@@ -104,7 +104,7 @@ theorem atkinsonIndexSlopeUpper_anti
       atkinsonIndexSlopeUpper u A := by
   unfold atkinsonIndexSlopeUpper
   apply Real.sqrt_le_sqrt
-  have hnum : 0 ≤ (2 * Real.pi + Real.pi ^ (2 : ℕ)) * (2 * u) := by
+  have hnum : 0 ≤ (2 * Real.pi + Real.pi ^ 2) * (2 * u) := by
     positivity
   exact div_le_div_of_nonneg_left hnum hA hAx
 

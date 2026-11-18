@@ -10,10 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseInitialArithmetic InverseFirstPriorityParents InverseMomentWholePriorityParents
-open InverseWholePriorityValidSource InverseWholePriorityRetainedSource RayFourExpansion FirstCauchyArithmetic
-open InverseMomentWholePriorityPhysical InversePrioritySecondSource InverseSecondPrincipalCaller
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseInitialArithmetic InverseFirstPriorityParents InverseMomentWholePriorityParents InverseWholePriorityValidSource InverseWholePriorityRetainedSource RayFourExpansion FirstCauchyArithmetic InverseMomentWholePriorityPhysical InversePrioritySecondSource InverseSecondPrincipalCaller
 local notation "Eis"=>ActualEisensteinCubic.O
 variable {ι σ:Type*} [DecidableEq ι] [DecidableEq σ] {Jo:ℕ}
 variable (p:ι→Eis) [∀i,(Ideal.span {p i}).IsMaximal]
@@ -48,8 +45,7 @@ theorem global_priority_signed_branches
       priorityTailParent p hg hp hinj extra pool negative Ψ₀ m slots assigned lists a V X Y R (parent p x)) := by
   intro V Ψ₀ parents source
   rw [global_priority_physical_source p hp hcop hg hinj hc hpr extra pool original negative Ψ m ray core w
-    slots assigned lists a om lo hi hlo hs X t Y hX hY R]
-  rw [wholePaired_parent_sq_sum p (fun x=>extra x.cube) hinj original negative assigned lists a
+    slots assigned lists a om lo hi hlo hs X t Y hX hY R, wholePaired_parent_sq_sum p (fun x=>extra x.cube) hinj original negative assigned lists a
       (globalPriorityOuter p hg negative Ψ m ray core w)
       (priorityZeroParent p hg extra pool negative Ψ₀ m slots assigned lists a V X Y R),
     wholePaired_parent_sq_sum p (fun x=>extra x.cube) hinj original negative assigned lists a

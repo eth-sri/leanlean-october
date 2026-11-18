@@ -63,9 +63,7 @@ theorem uniform_scalar_decay {κ : ℝ} (hκ : 0 < κ) :
 
 theorem tendsto_power_log_two_mul {κ : ℝ} (hκ : 0 < κ) :
     Tendsto (fun T : ℝ => T^(-κ)*Real.log (2*T)) atTop (𝓝 0) := by
-  have hp := tendsto_rpow_neg_atTop hκ
-  have hl := (isLittleO_log_rpow_atTop hκ).tendsto_div_nhds_zero
-  have hh := (hp.mul_const (Real.log 2)).add hl
+  have hh := ((tendsto_rpow_neg_atTop hκ).mul_const (Real.log 2)).add ((isLittleO_log_rpow_atTop hκ).tendsto_div_nhds_zero)
   simp only [zero_mul, zero_add] at hh
   apply hh.congr'
   filter_upwards [eventually_gt_atTop (0 : ℝ)] with T hT

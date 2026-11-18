@@ -9,8 +9,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 local notation "O" => ActualEisensteinCubic.O
 namespace SevenEighths.CenteredMomentCounting
-open CenteredMomentPrimary
-open QuadraticInitialBound
+open CenteredMomentPrimary QuadraticInitialBound
 
 theorem norm_tsum_ideal_ball (f : Ideal O → ℂ) (H M : ℝ)
     (hH : 0 ≤ H) (hM : 0 ≤ M) (hzero : f ⊥ = 0)

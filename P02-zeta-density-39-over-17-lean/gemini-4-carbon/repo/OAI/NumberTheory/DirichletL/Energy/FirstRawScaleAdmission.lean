@@ -10,12 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentEnergyFirstRawScaleAdmission
-open HeckeFamily ConcretePrimeRowBridge CanonicalQuadraticSieve
-open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentCommonProfile
-open CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps
-open CenteredMomentEnergyAmplifiedRayDictionary CenteredMomentFirstAnnularInput
-open CenteredMomentFirstChildLower CenteredMomentFirstAmplificationChoice
-open CenteredMomentSectorLocalization
+open HeckeFamily ConcretePrimeRowBridge CanonicalQuadraticSieve CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentCommonProfile CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps CenteredMomentEnergyAmplifiedRayDictionary CenteredMomentFirstAnnularInput CenteredMomentFirstChildLower CenteredMomentFirstAmplificationChoice CenteredMomentSectorLocalization
 local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α]
 local instance {ι:Type*}:DecidableEq ι:=Classical.decEq _
@@ -28,9 +23,7 @@ theorem parent_lower_scales (s:Input α)(Z:ℝ)(hZ:1<Z):
     Z^(parentLower s Z)≤s.X₁ ∧ Z^(parentLower s Z)≤s.X₂ ∧
     Z^(parentLower s Z)≤s.Y₁ ∧ Z^(parentLower s Z)≤s.Y₂:=by
   have h (X:ℝ)(hX:0<X)(hx:parentLower s Z≤Real.logb Z X):Z^(parentLower s Z)≤X:=by
-    calc
-      _≤Z^(Real.logb Z X):=Real.rpow_le_rpow_of_exponent_le hZ.le hx
-      _=X:=Real.rpow_logb (zero_lt_one.trans hZ) hZ.ne' hX
+    exact (Real.rpow_le_rpow_of_exponent_le hZ.le hx).trans_eq (Real.rpow_logb (zero_lt_one.trans hZ) hZ.ne' hX)
   exact ⟨h _ s.X₁_pos ((min_le_left _ _).trans (min_le_left _ _)),
     h _ s.X₂_pos ((min_le_left _ _).trans (min_le_right _ _)),
     h _ s.Y₁_pos ((min_le_right _ _).trans (min_le_left _ _)),
@@ -53,9 +46,8 @@ theorem active_error_lower (s:Input α)(C R:Ideal O)(hC:C≠0)
     let r':=r-Real.logb Z (C.absNorm:ℝ)-errorRemoval p Z k
     Z^r'≤d.X₁ ∧ Z^r'≤d.X₂ ∧ Z^r'≤d.Y₁ ∧ Z^r'≤d.Y₂:=by
   have hc:=child_lower s C R hC B τ t Z r hZ hX₁ hX₂ hY₁ hY₂
-  have hpn:(Ideal.span {p}:Ideal O)≠0:=Ideal.span_singleton_eq_bot.not.mpr hp
   have hh:=child_lower (activeInput (child s C R B τ t)) ((Ideal.span {p})^k) (R*C)
-    (pow_ne_zero k hpn) Bp υ v Z (r-Real.logb Z (C.absNorm:ℝ)) hZ
+    (pow_ne_zero k (Ideal.span_singleton_eq_bot.not.mpr hp)) Bp υ v Z (r-Real.logb Z (C.absNorm:ℝ)) hZ
     hc.1 hc.2.1 hc.2.2.1 hc.2.2.2
   have he:Real.logb Z (((Ideal.span {p}:Ideal O)^k).absNorm:ℝ)=errorRemoval p Z k:=by
     rw [map_pow,Nat.cast_pow,Real.logb_pow]

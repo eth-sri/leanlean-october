@@ -110,19 +110,13 @@ noncomputable def ApproxAddEnergy (η : ℝ) (W : Finset ℝ) : ℕ :=
 theorem approxAddEnergy_le_card_pow_four (η : ℝ) (W : Finset ℝ) :
     ApproxAddEnergy η W ≤ W.card ^ 4 := by
   unfold ApproxAddEnergy approximateAdditiveQuadruples
-  calc
-    (((W ×ˢ W) ×ˢ (W ×ˢ W)).filter fun q =>
-        |q.1.1 + q.1.2 - q.2.1 - q.2.2| ≤ η).card
-        ≤ ((W ×ˢ W) ×ˢ (W ×ˢ W)).card := Finset.card_filter_le _ _
-    _ = W.card ^ 4 := by simp only [Finset.card_product]; ring
+  exact (Finset.card_filter_le _ _).trans_eq (by simp only [Finset.card_product]; ring)
 
 theorem card_sq_le_approxAddEnergy {η : ℝ} (hη : 0 ≤ η) (W : Finset ℝ) :
     W.card ^ 2 ≤ ApproxAddEnergy η W := by
   classical
-  let diagonal : Finset ((ℝ × ℝ) × (ℝ × ℝ)) :=
-    (W ×ˢ W).image fun p => (p, p)
+  let diagonal := (W ×ˢ W).image fun p => (p, p)
   have hDiagonalCard : diagonal.card = (W ×ˢ W).card := by
-    dsimp [diagonal]
     apply Finset.card_image_of_injective
     intro p q hpq
     exact congrArg Prod.fst hpq

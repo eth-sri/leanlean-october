@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.SquareRootShiftSums
 
 @[expose] public section
@@ -30,10 +39,6 @@ theorem sum_third_derivative_correlation_majorant
     (show 0 ≤ C*N*Real.sqrt μ by positivity)
   have hi := mul_le_mul_of_nonneg_left (sum_shift_inverse_sqrt_le H)
     (show 0 ≤ 2/Real.sqrt μ by positivity)
-  calc
-    _ ≤ 12*(C*N*Real.sqrt μ*((H:ℝ)*Real.sqrt H)+
-        (2/Real.sqrt μ)*(2*Real.sqrt H)) :=
-      mul_le_mul_of_nonneg_left (add_le_add hs hi) (by norm_num)
-    _ = _ := by ring
+  exact (mul_le_mul_of_nonneg_left (add_le_add hs hi) (by norm_num)).trans_eq (by ring)
 
 end TaoTrudgianYang2025

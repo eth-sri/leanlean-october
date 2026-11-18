@@ -125,7 +125,7 @@ theorem floor_injective_on_of_separated (W : Finset ℝ)
   have hxylt : x - y < 1 := by
     rw [hfloor] at hxupper
     linarith
-  have hyxlt : -(1 : ℝ) < x - y := by
+  have hyxlt : -1 < x - y := by
     rw [← hfloor] at hyupper
     linarith
   exact (not_lt_of_ge hsep) (abs_lt.mpr ⟨hyxlt, hxylt⟩)

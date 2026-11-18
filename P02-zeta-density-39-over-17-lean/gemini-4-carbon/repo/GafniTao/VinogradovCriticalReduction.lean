@@ -14,9 +14,8 @@ the critical bound in every degree implies every supercritical instance of
 as an unexamined interface.
 -/
 
-open Complex Finset
+open Complex Finset MeasureTheory
 open scoped BigOperators
-open MeasureTheory
 
 namespace GafniTao
 

@@ -37,7 +37,7 @@ lemma logPhase_neg_argument (t y : ℝ) : logPhase t (-y)=logPhase (-t) y := by
 lemma gaussianFixedWindow_Vstar_twist (t x : ℝ) (hx : 0<x) :
     Vstar (CompletedHeight.normTwistedSource gaussianFixedWindow t) x=
       gaussianAnnulus x*logPhase t (Real.log x) := by
-  have hs : (Real.sqrt x:ℂ)≠0 := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hx).ne'
+  have hs := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hx).ne'
   unfold Vstar CompletedHeight.normTwistedSource gaussianFixedWindow
   field_simp
 

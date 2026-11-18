@@ -10,8 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 local notation "O" => ActualEisensteinCubic.O
 namespace SevenEighths.CenteredMomentActive
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge
-open CanonicalRowCompletion CenteredMomentCanonical
+open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge CanonicalRowCompletion CenteredMomentCanonical
 
 def netExponent (c d : ℕ) : ℕ := (c + 5 * d) % 6
 
@@ -87,8 +86,7 @@ theorem common_ideal_pair_active (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
     rw [← principal_product_eq_mask]
     apply Finset.prod_congr rfl
     intro i hi
-    have he := (Finset.mem_filter.mp hi).2
-    simp only [f, he, pow_zero]
+    simp only [f, ((Finset.mem_filter.mp hi).2), pow_zero]
   rw [hlocal, ← Finset.prod_filter_mul_prod_filter_not B
     (fun i => netExponent (c i) (d i) = 0) f, hzero]
   congr 1

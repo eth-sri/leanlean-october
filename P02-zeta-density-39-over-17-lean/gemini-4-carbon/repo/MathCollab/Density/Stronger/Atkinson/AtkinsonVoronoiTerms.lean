@@ -10,8 +10,7 @@ public import MathCollab.Density.Stronger.Atkinson.BesselY0
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set
-open MathCollab.Density.Stronger.Fourth
+open Complex Filter MeasureTheory Set MathCollab.Density.Stronger.Fourth
 open scoped ContDiff
 set_option autoImplicit false
 noncomputable section

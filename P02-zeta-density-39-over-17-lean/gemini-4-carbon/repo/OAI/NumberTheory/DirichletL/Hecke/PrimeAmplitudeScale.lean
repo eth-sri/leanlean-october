@@ -17,7 +17,7 @@ theorem upper_allowance_eventually (C dmin rmin ε mesh : ℝ)
       C*(Z^d)^(cap*r+ε)≤((Z^d)^r)^(cap+mesh) := by
   have hh := HeckeDyadic.constant_absorbed_eventually C (dmin*(rmin*mesh-ε))
     (mul_pos hd (by linarith))
-  filter_upwards [hh,eventually_ge_atTop (1 : ℝ)] with Z hC hZ
+  filter_upwards [hh,eventually_ge_atTop 1] with Z hC hZ
   intro d r cap hd' hr'
   have hZp : 0<Z := by linarith
   have hU : 0<Z^d := Real.rpow_pos_of_pos hZp _
@@ -47,13 +47,12 @@ theorem actual_bins_eventually (C dmin rmin ε mesh : ℝ)
       (0<amplitude ((Z^d)^r) cap mesh Q →
         (Z^d)^(2*r*amplitude ((Z^d)^r) cap mesh Q)≤‖Q‖^2) := by
   filter_upwards [upper_allowance_eventually C dmin rmin ε mesh hd hmesh hgap,
-    eventually_gt_atTop (1 : ℝ)] with Z hallow hZ
+    eventually_gt_atTop 1] with Z hallow hZ
   intro d hd' r cap hr' hcap Q hQ
-  have hU : 1<Z^d := Real.one_lt_rpow hZ (hd.trans_le hd')
-  have hP : 1<(Z^d)^r := Real.one_lt_rpow hU (hr.trans_le hr')
+  have hU := Real.one_lt_rpow hZ (hd.trans_le hd')
   have hb := amplitude_bounds ((Z^d)^r) cap mesh Q hcap
   exact ⟨hb.1,hb.2,amplitude_mem_labels _ cap mesh Q hmesh,
-    amplitude_upper _ cap mesh Q hP hmesh (hQ.trans (hallow d r cap hd' hr')),
+    amplitude_upper _ cap mesh Q (Real.one_lt_rpow hU (hr.trans_le hr')) hmesh (hQ.trans (hallow d r cap hd' hr')),
     squared_spike (Z^d) r cap mesh Q hU (hr.trans_le hr') hmesh⟩
 
 end SevenEighths.HeckePrimeAmplitudeBins

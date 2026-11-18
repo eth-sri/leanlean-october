@@ -26,10 +26,8 @@ theorem reciprocal_subpower (e ε : ℝ)
   obtain ⟨ψ,hp,hn,_,hr⟩ := hreduce χ
   have hc : complexity ψ s.im ≤ complexity χ s.im := by
     unfold complexity
-    have hn' : (ψ.modulus.absNorm : ℝ) ≤ χ.modulus.absNorm := by exact_mod_cast hn
     gcongr
-  have hc0 : 0 ≤ complexity ψ s.im :=
-    (Real.exp_pos 1).le.trans (complexity_ge_exp ψ s.im)
+  have hc0 := (Real.exp_pos 1).le.trans (complexity_ge_exp ψ s.im)
   have hr0 : 0 ≤ ((radical χ.modulus).absNorm : ℝ) := by positivity
   apply (hr s hs).trans
   calc
@@ -50,7 +48,7 @@ theorem polynomial_reciprocal_bound (χ : Character) (a : ℝ)
   have he : 0<e := lt_min (by norm_num) (by linarith)
   have he' : e<1/1000 := lt_of_le_of_lt (min_le_left _ _) (by norm_num)
   have hmargin : HeckeZeroSupremum.beta+8*e ≤ a := by
-    have hh := min_le_right (1/2000 : ℝ) ((a-HeckeZeroSupremum.beta)/16)
+    have hh := min_le_right (1/2000) ((a-HeckeZeroSupremum.beta)/16)
     change e ≤ (a-HeckeZeroSupremum.beta)/16 at hh
     linarith
   obtain ⟨C,hC,hbound⟩ := reciprocal_subpower e 1 he he' (by norm_num)

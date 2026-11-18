@@ -312,12 +312,11 @@ lemma enorm_translateL2_sub_toL2_le (a : E) (f : ↥(C1c (E := E))) :
       MeasureTheory.eLpNorm_eq_lintegral_rpow_enorm_toReal h2_ne0 h2_netop hgrad_meas,
       ENNReal.toReal_ofNat]
     -- It suffices to compare the squared integrals.
-    have hsq := lintegral_enorm_sub_sq_le (μ := μ) a f
     -- Take the `1/2` power on both sides and simplify.
     have hsq' :
         (∫⁻ x, ‖f.1 (x + a) - f.1 x‖ₑ ^ (2 : ℝ) ∂μ) ^ (1 / (2 : ℝ)) ≤
           (‖a‖ₑ ^ (2 : ℝ) * ∫⁻ x, ‖grad (E := E) f.1 x‖ₑ ^ (2 : ℝ) ∂μ) ^ (1 / (2 : ℝ)) := by
-      exact ENNReal.rpow_le_rpow hsq (by norm_num)
+      exact ENNReal.rpow_le_rpow (lintegral_enorm_sub_sq_le (μ := μ) a f) (by norm_num)
     -- Rewrite the RHS as `‖a‖ * (...)^(1/2)`.
     have hsq'' :
         (∫⁻ x, ‖f.1 (x + a) - f.1 x‖ₑ ^ (2 : ℝ) ∂μ) ^ (1 / (2 : ℝ)) ≤
@@ -329,13 +328,10 @@ lemma enorm_translateL2_sub_toL2_le (a : E) (f : ↥(C1c (E := E))) :
       -- `(x^2)^(1/2) = x` in `ℝ≥0∞`, accounting for simp-normalization of `2` and `1/2`.
       have hnat : (‖a‖ₑ ^ (2 : ℕ)) = ‖a‖ₑ ^ (2 : ℝ) := by
         simp
-      calc
-        (‖a‖ₑ ^ (2 : ℕ)) ^ ((2 : ℝ)⁻¹) = (‖a‖ₑ ^ (2 : ℝ)) ^ ((2 : ℝ)⁻¹) :=
-          congrArg (fun r : ℝ≥0∞ => r ^ ((2 : ℝ)⁻¹)) hnat
-        _ = ‖a‖ₑ := by
+      exact (congrArg (fun r : ℝ≥0∞ => r ^ ((2 : ℝ)⁻¹)) hnat).trans (by
           have := (ENNReal.rpow_mul ‖a‖ₑ (2 : ℝ) ((2 : ℝ)⁻¹)).symm
           have hmul : (2 : ℝ) * ((2 : ℝ)⁻¹) = (1 : ℝ) := by norm_num
-          simpa [hmul, ENNReal.rpow_one] using this
+          simpa [hmul, ENNReal.rpow_one] using this)
     simpa [hroot, mul_assoc, mul_left_comm, mul_comm] using hsq''
   -- Finish: translate back to the original `L²` norms.
   -- (The final `simp` is safe since we have explicit `eLpNorm` equalities above.)

@@ -6,16 +6,11 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondReducedEnergy
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
 open MeasureTheory
+open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentSecondMaskedWindow
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open CenteredMomentSecondSectorEnergy CenteredMomentSecondSectorColumns CenteredMomentSecondScaled
-open CenteredMomentHeckeColumnWindow CenteredMomentHeckeWindowEnergy CenteredMomentSecondHeightFamily
-open CenteredMomentRestrictedEnergy CenteredMomentRestrictedWindow CenteredMomentRestrictedSource
-open CenteredMomentChildAssembly CenteredMomentSmooth CenteredMomentFirstSectors RayFourExpansion
-open CenteredMomentLogDyadic CenteredMomentRowNorm CenteredMomentSourceRow
+open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss CenteredMomentSecondSectorEnergy CenteredMomentSecondSectorColumns CenteredMomentSecondScaled CenteredMomentHeckeColumnWindow CenteredMomentHeckeWindowEnergy CenteredMomentSecondHeightFamily CenteredMomentRestrictedEnergy CenteredMomentRestrictedWindow CenteredMomentRestrictedSource CenteredMomentChildAssembly CenteredMomentSmooth CenteredMomentFirstSectors RayFourExpansion CenteredMomentLogDyadic CenteredMomentRowNorm CenteredMomentSourceRow
 local notation "O" => ActualEisensteinCubic.O
 
 theorem masked_divisor_coefficient (η τ : Character) (χ : RayCharacter) (A : O)
@@ -28,9 +23,8 @@ theorem masked_divisor_coefficient (η τ : Character) (χ : RayCharacter) (A : 
       (movingCoefficient A (sectorElement C hC.1 S)
         (fun J:sectorPool C hC.1 S=>β (C*J)*heightCoeff η t J)) χ I=
       (if L∣(I:Ideal O) then β (C*I) else 0)*heightCoeff τ t I := by
-  have hi : IsCoprime C (I:Ideal O) := (Finset.mem_filter.mp I.property).2
   rw [divisorCoefficient,movingCoefficient,sectorElement_span,
-    hτ I (sectorPool_supported C hC.1 S I) hi t]
+    hτ I (sectorPool_supported C hC.1 S I) ((Finset.mem_filter.mp I.property).2) t]
   dsimp only [sectorElement]
   split_ifs <;> ring
 
@@ -46,8 +40,7 @@ theorem masked_child_energy (η τ : Character) (χ : RayCharacter) (A : O)
           (fun J:sectorPool C hC.1 S=>β (C*J)*heightCoeff η t J)) χ) Φ H=
     sourceRestrictedEnergy keep (residualPool C hC.1 S)
       (fun I=>if IsCoprime C I ∧ L∣I then β (C*I) else 0) (heightCoeff τ t) Φ H := by
-  have he := funext (masked_divisor_coefficient η τ χ A C hC hτ S β L t)
-  rw [he]
+  rw [(funext (masked_divisor_coefficient η τ χ A C hC hτ S β L t))]
   unfold restrictedEnergy sourceRestrictedEnergy
   apply tsum_congr
   intro z
@@ -78,11 +71,10 @@ theorem original_window_from_masked_source (η τ : Character) (χ : RayCharacte
         columnPhase logAnnulus (Real.log ((Ideal.absNorm (I:Ideal O):ℝ)/X)) θ) Φ H≤
       (E*heightCost t θ^(2*J))*(∫w:ℝ,(1+‖w‖)^J*
         ‖columnDensity logAnnulus logAnnulus_compact logAnnulus_smooth w‖)^2 := by
-  have hc := funext (masked_divisor_coefficient η τ χ A C hC hτ S β L t)
   change restrictedEnergy keep Finset.univ (sectorElement C hC.1 S)
     (fun I=>(divisorCoefficient L (sectorElement C hC.1 S)
       (movingCoefficient A (sectorElement C hC.1 S) (fun I=>β (C*I)*heightCoeff η t I)) χ) I*_) Φ H≤_
-  rw [hc]
+  rw [(funext (masked_divisor_coefficient η τ χ A C hC hτ S β L t))]
   have hh := restricted_window_energy_from_height keep logAnnulus logAnnulus_compact logAnnulus_smooth J
     Finset.univ (sectorElement C hC.1 S) (sectorElement_supported C hC.1 S)
     (fun I:sectorPool C hC.1 S=>if L∣(I:Ideal O) then β (C*I) else 0)
@@ -90,8 +82,7 @@ theorem original_window_from_masked_source (η τ : Character) (χ : RayCharacte
   · simpa only [sectorElement_span] using hh
   intro v
   have hs := hsource v
-  rw [←masked_child_energy η τ χ A C hC hτ S β L v keep Φ H] at hs
-  rw [funext (masked_divisor_coefficient η τ χ A C hC hτ S β L v)] at hs
+  rw [←masked_child_energy η τ χ A C hC hτ S β L v keep Φ H, funext (masked_divisor_coefficient η τ χ A C hC hτ S β L v)] at hs
   simpa only [sectorElement_span] using hs
 
 end SevenEighths.CenteredMomentSecondMaskedWindow

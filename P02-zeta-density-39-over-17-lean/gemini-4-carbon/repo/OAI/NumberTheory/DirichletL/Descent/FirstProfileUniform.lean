@@ -6,11 +6,8 @@ public import OAI.NumberTheory.DirichletL.Inversion.SecondProfileUniform
 namespace OAI
 
 noncomputable section
+open MeasureTheory FourierBridge JointLogSeparation EisensteinSchwartzPoisson SevenEighths.InverseMoment SevenEighths.InverseInitialProfile SevenEighths.InverseAmbientProfileTower
 open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
-open MeasureTheory FourierBridge JointLogSeparation EisensteinSchwartzPoisson
-open SevenEighths.InverseMoment
-open SevenEighths.InverseInitialProfile
-open SevenEighths.InverseAmbientProfileTower
 namespace SevenEighths.InverseMomentFirstProfileUniform
 
 def rooted (g : 𝓢(ℝ, ℂ)) (M a : ℝ)
@@ -146,7 +143,7 @@ private theorem radial_common_box (Φ : 𝓢(ℝ, ℂ)) (M : Fin 9 → ℝ)
 theorem translated_box (g : 𝓢(ℝ, ℂ)) (M B ρ : ℝ)
     (hg : Function.support g ⊆ Set.Icc (-M) M) (hρ : |ρ| ≤ B)
     {y : ℝ} (hy : translated g ρ y ≠ 0) : |y| ≤ M+B := by
-  have h := hg (show g (y+ρ) ≠ 0 from by simpa only [translated_apply] using hy)
+  have h := hg (show g (y+ρ) ≠ 0 from by simpa using hy)
   have hr := abs_le.mp hρ
   apply abs_le.mpr
   constructor <;> linarith [h.1,h.2,hr.1,hr.2]
@@ -306,10 +303,9 @@ theorem first_profile_common_measure
         ‖density G f₁ f₂ b₃ ρ c₁ c₂ θ₁ θ₂ L p‖) ≤
         C*((1+‖θ₁‖)^(InverseClippingProfiles.momentOrder J) *
           (1+‖θ₂‖)^(InverseClippingProfiles.momentOrder J)) := by
-  dsimp only
   obtain ⟨C,hC,hs⟩ := common_measure
     (fun i => rooted (U i) (M i) (InverseClippingProfiles.firstBalancedSlope i) (hU i))
-    (rooted g₁ m₁ (-(1/2:ℝ)) h₁) (rooted g₂ m₂ (-(1/2:ℝ)) h₂) Φ M B b hM hB
+    (rooted g₁ m₁ (-(1/2)) h₁) (rooted g₂ m₂ (-(1/2)) h₂) Φ M B b hM hB
     (fun i => rooted_support _ _ _ _) A J
   refine ⟨C,hC,?_⟩
   intro R hR

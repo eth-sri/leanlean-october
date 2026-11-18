@@ -29,7 +29,7 @@ theorem atkinsonBesselScale_quarter_normalization (n : ℕ) :
     rw [Real.sqrt_mul (by norm_num : (0:ℝ) ≤ 4)]
     norm_num
   unfold atkinsonBesselScale
-  norm_num only [show (-2:ℝ)*(1/4) = -(1/2) by norm_num]
+  norm_num
   rw [Real.rpow_neg (by positivity),← Real.sqrt_eq_rpow,hp]
   field_simp
 

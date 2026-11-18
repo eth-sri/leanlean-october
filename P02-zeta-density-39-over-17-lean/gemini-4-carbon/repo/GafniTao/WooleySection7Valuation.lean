@@ -93,8 +93,7 @@ def wooleySection7LowerSystem
 
 theorem wooleySection7LowerSystem_spaced
     (r p d : ℕ) (Xi : Fin r → Polynomial ℤ) :
-    (wooleySection7LowerSystem r p d Xi).Spaced p d := by
-  exact ⟨Xi, fun _ => rfl⟩
+    (wooleySection7LowerSystem r p d Xi).Spaced p d := ⟨Xi, fun _ => rfl⟩
 
 end
 

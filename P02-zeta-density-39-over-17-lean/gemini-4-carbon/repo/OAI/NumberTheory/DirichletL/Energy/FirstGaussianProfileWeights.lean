@@ -9,10 +9,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyFirstGaussianProfileWeights
-open HeckeFamily CenteredMomentFiniteProfileExceptional
-open CenteredMomentSecondChildPowerBudget CenteredMomentFirstChildProfileControl
-open CenteredMomentEnergyFirstGaussianCoefficients CenteredMomentSecondWindowBudget
-open QuadraticInitialBound
+open HeckeFamily CenteredMomentFiniteProfileExceptional CenteredMomentSecondChildPowerBudget CenteredMomentFirstChildProfileControl CenteredMomentEnergyFirstGaussianCoefficients CenteredMomentSecondWindowBudget QuadraticInitialBound
 local notation "O"=>HeckeFamily.O
 
 def losses (epsilon delta theta B:ℝ):Fin 4→ℝ:=

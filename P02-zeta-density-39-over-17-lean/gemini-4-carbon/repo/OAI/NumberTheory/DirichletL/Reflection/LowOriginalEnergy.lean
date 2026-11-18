@@ -53,7 +53,7 @@ theorem low_original_completed_energy (Q : Ideal Eis) (hQ : Q≠0)
   let lists' := punctureLists lists S
   have hsub (i : σ) : lists' i⊆lists i := Finset.filter_subset _ _
   let w' : ∀ i,lists' i→ℂ := fun i P => w i ⟨P.val,hsub i P.property⟩
-  have hLP (i : σ) (P : Ideal Eis) (hP : P∈lists' i) : IsCoprime (Q*Ideal.span {(72:Eis)}) P := by
+  have hLP (i : σ) (P : Ideal Eis) (hP : P∈lists' i) : IsCoprime (Q*Ideal.span {72}) P := by
     apply puncture_period_coprime _ m hperiod P (hmax i P (hsub i hP))
     intro hmP
     exact (Finset.mem_filter.mp hP).2 ((actualPuncturePrimes_mem lists m i P (hsub i hP)).mpr hmP)

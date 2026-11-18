@@ -14,8 +14,7 @@ def continuationMargin (β ω σ : ℝ) : ℝ := min (β - 7 / 8 - ω) σ
 
 theorem continuationMargin_pos {β ω σ : ℝ}
     (hω : ω < β - 7 / 8) (hσ : 0 < σ) :
-    0 < continuationMargin β ω σ := by
-  exact lt_min (sub_pos.mpr hω) hσ
+    0 < continuationMargin β ω σ := lt_min (sub_pos.mpr hω) hσ
 
 theorem continuationMargin_le_gap (β ω σ : ℝ) :
     continuationMargin β ω σ ≤ β - 7 / 8 - ω :=

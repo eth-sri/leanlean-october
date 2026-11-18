@@ -20,7 +20,7 @@ theorem bounded_row_square_expansion {β : Type*}
   have hs (b c : β) (hb:b∈C) (hc:c∈C) : Summable (fun z:O =>
       (star (r b z)*r c z)*W (‖eisEmbedding z‖^2/K)) := by
     have hW : Summable (fun z:O=>‖W (‖eisEmbedding z‖^2/K)‖) := by
-      simpa only [EisensteinSchwartzPoisson.scaledRadialTest_apply] using
+      simpa using
         EisensteinSchwartzPoisson.actual_eisenstein_summable_norm
           (EisensteinSchwartzPoisson.scaledRadialTest W K hK)
     apply Summable.of_norm
@@ -77,7 +77,6 @@ theorem varying_reopened_smoothed_expand
     multiplicityRow (fun i=>Ideal.span {p i}) hg pool b.1 z^3*
       finiteSquarefreeRow (fun i=>Ideal.span {p i}) hg b.2 z
   have hr (b : (ι→₀ℕ)×Finset ι) (hb:b∈Q×ˢpool.powerset) (z:O) : ‖r b z‖≤1 := by
-    dsimp [r]
     rw [norm_mul,norm_pow]
     calc
       _ ≤ 1 * ‖finiteSquarefreeRow (fun i => Ideal.span {p i}) hg b.2 z‖ :=

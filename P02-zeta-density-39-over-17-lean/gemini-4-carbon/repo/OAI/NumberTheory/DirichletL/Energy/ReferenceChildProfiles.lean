@@ -9,14 +9,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyReferenceChildProfiles
-open HeckeFamily HeckeDyadic ConcreteTraceCRT
-open CenteredMomentEnergyState CenteredMomentEnergyReferenceState
-open CenteredMomentEnergyReferenceChild CenteredMomentEnergyProfiles
-open CenteredMomentAllocatedNaturalRadial CenteredMomentCommonMaskExpansion
-open CenteredMomentCommonMaskEnergy CenteredMomentInductionEnergy
-open CenteredMomentOriginalRadialComparison CenteredMomentFiniteProfileExceptional
-open CenteredMomentScaleSupremum CenteredMomentSectorLocalization
-open CenteredMomentLattice CenteredMomentRetainedProfile
+open HeckeFamily HeckeDyadic ConcreteTraceCRT CenteredMomentEnergyState CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceChild CenteredMomentEnergyProfiles CenteredMomentAllocatedNaturalRadial CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy CenteredMomentInductionEnergy CenteredMomentOriginalRadialComparison CenteredMomentFiniteProfileExceptional CenteredMomentScaleSupremum CenteredMomentSectorLocalization CenteredMomentLattice CenteredMomentRetainedProfile
 local notation "O"=>HeckeFamily.O
 
 def reflectionProfiles {a b:ℝ}(ha:0<a)(hlo:a≤1/4)(hhi:1≤b)
@@ -105,7 +98,7 @@ theorem reflected_profile_control (a b:ℝ)(ha:0<a)(hlo:a≤1/4)(hhi:1≤b)
         C*sourceControl T W*(1+‖v‖+‖t‖)^n:=by
   obtain ⟨n,T,C,hC,hc⟩:=independent_profile_control a b ha S
   obtain ⟨U,D,hD,hd⟩:=derivative_choice_control T
-  let A:ℝ:=1+∑j:Fin 2,sourceControl T (derivativeChoice (annulusSeed a b hlo hhi).profile j)
+  let A :=1+∑j:Fin 2,sourceControl T (derivativeChoice (annulusSeed a b hlo hhi).profile j)
   have hA:0<A:=by
     have hh:=Finset.sum_nonneg (fun (j:Fin 2) (_:j∈Finset.univ)=>
       sourceControl_nonneg T (derivativeChoice (annulusSeed a b hlo hhi).profile j))

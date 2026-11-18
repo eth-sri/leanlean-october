@@ -52,7 +52,7 @@ theorem uniform_original_x_height_tail (K : ℕ)
       (∫p : HeightSpace in outsideBox T,‖continuedRowOnLines S hS hmax P hPS η u W0 W1 X Y Z 2 υ r p‖ ∂heightMeasure)≤
         (9*A)*D*(X^(1/2-r)*Z^(2+r-1)*Y^(υ-1))/(1+T)^N := by
     have hfun : continuedRowOnLines S hS hmax P hPS η u W0 W1 X Y Z 2 υ r=
-        (fun p : HeightSpace=>sourceMellinWeight W0 W1 X Y Z ((2:ℂ)+p.1.1*I) ((υ:ℂ)+p.2*I) ((r:ℂ)+p.1.2*I)*G p) := by
+        (fun p : HeightSpace=>sourceMellinWeight W0 W1 X Y Z (2+p.1.1*I) ((υ:ℂ)+p.2*I) ((r:ℂ)+p.1.2*I)*G p) := by
       funext p
       exact continuedRowOnLines_eq_amplitude ..
     rw [hfun]

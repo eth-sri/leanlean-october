@@ -12,10 +12,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseSecondSourceBlocks InverseSecondPrincipalCaller InverseSecondProfileUniform
-open FourierBridge CompletedHeight SecondPassIntegration JointLogSeparation
-open InverseInitialClippedColumns InverseSecondFibers
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondSourceBlocks InverseSecondPrincipalCaller InverseSecondProfileUniform FourierBridge CompletedHeight SecondPassIntegration JointLogSeparation InverseInitialClippedColumns InverseSecondFibers
 local notation "Eis" => ActualEisensteinCubic.O
 theorem actual_priority_cell_recursive_window_order_uniform_types
     (om Φ:𝓢(ℝ,ℂ)) (lo hi:ℝ) (hlo:0<lo)
@@ -92,7 +89,7 @@ theorem actual_priority_cell_recursive_window_order_uniform_types
   have hcg:Function.support (conjugateProfile g)⊆Set.Icc (-mg) mg:=by
     intro x hx
     apply hg
-    simpa only [Function.mem_support,conjugateProfile_apply,star_ne_zero] using hx
+    simpa using hx
   obtain ⟨ω₁,ω₂,af,bf,haf,hab,hc₁,hc₂,hs₁,hs₂,hordered⟩:=
     actual_second_fixed_block_recursive_window_order_uniform_types  (conjugateProfile g) g Φ mg mg 1
       (fun _=>1) (fun _=>2) B₀ hm hm (le_refl 1) (fun _=>zero_lt_one)

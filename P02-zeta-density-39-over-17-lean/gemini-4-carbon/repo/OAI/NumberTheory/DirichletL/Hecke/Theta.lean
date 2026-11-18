@@ -199,7 +199,6 @@ theorem regularizedCompleted_eq {N : ℕ} [NeZero N] (w : Fin N × Fin N → ℂ
   unfold regularizedCompleted completed WeakFEPair.Λ
   simp only [pair_k, Complex.ofReal_one, show (pair w).ε = 1 from rfl,
     smul_eq_mul, one_div]
-  have hsub : (1 : ℂ) - s ≠ 0 := sub_ne_zero.mpr hs₁.symm
   field_simp
   ring
 

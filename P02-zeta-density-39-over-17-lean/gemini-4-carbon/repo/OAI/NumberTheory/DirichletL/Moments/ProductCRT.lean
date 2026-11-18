@@ -8,8 +8,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentProductCRT
-open CenteredMomentCorrelation CenteredMomentCommonSupport
-open CenteredMomentHeterogeneousCRT
+open CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentHeterogeneousCRT
 variable {A ι : Type*} [CommRing A] [Fintype ι] [DecidableEq ι]
 
 def productCRT (a : ι → A)
@@ -107,9 +106,7 @@ theorem cross_cofactor_coprime (a b : ι → A)
   unfold cofactor
   apply IsCoprime.prod_right
   intro j hj
-  have hji : j ≠ i := (Finset.mem_erase.mp hj).1
-  have hij := (Ideal.isCoprime_span_singleton_iff _ _).mp (hab hji.symm)
-  exact (IsCoprime.mul_right_iff.mp (IsCoprime.mul_left_iff.mp hij).1).2
+  exact (IsCoprime.mul_right_iff.mp (IsCoprime.mul_left_iff.mp ((Ideal.isCoprime_span_singleton_iff _ _).mp (hab ((Finset.mem_erase.mp hj).1).symm))).1).2
 
 theorem local_cofactor_norm (a b : ι → A)
     (hab : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {a i * b i})))
@@ -149,8 +146,7 @@ theorem fullModulusCorrelation_product_norm (a b : ι → A)
   exact local_cofactor_norm a b hab χ ψ h i
 
 section Eisenstein
-open ActualEisensteinCubic ConcreteTraceCRT CanonicalQuadraticSieve CanonicalRowCompletion
-open CenteredMomentSupportedCorrelation
+open ActualEisensteinCubic ConcreteTraceCRT CanonicalQuadraticSieve CanonicalRowCompletion CenteredMomentSupportedCorrelation
 local notation "O" => ActualEisensteinCubic.O
 
 omit [DecidableEq ι] in

@@ -7,80 +7,11 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
-
-open scoped BigOperators Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 namespace CanonicalRowCompletion
 
 section
-open ActualEisensteinCubic
 open ConcretePrimeRowBridge hiding O columnWeight
 open CanonicalQuadraticSieve hiding O
 open SecondPassArithmetic hiding O
@@ -104,7 +35,6 @@ theorem cubeIdeal_primeProduct_norm (F : Finset (Ideal ActualEisensteinCubic.O))
 
 end
 
-open ActualEisensteinCubic
 open CompletedGauss hiding O
 open ConcretePrimeRowBridge hiding O columnWeight
 open CanonicalQuadraticSieve hiding O
@@ -114,12 +44,9 @@ open FirstPassCubeLabels (columnLog)
 
 end CanonicalRowCompletion
 
-open scoped BigOperators Classical
 namespace CanonicalUnitEuler
-open ActualEisensteinCubic
 open CanonicalRowCompletion
 open CanonicalQuadraticSieve hiding O
-open UniqueFactorizationMonoid
 open ActualEisensteinCoordinates (eval coords eval_coords)
 open ShortDraftLatticeCount (qNat qO_nonneg coords_eval)
 
@@ -185,7 +112,7 @@ lemma supported_span_congruent_mod_thirty_six (x y : ActualEisensteinCubic.O)
     Supported (Ideal.span {x})↔Supported (Ideal.span {y}) := by
   have h36:(36:ActualEisensteinCubic.O)∣x-y:=Ideal.mem_span_singleton.mp hxy
   have hlam : lambda∣(36:ActualEisensteinCubic.O):=
-    ((dvd_pow_self lambda (by decide : (2:ℕ)≠0)).trans lambda_sq_dvd_three).trans ⟨12,by norm_num⟩
+    ((dvd_pow_self lambda (by decide : 2≠0)).trans lambda_sq_dvd_three).trans ⟨12,by norm_num⟩
   have htwo : (2:ActualEisensteinCubic.O)∣(36:ActualEisensteinCubic.O):=⟨18,by norm_num⟩
   have he (a : ActualEisensteinCubic.O) (ha : a∣x-y) : a∣x↔a∣y := by
     constructor
@@ -210,13 +137,11 @@ theorem unitSupplement_periodic (u : ActualEisensteinCubic.Oˣ) (x y : ActualEis
 private lemma rowTwist_zero_of_common_prime (Ψ : ActualEisensteinCubic.O→*ℂ) (m f z n : ActualEisensteinCubic.O)
     (P : Ideal ActualEisensteinCubic.O) (hp : Prime P) (hm : m∈P) (hn : n∈P) :
     rowTwist Ψ m f z n=0 := by
-  have hPI:P∣Ideal.span {n}:=Ideal.dvd_iff_le.mpr (Ideal.span_le.mpr (Set.singleton_subset_iff.mpr hn))
   have hm6:m^6∈P:=by
     rw [show m^6=m^5*m by ring]
     exact P.mul_mem_left _ hm
-  have hx:m^6*f^4*z∈P:=P.mul_mem_right _ (P.mul_mem_right _ hm6)
   change Ψ n*idealRowHom _ (Ideal.span {n})=0
-  rw [idealRowHom_zero_of_dvd _ hp hPI hx,mul_zero]
+  rw [idealRowHom_zero_of_dvd _ hp (Ideal.dvd_iff_le.mpr (Ideal.span_le.mpr (Set.singleton_subset_iff.mpr hn))) (P.mul_mem_right _ (P.mul_mem_right _ hm6)),mul_zero]
 
 theorem rowTwist_unitSupplement (Ψ : ActualEisensteinCubic.O→*ℂ) (m f z : ActualEisensteinCubic.O) (u : ActualEisensteinCubic.Oˣ)
     (hmLam : lambda∣m) (hm2 : (2:ActualEisensteinCubic.O)∣m) :
@@ -249,8 +174,7 @@ end CanonicalUnitEuler
 namespace CubicEisenstein
 
 section
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff Manifold MatrixGroups
+open scoped Manifold MatrixGroups
 
 lemma kernelBarrier_sublevel_isCompact (T : ℝ) :
     IsCompact {q : KernelQuotient | kernelQuotientBarrier 2 3 q≤T} := by
@@ -267,9 +191,8 @@ lemma kernelBarrier_sublevel_isCompact (T : ℝ) :
     obtain ⟨r,hr⟩ := Set.mem_iUnion.mp htail
     obtain ⟨hrS,htail⟩ := Set.mem_iUnion.mp hr
     obtain ⟨p,hp,rfl⟩ := htail
-    have hh : 3<p.1.2 := (le_max_left 3 T).trans_lt hp.2.2
     change kernelQuotientBarrier 2 3 (fordOrbitChart globalKubotaKernel r p)≤T at hq
-    rw [kernelQuotientBarrier_fordCusp 2 3 (by norm_num) (by norm_num) r p hh] at hq
+    rw [kernelQuotientBarrier_fordCusp 2 3 (by norm_num) (by norm_num) r p ((le_max_left 3 T).trans_lt hp.2.2)] at hq
     exact (not_lt_of_ge hq) ((le_max_right 3 T).trans_lt hp.2.2)
 
 def kernelExhaustionProfile (n : ℕ) (v : ℝ) : ℝ :=
@@ -310,7 +233,6 @@ lemma kernelExhaustionCutoff_hasCompactSupport (n : ℕ) :
   apply HasCompactSupport.of_support_subset_isCompact
     (kernelBarrier_sublevel_isCompact (2*((n:ℝ)+1)))
   intro q hq
-  change kernelQuotientBarrier 2 3 q≤2*((n:ℝ)+1)
   by_contra h
   exact hq (kernelExhaustionProfile_zero n _ (le_of_not_ge h))
 
@@ -339,8 +261,7 @@ lemma kernelExhaustionCutoff_eventually_one_near (q : KernelQuotient) :
 
 end
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff MatrixGroups
+open scoped MatrixGroups
 
 lemma cuspTransition_euler_bounded (a b : ℝ) (hab : a<b) :
     ∃C : ℝ,0≤C ∧ ∀v,|v*deriv (cuspTransition a b) v|≤C := by
@@ -350,9 +271,7 @@ lemma cuspTransition_euler_bounded (a b : ℝ) (hab : a<b) :
     by_contra hnot
     have hout : v<a ∨ b<v := by simpa only [Set.mem_Icc,not_and_or,not_le] using hnot
     exact hv (by change v*deriv (cuspTransition a b) v=0; rw [(cuspTransition_derivatives a b v hab hout).1,mul_zero])
-  have hcont : Continuous (fun v => v*deriv (cuspTransition a b) v) :=
-    continuous_id.mul ((contDiff_infty_iff_deriv.mp (cuspTransition_contDiff a b)).2.continuous)
-  obtain ⟨C,hC⟩ := hc.exists_bound_of_continuous hcont
+  obtain ⟨C,hC⟩ := hc.exists_bound_of_continuous (continuous_id.mul ((contDiff_infty_iff_deriv.mp (cuspTransition_contDiff a b)).2.continuous))
   exact ⟨max C 0,le_max_right _ _,fun v => (hC v).trans (le_max_left _ _)⟩
 
 lemma cuspRemainderProfile_contDiffAt (a b : ℝ) (s : ℂ) (v : ℝ) (hv : 0<v) :
@@ -430,10 +349,7 @@ lemma cuspRemainder_row_scaled_deriv_bound (a b : ℝ) (s : ℂ) (C : ℝ)
 
 end CubicEisenstein
 
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap ContDiff
 namespace CanonicalRowCompletion
-open ActualEisensteinCubic
 open CompletedGauss hiding O
 open ConcretePrimeRowBridge hiding O columnWeight
 open CanonicalQuadraticSieve hiding O

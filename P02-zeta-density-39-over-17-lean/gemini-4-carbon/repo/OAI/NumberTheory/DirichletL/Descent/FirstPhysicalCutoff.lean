@@ -50,9 +50,8 @@ theorem first_physical_cutoff_raw_tail {ι : Type*} [DecidableEq ι]
     Z^tau ≤ (Z^M/(primeProductNorm p divisor *
       primeProductNorm p ((N∪Q)∪cubeActiveSupport S (fun i=>v₁ i+v₂ i) ε₁ ε₂)))*‖eisEmbedding h‖^2 := by
   by_contra hbad
-  have hratio := (lt_of_not_ge hbad).le
   have hrow := first_ratio_canonical_row p hp S N Q v₁ v₂ ε₁ ε₂ hv hNQ hNS hQS common divisor f h
-    Z M r ell V delta B j eta tau hZ hb₁ hb₂ hf hd hc hj hcol₁ hcol₂ hratio
+    Z M r ell V delta B j eta tau hZ hb₁ hb₂ hf hd hc hj hcol₁ hcol₂ ((lt_of_not_ge hbad).le)
   apply hout
   apply (mem_childFrequencyBall _ (firstPhysicalMultiplier_ne_zero p hp S v₁ v₂ ε₁ ε₂ f hf0) _ h).mpr
   simpa only [firstPhysicalMultiplier_row] using hrow

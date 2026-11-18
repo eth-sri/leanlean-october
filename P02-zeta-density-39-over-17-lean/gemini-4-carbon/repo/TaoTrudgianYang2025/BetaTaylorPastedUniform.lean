@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaTaylorPastedTransitionBounds
 
 @[expose] public section
@@ -54,7 +64,7 @@ theorem taylorPastedExtension_uniform_jets
       by_cases hx₂ : x < r-2*h
       · rw [(taylorPastedExtension_eventuallyEq_plateau f Q hh ⟨hx₁',hx₂⟩).iteratedDeriv_eq n]
         exact (hb x ⟨by linarith,by linarith⟩ n (by omega)).trans
-          (by simpa only [one_mul] using mul_le_mul_of_nonneg_right hC hM)
+          (by simpa using mul_le_mul_of_nonneg_right hC hM)
       · have hx₂' : r-2*h ≤ x := le_of_not_gt hx₂
         by_cases hx₃ : x ≤ r-h
         · exact (hright f l r h x M hh hh₁ hgap hf hb ⟨hx₂',hx₃⟩ n hn).trans

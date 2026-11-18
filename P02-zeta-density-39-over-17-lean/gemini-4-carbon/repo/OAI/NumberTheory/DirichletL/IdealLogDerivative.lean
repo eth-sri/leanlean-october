@@ -81,7 +81,7 @@ theorem idealDivisors_prime_pow (P : Ideal O) (hP : Prime P) (k : ℕ) :
     obtain ⟨j, hj, hDj⟩ := (dvd_prime_pow hP k).mp hD
     exact ⟨j, Finset.mem_range.mpr (by omega), (associated_iff_eq.mp hDj).symm⟩
   · rintro ⟨j, hj, rfl⟩
-    exact pow_dvd_pow P (by simpa only [Finset.mem_range, Nat.lt_succ_iff] using hj)
+    exact pow_dvd_pow P (by simpa using hj)
 
 theorem sum_value_prime_pow (P : Ideal O) (hP : Prime P) (k : ℕ) :
     (∑ D ∈ idealDivisors (P ^ k), (IdealMangoldt.value D : ℂ)) =
@@ -105,8 +105,6 @@ theorem sum_value_mul (B C : Ideal O) (hB : B ≠ 0) (hC : C ≠ 0)
     apply Ideal.isCoprime_iff_sup_eq.mpr
     apply Ideal.isUnit_iff.mp
     exact hBC (Ideal.dvd_iff_le.mpr le_sup_left) (Ideal.dvd_iff_le.mpr le_sup_right)
-  have h1B : (1 : Ideal O) ∈ idealDivisors B := (mem_idealDivisors hB).mpr (one_dvd _)
-  have h1C : (1 : Ideal O) ∈ idealDivisors C := (mem_idealDivisors hC).mpr (one_dvd _)
   rw [QuadraticDivisorSplit.sum_divisors_coprime_product B C hB hC hcop]
   calc
     _ = ∑ D ∈ idealDivisors B, ∑ E ∈ idealDivisors C,
@@ -121,7 +119,7 @@ theorem sum_value_mul (B C : Ideal O) (hB : B ≠ 0) (hC : C ≠ 0)
       split_ifs <;> rfl
     _ = _ := by
       simp only [Finset.sum_add_distrib, Finset.sum_ite_irrel,
-        Finset.sum_ite_eq', ite_eq_left h1C, ite_eq_left h1B, Finset.sum_const_zero]
+        Finset.sum_ite_eq', ite_eq_left ((mem_idealDivisors hC).mpr (one_dvd _)), ite_eq_left ((mem_idealDivisors hB).mpr (one_dvd _)), Finset.sum_const_zero]
 
 theorem sum_value_divisors (B : Ideal O) (hB : B ≠ 0) :
     (∑ D ∈ idealDivisors B, (IdealMangoldt.value D : ℂ)) =
@@ -136,8 +134,8 @@ theorem sum_value_divisors (B : Ideal O) (hB : B ≠ 0) :
     push_cast
     rfl
   | @hcp B C hBC ihB ihC =>
-    have hB0 : B ≠ 0 := left_ne_zero_of_mul hB
-    have hC0 : C ≠ 0 := right_ne_zero_of_mul hB
+    have hB0 := left_ne_zero_of_mul hB
+    have hC0 := right_ne_zero_of_mul hB
     rw [sum_value_mul B C hB0 hC0 hBC, ihB hB0, ihC hC0, map_mul, Nat.cast_mul,
       Real.log_mul (by exact_mod_cast (Ideal.absNorm_eq_zero_iff.not.mpr hB0))
         (by exact_mod_cast (Ideal.absNorm_eq_zero_iff.not.mpr hC0)), Complex.ofReal_add]
@@ -178,18 +176,16 @@ theorem log_weighted_hasSum (a : Ideal O →*₀ ℂ) (ha : ∀ I, ‖a I‖ ≤
     HasSum (fun B : Ideal O => (Real.log (Ideal.absNorm B) : ℂ) * weighted a s B)
       (-deriv (series a) s) := by
   obtain ⟨x, hx, hxs⟩ := exists_between hs
-  have hu := weighted_summable_norm a ha (x : ℂ) (by simpa using hx)
   have hd (B : Ideal O) : DifferentiableOn ℂ (fun z => weighted a z B) {z : ℂ | x < z.re} :=
     fun z _ => (weighted_hasDerivAt a z B).differentiableAt.differentiableWithinAt
-  have hU : IsOpen {z : ℂ | x < z.re} := isOpen_lt continuous_const Complex.continuous_re
   have hbound (B : Ideal O) (z : ℂ) (hz : z ∈ {z : ℂ | x < z.re}) :
       ‖weighted a z B‖ ≤ ‖weighted a (x : ℂ) B‖ := by
     simp only [weighted_eq_term]
     exact LSeries.norm_term_le_of_re_le_re _ (by simpa using hz.le) _
-  have H := Complex.hasSum_deriv_of_summable_norm hu hd hU hbound hxs
+  have H := Complex.hasSum_deriv_of_summable_norm (weighted_summable_norm a ha (x : ℂ) (by simpa using hx)) hd (isOpen_lt continuous_const Complex.continuous_re) hbound hxs
   simp_rw [(weighted_hasDerivAt a s _).deriv] at H
   unfold IdealEuler.series
-  simpa only [neg_neg] using H.neg
+  simpa using H.neg
 
 theorem mangoldt_weighted_summable_norm (a : Ideal O →*₀ ℂ)
     (ha : ∀ I, ‖a I‖ ≤ 1) (s : ℂ) (hs : 1 < s.re) :
@@ -219,10 +215,9 @@ theorem mangoldt_series_eq_LSeries (a : Ideal O →*₀ ℂ)
 theorem mulFiber_value_sum (B : Ideal O) (hB : B ≠ 0) :
     (∑' p : CompletedGauss.MulFiber B, (IdealMangoldt.value p.val.1 : ℂ)) =
       (Real.log (Ideal.absNorm B) : ℂ) := by
-  let e := CompletedGauss.mulFiberDivisorEquiv B hB
   calc
     _ = ∑' D : {D : Ideal O // D ∈ idealDivisors B}, (IdealMangoldt.value D.val : ℂ) :=
-      e.tsum_eq (fun D => (IdealMangoldt.value D.val : ℂ))
+      (CompletedGauss.mulFiberDivisorEquiv B hB).tsum_eq (fun D => (IdealMangoldt.value D.val : ℂ))
     _ = ∑ D ∈ idealDivisors B, (IdealMangoldt.value D : ℂ) := by
       rw [tsum_fintype]
       exact (Finset.sum_subtype (idealDivisors B) (fun _ => Iff.rfl)
@@ -284,9 +279,7 @@ theorem coeff_LSeries_eq_neg_logDeriv_of_eq (a : Ideal O →*₀ ℂ)
     LSeries (coeff a) s = -deriv F s / F s := by
   have hd : deriv F s = deriv (series a) s := by
     apply Filter.EventuallyEq.deriv_eq
-    have hU : {z : ℂ | 1 < z.re} ∈ nhds s :=
-      (isOpen_lt continuous_const Complex.continuous_re).mem_nhds hs
-    filter_upwards [hU] with z hz
+    filter_upwards [((isOpen_lt continuous_const Complex.continuous_re).mem_nhds hs)] with z hz
     exact hF z hz
   rw [hd, hF s hs]
   exact coeff_LSeries_eq_neg_logDeriv a ha s hs

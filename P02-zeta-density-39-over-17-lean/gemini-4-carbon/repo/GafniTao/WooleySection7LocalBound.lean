@@ -107,7 +107,6 @@ theorem wooley_equations_7_18_to_7_21_local_bound
     (hpoint gammaVal hgammaVal Psi hPsi)
   have hleftMass : wooleySourceMassSq left =
       wooleySourceResidueMassSq gamma (p ^ a) xi := by
-    dsimp only [left]
     rw [wooleySourceMassSq_affinePullback]
     simp
   have hleftNonzero : wooleySourceMassSq left ≠ 0 := by

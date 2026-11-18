@@ -8,16 +8,11 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondWidthDrop
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
 open Filter
+open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondChildRadialWidth
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss RayFourExpansion
-open CenteredMomentCanonicalFirst CenteredMomentSecondCanonical
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondLiveBlock
-open CenteredMomentSecondDyadicRowSupport CenteredMomentSectorLocalization
-open CenteredMomentSecondExceptionalFamily CenteredMomentSecondRadicalBudget
-open CenteredMomentSecondActualWidth CenteredMomentSecondWidthDrop
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss RayFourExpansion CenteredMomentCanonicalFirst CenteredMomentSecondCanonical CenteredMomentSecondPhysicalBlock CenteredMomentSecondLiveBlock CenteredMomentSecondDyadicRowSupport CenteredMomentSectorLocalization CenteredMomentSecondExceptionalFamily CenteredMomentSecondRadicalBudget CenteredMomentSecondActualWidth CenteredMomentSecondWidthDrop
 local notation "O" => HeckeFamily.O
 
 theorem physicalBlock_live_dyadic_witness (η:Character)(t:ℝ)
@@ -30,7 +25,7 @@ theorem physicalBlock_live_dyadic_witness (η:Character)(t:ℝ)
   unfold physicalBlock at hne
   obtain ⟨z,hz,_⟩:=Finset.exists_ne_zero_of_sum_ne_zero hne
   obtain ⟨hl,hd⟩:=(mem_dyadicRows _ n z).mp hz
-  have hz':z∈dyadicRows rows n:=(mem_dyadicRows rows n z).mpr
+  have hz' :=(mem_dyadicRows rows n z).mpr
     ⟨(Finset.mem_filter.mp hl).1,hd⟩
   exact ⟨z,hl,hz',dyadicRows_nonzero rows n z hz',by
     have hh:=(dyadicRows_norm rows n z hz').1

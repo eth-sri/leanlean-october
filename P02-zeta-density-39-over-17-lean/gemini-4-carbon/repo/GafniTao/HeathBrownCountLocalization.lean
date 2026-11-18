@@ -32,11 +32,7 @@ theorem heathBrownBlockProducts_pairwiseDisjoint (N K : ℕ) :
     ((heathBrownBlock N K j).product (heathBrownBlock N K j))
   rw [Finset.disjoint_left]
   intro p hpI hpJ
-  have hmI := (Finset.mem_product.mp hpI).1
-  have hmJ := (Finset.mem_product.mp hpJ).1
-  have hidxI := (mem_heathBrownBlock.mp hmI).2.2
-  have hidxJ := (mem_heathBrownBlock.mp hmJ).2.2
-  exact hij (hidxI.symm.trans hidxJ)
+  exact hij (((mem_heathBrownBlock.mp ((Finset.mem_product.mp hpI).1)).2.2).symm.trans ((mem_heathBrownBlock.mp ((Finset.mem_product.mp hpJ).1)).2.2))
 
 theorem heathBrown_sameBlock_kernel_sum_eq
     (N K : ℕ) (B C : ℝ) (g₁ g₂ : ℕ → ℝ) :
@@ -66,10 +62,7 @@ theorem heathBrown_kernel_support
     (hphi : heathBrownTriangularKernel B C x y ≠ 0) :
     heathBrownDistanceToInteger x < B ∧
       heathBrownDistanceToInteger y < C := by
-  have hphiPos : 0 < heathBrownTriangularKernel B C x y :=
-    lt_of_le_of_ne (heathBrownTriangularKernel_nonneg B C x y) hphi.symm
-  have hprod := (mul_pos_iff.mp hphiPos)
-  rcases hprod with hpos | hneg
+  rcases ((mul_pos_iff.mp (lt_of_le_of_ne (heathBrownTriangularKernel_nonneg B C x y) hphi.symm))) with hpos | hneg
   · exact ⟨heathBrownDistanceToInteger_lt_of_hat_pos hB hpos.1,
       heathBrownDistanceToInteger_lt_of_hat_pos hC hpos.2⟩
   · exact False.elim ((not_lt_of_ge (heathBrownHat_nonneg B x)) hneg.1)
@@ -87,13 +80,12 @@ theorem heathBrown_sameBlock_mem_pairCountTwo_of_kernel_ne_zero
   have hn := (Finset.mem_product.mp hp).2
   have hm' := mem_heathBrownBlock.mp hm
   have hn' := mem_heathBrownBlock.mp hn
-  have hclose := heathBrownBlock_pair_source_distance hm hn
   unfold heathBrownPairKernel at hkernel
   have hwidth₁ : 0 < 4 * (((H : ℝ) ^ (k - 2))⁻¹) := by positivity
   have hwidth₂ : 0 < 4 * (((H : ℝ) ^ (k - 1))⁻¹) := by positivity
   have hsupp := heathBrown_kernel_support hwidth₁ hwidth₂ hkernel
   rw [mem_heathBrownPairCountTwo]
-  exact ⟨hm'.1, hm'.2.1, hn'.1, hn'.2.1, hclose,
+  exact ⟨hm'.1, hm'.2.1, hn'.1, hn'.2.1, (heathBrownBlock_pair_source_distance hm hn),
     hsupp.1.le, hsupp.2.le⟩
 
 theorem heathBrown_sameBlock_kernel_sum_le_pairCountTwo
@@ -127,7 +119,7 @@ theorem heathBrown_sameBlock_kernel_sum_le_pairCountTwo
       · exact Finset.inter_subset_right
       · intro p _hpT _hpNot
         exact heathBrownPairKernel_nonneg k H f p
-    _ ≤ ∑ _p ∈ T, (1 : ℝ) := by
+    _ ≤ ∑ _p ∈ T, 1 := by
       apply Finset.sum_le_sum
       intro p _hp
       unfold heathBrownPairKernel

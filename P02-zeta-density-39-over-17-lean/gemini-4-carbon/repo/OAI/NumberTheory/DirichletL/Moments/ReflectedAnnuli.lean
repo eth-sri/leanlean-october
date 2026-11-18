@@ -10,8 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentReflectedAnnuli
-open Set EisensteinSchwartzPoisson CenteredMomentSectorLocalization
-open CenteredMomentComparisonReflection LocalLogFourier
+open Set EisensteinSchwartzPoisson CenteredMomentSectorLocalization CenteredMomentComparisonReflection LocalLogFourier
 
 def logWindow (v : ℝ) : ℂ := (annulus (Real.exp v) : ℂ)
 
@@ -21,14 +20,12 @@ theorem logWindow_smooth : ContDiff ℝ ∞ logWindow :=
 theorem logWindow_support : Function.support logWindow ⊆ Icc (-Real.log 4) 0 := by
   intro v hv
   have hn : annulus (Real.exp v) ≠ 0 := by simpa [logWindow] using hv
-  have hlow : 1/4 < Real.exp v := lt_of_not_ge (fun h => hn (annulus_zero_low _ h))
-  have hhigh : Real.exp v < 1 := lt_of_not_ge (fun h => hn (annulus_zero_high _ h))
   have hl : Real.exp (-Real.log 4) = (1/4 : ℝ) := by
     rw [Real.exp_neg, Real.exp_log (by norm_num : (0:ℝ)<4)]
     norm_num
   constructor
-  · exact (Real.exp_lt_exp.mp (hl ▸ hlow)).le
-  · exact (Real.exp_lt_one_iff.mp hhigh).le
+  · exact (Real.exp_lt_exp.mp (hl ▸ (lt_of_not_ge (fun h => hn (annulus_zero_low _ h))))).le
+  · exact (Real.exp_lt_one_iff.mp (lt_of_not_ge (fun h => hn (annulus_zero_high _ h)))).le
 
 theorem logWindow_compact : HasCompactSupport logWindow :=
   HasCompactSupport.of_support_subset_isCompact isCompact_Icc logWindow_support
@@ -54,12 +51,6 @@ def logProfile (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
     (s : ℝ) (hs0 : 0<s) (t : ℝ) : 𝓢(ℝ,ℂ) :=
   positiveLogProfile logWindow (reflected W t) s logWindow_compact logWindow_smooth
     (reflected_smooth W a b ha hs hW t) hs0
-
-@[simp] theorem logProfile_apply (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
-    (hs : Function.support W⊆Icc a b) (hW : ContDiff ℝ ∞ W)
-    (s : ℝ) (hs0 : 0<s) (t v : ℝ) :
-    logProfile W a b ha hs hW s hs0 t v =
-      annularProfile (reflected W t) s (Real.exp v) := rfl
 
 theorem normalized_annular_term (η : HeckeFamily.Character) (F : ℝ→ℂ)
     (s Y : ℝ) (hs : 0<s) (hY : 0<Y) :
@@ -92,13 +83,9 @@ lemma sqrt_nat_pow (x : ℝ) (hx : 0≤x) (j : ℕ) :
 theorem annularMass_lower_bound (B j : ℕ) :
     annularMass B (-(j:ℤ))≤(Real.sqrt (1/2:ℝ))^j := by
   have hx := dyadicScale_pos (-(j:ℤ))
-  have hd : 1≤(1+dyadicScale (-(j:ℤ)))^B := one_le_pow₀ (by linarith)
   have he : dyadicScale (-(j:ℤ))=(1/2:ℝ)^j := by
     simp [dyadicScale,zpow_neg,inv_pow]
-  calc
-    annularMass B (-(j:ℤ))≤Real.sqrt (dyadicScale (-(j:ℤ))) :=
-      div_le_self (Real.sqrt_nonneg _) hd
-    _=(Real.sqrt (1/2:ℝ))^j := by rw [he,sqrt_nat_pow _ (by norm_num)]
+  exact (div_le_self (Real.sqrt_nonneg _) (one_le_pow₀ (by linarith))).trans_eq (by rw [he,sqrt_nat_pow _ (by norm_num)])
 
 theorem annularMass_upper_bound (B A j : ℕ) (hAB : A+1≤B) :
     annularMass B (j:ℤ)≤((2:ℝ)^A)⁻¹^j := by
@@ -115,7 +102,7 @@ theorem annularMass_upper_bound (B A j : ℕ) (hAB : A+1≤B) :
       (by positivity) hd
   calc
     annularMass B (j:ℤ)≤dyadicScale (j:ℤ)/dyadicScale (j:ℤ)^(A+1) := hb
-    _=((2:ℝ)^A)⁻¹^j := by
+    _=(2^A)⁻¹^j := by
       rw [pow_succ,mul_comm (dyadicScale (j:ℤ)^A),div_mul_cancel_left₀ (ne_of_gt hp)]
       simp only [dyadicScale,zpow_natCast,←pow_mul,inv_pow]
       rw [Nat.mul_comm]
@@ -154,8 +141,8 @@ theorem annularMass_upper_tail (B A L : ℕ) (hA : 1≤A) (hAB : A+1≤B) :
 
 theorem annularMass_summable (B : ℕ) (hB : 2≤B) : Summable (annularMass B) := by
   apply Summable.of_nat_of_neg
-  · simpa only [Nat.add_zero] using (annularMass_upper_tail B 1 0 (by omega) hB).1
-  · simpa only [Nat.add_zero] using (annularMass_lower_tail B 0).1
+  · simpa using (annularMass_upper_tail B 1 0 (by omega) hB).1
+  · simpa using (annularMass_lower_tail B 0).1
 
 end SevenEighths.CenteredMomentReflectedAnnuli
 

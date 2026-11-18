@@ -10,8 +10,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.CenteredMomentEnergyReferenceDeletionBudget
-open HeckeFamily CenteredMomentCommonMaskExpansion CenteredMomentReflectionMass
-open CenteredMomentReflectionDeletion UniqueFactorizationMonoid
+open HeckeFamily CenteredMomentCommonMaskExpansion CenteredMomentReflectionMass CenteredMomentReflectionDeletion UniqueFactorizationMonoid
 local notation "O"=>HeckeFamily.O
 
 lemma product_norm_ge_one (D:Finset (Ideal O))(hD:∀I∈D,Prime I):
@@ -23,7 +22,7 @@ lemma weighted_inverse_sqrt (I:Ideal O)(hI:I≠0)(t:ℝ)(ht:t≤1/2):
     weight I*(I.absNorm:ℝ)^t≤1:=by
   have hn:(1:ℝ)≤I.absNorm:=by
     exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hI)
-  have hp:(0:ℝ)<I.absNorm:=zero_lt_one.trans_le hn
+  have hp :=zero_lt_one.trans_le hn
   rw [weight,Real.sqrt_eq_rpow,←Real.rpow_neg hp.le,←Real.rpow_add hp]
   exact Real.rpow_le_one_of_one_le_of_nonpos hn (by linarith)
 
@@ -120,17 +119,12 @@ theorem weighted_uniform_mass_subpower (F:Finset α)(b M:α→ℝ)(hM:∀i∈F,0
   let N:ℝ:=(∏I∈R,I).absNorm
   have hN:1≤N:=product_norm_ge_one R hR
   have hN0:0<N:=zero_lt_one.trans_le hN
-  have hmass:0≤∑J∈F.powerset,∏i∈J,(Real.sqrt (max 1 (b i))*M i)*(∑I∈R,weight I):=by
-    exact Finset.sum_nonneg (fun J hJ=>Finset.prod_nonneg (fun i hi=>mul_nonneg
-      (mul_nonneg (Real.sqrt_nonneg _) (hM i ((Finset.mem_powerset.mp hJ) hi)))
-      (Finset.sum_nonneg (fun I _=>weight_nonneg I))))
   have hpow:(∏I∈R,localMass I)^F.card≤Ce^F.card*N^(eps/2):=by
     calc
       _≤(Ce*N^delta)^F.card:=pow_le_pow_left₀
         (Finset.prod_nonneg (fun I hi=>localMass_nonneg I (hR I hi))) (heuler R hR) _
       _=Ce^F.card*N^(delta*(F.card:ℝ)):=by rw [mul_pow,←Real.rpow_mul_natCast hN0.le]
       _≤_:=mul_le_mul_of_nonneg_left (Real.rpow_le_rpow_of_exponent_le hN (by
-        dsimp [delta]
         rw [div_mul_eq_mul_div]
         apply (div_le_iff₀ (by positivity:0<2*((F.card:ℝ)+1))).mpr
         nlinarith)) (by positivity)

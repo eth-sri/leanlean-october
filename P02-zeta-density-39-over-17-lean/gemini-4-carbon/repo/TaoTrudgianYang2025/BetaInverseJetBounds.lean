@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaModelJetEstimatesFull
 
 @[expose] public section
@@ -26,10 +36,9 @@ def inverseJetMagnitude (σ : ℝ) : ℕ → ℝ
 
 theorem inverseJetMagnitude_nonneg {σ : ℝ} (hσ : 0 < σ) (j : ℕ) :
     0 ≤ inverseJetMagnitude σ j := by
-  have hc := (modelPhaseCurvatureLower_pos hσ).le
   match j with
   | 0 => norm_num [inverseJetMagnitude]
-  | 1 => exact inv_nonneg.mpr hc
+  | 1 => exact inv_nonneg.mpr ((modelPhaseCurvatureLower_pos hσ).le)
   | n+2 => exact add_nonneg (modelPhaseJetCoefficient_nonneg σ (n+1)) zero_le_one
 
 theorem modelPhaseInverseJet_abs_le
@@ -64,7 +73,7 @@ theorem modelPhaseInverseJet_abs_le
       rw [sub_add_cancel] at ht
       change |iteratedDeriv (n+2) F (modelPhaseInverseSlope F v)| ≤
         modelPhaseJetCoefficient σ (n+1)+1
-      have hd : δ ≤ 1 := hδ.trans (min_le_right _ _)
+      have hd := hδ.trans (min_le_right _ _)
       linarith
 
 end TaoTrudgianYang2025

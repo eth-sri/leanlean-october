@@ -21,7 +21,7 @@ theorem integral_cauchy_schwarz_nonneg {α : Type*} [MeasurableSpace α]
     (Filter.Eventually.of_forall hf0) (Filter.Eventually.of_forall hg0)
     (by simpa using hf) (by simpa using hg)
   rw [Real.sqrt_eq_rpow, Real.sqrt_eq_rpow]
-  simpa only [Real.rpow_two] using h
+  simpa using h
 
 /-- The integral analogue of the two outer Cauchy–Schwarz steps.
 The first factor r is unchanged, and the measure may itself be restricted. -/

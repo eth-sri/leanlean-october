@@ -7,74 +7,8 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 
 section
 
@@ -97,10 +31,9 @@ lemma levelThree_bottom_primary (M : levelThree) : lambda^2∣(M:SL(2,ActualEise
 
 lemma value_inverse_formula (M : levelThree) :
     value M⁻¹=symbol ((M:SL(2,ActualEisensteinCubic.O)) 1 0) ((M:SL(2,ActualEisensteinCubic.O)) 1 1) := by
-  have hd := levelThree_bottom_primary M
   change symbol (((M:SL(2,ActualEisensteinCubic.O))⁻¹) 1 0) (((M:SL(2,ActualEisensteinCubic.O))⁻¹) 0 0)=_
   simp only [Matrix.SpecialLinearGroup.coe_inv,Matrix.adjugate_fin_two]
-  exact symbol_neg_numerator _ _ hd
+  exact symbol_neg_numerator _ _ (levelThree_bottom_primary M)
 
 lemma value_upper_formula (M : levelThree) :
     value M=symbol ((M:SL(2,ActualEisensteinCubic.O)) 0 1) ((M:SL(2,ActualEisensteinCubic.O)) 1 1) := by
@@ -214,16 +147,13 @@ end
 
 open scoped BigOperators Classical
 namespace CubicJacobiGlobal
-open ActualEisensteinCubic
-open CubicRamified
+open ActualEisensteinCubic CubicRamified
 open CompletedGauss hiding O
 
 def rationalPrimary (n : ℕ) : ActualEisensteinCubic.O := if n%3=1 then (n:ActualEisensteinCubic.O) else -(n:ActualEisensteinCubic.O)
 
 lemma rationalPrimary_coord (n : ℕ) (hn : ¬3∣n) : ∃A : ℤ,rationalPrimary n=primaryCoord A 0 := by
   have hm : n%3=1 ∨ n%3=2 := by
-    have hl := Nat.mod_lt n (by decide : 0<3)
-    have h0 : n%3≠0 := fun h => hn (Nat.dvd_of_mod_eq_zero h)
     omega
   rcases hm with hm|hm
   · refine ⟨(n/3:ℕ),?_⟩
@@ -272,8 +202,6 @@ lemma rational_symbol_three (n : ℕ) (hn : ¬3∣n) : symbol (3:ActualEisenstei
   have hprimary := primaryCoord_primary A 0
   have hthree : (3:ActualEisensteinCubic.O)=-((1+2*omega)^2) := by
     have hw : omega^2=-omega-1 := by
-      change (IsCyclotomicExtension.zeta_spec 3 ℚ K).toInteger^2=
-        -(IsCyclotomicExtension.zeta_spec 3 ℚ K).toInteger-1
       exact IsCyclotomicExtension.Rat.Three.eta_sq (IsCyclotomicExtension.zeta_spec 3 ℚ K)
     linear_combination 4*hw
   have htrace := symbol_traceLambda_eq_linearRay (primaryCoord A 0) hprimary
@@ -296,8 +224,7 @@ lemma rational_symbol_reciprocity (m n : ℕ) (hm : ¬3∣m) (hn : ¬3∣n) :
 lemma rational_symbol_mod (m n : ℕ) : symbol (m:ActualEisensteinCubic.O) (n:ActualEisensteinCubic.O)=symbol ((m%n:ℕ):ActualEisensteinCubic.O) (n:ActualEisensteinCubic.O) := by
   apply symbol_congr
   refine ⟨(m/n:ℕ),?_⟩
-  have he : m=m%n+n*(m/n) := (Nat.mod_add_div m n).symm
-  have hh : (m:ActualEisensteinCubic.O)=(m%n:ℕ)+ (n:ActualEisensteinCubic.O)*(m/n:ℕ) := by exact_mod_cast he
+  have hh : (m:ActualEisensteinCubic.O)=(m%n:ℕ)+ (n:ActualEisensteinCubic.O)*(m/n:ℕ) := by exact_mod_cast ((Nat.mod_add_div m n).symm)
   linear_combination hh
 
 theorem rational_symbol_eq_one (n : ℕ) (hn : ¬3∣n) (m : ℕ) (hmn : Nat.Coprime m n) :
@@ -306,7 +233,7 @@ theorem rational_symbol_eq_one (n : ℕ) (hn : ¬3∣n) (m : ℕ) (hmn : Nat.Cop
   | h n ih =>
     by_cases hn1 : n=1
     · subst n
-      simpa only [Nat.cast_one] using symbol_one (m:ActualEisensteinCubic.O)
+      simpa using symbol_one (m:ActualEisensteinCubic.O)
     have hn0 : 0<n := Nat.pos_of_ne_zero (fun h => hn (by rw [h];exact dvd_zero 3))
     have hsmall : ∀r : ℕ,r<n → Nat.Coprime r n → symbol (r:ActualEisensteinCubic.O) (n:ActualEisensteinCubic.O)=1 := by
       intro r
@@ -343,16 +270,14 @@ open ActualEisensteinCubic
 
 lemma primary_int_natAbs_not_three (a : ℤ) (ha : lambda^2∣(a:ActualEisensteinCubic.O)-1) : ¬3∣a.natAbs := by
   intro h
-  have hInt : (3:ℤ)∣a := Int.natCast_dvd.mpr h
+  have hInt : 3∣a := Int.natCast_dvd.mpr h
   have hO : (3:ActualEisensteinCubic.O)∣(a:ActualEisensteinCubic.O) := by
     rcases hInt with ⟨b,hb⟩
     refine ⟨(b:ActualEisensteinCubic.O),?_⟩
-    simpa only [Int.cast_mul,Int.cast_ofNat] using congrArg (fun z : ℤ => (z:ActualEisensteinCubic.O)) hb
-  have hL2 : lambda∣lambda^2 := dvd_pow_self _ (by decide : (2:ℕ)≠0)
-  have hLa := (hL2.trans lambda_sq_dvd_three).trans hO
-  have hLa1 := hL2.trans ha
+    simpa using congrArg (fun z : ℤ => (z:ActualEisensteinCubic.O)) hb
+  have hL2 : lambda∣lambda^2 := dvd_pow_self _ (by decide : 2≠0)
   have h1 : lambda∣(1:ActualEisensteinCubic.O) := by
-    convert dvd_sub hLa hLa1 using 1 ; ring
+    convert dvd_sub ((hL2.trans lambda_sq_dvd_three).trans hO) (hL2.trans ha) using 1 ; ring
   exact PrimaryIdealUnitReindex.lambda_prime_actual.not_isUnit (isUnit_of_dvd_one h1)
 
 theorem integer_symbol_eq_one (c a : ℤ) (ha : lambda^2∣(a:ActualEisensteinCubic.O)-1)
@@ -395,7 +320,6 @@ theorem value_rational_intersection (g : SL(2,ℤ)) (hg : rationalEmbedding g∈
     linear_combination hdet
   have hp := levelThree_primary ⟨rationalEmbedding g,hg⟩
   change lambda^2∣((g 0 0:ℤ):ActualEisensteinCubic.O)-1 at hp
-  change symbol ((g 1 0:ℤ):ActualEisensteinCubic.O) ((g 0 0:ℤ):ActualEisensteinCubic.O)=1
   exact integer_symbol_eq_one (g 1 0) (g 0 0) hp (Int.isCoprime_iff_nat_coprime.mp hcop)
 
 theorem complexCharacter_rational_intersection (g : SL(2,ℤ)) (hg : rationalEmbedding g∈levelThree) :
@@ -430,8 +354,7 @@ lemma complexCharacter_product_well_defined (n m : levelThree) (r s : SL(2,ℤ))
     (h : (n:SL(2,ActualEisensteinCubic.O))*rationalEmbedding r=(m:SL(2,ActualEisensteinCubic.O))*rationalEmbedding s) :
     complexCharacter n=complexCharacter m := by
   have he : ((m⁻¹*n:levelThree):SL(2,ActualEisensteinCubic.O))=rationalEmbedding (s*r⁻¹) := by
-    have hh := congrArg (fun g : SL(2,ActualEisensteinCubic.O)=>(m:SL(2,ActualEisensteinCubic.O))⁻¹*g*(rationalEmbedding r)⁻¹) h
-    simpa [map_mul,map_inv,mul_assoc] using hh
+    simpa [map_mul,map_inv,mul_assoc] using (congrArg (fun g : SL(2,ActualEisensteinCubic.O)=>(m:SL(2,ActualEisensteinCubic.O))⁻¹*g*(rationalEmbedding r)⁻¹) h)
   have hm : rationalEmbedding (s*r⁻¹)∈levelThree := he ▸ (m⁻¹*n).property
   have hv : complexCharacter (m⁻¹*n)=1 := by
     have he' : (m⁻¹*n:levelThree)=⟨rationalEmbedding (s*r⁻¹),hm⟩ := Subtype.ext he
@@ -473,12 +396,10 @@ def levelTwoComplexCharacter : levelTwo→*ℂ where
     rfl
 
 lemma levelTwoComplexCharacter_restrict (n : levelThree) :
-    levelTwoComplexCharacter ⟨(n:SL(2,ActualEisensteinCubic.O)),levelThree_le_levelTwo n.property⟩=complexCharacter n := by
-  exact levelTwoValue_of_product _ n 1 (by simp)
+    levelTwoComplexCharacter ⟨(n:SL(2,ActualEisensteinCubic.O)),levelThree_le_levelTwo n.property⟩=complexCharacter n := levelTwoValue_of_product _ n 1 (by simp)
 
 lemma levelTwoComplexCharacter_rational (r : SL(2,ℤ)) :
-    levelTwoComplexCharacter ⟨rationalEmbedding r,rational_mem_levelTwo r⟩=1 := by
-  exact (levelTwoValue_of_product _ 1 r (by simp)).trans (map_one _)
+    levelTwoComplexCharacter ⟨rationalEmbedding r,rational_mem_levelTwo r⟩=1 := (levelTwoValue_of_product _ 1 r (by simp)).trans (map_one _)
 
 lemma levelTwoComplexCharacter_cube (g : levelTwo) : levelTwoComplexCharacter g^3=1 :=
   complexCharacter_cube (levelTwoLeft g)
@@ -491,9 +412,8 @@ end
 
 namespace CubicKubota
 
+open ActualEisensteinCubic CubicEisenstein
 open scoped Classical MatrixGroups
-open ActualEisensteinCubic
-open CubicEisenstein
 
 theorem globalKubotaKernel_conjugate (g : levelTwo) (k : SL(2,ActualEisensteinCubic.O))
     (hk : k∈globalKubotaKernel) :
@@ -519,9 +439,8 @@ instance kernelInLevelTwo_normal : kernelInLevelTwo.Normal where
 
 end CubicKubota
 
-open Filter MeasureTheory
+open Filter MeasureTheory Finset AddChar MulChar EisensteinEmbedding
 open scoped BigOperators Classical Topology ENNReal
-open Finset AddChar MulChar EisensteinEmbedding
 
 namespace CubicEisenstein
 
@@ -537,7 +456,7 @@ lemma cuspPeriodStrip_subset_heightCompact (a b : ℝ) (_ha : 0<a) :
     cuspPeriodStrip a b⊆cuspHeightCompact a b := by
   intro w hw
   refine ⟨(hyperbolicHeight w,hyperbolicHorizontal w),⟨hw.2,?_⟩,?_⟩
-  · simpa only [Metric.mem_closedBall,dist_zero_right] using norm_mem_periodDomain _ hw.1
+  · simpa using norm_mem_periodDomain _ hw.1
   · rw [←spatialComplexSplit_coordinates,cuspCoordinateLift,
       spatialComplexSplit.symm_apply_apply,euclideanToHyperbolic_coordinates]
 
@@ -554,7 +473,7 @@ theorem cuspPeriodStripFiniteVolume (a b : ℝ) (ha : 0<a) :
 lemma cuspStrip_restrict_le_compact (a b : ℝ) (ha : 0<a) :
     hyperbolicVolume.restrict (cuspPeriodStrip a b)≤
       (1:ℝ≥0∞) • hyperbolicVolume.restrict (cuspHeightCompact a b) := by
-  simpa only [one_smul] using
+  simpa using
     (Measure.restrict_mono_set hyperbolicVolume (cuspPeriodStrip_subset_heightCompact a b ha))
 
 abbrev CuspHeightStripL2 (a b : ℝ) := Lp ℂ 2 (hyperbolicVolume.restrict (cuspPeriodStrip a b))
@@ -649,18 +568,17 @@ lemma cuspCoordinateLift_weighted_integrable_of_pos (a b : ℝ) (ha : 0<a)
     (g : HyperbolicSpace→ℂ) (hg : Continuous g) :
     IntegrableOn (fun q : ℝ × ℂ => g (cuspCoordinateLift q)/(q.1:ℂ)^3)
       (Set.Icc a b ×ˢ periodDomain) volume := by
-  let radiusBound : ℝ := ∑i,‖periodBasis i‖
   have hc : ContinuousOn (fun q : ℝ × ℂ => g (cuspCoordinateLift q)/(q.1:ℂ)^3)
-      (Set.Icc a b ×ˢ Metric.closedBall (0:ℂ) radiusBound) := by
+      (Set.Icc a b ×ˢ Metric.closedBall 0 (∑i,‖periodBasis i‖)) := by
     intro q hq
-    have hpos : 0<q.1 := ha.trans_le hq.1.1
+    have hpos := ha.trans_le hq.1.1
     exact ((hg.continuousAt.comp (cuspCoordinateLift_continuousAt q hpos)).div
       ((Complex.continuous_ofReal.comp continuous_fst).continuousAt.pow 3)
       (pow_ne_zero _ (Complex.ofReal_ne_zero.mpr hpos.ne'))).continuousWithinAt
   apply (hc.integrableOn_compact (isCompact_Icc.prod (isCompact_closedBall _ _))).mono_set
   intro q hq
   refine ⟨hq.1,?_⟩
-  simpa only [Metric.mem_closedBall,dist_zero_right] using norm_mem_periodDomain q.2 hq.2
+  simpa using norm_mem_periodDomain q.2 hq.2
 
 end CubicEisenstein
 

@@ -10,11 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstLocalization
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
-open CenteredMomentFirstDiscardedEnergy CenteredMomentSectorLocalization CenteredMomentFirstScale
-open CenteredMomentCanonicalFirst CenteredMomentFirstReduced CenteredMomentCommonSupport
-open CenteredMomentSupportedCorrelation CenteredMomentSourceRow CenteredMomentFirstTailAggregate
-open CanonicalQuadraticSieve HeckeFamily CenteredMomentHeckeExpansion CenteredMomentFirstEnergy
+open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson CenteredMomentFirstDiscardedEnergy CenteredMomentSectorLocalization CenteredMomentFirstScale CenteredMomentCanonicalFirst CenteredMomentFirstReduced CenteredMomentCommonSupport CenteredMomentSupportedCorrelation CenteredMomentSourceRow CenteredMomentFirstTailAggregate CanonicalQuadraticSieve HeckeFamily CenteredMomentHeckeExpansion CenteredMomentFirstEnergy
 local notation "O" => ActualEisensteinCubic.O
 
 theorem weighted_fourier_summable (W : 𝓢(ℝ,ℂ)) (k : ℝ) (hk : 0<k)
@@ -50,7 +46,7 @@ theorem lattice_fourier_split (W : 𝓢(ℝ,ℂ)) (k : ℝ) (hk : 0<k)
   have hd := weighted_fourier_summable W k hk c (fun h => (discardedWeight R (normValue h):ℂ)) B hc
     (fun h => discarded_complex_norm R _)
   rw [hs.tsum_eq_add_tsum_ite 0]
-  have hzero : normValue (0:O)=0 := by simp [normValue]
+  have hzero : normValue 0=0 := by simp [normValue]
   simp only [hzero,mul_zero]
   rw [add_assoc,← hr.tsum_add hd]
   congr 1
@@ -62,9 +58,8 @@ theorem lattice_fourier_split (W : 𝓢(ℝ,ℂ)) (k : ℝ) (hk : 0<k)
       retainedWeight_zero_nonpos R 0 le_rfl,discardedWeight_zero_nonpos R 0 le_rfl,
       Complex.ofReal_zero,zero_mul,add_zero]
   · rw [ite_eq_right hh]
-    have hp : 0<normValue h := norm_pos _ (Ideal.span_singleton_eq_bot.not.mpr hh)
     have he : (retainedWeight R (normValue h):ℂ)+(discardedWeight R (normValue h):ℂ)=1 := by
-      exact_mod_cast retained_add_discarded R (normValue h) hp
+      exact_mod_cast retained_add_discarded R (normValue h) (norm_pos _ (Ideal.span_singleton_eq_bot.not.mpr hh))
     rw [← add_mul,← add_mul,he,one_mul]
 
 def canonicalRetainedTerm (I J : Ideal O) (hI : Supported I) (hJ : Supported J)

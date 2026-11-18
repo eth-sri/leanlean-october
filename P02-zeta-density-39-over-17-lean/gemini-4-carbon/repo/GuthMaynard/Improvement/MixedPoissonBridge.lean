@@ -7,7 +7,7 @@ noncomputable section
 open MeasureTheory
 open scoped SchwartzMap FourierTransform
 namespace GuthMaynard.Improvement
-open RiemannZeta.GuthMaynard
+open RiemannZeta.GuthMaynard GuthMaynard.NativeMoment
 
 /-- Actual independent-triple two-Poisson reduction, with one divisor constant
 chosen before every height, scale and input. All discarded integrals/series

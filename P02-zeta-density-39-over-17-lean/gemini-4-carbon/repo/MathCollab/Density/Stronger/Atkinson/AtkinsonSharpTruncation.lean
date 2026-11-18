@@ -22,8 +22,7 @@ set_option backward.isDefEq.respectTransparency.types false
 
 noncomputable section
 
-open Complex
-open MathCollab.Density.Stronger.Fourth
+open Complex MathCollab.Density.Stronger.Fourth
 
 namespace MathCollab.Density.Stronger.Atkinson
 
@@ -34,7 +33,7 @@ theorem exists_norm_atkinsonLeadingTerm_band_le :
         ‖divisorDirichletTerm (5 / 4) n‖ := by
   obtain ⟨C, hC, hbound⟩ :=
     exists_norm_atkinsonPowerPair_band_secondOrder_le (1 / 4) neumannLeadingPlus neumannLeadingMinus
-  let q : ℝ := Real.sqrt Real.pi / Real.pi
+  let q := Real.sqrt Real.pi / Real.pi
   have hq : 0 < q := by dsimp [q]; positivity
   refine ⟨2 * Real.pi * q * (4 * Real.pi) ^ (-(1 / 2 : ℝ)) * C, by positivity, ?_⟩
   intro T G L hT hG hGT hL hwidth n hband
@@ -56,7 +55,7 @@ theorem exists_norm_atkinsonLeadingTerm_band_le :
   have hs : ‖(atkinsonBesselScale (1 / 4) n : ℂ)‖ = atkinsonBesselScale (1 / 4) n := by
     rw [Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (atkinsonBesselScale_nonneg _ _)]
   have hd := norm_divisorDirichletTerm_real (5 / 4) n
-  norm_num only [Complex.ofReal_div, Complex.ofReal_ofNat] at hd
+  norm_num at hd
   rw [atkinsonLeadingTerm, atkinsonLeadingIntegral, norm_mul, norm_mul, norm_mul,
     norm_mul, hpi, hqn, hs, hd]
   calc
@@ -70,7 +69,7 @@ theorem exists_norm_atkinsonLeadingTerm_band_le :
         (T ^ (-(1 / 4 : ℝ)) / Real.sqrt T) *
           (‖divisorWeight n‖ * ((n : ℝ) ^ (-(1 / 4 : ℝ)) / n)) := by
       unfold atkinsonBesselScale
-      norm_num only [show (-2 : ℝ) * (1 / 4) = -(1 / 2) by norm_num]
+      norm_num
       ring
     _ = _ := by rw [hnPow, hTPow]
 
@@ -103,7 +102,6 @@ theorem exists_norm_atkinsonLeadingSum_sub_band_finite_le :
   have hs := summable_atkinsonLeadingTerm_of_band hT hG hGT hL hwidth
   have hsn := (summable_nat_add_iff N).2 hs
   have hd := (summable_divisorDirichletTerm (s := (5 / 4 : ℂ)) (by norm_num)).norm
-  have hdn := (summable_nat_add_iff N).2 hd
   have he : atkinsonLeadingSum T G L - atkinsonLeadingFiniteSum T G L N =
       ∑' n : ℕ, atkinsonLeadingTerm T G L (n + N) := by
     have h := hs.sum_add_tsum_nat_add N
@@ -121,7 +119,7 @@ theorem exists_norm_atkinsonLeadingSum_sub_band_finite_le :
   calc
     _ ≤ ∑' n : ℕ, ‖atkinsonLeadingTerm T G L (n + N)‖ := norm_tsum_le_tsum_norm hsn.norm
     _ ≤ ∑' n : ℕ, K * ‖divisorDirichletTerm (5 / 4) (n + N)‖ := by
-      apply hsn.norm.tsum_le_tsum _ (hdn.mul_left K)
+      apply hsn.norm.tsum_le_tsum _ (((summable_nat_add_iff N).2 hd).mul_left K)
       intro n
       apply hbound T G L hT hG hGT hL hwidth (n + N)
       exact hN.trans (by exact_mod_cast Nat.le_add_left N n)

@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.AdditiveEnergy
 
 @[expose] public section
@@ -28,7 +37,7 @@ theorem integer_card_le_interval_length_add_one (S : Finset ℤ) {a b : ℝ}
       apply hxy
       exact congrArg (fun z : ℤ => (z:ℝ)) (sub_eq_zero.mp he)
     have hpos : 0 < |m-n| := abs_pos.mpr hmn
-    have hbound : (1:ℤ) ≤ |m-n| := by omega
+    have hbound : 1 ≤ |m-n| := by omega
     exact_mod_cast hbound
   have hW : ∀ x ∈ W, a ≤ x ∧ x ≤ b := by
     intro x hx

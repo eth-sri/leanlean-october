@@ -7,9 +7,8 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstBalancedSource
 namespace OAI
 
 namespace SevenEighths.InverseMoment
+open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion JointLogSeparation FourierBridge MeasureTheory
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion
-open JointLogSeparation FourierBridge MeasureTheory
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι κ : Type*} [DecidableEq ι]
@@ -34,7 +33,6 @@ theorem integrable_first_block_density (F : Finset ι) (selector C₁ C₂ : Fin
     simp only [Finset.mul_sum]
     apply Finset.sum_congr rfl
     intro j hj
-    dsimp only [coef]
     ring
   rw [he]
   exact integrable_finsetSum _ (fun j hj => (integrable_density_mode density hDensity
@@ -106,7 +104,7 @@ theorem actual_first_balanced_family (hp : ∀ i,p i ≠ 0)
   apply Finset.sum_congr rfl
   intro x hx
   calc
-    _ = w x*((Real.exp (-(9/2:ℝ)*L):ℂ)*firstBlockedPhysicalRows p hg F (selector x) (C₁ x) (C₂ x)
+    _ = w x*((Real.exp (-(9/2)*L):ℂ)*firstBlockedPhysicalRows p hg F (selector x) (C₁ x) (C₂ x)
       (fun y => W₁ (y/(s 0*s 2*s 5*s 7))) (fun y => W₂ (y/(s 1*s 2*s 5*s 8)))
       Φ (A₁ x) (A₂ x) (C x) (R x) K (d x) (h x)) := by ring
     _ = _ := by rw [hb x hx]; ring

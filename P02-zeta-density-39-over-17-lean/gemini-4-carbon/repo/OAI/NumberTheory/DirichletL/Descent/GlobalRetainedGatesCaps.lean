@@ -8,10 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.InverseMomentGlobalRetainedGates
-open InverseMoment InverseFirstPriorityParents InverseMomentWholePriorityParents
-open InverseWholePriorityRetainedSource InversePrioritySecondSource InverseInitialArithmetic
-open InverseSecondUniformCutoff
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondSourceBlocks
+open InverseMoment InverseFirstPriorityParents InverseMomentWholePriorityParents InverseWholePriorityRetainedSource InversePrioritySecondSource InverseInitialArithmetic InverseSecondUniformCutoff ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondSourceBlocks
 open ConcreteTraceCRT (eisEmbedding)
 local notation "O" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ] {Jo : ℕ}
@@ -42,9 +39,8 @@ lemma uniform_radius_cap (G E : Finset ι) (hEG : E⊆G)
 
 lemma bare_frequency_norm_le (a k : O) (ha : a≠0) :
     ‖eisEmbedding k‖^2≤‖eisEmbedding (a*k)‖^2 := by
-  have hh := element_norm_ge_one a ha
   rw [map_mul,norm_mul,mul_pow]
-  exact le_mul_of_one_le_left (sq_nonneg _) hh
+  exact le_mul_of_one_le_left (sq_nonneg _) (element_norm_ge_one a ha)
 
 include hp in
 
@@ -58,18 +54,13 @@ theorem supported_outer_caps
       (fun G E=>uniformSecondRadius p Z delta eta G E L Y (Z^tau)) b X,
       ∀i,outerNorms p x i≤Z^Lcap := by
   intro x hx i
-  have hret := supported_subset p extra original negative J lists pool _ b X hx
-  have hm := (mem_unifiedSource p pool _ _ x).mp hret
-  have hg : primeProductNorm p x.second.sourceCommon*primeProductNorm p x.second.overlap≤Z^Lcap :=
-    (geometrySource_gate p _ b X x hx).trans hgeom
-  have hG : primeProductNorm p x.second.sourceCommon≤Z^Lcap :=
-    (le_mul_of_one_le_right (primeProductNorm_pos p hp _).le (primeProductNorm_ge_one p hp _)).trans hg
-  have hV : primeProductNorm p x.second.overlap≤Z^Lcap :=
-    (le_mul_of_one_le_left (primeProductNorm_pos p hp _).le (primeProductNorm_ge_one p hp _)).trans hg
+  have hm := (mem_unifiedSource p pool _ _ x).mp (supported_subset p extra original negative J lists pool _ b X hx)
+  have hg := (geometrySource_gate p _ b X x hx).trans hgeom
+  have hG := (le_mul_of_one_le_right (primeProductNorm_pos p hp _).le (primeProductNorm_ge_one p hp _)).trans hg
   fin_cases i
   · exact hG
   · exact (primeProductNorm_mono p hp hm.2.2.1).trans hG
-  · exact hV
+  · exact ((le_mul_of_one_le_left (primeProductNorm_pos p hp _).le (primeProductNorm_ge_one p hp _)).trans hg)
   · have hb := (mem_nonzeroChildFrequencyBall _ (actualSecondMultiplier_ne_zero p x) _ _).mp hm.2.2.2.2
     exact (bare_frequency_norm_le _ _ (actualSecondMultiplier_ne_zero p x)).trans
       (hb.2.trans ((uniform_radius_cap p hp _ _ hm.2.2.1 Z delta eta L Y tau Lcol LY

@@ -8,14 +8,12 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators ContDiff
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CubicEisenstein GaussianShiftedPartition ConcreteTraceCRT
-open EisensteinSchwartzPoisson
+open ActualEisensteinCubic CubicEisenstein GaussianShiftedPartition ConcreteTraceCRT EisensteinSchwartzPoisson
 local notation "O" => ActualEisensteinCubic.O
 
 lemma sexticGauss_frequency_congr (s : O) (hs : s≠0) (h k : O)
     (he : h-k ∈ (Ideal.span {s}:Ideal O)) : sexticGauss s hs h = sexticGauss s hs k := by
-  have hmk := Ideal.Quotient.eq.mpr he
-  simp only [sexticGauss, hmk]
+  simp only [sexticGauss, (Ideal.Quotient.eq.mpr he)]
 
 def physicalQuotient (C : CalibrationData) (A s : O) (hs : s≠0)
     (m : O ⧸ Ideal.span {(C.generator*A)*s}) : ℂ :=
@@ -47,7 +45,7 @@ theorem physical_row_poisson (C : CalibrationData) (A s : O) (hA : A≠0) (hs : 
         ∑' H : O, actualCongruenceCoefficient C A s hA H *
           paperRadialFourier W (K*elementNorm H/elementNorm ((C.generator*A)*s)) := by
   let c := (C.generator*A)*s
-  have hc : c≠0 := mul_ne_zero (mul_ne_zero C.generator_ne_zero hA) hs
+  have hc := mul_ne_zero (mul_ne_zero C.generator_ne_zero hA) hs
   let := finite_quotient_span hc
   let : Fintype (O ⧸ Ideal.span {c}) := Fintype.ofFinite _
   have ht := actual_compact_radial_paper_poisson_trace W hWc hWs K hK c hc

@@ -9,9 +9,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 local notation "O" => ActualEisensteinCubic.O
 namespace SevenEighths.CenteredMomentPoisson
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson CubicEisenstein
-open CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentSupportedCorrelation
-open CenteredMomentFourier
+open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson CubicEisenstein CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentSupportedCorrelation CenteredMomentFourier
 
 theorem full_gauss_pair_poisson (u v : O) (hu : u ≠ 0) (hv : v ≠ 0)
     (χu : MulChar (Residue u) ℂ) (χv : MulChar (Residue v) ℂ)
@@ -92,11 +90,9 @@ theorem normalized_gauss_pair_poisson (u v : O) (hu : u ≠ 0) (hv : v ≠ 0)
       (ru * rv)⁻¹ * (residueGauss u hu χu (Ideal.Quotient.mk _ z) *
         star (residueGauss v hv χv (Ideal.Quotient.mk _ z)) * W (‖eisEmbedding z‖ ^ 2 / K)) := by
     simp only [normalizedResidueGauss, star_div₀, Complex.star_def, Complex.conj_ofReal]
-    dsimp only [ru, rv]
     ring
   simp_rw [hterm]
   rw [tsum_mul_left, full_gauss_pair_poisson u v hu hv χu χv W K hK]
-  dsimp only [ru, rv]
   ring
 
 theorem sextic_gauss_pair_poisson (u v : O)

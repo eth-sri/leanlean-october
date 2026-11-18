@@ -9,14 +9,11 @@ public import OAI.NumberTheory.DirichletL.Energy.StageMargins
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
 open Filter
+open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentEnergyFirstSourceParameters
-open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyStageReserveSchedule
-open CenteredMomentEnergyFirstStageLossBudget CenteredMomentEnergyFirstActualFrequencyBudget
-open CenteredMomentEnergyFirstGaussianProfileWeights CenteredMomentFirstAmplifiedFourCoefficients
-open CenteredMomentEnergyFirstLiveAdmission CenteredMomentSectorLocalization
+open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyStageReserveSchedule CenteredMomentEnergyFirstStageLossBudget CenteredMomentEnergyFirstActualFrequencyBudget CenteredMomentEnergyFirstGaussianProfileWeights CenteredMomentFirstAmplifiedFourCoefficients CenteredMomentEnergyFirstLiveAdmission CenteredMomentSectorLocalization
 
 def sourceEpsilon (M A B ε:ℝ):ℝ:=reserve M B ε/(4*((A+1)+A+1))
 def maskEpsilon (M B ε:ℝ):ℝ:=reserve M B ε/(B+B+1)
@@ -75,11 +72,8 @@ theorem eventually_actual_four_fit (M A P B κ ε:ℝ)
               (frequencyLoss Z 32 (r/4)+r/4+r/4)/6+(r/4)/3+κ*mesh M B κ ε)
             (sourceEpsilon M A B ε) A (2*amplification ε+1) j+
           sourceEpsilon M A B ε*(A+1)+r/4≤columnLoss M B ε k:=by
-  dsimp only
   have hκ0:0≤κ:=by linarith
-  have h:=actual_frequency_four_budget M A B (A+1) κ ε hM hA hB (by linarith) hκ0 hε
-  obtain ⟨_,_,hem,_,_,hevent⟩:=h
-  have hr:0<reserve M B ε:=(bounds M B κ ε hM hB hκ0 hε).2.2.2.1
+  obtain ⟨_,_,hem,_,_,hevent⟩:=(actual_frequency_four_budget M A B (A+1) κ ε hM hA hB (by linarith) hκ0 hε)
   filter_upwards [hevent] with Z hZ
   refine ⟨hZ.1,?_⟩
   intro k εchild hchild j
@@ -95,7 +89,7 @@ theorem eventually_actual_four_fit (M A P B κ ε:ℝ)
   dsimp only [sourcePaid] at hmono hfit
   unfold columnLoss
   dsimp only [sourceEpsilon,maskEpsilon] at hmono hfit ⊢
-  linarith only [hmono,hfit]
+  linarith
 
 end SevenEighths.CenteredMomentEnergyFirstSourceParameters
 

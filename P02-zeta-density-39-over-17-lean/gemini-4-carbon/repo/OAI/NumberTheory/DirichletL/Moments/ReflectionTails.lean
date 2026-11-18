@@ -82,7 +82,6 @@ lemma discarded_rapid_control (F : ℝ→ℂ) (A B : ℕ) (D R : ℝ)
   by_cases hz : CenteredMomentSectorLocalization.discardedWeight R x=0
   · simp only [hz,Complex.ofReal_zero,zero_mul,norm_zero,mul_zero]
     positivity
-  have hRx := (CenteredMomentSectorLocalization.discardedWeight_support R x hz).le
   have hw := CenteredMomentSectorLocalization.discardedWeight_bounds R x
   have hnorm : ‖(CenteredMomentSectorLocalization.discardedWeight R x:ℂ)*F x‖≤‖F x‖ := by
     rw [norm_mul,Complex.norm_real,Real.norm_of_nonneg hw.1]
@@ -90,7 +89,7 @@ lemma discarded_rapid_control (F : ℝ→ℂ) (A B : ℕ) (D R : ℝ)
   apply (mul_le_mul_of_nonneg_left hnorm (pow_nonneg hx.le B)).trans
   apply (le_div_iff₀ (pow_pos hR A)).mpr
   calc
-    _≤(x^B*‖F x‖)*x^A :=mul_le_mul_of_nonneg_left (pow_le_pow_left₀ hR.le hRx A) (by positivity)
+    _≤(x^B*‖F x‖)*x^A :=mul_le_mul_of_nonneg_left (pow_le_pow_left₀ hR.le ((CenteredMomentSectorLocalization.discardedWeight_support R x hz).le) A) (by positivity)
     _=x^(B+A)*‖F x‖ :=by rw [pow_add];ring
     _≤D :=hF x hx
 

@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.FiniteSmoothThirdDerivative
 public import LaterPairs.Native.RobertSargosCubicJets
 public import LaterPairs.Native.RobertSargosShiftSupport
@@ -47,12 +56,10 @@ theorem hasDerivAt_robertSargos_mixed_jet_q
       (robertSargosMixedJet f m r (i+1) j k q h n) q := by
   have hd (y : ℝ) (hy : ContDiffAt ℝ 4 f (m+y)) :=
     hasDerivAt_iteratedDeriv_finite horder (cubic_remainder_contDiffAt hy)
-  have hdp := (hd _ hp).comp q (((hasDerivAt_id q).const_add n).add_const h)
-  have hdm := (hd _ hm).comp q (((hasDerivAt_id q).const_add n).sub_const h)
-  have hh := (hdp.sub (hdm.const_mul ((-1:ℝ)^j))).add_const
+  have hh := (((hd _ hp).comp q (((hasDerivAt_id q).const_add n).add_const h)).sub (((hd _ hm).comp q (((hasDerivAt_id q).const_add n).sub_const h)).const_mul ((-1)^j))).add_const
     (if i = 0 then
       -iteratedDeriv (i+j+k) (robertSargosCubicRemainder f m) (n+h+r)+
-        (-1:ℝ)^j*iteratedDeriv (i+j+k) (robertSargosCubicRemainder f m) (n-h-r)
+        (-1)^j*iteratedDeriv (i+j+k) (robertSargosCubicRemainder f m) (n-h-r)
      else 0)
   convert hh using 1
   · funext x
@@ -72,16 +79,14 @@ theorem hasDerivAt_robertSargos_mixed_jet_n
     hasDerivAt_iteratedDeriv_finite horder (cubic_remainder_contDiffAt hy)
   have hdp := (hd _ hp).comp n (((hasDerivAt_id n).add_const q).add_const h)
   have hdm := (hd _ hm).comp n (((hasDerivAt_id n).add_const q).sub_const h)
-  have hdrp := (hd _ hrp).comp n (((hasDerivAt_id n).add_const h).add_const r)
-  have hdrm := (hd _ hrm).comp n (((hasDerivAt_id n).sub_const h).sub_const r)
   by_cases hi : i = 0
-  · convert (hdp.sub (hdm.const_mul ((-1:ℝ)^j))).add
-        (hdrp.neg.add (hdrm.const_mul ((-1:ℝ)^j))) using 1
+  · convert (hdp.sub (hdm.const_mul ((-1)^j))).add
+        (((hd _ hrp).comp n (((hasDerivAt_id n).add_const h).add_const r)).neg.add (((hd _ hrm).comp n (((hasDerivAt_id n).sub_const h).sub_const r)).const_mul ((-1)^j))) using 1
     · funext x
       simp only [robertSargosMixedJet,ite_eq_left hi,Function.comp_apply,Pi.sub_apply,
         Pi.add_apply,Pi.neg_apply,id_eq]
     · simp only [robertSargosMixedJet,ite_eq_left hi,Nat.add_assoc,mul_one]
-  · convert hdp.sub (hdm.const_mul ((-1:ℝ)^j)) using 1
+  · convert hdp.sub (hdm.const_mul ((-1)^j)) using 1
     · funext x
       simp only [robertSargosMixedJet,ite_eq_right hi,add_zero,Function.comp_apply,
         Pi.sub_apply,id_eq]
@@ -99,18 +104,16 @@ theorem hasDerivAt_robertSargos_mixed_jet_h
     hasDerivAt_iteratedDeriv_finite horder (cubic_remainder_contDiffAt hy)
   have hdp := (hd _ hp).comp h ((hasDerivAt_id h).const_add (n+q))
   have hdm := (hd _ hm).comp h ((hasDerivAt_id h).const_sub (n+q))
-  have hdrp := (hd _ hrp).comp h (((hasDerivAt_id h).const_add n).add_const r)
-  have hdrm := (hd _ hrm).comp h (((hasDerivAt_id h).const_sub n).sub_const r)
   by_cases hi : i = 0
-  · convert (hdp.sub (hdm.const_mul ((-1:ℝ)^j))).add
-      (hdrp.neg.add (hdrm.const_mul ((-1:ℝ)^j))) using 1
+  · convert (hdp.sub (hdm.const_mul ((-1)^j))).add
+      (((hd _ hrp).comp h (((hasDerivAt_id h).const_add n).add_const r)).neg.add (((hd _ hrm).comp h (((hasDerivAt_id h).const_sub n).sub_const r)).const_mul ((-1)^j))) using 1
     · funext x
       simp only [robertSargosMixedJet,ite_eq_left hi,Function.comp_apply,Pi.sub_apply,
         Pi.add_apply,Pi.neg_apply,id_eq]
     · simp only [robertSargosMixedJet,ite_eq_left hi,pow_succ]
       rw [show i+(j+1)+k = i+j+k+1 by omega]
       ring
-  · convert hdp.sub (hdm.const_mul ((-1:ℝ)^j)) using 1
+  · convert hdp.sub (hdm.const_mul ((-1)^j)) using 1
     · funext x
       simp only [robertSargosMixedJet,ite_eq_right hi,add_zero,Function.comp_apply,
         Pi.sub_apply]
@@ -141,12 +144,12 @@ theorem abs_robertSargos_mixed_jet_le
   have hL : 0 ≤ L := (abs_nonneg (n+q+h)).trans (hp _ (by simp)).2
   have hD : 0 ≤ B*L^(4-(i+j+k)) := mul_nonneg hB (pow_nonneg hL _)
   let g := iteratedDeriv (i+j+k) (robertSargosCubicRemainder f m)
-  have ht := abs_sub_le (g (n+q+h)) 0 ((-1:ℝ)^j*g (n+q-h))
-  have hu := abs_add_le (-g (n+h+r)) ((-1:ℝ)^j*g (n-h-r))
+  have ht := abs_sub_le (g (n+q+h)) 0 ((-1)^j*g (n+q-h))
+  have hu := abs_add_le (-g (n+h+r)) ((-1)^j*g (n-h-r))
   simp only [sub_zero,zero_sub,abs_neg,abs_mul,abs_pow,abs_one,one_pow,one_mul] at ht hu
   by_cases hi : i = 0
-  · have hv := abs_add_le (g (n+q+h)-(-1:ℝ)^j*g (n+q-h))
-      (-g (n+h+r)+(-1:ℝ)^j*g (n-h-r))
+  · have hv := abs_add_le (g (n+q+h)-(-1)^j*g (n+q-h))
+      (-g (n+h+r)+(-1)^j*g (n-h-r))
     simp only [robertSargosMixedJet,ite_eq_left hi]
     dsimp [g] at ht hu hv
     linarith
@@ -184,8 +187,6 @@ theorem robertSargos_normalized_mixed_jet_bound
     (hb : ∀ x ∈ Set.Icc 1 M, |iteratedDeriv 4 f x| ≤ C*lam) :
     Q^(i+j+k)*|robertSargosMixedJet f m r i j k q h n| ≤ 324*C := by
   obtain ⟨hm',hp⟩ := robertSargos_mixed_shift_geometry hQ hH hHQ hm hq hh hhr hn
-  have ht := abs_robertSargos_mixed_jet_le horder (mul_nonneg hC hlam) hm' hp hf hb
-  have hQ0 : 0 ≤ Q := zero_le_one.trans hQ
   have he : Q^(i+j+k)*(4*(C*lam)*(3*Q)^(4-(i+j+k))) =
       4*C*(3:ℝ)^(4-(i+j+k))*(lam*Q^4) := by
     rw [mul_pow]
@@ -200,7 +201,7 @@ theorem robertSargos_normalized_mixed_jet_bound
       _ = 81 := by norm_num
   calc
     _ ≤ Q^(i+j+k)*(4*(C*lam)*(3*Q)^(4-(i+j+k))) :=
-      mul_le_mul_of_nonneg_left ht (pow_nonneg hQ0 _)
+      mul_le_mul_of_nonneg_left (abs_robertSargos_mixed_jet_le horder (mul_nonneg hC hlam) hm' hp hf hb) (pow_nonneg (zero_le_one.trans hQ) _)
     _ = _ := he
     _ ≤ 4*C*(3:ℝ)^(4-(i+j+k))*1 :=
       mul_le_mul_of_nonneg_left hscale (by positivity)
@@ -214,7 +215,7 @@ theorem robertSargos_floor_fourth_scale {lam : ℝ}
   have hT := thirteenth_root_physical_scale hlam hsmall
   have hT1 : 1 ≤ T := by dsimp [T]; linarith [hT.1]
   have he : T^3 = lam^(-(3:ℝ)/13) := by
-    simpa only [Nat.cast_ofNat] using thirteenth_root_nat_pow hlam 3
+    simpa using thirteenth_root_nat_pow hlam 3
   have hTp : 1 ≤ T^3 := one_le_pow₀ hT1
   have hfloor := positive_floor_half_bounds (he ▸ hTp)
   have hQ1 : 1 ≤ (⌊lam^(-(3:ℝ)/13)⌋₊:ℝ) := by exact_mod_cast hfloor.1
@@ -222,11 +223,10 @@ theorem robertSargos_floor_fourth_scale {lam : ℝ}
   have hQ : (⌊lam^(-(3:ℝ)/13)⌋₊:ℝ) ≤ T^3 := by
     rw [he]
     exact hfloor.2.2
-  have h4 := pow_le_pow_left₀ (Nat.cast_nonneg ⌊lam^(-(3:ℝ)/13)⌋₊) hQ 4
   have h12 : T^12 ≤ T^13 := pow_le_pow_right₀ hT1 (by norm_num)
   have hp : (⌊lam^(-(3:ℝ)/13)⌋₊:ℝ)^4 ≤ T^13 := by
     calc
-      _ ≤ (T^3)^4 := h4
+      _ ≤ (T^3)^4 := (pow_le_pow_left₀ (Nat.cast_nonneg ⌊lam^(-(3:ℝ)/13)⌋₊) hQ 4)
       _ = T^12 := by ring
       _ ≤ _ := h12
   have hmul := mul_le_mul_of_nonneg_left hp hlam.le
@@ -241,9 +241,9 @@ theorem robertSargos_floor_half_height {lam : ℝ} {H : ℕ}
   have hT : 2 ≤ T := (thirteenth_root_physical_scale hlam hsmall).1
   have hT1 : 1 ≤ T := by linarith
   have h2 : T^2 = lam^(-(2:ℝ)/13) := by
-    simpa only [Nat.cast_ofNat] using thirteenth_root_nat_pow hlam 2
+    simpa using thirteenth_root_nat_pow hlam 2
   have h3 : T^3 = lam^(-(3:ℝ)/13) := by
-    simpa only [Nat.cast_ofNat] using thirteenth_root_nat_pow hlam 3
+    simpa using thirteenth_root_nat_pow hlam 3
   have hfloor := (positive_floor_half_bounds
     (show 1 ≤ lam^(-(3:ℝ)/13) by rw [← h3]; exact one_le_pow₀ hT1)).2.1
   rw [← h2] at hH
@@ -265,13 +265,12 @@ theorem robertSargos_physical_mixed_jet_bound
     (⌊lam^(-(3:ℝ)/13)⌋₊:ℝ)^(i+j+k)*
       |robertSargosMixedJet f m r i j k q h n| ≤ 324*C := by
   obtain ⟨hQ,hscale⟩ := robertSargos_floor_fourth_scale hlam hsmall
-  have hHQ := robertSargos_floor_half_height hlam hsmall hH
   simp only [robertSargosCommonMInterval,Finset.mem_Icc] at hm
   have hml : 2*(H:ℝ)+(⌊lam^(-(3:ℝ)/13)⌋₊:ℝ) ≤ (m:ℝ) := by exact_mod_cast hm.1
   have hmu : (m:ℝ) ≤ (M:ℝ)-2*H-(⌊lam^(-(3:ℝ)/13)⌋₊:ℝ)-
       (⌊lam^(-(3:ℝ)/13)⌋₊:ℝ) := by exact_mod_cast hm.2
   apply robertSargos_normalized_mixed_jet_bound horder (zero_le_one.trans hC)
-    hlam.le hQ (Nat.cast_nonneg H) hHQ hscale ⟨hml,by linarith⟩ hq hh hhr hn hf
+    hlam.le hQ (Nat.cast_nonneg H) (robertSargos_floor_half_height hlam hsmall hH) hscale ⟨hml,by linarith⟩ hq hh hhr hn hf
   intro x hx
   rw [abs_of_nonneg (hlam.le.trans (hlo x hx))]
   exact hhi x hx

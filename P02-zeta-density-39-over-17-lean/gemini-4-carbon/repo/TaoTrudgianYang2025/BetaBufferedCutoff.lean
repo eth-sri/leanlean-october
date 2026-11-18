@@ -1,6 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
-public import TaoTrudgianYang2025.ZetaCutoffDerivatives
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import Mathlib.Data.Nat.Choose.Sum
 
 @[expose] public section
@@ -29,10 +38,10 @@ theorem smoothTransition_finite_jet_bound (Q : ℕ) :
   have hB : Continuous B := continuous_finsetSum _ fun j _ =>
     (Real.smoothTransition.contDiff.continuous_iteratedDeriv' j).abs
   obtain ⟨M,hM⟩ := isCompact_Icc.exists_bound_of_continuousOn
-    (s := Icc (0 : ℝ) 1) hB.continuousOn
+    (s := Icc 0 1) hB.continuousOn
   refine ⟨max M 1,le_max_right _ _,?_⟩
   intro x j hj
-  by_cases hx : x ∈ Icc (0 : ℝ) 1
+  by_cases hx : x ∈ Icc 0 1
   · have hb : |iteratedDeriv j Real.smoothTransition x| ≤ B x :=
       Finset.single_le_sum (fun k _ => abs_nonneg (iteratedDeriv k Real.smoothTransition x))
         (Finset.mem_range.mpr (Nat.lt_succ_iff.mpr hj))

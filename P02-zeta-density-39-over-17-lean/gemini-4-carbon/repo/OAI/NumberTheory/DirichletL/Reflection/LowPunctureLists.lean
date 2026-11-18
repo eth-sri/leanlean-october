@@ -44,9 +44,8 @@ theorem original_completed_actual_puncture_lists (lists : σ→Finset (Ideal Eis
   apply sum_puncture_lists lists (actualPuncturePrimes lists m)
   intro p hp
   obtain ⟨i,hi⟩ := hp
-  have hm : m∈(p i).val := (Finset.mem_filter.mp hi).2
   have hz := markedCompletedT_zero_punctured Ψ m f z (p i).val
-    (hprime i _ (p i).property) hm W X (fun A => ∏ j,if (p j).val∣A then (1:ℂ) else 0)
+    (hprime i _ (p i).property) ((Finset.mem_filter.mp hi).2) W X (fun A => ∏ j,if (p j).val∣A then 1 else 0)
     (fun A hA => Finset.prod_eq_zero (Finset.mem_univ i) (ite_eq_right hA))
   exact mul_eq_zero_of_right _ hz
 end

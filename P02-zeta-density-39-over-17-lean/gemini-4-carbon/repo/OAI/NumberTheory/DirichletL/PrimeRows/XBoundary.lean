@@ -70,7 +70,6 @@ theorem continuedPhysicalRowKernel_x_gaussian {K : ℕ}
     (show (((v:ℂ)+t*I)+z-1).re∈Icc (l+z.re-1) (r+z.re-1) by
       simpa using And.intro (by linarith [hv.1] : l+z.re-1≤v+z.re-1)
         (by linarith [hv.2] : v+z.re-1≤r+z.re-1))
-  have hgb := coupled_gaussian_bound z (by linarith : 0<l) hv t
   have hr : ‖star ((calibrationForSet S hmax).residueMonoid u.val)*
       physicalCompensatedRow S hS (Finset.univ.image P) (contourTupleOutside S P hPS) η u ((v:ℂ)+t*I) w z‖≤C*(3+|t|)^2 := by
     rw [norm_mul,norm_star]
@@ -81,7 +80,7 @@ theorem continuedPhysicalRowKernel_x_gaussian {K : ℕ}
   calc
     _ ≤ (‖xRowScalar P u W0 W1 X Y w z‖*scaleBound Z (l+z.re-1) (r+z.re-1))*
         (Real.exp ((|z.re|+r+1)^2)*Real.exp (-((t+z.im)^2)))*(C*(3+|t|)^2) :=
-      mul_le_mul (mul_le_mul (mul_le_mul_of_nonneg_left hZb (norm_nonneg _)) hgb
+      mul_le_mul (mul_le_mul (mul_le_mul_of_nonneg_left hZb (norm_nonneg _)) (coupled_gaussian_bound z (by linarith : 0<l) hv t)
         (norm_nonneg _) (mul_nonneg (norm_nonneg _) (scaleBound_pos _ _ _).le))
         hr (norm_nonneg _) (by unfold scaleBound;positivity)
     _ = A*(3+|t|)^2*Real.exp (-((t+z.im)^2)) := by dsimp [A];ring

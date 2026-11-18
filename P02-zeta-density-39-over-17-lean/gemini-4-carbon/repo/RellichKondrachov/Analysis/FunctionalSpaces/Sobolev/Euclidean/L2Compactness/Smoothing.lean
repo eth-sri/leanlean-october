@@ -59,11 +59,10 @@ private lemma tsupport_indicator_subset_closure (s : Set E) (f : E → ℝ) :
 omit [InnerProductSpace ℝ E] [CompleteSpace E] in
 private lemma hasCompactSupport_indicator_of_isCompact (s : Set E) (hs : IsCompact s) (f : E → ℝ) :
     HasCompactSupport (s.indicator f) := by
-  have hs_closed : IsClosed s := hs.isClosed
   -- `tsupport (s.indicator f)` is closed and contained in the compact set `s`.
   refine hs.of_isClosed_subset (isClosed_tsupport _) ?_
   have : tsupport (s.indicator f) ⊆ closure s := tsupport_indicator_subset_closure (E := E) s f
-  simpa [hs_closed.closure_eq] using this
+  simpa [(hs.isClosed).closure_eq] using this
 
 end
 
@@ -123,10 +122,6 @@ lemma extendByZeroL2_eq_extendByZeroₗᵢ (hKm : MeasurableSet K)
   classical
   let : Fact (1 ≤ (2 : ℝ≥0∞)) := ⟨by norm_num⟩
   refine MeasureTheory.Lp.ext ?_
-  have h1 :
-      (extendByZeroL2 (E := E) (K := K) hKm u : E → ℝ) =ᵐ[(volume : Measure E)]
-        extendByZeroFun (E := E) (K := K) u :=
-    extendByZeroL2_ae_eq (E := E) (K := K) hKm u
   have h2 :
       ((MeasureTheory.Lp.extendByZeroₗᵢ (μ := (volume : Measure E)) (E := ℝ) (p := (2 : ℝ≥0∞))
         (s := K) hKm) u : E → ℝ) =ᵐ[(volume : Measure E)]
@@ -134,7 +129,7 @@ lemma extendByZeroL2_eq_extendByZeroₗᵢ (hKm : MeasurableSet K)
     exact
       (MeasureTheory.Lp.extendByZeroₗᵢ_ae_eq (μ := (volume : Measure E)) (E := ℝ)
         (p := (2 : ℝ≥0∞)) (s := K) hKm u)
-  exact h1.trans h2.symm
+  exact (extendByZeroL2_ae_eq (E := E) (K := K) hKm u).trans h2.symm
 
 lemma norm_extendByZeroL2 (hKm : MeasurableSet K)
     (u : MeasureTheory.Lp ℝ (2 : ℝ≥0∞) (volume.restrict K)) :
@@ -164,11 +159,9 @@ lemma continuous_smoothFun
   have hf_memLp :
       MeasureTheory.MemLp (extendByZeroFun (K := K) u)
         (2 : ℝ≥0∞) (volume : Measure E) := by
-    have hu : MeasureTheory.MemLp (fun x : E => u x) (2 : ℝ≥0∞) (volume.restrict K) :=
-      MeasureTheory.Lp.memLp u
     simpa [extendByZeroFun] using
       (MeasureTheory.memLp_indicator_iff_restrict (μ := (volume : Measure E)) (p := (2 : ℝ≥0∞))
-          (s := K) (f := fun x : E => u x) hKm).2 hu
+          (s := K) (f := fun x : E => u x) hKm).2 (MeasureTheory.Lp.memLp u)
   have hf_loc :
       MeasureTheory.LocallyIntegrable (extendByZeroFun (K := K) u)
         (volume : Measure E) := by
@@ -182,10 +175,8 @@ lemma continuous_smoothFun
 lemma hasCompactSupport_smoothFun (hK : IsCompact K) (hψcs : HasCompactSupport ψ)
     (u : MeasureTheory.Lp ℝ (2 : ℝ≥0∞) (volume.restrict K)) :
     HasCompactSupport (smoothFun (K := K) ψ u) := by
-  have hf : HasCompactSupport (extendByZeroFun (K := K) u) :=
-    hasCompactSupport_extendByZeroFun (K := K) hK u
   simpa [smoothFun] using
-    (hf.convolution («L» := ContinuousLinearMap.lsmul ℝ ℝ)
+    ((hasCompactSupport_extendByZeroFun (K := K) hK u).convolution («L» := ContinuousLinearMap.lsmul ℝ ℝ)
       (μ := (volume : Measure E)) hψcs)
 
 lemma support_smoothFun_subset_add_tsupport

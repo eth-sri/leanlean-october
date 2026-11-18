@@ -9,79 +9,14 @@ noncomputable section
 
 namespace CanonicalQuadraticSieve
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 
 section
 
-open scoped BigOperators Classical SchwartzMap
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge CompletedGauss
-open EisensteinSchwartzPoisson UnrestrictedIdealReindex IdealMobiusDivisorSum
+open ConcretePrimeRowBridge CompletedGauss EisensteinSchwartzPoisson UnrestrictedIdealReindex IdealMobiusDivisorSum
 
 def maskedPairDualTail (G I J : Ideal O) (W : 𝓢(ℝ,ℂ)) (M K : ℝ) : ℂ :=
   ((M:ℂ)/(Real.sqrt ((Ideal.absNorm I:ℝ)*(Ideal.absNorm J:ℝ)):ℂ))*
@@ -147,7 +82,7 @@ theorem maskedPairIdealDualKernel_retained
 end
 
 section
-open ActualEisensteinCubic ConcretePrimeRowBridge IdealMobiusDivisorSum EisensteinSchwartzPoisson
+open ConcretePrimeRowBridge IdealMobiusDivisorSum EisensteinSchwartzPoisson
 
 theorem retainedDualPrincipalSum_pair_expansion {n : Type} [Fintype n] [DecidableEq n]
     (W : 𝓢(ℝ,ℂ)) (cols : n → Ideal O) (a : n → ℂ) (M F K : ℝ) :
@@ -235,16 +170,14 @@ theorem maskedDualFamily_retained {n : Type} [Fintype n] [DecidableEq n]
 end
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson CompletedGauss
-open IdealMobiusDivisorSum
+open ConcretePrimeRowBridge EisensteinSchwartzPoisson CompletedGauss IdealMobiusDivisorSum
 
 theorem normalizedFactors_commonMaskIdeal (D : Ideal O) :
     UniqueFactorizationMonoid.normalizedFactors (commonMaskIdeal D) = (gcdMaskPrimes D).val := by
   have hp (P : Ideal O) (hP : P∈(gcdMaskPrimes D).val) : Prime P := by
     let : P.IsMaximal := gcdMaskPrimes_maximal D ⟨P,hP⟩
     exact Ideal.prime_of_isPrime (NeZero.ne P) inferInstance
-  have h := UniqueFactorizationMonoid.normalizedFactors_prod_of_prime hp
-  simpa only [commonMaskIdeal,Finset.prod_val,id_eq] using h
+  simpa only [commonMaskIdeal,Finset.prod_val,id_eq] using (UniqueFactorizationMonoid.normalizedFactors_prod_of_prime hp)
 
 theorem idealZeroMask_commonMaskIdeal (D : Ideal O) (z : O) :
     idealZeroMask (commonMaskIdeal D) z =
@@ -272,13 +205,11 @@ theorem idealZeroMask_generator_eq_indicator (D B : Ideal O) (hD : D≠0) :
     apply ideals_coprime_of_relprime
     apply (UniqueFactorizationMonoid.isRelPrime_iff_no_prime_factors hD).mpr
     intro P hPD hPB hp
-    have hfac : P∈UniqueFactorizationMonoid.normalizedFactors D :=
-      (UniqueFactorizationMonoid.mem_normalizedFactors_iff hD).mpr ⟨hp,hPD⟩
     have hgen : idealGenerator B∈P := by
       apply (Ideal.span_singleton_le_iff_mem P).mp
       rw [span_idealGenerator]
       exact Ideal.dvd_iff_le.mp hPB
-    exact hn ⟨P,hfac,hgen⟩
+    exact hn ⟨P,((UniqueFactorizationMonoid.mem_normalizedFactors_iff hD).mpr ⟨hp,hPD⟩),hgen⟩
 
 theorem idealZeroMask_primary_eq_indicator (D B : Ideal O) (hD : D≠0) (hB : Supported B) :
     idealZeroMask D (primaryGenerator B) = if IsCoprime B D then 1 else 0 := by
@@ -301,13 +232,9 @@ theorem residual_joint_mask (D I J : Ideal O) (hI : Admissible I) (hJ : Admissib
   have hIq := admissible_idealQuotient hI hDI
   have hJq := admissible_idealQuotient hJ hDJ
   have hi : idealZeroMask I z=idealZeroMask D z*idealZeroMask (idealQuotient D I) z := by
-    calc
-      _ = idealZeroMask (D*idealQuotient D I) z := congrArg (fun A => idealZeroMask A z) (idealQuotient_mul hDI).symm
-      _ = _ := idealZeroMask_mul D _ hD.1 hIq.1 z
+    exact (congrArg (fun A => idealZeroMask A z) (idealQuotient_mul hDI).symm).trans (idealZeroMask_mul D _ hD.1 hIq.1 z)
   have hj : idealZeroMask J z=idealZeroMask D z*idealZeroMask (idealQuotient D J) z := by
-    calc
-      _ = idealZeroMask (D*idealQuotient D J) z := congrArg (fun A => idealZeroMask A z) (idealQuotient_mul hDJ).symm
-      _ = _ := idealZeroMask_mul D _ hD.1 hJq.1 z
+    exact (congrArg (fun A => idealZeroMask A z) (idealQuotient_mul hDJ).symm).trans (idealZeroMask_mul D _ hD.1 hJq.1 z)
   rw [gcdMaskPrimes_mask,singleton_rowCoprimeMask_eq_idealZeroMask,
     idealZeroMask_mul I J hI.1 hJ.1,
     idealZeroMask_mul (commonMaskIdeal D) _ (commonMaskIdeal_squarefree D).ne_zero (mul_ne_zero hIq.1 hJq.1),
@@ -371,9 +298,8 @@ theorem originalPairLow_residual_finite (D I J : Ideal O) (hI : Admissible I) (h
         ((6:ℂ)⁻¹*lowPrincipalLattice I J W (Real.sqrt (M/(Ideal.absNorm B.val:ℝ)))) =
       (6:ℂ)⁻¹*(if IsCoprime B.val (commonMaskIdeal D) then
         pairMaskedSquareSource (commonMaskIdeal D) (idealQuotient D I) (idealQuotient D J) W M B.val else 0) := by
-    have hB := admissible_supported (mem_idealRange.mp B.property).1
     have hp := canonical_pair_divisor_mask D I J hI hJ hDI hDJ (primaryGenerator B.val)
-    rw [canonical_quadraticRow_star I hI,commonMask_primary_indicator D B.val hB] at hp
+    rw [canonical_quadraticRow_star I hI,commonMask_primary_indicator D B.val (admissible_supported (mem_idealRange.mp B.property).1)] at hp
     rw [hp,lowPrincipalLattice_residual D I J hI hJ hDI hDJ]
     by_cases hc : IsCoprime B.val (commonMaskIdeal D)
     · simp only [hc,ite_true,one_mul,pairMaskedSquareSource,sourcePrincipalScale]
@@ -421,7 +347,7 @@ theorem originalLow_gcd_aggregate
 
 end
 
-open ActualEisensteinCubic ConcretePrimeRowBridge IdealMobiusDivisorSum EisensteinSchwartzPoisson
+open ConcretePrimeRowBridge IdealMobiusDivisorSum EisensteinSchwartzPoisson
 
 theorem originalDual_gcd_aggregate {n : Type} [Fintype n] [DecidableEq n]
     (D : Ideal O) (hD : D≠0) (cols : n → Ideal O) (hcols : ∀ j, Admissible (cols j))
@@ -492,30 +418,23 @@ end
 
 section
 
-open scoped BigOperators Classical
-open ActualEisensteinCubic ConcretePrimeRowBridge IdealMobiusDivisorSum
+open ConcretePrimeRowBridge IdealMobiusDivisorSum
 
 theorem residual_commonMask_coprime (D I : Ideal O) (hI : Admissible I) (hDI : D∣I) :
     IsCoprime (commonMaskIdeal D) (idealQuotient D I) := by
-  have hD := admissible_of_dvd hI hDI
   have hQ := admissible_idealQuotient hI hDI
   have hs : Squarefree (D*idealQuotient D I) := by rw [idealQuotient_mul hDI]; exact hI.2.1
-  have hrel := (squarefree_mul_iff.mp hs).1
   have hG := (commonMaskIdeal_squarefree D).ne_zero
   apply ideals_coprime_of_relprime
   apply (UniqueFactorizationMonoid.isRelPrime_iff_no_prime_factors hG).mpr
   intro P hPG hPQ hp
-  have hf : P∈UniqueFactorizationMonoid.normalizedFactors (commonMaskIdeal D) :=
-    (UniqueFactorizationMonoid.mem_normalizedFactors_iff hG).mpr ⟨hp,hPG⟩
+  have hf := (UniqueFactorizationMonoid.mem_normalizedFactors_iff hG).mpr ⟨hp,hPG⟩
   rw [normalizedFactors_commonMaskIdeal] at hf
-  have hmem : P∈fixedBadPrimes ∨ P∈primeSupport D := Finset.mem_union.mp hf
-  rcases hmem with hbad | hPD
+  rcases (Finset.mem_union.mp hf) with hbad | hPD
   · let : P.IsMaximal := (Ideal.isPrime_of_prime hp).isMaximal hp.ne_zero
-    have hfac : P∈UniqueFactorizationMonoid.normalizedFactors (idealQuotient D I) :=
-      (UniqueFactorizationMonoid.mem_normalizedFactors_iff hQ.1).mpr ⟨hp,hPQ⟩
-    exact (prime_good_iff_not_bad P).mp (hQ.2.2 P hfac) hbad
+    exact (prime_good_iff_not_bad P).mp (hQ.2.2 P ((UniqueFactorizationMonoid.mem_normalizedFactors_iff hQ.1).mpr ⟨hp,hPQ⟩)) hbad
   · have hd : P∣D := UniqueFactorizationMonoid.dvd_of_mem_normalizedFactors (Multiset.mem_toFinset.mp hPD)
-    exact hp.not_isUnit (hrel hd hPQ)
+    exact hp.not_isUnit (((squarefree_mul_iff.mp hs).1) hd hPQ)
 
 theorem idealQuotient_norm_eq (D I : Ideal O) (hD : D≠0) (hDI : D∣I) :
     (Ideal.absNorm (idealQuotient D I):ℝ)=(Ideal.absNorm I:ℝ)/(Ideal.absNorm D:ℝ) := by
@@ -539,8 +458,7 @@ theorem idealQuotient_shell (D I : Ideal O) (hD : D≠0) (hDI : D∣I) (N : ℝ)
 
 end
 
-open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic ConcretePrimeRowBridge IdealMobiusDivisorSum EisensteinSchwartzPoisson
+open ConcretePrimeRowBridge IdealMobiusDivisorSum EisensteinSchwartzPoisson
 
 def gcdRaySupport {n : Type} [Fintype n] (cols : n → Ideal O) (a : n → ℂ)
     (D : Ideal O) (c : EisensteinEPrimaryPhase.Coord) : Finset n :=
@@ -597,9 +515,7 @@ theorem gcd_ray_pair_sum_restrict {n : Type} [Fintype n]
   rw [←hright,←Finset.sum_coe_sort S (fun k => f j.val k)]
   apply Finset.sum_congr rfl
   intro k _
-  have hj := (mem_gcdRaySupport cols a D c j.val).mp j.property
-  have hk := (mem_gcdRaySupport cols a D c k.val).mp k.property
-  simp only [f,hj.2.1,hk.2.1,and_true]
+  simp only [f,((mem_gcdRaySupport cols a D c j.val).mp j.property).2.1,((mem_gcdRaySupport cols a D c k.val).mp k.property).2.1,and_true]
 
 theorem gcdRaySupport_quotient_properties (N X : ℝ) (a : idealRange N → ℂ)
     (ha : CoefficientOnShell N X a) (D : Ideal O) (hD : D≠0)
@@ -612,7 +528,6 @@ theorem gcdRaySupport_quotient_properties (N X : ℝ) (a : idealRange N → ℂ)
       (Ideal.absNorm (cols j):ℝ)≤X/(Ideal.absNorm D:ℝ) ∧
       IsCoprime (commonMaskIdeal D) (cols j)) ∧
     (∀ j k, columnRay (cols j)=columnRay (cols k)) := by
-  dsimp only
   have hp (j : gcdRaySupport (fun I : idealRange N => I.val) a D c) :=
     (mem_gcdRaySupport (fun I : idealRange N => I.val) a D c j.val).mp j.property
   refine ⟨?_,?_,?_⟩
@@ -636,8 +551,7 @@ theorem gcdRaySupport_proper (N X : ℝ) (a : idealRange N → ℂ)
     (hsmall : (Ideal.absNorm D:ℝ)≤X/2)
     (j : gcdRaySupport (fun I : idealRange N => I.val) a D c) : j.val.val≠D := by
   intro h
-  have hp := (mem_gcdRaySupport (fun I : idealRange N => I.val) a D c j.val).mp j.property
-  have hs := (ha j.val hp.2.2).1
+  have hs := (ha j.val ((mem_gcdRaySupport (fun I : idealRange N => I.val) a D c j.val).mp j.property).2.2).1
   rw [h] at hs
   exact (not_lt_of_ge hsmall) hs
 

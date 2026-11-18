@@ -7,35 +7,16 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondFrozenLiveSource
 namespace OAI
 
 noncomputable section
+open Filter SevenEighths.CenteredMomentSecondNonexceptionalScalar
 open scoped Classical BigOperators SchwartzMap
-open Filter
-open SevenEighths.CenteredMomentSecondNonexceptionalScalar
 
 namespace SevenEighths.CenteredMomentSecondFrozenLiveDescent
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss RayFourExpansion
-open CenteredMomentCommonRadialData CenteredMomentSourceMass CenteredMomentSourceProfileMass
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSecondFrozenRatioCost
-open CenteredMomentSecondNonexceptionalChosenBlock CenteredMomentSecondNonexceptionalAggregate
-open CenteredMomentSecondExceptionalFamily CenteredMomentSecondRetainedAggregate
-open CenteredMomentSecondBlockAggregate CenteredMomentSecondBlockHarmonicMass
-open CenteredMomentSecondLiveBlock CenteredMomentSecondEnergySplit CenteredMomentActiveSource
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonical CenteredMomentCanonicalFirst
-open CenteredMomentFirstSectors CenteredMomentSourceRow CenteredMomentSectorLocalization
-open CenteredMomentSecondSectorColumns CenteredMomentSecondWindowSource
-open CenteredMomentCommonHeightEnvelope CenteredMomentCommonRadialPointwise
-open CenteredMomentCommonAllocationSum CenteredMomentEligibleEnergy
-open CenteredMomentHeckeColumnWindow CenteredMomentSecondHeightFamily
-open ConcretePrimeRowBridge CenteredMomentExceptionalAmplitudePair
-open CenteredMomentMobiusRegroup CenteredMomentRadialEligibleEnergy CenteredMomentSecondWindowBudget
-open CenteredMomentSecondActivePhysicalDictionary
-open CenteredMomentSourceLiveColumn CenteredMomentSecondRetainedRatioScalar
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss RayFourExpansion CenteredMomentCommonRadialData CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentOriginalCommonHarmonic CenteredMomentSecondFrozenRatioCost CenteredMomentSecondNonexceptionalChosenBlock CenteredMomentSecondNonexceptionalAggregate CenteredMomentSecondExceptionalFamily CenteredMomentSecondRetainedAggregate CenteredMomentSecondBlockAggregate CenteredMomentSecondBlockHarmonicMass CenteredMomentSecondLiveBlock CenteredMomentSecondEnergySplit CenteredMomentActiveSource CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonical CenteredMomentCanonicalFirst CenteredMomentFirstSectors CenteredMomentSourceRow CenteredMomentSectorLocalization CenteredMomentSecondSectorColumns CenteredMomentSecondWindowSource CenteredMomentCommonHeightEnvelope CenteredMomentCommonRadialPointwise CenteredMomentCommonAllocationSum CenteredMomentEligibleEnergy CenteredMomentHeckeColumnWindow CenteredMomentSecondHeightFamily ConcretePrimeRowBridge CenteredMomentExceptionalAmplitudePair CenteredMomentMobiusRegroup CenteredMomentRadialEligibleEnergy CenteredMomentSecondWindowBudget CenteredMomentSecondActivePhysicalDictionary CenteredMomentSourceLiveColumn CenteredMomentSecondRetainedRatioScalar
 local notation "O" => HeckeFamily.O
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 local instance : DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
-open CenteredMomentFiniteProfileExceptional CenteredMomentFiniteProfileExceptionalPhysical
-open CenteredMomentOriginalChildEnergy CenteredMomentSupportedTailAggregate
-open CenteredMomentSourceInputTailUniform EisensteinSchwartzPoisson
+open CenteredMomentFiniteProfileExceptional CenteredMomentFiniteProfileExceptionalPhysical CenteredMomentOriginalChildEnergy CenteredMomentSupportedTailAggregate CenteredMomentSourceInputTailUniform EisensteinSchwartzPoisson
 
 theorem original_source_descent (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)
     (lo hi:ι→ℝ)(hhi:∀i,0≤hi i)(W:𝓢(ℝ,ℂ))(J₁ J₂:ℕ)
@@ -130,7 +111,7 @@ theorem original_source_descent (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)
   intro χ₀ m hm hml hm2 Kphys Tsec hKphys hVcap hTcap hnom hR hRcap E₁ E₂ hE₁ hE₂
     hleft hright r hX1 hX2 hY1 hY2
   have hn:=hchild χ₀ Q m hQ72 hm hml hm2 Kphys Tsec ξ hKphys
-    (by simpa only [one_mul] using hRcap) E₁ E₂ hE₁ hE₂ hleft hright
+    (by simpa using hRcap) E₁ E₂ hE₁ hE₂ hleft hright
   have he:=hrZ.2 s p hlo hhis hP hw1 hw2 R0 seed hR0 hseed hseed0 hH0 hH hη hR0N
     χ₀ m hm hml hm2 Tsec Kphys hKphys hVcap hTcap hnom hR hRcap r hX1 hX2 hY1 hY2
   have ht:‖sourceGaussEnergy S β (heightCoeff s.η s.t) W Kphys‖/volume s.toData≤
@@ -143,7 +124,7 @@ theorem original_source_descent (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)
       (partEnergy false s.η χ₀ Q m s.t S β W Kphys Tsec Z ξ (sourceRadius s))
       (sourceGaussEnergy S β (heightCoeff s.η s.t) W Kphys-
         partEnergy false s.η χ₀ Q m s.t S β W Kphys Tsec Z ξ (sourceRadius s))
-    simpa only [←add_sub_assoc, add_sub_cancel_left] using h
+    simpa using h
   exact ht.trans ((add_le_add hn he).trans_eq (by ring))
 
 end SevenEighths.CenteredMomentSecondFrozenLiveDescent

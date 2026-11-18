@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.PrimitiveTripleSignedCount
 public import LaterPairs.Native.RobertSargosRatioGeometry
 
@@ -29,7 +38,7 @@ theorem robertSargos_primitive_positive_q_fixed_coeff_card_le
     (S.card:ℝ) ≤ (r.natAbs.divisors.card:ℝ)+
       32*δ*Q^2/(H*|(r:ℝ)|)*(∑ g ∈ r.natAbs.divisors, (g:ℝ)) := by
   have hrn : (r:ℝ) ≠ 0 := by exact_mod_cast hr
-  have hrp : 0 < |(r:ℝ)| := abs_pos.mpr hrn
+  have hrp := abs_pos.mpr hrn
   have hrc : (r.natAbs:ℝ) = |(r:ℝ)| := by
     simpa only [Int.cast_natCast,Int.cast_abs] using
       congrArg (fun z : ℤ => (z:ℝ)) (Int.natCast_natAbs r)
@@ -39,8 +48,8 @@ theorem robertSargos_primitive_positive_q_fixed_coeff_card_le
   have hratio : ∀ p ∈ S,
       A-e ≤ (p.1:ℝ)/p.2.1 ∧ (p.1:ℝ)/p.2.1 ≤ A+e := by
     intro p hp
-    have hp₁ : 0 < (p.2.1:ℝ) := hQ.trans_le (hq₁ p hp).1
-    have hp₂ : 0 < (p.1:ℝ) := hQ.trans_le (hq₂ p hp)
+    have hp₁ := hQ.trans_le (hq₁ p hp).1
+    have hp₂ := hQ.trans_le (hq₂ p hp)
     have hl : (r:ℝ)*p.2.2+(h₁:ℝ)*p.2.1-(h₂:ℝ)*p.1 = 0 := by
       exact_mod_cast hline p hp
     have hb := robertSargos_ratio_sqrt_gap hH hQ hδ
@@ -53,10 +62,7 @@ theorem robertSargos_primitive_positive_q_fixed_coeff_card_le
     constructor <;> linarith
   have hb := primitive_linear_triple_card_le_abs_modulus S hcoeff hr hQ (by linarith : A-e ≤ A+e)
     (fun p hp => hq₁ p hp) hprim
-    (fun p hp => by have hl := hline p hp; nlinarith only [hl]) hratio
-  calc
-    (S.card:ℝ) ≤ (r.natAbs.divisors.card:ℝ)+
-        4*Q^2*((A+e)-(A-e))/(r.natAbs:ℝ)^2*(∑ g ∈ r.natAbs.divisors, (g:ℝ)) := hb
-    _ = _ := by rw [hrc]; dsimp [e]; field_simp; ring
+    (fun p hp => by have hl := hline p hp; nlinarith) hratio
+  exact (hb).trans_eq (by rw [hrc]; dsimp [e]; field_simp; ring)
 
 end TaoTrudgianYang2025

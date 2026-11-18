@@ -21,8 +21,7 @@ def rootedWindow (v : ℝ → ℂ) (L ρ a H : ℝ) (y : ℝ) : ℂ :=
   (Real.exp (a * y - H * L) : ℂ) * logWindow v L ρ y
 
 lemma logWindow_contDiff (v : ℝ → ℂ) (hv : ContDiff ℝ ∞ v) (L ρ : ℝ) :
-    ContDiff ℝ ∞ (logWindow v L ρ) := by
-  exact hv.comp ((contDiff_id.add contDiff_const).div_const L)
+    ContDiff ℝ ∞ (logWindow v L ρ) := hv.comp ((contDiff_id.add contDiff_const).div_const L)
 
 lemma rootedWindow_contDiff (v : ℝ → ℂ) (hv : ContDiff ℝ ∞ v) (L ρ a H : ℝ) :
     ContDiff ℝ ∞ (rootedWindow v L ρ a H) := by
@@ -62,9 +61,6 @@ def rootSchwartz (v : 𝓢(ℝ, ℂ)) (M B L ρ a H : ℝ)
     (hv : Function.support v ⊆ Set.Icc (-M) M) :
     rootSchwartz v M B L ρ a H hL hρ hv y = rootedWindow v L ρ a H y := rfl
 
-def rootDerivativeBound (v : 𝓢(ℝ, ℂ)) (a : ℝ) (n : ℕ) : ℝ :=
-  ∑ i ∈ Finset.range (n+1), (2:ℝ)^i * (1+|a|)^i * derivativeSeminormSum v 0 i
-
 def momentOrder (J : ℕ) : ℕ := J + (volume : Measure ℝ).integrablePower
 
 theorem clipping_ratio_of_column_witness (w : ℝ → ℂ) (Z N q a b : ℝ)
@@ -73,17 +69,15 @@ theorem clipping_ratio_of_column_witness (w : ℝ → ℂ) (Z N q a b : ℝ)
     (hwitness : w (q / Z^N) ≠ 0) :
     1 ≤ Z^(max 0 N-N) ∧ Z^(max 0 N-N) ≤ b := by
   have hz : 0 < Z := by linarith
-  have hn : 0 ≤ max 0 N-N := sub_nonneg.mpr (le_max_right _ _)
-  refine ⟨Real.one_le_rpow hZ.le hn, ?_⟩
+  refine ⟨Real.one_le_rpow hZ.le (sub_nonneg.mpr (le_max_right _ _)), ?_⟩
   by_cases hN : 0 ≤ N
   · simpa [max_eq_right hN] using hb
   · have hN' : N ≤ 0 := le_of_lt (lt_of_not_ge hN)
     rw [max_eq_left hN', zero_sub, Real.rpow_neg hz.le]
-    have hsupport := (hw hwitness).2
     calc
       _ = 1 / Z^N := (one_div _).symm
       _ ≤ q / Z^N := div_le_div_of_nonneg_right hq (Real.rpow_nonneg hz.le _)
-      _ ≤ b := hsupport
+      _ ≤ b := ((hw hwitness).2)
 
 open InverseMoment
 

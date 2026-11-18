@@ -23,7 +23,6 @@ theorem globalNormalization_finite_split (S : Finset (Ideal O)) (hS : ∀P∈S,P
     globalNormalization S hS η u x w z=
       globalNormalization (markExclusions S T) (markExclusions_prime S hS T) η u x w z*
         ∏P∈T,localNormalization η u P x w z := by
-  have hleft := localNormalization_hasProd S hS hbad η u x w z hx hw hz
   have hbase := localNormalization_hasProd (markExclusions S T) (markExclusions_prime S hS T)
     (hbad.trans Finset.subset_union_left) η u x w z hx hw hz
   let R := fun P : PrimeIdeal=>if P∈T then localNormalization η u P x w z else 1
@@ -31,7 +30,7 @@ theorem globalNormalization_finite_split (S : Finset (Ideal O)) (hS : ∀P∈S,P
     have hh := hasProd_prod_of_ne_finset_one (s:=T) (f:=R)
       (L:=SummationFilter.unconditional PrimeIdeal) (fun P hP=>ite_eq_right hP)
     simpa only [R,Finset.prod_ite_mem,Finset.inter_self] using hh
-  apply hleft.unique
+  apply (localNormalization_hasProd S hS hbad η u x w z hx hw hz).unique
   convert hbase.mul hR using 1
   · funext P
     by_cases hP : P∈T

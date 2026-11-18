@@ -9,9 +9,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentFirstAssembly
-open CanonicalRowCompletion CanonicalQuadraticSieve CenteredMomentSupportedCorrelation
-open CenteredMomentFirstColumns CenteredMomentMobiusRegroup CenteredMomentChildAssembly
-open CenteredMomentGaussEnergy RayFourExpansion
+open CanonicalRowCompletion CanonicalQuadraticSieve CenteredMomentSupportedCorrelation CenteredMomentFirstColumns CenteredMomentMobiusRegroup CenteredMomentChildAssembly CenteredMomentGaussEnergy RayFourExpansion
 local notation "O" => ActualEisensteinCubic.O
 
 def originalPhase (e r : O) (ρ : O → ℂ) (a b : O) : ℂ :=

@@ -10,15 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondActivePhysicalDictionary
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondSectorColumns
-open CenteredMomentSecondSectorFrequency CenteredMomentActiveSource
-open CenteredMomentSourceRow CenteredMomentFirstSectors CenteredMomentSupport
-open CenteredMomentHeckeColumnWindow CenteredMomentCanonicalFirst
-open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency
-open CenteredMomentSecondCanonicalNonunit CenteredMomentSectorLocalization
-open CenteredMomentSecondWholeKernel CenteredMomentLogDyadic
-open CenteredMomentSecondSectorRetained CenteredMomentSmooth
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss CenteredMomentSecondPhysicalBlock CenteredMomentSecondSectorColumns CenteredMomentSecondSectorFrequency CenteredMomentActiveSource CenteredMomentSourceRow CenteredMomentFirstSectors CenteredMomentSupport CenteredMomentHeckeColumnWindow CenteredMomentCanonicalFirst CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentSectorLocalization CenteredMomentSecondWholeKernel CenteredMomentLogDyadic CenteredMomentSecondSectorRetained CenteredMomentSmooth
 local notation "O"=>HeckeFamily.O
 
  theorem sectorPool_active (C:Ideal O)(hC:C≠0)(S:Finset (Ideal O))(β:Ideal O→ℂ):
@@ -66,9 +58,7 @@ local notation "O"=>HeckeFamily.O
         intro I hI
         apply Finset.sum_congr rfl
         intro J hJ
-        have hc:Supported (C*I):=(supported_mul_iff _ _).mpr ⟨hC,sectorPool_supported C hC.1 T I⟩
-        have hd:Supported (D*J):=(supported_mul_iff _ _).mpr ⟨hD,sectorPool_supported D hD.1 T J⟩
-        simp only [f,dite_eq_left hc,dite_eq_left hd]
+        simp only [f,dite_eq_left ((supported_mul_iff _ _).mpr ⟨hC,sectorPool_supported C hC.1 T I⟩),dite_eq_left ((supported_mul_iff _ _).mpr ⟨hD,sectorPool_supported D hD.1 T J⟩)]
       _=_:=by
         simp_rw [Finset.sum_coe_sort]
         exact Finset.sum_coe_sort (sectorPool C hC.1 T)

@@ -7,18 +7,15 @@ public import OAI.NumberTheory.DirichletL.Moments.ReflectedTruncation
 namespace OAI
 
 noncomputable section
-open scoped Classical
 open Filter
+open scoped Classical
 namespace SevenEighths.CenteredMomentReflectionRetainedLength
-open CenteredMomentComparisonReflection CenteredMomentReflectedTruncation
-open CenteredMomentSectorLocalization
+open CenteredMomentComparisonReflection CenteredMomentReflectedTruncation CenteredMomentSectorLocalization
 
 lemma retained_scale_lower (R Y : ℝ) (hY : 0<Y) (n : ℤ)
     (hn : n∈retainedAnnuli R Y hY) : 1≤dyadicScale n*Y := by
   obtain ⟨hr,q,hq,hne⟩ := (retainedAnnuli_mem R Y hY n).mp hn
-  have hs := (dyadicWeight_support n hne).2.le
-  have hh := mul_le_mul_of_nonneg_right (hq.trans hs) hY.le
-  simpa only [inv_mul_cancel₀ hY.ne'] using hh
+  simpa only [inv_mul_cancel₀ hY.ne'] using (mul_le_mul_of_nonneg_right (hq.trans ((dyadicWeight_support n hne).2.le)) hY.le)
 
 theorem eventually_actual_retained_length (C box xi : ℝ) (hC : 0<C)
     (hbox : 1≤box) (hxi : 0<xi) :
@@ -36,7 +33,7 @@ theorem eventually_actual_retained_length (C box xi : ℝ) (hC : 0<C)
   filter_upwards [eventually_gt_atTop (1:ℝ),hc,hfour] with Z hZ hconst h4
   refine ⟨hZ,?_⟩
   intro M a Q R d h hQ hd hcap hdR hh n hY hn
-  have hz : 0<Z := zero_lt_one.trans hZ
+  have hz := zero_lt_one.trans hZ
   have hs : dyadicScale n≤Z^(xi/2) := by
     calc
       _≤4*Z^(xi/4) := retained_scale_le _ n ((retainedAnnuli_mem _ _ hY n).mp hn).1

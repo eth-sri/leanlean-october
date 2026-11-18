@@ -4,8 +4,7 @@ public import GuthMaynard.NativeSource.GuthMaynard.TypeIIFourthMomentReduction
 
 @[expose] public section
 
-open Complex Finset Filter MeasureTheory Real Set
-open ComplexConjugate
+open Complex Finset Filter MeasureTheory Real Set ComplexConjugate
 open scoped BigOperators Interval
 
 namespace GuthMaynard.NativeMoment
@@ -788,7 +787,6 @@ theorem gmReflectionDecayOrder_budget {A ε : ℝ}
     A + 5 ≤ gmReflectionEta ε *
       ((gmReflectionDecayOrder A ε : ℝ) - 1) := by
   have hη := gmReflectionEta_pos hε
-  have hRatioNonneg : 0 ≤ (A + 6) / gmReflectionEta ε := by positivity
   have hceil : (A + 6) / gmReflectionEta ε ≤
       (Nat.ceil ((A + 6) / gmReflectionEta ε) : ℝ) := Nat.le_ceil _
   have hscaled : A + 6 ≤ gmReflectionEta ε *

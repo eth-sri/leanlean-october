@@ -33,7 +33,7 @@ theorem original_cube_shifted_tuple_energy (rmax : ℕ) (ε : ℝ) (hε : 0<ε) 
   apply (weighted_finite_row_energy_uniform Finset.univ rows (cubeAbsorbedCoefficient H L w)
     (fun T k => ∑ a : ∀ i : T,cubeAwayList H (L i.val),
       (∏ i : T,w i.val ⟨(a i).val,(Finset.mem_filter.mp (a i).property).1⟩)*
-        markedCompletedT (Ψ k) W X (fun A => ∏ i : T,if (a i).val∣A then (1:ℂ) else 0)) E
+        markedCompletedT (Ψ k) W X (fun A => ∏ i : T,if (a i).val∣A then 1 else 0)) E
     (fun T _ => he T)).trans
   exact mul_le_mul_of_nonneg_right (hb H hH L w hw hr) hE
 end

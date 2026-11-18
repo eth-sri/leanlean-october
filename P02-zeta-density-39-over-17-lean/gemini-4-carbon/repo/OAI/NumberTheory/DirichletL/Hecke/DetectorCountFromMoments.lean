@@ -6,11 +6,10 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorRawBranches
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators ContDiff
 open Set Filter
+open scoped Classical BigOperators ContDiff
 namespace SevenEighths.HeckeDetectorCountFromMoments
-open HeckeFamily HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorBranchBudget
-open HeckeDetectorRowCount
+open HeckeFamily HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorBranchBudget HeckeDetectorRowCount
 
 theorem count_from_raw_moments
     (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)

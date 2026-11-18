@@ -10,11 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentCanonicalFirst
-open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson
-open CanonicalRowCompletion CanonicalQuadraticSieve CenteredExceptionalCount
-open CenteredMomentCommonSupport CenteredMomentFourier CenteredMomentSupportedCorrelation
-open CenteredMomentFirstReduced CenteredMomentFirstActiveFourier CenteredMomentActive
-open CenteredMomentCompleteCommon UniqueFactorizationMonoid
+open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson CanonicalRowCompletion CanonicalQuadraticSieve CenteredExceptionalCount CenteredMomentCommonSupport CenteredMomentFourier CenteredMomentSupportedCorrelation CenteredMomentFirstReduced CenteredMomentFirstActiveFourier CenteredMomentActive CenteredMomentCompleteCommon UniqueFactorizationMonoid
 local notation "O" => ActualEisensteinCubic.O
 
 abbrev CommonIndex (I J : Ideal O) := {P : Ideal O // P∈commonSupport I J}
@@ -40,8 +36,7 @@ theorem rightExponent_pos (I J : Ideal O) (P : CommonIndex I J) : 0<rightExponen
   (common_valuations_pos I J P.val P.property).2
 
 theorem commonPart_left_product (I J : Ideal O) :
-    commonPart I J=∏ P : CommonIndex I J,P.val^leftExponent I J P := by
-  exact (Finset.prod_coe_sort (s:=commonSupport I J) (f:=fun P => P^valuation I P)).symm
+    commonPart I J=∏ P : CommonIndex I J,P.val^leftExponent I J P := (Finset.prod_coe_sort (s:=commonSupport I J) (f:=fun P => P^valuation I P)).symm
 
 theorem commonPart_right_product (I J : Ideal O) :
     commonPart J I=∏ P : CommonIndex I J,P.val^rightExponent I J P := by

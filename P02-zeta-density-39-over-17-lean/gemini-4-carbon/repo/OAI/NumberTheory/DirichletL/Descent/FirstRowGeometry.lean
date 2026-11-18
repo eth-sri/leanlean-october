@@ -21,15 +21,12 @@ lemma first_whole_frequency_numeric (K P dn an cn a1 a2 sn tn hn L : ℝ)
     (hratio : (K/(dn*(sn*tn*an)))*hn≤P) :
     hn≤L^2*an*dn/((K/P)*a1*a2*cn^2) := by
   have hprod : sn*tn*(a1*a2*cn^2)≤L^2 := by
-    have hh := mul_le_mul hS hT (by positivity : 0≤a2*cn*tn) hL.le
-    nlinarith [hh]
+    nlinarith [(mul_le_mul hS hT (by positivity : 0≤a2*cn*tn) hL.le)]
   have hraw : K*hn≤P*(dn*(sn*tn*an)) := by
     rw [div_mul_eq_mul_div] at hratio
     exact (div_le_iff₀ (by positivity)).mp hratio
   have hfull : K*hn*(a1*a2*cn^2)≤P*dn*an*L^2 := by
-    have hh := mul_le_mul_of_nonneg_right hraw (by positivity : 0≤a1*a2*cn^2)
-    have hh' := mul_le_mul_of_nonneg_left hprod (by positivity : 0≤P*dn*an)
-    nlinarith [hh,hh']
+    nlinarith [(mul_le_mul_of_nonneg_right hraw (by positivity : 0≤a1*a2*cn^2)),(mul_le_mul_of_nonneg_left hprod (by positivity : 0≤P*dn*an))]
   apply (le_div_iff₀ (by positivity)).mpr
   convert div_le_div_of_nonneg_right hfull hP.le using 1 <;> field_simp
 

@@ -175,15 +175,12 @@ theorem factors_any_re_subpower_bound (ε : ℝ) (hε : 0 < ε) :
   intro M ψ s
   have hR : 0 < ((radical M).absNorm : ℝ) := by
     exact_mod_cast Nat.pos_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr (radical_ne_zero M))
-  have hc : (2 : ℝ)^(SmoothMobiusCorrection.primeSet M).card ≤ C*((radical M).absNorm : ℝ)^ε := by
+  have hc : 2^(SmoothMobiusCorrection.primeSet M).card ≤ C*((radical M).absNorm : ℝ)^ε := by
     have h := hb (radical M) (radical_ne_zero M)
     rw [← primeSet_card, radical, SmoothMobiusCorrection.primeSet_primeProduct] at h
     exact h
   apply (factors_bound_any_re M ψ s).trans
-  calc
-    _ ≤ (C*((radical M).absNorm : ℝ)^ε)*((radical M).absNorm : ℝ)^(max (-s.re) 0) :=
-      mul_le_mul_of_nonneg_right hc (Real.rpow_nonneg hR.le _)
-    _ = _ := by rw [Real.rpow_add hR]; ring
+  exact (mul_le_mul_of_nonneg_right hc (Real.rpow_nonneg hR.le _)).trans_eq (by rw [Real.rpow_add hR]; ring)
 
 end SevenEighths.HeckeDeletionBounds
 

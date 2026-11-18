@@ -6,9 +6,8 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondSourceTuples
 namespace OAI
 
 namespace SevenEighths.InverseMoment
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss InverseSecondFibers
 open scoped BigOperators Classical
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss
-open InverseSecondFibers
 open InverseInitialArithmetic (sourceIdeal sourceIdeal_gen sourceIdeal_ne_zero sourceIdeal_union sourceIdeal_injective sourcePrime source_prime_dvd)
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
@@ -34,7 +33,6 @@ lemma cubeRadical_span_dvd_product (B : Finset ι) (v : ι → ℕ)
     (hv : ∀ i ∈ B, 0 < v i) :
     sourceIdeal p B ∣ Ideal.span {primeProduct p B v} := by
   apply span_dvd_of_element_dvd
-  change (∏ i ∈ B,p i) ∣ primeProduct p B v
   unfold primeProduct
   apply Finset.prod_dvd_prod_of_dvd
   intro i hi

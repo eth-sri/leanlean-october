@@ -68,8 +68,7 @@ theorem rowInner_base_rational (eta a X W V rho : ℂ) (hV : ‖V‖<1)
       convert hgeo using 1
       funext m
       exact rowMarkedTerm_base_tail p hp hg hc eta a X W V rho j e l k m ht ht6
-    have h := ht'.sum_range_add (f:=fun m=>rowMarkedTerm p hp hg eta a X W V rho j e l k m) (k:=2)
-    simpa only [Finset.sum_range_succ,Finset.sum_range_zero,zero_add] using h.tsum_eq
+    simpa only [Finset.sum_range_succ,Finset.sum_range_zero,zero_add] using (ht'.sum_range_add (f:=fun m=>rowMarkedTerm p hp hg eta a X W V rho j e l k m) (k:=2)).tsum_eq
   rw [rowInner_two,hsum 0,hsum 1]
   simp only [Fin.sum_univ_two,Fin.val_zero,Fin.val_one]
 

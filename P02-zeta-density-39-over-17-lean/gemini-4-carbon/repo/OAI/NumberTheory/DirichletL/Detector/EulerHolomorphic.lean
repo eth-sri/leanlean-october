@@ -12,7 +12,7 @@ lemma coordR_differentiable (Q : ℝ) (hQ : 0 < Q) (A z : ℂ) :
     Differentiable ℂ (fun x : ℂ => coordR Q A x z) := by
   unfold coordR
   have hn : (Q:ℂ) ≠ 0 := by exact_mod_cast hQ.ne'
-  exact (((differentiable_const (4:ℂ)).sub (differentiable_id.const_mul 6)).sub_const (6*z)).const_cpow
+  exact (((differentiable_const 4).sub (differentiable_id.const_mul 6)).sub_const (6*z)).const_cpow
     (Or.inl hn) |>.const_mul A
 
 lemma coordD_differentiable (Q : ℝ) (hQ : 0 < Q) (eta v : ℂ) :

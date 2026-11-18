@@ -7,12 +7,10 @@ public import OAI.NumberTheory.DirichletL.Detector.FinalAssemblyArithmetic
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology ContDiff
 open Filter Set
+open scoped Classical BigOperators Topology ContDiff
 namespace SevenEighths.ProbeFinalAssembly
-open ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-open ProbeRaySlots HeckeDetectorPhysicalSelection HeckeDetectorAmplitudeFirst HeckeDetectorFiberPartition
+open ProbeHighRowFamily HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary ProbeRaySlots HeckeDetectorPhysicalSelection HeckeDetectorAmplitudeFirst HeckeDetectorFiberPartition
 local notation "O" => HeckeFamily.O
 variable (M : Ideal O) [NeZero M]
 local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
@@ -85,10 +83,10 @@ theorem actual_nonfloor_cube_norm (N n : ℕ) (e eps c b A R dmin dmax rmin τ �
   intro d hd hd' v a C0 hv hv' hdv ha ha' hC0 rows hrows hnorm i hi hnext hcurrent
   dsimp only
   intro hmom
-  have hZp : 0<Z := zero_lt_one.trans hZ
+  have hZp := zero_lt_one.trans hZ
   let Y : Fin N→ℝ := fun j=>Z^(ell j)
   let T : Fin N→Finset ProbePhysical.PrimeIdeal := fun j=>pool (RayQuotient.identityClass M H) S c b (Y j)
-  let A : ℝ := C*C0*(η.modulus.absNorm:ℝ)^(2*eps)*
+  let A := C*C0*(η.modulus.absNorm:ℝ)^(2*eps)*
     Z^(3/16+Δ-saving-((25/48)*a-181/300+(105/8)*e))
   have hA : 0≤A := by dsimp [A];positivity
   have hp := hprofile e a (Z^τ) ((3*i+1:ℕ)*Z^τ) i he he1 ha.le ha' hT

@@ -23,8 +23,7 @@ lemma gaussValuationTable_geometric_summable (Q G V : ℂ) (hV : ‖V‖<1)
     Summable (fun m=>gaussValuationTable Q G r n (j m)*V^m) := by
   by_cases hr : 6∣r
   · have ha := geometric_indicator_summable V (Q^(n+1)) hV (fun m=>n+1≤j m)
-    have hb := geometric_indicator_summable V (Q^n) hV (fun m=>n≤j m)
-    convert ha.sub hb using 1
+    convert ha.sub (geometric_indicator_summable V (Q^n) hV (fun m=>n≤j m)) using 1
     funext m
     simp only [gaussValuationTable,ite_eq_left hr,sub_mul]
     split_ifs <;> rfl
@@ -63,8 +62,7 @@ theorem rowMarkedTerm_frequency_summable (eta a X W V rho : ℂ) (hV : ‖V‖<1
   by_cases ht : e+3*l=0
   · simp only [rowMarkedTerm,ite_eq_left ht,summable_zero]
   · simp only [rowMarkedTerm,ite_eq_right ht,rowWeightedScalar,weightedScalar]
-    have hs := SevenEighths.ProbePrimePower.positiveScalar_geometric_summable p hp hg hc (e+3*l-1) k (fun m=>j+6*m) V hV
-    convert hs.mul_left ((rho^k/rho^(e+3*l)) *
+    convert (SevenEighths.ProbePrimePower.positiveScalar_geometric_summable p hp hg hc (e+3*l-1) k (fun m=>j+6*m) V hV).mul_left ((rho^k/rho^(e+3*l)) *
       ((-eta*X/primeGauss p hp.ne_zero (actualSextic (Ideal.span {p}) hg) 1)^e *
         (a*X^3/(Ideal.absNorm (Ideal.span {p}):ℂ))^l *
         localCubePhase (star (localGamma p hp.ne_zero hg 3))
@@ -92,7 +90,7 @@ theorem rowMarkedFamily_hasSum (eta a X W V rho : ℂ) (hρ : rho^6=1)
   · intro r
     rw [show l+2*(r+1)=(l+2*r)+2 by omega]
     exact rowMarkedTerm_zero_lower_edge p hp hg hc eta a X W V rho j e (l+2*r) k hj (by omega)
-  · simpa only [mul_zero,add_zero] using rowMarkedTerm_frequency_summable p hp hg hc eta a X W V rho hV j e l k
+  · simpa using rowMarkedTerm_frequency_summable p hp hg hc eta a X W V rho hV j e l k
   · exact hR
 
 end SevenEighths.ProbeEuler

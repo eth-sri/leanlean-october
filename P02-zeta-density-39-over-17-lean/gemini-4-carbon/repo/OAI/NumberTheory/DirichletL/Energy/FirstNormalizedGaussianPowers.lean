@@ -9,13 +9,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentEnergyFirstNormalizedGaussianPowers
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss ActualEisensteinCubic ConcreteTraceCRT
-open CenteredMomentPrimeElements CenteredMomentPrimePool CenteredMomentFirstAmplificationChoice
-open CenteredMomentFirstPhysicalSource CenteredMomentFirstScale CenteredMomentCanonicalFirst
-open CenteredMomentFirstCanonicalFamily CenteredMomentSecondHeightFamily CenteredMomentCompleteCommon
-open CenteredMomentSectorLocalization CenteredMomentAmplifiedRetainedRadius
-open CenteredMomentFirstMixedNormalization CenteredMomentFirstMixedNormalizationActual CenteredMomentFirstMixedAllowance
-open CenteredMomentFirstAmplifiedFourCoefficients CenteredMomentFirstCommonReferencePower
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss ActualEisensteinCubic ConcreteTraceCRT CenteredMomentPrimeElements CenteredMomentPrimePool CenteredMomentFirstAmplificationChoice CenteredMomentFirstPhysicalSource CenteredMomentFirstScale CenteredMomentCanonicalFirst CenteredMomentFirstCanonicalFamily CenteredMomentSecondHeightFamily CenteredMomentCompleteCommon CenteredMomentSectorLocalization CenteredMomentAmplifiedRetainedRadius CenteredMomentFirstMixedNormalization CenteredMomentFirstMixedNormalizationActual CenteredMomentFirstMixedAllowance CenteredMomentFirstAmplifiedFourCoefficients CenteredMomentFirstCommonReferencePower
 local notation "O"=>HeckeFamily.O
 local notation "Ray"=>RayFourExpansion.RayCharacter
 
@@ -55,9 +49,6 @@ theorem actual_normalized_four_powers
         (56*((Mamp+2*sigma)/(sigma/6)+1872*(Fintype.card Ray:ℝ))*H j*
           Z^(Mdecl-M0+lossVector sigma delta reserve paid eps Mcap saving j+primeLoss)) := by
   dsimp only
-  have hq:=norm_pos τ.modulus τ.modulus_ne_bot
-  have hc:=norm_pos C hC.1
-  have hz:=zero_lt_one.trans hZ
   have hn:=actual_power_reference_identity
     (primePool M Hray Sbad (1/2) 1 (Z^(sigma/3))) ((Mamp+2*sigma)/(sigma/6))
     upper V (C.absNorm:ℝ) (τ.modulus.absNorm:ℝ) Z (allowance C D Z) eps N H
@@ -68,7 +59,7 @@ theorem actual_normalized_four_powers
     (fun p i χ=>errorCommonRadius Z (Real.logb Z (D.absNorm:ℝ))
       (nominalLog C D (Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E}) K V Z)
       (Real.logb Z (C.absNorm:ℝ)) sigma delta reserve p (errorIndex i+1))
-    rerror hV hc hq hz
+    rerror hV (norm_pos C hC.1) (norm_pos τ.modulus τ.modulus_ne_bot) (zero_lt_one.trans hZ)
   have hav:=actual_low_four_coefficients M Hray Sbad hbad η τ C D hC hD hCD E
     K V Z sigma delta reserve paid eps saving Mdecl Mcap Mamp primeLoss
     hK hV hZ hs heps hM hcap hactual hlow hloss hMamp hcard hmod H hH rmain rerror

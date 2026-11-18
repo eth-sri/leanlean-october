@@ -13,9 +13,8 @@ namespace GuthMaynard.Improvement
 theorem ratio_box_input_coordinates {a b v y : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) (hb1 : 1 ≤ b)
     (hv : v ∈ Icc a b) (hy : y ∈ Icc a b) :
     v ∈ Icc (a/b) (b/a) ∧ y ∈ Icc (a/b) (b/a) ∧ y/v ∈ Icc (a/b) (b/a) := by
-  have hb : 0 < b := lt_of_lt_of_le zero_lt_one hb1
-  have hvp : 0 < v := ha.trans_le hv.1
-  have hyp : 0 < y := ha.trans_le hy.1
+  have hb := lt_of_lt_of_le zero_lt_one hb1
+  have hvp := ha.trans_le hv.1
   have hcover : ∀ z ∈ Icc a b, z ∈ Icc (a/b) (b/a) := by
     intro z hz
     constructor

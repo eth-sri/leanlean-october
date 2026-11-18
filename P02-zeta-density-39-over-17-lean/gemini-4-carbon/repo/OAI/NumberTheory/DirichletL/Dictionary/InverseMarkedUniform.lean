@@ -8,14 +8,11 @@ public import OAI.NumberTheory.DirichletL.Dictionary.InverseMarkedPadding
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap FourierTransform ContDiff
 open MeasureTheory
+open scoped Classical BigOperators SchwartzMap FourierTransform ContDiff
 
 namespace SevenEighths.DetectorDictionaryInverseMarkedUniform
-open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseMoment
-open DetectorDictionaryInverseUniform DetectorDictionaryInverseClippedUniform
-open DetectorDictionaryInverseRawFourier InverseInitialClippedColumns
-open InverseInitialOverlapFourier FourierBridge HeckeDetectorRawFiber
+open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseMoment DetectorDictionaryInverseUniform DetectorDictionaryInverseClippedUniform DetectorDictionaryInverseRawFourier InverseInitialClippedColumns InverseInitialOverlapFourier FourierBridge HeckeDetectorRawFiber
 
 private theorem clipped_one_zero (W : ℝ→ℂ) : clippedTest W 1 0=W := by
   funext x
@@ -46,10 +43,8 @@ theorem moving_finite_energy (J : ℕ) :
   have hm:=hmass scaled reverse n hn U hU tstar r σ hσ t 1
   simp only [familyDensity_norm,logSource_eq_logSchwartz] at hm
   apply hb.trans
-  calc
-    _≤E*(B*(1+‖t‖)^K)^2:=mul_le_mul_of_nonneg_left
-      (pow_le_pow_left₀ (integral_nonneg (fun _=>by positivity)) hm 2) hE
-    _= _:=by rw [mul_pow,←pow_mul];ring_nf
+  exact (mul_le_mul_of_nonneg_left
+      (pow_le_pow_left₀ (integral_nonneg (fun _=>by positivity)) hm 2) hE).trans_eq (by rw [mul_pow,←pow_mul];ring_nf)
 
 theorem logTest_eq_iterate (W : ℝ→ℂ) (n : ℕ) :
     logTest W n=(HeckeDetectorRowwisePolynomial.logProfile^[n]) W := by

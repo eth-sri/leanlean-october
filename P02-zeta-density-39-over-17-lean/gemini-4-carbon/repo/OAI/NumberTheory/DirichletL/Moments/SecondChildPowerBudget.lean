@@ -10,10 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondChildPowerBudget
-open HeckeFamily CenteredMomentCommonRadialData CenteredMomentEligibleEnergy
-open CenteredMomentFirstChildProfileControl CenteredMomentCommonRadialPointwise
-open CenteredMomentFiniteProfileExceptional CenteredMomentFiniteProfileExceptionalPhysical
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceInputTailUniform
+open HeckeFamily CenteredMomentCommonRadialData CenteredMomentEligibleEnergy CenteredMomentFirstChildProfileControl CenteredMomentCommonRadialPointwise CenteredMomentFiniteProfileExceptional CenteredMomentFiniteProfileExceptionalPhysical CenteredMomentOriginalCommonHarmonic CenteredMomentSourceInputTailUniform
 local notation "O"=>HeckeFamily.O
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
@@ -39,14 +36,11 @@ lemma main_cost (s : Input ι) (N : ℕ) (b b₁ b₂ A : ℝ)
   have hg:=CenteredMomentAmplificationChildSourceCaps.radius_le N b b₁ b₂ hb
     (zero_le_one.trans h₁) (zero_le_one.trans h₂) s hc hhi
     (fun i=>(s.upper_ge i).trans hu) hs₁ hs₂ hb₁ hb₂
-  have hp:=profile_cost_bound s N b A hb hu hc hm
-  have he : max 1 s.b₁*max 1 s.b₂≤b₁*b₂ :=
-    mul_le_mul (max_le h₁ hb₁) (max_le h₂ hb₂) (by positivity) (by linarith)
+  have he := mul_le_mul (max_le h₁ hb₁) (max_le h₂ hb₂) (by positivity) (by linarith)
   have hp' : profileCost s≤(2*(b₁*b₂)*b^N*A^2)*mass s^2 := by
-    apply hp.trans
+    apply (profile_cost_bound s N b A hb hu hc hm).trans
     gcongr
-  have hh:=mul_le_mul hp' hg.2 hg.1 (by positivity)
-  convert hh using 1 ; ring
+  convert (mul_le_mul hp' hg.2 hg.1 (by positivity)) using 1 ; ring
 
 omit [DecidableEq ι] in
 lemma diagonal_cost (s : Input ι) (W₁ W₂ : 𝓢(ℝ,ℂ)) (N : ℕ) (b whi ε : ℝ)
@@ -114,14 +108,12 @@ theorem source_rhs {wlo whi : ℝ} (s : Input ι) (N : ℕ) (b b₁ b₂ A : ℝ
   have hexc:=div_le_div_of_nonneg_right
     (mul_le_mul_of_nonneg_right
       (mul_le_mul_of_nonneg_left (exceptional_factor_bound S p J Q K hK s N b A hb hu hc hm) (ha 1))
-      (Real.rpow_nonneg hv (1/3:ℝ))) hs
+      (Real.rpow_nonneg hv (1/3))) hs
   have hdiag:=div_le_div_of_nonneg_right
     (mul_le_mul_of_nonneg_right
       (mul_le_mul_of_nonneg_left (diagonal_cost s (p.profile 0) (p.profile 1) N b whi ε hb hu hc hhi hε) (ha 2))
       (Real.rpow_nonneg hv ε)) hs
-  have htail:=congrArg (fun x:ℝ=>a 3*x) (tail_cost s (p.profile 0) (p.profile 1))
-  have hh:=add_le_add (add_le_add (add_le_add hmain hexc) hdiag) (le_of_eq htail)
-  convert hh using 1 <;>
+  convert (add_le_add (add_le_add (add_le_add hmain hexc) hdiag) (le_of_eq (congrArg (fun x:ℝ=>a 3*x) (tail_cost s (p.profile 0) (p.profile 1))))) using 1 <;>
     (try simp only [coefficients,powers,Fin.sum_univ_succ,Fin.sum_univ_zero,
       Matrix.cons_val_zero,Matrix.cons_val_succ,
       Real.rpow_one,Real.rpow_zero]) <;> ring

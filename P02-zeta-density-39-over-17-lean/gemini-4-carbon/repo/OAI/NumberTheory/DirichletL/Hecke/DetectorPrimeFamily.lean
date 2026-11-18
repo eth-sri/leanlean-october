@@ -1,7 +1,8 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.PrimeNonprincipal
 public import OAI.NumberTheory.DirichletL.Hecke.PrimeScale
-public import OAI.NumberTheory.DirichletL.Hecke.DetectorFamilyInclusion
+public import OAI.NumberTheory.DirichletL.Hecke.DetectorZeros
+public import OAI.NumberTheory.DirichletL.Hecke.Conjugation
 
 @[expose] public section
 

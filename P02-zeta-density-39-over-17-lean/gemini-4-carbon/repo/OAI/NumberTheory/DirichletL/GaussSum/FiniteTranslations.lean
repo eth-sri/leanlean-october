@@ -8,79 +8,10 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 
 namespace CompletedGauss
-open Filter MeasureTheory
-open scoped Classical BigOperators Topology ContDiff
-
 open CubicEisenstein
 
 lemma positive_cpow_comp_continuous (r : ℝ) (hr : 0<r)
@@ -158,9 +89,6 @@ end CompletedGauss
 namespace CubicEisenstein
 
 section
-open scoped BigOperators Classical
-open MeasureTheory
-open Finset AddChar MulChar EisensteinEmbedding
 
 section
 local notation "Eis" => ActualEisensteinCubic.O
@@ -383,11 +311,7 @@ theorem finiteConjugateSource_wirtingerBar {ι : Type*} [Fintype ι]
       ∑'h : Eis,(-2*Real.pi*Complex.I*star (cuspFrequency h))*
         (∑i,weight i*ShortDraftTrace.breveE (-cuspFrequency h*shift i))*
           star (sourceBesselCoefficients.term h (v,z)) := by
-  have hf : finiteConjugateSource shift weight v hv = fun z=>
-      star ((sourceBesselCoefficients.finiteTranslate shift (fun i=>star (weight i))).fullFunction
-        ((∑i,star (weight i))*((3*(Real.pi:ℂ))*constantArithmeticResidue)) (upperPoint z v hv)) :=
-    funext (finiteConjugateSource_eq_bessel shift weight v hv)
-  rw [hf,horizontalWirtingerBar_star,
+  rw [(funext (finiteConjugateSource_eq_bessel shift weight v hv)),horizontalWirtingerBar_star,
     SubexponentialBesselCoefficients.fullFunction_wirtingerZ,tsum_star]
   apply tsum_congr
   intro h
@@ -434,7 +358,7 @@ theorem traceTwistedConjugateSource_wirtingerBar_zero (c : Eis) (hc : c≠0)
       mul_pos (mul_pos (mul_pos (by norm_num) Real.pi_pos)
         (norm_pos_iff.mpr (cuspFrequency_ne_zero h hh))) hv
     rw [schlafliBesselK_cubic_real _ hx]
-    have he0 : ShortDraftTrace.breveE (0:ℂ)=1 := by
+    have he0 : ShortDraftTrace.breveE 0=1 := by
       simp [ShortDraftTrace.breveE]
     simp only [mul_zero,he0,mul_one,star_mul,
       Complex.star_def,Complex.conj_ofReal,sourceBesselCoefficients]
@@ -442,7 +366,7 @@ theorem traceTwistedConjugateSource_wirtingerBar_zero (c : Eis) (hc : c≠0)
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CompletedGauss
+open CubicJacobiGlobal CompletedGauss
 local notation "Eis" => ActualEisensteinCubic.O
 
 def fixedThetaTwist (Ψ : Eis→*ℂ) (x : Eis) : ℂ :=
@@ -463,8 +387,8 @@ lemma paperLambda_symbol_cube (x : Eis) (hx : lambda^2∣x-1) :
 
 lemma paperLambda_symbol_norm (x : Eis) (hx : lambda^2∣x-1) :
     ‖eisEmbedding (symbol ramifiedTraceLambda x)‖=1 := by
-  apply (pow_left_inj₀ (norm_nonneg _) zero_le_one (by decide : (3:ℕ)≠0)).mp
-  simpa only [norm_pow,norm_one,one_pow] using congrArg norm (paperLambda_symbol_cube x hx)
+  apply (pow_left_inj₀ (norm_nonneg _) zero_le_one (by decide : 3≠0)).mp
+  simpa using congrArg norm (paperLambda_symbol_cube x hx)
 
 lemma fixedThetaTwist_norm_le_one (Ψ : Eis→*ℂ) (hΨ : ∀x,‖Ψ x‖≤1) (x : Eis) :
     ‖fixedThetaTwist Ψ x‖≤1 := by
@@ -477,8 +401,8 @@ lemma fixedThetaTwist_norm_le_one (Ψ : Eis→*ℂ) (hΨ : ∀x,‖Ψ x‖≤1) 
 theorem fixedThetaTwist_periodic (Ψ : Eis→*ℂ) (Q : Ideal Eis)
     (hΨ : CanonicalCoefficientClass.FactorsModulo Q Ψ) (x y : Eis)
     (hxy : x-y∈Ideal.span {(9:Eis)}*Q) : fixedThetaTwist Ψ x=fixedThetaTwist Ψ y := by
-  have h9 : (9:Eis)∣x-y := Ideal.mem_span_singleton.mp (Ideal.mul_le_left hxy)
-  have hd : lambda^2∣x-y := lambda_sq_dvd_three.trans ((show (3:Eis)∣9 from ⟨3,by norm_num⟩).trans h9)
+  have h9 := Ideal.mem_span_singleton.mp (Ideal.mul_le_left hxy)
+  have hd := lambda_sq_dvd_three.trans ((show (3:Eis)∣9 from ⟨3,by norm_num⟩).trans h9)
   have hp : lambda^2∣x-1 ↔ lambda^2∣y-1 := by
     constructor
     · intro hx
@@ -523,10 +447,8 @@ theorem fixedThetaTwist_infinity_coefficient (Ψ : Eis→*ℂ) (I J : Ideal Eis)
         Ψ (primaryGenerator I)*(Ψ (primaryGenerator J))^3 := by
   have hn := (primaryGenerator_spec I hI).2
   have hb := (primaryGenerator_spec J hJ).2
-  have hnb : lambda^2∣primaryGenerator I*(primaryGenerator J)^3-1 :=
-    CubicJacobiGlobal.primary_mul _ _ hn (primary_pow_congruence _ hb 3)
   rw [normalized_infinityCoefficient_squarefree_cube I J hI hJ hsq,
-    fixedThetaTwist_primary Ψ _ hnb,paperLambda_symbol_squarefree_cube _ _ hb,map_mul,map_pow]
+    fixedThetaTwist_primary Ψ _ (CubicJacobiGlobal.primary_mul _ _ hn (primary_pow_congruence _ hb 3)),paperLambda_symbol_squarefree_cube _ _ hb,map_mul,map_pow]
   have hunit : star (eisEmbedding (symbol ramifiedTraceLambda (primaryGenerator I)))*
       eisEmbedding (symbol ramifiedTraceLambda (primaryGenerator I))=1 := by
     simpa only [Complex.star_def,paperLambda_symbol_norm _ hn,one_pow,
@@ -540,7 +462,7 @@ theorem fixedThetaTwist_infinity_coefficient (Ψ : Eis→*ℂ) (I J : Ideal Eis)
 
 end
 
-open ActualEisensteinCubic CompletedGauss CubicJacobiGlobal
+open CompletedGauss CubicJacobiGlobal
 local notation "Eis" => ActualEisensteinCubic.O
 
 lemma sourceFourier_primary_squarefree_cube_preimage (x:Eis)
@@ -570,7 +492,6 @@ theorem sourceFourier_tsum_primary_pairs (w:Eis→ℂ)
     {J:Ideal Eis // primaryGenerator J≠0})
   let phi:P→Eis:=fun p=>primaryGenerator p.1.val*(primaryGenerator p.2.val)^3
   let f:Eis→ℂ:=fun x=>w x*star (sourceResidualFourierCoefficient x)
-  change (∑'x:Eis,f x)=∑'p:P,f (phi p)
   apply tsum_eq_tsum_of_ne_zero_bij
     (fun p:Function.support (fun p:P=>f (phi p))=>phi p.val)
   · exact primary_squarefree_cube_injective.comp Subtype.val_injective

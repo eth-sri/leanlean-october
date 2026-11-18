@@ -61,10 +61,6 @@ def IsExponentSumBound (α : ℝ≥0) (β : ℝ) : Prop :=
 def exponentSumBounds (α : ℝ≥0) : Set ℝ :=
   {β : ℝ | IsExponentSumBound α β}
 
-@[simp] theorem mem_exponentSumBounds {α : ℝ≥0} {β : ℝ} :
-    β ∈ exponentSumBounds α ↔ IsExponentSumBound α β :=
-  Iff.rfl
-
 /-- The exponential sum growth exponent `β(α)` from the blueprint definition `beta-def`. -/
 def exponentSumGrowthExponent (α : ℝ≥0) : ℝ :=
   sInf (exponentSumBounds α)
@@ -161,10 +157,9 @@ private lemma exists_isExponentSumBound_lt_add
     (α : ℝ≥0) {ε : ℝ} (hε : 0 < ε) :
     ∃ β : ℝ, IsExponentSumBound α β ∧
       β < exponentSumGrowthExponent α + ε := by
-  let S : Set ℝ := exponentSumBounds α
-  have hS : S.Nonempty := exponentSumBounds_nonempty α
+  let S := exponentSumBounds α
   have hinf_lt : sInf S < sInf S + ε := by linarith
-  obtain ⟨β, hβ, hβlt⟩ := exists_lt_of_csInf_lt hS hinf_lt
+  obtain ⟨β, hβ, hβlt⟩ := exists_lt_of_csInf_lt (exponentSumBounds_nonempty α) hinf_lt
   change IsExponentSumBound α β at hβ
   refine ⟨β, hβ, ?_⟩
   simpa [S, exponentSumGrowthExponent] using hβlt

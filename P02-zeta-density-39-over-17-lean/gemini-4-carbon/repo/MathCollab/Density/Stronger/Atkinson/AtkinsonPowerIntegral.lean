@@ -104,10 +104,8 @@ theorem exists_norm_atkinsonPowerIntegral_le (α : ℝ) :
       ((Real.sqrt (T / 16)) ^ 2) ((Real.sqrt T) ^ 2) (C * G * T ^ (-α)) := by
     simpa only [Real.sq_sqrt (by positivity : 0 ≤ T / 16), Real.sq_sqrt hT.le] using
       hweight T G L hT hG hGT hL
-  have h := (hf.comp_sq ha.le hab).atkinsonRoot hT b ha hab
   rw [atkinsonPowerIntegral_eq_root hT hG hL hwidth α b, norm_mul, norm_ofNat]
-  have hfin := mul_le_mul_of_nonneg_left h (by norm_num : (0 : ℝ) ≤ 2)
-  convert hfin using 1
+  convert (mul_le_mul_of_nonneg_left ((hf.comp_sq ha.le hab).atkinsonRoot hT b ha hab) (by norm_num : (0 : ℝ) ≤ 2)) using 1
   ring
 
 end MathCollab.Density.Stronger.Atkinson

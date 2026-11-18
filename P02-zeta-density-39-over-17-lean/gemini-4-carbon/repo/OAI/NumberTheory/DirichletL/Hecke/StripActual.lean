@@ -158,7 +158,7 @@ theorem LFunction_exp_growth (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
       ‖LFunction (character c χ hu) z‖ ≤ A * Real.exp (B * |z.im|) := by
   let f : ℝ → ℂ := fun t => (pair c χ hu hp).f t / 6
   have hP := pair_strong c χ hu hp hχ
-  have hconv (s : ℂ) : MellinConvergent f s := (hP.hasMellin s).1.div_const 6
+  have hconv (s : ℂ) := (hP.hasMellin s).1.div_const 6
   have h := HeckeStrip.mellin_uncompleted_exp_bound
     (HeckeStrip.completionScale (conductor c))
     (HeckeStrip.completionScale_pos _ (lt_of_lt_of_le zero_lt_one (conductor_ge_one c))) f

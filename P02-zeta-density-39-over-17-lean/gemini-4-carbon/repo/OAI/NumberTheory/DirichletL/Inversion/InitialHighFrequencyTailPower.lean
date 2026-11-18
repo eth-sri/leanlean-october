@@ -14,8 +14,8 @@ theorem initial_tail_power_cost (A : ℕ) (Z L Lcap m D τ : ℝ)
     (hm : -m≤Lcap) (hmd : m-D≤Lcap) :
     (128*L)^7*Z^(m-D)/((min 1 (Z^m/L^3))^2*(1+Z^τ)^A) ≤
       128^7*Z^(16*Lcap-τ*A) := by
-  have hz : 0<Z := zero_lt_one.trans_le hZ
-  have hl : 0<L := zero_lt_one.trans_le hL
+  have hz := zero_lt_one.trans_le hZ
+  have hl := zero_lt_one.trans_le hL
   have hbase : Z^(-4*Lcap)≤min 1 (Z^m/L^3) := by
     apply le_min
     · exact Real.rpow_le_one_of_one_le_of_nonpos hZ (by linarith)
@@ -32,8 +32,7 @@ theorem initial_tail_power_cost (A : ℕ) (Z L Lcap m D τ : ℝ)
       gcongr ; linarith
     _ = 128^7*Z^(16*Lcap-τ*A) := by
       rw [mul_pow,←Real.rpow_mul_natCast hz.le,←Real.rpow_mul_natCast hz.le,
-        ←Real.rpow_mul_natCast hz.le]
-      rw [mul_assoc,←Real.rpow_add hz,←Real.rpow_add hz,mul_div_assoc,
+        ←Real.rpow_mul_natCast hz.le, mul_assoc,←Real.rpow_add hz,←Real.rpow_add hz,mul_div_assoc,
         ←Real.rpow_sub hz]
       congr 2
       norm_num

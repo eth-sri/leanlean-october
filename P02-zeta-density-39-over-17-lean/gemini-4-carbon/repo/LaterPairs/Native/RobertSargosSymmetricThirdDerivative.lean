@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.FiniteSmoothThirdDerivative
 public import LaterPairs.Native.RobertSargosCubicPhase
 
@@ -40,7 +49,7 @@ theorem robertSargos_symmetric_third_curvature
   have hin (y : ℝ) (hy : y ∈ Icc (x-h) (x+h)) : y ∈ Icc a b :=
     ⟨hx.trans hy.1,hy.2.trans hxb⟩
   have hb := derivative_increment_bounds (iteratedDeriv 3 f) (iteratedDeriv 4 f)
-    (show x-h ≤ x+h by linarith)
+    (by linarith)
     (fun y hy => hasDerivAt_iteratedDeriv_finite (by norm_num : 3 < 4) (hf y (hin y hy)))
     (fun y hy => hlo y (hin y hy)) (fun y hy => hhi y (hin y hy))
   rw [show (x+h)-(x-h) = 2*h by ring] at hb
@@ -72,7 +81,7 @@ theorem robertSargos_symmetric_third_derivative_prefix
     (fun x => robertSargosSymmetricDifference (iteratedDeriv 2 f) x h)
     (fun x => robertSargosSymmetricDifference (iteratedDeriv 3 f) x h)
     A N hC (by positivity) hscale
-    (fun x hx => by simpa only [iteratedDeriv_zero] using hj 0 (by norm_num) x hx)
+    (fun x hx => by simpa using hj 0 (by norm_num) x hx)
     (fun x hx => hj 1 (by norm_num) x hx)
     (fun x hx => hj 2 (by norm_num) x hx)
     (fun x hx => (hc x hx).1) (fun x hx => (hc x hx).2)

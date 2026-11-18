@@ -32,11 +32,6 @@ theorem zetaDivisorBand_log_bound {T G L x : ℝ} (hT : 0 < T)
   apply abs_le.mpr
   constructor <;> linarith
 
-theorem zetaDivisorBandCutoff_log_bound {T G L x : ℝ}
-    (hT : 0 < T) (hG : 0 < G) (hL : 0 < L)
-    (hx : zetaDivisorBandCutoff T G L x ≠ 0) :
-    |Real.log x - Real.log (T / (2 * Real.pi))| ≤ 2 * L / G :=
-  zetaDivisorBand_log_bound hT (support_zetaDivisorBandCutoff hT hG hL hx)
 
 theorem arsinh_abs (x : ℝ) : Real.arsinh |x| = |Real.arsinh x| := by
   rcases le_total 0 x with hx | hx
@@ -84,7 +79,7 @@ theorem abs_frequency_le_of_saddle_cutoff {T G L b : ℝ}
     (hb : zetaDivisorBandCutoff T G L (zetaAtkinsonSaddle T b) ≠ 0) :
     |b| ≤ 3 * Real.sqrt T * (L / G) :=
   abs_frequency_le_of_saddle_log_bound hT hG hL hwidth
-    (zetaDivisorBandCutoff_log_bound hT hG hL hb)
+    ((zetaDivisorBand_log_bound hT (support_zetaDivisorBandCutoff hT hG hL hb)))
 
 theorem atkinsonStationaryMain_eq_zero_of_frequency {T G L b : ℝ}
     (hT : 0 < T) (hG : 0 < G) (hL : 0 < L) (hwidth : 8 * L ≤ G)
@@ -109,7 +104,7 @@ theorem atkinsonStationaryMain_pair_eq_zero_of_index {T G L : ℝ}
     nlinarith [Real.sq_sqrt (Nat.cast_nonneg (α := ℝ) n), Real.sqrt_nonneg (n : ℝ),
       show 0 ≤ 3 * Real.sqrt T * (L / G) by positivity]
   exact ⟨atkinsonStationaryMain_eq_zero_of_frequency hT hG hL hwidth hb α,
-    atkinsonStationaryMain_eq_zero_of_frequency hT hG hL hwidth (by simpa only [abs_neg]) α⟩
+    atkinsonStationaryMain_eq_zero_of_frequency hT hG hL hwidth (by simpa) α⟩
 
 theorem atkinsonStationaryMain_pair_eq_zero_after_cutoff {T G L : ℝ}
     (hT : 0 < T) (hG : 0 < G) (hL : 0 < L) (hwidth : 8 * L ≤ G)

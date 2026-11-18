@@ -1,8 +1,17 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaDuality
 public import TaoTrudgianYang2025.BetaUniformity
-public import Mathlib
 
 @[expose] public section
 set_option autoImplicit false
@@ -15,7 +24,7 @@ theorem exponentPair_rhs_eq_logb_power {T N : ℝ}
     (hT : 1 < T) (hN : 0 < N) (k l ε : ℝ) :
     (T/N)^(k+ε)*N^(l+ε) =
       T^(exponentPairLine k l (Real.logb T N)+ε) := by
-  have hTpos : 0 < T := zero_lt_one.trans hT
+  have hTpos := zero_lt_one.trans hT
   rw [Real.div_rpow hTpos.le hN.le, div_mul_eq_mul_div, mul_div_assoc,
     ← Real.rpow_sub hN]
   have hdiff : l+ε-(k+ε) = l-k := by ring

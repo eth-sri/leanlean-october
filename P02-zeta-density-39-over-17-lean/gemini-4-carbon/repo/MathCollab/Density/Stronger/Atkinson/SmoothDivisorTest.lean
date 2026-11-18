@@ -12,9 +12,7 @@ public import MathCollab.Density.Stronger.Atkinson.VoronoiTest
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+open Complex Filter MeasureTheory Set Topology MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth MathCollab.Density.Contour
 open scoped Interval ComplexConjugate ContDiff
 set_option autoImplicit false
 noncomputable section
@@ -30,9 +28,8 @@ def zetaSmoothDivisorSum (T G L : ℝ) : ℂ :=
 theorem zetaSmoothDivisorTest_eq_zero_left {T G L x : ℝ}
     (hT : 0 < T) (hG : 0 < G) (hL : 0 < L)
     (hx : x ≤ zetaDivisorBandEdge T G (-2 * L)) : zetaSmoothDivisorTest T G L x = 0 := by
-  have hm := zetaDivisorBandEdge_strictMono hT hG
   have hcut : zetaDivisorBandCutoff T G L x = 0 :=
-    zetaBandCutoff_eq_zero_left (hm (by linarith)) hx
+    zetaBandCutoff_eq_zero_left ((zetaDivisorBandEdge_strictMono hT hG) (by linarith)) hx
   simp only [zetaSmoothDivisorTest, hcut, Complex.ofReal_zero, zero_mul]
 
 theorem support_zetaSmoothDivisorTest {T G L : ℝ}
@@ -54,7 +51,7 @@ theorem contDiff_zetaSmoothDivisorTest {T G L : ℝ}
       (contDiffAt_zetaShortDivisorTestFunction T hG.ne' hx)
   · have hxa : x < zetaDivisorBandEdge T G (-2 * L) :=
       (le_of_not_gt hx).trans_lt (zetaDivisorBandEdge_pos hT G (-2 * L))
-    apply (contDiffAt_const (c := (0 : ℂ))).congr_of_eventuallyEq
+    apply (contDiffAt_const (c := 0)).congr_of_eventuallyEq
     filter_upwards [isOpen_Iio.mem_nhds hxa] with y hy
     exact zetaSmoothDivisorTest_eq_zero_left hT hG hL hy.le
 

@@ -46,7 +46,7 @@ theorem choose_rapid_tail_order (Lcap δ saving : ℝ) (hδ : 0<δ) :
   obtain ⟨A,hA⟩ := exists_nat_gt ((Lcap+saving)/δ)
   refine ⟨A,?_⟩
   intro Z hZ
-  have hz : 0<Z := lt_of_lt_of_le zero_lt_one hZ
+  have hz := lt_of_lt_of_le zero_lt_one hZ
   rw [←Real.rpow_mul hz.le,←Real.rpow_add hz]
   apply Real.rpow_le_rpow_of_exponent_le hZ
   have hh := (div_lt_iff₀ hδ).mp hA
@@ -58,10 +58,9 @@ theorem choose_weighted_rapid_tail_order (Lcap Lextra δ saving : ℝ) (hδ : 0<
   obtain ⟨A,hA⟩ := choose_rapid_tail_order (Lcap+Lextra) δ saving hδ
   refine ⟨A,?_⟩
   intro Z E hZ hE he
-  have hz : 0<Z := lt_of_lt_of_le zero_lt_one hZ
   calc
     _ ≤ Z^Lextra*(Z^δ)^(-(A:ℝ))*Z^Lcap := by gcongr
-    _ = (Z^δ)^(-(A:ℝ))*Z^(Lcap+Lextra) := by rw [Real.rpow_add hz]; ring
+    _ = (Z^δ)^(-(A:ℝ))*Z^(Lcap+Lextra) := by rw [Real.rpow_add (lt_of_lt_of_le zero_lt_one hZ)]; ring
     _ ≤ _ := hA Z hZ
 end
 end SevenEighths.InverseReflectedPhase

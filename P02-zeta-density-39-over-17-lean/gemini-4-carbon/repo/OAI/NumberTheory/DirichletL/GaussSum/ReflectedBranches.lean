@@ -7,77 +7,12 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-
-open scoped BigOperators Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 namespace CompletedGauss
 
 section
-open ActualEisensteinCubic LocalReflectionBrackets
+open LocalReflectionBrackets
 
 def reflectedLocalPiece (P : Ideal O) [P.IsMaximal] (hg : lambda∉P)
     (j : ℕ) (e : Fin 3) (n b : O) : ℂ :=
@@ -184,8 +119,7 @@ theorem reflectedBranch_divisibility {ι : Type*} [Fintype ι]
     reflectionExtractedDivisor P j e 1∣Ideal.span {n} ∧
     reflectionExtractedDivisor P j e 2∣Ideal.span {b} ∧
     (∀i,j i=4 → e i=2 → n∉P i) := by
-  have hn i : reflectedLocalPiece (P i) (hg i) (j i) (e i) n b≠0 :=
-    (Finset.prod_ne_zero_iff.mp hne) i (Finset.mem_univ i)
+  have hn i := (Finset.prod_ne_zero_iff.mp hne) i (Finset.mem_univ i)
   have hmemn i (hj : j i=4) (he : e i=1) : n∈P i := by
     by_contra hz
     exact hn i (by simp [reflectedLocalPiece,exceptionalPiece,hj,he,hz])
@@ -226,8 +160,6 @@ theorem reflectedBranch_divisibility {ι : Type*} [Fintype ι]
 
 end
 
-open scoped BigOperators Classical SchwartzMap ContDiff Topology
-open MeasureTheory Filter
 
 theorem Vstar_contDiff (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
     (hsupp : Function.support W⊆Set.Icc a b) (hW : ContDiff ℝ ∞ W) :
@@ -259,10 +191,6 @@ def vstarSchwartz (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
   (HasCompactSupport.of_support_subset_isCompact isCompact_Icc (Vstar_support W a b hsupp)).toSchwartzMap
     (Vstar_contDiff W a b ha hsupp hW)
 
-@[simp] theorem vstarSchwartz_apply (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
-    (hsupp : Function.support W⊆Set.Icc a b) (hW : ContDiff ℝ ∞ W) (x : ℝ) :
-    vstarSchwartz W a b ha hsupp hW x=Vstar W x := rfl
-
 end CompletedGauss
 
 namespace InitialMeanSquare
@@ -271,8 +199,7 @@ open SecondPassArithmetic
 end InitialMeanSquare
 
 namespace CubicEisenstein
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff Manifold ENNReal MatrixGroups Matrix InnerProductSpace
+open scoped Manifold ENNReal MatrixGroups Matrix InnerProductSpace
 
 def hyperbolicEuclideanCoordinates (w : HyperbolicSpace) : EuclideanSpatial :=
   WithLp.toLp 2 (hyperbolicSpatialCoordinates w)
@@ -284,7 +211,7 @@ lemma hyperbolicEuclideanCoordinates_upperPoint (z : ℂ) (v : ℝ) (hv : 0<v) :
 
 lemma euclideanToHyperbolic_coordinates (w : HyperbolicSpace) :
     euclideanToHyperbolic (hyperbolicEuclideanCoordinates w)=w := by
-  have hp : 0<hyperbolicEuclideanCoordinates w 2 := hyperbolicHeight_pos w
+  have hp := hyperbolicHeight_pos w
   rw [euclideanToHyperbolic_positive _ hp]
   change upperPoint ((hyperbolicSpatialCoordinates w 0:ℂ)+Complex.I*(hyperbolicSpatialCoordinates w 1:ℂ))
     (hyperbolicSpatialCoordinates w 2) hp=w
@@ -332,8 +259,8 @@ lemma euclideanAction_diagonal (b : ℂ) (hb : b≠0) (p : EuclideanSpatial) (hp
 
 lemma euclideanAction_weyl (p : EuclideanSpatial) (hp : 0<p 2) :
     euclideanAction complexWeyl p=euclideanWeylAction p := by
-  have hn : ‖p‖≠0 := norm_ne_zero_iff.mpr (euclideanUpperHalf_ne_zero p hp)
-  have hnc : (‖p‖:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hn
+  have hn := norm_ne_zero_iff.mpr (euclideanUpperHalf_ne_zero p hp)
+  have hnc := Complex.ofReal_ne_zero.mpr hn
   have hq : 0<euclideanWeylAction p 2 := by
     rw [(euclideanWeylAction_apply p).2.2]
     exact mul_pos (sq_pos_of_ne_zero (one_div_ne_zero hn)) hp
@@ -374,7 +301,7 @@ lemma euclideanInversionDeriv_norm (p u : EuclideanSpatial) :
     ‖euclideanInversionDeriv p u‖=(1/‖p‖)^2*‖u‖ := by
   unfold euclideanInversionDeriv
   rw [_root_.smul_apply,norm_smul,Real.norm_of_nonneg (sq_nonneg _)]
-  simp only [LinearIsometryEquiv.coe_coe'',LinearIsometryEquiv.norm_map]
+  simp
 
 def HyperbolicDifferentialIsometry (g : SL(2,ℂ)) : Prop :=
   ∀p : EuclideanSpatial,0<p 2 → ∃A : EuclideanSpatial→L[ℝ]EuclideanSpatial,
@@ -456,8 +383,7 @@ theorem hyperbolicDifferentialIsometry (g : SL(2,ℂ)) : HyperbolicDifferentialI
 
 end CubicEisenstein
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff Manifold ENNReal MatrixGroups
+open scoped Manifold ENNReal MatrixGroups
 
 namespace CubicEisenstein
 
@@ -488,9 +414,7 @@ lemma hyperbolic_cotangent_energy_comp (g : SL(2,ℂ)) (F : EuclideanSpatial→�
   rw [(hF.hasFDerivAt.comp p hA).fderiv]
   have hn : ∀u,‖A u‖=(euclideanAction g p 2/p 2)*‖u‖ := by
     intro u
-    calc
-      ‖A u‖=(‖u‖*euclideanAction g p 2)/p 2 := (eq_div_iff hp.ne').2 (hAn u)
-      _ = _ := by ring
+    exact ((eq_div_iff hp.ne').2 (hAn u)).trans (by ring)
   rw [norm_comp_scaled_isometry A _ (div_pos (euclideanAction_positive g p) hp) hn]
   field_simp
 
@@ -507,8 +431,6 @@ lemma euclideanScalarDirichletDensity_invariant (g : SL(2,ℂ)) (F : EuclideanSp
 
 end CubicEisenstein
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff Manifold ENNReal MatrixGroups
 
 namespace CubicEisenstein
 
@@ -571,7 +493,7 @@ lemma kernelTestEnergyDensity_invariant (f : kernelSmoothTests) (M : globalKubot
   have he : hyperbolicEuclideanCoordinates (integralComplexMatrix M•w)=
       euclideanAction (integralComplexMatrix M) (hyperbolicEuclideanCoordinates w) := by
     simp only [euclideanAction,euclideanToHyperbolic_coordinates]
-  have hp : 0<hyperbolicEuclideanCoordinates w 2 := hyperbolicHeight_pos w
+  have hp := hyperbolicHeight_pos w
   unfold kernelTestEnergyDensity
   rw [he]
   congr 1
@@ -594,11 +516,9 @@ def kernelQuotientEnergyDensity (f : kernelSmoothTests) : KernelQuotient→ℝ :
 lemma kernelTestEnergyDensity_continuous (f : kernelSmoothTests) : Continuous (kernelTestEnergyDensity f) := by
   rw [continuous_iff_continuousAt]
   intro w
-  have hp : 0<hyperbolicEuclideanCoordinates w 2 := hyperbolicHeight_pos w
-  have hr := (kernelTestField_re_contDiffAt f _ hp).continuousAt_fderiv (by simp)
-  have hi := (kernelTestField_im_contDiffAt f _ hp).continuousAt_fderiv (by simp)
+  have hp := hyperbolicHeight_pos w
   have ht : ContinuousAt (fun p : EuclideanSpatial => p 2) (hyperbolicEuclideanCoordinates w) := by fun_prop
-  exact (((ht.pow 2).mul (hr.norm.pow 2)).add ((ht.pow 2).mul (hi.norm.pow 2))).comp
+  exact (((ht.pow 2).mul (((kernelTestField_re_contDiffAt f _ hp).continuousAt_fderiv (by simp)).norm.pow 2)).add ((ht.pow 2).mul (((kernelTestField_im_contDiffAt f _ hp).continuousAt_fderiv (by simp)).norm.pow 2))).comp
     hyperbolicEuclideanCoordinates_continuous.continuousAt
 
 lemma kernelQuotientEnergyDensity_continuous (f : kernelSmoothTests) : Continuous (kernelQuotientEnergyDensity f) :=
@@ -635,14 +555,11 @@ lemma kernelQuotientEnergyDensity_support (f : kernelSmoothTests) :
     simp only [kernelTestEnergyDensity,euclideanScalarDirichletDensity,hzr.fderiv_eq,hzi.fderiv_eq,
       fderiv_zero,Pi.zero_apply,norm_zero,zero_pow (by decide : 2≠0),mul_zero,add_zero]
 
-lemma kernelQuotientEnergyDensity_hasCompactSupport (f : kernelSmoothTests) :
-    HasCompactSupport (kernelQuotientEnergyDensity f) :=
-  HasCompactSupport.of_support_subset_isCompact f.2.2 (kernelQuotientEnergyDensity_support f)
 
 lemma kernelQuotientEnergyDensity_integrable (f : kernelSmoothTests) :
     Integrable (kernelQuotientEnergyDensity f) (integralQuotientVolume globalKubotaKernel) :=
   (kernelQuotientEnergyDensity_continuous f).integrable_of_hasCompactSupport
-    (kernelQuotientEnergyDensity_hasCompactSupport f)
+    ((HasCompactSupport.of_support_subset_isCompact f.2.2 (kernelQuotientEnergyDensity_support f)))
 
 def kernelDirichletEnergy (f : kernelSmoothTests) : ℝ :=
   ∫q,kernelQuotientEnergyDensity f q ∂integralQuotientVolume globalKubotaKernel

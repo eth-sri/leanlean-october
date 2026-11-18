@@ -10,9 +10,7 @@ public import MathCollab.Density.Stronger.Atkinson.ShortDivisorSource
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+open Complex Filter MeasureTheory Set Topology MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth MathCollab.Density.Contour
 open scoped Interval ComplexConjugate ContDiff
 set_option autoImplicit false
 noncomputable section
@@ -36,7 +34,7 @@ theorem zetaQuadraticDivisorTerm_eq_testFunction (T G : ℝ) (n : ℕ) :
     zetaFrozenDivisorCoefficient T n * zetaSquareReflectedGammaPhase T *
       zetaGaussianQuadraticIntegral T G (Real.log (n : ℝ) - Real.log (T / (2 * Real.pi))) =
       divisorWeight n * zetaShortDivisorTestFunction T G n := by
-  have hs : -afeCriticalPoint (-T) = (-1 / 2 : ℂ) + (T : ℂ) * I := by
+  have hs : -afeCriticalPoint (-T) = (-1 / 2) + (T : ℂ) * I := by
     unfold afeCriticalPoint
     push_cast
     ring

@@ -45,10 +45,7 @@ theorem ExponentPair.atkinson_pair_gram_row {k l ε : ℝ}
       apply Real.rpow_le_rpow (by positivity)
         (div_le_div_of_nonneg_right (by simpa only [abs_sub_comm] using hdiam u (hSW hu)) hR.le)
         (by linarith [hpair.inTriangle.1])
-    calc
-      _ ≤ C*(X+Real.sqrt (H*(M : ℝ))/|t-u|) :=
-        hb.trans (mul_le_mul_of_nonneg_left (add_le_add hp le_rfl) (by linarith))
-      _ = _ := by rw [abs_sub_comm t u]; ring
+    exact (hb.trans (mul_le_mul_of_nonneg_left (add_le_add hp le_rfl) (by linarith))).trans_eq (by rw [abs_sub_comm t u]; ring)
   have hrecip : (∑ u ∈ S, 1/|u-t|) ≤
       (2/G)*(harmonic (Nat.ceil (L/G)) : ℝ) :=
     atkinson_sum_inv_gap_le_harmonic_ceil hG hsep ht hSW
@@ -86,12 +83,7 @@ theorem ExponentPair.atkinson_pair_gram_double_sum {k l ε : ℝ}
   obtain ⟨η,hη,C,hC,hrow⟩ := hpair.atkinson_pair_gram_row hε
   refine ⟨η,hη,C,hC,?_⟩
   intro H G L M W hH hG hM hsep hrange hdiam hsmall
-  calc
-    _ ≤ ∑ _t ∈ W, ((M : ℝ)+C*(W.card : ℝ)*
-        ((L/Real.sqrt (H*(M : ℝ)))^(k+ε)*(M : ℝ)^(l+ε))+
-        (2*C*Real.sqrt (H*(M : ℝ))/G)*(harmonic (Nat.ceil (L/G)) : ℝ)) :=
-      Finset.sum_le_sum (fun t ht => hrow H G L t M W
-        hH hG hM hsep ht hrange (hdiam t ht) hsmall)
-    _ = _ := by simp only [Finset.sum_const,nsmul_eq_mul]; ring
+  exact (Finset.sum_le_sum (fun t ht => hrow H G L t M W
+        hH hG hM hsep ht hrange (hdiam t ht) hsmall)).trans_eq (by simp only [Finset.sum_const,nsmul_eq_mul]; ring)
 
 end TaoTrudgianYang2025

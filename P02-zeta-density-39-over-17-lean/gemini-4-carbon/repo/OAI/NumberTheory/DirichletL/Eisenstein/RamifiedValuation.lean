@@ -9,81 +9,14 @@ noncomputable section
 
 namespace CubicEisenstein
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 
 section
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
+open scoped MatrixGroups
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CompletedGauss UniqueFactorizationMonoid
+open CubicJacobiGlobal CompletedGauss
 local notation "Eis" => ActualEisensteinCubic.O
 
 lemma ramifiedFunction_valuation_ne_two (F:Eis→ℂ)
@@ -94,18 +27,16 @@ lemma ramifiedFunction_valuation_ne_two (F:Eis→ℂ)
   have hI0:=primaryGenerator_ne_zero_ideal I hI
   have hprime:=prime_of_normalized_factor P hP
   let p:=primaryPrime P
-  have hp0:p≠0:=primaryPrime_factor_ne_zero I P hI hP
+  have hp0 :=primaryPrime_factor_ne_zero I P hI hP
   have hps:=primaryPrime_spec P hp0
-  have hp:Prime p:=primaryPrime_isPrime_of_mem I P hI (Multiset.mem_toFinset.mpr hP)
+  have hp :=primaryPrime_isPrime_of_mem I P hI (Multiset.mem_toFinset.mpr hP)
   obtain ⟨J,hJ,hnot⟩:=(FiniteMultiplicity.of_prime_left hprime hI0).exists_eq_pow_mul_and_not_dvd
   have hgen:primaryGenerator I=p^(multiplicity P I)*primaryGenerator J:=by
-    calc
-      _=primaryGenerator (P^(multiplicity P I)*J):=congrArg primaryGenerator hJ
-      _=p^(multiplicity P I)*primaryGenerator J:=by
+    exact (congrArg primaryGenerator hJ).trans (by
         rw [primaryGenerator_mul,primaryGenerator_pow]
         have he:primaryGenerator P=p:=by
           rw [←hps.2.2.1,primaryGenerator_span p hp0 hps.2.2.2]
-        rw [he]
+        rw [he])
   have hgJ:primaryGenerator J≠0:=by
     intro hz
     exact hI (by rw [hgen,hz,mul_zero])
@@ -135,8 +66,8 @@ theorem ramifiedBesselValue_squarefree_cube_support (side:Bool) (h:Eis) (hh:h≠
       primaryGenerator I≠0 ∧ primaryGenerator J≠0 ∧
       h=(u.val*lambda^m)*primaryGenerator I*(primaryGenerator J)^3 := by
   obtain ⟨n,u,m,hn,he⟩:=exists_primary_unit_lambda_factor h hh
-  let T:Ideal Eis:=Ideal.span {n}
-  have hT:primaryGenerator T=n:=primaryGenerator_span n (primary_ne_zero n hn) hn
+  let T :=Ideal.span {n}
+  have hT :=primaryGenerator_span n (primary_ne_zero n hn) hn
   have hT0:primaryGenerator T≠0:=by rw [hT]; exact primary_ne_zero n hn
   have hFT:ramifiedBesselValue side ((u.val*lambda^m)*primaryGenerator T)≠0:=by
     rw [hT,mul_comm]
@@ -146,18 +77,15 @@ theorem ramifiedBesselValue_squarefree_cube_support (side:Bool) (h:Eis) (hh:h≠
     exact ramifiedFunction_valuation_ne_two (ramifiedBesselValue side)
       (fun p hp hpp h hph k hk=>ramifiedBesselValue_prime_power_vanish side p hp hpp h hph k hk)
       T P hT0 hP u m hFT
-  have hparts:=thetaParts_mul_cube T (primaryGenerator_ne_zero_ideal T hT0) hv
   have hgen:primaryGenerator T=primaryGenerator (thetaSquarefreePart T)*
       (primaryGenerator (thetaCubePart T))^3:=by
-    calc
-      _=primaryGenerator (thetaSquarefreePart T*thetaCubePart T^3):=congrArg primaryGenerator hparts.symm
-      _=_:=by rw [primaryGenerator_mul,primaryGenerator_pow]
+    exact (congrArg primaryGenerator (thetaParts_mul_cube T (primaryGenerator_ne_zero_ideal T hT0) hv).symm).trans (by rw [primaryGenerator_mul,primaryGenerator_pow])
   have hA:primaryGenerator (thetaSquarefreePart T)≠0:=by
     intro hz
     exact hT0 (by rw [hgen,hz,zero_mul])
   have hC:primaryGenerator (thetaCubePart T)≠0:=by
     intro hz
-    exact hT0 (by rw [hgen,hz,zero_pow (by decide : (3:ℕ)≠0),mul_zero])
+    exact hT0 (by rw [hgen,hz,zero_pow (by decide : 3≠0),mul_zero])
   refine ⟨u,m,thetaSquarefreePart T,thetaCubePart T,thetaSquarefreePart_squarefree T,hA,hC,?_⟩
   rw [he,←hT,hgen]
   ring
@@ -165,13 +93,13 @@ theorem ramifiedBesselValue_squarefree_cube_support (side:Bool) (h:Eis) (hh:h≠
 end
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CompletedGauss
+open CubicJacobiGlobal CompletedGauss
 local notation "Eis" => ActualEisensteinCubic.O
 
 lemma onceCuspScale_not_three_dvd (t:Eisˣ) : ¬(3:Eis)∣onceCuspScale t := by
   rintro ⟨z,hz⟩
   have hq:Ideal.absNorm (Ideal.span {onceCuspScale t})=3:=by
-    simpa only [Fin.val_zero,pow_zero,mul_one] using onceCusp_q_absNorm t 0
+    simpa using onceCusp_q_absNorm t 0
   have he:=congrArg (fun x:Eis=>Ideal.absNorm (Ideal.span {x})) hz
   rw [hq,←Ideal.span_singleton_mul_span_singleton,map_mul,three_absNorm] at he
   omega
@@ -183,33 +111,29 @@ lemma onceCuspScale_lambda_dvd (t:Eisˣ) : lambda∣onceCuspScale t := by
 
 theorem ramifiedBesselValue_exact_lambda_valuation (side:Bool) (h:Eis)
     (hb:ramifiedBesselValue side h≠0) : lambda∣h ∧ ¬lambda^2∣h := by
-  have hf:(3:Eis)∣h-onceCuspScale (ramifiedCuspScaleUnit side):=by
+  have hf:3∣h-onceCuspScale (ramifiedCuspScaleUnit side):=by
     by_contra hnot
     exact hb (by simp only [ramifiedBesselValue,dite_eq_right hnot])
-  have hl3:lambda∣(3:Eis):=
-    (dvd_pow_self lambda (by decide : (2:ℕ)≠0)).trans lambda_sq_dvd_three
   constructor
-  · have hd:=hl3.trans hf
-    simpa only [sub_add_cancel] using dvd_add hd
+  · have hd:=((dvd_pow_self lambda (by decide : 2≠0)).trans lambda_sq_dvd_three).trans hf
+    simpa using dvd_add hd
       (onceCuspScale_lambda_dvd (ramifiedCuspScaleUnit side))
   · intro h2
-    have h3:(3:Eis)∣h:=three_dvd_lambda_sq.trans h2
-    have hq:(3:Eis)∣onceCuspScale (ramifiedCuspScaleUnit side):=by
-      convert dvd_sub h3 hf using 1 ; ring
+    have hq:3∣onceCuspScale (ramifiedCuspScaleUnit side):=by
+      convert dvd_sub (three_dvd_lambda_sq.trans h2) hf using 1 ; ring
     exact onceCuspScale_not_three_dvd _ hq
 
 end
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CompletedGauss
+open CubicJacobiGlobal CompletedGauss
 local notation "Eis" => ActualEisensteinCubic.O
 
 lemma sourceResidualFourierCoefficient_prime_norm (p:Eis) (hp:Prime p)
     (hpp:lambda^2∣p-1) (h:Eis) (hph:¬p∣h) :
     ‖sourceResidualFourierCoefficient (h*p)‖=‖sourceResidualFourierCoefficient h‖ := by
   have hp9:¬p∣9*h:=by
-    have ht:=ramified_prime_frequency_not_dvd h p hp hpp hph (1:Eisˣ) 0
-    simpa only [Units.val_one,pow_zero,one_mul,mul_one,mul_comm 9 h] using ht
+    simpa only [Units.val_one,pow_zero,one_mul,mul_one,mul_comm 9 h] using (ramified_prime_frequency_not_dvd h p hp hpp hph (1:Eisˣ) 0)
   rw [sourceResidualFourierCoefficient_prime_factor p hp hpp h hph,norm_mul,norm_div,
     primeCubicGauss_two_norm p hp hpp (9*h) hp9,Complex.norm_real,
     Real.norm_eq_abs,abs_of_nonneg (norm_nonneg _),
@@ -226,10 +150,9 @@ theorem sourceResidualFourierCoefficient_prime_product_norm {ι:Type*}
   | empty=>simp
   | @insert i s hi ih=>
     have hpi:=hp i (Finset.mem_insert_self _ _)
-    have hpri:=hprimary i (Finset.mem_insert_self _ _)
     have hps:∀j∈s,Prime (p j):=fun j hj=>hp j (Finset.mem_insert_of_mem hj)
     have hprs:∀j∈s,lambda^2∣p j-1:=fun j hj=>hprimary j (Finset.mem_insert_of_mem hj)
-    have hcpi:IsCoprime (p i) (∏j∈s,p j):=IsCoprime.prod_right (fun j hj=>
+    have hcpi :=IsCoprime.prod_right (fun j hj=>
       hpair i (Finset.mem_insert_self _ _) j (Finset.mem_insert_of_mem hj) (by intro he;subst j;exact hi hj))
     have hpb:¬p i∣h*(∏j∈s,p j):=by
       intro hd
@@ -237,7 +160,7 @@ theorem sourceResidualFourierCoefficient_prime_product_norm {ι:Type*}
       · exact hph i (Finset.mem_insert_self _ _) hd
       · exact hpi.not_isUnit (hcpi.isUnit_of_dvd hd)
     rw [Finset.prod_insert hi,show h*(p i*(∏j∈s,p j))=(h*(∏j∈s,p j))*p i by ring,
-      sourceResidualFourierCoefficient_prime_norm (p i) hpi hpri _ hpb]
+      sourceResidualFourierCoefficient_prime_norm (p i) hpi (hprimary i (Finset.mem_insert_self _ _)) _ hpb]
     exact ih hps hprs (fun j hj k hk hjk=>hpair j (Finset.mem_insert_of_mem hj) k (Finset.mem_insert_of_mem hk) hjk)
       (fun j hj=>hph j (Finset.mem_insert_of_mem hj))
 
@@ -246,11 +169,11 @@ lemma sourceResidualFourierCoefficient_ramified_bound (u:Eisˣ) (m:ℕ) :
       (‖cubicBesselNormalizer 1‖*(9*ramifiedSourceFamilyConstant*ramifiedResidueFamilyMass 1))*
         (3:ℝ)^((m:ℝ)/6) := by
   have hc:‖cubicBesselNormalizer (u.val*lambda^m)‖=
-      ‖cubicBesselNormalizer 1‖*(3:ℝ)^((m:ℝ)/6):=by
-    simpa only [one_mul] using cubicBesselNormalizer_ramified_mul_norm 1 u m
+      ‖cubicBesselNormalizer 1‖*3^((m:ℝ)/6):=by
+    simpa using cubicBesselNormalizer_ramified_mul_norm 1 u m
   rw [sourceResidualFourierCoefficient,norm_mul,hc]
   exact (mul_le_mul_of_nonneg_left (sourceArithmeticResidue_unit_lambda_bound u m)
-    (mul_nonneg (norm_nonneg _) (Real.rpow_nonneg (show (0:ℝ)≤3 by norm_num) ((m:ℝ)/6)))).trans_eq (by ring)
+    (mul_nonneg (norm_nonneg _) (Real.rpow_nonneg (by norm_num) ((m:ℝ)/6)))).trans_eq (by ring)
 
 lemma sourceResidualFourierCoefficient_squarefree_cube_norm (I J:Ideal Eis)
     (hI:primaryGenerator I≠0) (hJ:primaryGenerator J≠0) (hsq:Squarefree I)
@@ -267,19 +190,14 @@ lemma sourceResidualFourierCoefficient_squarefree_cube_norm (I J:Ideal Eis)
   · exact fun P hP=>(primaryPrime_spec P (primaryPrime_factor_ne_zero I P hI (Multiset.mem_toFinset.mp hP))).2.2.2
   · exact primaryPrime_support_coprime I hI
   · intro P hP hd
-    have hp:=primaryPrime_isPrime_of_mem I P hI hP
-    have hpp:lambda^2∣primaryPrime P-1:=
-      (primaryPrime_spec P (primaryPrime_factor_ne_zero I P hI (Multiset.mem_toFinset.mp hP))).2.2.2
-    have hc:IsCoprime (u.val*lambda^m) (primaryPrime P):=
-      (ramified_primary_coprime u m _ hpp).of_mul_left_right
-    exact hp.not_isUnit (hc.symm.isUnit_of_dvd hd)
+    exact (primaryPrime_isPrime_of_mem I P hI hP).not_isUnit (((ramified_primary_coprime u m _ ((primaryPrime_spec P (primaryPrime_factor_ne_zero I P hI (Multiset.mem_toFinset.mp hP))).2.2.2)).of_mul_left_right).symm.isUnit_of_dvd hd)
 
 theorem sourceResidualFourierCoefficient_squarefree_cube_bound :
     ∃C:ℝ,0<C ∧ ∀(I J:Ideal Eis),primaryGenerator I≠0→primaryGenerator J≠0→
       Squarefree I→∀(u:Eisˣ) (m:ℕ),
       ‖sourceResidualFourierCoefficient ((u.val*lambda^m)*primaryGenerator I*(primaryGenerator J)^3)‖≤
         C*(3:ℝ)^((m:ℝ)/6)*‖eisEmbedding (primaryGenerator J)‖ := by
-  let C:ℝ:=‖cubicBesselNormalizer 1‖*(9*ramifiedSourceFamilyConstant*ramifiedResidueFamilyMass 1)
+  let C :=‖cubicBesselNormalizer 1‖*(9*ramifiedSourceFamilyConstant*ramifiedResidueFamilyMass 1)
   have hC:0≤C:=by dsimp only [C]; exact mul_nonneg (norm_nonneg _) (mul_nonneg
     (mul_nonneg (by norm_num) ramifiedSourceFamilyConstant_nonneg) (ramifiedResidueFamilyMass_nonneg _))
   refine ⟨1+C,by positivity,?_⟩
@@ -310,7 +228,7 @@ theorem three_cusp_coefficients_squarefree_cube_bound :
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CompletedGauss UniqueFactorizationMonoid
+open CubicJacobiGlobal CompletedGauss
 local notation "Eis" => ActualEisensteinCubic.O
 
 lemma sourceResidualFourierCoefficient_prime_power_vanish (p:Eis) (hp:Prime p)
@@ -325,8 +243,8 @@ theorem sourceResidualFourierCoefficient_full_squarefree_cube_support (h:Eis) (h
       primaryGenerator I≠0 ∧ primaryGenerator J≠0 ∧
       h=(u.val*lambda^m)*primaryGenerator I*(primaryGenerator J)^3 := by
   obtain ⟨n,u,m,hn,he⟩:=exists_primary_unit_lambda_factor h hh
-  let T:Ideal Eis:=Ideal.span {n}
-  have hT:primaryGenerator T=n:=primaryGenerator_span n (primary_ne_zero n hn) hn
+  let T :=Ideal.span {n}
+  have hT :=primaryGenerator_span n (primary_ne_zero n hn) hn
   have hT0:primaryGenerator T≠0:=by rw [hT]; exact primary_ne_zero n hn
   have hFT:sourceResidualFourierCoefficient ((u.val*lambda^m)*primaryGenerator T)≠0:=by
     rw [hT,mul_comm]
@@ -336,18 +254,15 @@ theorem sourceResidualFourierCoefficient_full_squarefree_cube_support (h:Eis) (h
     exact ramifiedFunction_valuation_ne_two (sourceResidualFourierCoefficient)
       (fun p hp hpp h hph k hk=>sourceResidualFourierCoefficient_prime_power_vanish p hp hpp h hph k hk)
       T P hT0 hP u m hFT
-  have hparts:=thetaParts_mul_cube T (primaryGenerator_ne_zero_ideal T hT0) hv
   have hgen:primaryGenerator T=primaryGenerator (thetaSquarefreePart T)*
       (primaryGenerator (thetaCubePart T))^3:=by
-    calc
-      _=primaryGenerator (thetaSquarefreePart T*thetaCubePart T^3):=congrArg primaryGenerator hparts.symm
-      _=_:=by rw [primaryGenerator_mul,primaryGenerator_pow]
+    exact (congrArg primaryGenerator (thetaParts_mul_cube T (primaryGenerator_ne_zero_ideal T hT0) hv).symm).trans (by rw [primaryGenerator_mul,primaryGenerator_pow])
   have hA:primaryGenerator (thetaSquarefreePart T)≠0:=by
     intro hz
     exact hT0 (by rw [hgen,hz,zero_mul])
   have hC:primaryGenerator (thetaCubePart T)≠0:=by
     intro hz
-    exact hT0 (by rw [hgen,hz,zero_pow (by decide : (3:ℕ)≠0),mul_zero])
+    exact hT0 (by rw [hgen,hz,zero_pow (by decide : 3≠0),mul_zero])
   refine ⟨u,m,thetaSquarefreePart T,thetaCubePart T,thetaSquarefreePart_squarefree T,hA,hC,?_⟩
   rw [he,←hT,hgen]
   ring
@@ -355,9 +270,7 @@ theorem sourceResidualFourierCoefficient_full_squarefree_cube_support (h:Eis) (h
 end
 
 section
-open scoped Classical BigOperators
-
-open ActualEisensteinCubic CompletedGauss
+open CompletedGauss
 open PrimaryIdealUnitReindex (GoodIdeal)
 local notation "Eis" => ActualEisensteinCubic.O
 
@@ -372,10 +285,9 @@ def thetaPrimaryProduct (p : ThetaPrimaryCubePair) : GoodIdeal :=
 
 lemma thetaPrimaryProduct_injective : Function.Injective thetaPrimaryProduct := by
   intro p q he
-  have hprod : p.1.val*p.2.val^3=q.1.val*q.2.val^3 := congrArg Subtype.val he
   have h := squarefree_cube_decomposition_unique
     (primaryGenerator_ne_zero_ideal _ p.2.property)
-    (primaryGenerator_ne_zero_ideal _ q.2.property) p.1.property.1 q.1.property.1 hprod
+    (primaryGenerator_ne_zero_ideal _ q.2.property) p.1.property.1 q.1.property.1 (congrArg Subtype.val he)
   exact Prod.ext (Subtype.ext h.1) (Subtype.ext h.2)
 
 abbrev ThetaFullIndex := Eisˣ × ℕ × ThetaPrimaryCubePair
@@ -424,11 +336,8 @@ theorem thetaFullFrequency_injective : Function.Injective thetaFullFrequency := 
 end
 
 section
-open scoped BigOperators Classical MatrixGroups
-open MeasureTheory
-open Finset AddChar MulChar EisensteinEmbedding
-
-open CubicKubota EisensteinCuspModThree ConcreteTraceCRT
+open CubicKubota EisensteinCuspModThree
+open scoped MatrixGroups
 local notation "Eis" => ActualEisensteinCubic.O
 
 structure SourceCuspDatum where
@@ -455,7 +364,7 @@ lemma exists_sourceCuspDatum (a c : Eis) (hc : c≠0) :
     ∃d:SourceCuspDatum,d.point=eisEmbedding a/eisEmbedding c := by
   obtain ⟨M,hMc,hratio⟩:=exists_integral_matrix_cusp_ratio a c hc
   obtain ⟨G,j,T,hT,_,_,hM⟩:=three_cusp_decomposition M
-  let g:SL(2,ℂ):=integralComplexMatrix (G:SL(2,Eis))*integralComplexMatrix (cuspRepresentative j)
+  let g :=integralComplexMatrix (G:SL(2,Eis))*integralComplexMatrix (cuspRepresentative j)
   have he:integralComplexMatrix M=g*integralComplexMatrix T:=by
     rw [hM,map_mul,map_mul]
   have ht:integralComplexMatrix T 1 0=0:=by rw [integralComplexMatrix_apply,hT,map_zero]
@@ -496,9 +405,6 @@ lemma finiteTwistCusp_point (c : Eis) (hc : c≠0) (h : Eis⧸Ideal.span {c}) :
 
 end
 
-open scoped BigOperators Classical
-open MeasureTheory
-open Finset AddChar MulChar EisensteinEmbedding
 
 local notation "Eis" => ActualEisensteinCubic.O
 
@@ -533,12 +439,9 @@ lemma scaled_fullFunction_wirtingerBar (coeff : SubexponentialBesselCoefficients
       (upperPoint (w/(r:ℂ)) (v/r) (div_pos hv hr))) z=
       ∑'h:Eis,(2*Real.pi*Complex.I*star (cuspFrequency h)/(r:ℂ))*coeff.term h (v/r,z/(r:ℂ)) := by
   have h1:=(coeff.scaled_fullFunction_horizontal_hasDerivAt constant r hr v hv z 1).deriv
-  have hI:=(coeff.scaled_fullFunction_horizontal_hasDerivAt constant r hr v hv z Complex.I).deriv
   simp only [mul_one] at h1
-  rw [horizontalWirtingerBar,h1,hI]
-  have hs1:=coeff.directionalTerm_summable (v/r) (div_pos hv hr) (z/(r:ℂ)) (1/(r:ℂ))
-  have hsI:=(coeff.directionalTerm_summable (v/r) (div_pos hv hr) (z/(r:ℂ)) (Complex.I/(r:ℂ))).mul_left Complex.I
-  rw [←tsum_mul_left,←hs1.tsum_add hsI,←tsum_mul_left]
+  rw [horizontalWirtingerBar,h1,((coeff.scaled_fullFunction_horizontal_hasDerivAt constant r hr v hv z Complex.I).deriv)]
+  rw [←tsum_mul_left,←(coeff.directionalTerm_summable (v/r) (div_pos hv hr) (z/(r:ℂ)) (1/(r:ℂ))).tsum_add ((coeff.directionalTerm_summable (v/r) (div_pos hv hr) (z/(r:ℂ)) (Complex.I/(r:ℂ))).mul_left Complex.I),←tsum_mul_left]
   apply tsum_congr
   intro h
   unfold directionalTerm

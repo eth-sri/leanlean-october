@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.RobertSargosSevenNonzeroCount
 public import LaterPairs.Native.RobertSargosSevenZeroCount
 
@@ -36,14 +45,11 @@ theorem exists_robertSargos_seven_count (ε : ℝ) (hε : 0 < ε) :
   have hu := hnonzero U R H Q N δ hR hH hQ hN hδ hRH
     (fun p hp => hmem p (Finset.mem_filter.mp hp).1)
     (fun p hp => (Finset.mem_filter.mp hp).2)
-  have hQ0 : 0 ≤ Q := by linarith
-  have hone : 1 ≤ 1+δ*Q := by nlinarith only [mul_nonneg hδ hQ0]
-  have hz' : (Z.card:ℝ) ≤ Cz*(R*N*H*Q)^(1+ε)*(1+δ*Q) :=
-    hz.trans (le_mul_of_one_le_right (by positivity) hone)
+  have hone : 1 ≤ 1+δ*Q := by nlinarith
   calc
     _ = (Z.card:ℝ)+(U.card:ℝ) := hcard
     _ ≤ Cz*(R*N*H*Q)^(1+ε)*(1+δ*Q)+Cn*(R*N*H*Q)^(1+ε)*(1+δ*Q) :=
-      add_le_add hz' hu
+      add_le_add (hz.trans (le_mul_of_one_le_right (by positivity) hone)) hu
     _ = _ := by ring
 
 end TaoTrudgianYang2025

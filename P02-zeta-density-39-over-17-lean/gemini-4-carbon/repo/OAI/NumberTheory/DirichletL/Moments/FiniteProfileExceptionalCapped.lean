@@ -8,8 +8,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptional
-open HeckeFamily CenteredMomentHeckeHeight CenteredMomentHeckeVolume
-open CenteredMomentHeckeTwist CenteredMomentExceptionalCappedAmplitude
+open HeckeFamily CenteredMomentHeckeHeight CenteredMomentHeckeVolume CenteredMomentHeckeTwist CenteredMomentExceptionalCappedAmplitude
 local notation "O" => HeckeFamily.O
 theorem capped_rectangle_source_control
     (a b ε B : ℝ) (ha : 0<a) (hb : 0≤b) (hε : 0<ε) (hB : 0≤B) :
@@ -33,21 +32,19 @@ theorem capped_rectangle_source_control
   refine ⟨J,S,hS,?_⟩
   intro Q hQ
   obtain ⟨C,hC,hcancel⟩ := hJ Q hQ
-  let D : ℝ := 2*(128*b)*(128*b)
+  let D := 2*(128*b)*(128*b)
   have hD : 0≤D := by dsimp [D]; positivity
   refine ⟨C+D,by positivity,?_⟩
   intro W₁ W₂ hs₁ hs₂ Z hZ η m A z hm hA hz hml hm2 hcond hex
     t X₁ X₂ Y₁ Y₂ T L hL hX₁ hX₂ hY₁ hY₂ hpX hpY
   let P₁ := sourceControl S W₁
   let P₂ := sourceControl S W₂
-  have hP₁ : 0≤P₁ := sourceControl_nonneg S W₁
-  have hP₂ : 0≤P₂ := sourceControl_nonneg S W₂
-  have hw₁ (x:ℝ) : ‖W₁ x‖≤P₁ :=
-    (SchwartzMap.norm_le_seminorm ℝ W₁ x).trans
+  have hP₁ := sourceControl_nonneg S W₁
+  have hP₂ := sourceControl_nonneg S W₂
+  have hw₁ (x:ℝ) := (SchwartzMap.norm_le_seminorm ℝ W₁ x).trans
       (Seminorm.le_finset_sup_apply (p:=schwartzSeminormFamily ℝ ℝ ℂ)
         (s := S) (x := W₁) (i := (0, 0)) hS)
-  have hw₂ (x:ℝ) : ‖W₂ x‖≤P₂ :=
-    (SchwartzMap.norm_le_seminorm ℝ W₂ x).trans
+  have hw₂ (x:ℝ) := (SchwartzMap.norm_le_seminorm ℝ W₂ x).trans
       (Seminorm.le_finset_sup_apply (p:=schwartzSeminormFamily ℝ ℝ ℂ)
         (s := S) (x := W₂) (i := (0, 0)) hS)
   by_cases hlarge : 1≤L

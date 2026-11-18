@@ -31,9 +31,4 @@ this agree with the paper's ordinary mixed partial derivative. -/
 noncomputable def dfiMixedDeriv (i j : ℕ) (f : ℝ → ℝ → ℂ) (x y : ℝ) : ℂ :=
   iteratedDeriv i (fun x' => iteratedDeriv j (f x') y) x
 
-@[simp]
-theorem dfiMixedDeriv_zero_zero (f : ℝ → ℝ → ℂ) (x y : ℝ) :
-    dfiMixedDeriv 0 0 f x y = f x y := by
-  simp [dfiMixedDeriv]
-
 end GuthMaynard.NativeMoment

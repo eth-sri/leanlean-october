@@ -8,8 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical SchwartzMap
 namespace SevenEighths.ProbeGramCommon
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcreteTraceCRT
-open CenteredMomentSupportedCorrelation EisensteinSchwartzPoisson
+open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcreteTraceCRT CenteredMomentSupportedCorrelation EisensteinSchwartzPoisson
 local notation "O" => ActualEisensteinCubic.O
 
 lemma nonzero_tsum_indicator (f : O→ℂ) :
@@ -36,8 +35,7 @@ lemma actual_common_nonzero_tsum (C n₁ n₂ : O)
       ∑'k : GramFrequency,actualCorrelation (C*n₁) (C*n₂)
         (supported_mul_elements C n₁ hC h₁) (supported_mul_elements C n₂ hC h₂) (C*k.val)*F (C*k.val) := by
   have hh := actual_common_frequency_tsum C n₁ n₂ hC h₁ h₂ (fun j=>if j=0 then 0 else F j)
-  have hc0 := supported_element_ne_zero C hC
-  simp only [mul_ite,mul_zero,mul_eq_zero,hc0,false_or] at hh
+  simp only [mul_ite,mul_zero,mul_eq_zero,(supported_element_ne_zero C hC),false_or] at hh
   simpa only [nonzero_tsum_indicator] using hh
 
 lemma actual_gcd_nonzero_frequency_source (I J : SupportedIdeal) (U : SchwartzMap ℝ ℂ) (Q : ℝ) :

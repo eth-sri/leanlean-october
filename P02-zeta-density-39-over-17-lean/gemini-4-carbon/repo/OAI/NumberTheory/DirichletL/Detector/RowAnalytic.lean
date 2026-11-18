@@ -86,21 +86,16 @@ theorem spectralRow_vertical_integrable (S : Finset (Ideal O)) (D : Ideal O)
     Integrable (fun y : ℝ => (Z : ℂ) ^ ((σ : ℂ) + y * Complex.I) *
       Complex.exp (((σ : ℂ) + y * Complex.I) ^ 2) *
       spectralRow S D Ψ ((σ : ℂ) + y * Complex.I)) := by
-  let B : ℝ := ∑' p, rowMajorant σ p
   have hg := (integrable_exp_neg_mul_sq (b := 1) (by norm_num)).const_mul
-    (Z ^ σ * Real.exp (σ ^ 2) * B)
+    (Z ^ σ * Real.exp (σ ^ 2) * (∑' p, rowMajorant σ p))
   have hc : Continuous (fun y : ℝ => (σ : ℂ) + y * Complex.I) := by fun_prop
-  have hk := (hc.const_cpow (Or.inl (Complex.ofReal_ne_zero.mpr hZ.ne'))).mul ((hc.pow 2).cexp)
-  apply hg.mono' (hk.mul (spectralRow_continuous_vertical S D Ψ hΨ σ hσ)).aestronglyMeasurable
+  apply hg.mono' (((hc.const_cpow (Or.inl (Complex.ofReal_ne_zero.mpr hZ.ne'))).mul ((hc.pow 2).cexp)).mul (spectralRow_continuous_vertical S D Ψ hΨ σ hσ)).aestronglyMeasurable
   apply Filter.Eventually.of_forall
   intro y
   dsimp only [Pi.mul_apply, Pi.pow_apply]
   rw [norm_mul, verticalKernel_norm Z hZ σ y]
-  calc
-    _ ≤ (Z ^ σ * Real.exp (σ ^ 2) * Real.exp (-1 * y ^ 2)) * B :=
-      mul_le_mul_of_nonneg_left (spectralRow_vertical_bound S D Ψ hΨ σ hσ y)
-        (mul_nonneg (mul_nonneg (Real.rpow_nonneg hZ.le _) (Real.exp_pos _).le) (Real.exp_pos _).le)
-    _ = _ := by ring
+  exact (mul_le_mul_of_nonneg_left (spectralRow_vertical_bound S D Ψ hΨ σ hσ y)
+        (mul_nonneg (mul_nonneg (Real.rpow_nonneg hZ.le _) (Real.exp_pos _).le) (Real.exp_pos _).le)).trans_eq (by ring)
 
 end SevenEighths.ProbeRow
 end

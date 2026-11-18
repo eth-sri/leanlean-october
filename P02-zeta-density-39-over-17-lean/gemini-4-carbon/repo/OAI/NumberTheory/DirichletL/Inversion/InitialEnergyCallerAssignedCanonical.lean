@@ -7,12 +7,10 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss IdealMobiusDivisorSum
+open scoped BigOperators Classical
 namespace SevenEighths.InverseInitialEnergyCallerAssignedCanonical
-open InverseMoment InverseInitialArithmetic InverseInitialQuotientGeometry
-open InverseInitialEnergyCallerAssigned InverseInitialEnergyCallerOpposite
-open InverseInitialEnergyCallerCanonical InverseInitialClippedColumns
+open InverseMoment InverseInitialArithmetic InverseInitialQuotientGeometry InverseInitialEnergyCallerAssigned InverseInitialEnergyCallerOpposite InverseInitialEnergyCallerCanonical InverseInitialClippedColumns
 local notation "Eis"=>ActualEisensteinCubic.O
 variable {ι σ:Type*} [DecidableEq ι] [DecidableEq σ]
   (p:ι→Eis)(hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
@@ -51,7 +49,6 @@ theorem original_assigned_canonical_pair
       A*(Z^F*∑t∈quotientSet p (assignedSource S J₁ J₂ L₁ L₂),
         ((idealDivisors t).card:ℝ)^(J₁.card+J₂.card))*(Real.sqrt B₁*Real.sqrt B₂) := by
   let T := quotientSet p (assignedSource S J₁ J₂ L₁ L₂)
-  let f := child p hp hcop hg pool Ψ₁ j slots₁ L₁ a₁ W₁ X₁
   let g := child p hp hcop hg pool Ψ₂ j slots₂ L₂ a₂ W₂ X₂
   have h₁ := energy_le_moment p hp hcop hg pool Ψ₁ j slots₁ L₁ a₁ W₁ X₁
     (J₁.card+J₂.card) T labels rows hZ F B₁ hmoment₁
@@ -59,18 +56,14 @@ theorem original_assigned_canonical_pair
     (J₁.card+J₂.card) T labels rows hZ F B₂ hmoment₂
   rw [←energy_neg_rows T labels rows hneg (J₁.card+J₂.card) g] at h₂
   have hh := InverseInitialEnergyCallerAssignedPair.original_assigned_pair p hp hinj hpr
-    S u J₁ J₂ L₁ L₂ a₁ a₂ ha₁ ha₂ hdiv labels rows hlabels hchild c A hA hc f
+    S u J₁ J₂ L₁ L₂ a₁ a₂ ha₁ ha₂ hdiv labels rows hlabels hchild c A hA hc (child p hp hcop hg pool Ψ₁ j slots₁ L₁ a₁ W₁ X₁)
     (fun k=>g (negativeChild k))
   apply hh.trans
-  calc
-    _≤A*(Real.sqrt ((Z^F*∑t∈T,((idealDivisors t).card:ℝ)^(J₁.card+J₂.card))*B₁)*
-      Real.sqrt ((Z^F*∑t∈T,((idealDivisors t).card:ℝ)^(J₁.card+J₂.card))*B₂)) :=
-      mul_le_mul_of_nonneg_left (mul_le_mul (Real.sqrt_le_sqrt h₁)
-        (Real.sqrt_le_sqrt h₂) (Real.sqrt_nonneg _) (Real.sqrt_nonneg _)) hA
-    _=_ := by
+  exact (mul_le_mul_of_nonneg_left (mul_le_mul (Real.sqrt_le_sqrt h₁)
+        (Real.sqrt_le_sqrt h₂) (Real.sqrt_nonneg _) (Real.sqrt_nonneg _)) hA).trans_eq (by
       rw [sqrt_pair_mass _ B₁ B₂ (mul_nonneg (Real.rpow_nonneg hZ.le _)
         (Finset.sum_nonneg fun t ht=>by positivity))]
-      ring
+      ring)
 
 end SevenEighths.InverseInitialEnergyCallerAssignedCanonical
 

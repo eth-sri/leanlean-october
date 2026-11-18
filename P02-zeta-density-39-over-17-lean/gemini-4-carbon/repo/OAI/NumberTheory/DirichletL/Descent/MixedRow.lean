@@ -40,7 +40,6 @@ theorem unmarkedSexticTwist_periodic (p : ι → Eis) [∀ i, (Ideal.span {p i})
     (hg : ∀ i, λ₀ ∉ Ideal.span {p i}) (j : ι → ℕ) (S : Finset ι) :
     CanonicalCoefficientClass.FactorsModulo (Ideal.span {∏ i, p i}) (unmarkedSexticTwist p hg j S) := by
   intro x y hxy
-  change (∏ i ∈ (Finset.univ : Finset ι) \ S, _) = ∏ i ∈ (Finset.univ : Finset ι) \ S, _
   apply Finset.prod_congr rfl
   intro i hi
   have he : Ideal.Quotient.mk (Ideal.span {p i}) x = Ideal.Quotient.mk _ y := by
@@ -74,17 +73,12 @@ theorem markedThetaQuotient_mk (p : ι → Eis) (S : Finset ι)
     markedThetaQuotient p S Ψ c (Ideal.Quotient.mk _ n) =
       fixedThetaTwist Ψ n * ∏ i ∈ S, if p i ∣ n then 1 else 0 := by
   unfold markedThetaQuotient
-  have hcbase : Ideal.span {c} ≤ Ideal.span {(9 : Eis)} * Q :=
-    hcQ.trans (Ideal.mul_mono_right Ideal.mul_le_left)
-  rw [fixedThetaQuotient_mk Ψ Q hΨ c hcbase]
+  rw [fixedThetaQuotient_mk Ψ Q hΨ c (hcQ.trans (Ideal.mul_mono_right Ideal.mul_le_left))]
   congr 1
   apply Finset.prod_congr rfl
   intro i hi
-  have hxy : Quotient.out (Ideal.Quotient.mk (Ideal.span {c}) n) - n ∈ Ideal.span {c} :=
-    Ideal.Quotient.eq.mp (Ideal.Quotient.mk_out (Ideal.Quotient.mk (Ideal.span {c}) n))
-  have hp : p i ∣ Quotient.out (Ideal.Quotient.mk (Ideal.span {c}) n) - n :=
-    (Finset.dvd_prod_of_mem p hi).trans (Ideal.mem_span_singleton.mp
-      (Ideal.mul_le_right (Ideal.mul_le_right (hcQ hxy))))
+  have hp := (Finset.dvd_prod_of_mem p hi).trans (Ideal.mem_span_singleton.mp
+      (Ideal.mul_le_right (Ideal.mul_le_right (hcQ (Ideal.Quotient.eq.mp (Ideal.Quotient.mk_out (Ideal.Quotient.mk (Ideal.span {c}) n)))))))
   simp only [dvd_iff_dvd_of_dvd_sub hp]
 
 end

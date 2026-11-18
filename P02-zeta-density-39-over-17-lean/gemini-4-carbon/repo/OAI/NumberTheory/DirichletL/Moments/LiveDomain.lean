@@ -11,10 +11,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentLiveDomain
-open CenteredMomentSourceLiveColumn CenteredMomentLiveSupport CenteredMomentSourceMass
-open CenteredMomentAddedZeroUniform CenteredMomentCommonProfile CenteredMomentCommonAllocationSum
-open CenteredMomentFirstSectors CenteredMomentSourceRow CanonicalQuadraticSieve
-open CenteredMomentGaussEnergy
+open CenteredMomentSourceLiveColumn CenteredMomentLiveSupport CenteredMomentSourceMass CenteredMomentAddedZeroUniform CenteredMomentCommonProfile CenteredMomentCommonAllocationSum CenteredMomentFirstSectors CenteredMomentSourceRow CanonicalQuadraticSieve CenteredMomentGaussEnergy
 local notation "O" => ActualEisensteinCubic.O
 
  theorem finite_column_mem {ι : Type*} [Fintype ι] (S : Finset (Tuple ι))
@@ -78,7 +75,6 @@ theorem live_column_sum (S : (ι ⊕ Fin 2) → Finset (Ideal O))
       (liveProfile B C R ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂)
     (∑ I∈supportedColumns (residualPool C hC.1 (finiteColumns (Fintype.piFinset S))),c I*f I)=
       ∑ I∈supportedColumns (finiteColumns (liveBox S B hB)),c I*f I := by
-  dsimp only
   apply sum_same_support
   · intro I hI hn
     exact Finset.mem_filter.mpr ⟨finite_column_mem _ _ I hn,(Finset.mem_filter.mp hI).2⟩
@@ -104,11 +100,10 @@ theorem live_gaussPolynomial (S : (ι ⊕ Fin 2) → Finset (Ideal O))
   let c := finiteColumnCoefficient (liveBox S B hB)
     (liveProfile B C R ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂)
   let Q := residualPool C hC.1 (finiteColumns (Fintype.piFinset S))
-  let T := finiteColumns (liveBox S B hB)
   change gaussPolynomial Finset.univ (sourceGenerator Q) (sourceGenerator_supported Q)
     (fun I : supportedColumns Q => c I*f I) z=_
   refine (source_gaussPolynomial Q (fun I => c I*f I) z).trans ?_
-  refine Eq.trans ?_ (source_gaussPolynomial T (fun I => c I*f I) z).symm
+  refine Eq.trans ?_ (source_gaussPolynomial (finiteColumns (liveBox S B hB)) (fun I => c I*f I) z).symm
   simpa only [mul_assoc] using live_column_sum S hS hp B hB C R hC hlabel hprod ν Wslot P W₁ W₂
     X₁ X₂ Y₁ Y₂ B₁ B₂ (fun I => f I*primaryGaussRow I z)
 
@@ -126,7 +121,6 @@ theorem live_gaussEnergy (S : (ι ⊕ Fin 2) → Finset (Ideal O))
       (fun I : supportedColumns Q => c I*f I) W K=
       gaussEnergy Finset.univ (sourceGenerator T) (sourceGenerator_supported T)
         (fun I : supportedColumns T => c I*f I) W K := by
-  dsimp only
   unfold gaussEnergy
   apply tsum_congr
   intro z

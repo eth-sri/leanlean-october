@@ -41,10 +41,9 @@ theorem boundedPolynomial_hasDerivAt (N : ℝ) (a : ℕ → ℂ) (t : ℝ) :
   intro n _
   have hd : HasDerivAt (fun s : ℝ => ((s*Real.log ((n:ℝ)/N):ℝ):ℂ)*Complex.I)
       ((Real.log ((n:ℝ)/N):ℂ)*Complex.I) t := by
-    simpa only [id_eq,one_mul] using
+    simpa using
       (((hasDerivAt_id t).mul_const (Real.log ((n:ℝ)/N))).ofReal_comp).mul_const Complex.I
-  have hh := (hd.cexp).const_mul (a n)
-  convert hh using 1
+  convert ((hd.cexp).const_mul (a n)) using 1
   simp only [sourceDerivativeCoefficient]
   ring
 

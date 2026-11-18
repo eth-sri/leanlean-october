@@ -9,15 +9,13 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical ContDiff
 namespace SevenEighths.InverseShortCanonicalNormalization
-open ActualEisensteinCubic IdealMobiusDivisorSum CompletedGauss CanonicalRowCompletion
-open InverseMoment InverseReflectedPhase InverseTerminalWidths CompletedHeight
+open ActualEisensteinCubic IdealMobiusDivisorSum CompletedGauss CanonicalRowCompletion InverseMoment InverseReflectedPhase InverseTerminalWidths CompletedHeight
 local notation "Eis" => ActualEisensteinCubic.O
 lemma normalization_norm_sq (Z N V : ℝ) (hZ : 0<Z) (x : ℂ) :
     ‖((Z^(-(N+V)/2):ℝ):ℂ)*((Real.sqrt (Z^N):ℝ):ℂ)*x‖^2 =
       Z^(-V)*‖x‖^2 := by
-  have hn : 0≤Z^(-(N+V)/2) := Real.rpow_nonneg hZ.le _
   rw [norm_mul,norm_mul,Complex.norm_real,Complex.norm_real,
-    Real.norm_of_nonneg hn,Real.norm_of_nonneg (Real.sqrt_nonneg _),mul_pow,mul_pow,
+    Real.norm_of_nonneg (Real.rpow_nonneg hZ.le _),Real.norm_of_nonneg (Real.sqrt_nonneg _),mul_pow,mul_pow,
     Real.sq_sqrt (Real.rpow_nonneg hZ.le _),←Real.rpow_mul_natCast hZ.le _ 2,
     ←Real.rpow_add hZ]
   congr 2
@@ -28,21 +26,20 @@ lemma divisor_weight_sum (K : ℕ) (L ε : ℝ) (hL : 0≤L) (hε : 0<ε) :
       ∀ labels : Finset (Ideal Eis),
       (∀ f∈labels,f≠0 ∧ (Ideal.absNorm f:ℝ)≤Z^V) →
       (∑ f∈labels,((idealDivisors f).card:ℝ)^(9+4*K))≤C*Z^(V+ε) := by
-  let n : ℕ := 9+4*K
+  let n := 9+4*K
   have hn : (0:ℝ)<n := by dsimp [n]; positivity
   let δ : ℝ := ε/((L+1)*(n:ℝ))
   have hδ : 0<δ := by dsimp [δ]; positivity
   obtain ⟨D,hD,hd⟩ := IdealDivisorBound.ideal_divisor_small_power δ hδ
   refine ⟨128*D^n,by positivity,?_⟩
   intro Z V hZ hV hVL labels hf
-  have hz : 0<Z := zero_lt_one.trans_le hZ
+  have hz := zero_lt_one.trans_le hZ
   have hbudget : L*(δ*(n:ℝ))≤ε := by
     have heq : (L+1)*(δ*(n:ℝ))=ε := by dsimp [δ]; field_simp
     nlinarith [mul_pos hδ hn]
   have hb (f : Ideal Eis) (hfl : f∈labels) :
       ((idealDivisors f).card:ℝ)^n≤D^n*Z^ε := by
-    have hfN : (Ideal.absNorm f:ℝ)≤Z^L :=
-      (hf f hfl).2.trans (Real.rpow_le_rpow_of_exponent_le hZ hVL)
+    have hfN := (hf f hfl).2.trans (Real.rpow_le_rpow_of_exponent_le hZ hVL)
     calc
       _ ≤ (D*(Ideal.absNorm f:ℝ)^δ)^n := by gcongr; exact hd f (hf f hfl).1
       _ = D^n*(Ideal.absNorm f:ℝ)^(δ*(n:ℝ)) := by

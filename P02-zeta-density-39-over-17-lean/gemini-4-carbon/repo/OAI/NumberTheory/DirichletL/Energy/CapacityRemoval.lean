@@ -8,17 +8,11 @@ public import OAI.NumberTheory.DirichletL.Moments.NaturalFixedRaySourceFiber
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
+open scoped Classical BigOperators SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentEnergyCapacityRemoval
-open HeckeFamily ConcreteTraceCRT CenteredMomentRetainedEnergy
-open CenteredMomentInductionEnergy CenteredMomentWholeSlotDeletion
-open CenteredMomentPrimeSlot
-open CenteredMomentSlotNormalization CenteredMomentRelativeCapacityRemoval
-open CenteredMomentNaturalRowSource CenteredMomentNaturalFixedRaySource
-open CenteredMomentSecondHeightFamily CenteredMomentEnergyState
-open CenteredExceptionalProfile CenteredMomentFixedRowMask
+open HeckeFamily ConcreteTraceCRT CenteredMomentRetainedEnergy CenteredMomentInductionEnergy CenteredMomentWholeSlotDeletion CenteredMomentPrimeSlot CenteredMomentSlotNormalization CenteredMomentRelativeCapacityRemoval CenteredMomentNaturalRowSource CenteredMomentNaturalFixedRaySource CenteredMomentSecondHeightFamily CenteredMomentEnergyState CenteredExceptionalProfile CenteredMomentFixedRowMask
 local notation "O" => HeckeFamily.O
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
@@ -30,7 +24,7 @@ theorem compact_radial_summable (f : O→ℂ) (keep : O→Prop) (Φ : 𝓢(ℝ,�
   intro z hz
   have hΦ : Φ (‖eisEmbedding z‖^2/K)=0 := by
     by_contra hn
-    have hh : ‖eisEmbedding z‖^2≤(N:ℝ):=((div_le_iff₀ hK).mp (hs hn)).trans hN
+    have hh :=((div_le_iff₀ hK).mp (hs hn)).trans hN
     apply hz
     apply ShortDraftLatticeCount.mem_rowNormBall_of_absNorm_le
     exact_mod_cast (show ((Ideal.span {z}).absNorm:ℝ)≤N by
@@ -47,11 +41,8 @@ theorem selected_eq_positive (J : Finset ι) (η : Character) (m A z : O)
         (fun i:J=>P i) t X₁ X₂ := by
   have hh:=selectedProduct_univ η m A z W₁ W₂
     (fun i:J=>S i) (fun i:J=>β i) (fun i:J=>P i) t X₁ X₂ hX (fun i=>hP i)
-  have hp : (∏i:J,normalizedSlot η m A z (S i) (β i) t (P i))=
-      ∏i∈J,normalizedSlot η m A z (S i) (β i) t (P i) :=
-    Finset.prod_coe_sort J (fun i=>normalizedSlot η m A z (S i) (β i) t (P i))
   unfold selectedProduct at hh ⊢
-  rw [hp] at hh
+  rw [(Finset.prod_coe_sort J (fun i=>normalizedSlot η m A z (S i) (β i) t (P i)))] at hh
   exact hh
 
 theorem unit_puncture_energy (η : Character) (t : ℝ) (W₁ W₂ : ℝ→ℂ)
@@ -72,7 +63,7 @@ theorem eventual_row_conductor (bΦ Mrow : ℝ) (hb : 0≤bΦ) :
       s.rowWidth≤Mrow → ∀q:ℝ,(s.character.modulus.absNorm:ℝ)≤Z^q →
       ∀z:O,∀hz:z≠0,s.radial.profile (‖eisEmbedding z‖^2/s.radial.scale)≠0 →
       ((naturalRow s.character z hz).character.modulus.absNorm:ℝ)≤Z^(Mrow+q+1) := by
-  filter_upwards [eventually_gt_atTop (1:ℝ),eventually_ge_atTop ((fixedConductorFactor:ℝ)*bΦ)] with Z hZ hF
+  filter_upwards [eventually_gt_atTop 1,eventually_ge_atTop ((fixedConductorFactor:ℝ)*bΦ)] with Z hZ hF
   refine ⟨hZ,?_⟩
   intro Bmask s hrow q hq z hz hΦ
   have hn : ((Ideal.span {z}).absNorm:ℝ)≤bΦ*Z^s.rowWidth := by
@@ -80,11 +71,9 @@ theorem eventual_row_conductor (bΦ Mrow : ℝ) (hb : 0≤bΦ) :
     exact (div_le_iff₀ s.radial.scale_pos).mp (s.radial_support hΦ)
   have he:=(naturalRow s.character z hz).modulus_power_bound Z q s.rowWidth bΦ
     (zero_lt_one.trans hZ) hb hq hn
-  have hm:Z^(q+s.rowWidth)≤Z^(Mrow+q):=
-    Real.rpow_le_rpow_of_exponent_le hZ.le (by linarith)
   apply he.trans
   calc
-    _≤Z*Z^(Mrow+q):=mul_le_mul hF hm (Real.rpow_nonneg (zero_lt_one.trans hZ).le _)
+    _≤Z*Z^(Mrow+q):=mul_le_mul hF (Real.rpow_le_rpow_of_exponent_le hZ.le (by linarith)) (Real.rpow_nonneg (zero_lt_one.trans hZ).le _)
       (zero_lt_one.trans hZ).le
     _=Z^(Mrow+q+1):=by
       conv_rhs => rw [Real.rpow_add (zero_lt_one.trans hZ),Real.rpow_one]
@@ -216,7 +205,6 @@ theorem actual_relative_state_capacity_removal
     Mrow bΦ Lmod Lslot ε lo hi κ hbΦ hLm hLs hε hbeta hκ
   refine ⟨degree,C,hC,?_⟩
   intro η₀ θ
-  dsimp only
   obtain ⟨Z₀,hZ₀,hbound⟩:=hbound (fun i=>relativeCharacter M H hH η₀ (θ i))
   refine ⟨Z₀,hZ₀,?_⟩
   intro J w n₁ n₂ width mesh hmesh hw hwm hwcap

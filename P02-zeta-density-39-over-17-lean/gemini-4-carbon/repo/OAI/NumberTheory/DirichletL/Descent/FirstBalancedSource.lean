@@ -40,7 +40,6 @@ theorem first_fresh_physical_profile
       simp only [hw₂,zero_ne_one] at this
     simp only [firstNormProfile,hh,hw₂,mul_zero,zero_mul,zero_div]
   have hcut' := hcut hw₁ hw₂
-  have hnom := firstNormProfile_nominal W₁ W₂ Φ (fun _ _ => 1) s q hspos hq K
   have hfull : normalization * firstNormProfile W₁ W₂ Φ (fun _ _ => 1)
       (K*s 6/(s 3*s 4*(s 5)^2*s 7*s 8)) (fun i => q i/s i) =
       ∫ z : Frequency × (Fin 9 → ℝ), density z *
@@ -72,14 +71,13 @@ theorem first_fresh_physical_profile
     _ = (firstRootScale s:ℂ)⁻¹*(ω₁ (q 7/s 7)*ω₂ (q 8/s 8))*
         (normalization * firstNormProfile W₁ W₂ Φ (fun _ _ => 1)
           (K*s 6/(s 3*s 4*(s 5)^2*s 7*s 8)) (fun i => q i/s i)) := by
-      conv_lhs => rw [hm,hnom]
+      conv_lhs => rw [hm,(firstNormProfile_nominal W₁ W₂ Φ (fun _ _ => 1) s q hspos hq K)]
       ring
     _ = _ := by rw [hfull]
 
 theorem first_balanced_density_integrable (g : Fin 9 → 𝓢(ℝ,ℂ)) (g₁ g₂ b₃ : 𝓢(ℝ,ℂ))
     (ρ : Fin 9 → ℝ) (c₁ c₂ θ₁ θ₂ L : ℝ) :
-    Integrable (InverseMomentFirstProfileUniform.density g g₁ g₂ b₃ ρ c₁ c₂ θ₁ θ₂ L) := by
-  exact (full_density_integrable _ _ _ _).const_mul _
+    Integrable (InverseMomentFirstProfileUniform.density g g₁ g₂ b₃ ρ c₁ c₂ θ₁ θ₂ L) := (full_density_integrable _ _ _ _).const_mul _
 
 open ActualEisensteinCubic FirstPassCubeLabels
 local notation "Eis" => ActualEisensteinCubic.O
@@ -139,7 +137,7 @@ theorem actual_first_balanced_block (F : Finset ι) (selector : Finset ι → �
   exact first_fresh_physical_profile W₁ W₂ ω₁ ω₂ Φ V s
     (firstCommonNorms p A₁ A₂ C R d h j) hs
     (firstCommonNorms_pos p hp A₁ A₂ C R hA₁ hA₂ hC hR d h hd hh j) K density
-    (Real.exp (-(9/2:ℝ)*L):ℂ) hsep
+    (Real.exp (-(9/2)*L):ℂ) hsep
     (by simpa [firstCommonNorms] using hω₁ j hj hn)
     (by simpa [firstCommonNorms] using hω₂ j hj hn)
     (by simpa [firstCommonNorms] using hcut j hj hn)

@@ -42,7 +42,7 @@ theorem positiveScalar_step_six (p : O) (hp : Prime p)
         ring
       · have hz : j=0 := by omega
         subst j
-        simp only [show (1:ℕ)≤0+6 by omega,show ¬(1:ℕ)≤0 by omega,
+        simp only [show 1≤0+6 by omega,show ¬1≤0 by omega,
           and_true,and_false,ite_true,ite_false,mul_zero]
         simp only [gaussValuationTable]
         split_ifs <;> simp_all ; omega

@@ -8,8 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical SchwartzMap ContDiff Topology
 namespace SevenEighths.ProbeGramCommon
-open Filter ProbePhysical CanonicalQuadraticSieve CompletedGauss RayFourExpansion
-open CenteredMomentGaussEnergy
+open Filter ProbePhysical CanonicalQuadraticSieve CompletedGauss RayFourExpansion CenteredMomentGaussEnergy
 local notation "O" => ActualEisensteinCubic.O
 local notation "Id" => Ideal O
 
@@ -18,8 +17,7 @@ lemma sourceTruncation_tendsto (S : Finset Id) (hS : ∀p∈S,p.IsMaximal) (σ :
     (Y Q : ℝ) (hY : 0<Y) (hQ : 0<Q) (U : SchwartzMap ℝ ℂ) (v : ℝ) :
     Tendsto (fun E : Finset GramFrequency=>sourceTruncation S hS σ F E W hW Y Q hY U v) atTop
       (𝓝 (((Q/Y^3:ℝ):ℂ)*∑C∈F,∑'k : GramFrequency,originalCommonBlock S hS σ C k W hW Y Q hY U v)) := by
-  have hs (C : SupportedIdeal) : Summable (fun k : GramFrequency=>originalCommonBlock S hS σ C k W hW Y Q hY U v) :=
-    originalCommonBlock_summable S hS σ C W hW Y Q hY hQ U v
+  have hs (C : SupportedIdeal) := originalCommonBlock_summable S hS σ C W hW Y Q hY hQ U v
   have hh := (summable_sum (s:=F) (fun C hC=>hs C)).hasSum.mul_left ((Q/Y^3:ℝ):ℂ)
   rw [Summable.tsum_finsetSum (fun C hC=>hs C)] at hh
   change Tendsto _ atTop (𝓝 _) at hh

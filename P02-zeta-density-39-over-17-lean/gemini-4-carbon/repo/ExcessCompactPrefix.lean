@@ -14,10 +14,10 @@ theorem criticalExcess_compact_prefix {B : ℝ} (hB : 0 ≤ B) :
     continuous_zetaMomentCriticalNorm.continuousOn
   refine ⟨M,?_⟩
   intro v hv
-  have hz : Set.EqOn (criticalExcess v) (fun _ => (0:ℝ)) (Set.uIcc 0 B) := by
+  have hz : Set.EqOn (criticalExcess v) (fun _ => 0) (Set.uIcc 0 B) := by
     intro t ht
     rw [uIcc_of_le hB] at ht
-    have hb : zetaMomentCriticalNorm t ≤ M := hM ⟨t,ht,rfl⟩
+    have hb := hM ⟨t,ht,rfl⟩
     unfold criticalExcess
     exact max_eq_right (by linarith)
   rw [intervalIntegral.integral_congr hz]

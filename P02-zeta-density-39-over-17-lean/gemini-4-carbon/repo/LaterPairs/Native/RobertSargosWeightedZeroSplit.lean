@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.RobertSargosWeightedBoundary
 
 @[expose] public section
@@ -21,10 +30,10 @@ theorem sum_signed_shift_axes (F : ℤ → ℤ → ℝ) (Q R : ℕ)
         (∑ r ∈ (Finset.Ioo (-(R:ℤ)) R).erase 0, F 0 r)+
           ∑ q ∈ (Finset.Ioo (-(Q:ℤ)) Q).erase 0,
             ∑ r ∈ (Finset.Ioo (-(R:ℤ)) R).erase 0, F q r := by
-  have hq0 : (0:ℤ) ∈ Finset.Ioo (-(Q:ℤ)) Q := by
+  have hq0 : 0 ∈ Finset.Ioo (-(Q:ℤ)) Q := by
     simp only [Finset.mem_Ioo]
     constructor <;> omega
-  have hr0 : (0:ℤ) ∈ Finset.Ioo (-(R:ℤ)) R := by
+  have hr0 : 0 ∈ Finset.Ioo (-(R:ℤ)) R := by
     simp only [Finset.mem_Ioo]
     constructor <;> omega
   have he (q : ℤ) : (∑ r ∈ Finset.Ioo (-(R:ℤ)) R, F q r) =

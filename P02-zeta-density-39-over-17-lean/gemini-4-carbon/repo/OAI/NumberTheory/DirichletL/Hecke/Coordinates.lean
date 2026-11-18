@@ -59,7 +59,7 @@ def zmodQuotientHom (χ : Character) : ZMod χ.period →+ (O ⧸ χ.modulus) :=
 
 @[simp] theorem zmodQuotientHom_natCast (χ : Character) (a : ℕ) :
     zmodQuotientHom χ (a : ZMod χ.period) = Ideal.Quotient.mk χ.modulus (a : O) := by
-  simpa only [Int.cast_natCast] using zmodQuotientHom_intCast χ (a : ℤ)
+  simpa using zmodQuotientHom_intCast χ (a : ℤ)
 
 def coordinateQuotientHom (χ : Character) :
     (ZMod χ.period × ZMod χ.period) →+ (O ⧸ χ.modulus) where

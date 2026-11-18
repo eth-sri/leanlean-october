@@ -23,7 +23,7 @@ lemma dyadic_weighted_rows_card (α r C U B : ℝ) (hC : 0≤C) (hU : 0<U)
     _ ≤ ∑u∈R,C*ProbeSelectedPrimeSums.annularPower 1 2 (α-r)*U^(α-r) := by
       apply Finset.sum_le_sum
       intro u hu
-      have hN : 0<rowNorm u := hU.trans_le (hR u hu).1
+      have hN := hU.trans_le (hR u hu).1
       rw [frequencyWeight_ideal_norm,hz]
       change rowNorm u^(-r)*F u≤_
       calc

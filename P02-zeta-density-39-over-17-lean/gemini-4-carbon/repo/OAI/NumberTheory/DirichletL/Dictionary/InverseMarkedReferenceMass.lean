@@ -61,7 +61,7 @@ theorem all_assignedMass_sum_le (K:ℕ){b U:ℝ}(hb:1≤b)(hU:1≤U)
       intro J hJ
       exact assignedMass_sum_le K hb hU L J ((Finset.card_le_univ J).trans hK) ell
         (fun i _=>hL i) coeff (fun i _=>hc i)
-    _=(2:ℝ)^Fintype.card ι*assignedConstant K b := by
+    _=2^Fintype.card ι*assignedConstant K b := by
       simp
     _≤_:=mul_le_mul_of_nonneg_right (pow_le_pow_right₀ (by norm_num) hK)
       (assignedConstant_pos K hb).le
@@ -80,7 +80,7 @@ theorem original_energy_with_assigned_count (K:ℕ){b U:ℝ}(hb:1≤b)(hU:1≤U)
     (∑u∈rows,w u*‖∑q:Tuple L,(∏i,coeff i (q i).val)*
       InverseInitialConjugateEnergy.originalTotalPolynomial S (∏i,(q i).val) η (fun _=>1) W U r z u‖^2)≤
       ((2:ℝ)^K*assignedConstant K b)^2*E := by
-  have hU0:0<U:=zero_lt_one.trans_le hU
+  have hU0 :=zero_lt_one.trans_le hU
   refine (original_energy_of_remaining S L hp hdis coeff η hj hη W U r z
     (fun J=>∑i∈J,ell i) hU0 rows w hw E hE hres).trans ?_
   apply mul_le_mul_of_nonneg_right _ hE

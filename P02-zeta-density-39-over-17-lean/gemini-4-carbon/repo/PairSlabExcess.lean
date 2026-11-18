@@ -8,8 +8,7 @@ set_option autoImplicit false
 noncomputable section
 open MeasureTheory Filter Set
 namespace TaoTrudgianYang2025
-open MathCollab.Density MathCollab.Density.Stronger
-open Montgomery.RationalMoment.RightDetector
+open MathCollab.Density MathCollab.Density.Stronger Montgomery.RationalMoment.RightDetector
 
 theorem ExponentPair.critical_slab_excess {k l η ε : ℝ}
     (hpair : ExponentPair k l) (hk : 0 < k) (hlog : 2+4*l/k ≤ 7)
@@ -44,17 +43,14 @@ theorem ExponentPair.critical_slab_excess {k l η ε : ℝ}
       intro W hW hs
       exact hsource u hu0 (hvrange.trans hu) W hs
         (fun t ht => (hW t ht).1) (fun t ht => (hW t ht).2)
-    have hm := volume_le_two_mul_of_separated_card_bound hc
-    have hr := ENNReal.toReal_le_of_le_ofReal (by positivity) hm
     have he6 : u^(-6:ℝ)=1/u^6 := by
       rw [Real.rpow_neg hu0.le]
       norm_num [one_div]
     rw [he6,Real.rpow_neg hu0.le]
-    convert hr using 1
+    convert (ENNReal.toReal_le_of_le_ofReal (by positivity) (volume_le_two_mul_of_separated_card_bound hc)) using 1
     · rfl
     · rw [← hfirst,← hsecond]
       ring
-  have hh := critical_excess_integral_le_two_tails_interval hv hq htail
-  convert hh using 1
+  convert (critical_excess_integral_le_two_tails_interval hv hq htail) using 1
   congr 1 <;> ring_nf
 end TaoTrudgianYang2025

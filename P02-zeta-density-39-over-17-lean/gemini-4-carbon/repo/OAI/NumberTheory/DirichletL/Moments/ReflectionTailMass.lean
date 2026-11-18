@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators ContDiff
 namespace SevenEighths.CenteredMomentReflectionTailMass
-open HeckeFamily CenteredMomentReflectionDeletion CenteredMomentReflectionMass
-open CenteredMomentComparisonReflection EisensteinSchwartzPoisson
+open HeckeFamily CenteredMomentReflectionDeletion CenteredMomentReflectionMass CenteredMomentComparisonReflection EisensteinSchwartzPoisson
 local notation "O" => HeckeFamily.O
 
 lemma subset_norm_le (S D : Finset (Ideal O)) (hS : ∀P∈S,Prime P) (hD : D⊆S) :

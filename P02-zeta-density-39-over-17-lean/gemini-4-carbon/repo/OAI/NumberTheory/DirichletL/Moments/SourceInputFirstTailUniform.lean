@@ -7,17 +7,11 @@ public import OAI.NumberTheory.DirichletL.Moments.SourceInputFirstTailScale
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
+open scoped Classical BigOperators SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentSourceInputFirstTailUniform
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass CenteredMomentSourceRow
-open CenteredMomentSourceZeroEnergy CenteredMomentSourceLiveColumn CenteredMomentSupportedZeroEnergy
-open CenteredMomentSourceProfileMassUniform CenteredMomentSourceProfileMass
-open CenteredMomentSupportedTailAggregate CenteredMomentSectorLocalization
-open CenteredMomentExceptionalAmplitudePair CenteredMomentNaturalRadialCutoff
-open CenteredMomentSourceInputTailUniform CenteredMomentFirstTailAggregate
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass CenteredMomentSourceRow CenteredMomentSourceZeroEnergy CenteredMomentSourceLiveColumn CenteredMomentSupportedZeroEnergy CenteredMomentSourceProfileMassUniform CenteredMomentSourceProfileMass CenteredMomentSupportedTailAggregate CenteredMomentSectorLocalization CenteredMomentExceptionalAmplitudePair CenteredMomentNaturalRadialCutoff CenteredMomentSourceInputTailUniform CenteredMomentFirstTailAggregate
 local notation "O"=>HeckeFamily.O
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 local instance : DecidableEq (ι⊕Fin 2):=Classical.decEq _
@@ -28,17 +22,15 @@ lemma choose_first_tail_order (B ξ saving:ℝ)(hB:0≤B)(hξ:0<ξ):
         (1+Real.exp (2*HN))^2*Z^(-saving):=by
   obtain ⟨Adec,hAdec⟩:=exists_nat_ge ((4*B+saving)/(ξ/4))
   have horder:4*B-(ξ/4)*(Adec:ℝ)≤-saving:=by
-    have hh:4*B+saving≤(Adec:ℝ)*(ξ/4):=(div_le_iff₀ (by linarith:0<ξ/4)).mp hAdec
+    have hh :=(div_le_iff₀ (by linarith:0<ξ/4)).mp hAdec
     linarith
   refine ⟨Adec,?_⟩
   intro HN Z V Tsec hZ hV hVcap hT hTcap
-  have hz:0<Z:=zero_lt_one.trans_le hZ
-  have hk:=kernel_inverse_cap HN Z B Tsec hZ hB hT hTcap
-  have hd:=reciprocal_cutoff_bound Z (ξ/4) Adec hz
+  have hz :=zero_lt_one.trans_le hZ
   calc
     _≤(Z^B)^2*((1+Real.exp (2*HN))^2*(Z^B)^2)*Z^(-(ξ/4)*(Adec:ℝ)):=by
-      apply mul_le_mul _ hd (by positivity) (by positivity)
-      apply mul_le_mul (pow_le_pow_left₀ hV.le hVcap 2) hk
+      apply mul_le_mul _ (reciprocal_cutoff_bound Z (ξ/4) Adec hz) (by positivity) (by positivity)
+      apply mul_le_mul (pow_le_pow_left₀ hV.le hVcap 2) (kernel_inverse_cap HN Z B Tsec hZ hB hT hTcap)
         (inv_nonneg.mpr (sq_nonneg _)) (by positivity)
     _=(1+Real.exp (2*HN))^2*Z^(4*B-(ξ/4)*(Adec:ℝ)):=by
       rw [←Real.rpow_mul_natCast hz.le]

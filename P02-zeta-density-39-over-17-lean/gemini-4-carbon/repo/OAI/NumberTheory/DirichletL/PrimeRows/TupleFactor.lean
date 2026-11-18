@@ -29,7 +29,6 @@ theorem physicalCompensatedRow_indexed {K : ℕ}
           (outside_prime_supported S hS.bad (P i) (hPS i)) x w z
           (star (idealCoeff η (P i).val)*((P i).val.absNorm:ℂ)^x)
           (((P i).val.absNorm:ℂ)^(-w))) := by
-  dsimp only
   unfold physicalCompensatedRow continuedCompensatedRow
   congr 2
   symm

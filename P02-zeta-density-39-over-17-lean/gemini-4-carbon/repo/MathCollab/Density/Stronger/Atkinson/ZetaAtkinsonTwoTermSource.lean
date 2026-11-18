@@ -59,10 +59,9 @@ theorem exists_zetaSquareLocalMean_le_atkinson_twoTerm {δ : ℝ} (hδ : 0 < δ)
   refine ⟨C + 2 * Real.exp 1 * D, by positivity, max B B₁, hB.trans (le_max_left _ _), ?_⟩
   intro T G hT hlower hupper
   have hm := hsource T G ((le_max_left _ _).trans hT) hlower hupper
-  have he := herror T G ((le_max_right _ _).trans hT) hlower hupper
   have hr := (Complex.re_le_norm
     (zetaAtkinsonBesselMinus T G (Real.log T) -
-      zetaAtkinsonTwoTermSum T G (Real.log T))).trans he
+      zetaAtkinsonTwoTermSum T G (Real.log T))).trans (herror T G ((le_max_right _ _).trans hT) hlower hupper)
   simp only [Complex.sub_re] at hr
   have hscaled := mul_le_mul_of_nonneg_left hr (by positivity : 0 ≤ 2 * Real.exp 1)
   nlinarith

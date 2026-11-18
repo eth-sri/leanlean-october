@@ -70,8 +70,7 @@ theorem actual_first_physical_common
           (hFB.mono_left (Finset.mem_powerset.mp hP)) v ε₁ ε₂ C₁ C₂ W₁ W₂ Φ A₁ A₂ C K d h
       · simp [hd]
     _ = _ := by
-      rw [actual_first_gauss_coupled_reindex p hp hcop hg hinj hc hpr F B hFB]
-      rw [mul_assoc]
+      rw [actual_first_gauss_coupled_reindex p hp hcop hg hinj hc hpr F B hFB, mul_assoc]
       apply congrArg (fun z : ℂ => (K:ℂ)*(cubeBaseFactor p hp hg B v ε₁ ε₂ d h*z))
       unfold firstCoupledRayColumns firstPhysicalCommonRows
       apply Finset.sum_congr rfl
@@ -85,9 +84,9 @@ theorem actual_first_physical_common
       intro U hU
       apply Finset.sum_congr rfl
       intro V hV
-      have hDU : Disjoint D U := Finset.disjoint_of_subset_right
+      have hDU := Finset.disjoint_of_subset_right
         (Finset.mem_powerset.mp hU) disjoint_sdiff_self_right
-      have hDV : Disjoint D V := Finset.disjoint_of_subset_right
+      have hDV := Finset.disjoint_of_subset_right
         (Finset.mem_powerset.mp hV) disjoint_sdiff_self_right
       dsimp only [H]
       rw [firstNormProfile_actual_common p hp D U V hDU hDV]

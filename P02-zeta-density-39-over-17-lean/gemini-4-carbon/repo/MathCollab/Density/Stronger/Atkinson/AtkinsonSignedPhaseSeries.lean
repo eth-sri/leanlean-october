@@ -13,8 +13,7 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonPrefixVectors
 
 @[expose] public section
 
-open Complex Set Filter
-open MathCollab.Density.Stronger.Fourth
+open Complex Set Filter MathCollab.Density.Stronger.Fourth
 set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
@@ -33,7 +32,6 @@ theorem atkinsonStationaryLeadingTerm_eq_signed {T G : ℝ} (hT : 0 < T)
   have he : (2:ℂ)*(Real.sqrt Real.pi : ℂ)*(atkinsonBesselScale (1/4) n : ℂ) =
       (((n:ℝ)^(-(1/4:ℝ)) : ℝ) : ℂ) := by
     exact_mod_cast atkinsonBesselScale_quarter_normalization n
-  have hpi : (Real.pi : ℂ) ≠ 0 := by exact_mod_cast Real.pi_ne_zero
   unfold atkinsonStationaryLeadingTerm atkinsonStationaryLeadingIntegral
   rw [atkinsonStationaryMain_sqrt_normalized hT,atkinsonStationaryMain_neg_sqrt_normalized hT hG]
   unfold atkinsonCommonMainPhase atkinsonPositiveMainWeight atkinsonNegativeMainWeight

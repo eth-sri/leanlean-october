@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.RobertSargosCorrelationBoundary
 public import LaterPairs.Native.RobertSargosZeroRSignedBound
 
@@ -33,8 +42,7 @@ theorem robertSargos_zero_r_trimmed_correlation_bound
       ‖robertSargosZeroRSource f M h q‖ ≤
         1+12*(C*M*Real.sqrt (4*(H:ℝ)*|(q:ℝ)| *lam)+
           2/Real.sqrt (2*(H:ℝ)*|(q:ℝ)| *lam)) := by
-    have hi := ((mem_robertSargosHOverlap H h 0).mp hh).1
-    have hii := Finset.mem_Ico.mp hi
+    have hii := Finset.mem_Ico.mp (((mem_robertSargosHOverlap H h 0).mp hh).1)
     have hHh : (H:ℝ) ≤ h := by exact_mod_cast hii.1
     have hhH : (h:ℝ) < 2*H := by exact_mod_cast hii.2
     have hhr : (0:ℝ) < h := hHr.trans_le hHh

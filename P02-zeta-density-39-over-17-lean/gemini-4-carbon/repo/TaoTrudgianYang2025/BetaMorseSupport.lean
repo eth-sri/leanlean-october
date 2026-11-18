@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaMorseRemainder
 
 @[expose] public section
@@ -28,10 +38,6 @@ theorem modelPhaseMorseWeight_eq {χ F : ℝ → ℝ} {v z : ℝ}
     modelPhaseMorseWeight χ F v z = modelPhaseMorseAmplitude χ F v z :=
   Set.indicator_of_mem hz _
 
-theorem modelPhaseMorseWeight_zero_of_not_mem {χ F : ℝ → ℝ} {v z : ℝ}
-    (hz : z ∉ modelPhaseMorseRange F v) :
-    modelPhaseMorseWeight χ F v z = 0 :=
-  Set.indicator_of_notMem hz _
 
 theorem modelPhaseMorseWeight_support_subset {χ F : ℝ → ℝ} {v : ℝ} :
     Function.support (modelPhaseMorseWeight χ F v) ⊆
@@ -39,7 +45,7 @@ theorem modelPhaseMorseWeight_support_subset {χ F : ℝ → ℝ} {v : ℝ} :
   intro z hz
   have hr : z ∈ modelPhaseMorseRange F v := by
     by_contra hn
-    exact hz (modelPhaseMorseWeight_zero_of_not_mem hn)
+    exact hz ((Set.indicator_of_notMem hn _))
   refine ⟨modelPhaseMorseInverse F v z,?_,modelPhaseMorseCoordinate_inverse hr⟩
   apply subset_tsupport χ
   intro hc
@@ -53,9 +59,7 @@ theorem isCompact_modelPhaseMorseCoordinate_image_tsupport
     (hF : IsApproximateModelPhaseFunction F σ 1 δ)
     (hv : v ∈ modelPhaseSlopeRange F) :
     IsCompact (modelPhaseMorseCoordinate F v '' tsupport χ) := by
-  have hc : IsCompact (tsupport χ) :=
-    isCompact_Icc.of_isClosed_subset (isClosed_tsupport χ) (hs.trans Ioo_subset_Icc_self)
-  exact hc.image_of_continuousOn
+  exact (isCompact_Icc.of_isClosed_subset (isClosed_tsupport χ) (hs.trans Ioo_subset_Icc_self)).image_of_continuousOn
     ((modelPhaseMorseCoordinate_contDiffOn hσ hδ hF hv).continuousOn.mono hs)
 
 theorem modelPhaseMorseWeight_tsupport_subset

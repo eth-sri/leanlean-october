@@ -10,8 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.HeckeMaskDescent
-open HeckeFamily CenteredExceptionalProfile CanonicalQuadraticSieve ConcretePrimeRowBridge
-open UniqueFactorizationMonoid
+open HeckeFamily CenteredExceptionalProfile CanonicalQuadraticSieve ConcretePrimeRowBridge UniqueFactorizationMonoid
 local notation "O" => HeckeFamily.O
 
 theorem exists_coprime_shift (a c r : O) (hac : IsCoprime a c) (hr : r ≠ 0) :
@@ -46,8 +45,7 @@ theorem exists_primitive_above (χ : Character) (Q : Ideal O)
       χ.modulus χ.residue (Q.map (Ideal.Quotient.mk χ.modulus)) hdesc
   have hu : IdealCharacter.UnitInvariant K φ := by
     intro u
-    have h := hmask (u : O)
-    simpa only [χ.unit_trivial u,u.isUnit.map (Ideal.Quotient.mk χ.modulus),ite_true] using h.symm
+    simpa only [χ.unit_trivial u,u.isUnit.map (Ideal.Quotient.mk χ.modulus),ite_true] using (hmask (u : O)).symm
   refine ⟨Character.ofResidue K hK φ hu,hprim,?_,?_⟩
   · exact (Ideal.le_comap_map).trans hQK
   · exact IdealCharacter.ofResidue_source_mask χ.modulus K χ.residue φ χ.unit_trivial hu hmask
@@ -63,7 +61,7 @@ theorem descent_of_mask (χ χ' ψ : Character) (r : O) (hr : r ≠ 0)
   intro u hu
   obtain ⟨q,hq,hqu⟩ := (Ideal.mem_map_iff_of_surjective
     (Ideal.Quotient.mk χ.modulus) Ideal.Quotient.mk_surjective).mp hu
-  let a : O := 1+q
+  let a := 1+q
   have ha : Ideal.Quotient.mk χ.modulus a = (u : O ⧸ χ.modulus) := by
     dsimp [a];rw [map_add,map_one,hqu];ring
   have hψa : Ideal.Quotient.mk ψ.modulus a = 1 := by
@@ -91,12 +89,10 @@ theorem descent_of_mask (χ χ' ψ : Character) (r : O) (hr : r ≠ 0)
     exact MulChar.apply_ne_zero_iff.mpr (hnχ ▸ u.isUnit)
   have hn0 : n ≠ 0 := by
     intro hz
-    have hunit : IsUnit goodLambda := (htall.of_mul_right_right).isUnit_of_dvd'
+    have hunit := (htall.of_mul_right_right).isUnit_of_dvd'
       (by change goodLambda ∣ n; rw [hz]; exact dvd_zero _) (dvd_refl _)
     exact goodLambda_prime.not_isUnit hunit
-  have hcop : IsCoprime (Ideal.span {n}) χ'.modulus :=
-    (IdealCharacter.isUnit_mk_iff_isCoprime _ _).mp (MulChar.apply_ne_zero_iff.mp hnχ')
-  have heq := elementCoeff_eq_of_inducedBy χ' ψ hind n hn0 hcop
+  have heq := elementCoeff_eq_of_inducedBy χ' ψ hind n hn0 ((IdealCharacter.isUnit_mk_iff_isCoprime _ _).mp (MulChar.apply_ne_zero_iff.mp hnχ'))
   rw [he n,ite_eq_left ht] at heq
   change χ.residue (Ideal.Quotient.mk χ.modulus n) = ψ.residue (Ideal.Quotient.mk ψ.modulus n) at heq
   simpa only [hnχ,hnψ,map_one] using heq
@@ -111,8 +107,8 @@ theorem inducedBy_mask (χ χ' ψ : Character) (r : O)
   by_cases hc : IsCoprime I χ'.modulus
   · have hn' := CenteredMomentExceptionalPair.idealCoeff_ne_zero_iff χ' I |>.mpr ⟨hI,hc⟩
     let n := idealGenerator I
-    have hn0 : n ≠ 0 := idealGenerator_ne_zero I hI
-    have hspan : Ideal.span {n} = I := span_idealGenerator I
+    have hn0 := idealGenerator_ne_zero I hI
+    have hspan := span_idealGenerator I
     have hval' : elementCoeff χ' n = idealCoeff χ' I := by
       rw [← idealCoeff_span χ' hn0,hspan]
     have hval : elementCoeff χ n = idealCoeff χ I := by

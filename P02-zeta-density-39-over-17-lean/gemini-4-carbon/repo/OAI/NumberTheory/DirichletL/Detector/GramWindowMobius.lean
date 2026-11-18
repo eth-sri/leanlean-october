@@ -10,8 +10,7 @@ namespace OAI
 noncomputable section
 open scoped Classical SchwartzMap
 namespace SevenEighths.ProbeGramCommon
-open ProbePhysical CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion
-open ConcreteTraceCRT CenteredMomentMobiusRegroup UniqueFactorizationMonoid
+open ProbePhysical CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion ConcreteTraceCRT CenteredMomentMobiusRegroup UniqueFactorizationMonoid
 local notation "O" => ActualEisensteinCubic.O
 local notation "Id" => Ideal O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
@@ -25,8 +24,7 @@ lemma primary_norm (I : SupportedIdeal) :
 lemma shell_dilated_column (D I : SupportedIdeal) (N : ℝ) :
     (Ideal.absNorm (supportedIdealProduct D I).val:ℝ)/N=
       ‖eisEmbedding (primaryGenerator I.val)‖^2/(N/Ideal.absNorm D.val) := by
-  rw [primary_norm,supported_dilation_norm,Nat.cast_mul]
-  rw [div_div_eq_mul_div]
+  rw [primary_norm,supported_dilation_norm,Nat.cast_mul, div_div_eq_mul_div]
   ring
 
 lemma shell_window_support (W : ℝ→ℂ) (hW : HasCompactSupport W) (N : ℝ) (hN : 0<N)
@@ -68,17 +66,14 @@ theorem original_window_mobius_lattice (S : Finset Id) (hS : ∀p∈S,p.IsMaxima
   intro D hD
   congr 1
   let D₀ := poolDivisor F D
-  have hd : D₀.val=D := poolDivisor_val F D hD
-  have hdp : λ₀^2∣primaryGenerator D₀.val-1 :=
-    (primaryGenerator_spec _ (supported_primaryGenerator_ne_zero _ D₀.property)).2
   have he := jointExtension_ideal_lattice S hS hbad σ C k (primaryGenerator D₀.val)
-    (primary_product C _ hC hdp) u a b r hr P hg c
+    (primary_product C _ hC ((primaryGenerator_spec _ (supported_primaryGenerator_ne_zero _ D₀.property)).2)) u a b r hr P hg c
     (fun n m=>shellProfile W v U T (‖eisEmbedding n‖^2/(N/Ideal.absNorm D₀.val))
       (‖eisEmbedding m‖^2/(N/Ideal.absNorm D₀.val)))
   dsimp only [f]
   simp only [supported_dilation_generator,shell_dilated_column]
   convert he using 1
-  rw [hd]
+  rw [(poolDivisor_val F D hD)]
 
 end SevenEighths.ProbeGramCommon
 end

@@ -7,18 +7,16 @@ public import OAI.NumberTheory.DirichletL.Hecke.PrimeAmplitudeScale
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
 open Filter
+open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorBatch
-open HeckeDetectorWitnessRows HeckeDetectorClassBudget
+open HeckeFamily HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorBatch HeckeDetectorWitnessRows HeckeDetectorClassBudget
 
 lemma eventually_all_rpow_ge {P : ℝ→Prop} (hP : ∀ᶠU in atTop,P U)
     (dmin : ℝ) (hdmin : 0<dmin) :
     ∀ᶠZ : ℝ in atTop,∀d : ℝ,dmin≤d → P (Z^d) := by
   obtain ⟨A,hA⟩ := Filter.eventually_atTop.1 hP
-  have hh := (tendsto_rpow_atTop hdmin).eventually (eventually_ge_atTop A)
-  filter_upwards [hh,eventually_ge_atTop (1:ℝ)] with Z hZ hZ1
+  filter_upwards [((tendsto_rpow_atTop hdmin).eventually (eventually_ge_atTop A)),eventually_ge_atTop 1] with Z hZ hZ1
   intro d hd
   exact hA _ (hZ.trans (Real.rpow_le_rpow_of_exponent_le hZ1 hd))
 
@@ -50,11 +48,10 @@ lemma source_fiberConstant_bound (C K Z heightCost momentCost : ℝ)
     fiberConstant (C*Z^momentCost) (Z^heightCost) K ≤
       (384*max 1 K)*C*Z^(heightCost+momentCost) := by
   have hp := Real.one_le_rpow hZ hh
-  have hZp : 0<Z := zero_lt_one.trans_le hZ
   unfold fiberConstant
   calc
     _ ≤ (192*(2*Z^heightCost)*(C*Z^momentCost))*max 1 K := by gcongr;linarith
-    _ = _ := by rw [Real.rpow_add hZp];ring
+    _ = _ := by rw [Real.rpow_add (zero_lt_one.trans_le hZ)];ring
 
 lemma source_dyadic_cost_eventually (dmin dmax loss : ℝ)
     (hdmin : 0<dmin) (hdmax : 0<dmax) (hl : 0<loss) :
@@ -68,8 +65,7 @@ lemma source_dyadic_cost_eventually (dmin dmax loss : ℝ)
   apply mul_le_mul_of_nonneg_left _ hK
   rw [←Real.rpow_mul (zero_lt_one.trans_le hZ).le]
   apply Real.rpow_le_rpow_of_exponent_le hZ
-  have hh := mul_le_mul_of_nonneg_right hd' (show 0≤loss/dmax by positivity)
-  simpa only [mul_div_cancel₀ _ hdmax.ne'] using hh
+  simpa only [mul_div_cancel₀ _ hdmax.ne'] using (mul_le_mul_of_nonneg_right hd' (show 0≤loss/dmax by positivity))
 
 lemma source_count_prefactor_eventually {Label : Type*} [Fintype Label]
     (N : ℕ) (dmin dmax logCost heightCost momentCost binWidth K₀ : ℝ)
@@ -84,8 +80,8 @@ lemma source_count_prefactor_eventually {Label : Type*} [Fintype Label]
         fiberConstant (C*Z^momentCost) (Z^heightCost) K₀*(Fintype.card B.Bin:ℝ) ≤
       K*C*Z^(logCost+heightCost+momentCost) := by
   obtain ⟨L,hL,hbound⟩ := source_dyadic_cost_eventually dmin dmax logCost hdmin hdmax hl
-  let A : ℝ := (alphabetBound binWidth : ℕ)^N
-  let K : ℝ := (Fintype.card Label:ℝ)*L*(384*max 1 K₀)*A
+  let A := (alphabetBound binWidth : ℕ)^N
+  let K := (Fintype.card Label:ℝ)*L*(384*max 1 K₀)*A
   have hA : 0≤A := by dsimp [A];positivity
   have hK : 0≤K := by dsimp [K];positivity
   refine ⟨K+1,by positivity,?_⟩
@@ -94,12 +90,10 @@ lemma source_count_prefactor_eventually {Label : Type*} [Fintype Label]
   have hbin' : (Fintype.card B.Bin:ℝ)≤A := by
     have h1 := bin_card_le B.slots ((2*a-1)/2) B.binWidth (by linarith) B.binWidth_pos
     rw [hbin] at h1
-    have h2 : (alphabetBound binWidth)^B.slots.card≤(alphabetBound binWidth)^N :=
-      Nat.pow_le_pow_right (by unfold alphabetBound;omega) hslots
     change (Fintype.card (HeckeDetectorFiberPartition.BinLabel B.slots ((2*a-1)/2) B.binWidth):ℝ)≤A
     rw [hbin]
     dsimp only [A]
-    exact_mod_cast h1.trans h2
+    exact_mod_cast h1.trans (Nat.pow_le_pow_right (by unfold alphabetBound;omega) hslots)
   have hf := source_fiberConstant_bound C K₀ Z heightCost momentCost hC hZ hh
   have hf0 : 0≤fiberConstant (C*Z^momentCost) (Z^heightCost) K₀ := by unfold fiberConstant; positivity
   calc

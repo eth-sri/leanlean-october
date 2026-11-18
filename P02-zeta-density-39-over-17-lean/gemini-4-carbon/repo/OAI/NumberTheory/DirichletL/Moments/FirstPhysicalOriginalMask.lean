@@ -11,12 +11,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstPhysicalOriginalMask
-open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge CenteredMomentCommonRadialData
-open CenteredMomentAmplificationChildInput CenteredMomentFirstPhysicalSource
-open CenteredMomentFirstMaskedFamily CenteredMomentSecondHeightFamily
-open CenteredMomentOriginalCommonHarmonic CenteredMomentCommonSupport
-open CenteredMomentFirstRetainedNorm CenteredMomentFirstSourceReduction
-open CenteredMomentCanonicalFirst CenteredMomentFirstSectors
+open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput CenteredMomentFirstPhysicalSource CenteredMomentFirstMaskedFamily CenteredMomentSecondHeightFamily CenteredMomentOriginalCommonHarmonic CenteredMomentCommonSupport CenteredMomentFirstRetainedNorm CenteredMomentFirstSourceReduction CenteredMomentCanonicalFirst CenteredMomentFirstSectors
 local notation "O" => HeckeFamily.O
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
@@ -58,7 +53,6 @@ theorem original_block (s : Input ι) (R seed : Ideal O) (t : ℝ)
   intro a ha
   apply Finset.sum_congr rfl
   intro b hb
-  dsimp only
   rw [original_coefficient s R seed C a (column_supported C C hC.1 S a) t,
     original_coefficient s R seed D b (column_supported C D hD.1 S b) t]
 

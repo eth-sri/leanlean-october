@@ -9,12 +9,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondSourceFrequency
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentSourceRow CenteredMomentSecondSourceRetained CenteredMomentFirstSectors
-open CenteredMomentSecondSectorColumns CenteredMomentHeckeColumnWindow CenteredMomentSecondSectorRetained
-open CenteredMomentSecondRetainedPair CenteredMomentSecondSectorFrequency CenteredMomentSupport CenteredMomentSectorLocalization
-open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
-open CenteredMomentCanonicalFirst
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss CenteredMomentSourceRow CenteredMomentSecondSourceRetained CenteredMomentFirstSectors CenteredMomentSecondSectorColumns CenteredMomentHeckeColumnWindow CenteredMomentSecondSectorRetained CenteredMomentSecondRetainedPair CenteredMomentSecondSectorFrequency CenteredMomentSupport CenteredMomentSectorLocalization CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentCanonicalFirst
 local notation "O" => ActualEisensteinCubic.O
 
 theorem retained_sector_eq_physical (η : Character) (t : ℝ)
@@ -31,10 +26,8 @@ theorem retained_sector_eq_physical (η : Character) (t : ℝ)
   congr 1
   let c := fun I : sectorPool C hC.1 S=>β (C*I)*heightCoeff η t I
   let d := fun J : sectorPool D hD.1 S=>β (D*J)*heightCoeff η t J
-  have hci (I : sectorPool C hC.1 S) : Supported (C*(I:Ideal O)) :=
-    (supported_mul_iff _ _).mpr ⟨hC,sectorPool_supported C hC.1 S I⟩
-  have hdj (J : sectorPool D hD.1 S) : Supported (D*(J:Ideal O)) :=
-    (supported_mul_iff _ _).mpr ⟨hD,sectorPool_supported D hD.1 S J⟩
+  have hci (I : sectorPool C hC.1 S) := (supported_mul_iff _ _).mpr ⟨hC,sectorPool_supported C hC.1 S I⟩
+  have hdj (J : sectorPool D hD.1 S) := (supported_mul_iff _ _).mpr ⟨hD,sectorPool_supported D hD.1 S J⟩
   let f := fun (I : sectorPool C hC.1 S) (J : sectorPool D hD.1 S) (j : O)=>
     if IsCoprime (I:Ideal O) (J:Ideal O) then
       (c I*star (d J))*(idealCorrelation (C*I) (D*J) (hci I) (hdj J) j*

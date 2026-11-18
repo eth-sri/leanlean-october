@@ -7,13 +7,10 @@ namespace OAI
 
 noncomputable section
 
+open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve ConcretePrimeRowBridge FirstCauchyArithmetic SecondPassArithmetic
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve ConcretePrimeRowBridge
-open FirstCauchyArithmetic SecondPassArithmetic
 namespace SevenEighths.InverseInitialCommonTuples
-open InverseInitialOverlap InverseInitialPoissonBridge InverseInitialKernelBridge
-open InverseInitialRayAttachment InverseInitialArithmetic InverseInitialCommonPool
-open InverseInitialEnergyCallerWindow InverseInitialCommonForcing
+open InverseInitialOverlap InverseInitialPoissonBridge InverseInitialKernelBridge InverseInitialRayAttachment InverseInitialArithmetic InverseInitialCommonPool InverseInitialEnergyCallerWindow InverseInitialCommonForcing
 local notation "Eis"=>ActualEisensteinCubic.O
 variable {κ ι : Type*} [DecidableEq ι]
 

@@ -38,9 +38,8 @@ theorem atkinsonOrderedPrefixGapMajorant_le_far {H t u : ℝ} {M : ℕ}
   have hb := atkinson_far_lambda_bounds hH hHu huH htu hM
   have hM0 : (0:ℝ) < M := by exact_mod_cast hM
   have hR : 0 < Real.sqrt (H*(M:ℝ)) := by positivity
-  have hupper := atkinsonIndexBProcessLambdaUpper_pos (N := M) (hH.trans_le hHu) htu hM
   exact (atkinsonOrderedPrefixGapMajorant_le_min_bProcess M M t u).trans
-    (atkinson_far_min_bProcess hM0 hR hfar hb.1 hupper.le hb.2)
+    (atkinson_far_min_bProcess hM0 hR hfar hb.1 (atkinsonIndexBProcessLambdaUpper_pos (N := M) (hH.trans_le hHu) htu hM).le hb.2)
 
 theorem atkinsonPrefixGapMajorant_le_far {H t u : ℝ} {M : ℕ}
     (hH : 0 < H) (htH : H ≤ t) (hHt : t ≤ 2*H)
@@ -48,7 +47,7 @@ theorem atkinsonPrefixGapMajorant_le_far {H t u : ℝ} {M : ℕ}
     (hfar : Real.sqrt (H*(M:ℝ)) ≤ |t-u|) :
     atkinsonPrefixGapMajorant M M t u ≤
       2000*Real.sqrt ((M:ℝ)*|t-u|/Real.sqrt (H*(M:ℝ))) := by
-  have hM0 : (0:ℝ) < M := by exact_mod_cast hM
+  have hM0 : 0 < M := by exact_mod_cast hM
   have hR : 0 < Real.sqrt (H*(M:ℝ)) := by positivity
   have hne : t ≠ u := by
     intro h

@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.ExponentPairCorrelationNormalized
 
 @[expose] public section
@@ -27,7 +36,7 @@ theorem sum_shift_rpow_le {q : ℝ} (hq : 0 ≤ q) (H : ℕ) :
       apply Finset.sum_le_sum
       intro r hr
       exact Real.rpow_le_rpow (Nat.cast_nonneg r)
-        (by exact_mod_cast (show r ≤ H by have := Finset.mem_Icc.mp hr; omega)) hq
+        (by exact_mod_cast (by have := Finset.mem_Icc.mp hr; omega)) hq
     _ = ((Finset.Icc 1 (H-1)).card : ℝ)*(H : ℝ)^q := by simp
     _ ≤ _ := mul_le_mul_of_nonneg_right (by exact_mod_cast hc) (by positivity)
 
@@ -66,7 +75,7 @@ theorem sum_sourceShiftCorrelation_le
       intro r hr
       have hrI := Finset.mem_Icc.mp hr
       exact hbound F T N a L r hT hN (by omega)
-        ((by exact_mod_cast (show r ≤ H by omega) : (r : ℝ) ≤ H).trans hHN) ha hb hF
+        ((by exact_mod_cast (by omega) : (r : ℝ) ≤ H).trans hHN) ha hb hF
     _ = C*((T/N^2)^(k+ε)*N^(l+ε)*(∑ r ∈ Finset.Icc 1 (H-1), (r : ℝ)^(k+ε))+
         (N^2/T)*(∑ r ∈ Finset.Icc 1 (H-1), (r : ℝ)⁻¹)) := by
       rw [← Finset.mul_sum]
@@ -81,7 +90,7 @@ theorem sum_sourceShiftCorrelation_le
       apply mul_le_mul_of_nonneg_left _ (zero_le_one.trans hC)
       exact add_le_add
         (mul_le_mul_of_nonneg_left (sum_shift_rpow_le
-          (show 0 ≤ k+ε by linarith [hkl.inTriangle.1]) H) hM)
+          (by linarith [hkl.inTriangle.1]) H) hM)
         (mul_le_mul_of_nonneg_left (sum_shift_inv_le H) hI)
     _ = _ := by ring
 

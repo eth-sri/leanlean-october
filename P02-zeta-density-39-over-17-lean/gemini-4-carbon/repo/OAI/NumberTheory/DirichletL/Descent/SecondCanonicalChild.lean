@@ -7,9 +7,8 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondFixedFamily
 namespace OAI
 
 namespace SevenEighths.InverseMoment
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss InverseSecondFibers
 open scoped BigOperators Classical
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss
-open InverseSecondFibers
 open InverseInitialArithmetic (sourceIdeal sourceIdeal_gen)
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
@@ -31,7 +30,7 @@ theorem primaryGenerator_primeProduct
   | @insert i S hi ih =>
     rw [Finset.prod_insert hi]
     have hpow : ConcretePrimeRowBridge.goodLambda^2 ∣ p i^v i-1 := by
-      simpa only [one_pow] using (hpr i).trans (sub_dvd_pow_sub_pow (p i) 1 (v i))
+      simpa using (hpr i).trans (sub_dvd_pow_sub_pow (p i) 1 (v i))
     have he : p i^v i*(∏ j ∈ S,p j^v j)-1 =
         (p i^v i-1)*(∏ j ∈ S,p j^v j)+((∏ j ∈ S,p j^v j)-1) := by ring
     rw [he]

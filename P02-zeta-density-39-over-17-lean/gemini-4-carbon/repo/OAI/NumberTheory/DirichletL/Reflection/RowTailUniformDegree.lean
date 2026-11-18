@@ -55,8 +55,7 @@ theorem original_family_row_tail_uniform_degree (lo hi : ℝ) (hlo : 0<lo) (A : 
     · exact hj f
     · norm_num [reflectedExponent]
     · norm_num [reflectedExponent]
-  have hs (P : L) : Summable (block P) :=
-    literalDyadicBlock_summable (F.reflected K hK (S P.val.val)) (D P.val P.property) s hc hN hbase
+  have hs (P : L) := literalDyadicBlock_summable (F.reflected K hK (S P.val.val)) (D P.val P.property) s hc hN hbase
       (hchar P.val.val P.val.property) (reflectedExponent jF) hj' (slotIndices φ (PrimeIndex K) σ)
       (CompletedHeight.normTwistedSource W θ) lo hi hlo
       ((CompletedHeight.normTwistedSource_support W θ).trans hWs) htw X hX u
@@ -76,9 +75,7 @@ theorem original_family_row_tail_uniform_degree (lo hi : ℝ) (hlo : 0<lo) (A : 
   have hw (P : L) : ‖r K*aw P.val.val‖≤1 := by
     rw [norm_mul]
     exact (mul_le_mul hr (haw P.val.val P.val.property) (norm_nonneg _) zero_le_one).trans_eq (one_mul 1)
-  have hh := finite_weighted_truncation_norm block (fun P : L => r K*aw P.val.val) J _ hs hw he
-  change ‖(∑' i,∑ P : L,r K*aw P.val.val*block P i)-∑ i∈J,∑ P : L,r K*aw P.val.val*block P i‖≤_
-  apply hh.trans
+  apply (finite_weighted_truncation_norm block (fun P : L => r K*aw P.val.val) J _ hs hw he).trans
   apply mul_le_mul_of_nonneg_right
   · exact_mod_cast (Fintype.card_subtype_le (fun P : Pset => IsCoprime K P.val)).trans_eq (Fintype.card_coe Pset)
   · positivity

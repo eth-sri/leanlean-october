@@ -64,7 +64,7 @@ theorem literalDyadicBlock_eq_filtered_source (F : PrimeFamily φ) (K : Ideal Ei
           (fun _ => completedShellWindow) QK QP ((2:ℝ)^i.2.2) ((2:ℝ)^i.2.1) W θ X := by
   rw [literalDyadicBlock_eq_shell_source F K hK S jF D s hc u i QK QP hQK hQP hKr hPr W θ X]
   exact sum_dual_mask i.2.1 i.2.2 (fun n b => actualKernelSourceTerm F K hK S jF D s hc u i.1 n b
-    (fun _ => completedShellWindow) QK QP ((2:ℝ)^i.2.2) ((2:ℝ)^i.2.1) W θ X)
+    (fun _ => completedShellWindow) QK QP (2^i.2.2) (2^i.2.1) W θ X)
 end
 end SevenEighths.InverseReflectedPhase
 

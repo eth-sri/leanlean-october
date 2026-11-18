@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.SargosKernelFourier
 
 @[expose] public section
@@ -19,17 +28,16 @@ theorem sargos_sinc_lower {x : ℝ} (hx : |x| ≤ Real.pi/2) :
     1/2 ≤ Real.sinc x := by
   by_cases hz : x = 0
   · norm_num [hz]
-  have habs : 0 < |x| := abs_pos.mpr hz
-  have hsin := Real.mul_le_sin (abs_nonneg x) hx
+  have habs := abs_pos.mpr hz
   have hsinc : 2/Real.pi ≤ Real.sinc |x| := by
     rw [Real.sinc_of_ne_zero (ne_of_gt habs)]
-    exact (le_div_iff₀ habs).mpr hsin
+    exact (le_div_iff₀ habs).mpr (Real.mul_le_sin (abs_nonneg x) hx)
   have he : Real.sinc |x| = Real.sinc x := by
     by_cases hpos : 0 ≤ x
     · rw [abs_of_nonneg hpos]
     · rw [abs_of_neg (lt_of_not_ge hpos),Real.sinc_neg]
   rw [he] at hsinc
-  have hhalf : (1/2 : ℝ) ≤ 2/Real.pi := by
+  have hhalf : (1/2) ≤ 2/Real.pi := by
     apply (le_div_iff₀ Real.pi_pos).mpr
     linarith [Real.pi_le_four]
   exact hhalf.trans hsinc
@@ -40,9 +48,8 @@ theorem sargosSincKernel_lower {w x : ℝ} (hw : 0 < w)
     rw [abs_mul,abs_mul,abs_of_pos Real.pi_pos,abs_of_pos hw]
     nlinarith [mul_le_mul_of_nonneg_left hx Real.pi_pos.le]
   have hs := sargos_sinc_lower harg
-  have hsq : (1/4 : ℝ) ≤ Real.sinc (Real.pi*w*x)^2 := by nlinarith
-  have h := mul_le_mul_of_nonneg_left hsq hw.le
-  simpa only [sargosSincKernel,div_eq_mul_inv,one_mul] using h
+  have hsq : (1/4) ≤ Real.sinc (Real.pi*w*x)^2 := by nlinarith
+  simpa only [sargosSincKernel,div_eq_mul_inv,one_mul] using (mul_le_mul_of_nonneg_left hsq hw.le)
 
 theorem sargosSincKernel_rectangle_lower {a b x y : ℝ}
     (ha : 0 < a) (hb : 0 < b) (hx : a*|x| ≤ 1/2) (hy : b*|y| ≤ 1/2) :

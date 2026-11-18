@@ -7,10 +7,8 @@ public import OAI.NumberTheory.DirichletL.CubicSieve.ColumnShells
 namespace OAI
 
 namespace SevenEighths.CubicSieve
+open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge CanonicalQuadraticSieve IdealMobiusDivisorSum SecondPassArithmetic EisensteinSchwartzPoisson SevenEighths.CubicDyadicDecay
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge CanonicalQuadraticSieve
-open IdealMobiusDivisorSum SecondPassArithmetic EisensteinSchwartzPoisson
-open SevenEighths.CubicDyadicDecay
 noncomputable section
 local notation "O" => ActualEisensteinCubic.O
 

@@ -2,15 +2,14 @@ module
 public import OAI.NumberTheory.DirichletL.Moments.ReflectionLength
 public import OAI.NumberTheory.DirichletL.Moments.CommonMaskEnergy
 
-set_option linter.privateModule false
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
 open Filter
+open scoped Classical BigOperators
 namespace SevenEighths.CenteredMomentCommonMaskChildCapacity
 open HeckeFamily HeckeDyadic CenteredMomentComparisonReflection
 local notation "O" => HeckeFamily.O

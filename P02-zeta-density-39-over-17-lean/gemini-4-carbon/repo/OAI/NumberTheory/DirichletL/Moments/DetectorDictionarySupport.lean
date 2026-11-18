@@ -29,7 +29,7 @@ theorem eventually_primePool_coprime (η : Character) (a : ℝ) (ha : 0<a) :
     ∀ᶠD : ℝ in atTop,∀(M : Ideal O)(H : Subgroup (O⧸M)ˣ)(W : ℝ→ℂ)(b : ℝ),
       Function.support W⊆Set.Ici a →
       ∀P∈primePool M H b D,W ((P.absNorm:ℝ)/D)≠0→IsCoprime P η.modulus := by
-  filter_upwards [eventually_gt_atTop (0:ℝ),eventually_gt_atTop ((η.modulus.absNorm:ℝ)/a)] with D hD hlarge
+  filter_upwards [eventually_gt_atTop 0,eventually_gt_atTop ((η.modulus.absNorm:ℝ)/a)] with D hD hlarge
   intro M H W b hs P hP hW
   exact annular_prime_coprime η a D ha hD hlarge W hs P (Finset.mem_filter.mp hP).2.1 hW
 

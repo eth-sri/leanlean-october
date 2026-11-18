@@ -7,13 +7,11 @@ public import OAI.NumberTheory.DirichletL.Moments.PlainEnergy
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
 open MeasureTheory
+open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentPlainWindowEnergy
-open CanonicalQuadraticSieve CenteredMomentRowNorm CenteredMomentPlainEnergy
-open CenteredMomentHeckeColumnWindow CenteredMomentHeckeWindowEnergy
-open HeckeFamily FourierBridge CenteredMomentSmooth
+open CanonicalQuadraticSieve CenteredMomentRowNorm CenteredMomentPlainEnergy CenteredMomentHeckeColumnWindow CenteredMomentHeckeWindowEnergy HeckeFamily FourierBridge CenteredMomentSmooth
 local notation "O" => ActualEisensteinCubic.O
 
 theorem plain_column_integral {α : Type*} (S : Finset α) (a : α → O)

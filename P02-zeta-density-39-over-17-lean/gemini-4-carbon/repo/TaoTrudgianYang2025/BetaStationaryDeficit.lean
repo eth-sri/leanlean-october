@@ -1,6 +1,16 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
-public import TaoTrudgianYang2025.BetaStationaryBetaBound
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
+public import TaoTrudgianYang2025.BetaAmplitudePartialSummation
 public import Mathlib.Analysis.Calculus.Taylor
 
 @[expose] public section
@@ -45,12 +55,12 @@ theorem modelPhaseStationaryDeficit_bounds
       modelPhaseStationaryDeficit F v u ≤
         (σ+1)*(u-modelPhaseInverseSlope F v)^2/2 := by
   let u₀ := modelPhaseInverseSlope F v
-  have hu₀ : u₀ ∈ Ioo (1 : ℝ) 2 := modelPhaseInverseSlope_mem hv
+  have hu₀ : u₀ ∈ Ioo 1 2 := modelPhaseInverseSlope_mem hv
   by_cases heq : u₀ = u
   · rw [← heq]
     simp only [u₀,modelPhaseStationaryDeficit_at_inverse,sub_self,zero_pow (by decide : 2 ≠ 0),
       mul_zero,zero_div,le_refl,and_self]
-  · have hsub : uIcc u₀ u ⊆ Ioo (1 : ℝ) 2 :=
+  · have hsub : uIcc u₀ u ⊆ Ioo 1 2 :=
       ordConnected_Ioo.uIcc_subset hu₀ hu
     have hs : ContDiffOn ℝ 2 F (uIcc u₀ u) := by
       intro x hx
@@ -67,18 +77,17 @@ theorem modelPhaseStationaryDeficit_bounds
       exact deriv_modelPhaseInverseSlope_apply hv
     have hpoly : taylorWithinEval F 1 (uIcc u₀ u) u₀ u =
         F u₀+(u-u₀)*v := by
-      rw [show (1 : ℕ) = 0+1 by rfl,taylorWithinEval_succ,taylor_within_zero_eval]
+      rw [show 1 = 0+1 by rfl,taylorWithinEval_succ,taylor_within_zero_eval]
       norm_num [hfirst]
     obtain ⟨x,hx,hrem⟩ := taylor_mean_remainder_lagrange_iteratedDeriv (n := 1) heq hs
     rw [hpoly] at hrem
     norm_num only [Nat.reduceAdd,Nat.factorial_two,Nat.cast_ofNat,iteratedDeriv_succ,
       iteratedDeriv_zero] at hrem
-    have hxI : x ∈ Ioo (1 : ℝ) 2 := hsub (Ioo_subset_Icc_self hx)
+    have hxI : x ∈ Ioo 1 2 := hsub (Ioo_subset_Icc_self hx)
     have hc := approximateModelPhase_curvature_deriv_bounds hσ hδ hF hxI
     have hd : modelPhaseStationaryDeficit F v u =
         (-deriv (deriv F) x)*(u-u₀)^2/2 := by
       unfold modelPhaseStationaryDeficit
-      change F u₀+v*(u-u₀)-F u = _
       nlinarith only [hrem]
     rw [hd]
     exact ⟨div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_right hc.1 (sq_nonneg _))

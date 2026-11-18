@@ -4,33 +4,20 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalPairBound
 public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalFixedQWindow
 public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalPhysicalHeight
 public import OAI.NumberTheory.DirichletL.Moments.CommonExceptionalWindow
-public import OAI.NumberTheory.DirichletL.Moments.ExceptionalWindowHeight
+public import OAI.NumberTheory.DirichletL.Moments.CommonExceptionalSource
+public import OAI.NumberTheory.DirichletL.Moments.CommonHeightEnvelope
+public import OAI.NumberTheory.DirichletL.Moments.HeckeWindowEnergy
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter MeasureTheory
+open scoped Classical BigOperators SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptionalFixedQ
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss UniqueFactorizationMonoid
-open CenteredMomentCommonRadialData CenteredMomentCommonWindowColumn CenteredMomentReflectedSource
-open CenteredMomentCommonSectorWindow CenteredMomentSecondSectorColumns
-open CenteredMomentSecondScaled CenteredMomentChildAssembly CenteredMomentRowNorm
-open CenteredMomentHeckeColumnWindow CenteredMomentFirstSectors CenteredMomentSourceRow
-open CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentExceptionalAmplitudePair
-open CenteredMomentLogDyadic RayFourExpansion CenteredMomentSmooth
-open CenteredMomentFiniteProfileExceptional CenteredMomentFiniteProfileExceptionalCommon
-open CenteredMomentFiniteProfileExceptionalPhysical
-open CenteredMomentCommonHeightEnvelope CenteredMomentCommonExceptionalCost
-open CenteredMomentExceptionalSourceShell CenteredMomentSecondHeightFamily
-open CenteredMomentSecondExceptionalPairDictionary CenteredMomentSecondExceptionalPairBound
-open CenteredMomentSecondCanonical
-open CenteredMomentCanonicalFirst CenteredMomentSecondCanonicalFrequency
-open CenteredMomentSecondCanonicalNonunit CenteredMomentForcing CenteredMomentChildRows
-open ConcretePrimeRowBridge
+open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss UniqueFactorizationMonoid CenteredMomentCommonRadialData CenteredMomentCommonWindowColumn CenteredMomentReflectedSource CenteredMomentCommonSectorWindow CenteredMomentSecondSectorColumns CenteredMomentSecondScaled CenteredMomentChildAssembly CenteredMomentRowNorm CenteredMomentHeckeColumnWindow CenteredMomentFirstSectors CenteredMomentSourceRow CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentExceptionalAmplitudePair CenteredMomentLogDyadic RayFourExpansion CenteredMomentSmooth CenteredMomentFiniteProfileExceptional CenteredMomentFiniteProfileExceptionalCommon CenteredMomentFiniteProfileExceptionalPhysical CenteredMomentCommonHeightEnvelope CenteredMomentCommonExceptionalCost CenteredMomentExceptionalSourceShell CenteredMomentSecondHeightFamily CenteredMomentSecondExceptionalPairDictionary CenteredMomentSecondExceptionalPairBound CenteredMomentSecondCanonical CenteredMomentCanonicalFirst CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentForcing CenteredMomentChildRows ConcretePrimeRowBridge
 local notation "O" => HeckeFamily.O
 local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
 universe u
@@ -92,14 +79,13 @@ theorem actual_canonical_original_pair (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)(l
   rw [CenteredMomentCommonExceptionalSymmetry.same_raw_better_cap] at hb
   rw [originalPair,original_pair s s.η τ₁ τ₂ χ ξ A C D hC hD R seed s.t w X Y Ds rows hτ₁ hτ₂]
   apply (mul_le_mul_of_nonneg_left hb (volume_pos s.toData).le).trans
-  have hm:=mass_phase Sprofile s s p p w J
   let F:=volume s.toData*(K*(768*(6:ℝ)^(normalizedFactors Q).toFinset.card*Cr^(1/6:ℝ))*
           Z^((M-4*Real.logb Z (Ideal.absNorm (forcingIdeal (fun P:CommonIndex C D=>P.val)
             (leftExponent C D) (rightExponent C D) (nonunitPartitionSet C D U)):ℝ))/6+
             2*ε+δ-max (r-min (Real.logb Z (C.absNorm:ℝ)) (Real.logb Z (D.absNorm:ℝ))) 0)*
     ((C.absNorm:ℝ)*D.absNorm)^θ*(frozenProfile s*frozenProfile s/((C.absNorm:ℝ)*D.absNorm)))*
     (∫u:ℝ,(1+‖u‖)^J*‖columnDensity logAnnulus logAnnulus_compact logAnnulus_smooth u‖)^2
-  have hz:0<Z:=zero_lt_one.trans hZ.1
+  have hz :=zero_lt_one.trans hZ.1
   have hF:0≤F:=by
     dsimp only [F]
     exact mul_nonneg (mul_nonneg (volume_pos s.toData).le
@@ -111,7 +97,7 @@ theorem actual_canonical_original_pair (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)(l
         CenteredMomentAllocatedDetectorAmplitude.slotControl,CenteredMomentExceptionalAmplitudePair.volume]
       ring
     _≤F*((1+2*Real.pi)^(4*J)*profileMass Sprofile s.toData s.toData p p J*(1+‖w‖)^(2*J)):=
-      mul_le_mul_of_nonneg_left hm hF
+      mul_le_mul_of_nonneg_left (mass_phase Sprofile s s p p w J) hF
     _=_:=by dsimp only [F];ring
 
 end SevenEighths.CenteredMomentFiniteProfileExceptionalFixedQ

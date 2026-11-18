@@ -9,8 +9,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentAddedZeroUniform
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open CenteredMomentGaussEnergy CenteredMomentAddedZero CenteredMomentRectangle
+open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss CenteredMomentGaussEnergy CenteredMomentAddedZero CenteredMomentRectangle
 local notation "O" => ActualEisensteinCubic.O
 
 abbrev Tuple (ι : Type*) := (ι ⊕ Fin 2) → Ideal O
@@ -42,8 +41,7 @@ lemma tupleEquiv_plain {ι : Type*} {n : ℕ} (e : ι ≃ Fin n) (v : Tuple ι) 
 
 theorem tupleProduct_reindex {ι : Type*} [Fintype ι] {n : ℕ}
     (e : ι ≃ Fin n) (v : Tuple ι) :
-    tupleProduct (tupleEquiv e v) = finiteTupleProduct v := by
-  exact (coordinateEquiv e).symm.prod_comp v
+    tupleProduct (tupleEquiv e v) = finiteTupleProduct v := (coordinateEquiv e).symm.prod_comp v
 
 def originalFiniteCoefficient {ι : Type*} [Fintype ι]
     (c : O) (χ : MulChar (O ⧸ Ideal.span {c}) ℂ) (R : Ideal O) (t : ℝ)
@@ -62,7 +60,7 @@ theorem originalCoefficient_reindex {ι : Type*} [Fintype ι] {n : ℕ}
       (fun j => P (e.symm j)) W₁ W₂ X₁ X₂ Y₁ Y₂ b₁ b₂ s (tupleEquiv e v) =
     originalFiniteCoefficient c χ R t ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ b₁ b₂ s v := by
   have hslot (j : Fin n) : tupleEquiv e v (j.castAdd 2) = v (Sum.inl (e.symm j)) := by
-    simpa only [Equiv.apply_symm_apply] using tupleEquiv_slot e v (e.symm j)
+    simpa using tupleEquiv_slot e v (e.symm j)
   have hp₀ : (⟨n, by omega⟩ : Fin (n + 2)) = (0 : Fin 2).natAdd n := by ext; simp
   have hp₁ : (⟨n + 1, by omega⟩ : Fin (n + 2)) = (1 : Fin 2).natAdd n := by ext; simp
   simp only [originalCoefficient, originalFiniteCoefficient, tupleProduct_reindex,

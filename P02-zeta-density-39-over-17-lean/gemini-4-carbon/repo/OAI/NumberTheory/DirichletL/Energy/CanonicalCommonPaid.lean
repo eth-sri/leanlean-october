@@ -10,29 +10,11 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentEnergyCanonicalCommonPaid
-open HeckeFamily ConcreteTraceCRT
-open CenteredMomentEnergyAllocatedChildren CenteredMomentAllocatedNaturalSource
-open CenteredMomentAllocatedNaturalRadial CenteredMomentOriginalRadialComparison
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentRetainedProfile
-open CenteredMomentRadialEligibleEnergy
+open HeckeFamily ConcreteTraceCRT CenteredMomentEnergyAllocatedChildren CenteredMomentAllocatedNaturalSource CenteredMomentAllocatedNaturalRadial CenteredMomentOriginalRadialComparison CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentRetainedProfile CenteredMomentRadialEligibleEnergy
 local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
 
-open CenteredMomentEnergyCanonicalLiveBound CenteredMomentEnergyCanonicalLiveCapacity
-open CenteredMomentEnergyCanonicalPaidSource
-open CenteredMomentEnergyAllocatedClipped CenteredMomentEnergyAllocatedHomogeneous
-open CenteredMomentEnergyChildState CenteredMomentSecondNonexceptionalChosenBlock
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyAllocatedPaid CenteredMomentEnergyAllocatedProfiles
-open CenteredMomentEnergyAllocatedChildren CenteredMomentEnergyAllocatedZero
-open CenteredMomentInductionEnergy CenteredMomentFiniteProfileExceptional
-open CenteredMomentNaturalFixedRaySource CenteredMomentCommonRadialData
-open CenteredMomentCommonHeightEnvelope CenteredMomentCommonAllocationSum
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
-open CenteredMomentAllocatedNaturalSource CenteredMomentRetainedProfile
-open CenteredMomentAllocatedRayDictionary QuadraticInitialBound
-
-open CenteredMomentEnergyCanonicalChildBound CenteredMomentSectorLocalization
+open CenteredMomentEnergyCanonicalLiveBound CenteredMomentEnergyCanonicalLiveCapacity CenteredMomentEnergyCanonicalPaidSource CenteredMomentEnergyAllocatedClipped CenteredMomentEnergyAllocatedHomogeneous CenteredMomentEnergyChildState CenteredMomentSecondNonexceptionalChosenBlock CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyAllocatedPaid CenteredMomentEnergyAllocatedProfiles CenteredMomentEnergyAllocatedZero CenteredMomentInductionEnergy CenteredMomentFiniteProfileExceptional CenteredMomentNaturalFixedRaySource CenteredMomentCommonRadialData CenteredMomentCommonHeightEnvelope CenteredMomentCommonAllocationSum CenteredMomentAllocatedRayDictionary QuadraticInitialBound CenteredMomentEnergyCanonicalChildBound CenteredMomentSectorLocalization
 variable (M:Ideal O)[NeZero M]
 local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
@@ -95,10 +77,10 @@ theorem actual_common_paid_source (W:ℝ→ℂ)(aslot bslot Mcap Lslot εremove 
   let E:=Cc*(C₀+C₁)*diagonalControl rad.profile*(p.control T)^2*
     (1+(|v|+height))^(dc+degree+4*n)*
     Z^(Mnom+εchild+εremove+(δ₂+u+ell+δ₁/6+θclip/3)+κ*mesh)
-  have hz:1<Z:=hZ₀.trans_le hZ
+  have hz :=hZ₀.trans_le hZ
   have he:0≤E:=by
     have hd:0≤diagonalControl rad.profile:=by unfold diagonalControl;positivity
-    have hz0:0<Z:=zero_lt_one.trans hz
+    have hz0 :=zero_lt_one.trans hz
     dsimp [E]
     positivity
   have hleft:∀X₁ X₂:ℝ,∀h₁:0<X₁,∀h₂:0<X₂,X₁≤Z^L → X₂≤Z^L →

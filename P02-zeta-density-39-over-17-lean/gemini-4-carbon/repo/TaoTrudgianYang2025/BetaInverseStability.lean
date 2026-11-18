@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaLegendreDual
 
 @[expose] public section
@@ -25,8 +35,7 @@ theorem approximateModelPhase_firstDeriv_error {σ δ : ℝ} {P : ℕ} {F : ℝ 
     {u : ℝ} (hu : u ∈ Ioo (1 : ℝ) 2) :
     |deriv F u - u^(-σ)| ≤ δ := by
   have he := hF.2 0 (Nat.zero_le P) ⟨u, hu.1.le, hu.2.le⟩
-  have hc : ContDiffAt ℝ 1 F u :=
-    (approximateModelPhase_contDiffAt hF hu).of_le
+  have hc := (approximateModelPhase_contDiffAt hF hu).of_le
       (ENat.natCast_le_of_coe_top_le_withTop le_rfl 1)
   change ‖iteratedDerivWithin 1 F phaseInterval u - modelPhase σ u‖ ≤ δ at he
   rw [iteratedDerivWithin_eq_iteratedDeriv
@@ -40,18 +49,18 @@ theorem approximateModelPhase_slope_gap {σ δ : ℝ} {F : ℝ → ℝ}
     {u w : ℝ} (hu : u ∈ Ioo (1 : ℝ) 2) (hw : w ∈ Ioo (1 : ℝ) 2)
     (huw : u ≤ w) :
     modelPhaseCurvatureLower σ * (w-u) ≤ deriv F u - deriv F w := by
-  have hc : ContinuousOn (deriv F) (Ioo (1 : ℝ) 2) := fun x hx =>
+  have hc : ContinuousOn (deriv F) (Ioo 1 2) := fun x hx =>
     (approximateModelPhase_deriv_contDiffAt hF hx).continuousAt.continuousWithinAt
-  have hd : DifferentiableOn ℝ (deriv F) (interior (Ioo (1 : ℝ) 2)) := by
+  have hd : DifferentiableOn ℝ (deriv F) (interior (Ioo 1 2)) := by
     intro x hx
     exact ((approximateModelPhase_deriv_contDiffAt hF (by simpa using hx)).differentiableAt (by simp : (∞ : WithTop ℕ∞) ≠ 0)).differentiableWithinAt
-  have hb : ∀ x ∈ interior (Ioo (1 : ℝ) 2),
+  have hb : ∀ x ∈ interior (Ioo 1 2),
       deriv (deriv F) x ≤ -modelPhaseCurvatureLower σ := by
     intro x hx
     have h := (approximateModelPhase_curvature_deriv_bounds hσ hδ hF
       (by simpa using hx)).1
     linarith
-  have hg := (convex_Ioo (1 : ℝ) 2).image_sub_le_mul_sub_of_deriv_le
+  have hg := (convex_Ioo 1 2).image_sub_le_mul_sub_of_deriv_le
     hc hd hb u hu w hw huw
   linarith
 

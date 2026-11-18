@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.RobertSargosFixedDisplacementSafe
 
 @[expose] public section
@@ -44,13 +53,11 @@ theorem robertSargos_fixed_displacement_conic_card_le
     have hWp : ∀ p ∈ W, Int.gcd (Int.gcd p.2.2 p.1 : ℤ) p.2.1 = 1 := by
       intro p hp
       obtain ⟨q,hq,rfl⟩ := Finset.mem_image.mp hp
-      dsimp [f]
       rw [Int.gcd_assoc,Int.gcd_comm q.2.1 q.1,← Int.gcd_assoc]
       exact hprim q hq
     have hWl : ∀ p ∈ W, p.2.2*(-d)+q₂*p.1-q₁*p.2.1 = 0 := by
       intro p hp
       obtain ⟨q,hq,rfl⟩ := Finset.mem_image.mp hp
-      dsimp [f]
       have hl := hline q hq
       nlinarith only [hl]
     have hWn : ∀ p ∈ W,
@@ -58,8 +65,7 @@ theorem robertSargos_fixed_displacement_conic_card_le
       intro p hp
       obtain ⟨q,hq,rfl⟩ := Finset.mem_image.mp hp
       have hl : (q.2.2:ℝ)*d+(q.1:ℝ)*q₁-(q.2.1:ℝ)*q₂ = 0 := by
-        have hli := hline q hq
-        have hz : q.2.2*d+q.1*q₁-q.2.1*q₂ = 0 := by nlinarith only [hli]
+        have hz : q.2.2*d+q.1*q₁-q.2.1*q₂ = 0 := by nlinarith only [(hline q hq)]
         exact_mod_cast hz
       simpa only [f,Int.cast_neg,robertSargosReduced_swap hl,abs_neg] using hnear q hq
     have hb := robertSargos_fixed_displacement_safe_card_le W hc (neg_ne_zero.mpr hd)
@@ -67,8 +73,7 @@ theorem robertSargos_fixed_displacement_conic_card_le
       (by simpa only [Int.cast_neg] using hWn)
     have hinj : Function.Injective f := by
       intro p q he
-      have he' := congrArg f he
-      simpa only [f,Prod.mk.eta] using he'
+      simpa only [f,Prod.mk.eta] using (congrArg f he)
     have hcard : W.card = S.card := Finset.card_image_of_injective S hinj
     simpa only [hcard,Int.natAbs_neg] using hb
 

@@ -45,9 +45,9 @@ theorem canonical_nonexceptional_frequency_sum (A : ℕ) (hA : 2<A) (a₀ b₀ :
   have hV : 0≤V := by dsimp [V];positivity
   calc
     _≤∑k∈E,‖canonicalLatticeBlock S hS σ C k d W U v ((Ideal.absNorm (Ideal.span {k.val}):ℝ)/H) N‖ := norm_sum_le _ _
-    _≤∑k∈E,V*(1+(Ideal.absNorm (Ideal.span {k.val}):ℝ)/H)^(-2:ℝ) :=
+    _≤∑k∈E,V*(1+(Ideal.absNorm (Ideal.span {k.val}):ℝ)/H)^(-2) :=
       Finset.sum_le_sum (fun k hk=>hblock S hS σ C k (hE k hk) d U v H N hH hN)
-    _=V*(∑k∈E,(1+(Ideal.absNorm (Ideal.span {k.val}):ℝ)/H)^(-2:ℝ)) := (Finset.mul_sum ..).symm
+    _=V*(∑k∈E,(1+(Ideal.absNorm (Ideal.span {k.val}):ℝ)/H)^(-2)) := (Finset.mul_sum ..).symm
     _≤V*(L*H) := mul_le_mul_of_nonneg_left hc hV
     _=_ := by dsimp [V];ring
 
@@ -78,11 +78,10 @@ theorem canonical_exceptional_frequency_sum (a b M ε : ℝ) (ha : 0<a) (hb : 0�
       ‖canonicalLatticeBlock S hS σ C k d W U v ((Ideal.absNorm (Ideal.span {k.val}):ℝ)/H) N‖≤
         V*(1+(Ideal.absNorm (Ideal.span {k.val}):ℝ)/H)^(-2:ℝ) := by
     have ht : 0≤(Ideal.absNorm (Ideal.span {k.val}):ℝ)/H := by positivity
-    have hb := hblock W hcompact hs hW U S hS σ C k d N _ v hN ht
     have hpos : 0<1+(Ideal.absNorm (Ideal.span {k.val}):ℝ)/H := by positivity
     rw [Real.rpow_neg hpos.le,Real.rpow_two,←div_eq_mul_inv]
     apply (le_div_iff₀ (sq_pos_of_pos hpos)).mpr
-    convert hb using 1 ; dsimp [V] ; ring
+    convert (hblock W hcompact hs hW U S hS σ C k d N _ v hN ht) using 1 ; dsimp [V] ; ring
   calc
     _≤∑k∈E,‖canonicalLatticeBlock S hS σ C k d W U v ((Ideal.absNorm (Ideal.span {k.val}):ℝ)/H) N‖ := norm_sum_le _ _
     _≤∑k∈E,V*(1+(Ideal.absNorm (Ideal.span {k.val}):ℝ)/H)^(-2:ℝ) := Finset.sum_le_sum (fun k _=>hp k)

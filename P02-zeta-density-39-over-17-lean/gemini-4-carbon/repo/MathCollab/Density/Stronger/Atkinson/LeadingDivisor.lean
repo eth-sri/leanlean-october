@@ -10,9 +10,7 @@ public import MathCollab.Density.Stronger.Atkinson.KernelApproximation
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+open Complex Filter MeasureTheory Set Topology MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth MathCollab.Density.Contour
 open scoped Interval ComplexConjugate
 set_option autoImplicit false
 noncomputable section
@@ -50,7 +48,7 @@ theorem integrable_zetaSquareLeadingDivisorTerm {t : ℝ} (ht : 4 ≤ t) (n : �
 theorem summable_integral_norm_zetaSquareLeadingDivisorTerm (t : ℝ) :
     Summable (fun n : ℕ => ∫ u : ℝ, ‖zetaSquareLeadingDivisorTerm t n u‖) := by
   simp_rw [norm_zetaSquareLeadingDivisorTerm, integral_const_mul]
-  exact (summable_divisorDirichletTerm (s := (3 / 2 : ℂ)) (by norm_num)).norm.mul_right _
+  exact (summable_divisorDirichletTerm (s := (3 / 2)) (by norm_num)).norm.mul_right _
 
 theorem hasSum_zetaSquareLeadingDivisorContribution {t : ℝ} (ht : 4 ≤ t) :
     HasSum (zetaSquareLeadingDivisorContribution t) (zetaSquareLeadingDivisorIntegral t) := by

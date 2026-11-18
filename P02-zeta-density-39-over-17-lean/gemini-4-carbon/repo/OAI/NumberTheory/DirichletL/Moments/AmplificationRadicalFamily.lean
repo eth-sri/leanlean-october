@@ -9,22 +9,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical SchwartzMap
 namespace SevenEighths.CenteredMomentAmplificationRadicalFamily
-open HeckeFamily HeckeRowClosure CanonicalQuadraticSieve CanonicalRowCompletion
-open ConcretePrimeRowBridge CompletedGauss RayFourExpansion
-open CenteredMomentRadicalFamily CenteredMomentFirstFamily
-open CenteredMomentAmplificationFamily CenteredMomentAmplificationFamilyEnergy
-open CenteredMomentAmplificationActiveFamily CenteredMomentAmplificationActiveFactor
-open CenteredMomentAmplificationShortening CenteredMomentAmplificationSourceDomain
-open CenteredMomentHeckeExpansion CenteredMomentHeckeColumnWindow CenteredMomentChildRows
-open CenteredMomentSourceRow CenteredMomentOriginalChildEnergy CenteredMomentGaussEnergy
-open CenteredMomentSecondChildProfile
-open CenteredMomentAmplificationGlobal CenteredMomentAmplificationErrorEnergy
-open CenteredMomentAmplificationChildEnergy CenteredMomentAmplificationErrorPool
-open CenteredMomentSourceLiveColumn CenteredMomentAmplificationLiveMask
-open CenteredMomentAddedZeroUniform CenteredMomentSourceProfileMass CenteredMomentSourceMass
-open CenteredMomentCommonAllocationSum
-open CenteredMomentFirstAmplificationChoice
-open CenteredMomentSectorLocalization CenteredMomentAmplificationEligibility
+open HeckeFamily HeckeRowClosure CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge CompletedGauss RayFourExpansion CenteredMomentRadicalFamily CenteredMomentFirstFamily CenteredMomentAmplificationFamily CenteredMomentAmplificationFamilyEnergy CenteredMomentAmplificationActiveFamily CenteredMomentAmplificationActiveFactor CenteredMomentAmplificationShortening CenteredMomentAmplificationSourceDomain CenteredMomentHeckeExpansion CenteredMomentHeckeColumnWindow CenteredMomentChildRows CenteredMomentSourceRow CenteredMomentOriginalChildEnergy CenteredMomentGaussEnergy CenteredMomentSecondChildProfile CenteredMomentAmplificationGlobal CenteredMomentAmplificationErrorEnergy CenteredMomentAmplificationChildEnergy CenteredMomentAmplificationErrorPool CenteredMomentSourceLiveColumn CenteredMomentAmplificationLiveMask CenteredMomentAddedZeroUniform CenteredMomentSourceProfileMass CenteredMomentSourceMass CenteredMomentCommonAllocationSum CenteredMomentFirstAmplificationChoice CenteredMomentSectorLocalization CenteredMomentAmplificationEligibility
 local notation "O"=>ActualEisensteinCubic.O
 local instance {ι : Type*} : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
@@ -37,13 +22,12 @@ theorem radicalBound_error_power (η:Character)(m p:O)(hp:p≠0)(Z:ℝ)(hZ:1<Z)
     (radicalBound η m p (errorMovingExponent n):ℝ)=
       ((η.modulus.absNorm:ℝ)*(Ideal.span {m}).absNorm*(Ideal.span {(72:O)}).absNorm)*
         Z^(errorMoving p Z (n+1)):=by
-  have hpow:=Real.rpow_logb (zero_lt_one.trans hZ) (ne_of_gt hZ) (normValue_pos p hp)
   rcases hn with rfl|rfl|rfl <;>
     norm_num only [radicalBound,errorMovingExponent,errorMoving,Nat.cast_mul,
       Nat.cast_one,Real.rpow_zero,mul_one]
   all_goals simp only [ite_false,ite_true,Nat.one_ne_zero,eq_self,
     Nat.cast_one,Real.rpow_zero,mul_one]
-  all_goals rw [hpow]; rfl
+  all_goals rw [(Real.rpow_logb (zero_lt_one.trans hZ) (ne_of_gt hZ) (normValue_pos p hp))]; rfl
 
 theorem exists_radical_row (η:Character)(m p:O)(hm:m≠0)
     (hs:Supported (Ideal.span {p}))(hmLam:goodLambda∣m)(hm2:(2:O)∣m)(k:ℕ):
@@ -91,10 +75,9 @@ theorem exists_radical_family (η:Character)(m p:O)(hm:m≠0)
   choose τ hN hτ using fun χ:RayCharacter=>exists_radical_height η χ m p hm hs hmLam hm2 k
   refine ⟨τ,hN,?_⟩
   intro I hI t
-  have hn:=supported_primaryGenerator_ne_zero I hI
   have hgen:Supported (Ideal.span {primaryGenerator I}):=by
     rw [primary_span_supported I hI];exact hI
-  rw [residualCharacter_moving p _ k hs hgen hpp (primaryGenerator_spec I hn).2,
+  rw [residualCharacter_moving p _ k hs hgen hpp (primaryGenerator_spec I (supported_primaryGenerator_ne_zero I hI)).2,
     primary_span_supported I hI,amplificationPhase_expansion p _ k hgen]
   simp only [Finset.sum_mul,Finset.mul_sum]
   apply Finset.sum_congr rfl
@@ -168,18 +151,14 @@ theorem original_errors_to_children {ι : Type*} [Fintype ι] (η : Character) (
     (profileCoefficient R ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂ s)
   let S₀ := finiteColumns (Fintype.piFinset S)
   let C := (Ideal.span {p})^(n+1)
-  let Q := residualColumns S₀ p hp (n+1)
-  let T' := T/(Ideal.absNorm (Ideal.span {p}):ℝ)^(n+1)
-  have hC : C≠0 := pow_ne_zero _ hs.1
-  have ht : 0<T' := by
+  have ht : 0<(T/(Ideal.absNorm (Ideal.span {p}):ℝ)^(n+1)) := by
     apply div_pos hT
     apply pow_pos
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hs.1)
   have he := finite_original_error_energy S₀ (fun I => β I*rowWeight η m 1 1 t I)
     p hp hs hg hc hpp n hn T hT rows hrows W K hK hW hmajor
-  have hf := hτ S₀ C hC β t W K hK hW
   have hb (χ : RayCharacter) :
-      (sourceGaussEnergy Q (fun I => β (C*I)) (heightCoeff (τ χ) t) W K).re≤
+      (sourceGaussEnergy (residualColumns S₀ p hp (n+1)) (fun I => β (C*I)) (heightCoeff (τ χ) t) W K).re≤
         (n+2:ℝ)*∑ B : actualAllocations S C,
           (sourceGaussEnergy
             (finiteColumns (liveBox S B (allocation_data S C B (Finset.mem_filter.mp B.property).1).1))
@@ -187,15 +166,14 @@ theorem original_errors_to_children {ι : Type*} [Fintype ι] (η : Character) (
               (liveBox S B (allocation_data S C B (Finset.mem_filter.mp B.property).1).1)
               (maskedLiveProfile B C R s ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂))
             (heightCoeff (τ χ) t) W K).re := by
-    have hpool := residual_energy_eq_punctured S₀ β (heightCoeff (τ χ) t) p hp hs hpp (n+1) (by omega) W K
     change _≤_
-    rw [hpool]
+    rw [(residual_energy_eq_punctured S₀ β (heightCoeff (τ χ) t) p hp hs hpp (n+1) (by omega) W K)]
     simpa only [Nat.cast_add,Nat.cast_one,add_assoc,one_add_one_eq_two] using
       actual_amplification_child_energy S hS hprime (Ideal.span {p}) R s hPid hs (n+1)
         hslot hsc ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂ (heightCoeff (τ χ) t) W K hK hW
   apply he.trans
   apply (mul_le_mul_of_nonneg_left (div_le_div_of_nonneg_right
-    (hf.trans (mul_le_mul_of_nonneg_left (Finset.sum_le_sum (fun χ _ => hb χ)) (by norm_num))) ht.le)
+    ((hτ S₀ C (pow_ne_zero _ hs.1) β t W K hK hW).trans (mul_le_mul_of_nonneg_left (Finset.sum_le_sum (fun χ _ => hb χ)) (by norm_num))) ht.le)
     (localErrorCost_nonneg p n)).trans_eq
   rw [←Finset.mul_sum]
   ring

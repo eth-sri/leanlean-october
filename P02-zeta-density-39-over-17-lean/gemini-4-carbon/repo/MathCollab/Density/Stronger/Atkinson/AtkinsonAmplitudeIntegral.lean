@@ -65,20 +65,18 @@ theorem IntervalC1Bound.atkinsonRoot_of_primitive_bound {f : ℝ → ℂ} {a c M
     (hf : IntervalC1Bound f a c M) (b : ℝ) (ha : 0 < a) (hac : a ≤ c)
     (hprimitive : ∀ x ∈ Icc a c, ‖∫ y in a..x, atkinsonRootKernel T b y‖ ≤ B) :
     ‖∫ y in a..c, f y * atkinsonRootKernel T b y‖ ≤ 2 * B * M := by
-  have hB : 0 ≤ B := (norm_nonneg _).trans (hprimitive a ⟨le_rfl, hac⟩)
+  have hB := (norm_nonneg _).trans (hprimitive a ⟨le_rfl, hac⟩)
   let F : ℝ → ℂ := fun x => ∫ y in a..x, atkinsonRootKernel T b y
   have hk : ContinuousOn (atkinsonRootKernel T b) (Ioi 0) :=
     fun x hx => (continuousAt_atkinsonRootKernel T b hx).continuousWithinAt
-  have hd (x : ℝ) (hx : x ∈ Icc a c) :
-      HasDerivAt F (atkinsonRootKernel T b x) x :=
-    intervalIntegral.integral_hasDerivAt_right
+  have hd (x : ℝ) (hx : x ∈ Icc a c) := intervalIntegral.integral_hasDerivAt_right
       (intervalIntegrable_atkinsonRootKernel T b ha hx.1)
       (hk.stronglyMeasurableAtFilter isOpen_Ioi x (ha.trans_le hx.1))
       (continuousAt_atkinsonRootKernel T b (ha.trans_le hx.1))
   have hF : ContinuousOn F (uIcc a c) := by
     rw [uIcc_of_le hac]
     exact fun x hx => (hd x hx).continuousAt.continuousWithinAt
-  have hFb (x : ℝ) (hx : x ∈ Icc a c) : ‖F x‖ ≤ B := hprimitive x hx
+  have hFb (x : ℝ) (hx : x ∈ Icc a c) := hprimitive x hx
   have hparts := intervalIntegral.integral_mul_deriv_eq_deriv_mul
     (u := f) (u' := deriv f) (v := F) (v' := atkinsonRootKernel T b)
     (fun x hx => by
@@ -94,7 +92,7 @@ theorem IntervalC1Bound.atkinsonRoot_of_primitive_bound {f : ℝ → ℂ} {a c M
         rw [abs_of_nonneg (intervalIntegral.integral_nonneg hac (fun _ _ => norm_nonneg _))]
       _ ≤ ∫ y in a..c, ‖deriv f y‖ * B := by
         apply intervalIntegral.integral_mono_on hac
-        · simpa only [norm_mul] using
+        · simpa using
             (hf.derivative_integrable hac).norm.mul_continuousOn hF.norm
         · exact (hf.derivative_integrable hac).norm.mul_const B
         · intro y hy

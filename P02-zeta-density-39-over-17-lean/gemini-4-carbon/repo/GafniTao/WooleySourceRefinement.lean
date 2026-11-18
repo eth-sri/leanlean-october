@@ -112,7 +112,7 @@ theorem wooleySourcePolynomialResidueSum_eq_zero_of_massSq_eq_zero
   unfold wooleySourcePolynomialResidueSum
   apply Finset.sum_eq_zero
   intro n hn
-  have hnzero : ‖gamma n‖ = 0 := (sq_eq_zero_iff).mp (hterm n hn)
+  have hnzero := (sq_eq_zero_iff).mp (hterm n hn)
   rw [norm_eq_zero] at hnzero
   simp [hnzero]
 

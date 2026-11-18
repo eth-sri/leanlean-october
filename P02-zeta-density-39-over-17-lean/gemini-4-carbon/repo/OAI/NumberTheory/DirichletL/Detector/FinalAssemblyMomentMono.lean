@@ -6,11 +6,10 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.NonfloorMoments
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
 open Set
+open scoped Classical BigOperators
 namespace SevenEighths.ProbeFinalAssembly
-open HeckeFamily HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorBatch
-open ProbeHighRowFamily
+open HeckeFamily HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorBatch ProbeHighRowFamily
 
 lemma rawMoment_mono_constant {data : RowData} {W : ℝ→ℂ} {c κ C D : ℝ}
     (h : RawMoment data W c κ C) (hCD : C≤D) : RawMoment data W c κ D := by

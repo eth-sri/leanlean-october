@@ -8,8 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbeGramCommon
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcreteTraceCRT
-open CenteredMomentCorrelation CenteredMomentSupportedCorrelation
+open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcreteTraceCRT CenteredMomentCorrelation CenteredMomentSupportedCorrelation
 local notation "O" => ActualEisensteinCubic.O
 
 lemma actual_common_frequency_zero (C n₁ n₂ j : O)
@@ -32,10 +31,7 @@ lemma tsum_element_divisible (C : O) (hC : C≠0) (f : O→ℂ) :
     have hd : C∣j := by by_contra h;simp [h] at hj
     obtain ⟨k,rfl⟩ := hd
     exact ⟨k,rfl⟩
-  have ht := hinj.tsum_eq hs
-  calc
-    _ = ∑'k : O,if C∣C*k then f (C*k) else 0 := ht.symm
-    _ = _ := by simp only [dvd_mul_right,ite_true]
+  exact ((hinj.tsum_eq hs).symm).trans (by simp only [dvd_mul_right,ite_true])
 
 theorem actual_common_frequency_tsum (C n₁ n₂ : O)
     (hC : Supported (Ideal.span {C})) (h₁ : Supported (Ideal.span {n₁}))

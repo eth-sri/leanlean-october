@@ -95,10 +95,7 @@ theorem span_extractedGenerator (I : Ideal O) (hI : I ≠ 0) :
 
 theorem element_cubic_extraction (z : O) (hz : z ≠ 0) :
     ∃ u : Oˣ, z = u.val * extractedGenerator (Ideal.span {z}) := by
-  have hI : (Ideal.span {z} : Ideal O) ≠ 0 := Ideal.span_singleton_eq_bot.not.mpr hz
-  have ha : Associated (extractedGenerator (Ideal.span {z})) z :=
-    Ideal.span_singleton_eq_span_singleton.mp (span_extractedGenerator _ hI)
-  obtain ⟨u, hu⟩ := ha
+  obtain ⟨u, hu⟩ := (Ideal.span_singleton_eq_span_singleton.mp (span_extractedGenerator _ (Ideal.span_singleton_eq_bot.not.mpr hz)))
   exact ⟨u, by simpa only [mul_comm] using hu.symm⟩
 
 theorem badPart_sector (I : Ideal O) :

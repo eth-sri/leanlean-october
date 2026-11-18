@@ -12,22 +12,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyAmplifiedChildWidth
-open ActualEisensteinCubic ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve
-open CompletedGauss RayFourExpansion
-open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum
-open CenteredMomentCommonProfile CenteredMomentCommonRawScale CenteredMomentSourceLiveColumn
-open CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps
-open CenteredMomentFirstAmplificationChoice CenteredMomentAmplifiedRetainedRadius
-open CenteredMomentFirstAmplifiedActiveCapacitySource CenteredMomentFirstSecondActiveErrorGates
-open CenteredMomentFirstAnnularInput CenteredMomentEnergyAmplifiedRayDictionary
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonical
-open CenteredMomentSecondExceptionalFamily CenteredMomentSecondChildRadialWidth
-open CenteredMomentSecondDyadicRowSupport CenteredMomentSecondRadicalBudget
-open CenteredMomentSecondHeightFamily CenteredMomentSectorLocalization
-open CenteredMomentCanonicalFirst CenteredMomentCompleteCommon CenteredMomentFirstCanonicalFamily
-open CenteredMomentFirstScale CenteredMomentAmplifiedChildWidth
-open CenteredMomentAmplificationRadicalFamily CenteredMomentAmplificationActiveFactor
-open CenteredMomentChildRows
+open ActualEisensteinCubic ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve CompletedGauss RayFourExpansion CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentCommonProfile CenteredMomentCommonRawScale CenteredMomentSourceLiveColumn CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps CenteredMomentFirstAmplificationChoice CenteredMomentAmplifiedRetainedRadius CenteredMomentFirstAmplifiedActiveCapacitySource CenteredMomentFirstSecondActiveErrorGates CenteredMomentFirstAnnularInput CenteredMomentEnergyAmplifiedRayDictionary CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonical CenteredMomentSecondExceptionalFamily CenteredMomentSecondChildRadialWidth CenteredMomentSecondDyadicRowSupport CenteredMomentSecondRadicalBudget CenteredMomentSecondHeightFamily CenteredMomentSectorLocalization CenteredMomentCanonicalFirst CenteredMomentCompleteCommon CenteredMomentFirstCanonicalFamily CenteredMomentFirstScale CenteredMomentAmplifiedChildWidth CenteredMomentAmplificationRadicalFamily CenteredMomentAmplificationActiveFactor CenteredMomentChildRows
 local notation "O" => HeckeFamily.O
 variable {ι:Type*} [Fintype ι]
 local instance {α:Type*}:DecidableEq α:=Classical.decEq _
@@ -57,12 +42,10 @@ lemma main_nominal_cap (N:ℕ)(b:ℝ)(hb:1≤b)(s:Input ι)
     (hc:Fintype.card ι≤N)(hs:s.upper≤b)(C R:Ideal O)(B:actualAllocations s.pools C)
     (τ:Character)(t K:ℝ)(hK:0<K)(hne:frozenCoefficient B.val C R s.ν s.W s.P≠0) :
     nominal (child s C R B τ t) K≤geometry N b*((volume s/(C.absNorm:ℝ))^2/K) := by
-  have hv:=common_volume_le N b hb s hc hs C R B τ t hne
   have hC:=CenteredMomentAmplificationChildSourceCaps.norm_ge_one C (allocation_ne s C B)
-  have hh:0≤volume s/(C.absNorm:ℝ):=div_nonneg (volume_pos s).le (by positivity)
-  have hv':volume (child s C R B τ t)≤b^N*(volume s/(C.absNorm:ℝ)):=by simpa only [mul_div_assoc] using hv
+  have hv':volume (child s C R B τ t)≤b^N*(volume s/(C.absNorm:ℝ)):=by simpa only [mul_div_assoc] using (common_volume_le N b hb s hc hs C R B τ t hne)
   have hp:volume (child s C R B τ t)^2≤(b^N)^2*(volume s/(C.absNorm:ℝ))^2:=by
-    nlinarith [volume_pos (child s C R B τ t),mul_nonneg (pow_nonneg (zero_le_one.trans hb) N) hh]
+    nlinarith [volume_pos (child s C R B τ t),mul_nonneg (pow_nonneg (zero_le_one.trans hb) N) (div_nonneg (volume_pos s).le (by positivity))]
   exact (div_le_div_of_nonneg_right hp hK.le).trans_eq (by unfold geometry;ring)
 
 lemma error_volume_cap (N:ℕ)(b:ℝ)(hb:1≤b)(s:Input ι)
@@ -151,14 +134,13 @@ theorem main_child_width (N:ℕ)(b σ:ℝ)(hb:1≤b)(hσ:0<σ)
       (frequencyRadius (nominal (child s C R B τ t) (mainRadius C D E K (volume s) Z σ δ reserve)) Z ξ)
       rows W (mainRadius C D E K (volume s) Z σ δ reserve) n≠0)(χ:RayCharacter) :
     Real.logb Z (dyadicScale (n 1))+Real.logb Z ((family χ).modulus.absNorm:ℝ)<Mparent-σ/2 := by
-  have hZ:1<Z:=(threshold_gt_one N b σ hb hσ).trans_le hlarge
+  have hZ :=(threshold_gt_one N b σ hb hσ).trans_le hlarge
   let L:=mainRadius C D E K (volume s) Z σ δ reserve
   have hL:0<L:=by unfold L mainRadius mainCommonRadius;exact Real.rpow_pos_of_pos (zero_lt_one.trans hZ) _
   have he:=mainRadius_eq C D hC hD hCD E K (volume s) Z σ δ reserve
-  have hscale:=main_nominal_cap N b hb s hc hs C R B τ t L hL hB
   have hhscale:nominal (child s C R B τ t) L≤geometry N b*
       ((volume s/((commonPart C D).absNorm:ℝ))^2/L):=by
-    simpa only [commonPart_eq_left C D hC.1 hCD] using hscale
+    simpa only [commonPart_eq_left C D hC.1 hCD] using (main_nominal_cap N b hb s hc hs C R B τ t L hL hB)
   obtain ⟨z,hz,hball⟩:=actual_ball_witness τ t S β C₂ D₂ hC₂ hD₂ U _ rows W L n hne
   have hw:=main_declared_width_drop s.η τ fixedBadMask fixedBadMask_ne_zero C D E
     K (volume s) Z σ δ reserve hK (volume_pos s) hZ hmod hf t S β rows W

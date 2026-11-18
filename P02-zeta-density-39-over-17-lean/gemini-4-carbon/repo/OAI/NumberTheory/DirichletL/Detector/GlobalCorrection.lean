@@ -134,8 +134,7 @@ theorem globalClosedCorrection_analytic_z (η : HeckeFamily.Character) (S : Fins
 theorem exists_uniform_global_cutoff :
     ∃N : ℕ,4≤N ∧ ∀S : Finset Id,
       (∀P : PrimeIdeal,Ideal.absNorm P.val≤N → P.val∈S) → CorrectionTail S := by
-  have ht := (tendsto_order.1 (tendsto_tsum_compl_atTop_zero globalPrimeDefectBound)).2 (1/6) (by norm_num)
-  obtain ⟨F,hF⟩ := ht.exists
+  obtain ⟨F,hF⟩ := ((tendsto_order.1 (tendsto_tsum_compl_atTop_zero globalPrimeDefectBound)).2 (1/6) (by norm_num)).exists
   let N := max 4 (F.sup (fun P=>Ideal.absNorm P.val))
   refine ⟨N,le_max_left _ _,?_⟩
   intro S hS

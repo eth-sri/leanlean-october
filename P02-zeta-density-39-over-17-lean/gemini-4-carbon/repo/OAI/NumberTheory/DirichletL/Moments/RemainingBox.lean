@@ -70,9 +70,7 @@ theorem remaining_box_sum (B : Tuple ι) (S : (ι ⊕ Fin 2) → Finset (Ideal O
   apply Finset.sum_bij (fun u _ => remainingTuple B u)
   · exact fun u hu => remaining_mem B S u hu
   · intro u hu v hv he
-    have hu' := restore_remaining B u (fun i hi => hf i hi _ (Fintype.mem_piFinset.mp hu _))
-    have hv' := restore_remaining B v (fun i hi => hf i hi _ (Fintype.mem_piFinset.mp hv _))
-    rw [← hu',← hv',he]
+    rw [← (restore_remaining B u (fun i hi => hf i hi _ (Fintype.mem_piFinset.mp hu _))),← (restore_remaining B v (fun i hi => hf i hi _ (Fintype.mem_piFinset.mp hv _))),he]
   · intro v hv
     exact ⟨restoreTuple B v,restore_mem B S hg v hv,remaining_restore B v⟩
   · intro u hu

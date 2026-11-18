@@ -65,7 +65,7 @@ private theorem logQuadraticError_zero : logQuadraticError 0=0 := by
   simp [logQuadraticError]
 
 private theorem logQuadraticError_deriv_zero : deriv logQuadraticError 0=0 := by
-  have h := ((((hasDerivAt_id (0:ℝ)).const_add 1).log (by norm_num)).sub
+  have h := ((((hasDerivAt_id 0).const_add 1).log (by norm_num)).sub
     (hasDerivAt_id 0)).add (((hasDerivAt_id 0).pow 2).div_const 2)
   have hh : HasDerivAt logQuadraticError 0 0 := by
     convert h using 1
@@ -80,7 +80,7 @@ private theorem logQuadraticError_second_slope_zero :
   rw [hasDerivAt_iff_tendsto_slope]
   have hlim : Tendsto (fun x : ℝ => 2*|x|) (𝓝[≠] 0) (𝓝 0) := by
     have hc : Continuous (fun x : ℝ => 2*|x|) := continuous_const.mul continuous_abs
-    simpa only [abs_zero,mul_zero] using (hc.tendsto 0).mono_left nhdsWithin_le_nhds
+    simpa using (hc.tendsto 0).mono_left nhdsWithin_le_nhds
   apply squeeze_zero_norm' _ hlim
   have hsmall : ∀ᶠ x : ℝ in 𝓝[≠] 0, |x|≤1/2 := by
     have h : ∀ᶠ x : ℝ in 𝓝 0, |x|<1/2 :=
@@ -106,8 +106,7 @@ theorem logCubicProfile_analytic {x : ℝ} (hx : -1<x) :
     AnalyticAt ℝ logCubicProfile x := by
   have h0 := logQuadraticError_analytic (x:=0) (by norm_num)
   have h1 := analyticAt_dslope_zero h0 h0
-  have h2 := analyticAt_dslope_zero h1 h1
-  exact analyticAt_dslope_zero h2
+  exact analyticAt_dslope_zero (analyticAt_dslope_zero h1 h1)
     (analyticAt_dslope_zero h1 (analyticAt_dslope_zero h0 (logQuadraticError_analytic hx)))
 
                                                                           
@@ -132,8 +131,7 @@ def smoothLogCubicProfile (x : ℝ) : ℝ :=
 private theorem smoothLogCubicProfile_smooth : ContDiff ℝ ∞ smoothLogCubicProfile := by
   apply smoothCutoff_mul_contDiff (modelPhaseBufferedCutoff_contDiff _ _ _)
   intro x hx
-  have hs := modelPhaseBufferedCutoff_tsupport (by norm_num : (0:ℝ)<1/4) hx
-  exact (logCubicProfile_analytic (by linarith [hs.1])).contDiffAt
+  exact (logCubicProfile_analytic (by linarith [(modelPhaseBufferedCutoff_tsupport (by norm_num : (0:ℝ)<1/4) hx).1])).contDiffAt
 
 private theorem smoothLogCubicProfile_agrees {x : ℝ} (hx : |x|≤1/2) :
     smoothLogCubicProfile x=logCubicProfile x := by
@@ -200,18 +198,17 @@ theorem logRemainderCutoff_jet_bound (j : ℕ) :
     ∃ C : ℝ, 1≤C ∧ ∀ a∈Icc (-1:ℝ) 1, ∀ b∈Icc (-(1/4):ℝ) (1/4),
       ∀ s : ℝ, ‖iteratedDeriv j (logRemainderCutoff (a,b)) s‖≤C := by
   let F := fun q : (ℝ × ℝ) × ℝ => logRemainderCutoff q.1 q.2
-  have hcont : Continuous (fun q => ‖iteratedFDeriv ℝ j F q‖) :=
-    (logRemainderCutoff_joint_smooth.continuous_iteratedFDeriv
+  have hcont := (logRemainderCutoff_joint_smooth.continuous_iteratedFDeriv
       (m:=j) (by exact_mod_cast (le_top : (j:ℕ∞)≤⊤))).norm
   obtain ⟨M,hM⟩ := ((isCompact_Icc.prod isCompact_Icc).prod isCompact_Icc).exists_bound_of_continuousOn
-      (s:=(Icc (-1:ℝ) 1 ×ˢ Icc (-(1/4):ℝ) (1/4)) ×ˢ Icc (-2:ℝ) 2)
+      (s:=(Icc (-1) 1 ×ˢ Icc (-(1/4):ℝ) (1/4)) ×ˢ Icc (-2) 2)
       hcont.continuousOn
   refine ⟨max M 1,le_max_right _ _,?_⟩
   intro a ha b hb s
-  by_cases hs : s∈Icc (-2:ℝ) 2
+  by_cases hs : s∈Icc (-2) 2
   · have h := norm_slice_iteratedFDeriv F logRemainderCutoff_joint_smooth (a,b) s j
     rw [norm_iteratedFDeriv_eq_norm_iteratedDeriv] at h
-    exact h.trans (by simpa only [norm_norm] using
+    exact h.trans (by simpa using
       (hM ((a,b),s) ⟨⟨ha,hb⟩,hs⟩).trans (le_max_left M 1))
   · have hz : iteratedFDeriv ℝ j (logRemainderCutoff (a,b)) s=0 := by
       apply Function.notMem_support.mp
@@ -278,8 +275,7 @@ theorem exists_logCubic_multiplier_kernel :
         simpa only [Real.norm_eq_abs,abs_of_nonneg (show 0≤
           (1+|ξ|)^100*‖K ξ‖ by positivity)] using hdom ξ))
   have hmass : (∫ ξ : ℝ, (1+|ξ|)^100*‖K ξ‖)≤D*Real.pi := by
-    have h := integral_mono hKi (integrable_inv_one_add_sq.const_mul D) hdom
-    simpa only [integral_const_mul,integral_univ_inv_one_add_sq] using h
+    simpa only [integral_const_mul,integral_univ_inv_one_add_sq] using (integral_mono hKi (integrable_inv_one_add_sq.const_mul D) hdom)
   have hK : Integrable K := hKi.mono' hKc.aestronglyMeasurable
     (Eventually.of_forall (fun ξ => by
       simpa only [one_mul] using mul_le_mul_of_nonneg_right
@@ -333,7 +329,7 @@ theorem logarithmic_physical_phase {A : ℝ} (hA : 0<A)
   rw [hlog]
   have hm := congrArg (fun x : ℝ => t*x) he
   field_simp at hm ⊢
-  nlinarith only [hm]
+  nlinarith
 
                                                                          
                                                                           
@@ -348,10 +344,10 @@ theorem exists_logCubic_finite_moment :
   refine ⟨C^6,by positivity,?_⟩
   intro a ha b hb ι S z s hs
   obtain ⟨K,hKc,hKi,hmass,henv,hrep⟩ := hkern a ha b hb
-  have hK : Integrable K := hKi.mono' hKc.aestronglyMeasurable
+  have hK := hKi.mono' hKc.aestronglyMeasurable
     (Eventually.of_forall (fun ξ => by
       simpa only [one_mul] using mul_le_mul_of_nonneg_right
-        (one_le_pow₀ (by linarith [abs_nonneg ξ]) : (1:ℝ)≤(1+|ξ|)^100)
+        (one_le_pow₀ (by linarith [abs_nonneg ξ]) : 1≤(1+|ξ|)^100)
         (norm_nonneg (K ξ))))
   have hterm (i : ι) :
       Integrable (fun ξ : ℝ => z i*(K ξ*fordAdditiveCharacter (ξ*s i))) := by
@@ -396,7 +392,6 @@ theorem exists_logarithmic_physical_sixth_transfer :
   let l := 2*A*δ*α+δ*t/A
   let q := δ^2*α-δ^2*t/(2*A^2)
   let z' := fun i => z i*fordAdditiveCharacter (l*s i+q*(s i)^2)
-  have h := hbound (t*δ^3/A^3) (abs_le.mp ht) (δ/A) (abs_le.mp hδ) S z' s hs
   have hpos (i : ι) (hi : i∈S) : 0<A+δ*s i := by
     have hb : |δ/A*s i|≤1/4 := by
       rw [abs_mul]
@@ -428,7 +423,7 @@ theorem exists_logarithmic_physical_sixth_transfer :
     congr 2
     ring
   rw [hleft,norm_mul,sargos_character_norm,one_mul]
-  simpa only [hright,l,q] using h
+  simpa only [hright,l,q] using (hbound (t*δ^3/A^3) (abs_le.mp ht) (δ/A) (abs_le.mp hδ) S z' s hs)
 
                                                                                 
 def logCurve (κ s : ℝ) : ℝ := s^2-2*κ*s^3*logCubicProfile (κ*s)
@@ -437,7 +432,7 @@ theorem logCurve_identity (κ s : ℝ) :
     κ^2*logCurve κ s=2*(κ*s-Real.log (1+κ*s)) := by
   have h := logCubicProfile_identity (κ*s)
   unfold logCurve
-  nlinarith only [h]
+  nlinarith
 
 private theorem logCurve_eq_log {κ : ℝ} (hκ : κ≠0) (s : ℝ) :
     logCurve κ s=2*(κ*s-Real.log (1+κ*s))/κ^2 := by
@@ -457,7 +452,6 @@ theorem logCurve_rescaling (κ a h s : ℝ)
   by_cases hh : h=0
   · subst h
     simp
-  have hnew : κ*h/(1+κ*a)≠0 := div_ne_zero (mul_ne_zero hκ hh) ha.ne'
   have hfactor : 1+κ*(a+h*s)=(1+κ*a)*(1+(κ*h/(1+κ*a))*s) := by
     field_simp
     ring
@@ -467,7 +461,7 @@ theorem logCurve_rescaling (κ a h s : ℝ)
   have hlog : Real.log (1+κ*(a+h*s))=
       Real.log (1+κ*a)+Real.log (1+(κ*h/(1+κ*a))*s) := by
     rw [hfactor,Real.log_mul ha.ne' hright.ne']
-  rw [logCurve_eq_log hκ,logCurve_eq_log hκ,logCurve_eq_log hnew,hlog]
+  rw [logCurve_eq_log hκ,logCurve_eq_log hκ,logCurve_eq_log (div_ne_zero (mul_ne_zero hκ hh) ha.ne'),hlog]
   field_simp
   ring
 
@@ -514,11 +508,10 @@ theorem logCurve_square_source_phase {A n κ s : ℝ}
   have hlog : 2*Real.log n=2*Real.log A+Real.log (1+κ*s) := by
     have he := congrArg Real.log hcoord
     rw [Real.log_mul (pow_ne_zero 2 hA.ne') hq.ne',Real.log_pow,Real.log_pow] at he
-    norm_num only [Nat.cast_ofNat] at he
+    norm_num at he
     exact he
-  have hc := logCurve_identity κ s
   rw [hcoord]
-  linear_combination (t/2)*hlog+(t/4)*hc
+  linear_combination (t/2)*hlog+(t/4)*(logCurve_identity κ s)
 
                                                                             
                                                                                  
@@ -529,8 +522,8 @@ theorem logCurve_separated_secant {κ d u ν x y : ℝ}
     (hx : x∈Icc d (d+u)) (hy : y∈Icc d (d+u)) :
     2*ν*|x-y|≤|logCurve κ x-logCurve κ y| := by
   have hden (v : ℝ) (hv : v∈Icc d (d+u)) : 0<1+κ*v ∧ 1+κ*v≤2 := by
-    have hv₁ : -1≤v := hl.trans hv.1
-    have hv₂ : v≤1 := hv.2.trans hr
+    have hv₁ := hl.trans hv.1
+    have hv₂ := hv.2.trans hr
     have hlow := mul_le_mul_of_nonneg_left hv₁ hκ.1
     have hhigh := mul_le_mul_of_nonneg_left hv₂ hκ.1
     constructor <;> nlinarith [hκ.2]
@@ -544,7 +537,7 @@ theorem logCurve_separated_secant {κ d u ν x y : ℝ}
       linarith [hv.2]
   have hordered (a b : ℝ) (ha : a∈Icc d (d+u)) (hb : b∈Icc d (d+u))
       (hab : a<b) : 2*ν*|b-a|≤|logCurve κ b-logCurve κ a| := by
-    have hsub : Icc a b⊆Icc d (d+u) := Icc_subset_Icc ha.1 hb.2
+    have hsub := Icc_subset_Icc ha.1 hb.2
     obtain ⟨c,hc,he⟩ := exists_hasDerivAt_eq_slope (logCurve κ)
       (fun v => 2*v/(1+κ*v)) hab
       (fun v hv => (logCurve_hasDerivAt κ v (hden v (hsub hv)).1.ne').continuousAt.continuousWithinAt)
@@ -552,14 +545,10 @@ theorem logCurve_separated_secant {κ d u ν x y : ℝ}
     have hcI := hsub (Ioo_subset_Icc_self hc)
     have hderiv : 2*ν≤|2*c/(1+κ*c)| := by
       apply (hfar c hcI).trans
-      rw [abs_div,abs_mul,abs_of_pos (hden c hcI).1]
-      rw [abs_of_nonneg (by norm_num : (0:ℝ)≤2)]
+      rw [abs_div,abs_mul,abs_of_pos (hden c hcI).1, abs_of_nonneg (by norm_num : (0:ℝ)≤2)]
       apply (le_div_iff₀ (hden c hcI).1).mpr
       nlinarith [mul_le_mul_of_nonneg_left (hden c hcI).2 (abs_nonneg c)]
-    have he' : (2*c/(1+κ*c))*(b-a)=logCurve κ b-logCurve κ a :=
-      (eq_div_iff (sub_ne_zero.mpr hab.ne')).mp he
-    have hh := mul_le_mul_of_nonneg_right hderiv (abs_nonneg (b-a))
-    simpa only [←abs_mul,he'] using hh
+    simpa only [←abs_mul,((eq_div_iff (sub_ne_zero.mpr hab.ne')).mp he)] using (mul_le_mul_of_nonneg_right hderiv (abs_nonneg (b-a)))
   rcases lt_trichotomy x y with hxy|hxy|hxy
   · simpa only [abs_sub_comm] using hordered x y hx hy hxy
   · subst y
@@ -573,8 +562,7 @@ theorem logCurve_nonneg_le_sq {κ y : ℝ} (hκ : 0≤κ) (hy : 0≤y) :
     0≤logCurve κ y ∧ logCurve κ y≤y^2 := by
   have hp (v : ℝ) (hv : 0≤v) : 0<1+κ*v := by nlinarith [mul_nonneg hκ hv]
   have hd (v : ℝ) (hv : 0≤v) := logCurve_hasDerivAt κ v (hp v hv).ne'
-  have hmono : MonotoneOn (logCurve κ) (Ici (0:ℝ)) :=
-    monotoneOn_of_hasDerivWithinAt_nonneg (convex_Ici (0:ℝ))
+  have hmono := monotoneOn_of_hasDerivWithinAt_nonneg (convex_Ici 0)
       (fun v hv => (hd v hv).continuousAt.continuousWithinAt)
       (fun v hv => (hd v (interior_subset hv)).hasDerivWithinAt)
       (fun v hv => div_nonneg (mul_nonneg (by norm_num) (show 0≤v from interior_subset hv))
@@ -589,17 +577,16 @@ theorem logCurve_nonneg_le_sq {κ y : ℝ} (hκ : 0≤κ) (hy : 0≤y) :
       apply (div_le_iff₀ (hp v hv)).mpr
       nlinarith [mul_nonneg hv (mul_nonneg hκ hv)]
     linarith
-  have hmonog : MonotoneOn (fun t : ℝ => t^2-logCurve κ t) (Ici (0:ℝ)) :=
-    monotoneOn_of_hasDerivWithinAt_nonneg (convex_Ici (0:ℝ))
+  have hmonog := monotoneOn_of_hasDerivWithinAt_nonneg (convex_Ici 0)
       (fun v hv => (hg v hv).continuousAt.continuousWithinAt)
       (fun v hv => (hg v (interior_subset hv)).hasDerivWithinAt)
       (fun v hv => hg₀ v (interior_subset hv))
   have hz : logCurve κ 0=0 := by simp [logCurve]
-  have hlow := hmono (show (0:ℝ)∈Ici (0:ℝ) by simp) hy hy
-  have hupp := hmonog (show (0:ℝ)∈Ici (0:ℝ) by simp) hy hy
-  change (0:ℝ)^2-logCurve κ 0≤y^2-logCurve κ y at hupp
+  have hlow := hmono (by simp) hy hy
+  have hupp := hmonog (by simp) hy hy
+  change 0^2-logCurve κ 0≤y^2-logCurve κ y at hupp
   rw [hz] at hlow hupp
-  exact ⟨hlow,by nlinarith only [hupp]⟩
+  exact ⟨hlow,by nlinarith⟩
 
 theorem logCurve_sixth_frequency_gap {κ d u ν x x' y₁ y₂ y₃ y₄ w b : ℝ}
     (hκ : κ∈Icc (0:ℝ) (1/4)) (hν : 0<ν) (hu : u≤ν)
@@ -611,9 +598,9 @@ theorem logCurve_sixth_frequency_gap {κ d u ν x x' y₁ y₂ y₃ y₄ w b : �
     b < |logCurve κ x+logCurve κ y₁+logCurve κ y₂-
       (logCurve κ x'+logCurve κ y₃+logCurve κ y₄)| := by
   have hxgap := logCurve_separated_secant hκ hν hu hd hl hr hx hx'
-  have hvalue {v : ℝ} (hv : v∈Icc (0:ℝ) w) : 0≤logCurve κ v ∧ logCurve κ v≤w^2 := by
+  have hvalue {v : ℝ} (hv : v∈Icc 0 w) : 0≤logCurve κ v ∧ logCurve κ v≤w^2 := by
     have h := logCurve_nonneg_le_sq hκ.1 hv.1
-    exact ⟨h.1,h.2.trans ((pow_le_pow_iff_left₀ hv.1 hw (by norm_num : (2:ℕ)≠0)).mpr hv.2)⟩
+    exact ⟨h.1,h.2.trans ((pow_le_pow_iff_left₀ hv.1 hw (by norm_num : 2≠0)).mpr hv.2)⟩
   have hy₁ := hvalue h₁
   have hy₂ := hvalue h₂
   have hy₃ := hvalue h₃
@@ -624,7 +611,7 @@ theorem logCurve_sixth_frequency_gap {κ d u ν x x' y₁ y₂ y₃ y₄ w b : �
     apply abs_le.mpr
     constructor <;> linarith [hy₁.1,hy₁.2,hy₂.1,hy₂.2,hy₃.1,hy₃.2,hy₄.1,hy₄.2,hb.1,hb.2]
   have hg := (div_lt_iff₀ (by positivity : 0<2*ν)).mp hgap
-  nlinarith only [hxgap,hxupper,hg]
+  nlinarith
 
                                                                       
                                                                              
@@ -635,13 +622,12 @@ private theorem logCurve_slope_band {κ a : ℝ} (hκ : 0≤κ) (ha : a∈Icc (0
     (ξ η : ℝ) : |η-(2*a/(1+κ*a))*ξ|≤parabolaBandGauge (ξ/(1+κ)) η := by
   have hA : 0<1+κ*a := by nlinarith [mul_nonneg hκ ha.1]
   have hK : 0<1+κ := by linarith
-  have hb : (1+κ)*a/(1+κ*a)∈Icc (0:ℝ) 1 := by
+  have hb : (1+κ)*a/(1+κ*a)∈Icc 0 1 := by
     constructor
     · exact div_nonneg (mul_nonneg hK.le ha.1) hA.le
     · apply (div_le_one hA).mpr
       nlinarith [ha.2]
-  have h := parabolaBandGauge_slope_le hb (ξ/(1+κ)) η
-  convert h using 1
+  convert (parabolaBandGauge_slope_le hb (ξ/(1+κ)) η) using 1
   congr 1
   field_simp
 
@@ -659,12 +645,12 @@ theorem logCurveBandGauge_rescale {κ a σ : ℝ}
   have hA : 0<A := by dsimp [A]; nlinarith [mul_nonneg hκ ha]
   have hB : 0<B := by dsimp [B]; nlinarith [mul_nonneg hκ (add_nonneg ha hσ)]
   have hK : 0<1+κ := by linarith
-  have hk : 0≤k := div_nonneg (mul_nonneg hκ hσ) hA.le
+  have hk := div_nonneg (mul_nonneg hκ hσ) hA.le
   have hk₁ : 0<1+k := by linarith
-  have h1 := logCurve_slope_band hκ (show a∈Icc (0:ℝ) 1 from ⟨ha,by linarith⟩)
+  have h1 := logCurve_slope_band hκ (show a∈Icc 0 1 from ⟨ha,by linarith⟩)
     (σ*ξ) V
   have h2 := logCurve_slope_band hκ
-    (show a+σ∈Icc (0:ℝ) 1 from ⟨add_nonneg ha hσ,haσ⟩) (σ*ξ) V
+    (show a+σ∈Icc 0 1 from ⟨add_nonneg ha hσ,haσ⟩) (σ*ξ) V
   have he1 : V-(2*a/(1+κ*a))*(σ*ξ)=(σ^2/A^2)*η := by dsimp [V,A]; ring
   have he2 : V-(2*(a+σ)/(1+κ*(a+σ)))*(σ*ξ)=
       (σ^2/A^2)*(η-2*(ξ/(1+k))) := by
@@ -684,7 +670,7 @@ theorem logCurveBandGauge_rescale {κ a σ : ℝ}
     apply (le_div_iff₀ (sq_pos_of_pos hA)).mpr
     have hh := mul_self_le_mul_self hB.le hBle
     rw [←hBA] at hh
-    nlinarith only [hh]
+    nlinarith
   have hc : σ^2*(1+k)^2≤(1+κ)^2*(σ^2/A^2) := by
     have hh := mul_le_mul_of_nonneg_left hn (sq_nonneg σ)
     simpa only [div_eq_mul_inv,mul_assoc,mul_left_comm,mul_comm] using hh
@@ -743,7 +729,7 @@ theorem logCurve_band_sixth_gap {κ x x' y₁ y₂ y₃ y₄ w a β u ν δ : �
   let k := κ/A
   have hA : 0<A := by dsimp [A]; nlinarith [mul_nonneg hκ.1 hβ.1]
   have hk : k∈Icc (0:ℝ) (1/4) := by
-    simpa only [mul_one] using logCurve_rescaled_parameter hκ hβ.1
+    simpa using logCurve_rescaled_parameter hκ hβ.1
       (show (1:ℝ)∈Icc (0:ℝ) 1 by norm_num)
   have hmem {v : ℝ} (hv : v∈Icc β (β+w)) : v-β∈Icc (0:ℝ) w :=
     ⟨by linarith [hv.1],by linarith [hv.2]⟩
@@ -784,9 +770,8 @@ theorem logCurve_band_sixth_gap {κ x x' y₁ y₂ y₃ y₄ w a β u ν δ : �
     dsimp [A]
     nlinarith [mul_le_mul_of_nonneg_left hβ.2 hκ.1]
   have hsquare : A^2≤(1+κ)^2 := by nlinarith [mul_self_le_mul_self hA.le hAle]
-  have hbound := logCurve_slope_band hκ.1 hβ ξ η
   change δ^2≤(1+κ)^2*parabolaBandGauge (ξ/(1+κ)) η
-  exact hgap'.le.trans (mul_le_mul hsquare hbound
+  exact hgap'.le.trans (mul_le_mul hsquare (logCurve_slope_band hκ.1 hβ ξ η)
     (abs_nonneg _) (sq_nonneg (1+κ)))
 
 private def logCurveRescaling (κ a σ : ℝ) (hσ : σ≠0) (hA : 1+κ*a≠0) :
@@ -862,14 +847,13 @@ theorem LogCurveWeightBand.rescale {κ δ a σ : ℝ} {W : ℝ × ℝ → ℝ}
     (logCurveBandGauge_rescale hκ ha hσ.le haσ ξ η)
   have hcancel : σ^2*(δ/σ)^2=δ^2 := by field_simp
   rw [hcancel] at hg
-  have hz := hW.2.2 (σ*ξ) ((2*a/(1+κ*a))*σ*ξ+(σ^2/(1+κ*a)^2)*η) hg
   have he (p : ℝ × ℝ) : ξ*(e p).1+η*(e p).2=
       (σ*ξ)*p.1+((2*a/(1+κ*a))*σ*ξ+(σ^2/(1+κ*a)^2)*η)*p.2 := by
     dsimp [e,logCurveRescaling]
     ring
   dsimp only [f]
   simp_rw [he]
-  rw [hz,smul_zero]
+  rw [(hW.2.2 (σ*ξ) ((2*a/(1+κ*a))*σ*ξ+(σ^2/(1+κ*a)^2)*η) hg),smul_zero]
 
                                                                         
                                                                           
@@ -949,19 +933,17 @@ theorem logCurveWeightedSixNorm_pow_six {ι : Type*} (κ : ℝ) (W : ℝ × ℝ 
   unfold logCurveWeightedSixNorm
   rw [lpNorm_eq_integral_norm_rpow_toReal (by norm_num) (by norm_num)
     (logCurveWeighted_memLp κ hW S z x).aestronglyMeasurable]
-  norm_num only [ENNReal.toReal_ofNat,show (6:ℝ)=((6:ℕ):ℝ) from rfl,Real.rpow_natCast]
+  norm_num
   simp only [one_div]
   have hroot (m : ℝ) (hm : 0 ≤ m) : (m^((6:ℝ)⁻¹))^6=m := by
-    simpa only [Nat.cast_ofNat] using Real.rpow_inv_natCast_pow hm (by norm_num : (6:ℕ)≠0)
-  rw [hroot _ (integral_nonneg fun _ => by positivity)]
-  rw [integral_withDensity_eq_integral_toReal_smul₀
+    simpa using Real.rpow_inv_natCast_pow hm (by norm_num : (6:ℕ)≠0)
+  rw [hroot _ (integral_nonneg fun _ => by positivity), integral_withDensity_eq_integral_toReal_smul₀
     hW.1.aemeasurable.ennreal_ofReal (Filter.Eventually.of_forall fun _ => ENNReal.ofReal_lt_top)]
   unfold logCurveWeightedBilinearMoment
   apply integral_congr_ae
   filter_upwards with p
   rw [ENNReal.toReal_ofReal (hW₀ p)]
-  dsimp only [smul_eq_mul]
-  norm_num only [Real.rpow_ofNat]
+  norm_num
   ring
 
 theorem logCurveWeightedSixNorm_sum_le {τ ι : Type*} (κ : ℝ) (J : Finset τ)
@@ -1001,7 +983,7 @@ theorem exists_logCurveWeightedSixNorm_rescale (κ a σ : ℝ)
   let C := d^((6:ℝ)⁻¹)
   have hC : 0<C := Real.rpow_pos_of_pos hd _
   have hCpow : C^6=d := by
-    simpa only [C,Nat.cast_ofNat] using
+    simpa using
       Real.rpow_inv_natCast_pow hd.le (by norm_num : (6:ℕ)≠0)
   refine ⟨C,hC,fun ι W hW₀ hW S z x hx => ?_⟩
   let e := logCurveRescaling κ a σ hσ hA.ne'
@@ -1075,7 +1057,6 @@ theorem logCurveWeightedBilinearMoment_holder_swap {ι τ : Type*}
     nlinarith only [hp]
   have hdisc := discrim_le_zero hquad
   unfold discrim at hdisc
-  change M^2≤N*E
   nlinarith only [hdisc]
 
 theorem logCurveWeightedBilinearMoment_le_sixNorm {ι τ : Type*}
@@ -1108,11 +1089,10 @@ theorem logCurveWeightedBilinearMoment_le_sixNorm {ι τ : Type*}
   by_cases hz : M=0
   · rw [hz]
     positivity
-  have hMp := lt_of_le_of_ne hM (Ne.symm hz)
   have hcube : M^3≤(A^2*B^4)^3 := by
-    apply (mul_le_mul_iff_right₀ hMp).mp
+    apply (mul_le_mul_iff_right₀ (lt_of_le_of_ne hM (Ne.symm hz))).mp
     nlinarith only [hfour]
-  exact (pow_le_pow_iff_left₀ hM (by positivity) (by norm_num : (3:ℕ)≠0)).mp hcube
+  exact (pow_le_pow_iff_left₀ hM (by positivity) (by norm_num : 3≠0)).mp hcube
 
                                                                            
                                                                               
@@ -1128,7 +1108,7 @@ def LogCurveDecouplingBound (n : ℕ) (D : ℝ) : Prop :=
 theorem logCurveDecouplingBound_trivial (n : ℕ) : LogCurveDecouplingBound n (Real.sqrt n) := by
   refine ⟨Real.sqrt_nonneg _,fun κ _ ι W hW S z x _ => ?_⟩
   rw [Real.sq_sqrt (Nat.cast_nonneg n)]
-  simpa only [Finset.card_univ,Fintype.card_fin] using
+  simpa using
     logCurveWeightedSixNorm_sq_le_card κ Finset.univ S z x W hW.2.1
 
                                                                       
@@ -1174,7 +1154,7 @@ theorem LogCurveDecouplingBound.rescale {n : ℕ} {D κ a σ : ℝ}
   simp_rw [hi,mul_pow] at h
   rw [←Finset.mul_sum] at h
   apply (mul_le_mul_iff_right₀ (sq_pos_of_pos hC)).mp
-  nlinarith only [h]
+  nlinarith
 
                                                                         
                                                                            
@@ -1207,26 +1187,22 @@ private theorem logCurve_grid_rescale_bound {n : ℕ} {D κ δ a : ℝ}
   apply hD.rescale hκ (a:=a) (σ:=δ*n) (by positivity) ha haδ ι W
     (by simpa only [mul_div_cancel_right₀ _ hn'] using hW) S z x
   intro j k hk
-  have h := hx j k hk
   have hleft : δ*n*((j:ℕ)/(n:ℝ))=δ*(j:ℕ) := by field_simp
   have hright : δ*n*(((j:ℕ)+1)/(n:ℝ))=δ*((j:ℕ)+1) := by field_simp
-  simpa only [hleft,hright] using h
+  simpa only [hleft,hright] using (hx j k hk)
 
 theorem logCurveBilinearSixBound_of_linear {p q : ℕ} {δ ν A B : ℝ}
     (hp : 0<p) (hq : 0<q) (hδ : 0<δ)
     (hA : LogCurveDecouplingBound p A) (hB : LogCurveDecouplingBound q B) :
     LogCurveBilinearSixBound δ p q ν (A^2*B^4) := by
   refine ⟨by positivity,fun κ hκ ι τ W hW a b ha haδ hb hbδ _ S V z c x y hx hy => ?_⟩
-  have hS := logCurve_grid_rescale_bound hp hδ hA hκ ha haδ ι W hW S z x hx
-  have hV := logCurve_grid_rescale_bound hq hδ hB hκ hb hbδ τ W hW V c y hy
   have hm := logCurveWeightedBilinearMoment_le_sixNorm κ W hW.1 hW.2.1
     (Finset.univ.sigma S) (Finset.univ.sigma V)
     (fun jk => z jk.1 jk.2) (fun jk => c jk.1 jk.2)
     (fun jk => x jk.1 jk.2) (fun jk => y jk.1 jk.2)
   refine hm.trans ?_
-  have hV₂ := pow_le_pow_left₀ (sq_nonneg _) hV 2
-  have hs := mul_le_mul hS hV₂ (sq_nonneg _) (by positivity)
-  convert hs using 1 <;> ring
+  have hV₂ := pow_le_pow_left₀ (sq_nonneg _) (logCurve_grid_rescale_bound hq hδ hB hκ hb hbδ τ W hW V c y hy) 2
+  convert (mul_le_mul (logCurve_grid_rescale_bound hp hδ hA hκ ha haδ ι W hW S z x hx) hV₂ (sq_nonneg _) (by positivity)) using 1 <;> ring
 
 theorem LogCurveBilinearSixBound.holder_swap {p q : ℕ} {δ ν K B : ℝ}
     (hq : 0<q) (hδ : 0<δ) (hK : LogCurveBilinearSixBound δ q p ν K)
@@ -1244,7 +1220,6 @@ theorem LogCurveBilinearSixBound.holder_swap {p q : ℕ} {δ ν K B : ℝ}
     (fun jk => y jk.1 jk.2) (fun jk => x jk.1 jk.2)
   let Q := logCurveWeightedSixNorm κ W (Finset.univ.sigma V)
     (fun jk => c jk.1 jk.2) (fun jk => y jk.1 jk.2)
-  have hES : 0≤ES := Finset.sum_nonneg fun _ _ => sq_nonneg _
   have hEV : 0≤EV := Finset.sum_nonneg fun _ _ => sq_nonneg _
   have hM : 0≤M := integral_nonneg fun r =>
     mul_nonneg (mul_nonneg (hW.1 r) (sq_nonneg _)) (pow_nonneg (norm_nonneg _) 4)
@@ -1267,8 +1242,7 @@ theorem LogCurveBilinearSixBound.holder_swap {p q : ℕ} {δ ν K B : ℝ}
       Real.sq_sqrt hK.1]
     ring
   have hB₀ := hB.1
-  change M≤Real.sqrt K*B^3*ES*EV^2
-  apply (pow_le_pow_iff_left₀ hM (by positivity) (by norm_num : (2:ℕ)≠0)).mp
+  apply (pow_le_pow_iff_left₀ hM (by positivity) (by norm_num : 2≠0)).mp
   rw [he]
   exact hMN.trans hprod
 
@@ -1375,10 +1349,9 @@ theorem logCurveWeightedBilinearMoment_localization_closed {ι τ : Type*}
     have hq' := Finset.mem_product.mp hq
     have hps := Finset.mem_product.mp hp'.1
     have hqs := Finset.mem_product.mp hq'.1
-    have hgap := logCurve_block_gap hm (hblock i hi _ hps.1) (hblock j hj _ hqs.1) hij
     exact logCurve_band_sixth_gap hκ hw hν hβ ha har hwidth hu hd
       (hx i hi _ hps.1) (hx j hj _ hqs.1) (hy _ hps.2) (hy _ hp'.2)
-      (hy _ hqs.2) (hy _ hq'.2) hgap)
+      (hy _ hqs.2) (hy _ hq'.2) (logCurve_block_gap hm (hblock i hi _ hps.1) (hblock j hj _ hqs.1) hij))
   have heq : logCurveWeightedBilinearMoment κ W (J.sigma S) V
       (fun ij => z ij.1 ij.2) c (fun ij => x ij.1 ij.2) y=
       ∫ p : ℝ × ℝ, W p*‖sargosPlanarSum (J.sigma F)
@@ -1468,10 +1441,8 @@ private theorem logCurveWeightedBilinearMoment_fin_localization {k : ℕ}
   let J := Finset.Ico 0 (k:ℤ)
   have hR (i : ℤ) (hi : i ∈ J) : ((R i:Fin k):ℝ) = (i:ℝ) := by
     have hv := logCurveIntGridIndex_val hk hi
-    have hn : 0 ≤ i := (Finset.mem_Ico.mp hi).1
-    change (((R i:Fin k):ℕ):ℝ) = _
     rw [hv]
-    exact_mod_cast Int.toNat_of_nonneg hn
+    exact_mod_cast Int.toNat_of_nonneg ((Finset.mem_Ico.mp hi).1)
   have h := logCurveWeightedBilinearMoment_localization_closed J
     (fun i => S (R i)) V (fun i => z (R i)) c (fun i => x (R i)) y
     hκ hW hw hν hν₁ hβ ha har hwidth hu hd
@@ -1626,7 +1597,7 @@ theorem LogCurveBilinearSixBound.localization_holder {k m q : ℕ} {δ ν K B : 
 
 private theorem logCurve_dyadic_width_mul_cells {a n : ℕ} (ha : a ≤ n) :
     (1/(2:ℝ)^n)*(2:ℝ)^(n-a) = 1/(2:ℝ)^a := by
-  rw [pow_sub₀ (2:ℝ) (by norm_num) ha]
+  rw [pow_sub₀ 2 (by norm_num) ha]
   field_simp
 
 private theorem logCurve_dyadic_width_sq (b : ℕ) :
@@ -1679,15 +1650,13 @@ theorem logCurveBilinearSixBound_dyadic_iterate (D : ℕ → ℝ)
     exact logCurveBilinearSixBound_of_linear (by positivity) (by positivity)
       (by positivity) (hD (n-a) (by omega)) (hD (n-b) (by omega))
   | succ t ih =>
-    have hpow : (1:ℕ) ≤ 2^t := Nat.succ_le_iff.mpr (by positivity)
+    have hpow : 1 ≤ 2^t := Nat.succ_le_iff.mpr (by positivity)
     have he : (2*b)*2^t = b*2^(t+1) := by rw [pow_succ]; ring
     have hnext : (2*b)*2^t ≤ n := by rw [he]; exact hb
     have hb₂ : 2*b ≤ n :=
       (show 2*b ≤ (2*b)*2^t by simpa only [mul_one] using
         mul_le_mul_of_nonneg_left hpow (Nat.zero_le (2*b))).trans hnext
-    have hprev := ih (hra.trans hab) (by omega : b ≤ 2*b) hnext
-    have h := hprev.dyadic_step (a:=a) (by omega) hb₂ hra (hD (n-b) (by omega))
-    simpa only [parabolaDyadicBilinearBudget] using h
+    simpa only [parabolaDyadicBilinearBudget] using ((ih (hra.trans hab) (by omega : b ≤ 2*b) hnext).dyadic_step (a:=a) (by omega) hb₂ hra (hD (n-b) (by omega)))
 
 theorem logCurveWeightedSixNorm_bilinear_reduction {ι : Type*}
     (κ : ℝ)
@@ -1761,8 +1730,6 @@ private theorem logCurve_finGrid_cell {k l : ℕ} (hk : 0 < k) (hl : 0 < l)
       (i:ℕ)/(k:ℝ)+(1/(k:ℝ))*((j:ℕ)/(l:ℝ)) ∧
     (((finProdFinEquiv (i,j) : Fin (k*l)):ℕ)+1)/(k*l:ℝ) =
       (i:ℕ)/(k:ℝ)+(1/(k:ℝ))*(((j:ℕ)+1)/(l:ℝ)) := by
-  have hk' : (k:ℝ) ≠ 0 := by positivity
-  have hl' : (l:ℝ) ≠ 0 := by positivity
   simp only [finProdFinEquiv,Equiv.coe_fn_mk,Nat.cast_add,Nat.cast_mul]
   constructor <;> field_simp <;> ring
 
@@ -1775,11 +1742,8 @@ private theorem logCurve_sum_nonneg_powers_le {ι : Type*} (J : Finset ι) (E : 
   | @insert a J ha ih =>
     rw [Finset.sum_insert ha,Finset.sum_insert ha]
     have hJ : ∀ i ∈ J, 0 ≤ E i := fun i hi => hE i (Finset.mem_insert_of_mem hi)
-    calc
-      E a^n+(∑ i ∈ J, (E i)^n) ≤ E a^n+(∑ i ∈ J, E i)^n :=
-        add_le_add le_rfl (ih hJ)
-      _ ≤ _ := pow_add_pow_le (hE a (Finset.mem_insert_self a J))
-        (Finset.sum_nonneg hJ) hn
+    exact (add_le_add le_rfl (ih hJ)).trans (pow_add_pow_le (hE a (Finset.mem_insert_self a J))
+        (Finset.sum_nonneg hJ) hn)
 
 private theorem logCurveWeightedSixNorm_bilinear_budget {ι : Type*}
     (κ : ℝ)
@@ -1829,21 +1793,19 @@ private theorem logCurveWeightedSixNorm_bilinear_budget {ι : Type*}
       _ = _ := by ring
   have hd := mul_le_mul_of_nonneg_left hds (by positivity : (0:ℝ) ≤ 64*7^6)
   have hf := mul_le_mul_of_nonneg_left hcs (by positivity : (0:ℝ) ≤ 64*(J.card:ℝ)^5)
-  nlinarith only [hmain,hd,hf]
+  nlinarith
 
 private theorem logCurve_sixth_budget_to_square {L E A K k : ℝ}
     (hE : 0 ≤ E) (hA : 0 ≤ A) (hK : 0 ≤ K) (hk : 1 ≤ k)
     (h : L^6 ≤ ((64*7^6:ℝ)*A^6+64*k^5*K)*E^3) :
     L^2 ≤ (14*A+2*k*K^((6:ℝ)⁻¹))^2*E := by
   let R := K^((6:ℝ)⁻¹)
-  have hR : 0 ≤ R := Real.rpow_nonneg hK _
   have hR₆ : R^6 = K := by
     simpa only [R,Nat.cast_ofNat] using
       Real.rpow_inv_natCast_pow hK (by norm_num : (6:ℕ) ≠ 0)
   have hk₀ : 0 ≤ k := by linarith
   have hkp : k^5 ≤ k^6 := by
-    have hp := mul_le_mul_of_nonneg_left hk (pow_nonneg hk₀ 5)
-    simpa only [mul_one,← pow_succ] using hp
+    simpa only [mul_one,← pow_succ] using (mul_le_mul_of_nonneg_left hk (pow_nonneg hk₀ 5))
   have hab := pow_add_pow_le (by positivity : 0 ≤ 14*A)
     (by positivity : 0 ≤ 2*k*R) (by norm_num : (6:ℕ) ≠ 0)
   have hb : (64*7^6:ℝ)*A^6+64*k^5*K ≤ (14*A+2*k*R)^6 := by
@@ -1851,13 +1813,10 @@ private theorem logCurve_sixth_budget_to_square {L E A K k : ℝ}
       rw [mul_pow, mul_pow, mul_pow,hR₆]
       ring
     rw [he] at hab
-    have hp := mul_le_mul_of_nonneg_right hkp (mul_nonneg (by norm_num : (0:ℝ) ≤ 64) hK)
-    nlinarith only [hab,hp]
-  have hc := h.trans (mul_le_mul_of_nonneg_right hb (pow_nonneg hE 3))
+    nlinarith only [hab,(mul_le_mul_of_nonneg_right hkp (mul_nonneg (by norm_num : (0:ℝ) ≤ 64) hK))]
   apply (pow_le_pow_iff_left₀ (sq_nonneg L) (by positivity)
     (by norm_num : (3:ℕ) ≠ 0)).mp
-  change (L^2)^3 ≤ ((14*A+2*k*R)^2*E)^3
-  convert hc using 1 <;> ring
+  convert (h.trans (mul_le_mul_of_nonneg_right hb (pow_nonneg hE 3))) using 1 <;> ring
 
                                                                           
                                                                            
@@ -1904,17 +1863,16 @@ theorem LogCurveDecouplingBound.of_bilinear {k l : ℕ} {A K : ℝ}
     dsimp only [ai]
     rw [← add_div]
     apply (div_le_iff₀ hk').mpr
-    simpa only [one_mul] using
+    simpa using
       (show ((i:ℕ):ℝ)+1 ≤ k by exact_mod_cast i.isLt)
   have hlin (i : Fin k) :
       (logCurveWeightedSixNorm κ W (T i) (Z i) (X i))^2 ≤ A^2*E i :=
     logCurve_grid_rescale_bound hl hδ hA hκ (hai i) (htop i) ι W hW
       (fun j => S (e (i,j))) (fun j => z (e (i,j))) (fun j => x (e (i,j))) (hfine i)
   have hR (i : ℤ) (hi : i ∈ J) : ((R i:Fin k):ℝ) = (i:ℝ) := by
-    have hv := logCurveIntGridIndex_val hk hi
     have hn : 0 ≤ i := (Finset.mem_Ico.mp hi).1
     change (((R i:Fin k):ℕ):ℝ) = _
-    rw [hv]
+    rw [(logCurveIntGridIndex_val hk hi)]
     exact_mod_cast Int.toNat_of_nonneg hn
   have hfar (i : ℤ) (hi : i ∈ J) (j : ℤ) (hj : j ∈ J) (hij : 3 < |i-j|) :
       logCurveWeightedBilinearMoment κ W (T (R j)) (T (R i))
@@ -1954,11 +1912,9 @@ theorem LogCurveDecouplingBound.of_bilinear {k l : ℕ} {A K : ℝ}
     (show (1:ℝ) ≤ k by exact_mod_cast hk) hbudget
   have hsum : (∑ i ∈ J, E (R i)) =
       ∑ r, (logCurveWeightedSixNorm κ W (S r) (z r) (x r))^2 := by
-    calc
-      _ = ∑ i : Fin k, E i := logCurve_intGrid_sum hk E
-      _ = _ := by
+    exact (logCurve_intGrid_sum hk E).trans (by
         dsimp only [E,e]
-        exact (logCurve_finGrid_sum (fun r => (logCurveWeightedSixNorm κ W (S r) (z r) (x r))^2)).symm
+        exact (logCurve_finGrid_sum (fun r => (logCurveWeightedSixNorm κ W (S r) (z r) (x r))^2)).symm)
   rw [hsum] at hsq
   have htotal :
       logCurveWeightedSixNorm κ W (Finset.univ.sigma S)
@@ -1983,15 +1939,15 @@ theorem LogCurveDecouplingBound.of_bilinear_dyadic {n r : ℕ} {A K : ℝ}
     (hK : LogCurveBilinearSixBound (1/(2:ℝ)^n)
       (2^(n-r)) (2^(n-r)) (1/(2:ℝ)^r) K) :
     LogCurveDecouplingBound (2^n) (14*A+2*(2:ℝ)^r*K^((6:ℝ)⁻¹)) := by
-  have hcount : (2:ℕ)^r*2^(n-r) = 2^n := by
+  have hcount : 2^r*2^(n-r) = 2^n := by
     rw [← pow_add]
     congr 1
     omega
-  have hK' : LogCurveBilinearSixBound (1/(((2:ℕ)^r*2^(n-r):ℕ):ℝ))
+  have hK' : LogCurveBilinearSixBound (1/((2^r*2^(n-r):ℕ):ℝ))
       (2^(n-r)) (2^(n-r)) (1/((2^r:ℕ):ℝ)) K := by
     simpa only [hcount,Nat.cast_pow,Nat.cast_ofNat] using hK
   have h := LogCurveDecouplingBound.of_bilinear
-    (by positivity : 0 < (2:ℕ)^r) (by positivity : 0 < (2:ℕ)^(n-r)) hA hK'
+    (by positivity : 0 < 2^r) (by positivity : 0 < 2^(n-r)) hA hK'
   simpa only [hcount,Nat.cast_pow,Nat.cast_ofNat] using h
 
                                                                               
@@ -2002,9 +1958,9 @@ theorem logCurveDecouplingBound_dyadic_iterate (D : ℕ → ℝ)
     LogCurveDecouplingBound (2^n)
       (14*D (n-r)+2*(2:ℝ)^r*
         (parabolaDyadicBilinearBudget D n r t r r)^((6:ℝ)⁻¹)) := by
-  have hpow : (1:ℕ) ≤ 2^t := Nat.succ_le_iff.mpr (by positivity)
+  have hpow : 1 ≤ 2^t := Nat.succ_le_iff.mpr (by positivity)
   have hrn : r ≤ n :=
-    (show r ≤ r*2^t by simpa only [mul_one] using
+    (show r ≤ r*2^t by simpa using
       mul_le_mul_of_nonneg_left hpow (Nat.zero_le r)).trans hn
   exact LogCurveDecouplingBound.of_bilinear_dyadic hrn (hD (n-r) (by omega))
     (logCurveBilinearSixBound_dyadic_iterate D hr le_rfl le_rfl hn hD)
@@ -2023,23 +1979,22 @@ private theorem logCurve_dyadic_exponential_root {C ε : ℝ} (hC : 0 ≤ C)
     (parabolaDyadicBilinearBudget (fun j => C*(2:ℝ)^(ε*j)) n r t r r)^((6:ℝ)⁻¹) ≤
       2*C*(2:ℝ)^(ε*n-((3*(t:ℝ)+5)/6)*ε*r+(r:ℝ)/3) := by
   have hbudget : 0 ≤
-      parabolaDyadicBilinearBudget (fun j => C*(2:ℝ)^(ε*j)) n r t r r := by
+      parabolaDyadicBilinearBudget (fun j => C*2^(ε*j)) n r t r r := by
     cases t <;> simp only [parabolaDyadicBilinearBudget] <;> positivity
-  have hmajor := parabolaDyadicBilinearBudget_exponential (ε:=ε) (r:=r) hC (a:=r) ht hn
   have hpower :
-      (2*C*(2:ℝ)^(ε*n-((3*(t:ℝ)+5)/6)*ε*r+(r:ℝ)/3))^6 =
-        64*C^6*(2:ℝ)^(6*ε*n-(3*(t:ℝ)+5)*ε*r+2*r) := by
+      (2*C*2^(ε*n-((3*(t:ℝ)+5)/6)*ε*r+(r:ℝ)/3))^6 =
+        64*C^6*2^(6*ε*n-(3*(t:ℝ)+5)*ε*r+2*r) := by
     rw [mul_pow,mul_pow,←Real.rpow_mul_natCast (by norm_num)]
-    norm_num only [show (2:ℝ)^6=64 by norm_num,Nat.cast_ofNat]
+    norm_num only [show 2^6=64 by norm_num,Nat.cast_ofNat]
     congr 1
     congr 1
     ring
   apply (pow_le_pow_iff_left₀ (by positivity) (by positivity)
-    (by norm_num : (6:ℕ) ≠ 0)).mp
-  have hroot := Real.rpow_inv_natCast_pow hbudget (by norm_num : (6:ℕ) ≠ 0)
+    (by norm_num : 6 ≠ 0)).mp
+  have hroot := Real.rpow_inv_natCast_pow hbudget (by norm_num : 6 ≠ 0)
   simp only [Nat.cast_ofNat] at hroot
   rw [hroot,hpower]
-  exact hmajor.trans (by gcongr; norm_num)
+  exact (parabolaDyadicBilinearBudget_exponential (ε:=ε) (r:=r) hC (a:=r) ht hn).trans (by gcongr; norm_num)
 
 private theorem logCurve_dyadic_exponential_iteration {C ε : ℝ} (hC : 0 ≤ C)
     {n r t : ℕ} (ht : 1 ≤ t) (hn : r*2^t ≤ n)
@@ -2049,9 +2004,8 @@ private theorem logCurve_dyadic_exponential_iteration {C ε : ℝ} (hC : 0 ≤ C
         18*C*(2:ℝ)^(ε*((n-r:ℕ):ℝ)) := by
   have hpow : (1:ℕ) ≤ 2^t := Nat.succ_le_iff.mpr (by positivity)
   have hrn : r ≤ n :=
-    (show r ≤ r*2^t by simpa only [mul_one] using
+    (show r ≤ r*2^t by simpa using
       mul_le_mul_of_nonneg_left hpow (Nat.zero_le r)).trans hn
-  have hroot := logCurve_dyadic_exponential_root (ε:=ε) hC ht hn
   have hexp : ε*n-((3*(t:ℝ)+5)/6)*ε*r+(r:ℝ)/3+r ≤ ε*((n:ℝ)-r) := by
     have hmul := mul_le_mul_of_nonneg_right hεt (Nat.cast_nonneg r : (0:ℝ) ≤ r)
     nlinarith
@@ -2067,7 +2021,7 @@ private theorem logCurve_dyadic_exponential_iteration {C ε : ℝ} (hC : 0 ≤ C
         ring
       _ ≤ _ := mul_le_mul_of_nonneg_left
         (Real.rpow_le_rpow_of_exponent_le (by norm_num) hexp) (by positivity)
-  have h := mul_le_mul_of_nonneg_left hroot (show 0 ≤ 2*(2:ℝ)^r by positivity)
+  have h := mul_le_mul_of_nonneg_left (logCurve_dyadic_exponential_root (ε:=ε) hC ht hn) (show 0 ≤ 2*(2:ℝ)^r by positivity)
   linarith
 
 
@@ -2112,15 +2066,14 @@ theorem exists_logCurveDecouplingBound_dyadic {ε : ℝ} (hε : 0 < ε) :
     · have hactual := logCurveDecouplingBound_dyadic_iterate
         (fun j => C*(2:ℝ)^(ε*j)) hr hn ih
       apply hactual.mono
-      have hnum := logCurve_dyadic_exponential_iteration hC.le ht hn hεt
       have hpow : (1:ℕ) ≤ 2^t := Nat.succ_le_iff.mpr (by positivity)
       have hrn : r ≤ n :=
-        (show r ≤ r*2^t by simpa only [mul_one] using
+        (show r ≤ r*2^t by simpa using
           mul_le_mul_of_nonneg_left hpow (Nat.zero_le r)).trans hn
       have he : ε*(n:ℝ)=ε*((n-r:ℕ):ℝ)+ε*r := by
         rw [Nat.cast_sub hrn]; ring
       calc
-        _ ≤ 18*C*(2:ℝ)^(ε*((n-r:ℕ):ℝ)) := hnum
+        _ ≤ 18*C*(2:ℝ)^(ε*((n-r:ℕ):ℝ)) := (logCurve_dyadic_exponential_iteration hC.le ht hn hεt)
         _ ≤ (2:ℝ)^(ε*r)*C*(2:ℝ)^(ε*((n-r:ℕ):ℝ)) := by
           gcongr
         _ = C*(2:ℝ)^(ε*n) := by
@@ -2128,7 +2081,7 @@ theorem exists_logCurveDecouplingBound_dyadic {ε : ℝ} (hε : 0 < ε) :
           ring
     · have hnN : n ≤ N := by omega
       have htrivial : LogCurveDecouplingBound (2^n) (Real.sqrt ((2:ℝ)^n)) := by
-        simpa only [Nat.cast_pow,Nat.cast_ofNat] using logCurveDecouplingBound_trivial (2^n)
+        simpa using logCurveDecouplingBound_trivial (2^n)
       apply htrivial.mono
       have hpow : (1:ℝ) ≤ (2:ℝ)^n := one_le_pow₀ (by norm_num)
       calc
@@ -2167,7 +2120,7 @@ private theorem logSix_periodic_physical_window (f : ℝ → ℝ)
   have hh := hp.intervalIntegral_add_zsmul_eq (4:ℤ) (-2+η)
     (fun a b => hf.intervalIntegrable a b)
   rw [hp.intervalIntegral_add_eq (-2+η) 0] at hh
-  norm_num only [zsmul_eq_mul,Int.cast_ofNat,mul_one,zero_add] at hh
+  norm_num at hh
   have hend : -2+η+4=2+η := by ring
   rw [hend] at hh
   rw [hh,smul_eq_mul,intervalIntegral.integral_of_le (by norm_num : (0:ℝ) ≤ 1),
@@ -2259,8 +2212,7 @@ theorem logarithmic_quadratic_short_box {ι : Type*}
         ‖∑ i∈S, z i*fordAdditiveCharacter ((m i:ℝ)*u+(m i:ℝ)^2*v)‖^6) := by
   let P := integerQuadraticSix S z m
   let F := fun u => ∫ v : ℝ in Icc (0:ℝ) 1, P u v
-  have hPc : Continuous (fun p : ℝ × ℝ => P p.1 p.2) :=
-    integerQuadraticSix_continuous S z m
+  have hPc := integerQuadraticSix_continuous S z m
   have hper := integerQuadraticSix_periodic S z m
   have hFc : Continuous F := by
     have h := intervalIntegral.continuous_parametric_intervalIntegral_of_continuous'
@@ -2304,8 +2256,7 @@ private theorem logSix_envelope_integrable :
     (Filter.Eventually.of_forall (fun ξ => by
       simpa only [Real.norm_of_nonneg (by positivity : 0 ≤ ((1+|ξ|)^102)⁻¹)] using hdom ξ))
   refine ⟨hi,?_⟩
-  have h := integral_mono hi integrable_inv_one_add_sq hdom
-  simpa only [integral_univ_inv_one_add_sq] using h
+  simpa only [integral_univ_inv_one_add_sq] using (integral_mono hi integrable_inv_one_add_sq hdom)
 
                                                                       
                                                                            
@@ -2339,11 +2290,7 @@ theorem exists_logarithmic_short_cell_quadratic :
   have hFb (ξ : ℝ) (p : ℝ × ℝ) : ‖F ξ p‖ ≤ (∑ i∈S, ‖z i‖)^6 := by
     rw [Real.norm_of_nonneg (show 0 ≤ F ξ p by dsimp [F]; positivity)]
     apply pow_le_pow_left₀ (norm_nonneg _)
-    calc
-      _ ≤ ∑ i∈S, ‖z i*fordAdditiveCharacter
-        ((2*A*δ*p.2+δ*p.1/A+ξ)*s i+(δ^2*p.2-δ^2*p.1/(2*A^2))*(s i)^2)‖ :=
-        norm_sum_le _ _
-      _ = _ := by simp only [norm_mul,sargos_character_norm,mul_one]
+    exact (norm_sum_le _ _).trans_eq (by simp only [norm_mul,sargos_character_norm,mul_one])
   have hiP : IntegrableOn P B :=
     hPc.continuousOn.integrableOn_compact (isCompact_Icc.prod isCompact_Icc)
   have hiV : Integrable V := logSix_envelope_integrable.1
@@ -2362,7 +2309,6 @@ theorem exists_logarithmic_short_cell_quadratic :
       have he : p.1*δ^3/A^3=(p.1/A)*(δ^3/A^2) := by field_simp
       rw [he,abs_mul]
       simpa only [one_mul] using mul_le_mul ht hcubic (abs_nonneg _) (by norm_num : (0:ℝ) ≤ 1)
-    have h := htransfer S z s hs A δ p.1 p.2 hA hscale ht'
     have he (i : ι) (hi : i∈S) : A+δ*s i=(m i:ℝ) := by linarith [hm i hi]
     have heSum :
         (∑ i∈S, z i*fordAdditiveCharacter
@@ -2370,7 +2316,7 @@ theorem exists_logarithmic_short_cell_quadratic :
         ∑ i∈S, z i*fordAdditiveCharacter
           (p.2*(m i:ℝ)^2+p.1*Real.log (m i:ℝ)) :=
       Finset.sum_congr rfl (fun i hi => by rw [he i hi])
-    simpa only [heSum,P,F,V] using h
+    simpa only [heSum,P,F,V] using (htransfer S z s hs A δ p.1 p.2 hA hscale ht')
   have hmain := setIntegral_mono_on hiP
     (hiF.integral_prod_right.const_mul C) (measurableSet_Icc.prod measurableSet_Icc) hpoint
   rw [integral_const_mul] at hmain
@@ -2426,10 +2372,7 @@ theorem exists_logarithmic_short_cell_sixth {ε : ℝ} (hε : 0 < ε) :
   obtain ⟨E,hE,hquad⟩ := exists_bourgain_quadratic_weighted_finite_interval hε
   refine ⟨D*E,by positivity,?_⟩
   intro Q hQ ι S z s m A δ B L hA hδ hB hscale hcubic hs hm hinterval hz
-  have h := hlog ι S z s m A δ hA hδ hscale hcubic hs hm
-  have hq := hquad Q hQ ι S z m L B hB hinterval hz
-  have hh := mul_le_mul_of_nonneg_left hq (mul_nonneg hD.le hA.le)
-  exact h.trans (hh.trans_eq (by ring))
+  exact (hlog ι S z s m A δ hA hδ hscale hcubic hs hm).trans ((mul_le_mul_of_nonneg_left (hquad Q hQ ι S z m L B hB hinterval hz) (mul_nonneg hD.le hA.le)).trans_eq (by ring))
 
                                                                     
                                                                         
@@ -2452,7 +2395,6 @@ theorem exists_logarithmic_short_cell_sixth_translated {ε : ℝ} (hε : 0 < ε)
   let z' := fun i => z i*fordAdditiveCharacter (t₀*Real.log (m i:ℝ))
   have hz' (k : ℤ) : (∑ i∈S.filter (fun i => m i=k), ‖z' i‖) ≤ B := by
     simpa only [z',norm_mul,sargos_character_norm,mul_one] using hz k
-  have hh := h Q hQ ι S z' s m A δ B L hA hδ hB hscale hcubic hs hm hinterval hz'
   have he (t α : ℝ) :
       (∑ i∈S, z' i*fordAdditiveCharacter (α*(m i:ℝ)^2+t*Real.log (m i:ℝ))) =
       ∑ i∈S, z i*fordAdditiveCharacter (α*(m i:ℝ)^2+(t+t₀)*Real.log (m i:ℝ)) := by
@@ -2462,7 +2404,7 @@ theorem exists_logarithmic_short_cell_sixth_translated {ε : ℝ} (hε : 0 < ε)
     rw [mul_assoc,←fordAdditiveCharacter_add]
     congr 2
     ring
-  simpa only [he] using hh
+  simpa only [he] using (h Q hQ ι S z' s m A δ B L hA hδ hB hscale hcubic hs hm hinterval hz')
 
                                                                     
                                                                       
@@ -2568,10 +2510,7 @@ theorem exists_logarithmic_short_cell_lorentz {ε : ℝ} (hε : 0 < ε) :
   have hPb (t α : ℝ) : ‖P t α‖ ≤ (∑ i∈S, ‖z i‖)^6 := by
     rw [Real.norm_of_nonneg (show 0 ≤ P t α by dsimp [P]; positivity)]
     apply pow_le_pow_left₀ (norm_nonneg _)
-    calc
-      _ ≤ ∑ i∈S, ‖z i*fordAdditiveCharacter
-        (α*(m i:ℝ)^2+t*Real.log (m i:ℝ))‖ := norm_sum_le _ _
-      _ = _ := by simp only [norm_mul,sargos_character_norm,mul_one]
+    exact (norm_sum_le _ _).trans_eq (by simp only [norm_mul,sargos_character_norm,mul_one])
   have hfb (t : ℝ) : ‖f t‖ ≤ (∑ i∈S, ‖z i‖)^6 := by
     have hh := norm_setIntegral_le_of_norm_le_const_ae
       (μ:=volume) (s:=Icc (0:ℝ) 1) (f:=P t) isCompact_Icc.measure_lt_top
@@ -2581,8 +2520,7 @@ theorem exists_logarithmic_short_cell_lorentz {ε : ℝ} (hε : 0 < ε) :
   have hwindow (x : ℝ) : (∫ t : ℝ in Icc (-A) A, f (t+x)) ≤
       C*A*B^6*(Q:ℝ)^((3:ℝ)+ε) :=
     h Q hQ ι S z s m A δ B x L hA hδ hB hscale hcubic hs hm hinterval hz
-  have hh := logSix_lorentz_of_window hA f hfc hf₀ ((∑ i∈S, ‖z i‖)^6) hfb hwindow
-  exact hh.trans_eq (by ring)
+  exact (logSix_lorentz_of_window hA f hfc hf₀ ((∑ i∈S, ‖z i‖)^6) hfb hwindow).trans_eq (by ring)
 
 private theorem logSix_lorentz_periodic (f : ℝ → ℝ)
     (hf : Continuous f) (hf₀ : ∀ t, 0 ≤ f t)
@@ -2596,7 +2534,7 @@ private theorem logSix_lorentz_periodic (f : ℝ → ℝ)
     have hh := hp.intervalIntegral_add_zsmul_eq (2:ℤ) (-1+x)
       (fun a b => hf.intervalIntegrable a b)
     rw [hp.intervalIntegral_add_eq (-1+x) 0] at hh
-    norm_num only [zsmul_eq_mul,Int.cast_ofNat,mul_one,zero_add] at hh
+    norm_num at hh
     rw [show -1+x+2=1+x by ring] at hh
     rw [hh,intervalIntegral.integral_of_le (by norm_num : (0:ℝ) ≤ 1),
       ←integral_Icc_eq_integral_Ioc]
@@ -2657,10 +2595,7 @@ private theorem logarithmic_product_weight_period_reduction {ι : Type*}
   have hPb (t α : ℝ) : ‖P t α‖ ≤ (∑ i∈S, ‖z i‖)^6 := by
     rw [Real.norm_of_nonneg (hP₀ t α)]
     apply pow_le_pow_left₀ (norm_nonneg _)
-    calc
-      _ ≤ ∑ i∈S, ‖z i*fordAdditiveCharacter
-        (α*(m i:ℝ)^2+t*Real.log (m i:ℝ))‖ := norm_sum_le _ _
-      _ = _ := by simp only [norm_mul,sargos_character_norm,mul_one]
+    exact (norm_sum_le _ _).trans_eq (by simp only [norm_mul,sargos_character_norm,mul_one])
   have hper (t : ℝ) : Function.Periodic (P t) 1 := by
     intro α
     unfold P
@@ -2692,10 +2627,7 @@ theorem exists_logarithmic_short_cell_product_weight {ε : ℝ} (hε : 0 < ε) :
   obtain ⟨C,hC,h⟩ := exists_logarithmic_short_cell_lorentz hε
   refine ⟨3*Real.pi*C,by positivity,?_⟩
   intro Q hQ ι S z s m A δ B L hA hδ hB hscale hcubic hs hm hinterval hz
-  have hmain := logarithmic_product_weight_period_reduction S z m hA
-  have hsource := h Q hQ ι S z s m A δ B L hA hδ hB hscale hcubic hs hm hinterval hz
-  have hh := mul_le_mul_of_nonneg_left hsource (show 0 ≤ 3*Real.pi by positivity)
-  exact hmain.trans (hh.trans_eq (by ring))
+  exact (logarithmic_product_weight_period_reduction S z m hA).trans ((mul_le_mul_of_nonneg_left (h Q hQ ι S z s m A δ B L hA hδ hB hscale hcubic hs hm hinterval hz) (show 0 ≤ 3*Real.pi by positivity)).trans_eq (by ring))
 
                                                                 
                                                                        
@@ -2795,7 +2727,7 @@ private theorem logarithmicPhysicalWeight_fourier_zero {X u v : ℝ}
   rw [integral_mul_const]
   rcases hgap with h | h
   · rw [integral_parabolaRapidKernel_character_zero (by norm_num : (0:ℝ) < 1)
-      (by simpa only [mul_one] using h),zero_mul]
+      (by simpa using h),zero_mul]
   · rw [integral_parabolaRapidKernel_character_zero hX h,mul_zero]
 
                                                                      
@@ -2836,8 +2768,8 @@ theorem logarithmicPhysicalWeight_one_le {X : ℝ} (hX : 0 < X)
     1 ≤ logarithmicPhysicalWeight X p := by
   exact one_le_mul_of_one_le_of_one_le
     (parabolaRapidKernel_one_le (by norm_num : (0:ℝ) < 1)
-      (by simpa only [sub_zero] using hα))
-    (parabolaRapidKernel_one_le hX (by simpa only [sub_zero] using ht))
+      (by simpa using hα))
+    (parabolaRapidKernel_one_le hX (by simpa using ht))
 
                                                                           
                                                                            
@@ -2852,8 +2784,7 @@ theorem logarithmic_physical_sum_norm {ι : Type*}
       α*(m i)^2+t*Real.log (m i) =
       (α*X^2+t*Real.log X)+
         (x i*(X^2*α/4+t/8)+logCurve (1/4) (x i)*(-t/64)) := by
-    have h := logCurve_square_source_phase (κ:=1/4) hX (hm i hi) (hx i hi) α t
-    convert h using 1
+    convert (logCurve_square_source_phase (κ:=1/4) hX (hm i hi) (hx i hi) α t) using 1
     ring
   have hsum :
       (∑ i∈S, z i*fordAdditiveCharacter (α*(m i)^2+t*Real.log (m i))) =
@@ -2951,10 +2882,9 @@ theorem exists_logarithmicPhysicalSixMoment_dyadic {ε : ℝ} (hε : 0 < ε) :
       (fun ji => z ji.1 ji.2) (fun ji => m ji.1 ji.2) (fun ji => x ji.1 ji.2)
       (fun ji hji => hm ji.1 ji.2 (Finset.mem_sigma.mp hji).2)
       (fun ji hji => hx ji.1 ji.2 (Finset.mem_sigma.mp hji).2)
-  have hnorm := (hdec n).2 (1/4) (by norm_num) ι W hW S z x hgrid
-  have hcube := pow_le_pow_left₀ (sq_nonneg _) hnorm 3
+  have hcube := pow_le_pow_left₀ (sq_nonneg _) ((hdec n).2 (1/4) (by norm_num) ι W hW S z x hgrid) 3
   simp only [mul_pow,←pow_mul] at hcube
-  have hcoef : (D*(2:ℝ)^((ε/6)*n))^6=D^6*(2:ℝ)^(ε*n) := by
+  have hcoef : (D*2^((ε/6)*n))^6=D^6*2^(ε*n) := by
     rw [mul_pow,←Real.rpow_mul_natCast (by norm_num)]
     congr 1
     congr 1
@@ -2971,7 +2901,7 @@ theorem exists_logarithmicPhysicalSixMoment_dyadic {ε : ℝ} (hε : 0 < ε) :
   simp_rw [hcell] at hholder
   rw [←Finset.mul_sum] at hholder
   have hmain := hcube.trans (mul_le_mul_of_nonneg_left hholder
-    (show 0 ≤ D^6*(2:ℝ)^(ε*n) by positivity))
+    (show 0 ≤ D^6*2^(ε*n) by positivity))
   rw [hwhole] at hmain
   apply (mul_le_mul_iff_right₀ hc).mp
   convert hmain using 1
@@ -2989,24 +2919,20 @@ theorem exists_logarithmicPhysicalWeight_le_lorentz :
     simp only [sub_zero] at h
     have hs : 1+(y/R)^2 ≤ (1+|y/R|)^2 := by
       nlinarith [sq_abs (y/R),abs_nonneg (y/R)]
-    have hp := (mul_le_mul_of_nonneg_right hs (parabolaRapidKernel_nonneg _ _ _)).trans h
     apply (le_div_iff₀ (by positivity : 0 < 1+(y/R)^2)).mpr
-    simpa only [mul_comm] using hp
+    simpa only [mul_comm] using ((mul_le_mul_of_nonneg_right hs (parabolaRapidKernel_nonneg _ _ _)).trans h)
   refine ⟨D^2,by positivity,?_⟩
   intro X A hX hXA p
-  have hA : 0 < A := hX.trans_le hXA
   have hα : parabolaRapidKernel 1 0 p.1 ≤ D*(1+p.1^2)⁻¹ := by
     simpa only [div_one] using hkernel 1 p.1
   have hratio : |p.2/A| ≤ |p.2/X| := by
-    rw [abs_div,abs_div,abs_of_pos hA,abs_of_pos hX]
+    rw [abs_div,abs_div,abs_of_pos (hX.trans_le hXA),abs_of_pos hX]
     exact div_le_div_of_nonneg_left (abs_nonneg _) hX hXA
   have hs : (p.2/A)^2 ≤ (p.2/X)^2 := by
     simpa only [sq_abs] using pow_le_pow_left₀ (abs_nonneg _) hratio 2
-  have ht : parabolaRapidKernel X 0 p.2 ≤ D*(1+(p.2/A)^2)⁻¹ :=
-    (hkernel X p.2).trans (mul_le_mul_of_nonneg_left
+  have ht := (hkernel X p.2).trans (mul_le_mul_of_nonneg_left
       (inv_anti₀ (by positivity) (by linarith : 1+(p.2/A)^2 ≤ 1+(p.2/X)^2)) hD.le)
-  have hp := mul_le_mul hα ht (parabolaRapidKernel_nonneg _ _ _) (by positivity)
-  exact hp.trans_eq (by ring)
+  exact (mul_le_mul hα ht (parabolaRapidKernel_nonneg _ _ _) (by positivity)).trans_eq (by ring)
 
                                                                     
                                                                         
@@ -3027,7 +2953,7 @@ theorem exists_logarithmicPhysicalSixMoment_short_cell {ε : ℝ} (hε : 0 < ε)
   obtain ⟨C,hC,hcell⟩ := exists_logarithmic_short_cell_product_weight hε
   refine ⟨D*C,by positivity,?_⟩
   intro Q hQ ι S z s m X A δ B L hX hXA hδ hB hscale hcubic hs hm hinterval hz
-  have hA : 0 < A := hX.trans_le hXA
+  have hA := hX.trans_le hXA
   let P := fun p : ℝ × ℝ => ‖∑ i∈S, z i*fordAdditiveCharacter
     (p.1*(m i:ℝ)^2+p.2*Real.log (m i:ℝ))‖^6
   have hPc : Continuous P := by unfold P fordAdditiveCharacter; fun_prop
@@ -3035,16 +2961,11 @@ theorem exists_logarithmicPhysicalSixMoment_short_cell {ε : ℝ} (hε : 0 < ε)
   have hPb (p : ℝ × ℝ) : ‖P p‖ ≤ (∑ i∈S, ‖z i‖)^6 := by
     rw [Real.norm_of_nonneg (hP₀ p)]
     apply pow_le_pow_left₀ (norm_nonneg _)
-    calc
-      _ ≤ ∑ i∈S, ‖z i*fordAdditiveCharacter
-        (p.1*(m i:ℝ)^2+p.2*Real.log (m i:ℝ))‖ := norm_sum_le _ _
-      _ = _ := by simp only [norm_mul,sargos_character_norm,mul_one]
-  have hiL : Integrable (fun p : ℝ × ℝ => (1+p.1^2)⁻¹*(1+(p.2/A)^2)⁻¹*P p) :=
-    (integrable_inv_one_add_sq.mul_prod
+    exact (norm_sum_le _ _).trans_eq (by simp only [norm_mul,sargos_character_norm,mul_one])
+  have hiL := (integrable_inv_one_add_sq.mul_prod
       (integrable_inv_one_add_sq.comp_div hA.ne')).mul_bdd hPc.aestronglyMeasurable
         (Filter.Eventually.of_forall hPb)
-  have hiR : Integrable (fun p : ℝ × ℝ => logarithmicPhysicalWeight X p*P p) :=
-    (logarithmicPhysicalWeight_integrable hX).mul_bdd hPc.aestronglyMeasurable
+  have hiR := (logarithmicPhysicalWeight_integrable hX).mul_bdd hPc.aestronglyMeasurable
       (Filter.Eventually.of_forall hPb)
   have hmain : logarithmicPhysicalSixMoment X S z (fun i => (m i:ℝ)) ≤
       ∫ p : ℝ × ℝ, D*((1+p.1^2)⁻¹*(1+(p.2/A)^2)⁻¹*P p) := by
@@ -3064,31 +2985,26 @@ theorem exists_logarithmicPhysicalSixMoment_short_cell {ε : ℝ} (hε : 0 < ε)
     filter_upwards with α
     ring
   rw [hinter] at hmain
-  have hsource := hcell Q hQ ι S z s m A δ B L hA hδ hB hscale hcubic hs hm hinterval hz
-  exact hmain.trans ((mul_le_mul_of_nonneg_left hsource hD.le).trans_eq (by ring))
+  exact hmain.trans ((mul_le_mul_of_nonneg_left (hcell Q hQ ι S z s m A δ B L hA hδ hB hscale hcubic hs hm hinterval hz) hD.le).trans_eq (by ring))
 
 private theorem logarithmic_grid_center {X K j : ℝ}
     (hX : 0 < X) (hK : 0 < K) (hj : 0 ≤ j) (hjK : j ≤ K) :
     let A := Real.sqrt (X^2*(1+j/(4*K)))
     X ≤ A ∧ A ≤ 2*X ∧ A^2=X^2*(1+j/(4*K)) := by
-  dsimp
   have hu : 0 ≤ j/(4*K) := by positivity
   have hu₁ : j/(4*K) ≤ 1/4 := by
     apply (div_le_iff₀ (by positivity : 0 < 4*K)).mpr
     linarith
   have hsq := Real.sq_sqrt (show 0 ≤ X^2*(1+j/(4*K)) by positivity)
   have h₀ := Real.sqrt_nonneg (X^2*(1+j/(4*K)))
-  have hl := mul_nonneg (sq_nonneg X) hu
-  have hh := mul_le_mul_of_nonneg_left hu₁ (sq_nonneg X)
   exact ⟨by nlinarith,by nlinarith,hsq⟩
 
 private theorem logarithmic_grid_radius {X K A : ℝ}
     (hX : 0 < X) (hK : 1 ≤ K) (hXA : X ≤ A) (hscale : X ≤ 16*K^2) :
     let δ := X/(8*K)
     0 < δ ∧ |δ/A| ≤ 1/4 ∧ |δ^3/A^2| ≤ 1 := by
-  dsimp
   have hK₀ : 0 < K := by linarith
-  have hA : 0 < A := hX.trans_le hXA
+  have hA := hX.trans_le hXA
   have hδ : 0 < X/(8*K) := by positivity
   have hδle : X/(8*K) ≤ X/8 := by
     apply (div_le_iff₀ (by positivity : 0 < 8*K)).mpr
@@ -3105,7 +3021,6 @@ private theorem logarithmic_grid_radius {X K A : ℝ}
     rw [he] at hcmp
     apply hcmp.trans
     apply (div_le_iff₀ (by positivity : 0 < 512*K^3)).mpr
-    have hpow : K^2 ≤ K^3 := by nlinarith [mul_nonneg (sq_nonneg K) (sub_nonneg.mpr hK)]
     nlinarith [sq_nonneg K]
 
 private theorem logarithmic_grid_cell_range {X K j A m x : ℝ}
@@ -3190,7 +3105,6 @@ theorem exists_logarithmicPhysicalSixMoment_grid_cell {ε : ℝ} (hε : 0 < ε) 
   let A := Real.sqrt (X^2*(1+j/(4*K)))
   let δ := X/(8*K)
   let Q := Nat.ceil δ+2
-  let L := Int.floor A-1
   obtain ⟨hXA,hAX,hAsq⟩ := logarithmic_grid_center hX hK₀ hj hjK
   change X ≤ A at hXA
   change A ≤ 2*X at hAX
@@ -3202,7 +3116,7 @@ theorem exists_logarithmicPhysicalSixMoment_grid_cell {ε : ℝ} (hε : 0 < ε) 
   have hrange (i : ι) (hi : i∈S) : A ≤ (m i:ℝ) ∧ (m i:ℝ) ≤ A+δ := by
     exact logarithmic_grid_cell_range hX hK₀ hXA hAsq (hm i hi)
       (by convert hx i hi using 1; ring) (hgrid i hi)
-  have hs (i : ι) (hi : i∈S) : ((m i:ℝ)-A)/δ∈Icc (-1:ℝ) 1 := by
+  have hs (i : ι) (hi : i∈S) : ((m i:ℝ)-A)/δ∈Icc (-1) 1 := by
     have hh := hrange i hi
     constructor
     · apply (le_div_iff₀ hδ).mpr
@@ -3211,15 +3125,12 @@ theorem exists_logarithmicPhysicalSixMoment_grid_cell {ε : ℝ} (hε : 0 < ε) 
       linarith
   have hmul (i : ι) (_hi : i∈S) : δ*(((m i:ℝ)-A)/δ)=(m i:ℝ)-A := by
     field_simp
-  have hI (i : ι) (hi : i∈S) : L < m i ∧ m i ≤ L+Q :=
-    hinterval (m i) (hrange i hi).1 (hrange i hi).2
-  have hh := hcell Q hQ ι S z (fun i => ((m i:ℝ)-A)/δ) m X A δ B L
+  have hI (i : ι) (hi : i∈S) := hinterval (m i) (hrange i hi).1 (hrange i hi).2
+  have hh := hcell Q hQ ι S z (fun i => ((m i:ℝ)-A)/δ) m X A δ B (Int.floor A-1)
     hX hXA hδ.ne' hB hδA hcubic hs hmul hI hz
-  have hp : (Q:ℝ)^((3:ℝ)+ε) ≤ (X/K)^((3:ℝ)+ε) :=
-    Real.rpow_le_rpow (Nat.cast_nonneg _) hQbound (by positivity)
   calc
-    _ ≤ C*A*B^6*(Q:ℝ)^((3:ℝ)+ε) := hh
-    _ ≤ C*(2*X)*B^6*(X/K)^((3:ℝ)+ε) := by gcongr
+    _ ≤ C*A*B^6*(Q:ℝ)^(3+ε) := hh
+    _ ≤ C*(2*X)*B^6*(X/K)^(3+ε) := by gcongr
     _ = _ := by ring
 
 private theorem logarithmic_grid_scale_identity {X : ℝ} (hX : 0 < X)
@@ -3232,8 +3143,7 @@ private theorem logarithmic_grid_scale_identity {X : ℝ} (hX : 0 < X)
   generalize (2:ℝ)^n = K at hK ⊢
   rw [Real.div_rpow hX.le hK.le,Real.rpow_add hX,
     Real.rpow_add hK,Real.rpow_add hX]
-  norm_num only [Real.rpow_natCast,Real.rpow_ofNat]
-  have hr : K^ε ≠ 0 := (Real.rpow_pos_of_pos hK ε).ne'
+  norm_num
   field_simp
 
                                                                      
@@ -3263,19 +3173,18 @@ theorem exists_logarithmicPhysicalSixMoment_grid {ε : ℝ} (hε : 0 < ε) :
   have hwidth : 4/X ≤ (1/(2:ℝ)^n)^2 := by
     rw [div_pow,one_pow]
     apply (div_le_div_iff₀ hX₀ (by positivity)).mpr
-    simpa only [one_mul] using hl
-  have hmain := hdec n X hX hwidth ι S z (fun j i => (m j i:ℝ)) x hm hx hgrid
+    simpa using hl
   have hcells (j : Fin (2^n)) :
       logarithmicPhysicalSixMoment X (S j) (z j) (fun i => (m j i:ℝ)) ≤
         C*X*B^6*(X/(2:ℝ)^n)^((3:ℝ)+ε) := by
     apply hcell X ((2:ℝ)^n) (j:ℕ) hK hl hu (Nat.cast_nonneg _) ?_
       ι (S j) (z j) (m j) (x j) B hB (hm j) (hx j) ?_ (hz j)
     · exact_mod_cast j.isLt.le
-    · simpa only [Nat.cast_pow,Nat.cast_ofNat] using hgrid j
+    · simpa using hgrid j
   have hsum := Finset.sum_le_sum (fun j (_hj : j∈Finset.univ) => hcells j)
   simp only [Finset.sum_const,Finset.card_univ,Fintype.card_fin,nsmul_eq_mul,
     Nat.cast_pow,Nat.cast_ofNat] at hsum
-  have hh := hmain.trans (mul_le_mul_of_nonneg_left hsum
+  have hh := (hdec n X hX hwidth ι S z (fun j i => (m j i:ℝ)) x hm hx hgrid).trans (mul_le_mul_of_nonneg_left hsum
     (show 0 ≤ D*(2:ℝ)^(ε*n)*((2:ℝ)^n)^2 by positivity))
   have he : D*(2:ℝ)^(ε*n)*((2:ℝ)^n)^2*
       ((2:ℝ)^n*(C*X*B^6*(X/(2:ℝ)^n)^((3:ℝ)+ε))) =
@@ -3298,22 +3207,20 @@ private theorem logarithmicClosedGridCell_mem (n : ℕ) {x : ℝ}
   let M := 2^n
   have hM : 0<M := by dsimp [M]; positivity
   have hMr : (0:ℝ)<M := by exact_mod_cast hM
-  have hlo := Nat.floor_le (mul_nonneg hMr.le hx.1)
   have hmin : ((min ⌊(M:ℝ)*x⌋₊ (M-1):ℕ):ℝ)≤⌊(M:ℝ)*x⌋₊ := by
     exact_mod_cast min_le_left ⌊(M:ℝ)*x⌋₊ (M-1)
   change x∈Icc (((min ⌊(M:ℝ)*x⌋₊ (M-1):ℕ):ℝ)/M)
     ((((min ⌊(M:ℝ)*x⌋₊ (M-1):ℕ):ℝ)+1)/M)
   constructor
   · apply (div_le_iff₀ hMr).mpr
-    nlinarith [hmin.trans hlo]
+    nlinarith [hmin.trans (Nat.floor_le (mul_nonneg hMr.le hx.1))]
   · apply (le_div_iff₀ hMr).mpr
     by_cases hc : ⌊(M:ℝ)*x⌋₊≤M-1
     · rw [min_eq_left hc]
       have hh := Nat.lt_floor_add_one ((M:ℝ)*x)
       linarith
     · rw [min_eq_right (le_of_not_ge hc)]
-      have hm : M-1+1=M := Nat.sub_add_cancel hM
-      have hm' : ((M-1:ℕ):ℝ)+1=M := by exact_mod_cast hm
+      have hm' : ((M-1:ℕ):ℝ)+1=M := by exact_mod_cast (Nat.sub_add_cancel hM)
       rw [hm']
       nlinarith [hx.2]
 
@@ -3394,10 +3301,7 @@ theorem logarithmicPhysical_box_le {ι : Type*}
   have hPb (p : ℝ × ℝ) : ‖P p‖ ≤ (∑ i∈S, ‖z i‖)^6 := by
     rw [Real.norm_of_nonneg (hP₀ p)]
     apply pow_le_pow_left₀ (norm_nonneg _)
-    calc
-      _ ≤ ∑ i∈S, ‖z i*fordAdditiveCharacter
-        (p.1*(m i)^2+p.2*Real.log (m i))‖ := norm_sum_le _ _
-      _ = _ := by simp only [norm_mul,sargos_character_norm,mul_one]
+    exact (norm_sum_le _ _).trans_eq (by simp only [norm_mul,sargos_character_norm,mul_one])
   have hiP : IntegrableOn P B :=
     hPc.continuousOn.integrableOn_compact (isCompact_Icc.prod isCompact_Icc)
   have hiW : Integrable (fun p : ℝ × ℝ => logarithmicPhysicalWeight X p*P p) :=
@@ -3406,7 +3310,7 @@ theorem logarithmicPhysical_box_le {ι : Type*}
   have hpoint (p : ℝ × ℝ) (hp : p∈B) : P p ≤ logarithmicPhysicalWeight X p*P p := by
     have hα : |p.1| ≤ 1 := abs_le.mpr ⟨by linarith [hp.1.1],hp.1.2⟩
     have ht : |p.2| ≤ X := abs_le.mpr hp.2
-    simpa only [one_mul] using mul_le_mul_of_nonneg_right
+    simpa using mul_le_mul_of_nonneg_right
       (logarithmicPhysicalWeight_one_le hX hα ht) (hP₀ p)
   have hlocal := setIntegral_mono_on hiP hiW.integrableOn
     (measurableSet_Icc.prod measurableSet_Icc) hpoint
@@ -3448,7 +3352,6 @@ theorem exists_logarithmic_block_sixth_translated {ε : ℝ} (hε : 0 < ε) :
       ∑ i∈S, z i*fordAdditiveCharacter (α*(m i:ℝ)^2+(t+t₀)*Real.log (m i:ℝ)) := by
     apply Finset.sum_congr rfl
     intro i hi
-    dsimp only [c]
     rw [mul_assoc,←fordAdditiveCharacter_add]
     congr 2
     ring
@@ -3519,8 +3422,7 @@ theorem exists_logarithmic_block_sixth {ε : ℝ} (hε : 0 < ε) :
       (μ:=volume) (f:=P) hPc 0 1
     simpa only [f,integral_Icc_eq_integral_Ioc,
       intervalIntegral.integral_of_le (by norm_num : (0:ℝ) ≤ 1)] using hh
-  have hwindow (x : ℝ) : (∫ t : ℝ in Icc (-X) X, f (t+x)) ≤ C*B^6*X^((4:ℝ)+ε) :=
-    hblock X hX ι S z m B x hB hm hrange hz
+  have hwindow (x : ℝ) := hblock X hX ι S z m B x hB hm hrange hz
   have hh := logSix_long_window hX₀ hT f hfc
     (fun t => integral_nonneg (fun α => by dsimp [P]; positivity)) hwindow
   have he : (T/X+1)*(C*B^6*X^((4:ℝ)+ε))=C*B^6*(T+X)*X^((3:ℝ)+ε) := by
@@ -3609,7 +3511,7 @@ theorem exists_logarithmic_dyadic_sixth {ε : ℝ} (hε : 0 < ε) :
     constructor <;> nlinarith
   have hx (i : ι) (hi : i∈S) : x i∈Icc (0:ℝ) 1 := by
     have hh := hm i hi
-    have hlo : 1 ≤ (m i:ℝ)/X := (le_div_iff₀ hX₀).mpr (by simpa only [one_mul] using hh.1)
+    have hlo : 1 ≤ (m i:ℝ)/X := (le_div_iff₀ hX₀).mpr (by simpa using hh.1)
     have hhi : (m i:ℝ)/X ≤ 2 := (div_le_iff₀ hX₀).mpr hh.2
     dsimp only [x]
     constructor <;> linarith
@@ -3689,7 +3591,7 @@ private theorem logarithmicSixMoment_small {ι : Type*} {T B : ℝ}
       (μ:=volume) (s:=Icc (0:ℝ) 1) (f:=P t) isCompact_Icc.measure_lt_top
       (Filter.Eventually.of_forall (hb t))
     rw [Real.norm_of_nonneg (integral_nonneg (hP₀ t))] at hh
-    simpa only [Real.volume_real_Icc_of_le (by norm_num : (0:ℝ) ≤ 1),sub_zero,mul_one] using hh
+    simpa using hh
   have hmain : (∫ t : ℝ in Icc (-T) T, ∫ α : ℝ in Icc (0:ℝ) 1, P t α) ≤
       ∫ _t : ℝ in Icc (-T) T, (4*B)^6 := by
     have hc : IntegrableOn (fun _t : ℝ => (4*B)^6) (Icc (-T) T) :=
@@ -3796,7 +3698,7 @@ theorem exists_logarithmic_sixth_log_loss {ε : ℝ} (hε : 0 < ε) :
 private theorem logSix_shell_count {N : ℕ} (hN : 1 ≤ N) {η : ℝ} (hη : 0 < η) :
     (((Nat.log 2 N+1:ℕ):ℝ))^6 ≤ (2*(1+6/η))^6*(N:ℝ)^η := by
   have hN₁ : (1:ℝ) ≤ N := by exact_mod_cast hN
-  have hN₀ : (0:ℝ) < N := zero_lt_one.trans_le hN₁
+  have hN₀ := zero_lt_one.trans_le hN₁
   have hp : (2:ℝ)^(Nat.log 2 N) ≤ N := by
     exact_mod_cast Nat.pow_log_le_self 2 (by omega : N ≠ 0)
   have hl := Real.log_le_log (pow_pos (by norm_num : (0:ℝ) < 2) _) hp
@@ -3805,10 +3707,9 @@ private theorem logSix_shell_count {N : ℕ} (hN : 1 ≤ N) {η : ℝ} (hη : 0 
     have hh := Real.one_sub_inv_le_log_of_pos (by norm_num : (0:ℝ) < 2)
     norm_num at hh ⊢
     exact hh
-  have hmul := mul_le_mul_of_nonneg_left hlogtwo (Nat.cast_nonneg (Nat.log 2 N))
   have hcount : ((Nat.log 2 N+1:ℕ):ℝ) ≤ 2*(1+Real.log N) := by
     push_cast
-    nlinarith only [hl,hmul]
+    nlinarith
   have hbudget := one_add_log_le_rpow_budget hN₁ (show 0 < η/6 by positivity)
   have he : 1/(η/6)=6/η := by field_simp
   rw [he] at hbudget
@@ -3831,7 +3732,6 @@ theorem exists_logarithmic_sixth {ε : ℝ} (hε : 0 < ε) :
         logarithmicSixMoment T S z m ≤ C*B^6*(T+N)*(N:ℝ)^((3:ℝ)+ε) := by
   obtain ⟨D,hD,hbound⟩ := exists_logarithmic_sixth_log_loss (ε:=ε/2) (by positivity)
   let E := (2*(1+6/(ε/2)))^6
-  have hE : 0 < E := by dsimp [E]; positivity
   refine ⟨D*E,by positivity,?_⟩
   intro N hN T hT ι S z m B hB hm hz
   have hN₀ : (0:ℝ) < N := by exact_mod_cast (by omega : 0 < N)

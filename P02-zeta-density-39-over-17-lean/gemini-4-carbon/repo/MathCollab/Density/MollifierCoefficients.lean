@@ -47,15 +47,14 @@ theorem mollifierCoefficient_abs_le (X : ℝ) (n : ℕ) :
   calc
     _ ≤ ∑ d ∈ n.divisors with d ≤ ⌊X⌋₊, |ArithmeticFunction.moebius d| :=
       Finset.abs_sum_le_sum_abs _ _
-    _ ≤ ∑ _d ∈ n.divisors with _d ≤ ⌊X⌋₊, (1 : ℤ) :=
+    _ ≤ ∑ _d ∈ n.divisors with _d ≤ ⌊X⌋₊, 1 :=
       Finset.sum_le_sum fun _ _ => ArithmeticFunction.abs_moebius_le_one
     _ = ((n.divisors.filter (fun d => d ≤ ⌊X⌋₊)).card : ℤ) := by simp
     _ ≤ (n.divisors.card : ℤ) := by exact_mod_cast Finset.card_filter_le n.divisors _
 
 theorem mollifierCoefficient_norm_le (X : ℝ) (n : ℕ) :
     ‖(mollifierCoefficient X n : ℂ)‖ ≤ (n.divisors.card : ℝ) := by
-  have h := mollifierCoefficient_abs_le X n
   rw [Complex.norm_intCast]
-  exact_mod_cast h
+  exact_mod_cast (mollifierCoefficient_abs_le X n)
 
 end MathCollab.Density

@@ -60,7 +60,7 @@ theorem wooleySourcePolynomial_lemma_7_1
     have heasyBound := wooleySourcePolynomial_section7_easy phi p nu a b B s r
       gammaVal hpPrime.two_le hr hrk hnu hnua hnub haNext hgammaVal
       hBPrimeEasy gamma
-    have hCOne : (1 : ℝ) ≤ C := le_max_left _ _
+    have hCOne : 1 ≤ C := le_max_left _ _
     have hnonneg : 0 ≤ (p : ℝ) ^ (k ^ 2 * nu) *
         wooleySourcePolynomialMixedMean phi s r p B
           (wooleySection7NextB k r b) b nu gamma :=

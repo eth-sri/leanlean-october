@@ -7,13 +7,11 @@ public import OAI.NumberTheory.DirichletL.Hecke.ExceptionalRows
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology
 open Filter
+open scoped Classical BigOperators Topology
 
 namespace SevenEighths.CenteredMomentNaturalFixedRaySource
-open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily UniqueFactorizationMonoid
-open CenteredMomentDetectorDictionary CenteredExceptionalProfile CenteredExceptionalCount
-open ConcretePrimeRowBridge CenteredMomentSecondHeightFamily
+open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily UniqueFactorizationMonoid CenteredMomentDetectorDictionary CenteredExceptionalProfile CenteredExceptionalCount ConcretePrimeRowBridge CenteredMomentSecondHeightFamily
 local notation "O" => HeckeFamily.O
 
 theorem fixed_inducing_free_support (η : Character) (Q : Ideal O)
@@ -26,10 +24,10 @@ theorem fixed_inducing_free_support (η : Character) (Q : Ideal O)
   intro P hP
   refine ⟨?_,u.property.2 P⟩
   by_contra hout
-  have hp : Prime P:=prime_of_normalized_factor P hP
+  have hp :=prime_of_normalized_factor P hP
   let : P.IsMaximal:=(Ideal.isPrime_of_prime hp).isMaximal hp.ne_zero
   obtain ⟨hl,h2,hQP⟩:=outside_fixed_support Q hQ0 hQ72 P hp hout
-  have hηP : IsCoprime η.modulus P:=hQP.of_isCoprime_of_dvd_left (Ideal.dvd_iff_le.mpr hQη)
+  have hηP :=hQP.of_isCoprime_of_dvd_left (Ideal.dvd_iff_le.mpr hQη)
   have hz:=actual_row_numerator_valuation_zero η χ ψ hind Q hQ hQ72 hψ
     m 1 u.val hm one_ne_zero u.property.1 hml hm2
     (by simpa only [one_mul] using hχ) P hl h2 hQP hηP

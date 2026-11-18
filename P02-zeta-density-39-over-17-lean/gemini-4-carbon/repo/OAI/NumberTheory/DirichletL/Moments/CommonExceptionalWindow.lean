@@ -1,26 +1,21 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.CommonWindowColumn
-public import OAI.NumberTheory.DirichletL.Moments.ExceptionalHeight
+public import OAI.NumberTheory.DirichletL.Moments.CommonExceptionalSource
+public import OAI.NumberTheory.DirichletL.Moments.CommonHeightEnvelope
+public import OAI.NumberTheory.DirichletL.Moments.HeckeWindowEnergy
 public import OAI.NumberTheory.DirichletL.Moments.LogDyadic
 
-set_option linter.privateModule false
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter MeasureTheory
+open scoped Classical BigOperators SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentCommonExceptionalWindow
-open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge UniqueFactorizationMonoid
-open CenteredMomentCommonRadialData CenteredMomentCommonHeightEnvelope
-open CenteredMomentCommonExceptionalSource CenteredMomentCommonExceptionalCost
-open CenteredMomentCommonPairedSource CenteredMomentExceptionalAmplitudePair
-open CenteredMomentExceptionalSourceShell CenteredMomentCommonWindowColumn
-open CenteredMomentHeckeColumnWindow CenteredMomentSmooth
-open CenteredMomentSecondHeightFamily CenteredMomentLogDyadic
+open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge UniqueFactorizationMonoid CenteredMomentCommonRadialData CenteredMomentCommonHeightEnvelope CenteredMomentCommonExceptionalSource CenteredMomentCommonExceptionalCost CenteredMomentCommonPairedSource CenteredMomentExceptionalAmplitudePair CenteredMomentExceptionalSourceShell CenteredMomentCommonWindowColumn CenteredMomentHeckeColumnWindow CenteredMomentSmooth CenteredMomentSecondHeightFamily CenteredMomentLogDyadic
 local notation "O" => HeckeFamily.O
 universe u
 variable {ι:Type u}[Fintype ι][DecidableEq ι]

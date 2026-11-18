@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.RobertSargosComplementaryCount
 
 @[expose] public section
@@ -22,18 +31,16 @@ theorem robertSargos_conic_count_algebra {R H Q δ : ℝ}
   have hHp : 0 < H := by linarith
   have hQ0 : 0 ≤ Q := by linarith
   have hR0 : 0 ≤ R := by linarith
-  have hRH : H ≤ R*H := le_mul_of_one_le_left hHp.le hR
-  have hq : Q ≤ R*H := hQH.trans hRH
-  have h1 : Q^2 ≤ R*H*Q := by nlinarith only [mul_le_mul_of_nonneg_right hq hQ0]
-  have hsq : Q^2 ≤ H^2 := pow_le_pow_left₀ hQ0 hQH 2
+  have hRH := le_mul_of_one_le_left hHp.le hR
+  have hq := hQH.trans hRH
+  have h1 : Q^2 ≤ R*H*Q := by nlinarith
+  have hsq := pow_le_pow_left₀ hQ0 hQH 2
   have h2 : R*Q^3/H ≤ R*H*Q := by
     apply (div_le_iff₀ hHp).mpr
-    nlinarith only [mul_le_mul_of_nonneg_left hsq
-      (mul_nonneg hR0 hQ0)]
+    nlinarith
   have h3 : 8*δ*H^2*Q ≤ 8*(R*H*Q) := by
-    have hδH : δ*H ≤ R := (le_div_iff₀ hHp).mp hδR
-    nlinarith only [mul_le_mul_of_nonneg_right hδH
-      (show 0 ≤ 8*H*Q by positivity)]
+    have hδH := (le_div_iff₀ hHp).mp hδR
+    nlinarith
   have hb : 1+(δ*Q+99*R*Q/H) ≤ 100*(1+R*Q/H) := by
     have hm := mul_le_mul_of_nonneg_right hδR hQ0
     have he : (R/H)*Q = R*Q/H := by ring
@@ -48,7 +55,7 @@ theorem robertSargos_conic_count_algebra {R H Q δ : ℝ}
       10*(R*H*Q)*(1+δ*Q) := by
     rw [hid]
     have hpos : 0 ≤ δ*R*H*Q^2 := by positivity
-    nlinarith only [h1,h2,h3,hpos]
+    nlinarith
   calc
     _ ≤ Q*(100*(1+R*Q/H))*(Q+8*H^2*δ) :=
       mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hb hQ0) (by positivity)
@@ -64,19 +71,15 @@ theorem robertSargos_linear_count_algebra {R H Q δ : ℝ}
       7300*(R*H*Q)*(1+δ*Q) := by
   have hHp : 0 < H := by linarith
   have hQ0 : 0 ≤ Q := by linarith
-  have hRH : H ≤ R*H := le_mul_of_one_le_left hHp.le hR
   have hb : 1+(δ*Q+99*R*Q/H) ≤ 100*(1+δ*Q) := by
     have hm := mul_le_mul_of_nonneg_right hRδ hQ0
     have he : (R/H)*Q = R*Q/H := by ring
     rw [he] at hm
     rw [show 99*R*Q/H = 99*(R*Q/H) from by ring]
     linarith
-  have hl : Q+72*H*R ≤ 73*R*H := by nlinarith only [hQH,hRH]
-  calc
-    _ ≤ (Q*(100*(1+δ*Q)))*(73*R*H) :=
-      mul_le_mul (mul_le_mul_of_nonneg_left hb hQ0) hl
-        (by positivity) (by positivity)
-    _ = _ := by ring
+  have hl : Q+72*H*R ≤ 73*R*H := by nlinarith
+  exact (mul_le_mul (mul_le_mul_of_nonneg_left hb hQ0) hl
+        (by positivity) (by positivity)).trans_eq (by ring)
 
 theorem robertSargos_frequency_loss_algebra {R H Q δ ε K W : ℝ}
     (hR : 1 ≤ R) (hH : 1 ≤ H) (hQ : 1 ≤ Q)
@@ -86,11 +89,8 @@ theorem robertSargos_frequency_loss_algebra {R H Q δ ε K W : ℝ}
   have hQ0 : 0 ≤ Q := by linarith
   have hB : 0 < R*H*Q := by positivity
   have hQB : Q ≤ R*H*Q := by
-    have hRH : 1 ≤ R*H := one_le_mul_of_one_le_of_one_le hR hH
-    nlinarith only [mul_le_mul_of_nonneg_right hRH hQ0]
-  calc
-    _ ≤ (R*H*Q)^ε*(K*(R*H*Q)*(1+δ*Q)) :=
-      mul_le_mul (Real.rpow_le_rpow hQ0 hQB hε) hbound hW (by positivity)
-    _ = _ := by rw [Real.rpow_add hB,Real.rpow_one]; ring
+    have hRH := one_le_mul_of_one_le_of_one_le hR hH
+    nlinarith
+  exact (mul_le_mul (Real.rpow_le_rpow hQ0 hQB hε) hbound hW (by positivity)).trans_eq (by rw [Real.rpow_add hB,Real.rpow_one]; ring)
 
 end TaoTrudgianYang2025

@@ -9,10 +9,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentCommonExceptionalCost
-open HeckeFamily CenteredMomentCommonLinearNormalization CenteredMomentCommonRadialData
-open CenteredMomentCommonAllocationSum CenteredMomentSourceLiveColumn CenteredMomentCommonRawScale
-open CenteredMomentCommonRawCost CenteredMomentExceptionalAmplitudePair
-open CenteredMomentAllocatedDetectorAmplitude CenteredMomentAllocationCost CenteredMomentCommonProfile
+open HeckeFamily CenteredMomentCommonLinearNormalization CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentSourceLiveColumn CenteredMomentCommonRawScale CenteredMomentCommonRawCost CenteredMomentExceptionalAmplitudePair CenteredMomentAllocatedDetectorAmplitude CenteredMomentAllocationCost CenteredMomentCommonProfile
 local notation "O" => HeckeFamily.O
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 
@@ -28,19 +25,16 @@ omit [DecidableEq ι] in
 theorem scalar_volume_exact (s:Input ι)(C R:Ideal O)(B:actualAllocations s.pools C):
     ‖commonScalar s C R B‖*Real.sqrt (volume (commonData s C R B))=
       ‖frozenCoefficient B.val C R s.ν s.W s.P‖*Real.sqrt (volume s.toData)/rawReduction B.val s.P:=by
-  have hv:=volume_pos (commonData s C R B)
   have hr:=rawReduction_pos B.val (alloc_ne s C B) s.P s.P_pos
   have he:volume (commonData s C R B)*rawReduction B.val s.P=volume s.toData:=by
     rw [common_volume]
     exact raw_scale_identity B.val (alloc_ne s C B) (s.X₁*s.X₂) s.P
   have hs:Real.sqrt (volume s.toData)=Real.sqrt (volume (commonData s C R B))*
-      Real.sqrt (rawReduction B.val s.P):=by rw [←he,Real.sqrt_mul hv.le]
+      Real.sqrt (rawReduction B.val s.P):=by rw [←he,Real.sqrt_mul (volume_pos (commonData s C R B)).le]
   rw [commonScalar,norm_mul,norm_inv,Complex.norm_real,Real.norm_eq_abs,
     abs_of_nonneg (Real.sqrt_nonneg _),hs]
-  have hsq:=Real.sq_sqrt hr.le
-  have hn:Real.sqrt (rawReduction B.val s.P)≠0:=(Real.sqrt_pos.mpr hr).ne'
   field_simp
-  rw [hsq]
+  rw [(Real.sq_sqrt hr.le)]
   ring
 
 omit [DecidableEq ι] in
@@ -57,16 +51,13 @@ theorem scalar_volume_bound (s:Input ι)(C R:Ideal O)(hC:C≠0)(B:actualAllocati
   · have hn:=(actual_reduction_norm B.val (alloc_ne s C B) C R
       (Finset.mem_filter.mp B.property).2 s.ν s.W s.P s.P_pos s.lower s.upper
       s.lower_pos s.slot_support hz).2
-    have hc:=frozenCoefficient_norm B.val C R s.ν s.W s.P s.M s.ν_bound s.W_bound s.M_ge_one
-    have hi:(1:ℝ)/rawReduction B.val s.P≤(max 1 s.upper)^Fintype.card ι/(Ideal.absNorm C:ℝ):=
-      (div_le_div_iff₀ hr hN).mpr (by simpa using hn)
     calc
       _≤((∏i,s.M i)*Real.sqrt (volume s.toData))/rawReduction B.val s.P:=
-        div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_right hc (Real.sqrt_nonneg _)) hr.le
+        div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_right (frozenCoefficient_norm B.val C R s.ν s.W s.P s.M s.ν_bound s.W_bound s.M_ge_one) (Real.sqrt_nonneg _)) hr.le
       _=((∏i,s.M i)*Real.sqrt (volume s.toData))*(1/rawReduction B.val s.P):=by ring
       _≤((∏i,s.M i)*Real.sqrt (volume s.toData))*
           ((max 1 s.upper)^Fintype.card ι/(Ideal.absNorm C:ℝ)):=
-        mul_le_mul_of_nonneg_left hi (mul_nonneg
+        mul_le_mul_of_nonneg_left ((div_le_div_iff₀ hr hN).mpr (by simpa using hn)) (mul_nonneg
           (Finset.prod_nonneg (fun i _=>zero_le_one.trans (s.M_ge_one i))) (Real.sqrt_nonneg _))
       _=_:=by unfold frozenProfile;ring
 

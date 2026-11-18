@@ -7,15 +7,11 @@ public import OAI.NumberTheory.DirichletL.Moments.WholeDivisorShell
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
 open Filter
+open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentExceptionalWholeSource
-open HeckeFamily UniqueFactorizationMonoid CenteredMomentWholeDivisorShell
-open CenteredMomentEligibleEnergy CenteredMomentActiveDivisorShell
-open CenteredMomentAllocatedDetectorAmplitude CenteredMomentExceptionalAmplitudePair
-open CenteredMomentExceptionalAllocationShell CenteredMomentExceptionalSourceShell
-open CenteredMomentSectorLocalization
+open HeckeFamily UniqueFactorizationMonoid CenteredMomentWholeDivisorShell CenteredMomentEligibleEnergy CenteredMomentActiveDivisorShell CenteredMomentAllocatedDetectorAmplitude CenteredMomentExceptionalAmplitudePair CenteredMomentExceptionalAllocationShell CenteredMomentExceptionalSourceShell CenteredMomentSectorLocalization
 local notation "O" => HeckeFamily.O
 universe u
 variable {ι:Type u} [Fintype ι] [DecidableEq ι]

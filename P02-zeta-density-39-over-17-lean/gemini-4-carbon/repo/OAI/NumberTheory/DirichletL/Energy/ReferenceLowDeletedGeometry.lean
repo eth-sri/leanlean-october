@@ -2,7 +2,6 @@ module
 public import OAI.NumberTheory.DirichletL.Energy.ReferenceLowWindow
 public import OAI.NumberTheory.DirichletL.Energy.ReferenceDivisors
 
-set_option linter.privateModule false
 
 @[expose] public section
 
@@ -12,9 +11,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentEnergyReferenceLowDeletedGeometry
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceDivisors
-open CenteredMomentEnergyReferenceLowWindow
+open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceDivisors CenteredMomentEnergyReferenceLowWindow
 local notation "O"=>HeckeFamily.O
 
 end SevenEighths.CenteredMomentEnergyReferenceLowDeletedGeometry

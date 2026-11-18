@@ -76,16 +76,14 @@ theorem detectorPower_support_scale {T : ℝ} {N : ℕ}
     (hT : 1 ≤ T) (hlog : 1 ≤ Real.log T)
     (hN : T^(1/8 : ℝ) < N) (hN' : (N : ℝ) ≤ T*(Real.log T)^2) :
     ((2*N : ℕ)^(detectorPower T N) : ℝ) ≤ densityAmbient T := by
-  have hk := (detectorPower_spec (by linarith : 0 ≤ T) hN).2.1
-  have hbase := detectorPower_base_le hT hlog hN hN'
   have htwo : (2 : ℝ)^(detectorPower T N) ≤ 16 := by
-    have h := pow_le_pow_right₀ (by norm_num : (1 : ℝ) ≤ 2) hk
+    have h := pow_le_pow_right₀ (by norm_num : (1 : ℝ) ≤ 2) ((detectorPower_spec (by linarith : 0 ≤ T) hN).2.1)
     norm_num at h ⊢
     exact h
   push_cast
   rw [mul_pow]
   unfold densityAmbient
-  have h := mul_le_mul htwo hbase (by positivity) (by norm_num)
+  have h := mul_le_mul htwo (detectorPower_base_le hT hlog hN hN') (by positivity) (by norm_num)
   nlinarith [show 0 ≤ T*(Real.log T)^2 by positivity]
 
 end MathCollab.Density

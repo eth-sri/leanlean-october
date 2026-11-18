@@ -24,8 +24,7 @@ lemma sum_cubeBinRows (R : Finset FreeRow) (idx grid : FreeRow→ℕ) (n m : ℕ
     intro u hu
     simpa only [Finset.product_eq_sprod,Finset.mem_product,Finset.mem_range] using
       And.intro (Nat.lt_succ_of_le (hlabel u hu).1) (Nat.lt_succ_of_le (hlabel u hu).2)
-  have hs := Finset.sum_fiberwise_of_maps_to hm f
-  simpa only [Finset.product_eq_sprod,Finset.sum_product,Prod.mk.injEq,cubeBinRows] using hs
+  simpa only [Finset.product_eq_sprod,Finset.sum_product,Prod.mk.injEq,cubeBinRows] using (Finset.sum_fiberwise_of_maps_to hm f)
 
 theorem finiteCentralCubeRows_bin_partition {K : ℕ}
     (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)

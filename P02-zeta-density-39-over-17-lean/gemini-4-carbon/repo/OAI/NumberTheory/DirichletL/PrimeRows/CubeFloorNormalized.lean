@@ -7,11 +7,10 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.CubeNormalizer
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology ContDiff
 open Filter Set
+open scoped Classical BigOperators Topology ContDiff
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-open ProbeRaySlots HeckeDetectorPhysicalSelection
+open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary ProbeRaySlots HeckeDetectorPhysicalSelection
 local notation "O" => HeckeFamily.O
 variable (M : Ideal O) [NeZero M]
 local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
@@ -19,8 +18,7 @@ variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 omit [NeZero M] in
 theorem normalizedFloorPoolOutside (S : Finset (Ideal O)) (N : ℕ) (c b : ℝ) (Y : Fin N→ℝ) :
-    ∀j P,P∈pool (RayQuotient.identityClass M H) S c b (Y j) → P.val∉S :=
-  fun j P hP=>(mem_pool _ S c b (Y j) P).mp hP |>.2.2.2
+    ∀j P,P∈pool (RayQuotient.identityClass M H) S c b (Y j) → P.val∉S := by simp
 
 theorem actual_normalized_floor_cube (N n : ℕ) (e eps c b A R dmin dmax rmin τ ε κ cost mesh δ margin loss : ℝ)
     (he : 0<e) (he1 : e<1/1000) (heps : 0<eps) (hc : 0<c) (hcb : c≤b) (hA : 0≤A)
@@ -62,7 +60,7 @@ theorem actual_normalized_floor_cube (N n : ℕ) (e eps c b A R dmin dmax rmin �
             ProbeCentralExponent.realLoss N v e eps loss mesh+nu) := by
   let : NeZero (∏P∈S,P) := ⟨fixedPrimeProduct_ne_zero S hS.prime⟩
   let WC : Fin N→ℝ→ℂ := fun j y=>(W j y:ℂ)
-  have hWC (j : Fin N) : ContDiff ℝ ∞ (WC j) := Complex.ofRealCLM.contDiff.comp (hW j)
+  have hWC (j : Fin N) := Complex.ofRealCLM.contDiff.comp (hW j)
   have hWCs (j : Fin N) : Function.support (WC j)⊆Ioo c b := by
     intro y hy
     apply hWs j
@@ -74,8 +72,7 @@ theorem actual_normalized_floor_cube (N n : ℕ) (e eps c b A R dmin dmax rmin �
     he he1 heps hc hcb hA hR hdmin hdmax hdRange hrmin hτ hε hκ hcost hmesh hδ hbudget hgap hmargin hheight hloss
     S hS hfirst hmax ell hell hello hellhi WC hWCs hWC hWCB hellsum
     W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
-  have hellpos (j : Fin N) : 0<ell j :=
-    (mul_pos (hdmin.trans_le hdRange) hrmin).trans_le (hello j)
+  have hellpos (j : Fin N) := (mul_pos (hdmin.trans_le hdRange) hrmin).trans_le (hello j)
   obtain ⟨Cn,hCn,hnormer⟩ := actual_ray_normalizer_inverse M H hH S hS c b hc hcb ell hellpos hellsum
     W hW hcompact hWs (fun j y=>(hWB j y).1) hne W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
     hr0 hr1 hp0 hp1 hn0 hn1 nu hnu
@@ -85,10 +82,8 @@ theorem actual_normalized_floor_cube (N n : ℕ) (e eps c b A R dmin dmax rmin �
   intro d hd hd' v hv rows hrows hnorm i hi hbin
   dsimp only at hn ⊢
   refine ⟨hn.1,?_⟩
-  have hh := hb d hd hd' v hv rows hrows hnorm i hi hbin
   rw [div_eq_mul_inv,norm_mul]
-  have hm := mul_le_mul hh hn.2 (norm_nonneg _) (by positivity)
-  apply hm.trans_eq
+  apply (mul_le_mul (hb d hd hd' v hv rows hrows hnorm i hi hbin) hn.2 (norm_nonneg _) (by positivity)).trans_eq
   rw [Real.rpow_add hZ (ProbeCentralExponent.sourceExponent (51/100) v 1 (1/100)+
     ProbeCentralExponent.realLoss N v e eps loss mesh) nu]
   ring

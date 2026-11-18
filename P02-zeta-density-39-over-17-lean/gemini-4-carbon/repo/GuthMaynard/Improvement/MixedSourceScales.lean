@@ -7,7 +7,7 @@ noncomputable section
 open MeasureTheory
 open scoped SchwartzMap
 namespace GuthMaynard.Improvement
-open RiemannZeta.GuthMaynard
+open GuthMaynard.NativeMoment
 
 /-- Low frequency with three independent integer shells, bounded separately
 by outer scale R and denominator scale K. -/

@@ -6,16 +6,11 @@ public import OAI.NumberTheory.DirichletL.Moments.ExceptionalMaskedSource
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
 open Filter
+open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentExceptionalAsymmetricSource
-open HeckeFamily CenteredMomentEligibleEnergy CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
-open CenteredMomentAllocatedDetectorAmplitude CenteredMomentDetectorDictionary
-open CenteredMomentExceptionalAmplitudePair CenteredMomentExceptionalSourceShell
-open CenteredMomentExceptionalAllocationShell CenteredMomentExceptionalWholeSource
-open CenteredMomentExceptionalMaskedSource UniqueFactorizationMonoid CenteredMomentDivisorExtraction
-open CenteredMomentDivisorRectangle
+open HeckeFamily CenteredMomentEligibleEnergy CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentAllocatedDetectorAmplitude CenteredMomentDetectorDictionary CenteredMomentExceptionalAmplitudePair CenteredMomentExceptionalSourceShell CenteredMomentExceptionalAllocationShell CenteredMomentExceptionalWholeSource CenteredMomentExceptionalMaskedSource UniqueFactorizationMonoid CenteredMomentDivisorExtraction CenteredMomentDivisorRectangle
 local notation "O" => HeckeFamily.O
 universe u
 variable {ι:Type u} [Fintype ι] [DecidableEq ι]
@@ -35,8 +30,7 @@ lemma raw_cap_weight {α κ:Type u} [Fintype α] [Fintype κ] [DecidableEq α] [
     (b:Allocation D (Finset.univ:Finset (κ⊕Fin 2)))(Z r:ℝ)(hZ:1<Z):
     exceptionalWeight s.toSource v.toSource D a b Z r=
       exceptionalWeight s.toSource v.toSource D a b Z (max r 0):=by
-  have hd:0≤Real.logb Z (formalReductionFactor D a s.P):=
-    Real.logb_nonneg hZ (reduction_ge_one s hP D a)
+  have hd := Real.logb_nonneg hZ (reduction_ge_one s hP D a)
   unfold exceptionalWeight
   congr 2
   by_cases hr:0≤r

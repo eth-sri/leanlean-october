@@ -7,12 +7,10 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
+open scoped BigOperators Classical SchwartzMap
 namespace SevenEighths.InverseInitialEnergyCallerSourceMask
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
-open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
-open InverseInitialEnergyCallerGeometry InverseInitialProfile ConcreteTraceCRT
+open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource InverseInitialEnergyCallerGeometry InverseInitialProfile ConcreteTraceCRT
 local notation "Eis"=>ActualEisensteinCubic.O
 variable {ι:Type*}[DecidableEq ι]
   (p:ι→Eis)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
@@ -49,8 +47,7 @@ theorem physicalBlock_coprimeSource
       refine ⟨x,hx,?_⟩
       apply Finset.mem_image.mpr
       exact ⟨(N,M),Finset.mem_product.mpr ⟨hN,hM⟩,rfl⟩
-    have hv := pointSource_valid pool S hdiv hf _ hxpoint
-    rw [physicalTerm_extracted p hp hcop hg hpr Ψ j H W₁ W₂ Φ Z D m _ hv ρ]
+    rw [physicalTerm_extracted p hp hcop hg hpr Ψ j H W₁ W₂ Φ Z D m _ (pointSource_valid pool S hdiv hf _ hxpoint) ρ]
     have hz : outerCoefficient p hp hcop hg Ψ j (sourcePoint x N M) ρ=0 := by
       by_contra hn
       exact hc (outerCoefficient_nonzero_coprime p hp hcop hg Ψ j (sourcePoint x N M) ρ hn)
@@ -62,9 +59,7 @@ theorem retained_child_squarefree
     {x:Source (ι:=ι) 0}(hx:x∈coprimeSource p S)(u:Eisˣ) :
     Squarefree (initialChild (toTuple p (sectorSource u x))).2.1 := by
   obtain ⟨hxs,hcoprime⟩ := Finset.mem_filter.mp hx
-  change Squarefree (sourceIdeal p x.divisor*sourceIdeal p x.overlap)
-  have hc := hcoprime.symm.of_isCoprime_of_dvd_left (sourceIdeal_dvd p _ _ (hdiv x hxs))
-  exact squarefree_mul_iff.mpr ⟨hc.isRelPrime,sourceIdeal_squarefree p hcop _,
+  exact squarefree_mul_iff.mpr ⟨(hcoprime.symm.of_isCoprime_of_dvd_left (sourceIdeal_dvd p _ _ (hdiv x hxs))).isRelPrime,sourceIdeal_squarefree p hcop _,
     sourceIdeal_squarefree p hcop _⟩
 
 def childLabels (S:Finset (Source (ι:=ι) 0)) : Finset (Ideal Eis) :=

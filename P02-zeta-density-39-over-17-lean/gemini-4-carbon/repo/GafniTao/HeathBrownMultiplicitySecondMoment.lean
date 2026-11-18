@@ -66,7 +66,7 @@ theorem heathBrownNu_sq_eq_pair_sum
       intro n hn
       exact heathBrownCellIndicator_mul_cellIndicator k H f m n α
     _ = _ := by
-      simpa only [Finset.product_eq_sprod] using
+      simpa using
         (Finset.sum_product
           (heathBrownInteriorIndices N H)
           (heathBrownInteriorIndices N H)
@@ -80,7 +80,7 @@ theorem integrable_heathBrownCellIntersectionIndicator
     unfold heathBrownCoefficientMeasure
     infer_instance
   unfold heathBrownCellIntersectionIndicator
-  exact (integrable_const (1 : ℝ)).indicator
+  exact (integrable_const 1).indicator
     ((measurableSet_heathBrownCoefficientCell k H f p.1).inter
       (measurableSet_heathBrownCoefficientCell k H f p.2))
 
@@ -129,9 +129,7 @@ theorem integral_heathBrownNu_sq_le_overlap_count
   have hmeasure (n : ℕ) :
       μ.real (heathBrownCoefficientCell k H f n) = V := by
     unfold V μ heathBrownCoefficientMeasure
-    have hn := measure_heathBrownCoefficientCell (k := k) (H := H) hH f (n : ℝ)
-    have h1 := measure_heathBrownCoefficientCell (k := k) (H := H) hH f (1 : ℝ)
-    simpa only [Measure.real] using congrArg ENNReal.toReal (hn.trans h1.symm)
+    simpa only [Measure.real] using congrArg ENNReal.toReal ((measure_heathBrownCoefficientCell (k := k) (H := H) hH f (n : ℝ)).trans (measure_heathBrownCoefficientCell (k := k) (H := H) hH f 1).symm)
   have hterm (p : ℕ × ℕ) (hp : p ∈ S) :
       μ.real (heathBrownCoefficientCell k H f p.1 ∩
           heathBrownCoefficientCell k H f p.2) ≤
@@ -153,9 +151,7 @@ theorem integral_heathBrownNu_sq_le_overlap_count
         simp only [P, heathBrownOverlappingCellPairs, Finset.mem_filter]
         exact fun h => hover h.2
       rw [ite_eq_right hpP]
-      have hempty : heathBrownCoefficientCell k H f p.1 ∩
-          heathBrownCoefficientCell k H f p.2 = ∅ := not_nonempty_iff_eq_empty.mp hover
-      simp [hempty]
+      simp [(not_nonempty_iff_eq_empty.mp hover)]
   calc
     ∑ p ∈ S,
         μ.real (heathBrownCoefficientCell k H f p.1 ∩
@@ -167,9 +163,7 @@ theorem integral_heathBrownNu_sq_le_overlap_count
         intro p hp
         simp only [P, heathBrownOverlappingCellPairs, Finset.mem_filter] at hp
         exact hp.1
-      rw [← Finset.sum_filter]
-      rw [Finset.filter_mem_eq_inter]
-      rw [Finset.inter_eq_right.mpr hPS]
+      rw [← Finset.sum_filter, Finset.filter_mem_eq_inter, Finset.inter_eq_right.mpr hPS]
       simp [nsmul_eq_mul]
 
 

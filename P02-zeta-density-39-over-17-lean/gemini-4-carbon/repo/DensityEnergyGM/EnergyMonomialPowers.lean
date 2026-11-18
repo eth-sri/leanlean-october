@@ -16,10 +16,9 @@ theorem energy_monomial_rpow {K N T R V : ℝ} (δ α β γ q : ℝ)
   rw [Real.div_rpow (by positivity) (sq_nonneg V),
     Real.mul_rpow (by positivity) (by positivity),
     Real.mul_rpow (by positivity) (by positivity),
-    Real.mul_rpow (by positivity) (by positivity), Real.mul_rpow hK (by positivity)]
-  rw [← Real.rpow_mul hT, ← Real.rpow_mul hN, ← Real.rpow_mul hT, ← Real.rpow_mul hR,
+    Real.mul_rpow (by positivity) (by positivity), Real.mul_rpow hK (by positivity), ← Real.rpow_mul hT, ← Real.rpow_mul hN, ← Real.rpow_mul hT, ← Real.rpow_mul hR,
     ← Real.rpow_natCast V 2, ← Real.rpow_mul hV, div_eq_mul_inv, ← Real.rpow_neg hV]
-  have hExp : -((2 : ℝ) * q) = -2 * q := by ring
+  have hExp : -(2 * q) = -2 * q := by ring
   simp only [Nat.cast_ofNat]
   rw [hExp]
   ring

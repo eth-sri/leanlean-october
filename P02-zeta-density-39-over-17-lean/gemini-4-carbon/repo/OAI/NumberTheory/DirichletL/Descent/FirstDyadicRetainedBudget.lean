@@ -12,10 +12,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseFirstGlobalCaps InverseSecondSourceBlocks InverseMomentFirstChildWindows
-open InverseMomentFirstOriginalProfile InverseMomentFirstProfileUniform
-open InverseAmbientProfileTower JointLogSeparation FourierBridge CompletedHeight
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseFirstGlobalCaps InverseSecondSourceBlocks InverseMomentFirstChildWindows InverseMomentFirstOriginalProfile InverseMomentFirstProfileUniform InverseAmbientProfileTower JointLogSeparation FourierBridge CompletedHeight
 open ConcreteTraceCRT (eisEmbedding)
 local notation "O"=>ActualEisensteinCubic.O
 
@@ -78,11 +75,7 @@ theorem original_dyadic_retained_budget
   have hnkey:=hcount p hp hcop hg pool Q labels β cutoff Ψ m mark om Φ K Z r ell Fmax eta tau theta
     hZ hrcap hellcap hF0 hFcap heta heta1 htau htau1 hQ hn (fun y hy=>(hs hy).2)
   apply he'.trans
-  calc
-    _≤C*Γ^2*Benergy*(1+‖theta‖)^(2*InverseClippingProfiles.momentOrder J)*
-        Z^((2*Fmax+15*eta+tau)*eps)*(Cc*Z^eps):=
-      mul_le_mul_of_nonneg_left hnkey (by positivity)
-    _=_:=by rw [Real.rpow_add hz];ring
+  exact (mul_le_mul_of_nonneg_left hnkey (by positivity)).trans_eq (by rw [Real.rpow_add hz];ring)
 
 end SevenEighths.InverseMoment
 

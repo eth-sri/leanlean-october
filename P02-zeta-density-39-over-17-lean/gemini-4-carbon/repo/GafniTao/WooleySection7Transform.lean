@@ -32,8 +32,7 @@ theorem wooleySection7_primePower_mul_affineCore
       C ((p : ℤ) ^ a) * X + C h := by
   subst h
   unfold wooleySection7AffineCore
-  rw [mul_add, ← mul_assoc, ← C_mul, ← C_mul]
-  rw [← pow_add, Nat.add_sub_of_le hgamma]
+  rw [mul_add, ← mul_assoc, ← C_mul, ← C_mul, ← pow_add, Nat.add_sub_of_le hgamma]
   ring_nf
 
 /-- The exact quotient after removing the column factor
@@ -498,8 +497,7 @@ theorem wooleySection7TransformedPolynomial_coeff_low
         (p : ZMod (p ^ L)) ^ ((a - gamma) * ((d : ℕ) + 1))
       else 0 := by
   unfold wooleySection7TransformedPolynomial
-  rw [coeff_C_mul]
-  rw [← lcoeff_apply, map_sum]
+  rw [coeff_C_mul, ← lcoeff_apply, map_sum]
   simp only [lcoeff_apply]
   simp only [coeff_C_mul, Int.cast_mul, Int.cast_pow]
   push_cast

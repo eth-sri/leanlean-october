@@ -6,9 +6,8 @@ public import OAI.NumberTheory.DirichletL.Reflection.Static
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
+open ActualEisensteinCubic CubicEisenstein ConcreteTraceCRT CompletedGauss LocalReflectionBrackets FiniteGaussPhase
 open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein ConcreteTraceCRT CompletedGauss
-open LocalReflectionBrackets FiniteGaussPhase
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
@@ -49,7 +48,7 @@ theorem exceptional_local_phase {F : Type*} [Field F] [Fintype F]
       (tau χ (ψ.mulShift (-1)) 4*(χ A)⁻¹^2)*(χ z)⁻¹^2 := by
   simp only [phase,↓reduceIte,hsigma,map_mul,
     ]
-  simp only [MulChar.pow_apply' _ (by decide : (2:ℕ) ≠ 0),MulChar.inv_apply_eq_inv']
+  simp only [MulChar.pow_apply' _ (by decide : 2 ≠ 0),MulChar.inv_apply_eq_inv']
   ring
 
 noncomputable local instance frozenField (P : Ideal Eis) [P.IsMaximal] : Field (Eis ⧸ P) := Ideal.Quotient.field P
@@ -81,23 +80,23 @@ theorem controlled_frozen_phase [∀ i, (Ideal.span {p i}).IsMaximal]
       frozenCofactorCharacter (Ideal.span {p i}) (hg i) j (cofactor p i) := by
   have hs : (D.sigma i : Eis ⧸ Ideal.span {p i}) =
       Ideal.Quotient.mk _ (ramifiedTraceLambda^2*c)*Ideal.Quotient.mk _ (cofactor p i) := by
-    simpa only [map_mul] using D.sigma_value i
+    simpa using D.sigma_value i
   have he : Ideal.Quotient.mk (Ideal.span {p i}) (ramifiedTraceLambda^3*c)*
       Ideal.Quotient.mk _ (cofactor p i)*(D.sigma i : Eis ⧸ Ideal.span {p i})*
       (D.epsilon i : Eis ⧸ Ideal.span {p i}) = -1 := by
-    simpa only [map_mul] using D.epsilon_value i
+    simpa using D.epsilon_value i
   by_cases hj4 : j=4
   · subst j
     rw [exceptional_local_phase _ _ _ _ _ _ hs]
     simp only [frozenPrimeScalar,frozenCofactorCharacter,↓reduceIte,MonoidHom.comp_apply,
       RingHom.toMonoidHom_eq_coe,MulChar.coe_toMonoidHom,
-      MulChar.pow_apply' _ (by decide : (2:ℕ) ≠ 0),MulChar.inv_apply_eq_inv']
+      MulChar.pow_apply' _ (by decide : 2 ≠ 0),MulChar.inv_apply_eq_inv']
     rfl
   · by_cases hj0 : j=0
     · subst j
       rw [marked_local_phase _ _ _ _ _ _ he]
       simp [frozenPrimeScalar,frozenCofactorCharacter,markedPrimeScalar,
-        MulChar.pow_apply' _ (by decide : (2:ℕ) ≠ 0)]
+        MulChar.pow_apply' _ (by decide : 2 ≠ 0)]
     · rw [general_local_phase _ _ _ _ _ _ _ hs he j hj0 hj4]
       simp only [frozenPrimeScalar,frozenCofactorCharacter,hj4,hj0,↓reduceIte,
         MonoidHom.comp_apply,RingHom.toMonoidHom_eq_coe,

@@ -9,8 +9,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentEnergyReferenceScalarReserve
-open HeckeFamily CenteredMomentEnergyState CenteredMomentNaturalRowSource
-open CenteredMomentEnergyReferenceScalarBounds
+open HeckeFamily CenteredMomentEnergyState CenteredMomentNaturalRowSource CenteredMomentEnergyReferenceScalarBounds
 
 theorem ledger_bound (Mcap Bmask bΦ L d saving ε:ℝ)
     (hM:0≤Mcap)(_hB:0≤Bmask)(hL:0≤L)(hd:0<d)

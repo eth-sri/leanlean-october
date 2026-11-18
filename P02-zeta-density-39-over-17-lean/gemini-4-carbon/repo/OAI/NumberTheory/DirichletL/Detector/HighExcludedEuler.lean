@@ -29,7 +29,7 @@ lemma outside_cube (S : Finset Id) (hS : ∀P∈S,Prime P) (A : Id) :
     (∀P∈S,¬P∣A^3) ↔ ∀P∈S,¬P∣A := by
   constructor
   · intro h P hP hd
-    exact h P hP (dvd_trans hd (dvd_pow_self A (by decide : (3:ℕ)≠0)))
+    exact h P hP (dvd_trans hd (dvd_pow_self A (by decide : 3≠0)))
   · intro h P hP hd
     exact h P hP ((hS P hP).dvd_of_dvd_pow hd)
 
@@ -86,9 +86,7 @@ theorem excludedIdealHighSeries_hasProd (S : Finset Id) (hS : ∀P∈S,Prime P)
       bareIdealHighSummand_mul η x w z _ _ _ _ _ _ _ _ hc]
     ring
   · intro a ha
-    have hh : bareIdealHighSummand η 1 x w z a.1.1 a.1.2 a.2.1 a.2.2≠0 :=
-      (mul_ne_zero_iff.mp ha).2
-    have hs := bareIdealHighSummand_support η 1 x w z a.1.1 a.1.2 a.2.1 a.2.2 hh
+    have hs := bareIdealHighSummand_support η 1 x w z a.1.1 a.1.2 a.2.1 a.2.2 ((mul_ne_zero_iff.mp ha).2)
     exact ⟨hs.2.1.1,hs.2.2.1.1,hs.2.2.2.1.1,hs.2.2.2.2.1⟩
   · exact (markedIdealHighSummand_summable S 1 η 1 x w z hx hw hz).norm
 

@@ -11,8 +11,7 @@ public import MathCollab.Density.Stronger.Fourth.SquareDivisorSeries
 
 @[expose] public section
 
-open Complex Set MeasureTheory Filter Topology
-open MathCollab.Density.Stronger.Fourth
+open Complex Set MeasureTheory Filter Topology MathCollab.Density.Stronger.Fourth
 set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
@@ -30,8 +29,7 @@ theorem norm_divisorDirichletTerm_reflected (n : ℕ) (u : ℝ) :
 
 theorem continuous_divisorDirichletTerm_reflected (n : ℕ) :
     Continuous (fun u : ℝ => divisorDirichletTerm (1 - ((-1/2 : ℂ) + (u : ℂ)*I)) n) := by
-  have h := (continuous_divisorDirichletTerm_vertical 0 1 n).comp continuous_neg
-  convert h using 1
+  convert ((continuous_divisorDirichletTerm_vertical 0 1 n).comp continuous_neg) using 1
   funext u
   congr 1
   unfold afeCriticalPoint
@@ -59,7 +57,7 @@ theorem integral_norm_ordinaryDivisorDualTerm (g : ℝ → ℂ) (K : ℂ → ℂ
 theorem summable_integral_norm_ordinaryDivisorDualTerm (g : ℝ → ℂ) (K : ℂ → ℂ) :
     Summable (fun n : ℕ => ∫ u : ℝ, ‖ordinaryDivisorDualTerm g K n u‖) := by
   simp_rw [integral_norm_ordinaryDivisorDualTerm]
-  exact (summable_divisorDirichletTerm (s := (3/2 : ℂ)) (by norm_num)).norm.mul_right _
+  exact (summable_divisorDirichletTerm (s := (3/2)) (by norm_num)).norm.mul_right _
 
 theorem tsum_ordinaryDivisorDualTerm (g : ℝ → ℂ) (K : ℂ → ℂ) (u : ℝ) :
     (∑' n : ℕ, ordinaryDivisorDualTerm g K n u) =
@@ -100,8 +98,8 @@ theorem divisorWeight_mul_dualTransform (g : ℝ → ℂ) (K : ℂ → ℂ) (n :
   rw [verticalIntegral'_eq_realIntegral]
   norm_num only [ofReal_div, ofReal_neg, ofReal_one, ofReal_ofNat]
   have h (u : ℝ) : ordinaryDivisorDualTerm g K n u = divisorWeight n *
-      ((n : ℂ)^(-(1-((-1/2 : ℂ)+(u : ℂ)*I))) *
-        K ((-1/2 : ℂ)+(u : ℂ)*I) * mellin g ((-1/2 : ℂ)+(u : ℂ)*I)) := by
+      ((n : ℂ)^(-(1-((-1/2)+(u : ℂ)*I))) *
+        K ((-1/2)+(u : ℂ)*I) * mellin g ((-1/2)+(u : ℂ)*I)) := by
     rw [ordinaryDivisorDualTerm, divisorDirichletTerm_eq_divisorWeight_mul_cpow]
     ring
   simp_rw [h]
@@ -126,9 +124,8 @@ theorem tsum_divisorWeight_dualTransform {g : ℝ → ℂ} {K : ℂ → ℂ}
       PointMean.VerticalIntegral' (fun z : ℂ => riemannZeta (1-z)^2 * K z * mellin g z) (-1/2) := by
   simp_rw [divisorWeight_mul_dualTransform]
   rw [tsum_mul_left, integral_tsum_of_summable_integral_norm
-    (integrable_ordinaryDivisorDualTerm hK) (summable_integral_norm_ordinaryDivisorDualTerm g K)]
-  rw [verticalIntegral'_eq_realIntegral]
+    (integrable_ordinaryDivisorDualTerm hK) (summable_integral_norm_ordinaryDivisorDualTerm g K), verticalIntegral'_eq_realIntegral]
   simp_rw [tsum_ordinaryDivisorDualTerm]
-  norm_num only [ofReal_div, ofReal_neg, ofReal_one, ofReal_ofNat]
+  norm_num
 
 end MathCollab.Density.Stronger.Atkinson

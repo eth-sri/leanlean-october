@@ -43,7 +43,7 @@ theorem heathBrownPositiveShiftFiber_card_cast_le_harmonic_total
     ((heathBrownPositiveShiftFiber N k H K f d).card : ℝ) ≤
       ((D : ℝ) + c) * (b + a * D) / d := by
   dsimp only
-  have hdN : d ≤ N := hdD.trans hDN
+  have hdN := hdD.trans hDN
   by_cases hdStrict : d < N
   · have hNsub : 1 ≤ N - d := by omega
     exact heathBrownPositiveShiftFiber_card_cast_le_harmonic
@@ -83,9 +83,7 @@ theorem heathBrown_positiveShiftFiber_sum_cast_le_harmonic
     (∑ d ∈ Finset.Icc 1 D,
         ((heathBrownPositiveShiftFiber N k H K f d).card : ℝ)) ≤
       ((D : ℝ) + c) * (b + a * D) * (harmonic D : ℝ) := by
-  dsimp only
-  let Q : ℝ :=
-    ((D : ℝ) +
+  let Q := ((D : ℝ) +
       8 * ((k - 2).factorial : ℝ) *
         (((H : ℝ) ^ (k - 2))⁻¹) / lambda) *
       (8 * (((H : ℝ) ^ (k - 2))⁻¹) + 3 +
@@ -168,7 +166,7 @@ theorem heathBrownPairCountTwo_card_cast_le_harmonic
   dsimp only at hsum
   have hsum' := add_le_add_right
     (mul_le_mul_of_nonneg_left hsum (by norm_num : (0 : ℝ) ≤ 2)) (N : ℝ)
-  simpa only [D] using hcount.trans hsum'
+  simpa using hcount.trans hsum'
 
 
 end

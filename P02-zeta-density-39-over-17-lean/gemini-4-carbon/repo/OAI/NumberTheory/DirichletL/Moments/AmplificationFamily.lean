@@ -11,11 +11,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentAmplificationFamily
-open HeckeFamily HeckeRowClosure CanonicalQuadraticSieve CanonicalRowCompletion
-open ConcretePrimeRowBridge CompletedGauss RayFourExpansion
-open CenteredMomentAmplificationShortening CenteredMomentFixedRay
-open CenteredMomentHeckeExpansion CenteredMomentHeckeColumnWindow
-open CenteredMomentSecondChildProfile CenteredMomentSourceRow CenteredMomentChildRows
+open HeckeFamily HeckeRowClosure CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge CompletedGauss RayFourExpansion CenteredMomentAmplificationShortening CenteredMomentFixedRay CenteredMomentHeckeExpansion CenteredMomentHeckeColumnWindow CenteredMomentSecondChildProfile CenteredMomentSourceRow CenteredMomentChildRows
 local notation "O" => ActualEisensteinCubic.O
 
 def amplificationPhase (p : O) (k : ℕ) (r : RayRing) : ℂ :=
@@ -35,8 +31,7 @@ theorem amplificationPhase_expansion (p u : O) (k : ℕ)
     (hu : Supported (Ideal.span {u})) :
     sexticReciprocityPhase p u^k=
       ∑ χ : RayCharacter,phaseCoeff (amplificationPhase p k) χ*rayCharacter χ u := by
-  have he := phase_expansion (amplificationPhase p k) u
-  simpa only [supported_rayMask u hu,one_mul,amplificationPhase_mk] using he
+  simpa only [supported_rayMask u hu,one_mul,amplificationPhase_mk] using (phase_expansion (amplificationPhase p k) u)
 
 theorem original_column_family (η : Character) (m p : O) (k : ℕ)
     (τ : RayCharacter → Character)

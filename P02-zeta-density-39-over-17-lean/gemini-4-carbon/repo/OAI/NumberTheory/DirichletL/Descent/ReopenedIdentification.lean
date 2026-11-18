@@ -8,9 +8,8 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 noncomputable section
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic FirstPassCubeLabels
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion
-open ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic FirstPassCubeLabels
 local notation "O" => ActualEisensteinCubic.O
 
 theorem complete_pool_whole_cube_mark {σ : Type*} [DecidableEq σ]

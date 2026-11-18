@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaTaylorPolynomialRemainder
 public import TaoTrudgianYang2025.BetaBufferedJets
 
@@ -50,10 +60,9 @@ theorem abs_iteratedDeriv_cutoff_taylor_remainder_le
       intro i hi
       have hin : i ≤ n := Nat.lt_succ_iff.mp (Finset.mem_range.mp hi)
       have hij : n-i ≤ Q := (Nat.sub_le _ _).trans hn
-      have hrem := abs_iteratedDeriv_finiteTaylorPolynomial_remainder_le hij hf hb
       have hrem' : |iteratedDeriv (n-i) (fun y => f y-finiteTaylorPolynomial f Q a y) x| ≤
           M*h^(Q+1-(n-i)) :=
-        hrem.trans (mul_le_mul_of_nonneg_left
+        (abs_iteratedDeriv_finiteTaylorPolynomial_remainder_le hij hf hb).trans (mul_le_mul_of_nonneg_left
           (pow_le_pow_left₀ (abs_nonneg _) hx _) hM)
       have hprod := mul_le_mul (hχb i hin) hrem' (abs_nonneg _)
         (mul_nonneg hA (pow_nonneg (inv_nonneg.mpr hh.le) i))
@@ -68,7 +77,7 @@ theorem abs_iteratedDeriv_cutoff_taylor_remainder_le
           mul_le_mul_of_nonneg_left hprod (Nat.cast_nonneg _)
         _ = (n.choose i : ℝ)*(A*M*((h⁻¹)^i*h^(Q+1-(n-i)))) := by ring
         _ = _ := by rw [hcancel]
-    _ = (2 : ℝ)^n*A*M*h^(Q+1-n) := by
+    _ = 2^n*A*M*h^(Q+1-n) := by
       rw [← Finset.sum_mul,← Nat.cast_sum,Nat.sum_range_choose,Nat.cast_pow,Nat.cast_ofNat]
       ring
 

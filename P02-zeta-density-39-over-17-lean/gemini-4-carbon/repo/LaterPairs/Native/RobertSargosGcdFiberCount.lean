@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.RobertSargosNormalizedFrequency
 public import LaterPairs.Native.RobertSargosPrimitiveCount
 
@@ -29,14 +38,11 @@ theorem exists_robertSargos_gcd_fiber_count (ε : ℝ) (hε : 0 < ε) :
   intro S R H Q δ j k hR hH hQ hδ hRH hmem hj hk
   by_cases hs : S.Nonempty
   · obtain ⟨p₀,hp₀⟩ := hs
-    have hjp : 0 < j := hj p₀ hp₀ ▸ (hmem p₀ hp₀).coefficient_gcd_pos
     have hjR : (j:ℝ) ≤ R := by
       rw [hj p₀ hp₀]
       exact (hmem p₀ hp₀).coefficient_gcd_le
-    have hsc := robertSargos_normalized_scale_conditions (Q := Q) k hjp hjR hRH
+    have hsc := robertSargos_normalized_scale_conditions (Q := Q) k (hj p₀ hp₀ ▸ (hmem p₀ hp₀).coefficient_gcd_pos) hjR hRH
     let T := S.image (robertSargosNormalize j k)
-    have hcard : T.card = S.card :=
-      Finset.card_image_of_injOn (robertSargos_normalize_injective_on_gcd_fiber S hj hk)
     have hT : ∀ p ∈ T, RobertSargosPrimitiveSystem (R/j) (H/j) (max 1 (Q/k)) δ p := by
       intro q hq
       obtain ⟨p,hp,rfl⟩ := Finset.mem_image.mp hq
@@ -44,7 +50,7 @@ theorem exists_robertSargos_gcd_fiber_count (ε : ℝ) (hε : 0 < ε) :
         (hj p hp) (hk p hp)
     have hb := hbound T (R/j) (H/j) (max 1 (Q/k)) δ
       hsc.1 hsc.2.1 hsc.2.2.1 hδ hsc.2.2.2 hT
-    rwa [hcard] at hb
+    rwa [(Finset.card_image_of_injOn (robertSargos_normalize_injective_on_gcd_fiber S hj hk))] at hb
   · rw [Finset.not_nonempty_iff_eq_empty.mp hs]
     simp only [Finset.card_empty,Nat.cast_zero]
     positivity

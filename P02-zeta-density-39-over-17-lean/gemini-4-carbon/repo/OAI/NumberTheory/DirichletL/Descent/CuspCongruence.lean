@@ -23,7 +23,7 @@ private theorem cusp_sum_kernel_integral {ι : Type*} [Fintype ι]
   let : Countable Eis := ActualEisensteinCubic.latticeCoordEquiv.injective.countable
   let G : ι → ℝ → ℂ := fun i => cuspBarProfile cubicSourceConjugateFunction (d i).point
   let J : ι → ℝ → ℂ := fun i t =>
-    besselSmoothingIntegrand (G i) thetaBesselScale (Vstar W) X ((-1 : ℂ) + t * Complex.I)
+    besselSmoothingIntegrand (G i) thetaBesselScale (Vstar W) X ((-1) + t * Complex.I)
   have hVs := Vstar_support W lo hi hsupp
   have hV := Vstar_contDiff W lo hi hlo hsupp hW
   have hint (i : ι) : Integrable (J i) :=
@@ -42,7 +42,7 @@ private theorem cusp_sum_kernel_integral {ι : Type*} [Fintype ι]
       (d i).multiplier (d i).reflection_radial
       (sourceCuspRadialCoefficient_weighted_summable _ _) (Vstar W) lo hi hlo hVs hV X hX
   have hexpand (t : ℝ) :
-      besselSmoothingIntegrand F thetaBesselScale (Vstar W) X ((-1 : ℂ) + t * Complex.I) =
+      besselSmoothingIntegrand F thetaBesselScale (Vstar W) X ((-1) + t * Complex.I) =
         ∑ i, w i * J i t :=
     besselSmoothingIntegrand_finite_sum F G w hF thetaBesselScale (Vstar W) X _
       (fun i => (d i).cuspBarProfile_mellin_entire.1 _)

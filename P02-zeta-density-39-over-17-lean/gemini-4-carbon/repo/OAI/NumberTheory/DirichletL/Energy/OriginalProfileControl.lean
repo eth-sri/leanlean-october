@@ -12,10 +12,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyOriginalProfileControl
-open HeckeFamily CenteredMomentCommonRadialData CenteredMomentFiniteProfileExceptional
-open CenteredMomentSourceInputTailUniform CenteredMomentFirstReferenceEnergy
-open CenteredMomentEnergyZeroComparison CenteredMomentEnergyNaturalInputMatches
-open CenteredMomentEnergyState CenteredMomentFirstCanonicalFamily CenteredMomentFirstPhysicalSource
+open HeckeFamily CenteredMomentCommonRadialData CenteredMomentFiniteProfileExceptional CenteredMomentSourceInputTailUniform CenteredMomentFirstReferenceEnergy CenteredMomentEnergyZeroComparison CenteredMomentEnergyNaturalInputMatches CenteredMomentEnergyState CenteredMomentFirstCanonicalFamily CenteredMomentFirstPhysicalSource
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 
 omit [DecidableEq ι] in
@@ -43,14 +40,13 @@ omit [DecidableEq ι] in
 lemma plain_control_sq_le {a b:ℝ}(s:Input ι)(p:Profiles a b)(S:Finset (ℕ×ℕ))
     (N:ℕ)(C:ℝ)(hC:1≤C)(hN:Fintype.card ι≤N)(hM:∀i,s.M i≤C):
     (plainControl s (p.profile 0) (p.profile 1))^2≤C^(2*N)*(p.control (insert (0,0) S))^2 := by
-  have hh:=pow_le_pow_left₀ (plainControl_nonneg _ _ _) (plain_control_le s p S N C hC hN hM) 2
-  simpa only [mul_pow,←pow_mul,Nat.mul_comm N 2] using hh
+  simpa only [mul_pow,←pow_mul,Nat.mul_comm N 2] using (pow_le_pow_left₀ (plainControl_nonneg _ _ _) (plain_control_le s p S N C hC hN hM) 2)
 
 omit [DecidableEq ι] in
 lemma lower_product (s:Input ι)(N:ℕ)(a:ℝ)(ha:0<a)
     (hN:Fintype.card ι≤N)(hlo:∀i,a≤s.lo i):
     (min 1 a)^N≤∏i,s.lo i := by
-  have hm:0≤min 1 a:=le_min zero_le_one ha.le
+  have hm :=le_min zero_le_one ha.le
   calc
     _≤(min 1 a)^(Fintype.card ι):=pow_le_pow_of_le_one hm (min_le_left _ _) hN
     _=∏_i:ι,min 1 a:=by simp

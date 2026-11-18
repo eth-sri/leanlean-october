@@ -10,10 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSupportedZeroEnergy
-open ActualEisensteinCubic ConcreteTraceCRT CanonicalQuadraticSieve CanonicalRowCompletion IdealMobiusDivisorSum
-open CenteredMomentAddedZeroUniform CenteredMomentSourceMass CenteredMomentZeroMode
-open CenteredMomentSourceRow CenteredMomentHeckeExpansion CenteredMomentFirstLocalization
-open CenteredMomentZeroMeanBridge EisensteinSchwartzPoisson HeckeFamily
+open ActualEisensteinCubic ConcreteTraceCRT CanonicalQuadraticSieve CanonicalRowCompletion IdealMobiusDivisorSum CenteredMomentAddedZeroUniform CenteredMomentSourceMass CenteredMomentZeroMode CenteredMomentSourceRow CenteredMomentHeckeExpansion CenteredMomentFirstLocalization CenteredMomentZeroMeanBridge EisensteinSchwartzPoisson HeckeFamily
 local notation "O" => ActualEisensteinCubic.O
 
 theorem idealZeroEnergy_filter (S : Finset (Ideal O)) (hS : ∀ I∈S,Supported I)
@@ -44,8 +41,7 @@ theorem idealZeroEnergy_filter (S : Finset (Ideal O)) (hS : ∀ I∈S,Supported 
       exact hq (by simp only [f,hc q.2.val q.2.property hn,star_zero,mul_zero,zero_mul])
     exact ⟨(⟨q.1.val,Finset.mem_filter.mpr ⟨q.1.property,hi⟩⟩,
       ⟨q.2.val,Finset.mem_filter.mpr ⟨q.2.property,hj⟩⟩),rfl⟩
-  have ht := hep.tsum_eq hs
-  simpa only [tsum_fintype,Fintype.sum_prod_type,f,ep,e,idealZeroEnergy,idealColumn] using ht.symm
+  simpa only [tsum_fintype,Fintype.sum_prod_type,f,ep,e,idealZeroEnergy,idealColumn] using (hep.tsum_eq hs).symm
 
 def activeColumns (S : Finset (Ideal O)) (c : Ideal O → ℂ) : Finset (Ideal O) :=
   (supportedColumns S).filter (fun I => c I≠0)
@@ -86,7 +82,7 @@ theorem finite_tuple_fiber_card {ι : Type*} [Fintype ι]
     apply Subtype.ext
     funext i
     exact congrArg Subtype.val (congrFun he i)
-  simpa only [Fintype.card_coe,Fintype.card_fun,Fintype.card_sum,Fintype.card_fin,T]
+  simpa
     using Fintype.card_le_of_injective f hf
 
 theorem finiteColumnCoefficient_norm_le {ι : Type*} [Fintype ι]

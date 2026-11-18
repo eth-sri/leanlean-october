@@ -18,7 +18,7 @@ lemma norm_bracket_le_card {F : Type*} [Field F] [Fintype F]
   have hr : 1≤rootCard F := by
     unfold rootCard
     exact (Real.le_sqrt (by norm_num) (by positivity)).mpr (by simpa using hq)
-  have hi : (rootCard F)⁻¹≤1 := (inv_le_one₀ rootCard_pos).mpr hr
+  have hi := (inv_le_one₀ rootCard_pos).mpr hr
   by_cases hj4 : j=4
   · subst j
     by_cases hx : x=0

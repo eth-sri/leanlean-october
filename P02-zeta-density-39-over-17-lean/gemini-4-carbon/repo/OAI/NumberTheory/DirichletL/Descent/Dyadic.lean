@@ -48,10 +48,8 @@ theorem hybridSquarePool_bounds (S : Finset (Ideal Eis × Ideal Eis)) (B : ℝ)
     (t : Ideal Eis) (ht : t ∈ hybridSquarePool S) :
     1 ≤ (Ideal.absNorm t : ℝ) ∧ (Ideal.absNorm t : ℝ) ≤ B := by
   obtain ⟨d, hd, rfl⟩ := Finset.mem_image.mp ht
-  have hb0 : (d.common * d.residualB) * d.square ^ 2 ≠ 0 :=
-    mul_ne_zero d.g_squarefree.ne_zero (pow_ne_zero _ d.square_ne_zero)
   refine ⟨QuadraticMainBoundary.norm_one_le d.square_ne_zero, ?_⟩
-  apply (QuadraticMainBoundary.norm_le_of_dvd hb0 ?_).trans
+  apply (QuadraticMainBoundary.norm_le_of_dvd (mul_ne_zero d.g_squarefree.ne_zero (pow_ne_zero _ d.square_ne_zero)) ?_).trans
     (hS d.reconstruct ((mem_hybridColumnSupport S d).mp hd))
   exact dvd_mul_of_dvd_right (dvd_pow_self d.square (by norm_num : 2 ≠ 0)) _
 
@@ -113,7 +111,6 @@ theorem hybrid_square_dyad_energy
     (∑ k ∈ rows, ‖∑ t ∈ divisorDyadicBin (hybridSquarePool S) B j, F t k‖ ^ 2) ≤
       (256 * divisorDyadicScale j.val) ^ 2 * E := by
   let Tset := divisorDyadicBin (hybridSquarePool S) B j
-  have hc := hybridSquarePool_bin_count S B hS j
   calc
     _ ≤ (Tset.card : ℝ) * ∑ t ∈ Tset, ∑ k ∈ rows, ‖F t k‖ ^ 2 := by
       calc
@@ -126,7 +123,7 @@ theorem hybrid_square_dyad_energy
     _ ≤ (Tset.card : ℝ) * ∑ _t ∈ Tset, E :=
       mul_le_mul_of_nonneg_left (Finset.sum_le_sum hF) (Nat.cast_nonneg _)
     _ = (Tset.card : ℝ) ^ 2 * E := by simp; ring
-    _ ≤ _ := mul_le_mul_of_nonneg_right (pow_le_pow_left₀ (Nat.cast_nonneg _) hc 2) hE
+    _ ≤ _ := mul_le_mul_of_nonneg_right (pow_le_pow_left₀ (Nat.cast_nonneg _) (hybridSquarePool_bin_count S B hS j) 2) hE
 
 end
 end SevenEighths.InverseMoment

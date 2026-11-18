@@ -114,23 +114,21 @@ theorem polynomial_mellin (χ : Character) (W : ℝ → ℂ)
       mellin W ((c : ℂ)+t*Complex.I) *
         (D : ℂ)^(((c : ℂ)+t*Complex.I)+shift σ freq-(1/2 : ℂ)) *
           series χ (((c : ℂ)+t*Complex.I)+shift σ freq) := by
-  rw [polynomial_eq_weighted χ W D σ freq hD]
-  rw [CompletedGauss.weightedMellin_inversion norm norm_pos
+  rw [polynomial_eq_weighted χ W D σ freq hD, CompletedGauss.weightedMellin_inversion norm norm_pos
     (twistedCoefficient χ σ freq) c (twisted_coefficient_summable χ c σ freq hc)
-    W a b ha hWs hW D hD]
-  rw [mul_left_comm, ← integral_const_mul]
+    W a b ha hWs hW D hD, mul_left_comm, ← integral_const_mul]
   congr 1
   apply integral_congr_ae
   filter_upwards [] with t
   rw [twisted_series_eq χ σ freq (by simpa using hc)]
-  have he : (D : ℂ)^(shift σ freq-(1/2 : ℂ))*(D : ℂ)^((c : ℂ)+t*Complex.I) =
-      (D : ℂ)^(((c : ℂ)+t*Complex.I)+shift σ freq-(1/2 : ℂ)) := by
+  have he : (D : ℂ)^(shift σ freq-(1/2))*(D : ℂ)^((c : ℂ)+t*Complex.I) =
+      (D : ℂ)^(((c : ℂ)+t*Complex.I)+shift σ freq-(1/2)) := by
     rw [← Complex.cpow_add _ _ (Complex.ofReal_ne_zero.mpr hD.ne')]
     congr 1
     ring
   calc
     _ = mellin W ((c : ℂ)+t*Complex.I) *
-        ((D : ℂ)^(shift σ freq-(1/2 : ℂ))*(D : ℂ)^((c : ℂ)+t*Complex.I)) *
+        ((D : ℂ)^(shift σ freq-(1/2))*(D : ℂ)^((c : ℂ)+t*Complex.I)) *
           series χ (((c : ℂ)+t*Complex.I)+shift σ freq) := by ring
     _ = _ := by rw [he]
 

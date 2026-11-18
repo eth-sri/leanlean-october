@@ -10,9 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstReduced
-open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson
-open CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentFourier
-open CenteredMomentFirstMixed CenteredMomentActive
+open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentFourier CenteredMomentFirstMixed CenteredMomentActive
 local notation "O" => ActualEisensteinCubic.O
 
 def tripleRow (a b r : O) (χa : MulChar (Residue a) ℂ)
@@ -51,7 +49,7 @@ theorem tripleRow_radial_summable (a b r : O) (ha : a≠0) (hb : b≠0) (hr : r�
   let : Fintype (Residue (a*(b*r))) := Fintype.ofFinite _
   have hh := actual_eisenstein_periodic_summable (scaledRadialTest W K hK)
     (Ideal.Quotient.mk (Ideal.span {a*(b*r)})) (tripleResidue a b r χa χb G)
-  simpa only [tripleResidue_mk,scaledRadialTest_apply] using hh
+  simpa using hh
 
 theorem tripleRow_poisson (a b r : O) (ha : a≠0) (hb : b≠0) (hr : r≠0)
     (χa : MulChar (Residue a) ℂ) (χb : MulChar (Residue b) ℂ)

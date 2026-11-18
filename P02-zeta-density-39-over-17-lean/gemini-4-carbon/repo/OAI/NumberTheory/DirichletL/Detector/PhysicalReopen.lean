@@ -18,16 +18,6 @@ lemma supportedElement_ne_zero (s : O) (hs : Supported (Ideal.span {s})) : s≠0
   apply hs.1
   simp [h]
 
-lemma finite_support_tsum_comm {α β : Type*} (f : α → β → ℂ) (S : Finset α)
-    (hz : ∀ a, a∉S → ∀ b, f a b=0) (hs : ∀ a∈S, Summable (f a)) :
-    (∑' a, ∑' b, f a b) = ∑' b, ∑' a, f a b := by
-  calc
-    _ = ∑ a∈S, ∑' b, f a b := tsum_eq_sum (fun a ha => by simp only [hz a ha, tsum_zero])
-    _ = ∑' b, ∑ a∈S, f a b := (Summable.tsum_finsetSum hs).symm
-    _ = _ := by
-      apply tsum_congr
-      intro b
-      exact (tsum_eq_sum (fun a ha => hz a ha b)).symm
 
 theorem physical_spectral_reopen (η : HeckeFamily.Character) (C : CalibrationData)
     (S : Finset (Ideal O)) (D : Ideal O) (s : O)
@@ -49,7 +39,14 @@ theorem physical_spectral_reopen (η : HeckeFamily.Character) (C : CalibrationDa
   have hsum (m : O) : Summable (F m) :=
     (spectralRow_summable S D (rowCoefficient η C.Xi s hs m)
       (rowCoefficient_norm_le_one η C.Xi C.Xi_norm_le_one s hs m) t ht).mul_left _
-  have he := finite_support_tsum_comm F hfin.toFinset hzero (fun m _ => hsum m)
+  have he : (∑' a, ∑' b, F a b) = ∑' b, ∑' a, F a b := by
+    calc
+        _ = ∑ a∈(hfin.toFinset), ∑' b, F a b := tsum_eq_sum (fun a ha => by simp only [hzero a ha, tsum_zero])
+        _ = ∑' b, ∑ a∈(hfin.toFinset), F a b := (Summable.tsum_finsetSum (fun m _ => hsum m)).symm
+        _ = _ := by
+          apply tsum_congr
+          intro b
+          exact (tsum_eq_sum (fun a ha => hzero a ha b)).symm
   calc
     _ = ∑' m : O, ∑' p : Ideal O × Ideal O, F m p := by
       simp only [F, spectralRow, tsum_mul_left]

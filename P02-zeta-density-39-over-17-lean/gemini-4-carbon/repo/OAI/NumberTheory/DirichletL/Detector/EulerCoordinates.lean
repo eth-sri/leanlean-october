@@ -69,7 +69,7 @@ lemma coordD_norm_le (Q : ℝ) (hQ : 0 < Q) (eta v x : ℂ)
 
 lemma coordK_norm_le (Q : ℝ) (hQ : 1 ≤ Q) (eta x w : ℂ) (he : ‖eta‖ ≤ 1) :
     ‖coordK Q eta x w‖ ≤ Q ^ (1-x.re-w.re) := by
-  have hQ0 : 0 < Q := lt_of_lt_of_le zero_lt_one hQ
+  have hQ0 := lt_of_lt_of_le zero_lt_one hQ
   have hsub : ‖(Q:ℂ)-1‖ = Q-1 := by
     rw [← Complex.ofReal_one, ← Complex.ofReal_sub, Complex.norm_real, Real.norm_eq_abs,
       abs_of_nonneg (sub_nonneg.mpr hQ)]

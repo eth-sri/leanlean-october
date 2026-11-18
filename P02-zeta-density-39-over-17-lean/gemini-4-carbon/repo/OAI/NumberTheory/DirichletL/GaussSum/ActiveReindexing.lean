@@ -7,85 +7,17 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
-
-open scoped BigOperators Classical ContDiff
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 
 namespace CompletedGauss
-open ActualEisensteinCubic CubicEisenstein CanonicalQuadraticSieve CompletedDyadic LocalReflectionBrackets
+open CubicEisenstein CanonicalQuadraticSieve CompletedDyadic LocalReflectionBrackets
 local notation "Eis" => ActualEisensteinCubic.O
 
 end CompletedGauss
 
 namespace CubicEisenstein
-open ActualEisensteinCubic CompletedGauss CompletedDyadic CanonicalQuadraticSieve
+open CompletedGauss CompletedDyadic CanonicalQuadraticSieve
 local notation "Eis" => ActualEisensteinCubic.O
 namespace FixedFourierGeometry
 variable {c:Eis} {h:Eis⧸Ideal.span {c}} (G:FixedFourierGeometry c h)
@@ -95,26 +27,24 @@ end FixedFourierGeometry
 end CubicEisenstein
 
 namespace CompletedGauss.FreeReflection
-open ActualEisensteinCubic CubicEisenstein CanonicalQuadraticSieve CompletedDyadic
+open CubicEisenstein CanonicalQuadraticSieve CompletedDyadic
 local notation "Eis" => ActualEisensteinCubic.O
 
 end CompletedGauss.FreeReflection
 namespace CubicEisenstein.FixedFourierGeometry
-open ActualEisensteinCubic CompletedGauss CompletedGauss.FreeReflection CanonicalQuadraticSieve CompletedDyadic
+open CompletedGauss CompletedGauss.FreeReflection CanonicalQuadraticSieve CompletedDyadic
 local notation "Eis" => ActualEisensteinCubic.O
 
 end CubicEisenstein.FixedFourierGeometry
 
-open scoped BigOperators Classical
 
 namespace CompletedGauss.FreeReflection
-open ActualEisensteinCubic
 local notation "Eis" => ActualEisensteinCubic.O
 
 end CompletedGauss.FreeReflection
 
 namespace CanonicalRowCompletion.ActualFiber
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve CubicEisenstein
+open CompletedGauss CanonicalQuadraticSieve CubicEisenstein
 local notation "Eis" => ActualEisensteinCubic.O
 variable (q:ℕ) (hq:q≠0) (m:Eis) (hm:m≠0)
     (rows:Finset (Ideal Eis)) (R F:Ideal Eis) (hR:R≠0) (hF:Squarefree F)
@@ -124,7 +54,7 @@ variable (q:ℕ) (hq:q≠0) (m:Eis) (hm:m≠0)
 end CanonicalRowCompletion.ActualFiber
 
 namespace CubicEisenstein
-open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss LocalReflectionBrackets
+open CompletedGauss LocalReflectionBrackets
 local notation "Eis" => ActualEisensteinCubic.O
 
 noncomputable local instance inactiveField (P:Ideal Eis) [P.IsMaximal] : Field (Eis⧸P) :=
@@ -146,14 +76,13 @@ lemma prime_zeroFourier_norm_formula (p:Eis) [(Ideal.span {p}).IsMaximal]
       (fun x=>(actualSextic (Ideal.span {p}) hg^j) x) 0=
       if j=0 then 1-(Ideal.absNorm (Ideal.span {p}):ℂ)⁻¹ else 0 := by
   rw [finiteAdditiveFourierCoeff_zero]
-  have he:=canonical_zeroFourierCoefficient (Ideal.span {p}) hg hodd j hj
-  convert he using 1
+  convert (canonical_zeroFourierCoefficient (Ideal.span {p}) hg hodd j hj) using 1
   exact congrArg (fun n:ℕ=>(if j=0 then 1-(n:ℂ)⁻¹ else 0)) (by rw [Ideal.absNorm_apply,Submodule.cardQuot_apply,Nat.card_eq_fintype_card])
 
 end CubicEisenstein
 
 namespace CompletedGauss.FreeReflection
-open ActualEisensteinCubic CubicEisenstein LocalReflectionBrackets
+open CubicEisenstein LocalReflectionBrackets
 local notation "Eis" => ActualEisensteinCubic.O
 local instance inactivePoolMaximal (I Q Q0:Ideal Eis) (P:pool I Q Q0) : P.val.IsMaximal:=
   pool_maximal I Q Q0 P
@@ -165,7 +94,7 @@ noncomputable local instance inactivePoolFintype (I Q Q0:Ideal Eis) (P:pool I Q 
 end CompletedGauss.FreeReflection
 
 namespace CanonicalRowCompletion
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve CubicEisenstein
+open CompletedGauss CanonicalQuadraticSieve CubicEisenstein
 local notation "Eis" => ActualEisensteinCubic.O
 namespace GoodMaskRowData
 variable {m f z:Eis} (D:GoodMaskRowData m f z)
@@ -180,10 +109,8 @@ include R I F Q0 hR hI hF hm hf hz hbad hcop hA hT
 end GoodMaskRowData
 end CanonicalRowCompletion
 
-open scoped BigOperators Classical
 
 namespace CubicEisenstein
-open ActualEisensteinCubic
 local notation "Eis" => ActualEisensteinCubic.O
 noncomputable local instance rayUnitsFintype : Fintype Eisˣ := by
   letI : Finite Eisˣ:=PrimaryIdealUnitReindex.finite_units

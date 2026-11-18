@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaExpandedAllOrders
 public import TaoTrudgianYang2025.BetaLegendreCorrection
 
@@ -42,7 +52,7 @@ theorem modelPhaseLegendreDual_expanded_anchored_bound
         (fun y => modelPhaseLegendreDual F y-referenceModelPrimitive σ⁻¹ y)
         (modelPhaseInverseSlope F x-x^(-σ⁻¹)) (modelPhaseSlopeRange F) x := by
     intro x hx
-    have hp : 0 < x := hlo.trans_le (modelPhaseSlopeRange_positive_window hσ hpos hF hx).1
+    have hp := hlo.trans_le (modelPhaseSlopeRange_positive_window hσ hpos hF hx).1
     exact ((modelPhaseLegendreDual_hasDerivAt hσ hδ hF hx).sub
       (referenceModelPrimitive_hasDerivAt σ⁻¹ hp)).hasDerivWithinAt
   have he : ∀ x ∈ modelPhaseSlopeRange F, ‖modelPhaseInverseSlope F x-x^(-σ⁻¹)‖ ≤ A*δ := by
@@ -54,7 +64,7 @@ theorem modelPhaseLegendreDual_expanded_anchored_bound
   have hdist : |v-w| ≤ 2 := by
     rw [abs_le]
     constructor <;> linarith [hV.1,hV.2,hW.1,hW.2]
-  have h' : |anchoredLegendreError F σ w v| ≤ A*δ*|v-w| := h
+  have h' := h
   exact h'.trans ((mul_le_mul_of_nonneg_left hdist
     (mul_nonneg (zero_le_one.trans hA) hd)).trans (by nlinarith))
 
@@ -84,13 +94,12 @@ theorem anchoredLegendreError_expanded_finite_uniformity
         (mul_le_mul_of_nonneg_right (by linarith) hd)
   | succ n =>
       have hnQ : n ≤ Q := Nat.le_of_succ_le hn
-      have hsmall := approximateModelPhase_mono hF (legendreFiniteInputOrder_le hnQ) le_rfl
       have hp : 0 < v := (show 0 < (2 : ℝ)^(-σ)/2 by positivity).trans_le
         (modelPhaseSlopeRange_positive_window hσ hpos hF hv).1
       rw [anchoredLegendreError_iteratedDeriv hσ hδ hF₁ hv hp n]
       have hsum : B n ≤ S := Finset.single_le_sum
         (fun k _ => zero_le_one.trans (hB k)) (Finset.mem_range.mpr (Nat.lt_succ_iff.mpr hnQ))
-      exact (hderiv n F δ hδ hpos hsmall v hv).trans
+      exact (hderiv n F δ hδ hpos (approximateModelPhase_mono hF (legendreFiniteInputOrder_le hnQ) le_rfl) v hv).trans
         (mul_le_mul_of_nonneg_right (by linarith) hd)
 
 end TaoTrudgianYang2025

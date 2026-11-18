@@ -45,13 +45,11 @@ lemma gaussianMellin_inversion (y : ℝ) (hy : 0<y) (σ : ℝ) :
 
 lemma gaussian_completed_norm_power (a b Z : ℝ) (ha : 0<a) (hb : 0<b) (hZ : 0<Z) (t : ℂ) :
     (Z:ℂ)^t*((a:ℂ)^(-t)*(b:ℂ)^(-(3*t)))=((a*b^3/Z:ℝ):ℂ)^(-t) := by
-  rw [Complex.ofReal_div,Complex.div_cpow_ofReal_nonneg (mul_pos ha (pow_pos hb 3)).le hZ.le]
-  rw [Complex.ofReal_mul,Complex.mul_cpow_ofReal_nonneg ha.le (pow_pos hb 3).le]
-  have hp : ((b^3:ℝ):ℂ)^(-t)=(b:ℂ)^((3:ℂ)*(-t)) := by
-    simpa only [Real.rpow_ofNat,Real.rpow_natCast,Complex.ofReal_pow,Complex.cpow_ofNat,Complex.ofReal_ofNat] using
-      (Complex.cpow_mul_ofReal_nonneg hb.le (3:ℝ) (-t)).symm
-  rw [hp,Complex.cpow_neg (Z:ℂ),div_inv_eq_mul]
-  rw [show (3:ℂ)*(-t)= -(3*t) by ring]
+  rw [Complex.ofReal_div,Complex.div_cpow_ofReal_nonneg (mul_pos ha (pow_pos hb 3)).le hZ.le, Complex.ofReal_mul,Complex.mul_cpow_ofReal_nonneg ha.le (pow_pos hb 3).le]
+  have hp : ((b^3:ℝ):ℂ)^(-t)=(b:ℂ)^(3*(-t)) := by
+    simpa using
+      (Complex.cpow_mul_ofReal_nonneg hb.le 3 (-t)).symm
+  rw [hp,Complex.cpow_neg (Z:ℂ),div_inv_eq_mul, show 3*(-t)= -(3*t) by ring]
   ring
 
 end SevenEighths.ProbePhysical

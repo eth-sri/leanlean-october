@@ -25,8 +25,8 @@ theorem ExponentPair.atkinson_physical_gram_budget_all_lengths {k l δ ν : ℝ}
   refine ⟨F,hF,A,hA,?_⟩
   intro H G L W hH hwidth hupper hL hsep hrange hdiam
   have hH0 : 0 < H := by linarith [hA.trans hH]
-  have hG : 0 < G := (Real.rpow_pos_of_pos hH0 δ).trans_le hwidth
-  have hmin : 0 < min L H := lt_min hL hH0
+  have hG := (Real.rpow_pos_of_pos hH0 δ).trans_le hwidth
+  have hmin := lt_min hL hH0
   have hd : ∀ t ∈ W, ∀ u ∈ W, |u-t| ≤ min L H := by
     intro t ht u hu
     apply le_min (hdiam t ht u hu)

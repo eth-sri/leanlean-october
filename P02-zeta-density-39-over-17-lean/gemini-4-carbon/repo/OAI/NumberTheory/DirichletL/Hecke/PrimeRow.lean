@@ -35,7 +35,7 @@ theorem identityClass_coprime_larger {I J : Ideal O}
 omit [NeZero M] in
 theorem identityClass_prime_good (m : O) (hmLam : λ₀∣m) (hMm : M≤Ideal.span {m})
     (P : Ideal O) [P.IsMaximal] (hP : P∈RayQuotient.identityClass M H) : λ₀∉P := by
-  have hm : m∉P := (SixthPowerAverage.prime_coprime_span_iff P m).mp
+  have hm := (SixthPowerAverage.prime_coprime_span_iff P m).mp
     (identityClass_coprime_larger M H hP hMm)
   intro hLam
   obtain ⟨a,rfl⟩ := hmLam

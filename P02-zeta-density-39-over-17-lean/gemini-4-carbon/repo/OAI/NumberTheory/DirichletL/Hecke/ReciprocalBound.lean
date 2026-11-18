@@ -19,10 +19,9 @@ theorem normWeight_le_of_re_ge {σ : ℝ} {s : ℂ} (hs : σ ≤ s.re) (I : Idea
   by_cases hI : I = 0
   · simp [hI, CubicEisenstein.fullIdealWeight]
   · have hN : (1 : ℝ) ≤ Ideal.absNorm I := by
-      have hpos : 0 < Ideal.absNorm I := Nat.pos_of_ne_zero ((Ideal.absNorm_ne_zero_iff I).mpr (Ring.HasFiniteQuotients.finiteQuotient hI))
-      exact_mod_cast hpos
+      exact_mod_cast (Nat.pos_of_ne_zero ((Ideal.absNorm_ne_zero_iff I).mpr (Ring.HasFiniteQuotients.finiteQuotient hI)))
     simp only [CubicEisenstein.fullIdealWeight, hI, ite_false]
-    have hn : (0 : ℝ) < Ideal.absNorm I := lt_of_lt_of_le zero_lt_one hN
+    have hn := lt_of_lt_of_le zero_lt_one hN
     rw [show (Ideal.absNorm I : ℂ) = ((Ideal.absNorm I : ℝ) : ℂ) by simp,
       Complex.norm_cpow_eq_rpow_re_of_pos hn,
       Complex.norm_cpow_eq_rpow_re_of_pos hn]
@@ -31,7 +30,7 @@ theorem normWeight_le_of_re_ge {σ : ℝ} {s : ℂ} (hs : σ ≤ s.re) (I : Idea
 
 theorem reciprocal_norm_le (χ : Character) {σ : ℝ} (hσ : 1 < σ)
     {s : ℂ} (hs : σ ≤ s.re) : ‖HeckeReciprocal.reciprocal χ s‖ ≤ bound σ := by
-  have hs1 : 1 < s.re := hσ.trans_le hs
+  have hs1 := hσ.trans_le hs
   have hs0 : s ≠ 0 := by intro h; norm_num [h] at hs1
   have hsp : s ≠ 1 := by intro h; norm_num [h] at hs1
   rw [HeckeReciprocal.reciprocal_eq_inv χ hs0 hsp, LFunction_eq_series χ hs1,

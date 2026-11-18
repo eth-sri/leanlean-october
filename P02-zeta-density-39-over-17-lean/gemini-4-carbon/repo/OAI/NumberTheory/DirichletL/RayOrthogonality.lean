@@ -36,8 +36,7 @@ theorem exists_character_ne_one (H : Subgroup Rˣ) {u : Rˣ} (hu : u ∉ H) :
     intro χ hχ
     by_contra h
     exact hn ⟨⟨χ, hχ⟩, h⟩
-  have hh := (MulChar.mem_subgroupOrderIsoSubgroupMulChar_symm_iff).mpr hall
-  simpa only [characters, OrderDual.toDual_ofDual, OrderIso.symm_apply_apply] using hh
+  simpa only [characters, OrderDual.toDual_ofDual, OrderIso.symm_apply_apply] using ((MulChar.mem_subgroupOrderIsoSubgroupMulChar_symm_iff).mpr hall)
 
 theorem sum_characters_unit (H : Subgroup Rˣ) (u : Rˣ) :
     ∑ χ : characters H, (χ : MulChar R ℂ) u =

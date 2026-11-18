@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.RobertSargosWeightedShift
 public import LaterPairs.Native.RobertSargosWeightedZeroSplit
 
@@ -60,9 +69,8 @@ theorem robertSargos_nonzero_weighted_shift_error (f : ℝ → ℝ) (M H Q R N :
       apply Finset.sum_le_sum
       intro r hr
       have hqm := (Finset.mem_erase.mp hq).2
-      have hrm := (Finset.mem_erase.mp hr).2
       apply mul_le_mul_of_nonneg_left _ (mul_nonneg
-        (signed_triangular_weight_nonneg hQ hqm) (signed_triangular_weight_nonneg hR hrm))
+        (signed_triangular_weight_nonneg hQ hqm) (signed_triangular_weight_nonneg hR ((Finset.mem_erase.mp hr).2)))
       have hn := norm_robertSargos_trimmed_shift_error f M H Q N q r hN hqm
       have he := Complex.re_le_norm
         (robertSargosTrimmedCorrelation f M H q r-robertSargosShiftedCorrelation f M H Q N q r)

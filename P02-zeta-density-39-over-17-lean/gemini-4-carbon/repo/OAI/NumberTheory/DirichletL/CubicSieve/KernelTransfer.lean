@@ -7,9 +7,8 @@ public import OAI.NumberTheory.DirichletL.CubicSieve.PairPoisson
 namespace OAI
 
 namespace SevenEighths.CubicSieve
+open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson FourierBridge
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
-open EisensteinSchwartzPoisson FourierBridge
 noncomputable section
 local notation "O" => ActualEisensteinCubic.O
 

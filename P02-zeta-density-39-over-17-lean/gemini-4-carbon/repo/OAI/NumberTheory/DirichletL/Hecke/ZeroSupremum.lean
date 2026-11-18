@@ -52,8 +52,7 @@ theorem LFunction_ne_zero_of_beta_lt (χ : Character) {s : ℂ}
     (hs : beta < s.re) (hpole : s ≠ 1 ∨ χ.residue ≠ 1) :
     LFunction χ s ≠ 0 := by
   intro hz
-  have hpos : 0 < s.re := lt_trans (by linarith [half_le_beta]) hs
-  exact (not_lt_of_ge (zero_re_le_beta χ hpos hpole hz)) hs
+  exact (not_lt_of_ge (zero_re_le_beta χ (lt_trans (by linarith [half_le_beta]) hs) hpole hz)) hs
 
 end SevenEighths.HeckeZeroSupremum
 

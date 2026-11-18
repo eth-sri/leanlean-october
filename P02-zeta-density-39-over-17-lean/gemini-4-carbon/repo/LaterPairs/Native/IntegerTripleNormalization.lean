@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.PrimitiveTripleGcd
 
 @[expose] public section
@@ -32,7 +41,7 @@ theorem integerTripleGcd_pos {a b c : ℤ} (ha : a ≠ 0) :
 theorem integerTripleGcd_le_natAbs {a b c : ℤ} (ha : a ≠ 0) :
     integerTripleGcd a b c ≤ a.natAbs := by
   apply Nat.le_of_dvd (Int.natAbs_pos.mpr ha)
-  simpa only [Int.natAbs_natCast] using
+  simpa using
     Int.natAbs_dvd_natAbs.mpr (integerTripleGcd_dvd a b c).1
 
 theorem integerTripleGcd_mul_nat (g : ℕ) (a b c : ℤ) :
@@ -53,7 +62,7 @@ theorem integerTripleGcd_quotient_primitive {a b c : ℤ} (ha : a ≠ 0) :
   rw [Int.mul_ediv_cancel_of_dvd hd.1,Int.mul_ediv_cancel_of_dvd hd.2.1,
     Int.mul_ediv_cancel_of_dvd hd.2.2] at he
   apply Nat.eq_of_mul_eq_mul_left (integerTripleGcd_pos ha)
-  simpa only [Nat.mul_one] using he.symm
+  simpa using he.symm
 
 end TaoTrudgianYang2025
 

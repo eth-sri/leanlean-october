@@ -7,11 +7,10 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorRowCount
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
 open Set
+open scoped Classical BigOperators
 namespace SevenEighths.HeckeDetectorInverseFiberCount
-open HeckeFamily HeckeDyadic HeckeDetectorWitnessRows HeckeDetectorProfiles HeckeDetectorDyadicProfiles
-open HeckeDetectorPhysicalSelection HeckeDetectorRowwisePolynomial
+open HeckeFamily HeckeDyadic HeckeDetectorWitnessRows HeckeDetectorProfiles HeckeDetectorDyadicProfiles HeckeDetectorPhysicalSelection HeckeDetectorRowwisePolynomial
 
 def inverseTest (U tstar r : ℝ) : ℝ→ℂ :=
   HeckeDetectorDyadicBridge.inverseProfile cutoff positiveAnnular (U^tstar) (U^r)
@@ -55,13 +54,11 @@ theorem inverse_fiber_count {Row Label Slot : Type*}
     (by linarith) witness label J K hlabel hJ hK
   have hcap1' : r+2*(∑ s∈selected,widths s)<1 := by dsimp [r]; linarith
   have hcap2' : 2*r+8*(∑ s∈selected,widths s)<3 := by dsimp [r]; linarith
-  have hUp : 0<U := zero_lt_one.trans hU
-  have hDp : 0<U^r := Real.rpow_pos_of_pos hUp _
-  have hE : 0≤C*U^(1+εm) := mul_nonneg hC (Real.rpow_nonneg hUp.le _)
+  have hUp := zero_lt_one.trans hU
   have he := HeckeDetectorFiberEnergy.inverse_energy rows χ U a ε tstar T allowance i
     (by linarith) witness label (inverseTest U tstar r) (U^r) (1/4) (9/4) (C*U^(1+εm))
-    (fun u => ∏ s∈selected,physical M H row W b widths zs U u s) hDp (by norm_num)
-    (HeckeDetectorDyadicActual.inverse_profile_support _ _) hE height hheight hfreq
+    (fun u => ∏ s∈selected,physical M H row W b widths zs U u s) (Real.rpow_pos_of_pos hUp _) (by norm_num)
+    (HeckeDetectorDyadicActual.inverse_profile_support _ _) (mul_nonneg hC (Real.rpow_nonneg hUp.le _)) height hheight hfreq
     (hraw selected hsub hcap1' hcap2')
   have he' : ∑ u∈rows,
       ‖polynomial (χ u label) true (inverseTest U tstar r) (U^r) (witness u).zero.re

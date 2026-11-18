@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 
 namespace SevenEighths.CenteredMomentEnergyCappedRequests
-open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyWidthRanges
-open CenteredMomentEnergyWidthInduction CenteredMomentEnergyCappedWidthInduction
-open CenteredMomentEnergyFirstLiveAdmission CenteredMomentEnergySourceCapSchedule
+open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyWidthRanges CenteredMomentEnergyWidthInduction CenteredMomentEnergyCappedWidthInduction CenteredMomentEnergyFirstLiveAdmission CenteredMomentEnergySourceCapSchedule
 
 def requestLength (M B L:ℝ):ℝ:=max L (2*M+B+2)+1
 
@@ -46,8 +44,7 @@ lemma previous_admits (M B L ε parent e:ℝ)(hM:0≤M)(hB:0≤B)
     2*max (requestLength M B (lengthAt M B L ε (k+1))) parent+e≤lengthAt M B L ε k:=by
   have hL:=range_nonneg M B L hM hB (remaining M ε (k+1))
   change 0≤lengthAt M B L ε (k+1) at hL
-  have hreq:=request_bounds M B (lengthAt M B L ε (k+1)) hM hB hL
-  rw [max_eq_left (hp.trans hreq.2.2),child_length M B L ε k hk]
+  rw [max_eq_left (hp.trans (request_bounds M B (lengthAt M B L ε (k+1)) hM hB hL).2.2),child_length M B L ε k hk]
   exact doubled_request M B _ e hM hB hL he
 
 lemma request_le_final (M B L ε:ℝ)(hM:0≤M)(hB:0≤B)(k:ℕ)(hk:k<count M ε):

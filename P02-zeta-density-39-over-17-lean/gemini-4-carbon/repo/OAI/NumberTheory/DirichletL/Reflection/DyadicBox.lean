@@ -11,7 +11,7 @@ open CompletedGauss CompletedDyadic CanonicalQuadraticSieve
 noncomputable section
 
 lemma ramifiedScale_one_cube (m : ℕ) : (ramifiedScale 1 completedRamifiedStep m)^3=(3:ℝ)^m := by
-  have hs : completedRamifiedStep^3=(3:ℝ) := by
+  have hs : completedRamifiedStep^3=3 := by
     unfold completedRamifiedStep
     rw [← Real.rpow_mul_natCast (by norm_num)]
     norm_num
@@ -62,7 +62,7 @@ theorem retainedDyadicBox_count_small_power (ε : ℝ) (hε : 0<ε) :
   rw [retainedDyadicBox_card]
   push_cast
   rw [← pow_mul]
-  norm_num only [show (3:ℕ)*2=6 by norm_num]
+  norm_num only [show 3*2=6 by norm_num]
   apply (pow_le_pow_left₀ (by positivity) hh 6).trans_eq
   rw [mul_pow,← Real.rpow_mul_natCast hp.le]
   congr 2

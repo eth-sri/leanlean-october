@@ -9,17 +9,11 @@ public import OAI.NumberTheory.DirichletL.Moments.OriginalReflectionErrorMass
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
 open Filter
+open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyZeroRetainedError
-open HeckeFamily HeckeDyadic ConcreteTraceCRT
-open CenteredMomentNaturalPrimitive CenteredMomentUniformReflectionApproximation
-open CenteredMomentEnergyZeroReflectionSupport CenteredMomentOriginalRadialComparison
-open CenteredMomentRadialPolynomialEnergy CenteredMomentEnergyState
-open CenteredMomentEnergyReferenceState CenteredMomentAllocatedNaturalRadial
-open CenteredMomentNaturalRowSource CenteredMomentFiniteProfileExceptional CenteredMomentLattice
-open CenteredMomentEnergyReferenceHomogeneous CenteredMomentEnergyReferenceReflection
+open HeckeFamily HeckeDyadic ConcreteTraceCRT CenteredMomentNaturalPrimitive CenteredMomentUniformReflectionApproximation CenteredMomentEnergyZeroReflectionSupport CenteredMomentOriginalRadialComparison CenteredMomentRadialPolynomialEnergy CenteredMomentEnergyState CenteredMomentEnergyReferenceState CenteredMomentAllocatedNaturalRadial CenteredMomentNaturalRowSource CenteredMomentFiniteProfileExceptional CenteredMomentLattice CenteredMomentEnergyReferenceHomogeneous CenteredMomentEnergyReferenceReflection
 local notation "O" => HeckeFamily.O
 
 theorem finite_original_error (xi saving Cscale epsilon : ℝ)
@@ -46,15 +40,13 @@ theorem finite_original_error (xi saving Cscale epsilon : ℝ)
   refine ⟨ψ,hψ,?_⟩
   intro G P Z M along Src Rcap hZ₀ hfar hSrc hR hGS hmod hcap
   have hZ:=hZ₁ Z ((le_max_right _ _).trans hZ₀)
-  have hz:0<Z:=zero_lt_one.trans hZ.1
-  have hzero(i:ι):retainedSchwartz (χ i) (ψ i) (G i) (Z^along) (Z^(xi/4))=0:=
-    (hZ.2 (χ i) (ψ i) M along (hψ i).2.2 (hmod i) hfar).2.2.2 (G i)
+  have hzero(i:ι) := (hZ.2 (χ i) (ψ i) M along (hψ i).2.2 (hmod i) hfar).2.2.2 (G i)
   have hsource(i:ι):((χ i).modulus.absNorm:ℝ)≤Cscale*Z^(0:ℝ)*Z^along:=by
     simp only [Real.rpow_zero,mul_one]
     exact (hmod i).trans (mul_le_mul_of_nonneg_left
       (Real.rpow_le_rpow_of_exponent_le hZ.1.le (by linarith)) hscale.le)
   have hh:=henergy G (fun _=>Z^along) P Src Z Rcap hSrc hZ.1.le hR
-    (fun _=>Real.rpow_pos_of_pos hz _) hGS hcap hsource
+    (fun _=>Real.rpow_pos_of_pos (zero_lt_one.trans hZ.1) _) hGS hcap hsource
   rw [show (xi/2)/2=xi/4 by ring] at hh
   simp only [hzero,zero_mul,norm_zero,zero_pow (by decide : 2≠0),Finset.sum_const_zero,
     mul_zero,zero_add] at hh
@@ -81,17 +73,16 @@ theorem radial_original_error (xi saving Cscale epsilon : ℝ)
   refine ⟨H,C,Z₀,hC,hZ₀,?_⟩
   intro G χ P omega keep Φ K Pbound Wshort c d Z M along Xshort Src Rcap
     hZ hK hΦ hP hχ hd hshort hXshort hfar hSrc hR hGS hmod hcap
-  have hz:0<Z:=zero_lt_one.trans (hZ₀.trans_le hZ)
+  have hz :=zero_lt_one.trans (hZ₀.trans_le hZ)
   have hshortsum:=single_radial_summable χ P omega Wshort c d Xshort Pbound hd hXshort
     hshort hP keep Φ K hK
   unfold radialEnergy
   apply Real.tsum_le_of_sum_le (fun z=>by split_ifs;exact mul_nonneg (sq_nonneg _) (hΦ z);exact le_rfl)
   intro rows
   let S:=rows.filter keep
-  have hmem(z:↥S):keep (z:O):=(Finset.mem_filter.mp z.property).2
+  have hmem(z:↥S) :=(Finset.mem_filter.mp z.property).2
   obtain ⟨ψ,hψ,hf⟩:=hfinite (fun z:↥S=>χ z) (fun z=>hχ z (hmem z))
-  let Q(z:↥S):ℂ:=
-    (polynomial (χ z) false Wshort Xshort 0 (omega z)*P z)*
+  let Q(z:↥S) := (polynomial (χ z) false Wshort Xshort 0 (omega z)*P z)*
       (Real.sqrt ((Φ (‖eisEmbedding z‖^2/K)).re):ℂ)
   have hh:=(hf (fun z:↥S=>G z) Q Z M along Src Rcap hZ hfar hSrc hR
     (fun z=>hGS z (hmem z)) (fun z=>hmod z (hmem z)) (fun z=>hcap z (hmem z))).2
@@ -127,34 +118,25 @@ theorem natural_original_error (a b bΦ epsilon xi saving:ℝ)
   have hS:(0,0)∈S:=by simp [S]
   refine ⟨n,S,C*Ct^2,by positivity,?_⟩
   filter_upwards [eventually_ge_atTop Z₀] with Z hZ
-  have hz:1<Z:=hZ₀.trans_le hZ
+  have hz :=hZ₀.trans_le hZ
   refine ⟨hz,?_⟩
   intro Bmask state Wlong Wshort hsLong hsShort t omega along Xshort hXshort hfar
   by_cases hzero:sourceControl S Wlong=0
   · have hw:=sourceControl_zero S hS Wlong hzero
     subst Wlong
     simp [polynomial,summand,radialEnergy]
-  have hpos:0<sourceControl S Wlong:=lt_of_le_of_ne (sourceControl_nonneg S Wlong) (Ne.symm hzero)
-  let G:=normPowerProfile Wlong a b ha hsLong (Wlong.smooth ⊤) t
-  let Src:=Ct*(S.sup (schwartzSeminormFamily ℝ ℝ ℂ) Wlong)*(1+‖t‖)^n
-  have hSrc:0<Src:=mul_pos (mul_pos hCt hpos) (by positivity)
-  have hcontrol:sourceControl T Wlong≤sourceControl S Wlong:=
-    Seminorm.le_def.mp (Finset.sup_mono (Finset.subset_union_left:T⊆T∪{(0,0)})) Wlong
-  have hnorm:H.sup (schwartzSeminormFamily ℝ ℝ ℂ) G≤Src:=
-    (hprofile Wlong hsLong t).trans (mul_le_mul_of_nonneg_right
-      (mul_le_mul_of_nonneg_left hcontrol hCt.le) (by positivity))
-  have hh:=hr (fun _=>G) (naturalCharacter state.character) (fun _=>1) (fun _=>omega)
+  have hnorm := (hprofile Wlong hsLong t).trans (mul_le_mul_of_nonneg_right
+      (mul_le_mul_of_nonneg_left (Seminorm.le_def.mp (Finset.sup_mono (Finset.subset_union_left:T⊆T∪{(0,0)})) Wlong) hCt.le) (by positivity))
+  have hh:=hr (fun _=>(normPowerProfile Wlong a b ha hsLong (Wlong.smooth ⊤) t)) (naturalCharacter state.character) (fun _=>1) (fun _=>omega)
     (effectiveState state).radial.keep state.radial.profile state.radial.scale 1
-    Wshort a b Z state.width along Xshort Src
+    Wshort a b Z state.width along Xshort (Ct*(S.sup (schwartzSeminormFamily ℝ ℝ ℂ) Wlong)*(1+‖t‖)^n)
     (max 1 ((fixedConductorFactor:ℝ)*bΦ*Z^state.width)) hZ state.radial.scale_pos
     state.radial.nonneg (fun _=>by simp) (effective_character_nonprincipal state)
-    hb hsShort hXshort hfar hSrc (le_max_left _ _) (fun _ _=>hnorm)
+    hb hsShort hXshort hfar (mul_pos (mul_pos hCt (lt_of_le_of_ne (sourceControl_nonneg S Wlong) (Ne.symm hzero))) (by positivity)) (le_max_left _ _) (fun _ _=>hnorm)
     (effective_character_cap state hbΦ.le)
     (fun z hz=>(effective_character_cap state hbΦ.le z hz).trans (le_max_right _ _))
-  have hG:(G:ℝ→ℂ)=normPowerProfile Wlong a b ha hsLong (Wlong.smooth ⊤) t:=rfl
-  simp only [hG,CenteredMomentNaturalMaskedFloor.twist_polynomial _ Wlong a b ha hsLong t,mul_one] at hh
+  simp only [(rfl),CenteredMomentNaturalMaskedFloor.twist_polynomial _ Wlong a b ha hsLong t,mul_one] at hh
   apply hh.trans_eq
-  dsimp only [Src]
   rw [show (1+‖t‖)^(2*n)=((1+‖t‖)^n)^2 by rw [Nat.mul_comm 2 n,pow_mul]]
   ring
 
@@ -175,11 +157,10 @@ theorem short_radial_mass (χ:O→Character)(W:𝓢(ℝ,ℂ))(a b X:ℝ)
   have hsum:=single_radial_summable χ (fun _=>1) omega W a b X 1 hb hX hs
     (fun _=>by simp) keep Φ K hK
   simp only [mul_one] at hsum
-  have hweight:=CenteredMomentAbsoluteEnergy.radial_norm_summable Φ K hK
   have hh:radialEnergy (fun z=>polynomial (χ z) false W X 0 (omega z)) keep Φ K≤
       (∑'z:O,‖Φ (‖eisEmbedding z‖^2/K)‖)*V:=by
     rw [←tsum_mul_right]
-    apply hsum.tsum_le_tsum _ (hweight.mul_right V)
+    apply hsum.tsum_le_tsum _ ((CenteredMomentAbsoluteEnergy.radial_norm_summable Φ K hK).mul_right V)
     intro z
     split_ifs
     · exact (mul_le_mul_of_nonneg_left (Complex.re_le_norm _) (sq_nonneg _)).trans

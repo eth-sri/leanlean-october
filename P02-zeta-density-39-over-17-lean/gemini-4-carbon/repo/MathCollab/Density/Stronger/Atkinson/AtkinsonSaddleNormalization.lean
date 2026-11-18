@@ -54,8 +54,7 @@ theorem log_atkinsonSaddleRoot_div_sqrt {A : ℝ} (hA : 0 < A) (b : ℝ) :
     rw [Real.sinh_eq, Real.exp_log hratio, Real.exp_neg, Real.exp_log hratio]
     field_simp
     nlinarith [Real.sq_sqrt hA.le]
-  have h := congrArg Real.arsinh hh
-  simpa only [Real.arsinh_sinh] using h
+  simpa using (congrArg Real.arsinh hh)
 
 theorem log_atkinsonSaddleRoot_sq_sub_log {A : ℝ} (hA : 0 < A) (b : ℝ) :
     Real.log ((atkinsonSaddleRoot A b) ^ 2) - Real.log A =
@@ -86,9 +85,7 @@ theorem zetaAtkinsonPhase_at_saddle {T : ℝ} (hT : 0 < T) (b : ℝ) :
     zetaAtkinsonPhase T b (zetaAtkinsonSaddle T b) =
       atkinsonCentralPhase T + Real.pi * b ^ 2 + atkinsonDualPhase T b := by
   have hA : 0 < T / (2 * Real.pi) := by positivity
-  have hr := atkinsonSaddleRoot_pos hA b
-  have he := atkinsonSaddleRoot_equation hA b
-  have hTval := (eq_div_iff (show 2 * Real.pi ≠ 0 by positivity)).mp he
+  have hTval := (eq_div_iff (by positivity)).mp (atkinsonSaddleRoot_equation hA b)
   have hl := zetaAtkinsonSaddle_log_argument hT b
   have hs : Real.sqrt (b ^ 2 + 4 * (T / (2 * Real.pi))) =
       2 * atkinsonSaddleRoot (T / (2 * Real.pi)) b - b := by
@@ -98,7 +95,7 @@ theorem zetaAtkinsonPhase_at_saddle {T : ℝ} (hT : 0 < T) (b : ℝ) :
   rw [show Real.log (zetaAtkinsonSaddle T b) =
     Real.log (T / (2 * Real.pi)) +
       2 * Real.arsinh (b / (2 * Real.sqrt (T / (2 * Real.pi)))) by linarith,
-    zetaAtkinsonSaddle, Real.sqrt_sq hr.le, hs]
+    zetaAtkinsonSaddle, Real.sqrt_sq (atkinsonSaddleRoot_pos hA b).le, hs]
   nlinarith
 
 end MathCollab.Density.Stronger.Atkinson

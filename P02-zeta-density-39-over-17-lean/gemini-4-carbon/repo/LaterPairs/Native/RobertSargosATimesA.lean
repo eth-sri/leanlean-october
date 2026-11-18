@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.RobertSargosPlaneWeights
 
 @[expose] public section
@@ -26,11 +35,8 @@ theorem robertSargos_a_times_a_exact (a : ℤ → ℤ → ℂ) (M H Q R : ℕ)
   rw [robertSargos_plane_weighted_gram a M H Q R hQ hR] at ht
   simp only [Nat.cast_mul,Nat.cast_add] at ht
   apply (mul_le_mul_iff_right₀ (pow_pos hp 2)).mp
-  calc
-    _ ≤ ((M:ℝ)+Q)*((H:ℝ)+R)*
-        ((Q:ℝ)*R*robertSargosWeightedCorrelations a M H Q R) := ht
-    _ = _ := by
-      field_simp
+  exact (ht).trans_eq (by
+      field_simp)
 
 theorem robertSargos_a_times_a (a : ℤ → ℤ → ℂ) (M H Q R : ℕ)
     (hQ : 0 < Q) (hR : 0 < R) (hQM : Q ≤ M) (hRH : R ≤ H) :

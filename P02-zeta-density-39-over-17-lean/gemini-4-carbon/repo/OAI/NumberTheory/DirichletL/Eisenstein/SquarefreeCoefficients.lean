@@ -9,90 +9,21 @@ noncomputable section
 
 namespace CubicEisenstein
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 
 section
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
+open scoped MatrixGroups
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CompletedGauss
+open CubicJacobiGlobal CompletedGauss
 local notation "Eis" => ActualEisensteinCubic.O
 
 lemma primaryGenerator_squarefree_support (I:Ideal Eis) (hI:primaryGenerator I≠0)
     (hsq:Squarefree I) : primaryGenerator I=∏P∈primeSupport I,primaryPrime P := by
   have hI0:=primaryGenerator_ne_zero_ideal I hI
-  have hn: (UniqueFactorizationMonoid.normalizedFactors I).Nodup:=
-    (UniqueFactorizationMonoid.squarefree_iff_nodup_normalizedFactors hI0).mp hsq
   have hv:(primeSupport I).val=UniqueFactorizationMonoid.normalizedFactors I:=by
-    simpa only [primeSupport, Multiset.toFinset_val] using hn.dedup
+    simpa only [primeSupport, Multiset.toFinset_val] using ((UniqueFactorizationMonoid.squarefree_iff_nodup_normalizedFactors hI0).mp hsq).dedup
   unfold primaryGenerator
   rw [ite_eq_right hI0]
   change _=((primeSupport I).val.map primaryPrime).prod
@@ -146,7 +77,7 @@ theorem infinityCoefficient_squarefree_cube (I J:Ideal Eis)
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CompletedGauss UniqueFactorizationMonoid
+open CubicJacobiGlobal CompletedGauss
 local notation "Eis" => ActualEisensteinCubic.O
 
 theorem sourceArithmeticResidue_valuation_ne_two (I P:Ideal Eis)
@@ -156,18 +87,15 @@ theorem sourceArithmeticResidue_valuation_ne_two (I P:Ideal Eis)
   have hI0:=primaryGenerator_ne_zero_ideal I hI
   have hprime:=prime_of_normalized_factor P hP
   let p:=primaryPrime P
-  have hp0:p≠0:=primaryPrime_factor_ne_zero I P hI hP
+  have hp0 :=primaryPrime_factor_ne_zero I P hI hP
   have hps:=primaryPrime_spec P hp0
-  have hp:Prime p:=primaryPrime_isPrime_of_mem I P hI (Multiset.mem_toFinset.mpr hP)
   obtain ⟨J,hJ,hnot⟩:=(FiniteMultiplicity.of_prime_left hprime hI0).exists_eq_pow_mul_and_not_dvd
   have hgen:primaryGenerator I=p^(multiplicity P I)*primaryGenerator J:=by
-    calc
-      _=primaryGenerator (P^(multiplicity P I)*J):=congrArg primaryGenerator hJ
-      _=p^(multiplicity P I)*primaryGenerator J:=by
+    exact (congrArg primaryGenerator hJ).trans (by
         rw [primaryGenerator_mul,primaryGenerator_pow]
         have he:primaryGenerator P=p:=by
           rw [←hps.2.2.1,primaryGenerator_span p hp0 hps.2.2.2]
-        rw [he]
+        rw [he])
   have hgJ:primaryGenerator J≠0:=by
     intro hz
     exact hI (by rw [hgen,hz,mul_zero])
@@ -182,7 +110,7 @@ theorem sourceArithmeticResidue_valuation_ne_two (I P:Ideal Eis)
   intro hc
   have hm:(multiplicity P I)%3=2:=by rwa [hcount]
   apply hS
-  rw [hgen,mul_comm,sourceArithmeticResidue_prime_power_table p hp hps.2.2.2 _ hpd,
+  rw [hgen,mul_comm,sourceArithmeticResidue_prime_power_table p (primaryPrime_isPrime_of_mem I P hI (Multiset.mem_toFinset.mpr hP)) hps.2.2.2 _ hpd,
     hm]
   norm_num
 
@@ -226,15 +154,13 @@ theorem sourceArithmeticResidue_squarefree_cube_support (I:Ideal Eis)
     (fun P hP=>sourceArithmeticResidue_valuation_ne_two I P hI hP hS)
   have hgen:primaryGenerator I=
       primaryGenerator (thetaSquarefreePart I)*(primaryGenerator (thetaCubePart I))^3:=by
-    calc
-      _=primaryGenerator (thetaSquarefreePart I*thetaCubePart I^3):=congrArg primaryGenerator he.symm
-      _=_:=by rw [primaryGenerator_mul,primaryGenerator_pow]
+    exact (congrArg primaryGenerator he.symm).trans (by rw [primaryGenerator_mul,primaryGenerator_pow])
   have hA:primaryGenerator (thetaSquarefreePart I)≠0:=by
     intro hz
     exact hI (by rw [hgen,hz,zero_mul])
   have hB:primaryGenerator (thetaCubePart I)≠0:=by
     intro hz
-    exact hI (by rw [hgen,hz,zero_pow (by decide : (3:ℕ)≠0),mul_zero])
+    exact hI (by rw [hgen,hz,zero_pow (by decide : 3≠0),mul_zero])
   exact ⟨thetaSquarefreePart_squarefree I,hA,hB,he⟩
 
 theorem sourceFourier_squarefree_cube_support (I:Ideal Eis)
@@ -265,10 +191,7 @@ theorem sourceFourier_primary_zero_of_base_zero (hC:infinityCoefficientScalar=0)
 end
 
 section
-open Filter
-open scoped BigOperators Classical Topology
-
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
+open CubicJacobiGlobal
 local notation "Eis" => ActualEisensteinCubic.O
 
 lemma unramifiedGaussResidue_eq_of_initial_eq (h k:Eis)
@@ -278,7 +201,7 @@ lemma unramifiedGaussResidue_eq_of_initial_eq (h k:Eis)
   have hh:=unramifiedGaussResidue_of_initial_relation h k 0 (fun _=>1) (fun _=>0)
     (fun _ _=>analyticAt_const) (fun _ _=>analyticAt_const)
     continuousAt_const continuousAt_const (fun s hs hi=>by simpa using he s hs hi)
-  simpa only [one_mul,zero_mul,add_zero] using hh
+  simpa using hh
 
 theorem unramifiedGaussResidue_neg (h:Eis) :
     unramifiedGaussResidue (-h)=unramifiedGaussResidue h :=
@@ -298,11 +221,9 @@ theorem unramifiedGaussResidue_nine_family (h:Eis) (u:Eisˣ) (n:ℕ) :
 end
 
 section
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
+open CubicJacobiGlobal
 local notation "Eis" => ActualEisensteinCubic.O
 local instance : Fintype Eisˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
 
@@ -338,7 +259,7 @@ lemma unramifiedGaussResidue_unit_lambda_norm_le (u:Eisˣ) (n:ℕ) :
     ‖unramifiedGaussResidue ((u:Eis)*lambda^n)‖≤ramifiedResidueFamilyMass 1 := by
   obtain ⟨j,k,hjk⟩:=unramifiedGaussResidue_unit_lambda_family u n
   rw [hjk]
-  simpa only [one_mul] using unramifiedGaussResidue_family_norm_le 1 j k
+  simpa using unramifiedGaussResidue_family_norm_le 1 j k
 
 lemma ramifiedResidueFamilyMass_unit_lambda_le (u:Eisˣ) (n:ℕ) :
     ramifiedResidueFamilyMass ((u:Eis)*lambda^n)≤9*ramifiedResidueFamilyMass 1 := by
@@ -346,7 +267,7 @@ lemma ramifiedResidueFamilyMass_unit_lambda_le (u:Eisˣ) (n:ℕ) :
     _≤∑a:Fin 3×Fin 3,ramifiedResidueFamilyMass 1:=by
       apply Finset.sum_le_sum
       intro a ha
-      let v:Eisˣ:=u*ramifiedOmegaUnit^a.1.val
+      let v :=u*ramifiedOmegaUnit^a.1.val
       have he:((u:Eis)*lambda^n)*omega^a.1.val*lambda^a.2.val=
           (v:Eis)*lambda^(n+a.2.val):=by
         simp only [v,Units.val_mul,Units.val_pow_eq_pow_val,ramifiedOmegaUnit_val,pow_add]
@@ -395,7 +316,7 @@ theorem sourceArithmeticResidue_family_bound (h:Eis) (hh:h≠0) :
 end
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
+open CubicJacobiGlobal
 local notation "Eis" => ActualEisensteinCubic.O
 local instance : Fintype Eisˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
 
@@ -442,10 +363,7 @@ lemma principalRamifiedWeight_norm_le (h:Eis) (i:PrincipalRamifiedIndex h) :
     ‖principalRamifiedWeight h i (4/3)‖≤ramifiedDecayRatio^(i.2.val+2) := by
   unfold principalRamifiedWeight
   rw [norm_mul]
-  calc
-    _≤‖((3^(i.2.val+2):ℕ):ℂ)^(-(4/3:ℂ))‖*(3^(i.2.val+2):ℕ):=
-      mul_le_mul_of_nonneg_left (explicitRamifiedCoefficient_norm_le h i.1 _) (norm_nonneg _)
-    _=_:=ramifiedWeight_norm_scalar _
+  exact (mul_le_mul_of_nonneg_left (explicitRamifiedCoefficient_norm_le h i.1 _) (norm_nonneg _)).trans_eq (ramifiedWeight_norm_scalar _)
 
 theorem principalRamifiedWeight_sum_norm_le (h:Eis) :
     (∑i:PrincipalRamifiedIndex h,‖principalRamifiedWeight h i (4/3)‖)≤
@@ -477,7 +395,7 @@ theorem principalRamifiedWeight_sum_norm_le (h:Eis) :
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
+open CubicJacobiGlobal
 local notation "Eis" => ActualEisensteinCubic.O
 local instance : Fintype Eisˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
 
@@ -485,24 +403,19 @@ def ramifiedSourceFamilyConstant : ℝ :=
   (6*ramifiedDecayRatio^2/(1-ramifiedDecayRatio)+3)/(4*(9*Real.sqrt 3/2))
 
 lemma ramifiedSourceFamilyConstant_nonneg : 0≤ramifiedSourceFamilyConstant := by
-  have ht:0<1-ramifiedDecayRatio:=sub_pos.mpr ramifiedDecayRatio_lt_one
+  have ht :=sub_pos.mpr ramifiedDecayRatio_lt_one
   unfold ramifiedSourceFamilyConstant
   positivity
 
 theorem sourceArithmeticResidue_nine_family_bound (h:Eis) (hh:h≠0) :
     ‖sourceArithmeticResidue h‖≤ramifiedSourceFamilyConstant*ramifiedResidueFamilyMass h := by
-  have hm:=ramifiedResidueFamilyMass_nonneg h
   refine (sourceArithmeticResidue_family_bound h hh).trans ?_
   have hw:(∑i:PrincipalRamifiedIndex h,‖principalRamifiedWeight h i (4/3)‖)+3≤
       6*ramifiedDecayRatio^2/(1-ramifiedDecayRatio)+3:=by
     linarith [principalRamifiedWeight_sum_norm_le h]
-  calc
-    _≤(6*ramifiedDecayRatio^2/(1-ramifiedDecayRatio)+3)*
-        ramifiedResidueFamilyMass h/(4*(9*Real.sqrt 3/2)):=
-      div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_right hw hm) (by positivity)
-    _=ramifiedSourceFamilyConstant*ramifiedResidueFamilyMass h:=by
+  exact (div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_right hw (ramifiedResidueFamilyMass_nonneg h)) (by positivity)).trans_eq (by
       unfold ramifiedSourceFamilyConstant
-      ring
+      ring)
 
 theorem sourceArithmeticResidue_unit_lambda_bound (u:Eisˣ) (n:ℕ) :
     ‖sourceArithmeticResidue ((u:Eis)*lambda^n)‖≤
@@ -514,10 +427,8 @@ theorem sourceArithmeticResidue_unit_lambda_bound (u:Eisˣ) (n:ℕ) :
 
 end
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
-
-open ActualEisensteinCubic ConcreteTraceCRT CubicKubota CubicJacobiGlobal
+open CubicKubota CubicJacobiGlobal
+open scoped MatrixGroups
 local notation "Eis" => ActualEisensteinCubic.O
 
 def extraPeriodWitness : levelThree := by
@@ -551,8 +462,7 @@ lemma extraPeriodWitness_factor :
 lemma extraPeriodWitness_character : complexCharacter extraPeriodWitness=eisEmbedding omega := by
   change eisEmbedding (symbol (-3) (1+3*omega))=eisEmbedding omega
   apply congrArg eisEmbedding
-  have hp:lambda^2∣(1+3*omega)-1:=lambda_sq_dvd_three.trans ⟨omega,by ring⟩
-  rw [symbol_neg_numerator _ _ hp]
+  rw [symbol_neg_numerator _ _ (lambda_sq_dvd_three.trans ⟨omega,by ring⟩)]
   have he:=ramified_symbol_at_omega (-(ramifiedOmegaUnit^2)) 2 2
     (Or.inr (by simp only [Units.val_neg,Units.val_pow_eq_pow_val,ramifiedOmegaUnit_val]))
   have hl:lambda^2=-3*omega:=by
@@ -566,7 +476,7 @@ lemma extraPeriodWitness_character : complexCharacter extraPeriodWitness=eisEmbe
       _=3:=by rw [omega_primitive.pow_eq_one];ring
   rw [hnum] at he
   have hw:omega^(2*2)=omega:=by
-    norm_num only [Nat.reduceMul]
+    norm_num
     calc
       omega^4=omega^3*omega:=by ring
       _=omega:=by rw [omega_primitive.pow_eq_one,one_mul]
@@ -575,7 +485,7 @@ lemma extraPeriodWitness_character : complexCharacter extraPeriodWitness=eisEmbe
 lemma extraPeriodWitness_character_ne_one : complexCharacter extraPeriodWitness≠1 := by
   rw [extraPeriodWitness_character]
   intro he
-  exact omega_primitive.ne_one (by decide) (eisEmbedding_injective (by simpa only [map_one] using he))
+  exact omega_primitive.ne_one (by decide) (eisEmbedding_injective (by simpa using he))
 
 theorem cubicSource_not_eisenstein_periodic :
     ¬(∀a:Eis,∀w:HyperbolicSpace,
@@ -587,7 +497,7 @@ theorem cubicSource_not_eisenstein_periodic :
   have hneg (u:HyperbolicSpace):
       cubicSourceResidualFunction (complexTranslation (-eisEmbedding omega) • u)=
         cubicSourceResidualFunction u:=by
-    simpa only [map_neg] using hperiod (-omega) u
+    simpa using hperiod (-omega) u
   have hinv:cubicSourceResidualFunction
       (integralComplexMatrix (extraPeriodWitness:SL(2,Eis)) • w)=cubicSourceResidualFunction w:=by
     rw [extraPeriodWitness_factor,mul_smul,mul_smul,hneg,

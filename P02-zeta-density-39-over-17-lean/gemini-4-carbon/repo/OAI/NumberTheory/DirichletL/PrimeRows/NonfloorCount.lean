@@ -8,11 +8,10 @@ public import OAI.NumberTheory.DirichletL.Detector.CentralMixedMargins
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators ContDiff
 open Set Filter
+open scoped Classical BigOperators ContDiff
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorBatch HeckeDetectorWitnessRows
-open HeckeDetectorPhysicalSelection HeckeDetectorAmplitudeFirst HeckeDetectorRowCount HeckeDetectorAdaptiveCutoff
+open HeckeFamily HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorBatch HeckeDetectorWitnessRows HeckeDetectorPhysicalSelection HeckeDetectorAmplitudeFirst HeckeDetectorRowCount HeckeDetectorAdaptiveCutoff
 
 theorem balanced_adaptive_count_from_raw_moments
     (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
@@ -45,8 +44,6 @@ theorem balanced_adaptive_count_from_raw_moments
   intro a ε T allowance Δ ν C height q i hU ha hd hε hε' hΔ hΔ' hν hC hh hf Label Slot _ B hne hq hmom
   have hδ : 0<2*a-1 := by linarith
   have hqb := HeckeDetectorFixedAmplitudeCount.batch_mean_bounds B hne (by linarith) q hq
-  have hx : 0≤q/(2*a-1) := div_nonneg hqb.1 hδ.le
-  have hx' : q/(2*a-1)≤1/2 := (div_le_iff₀ hδ).mpr (by linarith [hqb.2])
   have ht := cutoff_bounds (2*a-1) q hδ.le
   have hc' := hcount a ε (cutoff (2*a-1) q) T allowance Δ ν C height q i
     hU ha hd hε hε' ht.1 ht.2 hΔ hΔ' hν hC hh hf B hq hmom
@@ -54,7 +51,7 @@ theorem balanced_adaptive_count_from_raw_moments
       (longExponent (2*a-1) (cutoff (2*a-1) q)) =
       Endpoint.balancedRowCount (2*a-1) (1/2-q/(2*a-1)) := by
     rw [cutoff_eq_balanced (2*a-1) q hδ hd hqb.1 hqb.2]
-    exact HeckeDetectorRowCount.balanced_count_identity hδ.le hd hx hx'
+    exact HeckeDetectorRowCount.balanced_count_identity hδ.le hd (div_nonneg hqb.1 hδ.le) ((div_le_iff₀ hδ).mpr (by linarith [hqb.2]))
   rw [he] at hc'
   exact hc'
 

@@ -17,8 +17,7 @@ lemma primeFamily_support_card (F : PrimeFamily φ)
     (IdealMobiusDivisorSum.primeSupport (∏ i,F.ideal i)).card=Fintype.card φ := by
   have hc : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {F.generator i})) := by
     simpa only [PrimeFamily.generator_span] using hF
-  have hh := InverseMoment.finite_primeSupport_card F.generator hc Finset.univ
-  simpa only [PrimeFamily.product_span,Finset.card_univ] using hh
+  simpa only [PrimeFamily.product_span,Finset.card_univ] using (InverseMoment.finite_primeSupport_card F.generator hc Finset.univ)
 
 theorem branch_count_small_power (ε : ℝ) (hε : 0<ε) :
     ∃ C : ℝ, 0<C ∧ ∀ {ι : Type*} [Fintype ι] (F : PrimeFamily ι),

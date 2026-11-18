@@ -55,7 +55,7 @@ theorem HasCubicExponent.full_improved {ξ : ℝ} (h : HasCubicExponent ξ)
       elementSieveNorm M N ≤ C*N^(7*θ)*
         (M+(M*N)^(2/3 : ℝ)+M^(1-ξ)*N^(2*ξ-1)) := by
   obtain ⟨K,hK,hb⟩ := h.annular_improved hξ hξ2 θ hθ hθsmall
-  let D : ℝ := 2+1/(θ*Real.log 2)
+  let D := 2+1/(θ*Real.log 2)
   have hD : 0 < D := by
     dsimp [D]
     have := Real.log_pos (by norm_num : (1:ℝ)<2)
@@ -65,11 +65,10 @@ theorem HasCubicExponent.full_improved {ξ : ℝ} (h : HasCubicExponent ξ)
   have hM0 : 0 < M := by linarith
   have hN0 : 0 < N := by linarith
   let cols : idealRange N → Ideal O := fun j => j.val
-  have hc (j : idealRange N) : Admissible (cols j) := (mem_idealRange.mp j.property).1
-  have hn (j : idealRange N) : (Ideal.absNorm (cols j) : ℝ) ≤ N := (mem_idealRange.mp j.property).2
+  have hc (j : idealRange N) := (mem_idealRange.mp j.property).1
+  have hn (j : idealRange N) := (mem_idealRange.mp j.property).2
   let R := elementRange M
-  have hR (z : O) (hz : z ∈ R) : (Ideal.absNorm (Ideal.span {z}) : ℝ) ≤ M :=
-    ((mem_elementRange M z).mp hz).2
+  have hR (z : O) (hz : z ∈ R) := ((mem_elementRange M z).mp hz).2
   let S := M+(M*N)^(2/3 : ℝ)+M^(1-ξ)*N^(2*ξ-1)
   have hS : 0 ≤ S := by dsimp [S]; positivity
   apply FiniteSieveOperator.squared_norm_le_of_energy (elementMatrix M N)
@@ -81,8 +80,7 @@ theorem HasCubicExponent.full_improved {ξ : ℝ} (h : HasCubicExponent ξ)
     by_cases hne : Nonempty (CubicColumnShell cols N l)
     · obtain ⟨j₀⟩ := hne
       have hYN := cubicColumnShell_scale_le cols N hc hn l j₀
-      have hY1 : 1 ≤ (2:ℝ)^l.val := one_le_pow₀ (by norm_num)
-      have hs := hb M ((2:ℝ)^l.val) hM hY1
+      have hs := hb M ((2:ℝ)^l.val) hM (one_le_pow₀ (by norm_num))
         (fun j : CubicColumnShell cols N l => cols j.val)
         (fun j k he => Subtype.ext (Subtype.ext he)) (fun j => hc j.val)
         (fun j => cubicColumnShell_bounds cols N hc hn l j)
@@ -92,16 +90,12 @@ theorem HasCubicExponent.full_improved {ξ : ℝ} (h : HasCubicExponent ξ)
         (by linarith) hξ2
       apply hs.trans
       apply mul_le_mul_of_nonneg_right _ (by positivity)
-      have hh := mul_le_mul (mul_le_mul_of_nonneg_left hl hK.le) ht (by positivity) (by positivity)
-      convert hh using 1; dsimp only [S]; ring
+      convert (mul_le_mul (mul_le_mul_of_nonneg_left hl hK.le) ht (by positivity) (by positivity)) using 1; dsimp only [S]; ring
     · let : IsEmpty (CubicColumnShell cols N l) := not_nonempty_iff.mp hne
       simp
-  have hsum := cubic_energy_column_shells cols N a R
   have hle := Finset.sum_le_sum (s := Finset.univ) (fun l hl => hsector l)
   rw [← Finset.mul_sum, cubicColumnShell_energy cols N a] at hle
-  have he := hsum.trans (mul_le_mul_of_nonneg_left hle (by positivity))
-  have hlog := CanonicalQuadraticSieve.columnDyadicLength_small_power θ hθ N hN
-  have he' := he.trans (mul_le_mul_of_nonneg_right hlog
+  have he' := ((cubic_energy_column_shells cols N a R).trans (mul_le_mul_of_nonneg_left hle (by positivity))).trans (mul_le_mul_of_nonneg_right (CanonicalQuadraticSieve.columnDyadicLength_small_power θ hθ N hN)
     (show 0 ≤ (64*K*N^(6*θ)*S)*∑ j, ‖a j‖^2 by positivity))
   have hp : N^θ*N^(6*θ) = N^(7*θ) := by
     rw [← Real.rpow_add hN0]

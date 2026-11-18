@@ -10,9 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSourceLiveAllocation
-open CenteredMomentRemainingBox CenteredMomentCommonProfile CenteredMomentCommonPuncture
-open CenteredMomentAddedZeroUniform CenteredMomentSourceProfileMass
-open CenteredMomentCommonAllocationBox CenteredMomentFirstSectors
+open CenteredMomentRemainingBox CenteredMomentCommonProfile CenteredMomentCommonPuncture CenteredMomentAddedZeroUniform CenteredMomentSourceProfileMass CenteredMomentCommonAllocationBox CenteredMomentFirstSectors
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [Fintype ι]
 
@@ -22,10 +20,9 @@ theorem prime_residual_frozen (B : Tuple ι) (hB : ∀ i,B i≠0)
     (hp : ∀ i,∀ I∈S (Sum.inl i),Prime I) :
     ∀ i,B (Sum.inl i)≠1 → ∀ I∈residualPool (B (Sum.inl i)) (hB _) (S (Sum.inl i)),I=1 := by
   intro i hi I hI
-  have hprime := hp i _ ((mem_residualPool _ _ _ _).mp hI)
-  rcases hprime.irreducible.isUnit_or_isUnit rfl with h|h
-  · exact False.elim (hi (by simpa only [Ideal.isUnit_iff,Ideal.one_eq_top] using h))
-  · simpa only [Ideal.isUnit_iff,Ideal.one_eq_top] using h
+  rcases (hp i _ ((mem_residualPool _ _ _ _).mp hI)).irreducible.isUnit_or_isUnit rfl with h|h
+  · exact False.elim (hi (by simpa using h))
+  · simpa using h
 
 theorem allocation_frozen_gate (S : (ι ⊕ Fin 2) → Finset (Ideal O))
     (hp : ∀ i,∀ I∈S (Sum.inl i),Prime I) (C : Ideal O) (B : Tuple ι)

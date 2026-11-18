@@ -6,16 +6,11 @@ public import OAI.NumberTheory.DirichletL.Energy.ReferenceReflection
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
+open scoped Classical BigOperators SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentEnergyReferenceHomogeneous
-open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentEnergyReferenceState
-open CenteredMomentAllocatedNaturalRadial CenteredMomentNaturalRowSource
-open CenteredMomentOriginalRadialComparison CenteredMomentCommonMaskExpansion
-open CenteredMomentScaleSupremum CenteredMomentSectorLocalization
-open CenteredMomentUniformReflectionProfile CenteredExceptionalProfile CenteredMomentLattice
+open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound CenteredMomentEnergyState CenteredMomentEnergyReferenceState CenteredMomentAllocatedNaturalRadial CenteredMomentNaturalRowSource CenteredMomentOriginalRadialComparison CenteredMomentCommonMaskExpansion CenteredMomentScaleSupremum CenteredMomentSectorLocalization CenteredMomentUniformReflectionProfile CenteredExceptionalProfile CenteredMomentLattice
 local notation "O"=>HeckeFamily.O
 
 open CenteredMomentEnergyReferenceReflection CenteredMomentFiniteProfileExceptional
@@ -69,30 +64,21 @@ theorem natural_reference_reflection_homogeneous (a b bΦ epsilon xi saving L:�
   · have hw:=sourceControl_zero S hS Wlong hzero
     subst Wlong
     simp [polynomial,summand,radialEnergy]
-  have hpos:0<sourceControl S Wlong:=lt_of_le_of_ne (sourceControl_nonneg S Wlong) (Ne.symm hzero)
-  let G:=normPowerProfile Wlong a b ha hsLong (Wlong.smooth ⊤) t
-  let Src:=Ct*(S.sup (schwartzSeminormFamily ℝ ℝ ℂ) Wlong)*(1+‖t‖)^n
-  have hSrc:0<Src:=mul_pos (mul_pos hCt hpos) (by positivity)
-  have hcontrol:sourceControl T Wlong≤sourceControl S Wlong:=
-    Seminorm.le_def.mp (Finset.sup_mono (Finset.subset_union_left:T⊆T∪{(0,0)})) Wlong
-  have hnorm:H.sup (schwartzSeminormFamily ℝ ℝ ℂ) G≤Src:=
-    (hprofile Wlong hsLong t).trans (mul_le_mul_of_nonneg_right
-      (mul_le_mul_of_nonneg_left hcontrol hCt.le) (by positivity))
+  have hnorm := (hprofile Wlong hsLong t).trans (mul_le_mul_of_nonneg_right
+      (mul_le_mul_of_nonneg_left (Seminorm.le_def.mp (Finset.sup_mono (Finset.subset_union_left:T⊆T∪{(0,0)})) Wlong) hCt.le) (by positivity))
   obtain ⟨Pbound,hPbound,hbound⟩:=CenteredMomentCommonMaskRadialEnergy.slots_bounded F pool β P
-  have hh:=hZ.2 (fun _=>G) (naturalCharacter s.character)
+  have hh:=hZ.2 (fun _=>(normPowerProfile Wlong a b ha hsLong (Wlong.smooth ⊤) t)) (naturalCharacter s.character)
     (fun z=>∏i∈F,naturalSlot (naturalCharacter s.character z) (pool i) (β i) (P i))
     (fun _=>t) (effectiveState s).radial.keep s.radial.profile s.radial.scale Pbound
-    Wshort a b s.width along bshort E Src
+    Wshort a b s.width along bshort E (Ct*(S.sup (schwartzSeminormFamily ℝ ℝ ℂ) Wlong)*(1+‖t‖)^n)
     (max 1 ((fixedConductorFactor:ℝ)*bΦ*Z^s.width))
     s.radial.scale_pos s.radial.nonneg (fun z=>hbound _)
     (effective_character_nonprincipal s) hb hsShort (Wshort.smooth ⊤)
-    hlength (effective_character_cap s hbΦ.le) hE hSrc (fun _ _=>hnorm)
+    hlength (effective_character_cap s hbΦ.le) hE (mul_pos (mul_pos hCt (lt_of_le_of_ne (sourceControl_nonneg S Wlong) (Ne.symm hzero))) (by positivity)) (fun _ _=>hnorm)
     (le_max_left _ _) (fun z hz=>(effective_character_cap s hbΦ.le z hz).trans (le_max_right _ _))
     hchildren
-  have hG:(G:ℝ→ℂ)=normPowerProfile Wlong a b ha hsLong (Wlong.smooth ⊤) t:=rfl
-  simp only [hG,CenteredMomentNaturalMaskedFloor.twist_polynomial _ Wlong a b ha hsLong t] at hh
+  simp only [(rfl),CenteredMomentNaturalMaskedFloor.twist_polynomial _ Wlong a b ha hsLong t] at hh
   apply hh.trans_eq
-  dsimp only [Src]
   rw [show (1+‖t‖)^(2*n)=((1+‖t‖)^n)^2 by rw [Nat.mul_comm 2 n,pow_mul]]
   ring
 

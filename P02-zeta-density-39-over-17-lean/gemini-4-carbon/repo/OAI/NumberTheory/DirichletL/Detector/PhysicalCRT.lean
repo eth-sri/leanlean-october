@@ -8,9 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein CanonicalRowCompletion GaussianShiftedPartition
-open CanonicalQuadraticSieve CenteredMomentCorrelation CenteredMomentCommonSupport
-open CenteredMomentFourier CenteredMomentFirstPoisson CenteredMomentSupportedCorrelation
+open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein CanonicalRowCompletion GaussianShiftedPartition CanonicalQuadraticSieve CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentFourier CenteredMomentFirstPoisson CenteredMomentSupportedCorrelation
 local notation "O" => ActualEisensteinCubic.O
 
 theorem coprime_function_fourier (a b : O) (ha : a ≠ 0) (hb : b ≠ 0)
@@ -28,8 +26,7 @@ theorem coprime_function_fourier (a b : O) (ha : a ≠ 0) (hb : b ≠ 0)
         quotientTrace b hb (frequencyReduction b (a*b) (dvd_mul_left b a) h*y)) := by
   let ua := residueUnit a b hcop
   let ub := residueUnit b a hcop.symm
-  let e : Residue a × Residue b ≃ Residue (a * b) :=
-    (ua.mulLeft.prodCongr ub.mulLeft).trans (principalCRT a b hcop).toEquiv.symm
+  let e := (ua.mulLeft.prodCongr ub.mulLeft).trans (principalCRT a b hcop).toEquiv.symm
   have heproj (x : Residue a × Residue b) : principalCRT a b hcop (e x) =
       ((ua : Residue a) * x.1, (ub : Residue b) * x.2) := by
     change (principalCRT a b hcop).toEquiv
@@ -108,8 +105,7 @@ lemma bareMoving_product (A B s r : O) (hs : Supported (Ideal.span {s}))
     (idealRowHom r (Ideal.span {s}) * idealRowHom s (Ideal.span {r})) *
       ((idealRowHom m (Ideal.span {A}) * sexticGauss s (supportedElement_ne_zero s hs) (-m)) *
         (idealRowHom m (Ideal.span {B}) * sexticGauss r (supportedElement_ne_zero r hr) (-m))) := by
-  rw [sexticGauss_coprime_product s r hs hr hcop]
-  rw [← Ideal.span_singleton_mul_span_singleton, map_mul]
+  rw [sexticGauss_coprime_product s r hs hr hcop, ← Ideal.span_singleton_mul_span_singleton, map_mul]
   ring
 
 theorem barePhysicalFourier_product (A B s r : O) (hA : A≠0) (hB : B≠0)
@@ -122,9 +118,6 @@ theorem barePhysicalFourier_product (A B s r : O) (hA : A≠0) (hB : B≠0)
       (idealRowHom (A*s) (Ideal.span {B}) * (idealRowHom (A*s) (Ideal.span {r}))⁻¹) *
       barePhysicalFourier A s hA (supportedElement_ne_zero s hs) H *
       barePhysicalFourier B r hB (supportedElement_ne_zero r hr) H := by
-  have hsc : IsCoprime s r := hcop.of_mul_left_right.of_mul_right_right
-  have hc1 : IsCoprime (B*r) s := hcop.of_mul_left_right.symm
-  have hc2 : IsCoprime (A*s) r := hcop.of_mul_right_right
   have hAs := mul_ne_zero hA (supportedElement_ne_zero s hs)
   have hBr := mul_ne_zero hB (supportedElement_ne_zero r hr)
   let := finite_quotient_span hAs
@@ -137,8 +130,8 @@ theorem barePhysicalFourier_product (A B s r : O) (hA : A≠0) (hB : B≠0)
     (movingQuotient A s (supportedElement_ne_zero s hs))
     (movingQuotient B r (supportedElement_ne_zero r hr)) (Ideal.Quotient.mk _ H)
   simp only [frequencyReduction_mk] at he
-  simp_rw [movingQuotient_unit_scale A s hs (B*r) hc1,
-    movingQuotient_unit_scale B r hr (A*s) hc2, mul_assoc] at he
+  simp_rw [movingQuotient_unit_scale A s hs (B*r) (hcop.of_mul_left_right.symm),
+    movingQuotient_unit_scale B r hr (A*s) (hcop.of_mul_right_right), mul_assoc] at he
   simp only [← Finset.mul_sum] at he
   have hexpand : elementFourier ((A*s)*(B*r)) (mul_ne_zero hAs hBr)
       (fun m => (idealRowHom m (Ideal.span {A}) * sexticGauss s (supportedElement_ne_zero s hs) (-m)) *
@@ -171,7 +164,7 @@ theorem barePhysicalFourier_product (A B s r : O) (hA : A≠0) (hB : B≠0)
   simp only [barePhysicalFourier] at hexpand
   unfold barePhysicalFourier
   rw [elementFourier_congr ((A*B)*(s*r)) ((A*s)*(B*r)) _ (mul_ne_zero hAs hBr) _ H (by ring)]
-  simp_rw [bareMoving_product A B s r hs hr hsc]
+  simp_rw [bareMoving_product A B s r hs hr (hcop.of_mul_left_right.of_mul_right_right)]
   rw [elementFourier_const_mul, hexpand]
   ring
 

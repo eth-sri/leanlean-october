@@ -7,8 +7,7 @@ namespace OAI
 
 noncomputable section
 namespace SevenEighths.ProbePhase
-open ActualEisensteinCubic ActualEisensteinCoordinates QuadraticGaussRay ConcreteTraceCRT
-open QuadraticAllOddCRT CanonicalRowCompletion CanonicalQuadraticSieve
+open ActualEisensteinCubic ActualEisensteinCoordinates QuadraticGaussRay ConcreteTraceCRT QuadraticAllOddCRT CanonicalRowCompletion CanonicalQuadraticSieve
 local notation "O" => ActualEisensteinCubic.O
 
 theorem quadraticRayValue_norm_one (r : EisensteinEPrimaryPhase.Coord)
@@ -24,10 +23,9 @@ theorem G_norm_one (a : O) (ha : EisensteinEPrimaryPhase.odd (residue a))
   simp only [MulChar.pow_apply' _ (by decide : (3 : ℕ) ≠ 0), MulChar.one_apply hu] at hχ
   have hc := congrArg eisEmbedding hχ
   simp only [map_pow, map_one] at hc
-  have hn := Complex.norm_eq_one_of_pow_eq_one hc (by decide : (3 : ℕ) ≠ 0)
   change ‖fixedGValue (residue a)‖ = 1
   simp only [fixedGValue, ← fixed_two_mk_eq_residue_lift, norm_mul, norm_inv,
-    hn, inv_one, one_mul]
+    (Complex.norm_eq_one_of_pow_eq_one hc (by decide : (3 : ℕ) ≠ 0)), inv_one, one_mul]
   exact quadraticRayValue_norm_one _ ha
 
 theorem cubicTwo_isUnit_of_odd (a : O)
@@ -36,9 +34,8 @@ theorem cubicTwo_isUnit_of_odd (a : O)
   let : Field (O ⧸ cubicTwoIdeal) := Ideal.Quotient.field _
   apply isUnit_iff_ne_zero.mpr
   intro hz
-  have hm := Ideal.Quotient.eq_zero_iff_mem.mp hz
   have hd : (2 : O) ∣ a := by
-    simpa only [cubicTwoIdeal, Ideal.mem_span_singleton, neg_dvd] using hm
+    simpa only [cubicTwoIdeal, Ideal.mem_span_singleton, neg_dvd] using (Ideal.Quotient.eq_zero_iff_mem.mp hz)
   exact ((odd_residue_iff_not_two_dvd a).mp ha) hd
 
 theorem G_norm_one_of_odd (a : O)

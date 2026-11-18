@@ -109,8 +109,6 @@ theorem exists_intervalC2Bound_zetaDivisorBandCutoff_root :
   have hright : |-(1 / (d - c))| ≤ R := by
     rw [abs_neg, abs_of_pos (by positivity : 0 < 1 / (d - c))]
     exact hinv.2.trans hbound
-  have hf := hquad (1 / (b - a)) (-a / (b - a)) R hR hleft
-  have hg := hquad (-(1 / (d - c))) (d / (d - c)) R hR hright
   have he : (fun u => (zetaDivisorBandCutoff T G L (T * u ^ 2) : ℂ)) =
       fun u => (Real.smoothTransition ((1 / (b - a)) * u ^ 2 + -a / (b - a)) : ℂ) *
         (Real.smoothTransition ((-(1 / (d - c))) * u ^ 2 + d / (d - c)) : ℂ) := by
@@ -122,6 +120,6 @@ theorem exists_intervalC2Bound_zetaDivisorBandCutoff_root :
     have hr : (d - u ^ 2) / (d - c) = (-(1 / (d - c))) * u ^ 2 + d / (d - c) := by ring
     rw [hl, hr]
   rw [he]
-  exact hf.mul hg
+  exact (hquad (1 / (b - a)) (-a / (b - a)) R hR hleft).mul (hquad (-(1 / (d - c))) (d / (d - c)) R hR hright)
 
 end MathCollab.Density.Stronger.Atkinson

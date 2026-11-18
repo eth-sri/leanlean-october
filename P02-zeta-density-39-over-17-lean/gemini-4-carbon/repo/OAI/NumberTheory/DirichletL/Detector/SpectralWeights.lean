@@ -31,15 +31,13 @@ lemma spectral_power_split (Q : ℝ) (hQ : 0<Q) (x w z : ℂ) (e l k m : ℕ) :
       ((Q:ℂ)^(-x)/(Q:ℂ)^(1/2:ℂ))^e *
       (((Q:ℂ)^(-x))^3/(Q:ℂ))^l * ((Q:ℂ)^(-w))^k * ((Q:ℂ)^(-6*z))^m := by
   have hn : (Q:ℂ)≠0 := by exact_mod_cast hQ.ne'
-  have h1 : (Q:ℂ)^(-x)/(Q:ℂ)^(1/2:ℂ) = (Q:ℂ)^(-x-(1/2:ℂ)) :=
-    (Complex.cpow_sub _ _ hn).symm
   have h3 : ((Q:ℂ)^(-x))^3/(Q:ℂ) = (Q:ℂ)^(-1-3*x) := by
     rw [← Complex.cpow_nat_mul (Q:ℂ) 3 (-x)]
     calc
-      _ = (Q:ℂ)^(3*(-x)) / (Q:ℂ)^(1:ℂ) := by rw [Complex.cpow_one]; norm_num
+      _ = (Q:ℂ)^(3*(-x)) / (Q:ℂ)^1 := by rw [Complex.cpow_one]; norm_num
       _ = (Q:ℂ)^(3*(-x)-1) := (Complex.cpow_sub _ _ hn).symm
       _ = _ := by congr 1; ring
-  rw [h1, h3, ← Complex.cpow_mul_nat, ← Complex.cpow_mul_nat,
+  rw [((Complex.cpow_sub _ _ hn).symm), h3, ← Complex.cpow_mul_nat, ← Complex.cpow_mul_nat,
     ← Complex.cpow_mul_nat, ← Complex.cpow_mul_nat,
     ← Complex.cpow_add _ _ hn, ← Complex.cpow_add _ _ hn, ← Complex.cpow_add _ _ hn]
   congr 1
@@ -48,7 +46,7 @@ lemma spectral_power_split (Q : ℝ) (hQ : 0<Q) (x w z : ℂ) (e l k m : ℕ) :
 lemma cpow_half_eq_sqrt (Q : ℝ) (hQ : 0≤Q) :
     (Q:ℂ)^(1/2:ℂ) = (Real.sqrt Q:ℂ) := by
   rw [Real.sqrt_eq_rpow]
-  simpa using (Complex.ofReal_cpow hQ (1/2:ℝ)).symm
+  simpa using (Complex.ofReal_cpow hQ (1/2)).symm
 
 def sourceWeightedScalar (Q : ℝ) (eta a gamma1 C omega x w z scalar : ℂ)
     (e l k m : ℕ) : ℂ :=
@@ -63,8 +61,7 @@ theorem sourceWeightedScalar_eq (Q : ℝ) (hQ : 0<Q)
       weightedScalar Q eta a G1 C omega ((Q:ℂ)^(-x)) ((Q:ℂ)^(-w))
         ((Q:ℂ)^(-6*z)) scalar e l k m := by
   unfold sourceWeightedScalar weightedScalar
-  rw [spectral_power_split Q hQ, cpow_half_eq_sqrt Q hQ.le]
-  rw [zpow_neg, zpow_natCast]
+  rw [spectral_power_split Q hQ, cpow_half_eq_sqrt Q hQ.le, zpow_neg, zpow_natCast]
   have hphase := source_signed_phase 1 omega ho e l k
   simp only [localCubePhase, one_pow, one_mul] at hphase
   unfold localCubePhase

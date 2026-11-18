@@ -17,19 +17,15 @@ theorem mem_localSet_iff_floor {U : Finset ℝ} {H t : ℝ} (hH : 0 < H) (j : �
   simp only [localSet, Finset.mem_filter]
   constructor
   · rintro ⟨ht, hlo, hhi⟩
-    have hj : (j : ℝ) ≤ t/H := (le_div_iff₀ hH).2 hlo
-    have hj' : t/H < (j : ℝ)+3 := (div_lt_iff₀ hH).2 hhi
-    have hf := Int.floor_le (t/H)
-    have hfloor : ⌊t/H⌋ < j+3 := by exact_mod_cast (hf.trans_lt hj')
-    exact ⟨ht, by omega, Int.le_floor.mpr hj⟩
+    have hfloor : ⌊t/H⌋ < j+3 := by exact_mod_cast ((Int.floor_le (t/H)).trans_lt ((div_lt_iff₀ hH).2 hhi))
+    exact ⟨ht, by omega, Int.le_floor.mpr ((le_div_iff₀ hH).2 hlo)⟩
   · rintro ⟨ht, hlo, hhi⟩
     refine ⟨ht, ?_, ?_⟩
     · apply (le_div_iff₀ hH).1
       exact (Int.cast_le.mpr hhi).trans (Int.floor_le (t/H))
     · apply (div_lt_iff₀ hH).1
-      have hf := Int.lt_floor_add_one (t/H)
-      have hh : ((⌊t/H⌋ : ℤ) : ℝ) + 1 ≤ (j : ℝ)+3 := by exact_mod_cast (show ⌊t/H⌋+1 ≤ j+3 by omega)
-      exact hf.trans_le hh
+      have hh : ((⌊t/H⌋ : ℤ) : ℝ) + 1 ≤ (j : ℝ)+3 := by exact_mod_cast (by omega)
+      exact (Int.lt_floor_add_one (t/H)).trans_le hh
 
 theorem mem_localIndices_iff {U : Finset ℝ} {H : ℝ} (hH : 0 < H) (j : ℤ) :
     j ∈ localIndices U H ↔ ∃ t ∈ U, t ∈ localSet U H j := by

@@ -10,9 +10,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein
-open CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentFourier
-open CenteredMomentFirstPoisson
+open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentFourier CenteredMomentFirstPoisson
 local notation "O" => ActualEisensteinCubic.O
 
 theorem coprime_mixed_fourier (a b : O) (ha : a ≠ 0) (hb : b ≠ 0)
@@ -30,8 +28,7 @@ theorem coprime_mixed_fourier (a b : O) (ha : a ≠ 0) (hb : b ≠ 0)
           quotientTrace b hb (frequencyReduction b (a*b) (dvd_mul_left b a) h*y)) := by
   let ua := residueUnit a b hcop
   let ub := residueUnit b a hcop.symm
-  let e : Residue a × Residue b ≃ Residue (a * b) :=
-    (ua.mulLeft.prodCongr ub.mulLeft).trans (principalCRT a b hcop).toEquiv.symm
+  let e := (ua.mulLeft.prodCongr ub.mulLeft).trans (principalCRT a b hcop).toEquiv.symm
   have heproj (x : Residue a × Residue b) : principalCRT a b hcop (e x) =
       ((ua : Residue a) * x.1, (ub : Residue b) * x.2) := by
     change (principalCRT a b hcop).toEquiv
@@ -92,8 +89,7 @@ theorem calibration_mixed_fourier (S : Finset (Ideal O)) (hS : ∀ P∈S, P.IsMa
   let : Fintype (Residue (C.generator*b)) := Fintype.ofFinite _
   rw [tsum_fintype, coprime_mixed_fourier _ _ C.generator_ne_zero hb hcop]
   change C.residueMonoid b * calibrationGauss C H * _ = _
-  rw [calibrationForSet_gauss]
-  rw [tsum_fintype]
+  rw [calibrationForSet_gauss, tsum_fintype]
   dsimp only [C]
   simp only [frequencyReduction_mk]
   ring

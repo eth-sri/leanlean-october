@@ -7,76 +7,11 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-
-open scoped BigOperators Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 
 namespace CubicEisenstein
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal UniqueFactorizationMonoid CompletedGauss
+open CubicJacobiGlobal CompletedGauss
 open PrimaryIdealUnitReindex (GoodIdeal)
 
 lemma constant_dirichlet_support (s : ℂ) :
@@ -100,7 +35,6 @@ lemma totient_sum_good (s : ℂ) :
     (f := fun I : Ideal O => (idealTotient I:ℂ)*unramifiedNormWeight s I)
   intro I hI
   change (idealTotient I:ℂ)*unramifiedNormWeight s I ≠ 0 at hI
-  change primaryGenerator I ≠ 0
   intro hg
   apply hI
   rw [unramifiedNormWeight_of_bad _ I hg,mul_zero]
@@ -164,9 +98,7 @@ lemma ramified_geometric_sum (s : ℂ) (hs : 1<s.re) :
 theorem arithmeticDirichletSeries_zero_totient (s : ℂ) (hs : (4:ℝ)/3<s.re) :
     arithmeticDirichletSeries s 0 =
       2*((3:ℂ)^(3*s-3)-1)⁻¹*unramifiedTotientSeries (3*s-2) := by
-  have hc := (constantDirichlet_summable_norm s hs).of_norm
-  have hsub : Summable (fun c : CubeLower => arithmeticDirichletTerm s 0 c.1) := hc.subtype _
-  have hp := cubeColumnEquiv.summable_iff.mpr hsub
+  have hp := cubeColumnEquiv.summable_iff.mpr (((constantDirichlet_summable_norm s hs).of_norm).subtype _)
   change Summable (fun p : Bool × ℕ × GoodIdeal =>
     arithmeticDirichletTerm s 0 (cubeColumnMap p).1) at hp
   calc
@@ -205,8 +137,7 @@ theorem scatteringCoefficient_zero_zeta (s : ℂ) (hs : (4:ℝ)/3<s.re) :
   rw [scatteringCoefficient,arithmeticDirichletSeries_zero_totient s hs,
     unramifiedTotientSeries_quotient (3*s-2) (by
       norm_num
-      linarith)]
-  rw [show 3*s-2-1=3*s-3 by ring]
+      linarith), show 3*s-2-1=3*s-3 by ring]
   ring
 
 end CubicEisenstein
@@ -214,7 +145,7 @@ end CubicEisenstein
 namespace CanonicalQuadraticSieve
 
 section
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge
+open CompletedGauss ConcretePrimeRowBridge
 
 theorem matrix_eq_primePool (M N : ℝ) (F : Finset (Ideal O))
     (hF : ∀ I ∈ F, Admissible I)
@@ -227,8 +158,7 @@ theorem matrix_eq_primePool (M N : ℝ) (F : Finset (Ideal O))
       (fun J : idealRange N => idealSupport F J.val) := by
   ext I J
   change quadraticRow J.val (primaryGenerator I.val) = _
-  rw [quadraticRow_eq_primaryPool F hF J.val (hN J.property)]
-  rw [primaryGenerator_eq_poolProduct F hF I.val (hM I.property)]
+  rw [quadraticRow_eq_primaryPool F hF J.val (hN J.property), primaryGenerator_eq_poolProduct F hF I.val (hM I.property)]
   rfl
 
 theorem sieveNorm_reverse_le (M N : ℝ) :
@@ -255,9 +185,7 @@ theorem sieveNorm_reverse_le (M N : ℝ) :
 end
 section
 
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge CompletedGauss
-open EisensteinSchwartzPoisson GaussGeneratorTransport UnrestrictedIdealReindex
-open TruncatedPrincipalPoisson QuadraticSquarefreeKernel
+open ConcretePrimeRowBridge CompletedGauss EisensteinSchwartzPoisson GaussGeneratorTransport UnrestrictedIdealReindex TruncatedPrincipalPoisson QuadraticSquarefreeKernel
 
 def dualPrincipalIdeal (I J : Ideal O) (V : ℝ → ℂ) (X : ℝ) : ℂ :=
   ∑' A : NonzeroIdeal,
@@ -271,20 +199,17 @@ theorem canonical_pair_ideal_fourier_summable (I J : Ideal O) (W : 𝓢(ℝ, ℂ
   have hi : Function.Injective (fun lengthScale : NonzeroIdeal => idealGenerator lengthScale.val) := by
     intro A B he
     apply Subtype.ext
-    have hs := congrArg (fun z : O => Ideal.span {z}) he
-    simpa only [span_idealGenerator] using hs
-  have h := (canonical_pair_fourier_summable I J W t ht).comp_injective hi
-  simpa only [Function.comp_def, idealGenerator_norm_sq, unrestrictedPairCharacter] using h
+    simpa only [span_idealGenerator] using (congrArg (fun z : O => Ideal.span {z}) he)
+  simpa only [Function.comp_def, idealGenerator_norm_sq, unrestrictedPairCharacter] using ((canonical_pair_fourier_summable I J W t ht).comp_injective hi)
 
 end
 section
 
-open ActualEisensteinCubic CompletedGauss IdealMobiusDivisorSum
-open QuadraticMainOperatorBound IdealCoprimeSieveOperator DivisorBlockCauchy
+open CompletedGauss IdealMobiusDivisorSum QuadraticMainOperatorBound IdealCoprimeSieveOperator DivisorBlockCauchy
 
 end
 
-open ActualEisensteinCubic CompletedGauss FiniteSieveRestriction
+open CompletedGauss FiniteSieveRestriction
 
 def CoefficientOnShell (N X : ℝ) (a : idealRange N → ℂ) : Prop :=
   ∀ J, a J ≠ 0 → X / 2 < (Ideal.absNorm J.val : ℝ) ∧ (Ideal.absNorm J.val : ℝ) ≤ X
@@ -292,7 +217,7 @@ def CoefficientOnShell (N X : ℝ) (a : idealRange N → ℂ) : Prop :=
 theorem column_dyadic_exists (N : ℝ) (lengthScale : ℕ) (hNL : N ≤ (2 : ℝ) ^ lengthScale) (J : idealRange N) :
     ∃ j ∈ Finset.range (lengthScale + 1), (2 : ℝ) ^ j / 2 < (Ideal.absNorm J.val : ℝ) ∧
       (Ideal.absNorm J.val : ℝ) ≤ (2 : ℝ) ^ j := by
-  have hn : 1 ≤ Ideal.absNorm J.val := Nat.one_le_iff_ne_zero.mpr
+  have hn := Nat.one_le_iff_ne_zero.mpr
     (fun hz => (mem_idealRange.mp J.property).1.1 (Ideal.absNorm_eq_zero_iff.mp hz))
   exact exists_dyadic_shell (Ideal.absNorm J.val) lengthScale hn ((mem_idealRange.mp J.property).2.trans hNL)
 
@@ -311,15 +236,10 @@ theorem dyadicColumnCoefficient_shell (N : ℝ) (lengthScale : ℕ) (hNL : N ≤
   have he : columnDyadicSector N lengthScale hNL J = j := by
     by_contra hn
     exact hJ (by simp only [dyadicColumnCoefficient, sectorCoefficient, ite_eq_right hn])
-  have hs := (column_dyadic_exists N lengthScale hNL J).choose_spec.2
-  have hv : (columnDyadicSector N lengthScale hNL J).val = j.val := congrArg Fin.val he
+  have hv := congrArg Fin.val he
   change (column_dyadic_exists N lengthScale hNL J).choose = j.val at hv
-  simpa only [hv] using hs
+  simpa only [hv] using ((column_dyadic_exists N lengthScale hNL J).choose_spec.2)
 
-theorem dyadicColumnCoefficient_energy (N : ℝ) (lengthScale : ℕ) (hNL : N ≤ (2 : ℝ) ^ lengthScale)
-    (a : idealRange N → ℂ) :
-    (∑ j : Fin (lengthScale + 1), ∑ J, ‖dyadicColumnCoefficient N lengthScale hNL j a J‖ ^ 2) = ∑ J, ‖a J‖ ^ 2 :=
-  sectorCoefficient_energy (columnDyadicSector N lengthScale hNL) a
 
 theorem weighted_energy_column_shells {m : Type*} [Fintype m]
     (N : ℝ) (lengthScale : ℕ) (hNL : N ≤ (2 : ℝ) ^ lengthScale)
@@ -418,7 +338,7 @@ theorem dyadicColumnCoefficient_at_scale_energy (N : ℝ) (lengthScale : ℕ) (h
       intro j _
       exact (coefficientAtScale_energy N _ _
         (fun J hJ => (dyadicColumnCoefficient_shell N lengthScale hNL j a J hJ).2)).symm
-    _ = _ := dyadicColumnCoefficient_energy N lengthScale hNL a
+    _ = _ := (sectorCoefficient_energy (columnDyadicSector N lengthScale hNL) a)
 
 end CanonicalQuadraticSieve
 

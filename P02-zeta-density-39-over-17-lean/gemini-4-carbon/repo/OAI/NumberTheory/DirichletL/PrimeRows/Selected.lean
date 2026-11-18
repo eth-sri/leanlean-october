@@ -11,8 +11,7 @@ namespace OAI
 noncomputable section
 open scoped Classical ComplexConjugate
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler ProbeRow
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcretePrimeRowBridge
+open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler ProbeRow CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcretePrimeRowBridge
 local notation "O" => HeckeFamily.O
 
 def continuedCompensatedLocal (η : Character) (u : FreeRow) (P : PrimeIdeal) (hs : Supported P.val)
@@ -28,13 +27,12 @@ theorem localNormalization_coordinates (η : Character) (u : FreeRow) (P : Prime
         (1-coordD P.val.absNorm (idealCoeff η P.val) (idealRowHom u.val P.val) x) := by
   unfold localNormalization coordV coordW coordD CubicEisenstein.fullIdealWeight
   simp only [P.property.ne_zero,ite_false,Complex.ofReal_natCast]
-  rw [show -(6*z)=(-6:ℂ)*z by ring]
+  rw [show -(6*z)=(-6)*z by ring]
   rfl
 
 theorem row_phase_ramified (u : FreeRow) (P : PrimeIdeal) (hP : P.val∣Ideal.span {u.val}) :
     idealRowHom u.val P.val=0 := by
-  have hu : u.val∈P.val := (Ideal.dvd_iff_le.mp hP) (Ideal.subset_span (by simp))
-  exact idealRowHom_zero_of_dvd u.val P.property (dvd_refl _) hu
+  exact idealRowHom_zero_of_dvd u.val P.property (dvd_refl _) ((Ideal.dvd_iff_le.mp hP) (Ideal.subset_span (by simp)))
 
 theorem continuedCompensatedLocal_ramified (η : Character) (u : FreeRow) (P : PrimeIdeal)
     (hs : Supported P.val) (hP : P.val∣Ideal.span {u.val}) (x w z : ℂ) :

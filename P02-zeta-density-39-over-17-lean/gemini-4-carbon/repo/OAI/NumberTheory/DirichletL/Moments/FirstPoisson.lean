@@ -9,26 +9,21 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 local notation "O" => ActualEisensteinCubic.O
 namespace SevenEighths.CenteredMomentFirstPoisson
-open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson
-open CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentFourier
+open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentFourier
 
 lemma principalCRT_scaled_left (a b : O) (hcop : IsCoprime a b) (x : Residue a) :
     principalCRT a b hcop (scaledResidue a b (a * b) rfl x) =
       (Ideal.Quotient.mk _ b * x, 0) := by
   obtain ⟨x, rfl⟩ := Ideal.Quotient.mk_surjective x
   rw [scaledResidue_mk, principalCRT_mk]
-  have hb : Ideal.Quotient.mk (Ideal.span {b}) b = 0 :=
-    (residue_eq_zero_iff_dvd b b).mpr dvd_rfl
-  simp only [map_mul, hb, zero_mul]
+  simp
 
 lemma principalCRT_scaled_right (a b : O) (hcop : IsCoprime a b) (y : Residue b) :
     principalCRT a b hcop (scaledResidue b a (a * b) (mul_comm a b) y) =
       (0, Ideal.Quotient.mk _ a * y) := by
   obtain ⟨y, rfl⟩ := Ideal.Quotient.mk_surjective y
   rw [scaledResidue_mk, principalCRT_mk]
-  have ha : Ideal.Quotient.mk (Ideal.span {a}) a = 0 :=
-    (residue_eq_zero_iff_dvd a a).mpr dvd_rfl
-  simp only [map_mul, ha, zero_mul]
+  simp
 
 theorem coprime_character_fourier (a b : O) (ha : a ≠ 0) (hb : b ≠ 0)
     (hcop : IsCoprime a b)
@@ -44,8 +39,7 @@ theorem coprime_character_fourier (a b : O) (ha : a ≠ 0) (hb : b ≠ 0)
         residueGauss b hb χb (frequencyReduction b (a * b) (dvd_mul_left b a) h) := by
   let ua := residueUnit a b hcop
   let ub := residueUnit b a hcop.symm
-  let e : Residue a × Residue b ≃ Residue (a * b) :=
-    (ua.mulLeft.prodCongr ub.mulLeft).trans (principalCRT a b hcop).toEquiv.symm
+  let e := (ua.mulLeft.prodCongr ub.mulLeft).trans (principalCRT a b hcop).toEquiv.symm
   have heproj (x : Residue a × Residue b) : principalCRT a b hcop (e x) =
       ((ua : Residue a) * x.1, (ub : Residue b) * x.2) := by
     change (principalCRT a b hcop).toEquiv

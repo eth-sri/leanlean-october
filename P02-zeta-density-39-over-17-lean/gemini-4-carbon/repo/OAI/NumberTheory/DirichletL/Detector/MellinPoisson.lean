@@ -18,7 +18,7 @@ lemma finiteSupport_verticalIntegral {α : Type*} (c : α → ℂ)
     verticalIntegral σ (fun t => ∑' a, c a * F a t) =
       ∑' a, c a * verticalIntegral σ (F a) := by
   have hz (a : α) (ha : a∉hc.toFinset) : c a=0 := by
-    simpa only [Set.Finite.mem_toFinset, Function.mem_support, not_not] using ha
+    simpa using ha
   have he (t : ℂ) : (∑' a, c a*F a t) = ∑ a∈hc.toFinset, c a*F a t :=
     tsum_eq_sum (fun a ha => by rw [hz a ha, zero_mul])
   rw [tsum_eq_sum (s := hc.toFinset) (fun a ha => by rw [hz a ha, zero_mul])]
@@ -56,14 +56,12 @@ theorem inner_mellin_poisson (η : HeckeFamily.Character) (C : CalibrationData)
   apply integral_congr_ae
   apply Filter.Eventually.of_forall
   intro y
-  dsimp only
-  norm_num only [Complex.ofReal_ofNat]
-  have ht : 1 < ((4:ℂ)+(y:ℂ)*Complex.I).re := by simp
+  norm_num
+  have ht : 1 < (4+(y:ℂ)*Complex.I).re := by simp
   rw [← physical_spectral_poisson η C C.excluded D s hs W hWc hWs K hK _ ht,
     ← tsum_mul_left]
   apply tsum_congr
   intro m
-  dsimp only [c]
   ring
 
 end SevenEighths.ProbePhysical

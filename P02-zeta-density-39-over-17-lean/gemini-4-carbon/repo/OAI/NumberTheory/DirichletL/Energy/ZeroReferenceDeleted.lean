@@ -8,18 +8,11 @@ public import OAI.NumberTheory.DirichletL.Energy.ZeroReferenceError
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
 open Filter
+open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyZeroReferenceDeleted
-open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands
-open CenteredMomentEnergyReferenceChild CenteredMomentEnergyZeroReferenceChild
-open CenteredMomentEnergyZeroReferenceGeometry CenteredMomentEnergyZeroReferenceReflection
-open CenteredMomentEnergyZeroReferenceError CenteredMomentNaturalRowSource
-open CenteredMomentOriginalRadialComparison CenteredMomentAllocatedNaturalRadial
-open CenteredMomentFiniteProfileExceptional CenteredMomentScaleSupremum
+open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands CenteredMomentEnergyReferenceChild CenteredMomentEnergyZeroReferenceChild CenteredMomentEnergyZeroReferenceGeometry CenteredMomentEnergyZeroReferenceReflection CenteredMomentEnergyZeroReferenceError CenteredMomentNaturalRowSource CenteredMomentOriginalRadialComparison CenteredMomentAllocatedNaturalRadial CenteredMomentFiniteProfileExceptional CenteredMomentScaleSupremum
 local notation "O"=>HeckeFamily.O
 
 theorem deleted_from_low (a b bΦ epsilon xi saving Mcap Bmask L:ℝ)
@@ -66,10 +59,10 @@ theorem deleted_from_low (a b bΦ epsilon xi saving Mcap Bmask L:ℝ)
     hX₁ hX₂ hxi.le hxiM hlarge D₁ D₂ hD₁ hD₂
   dsimp only at hg
   rw [←hg.1,←hg.2.1]
-  have hZpos:0<Z:=zero_lt_one.trans hZ.1
+  have hZpos :=zero_lt_one.trans hZ.1
   have hdiag:0≤diagonalControl s.radial.profile:=by unfold diagonalControl;positivity
   have hLpos:0≤L:=by linarith [s.width_nonneg]
-  have hlog:0≤Real.log Z:=(Real.log_pos hZ.1).le
+  have hlog :=(Real.log_pos hZ.1).le
   rcases hg.2.2.2.2.2.2.2 with hd|hr
   · have hdirect:=independent_from_low a b bΦ Bmask L Mcap ε Z Q degree S K hlow hBmask ha
       s hQ hs W₁ W₂ hs₁ hs₂ t t (Z^short) (Z^along)

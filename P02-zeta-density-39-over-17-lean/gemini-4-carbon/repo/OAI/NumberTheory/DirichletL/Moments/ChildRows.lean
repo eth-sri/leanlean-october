@@ -10,8 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentChildRows
-open CanonicalRowCompletion CanonicalQuadraticSieve HeckeFamily HeckeRowClosure
-open CenteredMomentFixedRay RayFourExpansion
+open CanonicalRowCompletion CanonicalQuadraticSieve HeckeFamily HeckeRowClosure CenteredMomentFixedRay RayFourExpansion
 local notation "O" => ActualEisensteinCubic.O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
@@ -38,7 +37,7 @@ theorem old_coefficient_prime_coprime (η : Character) (e : O)
 theorem childCharacter_coprime (η : Character) (χ : RayCharacter) (Q P : Ideal O)
     (hQ : Q ≤ Ideal.span {(72 : O)}) (hQP : IsCoprime Q P)
     (hηP : IsCoprime η.modulus P) : IsCoprime (childCharacter η χ).modulus P := by
-  have h12 : IsCoprime (Ideal.span {(12 : O)}) P :=
+  have h12 : IsCoprime (Ideal.span {12}) P :=
     hQP.of_isCoprime_of_dvd_left (Ideal.dvd_iff_le.mpr (hQ.trans
       (Ideal.span_singleton_le_span_singleton.mpr ⟨6, by norm_num⟩)))
   rw [childCharacter_modulus]

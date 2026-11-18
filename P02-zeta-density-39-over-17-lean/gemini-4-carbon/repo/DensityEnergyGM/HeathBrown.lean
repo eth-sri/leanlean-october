@@ -267,12 +267,10 @@ theorem heathBrown_poweredBlock_subset
   · exact lt_of_le_of_lt
       (Nat.le_mul_of_pos_left _ (pow_pos (by omega) r)) hm.1
   · have hrSucc : r + 1 ≤ k := by omega
-    have hPow : 2 ^ (r + 1) ≤ (2 : ℕ) ^ k :=
-      pow_le_pow_right₀ (by omega : (1 : ℕ) ≤ 2) hrSucc
     calc
       m ≤ 2 * (2 ^ r * N ^ k) := hm.2
       _ = 2 ^ (r + 1) * N ^ k := by rw [pow_succ]; ring
-      _ ≤ 2 ^ k * N ^ k := Nat.mul_le_mul_right _ hPow
+      _ ≤ 2 ^ k * N ^ k := Nat.mul_le_mul_right _ (pow_le_pow_right₀ (by omega : 1 ≤ 2) hrSucc)
 
 /-- Reversing the ordinate changes the negative-sign polynomial into the
 source positive-sign convention without changing coefficients. -/

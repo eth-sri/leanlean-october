@@ -11,12 +11,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstRetainedPhysical
-open ActualEisensteinCubic ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentFirstSectors CenteredMomentFirstSectorTransform CenteredMomentSourceRow
-open CenteredMomentFirstRetainedSector CenteredMomentFirstCommonFourierTransport
-open CenteredMomentCanonicalFirst CenteredMomentFirstPhysicalSource CenteredMomentFirstPhysicalDyadicAssembly
-open CenteredMomentSupportedCorrelation CenteredMomentHeckeExpansion CenteredMomentCompleteCommon
-open CenteredMomentSectorLocalization CenteredMomentFirstScale CenteredMomentFirstReduced
+open ActualEisensteinCubic ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve CompletedGauss CenteredMomentFirstSectors CenteredMomentFirstSectorTransform CenteredMomentSourceRow CenteredMomentFirstRetainedSector CenteredMomentFirstCommonFourierTransport CenteredMomentCanonicalFirst CenteredMomentFirstPhysicalSource CenteredMomentFirstPhysicalDyadicAssembly CenteredMomentSupportedCorrelation CenteredMomentHeckeExpansion CenteredMomentCompleteCommon CenteredMomentSectorLocalization CenteredMomentFirstScale CenteredMomentFirstReduced
 local notation "O"=>ActualEisensteinCubic.O
 
  theorem original_sector_columns (η:Character)(m A:O)(t:ℝ)(S:Finset (Ideal O))(c:Ideal O→ℂ)
@@ -32,12 +27,10 @@ local notation "O"=>ActualEisensteinCubic.O
             retainedKernel (C*a) (D*b) W K X Z ξ else 0:=by
   rw [←original_pool_restriction C D hC hD S
     (fun a b=>(coefficient η m A t c C a*star (coefficient η m A t c D b))*
-      retainedKernel (C*a) (D*b) W K X Z ξ)]
-  rw [pairSector_double_sum C D hC hD hCD _ _
+      retainedKernel (C*a) (D*b) W K X Z ξ), pairSector_double_sum C D hC hD hCD _ _
     (fun I hI=>(Finset.mem_filter.mp hI).2.1) (fun I hI=>(Finset.mem_filter.mp hI).2.1)
     (fun I J=>((c I*rowWeight η m A 1 t I)*star (c J*rowWeight η m A 1 t J))*
-      retainedKernel I J W K X Z ξ)]
-  rw [Finset.mul_sum]
+      retainedKernel I J W K X Z ξ), Finset.mul_sum]
   apply Finset.sum_congr rfl
   intro a ha
   rw [Finset.mul_sum]

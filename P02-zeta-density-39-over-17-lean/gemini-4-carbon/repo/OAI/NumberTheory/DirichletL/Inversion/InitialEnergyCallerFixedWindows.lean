@@ -7,13 +7,10 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical SchwartzMap ContDiff
 open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
+open scoped BigOperators Classical SchwartzMap ContDiff
 namespace SevenEighths.InverseInitialEnergyCallerFixedWindows
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
-open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
-open InverseInitialEnergyCallerWindows InverseInitialProfile InverseInitialClippedColumns
-open InverseSecondChildWindows InverseSecondProfileUniform
+open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource InverseInitialEnergyCallerWindows InverseInitialProfile InverseInitialClippedColumns InverseSecondChildWindows InverseSecondProfileUniform
 local notation "Eis"=>ActualEisensteinCubic.O
 
 theorem log_source_support (W:ℝ→ℂ)(a b:ℝ)(ha:0<a)

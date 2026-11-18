@@ -12,10 +12,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptionalCommon
-open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge
-open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentSourceMass
-open CenteredMomentAddedZeroUniform CenteredMomentExceptionalAmplitudePair
-open CenteredMomentFixedRowMask CenteredExceptionalProfile CenteredMomentSecondHeightFamily
+open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentSourceMass CenteredMomentAddedZeroUniform CenteredMomentExceptionalAmplitudePair CenteredMomentFixedRowMask CenteredExceptionalProfile CenteredMomentSecondHeightFamily
 local notation "O" => HeckeFamily.O
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 
@@ -36,7 +33,7 @@ theorem common_admissible (s:Input ι)(p:Profiles wlo whi)(C R Q:Ideal O)(hC:C�
   · exact (dvd_mul_right _ _).trans (dvd_mul_right _ _)
   · exact (dvd_mul_left _ _).trans (dvd_mul_right _ _)
   · rw [common_conductor]
-    simpa only [Nat.cast_mul] using hcond
+    simpa using hcond
   · exact (common_mask_inducing s C R Q hC hR B z hz).mpr hex
   · exact extracted_lower s C hC B (Sum.inr 0) Z r s.X₁ hZ hX₁
   · exact extracted_lower s C hC B (Sum.inr 1) Z r s.X₂ hZ hX₂

@@ -10,9 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseSecondSourceBlocks InverseSecondPrincipalCaller InverseSecondProfileUniform
-open FourierBridge CompletedHeight SecondPassIntegration
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondSourceBlocks InverseSecondPrincipalCaller InverseSecondProfileUniform FourierBridge CompletedHeight SecondPassIntegration
 local notation "O" => ActualEisensteinCubic.O
 
 def secondCellColumnExponent (Z X:ℝ) (d:BlockIndex):ℝ :=
@@ -33,14 +31,12 @@ theorem second_cell_clipping_ratio (Z X b:ℝ) (d:BlockIndex) (hZ:1<Z) (hX:0<X)
     1≤Z^(max 0 (secondCellColumnExponent Z X d)-secondCellColumnExponent Z X d) ∧
     Z^(max 0 (secondCellColumnExponent Z X d)-secondCellColumnExponent Z X d)≤b := by
   let N:=secondCellColumnExponent Z X d
-  have hz:0<Z:=lt_trans zero_lt_one hZ
-  have hn:Z^N=X/(scales d 0*scales d 2):=second_cell_column_scale Z X d hZ hX
   constructor
   · exact Real.one_le_rpow hZ.le (sub_nonneg.mpr (le_max_right _ _))
   · by_cases hN:0≤N
     · rw [max_eq_right hN,sub_self,Real.rpow_zero];exact hb
     · have hN':N≤0:=le_of_not_ge hN
-      rw [max_eq_left hN',zero_sub,Real.rpow_neg hz.le,hn,inv_div]
+      rw [max_eq_left hN',zero_sub,Real.rpow_neg (lt_trans zero_lt_one hZ).le,(second_cell_column_scale Z X d hZ hX),inv_div]
       exact (div_le_iff₀ hX).mpr hsource
 
 theorem actual_source_block_ratios {ι:Type*} [DecidableEq ι]
@@ -50,8 +46,7 @@ theorem actual_source_block_ratios {ι:Type*} [DecidableEq ι]
     ∀x∈source,∀i,InverseSecondChildWindows.actualOuterRatios p x
       (scales d 0) (scales d 1) (scales d 2) (scales d 3) i∈Set.Icc 1 2 := by
   intro x hx i
-  have hxcell:x∈cell p source d:=(mem_cell p source d x).mpr ⟨hx,hcell x hx⟩
-  have hr:=cell_ratios p hp source hk d x hxcell i
+  have hr:=cell_ratios p hp source hk d x ((mem_cell p source d x).mpr ⟨hx,hcell x hx⟩) i
   have he:InverseSecondChildWindows.actualOuterRatios p x
       (scales d 0) (scales d 1) (scales d 2) (scales d 3) i=outerNorms p x i/scales d i := by
     fin_cases i <;> simp [InverseSecondChildWindows.actualOuterRatios,outerNorms,

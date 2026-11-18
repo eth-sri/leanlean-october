@@ -7,80 +7,12 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 
 namespace CubicEisenstein
 
 section
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology
 
 local notation "O" => ActualEisensteinCubic.O
 namespace SubexponentialBesselCoefficients
@@ -88,12 +20,10 @@ namespace SubexponentialBesselCoefficients
 theorem series_cusp_decay (coeff : SubexponentialBesselCoefficients) (a : ℝ) (ha : 0<a) :
     ∃C : ℝ,0≤C ∧ ∀v z,a≤v → ‖coeff.series (v,z)‖≤C*Real.exp (-residualCuspDecayRate*v) := by
   obtain ⟨D,hD,hterm⟩ := coeff.term_cusp_bound a ha
-  let S : ℝ := ∑'h : ActualEisensteinCubic.O,Real.exp (-(Real.pi*a/2)*‖cuspFrequency h‖)
-  have hS : 0≤S := tsum_nonneg (fun h => (Real.exp_pos _).le)
-  have hs := summable_exp_neg_cuspFrequency_norm (Real.pi*a/2) (by positivity)
+  let S := ∑'h : ActualEisensteinCubic.O,Real.exp (-(Real.pi*a/2)*‖cuspFrequency h‖)
   refine ⟨D*S*(2/(2*residualCuspDecayRate)),by have := residualCuspDecayRate_pos;positivity,?_⟩
   intro v z hav
-  have hv : 0<v := ha.trans_le hav
+  have hv := ha.trans_le hav
   have hb (h : ActualEisensteinCubic.O) : ‖coeff.term h (v,z)‖≤
       (D*v*Real.exp (-(2*residualCuspDecayRate)*v))*Real.exp (-(Real.pi*a/2)*‖cuspFrequency h‖) := by
     by_cases hh : h=0
@@ -109,13 +39,12 @@ theorem series_cusp_decay (coeff : SubexponentialBesselCoefficients) (a : ℝ) (
       unfold residualCuspDecayRate
       nlinarith
     exact (hterm h v z hav).trans ((mul_le_mul_of_nonneg_left he (by positivity)).trans_eq (by ring))
-  have hsum := tsum_of_norm_bounded (hs.hasSum.mul_left (D*v*Real.exp (-(2*residualCuspDecayRate)*v))) hb
   calc
-    _ ≤ (D*v*Real.exp (-(2*residualCuspDecayRate)*v))*S := hsum
+    _ ≤ (D*v*Real.exp (-(2*residualCuspDecayRate)*v))*S := (tsum_of_norm_bounded ((summable_exp_neg_cuspFrequency_norm (Real.pi*a/2) (by positivity)).hasSum.mul_left (D*v*Real.exp (-(2*residualCuspDecayRate)*v))) hb)
     _ = (D*S)*(v*Real.exp (-(2*residualCuspDecayRate)*v)) := by ring
     _ ≤ (D*S)*((2/(2*residualCuspDecayRate))*Real.exp (-((2*residualCuspDecayRate)/2)*v)) :=
       mul_le_mul_of_nonneg_left (norm_mul_exp_neg_bound (2*residualCuspDecayRate) v
-        (mul_pos (by norm_num) residualCuspDecayRate_pos)) (mul_nonneg hD hS)
+        (mul_pos (by norm_num) residualCuspDecayRate_pos)) (mul_nonneg hD (tsum_nonneg (fun h => (Real.exp_pos _).le)))
     _ = _ := by
       rw [show -((2*residualCuspDecayRate)/2)*v=-residualCuspDecayRate*v by ring]
       ring
@@ -124,13 +53,13 @@ theorem series_cubic_decay (coeff : SubexponentialBesselCoefficients) (a : ℝ) 
     ∃C : ℝ,0≤C ∧ ∀v z,a≤v → ‖coeff.series (v,z)‖≤C/v^3 := by
   obtain ⟨C,hC,hbound⟩ := coeff.series_cusp_decay a ha
   let k := residualCuspDecayRate
-  have hk : 0<k := residualCuspDecayRate_pos
+  have hk := residualCuspDecayRate_pos
   refine ⟨C*(6/k^3),by positivity,?_⟩
   intro v z hav
-  have hv : 0<v := ha.trans_le hav
+  have hv := ha.trans_le hav
   have he : Real.exp (-k*v)*v^3≤6/k^3 := by
     have hb := Real.pow_div_factorial_le_exp (k*v) (mul_nonneg hk.le hv.le) 3
-    norm_num only [Nat.factorial] at hb
+    norm_num at hb
     have hm := mul_le_mul_of_nonneg_right hb (Real.exp_pos (-k*v)).le
     rw [←Real.exp_add,show k*v+ -k*v=0 by ring,Real.exp_zero] at hm
     apply (le_div_iff₀ (pow_pos hk 3)).mpr
@@ -152,29 +81,27 @@ theorem fullFunction_zero_cubic_decay (coeff : SubexponentialBesselCoefficients)
 end SubexponentialBesselCoefficients
 end
 
-open scoped BigOperators Classical MatrixGroups Matrix
+open scoped MatrixGroups Matrix
 
 section
-open ActualEisensteinCubic CubicKubota ConcreteTraceCRT CompletedGauss
+open CubicKubota CompletedGauss
 open PrimaryIdealUnitReindex (GoodIdeal GoodElement)
 local notation "Eis" => ActualEisensteinCubic.O
 local notation "ramLambda" => (omega-1:Eis)
 
-lemma halfPrimary_lambda_dvd_three : ramLambda ∣ (3:Eis) := by
-  exact (dvd_pow_self ramLambda (by decide : (2:ℕ)≠0)).trans lambda_sq_dvd_three
+lemma halfPrimary_lambda_dvd_three : ramLambda ∣ (3:Eis) := (dvd_pow_self ramLambda (by decide : 2≠0)).trans lambda_sq_dvd_three
 
 lemma halfPrimary_lambda_not_dvd_one : ¬ramLambda ∣ (1:Eis) := by
   intro h
   exact PrimaryIdealUnitReindex.lambda_prime_actual.not_isUnit (isUnit_of_dvd_one h)
 
 lemma halfPrimary_omega_pow (j:ℕ) : ramLambda ∣ omega^j-1 := by
-  simpa only [one_pow] using sub_dvd_pow_sub_pow omega (1:Eis) j
+  simpa using sub_dvd_pow_sub_pow omega 1 j
 
 lemma halfPrimary_not_negative (j:ℕ) : ¬ramLambda ∣ -(omega^j)-1 := by
   intro h
-  have h2 : ramLambda ∣ (2:Eis) := by
-    have hh:=dvd_add h (halfPrimary_omega_pow j)
-    convert dvd_neg.mpr hh using 1 ;ring
+  have h2 : ramLambda ∣ 2 := by
+    convert dvd_neg.mpr (dvd_add h (halfPrimary_omega_pow j)) using 1 ;ring
   apply halfPrimary_lambda_not_dvd_one
   convert dvd_sub halfPrimary_lambda_dvd_three h2 using 1 ;ring
 
@@ -235,7 +162,7 @@ def halfPrimaryAssociateEquiv : Fin 3×PrimaryLower ≃ HalfPrimary :=
 
 end
 
-open ActualEisensteinCubic CubicKubota ConcreteTraceCRT
+open CubicKubota
 local notation "Eis" => ActualEisensteinCubic.O
 
 def unitCuspUpper (b : Eis) : SL(2,Eis) := ⟨!![1,b;0,1],by simp [Matrix.det_fin_two]⟩
@@ -271,11 +198,11 @@ lemma unitCuspUpper_section (b : Eis) (z : ℂ) (v : ℝ) (hv : 0<v) :
 
 end CubicEisenstein
 
-open scoped Classical MatrixGroups
+open scoped MatrixGroups
 namespace CubicEisenstein
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicKubota
+open CubicJacobiGlobal CubicKubota
 local notation "Eis" => ActualEisensteinCubic.O
 
 abbrev CubeResidueStrata (p:Eis) := Σj:Fin 4,CubicUnitResidue (p^(3-j.val))
@@ -294,17 +221,12 @@ private lemma cube_strata_exponents (p:Eis) (hp:Prime p) (j k:Fin 4)
   intro hjk
   have hj3:j.val+1≤3:=by omega
   have hjk':j.val+1≤k.val:=by omega
-  have h1:p^(j.val+1)∣p^j.val*b-p^k.val*d:=
-    (pow_dvd_pow p hj3).trans he
-  have h2:p^(j.val+1)∣p^k.val*d:=
-    dvd_mul_of_dvd_left (pow_dvd_pow p hjk') d
   have h3:p^(j.val+1)∣p^j.val*b:=by
-    simpa only [sub_add_cancel] using dvd_add h1 h2
+    simpa only [sub_add_cancel] using dvd_add ((pow_dvd_pow p hj3).trans he) (dvd_mul_of_dvd_left (pow_dvd_pow p hjk') d)
   rw [pow_succ] at h3
-  have hpb:p∣b:=(mul_dvd_mul_iff_left (pow_ne_zero j.val hp.ne_zero)).mp h3
-  have hpc:IsCoprime p b:=hb.of_isCoprime_of_dvd_left
+  have hpc :=hb.of_isCoprime_of_dvd_left
     (dvd_pow_self p (by omega:3-j.val≠0))
-  exact (hp.coprime_iff_not_dvd.mp hpc) hpb
+  exact (hp.coprime_iff_not_dvd.mp hpc) ((mul_dvd_mul_iff_left (pow_ne_zero j.val hp.ne_zero)).mp h3)
 
 lemma cubeResidueStratumMap_injective (p:Eis) (hp:Prime p) :
     Function.Injective (cubeResidueStratumMap p) := by
@@ -367,7 +289,7 @@ def cubeResidueStrataEquiv (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-1) :
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicKubota
+open CubicJacobiGlobal CubicKubota
 local notation "Eis" => ActualEisensteinCubic.O
 
 def cubeStratumSymbol (p C:Eis) (j:Fin 4) (b:CubicUnitResidue (p^(3-j.val))) : ℂ :=
@@ -416,9 +338,8 @@ lemma cubeStrata_weighted_sum (p C:Eis) (hp:Prime p) (hprimary:lambda^2∣p-1)
 
 end CubicEisenstein
 
-open scoped Classical MatrixGroups
 namespace CubicKubota
-open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein CubicJacobiGlobal CubicRamified
+open CubicEisenstein CubicJacobiGlobal CubicRamified
 local notation "Eis" => ActualEisensteinCubic.O
 
 lemma comparison_mod_three (A N:SL(2,Eis)) (hNA:N*A⁻¹∈levelThree) (i j:Fin 2) :
@@ -432,13 +353,11 @@ lemma comparison_mod_three (A N:SL(2,Eis)) (hNA:N*A⁻¹∈levelThree) (i j:Fin 
 
 lemma comparison_primary (A N:SL(2,Eis)) (hNA:N*A⁻¹∈levelThree)
     (hA:lambda^2∣A 0 0-1) : lambda^2∣N 0 0-1 := by
-  have hh:=lambda_sq_dvd_three.trans (comparison_mod_three A N hNA 0 0)
-  simpa only [sub_add_sub_cancel] using dvd_add hh hA
+  simpa using dvd_add (lambda_sq_dvd_three.trans (comparison_mod_three A N hNA 0 0)) hA
 
 lemma comparison_levelTwo (A:levelTwo) (N:SL(2,Eis))
     (hNA:N*(A:SL(2,Eis))⁻¹∈levelThree) : N∈levelTwo := by
-  have hh:=Subgroup.mul_mem levelTwo (levelThree_le_levelTwo hNA) A.property
-  simpa only [inv_mul_cancel_right] using hh
+  simpa using (Subgroup.mul_mem levelTwo (levelThree_le_levelTwo hNA) A.property)
 
 lemma levelTwo_cube_zero_phase (A N:levelTwo) (p q:Eis)
     (hp:lambda^2∣p-1)
@@ -459,14 +378,13 @@ lemma levelTwo_cube_zero_phase (A N:levelTwo) (p q:Eis)
     rw [←map_pow,symbol_cube_of_isCoprime _ _ hp hcop,map_one]
   have hb:=levelTwo_cube_phase_balance A N p q 0 hp hA hN (by simpa using hx) (by simpa using hc)
   simp only [pow_zero,mul_one,Nat.sub_zero,hcube] at hb
-  have hcomp:=levelTwo_comparison_character A N hNA
   have hbase:levelTwoComplexCharacter A≠0:=by
     intro he
     have hh:=levelTwoComplexCharacter_cube A
     rw [he] at hh
     norm_num at hh
   apply mul_right_cancel₀ hbase
-  rw [one_mul,hcomp,hb]
+  rw [one_mul,(levelTwo_comparison_character A N hNA),hb]
 
 lemma cube_exponent_zero_of_lower_divisible (A N:SL(2,Eis)) (p q:Eis) (j:ℕ)
     (hp:Prime p) (hC:p∣A 1 0)
@@ -487,13 +405,13 @@ lemma cube_exponent_zero_of_lower_divisible (A N:SL(2,Eis)) (p q:Eis) (j:ℕ)
 end CubicKubota
 
 namespace CubicEisenstein
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicKubota
+open CubicJacobiGlobal CubicKubota
 local notation "Eis" => ActualEisensteinCubic.O
 
 lemma cube_affine_coefficient_unit (p C:Eis) (hprimary:lambda^2∣p-1) (hC:IsCoprime C p) :
     IsUnit (Ideal.Quotient.mk (Ideal.span {p^3}) (3*C)) := by
   obtain ⟨t,ht⟩:=(three_dvd_primary_sub_one p hprimary)
-  have hp3:IsCoprime p (3:Eis):=by
+  have hp3:IsCoprime p 3:=by
     refine ⟨1,-t,?_⟩
     linear_combination ht
   apply (isUnit_quotient_span_iff _ _).mpr
@@ -530,9 +448,8 @@ lemma cubeCuspAffineEquiv_mk (p A C q:Eis) (hprimary:lambda^2∣p-1) (hC:IsCopri
 
 end CubicEisenstein
 
-open scoped Classical MatrixGroups BigOperators
 namespace CubicKubota
-open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein CubicJacobiGlobal
+open CubicEisenstein CubicJacobiGlobal
 local notation "Eis" => ActualEisensteinCubic.O
 
 structure CubeCuspData (A:SL(2,Eis)) (p q:Eis) where
@@ -590,20 +507,17 @@ lemma comparison_phase (A2:levelTwo) (d:CubeCuspData (A2:SL(2,Eis)) p q)
     (hC:IsCoprime ((A2:SL(2,Eis)) 1 0) p) :
     complexCharacter ⟨d.matrix*(A2:SL(2,Eis))⁻¹,d.congruent⟩ =
       cubeStratumSymbol p ((A2:SL(2,Eis)) 1 0) d.exponent (d.stratum hp.ne_zero).2 := by
-  let N2:levelTwo:=⟨d.matrix,comparison_levelTwo A2 d.matrix d.congruent⟩
-  have hN:lambda^2∣d.matrix 0 0-1:=comparison_primary _ _ d.congruent hA
-  have he:=levelTwo_cube_comparison_phase A2 N2 p q d.exponent.val
-    (by omega:d.exponent.val≤3) hprimary hA hN d.first (d.lower_eq hp.ne_zero) hC d.congruent
+  have he:=levelTwo_cube_comparison_phase A2 (⟨d.matrix,comparison_levelTwo A2 d.matrix d.congruent⟩) p q d.exponent.val
+    (by omega:d.exponent.val≤3) hprimary hA (comparison_primary _ _ d.congruent hA) d.first (d.lower_eq hp.ne_zero) hC d.congruent
   rw [he]
   unfold cubeStratumSymbol
   rw [←map_pow,←cubicSymbol_pow_denominator]
   apply congrArg eisEmbedding
   apply symbol_congr
-  have hd:=gaussRep_mk_congr (p^(3-d.exponent.val)) (d.matrix 0 0)
   change p^(3-d.exponent.val)∣d.matrix 0 0*((A2:SL(2,Eis)) 1 0)-
     GaussianShiftedPartition.representative (p^(3-d.exponent.val))
       (Ideal.Quotient.mk _ (d.matrix 0 0))*((A2:SL(2,Eis)) 1 0)
-  convert dvd_mul_of_dvd_left (dvd_neg.mpr hd) ((A2:SL(2,Eis)) 1 0) using 1 ; ring
+  convert dvd_mul_of_dvd_left (dvd_neg.mpr (gaussRep_mk_congr (p^(3-d.exponent.val)) (d.matrix 0 0))) ((A2:SL(2,Eis)) 1 0) using 1 ; ring
 
 end CubeCuspData
 end CubicKubota

@@ -5,17 +5,11 @@ public import OAI.NumberTheory.DirichletL.Mellin.LogProfiles
 
 namespace OAI
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
+open MulChar AddChar Filter Asymptotics MeasureTheory Real
+open scoped BigOperators Topology FourierTransform SchwartzMap
 
 namespace ShortDraftCRT
 
-open AddChar
 
 variable {K : Type*} [Field K]
 
@@ -38,7 +32,7 @@ theorem normalized_crt_pair {R : Type*} [CommRing R]
       ψ (-(ι d * ι u * (ι x / ι lam ^ 4)) / ι c₀) *
         ψ (ι (-d * w * x) / (ι lam * ι r)) := by
   have hbezK : ι u * ι r + ι (lam ^ 3 * w) * ι c₀ = 1 := by
-    simpa only [map_add, map_mul, map_one] using congrArg ι hbez
+    simpa using congrArg ι hbez
   have hsplit := addChar_crt_pair ψ (ι c₀) (ι r) (ι u)
     (ι (lam ^ 3 * w)) (-(ι d * (ι x / ι lam ^ 4))) hc₀ hr hbezK
   rw [hsplit]
@@ -72,7 +66,7 @@ include hω hconj
 omit hconj in
 private lemma lam_ne_zero : (1 + 2 * ω : ℂ) ≠ 0 := by
   intro h
-  have hw : ω = -(1 : ℂ) / 2 := by linear_combination h / 2
+  have hw : ω = -1 / 2 := by linear_combination h / 2
   rw [hw] at hω
   norm_num at hω
 
@@ -149,8 +143,7 @@ noncomputable def breveE : AddChar ℂ ℂ where
     rw [harg, Complex.exp_add]
 
 theorem breveE_period_lam (a b : ℤ) :
-    breveE (((a : ℂ) + (b : ℂ) * ω₃) / (1 + 2 * ω₃)) = 1 := by
-  exact eisenstein_trace_period a b
+    breveE (((a : ℂ) + (b : ℂ) * ω₃) / (1 + 2 * ω₃)) = 1 := eisenstein_trace_period a b
 
 private theorem lam_eq_sqrt3_mul_I :
     1 + 2 * ω₃ = (Real.sqrt 3 : ℝ) * Complex.I := by

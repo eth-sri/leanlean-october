@@ -13,9 +13,8 @@ oriented mixed moments.  This file proves the finite nonnegative inequality
 directly, with all three exponents visible.
 -/
 
-open Finset
+open Finset MeasureTheory
 open scoped BigOperators ENNReal
-open MeasureTheory
 
 namespace GafniTao
 

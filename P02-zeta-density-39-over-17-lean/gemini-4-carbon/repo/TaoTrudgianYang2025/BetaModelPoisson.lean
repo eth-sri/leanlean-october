@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaDualScales
 public import Mathlib.Analysis.Fourier.PoissonSummation
 
@@ -59,7 +69,7 @@ theorem modelPhaseWeightedKernel_zero_of_not_mem
     intro h
     have hu := hs h
     apply hx
-    exact ⟨by simpa only [one_mul] using ((lt_div_iff₀ hN).mp hu.1).le,
+    exact ⟨by simpa using ((lt_div_iff₀ hN).mp hu.1).le,
       ((div_lt_iff₀ hN).mp hu.2).le⟩
   simp only [modelPhaseWeightedKernel,image_eq_zero_of_notMem_tsupport hnot,
     Complex.ofReal_zero,zero_mul]
@@ -122,8 +132,7 @@ theorem modelPhase_weighted_poisson
     (∑ n ∈ Finset.Icc ⌈N⌉ ⌊2*N⌋, modelPhaseWeightedKernel χ F T N n) =
       ∑' r : ℤ, modelPhaseFourierMode χ F T N r := by
   rw [← modelPhaseWeightedKernel_tsum_eq_finite hs hN T]
-  have h := SchwartzMap.tsum_eq_tsum_fourier (modelPhaseWeightedSchwartz hχ hs hF hN T) 0
   simpa only [zero_add,AddCircle.coe_zero,fourier_eval_zero,mul_one,
-    modelPhaseWeightedSchwartz_fourier,modelPhaseWeightedSchwartz_apply] using h
+    modelPhaseWeightedSchwartz_fourier,modelPhaseWeightedSchwartz_apply] using (SchwartzMap.tsum_eq_tsum_fourier (modelPhaseWeightedSchwartz hχ hs hF hN T) 0)
 
 end TaoTrudgianYang2025

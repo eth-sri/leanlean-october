@@ -7,9 +7,8 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstHeightBudget
 namespace OAI
 
 namespace SevenEighths.InverseMoment
+open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion JointLogSeparation FourierBridge MeasureTheory
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion
-open JointLogSeparation FourierBridge MeasureTheory
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 open InverseMomentFirstProfileUniform InverseAmbientProfileTower
@@ -83,8 +82,8 @@ theorem actual_first_original_subset_physical_budget (ε : ℝ) (hε : 0<ε)
     hΨ₁ hΨ₂ hΓ hY hlabels hn ha ω₁ ω₂ ρ c₁ c₂ θ₁ θ₂ A₁ A₂ C R K L hK s hs selected hselected
     source C₁ C₂ w hpos hρ hc₁ hc₂ hc₁b hc₂b hL hω₁ hω₂ hcut Benergy hBenergy
     Z M r ell V delta aa₁ aa₂ bb rr tq hh eta hZ hscale hLe hleft hright
-  let P₁:=Z^(firstKappa M r ell V delta aa₁ bb rr)*Real.exp ((9/2:ℝ)*(eta*Real.log Z))
-  let P₂:=Z^(firstKappa M r ell V delta aa₂ bb rr)*Real.exp ((9/2:ℝ)*(eta*Real.log Z))
+  let P₁:=Z^(firstKappa M r ell V delta aa₁ bb rr)*Real.exp ((9/2)*(eta*Real.log Z))
+  let P₂:=Z^(firstKappa M r ell V delta aa₂ bb rr)*Real.exp ((9/2)*(eta*Real.log Z))
   have hp₁:0<P₁:=by dsimp [P₁];positivity
   have hp₂:0<P₂:=by dsimp [P₂];positivity
   have hb:=he p hp hg hinj hcop hc hpr F outer b common Ψ₁ Ψ₂ mleft mright dd H₁ H₂ selector labels a Γ Y
@@ -98,14 +97,14 @@ theorem actual_first_original_subset_physical_budget (ε : ℝ) (hε : 0<ε)
       _=(Real.sqrt Benergy)^2*(Real.sqrt P₁⁻¹*Real.sqrt P₂⁻¹):=by ring
       _= _:=by rw [Real.sq_sqrt hBenergy]
   rw [hroot] at hb
-  have hcancel:(Z^(-r-2*ell-V)*Z^M/firstRootScale s)*Real.exp ((9/2:ℝ)*L)*
+  have hcancel:(Z^(-r-2*ell-V)*Z^M/firstRootScale s)*Real.exp ((9/2)*L)*
       (Real.sqrt P₁⁻¹*Real.sqrt P₂⁻¹)=1:=by
     rw [hscale,hLe]
     exact first_unequal_prefactor Z hZ M r ell V delta aa₁ aa₂ bb rr tq hh eta
   have hnorm:0≤Z^(-r-2*ell-V)*Z^M:=by positivity
   apply (mul_le_mul_of_nonneg_left hb hnorm).trans_eq
   calc
-    _=((Z^(-r-2*ell-V)*Z^M/firstRootScale s)*Real.exp ((9/2:ℝ)*L)*
+    _=((Z^(-r-2*ell-V)*Z^M/firstRootScale s)*Real.exp ((9/2)*L)*
       (Real.sqrt P₁⁻¹*Real.sqrt P₂⁻¹))*
       ((Γ*Kpush*Y^ε*Benergy)*(Cprofile*((1+‖θ₁‖)^InverseClippingProfiles.momentOrder J *
           (1+‖θ₂‖)^InverseClippingProfiles.momentOrder J) /

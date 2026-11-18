@@ -14,11 +14,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseSecondSourceBlocks InverseSecondPrincipalCaller InverseSecondProfileUniform
-open FourierBridge CompletedHeight SecondPassIntegration JointLogSeparation
-open InverseInitialClippedColumns InverseSecondFibers InverseInitialArithmetic
-open InverseWholePriorityRetainedSource RayFourExpansion FirstCauchyArithmetic
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondSourceBlocks InverseSecondPrincipalCaller InverseSecondProfileUniform FourierBridge CompletedHeight SecondPassIntegration JointLogSeparation InverseInitialClippedColumns InverseSecondFibers InverseInitialArithmetic InverseWholePriorityRetainedSource RayFourExpansion FirstCauchyArithmetic
 local notation "Eis"=>ActualEisensteinCubic.O
 theorem global_priority_filtered_moving_radius_uniform_types
     (om:𝓢(ℝ,ℂ)) (lo hi:ℝ) (hlo:0<lo)
@@ -109,9 +105,7 @@ theorem global_priority_filtered_moving_radius_uniform_types
     Y R L Z X εchild Vlabel ell Ractive j tcount eta M r V delta Acol Bfirst tau pi b ρ t labels A source hhib
     haassigned hρ hL hZ hX hY heta hbin hrows hcube₁ hcube₂ hactive hj hquot hΨ
     ha₁ ha₂ hlabels ho hslots₁ hslots₂ hA hYe hXe hLe hVe hZ2 hb hthreshold hnorm hgeom hmass hleft hright
-  have hsub:source⊆originalSource:=InverseMomentGlobalRetainedGates.geometrySource_subset p originalSource b X
-  have hsource:ActualSecondSourceConditions p source:=
-    ActualSecondSourceConditions.mono p (unified_conditions p hp extra original hvalid hextra negative assigned lists pool cutoff) hsub
+  have hsub :=InverseMomentGlobalRetainedGates.geometrySource_subset p originalSource b X
   have hd:∀x∈source,∀i∈InverseMomentWholeRetainedSource.deleted p extra negative x,
       i∈x.cube.support∪x.firstCommon ∨ (Ideal.span {p i}:Ideal Eis)∣x.quotient:=
     fun x hx=>unified_deleted_support p hinj extra original hvalid hextra negative assigned lists pool cutoff x (hsub hx)
@@ -120,7 +114,7 @@ theorem global_priority_filtered_moving_radius_uniform_types
       assigned lists a haassigned cutoff x (hsub hx)
   have hΨ₀:∀n,‖Ψ₀ n‖≤1:=fun n=>(firstCoreTwist_norm_le negative (if negative then ray.1 else ray.2)
     Ψ core n).trans (hΨ n)
-  have he₀:=he p hp hcop hg hpr hinj hc source hsource pool Ψ₀ m z (slots\assigned) (slots\assigned)
+  have he₀:=he p hp hcop hg hpr hinj hc source (ActualSecondSourceConditions.mono p (unified_conditions p hp extra original hvalid hextra negative assigned lists pool cutoff) hsub) pool Ψ₀ m z (slots\assigned) (slots\assigned)
     lists lists a a (InverseMomentWholeRetainedSource.deleted p extra negative)
     (InverseMomentWholeRetainedSource.deleted p extra negative)
     Y R L Z X εchild Vlabel ell Ractive j tcount eta M r V delta Acol Bfirst tau pi b ρ t
@@ -144,17 +138,14 @@ theorem global_priority_filtered_moving_radius_uniform_types
     exact (hsupport hy').2.trans hhib
   rw [InverseMomentGlobalRetainedGates.original_retained_geometry_sum p hp hcop hg extra pool originalSource
     (globalPriorityWeight p hg negative Ψ m ray core w assigned a) negative Ψ₀ m slots assigned lists a
-    (principalWindow om lo hi hlo hsupport negative t) X Y b hX hupper z]
-  rw [globalPriority_sum_normalized p hg negative Ψ m ray core w assigned a source]
-  rw [show (Y:ℂ)*secondRayCoefficient z*((coefficientBound:ℂ)*
+    (principalWindow om lo hi hlo hsupport negative t) X Y b hX hupper z, globalPriority_sum_normalized p hg negative Ψ m ray core w assigned a source, show (Y:ℂ)*secondRayCoefficient z*((coefficientBound:ℂ)*
       ∑x∈source,normalizedGlobalPriorityWeight p hg negative Ψ m ray core w assigned a x*
         wholeRow p hp hcop hg extra pool negative Ψ₀ m slots assigned lists a
           (principalWindow om lo hi hlo hsupport negative t) X Y z x)=
       (coefficientBound:ℂ)*((Y:ℂ)*secondRayCoefficient z*
         ∑x∈source,normalizedGlobalPriorityWeight p hg negative Ψ m ray core w assigned a x*
           wholeRow p hp hcop hg extra pool negative Ψ₀ m slots assigned lists a
-            (principalWindow om lo hi hlo hsupport negative t) X Y z x) by ring]
-  rw [norm_mul,Complex.norm_real,Real.norm_of_nonneg coefficientBound_pos.le]
+            (principalWindow om lo hi hlo hsupport negative t) X Y z x) by ring, norm_mul,Complex.norm_real,Real.norm_of_nonneg coefficientBound_pos.le]
   simp_rw [hrow,←mul_assoc]
   convert mul_le_mul_of_nonneg_left he₀ coefficientBound_pos.le using 1 <;> ring_nf
 

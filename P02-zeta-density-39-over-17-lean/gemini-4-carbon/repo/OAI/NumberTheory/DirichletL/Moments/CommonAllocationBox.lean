@@ -10,8 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentCommonAllocationBox
-open CenteredMomentCommonAllocation CenteredMomentSupport CenteredMomentCommonSectors
-open CenteredMomentFirstSectors IdealMobiusDivisorSum
+open CenteredMomentCommonAllocation CenteredMomentSupport CenteredMomentCommonSectors CenteredMomentFirstSectors IdealMobiusDivisorSum
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [Fintype ι]
 
@@ -40,8 +39,7 @@ theorem residualBoxes_image (S : ι → Finset (Ideal O))
       exact (mem_residualPool (B i) (hB i) (S i) _).mp (Finset.mem_filter.mp (hui i)).1
     · intro i
       have hp := Finset.mem_filter.mp (hui i)
-      have hsrc := (mem_residualPool (B i) (hB i) (S i) _).mp hp.1
-      have hu0 : u i≠0 := right_ne_zero_of_mul (hS i _ hsrc)
+      have hu0 := right_ne_zero_of_mul (hS i _ ((mem_residualPool (B i) (hB i) (S i) _).mp hp.1))
       rw [supportExtract_mul _ _ (hB i) hu0,supportExtract_of_subset _ (hB i) _ (hBs i),
         supportExtract_of_disjoint _ _ ((IdealCoprimeSieveOperator.primeSupport_disjoint_iff hC hu0).mpr hp.2).symm,mul_one]
   · intro hv

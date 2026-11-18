@@ -1,15 +1,14 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.FirstActualSecondEnergy
 
-set_option linter.privateModule false
 
 @[expose] public section
 
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic FirstCauchyArithmetic RayFourExpansion
+open scoped BigOperators Classical SchwartzMap
 noncomputable section
 local notation "O" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]

@@ -34,8 +34,8 @@ theorem densityAmbient_eventually_cubeRoot_le :
 theorem detectorHeight_ge_scale {T L σ η : ℝ}
     (hT : 0 < T) (hL : Real.sqrt T ≤ L) (hη : 0 ≤ η) :
     L^(σ-4*η) ≤ L^σ*T^(-2*η) := by
-  have hs : 0 < Real.sqrt T := Real.sqrt_pos.mpr hT
-  have hLp : 0 < L := hs.trans_le hL
+  have hs := Real.sqrt_pos.mpr hT
+  have hLp := hs.trans_le hL
   have hp := Real.rpow_le_rpow_of_nonpos hs hL (show -4*η ≤ 0 by linarith)
   have he : (Real.sqrt T)^(-4*η) = T^(-2*η) := by
     rw [Real.sqrt_eq_rpow, ← Real.rpow_mul hT.le]
@@ -43,7 +43,7 @@ theorem detectorHeight_ge_scale {T L σ η : ℝ}
     ring
   rw [he] at hp
   rw [sub_eq_add_neg, Real.rpow_add hLp]
-  simpa only [neg_mul] using mul_le_mul_of_nonneg_left hp (show 0 ≤ L^σ by positivity)
+  simpa using mul_le_mul_of_nonneg_left hp (show 0 ≤ L^σ by positivity)
 
 /-- All large-values admissibility conditions hold for every member of the
 preselected finite family, with the original eta margin. -/

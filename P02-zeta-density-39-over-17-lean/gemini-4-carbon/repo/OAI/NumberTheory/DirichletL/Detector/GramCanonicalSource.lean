@@ -8,9 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical SchwartzMap
 namespace SevenEighths.ProbeGramCommon
-open ProbePhysical CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion
-open ConcreteTraceCRT CenteredMomentMobiusRegroup UniqueFactorizationMonoid
-open CenteredMomentSupportedCorrelation EisensteinSchwartzPoisson
+open ProbePhysical CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion ConcreteTraceCRT CenteredMomentMobiusRegroup UniqueFactorizationMonoid CenteredMomentSupportedCorrelation EisensteinSchwartzPoisson
 local notation "O" => ActualEisensteinCubic.O
 local notation "Id" => Ideal O
 
@@ -52,10 +50,7 @@ theorem originalCommonBlock_eq_lattice (S : Finset Id) (hS : ∀p∈S,p.IsMaxima
   apply Finset.sum_congr rfl
   intro D hD
   congr 1
-  have hD0 := (divisorPool_supported _ D hD).1
-  have hN : 0<commonResidualScale C Y/(Ideal.absNorm D:ℝ) :=
-    div_pos (commonResidualScale_pos C Y hY) (by exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hD0))
-  exact (shell_lattice_summable W hW _ hN U v (frequencyScale C k.val Y Q)
+  exact (shell_lattice_summable W hW _ (div_pos (commonResidualScale_pos C Y hY) (by exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr ((divisorPool_supported _ D hD).1)))) U v (frequencyScale C k.val Y Q)
     (fun n m=>canonicalJoint S hS σ C k (primaryGenerator D*n) (primaryGenerator D*m))).tsum_prod.symm
 
 end SevenEighths.ProbeGramCommon

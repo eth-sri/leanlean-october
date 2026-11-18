@@ -32,9 +32,7 @@ theorem original_source_positive (pool : Finset ι) (Q : Finset (ι→₀ℕ))
       0<leftNorm p x ∧ 0<rightNorm p x ∧ 0<commonNorm p x ∧ 0<activeNorm p x ∧
       divisorElement p x.1≠0 ∧ x.2.2≠0 := by
   intro x hx
-  have hm := (Finset.mem_sigma.mp hx).2
-  have hk := ((mem_firstRetainedSource p labels x.1.1 Y x.2).mp hm).2
-  refine ⟨?_,?_,primeProductNorm_pos p hp _,primeProductNorm_pos p hp _,?_,(Finset.mem_erase.mp hk).1⟩
+  refine ⟨?_,?_,primeProductNorm_pos p hp _,primeProductNorm_pos p hp _,?_,(Finset.mem_erase.mp (((mem_firstRetainedSource p labels x.1.1 Y x.2).mp ((Finset.mem_sigma.mp hx).2)).2)).1⟩
   · exact sq_pos_of_pos (norm_pos_iff.mpr (ConcreteTraceCRT.eisEmbedding_ne_zero
       (primeProduct_ne_zero p hp _ _)))
   · exact sq_pos_of_pos (norm_pos_iff.mpr (ConcreteTraceCRT.eisEmbedding_ne_zero
@@ -65,10 +63,8 @@ theorem original_weight_bound (pool : Finset ι) (Q : Finset (ι→₀ℕ))
     ∀k∈firstOriginalOuter pool Q,∀x∈firstRetainedSource p labels k.1 Y,
       ‖firstOriginalWeight p β R k x‖≤Γ^2 := by
   intro k hk x hx
-  have hb := (mem_firstOriginalOuter pool Q k).mp hk
-  have hf := ((mem_firstRetainedSource p labels k.1 Y x).mp hx).1
   exact (firstOriginalWeight_norm_le p β R k x).trans
-    (reopenedPairCoefficient_bound Q labels β Γ hΓ hβ k.1 hb.1 k.2.1 x.1 hf)
+    (reopenedPairCoefficient_bound Q labels β Γ hΓ hβ k.1 ((mem_firstOriginalOuter pool Q k).mp hk).1 k.2.1 x.1 (((mem_firstRetainedSource p labels k.1 Y x).mp hx).1))
 
 theorem actual_old_profile (om : 𝓢(ℝ,ℂ)) (a b : ℝ) (ha : 0<a)
     (hs : Function.support om⊆Set.Icc a b) (theta x : ℝ) (hx : 0<x) :

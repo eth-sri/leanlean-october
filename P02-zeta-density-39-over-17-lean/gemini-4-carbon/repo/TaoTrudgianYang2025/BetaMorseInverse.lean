@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaMorseMonotonicity
 
 @[expose] public section
@@ -95,8 +105,7 @@ theorem modelPhaseMorseInverse_contDiffAt
     ContDiffAt ℝ ∞ (modelPhaseMorseInverse F v) z := by
   rcases hz with ⟨u,hu,rfl⟩
   have hc := modelPhaseMorseCoordinate_contDiffAt hσ hδ hF hv hu
-  have hd := hc.hasStrictDerivAt (by simp : (∞ : WithTop ℕ∞) ≠ 0)
-  have he := hd.hasStrictFDerivAt_equiv (modelPhaseMorseCoordinate_deriv_pos hσ hδ hF hv hu).ne'
+  have he := (hc.hasStrictDerivAt (by simp : (∞ : WithTop ℕ∞) ≠ 0)).hasStrictFDerivAt_equiv (modelPhaseMorseCoordinate_deriv_pos hσ hδ hF hv hu).ne'
   have hg : ∀ᶠ x in 𝓝 u,
       modelPhaseMorseInverse F v (modelPhaseMorseCoordinate F v x) = x := by
     filter_upwards [isOpen_Ioo.mem_nhds hu] with x hx

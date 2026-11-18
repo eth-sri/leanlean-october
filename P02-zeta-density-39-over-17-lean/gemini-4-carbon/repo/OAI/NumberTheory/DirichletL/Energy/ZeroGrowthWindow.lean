@@ -9,14 +9,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyZeroGrowthWindow
-open CenteredMomentFiniteProfileExceptional
-open HeckeFamily HeckeDyadic QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyZeroGrowth
-open CenteredMomentEnergyZeroGrowthMoments CenteredMomentEnergyZeroReflectionSupport
-open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceDivisors
-open CenteredMomentEnergyReferenceLowWindow CenteredMomentEnergyReferenceLowBranchGeometry
-open CenteredMomentOriginalRadialComparison CenteredMomentAllocatedNaturalRadial
-open CenteredMomentScaleSupremum CenteredMomentSectorLocalization
+open CenteredMomentFiniteProfileExceptional HeckeFamily HeckeDyadic QuadraticInitialBound CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyZeroGrowth CenteredMomentEnergyZeroGrowthMoments CenteredMomentEnergyZeroReflectionSupport CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceDivisors CenteredMomentEnergyReferenceLowWindow CenteredMomentEnergyReferenceLowBranchGeometry CenteredMomentOriginalRadialComparison CenteredMomentAllocatedNaturalRadial CenteredMomentScaleSupremum CenteredMomentSectorLocalization
 local notation "O"=>HeckeFamily.O
 
 theorem actual_reflected_window (a b:ℝ)(ha:0<a)(hlo:a≤1/4)(hhi:1≤b)
@@ -51,10 +44,7 @@ theorem actual_reflected_window (a b:ℝ)(ha:0<a)(hlo:a≤1/4)(hhi:1≤b)
   intro hlive j k v t x hx
   obtain ⟨hNs,hNscap⟩:=divisor_norm s Dshort hDs
   obtain ⟨hNl,hNlcap⟩:=divisor_norm s Dlong hDl
-  have hpS:0<((∏P∈Dshort,P).absNorm:ℝ):=zero_lt_one.trans_le hNs
-  have hpL:0<((∏P∈Dlong,P).absNorm:ℝ):=zero_lt_one.trans_le hNl
-  have hlogN:Real.logb Z ((∏P∈Dlong,P).absNorm:ℝ)≤Bmask:=
-    (Real.logb_le_iff_le_rpow hZ hpL).mpr hNlcap
+  have hlogN := (Real.logb_le_iff_le_rpow hZ (zero_lt_one.trans_le hNl)).mpr hNlcap
   have hlen:=live_deleted_growth Z b s.width xi Xshort Xlong _ _ hZ (by linarith)
     s.width_nonneg hshort hlong hNs hNl hsupport hlive x hx
   have hn:=length_nonneg Z (Xshort/((∏P∈Dshort,P).absNorm:ℝ)) hZ
@@ -62,12 +52,9 @@ theorem actual_reflected_window (a b:ℝ)(ha:0<a)(hlo:a≤1/4)(hhi:1≤b)
   have hlogx:Real.logb Z (Real.exp x)≤length Z (Real.exp x):=by
     rw [length_eq_max_log Z _ hZ (Real.exp_pos _)]
     exact le_max_right _ _
-  have hxc:Real.exp x≤Z^L:=(Real.logb_le_iff_le_rpow hZ (Real.exp_pos _)).mp (hlogx.trans hlenx)
-  have hsc:Xshort/((∏P∈Dshort,P).absNorm:ℝ)≤Z^L:=
-    (div_le_self hshort.le hNs).trans hshortcap
   have hh:=hu bΦ Bmask L Mcap loss Z Q degree C hC hgrowth hB s hQ hs Wshort hsW
     j k v t (Real.exp x) (Xshort/((∏P∈Dshort,P).absNorm:ℝ))
-    (Real.exp_pos _) (div_pos hshort hpS) hxc hsc
+    (Real.exp_pos _) (div_pos hshort (zero_lt_one.trans_le hNs)) ((Real.logb_le_iff_le_rpow hZ (Real.exp_pos _)).mp (hlogx.trans hlenx)) ((div_le_self hshort.le hNs).trans hshortcap)
   have hp:=actual_growth_power Z b s.width xi epsilon loss Xshort Xlong _ _ x
     hZ (by linarith) s.width_nonneg he hxi hshort hlong hNs hNl hsupport hdef hlive hx
   have hcoef:0≤C*diagonalControl s.radial.profile*D*(sourceControl T Wshort)^2*(1+|t|)^(2*n):=by

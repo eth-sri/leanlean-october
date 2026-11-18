@@ -41,7 +41,7 @@ lemma integral_deriv_mul_add_const (c : 𝕜) (hab : a ≤ b) (h_int : IntervalI
     simp only [hasDerivAt_add_const_iff]
     convert ContinuousLinearMap.hasDerivAt (RCLike.ofRealCLM (K := 𝕜)) using 1
     · exact RCLike.ofRealCLM_apply.symm
-    · change (1 : 𝕜) = RCLike.ofReal (1 : ℝ)
+    · change (1 : 𝕜) = RCLike.ofReal 1
       simp
   replace hf_diff := fun t ht ↦ (hf_diff t ht).hasDerivAt
   rw [intervalIntegral.integral_mul_deriv_eq_deriv_mul this hf_diff (by simp) h_int]
@@ -81,8 +81,7 @@ theorem sum_eq_integral_add_integral_deriv (ha : 0 ≤ a) (hab : a ≤ b)
   have := sum_mul_eq_sub_sub_integral_mul (fun _ ↦ 1) ha hab hf_diff (Set.uIcc_of_le hab ▸ h_cont).integrableOn_Icc
   simp only [mul_one, sum_const, Nat.card_Icc, tsub_zero, nsmul_eq_mul, Nat.cast_add,
     Nat.cast_one] at this
-  rw [this, ← intervalIntegral.integral_of_le hab]
-  rw [integral_deriv_mul_floor_add_one ha hab hf_diff h_cont]
+  rw [this, ← intervalIntegral.integral_of_le hab, integral_deriv_mul_floor_add_one ha hab hf_diff h_cont]
   unfold B1
   push_cast
   ring

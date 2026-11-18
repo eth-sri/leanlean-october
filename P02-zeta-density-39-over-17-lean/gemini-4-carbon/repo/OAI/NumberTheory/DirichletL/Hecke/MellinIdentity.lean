@@ -24,7 +24,6 @@ theorem regularized_eq (P : WeakFEPair ℂ) (hk : P.k = 1) {s : ℂ}
   unfold regularized WeakFEPair.Λ
   rw [hk]
   simp only [smul_eq_mul, Complex.ofReal_one]
-  have h1' : (1 : ℂ) - s ≠ 0 := sub_ne_zero.mpr (Ne.symm h1)
   field_simp
   ring
 

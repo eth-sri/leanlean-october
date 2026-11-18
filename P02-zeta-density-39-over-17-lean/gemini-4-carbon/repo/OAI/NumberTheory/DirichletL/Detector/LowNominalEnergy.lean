@@ -35,8 +35,7 @@ theorem low_selected_nominal_energy (η : HeckeFamily.Character) (S : Finset Id)
   refine ⟨hc.1,?_⟩
   intro T hT hout hdis hnorm J R hR X hX hXlo hXhi W hW Y t σ
   obtain ⟨hd,hd1,hs,hscap⟩ := lowLength_bounds ell hell hsum J
-  have hscale := lowCentralShift_scale Z X (lowSelectedLength ell J+ε/2) hc.1 hX
-  rw [←hscale]
+  rw [←(lowCentralShift_scale Z X (lowSelectedLength ell J+ε/2) hc.1 hX)]
   apply he Z (lowUnselectedLength ell J) (lowSelectedLength ell J+ε/2)
     (lowCentralShift Z X (lowSelectedLength ell J+ε/2)) hZ hd hd1 (by linarith) (by linarith)
     (lowCentralShift_bound Z X (lowSelectedLength ell J) ε hc.1 hX hε.le hXlo hXhi)

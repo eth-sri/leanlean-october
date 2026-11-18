@@ -56,9 +56,8 @@ theorem card_sq_le_four_quarter_height_energy {T : ℝ} {W : Finset ℝ}
     (hT : 2 ≤ T) (hBase : InBaseInterval T W) :
     (W.card : ℝ) ^ 2 ≤ 4 * (W.card : ℝ) *
       T ^ (1 / 4 : ℝ) * (discreteAdditiveEnergy W : ℝ) ^ (1 / 4 : ℝ) := by
-  have hE := card_four_le_four_height_energy hT hBase
   have hQuarter := Real.rpow_le_rpow (by positivity : (0 : ℝ) ≤ (W.card : ℝ) ^ 4)
-    hE (by norm_num : (0 : ℝ) ≤ 1 / 4)
+    (card_four_le_four_height_energy hT hBase) (by norm_num : (0 : ℝ) ≤ 1 / 4)
   have hId : ((W.card : ℝ) ^ 4) ^ (1 / 4 : ℝ) = (W.card : ℝ) := by
     rw [← Real.rpow_natCast, ← Real.rpow_mul (Nat.cast_nonneg W.card)]
     norm_num

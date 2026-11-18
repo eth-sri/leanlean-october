@@ -43,9 +43,7 @@ theorem twistProfile_smooth (W : ℝ→ℂ) (σ freq a b : ℝ) (ha : 0<a)
     apply ContDiffAt.congr_of_eventuallyEq _ he
     apply hW.contDiffAt.mul
     apply Complex.contDiff_exp.contDiffAt.comp x
-    have hl : ContDiffAt ℝ ∞ (fun y : ℝ => (Real.log y : ℂ)) x :=
-      Complex.ofRealCLM.contDiff.contDiffAt.comp x (Real.contDiffAt_log.mpr hx.ne')
-    exact hl.mul contDiffAt_const
+    exact (Complex.ofRealCLM.contDiff.contDiffAt.comp x (Real.contDiffAt_log.mpr hx.ne')).mul contDiffAt_const
   · have hxa : x<a := lt_of_le_of_lt (le_of_not_gt hx) ha
     have he : twistProfile W σ freq =ᶠ[nhds x] (fun _ => 0) := by
       filter_upwards [isOpen_Iio.mem_nhds hxa] with y hy

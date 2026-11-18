@@ -15,18 +15,17 @@ local notation "Id" => Ideal O
 lemma maximal_coprime_of_not_dvd (p J : Id) [p.IsMaximal] (h : ¬p∣J) : IsCoprime J p := by
   rw [Ideal.isCoprime_iff_sup_eq]
   by_contra htop
-  have he : p=J⊔p := Ideal.IsMaximal.eq_of_le inferInstance htop le_sup_right
   apply h
   apply Ideal.dvd_iff_le.mpr
-  rw [he]
+  rw [(Ideal.IsMaximal.eq_of_le inferInstance htop le_sup_right)]
   exact le_sup_left
 
 theorem exists_prime_separation (I p : Id) (hI : I≠0) [p.IsMaximal] (hp0 : p≠0) :
     ∃J : Id,I=J*p^((normalizedFactors I).count p) ∧ IsCoprime J p ∧ J≠0 := by
-  have hp : Prime p := Ideal.prime_of_isPrime hp0 inferInstance
+  have hp := Ideal.prime_of_isPrime hp0 inferInstance
   obtain ⟨J,hJ,hnd⟩ := (FiniteMultiplicity.of_prime_left hp hI).exists_eq_pow_mul_and_not_dvd
   have he : multiplicity p I=(normalizedFactors I).count p := by
-    simpa only [normalize_eq] using multiplicity_eq_count_normalizedFactors hp.irreducible hI
+    simpa using multiplicity_eq_count_normalizedFactors hp.irreducible hI
   refine ⟨J,?_,maximal_coprime_of_not_dvd p J hnd,?_⟩
   · rw [←he,mul_comm]
     exact hJ

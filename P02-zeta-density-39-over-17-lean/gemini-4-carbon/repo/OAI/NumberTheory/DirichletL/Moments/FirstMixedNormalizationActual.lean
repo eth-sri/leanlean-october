@@ -10,14 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstMixedNormalizationActual
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss ActualEisensteinCubic
-open CenteredMomentSecondHeightFamily
-open CenteredMomentFirstPhysicalSource CenteredMomentFirstCanonicalFamily
-open CenteredMomentFirstExceptionalPrefactor CenteredMomentFirstNonexceptionalPrefactor
-open CenteredMomentFirstMixedNormalization CenteredMomentFirstMixedAllowance
-open CenteredMomentDescentLedger CenteredMomentSectorLocalization CenteredMomentCanonicalFirst
-open CenteredMomentFirstScale ConcreteTraceCRT
-open CenteredMomentAmplificationErrorEnergy CenteredMomentFirstAmplificationChoice
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss ActualEisensteinCubic CenteredMomentSecondHeightFamily CenteredMomentFirstPhysicalSource CenteredMomentFirstCanonicalFamily CenteredMomentFirstExceptionalPrefactor CenteredMomentFirstNonexceptionalPrefactor CenteredMomentFirstMixedNormalization CenteredMomentFirstMixedAllowance CenteredMomentDescentLedger CenteredMomentSectorLocalization CenteredMomentCanonicalFirst CenteredMomentFirstScale ConcreteTraceCRT CenteredMomentAmplificationErrorEnergy CenteredMomentFirstAmplificationChoice
 local notation "O"=>HeckeFamily.O
 
 theorem actual_reference_width (η τ:Character)(C D:Ideal O)(hC:Supported C)
@@ -81,7 +74,7 @@ theorem actual_error_reference_le (η τ:Character)(C D:Ideal O)
       ((τ.modulus.absNorm:ℝ)*(V/(C.absNorm:ℝ))^2*Z^(allowance C D Z))≤
       Z^(Real.logb Z V-5*M/6-firstSaving c (d+K0-j) (errorRemoval p Z k) q
         (errorMoving p Z k) (allowance C D Z) g 0):=by
-  have hz:0<Z:=zero_lt_one.trans hZ
+  have hz :=zero_lt_one.trans hZ
   have hCpos:=norm_pos C hC.1
   have hqpos:=norm_pos _ τ.modulus_ne_bot
   have hnpos:=normValue_pos p hp

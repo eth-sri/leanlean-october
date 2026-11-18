@@ -35,7 +35,7 @@ theorem beta_eq_primitive_supremum : beta = sSup primitiveSetWithSentinel := by
     intro x hx
     rcases Set.mem_insert_iff.mp hx with rfl | hx
     · exact le_csSup primitiveSet_bddAbove (Set.mem_insert _ _)
-    · by_cases hhalf : (1 / 2 : ℝ) ≤ x
+    · by_cases hhalf : (1 / 2) ≤ x
       · obtain ⟨χ, s, hpos, hpole, hz, rfl⟩ := hx
         obtain ⟨ψ, hp, hpoleψ, hzψ⟩ :=
           HeckeFiniteDeletion.exists_primitive_zero χ hpos hpole hz

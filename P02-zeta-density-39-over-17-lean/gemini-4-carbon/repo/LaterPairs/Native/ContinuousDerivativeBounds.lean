@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 
 @[expose] public section
 set_option autoImplicit false
@@ -28,7 +37,7 @@ theorem derivative_increment_bounds
   · obtain ⟨x,hx,he⟩ := exists_hasDerivAt_eq_slope F F' hlt
       (fun y hy => (hF y hy).continuousAt.continuousWithinAt)
       (fun y hy => hF y ⟨hy.1.le,hy.2.le⟩)
-    have hpos : 0 < b-a := sub_pos.mpr hlt
+    have hpos := sub_pos.mpr hlt
     have hlow := hlo x ⟨hx.1.le,hx.2.le⟩
     have hupp := hhi x ⟨hx.1.le,hx.2.le⟩
     rw [he] at hlow hupp

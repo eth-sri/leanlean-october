@@ -21,8 +21,7 @@ noncomputable section
 
 theorem sum_range_succ_eq_heathBrownCriticalMoment (k : ℕ) :
     (∑ j ∈ Finset.range (k - 1), (j + 1)) = heathBrownCriticalMoment k := by
-  rw [Finset.sum_add_distrib]
-  rw [Finset.sum_range_id]
+  rw [Finset.sum_add_distrib, Finset.sum_range_id]
   simp only [Finset.sum_const, Finset.card_range, nsmul_eq_mul, mul_one]
   unfold heathBrownCriticalMoment
   rw [← Nat.choose_two_right (k - 1), ← Nat.choose_two_right k]
@@ -35,9 +34,7 @@ theorem prod_heathBrownCellRadius
     (∏ j : Fin (k - 1), heathBrownCellRadius H j) =
       (((H : ℝ) ^ heathBrownCriticalMoment k)⁻¹) := by
   simp only [heathBrownCellRadius]
-  rw [Finset.prod_inv_distrib]
-  rw [Fin.prod_univ_eq_prod_range (fun j : ℕ => (H : ℝ) ^ (j + 1)) (k - 1)]
-  rw [Finset.prod_pow_eq_pow_sum]
+  rw [Finset.prod_inv_distrib, Fin.prod_univ_eq_prod_range (fun j : ℕ => (H : ℝ) ^ (j + 1)) (k - 1), Finset.prod_pow_eq_pow_sum]
   congr 2
   exact sum_range_succ_eq_heathBrownCriticalMoment k
 
@@ -55,8 +52,7 @@ theorem measure_heathBrownCoefficientCell_exact
         (heathBrownCoefficientCell k H f n) =
       ENNReal.ofReal
         ((2 : ℝ) ^ (k - 1) * (((H : ℝ) ^ heathBrownCriticalMoment k)⁻¹)) := by
-  rw [measure_heathBrownCoefficientCell hH]
-  rw [← ENNReal.ofReal_prod_of_nonneg]
+  rw [measure_heathBrownCoefficientCell hH, ← ENNReal.ofReal_prod_of_nonneg]
   · rw [prod_two_mul_heathBrownCellRadius]
   · intro j hj
     exact mul_nonneg (by norm_num)
@@ -68,8 +64,7 @@ theorem measureReal_heathBrownCoefficientCell_exact
         (heathBrownCoefficientCell k H f n) =
       (2 : ℝ) ^ (k - 1) * (((H : ℝ) ^ heathBrownCriticalMoment k)⁻¹) := by
   unfold Measure.real
-  rw [measure_heathBrownCoefficientCell_exact hH f n]
-  rw [ENNReal.toReal_ofReal]
+  rw [measure_heathBrownCoefficientCell_exact hH f n, ENNReal.toReal_ofReal]
   exact mul_nonneg (by positivity) (by positivity)
 
 end

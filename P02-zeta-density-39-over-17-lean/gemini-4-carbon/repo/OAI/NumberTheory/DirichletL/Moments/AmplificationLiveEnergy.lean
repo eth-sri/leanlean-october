@@ -9,11 +9,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentAmplificationLiveEnergy
-open CanonicalQuadraticSieve CenteredMomentGaussEnergy CenteredMomentSourceRow
-open CenteredMomentSourceLiveColumn CenteredMomentSourceProfileMass CenteredMomentSourceMass
-open CenteredMomentAddedZeroUniform CenteredMomentCommonAllocationSum CenteredMomentFirstSectors
-open CenteredMomentLiveSupport CenteredMomentLiveDomain CenteredMomentSourceSmoothedAllocation
-open CenteredMomentOriginalChildEnergy CenteredMomentAmplificationLiveMask
+open CanonicalQuadraticSieve CenteredMomentGaussEnergy CenteredMomentSourceRow CenteredMomentSourceLiveColumn CenteredMomentSourceProfileMass CenteredMomentSourceMass CenteredMomentAddedZeroUniform CenteredMomentCommonAllocationSum CenteredMomentFirstSectors CenteredMomentLiveSupport CenteredMomentLiveDomain CenteredMomentSourceSmoothedAllocation CenteredMomentOriginalChildEnergy CenteredMomentAmplificationLiveMask
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [Fintype ι]
 local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
@@ -33,7 +29,6 @@ local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
       (fun I : supportedColumns Q => c I*f I) W K=
       gaussEnergy Finset.univ (sourceGenerator T) (sourceGenerator_supported T)
         (fun I : supportedColumns T => c I*f I) W K := by
-  dsimp only
   have he (I : Ideal O) : finiteColumnCoefficient (liveBox S B hB)
       (maskedLiveProfile B C R s ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂) I=
       finiteColumnCoefficient (liveBox S B hB)
@@ -72,11 +67,9 @@ theorem original_masked_child_energy (S : (ι ⊕ Fin 2) → Finset (Ideal O))
     rw [original_masked_live_column S hS hp C R s I hC.1
       (Finset.mem_filter.mp I.property).2.1 hsc ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂,Finset.sum_mul]
     simp only [b,d,mul_assoc]
-  have h := smoothed_allocation_energy Finset.univ (sourceGenerator Q) (sourceGenerator_supported Q) b d W K hK hW
-  have he' := funext he
   change (gaussEnergy Finset.univ (sourceGenerator Q) (sourceGenerator_supported Q) _ W K).re≤_
-  rw [he']
-  apply h.trans_eq
+  rw [(funext he)]
+  apply (smoothed_allocation_energy Finset.univ (sourceGenerator Q) (sourceGenerator_supported Q) b d W K hK hW).trans_eq
   rw [Fintype.card_coe]
   apply congrArg (fun x : ℝ => ((actualAllocations S C).card:ℝ)*x)
   apply Finset.sum_congr rfl

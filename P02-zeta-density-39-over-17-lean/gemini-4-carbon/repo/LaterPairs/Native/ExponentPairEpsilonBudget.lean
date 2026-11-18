@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.ExponentPairOptimizationScale
 
 @[expose] public section
@@ -47,29 +56,24 @@ theorem aProcess_power_budget {k l ε U N : ℝ}
     (hk : 0 ≤ k) (hl : 0 ≤ l) (hε : 0 < ε) (hU : 1 ≤ U) (hN : 1 ≤ N) :
     U^((k+ε)/(k+ε+1))*N^(1+(l+ε)/(k+ε+1))*(1+Real.log N) ≤
       (1+1/ε)*(U^(k/(2*k+2)+ε)*N^(l/(2*k+2)+1/2+ε))^2 := by
-  have hUp := zero_lt_one.trans_le hU
   have hNp := zero_lt_one.trans_le hN
   have hp₁ := Real.rpow_le_rpow_of_exponent_le hU
     ((aProcess_first_exponent_loss hk hε.le).trans
       (show k/(k+1)+ε ≤ k/(k+1)+2*ε by linarith))
   have hp₂ := Real.rpow_le_rpow_of_exponent_le hN
-    (add_le_add (le_refl (1 : ℝ)) (aProcess_second_exponent_loss hk hl hε.le))
-  have hlog := one_add_log_le_rpow_budget hN hε
+    (add_le_add (le_refl 1) (aProcess_second_exponent_loss hk hl hε.le))
   have hlogpos : 0 ≤ 1+Real.log N := by have := Real.log_nonneg hN; linarith
   have heq : U^(k/(k+1)+2*ε)*N^(1+(l/(k+1)+ε))*((1+1/ε)*N^ε) =
       (1+1/ε)*(U^(k/(2*k+2)+ε)*N^(l/(2*k+2)+1/2+ε))^2 := by
-    rw [mul_pow,← Real.rpow_mul_natCast hUp.le,← Real.rpow_mul_natCast hNp.le]
-    have h₁ : (k/(2*k+2)+ε)*(2 : ℝ) = k/(k+1)+2*ε := by
+    rw [mul_pow,← Real.rpow_mul_natCast (zero_lt_one.trans_le hU).le,← Real.rpow_mul_natCast hNp.le]
+    have h₁ : (k/(2*k+2)+ε)*2 = k/(k+1)+2*ε := by
       field_simp
-    have h₂ : (l/(2*k+2)+1/2+ε)*(2 : ℝ) = 1+(l/(k+1)+ε)+ε := by
+    have h₂ : (l/(2*k+2)+1/2+ε)*2 = 1+(l/(k+1)+ε)+ε := by
       field_simp
       ring
     simp only [Nat.cast_ofNat]
     rw [h₁,h₂,Real.rpow_add hNp (1+(l/(k+1)+ε)) ε]
     ring
-  calc
-    _ ≤ (U^(k/(k+1)+2*ε)*N^(1+(l/(k+1)+ε)))*((1+1/ε)*N^ε) :=
-      mul_le_mul (mul_le_mul hp₁ hp₂ (by positivity) (by positivity)) hlog hlogpos (by positivity)
-    _ = _ := heq
+  exact (mul_le_mul (mul_le_mul hp₁ hp₂ (by positivity) (by positivity)) (one_add_log_le_rpow_budget hN hε) hlogpos (by positivity)).trans_eq (heq)
 
 end TaoTrudgianYang2025

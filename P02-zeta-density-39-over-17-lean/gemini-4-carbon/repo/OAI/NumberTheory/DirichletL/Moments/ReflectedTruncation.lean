@@ -8,9 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.CenteredMomentReflectedTruncation
-open HeckeFamily CenteredMomentSectorLocalization CenteredMomentReflectedAnnuli
-open CenteredMomentComparisonReflection CenteredMomentReflectionDeletion
-open CenteredMomentReflectedSeries EisensteinSchwartzPoisson
+open HeckeFamily CenteredMomentSectorLocalization CenteredMomentReflectedAnnuli CenteredMomentComparisonReflection CenteredMomentReflectionDeletion CenteredMomentReflectedSeries EisensteinSchwartzPoisson
 local notation "NI" => UnrestrictedIdealReindex.NonzeroIdeal
 
 theorem normalized_subseries (η : Character) (F : ℝ→ℂ) (hF : DecayTwo F)
@@ -55,8 +53,7 @@ def retainedAnnuli (R Y : ℝ) (hY : 0<Y) : Finset ℤ :=
   (finite_retained_above R (Y⁻¹) (inv_pos.mpr hY)).toFinset
 
 lemma retainedAnnuli_mem (R Y : ℝ) (hY : 0<Y) (n : ℤ) :
-    n∈retainedAnnuli R Y hY ↔ Retained R n ∧ ∃q : ℝ,Y⁻¹≤q ∧ dyadicWeight n q≠0 := by
-  exact (finite_retained_above R (Y⁻¹) (inv_pos.mpr hY)).mem_toFinset
+    n∈retainedAnnuli R Y hY ↔ Retained R n ∧ ∃q : ℝ,Y⁻¹≤q ∧ dyadicWeight n q≠0 := (finite_retained_above R (Y⁻¹) (inv_pos.mpr hY)).mem_toFinset
 
 lemma original_norm_lower (I : NI) (Y : ℝ) (hY : 0<Y) :
     Y⁻¹≤(I.val.absNorm:ℝ)/Y := by

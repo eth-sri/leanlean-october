@@ -8,7 +8,7 @@ noncomputable section
 open MeasureTheory
 open scoped SchwartzMap FourierTransform
 namespace GuthMaynard.Improvement
-open RiemannZeta.GuthMaynard
+open RiemannZeta.GuthMaynard GuthMaynard.NativeMoment
 
 set_option maxHeartbeats 800000 in
 /-- Uniform tail closure for a fixed height-mass Fourier family. No tail

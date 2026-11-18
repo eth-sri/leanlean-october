@@ -62,9 +62,9 @@ theorem logSource_uniform_seminorm (Ω : ℝ → ℂ) (V T : SchwartzMap ℝ ℂ
   rw [← norm_iteratedFDeriv_eq_norm_iteratedDeriv]
   by_cases hz : ‖iteratedFDeriv ℝ j (logSourceFun Ω V T A B D) y‖ = 0
   · rw [hz, mul_zero]; positivity
-  have hys : y ∈ tsupport Ω := logSource_support Ω V T A B D
+  have hys := logSource_support Ω V T A B D
     ((support_iteratedFDeriv_subset j) (by simpa [Function.mem_support] using hz))
-  have hy : |y| ≤ L := abs_le.mpr (hwindow hys)
+  have hy := abs_le.mpr (hwindow hys)
   exact mul_le_mul (by simpa [Real.norm_eq_abs] using pow_le_pow_left₀ (abs_nonneg y) hy k)
     (hb A B D hA hB hD j hj y hy) (norm_nonneg _) (pow_nonneg hL k)
 

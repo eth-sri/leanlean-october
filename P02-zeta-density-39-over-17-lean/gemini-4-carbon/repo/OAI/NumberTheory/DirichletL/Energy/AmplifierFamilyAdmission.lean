@@ -11,15 +11,11 @@ public import OAI.NumberTheory.DirichletL.Energy.FirstAnnularAdmission
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
 open Filter
+open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyAmplifierFamilyAdmission
-open HeckeFamily CanonicalQuadraticSieve ConcreteTraceCRT ActualEisensteinCubic
-open CenteredMomentFirstSourceConductorCaps CenteredMomentAmplificationRadicalFamily
-open CenteredMomentAmplificationActiveFactor CenteredMomentFirstAmplificationChoice
-open CenteredMomentFirstPhysicalSource CenteredMomentSecondHeightFamily CenteredMomentChildRows
-open CenteredMomentSectorLocalization CenteredMomentFirstAmplifiedFourCoefficients
+open HeckeFamily CanonicalQuadraticSieve ConcreteTraceCRT ActualEisensteinCubic CenteredMomentFirstSourceConductorCaps CenteredMomentAmplificationRadicalFamily CenteredMomentAmplificationActiveFactor CenteredMomentFirstAmplificationChoice CenteredMomentFirstPhysicalSource CenteredMomentSecondHeightFamily CenteredMomentChildRows CenteredMomentSectorLocalization CenteredMomentFirstAmplifiedFourCoefficients
 local notation "O"=>HeckeFamily.O
 local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
@@ -33,14 +29,13 @@ theorem actual_error_reference_cap (ρ υ:Character)(χ:RayFourExpansion.RayChar
       (errorMovingExponent n)):
     (υ.modulus.absNorm:ℝ)≤referenceCost*(ρ.modulus.absNorm:ℝ)*
       Z^(errorMoving p Z (n+1)):=by
-  have hray:=CenteredMomentSecondRadicalBudget.child_modulus_bound ρ χ
   have hN:(υ.modulus.absNorm:ℝ)≤
       ((childCharacter ρ χ).modulus.absNorm:ℝ)*(Ideal.span {fixedBadMask}).absNorm*
         (Ideal.span {(72:O)}).absNorm*Z^(errorMoving p Z (n+1)):=by
     rw [←radicalBound_error_power (childCharacter ρ χ) fixedBadMask p hp Z hZ n hn]
     exact_mod_cast hυ
   have hr:((childCharacter ρ χ).modulus.absNorm:ℝ)≤
-      (ρ.modulus.absNorm:ℝ)*(Ideal.span {(12:O)}).absNorm:=by exact_mod_cast hray
+      (ρ.modulus.absNorm:ℝ)*(Ideal.span {(12:O)}).absNorm:=by exact_mod_cast (CenteredMomentSecondRadicalBudget.child_modulus_bound ρ χ)
   calc
     _≤((ρ.modulus.absNorm:ℝ)*(Ideal.span {(12:O)}).absNorm)*
         (Ideal.span {fixedBadMask}).absNorm*(Ideal.span {(72:O)}).absNorm*

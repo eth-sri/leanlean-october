@@ -7,15 +7,10 @@ namespace OAI
 
 noncomputable section
 
+open MeasureTheory ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic IdealMobiusDivisorSum
 open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory
-open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic IdealMobiusDivisorSum
 namespace SevenEighths.InverseInitialEnergyCallerPhysical
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialKernelBridge
-open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
-open InverseInitialEnergyCallerCanonical InverseInitialEnergyCallerOpposite InverseInitialProfile
-open InverseInitialEnergyCallerAllocation InverseInitialEnergyCallerAssigned
-open InverseInitialQuotientGeometry InverseInitialClippedColumns InverseInitialEnergyCallerBranch
+open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialKernelBridge InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource InverseInitialEnergyCallerCanonical InverseInitialEnergyCallerOpposite InverseInitialProfile InverseInitialEnergyCallerAllocation InverseInitialEnergyCallerAssigned InverseInitialQuotientGeometry InverseInitialClippedColumns InverseInitialEnergyCallerBranch
 local notation "Eis"=>ActualEisensteinCubic.O
 local instance initialEnergyUnits : Fintype Eisˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
 variable {ι σ:Type*} [DecidableEq ι] [DecidableEq σ]
@@ -74,7 +69,7 @@ theorem actual_physical_block_bound
   intro ι σ _ _ p hp _ hcop hg hinj hpr hc S hdiv hf pool Ψ hΨ j slots hslots lists a ha ω₁ ω₂
     Z D B v θ H R m η hZ hR hη c₁ c₂ θ₁ θ₂ hc₁ hc₂ hsupport hn
     w hw labels rows hlabels hneg hchild F A hA hmoment
-  have hZp : 0<Z := zero_lt_one.trans_le hZ
+  have hZp := zero_lt_one.trans_le hZ
   obtain ⟨b₃,hb₃⟩ := hprofile Z D B v m θ H η hZp hη
   obtain ⟨hid,hint,hprofileBound⟩ := hb₃ c₁ c₂ θ₁ θ₂ hc₁ hc₂
   let g := secondRootSchwartz V hV hS
@@ -91,8 +86,7 @@ theorem actual_physical_block_bound
     simp only [pow_zero,one_mul] at hprofileBound
     exact hprofileBound.trans (mul_le_mul_of_nonneg_right (by linarith) (by positivity))
   rw [physicalBlock_rectangular_common_measure p hp hcop hg hpr W₁ W₂ Φ V g g₁ g₂ b₃
-    Z D B v m θ H η c₁ c₂ θ₁ θ₂ hid pool S hdiv hf w Ψ j slots lists a ω₁ ω₂ hsupport]
-  rw [norm_mul,Complex.norm_real,Real.norm_eq_abs,abs_of_pos (Real.rpow_pos_of_pos hZp _)]
+    Z D B v m θ H η c₁ c₂ θ₁ θ₂ hid pool S hdiv hf w Ψ j slots lists a ω₁ ω₂ hsupport, norm_mul,Complex.norm_real,Real.norm_eq_abs,abs_of_pos (Real.rpow_pos_of_pos hZp _)]
   apply (mul_le_mul_of_nonneg_left hb (Real.rpow_nonneg hZp.le _)).trans
   calc
     _≤Z^(prefactorCenter m D B θ+3*η)*

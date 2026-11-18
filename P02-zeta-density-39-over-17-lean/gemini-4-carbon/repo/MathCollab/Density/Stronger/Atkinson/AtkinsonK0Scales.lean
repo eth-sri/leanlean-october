@@ -9,8 +9,7 @@ public import MathCollab.Density.Stronger.Atkinson.SourceLogScales
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set
-open MathCollab.Density.Stronger.Fourth
+open Complex Filter MeasureTheory Set MathCollab.Density.Stronger.Fourth
 open scoped ContDiff
 set_option autoImplicit false
 noncomputable section
@@ -45,10 +44,9 @@ theorem exists_zetaAtkinsonBesselPlus_powerSaving {δ : ℝ} (hδ : 0 < δ) (A :
       eventually_zeta_source_log_window_scales hδ, eventually_ge_atTop C] with T hsupport hscale hTC
     intro G hlower hupper
     obtain ⟨hG, hlog, hwidth, _⟩ := hsupport.2 G hlower
-    have hb := hbound T G (Real.log T) hsupport.1 hG (hscale.2.2 G hG hupper).1 hlog hwidth
     have hp := mul_le_mul_of_nonneg_left
       (besselK0_source_power_absorb (by linarith [hsupport.1]) hTC hkA) hG.le
-    apply hb.trans
+    apply (hbound T G (Real.log T) hsupport.1 hG (hscale.2.2 G hG hupper).1 hlog hwidth).trans
     convert hp using 1
     ring
   obtain ⟨T₁, hT₁⟩ := eventually_atTop.mp hev

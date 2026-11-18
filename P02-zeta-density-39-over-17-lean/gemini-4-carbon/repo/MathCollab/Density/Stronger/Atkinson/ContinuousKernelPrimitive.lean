@@ -30,13 +30,11 @@ theorem IntervalC1Bound.continuousKernel_of_primitive_bound {f K : ℝ → ℂ}
     (hK : Continuous K) (hac : a ≤ c)
     (hprimitive : ∀ x ∈ Icc a c, ‖∫ y in a..x, K y‖ ≤ B) :
     ‖∫ y in a..c, f y * K y‖ ≤ 2 * B * M := by
-  have hB : 0 ≤ B := (norm_nonneg _).trans (hprimitive a ⟨le_rfl, hac⟩)
+  have hB := (norm_nonneg _).trans (hprimitive a ⟨le_rfl, hac⟩)
   let F : ℝ → ℂ := fun x => ∫ y in a..x, K y
-  have hd (x : ℝ) : HasDerivAt F (K x) x :=
-    intervalIntegral.integral_hasDerivAt_right (hK.intervalIntegrable a x)
+  have hd (x : ℝ) := intervalIntegral.integral_hasDerivAt_right (hK.intervalIntegrable a x)
       hK.stronglyMeasurable.stronglyMeasurableAtFilter hK.continuousAt
-  have hF : Continuous F := continuous_iff_continuousAt.mpr fun x => (hd x).continuousAt
-  have hFb (x : ℝ) (hx : x ∈ Icc a c) : ‖F x‖ ≤ B := hprimitive x hx
+  have hFb (x : ℝ) (hx : x ∈ Icc a c) := hprimitive x hx
   have hparts := intervalIntegral.integral_mul_deriv_eq_deriv_mul
     (u := f) (u' := deriv f) (v := F) (v' := K)
     (fun x hx => by
@@ -51,8 +49,8 @@ theorem IntervalC1Bound.continuousKernel_of_primitive_bound {f K : ℝ → ℂ}
         rw [abs_of_nonneg (intervalIntegral.integral_nonneg hac (fun _ _ => norm_nonneg _))]
       _ ≤ ∫ y in a..c, ‖deriv f y‖ * B := by
         apply intervalIntegral.integral_mono_on hac
-        · simpa only [norm_mul] using
-            (hf.derivative_integrable hac).norm.mul_continuousOn hF.norm.continuousOn
+        · simpa using
+            (hf.derivative_integrable hac).norm.mul_continuousOn (continuous_iff_continuousAt.mpr fun x => (hd x).continuousAt).norm.continuousOn
         · exact (hf.derivative_integrable hac).norm.mul_const B
         · intro y hy
           rw [norm_mul]

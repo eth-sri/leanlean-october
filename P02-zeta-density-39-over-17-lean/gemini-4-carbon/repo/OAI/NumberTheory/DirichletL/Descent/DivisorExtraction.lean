@@ -17,8 +17,7 @@ theorem inverseCubicKernel_divisor_overlap_zero (R r P c m : Ideal Eis)
     inverseCubicKernel P (c * m) = 0 := by
   apply inverseCubicKernel_eq_zero_of_not_coprime P (c * m) hP hcm
   intro hcop
-  have hPc := hcop.of_isCoprime_of_dvd_right (dvd_mul_right c m)
-  exact hRr ((hPc.of_isCoprime_of_dvd_left hRP).of_isCoprime_of_dvd_right hrc)
+  exact hRr (((hcop.of_isCoprime_of_dvd_right (dvd_mul_right c m)).of_isCoprime_of_dvd_left hRP).of_isCoprime_of_dvd_right hrc)
 
 theorem double_divisor_row_reindex {A : Type*} [AddCommMonoid A]
     (rows : Finset (Ideal Eis)) (hrows : ∀ k ∈ rows, k ≠ 0)

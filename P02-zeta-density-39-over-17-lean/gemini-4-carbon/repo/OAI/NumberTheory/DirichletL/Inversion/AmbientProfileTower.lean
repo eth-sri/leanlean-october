@@ -9,9 +9,8 @@ public import OAI.NumberTheory.DirichletL.Descent.FullProfile
 namespace OAI
 
 namespace SevenEighths.InverseAmbientProfileTower
+open MeasureTheory FourierBridge JointLogSeparation SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
-open MeasureTheory FourierBridge JointLogSeparation
-open SevenEighths.InverseMoment
 noncomputable section
 
 abbrev Ambient (ι : Type*) := Frequency × (ι → ℝ)
@@ -47,9 +46,7 @@ def inheritedRight {ι : Type*} (i : ι) (p : Ambient ι) : ℝ :=
 private theorem one_add_norm_add_le (x y : ℝ) :
     1 + ‖x + y‖ ≤ (1 + ‖x‖) * (1 + ‖y‖) := by
   have h := norm_add_le x y
-  have hx := norm_nonneg x
-  have hy := norm_nonneg y
-  nlinarith [mul_nonneg hx hy]
+  nlinarith [mul_nonneg (norm_nonneg x) (norm_nonneg y)]
 
 private theorem coordinate_factor_le {ι : Type*} [Fintype ι]
     (i : ι) (u : ι → ℝ) :
@@ -57,7 +54,7 @@ private theorem coordinate_factor_le {ι : Type*} [Fintype ι]
   by
   have hm (j : ι) : max (1 + ‖u j‖) 1 = 1 + ‖u j‖ :=
     max_eq_left (by linarith [norm_nonneg (u j)])
-  simpa only [hm] using
+  simpa using
     Finset.le_prod_max_one (Finset.mem_univ i) (fun j => 1 + ‖u j‖)
 
 theorem inheritedLeft_bound {ι : Type*} [Fintype ι] (i : ι) (p : Ambient ι) :
@@ -65,23 +62,21 @@ theorem inheritedLeft_bound {ι : Type*} [Fintype ι] (i : ι) (p : Ambient ι) 
   have h := (one_add_norm_add_le (p.2 i + p.1.1) (-p.1.2.2)).trans
     (mul_le_mul_of_nonneg_right (one_add_norm_add_le (p.2 i) p.1.1) (by positivity))
   simp only [norm_neg, ← sub_eq_add_neg] at h
-  have hc := coordinate_factor_le i p.2
   have ht : (1 + ‖p.1.1‖) * (1 + ‖p.1.2.2‖) ≤
       (1 + ‖p.1.1‖) * (1 + ‖p.1.2.1‖) * (1 + ‖p.1.2.2‖) := by
     nlinarith [norm_nonneg p.1.1, norm_nonneg p.1.2.1, norm_nonneg p.1.2.2,
       mul_nonneg (mul_nonneg (show 0 ≤ 1 + ‖p.1.1‖ by positivity)
         (norm_nonneg p.1.2.1)) (show 0 ≤ 1 + ‖p.1.2.2‖ by positivity)]
-  have hh := mul_le_mul hc ht (by positivity)
+  have hh := mul_le_mul (coordinate_factor_le i p.2) ht (by positivity)
     (Finset.prod_nonneg (fun j _ => by positivity))
   change _ ≤ (∏ j, (1 + ‖p.2 j‖)) * _ at hh
   exact h.trans (by simpa [ambientWeight, inheritedLeft, mul_comm, mul_left_comm, mul_assoc] using hh)
 
 theorem inheritedRight_bound {ι : Type*} [Fintype ι] (i : ι) (p : Ambient ι) :
     1 + ‖inheritedRight i p‖ ≤ ambientWeight 1 p := by
-  have h := inheritedLeft_bound i ((p.1.2.1, p.1.1, p.1.2.2), p.2)
   change 1 + ‖-(p.2 i + p.1.2.1 - p.1.2.2)‖ ≤ _
   rw [norm_neg]
-  simpa [inheritedLeft, ambientWeight, mul_comm, mul_left_comm, mul_assoc] using h
+  simpa [inheritedLeft, ambientWeight, mul_comm, mul_left_comm, mul_assoc] using (inheritedLeft_bound i ((p.1.2.1, p.1.1, p.1.2.2), p.2))
 
 theorem inherited_pair_weight_bound {ι : Type*} [Fintype ι]
     (i j : ι) (J K : ℕ) (p : Ambient ι) :

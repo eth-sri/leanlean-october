@@ -43,15 +43,12 @@ lemma dyadic_kernel_argument_lower (scale rho q : ℝ) (hs : 0≤scale)
     (n : dualIdealDyad i.2.2) (b : dualIdealDyad i.2.1) :
     scale*(ramifiedScale rho q i.1)^3*(2:ℝ)^i.2.2*((2:ℝ)^i.2.1)^3/16 ≤
       scale*(ramifiedScale rho q i.1)^3*(Ideal.absNorm n.val:ℝ)*(Ideal.absNorm b.val:ℝ)^3 := by
-  have hn := (dualIdealDyad_bounds _ _ n.property).2.1
-  have hb := (dualIdealDyad_bounds _ _ b.property).2.1
   have hp : 0≤scale*(ramifiedScale rho q i.1)^3 := by
     unfold ramifiedScale
     positivity
-  have hh := mul_le_mul hn (pow_le_pow_left₀ (by positivity) hb 3) (by positivity)
+  have hh := mul_le_mul ((dualIdealDyad_bounds _ _ n.property).2.1) (pow_le_pow_left₀ (by positivity) ((dualIdealDyad_bounds _ _ b.property).2.1) 3) (by positivity)
     (Nat.cast_nonneg (Ideal.absNorm n.val))
-  have hh' := mul_le_mul_of_nonneg_left hh hp
-  nlinarith only [hh']
+  nlinarith
 
 end
 end SevenEighths.InverseReflectedPhase

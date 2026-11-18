@@ -15,8 +15,7 @@ variable {R : Type*} [CommRing R] [Finite R]
 theorem FactorsThroughIdeal.bot (χ : MulChar R ℂ) : FactorsThroughIdeal χ ⊥ := by
   rw [factorsThroughIdeal_iff]
   intro u hu
-  have hu1 : (u : R) = 1 := sub_eq_zero.mp hu
-  rw [hu1, map_one]
+  rw [(sub_eq_zero.mp hu), map_one]
 
 theorem FactorsThroughIdeal.pow {χ : MulChar R ℂ} {I : Ideal R}
     (hχ : FactorsThroughIdeal χ I) (n : ℕ) : FactorsThroughIdeal (χ ^ n) I := by
@@ -87,7 +86,7 @@ theorem exists_primitive_presentation_above_quotient
     source_le_comap M I, Ideal.comap_mono hJI, comap_ne_bot M I,
     primitive_quotientCharacter M I ψ hprimitive, hnorm, ?_⟩
   intro a
-  simpa only [quotientCharacter_mk] using hmask (Ideal.Quotient.mk M a)
+  simpa using hmask (Ideal.Quotient.mk M a)
 
 theorem exists_primitive_presentation (M : Ideal A) [Finite (A ⧸ M)]
     (χ : MulChar (A ⧸ M) ℂ) :

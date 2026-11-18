@@ -85,14 +85,10 @@ theorem source_exponentialSum_heathBrown_bound_of_derivative
         C*heathBrownDerivativeMajorant k η L lambda := by
       simpa only [heathBrownCharacterSum_eq_source,heathBrownDerivativeMajorant_eq_source,
         mul_assoc] using hraw
-    have hmono := heathBrownDerivativeMajorant_mono_length hk hη.le hLpos hLN hlambda
-    have hphysical := heathBrownDerivativeMajorant_le_powerMajorant hk hc hT hNpos η
     have hnorm : ‖heathBrownSourceTail F T N a L‖ ≤ C*B*heathBrownPowerMajorant k η T N := by
       rw [norm_heathBrownSourceTail_eq_signed_characterSum F T N σ a L p]
       apply hraw'.trans
-      have htotal := hmono.trans hphysical
-      have hscaled := mul_le_mul_of_nonneg_left htotal hC.le
-      simpa only [B,lambda,mul_assoc] using hscaled
+      simpa only [B,lambda,mul_assoc] using (mul_le_mul_of_nonneg_left ((heathBrownDerivativeMajorant_mono_length hk hη.le hLpos hLN hlambda).trans (heathBrownDerivativeMajorant_le_powerMajorant hk hc hT hNpos η)) hC.le)
     dsimp only [K]
     nlinarith
   · have hzero : L = 0 := by omega
@@ -101,7 +97,6 @@ theorem source_exponentialSum_heathBrown_bound_of_derivative
       simp [heathBrownSourceTail]
     simp only [htailzero,norm_zero,add_zero] at htail
     have hnonneg : 0 ≤ heathBrownPowerMajorant k η T N := zero_le_one.trans hMone
-    have hprod := mul_le_mul_of_nonneg_right hK hnonneg
-    exact htail.trans (hMone.trans (by simpa only [one_mul] using hprod))
+    exact htail.trans (hMone.trans (by simpa only [one_mul] using (mul_le_mul_of_nonneg_right hK hnonneg)))
 
 end TaoTrudgianYang2025

@@ -31,9 +31,6 @@ lemma lowUnselectedProduct_norm_bound {K : ℕ} (ell : Fin K→ℝ)
     (hslots : ∀i x,x∈slots i→elementNorm x≤b*Z^(ell i))
     (J : Finset (Fin K)) (a : LowUnselectedTuple slots J) :
     elementNorm (∏i : J,(a i).val)≤b^K*Z^(1/6:ℝ) := by
-  have hz : 0<Z := lt_of_lt_of_le zero_lt_one hZ
-  have hsub : ∑i∈J,ell i≤1/6 :=
-    (Finset.sum_le_sum_of_subset_of_nonneg (Finset.subset_univ _) (fun i _ _=>hell i)).trans hsum
   have hc : J.card≤K := by simpa using Finset.card_le_card (Finset.subset_univ J)
   rw [elementNorm_finset_prod]
   calc
@@ -41,9 +38,9 @@ lemma lowUnselectedProduct_norm_bound {K : ℕ} (ell : Fin K→ℝ)
       (fun i _=>hslots i.val _ (a i).property)
     _=b^J.card*Z^(∑i∈J,ell i) := by
       rw [Finset.prod_mul_distrib,Finset.prod_const,Finset.card_univ,Fintype.card_coe,
-        ←Real.rpow_sum_of_pos hz,Finset.sum_coe_sort]
-    _≤b^K*Z^(1/6:ℝ) := mul_le_mul (pow_le_pow_right₀ hb hc)
-      (Real.rpow_le_rpow_of_exponent_le hZ hsub) (by positivity) (by positivity)
+        ←Real.rpow_sum_of_pos (lt_of_lt_of_le zero_lt_one hZ),Finset.sum_coe_sort]
+    _≤b^K*Z^(1/6) := mul_le_mul (pow_le_pow_right₀ hb hc)
+      (Real.rpow_le_rpow_of_exponent_le hZ ((Finset.sum_le_sum_of_subset_of_nonneg (Finset.subset_univ _) (fun i _ _=>hell i)).trans hsum)) (by positivity) (by positivity)
 
 theorem eventually_original_slot_scales {K : ℕ} (C : CalibrationData) (ell : Fin K→ℝ)
     (hell : ∀i,0≤ell i) (hsum : ∑i,ell i≤1/6) (b : ℝ) (hb : 1≤b) :

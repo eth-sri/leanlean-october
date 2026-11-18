@@ -10,10 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentAbsoluteEnergy
-open ActualEisensteinCubic HeckeFamily CanonicalRowCompletion
-open CenteredMomentHeckeExpansion CenteredMomentSourceRow CenteredMomentSourceMass
-open CenteredMomentSourceProfileMass CenteredMomentAddedZeroUniform
-open ConcreteTraceCRT EisensteinSchwartzPoisson QuadraticInitialBound
+open ActualEisensteinCubic HeckeFamily CanonicalRowCompletion CenteredMomentHeckeExpansion CenteredMomentSourceRow CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentAddedZeroUniform ConcreteTraceCRT EisensteinSchwartzPoisson QuadraticInitialBound
 local notation "O" => ActualEisensteinCubic.O
 
 theorem rowWeight_norm_le_one_all (η : Character) (m A z : O) (t : ℝ)
@@ -26,7 +23,7 @@ theorem rowWeight_norm_le_one_all (η : Character) (m A z : O) (t : ℝ)
 
 theorem radial_norm_summable (Φ : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K) :
     Summable (fun z : O => ‖Φ (‖eisEmbedding z‖^2/K)‖) := by
-  simpa only [scaledRadialTest_apply] using
+  simpa using
     actual_eisenstein_summable_norm (scaledRadialTest Φ K hK)
 
 theorem radial_weight_lattice_bound_all (Φ : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K) :

@@ -8,19 +8,14 @@ public import OAI.NumberTheory.DirichletL.Energy.ReferenceProfileBudget
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
 open Filter
+open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyZeroUnbalancedOriginalPower
-open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands
-open CenteredMomentEnergyZeroUnbalancedOriginalSource CenteredMomentEnergyReferenceScalarReserve
-open CenteredMomentEnergyStageReserveBounded
-open CenteredMomentEnergyReferenceProfileBudget CenteredMomentNaturalRowSource
-open CenteredMomentFiniteProfileExceptional
+open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands CenteredMomentEnergyZeroUnbalancedOriginalSource CenteredMomentEnergyReferenceScalarReserve CenteredMomentEnergyStageReserveBounded CenteredMomentEnergyReferenceProfileBudget CenteredMomentNaturalRowSource CenteredMomentFiniteProfileExceptional
 local notation "O"=>HeckeFamily.O
 
+set_option maxHeartbeats 400000
 theorem original_from_zero_low
     (a b bΦ rho ε Mcap Bmask:ℝ)
     (ha:0<a)(hlo:a≤1/4)(hhi:1≤b)(hbΦ:0<bΦ)(hrho:0<rho)(hε:0<ε)
@@ -49,8 +44,7 @@ theorem original_from_zero_low
   filter_upwards [href] with Z hZ
   refine ⟨hZ.1,?_⟩
   intro e Q degree K he hK hlow s hQ hslo hs p t X₁ X₂ hX₁ hX₂ hshort hlong
-  have hxiM:xi≤s.width/6:=by linarith only [hxirho, hslo, hrho]
-  have hh:=hZ.2 e Q degree K hK hlow s hQ hs hxiM p t X₁ X₂ hX₁ hX₂ hshort hlong
+  have hxiM:xi≤s.width/6:=by linarith
   have hledger:=hscalar e he Z hZ.1.le s hs (Fin 0) (fun _=>0) (by simpa using hM)
   simp only [Finset.univ_eq_empty,Finset.prod_empty,mul_one] at hledger
   have hp:=hprofile (p.profile 0) (p.profile 1) (p.support 0) (p.support 1) t 0 (le_refl 0)
@@ -62,32 +56,29 @@ theorem original_from_zero_low
   have hE:0≤E:=by dsimp only [E];positivity
   have hdir:K*diagonalControl s.radial.profile*
       ((CenteredMomentEnergyReferenceChild.independentProfiles ha (p.profile 0) (p.profile 1) (p.support 0) (p.support 1) t t).control S)^2≤E:=by
-    have ht:=mul_le_mul_of_nonneg_left hp.1 (mul_nonneg hK hdiag)
     have hk:K*diagonalControl s.radial.profile*A≤E:=by
       dsimp only [E]
-      nlinarith only [mul_nonneg hdiag hA]
+      nlinarith
     apply le_trans _ hk
-    exact ht
+    exact (mul_le_mul_of_nonneg_left hp.1 (mul_nonneg hK hdiag))
   have hmain:Cref*(sourceControl Slong (p.profile 1))^2*(1+‖t‖)^(2*nlong)*
       (K*diagonalControl s.radial.profile*Dchild*(sourceControl T (p.profile 0))^2*
         (1+|t|)^(2*n))≤E:=by
-    have ht:=mul_le_mul_of_nonneg_left hp.2.1 (mul_nonneg hK hdiag)
     have hk:K*diagonalControl s.radial.profile*A≤E:=by
       dsimp only [E]
-      nlinarith only [mul_nonneg hdiag hA]
+      nlinarith
     apply le_trans _ hk
-    convert ht using 1 ; ring
+    convert (mul_le_mul_of_nonneg_left hp.2.1 (mul_nonneg hK hdiag)) using 1 ; ring
   have herr:Dref*(sourceControl Slong (p.profile 1))^2*(1+‖t‖)^(2*nlong)*
       ((schwartzSeminormFamily ℝ ℝ ℂ (0,0)) (p.profile 0))^2*diagonalControl s.radial.profile≤E:=by
-    have ht:=mul_le_mul_of_nonneg_left hp.2.2 hdiag
     have hk:diagonalControl s.radial.profile*A≤E:=by
       dsimp only [E]
-      nlinarith only [mul_nonneg hK (mul_nonneg hdiag hA)]
+      nlinarith
     apply le_trans _ hk
-    convert ht using 1 ; ring
-  have hz:0<Z:=zero_lt_one.trans hZ.1
-  have hlog:0≤Real.log Z:=(Real.log_pos hZ.1).le
-  have hLpos:0≤L:=by linarith only [hM, hBmask, hxi, hL]
+    convert (mul_le_mul_of_nonneg_left hp.2.2 hdiag) using 1 ; ring
+  have hz :=zero_lt_one.trans hZ.1
+  have hlog :=(Real.log_pos hZ.1).le
+  have hLpos:0≤L:=by linarith
   let P:=Z^(s.width+e)
   let Qmain:=(max 1 ((fixedConductorFactor:ℝ)*bΦ*Z^s.width))^d*(1+2*(L*Real.log Z))*Z^(s.width+e)
   let Qerror:=(max 1 ((fixedConductorFactor:ℝ)*bΦ*Z^s.width))^(2*d)*Z^(-2*saving)*
@@ -97,11 +88,10 @@ theorem original_from_zero_low
   have hQerror:0≤Qerror:=by dsimp only [Qerror];positivity
   have htotal:=add_le_add (add_le_add (mul_le_mul_of_nonneg_right hdir hP)
     (mul_le_mul_of_nonneg_right hmain hQmain)) (mul_le_mul_of_nonneg_right herr hQerror)
-  apply hh.trans
+  apply (hZ.2 e Q degree K hK hlow s hQ hs hxiM p t X₁ X₂ hX₁ hX₂ hshort hlong).trans
   have hfirst:=mul_le_mul_of_nonneg_left htotal
     (show 0≤Cweight*(s.puncture.radical.absNorm:ℝ)^d by positivity)
-  have hlast:=mul_le_mul_of_nonneg_left hledger (mul_nonneg hCw.le hE)
-  refine le_trans ?_ (hlast.trans_eq ?_)
+  refine le_trans ?_ ((mul_le_mul_of_nonneg_left hledger (mul_nonneg hCw.le hE)).trans_eq ?_)
   · dsimp only [P,Qmain,Qerror] at hfirst
     convert hfirst using 1 <;> (try dsimp only [E,A]) <;> ring
   · dsimp only [E,A]

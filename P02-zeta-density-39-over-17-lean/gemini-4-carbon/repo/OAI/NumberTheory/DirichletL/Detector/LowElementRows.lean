@@ -55,13 +55,13 @@ lemma low_rowTwist_label_one (Ψ : O→*ℂ) (m : O) (u : Oˣ) (I : Id) :
     CanonicalRowCompletion.rowTwist Ψ m 1 (u.val*idealGenerator I)=
       CanonicalRowCompletion.rowTwist Ψ m (idealGenerator (1:Id))
         (((InitialMeanSquare.sourceLabelUnit 1)^4*u).val*idealGenerator I) := by
-  have he : (InitialMeanSquare.sourceLabelUnit (1:O)).val*idealGenerator (1:Id)=1 := by
-    simpa only [Ideal.span_singleton_one,Ideal.one_eq_top] using (InitialMeanSquare.sourceLabelUnit_spec (1:O)).symm
+  have he : (InitialMeanSquare.sourceLabelUnit 1).val*idealGenerator (1:Id)=1 := by
+    simpa using (InitialMeanSquare.sourceLabelUnit_spec 1).symm
   have harg : m^6*(idealGenerator (1:Id))^4*
       (((InitialMeanSquare.sourceLabelUnit 1)^4*u).val*idealGenerator I)=m^6*1^4*(u.val*idealGenerator I) := by
     simp only [Units.val_mul,Units.val_pow_eq_pow_val,one_pow]
     calc
-      _=m^6*((InitialMeanSquare.sourceLabelUnit (1:O)).val*idealGenerator (1:Id))^4*(u.val*idealGenerator I) := by ring
+      _=m^6*((InitialMeanSquare.sourceLabelUnit 1).val*idealGenerator (1:Id))^4*(u.val*idealGenerator I) := by ring
       _=_ := by rw [he];ring
   unfold CanonicalRowCompletion.rowTwist
   rw [harg]
@@ -70,7 +70,7 @@ lemma low_units_label_one_sum (F : (O→*ℂ)→ℝ) (Ψ : O→*ℂ) (m : O) (I 
     (∑u : Oˣ,F (CanonicalRowCompletion.rowTwist Ψ m 1 (u.val*idealGenerator I)))=
       ∑u : Oˣ,F (CanonicalRowCompletion.rowTwist Ψ m (idealGenerator (1:Id)) (u.val*idealGenerator I)) := by
   simp_rw [low_rowTwist_label_one]
-  exact Equiv.sum_comp (Equiv.mulLeft ((InitialMeanSquare.sourceLabelUnit (1:O))^4))
+  exact Equiv.sum_comp (Equiv.mulLeft ((InitialMeanSquare.sourceLabelUnit 1)^4))
     (fun u : Oˣ=>F (CanonicalRowCompletion.rowTwist Ψ m (idealGenerator (1:Id)) (u.val*idealGenerator I)))
 
 lemma low_element_rowTwist_energy (R : Finset O) (hR : ∀z∈R,z≠0)
@@ -94,11 +94,10 @@ lemma lowNumeratorRows_nonzero (a b : ℝ) (ha : 0<a) (hb : 0<b) (Q : ℝ) (hQ :
 
 lemma lowNumeratorRows_norm_bound (a b : ℝ) (ha : 0<a) (hb : 0<b) (Q : ℝ) (hQ : 0<Q)
     (z : O) (hz : z∈lowNumeratorRows a b ha hb Q hQ) : elementNorm z≤2*b*Q := by
-  have hh := (lowOuterCutoff_support a b ha hb ((lowNumeratorRows_mem a b ha hb Q hQ z).mp hz)).2
-  exact (div_le_iff₀ hQ).mp hh
+  exact (div_le_iff₀ hQ).mp ((lowOuterCutoff_support a b ha hb ((lowNumeratorRows_mem a b ha hb Q hQ z).mp hz)).2)
 
 lemma low_unit_card : Fintype.card Oˣ=6 := by
-  simpa only [Nat.card_eq_fintype_card] using PrimaryIdealUnitReindex.card_units_eq_six
+  simpa using PrimaryIdealUnitReindex.card_units_eq_six
 
 end SevenEighths.ProbePhysical
 end

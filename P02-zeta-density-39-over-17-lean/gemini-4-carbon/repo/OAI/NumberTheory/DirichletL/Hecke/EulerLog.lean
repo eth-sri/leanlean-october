@@ -9,9 +9,8 @@ public import Mathlib.Analysis.SpecialFunctions.Complex.LogBounds
 namespace OAI
 
 noncomputable section
+open Set Metric Filter Complex ActualEisensteinCubic SevenEighths.IdealEuler SevenEighths.IdealCharacter
 open scoped Classical Topology BigOperators
-open Set Metric Filter Complex ActualEisensteinCubic
-open SevenEighths.IdealEuler SevenEighths.IdealCharacter
 open SmoothMobiusCorrection (PrimeIdeal)
 
 namespace SevenEighths.HeckeEulerLog
@@ -48,16 +47,15 @@ theorem weighted_norm_le_half (a : Ideal O →*₀ ℂ) (ha : ∀ I, ‖a I‖ �
     (P : PrimeIdeal) {s : ℂ} (hs : 1 ≤ s.re) : ‖weighted a s P.val‖ ≤ 1 / 2 := by
   refine (weighted_norm_le a ha P hs).trans ?_
   rw [Real.rpow_neg_one]
-  have hn : (2 : ℝ) ≤ Ideal.absNorm P.val := by
+  have hn : 2 ≤ Ideal.absNorm P.val := by
     exact_mod_cast SmoothMobiusCorrection.prime_norm_two_le P
   exact inv_le_of_inv_le₀ (by norm_num) (by norm_num at *; exact hn)
 
 theorem log_factor_norm_le (a : Ideal O →*₀ ℂ) (ha : ∀ I, ‖a I‖ ≤ 1)
     (P : PrimeIdeal) {s : ℂ} {σ : ℝ} (hσ : 1 ≤ σ) (hs : σ ≤ s.re) :
     ‖-Complex.log (1 - weighted a s P.val)‖ ≤ majorant σ P := by
-  have hhalf := weighted_norm_le_half a ha P (hσ.trans hs)
   have h := Complex.norm_log_one_add_half_le_self
-    (z := -weighted a s P.val) (by simpa using hhalf)
+    (z := -weighted a s P.val) (by simpa using (weighted_norm_le_half a ha P (hσ.trans hs)))
   simp only [norm_neg, ← sub_eq_add_neg] at h ⊢
   exact h.trans (mul_le_mul_of_nonneg_left (weighted_norm_le a ha P hs) (by norm_num))
 
@@ -74,10 +72,9 @@ theorem log_factor_differentiableOn (a : Ideal O →*₀ ℂ) (ha : ∀ I, ‖a 
     DifferentiableOn ℂ (fun s ↦ -Complex.log (1 - weighted a s P.val)) {s : ℂ | 1 < s.re} := by
   intro s hs
   change 1 < s.re at hs
-  have hn := prime_norm_lt_one a ha s (by linarith : 0 < s.re) P
   have hslit : 1 - weighted a s P.val ∈ Complex.slitPlane := by
     simpa only [sub_eq_add_neg] using Complex.mem_slitPlane_of_norm_lt_one
-      (z := -weighted a s P.val) (by simpa using hn)
+      (z := -weighted a s P.val) (by simpa using (prime_norm_lt_one a ha s (by linarith : 0 < s.re) P))
   exact ((Complex.differentiableAt_log hslit).comp s
     ((differentiableAt_const (1 : ℂ)).sub (weighted_differentiable a P s))).neg.differentiableWithinAt
 
@@ -116,8 +113,7 @@ theorem eulerLog_norm_le (a : Ideal O →*₀ ℂ) (ha : ∀ I, ‖a I‖ ≤ 1)
   have hb : ∀ P : PrimeIdeal, ‖-Complex.log (1 - weighted a s P.val)‖ ≤ majorant (3 / 2) P :=
     fun P ↦ log_factor_norm_le a ha P (by norm_num) hs
   have hsum := majorant_summable (by norm_num : (1 : ℝ) < 3 / 2)
-  have hnorm : Summable (fun P : PrimeIdeal ↦ ‖-Complex.log (1 - weighted a s P.val)‖) :=
-    hsum.of_nonneg_of_le (fun _ ↦ norm_nonneg _) hb
+  have hnorm := hsum.of_nonneg_of_le (fun _ ↦ norm_nonneg _) hb
   calc
     ‖eulerLog a s‖ ≤ ∑' P : PrimeIdeal, ‖-Complex.log (1 - weighted a s P.val)‖ :=
       norm_tsum_le_tsum_norm hnorm
@@ -230,18 +226,12 @@ theorem principalLog_norm_le {s : ℂ} (hs : 3 / 2 ≤ s.re) : ‖principalLog s
 
 def principalEulerLog (a : Ideal O →*₀ ℂ) (s : ℂ) : ℂ := principalLog s + eulerLog a s
 
-theorem principalEulerLog_differentiableOn (a : Ideal O →*₀ ℂ) (ha : ∀ I, ‖a I‖ ≤ 1) :
-    DifferentiableOn ℂ (principalEulerLog a) {s : ℂ | 1 < s.re} :=
-  principalLog_differentiableOn.add (eulerLog_differentiableOn a ha)
 
 theorem exp_principalEulerLog (a : Ideal O →*₀ ℂ) (ha : ∀ I, ‖a I‖ ≤ 1)
     {s : ℂ} (hs : 1 < s.re) :
     Complex.exp (principalEulerLog a s) = ((s - 1) / (s + 1)) * series a s := by
   rw [principalEulerLog, Complex.exp_add, exp_principalLog hs, exp_eulerLog_eq_series a ha s hs]
 
-theorem principalEulerLog_norm_le (a : Ideal O →*₀ ℂ) (ha : ∀ I, ‖a I‖ ≤ 1)
-    {s : ℂ} (hs : 3 / 2 ≤ s.re) : ‖principalEulerLog a s‖ ≤ 3 + eulerLogBound :=
-  (norm_add_le _ _).trans (add_le_add (principalLog_norm_le hs) (eulerLog_norm_le a ha hs))
 
 theorem principal_continued_inner_disk (a : Ideal O →*₀ ℂ) (ha : ∀ I, ‖a I‖ ≤ 1)
     (L : ℂ → ℂ)
@@ -256,12 +246,11 @@ theorem principal_continued_inner_disk (a : Ideal O →*₀ ℂ) (ha : ∀ I, �
     have := inner_disk_re (ball_subset_closedBall hs)
     change 1 < s.re
     linarith
-  refine ⟨(principalEulerLog_differentiableOn a ha).mono hsub, ?_, ?_⟩
+  refine ⟨((principalLog_differentiableOn.add (eulerLog_differentiableOn a ha))).mono hsub, ?_, ?_⟩
   · intro s hs
     exact (exp_principalEulerLog a ha (hsub hs)).trans (hL s (hsub hs)).symm
   · intro s hs
-    exact principalEulerLog_norm_le a ha
-      (inner_disk_re (closedBall_subset_closedBall (by norm_num) hs))
+    exact ((norm_add_le _ _).trans (add_le_add (principalLog_norm_le (inner_disk_re (closedBall_subset_closedBall (by norm_num) hs))) (eulerLog_norm_le a ha (inner_disk_re (closedBall_subset_closedBall (by norm_num) hs)))))
 
 end SevenEighths.HeckeEulerLog
 

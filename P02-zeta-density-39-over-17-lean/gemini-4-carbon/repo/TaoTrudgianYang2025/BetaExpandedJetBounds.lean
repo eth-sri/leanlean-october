@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaExpandedReferenceJets
 public import TaoTrudgianYang2025.BetaLegendreAllOrders
 
@@ -66,33 +76,26 @@ theorem modelPhaseInverseJet_expanded_reference_error
       obtain ⟨A,hA,hjet⟩ := modelPhaseInverse_iteratedDeriv_expanded_reference_error hσ 1
       obtain ⟨B,hB,hreference⟩ := expandedReferenceInverseJet_uniform_bound hσ 1
       let M := (modelPhaseCurvatureLower σ)⁻¹
-      have hM : 0 ≤ M := inv_nonneg.mpr (modelPhaseCurvatureLower_pos hσ).le
       refine ⟨max 1 (A*M*B),le_max_left _ _,?_⟩
       intro F δ P hδ hpos hP hF hj v hv
       have hF₁ := approximateModelPhase_mono hF hP le_rfl
-      have hu := modelPhaseInverseSlope_mem hv
       have hw := modelPhaseSlopeRange_positive_window hσ hpos hF hv
-      have hvpos : 0 < v := (show 0 < (2 : ℝ)^(-σ)/2 by positivity).trans_le hw.1
-      have ha := approximateModelPhase_secondDeriv_ne_zero hσ hδ hF₁ hu
-      have hb := referenceModelPrimitive_secondDeriv_reciprocal_ne_zero hσ hvpos
       have hx := modelPhaseInverseJet_abs_le hσ hδ hP hF hv 1 hj
       have hy := hreference v hw 1 le_rfl
       have he := hjet F δ P hpos hF hj v hv
       simp only [iteratedDeriv_succ,iteratedDeriv_zero] at he
       change |(deriv (deriv F) (modelPhaseInverseSlope F v))⁻¹| ≤ M at hx
       change |(deriv (deriv (referenceModelPrimitive σ)) (v^(-σ⁻¹)))⁻¹| ≤ B at hy
-      change |(deriv (deriv F) (modelPhaseInverseSlope F v))⁻¹-
-        (deriv (deriv (referenceModelPrimitive σ)) (v^(-σ⁻¹)))⁻¹| ≤ _
       have hd := approximateModelPhase_tolerance_nonneg hF
       calc
         _ ≤ |deriv (deriv F) (modelPhaseInverseSlope F v)-
             deriv (deriv (referenceModelPrimitive σ)) (v^(-σ⁻¹))| *
             |(deriv (deriv F) (modelPhaseInverseSlope F v))⁻¹| *
             |(deriv (deriv (referenceModelPrimitive σ)) (v^(-σ⁻¹)))⁻¹| :=
-          abs_inverse_sub_inverse_le_product ha hb
+          abs_inverse_sub_inverse_le_product (approximateModelPhase_secondDeriv_ne_zero hσ hδ hF₁ (modelPhaseInverseSlope_mem hv)) (referenceModelPrimitive_secondDeriv_reciprocal_ne_zero hσ ((show 0 < (2 : ℝ)^(-σ)/2 by positivity).trans_le hw.1))
         _ ≤ (A*δ)*M*B := mul_le_mul
           (mul_le_mul he hx (abs_nonneg _) (mul_nonneg (zero_le_one.trans hA) hd))
-          hy (abs_nonneg _) (mul_nonneg (mul_nonneg (zero_le_one.trans hA) hd) hM)
+          hy (abs_nonneg _) (mul_nonneg (mul_nonneg (zero_le_one.trans hA) hd) (inv_nonneg.mpr (modelPhaseCurvatureLower_pos hσ).le))
         _ = (A*M*B)*δ := by ring
         _ ≤ _ := mul_le_mul_of_nonneg_right (le_max_right _ _) hd
   | n+2 =>

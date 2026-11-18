@@ -15,14 +15,13 @@ namespace GuthMaynard.NativeMoment
 lemma sum_sq_le_card_mul_sum_sq {ι : Type*} (s : Finset ι) (f : ι → ℝ) :
   (∑ i ∈ s, f i)^2 ≤ (s.card : ℝ) * ∑ i ∈ s, (f i)^2 := by
   have h_CS := Finset.sum_mul_sq_le_sq_mul_sq s f (fun _ => 1)
-  have h_sum_one : ∑ i ∈ s, (1 : ℝ)^2 = (s.card : ℝ) := by
-    simp only [one_pow, sum_const, nsmul_eq_mul, mul_one]
+  have h_sum_one : ∑ i ∈ s, 1^2 = (s.card : ℝ) := by
+    simp
   have h_sum_f : ∑ i ∈ s, f i * 1 = ∑ i ∈ s, f i := by
     apply Finset.sum_congr rfl
     intro x _
     rw [mul_one]
-  rw [h_sum_f, h_sum_one] at h_CS
-  rw [mul_comm] at h_CS
+  rw [h_sum_f, h_sum_one, mul_comm] at h_CS
   exact h_CS
 
 lemma complex_sum_sq_le_card_mul_sum_sq {ι : Type*} (s : Finset ι) (f : ι → ℂ) :

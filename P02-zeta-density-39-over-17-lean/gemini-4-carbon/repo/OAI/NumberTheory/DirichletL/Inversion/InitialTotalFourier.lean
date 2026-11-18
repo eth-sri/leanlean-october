@@ -11,16 +11,10 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.InverseInitialTotalFourier
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ConcreteTraceCRT
-open CanonicalQuadraticSieve CanonicalRowCompletion CanonicalCoefficientClass
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialProfile
-open InverseInitialEnergyCallerSource InverseInitialEnergyCallerModes InverseInitialEnergyCallerWindows
-open InverseInitialQuotientGeometry InverseInitialClippedColumns InverseInitialEnergyCallerState
-open InverseInitialDyadicAssembly InverseInitialProfileBounds Filter
+open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ConcreteTraceCRT CanonicalQuadraticSieve CanonicalRowCompletion CanonicalCoefficientClass InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialProfile InverseInitialEnergyCallerSource InverseInitialEnergyCallerModes InverseInitialEnergyCallerWindows InverseInitialQuotientGeometry InverseInitialClippedColumns InverseInitialEnergyCallerState InverseInitialDyadicAssembly InverseInitialProfileBounds Filter
 local notation "O"=>ActualEisensteinCubic.O
 
-open InverseInitialPhysicalLimit InverseInitialPhysicalReassembly SecondPassArithmetic InverseInitialRayAttachment
-open MeasureTheory FourierBridge JointLogSeparation InverseInitialOverlapFourier
+open InverseInitialPhysicalLimit InverseInitialPhysicalReassembly SecondPassArithmetic InverseInitialRayAttachment MeasureTheory FourierBridge JointLogSeparation InverseInitialOverlapFourier
 theorem original_fourier_energy_bound
     (g:𝓢(ℝ,ℂ))(W:ℝ→ℂ)(a₀ b₀ bcap:ℝ)(ha₀:0<a₀)(hbcap:1≤bcap)
     (hs:Function.support W⊆Set.Icc a₀ b₀)
@@ -78,7 +72,7 @@ theorem original_fourier_energy_bound
   intro p hp hcop hg σ dec all assigned hassigned hK lists Hslot coeff hdis hHs hPs hac
     qelem z al bl primeW hz hqe hprimeW hprimeLive Ψ hΨ hperiod
     D m r hm hmcap hDlo hprodj hprod hDeq hmargin₁ hmargin₂ hparent rows hrows y xj θ
-  have hZp:0<Z:=zero_lt_one.trans (hZ₀.trans_le hZ)
+  have hZp :=zero_lt_one.trans (hZ₀.trans_le hZ)
   let φ:O→ℝ→ℂ:=fun u t=>((Z^(-D/2):ℝ):ℂ)*inputConjugateRow p hg Finset.univ Ψ
     (assignedElement assigned qelem) 1 1
     (initialTest p (primeMark (all\assigned) lists
@@ -96,8 +90,7 @@ theorem original_fourier_energy_bound
   apply (Finset.sum_coe_sort rows (fun u=>‖∫t:ℝ,density (frequencyTwist g θ) xj t*φ u t‖^2)).symm.le.trans
   apply ht.trans
   have hh:0≤C*Z^(m+15*η+π+eps+loss)*(1+‖θ‖)^(2*(J+(volume:Measure ℝ).integrablePower)):=by positivity
-  have he:=mul_le_mul_of_nonneg_right (show Cm≤Cm+1 by linarith) hh
-  convert he using 1 <;> simp only [pow_mul,pow_two,mul_pow] <;> ring
+  convert (mul_le_mul_of_nonneg_right (show Cm≤Cm+1 by linarith) hh) using 1 <;> simp only [pow_mul,pow_two,mul_pow] <;> ring
 
 end SevenEighths.InverseInitialTotalFourier
 

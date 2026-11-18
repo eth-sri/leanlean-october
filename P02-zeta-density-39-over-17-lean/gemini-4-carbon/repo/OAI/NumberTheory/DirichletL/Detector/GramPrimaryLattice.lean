@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbeGramCommon
-open ProbePhysical CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion
-open CenteredMomentSupportedCorrelation
+open ProbePhysical CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion CenteredMomentSupportedCorrelation
 local notation "O" => ActualEisensteinCubic.O
 local notation "Id" => Ideal O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
@@ -37,8 +36,7 @@ lemma primaryCoefficient_nonzero_supported (S : Finset Id) (hS : ∀p∈S,p.IsMa
   exact ⟨supported_of_coprime_bad _ n hb.1 hb.2 hc,hp⟩
 
 lemma primary_factor_right (A n : O) (hA : λ₀^2∣A-1) (hAn : λ₀^2∣A*n-1) : λ₀^2∣n-1 := by
-  have h := dvd_sub hAn (hA.mul_right n)
-  convert h using 1 ; ring
+  convert (dvd_sub hAn (hA.mul_right n)) using 1 ; ring
 
 lemma primaryCoefficient_residual (S : Finset Id) (hS : ∀p∈S,p.IsMaximal)
     (hbad : fixedBadPrimes⊆S) (σ : RayRing) (A n : O) (hA : λ₀^2∣A-1)
@@ -63,8 +61,7 @@ theorem primary_ideal_pair_tsum (f : O→O→ℂ)
     (hr : ∀n m,¬(Supported (Ideal.span {m}) ∧ λ₀^2∣m-1)→f n m=0) :
     (∑'I : SupportedIdeal,∑'J : SupportedIdeal,f (primaryGenerator I.val) (primaryGenerator J.val))=
       ∑'n : O,∑'m : O,f n m := by
-  have hinner (n : O) : (∑'J : SupportedIdeal,f n (primaryGenerator J.val))=∑'m : O,f n m :=
-    primary_ideal_tsum (fun m=>f n m) (fun m h=>hr n m h)
+  have hinner (n : O) := primary_ideal_tsum (fun m=>f n m) (fun m h=>hr n m h)
   simp_rw [hinner]
   apply primary_ideal_tsum (fun n=>∑'m : O,f n m)
   intro n hn

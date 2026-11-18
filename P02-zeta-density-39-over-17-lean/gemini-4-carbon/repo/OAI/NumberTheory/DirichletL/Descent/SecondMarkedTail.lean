@@ -7,9 +7,8 @@ public import OAI.NumberTheory.DirichletL.Inversion.SecondPrincipalCaller
 namespace OAI
 
 namespace SevenEighths.InverseMoment
+open ActualEisensteinCubic FirstCauchyArithmetic CompletedGauss FirstPassCubeLabels SecondPassArithmetic InversePrincipalEnergy InverseSecondPrincipalCaller
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstCauchyArithmetic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
-open InversePrincipalEnergy InverseSecondPrincipalCaller
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
 local notation "O" => ActualEisensteinCubic.O
@@ -33,7 +32,7 @@ theorem marked_radial_uniform_bound (ε : ℝ) (hε : 0 < ε) :
     positivity
   · have hn : primeProductNorm p U ≤ X*Real.exp M := by
       simpa only [mul_comm] using (div_le_iff₀ hX).mp (hV _ hz)
-    have hn0 : 0 ≤ primeProductNorm p U := (primeProductNorm_pos p hp U).le
+    have hn0 := (primeProductNorm_pos p hp U).le
     rw [markedRadial,norm_mul]
     apply (mul_le_mul (hmark p hp hcop slots lists a hslots ha A U)
       (V.norm_le_seminorm ℝ _) (norm_nonneg _) (by positivity)).trans

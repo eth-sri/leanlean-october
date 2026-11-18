@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.HeckeDetectorLower
-open HeckeFamily HeckeDetectorTail HeckeDetectorFinite HeckeDetectorPartition
-open GammaZeroDetector
+open HeckeFamily HeckeDetectorTail HeckeDetectorFinite HeckeDetectorPartition GammaZeroDetector
 local notation "O" => HeckeFamily.O
 
 lemma unit_term_lower (U : ℝ) (hU : 2 ≤ U) :
@@ -91,7 +90,6 @@ theorem exists_dyadic_zero_witness (R θ : ℝ) (hR : 0 ≤ R) (hθ : 0 ≤ θ) 
   refine ⟨max 2 U₁,?_⟩
   intro U hU χ hχ V T hVb hTb hVone hVzero hTone hTzero D hD hDU hQ ρ hρ hzero hheight
   have hU2 : 2 ≤ U := (le_max_left _ _).trans hU
-  have hUpos : 0 < U := by linarith
   have ht := hU₁ U ((le_max_right _ _).trans hU) χ hχ V T hVb hTb hVone hVzero hTone D hD hDU hQ ρ hρ hzero hheight
   obtain ⟨j,hj,k,hk,hb⟩ := exists_dyadic_block χ V T D (U^20) (U^21)
     (by positivity) hTzero hVone hVzero ρ (1/2) ht

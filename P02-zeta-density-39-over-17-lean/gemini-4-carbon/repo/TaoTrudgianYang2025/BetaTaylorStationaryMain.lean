@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaSourceChartPartition
 public import TaoTrudgianYang2025.BetaAmplitudePartialSummation
 
@@ -35,9 +45,8 @@ theorem modelPhaseStationaryPoint_taylor_phase
   rw [modelPhaseStationaryPoint_phase hT hN,
     modelPhaseDualScale_coordinate hA.ne' hT hN,
     canonicalTaylorLegendrePhase_agrees Q hA hw hv hh hplateau]
-  have hcancel := modelPhaseDualParameter_cancel σ hA T
   unfold modelPhaseDualOffset
-  rw [mul_add,← mul_assoc,hcancel]
+  rw [mul_add,← mul_assoc,(modelPhaseDualParameter_cancel σ hA T)]
   ring
 
 theorem modelPhaseStationaryCharacter_taylor
@@ -51,14 +60,12 @@ theorem modelPhaseStationaryCharacter_taylor
         starRingEnd ℂ (𝐞 (modelPhaseDualParameter σ A T *
           canonicalTaylorLegendrePhase F σ A Q w h (r/modelPhaseDualScale A T N))) := by
   unfold modelPhaseStationaryCharacter
-  rw [modelPhaseStationaryPoint_taylor_phase Q hA hw hh hT hN hv hplateau]
-  rw [show modelPhaseDualOffset F σ A w T -
+  rw [modelPhaseStationaryPoint_taylor_phase Q hA hw hh hT hN hv hplateau, show modelPhaseDualOffset F σ A w T -
       modelPhaseDualParameter σ A T *
         canonicalTaylorLegendrePhase F σ A Q w h (r/modelPhaseDualScale A T N)-1/8 =
       (modelPhaseDualOffset F σ A w T-1/8) +
         -(modelPhaseDualParameter σ A T *
-          canonicalTaylorLegendrePhase F σ A Q w h (r/modelPhaseDualScale A T N)) by ring]
-  rw [AddChar.map_add_eq_mul,AddChar.map_neg_eq_inv,Circle.coe_mul,Circle.coe_inv_eq_conj]
+          canonicalTaylorLegendrePhase F σ A Q w h (r/modelPhaseDualScale A T N)) by ring, AddChar.map_add_eq_mul,AddChar.map_neg_eq_inv,Circle.coe_mul,Circle.coe_inv_eq_conj]
 
 theorem norm_modelPhaseStationaryCharacter_taylor_range
     {F : ℝ → ℝ} {σ A w h T N : ℝ} (Q : ℕ)
@@ -106,7 +113,7 @@ theorem norm_modelPhaseStationaryBlock_le_taylor_prefixMax
   intro j hj
   cases j with
   | zero =>
-    simpa only [Finset.sum_range_zero,norm_zero] using
+    simpa using
       exponentialSumAtPrefixMax_nonneg (canonicalTaylorLegendrePhase F σ A Q w h)
         (modelPhaseDualParameter σ A T) (modelPhaseDualScale A T N) a L
   | succ j =>

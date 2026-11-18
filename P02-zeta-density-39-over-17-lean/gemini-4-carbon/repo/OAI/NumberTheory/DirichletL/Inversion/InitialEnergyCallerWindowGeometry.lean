@@ -7,13 +7,10 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
+open scoped BigOperators Classical
 namespace SevenEighths.InverseInitialEnergyCallerWindowGeometry
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
-open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
-open InverseInitialEnergyCallerWindows InverseInitialEnergyCallerGeometry
-open InverseInitialProfile InverseInitialKernelBridge ConcreteTraceCRT
+open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource InverseInitialEnergyCallerWindows InverseInitialEnergyCallerGeometry InverseInitialProfile InverseInitialKernelBridge ConcreteTraceCRT
 local notation "Eis"=>ActualEisensteinCubic.O
 variable {ι:Type*}[DecidableEq ι](p:ι→Eis)
 

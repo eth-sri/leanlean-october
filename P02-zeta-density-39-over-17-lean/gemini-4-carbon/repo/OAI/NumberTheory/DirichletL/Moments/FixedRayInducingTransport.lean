@@ -10,9 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFixedRayInducingTransport
-open HeckeFamily HeckeRowClosure CenteredExceptionalProfile
-open CanonicalRowCompletion ConcretePrimeRowBridge
-open CenteredMomentExceptionalPair CenteredMomentFixedRowMask
+open HeckeFamily HeckeRowClosure CenteredExceptionalProfile CanonicalRowCompletion ConcretePrimeRowBridge CenteredMomentExceptionalPair CenteredMomentFixedRowMask
 local notation "O" => HeckeFamily.O
 
 theorem modulus_generator_ne_zero (ν : Character) :
@@ -72,8 +70,7 @@ theorem fixedInducingRow_product_iff (η ν : Character) (Q : Ideal O)
     FixedInducingRow (η.product ν) Q m A z ↔ FixedInducingRow η Q m A z := by
   constructor
   · intro h
-    have hi := fixedInducingRow_product_of (η.product ν) ν.inverse Q m A z hν h
-    obtain ⟨χ,ψ,hprim,hind,hQ,hrow⟩ := hi
+    obtain ⟨χ,ψ,hprim,hind,hQ,hrow⟩ := (fixedInducingRow_product_of (η.product ν) ν.inverse Q m A z hν h)
     apply (fixedInducingRow_mul_mask_iff η Q m (idealGenerator ν.modulus) A z
       hm (modulus_generator_ne_zero ν) hA hz hmLam hm2).mp
     exact ⟨χ,ψ,hprim,hind,hQ,fun n=>(hrow n).trans

@@ -8,8 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.CenteredMomentSlotNormalization
-open HeckeFamily CenteredMomentHeckeSlots CenteredMomentRetainedEnergy
-open CenteredMomentWholeSlotDeletion CenteredMomentHeckeHeight
+open HeckeFamily CenteredMomentHeckeSlots CenteredMomentRetainedEnergy CenteredMomentWholeSlotDeletion CenteredMomentHeckeHeight
 local notation "O" => HeckeFamily.O
 
 lemma sqrt_product_normalizer {ι:Type*} [Fintype ι] (X:ℝ) (P:ι→ℝ)
@@ -28,12 +27,11 @@ theorem selectedProduct_univ {ι:Type*} [Fintype ι] [DecidableEq ι]
       positiveSlotRow η m A z W₁ W₂ S β P t X₁ X₂ := by
   unfold selectedProduct normalizedSlot positiveSlotRow
   rw [Finset.prod_mul_distrib]
-  have he:=sqrt_product_normalizer (X₁*X₂) P hX hP
   calc
     _=((Real.sqrt (X₁*X₂):ℂ)⁻¹*(∏i,(Real.sqrt (P i):ℂ)⁻¹))*
       ((rowTwistedSum η m A z W₁ t X₁*rowTwistedSum η m A z W₂ t X₂)*
         ∏i,rowSlot η m A z (S i) (β i) t) := by ring
-    _=_ := by rw [he]
+    _=_ := by rw [(sqrt_product_normalizer (X₁*X₂) P hX hP)]
 
 end SevenEighths.CenteredMomentSlotNormalization
 

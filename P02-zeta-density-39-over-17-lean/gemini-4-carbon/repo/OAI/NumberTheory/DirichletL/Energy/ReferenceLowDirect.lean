@@ -9,15 +9,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyReferenceLowDirect
-open HeckeFamily HeckeDyadic ConcreteTraceCRT
-open CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyReferenceLowBands CenteredMomentEnergyReferenceState
-open CenteredMomentEnergyReferenceChild CenteredMomentEnergyReferenceChildProfiles
-open CenteredMomentNaturalFixedRaySource CenteredMomentInductionEnergy
-open CenteredMomentPrimeSlot CenteredMomentFiniteProfileExceptional QuadraticInitialBound
-open CenteredMomentOriginalRadialComparison CenteredMomentCommonMaskExpansion
-open CenteredMomentCommonMaskEnergy CenteredMomentAllocatedNaturalRadial
-open CenteredMomentScaleSupremum CenteredMomentSectorLocalization
+open HeckeFamily HeckeDyadic ConcreteTraceCRT CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyReferenceLowBands CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceChild CenteredMomentEnergyReferenceChildProfiles CenteredMomentNaturalFixedRaySource CenteredMomentInductionEnergy CenteredMomentPrimeSlot CenteredMomentFiniteProfileExceptional QuadraticInitialBound CenteredMomentOriginalRadialComparison CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy CenteredMomentAllocatedNaturalRadial CenteredMomentScaleSupremum CenteredMomentSectorLocalization
 local notation "O"=>HeckeFamily.O
 
 open CenteredMomentEnergyReferenceLowChild
@@ -52,7 +44,6 @@ theorem direct_child_from_low
       C*diagonalControl s.radial.profile*
         ((independentProfiles ha W₁ W₂ hs₁ hs₂ t t).control S)^2*
         (1+|t|+height)^degree*Z^(s.width+ε):=by
-  have hZ:0<Z:=zero_lt_one.trans_le s.base_ge_one
   have hh:=hlow F (fun i=>θ i) (fun i=>w i) (fun i=>σ i) (fun i=>t+freq i)
     0 (|t|+height) (fun i=>hw i) (fun i=>hwL i) (fun i=>hσlo i) (fun i=>hσhi i)
     (add_nonneg (abs_nonneg t) hheight)
@@ -66,7 +57,7 @@ theorem direct_child_from_low
     (fun i=>relativeCharacter M H hH η₀ (θ i)) (fun _=>Wslot)
     (fun i=>Z^(w i)) σ freq
     (fun i _ I hI=>(Finset.mem_filter.mp hI).2.1)
-    (fun i _=>Real.rpow_pos_of_pos hZ _) t t t X₁ X₂ hX₁ hX₂]
+    (fun i _=>Real.rpow_pos_of_pos (zero_lt_one.trans_le s.base_ge_one) _) t t t X₁ X₂ hX₁ hX₂]
   simpa only [unitBudgetState,unpuncturedState,NaturalState.width,
     NaturalState.mask,effectiveState,effectiveRadial,abs_zero,add_zero,add_assoc] using hh
 

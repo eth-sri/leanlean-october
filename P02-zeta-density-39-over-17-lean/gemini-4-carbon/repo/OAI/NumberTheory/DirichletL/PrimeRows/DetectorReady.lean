@@ -62,17 +62,14 @@ theorem source_ray_conductor_eventually (S : Finset (Ideal O)) (hS : ∀P∈S,Pr
     (η : Character) (ν : ℝ) (hν : 0<ν) :
     ∀ᶠ Z : ℝ in atTop,∀(u : FreeRow) (d : ℝ),rowNorm u≤Z^(d-ν) →
       ∀j,((sourceDetectorFamily S hS η u (rayCubeFamily M H hH u) j).modulus.absNorm:ℝ)≤Z^d := by
-  have hh := HeckeDyadic.constant_absorbed_eventually (sourceConductorConstant M S η:ℝ) ν hν
-  filter_upwards [hh,eventually_gt_atTop (0:ℝ)] with Z hC hZ
+  filter_upwards [(HeckeDyadic.constant_absorbed_eventually (sourceConductorConstant M S η:ℝ) ν hν),eventually_gt_atTop 0] with Z hC hZ
   intro u d hu j
   have hq : ((sourceDetectorFamily S hS η u (rayCubeFamily M H hH u) j).modulus.absNorm:ℝ)≤
       (sourceConductorConstant M S η:ℝ)*rowNorm u := by
     unfold rowNorm
     exact_mod_cast source_ray_conductor M H hH S hS η u j
   apply hq.trans
-  calc
-    _ ≤ Z^ν*Z^(d-ν) := mul_le_mul hC hu (by unfold rowNorm;positivity) (Real.rpow_nonneg hZ.le _)
-    _ = Z^d := by rw [←Real.rpow_add hZ];congr 1;ring
+  exact (mul_le_mul hC hu (by unfold rowNorm;positivity) (Real.rpow_nonneg hZ.le _)).trans_eq (by rw [←Real.rpow_add hZ];congr 1;ring)
 
 end SevenEighths.ProbeHighRowFamily
 

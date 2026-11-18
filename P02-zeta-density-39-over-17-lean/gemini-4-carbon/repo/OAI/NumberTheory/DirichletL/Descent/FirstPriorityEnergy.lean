@@ -39,9 +39,8 @@ theorem first_fresh_real_energy
 
 lemma priority_norm_sum_sq {α : Type*} (s : Finset α) (f : α→ℂ) :
     ‖∑ i∈s,f i‖^2≤(s.card:ℝ)*∑ i∈s,‖f i‖^2 := by
-  have hnorm := pow_le_pow_left₀ (norm_nonneg _) (norm_sum_le s f) 2
-  apply hnorm.trans
-  simpa using Finset.sum_mul_sq_le_sq_mul_sq s (fun _=>(1:ℝ)) (fun i=>‖f i‖)
+  apply (pow_le_pow_left₀ (norm_nonneg _) (norm_sum_le s f) 2).trans
+  simpa using Finset.sum_mul_sq_le_sq_mul_sq s (fun _=>1) (fun i=>‖f i‖)
 
 theorem first_fresh_priority_energy
     (hinj : Function.Injective (fun i=>Ideal.span {p i}))

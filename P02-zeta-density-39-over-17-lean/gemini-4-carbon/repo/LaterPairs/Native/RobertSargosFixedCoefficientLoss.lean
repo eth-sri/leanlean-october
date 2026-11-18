@@ -2,7 +2,16 @@ module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import GuthMaynard.AffineSource.Foundation
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.PrimitiveDivisorGrowth
 public import LaterPairs.Native.RobertSargosSameSignCount
 
@@ -26,11 +35,9 @@ theorem exists_robertSargos_fixed_coeff_divisor_bound (ε : ℝ) (hε : 0 < ε) 
   refine ⟨64*D,by positivity,?_⟩
   intro n H Q δ hn hH hnH hδ
   have hnp : (0:ℝ) < n := by exact_mod_cast hn
-  have ht : (n.divisors.card:ℝ) ≤ D*H^ε :=
-    (hdiv n hn).trans (mul_le_mul_of_nonneg_left
+  have ht := (hdiv n hn).trans (mul_le_mul_of_nonneg_left
       (Real.rpow_le_rpow hnp.le hnH hε.le) hD.le)
   have hτ : (0:ℝ) ≤ n.divisors.card := by positivity
-  have hX : 0 ≤ δ*Q^2/H := by positivity
   calc
     _ ≤ 2*(n.divisors.card:ℝ)+
         64*δ*Q^2/(H*(n:ℝ))*((n:ℝ)*(n.divisors.card:ℝ)) :=
@@ -60,7 +67,7 @@ theorem exists_robertSargos_fixed_coeff_bound (ε : ℝ) (hε : 0 < ε) :
   refine ⟨C,hC,?_⟩
   intro S r h₁ h₂ H Q δ hc hr hH hQ hδ hrH hh₁ hh₂ hq₁ hq₂ hs hp hl hn
   have hrc : (r.natAbs:ℝ) = |(r:ℝ)| := by
-    simpa only [Int.cast_natCast,Int.cast_abs] using
+    simpa using
       congrArg (fun z : ℤ => (z:ℝ)) (Int.natCast_natAbs r)
   have hrH' : (r.natAbs:ℝ) ≤ H := by rw [hrc]; linarith
   have hb := robertSargos_primitive_fixed_coeff_card_le S hc hr hH hQ hδ hrH

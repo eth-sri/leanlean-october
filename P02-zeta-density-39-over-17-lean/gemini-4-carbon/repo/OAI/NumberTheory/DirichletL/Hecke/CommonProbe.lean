@@ -30,10 +30,9 @@ def UniformCommonProbe : Prop :=
 theorem beta_le_seven_eighths (h : UniformCommonProbe) : beta ≤ 7/8 := by
   by_contra hn
   obtain ⟨ω, σ, hω0, hω, hσ, hcontract⟩ := h (lt_of_not_ge hn)
-  have hmargin := Supremum.continuationMargin_pos hω hσ
   have hboundary := Supremum.continuation_boundary_gt (β := beta) (σ := σ) hω0
   obtain ⟨η, ρ, hp, hhalf, _, hpole, hz, hnear⟩ :=
-    HeckePrimitiveSupremum.exists_primitive_zero_near_beta hmargin (by linarith)
+    HeckePrimitiveSupremum.exists_primitive_zero_near_beta (Supremum.continuationMargin_pos hω hσ) (by linarith)
   obtain ⟨χ, H, J, hmask, hH, hb, hJ, herr⟩ := hcontract η hp
   have hχpole : ρ ≠ 1 ∨ χ.residue ≠ 1 := by
     rcases hpole with h1 | hη
@@ -49,8 +48,7 @@ theorem beta_le_seven_eighths (h : UniformCommonProbe) : beta ≤ 7/8 := by
 
 theorem hecke_ne_zero_of_common_probe (h : UniformCommonProbe)
     (χ : Character) (s : ℂ) (hs : (7/8 : ℝ) < s.re)
-    (hpole : s ≠ 1 ∨ χ.residue ≠ 1) : LFunction χ s ≠ 0 := by
-  exact LFunction_ne_zero_of_beta_lt χ ((beta_le_seven_eighths h).trans_lt hs) hpole
+    (hpole : s ≠ 1 ∨ χ.residue ≠ 1) : LFunction χ s ≠ 0 := LFunction_ne_zero_of_beta_lt χ ((beta_le_seven_eighths h).trans_lt hs) hpole
 
 theorem zeta_of_common_probe (h : UniformCommonProbe) (s : ℂ)
     (hs : (7/8 : ℝ) < s.re) : riemannZeta s ≠ 0 :=

@@ -2,7 +2,16 @@ module
 public import GuthMaynard.Weyl
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 
 @[expose] public section
 set_option autoImplicit false
@@ -18,8 +27,7 @@ open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean 
 
 noncomputable section
 
-open Complex Finset
-open RiemannZeta.GuthMaynard
+open Complex Finset RiemannZeta.GuthMaynard
 open scoped BigOperators
 
 namespace TaoTrudgianYang2025
@@ -61,29 +69,24 @@ theorem padded_sequence_correlation_eq (a : ℤ → ℂ) (N H h k : ℕ)
     case hi =>
       intro n hn
       have hnData := Finset.mem_filter.mp hn
-      have hnh := Finset.mem_Ico.mp hnData.2.1
       have hnk := Finset.mem_Ico.mp hnData.2.2
       apply Finset.mem_range.mpr
       have heq : n + (k : Int) = (n + h) + (k - h : Nat) := by
         omega
       rw [heq] at hnk
       have hcast : Int.toNat (n + h) + (k - h) < N := by
-        have hto : ((Int.toNat (n + h) : Nat) : Int) = n + h :=
-          Int.toNat_of_nonneg hnh.1
         have hcastInt : ((Int.toNat (n + h) + (k - h) : Nat) : Int) < (N : Int) := by
           push_cast
-          rw [hto]
+          rw [(Int.toNat_of_nonneg (Finset.mem_Ico.mp hnData.2.1).1)]
           exact hnk.2
         exact_mod_cast hcastInt
       omega
     case i_inj =>
       intro n₁ hn₁ n₂ hn₂ heq
-      have h1 := (Finset.mem_Ico.mp (Finset.mem_filter.mp hn₁).2.1).1
-      have h2 := (Finset.mem_Ico.mp (Finset.mem_filter.mp hn₂).2.1).1
       have heqInt := congrArg (fun m : Nat => (m : Int)) heq
       change ((Int.toNat (n₁ + h) : Nat) : Int) =
         ((Int.toNat (n₂ + h) : Nat) : Int) at heqInt
-      rw [Int.toNat_of_nonneg h1, Int.toNat_of_nonneg h2] at heqInt
+      rw [Int.toNat_of_nonneg ((Finset.mem_Ico.mp (Finset.mem_filter.mp hn₁).2.1).1), Int.toNat_of_nonneg ((Finset.mem_Ico.mp (Finset.mem_filter.mp hn₂).2.1).1)] at heqInt
       omega
     case i_surj =>
       intro m hm
@@ -110,8 +113,7 @@ theorem padded_sequence_correlation_eq (a : ℤ → ℂ) (N H h k : ℕ)
       · simp
     case h =>
       intro n hn
-      have hnonneg := (Finset.mem_Ico.mp (Finset.mem_filter.mp hn).2.1).1
-      have hnat : ((Int.toNat (n + h) : Nat) : Int) = n + h := Int.toNat_of_nonneg hnonneg
+      have hnat := Int.toNat_of_nonneg ((Finset.mem_Ico.mp (Finset.mem_filter.mp hn).2.1).1)
       congr 2
       · rw [hnat]
       · rw [hnat]

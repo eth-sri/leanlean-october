@@ -42,7 +42,6 @@ theorem heathBrownDerivativeExponent_bounds {k : ℕ} (hk : 3 ≤ k) :
 
 theorem heathBrownInverseExponent_identity {k : ℕ} (hk : 3 ≤ k) :
     (k : ℝ)*heathBrownInverseExponent k = 2*heathBrownDerivativeExponent k := by
-  have hp : (0 : ℝ) < k := by exact_mod_cast (show 0 < k by omega)
   unfold heathBrownInverseExponent heathBrownDerivativeExponent
   field_simp
 
@@ -50,10 +49,6 @@ theorem heathBrownBetaBound_eq_max {k : ℕ} (hk : 3 ≤ k) (α : ℝ) :
     heathBrownBetaBound k α =
       max (heathBrownDerivativeExponent k+α*(1-(k : ℝ)*heathBrownDerivativeExponent k))
         (max (α*(1-heathBrownDerivativeExponent k)) (α-heathBrownInverseExponent k)) := by
-  have hp : (k : ℝ) ≠ 0 := by exact_mod_cast (show k ≠ 0 by omega)
-  have hm : (k : ℝ)-1 ≠ 0 := by
-    have hkr : (3 : ℝ) ≤ k := by exact_mod_cast hk
-    linarith
   unfold heathBrownBetaBound heathBrownDerivativeExponent heathBrownInverseExponent
   rw [add_max,add_max]
   congr 1
@@ -71,13 +66,11 @@ theorem heathBrown_physical_monomial {c T N : ℝ}
   apply Real.log_injOn_pos (show 0 < N^(1+η-ζ)*(c*T/N^k)^r by positivity)
     (show 0 < c^r*N^η*T^r*N^(1-ζ-(k : ℝ)*r) by positivity)
   rw [Real.log_mul (by positivity) (by positivity),
-    Real.log_rpow hN,Real.log_rpow (show 0 < c*T/N^k by positivity),
+    Real.log_rpow hN,Real.log_rpow (by positivity),
     Real.log_div (by positivity) (by positivity),
-    Real.log_mul hc.ne' hT.ne',Real.log_pow]
-  rw [Real.log_mul (by positivity) (by positivity),
+    Real.log_mul hc.ne' hT.ne',Real.log_pow, Real.log_mul (by positivity) (by positivity),
     Real.log_mul (by positivity) (by positivity),
-    Real.log_mul (by positivity) (by positivity)]
-  rw [Real.log_rpow hc,Real.log_rpow hN,Real.log_rpow hT,Real.log_rpow hN]
+    Real.log_mul (by positivity) (by positivity), Real.log_rpow hc,Real.log_rpow hN,Real.log_rpow hT,Real.log_rpow hN]
   ring
 
 end TaoTrudgianYang2025

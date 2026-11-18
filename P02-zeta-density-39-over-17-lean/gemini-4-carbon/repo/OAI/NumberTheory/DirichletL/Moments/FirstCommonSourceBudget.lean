@@ -10,10 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstCommonSourceBudget
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData
-open CenteredMomentAmplificationChildInput CenteredMomentFirstPhysicalSource
-open CenteredMomentFirstAmplificationChoice CenteredMomentCommonAllocationSum
-open CenteredMomentCommonRawScale CenteredMomentSourceLiveColumn CenteredMomentFirstAllocationGaussEnergy
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput CenteredMomentFirstPhysicalSource CenteredMomentFirstAmplificationChoice CenteredMomentCommonAllocationSum CenteredMomentCommonRawScale CenteredMomentSourceLiveColumn CenteredMomentFirstAllocationGaussEnergy
 local notation "O"=>ActualEisensteinCubic.O
 variable {ι:Type*}[Fintype ι]
 local instance {κ:Type*}:DecidableEq κ:=Classical.decEq _
@@ -67,10 +64,9 @@ theorem common_energy_live_allocations (N:ℕ)(a b:ℝ)(ha:0<a)
         have hf:=frozen_normalized_bound N a b ha (original s R seed) hcard C hC.1 B s.M
           (fun i=>zero_le_one.trans (s.M_ge_one i)) s.P_pos s.ν_bound s.W_bound
           (fun i x hx=>⟨haS.trans (s.slot_support i hx).1,(s.slot_support i hx).2.trans hbS⟩)
-        have hn:=child_nonneg s C R L B τ t W K hK hW
         change ‖frozenCoefficient B.val C R s.ν s.W s.P‖^2/rawReduction B.val s.P≤
           (max 1 b)^N/(C.absNorm:ℝ)*(frozenControl B.val s.M)^2 at hf
-        convert mul_le_mul_of_nonneg_right hf hn using 1 ; ring
+        convert mul_le_mul_of_nonneg_right hf (child_nonneg s C R L B τ t W K hK hW) using 1 ; ring
     _=_:=by rw [←Finset.mul_sum];ring
 
 theorem common_energy_from_live_children (N:ℕ)(a b ε:ℝ)(ha:0<a)(hε:0<ε):
@@ -87,8 +83,7 @@ theorem common_energy_from_live_children (N:ℕ)(a b ε:ℝ)(ha:0<a)(hε:0<ε):
   obtain ⟨D,hD,hmass⟩:=allocated_control_mass N ε hε
   refine ⟨(max 1 b)^N*D,mul_pos (pow_pos (lt_of_lt_of_le zero_lt_one (le_max_left _ _)) _) hD,?_⟩
   intro κ _ s hcard haS hbS C R seed hC hseed τ t L W K E hK hE hW hchild
-  have hh:=common_energy_live_allocations N a b ha s hcard haS hbS C R seed hC hseed τ t L W K hK hW
-  apply hh.trans
+  apply (common_energy_live_allocations N a b ha s hcard haS hbS C R seed hC hseed τ t L W K hK hW).trans
   have hc:0≤(max 1 b)^N*((actualAllocations s.pools C).card:ℝ)/(C.absNorm:ℝ):=by positivity
   have hs:(∑B:actualAllocations s.pools C,
       if frozenCoefficient B.val C R s.ν s.W s.P≠0 then
@@ -100,7 +95,6 @@ theorem common_energy_from_live_children (N:ℕ)(a b ε:ℝ)(ha:0<a)(hε:0<ε):
     split_ifs with hb
     · convert mul_le_mul_of_nonneg_left (hchild B hb) (sq_nonneg (frozenControl B.val s.M)) using 1 ; ring
     · positivity
-  have hm:=hmass hcard s C R hC.1 τ t
   calc
     _≤((max 1 b)^N*((actualAllocations s.pools C).card:ℝ)/(C.absNorm:ℝ))*
         (E*∑B:actualAllocations s.pools C,(frozenControl B.val s.M)^2*(∏i,(child s C R B τ t).M i)^2):=
@@ -108,7 +102,7 @@ theorem common_energy_from_live_children (N:ℕ)(a b ε:ℝ)(ha:0<a)(hε:0<ε):
     _=((max 1 b)^N*E)*(((actualAllocations s.pools C).card:ℝ)/(C.absNorm:ℝ)*
         ∑B:actualAllocations s.pools C,(frozenControl B.val s.M)^2*(∏i,(child s C R B τ t).M i)^2):=by ring
     _≤((max 1 b)^N*E)*(D*(C.absNorm:ℝ)^(ε-1)*(∏i,s.M i)^2):=
-      mul_le_mul_of_nonneg_left hm (mul_nonneg (by positivity) hE)
+      mul_le_mul_of_nonneg_left (hmass hcard s C R hC.1 τ t) (mul_nonneg (by positivity) hE)
     _=_:=by ring
 
 end SevenEighths.CenteredMomentFirstCommonSourceBudget

@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical SchwartzMap
 namespace SevenEighths.ProbeGramCommon
-open ProbePhysical CanonicalQuadraticSieve CompletedGauss RayFourExpansion ConcreteTraceCRT
-open CenteredMomentMobiusRegroup UniqueFactorizationMonoid
+open ProbePhysical CanonicalQuadraticSieve CompletedGauss RayFourExpansion ConcreteTraceCRT CenteredMomentMobiusRegroup UniqueFactorizationMonoid
 local notation "O" => ActualEisensteinCubic.O
 local notation "Id" => Ideal O
 
@@ -62,9 +61,7 @@ theorem originalCommonBlock_eq_rectangle (S : Finset Id) (hS : ∀p∈S,p.IsMaxi
         canonicalLatticeBlock S hS σ C k (primaryGenerator D.val) W U v
           ((Ideal.absNorm (Ideal.span {k.val}):ℝ)/((Y^2/Q)/gramIdealNorm C))
           (Y/(gramIdealNorm C*gramIdealNorm D)) := by
-  rw [sourceMobiusWeight_rectangle F W hW Y hY C hC]
-  rw [originalCommonBlock_eq_lattice S hS hbad σ C k W hW Y Q hY hQ U v]
-  rw [←sourceDivisors_sum W hW Y hY C]
+  rw [sourceMobiusWeight_rectangle F W hW Y hY C hC, originalCommonBlock_eq_lattice S hS hbad σ C k W hW Y Q hY hQ U v, ←sourceDivisors_sum W hW Y hY C]
   apply Finset.sum_congr rfl
   intro D hD
   congr 1

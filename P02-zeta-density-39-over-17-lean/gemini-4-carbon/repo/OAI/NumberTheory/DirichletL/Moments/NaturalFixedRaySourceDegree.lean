@@ -1,7 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.HeckeSlots
 
-set_option linter.privateModule false
 
 @[expose] public section
 
@@ -11,10 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentNaturalFixedRaySource
-open HeckeFamily CenteredMomentHeckeHeight CenteredMomentHeckeVolume
-open CenteredMomentHeckeCancellation CenteredMomentHeckeTwist CenteredMomentLattice
-open CenteredMomentMask CenteredMomentTwist CenteredMomentHeight CenteredMomentHeckeSlots
-open QuadraticInitialBound EisensteinSchwartzPoisson
+open HeckeFamily CenteredMomentHeckeHeight CenteredMomentHeckeVolume CenteredMomentHeckeCancellation CenteredMomentHeckeTwist CenteredMomentLattice CenteredMomentMask CenteredMomentTwist CenteredMomentHeight CenteredMomentHeckeSlots QuadraticInitialBound EisensteinSchwartzPoisson
 local notation "O" => HeckeFamily.O
 variable {ι : Type*} [Fintype ι]
 

@@ -25,11 +25,9 @@ theorem chain_rowwise {ι : Type*} (rows : Finset ι) (M : ℕ→ι→ℝ→ℝ�
     if j=0 then (if k=0 then M 0 i x y else I*M 1 i x y)
     else (if k=0 then -M 1 i x y else -(I*M 2 i x y))
   have cF (j k : Fin 2) (i : ι) (hi : i∈rows) : Continuous (Function.uncurry (F j k i)) := by
-    have c0 := cm 0 i (by norm_num)
     have c1 := cm 1 i (by norm_num)
-    have c2 := cm 2 i (by norm_num)
     fin_cases j <;> fin_cases k
-    · simpa [F] using c0
+    · simpa [F] using (cm 0 i (by norm_num))
     · convert c1.const_mul I using 1
       ext p
       simp [F]
@@ -38,7 +36,7 @@ theorem chain_rowwise {ι : Type*} (rows : Finset ι) (M : ℕ→ι→ℝ→ℝ�
       ext p
       simp [F]
       rfl
-    · convert (c2.const_mul I).neg using 1
+    · convert ((cm 2 i (by norm_num)).const_mul I).neg using 1
       ext p
       simp [F]
       rfl

@@ -10,10 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSecondSixthReduction
-open HeckeFamily HeckeRowClosure CanonicalRowCompletion CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
-open CenteredMomentCanonicalFirst CenteredMomentSecondMovingSupport CenteredMomentFixedRowMask
-open CenteredExceptionalProfile CenteredMomentSupportedCorrelation
+open HeckeFamily HeckeRowClosure CanonicalRowCompletion CanonicalQuadraticSieve CompletedGauss CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentCanonicalFirst CenteredMomentSecondMovingSupport CenteredMomentFixedRowMask CenteredExceptionalProfile CenteredMomentSupportedCorrelation
 local notation "O" => ActualEisensteinCubic.O
 
 def reducedNumerator (C D : Ideal O) (U : Finset (CommonIndex C D)) : O :=
@@ -49,10 +46,6 @@ theorem reducedNumerator_ne_zero (C D : Ideal O) (hC : Supported C) (U : Finset 
   Finset.prod_ne_zero_iff.mpr (fun P _=>pow_ne_zero _
     (supported_element_ne_zero _ (commonPrime_supported C D hC P)))
 
-theorem sixthFactor_ne_zero (C D : Ideal O) (hC : Supported C) (U : Finset (CommonIndex C D)) :
-    sixthFactor C D U≠0 :=
-  Finset.prod_ne_zero_iff.mpr (fun P _=>pow_ne_zero _
-    (supported_element_ne_zero _ (commonPrime_supported C D hC P)))
 
 theorem fixed_sixth_row (η : Character) (m h n : O) (C D : Ideal O)
     (U : Finset (CommonIndex C D)) :
@@ -77,7 +70,8 @@ theorem fixed_sixth_inducing_iff (η : Character) (Q : Ideal O) (m h : O)
     unfold FixedInducingRow
     simp only [fixed_sixth_row]
   exact he.trans (fixedInducingRow_mul_mask_iff η Q m (sixthFactor C D U)
-    (reducedNumerator C D U) h hm (sixthFactor_ne_zero C D hC U)
+    (reducedNumerator C D U) h hm ((Finset.prod_ne_zero_iff.mpr (fun P _=>pow_ne_zero _
+    (supported_element_ne_zero _ (commonPrime_supported C D hC P)))))
     (reducedNumerator_ne_zero C D hC U) hh hmLam hm2)
 
 end SevenEighths.CenteredMomentSecondSixthReduction

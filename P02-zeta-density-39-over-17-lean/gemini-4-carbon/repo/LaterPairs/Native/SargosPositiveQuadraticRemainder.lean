@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 
 @[expose] public section
 set_option autoImplicit false
@@ -18,9 +27,7 @@ open scoped ContDiff FourierTransform ComplexConjugate
 namespace TaoTrudgianYang2025
 
 theorem sargos_fourier_conj (t : ℝ) :
-    conj (𝐞 (-t) : ℂ) = (𝐞 t : ℂ) := by
-  rw [AddChar.map_neg_eq_inv,Circle.coe_inv_eq_conj]
-  simp
+    conj (𝐞 (-t) : ℂ) = (𝐞 t : ℂ) := by simp
 
 theorem sargos_positive_quadratic_conj (T z : ℝ) :
     conj (betaQuadraticKernel T z) = (𝐞 ((T/2)*z^2) : ℂ) := by
@@ -36,9 +43,9 @@ theorem sargos_positive_quadratic_global_remainder {W : ℝ → ℝ} {T H M₀ M
         quadraticRemainderConstant H M₀ M₂ M₃/T := by
   have he :
       (∫ z : ℝ, (W z : ℂ)*(𝐞 ((T/2)*z^2) : ℂ))-
-        (W 0 : ℂ)*((𝐞 ((1 : ℝ)/8) : ℂ)/(Real.sqrt T : ℂ)) =
+        (W 0 : ℂ)*((𝐞 (1/8) : ℂ)/(Real.sqrt T : ℂ)) =
       conj ((∫ z : ℝ, (W z : ℂ)*betaQuadraticKernel T z)-
-        (W 0 : ℂ)*((𝐞 (-(1 : ℝ)/8) : ℂ)/(Real.sqrt T : ℂ))) := by
+        (W 0 : ℂ)*((𝐞 (-1/8) : ℂ)/(Real.sqrt T : ℂ))) := by
     rw [map_sub,← integral_conj]
     simp only [map_mul,map_div₀,Complex.conj_ofReal,sargos_positive_quadratic_conj,
       neg_div,sargos_fourier_conj]

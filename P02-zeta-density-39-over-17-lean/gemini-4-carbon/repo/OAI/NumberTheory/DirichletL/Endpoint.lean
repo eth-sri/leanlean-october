@@ -50,7 +50,7 @@ theorem balanceDenominator_bounds {δ y : ℝ}
     35 / 54 ≤ balanceDenominator δ y ∧ balanceDenominator δ y ≤ 5 / 2 := by
   obtain ⟨hd0, hd1⟩ := denominator_bounds hy0 hy1
   obtain ⟨hp0, hp1⟩ := primeWeight_bounds hy0 hy1
-  have ha : 0 ≤ 5 / 6 - δ := sub_nonneg.mpr hδ1
+  have ha := sub_nonneg.mpr hδ1
   have hl1 := mul_le_mul_of_nonneg_left hd0 ha
   have hl2 := mul_le_mul_of_nonneg_left hp0 hδ0
   have hu1 := mul_le_mul_of_nonneg_left hd1 ha
@@ -85,22 +85,21 @@ theorem balanced_endpoint_margin {δ y : ℝ}
   have hid := endpoint_identity δ y (ne_of_gt hJpos)
   have hcert : 49 * (3 + 5 * y) ≤
       10368 * certificateWeight y * balanceDenominator δ y * (-balancedExponent δ y) := by
-    nlinarith only [hid, hrest, hsq]
+    nlinarith
   have hvhi : certificateWeight y ≤ 17 * (3 + 5 * y) := by
     dsimp [certificateWeight]
     linarith
   have hscaled : 49 * certificateWeight y ≤
       176256 * certificateWeight y * balanceDenominator δ y * (-balancedExponent δ y) := by
-    nlinarith only [hcert, hvhi]
+    nlinarith
   have hcancel : 49 ≤ 176256 * balanceDenominator δ y * (-balancedExponent δ y) := by
-    nlinarith only [hscaled, hvpos]
+    nlinarith
   have hEpos : 0 < -balancedExponent δ y := by
     by_contra hn
-    have hn' : -balancedExponent δ y ≤ 0 := le_of_not_gt hn
-    have hp := mul_nonpos_of_nonneg_of_nonpos (le_of_lt hJpos) hn'
-    nlinarith only [hcancel, hp]
+    have hp := mul_nonpos_of_nonneg_of_nonpos (le_of_lt hJpos) (le_of_not_gt hn)
+    nlinarith
   have hup := mul_le_mul_of_nonneg_right hJhi (le_of_lt hEpos)
-  nlinarith only [hcancel, hup]
+  nlinarith
 
 end
 

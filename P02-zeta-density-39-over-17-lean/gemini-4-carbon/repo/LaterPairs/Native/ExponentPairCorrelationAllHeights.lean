@@ -2,7 +2,16 @@ module
 public import TaoTrudgianYang2025.ExponentPairAllHeights
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.ExponentPairSourceCorrelation
 
 @[expose] public section
@@ -49,10 +58,9 @@ theorem sourceShiftCorrelation_bound_allHeights
   by_cases hrL : r ≤ L
   · have hηpos : 0 < (r : ℝ)/N := div_pos (Nat.cast_pos.mpr hr) hNpos
     have hηcap : (r : ℝ)/N ≤ η₀ := (div_le_iff₀ hNpos).mpr hrN
-    have hphase := hmodel F ((r : ℝ)/N) hF hηpos hηcap
     have hend := sourceShiftCorrelation_compressed_endpoints ha hb hrlt hrL
     have hsum := hbound (σ*T*r/N) (N-r) (aProcessShiftPhase F σ ((r : ℝ)/N))
-      (a-r) ((a-r)+(L-r)) hdual hNr hend.1 hend.2 hphase
+      (a-r) ((a-r)+(L-r)) hdual hNr hend.1 hend.2 (hmodel F ((r : ℝ)/N) hF hηpos hηcap)
     rw [norm_sourceShiftCorrelation_compressed_sum hNpos.ne'
       (zero_lt_one.trans_le hNr).ne' hσ.ne' hr hra hrL]
     exact hsum

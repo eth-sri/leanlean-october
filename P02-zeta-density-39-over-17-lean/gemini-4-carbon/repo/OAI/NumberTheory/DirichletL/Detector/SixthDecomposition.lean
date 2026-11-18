@@ -16,13 +16,13 @@ local notation "Id" => Ideal O
 
 theorem sixthRow_surjective (H : NonzeroFrequency) :
     ∃p : FreeRow×HeckeInverseAmplification.NonzeroIdeal,rowMap p=H.val := by
-  let I : Id := Ideal.span {H.val}
-  have hI : I≠0 := Ideal.span_singleton_eq_bot.not.mpr H.property
-  let J : Id := sixthQuotient I
-  have hJ : J≠0 := sixthQuotient_ne_zero I
+  let I := Ideal.span {H.val}
+  have hI := Ideal.span_singleton_eq_bot.not.mpr H.property
+  let J := sixthQuotient I
+  have hJ := sixthQuotient_ne_zero I
   let a := idealGenerator J
-  have ha : a≠0 := idealGenerator_ne_zero J hJ
-  have hspan : Ideal.span {a}=J := span_idealGenerator J
+  have ha := idealGenerator_ne_zero J hJ
+  have hspan := span_idealGenerator J
   have hd : a^6∣H.val := by
     apply Ideal.span_singleton_dvd_span_singleton_iff_dvd.mp
     rw [←Ideal.span_singleton_pow,hspan]

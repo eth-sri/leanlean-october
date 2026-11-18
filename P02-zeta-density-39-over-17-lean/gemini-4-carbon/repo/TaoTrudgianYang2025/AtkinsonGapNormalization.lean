@@ -39,7 +39,6 @@ theorem atkinsonGapSlopeProfile_zero (r x : ℝ) :
     atkinsonGapSlopeProfile 0 r x = 1/Real.sqrt x := by
   unfold atkinsonGapSlopeProfile
   simp only [zero_mul,add_zero,Real.sqrt_one]
-  have hs : Real.sqrt r+1 ≠ 0 := by positivity
   field_simp
 
 theorem atkinsonIndexRealSlope_scaled {M T u x : ℝ}
@@ -66,7 +65,7 @@ theorem hasDerivAt_atkinsonNormalizedGapPhase {M t u x : ℝ}
     HasDerivAt (atkinsonNormalizedGapPhase M t u)
       (atkinsonGapSlopeProfile (Real.pi*M/(2*u)) (t/u) x) x := by
   have ht := hu.trans htu
-  have hMx : 0 < M*x := mul_pos hM hx
+  have hMx := mul_pos hM hx
   have hd := ((hasDerivAt_atkinsonIndexPhaseDifference ht hu hMx).comp x
     ((hasDerivAt_id x).const_mul M)).div_const (atkinsonGapFrequency M t u)
   simp only [mul_one] at hd
@@ -76,17 +75,13 @@ theorem hasDerivAt_atkinsonNormalizedGapPhase {M t u x : ℝ}
   apply hd.congr_deriv
   rw [atkinsonIndexRealSlope_sub_eq ht hu hMx,
     atkinsonIndexRealSlope_scaled hM ht hu hx,
-    atkinsonIndexRealSlope_scaled hM hu hu hx]
-  rw [div_self hu.ne']
+    atkinsonIndexRealSlope_scaled hM hu hu hx, div_self hu.ne']
   have hS : 0 < Real.sqrt (2*Real.pi*u/M) := by positivity
-  have hX : 0 < Real.sqrt x := Real.sqrt_pos.mpr hx
   have hSum : 0 < Real.sqrt (t/u+(Real.pi*M/(2*u))*x)+
       Real.sqrt (1+(Real.pi*M/(2*u))*x) := by positivity
-  have hGap : t-u ≠ 0 := sub_ne_zero.mpr htu.ne'
   unfold atkinsonGapFrequency atkinsonGapSlopeProfile
-  have hsq := Real.sq_sqrt hx.le
-  field_simp [hM.ne',hu.ne',hx.ne',hS.ne',hX.ne',hSum.ne',hGap,Real.pi_ne_zero]
-  nlinarith [hsq]
+  field_simp [hM.ne',hu.ne',hx.ne',hS.ne',(Real.sqrt_pos.mpr hx).ne',hSum.ne',(sub_ne_zero.mpr htu.ne'),Real.pi_ne_zero]
+  nlinarith [(Real.sq_sqrt hx.le)]
 
 theorem contDiffAt_atkinsonGapSlopeProfile
     {q r x : ℝ} (hr : 0 < r) (hx : 0 < x)
@@ -95,8 +90,6 @@ theorem contDiffAt_atkinsonGapSlopeProfile
       (fun p : ℝ × ℝ × ℝ => atkinsonGapSlopeProfile p.1 p.2.1 p.2.2)
       (q,r,x) := by
   unfold atkinsonGapSlopeProfile
-  have hden : Real.sqrt x*(Real.sqrt (r+q*x)+Real.sqrt (1+q*x)) ≠ 0 := by
-    positivity
   fun_prop (disch := positivity)
 
 end TaoTrudgianYang2025

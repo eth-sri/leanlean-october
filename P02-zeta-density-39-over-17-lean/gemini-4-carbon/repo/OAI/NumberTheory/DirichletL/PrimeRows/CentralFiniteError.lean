@@ -26,9 +26,7 @@ lemma central_prime_tuple_count {K : ℕ} (T : Fin K→Finset PrimeIdeal)
     simpa only [Finset.card_image_of_injective _ Subtype.val_injective,mul_assoc] using hh
   rw [Fintype.card_pi,Nat.cast_prod]
   simp only [Fintype.card_coe]
-  calc
-    _ ≤ ∏j,128*b*Z^(length j) := Finset.prod_le_prod₀ (fun j _=>Nat.cast_nonneg _) (fun j _=>hc j)
-    _ = _ := by rw [Finset.prod_mul_distrib,Finset.prod_const,Finset.card_univ,Fintype.card_fin,←Real.rpow_sum_of_pos hZ,hl]
+  exact (Finset.prod_le_prod₀ (fun j _=>Nat.cast_nonneg _) (fun j _=>hc j)).trans_eq (by rw [Finset.prod_mul_distrib,Finset.prod_const,Finset.card_univ,Fintype.card_fin,←Real.rpow_sum_of_pos hZ,hl])
 
 end SevenEighths.ProbeHighRowFamily
 

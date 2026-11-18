@@ -11,23 +11,10 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstMaskedFamily
-open HeckeFamily HeckeRowClosure CanonicalRowCompletion CanonicalQuadraticSieve
-open ConcretePrimeRowBridge CompletedGauss RayFourExpansion
-open CenteredMomentFixedRowMask
-open CenteredMomentFirstFamily CenteredMomentFirstIdealFamily CenteredMomentFirstCanonicalFamily
-open CenteredMomentFirstColumns CenteredMomentCanonicalFirst CenteredMomentCommonSupport
-open CenteredMomentHeckeExpansion CenteredMomentHeckeColumnWindow CenteredMomentSourceRow
-open CenteredMomentAmplificationRadicalFamily CenteredMomentAmplificationActiveFactor
-open CenteredMomentAmplificationShortening CenteredMomentAmplificationSourceDomain
-open CenteredMomentAmplificationFamily CenteredMomentSourceAllocationEnergy
-open CenteredMomentAmplificationFamilyEnergy CenteredMomentOriginalChildEnergy
-open CenteredMomentGaussEnergy CenteredMomentLiveDomain CenteredMomentPrimaryCharacter
-open ActualEisensteinCubic ConcreteTraceCRT CenteredMomentChildAssembly CenteredMomentChildRows
+open HeckeFamily HeckeRowClosure CanonicalRowCompletion CanonicalQuadraticSieve ConcretePrimeRowBridge CompletedGauss RayFourExpansion CenteredMomentFixedRowMask CenteredMomentFirstFamily CenteredMomentFirstIdealFamily CenteredMomentFirstCanonicalFamily CenteredMomentFirstColumns CenteredMomentCanonicalFirst CenteredMomentCommonSupport CenteredMomentHeckeExpansion CenteredMomentHeckeColumnWindow CenteredMomentSourceRow CenteredMomentAmplificationRadicalFamily CenteredMomentAmplificationActiveFactor CenteredMomentAmplificationShortening CenteredMomentAmplificationSourceDomain CenteredMomentAmplificationFamily CenteredMomentSourceAllocationEnergy CenteredMomentAmplificationFamilyEnergy CenteredMomentOriginalChildEnergy CenteredMomentGaussEnergy CenteredMomentLiveDomain CenteredMomentPrimaryCharacter ActualEisensteinCubic ConcreteTraceCRT CenteredMomentChildAssembly CenteredMomentChildRows
 local notation "O" => HeckeFamily.O
 local notation "fixedBadMask" => (goodLambda*(2:O))
 
-lemma fixed_mask_ne_zero : fixedBadMask≠0 :=
-  mul_ne_zero PrimaryIdealUnitReindex.lambda_prime_actual.ne_zero (by norm_num)
 
 def idealMask (u : O) (I : Ideal O) : ℂ := if IsCoprime I (Ideal.span {u}) then 1 else 0
 
@@ -81,8 +68,8 @@ theorem exists_canonical_masked_pair (η : Character) (C D : Ideal O)
         rowWeight η (fixedBadMask*u) 1 1 t I*
           (rightCoefficient e r ρ (primaryGenerator I)*rayCharacter ξ₂ (primaryGenerator I)) =
           idealMask u I*heightCoeff τ₂ t I) := by
-  obtain ⟨τ₁,τ₂,hM₁,hM₂,h₁,h₂⟩ := exists_first_ideal_pair η fixedBadMask fixed_mask_ne_zero
-    (dvd_mul_right goodLambda (2:O)) (dvd_mul_left (2:O) goodLambda) C D hC E ξ₁ ξ₂
+  obtain ⟨τ₁,τ₂,hM₁,hM₂,h₁,h₂⟩ := exists_first_ideal_pair η fixedBadMask (mul_ne_zero PrimaryIdealUnitReindex.lambda_prime_actual.ne_zero (by norm_num))
+    (dvd_mul_right goodLambda 2) (dvd_mul_left 2 goodLambda) C D hC E ξ₁ ξ₂
   refine ⟨τ₁,τ₂,hM₁,hM₂,h₁,h₂,?_,?_⟩
   · intro u I hI t
     rw [rowWeight_mask_factor η u I hI t,heightCoeff,h₁ I hI t]

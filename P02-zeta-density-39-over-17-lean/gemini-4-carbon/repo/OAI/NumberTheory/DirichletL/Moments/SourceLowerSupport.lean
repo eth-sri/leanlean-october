@@ -10,8 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentSourceLowerSupport
-open CenteredMomentSourceProfileMass CenteredMomentSourceMass CenteredMomentAddedZeroUniform
-open CenteredMomentRectangle
+open CenteredMomentSourceProfileMass CenteredMomentSourceMass CenteredMomentAddedZeroUniform CenteredMomentRectangle
 local notation "O" => ActualEisensteinCubic.O
 
 lemma tuple_norm_product {ι:Type*} [Fintype ι] (v:Tuple ι) :
@@ -34,11 +33,9 @@ lemma tuple_norm_product {ι:Type*} [Fintype ι] (v:Tuple ι) :
       (Ideal.absNorm (finiteTupleProduct v):ℝ) := by
   have hslot:∀i,Wslot i ((Ideal.absNorm (v (Sum.inl i)):ℝ)/P i)≠0:=by
     intro i
-    have hp: (∏j,ν j (v (Sum.inl j))*Wslot j ((Ideal.absNorm (v (Sum.inl j)):ℝ)/P j))≠0 :=
-      (mul_ne_zero_iff.mp (mul_ne_zero_iff.mp (mul_ne_zero_iff.mp hv).1).1).1
+    have hp := (mul_ne_zero_iff.mp (mul_ne_zero_iff.mp (mul_ne_zero_iff.mp hv).1).1).1
     exact (mul_ne_zero_iff.mp (Finset.prod_ne_zero_iff.mp hp i (Finset.mem_univ _))).2
-  have hrect:idealRectangle W₁ W₂ X₁ X₂ Y₁ Y₂ (B₁*v (Sum.inr 0)) (B₂*v (Sum.inr 1))≠0:=
-    (mul_ne_zero_iff.mp (mul_ne_zero_iff.mp hv).1).2
+  have hrect := (mul_ne_zero_iff.mp (mul_ne_zero_iff.mp hv).1).2
   have hslots:(∏i,a i)*(∏i,P i)≤∏i,(Ideal.absNorm (v (Sum.inl i)):ℝ):=by
     rw [←Finset.prod_mul_distrib]
     apply Finset.prod_le_prod₀ (fun i _=>mul_nonneg (ha i) (hP i).le)
@@ -53,11 +50,7 @@ lemma tuple_norm_product {ι:Type*} [Fintype ι] (v:Tuple ι) :
           W₂ ((Ideal.absNorm (B₂*v (Sum.inr 1)):ℝ)/Y)≠0) :
         a₁*a₂*T≤(Ideal.absNorm B₁:ℝ)*Ideal.absNorm B₂*
           ((Ideal.absNorm (v (Sum.inr 0)):ℝ)*Ideal.absNorm (v (Sum.inr 1))) := by
-      have h1: a₁*X≤(Ideal.absNorm (B₁*v (Sum.inr 0)):ℝ):=
-        (le_div_iff₀ hX).mp (hs₁ _ (mul_ne_zero_iff.mp hn).1)
-      have h2: a₂*Y≤(Ideal.absNorm (B₂*v (Sum.inr 1)):ℝ):=
-        (le_div_iff₀ hY).mp (hs₂ _ (mul_ne_zero_iff.mp hn).2)
-      have hh:=mul_le_mul h1 h2 (mul_nonneg ha₂ hY.le) (Nat.cast_nonneg _)
+      have hh:=mul_le_mul ((le_div_iff₀ hX).mp (hs₁ _ (mul_ne_zero_iff.mp hn).1)) ((le_div_iff₀ hY).mp (hs₂ _ (mul_ne_zero_iff.mp hn).2)) (mul_nonneg ha₂ hY.le) (Nat.cast_nonneg _)
       simp only [map_mul,Nat.cast_mul] at hh
       rw [←hXY]
       nlinarith
@@ -70,8 +63,7 @@ lemma tuple_norm_product {ι:Type*} [Fintype ι] (v:Tuple ι) :
         exact hrect (by rw [hx,hy,sub_self])
       exact hbranch Y₁ Y₂ hY₁ hY₂ hYT hy
     · exact hbranch X₁ X₂ hX₁ hX₂ hXT hx
-  have hT:0<T:=hXT ▸ mul_pos hX₁ hX₂
-  have hp:=mul_le_mul hslots hplain (mul_nonneg (mul_nonneg ha₁ ha₂) hT.le)
+  have hp:=mul_le_mul hslots hplain (mul_nonneg (mul_nonneg ha₁ ha₂) (hXT ▸ mul_pos hX₁ hX₂).le)
     (Finset.prod_nonneg (fun _ _=>Nat.cast_nonneg _))
   rw [tuple_norm_product]
   have he:(∏i,a i)*a₁*a₂*(T/((Ideal.absNorm B₁:ℝ)*Ideal.absNorm B₂))*(∏i,P i)=

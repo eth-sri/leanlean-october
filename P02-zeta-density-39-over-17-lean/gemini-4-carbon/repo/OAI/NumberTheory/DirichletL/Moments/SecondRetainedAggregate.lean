@@ -9,12 +9,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondRetainedAggregate
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentSourceRow CenteredMomentFirstSectors CenteredMomentCanonicalFirst
-open CenteredMomentSecondLocalization CenteredMomentSecondSourceRetained CenteredMomentSecondSourceFrequency
-open CenteredMomentSecondSectorFrequency CenteredMomentSecondSectorRetained CenteredMomentSectorLocalization
-open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
-open CenteredMomentHeckeColumnWindow CenteredMomentCompleteCommon
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss CenteredMomentSourceRow CenteredMomentFirstSectors CenteredMomentCanonicalFirst CenteredMomentSecondLocalization CenteredMomentSecondSourceRetained CenteredMomentSecondSourceFrequency CenteredMomentSecondSectorFrequency CenteredMomentSecondSectorRetained CenteredMomentSectorLocalization CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentHeckeColumnWindow CenteredMomentCompleteCommon
 local notation "O" => ActualEisensteinCubic.O
 
 theorem commonLabels_supported (S : Finset (Ideal O)) (C D : Ideal O)
@@ -41,8 +36,7 @@ theorem original_retained_energy_GV (η : Character) (t : ℝ)
                 (physicalKernel p.val.1 p.val.2 W K (frequencyRadius Tsec Z ξ))
                 ((commonFrequencyGenerator p.val.1 p.val.2*
                   nonunitFrequencyGenerator p.val.1 p.val.2 U)*h) else 0 := by
-  rw [retainedEnergy_common_sectors]
-  rw [←Finset.sum_coe_sort]
+  rw [retainedEnergy_common_sectors, ←Finset.sum_coe_sort]
   apply Finset.sum_congr rfl
   intro p hp
   exact original_retained_sector_GV η t S β p.val.1 p.val.2

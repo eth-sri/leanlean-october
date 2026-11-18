@@ -13,28 +13,11 @@ public import OAI.NumberTheory.DirichletL.Energy.InputParentCapacity
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
 open Filter
+open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyFirstLiveAdmission
-open HeckeFamily CanonicalQuadraticSieve ConcreteTraceCRT ConcretePrimeRowBridge
-open ActualEisensteinCubic CenteredMomentCanonicalFirst CenteredMomentSourceMass
-open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum
-open CenteredMomentCommonProfile CenteredMomentAmplificationChildInput
-open CenteredMomentAmplificationChildSourceCaps CenteredMomentOriginalCommonHarmonic
-open CenteredMomentFirstSecondInputGates CenteredMomentFirstSecondActiveErrorGates
-open CenteredMomentFirstPhysicalSource CenteredMomentFirstPhysicalDyadicRows
-open CenteredMomentFirstAmplifiedRadiusLower CenteredMomentFirstScale
-open CenteredMomentFirstAmplificationChoice CenteredMomentAmplifiedRetainedRadius
-open CenteredMomentFirstAnnularInput CenteredMomentSectorLocalization
-open CenteredMomentSecondInputCapacitySource CenteredMomentFirstSourceConductorCaps
-open CenteredMomentEnergyInputParentCapacity CenteredMomentEnergyBands
-open CenteredMomentEnergyAmplifiedChildWidth CenteredMomentSecondHeightFamily
-open CenteredMomentSourceLiveColumn CenteredMomentActiveSource
-open CenteredMomentPrimePool CenteredMomentPrimeElements
-open CenteredMomentAmplificationRadicalFamily CenteredMomentAmplificationActiveFactor
-open CenteredMomentChildRows CompletedGauss RayFourExpansion
-open CenteredMomentLogDyadic CenteredMomentRowNorm
+open HeckeFamily CanonicalQuadraticSieve ConcreteTraceCRT ConcretePrimeRowBridge ActualEisensteinCubic CenteredMomentCanonicalFirst CenteredMomentSourceMass CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentCommonProfile CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps CenteredMomentOriginalCommonHarmonic CenteredMomentFirstSecondInputGates CenteredMomentFirstSecondActiveErrorGates CenteredMomentFirstPhysicalSource CenteredMomentFirstPhysicalDyadicRows CenteredMomentFirstAmplifiedRadiusLower CenteredMomentFirstScale CenteredMomentFirstAmplificationChoice CenteredMomentAmplifiedRetainedRadius CenteredMomentFirstAnnularInput CenteredMomentSectorLocalization CenteredMomentSecondInputCapacitySource CenteredMomentFirstSourceConductorCaps CenteredMomentEnergyInputParentCapacity CenteredMomentEnergyBands CenteredMomentEnergyAmplifiedChildWidth CenteredMomentSecondHeightFamily CenteredMomentSourceLiveColumn CenteredMomentActiveSource CenteredMomentPrimePool CenteredMomentPrimeElements CenteredMomentAmplificationRadicalFamily CenteredMomentAmplificationActiveFactor CenteredMomentChildRows CompletedGauss RayFourExpansion CenteredMomentLogDyadic CenteredMomentRowNorm
 local notation "O" => HeckeFamily.O
 local instance {ι : Type*} : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
@@ -48,9 +31,8 @@ theorem first_block_active_rows_nonempty
       (dyadicScale (n 2)) (dyadicScale (n 3)) ≠ 0) :
     (activeRows rows n).Nonempty := by
   by_contra h
-  have he : activeRows rows n = ∅ := Finset.not_nonempty_iff_eq_empty.mp h
   apply hne
-  rw [block_activeRows, he]
+  rw [block_activeRows, (Finset.not_nonempty_iff_eq_empty.mp h)]
   simp only [block, Finset.sum_empty, mul_zero]
 
 def columnIdeal (C D : Ideal O) (right : Bool) : Ideal O := if right then D else C
@@ -133,18 +115,13 @@ theorem eventual_parent_radius (N : ℕ) (b b₁ b₂ : ℝ)
       ∀ A : ℝ, volume s ≤ Z^A → sourceRadius s ≤ Z^(A+1) := by
   let G := b^N*b₁*b₂
   have hG : 1 ≤ G := by
-    have hp : 1 ≤ b^N := one_le_pow₀ hb
-    dsimp [G]
-    exact one_le_mul_of_one_le_of_one_le (one_le_mul_of_one_le_of_one_le hp hb₁) hb₂
+    exact one_le_mul_of_one_le_of_one_le (one_le_mul_of_one_le_of_one_le (one_le_pow₀ hb) hb₁) hb₂
   filter_upwards [eventual_geometry G 1 hG (by norm_num)] with Z hZ
   refine ⟨hZ.1, ?_⟩
   intro ι _ _ s hc he A hV
-  have hr := (radius_bound N b b₁ b₂ hb hb₁ hb₂ s hc he).2
-  have hg : G ≤ Z := by simpa only [Real.rpow_one] using hZ.2.1
-  apply hr.trans
-  calc
-    G * volume s ≤ Z * Z^A := mul_le_mul hg hV (volume_pos s).le (zero_lt_one.trans hZ.1).le
-    _ = Z^(A+1) := by rw [Real.rpow_add_one (zero_lt_one.trans hZ.1).ne']; ring
+  have hg : G ≤ Z := by simpa using hZ.2.1
+  apply ((radius_bound N b b₁ b₂ hb hb₁ hb₂ s hc he).2).trans
+  exact (mul_le_mul hg hV (volume_pos s).le (zero_lt_one.trans hZ.1).le).trans_eq (by rw [Real.rpow_add_one (zero_lt_one.trans hZ.1).ne']; ring)
 
 theorem eventually_main_packet (N : ℕ) (b b₁ b₂ l a A P : ℝ)
     (hb : 1 ≤ b) (hb₁ : 1 ≤ b₁) (hb₂ : 1 ≤ b₂)

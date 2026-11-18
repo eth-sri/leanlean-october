@@ -7,9 +7,8 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 noncomputable section
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic FirstPassCubeLabels
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion
-open ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic FirstPassCubeLabels
 local notation "O" => ActualEisensteinCubic.O
 
 theorem marked_column_zero_of_subunit (Ψ : O→*ℂ) (W : ℝ→ℂ) (b Y : ℝ)
@@ -40,14 +39,12 @@ theorem markedReopenedCubeBin_eq_active (hX : 0<X) (hW : ∀ t,W t≠0→t≤b) 
       Ψ m f z W X H₀ slots lists a =
     markedReopenedCubeBin S D (activeCubeExponents S D b X) Ψ m f z W X H₀ slots lists a := by
   unfold markedReopenedCubeBin activeCubeExponents
-  dsimp only
   symm
   apply Finset.sum_subset (Finset.filter_subset _ _)
   intro v hv hn
   have hlarge : b*X<(Ideal.absNorm (cubeIdeal (InitialMeanSquare.outsideSquarefreeIdeals S D) v):ℝ)^3 := by
     exact lt_of_not_ge (fun hh=>hn (Finset.mem_filter.mpr ⟨hv,hh⟩))
-  have hN : 0<(Ideal.absNorm (cubeIdeal (InitialMeanSquare.outsideSquarefreeIdeals S D) v):ℝ) :=
-    lt_of_lt_of_le zero_lt_one (norm_at_least_one _ (cubeIdeal_ne_zero _ v))
+  have hN := lt_of_lt_of_le zero_lt_one (norm_at_least_one _ (cubeIdeal_ne_zero _ v))
   have hsub : b*(X/(Ideal.absNorm (cubeIdeal (InitialMeanSquare.outsideSquarefreeIdeals S D) v):ℝ)^3)<1 := by
     rw [←mul_div_assoc]
     exact (div_lt_one (pow_pos hN _)).mpr hlarge
@@ -58,7 +55,6 @@ theorem markedReopenedCubeBin_log_bins :
     ∑ j∈cubeLogRange b X,
       markedReopenedCubeBin S D (activeCubeLogBin S D b X j) Ψ m f z W X H₀ slots lists a := by
   unfold markedReopenedCubeBin
-  dsimp only
   exact sum_activeCubeLogBins S D b X _
 
 def markedShortCompletedSum (Ψrow : O→*ℂ) (W : ℝ→ℂ) (X H₀ : ℝ) (mark : Ideal O→ℂ) : ℂ :=
@@ -73,8 +69,7 @@ theorem original_marked_reopened_binned (hbad : fixedBadPrimes⊆S) (hSp : ∀ P
       (indexedIdealMark (fun i:primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)=>i.val) slots lists a) +
     ∑ j∈cubeLogRange b X,
       markedReopenedCubeBin S D (activeCubeLogBin S D b X j) Ψ m f z W X H₀ slots lists a := by
-  rw [original_marked_split_to_bins S D hbad hSp Ψ m f z W hWc b X H₀ hX hW hD]
-  rw [markedReopenedCubeBin_eq_active S D Ψ m f z W b X H₀ slots lists a hX hW,
+  rw [original_marked_split_to_bins S D hbad hSp Ψ m f z W hWc b X H₀ hX hW hD, markedReopenedCubeBin_eq_active S D Ψ m f z W b X H₀ slots lists a hX hW,
     markedReopenedCubeBin_log_bins]
   rfl
 

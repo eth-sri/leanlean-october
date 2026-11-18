@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaQuadraticRemainder
 
 @[expose] public section
@@ -25,7 +35,7 @@ theorem abs_segmentTaylorAverage_le_closed
     (ha : a ∈ Icc l r) (hx : x ∈ Icc l r) (k : ℕ)
     (hb : ∀ u ∈ Icc l r, |iteratedDeriv k f u| ≤ M) :
     |segmentTaylorAverage f a k x| ≤ M := by
-  have hpoint : ∀ᵐ t ∂volume.restrict (Icc (0 : ℝ) 1),
+  have hpoint : ∀ᵐ t ∂volume.restrict (Icc 0 1),
       ‖(1-t)*t^k*iteratedDeriv k f (a+t*(x-a))‖ ≤ M := by
     filter_upwards [ae_restrict_mem measurableSet_Icc] with t ht
     have hf : 0 ≤ (1-t)*t^k := mul_nonneg (by linarith [ht.2]) (pow_nonneg ht.1 k)
@@ -40,14 +50,13 @@ theorem abs_segmentTaylorAverage_le_closed
       constructor <;> nlinarith
     rw [norm_mul,Real.norm_eq_abs,abs_of_nonneg hf]
     exact (mul_le_of_le_one_left (norm_nonneg _) hf').trans (hb _ hseg)
-  have h := norm_integral_le_of_norm_le_const hpoint
-  simpa [segmentTaylorAverage,Real.norm_eq_abs,Measure.real] using h
+  simpa [segmentTaylorAverage,Real.norm_eq_abs,Measure.real] using (norm_integral_le_of_norm_le_const hpoint)
 
 theorem abs_quadraticTaylorCoefficient_le_local {W : ℝ → ℝ} {H M z : ℝ}
     (hH : 0 ≤ H) (hb : ∀ x ∈ Icc (-H) H, |iteratedDeriv 2 W x| ≤ M)
     (hz : z ∈ Icc (-H) H) :
     |quadraticTaylorCoefficient W z| ≤ M := by
-  apply abs_segmentTaylorAverage_le_closed (show (0 : ℝ) ∈ Icc (-H) H by constructor <;> linarith) hz 0
+  apply abs_segmentTaylorAverage_le_closed (show 0 ∈ Icc (-H) H by constructor <;> linarith) hz 0
   intro x hx
   simpa only [iteratedDeriv_succ,iteratedDeriv_zero] using hb x hx
 
@@ -57,7 +66,7 @@ theorem abs_deriv_quadraticTaylorCoefficient_le_local {W : ℝ → ℝ} {H M z :
     (hz : z ∈ Icc (-H) H) :
     |deriv (quadraticTaylorCoefficient W) z| ≤ M := by
   rw [quadraticTaylorCoefficient_deriv hW]
-  apply abs_segmentTaylorAverage_le_closed (show (0 : ℝ) ∈ Icc (-H) H by constructor <;> linarith) hz 1
+  apply abs_segmentTaylorAverage_le_closed (show 0 ∈ Icc (-H) H by constructor <;> linarith) hz 1
   intro x hx
   simpa only [iteratedDeriv_succ,iteratedDeriv_zero] using hb x hx
 
@@ -151,24 +160,23 @@ theorem norm_quadratic_window_remainder_le_local
     (quadraticTaylorCoefficient_contDiff hW) hT hH
     (fun z hz => abs_quadraticTaylorCoefficient_le_local hH.le h₂ hz)
     (fun z hz => abs_deriv_quadraticTaylorCoefficient_le_local hW hH.le h₃ hz)
-  have htail := norm_betaQuadraticWindow_sub_main hT hH
   rw [integral_weighted_betaQuadraticKernel_taylor hW]
   have he :
       (W 0 : ℂ)*(∫ z in (-H)..H, betaQuadraticKernel T z)+
           (∫ z in (-H)..H, ((z^2*quadraticTaylorCoefficient W z : ℝ) : ℂ)*
             betaQuadraticKernel T z)-
-          (W 0 : ℂ)*((𝐞 (-(1 : ℝ)/8) : ℂ)/(Real.sqrt T : ℂ)) =
+          (W 0 : ℂ)*((𝐞 (-1/8) : ℂ)/(Real.sqrt T : ℂ)) =
       (W 0 : ℂ)*((∫ z in (-H)..H, betaQuadraticKernel T z)-
-          (𝐞 (-(1 : ℝ)/8) : ℂ)/(Real.sqrt T : ℂ))+
+          (𝐞 (-1/8) : ℂ)/(Real.sqrt T : ℂ))+
           ∫ z in (-H)..H, ((z^2*quadraticTaylorCoefficient W z : ℝ) : ℂ)*
             betaQuadraticKernel T z := by ring
   rw [he]
   apply (norm_add_le _ _).trans
   have hmain :
       ‖(W 0 : ℂ)*((∫ z in (-H)..H, betaQuadraticKernel T z)-
-        (𝐞 (-(1 : ℝ)/8) : ℂ)/(Real.sqrt T : ℂ))‖ ≤ M₀*(4/(T*H*Real.pi)) := by
+        (𝐞 (-1/8) : ℂ)/(Real.sqrt T : ℂ))‖ ≤ M₀*(4/(T*H*Real.pi)) := by
     rw [norm_mul,Complex.norm_real,Real.norm_eq_abs]
-    exact mul_le_mul h₀ htail (norm_nonneg _) ((abs_nonneg _).trans h₀)
+    exact mul_le_mul h₀ (norm_betaQuadraticWindow_sub_main hT hH) (norm_nonneg _) ((abs_nonneg _).trans h₀)
   apply (add_le_add hmain hparts).trans_eq
   unfold quadraticRemainderConstant
   field_simp

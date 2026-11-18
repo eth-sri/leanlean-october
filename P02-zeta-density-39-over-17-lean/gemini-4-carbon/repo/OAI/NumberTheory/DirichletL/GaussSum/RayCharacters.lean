@@ -7,76 +7,11 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-
-open scoped BigOperators Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 
 namespace RayFourExpansion
-open ActualEisensteinCubic ConcreteTraceCRT FiniteGaussPhase QuadraticGaussRay
-open ActualEisensteinCoordinates MixedCrossSeparation
+open FiniteGaussPhase QuadraticGaussRay ActualEisensteinCoordinates MixedCrossSeparation
 
 theorem prime_unit_mod_four (p : O) [(Ideal.span {p}).IsMaximal]
     (hchar : ringChar (O ⧸ Ideal.span {p}) ≠ 2) :
@@ -156,8 +91,7 @@ theorem quadraticCrossPhase_character_expansion
 end RayFourExpansion
 
 namespace MixedCrossSeparation
-open ActualEisensteinCubic ConcreteTraceCRT FiniteGaussPhase MixedGaussConversion
-open QuadraticGaussRay ActualEisensteinCoordinates GaussGeneratorTransport
+open FiniteGaussPhase MixedGaussConversion QuadraticGaussRay ActualEisensteinCoordinates GaussGeneratorTransport
 
 theorem convertedColumnBlock_image
     {ι κ : Type*} [DecidableEq ι] [DecidableEq κ]
@@ -204,8 +138,7 @@ private theorem positive_active_image {ι : Type*} [DecidableEq ι] (S T : Finse
   constructor
   · intro hi
     obtain ⟨a, ha, rfl⟩ := Finset.mem_image.mp hi
-    have hm := a.property
-    rcases Finset.mem_union.mp hm with hleft | hright
+    rcases Finset.mem_union.mp (a.property) with hleft | hright
     · exact ((Finset.mem_filter.mp ha).2 hleft).elim
     · exact hright
   · intro hi
@@ -222,8 +155,7 @@ theorem activeConvertedGauss_eq_columnBlocks
       convertedColumnBlock p hp hg (S \ T) true *
         convertedColumnBlock p hp hg (T \ S) false *
           quadraticCrossPhase p hg (S \ T) (T \ S) := by
-  rw [activeConvertedGauss_separated p hp hg hprimary S T]
-  rw [convertedColumnBlock_image p hp hg Subtype.val Subtype.val_injective,
+  rw [activeConvertedGauss_separated p hp hg hprimary S T, convertedColumnBlock_image p hp hg Subtype.val Subtype.val_injective,
     convertedColumnBlock_image p hp hg Subtype.val Subtype.val_injective,
     quadraticCrossPhase_image p hg Subtype.val Subtype.val_injective,
     negative_active_image, positive_active_image]
@@ -234,7 +166,7 @@ namespace FirstCauchyArithmetic
 
 section
 abbrev O := ActualEisensteinCubic.O
-open ActualEisensteinCubic CoprimeMobiusExtension
+open CoprimeMobiusExtension
 
 def supportMobius {ι : Type*} (P : ι → Ideal O) (S : Finset ι) : ℂ :=
   (UniqueFactorizationMonoid.moebius (∏ i ∈ S, P i) : ℂ)
@@ -258,14 +190,14 @@ theorem star_supportMobius {ι : Type*} (P : ι → Ideal O) (S : Finset ι) :
 end
 section
 
-open ActualEisensteinCubic ConcreteTraceCRT FiniteGaussPhase MixedCrossSeparation RayFourExpansion
+open FiniteGaussPhase MixedCrossSeparation RayFourExpansion
 
 def supportRay {ι : Type*} (p : ι → O) (χ : RayCharacter) (S : Finset ι) : ℂ :=
   rayCharacter χ (∏ i ∈ S, p i)
 
 end
 
-open ActualEisensteinCubic ConcretePrimeRowBridge
+open ConcretePrimeRowBridge
 
 private theorem family_prime {ι : Type*} (P : ι → Ideal O) [∀ i, (P i).IsMaximal] (i : ι) :
     Prime (P i) := Ideal.prime_of_isPrime (NeZero.ne (P i)) inferInstance
@@ -281,7 +213,7 @@ theorem family_prime_dvd_product_iff {ι : Type*} [DecidableEq ι]
   constructor
   · intro h
     obtain ⟨j, hj, hd⟩ := ((family_prime P i).dvd_finsetProd_iff P).mp h
-    have he : P i = P j := associated_iff_eq.mp
+    have he := associated_iff_eq.mp
       ((family_prime P i).associated_of_dvd (family_prime P j) hd)
     exact hinj he ▸ hj
   · exact fun hi => Finset.dvd_prod_of_mem P hi

@@ -10,8 +10,7 @@ namespace Montgomery.RationalMoment
 
 theorem rpow_log_quotient {T x : ℝ} (hT : 1 < T) (hx : 0 < x) :
     T ^ (Real.log x / Real.log T) = x := by
-  rw [Real.rpow_def_of_pos (by linarith : 0 < T)]
-  rw [mul_div_cancel₀ _ (Real.log_pos hT).ne', Real.exp_log hx]
+  rw [Real.rpow_def_of_pos (by linarith : 0 < T), mul_div_cancel₀ _ (Real.log_pos hT).ne', Real.exp_log hx]
 
 theorem coprime_pair_den {q : ℕ × ℕ} (hq : 0 < q.2)
     (hc : Nat.Coprime q.1 q.2) : (pairRatio q).den = q.2 := by

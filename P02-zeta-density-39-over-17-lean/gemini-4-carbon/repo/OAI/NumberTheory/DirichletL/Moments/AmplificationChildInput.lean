@@ -10,16 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentAmplificationChildInput
-open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge RayFourExpansion
-open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentCommonProfile
-open CenteredMomentSourceRectangle CenteredMomentSourceProfileMass CenteredMomentSourceMass
-open CenteredMomentSourceLiveColumn CenteredMomentAddedZeroUniform CenteredMomentRemainingBox
-open CenteredMomentAmplificationAllocationCost CenteredMomentAmplificationAllocationScale
-open CenteredMomentHeckeColumnWindow CenteredMomentAmplificationErrorEnergy
-open CenteredMomentAmplificationShortening
-open CenteredMomentAmplificationLiveMask CenteredMomentFirstAmplificationChoice
-open CenteredMomentOriginalChildEnergy CenteredMomentSecondHeightFamily
-open CenteredMomentFirstSectors CenteredMomentRectangle CenteredMomentExtraction
+open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge RayFourExpansion CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentCommonProfile CenteredMomentSourceRectangle CenteredMomentSourceProfileMass CenteredMomentSourceMass CenteredMomentSourceLiveColumn CenteredMomentAddedZeroUniform CenteredMomentRemainingBox CenteredMomentAmplificationAllocationCost CenteredMomentAmplificationAllocationScale CenteredMomentHeckeColumnWindow CenteredMomentAmplificationErrorEnergy CenteredMomentAmplificationShortening CenteredMomentAmplificationLiveMask CenteredMomentFirstAmplificationChoice CenteredMomentOriginalChildEnergy CenteredMomentSecondHeightFamily CenteredMomentFirstSectors CenteredMomentRectangle CenteredMomentExtraction
 local notation "O" => HeckeFamily.O
 variable {ι : Type*} [Fintype ι]
 local instance {κ : Type*} : DecidableEq κ := Classical.decEq _
@@ -53,14 +44,13 @@ theorem residual_ne (S : Finset (Ideal O)) (hS : ∀I∈S,I≠0)
 theorem residual_one (S : Finset (Ideal O)) (h : (1:Ideal O)≠0) :
     residualPool 1 h S=S := by
   ext I
-  simp only [mem_residualPool,one_mul]
+  simp
 
 theorem residual_coverage (S : Finset (Ideal O)) (W : ℝ→ℂ)
     (B : Ideal O) (hB : B≠0) (X Y : ℝ) (h : PlainCoverage S W 1 X Y) :
     PlainCoverage (residualPool B hB S) W 1 (X/B.absNorm) (Y/B.absNorm) := by
-  have he := plainCoverage_residualPool S W 1 B hB X Y h
   intro I hi
-  apply he I
+  apply (plainCoverage_residualPool S W 1 B hB X Y h) I
   simpa only [one_mul,map_mul,map_one,Nat.cast_mul,Nat.cast_one,mul_one,div_div_eq_mul_div,mul_comm] using hi
 
 def child (s : Input ι) (C R : Ideal O) (B : actualAllocations s.pools C)
@@ -80,17 +70,6 @@ def child (s : Input ι) (C R : Ideal O) (B : actualAllocations s.pools C)
   lower_le := fun i=>s.lower_le i.val
   upper_ge := fun i=>s.upper_ge i.val
 
-@[simp] theorem child_modulus (s : Input ι) (C R : Ideal O) (B : actualAllocations s.pools C)
-    (τ : Character) (t : ℝ) : (child s C R B τ t).m=fixedBadMask*idealGenerator (R*C) := rfl
-
-@[simp] theorem child_character (s : Input ι) (C R : Ideal O) (B : actualAllocations s.pools C)
-    (τ : Character) (t : ℝ) : (child s C R B τ t).η=τ := rfl
-
-@[simp] theorem child_height (s : Input ι) (C R : Ideal O) (B : actualAllocations s.pools C)
-    (τ : Character) (t : ℝ) : (child s C R B τ t).t=t := rfl
-
-theorem live_slot_one (B : Tuple ι) (i : liveIndices B) : B (Sum.inl i.val)=1 :=
-  (Finset.mem_filter.mp i.property).2
 
 theorem child_tuplePool (s : Input ι) (C R : Ideal O) (B : actualAllocations s.pools C)
     (τ : Character) (t : ℝ) :
@@ -102,9 +81,8 @@ theorem child_tuplePool (s : Input ι) (C R : Ideal O) (B : actualAllocations s.
   all_goals
     cases j with
     | inl i =>
-      have hi:=h (Sum.inl i)
-      simpa only [remainingSets,child,commonData,Input.pools,Sum.elim_inl,live_slot_one B.val i,
-        residual_one] using hi
+      simpa only [remainingSets,child,commonData,Input.pools,Sum.elim_inl,((Finset.mem_filter.mp i.property).2),
+        residual_one] using (h (Sum.inl i))
     | inr j =>
       fin_cases j
       · simpa [remainingSets,child,commonData,Input.pools] using h (Sum.inr 0)
@@ -184,7 +162,6 @@ theorem original_childEnergy_eq_inputs (s : Input ι) (R seed : Ideal O)
       (16*(n+2:ℝ)*localErrorCost p n)*
         ∑χ:RayCharacter,∑B:actualAllocations s.pools ((Ideal.span {p})^(n+1)),
           childNormalizedGaussSource s ((Ideal.span {p})^(n+1)) R seed B (τ χ) t ballProfile K := by
-  have hQ : (Ideal.span {p}:Ideal O)≠0 := Ideal.span_singleton_eq_bot.not.mpr hp
   unfold OriginalData.childEnergy
   simp only [original,Finset.sum_div]
   apply congrArg (fun x : ℝ => (16*(n+2:ℝ)*localErrorCost p n)*x)
@@ -193,7 +170,7 @@ theorem original_childEnergy_eq_inputs (s : Input ι) (R seed : Ideal O)
   apply Finset.sum_congr rfl
   intro B hB
   unfold childNormalizedGaussSource normalizedGaussSource
-  rw [child_volume s (Ideal.span {p}) hQ (n+1) hslot R B (τ χ) t,
+  rw [child_volume s (Ideal.span {p}) (Ideal.span_singleton_eq_bot.not.mpr hp) (n+1) hslot R B (τ χ) t,
     child_gauss_source s ((Ideal.span {p})^(n+1)) R seed B (τ χ) t ballProfile K]
 
 end SevenEighths.CenteredMomentAmplificationChildInput

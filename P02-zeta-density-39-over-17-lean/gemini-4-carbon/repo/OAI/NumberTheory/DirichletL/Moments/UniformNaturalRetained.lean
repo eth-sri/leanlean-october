@@ -6,13 +6,10 @@ public import OAI.NumberTheory.DirichletL.Moments.UniformRetainedEnergy
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
+open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentUniformNaturalRetained
-open HeckeFamily HeckeDyadic CenteredMomentScaleSupremum CenteredMomentNaturalPrimitive
-open CenteredMomentUniformRetainedEnergy CenteredMomentUniformReflectionApproximation CenteredMomentRetainedWeightedSource
-open CenteredMomentReflectedChoiceEnergy CenteredMomentReflectionWeightedEnergy
-open CenteredMomentOriginalReflectionApproximation CenteredMomentSectorLocalization
+open HeckeFamily HeckeDyadic CenteredMomentScaleSupremum CenteredMomentNaturalPrimitive CenteredMomentUniformRetainedEnergy CenteredMomentUniformReflectionApproximation CenteredMomentRetainedWeightedSource CenteredMomentReflectedChoiceEnergy CenteredMomentReflectionWeightedEnergy CenteredMomentOriginalReflectionApproximation CenteredMomentSectorLocalization
 
 theorem actual_natural_retained_energy (epsilon Cscale xi : ℝ)
      (hepsilon : 0<epsilon) (hscale : 0<Cscale) (hxi : 0<xi)
@@ -40,7 +37,7 @@ theorem actual_natural_retained_energy (epsilon Cscale xi : ℝ)
   intro ι _ G χ ψ P omega Wshort c d M along bshort D E Rcap hd hshort hshortsmooth
     hnatural hmod hD hE hGD hRcap hcap henergy
   have hz : 0<Z := by linarith [hZ.1]
-  have hlog : 0≤Real.log Z := (Real.log_pos hZ.1).le
+  have hlog := (Real.log_pos hZ.1).le
   have hexp : Real.exp (bshort*Real.log Z)=Z^bshort := by
     rw [Real.rpow_def_of_pos hz,mul_comm]
   have hgeom (i : ι) (u : Index (sourcePrimes (χ i) (ψ i)))
@@ -51,16 +48,14 @@ theorem actual_natural_retained_energy (epsilon Cscale xi : ℝ)
         Set.Icc 0 (max 0 (M-along+xi)*Real.log Z) := by
     have hh := hZ.2 (χ i) (ψ i) M along (hnatural i) (hmod i) u hY hu
     exact ⟨hh.2.1,hh.2.2.trans (mul_le_mul_of_nonneg_right (le_max_right _ _) hlog)⟩
-  have hrad (i : ι) : (Ideal.absNorm (∏Q∈sourcePrimes (χ i) (ψ i),Q):ℝ)≤Rcap :=
-    (radical_le_original (χ i) (ψ i) (hnatural i)).trans (hcap i)
+  have hrad (i : ι) := (radical_le_original (χ i) (ψ i) (hnatural i)).trans (hcap i)
   have hh := hb G χ ψ P (fun _=>Z^along) (fun _=>Z^(xi/4)) (fun _=>bshort*Real.log Z) omega
     Wshort c d 0 (max 0 (M-along+xi)*Real.log Z) (bshort*Real.log Z) (bshort*Real.log Z)
     D E Rcap (fun _=>Real.rpow_pos_of_pos hz _) hd hshort hshortsmooth
     (mul_nonneg (le_max_left _ _) hlog) le_rfl (fun _=>⟨le_rfl,le_rfl⟩) hgeom
     hD hE hGD hRcap hrad (by
       intro v j k x hx y hy
-      have hey : y=bshort*Real.log Z := le_antisymm hy.2 hy.1
-      simpa only [hey,hexp] using henergy v j k x hx)
+      simpa only [(le_antisymm hy.2 hy.1),hexp] using henergy v j k x hx)
   simpa only [hexp,sub_zero,sub_self,mul_zero,add_zero,mul_one] using hh
 
 end SevenEighths.CenteredMomentUniformNaturalRetained

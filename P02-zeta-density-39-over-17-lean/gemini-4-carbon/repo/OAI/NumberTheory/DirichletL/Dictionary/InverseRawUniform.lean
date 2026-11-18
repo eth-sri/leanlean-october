@@ -7,12 +7,10 @@ public import OAI.NumberTheory.DirichletL.Dictionary.InverseClippedUniform
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap FourierTransform ContDiff
 open MeasureTheory
+open scoped Classical BigOperators SchwartzMap FourierTransform ContDiff
 namespace SevenEighths.DetectorDictionaryInverseRawUniform
-open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseMoment
-open DetectorDictionaryInverseUniform DetectorDictionaryInverseClippedUniform
-open DetectorDictionaryInverseRawFourier
+open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseMoment DetectorDictionaryInverseUniform DetectorDictionaryInverseClippedUniform DetectorDictionaryInverseRawFourier
 
 private theorem rawMoment_mono (data : RowData) (W : ℝ→ℂ) (c κ A B : ℝ)
     (hAB : A≤B) (h : RawMoment data W c κ A) : RawMoment data W c κ B := by
@@ -43,14 +41,11 @@ theorem raw_family_uniform (J : ℕ) :
   have hh:=rawMoment_reference data W (1/4) (9/4) (by norm_num) hs (W.smooth ⊤)
     referenceWindow (13/4) c κ A J hA hw hagree href
   have hm : (∫v:ℝ,(1+‖v‖)^J*‖(𝓕 g) v‖)≤B*(1+‖t‖)^K := by
-    have hb:=hmass scaled reverse n hn U hU tstar r σ hσ t 1
-    simpa only [familyDensity_norm,logSource_eq_logSchwartz,g,W,hs] using hb
+    simpa only [familyDensity_norm,logSource_eq_logSchwartz,g,W,hs] using (hmass scaled reverse n hn U hU tstar r σ hσ t 1)
   apply rawMoment_mono data W c κ _ _ _ hh
   change A*(∫v:ℝ,(1+‖v‖)^J*‖(𝓕 g) v‖)^2≤_
-  calc
-    _≤A*(B*(1+‖t‖)^K)^2:=mul_le_mul_of_nonneg_left
-      (pow_le_pow_left₀ (integral_nonneg (fun _=>by positivity)) hm 2) hA
-    _= _:=by simp only [mul_pow,←pow_mul,Nat.mul_comm];ring
+  exact (mul_le_mul_of_nonneg_left
+      (pow_le_pow_left₀ (integral_nonneg (fun _=>by positivity)) hm 2) hA).trans_eq (by simp only [mul_pow,←pow_mul,Nat.mul_comm];ring)
 
 theorem raw_pair_uniform (J : ℕ) :
     ∃K : ℕ,∃C : ℝ,0<C ∧ ∀(data : RowData)(c κ A : ℝ),0≤A →
@@ -65,17 +60,16 @@ theorem raw_pair_uniform (J : ℕ) :
   obtain ⟨K,C,hC,hb⟩:=raw_family_uniform J
   refine ⟨K,C,hC,?_⟩
   intro data c κ A hA href reverse n hn U hU tstar r σ hσ t
-  dsimp only
   have hefalse : (inverseSourceSchwartz false reverse n U tstar r σ t:ℝ→ℂ)=
       twistProfile (logTest (HeckeDetectorCoefficientTransfer.orientedProfile reverse
         (HeckeDetectorInverseFiberCount.inverseTest U tstar r)) n) σ t := by
     funext x
-    simpa only [Bool.false_eq_true,ite_false] using inverseSourceSchwartz_apply false reverse n U tstar r σ t x
+    simpa using inverseSourceSchwartz_apply false reverse n U tstar r σ t x
   have hetrue : (inverseSourceSchwartz true reverse n U tstar r σ t:ℝ→ℂ)=
       scaleProfile (twistProfile (logTest (HeckeDetectorCoefficientTransfer.orientedProfile reverse
         (HeckeDetectorInverseFiberCount.inverseTest U tstar r)) n) σ t) := by
     funext x
-    simpa only [Bool.true_eq,ite_true] using inverseSourceSchwartz_apply true reverse n U tstar r σ t x
+    simpa using inverseSourceSchwartz_apply true reverse n U tstar r σ t x
   exact ⟨hefalse ▸ hb data c κ A hA href false reverse n hn U hU tstar r σ hσ t,
     hetrue ▸ hb data c κ A hA href true reverse n hn U hU tstar r σ hσ t⟩
 

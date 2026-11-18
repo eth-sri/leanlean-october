@@ -9,9 +9,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyZeroReferenceError
-open HeckeFamily ConcreteTraceCRT HeckeDyadic QuadraticInitialBound
-open CenteredMomentCommonMaskEnergy CenteredMomentOriginalRadialComparison
-open CenteredMomentEnergyReferenceHomogeneousError
+open HeckeFamily ConcreteTraceCRT HeckeDyadic QuadraticInitialBound CenteredMomentCommonMaskEnergy CenteredMomentOriginalRadialComparison CenteredMomentEnergyReferenceHomogeneousError
 local notation "O"=>HeckeFamily.O
 
 theorem short_energy_bound (b:ℝ):
@@ -26,7 +24,7 @@ theorem short_energy_bound (b:ℝ):
   intro W hs χ t X K Φ keep hX hK hΦ
   have hh:=h ∅ (Finset.Subset.refl _) W hs χ (fun _=>∅) (fun _ _=>0)
     (fun _=>1) t X K Φ keep hX hK (by simp) (by simp) (by simp) (by simp) hΦ
-  simpa only [Finset.prod_empty,mul_one] using hh
+  simpa using hh
 
 end SevenEighths.CenteredMomentEnergyZeroReferenceError
 

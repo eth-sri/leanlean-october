@@ -44,29 +44,22 @@ theorem quadratic_monomial_budgets {σ a δ T N : ℝ}
   let p := 3*a*(1-σ)
   let l := max x (p+(2*σ-1)*x)
   let L := T^l
-  have hLp : 0 < L := by dsimp [L]; positivity
   obtain ⟨_,_,hb1a,hb2a⟩ := Montgomery.DraftParameters.quadratic_window
     hw.sigma_low hw.sigma_high (by linarith [hw.a_low]) hw.a_high.le hw.first hw.second
     (le_rfl : a ≤ a) (by linarith [hw.a_low] : a ≤ 3*a/2)
-  have hmono1 := mul_le_mul_of_nonneg_left hxa (show 0 ≤ 6*σ-4 by linarith [hw.sigma_low])
-  have hmono2 := mul_le_mul_of_nonneg_left hxa (show 0 ≤ 4*σ-3 by linarith [hw.sigma_low])
-  have hb1 : 1 ≤ (3/2)*p+(6*σ-4)*x := by linarith only [hb1a,hmono1]
-  have hb2 : 1/4 ≤ (5/12)*p+(4*σ-3)*x := by linarith only [hb2a,hmono2]
+  have hb1 : 1 ≤ (3/2)*p+(6*σ-4)*x := by linarith only [hb1a,(mul_le_mul_of_nonneg_left hxa (show 0 ≤ 6*σ-4 by linarith [hw.sigma_low]))]
+  have hb2 : 1/4 ≤ (5/12)*p+(4*σ-3)*x := by linarith only [hb2a,(mul_le_mul_of_nonneg_left hxa (show 0 ≤ 4*σ-3 by linarith [hw.sigma_low]))]
   have hlx : x ≤ l := le_max_left _ _
   have hlower : p+(2*σ-1)*x ≤ l := le_max_right _ _
   have hupper : l ≤ p+(2*σ-1)*x+δ := by
     apply max_le ?_ (by linarith only [hδ])
-    have hm := mul_le_mul_of_nonneg_left hxhi (show 0 ≤ 2*(1-σ) by linarith [hw.sigma_high])
     have hd := mul_nonneg hδ (show 0 ≤ 2*σ-1 by linarith [hw.sigma_low])
-    dsimp [p]
-    nlinarith only [hm,hd]
+    nlinarith only [(mul_le_mul_of_nonneg_left hxhi (show 0 ≤ 2*(1-σ) by linarith [hw.sigma_high])),hd]
   have hlu : l ≤ 1 := by
     have hxu : x ≤ 1 := by linarith [hw.a_high]
     apply max_le hxu
-    have hm := mul_le_mul_of_nonneg_left hxhi (show 0 ≤ 2*σ-1 by linarith [hw.sigma_low])
     have hd := mul_nonneg hδ (show 0 ≤ 2-2*σ by linarith [hw.sigma_high])
-    dsimp [p]
-    nlinarith only [hm,hd,hδ',hw.a_high]
+    nlinarith only [(mul_le_mul_of_nonneg_left hxhi (show 0 ≤ 2*σ-1 by linarith [hw.sigma_low])),hd,hδ',hw.a_high]
   refine ⟨L,?_,?_,?_⟩
   · rw [← hNx]
     exact Real.rpow_le_rpow_of_exponent_le hT.le hlx
@@ -74,7 +67,6 @@ theorem quadratic_monomial_budgets {σ a δ T N : ℝ}
   have hlogN : Real.log N=x*Real.log T := by rw [← hNx,Real.log_rpow hTp]
   have hlogL : Real.log L=l*Real.log T := Real.log_rpow hTp l
   have hd := mul_nonneg hδ ht.le
-  dsimp only
   refine ⟨?_,?_,?_⟩
   all_goals
     apply (Real.log_le_log_iff (by positivity) (by positivity)).mp
@@ -84,8 +76,7 @@ theorem quadratic_monomial_budgets {σ a δ T N : ℝ}
   · have hh := mul_nonneg (show 0 ≤ p+(2*σ-1)*x+δ-l by linarith only [hupper]) ht.le
     nlinarith only [hh,hd]
   · have hh := mul_nonneg (show 0 ≤ (3/2)*p+(6*σ-4)*x-1 by linarith only [hb1]) ht.le
-    have hh' := mul_nonneg (show 0 ≤ l-(p+(2*σ-1)*x) by linarith only [hlower]) ht.le
-    nlinarith only [hh,hh',hd]
+    nlinarith only [hh,(mul_nonneg (show 0 ≤ l-(p+(2*σ-1)*x) by linarith only [hlower]) ht.le),hd]
   · have hh := mul_nonneg (show 0 ≤ (5/12)*p+(4*σ-3)*x-1/4 by linarith only [hb2]) ht.le
     nlinarith only [hh,hd]
 

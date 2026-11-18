@@ -10,10 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSourceSmoothedAllocation
-open CanonicalQuadraticSieve CenteredMomentGaussEnergy CenteredMomentSmoothedWindowEnergy
-open CenteredMomentSourceAllocationEnergy CenteredMomentSourceLiveColumn
-open CenteredMomentSourceProfileMass CenteredMomentSourceMass
-open CenteredMomentAddedZeroUniform CenteredMomentCommonAllocationSum
+open CanonicalQuadraticSieve CenteredMomentGaussEnergy CenteredMomentSmoothedWindowEnergy CenteredMomentSourceAllocationEnergy CenteredMomentSourceLiveColumn CenteredMomentSourceProfileMass CenteredMomentSourceMass CenteredMomentAddedZeroUniform CenteredMomentCommonAllocationSum
 local notation "O" => ActualEisensteinCubic.O
 
 theorem smoothed_allocation_energy {α γ : Type*} [Fintype γ]
@@ -23,8 +20,7 @@ theorem smoothed_allocation_energy {α γ : Type*} [Fintype γ]
     (hW : ∀ z : O,0≤(W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re) :
     (gaussEnergy S a ha (fun i => ∑ B,b B*d B i) W K).re≤
       (Fintype.card γ:ℝ)*∑ B,‖b B‖^2*(gaussEnergy S a ha (d B) W K).re := by
-  have hs := gaussEnergy_hasSum_re S a ha (fun i => ∑ B,b B*d B i) W K hK
-  rw [← hs.tsum_eq]
+  rw [← (gaussEnergy_hasSum_re S a ha (fun i => ∑ B,b B*d B i) W K hK).tsum_eq]
   apply Real.tsum_le_of_sum_le (fun z => mul_nonneg (sq_nonneg _) (hW z))
   intro rows
   calc

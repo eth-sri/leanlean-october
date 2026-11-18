@@ -7,17 +7,11 @@ public import OAI.NumberTheory.DirichletL.Moments.RetainedProfile
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
 open Filter
+open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyZeroComparison
-open HeckeFamily CenteredMomentCommonRadialData CenteredMomentEnergyOriginalSource
-open CenteredMomentRadialEligibleEnergy CenteredMomentInductionEnergy
-open CenteredMomentRetainedProfile CenteredMomentRetainedEnergy
-open CenteredMomentHeckeExpansion CenteredMomentOriginalCommonHarmonic
-open CenteredMomentAmplificationChildInput CenteredMomentSourceRow
-open CanonicalQuadraticSieve ConcretePrimeRowBridge CenteredMomentSecondHeightFamily
-open CenteredMomentSourceProfileMass CenteredMomentHeckeHeight CenteredMomentSourceMass
+open HeckeFamily CenteredMomentCommonRadialData CenteredMomentEnergyOriginalSource CenteredMomentRadialEligibleEnergy CenteredMomentInductionEnergy CenteredMomentRetainedProfile CenteredMomentRetainedEnergy CenteredMomentHeckeExpansion CenteredMomentOriginalCommonHarmonic CenteredMomentAmplificationChildInput CenteredMomentSourceRow CanonicalQuadraticSieve ConcretePrimeRowBridge CenteredMomentSecondHeightFamily CenteredMomentSourceProfileMass CenteredMomentHeckeHeight CenteredMomentSourceMass
 local notation "O" => HeckeFamily.O
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 local instance : DecidableEq (ι⊕Fin 2):=energyOriginalSourceDecidableSum
@@ -28,8 +22,8 @@ lemma smallScale_pos (b:ℝ):0<smallScale b:=by unfold smallScale;positivity
 
 lemma smallScale_le_one (b:ℝ):smallScale b≤1:=by
   unfold smallScale
-  apply (div_le_iff₀ (by positivity:0<(2:ℝ)*max 1 b)).mpr
-  linarith [le_max_left (1:ℝ) b]
+  apply (div_le_iff₀ (by positivity:0<2*max 1 b)).mpr
+  linarith [le_max_left 1 b]
 
 lemma smallScale_strict (b:ℝ):smallScale b*b<1:=by
   have hm:0<max 1 b:=zero_lt_one.trans_le (le_max_left _ _)
@@ -71,7 +65,7 @@ lemma comparison_energy_zero (s:Input ι)(hz₁:s.W₁ 0=0)(hz₂:s.W₂ 0=0)
       s.toData.coefficient s.P (zeroInput s hz₁ hz₂).Y₁ (zeroInput s hz₁ hz₂).Y₂
       r.keep r.profile r.scale=0:=by
   unfold CenteredMomentInductionEnergy.energy
-  simp only [comparison_row_zero s hz₁ hz₂ R, norm_zero, zero_pow (by decide : (2:ℕ)≠0),
+  simp only [comparison_row_zero s hz₁ hz₂ R, norm_zero, zero_pow (by decide : 2≠0),
     zero_mul, ite_self, tsum_zero]
 
 end SevenEighths.CenteredMomentEnergyZeroComparison

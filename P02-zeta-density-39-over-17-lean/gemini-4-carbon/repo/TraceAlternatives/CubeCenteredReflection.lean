@@ -21,10 +21,8 @@ theorem reflection_local_energy_cube {η : ℝ} (hη : 0 < η) :
   refine ⟨120*C,by positivity,?_⟩
   intro T t₀ L H hT hL hH hHT W hW _hSep
   have hTp : 0<T := by linarith
-  have hRoot : 0<Real.sqrt T := Real.sqrt_pos.mpr hTp
-  have hLp : 0<L := hRoot.trans_le hL
-  let X : ℝ := H/L
-  have hX : 0<X := div_pos hH hLp
+  have hLp := (Real.sqrt_pos.mpr hTp).trans_le hL
+  let X := H/L
   have hXbound : X≤2*Real.sqrt T := by
     apply (div_le_iff₀ hLp).mpr
     nlinarith [Real.sq_sqrt hTp.le,
@@ -42,7 +40,6 @@ theorem reflection_local_energy_cube {η : ℝ} (hη : 0 < η) :
       apply (div_le_div_iff₀ (by positivity : 0<Real.pi*L) hLp).mpr
       nlinarith [Real.pi_gt_three,mul_pos hH hLp]
     have hMT : (M:ℝ)≤4*Real.sqrt T := by linarith
-    have h := hBound T t₀ hT M hM0 hMT W hW
     have hSq : (M:ℝ)^2≤4*X^2 := by
       have hh := pow_le_pow_left₀ (Nat.cast_nonneg M : (0:ℝ)≤M) hMU 2
       nlinarith
@@ -50,7 +47,7 @@ theorem reflection_local_energy_cube {η : ℝ} (hη : 0 < η) :
         (W.card:ℝ)^(2/3:ℝ)*(discreteAdditiveEnergy W:ℝ)^(1/3:ℝ) ≤ 4*S := by
       have hLin := mul_le_mul_of_nonneg_left hMU (Real.rpow_nonneg hTp.le (1/3:ℝ))
       have hQuad : (M:ℝ)^2+T^(1/3:ℝ)*M ≤ 4*(X^2+T^(1/3:ℝ)*X) := by
-        nlinarith [mul_nonneg (Real.rpow_nonneg hTp.le (1/3:ℝ)) hX.le]
+        nlinarith [mul_nonneg (Real.rpow_nonneg hTp.le (1/3:ℝ)) (div_pos hH hLp).le]
       calc
         _ ≤ (4*(X^2+T^(1/3:ℝ)*X))*
             (W.card:ℝ)^(2/3:ℝ)*(discreteAdditiveEnergy W:ℝ)^(1/3:ℝ) := by gcongr
@@ -58,7 +55,7 @@ theorem reflection_local_energy_cube {η : ℝ} (hη : 0 < η) :
     have hGrouped : completePairEnergy M W ≤ C*T^η*
         (((M:ℝ)^2+T^(1/3:ℝ)*M)*
           (W.card:ℝ)^(2/3:ℝ)*(discreteAdditiveEnergy W:ℝ)^(1/3:ℝ)) := by
-      convert h using 1
+      convert (hBound T t₀ hT M hM0 hMT W hW) using 1
       ring
     exact (reflection_local_pair_le_three hH M W).trans
       ((mul_le_mul_of_nonneg_left

@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.ContinuousPhaseWeyl
 public import LaterPairs.Native.ThirdDerivativeCorrelation
 public import LaterPairs.Native.ThirdDerivativeCorrelationSum
@@ -33,16 +42,15 @@ theorem continuous_third_derivative_weyl
       ‖continuousPhaseCorrelation F A N r‖ ≤
         12*(C*N*Real.sqrt ((r:ℝ)*μ)+2/Real.sqrt ((r:ℝ)*μ)) := by
     have hri := Finset.mem_Icc.mp hr
-    have hrH : (r:ℝ) ≤ H := by exact_mod_cast (show r ≤ H by omega)
+    have hrH : (r:ℝ) ≤ H := by exact_mod_cast (by omega)
     exact continuous_third_derivative_correlation F F' F'' F''' A N r hC hμ
       (by omega) ((mul_le_mul_of_nonneg_right hrH hμ.le).trans hHμ)
       hF hF' hF'' hlo hhi
   have hs := (Finset.sum_le_sum hc).trans
     (sum_third_derivative_correlation_majorant N H hC hμ)
-  have hb := continuous_phase_weyl F A N H
   calc
     _ ≤ ((N+H:ℕ):ℝ)*((H:ℝ)*N+
-        2*H*∑ r ∈ Finset.Icc 1 (H-1), ‖continuousPhaseCorrelation F A N r‖) := hb
+        2*H*∑ r ∈ Finset.Icc 1 (H-1), ‖continuousPhaseCorrelation F A N r‖) := (continuous_phase_weyl F A N H)
     _ ≤ ((N+H:ℕ):ℝ)*((H:ℝ)*N+
         2*H*(12*(C*N*Real.sqrt μ*((H:ℝ)*Real.sqrt H)+
           4*Real.sqrt H/Real.sqrt μ))) := by

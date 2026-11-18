@@ -1,5 +1,7 @@
 module
-public import TaoTrudgianYang2025.AsymptoticBridge
+public import Expdb.Basic.AutomaticUniformity
+public import Expdb.Basic.PowerAsymptotics
+public import Expdb.ExponentialSums.ExponentSumGrowthNonAsymptotic
 
 @[expose] public section
 
@@ -87,9 +89,8 @@ private theorem isModelPhaseFunction_of_approximations
     (VariableObject.isInfinitesimal_iff_forall_pos δ).1 hδ ε hε
   filter_upwards [hP p, hδsmall] with i hip hiδ
   intro u
-  have herror := (happrox i).2 p hip u
   rw [Real.norm_eq_abs] at hiδ
-  exact lt_of_le_of_lt herror ((le_abs_self (δ i)).trans_lt hiδ)
+  exact lt_of_le_of_lt ((happrox i).2 p hip u) ((le_abs_self (δ i)).trans_lt hiδ)
 
 private theorem isExponentPairEstimate_of_nonAsymptotic
     {k l : ℝ} (hbound : IsExponentPairEstimateNonAsymptotic k l) :
@@ -108,8 +109,7 @@ private theorem isExponentPairEstimate_of_nonAsymptotic
     (IsModelPhaseFunctionWith.mk hphase herror).eventually_isApproximate P hδ
   refine Asymptotics.IsBigO.of_bound C ?_
   filter_upwards [hTC, happrox, hNT] with i hiT hiF hiNT
-  have hratioNonneg : 0 ≤ T i / N i :=
-    div_nonneg (zero_le_one.trans ((hN i).trans hiNT))
+  have hratioNonneg := div_nonneg (zero_le_one.trans ((hN i).trans hiNT))
       (zero_le_one.trans (hN i))
   simpa only [exponentialSum_apply, Real.norm_eq_abs, mul_assoc,
     abs_of_nonneg (mul_nonneg (Real.rpow_nonneg hratioNonneg _)
@@ -134,7 +134,7 @@ private theorem nonAsymptotic_of_isExponentPairEstimate
     omega
   have hCone : ∀ i, 1 ≤ C i := fun i ↦ by
     dsimp [C]
-    have hi : (0 : ℝ) ≤ i := Nat.cast_nonneg i
+    have hi : 0 ≤ i := Nat.cast_nonneg i
     linarith
   choose T N F a b hdata using fun i ↦
     hfailure (δ i) (hδpos i) (P i) (hPone i) (C i) (hCone i)

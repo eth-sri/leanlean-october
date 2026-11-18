@@ -6,9 +6,8 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstBlockEnergy
 namespace OAI
 
 namespace SevenEighths.InverseMoment
+open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion JointLogSeparation FourierBridge MeasureTheory
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion
-open JointLogSeparation FourierBridge MeasureTheory
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι κ : Type*} [DecidableEq ι]
@@ -37,8 +36,7 @@ theorem first_family_cauchy (source : Finset κ) (F : Finset ι)
       Real.sqrt (firstFamilyEnergy p hg source F selector C₂ w false ω₂ (s 8) (H 8) h) := by
   dsimp only
   let H := profileHeight firstLeftSlope firstRightSlope firstKernelSlope z.1 z.2
-  let weight (j : κ × (RayCharacter × RayCharacter) × Finset ι) : ℂ :=
-    w j.1*firstBlockOuterWeight p (selector j.1) j.2.1 j.2.2 (h j.1)*
+  let weight (j : κ × (RayCharacter × RayCharacter) × Finset ι) := w j.1*firstBlockOuterWeight p (selector j.1) j.2.1 j.2.2 (h j.1)*
       firstOuterPhase H (firstCommonOuterLog p (A₁ j.1) (A₂ j.1) (C j.1) (R j.1)
         (d j.1) (h j.1) j.2.2 s)
   have hn (j : κ × (RayCharacter × RayCharacter) × Finset ι) :

@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.RobertSargosZeroRPrefix
 public import LaterPairs.Native.RobertSargosZeroRSource
 
@@ -57,7 +66,7 @@ theorem robertSargos_zero_r_source_positive_bound
             robertSargosSymmetricDifference f (↑(h+1+(n:ℤ))) h)‖ ≤
         12*(C*M*Real.sqrt (2*(h:ℝ)*(q:ℝ)*lam)+
           2/Real.sqrt (2*(h:ℝ)*(q:ℝ)*lam)) := by
-      simpa only [Int.cast_add,Int.cast_one,Int.cast_natCast] using hp.trans hmono
+      simpa using hp.trans hmono
     have he : ‖fordAdditiveCharacter
         (robertSargosSymmetricDifference f (↑((M:ℤ)-h-q)+q) h-
           robertSargosSymmetricDifference f (↑((M:ℤ)-h-q)) h)‖ = 1 := by

@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 
 @[expose] public section
 set_option autoImplicit false
@@ -69,26 +78,23 @@ theorem abs_iteratedDeriv_finiteTaylorPolynomial_remainder_le_finite
     (hb : ∀ y ∈ uIcc a x, |iteratedDeriv (Q+1) f y| ≤ M) :
     |iteratedDeriv j (fun y => f y-finiteTaylorPolynomial f Q a y) x| ≤
       M*|x-a|^(Q+1-j) := by
-  have hM : 0 ≤ M := (abs_nonneg _).trans (hb a left_mem_uIcc)
   have hjQ : (j : WithTop ℕ∞) ≤ Q+1 := by exact_mod_cast (by omega : j ≤ Q+1)
-  have hjtop : (j : WithTop ℕ∞) ≤ ∞ :=
-    ENat.natCast_le_of_coe_top_le_withTop le_rfl j
   rw [iteratedDeriv_fun_sub ((hf x right_mem_uIcc).of_le hjQ)
-    ((finiteTaylorPolynomial_contDiff f Q a).contDiffAt.of_le hjtop),
+    ((finiteTaylorPolynomial_contDiff f Q a).contDiffAt.of_le (ENat.natCast_le_of_coe_top_le_withTop le_rfl j)),
     iteratedDeriv_finiteTaylorPolynomial f a hj]
   have hf' (y : ℝ) (hy : y ∈ uIcc a x) :
       ContDiffAt ℝ (((Q-j+1)+j : ℕ) : WithTop ℕ∞) f y := by
     rw [show Q-j+1+j = Q+1 by omega]
-    simpa only [Nat.cast_add,Nat.cast_one] using hf y hy
+    simpa using hf y hy
   have h := abs_finiteTaylorPolynomial_remainder_le_finite
     (f := iteratedDeriv j f) (a := a) (x := x) (M := M) (Q-j)
     (fun y hy => by
       have ht := contDiffAt_iteratedDeriv_finite (n := Q-j+1) (j := j)
-        (by simpa only [Nat.cast_add,Nat.cast_one] using hf' y hy)
-      simpa only [Nat.cast_add,Nat.cast_one] using ht) ?_
-  · have hfac : (1 : ℝ) ≤ ((Q-j+1).factorial : ℝ) := by
+        (by simpa using hf' y hy)
+      simpa using ht) ?_
+  · have hfac : 1 ≤ ((Q-j+1).factorial : ℝ) := by
       exact_mod_cast Nat.succ_le_of_lt (Nat.factorial_pos (Q-j+1))
-    exact h.trans ((div_le_self (mul_nonneg hM (pow_nonneg (abs_nonneg _) _)) hfac).trans_eq
+    exact h.trans ((div_le_self (mul_nonneg ((abs_nonneg _).trans (hb a left_mem_uIcc)) (pow_nonneg (abs_nonneg _) _)) hfac).trans_eq
       (by rw [show Q-j+1 = Q+1-j by omega]))
   · intro y hy
     rw [iteratedDeriv_real_comp_order,show Q-j+1+j = Q+1 by omega]

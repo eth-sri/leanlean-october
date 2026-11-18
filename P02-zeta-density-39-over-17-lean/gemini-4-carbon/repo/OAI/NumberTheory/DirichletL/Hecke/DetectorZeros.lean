@@ -17,7 +17,7 @@ def rectangle (T : ℝ) : Set ℂ :=
   {s | (51/100 : ℝ) ≤ s.re ∧ s.re ≤ 1 ∧ |s.im| ≤ T}
 
 theorem rectangle_compact (T : ℝ) : IsCompact (rectangle T) := by
-  have heq : rectangle T = Set.Icc (51/100 : ℝ) 1 ×ℂ Set.Icc (-T) T := by
+  have heq : rectangle T = Set.Icc (51/100) 1 ×ℂ Set.Icc (-T) T := by
     ext z
     simp only [rectangle, Set.mem_ofPred_eq, Complex.mem_reProdIm, Set.mem_Icc, abs_le]
     tauto
@@ -28,9 +28,7 @@ def zeros (χ : Character) (T : ℝ) : Set ℂ := {s ∈ rectangle T | LFunction
 
 theorem zeros_finite (χ : Character) (hχ : χ.residue ≠ 1) (T : ℝ) :
     (zeros χ T).Finite := by
-  have ha : AnalyticOnNhd ℂ (LFunction χ) Set.univ :=
-    Complex.analyticOnNhd_univ_iff_differentiable.mpr (LFunction_entire_nonprincipal χ hχ)
-  have hcod := ha.preimage_zero_mem_codiscreteWithin
+  have hcod := (Complex.analyticOnNhd_univ_iff_differentiable.mpr (LFunction_entire_nonprincipal χ hχ)).preimage_zero_mem_codiscreteWithin
     (LFunction_ne_zero_of_one_lt_re χ (by norm_num : 1 < (2 : ℂ).re))
     (Set.mem_univ (2 : ℂ)) isConnected_univ
   have hfin := (rectangle_compact T).finite_sdiff_of_mem_codiscreteWithin

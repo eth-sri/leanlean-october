@@ -38,50 +38,36 @@ theorem wooleyPolynomial_mixed_one_point_refinement
                   phi qB gamma alpha xi'‖ ^ 2 *
                 ‖wooleyPolynomialNormalizedResidueGridSum
                   phi qB gamma alpha eta'‖ ^ (2 * (s - 1))) := by
-  let A : ℝ := wooleyWeightedResidueMassSq gamma xi *
+  let A := wooleyWeightedResidueMassSq gamma xi *
     ‖wooleyPolynomialNormalizedResidueGridSum
       phi qB gamma alpha xi‖ ^ 2
-  let D : ℝ := wooleyWeightedResidueMassSq gamma eta *
+  let D := wooleyWeightedResidueMassSq gamma eta *
     ‖wooleyPolynomialNormalizedResidueGridSum
       phi qB gamma alpha eta‖ ^ (2 * (s - 1))
-  let AR : ℝ := ∑ xi' ∈ wooleyResidueRefinementFiber p nu theta hnu xi,
+  let AR := ∑ xi' ∈ wooleyResidueRefinementFiber p nu theta hnu xi,
     wooleyWeightedResidueMassSq gamma xi' *
       ‖wooleyPolynomialNormalizedResidueGridSum
         phi qB gamma alpha xi'‖ ^ 2
-  let DR : ℝ := ∑ eta' ∈ wooleyResidueRefinementFiber p nu theta hnu eta,
+  let DR := ∑ eta' ∈ wooleyResidueRefinementFiber p nu theta hnu eta,
     wooleyWeightedResidueMassSq gamma eta' *
       ‖wooleyPolynomialNormalizedResidueGridSum
         phi qB gamma alpha eta'‖ ^ (2 * (s - 1))
   have hs1 : 1 ≤ s - 1 := by omega
   have hA : A ≤ (p ^ (theta - nu) : ℝ) * AR := by
-    simpa only [A, AR, one_mul, pow_one, Nat.mul_one] using
+    simpa using
       (wooleyPolynomial_lemma_6_2 (w := 1) phi hnu (by omega)
         gamma alpha xi)
   have hD : D ≤ (p ^ (theta - nu) : ℝ) ^ (s - 1) * DR := by
-    simpa only [D, DR] using
+    simpa using
       (wooleyPolynomial_lemma_6_2 (w := s - 1) phi hnu hs1 gamma alpha eta)
-  have hAnonneg : 0 ≤ A := by
-    dsimp [A]
-    exact mul_nonneg (wooleyWeightedResidueMassSq_nonneg gamma xi)
-      (sq_nonneg _)
   have hDnonneg : 0 ≤ D := by
-    dsimp [D]
     exact mul_nonneg (wooleyWeightedResidueMassSq_nonneg gamma eta)
       (pow_nonneg (norm_nonneg _) _)
   have hARnonneg : 0 ≤ AR := by
-    dsimp [AR]
     exact Finset.sum_nonneg fun xi' hxi' =>
       mul_nonneg (wooleyWeightedResidueMassSq_nonneg gamma xi')
         (sq_nonneg _)
-  have hDRnonneg : 0 ≤ DR := by
-    dsimp [DR]
-    exact Finset.sum_nonneg fun eta' heta' =>
-      mul_nonneg (wooleyWeightedResidueMassSq_nonneg gamma eta')
-        (pow_nonneg (norm_nonneg _) _)
-  have hmul : A * D ≤
-      ((p ^ (theta - nu) : ℝ) * AR) *
-        ((p ^ (theta - nu) : ℝ) ^ (s - 1) * DR) :=
-    mul_le_mul hA hD hDnonneg (mul_nonneg (by positivity) hARnonneg)
+  have hmul := mul_le_mul hA hD hDnonneg (mul_nonneg (by positivity) hARnonneg)
   dsimp [A, D, AR, DR] at hmul
   have hpow :
       (p ^ (theta - nu) : ℝ) *
@@ -224,7 +210,7 @@ theorem wooleyPolynomial_mixed_one_refinement
         intro xi hxi
         apply Finset.sum_le_sum
         intro eta heta
-        simpa only [V] using
+        simpa using
           (wooleyPolynomial_mixed_one_point_refinement
             phi hnu hs gamma alpha xi eta)
       _ = (p ^ (theta - nu) : ℝ) ^ s *
@@ -240,25 +226,7 @@ theorem wooleyPolynomial_mixed_one_refinement
         rw [Finset.mul_sum]
   have hP : P nu ≤ (p ^ (theta - nu) : ℝ) ^ s * P theta := by
     dsimp [P]
-    calc
-      (∑ alpha : Fin k → ZMod (p ^ B),
-          ∑ xi : ZMod (p ^ nu),
-            ∑ eta : ZMod (p ^ nu) with
-              wooleyResiduesSeparated nu xi eta,
-                V nu xi eta alpha) ≤
-          ∑ alpha : Fin k → ZMod (p ^ B),
-            (p ^ (theta - nu) : ℝ) ^ s *
-              ∑ xi : ZMod (p ^ theta),
-                ∑ eta : ZMod (p ^ theta) with
-                  wooleyResiduesSeparated nu xi eta,
-                    V theta xi eta alpha :=
-        Finset.sum_le_sum fun alpha _ => hpoint alpha
-      _ = (p ^ (theta - nu) : ℝ) ^ s *
-          ∑ alpha : Fin k → ZMod (p ^ B),
-            ∑ xi : ZMod (p ^ theta),
-              ∑ eta : ZMod (p ^ theta) with
-                wooleyResiduesSeparated nu xi eta,
-                  V theta xi eta alpha := by rw [Finset.mul_sum]
+    exact (Finset.sum_le_sum fun alpha _ => hpoint alpha).trans_eq (by rw [Finset.mul_sum])
   unfold wooleyPolynomialMixedGridMean
   split_ifs with hmass
   · simp

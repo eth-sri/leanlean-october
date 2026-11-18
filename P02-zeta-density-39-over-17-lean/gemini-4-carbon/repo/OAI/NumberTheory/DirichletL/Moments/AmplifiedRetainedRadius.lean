@@ -7,15 +7,11 @@ public import OAI.NumberTheory.DirichletL.Moments.SmoothedWindowEnergy
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
 open Filter
+open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentAmplifiedRetainedRadius
-open HeckeFamily CanonicalQuadraticSieve ConcreteTraceCRT
-open CenteredMomentFirstAmplificationChoice CenteredMomentGaussEnergy
-open CenteredMomentSmoothedWindowEnergy CenteredMomentOriginalChildEnergy
-open CenteredMomentAmplificationErrorEnergy CenteredMomentSectorLocalization
-open CenteredMomentSourceRow CenteredMomentGaussNormalization
+open HeckeFamily CanonicalQuadraticSieve ConcreteTraceCRT CenteredMomentFirstAmplificationChoice CenteredMomentGaussEnergy CenteredMomentSmoothedWindowEnergy CenteredMomentOriginalChildEnergy CenteredMomentAmplificationErrorEnergy CenteredMomentSectorLocalization CenteredMomentSourceRow CenteredMomentGaussNormalization
 local notation "O" => ActualEisensteinCubic.O
 
 theorem ballProfile_support_upper (x : ℝ) (hx : 0≤x) (h : ballProfile x≠0) : x<2 := by
@@ -30,9 +26,7 @@ theorem ballProfile_radius_le (x Y V : ℝ) (hx : 0≤x) (hY : 0<Y) (hV : 0<V)
     (hscale : 2*Y≤V) : (ballProfile (x/Y)).re≤(ballProfile (x/V)).re := by
   by_cases hz : ballProfile (x/Y)=0
   · simpa only [hz,Complex.zero_re] using ballProfile_nonneg (x/V)
-  have hs := ballProfile_support_upper (x/Y) (div_nonneg hx hY.le) hz
-  have hxy : x≤V := ((div_lt_iff₀ hY).mp hs).le.trans hscale
-  rw [ballProfile_one (x/V) (div_nonneg hx hV.le) ((div_le_one hV).mpr hxy)]
+  rw [ballProfile_one (x/V) (div_nonneg hx hV.le) ((div_le_one hV).mpr (((div_lt_iff₀ hY).mp (ballProfile_support_upper (x/Y) (div_nonneg hx hY.le) hz)).le.trans hscale))]
   exact ballProfile_le_one _
 
 theorem gaussEnergy_radius_le {α : Type*} (S : Finset α) (a : α→O)
@@ -47,10 +41,6 @@ theorem gaussEnergy_radius_le {α : Type*} (S : Finset α) (a : α→O)
   exact mul_le_mul_of_nonneg_left
     (ballProfile_radius_le _ Y V (sq_nonneg _) hY hV hscale) (sq_nonneg _)
 
-theorem sourceGaussEnergy_radius_le (Q : Finset (Ideal O)) (c f : Ideal O→ℂ)
-    (Y V : ℝ) (hY : 0<Y) (hV : 0<V) (hscale : 2*Y≤V) :
-    (sourceGaussEnergy Q c f ballProfile Y).re≤(sourceGaussEnergy Q c f ballProfile V).re :=
-  gaussEnergy_radius_le _ _ _ _ Y V hY hV hscale
 
 theorem childEnergy_radius_le {ι : Type*} [Fintype ι]
     (D : OriginalData ι) (τ : RayFourExpansion.RayCharacter→Character) (p : O) (n : ℕ)
@@ -64,7 +54,7 @@ theorem childEnergy_radius_le {ι : Type*} [Fintype ι]
   intro χ _
   apply Finset.sum_le_sum
   intro B _
-  exact sourceGaussEnergy_radius_le _ _ _ Y V hY hV hscale
+  exact (gaussEnergy_radius_le _ _ _ _ Y V hY hV hscale)
 
 lemma exponent_max (d K0 j c g : ℝ) :
     j+(max (d+K0-j-c) 0+g)=max (j+g) (d+K0-c+g) := by
@@ -78,8 +68,8 @@ lemma envelope_exponent (d K0 j c g δ : ℝ) (hδ : 0≤δ) (hj : j≤K0+δ) :
     j+(max (d+K0-j-c) 0+g)≤K0+max (d-c) 0+g+δ := by
   rw [exponent_max]
   apply max_le
-  · linarith [le_max_right (d-c) (0:ℝ)]
-  · linarith [le_max_left (d-c) (0:ℝ)]
+  · linarith [le_max_right (d-c) 0]
+  · linarith [le_max_left (d-c) 0]
 
 theorem main_exponent_envelope (d K0 j c sigma δ : ℝ) (hδ : 0≤δ) (hj : j≤K0+δ) :
     j+mainGain (d+K0-j) c sigma≤K0+max (d-c) 0+2*sigma+δ :=
@@ -89,25 +79,22 @@ theorem error_exponent_envelope (d K0 j c sigma δ Z : ℝ) (p : O) (k : ℕ)
     (hδ : 0≤δ) (hj : j≤K0+δ) :
     j+errorGain (d+K0-j) c sigma Z p k≤
       K0+max (d-c-2*errorRemoval p Z k+errorMoving p Z k) 0+sigma+δ := by
-  have he := envelope_exponent d K0 j (c+2*errorRemoval p Z k-errorMoving p Z k) sigma δ hδ hj
   unfold errorGain
-  convert he using 1 <;> ring_nf
+  convert (envelope_exponent d K0 j (c+2*errorRemoval p Z k-errorMoving p Z k) sigma δ hδ hj) using 1 <;> ring_nf
 
 theorem eventually_support_reserve (reserve : ℝ) (hreserve : 0<reserve) :
     ∀ᶠ Z : ℝ in atTop,1<Z ∧ 2≤Z^reserve := by
-  filter_upwards [eventually_gt_atTop (1:ℝ),
-    (tendsto_rpow_atTop hreserve).eventually (eventually_ge_atTop (2:ℝ))] with Z hZ hpow
+  filter_upwards [eventually_gt_atTop 1,
+    (tendsto_rpow_atTop hreserve).eventually (eventually_ge_atTop 2)] with Z hZ hpow
   exact ⟨hZ,hpow⟩
 
 lemma doubled_radius_le (Z a b reserve : ℝ) (hZ : 1<Z) (hab : a≤b)
     (hreserve : 2≤Z^reserve) : 2*Z^a≤Z^(b+reserve) := by
   rw [Real.rpow_add (zero_lt_one.trans hZ)]
-  calc
-    _≤2*Z^b := mul_le_mul_of_nonneg_left
-      (Real.rpow_le_rpow_of_exponent_le hZ.le hab) (by norm_num)
-    _≤Z^b*Z^reserve := by
+  exact (mul_le_mul_of_nonneg_left
+      (Real.rpow_le_rpow_of_exponent_le hZ.le hab) (by norm_num)).trans (by
       rw [mul_comm (Z^b)]
-      exact mul_le_mul_of_nonneg_right hreserve (Real.rpow_nonneg (zero_lt_one.trans hZ).le _)
+      exact mul_le_mul_of_nonneg_right hreserve (Real.rpow_nonneg (zero_lt_one.trans hZ).le _))
 
 def mainCommonRadius (Z d K0 c sigma δ reserve : ℝ) : ℝ :=
   Z^(K0+max (d-c) 0+2*sigma+δ+reserve)
@@ -151,8 +138,7 @@ theorem retained_nominal_upper (I J E : Ideal O) (hE : E≠0)
     (firstNominalScale_pos I J E hE K X hK hX)]
   exact hsec
 
-open CenteredMomentPrimePool CenteredMomentPrimeElements
-open CenteredMomentAmplificationOriginalErrors CenteredMomentAmplificationGlobal
+open CenteredMomentPrimePool CenteredMomentPrimeElements CenteredMomentAmplificationOriginalErrors CenteredMomentAmplificationGlobal
 
 end SevenEighths.CenteredMomentAmplifiedRetainedRadius
 

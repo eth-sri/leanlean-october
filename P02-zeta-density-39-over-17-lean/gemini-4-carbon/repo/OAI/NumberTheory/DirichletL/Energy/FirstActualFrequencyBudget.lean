@@ -7,14 +7,11 @@ public import OAI.NumberTheory.DirichletL.Moments.SectorLocalization
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
 open Filter
+open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentEnergyFirstActualFrequencyBudget
-open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyStageReserveSchedule
-open CenteredMomentEnergyFirstStageLossBudget CenteredMomentEnergyFirstDeclaredCapacityLossBudget
-open CenteredMomentEnergyFirstGaussianProfileWeights CenteredMomentFirstAmplifiedFourCoefficients
-open CenteredMomentSectorLocalization
+open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyStageReserveSchedule CenteredMomentEnergyFirstStageLossBudget CenteredMomentEnergyFirstDeclaredCapacityLossBudget CenteredMomentEnergyFirstGaussianProfileWeights CenteredMomentFirstAmplifiedFourCoefficients CenteredMomentSectorLocalization
 
 theorem eventually_frequency_loss (r:ℝ)(hr:0<r):
     ∀ᶠ Z:ℝ in atTop,1<Z ∧
@@ -39,7 +36,7 @@ lemma paid_frequency_mono
       es A saving j:=by
   fin_cases j <;>
     simp only [lossVector,sourcePaid,Matrix.cons_val,Fin.reduceFinMk] <;>
-    linarith only [hd]
+    linarith
 
 theorem actual_frequency_four_budget (M A Bcap Bcommon κ ε:ℝ)
     (hM:0≤M)(hA:0≤A)(hB:0≤Bcap)(hBc:0≤Bcommon)(hκ:0≤κ)(hε:0<ε):
@@ -57,7 +54,6 @@ theorem actual_frequency_four_budget (M A Bcap Bcommon κ ε:ℝ)
               (r/4) (r/4) (r/4) κ (mesh M Bcap κ ε))
             es A (2*amplification ε+1) j+
           es*Bcommon+r/4+r/4+highReflection+zeroReflection≤stageLoss M Bcap ε (k+1):=by
-  dsimp only
   let r:=reserve M Bcap ε
   let es:=r/(4*(Bcommon+A+1))
   let em:=r/(Bcap+Bcap+1)
@@ -65,7 +61,6 @@ theorem actual_frequency_four_budget (M A Bcap Bcommon κ ε:ℝ)
     hM hA hB hBc hκ hε
   have hb:=bounds M Bcap κ ε hM hB hκ hε
   have hr:0<r:=hb.2.2.2.1
-  have hrs:r≤amplification ε/100:=min_le_left _ _
   refine ⟨hes,hes1,hem,by positivity,by linarith [hb.1],?_⟩
   filter_upwards [eventually_frequency_loss r hr] with Z hZ
   refine ⟨hZ.1,hZ.2.1,hZ.2.2,?_⟩

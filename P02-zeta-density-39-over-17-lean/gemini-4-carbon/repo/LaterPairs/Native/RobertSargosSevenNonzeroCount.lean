@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.RobertSargosReducedCount
 public import LaterPairs.Native.RobertSargosSevenMultiplicity
 
@@ -59,18 +68,16 @@ theorem exists_robertSargos_seven_nonzero_count (ε : ℝ) (hε : 0 < ε) :
   refine ⟨C,hC,?_⟩
   intro S R H Q N δ hR hH hQ hN hδ hRH hmem hne
   have hN0 : 0 ≤ N := by linarith
-  have hQ0 : 0 ≤ Q := by linarith
   have hB : 0 ≤ R*H*Q := by positivity
   have ht : ∀ p ∈ S.image robertSargosDisplacementPoint,
       RobertSargosReducedSystem R H Q δ p := by
     intro q hq
     obtain ⟨p,hp,rfl⟩ := Finset.mem_image.mp hq
     exact (hmem p hp).to_reduced (hne p hp)
-  have hb := hcount _ R H Q δ hR hH hQ hδ hRH ht
   calc
     _ ≤ N*((S.image robertSargosDisplacementPoint).card:ℝ) :=
       robertSargos_seven_card_le_displacement_image S hN hmem
-    _ ≤ N*(C*(R*H*Q)^(1+ε)*(1+δ*Q)) := mul_le_mul_of_nonneg_left hb hN0
+    _ ≤ N*(C*(R*H*Q)^(1+ε)*(1+δ*Q)) := mul_le_mul_of_nonneg_left (hcount _ R H Q δ hR hH hQ hδ hRH ht) hN0
     _ = C*(N*(R*H*Q)^(1+ε))*(1+δ*Q) := by ring
     _ ≤ C*(N*(R*H*Q))^(1+ε)*(1+δ*Q) :=
       mul_le_mul_of_nonneg_right

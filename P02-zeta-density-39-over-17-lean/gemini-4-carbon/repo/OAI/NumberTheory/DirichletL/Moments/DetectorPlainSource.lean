@@ -11,15 +11,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentDetectorPlainSource
-open HeckeFamily CanonicalRowCompletion CanonicalQuadraticSieve ConcretePrimeRowBridge
-open CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentSourceRow
-open CenteredMomentAddedZeroUniform
-open CenteredMomentSourceRectangle CenteredMomentSourceRectangleMask
-open CenteredMomentUncenteredTerminal CenteredMomentHeckeExpansion
-open CenteredMomentHeckeHeight CenteredMomentHeckeSlots CenteredMomentDivisorRowEnergy
-open CenteredMomentRetainedEnergy CenteredMomentRectangle CenteredMomentSourceRectangleEnergy
-open CenteredMomentHeckeColumnWindow
-open CenteredMomentRestrictedSource CenteredMomentRestrictedEnergy CenteredMomentSecondHeightFamily
+open HeckeFamily CanonicalRowCompletion CanonicalQuadraticSieve ConcretePrimeRowBridge CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentSourceRow CenteredMomentAddedZeroUniform CenteredMomentSourceRectangle CenteredMomentSourceRectangleMask CenteredMomentUncenteredTerminal CenteredMomentHeckeExpansion CenteredMomentHeckeHeight CenteredMomentHeckeSlots CenteredMomentDivisorRowEnergy CenteredMomentRetainedEnergy CenteredMomentRectangle CenteredMomentSourceRectangleEnergy CenteredMomentHeckeColumnWindow CenteredMomentRestrictedSource CenteredMomentRestrictedEnergy CenteredMomentSecondHeightFamily
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
@@ -41,8 +33,7 @@ lemma comparison_row_zero (η : Character) (m A z : O) (t : ℝ)
     _ = ∑' _I : Ideal O, (0:ℂ) := by
       apply tsum_congr
       intro I
-      have h := comparison_first_zero W a b ha hs 1 I one_ne_zero
-      simpa only [one_mul,mul_zero] using congrArg (fun v : ℂ=>rowWeight η m A z t I*v) h
+      simpa only [one_mul,mul_zero] using congrArg (fun v : ℂ=>rowWeight η m A z t I*v) (comparison_first_zero W a b ha hs 1 I one_ne_zero)
     _ = 0 := tsum_zero
 
 theorem complete_source_polynomial (η : Character) (m A z : O) (t : ℝ)

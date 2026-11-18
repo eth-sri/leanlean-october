@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.RobertSargosZeroQPhase
 
 @[expose] public section
@@ -38,7 +47,7 @@ theorem robertSargos_zero_q_leading_prefix
       (fun x hx => by nlinarith [mul_le_mul_of_nonneg_left (hhi x hx) hrp.le])
       (fun x hx => by nlinarith [mul_le_mul_of_nonneg_left (hlo x hx) hrp.le])
   · have hrn : r < 0 := lt_of_le_of_ne (le_of_not_gt hrp) hr
-    have hneg : 0 < -r := neg_pos.mpr hrn
+    have hneg := neg_pos.mpr hrn
     rw [abs_of_neg hrn] at hscale ⊢
     exact continuous_third_derivative_bound
       (robertSargosZeroQLeading f r) (fun x => -2*r*iteratedDeriv 2 f x)

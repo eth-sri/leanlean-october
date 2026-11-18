@@ -8,12 +8,11 @@ public import OAI.NumberTheory.DirichletL.Moments.DetectorDictionaryProfiles
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology
 open Filter
+open scoped Classical BigOperators Topology
 
 namespace SevenEighths.CenteredMomentDetectorDictionary
-open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily
-open ProbePhysical CenteredMomentPrimeSlot
+open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily ProbePhysical CenteredMomentPrimeSlot
 local notation "O" => HeckeFamily.O
 
 lemma source_product_le_rowMask (S : Finset (Ideal O))
@@ -69,7 +68,7 @@ theorem eventually_source_slots_coprime {N : ℕ}
     filter_upwards [eventually_primePool_power_coprime (sourceMomentBase M H hH S hS η j)
       a (ell i) ha (hell i)] with Z hz
     exact hz M H
-  filter_upwards [he,eventually_ge_atTop (0:ℝ)] with Z hz hZ
+  filter_upwards [he,eventually_ge_atTop 0] with Z hz hZ
   intro j i d hd W b hs
   have heq : (Z^d)^(ell i/d)=Z^(ell i) := by
     rw [←Real.rpow_mul hZ,mul_div_cancel₀ _ hd]

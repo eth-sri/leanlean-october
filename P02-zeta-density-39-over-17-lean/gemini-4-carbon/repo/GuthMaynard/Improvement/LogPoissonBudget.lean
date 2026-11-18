@@ -12,7 +12,7 @@ theorem choose_log_poisson_order {η : ℝ} (hη : 0 < η) :
     ∃ j : ℕ, ∀ T : ℝ, 1 ≤ T →
       T^2*T^(j+2)/(T^(1+η))^j ≤ T^(-200:ℝ) := by
   let j := ⌈204/η⌉₊
-  have hj : (204:ℝ) ≤ (j:ℝ)*η := (div_le_iff₀ hη).mp (Nat.le_ceil _)
+  have hj : 204 ≤ (j:ℝ)*η := (div_le_iff₀ hη).mp (Nat.le_ceil _)
   refine ⟨j,?_⟩
   intro T hT
   have hTp : 0 < T := by linarith

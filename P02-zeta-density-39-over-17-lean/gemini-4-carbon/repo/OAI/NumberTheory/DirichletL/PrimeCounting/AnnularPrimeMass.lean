@@ -10,8 +10,7 @@ namespace OAI
 
 namespace SevenEighths.PNT.AnnularPrimeMass
 
-open ActualEisensteinCubic ArithmeticFunction Filter MeasureTheory
-open SevenEighths.IdealMangoldt SevenEighths.PNT.IdealPrimeMass
+open ActualEisensteinCubic ArithmeticFunction Filter MeasureTheory SevenEighths.IdealMangoldt SevenEighths.PNT.IdealPrimeMass
 open scoped BigOperators Classical Topology ContDiff
 
 noncomputable section
@@ -23,12 +22,10 @@ def scaledCumulative (f : ℕ → ℝ) (x y : ℝ) : ℝ := cumulative f (x * y)
 theorem cumulative_ratio_tendsto {f : ℕ → ℝ} {A : ℝ}
     (h : Tendsto (fun N : ℕ => cumsum f N / N) atTop (𝓝 A)) :
     Tendsto (fun t : ℝ => cumulative f t / t) atTop (𝓝 A) := by
-  have ht : Tendsto (fun t : ℝ => ⌊t⌋₊ + 1) atTop atTop :=
-    tendsto_atTop_mono (fun _ => Nat.le_succ _) tendsto_nat_floor_atTop
   have hr : Tendsto (fun t : ℝ => ((⌊t⌋₊ + 1 : ℕ) : ℝ) / t) atTop (𝓝 1) := by
     convert (tendsto_nat_floor_div_atTop (R := ℝ)).add
-      (show Tendsto (fun t : ℝ => 1 / t) atTop (𝓝 0) by simpa only [one_div] using tendsto_inv_atTop_zero) using 1 <;> simp [add_div]
-  convert (h.comp ht).mul hr using 1
+      (show Tendsto (fun t : ℝ => 1 / t) atTop (𝓝 0) by simpa using tendsto_inv_atTop_zero) using 1 <;> simp [add_div]
+  convert (h.comp (tendsto_atTop_mono (fun _ => Nat.le_succ _) tendsto_nat_floor_atTop)).mul hr using 1
   · ext t
     simp only [Function.comp_def, cumulative]
     field_simp
@@ -52,7 +49,7 @@ theorem scaledCumulative_bound {f : ℕ → ℝ} (hf : ∀ n, 0 ≤ f n)
     {C : ℝ} (hC : 0 ≤ C) (hbound : ∀ N : ℕ, cumsum f N ≤ C * N)
     {x y b : ℝ} (hx : 1 ≤ x) (hy : 0 ≤ y) (hyb : y ≤ b) :
     ‖scaledCumulative f x y‖ ≤ C * (b + 1) := by
-  have hx0 : 0 < x := lt_of_lt_of_le zero_lt_one hx
+  have hx0 := lt_of_lt_of_le zero_lt_one hx
   rw [scaledCumulative, Real.norm_eq_abs, abs_of_nonneg
     (div_nonneg (cumulative_nonneg hf _) hx0.le)]
   calc
@@ -67,12 +64,7 @@ theorem scaledCumulative_bound {f : ℕ → ℝ} (hf : ∀ n, 0 ≤ f n)
       nlinarith [mul_le_mul_of_nonneg_left hyb hx0.le,
         mul_nonneg hC (sub_nonneg.mpr hx)]
 
-theorem measurable_cumulative (f : ℕ → ℝ) : Measurable (cumulative f) :=
-  (measurable_of_countable (cumsum f)).comp (measurable_id.nat_floor.add_const 1)
 
-theorem measurable_scaledCumulative (f : ℕ → ℝ) (x : ℝ) :
-    Measurable (scaledCumulative f x) :=
-  ((measurable_cumulative f).comp (measurable_const.mul measurable_id)).div_const x
 
 def annularSum (f : ℕ → ℝ) (φ : ℝ → ℝ) (a b x : ℝ) : ℝ :=
   ∑ n ∈ Finset.Ioc ⌊x * a⌋₊ ⌊x * b⌋₊, f n * φ (n / x)
@@ -88,8 +80,7 @@ theorem annularSum_div_eq_integral (f : ℕ → ℝ) (φ : ℝ → ℝ)
     convert (hφ (t / x)).hasDerivAt.comp t ((hasDerivAt_id t).div_const x) using 1 <;>
       simp only [g, Function.comp_def, div_eq_mul_inv, id_eq, one_mul]
   have hgc : Continuous (deriv g) := by
-    have heq : deriv g = fun t => deriv φ (t / x) / x := funext (fun t => (hg t).deriv)
-    rw [heq]
+    rw [(funext (fun t => (hg t).deriv))]
     exact (hφ'.comp (continuous_id.div_const x)).div_const x
   have h := sum_mul_eq_sub_sub_integral_mul f (a := x * a) (b := x * b)
     (mul_nonneg hx.le ha) (mul_le_mul_of_nonneg_left hab hx.le)
@@ -128,8 +119,8 @@ theorem integral_scaledCumulative_tendsto {f : ℕ → ℝ} (hf : ∀ n, 0 ≤ f
   simp_rw [intervalIntegral.integral_of_le hab]
   apply tendsto_integral_filter_of_dominated_convergence (fun y => ‖g y‖ * (C * (b + 1)))
   · exact Eventually.of_forall (fun x =>
-      (hg.measurable.mul (measurable_scaledCumulative f x)).aestronglyMeasurable)
-  · filter_upwards [eventually_ge_atTop (1 : ℝ)] with x hx
+      (hg.measurable.mul ((((((measurable_of_countable (cumsum f)).comp (measurable_id.nat_floor.add_const 1))).comp (measurable_const.mul measurable_id)).div_const x))).aestronglyMeasurable)
+  · filter_upwards [eventually_ge_atTop 1] with x hx
     filter_upwards [ae_restrict_mem measurableSet_Ioc] with y hy
     rw [norm_mul]
     exact mul_le_mul_of_nonneg_left
@@ -147,7 +138,7 @@ theorem annularSum_div_tendsto {f : ℕ → ℝ} (hf : ∀ n, 0 ≤ f n)
       (𝓝 (A * ∫ y in a..b, φ y)) := by
   have h := (integral_scaledCumulative_tendsto hf hC hbound hmass ha hab (deriv φ) hφ').neg
   have hibp := intervalIntegral.integral_mul_deriv_eq_deriv_mul
-    (u := fun y : ℝ => y) (u' := fun _ => (1 : ℝ)) (v := φ) (v' := deriv φ)
+    (u := fun y : ℝ => y) (u' := fun _ => 1) (v := φ) (v' := deriv φ)
     (fun y _ => hasDerivAt_id y) (fun y _ => (hφ y).hasDerivAt)
     (continuous_const.intervalIntegrable a b) (hφ'.intervalIntegrable a b)
   have heq : -(∫ y in a..b, deriv φ y * (A * y)) = A * ∫ y in a..b, φ y := by
@@ -158,7 +149,7 @@ theorem annularSum_div_tendsto {f : ℕ → ℝ} (hf : ∀ n, 0 ≤ f n)
     simp
   rw [heq] at h
   apply h.congr'
-  filter_upwards [eventually_gt_atTop (0 : ℝ)] with x hx
+  filter_upwards [eventually_gt_atTop 0] with x hx
   exact (annularSum_div_eq_integral f φ hφ hφ' ha.le hab hx hφa hφb).symm
 
 def annularPrimeIdeals (C : Set (Ideal O)) (a b x : ℝ) : Finset (Ideal O) :=
@@ -207,8 +198,7 @@ theorem primeClassCoeff_chebyshev (C : Set (Ideal O)) :
     funext n
     exact (Complex.norm_of_nonneg (primeClassCoeff_nonneg C n)).symm
   refine ⟨B, ?_, hbound⟩
-  have h := (cumsum_nonneg (primeClassCoeff_nonneg C) 1).trans (hbound 1)
-  simpa only [Nat.cast_one, mul_one, Pi.zero_apply] using h
+  simpa using ((cumsum_nonneg (primeClassCoeff_nonneg C) 1).trans (hbound 1))
 
 theorem primeLogAnnularSum_div_tendsto (C : Set (Ideal O)) {A a b : ℝ}
     (hmass : Tendsto (fun N : ℕ => cumsum (classCoeff C) N / N) atTop (𝓝 A))
@@ -254,8 +244,7 @@ theorem annularPrime_card_div_bound (C : Set (Ideal O)) {B a b x : ℝ}
     (hB : 0 ≤ B) (hbound : ∀ N : ℕ, cumsum (primeClassCoeff C) N ≤ B * N)
     (ha : 0 < a) (hab : a ≤ b) (hx : 1 ≤ x) (hxa : 1 < x * a) :
     ((annularPrimeIdeals C a b x).card : ℝ) / x ≤ B * (b + 1) / Real.log (x * a) := by
-  have hx0 : 0 < x := lt_of_lt_of_le zero_lt_one hx
-  have hlog : 0 < Real.log (x * a) := Real.log_pos hxa
+  have hx0 := lt_of_lt_of_le zero_lt_one hx
   have hlower : Real.log (x * a) * (annularPrimeIdeals C a b x).card ≤
       ∑ P ∈ annularPrimeIdeals C a b x, Real.log (Ideal.absNorm P) := by
     rw [mul_comm, ← nsmul_eq_mul, ← Finset.sum_const]
@@ -272,9 +261,7 @@ theorem annularPrime_card_div_bound (C : Set (Ideal O)) {B a b x : ℝ}
     exact value_nonneg P
   have hnorm := scaledCumulative_bound (primeClassCoeff_nonneg C) hB hbound hx
     (ha.le.trans hab) (le_refl b)
-  have hcum : cumsum (primeClassCoeff C) (⌊x * b⌋₊ + 1) / x ≤ B * (b + 1) :=
-    (le_abs_self _).trans (by simpa only [Real.norm_eq_abs, scaledCumulative, cumulative] using hnorm)
-  apply (le_div_iff₀ hlog).mpr
+  apply (le_div_iff₀ (Real.log_pos hxa)).mpr
   calc
     ((annularPrimeIdeals C a b x).card : ℝ) / x * Real.log (x * a) =
         (Real.log (x * a) * (annularPrimeIdeals C a b x).card) / x := by ring
@@ -282,7 +269,7 @@ theorem annularPrime_card_div_bound (C : Set (Ideal O)) {B a b x : ℝ}
       div_le_div_of_nonneg_right hlower hx0.le
     _ ≤ cumsum (primeClassCoeff C) (⌊x * b⌋₊ + 1) / x :=
       div_le_div_of_nonneg_right hupper hx0.le
-    _ ≤ _ := hcum
+    _ ≤ _ := ((le_abs_self _).trans (by simpa only [Real.norm_eq_abs, scaledCumulative, cumulative] using hnorm))
 
 theorem primeAnnularSum_log_error_bound (C : Set (Ideal O)) (φ : ℝ → ℝ)
     {B M a b x : ℝ} (hB : 0 ≤ B)
@@ -291,7 +278,7 @@ theorem primeAnnularSum_log_error_bound (C : Set (Ideal O)) (φ : ℝ → ℝ)
     (ha : 0 < a) (hab : a ≤ b) (hx : 1 ≤ x) (hxa : 1 < x * a) :
     ‖Real.log x * primeAnnularSum C φ a b x / x - primeLogAnnularSum C φ a b x / x‖ ≤
       ((|Real.log a| + |Real.log b|) * M) * (B * (b + 1) / Real.log (x * a)) := by
-  have hx0 : 0 < x := lt_of_lt_of_le zero_lt_one hx
+  have hx0 := lt_of_lt_of_le zero_lt_one hx
   have heq : Real.log x * primeAnnularSum C φ a b x - primeLogAnnularSum C φ a b x =
       ∑ P ∈ annularPrimeIdeals C a b x,
         (Real.log x - Real.log (Ideal.absNorm P)) * φ (Ideal.absNorm P / x) := by
@@ -322,7 +309,6 @@ theorem primeAnnularSum_log_error_tendsto (C : Set (Ideal O)) (φ : ℝ → ℝ)
       primeLogAnnularSum C φ a b x / x) atTop (𝓝 0) := by
   obtain ⟨B, hB, hbound⟩ := primeClassCoeff_chebyshev C
   obtain ⟨M, hMbound⟩ := isCompact_Icc.exists_bound_of_continuousOn hφ.continuousOn
-  have hM : 0 ≤ M := (norm_nonneg _).trans (hMbound a ⟨le_rfl, hab⟩)
   have hup : Tendsto (fun x : ℝ => ((|Real.log a| + |Real.log b|) * M) *
       (B * (b + 1) / Real.log (x * a))) atTop (𝓝 0) := by
     have hi := tendsto_inv_atTop_zero.comp
@@ -330,10 +316,10 @@ theorem primeAnnularSum_log_error_tendsto (C : Set (Ideal O)) (φ : ℝ → ℝ)
     convert (hi.const_mul (B * (b + 1))).const_mul ((|Real.log a| + |Real.log b|) * M)
       using 1 <;> simp only [div_eq_mul_inv, mul_zero, Function.comp_def, id_eq]
   apply squeeze_zero_norm' _ hup
-  filter_upwards [eventually_ge_atTop (1 : ℝ),
+  filter_upwards [eventually_ge_atTop 1,
     (tendsto_id.atTop_mul_const ha).eventually_gt_atTop 1] with x hx hxa
-  exact primeAnnularSum_log_error_bound C φ hB hbound hM
-    (fun y hy => by simpa only [Real.norm_eq_abs] using hMbound y hy) ha hab hx hxa
+  exact primeAnnularSum_log_error_bound C φ hB hbound ((norm_nonneg _).trans (hMbound a ⟨le_rfl, hab⟩))
+    (fun y hy => by simpa using hMbound y hy) ha hab hx hxa
 
 theorem primeAnnularSum_log_div_tendsto (C : Set (Ideal O)) {A a b : ℝ}
     (hmass : Tendsto (fun N : ℕ => cumsum (classCoeff C) N / N) atTop (𝓝 A))
@@ -343,7 +329,7 @@ theorem primeAnnularSum_log_div_tendsto (C : Set (Ideal O)) {A a b : ℝ}
       (𝓝 (A * ∫ y in a..b, φ y)) := by
   have h := (primeAnnularSum_log_error_tendsto C φ hφ.continuous ha hab).add
     (primeLogAnnularSum_div_tendsto C hmass φ hφ hφ' ha hab hφa hφb)
-  simpa only [sub_add_cancel, zero_add] using h
+  simpa using h
 
 theorem contDiff_powerWeight (W : ℝ → ℝ) (hW : ContDiff ℝ ∞ W)
     {a b : ℝ} (ha : 0 < a) (hsupp : Function.support W ⊆ Set.Ioo a b) (r : ℝ) :
@@ -354,7 +340,7 @@ theorem contDiff_powerWeight (W : ℝ → ℝ) (hW : ContDiff ℝ ∞ W)
   · subst y
     apply (contDiffAt_const (c := (0 : ℝ))).congr_of_eventuallyEq
     filter_upwards [Iio_mem_nhds ha] with y hy
-    have hWy : W y = 0 := Function.notMem_support.mp (by
+    have hWy := Function.notMem_support.mp (by
       intro h
       exact (not_lt_of_ge (hsupp h).1.le) hy)
     simp only [hWy, zero_mul]
@@ -481,7 +467,7 @@ theorem weightedPrimeSum_tendsto (C : Set (Ideal O)) {A : ℝ}
       atTop (𝓝 (A * ∫ y : ℝ, W y * y ^ (-5 / 6 : ℝ))) := by
   obtain ⟨a, b, ha, hab, hsupp⟩ := exists_positive_support_annulus W hc hp
   apply (weightedPrimeAnnularSum_tendsto C hmass W hW ha hab.le hsupp).congr'
-  filter_upwards [eventually_gt_atTop (0 : ℝ)] with x hx
+  filter_upwards [eventually_gt_atTop 0] with x hx
   rw [weightedPrimeSum_eq_annular C W ha hab.le hsupp hx]
 
 def weightedPrimeSumDeleted (C : Set (Ideal O)) (S : Finset (Ideal O))
@@ -491,14 +477,12 @@ def weightedPrimeSumDeleted (C : Set (Ideal O)) (S : Finset (Ideal O))
 theorem finite_prime_weights_eventually_zero (C : Set (Ideal O)) (S : Finset (Ideal O))
     (W : ℝ → ℝ) (hp : tsupport W ⊆ Set.Ioi 0) :
     ∀ᶠ x : ℝ in atTop, ∀ P ∈ S, primeWeightTerm C W x P = 0 := by
-  have hz : ∀ᶠ y in 𝓝 (0 : ℝ), W y = 0 :=
-    notMem_tsupport_iff_eventuallyEq.mp (fun h => (show (0 : ℝ) < 0 from hp h).false)
   rw [eventually_all_finset]
   intro P hP
   have ht : Tendsto (fun x : ℝ => (Ideal.absNorm P : ℝ) / x) atTop (𝓝 0) := by
     simpa only [div_eq_mul_inv, mul_zero] using
       tendsto_inv_atTop_zero.const_mul (Ideal.absNorm P : ℝ)
-  filter_upwards [ht hz] with x hx
+  filter_upwards [ht (notMem_tsupport_iff_eventuallyEq.mp (fun h => (show (0 : ℝ) < 0 from hp h).false))] with x hx
   change W (Ideal.absNorm P / x) = 0 at hx
   simp only [primeWeightTerm, hx, zero_mul, ite_self]
 
@@ -540,9 +524,8 @@ theorem weightedPrimeSumDeleted_eq_annular (C : Set (Ideal O)) (S : Finset (Idea
   rw [weightedPrimeSumDeleted, finsum_eq_finsetSum_of_support_subset _ hsub]
   apply Finset.sum_congr rfl
   intro P hP
-  have hS := (Finset.mem_sdiff.mp hP).2
   have h := (mem_annularPrimeIdeals C a b x P).mp (Finset.mem_sdiff.mp hP).1
-  simp only [hS, ite_false, primeWeightTerm, h.1, h.2.1, and_self, ite_true]
+  simp only [((Finset.mem_sdiff.mp hP).2), ite_false, primeWeightTerm, h.1, h.2.1, and_self, ite_true]
 
 theorem powerWeight_integral_pos (W : ℝ → ℝ) (hW : ContDiff ℝ ∞ W)
     (hc : HasCompactSupport W) (hp : tsupport W ⊆ Set.Ioi 0)
@@ -554,14 +537,13 @@ theorem powerWeight_integral_pos (W : ℝ → ℝ) (hW : ContDiff ℝ ∞ W)
     by_contra h
     push Not at h
     exact hWne (funext h)
-  have hy0 : 0 < y := hp (subset_closure hy)
   apply hφ.continuous.integral_pos_of_hasCompactSupport_nonneg_nonzero hc.mul_right
   · intro z
     by_cases hz : W z = 0
     · simp only [hz, zero_mul, Pi.zero_apply, le_refl]
     · have hz0 : 0 < z := hp (subset_closure hz)
       exact mul_nonneg (hW0 z) (Real.rpow_nonneg hz0.le _)
-  · exact mul_ne_zero hy (Real.rpow_pos_of_pos hy0 _).ne'
+  · exact mul_ne_zero hy (Real.rpow_pos_of_pos (hp (subset_closure hy)) _).ne'
 
 theorem weightedPrimeSumDeleted_eventually_lower_bound (C : Set (Ideal O))
     (S : Finset (Ideal O)) {A : ℝ} (hA : 0 < A)
@@ -570,16 +552,13 @@ theorem weightedPrimeSumDeleted_eventually_lower_bound (C : Set (Ideal O))
     (hp : tsupport W ⊆ Set.Ioi 0) (hW0 : ∀ y, 0 ≤ W y) (hWne : W ≠ 0) :
     ∃ c : ℝ, 0 < c ∧ ∀ᶠ x : ℝ in atTop,
       c * x ^ (1 / 6 : ℝ) / Real.log x ≤ weightedPrimeSumDeleted C S W x := by
-  let L : ℝ := A * ∫ y : ℝ, W y * y ^ (-5 / 6 : ℝ)
-  have hL : 0 < L := mul_pos hA (powerWeight_integral_pos W hW hc hp hW0 hWne)
+  let L := A * ∫ y : ℝ, W y * y ^ (-5 / 6 : ℝ)
+  have hL := mul_pos hA (powerWeight_integral_pos W hW hc hp hW0 hWne)
   refine ⟨L / 2, half_pos hL, ?_⟩
-  have ht := weightedPrimeSumDeleted_tendsto C S hmass W hW hc hp
-  have he := ht (Ioi_mem_nhds (half_lt_self hL))
-  filter_upwards [he, eventually_gt_atTop (1 : ℝ)] with x hx hx1
+  filter_upwards [((weightedPrimeSumDeleted_tendsto C S hmass W hW hc hp) (Ioi_mem_nhds (half_lt_self hL))), eventually_gt_atTop (1 : ℝ)] with x hx hx1
   change L / 2 < Real.log x / x ^ (1 / 6 : ℝ) * weightedPrimeSumDeleted C S W x at hx
-  have hxp : 0 < x ^ (1 / 6 : ℝ) := Real.rpow_pos_of_pos (zero_lt_one.trans hx1) _
   apply (div_le_iff₀ (Real.log_pos hx1)).mpr
-  have hmul := (le_div_iff₀ hxp).mp (show L / 2 ≤
+  have hmul := (le_div_iff₀ (Real.rpow_pos_of_pos (zero_lt_one.trans hx1) _)).mp (show L / 2 ≤
       (Real.log x * weightedPrimeSumDeleted C S W x) / x ^ (1 / 6 : ℝ) by
     convert hx.le using 1; ring)
   nlinarith
@@ -592,7 +571,7 @@ theorem weightedPrimeSumDeleted_eventually_pos (C : Set (Ideal O))
     ∀ᶠ x : ℝ in atTop, 0 < weightedPrimeSumDeleted C S W x := by
   obtain ⟨c, hc0, he⟩ := weightedPrimeSumDeleted_eventually_lower_bound C S hA hmass
     W hW hc hp hW0 hWne
-  filter_upwards [he, eventually_gt_atTop (1 : ℝ)] with x hx hx1
+  filter_upwards [he, eventually_gt_atTop 1] with x hx hx1
   exact (div_pos (mul_pos hc0 (Real.rpow_pos_of_pos (zero_lt_one.trans hx1) _))
     (Real.log_pos hx1)).trans_le hx
 

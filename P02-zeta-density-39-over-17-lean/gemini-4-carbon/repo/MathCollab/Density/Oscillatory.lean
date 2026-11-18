@@ -48,9 +48,7 @@ theorem hasDerivAt_gmReflectionPrimitive {tau v : ℝ} (hv : v ≠ 0) :
       ((hasDerivAt_id v).const_mul (2 * Real.pi)) using 1
     · rfl
     · simp only [div_eq_mul_inv, mul_one]
-  have hExp := (hReal.ofReal_comp.mul_const I).cexp.const_mul I⁻¹
-  change HasDerivAt (gmReflectionPrimitive tau) _ v
-  convert hExp using 1
+  convert ((hReal.ofReal_comp.mul_const I).cexp.const_mul I⁻¹) using 1
   · rfl
   · field_simp [Complex.I_ne_zero]
 
@@ -62,9 +60,7 @@ theorem hasDerivAt_gmReflectionRatio {tau v : ℝ}
       (fun x : ℝ => tau - 2 * Real.pi * x) (-2 * Real.pi) v := by
     convert (hasDerivAt_id v).const_mul (2 * Real.pi) |>.const_sub tau using 1
     all_goals simp only [id_eq, mul_one] <;> ring
-  have hInv := (hLinear.inv hv).ofReal_comp
-  change HasDerivAt (gmReflectionRatio tau) _ v
-  convert hInv using 1
+  convert ((hLinear.inv hv).ofReal_comp) using 1
   · funext x
     simp [gmReflectionRatio]
   · push_cast
@@ -177,8 +173,7 @@ theorem norm_gmReflectionPrimitive (tau v : ℝ) :
 
 theorem norm_gmReflectionRatio (tau v : ℝ) :
     ‖gmReflectionRatio tau v‖ = |tau - 2 * Real.pi * v|⁻¹ := by
-  rw [gmReflectionRatio, norm_inv, Complex.norm_real]
-  rw [Real.norm_eq_abs]
+  rw [gmReflectionRatio, norm_inv, Complex.norm_real, Real.norm_eq_abs]
 
 /-- On the positive axis, the rescaled reflection integrand has norm `1/v`.
 This is the amplitude estimate used both near and away from its stationary

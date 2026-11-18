@@ -57,8 +57,7 @@ theorem weightedCriticalTwelfth_tail_pointwise {T u t : ℝ}
 
 theorem integrable_translated_critical_twelfth {A : ℕ} (hA : 14 ≤ A) (u : ℝ) :
     Integrable (fun t : ℝ => momentDecay A (t-u)*zetaMomentCriticalNorm t^12) := by
-  have hh := (integrable_weightedCriticalTwelfth A hA u).comp_sub_right u
-  simpa only [add_sub_cancel] using hh
+  simpa using ((integrable_weightedCriticalTwelfth A hA u).comp_sub_right u)
 
 /-- The full complementary tail is bounded using genuine integrability. -/
 theorem weightedCriticalTwelfth_physical_tail {T u : ℝ} (hT : 1 ≤ T)

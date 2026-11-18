@@ -23,17 +23,14 @@ theorem fullCorrelation_equal_divided (q k : A) (hq : q ≠ 0)
         Ideal.Quotient.mk _ (q * k) ↔ x - y = Ideal.Quotient.mk _ k := by
     obtain ⟨x, rfl⟩ := Ideal.Quotient.mk_surjective x
     obtain ⟨y, rfl⟩ := Ideal.Quotient.mk_surjective y
-    rw [scaledResidue_congruence, ← map_sub, Ideal.Quotient.eq, Ideal.mem_span_singleton]
-    rw [show q * x - q * y - q * k = q * (x - y - k) by ring]
+    rw [scaledResidue_congruence, ← map_sub, Ideal.Quotient.eq, Ideal.mem_span_singleton, show q * x - q * y - q * k = q * (x - y - k) by ring]
     exact mul_dvd_mul_iff_left hq
   unfold fullModulusCorrelation fullCorrelation
   simp_rw [hs]
 
 end Domain
 
-open ActualEisensteinCubic ConcreteTraceCRT CanonicalQuadraticSieve CanonicalRowCompletion
-open CenteredMomentSupportedCorrelation CenteredMomentCanonical CompletedGauss
-open CenteredMomentFourier
+open ActualEisensteinCubic ConcreteTraceCRT CanonicalQuadraticSieve CanonicalRowCompletion CenteredMomentSupportedCorrelation CenteredMomentCanonical CompletedGauss CenteredMomentFourier
 open ConcretePrimeRowBridge hiding O
 local notation "O" => ActualEisensteinCubic.O
 
@@ -114,8 +111,7 @@ theorem equal_prime_power_norm_le (p : O) [(Ideal.span {p}).IsMaximal]
     {i : ℕ} (hi : 1 ≤ i) (k : O) :
     ‖actualCorrelation (p ^ i) (p ^ i) (supported_power p hp i) (supported_power p hp i)
       (p ^ i * k)‖ ≤ (Ideal.absNorm (Ideal.span {p}) : ℝ) ^ i := by
-  have hp0 := supported_element_ne_zero p hp
-  let := finite_quotient_span hp0
+  let := finite_quotient_span (supported_element_ne_zero p hp)
   let : Fintype (Residue p) := Fintype.ofFinite _
   have hcard : Fintype.card (Residue p) = Ideal.absNorm (Ideal.span {p}) := by
     rw [Ideal.absNorm_apply, Submodule.cardQuot_apply, Nat.card_eq_fintype_card]
@@ -139,10 +135,7 @@ theorem equal_prime_power_norm_le (p : O) [(Ideal.span {p}).IsMaximal]
     · simpa using hsub 1 (by norm_num) (by linarith)
     · simpa using hsub 2 (by norm_num) hN
     · simpa using (show (1 : ℝ) ≤ Ideal.absNorm (Ideal.span {p}) by linarith)
-  calc
-    _ ≤ (Ideal.absNorm (Ideal.span {p}) : ℝ) ^ (i - 1) * Ideal.absNorm (Ideal.span {p}) :=
-      mul_le_mul_of_nonneg_left hb (by positivity)
-    _ = _ := by rw [← pow_succ, Nat.sub_add_cancel hi]
+  exact (mul_le_mul_of_nonneg_left hb (by positivity)).trans_eq (by rw [← pow_succ, Nat.sub_add_cancel hi])
 
 end SevenEighths.CenteredMomentLocal
 

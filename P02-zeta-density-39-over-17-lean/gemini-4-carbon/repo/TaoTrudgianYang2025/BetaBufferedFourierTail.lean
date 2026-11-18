@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaBufferedFourierDecay
 public import TaoTrudgianYang2025.IntegerFourierTails
 public import TaoTrudgianYang2025.BetaBufferedBoundary
@@ -70,13 +80,12 @@ theorem modelPhase_buffered_poisson_truncated
   intro N η a b hN hη hη₁ ha hb F δ T hδ hF R hR
   let χ := modelPhaseBufferedCutoff ((a : ℝ)/N) ((b : ℝ)/N) η
   have hsource := modelPhase_buffered_poisson hF hN hη ha hb T
-  have hsplit := tsum_int_eq_sum_Icc_add_far hsource.1.of_norm R
   have hfar := htail ((a : ℝ)/N) ((b : ℝ)/N) η
     ((one_le_div hN).mpr ha) ((div_le_iff₀ hN).mpr hb) hη hη₁ F δ T N hδ hF hN R hR
   have hdiff : ‖(∑' q : ℤ, modelPhaseFourierMode χ F T N q)-
       ∑ q ∈ Finset.Icc (-(R : ℤ)) (R : ℤ), modelPhaseFourierMode χ F T N q‖ ≤
         C*(η⁻¹)^2*(1+|T|)^2/(N*(R : ℝ)) := by
-    rw [hsplit]
+    rw [(tsum_int_eq_sum_Icc_add_far hsource.1.of_norm R)]
     simpa only [χ,add_sub_cancel_left,modelPhaseBufferedFarTail] using hfar
   calc
     _ = ‖(exponentialSumAt F T N a b-(∑' q : ℤ, modelPhaseFourierMode χ F T N q))+

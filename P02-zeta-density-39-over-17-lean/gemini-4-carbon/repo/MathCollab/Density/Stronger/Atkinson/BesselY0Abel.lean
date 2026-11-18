@@ -77,8 +77,6 @@ theorem integral_cpow_mul_damped_sin_Ioi
         (x : ℂ) ^ (s - 1) * Real.exp (-ε * x) * Real.sin (a * x)) =
       (((ε : ℂ) - I * a) ^ (-s) - ((ε : ℂ) + I * a) ^ (-s)) /
         (2 * I) * Gamma s := by
-  have hp := integral_cpow_mul_damped_cexp_Ioi hs hε (a := a)
-  have hm := integral_cpow_mul_damped_cexp_neg_Ioi hs hε (a := a)
   let P : ℝ → ℂ := fun x => (x : ℂ) ^ (s - 1) *
     cexp (-((ε : ℂ) * x)) * cexp (I * ((a : ℂ) * x))
   let M : ℝ → ℂ := fun x => (x : ℂ) ^ (s - 1) *
@@ -126,7 +124,7 @@ theorem integral_cpow_mul_damped_sin_Ioi
           push_cast
           field_simp
           ring
-        simpa only [Complex.ofReal_mul] using hSin (a * x)]
+        simpa using hSin (a * x)]
       rw [hExp]
       ring
     _ = (∫ x : ℝ in Set.Ioi 0, P x - M x) / (2 * I) := by
@@ -137,9 +135,9 @@ theorem integral_cpow_mul_damped_sin_Ioi
     _ = (((ε : ℂ) - I * a) ^ (-s) - ((ε : ℂ) + I * a) ^ (-s)) /
         (2 * I) * Gamma s := by
       rw [show (∫ x : ℝ in Set.Ioi 0, P x) =
-          ((ε : ℂ) - I * a) ^ (-s) * Gamma s by exact hp,
+          ((ε : ℂ) - I * a) ^ (-s) * Gamma s by exact (integral_cpow_mul_damped_cexp_Ioi hs hε (a := a)),
         show (∫ x : ℝ in Set.Ioi 0, M x) =
-          ((ε : ℂ) + I * a) ^ (-s) * Gamma s by exact hm]
+          ((ε : ℂ) + I * a) ^ (-s) * Gamma s by exact (integral_cpow_mul_damped_cexp_neg_Ioi hs hε (a := a))]
       field_simp
 
 /-- The two damped complex powers have their expected nontangential Abel

@@ -10,8 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 local notation "O" => ActualEisensteinCubic.O
 namespace SevenEighths.CenteredMomentSupportedCorrelation
-open CanonicalRowCompletion CanonicalQuadraticSieve
-open CenteredMomentCorrelation CenteredMomentCommonSupport
+open CanonicalRowCompletion CanonicalQuadraticSieve CenteredMomentCorrelation CenteredMomentCommonSupport
 
 def supportedModulusCharacter (d : O) (hd : Supported (Ideal.span {d})) :
     MulChar (Residue d) ℂ where
@@ -55,8 +54,7 @@ theorem supportedModulusCharacter_mul (d a : O)
   simp only [supportedModulusCharacter_mk, ← Ideal.span_singleton_mul_span_singleton, map_mul]
 
 lemma sexticReciprocityPhase_symm (a b : O) :
-    sexticReciprocityPhase a b = sexticReciprocityPhase b a := by
-  exact congrArg (fun z : ℤ => (z : ℂ)) (QuadraticAllOddCRT.quadraticRaySign_symm _ _)
+    sexticReciprocityPhase a b = sexticReciprocityPhase b a := congrArg (fun z : ℤ => (z : ℂ)) (QuadraticAllOddCRT.quadraticRaySign_symm _ _)
 
 @[simp] lemma star_sexticReciprocityPhase (a b : O) :
     star (sexticReciprocityPhase a b) = sexticReciprocityPhase a b := by
@@ -71,8 +69,7 @@ theorem supported_opposite_phase (a b : O)
       sexticReciprocityPhase a b := by
   rw [idealRowHom_primary_reciprocity b a hpb hpa hb ha,
     sexticReciprocityPhase_symm b a, mul_assoc]
-  have hunit := isUnit_residue_of_coprime a b hcop
-  have hn := (supportedModulusCharacter a ha).apply_ne_zero_iff.mpr hunit
+  have hn := (supportedModulusCharacter a ha).apply_ne_zero_iff.mpr (isUnit_residue_of_coprime a b hcop)
   change idealRowHom b (Ideal.span {a}) ≠ 0 at hn
   have heq : idealRowHom b (Ideal.span {a}) * star (idealRowHom b (Ideal.span {a})) = 1 := by
     change supportedModulusCharacter a ha (Ideal.Quotient.mk _ b) *

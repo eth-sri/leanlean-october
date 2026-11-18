@@ -10,9 +10,7 @@ noncomputable section
 
 open scoped BigOperators Classical SchwartzMap ContDiff
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
-open CanonicalCubeSeparation CanonicalQuadraticSieve FirstPassCubeLabels SecondPassArithmetic
-open JointLogSeparation FourierBridge CompletedHeight
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge CanonicalCubeSeparation CanonicalQuadraticSieve FirstPassCubeLabels SecondPassArithmetic JointLogSeparation FourierBridge CompletedHeight
 local notation "O"=>ActualEisensteinCubic.O
 
 theorem long_frequency_profile
@@ -90,7 +88,7 @@ theorem long_cube_progress_with_slack
       Real.exp 1*Z^ell) :
     cutoff-eta≤ell+V := by
   have h:=long_cube_progress S D Q Z cutoff V ell hZ hne hupper
-  have hh:1/Real.log Z≤eta:=(div_le_iff₀ (Real.log_pos hZ)).mpr (by simpa only [mul_comm] using hlog)
+  have hh :=(div_le_iff₀ (Real.log_pos hZ)).mpr (by simpa only [mul_comm] using hlog)
   linarith
 
 theorem short_sum_zero_of_label_large
@@ -98,8 +96,7 @@ theorem short_sum_zero_of_label_large
     (hZ:1≤Z)(hV:cutoff≤V) :
     markedShortCompletedSum Ψ W X (Z^(cutoff-V)) mark=0 := by
   have ht:Z^(cutoff-V)≤1:=by
-    have he:=Real.rpow_le_rpow_of_exponent_le hZ (show cutoff-V≤0 by linarith)
-    simpa only [Real.rpow_zero] using he
+    simpa only [Real.rpow_zero] using (Real.rpow_le_rpow_of_exponent_le hZ (show cutoff-V≤0 by linarith))
   unfold markedShortCompletedSum
   trans ∑' _ : Ideal O,(0:ℂ)
   · apply tsum_congr

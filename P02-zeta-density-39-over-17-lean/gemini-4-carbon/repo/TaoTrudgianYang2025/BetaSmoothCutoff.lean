@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaLegendreAnchoring
 public import Mathlib.Analysis.Calculus.BumpFunction.InnerProduct
 
@@ -29,7 +39,7 @@ theorem smoothCutoff_mul_contDiff {χ H : ℝ → ℝ}
   intro x
   by_cases hx : x ∈ tsupport χ
   · exact hχ.contDiffAt.mul (hH x hx)
-  · have he : (fun y => χ y * H y) =ᶠ[𝓝 x] (fun _ => (0 : ℝ)) := by
+  · have he : (fun y => χ y * H y) =ᶠ[𝓝 x] (fun _ => 0) := by
       filter_upwards [notMem_tsupport_iff_eventuallyEq.mp hx] with y hy
       simp only [hy, zero_mul, Pi.zero_apply]
     exact contDiffAt_const.congr_of_eventuallyEq he

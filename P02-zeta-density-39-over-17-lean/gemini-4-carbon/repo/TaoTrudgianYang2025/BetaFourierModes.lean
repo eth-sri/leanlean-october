@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaSharpCutoff
 public import Mathlib.MeasureTheory.Measure.Haar.NormedSpace
 
@@ -45,10 +55,9 @@ theorem summable_modelPhaseFourierMode
     (hF : IsApproximateModelPhaseFunction F σ P δ) (hN : 0 < N) (T : ℝ) :
     Summable (fun r : ℤ => modelPhaseFourierMode χ F T N r) := by
   let f := modelPhaseWeightedSchwartz hχ hs hF hN T
-  have hdecay := (𝓕 f).isBigO_cocompact_rpow (-(2 : ℝ))
   have hsum := summable_of_isBigO
     (Real.summable_abs_int_rpow (by norm_num : (1 : ℝ) < 2))
-    (hdecay.comp_tendsto Int.tendsto_coe_cofinite)
+    (((𝓕 f).isBigO_cocompact_rpow (-(2 : ℝ))).comp_tendsto Int.tendsto_coe_cofinite)
   simpa only [f,Function.comp_def,Real.norm_eq_abs,modelPhaseWeightedSchwartz_fourier] using hsum
 
 theorem summable_norm_modelPhaseFourierMode

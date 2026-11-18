@@ -9,9 +9,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion FirstCauchyArithmetic
-open InverseSecondPrincipalCaller InverseFirstPriorityParents InverseMomentWholePriorityParents
-open InverseMomentGlobalPrincipalMass
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion FirstCauchyArithmetic InverseSecondPrincipalCaller InverseFirstPriorityParents InverseMomentWholePriorityParents InverseMomentGlobalPrincipalMass
 local notation "O"=>ActualEisensteinCubic.O
 
 theorem global_priority_zero_physical (ε:ℝ)(hε:0<ε)(Jmax:ℕ)(dsmall:ℝ)(hdsmall:0<dsmall):
@@ -52,7 +50,7 @@ theorem global_priority_zero_physical (ε:ℝ)(hε:0<ε)(Jmax:ℕ)(dsmall:ℝ)(h
   intro ι σ _ _ p hp _ hg hinj hcop Jo hJo extra pool original w negative Ψ m slots lists a
     hslots ha hΨ hw om lo hi hlo hs Z M r ell V delta A B Ractive j t eta tau window pi height R
     hZ hell hB hj hcost hsource hc₁ hc₂ hactive hcommon hquot hextra hhi hY hR
-  have hz:0<Z:=zero_lt_one.trans_le hZ
+  have hz :=zero_lt_one.trans_le hZ
   let P:=Z^(firstKappa M r ell V delta A B Ractive)*Real.exp ((9/2:ℝ)*(eta*Real.log Z))
   let Q:=Cp*(4:ℝ)^slots.card*(s.sup (schwartzSeminormFamily ℝ ℝ ℂ) rowMajorant)*
     (SchwartzMap.seminorm ℝ 0 0 om)^2

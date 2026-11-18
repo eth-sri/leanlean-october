@@ -25,12 +25,11 @@ theorem productMultiplicity_le_divisors {N M m : ℕ} (hm : m ≠ 0) :
     exact Nat.mem_divisors.mpr ⟨⟨p.2, hp'.2.symm⟩, hm⟩
   · intro p hp q hq he
     have hp' := Finset.mem_filter.mp hp
-    have hq' := Finset.mem_filter.mp hq
     have hn : 0 < p.1 := by
       have hh := (Finset.mem_Ioc.mp (Finset.mem_product.mp hp'.1).1).1
       omega
     apply Prod.ext he
-    have hh : p.1*p.2 = p.1*q.2 := by rw [hp'.2, he, hq'.2]
+    have hh : p.1*p.2 = p.1*q.2 := by rw [hp'.2, he, (Finset.mem_filter.mp hq).2]
     exact Nat.eq_of_mul_eq_mul_left hn hh
 
 theorem product_range {N M : ℕ} (_hN : 0 < N) (hM : 0 < M)
@@ -39,12 +38,10 @@ theorem product_range {N M : ℕ} (_hN : 0 < N) (hM : 0 < M)
   obtain ⟨hn, hq⟩ := Finset.mem_product.mp hp
   obtain ⟨hnlo, hnhi⟩ := Finset.mem_Ioc.mp hn
   obtain ⟨hqlo, hqhi⟩ := Finset.mem_Ico.mp hq
-  have hqpos : 0 < p.2 := hM.trans_le hqlo
   have hnpos : 0 < p.1 := by omega
-  refine ⟨Nat.mul_pos hnpos hqpos, ?_, ?_⟩
+  refine ⟨Nat.mul_pos hnpos (hM.trans_le hqlo), ?_, ?_⟩
   · exact (Nat.mul_lt_mul_of_pos_right hnlo hM).trans_le (Nat.mul_le_mul_left _ hqlo)
   · have hh := Nat.mul_lt_mul_of_pos_left hqhi hnpos
-    have hi := Nat.mul_le_mul_right (2*M) hnhi
     nlinarith
 
 theorem divisorMaximum_ge_one {T : ℝ} (hT : 0 ≤ T) : 1 ≤ divisorMaximum T := by
@@ -52,7 +49,7 @@ theorem divisorMaximum_ge_one {T : ℝ} (hT : 0 ≤ T) : 1 ≤ divisorMaximum T 
     apply Finset.mem_Icc.mpr
     refine ⟨le_rfl, ?_⟩
     have hh := Nat.le_ceil (32*(T+1))
-    have hi : (1 : ℝ) ≤ (⌈32*(T+1)⌉₊ : ℝ) := by linarith
+    have hi : 1 ≤ (⌈32*(T+1)⌉₊ : ℝ) := by linarith
     exact_mod_cast hi
   simpa only [divisorMaximum, Nat.divisors_one, Finset.card_singleton] using
     (Finset.le_sup (f := fun m : ℕ => m.divisors.card) hmem)
@@ -74,12 +71,12 @@ theorem product_cutoff_one (w : ComparisonCutoff) {N M : ℕ} (hN : 0 < N) (hM :
     {p : ℕ × ℕ} (hp : p ∈ productPairs N M) :
     w (((p.1*p.2 : ℕ) : ℝ)/((N : ℝ)*M)) = 1 := by
   have hh := product_range hN hM hp
-  have hL : (0 : ℝ) < (N : ℝ)*M := by positivity
+  have hL : 0 < (N : ℝ)*M := by positivity
   have hlo : (N : ℝ)*M < ((p.1*p.2 : ℕ) : ℝ) := by exact_mod_cast hh.2.1
   have hhi : ((p.1*p.2 : ℕ) : ℝ) < 4*((N : ℝ)*M) := by exact_mod_cast hh.2.2
   apply w.one_on
   constructor
-  · exact (le_div_iff₀ hL).2 (by simpa only [one_mul] using hlo.le)
+  · exact (le_div_iff₀ hL).2 (by simpa using hlo.le)
   · exact (div_le_iff₀ hL).2 hhi.le
 
 /-- Group only original products, bound their multiplicities, then extend using the cutoff. -/

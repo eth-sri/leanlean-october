@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler
-open CanonicalRowCompletion CompletedGauss
+open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler CanonicalRowCompletion CompletedGauss
 local notation "O" => HeckeFamily.O
 
 theorem unramifiedFactor_first_neighborhood_defect (η : Character) (u : FreeRow) (P : PrimeIdeal)
@@ -52,10 +51,9 @@ theorem unramifiedProduct_first_neighborhood_analytic_x (eps : ℝ) (S : Finset 
       change (1/2:ℝ)<x.re
       linarith
   · intro P x hx
-    have hx' := (lt_of_le_of_lt (le_max_left (101/200:ℝ) (1+eps-w.re)) hx)
     have hxw := (lt_of_le_of_lt (le_max_right (101/200:ℝ) (1+eps-w.re)) hx)
     exact unramifiedFactor_first_neighborhood_defect η u P.val (hS.norm_four P.val P.property)
-      x w z eps hS.positive hx'.le hz hw (by linarith)
+      x w z eps hS.positive ((lt_of_le_of_lt (le_max_left (101/200:ℝ) (1+eps-w.re)) hx)).le hz hw (by linarith)
   · exact hS.half
 
 theorem unramifiedProduct_first_neighborhood_analytic_w (eps : ℝ) (S : Finset (Ideal O)) (hS : FirstTail eps S)
@@ -74,10 +72,9 @@ theorem unramifiedProduct_first_neighborhood_analytic_w (eps : ℝ) (S : Finset 
         (idealCoeff_norm_le_one η _) (idealRowHom_norm u.val _) (by linarith) (by linarith)).mono
           (Set.subset_univ _)
   · intro P w hw
-    have hw' := (lt_of_le_of_lt (le_max_left (-(3/200:ℝ)) (1+eps-x.re)) hw)
     have hxw := (lt_of_le_of_lt (le_max_right (-(3/200:ℝ)) (1+eps-x.re)) hw)
     exact unramifiedFactor_first_neighborhood_defect η u P.val (hS.norm_four P.val P.property)
-      x w z eps hS.positive hx hz hw'.le (by linarith)
+      x w z eps hS.positive hx hz ((lt_of_le_of_lt (le_max_left (-(3/200:ℝ)) (1+eps-x.re)) hw)).le (by linarith)
   · exact hS.half
 
 theorem unramifiedProduct_first_neighborhood_analytic_z (eps : ℝ) (S : Finset (Ideal O)) (hS : FirstTail eps S)

@@ -9,7 +9,7 @@ noncomputable section
 open MeasureTheory
 open scoped SchwartzMap
 namespace GuthMaynard.Improvement
-open RiemannZeta.GuthMaynard
+open RiemannZeta.GuthMaynard GuthMaynard.NativeMoment
 
 /-- Apply the verified sparse affine theorem to the actual adaptive source
 smoothing, uniformly even in the internal epsilon parameter. -/
@@ -35,7 +35,7 @@ theorem adaptive_sparse_affine (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 ≤ D
   have hft : ∀ x, 0 ≤ ft x := gmAffineTildeSchwartz_nonneg S hS f hf
   have hwidth : 2/S ≤ (1/4:ℝ) := (div_le_iff₀ hS).mpr (by linarith only [hT,hTS])
   have hsft : GMAffineSupportedOn (1/4:ℝ) (9/4) ft :=
-    (gmAffineTildeSchwartz_supportedOn hS f hs.supportedOn).mono (by linarith) (by linarith)
+    (gmAffineTildeSchwartz_supportedOn hS f hs).mono (by linarith) (by linarith)
   have hpft : GMAffineHeightFourierMassFamilyAtDepth T (fun β n => 2*D β n) 0 ft := by
     have h := gmAffineTildeSchwartz_heightFourierMassFamilyAtDepth_succ hTp.le hS D hD f hf hp
     simpa only [GMAffineHeightFourierMassFamilyAtDepth,Nat.zero_add,pow_zero,pow_one,one_mul] using h

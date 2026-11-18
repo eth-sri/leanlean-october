@@ -9,78 +9,14 @@ noncomputable section
 
 namespace CanonicalQuadraticSieve
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 
 section
 
-open scoped BigOperators Classical
 
 section
-open ActualEisensteinCubic ConcretePrimeRowBridge CompletedGauss QuadraticSquarefreeKernel
+open ConcretePrimeRowBridge CompletedGauss QuadraticSquarefreeKernel
 
 def squarefreeHighRange (M K : ℝ) : Finset (Ideal O) :=
   (idealRange M).filter (fun I => K<(Ideal.absNorm I:ℝ))
@@ -91,18 +27,16 @@ def annularLift (M K : ℝ) (I : squarefreeHighRange M K) : Ideal O :=
 
 theorem annularLift_injective (M K : ℝ) : Function.Injective (annularLift M K) := by
   intro I J h
-  have he := congrArg squarefreePart h
   apply Subtype.ext
   simpa only [annularLift,
     liftedRow_squarefreePart M I.val (mem_idealRange.mp (Finset.mem_filter.mp I.property).1).1,
-    liftedRow_squarefreePart M J.val (mem_idealRange.mp (Finset.mem_filter.mp J.property).1).1] using he
+    liftedRow_squarefreePart M J.val (mem_idealRange.mp (Finset.mem_filter.mp J.property).1).1] using (congrArg squarefreePart h)
 
 theorem annularLift_properties (M K : ℝ) (I : squarefreeHighRange M K) :
     Supported (annularLift M K I) ∧ K<(Ideal.absNorm (squarefreePart (annularLift M K I)):ℝ) ∧
       M<(Ideal.absNorm (annularLift M K I):ℝ) ∧ (Ideal.absNorm (annularLift M K I):ℝ)≤49*M := by
   have hi := mem_idealRange.mp (Finset.mem_filter.mp I.property).1
-  have hn := liftedRow_bounds M I.val hi.1.1 hi.2
-  refine ⟨liftedRow_supported M I.val hi.1 hi.2,?_,hn⟩
+  refine ⟨liftedRow_supported M I.val hi.1 hi.2,?_,(liftedRow_bounds M I.val hi.1.1 hi.2)⟩
   simpa only [annularLift,liftedRow_squarefreePart M I.val hi.1] using (Finset.mem_filter.mp I.property).2
 
 theorem annularLift_row_sum (M N K : ℝ) (I : squarefreeHighRange M K)
@@ -139,8 +73,7 @@ lemma sum_injective_mask_le {ι : Type*} [Fintype ι]
     (v : Ideal O → ℝ) (hv : ∀I, 0≤v I) :
     (∑i, if f i∈S then v (f i) else 0)≤∑I∈S,v I := by
   classical
-  rw [←Finset.sum_filter]
-  rw [←Finset.sum_image (f := v) (g := f) (by intro i hi j hj he; exact hf he)]
+  rw [←Finset.sum_filter, ←Finset.sum_image (f := v) (g := f) (by intro i hi j hj he; exact hf he)]
   apply Finset.sum_le_sum_of_subset_of_nonneg
   · intro I hI
     obtain ⟨i,hi,rfl⟩ := Finset.mem_image.mp hI
@@ -203,8 +136,7 @@ theorem squarefreeHigh_energy_le_annuli (M N K : ℝ) (hM : 0<M)
 end
 
 section
-open ActualEisensteinCubic ConcretePrimeRowBridge IdealMobiusDivisorSum
-open FiniteSieveRestriction
+open ConcretePrimeRowBridge IdealMobiusDivisorSum FiniteSieveRestriction
 
 def liftingDivisibleColumns (N : ℝ) : Finset (idealRange N) :=
   Finset.univ.filter (fun J => liftingPrime∣J.val)
@@ -246,9 +178,8 @@ theorem liftingDividedCoefficient_coprime (N : ℝ) (a : idealRange N → ℂ)
     by_contra hn
     exact hJ (extendByZero_zero _ _ _ _ hn)
   obtain ⟨I,hI,rfl⟩ := Finset.mem_image.mp hmem
-  have hdiv := (Finset.mem_filter.mp I.property).2
   have hsf : Squarefree (liftingPrime*idealQuotient liftingPrime I.val.val) := by
-    rw [idealQuotient_mul hdiv]
+    rw [idealQuotient_mul ((Finset.mem_filter.mp I.property).2)]
     exact (mem_idealRange.mp I.val.property).1.2.1
   exact ideals_coprime_of_relprime _ _ (squarefree_mul_iff.mp hsf).1
 
@@ -335,49 +266,42 @@ theorem liftingDividedCoefficient_shell (N X : ℝ) (a : idealRange N → ℂ)
 end
 
 section
-open ActualEisensteinCubic ConcretePrimeRowBridge CompletedGauss FiniteSieveOperator
+open ConcretePrimeRowBridge CompletedGauss FiniteSieveOperator
 
 def ballQuadraticEnergy (M N : ℝ) (a : idealRange N → ℂ) : ℝ :=
   ∑I : idealRange M, ‖∑J : idealRange N, quadraticRow J.val (primaryGenerator I.val)*a J‖^2
 
-theorem ballQuadraticEnergy_low_high (M N K : ℝ) (a : idealRange N → ℂ) :
-    ballQuadraticEnergy M N a ≤ sieveNorm K N*(∑J, ‖a J‖^2) +
-      ∑I : squarefreeHighRange M K, ‖∑J : idealRange N, quadraticRow J.val (primaryGenerator I.val)*a J‖^2 := by
-  classical
-  let E := fun I : Ideal O => ‖∑J : idealRange N, quadraticRow J.val (primaryGenerator I)*a J‖^2
-  have hs : (idealRange M).filter (fun I => (Ideal.absNorm I:ℝ)≤K) ⊆ idealRange K := by
-    intro I hI
-    exact mem_idealRange.mpr ⟨(mem_idealRange.mp (Finset.mem_filter.mp hI).1).1,(Finset.mem_filter.mp hI).2⟩
-  have hlo : (∑I∈(idealRange M).filter (fun I => (Ideal.absNorm I:ℝ)≤K), E I) ≤
-      sieveNorm K N*(∑J, ‖a J‖^2) := by
-    calc
-      _ ≤ ∑I∈idealRange K,E I := Finset.sum_le_sum_of_subset_of_nonneg hs (fun I hI hnot => sq_nonneg _)
-      _ = ballQuadraticEnergy K N a := (Finset.sum_coe_sort (idealRange K) E).symm
-      _ ≤ _ := FiniteSieveOperator.energy_bound (matrix K N) a
-  change (∑I : idealRange M,E I.val)≤_+(∑I : squarefreeHighRange M K,E I.val)
-  rw [Finset.sum_coe_sort (idealRange M) E,
-    ←Finset.sum_filter_add_sum_filter_not (idealRange M) (fun I => (Ideal.absNorm I:ℝ)≤K) E]
-  rw [Finset.sum_coe_sort (squarefreeHighRange M K) E]
-  simp only [not_le,squarefreeHighRange]
-  linarith
 
 theorem ballQuadraticEnergy_lifted_annuli (M N K : ℝ) (hM : 0<M) (a : idealRange N → ℂ) :
     ballQuadraticEnergy M N a ≤ sieveNorm K N*(∑J, ‖a J‖^2) +
       2*((∑j : Fin 7, annularHighEnergy ((2:ℝ)^j.val*M) N K (liftingFreeCoefficient N a)) +
         ∑j : Fin 7, annularHighEnergy ((2:ℝ)^j.val*M) N K (liftingDividedCoefficient N a)) := by
-  have hlo := ballQuadraticEnergy_low_high M N K a
+  have hlo : ballQuadraticEnergy M N a ≤ sieveNorm K N*(∑J, ‖a J‖^2) +
+      ∑I : squarefreeHighRange M K, ‖∑J : idealRange N, quadraticRow J.val (primaryGenerator I.val)*a J‖^2 := by
+    classical
+      let E := fun I : Ideal O => ‖∑J : idealRange N, quadraticRow J.val (primaryGenerator I)*a J‖^2
+      have hs : (idealRange M).filter (fun I => (Ideal.absNorm I:ℝ)≤K) ⊆ idealRange K := by
+        intro I hI
+        exact mem_idealRange.mpr ⟨(mem_idealRange.mp (Finset.mem_filter.mp hI).1).1,(Finset.mem_filter.mp hI).2⟩
+      have hlo : (∑I∈(idealRange M).filter (fun I => (Ideal.absNorm I:ℝ)≤K), E I) ≤
+          sieveNorm K N*(∑J, ‖a J‖^2) := by
+        calc
+          _ ≤ ∑I∈idealRange K,E I := Finset.sum_le_sum_of_subset_of_nonneg hs (fun I hI hnot => sq_nonneg _)
+          _ = ballQuadraticEnergy K N a := (Finset.sum_coe_sort (idealRange K) E).symm
+          _ ≤ _ := FiniteSieveOperator.energy_bound (matrix K N) a
+      change (∑I : idealRange M,E I.val)≤_+(∑I : squarefreeHighRange M K,E I.val)
+      rw [Finset.sum_coe_sort (idealRange M) E,
+        ←Finset.sum_filter_add_sum_filter_not (idealRange M) (fun I => (Ideal.absNorm I:ℝ)≤K) E]
+      rw [Finset.sum_coe_sort (squarefreeHighRange M K) E]
+      simp only [not_le,squarefreeHighRange]
+      linarith
   have hs : (∑I : squarefreeHighRange M K,
       ‖∑J : idealRange N, quadraticRow J.val (primaryGenerator I.val)*a J‖^2) ≤
       2*((∑I : squarefreeHighRange M K,
           ‖∑J : idealRange N, quadraticRow J.val (primaryGenerator I.val)*liftingFreeCoefficient N a J‖^2) +
         ∑I : squarefreeHighRange M K,
           ‖∑J : idealRange N, quadraticRow J.val (primaryGenerator I.val)*liftingDividedCoefficient N a J‖^2) := by
-    calc
-      _ ≤ ∑I : squarefreeHighRange M K, 2*(
-          ‖∑J : idealRange N, quadraticRow J.val (primaryGenerator I.val)*liftingFreeCoefficient N a J‖^2 +
-          ‖∑J : idealRange N, quadraticRow J.val (primaryGenerator I.val)*liftingDividedCoefficient N a J‖^2) :=
-        Finset.sum_le_sum (fun I _ => liftingCoefficient_row_energy N a (primaryGenerator I.val))
-      _ = _ := by rw [←Finset.mul_sum,Finset.sum_add_distrib]
+    exact (Finset.sum_le_sum (fun I _ => liftingCoefficient_row_energy N a (primaryGenerator I.val))).trans_eq (by rw [←Finset.mul_sum,Finset.sum_add_distrib])
   have hfree := squarefreeHigh_energy_le_annuli M N K hM (liftingFreeCoefficient N a)
     (liftingFreeCoefficient_coprime N a)
   have hdiv := squarefreeHigh_energy_le_annuli M N K hM (liftingDividedCoefficient N a)
@@ -386,7 +310,7 @@ theorem ballQuadraticEnergy_lifted_annuli (M N K : ℝ) (hM : 0<M) (a : idealRan
 
 end
 
-open ActualEisensteinCubic CompletedGauss
+open CompletedGauss
 
 theorem ballQuadraticEnergy_mono {M M' N : ℝ} (hM : M≤M') (a : idealRange N → ℂ) :
     ballQuadraticEnergy M N a≤ballQuadraticEnergy M' N a := by
@@ -449,9 +373,7 @@ end
 
 section
 
-open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic ConcretePrimeRowBridge CompletedGauss
-open IdealCoprimeSieveOperator DivisorBlockCauchy
+open ConcretePrimeRowBridge CompletedGauss IdealCoprimeSieveOperator DivisorBlockCauchy
 
 theorem gcdPool_admissible {n : Type*} [Fintype n] (cols : n → Ideal O)
     (hcols : ∀j, Admissible (cols j)) (D : Ideal O) (hD : D∈gcdPool cols) : Admissible D := by
@@ -514,10 +436,8 @@ theorem HasSieveExponent.annular_energy_from_scalar_cost {α : ℝ} (hexp : HasS
     (fun J => (mem_idealRange.mp J.property).1.1) a N (C/6) (by positivity)
     (fun J hJ => (mem_idealRange.mp J.property).2)
     (fun D c => ‖annularRayGcdBlock M N K D c a‖) hb
-  have hNH : 1≤N/H := (le_div_iff₀ hH).mpr (by linarith)
-  have hh := hhigh (2*M) (N/H) K (by linarith) hNH hK
-  have hred := annularHighEnergy_gcd_reduction M N K H hN hH ε hε a
-  apply hred.trans
+  have hh := hhigh (2*M) (N/H) K (by linarith) ((le_div_iff₀ hH).mpr (by linarith)) hK
+  apply (annularHighEnergy_gcd_reduction M N K H hN hH ε hε a).trans
   have hsupp := (supportConstant_pos ε hε).le
   have hdiv := (divisorConstant_pos ε hε).le
   calc
@@ -537,8 +457,6 @@ theorem cutoffRescaleCoefficient_eq (C η r q : ℝ) (hr : 0<r) (hq : 0<q) :
     cutoffRescaleCoefficient C η r q=C*r^(1-η)*q^(2+η) := by
   rw [cutoffRescaleCoefficient,Real.div_rpow hr.le hq.le,
     Real.rpow_sub hr,Real.rpow_one,Real.rpow_add hq,Real.rpow_two]
-  have hrp : r^η≠0 := (Real.rpow_pos_of_pos hr η).ne'
-  have hqp : q^η≠0 := (Real.rpow_pos_of_pos hq η).ne'
   field_simp
 
 theorem cutoffRescaleCoefficient_bounds (C η r q : ℝ)
@@ -567,12 +485,10 @@ theorem selectedPoissonK_rescale (C M X η r q : ℝ)
   unfold selectedPoissonK selectedPoissonT cutoffRescaleCoefficient
   have he : (r*M)*(X/q)=(r/q)*(M*X) := by ring
   rw [he,Real.mul_rpow (by positivity : 0≤r/q) (by positivity : 0≤M*X)]
-  have hp : (r/q)^η≠0 := (Real.rpow_pos_of_pos (by positivity) η).ne'
   field_simp
 
 end
 
-open scoped BigOperators Classical
 
 def largeGcdThreshold (α N : ℝ) : ℝ := N^(1-1/α)
 

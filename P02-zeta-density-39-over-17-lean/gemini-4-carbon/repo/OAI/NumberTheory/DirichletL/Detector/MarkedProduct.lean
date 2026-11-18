@@ -49,9 +49,7 @@ theorem markedIdealHighSeries_eq_product (S : Finset Id) (hS : SourceExclusions 
   let R := fun P : PrimeIdeal=>if P∈T then
     idealMarkedLocalFactor η P x w z/idealHighLocalFactor η P.val x w z else 1
   have hR : HasProd R (∏P∈T,idealMarkedLocalFactor η P x w z/idealHighLocalFactor η P.val x w z) := by
-    have hh := hasProd_prod_of_ne_finset_one (s:=T) (f:=R) (L:=SummationFilter.unconditional PrimeIdeal) (fun P hP=>ite_eq_right hP)
-    simpa only [R,Finset.prod_ite_mem,Finset.inter_self] using hh
-  have he := (excludedIdealHighSeries_hasProd S hS.prime η x w z hx hw hz).mul hR
+    simpa only [R,Finset.prod_ite_mem,Finset.inter_self] using (hasProd_prod_of_ne_finset_one (s:=T) (f:=R) (L:=SummationFilter.unconditional PrimeIdeal) (fun P hP=>ite_eq_right hP))
   have heq (P : PrimeIdeal) :
       (∑'b : HighValuation,excludedHighPrimeTerm S η x w z P b)*R P=
       ∑'b : HighValuation,markedLocal T completedValuationMark (excludedHighPrimeTerm S η x w z) P b := by
@@ -67,7 +65,7 @@ theorem markedIdealHighSeries_eq_product (S : Finset Id) (hS : SourceExclusions 
       markedLocal T completedValuationMark (excludedHighPrimeTerm S η x w z) P b)
       (markedIdealHighSeries S 1 η 1 x w z *
         ∏P∈T,idealMarkedLocalFactor η P x w z/idealHighLocalFactor η P.val x w z) := by
-    convert he using 1
+    convert ((excludedIdealHighSeries_hasProd S hS.prime η x w z hx hw hz).mul hR) using 1
     funext P
     exact (heq P).symm
   exact (markedIdealHighSeries_hasProd S hS.prime T η x w z hx hw hz).unique he'

@@ -7,12 +7,11 @@ public import OAI.NumberTheory.DirichletL.Moments.DyadicCount
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
 open Filter
+open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentWholeDivisorShell
-open IdealMobiusDivisorSum UniqueFactorizationMonoid
-open CenteredMomentMobiusRegroup CenteredMomentDyadicCount CenteredMomentSectorLocalization
+open IdealMobiusDivisorSum UniqueFactorizationMonoid CenteredMomentMobiusRegroup CenteredMomentDyadicCount CenteredMomentSectorLocalization
 local notation "O" => ActualEisensteinCubic.O
 
 lemma moebius_norm_le_one (D : Ideal O) : ‖(moebius D:ℂ)‖≤1 := by
@@ -32,8 +31,6 @@ lemma mem_live (Ds : Finset (Ideal O)) (D : Ideal O) :
 lemma live_squarefree (Ds : Finset (Ideal O)) (D : Ideal O) (hD : D∈live Ds) : Squarefree D :=
   squarefree_of_moebius_ne_zero D ((mem_live Ds D).mp hD).2
 
-lemma live_norm_one (Ds : Finset (Ideal O)) (D : Ideal O) (hD : D∈live Ds) : 1≤(D.absNorm:ℝ) := by
-  exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr (live_squarefree Ds D hD).ne_zero)
 
 theorem sum_norm_moebius_live (Ds : Finset (Ideal O)) (f : Ideal O→ℝ) :
     (∑D∈Ds,‖(moebius D:ℂ)‖*f D)=∑D∈live Ds,‖(moebius D:ℂ)‖*f D := by
@@ -82,7 +79,8 @@ lemma selected_scale_bounds (Ds : Finset (Ideal O)) (Y : ℝ)
     1≤dyadicScale n ∧ dyadicScale n≤Y := by
   obtain ⟨D,hD,rfl⟩:=Finset.mem_image.mp hn
   have hd:=live_squarefree Ds D hD
-  have hnorm:=live_norm_one Ds D hD
+  have hnorm : 1≤(D.absNorm:ℝ) := by
+    exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr (live_squarefree Ds D hD).ne_zero)
   have hkey : 0≤normKey D := Int.floor_nonneg.mpr
     (Real.logb_nonneg (by norm_num : (1:ℝ)<2) hnorm)
   have hscale : 1≤dyadicScale (normKey D) := by
@@ -103,12 +101,12 @@ theorem selected_card_log (B Z : ℝ) (hB : 0≤B) (hZ : 1≤Z)
     (Ds : Finset (Ideal O))
     (hbound : ∀D∈Ds,(moebius D:ℂ)≠0 → (D.absNorm:ℝ)≤Z^B) :
     ((selectedShells Ds).card:ℝ)≤(3+B/Real.log 2)*(1+Real.log Z) := by
-  have hY : 1≤Z^B := Real.one_le_rpow hZ hB
+  have hY := Real.one_le_rpow hZ hB
   have hc : ((selectedShells Ds).card:ℝ)≤(indices 1 (Z^B)).card := by
     exact_mod_cast Finset.card_le_card (selected_subset_indices Ds (Z^B) hY hbound)
   have hi:=indices_card_log_bound 1 B Z 1 (Z^B) le_rfl hB hZ (by norm_num) hY
     (by simp only [div_one,one_mul,le_refl])
-  exact hc.trans (by simpa only [Real.logb_one,add_zero] using hi)
+  exact hc.trans (by simpa using hi)
 
 theorem selected_card_subpower (B δ : ℝ) (hB : 0≤B) (hδ : 0<δ) :
     ∃C:ℝ,0<C ∧ ∀ᶠZ:ℝ in atTop,1<Z ∧ ∀Ds:Finset (Ideal O),
@@ -121,7 +119,7 @@ theorem selected_card_subpower (B δ : ℝ) (hB : 0≤B) (hδ : 0<δ) :
   have ht:=(isLittleO_log_rpow_rpow_atTop (1:ℝ) hδ).bound (by norm_num : (0:ℝ)<1)
   refine ⟨C,hC,?_⟩
   filter_upwards [ht,eventually_ge_atTop (Real.exp 1)] with Z ht hZ
-  have hz : 1<Z := (Real.one_lt_exp_iff.mpr (by norm_num : (0:ℝ)<1)).trans_le hZ
+  have hz := (Real.one_lt_exp_iff.mpr (by norm_num : (0:ℝ)<1)).trans_le hZ
   have hl : 1≤Real.log Z := by
     simpa only [Real.log_exp] using Real.log_le_log (Real.exp_pos 1) hZ
   have hp : Real.log Z≤Z^δ := by

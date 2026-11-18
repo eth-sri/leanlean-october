@@ -11,10 +11,8 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonFarGap
 
 @[expose] public section
 
-open Complex Finset Set Filter
+open Complex Finset Set Filter RiemannZeta.GuthMaynard MathCollab.Density.Stronger.Fourth
 open scoped ComplexConjugate
-open RiemannZeta.GuthMaynard
-open MathCollab.Density.Stronger.Fourth
 set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
@@ -36,9 +34,7 @@ theorem atkinson_far_gap_row_le {H L : ℝ} {M : ℕ} {W : Finset ℝ} {t : ℝ}
     have hf := atkinsonPrefixGapMajorant_le_far hH
       (hrange t ht).1 (hrange t ht).2 (hrange u hd.1).1 (hrange u hd.1).2 hM
       (by simpa only [abs_sub_comm] using hd.2.le)
-    have hmono : (M:ℝ)*|t-u|/Real.sqrt (H*(M:ℝ)) ≤
-        (M:ℝ)*L/Real.sqrt (H*(M:ℝ)) :=
-      div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_left
+    have hmono := div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_left
         (by simpa only [abs_sub_comm] using hdiam u hd.1) hM0.le) hR.le
     exact hf.trans (mul_le_mul_of_nonneg_left (Real.sqrt_le_sqrt hmono) (by norm_num))
   calc
@@ -55,10 +51,7 @@ theorem atkinson_far_gap_double_sum_le {H L : ℝ} {M : ℕ} {W : Finset ℝ}
     (hdiam : ∀ t ∈ W, ∀ u ∈ W, |u-t| ≤ L) :
     (∑ t ∈ W, atkinsonFarGapRow H M W t) ≤
       (W.card:ℝ)^2*(2000*Real.sqrt ((M:ℝ)*L/Real.sqrt (H*(M:ℝ)))) := by
-  calc
-    _ ≤ ∑ t ∈ W, (W.card:ℝ)*(2000*Real.sqrt ((M:ℝ)*L/Real.sqrt (H*(M:ℝ)))) :=
-      Finset.sum_le_sum (fun t ht => atkinson_far_gap_row_le hH hM ht hrange (hdiam t ht))
-    _ = _ := by simp; ring
+  exact (Finset.sum_le_sum (fun t ht => atkinson_far_gap_row_le hH hM ht hrange (hdiam t ht))).trans_eq (by simp; ring)
 
 def atkinsonLocalizedGapBudget (η H G L : ℝ) (N R : ℕ) : ℝ :=
   (Nat.clog 2 N:ℝ)*∑ j ∈ Finset.range (Nat.clog 2 N),

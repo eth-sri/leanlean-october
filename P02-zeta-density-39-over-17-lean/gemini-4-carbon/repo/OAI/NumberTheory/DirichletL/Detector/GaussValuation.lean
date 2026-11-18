@@ -19,7 +19,7 @@ theorem primePowerGauss_at_pow_nonprincipal (p : O) (hp : Prime p)
   by_cases he : j = n
   · subst j
     rw [ite_eq_left rfl]
-    simpa only [mul_one] using primePowerGauss_lift p hp.ne_zero χ n 1
+    simpa using primePowerGauss_lift p hp.ne_zero χ n 1
   rw [ite_eq_right he]
   rcases lt_or_gt_of_ne he with hjn | hnj
   · apply primePowerGauss_zero_off_support
@@ -56,8 +56,7 @@ theorem primePowerGauss_at_pow_principal (p : O) (hp : Prime p)
       primePowerGauss_principal p hp.ne_zero hψ n 1
   · have hle : n ≤ j := by omega
     have heq : p ^ j = p ^ n * p ^ (j - n) := by rw [← pow_add, Nat.add_sub_of_le hle]
-    have hd : p ∣ p ^ (j - n) := dvd_pow_self p (by omega)
-    rw [heq, primePowerGauss_principal, ite_eq_left hd, ite_eq_left (by omega : n + 1 ≤ j),
+    rw [heq, primePowerGauss_principal, ite_eq_left (dvd_pow_self p (by omega)), ite_eq_left (by omega : n + 1 ≤ j),
       ite_eq_left hle, hcard, pow_succ]
     ring
     exact hψ

@@ -51,25 +51,21 @@ theorem ramifiedFactor_hasProd (S : Finset (Ideal O)) (hS : SourceExclusions S)
 
 theorem supported_prime_coprime (P : PrimeIdeal) (hs : Supported P.val) (u : O)
     (hn : ¬P.val∣Ideal.span {u}) : IsCoprime P.val (Ideal.span {u}) := by
-  let p := primaryGenerator P.val
-  have hp : Prime p := supported_primeGenerator_prime P hs
-  have he : Ideal.span {p}=P.val := span_primaryGenerator_of_supported P.val hs
-  have hnot : ¬p∣u := by
+  have he := span_primaryGenerator_of_supported P.val hs
+  have hnot : ¬(primaryGenerator P.val)∣u := by
     intro hd
     apply hn
     rw [Ideal.dvd_iff_le,←he,Ideal.span_singleton_le_span_singleton]
     exact hd
   rw [←he,Ideal.isCoprime_span_singleton_iff]
-  exact hp.irreducible.coprime_iff_not_dvd.mpr hnot
+  exact (supported_primeGenerator_prime P hs).irreducible.coprime_iff_not_dvd.mpr hnot
 
 theorem continuedCorrection_eq_initial (S : Finset (Ideal O)) (hS : SourceExclusions S)
     (η : Character) (u : FreeRow) (x w z : ℂ)
     (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) :
     continuedCorrection S hS η u x w z=globalCorrection S η u x w z := by
-  have hr := ramifiedFactor_hasProd S hS η u x w z
   have hu := (unramifiedProduct_multipliable S hS.tail η u x w z
     (by linarith) (by linarith) (by linarith)).hasProd
-  have he := hr.mul hu
   have hlocal (P : {P : PrimeIdeal // P.val∉S}) :
       ramifiedFactor S hS η u P x w z*unramifiedFactor η u P.val x w z=
         localCorrection η u P.val x w z := by
@@ -82,7 +78,7 @@ theorem continuedCorrection_eq_initial (S : Finset (Ideal O)) (hS : SourceExclus
         (supported_prime_coprime P.val hs u.val h) x w z hx hw hz).symm
   have hh : HasProd (fun P : {P : PrimeIdeal // P.val∉S} =>localCorrection η u P.val x w z)
       (continuedCorrection S hS η u x w z) := by
-    simpa only [hlocal,continuedCorrection,unramifiedProduct] using he
+    simpa only [hlocal,continuedCorrection,unramifiedProduct] using ((ramifiedFactor_hasProd S hS η u x w z).mul hu)
   exact hh.tprod_eq.symm
 
 end SevenEighths.ProbeHighRowFamily

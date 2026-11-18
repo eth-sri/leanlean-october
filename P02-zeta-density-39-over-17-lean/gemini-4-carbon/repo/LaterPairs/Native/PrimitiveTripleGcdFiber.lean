@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.PrimitiveTripleGcd
 
 @[expose] public section
@@ -60,7 +69,7 @@ theorem primitive_linear_triple_gcd_fiber_card_le
       rw [heu,hev] at hp'
       nlinarith
     exact Prod.ext heu (Prod.ext hev hew)
-  have hm : 0 < c/(g:ℤ) := Int.ediv_pos_of_pos_of_dvd hc hgz.le hgc
+  have hm := Int.ediv_pos_of_pos_of_dvd hc hgz.le hgc
   have hmod := primitive_coefficients_of_modulus_dvd hcoeff (Int.ediv_dvd_of_dvd hgc)
   have hWden : ∀ p ∈ W, V/(g:ℝ) ≤ (p.2:ℝ) ∧ (p.2:ℝ) ≤ 2*(V/g) := by
     intro p hp
@@ -88,13 +97,11 @@ theorem primitive_linear_triple_gcd_fiber_card_le
     exact hratio q hq
   have hb := primitive_congruence_card_le W hmod hm (div_pos hV hgr) hαβ
     hWden hWprim hWcong hWratio
-  have hcard : W.card = S.card := Finset.card_image_of_injOn hinj
+  have hcard := Finset.card_image_of_injOn hinj
   have hmc : ((c/(g:ℤ):ℤ):ℝ) = (c:ℝ)/g := by
     apply (eq_div_iff hgr.ne').mpr
     exact_mod_cast Int.ediv_mul_cancel hgc
   rw [hcard,hmc] at hb
-  calc
-    (S.card:ℝ) ≤ 1+4*(V/(g:ℝ))^2*(β-α)/((c:ℝ)/g) := hb
-    _ = 1+4*V^2*(β-α)/((c:ℝ)*g) := by field_simp
+  exact (hb).trans_eq (by field_simp)
 
 end TaoTrudgianYang2025

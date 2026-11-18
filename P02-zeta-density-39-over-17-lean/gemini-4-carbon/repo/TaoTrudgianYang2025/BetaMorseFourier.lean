@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaFourierModes
 public import TaoTrudgianYang2025.BetaMorseAmplitude
 
@@ -29,8 +39,8 @@ theorem modelPhaseNormalizedIntegrand_integrableOn
     {χ F : ℝ → ℝ} {σ δ : ℝ} {P : ℕ}
     (hχ : Continuous χ) (hF : IsApproximateModelPhaseFunction F σ P δ) (T q : ℝ) :
     IntegrableOn (fun u : ℝ => (χ u : ℂ)*(𝐞 (T*F u-q*u) : ℂ)) (Icc (1 : ℝ) 2) := by
-  have hf : ContinuousOn F (Icc (1 : ℝ) 2) := hF.1.continuousOn
-  have hp : ContinuousOn (fun u : ℝ => T*F u-q*u) (Icc (1 : ℝ) 2) :=
+  have hf : ContinuousOn F (Icc 1 2) := hF.1.continuousOn
+  have hp : ContinuousOn (fun u : ℝ => T*F u-q*u) (Icc 1 2) :=
     (continuousOn_const.mul hf).sub (continuousOn_const.mul continuousOn_id)
   have he : Continuous (fun t : ℝ => (𝐞 t : ℂ)) :=
     continuous_subtype_val.comp Real.continuous_fourierChar
@@ -42,8 +52,7 @@ theorem modelPhaseNormalizedIntegrand_support
     Function.support (fun u : ℝ => (χ u : ℂ)*(𝐞 (T*F u-q*u) : ℂ)) ⊆ Ioo (1 : ℝ) 2 := by
   intro u hu
   by_contra hout
-  have hz : χ u = 0 := image_eq_zero_of_notMem_tsupport (fun h => hout (hs h))
-  exact hu (by simp only [hz,Complex.ofReal_zero,zero_mul])
+  exact hu (by simp only [(image_eq_zero_of_notMem_tsupport (fun h => hout (hs h))),Complex.ofReal_zero,zero_mul])
 
 theorem modelPhaseNormalizedIntegrand_integrable
     {χ F : ℝ → ℝ} {σ δ : ℝ} {P : ℕ}
@@ -84,11 +93,11 @@ theorem modelPhaseNormalizedMode_morse
     (hv : v ∈ modelPhaseSlopeRange F) (T : ℝ) :
     modelPhaseNormalizedMode χ F T (T*v) =
       (𝐞 (-T*modelPhaseLegendreDual F v) : ℂ)*modelPhaseMorseWeightedIntegral χ F T v := by
-  have hsource : (∫ u in Ioo (1 : ℝ) 2, (χ u : ℂ)*(𝐞 (T*F u-(T*v)*u) : ℂ)) =
+  have hsource : (∫ u in Ioo 1 2, (χ u : ℂ)*(𝐞 (T*F u-(T*v)*u) : ℂ)) =
       modelPhaseNormalizedMode χ F T (T*v) := by
     apply setIntegral_eq_integral_of_forall_compl_eq_zero
     intro u hu
-    have hz : χ u = 0 := image_eq_zero_of_notMem_tsupport (fun h => hu (hs h))
+    have hz := image_eq_zero_of_notMem_tsupport (fun h => hu (hs h))
     simp only [hz,Complex.ofReal_zero,zero_mul]
   rw [← hsource,integral_Ioo_eq_morseIntegral hσ hδ hF hv]
   unfold modelPhaseMorseWeightedIntegral

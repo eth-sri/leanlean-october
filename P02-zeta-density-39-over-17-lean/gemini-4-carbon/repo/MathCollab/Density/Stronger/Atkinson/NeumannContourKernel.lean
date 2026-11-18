@@ -46,10 +46,9 @@ theorem norm_neumannContourKernel (x : ℝ) (z : ℂ) :
         ‖1 + z‖ ^ (-(1 / 2 : ℝ)) := by
   unfold neumannContourKernel
   rw [norm_mul, norm_mul, Complex.norm_exp]
-  have hm := Complex.norm_cpow_real (1 - z) (-(1 / 2 : ℝ))
-  have hp := Complex.norm_cpow_real (1 + z) (-(1 / 2 : ℝ))
-  norm_num only [Complex.ofReal_neg, Complex.ofReal_div, Complex.ofReal_one,
-    Complex.ofReal_ofNat] at hm hp
+  have hm := Complex.norm_cpow_real (1 - z) (-(1 / 2))
+  have hp := Complex.norm_cpow_real (1 + z) (-(1 / 2))
+  norm_num at hm hp
   rw [hm, hp]
   congr 2
   simp [mul_re, mul_im]
@@ -139,7 +138,7 @@ theorem neumannContourKernel_finite_rectangle (x : ℝ) {b H : ℝ}
       I * (∫ t in (0 : ℝ)..H, neumannContourKernel x ((b : ℂ) + t * I)) -
       I * (∫ t in (0 : ℝ)..H, neumannContourKernel x (t * I)) = 0 := by
   have hd : DifferentiableOn ℂ (neumannContourKernel x)
-      (uIcc (0 : ℝ) b ×ℂ uIcc (0 : ℝ) H) := by
+      (uIcc 0 b ×ℂ uIcc 0 H) := by
     intro z hz
     have hr : z.re ∈ Icc 0 b := by simpa only [uIcc_of_le hb] using! hz.1
     apply (differentiableAt_neumannContourKernel x ?_ ?_).differentiableWithinAt

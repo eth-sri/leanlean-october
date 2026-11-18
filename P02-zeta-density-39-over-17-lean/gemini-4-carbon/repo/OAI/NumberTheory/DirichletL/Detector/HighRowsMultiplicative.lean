@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve
-open ConcretePrimeRowBridge CubicEisenstein
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve ConcretePrimeRowBridge CubicEisenstein
 local notation "O" => ActualEisensteinCubic.O
 local notation "Id" => Ideal O
 
@@ -58,9 +57,8 @@ theorem bareIdealHighCoefficient_row_mul (η : HeckeFamily.Character) (u : O)
       ⟨(supported_mul_iff I (J^3)).mpr ⟨h.2.1,supported_pow h.2.2.1 3⟩,h.2.2.2.1⟩
     have hsB := (supported_mul_iff (I'*J'^3) K').mpr
       ⟨(supported_mul_iff I' (J'^3)).mpr ⟨h'.2.1,supported_pow h'.2.2.1 3⟩,h'.2.2.2.1⟩
-    have hc3 : IsCoprime ((I*J*K*L)^3) ((I'*J'*K'*L')^3) := hcop.pow_left.pow_right
     have hab := primaryGenerator_coprime _ _ hsA hsB
-      (hc3.mono (completed_block_dvd_cube I J K L) (completed_block_dvd_cube I' J' K' L'))
+      ((hcop.pow_left.pow_right).mono (completed_block_dvd_cube I J K L) (completed_block_dvd_cube I' J' K' L'))
     have hba := primaryGenerator_coprime _ _ h'.2.2.2.2 hsA
       (hcop.symm.pow_right.mono (last_block_dvd I' J' K' L') (completed_block_dvd_cube I J K L))
     have hab' := primaryGenerator_coprime _ _ h.2.2.2.2 hsB

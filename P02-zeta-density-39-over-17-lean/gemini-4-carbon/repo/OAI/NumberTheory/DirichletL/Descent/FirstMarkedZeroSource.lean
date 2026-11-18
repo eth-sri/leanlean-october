@@ -52,17 +52,12 @@ theorem full_marked_first_zero_bound (ε : ℝ) (hε : 0<ε) :
     test₁ test₂ extra₁ extra₂ slots lists a W Γ G₁ G₂ L K B F
     hΓ hG₁ hG₂ hL hB hF hΨ₁ hΨ₂ hadm hb₁ hb₂ hI0 hIF hcoeff hslots ha
     he₁ he₂ htest₁ htest₂ hs₁ hs₂
-  have hB0 : 0≤B := le_trans zero_le_one hB
   have hextra (extra : CubeCoordinates ι→Finset ι) (he : ∀b∈bs,extra b⊆b.support)
       (b : CubeCoordinates ι) (hb : b∈bs) : primeProductNorm p (extra b)≤B^2 :=
-    (primeProductNorm_mono p hp (he b hb)).trans (cube_whole_support_dyad p hp b B hB0 (hb₁ b hb) (hb₂ b hb))
-  have ht₁ (b : CubeCoordinates ι) (hb : b∈bs) :
-      ∀U,‖primeMark slots lists a (extra₁ b∪U)*test₁ b U‖≤Cm*(B^2*L)^ε*G₁ :=
-    hmark p hp hcop slots lists a hslots ha (extra₁ b) (test₁ b) (B^2) G₁ L
+    (primeProductNorm_mono p hp (he b hb)).trans (cube_whole_support_dyad p hp b B (le_trans zero_le_one hB) (hb₁ b hb) (hb₂ b hb))
+  have ht₁ (b : CubeCoordinates ι) (hb : b∈bs) := hmark p hp hcop slots lists a hslots ha (extra₁ b) (test₁ b) (B^2) G₁ L
       (sq_nonneg _) hG₁ hL.le (hextra extra₁ he₁ b hb) (htest₁ b hb) (hs₁ b hb)
-  have ht₂ (b : CubeCoordinates ι) (hb : b∈bs) :
-      ∀U,‖primeMark slots lists a (extra₂ b∪U)*test₂ b U‖≤Cm*(B^2*L)^ε*G₂ :=
-    hmark p hp hcop slots lists a hslots ha (extra₂ b) (test₂ b) (B^2) G₂ L
+  have ht₂ (b : CubeCoordinates ι) (hb : b∈bs) := hmark p hp hcop slots lists a hslots ha (extra₂ b) (test₂ b) (B^2) G₂ L
       (sq_nonneg _) hG₂ hL.le (hextra extra₂ he₂ b hb) (htest₂ b hb) (hs₂ b hb)
   have hh := hzero p hp hcop hg hinj hc pool bs labels coeff Ψ₁ Ψ₂ m₁ m₂
     (fun b U=>primeMark slots lists a (extra₁ b∪U)*test₁ b U)

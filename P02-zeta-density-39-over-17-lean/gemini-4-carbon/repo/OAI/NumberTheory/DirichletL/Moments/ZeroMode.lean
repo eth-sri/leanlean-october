@@ -9,11 +9,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentZeroMode
-open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve
-open ConcreteTraceCRT CubicEisenstein
-open CenteredMomentRowNorm CenteredMomentCorrelation CenteredMomentCommonSupport
-open CenteredMomentSupportedCorrelation CenteredMomentFourier
-open UniqueFactorizationMonoid CenteredExceptionalCount CenteredExceptionalProfile
+open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve ConcreteTraceCRT CubicEisenstein CenteredMomentRowNorm CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentSupportedCorrelation CenteredMomentFourier UniqueFactorizationMonoid CenteredExceptionalCount CenteredExceptionalProfile
 local notation "O" => ActualEisensteinCubic.O
 
 @[simp] theorem pairResidue_mul (a b : O) (ha : Supported (Ideal.span {a}))
@@ -56,13 +52,11 @@ theorem rows_agree_of_mean_ne_zero (a b : O)
   have he := pairResidue_unit_eq_one_of_mean_ne_zero a b ha hb hm hunit.unit
   rw [hunit.unit_spec, pairResidue_mk] at he
   let := finite_quotient_span (supported_element_ne_zero b hb)
-  have hu : IsUnit (Ideal.Quotient.mk (Ideal.span {b}) n) :=
-    (IdealCharacter.isUnit_mk_iff_isCoprime _ _).mpr hn.of_mul_right_right
   have hj : idealRowHom n (Ideal.span {b}) * star (idealRowHom n (Ideal.span {b})) = 1 := by
     change supportedModulusCharacter b hb (Ideal.Quotient.mk _ n) *
       star (supportedModulusCharacter b hb (Ideal.Quotient.mk _ n)) = 1
     rw [MulChar.star_apply', ← MulChar.mul_apply, mul_inv_cancel]
-    exact MulChar.one_apply hu
+    exact MulChar.one_apply ((IdealCharacter.isUnit_mk_iff_isCoprime _ _).mpr hn.of_mul_right_right)
   exact mul_right_cancel₀ (by intro hz; simp [hz] at hj) (he.trans hj.symm)
 
 theorem valuation_profile_of_mean_ne_zero (a b : O)
@@ -143,7 +137,7 @@ theorem pairFourier_zero_norm_le (a b : O) (ha : Supported (Ideal.span {a}))
   rw [pairFourier_zero, tsum_fintype]
   calc
     _ ≤ ∑ x : Residue (a * b), ‖pairResidue a b ha hb x‖ := norm_sum_le _ _
-    _ ≤ ∑ _x : Residue (a * b), (1 : ℝ) := by
+    _ ≤ ∑ _x : Residue (a * b), 1 := by
       apply Finset.sum_le_sum
       intro x _
       obtain ⟨n, rfl⟩ := Ideal.Quotient.mk_surjective x
@@ -161,11 +155,7 @@ theorem scaled_zero_mean_norm_le (a b : O) (ha : Supported (Ideal.span {a}))
         (supported_element_ne_zero a ha) (supported_element_ne_zero b hb))))
   rw [norm_mul, Complex.norm_real, Real.norm_eq_abs,
     eisEmbedding_norm_sq_eq_absNorm_span, abs_of_nonneg (div_nonneg hK hn.le)]
-  calc
-    _ ≤ (K / (Ideal.absNorm (Ideal.span {a * b}) : ℝ)) *
-        (Ideal.absNorm (Ideal.span {a * b}) : ℝ) :=
-      mul_le_mul_of_nonneg_left (pairFourier_zero_norm_le a b ha hb) (div_nonneg hK hn.le)
-    _ = K := div_mul_cancel₀ _ hn.ne'
+  exact (mul_le_mul_of_nonneg_left (pairFourier_zero_norm_le a b ha hb) (div_nonneg hK hn.le)).trans_eq (div_mul_cancel₀ _ hn.ne')
 
 theorem nonzero_mean_pair_count (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ {α β : Type*} (S : Finset (α × β))
@@ -184,14 +174,13 @@ theorem nonzero_mean_pair_count (ε : ℝ) (hε : 0 < ε) :
   have hf : Set.InjOn f (T : Set (α × β)) := by
     intro p hp q hq he
     exact hinj (Finset.mem_filter.mp hp).1 (Finset.mem_filter.mp hq).1 he
-  have ht : (T.image f).card = T.card := Finset.card_image_of_injOn hf
   have hbound := hc (T.image f) Y hY (by
     intro I hI
     obtain ⟨p, hp, rfl⟩ := Finset.mem_image.mp hI
     have hp' := Finset.mem_filter.mp hp
     exact ⟨powerful_product_of_mean_ne_zero (a p.1) (b p.2) (ha p.1) (hb p.2) hp'.2,
       hN p hp'.1⟩)
-  simpa only [ht] using hbound
+  simpa only [(Finset.card_image_of_injOn hf)] using hbound
 
 theorem first_zero_sum_bound (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ {α β : Type*} (S : Finset (α × β))

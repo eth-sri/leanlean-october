@@ -31,7 +31,7 @@ section lemmas
 noncomputable def funscale {E : Type*} (g : ℝ → E) (R x : ℝ) : E := g (R⁻¹ • x)
 
 lemma contDiff_ofReal : ContDiff ℝ ∞ ofReal := by
-  have key x : HasDerivAt ofReal 1 x := hasDerivAt_id x |>.ofReal_comp
+  have key x := hasDerivAt_id x |>.ofReal_comp
   have key' : deriv ofReal = fun _ => 1 := by ext x ; exact (key x).deriv
   refine contDiff_infty_iff_deriv.mpr ⟨fun x => (key x).differentiableAt, ?_⟩
   simpa [key'] using contDiff_const
@@ -264,7 +264,7 @@ theorem W21_approximation (f : W21) (g : trunc) :
   -- Proof
   convert_to Tendsto (fun R => W21.norm (fun v => h R v * f v)) atTop (𝓝 0)
   · ext R ; change W21.norm _ = _ ; congr ; ext v ; simp [h, sub_mul] ; rfl
-  rw [show (0 : ℝ) = 0 + ((4 * π ^ 2)⁻¹ : ℝ) * 0 by simp]
+  rw [show 0 = 0 + ((4 * π ^ 2)⁻¹ : ℝ) * 0 by simp]
   refine Tendsto.add ?_ (Tendsto.const_mul _ ?_)
 
   · let F R v := ‖h R v * f v‖
@@ -346,11 +346,9 @@ theorem W21_approximation (f : W21) (g : trunc) :
     have e4 : ∀ᵐ (a : ℝ), Tendsto (fun n ↦ F n a) atTop (𝓝 0) := by
       apply Eventually.of_forall ; intro v
       have evg' : g' =ᶠ[𝓝 0] 0 := by
-        have he := g.zero.deriv
-        simpa [g', CS.deriv, deriv_const'] using he
+        simpa [g', CS.deriv, deriv_const'] using (g.zero.deriv)
       have evg'' : g'' =ᶠ[𝓝 0] 0 := by
-        have he := evg'.deriv
-        simpa [g'', CS.deriv, deriv_const'] using he
+        simpa [g'', CS.deriv, deriv_const'] using (evg'.deriv)
       refine tendsto_norm_zero.comp <| (ZeroAtFilter.add ?_ ?_).add ?_
       · have eh'' v : ∀ᶠ R in atTop, h'' R v = 0 := by
           filter_upwards [(vR v).eventually evg'', eventually_ne_atTop 0] with R hR hR'

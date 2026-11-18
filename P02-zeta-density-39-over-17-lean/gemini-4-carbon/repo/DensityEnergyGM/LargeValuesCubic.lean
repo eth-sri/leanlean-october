@@ -173,22 +173,19 @@ private theorem gmTraceKernel_eq_scaled_phase
         gmTraceKernel cutoff t ((n : ℝ) / N) := by
   have hNr : 0 < (N : ℝ) := by exact_mod_cast hN
   have hnr : 0 < (n : ℝ) := by exact_mod_cast hn
-  have hratio : 0 < (n : ℝ) / N := div_pos hnr hNr
+  have hratio := div_pos hnr hNr
   have hcast :
       ((n : ℂ) : ℂ) = (N : ℂ) * (((n : ℝ) / N : ℝ) : ℂ) := by
-    have hreal : (n : ℝ) = (N : ℝ) * ((n : ℝ) / N) :=
-      (mul_div_cancel₀ (n : ℝ) hNr.ne').symm
     calc
       (n : ℂ) = (((n : ℝ) : ℂ)) := by norm_num
-      _ = ((((N : ℝ) * ((n : ℝ) / N) : ℝ)) : ℂ) := congrArg Complex.ofReal hreal
+      _ = ((((N : ℝ) * ((n : ℝ) / N) : ℝ)) : ℂ) := congrArg Complex.ofReal ((mul_div_cancel₀ (n : ℝ) hNr.ne').symm)
       _ = (N : ℂ) * (((n : ℝ) / N : ℝ) : ℂ) := by push_cast; rfl
   rw [hcast]
   change (cutoff ((n : ℝ) / N) ^ 2 : ℂ) *
       ((((N : ℝ) : ℂ) * (((n : ℝ) / N : ℝ) : ℂ)) ^ ((t : ℂ) * I)) = _
   rw [Complex.mul_cpow_ofReal_nonneg hNr.le hratio.le]
   unfold gmTraceKernel
-  rw [Complex.cpow_def_of_ne_zero (Complex.ofReal_ne_zero.mpr hratio.ne')]
-  rw [← Complex.ofReal_log hratio.le]
+  rw [Complex.cpow_def_of_ne_zero (Complex.ofReal_ne_zero.mpr hratio.ne'), ← Complex.ofReal_log hratio.le]
   have harg :
       ((Real.log ((n : ℝ) / N) : ℝ) : ℂ) * ((t : ℂ) * I) =
         (((t * Real.log ((n : ℝ) / N) : ℝ)) : ℂ) * I := by

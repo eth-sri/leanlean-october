@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 
 @[expose] public section
 set_option autoImplicit false
@@ -40,10 +49,9 @@ private theorem sortedList_length_le_interval
           linarith
       | cons y ys =>
           intro a b hmem hab
-          have hxmem : x ∈ W := hsub x (by simp)
-          have hymem : y ∈ W := hsub y (by simp)
-          have hxy : x < y :=
-            (List.pairwise_cons_cons_iff_of_trans.mp hsorted).1
+          have hxmem := hsub x (by simp)
+          have hymem := hsub y (by simp)
+          have hxy := (List.pairwise_cons_cons_iff_of_trans.mp hsorted).1
           have hgap := hsep y hymem x hxmem (ne_of_gt hxy)
           rw [abs_of_nonneg (sub_nonneg.mpr hxy.le)] at hgap
           have htailSub : ∀ z ∈ y :: ys, z ∈ W := by
@@ -72,7 +80,7 @@ theorem oneSeparated_card_cast_le_interval_length_add_one
     {a b : ℝ} (hab : 0 ≤ b - a)
     (hmem : ∀ x ∈ W, a ≤ x ∧ x ≤ b) :
     (W.card : ℝ) ≤ b - a + 1 := by
-  let L : List ℝ := W.sort
+  let L := W.sort
   have hsorted : L.Pairwise (· < ·) := by
     exact List.sortedLT_iff_pairwise.mp (by
       simpa [L] using Finset.sortedLT_sort W)

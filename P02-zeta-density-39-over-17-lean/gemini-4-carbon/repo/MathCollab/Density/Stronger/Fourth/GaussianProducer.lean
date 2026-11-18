@@ -45,10 +45,7 @@ theorem exists_integral_sq_fourthPolynomial_le {ε : ℝ} (hε : 0 < ε) :
     apply (hcoeff c hc (2^j) (by positivity)).trans
     exact mul_le_mul_of_nonneg_left
       (Real.rpow_le_rpow (by positivity) hsize hε.le) (by linarith)
-  calc
-    _ ≤ 2*((M:ℝ)+1)^2*(H+2*(5*Real.pi+1)*(2:ℝ)^M)*L :=
-      integral_norm_sq_dirichletPrefix_reflected_le M (zetaFourthCoeff c) u hH hone hmass
-    _ = _ := by dsimp [L]; ring
+  exact (integral_norm_sq_dirichletPrefix_reflected_le M (zetaFourthCoeff c) u hH hone hmass).trans_eq (by dsimp [L]; ring)
 
 theorem integrable_gaussian_dirichletPrefix_prod
     {b : ℝ} (hb : 0 < b) (N : ℕ) (a : ℕ → ℂ) (A B : ℝ) :
@@ -61,21 +58,17 @@ theorem integrable_gaussian_dirichletPrefix_prod
     change Integrable (fun _ : ℝ => C^2)
       (volume.restrict (Ioc (min A B) (max A B)))
     exact integrable_const _
-  have hg := integrable_exp_neg_mul_sq hb
   have hcont : Continuous (fun z : ℝ × ℝ =>
       Real.exp (-b*z.2^2)*‖dirichletPrefix N a (z.2-z.1)‖^2) :=
     (by fun_prop : Continuous (fun z : ℝ × ℝ => Real.exp (-b*z.2^2))).mul
       (((continuous_dirichletPrefix N a).comp (by fun_prop)).norm.pow 2)
-  apply (hc.mul_prod hg).mono' hcont.aestronglyMeasurable
+  apply (hc.mul_prod (integrable_exp_neg_mul_sq hb)).mono' hcont.aestronglyMeasurable
   apply Eventually.of_forall
   intro z
   rw [Real.norm_of_nonneg (by positivity)]
-  calc
-    _ ≤ Real.exp (-b*z.2^2)*C^2 :=
-      mul_le_mul_of_nonneg_left
+  exact (mul_le_mul_of_nonneg_left
         (pow_le_pow_left₀ (norm_nonneg _) (norm_dirichletPrefix_le N a (z.2-z.1)) 2)
-        (Real.exp_pos _).le
-    _ = _ := mul_comm _ _
+        (Real.exp_pos _).le).trans_eq (mul_comm _ _)
 
 theorem intervalIntegrable_gaussianPrefixMean
     {b : ℝ} (hb : 0 < b) (N : ℕ) (a : ℕ → ℂ) (A B : ℝ) :
@@ -100,27 +93,23 @@ theorem exists_integral_gaussian_fourthPolynomial_le {ε : ℝ} (hε : 0 < ε) :
         Real.exp (-98*u^2)*‖dirichletPrefix (2^M) (zetaFourthCoeff c) (u-t)‖^2) ≤
           D*((M:ℝ)+1)^2*(H+2*(5*Real.pi+1)*(2:ℝ)^M)*((2:ℝ)^M)^ε := by
   obtain ⟨C,hC,hmean⟩ := exists_integral_sq_fourthPolynomial_le hε
-  let G : ℝ := Real.sqrt (Real.pi/98)
+  let G := Real.sqrt (Real.pi/98)
   have hG : 0 < G := by dsimp [G]; positivity
   refine ⟨C*G,mul_pos hC hG,?_⟩
   intro c hc M H hH
   rw [integral_gaussianPrefixMean_swap (by norm_num : (0:ℝ)<98)]
-  let Q : ℝ := C*((M:ℝ)+1)^2*(H+2*(5*Real.pi+1)*(2:ℝ)^M)*((2:ℝ)^M)^ε
+  let Q := C*((M:ℝ)+1)^2*(H+2*(5*Real.pi+1)*(2:ℝ)^M)*((2:ℝ)^M)^ε
   have hnonneg : ∀ u : ℝ, 0 ≤ Real.exp (-98*u^2)*
       (∫ t : ℝ in H..2*H, ‖dirichletPrefix (2^M) (zetaFourthCoeff c) (u-t)‖^2) := by
     intro u
     apply mul_nonneg (Real.exp_pos _).le
     exact intervalIntegral.integral_nonneg (by linarith) (fun _ _ => sq_nonneg _)
-  calc
-    _ ≤ ∫ u : ℝ, Real.exp (-98*u^2)*Q :=
-      integral_mono_of_nonneg (Eventually.of_forall hnonneg)
+  exact (integral_mono_of_nonneg (Eventually.of_forall hnonneg)
         ((integrable_exp_neg_mul_sq (by norm_num : (0:ℝ)<98)).mul_const Q)
         (Eventually.of_forall (fun u =>
-          mul_le_mul_of_nonneg_left (hmean c hc M H hH u) (Real.exp_pos _).le))
-    _ = _ := by
+          mul_le_mul_of_nonneg_left (hmean c hc M H hH u) (Real.exp_pos _).le))).trans_eq (by
       rw [integral_mul_const,integral_gaussian]
-      dsimp [Q,G]
-      ring
+      ring)
 
 theorem fourth_height_power_identity {H q : ℝ} (hH : 0 < H) :
     (2*H)^(2*q)*H^(1+q)*(2*H^(1+q))^(2*q) =
@@ -142,16 +131,14 @@ theorem exists_fourth_dyadic_budget {q : ℝ} (hq : 0 < q) (hq1 : q ≤ 1) :
       (2*H)^(2*q)*((M:ℝ)+1)^2*
         (H+2*(5*Real.pi+1)*(2:ℝ)^M)*((2:ℝ)^M)^q ≤ D*H^(1+7*q) := by
   obtain ⟨A,hA,hcount⟩ := MathCollab.Density.Stronger.exists_dyadic_count_sq_le_rpow hq
-  let B : ℝ := 2*(5*Real.pi+1)
+  let B := 2*(5*Real.pi+1)
   have hB : 0 < B := by dsimp [B]; positivity
   refine ⟨A*(1+2*B)*(2:ℝ)^(4*q),by positivity,?_⟩
   intro H hH M hN
   have hH0 : 0 < H := by linarith
   have hNp : 0 < (2:ℝ)^M := by positivity
   have hHH : H ≤ H^(1+q) := by
-    calc
-      H = H^(1:ℝ) := (Real.rpow_one H).symm
-      _ ≤ _ := Real.rpow_le_rpow_of_exponent_le hH (by linarith)
+    exact ((Real.rpow_one H).symm).trans_le (Real.rpow_le_rpow_of_exponent_le hH (by linarith))
   have hlength : H+B*(2:ℝ)^M ≤ (1+2*B)*H^(1+q) := by
     have h := mul_le_mul_of_nonneg_left hN hB.le
     nlinarith

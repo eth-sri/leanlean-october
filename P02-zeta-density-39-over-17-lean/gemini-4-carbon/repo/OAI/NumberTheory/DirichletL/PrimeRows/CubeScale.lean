@@ -21,8 +21,8 @@ theorem cube_height_budget_eventually (n : ℕ) (τ dmin cost : ℝ)
     ((3*(n:ℝ)+5)^2) (dmin*cost-2*τ) (by linarith)
   filter_upwards [habs,eventually_ge_atTop (1:ℝ)] with Z hC hZ
   intro i hi d hd
-  have hZp : 0<Z := zero_lt_one.trans_le hZ
-  have hpow : 1≤Z^τ := Real.one_le_rpow hZ hτ.le
+  have hZp := zero_lt_one.trans_le hZ
+  have hpow := Real.one_le_rpow hZ hτ.le
   have hi' : (i:ℝ)≤n := by exact_mod_cast hi
   have hx : 3+(3*i+2:ℕ)*Z^τ≤(3*(n:ℝ)+5)*Z^τ := by
     push_cast
@@ -48,7 +48,7 @@ theorem ray_cube_conductor_eventually (M : Ideal O) (ν : ℝ) (hν : 0<ν) :
       (conductorConstant*M.absNorm*(Ideal.span {u.val}:Ideal O).absNorm:ℝ)≤Z^d := by
   have hh := HeckeDyadic.constant_absorbed_eventually
     ((conductorConstant*M.absNorm:ℕ):ℝ) ν hν
-  filter_upwards [hh,eventually_gt_atTop (0:ℝ)] with Z hC hZ
+  filter_upwards [hh,eventually_gt_atTop 0] with Z hC hZ
   intro u d hu
   calc
     _ = ((conductorConstant*M.absNorm:ℕ):ℝ)*rowNorm u := by simp [rowNorm]

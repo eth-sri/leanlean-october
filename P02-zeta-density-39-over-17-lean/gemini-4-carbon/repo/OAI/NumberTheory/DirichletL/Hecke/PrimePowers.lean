@@ -40,8 +40,7 @@ theorem logWeight_le_one (I : Ideal O) : logWeight I≤1 := by
 theorem logWeight_prime {P : Ideal O} (hP : Prime P) : logWeight P=1 := by
   have hp2 : (2 : ℝ)≤P.absNorm := by
     exact_mod_cast SmoothMobiusCorrection.prime_norm_two_le ⟨P,hP⟩
-  have hp : 0<Real.log (P.absNorm : ℝ) := Real.log_pos (by linarith)
-  rw [logWeight, PNT.IdealPrimeMass.value_prime hP, div_self hp.ne']
+  rw [logWeight, PNT.IdealPrimeMass.value_prime hP, div_self (Real.log_pos (by linarith)).ne']
 
 theorem logWeight_eq_zero {I : Ideal O} (hI : ¬IsPrimePow I) : logWeight I=0 := by
   simp only [logWeight, IdealMangoldt.value, ite_eq_right hI, zero_div]
@@ -84,8 +83,7 @@ theorem prime_extraction_error (ε : ℝ) (hε : 0<ε) :
       intro I hI
       rw [norm_mul, norm_mul, Complex.norm_real, Real.norm_eq_abs,
         abs_of_nonneg (logWeight_nonneg _)]
-      have hcoeff : logWeight I*‖idealCoeff χ I‖≤1 :=
-        (mul_le_of_le_one_right (logWeight_nonneg I) (idealCoeff_norm_le_one χ I)).trans
+      have hcoeff := (mul_le_of_le_one_right (logWeight_nonneg I) (idealCoeff_norm_le_one χ I)).trans
           (logWeight_le_one I)
       exact (mul_le_mul_of_nonneg_right hcoeff (norm_nonneg _)).trans
         (by simpa using hf I (Finset.mem_filter.mp hI).1)

@@ -10,8 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace SevenEighths.InverseSecondChildWindows
-open InverseMoment InverseSecondProfileUniform
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondFibers
+open InverseMoment InverseSecondProfileUniform ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondFibers
 local notation "O" => ActualEisensteinCubic.O
 
 theorem positive_cutoff (a b : ℝ) (ha : 0<a) (_hab : a≤b) :
@@ -23,14 +22,13 @@ theorem positive_cutoff (a b : ℝ) (ha : 0<a) (_hab : a≤b) :
   obtain ⟨f,hf,_,hs,hone⟩ := exists_contDiff_support_eq_eq_one_iff
     (n:=⊤) isOpen_Ioo isClosed_Icc hKU
   let v : ℝ→ℂ := fun x => (f x:ℂ)
-  have hv : ContDiff ℝ ∞ v := Complex.ofRealCLM.contDiff.comp (by simpa using hf)
   have hvs : Function.support v⊆Set.Icc (a/2) (b+1) := by
     intro x hx
     have hh : x∈Function.support f := by simpa [v,Function.mem_support] using hx
     rw [hs] at hh
     exact ⟨hh.1.le,hh.2.le⟩
   have hvc := HasCompactSupport.of_support_subset_isCompact isCompact_Icc hvs
-  refine ⟨hvc.toSchwartzMap hv,hvc,?_,closure_minimal hvs isClosed_Icc⟩
+  refine ⟨hvc.toSchwartzMap (Complex.ofRealCLM.contDiff.comp (by simpa using hf)),hvc,?_,closure_minimal hvs isClosed_Icc⟩
   intro x hx
   change (f x:ℂ)=1
   rw [(hone x).mp hx]
@@ -40,11 +38,9 @@ theorem positiveSource_log_bound (g : 𝓢(ℝ,ℂ)) (m bcap c θ x : ℝ)
     (_hm : 0≤m) (hs : Function.support g⊆Set.Icc (-m) m)
     (hc : 1≤c) (hcb : c≤bcap) (_hx : 0<x)
     (hn : positiveSource g c θ x≠0) : |Real.log x|≤m+Real.log bcap := by
-  have hc0 : 0<c := zero_lt_one.trans_le hc
-  have hgn : g (Real.log x+Real.log c)≠0 := (mul_ne_zero_iff.mp hn).2
-  have hh := hs hgn
-  have hcl : 0≤Real.log c := Real.log_nonneg hc
-  have hclb : Real.log c≤Real.log bcap := Real.log_le_log hc0 hcb
+  have hh := hs ((mul_ne_zero_iff.mp hn).2)
+  have hcl := Real.log_nonneg hc
+  have hclb := Real.log_le_log (zero_lt_one.trans_le hc) hcb
   rw [abs_le]
   constructor <;> linarith [hh.1,hh.2]
 
@@ -59,9 +55,8 @@ theorem positiveSource_ratio_support (g : 𝓢(ℝ,ℂ)) (m bcap c θ x : ℝ)
 theorem translated_log_bound (a b x ρ B : ℝ) (ha : 0<a)
     (hx : x∈Set.Icc a b) (hρ : |ρ|≤B) :
     |Real.log x+ρ|≤|Real.log a|+|Real.log b|+B := by
-  have hx0 := ha.trans_le hx.1
   have hlo := Real.log_le_log ha hx.1
-  have hhi := Real.log_le_log hx0 hx.2
+  have hhi := Real.log_le_log (ha.trans_le hx.1) hx.2
   have hl : |Real.log x|≤|Real.log a|+|Real.log b| := by
     rw [abs_le]
     constructor
@@ -188,7 +183,6 @@ theorem actual_second_child_windows (g₁ g₂ : 𝓢(ℝ,ℂ)) (m₁ m₂ bcap 
         U₀ i (secondRelativeLog
           (secondActualNorms p (secondInheritedProfile p j.1 Ψ m z) j.2.1 j.2.2) G E V B X i+ρ i)=1) := by
   let mmax := max m₁ m₂
-  have hmmax : 0≤mmax := hm₁.trans (le_max_left _ _)
   have hg₁' : Function.support g₁⊆Set.Icc (-mmax) mmax := by
     intro x hx
     have h := hg₁ hx
@@ -198,7 +192,7 @@ theorem actual_second_child_windows (g₁ g₂ : 𝓢(ℝ,ℂ)) (m₁ m₂ bcap 
     have h := hg₂ hx
     exact ⟨(neg_le_neg (le_max_right _ _)).trans h.1,h.2.trans (le_max_right _ _)⟩
   obtain ⟨w,U,M,a,b,ha,hab,hwc,hws,hM,hUc,hUs,hfresh,hcut⟩ :=
-    fixed_windows mmax bcap lo hi Bρ hmmax hcap hlo hhi hBρ
+    fixed_windows mmax bcap lo hi Bρ (hm₁.trans (le_max_left _ _)) hcap hlo hhi hBρ
   refine ⟨w,w,U,M,a,b,ha,hab,hwc,hwc,hws,hws,hM,hUc,hUs,?_⟩
   intro ι _ p hp _ Jo Jn source pool Ψ m z G E V B X ρ c₁ c₂ θ₁ θ₂ hG hE hV hB hX hρ hc₁ hcb₁ hc₂ hcb₂ hblock
   have he (x : MarkedSecondSource ι Jo Jn) (Q : Finset ι) :

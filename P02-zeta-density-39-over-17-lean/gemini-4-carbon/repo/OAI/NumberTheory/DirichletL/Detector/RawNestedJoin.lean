@@ -27,7 +27,6 @@ theorem nestedMellinPhysicalProbe_eq_raw (η : HeckeFamily.Character) (C : Calib
   rw [sourceOuter_tsum]
   apply tsum_congr
   intro K
-  dsimp only
   simp_rw [rawPhysicalMellinTerm_radial_join,tsum_mul_left]
   apply congrArg (verticalIntegral υ)
   funext w

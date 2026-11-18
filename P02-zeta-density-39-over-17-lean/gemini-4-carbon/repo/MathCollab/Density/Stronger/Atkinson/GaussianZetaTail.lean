@@ -11,9 +11,7 @@ public import MathCollab.Density.AbelZetaGrowth
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.ZetaGrowth
+open Complex Filter MeasureTheory Set Topology MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth MathCollab.Density.ZetaGrowth
 open scoped Interval
 set_option autoImplicit false
 noncomputable section
@@ -39,9 +37,7 @@ theorem exists_zetaMomentCriticalNorm_linear_bound :
     have hs : ‖((1 / 2 : ℝ) : ℂ) + (t : ℂ) * I‖ ≤ 1 / 2 + |t| := by
       simpa [Real.norm_eq_abs] using norm_add_le ((1 / 2 : ℝ) : ℂ) ((t : ℂ) * I)
     change zetaMomentCriticalNorm t ≤ _ at hζ
-    calc
-      _ ≤ 5 * (1 / 2 + |t|) := hζ.trans (mul_le_mul_of_nonneg_left hs (by norm_num))
-      _ ≤ C * (1 + |t|) := by nlinarith [abs_nonneg t]
+    exact (hζ.trans (mul_le_mul_of_nonneg_left hs (by norm_num))).trans (by nlinarith [abs_nonneg t])
 
 def zetaSquareCenteredGaussian (T G x : ℝ) : ℝ :=
   Real.exp (-x ^ 2) * zetaMomentCriticalNorm (T + G * x) ^ 2

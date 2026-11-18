@@ -10,13 +10,9 @@ noncomputable section
 
 lemma cube_scale_power (M T a : ℝ) (hT : 0 < T) (hTM : T ≤ M) (ha : (1/3 : ℝ) ≤ a) :
     (M/T)^(1/3 : ℝ) * T^a ≤ M^a := by
-  have hM : 0 < M := hT.trans_le hTM
-  have hbase : 1 ≤ M/T := (one_le_div hT).mpr hTM
-  calc
-    _ ≤ (M/T)^a * T^a := mul_le_mul_of_nonneg_right
-      (Real.rpow_le_rpow_of_exponent_le hbase ha) (Real.rpow_nonneg hT.le _)
-    _ = M^a := by
-      rw [Real.div_rpow hM.le hT.le, div_mul_cancel₀ _ (Real.rpow_pos_of_pos hT a).ne']
+  exact (mul_le_mul_of_nonneg_right
+      (Real.rpow_le_rpow_of_exponent_le ((one_le_div hT).mpr hTM) ha) (Real.rpow_nonneg hT.le _)).trans_eq (by
+      rw [Real.div_rpow (hT.trans_le hTM).le hT.le, div_mul_cancel₀ _ (Real.rpow_pos_of_pos hT a).ne'])
 
 lemma extracted_monomial_le (W U T a : ℝ) (hW : 1 ≤ W) (hU : 0 ≤ U)
     (hWT : W^2*U ≤ T) (ha : (1/2 : ℝ) ≤ a) : W*U^a ≤ T^a := by
@@ -94,11 +90,8 @@ lemma cubic_cross_shape_absorb (M N ξ : ℝ) (hM : 1 ≤ M) (hN : 0 ≤ N)
     (hξ : (4/3 : ℝ) ≤ ξ) :
     (M*N)^(2/3 : ℝ) ≤ M^(1/3 : ℝ)*N + M^ξ := by
   have hM0 : 0 < M := by linarith
-  have hfirst : 0 ≤ M^(1/3 : ℝ)*N := mul_nonneg (Real.rpow_nonneg hM0.le _) hN
-  have hsecond : 0 ≤ M^ξ := Real.rpow_nonneg hM0.le _
   by_cases hMN : M ≤ N
   · have hN0 : 0 < N := hM0.trans_le hMN
-    have hh := Real.rpow_le_rpow hM0.le hMN (by norm_num : (0 : ℝ) ≤ 1/3)
     have hm : M^(2/3 : ℝ) = M^(1/3 : ℝ)*M^(1/3 : ℝ) := by
       rw [← Real.rpow_add hM0]
       congr 1
@@ -106,15 +99,12 @@ lemma cubic_cross_shape_absorb (M N ξ : ℝ) (hM : 1 ≤ M) (hN : 0 ≤ N)
     have hn : N^(1/3 : ℝ)*N^(2/3 : ℝ) = N := by
       rw [← Real.rpow_add hN0]
       norm_num
-    apply le_trans _ (le_add_of_nonneg_right hsecond)
+    apply le_trans _ (le_add_of_nonneg_right (Real.rpow_nonneg hM0.le _))
     rw [Real.mul_rpow hM0.le hN, hm]
-    calc
-      _ ≤ (M^(1/3 : ℝ)*N^(1/3 : ℝ))*N^(2/3 : ℝ) :=
-        mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hh (Real.rpow_nonneg hM0.le _))
-          (Real.rpow_nonneg hN _)
-      _ = _ := by rw [mul_assoc, hn]
+    exact (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left (Real.rpow_le_rpow hM0.le hMN (by norm_num : (0 : ℝ) ≤ 1/3)) (Real.rpow_nonneg hM0.le _))
+          (Real.rpow_nonneg hN _)).trans_eq (by rw [mul_assoc, hn])
   · have hNM : N ≤ M := (lt_of_not_ge hMN).le
-    apply le_trans _ (le_add_of_nonneg_left hfirst)
+    apply le_trans _ (le_add_of_nonneg_left (mul_nonneg (Real.rpow_nonneg hM0.le _) hN))
     calc
       _ ≤ (M*M)^(2/3 : ℝ) := Real.rpow_le_rpow (mul_nonneg hM0.le hN)
         (mul_le_mul_of_nonneg_left hNM hM0.le) (by norm_num)

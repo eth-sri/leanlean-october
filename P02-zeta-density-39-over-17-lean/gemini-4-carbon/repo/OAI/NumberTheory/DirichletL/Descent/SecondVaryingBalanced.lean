@@ -52,7 +52,6 @@ theorem actual_second_varying_balanced_source (source : Finset κ) (F : Finset �
       primeProductNorm p j.2.1/(G₀*V₀*X₀))) ≠ 0 → star (ω₁ (primeProductNorm p j.2.1/X₀)) = 1 := by
     intro hh
     rw [hω₁ j.1 hjS j.2.1 hN (star_ne_zero.mp hh),star_one]
-  have h2 := hω₂ j.1 hjS j.2.2 hM
   have h3 : star (ω₁ (primeProductNorm p j.2.1/X₀)) ≠ 0 → ω₂ (primeProductNorm p j.2.2/X₀) ≠ 0 → ∀ i,
       V i (secondRelativeLog (secondActualNorms p (x j.1) j.2.1 j.2.2) G₀ E₀ V₀ K₀ X₀ i) = 1 :=
     fun ha hb => hcut j hj (star_ne_zero.mp ha) hb
@@ -61,7 +60,7 @@ theorem actual_second_varying_balanced_source (source : Finset κ) (F : Finset �
     (fun x => star (ω₁ x)) ω₂ (secondActualNorms p (x j.1) j.2.1 j.2.2)
     (secondActualNorms_pos p hp (x j.1) (hn j.1 hjS).1 (hn j.1 hjS).2 j.2.1 j.2.2)
     (by simpa [secondActualNorms] using h1)
-    (by simpa [secondActualNorms] using h2)
+    (by simpa [secondActualNorms] using (hω₂ j.1 hjS j.2.2 hM))
     (by simpa [secondActualNorms] using h3)
   rw [hsep] at he
   simpa [secondActualNorms] using he

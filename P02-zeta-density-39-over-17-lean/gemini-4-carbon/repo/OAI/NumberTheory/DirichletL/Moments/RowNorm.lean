@@ -9,10 +9,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical SchwartzMap
 namespace SevenEighths.CenteredMomentRowNorm
-open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson
-open CanonicalRowCompletion CanonicalQuadraticSieve
-open CenteredMomentCorrelation CenteredMomentFourier CenteredMomentSupportedCorrelation
-open CenteredMomentCommonSupport
+open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson CanonicalRowCompletion CanonicalQuadraticSieve CenteredMomentCorrelation CenteredMomentFourier CenteredMomentSupportedCorrelation CenteredMomentCommonSupport
 local notation "O" => ActualEisensteinCubic.O
 
 def pairResidue (a b : O) (ha : Supported (Ideal.span {a}))
@@ -43,7 +40,7 @@ theorem row_pair_summable (a b : O) (ha : Supported (Ideal.span {a}))
   let : Fintype (Residue (a * b)) := Fintype.ofFinite _
   have h := actual_eisenstein_periodic_summable (scaledRadialTest W K hK)
     (Ideal.Quotient.mk (Ideal.span {a * b})) (pairResidue a b ha hb)
-  simpa only [pairResidue_mk, scaledRadialTest_apply] using h
+  simpa using h
 
 def rowPolynomial {α : Type*} (S : Finset α) (a : α → O) (c : α → ℂ) (z : O) : ℂ :=
   ∑ i ∈ S, c i * idealRowHom z (Ideal.span {a i})

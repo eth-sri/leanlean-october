@@ -27,14 +27,11 @@ lemma sum_tuple_filter_zero {ι α : Type*} [Fintype ι] [DecidableEq α]
     have hn : ∀i,good i (p i).val := by
       intro i
       by_contra hbad
-      have hc0 := hc i (p i).val (p i).property hbad
-      have hprod : (∏j,c j (p j).val)=0 := Finset.prod_eq_zero (Finset.mem_univ i) hc0
-      exact hh (by dsimp [H];rw [hprod,zero_mul])
+      exact hh (by dsimp [H];rw [(Finset.prod_eq_zero (Finset.mem_univ i) (hc i (p i).val (p i).property hbad)),zero_mul])
     let q : ∀i,(T i).filter (good i) := fun i=>⟨(p i).val,Finset.mem_filter.mpr ⟨(p i).property,hn i⟩⟩
     exact hp (Finset.mem_image.mpr ⟨q,Finset.mem_univ _,rfl⟩)
   have he := Finset.sum_subset (Finset.subset_univ (Finset.univ.image forget))
     (fun p hp hnot=>hz p hnot)
-  change (∑p,H p)=_
   rw [←he,Finset.sum_image (fun p _ q _ h=>hinj h)]
 
 def lowPeriodIdeal (η : HeckeFamily.Character) (S : Finset Id) (hS : ∀P∈S,P.IsMaximal) : Id :=
@@ -47,9 +44,7 @@ lemma canonical_prime_calibration_coprime (S : Finset Id) (hS : ∀P∈S,P.IsMax
   apply calibrationForSet_coprime_of_excluded S hS
   intro Q hQ hdiv
   rw [span_primaryGenerator_of_supported P.val hP] at hdiv
-  have hpmax := (Ideal.isPrime_of_prime P.property).isMaximal P.property.ne_zero
-  have he : P.val=Q := Ideal.IsMaximal.eq_of_le hpmax (hS Q hQ).ne_top (Ideal.dvd_iff_le.mp hdiv)
-  exact hout (he.symm ▸ hQ)
+  exact hout ((Ideal.IsMaximal.eq_of_le ((Ideal.isPrime_of_prime P.property).isMaximal P.property.ne_zero) (hS Q hQ).ne_top (Ideal.dvd_iff_le.mp hdiv)).symm ▸ hQ)
 
 def lowPeriodPrimeList (η : HeckeFamily.Character) (S : Finset Id)
     (hS : ∀P∈S,P.IsMaximal) (T : Finset PrimeIdeal) : Finset PrimeIdeal :=
@@ -80,7 +75,6 @@ theorem low_canonical_polynomial_period_filter {ι : Type*} [Fintype ι]
   intro i P hP hnot
   apply lowSingleSlotWeight_zero_of_period η S hS hbad (W i) (Y i) t _
     (canonical_prime_calibration_coprime S hS P (hT i P hP) (hout i P hP))
-  change ¬IsCoprime (Ideal.span {CompletedGauss.primaryGenerator P.val}) (lowPeriodIdeal η S hS)
   rwa [span_primaryGenerator_of_supported P.val (hT i P hP)]
 
 end SevenEighths.ProbePhysical

@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 
 @[expose] public section
 set_option autoImplicit false
@@ -38,7 +47,7 @@ theorem robertSargos_reduced_factor {r q₁ q₂ h₁ h₂ d : ℝ}
     r*robertSargosReduced r q₁ q₂ h₁ h₂ d =
       h₂*(h₂-r)*q₂^2-h₁*(h₁-r)*q₁^2 := by
   unfold robertSargosReduced
-  have he : r*d = h₂*q₂-h₁*q₁ := by linarith only [h]
+  have he : r*d = h₂*q₂-h₁*q₁ := by linarith
   calc
     r*(r*d^2+2*h₁*q₁*d+h₁*q₁^2-h₂*q₂^2) =
         (r*d)^2+2*h₁*q₁*(r*d)+r*h₁*q₁^2-r*h₂*q₂^2 := by ring

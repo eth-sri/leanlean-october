@@ -8,19 +8,11 @@ public import OAI.NumberTheory.DirichletL.Energy.ReferenceLowDirect
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
 open Filter
+open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyOriginalHighReflectionDeleted
-open HeckeFamily HeckeDyadic ConcreteTraceCRT
-open CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands
-open CenteredMomentEnergyOriginalHighReflectionGeometry CenteredMomentEnergyReferenceLowReflectionError
-open CenteredMomentEnergyReferenceLowDirect CenteredMomentEnergyReferenceChild
-open CenteredMomentNaturalFixedRaySource CenteredMomentNaturalRowSource
-open CenteredMomentCommonMaskEnergy CenteredMomentCommonMaskExpansion
-open CenteredMomentOriginalRadialComparison CenteredMomentAllocatedNaturalRadial
-open CenteredMomentFiniteProfileExceptional QuadraticInitialBound CenteredMomentPrimeSlot
+open HeckeFamily HeckeDyadic ConcreteTraceCRT CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands CenteredMomentEnergyOriginalHighReflectionGeometry CenteredMomentEnergyReferenceLowReflectionError CenteredMomentEnergyReferenceLowDirect CenteredMomentEnergyReferenceChild CenteredMomentNaturalFixedRaySource CenteredMomentNaturalRowSource CenteredMomentCommonMaskEnergy CenteredMomentCommonMaskExpansion CenteredMomentOriginalRadialComparison CenteredMomentAllocatedNaturalRadial CenteredMomentFiniteProfileExceptional QuadraticInitialBound CenteredMomentPrimeSlot
 local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
 variable (M:Ideal O)[NeZero M]
@@ -85,18 +77,17 @@ theorem deleted_original_from_low
   dsimp only
   let short:=Real.logb Z (X₁/((∏I∈D₁,I).absNorm:ℝ))
   let along:=Real.logb Z (X₂/((∏I∈D₂,I).absNorm:ℝ))
-  have hsum:0≤∑i∈F,w i:=Finset.sum_nonneg (fun i _=>hw i)
-  have hsumle:(∑i∈F,w i)≤∑i,w i:=Finset.sum_le_sum_of_subset_of_nonneg
+  have hsumle :=Finset.sum_le_sum_of_subset_of_nonneg
     (Finset.subset_univ F) (fun i _ _=>hw i)
   have hg:=actual_deleted_gates s hZ.1 (by linarith) hBmask Mcap L X₁ X₂ (∑i,w i) (∑i∈F,w i) κ xi hs hL
-    hX₁ hX₂ (Finset.sum_nonneg (fun i _=>hw i)) hsum hsumle hκ hxi.le hxiM hshort hlarge hcap D₁ D₂ hD₁ hD₂
+    hX₁ hX₂ (Finset.sum_nonneg (fun i _=>hw i)) (Finset.sum_nonneg (fun i _=>hw i)) hsumle hκ hxi.le hxiM hshort hlarge hcap D₁ D₂ hD₁ hD₂
   dsimp only at hg
   rw [←hg.1,←hg.2.1]
-  have hZpos:0<Z:=zero_lt_one.trans hZ.1
+  have hZpos :=zero_lt_one.trans hZ.1
   have hdiag:0≤diagonalControl s.radial.profile:=by unfold diagonalControl;positivity
   have hLpos:0≤L:=by linarith [s.width_nonneg]
-  have hlog:0≤Real.log Z:=(Real.log_pos hZ.1).le
-  have hprod: (∏i∈F,Z^(w i))≤∏i,Z^(w i):=Finset.prod_le_prod_of_subset_of_one_le₀
+  have hlog :=(Real.log_pos hZ.1).le
+  have hprod :=Finset.prod_le_prod_of_subset_of_one_le₀
     (Finset.subset_univ F) (fun i _=> (Real.rpow_pos_of_pos hZpos _).le)
     (fun i _ _=>Real.one_le_rpow hZ.1.le (hw i))
   rcases hg.2.2.2.2.2.2.2 with hd|hr

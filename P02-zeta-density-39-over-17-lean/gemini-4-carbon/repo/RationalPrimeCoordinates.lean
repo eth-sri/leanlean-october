@@ -54,9 +54,9 @@ theorem rationalExponent_zero_outside {r : ℚ} {p : ℕ}
     rationalExponent r p = 0 := by
   simp only [mem_union, not_or] at hp
   have hn : r.num.natAbs.factorization p = 0 := by
-    simpa only [Nat.support_factorization] using (Finsupp.notMem_support_iff.mp hp.1)
+    simpa using (Finsupp.notMem_support_iff.mp hp.1)
   have hd : r.den.factorization p = 0 := by
-    simpa only [Nat.support_factorization] using (Finsupp.notMem_support_iff.mp hp.2)
+    simpa using (Finsupp.notMem_support_iff.mp hp.2)
   simp [rationalExponent, hn, hd]
 
 /-- The one-coordinate weight grows polynomially in the exponent. -/

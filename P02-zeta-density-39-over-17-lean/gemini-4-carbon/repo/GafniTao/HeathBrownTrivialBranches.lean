@@ -56,9 +56,8 @@ theorem norm_heathBrownExponentialSum_le_of_lambda_lower
       (N : ℝ) ^ (1 + epsilon) *
         heathBrownKthDerivativeFactor k N lambda :=
     mul_le_mul hNpow (hbpow.trans hcomponent) (by positivity) (by positivity)
-  have htrivial := norm_heathBrownExponentialSum_le N f
   calc
-    ‖heathBrownExponentialSum N f‖ ≤ (N : ℝ) := by exact_mod_cast htrivial
+    ‖heathBrownExponentialSum N f‖ ≤ (N : ℝ) := by exact_mod_cast (norm_heathBrownExponentialSum_le N f)
     _ = (b ^ r)⁻¹ * ((N : ℝ) * b ^ r) := by
       calc
         (N : ℝ) = ((b ^ r)⁻¹ * b ^ r) * (N : ℝ) := by
@@ -77,22 +76,20 @@ theorem norm_heathBrownExponentialSum_le_of_third_lower
     ‖heathBrownExponentialSum N f‖ ≤
       c⁻¹ * (N : ℝ) ^ (1 + epsilon) *
         heathBrownKthDerivativeFactor k N lambda := by
-  have hthirdThree := heathBrownThirdTerm_le_threeTerm (k := k) hN hlambda
-  have hNone : (1 : ℝ) ≤ (N : ℝ) ^ epsilon :=
+  have hNone : 1 ≤ (N : ℝ) ^ epsilon :=
     Real.one_le_rpow (by exact_mod_cast hN) hepsilon.le
   have hthree0 := (heathBrownThreeTerm_pos (k := k) hN hlambda).le
   have hscaled : c * (N : ℝ) ≤
       (N : ℝ) ^ epsilon * heathBrownThreeTerm N k lambda := by
     calc
       c * (N : ℝ) ≤ heathBrownThirdTerm N k lambda := hthird
-      _ ≤ heathBrownThreeTerm N k lambda := hthirdThree
+      _ ≤ heathBrownThreeTerm N k lambda := (heathBrownThirdTerm_le_threeTerm (k := k) hN hlambda)
       _ ≤ (N : ℝ) ^ epsilon * heathBrownThreeTerm N k lambda := by
         nlinarith
   rw [heathBrownThreeTerm_scaled_identity hN (by omega : 2 ≤ k)
     lambda epsilon] at hscaled
-  have htrivial := norm_heathBrownExponentialSum_le N f
   calc
-    ‖heathBrownExponentialSum N f‖ ≤ (N : ℝ) := by exact_mod_cast htrivial
+    ‖heathBrownExponentialSum N f‖ ≤ (N : ℝ) := by exact_mod_cast (norm_heathBrownExponentialSum_le N f)
     _ = c⁻¹ * (c * (N : ℝ)) := by
       calc
         (N : ℝ) = (c⁻¹ * c) * (N : ℝ) := by
@@ -157,11 +154,10 @@ theorem norm_heathBrownExponentialSum_le_small_N_factor
     ‖heathBrownExponentialSum N f‖ ≤
       2 * (N : ℝ) ^ (1 + epsilon) *
         heathBrownKthDerivativeFactor k N lambda := by
-  have htrivial := norm_heathBrownExponentialSum_le N f
-  have hNtwo : (N : ℝ) ≤ 2 := by exact_mod_cast (show N ≤ 2 by omega)
+  have hNtwo : (N : ℝ) ≤ 2 := by exact_mod_cast (by omega)
   have hfactorOne := one_le_heathBrown_scaled_factor hN hk hlambda hepsilon
   calc
-    ‖heathBrownExponentialSum N f‖ ≤ (N : ℝ) := by exact_mod_cast htrivial
+    ‖heathBrownExponentialSum N f‖ ≤ (N : ℝ) := by exact_mod_cast (norm_heathBrownExponentialSum_le N f)
     _ ≤ 2 := hNtwo
     _ ≤ 2 * ((N : ℝ) ^ (1 + epsilon) *
         heathBrownKthDerivativeFactor k N lambda) := by nlinarith

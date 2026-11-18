@@ -10,10 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondReferenceNormalization
-open HeckeFamily CenteredMomentCanonicalFirst CenteredMomentSecondCanonicalNonunit
-open CenteredMomentSecondNonexceptionalScalar CenteredMomentSecondRadicalBudget
-open CenteredMomentSectorLocalization CenteredMomentSecondSourcePowerDescent
-open CenteredMomentSecondSourceSeededPowerDescent
+open HeckeFamily CenteredMomentCanonicalFirst CenteredMomentSecondCanonicalNonunit CenteredMomentSecondNonexceptionalScalar CenteredMomentSecondRadicalBudget CenteredMomentSectorLocalization CenteredMomentSecondSourcePowerDescent CenteredMomentSecondSourceSeededPowerDescent
 local notation "O"=>HeckeFamily.O
 
 def referenceEnvelope (qref:ℝ)(C D:Ideal O)(U:Finset (CommonIndex C D))(n:Fin 4→ℤ):ℝ:=
@@ -45,12 +42,11 @@ lemma physicalFactors_rescale (Cmain Cexc Cdiag Ctail Z ε δ θ B saving K t q 
   funext j
   fin_cases j
   · dsimp [physicalFactors]
-    have hh:=paired_rescale q qref E₁ E₂ hq hr
     calc
       _=Cmain*Z^(2*δ+ε)*(q*Real.sqrt ((qref/q*E₁)*(qref/q*E₂)))*
         CenteredMomentSecondWindowBudget.heightEnvelope t^(J₁+J₂)*
         CenteredMomentSecondWindowBudget.profileMoment J₁*CenteredMomentSecondWindowBudget.profileMoment J₂:=by ring
-      _=_:=by rw [hh];ring
+      _=_:=by rw [(paired_rescale q qref E₁ E₂ hq hr)];ring
   all_goals rfl
 
 lemma seededFactors_rescale (Cmain Cexc Cdiag Ctail Z ε δ θ B saving K t q qref E₁ E₂ r

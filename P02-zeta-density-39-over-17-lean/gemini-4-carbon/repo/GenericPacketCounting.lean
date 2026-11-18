@@ -28,8 +28,6 @@ theorem absorptionLength_absorbs {k l A H G Y : ℝ}
   rw [← Real.rpow_mul hp, one_div_mul_cancel hk.ne', Real.rpow_one]
   have he : 2*A*((Y^2/(4*A*H^(l-k)*G^(1+k-2*l)))*H^(l-k)*G^(1+k-2*l)) =
       Y^2/2 := by
-    have hHp : H^(l-k) ≠ 0 := (Real.rpow_pos_of_pos hH _).ne'
-    have hGp : G^(1+k-2*l) ≠ 0 := (Real.rpow_pos_of_pos hG _).ne'
     field_simp
     ring
   rw [he]
@@ -63,16 +61,12 @@ theorem covered_card_budget {k l A H G Y : ℝ}
     (hA : 0 < A) (hH : 0 < H) (hG : 0 < G) (hY : 0 < Y) :
     ((Nat.floor (H/absorptionLength k l A H G Y)+1:ℕ):ℝ)*(2*A*H/(G*Y^2)) ≤
       2*A*H/(G*Y^2)+(H/absorptionLength k l A H G Y)*(2*A*H/(G*Y^2)) := by
-  have hL := absorptionLength_pos (k := k) (l := l) hA hH hG hY
-  have hfloor := Nat.floor_le (div_nonneg hH.le hL.le)
+  have hfloor := Nat.floor_le (div_nonneg hH.le (absorptionLength_pos (k := k) (l := l) hA hH hG hY).le)
   have hc : ((Nat.floor (H/absorptionLength k l A H G Y)+1:ℕ):ℝ) ≤
       H/absorptionLength k l A H G Y+1 := by
     push_cast
     linarith
-  calc
-    _ ≤ (H/absorptionLength k l A H G Y+1)*(2*A*H/(G*Y^2)) :=
-      mul_le_mul_of_nonneg_right hc (by positivity)
-    _ = _ := by ring
+  exact (mul_le_mul_of_nonneg_right hc (by positivity)).trans_eq (by ring)
 
 /-- The generic subdivision lemma preserves the physical interval and packet powers. -/
 theorem card_le_of_local_packets {k l A H G Y : ℝ}

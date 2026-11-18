@@ -12,7 +12,7 @@ open HeckeFamily HeckeDeletionBounds
 
 theorem factor_deriv {N : ℝ} (hN : 0 < N) (a s : ℂ) :
     deriv (EulerFactors.factor N a) s = a*(N : ℂ)^(-s)*Complex.log (N : ℂ) := by
-  have h := (hasDerivAt_const s (1 : ℂ)).sub
+  have h := (hasDerivAt_const s 1).sub
     (((hasDerivAt_id s).neg.const_cpow (Or.inl (Complex.ofReal_ne_zero.mpr hN.ne'))).const_mul a)
   have h' : HasDerivAt (EulerFactors.factor N a)
       (a*(N : ℂ)^(-s)*Complex.log (N : ℂ)) s := by

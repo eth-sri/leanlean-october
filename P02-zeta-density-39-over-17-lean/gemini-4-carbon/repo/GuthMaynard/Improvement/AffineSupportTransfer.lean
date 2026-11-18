@@ -8,7 +8,7 @@ noncomputable section
 open MeasureTheory Set
 open scoped SchwartzMap FourierTransform ContDiff
 namespace GuthMaynard.Improvement
-open RiemannZeta.GuthMaynard
+open RiemannZeta.GuthMaynard GuthMaynard.NativeMoment
 
 /-- Exact Fourier norm under the support-normalizing affine change. -/
 theorem fourier_norm_affine_input (f : ℝ → ℝ) {L : ℝ} (hL : 0 < L) (ξ : ℝ) :

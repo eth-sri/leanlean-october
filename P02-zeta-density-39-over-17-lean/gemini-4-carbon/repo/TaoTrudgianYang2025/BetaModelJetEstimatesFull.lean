@@ -1,8 +1,17 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaReferencePhase
 public import TaoTrudgianYang2025.HeathBrownModelJetCore
-public import Mathlib
 
 @[expose] public section
 set_option autoImplicit false
@@ -25,12 +34,12 @@ theorem iteratedDeriv_modelPhase_lipschitz {σ : ℝ} (hσ : 0 ≤ σ)
     {u w : ℝ} (hu : u ∈ Ioo (1 : ℝ) 2) (hw : w ∈ Ioo (1 : ℝ) 2) (p : ℕ) :
     |iteratedDeriv p (modelPhase σ) u - iteratedDeriv p (modelPhase σ) w| ≤
       modelPhaseJetCoefficient σ (p+1) * |u-w| := by
-  have hd : ∀ x ∈ Ioo (1 : ℝ) 2, DifferentiableAt ℝ (iteratedDeriv p (modelPhase σ)) x := by
+  have hd : ∀ x ∈ Ioo 1 2, DifferentiableAt ℝ (iteratedDeriv p (modelPhase σ)) x := by
     intro x hx
     exact (contDiffAt_iteratedDeriv_infty
       (Real.contDiffAt_rpow_const_of_ne (zero_lt_one.trans hx.1).ne') p).differentiableAt
         (by simp : (∞ : WithTop ℕ∞) ≠ 0)
-  have hb : ∀ x ∈ Ioo (1 : ℝ) 2,
+  have hb : ∀ x ∈ Ioo 1 2,
       ‖deriv (iteratedDeriv p (modelPhase σ)) x‖ ≤ modelPhaseJetCoefficient σ (p+1) := by
     intro x hx
     rw [← iteratedDeriv_succ]

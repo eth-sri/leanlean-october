@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaStationaryDeficit
 public import Mathlib.Analysis.Calculus.Deriv.Slope
 
@@ -34,23 +44,23 @@ theorem modelPhaseStationaryDeficit_ratio_tendsto
       (u-modelPhaseInverseSlope F v)^2)
       (𝓝[≠] modelPhaseInverseSlope F v) (𝓝 (modelPhaseCurvatureAt F v)) := by
   let u₀ := modelPhaseInverseSlope F v
-  have hu₀ : u₀ ∈ Ioo (1 : ℝ) 2 := modelPhaseInverseSlope_mem hv
-  have hs : ContDiffOn ℝ 2 F (Ioo (1 : ℝ) 2) := by
+  have hu₀ : u₀ ∈ Ioo 1 2 := modelPhaseInverseSlope_mem hv
+  have hs : ContDiffOn ℝ 2 F (Ioo 1 2) := by
     intro x hx
     exact ((approximateModelPhase_contDiffAt hF hx).of_le
       (ENat.natCast_le_of_coe_top_le_withTop le_rfl 2)).contDiffWithinAt
-  have hfirst : iteratedDerivWithin 1 F (Ioo (1 : ℝ) 2) u₀ = v := by
+  have hfirst : iteratedDerivWithin 1 F (Ioo 1 2) u₀ = v := by
     rw [iteratedDerivWithin_eq_iteratedDeriv (uniqueDiffOn_Ioo 1 2)
       ((approximateModelPhase_contDiffAt hF hu₀).of_le
         (ENat.natCast_le_of_coe_top_le_withTop le_rfl 1)) hu₀,iteratedDeriv_one]
     exact deriv_modelPhaseInverseSlope_apply hv
-  have hsecond : iteratedDerivWithin 2 F (Ioo (1 : ℝ) 2) u₀ =
+  have hsecond : iteratedDerivWithin 2 F (Ioo 1 2) u₀ =
       deriv (deriv F) u₀ := by
     rw [iteratedDerivWithin_eq_iteratedDeriv (uniqueDiffOn_Ioo 1 2)
       ((approximateModelPhase_contDiffAt hF hu₀).of_le
         (ENat.natCast_le_of_coe_top_le_withTop le_rfl 2)) hu₀]
     simp only [iteratedDeriv_succ,iteratedDeriv_zero]
-  have hpoly (u : ℝ) : taylorWithinEval F 2 (Ioo (1 : ℝ) 2) u₀ u =
+  have hpoly (u : ℝ) : taylorWithinEval F 2 (Ioo 1 2) u₀ u =
       F u₀+(u-u₀)*v+(u-u₀)^2/2*deriv (deriv F) u₀ := by
     rw [taylorWithinEval_succ F 1,taylorWithinEval_succ F 0,taylor_within_zero_eval]
     rw [hfirst,hsecond]
@@ -58,12 +68,11 @@ theorem modelPhaseStationaryDeficit_ratio_tendsto
     ring
   have ht := Real.taylor_tendsto (n := 2) (convex_Ioo 1 2) hu₀ hs
   rw [nhdsWithin_eq_nhds.mpr (isOpen_Ioo.mem_nhds hu₀)] at ht
-  have ht' := ht.mono_left (show 𝓝[≠] u₀ ≤ 𝓝 u₀ from inf_le_left)
   have hlim : Tendsto (fun u : ℝ => modelPhaseCurvatureAt F v -
-      2*((F u-taylorWithinEval F 2 (Ioo (1 : ℝ) 2) u₀ u)/(u-u₀)^2))
+      2*((F u-taylorWithinEval F 2 (Ioo 1 2) u₀ u)/(u-u₀)^2))
       (𝓝[≠] u₀) (𝓝 (modelPhaseCurvatureAt F v)) := by
     simpa only [mul_zero,sub_zero] using
-      (tendsto_const_nhds.sub (tendsto_const_nhds.mul ht'))
+      (tendsto_const_nhds.sub (tendsto_const_nhds.mul (ht.mono_left (show 𝓝[≠] u₀ ≤ 𝓝 u₀ from inf_le_left))))
   apply hlim.congr'
   filter_upwards [self_mem_nhdsWithin] with u hu
   have hne : u-u₀ ≠ 0 := sub_ne_zero.mpr hu

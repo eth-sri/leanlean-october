@@ -8,78 +8,13 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-
-open scoped BigOperators Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 namespace CanonicalQuadraticSieve
 
 section
 
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge
+open CompletedGauss ConcretePrimeRowBridge
 
 instance canonicalPoolMaximal (F : Finset (Ideal O)) (i : primePool F) : i.val.IsMaximal := by
   obtain ⟨I, hIF, hi⟩ := mem_primePool_iff.mp i.property
@@ -107,10 +42,10 @@ theorem poolPrimary_span (F : Finset (Ideal O)) (hF : ∀ I ∈ F, Admissible I)
 
 theorem primaryPrime_eq_primaryGenerator (P : Ideal O) [P.IsMaximal] :
     primaryPrime P = primaryGenerator P := by
-  have hp : Prime P := Ideal.prime_of_isPrime (NeZero.ne P) inferInstance
+  have hp := Ideal.prime_of_isPrime (NeZero.ne P) inferInstance
   rw [primaryGenerator, ite_eq_right hp.ne_zero, UniqueFactorizationMonoid.normalizedFactors_irreducible hp.irreducible,
     normalize_eq]
-  simp only [Multiset.map_singleton, Multiset.prod_singleton]
+  simp
 
 theorem primaryGenerator_eq_poolProduct (F : Finset (Ideal O)) (hF : ∀ I ∈ F, Admissible I)
     (I : Ideal O) (hIF : I ∈ F) :
@@ -144,7 +79,7 @@ theorem poolPrimary_good (F : Finset (Ideal O)) (hF : ∀ I ∈ F, Admissible I)
 theorem poolPrimary_odd (F : Finset (Ideal O)) (hF : ∀ I ∈ F, Admissible I) (i : primePool F) :
     ringChar (O ⧸ Ideal.span {poolPrimary F i}) ≠ 2 := by rw [poolPrimary_span F hF i]; exact poolOdd F hF i
 
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ActualEisensteinCoordinates
+open ActualEisensteinCoordinates
 
 theorem quadraticRow_eq_primaryPool (F : Finset (Ideal O)) (hF : ∀ I ∈ F, Admissible I)
     (I : Ideal O) (hIF : I ∈ F) (z : O) :
@@ -152,9 +87,7 @@ theorem quadraticRow_eq_primaryPool (F : Finset (Ideal O)) (hF : ∀ I ∈ F, Ad
       fun i => by rw [poolPrimary_span F hF i]; infer_instance
     quadraticRow I z = QuadraticInitialBound.quadraticRow
       (fun i : primePool F => Ideal.span {poolPrimary F i}) (poolPrimary_good F hF) (idealSupport F I) z := by
-  have he : (fun i : primePool F => Ideal.span {poolPrimary F i}) = (fun i : primePool F => i.val) :=
-    funext (poolPrimary_span F hF)
-  simpa only [he] using quadraticRow_eq_pool F hF I hIF z
+  simpa only [(funext (poolPrimary_span F hF))] using quadraticRow_eq_pool F hF I hIF z
 
 theorem quadraticRow_eq_primeSubset (F : Finset (Ideal O)) (hF : ∀ I ∈ F, Admissible I)
     (I : Ideal O) (hIF : I ∈ F) (z : O) :
@@ -167,11 +100,9 @@ theorem idealSupport_disjoint_of_coprime (F : Finset (Ideal O)) (I J : Ideal O)
   apply Finset.disjoint_left.mpr
   intro P hPI hPJ
   have hi := (mem_idealSupport_iff F I P).mp hPI
-  have hj := (mem_idealSupport_iff F J P).mp hPJ
-  have hp := UniqueFactorizationMonoid.prime_of_normalized_factor P.val hi
-  exact hp.not_isUnit (hIJ.isRelPrime
+  exact (UniqueFactorizationMonoid.prime_of_normalized_factor P.val hi).not_isUnit (hIJ.isRelPrime
     (UniqueFactorizationMonoid.dvd_of_mem_normalizedFactors hi)
-    (UniqueFactorizationMonoid.dvd_of_mem_normalizedFactors hj))
+    (UniqueFactorizationMonoid.dvd_of_mem_normalizedFactors ((mem_idealSupport_iff F J P).mp hPJ)))
 
 theorem primaryGenerator_unit_mod_four (I : Ideal O) (hI : Admissible I) :
     IsUnit (Ideal.Quotient.mk (Ideal.span {(4 : O)}) (primaryGenerator I)) := by
@@ -188,13 +119,11 @@ theorem primaryGenerator_unit_mod_four (I : Ideal O) (hI : Admissible I) :
 theorem columnRay_idealQuotient_eq (D I J : Ideal O) (hI : Admissible I) (_hJ : Admissible J)
     (hDI : D ∣ I) (hDJ : D ∣ J) (hIJ : columnRay I = columnRay J) :
     columnRay (idealQuotient D I) = columnRay (idealQuotient D J) := by
-  have hD : Admissible D := admissible_of_dvd hI hDI
-  have hu := primaryGenerator_unit_mod_four D hD
+  have hu := primaryGenerator_unit_mod_four D (admissible_of_dvd hI hDI)
   obtain ⟨u, hu⟩ := hu
-  have hray : residue (primaryGenerator I) = residue (primaryGenerator J) := hIJ
-  obtain ⟨z, hz⟩ := congr_mod_four_of_residue_eq hray
-  have hquot : Ideal.Quotient.mk (Ideal.span {(4 : O)}) (primaryGenerator I) =
-      Ideal.Quotient.mk (Ideal.span {(4 : O)}) (primaryGenerator J) := by
+  obtain ⟨z, hz⟩ := congr_mod_four_of_residue_eq (hIJ)
+  have hquot : Ideal.Quotient.mk (Ideal.span {4}) (primaryGenerator I) =
+      Ideal.Quotient.mk (Ideal.span {4}) (primaryGenerator J) := by
     apply Ideal.Quotient.eq.mpr
     apply Ideal.mem_span_singleton.mpr
     exact ⟨z, hz⟩
@@ -203,14 +132,12 @@ theorem columnRay_idealQuotient_eq (D I J : Ideal O) (hI : Admissible I) (_hJ : 
   have hprodJ : primaryGenerator J = primaryGenerator D * primaryGenerator (idealQuotient D J) := by
     rw [← primaryGenerator_mul, idealQuotient_mul hDJ]
   rw [hprodI, hprodJ, map_mul, map_mul, ← hu] at hquot
-  have heq := (Units.mul_right_inj u).mp hquot
-  exact QuadraticGaussRay.residue_eq_of_quotient_four_eq _ _ heq
+  exact QuadraticGaussRay.residue_eq_of_quotient_four_eq _ _ ((Units.mul_right_inj u).mp hquot)
 
 end
 section
 
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ActualEisensteinCoordinates
-open EisensteinSchwartzPoisson GaussGeneratorTransport
+open CompletedGauss ConcretePrimeRowBridge ActualEisensteinCoordinates EisensteinSchwartzPoisson GaussGeneratorTransport
 
 theorem quadraticRow_eq_primarySubset (F : Finset (Ideal O)) (hF : ∀ I ∈ F, Admissible I)
     (I : Ideal O) (hIF : I ∈ F) (z : O) :
@@ -225,7 +152,7 @@ theorem quadraticRow_eq_primarySubset (F : Finset (Ideal O)) (hF : ∀ I ∈ F, 
 
 end
 
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge
+open CompletedGauss ConcretePrimeRowBridge
 
 theorem quadraticRow_zero_of_ne_one (I : Ideal O) (hI : Admissible I) (hI1 : I ≠ 1) :
     quadraticRow I 0 = 0 := by
@@ -253,9 +180,7 @@ theorem quadratic_pair_zero_of_nontrivial (I J : Ideal O) (hI : Admissible I) (h
 
 end CanonicalQuadraticSieve
 
-open scoped BigOperators Classical SchwartzMap
 namespace SecondPassArithmetic
-open ActualEisensteinCubic
 open ConcreteTraceCRT (eisEmbedding)
 open FirstPassCubeLabels (columnLog primeProductNorm)
 open EisensteinSchwartzPoisson (paperRadialFourier)
@@ -267,15 +192,13 @@ variable {ι : Type*} [DecidableEq ι]
 
 end SecondPassArithmetic
 
-open scoped BigOperators Classical SchwartzMap ContDiff
 namespace SecondPassIntegration
-open ActualEisensteinCubic JointLogSeparation FirstPassCubeLabels
+open JointLogSeparation FirstPassCubeLabels
 open ConcreteTraceCRT (eisEmbedding)
 
 def elementNorm (a : O) : ℝ := ‖eisEmbedding a‖ ^ 2
 
-lemma elementNorm_pos (a : O) (ha : a ≠ 0) : 0 < elementNorm a := by
-  exact sq_pos_of_pos (norm_pos_iff.mpr (ConcreteTraceCRT.eisEmbedding_ne_zero ha))
+lemma elementNorm_pos (a : O) (ha : a ≠ 0) : 0 < elementNorm a := sq_pos_of_pos (norm_pos_iff.mpr (ConcreteTraceCRT.eisEmbedding_ne_zero ha))
 
 def conjugateProfile (g : 𝓢(ℝ, ℂ)) : 𝓢(ℝ, ℂ) :=
   SchwartzMap.postcompCLM Complex.conjCLE.toContinuousLinearMap g
@@ -285,11 +208,9 @@ def conjugateProfile (g : 𝓢(ℝ, ℂ)) : 𝓢(ℝ, ℂ) :=
 
 end SecondPassIntegration
 
-open scoped BigOperators Classical SchwartzMap
 namespace SecondPassArithmetic
 
 section
-open ActualEisensteinCubic
 open ConcreteTraceCRT (eisEmbedding eisEmbedding_ne_zero)
 open EisensteinSchwartzPoisson (paperRadialFourier)
 open FirstCauchyArithmetic (supportMobius activeGaussRowFactor)
@@ -327,12 +248,11 @@ theorem secondPairRadialMode_summable (S T : Finset ι) (e : O) (he : e ≠ 0)
   have hs := EisensteinSchwartzPoisson.paperRadialFourier_lattice_summable_norm W _ hK
   have hgk (k : O) : ‖activeGaussRowFactor p hp hinj hg T S e k‖ ≤ ‖G‖ := by
     simp only [activeGaussRowFactor, norm_mul, norm_star]
-    change ‖G‖ * (_ * _) ≤ ‖G‖
     have hb : ‖finiteSexticRow (activePrimes (fun i => Ideal.span {p i}) T S)
         (fun i => hg i.val) (activeExponent T S) e‖ *
         ‖finiteSexticRow (activePrimes (fun i => Ideal.span {p i}) T S)
         (fun i => hg i.val) (activeExponent T S) k‖ ≤ 1 := by
-      simpa only [one_mul] using mul_le_mul (active_row_norm_le_one p hg T S e)
+      simpa using mul_le_mul (active_row_norm_le_one p hg T S e)
         (active_row_norm_le_one p hg T S k) (norm_nonneg _) zero_le_one
     exact mul_le_of_le_one_right (norm_nonneg _) hb
   have harg (k : O) : Y * ‖eisEmbedding k‖ ^ 2 / (‖eisEmbedding e‖ ^ 2 * ‖eisEmbedding n‖ ^ 2) =
@@ -381,7 +301,6 @@ theorem residualSecondMode_summable (F G : Finset ι) (Ψ₁ Ψ₂ : O →* ℂ)
 
 end
 
-open ActualEisensteinCubic
 open ConcreteTraceCRT (eisEmbedding)
 open EisensteinSchwartzPoisson (paperRadialFourier)
 open FirstCauchyArithmetic (supportMobius activeGaussRowFactor)

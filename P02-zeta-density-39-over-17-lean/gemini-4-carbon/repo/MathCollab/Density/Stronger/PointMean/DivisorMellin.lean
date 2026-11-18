@@ -13,8 +13,7 @@ public import MathCollab.Density.Stronger.Fourth.SquareSource
 
 @[expose] public section
 
-open Complex Set MeasureTheory Filter ArithmeticFunction
-open MathCollab.Density.Stronger.Fourth
+open Complex Set MeasureTheory Filter ArithmeticFunction MathCollab.Density.Stronger.Fourth
 open scoped BigOperators Topology LSeries.notation
 set_option autoImplicit false
 noncomputable section
@@ -28,12 +27,10 @@ private theorem continuous_Gamma_two_vertical :
   intro n h
   have hr := congrArg Complex.re h
   simp at hr
-  have hn : (0 : ℝ) ≤ n := by positivity
   linarith
 
 private theorem integrable_Gamma_two_vertical :
-    Integrable (fun t : ℝ => Complex.Gamma ((2 : ℂ) + (t : ℂ) * I)) := by
-  exact GammaMellin.verticalIntegrable_Gamma (by norm_num : (0 : ℝ) < 2)
+    Integrable (fun t : ℝ => Complex.Gamma ((2 : ℂ) + (t : ℂ) * I)) := GammaMellin.verticalIntegrable_Gamma (by norm_num : (0 : ℝ) < 2)
 
 private theorem inverseMellin_exp_neg {x : ℝ} (hx : 0 < x) :
     (((1 / (2 * Real.pi) : ℝ) : ℂ)) *
@@ -68,7 +65,6 @@ theorem continuous_heathBrownDivisorMellinSeriesTerm
     Continuous (heathBrownDivisorMellinSeriesTerm s n) := by
   by_cases hn : n = 0
   · subst n
-    change Continuous (fun _ : ℝ => (0 : ℂ))
     exact continuous_const
   · have hnPos : (0 : ℝ) < n := by exact_mod_cast Nat.pos_of_ne_zero hn
     have hPow : Continuous (fun t : ℝ =>
@@ -104,19 +100,16 @@ theorem norm_heathBrownDivisorMellinSeriesTerm_le
       rw [show (n : ℂ) = ((n : ℝ) : ℂ) by norm_num,
         Complex.norm_cpow_eq_rpow_re_of_pos hnPos]
       simp [w]
-    have hCardNonneg : 0 ≤ (n.divisors.card : ℝ) := by positivity
     have hPowSNonneg : 0 ≤ (n : ℝ) ^ (-s.re) := Real.rpow_nonneg hnPos.le _
     have hPowWNonneg : 0 ≤ (n : ℝ) ^ (-(2 : ℝ)) := Real.rpow_nonneg hnPos.le _
     unfold heathBrownDivisorMellinSeriesTerm
     rw [ite_eq_right hn]
-    dsimp only [w]
     rw [norm_mul, norm_mul, norm_mul, Complex.norm_natCast, hPowS, hPowW]
     have hRest : 0 ≤ (n : ℝ) ^ (-s.re) *
         ((n : ℝ) ^ (-(2 : ℝ)) *
           ‖Complex.Gamma ((2 : ℂ) + (t : ℂ) * I)‖) :=
       mul_nonneg hPowSNonneg
         (mul_nonneg hPowWNonneg (norm_nonneg _))
-    have hMul := mul_le_mul_of_nonneg_right hCard hRest
     calc
       (n.divisors.card : ℝ) * (n : ℝ) ^ (-s.re) *
           ((n : ℝ) ^ (-(2 : ℝ)) *
@@ -124,7 +117,7 @@ theorem norm_heathBrownDivisorMellinSeriesTerm_le
         (n : ℝ) * (n : ℝ) ^ (-s.re) *
           ((n : ℝ) ^ (-(2 : ℝ)) *
             ‖Complex.Gamma ((2 : ℂ) + (t : ℂ) * I)‖) := by
-          simpa only [mul_assoc] using hMul
+          simpa only [mul_assoc] using (mul_le_mul_of_nonneg_right hCard hRest)
       _ = (n : ℝ) ^ (-s.re - 1) *
           ‖Complex.Gamma ((2 : ℂ) + (t : ℂ) * I)‖ := by
         calc
@@ -147,7 +140,7 @@ theorem integrable_heathBrownDivisorMellinSeriesTerm
     Integrable (heathBrownDivisorMellinSeriesTerm s n) := by
   have hMajorant : Integrable (fun t : ℝ =>
       (n : ℝ) ^ (-s.re - 1) *
-        ‖Complex.Gamma ((2 : ℂ) + (t : ℂ) * I)‖) :=
+        ‖Complex.Gamma (2 + (t : ℂ) * I)‖) :=
     integrable_Gamma_two_vertical.norm.const_mul _
   exact hMajorant.mono'
     (continuous_heathBrownDivisorMellinSeriesTerm n).aestronglyMeasurable
@@ -159,7 +152,7 @@ theorem summable_integral_norm_heathBrownDivisorMellinSeriesTerm
     Summable (fun n : ℕ =>
       ∫ t : ℝ, ‖heathBrownDivisorMellinSeriesTerm s n t‖) := by
   let G : ℝ := ∫ t : ℝ,
-    ‖Complex.Gamma ((2 : ℂ) + (t : ℂ) * I)‖
+    ‖Complex.Gamma (2 + (t : ℂ) * I)‖
   have hPower : Summable (fun n : ℕ => (n : ℝ) ^ (-s.re - 1)) :=
     Real.summable_nat_rpow.mpr (by linarith)
   refine ((hPower.mul_left G).of_nonneg_of_le
@@ -168,7 +161,7 @@ theorem summable_integral_norm_heathBrownDivisorMellinSeriesTerm
   calc
     (∫ t : ℝ, ‖heathBrownDivisorMellinSeriesTerm s n t‖) ≤
         ∫ t : ℝ, (n : ℝ) ^ (-s.re - 1) *
-          ‖Complex.Gamma ((2 : ℂ) + (t : ℂ) * I)‖ := by
+          ‖Complex.Gamma (2 + (t : ℂ) * I)‖ := by
       apply integral_mono
         (integrable_heathBrownDivisorMellinSeriesTerm n).norm
         (integrable_Gamma_two_vertical.norm.const_mul _)
@@ -176,7 +169,6 @@ theorem summable_integral_norm_heathBrownDivisorMellinSeriesTerm
       exact norm_heathBrownDivisorMellinSeriesTerm_le n t
     _ = G * (n : ℝ) ^ (-s.re - 1) := by
       rw [integral_const_mul]
-      dsimp only [G]
       ring
 
 theorem integral_heathBrownDivisorMellinSeriesTerm
@@ -220,11 +212,10 @@ theorem tsum_heathBrownDivisorMellinSeriesTerm_eq
     {s : ℂ} (hs : 0 < s.re) (t : ℝ) :
     (∑' n : ℕ, heathBrownDivisorMellinSeriesTerm s n t) =
       heathBrownDivisorMellinIntegrand s t := by
-  let w : ℂ := (2 : ℂ) + (t : ℂ) * I
+  let w := 2 + (t : ℂ) * I
   have hsw : 1 < (s + w).re := by simp [w]; linarith
   rw [heathBrownDivisorMellinIntegrand,
     riemannZeta_sq_eq_divisorLSeries hsw]
-  dsimp only [w]
   unfold LSeries
   rw [← tsum_mul_left]
   apply tsum_congr
@@ -236,8 +227,8 @@ theorem tsum_heathBrownDivisorMellinSeriesTerm_eq
     unfold heathBrownDivisorMellinSeriesTerm
     rw [ite_eq_right hn, LSeries.term_of_ne_zero hn]
     simp_rw [Complex.cpow_neg]
-    rw [show (n : ℂ) ^ (s + ((2 : ℂ) + (t : ℂ) * I)) =
-        (n : ℂ) ^ s * (n : ℂ) ^ ((2 : ℂ) + (t : ℂ) * I) by
+    rw [show (n : ℂ) ^ (s + (2 + (t : ℂ) * I)) =
+        (n : ℂ) ^ s * (n : ℂ) ^ (2 + (t : ℂ) * I) by
       exact Complex.cpow_add _ _ hnC]
     ring
 

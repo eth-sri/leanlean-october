@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.DoubledBlockSelection
 public import LaterPairs.Native.RobertSargosSourceAProcess
 
@@ -37,7 +46,7 @@ theorem robertSargos_phase_sequence_norm (f : ℝ → ℝ) (M n : ℕ) :
     ‖robertSargosPhaseSequence f M n‖ ≤ M := by
   unfold robertSargosPhaseSequence
   split_ifs
-  · simpa only [norm_zero] using Nat.cast_nonneg (α := ℝ) M
+  · simpa using Nat.cast_nonneg (α := ℝ) M
   · exact robertSargos_source_centered_phase_norm f M n (Nat.cast_nonneg n)
 
 theorem robertSargos_phase_sequence_block (f : ℝ → ℝ) (M k : ℕ) (hk : 0 < k) :
@@ -59,7 +68,7 @@ theorem robertSargos_phase_sequence_block (f : ℝ → ℝ) (M k : ℕ) (hk : 0 
   · intro j _
     rw [robertSargosPhaseSequence,ite_eq_right (by omega)]
     unfold robertSargosSourceCenteredPhase
-    simp only [Nat.cast_add]
+    simp
 
 theorem robertSargos_phase_sequence_weighted (f : ℝ → ℝ) (M H : ℕ) :
     (∑ n ∈ Finset.range H, ((1-(n:ℝ)/H : ℝ):ℂ)*robertSargosPhaseSequence f M n) =
@@ -87,13 +96,12 @@ theorem robertSargos_phase_sequence_weighted (f : ℝ → ℝ) (M H : ℕ) :
     omega
   · intro h hh
     have ht := Finset.mem_Ioo.mp hh
-    have hc := Int.toNat_of_nonneg (le_of_lt ht.1)
     refine ⟨h.toNat,Finset.mem_filter.mpr
-      ⟨Finset.mem_range.mpr (by omega),by omega⟩,hc⟩
+      ⟨Finset.mem_range.mpr (by omega),by omega⟩,(Int.toNat_of_nonneg (le_of_lt ht.1))⟩
   · intro n hn
     have ht := (Finset.mem_filter.mp hn).2
     dsimp only [F]
     rw [robertSargosPhaseSequence,ite_eq_right (by omega)]
-    simp only [Int.cast_natCast]
+    simp
 
 end TaoTrudgianYang2025

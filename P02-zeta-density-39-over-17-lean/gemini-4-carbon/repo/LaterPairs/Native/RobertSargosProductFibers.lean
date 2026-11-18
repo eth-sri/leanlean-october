@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.IntegerProductCount
 public import LaterPairs.Native.RobertSargosProductProjection
 
@@ -56,14 +65,12 @@ theorem exists_robertSargos_product_fiber_bound (ε : ℝ) (hε : 0 < ε) :
       exact mul_ne_zero (ne_of_gt (hpos p₀ hp₀)) hqne
     have hM : (m.natAbs:ℝ) ≤ 4*H*Q := by
       have hcast : (m.natAbs:ℝ) = |(m:ℝ)| := by
-        simpa only [Int.cast_natCast,Int.cast_abs] using
+        simpa using
           congrArg (fun z : ℤ => (z:ℝ)) (Int.natCast_natAbs m)
       have hh : (0:ℝ) < p₀.h₂ := by exact_mod_cast hpos p₀ hp₀
       rw [hcast,← hprod p₀ hp₀,Int.cast_mul,abs_mul,abs_of_pos hh]
-      calc
-        _ ≤ (2*H)*(2*Q) := mul_le_mul (hmem p₀ hp₀).h₂_support.2
-          (hmem p₀ hp₀).q₂_support.2 (abs_nonneg _) (by positivity)
-        _ = _ := by ring
+      exact (mul_le_mul (hmem p₀ hp₀).h₂_support.2
+          (hmem p₀ hp₀).q₂_support.2 (abs_nonneg _) (by positivity)).trans_eq (by ring)
     have hinj : Set.InjOn f S := by
       intro p hp q hq he
       exact robertSargos_product_key_injective ((hfix p hp).trans (hfix q hq).symm)

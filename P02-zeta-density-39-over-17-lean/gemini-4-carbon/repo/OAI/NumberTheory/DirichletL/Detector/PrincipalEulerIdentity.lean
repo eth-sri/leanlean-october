@@ -57,7 +57,6 @@ theorem principalFullSeries_euler_identity (eta a x w z : ℂ)
     principalFullSeries p hp hg eta a ((Q:ℂ)^(-x)) ((Q:ℂ)^(-w)) (coordV Q z) =
       (1-coordD Q eta 1 x) / ((1-coordV Q z)*(1-coordW Q 1 w)) *
         unramifiedClosed Q (a^2) eta 1 x w z := by
-  dsimp only
   have hQ : 0 < (Ideal.absNorm (Ideal.span {p}):ℝ) := by
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
       (Ideal.span_singleton_eq_bot.not.mpr hp.ne_zero))
@@ -72,7 +71,6 @@ theorem principalFullSeries_euler_identity (eta a x w z : ℂ)
   rw [principalFullSeries, principalMarkedSeries_eq p hp hg hc _ _ _ _ _ hV hr,
     hratio]
   unfold unramifiedClosed
-  dsimp only
   rw [coordK_eq_geometric _ hQ]
   have hv := one_sub_ne_zero_of_norm_lt_one _ hV
   have hw := one_sub_ne_zero_of_norm_lt_one _ hW

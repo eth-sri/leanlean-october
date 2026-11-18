@@ -9,10 +9,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondDyadicRowSupport
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondLiveBlock
-open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency
-open CenteredMomentSectorLocalization CenteredMomentCanonicalFirst
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss CenteredMomentSecondPhysicalBlock CenteredMomentSecondLiveBlock CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSectorLocalization CenteredMomentCanonicalFirst
 local notation "O"=>HeckeFamily.O
 
  def dyadicRows (rows:Finset O) (n:Fin 4→ℤ):Finset O:=
@@ -30,7 +27,7 @@ local notation "O"=>HeckeFamily.O
   dyadicWeight_support (n 1) ((mem_dyadicRows rows n z).mp hz).2
 
  theorem dyadicRows_nonzero (rows:Finset O)(n:Fin 4→ℤ)(z:O)(hz:z∈dyadicRows rows n):z≠0:=by
-  have hn:0<normValue z:=(div_pos (dyadicScale_pos (n 1)) (by norm_num)).trans
+  have hn :=(div_pos (dyadicScale_pos (n 1)) (by norm_num)).trans
     (dyadicRows_norm rows n z hz).1
   intro he
   simp only [he,normValue_eq_embedding,map_zero,norm_zero,zero_pow (by decide : 2≠0)] at hn

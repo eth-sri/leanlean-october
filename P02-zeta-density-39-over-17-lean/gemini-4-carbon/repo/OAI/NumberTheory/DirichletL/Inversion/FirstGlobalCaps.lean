@@ -11,9 +11,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.InverseFirstGlobalCaps
-open InverseMoment InverseFirstGlobalParents InverseFirstPriorityParents
-open InverseMomentWholePriorityParents InverseMomentFirstChildWindows
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic FirstCauchyArithmetic
+open InverseMoment InverseFirstGlobalParents InverseFirstPriorityParents InverseMomentWholePriorityParents InverseMomentFirstChildWindows ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic FirstCauchyArithmetic
 open InverseSecondSourceBlocks (dyadIndex dyadScale dyadScale_pos dyadIndex_bounds)
 open ConcreteTraceCRT (eisEmbedding)
 open InverseInitialArithmetic (sourceIdeal)
@@ -157,14 +155,12 @@ theorem parentCell_norm_bounds (pool : Finset ι) (Q : Finset (ι→₀ℕ))
     Z^dyadicExponent Z l≤(Ideal.absNorm (parent p x).quotient:ℝ) ∧
     (Ideal.absNorm (parent p x).quotient:ℝ)≤Z^(dyadicExponent Z l+eta) := by
   obtain ⟨o,ho,D,hD,hs,rfl⟩:=(mem_parentCell p pool Q selector k l x).mp hx
-  have hg := outerGate_dyads p hp k o (Finset.mem_filter.mp ho).2
-  have hd := live_common_dyads p hp (selector o) l D hs
   simp only [toOriginal_fill,toOriginal_ofOriginal]
-  refine ⟨fun i=>dyad_power_bounds Z eta _ hZ h2 _ (hg i),sourceIdeal_norm p D,?_⟩
+  refine ⟨fun i=>dyad_power_bounds Z eta _ hZ h2 _ ((outerGate_dyads p hp k o (Finset.mem_filter.mp ho).2) i),sourceIdeal_norm p D,?_⟩
   change Z^dyadicExponent Z l≤(Ideal.absNorm (sourceIdeal p D):ℝ) ∧
     (Ideal.absNorm (sourceIdeal p D):ℝ)≤Z^(dyadicExponent Z l+eta)
   rw [sourceIdeal_norm]
-  exact dyad_power_bounds Z eta _ hZ h2 l hd
+  exact dyad_power_bounds Z eta _ hZ h2 l (live_common_dyads p hp (selector o) l D hs)
 
 include hp in
 omit [∀i,(Ideal.span {p i}).IsMaximal] in

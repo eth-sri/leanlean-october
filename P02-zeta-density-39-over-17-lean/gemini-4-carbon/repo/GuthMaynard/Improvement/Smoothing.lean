@@ -74,7 +74,7 @@ theorem smooth_square_integrable {κ g : ℝ → ℝ} {B : ℝ}
   apply (smooth_integrable hκi hg2).mono'
     ((smooth_integrable hκi hgi).aestronglyMeasurable.pow 2)
   exact Eventually.of_forall (fun x => by
-    simpa only [Pi.pow_apply, Real.norm_eq_abs, abs_of_nonneg (sq_nonneg (smooth κ g x))] using
+    simpa using
       smooth_square_le hκm hκi hκ0 hκB hmass hgm hg2 hg0 x)
 
 /-- L2 squared contraction with constant exactly one. The constant is uniform

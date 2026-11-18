@@ -11,9 +11,8 @@ public import Mathlib.Analysis.PSeries
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
+open Complex Filter MeasureTheory Set Topology MathCollab.Density.Stronger
 open scoped Interval
-open MathCollab.Density.Stronger
 set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Fourth
@@ -30,11 +29,11 @@ theorem exists_norm_zetaFourthContribution_le {c : ℝ} (hc : 0 < c) :
       ‖zetaFourthContribution t c n‖ ≤
         K*t^c*((n.divisors.card:ℝ)*(n:ℝ)^(-(1/2+c))) := by
   obtain ⟨A,hA,hbound⟩ := exists_integral_norm_zetaFourthKernel_le hc
-  let B : ℝ := ‖(1/(2*Real.pi):ℂ)‖
+  let B := ‖(1/(2*Real.pi):ℂ)‖
   have hB : 0 < B := by
     apply norm_pos_iff.mpr
     exact one_div_ne_zero (mul_ne_zero (by norm_num) (Complex.ofReal_ne_zero.mpr Real.pi_ne_zero))
-  let K : ℝ := B*A*Real.sqrt (Real.pi/98)
+  let K := B*A*Real.sqrt (Real.pi/98)
   refine ⟨K,by dsimp [K]; positivity,?_⟩
   intro t ht hct n
   calc
@@ -119,7 +118,6 @@ theorem exists_norm_zetaFourthTail_le {c : ℝ} (hc : 3/2 < c) :
   refine ⟨K,hK,?_⟩
   intro t ht hct S
   have ht0 : 0 ≤ t := by linarith
-  have hs := (summable_fourth_divisorWeight hc).subtype (fun n => n ∉ S)
   calc
     ‖zetaFourthTail t c S‖ ≤
         ∑' n : {n : ℕ // n ∉ S}, ‖zetaFourthContribution t c n‖ :=
@@ -127,7 +125,7 @@ theorem exists_norm_zetaFourthTail_le {c : ℝ} (hc : 3/2 < c) :
     _ ≤ ∑' n : {n : ℕ // n ∉ S},
         K*t^c*(((n:ℕ).divisors.card:ℝ)*((n:ℕ):ℝ)^(-(1/2+c))) :=
       Summable.tsum_le_tsum (fun n => hbound t ht hct n)
-        (summable_norm_zetaFourthTail ht0 hc0 S) (hs.mul_left (K*t^c))
+        (summable_norm_zetaFourthTail ht0 hc0 S) (((summable_fourth_divisorWeight hc).subtype (fun n => n ∉ S)).mul_left (K*t^c))
     _ = _ := tsum_mul_left
 
 end MathCollab.Density.Stronger.Fourth

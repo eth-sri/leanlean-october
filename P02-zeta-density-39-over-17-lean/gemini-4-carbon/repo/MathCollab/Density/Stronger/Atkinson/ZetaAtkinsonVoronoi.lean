@@ -13,8 +13,7 @@ public import MathCollab.Density.Stronger.Atkinson.SmoothDivisorSource
 
 @[expose] public section
 
-open Complex MeasureTheory Set
-open MathCollab.Density.Stronger.Fourth
+open Complex MeasureTheory Set MathCollab.Density.Stronger.Fourth
 set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
@@ -62,7 +61,6 @@ theorem exists_zetaSquareLocalMean_le_atkinson_bessel {δ : ℝ} (hδ : 0 < δ) 
   obtain ⟨C, hC, T₀, hT₀, hbound⟩ := exists_zetaSquareLocalMean_le_smooth_divisor hδ
   refine ⟨C, hC, T₀, hT₀, ?_⟩
   intro T G hT hG hupper
-  have hT8 := hT₀.trans hT
   rw [← zetaSmoothDivisorSum_eq_atkinson_bessel (by linarith : 0 < T) hG (Real.log_pos (by linarith))]
   exact hbound T G hT hG hupper
 

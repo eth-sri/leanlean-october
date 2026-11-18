@@ -36,11 +36,10 @@ theorem operator_finite_signed_spectral_comparison [FiniteDimensional ℂ E]
       (∑ i, inner ℂ (d i) (((G-C)^3) (d i))).re+
       (∑ i, inner ℂ (d i) ((C*(G-C)^2) (d i))).re := by
   let H := G-C
-  have hs : H.toLinearMap.IsSymmetric := hG.isSymmetric.sub hC.isSymmetric
+  have hs := hG.isSymmetric.sub hC.isSymmetric
   let b := hs.eigenvectorBasis rfl
   let e := hs.eigenvalues rfl
-  have he (i : Fin (Module.finrank ℂ E)) : H (b i) = (e i:ℂ) • b i :=
-    hs.apply_eigenvectorBasis rfl i
+  have he (i : Fin (Module.finrank ℂ E)) := hs.apply_eigenvectorBasis rfl i
   have hp := finite_operator_positive_cube b H C hs e he v hv hk hB
     (by simpa [H] using hw)
   have hd := finite_diagonal_signed_trace
@@ -53,8 +52,6 @@ theorem operator_finite_signed_spectral_comparison [FiniteDimensional ℂ E]
     exact (LinearMap.trace_eq_sum_inner T.toLinearMap d).symm.trans
       (LinearMap.trace_eq_sum_inner T.toLinearMap b)
   rw [htrace ((G-C)^3), htrace (C*(G-C)^2)]
-  change k*(max (a-B) 0)^3 ≤ (∑ i, inner ℂ (b i) ((H^3) (b i))).re+
-    (∑ i, inner ℂ (b i) ((C*H^2) (b i))).re
   rw [hcubes.1, hcubes.2, Complex.ofReal_re]
   exact hp.trans hd
 

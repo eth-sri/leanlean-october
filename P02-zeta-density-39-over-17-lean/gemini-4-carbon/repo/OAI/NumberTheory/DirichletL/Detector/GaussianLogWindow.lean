@@ -13,8 +13,7 @@ namespace SevenEighths.ProbePhysical
 lemma gaussianFlow_real_smooth (R : ℝ) : ContDiff ℝ ∞ (fun s : ℝ=>gaussianFlow R (s:ℂ)) := by
   rw [contDiff_iff_contDiffAt]
   intro s
-  have hf : ContDiffAt ℂ ∞ (gaussianFlow R) (s:ℂ) := (gaussianFlow_analytic R _).contDiffAt
-  exact (hf.restrict_scalars ℝ).comp s Complex.ofRealCLM.contDiff.contDiffAt
+  exact (((gaussianFlow_analytic R _).contDiffAt).restrict_scalars ℝ).comp s Complex.ofRealCLM.contDiff.contDiffAt
 
 def gaussianLogWindow (V : SchwartzMap ℝ ℂ) (hV : HasCompactSupport (V:ℝ→ℂ)) (R : ℝ) : SchwartzMap ℝ ℂ :=
   (hV.mul_right (f':=fun s : ℝ=>gaussianFlow R (s:ℂ))).toSchwartzMap
@@ -26,8 +25,7 @@ lemma gaussianLogWindow_derivative_outside (V : SchwartzMap ℝ ℂ) (hV : HasCo
     (L : ℝ) (hbox : ∀s,V s≠0→|s|≤L) (R y : ℝ) (hy : L < |y|) (n : ℕ) :
     iteratedDeriv n (gaussianLogWindow V hV R) y=0 := by
   have he : (gaussianLogWindow V hV R:ℝ→ℂ)=ᶠ[𝓝 y](fun _=>0) := by
-    have hu : {x : ℝ | L < |x|}∈𝓝 y := (isOpen_lt continuous_const continuous_abs).mem_nhds hy
-    filter_upwards [hu] with x hx
+    filter_upwards [((isOpen_lt continuous_const continuous_abs).mem_nhds hy)] with x hx
     have hv : V x=0 := by by_contra h; exact (not_lt_of_ge (hbox x h)) hx
     simp only [gaussianLogWindow_apply,hv,zero_mul]
   rw [he.iteratedDeriv_eq n]

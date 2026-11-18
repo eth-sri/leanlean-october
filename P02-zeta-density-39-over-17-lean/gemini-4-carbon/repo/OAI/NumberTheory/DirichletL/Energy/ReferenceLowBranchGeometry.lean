@@ -9,8 +9,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentEnergyReferenceLowBranchGeometry
-open HeckeFamily CenteredMomentEnergyBands CenteredMomentEnergyReferenceState
-open CenteredMomentEnergyReferenceDeletionBudget CenteredMomentEnergyReferenceDeletionCapacity
+open HeckeFamily CenteredMomentEnergyBands CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceDeletionBudget CenteredMomentEnergyReferenceDeletionCapacity
 local notation "O"=>HeckeFamily.O
 
 lemma length_eq_max_log (Z X:ℝ)(hZ:1<Z)(hX:0<X):
@@ -25,7 +24,6 @@ lemma length_eq_max_log (Z X:ℝ)(hZ:1<Z)(hX:0<X):
 lemma slot_budgets (M total ell kappa:ℝ)(_hM:0≤M)(hell:0≤ell)(hk:3/4≤kappa)
     (hlarge:5*M/6≤total+ell)(hcap:total+ell+(6*kappa-1)*ell≤M):
     ell≤M/21 ∧ (6*kappa-1)*ell≤M/6:=by
-  have hkell:7/2*ell≤(6*kappa-1)*ell:=mul_le_mul_of_nonneg_right (by linarith) hell
   constructor <;> nlinarith
 
 theorem reflected_low (M short along ell z kappa xi reflected:ℝ)
@@ -37,13 +35,9 @@ theorem reflected_low (M short along ell z kappa xi reflected:ℝ)
       reflected+short+6*kappa*z≤13*M/14+xi:=by
   have haz:0<along:=by
     by_contra hn
-    have ha:along≤0:=le_of_not_gt hn
-    rw [max_eq_left ha] at hhigh
+    rw [max_eq_left (le_of_not_gt hn)] at hhigh
     linarith
   rw [max_eq_right haz.le] at hhigh
-  have hzbudget:(6*kappa-1)*z≤M/6:=
-    (mul_le_mul_of_nonneg_left hze (by linarith)).trans hbudget
-  have hzcap:z≤M/21:=hze.trans he
   refine ⟨haz,?_⟩
   by_cases hr:0≤M-along+xi
   · rw [max_eq_right hr] at href

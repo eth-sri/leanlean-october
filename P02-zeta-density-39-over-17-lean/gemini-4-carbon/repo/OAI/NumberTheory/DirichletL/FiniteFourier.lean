@@ -98,14 +98,13 @@ theorem primitive_gaussSum_mulShift (χ : MulChar R ℂ)
     (hχ : IsPrimitiveOnIdeals χ) (ψ : AddChar R ℂ) (a : R) :
     gaussSum χ (ψ.mulShift a) = χ⁻¹ a * gaussSum χ ψ := by
   by_cases ha : IsUnit a
-  · simpa only [ha.unit_spec] using gaussSum_mulShift_eq χ ψ ha.unit
+  · simpa using gaussSum_mulShift_eq χ ψ ha.unit
   · rw [gaussSum_mulShift_nonunit_eq_zero χ hχ ψ ha,
       MulChar.map_nonunit _ ha, zero_mul]
 
 theorem transform_primitive_character (χ : MulChar R ℂ)
     (hχ : IsPrimitiveOnIdeals χ) (ψ : AddChar R ℂ) (a : R) :
-    transform ψ χ a = χ⁻¹ a * gaussSum χ ψ := by
-  exact primitive_gaussSum_mulShift χ hχ ψ a
+    transform ψ χ a = χ⁻¹ a * gaussSum χ ψ := primitive_gaussSum_mulShift χ hχ ψ a
 
 theorem primitive_gaussSum_mul_conjugate (χ : MulChar R ℂ)
     (hχ : IsPrimitiveOnIdeals χ) (ψ : AddChar R ℂ) (hψ : ψ.IsPrimitive) :

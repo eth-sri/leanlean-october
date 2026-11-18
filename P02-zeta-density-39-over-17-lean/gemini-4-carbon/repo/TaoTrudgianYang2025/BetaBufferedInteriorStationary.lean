@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaBufferedWindowTails
 public import TaoTrudgianYang2025.BetaMorseRemainder
 
@@ -44,22 +54,20 @@ theorem bufferedNormalizedMode_interior_window_remainder
   have hF₁ := approximateModelPhase_mono hF bufferedLocalStationaryOrder_pos le_rfl
   have hgeom (z : ℝ) (hz : z ∈ Icc (-H) H) :=
     modelPhaseMorseWindow_mem_and_inverse hσ hδ hF₁ hv hd
-      (show 1 < modelPhaseInverseSlope F v-d by linarith)
-      (show modelPhaseInverseSlope F v+d < 2 by linarith) hsmall hz
+      (by linarith)
+      (by linarith) hsmall hz
   have hs : Icc (-H) H ⊆ modelPhaseMorseRange F v := fun z hz => (hgeom z hz).1
   have hminus : -H ∈ Icc (-H) H := ⟨le_rfl,by linarith⟩
   have hplus : H ∈ Icc (-H) H := ⟨by linarith,le_rfl⟩
-  have hm := abs_lt.mp (hgeom (-H) hminus).2
-  have hp := abs_lt.mp (hgeom H hplus).2
   have htail := norm_bufferedNormalizedMode_sub_window_le hσ hδ hF₁ hv hT hη hl hr hH
-    (hs hminus) (hs hplus) (show l+η ≤ modelPhaseMorseInverse F v (-H) by linarith [hm.1])
-    (show modelPhaseMorseInverse F v H ≤ r-η by linarith [hp.2])
+    (hs hminus) (hs hplus) (show l+η ≤ modelPhaseMorseInverse F v (-H) by linarith [(abs_lt.mp (hgeom (-H) hminus).2).1])
+    (by linarith [(abs_lt.mp (hgeom H hplus).2).2])
   have hcentral := bufferedMorseWeight_local_window_remainder_inverse hσ hδ hF hv hη hl hr hd
     hleft hright hH hH₁ hsmall hT
   let mid := ∫ u in modelPhaseMorseInverse F v (-H)..modelPhaseMorseInverse F v H,
     (modelPhaseBufferedCutoff l r η u : ℂ)*(𝐞 (T*F u-(T*v)*u) : ℂ)
   let main := (𝐞 (-T*modelPhaseLegendreDual F v) : ℂ)*
-    ((modelPhaseStationaryAmplitude F v : ℂ)*((𝐞 (-(1 : ℝ)/8) : ℂ)/(Real.sqrt T : ℂ)))
+    ((modelPhaseStationaryAmplitude F v : ℂ)*((𝐞 (-1/8) : ℂ)/(Real.sqrt T : ℂ)))
   have hmid : ‖mid-main‖ ≤
       (4*morseInverseDerivativeBound σ 1/Real.pi+
         (4*morseInverseDerivativeBound σ 3+2*morseInverseDerivativeBound σ 4)/(2*Real.pi))/(T*H) := by
@@ -96,15 +104,14 @@ theorem modelPhaseBufferedMorseRemainder_interior_uniform
   have hd₁ : d ≤ 1 := by linarith
   have hH : 0 < γ*d := mul_pos hγ hd
   have hH₁ : γ*d ≤ 1 := (mul_le_mul hγ₁ hd₁ hd.le (by norm_num)).trans_eq (one_mul 1)
-  have hsmall := mul_lt_mul_of_pos_right hγs hd
   have hb := bufferedNormalizedMode_interior_window_remainder hσ hδ hF hv hη hl hr hd
-    hleft hright hH hH₁ hsmall hT
+    hleft hright hH hH₁ (mul_lt_mul_of_pos_right hγs hd) hT
   have hχ : modelPhaseBufferedCutoff l r η (modelPhaseInverseSlope F v) = 1 :=
     modelPhaseBufferedCutoff_one hη (by linarith) (by linarith)
   have he :
       modelPhaseNormalizedMode (modelPhaseBufferedCutoff l r η) F T (T*v)-
         (𝐞 (-T*modelPhaseLegendreDual F v) : ℂ)*
-          ((modelPhaseStationaryAmplitude F v : ℂ)*((𝐞 (-(1 : ℝ)/8) : ℂ)/(Real.sqrt T : ℂ))) =
+          ((modelPhaseStationaryAmplitude F v : ℂ)*((𝐞 (-1/8) : ℂ)/(Real.sqrt T : ℂ))) =
       (𝐞 (-T*modelPhaseLegendreDual F v) : ℂ)*
         modelPhaseMorseRemainder (modelPhaseBufferedCutoff l r η) F T v := by
     rw [modelPhaseNormalizedMode_morse (modelPhaseBufferedCutoff_tsupport_model hη hl hr)

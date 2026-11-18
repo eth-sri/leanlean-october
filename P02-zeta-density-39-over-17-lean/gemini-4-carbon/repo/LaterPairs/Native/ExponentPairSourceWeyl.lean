@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.ExponentPairSourceCorrelation
 public import LaterPairs.Native.ExponentPairWeylSum
 
@@ -35,7 +44,7 @@ theorem sum_sourceOscillatorySequence (F : ℝ → ℝ) (T N : ℝ) (a L : ℕ) 
   case hi =>
     intro n hn
     have hn' := Finset.mem_Ico.mp hn
-    have hto : (n.toNat : ℤ) = n := Int.toNat_of_nonneg hn'.1
+    have hto := Int.toNat_of_nonneg hn'.1
     have hbound : n.toNat ≤ L := by omega
     exact Finset.mem_Icc.mpr ⟨by omega,by omega⟩
   case i_inj =>
@@ -50,7 +59,7 @@ theorem sum_sourceOscillatorySequence (F : ℝ → ℝ) (T N : ℝ) (a L : ℕ) 
     intro m hm
     have hm' := Finset.mem_Icc.mp hm
     refine ⟨(m-a : ℕ),?_,by omega⟩
-    exact Finset.mem_Ico.mpr ⟨by positivity,by exact_mod_cast (show m-a < L+1 by omega)⟩
+    exact Finset.mem_Ico.mpr ⟨by positivity,by exact_mod_cast (by omega)⟩
   case h =>
     intro n hn
     have hn0 := (Finset.mem_Ico.mp hn).1
@@ -96,6 +105,6 @@ theorem source_exponentialSum_weyl (F : ℝ → ℝ) (T N : ℝ) (a L H : ℕ) :
     (fun h hh k hk hne => (norm_padded_source_correlation F T N a L H h k
       (Finset.mem_range.mp hh) (Finset.mem_range.mp hk) hne).le)
   rw [sum_sourceOscillatorySequence] at h
-  simpa only [Nat.cast_add,Nat.cast_one] using h
+  simpa using h
 
 end TaoTrudgianYang2025

@@ -19,7 +19,7 @@ theorem actual_cube_bin_count (b L eps:ℝ)(hb:0≤b)(hL:0≤L)(heps:0<eps) :
   obtain ⟨C,hC,hh⟩:=cubeLogRange_sq_small_power b (3*eps/(L+1)) hb hd
   refine ⟨C,hC,?_⟩
   intro X Z hX hZ hXL
-  have hz:0<Z:=zero_lt_one.trans_le hZ
+  have hz :=zero_lt_one.trans_le hZ
   have hscale:(Z^((L+1)/3))^3=Z^(L+1) := by
     rw [←Real.rpow_mul_natCast hz.le]
     congr 1

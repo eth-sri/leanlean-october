@@ -16,8 +16,7 @@ def ratioFourierInput (μ : ℝ → ℝ) (a b : ℝ) : ℝ → ℝ :=
 
 theorem ratioFourierInput_measurable {μ : ℝ → ℝ} (h1 : Integrable μ) (a b : ℝ) :
     Measurable (ratioFourierInput μ a b) := by
-  have hc : Continuous (𝓕 (fun t => (μ t : ℂ))) :=
-    VectorFourier.fourierIntegral_continuous Real.continuous_fourierChar
+  have hc := VectorFourier.fourierIntegral_continuous Real.continuous_fourierChar
       (innerSL ℝ).continuous₂ (Complex.ofRealCLM.integrable_comp h1)
   exact ((hc.measurable.norm).comp (by unfold mellinFrequency; fun_prop)).indicator
     measurableSet_Icc
@@ -76,7 +75,7 @@ theorem ratioFourierInput_fourth_integrable {μ : ℝ → ℝ} {a b : ℝ}
     (ha : 0 < a) (hab : a ≤ b) (h0 : ∀ t, 0 ≤ μ t) (h1 : Integrable μ)
     (h2 : Integrable (fun t => μ t^2)) :
     Integrable (fun v => ratioFourierInput μ a b v^4) := by
-  simpa using (ratioFourierInput_masked_moment (by norm_num : (4:ℕ) ≠ 0)
+  simpa using (ratioFourierInput_masked_moment (by norm_num : 4 ≠ 0)
     ha hab MeasurableSet.univ (ordinary_real_fourier_fourth_integrable h0 h1 h2)).1
 
 /-- Mask-sensitive second moment for ordinary input; A is not enlarged. -/

@@ -19,7 +19,7 @@ lemma weighted_finite_row_energy {ι κ : Type*} (L : Finset ι) (rows : Finset 
     _ ≤ ∑ k∈rows, (∑ i∈L, ‖w i‖*‖f i k‖^2)*(∑ i∈L, ‖w i‖) := by
       apply Finset.sum_le_sum
       intro k hk
-      simpa only [star_one,mul_one,norm_one,one_pow] using
+      simpa using
         DescentWeightedCauchy.weighted_cauchy_sq L w (fun i => f i k) (fun _ => 1)
     _ = _ := by
       rw [← Finset.sum_mul,Finset.sum_comm]

@@ -7,7 +7,7 @@ noncomputable section
 open MeasureTheory Set
 open scoped SchwartzMap
 namespace GuthMaynard.Improvement
-open RiemannZeta.GuthMaynard
+open RiemannZeta.GuthMaynard GuthMaynard.NativeMoment
 
 /-- Positivity allows overlapping finite covers without a disjointness premise. -/
 theorem sum_le_cover {α ι : Type*} [DecidableEq α] [DecidableEq ι]

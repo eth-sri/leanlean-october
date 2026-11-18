@@ -91,8 +91,7 @@ def detectorTail (ρ : ℂ) (X Y : ℝ) : ℂ :=
 theorem detectorTail_decomposition {ρ : ℂ} {X Y : ℝ}
     (hX : 1 ≤ X) (hY : 0 < Y) (hρ : 0 ≤ ρ.re) :
     (Real.exp (-1/Y) : ℂ) + detectorTail ρ X Y = smoothedDetector ρ X (1/Y) := by
-  have hs := summable_zeta_detector_series X hY hρ
-  have he := hs.sum_add_tsum_nat_add 2
+  have he := (summable_zeta_detector_series X hY hρ).sum_add_tsum_nat_add 2
   have hz : detectorTerm ρ X Y 0 = 0 := by simp [detectorTerm, mollifierCoefficient]
   have ho : detectorTerm ρ X Y 1 = (Real.exp (-1/Y) : ℂ) := by
     simp [detectorTerm, mollifierCoefficient_one hX]

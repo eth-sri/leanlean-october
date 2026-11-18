@@ -8,78 +8,12 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-
-open scoped BigOperators Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 namespace CanonicalQuadraticSieve
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge CompletedGauss
-open IdealMobiusDivisorSum QuadraticMainBoundary QuadraticMainOperatorBound IdealCoprimeSieveOperator
+open ConcretePrimeRowBridge CompletedGauss IdealMobiusDivisorSum QuadraticMainBoundary QuadraticMainOperatorBound IdealCoprimeSieveOperator
 
 theorem normalizedPair_boundary_term
     (I J H D E : Ideal O) (hI : Admissible I) (hJ : Admissible J)
@@ -125,7 +59,7 @@ theorem actualPrincipalDifference_bound
       ((idealDivisors G).card : ℝ) ^ 2 *
         ((1 / Real.sqrt K) * sieveNorm K N * (supportConstant ε hε * N ^ ε) * ∑ j, ‖a j‖ ^ 2) := by
   let S := coprimeSquarefreeRange G K
-  have hS : S ⊆ idealRange K := coprimeSquarefreeRange_subset_idealRange G hbad K
+  have hS := coprimeSquarefreeRange_subset_idealRange G hbad K
   let A : Matrix S n ℂ := fun H j => quadraticRow (cols j) (primaryGenerator H.val)
   let r : Ideal O → Ideal O → n → ℂ := fun D E j =>
     quadraticRow (cols j) (idealGenerator D * idealGenerator E)
@@ -168,16 +102,15 @@ theorem actualPrincipalDifference_bound
   have hb := main_difference_operator_bound ε hε K hK G hG.ne_zero (fun H : S => H.val)
     cols (fun j => (hcols j).1.1) N hN (fun j => (hcols j).2) A a r
     (fun D E j => quadraticRow_norm_le_one (cols j) _)
-  have hA : ‖FiniteSieveOperator.operator A‖ ^ 2 ≤ sieveNorm K N :=
-    family_squared_norm_le (fun H : S => H.val) cols Subtype.val_injective hinj K N
+  have hA := family_squared_norm_le (fun H : S => H.val) cols Subtype.val_injective hinj K N
       (fun H => mem_idealRange.mp (hS H.property)) hcols
   apply hb.trans
-  have hs : 0 ≤ supportConstant ε hε := (supportConstant_pos ε hε).le
+  have hs := (supportConstant_pos ε hε).le
   gcongr
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
+open EisensteinSchwartzPoisson
 
 def middleRatio (B b D₁ d D₂ e : ℝ) : ℝ := Real.sqrt (B / b) * (D₁ / d) * (D₂ / e)
 
@@ -229,8 +162,8 @@ theorem middleRatio_argument (M B b D₁ d D₂ e q : ℝ)
     (Real.sqrt (M / B) * q / (D₁ * D₂)) * Real.exp (Real.log (middleRatio B b D₁ d D₂ e)) =
       Real.sqrt (M / b) * q / (d * e) := by
   have hb0 : 0 < b := by linarith
-  have hd0 : 0 < d := hD₁.trans_le hd.1
-  have he0 : 0 < e := hD₂.trans_le he.1
+  have hd0 := hD₁.trans_le hd.1
+  have he0 := hD₂.trans_le he.1
   have hr : 0 < middleRatio B b D₁ d D₂ e := by
     have hh := middleRatio_bounds B b D₁ d D₂ e hB hb hD₁ hd hD₂ he
     linarith
@@ -274,12 +207,11 @@ theorem actual_middle_radial_block_bound (W : 𝓢(ℝ, ℂ)) (A : ℕ) :
   have hD₂0 : 0 < D₂ := by linarith
   have hB0 : 0 < B := by linarith
   let R := Real.sqrt (M / B) * ‖eisEmbedding h‖ ^ 2 / (D₁ * D₂)
-  have hR : 0 < R := div_pos (mul_pos (Real.sqrt_pos.mpr (div_pos hM hB0))
+  have hR := div_pos (mul_pos (Real.sqrt_pos.mpr (div_pos hM hB0))
     (sq_pos_of_pos (norm_pos_iff.mpr (eisEmbedding_ne_zero hh)))) (mul_pos hD₁0 hD₂0)
   let x : S → T → m → ℝ := fun D E i => Real.log
     (middleRatio B (Ideal.absNorm (rows i)) D₁ (Ideal.absNorm D.val) D₂ (Ideal.absNorm E.val))
-  have hx (D : S) (E : T) (i : m) : |x D E i| ≤ 4 :=
-    middleRatio_log_bound _ (middleRatio_bounds _ _ _ _ _ _ hB0 (hrows i).2 hD₁0
+  have hx (D : S) (E : T) (i : m) := middleRatio_log_bound _ (middleRatio_bounds _ _ _ _ _ _ hB0 (hrows i).2 hD₁0
       (hS D.val D.property) hD₂0 (hT E.val E.property))
   have he := hb R hR ε hε S T D₁ D₂ B N hD₁ hD₂ hN hS hT rows left right hr hl hri
     (fun i => ⟨(hrows i).1, (hrows i).2.2⟩) hleft hright a b x (fun _ => 0) (fun _ => 0) hx
@@ -295,7 +227,6 @@ theorem actual_middle_radial_block_bound (W : 𝓢(ℝ, ℂ)) (A : ℕ) :
 end CanonicalQuadraticSieve
 
 namespace SecondPassArithmetic
-open ActualEisensteinCubic
 open FirstPassCubeLabels (columnLog primeProductNorm b0Label jLabel)
 open ConcreteTraceCRT (eisEmbedding)
 open RayFourExpansion (RayCharacter)
@@ -309,9 +240,7 @@ end SecondPassArithmetic
 
 namespace SecondPassIntegration
 
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap FourierTransform
-open ActualEisensteinCubic SecondPassArithmetic JointLogSeparation
+open SecondPassArithmetic JointLogSeparation
 
 variable {ι : Type*} [DecidableEq ι]
   (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
@@ -320,11 +249,9 @@ variable {ι : Type*} [DecidableEq ι]
 
 end SecondPassIntegration
 
-open scoped BigOperators Classical SchwartzMap
 namespace SecondPassArithmetic
 
 section
-open ActualEisensteinCubic
 open ConcreteTraceCRT (eisEmbedding)
 open FirstCauchyArithmetic (supportMobius)
 
@@ -377,7 +304,6 @@ def residualTailCost (F G : Finset ι) (Ψ₁ Ψ₂ : O →* ℂ)
 
 end
 
-open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProductNorm)
 open ConcreteTraceCRT (eisEmbedding)
 
@@ -404,9 +330,7 @@ include hp in
 omit [∀ (i : ι), (span {p i}).IsMaximal] in
 theorem primeProductNorm_mono {S T : Finset ι} (hST : S ⊆ T) :
     primeProductNorm p S ≤ primeProductNorm p T := by
-  have hd : Disjoint S (T\S) := Finset.disjoint_sdiff
-  have hu : S ∪ (T\S) = T := Finset.union_sdiff_of_subset hST
-  rw [← hu, FirstPassCubeLabels.primeProductNorm_union p S (T\S) hd]
+  rw [← (Finset.union_sdiff_of_subset hST), FirstPassCubeLabels.primeProductNorm_union p S (T\S) (Finset.disjoint_sdiff)]
   exact le_mul_of_one_le_right (FirstPassCubeLabels.primeProductNorm_pos p hp S).le
     (primeProductNorm_ge_one p hp _)
 
@@ -417,11 +341,8 @@ include hinj in
 theorem boundedPrimeSupports_card (F : Finset ι) (X : ℝ) (hX : 1 ≤ X) :
     ((boundedPrimeSupports p F X).card : ℝ) ≤ 128*X := by
   let q : Finset ι → Ideal O := fun S => ∏ i ∈ S, Ideal.span {p i}
-  have hq : Function.Injective q := FirstCauchyArithmetic.family_product_injective _ hinj
-  let I := (boundedPrimeSupports p F X).image q
-  have hcard : I.card = (boundedPrimeSupports p F X).card := Finset.card_image_of_injective _ hq
-  rw [← hcard]
-  apply DescentFiberCost.finite_ideal_count_real I X hX
+  rw [← (Finset.card_image_of_injective _ (FirstCauchyArithmetic.family_product_injective _ hinj))]
+  apply DescentFiberCost.finite_ideal_count_real ((boundedPrimeSupports p F X).image q) X hX
   · intro J hJ
     obtain ⟨S,hS,rfl⟩ := Finset.mem_image.mp hJ
     exact Finset.prod_ne_zero_iff.mpr (fun i hi => NeZero.ne (Ideal.span {p i}))

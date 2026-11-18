@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.CenteredMomentSourceInputFirstTailUniform
-open CenteredMomentCanonicalFirst CenteredMomentCompleteCommon CenteredMomentFirstScale
-open ActualEisensteinCubic
+open CenteredMomentCanonicalFirst CenteredMomentCompleteCommon CenteredMomentFirstScale ActualEisensteinCubic
 local notation "O" => ActualEisensteinCubic.O
 
 lemma common_subset_product_dvd_right (I J : Ideal O) (E : Finset (CommonIndex I J)) :
@@ -20,7 +19,7 @@ lemma common_subset_product_dvd_right (I J : Ideal O) (E : Finset (CommonIndex I
   rw [commonPart_right_product]
   apply Finset.prod_dvd_prod_of_dvd
   intro P hP
-  simpa only [pow_one] using pow_dvd_pow P.val (rightExponent_pos I J P)
+  simpa using pow_dvd_pow P.val (rightExponent_pos I J P)
 
 theorem first_nominal_scale_le (I J : Ideal O) (E : Finset (CommonIndex I J))
     (K X : ℝ) (hK : 0<K) :

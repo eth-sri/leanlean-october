@@ -62,13 +62,10 @@ theorem integrable_zetaGaussianQuadraticIntegrand (T v : ℝ) {G : ℝ} (hG : G 
 theorem inverse_re_lower_of_im_le_re {a : ℂ} (ha : 0 < a.re) (hi : |a.im| ≤ a.re) :
     1 / (2 * a.re) ≤ a⁻¹.re := by
   have ha0 : a ≠ 0 := by intro h; simp [h] at ha
-  have hn : 0 < Complex.normSq a := Complex.normSq_pos.mpr ha0
   have hi2 : a.im ^ 2 ≤ a.re ^ 2 := by
-    calc
-      _ = |a.im| ^ 2 := (sq_abs _).symm
-      _ ≤ _ := pow_le_pow_left₀ (abs_nonneg _) hi 2
+    exact ((sq_abs _).symm).trans_le (pow_le_pow_left₀ (abs_nonneg _) hi 2)
   rw [Complex.inv_re]
-  apply (div_le_div_iff₀ (by positivity : 0 < 2 * a.re) hn).mpr
+  apply (div_le_div_iff₀ (by positivity : 0 < 2 * a.re) (Complex.normSq_pos.mpr ha0)).mpr
   rw [Complex.normSq_apply]
   nlinarith
 
@@ -76,7 +73,6 @@ theorem norm_fourierGaussian_le_of_im_le_re {a : ℂ} (ha : 0 < a.re)
     (hi : |a.im| ≤ a.re) (v : ℝ) :
     ‖((Real.pi : ℂ) / a) ^ (1 / 2 : ℂ) * Complex.exp (-(v : ℂ) ^ 2 / (4 * a))‖ ≤
       Real.sqrt (Real.pi / a.re) * Real.exp (-v ^ 2 / (8 * a.re)) := by
-  have haNorm : a.re ≤ ‖a‖ := (le_abs_self _).trans (Complex.abs_re_le_norm a)
   have hexp : (-(v : ℂ) ^ 2 / (4 * a)).re = -(v ^ 2 / 4) * a⁻¹.re := by
     have heq : -(v : ℂ) ^ 2 / (4 * a) = ((-(v ^ 2 / 4) : ℝ) : ℂ) * a⁻¹ := by
       rw [div_eq_mul_inv, mul_inv_rev]
@@ -92,7 +88,7 @@ theorem norm_fourierGaussian_le_of_im_le_re {a : ℂ} (ha : 0 < a.re)
   rw [norm_mul, show (1 / 2 : ℂ) = ((1 / 2 : ℝ) : ℂ) by norm_num,
     Complex.norm_cpow_real, norm_div, Complex.norm_real,
     Real.norm_of_nonneg Real.pi_pos.le, ← Real.sqrt_eq_rpow, Complex.norm_exp, hexp]
-  exact mul_le_mul (Real.sqrt_le_sqrt (div_le_div_of_nonneg_left Real.pi_pos.le ha haNorm))
+  exact mul_le_mul (Real.sqrt_le_sqrt (div_le_div_of_nonneg_left Real.pi_pos.le ha ((le_abs_self _).trans (Complex.abs_re_le_norm a))))
     (Real.exp_le_exp.mpr hdecay) (Real.exp_pos _).le (Real.sqrt_nonneg _)
 
 /-- Uniform frequency damping in the physical range `G^2 ≤ 2T`. -/
@@ -121,9 +117,7 @@ theorem norm_zetaGaussianQuadraticIntegral_tail {T G L v : ℝ}
     ‖zetaGaussianQuadraticIntegral T G v‖ ≤
       Real.sqrt Real.pi * G * Real.exp (-L ^ 2 / 8) := by
   have hsq : L ^ 2 ≤ (G * v) ^ 2 := by
-    calc
-      _ ≤ (G * |v|) ^ 2 := pow_le_pow_left₀ hL hfrequency 2
-      _ = _ := by rw [mul_pow, mul_pow, sq_abs]
+    exact (pow_le_pow_left₀ hL hfrequency 2).trans_eq (by rw [mul_pow, mul_pow, sq_abs])
   apply (norm_zetaGaussianQuadraticIntegral_le hT hG hscale v).trans
   apply mul_le_mul_of_nonneg_left _ (by positivity)
   exact Real.exp_le_exp.mpr (by linarith)
@@ -136,8 +130,7 @@ theorem hasDerivAt_zetaGaussianQuadraticIntegral (T : ℝ) {G : ℝ} (hG : G ≠
       ((Real.pi : ℂ) / zetaGaussianQuadraticCoefficient T G) ^ (1 / 2 : ℂ) *
         Complex.exp (-(w : ℂ) ^ 2 / (4 * zetaGaussianQuadraticCoefficient T G)) :=
     funext (fun w => zetaGaussianQuadraticIntegral_eq T w hG)
-  have hv := (hasDerivAt_id v).ofReal_comp
-  have h := ((hv.pow 2).neg.div_const (4 * zetaGaussianQuadraticCoefficient T G)).cexp.const_mul
+  have h := ((((hasDerivAt_id v).ofReal_comp).pow 2).neg.div_const (4 * zetaGaussianQuadraticCoefficient T G)).cexp.const_mul
     (((Real.pi : ℂ) / zetaGaussianQuadraticCoefficient T G) ^ (1 / 2 : ℂ))
   rw [heq]
   convert h using 1 <;> simp only [Pi.pow_apply, Pi.neg_apply, id_eq, Complex.ofReal_one, Nat.reduceSub, pow_one, mul_one]
@@ -145,10 +138,7 @@ theorem hasDerivAt_zetaGaussianQuadraticIntegral (T : ℝ) {G : ℝ} (hG : G ≠
 
 theorem inverse_norm_zetaGaussianQuadraticCoefficient_le (T : ℝ) {G : ℝ} (hG : G ≠ 0) :
     1 / ‖zetaGaussianQuadraticCoefficient T G‖ ≤ G ^ 2 := by
-  have hr := zetaGaussianQuadraticCoefficient_re_pos T hG
-  have hle := (Complex.re_le_norm (zetaGaussianQuadraticCoefficient T G))
-  have h := one_div_le_one_div_of_le hr hle
-  simpa only [zetaGaussianQuadraticCoefficient_re, one_div_one_div] using h
+  simpa only [zetaGaussianQuadraticCoefficient_re, one_div_one_div] using (one_div_le_one_div_of_le (zetaGaussianQuadraticCoefficient_re_pos T hG) ((Complex.re_le_norm (zetaGaussianQuadraticCoefficient T G))))
 
 theorem norm_deriv_zetaGaussianQuadraticIntegral_le {T G : ℝ}
     (hT : 0 < T) (hG : 0 < G) (hGT : G ^ 2 ≤ 2 * T) (v : ℝ) :
@@ -156,16 +146,12 @@ theorem norm_deriv_zetaGaussianQuadraticIntegral_le {T G : ℝ}
       (Real.sqrt Real.pi * G ^ 3 / 2) * |v| * Real.exp (-(G * v) ^ 2 / 8) := by
   rw [(hasDerivAt_zetaGaussianQuadraticIntegral T hG.ne' v).deriv, norm_mul,
     norm_div, norm_neg, Complex.norm_real, Real.norm_eq_abs, norm_mul]
-  norm_num only [norm_ofNat]
+  norm_num
   have hcoef : |v| / (2 * ‖zetaGaussianQuadraticCoefficient T G‖) ≤ |v| * G ^ 2 / 2 := by
     have h := mul_le_mul_of_nonneg_left (inverse_norm_zetaGaussianQuadraticCoefficient_le T hG.ne')
       (show 0 ≤ |v| / 2 by positivity)
     convert h using 1 <;> ring
-  calc
-    _ ≤ (|v| * G ^ 2 / 2) *
-        (Real.sqrt Real.pi * G * Real.exp (-(G * v) ^ 2 / 8)) :=
-      mul_le_mul hcoef (norm_zetaGaussianQuadraticIntegral_le hT hG hGT v)
-        (norm_nonneg _) (by positivity)
-    _ = _ := by ring
+  exact (mul_le_mul hcoef (norm_zetaGaussianQuadraticIntegral_le hT hG hGT v)
+        (norm_nonneg _) (by positivity)).trans_eq (by ring)
 
 end MathCollab.Density.Stronger.Atkinson

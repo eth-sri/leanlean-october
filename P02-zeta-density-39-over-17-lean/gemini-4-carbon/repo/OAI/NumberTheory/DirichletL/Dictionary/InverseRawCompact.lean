@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.DetectorDictionaryInverseRawCompact
-open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseMoment FourierBridge HeckePrimeAnnular
-open CenteredMomentOriginalReflectionErrorMass CenteredMomentCounting
-open ActualEisensteinCubic ConcreteTraceCRT
+open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseMoment FourierBridge HeckePrimeAnnular CenteredMomentOriginalReflectionErrorMass CenteredMomentCounting ActualEisensteinCubic ConcreteTraceCRT
 
 local notation "O" => HeckeFamily.O
 
@@ -100,8 +98,7 @@ theorem reference_energy_linear (W : SchwartzMap ℝ ℂ) (a b : ℝ) (ha : 0<a)
     _≤∑v∈rows,A^2*D := by
       apply Finset.sum_le_sum
       intro v _
-      have hh:=pow_le_pow_left₀ (norm_nonneg _) (hbound (χ v) s D hD) 2
-      simpa only [mul_pow,Real.sq_sqrt hD.le] using hh
+      simpa only [mul_pow,Real.sq_sqrt hD.le] using (pow_le_pow_left₀ (norm_nonneg _) (hbound (χ v) s D hD) 2)
     _=(rows.card:ℝ)*(A^2*D) := by simp
     _≤(128*H)*(A^2*D) := mul_le_mul_of_nonneg_right
       (nonzero_element_rows_card rows H hH hrows) (by positivity)
@@ -113,7 +110,7 @@ lemma scale_le_rows (c H D : ℝ) (hc : 0≤c) (hH : 1≤H)
   · exact hD1.trans hH
   · have hd : 1≤D := le_of_not_ge hD1
     calc
-      D=D^(1:ℝ) := (Real.rpow_one D).symm
+      D=D^1 := (Real.rpow_one D).symm
       _≤D^(1+c) := Real.rpow_le_rpow_of_exponent_le hd (by linarith)
       _≤H := hDH
 

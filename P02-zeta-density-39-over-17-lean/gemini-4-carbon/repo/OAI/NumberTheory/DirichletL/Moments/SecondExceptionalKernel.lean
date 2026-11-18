@@ -10,11 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondExceptionalKernel
-open HeckeFamily CanonicalRowCompletion CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentSupportedCorrelation CenteredMomentChildAssembly
-open CenteredMomentMobiusRegroup CenteredMomentFixedRay CenteredMomentRowNorm
-open CenteredMomentSmooth CenteredMomentCauchy CenteredMomentPlainChildEnergy
-open CenteredMomentSecondScaled CenteredMomentExceptionalKernel RayFourExpansion
+open HeckeFamily CanonicalRowCompletion CanonicalQuadraticSieve CompletedGauss CenteredMomentSupportedCorrelation CenteredMomentChildAssembly CenteredMomentMobiusRegroup CenteredMomentFixedRay CenteredMomentRowNorm CenteredMomentSmooth CenteredMomentCauchy CenteredMomentPlainChildEnergy CenteredMomentSecondScaled CenteredMomentExceptionalKernel RayFourExpansion
 local notation "O" => ActualEisensteinCubic.O
 
 theorem whole_kernel_divisor_pair (W : 𝓢(ℝ,ℂ)) (V : Fin 4→ℝ→ℂ)
@@ -62,8 +58,7 @@ theorem whole_kernel_divisor_pair (W : 𝓢(ℝ,ℂ)) (V : Fin 4→ℝ→ℂ)
     intro t
     simp only [Finset.sum_product,hl,rightColumn_eq_star_rowPolynomial,norm_star,norm_mul,mul_assoc,←Finset.mul_sum]
     exact he t
-  have hout:=hh hp
-  apply hout.trans_eq'
+  apply (hh hp).trans_eq'
   congr 2
   simp only [Finset.sum_product,Finset.mul_sum]
   apply Finset.sum_congr rfl
@@ -168,11 +163,7 @@ theorem whole_kernel_actual_second_pair (W : 𝓢(ℝ,ℂ))(V:Fin 4→ℝ→ℂ)
     _≤256*(C*E0):=mul_le_mul_of_nonneg_right (phaseTable_mass D E) (mul_nonneg hC hE0)
     _=(256*C)*E0:=by ring
 
-open CenteredMomentSecondSectorColumns CenteredMomentSecondCanonical CenteredMomentCanonicalFirst
-open CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalScalar
-open CenteredMomentLogDyadic CenteredMomentSupport CenteredMomentRestrictedEnergy
-open CenteredMomentHeckeColumnWindow CenteredMomentSectorLocalization
-open CenteredMomentChildRows CenteredExceptionalProfile
+open CenteredMomentSecondSectorColumns CenteredMomentSecondCanonical CenteredMomentCanonicalFirst CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalScalar CenteredMomentLogDyadic CenteredMomentSupport CenteredMomentRestrictedEnergy CenteredMomentHeckeColumnWindow CenteredMomentSectorLocalization CenteredMomentChildRows CenteredExceptionalProfile
 
 theorem exceptional_rows_pair (η:Character)(χ₀ χ ξ:RayCharacter)(Q:Ideal O)
     (hQ:Q≤Ideal.span {(72:O)})(m A:O)(hmLam:ConcretePrimeRowBridge.goodLambda∣m)
@@ -184,7 +175,7 @@ theorem exceptional_rows_pair (η:Character)(χ₀ χ ξ:RayCharacter)(Q:Ideal O
   · intro z hz
     have hh:=CenteredMomentExceptionalReflection.fixedInducingRow_reflected
       η χ₀ χ₀ Q hQ m A z hmLam hm2 (hrows z hz)
-    simpa only [neg_neg] using
+    simpa using
       CenteredMomentExceptionalReflection.fixedInducingRow_reflected
         η χ₀ χ Q hQ m A (-z) hmLam hm2 hh
   · intro z hz

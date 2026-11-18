@@ -10,14 +10,12 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.InverseInitialExcludedPolynomial
-open HeckeFamily HeckeDyadic HeckeDetectorDyadicBridge
-open InverseInitialExcludedSource IdealMobiusDivisorSum UniqueFactorizationMonoid
+open HeckeFamily HeckeDyadic HeckeDetectorDyadicBridge InverseInitialExcludedSource IdealMobiusDivisorSum UniqueFactorizationMonoid
 local notation "O"=>HeckeFamily.O
 
 theorem prime_product_squarefree (S:Finset (Ideal O))(hS:∀P∈S,Prime P):
     Squarefree (∏P∈S,P) := by
-  have hz:(∏P∈S,P)≠0:=Finset.prod_ne_zero_iff.mpr (fun P hP=>(hS P hP).ne_zero)
-  apply (squarefree_iff_nodup_normalizedFactors hz).mpr
+  apply (squarefree_iff_nodup_normalizedFactors (Finset.prod_ne_zero_iff.mpr (fun P hP=>(hS P hP).ne_zero))).mpr
   have he:normalizedFactors (∏P∈S,P)=S.val:=by
     simpa using normalizedFactors_prod_of_prime (m:=S.val) (fun P hP=>hS P hP)
   rw [he]
@@ -38,7 +36,6 @@ theorem residual_source (χ:Character)(S A:Finset (Ideal O))(hS:∀P∈S,Prime P
     ∑'c:Ideal O,(moebius c:ℂ)*idealCoeff (χ.excludePrimes S hS) c*
       W ((c.absNorm:ℝ)/(X/(j.absNorm:ℝ))) := by
   have hP:=prime_product_squarefree S hS
-  have hj0:=ne_zero_of_dvd_ne_zero hP.ne_zero hj
   symm
   calc
     _ = ∑c∈columns A (∏P∈S,P) j,(moebius c:ℂ)*idealCoeff (χ.excludePrimes S hS) c*
@@ -51,7 +48,7 @@ theorem residual_source (χ:Character)(S A:Finset (Ideal O))(hS:∀P∈S,Prime P
             by_contra hw
             apply hc
             apply (mem_columns hP hj).mpr
-            refine ⟨hcs,hcp,hcover (j*c) (mul_ne_zero hj0 hcs.ne_zero) ?_⟩
+            refine ⟨hcs,hcp,hcover (j*c) (mul_ne_zero (ne_zero_of_dvd_ne_zero hP.ne_zero hj) hcs.ne_zero) ?_⟩
             rwa [cutoff_argument]
           rw [hw,mul_zero]
         · rw [deleted_coefficient_product,ite_eq_right hcp,mul_zero,zero_mul]
@@ -90,14 +87,13 @@ theorem polynomial_all_ideals (χ:Character)(W:ℝ→ℂ)(X σ t:ℝ):
     intro I hi hz
     subst I
     exact hi (by simp only [f,map_zero,mul_zero,zero_mul])
-  have he:=tsum_subtype_eq_of_support_subset hf
   calc
     _=∑'I:{I:Ideal O//I≠0},f I.val:=by
       apply tsum_congr
       intro I
       simp only [summand,coefficient,ite_true,HeckeDyadic.norm,f]
       ring
-    _=_:=he
+    _=_:=(tsum_subtype_eq_of_support_subset hf)
 
 theorem scale_normalization (X n:ℝ)(hX:0<X)(hn:0<n):
     (n:ℂ)^(-(1/2:ℂ))*((X/n:ℝ):ℂ)^(-(1/2:ℂ))=(X:ℂ)^(-(1/2:ℂ)) := by
@@ -113,15 +109,13 @@ theorem inverse_polynomial_decomposition (χ:Character)(S:Finset (Ideal O))
         polynomial (χ.excludePrimes S hS) true W (X/(j.absNorm:ℝ)) σ t := by
   let A:=ConcretePrimeRowBridge.idealsUpTo ⌈X*b⌉₊
   let V:ℝ→ℂ:=fun x=>W x*(x:ℂ)^(-shift σ t)
-  have hc:∀I:Ideal O,I≠0→W ((I.absNorm:ℝ)/X)≠0→I∈A:=
-    InverseInitialRawDictionary.finite_source_cover W X b hX hW
+  have hc := InverseInitialRawDictionary.finite_source_cover W X b hX hW
   have hcv:∀I:Ideal O,I≠0→V ((I.absNorm:ℝ)/X)≠0→I∈A:=by
     intro I hi hv
     apply hc I hi
     intro hw
     exact hv (by simp [V,hw])
   rw [polynomial_eq_finite χ true W X σ t A hc]
-  have hsource:=source_decomposition χ S A hS V X hcv
   have hfinite:(∑I∈A,coefficient χ true I*W ((I.absNorm:ℝ)/X)*
       (((I.absNorm:ℝ)/X:ℝ):ℂ)^(-shift σ t))=
       ∑I∈A,(moebius I:ℂ)*idealCoeff χ I*V ((I.absNorm:ℝ)/X):=by
@@ -129,17 +123,14 @@ theorem inverse_polynomial_decomposition (χ:Character)(S:Finset (Ideal O))
     intro I hi
     simp only [coefficient,ite_true,V]
     ring
-  rw [hfinite,hsource,Finset.mul_sum]
+  rw [hfinite,(source_decomposition χ S A hS V X hcv),Finset.mul_sum]
   apply Finset.sum_congr rfl
   intro j hj
-  have hjd: j∣∏P∈S,P:=(mem_idealDivisors (prime_product_squarefree S hS).ne_zero).mp hj
-  have hj0:j≠0:=ne_zero_of_dvd_ne_zero (prime_product_squarefree S hS).ne_zero hjd
   have hjpos:0<(j.absNorm:ℝ):=by
-    exact_mod_cast Nat.pos_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hj0)
+    exact_mod_cast Nat.pos_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr (ne_zero_of_dvd_ne_zero (prime_product_squarefree S hS).ne_zero ((mem_idealDivisors (prime_product_squarefree S hS).ne_zero).mp hj)))
   rw [polynomial_all_ideals]
   have hn:=scale_normalization X (j.absNorm:ℝ) hX hjpos
   simp only [Complex.ofReal_natCast] at hn
-  dsimp only [V]
   rw [←hn]
   ring
 

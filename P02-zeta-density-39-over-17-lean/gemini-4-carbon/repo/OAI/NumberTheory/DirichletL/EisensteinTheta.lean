@@ -74,9 +74,6 @@ theorem cosetTheta_hasSum (a b L : ℝ) (hL : 0 < L) {t : ℝ} (ht : 0 < t) :
   rw [hFC.tsum_prod, tsum_fintype]
   exact (Finset.sum_congr rfl (fun e _ => (hsum e).tsum_eq)).symm
 
-@[simp] theorem parityPair_k (a b L : ℝ) (hL : 0 < L) (e : Fin 2) :
-    (parityPair a b L hL e).k = 1 := rectangularPair_k _ _ _ _ _ _
-
 def cosetConstant (a b L : ℝ) (hL : 0 < L) : ℂ :=
   ∑ e : Fin 2, (parityPair a b L hL e).f₀
 
@@ -119,10 +116,8 @@ theorem cosetConstant_eq (a b L : ℝ) (hL : 0 < L)
     have hx : xShift a 0 L 0 = a / L := by
       simp only [xShift, sub_zero, Fin.val_zero, Nat.cast_zero, mul_zero]
       field_simp
-    have hxmem : a / L ∈ Set.Ico (0 : ℝ) 1 :=
-      ⟨div_nonneg ha₀ hL.le, (div_lt_one hL).2 haL⟩
     have hxiff : (xShift a 0 L 0 : UnitAddCircle) = 0 ↔ a = 0 := by
-      rw [hx, AddCircle.coe_eq_zero_iff_of_mem_Ico hxmem]
+      rw [hx, AddCircle.coe_eq_zero_iff_of_mem_Ico (⟨div_nonneg ha₀ hL.le, (div_lt_one hL).2 haL⟩)]
       simp [div_eq_zero_iff, hL.ne']
     simp only [hxiff, and_true]
   · rw [ite_eq_right (fun h => hb (hy0iff.mp h)), mul_zero, ite_eq_right (fun h => hb h.2)]

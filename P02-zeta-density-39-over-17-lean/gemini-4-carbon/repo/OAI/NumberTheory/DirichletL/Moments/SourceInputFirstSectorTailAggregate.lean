@@ -10,9 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSourceInputFirstSectorTail
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentSourceRow
-open CenteredMomentFirstTailAggregate CenteredMomentFirstDiscardedEnergy
-open CenteredMomentFirstScale CenteredMomentSectorLocalization CenteredMomentHeckeExpansion
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentSourceRow CenteredMomentFirstTailAggregate CenteredMomentFirstDiscardedEnergy CenteredMomentFirstScale CenteredMomentSectorLocalization CenteredMomentHeckeExpansion
 local notation "O"=>ActualEisensteinCubic.O
 
 private theorem pair_mass {α : Type*} [Fintype α] (c w : α → ℂ) (F : α → α → ℂ)
@@ -54,9 +52,8 @@ theorem local_discarded_energy_bound (Adec : ℕ) (ε : ℝ) (hε : 0<ε) :
       ‖CenteredMomentFirstSectorLocalization.discardedPair I J (Finset.mem_filter.mp I.property).2
         (Finset.mem_filter.mp J.property).2 W K X Z ξ‖≤B := by
     have hni := hN I (Finset.mem_filter.mp I.property).1 hi
-    have hnj := hN J (Finset.mem_filter.mp J.property).1 hj
     apply (ht W I J (Finset.mem_filter.mp I.property).2 (Finset.mem_filter.mp J.property).2
-      K X H Tsec Z Csec ξ hK hX hZ hCs hni hnj hsec hthreshold).trans
+      K X H Tsec Z Csec ξ hK hX hZ hCs hni (hN J (Finset.mem_filter.mp J.property).1 hj) hsec hthreshold).trans
     apply div_le_div_of_nonneg_right _ (by positivity)
     apply mul_le_mul_of_nonneg_right _ (by positivity)
     exact mul_le_mul_of_nonneg_right (Real.rpow_le_rpow (Nat.cast_nonneg _) hni hε.le) hK.le

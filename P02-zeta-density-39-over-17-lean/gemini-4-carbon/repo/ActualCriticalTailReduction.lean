@@ -26,15 +26,14 @@ theorem critical_norm_le_threshold_add_excess (v t : ℝ) :
 
 theorem integrable_translated_critical_mean (u : ℝ) :
     Integrable (fun t : ℝ => momentDecay 128 (t-u)*zetaMomentCriticalNorm t) := by
-  have hh := (integrable_weightedCriticalMean 128 (by norm_num) u).comp_sub_right u
-  simpa [momentDecay,zetaMomentCriticalNorm,div_eq_mul_inv,mul_comm] using hh
+  simpa [momentDecay,zetaMomentCriticalNorm,div_eq_mul_inv,mul_comm] using ((integrable_weightedCriticalMean 128 (by norm_num) u).comp_sub_right u)
 
 theorem weightedCriticalMean_eq_translated (u : ℝ) :
     weightedCriticalMean 128 u =
       ∫ t : ℝ, momentDecay 128 (t-u)*zetaMomentCriticalNorm t := by
   unfold weightedCriticalMean
   have hh := integral_sub_right_eq_self (μ := volume)
-    (f := fun t : ℝ => ‖riemannZeta ((1/2 : ℂ)+((u+t : ℝ):ℂ)*Complex.I)‖/(1+|t|)^128) u
+    (f := fun t : ℝ => ‖riemannZeta ((1/2)+((u+t : ℝ):ℂ)*Complex.I)‖/(1+|t|)^128) u
   simpa [momentDecay,zetaMomentCriticalNorm,div_eq_mul_inv,mul_comm] using hh.symm
 
 /-- Actual first-moment far tail, independent of any zeta moment theorem. -/
@@ -66,14 +65,12 @@ theorem weightedCriticalMean_physical_tail {T u : ℝ} (hT : 1 ≤ T)
     (hu : u ∈ Icc T (2*T)) :
     (∫ t in (Icc 0 (3*T))ᶜ, momentDecay 128 (t-u)*zetaMomentCriticalNorm t) ≤
       12*T^(-125 : ℝ)*Real.pi := by
-  have hi := integrable_translated_critical_mean u
-  have hw : Integrable (fun t : ℝ => momentDecay 2 (t-u)) :=
-    (integrable_momentDecay (by norm_num : 2 ≤ 2)).comp_sub_right u
-  let C : ℝ := 12*T^(-125 : ℝ)
+  have hw := (integrable_momentDecay (by norm_num : 2 ≤ 2)).comp_sub_right u
+  let C := 12*T^(-125 : ℝ)
   have hC : 0 ≤ C := by dsimp [C]; positivity
   calc
     _ ≤ ∫ t in (Icc 0 (3*T))ᶜ, C*momentDecay 2 (t-u) := by
-      apply setIntegral_mono_on hi.integrableOn (hw.const_mul C).integrableOn measurableSet_Icc.compl
+      apply setIntegral_mono_on (integrable_translated_critical_mean u).integrableOn (hw.const_mul C).integrableOn measurableSet_Icc.compl
       intro t ht
       exact weightedCriticalMean_tail_pointwise hT hu ht
     _ ≤ ∫ t : ℝ, C*momentDecay 2 (t-u) :=

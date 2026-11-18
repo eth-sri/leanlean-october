@@ -46,10 +46,8 @@ theorem exists_fixed_probe_window : ∃ (w : ℝ→ℝ) (W : SchwartzMap ℝ ℂ
     (∀x,(W x).im=0) ∧ (∀x,0≤(W x).re) := by
   obtain ⟨w,W,hw,hc,hs,hb,hv,hn,he,hWn,hWs,hr,hp⟩ := exists_probe_window
   refine ⟨w,W,hw,hc,hs,?_,hb,hn,he,hWn,hWs,hr,hp⟩
-  have hcl : tsupport w⊆Set.Icc 1 2 :=
-    closure_minimal (hs.trans Set.Ioo_subset_Icc_self) isClosed_Icc
   intro x hx
-  exact lt_of_lt_of_le (by norm_num : (0:ℝ)<1) (hcl hx).1
+  exact lt_of_lt_of_le (by norm_num : (0:ℝ)<1) ((closure_minimal (hs.trans Set.Ioo_subset_Icc_self) isClosed_Icc) hx).1
 end SevenEighths.Parameters
 
 end

@@ -9,12 +9,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondPhysicalBlock
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcreteTraceCRT
-open CenteredMomentSecondSectorColumns CenteredMomentSecondCanonical CenteredMomentCanonicalFirst
-open CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalScalar
-open CenteredMomentSecondSectorRetained CenteredMomentSecondPhysicalWindow CenteredMomentSecondWholeKernel
-open CenteredMomentLogDyadic CenteredMomentSmooth CenteredMomentSupport CenteredMomentSectorLocalization
-open CenteredMomentSecondRadicalBlock CenteredMomentHeckeColumnWindow
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcreteTraceCRT CenteredMomentSecondSectorColumns CenteredMomentSecondCanonical CenteredMomentCanonicalFirst CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalScalar CenteredMomentSecondSectorRetained CenteredMomentSecondPhysicalWindow CenteredMomentSecondWholeKernel CenteredMomentLogDyadic CenteredMomentSmooth CenteredMomentSupport CenteredMomentSectorLocalization CenteredMomentSecondRadicalBlock CenteredMomentHeckeColumnWindow
 local notation "O" => ActualEisensteinCubic.O
 
 def outerScalar (C D : Ideal O) (K : ℝ) (n : Fin 4→ℤ) : ℝ :=
@@ -69,16 +64,14 @@ theorem physicalBlock_eq (η : Character) (t : ℝ) (S : Finset (Ideal O)) (β :
     physicalBlock η t S β C D hC hD U R rows W K n=
       (outerScalar C D K n:ℂ)*(normalizer C D U:ℂ)*
         normalizedBlock η t S β C D hC hD U R rows W K n := by
-  have hA : commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U≠0 :=
-    mul_ne_zero (commonFrequencyGenerator_ne_zero C D hC) (nonunitFrequencyGenerator_ne_zero C D hC U)
   unfold physicalBlock normalizedBlock
   simp only [Finset.mul_sum]
   apply Finset.sum_congr rfl
   intro z hz
   simp_rw [physical_kernel_dyadic C D _ _ hC hD
     (sectorPool_supported C hC.1 S _) (sectorPool_supported D hD.1 S _)
-    _ z hA (hrows z hz) W K R hK n]
-  have hn : (normalizer C D U:ℂ)≠0 := Complex.ofReal_ne_zero.mpr (normalizer_pos C D hC U).ne'
+    _ z (mul_ne_zero (commonFrequencyGenerator_ne_zero C D hC) (nonunitFrequencyGenerator_ne_zero C D hC U)) (hrows z hz) W K R hK n]
+  have hn := Complex.ofReal_ne_zero.mpr (normalizer_pos C D hC U).ne'
   simp only [outerScalar,Complex.ofReal_div,Complex.ofReal_mul,retainedScalar,canonicalPartitionScalar]
   simp only [normalizer] at hn ⊢
   by_cases hp : canonicalPartition C D U (nonunitFrequencyGenerator C D U*z)

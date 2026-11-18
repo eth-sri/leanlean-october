@@ -37,12 +37,11 @@ theorem prime_factor_allocation (P : Ideal O) (hP : Prime P)
   let f := fun J : Finset ι => (-1:ℂ)^J.card*∏ i ∈ J,if P∣v i then (1:ℂ) else 0
   have he : (∑ J ∈ nonemptySelections s,f J)+1 =
       if P ∣ ∏ i ∈ s,v i then (0:ℂ) else 1 := by
-    have hr := Finset.sum_erase_add s.powerset f (Finset.mem_powerset.mpr (Finset.empty_subset s))
     have hh := Finset.prod_sub (fun _i : ι => (1:ℂ))
       (fun i => if P∣v i then (1:ℂ) else 0) s
     simp only [Finset.prod_const_one,mul_one] at hh
     rw [prime_complement P hP s v] at hh
-    simpa only [nonemptySelections,f,Finset.card_empty,pow_zero,Finset.prod_empty,one_mul] using hr.trans hh.symm
+    simpa only [nonemptySelections,f,Finset.card_empty,pow_zero,Finset.prod_empty,one_mul] using (Finset.sum_erase_add s.powerset f (Finset.mem_powerset.mpr (Finset.empty_subset s))).trans hh.symm
   have hn : (∑ J ∈ nonemptySelections s, (-1:ℂ)^(J.card+1)*
       ∏ i ∈ J,if P∣v i then (1:ℂ) else 0) = -(∑ J ∈ nonemptySelections s,f J) := by
     rw [← Finset.sum_neg_distrib]
@@ -111,9 +110,7 @@ theorem allocation_card_bound (D : Ideal O) (s : Finset ι) :
       (Finset.card_erase_le (s := s.powerset) (a := (∅:Finset ι)))
   change Fintype.card (primeSupport D → nonemptySelections s) ≤ _
   simp only [Fintype.card_fun,Fintype.card_coe]
-  calc
-    _ ≤ (2^s.card)^(primeSupport D).card := Nat.pow_le_pow_left hc _
-    _ = _ := by simp only [← pow_mul,Nat.mul_comm]
+  exact (Nat.pow_le_pow_left hc _).trans_eq (by simp only [← pow_mul,Nat.mul_comm])
 
 end SevenEighths.CenteredMomentDivisorAllocation
 

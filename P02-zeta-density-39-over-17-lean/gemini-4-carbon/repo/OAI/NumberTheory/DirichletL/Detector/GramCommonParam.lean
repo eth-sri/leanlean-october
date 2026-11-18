@@ -52,9 +52,8 @@ def param (C n₁ n₂ a b k : A) (hab : a*n₁+b*n₂=1) (t : ResidueQ C) : Sol
 lemma param_injective (C n₁ n₂ a b k : A) (hab : a*n₁+b*n₂=1) (hn₁ : n₁≠0) :
     Function.Injective (param C n₁ n₂ a b k hab) := by
   intro t u he
-  have hl : leftParam C n₁ b k t=leftParam C n₁ b k u := congrArg (fun p=>p.val.1) he
   apply scaledResidue_injective C n₁ (C*n₁) rfl hn₁
-  exact add_left_cancel hl
+  exact add_left_cancel (congrArg (fun p=>p.val.1) he)
 
 lemma condition_divided (C n₁ n₂ k x y : A) (hC : C≠0)
     (hc : condition C n₁ n₂ k (Ideal.Quotient.mk _ x,Ideal.Quotient.mk _ y)) :
@@ -79,7 +78,7 @@ lemma param_surjective (C n₁ n₂ a b k : A) (hC : C≠0) (hab : a*n₁+b*n₂
   · change leftParam C n₁ b k (Ideal.Quotient.mk _ (a*x+b*y))=p.val.1
     rw [leftParam_mk,←hx,Ideal.Quotient.eq]
     apply Ideal.mem_span_singleton.mpr
-    have hh : C*n₁∣n₂*x-n₁*y-k := (dvd_mul_right (C*n₁) n₂).trans hd
+    have hh := (dvd_mul_right (C*n₁) n₂).trans hd
     have he : b*k+n₁*(a*x+b*y)-x= -b*(n₂*x-n₁*y-k) := by
       linear_combination x*hab
     rw [he]
@@ -99,10 +98,6 @@ def solutionEquiv (C n₁ n₂ a b k : A) (hC : C≠0) (hn₁ : n₁≠0)
     (hab : a*n₁+b*n₂=1) : ResidueQ C≃Solutions C n₁ n₂ k :=
   Equiv.ofBijective (param C n₁ n₂ a b k hab)
     ⟨param_injective C n₁ n₂ a b k hab hn₁,param_surjective C n₁ n₂ a b k hC hab⟩
-
-@[simp] lemma solutionEquiv_val (C n₁ n₂ a b k : A) (hC : C≠0) (hn₁ : n₁≠0)
-    (hab : a*n₁+b*n₂=1) (t : ResidueQ C) :
-    (solutionEquiv C n₁ n₂ a b k hC hn₁ hab t).val=(leftParam C n₁ b k t,rightParam C n₂ a k t) := rfl
 
 end SevenEighths.ProbeGramCommon
 end

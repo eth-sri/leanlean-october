@@ -92,29 +92,24 @@ noncomputable def grad (f : E → ℝ) : E → E :=
   fun x => (InnerProductSpace.toDual ℝ E).symm (fderiv ℝ f x)
 
 lemma continuous_grad {f : E → ℝ} (hf : ContDiff ℝ 1 f) : Continuous (grad (E := E) f) := by
-  have hcont : Continuous (fderiv ℝ f) := hf.continuous_fderiv one_ne_zero
   have : Continuous fun x => (InnerProductSpace.toDual ℝ E).symm (fderiv ℝ f x) :=
-    (InnerProductSpace.toDual ℝ E).symm.continuous.comp hcont
+    (InnerProductSpace.toDual ℝ E).symm.continuous.comp (hf.continuous_fderiv one_ne_zero)
   exact this
 
 lemma hasCompactSupport_grad {f : E → ℝ} (hf : HasCompactSupport f) :
     HasCompactSupport (grad (E := E) f) := by
   -- Outside the support of `f`, `fderiv` is identically `0`, hence so is `grad`.
-  have hf' : HasCompactSupport (fderiv ℝ f) := hf.fderiv ℝ
   -- `grad` is composition with a linear map sending `0` to `0`.
   exact
     (HasCompactSupport.comp_left (f := fderiv ℝ f) (g := (InnerProductSpace.toDual ℝ E).symm)
-      hf' (by simp))
+      (hf.fderiv ℝ) (by simp))
 
 omit [CompleteSpace E] in
-lemma memLp_of_mem_C1c {f : E → ℝ} (hf : f ∈ C1c (E := E)) : MemLp f 2 μ := by
-  exact (hf.1.continuous.memLp_of_hasCompactSupport (μ := μ) (p := (2 : ℝ≥0∞)) hf.2)
+lemma memLp_of_mem_C1c {f : E → ℝ} (hf : f ∈ C1c (E := E)) : MemLp f 2 μ := (hf.1.continuous.memLp_of_hasCompactSupport (μ := μ) (p := (2 : ℝ≥0∞)) hf.2)
 
 lemma memLp_grad_of_mem_C1c {f : E → ℝ} (hf : f ∈ C1c (E := E)) :
     MemLp (grad (E := E) f) 2 μ := by
-  have hcont : Continuous (grad (E := E) f) := continuous_grad (E := E) (f := f) hf.1
-  have hcs : HasCompactSupport (grad (E := E) f) := hasCompactSupport_grad (E := E) (f := f) hf.2
-  exact hcont.memLp_of_hasCompactSupport (μ := μ) (p := (2 : ℝ≥0∞)) hcs
+  exact (continuous_grad (E := E) (f := f) hf.1).memLp_of_hasCompactSupport (μ := μ) (p := (2 : ℝ≥0∞)) (hasCompactSupport_grad (E := E) (f := f) hf.2)
 
 /-- The `L²` class of a `C¹` compactly supported function. -/
 noncomputable def toL2 (f : ↥(C1c (E := E))) : L2ℝ (μ := μ) :=

@@ -11,9 +11,7 @@ public import MathCollab.Density.Stronger.Fourth.DigammaLog
 
 @[expose] public section
 
-open Complex Set MeasureTheory
-open MathCollab.Density.Stronger
-open MathCollab.Density.Stronger.Fourth.Digamma
+open Complex Set MeasureTheory MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth.Digamma
 set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Fourth
@@ -25,7 +23,6 @@ theorem hasDerivAt_Gamma_eq_mul_digamma_of_re_pos
     intro n hn
     have hre := congrArg Complex.re hn
     simp only [neg_re, natCast_re] at hre
-    have hn0 : (0 : ℝ) ≤ n := Nat.cast_nonneg n
     linarith
   have hdiff := (Complex.differentiableAt_Gamma z hpoles).hasDerivAt
   convert hdiff using 1
@@ -40,7 +37,7 @@ theorem hasDerivAt_gammaReal {z : ℂ} (hz : 0 < z.re) :
     convert (((hasDerivAt_id z).neg.div_const 2).const_cpow
       (c := (Real.pi : ℂ)) (Or.inl (Complex.ofReal_ne_zero.mpr Real.pi_ne_zero))) using 1 <;> simp
   have hzhalf : 0 < (z / 2).re := by
-    simpa only [div_ofNat_re] using div_pos hz two_pos
+    simpa using div_pos hz two_pos
   have hgamma : HasDerivAt (fun w : ℂ => Complex.Gamma (w / 2))
       (Complex.Gamma (z / 2) * Complex.digamma (z / 2) / 2) z := by
     convert (hasDerivAt_Gamma_eq_mul_digamma_of_re_pos hzhalf).comp z
@@ -97,9 +94,8 @@ theorem zetaGammaHalfShift_re_pos (t : ℝ) {w : ℂ} (hw : 0 ≤ w.re)
 
 theorem zetaGammaHalfShift_im_le {t : ℝ} (ht : 0 < t) {w : ℂ} (hw : ‖w‖ ≤ t / 2)
     {v : ℝ} (hv : v ∈ Icc (0 : ℝ) 1) : (zetaGammaHalfShift t w v).im ≤ -t / 4 := by
-  have hwi : w.im ≤ t / 2 := (Complex.im_le_norm w).trans hw
   have hvwi : v * w.im ≤ t / 2 := by
-    have h := mul_le_mul_of_nonneg_left hwi hv.1
+    have h := mul_le_mul_of_nonneg_left ((Complex.im_le_norm w).trans hw) hv.1
     nlinarith [hv.2]
   simp [zetaGammaHalfShift, afeCriticalPoint, Complex.mul_im]
   linarith
@@ -120,7 +116,7 @@ theorem norm_zetaGammaHalfShift_sub_negative_height_le (t : ℝ) (w : ℂ)
     {v : ℝ} (hv : v ∈ Icc (0 : ℝ) 1) :
     ‖zetaGammaHalfShift t w v - (-((t / 2 : ℝ) : ℂ) * I)‖ ≤ 1 / 4 + ‖w‖ / 2 := by
   have heq : zetaGammaHalfShift t w v - (-((t / 2 : ℝ) : ℂ) * I) =
-      (1 / 4 : ℂ) + (v : ℂ) * w / 2 := by
+      (1 / 4) + (v : ℂ) * w / 2 := by
     unfold zetaGammaHalfShift afeCriticalPoint
     push_cast
     ring

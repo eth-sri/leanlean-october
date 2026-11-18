@@ -44,14 +44,13 @@ theorem fordVinogradovPowerVector_le_top_degree
     {s k Q : ℕ} (hQ : 1 ≤ Q)
     (x : FordVinogradovTuple s Q) (j : Fin k) :
     fordVinogradovPowerVector s k Q x j ≤ (s * Q ^ k : ℕ) := by
-  have hx := (fordVinogradovPowerVector_bounds x j).2
   have hj : (j : ℕ) + 1 ≤ k := j.isLt
   have hpow : Q ^ ((j : ℕ) + 1) ≤ Q ^ k :=
     Nat.pow_le_pow_right (by omega) hj
   have hx' : fordVinogradovPowerVector s k Q x j ≤
       ((s * Q ^ k : ℕ) : ℤ) := by
     push_cast
-    exact hx.trans (mul_le_mul_of_nonneg_left (by exact_mod_cast hpow)
+    exact ((fordVinogradovPowerVector_bounds x j).2).trans (mul_le_mul_of_nonneg_left (by exact_mod_cast hpow)
       (by positivity))
   exact_mod_cast hx'
 

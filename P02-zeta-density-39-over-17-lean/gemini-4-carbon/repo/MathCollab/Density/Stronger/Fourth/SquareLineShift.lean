@@ -10,9 +10,8 @@ public import MathCollab.Density.Stronger.Fourth.SquareTerm
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
+open Complex Filter MeasureTheory Set Topology MathCollab.Density.Stronger
 open scoped Interval
-open MathCollab.Density.Stronger
 set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Fourth
@@ -29,15 +28,14 @@ theorem integral_zetaFourthTerm_vertical_eq_of_le
   have hright := intervalIntegral_tendsto_integral
     (integrable_zetaFourthTerm_vertical ht (ha.trans_le hab) n)
     tendsto_neg_atTop_atBot tendsto_id
-  have hlimit := ((hbottom.sub htop).add (hright.const_smul I)).sub (hleft.const_smul I)
   have hzero :
       (0:ℂ)-0 + I • (∫ u : ℝ, zetaFourthTerm t n ((b:ℂ)+(u:ℂ)*I)) -
         I • (∫ u : ℝ, zetaFourthTerm t n ((a:ℂ)+(u:ℂ)*I)) = 0 := by
-    apply tendsto_nhds_unique hlimit
+    apply tendsto_nhds_unique (((hbottom.sub htop).add (hright.const_smul I)).sub (hleft.const_smul I))
     apply (tendsto_const_nhds : Tendsto (fun _ : ℝ => (0:ℂ)) atTop (𝓝 0)).congr'
     apply Eventually.of_forall
     intro H
-    simpa only [Complex.ofReal_neg,id_eq] using
+    simpa using
       (zetaFourthTerm_boundaryRect_zero t n (H := H) ha hab).symm
   simp only [sub_self,zero_add,smul_eq_mul,← mul_sub] at hzero
   exact (sub_eq_zero.mp ((mul_eq_zero.mp hzero).resolve_left I_ne_zero)).symm

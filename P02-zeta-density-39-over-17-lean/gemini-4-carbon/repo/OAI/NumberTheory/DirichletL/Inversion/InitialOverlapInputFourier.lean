@@ -9,9 +9,8 @@ namespace OAI
 
 noncomputable section
 
+open MeasureTheory FourierBridge ActualEisensteinCubic FirstCauchyArithmetic SecondPassArithmetic FirstPassCubeLabels
 open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
-open MeasureTheory FourierBridge ActualEisensteinCubic FirstCauchyArithmetic SecondPassArithmetic
-open FirstPassCubeLabels
 namespace SevenEighths.InverseInitialOverlapInputFourier
 open InverseMoment InverseInitialOverlapFourier InverseInitialArithmetic InverseInitialRayAttachment
 local notation "Eis"=>ActualEisensteinCubic.O

@@ -13,46 +13,18 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentEnergyCanonicalErrorPaid
-open HeckeFamily ConcreteTraceCRT
-open CenteredMomentEnergyAllocatedChildren CenteredMomentAllocatedNaturalSource
-open CenteredMomentAllocatedNaturalRadial CenteredMomentOriginalRadialComparison
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentRetainedProfile
-open CenteredMomentRadialEligibleEnergy
+open HeckeFamily ConcreteTraceCRT CenteredMomentEnergyAllocatedChildren CenteredMomentAllocatedNaturalSource CenteredMomentAllocatedNaturalRadial CenteredMomentOriginalRadialComparison CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentRetainedProfile CenteredMomentRadialEligibleEnergy
 local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][instα:DecidableEq α]
 
-open CenteredMomentEnergyCanonicalLiveBound CenteredMomentEnergyCanonicalLiveCapacity
-open CenteredMomentEnergyCanonicalPaidSource CenteredMomentEnergyCanonicalCommonPaid
-open CenteredMomentEnergyCanonicalReferencePaid CenteredMomentEnergyBandSubtypeTransport
+open CenteredMomentEnergyCanonicalLiveBound CenteredMomentEnergyCanonicalLiveCapacity CenteredMomentEnergyCanonicalPaidSource CenteredMomentEnergyCanonicalCommonPaid CenteredMomentEnergyCanonicalReferencePaid CenteredMomentEnergyBandSubtypeTransport
 open CenteredMomentFirstAmplifiedCapacityCommon (ratioPenalty)
-open CenteredMomentEnergyAllocatedClipped CenteredMomentEnergyAllocatedHomogeneous
-open CenteredMomentEnergyChildState CenteredMomentSecondNonexceptionalChosenBlock
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyAllocatedPaid CenteredMomentEnergyAllocatedProfiles
-open CenteredMomentEnergyAllocatedChildren CenteredMomentEnergyAllocatedZero
-open CenteredMomentInductionEnergy CenteredMomentFiniteProfileExceptional
-open CenteredMomentNaturalFixedRaySource CenteredMomentCommonRadialData
-open CenteredMomentCommonHeightEnvelope CenteredMomentCommonAllocationSum
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
-open CenteredMomentAllocatedNaturalSource CenteredMomentRetainedProfile
-open CenteredMomentAllocatedRayDictionary QuadraticInitialBound
-
-open CenteredMomentEnergyCanonicalChildBound CenteredMomentSectorLocalization
+open CenteredMomentEnergyAllocatedClipped CenteredMomentEnergyAllocatedHomogeneous CenteredMomentEnergyChildState CenteredMomentSecondNonexceptionalChosenBlock CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyAllocatedPaid CenteredMomentEnergyAllocatedProfiles CenteredMomentEnergyAllocatedZero CenteredMomentInductionEnergy CenteredMomentFiniteProfileExceptional CenteredMomentNaturalFixedRaySource CenteredMomentCommonRadialData CenteredMomentCommonHeightEnvelope CenteredMomentCommonAllocationSum CenteredMomentAllocatedRayDictionary QuadraticInitialBound CenteredMomentEnergyCanonicalChildBound CenteredMomentSectorLocalization
 variable (M:Ideal O)[NeZero M]
 local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
-open CenteredMomentEnergyCanonicalUniformReference CenteredMomentEnergyAmplifiedRayDictionary
-open CenteredMomentFirstAmplifiedPaidAdmission CenteredMomentFirstAmplifiedCapacityCommon
-open CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps
-open CenteredMomentCanonicalFirst CenteredMomentSecondExceptionalFamily CenteredMomentSourceLiveColumn
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonical CanonicalQuadraticSieve CompletedGauss
-open CanonicalRowCompletion ConcretePrimeRowBridge ActualEisensteinCubic
-open CenteredMomentSecondHeightFamily
-open CenteredMomentFirstCanonicalFamily CenteredMomentFirstScale CenteredMomentAmplifiedRetainedRadius
-
-open CenteredMomentEnergyCanonicalMainPaid CenteredMomentEnergyCanonicalNestedReference
-open CenteredMomentFirstSecondActiveErrorGates CenteredMomentFirstAnnularInput
+open CenteredMomentEnergyCanonicalUniformReference CenteredMomentEnergyAmplifiedRayDictionary CenteredMomentFirstAmplifiedPaidAdmission CenteredMomentFirstAmplifiedCapacityCommon CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps CenteredMomentCanonicalFirst CenteredMomentSecondExceptionalFamily CenteredMomentSourceLiveColumn CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonical CanonicalQuadraticSieve CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge ActualEisensteinCubic CenteredMomentSecondHeightFamily CenteredMomentFirstCanonicalFamily CenteredMomentFirstScale CenteredMomentAmplifiedRetainedRadius CenteredMomentEnergyCanonicalMainPaid CenteredMomentEnergyCanonicalNestedReference CenteredMomentFirstSecondActiveErrorGates CenteredMomentFirstAnnularInput
 open CenteredMomentFirstAmplificationChoice (errorMoving errorRemoval)
 open CenteredMomentEnergyActiveChildRestoration
 
@@ -195,8 +167,7 @@ theorem actual_error_child_from_bands (W:ℝ→ℂ)(aslot bslot Mcap Lslot εrem
     family hfamily χ hwidth Cpick Rpick hside hRpick B₂ hB₂ Dalloc alloc p hp₁ hp₂
     hX₁ hX₂ hY₁ hY₂ Mdecl θclip hθclip hcap hMdecl hclip
   subst input
-  have hz:1<Z:=hZ₀.trans_le hZ
-  have hcost0:0<cost:=zero_lt_one.trans_le hcost
+  have hz :=hZ₀.trans_le hZ
   let input:=errorInput src C R0 B τ t (Ideal.span {prime}) k Bp υ v0
   let restored:=restoredError src C R0 B τ t (Ideal.span {prime}) k Bp υ v0
   have heInput:input=activeInput restored:=by
@@ -213,10 +184,9 @@ theorem actual_error_child_from_bands (W:ℝ→ℂ)(aslot bslot Mcap Lslot εrem
   have hcap':length Z src.X₁+length Z src.X₂+6*κ*(∑i,Real.logb Z (src.P i))≤Mdecl:=by
     simpa only [hmatch.scale,Real.logb_rpow (zero_lt_one.trans hz) hz.ne'] using hcap
   obtain ⟨hδ,hpar,hshift⟩:=actual_active_error_admission src τ υ C D R0 hC hD hCD E B t hB
-    K Z sigma delta reserve cost asource hK hz hcost0 hasource prime hprime k hk hsigma hprimeScale
+    K Z sigma delta reserve cost asource hK hz (zero_lt_one.trans_le hcost) hasource prime hprime k hk hsigma hprimeScale
     hslot Bp v0 hmod Scols βsource C₂ D₂ hC₂ hD₂ hCD₂ U Rwindow rows Wkernel dyad hlower hphysical
     Cpick Rpick hside B₂ hB₂ κ Mdecl hκsmall hP hcap' hMdecl
-  have hm:=restoredError_matches M H hH hmatch C R0 B τ t (Ideal.span {prime}) k Bp υ v0
   have caps₁:=common_raw_caps src C R0 B τ t (Z^L) hX₁ hX₂ hY₁ hY₂
   have caps₂:=common_raw_caps (child src C R0 B τ t) ((Ideal.span {prime})^k) (R0*C)
     (restoreAllocation (child src C R0 B τ t) ((Ideal.span {prime})^k) Bp) υ v0 (Z^L)
@@ -258,26 +228,20 @@ theorem actual_error_child_from_bands (W:ℝ→ℂ)(aslot bslot Mcap Lslot εrem
     have hpv:= (restored_preVolume restored Cpick Rpick B₂a (family χ) v).trans
       ((cast_preVolume input (activeInput restored) heInput Cpick Rpick B₂ (family χ) v).trans
         (common_preVolume_height input Cpick Rpick B₂ (family χ) υ v v0))
-    calc
-      _ = Real.logb Z (CenteredMomentAllocatedChildCapacity.preVolume
-          (commonData (withHeight input υ v0) Cpick Rpick B₂)) -
-          Real.logb Z (envelopeRef (cost*(τ.modulus.absNorm:ℝ)*Z^(errorMoving prime Z k)) C₂ D₂ U dyad) :=
-        congrArg (fun x=>Real.logb Z x - Real.logb Z
-          (envelopeRef (cost*(τ.modulus.absNorm:ℝ)*Z^(errorMoving prime Z k)) C₂ D₂ U dyad)) hpv
-      _ ≤ _ := by
+    exact (congrArg (fun x=>Real.logb Z x - Real.logb Z
+          (envelopeRef (cost*(τ.modulus.absNorm:ℝ)*Z^(errorMoving prime Z k)) C₂ D₂ U dyad)) hpv).trans_le (by
         dsimp only [input]
-        simpa only [add_zero] using hshift
+        simpa only [add_zero] using hshift)
   have hh:=hbound (CenteredMomentCommonProfile.liveIndices B.val)
     (CenteredMomentCommonProfile.liveIndices Bp.val) (fun i=>θ i.val.val)
     Z hZ εchild Q hQM C₀ C₁ hC₀ hC₁ hzero hpos
     (fun i=>w i.val.val) (fun i=>σ i.val.val) (fun i=>freq i.val.val) v height mesh hmesh
     (fun i=>hw i.val.val) (fun i=>hwm i.val.val) (fun i=>hwL i.val.val) (fun i=>hσlo i.val.val)
     (fun i=>hσhi i.val.val) hheight (fun i=>hfreq i.val.val)
-  have hh := hh restored hm (fun i=>hhi i.val.val) (fun i=>hMs i.val.val)
+  have hh := hh restored (restoredError_matches M H hH hmatch C R0 B τ t (Ideal.span {prime}) k Bp υ v0) (fun i=>hhi i.val.val) (fun i=>hMs i.val.val)
   have hh := hh Cpick Rpick B₂r
   let allocA:=castDivisorAllocation input (activeInput restored) heInput Cpick B₂ Dalloc alloc
-  let allocR:=restoreDivisorAllocation restored Cpick B₂a Dalloc allocA
-  have hh := hh Dalloc allocR hRpick
+  have hh := hh Dalloc (restoreDivisorAllocation restored Cpick B₂a Dalloc allocA) hRpick
   have hh := hh (family χ) dyad hn hwidth
   have hh := hh p hp₁ hp₂
   have hh := hh caps₃.1 caps₃.2.1 caps₃.2.2.1 caps₃.2.2.2
@@ -288,15 +252,12 @@ theorem actual_error_child_from_bands (W:ℝ→ℂ)(aslot bslot Mcap Lslot εrem
       sourceReserve src input C D Z delta reserve cost asource)
     0 θclip (envelope_pos _ hqpos _ _ hC₂ _ _)
     hrem le_rfl hδ le_rfl hθclip
-  have hh := hh hparw
-  have hh := hh hshiftw
-  have hh := hh (by linarith only [hdef]) hclip
   have he := (cast_child_energy input (activeInput restored) heInput Cpick Rpick B₂ (family χ) v Dalloc alloc
     (canonicalRadial (family χ) (internalQ Q η₀) dyad)).trans
       (restored_child_energy restored Cpick Rpick B₂a (family χ) v Dalloc allocA
         (canonicalRadial (family χ) (internalQ Q η₀) dyad))
   apply he.trans_le
-  simpa only [zero_add,add_zero] using hh
+  simpa only [zero_add,add_zero] using (((hh hparw) hshiftw) (by linarith) hclip)
 
 end SevenEighths.CenteredMomentEnergyCanonicalErrorPaid
 

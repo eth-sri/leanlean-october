@@ -27,10 +27,8 @@ def wooleyResidueRefinementFiber (p a b : ℕ) [NeZero p] (hab : a ≤ b)
 theorem wooleyResidueRefinementFiber_card
     {p a b : ℕ} [NeZero p] (hab : a ≤ b) (xi : ZMod (p ^ a)) :
     (wooleyResidueRefinementFiber p a b hab xi).card = p ^ (b - a) := by
-  let f : ZMod (p ^ b) →+ ZMod (p ^ a) :=
-    (ZMod.castHom (pow_dvd_pow p hab) (ZMod (p ^ a))).toAddMonoidHom
-  have hf : Function.Surjective f :=
-    ZMod.castHom_surjective (pow_dvd_pow p hab)
+  let f := (ZMod.castHom (pow_dvd_pow p hab) (ZMod (p ^ a))).toAddMonoidHom
+  have hf := ZMod.castHom_surjective (pow_dvd_pow p hab)
   have hfiber (y : ZMod (p ^ a)) :
       (Finset.univ.filter fun z : ZMod (p ^ b) => f z = y).card =
         (Finset.univ.filter fun z : ZMod (p ^ b) => f z = xi).card := by
@@ -58,7 +56,7 @@ theorem wooleyResidueRefinementFiber_card
         simp_rw [hfiber]
         simp
       _ = p ^ b := htotal
-  have hpPow : 0 < p ^ a := pow_pos (NeZero.pos p) a
+  have hpPow := pow_pos (NeZero.pos p) a
   have hcanonical : p ^ a * p ^ (b - a) = p ^ b := by
     rw [Nat.mul_comm, Nat.pow_sub_mul_pow p hab]
   have hcard :

@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.ExponentPairEpsilonBudget
 public import LaterPairs.Native.RobertSargosPhysicalInitialReduction
 public import LaterPairs.Native.RobertSargosPolynomialSieve
@@ -110,7 +119,6 @@ theorem exists_robertSargos_physical_sieve_reduction (ε : ℝ) (hε : 0 < ε) :
   have hHA : (H:ℝ) ≤ A := by change (H:ℝ) ≤ A/2 at hHmax; linarith
   obtain ⟨hH0,hQ0,hR0,_,_⟩ :=
     robertSargos_physical_a_times_a_ranges M H hlam hsmall hM hHmin hHmax
-  have hRH := robertSargos_physical_shift_half_height H hlam hsmall hHmin
   have hM1 : 1 ≤ M := by
     have h := (one_le_pow₀ hT1 : 1 ≤ T^8)
     rw [h8] at h
@@ -119,16 +127,14 @@ theorem exists_robertSargos_physical_sieve_reduction (ε : ℝ) (hε : 0 < ε) :
   obtain ⟨positive,X,Y,N,hprefix,hbase⟩ :=
     robertSargos_physical_polynomial_reduction f M H hC hlam hsmall hM hHmin hHmax hf hlo hhi
   have hb := hcount f M R H Q positive X Y N A C lam
-    hM1 hR0 hH0 hQ0 hA hCpos hlam hAQ hHA hRA hRH
+    hM1 hR0 hH0 hQ0 hA hCpos hlam hAQ hHA hRA (robertSargos_physical_shift_half_height H hlam hsmall hHmin)
     (fun r => (hprefix r).1) (fun r => (hprefix r).2.1) (fun r => (hprefix r).2.2)
     hf hlo hhi
-  have hs := robertSargos_physical_sample_spacing f M hC hlam hsmall hM hf hlo hhi
   have hnonneg : 0 ≤
       K*(Nat.clog 2 Q:ℝ)^2*(((Finset.Ioo (-(R:ℤ)) R).erase 0).card:ℝ)*
         (1+3*A*Q)*(1+(C*lam*M)*(13*A*(Q:ℝ)^2))*
         ((R:ℝ)*Q*H*Q)^(1+ε)*
         (1+(1/(C*lam*M)+12*R*(H:ℝ)^2)/((H:ℝ)*Q)) := by positivity
-  have hmul := mul_le_mul_of_nonneg_left hs hnonneg
   have hbound :
       (∑ r ∈ (Finset.Ioo (-(R:ℤ)) R).erase 0, ∑ m ∈ Finset.Icc (1:ℤ) M,
         ‖robertSargosSignedPolynomialPrefix f H Q r m (positive r) (X r) (Y r) (N r)‖)^2 ≤
@@ -138,7 +144,7 @@ theorem exists_robertSargos_physical_sieve_reduction (ε : ℝ) (hε : 0 < ε) :
         ((R:ℝ)*Q*H*Q)^(1+ε)*
         (1+(1/(C*lam*M)+12*R*(H:ℝ)^2)/((H:ℝ)*Q)) := by
     apply hb.trans
-    convert hmul using 1 <;> dsimp only [Q,A] <;> ring
+    convert (mul_le_mul_of_nonneg_left (robertSargos_physical_sample_spacing f M hC hlam hsmall hM hf hlo hhi) hnonneg) using 1 <;> dsimp only [Q,A] <;> ring
   have hcommon : robertSargosCommonMInterval M H Q Q ⊆ Finset.Icc (1:ℤ) M := by
     intro m hm
     simp only [robertSargosCommonMInterval,Finset.mem_Icc] at hm
@@ -152,8 +158,7 @@ theorem exists_robertSargos_physical_sieve_reduction (ε : ℝ) (hε : 0 < ε) :
         ‖robertSargosSignedPolynomialPrefix f H Q r m (positive r) (X r) (Y r) (N r)‖ := by
     exact Finset.sum_le_sum (fun r _ => Finset.sum_le_sum_of_subset_of_nonneg
       hcommon (fun m _ _ => norm_nonneg _))
-  have hroot := hsum.trans (Real.le_sqrt_of_sq_le hbound)
-  exact hbase.trans (add_le_add_right (mul_le_mul_of_nonneg_left hroot
+  exact hbase.trans (add_le_add_right (mul_le_mul_of_nonneg_left (hsum.trans (Real.le_sqrt_of_sq_le hbound))
     (show 0 ≤ 256*(1+648*Real.pi*C)^3*(M:ℝ)*H/((Q:ℝ)*R*Q) by positivity)) _)
 
 
@@ -165,9 +170,9 @@ theorem robertSargos_taylor_factor_budget {T lam M C R H Q ε : ℝ}
     (hε : 0 ≤ ε) :
     (R*Q*H*Q)^(1+ε)*(1+(1/(C*lam*M)+12*R*H^2)/(H*Q)) ≤
       14*(T^9)^ε*T^9 := by
-  have hTp : 0 < T := zero_lt_one.trans_le hT
-  have hMp : 0 < M := (by positivity : 0 < T^8).trans_le hM
-  have hCp : 0 < C := zero_lt_one.trans_le hC
+  have hTp := zero_lt_one.trans_le hT
+  have hMp := (by positivity : 0 < T^8).trans_le hM
+  have hCp := zero_lt_one.trans_le hC
   have hbase : R*Q*H*Q ≤ T^9 := by
     calc
       _ ≤ T*T^3*T^2*T^3 := by gcongr
@@ -178,7 +183,7 @@ theorem robertSargos_taylor_factor_budget {T lam M C R H Q ε : ℝ}
       linarith
     have h := mul_le_mul_of_nonneg_left hCM (show 0 ≤ T^5*lam by positivity)
     apply (div_le_iff₀ (by positivity : 0 < C*lam*M)).mpr
-    nlinarith only [h,hnorm]
+    nlinarith
   have hsecond : R*Q*(1/(C*lam*M)) ≤ T^9 := by
     calc
       _ ≤ T*T^3*T^5 := by gcongr
@@ -206,9 +211,7 @@ theorem robertSargos_frequency_factor_budget {T lam M C Q : ℝ}
     (hT : 1 ≤ T) (hlam : 0 < lam) (hnorm : T^13*lam = 1)
     (hM : T^8 ≤ M) (hC : 1 ≤ C) (hQ : 0 ≤ Q) (hQhi : Q ≤ T^3) :
     (1+3*T^2*Q)*(1+(C*lam*M)*(13*T^2*Q^2)) ≤ 56*C*M := by
-  have hTp : 0 < T := zero_lt_one.trans_le hT
   have hMp : 0 < M := (by positivity : 0 < T^8).trans_le hM
-  have hCp : 0 < C := zero_lt_one.trans_le hC
   have hCM : T^8 ≤ C*M := by
     have h := mul_le_mul_of_nonneg_right hC hMp.le
     linarith
@@ -240,8 +243,8 @@ theorem robertSargos_sieve_coefficient_budget {T M H Q R : ℝ}
     (hT : 0 < T) (hM : 0 ≤ M) (hHhi : H ≤ T^2/2)
     (hQlo : T^3/2 ≤ Q) (hRlo : T/2 ≤ R) :
     M*H/(Q*R*Q) ≤ 4*M/T^5 := by
-  have hQ : 0 < Q := (by positivity : 0 < T^3/2).trans_le hQlo
-  have hR : 0 < R := (by positivity : 0 < T/2).trans_le hRlo
+  have hQ := (by positivity : 0 < T^3/2).trans_le hQlo
+  have hR := (by positivity : 0 < T/2).trans_le hRlo
   have hd : T^7/8 ≤ Q*R*Q := by
     calc
       _ = (T^3/2)*(T/2)*(T^3/2) := by ring
@@ -256,13 +259,13 @@ theorem robertSargos_root_power_budget {T M ε : ℝ}
   have hMp : 0 < M := (by positivity : 0 < T^8).trans_le hM
   have hp : T^9 ≤ M^2 := by
     have h₁ : T^9 ≤ T^16 := pow_le_pow_right₀ hT (by norm_num)
-    have h₂ := pow_le_pow_left₀ (show 0 ≤ T^8 by positivity) hM 2
+    have h₂ := pow_le_pow_left₀ (by positivity) hM 2
     nlinarith only [h₁,h₂]
   have h := Real.rpow_le_rpow (by positivity : 0 ≤ T^9) hp hε
   have he : (M^2)^ε = (M^ε)^2 := by
     rw [← Real.rpow_natCast M 2,← Real.rpow_mul hMp.le]
     norm_num only [Nat.cast_ofNat]
-    rw [mul_comm (2:ℝ) ε,Real.rpow_mul hMp.le]
+    rw [mul_comm 2 ε,Real.rpow_mul hMp.le]
     norm_num only [Real.rpow_two]
   rwa [he] at h
 
@@ -281,19 +284,17 @@ theorem robertSargos_sieve_radicand_budget {T lam M C R H Q K J L W ε : ℝ}
   have hCp : 0 < C := zero_lt_one.trans_le hC
   have hL0 : 0 ≤ L := zero_le_one.trans hL
   have hLL : L ≤ L^2 := by nlinarith
-  have hf := robertSargos_frequency_factor_budget hT hlam hnorm hM hC hQ.le hQhi
   have ht := robertSargos_taylor_factor_budget hT hlam hnorm hM hC hR hRhi
     hH hHhi hQ hQhi hε
   have hp := robertSargos_root_power_budget hT hM hε
   have hP : (K*C*M*L*J^2)*W ≤ (K*C*M*L^2*J^2)*(2*T) := by gcongr
-  have hPF := mul_le_mul hP hf (by positivity) (by positivity)
   have hCT : (R*Q*H*Q)^(1+ε)*(1+(1/(C*lam*M)+12*R*H^2)/(H*Q)) ≤
       14*(M^ε)^2*T^9 := ht.trans (by gcongr)
   calc
     _ = (K*C*M*L*J^2)*W*((1+3*T^2*Q)*(1+(C*lam*M)*(13*T^2*Q^2)))*
         ((R*Q*H*Q)^(1+ε)*(1+(1/(C*lam*M)+12*R*H^2)/(H*Q))) := by ring
     _ ≤ (K*C*M*L^2*J^2)*(2*T)*(56*C*M)*(14*(M^ε)^2*T^9) := by
-      exact mul_le_mul hPF hCT (by positivity) (by positivity)
+      exact mul_le_mul (mul_le_mul hP (robertSargos_frequency_factor_budget hT hlam hnorm hM hC hQ.le hQhi) (by positivity) (by positivity)) hCT (by positivity) (by positivity)
     _ = _ := by
       simp only [mul_pow,Real.sq_sqrt (show 0 ≤ 1568*K by positivity)]
       ring
@@ -381,11 +382,10 @@ theorem exists_robertSargos_large_block_log_bound (ε : ℝ) (hε : 0 < ε)
   have hroot := Real.sqrt_le_sqrt hrad
   rw [Real.sqrt_sq (show 0 ≤ Real.sqrt (1568*K)*C*(M:ℝ)*L*J*T^5*(M:ℝ)^ε
     by positivity)] at hroot
-  have hcb := robertSargos_sieve_coefficient_budget hTp hMp.le hHhalf hQlo hRlo
   have hcoef :
       256*(1+648*Real.pi*C)^3*(M:ℝ)*H/((Q:ℝ)*R*Q) ≤
       1024*(1+648*Real.pi*C)^3*(M:ℝ)/T^5 := by
-    have h := mul_le_mul_of_nonneg_left hcb
+    have h := mul_le_mul_of_nonneg_left (robertSargos_sieve_coefficient_budget hTp hMp.le hHhalf hQlo hRlo)
       (show 0 ≤ 256*(1+648*Real.pi*C)^3 by positivity)
     convert h using 1 <;> ring
   have hm := mul_le_mul hcoef hroot (Real.sqrt_nonneg _) (by positivity)
@@ -409,10 +409,8 @@ theorem exists_robertSargos_large_block_log_bound (ε : ℝ) (hε : 0 < ε)
     have h₂ := le_mul_of_one_le_right
       (show 0 ≤ D₀*(M:ℝ)^2*L^2 by dsimp [D₀]; positivity) hpow
     exact h₁.trans h₂
-  have hs := hsrc f M H C lam hC hlam hsmall hM hHmin hHmax hf hlo hhi
-  have htotal := hs.trans (add_le_add herror hmain)
   change _ ≤ (D₀+D₁)*(M:ℝ)^2*L^2*(M:ℝ)^ε
-  convert htotal using 1; ring
+  convert ((hsrc f M H C lam hC hlam hsmall hM hHmin hHmax hf hlo hhi).trans (add_le_add herror hmain)) using 1; ring
 
 theorem exists_robertSargos_large_block_bound (ε : ℝ) (hε : 0 < ε)
     (C : ℝ) (hC : 1 ≤ C) :
@@ -426,10 +424,9 @@ theorem exists_robertSargos_large_block_bound (ε : ℝ) (hε : 0 < ε)
   obtain ⟨D,hD,hblock⟩ := exists_robertSargos_large_block_log_bound ε hε C hC
   refine ⟨Real.sqrt D*(1+2/ε),by positivity,?_⟩
   intro f M H lam hlam hsmall hM hHmin hHmax hf hlo hhi
-  have hM1 : (1:ℝ) ≤ M :=
-    (Real.one_le_rpow_of_pos_of_le_one_of_nonpos hlam
+  have hM1 := (Real.one_le_rpow_of_pos_of_le_one_of_nonpos hlam
       (by linarith : lam ≤ 1) (by norm_num : -(8:ℝ)/13 ≤ 0)).trans hM
-  have hMp : (0:ℝ) < M := zero_lt_one.trans_le hM1
+  have hMp := zero_lt_one.trans_le hM1
   have hL : 0 ≤ 1+Real.log (M:ℝ) := by
     have h := Real.log_nonneg hM1
     linarith
@@ -453,7 +450,7 @@ theorem exists_robertSargos_large_block_bound (ε : ℝ) (hε : 0 < ε)
   rw [he] at hs
   have hn := norm_nonneg (robertSargosSymmetricSum f M H)
   have ht : 0 ≤ Real.sqrt D*(1+2/ε)*(M:ℝ)^(1+ε) := by positivity
-  nlinarith only [hs,hn,ht]
+  nlinarith
 
 theorem exists_robertSargos_fourth_derivative_long_range_small (ε : ℝ) (hε : 0 < ε)
     (C : ℝ) (hC : 1 ≤ C) :
@@ -497,8 +494,7 @@ theorem exists_robertSargos_fourth_derivative_long_range_small (ε : ℝ) (hε :
       have hlogH : 0 ≤ Real.log (H:ℝ) := Real.log_nonneg (by
         dsimp only [H]
         exact_mod_cast (show 1 ≤ ⌊lam^(-(2:ℝ)/13)⌋₊ by omega))
-      have hb := hblock f M k lam hlam hsmall hM hkmin.le hkmax hf hlo hhi
-      have hterm := mul_le_mul_of_nonneg_left hb (show 0 ≤ (M:ℝ)/H by positivity)
+      have hterm := mul_le_mul_of_nonneg_left (hblock f M k lam hlam hsmall hM hkmin.le hkmax hf hlo hhi) (show 0 ≤ (M:ℝ)/H by positivity)
       have hmain : (M:ℝ)^2/H+((M:ℝ)/H)*‖robertSargosSymmetricSum f M k‖ ≤
           (1+D)*((M:ℝ)^2/H)*(M:ℝ)^ε := by
         have hfirst := le_mul_of_one_le_right (show 0 ≤ (M:ℝ)^2/H by positivity) hpow
@@ -513,22 +509,19 @@ theorem exists_robertSargos_fourth_derivative_long_range_small (ε : ℝ) (hε :
           15*(1+D)*(Real.log H/Real.log 2)*((M:ℝ)^2/H) ≤
           30*(1+D)*(Real.log M/Real.log 2)*(M:ℝ)^2*lam^((2:ℝ)/13) := by
         convert hfloor using 1 <;> ring
-      have hfloormul := mul_le_mul_of_nonneg_right hfloor' (show 0 ≤ (M:ℝ)^ε by positivity)
       have hB' : 30*(1+D) ≤ B := by dsimp [B]; linarith
       have hlast := mul_le_mul_of_nonneg_right hB' (show 0 ≤
         (Real.log M/Real.log 2)*(M:ℝ)^2*lam^((2:ℝ)/13)*(M:ℝ)^ε by positivity)
-      have hfirst := hs.trans hscaled
-      have hsecond := hfirst.trans (show
+      have hsecond := (hs.trans hscaled).trans (show
           15*(Real.log H/Real.log 2)*((1+D)*((M:ℝ)^2/H)*(M:ℝ)^ε) ≤
           30*(1+D)*(Real.log M/Real.log 2)*(M:ℝ)^2*lam^((2:ℝ)/13)*(M:ℝ)^ε by
-        convert hfloormul using 1; ring)
+        convert (mul_le_mul_of_nonneg_right hfloor' (show 0 ≤ (M:ℝ)^ε by positivity)) using 1; ring)
       apply hsecond.trans
       convert hlast using 1 <;> ring
   have hlog : Real.log (M:ℝ)/Real.log 2 ≤ ((1+1/ε)/Real.log 2)*(M:ℝ)^ε := by
     have h := one_add_log_le_rpow_budget hM1 hε
     have h' : Real.log (M:ℝ) ≤ (1+1/ε)*(M:ℝ)^ε := by linarith
-    have hd := div_le_div_of_nonneg_right h' hlog2.le
-    convert hd using 1; ring
+    convert (div_le_div_of_nonneg_right h' hlog2.le) using 1; ring
   have hmul := mul_le_mul_of_nonneg_left hlog (show 0 ≤
       B*(M:ℝ)^2*lam^((2:ℝ)/13)*(M:ℝ)^ε by positivity)
   have hsq :
@@ -541,10 +534,9 @@ theorem exists_robertSargos_fourth_derivative_long_range_small (ε : ℝ) (hε :
     simp only [mul_pow,hlam2,Real.rpow_add hMp,Real.rpow_one,
       Real.sq_sqrt (show 0 ≤ B*(1+1/ε)/Real.log 2 by positivity)]
     convert hmul using 1 <;> ring
-  have hn := norm_nonneg S
   have ht : 0 ≤ Real.sqrt (B*(1+1/ε)/Real.log 2)*(M:ℝ)^(1+ε)*lam^((1:ℝ)/13) := by positivity
   change ‖S‖ ≤ _
-  nlinarith only [hsq,hn,ht]
+  nlinarith only [hsq,(norm_nonneg S),ht]
 
                                                                            
 theorem exists_robertSargos_fourth_derivative_long_range (ε : ℝ) (hε : 0 < ε)
@@ -563,7 +555,7 @@ theorem exists_robertSargos_fourth_derivative_long_range (ε : ℝ) (hε : 0 < �
   · apply (hsmallRange f M lam hlam hsmall hM hf hlo hhi).trans
     gcongr
     linarith
-  have hMp : (0:ℝ) < M := (Real.rpow_pos_of_pos hlam (-(8:ℝ)/13)).trans_le hM
+  have hMp := (Real.rpow_pos_of_pos hlam (-(8:ℝ)/13)).trans_le hM
   have hM1 : (1:ℝ) ≤ M := by
     have hm : 0 < M := by exact_mod_cast hMp
     exact_mod_cast (show 1 ≤ M by omega)
@@ -587,7 +579,7 @@ theorem exists_robertSargos_fourth_derivative_long_range (ε : ℝ) (hε : 0 < �
   calc
     _ ≤ (M:ℝ) := hphase
     _ ≤ (M:ℝ)^(1+ε) := hpower
-    _ ≤ 2*(M:ℝ)^(1+ε)*lam^((1:ℝ)/13) := by nlinarith only [hprod]
+    _ ≤ 2*(M:ℝ)^(1+ε)*lam^((1:ℝ)/13) := by nlinarith
     _ ≤ _ := by gcongr; linarith
 
 end TaoTrudgianYang2025

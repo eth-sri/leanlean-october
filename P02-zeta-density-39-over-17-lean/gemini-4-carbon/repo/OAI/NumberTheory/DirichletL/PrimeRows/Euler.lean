@@ -53,14 +53,11 @@ theorem localCorrection_hasProd (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
   have hx1 : 1<x.re := by linarith
   have hw1 : 1<w.re := by linarith
   have hz1 : 1<(6*z).re := by norm_num [Complex.mul_re]; linarith
-  have hF := excludedIdealHighSeries_row_hasProd_outside S hS η u.val x w z hx hw hz
   have hZ := (fixedSourcePrincipal_hasProd S hS (6*z) hz1).inv₀
     (LFunction_ne_zero_of_one_lt_re (fixedSourcePrincipal S hS) hz1)
   have hW := (rowCharacter_hasProd S hS hbad u w hw1).inv₀
     (LFunction_ne_zero_of_one_lt_re (rowCharacter S hS u) hw1)
-  have hD := targetRow_hasProd S hS hbad η u x hx1
-  have he := ((hF.mul hZ).mul hW).mul hD
-  simpa only [localCorrection,inv_inv,div_eq_mul_inv] using he
+  simpa only [localCorrection,inv_inv,div_eq_mul_inv] using ((((excludedIdealHighSeries_row_hasProd_outside S hS η u.val x w z hx hw hz).mul hZ).mul hW).mul (targetRow_hasProd S hS hbad η u x hx1))
 
 end SevenEighths.ProbeHighRowFamily
 

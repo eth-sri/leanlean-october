@@ -107,8 +107,7 @@ theorem heathBrownPairCount_card_cast_le_source_scale
             C * (lambda ^ (-(2 / (k : ℝ))) + N) := by
           simpa only [C] using hshift
         _ = C * S := by simp only [S, add_comm]
-    have hmul := mul_le_mul_of_nonneg_right hshift' hL
-    have hmul' := mul_le_mul_of_nonneg_left hmul
+    have hmul' := mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_right hshift' hL)
       (by norm_num : (0 : ℝ) ≤ 2)
     calc
       (N : ℝ) + 2 * heathBrownChosenShiftFactor N k A lambda * L ≤
@@ -185,8 +184,6 @@ theorem heathBrownPairCount_card_cast_le_lemma_two
   have hexp : 0 ≤ 1 - 2 / (k : ℝ) := by
     rw [sub_nonneg, div_le_one (by positivity : (0 : ℝ) < k)]
     exact_mod_cast (by omega : 2 ≤ k)
-  have hq : lambda ^ (1 - 2 / (k : ℝ)) ≤ 1 :=
-    Real.rpow_le_one hlambda.le hlambdaOne hexp
   have hcombine : lambda * P = lambda ^ (1 - 2 / (k : ℝ)) := by
     dsimp only [P]
     calc
@@ -201,7 +198,7 @@ theorem heathBrownPairCount_card_cast_le_lemma_two
       (1 + A * lambda * (N : ℝ)) * (N + P) ≤ (1 + A) * B := by
     have hcross : A * (N : ℝ) * (lambda * P) ≤ A * N := by
       rw [hcombine]
-      have h := mul_le_mul_of_nonneg_left hq
+      have h := mul_le_mul_of_nonneg_left (Real.rpow_le_one hlambda.le hlambdaOne hexp)
         (mul_nonneg hA.le (Nat.cast_nonneg N))
       simpa only [mul_one] using h
     calc
@@ -218,8 +215,6 @@ theorem heathBrownPairCount_card_cast_le_lemma_two
     have hNreal : (1 : ℝ) ≤ N := by exact_mod_cast hN
     have := Real.log_nonneg hNreal
     linarith
-  have hC : 0 ≤ heathBrownRefinedCountConstant k A :=
-    (heathBrownRefinedCountConstant_pos k hA).le
   calc
     ((heathBrownPairCount N k (heathBrownHChoice k A lambda) f).card : ℝ) ≤
         heathBrownRefinedCountConstant k A *
@@ -227,12 +222,11 @@ theorem heathBrownPairCount_card_cast_le_lemma_two
           (1 + Real.log N) := by simpa only [P] using hsource
     _ ≤ heathBrownRefinedCountConstant k A * ((1 + A) * B) *
         (1 + Real.log N) := by
-      have hmul := mul_le_mul_of_nonneg_left hproduct hC
       have hmul' :
           heathBrownRefinedCountConstant k A *
               (1 + A * lambda * (N : ℝ)) * (N + P) ≤
             heathBrownRefinedCountConstant k A * ((1 + A) * B) := by
-        simpa only [mul_assoc] using hmul
+        simpa only [mul_assoc] using (mul_le_mul_of_nonneg_left hproduct ((heathBrownRefinedCountConstant_pos k hA).le))
       exact mul_le_mul_of_nonneg_right hmul' hlog
     _ = heathBrownLemmaTwoConstant k A *
         (N + lambda * N ^ 2 + lambda ^ (-(2 / (k : ℝ)))) *

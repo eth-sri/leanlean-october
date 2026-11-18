@@ -7,13 +7,10 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
+open scoped BigOperators Classical
 namespace SevenEighths.InverseInitialEnergyCallerRanges
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
-open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
-open InverseInitialEnergyCallerGeometry InverseInitialEnergyCallerSourceMask
-open InverseInitialProfile ConcreteTraceCRT CanonicalQuadraticSieve
+open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource InverseInitialEnergyCallerGeometry InverseInitialEnergyCallerSourceMask InverseInitialProfile ConcreteTraceCRT CanonicalQuadraticSieve
 local notation "Eis"=>ActualEisensteinCubic.O
 variable {ι:Type*}[DecidableEq ι]
   (p:ι→Eis)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
@@ -31,8 +28,7 @@ theorem sourceIdeal_admissible (hc:∀i,ringChar (Eis⧸Ideal.span {p i})≠2)
     (sourceIdeal_ne_zero p hp S)).mp hP
   rw [sourceIdeal,FiniteGaussPhase.span_finset_prod] at hdiv
   obtain ⟨i,hi,hPi⟩ := (hprime.dvd_finsetProd_iff (fun i=>Ideal.span {p i})).mp hdiv
-  have he := (prime_dvd_prime_iff_eq hprime (sourcePrime p i).property).mp hPi
-  rw [he]
+  rw [((prime_dvd_prime_iff_eq hprime (sourcePrime p i).property).mp hPi)]
   exact ⟨hg i,hc i⟩
 
 theorem retained_label_admissible (hc:∀i,ringChar (Eis⧸Ideal.span {p i})≠2)
@@ -56,7 +52,6 @@ theorem childLabels_subset_range
   obtain ⟨x,hx,rfl⟩ := Finset.mem_image.mp hf
   apply mem_idealRange.mpr
   refine ⟨retained_label_admissible p hp hcop hg hc S hdiv hx 1,?_⟩
-  change ((sourceIdeal p x.divisor*sourceIdeal p x.overlap).absNorm:ℝ)≤_
   rw [map_mul,Nat.cast_mul]
   apply (mul_le_mul (hd x hx) (hv x hx) (by positivity) (by positivity)).trans_eq
   rw [←Real.rpow_add hZ]

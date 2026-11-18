@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.RobertSargosZeroQBlock
 public import LaterPairs.Native.RobertSargosZeroRWeighted
 
@@ -29,7 +38,7 @@ theorem robertSargos_zero_q_weighted_column_bound
       (1-|(r:ℝ)|/R)*(robertSargosTrimmedCorrelation f M H 0 r).re) ≤
         2*(R:ℝ)*((H:ℝ)*(1+120*C*(1+2*Real.pi*C)*M*(2*(R:ℝ)*lam)^((1:ℝ)/12))+
           2*H*R) := by
-  have hCp : 0 ≤ C := zero_le_one.trans hC
+  have hCp := zero_le_one.trans hC
   let B := (H:ℝ)*(1+120*C*(1+2*Real.pi*C)*M*(2*(R:ℝ)*lam)^((1:ℝ)/12))+2*H*R
   have hB : 0 ≤ B := by dsimp [B]; positivity
   have hpoint (r : ℤ) (hr : r ∈ (Finset.Ioo (-(R:ℤ)) R).erase 0) :
@@ -57,7 +66,7 @@ theorem robertSargos_zero_q_weighted_column_bound
       _ ≤ (1-|(r:ℝ)|/R)*‖robertSargosTrimmedCorrelation f M H 0 r‖ :=
         mul_le_mul_of_nonneg_left (Complex.re_le_norm _) hw0
       _ ≤ ‖robertSargosTrimmedCorrelation f M H 0 r‖ := by
-        simpa only [one_mul] using mul_le_mul_of_nonneg_right hw1 (norm_nonneg _)
+        simpa using mul_le_mul_of_nonneg_right hw1 (norm_nonneg _)
       _ ≤ B := hb
   have hcard : ((Finset.Ioo (-(R:ℤ)) R).erase 0).card ≤ 2*R := by
     have he := Finset.card_le_card (Finset.erase_subset 0 (Finset.Ioo (-(R:ℤ)) R))

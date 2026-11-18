@@ -48,14 +48,13 @@ theorem atkinsonRootBand_length_le {T G L : ℝ}
   have hA : T / (2 * Real.pi) ≤ T := by
     apply (div_le_iff₀ (by positivity : 0 < 2 * Real.pi)).2
     nlinarith [Real.pi_gt_three]
-  have hS := Real.sqrt_le_sqrt hA
   rw [atkinsonRootBandUpper, atkinsonRootBandLower, sqrt_zetaDivisorBandEdge hT,
     sqrt_zetaDivisorBandEdge hT, show 2 * L / G / 2 = L / G by ring,
     show -2 * L / G / 2 = -(L / G) by ring, ← mul_sub]
   calc
     _ ≤ Real.sqrt (T / (2 * Real.pi)) * (3 * (L / G)) :=
       mul_le_mul_of_nonneg_left hexp (Real.sqrt_nonneg _)
-    _ ≤ Real.sqrt T * (3 * (L / G)) := mul_le_mul_of_nonneg_right hS (by positivity)
+    _ ≤ Real.sqrt T * (3 * (L / G)) := mul_le_mul_of_nonneg_right (Real.sqrt_le_sqrt hA) (by positivity)
     _ ≤ _ := by nlinarith [mul_nonneg (Real.sqrt_nonneg T) hu0]
 
 theorem zetaDivisorBandCutoff_endpoints {T G L : ℝ}
@@ -111,8 +110,7 @@ theorem exists_intervalC2Bound_atkinsonSlopeQuotient_band (α : ℝ) :
     (show G / Real.sqrt T ≤ 32 * (G / Real.sqrt T) by
       have hp : 0 ≤ G / Real.sqrt T := by positivity
       linarith)
-  have hi := intervalC2Bound_atkinsonSlope_reciprocal_band hT hG hL hwidth hB b hslope
-  convert hf.mul hi using 1
+  convert hf.mul (intervalC2Bound_atkinsonSlope_reciprocal_band hT hG hL hwidth hB b hslope) using 1
   ring
 
 end MathCollab.Density.Stronger.Atkinson

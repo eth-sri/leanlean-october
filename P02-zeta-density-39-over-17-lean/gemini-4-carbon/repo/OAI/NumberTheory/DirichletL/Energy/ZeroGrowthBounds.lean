@@ -7,16 +7,11 @@ public import OAI.NumberTheory.DirichletL.Energy.ZeroReferenceError
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
 open Filter
+open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyZeroGrowthBounds
-open HeckeFamily HeckeDyadic QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentEnergyReferenceState
-open CenteredMomentEnergyReferenceDivisors CenteredMomentEnergyZeroReflectionSupport
-open CenteredMomentEnergyZeroReferenceError CenteredMomentOriginalRadialComparison
-open CenteredMomentNaturalRowSource
-open CenteredMomentAllocatedNaturalRadial
+open HeckeFamily HeckeDyadic QuadraticInitialBound CenteredMomentEnergyState CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceDivisors CenteredMomentEnergyZeroReflectionSupport CenteredMomentEnergyZeroReferenceError CenteredMomentOriginalRadialComparison CenteredMomentNaturalRowSource CenteredMomentAllocatedNaturalRadial
 local notation "O"=>HeckeFamily.O
 
 lemma actual_window_cap (Z b Bmask bΦ Mcap defect xi L Xlong:ℝ)
@@ -51,10 +46,9 @@ theorem actual_deleted_short_mass (b:ℝ):
   refine ⟨C,hC,?_⟩
   intro Z Bmask bΦ L s W hW t X hX hcap D hD
   obtain ⟨hn,_⟩:=divisor_norm s D hD
-  have hnp:0<((∏P∈D,P).absNorm:ℝ):=zero_lt_one.trans_le hn
   have hh:=hbound W hW (naturalCharacter s.character) t
     (X/((∏P∈D,P).absNorm:ℝ)) s.radial.scale s.radial.profile
-    (effectiveState s).radial.keep (div_pos hX hnp) s.radial.scale_pos s.radial.nonneg
+    (effectiveState s).radial.keep (div_pos hX (zero_lt_one.trans_le hn)) s.radial.scale_pos s.radial.nonneg
   apply hh.trans
   apply mul_le_mul_of_nonneg_left ((div_le_self hX.le hn).trans hcap)
   exact mul_nonneg (mul_nonneg (mul_nonneg hC.le (sq_nonneg _))

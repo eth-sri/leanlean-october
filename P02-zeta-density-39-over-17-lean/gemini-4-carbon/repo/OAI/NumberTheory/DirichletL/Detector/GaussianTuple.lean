@@ -37,14 +37,13 @@ lemma gaussian_selected_tuple_sum {ι α : Type*} [Fintype ι]
   rw [integral_finsetSum _ (fun k _=>hi k)]
   apply Finset.sum_congr rfl
   intro k hk
-  have hh := gaussian_selected_completed W V hV hsep S (D k) (Ψ k) Z hZ j (q k) (hq k hk)
   calc
     _ = a k*((∏i,W i (q k i))*correctedCompletedT S (D k) (Ψ k)
       (gaussianDyadicProfile (Z*∏i,q k i) j) ((2:ℝ)^j)) := by ring
     _ = a k*∫t : ℝ,correctedCompletedT S (D k) (Ψ k)
       (CompletedHeight.normTwistedSource gaussianFixedWindow t) ((2:ℝ)^j)*
       (∏i,W i (q k i)*logPhase (-t) (Real.log (q k i)))*
-        gaussianJointDensity V hV ((2:ℝ)^j/Z) t := by rw [hh]
+        gaussianJointDensity V hV ((2:ℝ)^j/Z) t := by rw [(gaussian_selected_completed W V hV hsep S (D k) (Ψ k) Z hZ j (q k) (hq k hk))]
     _ = _ := by
       rw [←integral_const_mul]
       apply integral_congr_ae
@@ -58,8 +57,7 @@ lemma gaussian_selected_scale {ι : Type*} [Fintype ι]
   field_simp
 
 lemma gaussianFixedWindow_twist_compact (t : ℝ) :
-    HasCompactSupport (CompletedHeight.normTwistedSource gaussianFixedWindow t) := by
-  exact gaussianFixedWindow_compact.mul_left
+    HasCompactSupport (CompletedHeight.normTwistedSource gaussianFixedWindow t) := gaussianFixedWindow_compact.mul_left
 
 lemma correctedGaussian_dyadic_summable (S : Finset Id) (D : Id) (Ψ : O→*ℂ)
     (hΨ : ∀n,‖Ψ n‖≤1) (Z : ℝ) (hZ : 0<Z) :
@@ -89,16 +87,16 @@ theorem gaussian_selected_tuple_reassembly {ι α : Type*} [Fintype ι]
   have hp (k : α) (hk : k∈F) : 0<Z*∏i,q k i :=
     mul_pos hZ (Finset.prod_pos (fun i _=>hq k hk i))
   have hd (k : α) (hk : k∈F) : Summable (fun j : ℕ=>a k*(∏i,W i (q k i))*
-      correctedCompletedT S (D k) (Ψ k) (gaussianDyadicProfile (Z*∏i,q k i) j) ((2:ℝ)^j)) :=
+      correctedCompletedT S (D k) (Ψ k) (gaussianDyadicProfile (Z*∏i,q k i) j) (2^j)) :=
     (correctedGaussian_dyadic_summable S (D k) (Ψ k) (hΨ k hk) _ (hp k hk)).mul_left _
   calc
     _ = ∑k∈F,∑'j : ℕ,a k*(∏i,W i (q k i))*correctedCompletedT S (D k) (Ψ k)
-      (gaussianDyadicProfile (Z*∏i,q k i) j) ((2:ℝ)^j) := by
+      (gaussianDyadicProfile (Z*∏i,q k i) j) (2^j) := by
         apply Finset.sum_congr rfl
         intro k hk
         rw [correctedGaussian_eq_tsum_dyadic S (D k) (Ψ k) (hΨ k hk) _ (hp k hk),tsum_mul_left]
     _ = ∑'j : ℕ,∑k∈F,a k*(∏i,W i (q k i))*correctedCompletedT S (D k) (Ψ k)
-      (gaussianDyadicProfile (Z*∏i,q k i) j) ((2:ℝ)^j) := (Summable.tsum_finsetSum hd).symm
+      (gaussianDyadicProfile (Z*∏i,q k i) j) (2^j) := (Summable.tsum_finsetSum hd).symm
     _ = _ := by
       apply tsum_congr
       intro j

@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.SargosPlanarRegularity
 
 @[expose] public section
@@ -29,11 +38,8 @@ theorem sargosPlanarNormSq_window_le_weighted {ι : Type*} (S : Finset ι)
     ‖sargosPlanarSum S z u v α γ‖^2 ≤
       (16*δ*lambda)*sargosWeightedPlanarIntegrand S z u v
         (1/δ) (1/lambda) (c+δ/2) (d+lambda/2) α γ := by
-  have hk := sargosSincKernel_window_rectangle hδ hlambda hα hγ
   have hC : 0 < 16*δ*lambda := by positivity
-  have h := (div_le_iff₀ hC).mp hk
-  have hm := mul_le_mul_of_nonneg_right h (sq_nonneg ‖sargosPlanarSum S z u v α γ‖)
-  simpa only [sargosWeightedPlanarIntegrand,one_mul,mul_assoc,mul_left_comm,mul_comm] using hm
+  simpa only [sargosWeightedPlanarIntegrand,one_mul,mul_assoc,mul_left_comm,mul_comm] using (mul_le_mul_of_nonneg_right ((div_le_iff₀ hC).mp (sargosSincKernel_window_rectangle hδ hlambda hα hγ)) (sq_nonneg ‖sargosPlanarSum S z u v α γ‖))
 
 theorem sargosPlanarNormSq_window_inner_le_weighted {ι : Type*} (S : Finset ι)
     (z : ι → ℂ) (u v : ι → ℝ) {δ lambda c d α : ℝ}
@@ -67,8 +73,8 @@ theorem sargosPlanar_window_le_nearPairs {ι : Type*} (S : Finset ι)
     (∫ α in Icc c (c+δ), ∫ γ in Icc d (d+lambda),
       ‖sargosPlanarSum S z u v α γ‖^2) ≤
         (16*δ*lambda)*((sargosNearPairs S u v (1/δ) (1/lambda)).card : ℝ) := by
-  have hA : 0 < 1/δ := one_div_pos.mpr hδ
-  have hB : 0 < 1/lambda := one_div_pos.mpr hlambda
+  have hA := one_div_pos.mpr hδ
+  have hB := one_div_pos.mpr hlambda
   have hi := integrable_sargosWeightedPlanarIntegrand_outer S z u v hA hB
     (c+δ/2) (d+lambda/2)
   have hC : 0 ≤ 16*δ*lambda := by positivity

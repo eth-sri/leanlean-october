@@ -11,10 +11,8 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonPrefixMax
 
 @[expose] public section
 
-open Complex Finset Set Filter
+open Complex Finset Set Filter RiemannZeta.GuthMaynard MathCollab.Density.Stronger.Fourth
 open scoped ComplexConjugate
-open RiemannZeta.GuthMaynard
-open MathCollab.Density.Stronger.Fourth
 set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
@@ -30,8 +28,7 @@ theorem norm_atkinsonPhaseBlockSum_le_max (T : ℝ) (m N j : ℕ) (hj : j ≤ N)
 
 theorem atkinsonPhaseBlockMax_nonneg (T : ℝ) (m N : ℕ) :
     0 ≤ atkinsonPhaseBlockMax T m N := by
-  have h := norm_atkinsonPhaseBlockSum_le_max T m N 0 (Nat.zero_le N)
-  simpa only [atkinsonPhaseBlockSum,Finset.sum_range_zero,norm_zero] using h
+  simpa only [atkinsonPhaseBlockSum,Finset.sum_range_zero,norm_zero] using (norm_atkinsonPhaseBlockSum_le_max T m N 0 (Nat.zero_le N))
 
 theorem exists_atkinsonPhaseBlockMax_prefix (T : ℝ) (m N : ℕ) :
     ∃ j : ℕ, j ≤ N ∧ atkinsonPhaseBlockMax T m N = ‖atkinsonPhaseBlockSum T m j‖ := by

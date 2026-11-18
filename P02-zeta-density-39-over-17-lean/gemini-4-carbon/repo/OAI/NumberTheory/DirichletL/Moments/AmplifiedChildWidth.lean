@@ -9,23 +9,11 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstPhysicalLedger
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
 open Filter
+open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentAmplifiedChildWidth
-open ActualEisensteinCubic
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss RayFourExpansion
-open CenteredMomentCanonicalFirst CenteredMomentCompleteCommon
-open CenteredMomentFirstCanonicalFamily CenteredMomentFirstScale
-open CenteredMomentFirstAmplificationChoice CenteredMomentAmplifiedRetainedRadius
-open CenteredMomentAmplificationRadicalFamily CenteredMomentAmplificationActiveFactor
-open CenteredMomentChildRows CenteredMomentSecondRadicalBudget
-open CenteredMomentSecondExceptionalFamily CenteredMomentSecondChildRadialWidth
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondLiveBlock
-open CenteredMomentSecondActualWidth CenteredMomentSecondWidthDrop
-open CenteredMomentSecondCanonical CenteredMomentSecondHeightFamily
-open CenteredMomentHeckeColumnWindow CenteredMomentSourceRow
-open CenteredMomentSectorLocalization
+open ActualEisensteinCubic HeckeFamily CanonicalQuadraticSieve CompletedGauss RayFourExpansion CenteredMomentCanonicalFirst CenteredMomentCompleteCommon CenteredMomentFirstCanonicalFamily CenteredMomentFirstScale CenteredMomentFirstAmplificationChoice CenteredMomentAmplifiedRetainedRadius CenteredMomentAmplificationRadicalFamily CenteredMomentAmplificationActiveFactor CenteredMomentChildRows CenteredMomentSecondRadicalBudget CenteredMomentSecondExceptionalFamily CenteredMomentSecondChildRadialWidth CenteredMomentSecondPhysicalBlock CenteredMomentSecondLiveBlock CenteredMomentSecondActualWidth CenteredMomentSecondWidthDrop CenteredMomentSecondCanonical CenteredMomentSecondHeightFamily CenteredMomentHeckeColumnWindow CenteredMomentSourceRow CenteredMomentSectorLocalization
 local notation "O" => HeckeFamily.O
 
 theorem modulus_pos (η:Character) : 0<(η.modulus.absNorm:ℝ) :=
@@ -112,13 +100,12 @@ theorem main_nominal_bound (η ρ:Character)(m:O)(hm:m≠0)(I J:Ideal O)
       Real.logb Z K+Real.logb Z (η.modulus.absNorm:ℝ)+
       Real.logb Z ((Ideal.span {m}).absNorm:ℝ)+Real.logb Z ((Ideal.span {(72:O)}).absNorm:ℝ)-
       2*σ-δ-reserve := by
-  have he:(∏P∈A,P.val)≠0 := Finset.prod_ne_zero_iff.mpr (fun P _=>(IdealMobiusDivisorSum.support_prime (Finset.mem_inter.mp P.property).1).ne_zero)
   rw [Real.logb_div hX.ne' (norm_pos _ (commonPart_ne_zero I J)).ne',
     mainCommonRadius,Real.logb_rpow (zero_lt_one.trans hZ) hZ.ne',
-    nominalLog,CenteredMomentFirstPhysicalLedger.nominal_log I J _ he Z K X hK hX,
+    nominalLog,CenteredMomentFirstPhysicalLedger.nominal_log I J _ (Finset.prod_ne_zero_iff.mpr (fun P _=>(IdealMobiusDivisorSum.support_prime (Finset.mem_inter.mp P.property).1).ne_zero)) Z K X hK hX,
     canonical_modulus_log η ρ m hm I J A Z hmod]
   linarith [le_max_left (Real.logb Z (Ideal.absNorm (commonPart J I):ℝ)-
-    Real.logb Z (Ideal.absNorm (commonPart I J):ℝ)) (0:ℝ)]
+    Real.logb Z (Ideal.absNorm (commonPart I J):ℝ)) 0]
 
 theorem error_nominal_bound (η ρ θ:Character)(χ:RayCharacter)(m₀ m₁ p:O)
     (hm₀:m₀≠0)(hm₁:m₁≠0)(hp:p≠0)(I J:Ideal O)(A:Finset (CommonIndex I J))
@@ -191,7 +178,7 @@ theorem physical_declared_budget {η:Character}{C D:Ideal O}
       Real.logb Z (16*b*Csec*(fixedFactor:ℝ)) := by
   have hh:=physical_radial_budget h t S β rows W Z H L Tsec Csec ξ hZ hH hL hT hCs hscale n hne χ b hb
   have hc:=actual_common_log_ge_unit C D hC U Z hZ
-  have hbH:1≤b*dyadicScale (n 1):=(normValue_ge_one y hy0).trans
+  have hbH :=(normValue_ge_one y hy0).trans
     (radial_support_bound n Φ b hs y hy)
   rw [max_eq_right hbH]
   linarith
@@ -294,9 +281,7 @@ theorem main_declared_width {C D:Ideal O}{hC:Supported C}{hD:Supported D}
     Real.logb Z (max 1 (b*dyadicScale (n 1)))+Real.logb Z ((τ χ).modulus.absNorm:ℝ)≤
       parentWidth-2*σ-δ-reserve+ξ/2+
       Real.logb Z (16*b*Csec*(fixedFactor:ℝ)*presentationFactor) := by
-  have hHx:0<Hx:=div_pos hX (norm_pos _ (commonPart_ne_zero I J))
-  have hL:0<Lm:=Real.rpow_pos_of_pos (zero_lt_one.trans hZ) _
-  have hw:=physical_declared_budget h t S β rows W Z Hx Lm Tsec Csec ξ hZ hHx hL hT hCs hscale n hne χ Φ b hb hs y hy0 hy
+  have hw:=physical_declared_budget h t S β rows W Z Hx Lm Tsec Csec ξ hZ (div_pos hX (norm_pos _ (commonPart_ne_zero I J))) (Real.rpow_pos_of_pos (zero_lt_one.trans hZ) _) hT hCs hscale n hne χ Φ b hb hs y hy0 hy
   have hnom:=main_nominal_fixed η ρ m hm I J A K X Z σ δ reserve hK hX hZ hmod
   have hF:(0:ℝ)<fixedFactor:=by exact_mod_cast fixedFactor_pos
   rw [Real.logb_mul (by positivity : (0:ℝ)<16*b*Csec*fixedFactor).ne' presentationFactor_pos.ne']

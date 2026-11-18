@@ -29,12 +29,11 @@ open HeckeFamily HeckeDyadic
         (mul_nonneg (norm_nonneg _) (sq_nonneg _)) t hm'
       have hh:=mul_le_mul_of_nonneg_left (hs t ⟨ht.1.le,ht.2⟩)
         (norm_nonneg (mellin W (((1/2:ℝ):ℂ)+t*I)))
-      have hbK:=mul_le_mul_of_nonneg_right hb hK
       simp only [add_re,ofReal_re,mul_re,ofReal_im,I_re,mul_zero,I_im,zero_mul,
         sub_self,add_zero]
       norm_num only [add_zero,sub_self,Real.rpow_zero,mul_one]
       apply hh.trans
-      convert hbK using 1 <;> ring
+      convert (mul_le_mul_of_nonneg_right hb hK) using 1 <;> ring
     _≤∫t:ℝ,(C*K)*(1+t^2)⁻¹:=
       integral_mono_measure Measure.restrict_le_self (by filter_upwards [] with t; positivity) hint
     _=_:=by rw [integral_const_mul,integral_univ_inv_one_add_sq]

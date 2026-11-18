@@ -37,161 +37,8 @@ public import TaoTrudgianYang2025.ModelEndpointEntry
 @[expose] public section
 set_option autoImplicit false
 set_option maxHeartbeats 0
-set_option maxErrors 1000
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
-
- 
-                                                                    
-
-                                                                   
-                                                                        
-                                                                         
-                                                                     
-
-                                                                          
-                                                                         
-                                                                         
-                                                                            
-                                                 
-
-                                                                     
-                                                                        
-                                                                       
-                                                                           
-                                                                   
-                                                                       
-                                                                      
-                                                                       
-                                                                 
-                                                                  
-                                                                       
-                                                                         
-                                                                         
-                                                                   
-                                                                          
-                                                                          
-                                                                         
-                                                                           
-                                                                      
-                                                                       
-                                                                    
-                                                                    
-                                                                      
-                                                                        
-                                                           
-                                                                       
-                                                                           
-                                                                      
-                                                                          
-                                                                           
-                                                                    
-                                                                          
-                                                                        
-                                                                          
-                                                                  
-                                                                         
-                                                                          
-                                                                        
-                                                              
-                                                                         
-                                                                       
-                                                                       
-                                                                       
-                                                                            
-                                                                     
-                                                                           
-                                                                        
-                                                                        
-                                                                      
-                                                                   
-                                                                         
-                                                                            
-                                                                         
-                                                                       
-                                                                          
-                                                                       
-                                                                         
-                                                                         
-                                                                        
-                                                                          
-                                                                         
-                                                                      
-                                                                    
-                                                                      
-                                                                        
-                                                                       
-                                                                      
-                                                                        
-                                                                        
-                                                                    
-                                                                       
-                                                                        
-                                                                          
-                                                                     
-                                                                      
-                                                                         
-                                                                            
-                                                                       
-                                                                          
-                                                                     
-                                                                          
-                                                                       
-                                                                  
-                                                                  
-                                                                
-                                                                       
-                                                                      
-                                                                    
-                                                                      
-                                                                
-                                                             
-                                                                      
-                                                                        
-                                                                       
-                                                                   
-                                                                       
-                                                                           
-                                                                         
-                                                                       
-                                                                       
-                                                                        
-                                                                     
-                                                                     
-                                                                       
-                                                                          
-                                                                     
-                                                                        
-                                                                           
-                                                                     
-                                                                          
-                                                                       
-                                                                       
-                                                                     
-                                                                     
-                                                                           
-                                                                         
-                                                                       
-                                                                           
-                                                                    
-
-                                                                     
-                                         
-                                                                   
-                                                                 
-                                                                          
-                                                                            
-                                                                       
-
-
-
-open Filter
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
-open Polynomial
-open Set
-open scoped Classical
-open scoped ContDiff
-open scoped FourierTransform BigOperators
-open scoped Topology
+open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth Filter Polynomial Set
+open scoped Classical ContDiff FourierTransform BigOperators Topology
 noncomputable section
 namespace TaoTrudgianYang2025.HuxleyRationalPhase
 theorem positive_difference_minimal_curvature_arc_count
@@ -403,8 +250,7 @@ theorem positive_difference_reference_gap_minimal_arcs
   · intro k hk
     have hkI := (hmem' k).mp hk
     have hd := hdata k hk
-    have hloc := hlocal k hk x hx z hz hkI.1 hkI.2
-    refine ⟨⟨?_,?_⟩,hd.2.1,hloc,hd.2.2.1,hd.2.2.2⟩
+    refine ⟨⟨?_,?_⟩,hd.2.1,(hlocal k hk x hx z hz hkI.1 hkI.2),hd.2.2.1,hd.2.2.2⟩
     · have hh := hd.1.1
       change t k-(N:ℝ)/4 < w k at hh
       linarith only [hh,hkI.1]
@@ -606,10 +452,9 @@ theorem positive_difference_chosen_arcs_band_fourier
       (fun w hw => ⟨(by linarith only [(hthree i hi w hw).1,hlambda]),(hthree i hi w hw).2⟩)
       (hm i hi) ⟨(hgeo i hi).1.1.le,(hgeo i hi).1.2.le⟩
     rw [(hroots i hi).2] at hh
-    have hr := mul_le_mul_of_nonneg_left (hgeo i hi).2.1 (show 0 ≤ 3*U₃ by positivity)
     have he : (r i:ℝ)=((r i).num:ℝ)/(q i:ℝ) := by rw [Rat.cast_def]
     rw [he,abs_sub_comm (m i:ℝ) (z i)] at hh
-    exact hh.trans (by linarith only [hr])
+    exact hh.trans (by linarith only [(mul_le_mul_of_nonneg_left (hgeo i hi).2.1 (show 0 ≤ 3*U₃ by positivity))])
   have hGS : G ⊆ S := fun i hi => (Finset.mem_filter.mp hi).1
   have hscale i (hi : i∈G) :
       0 < q i ∧ q i ≤ A i ∧ IsCoprime (r i).num (q i:ℤ) ∧
@@ -684,8 +529,7 @@ theorem positive_difference_chosen_arcs_band_fourier
       (fun i => q i ≤ N ∧ 1 ≤ lambda*(q i:ℝ)^2*N) Src).symm
   change (∑ i∈S,Src i) ≤ _
   rw [hsplit]
-  have hh := add_le_add hk (hbad.trans hbadC)
-  convert hh using 1
+  convert (add_le_add hk (hbad.trans hbadC)) using 1
   dsimp only [Bad]
   ring
 
@@ -717,7 +561,6 @@ theorem positive_difference_rounded_cubic_scales
       linarith only [hm.2]
   have hy' : y∈Icc (1/2:ℝ) 3 :=
     ⟨by linarith only [hy.1],by linarith only [hy.2]⟩
-  have hlow := positive_difference_third_signed_lower F (y:=y) hσ hη hηmax hc hn hy' hf hnegative
   have hu := positive_jets_difference_mixed_upper F hσ hJ hη hηmax hn hy' hf hbound
     3 0 (by norm_num) (by norm_num)
   simp only [iteratedDeriv_zero] at hu
@@ -735,17 +578,15 @@ theorem positive_difference_rounded_cubic_scales
   have hscale : T/M^3=1/(N*R^2) := by
     apply (div_eq_div_iff (by positivity) (by positivity)).mpr
     nlinarith only [hphase]
-  dsimp only [f]
   rw [hid,hscale]
-  have hupper := (le_abs_self _).trans hu
   constructor
   · have hh := div_le_div_of_nonneg_right
-      (mul_le_mul_of_nonneg_left hlow (show 0 ≤ 1/(N*R^2) by positivity))
+      (mul_le_mul_of_nonneg_left (positive_difference_third_signed_lower F (y:=y) hσ hη hηmax hc hn hy' hf hnegative) (show 0 ≤ 1/(N*R^2) by positivity))
       (by norm_num : (0:ℝ) ≤ 6)
     convert hh using 1
     ring
   · have hh := div_le_div_of_nonneg_right
-      (mul_le_mul_of_nonneg_left hupper (show 0 ≤ 1/(N*R^2) by positivity))
+      (mul_le_mul_of_nonneg_left ((le_abs_self _).trans hu) (show 0 ≤ 1/(N*R^2) by positivity))
       (by norm_num : (0:ℝ) ≤ 6)
     convert hh using 1
     ring
@@ -881,8 +722,7 @@ theorem source_arc_fourier_cloud_matrices
       change |K ij.1.1/Real.sqrt K₀-K ij.2.1/Real.sqrt K₀| ≤
         2*((1/(K₀:ℝ)^2)/12) at hh
       rw [←sub_div,abs_div,abs_of_pos hsqrt] at hh
-      have hh' := (div_le_iff₀ hsqrt).mp hh
-      convert hh' using 1
+      convert ((div_le_iff₀ hsqrt).mp hh) using 1
       ring
     have hcoef := TaoTrudgianYang2025.bourgain_dual_variable_denominator_difference
       hmip hmjp hqi hqj hmi.2 hmj.2 hqiQ hqjQ hQqi hdual
@@ -1007,17 +847,16 @@ theorem rounded_offset_floor_block_count
   let lower := W+(j:ℝ)*N-(N:ℝ)-1/2
   let upper := W+((j:ℝ)+1)*N+(N:ℝ)+1/2
   obtain ⟨J,hJ,_hJlow,hJhigh⟩ := physical_grid_interval_card (N:=(N:ℝ)) (Z:=(Z:ℝ))
-    (x:=lower) (z:=upper) hNp (by dsimp only [lower,upper]; nlinarith only [hNp])
+    (x:=lower) (z:=upper) hNp (by dsimp only [lower,upper]; nlinarith)
   have hJcard : J.card ≤ 5 := by
     have hwidth : upper-lower ≤ 4*(N:ℝ) := by
       dsimp only [upper,lower]
-      nlinarith only [hN1]
-    have hd : (upper-lower)/(N:ℝ) ≤ 4 := (div_le_iff₀ hNp).mpr hwidth
-    have hh : (J.card:ℝ) ≤ 5 := by linarith only [hJhigh,hd]
+      nlinarith
+    have hd := (div_le_iff₀ hNp).mpr hwidth
+    have hh : (J.card:ℝ) ≤ 5 := by linarith
     exact_mod_cast hh
   apply (Finset.card_le_card ?_).trans hJcard
   intro k hk
-  have hkI := (Finset.mem_filter.mp hk).1
   have hklabel := (Finset.mem_filter.mp hk).2
   change ⌊(z k-W)/(N:ℝ)⌋=j at hklabel
   have hlo := Int.floor_le ((z k-W)/(N:ℝ))
@@ -1026,14 +865,14 @@ theorem rounded_offset_floor_block_count
   have hzl := (le_div_iff₀ hNp).mp hlo
   have hzu := (div_lt_iff₀ hNp).mp hhi
   have hr := abs_le.mp (abs_sub_round (z k))
-  have hg := hgeometry k hkI
+  have hg := hgeometry k ((Finset.mem_filter.mp hk).1)
   have hAlo : (N:ℝ) ≤ Alen k := by exact_mod_cast hg.1
   have hAhi : (Alen k:ℝ) ≤ 3*(N:ℝ) := by exact_mod_cast hg.2.1
   have he : (round (z k):ℝ)+(Alen k:ℝ)=(Z:ℝ)+(N:ℝ)*k+2*(N:ℝ) := by
     exact_mod_cast hg.2.2
   apply (hJ k).mpr
   dsimp only [lower,upper]
-  constructor <;> nlinarith only [hzl,hzu,hr.1,hr.2,hAlo,hAhi,he]
+  constructor <;> nlinarith
 
                                                                        
                                                                        
@@ -1054,7 +893,7 @@ theorem bounded_action_narrow_ratios_trace_two
   have hH : 0 ≤ H := (abs_nonneg x).trans hx
   have hL : 0 ≤ L := (mul_nonneg (abs_nonneg (c:ℝ)) hH).trans haction
   have hLp : 0 < L+3 := by linarith only [hL]
-  have hε : 1/(8*(L+3)) ≤ (1:ℝ)/24 :=
+  have hε : 1/(8*(L+3)) ≤ 1/24 :=
     one_div_le_one_div_of_le (by norm_num) (by linarith only [hL])
   have hθbounds := abs_le.mp (hθ.trans hε)
   have hdetR : (a:ℝ)*d-(b:ℝ)*c=1 := by exact_mod_cast hdet
@@ -1062,13 +901,9 @@ theorem bounded_action_narrow_ratios_trace_two
     (by dsimp only [θ] at hθbounds; linarith only [hθbounds.1])
     (by dsimp only [θ] at hθbounds; linarith only [hθbounds.2]) hmap hx hy
   have ha : |1-(a:ℝ)| ≤ L+3 := by
-    calc
-      _ ≤ |(1:ℝ)|+|(a:ℝ)| := abs_sub _ _
-      _ ≤ L+3 := by norm_num only [abs_one]; linarith only [hentries.1,haction]
+    exact (abs_sub _ _).trans (by norm_num only [abs_one]; linarith only [hentries.1,haction])
   have hd : |1-(d:ℝ)| ≤ L+3 := by
-    calc
-      _ ≤ |(1:ℝ)|+|(d:ℝ)| := abs_sub _ _
-      _ ≤ L+3 := by norm_num only [abs_one]; linarith only [hentries.2,haction]
+    exact (abs_sub _ _).trans (by norm_num only [abs_one]; linarith only [hentries.2,haction])
   have hid : θ*(a:ℝ)+φ*(d:ℝ)=1+θ*φ := by
     dsimp only [θ,φ]
     field_simp [hx0]
@@ -1111,7 +946,7 @@ theorem bounded_action_narrow_nontriangular_matrix_count
     (hnum : ∀ A∈S, |((A 0:ℝ)*x A+A 1)/x A-1| ≤ 1/(8*(L+3))) :
     (S.card:ℝ) ≤ (2*(L+3)^2+1)*(2*L+5)^2*(L+3)^2 := by
   classical
-  have hε : 1/(8*(L+3)) ≤ (1:ℝ)/24 :=
+  have hε : 1/(8*(L+3)) ≤ 1/24 :=
     one_div_le_one_div_of_le (by norm_num) (by linarith only [hL])
   have hdata A (hA : A∈S) :
       |(A 2:ℝ)| ≤ (L+3)^2 ∧
@@ -1128,12 +963,10 @@ theorem bounded_action_narrow_nontriangular_matrix_count
       (hmap A hA) hp.2.1 hp.2.2
     have ha : |(A 0:ℝ)| ≤ L+2 := by linarith only [he.1,haction A hA]
     have hd : |(A 3:ℝ)| ≤ L+2 := by linarith only [he.2,haction A hA]
-    have hb1 : (1:ℝ) ≤ |(A 1:ℝ)| := by exact_mod_cast Int.one_le_abs (hnontri A hA).1
-    have hc1 : (1:ℝ) ≤ |(A 2:ℝ)| := by exact_mod_cast Int.one_le_abs (hnontri A hA).2
+    have hb1 : 1 ≤ |(A 1:ℝ)| := by exact_mod_cast Int.one_le_abs (hnontri A hA).1
+    have hc1 : 1 ≤ |(A 2:ℝ)| := by exact_mod_cast Int.one_le_abs (hnontri A hA).2
     have hasub : |(A 0:ℝ)-1| ≤ L+3 := by
-      calc
-        _ ≤ |(A 0:ℝ)|+|(1:ℝ)| := abs_sub _ _
-        _ ≤ L+3 := by rw [abs_one]; linarith only [ha]
+      exact (abs_sub _ _).trans (by rw [abs_one]; linarith only [ha])
     have hsq := pow_le_pow_left₀ (abs_nonneg ((A 0:ℝ)-1)) hasub 2
     rw [sq_abs] at hsq
     have hsqR : ((A 0:ℝ)-1)^2= -(A 1:ℝ)*A 2 := by exact_mod_cast htr.2
@@ -1147,7 +980,7 @@ theorem bounded_action_narrow_nontriangular_matrix_count
     (X:=L) (Gamma:=(L+3)^2) (W:=0) S hL (sq_nonneg _) (by norm_num)
     hdet (fun A hA => ⟨(hnontri A hA).2,(hdata A hA).1⟩)
     (fun A hA => (hdata A hA).2.1) (fun A hA => (hdata A hA).2.2)
-  simpa only [zero_div,add_zero,Finset.sum_const,nsmul_eq_mul,mul_one] using hsum
+  simpa using hsum
 
                                                                  
                                                                   
@@ -1157,13 +990,12 @@ theorem same_scaled_floor_relative_bound {u v Q δ : ℝ}
     (hQ : 0 < Q) (hδ : 0 < δ) (hu : Q ≤ |u|)
     (hbin : ⌊u/(δ*Q)⌋=⌊v/(δ*Q)⌋) :
     |v/u-1| ≤ δ := by
-  have hden : 0 < δ*Q := mul_pos hδ hQ
-  have hup : 0 < |u| := hQ.trans_le hu
+  have hden := mul_pos hδ hQ
+  have hup := hQ.trans_le hu
   have hdiff := Int.abs_sub_lt_one_of_floor_eq_floor hbin
   rw [←sub_div,abs_div,abs_of_pos hden] at hdiff
   have hd : |v-u| ≤ δ*Q := by
-    have hh := (div_lt_iff₀ hden).mp hdiff
-    simpa only [one_mul,abs_sub_comm u v] using hh.le
+    simpa only [one_mul,abs_sub_comm u v] using ((div_lt_iff₀ hden).mp hdiff).le
   have he : v/u-1=(v-u)/u := by field_simp [abs_pos.mp hup]
   rw [he,abs_div]
   exact (div_le_iff₀ hup).mpr (hd.trans (mul_le_mul_of_nonneg_left hu hδ.le))
@@ -1178,24 +1010,22 @@ theorem scaled_floor_image_card
     (hu : ∀ i∈S, |u i| ≤ R*Q) :
     ((S.image (fun i => ⌊u i/(δ*Q)⌋)).card:ℝ) ≤ 2*R/δ+3 := by
   classical
-  have hden : 0 < δ*Q := mul_pos hδ hQ
+  have hden := mul_pos hδ hQ
   have hper i (hi : i∈S) : |(⌊u i/(δ*Q)⌋:ℝ)| ≤ R/δ+1 := by
     have hb : |u i/(δ*Q)| ≤ R/δ := by
       rw [abs_div,abs_of_pos hden]
-      calc
-        _ ≤ R*Q/(δ*Q) := div_le_div_of_nonneg_right (hu i hi) hden.le
-        _ = _ := by field_simp
+      exact (div_le_div_of_nonneg_right (hu i hi) hden.le).trans_eq (by field_simp)
     have hb' := abs_le.mp hb
     have hlo := Int.floor_le (u i/(δ*Q))
     have hhi := Int.lt_floor_add_one (u i/(δ*Q))
     apply abs_le.mpr
-    constructor <;> linarith only [hb'.1,hb'.2,hlo,hhi]
+    constructor <;> linarith
   have hh := integer_card_le_of_abs_sub_le (a:=0)
-    (S.image (fun i => ⌊u i/(δ*Q)⌋)) (by positivity : (0:ℝ) ≤ R/δ+1)
+    (S.image (fun i => ⌊u i/(δ*Q)⌋)) (by positivity : 0 ≤ R/δ+1)
     (by
       intro k hk
       obtain ⟨i,hi,rfl⟩ := Finset.mem_image.mp hk
-      simpa only [sub_zero] using hper i hi)
+      simpa using hper i hi)
   convert hh using 1
   ring
 
@@ -1222,7 +1052,7 @@ theorem rational_narrow_band_partition
   have hqlo i (hi : i∈S) : q₀ ≤ ((r i).den:ℝ) := by
     have hh : (Q:ℝ) ≤ 2*((r i).den:ℝ) := by exact_mod_cast (hden i hi).2
     dsimp only [q₀]
-    linarith only [hh]
+    linarith
   have hqhi i (hi : i∈S) : ((r i).den:ℝ) ≤ Q := by exact_mod_cast (hden i hi).1
   have hn i (hi : i∈S) :
       p₀ ≤ |((r i).num:ℝ)| ∧ |((r i).num:ℝ)| ≤ U*(Q:ℝ) := by
@@ -1230,14 +1060,12 @@ theorem rational_narrow_band_partition
     have hl := (hcurv i hi).1
     have hu := (hcurv i hi).2
     rw [Rat.cast_def,abs_div,abs_of_pos hd] at hl hu
-    have hl' := (le_div_iff₀ hd).mp hl
-    have hu' := (div_le_iff₀ hd).mp hu
     constructor
     · calc
         p₀ = lambda*q₀ := by dsimp only [p₀,q₀]; ring
         _ ≤ lambda*((r i).den:ℝ) := mul_le_mul_of_nonneg_left (hqlo i hi) hlambda.le
-        _ ≤ _ := hl'
-    · exact hu'.trans (mul_le_mul_of_nonneg_left (hqhi i hi) hU)
+        _ ≤ _ := ((le_div_iff₀ hd).mp hl)
+    · exact ((div_le_iff₀ hd).mp hu).trans (mul_le_mul_of_nonneg_left (hqhi i hi) hU)
   have hfirst := scaled_floor_image_card S (fun i => ((r i).den:ℝ))
     hq₀ hδ (by norm_num : (0:ℝ) ≤ 2)
     (by
@@ -1245,14 +1073,12 @@ theorem rational_narrow_band_partition
       rw [abs_of_pos (by exact_mod_cast (r i).pos : (0:ℝ) < (r i).den)]
       have hh := hqhi i hi
       dsimp only [q₀]
-      linarith only [hh])
+      linarith)
   have hsecond := scaled_floor_image_card (R:=2*U/lambda) S (fun i => ((r i).num:ℝ))
     hp₀ hδ (div_nonneg (mul_nonneg (by norm_num) hU) hlambda.le)
     (by
       intro i hi
-      calc
-        _ ≤ U*(Q:ℝ) := (hn i hi).2
-        _ = (2*U/lambda)*p₀ := by dsimp only [p₀]; field_simp)
+      exact ((hn i hi).2).trans_eq (by dsimp only [p₀]; field_simp))
   have hc₁ : ((S.image (fun i => (color i).1)).card:ℝ) ≤ 4/δ+3 := by
     convert hfirst using 1
     ring
@@ -1274,7 +1100,7 @@ theorem rational_narrow_band_partition
   · intro i hi j _hj he
     constructor
     · apply same_scaled_floor_relative_bound hq₀ hδ
-      · simpa only [abs_of_nonneg (Nat.cast_nonneg ((r i).den) : (0:ℝ) ≤ (r i).den)] using hqlo i hi
+      · simpa using hqlo i hi
       · exact congrArg Prod.fst he
     · exact same_scaled_floor_relative_bound hp₀ hδ (hn i hi).1 (congrArg Prod.snd he)
 
@@ -1309,12 +1135,11 @@ theorem rational_narrow_band_twelfth_partition
   have hnorm : ‖∑ i∈S,z i‖ ≤ ∑ j∈J,‖g j‖ := by
     rw [←he]
     exact norm_sum_le _ _
-  have hp := pow_le_pow_left₀ (norm_nonneg _) hnorm 12
   have hholder := Real.rpow_sum_le_const_mul_sum_rpow_of_nonneg J
     (f:=fun j => ‖g j‖) (p:=(12:ℝ)) (by norm_num) (fun _ _ => norm_nonneg _)
   have hh : (∑ j∈J,‖g j‖)^12 ≤ (J.card:ℝ)^11*∑ j∈J,‖g j‖^12 := by
     simpa only [show (12:ℝ)-1=11 by norm_num,Real.rpow_ofNat] using hholder
-  exact (hp.trans hh).trans (mul_le_mul_of_nonneg_right
+  exact ((pow_le_pow_left₀ (norm_nonneg _) hnorm 12).trans hh).trans (mul_le_mul_of_nonneg_right
     (pow_le_pow_left₀ (by positivity : (0:ℝ) ≤ J.card) hd.1 11)
     (Finset.sum_nonneg (fun _ _ => by positivity)))
 
@@ -1395,8 +1220,8 @@ theorem narrow_band_matrix_translation_cases
     (a=1 ∧ d=1 ∧ c=0 ∧ b≠0 ∧ |(b:ℝ)| ≤ δ*H) ∨
     (a=1 ∧ d=1 ∧ b=0 ∧ c≠0 ∧ |(c:ℝ)| ≤ δ/lambda) ∨
     (b≠0 ∧ c≠0) := by
-  have hxabs : 0 < |x| := hlambda.trans_le hxlo
-  have hx : x ≠ 0 := abs_pos.mp hxabs
+  have hxabs := hlambda.trans_le hxlo
+  have hx := abs_pos.mp hxabs
   by_cases hc : c=0
   · have hdabs : |((d-1:ℤ):ℝ)| < 1 := by
       push_cast
@@ -1411,9 +1236,7 @@ theorem narrow_band_matrix_translation_cases
       refine ⟨ha,hd,hc,hb,?_⟩
       have he : ((a:ℝ)*x+b)/x-1=(b:ℝ)/x := by rw [ha]; push_cast; field_simp; ring
       rw [he,abs_div] at hnum
-      calc
-        |(b:ℝ)| ≤ δ*|x| := (div_le_iff₀ hxabs).mp hnum
-        _ ≤ δ*H := mul_le_mul_of_nonneg_left hxhi hδ
+      exact ((div_le_iff₀ hxabs).mp hnum).trans (mul_le_mul_of_nonneg_left hxhi hδ)
   · by_cases hb : b=0
     · have he : ((a:ℝ)*x+b)/x-1=(a:ℝ)-1 := by rw [hb]; push_cast; field_simp; ring
       rw [he] at hnum
@@ -1539,19 +1362,16 @@ theorem positive_difference_physical_family_fiber_count
         rw [hd.2] at hlo hhi
         constructor <;> nlinarith only [he,hlo,hhi]
       · intro ip hip jp hjp he
-        have hi := (Finset.mem_filter.mp hip).2
-        have hj := (Finset.mem_filter.mp hjp).2
         have he1 : ip.1.2=jp.1.2 := congrArg (fun p : ℤ × Fin 2 => p.1) he
         have he2 : ip.2=jp.2 := congrArg (fun p : ℤ × Fin 2 => p.2) he
-        exact Prod.ext (Prod.ext (hi.trans hj.symm) he1) he2
+        exact Prod.ext (Prod.ext (((Finset.mem_filter.mp hip).2).trans ((Finset.mem_filter.mp hjp).2).symm) he1) he2
     have he : (I ×ˢ (Finset.univ : Finset (Fin 2))).card=I.card*2 := by
-      simp only [Finset.card_product,Finset.card_univ,Fintype.card_fin]
+      simp
     rw [he] at hfiber
     change E.card ≤ 6
     omega
   have hcardR : (S.card:ℝ) ≤ 6*(Y.card:ℝ) := by exact_mod_cast hcard
-  have hh := hcardR.trans (mul_le_mul_of_nonneg_left hY (by norm_num : (0:ℝ) ≤ 6))
-  convert hh using 1
+  convert (hcardR.trans (mul_le_mul_of_nonneg_left hY (by norm_num : (0:ℝ) ≤ 6))) using 1
   ring
 
 
@@ -1605,7 +1425,6 @@ theorem positive_difference_family_pair_card_le_matrix_points
       ((P.filter (fun ij => key ij=k)).card:ℝ) ≤ Vbound := by
     obtain ⟨ij₀,hij₀,he₀⟩ := Finset.mem_image.mp hk
     let E := P.filter (fun ij => key ij=k)
-    let S := E.image Prod.snd
     have hmem ij (hij : ij∈E) : ij∈P ∧ Mat ij=Mat ij₀ ∧ ij.1=ij₀.1 := by
       have hh := Finset.mem_filter.mp hij
       exact ⟨hh.1,(congrArg Prod.fst hh.2).trans (congrArg Prod.fst he₀).symm,
@@ -1613,7 +1432,7 @@ theorem positive_difference_family_pair_card_le_matrix_points
     have htE ij (hij : ij∈E) : t ij=t ij₀ := by
       dsimp only [t]
       rw [(hmem ij hij).2.1,(hmem ij hij).2.2]
-    have hcS := hcount S F z Alen N Z η ij₀.1.1.1 (z ij₀.1.1.1 ij₀.1.1.2)
+    have hcS := hcount (E.image Prod.snd) F z Alen N Z η ij₀.1.1.1 (z ij₀.1.1.1 ij₀.1.1.2)
       Δ J (((Mat ij₀ 0:ℝ)*h ij₀.1.1.1 (z ij₀.1.1.1 ij₀.1.1.2)+Mat ij₀ 1)/t ij₀)
       (t ij₀) T M hη hηmax (hpoints ij₀ hij₀).1.1 hf hbound htests hnegative
       hT hM hN hΔ hJ (ht ij₀ hij₀) (hpoints ij₀ hij₀).1.2
@@ -1642,7 +1461,7 @@ theorem positive_difference_family_pair_card_le_matrix_points
         have hh := hthird ij (hmem ij hij).1
         rw [htE ij hij,(hmem ij hij).2.2] at hh
         exact hh)
-    have he : S.card=E.card := Finset.card_image_of_injOn (by
+    have he := Finset.card_image_of_injOn (by
       intro ij hij kl hkl he
       exact Prod.ext ((hmem ij hij).2.2.trans (hmem kl hkl).2.2.symm) he)
     rw [he] at hcS
@@ -1707,18 +1526,13 @@ theorem positive_difference_family_identity_pair_count
     hT hM hN hΔ hJ hpoints hgeometry hsep
     (by
       intro ij _
-      change ((Id 2:ℝ)*h ij.1.1.1 (z ij.1.1.1 ij.1.1.2)+Id 3)∈Icc (1/2:ℝ) 2
       rw [hI2,hI3]
       norm_num)
     (by
       intro ij hij
-      change ((Id 0:ℝ)*h ij.1.1.1 (z ij.1.1.1 ij.1.1.2)+Id 1)/
-        ((Id 2:ℝ)*h ij.1.1.1 (z ij.1.1.1 ij.1.1.2)+Id 3)=h ij.2.1.1 (z ij.2.1.1 ij.2.1.2)
       simpa only [hI0,hI1,hI2,hI3,one_mul,add_zero,zero_mul,zero_add,div_one] using (hmap ij hij).symm)
     (by
       intro ij hij
-      change |μ ij.2.1.1 (z ij.2.1.1 ij.2.1.2)/μ ij.1.1.1 (z ij.1.1.1 ij.1.1.2)*
-        ((Id 2:ℝ)*h ij.1.1.1 (z ij.1.1.1 ij.1.1.2)+Id 3)^3-1| ≤ Δ
       simpa only [hI2,hI3,zero_mul,zero_add,one_pow,mul_one] using hthird ij hij)
   have he : P.image (fun ij => (Id,ij.1))=(P.image Prod.fst).image (fun ip => (Id,ip)) := by
     rw [Finset.image_image]
@@ -1802,8 +1616,7 @@ theorem positive_difference_family_bounded_action_pair_count
       intro A hA
       have hp := hpoints _ (hpick A hA).1
       have ha := hcurv _ _ hp.1.1 hp.1.2
-      have hb := hcurv _ _ hp.2.1 hp.2.2
-      exact ⟨ha.1,ha.2,hb.2⟩)
+      exact ⟨ha.1,ha.2,(hcurv _ _ hp.2.1 hp.2.2).2⟩)
     (by intro A hA; have hh := haction _ (hpick A hA).1; rw [(hpick A hA).2] at hh; exact hh)
     (by
       intro A hA
@@ -1887,20 +1700,16 @@ theorem rounded_offset_family_point_count
         rw [←hd.2]
         constructor <;> nlinarith only [he,hlo,hhi,hz.1,hz.2,hr.1,hr.2]
       · intro ip hip jp hjp he
-        have hi := (Finset.mem_filter.mp hip).2
-        have hj := (Finset.mem_filter.mp hjp).2
         have he1 : ip.1.2=jp.1.2 := congrArg (fun p : ℤ × Fin 2 => p.1) he
         have he2 : ip.2=jp.2 := congrArg (fun p : ℤ × Fin 2 => p.2) he
-        exact Prod.ext (Prod.ext (hi.trans hj.symm) he1) he2
+        exact Prod.ext (Prod.ext (((Finset.mem_filter.mp hip).2).trans ((Finset.mem_filter.mp hjp).2).symm) he1) he2
     have hcR : (E.card:ℝ) ≤ (I.card:ℝ)*2 := by
       exact_mod_cast hc.trans_eq (by simp only [Finset.card_product,Finset.card_univ,Fintype.card_fin])
     exact hcR.trans (by nlinarith only [hIcard])
   have he : (S.card:ℝ)=∑ y∈Y,((S.filter (fun ip => ip.1.1=y)).card:ℝ) := by
     exact_mod_cast Finset.card_eq_sum_card_image (fun ip => ip.1.1) S
   rw [he]
-  calc
-    _ ≤ ∑ _y∈Y,2*(4+M/(N:ℝ)) := Finset.sum_le_sum hfiber
-    _ = _ := by rw [Finset.sum_const,nsmul_eq_mul,mul_comm]
+  exact (Finset.sum_le_sum hfiber).trans_eq (by rw [Finset.sum_const,nsmul_eq_mul,mul_comm])
 
                                                                      
                                                                         
@@ -1961,12 +1770,12 @@ theorem positive_difference_family_identity_source_scale
   rw [Finset.image_image] at hfirst
   let I := ((P.image (fun ij => ij.1.1.1)).card:ℝ)
   have hI : 0 ≤ I := by dsimp only [I]; positivity
-  have hscale : 1 ≤ M/(N:ℝ) := (le_div_iff₀ hNp).mpr (by simpa only [one_mul] using hNM)
+  have hscale : 1 ≤ M/(N:ℝ) := (le_div_iff₀ hNp).mpr (by simpa using hNM)
   have hfirst' : ((P.image Prod.fst).card:ℝ) ≤ 10*(M/(N:ℝ))*I := by
     apply hfirst.trans
     apply mul_le_mul_of_nonneg_right _ hI
     linarith only [hscale]
-  have hJM' : J/M ≤ 1 := (div_le_iff₀ hMp).mpr (by simpa only [one_mul] using hJM)
+  have hJM' : J/M ≤ 1 := (div_le_iff₀ hMp).mpr (by simpa using hJM)
   have hfactor : 1+8*C*B*(Δ+5/M)*J ≤ (1+40*C*B)*(1+Δ*J) := by
     calc
       _ = 1+8*C*B*(Δ*J+5*(J/M)) := by ring
@@ -2002,7 +1811,7 @@ theorem separated_reference_interval_card
     obtain ⟨v,hv,rfl⟩ := Finset.mem_image.mp hy
     have huv : u≠v := fun he => hne (congrArg (fun z : ℝ => z/d) he)
     rw [←sub_div,abs_div,abs_of_pos hd]
-    exact (le_div_iff₀ hd).mpr (by simpa only [one_mul] using hsep u hu v hv huv)
+    exact (le_div_iff₀ hd).mpr (by simpa using hsep u hu v hv huv)
   have hh := TaoTrudgianYang2025.oneSeparated_card_cast_le_interval_length_add_one V hs
     (show 0 ≤ b/d-a/d from sub_nonneg.mpr (div_le_div_of_nonneg_right hab hd.le))
     (by
@@ -2120,9 +1929,8 @@ theorem positive_difference_reference_gap_packing
     rw [hTeq]
     field_simp
     ring
-  have hh := adjacent_reference_gap_card S G hd hlohi hsep hgap hmeet
   calc
-    (G.card:ℝ) ≤ (h (2*M)-h M)/d+2 := hh
+    (G.card:ℝ) ≤ (h (2*M)-h M)/d+2 := (adjacent_reference_gap_card S G hd hlohi hsep hgap hmeet)
     _ ≤ 2*Hcurv/d+2 := add_le_add (div_le_div_of_nonneg_right hrange hd.le) (le_refl 2)
     _ = _ := by rw [hscale]
 
@@ -2188,18 +1996,14 @@ theorem positive_difference_reference_family_packing
           ⟨Finset.mem_product.mpr ⟨hyY,hh.1⟩,hh.2⟩,rfl⟩
     have hi : Set.InjOn Prod.snd (E : Set (ℝ × (ℝ × ℝ))) := by
       intro a ha b hb he
-      have hya := (Finset.mem_filter.mp ha).2
-      have hyb := (Finset.mem_filter.mp hb).2
-      exact Prod.ext (hya.trans hyb.symm) he
+      exact Prod.ext (((Finset.mem_filter.mp ha).2).trans ((Finset.mem_filter.mp hb).2).symm) he
     exact (Finset.card_image_of_injOn hi).symm.trans (congrArg Finset.card he)
   have he : (V.card:ℝ)=∑ y∈Y,((G y).card:ℝ) := by
     have hh := Finset.card_eq_sum_card_fiberwise hmaps
     rw [Finset.sum_congr rfl (fun y hyY => hfiber y hyY)] at hh
     exact_mod_cast hh
   rw [he]
-  calc
-    _ ≤ ∑ _y∈Y,((12*J/σ)*M/(N*U)+2) := Finset.sum_le_sum hG
-    _ = _ := by rw [Finset.sum_const,nsmul_eq_mul,mul_comm]
+  exact (Finset.sum_le_sum hG).trans_eq (by rw [Finset.sum_const,nsmul_eq_mul,mul_comm])
 
                                                                    
                                                                 
@@ -2275,13 +2079,11 @@ theorem positive_difference_common_model
     have hb w (hw : w∈Icc u (u+η*y)) :
         ‖deriv g w‖ ≤ δ+σ*V*(η*y) := by
       rw [(hd w hw).deriv,Real.norm_eq_abs]
-      have he := hjets w (hwide w hw) (p+1) (by omega)
-      have hl := hLip ⟨p,by omega⟩ u huwide w (hwide w hw)
       have hdist : |u-w| ≤ η*y := by
         rw [abs_of_nonpos (sub_nonpos.mpr hw.1)]
         linarith only [hw.2]
       have hl' : |R-iteratedDeriv p (Expdb.modelPhase (σ+1)) w| ≤ V*(η*y) :=
-        hl.trans (mul_le_mul hBp hdist (abs_nonneg _) hV)
+        (hLip ⟨p,by omega⟩ u huwide w (hwide w hw)).trans (mul_le_mul hBp hdist (abs_nonneg _) hV)
       calc
         _ = |(iteratedDeriv (p+2) F w-iteratedDeriv (p+1) (Expdb.modelPhase σ) w)+
             σ*(R-iteratedDeriv p (Expdb.modelPhase (σ+1)) w)| := by
@@ -2293,7 +2095,7 @@ theorem positive_difference_common_model
             |σ*(R-iteratedDeriv p (Expdb.modelPhase (σ+1)) w)| := abs_add_le _ _
         _ ≤ δ+σ*(V*(η*y)) := by
           rw [abs_mul,abs_of_pos hσ]
-          exact add_le_add he (mul_le_mul_of_nonneg_left hl' hσ.le)
+          exact add_le_add (hjets w (hwide w hw) (p+1) (by omega)) (mul_le_mul_of_nonneg_left hl' hσ.le)
         _ = _ := by ring
     have hm := Convex.norm_image_sub_le_of_norm_deriv_le
       (fun w hw => (hd w hw).differentiableAt) hb (convex_Icc u (u+η*y))
@@ -2308,10 +2110,9 @@ theorem positive_difference_common_model
       ring
     have hden : 0 < σ*η*y₀ := by positivity
     have hquot : |D/(σ*η*y₀)-(y/y₀)*R| ≤ (δ/σ+V*(η*y))*(y/y₀) := by
-      have hh := div_le_div_of_nonneg_right herror hden.le
       rw [show D/(σ*η*y₀)-(y/y₀)*R=(D-σ*(η*y)*R)/(σ*η*y₀) by field_simp,
         abs_div,abs_of_pos hden]
-      convert hh using 1
+      convert (div_le_div_of_nonneg_right herror hden.le) using 1
       field_simp
     have hratio : y/y₀ ≤ 2 := (div_le_iff₀ hy₀pos).mpr (by linarith only [hy.2,hy₀.1])
     have hquot' : |D/(σ*η*y₀)-(y/y₀)*R| ≤ 2*δ/σ+4*V*η := by
@@ -2324,10 +2125,8 @@ theorem positive_difference_common_model
     have hamp : |(y/y₀)*R-R| ≤ J*|y-y₀| := by
       rw [show (y/y₀)*R-R=((y-y₀)/y₀)*R by field_simp,
         abs_mul,abs_div,abs_of_pos hy₀pos]
-      calc
-        _ ≤ |y-y₀| * J := mul_le_mul
-          (div_le_self (abs_nonneg _) hy₀.1) hR (abs_nonneg _) (abs_nonneg _)
-        _ = _ := by ring
+      exact (mul_le_mul
+          (div_le_self (abs_nonneg _) hy₀.1) hR (abs_nonneg _) (abs_nonneg _)).trans_eq (by ring)
     have hreg : ContDiffAt ℝ (p+1) F u :=
       (hf u hu0).of_le (ENat.natCast_le_of_coe_top_le_withTop le_rfl (p+1))
     have hregShift : ContDiffAt ℝ (p+1) (fun w => F (w+η*y)) u :=
@@ -2340,11 +2139,8 @@ theorem positive_difference_common_model
       _ ≤ |D/(σ*η*y₀)-(y/y₀)*R|+|(y/y₀)*R-R| := abs_sub_le _ _ _
       _ ≤ 2*δ/σ+4*V*η+J*|y-y₀| := add_le_add hquot' hamp
       _ ≤ C*δ+C*η+C*|y-y₀| := by
-        have hd := mul_le_mul_of_nonneg_right hCδ hδ
-        have he := mul_le_mul_of_nonneg_right hCη hη.le
-        have hyc := mul_le_mul_of_nonneg_right hCy (abs_nonneg (y-y₀))
         rw [show 2*δ/σ=(2/σ)*δ by ring]
-        exact add_le_add (add_le_add hd he) hyc
+        exact add_le_add (add_le_add (mul_le_mul_of_nonneg_right hCδ hδ) (mul_le_mul_of_nonneg_right hCη hη.le)) (mul_le_mul_of_nonneg_right hCy (abs_nonneg (y-y₀)))
       _ = _ := by ring
 
                                                                  
@@ -2375,7 +2171,7 @@ theorem approximateModelPhase_enlarged_common_difference_models
   have hBp : 0 < B := zero_lt_one.trans_le hB
   let t := ε/(3*C)
   let δ := t/B
-  let η₀ := min (1/8:ℝ) t
+  let η₀ := min (1/8) t
   have ht : 0 < t := by dsimp only [t]; positivity
   have hδ : 0 < δ := div_pos ht hBp
   have hη₀ : 0 < η₀ := lt_min (by norm_num) ht
@@ -2386,9 +2182,9 @@ theorem approximateModelPhase_enlarged_common_difference_models
   obtain ⟨Fext,hreg,hjets,hsharp⟩ := hbuild σ δ N F hδ.le hN hF
   have hte : t ≤ ε := by
     dsimp only [t]
-    apply (div_le_iff₀ (by positivity : (0:ℝ) < 3*C)).mpr
+    apply (div_le_iff₀ (by positivity : 0 < 3*C)).mpr
     nlinarith only [hε,mul_le_mul_of_nonneg_left hC hε.le]
-  have hjetbound w (hw : w∈Icc (1/2:ℝ) 3) p (hp : p ≤ P+1) :
+  have hjetbound w (hw : w∈Icc (1/2) 3) p (hp : p ≤ P+1) :
       |iteratedDeriv (p+1) Fext w-iteratedDeriv p (Expdb.modelPhase σ) w| ≤ ε := by
     have hh := hjets w hw p hp
     rw [hBt] at hh
@@ -2465,12 +2261,11 @@ theorem approximateModelPhase_enlarged_colored_difference_models
     have hnorm : ‖∑ i∈S,z i‖ ≤ ∑ j∈J,‖g j‖ := by
       rw [←he]
       exact norm_sum_le _ _
-    have hp := pow_le_pow_left₀ (norm_nonneg _) hnorm 12
     have hholder := Real.rpow_sum_le_const_mul_sum_rpow_of_nonneg J
       (f:=fun j => ‖g j‖) (p:=(12:ℝ)) (by norm_num) (fun _ _ => norm_nonneg _)
     have hh : (∑ j∈J,‖g j‖)^12 ≤ (J.card:ℝ)^11*∑ j∈J,‖g j‖^12 := by
       simpa only [show (12:ℝ)-1=11 by norm_num,Real.rpow_ofNat] using hholder
-    exact (hp.trans hh).trans (mul_le_mul_of_nonneg_right
+    exact ((pow_le_pow_left₀ (norm_nonneg _) hnorm 12).trans hh).trans (mul_le_mul_of_nonneg_right
       (pow_le_pow_left₀ (by positivity : (0:ℝ) ≤ J.card) hcard 11)
       (Finset.sum_nonneg (fun _ _ => pow_nonneg (norm_nonneg _) _)))
   · intro j hj
@@ -2526,13 +2321,12 @@ theorem fourier_parity_round_partition
   have hnorm : ‖∑ ip∈V,a ip‖ ≤ ∑ j∈J,‖g j‖ := by
     rw [←he]
     exact norm_sum_le _ _
-  have hp := pow_le_pow_left₀ (norm_nonneg _) hnorm 12
   have hholder := Real.rpow_sum_le_const_mul_sum_rpow_of_nonneg J
     (f:=fun j => ‖g j‖) (p:=(12:ℝ)) (by norm_num) (fun _ _ => norm_nonneg _)
   have hh : (∑ j∈J,‖g j‖)^12 ≤ (J.card:ℝ)^11*∑ j∈J,‖g j‖^12 := by
     simpa only [show (12:ℝ)-1=11 by norm_num,Real.rpow_ofNat] using hholder
   have hc : (J.card:ℝ) ≤ 3 := by exact_mod_cast hcard
-  exact (hp.trans hh).trans (mul_le_mul_of_nonneg_right
+  exact ((pow_le_pow_left₀ (norm_nonneg _) hnorm 12).trans hh).trans (mul_le_mul_of_nonneg_right
     (pow_le_pow_left₀ (by positivity : (0:ℝ) ≤ J.card) hc 11)
     (Finset.sum_nonneg (fun _ _ => pow_nonneg (norm_nonneg _) _)))
 
@@ -2547,7 +2341,7 @@ theorem fourier_inverse_normalized_chart
   obtain ⟨m,hm⟩ := hinv
   refine ⟨-m-e*⌊-(v:ℝ)/q⌋,?_,?_⟩
   · dsimp only [s]
-    nlinarith only [hm]
+    nlinarith
   · have hqr : (q:ℝ) ≠ 0 := by exact_mod_cast hq
     simp only [s,Int.cast_sub,Int.cast_neg,Int.cast_mul,Int.fract]
     field_simp
@@ -2607,16 +2401,13 @@ theorem fourier_cloud_round_farey_conditions
   constructor
   · apply (round_le C n).trans
     rw [he]
-    calc
-      _ ≤ |Int.fract (X 0*b 0)-Int.fract (X 1*b 1)|+
-          |(k:ℝ)*(Int.fract (X 0)-Int.fract (X 1))| := abs_sub _ _
-      _ ≤ E₀+E₁ := by
+    exact (abs_sub _ _).trans (by
         apply add_le_add hnear₀
         rw [abs_mul]
         calc
           _ ≤ 1*|Int.fract (X 0)-Int.fract (X 1)| :=
             mul_le_mul_of_nonneg_right hk (abs_nonneg _)
-          _ ≤ E₁ := by simpa only [one_mul] using hnear₁
+          _ ≤ E₁ := by simpa using hnear₁)
   · have hcR : (b 0:ℝ)-c 0=(b 1:ℝ)-c 1 := by exact_mod_cast hcolor
     have heq : ((q 0:ℝ)*ell 0-c 0)-((q 1:ℝ)*ell 1-c 1)=
         -2*(tau 0-tau 1) := by
@@ -2697,13 +2488,11 @@ theorem source_arc_fourier_cloud_rounded_conditions
   refine ⟨hpartition.2.1,hpartition.2.2,A,hA,?_⟩
   intro ij hij hcolor
   have hp := Finset.mem_filter.mp hij
-  have hi : ij.1.1∈S := (Finset.mem_product.mp (Finset.mem_product.mp hp.1).1).1
-  have hj : ij.2.1∈S := (Finset.mem_product.mp (Finset.mem_product.mp hp.1).2).1
-  let qq : Fin 2 → ℤ := ![(q ij.1.1:ℤ),(q ij.2.1:ℤ)]
-  let ee : Fin 2 → ℤ := ![(r ij.1.1).num,(r ij.2.1).num]
-  let vv : Fin 2 → ℤ := ![v ij.1.1,v ij.2.1]
-  let ll : Fin 2 → ℝ := ![ℓ ij.1.1,ℓ ij.2.1]
-  let pp : Fin 2 → Fin 2 := ![ij.1.2,ij.2.2]
+  let qq := ![(q ij.1.1:ℤ),(q ij.2.1:ℤ)]
+  let ee := ![(r ij.1.1).num,(r ij.2.1).num]
+  let vv := ![v ij.1.1,v ij.2.1]
+  let ll := ![ℓ ij.1.1,ℓ ij.2.1]
+  let pp := ![ij.1.2,ij.2.2]
   have hqq i : qq i ≠ 0 := by
     fin_cases i
     · change ((q ij.1.1:ℤ)) ≠ 0
@@ -2712,8 +2501,8 @@ theorem source_arc_fourier_cloud_rounded_conditions
       exact_mod_cast (r ij.2.1).den_nz
   have hinvv i : qq i ∣ ee i*vv i-1 := by
     fin_cases i
-    · exact hinv _ hi
-    · exact hinv _ hj
+    · exact hinv _ ((Finset.mem_product.mp (Finset.mem_product.mp hp.1).1).1)
+    · exact hinv _ ((Finset.mem_product.mp (Finset.mem_product.mp hp.1).2).1)
   have hnear₀ :
       |Int.fract ((-(v ij.1.1:ℝ)/q ij.1.1)*b ij.1.1 ij.1.2)-
         Int.fract ((-(v ij.2.1:ℝ)/q ij.2.1)*b ij.2.1 ij.2.2)| ≤ 1/(6*(K₀:ℝ)) := by
@@ -2735,8 +2524,6 @@ theorem source_arc_fourier_cloud_rounded_conditions
     · change _ = |Int.fract (-(v ij.1.1:ℝ)/q ij.1.1)-Int.fract (-(v ij.2.1:ℝ)/q ij.2.1)|
       rfl
     · ring
-  have htau : |τ ij.1.1 ij.1.2-τ ij.2.1 ij.2.2| ≤ D :=
-    (hA ij hij).2.2.2.2.2.2.2.1
   have hcol : ⌊(qq 0:ℝ)*ll 0⌋+(pp 0:ℕ)-round ((qq 0:ℝ)*ll 0)=
       ⌊(qq 1:ℝ)*ll 1⌋+(pp 1:ℕ)-round ((qq 1:ℝ)*ll 1) := by
     simpa only [qq,ll,pp,Matrix.cons_val_zero,Matrix.cons_val_one,Matrix.cons_val_fin_one,
@@ -2747,7 +2534,7 @@ theorem source_arc_fourier_cloud_rounded_conditions
     (by simpa only [qq,vv,Matrix.cons_val_zero,Matrix.cons_val_one,
       Matrix.cons_val_fin_one,Int.cast_natCast] using hnear₁)
     (by simpa only [qq,ll,pp,Matrix.cons_val_zero,Matrix.cons_val_one,
-      Matrix.cons_val_fin_one,Int.cast_natCast] using htau)
+      Matrix.cons_val_fin_one,Int.cast_natCast] using ((hA ij hij).2.2.2.2.2.2.2.1))
   obtain ⟨u,hu,_hs,hfirst,hsecond,hfourth⟩ := hh
   refine ⟨u 0,u 1,?_,?_,?_,?_,?_⟩
   · simpa only [qq,ee,vv,Matrix.cons_val_zero,Int.cast_natCast] using hu 0
@@ -2797,7 +2584,7 @@ theorem positive_difference_common_physical_normalization
     exact congrFun (hfun A) x
   · intro A w k
     rw [hfun,iteratedDeriv_comp_const_add,round_sub_intCast,Int.cast_sub]
-    simp only [add_sub_cancel]
+    simp
 
                                                            
                                                                   
@@ -2815,17 +2602,16 @@ theorem fourier_cloud_linked_error_bounds
       (16*U/mu)*Real.sqrt (U*Q^3)*Real.sqrt K/(6*K^2) ≤
         (8*J*Real.sqrt J/(3*c))*R^2/N^2 := by
   intro U mu D
-  have hKp : 0 < K := zero_lt_one.trans_le hK
+  have hKp := zero_lt_one.trans_le hK
   have hmesh : 1/K ≤ R^2/(Q*N) := by
     apply (div_le_div_iff₀ hKp (mul_pos hQ hN)).mpr
     simpa only [one_mul,mul_one,mul_comm] using hscale
   have hmesh2 : 1/K^2 ≤ R^4/(Q^2*N^2) := by
     have hh := pow_le_pow_left₀ (by positivity : (0:ℝ) ≤ 1/K) hmesh 2
     convert hh using 1 <;> field_simp
-  have hKinv : 1/K ≤ 1 := (div_le_one hKp).mpr hK
   have hKtwo : 1/K^2 ≤ 1/K := by
     rw [show 1/K^2=(1/K)*(1/K) by field_simp]
-    simpa only [one_mul] using mul_le_mul_of_nonneg_right hKinv
+    simpa only [one_mul] using mul_le_mul_of_nonneg_right ((div_le_one hKp).mpr hK)
       (by positivity : (0:ℝ) ≤ 1/K)
   let B := Real.sqrt (U*Q^3)*Real.sqrt K/K
   have hBp : 0 ≤ B := by dsimp only [B,U]; positivity
@@ -2841,14 +2627,13 @@ theorem fourier_cloud_linked_error_bounds
       (show 0 ≤ J*Q^2*N by positivity) using 1 <;> ring
   have hfactor : (1/9:ℝ)+1/(12*K) ≤ 7/36 := by
     have hh := div_le_div_of_nonneg_left (by norm_num : (0:ℝ) ≤ 1)
-      (by norm_num : (0:ℝ) < 12) (by linarith only [hK] : 12 ≤ 12*K)
-    linarith only [hh]
+      (by norm_num : (0:ℝ) < 12) (by linarith : 12 ≤ 12*K)
+    linarith
   refine ⟨?_,?_,?_,?_⟩
   · have hh := mul_le_mul_of_nonneg_left hmesh2 (by norm_num : (0:ℝ) ≤ 1/6)
     convert hh using 1 <;> ring
   · have hh := add_le_add hmesh (hKtwo.trans hmesh)
-    have hh' := mul_le_mul_of_nonneg_left hh (by norm_num : (0:ℝ) ≤ 1/6)
-    convert hh' using 1 <;> ring
+    convert (mul_le_mul_of_nonneg_left hh (by norm_num : (0:ℝ) ≤ 1/6)) using 1 <;> ring
   · calc
       D = ((1/9:ℝ)+1/(12*K))*B := by dsimp only [D,B]; field_simp
       _ ≤ (7/36:ℝ)*(Real.sqrt J*Q/N) :=
@@ -2945,8 +2730,7 @@ theorem source_arc_fourier_cloud_linked_conditions
   · intro ij hij hcolor
     obtain ⟨u₀,u₁,hu₀,hu₁,hfirst,hsecond,hfourth⟩ := hround ij hij hcolor
     refine ⟨u₀,u₁,hu₀,hu₁,hfirst.trans herrors.1,hsecond.trans herrors.2.1,?_⟩
-    have hh := mul_le_mul_of_nonneg_left herrors.2.2.1 (by norm_num : (0:ℝ) ≤ 2)
-    exact hfourth.trans (hh.trans_eq (by ring))
+    exact hfourth.trans ((mul_le_mul_of_nonneg_left herrors.2.2.1 (by norm_num : (0:ℝ) ≤ 2)).trans_eq (by ring))
 
                                                                   
                                                                    
@@ -3044,8 +2828,7 @@ theorem physicalModelPhase_actual_fourier_conditions
     calc
       R^4/(6*(Q:ℝ)^2*N^2) ≤ R^4/((q 0:ℝ)^2*N^2) := by
         apply div_le_div_of_nonneg_left (by positivity) (by positivity)
-        have hh := pow_le_pow_left₀ (hqp 0).le hqQ 2
-        nlinarith only [mul_le_mul_of_nonneg_right hh (sq_nonneg N),
+        nlinarith only [mul_le_mul_of_nonneg_right (pow_le_pow_left₀ (hqp 0).le hqQ 2) (sq_nonneg N),
           mul_nonneg (sq_nonneg (Q:ℝ)) (sq_nonneg N)]
       _ ≤ B*(R^4/((q 0:ℝ)^2*N^2)) :=
         le_mul_of_one_le_left (by positivity) hB1
@@ -3065,8 +2848,7 @@ theorem physicalModelPhase_actual_fourier_conditions
         nlinarith only [Real.sqrt_nonneg J]
       _ ≤ (2*Real.sqrt J)*(q 0:ℝ)/N := by
         apply div_le_div_of_nonneg_right _ hN.le
-        have hh := mul_le_mul_of_nonneg_left hQq (Real.sqrt_nonneg J)
-        nlinarith only [hh]
+        nlinarith only [(mul_le_mul_of_nonneg_left hQq (Real.sqrt_nonneg J))]
       _ ≤ _ := by gcongr
 
                                                               
@@ -3109,14 +2891,11 @@ theorem farey_matrix_companion_unique
       _ = (a*d-b*c)*(v₀*r₀-e₀*s₀) := by rw [←he,←hr]; ring
       _ = 1 := by rw [hdet,h₀]; norm_num
   have hrel : dv*r₁-e₁*ds=0 := by
-    dsimp only [ds,dv]
     linear_combination htransport-h₁
   let k := v₁*ds-s₁*dv
   have hds : ds=k*r₁ := by
-    dsimp only [k]
     linear_combination -ds*h₁+s₁*hrel
   have hc : c-(r₀*s₁-s₀*r₁)=r₀*ds := by
-    dsimp only [ds]
     linear_combination -c*h₀-s₀*hr
   have hkbound : |r₀*r₁*k| < r₀*r₁ := by
     calc
@@ -3158,10 +2937,10 @@ theorem fourier_matrix_normalized_chart_transport
   classical
   intro s
   have hqr i : (0:ℝ) < q i := by exact_mod_cast hq i
-  have hq₀ : (q 0:ℝ) ≠ 0 := (hqr 0).ne'
-  have hq₁ : (q 1:ℝ) ≠ 0 := (hqr 1).ne'
+  have hq₀ := (hqr 0).ne'
+  have hq₁ := (hqr 1).ne'
   choose v hv hs using fun i => fourier_inverse_normalized_chart (hq i).ne' (hinv i)
-  have hs' i : (s i:ℝ)/q i=Int.fract (-(vinv i:ℝ)/q i) := hs i
+  have hs' i := hs i
   have hdenR : (A 2:ℝ)*e 0+A 3*q 0=q 1 := by
     calc
       _ = ((A 2:ℝ)*((e 0:ℝ)/q 0)+A 3)*q 0 := by field_simp
@@ -3170,10 +2949,10 @@ theorem fourier_matrix_normalized_chart_transport
     rw [ht] at hmap
     have hh := (div_eq_iff (div_ne_zero (hqr 1).ne' (hqr 0).ne')).mp hmap
     field_simp [hq₀,hq₁] at hh
-    nlinarith only [hh]
+    nlinarith
   have hden : A 2*e 0+A 3*q 0=q 1 := by exact_mod_cast hdenR
   have hnum : A 0*e 0+A 1*q 0=e 1 := by exact_mod_cast hnumR
-  have hp : (0:ℝ) < (q 0:ℝ)*q 1 := mul_pos (hqr 0) (hqr 1)
+  have hp := mul_pos (hqr 0) (hqr 1)
   have hcanon : |(q 0:ℝ)*s 1-(s 0:ℝ)*q 1| ≤ (q 0:ℝ)*q 1/(6*K^2) := by
     calc
       _ = |(s 1:ℝ)/q 1-(s 0:ℝ)/q 0| *((q 0:ℝ)*q 1) := by
@@ -3185,18 +2964,15 @@ theorem fourier_matrix_normalized_chart_transport
         rw [hs' 0,hs' 1,abs_sub_comm]
         exact hnear
       _ = _ := by ring
-  have hKden : 6 ≤ 6*K^2 := by nlinarith only [hK,sq_nonneg (K-1)]
-  have hQ : 0 < Q := (hqr 0).trans_le (hband 0).1
+  have hKden : 6 ≤ 6*K^2 := by nlinarith
   have hQsq : Q^2 ≤ 4*((q 0:ℝ)*q 1) := by
-    have hh := mul_le_mul (hband 0).2 (hband 1).2 hQ.le
+    have hh := mul_le_mul (hband 0).2 (hband 1).2 ((hqr 0).trans_le (hband 0).1).le
       (mul_nonneg (by norm_num) (hqr 0).le)
-    nlinarith only [hh]
-  have hgamma' : |(A 2:ℝ)| ≤ Q^2/6 :=
-    hgamma.trans (div_le_div_of_nonneg_left (sq_nonneg Q) (by norm_num) hKden)
-  have hcanon' : |(q 0:ℝ)*s 1-(s 0:ℝ)*q 1| ≤ (q 0:ℝ)*q 1/6 :=
-    hcanon.trans (div_le_div_of_nonneg_left hp.le (by norm_num) hKden)
+    nlinarith
+  have hgamma' := hgamma.trans (div_le_div_of_nonneg_left (sq_nonneg Q) (by norm_num) hKden)
+  have hcanon' := hcanon.trans (div_le_div_of_nonneg_left hp.le (by norm_num) hKden)
   have hsmallR : |(A 2:ℝ)|+|(q 0:ℝ)*s 1-(s 0:ℝ)*q 1| < (q 0:ℝ)*q 1 := by
-    nlinarith only [hgamma',hcanon',hQsq,hp]
+    nlinarith
   have hsmall : |A 2|+|q 0*s 1-s 0*q 1| < q 0*q 1 := by exact_mod_cast hsmallR
   have hc := farey_matrix_companion_unique (hq 0) (hq 1)
     (hv 0) (hv 1) hdet hnum hden hsmall
@@ -3270,25 +3046,25 @@ theorem physicalModelPhase_short_block_residual_difference_signed
   intro hbase hpoint hnN hqpos hgeom hminr hthird hfirst hsecond hfourth
   have hr' (i) : (0:ℝ) < r i := by exact_mod_cast hr i
   have ht' : (t:ℝ) ≠ 0 := by exact_mod_cast ht
-  have htpos : 0 < |(t:ℝ)| := abs_pos.mpr ht'
-  have hrne (i) : r i ≠ 0 := (hr i).ne'
-  have htne : t ≠ 0 := ht
+  have htpos := abs_pos.mpr ht'
+  have hrne (i) := (hr i).ne'
+  have htne := ht
   have hq (i) : r i*u+s i*t ≠ 0 := by
-    have hh : q i ≠ 0 := (hqpos i).1.ne'
+    have hh := (hqpos i).1.ne'
     dsimp only [q] at hh
     exact_mod_cast hh
-  have hq' (i) : q i ≠ 0 := (hqpos i).1.ne'
+  have hq' (i) := (hqpos i).1.ne'
   have hdet' (i) : (v i:ℝ)*r i-e i*s i=1 := by exact_mod_cast hdet i
   have hF₂ (i) := TaoTrudgianYang2025.approximateModelPhase_mono (hF i) (by norm_num : 2 ≤ 3) le_rfl
   have hround := (physicalModelPhase_halfCurvature_round_error hσ.le (hF₂ 0)
     hT hM (hA 0) (hW 0) (hx₀ 0)).1
-  have hδ0 : 0 ≤ δ := (abs_nonneg _).trans
+  have hδ0 := (abs_nonneg _).trans
     (TaoTrudgianYang2025.approximateModelPhase_iteratedDeriv_error (hF 0)
       (TaoTrudgianYang2025.heathBrownPhysicalPoint_mem_interior hM (hA 0) (hW 0) hround)
       3 le_rfl)
-  have hC₂ : 0 ≤ C₂ := add_nonneg (TaoTrudgianYang2025.modelPhaseJetCoefficient_nonneg σ 2) hδ0
-  have hC₃ : 0 ≤ C₃ := add_nonneg (TaoTrudgianYang2025.modelPhaseJetCoefficient_nonneg σ 3) hδ0
-  have hκ : 0 < κ := TaoTrudgianYang2025.modelPhaseThirdLower_pos hσ
+  have hC₂ := add_nonneg (TaoTrudgianYang2025.modelPhaseJetCoefficient_nonneg σ 2) hδ0
+  have hC₃ := add_nonneg (TaoTrudgianYang2025.modelPhaseJetCoefficient_nonneg σ 3) hδ0
+  have hκ := TaoTrudgianYang2025.modelPhaseThirdLower_pos hσ
   let G := minorArcCoordinate (μ 0) (r 0) (s 0) ((u:ℝ)/t)
   have hcoord : |(n 0:ℝ)-G| ≤ C₂/κ+C₃*|(n 0:ℝ)|^2/(2*κ*M) := by
     have hh := physicalModelPhase_rounded_minorArcCoordinate_entry hσ hδ (hF 0)
@@ -3300,8 +3076,8 @@ theorem physicalModelPhase_short_block_residual_difference_signed
   have hG : |G| ≤ |(n 0:ℝ)|+(C₂/κ+C₃*|(n 0:ℝ)|^2/(2*κ*M)) := by
     have hh := abs_sub_le G (n 0:ℝ) 0
     simp only [sub_zero,abs_sub_comm G] at hh
-    linarith only [hh,hcoord]
-  have hgeomQ (i) : |(t:ℝ)|/r i ≤ Q/R^2 := (hgeom i).trans
+    linarith
+  have hgeomQ (i) := (hgeom i).trans
     (div_le_div_of_nonneg_right (hqpos i).2 (sq_nonneg R))
   have hU : U=q 0/((r 0:ℝ)*t) := by
     dsimp [U,q]
@@ -3316,7 +3092,7 @@ theorem physicalModelPhase_short_block_residual_difference_signed
       apply (div_le_div_iff₀ (pow_pos (hr' 0) 2) (mul_pos (hr' 0) htpos)).mpr
       have hh := mul_le_mul_of_nonneg_left hg (hr' 0).le
       dsimp only [q] at hh ⊢
-      nlinarith only [hh]
+      nlinarith
     have hh := mul_le_mul_of_nonneg_left hrat (show 0 ≤ K*R^2/N^2 by positivity)
     convert hh using 1
     ring
@@ -3401,17 +3177,16 @@ theorem physicalModelPhase_short_block_fourth_signed
   let d₀ := fun i => iteratedDeriv 1 (f i) (round (x₀ i))
   let d₁ := fun i => iteratedDeriv 1 (f i) (round (x₁ i))
   let c := fun i => round ((r i:ℝ)*d₀ i)
-  let C := (c 0:ℝ)*s 0/r 0-(c 1:ℝ)*s 1/r 1
   change _ → _ → _ → _ → _ → _ → _ → _ → _ → _ → _
   intro hbase hpoint hnN hqpos hgeom hminr hthird hfirst hsecond hfourth
   have hbound := physicalModelPhase_short_block_residual_difference_signed hσ hδ hF
     hT hM hN hR hscale hQ hK hsmall hNR hRN hcube hA hW hx₀ hx₁ hr ht hdet
     hbase hpoint hnN hqpos hgeom hminr hthird hfirst hsecond hfourth
   have hq (i) : r i*u+s i*t ≠ 0 := by
-    have hh : (0:ℝ) < (r i:ℝ)*u+s i*t := (hqpos i).1
+    have hh : 0 < (r i:ℝ)*u+s i*t := (hqpos i).1
     exact_mod_cast hh.ne'
   exact (actual_derivative_base_centered_bound (fun i => (hr i).ne') hq hdet
-    (d₀ := d₀) (d₁ := d₁) (n := n) (b := round C)).trans hbound
+    (d₀ := d₀) (d₁ := d₁) (n := n) (b := round ((c 0:ℝ)*s 0/r 0-(c 1:ℝ)*s 1/r 1))).trans hbound
 
                                                                 
                                                                 
@@ -3451,7 +3226,7 @@ theorem physicalModelPhase_short_window_geometry_signed
   rw [hid] at hc
   have hmain : |t|/(r*(r*u+s*t)) ≤ 1/R^2 := by
     apply hc.trans
-    apply (div_le_iff₀ (show 0 < 2*N*R^2 by positivity)).mpr
+    apply (div_le_iff₀ (by positivity)).mpr
     rw [show (1/R^2)*(2*N*R^2)=2*N by field_simp]
     exact hphasewidth
   have hh := mul_le_mul_of_nonneg_right hmain hq.le
@@ -3520,11 +3295,11 @@ theorem physicalModelPhase_short_window_fourth
   · exact physicalModelPhase_short_block_fourth_signed hσ hδ hF hT hM hN hR
       hscale hQ hK hsmall hNR hRN hcube hA hW hx₀ hx₁ hr ht hdet
       hbase hpoint hn hqpos (fun i => (hgeo i).2) hminr hthird hfirst hsecond hfourth
-  have htzero : t=0 := not_ne_iff.mp ht
+  have htzero := not_ne_iff.mp ht
   have hq₀ : 0 < (r 0:ℝ)*u := by
     simpa only [q,htzero,Int.cast_zero,mul_zero,add_zero] using (hqpos 0).1
-  have hu : (0:ℝ) < u := (mul_pos_iff_of_pos_left (hr' 0)).mp hq₀
-  have hκ : 0 < κ := modelPhaseThirdLower_pos hσ
+  have hu := (mul_pos_iff_of_pos_left (hr' 0)).mp hq₀
+  have hκ := modelPhaseThirdLower_pos hσ
   have hlevels i : iteratedDeriv 2 (f i) (x₁ i)/2=iteratedDeriv 2 (f i) (x₀ i)/2 := by
     rw [hpoint i,hbase i]
     simp only [q,htzero,Int.cast_zero,mul_zero,add_zero]
@@ -3550,15 +3325,15 @@ theorem physicalModelPhase_short_window_fourth
     dsimp only [θ]
     push_cast
     ring
-  have hδ0 : 0 ≤ δ := (abs_nonneg _).trans
+  have hδ0 := (abs_nonneg _).trans
     (approximateModelPhase_iteratedDeriv_error (hF 0)
       (by norm_num : (3/2:ℝ)∈Ioo 1 2) 3 le_rfl)
-  have hC₂ : 0 ≤ C₂ := add_nonneg (modelPhaseJetCoefficient_nonneg σ 2) hδ0
-  have hC₃ : 0 ≤ C₃ := add_nonneg (modelPhaseJetCoefficient_nonneg σ 3) hδ0
+  have hC₂ := add_nonneg (modelPhaseJetCoefficient_nonneg σ 2) hδ0
+  have hC₃ := add_nonneg (modelPhaseJetCoefficient_nonneg σ 3) hδ0
   have hCt : 0 ≤ Ct := by dsimp only [Ct]; positivity
   have hCc : 0 ≤ Cc := by dsimp only [Cc]; positivity
   have hcoef : K ≤ 37*K/2+16*K*Cc+2*Ct+2*Cc := by
-    nlinarith only [hK,hCt,hCc,mul_nonneg hK hCc]
+    nlinarith
   apply (round_le (z 0-z 1) (u*(c 0-c 1))).trans
   rw [hid,abs_mul,abs_of_pos hu]
   calc
@@ -3771,8 +3546,8 @@ theorem physicalModelPhase_actual_fourier_matrix_fourth
     funext i
     have hc : vc i*(q i:ℤ)-(rat i).num*s i=1 := by
       simpa only [qi,ei,Int.cast_natCast] using hvc i
-    have hd : v i*(q i:ℤ)-(rat i).num*s i=1 := hv i
-    have hh : (vc i-v i)*(q i:ℤ)=0 := by nlinarith only [hc,hd]
+    have hd := hv i
+    have hh : (vc i-v i)*(q i:ℤ)=0 := by nlinarith
     exact sub_eq_zero.mp ((mul_eq_zero.mp hh).resolve_right (hqi i).ne')
   subst vc
   simp only [qi,ei,Int.cast_natCast] at htransport
@@ -3905,9 +3680,7 @@ theorem physicalModelPhase_matrix_window_roots
         have hh := mul_le_mul hlo htlo (by norm_num : (0:ℝ) ≤ 1/2) hypos.le
         norm_num at hh
         exact hh
-      calc
-        _ ≤ |y-y₀|/(1/8:ℝ) := div_le_div_of_nonneg_left (abs_nonneg _) (by norm_num) hp
-        _ ≤ 8*ε := by norm_num; linarith only [hy]
+      exact (div_le_div_of_nonneg_left (abs_nonneg _) (by norm_num) hp).trans (by norm_num; linarith only [hy])
   have hrate : modelPhaseThirdLower σ*T/(2*M^3)*H=8*ε := by
     rw [←hscale]
     dsimp only [H,ε]
@@ -4072,10 +3845,9 @@ theorem physicalModelPhase_actual_fourier_matrix_root_fourth
     linarith only [hh,hNtwo]
   have hCH : C*H ≤ 2*N := by
     have hh : C/(C+2) ≤ 1 := (div_le_one hC₂).mpr (by linarith)
-    have hh' := mul_le_mul_of_nonneg_right hh hN.le
     calc
       C*H = C/(C+2)*N := by dsimp only [H]; ring
-      _ ≤ 1*N := hh'
+      _ ≤ 1*N := (mul_le_mul_of_nonneg_right hh hN.le)
       _ ≤ 2*N := by linarith only [hN]
   refine ⟨hε,ρ,?_⟩
   intro a d hd hdQ hy x₁ anew qnew C₂ C₃ κ Ct Cc z Δ
@@ -4097,9 +3869,7 @@ theorem physicalModelPhase_actual_fourier_matrix_root_fourth
       exact ⟨hd,by linarith only [hdQ,hQreal]⟩
     · change 0 < (qnew 1:ℝ) ∧ (qnew 1:ℝ) ≤ Q
       rw [hqd]
-      have hhlo := mul_le_mul_of_nonneg_right hr.1.1 hd.le
-      have hhhi := mul_le_mul_of_nonneg_right hr.1.2 hd.le
-      exact ⟨by nlinarith only [hhlo,hd],by nlinarith only [hhhi,hdQ]⟩
+      exact ⟨by nlinarith only [(mul_le_mul_of_nonneg_right hr.1.1 hd.le),hd],by nlinarith only [(mul_le_mul_of_nonneg_right hr.1.2 hd.le),hdQ]⟩
   have hx₁ i : x₁ i∈Ioo (1/2:ℝ) (W i-1/2) := (hr.2 i).2.1
   have hdist i : |x₁ i-x₀ i| ≤ H := (hr.2 i).2.2.2.1
   have hroot i : iteratedDeriv 2 (f i) (x₁ i)/2=(anew i:ℝ)/qnew i := by
@@ -4199,9 +3969,7 @@ theorem physicalModelPhase_matrix_long_window_roots
         have hh := mul_le_mul hlo htlo (by norm_num : (0:ℝ) ≤ 1/2) hypos.le
         norm_num at hh
         exact hh
-      calc
-        _ ≤ |y-y₀|/(1/8:ℝ) := div_le_div_of_nonneg_left (abs_nonneg _) (by norm_num) hp
-        _ ≤ 8*ε := by norm_num; linarith only [hy]
+      exact (div_le_div_of_nonneg_left (abs_nonneg _) (by norm_num) hp).trans (by norm_num; linarith only [hy])
   have hrate : modelPhaseThirdLower σ*T/(2*M^3)*H=8*ε := by
     rw [←hscale]
     dsimp only [H,ε]
@@ -4377,17 +4145,14 @@ theorem physicalModelPhase_curvature_boundary_window_count
     have hg := physicalModelPhase_halfCurvature_growth hσ hδ hF hT hM hA hW
       (hx i hi) (hx j hj) hij
     rw [hcoef] at hg
-    have ha := abs_le.mp (hnear i hi)
-    have hb := abs_le.mp (hnear j hj)
     have hh : modelPhaseThirdLower σ/(2*N*R^2)*(x j-x i) ≤ 2*ε := by
-      linarith only [hg,ha.1,hb.2]
+      linarith only [hg,(abs_le.mp (hnear i hi)).1,(abs_le.mp (hnear j hj)).2]
     have hh' : modelPhaseThirdLower σ*(x j-x i) ≤ 2*ε*(2*N*R^2) := by
-      apply (div_le_iff₀ (show 0 < 2*N*R^2 by positivity)).mp
+      apply (div_le_iff₀ (by positivity)).mp
       convert hh using 1
       ring
-    have hs := mul_le_mul_of_nonneg_right hsmall hN.le
     apply (mul_le_mul_iff_of_pos_left hκ).mp
-    nlinarith only [hh',hs]
+    nlinarith only [hh',(mul_le_mul_of_nonneg_right hsmall hN.le)]
   have hwidth i (hi : i∈S) j (hj : j∈S) : |x j-x i| ≤ N := by
     rcases le_total (x i) (x j) with hij | hji
     · rw [abs_of_nonneg (sub_nonneg.mpr hij)]
@@ -4401,12 +4166,12 @@ theorem physicalModelPhase_curvature_boundary_window_count
     (by
       intro j hj
       obtain ⟨i,hi,rfl⟩ := Finset.mem_image.mp hj
-      simpa only [Int.toNat_natCast,Int.cast_natCast,Set.mem_Icc] using hwindow i hi)
+      simpa using hwindow i hi)
     (by
       intro j hj k hk
       obtain ⟨i,hi,rfl⟩ := Finset.mem_image.mp hj
       obtain ⟨m,hm,rfl⟩ := Finset.mem_image.mp hk
-      simpa only [Int.toNat_natCast,one_mul] using hwidth i hi m hm)
+      simpa using hwidth i hi m hm)
   have hSI : SI.card=S.card := Finset.card_image_of_injective _ Int.ofNat_injective
   rw [hSI] at hh
   have hc : (S.card:ℝ) ≤ 3 := by linarith only [hh]
@@ -4449,13 +4214,13 @@ theorem physicalModelPhase_farey_boundary_crossing_count
     have hb := (le_div_iff₀ (hchart j hjS).1).mp hhi
     have hleft : q j-ε ≤ (e*z+v)/(r*z+s) := by
       apply (le_div_iff₀ (hZden z hz)).mpr
-      nlinarith only [hb]
+      nlinarith
     have hright : (e*z+v)/(r*z+s) ≤ q j+ε := by
       apply (div_le_iff₀ (hZden z hz)).mpr
-      nlinarith only [ha]
+      nlinarith
     change |q j-(e*z+v)/(r*z+s)| ≤ ε
     apply abs_le.mpr
-    constructor <;> linarith only [hleft,hright]
+    constructor <;> linarith
   have he : S.filter (fun j => ∃ z∈Z, z∈Icc (α j) (β j))=Z.biUnion fiber := by
     ext j
     simp only [Finset.mem_filter,Finset.mem_biUnion,fiber]
@@ -4530,11 +4295,9 @@ theorem exists_dyadic_rational_near_anchor {Q : ℕ} {a : ℚ} {ε : ℝ}
   have hden : (b.den:ℤ)=d :=
     Rat.den_div_eq_of_coprime hdpos (Int.isCoprime_iff_nat_coprime.mp hcop)
   have hbQ : b.den ≤ Q := by exact_mod_cast (hden ▸ hdQ)
-  have hcutI : 2*(a.den:ℤ) ≤ Q := by exact_mod_cast hcut
   have hhalfI : (Q:ℤ) ≤ 2*(b.den:ℤ) := by omega
   have hhalf : Q ≤ 2*b.den := by exact_mod_cast hhalfI
   have haR : (0:ℝ) < a.den := by exact_mod_cast a.den_pos
-  have hdR : (0:ℝ) < d := by exact_mod_cast hdpos
   have hbR : (0:ℝ) < b.den := by exact_mod_cast b.den_pos
   have hdenR : (b.den:ℝ)=d := by exact_mod_cast hden
   have hval : (b:ℝ)=(c:ℝ)/d := by dsimp only [b]; push_cast; rfl
@@ -4549,8 +4312,7 @@ theorem exists_dyadic_rational_near_anchor {Q : ℕ} {a : ℚ} {ε : ℝ}
     exact (mul_pos_iff_of_pos_right (mul_pos hQpos haR)).mp hp
   have hhalfR : (Q:ℝ) ≤ 2*(b.den:ℝ) := by exact_mod_cast hhalf
   have hbscale : 2 ≤ ε*(a.den:ℝ)*b.den := by
-    have hh := mul_le_mul_of_nonneg_left hhalfR (mul_nonneg hε.le haR.le)
-    nlinarith only [hh,hscale]
+    nlinarith only [(mul_le_mul_of_nonneg_left hhalfR (mul_nonneg hε.le haR.le)),hscale]
   refine ⟨b,hbQ,hhalf,by linarith only [hpos],?_,hgap⟩
   rw [abs_of_pos hpos,hgap]
   apply (div_le_iff₀ (mul_pos haR hbR)).mpr
@@ -4872,7 +4634,6 @@ private theorem positive_difference_dyadic_anchor_source_partition_cutoffs
   have hbad : (∑ i∈Bad,Src i) ≤ ∑ i∈Bad,(H i:ℝ) := by
     apply Finset.sum_le_sum
     intro i _hi
-    dsimp only [Src]
     apply (norm_sum_le _ _).trans_eq
     simp
   have hbad0 : 0 ≤ ∑ i∈Bad,(H i:ℝ) :=
@@ -4881,11 +4642,8 @@ private theorem positive_difference_dyadic_anchor_source_partition_cutoffs
   simp only [one_mul] at hbadC
   have hsplit : (∑ i∈S,Src i)=(∑ i∈G,Src i)+(∑ i∈Bad,Src i) :=
     (Finset.sum_filter_add_sum_filter_not S Good Src).symm
-  change (∑ i∈S,Src i) ≤ _
   rw [hsplit]
-  have hh := add_le_add hk (hbad.trans hbadC)
-  convert hh using 1
-  dsimp only [Bad]
+  convert (add_le_add hk (hbad.trans hbadC)) using 1
   ring
 
                                                                              
@@ -5300,15 +5058,14 @@ theorem approximateModelPhase_enlarged_colored_linked_models
   obtain ⟨i₀,hi₀,hcolor₀,hmodels₀⟩ := hmodels j hj
   refine ⟨i₀,hi₀,hcolor₀,?_⟩
   intro xi T N R hxi hT hR hscale Tnew Rnew
-  have hy₀ : 0 < y i₀ := zero_lt_one.trans_le (hy i₀ hi₀).1
+  have hy₀ := zero_lt_one.trans_le (hy i₀ hi₀).1
   have hn₀ := positive_difference_common_physical_normalization Fext (y:=y i₀)
     hσ hxi hη hy₀ hT hR hscale
   refine ⟨hn₀.1,hn₀.2.1,hn₀.2.2.1,hn₀.2.2.2.1,?_⟩
   intro i hi hcolor G f
-  have hm := hmodels₀ i hi hcolor
   have hn := positive_difference_common_physical_normalization Fext (y:=y i)
     hσ hxi hη hy₀ hT hR hscale
-  exact ⟨hm.1,hn.2.2.2.2.1,hn.2.2.2.2.2⟩
+  exact ⟨(hmodels₀ i hi hcolor).1,hn.2.2.2.2.1,hn.2.2.2.2.2⟩
 
 
                                                                  
@@ -5363,27 +5120,22 @@ theorem modelPhase_compact_jet_signed_source_tests {σ : ℝ} (hσ : 0 < σ) :
   intro Fext hjets
   refine ⟨?_,?_,?_⟩
   · intro x hx n hn
-    have hh := hjets x hx n hn
     have hmodel : |iteratedDeriv n (Expdb.modelPhase σ) x| ≤ max 1 B :=
       ((norm_le_pi_norm (W x) ⟨n,by omega⟩).trans (hB x hx)).trans (le_max_right 1 B)
     have htri := abs_add_le
       (iteratedDeriv (n+1) Fext x-iteratedDeriv n (Expdb.modelPhase σ) x)
       (iteratedDeriv n (Expdb.modelPhase σ) x)
     rw [sub_add_cancel] at htri
-    linarith only [hmodel,hh,htri,heone]
+    linarith only [hmodel,(hjets x hx n hn),htri,heone]
   · intro x hx j
     apply (min_le_left c (q/2)).trans
     apply htests x hx (fun i : Fin 4 => iteratedDeriv (i.val+3) Fext x)
     intro i
-    have hh := hjets x hx (i.val+2) (by omega)
-    exact hh.trans heε
+    exact (hjets x hx (i.val+2) (by omega)).trans heε
   · intro x hx
-    have hh := hjets x hx 3 (by norm_num)
     have hup : iteratedDeriv 3 (Expdb.modelPhase σ) x ≤ -q := by
       simpa only [q,neg_neg,Set.mem_ofPred_eq] using hmax hx
-    have herr := (abs_le.mp hh).2
-    have hcq := min_le_right c (q/2)
-    linarith only [hup,herr,heq,hcq]
+    linarith only [hup,((abs_le.mp (hjets x hx 3 (by norm_num))).2),heq,(min_le_right c (q/2))]
 
 
                                                               
@@ -5434,7 +5186,7 @@ theorem approximateModelPhase_enlarged_colored_linked_source_tests
   refine ⟨δ,η₀,a,c,J,hδ,hη₀,hηcap,ha,hc,hJ,?_⟩
   intro M F hM hF
   obtain ⟨Fext,hreg,hjets,hsharp,hcolors⟩ := hsource M F hM hF
-  have hsourceJets : ∀ x ∈ Icc (1/2:ℝ) 3, ∀ n ≤ 6,
+  have hsourceJets : ∀ x ∈ Icc (1/2) 3, ∀ n ≤ 6,
       |iteratedDeriv (n+1) Fext x-iteratedDeriv n (Expdb.modelPhase σ) x| ≤ e :=
     fun x hx n hn => (hjets x hx n (by omega)).trans (min_le_right ε e)
   obtain ⟨hbound,htest,hnegative⟩ := htests Fext hsourceJets
@@ -5474,7 +5226,7 @@ theorem exists_positive_difference_source_fourier_mesh
   have hrate : 1 ≤ Q*N/R^2 := (le_div_iff₀ (sq_pos_of_pos hR)).mpr (by simpa using hbase)
   have hratepos : 0 < Q*N/R^2 := by positivity
   have hCX : Q*N/R^2 ≤ x := by
-    simpa only [one_mul] using mul_le_mul_of_nonneg_right hC hratepos.le
+    simpa using mul_le_mul_of_nonneg_right hC hratepos.le
   have hx : 1 ≤ x := hrate.trans hCX
   have hceil : x ≤ (⌈x⌉₊:ℝ) := Nat.le_ceil x
   have hceilup : (⌈x⌉₊:ℝ) < x+1 := Nat.ceil_lt_add_one (zero_le_one.trans hx)
@@ -5487,7 +5239,6 @@ theorem exists_positive_difference_source_fourier_mesh
     exact hCX.trans hceil
   · have hh : (⌈x⌉₊:ℝ) ≤ 2*x := by linarith only [hceilup,hx]
     convert hh using 1
-    dsimp only [x]
     ring
 
 
@@ -5531,13 +5282,12 @@ theorem physicalModelPhase_actual_matrix_reference_roots_signed
       hdet hgamma hwindow hrpos hlevel hMatt hMatmap hL hU hy
     refine ⟨xref,fun i => ⟨mul_pos (hxr i).1 hrpos,(hxr i).2⟩⟩
   · have hrneg : r < 0 := by omega
-    have hr' : 0 < -r := neg_pos.mpr hrneg
     have hy' : ((-e:ℤ):ℝ)/(-r:ℤ)-(rat 0:ℝ) ∈
         Icc (-(modelPhaseThirdLower σ*L/(16*R^2))) (modelPhaseThirdLower σ*L/(16*R^2)) := by
-      simpa only [Int.cast_neg,neg_div_neg_eq,Set.mem_Icc] using abs_le.mp hy
+      simpa using abs_le.mp hy
     obtain ⟨xref,hxr⟩ := physicalModelPhase_actual_matrix_reference_roots Q K₀ rat Mat (-e) (-r)
       hσ hδ hF hT hM hN hR hLpos hQ hscale hmesh hA hW hx₀ hden
-      hdet hgamma hwindow hr' hlevel hMatt hMatmap hL hU (abs_le.mpr hy')
+      hdet hgamma hwindow (neg_pos.mpr hrneg) hlevel hMatt hMatmap hL hU (abs_le.mpr hy')
     have he i :
         (![ -e,Mat 0*(-e)+Mat 1*(-r)] : Fin 2 → ℤ) i= -ep i := by
       fin_cases i
@@ -5554,9 +5304,8 @@ theorem physicalModelPhase_actual_matrix_reference_roots_signed
     intro i
     have hi := hxr i
     rw [he,hd] at hi
-    have hsign : 0 < rp i*r := mul_pos_of_neg_of_neg (neg_pos.mp hi.1) hrneg
-    refine ⟨hsign,hi.2.1,?_,hi.2.2.2⟩
-    simpa only [Int.cast_neg,neg_div_neg_eq] using hi.2.2.1
+    refine ⟨(mul_pos_of_neg_of_neg (neg_pos.mp hi.1) hrneg),hi.2.1,?_,hi.2.2.2⟩
+    simpa using hi.2.2.1
 
                                                                    
                                                                        
@@ -5570,11 +5319,9 @@ theorem inverseFarey_mem_interval_signed {e r v s l w x : ℝ}
     · exact hw.trans_le (sub_le_sub_right (mul_le_mul_of_nonpos_left hx.2 hr) e)
   have ha := inverseFarey_difference hdet hxx.ne' hw.ne'
   have hb := inverseFarey_difference hdet hl.ne' hxx.ne'
-  have h₁ : 0 ≤ (w-x)/((r*x-e)*(r*w-e)) :=
-    div_nonneg (sub_nonneg.mpr hx.2) (mul_pos hxx hw).le
-  have h₂ : 0 ≤ (x-l)/((r*l-e)*(r*x-e)) :=
-    div_nonneg (sub_nonneg.mpr hx.1) (mul_pos hl hxx).le
-  exact ⟨by linarith only [ha,h₁],by linarith only [hb,h₂]⟩
+  have h₁ := div_nonneg (sub_nonneg.mpr hx.2) (mul_pos hxx hw).le
+  have h₂ := div_nonneg (sub_nonneg.mpr hx.1) (mul_pos hl hxx).le
+  exact ⟨by linarith,by linarith⟩
 
                                                                 
                                                               
@@ -5850,8 +5597,7 @@ theorem physicalModelPhase_actual_fourier_complete_sector_fourth_signed
   have hx : x₁=ρ ((a:ℝ)/d) := by
     change ρ (((e:ℝ)*((p.1:ℝ)/p.2)+v)/((r:ℝ)*((p.1:ℝ)/p.2)+s))=_
     rw [hfrac]
-  have hh := hρ a d hd hdQ hy
-  simpa only [z,hx] using hh
+  simpa only [z,hx] using (hρ a d hd hdQ hy)
 
                                                                         
                                                                           
@@ -5923,10 +5669,9 @@ theorem inverseFarey_original_seed_enlarged_rectangle_signed
     rw [hpden]
     exact mul_le_mul_of_nonneg_right (hRange _ hseed).2 (hden seed).le
   have hpK : (p.2:ℝ) ≤ 12*(K:ℝ) := by
-    have hh := mul_le_mul_of_nonneg_left hseedQ hdx.le
     have hy := mul_le_mul_of_nonneg_right hdyad' hQ.le
     change dx*Q ≤ 2*dm*Q at hy
-    nlinarith only [hpthi,hh,hy,hfloor]
+    nlinarith only [hpthi,(mul_le_mul_of_nonneg_left hseedQ hdx.le),hy,hfloor]
   have hfrac : (p.1:ℝ)/p.2=
       ((v:ℝ)-s*(seed:ℝ))/((r:ℝ)*(seed:ℝ)-e) := by
     rw [hpden]
@@ -5939,12 +5684,10 @@ theorem inverseFarey_original_seed_enlarged_rectangle_signed
   have hα : 0 < α := div_pos hnw hw
   have hβ : 0 ≤ β := hα.le.trans (hpI.1.trans hpI.2)
   have hp0 : 0 ≤ (p.1:ℝ) := by
-    have hh := (le_div_iff₀ hpt).mp hpI.1
-    exact (mul_nonneg hα.le hpt.le).trans hh
-  have hphi := (div_le_iff₀ hpt).mp hpI.2
+    exact (mul_nonneg hα.le hpt.le).trans ((le_div_iff₀ hpt).mp hpI.1)
   refine ⟨hpt,hpI,hp0,?_,hpK⟩
   calc
-    _ ≤ β*(p.2:ℝ) := hphi
+    _ ≤ β*(p.2:ℝ) := ((div_le_iff₀ hpt).mp hpI.2)
     _ ≤ β*(12*(K:ℝ)) := mul_le_mul_of_nonneg_left hpK hβ
     _ = _ := by ring
 
@@ -6070,14 +5813,14 @@ theorem completeNegativeSector_density_from_curvature
         ((e:ℝ)*p.1+v*p.2)/((r:ℝ)*p.1+s*p.2) ∈ Set.Icc l w := by
   classical
   intro α β K P S
-  have hd : (-v)*(-r)-e*s=1 := by nlinarith only [hdet]
+  have hd : (-v)*(-r)-e*s=1 := by nlinarith
   have hdl : 0 < ((-r:ℤ):ℝ)*(-w)-e := by
     simpa only [Int.cast_neg,neg_mul_neg] using hw
   have hdw : 0 < ((-r:ℤ):ℝ)*(-l)-e := by
     simpa only [Int.cast_neg,neg_mul_neg] using hl
   have hn : 0 < ((-v:ℤ):ℝ)-s*(-l) := by
     push_cast
-    nlinarith only [hnl]
+    nlinarith
   have ha' : ((-a:ℚ):ℝ)∈Icc (-w) (-l) := by
     simp only [Rat.cast_neg,Set.mem_Icc]
     exact ⟨neg_le_neg ha.2,neg_le_neg ha.1⟩
@@ -6106,9 +5849,8 @@ theorem completeNegativeSector_density_from_curvature
     have h₁ := congrArg Prod.fst hpq
     have h₂ := congrArg Prod.snd hpq
     exact Prod.ext (neg_injective h₁) h₂
-  have hcard : S.card=P.card := Finset.card_image_of_injective P hinj
   refine ⟨?_,?_⟩
-  · rw [hcard]
+  · rw [(Finset.card_image_of_injective P hinj)]
     simpa only [show (-α)-(-β)=β-α by ring] using hh.1
   · intro p hp
     obtain ⟨q,hq,rfl⟩ := Finset.mem_image.mp hp
@@ -6262,8 +6004,7 @@ theorem physicalModelPhase_actual_fourier_complete_negative_sector_fourth
   have hx : x₁=ρ ((a:ℝ)/d) := by
     change ρ (((e:ℝ)*((p.1:ℝ)/p.2)+v)/((r:ℝ)*((p.1:ℝ)/p.2)+s))=_
     rw [hfrac]
-  have hh := hρ a d hd hdQ hy
-  simpa only [z,hx] using hh
+  simpa only [z,hx] using (hρ a d hd hdQ hy)
 
                                                                
                                                                    
@@ -6303,18 +6044,15 @@ theorem inverseFarey_negative_original_seed_enlarged_rectangle
   have hh := inverseFarey_original_seed_enlarged_rectangle_signed hd hdl hdw hn
     (hmem anchor ha) (hmem seed hseed) hdyad' hc hs
   have hα : (((-v:ℤ):ℝ)-s*(-l))/(((-r:ℤ):ℝ)*(-l)-e) = -β := by
-    dsimp only [β]
     push_cast
     ring
   have hβ : (((-v:ℤ):ℝ)-s*(-w))/(((-r:ℤ):ℝ)*(-w)-e) = -α := by
-    dsimp only [α]
     push_cast
     ring
   have hK : ⌊(Q/3)*min (((-r:ℤ):ℝ)*(-w)-e) (((-r:ℤ):ℝ)*(-l)-e)⌋₊ = K := by
     simp only [Int.cast_neg,neg_mul_neg,min_comm,K]
   have hp : ((-v)*(-seed).den-s*(-seed).num,(-r)*(-seed).num-e*(-seed).den) =
       (-p.1,p.2) := by
-    dsimp only [p]
     simp only [Rat.neg_den,Rat.neg_num]
     apply Prod.ext <;> dsimp <;> ring
   dsimp only at hh
@@ -6333,8 +6071,8 @@ theorem mem_negative_fareySector_iff {N : ℕ} {l w : ℝ} {p : ℤ × ℤ}
       1 ≤ p.2 ∧ p.2 ≤ N ∧ IsCoprime p.1 p.2 ∧
         l*(p.2:ℝ) ≤ p.1 ∧ (p.1:ℝ) ≤ w*p.2 := by
   classical
-  have hw' : 0 < -w := neg_pos.mpr hw
-  have hl' : 0 ≤ -l := by linarith only [hw,hlw]
+  have hw' := neg_pos.mpr hw
+  have hl' : 0 ≤ -l := by linarith
   constructor
   · intro hp
     obtain ⟨q,hq,rfl⟩ := Finset.mem_image.mp hp
@@ -6342,18 +6080,18 @@ theorem mem_negative_fareySector_iff {N : ℕ} {l w : ℝ} {p : ℤ × ℤ}
       (HuxleyLinearForm.mem_fareySector_iff hw' hl').mp hq
     refine ⟨ht,htN,hcop.neg_left,?_,?_⟩
     · simp only [Int.cast_neg]
-      nlinarith only [hhi]
+      nlinarith
     · simp only [Int.cast_neg]
-      nlinarith only [hlo]
+      nlinarith
   · rintro ⟨ht,htN,hcop,hlo,hhi⟩
     apply Finset.mem_image.mpr
     refine ⟨(-p.1,p.2),?_,by simp⟩
     apply (HuxleyLinearForm.mem_fareySector_iff hw' hl').mpr
     refine ⟨ht,htN,hcop.neg_left,?_,?_⟩
     · simp only [Int.cast_neg]
-      nlinarith only [hhi]
+      nlinarith
     · simp only [Int.cast_neg]
-      nlinarith only [hlo]
+      nlinarith
 
                                                                                  
                                                                        
@@ -6362,14 +6100,11 @@ theorem fareySector_card_le_rectangle_all_slopes {N : ℕ} {l w : ℝ}
     ((HuxleyLinearForm.fareySector N l w).card:ℝ) ≤ w*(N:ℝ)^2 := by
   classical
   have hc : (HuxleyLinearForm.fareySector N l w).card ≤ ⌊w*(N:ℝ)⌋₊*N := by
-    calc
-      _ ≤ (((Finset.Icc (1:ℤ) ⌊w*(N:ℝ)⌋) ×ˢ Finset.Icc 1 (N:ℤ))).card :=
-        Finset.card_filter_le _ _
-      _ = _ := by simp [Finset.card_product,Int.floor_toNat]
+    exact (Finset.card_filter_le _ _).trans_eq (by simp [Finset.card_product,Int.floor_toNat])
   have hc' : ((HuxleyLinearForm.fareySector N l w).card:ℝ) ≤
       (⌊w*(N:ℝ)⌋₊:ℝ)*(N:ℝ) := by exact_mod_cast hc
   have hf := Nat.floor_le (mul_nonneg hw (Nat.cast_nonneg N))
-  exact hc'.trans (by nlinarith only [mul_le_mul_of_nonneg_right hf (Nat.cast_nonneg N)])
+  exact hc'.trans (by nlinarith)
 
                                                                    
                                                                   
@@ -6400,11 +6135,9 @@ theorem fareySector_numerator_fiber_bounds
     · apply (le_div_iff₀ hl).mpr
       nlinarith only [hlo]
   have hcN : A.card ≤ N := by
-    calc
-      _ ≤ (Finset.Icc (1:ℤ) (N:ℤ)).card := Finset.card_le_card (by
+    exact (Finset.card_le_card (by
         intro n hn
-        exact Finset.mem_Icc.mpr ⟨(hdata n hn).1,(hdata n hn).2.1⟩)
-      _ = N := by simp
+        exact Finset.mem_Icc.mpr ⟨(hdata n hn).1,(hdata n hn).2.1⟩)).trans_eq (by simp)
   have hmR : (0:ℝ) ≤ m := by exact_mod_cast hm
   have hwidth : 0 ≤ (m:ℝ)/l-(m:ℝ)/w :=
     sub_nonneg.mpr (div_le_div_of_nonneg_left hmR hl hlw)
@@ -6538,12 +6271,10 @@ theorem fareySector_numerator_projection_card_le {N : ℕ} {l w : ℝ}
     (((HuxleyLinearForm.fareySector N l w).image Prod.fst).card:ℝ) ≤ w*(N:ℝ) := by
   classical
   have hc : ((HuxleyLinearForm.fareySector N l w).image Prod.fst).card ≤ ⌊w*(N:ℝ)⌋₊ := by
-    calc
-      _ ≤ (Finset.Icc (1:ℤ) ⌊w*(N:ℝ)⌋).card := Finset.card_le_card (by
+    exact (Finset.card_le_card (by
         intro m hm
         obtain ⟨p,hp,rfl⟩ := Finset.mem_image.mp hm
-        exact (Finset.mem_product.mp (Finset.mem_filter.mp hp).1).1)
-      _ = _ := by simp [Int.floor_toNat]
+        exact (Finset.mem_product.mp (Finset.mem_filter.mp hp).1).1)).trans_eq (by simp [Int.floor_toNat])
   have hc' : (((HuxleyLinearForm.fareySector N l w).image Prod.fst).card:ℝ) ≤
       (⌊w*(N:ℝ)⌋₊:ℝ) := by exact_mod_cast hc
   exact hc'.trans (Nat.floor_le (mul_nonneg hw (Nat.cast_nonneg N)))
@@ -6607,8 +6338,7 @@ theorem fareySector_large_numerator_width {N : ℕ} {l w : ℝ}
       intro m hm
       have hmR := hnum m hm
       have hh := fareySector_numerator_fiber_cutoff_bound (N:=N) hl hlw hmR.2
-      have hdiv := div_le_div_of_nonneg_right hmR.1 hw.le
-      linarith only [hh,hdiv]
+      linarith only [hh,(div_le_div_of_nonneg_right hmR.1 hw.le)]
     have hh := Finset.sum_le_sum hf
     rw [←hsum,Finset.sum_const,nsmul_eq_mul] at hh
     exact hh.trans (mul_le_mul_of_nonneg_right hE (by positivity))
@@ -6643,13 +6373,11 @@ theorem fareySector_consecutive_denominators {N : ℕ} {l w : ℝ}
     obtain ⟨n,han,hna,hcn,hcn1⟩ := hcop a
     have hn : 1 ≤ n := by dsimp [a] at han; omega
     have hlow : (p:ℝ)/w ≤ n := by
-      have hf := Nat.lt_floor_add_one ((p:ℝ)/w)
       have hh : (⌊(p:ℝ)/w⌋₊:ℝ)+1 ≤ n := by exact_mod_cast han
-      linarith only [hf,hh]
+      linarith only [(Nat.lt_floor_add_one ((p:ℝ)/w)),hh]
     have hupp : (n:ℝ)+1 ≤ (p:ℝ)/w+4 := by
-      have hf := Nat.floor_le (div_nonneg (Nat.cast_nonneg p) hw.le)
       have hh : (n:ℝ) ≤ (⌊(p:ℝ)/w⌋₊:ℝ)+3 := by exact_mod_cast hna
-      linarith only [hf,hh]
+      linarith only [(Nat.floor_le (div_nonneg (Nat.cast_nonneg p) hw.le)),hh]
     have hnN : (n:ℝ)+1 ≤ N := by linarith only [hupp,hbound]
     have hnl : (n:ℝ)+1 ≤ (p:ℝ)/l := by linarith only [hupp,hwide]
     have hln : l*(n:ℝ) ≤ p := by
@@ -6666,13 +6394,13 @@ theorem fareySector_consecutive_denominators {N : ℕ} {l w : ℝ}
     refine ⟨p,n,?_,?_⟩
     · apply (HuxleyLinearForm.mem_fareySector_iff hl hw.le).mpr
       refine ⟨by dsimp; exact_mod_cast hn,by dsimp; omega,hcn.isCoprime,?_,?_⟩
-      · simpa only [Int.cast_natCast] using hln
-      · simpa only [Int.cast_natCast] using hpn
+      · simpa using hln
+      · simpa using hpn
     · apply (HuxleyLinearForm.mem_fareySector_iff hl hw.le).mpr
       refine ⟨by dsimp; omega,hnNZ,?_,?_,?_⟩
-      · simpa only [Nat.cast_add,Nat.cast_one] using hcn1.isCoprime
-      · simpa only [Int.cast_natCast,Int.cast_add,Int.cast_one] using hln1
-      · simpa only [Int.cast_natCast,Int.cast_add,Int.cast_one] using hpn1
+      · simpa using hcn1.isCoprime
+      · simpa using hln1
+      · simpa using hpn1
   by_cases hsmall : M < 8
   · refine hbuild 1 ?_ ?_ ?_
     · norm_num only [Nat.cast_one]
@@ -6691,14 +6419,12 @@ theorem fareySector_consecutive_denominators {N : ℕ} {l w : ℝ}
     obtain ⟨p,hp,hkp,hpk⟩ := Nat.exists_prime_lt_and_le_two_mul k (by omega)
     have hp3 : 3 ≤ p := by omega
     have hpl : M/4 < (p:ℝ) := by
-      have hf := Nat.lt_floor_add_one (M/4)
       have hh : (k:ℝ)+1 ≤ p := by exact_mod_cast hkp
-      exact hf.trans_le hh
+      exact (Nat.lt_floor_add_one (M/4)).trans_le hh
     have hpu : (p:ℝ) ≤ M/2 := by
-      have hf := Nat.floor_le (by positivity : 0 ≤ M/4)
       have hh : (p:ℝ) ≤ 2*(k:ℝ) := by exact_mod_cast hpk
       dsimp only [k] at hh
-      linarith only [hf,hh]
+      linarith only [(Nat.floor_le (by positivity : 0 ≤ M/4)),hh]
     refine hbuild p ?_ ?_ ?_
     · have hh := mul_le_mul_of_nonneg_right hpl.le hD
       have he : (p:ℝ)/l-(p:ℝ)/w=(p:ℝ)*D := by dsimp only [D]; ring

@@ -31,7 +31,7 @@ theorem full_ray_sector_energy (N : Eis) [Fintype (Eis⧸Ideal.span {N^2})]
       apply Finset.sum_le_sum
       intro r hr
       have hh := weighted_finite_row_energy_uniform (Finset.univ : Finset (Eis⧸Ideal.span {N^2}))
-        (fullRaySector N rows r) (fun _ => (1:ℂ))
+        (fullRaySector N rows r) (fun _ => 1)
         (fun p K => ∑ P∈fullRaySector N Pset p,f K P) E (fun p _ => hE r p)
       simp only [one_mul,norm_one,Finset.sum_const,Finset.card_univ,nsmul_eq_mul,mul_one] at hh
       have he : (∑ K∈fullRaySector N rows r, ‖∑ P∈Pset,f K P‖^2)=

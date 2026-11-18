@@ -9,11 +9,7 @@ noncomputable section
 
 open scoped Classical BigOperators
 namespace SevenEighths.InverseInitialCanonicalState
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT InverseMoment
-open InverseInitialArithmetic InverseInitialQuotientGeometry InverseInitialProfile
-open InverseInitialEnergyCallerState InverseInitialEnergyCallerWindows
-open InverseInitialEnergyCallerWindowGeometry InverseInitialEnergyCallerGeometry
-open InverseInitialEnergyCallerRanges CanonicalQuadraticSieve
+open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT InverseMoment InverseInitialArithmetic InverseInitialQuotientGeometry InverseInitialProfile InverseInitialEnergyCallerState InverseInitialEnergyCallerWindows InverseInitialEnergyCallerWindowGeometry InverseInitialEnergyCallerGeometry InverseInitialEnergyCallerRanges CanonicalQuadraticSieve
 local notation "O"=>ActualEisensteinCubic.O
 local notation "λ₀"=>ConcretePrimeRowBridge.goodLambda
 variable {ι:Type*}[DecidableEq ι](p:ι→O)(hp:∀i,p i≠0)
@@ -39,9 +35,7 @@ theorem live_widths_nonnegative
   obtain ⟨hlabel,hrow⟩:=initial_child_enclosures p hp hpr x 1 Z θ v H η hz
     (bound _ _ 1 hd) (bound _ _ 2 hv) (bound _ _ 3 hh)
   have hI:(1:ℝ)≤Ideal.absNorm (initialChild (toTuple p (sectorSource 1 x))).2.1:=by
-    have hne:(initialChild (toTuple p (sectorSource 1 x))).2.1≠0:=
-      mul_ne_zero (sourceIdeal_ne_zero p hp _) (sourceIdeal_ne_zero p hp _)
-    exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hne)
+    exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr (mul_ne_zero (sourceIdeal_ne_zero p hp _) (sourceIdeal_ne_zero p hp _)))
   have hdiv:(1:ℝ)≤(sourceIdeal p x.divisor).absNorm:=by
     exact_mod_cast Nat.one_le_iff_ne_zero.mpr
       (Ideal.absNorm_eq_zero_iff.not.mpr (sourceIdeal_ne_zero p hp _))
@@ -73,14 +67,12 @@ theorem retained_full_puncture
     ‖eisEmbedding (j*primaryGenerator t)‖^2=Z^(fullPunctureWidth Z t j) ∧
     fullPunctureWidth Z t j≤B-θ+G+3*η := by
   have hspan:=span_source_puncture p hp (windowSource p S ψ Z D B v θ H) hpr j ht
-  have ht0:=quotientSet_nonzero p hp (windowSource p S ψ Z D B v θ H) t ht
   have hm:j*primaryGenerator t≠0:=by
     apply Ideal.span_singleton_eq_bot.not.mp
     rw [hspan]
-    exact mul_ne_zero ht0 (Ideal.span_singleton_eq_bot.not.mpr hj)
-  have hret:=window_quotient_subset_retained p S ψ Z D B v θ H ht
+    exact mul_ne_zero (quotientSet_nonzero p hp (windowSource p S ψ Z D B v θ H) t ht) (Ideal.span_singleton_eq_bot.not.mpr hj)
   have hnt:=retained_quotient_bound p hp S (fun _=>1) (ψ 0) (ψ 1)
-    aC bC ad bd Z B θ η (zero_lt_one.trans hZ) hC hd hCup hdlo hdiv t hret
+    aC bC ad bd Z B θ η (zero_lt_one.trans hZ) hC hd hCup hdlo hdiv t (window_quotient_subset_retained p S ψ Z D B v θ H ht)
   obtain ⟨hn,he⟩:=full_puncture_width_exact Z hZ t j hm
   exact ⟨hm,hn,he,full_product_width_bound Z (B-θ) G η hZ t j hm hspan hnt hnj⟩
 

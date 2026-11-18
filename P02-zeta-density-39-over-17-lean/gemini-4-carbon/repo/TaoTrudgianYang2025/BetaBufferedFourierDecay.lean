@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaBufferedKernelJets
 public import TaoTrudgianYang2025.FourierDecayCore
 
@@ -55,7 +65,7 @@ theorem modelPhaseBufferedFourierMode_uniform_decay
     by_contra hn
     exact hu (by
       exact modelPhaseWeightedKernel_zero_of_not_mem hs (by norm_num)
-        (by simpa only [mul_one] using hn) T)
+        (by simpa using hn) T)
   have hb₀ : ∀ u, ‖iteratedDeriv 0 f u‖ ≤ 1 := by
     intro u
     exact norm_modelPhaseBufferedKernel_le_one l r η T 1 u F
@@ -88,10 +98,9 @@ theorem modelPhaseBufferedFourierMode_inverse_square_bound
   obtain ⟨C,hC,hdecay⟩ := modelPhaseBufferedFourierMode_uniform_decay hσ
   refine ⟨C,hC,?_⟩
   intro l r η hl hr hη hη₁ F δ T N q hδ hF hN hq
-  have h := hdecay l r η hl hr hη hη₁ F δ T N q hδ hF hN
   have hsmall : |q*N|^2 ≤ (1+|q*N|)^2 := by nlinarith [abs_nonneg (q*N)]
   have hb := (mul_le_mul_of_nonneg_right hsmall
-    (norm_nonneg (modelPhaseFourierMode (modelPhaseBufferedCutoff l r η) F T N q))).trans h
+    (norm_nonneg (modelPhaseFourierMode (modelPhaseBufferedCutoff l r η) F T N q))).trans (hdecay l r η hl hr hη hη₁ F δ T N q hδ hF hN)
   rw [sq_abs,mul_pow] at hb
   apply (le_div_iff₀ (mul_pos hN (sq_pos_of_ne_zero hq))).mpr
   apply (mul_le_mul_iff_left₀ hN).mp

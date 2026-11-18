@@ -16,8 +16,7 @@ theorem marked_cube_inverse_finite_support (Ψ : O →* ℂ) (W : ℝ → ℂ)
     (Function.support (fun H : Ideal O =>
       (UniqueFactorizationMonoid.moebius H : ℂ) * cubeWeight Ψ H *
         markedCompletedT Ψ W (X / (Ideal.absNorm H : ℝ) ^ 3) (fun A => d (H^3*A)))).Finite := by
-  have hf := markedExpandedTerm_finite_support Ψ W hW X hX d
-  apply (hf.image (fun p => p.2.1)).subset
+  apply ((markedExpandedTerm_finite_support Ψ W hW X hX d).image (fun p => p.2.1)).subset
   intro H hH
   by_contra hn
   have hzero : ∀ I J, markedExpandedTerm Ψ W X d I H J = 0 := by
@@ -40,15 +39,13 @@ theorem marked_large_cube_inner_reopen (Ψ : O →* ℂ) (W : ℝ → ℂ)
   have heq (H J : Ideal O) :
       (UniqueFactorizationMonoid.moebius H : ℂ)*cubeWeight Ψ (H*J)*f (H*J)=markedExpandedTerm Ψ W X d I H J := by
     simp only [f,markedExpandedTerm,expandedTerm,map_mul,Nat.cast_mul,mul_pow,mul_assoc]
-  have hf := markedExpandedTerm_finite_support Ψ W hW X hX d
   have hp : (Function.support (fun p : Ideal O × Ideal O => markedExpandedTerm Ψ W X d I p.1 p.2)).Finite := by
     change ((fun p : Ideal O × Ideal O => (I,p)) ⁻¹'
       Function.support (fun p : Ideal O × Ideal O × Ideal O => markedExpandedTerm Ψ W X d p.1 p.2.1 p.2.2)).Finite
-    exact Set.Finite.preimage (fun a _ b _ hab => (Prod.mk.inj hab).2) hf
-  have hg := large_cube_convolution H₀ (cubeWeight Ψ) (cubeWeight_zero Ψ) f (by simpa only [heq] using hp)
+    exact Set.Finite.preimage (fun a _ b _ hab => (Prod.mk.inj hab).2) (markedExpandedTerm_finite_support Ψ W hW X hX d)
   rw [show (∑' H : Ideal O, ∑' J : Ideal O,
       if H₀ ≤ (Ideal.absNorm H : ℝ) then markedExpandedTerm Ψ W X d I H J else 0)=
-      ∑' B : Ideal O,largeCubeCoefficient H₀ B*cubeWeight Ψ B*f B by simpa only [heq] using hg]
+      ∑' B : Ideal O,largeCubeCoefficient H₀ B*cubeWeight Ψ B*f B by simpa only [heq] using (large_cube_convolution H₀ (cubeWeight Ψ) (cubeWeight_zero Ψ) f (by simpa only [heq] using hp))]
   apply tsum_congr
   intro B
   dsimp [f,summand]

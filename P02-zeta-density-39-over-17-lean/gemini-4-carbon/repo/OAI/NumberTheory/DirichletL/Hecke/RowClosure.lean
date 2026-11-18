@@ -19,21 +19,19 @@ theorem periodic_of_primary (M : Ideal O)
     (hagree : ∀ x, λ₀ ^ 2 ∣ x - 1 → G x = F x) :
     CanonicalCoefficientClass.FactorsModulo M G := by
   intro x y hxy
-  have hdiff : λ₀ ^ 2 ∣ x - y := Ideal.mem_span_singleton.mp (hM hxy)
-  have hdiff' : λ₀ ∣ x - y := (dvd_pow_self λ₀ (by decide : 2 ≠ 0)).trans hdiff
+  have hdiff := Ideal.mem_span_singleton.mp (hM hxy)
   by_cases hx : λ₀ ∣ x
   · have hy : λ₀ ∣ y := by
-      convert dvd_sub hx hdiff' using 1 ; ring
+      convert dvd_sub hx ((dvd_pow_self λ₀ (by decide : 2 ≠ 0)).trans hdiff) using 1 ; ring
     rw [hz x hx, hz y hy]
   · have hg := PrimaryIdealUnitReindex.primaryGenerator_span_ne_zero_iff x |>.mpr hx
     have hspec := CompletedGauss.primaryGenerator_spec (Ideal.span {x}) hg
     obtain ⟨u, hu'⟩ := Ideal.span_singleton_eq_span_singleton.mp hspec.1.symm
     have hp : λ₀ ^ 2 ∣ (u : O) * x - 1 := by
-      have hp' : λ₀ ^ 2 ∣ CompletedGauss.primaryGenerator (Ideal.span {x}) - 1 := hspec.2
+      have hp' := hspec.2
       rwa [mul_comm, hu']
     have hq : λ₀ ^ 2 ∣ (u : O) * y - 1 := by
-      have hd := hdiff.trans (dvd_mul_left (x-y) (u : O))
-      convert dvd_sub hp hd using 1 ; ring
+      convert dvd_sub hp (hdiff.trans (dvd_mul_left (x-y) (u : O))) using 1 ; ring
     rw [← hu u x, ← hu u y, hagree _ hp, hagree _ hq]
     apply hF
     simpa only [mul_sub] using M.mul_mem_left (u : O) hxy
@@ -119,10 +117,9 @@ theorem rowTwist_periodic (η : Character) (m f z : O)
     (CanonicalRowCompletion.actualPeriodicRow (elementHom η) m u a b r hr)
     (CanonicalRowCompletion.actualPeriodicRow_periodic _ _ (elementHom_periodic η) _ _ _ _ _ hr)
     (rowTwist_unit_mul η m f z) ?_ ?_
-  · have hd3 : λ₀ ^ 2 ∣ (3 : O) := ActualEisensteinCubic.lambda_sq_dvd_three
-    have hd72 : λ₀ ^ 2 ∣ (72 : O) := hd3.trans ⟨24, by norm_num⟩
+  · have hd3 : λ₀ ^ 2 ∣ 3 := ActualEisensteinCubic.lambda_sq_dvd_three
     exact (Ideal.mul_le_left.trans Ideal.mul_le_right).trans
-      ((Ideal.span_singleton_le_iff_mem _).mpr (Ideal.mem_span_singleton.mpr hd72))
+      ((Ideal.span_singleton_le_iff_mem _).mpr (Ideal.mem_span_singleton.mpr (hd3.trans ⟨24, by norm_num⟩)))
   · intro n hn
     apply CanonicalRowCompletion.rowTwist_zero_of_not_supported _ _ _ _ _ hmLam hm2
     intro hs
@@ -157,13 +154,13 @@ theorem rowTwist_nonzero_unit (η : Character) (m f z n : O)
   obtain ⟨hs, hc⟩ := rowTwist_nonzero_coprime η m f z n hmLam hm2 hn
   have hm : IsCoprime n m := hc.of_isCoprime_of_dvd_right ⟨m^5*f^4*z, by ring⟩
   have hr : IsCoprime n r := hc.of_isCoprime_of_dvd_right
-    ⟨m^6*((u : O)*λ₀^a*(2 : O)^b), by
+    ⟨m^6*((u : O)*λ₀^a*2^b), by
       rw [show m^6*f^4*z = m^6*(f^4*z) by ring, hx]; ring⟩
   have h2 := hm.of_isCoprime_of_dvd_right hm2
   have h9 := (ShortDraftCRT.nine_coprime_of_not_lambda_dvd n
     ((CanonicalQuadraticSieve.supported_span_iff n).mp hs).1).symm
-  have h72 : IsCoprime n (72 : O) := by
-    convert (h2.pow_right : IsCoprime n ((2 : O)^3)).mul_right h9 using 1 ; norm_num
+  have h72 : IsCoprime n 72 := by
+    convert (h2.pow_right : IsCoprime n (2^3)).mul_right h9 using 1 ; norm_num
   have he : elementCoeff η n ≠ 0 := left_ne_zero_of_mul hn
   have hη : IsCoprime (Ideal.span {n}) η.modulus := by
     apply (IdealCharacter.isUnit_mk_iff_isCoprime _ _).mp
@@ -182,10 +179,7 @@ theorem exists_row_character (η : Character) (m f z : O)
   obtain ⟨u, a, b, r, hr, hpr, hx, hM, _, _, _⟩ :=
     CanonicalRowCompletion.exists_actual_periodic_row (elementHom η) η.modulus
       η.modulus_ne_bot (elementHom_periodic η) (elementHom_norm η) m f z hm hf hz hmLam hm2
-  let M := η.modulus * Ideal.span {m} * Ideal.span {(72 : O)} * Ideal.span {r}
-  let G := CanonicalRowCompletion.rowTwist (elementHom η) m f z
-  have hG := rowTwist_periodic η m f z hmLam hm2 u a b r hr hpr hx
-  refine ⟨rowCharacter M hM G hG (rowTwist_unit η m f z), ?_⟩
+  refine ⟨rowCharacter (η.modulus * Ideal.span {m} * Ideal.span {72} * Ideal.span {r}) hM (CanonicalRowCompletion.rowTwist (elementHom η) m f z) (rowTwist_periodic η m f z hmLam hm2 u a b r hr hpr hx) (rowTwist_unit η m f z), ?_⟩
   intro n
   rw [elementCoeff_rowCharacter]
   split_ifs with hn
@@ -201,9 +195,7 @@ theorem row_modulus_norm_le (η : Character) (m f z : O)
     (hx : f^4*z = (u : O)*λ₀^a*(2 : O)^b*r) :
     (η.modulus * Ideal.span {m} * Ideal.span {(72 : O)} * Ideal.span {r}).absNorm ≤
       rowConductorBound η m f z := by
-  have hprod : (Ideal.span {f^4*z} : Ideal O) ≠ ⊥ :=
-    Ideal.span_singleton_eq_bot.not.mpr (mul_ne_zero (pow_ne_zero _ hf) hz)
-  let : Finite (O ⧸ Ideal.span {f^4*z}) := Ring.HasFiniteQuotients.finiteQuotient hprod
+  let : Finite (O ⧸ Ideal.span {f^4*z}) := Ring.HasFiniteQuotients.finiteQuotient (Ideal.span_singleton_eq_bot.not.mpr (mul_ne_zero (pow_ne_zero _ hf) hz))
   have hle : (Ideal.span {f^4*z} : Ideal O) ≤ Ideal.span {r} := by
     apply (Ideal.span_singleton_le_iff_mem _).mpr
     apply Ideal.mem_span_singleton.mpr
@@ -225,10 +217,7 @@ theorem exists_row_character_with_conductor (η : Character) (m f z : O)
   obtain ⟨u, a, b, r, hr, hpr, hx, hM, _, _, _⟩ :=
     CanonicalRowCompletion.exists_actual_periodic_row (elementHom η) η.modulus
       η.modulus_ne_bot (elementHom_periodic η) (elementHom_norm η) m f z hm hf hz hmLam hm2
-  let M := η.modulus * Ideal.span {m} * Ideal.span {(72 : O)} * Ideal.span {r}
-  let G := CanonicalRowCompletion.rowTwist (elementHom η) m f z
-  have hG := rowTwist_periodic η m f z hmLam hm2 u a b r hr hpr hx
-  refine ⟨rowCharacter M hM G hG (rowTwist_unit η m f z),
+  refine ⟨rowCharacter (η.modulus * Ideal.span {m} * Ideal.span {72} * Ideal.span {r}) hM (CanonicalRowCompletion.rowTwist (elementHom η) m f z) (rowTwist_periodic η m f z hmLam hm2 u a b r hr hpr hx) (rowTwist_unit η m f z),
     row_modulus_norm_le η m f z hf hz u a b r hx, ?_⟩
   intro n
   rw [elementCoeff_rowCharacter]
@@ -244,10 +233,8 @@ theorem idealCoeff_eq_row (η χ : Character) (m f z : O)
   · subst I
     rw [map_zero, map_zero, zero_mul]
   let n := ConcretePrimeRowBridge.idealGenerator I
-  have hn : n ≠ 0 := ConcretePrimeRowBridge.idealGenerator_ne_zero I hI
-  have hs : Ideal.span {n} = I := ConcretePrimeRowBridge.span_idealGenerator I
-  rw [← hs, idealCoeff_span χ hn, heq]
-  change elementCoeff η n * _ = idealCoeff η (Ideal.span {n}) * _
+  have hn := ConcretePrimeRowBridge.idealGenerator_ne_zero I hI
+  rw [← (ConcretePrimeRowBridge.span_idealGenerator I), idealCoeff_span χ hn, heq]
   rw [idealCoeff_span η hn]
   rfl
 

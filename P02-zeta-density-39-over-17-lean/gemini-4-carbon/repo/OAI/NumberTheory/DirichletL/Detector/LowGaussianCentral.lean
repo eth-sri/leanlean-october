@@ -53,7 +53,7 @@ theorem low_central_gaussian_dyads (η : HeckeFamily.Character) (S : Finset Id)
   let f := fun j : ℕ=>if lowRemote Z (lowSelectedLength ell J) ε ((2:ℝ)^j) then 0 else
     ‖lowCommonDyad η (calibrationForSet S hS) W0 W1 (fun i=>canonicalSlotSupport (T i))
       W (fun i=>Z^(ell i)) J (Z^(17/48:ℝ)) (Z^(23/48:ℝ)) ((2:ℝ)^j) R V hV‖
-  have hz : 0<Z := lt_trans zero_lt_one hZ.1
+  have hz := lt_trans zero_lt_one hZ.1
   obtain ⟨hsm,hmb⟩ := hm R (by dsimp [R];positivity)
   have hb (j : ℕ) : f j≤(C*Z^(3/16+254*ε))*
       (((2:ℝ)^j)^ε*gaussianJointMoment V hV degree ((2:ℝ)^j/R)) := by
@@ -62,9 +62,8 @@ theorem low_central_gaussian_dyads (η : HeckeFamily.Character) (S : Finset Id)
     · exact mul_nonneg (by positivity) (mul_nonneg (by positivity) (gaussianJointMoment_nonneg V hV degree _))
     · obtain ⟨hlo,hhi⟩ := not_lowRemote_bounds Z (lowSelectedLength ell J) ε ((2:ℝ)^j) hz hj
       apply (hZ.2 T hT hout hdis hnorm J ((2:ℝ)^j) (by positivity) hlo hhi W hW V hV).trans
-      have hp : 1≤((2:ℝ)^j)^ε := Real.one_le_rpow (one_le_pow₀ (by norm_num)) hε.le
       apply mul_le_mul_of_nonneg_left _ (by positivity)
-      exact le_mul_of_one_le_left (gaussianJointMoment_nonneg V hV degree _) hp
+      exact le_mul_of_one_le_left (gaussianJointMoment_nonneg V hV degree _) (Real.one_le_rpow (one_le_pow₀ (by norm_num)) hε.le)
   have hn (j : ℕ) : 0≤f j := by dsimp [f];split_ifs <;>positivity
   have hsumf := Summable.of_nonneg_of_le hn hb (hsm.mul_left (C*Z^(3/16+254*ε)))
   refine ⟨hsumf,?_⟩

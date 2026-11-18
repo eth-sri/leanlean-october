@@ -7,78 +7,12 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-
-open scoped BigOperators Classical SchwartzMap
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 namespace CanonicalQuadraticSieve
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
-open TruncatedPrincipalPoisson IdealMobiusDivisorSum
+open ConcretePrimeRowBridge EisensteinSchwartzPoisson TruncatedPrincipalPoisson IdealMobiusDivisorSum
 
 theorem middleTruncation_coprime_common_mask
     (G C : Ideal O) (hG : Squarefree G) (hC : Squarefree C) (hGC : IsCoprime G C)
@@ -88,8 +22,7 @@ theorem middleTruncation_coprime_common_mask
         middleTruncation (fun P : primePool {C} => P.val) Finset.univ W
           (X / (Ideal.absNorm q : ℝ)) (Y / (Ideal.absNorm q : ℝ)) (Z / (Ideal.absNorm q : ℝ)) lengthScale := by
   classical
-  have hprod : Squarefree (G * C) := squarefree_mul_iff.mpr ⟨hGC.isRelPrime, hG, hC⟩
-  rw [middleTruncation_eq_ideal_frequencies _ hprod]
+  rw [middleTruncation_eq_ideal_frequencies _ (squarefree_mul_iff.mpr ⟨hGC.isRelPrime, hG, hC⟩)]
   simp_rw [middleTruncation_eq_ideal_frequencies C hC]
   simp only [Finset.mul_sum]
   rw [Finset.sum_comm (s := idealDivisors G) (t := rowNormDisk ⌊lengthScale⌋₊)]
@@ -101,11 +34,9 @@ theorem middleTruncation_coprime_common_mask
   apply Finset.sum_congr rfl
   intro d hd
   have hqG := (mem_idealDivisors hG.ne_zero).mp hq
-  have hdC := (mem_idealDivisors hC.ne_zero).mp hd
   have hq0 : q ≠ 0 := by intro he; rw [he, zero_dvd_iff] at hqG; exact hG.ne_zero hqG
   have hNq : 0 < (Ideal.absNorm q : ℝ) := by
     exact_mod_cast Nat.pos_of_ne_zero (fun he => hq0 (Ideal.absNorm_eq_zero_iff.mp he))
-  have hqd := (hGC.mono hqG hdC).isRelPrime
   have hlow : Y < (Ideal.absNorm q : ℝ) * (Ideal.absNorm d : ℝ) ↔
       Y / (Ideal.absNorm q : ℝ) < (Ideal.absNorm d : ℝ) := by
     constructor
@@ -122,7 +53,7 @@ theorem middleTruncation_coprime_common_mask
       simpa only [mul_comm] using hz
     · intro hz
       simpa only [mul_comm] using (le_div_iff₀ hNq).mp hz
-  simp only [map_mul, Nat.cast_mul, hlow, hhigh, hqd.moebius_mul, Int.cast_mul]
+  simp only [map_mul, Nat.cast_mul, hlow, hhigh, ((hGC.mono hqG ((mem_idealDivisors hC.ne_zero).mp hd)).isRelPrime).moebius_mul, Int.cast_mul]
   by_cases hp : Y / (Ideal.absNorm q : ℝ) < (Ideal.absNorm d : ℝ) ∧
       (Ideal.absNorm d : ℝ) ≤ Z / (Ideal.absNorm q : ℝ)
   · simp only [hp, and_self, ite_true]
@@ -254,7 +185,7 @@ theorem HasSieveExponent.original_masked_truncated_middle {α : ℝ} (hexp : Has
 
 end
 
-open ActualEisensteinCubic IdealMobiusDivisorSum IdealCoprimeSieveOperator
+open IdealMobiusDivisorSum IdealCoprimeSieveOperator
 
 theorem HasSieveExponent.actual_principal_difference {α : ℝ} (hexp : HasSieveExponent α)
     (deltaLoss : ℝ) (hδ : 0 < deltaLoss) :
@@ -274,14 +205,13 @@ theorem HasSieveExponent.actual_principal_difference {α : ℝ} (hexp : HasSieve
   intro n _ _ cols hinj M N K hM hN hK hcols hray a G hG hbad ε hε
   have hM0 : 0 ≤ M := by linarith
   have hK0 : 0 < K := by linarith
-  have hs := actualPrincipalDifference_bound cols hinj N (by linarith) hcols hray a G hG hbad K hK0 ε hε
   have hsupp := (supportConstant_pos ε hε).le
   have hb := hbound K N hK hN
   rw [norm_mul,Complex.norm_real,Real.norm_eq_abs,abs_of_nonneg (Real.sqrt_nonneg M)]
   calc
     _ ≤ Real.sqrt M * (((idealDivisors G).card : ℝ)^2 *
         ((1/Real.sqrt K)*sieveNorm K N*(supportConstant ε hε*N^ε)*∑ j, ‖a j‖^2)) :=
-      mul_le_mul_of_nonneg_left hs (Real.sqrt_nonneg _)
+      mul_le_mul_of_nonneg_left (actualPrincipalDifference_bound cols hinj N (by linarith) hcols hray a G hG hbad K hK0 ε hε) (Real.sqrt_nonneg _)
     _ ≤ Real.sqrt M * (((idealDivisors G).card : ℝ)^2 *
         ((1/Real.sqrt K)*(C*(K*N)^deltaLoss*(N+K^α))*(supportConstant ε hε*N^ε)*∑ j, ‖a j‖^2)) := by
       gcongr
@@ -295,15 +225,13 @@ theorem HasSieveExponent.actual_principal_difference {α : ℝ} (hexp : HasSieve
 end CanonicalQuadraticSieve
 
 namespace ShortDraftDescent
-open MeasureTheory Filter
 
 end ShortDraftDescent
 
-open scoped BigOperators Classical
 namespace CanonicalQuadraticSieve
 
 section
-open ActualEisensteinCubic FourierBridge
+open FourierBridge
 
 def halfShellFactor (N q : ℝ) : ℝ := Real.sqrt (N/2) / Real.sqrt q
 
@@ -322,11 +250,8 @@ lemma halfShellFactor_pair (M F N i j : ℝ) (hN : 0 < N) (hi : 0 < i) (hj : 0 <
       M/(Real.sqrt (i*j)*F) := by
   unfold halfShellFactor
   rw [Real.sqrt_mul hi.le]
-  have hs := Real.sq_sqrt (show 0 ≤ N/2 by positivity)
-  have hsi := (Real.sqrt_pos.mpr hi).ne'
-  have hsj := (Real.sqrt_pos.mpr hj).ne'
   field_simp
-  rw [hs]
+  rw [(Real.sq_sqrt (by positivity))]
   ring
 
 variable {m n p : Type} [Fintype m] [Fintype n] [Fintype p]
@@ -391,7 +316,6 @@ theorem smallPrincipalCorrection_bound
       originalTerm rows left right a b D E i j k*(u j:ℂ)*(v k:ℂ) from
       originalTerm_real_scaling rows left right a b u v D E i j k]
     push_cast
-    dsimp only [u,v]
     ring
   have hblock := canonical_original_divisor_block_phase_bound ε hε S T D₁ D₂ B N hD₁ hD₂ hN hS hT
     rows left right hr hl hri hrows (fun j => ⟨(hleft j).1,(hleft j).2.2⟩)
@@ -409,7 +333,6 @@ theorem smallPrincipalCorrection_bound
 
 end
 
-open ActualEisensteinCubic
 
 theorem HasSieveExponent.small_principal_correction {α : ℝ} (hexp : HasSieveExponent α)
     (deltaLoss : ℝ) (hδ : 0 < deltaLoss) {m n p : Type} [Fintype m] [Fintype n] [Fintype p]
@@ -430,21 +353,19 @@ theorem HasSieveExponent.small_principal_correction {α : ℝ} (hexp : HasSieveE
         (M/F+U*Real.sqrt (M/F)*B^(α-1/2)) := by
   have hb := smallPrincipalCorrection_bound ε hε S T D₁ D₂ B N M F hD₁ hD₂ hN hM hF hS hT
     rows left right hr hl hri hrows hleft hright a b
-  have hc := divisor_cost_with_constant hexp deltaLoss hδ ε hε B N D₁ D₂ hB hN hD₁ hD₂ hD₁N hD₂N a b
   have he := divisorEnergyFactor_nonneg ε hε N a b
   have hC := (divisorExponentConstant_pos hexp deltaLoss hδ).le
   calc
     _ ≤ (2*M/(F*N))*(divisorEnergyFactor ε hε N a b*
         (divisorExponentConstant hexp deltaLoss hδ*(B*N)^deltaLoss*(N+B^α*(D₁*D₂)))) :=
-      hb.trans (mul_le_mul_of_nonneg_left hc (by positivity))
+      hb.trans (mul_le_mul_of_nonneg_left (divisor_cost_with_constant hexp deltaLoss hδ ε hε B N D₁ D₂ hB hN hD₁ hD₂ hD₁N hD₂N a b) (by positivity))
     _ = (2*divisorEnergyFactor ε hε N a b*(divisorExponentConstant hexp deltaLoss hδ*(B*N)^deltaLoss))*
         ((M/(F*N))*(N+B^α*(D₁*D₂))) := by ring
     _ ≤ _ := mul_le_mul_of_nonneg_left
       (dual_middle_scale_shape M F B N (D₁*D₂) U α hM hF (by linarith) (by linarith) hcut)
       (by positivity)
 
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
-open TruncatedPrincipalPoisson IdealCoprimeSieveOperator
+open ConcretePrimeRowBridge EisensteinSchwartzPoisson TruncatedPrincipalPoisson IdealCoprimeSieveOperator
 
 theorem truncationError_symmetric_bound (m : ℕ) :
     ∃ (s : Finset (ℕ × ℕ)) (C : ℝ), 0 < C ∧
@@ -457,14 +378,12 @@ theorem truncationError_symmetric_bound (m : ℕ) :
   refine ⟨s, C * 2 ^ (m + 10), by positivity, ?_⟩
   intro ι _ P _ hinj S W X₀ X T hX₀ hlo hhi hT
   obtain ⟨hX, hY, hYX, hXZ, hL⟩ := symmetric_truncation_scales X₀ X T hX₀ hlo hhi hT
-  have hp := hb P hinj S W X (X₀ / T) (T * X₀) (T ^ 4) hX hY hYX hXZ hL
-  have hs := symmetric_truncation_scalar_bound m X₀ X T hX₀ hlo hhi hT
   calc
-    _ ≤ (2 : ℝ) ^ S.card * (C * s.sup (schwartzSeminormFamily ℝ ℝ ℂ) W) *
+    _ ≤ 2 ^ S.card * (C * s.sup (schwartzSeminormFamily ℝ ℝ ℂ) W) *
         (((X₀ / T) / X) ^ (m + 3) + 1 / (1 + (T * X₀) / X) ^ (m + 3) +
-          (X / (X₀ / T)) / ((min 1 (X / (T * X₀))) ^ 2 * (1 + X * T ^ 4 / (T * X₀)) ^ (m + 3))) := hp
-    _ ≤ (2 : ℝ) ^ S.card * (C * s.sup (schwartzSeminormFamily ℝ ℝ ℂ) W) * (2 ^ (m + 10) / T ^ m) :=
-      mul_le_mul_of_nonneg_left hs (by positivity)
+          (X / (X₀ / T)) / ((min 1 (X / (T * X₀))) ^ 2 * (1 + X * T ^ 4 / (T * X₀)) ^ (m + 3))) := (hb P hinj S W X (X₀ / T) (T * X₀) (T ^ 4) hX hY hYX hXZ hL)
+    _ ≤ 2 ^ S.card * (C * s.sup (schwartzSeminormFamily ℝ ℝ ℂ) W) * (2 ^ (m + 10) / T ^ m) :=
+      mul_le_mul_of_nonneg_left (symmetric_truncation_scalar_bound m X₀ X T hX₀ hlo hhi hT) (by positivity)
     _ = _ := by ring
 
 theorem primePool_symmetric_error_bound (m : ℕ) :
@@ -486,8 +405,6 @@ theorem primePool_symmetric_error_bound (m : ℕ) :
   exact div_le_div_of_nonneg_right
     (mul_le_mul_of_nonneg_right (support_card_bound ε hε G hG) (by positivity)) (by positivity)
 
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
-open TruncatedPrincipalPoisson IdealCoprimeSieveOperator
 
 theorem originalTerm_one_norm_le {m n p : Type*}
     (rows : m → Ideal O) (left : n → Ideal O) (right : p → Ideal O)
@@ -498,12 +415,10 @@ theorem originalTerm_one_norm_le {m n p : Type*}
   simp only [one_dvd, ite_true]
   split_ifs with hc
   · simp only [norm_mul, norm_star]
-    calc
-      _ ≤ (1 * ‖a j‖) * (1 * ‖b k‖) := mul_le_mul
+    exact (mul_le_mul
         (mul_le_mul_of_nonneg_right (quadraticRow_norm_le_one _ _) (norm_nonneg _))
         (mul_le_mul_of_nonneg_right (quadraticRow_norm_le_one _ _) (norm_nonneg _))
-        (by positivity) (by positivity)
-      _ = _ := by ring
+        (by positivity) (by positivity)).trans_eq (by ring)
   · simp only [norm_zero]
     positivity
 

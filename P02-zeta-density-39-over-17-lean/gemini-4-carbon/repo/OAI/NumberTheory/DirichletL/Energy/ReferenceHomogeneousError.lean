@@ -10,11 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyReferenceHomogeneousError
-open HeckeFamily HeckeDyadic ConcreteTraceCRT
-open CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy
-open CenteredMomentOriginalReflectionErrorMass CenteredMomentNaturalFixedRaySource
-open CenteredMomentOriginalRadialComparison CenteredMomentUniformReflectionProfile
-open CenteredMomentCounting CenteredMomentAbsoluteEnergy QuadraticInitialBound
+open HeckeFamily HeckeDyadic ConcreteTraceCRT CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy CenteredMomentOriginalReflectionErrorMass CenteredMomentNaturalFixedRaySource CenteredMomentOriginalRadialComparison CenteredMomentUniformReflectionProfile CenteredMomentCounting CenteredMomentAbsoluteEnergy QuadraticInitialBound
 local notation "O"=>HeckeFamily.O
 
 theorem natural_remaining_homogeneous_bound {α : Type*} (F T : Finset α) (hT : T⊆F)
@@ -81,23 +77,19 @@ theorem natural_reference_error_homogeneous {α:Type*}(F:Finset α)(bshort:ℝ)(
   refine ⟨errorConstant F bshort 1 b M,errorConstant_pos _ _ _ _ _,?_⟩
   intro T hT W hsW χ pool β P t X K Φ keep hX hK hP hp hβ hs hΦ
   let A:=(schwartzSeminormFamily ℝ ℝ ℂ (0,0)) W
-  have hA:0≤A:=apply_nonneg _ _
-  have hWA:∀x,‖W x‖≤A:=SchwartzMap.norm_le_seminorm ℝ W
   let R:=fun z:O=>polynomial (χ z) false W X 0 t *
     ∏i∈T,naturalSlot (χ z) (pool i) (heightCoefficient (β i) t) (P i)
   let V:=errorConstant F bshort 1 b M*A^2*X*∏i∈T,P i
   have hV:0≤V:=by
-    dsimp only [V]
     exact mul_nonneg (mul_nonneg (mul_nonneg (errorConstant_pos F bshort 1 b M).le
       (sq_nonneg A)) hX.le) (Finset.prod_nonneg (fun i hi=>(hP i hi).le))
   have hr(z:O):‖R z‖^2≤V:=by
-    have hh:=natural_remaining_homogeneous_bound F T hT W bshort A b M hA hM hWA hsW
+    have hh:=natural_remaining_homogeneous_bound F T hT W bshort A b M (apply_nonneg _ _) hM (SchwartzMap.norm_le_seminorm ℝ W) hsW
       (χ z) pool (fun i=>heightCoefficient (β i) t) P X t hX hP
       (fun i hi I hI=>by rw [heightCoefficient_norm _ _ _ (hp i hi I hI).ne_zero];exact hβ i hi I hI)
       (fun i hi I hI hn=>hs i hi I hI (left_ne_zero_of_mul hn))
     exact hh
-  have hsum:Summable (fun z:O=>‖Φ (‖eisEmbedding z‖^2/K)‖*‖R z‖^2):=
-    Summable.of_nonneg_of_le (fun z=>mul_nonneg (norm_nonneg _) (sq_nonneg _))
+  have hsum := Summable.of_nonneg_of_le (fun z=>mul_nonneg (norm_nonneg _) (sq_nonneg _))
       (fun z=>mul_le_mul_of_nonneg_left (hr z) (norm_nonneg _))
       ((radial_norm_summable Φ K hK).mul_right V)
   apply (radialEnergy_le_absolute_mass R keep Φ K hΦ hsum).trans

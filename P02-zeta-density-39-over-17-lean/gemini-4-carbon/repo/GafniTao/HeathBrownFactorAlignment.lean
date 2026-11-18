@@ -22,11 +22,7 @@ theorem heathBrownKthDerivativeFactor_eq_critical
       let r := heathBrownCriticalReciprocal k
       lambda ^ r + N ^ (-r) +
         N ^ (-2 * r) * lambda ^ (-2 * r / (k : ℝ)) := by
-  dsimp only
   unfold heathBrownKthDerivativeFactor heathBrownCriticalReciprocal
-  have hkReal : (2 : ℝ) ≤ k := by exact_mod_cast hk
-  have hk0 : (k : ℝ) ≠ 0 := by linarith
-  have hkm10 : (k : ℝ) - 1 ≠ 0 := by linarith
   congr 1
   · congr 1
     field_simp
@@ -86,9 +82,7 @@ theorem heathBrownThreeTerm_scaled_identity
             lambda ^ (-2 * r / (k : ℝ))) := by ring
   rw [heathBrownKthDerivativeFactor_eq_critical hk N lambda]
   unfold heathBrownThreeTerm
-  dsimp only
-  rw [mul_add, mul_add, mul_add, mul_add]
-  rw [hfirst, hmiddle, hlast]
+  rw [mul_add, mul_add, mul_add, mul_add, hfirst, hmiddle, hlast]
   ring
 
 theorem heathBrown_lambda_power_identity

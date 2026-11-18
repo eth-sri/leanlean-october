@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaTaylorPolynomialJets
 
 @[expose] public section
@@ -66,18 +76,16 @@ theorem abs_iteratedDeriv_finiteTaylorPolynomial_remainder_le
     (hb : ∀ y ∈ uIcc a x, |iteratedDeriv (Q+1) f y| ≤ M) :
     |iteratedDeriv j (fun y => f y-finiteTaylorPolynomial f Q a y) x| ≤
       M*|x-a|^(Q+1-j) := by
-  have hM : 0 ≤ M := (abs_nonneg _).trans (hb a left_mem_uIcc)
-  have hN : (j : WithTop ℕ∞) ≤ ∞ :=
-    ENat.natCast_le_of_coe_top_le_withTop le_rfl j
+  have hN := ENat.natCast_le_of_coe_top_le_withTop le_rfl j
   rw [iteratedDeriv_fun_sub ((hf x right_mem_uIcc).of_le hN)
     ((finiteTaylorPolynomial_contDiff f Q a).contDiffAt.of_le hN),
     iteratedDeriv_finiteTaylorPolynomial f a hj]
   have h := abs_finiteTaylorPolynomial_remainder_le (f := iteratedDeriv j f)
     (a := a) (x := x) (M := M) (Q-j)
     (fun y hy => contDiffAt_iteratedDeriv_infty (hf y hy) j) ?_
-  · have hfac : (1 : ℝ) ≤ ((Q-j+1).factorial : ℝ) := by
+  · have hfac : 1 ≤ ((Q-j+1).factorial : ℝ) := by
       exact_mod_cast Nat.succ_le_of_lt (Nat.factorial_pos (Q-j+1))
-    exact h.trans ((div_le_self (mul_nonneg hM (pow_nonneg (abs_nonneg _) _)) hfac).trans_eq
+    exact h.trans ((div_le_self (mul_nonneg ((abs_nonneg _).trans (hb a left_mem_uIcc)) (pow_nonneg (abs_nonneg _) _)) hfac).trans_eq
       (by rw [show Q-j+1 = Q+1-j by omega]))
   · intro y hy
     rw [iteratedDeriv_real_comp_order,show Q-j+1+j = Q+1 by omega]

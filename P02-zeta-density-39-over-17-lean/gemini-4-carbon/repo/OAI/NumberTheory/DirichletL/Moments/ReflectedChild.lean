@@ -8,8 +8,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical SchwartzMap
 namespace SevenEighths.CenteredMomentReflectedChild
-open CanonicalQuadraticSieve CenteredMomentGaussEnergy CenteredMomentCauchy
-open CenteredMomentSmooth CenteredMomentChildEnergy
+open CanonicalQuadraticSieve CenteredMomentGaussEnergy CenteredMomentCauchy CenteredMomentSmooth CenteredMomentChildEnergy
 local notation "O" => ActualEisensteinCubic.O
 
 theorem finite_reflected_energy_le_gaussEnergy {α : Type*} (S : Finset α) (a : α → O)
@@ -21,7 +20,7 @@ theorem finite_reflected_energy_le_gaussEnergy {α : Type*} (S : Finset α) (a :
       (gaussEnergy S a ha c W K).re := by
   have hh := finite_energy_le_gaussEnergy S a ha c W K hK (rows.image Neg.neg) hW
     (by intro z hz;obtain ⟨w,hw,rfl⟩ := Finset.mem_image.mp hz
-        simpa only [map_neg,norm_neg] using hmajor w hw)
+        simpa using hmajor w hw)
   rw [Finset.sum_image] at hh
   · exact hh
   · intro x hx y hy hxy
@@ -64,17 +63,8 @@ theorem whole_kernel_reflected_gauss_child_bound (W : 𝓢(ℝ, ℂ)) (V : Fin 4
     (fun i => c i * columnPhase (V 2) (u i) t) U K hK rows hU hmajor).trans (hleft t)
   have hR' := (finite_reflected_energy_le_gaussEnergy T b hb
     (fun j => d j * star (columnPhase (V 3) (v j) t)) U K hK rows hU hmajor).trans (hright t)
-  have hl : Real.sqrt (∑ z ∈ rows,
-      ‖gaussPolynomial S a ha (fun i => c i * columnPhase (V 2) (u i) t) z‖ ^ 2) ≤
-      E₁ * (1 + ‖t‖) ^ J₁ := (Real.sqrt_le_iff).mpr ⟨by positivity, hL⟩
-  have hr : Real.sqrt (∑ z ∈ rows,
-      ‖gaussPolynomial T b hb (fun j => d j * star (columnPhase (V 3) (v j) t)) (-z)‖ ^ 2) ≤
-      E₂ * (1 + ‖t‖) ^ J₂ := (Real.sqrt_le_iff).mpr ⟨by positivity, hR'⟩
   simp only [leftColumn_eq_gaussPolynomial, rightColumn_eq_star_gaussPolynomial, norm_star]
-  calc
-    _ ≤ (E₁ * (1 + ‖t‖) ^ J₁) * (E₂ * (1 + ‖t‖) ^ J₂) :=
-      mul_le_mul hl hr (Real.sqrt_nonneg _) (by positivity)
-    _ = _ := by rw [pow_add]; ring
+  exact (mul_le_mul ((Real.sqrt_le_iff).mpr ⟨by positivity, hL⟩) ((Real.sqrt_le_iff).mpr ⟨by positivity, hR'⟩) (Real.sqrt_nonneg _) (by positivity)).trans_eq (by rw [pow_add]; ring)
 
 end SevenEighths.CenteredMomentReflectedChild
 

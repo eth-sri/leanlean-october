@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.ThirteenthRootScales
 
 @[expose] public section
@@ -45,10 +54,9 @@ theorem zero_q_physical_polynomial_budgets {T M H Q R lam : ℝ}
   have hfirst := mul_le_mul_of_nonneg_right hTM hQ0
   have hsecond := mul_le_mul hHQ hRmax hR (show 0 ≤ T*Q/2 by positivity)
   have hsecond' := mul_le_mul_of_nonneg_right hT2M hQ0
-  have hroot := zero_q_twelfth_root_budget (show 0 ≤ T by linarith) hR hRmax hlam hscale
   have hx : 0 ≤ (2*R*lam)^((1:ℝ)/12) := Real.rpow_nonneg (by positivity) _
   have hxH := mul_le_mul_of_nonneg_right hHQ hx
-  have hxQ := mul_le_mul_of_nonneg_right hroot hQ0
+  have hxQ := mul_le_mul_of_nonneg_right (zero_q_twelfth_root_budget (show 0 ≤ T by linarith) hR hRmax hlam hscale) hQ0
   constructor
   · nlinarith
   constructor <;> nlinarith

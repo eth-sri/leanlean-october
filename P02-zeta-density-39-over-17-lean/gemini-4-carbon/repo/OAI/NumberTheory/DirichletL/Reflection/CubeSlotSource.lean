@@ -46,8 +46,7 @@ lemma cubeJoined_completed (x : CubeSlotChoices H L) (Ψ : Eis→*ℂ) (W : ℝ�
 lemma cubeJoined_coefficient (x : CubeSlotChoices H L) (w : ∀ i,L i→ℂ) :
     (∏ i,w i (cubeChoicesJoin H L x i))=
       (∏ i : {i // i∉x.1},w i.val ⟨(x.2.1 i).val,(Finset.mem_filter.mp (x.2.1 i).property).1⟩)*
-      (∏ i : x.1,w i.val ⟨(x.2.2 i).val,(Finset.mem_filter.mp (x.2.2 i).property).1⟩) := by
-  exact (slot_coefficient_split L x.1 w _ _).trans (mul_comm _ _)
+      (∏ i : x.1,w i.val ⟨(x.2.2 i).val,(Finset.mem_filter.mp (x.2.2 i).property).1⟩) := (slot_coefficient_split L x.1 w _ _).trans (mul_comm _ _)
 
 def cubeAbsorbedCoefficient (w : ∀ i,L i→ℂ) (T : Finset σ) : ℂ :=
   ∑ b : ∀ i : {i // i∉T},cubeDivList H (L i.val),

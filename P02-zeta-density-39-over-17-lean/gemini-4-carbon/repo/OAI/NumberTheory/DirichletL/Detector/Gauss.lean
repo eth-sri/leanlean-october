@@ -18,8 +18,7 @@ def frequencyGauss {F : Type*} [Field F] [Fintype F]
 
 theorem frequencyGauss_nonzero {F : Type*} [Field F] [Fintype F]
     (ξ : MulChar F ℂ) (ψ : AddChar F ℂ) {h : F} (hh : h ≠ 0) :
-    frequencyGauss ξ ψ h = ξ⁻¹ h * gaussSum ξ ψ := by
-  exact gaussSum_mulShift_eq ξ ψ (Units.mk0 h hh)
+    frequencyGauss ξ ψ h = ξ⁻¹ h * gaussSum ξ ψ := gaussSum_mulShift_eq ξ ψ (Units.mk0 h hh)
 
 theorem frequencyGauss_principal {F : Type*} [Field F] [Fintype F]
     (ψ : AddChar F ℂ) (hψ : ψ ≠ 1) (h : F) :

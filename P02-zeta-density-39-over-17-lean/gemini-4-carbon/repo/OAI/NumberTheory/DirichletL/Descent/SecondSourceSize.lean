@@ -2,15 +2,14 @@ module
 public import OAI.NumberTheory.DirichletL.Descent.FirstSourceSize
 public import OAI.NumberTheory.DirichletL.Descent.SecondCanonicalTail
 
-set_option linter.privateModule false
 
 @[expose] public section
 
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open scoped BigOperators Classical
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
 local notation "O" => ActualEisensteinCubic.O

@@ -55,15 +55,11 @@ theorem functional_equation (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
 theorem gamma_real_ratio_bound : ∃ C : ℝ, 0<C ∧
     ∀ x ∈ Icc (-(1/10 : ℝ)) (1/2), Real.Gamma (1-x)/Real.Gamma (x+2)≤C := by
   have hcont : ContinuousOn (fun x : ℝ => Real.Gamma (1-x)/Real.Gamma (x+2))
-      (Icc (-(1/10 : ℝ)) (1/2)) := by
+      (Icc (-(1/10)) (1/2)) := by
     intro x hx
-    have hnum : DifferentiableAt ℝ Real.Gamma (1-x) :=
-      Real.differentiableAt_Gamma (by intro n hn; have hnn := Nat.cast_nonneg (α:=ℝ) n; linarith [hx.2])
-    have hden : DifferentiableAt ℝ Real.Gamma (x+2) :=
-      Real.differentiableAt_Gamma (by intro n hn; have hnn := Nat.cast_nonneg (α:=ℝ) n; linarith [hx.1])
-    exact ((hnum.continuousAt.comp (g := Real.Gamma) (f := fun y : ℝ => 1-y) (show ContinuousAt (fun y : ℝ => 1-y) x by fun_prop)).div
-      (hden.continuousAt.comp (g := Real.Gamma) (f := fun y : ℝ => y+2) (show ContinuousAt (fun y : ℝ => y+2) x by fun_prop))
-      (Real.Gamma_pos_of_pos (show 0<x+2 by linarith [hx.1])).ne').continuousWithinAt
+    exact (((Real.differentiableAt_Gamma (by intro n hn; have hnn := Nat.cast_nonneg (α:=ℝ) n; linarith [hx.2])).continuousAt.comp (g := Real.Gamma) (f := fun y : ℝ => 1-y) (show ContinuousAt (fun y : ℝ => 1-y) x by fun_prop)).div
+      ((Real.differentiableAt_Gamma (by intro n hn; have hnn := Nat.cast_nonneg (α:=ℝ) n; linarith [hx.1])).continuousAt.comp (g := Real.Gamma) (f := fun y : ℝ => y+2) (show ContinuousAt (fun y : ℝ => y+2) x by fun_prop))
+      (Real.Gamma_pos_of_pos (by linarith [hx.1])).ne').continuousWithinAt
   obtain ⟨C,hC⟩ := isCompact_Icc.exists_bound_of_continuousOn hcont
   refine ⟨|C|+1,by positivity,?_⟩
   intro x hx
@@ -113,13 +109,11 @@ theorem completionScale_rpow_le {Q x : ℝ} (hQ : 0<Q) (hx : 0≤x) :
     rw [Real.sqrt_mul (by norm_num : (0 : ℝ)≤3)]
     apply (div_le_iff₀ (by positivity : 0<2*Real.pi)).mpr
     nlinarith [Real.sqrt_nonneg Q,Real.pi_gt_three]
-  calc
-    _ ≤ (Real.sqrt Q)^x := Real.rpow_le_rpow
-      (HeckeStrip.completionScale_pos Q hQ).le hscale hx
-    _ = _ := by
+  exact (Real.rpow_le_rpow
+      (HeckeStrip.completionScale_pos Q hQ).le hscale hx).trans_eq (by
       rw [Real.sqrt_eq_rpow,←Real.rpow_mul hQ.le]
       congr 1
-      ring
+      ring)
 
 theorem primitive_reflected_bound : ∃ C : ℝ, 0<C ∧
     ∀ (c : O) [NeZero c] (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
@@ -142,13 +136,9 @@ theorem primitive_reflected_bound : ∃ C : ℝ, 0<C ∧
   rw [he]
   have he' : (1-2*s.re)/2=1/2-s.re := by ring
   rw [he'] at hscale
-  calc
-    _ ≤ ((conductor c)^(1/2-s.re)*(C*(3+|s.im|)^2))*
-        ‖LFunction (character c χ⁻¹ (inverse_unit_trivial c χ hu)) (1-s)‖ :=
-      mul_le_mul_of_nonneg_right (mul_le_mul hscale (hgamma s hl hr)
+  exact (mul_le_mul_of_nonneg_right (mul_le_mul hscale (hgamma s hl hr)
         (norm_nonneg _) (Real.rpow_nonneg (by exact_mod_cast (conductor_ge_one c).trans' zero_le_one) _))
-        (norm_nonneg _)
-    _ = _ := by ring
+        (norm_nonneg _)).trans_eq (by ring)
 
 end SevenEighths.HeckeDyadicReflection
 

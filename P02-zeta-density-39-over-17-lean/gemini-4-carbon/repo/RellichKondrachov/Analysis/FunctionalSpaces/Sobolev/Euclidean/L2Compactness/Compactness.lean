@@ -102,7 +102,7 @@ lemma uniformContinuous_ψ (hψc : Continuous ψ) (hψcs : HasCompactSupport ψ)
   classical
   -- `HasCompactSupport` implies `ψ = 0` outside a compact set, hence `ψ → 0` along `cocompact`.
   refine
-    Continuous.uniformContinuous_of_tendsto_cocompact (f := ψ) (x := (0 : ℝ)) hψc ?_
+    Continuous.uniformContinuous_of_tendsto_cocompact (f := ψ) (x := 0) hψc ?_
   -- Show `ψ → 0` along `cocompact` using the `ε`-ball characterization.
   refine (Metric.tendsto_nhds.2 ?_)
   intro ε hε

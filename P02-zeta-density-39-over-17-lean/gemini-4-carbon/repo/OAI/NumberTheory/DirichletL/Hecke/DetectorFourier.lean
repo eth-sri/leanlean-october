@@ -6,9 +6,8 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorProfilesUniform
 namespace OAI
 
 namespace SevenEighths.HeckeDetectorFourier
-open MeasureTheory
+open MeasureTheory HeckeDetectorProfiles
 open scoped BigOperators Classical ContDiff FourierTransform SchwartzMap
-open HeckeDetectorProfiles
 noncomputable section
 
 theorem uniform_fourier_moment (Ω : ℝ → ℂ) (V T : SchwartzMap ℝ ℂ)
@@ -42,17 +41,14 @@ theorem schwartz_weighted_tail (g : SchwartzMap ℝ ℂ) (J N : ℕ)
     (R : ℝ) (hR : 0 < R) :
     R^N*(∫ t : ℝ in {t | R < ‖t‖}, (1+‖t‖)^J*‖(𝓕 g) t‖) ≤
       ∫ t : ℝ, (1+‖t‖)^(J+N)*‖(𝓕 g) t‖ := by
-  have hiJ := AnalyticBridge.schwartz_fourier_one_plus_integrable g J
   have hiN := AnalyticBridge.schwartz_fourier_one_plus_integrable g (J+N)
-  have hs : MeasurableSet {t : ℝ | R < ‖t‖} := measurableSet_lt measurable_const continuous_norm.measurable
   rw [← integral_const_mul]
-  apply (setIntegral_mono_on (hiJ.const_mul _).integrableOn hiN.integrableOn hs ?_).trans
+  apply (setIntegral_mono_on ((AnalyticBridge.schwartz_fourier_one_plus_integrable g J).const_mul _).integrableOn hiN.integrableOn (measurableSet_lt measurable_const continuous_norm.measurable) ?_).trans
     (setIntegral_le_integral hiN (Filter.Eventually.of_forall (by intro t; positivity)))
   intro t ht
-  have hp : R^N ≤ (1+‖t‖)^N := pow_le_pow_left₀ hR.le (by change R < ‖t‖ at ht; linarith) N
   calc
     _ ≤ (1+‖t‖)^N*((1+‖t‖)^J*‖(𝓕 g) t‖) :=
-      mul_le_mul_of_nonneg_right hp (by positivity)
+      mul_le_mul_of_nonneg_right (pow_le_pow_left₀ hR.le (by change R < ‖t‖ at ht; linarith) N) (by positivity)
     _ = _ := by rw [pow_add]; ring
 
 end

@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.IntegerQuadrupleCount
 public import LaterPairs.Native.RobertSargosPrimitiveSystem
 
@@ -58,13 +67,11 @@ theorem robertSargos_product_image_card_le
     (hmem : ∀ p ∈ S, RobertSargosPrimitiveSystem R H Q δ p) :
     ((S.image robertSargosProductKey).card:ℝ) ≤ 570*δ*R*H*Q^2 := by
   have hR0 : 0 ≤ R := by linarith
-  have hH0 : 0 ≤ H := by linarith
   have hQ0 : 0 ≤ Q := by linarith
   have hδ0 : 0 ≤ δ := by linarith
-  have hδQ : 1 ≤ δ*Q := one_le_mul_of_one_le_of_one_le hδ hQ
+  have hδQ := one_le_mul_of_one_le_of_one_le hδ hQ
   have hlast : 2*(δ+8)*Q+1 ≤ 19*δ*Q := by
-    have hm := mul_le_mul_of_nonneg_right hδ hQ0
-    nlinarith only [hm,hδQ]
+    nlinarith
   have hb := robertSargos_product_image_card_le_box S hR0 (by linarith)
     (by linarith) hδ0 hmem
   calc

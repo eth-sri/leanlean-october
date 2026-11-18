@@ -13,15 +13,14 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 noncomputable section
-open Complex MeasureTheory Set
-open MathCollab.Density.Stronger.Fourth
+open Complex MeasureTheory Set MathCollab.Density.Stronger.Fourth
 namespace MathCollab.Density.Stronger.Atkinson
 
 theorem atkinsonRootSlope_far_positive {T b y : ℝ} (hT : 0 < T)
     (hy : y ∈ Icc (Real.sqrt (T / 16)) (Real.sqrt T))
     (hb : 8 * Real.sqrt T ≤ b) :
     b ≤ atkinsonRootSlope T b y := by
-  have hy0 : 0 < y := (Real.sqrt_pos.2 (by positivity : 0 < T / 16)).trans_le hy.1
+  have hy0 := (Real.sqrt_pos.2 (by positivity : 0 < T / 16)).trans_le hy.1
   have hp : 0 ≤ T / (Real.pi * y) := by positivity
   unfold atkinsonRootSlope
   nlinarith [Real.sqrt_nonneg T, hy.2]
@@ -30,7 +29,7 @@ theorem atkinsonRootSlope_far_negative {T b y : ℝ} (hT : 0 < T)
     (hy : y ∈ Icc (Real.sqrt (T / 16)) (Real.sqrt T))
     (hb : 8 * Real.sqrt T ≤ b) :
     atkinsonRootSlope T (-b) y ≤ -b := by
-  have hy0 : 0 < y := (Real.sqrt_pos.2 (by positivity : 0 < T / 16)).trans_le hy.1
+  have hy0 := (Real.sqrt_pos.2 (by positivity : 0 < T / 16)).trans_le hy.1
   have hs : Real.sqrt (T / 16) = Real.sqrt T / 4 := by
     rw [Real.sqrt_div hT.le]
     norm_num
@@ -41,7 +40,7 @@ theorem atkinsonRootSlope_far_negative {T b y : ℝ} (hT : 0 < T)
     have hprod := mul_le_mul_of_nonneg_left hsy (Real.sqrt_nonneg T)
     rw [Real.mul_self_sqrt hT.le] at hprod
     have hmul := mul_le_mul_of_nonneg_left hpi
-      (show 0 ≤ 4 * Real.sqrt T * y by positivity)
+      (by positivity)
     nlinarith
   unfold atkinsonRootSlope
   linarith [Real.sqrt_nonneg T]
@@ -88,15 +87,12 @@ theorem exists_norm_atkinsonPowerIntegral_far_le (α : ℝ) :
       ((Real.sqrt (T / 16)) ^ 2) ((Real.sqrt T) ^ 2) (C * G * T ^ (-α)) := by
     simpa only [Real.sq_sqrt (by positivity : 0 ≤ T / 16), Real.sq_sqrt hT.le] using
       hweight T G L hT hG hGT hL
-  have hw := hf.comp_sq ha.le hab
   have hp (u : ℝ)
       (hu : ∀ x ∈ Icc (Real.sqrt (T / 16)) (Real.sqrt T),
         ‖∫ y in Real.sqrt (T / 16)..x, atkinsonRootKernel T u y‖ ≤ 1 / (b * Real.pi)) :
       ‖atkinsonPowerIntegral T G L α u‖ ≤ (4 * C / Real.pi) * G * T ^ (-α) / b := by
-    have h := hw.atkinsonRoot_of_primitive_bound u ha hab hu
     rw [atkinsonPowerIntegral_eq_root hT hG hL hwidth α u, norm_mul, norm_ofNat]
-    have hfin := mul_le_mul_of_nonneg_left h (by norm_num : (0 : ℝ) ≤ 2)
-    convert hfin using 1
+    convert (mul_le_mul_of_nonneg_left ((hf.comp_sq ha.le hab).atkinsonRoot_of_primitive_bound u ha hab hu) (by norm_num : (0 : ℝ) ≤ 2)) using 1
     ring
   exact ⟨hp b (fun x hx => (norm_atkinsonRootKernel_integral_far hT hx hb).1),
     hp (-b) (fun x hx => (norm_atkinsonRootKernel_integral_far hT hx hb).2)⟩

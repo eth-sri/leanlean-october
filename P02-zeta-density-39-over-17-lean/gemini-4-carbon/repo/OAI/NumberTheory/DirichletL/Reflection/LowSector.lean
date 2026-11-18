@@ -72,12 +72,11 @@ theorem original_low_sector_literal_energy
     hNs heH heza heN hδ hδη hrowcap hslotcap hconst hbudget
   dsimp only
   intro hscap hret rows Pset S hrows E hGN hGchar hrowcop hprod hScop hSN hSchar u θ r aw hqk hqp hKr hPr hr haw
-  have hzpos : 0<Z := lt_trans zero_lt_one (lt_of_lt_of_le hZs ((le_max_left _ _).trans hZ))
+  have hzpos := lt_trans zero_lt_one (lt_of_lt_of_le hZs ((le_max_left _ _).trans hZ))
   let G := (poolPrimeFamily J Q Q₀).restrict A
   let j := fun b : A => completedLocalExponent J F b.val.val
-  have hpair := (poolPrimeFamily J Q Q₀).restrict_pairwise (poolPrimeFamily_pairwise J Q Q₀) A
   have hj : ∀ b : A,j b<6 := by intro b;exact Nat.mod_lt _ (by norm_num)
-  have hs := henergy Z ((le_max_left _ _).trans hZ) G j hNlevel hbase hac hpair hGN hGchar hj
+  have hs := henergy Z ((le_max_left _ _).trans hZ) G j hNlevel hbase hac ((poolPrimeFamily J Q Q₀).restrict_pairwise (poolPrimeFamily_pairwise J Q Q₀) A) hGN hGchar hj
     rows Pset S hrows E hrowcop hprod hScop hSN hSchar u i X θ QK QP r aw hX hqk hqp hKr hPr hr haw
   have hb := hbranch J I F Q Q₀ hJ hI hQ hpower hmask A (actualCuspColumn E.referenceArithmetic s hc₀ u i.1)
     Z O₀ H za Nstar d ell0 shift δ π Ck CO CH X QK QP ε Lscale Lrow Lslot i

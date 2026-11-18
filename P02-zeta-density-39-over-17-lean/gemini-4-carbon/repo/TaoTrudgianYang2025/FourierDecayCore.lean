@@ -11,8 +11,7 @@ theorem integrable_iteratedDeriv_of_complex
     (f : ℝ → ℂ) (hf : ContDiff ℝ ∞ f) (hfc : HasCompactSupport f)
     (j : ℕ) :
     Integrable (iteratedDeriv j f) := by
-  have hcont : Continuous (iteratedDeriv j f) :=
-    hf.continuous_iteratedDeriv j
+  have hcont := hf.continuous_iteratedDeriv j
       (WithTop.coe_le_coe.mpr (le_of_lt (ENat.natCast_lt_top j)))
   have hcomp : HasCompactSupport (iteratedDeriv j f) := by
     have haux : ∀ k : ℕ, HasCompactSupport (iteratedDeriv k f) := by
@@ -69,7 +68,7 @@ theorem one_add_abs_fourier_decay_of_support_of_bounds_order
     apply HasCompactSupport.intro isCompact_Icc
     intro u hu
     by_contra hne
-    exact hu (hSupport (by simpa only [Function.mem_support] using hne))
+    exact hu (hSupport (by simpa using hne))
   have derivativeSupport (j : ℕ) :
       Function.support (iteratedDeriv j f) ⊆ Set.Icc C D := by
     have hTsupport : tsupport (iteratedDeriv j f) ⊆ tsupport f := by
@@ -94,7 +93,7 @@ theorem one_add_abs_fourier_decay_of_support_of_bounds_order
       · have hz : iteratedDeriv j f u = 0 := by
           by_contra hne
           exact hu (derivativeSupport j (by
-            simpa only [Function.mem_support] using hne))
+            simpa using hne))
         simp [Set.indicator_of_notMem hu, hz]
     have hNonneg : 0 ≤ ∫ u in Set.Icc C D,
         ‖iteratedDeriv j f u‖ :=
@@ -115,47 +114,42 @@ theorem one_add_abs_fourier_decay_of_support_of_bounds_order
       _ ≤ K * (MeasureTheory.volume (Set.Icc C D)).toReal := hSetBound
       _ = (D - C) * K := by rw [hMeasure]; ring
   have hZero (ξ : ℝ) : ‖𝓕 f ξ‖ ≤ (D - C) * K₀ := by
-    have h := abs_pow_mul_norm_fourier_complex_le f hf hCompact 0 ξ
-    simpa using h.trans (integralBound 0 K₀ hBound₀)
+    simpa using (abs_pow_mul_norm_fourier_complex_le f hf hCompact 0 ξ).trans (integralBound 0 K₀ hBound₀)
   have hHigh (ξ : ℝ) :
       |ξ| ^ p * ‖𝓕 f ξ‖ ≤ (D - C) * Kp :=
     (abs_pow_mul_norm_fourier_complex_le f hf hCompact p ξ).trans
       (integralBound p Kp hBoundp)
   intro ξ
   by_cases hξ : |ξ| ≤ 1
-  · have hWeight : (1 + |ξ|) ^ p ≤ (2 : ℝ) ^ p := by
+  · have hWeight : (1 + |ξ|) ^ p ≤ 2 ^ p := by
       exact pow_le_pow_left₀ (by positivity) (by linarith) p
-    calc
-      (1 + |ξ|) ^ p * ‖𝓕 f ξ‖ ≤
-          (2 : ℝ) ^ p * ((D - C) * K₀) :=
-        mul_le_mul hWeight (hZero ξ) (norm_nonneg _) (by positivity)
-      _ ≤ (2 : ℝ) ^ p * (D - C) * (K₀ + Kp) := by
+    exact (mul_le_mul hWeight (hZero ξ) (norm_nonneg _) (by positivity)).trans (by
         have hLen : 0 ≤ D - C := sub_nonneg.mpr hCD
         have hmono : K₀ ≤ K₀ + Kp := le_add_of_nonneg_right hKp
         calc
-          (2 : ℝ) ^ p * ((D - C) * K₀) =
-              ((2 : ℝ) ^ p * (D - C)) * K₀ := by ring
-          _ ≤ ((2 : ℝ) ^ p * (D - C)) * (K₀ + Kp) :=
-            mul_le_mul_of_nonneg_left hmono (mul_nonneg (by positivity) hLen)
+          2 ^ p * ((D - C) * K₀) =
+              (2 ^ p * (D - C)) * K₀ := by ring
+          _ ≤ (2 ^ p * (D - C)) * (K₀ + Kp) :=
+            mul_le_mul_of_nonneg_left hmono (mul_nonneg (by positivity) hLen))
   · have hξOne : 1 ≤ |ξ| := le_of_lt (lt_of_not_ge hξ)
-    have hWeight : (1 + |ξ|) ^ p ≤ (2 : ℝ) ^ p * |ξ| ^ p := by
+    have hWeight : (1 + |ξ|) ^ p ≤ 2 ^ p * |ξ| ^ p := by
       have hp := pow_le_pow_left₀ (by positivity : 0 ≤ 1 + |ξ|)
         (by linarith : 1 + |ξ| ≤ 2 * |ξ|) p
       simpa [mul_pow] using hp
     calc
       (1 + |ξ|) ^ p * ‖𝓕 f ξ‖ ≤
-          ((2 : ℝ) ^ p * |ξ| ^ p) * ‖𝓕 f ξ‖ :=
+          (2 ^ p * |ξ| ^ p) * ‖𝓕 f ξ‖ :=
         mul_le_mul_of_nonneg_right hWeight (norm_nonneg _)
-      _ = (2 : ℝ) ^ p * (|ξ| ^ p * ‖𝓕 f ξ‖) := by ring
-      _ ≤ (2 : ℝ) ^ p * ((D - C) * Kp) :=
+      _ = 2 ^ p * (|ξ| ^ p * ‖𝓕 f ξ‖) := by ring
+      _ ≤ 2 ^ p * ((D - C) * Kp) :=
         mul_le_mul_of_nonneg_left (hHigh ξ) (by positivity)
-      _ ≤ (2 : ℝ) ^ p * (D - C) * (K₀ + Kp) := by
+      _ ≤ 2 ^ p * (D - C) * (K₀ + Kp) := by
         have hLen : 0 ≤ D - C := sub_nonneg.mpr hCD
         have hmono : Kp ≤ K₀ + Kp := le_add_of_nonneg_left hK₀
         calc
-          (2 : ℝ) ^ p * ((D - C) * Kp) =
-              ((2 : ℝ) ^ p * (D - C)) * Kp := by ring
-          _ ≤ ((2 : ℝ) ^ p * (D - C)) * (K₀ + Kp) :=
+          2 ^ p * ((D - C) * Kp) =
+              (2 ^ p * (D - C)) * Kp := by ring
+          _ ≤ (2 ^ p * (D - C)) * (K₀ + Kp) :=
             mul_le_mul_of_nonneg_left hmono (mul_nonneg (by positivity) hLen)
 
 end RiemannZeta.GuthMaynard

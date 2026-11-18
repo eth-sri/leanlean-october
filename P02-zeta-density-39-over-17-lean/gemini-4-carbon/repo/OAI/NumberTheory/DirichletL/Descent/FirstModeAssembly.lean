@@ -1,16 +1,14 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.FirstModeColumns
 
-set_option linter.privateModule false
 
 @[expose] public section
 
 namespace OAI
 
 namespace SevenEighths.InverseMoment
+open ActualEisensteinCubic FirstPassCubeLabels FourierBridge JointLogSeparation MeasureTheory
 open scoped BigOperators Classical SchwartzMap ContDiff
-open ActualEisensteinCubic FirstPassCubeLabels FourierBridge JointLogSeparation
-open MeasureTheory
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]

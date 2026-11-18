@@ -85,7 +85,6 @@ theorem integral_atkinsonRootQuadraticKernel (T b H : ℝ) :
   have hs := intervalIntegral.integral_comp_add_right (atkinsonRootQuadraticKernel T b) r
     (a := -H) (b := H)
   rw [show -H + r = r - H by ring, show H + r = r + H by ring] at hs
-  change (∫ y in (r - H)..(r + H), atkinsonRootQuadraticKernel T b y) = _
   rw [← hs]
   simp_rw [show ∀ z, atkinsonRootQuadraticKernel T b (z + r) =
     atkinsonRootKernel T b r *

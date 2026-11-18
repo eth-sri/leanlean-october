@@ -10,9 +10,7 @@ public import MathCollab.Density.Stronger.Atkinson.FrozenDivisorGaussian
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+open Complex Filter MeasureTheory Set Topology MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth MathCollab.Density.Contour
 open scoped Interval ComplexConjugate ContDiff
 set_option autoImplicit false
 noncomputable section
@@ -68,8 +66,7 @@ theorem frequency_le_of_not_mem_zetaQuadraticDivisorBand {T G L : ℝ}
     (hT : 0 < T) (hG : 0 < G) {n : ℕ} (hn : 0 < n)
     (hnot : n ∉ zetaQuadraticDivisorBand T G L) :
     L ≤ G * |Real.log (n : ℝ) - Real.log (T / (2 * Real.pi))| := by
-  have h := mt (mem_zetaQuadraticDivisorBand_iff hT hG n).mpr hnot
-  exact (lt_of_not_ge (fun hfreq => h ⟨hn, hfreq⟩)).le
+  exact (lt_of_not_ge (fun hfreq => (mt (mem_zetaQuadraticDivisorBand_iff hT hG n).mpr hnot) ⟨hn, hfreq⟩)).le
 
 theorem zetaFrozenDivisorCoefficient_zero (T : ℝ) : zetaFrozenDivisorCoefficient T 0 = 0 := by
   simp [zetaFrozenDivisorCoefficient, divisorDirichletTerm, LSeries.term]

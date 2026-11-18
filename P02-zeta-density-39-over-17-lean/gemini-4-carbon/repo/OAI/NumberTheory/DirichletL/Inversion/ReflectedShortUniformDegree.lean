@@ -9,8 +9,7 @@ noncomputable section
 open scoped BigOperators Classical ContDiff
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve
-open InverseTerminalWidths InverseReflectedPhase CompletedHeight
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve InverseTerminalWidths InverseReflectedPhase CompletedHeight
 local notation "Eis"=>ActualEisensteinCubic.O
 universe u v
 
@@ -49,10 +48,8 @@ theorem canonical_short_completed_energy_uniform_degree
   intro σ _ _ F hF m hm Z N V M z₀ margin hcut d hZ hN hM hMc hVc hzc hcutc hFn hRn
     hmargin hreserve hVd hcutd hd parents hparents hcard lists H hdis hmax hgood hprime hodd hH1 hH hprod
     Ψ hΨ hperiod u θ w hw
-  have hZ1:1<Z:=lt_of_lt_of_le hZ₀ hZ
-  have hz:0<Z:=zero_lt_one.trans hZ1
-  have htw:HasCompactSupport (normTwistedSource W θ):=
-    HasCompactSupport.of_support_subset_isCompact isCompact_Icc ((normTwistedSource_support W θ).trans hWs)
+  have hZ1 :=lt_of_lt_of_le hZ₀ hZ
+  have hz :=zero_lt_one.trans hZ1
   have hcompleted (J:Ideal Eis) (hJ:J∈shortCubeRange (Z^hcut)):
       (∑I∈parents,‖markedCompletedT
         (rowTwist Ψ (ActualFiber.maskElement q m) (ConcretePrimeRowBridge.idealGenerator F)
@@ -61,15 +58,14 @@ theorem canonical_short_completed_energy_uniform_degree
       C*(1+‖θ‖)^degree*Z^(N+V-cstar/64):=by
     obtain ⟨hJ0,hJnorm⟩:=(mem_shortCubeRange _ J).mp hJ
     have hn:0<(Ideal.absNorm J:ℝ):=by exact_mod_cast Nat.pos_of_ne_zero (fun hn=>hJ0 (Ideal.absNorm_eq_zero_iff.mp hn))
-    have hc:Real.logb Z (Ideal.absNorm J:ℝ)≤hcut:=
-      (Real.logb_le_iff_le_rpow hZ1 hn).mpr hJnorm.le
+    have hc := (Real.logb_le_iff_le_rpow hZ1 hn).mpr hJnorm.le
     have hjpow:(Ideal.absNorm J:ℝ)≤Z^(Real.logb Z (Ideal.absNorm J:ℝ)):=by
       rw [Real.rpow_logb hz (ne_of_gt hZ1) hn]
     have h:=he F hF m hm Z N V M z₀ margin (Real.logb Z (Ideal.absNorm J:ℝ)) d
       hZ hN hM hMc hVc hzc (hc.trans hcutc) hFn hRn hmargin hreserve hVd (hc.trans hcutd) hd
       parents hparents hcard lists H hdis hmax hgood hprime hodd hH1 hH hprod Ψ hΨ hperiod J hJ0 hjpow u θ w hw
     rw [short_cube_exact_scale Z N hZ1 J hJ0] at h
-    simpa only [completed_tuple_mark lists w _ _ htw _ (div_pos (Real.rpow_pos_of_pos hz _) (pow_pos hn _)) J] using h
+    simpa only [completed_tuple_mark lists w _ _ (HasCompactSupport.of_support_subset_isCompact isCompact_Icc ((normTwistedSource_support W θ).trans hWs)) _ (div_pos (Real.rpow_pos_of_pos hz _) (pow_pos hn _)) J] using h
   have hh:=marked_short_completed_energy
     (fun I:parents=>rowTwist Ψ (ActualFiber.maskElement q m) (ConcretePrimeRowBridge.idealGenerator F)
       (u.val*ConcretePrimeRowBridge.idealGenerator I.val))

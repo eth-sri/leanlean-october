@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic ConcretePrimeRowBridge CanonicalQuadraticSieve CubicEisenstein
-open HeckeInverseAmplification
+open ActualEisensteinCubic ConcretePrimeRowBridge CanonicalQuadraticSieve CubicEisenstein HeckeInverseAmplification
 local notation "O" => ActualEisensteinCubic.O
 
 lemma calibration_sixth_ideal_mask (S : Finset (Ideal O)) (hS : ∀P∈S,P.IsMaximal)
@@ -47,7 +46,6 @@ lemma calibration_sixth_frequency_mask (S : Finset (Ideal O)) (hS : ∀P∈S,P.I
 lemma sixthFrequencyWeight (p : FreeRow×HeckeInverseAmplification.NonzeroIdeal) (z : ℂ) :
     frequencyWeight z (sixthFrequencyEquiv p)=
       frequencyWeight z ⟨p.1.val,p.1.property.1⟩*fullIdealWeight (6*z) p.2.val := by
-  have hu : 0<elementNorm p.1.val := elementNorm_pos _ p.1.property.1
   have hl : 0<(Ideal.absNorm p.2.val:ℝ) := by
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr p.2.property)
   have hn : elementNorm (sixthFrequencyEquiv p).val=
@@ -55,9 +53,9 @@ lemma sixthFrequencyWeight (p : FreeRow×HeckeInverseAmplification.NonzeroIdeal)
     unfold elementNorm
     exact_mod_cast rowMap_norm p
   simp only [frequencyWeight,fullIdealWeight,ite_eq_right p.2.property,hn,Complex.ofReal_mul]
-  rw [Complex.mul_cpow_ofReal_nonneg hu.le (pow_nonneg hl.le 6)]
+  rw [Complex.mul_cpow_ofReal_nonneg (elementNorm_pos _ p.1.property.1).le (pow_nonneg hl.le 6)]
   congr 1
-  have he := Complex.cpow_mul_ofReal_nonneg hl.le (6:ℝ) (-z)
+  have he := Complex.cpow_mul_ofReal_nonneg hl.le 6 (-z)
   simp only [Real.rpow_ofNat,Complex.ofReal_pow,Complex.ofReal_ofNat,Complex.ofReal_natCast] at he
   simp only [Complex.ofReal_pow,Complex.ofReal_natCast]
   rw [←he]

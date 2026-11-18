@@ -9,8 +9,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentNonprincipalGate
-open HeckeFamily HeckeRowClosure CenteredExceptionalProfile CanonicalRowCompletion
-open ConcretePrimeRowBridge CenteredMomentRestrictedEnergy CenteredMomentChildRows RayFourExpansion
+open HeckeFamily HeckeRowClosure CenteredExceptionalProfile CanonicalRowCompletion ConcretePrimeRowBridge CenteredMomentRestrictedEnergy CenteredMomentChildRows RayFourExpansion
 local notation "O" => HeckeFamily.O
 
 def unitCharacter : Character := Character.ofResidue ⊤ top_ne_bot 1 (by
@@ -34,8 +33,7 @@ theorem principal_inducedBy_unit (χ:Character) (hχ:χ.residue=1) : InducedBy �
   · subst I
     simp only [map_zero,ite_self]
   · have hn:=idealGenerator_ne_zero I hI
-    rw [unitCharacter_ideal I hI]
-    rw [←span_idealGenerator I,idealCoeff_span χ hn]
+    rw [unitCharacter_ideal I hI, ←span_idealGenerator I,idealCoeff_span χ hn]
     change χ.residue (Ideal.Quotient.mk χ.modulus (idealGenerator I))=_
     rw [hχ]
     by_cases hc:IsCoprime (Ideal.span {idealGenerator I}) χ.modulus

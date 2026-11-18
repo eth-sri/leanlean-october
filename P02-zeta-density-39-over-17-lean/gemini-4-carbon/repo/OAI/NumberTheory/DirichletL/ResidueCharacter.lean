@@ -7,8 +7,7 @@ namespace OAI
 
 namespace SevenEighths.ResidueCharacter
 
-open SevenEighths.FiniteFourier SevenEighths.FiniteConductor
-open SevenEighths.ConductorPresentation
+open SevenEighths.FiniteFourier SevenEighths.FiniteConductor SevenEighths.ConductorPresentation
 open scoped Classical
 
 noncomputable section
@@ -36,7 +35,7 @@ theorem inflate_apply {M L : Ideal A} (hML : M ≤ L) (χ : MulChar (A ⧸ L) �
 theorem inflate_mk {M L : Ideal A} (hML : M ≤ L) (χ : MulChar (A ⧸ L) ℂ) (a : A) :
     inflate hML χ (Ideal.Quotient.mk M a) =
       if IsUnit (Ideal.Quotient.mk M a) then χ (Ideal.Quotient.mk L a) else 0 := by
-  simpa only [Ideal.Quotient.factor_mk] using inflate_apply hML χ (Ideal.Quotient.mk M a)
+  simpa using inflate_apply hML χ (Ideal.Quotient.mk M a)
 
 theorem inflate_global_units {M L : Ideal A} (hML : M ≤ L) (χ : MulChar (A ⧸ L) ℂ)
     (hχ : ∀ u : Aˣ, χ (Ideal.Quotient.mk L u) = 1) :
@@ -51,26 +50,22 @@ theorem isUnit_mk_inf_iff (I J : Ideal A) (a : A) :
   constructor
   · intro h
     constructor
-    · simpa only [Ideal.Quotient.factor_mk] using
+    · simpa using
         (h.map (Ideal.Quotient.factor (show I ⊓ J ≤ I from inf_le_left)))
-    · simpa only [Ideal.Quotient.factor_mk] using
+    · simpa using
         (h.map (Ideal.Quotient.factor (show I ⊓ J ≤ J from inf_le_right)))
   · rintro ⟨hI, hJ⟩
     obtain ⟨b, hb⟩ := isUnit_iff_exists_inv.mp hI
     obtain ⟨c, hc⟩ := isUnit_iff_exists_inv.mp hJ
     obtain ⟨b, rfl⟩ := Ideal.Quotient.mk_surjective b
     obtain ⟨c, rfl⟩ := Ideal.Quotient.mk_surjective c
-    have hbI : a * b - 1 ∈ I :=
-      (Ideal.Quotient.mk_eq_one_iff_sub_mem _).mp (by simpa only [map_mul] using hb)
-    have hcJ : a * c - 1 ∈ J :=
-      (Ideal.Quotient.mk_eq_one_iff_sub_mem _).mp (by simpa only [map_mul] using hc)
     apply isUnit_iff_exists_inv.mpr
     refine ⟨Ideal.Quotient.mk (I ⊓ J) (b + c - a * b * c), ?_⟩
     rw [← map_mul]
     apply (Ideal.Quotient.mk_eq_one_iff_sub_mem _).mpr
     have hid : a * (b + c - a * b * c) - 1 = -((a * b - 1) * (a * c - 1)) := by ring
     rw [hid]
-    exact ⟨I.neg_mem (I.mul_mem_right _ hbI), J.neg_mem (J.mul_mem_left _ hcJ)⟩
+    exact ⟨I.neg_mem (I.mul_mem_right _ ((Ideal.Quotient.mk_eq_one_iff_sub_mem _).mp (by simpa using hb))), J.neg_mem (J.mul_mem_left _ ((Ideal.Quotient.mk_eq_one_iff_sub_mem _).mp (by simpa using hc)))⟩
 
 theorem finite_quotient_inf (I J : Ideal A) [Finite (A ⧸ I)] [Finite (A ⧸ J)] :
     Finite (A ⧸ I ⊓ J) := by

@@ -7,14 +7,11 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators SchwartzMap
 open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
+open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseInitialDyadicAssembly
 local notation "Eis"=>ActualEisensteinCubic.O
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
-open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
-open InverseInitialEnergyCallerWindows InverseInitialProfile InverseInitialClippedColumns
-open CenteredMomentSectorLocalization CenteredMomentDyadicCount
+open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource InverseInitialEnergyCallerWindows InverseInitialProfile InverseInitialClippedColumns CenteredMomentSectorLocalization CenteredMomentDyadicCount
 
 theorem windows_card_subpower (C R ε:ℝ)(hC:1≤C)(hR:0≤R)(hε:0<ε) :
     ∃A:ℝ,0<A ∧ ∀ᶠZ:ℝ in Filter.atTop,

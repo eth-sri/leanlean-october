@@ -9,11 +9,10 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
 open MeasureTheory FourierBridge ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge
+open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
 namespace SevenEighths.InverseInitialCommonProfile
-open InverseMoment InverseInitialCommonLists InverseInitialCommonRatios
-open InverseInitialOverlapFourier InverseInitialOverlapIdealFourier
+open InverseMoment InverseInitialCommonLists InverseInitialCommonRatios InverseInitialOverlapFourier InverseInitialOverlapIdealFourier
 local notation "Eis"=>ActualEisensteinCubic.O
 variable {σ:Type*} [DecidableEq σ]
 
@@ -41,11 +40,7 @@ theorem common_profile_separation
         (Real.log yj) t*logPhase t (Real.log yc)*
         primeMark I (fun i=>poolList F (L i))
           (fun i q=>a i q.val*logPhase (-t) (Real.log (slotRatio Z ell i q.val))) A := by
-  have hm (t:ℝ) : primeMark I (fun i=>poolList F (L i))
-      (fun i q=>a i q.val*logPhase (-t) (Real.log (slotRatio Z ell i q.val))) A =
-      primeMark I L (fun i P=>a i P*logPhase (-t) (Real.log (slotRatio Z ell i P)))
-        (activeIndices id I L (∏i∈A,i.val)) :=
-    (original_ideal_mark F I L hL
+  have hm (t:ℝ) := (original_ideal_mark F I L hL
       (fun i P=>a i P*logPhase (-t) (Real.log (slotRatio Z ell i P))) A).symm.trans
       (indexed_mark_active id I L _ _)
   simp_rw [hm]

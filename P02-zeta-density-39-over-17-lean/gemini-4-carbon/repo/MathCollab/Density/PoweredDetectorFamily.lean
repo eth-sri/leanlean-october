@@ -42,8 +42,7 @@ theorem poweredDetectorFamily_scales {T : ℝ} {p : (ℕ × ℕ) × ℕ}
   obtain ⟨_, hlo, hhi, hℓ⟩ := Finset.mem_filter.mp hp
   let N := 2^p.1.1
   have hN : 0 < N := by dsimp [N]; positivity
-  have hsc := detectorPower_piece_scales hT hlog hlo hhi hℓ
-  refine ⟨by unfold poweredDetectorScale; positivity, hsc.1, ?_⟩
+  refine ⟨by unfold poweredDetectorScale; positivity, (detectorPower_piece_scales hT hlog hlo hhi hℓ).1, ?_⟩
   have hk := (detectorPower_spec (by linarith : 0 ≤ T) hlo).2.1
   have hs := detectorPower_support_scale hT hlog hlo hhi
   have hpw : (2 : ℝ)^(p.2+1) ≤ 2^(detectorPower T N) :=

@@ -49,8 +49,7 @@ theorem atkinsonHeightFiber_interval {H L : ℝ} {W : Finset ℝ} (k : ℕ)
       H+(k:ℝ)*L ≤ t ∧ t ≤ (H+(k:ℝ)*L)+L := by
   intro t ht
   obtain ⟨htW,htbin⟩ := Finset.mem_filter.mp ht
-  have hq : 0 ≤ (t-H)/L := div_nonneg (sub_nonneg.mpr (hrange t htW)) hL.le
-  have hlo := Nat.floor_le hq
+  have hlo := Nat.floor_le (div_nonneg (sub_nonneg.mpr (hrange t htW)) hL.le)
   have hhi := Nat.lt_floor_add_one ((t-H)/L)
   change (atkinsonHeightBin H L t:ℝ) ≤ (t-H)/L at hlo
   change (t-H)/L < (atkinsonHeightBin H L t:ℝ)+1 at hhi
@@ -75,8 +74,6 @@ theorem atkinson_card_le_of_height_fibers {H L B : ℝ} {W : Finset ℝ}
       ((atkinsonHeightFiber H L W k).card:ℝ) := by
     exact_mod_cast atkinsonHeightFiber_card_partition W hL hrange
   rw [he]
-  calc
-    _ ≤ ∑ _k ∈ Finset.range (Nat.floor (H/L)+1), B := Finset.sum_le_sum hcard
-    _ = _ := by simp
+  exact (Finset.sum_le_sum hcard).trans_eq (by simp)
 
 end MathCollab.Density.Stronger

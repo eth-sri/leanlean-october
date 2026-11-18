@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.RobertSargosCoefficientGeometry
 
 @[expose] public section
@@ -27,7 +36,6 @@ theorem robertSargos_safe_pivot {q₁ q₂ d : ℝ} (hsign : 0 < q₁*q₂) :
   by_cases h : 0 ≤ q₁*d
   · exact Or.inl h
   right
-  have hn : q₁*d < 0 := lt_of_not_ge h
   rcases mul_pos_iff.mp hsign with hp | hm
   · have hd : d ≤ 0 := by nlinarith [hp.1]
     exact mul_nonneg hp.2.le (neg_nonneg.mpr hd)
@@ -45,10 +53,7 @@ theorem robertSargos_coefficient_linear_source_gap {r q₁ q₂ h₁ h₂ d R H 
   have hdisp := robertSargos_displacement_same_sign hH hQ hh₁ hh₂ hq₁ hq₂
     hsign hlin hnear
   have hd : |d| ≤ 9*Q := by nlinarith
-  have hb := robertSargos_coefficient_linear_ratio_gap hH hQ hr hd hh₂.1 hq₁.1 hlin
-  calc
-    _ ≤ R*(9*Q)/(H*Q) := hb
-    _ = _ := by field_simp
+  exact ((robertSargos_coefficient_linear_ratio_gap hH hQ hr hd hh₂.1 hq₁.1 hlin)).trans_eq (by field_simp)
 
 end TaoTrudgianYang2025
 

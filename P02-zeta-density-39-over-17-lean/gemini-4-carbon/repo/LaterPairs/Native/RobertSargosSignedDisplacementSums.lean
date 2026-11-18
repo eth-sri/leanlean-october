@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.RobertSargosDisplacementSums
 
 @[expose] public section
@@ -25,7 +34,7 @@ theorem sum_integer_natAbs_le_twice
     intro n
     have hsub : S.filter (fun d => d.natAbs = n) ⊆ {(n:ℤ),-(n:ℤ)} := by
       intro d hd
-      simpa only [Finset.mem_insert,Finset.mem_singleton] using
+      simpa using
         Int.natAbs_eq_iff.mp (Finset.mem_filter.mp hd).2
     exact (Finset.card_le_card hsub).trans Finset.card_le_two
   calc

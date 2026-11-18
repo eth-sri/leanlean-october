@@ -10,9 +10,8 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondBalancedSource
 namespace OAI
 
 namespace SevenEighths.InverseMoment
+open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic JointLogSeparation MeasureTheory SchwartzMap InverseInitialClippedColumns
 open scoped BigOperators Classical ContDiff
-open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open JointLogSeparation MeasureTheory SchwartzMap InverseInitialClippedColumns
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 local instance inverseSecondDeletedMovingMassUnitsUniform : Fintype Eisˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
@@ -109,7 +108,7 @@ theorem actual_second_deleted_moving_mass_recursive_uniform_types
     hrows hω₁ hω₂ hcut hΨ hw ha₁ ha₂ hlabels ho hslots₁ hslots₂ hA hleft hright
   have hm := hmass p hp source 1 1 Z ell Ractive j tcount gcount theta eta hZ
     hs.quotient_nonzero hs.second_divisor hcube₁ hcube₂ hactive hj hquot hcommon hdiv
-  have hfac : 0 ≤ 36*(2:ℝ)^slots₁.card*(2:ℝ)^slots₂.card*(A*Z^(2*(max 0 N+Vlabel)+εchild)) := by positivity
+  have hfac : 0 ≤ 36*2^slots₁.card*2^slots₂.card*(A*Z^(2*(max 0 N+Vlabel)+εchild)) := by positivity
   have hh : 0 ≤ Cp*((1+‖θ₁‖)^InverseClippingProfiles.momentOrder J *
       (1+‖θ₂‖)^InverseClippingProfiles.momentOrder J) /
         (1+Y*B/(E*V^2*(Z^N)^2))^Aker := by positivity

@@ -1,5 +1,6 @@
 module
-public import OAI.NumberTheory.DirichletL.Hecke.DetectorBatchCount
+public import OAI.NumberTheory.DirichletL.Hecke.DetectorBatch
+public import OAI.NumberTheory.DirichletL.Hecke.DetectorCountFromMoments
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorAmplitudeFirst
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorClassBudget
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorRowCountEndpoint
@@ -9,11 +10,10 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorRowCountEndpoint
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators ContDiff
 open Set Filter
+open scoped Classical BigOperators ContDiff
 namespace SevenEighths.HeckeDetectorFixedAmplitudeCount
-open HeckeFamily HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorBatch HeckeDetectorWitnessRows
-open HeckeDetectorPhysicalSelection HeckeDetectorAmplitudeFirst HeckeDetectorRowCount
+open HeckeFamily HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorBatch HeckeDetectorWitnessRows HeckeDetectorPhysicalSelection HeckeDetectorAmplitudeFirst HeckeDetectorRowCount
 
 variable {M : Ideal O} {H : Subgroup (O ⧸ M)ˣ} {Label Slot : Type*}
   {U a ε tstar T allowance : ℝ} {i : ℕ}
@@ -24,9 +24,8 @@ lemma fiber_mean_eq (B : Batch M H Label Slot U a ε tstar T allowance i) (q : �
     (bin : B.Bin) (j : Label) (J K : Fin (dyadicLength U))
     (hne : (B.fiberRows bin j J K).Nonempty) : (B.fiber bin j J K hne).q=q := by
   let u := hne.choose
-  have hu : u ∈ B.fiberRows bin j J K := hne.choose_spec
-  have huR : u∈B.rows := (Finset.mem_filter.mp hu).1
-  rw [←hq u huR]
+  have hu := hne.choose_spec
+  rw [←hq u ((Finset.mem_filter.mp hu).1)]
   unfold Fiber.q rowMean weightedMean
   congr 1
   apply Finset.sum_congr rfl

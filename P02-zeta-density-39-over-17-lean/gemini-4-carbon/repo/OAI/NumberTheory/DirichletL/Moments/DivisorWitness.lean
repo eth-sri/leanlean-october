@@ -10,9 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentDivisorWitness
-open CenteredMomentDivisorAllocation CenteredMomentDivisorExtraction CenteredMomentDivisorRectangle
-open CenteredMomentDivisorRows CenteredMomentDivisorRaw CenteredMomentHeckeExpansion
-open CenteredMomentRectangle HeckeFamily IdealMobiusDivisorSum
+open CenteredMomentDivisorAllocation CenteredMomentDivisorExtraction CenteredMomentDivisorRectangle CenteredMomentDivisorRows CenteredMomentDivisorRaw CenteredMomentHeckeExpansion CenteredMomentRectangle HeckeFamily IdealMobiusDivisorSum
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
@@ -72,12 +70,6 @@ theorem divisor_dvd_actualExtracted (D : Ideal O) (hD : Squarefree D)
       · exact dvd_mul_of_dvd_left (dvd_mul_of_dvd_left hd _) _
       · exact dvd_mul_of_dvd_left (dvd_mul_of_dvd_right hd _) _
 
-theorem actualExtracted_ne_zero (D : Ideal O)
-    (a : Allocation D (Finset.univ : Finset (ι ⊕ Fin 2)))
-    (v : ι → Ideal O) (hv : ∀ i,v i ≠ 0) : actualExtracted D a v ≠ 0 :=
-  mul_ne_zero (mul_ne_zero (selectedDivisor_ne_zero D Finset.univ a (Sum.inr 0))
-    (selectedDivisor_ne_zero D Finset.univ a (Sum.inr 1)))
-    (Finset.prod_ne_zero_iff.mpr (fun i _ => hv i))
 
 theorem actualExtracted_norm_boundary (D : Ideal O) (hD : Squarefree D)
     (a : Allocation D (Finset.univ : Finset (ι ⊕ Fin 2)))
@@ -85,7 +77,9 @@ theorem actualExtracted_norm_boundary (D : Ideal O) (hD : Squarefree D)
     (hn : allocationTerm D Finset.univ (factorTuple v I J) a ≠ 0) :
     (Ideal.absNorm D:ℝ) ≤ selectedNorm D a*∏ i∈frozenIndices D a,(Ideal.absNorm (v i):ℝ) := by
   have h := Nat.le_of_dvd (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
-    (actualExtracted_ne_zero D a v hv))) (map_dvd Ideal.absNorm (divisor_dvd_actualExtracted D hD a v I J hn))
+    ((mul_ne_zero (mul_ne_zero (selectedDivisor_ne_zero D Finset.univ a (Sum.inr 0))
+    (selectedDivisor_ne_zero D Finset.univ a (Sum.inr 1)))
+    (Finset.prod_ne_zero_iff.mpr (fun i _ => hv i)))))) (map_dvd Ideal.absNorm (divisor_dvd_actualExtracted D hD a v I J hn))
   simpa only [actualExtracted,map_mul,map_prod,Nat.cast_mul,Nat.cast_prod,selectedNorm] using
     (show (Ideal.absNorm D:ℝ) ≤ Ideal.absNorm (actualExtracted D a v) by exact_mod_cast h)
 

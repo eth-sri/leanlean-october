@@ -27,8 +27,7 @@ theorem localFourier_zeroMark (ψ : AddChar F ℂ) (h : F) :
 theorem localFourier_trivial_nonzero (ψ : AddChar F ℂ)
     (hψ : ψ.IsPrimitive) (h : F) (hh : h ≠ 0) :
     localFourier (fun t => (1 : MulChar F ℂ) t) ψ h = -1 := by
-  have he := gaussSum_one_left (hψ (neg_ne_zero.mpr hh))
-  simpa only [gaussSum, AddChar.mulShift_apply, neg_mul, localFourier] using he
+  simpa only [gaussSum, AddChar.mulShift_apply, neg_mul, localFourier] using (gaussSum_one_left (hψ (neg_ne_zero.mpr hh)))
 
 def localReflectionActive (f : F → ℂ) (χ : MulChar F ℂ)
     (ψ : AddChar F ℂ) (σ ε : Fˣ) (x : F) : ℂ :=

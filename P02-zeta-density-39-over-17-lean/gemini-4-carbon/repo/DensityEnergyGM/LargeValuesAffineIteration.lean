@@ -264,13 +264,9 @@ theorem sqrt_mul_sqrt_add_le_add
     Real.sqrt B * Real.sqrt (A + B) ≤ A + B := by
   have hsqrt : Real.sqrt B ≤ Real.sqrt (A + B) :=
     Real.sqrt_le_sqrt (by linarith)
-  calc
-    Real.sqrt B * Real.sqrt (A + B) ≤
-        Real.sqrt (A + B) * Real.sqrt (A + B) :=
-      mul_le_mul_of_nonneg_right hsqrt (Real.sqrt_nonneg _)
-    _ = A + B := by
+  exact (mul_le_mul_of_nonneg_right hsqrt (Real.sqrt_nonneg _)).trans_eq (by
       rw [← sq]
-      exact Real.sq_sqrt (add_nonneg hA hB)
+      exact Real.sq_sqrt (add_nonneg hA hB))
 
 /-- Square-root normalization used in the Lemma 9.2 descent. -/
 theorem sqrt_le_four_mul_sqrt_rpow_mul_sqrt
@@ -834,10 +830,9 @@ theorem integrable_gmAffinePositiveTransformSum_sq
       fun_prop).pow 2).aestronglyMeasurable
   · filter_upwards with u
     rw [Real.norm_eq_abs, abs_of_nonneg (sq_nonneg _)]
-    have hpos := gmAffinePositiveTransformSum_nonneg hf M u
     have hmajor := gmAffineTransformSum_le_smooth
       (M₁ := M) (M₂ := M) hf hM u
-    exact (sq_le_sq₀ hpos
+    exact (sq_le_sq₀ (gmAffinePositiveTransformSum_nonneg hf M u)
       (gmAffineSmoothTransformSum_nonneg hf M M M u)).mpr
         ((gmAffinePositiveTransformSum_le_transformSum hf M u).trans hmajor)
 
@@ -1554,7 +1549,7 @@ theorem gmAffineM₂FourierBlock_eq_middleBlock
       ((1 / |(m₁ : ℝ)| : ℝ) : ℂ) *
         gmAffineMiddleFourierBlock f (8 * M₃) M₂ (-ell)
           (gmAffineFirstPoissonTau M₃ m₁ ell xi) := by
-  have hm₁neZ : m₁ ≠ 0 := gmAffineSignedShell_ne_zero hM₁ hm₁
+  have hm₁neZ := gmAffineSignedShell_ne_zero hM₁ hm₁
   have hm₁neR : (m₁ : ℝ) ≠ 0 := by exact_mod_cast hm₁neZ
   have hdenom : (8 * M₃ : ℝ) ≠ 0 := by positivity
   unfold gmAffineM₂FourierBlock gmAffineMiddleFourierBlock
@@ -1717,17 +1712,11 @@ theorem integrable_gmAffineMiddleTauWeightedBlockSq
     Integrable (fun tau : ℝ =>
       gmAffineMiddleTauWeight Q tau *
         ‖gmAffineMiddleFourierBlock f A M₂ ell tau‖ ^ 2) := by
-  have hcont : Continuous (fun tau : ℝ =>
-      gmAffineMiddleTauWeight Q tau *
-        ‖gmAffineMiddleFourierBlock f A M₂ ell tau‖ ^ 2) :=
-    (continuous_gmAffineMiddleTauWeight Q).mul
+  have hcont := (continuous_gmAffineMiddleTauWeight Q).mul
       ((continuous_gmAffineMiddleFourierBlock f A M₂ ell).norm.pow 2)
   have hcomp : HasCompactSupport (fun tau : ℝ =>
       gmAffineMiddleTauWeight Q tau *
         ‖gmAffineMiddleFourierBlock f A M₂ ell tau‖ ^ 2) := by
-    change HasCompactSupport
-      (gmAffineMiddleTauWeight Q * fun tau : ℝ =>
-        ‖gmAffineMiddleFourierBlock f A M₂ ell tau‖ ^ 2)
     exact (hasCompactSupport_gmAffineMiddleTauWeight hQ).mul_right
   exact hcont.integrable_of_hasCompactSupport hcomp
 
@@ -2138,10 +2127,7 @@ noncomputable def gmAffineMiddleEquation97Term
 theorem integrable_gmAffineMiddleSourceTerm
     (f : SchwartzMap ℝ ℝ) (M₁ : ℝ) (ell m₂ m₂' : ℤ) :
     Integrable (gmAffineMiddleSourceTerm f M₁ ell m₂ m₂') := by
-  let F : ℝ × (ℝ × ℝ) → ℂ :=
-    gmAffineMiddleTripleKernel f M₁ ell m₂ m₂'
-  have hF : Integrable F (volume.prod (volume.prod volume)) :=
-    integrable_gmAffineMiddleTripleKernel f M₁ ell m₂ m₂'
+  have hF := integrable_gmAffineMiddleTripleKernel f M₁ ell m₂ m₂'
   refine hF.integral_prod_left.congr ?_
   filter_upwards [hF.prod_right_ae] with tau htau
   unfold gmAffineMiddleSourceTerm
@@ -2153,20 +2139,14 @@ theorem integrable_gmAffineMiddleEquation97Term
     (ell m₂ m₂' : ℤ) :
     Integrable (gmAffineMiddleEquation97Term f T M₁ M₂ ell m₂ m₂')
       (volume.prod volume) := by
-  let F : ℝ × (ℝ × ℝ) → ℂ :=
-    gmAffineMiddleTripleKernel f M₁ ell m₂ m₂'
-  let c : ℂ :=
-    (gmCubicLocalBump (((M₂ : ℝ) * (ell : ℝ)) / T) : ℂ)
-  have hF : Integrable F (volume.prod (volume.prod volume)) :=
-    integrable_gmAffineMiddleTripleKernel f M₁ ell m₂ m₂'
-  have hc : Integrable (fun q : ℝ × ℝ =>
-      c * ∫ tau : ℝ, F (tau, q)) (volume.prod volume) :=
-    hF.integral_prod_right.const_mul c
+  let F := gmAffineMiddleTripleKernel f M₁ ell m₂ m₂'
+  let c := (gmCubicLocalBump (((M₂ : ℝ) * (ell : ℝ)) / T) : ℂ)
+  have hF := integrable_gmAffineMiddleTripleKernel f M₁ ell m₂ m₂'
+  have hc := hF.integral_prod_right.const_mul c
   refine hc.congr ?_
   filter_upwards with q
   rw [integral_gmAffineMiddleTripleKernel_eq_Z₁]
   unfold gmAffineMiddleEquation97Term
-  dsimp only [F, c]
   ring
 
 /-- Exact equation-(9.7) rearrangement for one fixed integer frequency,
@@ -2871,19 +2851,14 @@ theorem gmAffineSigmaIINearEnvelope_le_physical
           (by positivity : (0 : ℝ) ≤ 2 * M₂)]
       have hnear := gmAffineMiddleNearKernelNormSum_le_physical
         hT hQ hQT hM₂ hm₂ hm₂' hq₂ hq₁
-      have hf₁ : 0 ≤ f q.1 := hf q.1
-      have hf₂ : 0 ≤ f q.2 := hf q.2
+      have hf₁ := hf q.1
+      have hf₂ := hf q.2
       have hNearNonneg :
           0 ≤ gmAffineMiddleNearKernelNormSum
             T hT M₂ hM₂ Q m₂ m₂' q.2 q.1 := by
         unfold gmAffineMiddleNearKernelNormSum
         positivity
       rw [abs_of_nonneg (hf q.1), abs_of_nonneg (hf q.2)]
-      change ‖(((m₂' * m₂ : ℤ) : ℂ))‖ * f q.1 * f q.2 * 4 *
-          gmAffineMiddleNearKernelNormSum
-            T hT M₂ hM₂ Q m₂ m₂' q.2 q.1 ≤
-        16 * (M₂ : ℝ) ^ 2 * f q.1 * f q.2 *
-          gmAffineMiddlePhysicalWindowWeight T Q M₂ m₂ m₂' q.2 q.1
       calc
         ‖(((m₂' * m₂ : ℤ) : ℂ))‖ * f q.1 * f q.2 * 4 *
             gmAffineMiddleNearKernelNormSum
@@ -3246,11 +3221,10 @@ theorem integrable_gmAffineSigmaIIEquation97Integrand
     (f : SchwartzMap ℝ ℝ) (M₁ : ℝ) :
     Integrable (gmAffineSigmaIIEquation97Integrand f T M₁ M₂)
       (volume.prod volume) := by
-  let L := gmAffineMiddleFrequencySupport T M₂
   have hfinite : Integrable (fun q : ℝ × ℝ =>
       ∑ m₂' ∈ gmAffinePositiveShell M₂,
         ∑ m₂ ∈ gmAffinePositiveShell M₂,
-          ∑ ell ∈ L,
+          ∑ ell ∈ (gmAffineMiddleFrequencySupport T M₂),
             gmAffineMiddleEquation97Term f T M₁ M₂ ell m₂ m₂' q)
       (volume.prod volume) :=
     integrable_finsetSum _ (fun m₂' _ =>
@@ -3350,7 +3324,6 @@ theorem gmAffineSigmaIIFarCoefficient_le
       16 * (M₂ : ℝ) ^ 2 *
         ((gmAffinePositiveShell M₂).card : ℝ) ^ 2 *
           gmAffineMiddleFarBound n T Q M₂ := by
-  have hB := gmAffineMiddleFarBound_nonneg n hT hQ hM₂
   unfold gmAffineSigmaIIFarCoefficient
   calc
     (∑ m₂' ∈ gmAffinePositiveShell M₂,
@@ -3365,7 +3338,7 @@ theorem gmAffineSigmaIIFarCoefficient_le
       intro m₂' hm₂'
       apply Finset.sum_le_sum
       intro m₂ hm₂
-      apply mul_le_mul_of_nonneg_right _ hB
+      apply mul_le_mul_of_nonneg_right _ (gmAffineMiddleFarBound_nonneg n hT hQ hM₂)
       apply mul_le_mul_of_nonneg_right _ (by positivity)
       rw [Complex.norm_intCast, Int.cast_mul, abs_mul]
       have hm₂Le := abs_gmAffinePositiveShell_le_scale hm₂
@@ -3607,7 +3580,6 @@ theorem integrable_gmAffineRetainedMiddleProfile
     exact continuous_const.mul
       ((fourier (gmAffineComplexify f)).continuous.comp (by fun_prop))
   have hHcont : Continuous H := by
-    dsimp only [H]
     exact (continuous_norm.comp hblock).pow 2 |>.mul
       ((continuous_norm.comp gmAffineLocalBumpDual.continuous).pow 2)
   have hlocal : IntegrableOn H (Set.Ioo (-Q) Q) :=
@@ -3661,8 +3633,7 @@ theorem integrable_gmAffineRetainedFirstPoissonPairSquare
   have ha : a ≠ 0 := div_ne_zero (by positivity) hm₁neR
   have hbase : Integrable (fun xi : ℝ => H (a * xi + b)) :=
     ((integrable_gmAffineRetainedMiddleProfile f Q M₂ M₃ ell).comp_add_right b).comp_mul_left' ha
-  have hscaled := hbase.const_mul (((8 * M₃ : ℝ) / |(m₁ : ℝ)|) ^ 2)
-  apply hscaled.congr
+  apply (hbase.const_mul (((8 * M₃ : ℝ) / |(m₁ : ℝ)|) ^ 2)).congr
   filter_upwards with xi
   rw [gmAffineRetainedFirstPoissonPairSquare_eq_scaled_profile
     f hM₁ hM₂ hM₃ hm₁ Q xi]
@@ -3679,12 +3650,12 @@ theorem integral_gmAffineRetainedFirstPoissonPairSquare_eq
       gmAffineRetainedFirstPoissonPairSquare f Q M₂ M₃ hM₃ (m₁, ell) xi) =
       ((8 * M₃ : ℝ) / |(m₁ : ℝ)|) *
         ∫ tau : ℝ, gmAffineRetainedMiddleProfile f Q M₂ M₃ ell tau := by
-  have hm₁neZ : m₁ ≠ 0 := gmAffineSignedShell_ne_zero hM₁ hm₁
+  have hm₁neZ := gmAffineSignedShell_ne_zero hM₁ hm₁
   have hm₁neR : (m₁ : ℝ) ≠ 0 := by exact_mod_cast hm₁neZ
-  let a : ℝ := (8 * M₃ : ℝ) / (m₁ : ℝ)
-  let b : ℝ := (8 * M₃ : ℝ) * (ell : ℝ)
+  let a := (8 * M₃ : ℝ) / (m₁ : ℝ)
+  let b := (8 * M₃ : ℝ) * (ell : ℝ)
   let H : ℝ → ℝ := fun tau => gmAffineRetainedMiddleProfile f Q M₂ M₃ ell tau
-  have ha : a ≠ 0 := div_ne_zero (by positivity) hm₁neR
+  have ha := div_ne_zero (by positivity) hm₁neR
   have htau (xi : ℝ) : gmAffineFirstPoissonTau M₃ m₁ ell xi = a * xi + b := by
     dsimp only [a, b]
     unfold gmAffineFirstPoissonTau
@@ -3720,7 +3691,7 @@ theorem integral_gmAffineRetainedFirstPoissonPairSquare_eq
     dsimp only [a]
     rw [inv_div, abs_div, abs_of_pos (by positivity : (0 : ℝ) < 8 * M₃)]
   rw [habs]
-  have hm₁abs : |(m₁ : ℝ)| ≠ 0 := abs_ne_zero.mpr hm₁neR
+  have hm₁abs := abs_ne_zero.mpr hm₁neR
   field_simp [hm₁abs, show (8 * M₃ : ℝ) ≠ 0 by positivity]
   ring
 
@@ -3753,10 +3724,9 @@ theorem integral_gmAffineRetainedMiddleProfile_le
     · dsimp only [G]
       rw [show gmAffineMiddleTauWeight Q tau = 1 from
         gmAffineMiddleTauWeight_one_of_abs_lt hQ htau]
-      have hdual := SchwartzMap.norm_le_seminorm ℝ gmAffineLocalBumpDual tau
       have hdualSq : ‖gmAffineLocalBumpDual tau‖ ^ 2 ≤
           SchwartzMap.seminorm ℝ 0 0 gmAffineLocalBumpDual ^ 2 :=
-        (sq_le_sq₀ (norm_nonneg _) (by positivity)).mpr hdual
+        (sq_le_sq₀ (norm_nonneg _) (by positivity)).mpr (SchwartzMap.norm_le_seminorm ℝ gmAffineLocalBumpDual tau)
       have hblock : 0 ≤ ‖gmAffineMiddleFourierBlock f (8 * M₃) M₂ (-ell) tau‖ ^ 2 :=
         sq_nonneg _
       nlinarith
@@ -4123,10 +4093,9 @@ theorem gmAffineMiddleCore_subset_frequencySupport
     gmAffineMiddleCore L B M₂ ⊆ gmAffineMiddleFrequencySupport B M₂ := by
   intro ell hell
   let K : ℕ := ⌈2 * B / (M₂ : ℝ)⌉₊ + 1
-  have hscale := (Finset.mem_filter.mp hell).2
   have hM₂real : (0 : ℝ) < M₂ := by positivity
   have hellAbs : |(ell : ℝ)| ≤ B / (M₂ : ℝ) := by
-    exact (le_div_iff₀ hM₂real).mpr (by simpa only [mul_comm] using hscale)
+    exact (le_div_iff₀ hM₂real).mpr (by simpa only [mul_comm] using ((Finset.mem_filter.mp hell).2))
   have hceil : 2 * B / (M₂ : ℝ) ≤
       (⌈2 * B / (M₂ : ℝ)⌉₊ : ℝ) := Nat.le_ceil _
   have hK : |(ell : ℝ)| ≤ (K : ℝ) := by
@@ -5051,10 +5020,8 @@ theorem gmAffineFirstPoissonRadius_le_of_scale
     {Q Y : ℝ} (hQ : 0 ≤ Q) (hQMY : Q * (M : ℝ) ≤ 4 * Y) :
     gmAffineFirstPoissonRadius M₁ M₃ Q ≤ Y := by
   have hM₁Real : (M₁ : ℝ) ≤ M := by exact_mod_cast hM₁M
-  have hM₃Real : (1 : ℝ) ≤ M₃ := by exact_mod_cast hM₃
-  have hnum : Q * (2 * M₁ : ℝ) ≤ Q * (2 * M : ℝ) := by
-    gcongr
-  have hden : (8 : ℝ) ≤ (8 * M₃ : ℝ) := by
+  have hM₃Real : 1 ≤ M₃ := by exact_mod_cast hM₃
+  have hden : 8 ≤ (8 * M₃ : ℝ) := by
     norm_num at hM₃Real ⊢
     nlinarith
   unfold gmAffineFirstPoissonRadius
@@ -5229,7 +5196,7 @@ theorem gmAffineSecondPoissonCutoff_width
     4 * Q * (M₂ : ℝ) / (8 * M₃ : ℝ) ≤
       gmAffineSecondPoissonCutoff T Q M₂ M₃ := by
   unfold gmAffineSecondPoissonCutoff
-  have hTQ : 0 < T * Q := mul_pos hT hQ
+  have hTQ := mul_pos hT hQ
   linarith
 
 theorem gmAffineSecondPoissonCutoff_ge_Q
@@ -5854,11 +5821,7 @@ theorem gmAffineRegionIITailRawBound_le_source
     dsimp only [F]
     positivity
   have hmain : 2 * D * K * (Q * E + P) ≤ F * (Q * E₀ + P₀) := by
-    calc
-      2 * D * K * (Q * E + P) ≤ F * (Q * E + P) :=
-        mul_le_mul_of_nonneg_right hpref hinnerNonneg
-      _ ≤ F * (Q * E₀ + P₀) :=
-        mul_le_mul_of_nonneg_left hinner hFNonneg
+    exact (mul_le_mul_of_nonneg_right hpref hinnerNonneg).trans (mul_le_mul_of_nonneg_left hinner hFNonneg)
   have hhigh := gmAffineRegionIIHighTail_le
     n f hf hQ hY.le hM₁ hM₂ hM₂M hM₃ hM₃M
   unfold gmAffineRegionIITailRawBound gmAffineRegionIITailSourceBound
@@ -6238,8 +6201,6 @@ theorem gmAffineRegionIIIRawBound_le_source
     n f hQ hM₁ hM₁M hM₂ hM₂M hM₃ hM₃M
   have henvNonneg := gmAffineFourierDecayEnvelope_nonneg
     n f hM₁ hM₂ hM₃ (zero_lt_one.trans_le hQ)
-  have henvSq := pow_le_pow_left₀ henvNonneg henv 2
-  have hfactor := gmAffineHighFrequencyIntegralFactor_le hn hY
   have hfactorNonneg :
       0 ≤ 2 * (-Y ^ ((-(2 * (n : ℝ))) + 1) /
         ((-(2 * (n : ℝ))) + 1)) := by
@@ -6252,7 +6213,7 @@ theorem gmAffineRegionIIIRawBound_le_source
   have htargetFactorNonneg : 0 ≤ 2 * Y ^ (1 - 2 * (n : ℝ)) := by
     positivity
   unfold gmAffineRegionIIIRawBound gmAffineRegionIIISourceBound
-  exact mul_le_mul henvSq hfactor hfactorNonneg (by positivity)
+  exact mul_le_mul (pow_le_pow_left₀ henvNonneg henv 2) (gmAffineHighFrequencyIntegralFactor_le hn hY) hfactorNonneg (by positivity)
 
 /-- Complete raw form of Guth--Maynard Lemma 9.2, attached to the
 literal scale triple attaining `J(f)`.  No tail, support, or scale term
@@ -6542,7 +6503,7 @@ theorem gmAffineIterationEta_le_delta_div_twenty (delta : ℝ) :
 
 theorem gmAffineIterationEta_le_one (delta : ℝ) :
     gmAffineIterationEta delta ≤ 1 := by
-  have h := min_le_right (delta / 20) (1 / 20 : ℝ)
+  have h := min_le_right (delta / 20) (1 / 20)
   unfold gmAffineIterationEta
   linarith
 
@@ -6554,13 +6515,12 @@ theorem ten_mul_gmAffineIterationEta_le
 
 theorem one_le_rpow_gmAffineIterationEta
     {delta T : ℝ} (hdelta : 0 < delta) (hT : 1 ≤ T) :
-    1 ≤ T ^ gmAffineIterationEta delta := by
-  exact Real.one_le_rpow hT (gmAffineIterationEta_pos hdelta).le
+    1 ≤ T ^ gmAffineIterationEta delta := Real.one_le_rpow hT (gmAffineIterationEta_pos hdelta).le
 
 theorem rpow_gmAffineIterationEta_le_self
     (delta : ℝ) {T : ℝ} (hT : 1 ≤ T) :
     T ^ gmAffineIterationEta delta ≤ T := by
-  simpa only [Real.rpow_one] using
+  simpa using
     Real.rpow_le_rpow_of_exponent_le hT
       (gmAffineIterationEta_le_one delta)
 
@@ -6599,18 +6559,15 @@ theorem gmAffineIterationDoubleSix_rpow_le
     (T ^ (6 : ℕ) + T ^ (6 : ℕ)) ^ gmAffineIterationEta delta ≤
       T ^ (7 * gmAffineIterationEta delta) := by
   have hTnonneg : 0 ≤ T := by linarith
-  have hbase : T ^ (6 : ℕ) + T ^ (6 : ℕ) ≤ T ^ (7 : ℕ) := by
+  have hbase : T ^ 6 + T ^ 6 ≤ T ^ 7 := by
     have hmul := mul_le_mul_of_nonneg_right hT (pow_nonneg hTnonneg 6)
-    nlinarith [show T ^ (7 : ℕ) = T ^ (6 : ℕ) * T by ring]
+    nlinarith [show T ^ 7 = T ^ 6 * T by ring]
   have hp := Real.rpow_le_rpow
     (add_nonneg (pow_nonneg hTnonneg 6) (pow_nonneg hTnonneg 6))
     hbase (gmAffineIterationEta_pos hdelta).le
-  calc
-    (T ^ (6 : ℕ) + T ^ (6 : ℕ)) ^ gmAffineIterationEta delta ≤
-        (T ^ (7 : ℕ)) ^ gmAffineIterationEta delta := hp
-    _ = T ^ (7 * gmAffineIterationEta delta) := by
+  exact (hp).trans_eq (by
       rw [← Real.rpow_natCast, ← Real.rpow_mul hTnonneg]
-      norm_num
+      norm_num)
 
 /-- Region I and the retained Region-II core together spend at most the
 requested `T^δ` factor under the source choices. -/

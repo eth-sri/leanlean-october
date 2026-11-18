@@ -42,8 +42,7 @@ theorem rawReduction_pos (B : Tuple ι) (hB : ∀ i,B i≠0) (P : ι → ℝ) (h
 
 theorem slot_scale_split (B : Tuple ι) (P : ι → ℝ) :
     (∏ i,frozenScale B P i)*(∏ i : liveIndices B,P i)=∏ i,P i := by
-  rw [Finset.prod_coe_sort (liveIndices B) P]
-  rw [← Finset.prod_filter_mul_prod_filter_not Finset.univ (fun i => B (Sum.inl i)=1) P]
+  rw [Finset.prod_coe_sort (liveIndices B) P, ← Finset.prod_filter_mul_prod_filter_not Finset.univ (fun i => B (Sum.inl i)=1) P]
   unfold frozenScale liveIndices
   rw [Finset.prod_ite]
   simp only [Finset.prod_const_one,one_mul]
@@ -52,11 +51,10 @@ theorem slot_scale_split (B : Tuple ι) (P : ι → ℝ) :
 theorem raw_scale_identity (B : Tuple ι) (hB : ∀ i,B i≠0) (T : ℝ) (P : ι → ℝ) :
     remainingRaw B T P*rawReduction B P=T*∏ i,P i := by
   unfold remainingRaw rawReduction
-  have h := slot_scale_split B P
   calc
     _ = T*((∏ i,frozenScale B P i)*(∏ i : liveIndices B,P i)) := by
       field_simp [(plainNorm_pos B hB).ne']
-    _ = _ := by rw [h]
+    _ = _ := by rw [(slot_scale_split B P)]
 
 theorem remainingRaw_source (B : Tuple ι) (_hB : ∀ i,B i≠0)
     (B₁ B₂ : Ideal O) (_hB₁ : B₁≠0) (_hB₂ : B₂≠0) (T : ℝ) (P : ι → ℝ) :
@@ -77,9 +75,7 @@ theorem frozen_window_ne_zero (B : Tuple ι) (C R : Ideal O) (ν : ι → Ideal 
     (Wslot : ι → ℝ → ℂ) (P : ι → ℝ)
     (hne : frozenCoefficient B C R ν Wslot P≠0) (i : ι) (hi : B (Sum.inl i)≠1) :
     Wslot i ((Ideal.absNorm (B (Sum.inl i)):ℝ)/P i)≠0 := by
-  have hp := (mul_ne_zero_iff.mp hne).1
-  have hx := Finset.prod_ne_zero_iff.mp hp i (Finset.mem_filter.mpr ⟨Finset.mem_univ _,hi⟩)
-  exact (mul_ne_zero_iff.mp hx).2
+  exact (mul_ne_zero_iff.mp (Finset.prod_ne_zero_iff.mp ((mul_ne_zero_iff.mp hne).1) i (Finset.mem_filter.mpr ⟨Finset.mem_univ _,hi⟩))).2
 
 theorem actual_reduction_norm (B : Tuple ι) (hB : ∀ i,B i≠0) (C R : Ideal O)
     (hprod : finiteTupleProduct B=C) (ν : ι → Ideal O → ℂ)
@@ -105,13 +101,11 @@ theorem actual_reduction_norm (B : Tuple ι) (hB : ∀ i,B i≠0) (C R : Ideal O
       (fun i _ => mul_nonneg (le_of_lt (lt_min zero_lt_one ha)) (frozenScale_pos B P hP i).le)
       (fun i _ => (hi i).1)
     simp only [Finset.prod_mul_distrib,Finset.prod_const,Finset.card_univ] at hh
-    have hh' := mul_le_mul_of_nonneg_left hh (plainNorm_pos B hB).le
-    simpa only [rawReduction,mul_left_comm,mul_assoc] using hh'
+    simpa only [rawReduction,mul_left_comm,mul_assoc] using (mul_le_mul_of_nonneg_left hh (plainNorm_pos B hB).le)
   · have hh := Finset.prod_le_prod₀ (s:=Finset.univ) (fun i _ => Nat.cast_nonneg (Ideal.absNorm (B (Sum.inl i))))
       (fun i _ => (hi i).2)
     simp only [Finset.prod_mul_distrib,Finset.prod_const,Finset.card_univ] at hh
-    have hh' := mul_le_mul_of_nonneg_left hh (plainNorm_pos B hB).le
-    simpa only [rawReduction,mul_left_comm,mul_assoc] using hh'
+    simpa only [rawReduction,mul_left_comm,mul_assoc] using (mul_le_mul_of_nonneg_left hh (plainNorm_pos B hB).le)
 
 end SevenEighths.CenteredMomentCommonRawScale
 

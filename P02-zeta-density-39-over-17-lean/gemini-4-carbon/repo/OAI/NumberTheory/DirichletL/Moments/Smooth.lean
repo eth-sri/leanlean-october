@@ -63,7 +63,7 @@ theorem whole_kernel_separation (W : 𝓢(ℝ, ℂ)) (V : Fin 4 → ℝ → ℂ)
 lemma separated_integrable (b : 𝓢(ℝ, ℂ)) (V : Fin 4 → ℝ → ℂ)
     (ρ x u v : ℝ) (c : ℂ) :
     Integrable (fun t : ℝ => c * separatedKernel V ρ x u v t * b t) := by
-  let K : ℝ := ‖c‖ * ‖V 0 ρ‖ * ‖V 1 x‖ * ‖rootWindow (V 2) u‖ * ‖rootWindow (V 3) v‖
+  let K := ‖c‖ * ‖V 0 ρ‖ * ‖V 1 x‖ * ‖rootWindow (V 2) u‖ * ‖rootWindow (V 3) v‖
   apply (b.integrable.norm.const_mul K).mono'
   · have hρ := logPhase_continuous_left ρ
     have hx := logPhase_continuous_left x
@@ -146,7 +146,6 @@ theorem logPhase_norm_ratio (q X θ : ℝ) (hq : 0 < q) (hX : 0 < X) :
   rw [hlog, logPhase_add]
   congr 1
   have hθ : (-(2 * Real.pi * θ)) / (2 * Real.pi) = -θ := by
-    have hp := Real.pi_ne_zero
     field_simp
   have hn := CenteredMomentLattice.logPhase_eq_normPower (-(2 * Real.pi * θ)) q hq
   rw [hθ] at hn

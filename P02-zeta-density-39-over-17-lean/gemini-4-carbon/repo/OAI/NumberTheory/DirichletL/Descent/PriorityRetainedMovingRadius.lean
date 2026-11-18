@@ -2,7 +2,6 @@ module
 public import OAI.NumberTheory.DirichletL.Descent.PriorityMovingRadius
 public import OAI.NumberTheory.DirichletL.Descent.PrioritySourceBudget
 
-set_option linter.privateModule false
 
 @[expose] public section
 
@@ -12,10 +11,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseSecondSourceBlocks InverseSecondPrincipalCaller InverseSecondProfileUniform
-open FourierBridge CompletedHeight SecondPassIntegration JointLogSeparation
-open InverseInitialClippedColumns InverseSecondFibers
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondSourceBlocks InverseSecondPrincipalCaller InverseSecondProfileUniform FourierBridge CompletedHeight SecondPassIntegration JointLogSeparation InverseInitialClippedColumns InverseSecondFibers
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι σ:Type} [DecidableEq ι] [DecidableEq σ]
 

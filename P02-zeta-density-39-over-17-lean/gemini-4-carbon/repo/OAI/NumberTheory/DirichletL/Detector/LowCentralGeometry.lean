@@ -32,14 +32,12 @@ theorem eventually_low_selected_caps {K : ℕ} (ell : Fin K→ℝ) (hell : ∀i,
     ∀ᶠZ : ℝ in Filter.atTop,1<Z ∧ ∀J : Finset (Fin K),
       (∏i : SelectedSlot J,max 1 (b*Z^(ell i.val)))≤Z^(lowSelectedLength ell J+ε/2) := by
   have hp : 0<ε/2 := by linarith
-  filter_upwards [Filter.eventually_gt_atTop (1:ℝ),
+  filter_upwards [Filter.eventually_gt_atTop 1,
     (tendsto_rpow_atTop hp).eventually (Filter.eventually_ge_atTop ((max 1 b)^K))] with Z hZ hc
   refine ⟨hZ,?_⟩
   intro J
   apply (lowSelectedCaps_product ell hell J Z b hZ.le).trans
-  calc
-    _≤Z^(ε/2)*Z^(lowSelectedLength ell J) := mul_le_mul_of_nonneg_right hc (by positivity)
-    _=_ := by rw [←Real.rpow_add (lt_trans zero_lt_one hZ)];congr 1;ring
+  exact (mul_le_mul_of_nonneg_right hc (by positivity)).trans_eq (by rw [←Real.rpow_add (lt_trans zero_lt_one hZ)];congr 1;ring)
 
 def lowCentralShift (Z T ell0 : ℝ) : ℝ := Real.logb Z T-1-ell0
 
@@ -51,8 +49,7 @@ lemma lowCentralShift_scale (Z T ell0 : ℝ) (hZ : 1<Z) (hT : 0<T) :
 lemma lowCentralShift_bound (Z T ell ε : ℝ) (hZ : 1<Z) (hT : 0<T) (hε : 0≤ε)
     (hlo : Z^(1+ell-ε/2)≤T) (hhi : T≤Z^(1+ell+ε/2)) :
     |lowCentralShift Z T (ell+ε/2)|≤ε := by
-  have he := lowCentralShift_scale Z T (ell+ε/2) hZ hT
-  rw [←he,Real.rpow_le_rpow_left_iff hZ] at hlo hhi
+  rw [←(lowCentralShift_scale Z T (ell+ε/2) hZ hT),Real.rpow_le_rpow_left_iff hZ] at hlo hhi
   exact abs_le.mpr ⟨by linarith,by linarith⟩
 
 lemma lowCentral_ratio_bounds (Z T ell ε : ℝ) (hZ : 0<Z)

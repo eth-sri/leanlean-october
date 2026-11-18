@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical ComplexConjugate
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler ProbeRow
-open CanonicalRowCompletion CompletedGauss ConcretePrimeRowBridge
+open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler ProbeRow CanonicalRowCompletion CompletedGauss ConcretePrimeRowBridge
 local notation "O" => HeckeFamily.O
 
 theorem localCorrection_coordinates (η : Character) (u : FreeRow) (p : O) (hp : Prime p)
@@ -20,12 +19,11 @@ theorem localCorrection_coordinates (η : Character) (u : FreeRow) (p : O) (hp :
     localCorrection η u ⟨Ideal.span {p},Ideal.prime_span_singleton_iff.mpr hp⟩ x w z=
       idealRowHighLocalFactor η u.val (Ideal.span {p}) x w z *
         (1-coordV Q z)*(1-coordW Q rho w)/(1-coordD Q (targetMonoid η p) rho x) := by
-  dsimp only
   have hP0 : (Ideal.span {p}:Ideal O)≠0 := Ideal.span_singleton_eq_bot.not.mpr hp.ne_zero
   unfold localCorrection coordV coordW coordD
   simp only [CubicEisenstein.fullIdealWeight,hP0,ite_false,Complex.ofReal_natCast]
   rw [idealCoeff_span η hp.ne_zero,idealRowHom_prime u.val (Ideal.span {p}) hg]
-  rw [show -(6*z)=(-6 : ℂ)*z by ring]
+  rw [show -(6*z)=(-6)*z by ring]
   rfl
 
 theorem localCorrection_unramified (η : Character) (u : FreeRow) (p : O) (hp : Prime p)
@@ -35,8 +33,7 @@ theorem localCorrection_unramified (η : Character) (u : FreeRow) (p : O) (hp : 
     (x w z : ℂ) (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) :
     localCorrection η u ⟨Ideal.span {p},Ideal.prime_span_singleton_iff.mpr hp⟩ x w z=
       actualUnramifiedClosed η p u.val hg x w z := by
-  rw [localCorrection_coordinates η u p hp hg]
-  rw [idealRowHighLocalFactor_unramified η p hp hg hc hprimary hs u.val hu x w z hx hw hz]
+  rw [localCorrection_coordinates η u p hp hg, idealRowHighLocalFactor_unramified η p hp hg hc hprimary hs u.val hu x w z hx hw hz]
   have hgeom := row_initial_geometric η p hp hg hc u.val hu x w z hx hw hz
   dsimp only at hgeom
   have hV := one_sub_ne_zero_of_norm_lt_one _ hgeom.1

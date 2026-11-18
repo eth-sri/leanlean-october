@@ -7,75 +7,9 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-
-open scoped BigOperators Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 namespace SecondPassArithmetic
-open ActualEisensteinCubic
 
 section
 variable {ι : Type*} [DecidableEq ι] (P : ι → Ideal O)
@@ -84,7 +18,7 @@ include hinj
 
 theorem primeIdealProduct_emultiplicity (S : Finset ι) (v : ι → ℕ) (i : ι) :
     emultiplicity (P i) (∏ j ∈ S, P j ^ v j) = if i ∈ S then (v i : ℕ∞) else 0 := by
-  have hp (j : ι) : Prime (P j) := Ideal.prime_of_isPrime (NeZero.ne (P j)) inferInstance
+  have hp (j : ι) := Ideal.prime_of_isPrime (NeZero.ne (P j)) inferInstance
   rw [Finset.emultiplicity_prod (hp i)]
   have hz (j : ι) (hji : j ≠ i) : emultiplicity (P i) (P j ^ v j) = 0 := by
     rw [emultiplicity_pow (hp i), emultiplicity_eq_zero_of_irreducible_ne
@@ -129,12 +63,10 @@ theorem primeProduct_span_exponents_eq {ι : Type*} [DecidableEq ι]
 
 end SecondPassArithmetic
 
-open scoped BigOperators Classical SchwartzMap
 namespace CanonicalQuadraticSieve
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
-open TruncatedPrincipalPoisson IdealMobiusDivisorSum
+open ConcretePrimeRowBridge EisensteinSchwartzPoisson TruncatedPrincipalPoisson IdealMobiusDivisorSum
 
 theorem divisor_dyadic_sum_le (S T : Finset (Ideal O)) (N : ℝ)
     (f : Ideal O → Ideal O → ℝ) (C : ℝ) (hC : 0 ≤ C)
@@ -224,9 +156,7 @@ theorem HasSieveExponent.large_principal_window {α : ℝ} (hexp : HasSieveExpon
         have hlo := hP D hD E hE i hp
         have hhi : (Ideal.absNorm (D*E):ℝ) ≤ 4*(D₁*D₂) := by
           rw [map_mul, Nat.cast_mul]
-          calc
-            _ ≤ (2*D₁)*(2*D₂) := mul_le_mul (hS D hD).2 (hT E hE).2 (by positivity) (by linarith)
-            _ = _ := by ring
+          exact (mul_le_mul (hS D hD).2 (hT E hE).2 (by positivity) (by linarith)).trans_eq (by ring)
         nlinarith
       simp only [hn, ite_false]
     rw [hz]
@@ -267,8 +197,7 @@ theorem HasSieveExponent.large_principal_pool {α : ℝ} (hexp : HasSieveExponen
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
-open TruncatedPrincipalPoisson IdealMobiusDivisorSum
+open ConcretePrimeRowBridge EisensteinSchwartzPoisson TruncatedPrincipalPoisson IdealMobiusDivisorSum
 
 theorem finite_principal_triangle
     {m n p D : Type*} [Fintype m] [Fintype n] [Fintype p] [Fintype D]
@@ -364,8 +293,7 @@ lemma principalDivisorCorrection_le_product (K : Finset (Ideal O))
     apply Finset.sum_congr rfl
     intro k _
     rw [← divisorPool_filter K (left j*right k) (mul_ne_zero (hleft j) (hright k)) (hK j k),
-      Finset.sum_filter, Finset.mul_sum]
-    rw [Finset.sum_coe_sort K (fun d => (UniqueFactorizationMonoid.moebius d:ℂ)*
+      Finset.sum_filter, Finset.mul_sum, Finset.sum_coe_sort K (fun d => (UniqueFactorizationMonoid.moebius d:ℂ)*
       (if P d i then if d ∣ left j*right k then originalTerm rows left right a b 1 1 i j k *
         ((Real.sqrt (M/(Ideal.absNorm (rows i):ℝ))/(Ideal.absNorm d:ℝ):ℝ):ℂ) else 0 else 0))]
     apply Finset.sum_congr rfl
@@ -422,11 +350,9 @@ theorem HasSieveExponent.principal_divisor_correction {α : ℝ} (hexp : HasSiev
 
 end CanonicalQuadraticSieve
 
-open scoped BigOperators Classical
 namespace SecondPassArithmetic
 
 section
-open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProduct aLabel b0Label jLabel cubeActiveSupport primeProductNorm)
 open ConcreteTraceCRT (eisEmbedding)
 
@@ -499,7 +425,6 @@ variable {ι : Type*} [DecidableEq ι]
 
 end
 
-open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProduct aLabel)
 
 variable {ι : Type*} [DecidableEq ι]

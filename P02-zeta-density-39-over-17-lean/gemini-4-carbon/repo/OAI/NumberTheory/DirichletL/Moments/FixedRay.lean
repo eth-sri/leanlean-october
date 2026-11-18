@@ -11,8 +11,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentFixedRay
-open CanonicalRowCompletion CanonicalQuadraticSieve CenteredMomentSupportedCorrelation
-open RayFourExpansion CenteredMomentPrimary HeckeFamily HeckeRowClosure
+open CanonicalRowCompletion CanonicalQuadraticSieve CenteredMomentSupportedCorrelation RayFourExpansion CenteredMomentPrimary HeckeFamily HeckeRowClosure
 local notation "O" => ActualEisensteinCubic.O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
@@ -28,9 +27,8 @@ theorem supported_coprime_four (a : O) (ha : Supported (Ideal.span {a})) :
 
 theorem supported_coprime_twelve (a : O) (ha : Supported (Ideal.span {a})) :
     IsCoprime (12 : O) a := by
-  have h9 := ShortDraftCRT.nine_coprime_of_not_lambda_dvd a ((supported_span_iff a).mp ha).1
-  have h36 : IsCoprime (36 : O) a := by
-    convert (supported_coprime_four a ha).mul_left h9 using 1 ; norm_num
+  have h36 : IsCoprime 36 a := by
+    convert (supported_coprime_four a ha).mul_left (ShortDraftCRT.nine_coprime_of_not_lambda_dvd a ((supported_span_iff a).mp ha).1) using 1 ; norm_num
   exact h36.of_isCoprime_of_dvd_left ⟨3, by norm_num⟩
 
 theorem supported_rayMask (a : O) (ha : Supported (Ideal.span {a})) : rayMask a = 1 := by
@@ -62,13 +60,12 @@ theorem phaseTable_expansion (D E a b : O)
         sexticReciprocityPhase a b =
       ∑ χ : RayCharacter, ∑ ξ : RayCharacter,
         pairCoeff (phaseTable D E) χ ξ * rayCharacter χ a * rayCharacter ξ b := by
-  have h := pair_phase_expansion (phaseTable D E) a b
   simpa only [supported_rayMask a ha, supported_rayMask b hb, one_mul,
-    phaseTable_mk] using h
+    phaseTable_mk] using (pair_phase_expansion (phaseTable D E) a b)
 
 theorem phaseTable_mass (D E : O) :
     (∑ χ : RayCharacter, ∑ ξ : RayCharacter, ‖pairCoeff (phaseTable D E) χ ξ‖) ≤ 256 := by
-  simpa only [mul_one] using pairCoeff_sum_norm_le (phaseTable D E) 1
+  simpa using pairCoeff_sum_norm_le (phaseTable D E) 1
     (fun u v => phaseTable_norm D E u v)
 
 def primaryRayHom (χ : RayCharacter) : O →* ℂ where
@@ -90,8 +87,7 @@ theorem primaryRayHom_unit_mul (χ : RayCharacter) (u : Oˣ) (a : O) :
 
 theorem primaryRayHom_periodic (χ : RayCharacter) :
     CanonicalCoefficientClass.FactorsModulo (Ideal.span {(12 : O)}) (primaryRayHom χ) := by
-  let F : O →* ℂ := χ.toMonoidHom.comp (Ideal.Quotient.mk (Ideal.span {(4 : O)})).toMonoidHom
-  refine periodic_of_primary _ ?_ _ F ?_ (primaryRayHom_unit_mul χ) ?_ ?_
+  refine periodic_of_primary _ ?_ _ (χ.toMonoidHom.comp (Ideal.Quotient.mk (Ideal.span {(4 : O)})).toMonoidHom) ?_ (primaryRayHom_unit_mul χ) ?_ ?_
   · apply Ideal.span_singleton_le_span_singleton.mpr
     exact ActualEisensteinCubic.lambda_sq_dvd_three.trans ⟨4, by norm_num⟩
   · intro x y hxy
@@ -134,14 +130,13 @@ theorem completeSupportExtension_separated (D E h a b : O)
             (rayCharacter χ a * idealRowHom h (Ideal.span {a})) *
             (rayCharacter ξ b * star (idealRowHom (-h) (Ideal.span {b}))) := by
   rw [completeSupportExtension]
-  have he := phaseTable_expansion D E a b ha hb
   calc
     _ = actualCorrelation D E hD hE h *
         (sexticReciprocityPhase a E * star (sexticReciprocityPhase b D) *
           sexticReciprocityPhase a b) *
         idealRowHom h (Ideal.span {a}) * star (idealRowHom (-h) (Ideal.span {b})) := by ring
     _ = _ := by
-      rw [he]
+      rw [(phaseTable_expansion D E a b ha hb)]
       simp only [Finset.mul_sum, Finset.sum_mul]
       apply Finset.sum_congr rfl
       intro χ _

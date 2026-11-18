@@ -7,18 +7,8 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical
 
 namespace OscSpecial
 
@@ -28,7 +18,7 @@ theorem oscillatory_gaussian_poisson {η a b : ℝ}
       (1 / ((R η a b : ℂ) ^ (1 / 2 : ℂ))) *
         ∑' z : ℤ × ℤ,
           RankTwoComplex.dualGaussian (A η a b) (B η a b) (D η a b) z := by
-  have hq0 : q a b ≠ 0 := hq.ne'
+  have hq0 := hq.ne'
   have ha : 0 < (A η a b).re := by
     rw [(coefficient_re η a b hq0).1]
     exact hη
@@ -55,10 +45,8 @@ private theorem inverseForm_explicit {η a b : ℝ} (hη : 0 < η) (hq : 0 < q a
         (((a-b : ℝ) : ℂ) * (z.1 : ℂ) ^ 2 +
           2 * (a : ℂ) * (z.1 : ℂ) * (z.2 : ℂ) +
           (b : ℂ) * (z.2 : ℂ) ^ 2) := by
-  have hq0 : q a b ≠ 0 := hq.ne'
-  have hqc : (q a b : ℂ) ≠ 0 := by exact_mod_cast hq0
-  have hr0 : r η a b ≠ 0 := (r_pos hη hq).ne'
-  have hrc : (r η a b : ℂ) ≠ 0 := by exact_mod_cast hr0
+  have hqc : (q a b : ℂ) ≠ 0 := by exact_mod_cast (hq.ne')
+  have hrc : (r η a b : ℂ) ≠ 0 := by exact_mod_cast ((r_pos hη hq).ne')
   have hR : 0 < R η a b := by unfold R; positivity
   have hRc : (R η a b : ℂ) ≠ 0 := by exact_mod_cast hR.ne'
   have hRexpr : (R η a b : ℂ) = 4 * (r η a b : ℂ) / (q a b : ℂ) := by
@@ -102,16 +90,14 @@ namespace ActualEisensteinCubic
 
 section
 
-open EisensteinEmbedding ConcreteTraceCRT Complex
+open EisensteinEmbedding ConcreteTraceCRT
 
 theorem dual_quadratic_trace_coeff (a b k l : ℤ) :
     (ActualEisensteinCoordinates.coords
       (ActualEisensteinCoordinates.eval a b *
         (ActualEisensteinCoordinates.eval (k+l) k)^2)).2 =
       (a-b)*k^2+2*a*k*l+b*l^2 := by
-  rw [pow_two, ActualEisensteinCoordinates.eval_mul (k+l) k (k+l) k]
-  rw [ActualEisensteinCoordinates.eval_mul]
-  rw [ShortDraftLatticeCount.coords_eval]
+  rw [pow_two, ActualEisensteinCoordinates.eval_mul (k+l) k (k+l) k, ActualEisensteinCoordinates.eval_mul, ShortDraftLatticeCount.coords_eval]
   ring
 
 private theorem coords_neg_second (z : O) :
@@ -119,9 +105,7 @@ private theorem coords_neg_second (z : O) :
       -(ActualEisensteinCoordinates.coords z).2 := by
   let a := (ActualEisensteinCoordinates.coords z).1
   let b := (ActualEisensteinCoordinates.coords z).2
-  have hz : z = ActualEisensteinCoordinates.eval a b :=
-    (ActualEisensteinCoordinates.eval_coords z).symm
-  rw [hz]
+  rw [((ActualEisensteinCoordinates.eval_coords z).symm)]
   have hneg : -ActualEisensteinCoordinates.eval a b =
       ActualEisensteinCoordinates.eval (-a) (-b) := by
     simp only [ActualEisensteinCoordinates.eval]
@@ -144,9 +128,8 @@ theorem breveE_dual_quadratic_real_scale
       (-(ActualEisensteinCoordinates.eval a b *
         (ActualEisensteinCoordinates.eval (k+l) k)^2))).2 =
       -((a-b)*k^2+2*a*k*l+b*l^2) := by
-    have hp := dual_quadratic_trace_coeff a b k l
     rw [coords_neg_second]
-    simpa using congrArg Neg.neg hp
+    simpa using congrArg Neg.neg (dual_quadratic_trace_coeff a b k l)
   rw [hneg]
   congr 1
   push_cast
@@ -156,8 +139,7 @@ end
 
 section
 
-open scoped Topology
-open Filter EisensteinEmbedding ConcreteTraceCRT Complex
+open EisensteinEmbedding ConcreteTraceCRT
 
 theorem original_abel_gamma_limit (c : O) (hc : c ≠ 0) :
     letI : Finite (O ⧸ Ideal.span {c}) := finite_quotient_span hc
@@ -202,7 +184,7 @@ theorem original_abel_gamma_limit (c : O) (hc : c ≠ 0) :
 
 end
 
-open EisensteinEmbedding ConcreteTraceCRT Complex
+open EisensteinEmbedding ConcreteTraceCRT
 
 theorem actual_oscillatory_binary_coordinate
     (a b m n : ℤ) (hc : ActualEisensteinCoordinates.eval a b ≠ 0)
@@ -218,9 +200,7 @@ theorem actual_oscillatory_binary_coordinate
         (OscSpecial.A η (a : ℝ) (b : ℝ))
         (OscSpecial.B η (a : ℝ) (b : ℝ))
         (OscSpecial.D η (a : ℝ) (b : ℝ)) (m,n) := by
-  have hqZ : a*a-a*b+b*b ≠ 0 :=
-    (coordinate_norm_pos_of_nonzero a b hc).ne'
-  have hqC : (((a*a-a*b+b*b : ℤ) : ℂ)) ≠ 0 := by exact_mod_cast hqZ
+  have hqC : (((a*a-a*b+b*b : ℤ) : ℂ)) ≠ 0 := by exact_mod_cast ((coordinate_norm_pos_of_nonzero a b hc).ne')
   dsimp only
   rw [actual_oscillatory_gaussian_coordinate a b m n hc η]
   unfold RankTwoComplex.binaryGaussian OscSpecial.A OscSpecial.B
@@ -301,15 +281,12 @@ theorem dualFrequencyEquiv_trace_phase (r : ℝ) (a b k l : ℤ) :
         eisLam / ((4*r : ℝ) : ℂ)) =
       Complex.exp (-(2 * Real.pi * Complex.I *
         (((a-b)*k^2+2*a*k*l+b*l^2 : ℤ) : ℂ)) /
-        ((4*r : ℝ) : ℂ)) := by
-  exact breveE_dual_quadratic_real_scale r a b k l
+        ((4*r : ℝ) : ℂ)) := breveE_dual_quadratic_real_scale r a b k l
 
 end ActualEisensteinCubic
 
 namespace GaussianMoment
 
-open scoped Topology
-open Filter
 
 noncomputable def realGauss (t : ℝ) (z : ℤ × ℤ) : ℝ :=
   Real.exp (-Real.pi * t * RankTwoPoisson.eisQ z)
@@ -319,8 +296,7 @@ theorem realGauss_nonneg (t : ℝ) (z : ℤ × ℤ) :
 
 theorem realGauss_summable {t : ℝ} (ht : 0 < t) :
     Summable (realGauss t) := by
-  have h := (RankTwoPoisson.eis_gauss_summable ht).norm
-  convert h using 1
+  convert ((RankTwoPoisson.eis_gauss_summable ht).norm) using 1
   funext z
   dsimp [realGauss, RankTwoPoisson.eisGauss]
   rw [Complex.norm_exp]
@@ -337,9 +313,8 @@ theorem realGauss_cast (t : ℝ) (z : ℤ × ℤ) :
 theorem real_gaussian_mass :
     Tendsto (fun t : ℝ => t * (∑' z : ℤ × ℤ, realGauss t z))
       (𝓝[>] (0 : ℝ)) (𝓝 (2 / Real.sqrt 3)) := by
-  have hC := EisensteinAbelFiber.shifted_gaussian_mass 0 0
   have hRe := (Complex.continuous_re.tendsto
-    (((2 / Real.sqrt 3 : ℝ) : ℂ))).comp hC
+    (((2 / Real.sqrt 3 : ℝ) : ℂ))).comp (EisensteinAbelFiber.shifted_gaussian_mass 0 0)
   have hsum (t : ℝ) :
       (∑' z : ℤ × ℤ, RankTwoEisShift.shifted t 0 0 z) =
         (((∑' z : ℤ × ℤ, realGauss t z) : ℝ) : ℂ) := by
@@ -364,13 +339,13 @@ theorem real_gaussian_mass :
     funext t
     exact hfun t
   rw [← hEq] at hRe
-  simpa only [Complex.ofReal_re] using hRe
+  simpa using hRe
 
 end GaussianMoment
 
 namespace ActualEisensteinCubic
 
-open EisensteinEmbedding ConcreteTraceCRT Complex
+open EisensteinEmbedding ConcreteTraceCRT
 
 theorem dual_gaussian_is_actual_trace_phase
     (a b k l : ℤ)
@@ -389,18 +364,15 @@ theorem dual_gaussian_is_actual_trace_phase
         (‖eisEmbedding y‖ ^ 2 : ℂ)) *
       ShortDraftTrace.breveE
         (eisEmbedding (-(c * y^2)) / eisLam / ((4*r : ℝ) : ℂ)) := by
-  have hqZ := coordinate_norm_pos_of_nonzero a b hc
   have hq : 0 < OscSpecial.q (a : ℝ) (b : ℝ) := by
     change 0 < (a : ℝ)^2 - (a : ℝ)*(b : ℝ)+(b : ℝ)^2
-    exact_mod_cast (show 0 < a^2-a*b+b^2 by simpa only [pow_two] using hqZ)
+    exact_mod_cast (show 0 < a^2-a*b+b^2 by simpa only [pow_two] using (coordinate_norm_pos_of_nonzero a b hc))
   dsimp only
-  rw [OscSpecial.dualGaussian_explicit hη hq (k,l)]
-  rw [dualFrequencyEquiv_trace_phase (OscSpecial.r η (a : ℝ) (b : ℝ)) a b k l]
+  rw [OscSpecial.dualGaussian_explicit hη hq (k,l), dualFrequencyEquiv_trace_phase (OscSpecial.r η (a : ℝ) (b : ℝ)) a b k l]
   have hnormC : ((‖eisEmbedding (dualFrequencyEquiv (k,l))‖ : ℂ)^2) =
       (((k^2+k*l+l^2 : ℤ) : ℂ)) := by
     exact_mod_cast dualFrequencyEquiv_norm_sq k l
-  rw [hnormC]
-  rw [← Complex.exp_add]
+  rw [hnormC, ← Complex.exp_add]
   congr 1
   push_cast
   ring
@@ -424,10 +396,9 @@ theorem actual_oscillatory_poisson
             (‖eisEmbedding y‖ ^ 2 : ℂ)) *
           ShortDraftTrace.breveE
             (eisEmbedding (-(c * y^2)) / eisLam / ((4*r : ℝ) : ℂ)) := by
-  have hqZ := coordinate_norm_pos_of_nonzero a b hc
   have hq : 0 < OscSpecial.q (a : ℝ) (b : ℝ) := by
     change 0 < (a : ℝ)^2 - (a : ℝ)*(b : ℝ)+(b : ℝ)^2
-    exact_mod_cast (show 0 < a^2-a*b+b^2 by simpa only [pow_two] using hqZ)
+    exact_mod_cast (show 0 < a^2-a*b+b^2 by simpa only [pow_two] using (coordinate_norm_pos_of_nonzero a b hc))
   dsimp only
   rw [actual_oscillatory_sum_eq_binary a b hc η,
     OscSpecial.oscillatory_gaussian_poisson hη hq]
@@ -466,9 +437,7 @@ private theorem R_eq_four_r_div_q {η a b : ℝ} (hq : q a b ≠ 0) :
 
 private theorem sqrt_R_eq {η a b : ℝ} (_hη : 0 < η) (hq : 0 < q a b) :
     Real.sqrt (R η a b) = 2 * Real.sqrt (r η a b) / Real.sqrt (q a b) := by
-  rw [R_eq_four_r_div_q hq.ne']
-  rw [Real.sqrt_div' (4 * r η a b) hq.le]
-  rw [Real.sqrt_mul (by norm_num : (0 : ℝ) ≤ 4)]
+  rw [R_eq_four_r_div_q hq.ne', Real.sqrt_div' (4 * r η a b) hq.le, Real.sqrt_mul (by norm_num : (0 : ℝ) ≤ 4)]
   have hs4 : Real.sqrt (4 : ℝ) = 2 := by
     rw [show (4 : ℝ) = 2 ^ 2 by norm_num, Real.sqrt_sq (by norm_num : (0 : ℝ) ≤ 2)]
   rw [hs4]
@@ -477,9 +446,6 @@ theorem prefactor_eq_real_sqrt {η a b : ℝ} (hη : 0 < η) (hq : 0 < q a b) :
     (1 / ((R η a b : ℂ) ^ (1 / 2 : ℂ))) =
       ((Real.sqrt (q a b) / (2 * Real.sqrt (r η a b)) : ℝ) : ℂ) := by
   have hR : 0 ≤ R η a b := by unfold R; positivity
-  have hqS : Real.sqrt (q a b) ≠ 0 := (Real.sqrt_pos.mpr hq).ne'
-  have hrS : Real.sqrt (r η a b) ≠ 0 :=
-    (Real.sqrt_pos.mpr (r_pos hη hq)).ne'
   have hcpow : (R η a b : ℂ) ^ (1 / 2 : ℂ) =
       ((R η a b) ^ (1 / 2 : ℝ) : ℝ) := by
     simpa using (Complex.ofReal_cpow hR (1 / 2 : ℝ)).symm
@@ -487,10 +453,8 @@ theorem prefactor_eq_real_sqrt {η a b : ℝ} (hη : 0 < η) (hq : 0 < q a b) :
   simp only [Complex.ofReal_div]
   rw [← Real.sqrt_eq_rpow, sqrt_R_eq hη hq]
   push_cast
-  field_simp [hqS, hrS]
+  field_simp [((Real.sqrt_pos.mpr hq).ne'), ((Real.sqrt_pos.mpr (r_pos hη hq)).ne')]
 
-open scoped Topology
-open Filter
 
 theorem prefactor_tendsto {a b : ℝ} (hq : 0 < q a b) :
     Tendsto (fun η : ℝ => 1 / ((R η a b : ℂ) ^ (1 / 2 : ℂ)))
@@ -510,22 +474,16 @@ theorem prefactor_tendsto {a b : ℝ} (hq : 0 < q a b) :
       (𝓝 (Real.sqrt (q a b) / 2)) := by
     convert tendsto_const_nhds.div (tendsto_const_nhds.mul hs)
       (by norm_num : (2 : ℝ) * 1 ≠ 0) using 1 ; simp
-  have hc : Tendsto (fun η : ℝ =>
-      ((Real.sqrt (q a b) / (2 * Real.sqrt (r η a b)) : ℝ) : ℂ))
-      (𝓝[>] (0 : ℝ)) (𝓝 (((Real.sqrt (q a b) / 2 : ℝ) : ℂ))) :=
-    Complex.continuous_ofReal.continuousAt.tendsto.comp hd
   have heq : (fun η : ℝ => 1 / ((R η a b : ℂ) ^ (1 / 2 : ℂ))) =ᶠ[𝓝[>] (0 : ℝ)]
       (fun η : ℝ => ((Real.sqrt (q a b) / (2 * Real.sqrt (r η a b)) : ℝ) : ℂ)) := by
     filter_upwards [self_mem_nhdsWithin] with η hη
     exact prefactor_eq_real_sqrt hη hq
-  exact hc.congr' heq.symm
+  exact (Complex.continuous_ofReal.continuousAt.tendsto.comp hd).congr' heq.symm
 
 end OscSpecial
 
 namespace GaussianMoment
 
-open scoped Topology
-open Filter
 
 private theorem eisQ_nonneg (z : ℤ × ℤ) : 0 ≤ RankTwoPoisson.eisQ z := by
   have h := RankTwoPoisson.eisQ_lower z
@@ -540,10 +498,7 @@ private theorem moment_term_bound {t : ℝ} (ht : 0 < t) (z : ℤ × ℤ) :
 
 private theorem moment_summable {t : ℝ} (ht : 0 < t) :
     Summable (fun z : ℤ × ℤ => RankTwoPoisson.eisQ z * realGauss t z) := by
-  have hmajor : Summable (fun z : ℤ × ℤ =>
-      (2 / (Real.pi * t)) * realGauss (t / 2) z) :=
-    (realGauss_summable (t := t / 2) (half_pos ht)).mul_left _
-  exact hmajor.of_nonneg_of_le
+  exact ((realGauss_summable (t := t / 2) (half_pos ht)).mul_left _).of_nonneg_of_le
     (fun z => mul_nonneg (eisQ_nonneg z) (realGauss_nonneg t z))
     (moment_term_bound ht)
 
@@ -551,16 +506,10 @@ private theorem moment_tsum_bound {t : ℝ} (ht : 0 < t) :
     (∑' z : ℤ × ℤ, RankTwoPoisson.eisQ z * realGauss t z) ≤
       (2 / (Real.pi * t)) *
         (∑' z : ℤ × ℤ, realGauss (t / 2) z) := by
-  have hmajor : Summable (fun z : ℤ × ℤ =>
-      (2 / (Real.pi * t)) * realGauss (t / 2) z) :=
-    (realGauss_summable (t := t / 2) (half_pos ht)).mul_left _
   have h := Summable.tsum_le_tsum (moment_term_bound ht)
-    (moment_summable ht) hmajor
+    (moment_summable ht) ((realGauss_summable (t := t / 2) (half_pos ht)).mul_left _)
   simpa only [tsum_mul_left] using h
 
-private theorem moment_tsum_nonneg (t : ℝ) :
-    0 ≤ (∑' z : ℤ × ℤ, RankTwoPoisson.eisQ z * realGauss t z) := by
-  exact tsum_nonneg fun z => mul_nonneg (eisQ_nonneg z) (realGauss_nonneg t z)
 
 private theorem half_tendsto_within :
     Tendsto (fun t : ℝ => t / 2) (𝓝[>] (0 : ℝ)) (𝓝[>] (0 : ℝ)) := by
@@ -592,27 +541,16 @@ theorem scaled_moment_vanishes :
       (fun t : ℝ => (4 / Real.pi) * t *
         ((t / 2) * (∑' z : ℤ × ℤ, realGauss (t / 2) z)))
       (𝓝[>] (0 : ℝ)) (𝓝 (0 : ℝ)) := by
-    have h := (t_tendsto_zero.mul scaled_half_mass_tendsto).const_mul (4 / Real.pi)
-    simpa only [zero_mul, mul_zero, Function.comp_def, mul_assoc] using h
-  have hleft : Tendsto (fun _ : ℝ => (0 : ℝ))
-      (𝓝[>] (0 : ℝ)) (𝓝 (0 : ℝ)) := tendsto_const_nhds
-  apply tendsto_of_tendsto_of_tendsto_of_le_of_le' hleft hright
+    simpa only [zero_mul, mul_zero, Function.comp_def, mul_assoc] using ((t_tendsto_zero.mul scaled_half_mass_tendsto).const_mul (4 / Real.pi))
+  apply tendsto_of_tendsto_of_tendsto_of_le_of_le' (tendsto_const_nhds) hright
   · filter_upwards [self_mem_nhdsWithin] with t ht
     change 0 < t at ht
-    exact mul_nonneg (pow_nonneg ht.le _) (moment_tsum_nonneg t)
+    exact mul_nonneg (pow_nonneg ht.le _) ((tsum_nonneg fun z => mul_nonneg (eisQ_nonneg z) (realGauss_nonneg t z)))
   · filter_upwards [self_mem_nhdsWithin] with t ht
     change 0 < t at ht
-    have h := moment_tsum_bound ht
-    have ht3 : 0 ≤ t ^ 3 := pow_nonneg ht.le _
-    have hmul := mul_le_mul_of_nonneg_left h ht3
-    calc
-      t ^ 3 * (∑' z : ℤ × ℤ, RankTwoPoisson.eisQ z * realGauss t z) ≤
-          t ^ 3 * ((2 / (Real.pi * t)) *
-            (∑' z : ℤ × ℤ, realGauss (t / 2) z)) := hmul
-      _ = (4 / Real.pi) * t *
-          ((t / 2) * (∑' z : ℤ × ℤ, realGauss (t / 2) z)) := by
+    exact ((mul_le_mul_of_nonneg_left (moment_tsum_bound ht) (pow_nonneg ht.le _))).trans_eq (by
         field_simp [ht.ne']
-        ring
+        ring)
 
 end GaussianMoment
 

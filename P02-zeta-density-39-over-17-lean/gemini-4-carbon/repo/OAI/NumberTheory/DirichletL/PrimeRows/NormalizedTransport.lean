@@ -7,11 +7,10 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.CubeNormalizer
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology ContDiff
 open Filter Set
+open scoped Classical BigOperators Topology ContDiff
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary CompletedGauss
-open ProbeRaySlots PrincipalMellinResidues PrincipalSignalComparison ProbePrincipalResidueActual
+open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary CompletedGauss ProbeRaySlots PrincipalMellinResidues PrincipalSignalComparison ProbePrincipalResidueActual
 local notation "O" => HeckeFamily.O
 variable (M : Ideal O) [NeZero M]
 local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
@@ -19,8 +18,7 @@ variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 omit [NeZero M] in
 theorem transportPoolOutside (S : Finset (Ideal O)) (K : ℕ) (a b : ℝ) (Y : Fin K→ℝ) :
-    ∀j P,P∈pool (RayQuotient.identityClass M H) S a b (Y j) → P.val∉S :=
-  fun j P hP=>(mem_pool _ S a b (Y j) P).mp hP |>.2.2.2
+    ∀j P,P∈pool (RayQuotient.identityClass M H) S a b (Y j) → P.val∉S := by simp
 
 lemma normalized_central_transport (A P C F N : ℂ) (a b v : ℝ)
     (ha : ‖A-P-C‖≤a) (hb : ‖P/N-F‖≤b) (hv : ‖N⁻¹‖≤v) (ha0 : 0≤a) :
@@ -93,7 +91,7 @@ theorem actual_normalized_probe_transport (K : ℕ) (e δ a b B ζ saving τ ell
     a b B ellMin ha hab hB hmin ell hell hellinj hellsum W hW hcompact hsupp hWB hne
     W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1 hr0 hr1 hp0 hp1 hn0 hn1 e nu he he'.le hnu
     (by linarith) (by linarith)
-  let D : ℝ := Ca*(η.modulus.absNorm:ℝ)^2*Cn
+  let D := Ca*(η.modulus.absNorm:ℝ)^2*Cn
   have hD : 0≤D := by dsimp [D];positivity
   refine ⟨D+Cp,by positivity,?_⟩
   filter_upwards [hcanonical,hnormalizer,hprincipal,
@@ -103,7 +101,6 @@ theorem actual_normalized_probe_transport (K : ℕ) (e δ a b B ζ saving τ ell
   dsimp only at hnorm hprincipal ⊢
   let Yp : Fin K→ℝ := fun j=>Z^(ell j)
   let T : Fin K→Finset PrimeIdeal := fun j=>pool (RayQuotient.identityClass M H) S a b (Yp j)
-  let hT := transportPoolOutside M H S K a b Yp
   let WC : Fin K→ℝ→ℂ := fun j y=>(W j y:ℂ)
   have hWS (j : Fin K) : Function.support (WC j)⊆Icc a b := by
     intro y hy
@@ -116,11 +113,10 @@ theorem actual_normalized_probe_transport (K : ℕ) (e δ a b B ζ saving τ ell
     have hh := (pool_norm_bounds (RayQuotient.identityClass M H) S ha.le hab
       (Real.rpow_pos_of_pos hZ (ell j)) P hP).2
     simpa only [mul_comm] using hh
-  obtain ⟨idx,grid,hlabels,hbins,hray,herror⟩ := hcan η T hT hdis ell (fun j=>(hmin.trans_le (hell j)).le)
+  obtain ⟨idx,grid,hlabels,hbins,hray,herror⟩ := hcan η T (transportPoolOutside M H S K a b Yp) hdis ell (fun j=>(hmin.trans_le (hell j)).le)
     hellsum hpool WC hWS hWCB
   refine ⟨hnorm.1,idx,grid,hlabels,hbins,hray,?_⟩
-  have hh := normalized_central_transport _ _ _ _ _ _ _ _ herror hprincipal.2 hnorm.2 (by positivity)
-  apply hh.trans
+  apply (normalized_central_transport _ _ _ _ _ _ _ _ herror hprincipal.2 hnorm.2 (by positivity)).trans
   have heq : (Ca*(η.modulus.absNorm:ℝ)^2*(Z^(HeckeZeroSupremum.beta-11/16-63/800+8*e)+Z^(-saving)))*(Cn*Z^nu)=
       D*(Z^(HeckeZeroSupremum.beta-11/16-63/800+8*e+nu)+Z^(-saving+nu)) := by
     rw [Real.rpow_add hZ (HeckeZeroSupremum.beta-11/16-63/800+8*e) nu,

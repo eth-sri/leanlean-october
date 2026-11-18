@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import MathCollab.Density.Stronger.Atkinson.IntervalAmplitudeBounds
 
 @[expose] public section
@@ -26,19 +36,18 @@ theorem IntervalC1Bound.integral_mul_of_primitive_bound
     (hk : ∀ x ∈ J, ContinuousAt k x)
     (hprimitive : ∀ x ∈ Icc a b, ‖∫ y in a..x, k y‖ ≤ B) :
     ‖∫ y in a..b, f y*k y‖ ≤ 2*B*M := by
-  have hB : 0 ≤ B := (norm_nonneg _).trans (hprimitive a ⟨le_rfl,hab⟩)
+  have hB := (norm_nonneg _).trans (hprimitive a ⟨le_rfl,hab⟩)
   let K : ℝ → ℂ := fun x => ∫ y in a..x, k y
   have hki {x : ℝ} (hx : x ∈ Icc a b) : IntervalIntegrable k volume a x := by
     apply ContinuousOn.intervalIntegrable
     rw [uIcc_of_le hx.1]
     exact fun y hy => (hk y (hsub ⟨hy.1,hy.2.trans hx.2⟩)).continuousWithinAt
-  have hd (x : ℝ) (hx : x ∈ Icc a b) : HasDerivAt K (k x) x :=
-    intervalIntegral.integral_hasDerivAt_right (hki hx)
+  have hd (x : ℝ) (hx : x ∈ Icc a b) := intervalIntegral.integral_hasDerivAt_right (hki hx)
       (ContinuousAt.stronglyMeasurableAtFilter hJ hk x (hsub hx)) (hk x (hsub hx))
   have hK : ContinuousOn K (uIcc a b) := by
     rw [uIcc_of_le hab]
     exact fun x hx => (hd x hx).continuousAt.continuousWithinAt
-  have hKb (x : ℝ) (hx : x ∈ Icc a b) : ‖K x‖ ≤ B := hprimitive x hx
+  have hKb (x : ℝ) (hx : x ∈ Icc a b) := hprimitive x hx
   have hparts := intervalIntegral.integral_mul_deriv_eq_deriv_mul
     (u := f) (u' := deriv f) (v := K) (v' := k)
     (fun x hx => by
@@ -54,7 +63,7 @@ theorem IntervalC1Bound.integral_mul_of_primitive_bound
         rw [abs_of_nonneg (intervalIntegral.integral_nonneg hab (fun _ _ => norm_nonneg _))]
       _ ≤ ∫ y in a..b, ‖deriv f y‖*B := by
         apply intervalIntegral.integral_mono_on hab
-        · simpa only [norm_mul] using
+        · simpa using
             (hf.derivative_integrable hab).norm.mul_continuousOn hK.norm
         · exact (hf.derivative_integrable hab).norm.mul_const B
         · intro y hy

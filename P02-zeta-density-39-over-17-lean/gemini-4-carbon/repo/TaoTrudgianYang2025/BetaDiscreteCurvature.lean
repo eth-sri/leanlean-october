@@ -14,9 +14,8 @@ are retained separately in the finite-sum consumer.
 
 noncomputable section
 
-open Set Expdb
+open Set Expdb RiemannZeta.GuthMaynard
 open scoped ContDiff
-open RiemannZeta.GuthMaynard
 
 namespace TaoTrudgianYang2025
 
@@ -27,12 +26,9 @@ theorem betaModelSample_hasDerivAt {F : ℝ → ℝ} {T N A x : ℝ}
     (hF : ContDiffOn ℝ ∞ F phaseInterval) (hu : (A+x)/N ∈ Ioo (1 : ℝ) 2) :
     HasDerivAt (betaModelSample F T N A)
       ((-2*Real.pi*T/N)*deriv F ((A+x)/N)) x := by
-  have hc : ContDiffAt ℝ 1 F ((A+x)/N) :=
-    (hF.contDiffAt (Icc_mem_nhds hu.1 hu.2)).of_le
+  have hc := (hF.contDiffAt (Icc_mem_nhds hu.1 hu.2)).of_le
       (ENat.natCast_le_of_coe_top_le_withTop le_rfl 1)
-  have hin : HasDerivAt (fun y : ℝ => (A+y)/N) (1/N) x :=
-    ((hasDerivAt_id x).const_add A).div_const N
-  convert ((hc.differentiableAt_one.hasDerivAt.comp x hin).const_mul
+  convert ((hc.differentiableAt_one.hasDerivAt.comp x (((hasDerivAt_id x).const_add A).div_const N)).const_mul
     (-2*Real.pi*T)) using 1
   · rfl
   · ring
@@ -67,11 +63,11 @@ theorem betaModelSample_secondDifference_bounds
         (betaModelSample F T N A (n+1)-betaModelSample F T N A n) ≤
       (2*Real.pi*(σ+1))*T/N^2 := by
   have hinside (x : ℝ) (hx : x ∈ Icc (n : ℝ) (n+2)) :
-      (A+x)/N ∈ Ioo (1 : ℝ) 2 := by
+      (A+x)/N ∈ Ioo 1 2 := by
     have hn' : (n : ℝ)+1 ≤ L := by exact_mod_cast hn
     constructor
     · apply (lt_div_iff₀ hN).2
-      nlinarith [(Nat.cast_nonneg n : (0 : ℝ) ≤ n),hx.1]
+      nlinarith [(Nat.cast_nonneg n : 0 ≤ n),hx.1]
     · apply (div_lt_iff₀ hN).2
       linarith [hx.2]
   obtain ⟨x,hx,heq⟩ := second_order_mean_value

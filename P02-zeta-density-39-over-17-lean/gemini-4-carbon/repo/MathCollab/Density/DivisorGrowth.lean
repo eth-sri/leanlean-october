@@ -39,7 +39,6 @@ theorem exponent_linear_le_two_pow (e : ℕ) : (e : ℝ)+1 ≤ (2 : ℝ)^e := by
   induction e with
   | zero => norm_num
   | succ e ih =>
-    have hh : (1 : ℝ) ≤ (2 : ℝ)^e := one_le_pow₀ (by norm_num)
     push_cast
     rw [pow_succ]
     linarith

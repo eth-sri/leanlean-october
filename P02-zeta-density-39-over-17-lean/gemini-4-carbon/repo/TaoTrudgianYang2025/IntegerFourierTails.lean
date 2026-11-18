@@ -1,6 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
-public import TaoTrudgianYang2025.ZetaFourthTailPower
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import Mathlib.Topology.Algebra.InfiniteSum.NatInt
 
 @[expose] public section
@@ -43,11 +52,10 @@ theorem tsum_nat_inverse_square_tail_le {R : ℕ} (hR : 0 < R) :
   rw [hshift] at he
   change (∑' n, f n) ≤ _
   rw [← he]
-  have ht := tsum_nat_rpow_tail_le (p := -2) (by norm_num) hR
   have hr (n : ℕ) : (n : ℝ)^(-2 : ℝ) = 1/(n : ℝ)^2 := by
     rw [Real.rpow_neg (Nat.cast_nonneg n),Real.rpow_two,one_div]
   simpa only [hr,show (-2 : ℝ)+1 = -1 by norm_num,
-    show -(-2 : ℝ)-1 = 1 by norm_num,div_one,Real.rpow_neg_one,one_div] using ht
+    show -(-2 : ℝ)-1 = 1 by norm_num,div_one,Real.rpow_neg_one,one_div] using (tsum_nat_rpow_tail_le (p := -2) (by norm_num) hR)
 
 theorem tsum_int_inverse_square_tail_le {R : ℕ} (hR : 0 < R) :
     (∑' q : ℤ, if R < q.natAbs then 1/(q : ℝ)^2 else 0) ≤ 2/(R : ℝ) := by
@@ -55,13 +63,13 @@ theorem tsum_int_inverse_square_tail_le {R : ℕ} (hR : 0 < R) :
   let f : ℕ → ℝ := fun n => if R < n then 1/(n : ℝ)^2 else 0
   have hg : Summable g := by
     have hi := (Real.summable_one_div_int_pow.mpr
-      (by norm_num : 1 < (2 : ℕ))).indicator {q | R < q.natAbs}
+      (by norm_num : 1 < 2)).indicator {q | R < q.natAbs}
     apply hi.congr
     intro q
     by_cases hq : R < q.natAbs <;> simp [g,hq]
   have hf : Summable f := by
     have hi := (Real.summable_one_div_nat_pow.mpr
-      (by norm_num : 1 < (2 : ℕ))).indicator {n | R < n}
+      (by norm_num : 1 < 2)).indicator {n | R < n}
     apply hi.congr
     intro n
     by_cases hn : R < n <;> simp [f,hn]
@@ -83,13 +91,10 @@ theorem tsum_int_inverse_square_tail_le {R : ℕ} (hR : 0 < R) :
   have hz : f 0 = 0 := by simp [f]
   have hshift : (∑' n : ℕ, f (n+1)) = ∑' n : ℕ, f n := by
     simpa only [hz,zero_add] using hf.tsum_eq_zero_add.symm
-  change (∑' q, g q) ≤ _
   rw [tsum_of_nat_of_neg_add_one hpSum hnSum,hp,hm,hshift]
   have hb := tsum_nat_inverse_square_tail_le hR
   change (∑' n, f n) ≤ 1/(R : ℝ) at hb
-  calc
-    _ ≤ 1/(R : ℝ)+1/(R : ℝ) := add_le_add hb hb
-    _ = _ := by ring
+  exact (add_le_add hb hb).trans_eq (by ring)
 
 theorem norm_integer_far_tail_le_of_inverse_square
     {f : ℤ → ℂ} {K : ℝ} (hK : 0 ≤ K)
@@ -103,7 +108,7 @@ theorem norm_integer_far_tail_le_of_inverse_square
     by_cases hq : R < q.natAbs <;> simp [hq]
   have hg : Summable (fun q : ℤ => if R < q.natAbs then 1/(q : ℝ)^2 else 0) := by
     have hi := (Real.summable_one_div_int_pow.mpr
-      (by norm_num : 1 < (2 : ℕ))).indicator {q | R < q.natAbs}
+      (by norm_num : 1 < 2)).indicator {q | R < q.natAbs}
     apply hi.congr
     intro q
     by_cases hq : R < q.natAbs <;> simp [hq]

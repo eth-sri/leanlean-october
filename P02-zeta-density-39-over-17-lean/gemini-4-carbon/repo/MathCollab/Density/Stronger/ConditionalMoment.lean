@@ -32,7 +32,7 @@ theorem eventually_zeta_high_log_budget {η ε : ℝ} (hgap : η < ε) :
     (C := 4) (a := 2+η) (b := 2+ε) (by norm_num) 0 (by linarith)
   have h1 := eventually_const_height_log_pow_mul_rpow_le_rpow
     (C := 12) (a := 2+η) (b := 2+ε) (by norm_num) 1 (by linarith)
-  filter_upwards [h0,h1,eventually_ge_atTop (1:ℝ)] with H h0 h1 hH
+  filter_upwards [h0,h1,eventually_ge_atTop 1] with H h0 h1 hH
   simp only [pow_zero,mul_one,pow_one] at h0 h1
   have hlog : Real.log H ≤ Real.log (3*H) :=
     Real.log_le_log (by linarith) (by linarith)

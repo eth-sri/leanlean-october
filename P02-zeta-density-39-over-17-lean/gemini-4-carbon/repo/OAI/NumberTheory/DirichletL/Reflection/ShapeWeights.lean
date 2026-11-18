@@ -18,7 +18,7 @@ local notation "Eis" => ActualEisensteinCubic.O
 lemma stratumShapeFactor_mul_one {H : Matrix.SpecialLinearGroup (Fin 2) Eis}
     (s : FixedCuspShape H) (c r : Eis) :
     s.stratumShapeFactor (c*r)=s.stratumShapeFactor c*shapeArgument r := by
-  simpa only [mul_one,shapeArgument_one] using stratumShapeFactor_mul s c r 1
+  simpa using stratumShapeFactor_mul s c r 1
 
 lemma primeFamily_primary_product_ne_zero {φ : Type*} [Fintype φ] (F : PrimeFamily φ) :
     primaryGenerator (∏ i,F.ideal i)≠0 := by
@@ -32,8 +32,7 @@ lemma stratumShapeFactor_frozen_norm {φ : Type*} [Fintype φ]
 
 lemma row_shape_weight_norm (r : Ideal Eis→ℂ) (K : Ideal Eis) (hK : Admissible K) :
     ‖r K*shapeArgument (primaryGenerator K)‖=‖r K‖ := by
-  have hk := PrimaryIdealUnitReindex.primaryGenerator_ne_zero_of_good_factors K hK.1 (fun P hP => (hK.2.2 P hP).1)
-  rw [norm_mul,shapeArgument_norm _ hk,mul_one]
+  rw [norm_mul,shapeArgument_norm _ (PrimaryIdealUnitReindex.primaryGenerator_ne_zero_of_good_factors K hK.1 (fun P hP => (hK.2.2 P hP).1)),mul_one]
 
 lemma slot_shape_weight_norm (aw : Ideal Eis→ℂ) (P : Ideal Eis) (hP : CubicSieve.Admissible P) :
     ‖aw P*shapeArgument (primaryGenerator P)‖=‖aw P‖ := by

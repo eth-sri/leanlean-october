@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical SchwartzMap
 namespace SevenEighths.ProbeGramCommon
-open ProbePhysical CanonicalQuadraticSieve CompletedGauss ConcreteTraceCRT
-open CenteredMomentSupportedCorrelation EisensteinSchwartzPoisson
+open ProbePhysical CanonicalQuadraticSieve CompletedGauss ConcreteTraceCRT CenteredMomentSupportedCorrelation EisensteinSchwartzPoisson
 local notation "O" => ActualEisensteinCubic.O
 
 lemma actual_correlation_radial_summable (I J : SupportedIdeal) (C : O) (hC : C≠0)
@@ -21,13 +20,9 @@ lemma actual_correlation_radial_summable (I J : SupportedIdeal) (C : O) (hC : C�
       paperRadialFourier U (Q*‖eisEmbedding (C*k)‖^2/
         ‖eisEmbedding (primaryGenerator I.val*primaryGenerator J.val)‖^2)) := by
   let t:=Q*‖eisEmbedding C‖^2/‖eisEmbedding (primaryGenerator I.val*primaryGenerator J.val)‖^2
-  have hc : 0<‖eisEmbedding C‖^2 := sq_pos_of_pos (norm_pos_iff.mpr (eisEmbedding_ne_zero hC))
-  have hd : 0<‖eisEmbedding (primaryGenerator I.val*primaryGenerator J.val)‖^2 :=
-    sq_pos_of_pos (norm_pos_iff.mpr (eisEmbedding_ne_zero (mul_ne_zero
+  have hd := sq_pos_of_pos (norm_pos_iff.mpr (eisEmbedding_ne_zero (mul_ne_zero
       (supported_primaryGenerator_ne_zero _ I.property) (supported_primaryGenerator_ne_zero _ J.property))))
-  have ht : 0<t := div_pos (mul_pos hQ hc) hd
-  have hs := paperRadialFourier_lattice_summable_norm U t ht
-  let B : ℝ := (Ideal.absNorm I.val:ℝ)*Ideal.absNorm J.val
+  let B := (Ideal.absNorm I.val:ℝ)*Ideal.absNorm J.val
   have hb (k : O) : ‖actualCorrelation (primaryGenerator I.val) (primaryGenerator J.val)
       ((supported_span_primaryGenerator_iff _).mpr I.property)
       ((supported_span_primaryGenerator_iff _).mpr J.property) (C*k)‖≤B := by
@@ -40,7 +35,7 @@ lemma actual_correlation_radial_summable (I J : SupportedIdeal) (C : O) (hC : C�
     simp only [map_mul,norm_mul,mul_pow,t]
     ring
   apply Summable.of_norm
-  apply Summable.of_nonneg_of_le (fun k=>norm_nonneg _) _ (hs.mul_left B)
+  apply Summable.of_nonneg_of_le (fun k=>norm_nonneg _) _ ((paperRadialFourier_lattice_summable_norm U t (div_pos (mul_pos hQ (sq_pos_of_pos (norm_pos_iff.mpr (eisEmbedding_ne_zero hC)))) hd)).mul_left B)
   intro k
   rw [norm_mul,harg]
   exact mul_le_mul_of_nonneg_right (hb k) (norm_nonneg _)

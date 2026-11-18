@@ -10,10 +10,7 @@ noncomputable section
 
 open scoped BigOperators Classical SchwartzMap ContDiff
 namespace SevenEighths.InverseMoment
-open MeasureTheory ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
-open CanonicalQuadraticSieve CanonicalCubeSeparation FirstPassCubeLabels SecondPassArithmetic
-open InverseMomentFirstLabelCell InverseMomentFirstSecondHeightCost CompletedHeight
-open FourierBridge JointLogSeparation InverseReflectedPhase InverseTerminalWidths InverseSecondFibers
+open MeasureTheory ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge CanonicalQuadraticSieve CanonicalCubeSeparation FirstPassCubeLabels SecondPassArithmetic InverseMomentFirstLabelCell InverseMomentFirstSecondHeightCost CompletedHeight FourierBridge JointLogSeparation InverseReflectedPhase InverseTerminalWidths InverseSecondFibers
 local notation "O"=>ActualEisensteinCubic.O
 
 theorem actual_complete_state_from_children
@@ -123,7 +120,6 @@ theorem actual_complete_state_from_children
     let F:=InitialMeanSquare.outsideSquarefreeIdeals S D
     have hF:=InitialMeanSquare.outsideSquarefree_admissible S D (reflectionExcludedPrimes_bad q)
     let : ∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal:=fun i=>by rw [poolPrimary_span F hF i];infer_instance
-    let Q:=progressingCubes S D (Z^(cutoff-V)) (activeCubeLogBin S D hi (Z^N) j)
     obtain ⟨hel,hr,hrL,helL,hFL,hgap,hqn⟩:=actual_long_bin_geometry S D (reflectionExcludedPrimes_bad q)
       hi Z N V cutoff eta L j (by linarith) hL heta1 hV hFcap hbZ hlog hne
     have hsN:(N-3*ell)+3*ell=N:=by ring
@@ -131,7 +127,7 @@ theorem actual_complete_state_from_children
       have hNL:N≤L:=by linarith
       nlinarith
     have hh:=hbin theta S D (reflectionExcludedPrimes_bad q) (reflectionExcludedPrimes_prime q)
-      Q labels Ψ m slots lists a Z M (N-3*ell) ell V (Z^(cutoff-V)) pi epschild A loss lossFinal
+      (progressingCubes S D (Z^(cutoff-V)) (activeCubeLogBin S D hi (Z^N) j)) labels Ψ m slots lists a Z M (N-3*ell) ell V (Z^(cutoff-V)) pi epschild A loss lossFinal
       hZ2 h2 hExp hM hFL (by linarith) hel hV hr hAZ
       (by intro v hv;rw [←cubeIdeal_primeProduct_norm F hF];exact (hqn v hv).1)
       (by intro v hv;rw [←cubeIdeal_primeProduct_norm F hF];exact (hqn v hv).2)

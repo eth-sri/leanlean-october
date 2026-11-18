@@ -14,12 +14,10 @@ open HeckeDetectorFrequency
 
 lemma logarithmic_cost_eventually (C ε : ℝ) (hε : 0<ε) :
     ∀ᶠ U : ℝ in atTop, (C*(Real.logb 2 U)^2)^2≤U^ε := by
-  have ht := (logb_square_div_rpow_tendsto (ε/2) (by linarith)).pow 2
-  have ht' := ht.const_mul (C^2)
   have hbound : ∀ᶠ U : ℝ in atTop,
       C^2*((Real.logb 2 U)^2/U^(ε/2))^2≤1 := by
     have hh : Tendsto (fun U : ℝ => C^2*((Real.logb 2 U)^2/U^(ε/2))^2)
-        atTop (𝓝 0) := by simpa using ht'
+        atTop (𝓝 0) := by simpa using (((logb_square_div_rpow_tendsto (ε/2) (by linarith)).pow 2).const_mul (C^2))
     exact (tendsto_order.mp hh).2 1 (by norm_num) |>.mono (fun _ h => h.le)
   filter_upwards [hbound,eventually_gt_atTop (0 : ℝ)] with U hb hU
   have he : (U^(ε/2))^2=U^ε := by
@@ -43,9 +41,7 @@ lemma normalized_product_lower (U r m σ a ε K A B : ℝ)
     congr 1
     ring
   have hp : 1≤K*U^((1/2-σ)*(r+m))*(A*B) := by
-    calc
-      1 ≤ K*(U^r)^(1/2-σ)*(U^m)^(1/2-σ)*(A*B) := hprod
-      _ = _ := by rw [←hcentral]; ring
+    exact (hprod).trans_eq (by rw [←hcentral]; ring)
   have hsq : 1≤(K*U^((1/2-σ)*(r+m))*(A*B))^2 := by nlinarith
   have he : (U^((1/2-σ)*(r+m)))^2=U^((1-2*σ)*(r+m)) := by
     rw [←Real.rpow_natCast,←Real.rpow_mul hUp.le]
@@ -103,7 +99,7 @@ theorem actual_saturation (R dmax τ ε e κ η Clower : ℝ)
   refine ⟨U₀,?_⟩
   intro Z d hZ hd hd' hT hlarge hU ι _ χ hχ a i ha ha' hmax j Dstar r m σ freq
     hQ hDs hr hrR hm hmR hratio hσ hσ' hfreq hheight M S hprod
-  have hσlo : 51/100≤σ := ha.trans hσ
+  have hσlo := ha.trans hσ
   obtain ⟨hcost,hconst⟩ := hU₀ (Z^d) hlarge
   obtain ⟨hMu,hSu⟩ := hupper Z d hZ hd hd' hT χ hχ a i ha ha' hmax j Dstar r m σ freq
     hQ hDs hr hrR hm hmR hratio hσlo hσ' hfreq hheight
@@ -111,10 +107,7 @@ theorem actual_saturation (R dmax τ ε e κ η Clower : ℝ)
     (Clower*(Real.logb 2 (Z^d))^2) ‖M‖ ‖S‖ hU hr hm hσ
     (mul_nonneg hClower (sq_nonneg _)) (norm_nonneg _) (norm_nonneg _) hcost hprod
   have hbound (x : ℝ) : Cu*(Z^d)^(x+ε/2)≤(Z^d)^(x+ε) := by
-    calc
-      _ ≤ (Z^d)^(ε/2)*(Z^d)^(x+ε/2) :=
-        mul_le_mul_of_nonneg_right hconst (Real.rpow_nonneg (by linarith) _)
-      _ = _ := by rw [←Real.rpow_add (by linarith : 0<Z^d)]; congr 1; ring
+    exact (mul_le_mul_of_nonneg_right hconst (Real.rpow_nonneg (by linarith) _)).trans_eq (by rw [←Real.rpow_add (by linarith : 0<Z^d)]; congr 1; ring)
   exact Detector.simultaneous_saturation hU (by linarith) hε.le (sq_nonneg _) (sq_nonneg _)
     hp (hMu.trans (hbound _)) (hSu.trans (hbound _))
 

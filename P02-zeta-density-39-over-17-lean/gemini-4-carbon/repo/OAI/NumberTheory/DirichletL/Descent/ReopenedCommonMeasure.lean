@@ -7,10 +7,8 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 noncomputable section
+open MeasureTheory ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic FirstPassCubeLabels CanonicalCubeSeparation JointLogSeparation
 open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory ActualEisensteinCubic CompletedGauss CanonicalRowCompletion
-open ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic FirstPassCubeLabels
-open CanonicalCubeSeparation JointLogSeparation
 local notation "O" => ActualEisensteinCubic.O
 
 theorem markedReopenedCubeBin_separated {σ : Type*} [DecidableEq σ]
@@ -45,7 +43,6 @@ theorem markedReopenedCubeBin_separated {σ : Type*} [DecidableEq σ]
     fun i=>by rw [poolPrimary_span F hF i];infer_instance
   let β := fun v=>reopenedCubeCoefficient H₀ (rowTwist Ψ (m*excludedGenerator S) f 1) (cubeIdeal F v)
   let n := fun v=>(Ideal.absNorm (cubeIdeal F v):ℝ)
-  have hXp : 0<X := hX ▸ mul_pos (pow_pos hB _) hell
   have hupper : ∀ t,W t≠0→t≤b := fun t ht=>(hs ht).2
   dsimp only
   rw [←varying_canonical_bin_separation (poolPrimary F) (poolPrimary_ne_zero F hF)
@@ -56,8 +53,7 @@ theorem markedReopenedCubeBin_separated {σ : Type*} [DecidableEq σ]
   dsimp only
   apply Finset.sum_congr rfl
   intro v hv
-  rw [reopened_marked_global_column S D hbad hSp Ψ m f z W b X hb hXp hupper hD slots lists weights v]
-  rw [cubeWeight_row_factor,cubeIdeal_row F hF v z]
+  rw [reopened_marked_global_column S D hbad hSp Ψ m f z W b X hb (hX ▸ mul_pos (pow_pos hB _) hell) hupper hD slots lists weights v, cubeWeight_row_factor,cubeIdeal_row F hF v z]
   have hc := cube_coefficient_restore H₀ (rowTwist Ψ (m*excludedGenerator S) f 1)
     (cubeIdeal F v) (cubeIdeal_ne_zero F v)
   have hc' : β v*(n v:ℂ)⁻¹=largeCubeCoefficient H₀ (cubeIdeal F v)*

@@ -6,21 +6,11 @@ public import OAI.NumberTheory.DirichletL.Energy.NaturalLowSourceBound
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
 open Filter
+open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyNaturalSourceAdmission
-open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound
-open CenteredMomentCommonRadialData CenteredMomentEnergyNaturalInputMatches
-open CenteredMomentEnergyNaturalLowSourceBound CenteredMomentEnergyState
-open CenteredMomentFiniteProfileExceptional CenteredMomentEnergyZeroComparison
-open CenteredMomentEnergyOriginalSource CenteredMomentEnergyOriginalProfileControl
-open CenteredMomentEnergyInputParentCapacity CenteredMomentAmplificationChildInput
-open CenteredMomentEnergyBands CenteredMomentSecondHeightFamily
-open CenteredMomentPrimeSlot CenteredMomentNaturalFixedRaySource HeckeDyadic HeckePrimeAnnular
-open CenteredMomentInductionEnergy CenteredMomentSourceRow CenteredMomentRetainedEnergy
-open CenteredMomentSourceInputTailUniform CenteredMomentSourceMass
-open CenteredMomentSourceProfileMass CenteredMomentHeckeExpansion CenteredMomentHeckeHeight
+open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound CenteredMomentCommonRadialData CenteredMomentEnergyNaturalInputMatches CenteredMomentEnergyNaturalLowSourceBound CenteredMomentEnergyState CenteredMomentFiniteProfileExceptional CenteredMomentEnergyZeroComparison CenteredMomentEnergyOriginalSource CenteredMomentEnergyOriginalProfileControl CenteredMomentEnergyInputParentCapacity CenteredMomentAmplificationChildInput CenteredMomentEnergyBands CenteredMomentSecondHeightFamily CenteredMomentPrimeSlot CenteredMomentNaturalFixedRaySource HeckeDyadic HeckePrimeAnnular CenteredMomentInductionEnergy CenteredMomentSourceRow CenteredMomentRetainedEnergy CenteredMomentSourceInputTailUniform CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentHeckeExpansion CenteredMomentHeckeHeight
 local notation "O" => HeckeFamily.O
 variable {ι : Type*} [Fintype ι]
 local instance : DecidableEq (ι ⊕ Fin 2) := energyOriginalSourceDecidableSum
@@ -73,8 +63,7 @@ theorem lower_product_admission (N : ℕ) (hN : Fintype.card ι ≤ N) :
     0 < lowerProduct N aslot a ∧
     lowerProduct N aslot a ≤ (∏ i, (s).lo i)*a*a ∧
     lowerProduct N aslot a ≤ (∏ i, (s₀).lo i)*a*a := by
-  have hh := lower_product s N aslot haslot hN (fun _ => le_rfl)
-  have hb := mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right hh ha.le) ha.le
+  have hb := mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right (lower_product s N aslot haslot hN (fun _ => le_rfl)) ha.le) ha.le
   exact ⟨lowerProduct_pos N haslot ha,hb,hb⟩
 
 end Source

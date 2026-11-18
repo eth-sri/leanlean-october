@@ -221,22 +221,19 @@ noncomputable def gmMatrixSingularValue (cutoff : GMSmoothCutoff) (N : ℕ)
 
 theorem gmMatrixSingularValue_nonneg (cutoff : GMSmoothCutoff) (N : ℕ)
     (W : Finset ℝ) (i : GMRow W) :
-    0 ≤ gmMatrixSingularValue cutoff N W i := by
-  exact Real.sqrt_nonneg _
+    0 ≤ gmMatrixSingularValue cutoff N W i := Real.sqrt_nonneg _
 
 theorem gmMatrixSingularValue_sq (cutoff : GMSmoothCutoff) (N : ℕ)
     (W : Finset ℝ) (i : GMRow W) :
     gmMatrixSingularValue cutoff N W i ^ 2 =
-      (gmMatrix_gram_isHermitian cutoff N W).eigenvalues i := by
-  exact Real.sq_sqrt (gmMatrix_gram_eigenvalue_nonneg cutoff N W i)
+      (gmMatrix_gram_isHermitian cutoff N W).eigenvalues i := Real.sq_sqrt (gmMatrix_gram_eigenvalue_nonneg cutoff N W i)
 
 theorem gmMatrixSingularValue_sixth (cutoff : GMSmoothCutoff) (N : ℕ)
     (W : Finset ℝ) (i : GMRow W) :
     gmMatrixSingularValue cutoff N W i ^ 6 =
       (gmMatrix_gram_isHermitian cutoff N W).eigenvalues i ^ 3 := by
   rw [show gmMatrixSingularValue cutoff N W i ^ 6 =
-      (gmMatrixSingularValue cutoff N W i ^ 2) ^ 3 by ring]
-  rw [gmMatrixSingularValue_sq]
+      (gmMatrixSingularValue cutoff N W i ^ 2) ^ 3 by ring, gmMatrixSingularValue_sq]
 
 /-- A positive Hermitian matrix is bounded in Euclidean operator norm by any
 eigenvalue which dominates its spectrum. -/

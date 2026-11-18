@@ -9,8 +9,7 @@ namespace OAI
 
 noncomputable section
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve
-open ProbeCompleted ProbeRow CubicEisenstein
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve ProbeCompleted ProbeRow CubicEisenstein
 local notation "O" => ActualEisensteinCubic.O
 
 theorem physical_spectral_coefficient_scale (S : Finset (Ideal O)) (D I J : Ideal O)
@@ -29,7 +28,6 @@ theorem physical_spectral_coefficient_scale (S : Finset (Ideal O)) (D I J : Idea
       calibratedHighCoefficient C η I (supported_primaryGenerator_ne_zero I hI) A s hA H /
       ((elementNorm A:ℂ)*(Real.sqrt (Ideal.absNorm I):ℂ)*(Ideal.absNorm J:ℂ)) *
       (fullIdealWeight t I*fullIdealWeight (3*t) J) := by
-  dsimp only
   have hA := supportedElement_ne_zero (completedIndex I J) (supported_completed _ _
     ((supported_span_primaryGenerator_iff I).mpr hI) ((supported_span_primaryGenerator_iff J).mpr hJ))
   have he := physical_poisson_prefactor (elementNorm C.generator) (elementNorm (completedIndex I J))

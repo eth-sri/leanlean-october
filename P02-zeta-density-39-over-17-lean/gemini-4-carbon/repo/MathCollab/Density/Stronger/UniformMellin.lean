@@ -95,7 +95,7 @@ theorem dampedMellinLift_tsupport {ψ : ℝ → ℝ} {a b : ℝ}
     · have h := Real.exp_le_exp.mp
         (show Real.exp (Real.log a) ≤ Real.exp (-u) by simpa [Real.exp_log ha] using hx.1)
       linarith
-  have hz : ψ (Real.exp (-u)) = 0 := image_eq_zero_of_notMem_tsupport
+  have hz := image_eq_zero_of_notMem_tsupport
     (fun hh => hexp (hs hh))
   exact hu (by simp [dampedMellinLift, dampedCutoff, hz])
 
@@ -219,11 +219,10 @@ theorem dampedCutoff_uniform_mellin_power_bound {ψ : ℝ → ℝ} {a b : ℝ}
   refine ⟨B*(2*Real.pi)^n, by positivity, ?_⟩
   intro σ hσ q hq r
   rw [dampedCutoff_mellin_eq_fourier]
-  have hp := h (⟨σ,hσ⟩,⟨q,hq⟩) (r/(2*Real.pi))
   have hp' : (|r|^n * ‖𝓕 (fun u => (dampedMellinLift ψ σ q u : ℂ))
       (r/(2*Real.pi))‖) / (2*Real.pi)^n ≤ B := by
-    simpa only [f, abs_div, abs_of_pos (by positivity : (0:ℝ)<2*Real.pi), div_pow,
-      div_mul_eq_mul_div] using hp
+    simpa only [f, abs_div, abs_of_pos (by positivity : 0<2*Real.pi), div_pow,
+      div_mul_eq_mul_div] using (h (⟨σ,hσ⟩,⟨q,hq⟩) (r/(2*Real.pi)))
   exact (div_le_iff₀ (pow_pos (by positivity) n)).mp hp'
 
 /-- Literal arbitrary-order decay with a constant uniform in q≥0 and the strip. -/

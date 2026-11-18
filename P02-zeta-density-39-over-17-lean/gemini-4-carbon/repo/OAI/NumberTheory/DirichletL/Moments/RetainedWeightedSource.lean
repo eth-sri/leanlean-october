@@ -10,12 +10,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.CenteredMomentRetainedWeightedSource
-open HeckeFamily CenteredMomentNaturalPrimitive CenteredMomentReflectionDeletion
-open CenteredMomentReflectionMass CenteredMomentReflectionWeightedEnergy
-open CenteredMomentOriginalReflectionApproximation CenteredMomentReflectedNormalization
-open CenteredMomentReflectedAnnuli CenteredMomentReflectedTruncation
-open CenteredMomentReflectedUniformPair CenteredMomentSectorLocalization
-open EisensteinSchwartzPoisson
+open HeckeFamily CenteredMomentNaturalPrimitive CenteredMomentReflectionDeletion CenteredMomentReflectionMass CenteredMomentReflectionWeightedEnergy CenteredMomentOriginalReflectionApproximation CenteredMomentReflectedNormalization CenteredMomentReflectedAnnuli CenteredMomentReflectedTruncation CenteredMomentReflectedUniformPair CenteredMomentSectorLocalization EisensteinSchwartzPoisson
 local notation "O" => HeckeFamily.O
 
 abbrev sourcePrimes (χ ψ : Character) := redundantSet χ.modulus ψ.modulus
@@ -27,7 +22,7 @@ def dualScale (χ ψ : Character) (X : ℝ)
 lemma dualScale_pos (χ ψ : Character) (X : ℝ) (hX : 0<X)
     (D : (sourcePrimes χ ψ).powerset) (H : SmoothIdeal (sourcePrimes χ ψ)) :
     0<dualScale χ ψ X D H := by
-  have hD : (∏P∈D.val,P : Ideal O)≠0 := Finset.prod_ne_zero_iff.mpr (fun P hP=>
+  have hD := Finset.prod_ne_zero_iff.mpr (fun P hP=>
     (redundantSet_prime χ.modulus ψ.modulus P ((Finset.mem_powerset.mp D.property) hP)).ne_zero)
   have hQ : 0<(ψ.modulus.absNorm:ℝ) := by
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr ψ.modulus_ne_bot)
@@ -98,8 +93,7 @@ theorem retainedOriginal_fiber_summable (χ ψ : Character) (W : ℝ→ℂ)
       ‖(coefficient ψ ψ.inverse (sourcePrimes χ ψ) D.val H*
         finiteAnnularColumn χ.inverse (paperRadialFourier (CompletedHeight.normTwistedSource W t))
           R (dualScale χ ψ X D H))*P‖) := by
-  have hh := ((hs.of_norm.prod.prod_factor D).mul_left (((1+‖t‖)^n:ℝ):ℂ)).norm
-  apply hh.congr
+  apply (((hs.of_norm.prod.prod_factor D).mul_left (((1+‖t‖)^n:ℝ):ℂ)).norm).congr
   intro H
   congr 1
   rw [mul_assoc,finiteAnnularColumn_normalized χ ψ W X R t hX B n P D H]

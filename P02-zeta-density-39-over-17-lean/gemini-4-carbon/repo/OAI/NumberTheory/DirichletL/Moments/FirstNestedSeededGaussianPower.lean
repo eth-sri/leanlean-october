@@ -18,49 +18,16 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondNonexceptionalLiveSource
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
 open Filter
+open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstNestedSeededGaussianPower
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss RayFourExpansion
-open CenteredMomentCommonRadialData CenteredMomentSourceMass CenteredMomentSourceProfileMass
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSecondNonexceptionalCost
-open CenteredMomentSecondNonexceptionalChosenBlock CenteredMomentSecondNonexceptionalAggregate
-open CenteredMomentSecondExceptionalFamily CenteredMomentSecondRetainedAggregate
-open CenteredMomentSecondBlockAggregate CenteredMomentSecondBlockHarmonicMass
-open CenteredMomentSecondLiveBlock CenteredMomentSecondEnergySplit CenteredMomentActiveSource
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonical CenteredMomentCanonicalFirst
-open CenteredMomentFirstSectors CenteredMomentSourceRow CenteredMomentSectorLocalization
-open CenteredMomentSecondSectorColumns CenteredMomentSecondWindowSource
-open CenteredMomentCommonHeightEnvelope CenteredMomentCommonRadialPointwise
-open CenteredMomentCommonAllocationSum CenteredMomentEligibleEnergy CenteredMomentCommonProfile
-open CenteredMomentHeckeColumnWindow CenteredMomentSecondHeightFamily
-open ConcretePrimeRowBridge CenteredMomentExceptionalAmplitudePair
-open CenteredMomentMobiusRegroup CenteredMomentRadialEligibleEnergy CenteredMomentSecondWindowBudget
-open CenteredMomentSecondActivePhysicalDictionary
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss RayFourExpansion CenteredMomentCommonRadialData CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentOriginalCommonHarmonic CenteredMomentSecondNonexceptionalCost CenteredMomentSecondNonexceptionalChosenBlock CenteredMomentSecondNonexceptionalAggregate CenteredMomentSecondExceptionalFamily CenteredMomentSecondRetainedAggregate CenteredMomentSecondBlockAggregate CenteredMomentSecondBlockHarmonicMass CenteredMomentSecondLiveBlock CenteredMomentSecondEnergySplit CenteredMomentActiveSource CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonical CenteredMomentCanonicalFirst CenteredMomentFirstSectors CenteredMomentSourceRow CenteredMomentSectorLocalization CenteredMomentSecondSectorColumns CenteredMomentSecondWindowSource CenteredMomentCommonHeightEnvelope CenteredMomentCommonRadialPointwise CenteredMomentCommonAllocationSum CenteredMomentEligibleEnergy CenteredMomentCommonProfile CenteredMomentHeckeColumnWindow CenteredMomentSecondHeightFamily ConcretePrimeRowBridge CenteredMomentExceptionalAmplitudePair CenteredMomentMobiusRegroup CenteredMomentRadialEligibleEnergy CenteredMomentSecondWindowBudget CenteredMomentSecondActivePhysicalDictionary
 local notation "O" => HeckeFamily.O
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 local instance : DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
-open CenteredMomentFiniteProfileExceptional CenteredMomentFiniteProfileExceptionalPhysical
-open CenteredMomentOriginalChildEnergy CenteredMomentSupportedTailAggregate
-open CenteredMomentSourceInputTailUniform EisensteinSchwartzPoisson
-
-open CenteredMomentLogDyadic CenteredMomentSecondWindowSource
-open MeasureTheory UniqueFactorizationMonoid CenteredMomentAllocatedDetectorAmplitude CenteredMomentCommonExceptionalCost
-
-open CenteredMomentSecondChildPowerBudget CenteredMomentFirstChildProfileControl
-
-open CenteredMomentSourceLiveColumn CenteredMomentSecondRetainedRatioScalar
-open CenteredMomentSecondSourcePowerDescent CenteredMomentSourceInputTailSeed
-open CenteredMomentSecondSourceSeededPowerDescent CenteredMomentSecondNonexceptionalScalar
-open CenteredMomentSecondReferenceNormalization
-
-open CenteredMomentAmplificationChildInput
-open CenteredMomentFirstSecondActiveErrorGates CenteredMomentFirstAnnularInput
-
-open CenteredMomentFirstSeededGaussianPower CenteredMomentSecondFrozenRatioCost
-open CenteredMomentSecondUniformSubsetSource
+open CenteredMomentFiniteProfileExceptional CenteredMomentFiniteProfileExceptionalPhysical CenteredMomentOriginalChildEnergy CenteredMomentSupportedTailAggregate CenteredMomentSourceInputTailUniform EisensteinSchwartzPoisson CenteredMomentLogDyadic MeasureTheory UniqueFactorizationMonoid CenteredMomentAllocatedDetectorAmplitude CenteredMomentCommonExceptionalCost CenteredMomentSecondChildPowerBudget CenteredMomentFirstChildProfileControl CenteredMomentSourceLiveColumn CenteredMomentSecondRetainedRatioScalar CenteredMomentSecondSourcePowerDescent CenteredMomentSourceInputTailSeed CenteredMomentSecondSourceSeededPowerDescent CenteredMomentSecondNonexceptionalScalar CenteredMomentSecondReferenceNormalization CenteredMomentAmplificationChildInput CenteredMomentFirstSecondActiveErrorGates CenteredMomentFirstAnnularInput CenteredMomentFirstSeededGaussianPower CenteredMomentSecondFrozenRatioCost CenteredMomentSecondUniformSubsetSource
 
 abbrev NestedIndex (α:Type*) := ΣT:Finset α,Finset T
 
@@ -275,7 +242,6 @@ theorem nested_seeded_power_descent (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)
   obtain ⟨τ,hfamily,hchild⟩:=hZ.2 T s p hlo hhis hP hw1 hw2 R0 seed hR0 hseed hseed0 hH0 hH hη hR0N
   refine ⟨τ,hfamily,?_⟩
   intro χ₀ m hm hml hm2 Kphys Tsec hKphys hVcap hTcap hnom hR hRcap E₁ E₂ hE₁ hE₂ hleft hright r hX1 hX2 hY1 hY2
-  have hh:=hchild χ₀ m hm hml hm2 Kphys Tsec hKphys hVcap hTcap hnom hR hRcap E₁ E₂ hE₁ hE₂ hleft hright r hX1 hX2 hY1 hY2
   let a:=seededFactors Cm Ce Cd Ct Z ε δ θ B saving Kphys s.t
     (s.η.modulus.absNorm:ℝ) E₁ E₂ r (∏i,s.lo i) wlo (seed.absNorm:ℝ) J₁ J₂ Sf W
   have hapos:=physicalFactors_nonneg Cm Ce Cd Ct Z ε δ θ B saving Kphys s.t
@@ -293,7 +259,7 @@ theorem nested_seeded_power_descent (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)
     · exact div_nonneg (hapos 3) hseedpos.le
   have hh': ‖sourceGaussEnergy S β (heightCoeff s.η s.t) W Kphys‖/volume s.toData≤
       sourceCost s Sp p J Q Kc ε (seed.absNorm:ℝ) a := by
-    apply hh.trans
+    apply (hchild χ₀ m hm hml hm2 Kphys Tsec hKphys hVcap hTcap hnom hR hRcap E₁ E₂ hE₁ hE₂ hleft hright r hX1 hX2 hY1 hY2).trans
     have htail:=paid_seed_term Z Bseed saving (seed.absNorm:ℝ)
       (Ct*plainControl s (p.profile 0) (p.profile 1)^2*
         Sf.sup (schwartzSeminormFamily ℝ ℝ ℂ) W*Kphys)
@@ -303,7 +269,7 @@ theorem nested_seeded_power_descent (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)
     dsimp [mass, CenteredMomentAmplificationChildInput.volume,
       CenteredMomentExceptionalAmplitudePair.volume]
     ring_nf at htail ⊢
-    linarith only [htail]
+    linarith
   exact hh'.trans (source_rhs s N b b₁ b₂ A hb hb₁ hb₂ hu hc
     (fun i=>by rw [hhis]; exact hhi i.val.val) hs1 hs2 hsb1 hsb2 hmass Sp p J Q Kc ε
     (seed.absNorm:ℝ) hKc.le hε.le (by positivity) a ha)
@@ -391,8 +357,8 @@ theorem nested_reference_seeded_power_descent (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0�
   refine ⟨τ,hfamily,?_⟩
   intro χ₀ m hm hml hm2 Kphys Tsec hKphys hVcap hTcap hnom hR hRcap qref hqref
     E₁ E₂ hE₁ hE₂ hleft hright r hX1 hX2 hY1 hY2
-  have hq:0<(s.η.modulus.absNorm:ℝ):=CenteredMomentFirstScale.norm_pos _ s.η.modulus_ne_bot
-  have hr:0≤qref/(s.η.modulus.absNorm:ℝ):=div_nonneg hqref.le hq.le
+  have hq :=CenteredMomentFirstScale.norm_pos _ s.η.modulus_ne_bot
+  have hr :=div_nonneg hqref.le hq.le
   have hh:=hchild χ₀ m hm hml hm2 Kphys Tsec hKphys hVcap hTcap hnom hR hRcap
     (qref/(s.η.modulus.absNorm:ℝ)*E₁) (qref/(s.η.modulus.absNorm:ℝ)*E₂)
     (mul_nonneg hr hE₁) (mul_nonneg hr hE₂)

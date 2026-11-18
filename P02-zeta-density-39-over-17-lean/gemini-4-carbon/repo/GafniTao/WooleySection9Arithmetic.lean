@@ -28,11 +28,9 @@ def wooleyTwoStepWeight (k r₁ r₂ : ℕ) : ℝ :=
 theorem wooley_nextB_ge_divisor_scale
     {k r b : ℕ} (hr : 1 ≤ r) (hrk : r ≤ k) :
     b ≤ k * wooleyNextB k r b := by
-  have hlower := wooley_nextB_lower (k := k) (r := r) (b := b) hr
-  have hcoef : r ≤ k := hrk
   have hleft : b ≤ (k - r + 1) * b := by
     exact Nat.le_mul_of_pos_left b (by omega)
-  exact hleft.trans (hlower.trans (Nat.mul_le_mul_right _ hcoef))
+  exact hleft.trans ((wooley_nextB_lower (k := k) (r := r) (b := b) hr).trans (Nat.mul_le_mul_right _ (hrk)))
 
 theorem wooley_twoStep_indices
     {k r₁ r₂ : ℕ} (hr₁ : 1 ≤ r₁) (hr₁k : r₁ < k)
@@ -146,8 +144,7 @@ theorem wooley_twoStep_defining_ceiling
 
 theorem wooley_twoStep_weight_pos
     {k r₁ r₂ : ℕ} (hr₁ : 1 ≤ r₁) (hr₂ : 1 ≤ r₂) :
-    0 < wooleyTwoStepWeight k r₁ r₂ := by
-  exact mul_pos (wooleyRho_pos hr₁) (wooleyRho_pos hr₂)
+    0 < wooleyTwoStepWeight k r₁ r₂ := mul_pos (wooleyRho_pos hr₁) (wooleyRho_pos hr₂)
 
 /-- The last inequality in (9.9), obtained directly from the two ceiling
 inequalities and not from an asymptotic comparison. -/

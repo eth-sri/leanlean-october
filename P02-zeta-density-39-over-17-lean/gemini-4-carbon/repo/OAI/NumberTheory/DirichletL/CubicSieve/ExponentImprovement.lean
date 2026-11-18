@@ -27,16 +27,14 @@ lemma enlargement_cross_identity (ξ : ℝ) (hξ : (4/3 : ℝ) ≤ ξ) :
   have hd : 3*ξ-1 ≠ 0 := by linarith
   unfold enlargementExponent SevenEighths.HeathBrownIteration.step
   apply (eq_div_iff hd).mpr
-  have hc := div_mul_cancel₀ (6*ξ-5) hd
-  nlinarith [hc]
+  nlinarith [(div_mul_cancel₀ (6*ξ-5) hd)]
 
 lemma enlargement_secondary_identity (ξ : ℝ) (hξ : (4/3 : ℝ) ≤ ξ) :
     enlargementExponent ξ*(1-ξ)+(2*ξ-1) = SevenEighths.HeathBrownIteration.step ξ := by
   have hd : 3*ξ-1 ≠ 0 := by linarith
   unfold enlargementExponent SevenEighths.HeathBrownIteration.step
   apply (eq_div_iff hd).mpr
-  have hc := div_mul_cancel₀ (6*ξ-5) hd
-  nlinarith [hc]
+  nlinarith [(div_mul_cancel₀ (6*ξ-5) hd)]
 
 theorem enlarged_improved_shape (M N ξ : ℝ) (hM : 1 ≤ M) (hN : 1 ≤ N)
     (hξ : (4/3 : ℝ) ≤ ξ) :

@@ -41,13 +41,12 @@ theorem LFunction_inverse_conj (χ : Character) (hχ : χ.residue≠1) (s : ℂ)
   have hi : χ.inverse.residue≠1 := by
     change χ.residue⁻¹≠1
     simpa only [ne_eq,inv_eq_one] using hχ
-  have hA := LFunction_entire_nonprincipal χ.inverse hi
   have hB : Differentiable ℂ (fun z => conj (LFunction χ (conj z))) := by
     intro z
     simpa only [Function.comp_def,conj_conj] using
       (LFunction_entire_nonprincipal χ hχ (conj z)).conj_conj
   have he : LFunction χ.inverse=(fun z => conj (LFunction χ (conj z))) := by
-    apply (Complex.analyticOnNhd_univ_iff_differentiable.mpr hA).eq_of_eventuallyEq
+    apply (Complex.analyticOnNhd_univ_iff_differentiable.mpr (LFunction_entire_nonprincipal χ.inverse hi)).eq_of_eventuallyEq
       (Complex.analyticOnNhd_univ_iff_differentiable.mpr hB) (z₀ := (2 : ℂ))
     filter_upwards [(Complex.isOpen_re_gt 1).mem_nhds (by norm_num : (1 : ℝ)<(2 : ℂ).re)] with z hz
     rw [LFunction_eq_ideal_tsum χ.inverse hz,LFunction_eq_ideal_tsum χ (by simpa using hz),conj_tsum]

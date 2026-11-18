@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve
-open ProbeCompleted ProbeRow SecondPassArithmetic
+open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve ProbeCompleted ProbeRow SecondPassArithmetic
 local notation "O" => ActualEisensteinCubic.O
 
 lemma supported_of_source_exclusions (S : Finset (Ideal O))
@@ -18,7 +17,7 @@ lemma supported_of_source_exclusions (S : Finset (Ideal O))
     (hS : ∀P∈S,¬P∣I) : Supported I := by
   refine ⟨hI,?_⟩
   intro P hP
-  have hp : Prime P := UniqueFactorizationMonoid.prime_of_normalized_factor P hP
+  have hp := UniqueFactorizationMonoid.prime_of_normalized_factor P hP
   let : P.IsMaximal := (Ideal.isPrime_of_prime hp).isMaximal hp.ne_zero
   apply (prime_good_iff_not_bad P).mpr
   intro hb

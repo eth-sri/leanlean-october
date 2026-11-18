@@ -77,22 +77,21 @@ theorem atkinson_pair_power_term_eq {H : ℝ} {M : ℕ}
   have hd := atkinson_weighted_diagonal_power hM0 0
   have hn := atkinson_weighted_near_power hH hM0 0
   simp only [add_zero,Real.rpow_one] at hd hn
-  have hf := atkinson_weighted_pair_power hH hM0 hL k l
   calc
     _ = (R : ℝ)*((M : ℝ)^(1/2:ℝ)*(M : ℝ))+
         C*(R : ℝ)^2*((M : ℝ)^(1/2:ℝ)*
           ((L/Real.sqrt (H*(M : ℝ)))^k*(M : ℝ)^l))+
         (2*C*(R : ℝ)/G)*((M : ℝ)^(1/2:ℝ)*Real.sqrt (H*(M : ℝ)))*
           (harmonic (Nat.ceil (L/G)) : ℝ) := by ring
-    _ = _ := by rw [hd,hn,hf]; unfold atkinsonPairPowerTerm; ring
+    _ = _ := by rw [hd,hn,(atkinson_weighted_pair_power hH hM0 hL k l)]; unfold atkinsonPairPowerTerm; ring
 
 theorem atkinsonPairPowerTerm_nonneg {C H G L : ℝ}
     (hC : 0 ≤ C) (hH : 0 ≤ H) (hG : 0 ≤ G) (hL : 0 ≤ L)
     (k l : ℝ) (N R : ℕ) :
     0 ≤ atkinsonPairPowerTerm C k l H G L N R := by
   unfold atkinsonPairPowerTerm
-  have hh : (0 : ℝ) ≤ (harmonic (Nat.ceil (L/G)) : ℝ) := by
-    simpa only [harmonic_zero,Rat.cast_zero] using
+  have hh : 0 ≤ (harmonic (Nat.ceil (L/G)) : ℝ) := by
+    simpa using
       atkinson_harmonic_mono (Nat.zero_le (Nat.ceil (L/G)))
   positivity
 
@@ -102,8 +101,8 @@ theorem atkinsonPairPowerTerm_mono_index {C H G L k l : ℝ} {M N : ℕ}
     atkinsonPairPowerTerm C k l H G L M R ≤
       atkinsonPairPowerTerm C k l H G L N R := by
   have hMN0 : (M : ℝ) ≤ N := by exact_mod_cast hMN
-  have hh : (0 : ℝ) ≤ (harmonic (Nat.ceil (L/G)) : ℝ) := by
-    simpa only [harmonic_zero,Rat.cast_zero] using
+  have hh : 0 ≤ (harmonic (Nat.ceil (L/G)) : ℝ) := by
+    simpa using
       atkinson_harmonic_mono (Nat.zero_le (Nat.ceil (L/G)))
   unfold atkinsonPairPowerTerm
   apply add_le_add

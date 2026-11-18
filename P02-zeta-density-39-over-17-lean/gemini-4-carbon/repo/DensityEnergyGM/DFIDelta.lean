@@ -4,14 +4,16 @@ public import Mathlib.Basic.Real.Basic
 public import Mathlib.NumberTheory.ArithmeticFunction.Moebius
 public import Mathlib.RingTheory.RootsOfUnity.Complex
 public import DensityEnergyGM.DFIWeight
-public import GuthMaynard.NativeSource.GuthMaynard.QuadraticDivisor
+public import Mathlib.Analysis.Fourier.ZMod
+public import Mathlib.Data.Int.Interval
+public import Mathlib.Data.Nat.Totient
+public import Mathlib.NumberTheory.LSeries.Dirichlet
+public import Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral
 
 @[expose] public section
 
-open Complex Finset Set
-open scoped BigOperators ContDiff Topology
-open scoped ArithmeticFunction.Moebius
-open Classical
+open Complex Finset Set Classical
+open scoped BigOperators ContDiff Topology ArithmeticFunction.Moebius
 
 namespace GuthMaynard.NativeMoment
 

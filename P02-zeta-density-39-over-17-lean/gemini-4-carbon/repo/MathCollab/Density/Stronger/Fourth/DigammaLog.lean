@@ -113,7 +113,7 @@ theorem sum_reciprocal_sq_le {y : ℝ} (hy : 1 ≤ y) (N : ℕ) :
     (∑ n ∈ range N, 2 / ((n : ℝ) + y) ^ 2) ≤ 4 / y := by
   have hstep (n : ℕ) : 2 / ((n : ℝ) + y) ^ 2 ≤
       4 * (((n : ℝ) + y)⁻¹ - ((n : ℝ) + y + 1)⁻¹) := by
-    have hn : (0 : ℝ) ≤ n := Nat.cast_nonneg n
+    have hn : 0 ≤ n := Nat.cast_nonneg n
     have hp : 0 < (n : ℝ) + y := by linarith
     have hp1 : 0 < (n : ℝ) + y + 1 := by linarith
     field_simp

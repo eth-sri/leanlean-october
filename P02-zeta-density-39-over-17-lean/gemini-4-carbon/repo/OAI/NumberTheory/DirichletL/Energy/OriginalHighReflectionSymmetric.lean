@@ -6,18 +6,11 @@ public import OAI.NumberTheory.DirichletL.Energy.OriginalHighReflectionPower
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
 open Filter
+open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyOriginalHighReflectionSymmetric
-open HeckeFamily HeckeDyadic ConcreteTraceCRT
-open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentInductionEnergy
-open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands
-open CenteredMomentEnergyOriginalHighReflectionPower
-open CenteredMomentNaturalFixedRaySource CenteredMomentNaturalRowSource
-open CenteredMomentCommonMaskEnergy CenteredMomentCommonMaskExpansion
-open CenteredMomentFiniteProfileExceptional QuadraticInitialBound CenteredMomentPrimeSlot
-open CenteredMomentRetainedEnergy
+open HeckeFamily HeckeDyadic ConcreteTraceCRT CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentInductionEnergy CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands CenteredMomentEnergyOriginalHighReflectionPower CenteredMomentNaturalFixedRaySource CenteredMomentNaturalRowSource CenteredMomentCommonMaskEnergy CenteredMomentCommonMaskExpansion CenteredMomentFiniteProfileExceptional QuadraticInitialBound CenteredMomentPrimeSlot CenteredMomentRetainedEnergy
 local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
 
@@ -44,8 +37,8 @@ theorem balanced_four_scale_gates (Z width X₁ X₂:ℝ)(hZ:1<Z)(hwidth:0<width
     Z^(width/4)≤comparisonFirst Z width ∧
     Z^(width/4)≤comparisonSecond Z width X₁ X₂ ∧
     length Z X₁+length Z X₂=Real.logb Z (X₁*X₂):=by
-  have h₁:width/4≤length Z X₁:=hshort.trans (min_le_left _ _)
-  have h₂:width/4≤length Z X₂:=hshort.trans (min_le_right _ _)
+  have h₁ :=hshort.trans (min_le_left _ _)
+  have h₂ :=hshort.trans (min_le_right _ _)
   have hraw (X:ℝ)(hX:0<X)(h:width/4≤length Z X):
       length Z X=Real.logb Z X ∧ width/4≤Real.logb Z X:=by
     have he:=CenteredMomentEnergyReferenceLowBranchGeometry.length_eq_max_log Z X hZ hX

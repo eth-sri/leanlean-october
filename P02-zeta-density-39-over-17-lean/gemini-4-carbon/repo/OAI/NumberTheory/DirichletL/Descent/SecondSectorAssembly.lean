@@ -7,9 +7,8 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondSupportedEnergy
 namespace OAI
 
 namespace SevenEighths.InverseMoment
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss InverseSecondFibers
 open scoped BigOperators Classical
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss
-open InverseSecondFibers
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 local instance : Fintype Eisˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
@@ -66,7 +65,7 @@ theorem secondSourceSector_partition {Jo Jn : ℕ}
 
 theorem second_unit_sector_card : Fintype.card (Eisˣ × Eisˣ) = 36 := by
   have hc : Fintype.card Eisˣ = 6 := by
-    simpa only [Nat.card_eq_fintype_card] using PrimaryIdealUnitReindex.card_units_eq_six
+    simpa using PrimaryIdealUnitReindex.card_units_eq_six
   rw [Fintype.card_prod,hc]
 
 end

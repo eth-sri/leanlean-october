@@ -7,20 +7,14 @@ namespace OAI
 
 noncomputable section
 
+open MeasureTheory FourierBridge ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve ConcretePrimeRowBridge FirstCauchyArithmetic SecondPassArithmetic FirstPassCubeLabels
 open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
-open MeasureTheory FourierBridge ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve
-open ConcretePrimeRowBridge FirstCauchyArithmetic SecondPassArithmetic FirstPassCubeLabels
 namespace SevenEighths.InverseInitialExcludedFourier
-open InverseMoment InverseInitialCommonLists InverseInitialCommonRatios InverseInitialCommonProfile
-open InverseInitialCommonCutoff InverseInitialCommonTuples InverseInitialOverlapFourier
-open InverseInitialOverlapInputFourier InverseInitialRayAttachment InverseInitialArithmetic
-open InverseInitialOverlap InverseInitialPoissonBridge InverseInitialKernelBridge
-open InverseInitialEnergyCallerWindow
+open InverseMoment InverseInitialCommonLists InverseInitialCommonRatios InverseInitialCommonProfile InverseInitialCommonCutoff InverseInitialCommonTuples InverseInitialOverlapFourier InverseInitialOverlapInputFourier InverseInitialRayAttachment InverseInitialArithmetic InverseInitialOverlap InverseInitialPoissonBridge InverseInitialKernelBridge InverseInitialEnergyCallerWindow
 local notation "Eis"=>ActualEisensteinCubic.O
 variable {σ:Type*} [DecidableEq σ]
 
-open InverseInitialCommonTransform InverseInitialLargePool
-open InverseInitialExcludedPool InverseInitialExcludedForcing
+open InverseInitialCommonTransform InverseInitialLargePool InverseInitialExcludedPool InverseInitialExcludedForcing
 theorem original_tuples_excluded_fourier
     (W wFresh:ℝ→ℂ)(a₀ b₀:ℝ)(ha₀:0<a₀)
     (hs:Function.support W⊆Set.Icc a₀ b₀)(hW:ContDiff ℝ ∞ W)
@@ -96,8 +90,7 @@ theorem original_tuples_excluded_fourier
     (∏i∈I.attach,a i.val (q i.val i.property))*
       (if residual (P q) j∣(∏i∈A,i.val) then residualOverlapWindow (P q) j W Z z G
         (((∏i∈A,i.val).absNorm:ℝ)/Z^(r+z-2*G)) else 0)) = (fun A=>∫t:ℝ,H A t)
-    from funext hpoint]
-  rw [input_integral (poolPrimary F) (poolPrimary_good F hF) Finset.univ
+    from funext hpoint, input_integral (poolPrimary F) (poolPrimary_good F hF) Finset.univ
     (elementCharacter η) (primaryGenerator j) u H (fun A _=>hHi A),←integral_const_mul]
   apply integral_congr_ae
   filter_upwards with t

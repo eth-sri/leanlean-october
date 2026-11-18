@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.RobertSargosComplementaryAlgebra
 public import LaterPairs.Native.RobertSargosWideFrequencyBound
 
@@ -24,10 +33,9 @@ theorem exists_robertSargos_primitive_count_narrow_frequency (ε : ℝ) (hε : 0
   obtain ⟨Cl,hCl,hlinear⟩ := exists_robertSargos_primitive_count_linear_weight ε hε
   refine ⟨Cc*1000+Cl*7300,by positivity,?_⟩
   intro S R H Q δ hR hH hQ hδ hQH hmem
-  have hδ0 : 0 ≤ δ := hδ.1
+  have hδ0 := hδ.1
   have hHp : 0 < H := by linarith
   have hR0 : 0 ≤ R := by linarith
-  have hQp : 0 < Q := by linarith
   have hnonneg : 0 ≤ (R*H*Q)^(1+ε)*(1+δ*Q) := by positivity
   by_cases hs : δ ≤ R/H
   · have ha := robertSargos_conic_count_algebra hR hH hQ hδ0 hQH hs
@@ -40,7 +48,7 @@ theorem exists_robertSargos_primitive_count_narrow_frequency (ε : ℝ) (hε : 0
       _ ≤ Cc*(1000*(R*H*Q)^(1+ε)*(1+δ*Q)) := mul_le_mul_of_nonneg_left hl hCc.le
       _ = (Cc*1000)*((R*H*Q)^(1+ε)*(1+δ*Q)) := by ring
       _ ≤ (Cc*1000+Cl*7300)*((R*H*Q)^(1+ε)*(1+δ*Q)) :=
-        mul_le_mul_of_nonneg_right (by nlinarith only [hCl]) hnonneg
+        mul_le_mul_of_nonneg_right (by nlinarith) hnonneg
       _ = _ := by ring
   · have ha := robertSargos_linear_count_algebra hR hH hQ hδ0 hQH (le_of_not_ge hs)
     have hl := robertSargos_frequency_loss_algebra hR hH hQ hε.le
@@ -52,7 +60,7 @@ theorem exists_robertSargos_primitive_count_narrow_frequency (ε : ℝ) (hε : 0
       _ ≤ Cl*(7300*(R*H*Q)^(1+ε)*(1+δ*Q)) := mul_le_mul_of_nonneg_left hl hCl.le
       _ = (Cl*7300)*((R*H*Q)^(1+ε)*(1+δ*Q)) := by ring
       _ ≤ (Cc*1000+Cl*7300)*((R*H*Q)^(1+ε)*(1+δ*Q)) :=
-        mul_le_mul_of_nonneg_right (by nlinarith only [hCc]) hnonneg
+        mul_le_mul_of_nonneg_right (by nlinarith) hnonneg
       _ = _ := by ring
 
 theorem exists_robertSargos_primitive_count_small_tolerance (ε : ℝ) (hε : 0 < ε) :
@@ -64,7 +72,7 @@ theorem exists_robertSargos_primitive_count_small_tolerance (ε : ℝ) (hε : 0 
   obtain ⟨Cn,hCn,hn⟩ := exists_robertSargos_primitive_count_narrow_frequency ε hε
   refine ⟨Cw+Cn,by positivity,?_⟩
   intro S R H Q δ hR hH hQ hδ hRH hmem
-  have hδ0 : 0 ≤ δ := hδ.1
+  have hδ0 := hδ.1
   have hnonneg : 0 ≤ (R*H*Q)^(1+ε)*(1+δ*Q) := by positivity
   rcases le_total H Q with hHQ | hQH
   · calc
@@ -72,14 +80,14 @@ theorem exists_robertSargos_primitive_count_small_tolerance (ε : ℝ) (hε : 0 
         hw S R H Q δ hR hH hQ hδ0 hRH hHQ hmem
       _ ≤ (Cw+Cn)*((R*H*Q)^(1+ε)*(1+δ*Q)) := by
         rw [mul_assoc]
-        exact mul_le_mul_of_nonneg_right (by linarith only [hCn]) hnonneg
+        exact mul_le_mul_of_nonneg_right (by linarith) hnonneg
       _ = _ := by ring
   · calc
       _ ≤ Cn*(R*H*Q)^(1+ε)*(1+δ*Q) :=
         hn S R H Q δ hR hH hQ hδ hQH hmem
       _ ≤ (Cw+Cn)*((R*H*Q)^(1+ε)*(1+δ*Q)) := by
         rw [mul_assoc]
-        exact mul_le_mul_of_nonneg_right (by linarith only [hCw]) hnonneg
+        exact mul_le_mul_of_nonneg_right (by linarith) hnonneg
       _ = _ := by ring
 
 end TaoTrudgianYang2025

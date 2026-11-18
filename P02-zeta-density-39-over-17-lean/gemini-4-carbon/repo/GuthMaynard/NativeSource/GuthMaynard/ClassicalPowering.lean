@@ -33,7 +33,6 @@ theorem finite_polynomial_power_identity (N k : ℕ) (a : ℕ → ℂ) (s : ℂ)
     intro p hp
     exact powCoeff_product_mem_support N k p hp
   rw [finitePowPoly, Finset.sum_pow']
-  change (∑ p ∈ tuples, ∏ x : Fin k, (a (p x) * (p x : ℂ) ^ (-s))) = _
   calc
     (∑ p ∈ tuples, ∏ x : Fin k, (a (p x) * (p x : ℂ) ^ (-s))) =
         ∑ p ∈ tuples, (∏ x : Fin k, a (p x)) *
@@ -84,8 +83,7 @@ theorem finite_polynomial_power_identity_Ioc
     finitePowPoly N k a s =
       ∑ m ∈ Ioc (N ^ k) ((2 * N) ^ k),
         finitePowCoeff N k a m * (m : ℂ) ^ (-s) := by
-  rw [finite_polynomial_power_identity]
-  rw [Finset.Icc_eq_cons_Ioc]
+  rw [finite_polynomial_power_identity, Finset.Icc_eq_cons_Ioc]
   · simp [finitePowCoeff_lower_endpoint_eq_zero N k a hN hk]
   · exact Nat.pow_le_pow_left (by omega : N ≤ 2 * N) k
 
@@ -145,8 +143,7 @@ theorem wideDirichletPoly_finitePoweredLineCoeffs
   rw [hUpper, Finset.mul_sum]
   apply Finset.sum_congr rfl
   intro m hm
-  have hmPos : 0 < m := lt_of_le_of_lt (Nat.zero_le _) (Finset.mem_Ioc.mp hm).1
-  have hmNe : (m : ℂ) ≠ 0 := by exact_mod_cast hmPos.ne'
+  have hmNe : (m : ℂ) ≠ 0 := by exact_mod_cast (lt_of_le_of_lt (Nat.zero_le _) (Finset.mem_Ioc.mp hm).1).ne'
   rw [mul_assoc, mul_assoc, ← Complex.cpow_add _ _ hmNe]
   congr 2
   ring_nf
@@ -208,7 +205,7 @@ theorem norm_normalizedFinitePoweredCoeffs_le_one
   have hDenomNorm :
       ‖((C * ((2 ^ k * N ^ k : ℕ) : ℝ) ^ η : ℝ) : ℂ)‖ =
         C * ((2 ^ k * N ^ k : ℕ) : ℝ) ^ η := by
-    simpa only [Complex.norm_real, Real.norm_eq_abs] using abs_of_pos hDenomPos
+    simpa using abs_of_pos hDenomPos
   rw [normalizedFinitePoweredCoeffs, norm_div, hDenomNorm,
     div_le_one hDenomPos]
   exact (norm_finitePoweredLineCoeffs_le N k m a σ hN hσ hm).trans

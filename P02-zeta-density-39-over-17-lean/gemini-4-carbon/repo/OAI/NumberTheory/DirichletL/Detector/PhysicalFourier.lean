@@ -83,7 +83,7 @@ theorem rawFourier_norm_le (a : O) (ha : a≠0) (F : (O ⧸ Ideal.span {a}) → 
   calc
     _ ≤ ∑ m : O ⧸ Ideal.span {a}, ‖F m * quotientTrace a ha (Ideal.Quotient.mk _ H*m)‖ :=
       norm_sum_le _ _
-    _ ≤ ∑ _m : O ⧸ Ideal.span {a}, (1:ℝ) := by
+    _ ≤ ∑ _m : O ⧸ Ideal.span {a}, 1 := by
       apply Finset.sum_le_sum
       intro m hm
       rw [norm_mul, AddChar.norm_apply, mul_one]

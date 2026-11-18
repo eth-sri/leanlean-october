@@ -9,8 +9,7 @@ public import MathCollab.Density.Stronger.Atkinson.BesselK0SourceIntegral
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set
-open MathCollab.Density.Stronger.Fourth
+open Complex Filter MeasureTheory Set MathCollab.Density.Stronger.Fourth
 open scoped ContDiff
 set_option autoImplicit false
 noncomputable section
@@ -39,8 +38,7 @@ theorem norm_integral_zetaAtkinsonK0_le {T G L : ℝ}
           ‖zetaSmoothDivisorTest T G L x‖ := by
     rw [norm_zetaAtkinsonK0_integrand]
     exact norm_zetaBesselK0SourceIntegrand_le hT hG hL hwidth hn k x
-  have h := norm_integral_le_of_norm_le hi (Filter.Eventually.of_forall hb)
-  simpa only [integral_const_mul] using h
+  simpa only [integral_const_mul] using (norm_integral_le_of_norm_le hi (Filter.Eventually.of_forall hb))
 
 theorem exists_norm_integral_zetaAtkinsonK0_le (k : ℕ) :
     ∃ C : ℝ, 0 < C ∧ ∀ T G L : ℝ, 16 ≤ T → 0 < G → G ^ 2 ≤ 2 * T →
@@ -54,9 +52,6 @@ theorem exists_norm_integral_zetaAtkinsonK0_le (k : ℕ) :
   apply (norm_integral_zetaAtkinsonK0_le hT hG hL hwidth hn k).trans
   have hfac : 0 ≤ zetaBesselK0PowerConstant k / (T ^ k * (n : ℝ) ^ k) :=
     div_nonneg (zetaBesselK0PowerConstant_pos k).le (by positivity)
-  calc
-    _ ≤ (zetaBesselK0PowerConstant k / (T ^ k * (n : ℝ) ^ k)) * (C * G * T) :=
-      mul_le_mul_of_nonneg_left (hmass T G L hT hG hGT hL hwidth) hfac
-    _ = _ := by ring
+  exact (mul_le_mul_of_nonneg_left (hmass T G L hT hG hGT hL hwidth) hfac).trans_eq (by ring)
 
 end MathCollab.Density.Stronger.Atkinson

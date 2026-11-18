@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaUniformityFull
 public import TaoTrudgianYang2025.BetaModelSumBound
 
@@ -79,12 +89,11 @@ theorem exponentSumGrowthExponent_le_exponentPairLine_closed
   · exact exponentSumGrowthExponent_le_exponentPairLine hkl α hlt
   · have hαone : α = 1 := NNReal.coe_injective heq
     rw [hαone]
-    have hl : (1 : ℝ)/2 ≤ l := hkl.inTriangle.2.2.1
     have hline : exponentPairLine k l 1 = l := by
       unfold exponentPairLine
       ring
     simpa only [NNReal.coe_one,hline] using
-      exponentSumGrowthExponent_one_le_half.trans hl
+      exponentSumGrowthExponent_one_le_half.trans (hkl.inTriangle.2.2.1)
 
 theorem exponentPair_iff_beta_bound {k l : ℝ}
     (htri : InExponentPairTriangle k l) :

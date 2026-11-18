@@ -7,10 +7,8 @@ public import OAI.NumberTheory.DirichletL.Reflection.UniformTail
 namespace OAI
 
 namespace SevenEighths.InverseReflectedArithmeticHeight
+open MeasureTheory FourierBridge InverseKernelSourceUniform CompletedDyadic ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment InverseReflectedPhase
 open scoped Classical BigOperators ContDiff SchwartzMap
-open MeasureTheory FourierBridge InverseKernelSourceUniform CompletedDyadic
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
-open InverseReflectedPhase
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 universe u v w
@@ -191,7 +189,7 @@ theorem literal_reflected_raw_tail_arithmetic_uniform (a₀ b₀ : ℝ) (ha₀ :
   intro N a c mode V hV ι _ G D s hc hN hbase hchar j hj S u scale T hs hT cut hcut
   have hh := hb V hV scale 1 (Ideal.absNorm (∏ i,G.ideal i):ℝ) T hs (by norm_num) (Nat.cast_nonneg _) hT
     (literalRawCoefficient G D s hc j S u) (literalRawCoefficient_norm G D s hc hN hbase hchar j hj S u) cut hcut
-  simpa only [one_pow,mul_one] using hh
+  simpa using hh
 
 theorem literal_reflected_dyadic_tail_arithmetic_uniform (lo hi : ℝ) (hlo : 0<lo) (A : ℕ) :
     ∃ (orders : Finset (ℕ×ℕ)) (C : ℝ), 0<C ∧
@@ -236,7 +234,7 @@ theorem literal_dyadic_tail_height_arithmetic_uniform (lo hi : ℝ) (hlo : 0<lo)
         C*(1+‖θ‖)^degree*(Ideal.absNorm (∏ i,G.ideal i):ℝ)*T^(-(A:ℝ))*(literalRawScale G s X^2)⁻¹ := by
   obtain ⟨orders,C,hC,hbound⟩ := literal_reflected_dyadic_tail_arithmetic_uniform lo hi hlo A
   let V := vstarSchwartz W lo hi hlo hWs hW
-  have hV : Function.support (V : ℝ→ℂ)⊆Set.Icc lo hi := Vstar_support W lo hi hWs
+  have hV := Vstar_support W lo hi hWs
   obtain ⟨H,hH,hpoly⟩ := CompletedHeight.normTwistedSource_schwartz V lo hi hlo hV
   obtain ⟨degree,C₁,hC₁,hsemi⟩ := hpoly orders
   have hlink (θ : ℝ) : (H θ : ℝ→ℂ)=Vstar (CompletedHeight.normTwistedSource W θ) := by
@@ -265,14 +263,13 @@ theorem literal_dyadic_tail_height_arithmetic_uniform (lo hi : ℝ) (hlo : 0<lo)
     simp only [rawDualKernelTerm,hlink,literalDyadicBlock,literalRawSeries]
   rw [hleft] at hh
   apply hh.trans
-  have hsemi' := mul_le_mul_of_nonneg_left (hsemi θ) hC.le
   have hrest : 0≤(Ideal.absNorm (∏ i,G.ideal i):ℝ)*T^(-(A:ℝ))*(literalRawScale G s X^2)⁻¹ := by positivity
   calc
     _ = (C*orders.sup (schwartzSeminormFamily ℝ ℝ ℂ) (H θ))*
         ((Ideal.absNorm (∏ i,G.ideal i):ℝ)*T^(-(A:ℝ))*(literalRawScale G s X^2)⁻¹) := by ring
     _ ≤ (C*(C₁*(1+‖θ‖)^degree))*
         ((Ideal.absNorm (∏ i,G.ideal i):ℝ)*T^(-(A:ℝ))*(literalRawScale G s X^2)⁻¹) :=
-      mul_le_mul_of_nonneg_right hsemi' hrest
+      mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left (hsemi θ) hC.le) hrest
     _ = _ := by ring
 
 end

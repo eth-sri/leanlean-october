@@ -21,8 +21,7 @@ def remainingIndexEquiv (J:Finset ι) : {i:ι // i∉J} ≃ ↥(Finset.univ\J) w
 
 theorem remaining_product_attach {A:Type*}[CommMonoid A]
     (J:Finset ι)(f:{i:ι // i∉J}→A) :
-    (∏i,f i)=∏i∈(Finset.univ\J).attach,f ⟨i.val,(Finset.mem_sdiff.mp i.property).2⟩ := by
-  exact ((remainingIndexEquiv J).symm.prod_comp f).symm
+    (∏i,f i)=∏i∈(Finset.univ\J).attach,f ⟨i.val,(Finset.mem_sdiff.mp i.property).2⟩ := ((remainingIndexEquiv J).symm.prod_comp f).symm
 
 def remainingPi (L:ι→Finset (Ideal O))(J:Finset ι)(q:Remaining L J) :
     ∀i∈Finset.univ\J,Ideal O := fun i hi=>(q ⟨i,(Finset.mem_sdiff.mp hi).2⟩).val

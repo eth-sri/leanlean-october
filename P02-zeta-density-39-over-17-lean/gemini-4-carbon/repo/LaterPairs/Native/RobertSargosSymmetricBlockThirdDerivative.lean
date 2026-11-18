@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.RobertSargosSourceThirdDerivative
 public import LaterPairs.Native.RobertSargosSymmetricArray
 
@@ -35,7 +44,7 @@ theorem robertSargos_symmetric_block_third_derivative_bound
     have hhiI := Finset.mem_Ico.mp hh
     have hHh : (H:ℝ) ≤ h := by exact_mod_cast hhiI.1
     have hhH : (h:ℝ) < 2*H := by exact_mod_cast hhiI.2
-    have hhr : (0:ℝ) < h := hHr.trans_le hHh
+    have hhr := hHr.trans_le hHh
     have hsmall : 2*(H:ℝ)*lam ≤ 2*(h:ℝ)*lam := by nlinarith
     have hlarge : 2*(h:ℝ)*lam ≤ 4*(H:ℝ)*lam := by nlinarith
     have hp := robertSargos_source_centered_third_derivative_bound f M h hC

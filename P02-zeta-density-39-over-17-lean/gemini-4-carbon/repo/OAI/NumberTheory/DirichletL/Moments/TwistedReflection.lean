@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentTwistedReflection
-open HeckeFamily CenteredMomentNaturalPrimitive CenteredMomentNaturalReflection
-open CenteredMomentReflectionDeletion EisensteinSchwartzPoisson
+open HeckeFamily CenteredMomentNaturalPrimitive CenteredMomentNaturalReflection CenteredMomentReflectionDeletion EisensteinSchwartzPoisson
 local notation "O" => HeckeFamily.O
 
 lemma polynomial_twisted_source (χ : Character) (W : ℝ→ℂ) (X t : ℝ) (hX : 0<X) :

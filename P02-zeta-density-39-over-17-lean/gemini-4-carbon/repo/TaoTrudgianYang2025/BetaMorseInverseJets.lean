@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaMorseJetBounds
 
 @[expose] public section
@@ -41,10 +51,9 @@ theorem modelPhaseMorseInverseJet_hasDerivAt
       have hc := (contDiffAt_iteratedDeriv_infty hw 1).differentiableAt
         (by simp : (∞ : WithTop ℕ∞) ≠ 0)
       have hne : iteratedDeriv 1 (modelPhaseMorseCoordinate F v) (modelPhaseMorseInverse F v z) ≠ 0 := by
-        simpa only [iteratedDeriv_succ,iteratedDeriv_zero] using
+        simpa using
           (modelPhaseMorseCoordinate_deriv_pos hσ hδ hF hv hu).ne'
-      have hh := (hc.hasDerivAt.comp z hi).inv hne
-      convert hh using 1
+      convert ((hc.hasDerivAt.comp z hi).inv hne) using 1
       · funext x
         simp only [modelPhaseMorseInverseJet,Pi.inv_apply,Function.comp_apply,
           iteratedDeriv_succ,iteratedDeriv_zero]

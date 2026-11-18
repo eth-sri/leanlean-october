@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaMorseCriticalPoint
 public import Mathlib.Analysis.Calculus.ParametricIntegral
 public import Mathlib.Analysis.Calculus.ContDiff.Deriv
@@ -28,13 +38,13 @@ def segmentTaylorAverage (f : ℝ → ℝ) (a : ℝ) (k : ℕ) (x : ℝ) : ℝ :
 theorem affineSegment_mem_Icc {b c a x t : ℝ}
     (ha : a ∈ Icc b c) (hx : x ∈ Icc b c) (ht : t ∈ Icc (0 : ℝ) 1) :
     a+t*(x-a) ∈ Icc b c := by
-  simpa only [smul_eq_mul] using
+  simpa using
     (convex_Icc b c).add_smul_mem ha (by simpa using hx) ht
 
 theorem affineSegment_mem_Ioo {b c a x t : ℝ}
     (ha : a ∈ Ioo b c) (hx : x ∈ Ioo b c) (ht : t ∈ Icc (0 : ℝ) 1) :
     a+t*(x-a) ∈ Ioo b c := by
-  simpa only [smul_eq_mul] using
+  simpa using
     (convex_Ioo b c).add_smul_mem ha (by simpa using hx) ht
 
 theorem segmentTaylorAverage_integrable
@@ -50,7 +60,7 @@ theorem segmentTaylorAverage_integrable
   exact ((continuousWithinAt_const.sub continuousWithinAt_id).mul
     (continuousWithinAt_id.pow k)).mul
       (hc.comp_continuousWithinAt (f := fun t : ℝ => a+t*(x-a)) (by
-        fun_prop : ContinuousWithinAt (fun t : ℝ => a+t*(x-a)) (Icc (0 : ℝ) 1) t))
+        fun_prop : ContinuousWithinAt (fun t : ℝ => a+t*(x-a)) (Icc 0 1) t))
 
 theorem segmentTaylorAverage_hasDerivAt
     {f : ℝ → ℝ} {l r a x : ℝ}
@@ -70,7 +80,7 @@ theorem segmentTaylorAverage_hasDerivAt
     intro u hu
     exact (contDiffAt_iteratedDeriv_infty (hf u (hsub hu)) (k+1)).continuousAt.continuousWithinAt
   obtain ⟨M,hM⟩ := isCompact_Icc.exists_bound_of_continuousOn hj
-  have hbound : ∀ᵐ t ∂volume.restrict (Icc (0 : ℝ) 1),
+  have hbound : ∀ᵐ t ∂volume.restrict (Icc 0 1),
       ∀ z ∈ Ioo b c,
         ‖(1-t)*t^(k+1)*iteratedDeriv (k+1) f (a+t*(z-a))‖ ≤ M := by
     filter_upwards [ae_restrict_mem measurableSet_Icc] with t ht z hz
@@ -82,13 +92,12 @@ theorem segmentTaylorAverage_hasDerivAt
     rw [norm_mul,Real.norm_eq_abs,abs_of_nonneg hfactor]
     exact (mul_le_of_le_one_left (norm_nonneg _) hfactor').trans
       (hM _ (affineSegment_mem_Icc ha' (Ioo_subset_Icc_self hz) ht))
-  have hdiff : ∀ᵐ t ∂volume.restrict (Icc (0 : ℝ) 1),
+  have hdiff : ∀ᵐ t ∂volume.restrict (Icc 0 1),
       ∀ z ∈ Ioo b c,
         HasDerivAt (fun y : ℝ => (1-t)*t^k*iteratedDeriv k f (a+t*(y-a)))
           ((1-t)*t^(k+1)*iteratedDeriv (k+1) f (a+t*(z-a))) z := by
     filter_upwards [ae_restrict_mem measurableSet_Icc] with t ht z hz
-    have hu := hsub (affineSegment_mem_Icc ha' (Ioo_subset_Icc_self hz) ht)
-    have hd := (contDiffAt_iteratedDeriv_infty (hf _ hu) k).differentiableAt
+    have hd := (contDiffAt_iteratedDeriv_infty (hf _ (hsub (affineSegment_mem_Icc ha' (Ioo_subset_Icc_self hz) ht))) k).differentiableAt
       (by simp : (∞ : WithTop ℕ∞) ≠ 0)
     have hh := (hd.hasDerivAt.comp z
       ((((hasDerivAt_id z).sub_const a).const_mul t).const_add a)).const_mul ((1-t)*t^k)

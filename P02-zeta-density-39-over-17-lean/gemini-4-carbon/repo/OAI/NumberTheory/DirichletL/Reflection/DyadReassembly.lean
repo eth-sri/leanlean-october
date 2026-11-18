@@ -16,7 +16,6 @@ lemma dependent_sum_filter_partition {α β A : Type*} [Fintype β] [DecidableEq
     (T : Finset α) (label : α→β) (f : T→A) :
     (∑ p : T,f p)=∑ j : β,∑ p : T.filter (fun p => label p=j),f ⟨p.val,(Finset.mem_filter.mp p.property).1⟩ := by
   let g : α→A := fun p => if hp:p∈T then f ⟨p,hp⟩ else 0
-  have h := Finset.sum_fiberwise T label g
   calc
     _ = ∑ p∈T,g p := by
       symm
@@ -24,7 +23,7 @@ lemma dependent_sum_filter_partition {α β A : Type*} [Fintype β] [DecidableEq
       apply Finset.sum_congr rfl
       intro p hp
       simp only [g,dite_eq_left p.property]
-    _ = ∑ j,∑ p∈T.filter (fun p => label p=j),g p := h.symm
+    _ = ∑ j,∑ p∈T.filter (fun p => label p=j),g p := (Finset.sum_fiberwise T label g).symm
     _ = _ := by
       apply Finset.sum_congr rfl
       intro j hj
@@ -55,7 +54,7 @@ theorem dependent_partition_energy {α β ι κ : Type*} [Fintype ι] [Fintype �
         ∑ p : tuples.filter (fun p => slotLabel p=j),
           f ⟨k.val,(Finset.mem_filter.mp k.property).1⟩ ⟨p.val,(Finset.mem_filter.mp p.property).1⟩
       have he := weighted_finite_row_energy (Finset.univ : Finset κ)
-        (Finset.univ : Finset (rows.filter (fun k => rowLabel k=i))) (fun _ => (1:ℂ)) g
+        (Finset.univ : Finset (rows.filter (fun k => rowLabel k=i))) (fun _ => 1) g
       simp only [one_mul,norm_one,Finset.sum_const,Finset.card_univ,nsmul_eq_mul,mul_one] at he
       convert he using 1
       apply Finset.sum_congr rfl

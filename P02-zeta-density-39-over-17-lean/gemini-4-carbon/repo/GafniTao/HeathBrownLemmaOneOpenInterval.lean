@@ -35,13 +35,13 @@ theorem norm_heathBrownExponentialSum_le_sourceScale_open_of_vmvt
           (N : ℝ) ^ epsilon * heathBrownThreeTerm N k lambda +
         heathBrownHChoice k A lambda + 2 := by
   let M := N - 2
-  let U := Set.Ioo (-1 : ℝ) ((N : ℝ) - 1)
+  let U := Set.Ioo (-1) ((N : ℝ) - 1)
   have hM : 1 ≤ M := by dsimp only [M]; omega
   have hMN : M ≤ N := by dsimp only [M]; omega
   have hShiftDiff : ContDiffOn ℝ k (heathBrownInteriorShift f) U := by
     dsimp only [U]
     exact heathBrownInteriorShift_contDiffOn hf
-  have hCompact : Set.Icc (0 : ℝ) (M : ℝ) ⊆ U := by
+  have hCompact : Set.Icc 0 (M : ℝ) ⊆ U := by
     dsimp only [M, U]
     exact heathBrownInteriorCompact_subset (by omega : 2 ≤ N)
   have hShiftBounds : ∀ x ∈ U,
@@ -53,14 +53,11 @@ theorem norm_heathBrownExponentialSum_le_sourceScale_open_of_vmvt
     (U := U) (N := M) (k := k) (f := heathBrownInteriorShift f)
     (A := A) (lambda := lambda) (epsilon := epsilon) (C := C)
     (isOpen_Ioo) hk hM hA hlambda hlambdaOne hepsilon hsmall hlargeH
-    (by simpa only [M] using hHN) hShiftDiff hCompact hShiftBounds hC hVMVT
+    (by simpa using hHN) hShiftDiff hCompact hShiftBounds hC hVMVT
   have hEndpoint := norm_heathBrownExponentialSum_le_interior_add_two
     (by omega : 2 ≤ N) f
-  have hConstant0 : 0 ≤
-      heathBrownLemmaOneSourceConstant k A C epsilon :=
-    (heathBrownLemmaOneSourceConstant_pos hk hA hC hepsilon).le
   have hMainMono := heathBrown_sourceScale_main_mono
-    hM hMN hk hlambda hepsilon hConstant0
+    hM hMN hk hlambda hepsilon ((heathBrownLemmaOneSourceConstant_pos hk hA hC hepsilon).le)
   change heathBrownLemmaOneSourceConstant k A C epsilon *
       (M : ℝ) ^ epsilon * heathBrownThreeTerm M k lambda ≤
     heathBrownLemmaOneSourceConstant k A C epsilon *
@@ -68,7 +65,7 @@ theorem norm_heathBrownExponentialSum_le_sourceScale_open_of_vmvt
   calc
     ‖heathBrownExponentialSum N f‖ ≤
         ‖heathBrownExponentialSum M (heathBrownInteriorShift f)‖ + 2 := by
-      simpa only [M] using hEndpoint
+      simpa using hEndpoint
     _ ≤ (heathBrownLemmaOneSourceConstant k A C epsilon *
           (M : ℝ) ^ epsilon * heathBrownThreeTerm M k lambda +
         heathBrownHChoice k A lambda) + 2 := by gcongr

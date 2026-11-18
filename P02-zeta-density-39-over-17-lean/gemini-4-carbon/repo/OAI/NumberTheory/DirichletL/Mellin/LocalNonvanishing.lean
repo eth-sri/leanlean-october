@@ -7,27 +7,8 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-
-open Filter Asymptotics
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical
 
 namespace TargetLocalReduction
 
@@ -35,12 +16,10 @@ end TargetLocalReduction
 
 namespace ActualEisensteinCubic
 
-open AddChar MulChar
 
 end ActualEisensteinCubic
 
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
 
 namespace ShortDraftHeckeBridge
 
@@ -60,8 +39,7 @@ theorem normFiber_LSeries_eq_pair_inverse
     (weight : Ideal O → ℂ)
     (hcoeff : ∀ n : ℕ, n ≠ 0 → normFiberCoeff weight n = pairInverseCoeff χ ψ n)
     (s : ℂ) :
-    LSeries (normFiberCoeff weight) s = LSeries (pairInverseCoeff χ ψ) s := by
-  exact LSeries_congr (fun {n} hn => hcoeff n hn) s
+    LSeries (normFiberCoeff weight) s = LSeries (pairInverseCoeff χ ψ) s := LSeries_congr (fun {n} hn => hcoeff n hn) s
 
 theorem pair_inverse_euler_identity
     {q r : ℕ} [NeZero q] [NeZero r]
@@ -127,12 +105,11 @@ private theorem pairing_algebra
       _ = star g2 * alpha := h.symm
       _ = alpha * star g2 := by ring
   have hD : (-star gm) * star G = star eps * (alpha * star g2) := by
-    have h := congrArg (fun z : ℂ => star z) hB
-    simpa only [star_mul, star_neg, star_star, mul_comm, mul_left_comm, mul_assoc] using h
+    simpa using (congrArg (fun z : ℂ => star z) hB)
   exact ⟨by rw [hA], by rw [hB], by rw [hC], by rw [hD]⟩
 
 namespace ActualEisensteinCubic
-open EisensteinEmbedding ConcreteTraceCRT PrimitiveTrace
+open PrimitiveTrace
 open scoped ComplexConjugate
 
 private theorem breveGamma1_mul_star_one (P : Ideal O) [P.IsMaximal]
@@ -144,9 +121,8 @@ private theorem breveGamma1_mul_star_one (P : Ideal O) [P.IsMaximal]
   let χ := canonicalSextic (Ideal.span {p}) hgood
   let ψ := eisTraceModChar ShortDraftTrace.breveE
     ConcreteBreveE.breveE_period_coordinates p hp
-  let s : ℝ := ‖eisEmbedding p‖
-  have hψ : ψ.IsPrimitive :=
-    eisTraceModChar_breveE_primitive (Ideal.span {p}) p rfl hp
+  let s := ‖eisEmbedding p‖
+  have hψ := eisTraceModChar_breveE_primitive (Ideal.span {p}) p rfl hp
   have hχ1 : χ ≠ 1 := by
     simpa only [pow_one] using
       (canonicalSextic_pow_ne_one (Ideal.span {p}) hgood hchar
@@ -169,9 +145,7 @@ private theorem breveGamma1_mul_star_one (P : Ideal O) [P.IsMaximal]
     exact (norm_ne_zero_iff.mpr (eisEmbedding_ne_zero hp))
   have hnorm : ‖breveGamma1 (Ideal.span {p}) hgood p rfl hp‖ = 1 := by
     change ‖gaussSum χ ψ / (s : ℂ)‖ = 1
-    rw [norm_div, ShortDraftGauss.norm_gaussSum_eq_sqrt_card χ ψ hχ1 hψ]
-    rw [Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (norm_nonneg (eisEmbedding p))]
-    rw [← hsroot]
+    rw [norm_div, ShortDraftGauss.norm_gaussSum_eq_sqrt_card χ ψ hχ1 hψ, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (norm_nonneg (eisEmbedding p)), ← hsroot]
     exact div_self hs0
   rw [← starRingEnd_apply, Complex.mul_conj', hnorm]
   norm_num
@@ -192,7 +166,7 @@ theorem first_poisson_prime_sign_pairing
     (-gm) * G * t = eps * (star alpha * g2) * t ∧
     (-g1) * star G * t⁻¹ = (alpha * star g2) * t⁻¹ ∧
     (-star gm) * star G * t⁻¹ = star eps * (alpha * star g2) * t⁻¹ := by
-  have hz : eisEmbedding p ≠ 0 := eisEmbedding_ne_zero hp
+  have hz := eisEmbedding_ne_zero hp
   have hs : (‖eisEmbedding p‖ : ℂ) ≠ 0 := by
     exact_mod_cast (norm_ne_zero_iff.mpr hz)
   have hanorm : ‖eisEmbedding p / (‖eisEmbedding p‖ : ℂ)‖ = 1 := by
@@ -203,7 +177,6 @@ theorem first_poisson_prime_sign_pairing
       star (eisEmbedding p / (‖eisEmbedding p‖ : ℂ)) = 1 := by
     rw [← starRingEnd_apply, Complex.mul_conj', hanorm]
     norm_num
-  have hg1 := breveGamma1_mul_star_one P hgood hchar p hP hp hprimary
   have hprod := breveGamma1_gamma2_eq_neg_alpha_G
     P hgood hchar p hP hp hprimary
   have hprod' :
@@ -222,11 +195,10 @@ theorem first_poisson_prime_sign_pairing
     (eisEmbedding p / (‖eisEmbedding p‖ : ℂ))
     (canonicalSextic P hgood (Ideal.Quotient.mk P (-1 : O)))
     (canonicalSextic P hgood (Ideal.Quotient.mk P h))
-    ha hg1 hprod' hpair
+    ha (breveGamma1_mul_star_one P hgood hchar p hP hp hprimary) hprod' hpair
 
 end ActualEisensteinCubic
 
-open MulChar AddChar
 
 namespace ShortDraftLocal
 

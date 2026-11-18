@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaSourceTaylorPhase
 
 @[expose] public section
@@ -48,10 +58,10 @@ theorem positiveSlopeChartIndex_mem {d v : ℝ} (hd : 0 < d)
 theorem positiveSlopeChartScale_bounds {d : ℝ} {j : ℕ}
     (hd : 0 < d) (hj : j ∈ positiveSlopeChartIndices d) :
     0 < positiveSlopeChartScale d j ∧ positiveSlopeChartScale d j ≤ 3/2 := by
-  have hjlow : (4 : ℝ) ≤ j := by
+  have hjlow : 4 ≤ j := by
     exact_mod_cast (Finset.mem_Icc.mp hj).1
   have hjhigh : (j : ℝ)*d ≤ 2 := by
-    exact (le_div_iff₀ hd).mp ((Nat.le_floor_iff (by positivity : 0 ≤ (2 : ℝ)/d)).mp
+    exact (le_div_iff₀ hd).mp ((Nat.le_floor_iff (by positivity : 0 ≤ 2/d)).mp
       (Finset.mem_Icc.mp hj).2)
   unfold positiveSlopeChartScale
   constructor
@@ -63,7 +73,6 @@ theorem positiveSlopeChart_coordinate {d v : ℝ} {j : ℕ}
     (hv : (j : ℝ)*d ≤ v ∧ v < ((j : ℝ)+1)*d) :
     v/positiveSlopeChartScale d j ∈ Ioo (1 : ℝ) 2 := by
   have hjreal : (4 : ℝ) ≤ j := by exact_mod_cast hj
-  have hjd : 0 < (j : ℝ)*d := mul_pos (by linarith) hd
   have hA : 0 < positiveSlopeChartScale d j := by
     unfold positiveSlopeChartScale
     positivity

@@ -24,11 +24,10 @@ theorem principalHigh_L_factorization (S : Finset Id) (hS : ∀P∈S,Prime P)
   have hz1 : 1<(6*z).re := by
     norm_num [Complex.mul_re]
     linarith
-  have hH := globalClosedCorrection_multipliable η S htail x w z (by linarith) (by linarith) (by linarith)
   have he := (((fixedSourcePrincipal_hasProd S hS (6*z) hz1).mul
     (fixedSourcePrincipal_hasProd S hS w hw1)).mul
       ((excludedTarget_hasProd η S hS x hx1).inv₀
-        (LFunction_ne_zero_of_one_lt_re (η.excludePrimes S hS) hx1))).mul hH.hasProd
+        (LFunction_ne_zero_of_one_lt_re (η.excludePrimes S hS) hx1))).mul (globalClosedCorrection_multipliable η S htail x w z (by linarith) (by linarith) (by linarith)).hasProd
   have hlocal (P : {P : PrimeIdeal // P.val∉S}) :
       ((1-CubicEisenstein.fullIdealWeight (6*z) P.val.val)⁻¹ *
        (1-CubicEisenstein.fullIdealWeight w P.val.val)⁻¹ *

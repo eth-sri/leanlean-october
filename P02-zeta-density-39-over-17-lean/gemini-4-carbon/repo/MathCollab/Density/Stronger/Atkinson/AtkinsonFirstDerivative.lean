@@ -57,13 +57,11 @@ theorem norm_phaseIntegral_le_of_negative_slope {φ : ℝ → ℝ} {a b lam : �
   have hi : ‖∫ x in a..b, Complex.exp (2 * Real.pi * I * (φ x : ℂ))‖ ≤
       |1 / deriv φ a| / Real.pi := by
     rw [intervalIntegral.integral_of_le hab, ← integral_Icc_eq_integral_Ioc]
-    simpa only [Complex.ofReal_one, one_mul] using h
+    simpa using h
   apply hi.trans
   have ha : deriv φ a ≤ -lam := hslope a ⟨le_rfl, hab⟩
   rw [abs_div, abs_one, abs_of_neg (by linarith : deriv φ a < 0)]
-  have hrec := one_div_le_one_div_of_le hlam (show lam ≤ -deriv φ a by linarith)
-  have hfin := div_le_div_of_nonneg_right hrec Real.pi_pos.le
-  convert hfin using 1
+  convert (div_le_div_of_nonneg_right (one_div_le_one_div_of_le hlam (show lam ≤ -deriv φ a by linarith)) Real.pi_pos.le) using 1
   ring
 
 theorem norm_phaseIntegral_le_of_positive_slope {φ : ℝ → ℝ} {a b lam : ℝ}
@@ -78,7 +76,7 @@ theorem norm_phaseIntegral_le_of_positive_slope {φ : ℝ → ℝ} {a b lam : �
       deriv (fun y => φ (-y)) x = -deriv φ (-x) := by
     have h := (((hφ (-x) (hmem x hx)).differentiableAt (by norm_num)).hasDerivAt.comp
       x (hasDerivAt_neg x)).deriv
-    simpa only [mul_neg_one, Function.comp_def] using! h
+    simpa using! h
   have h := norm_phaseIntegral_le_of_negative_slope
     (φ := fun y => φ (-y)) (by linarith : -b ≤ -a) hlam
     (fun x hx => (hφ (-x) (hmem x hx)).comp x (by fun_prop))
@@ -89,7 +87,7 @@ theorem norm_phaseIntegral_le_of_positive_slope {φ : ℝ → ℝ} {a b lam : �
       exact neg_le_neg (hmono (hmem y hy) (hmem x hx) (by linarith)))
   rw [intervalIntegral.integral_comp_neg
     (f := fun x => Complex.exp (2 * Real.pi * I * (φ x : ℂ)))] at h
-  simpa only [neg_neg] using h
+  simpa using h
 
 
 end MathCollab.Density.Stronger.Atkinson

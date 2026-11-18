@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.RobertSargosPhysicalShift
 
 @[expose] public section
@@ -41,8 +50,7 @@ theorem robertSargos_initial_floor_budget
     have he := mul_le_mul_of_nonneg_left hi (sq_nonneg (M:ℝ))
     rw [div_eq_mul_one_div 2,hrec] at he
     simpa only [div_eq_mul_inv,one_mul,mul_assoc,mul_comm,mul_left_comm] using he
-  have hlogdiv := div_le_div_of_nonneg_right hlog hlog2.le
-  have hprod := mul_le_mul hlogdiv hbound
+  have hprod := mul_le_mul (div_le_div_of_nonneg_right hlog hlog2.le) hbound
     (by positivity : 0 ≤ (M:ℝ)^2/(H:ℝ)) (div_nonneg hlogM hlog2.le)
   have hall := mul_le_mul_of_nonneg_left hprod (show 0 ≤ 930*C by positivity)
   dsimp [H] at hall

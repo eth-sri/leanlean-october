@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve CubicEisenstein
-open CompletedGauss ConcreteTraceCRT GaussianShiftedPartition CenteredMomentCommonSupport
-open CenteredMomentSupportedCorrelation ConcretePrimeRowBridge ProbePrimePower ProbeLocal ProbeEuler
+open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve CubicEisenstein CompletedGauss ConcreteTraceCRT GaussianShiftedPartition CenteredMomentCommonSupport CenteredMomentSupportedCorrelation ConcretePrimeRowBridge ProbePrimePower ProbeLocal ProbeEuler
 local notation "O" => ActualEisensteinCubic.O
 
 lemma finite_fourier_unit_scale {R : Type*} [CommRing R] [Fintype R]
@@ -39,15 +37,13 @@ theorem barePhysicalFourier_unit_frequency (A s : O)
   let := finite_quotient_span hAs
   let : Fintype (Residue (A*s)) := Fintype.ofFinite _
   let u := residueUnit (A*s) b hcop.symm
-  have hcA := idealRowHom_ne_zero_of_coprime A b hA hcop.of_mul_right_left.symm
-  have hcs := idealRowHom_ne_zero_of_coprime s b hs hcop.of_mul_right_right.symm
   have hF (x : Residue (A*s)) :
       movingQuotient A s (supportedElement_ne_zero s hs) ((u : Residue (A*s))*x) =
         (idealRowHom b (Ideal.span {A}) * (idealRowHom b (Ideal.span {s}))⁻¹) *
           movingQuotient A s (supportedElement_ne_zero s hs) x := by
     exact movingQuotient_unit_scale A s hs b hcop.of_mul_right_right x
   have he := finite_fourier_unit_scale (movingQuotient A s (supportedElement_ne_zero s hs))
-    (quotientTrace (A*s) hAs) u _ (mul_ne_zero hcA (inv_ne_zero hcs)) hF
+    (quotientTrace (A*s) hAs) u _ (mul_ne_zero (idealRowHom_ne_zero_of_coprime A b hA hcop.of_mul_right_left.symm) (inv_ne_zero (idealRowHom_ne_zero_of_coprime s b hs hcop.of_mul_right_right.symm))) hF
     (Ideal.Quotient.mk _ H)
   unfold barePhysicalFourier elementFourier
   simp only [tsum_fintype]

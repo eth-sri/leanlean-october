@@ -11,16 +11,13 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstNormalization
-open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson
-open CanonicalQuadraticSieve CenteredMomentCommonSupport CenteredMomentFourier
-open CenteredMomentSupportedCorrelation CenteredMomentFirstReduced CenteredMomentFirstActiveFourier
-open CenteredMomentGaussEnergy CenteredMomentPrimitive CenteredMomentFirstPoisson
+open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson CanonicalQuadraticSieve CenteredMomentCommonSupport CenteredMomentFourier CenteredMomentSupportedCorrelation CenteredMomentFirstReduced CenteredMomentFirstActiveFourier CenteredMomentGaussEnergy CenteredMomentPrimitive CenteredMomentFirstPoisson
 local notation "O" => ActualEisensteinCubic.O
 
 theorem residueGauss_eq_norm_mul_gaussRow (a : O) (ha : Supported (Ideal.span {a})) (h : O) :
     residueGauss a (supported_element_ne_zero a ha) (supportedModulusCharacter a ha) (Ideal.Quotient.mk _ h)=
       (‖eisEmbedding a‖:ℂ)*gaussRow a ha h := by
-  have hn : (‖eisEmbedding a‖:ℂ)≠0 := Complex.ofReal_ne_zero.mpr
+  have hn := Complex.ofReal_ne_zero.mpr
     (norm_ne_zero_iff.mpr (eisEmbedding_ne_zero (supported_element_ne_zero a ha)))
   rw [gaussRow,residueGauss_supported_mk,sqrt_absNorm]
   field_simp
@@ -46,11 +43,11 @@ theorem normalized_active_coefficient {ι : Type*} [Fintype ι]
       (star (finiteSexticRow P hg j h)*gaussRow a ha h*star (gaussRow b hb (-h))) := by
   dsimp only
   let := finite_quotient_span (supported_element_ne_zero b hb)
-  have hna : (‖eisEmbedding a‖:ℂ)≠0 := Complex.ofReal_ne_zero.mpr
+  have hna := Complex.ofReal_ne_zero.mpr
     (norm_ne_zero_iff.mpr (eisEmbedding_ne_zero (supported_element_ne_zero a ha)))
-  have hnb : (‖eisEmbedding b‖:ℂ)≠0 := Complex.ofReal_ne_zero.mpr
+  have hnb := Complex.ofReal_ne_zero.mpr
     (norm_ne_zero_iff.mpr (eisEmbedding_ne_zero (supported_element_ne_zero b hb)))
-  have hnr : (‖eisEmbedding (finitePrimeModulus P)‖:ℂ)≠0 := Complex.ofReal_ne_zero.mpr
+  have hnr := Complex.ofReal_ne_zero.mpr
     (norm_ne_zero_iff.mpr (eisEmbedding_ne_zero (finitePrimeModulus_ne_zero P)))
   rw [tripleFourier_active P hcop hg hchar j hj0 hj6 a b
     (supported_element_ne_zero a ha) (supported_element_ne_zero b hb) har hbr,

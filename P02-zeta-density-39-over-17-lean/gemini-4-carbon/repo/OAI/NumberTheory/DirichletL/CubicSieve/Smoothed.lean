@@ -6,9 +6,8 @@ public import OAI.NumberTheory.DirichletL.CubicSieve.DualCoefficients
 namespace OAI
 
 namespace SevenEighths.CubicSieve
+open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
-open EisensteinSchwartzPoisson
 noncomputable section
 local notation "O" => ActualEisensteinCubic.O
 
@@ -26,7 +25,7 @@ lemma cubic_pair_fourier_summable (I J : Ideal O) (hI : Admissible I) (hJ : Admi
   simp only [norm_mul, norm_star]
   exact (mul_le_mul_of_nonneg_right
     ((mul_le_mul_of_nonneg_right (cubicRow_norm_le_one I hI h) (norm_nonneg _)).trans
-      (by simpa only [one_mul] using cubicRow_norm_le_one J hJ h))
+      (by simpa using cubicRow_norm_le_one J hJ h))
     (norm_nonneg _)).trans_eq (one_mul _)
 
 def cubicSmoothedCoprime {n : Type*} [Fintype n] (cols : n → Ideal O)
@@ -62,8 +61,7 @@ lemma cubicDualRow_summable {n : Type*} [Fintype n]
         ((‖eisEmbedding (primaryGenerator (cols j))‖ : ℂ) * (‖eisEmbedding (primaryGenerator (cols k))‖ : ℂ)))
     convert hs using 1
     ext z
-    rw [eisEmbedding_norm_sq_eq_absNorm_span]
-    rw [show M / ((Ideal.absNorm (cols j) : ℝ) * (Ideal.absNorm (cols k) : ℝ)) *
+    rw [eisEmbedding_norm_sq_eq_absNorm_span, show M / ((Ideal.absNorm (cols j) : ℝ) * (Ideal.absNorm (cols k) : ℝ)) *
       (Ideal.absNorm (Ideal.span {z}) : ℝ) = M * (Ideal.absNorm (Ideal.span {z}) : ℝ) /
         ((Ideal.absNorm (cols j) : ℝ) * (Ideal.absNorm (cols k) : ℝ)) by ring]
     try simp only [mul_assoc]
@@ -92,8 +90,7 @@ lemma cubicDualRow_tsum {n : Type*} [Fintype n]
     convert cubic_pair_fourier_summable (cols j) (cols k) (hc j) (hc k) W
       (M / ((Ideal.absNorm (cols j) : ℝ) * (Ideal.absNorm (cols k) : ℝ))) (by positivity) using 1
     ext z
-    rw [eisEmbedding_norm_sq_eq_absNorm_span]
-    rw [show M / ((Ideal.absNorm (cols j) : ℝ) * (Ideal.absNorm (cols k) : ℝ)) *
+    rw [eisEmbedding_norm_sq_eq_absNorm_span, show M / ((Ideal.absNorm (cols j) : ℝ) * (Ideal.absNorm (cols k) : ℝ)) *
       (Ideal.absNorm (Ideal.span {z}) : ℝ) = M * (Ideal.absNorm (Ideal.span {z}) : ℝ) /
         ((Ideal.absNorm (cols j) : ℝ) * (Ideal.absNorm (cols k) : ℝ)) by ring]
     try simp only [mul_assoc]

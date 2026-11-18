@@ -8,8 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbeGramCommon
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
-open CenteredMomentCorrelation CenteredMomentCanonical
+open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge CenteredMomentCorrelation CenteredMomentCanonical
 local notation "O" => ActualEisensteinCubic.O
 
 lemma actualSextic_power_nonprincipal (P : Ideal O) [P.IsMaximal]
@@ -42,18 +41,12 @@ theorem crt_joint_mean_zero (Q P : Ideal O) [P.IsMaximal]
   rw [Finset.sum_comm]
   apply Finset.sum_eq_zero
   intro y hy
-  let E := Ideal.quotientMulEquivQuotientProd Q (P^c) hcop
-  have heq := E.toEquiv.sum_comp (fun p : (O⧸Q)×(O⧸P^c)=>
+  have heq := (Ideal.quotientMulEquivQuotientProd Q (P^c) hcop).toEquiv.sum_comp (fun p : (O⧸Q)×(O⧸P^c)=>
     (actualSextic P hg^e) (Ideal.Quotient.mk P d*primePowerReduction P hc p.2)*F p.1 y)
-  change (∑x : O⧸Q*P^c,(actualSextic P hg^e)
-    (Ideal.Quotient.mk P d*primePowerReduction P hc (E x).2)*F (E x).1 y)=0
-  calc
-    _ = ∑p : (O⧸Q)×(O⧸P^c),(actualSextic P hg^e)
-        (Ideal.Quotient.mk P d*primePowerReduction P hc p.2)*F p.1 y := heq
-    _ = 0 := by
+  exact (heq).trans (by
       rw [Fintype.sum_prod_type]
       simp_rw [←Finset.sum_mul,primePower_mean_zero P hg hchar c e hc he d,zero_mul]
-      simp
+      simp)
 
 end SevenEighths.ProbeGramCommon
 end

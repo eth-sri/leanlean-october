@@ -22,10 +22,9 @@ theorem criticalPoint_neg (t : ℝ) :
 theorem criticalTerm_neg (t : ℝ) (n : ℕ) :
     criticalTerm (-t) n = conj (criticalTerm t n) := by
   have ha : (n:ℂ).arg ≠ Real.pi := by simp [Real.pi_ne_zero.symm]
-  have hc := Complex.cpow_conj (n:ℂ) (-criticalPoint t) ha
   change (n:ℂ)^(-criticalPoint (-t)) = conj ((n:ℂ)^(-criticalPoint t))
   rw [criticalPoint_neg]
-  simpa only [map_neg, map_natCast] using hc
+  simpa using (Complex.cpow_conj (n:ℂ) (-criticalPoint t) ha)
 
 theorem norm_critical_sum_neg (t : ℝ) (N : ℕ) :
     ‖∑ n ∈ Ico 1 (N+1), criticalTerm (-t) n‖ =

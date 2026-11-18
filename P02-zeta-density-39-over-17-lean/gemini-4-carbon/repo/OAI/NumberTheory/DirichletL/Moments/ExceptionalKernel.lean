@@ -56,8 +56,6 @@ theorem common_density_pair {κ α β : Type*}
       ring
     rw [he, norm_mul]
     exact (mul_le_mul_of_nonneg_right (hs.trans (henergy t)) (norm_nonneg _)).trans_eq (by ring)
-  have hi : Integrable (fun t : ℝ => (1 + ‖t‖) ^ J * ‖b t‖) :=
-    JointLogSeparation.weighted_schwartz_integrable b J
   calc
     _ = ‖∫ t : ℝ, ∑ k ∈ rows, η k * (rowPhase V (ρ k) (x k) t *
         leftColumn S (c k) (V 2) u t * rightColumn T (d k) (V 3) v t * b t)‖ := by
@@ -68,7 +66,7 @@ theorem common_density_pair {κ α β : Type*}
       intro k hk
       rw [integral_const_mul]
     _ ≤ ∫ t : ℝ, E * ((1 + ‖t‖) ^ J * ‖b t‖) :=
-      norm_integral_le_of_norm_le (hi.const_mul E) (Filter.Eventually.of_forall hpoint)
+      norm_integral_le_of_norm_le ((JointLogSeparation.weighted_schwartz_integrable b J).const_mul E) (Filter.Eventually.of_forall hpoint)
     _ = _ := integral_const_mul _ _
 
 theorem whole_kernel_paired_row_estimate (W : 𝓢(ℝ, ℂ)) (V : Fin 4 → ℝ → ℂ)
@@ -92,13 +90,9 @@ theorem whole_kernel_paired_row_estimate (W : 𝓢(ℝ, ℂ)) (V : Fin 4 → ℝ
   obtain ⟨b, hb, hi, hm, hp⟩ := hs R hR
   have hid (k : κ) := hb S T (c k) (d k) u v (ρ k) (x k)
   simp_rw [hid]
-  have hcs := common_density_pair b V rows S T c d u v ρ x η hη hV₀ hV₁ E hE J he
-  change (1 + R) ^ A * ‖∑ k ∈ rows, η k * ∫ t : ℝ,
-    rowPhase V (ρ k) (x k) t * leftColumn S (c k) (V 2) u t *
-      rightColumn T (d k) (V 3) v t * b t‖ ≤ _
   calc
     _ ≤ (1 + R) ^ A * (E * ∫ t : ℝ, (1 + ‖t‖) ^ J * ‖b t‖) :=
-      mul_le_mul_of_nonneg_left hcs (by positivity)
+      mul_le_mul_of_nonneg_left (common_density_pair b V rows S T c d u v ρ x η hη hV₀ hV₁ E hE J he) (by positivity)
     _ = E * ((1 + R) ^ A * ∫ t : ℝ, (1 + ‖t‖) ^ J * ‖b t‖) := by ring
     _ ≤ E * C := mul_le_mul_of_nonneg_left hm hE
     _ = _ := mul_comm _ _

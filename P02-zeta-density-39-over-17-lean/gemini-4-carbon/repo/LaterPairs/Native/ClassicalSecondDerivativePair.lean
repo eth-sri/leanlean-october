@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 
 @[expose] public section
 set_option autoImplicit false
@@ -54,18 +63,15 @@ theorem isExponentPairEstimateNonAsymptotic_half_half :
       calc
         _ ≤ 3*Real.sqrt T := by linarith [h.end_le_two_mul_scale]
         _ ≤ C*Real.sqrt T := mul_le_mul_of_nonneg_right hCthree hspos.le
-  have hsbound : Real.sqrt T ≤ T^((1 : ℝ)/2+ε) := by
+  have hsbound : Real.sqrt T ≤ T^(1/2+ε) := by
     rw [Real.sqrt_eq_rpow]
     exact Real.rpow_le_rpow_of_exponent_le hT (by linarith)
-  have heq : (T/N)^((1 : ℝ)/2+ε)*N^((1 : ℝ)/2+ε) =
-      T^((1 : ℝ)/2+ε) := by
+  have heq : (T/N)^(1/2+ε)*N^(1/2+ε) =
+      T^(1/2+ε) := by
     rw [← Real.mul_rpow (div_nonneg hTp.le hNp.le) hNp.le,
       div_mul_cancel₀ T (ne_of_gt hNp)]
-  calc
-    _ ≤ C*T^((1 : ℝ)/2+ε) :=
-      hbound.trans (mul_le_mul_of_nonneg_left hsbound (zero_le_one.trans hC))
-    _ = C*(T/N)^((1 : ℝ)/2+ε)*N^((1 : ℝ)/2+ε) := by
-      rw [mul_assoc,heq]
+  exact (hbound.trans (mul_le_mul_of_nonneg_left hsbound (zero_le_one.trans hC))).trans_eq (by
+      rw [mul_assoc,heq])
 
 theorem exponentPair_half_half : ExponentPair ((1 : ℝ)/2) ((1 : ℝ)/2) :=
   ⟨by norm_num [InExponentPairTriangle],

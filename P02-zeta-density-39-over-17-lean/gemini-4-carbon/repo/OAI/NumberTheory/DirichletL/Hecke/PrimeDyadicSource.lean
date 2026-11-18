@@ -42,8 +42,8 @@ theorem source_log_profile_bound (W : ℝ→ℂ) (A B : ℝ) (hA : 0<A)
   intro Z d hZ hd hd' hU2 hT ι _ χ hχ a i ha ha' hmax r σ freq L
     hr hrR hσmin hσmax hL k hQ hfreq hheight
   let U := Z^d
-  have hU : 1≤U := Real.one_le_rpow hZ hd
-  have hUp : 0<U := lt_of_lt_of_le zero_lt_one hU
+  have hU := Real.one_le_rpow hZ hd
+  have hUp := lt_of_lt_of_le zero_lt_one hU
   have hs : Icc (a+8*e-σ) (2-σ)⊆Icc (-σmax) (2-σmin) := by
     intro x hx
     exact ⟨by linarith [hx.1],by linarith [hx.2]⟩

@@ -12,14 +12,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentCommonLiveFrozen
-open CenteredMomentCommonRadialSource CenteredMomentCommonRadialData CenteredMomentCommonRadialCost
-open CenteredMomentEligibleEnergy CenteredMomentRadialEligibleEnergy
-open CenteredMomentCommonAllocationSum CenteredMomentCommonProfile CenteredMomentAddedZeroUniform
-open CanonicalQuadraticSieve
-open CenteredMomentCommonRadialPointwise CenteredMomentCommonRawScale CenteredMomentCommonRawCost
-open CenteredMomentSourceLiveColumn CenteredMomentSourceProfileMass CenteredMomentSourceMass
-open CenteredMomentFirstSectors CenteredMomentSecondHeightFamily CenteredMomentHeckeColumnWindow
-open CenteredMomentRestrictedSourceNormalization CenteredMomentSecondLiveEnergy
+open CenteredMomentCommonRadialSource CenteredMomentCommonRadialData CenteredMomentCommonRadialCost CenteredMomentEligibleEnergy CenteredMomentRadialEligibleEnergy CenteredMomentCommonAllocationSum CenteredMomentCommonProfile CenteredMomentAddedZeroUniform CanonicalQuadraticSieve CenteredMomentCommonRadialPointwise CenteredMomentCommonRawScale CenteredMomentCommonRawCost CenteredMomentSourceLiveColumn CenteredMomentSourceProfileMass CenteredMomentSourceMass CenteredMomentFirstSectors CenteredMomentSecondHeightFamily CenteredMomentHeckeColumnWindow CenteredMomentRestrictedSourceNormalization CenteredMomentSecondLiveEnergy
 local notation "O" => ActualEisensteinCubic.O
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 local instance : DecidableEq (ι⊕Fin 2) := Classical.decEq _
@@ -34,7 +27,6 @@ lemma source_mask_energy (keep:O→Prop) (Q:Finset (Ideal O)) (C L:Ideal O)
   unfold CenteredMomentRestrictedSource.sourceRestrictedEnergy
   congr 1
   funext I
-  dsimp only
   by_cases hc:IsCoprime C (I:Ideal O) <;> by_cases hl:L∣(I:Ideal O) <;> simp [hc,hl]
 
 theorem original_source_weighted (s:Input ι) (r:Radial) (C:Ideal O) (hC:Supported C)
@@ -72,7 +64,6 @@ theorem original_source_weighted (s:Input ι) (r:Radial) (C:Ideal O) (hC:Support
   intro s hlo hhi r C hC R seed L hseed hL E Z hE hZ hNC hNL hc
   have hnC:0<(Ideal.absNorm C:ℝ):=by exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hC.1)
   have hnL:0<(Ideal.absNorm L:ℝ):=by exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hL.ne_zero)
-  have hz:0<Z:=zero_lt_one.trans hZ
   have hprof:=s.toData.profile_nonneg
   have heach (b:actualAllocations s.pools C) (hlive:frozenCoefficient b.val C R s.ν s.W s.P≠0):
       energy (commonData s C R b) r L≤C₁*Z^(δ/2)*(s.toData.profileFactor*E)/(Ideal.absNorm L:ℝ):=by
@@ -104,7 +95,6 @@ theorem original_source_weighted (s:Input ι) (r:Radial) (C:Ideal O) (hC:Support
             (CenteredMomentRadialEligibleEnergy.energy_nonneg _ _ _) (by positivity)
       _=_:=by simp only [Finset.sum_const,Finset.card_univ,Fintype.card_coe,nsmul_eq_mul];ring
   apply hh.trans
-  have hc2:=hcount s C hC.1 Z hZ hNC
   calc
     _=((actualAllocations s.pools C).card:ℝ)^2*
         (C₁*Z^(δ/2)*(profileCost s*E)/((Ideal.absNorm C:ℝ)*Ideal.absNorm L)):=by
@@ -112,10 +102,10 @@ theorem original_source_weighted (s:Input ι) (r:Radial) (C:Ideal O) (hC:Support
       ring
     _≤(C₂*Z^(δ/2))*(C₁*Z^(δ/2)*(profileCost s*E)/
         ((Ideal.absNorm C:ℝ)*Ideal.absNorm L)):=
-      mul_le_mul_of_nonneg_right hc2 (div_nonneg (mul_nonneg (by positivity)
+      mul_le_mul_of_nonneg_right (hcount s C hC.1 Z hZ hNC) (div_nonneg (mul_nonneg (by positivity)
         (mul_nonneg (profileCost_nonneg s) hE)) (mul_nonneg hnC.le hnL.le))
     _=_:=by
-      have hp:Z^(δ/2)*Z^(δ/2)=Z^δ:=by rw [←Real.rpow_add hz];congr 1;ring
+      have hp:Z^(δ/2)*Z^(δ/2)=Z^δ:=by rw [←Real.rpow_add (zero_lt_one.trans hZ)];congr 1;ring
       calc
         _=(C₁*C₂)*(Z^(δ/2)*Z^(δ/2))*(profileCost s*E)/
           ((Ideal.absNorm C:ℝ)*Ideal.absNorm L):=by ring

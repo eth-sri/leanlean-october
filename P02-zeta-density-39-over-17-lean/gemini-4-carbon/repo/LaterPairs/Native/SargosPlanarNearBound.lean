@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.SargosPlanarIntegral
 
 @[expose] public section
@@ -35,8 +44,7 @@ theorem norm_sargosPlanarGramTerm_le {a b : ℝ} (ha : 0 < a) (hb : 0 < b)
     have hz : ‖z₁*conj z₂‖ ≤ 1 := by
       rw [norm_mul,Complex.norm_conj]
       nlinarith [norm_nonneg z₁,norm_nonneg z₂]
-    have hk := norm_integral_sargosPlanarKernelTerm_le_one ha hb c d ξ η
-    exact (mul_le_mul hz hk (norm_nonneg _) (by norm_num)).trans_eq (by norm_num)
+    exact (mul_le_mul hz (norm_integral_sargosPlanarKernelTerm_le_one ha hb c d ξ η) (norm_nonneg _) (by norm_num)).trans_eq (by norm_num)
   · have hcut : a ≤ |ξ| ∨ b ≤ |η| := by
       by_cases hx : |ξ| ≤ a
       · right
@@ -72,7 +80,7 @@ theorem sargosWeightedPlanarIntegral_le_nearPairs {ι : Type*}
           sargosPlanarKernelTerm a b c d (u p.1-u p.2) (v p.1-v p.2) α γ‖ :=
       norm_sum_le _ _
     _ ≤ ∑ p ∈ S ×ˢ S,
-        if |u p.1-u p.2| ≤ a ∧ |v p.1-v p.2| ≤ b then (1 : ℝ) else 0 := by
+        if |u p.1-u p.2| ≤ a ∧ |v p.1-v p.2| ≤ b then 1 else 0 := by
       apply Finset.sum_le_sum
       intro p hp
       have hpI := Finset.mem_product.mp hp

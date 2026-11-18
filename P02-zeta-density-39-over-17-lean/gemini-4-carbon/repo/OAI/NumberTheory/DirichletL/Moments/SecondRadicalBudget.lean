@@ -8,12 +8,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical Topology
 namespace SevenEighths.CenteredMomentSecondRadicalBudget
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open CenteredMomentSecondRadicalFamily CenteredMomentSecondMovingSupport
-open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalNonunit
-open CenteredMomentSecondCanonicalLedger CenteredMomentSecondHeightFamily
-open CenteredMomentCanonicalFirst CenteredMomentChildRows CenteredMomentPartitionNorm
-open CenteredMomentHeckeColumnWindow RayFourExpansion CenteredMomentCommonSupport CenteredMomentSupport
+open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss CenteredMomentSecondRadicalFamily CenteredMomentSecondMovingSupport CenteredMomentSecondCanonical CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalLedger CenteredMomentSecondHeightFamily CenteredMomentCanonicalFirst CenteredMomentChildRows CenteredMomentPartitionNorm CenteredMomentHeckeColumnWindow RayFourExpansion CenteredMomentCommonSupport CenteredMomentSupport
 local notation "O" => ActualEisensteinCubic.O
 
 def fixedFactor : ℕ := (Ideal.span {(12:O)}).absNorm*
@@ -32,12 +27,12 @@ theorem fixedFactor_pos : 0<fixedFactor := by
 
 theorem child_modulus_bound (η : Character) (χ : RayCharacter) :
     (childCharacter η χ).modulus.absNorm≤η.modulus.absNorm*(Ideal.span {(12:O)}).absNorm := by
-  have hn : η.modulus*Ideal.span {(12:O)}≠0 := mul_ne_zero η.modulus_ne_bot
+  have hn : η.modulus*Ideal.span {12}≠0 := mul_ne_zero η.modulus_ne_bot
     (Ideal.span_singleton_eq_bot.not.mpr (by norm_num))
-  have hd : (childCharacter η χ).modulus∣η.modulus*Ideal.span {(12:O)} := by
+  have hd : (childCharacter η χ).modulus∣η.modulus*Ideal.span {12} := by
     apply Ideal.dvd_iff_le.mpr
     exact le_inf Ideal.mul_le_left Ideal.mul_le_right
-  simpa only [map_mul] using Nat.le_of_dvd
+  simpa using Nat.le_of_dvd
     (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hn)) (map_dvd Ideal.absNorm hd)
 
 theorem active_radical_dvd (C D : Ideal O) (hC : Supported C) (hD : Supported D)
@@ -90,15 +85,8 @@ theorem exists_second_budgeted_family (η : Character) (χ : RayCharacter)
   obtain ⟨τ,hN,he,ht⟩ := exists_second_radical_family η χ C D hC U
   refine ⟨τ,he,ht,?_⟩
   intro hD hCD w hne
-  have h1 := child_modulus_bound η χ
-  have h2 := active_radical_norm_bound C D hC hD hCD U w hne
   apply hN.trans
-  calc
-    _≤(η.modulus.absNorm*(Ideal.span {(12:O)}).absNorm)*
-      (Ideal.span {fixedBadMask}).absNorm*(Ideal.span {(72:O)}).absNorm*
-      ((∏P∈U,P.val).absNorm*(Ideal.span {nonunitFrequencyGenerator C D U}).absNorm) :=
-      Nat.mul_le_mul (Nat.mul_le_mul_right _ (Nat.mul_le_mul_right _ h1)) h2
-    _=_ := by unfold fixedFactor;ring
+  exact (Nat.mul_le_mul (Nat.mul_le_mul_right _ (Nat.mul_le_mul_right _ (child_modulus_bound η χ))) (active_radical_norm_bound C D hC hD hCD U w hne)).trans_eq (by unfold fixedFactor;ring)
 
 theorem conductor_log_bound (η τ : Character) (A B : Ideal O) (hA : A≠0) (hB : B≠0)
     (hN : τ.modulus.absNorm≤η.modulus.absNorm*fixedFactor*A.absNorm*B.absNorm)

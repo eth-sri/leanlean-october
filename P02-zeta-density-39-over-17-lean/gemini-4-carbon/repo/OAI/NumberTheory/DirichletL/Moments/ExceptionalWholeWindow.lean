@@ -6,13 +6,11 @@ public import OAI.NumberTheory.DirichletL.Moments.ExceptionalIndexedWindow
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
 open MeasureTheory
+open scoped Classical BigOperators SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentExceptionalWholeWindow
-open CenteredMomentExceptionalIndexedWindow CenteredMomentPlainWindowEnergy
-open CenteredMomentRowNorm CenteredMomentSmooth CenteredMomentHeckeColumnWindow
-open CenteredMomentHeckeWindowEnergy HeckeFamily FourierBridge
+open CenteredMomentExceptionalIndexedWindow CenteredMomentPlainWindowEnergy CenteredMomentRowNorm CenteredMomentSmooth CenteredMomentHeckeColumnWindow CenteredMomentHeckeWindowEnergy HeckeFamily FourierBridge
 local notation "O" => ActualEisensteinCubic.O
 
 theorem rowPolynomial_factor {α:Type*}(S:Finset α)(a:α→O)(c:α→ℂ)(v:ℂ)(z:O):

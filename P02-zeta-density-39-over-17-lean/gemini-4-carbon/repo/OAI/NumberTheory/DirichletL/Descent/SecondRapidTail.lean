@@ -32,9 +32,8 @@ theorem full_second_rapid_correlated_tail (Lcap tau saving : ℝ)
   obtain ⟨s,Ct,hCt,htail⟩ := full_second_correlated_tail order
   refine ⟨s,(4*128^4)*Ct,by positivity,?_⟩
   intro ι _ p hp _ hg hinj hc F Ψ hΨ m c d hd Hcol W Z B Y L R hZ hB hY hL hy hyi hl hcol hsupp hR
-  have hz : 0<Z := zero_lt_one.trans_le hZ
   have he := htail p hp hg hinj hc F Ψ hΨ m c d hd Hcol W B Y (Z^tau) L R
-    hB hY (Real.rpow_pos_of_pos hz _).le hL hcol hsupp hR
+    hB hY (Real.rpow_pos_of_pos (zero_lt_one.trans_le hZ) _).le hL hcol hsupp hR
   apply he.trans
   have hh := horder Z Y L B (Ct*s.sup (schwartzSeminormFamily ℝ ℝ ℂ) W)
     hZ hY (zero_le_one.trans hL) hB (mul_nonneg hCt.le (apply_nonneg _ _)) hy hyi hl

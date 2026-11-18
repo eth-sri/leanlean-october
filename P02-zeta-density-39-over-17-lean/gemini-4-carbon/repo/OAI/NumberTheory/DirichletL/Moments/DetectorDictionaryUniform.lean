@@ -19,27 +19,22 @@ theorem compact_family_seminorm
     (J : Set (ℝ×ℝ)) (hJ : IsCompact J)
     (G : (ℝ×ℝ)→𝓢(ℝ,ℂ)) (hG : ∀p x,G p x=F p x) (k n : ℕ) :
     ∃C : ℝ,0<C ∧ ∀p∈J,SchwartzMap.seminorm ℝ k n (G p)≤C := by
-  have hc := (section_iteratedDeriv_smooth F hF n).continuous.norm
-  obtain ⟨M,hM⟩ := (hJ.prod isCompact_Icc).bddAbove_image hc.continuousOn
+  obtain ⟨M,hM⟩ := (hJ.prod isCompact_Icc).bddAbove_image ((section_iteratedDeriv_smooth F hF n).continuous.norm).continuousOn
   refine ⟨1+L^k*(|M|+1),by positivity,?_⟩
   intro p hp
   apply SchwartzMap.seminorm_le_bound' ℝ k n _ (by positivity)
   intro x
-  have he : (G p : ℝ→ℂ)=F p := funext (hG p)
-  rw [he]
+  rw [(funext (hG p))]
   by_cases hx : x∈Icc (-L) L
   · have hnorm : ‖iteratedDeriv n (F p) x‖≤|M|+1 := by
-      have hb := hM (Set.mem_image_of_mem _ (show (p,x)∈J×ˢIcc (-L) L from ⟨hp,hx⟩))
-      exact hb.trans (by linarith [le_abs_self M])
+      exact (hM (Set.mem_image_of_mem _ (show (p,x)∈J×ˢIcc (-L) L from ⟨hp,hx⟩))).trans (by linarith [le_abs_self M])
     have hxp : ‖x‖^k≤L^k := by
       apply pow_le_pow_left₀ (norm_nonneg _)
       simpa only [Real.norm_eq_abs,abs_le,Set.mem_Icc] using hx
     exact (mul_le_mul hxp hnorm (norm_nonneg _) (pow_nonneg hL k)).trans (by linarith)
   · have hout : iteratedDeriv n (F p) x=0 := by
       by_contra hn
-      have hx' := (subset_tsupport (iteratedDeriv n (F p))) hn
-      have hh := (CubicReflectionKernel.tsupport_iteratedDeriv_subset (F p) n) hx'
-      exact hx ((closure_minimal (hs p) isClosed_Icc) hh)
+      exact hx ((closure_minimal (hs p) isClosed_Icc) ((CubicReflectionKernel.tsupport_iteratedDeriv_subset (F p) n) ((subset_tsupport (iteratedDeriv n (F p))) hn)))
     rw [hout,norm_zero,mul_zero]
     positivity
 

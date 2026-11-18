@@ -20,12 +20,11 @@ lemma physicalRows_common_finset {α : Type*} (C : CalibrationData) (W0 W1 : ℝ
     ∃R : Finset PhysicalRowIndex,∀k∈F,∀r,r∉R→physicalRowWeight C W0 W1 (X k) (Y k) r=0 := by
   have hf (k : {k // k∈F}) := physicalRowWeight_finite_support C W0 W1 hW0 hW1
     (X k.val) (Y k.val) (hX k.val k.property) (hY k.val k.property)
-  let R := F.attach.biUnion (fun k=>(hf k).toFinset)
-  refine ⟨R,?_⟩
+  refine ⟨(F.attach.biUnion (fun k=>(hf k).toFinset)),?_⟩
   intro k hk r hr
   by_contra hn
   apply hr
-  exact Finset.mem_biUnion.mpr ⟨⟨k,hk⟩,by simp,by simpa only [Set.Finite.mem_toFinset,Function.mem_support] using hn⟩
+  exact Finset.mem_biUnion.mpr ⟨⟨k,hk⟩,by simp,by simpa using hn⟩
 
 theorem physical_selected_gaussian_reassembly {ι α : Type*} [Fintype ι]
     (W : ι→ℝ→ℂ) (V : SchwartzMap ℝ ℂ) (hV : HasCompactSupport (V:ℝ→ℂ))

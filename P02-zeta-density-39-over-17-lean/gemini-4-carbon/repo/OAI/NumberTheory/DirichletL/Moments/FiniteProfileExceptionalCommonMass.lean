@@ -9,10 +9,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptionalCommon
-open HeckeFamily CenteredMomentCommonLinearNormalization CenteredMomentCommonRadialData
-open CenteredMomentCommonExceptionalCost CenteredMomentCommonAllocationSum
-open CenteredMomentExceptionalAmplitudePair CenteredMomentAllocatedDetectorAmplitude
-open CenteredMomentCommonExceptionalMass CenteredMomentFiniteProfileExceptional
+open HeckeFamily CenteredMomentCommonLinearNormalization CenteredMomentCommonRadialData CenteredMomentCommonExceptionalCost CenteredMomentCommonAllocationSum CenteredMomentExceptionalAmplitudePair CenteredMomentAllocatedDetectorAmplitude CenteredMomentCommonExceptionalMass CenteredMomentFiniteProfileExceptional
 local notation "O" => HeckeFamily.O
 variable {ι:Type*} [Fintype ι] [DecidableEq ι] {wlo whi:ℝ}
 lemma common_pair_profile_bound (Sprofile:Finset (ℕ×ℕ)) (s v:Input ι)(C D R:Ideal O)(hC:C≠0)(hD:D≠0)
@@ -21,9 +18,7 @@ lemma common_pair_profile_bound (Sprofile:Finset (ℕ×ℕ)) (s v:Input ι)(C D 
       profileMass Sprofile (commonData s C R B) (commonData v D R E) p q J≤
         profileMass Sprofile s.toData v.toData p q J*frozenProfile s*frozenProfile v/
           ((Ideal.absNorm C:ℝ)*Ideal.absNorm D):=by
-  have hs:=scalar_profile_volume s C R hC B
-  have hv:=scalar_profile_volume v D R hD E
-  have hprod:=mul_le_mul hs hv
+  have hprod:=mul_le_mul (scalar_profile_volume s C R hC B) (scalar_profile_volume v D R hD E)
     (mul_nonneg (mul_nonneg (norm_nonneg _) (slotControl_nonneg _)) (Real.sqrt_nonneg _))
     (div_nonneg (mul_nonneg (mul_nonneg (slotControl_nonneg _) (frozenProfile_nonneg _))
       (Real.sqrt_nonneg _)) (Nat.cast_nonneg _))
@@ -58,7 +53,6 @@ theorem common_profile_mass (δ:ℝ)(hδ:0<δ):
         (Nat.cast_nonneg _) (mul_nonneg hK.le (Real.rpow_nonneg (Nat.cast_nonneg _) _))) hA
     _=_:=by
       rw [Real.mul_rpow (Nat.cast_nonneg _) (Nat.cast_nonneg _)]
-      dsimp only [A]
       ring
 
 end SevenEighths.CenteredMomentFiniteProfileExceptionalCommon

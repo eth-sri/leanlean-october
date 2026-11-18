@@ -21,8 +21,7 @@ theorem mem_reflectionNatBand (L H : ℝ) (m : ℕ) :
   · intro hm
     apply Finset.mem_filter.mpr
     refine ⟨Finset.mem_Icc.mpr ⟨by have := hm.1; omega, ?_⟩, hm⟩
-    have hh := hm.2.2.trans (Nat.le_ceil (4*H/(Real.pi*L)))
-    exact_mod_cast hh
+    exact_mod_cast (hm.2.2.trans (Nat.le_ceil (4*H/(Real.pi*L))))
 
 theorem sum_reflectionBand_eq_nat {E : Type*} [AddCommMonoid E]
     (L H : ℝ) (f : ℤ → E) :
@@ -33,16 +32,12 @@ theorem sum_reflectionBand_eq_nat {E : Type*} [AddCommMonoid E]
     apply (mem_reflectionNatBand L H _).2
     simpa only [Int.toNat_of_nonneg hb.1.le] using hb
   · intro m hm n hn he
-    have hm0 := ((mem_reflectionBand L H m).1 hm).1.le
-    have hn0 := ((mem_reflectionBand L H n).1 hn).1.le
-    have hh := congrArg (fun x : ℕ => (x : ℤ)) he
-    simpa only [Int.toNat_of_nonneg hm0, Int.toNat_of_nonneg hn0] using hh
+    simpa only [Int.toNat_of_nonneg (((mem_reflectionBand L H m).1 hm).1.le), Int.toNat_of_nonneg (((mem_reflectionBand L H n).1 hn).1.le)] using (congrArg (fun x : ℕ => (x : ℤ)) he)
   · intro n hn
     refine ⟨(n : ℤ), (mem_reflectionBand L H _).2 ((mem_reflectionNatBand L H n).1 hn), ?_⟩
     simp
   · intro m hm
-    have hm0 := ((mem_reflectionBand L H m).1 hm).1.le
-    simp only [Int.toNat_of_nonneg hm0]
+    simp only [Int.toNat_of_nonneg (((mem_reflectionBand L H m).1 hm).1.le)]
 
 def dyadicExponents (L H : ℝ) : Finset ℕ := (reflectionNatBand L H).image Nat.log2
 
@@ -55,8 +50,7 @@ theorem log2_block_bounds {m : ℕ} (hm : 0 < m) : 2^m.log2 ≤ m ∧ m < 2*(2^m
     simpa only [pow_succ, mul_comm] using hh
 
 theorem mem_dyadicExponents (L H : ℝ) (j : ℕ) :
-    j ∈ dyadicExponents L H ↔ ∃ m ∈ reflectionNatBand L H, m.log2 = j := by
-  exact Finset.mem_image
+    j ∈ dyadicExponents L H ↔ ∃ m ∈ reflectionNatBand L H, m.log2 = j := Finset.mem_image
 
 theorem dyadicExponent_scale_bounds {L H : ℝ} (hL : 0 < L) (_hH : 0 < H)
     {j : ℕ} (hj : j ∈ dyadicExponents L H) :
@@ -133,8 +127,7 @@ theorem natBand_filter_log2 (L H : ℝ) (j : ℕ) :
       omega
     exact ⟨(log2_eq_iff_block hmpos).1 hj, hm⟩
   · rintro ⟨hb, hm⟩
-    have hmpos : 0 < m := (by positivity : 0 < 2^j).trans_le hb.1
-    exact ⟨hm, (log2_eq_iff_block hmpos).2 hb⟩
+    exact ⟨hm, (log2_eq_iff_block ((by positivity : 0 < 2^j).trans_le hb.1)).2 hb⟩
 
 theorem dirichletPhase_add (x a b : ℝ) :
     dirichletPhase x (a+b) = dirichletPhase x a * dirichletPhase x b := by
@@ -175,8 +168,7 @@ theorem fiber_phaseSum_eq {L : ℝ} (hL : 0 < L) (H v r : ℝ) (j : ℕ) :
   · simp only [hqb, ↓reduceIte, blockCoefficient]
     have hM : (0 : ℝ) < (2^j : ℕ) := by positivity
     have hqpos : (0 : ℝ) < q := by
-      have hle := (Finset.mem_Ico.mp hq).1
-      have : 0 < q := (by positivity : 0 < 2^j).trans_le hle
+      have : 0 < q := (by positivity : 0 < 2^j).trans_le ((Finset.mem_Ico.mp hq).1)
       exact_mod_cast this
     have he : (q : ℝ)*L = ((q : ℝ)/(2^j : ℕ))*(((2^j : ℕ) : ℝ)*L) := by field_simp
     rw [sub_eq_add_neg, dirichletPhase_add]

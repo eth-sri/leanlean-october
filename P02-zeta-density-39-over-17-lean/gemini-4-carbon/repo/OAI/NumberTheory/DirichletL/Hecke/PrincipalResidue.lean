@@ -33,7 +33,7 @@ theorem coefficients_sum_positive (χ : Character) (hχ : χ.residue=1) :
   refine ⟨(Nat.card (coordinateQuotientHom χ).ker : ℝ) * Fintype.card (O ⧸ χ.modulus)ˣ, ?_, ?_⟩
   · exact mul_pos (Nat.cast_pos.mpr (Nat.card_pos (α := (coordinateQuotientHom χ).ker)))
       (Nat.cast_pos.mpr (Fintype.card_pos (α := (O ⧸ χ.modulus)ˣ)))
-  · simpa only [Complex.ofReal_mul, Complex.ofReal_natCast] using heq
+  · simpa using heq
 
 theorem principal_residue_positive (χ : Character) (hχ : χ.residue=1) :
     ∃ R : ℝ, 0<R ∧ HeckeOrigin.poleRemoved χ 1=(R : ℂ) := by

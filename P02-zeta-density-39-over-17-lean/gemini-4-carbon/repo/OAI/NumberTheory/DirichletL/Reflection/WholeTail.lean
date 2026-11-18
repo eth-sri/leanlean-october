@@ -46,28 +46,23 @@ theorem original_family_whole_tail (lo hi : ℝ) (hlo : 0<lo) (A : ℕ)
   intro φ σ _ _ F K hK S jF Pset D s hc hN hbase hchar hj hprod hPad θ X T QK QP r aw hX hT hQK hQP hKr hPr hr haw
   let : Finite Eisˣ := PrimaryIdealUnitReindex.finite_units
   let : Fintype Eisˣ := Fintype.ofFinite _
-  let J := retainedDyads (familyRawScale F s X QK QP) (16*T)
   let rr := fun K => r K*shapeArgument (primaryGenerator K)
   let aa := fun P => aw P*shapeArgument (primaryGenerator P)
   let E := C*(1+‖θ‖)^degree*((Ideal.absNorm (∏ i,F.ideal i):ℝ)*QK*QP)*
     T^(-(A:ℝ))*(familyRawScale F s X QK QP^2)⁻¹
-  have hb (v : Eisˣ) :
-      ‖(∑' i,literalDyadicRow F K hK S jF Pset D s hc v i W θ X rr aa)-
-        ∑ i∈J,literalDyadicRow F K hK S jF Pset D s hc v i W θ X rr aa‖≤Pset.card*E :=
-    hbound F K hK S jF Pset D s hc hN hbase hchar hj hprod v θ X T QK QP rr aa hX hT hQK hQP hKr hPr
+  have hb (v : Eisˣ) := hbound F K hK S jF Pset D s hc hN hbase hchar hj hprod v θ X T QK QP rr aa hX hT hQK hQP hKr hPr
       (by simpa only [rr,row_shape_weight_norm r K hK] using hr)
       (fun P hp => by simpa only [aa,slot_shape_weight_norm aw P (hPad P hp)] using haw P hp)
   have hcard : Fintype.card Eisˣ=6 := by
     rw [←Nat.card_eq_fintype_card]
     exact PrimaryIdealUnitReindex.card_units_eq_six
-  rw [literalWholeRow_eq_dyadic F K hK S jF Pset D s hc hN hbase hchar hj hprod W lo hi hlo hWs hW θ X hX r aw]
-  rw [←mul_sub,norm_mul, norm_mul,stratumShapeFactor_frozen_norm]
+  rw [literalWholeRow_eq_dyadic F K hK S jF Pset D s hc hN hbase hchar hj hprod W lo hi hlo hWs hW θ X hX r aw, ←mul_sub,norm_mul, norm_mul,stratumShapeFactor_frozen_norm]
   simp only [tsum_fintype]
   rw [←Finset.sum_sub_distrib]
   calc
     _ ≤ (‖fixedRadialCoefficientScalar‖*‖s.stratumShapeFactor c‖)*
         ∑ v : Eisˣ,‖(∑' i,literalDyadicRow F K hK S jF Pset D s hc v i W θ X rr aa)-
-          ∑ i∈J,literalDyadicRow F K hK S jF Pset D s hc v i W θ X rr aa‖ := by
+          ∑ i∈(retainedDyads (familyRawScale F s X QK QP) (16*T)),literalDyadicRow F K hK S jF Pset D s hc v i W θ X rr aa‖ := by
       exact mul_le_mul_of_nonneg_left (norm_sum_le _ _) (by positivity)
     _ ≤ (‖fixedRadialCoefficientScalar‖*‖s.stratumShapeFactor c‖)*∑ _v : Eisˣ,Pset.card*E := by
       exact mul_le_mul_of_nonneg_left (Finset.sum_le_sum (fun v _ => hb v)) (by positivity)

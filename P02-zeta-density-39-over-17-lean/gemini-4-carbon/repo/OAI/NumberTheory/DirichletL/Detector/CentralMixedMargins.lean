@@ -15,9 +15,6 @@ lemma balanced_count_range (δ x Δ loss : ℝ) (hδ : 0≤δ) (hd : δ≤5/6)
     let R := Endpoint.balancedRowCount δ (1/2-x)+Δ/4+loss
     1-δ≤R ∧ R≤3/2 := by
   have ht := balanced_cutoff_bounds hδ hd hx hx'
-  have hp0 := mul_nonneg (show 0≤5/6-δ by linarith) (show 0≤Endpoint.balancedCutoff δ (1/2-x)-1 by linarith)
-  have hp1 := mul_le_mul_of_nonneg_left ht.2 (show 0≤5/6-δ by linarith)
-  dsimp only
   unfold Endpoint.balancedRowCount
   constructor <;> nlinarith
 

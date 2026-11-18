@@ -12,11 +12,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstPhysicalSourceSupport
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentCanonicalFirst
-open CenteredMomentFirstPhysicalSource CenteredMomentFirstWholeKernel
-open CenteredMomentCommonRadialData CenteredMomentOriginalCommonHarmonic
-open CenteredMomentSourceLowerSupport CenteredMomentExceptionalAmplitudePair
+open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve CenteredMomentCanonicalFirst CenteredMomentFirstPhysicalSource CenteredMomentFirstWholeKernel CenteredMomentCommonRadialData CenteredMomentOriginalCommonHarmonic CenteredMomentSourceLowerSupport CenteredMomentExceptionalAmplitudePair
 local notation "O"=>ActualEisensteinCubic.O
 local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
@@ -62,8 +58,7 @@ theorem original_column_lower {ι:Type*}[Fintype ι][DecidableEq ι]
 
 lemma log_window_upper (N H M:ℝ)(hN:0<N)(hH:0<H)
     (hlog:|Real.log (N/H)|≤M):N≤Real.exp M*H := by
-  have hl:Real.log (N/H)≤M:=(le_abs_self _).trans hlog
-  have he:=Real.exp_le_exp.mpr hl
+  have he:=Real.exp_le_exp.mpr ((le_abs_self _).trans hlog)
   rw [Real.exp_log (div_pos hN hH)] at he
   exact (div_le_iff₀ hH).mp he
 
@@ -99,8 +94,7 @@ lemma reference_sqrt_lower (NC ND A₀ B₀ a T M:ℝ)
     (hNC:0≤NC)(hND:0≤ND)(hA:0≤A₀)(_hB:0≤B₀)(ha:0≤a)(hT:0≤T)
     (hl:a*T≤NC*Real.exp M*A₀)(hr:a*T≤ND*Real.exp M*B₀):
     a*T≤Real.exp M*Real.sqrt (NC*ND)*(Real.sqrt A₀*Real.sqrt B₀) := by
-  have hh:=mul_le_mul hl hr (mul_nonneg ha hT) (by positivity : 0≤NC*Real.exp M*A₀)
-  have hs:(a*T)^2≤(NC*ND)*(Real.exp M)^2*(A₀*B₀):=by nlinarith [hh]
+  have hs:(a*T)^2≤(NC*ND)*(Real.exp M)^2*(A₀*B₀):=by nlinarith [(mul_le_mul hl hr (mul_nonneg ha hT) (by positivity : 0≤NC*Real.exp M*A₀))]
   have hsqrt:=Real.sqrt_le_sqrt hs
   rw [Real.sqrt_sq (mul_nonneg ha hT),
     Real.sqrt_mul (mul_nonneg (mul_nonneg hNC hND) (sq_nonneg _)),

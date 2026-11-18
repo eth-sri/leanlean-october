@@ -20,10 +20,8 @@ def activeChoices {k : ℕ} (u : FreeRow) (T : Fin k→Finset PrimeIdeal)
 lemma active_card_le_divisors {k : ℕ} (u : FreeRow) (T : Fin k→Finset PrimeIdeal)
     (W : Fin k→ℝ→ℂ) (Y : Fin k→ℝ) :
     (activeChoices u T W Y).card≤(IdealMobiusDivisorSum.idealDivisors (Ideal.span {u.val})).card^k := by
-  let U : Ideal O := Ideal.span {u.val}
-  have hU : U≠0 := Ideal.span_singleton_eq_bot.not.mpr u.property.1
-  let f : activeChoices u T W Y→(Fin k→IdealMobiusDivisorSum.idealDivisors U) :=
-    fun P j=>⟨(P.val j).val.val,(IdealMobiusDivisorSum.mem_idealDivisors hU).mpr
+  let f : activeChoices u T W Y→(Fin k→IdealMobiusDivisorSum.idealDivisors (Ideal.span {u.val})) :=
+    fun P j=>⟨(P.val j).val.val,(IdealMobiusDivisorSum.mem_idealDivisors (Ideal.span_singleton_eq_bot.not.mpr u.property.1)).mpr
       (((Finset.mem_filter.mp P.property).2 j).1.1)⟩
   have hf : Function.Injective f := by
     intro P Q h
@@ -32,8 +30,7 @@ lemma active_card_le_divisors {k : ℕ} (u : FreeRow) (T : Fin k→Finset PrimeI
     apply Subtype.ext
     apply Subtype.ext
     exact congrArg (fun g=>(g j).val) h
-  have hc := Fintype.card_le_of_injective f hf
-  simpa only [Fintype.card_coe,Fintype.card_fun,Fintype.card_fin] using hc
+  simpa using (Fintype.card_le_of_injective f hf)
 
 theorem active_card_subpower (N : ℕ) (eps : ℝ) (heps : 0<eps) :
     ∃C : ℝ,0<C ∧ ∀k : ℕ,k≤N → ∀(u : FreeRow) (T : Fin k→Finset PrimeIdeal)
@@ -44,27 +41,24 @@ theorem active_card_subpower (N : ℕ) (eps : ℝ) (heps : 0<eps) :
   obtain ⟨D,hD,hdiv⟩ := IdealDivisorBound.ideal_divisor_small_power δ hδ
   refine ⟨(max 1 D)^N,by positivity,?_⟩
   intro k hk u T W Y
-  have hU : (Ideal.span {u.val}:Ideal O)≠0 := Ideal.span_singleton_eq_bot.not.mpr u.property.1
+  have hU := Ideal.span_singleton_eq_bot.not.mpr u.property.1
   have hU1 : (1:ℝ)≤(Ideal.span {u.val}:Ideal O).absNorm := by
     exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hU)
-  have hd := hdiv (Ideal.span {u.val}) hU
   have hcard : ((activeChoices u T W Y).card:ℝ)≤
       ((IdealMobiusDivisorSum.idealDivisors (Ideal.span {u.val})).card:ℝ)^k := by
     exact_mod_cast active_card_le_divisors u T W Y
-  have hpow : D^k≤(max 1 D)^N :=
-    (pow_le_pow_left₀ hD.le (le_max_right 1 D) k).trans (pow_le_pow_right₀ (le_max_left 1 D) hk)
   have hke : δ*k≤eps := by
     have hn : (k:ℝ)≤N := by exact_mod_cast hk
     have he : δ*(N+1)=eps := by dsimp [δ];field_simp
     nlinarith
   calc
     _ ≤ ((IdealMobiusDivisorSum.idealDivisors (Ideal.span {u.val})).card:ℝ)^k := hcard
-    _ ≤ (D*((Ideal.span {u.val}:Ideal O).absNorm:ℝ)^δ)^k := pow_le_pow_left₀ (by positivity) hd k
+    _ ≤ (D*((Ideal.span {u.val}:Ideal O).absNorm:ℝ)^δ)^k := pow_le_pow_left₀ (by positivity) (hdiv (Ideal.span {u.val}) hU) k
     _ = D^k*((Ideal.span {u.val}:Ideal O).absNorm:ℝ)^(δ*k) := by
       rw [mul_pow]
       congr 1
       rw [←Real.rpow_natCast,←Real.rpow_mul (by positivity)]
-    _ ≤ _ := mul_le_mul hpow (Real.rpow_le_rpow_of_exponent_le hU1 hke)
+    _ ≤ _ := mul_le_mul ((pow_le_pow_left₀ hD.le (le_max_right 1 D) k).trans (pow_le_pow_right₀ (le_max_left 1 D) hk)) (Real.rpow_le_rpow_of_exponent_le hU1 hke)
       (by positivity) (by positivity)
 
 lemma sum_products_restrict {k : ℕ} (η : Character) (u : FreeRow)

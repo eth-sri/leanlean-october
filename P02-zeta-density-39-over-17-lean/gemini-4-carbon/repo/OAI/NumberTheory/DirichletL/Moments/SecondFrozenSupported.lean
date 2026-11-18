@@ -12,21 +12,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentSecondFrozenSupported
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcreteTraceCRT
-open CenteredMomentSecondSectorColumns CenteredMomentSecondCanonical CenteredMomentCanonicalFirst
-open CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalScalar
-open CenteredMomentLogDyadic CenteredMomentSmooth CenteredMomentSupport
-open CenteredMomentSecondNonexceptional CenteredMomentRestrictedEnergy CenteredMomentSecondScaled
-open CenteredMomentChildAssembly CenteredMomentMobiusRegroup CenteredMomentRowNorm
-open CenteredMomentHeckeColumnWindow CenteredMomentSectorLocalization RayFourExpansion
-open CenteredMomentSecondMaskedWindow CenteredMomentSecondRadicalColumns CenteredMomentSecondWindowBudget
-open CenteredMomentRestrictedSource CenteredMomentFirstSectors CenteredMomentSecondWindowSource
-open CenteredMomentSecondIdealBlockBound CenteredMomentSecondDivisorSupport CenteredMomentSourceRow
-open Filter
-open CenteredMomentCommonHeightEnvelope CenteredMomentCommonRadialData CenteredMomentCommonRadialPointwise
-open CenteredMomentRadialEligibleEnergy CenteredMomentSourceMass CenteredMomentSourceProfileMass
-open CenteredMomentCommonAllocationSum CenteredMomentEligibleEnergy CenteredMomentSecondOriginalChildren
-open CenteredMomentSecondSupportedChildren CenteredMomentSourceLiveColumn
+open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcreteTraceCRT CenteredMomentSecondSectorColumns CenteredMomentSecondCanonical CenteredMomentCanonicalFirst CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalScalar CenteredMomentLogDyadic CenteredMomentSmooth CenteredMomentSupport CenteredMomentSecondNonexceptional CenteredMomentRestrictedEnergy CenteredMomentSecondScaled CenteredMomentChildAssembly CenteredMomentMobiusRegroup CenteredMomentRowNorm CenteredMomentHeckeColumnWindow CenteredMomentSectorLocalization RayFourExpansion CenteredMomentSecondMaskedWindow CenteredMomentSecondRadicalColumns CenteredMomentSecondWindowBudget CenteredMomentRestrictedSource CenteredMomentFirstSectors CenteredMomentSecondWindowSource CenteredMomentSecondIdealBlockBound CenteredMomentSecondDivisorSupport CenteredMomentSourceRow Filter CenteredMomentCommonHeightEnvelope CenteredMomentCommonRadialData CenteredMomentCommonRadialPointwise CenteredMomentRadialEligibleEnergy CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentCommonAllocationSum CenteredMomentEligibleEnergy CenteredMomentSecondOriginalChildren CenteredMomentSecondSupportedChildren CenteredMomentSourceLiveColumn
 local notation "O" => ActualEisensteinCubic.O
 
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
@@ -93,14 +79,12 @@ theorem actual_block_from_supported_children (lo hi:ι→ℝ) (W : 𝓢(ℝ,ℂ)
     hrows Φ H hH hΦ hmajor (core s C Ce Z δ E₁) (core s D Ce Z δ E₂)
     (hcore C E₁ hE₁) (hcore D E₂ hE₂)
   · intro L hL hcap hsf χ v
-    have hNL: (Ideal.absNorm L:ℝ)≤Z^B:=hcap.trans hn
     have hh:=hsource s hlo hhi (sourceRadial (nonexceptional η χ Q m A) Φ H hH hΦ) C hC R0 seed L hsC hsf
-      E₁ Z hE₁ hZ.1 hnC hNL J₁ (τ χ) v (hleft L hL hcap hsf χ v)
+      E₁ Z hE₁ hZ.1 hnC (hcap.trans hn) J₁ (τ χ) v (hleft L hL hcap hsf χ v)
     simpa only [envelope_eq_core,sourceRadial,S,β,A] using hh
   · intro L hL hcap hsf χ v
-    have hNL: (Ideal.absNorm L:ℝ)≤Z^B:=hcap.trans hn
     have hh:=hsource s hlo hhi (sourceRadial (nonexceptional η χ Q m A) Φ H hH hΦ) D hD R0 seed L hsD hsf
-      E₂ Z hE₂ hZ.1 hnD hNL J₂ (τ χ) v (hright L hL hcap hsf χ v)
+      E₂ Z hE₂ hZ.1 hnD (hcap.trans hn) J₂ (τ χ) v (hright L hL hcap hsf χ v)
     simpa only [envelope_eq_core,sourceRadial,S,β,A] using hh
 
 end SevenEighths.CenteredMomentSecondFrozenSupported

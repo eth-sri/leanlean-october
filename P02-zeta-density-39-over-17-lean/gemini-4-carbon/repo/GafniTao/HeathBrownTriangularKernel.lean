@@ -28,8 +28,7 @@ noncomputable def heathBrownTriangularKernel
   heathBrownHat B x * heathBrownHat C y
 
 theorem heathBrownHat_nonneg (B x : ℝ) :
-    0 ≤ heathBrownHat B x := by
-  exact le_max_right _ _
+    0 ≤ heathBrownHat B x := le_max_right _ _
 
 theorem heathBrownHat_le_one
     {B x : ℝ} (hB : 0 ≤ B) :
@@ -37,8 +36,7 @@ theorem heathBrownHat_le_one
   unfold heathBrownHat
   apply max_le
   · have hinv : 0 ≤ B⁻¹ := inv_nonneg.mpr hB
-    have hdist := heathBrownDistanceToInteger_nonneg x
-    nlinarith [mul_nonneg hinv hdist]
+    nlinarith [mul_nonneg hinv (heathBrownDistanceToInteger_nonneg x)]
   · norm_num
 
 theorem heathBrownHat_eq_zero_of_le_distance
@@ -80,8 +78,7 @@ theorem one_quarter_le_heathBrownTriangularKernel
     heathBrownHat_nonneg B x, heathBrownHat_nonneg C y]
 
 theorem heathBrownTriangularKernel_nonneg (B C x y : ℝ) :
-    0 ≤ heathBrownTriangularKernel B C x y := by
-  exact mul_nonneg (heathBrownHat_nonneg B x) (heathBrownHat_nonneg C y)
+    0 ≤ heathBrownTriangularKernel B C x y := mul_nonneg (heathBrownHat_nonneg B x) (heathBrownHat_nonneg C y)
 
 theorem heathBrownTriangularKernel_le_one
     {B C x y : ℝ} (hB : 0 ≤ B) (hC : 0 ≤ C) :
@@ -114,8 +111,7 @@ theorem heathBrownHatFourierCoefficient_zero (B : ℝ) :
 
 theorem heathBrownHatFourierCoefficient_nonneg
     {B : ℝ} (hB : 0 ≤ B) (r : ℤ) :
-    0 ≤ heathBrownHatFourierCoefficient B r := by
-  exact mul_nonneg hB (sq_nonneg _)
+    0 ≤ heathBrownHatFourierCoefficient B r := mul_nonneg hB (sq_nonneg _)
 
 theorem heathBrownTriangularFourierCoefficient_nonneg
     {B C : ℝ} (hB : 0 ≤ B) (hC : 0 ≤ C) (r s : ℤ) :
@@ -140,7 +136,6 @@ theorem one_quarter_le_heathBrownPairKernel_of_mem
     (1 : ℝ) / 4 ≤ heathBrownPairKernel k H f p := by
   rw [mem_heathBrownPairCountOne] at hp
   unfold heathBrownPairKernel
-  have hpowPos (j : ℕ) : 0 < (((H : ℝ) ^ j)⁻¹) := by positivity
   apply one_quarter_le_heathBrownTriangularKernel
     (by positivity : 0 < 4 * (((H : ℝ) ^ (k - 2))⁻¹))
     (by positivity : 0 < 4 * (((H : ℝ) ^ (k - 1))⁻¹))

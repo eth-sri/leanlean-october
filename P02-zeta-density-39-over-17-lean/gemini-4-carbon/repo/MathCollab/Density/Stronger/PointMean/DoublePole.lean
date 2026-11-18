@@ -11,8 +11,7 @@ public import Mathlib.Analysis.Complex.RealDeriv
 
 @[expose] public section
 
-open Complex Set MeasureTheory
-open MathCollab.Density.Contour
+open Complex Set MeasureTheory MathCollab.Density.Contour
 open scoped Topology Interval
 set_option autoImplicit false
 set_option backward.isDefEq.respectTransparency false
@@ -38,7 +37,6 @@ private theorem hIntegral_const_div_sq (C p : ℂ) (x₁ x₂ y : ℝ)
     exact hy (sub_eq_zero.mp hi)
   have hhas : ∀ x : ℝ, HasDerivAt F (F' x) x := by
     intro x
-    dsimp [F, F']
     have hg : HasDerivAt
         (fun x : ℝ => (x : ℂ) + (y : ℂ) * I - p) 1 x := by
       convert (hasDerivAt_ofReal x).add_const ((y : ℂ) * I - p) using 1
@@ -46,16 +44,14 @@ private theorem hIntegral_const_div_sq (C p : ℂ) (x₁ x₂ y : ℝ)
       ring
     convert (hasDerivAt_const x (-C)).div hg (hne x) using 1
     ring
-  have hd : deriv F = F' := funext fun x => (hhas x).deriv
   have hdiff : ∀ x ∈ Set.uIcc x₁ x₂, DifferentiableAt ℝ F x :=
     fun x _ => (hhas x).differentiableAt
   have hcont : Continuous F' := by
-    dsimp [F']
     exact continuous_const.div
       (((continuous_ofReal.add continuous_const).sub continuous_const).pow 2)
       (fun x => pow_ne_zero 2 (hne x))
   simpa [HIntegral, F, F'] using
-    intervalIntegral.integral_deriv_eq_sub' F hd hdiff hcont.continuousOn
+    intervalIntegral.integral_deriv_eq_sub' F (funext fun x => (hhas x).deriv) hdiff hcont.continuousOn
 
 private theorem vIntegral_const_div_sq (C p : ℂ) (x y₁ y₂ : ℝ)
     (hx : x ≠ p.re) :
@@ -72,7 +68,6 @@ private theorem vIntegral_const_div_sq (C p : ℂ) (x y₁ y₂ : ℝ)
     exact hx (sub_eq_zero.mp hr)
   have hhas : ∀ y : ℝ, HasDerivAt F (F' y) y := by
     intro y
-    dsimp [F, F']
     have hg : HasDerivAt
         (fun y : ℝ => (x : ℂ) + (y : ℂ) * I - p) I y := by
       convert ((hasDerivAt_ofReal y).mul_const I).add_const
@@ -82,20 +77,17 @@ private theorem vIntegral_const_div_sq (C p : ℂ) (x y₁ y₂ : ℝ)
       · simp
     convert (hasDerivAt_const y (-C)).div hg (hne y) using 1
     ring
-  have hd : deriv F = F' := funext fun y => (hhas y).deriv
   have hdiff : ∀ y ∈ Set.uIcc y₁ y₂, DifferentiableAt ℝ F y :=
     fun y _ => (hhas y).differentiableAt
   have hcont : Continuous F' := by
-    dsimp [F']
     exact continuous_const.div
       (((continuous_const.add (continuous_ofReal.mul continuous_const)).sub
         continuous_const).pow 2)
       (fun y => pow_ne_zero 2 (hne y))
-  have hFTC := intervalIntegral.integral_deriv_eq_sub' F hd hdiff hcont.continuousOn
+  have hFTC := intervalIntegral.integral_deriv_eq_sub' F (funext fun y => (hhas y).deriv) hdiff hcont.continuousOn
   rw [show F' = fun y : ℝ =>
       I * (C / ((x : ℂ) + (y : ℂ) * I - p) ^ 2) by
     funext y
-    dsimp [F']
     ring] at hFTC
   rw [intervalIntegral.integral_const_mul] at hFTC
   simpa [VIntegral, F, smul_eq_mul] using hFTC

@@ -10,8 +10,7 @@ public import MathCollab.Density.DetectorContour
 
 @[expose] public section
 
-open Complex MeasureTheory Set Filter
-open MathCollab.Density.ZetaGrowth MathCollab.Density.Contour
+open Complex MeasureTheory Set Filter MathCollab.Density.ZetaGrowth MathCollab.Density.Contour
 open scoped BigOperators Topology ContDiff
 set_option autoImplicit false
 noncomputable section
@@ -52,11 +51,10 @@ theorem smoothContourNumerator_differentiable {ψ : ℝ → ℝ} {a b : ℝ}
   have hBase : (N : ℂ) ≠ 0 := by exact_mod_cast hN.ne'
   have hPow : DifferentiableAt ℂ (fun z : ℂ => (N : ℂ)^z) s :=
     differentiableAt_id.const_cpow (Or.inl hBase)
-  have hMellin := (dampedCutoff_mellin_entire hψ ha hs q s (mem_univ s)).differentiableAt
   have hMollifier : DifferentiableAt ℂ (fun z : ℂ => zetaMollifier X (ρ+z)) s :=
     (differentiableAt_zetaMollifier X (ρ+s)).comp s
       ((differentiableAt_const (𝕜 := ℂ) ρ).add differentiableAt_id)
-  exact ((hPow.mul hMellin).mul hMollifier).mul
+  exact ((hPow.mul ((dampedCutoff_mellin_entire hψ ha hs q s (mem_univ s)).differentiableAt)).mul hMollifier).mul
     (differentiableAt_shiftedRegularizedZeta ρ s)
 
 /-- The simple-pole residue formula for an entire numerator. -/

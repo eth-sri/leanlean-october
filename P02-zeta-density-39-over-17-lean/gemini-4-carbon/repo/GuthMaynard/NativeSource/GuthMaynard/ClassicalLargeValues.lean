@@ -24,17 +24,14 @@ separated-set counting, localization, and subdivision.
 /-- A unit complex number which rotates `z` onto the nonnegative real axis. -/
 noncomputable def phaseAlign (z : ℂ) : ℂ := if z = 0 then 1 else conj z / ‖z‖
 
-private theorem norm_conj_eq (z : ℂ) : ‖conj z‖ = ‖z‖ := by
-  change ‖star z‖ = ‖z‖
-  exact norm_star z
+private theorem norm_conj_eq (z : ℂ) : ‖conj z‖ = ‖z‖ := by simp
 
 theorem norm_phaseAlign_le_one (z : ℂ) : ‖phaseAlign z‖ ≤ 1 := by
   by_cases hz : z = 0
   · simp [phaseAlign, hz]
   · rw [phaseAlign, ite_eq_right hz, norm_div]
     rw [norm_conj_eq, norm_real]
-    have hzNorm : ‖z‖ ≠ 0 := norm_ne_zero_iff.mpr hz
-    simp [hzNorm]
+    simp [(norm_ne_zero_iff.mpr hz)]
 
 theorem phaseAlign_mul (z : ℂ) : phaseAlign z * z = (‖z‖ : ℂ) := by
   by_cases hz : z = 0
@@ -46,7 +43,6 @@ theorem phaseAlign_mul (z : ℂ) : phaseAlign z * z = (‖z‖ : ℂ) := by
         rw [← Complex.normSq_eq_norm_sq, Complex.normSq_eq_conj_mul_self]
       _ = (‖z‖ : ℂ) := by
         push_cast
-        have hzNorm : ‖z‖ ≠ 0 := norm_ne_zero_iff.mpr hz
         field_simp
 
 /-- Coordinate Cauchy--Schwarz for a finite complex sum. -/
@@ -234,8 +230,7 @@ private theorem separated_subset_card_le_one_of_diameter
   rw [Finset.card_le_one]
   intro x hx y hy
   by_contra hxy
-  have hlarge := hSep x (hSW hx) y (hSW hy) hxy
-  exact (not_lt_of_ge hlarge) (hdiam x hx y hy)
+  exact (not_lt_of_ge (hSep x (hSW hx) y (hSW hy) hxy)) (hdiam x hx y hy)
 
 /-- A unit-width annulus about a point contains at most one separated point on
 each side. -/
@@ -552,14 +547,13 @@ theorem dyadic_energy_le_length
     (∑ n ∈ dyadicInterval N, ‖a n‖ ^ 2) ≤ (N : ℝ) := by
   calc
     (∑ n ∈ dyadicInterval N, ‖a n‖ ^ 2) ≤
-        ∑ n ∈ dyadicInterval N, (1 : ℝ) := by
+        ∑ n ∈ dyadicInterval N, 1 := by
       apply Finset.sum_le_sum
       intro n hn
       nlinarith [ha n hn, norm_nonneg (a n)]
     _ = (N : ℝ) := by
       simp only [sum_const, nsmul_eq_mul, mul_one, dyadicInterval,
         Nat.card_Ioc]
-      have hle : N ≤ 2 * N := by omega
       norm_num
       omega
 
@@ -899,22 +893,14 @@ theorem classical_montgomery_halasz_huxley_native :
   rcases classical_large_values_with_harmonic with ⟨C₀, hC₀, hBound⟩
   refine ⟨C₀ * (2 + 1 / ε), by positivity, ?_⟩
   intro N T V W a hN hT hNT hV ha hSep hBase hLarge
-  have hraw := hBound N T V W a hN hT hNT hV ha hSep hBase hLarge
-  have hHlog : (((harmonic N : ℚ) : ℝ)) ≤ 1 + Real.log N :=
-    harmonic_le_one_add_log N
-  have hlogPow : Real.log N ≤ (N : ℝ) ^ ε / ε :=
-    Real.log_natCast_le_rpow_div N hε
-  have hpowMono : (N : ℝ) ^ ε ≤ T ^ ε :=
-    Real.rpow_le_rpow (Nat.cast_nonneg N) hNT hε.le
+  have hHlog := harmonic_le_one_add_log N
   have hpowOne : 1 ≤ T ^ ε := by
     simpa only [Real.one_rpow] using Real.rpow_le_rpow (by norm_num : (0 : ℝ) ≤ 1) hT hε.le
   have hfactor : 1 + (((harmonic N : ℚ) : ℝ)) ≤ (2 + 1 / ε) * T ^ ε := by
-    have hdivMono : (N : ℝ) ^ ε / ε ≤ T ^ ε / ε :=
-      div_le_div_of_nonneg_right hpowMono hε.le
     calc
       1 + (((harmonic N : ℚ) : ℝ)) ≤ 2 + Real.log N := by linarith
-      _ ≤ 2 + (N : ℝ) ^ ε / ε := add_le_add_right hlogPow 2
-      _ ≤ 2 + T ^ ε / ε := add_le_add_right hdivMono 2
+      _ ≤ 2 + (N : ℝ) ^ ε / ε := add_le_add_right (Real.log_natCast_le_rpow_div N hε) 2
+      _ ≤ 2 + T ^ ε / ε := add_le_add_right (div_le_div_of_nonneg_right (Real.rpow_le_rpow (Nat.cast_nonneg N) hNT hε.le) hε.le) 2
       _ ≤ 2 * T ^ ε + T ^ ε / ε := by
         simpa only [add_comm] using
           add_le_add_right (by nlinarith [hpowOne] : (2 : ℝ) ≤ 2 * T ^ ε)
@@ -924,15 +910,7 @@ theorem classical_montgomery_halasz_huxley_native :
       T * min ((N : ℝ) / V ^ 2) ((N : ℝ) ^ 4 / V ^ 6) := by
     have hmin : 0 ≤ min ((N : ℝ) / V ^ 2) ((N : ℝ) ^ 4 / V ^ 6) := by positivity
     positivity
-  calc
-    (W.card : ℝ) ≤ C₀ * (1 + (((harmonic N : ℚ) : ℝ))) *
-        ((N : ℝ) ^ 2 / V ^ 2 +
-          T * min ((N : ℝ) / V ^ 2) ((N : ℝ) ^ 4 / V ^ 6)) := hraw
-    _ ≤ (C₀ * (2 + 1 / ε)) * T ^ ε *
-        ((N : ℝ) ^ 2 / V ^ 2 +
-          T * min ((N : ℝ) / V ^ 2) ((N : ℝ) ^ 4 / V ^ 6)) := by
-      have hscale := mul_le_mul_of_nonneg_left hfactor hC₀.le
-      have hmul := mul_le_mul_of_nonneg_right hscale hinner
-      simpa only [mul_assoc, mul_left_comm, mul_comm] using hmul
+  exact ((hBound N T V W a hN hT hNT hV ha hSep hBase hLarge)).trans (by
+      simpa only [mul_assoc, mul_left_comm, mul_comm] using (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hfactor hC₀.le) hinner))
 
 end GuthMaynard.NativeMoment

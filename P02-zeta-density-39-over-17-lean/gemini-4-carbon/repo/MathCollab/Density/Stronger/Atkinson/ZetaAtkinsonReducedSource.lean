@@ -46,7 +46,7 @@ theorem exists_zetaSquareLocalMean_le_atkinson_reduced {δ : ℝ} (hδ : 0 < δ)
       eventually_ge_atTop B₁] with T hscale hTB hTB₁
     intro G hlower hupper
     have hT0 : 0 < T := by linarith [hscale.1]
-    have hG : 0 < G := (Real.rpow_pos_of_pos hT0 δ).trans_le hlower
+    have hG := (Real.rpow_pos_of_pos hT0 δ).trans_le hlower
     have hm := hsource T G hTB hG hupper
     have hk := hplus T G hTB₁ hlower hupper
     simp only [neg_zero, Real.rpow_zero, mul_one] at hk

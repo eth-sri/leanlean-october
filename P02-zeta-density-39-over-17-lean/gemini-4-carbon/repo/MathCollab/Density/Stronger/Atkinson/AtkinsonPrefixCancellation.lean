@@ -23,8 +23,7 @@ maximizer or a terminal-block substitution.
 set_option autoImplicit false
 noncomputable section
 
-open Complex
-open RiemannZeta.GuthMaynard
+open Complex RiemannZeta.GuthMaynard
 
 namespace MathCollab.Density.Stronger.Atkinson
 
@@ -41,7 +40,7 @@ theorem atkinsonIndexBProcessLambdaUpper_pos {M N : ℕ} {t u : ℝ}
   exact mul_pos
     (div_pos Real.pi_pos (mul_pos (sq_pos_of_pos (by exact_mod_cast hM))
       (atkinsonIndexSlopeLower_pos hu (by
-        exact_mod_cast (show 0 < M+N+2 by omega)))))
+        exact_mod_cast (by omega)))))
     (sub_pos.mpr htu)
 
 theorem atkinsonPrefixBProcessMajorant_nonneg {M N : ℕ} {t u : ℝ}
@@ -70,7 +69,7 @@ theorem norm_atkinsonPrefixGram_le_bProcess {M N j : ℕ} {t u : ℝ}
       apply hraw.trans
       unfold atkinsonPrefixBProcessMajorant
       apply mul_le_mul_of_nonneg_right _ (by positivity)
-      have hk : (k:ℝ) ≤ N := by exact_mod_cast (show k ≤ N by omega)
+      have hk : (k:ℝ) ≤ N := by exact_mod_cast (by omega)
       have hm := mul_le_mul_of_nonneg_right hk hU.le
       have hd := div_le_div_of_nonneg_right hm (by positivity : 0 ≤ 2*Real.pi)
       linarith
@@ -94,7 +93,7 @@ theorem atkinsonPrefixFirstDerivativeMajorant_pos {M N : ℕ} {t u : ℝ}
   unfold atkinsonPrefixFirstDerivativeMajorant atkinsonIndexFirstDerivativeLower
   exact div_pos (by positivity)
     (div_pos (mul_pos Real.pi_pos (sub_pos.mpr htu))
-      (mul_pos (by exact_mod_cast (show 0 < M+N+1 by omega))
+      (mul_pos (by exact_mod_cast (by omega))
         (atkinsonIndexSlopeUpper_pos hu (by exact_mod_cast hM))))
 
 theorem norm_atkinsonPrefixGram_le_firstDerivative {M N j : ℕ} {t u : ℝ}
@@ -107,11 +106,10 @@ theorem norm_atkinsonPrefixGram_le_firstDerivative {M N j : ℕ} {t u : ℝ}
   have hδ : 0 < δ := by
     unfold δ atkinsonIndexFirstDerivativeLower
     exact div_pos (mul_pos Real.pi_pos (sub_pos.mpr htu))
-      (mul_pos (by exact_mod_cast (show 0 < M+N+1 by omega))
+      (mul_pos (by exact_mod_cast (by omega))
         (atkinsonIndexSlopeUpper_pos hu (by exact_mod_cast hM)))
   have hb := atkinsonIndexIncreasingDifferenceNat_increment_bounds hu htu hM hblock htUpper
-  have hm := atkinsonIndexIncreasingDifferenceNat_increment_anti hu htu hM hblock htUpper
-  have hδpi : δ ≤ Real.pi := (hb 0 (Nat.zero_le N)).1.trans
+  have hδpi := (hb 0 (Nat.zero_le N)).1.trans
     ((hb 0 (Nat.zero_le N)).2.trans hsmall)
   cases j with
   | zero =>
@@ -124,7 +122,7 @@ theorem norm_atkinsonPrefixGram_le_firstDerivative {M N j : ℕ} {t u : ℝ}
         (fun n hn => by
           have h := (hb n (by omega)).2.trans hsmall
           linarith)
-        (fun n hn => hm n (by omega))
+        (fun n hn => (atkinsonIndexIncreasingDifferenceNat_increment_anti hu htu hM hblock htUpper) n (by omega))
       change ‖atkinsonPrefixGram M (k+1) u t‖ ≤ _ at hraw
       rw [atkinsonPrefixGram_swap,Complex.norm_conj] at hraw
       exact hraw
@@ -144,9 +142,8 @@ theorem atkinsonPrefixFirstDerivativeMajorant_eq_gap {M N : ℕ} {t u : ℝ}
     (hu : 0 < u) (htu : u < t) (hM : 0 < M) :
     atkinsonPrefixFirstDerivativeMajorant M N t u =
       2*((M:ℝ)+(N:ℝ)+1)*atkinsonIndexSlopeUpper u M/(t-u) := by
-  have hs := atkinsonIndexSlopeUpper_pos (x := (M:ℝ)) hu (by exact_mod_cast hM)
-  have hB : (0:ℝ) < (M:ℝ)+(N:ℝ)+1 := by positivity
+  have hB : 0 < (M:ℝ)+(N:ℝ)+1 := by positivity
   unfold atkinsonPrefixFirstDerivativeMajorant atkinsonIndexFirstDerivativeLower
-  field_simp [Real.pi_ne_zero,hs.ne',hB.ne',sub_ne_zero.mpr htu.ne']
+  field_simp [Real.pi_ne_zero,(atkinsonIndexSlopeUpper_pos (x := (M:ℝ)) hu (by exact_mod_cast hM)).ne',hB.ne',sub_ne_zero.mpr htu.ne']
 
 end MathCollab.Density.Stronger.Atkinson

@@ -60,8 +60,7 @@ theorem integrand_vertical_integrable (χ : Character) (W : ℝ → ℂ)
     apply (integrand_differentiableAt χ W a b ha hWs hW D σ freq hD
       (series_differentiableAt_right χ (by simpa using hc))).continuousAt.comp
     fun_prop
-  have hm := (CompletedGauss.compactMellin_vertical_integrable W a b ha hWs hW c).norm
-  apply (hm.mul_const (D^(c+σ-1/2)*eulerBound (c+σ))).mono'
+  apply (((CompletedGauss.compactMellin_vertical_integrable W a b ha hWs hW c).norm).mul_const (D^(c+σ-1/2)*eulerBound (c+σ))).mono'
     hcont.aestronglyMeasurable
   apply ae_of_all
   intro t
@@ -114,9 +113,7 @@ theorem polynomial_finite_shift (χ : Character) (hχ : χ.residue≠1)
   rw [polynomial_mellin χ W a b ha hWs hW D r σ freq hD hr]
   change (1/(2*Real.pi) : ℂ)*(∫ t : ℝ, integrand χ W D σ freq ((r : ℂ)+t*I)) = _
   rw [← integral_add_compl measurableSet_Icc
-    (integrand_vertical_integrable χ W a b ha hWs hW D r σ freq hD hr)]
-  rw [integral_Icc_eq_integral_Ioc, ← intervalIntegral.integral_of_le (by linarith : -T≤T)]
-  rw [finite_rectangle χ hχ W a b ha hWs hW D σ freq l r T hD hz]
+    (integrand_vertical_integrable χ W a b ha hWs hW D r σ freq hD hr), integral_Icc_eq_integral_Ioc, ← intervalIntegral.integral_of_le (by linarith : -T≤T), finite_rectangle χ hχ W a b ha hWs hW D σ freq l r T hD hz]
 
 end SevenEighths.HeckePrimeDyadic
 

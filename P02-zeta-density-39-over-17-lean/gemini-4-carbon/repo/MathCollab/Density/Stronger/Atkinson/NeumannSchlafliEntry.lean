@@ -54,8 +54,7 @@ theorem neumannContourHalfPowers_imaginary_axis (t : ℝ) :
   have hz : z ∈ slitPlane := Or.inl (by simp [z])
   have hc : (1 - (t : ℂ) * I) ^ (-(1 / 2 : ℂ)) =
       conj (z ^ (-(1 / 2 : ℂ))) := by
-    have h := Complex.conj_cpow z (-(1 / 2 : ℂ)) (slitPlane_arg_ne_pi hz)
-    simpa [z, sub_eq_add_neg, map_ofNat] using h
+    simpa [z, sub_eq_add_neg, map_ofNat] using (Complex.conj_cpow z (-(1 / 2 : ℂ)) (slitPlane_arg_ne_pi hz))
   have hn : ‖z ^ (-(1 / 2 : ℂ))‖ = ‖z‖ ^ (-(1 / 2 : ℝ)) := by
     convert Complex.norm_cpow_real z (-(1 / 2 : ℝ)) using 1
     norm_num
@@ -68,7 +67,6 @@ theorem neumannContourHalfPowers_imaginary_axis (t : ℝ) :
     rw [Complex.norm_def]
     congr 1
     simp [z, normSq_apply, pow_two]
-  change (1 - (t : ℂ) * I) ^ (-(1 / 2 : ℂ)) * z ^ (-(1 / 2 : ℂ)) = _
   rw [hc, mul_comm, Complex.mul_conj, Complex.normSq_eq_norm_sq, hs, hzNorm]
 
 theorem neumannContourKernel_imaginary_axis (x t : ℝ) :
@@ -101,7 +99,6 @@ theorem neumannContourHalfPowers_sine {u : ℝ}
   have hp : 0 ≤ 1 + Real.sin u := by linarith
   have hprod : (1 - Real.sin u) * (1 + Real.sin u) = (Real.cos u) ^ 2 := by
     nlinarith [Real.sin_sq_add_cos_sq u]
-  have hmul := Complex.mul_cpow_ofReal_nonneg hm hp (-(1 / 2 : ℂ))
   have hpow : (((Real.cos u) ^ 2 : ℝ) : ℂ) ^ (-(1 / 2 : ℂ)) =
       (((Real.cos u)⁻¹ : ℝ) : ℂ) := by
     have hh := Complex.ofReal_cpow (sq_nonneg (Real.cos u)) (-(1 / 2 : ℝ))
@@ -110,7 +107,7 @@ theorem neumannContourHalfPowers_sine {u : ℝ}
     rw [← hh, Real.rpow_neg (sq_nonneg _), ← Real.sqrt_eq_rpow, Real.sqrt_sq hc.le]
   have hminus : (1 - (Real.sin u : ℂ)) = ((1 - Real.sin u : ℝ) : ℂ) := by push_cast; rfl
   have hplus : (1 + (Real.sin u : ℂ)) = ((1 + Real.sin u : ℝ) : ℂ) := by push_cast; rfl
-  rw [hminus, hplus, ← hmul, ← Complex.ofReal_mul, hprod, hpow]
+  rw [hminus, hplus, ← (Complex.mul_cpow_ofReal_nonneg hm hp (-(1 / 2 : ℂ))), ← Complex.ofReal_mul, hprod, hpow]
   norm_cast
   exact mul_inv_cancel₀ hc.ne'
 
@@ -133,12 +130,11 @@ theorem neumannContourKernel_angular_change (x : ℝ) {a : ℝ}
   apply intervalIntegral.integral_congr
   intro u hu
   rw [uIcc_of_le ha] at hu
-  have hp := neumannContourHalfPowers_sine hu.1 (lt_of_le_of_lt hu.2 ha1)
   simp only [Function.comp_apply, neumannContourKernel, real_smul]
   calc
     _ = Complex.exp (I * (x : ℂ) * Real.sin u) *
         ((Real.cos u : ℂ) * ((1 - (Real.sin u : ℂ)) ^ (-(1 / 2 : ℂ)) *
           (1 + (Real.sin u : ℂ)) ^ (-(1 / 2 : ℂ)))) := by ring
-    _ = _ := by rw [hp, mul_one]
+    _ = _ := by rw [(neumannContourHalfPowers_sine hu.1 (lt_of_le_of_lt hu.2 ha1)), mul_one]
 
 end MathCollab.Density.Stronger.Atkinson

@@ -161,9 +161,8 @@ theorem secondSourceTailCost_bounded_test
             have hr := residualTailCost_bounded_test p hp hg hinj F G E.val (Finset.mem_powerset.mp E.property)
               Ψ hΨ m c d Hcol B Y H lengthScale P A hB hY hH hP hL hcol hsupport
             rw [ite_eq_left hGn] at hr
-            have hc := secondSourceCommonCoefficient_norm_le_one p hp hg hinj Ψ hΨ m c d G E.val
             exact (mul_le_mul_of_nonneg_left hr (norm_nonneg _)).trans
-              (by simpa only [one_mul] using mul_le_mul_of_nonneg_right hc (mul_nonneg (sq_nonneg _) hC))
+              (by simpa only [one_mul] using mul_le_mul_of_nonneg_right (secondSourceCommonCoefficient_norm_le_one p hp hg hinj Ψ hΨ m c d G E.val) (mul_nonneg (sq_nonneg _) hC))
           _ = (G.powerset.card : ℝ)*((128*lengthScale)^2*C) := by
             simp only [Finset.sum_const, Finset.card_univ, Fintype.card_coe, nsmul_eq_mul]
           _ ≤ (128*lengthScale)*((128*lengthScale)^2*C) := mul_le_mul_of_nonneg_right hcard (mul_nonneg (sq_nonneg _) hC)

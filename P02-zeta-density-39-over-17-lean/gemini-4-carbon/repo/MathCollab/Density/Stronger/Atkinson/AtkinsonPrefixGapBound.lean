@@ -21,19 +21,14 @@ holds. The diagonal is the literal prefix length.
 set_option autoImplicit false
 noncomputable section
 
-open Complex
-open RiemannZeta.GuthMaynard
+open Complex RiemannZeta.GuthMaynard
 
 namespace MathCollab.Density.Stronger.Atkinson
 
 theorem norm_atkinsonPrefixGram_le_length (M j : ℕ) (t u : ℝ) :
     ‖atkinsonPrefixGram M j t u‖ ≤ (j:ℝ) := by
   unfold atkinsonPrefixGram
-  calc
-    _ ≤ ∑ i ∈ Finset.range j,
-        ‖unitaryPhase (atkinsonSourcePhase u (M+i)-atkinsonSourcePhase t (M+i))‖ :=
-      norm_sum_le _ _
-    _ = _ := by simp
+  exact (norm_sum_le _ _).trans_eq (by simp)
 
 theorem atkinsonPrefixGramMax_le_length (M N : ℕ) (t u : ℝ) :
     atkinsonPrefixGramMax M N t u ≤ (N:ℝ) := by
@@ -59,9 +54,8 @@ theorem atkinsonPrefixGramMax_le_orderedGap {M N : ℕ} {t u : ℝ}
     (hblock : ((M+N+2:ℕ):ℝ) ≤ u) (htUpper : t ≤ 2*u) :
     atkinsonPrefixGramMax M N t u ≤ atkinsonOrderedPrefixGapMajorant M N t u := by
   have hb := atkinsonPrefixGramMax_le_bProcess hu htu hM hblock htUpper
-  have hl := atkinsonPrefixGramMax_le_length M N t u
   unfold atkinsonOrderedPrefixGapMajorant
-  apply le_min hl
+  apply le_min (atkinsonPrefixGramMax_le_length M N t u)
   split_ifs with hsmall
   · exact le_min hb (atkinsonPrefixGramMax_le_firstDerivative hu htu hM hblock htUpper hsmall)
   · exact hb

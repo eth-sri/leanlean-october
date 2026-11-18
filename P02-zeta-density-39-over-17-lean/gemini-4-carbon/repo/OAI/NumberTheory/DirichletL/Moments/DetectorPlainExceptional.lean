@@ -8,20 +8,11 @@ public import OAI.NumberTheory.DirichletL.Moments.NaturalFixedRaySourceFreeExcep
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap Topology
 open Filter
+open scoped Classical BigOperators SchwartzMap Topology
 
 namespace SevenEighths.CenteredMomentDetectorPlainExceptional
-open HeckeFamily HeckeDyadic HeckeInverseAmplification HeckeRowClosure
-open CenteredMomentDetectorDictionary CenteredMomentDetectorPlainSource
-open CenteredMomentDetectorPlainFiberSource CenteredMomentDetectorEnergyInitialState
-open CenteredMomentRetainedEnergy CenteredMomentSourceRow CenteredMomentSourceMass
-open CenteredMomentUncenteredTerminal CenteredMomentHeckeColumnWindow
-open CenteredMomentSourceRectangleEnergy CenteredMomentRestrictedSource CenteredMomentRestrictedEnergy
-open CenteredMomentNaturalFixedRaySource ProbeHighRowFamily HeckeDetectorRawFiber HeckeDetectorBatch
-open HeckeDetectorCoefficientTransfer HeckeDetectorRowwisePolynomial HeckeDetectorDyadicProfiles
-open CenteredMomentPrimeSlot CanonicalQuadraticSieve CenteredMomentRowNorm
-open CenteredMomentSecondHeightFamily ConcreteTraceCRT ActualEisensteinCubic
+open HeckeFamily HeckeDyadic HeckeInverseAmplification HeckeRowClosure CenteredMomentDetectorDictionary CenteredMomentDetectorPlainSource CenteredMomentDetectorPlainFiberSource CenteredMomentDetectorEnergyInitialState CenteredMomentRetainedEnergy CenteredMomentSourceRow CenteredMomentSourceMass CenteredMomentUncenteredTerminal CenteredMomentHeckeColumnWindow CenteredMomentSourceRectangleEnergy CenteredMomentRestrictedSource CenteredMomentRestrictedEnergy CenteredMomentNaturalFixedRaySource ProbeHighRowFamily HeckeDetectorRawFiber HeckeDetectorBatch HeckeDetectorCoefficientTransfer HeckeDetectorRowwisePolynomial HeckeDetectorDyadicProfiles CenteredMomentPrimeSlot CanonicalQuadraticSieve CenteredMomentRowNorm CenteredMomentSecondHeightFamily ConcreteTraceCRT ActualEisensteinCubic
 local notation "O"=>HeckeFamily.O
 variable {M:Ideal O}{H:Subgroup (O⧸M)ˣ}{Label Slot:Type*}
 variable {U a ε tstar T allowance:ℝ}{i:ℕ}
@@ -63,7 +54,7 @@ theorem retained_positive_energy_le_source
       exact hkeep u hu) (fun z=>hΦ _) (by
       intro z hz
       obtain ⟨u,hu,rfl⟩:=Finset.mem_image.mp hz
-      have hn:‖eisEmbedding u.val‖^2/U∈Set.Icc (0:ℝ) 1:=by
+      have hn:‖eisEmbedding u.val‖^2/U∈Set.Icc 0 1:=by
         refine ⟨div_nonneg (sq_nonneg _) hU.le,(div_le_one hU).mpr ?_⟩
         rw [eisEmbedding_norm_sq_eq_absNorm_span]
         exact F.row_norm u hu

@@ -26,7 +26,6 @@ theorem exists_smoothPowered_height {σ T t X Y : ℝ} (j : ℤ) (e r : ℕ) {k 
       ‖detectingPolynomial (2^l*(smoothHalfScale j e)^k) (smoothPoweredCoefficient X Y j e r k) t‖ := by
   obtain ⟨l, hl, hh⟩ := exists_smoothTaylor_powered_piece X Y t j e r hk
   refine ⟨l, hl, ?_⟩
-  have hlogpos : 0 < Real.log T := by linarith
   have hkpos : (0 : ℝ) < k := by exact_mod_cast hk
   have hkKR : (k : ℝ) ≤ K+1 := by exact_mod_cast (show k ≤ K+1 by omega)
   have hlK : l ≤ K := by have := Finset.mem_range.mp hl; omega
@@ -41,10 +40,7 @@ theorem exists_smoothPowered_height {σ T t X Y : ℝ} (j : ℤ) (e r : ℕ) {k 
     exact (Real.rpow_le_rpow_of_exponent_le (one_le_pow₀ (by norm_num)) hσ).trans
       (by simpa only [Real.rpow_one] using htwo)
   have hden : (k : ℝ)*(192*Real.log T)^k ≤ (K+1)*192^K*(Real.log T)^K := by
-    have hp := pow_le_pow_right₀ (show (1 : ℝ) ≤ 192*Real.log T by linarith) hkK
-    have hm := mul_le_mul hkKR hp (by positivity) (by positivity)
-    simpa only [mul_pow, mul_assoc] using hm
-  have hpow := pow_le_pow_left₀ (by positivity : 0 ≤ (smoothHalfScale j e : ℝ)^σ/(192*Real.log T)) hD k
+    simpa only [mul_pow, mul_assoc] using (mul_le_mul hkKR (pow_le_pow_right₀ (show (1 : ℝ) ≤ 192*Real.log T by linarith) hkK) (by positivity) (by positivity))
   calc
     _ ≤ ((2 : ℝ)^K*((smoothHalfScale j e : ℝ)^σ)^k)/(smoothHeightConstant K*(Real.log T)^K) :=
       div_le_div_of_nonneg_right hscale (by unfold smoothHeightConstant; positivity)
@@ -55,21 +51,17 @@ theorem exists_smoothPowered_height {σ T t X Y : ℝ} (j : ℤ) (e r : ℕ) {k 
       div_le_div_of_nonneg_left (by positivity) (by positivity) hden
     _ = ((smoothHalfScale j e : ℝ)^σ/(192*Real.log T))^k/(k : ℝ) := by rw [div_pow]; ring
     _ ≤ ‖genericTaylorPolynomial (smoothShortCoefficient X Y ((2 : ℝ)^j))
-        (smoothHalfScale j e) r t‖^k/(k : ℝ) := div_le_div_of_nonneg_right hpow hkpos.le
+        (smoothHalfScale j e) r t‖^k/(k : ℝ) := div_le_div_of_nonneg_right (pow_le_pow_left₀ (by positivity : 0 ≤ (smoothHalfScale j e : ℝ)^σ/(192*Real.log T)) hD k) hkpos.le
     _ ≤ _ := hh
 
 theorem smoothHeightConstant_eventually {η : ℝ} (hη : 0 < η) (K : ℕ) :
     ∀ᶠ T : ℝ in atTop, smoothHeightConstant K*(Real.log T)^K ≤ T^η := by
   have hl := (isLittleO_log_rpow_rpow_atTop (K : ℝ) hη).tendsto_div_nhds_zero
   simp only [Real.rpow_natCast] at hl
-  filter_upwards [eventually_ge_atTop (1 : ℝ),
-    hl.eventually (gt_mem_nhds (show (0 : ℝ) < 1/smoothHeightConstant K by
+  filter_upwards [eventually_ge_atTop 1,
+    hl.eventually (gt_mem_nhds (show 0 < 1/smoothHeightConstant K by
       exact one_div_pos.mpr (smoothHeightConstant_pos K)))] with T hT hh
-  have hb := (div_lt_iff₀ (by positivity : 0 < T^η)).mp hh
-  have hm := mul_le_mul_of_nonneg_left hb.le (smoothHeightConstant_pos K).le
-  calc
-    _ ≤ smoothHeightConstant K*((1/smoothHeightConstant K)*T^η) := hm
-    _ = _ := by field_simp [(smoothHeightConstant_pos K).ne']
+  exact ((mul_le_mul_of_nonneg_left ((div_lt_iff₀ (by positivity : 0 < T^η)).mp hh).le (smoothHeightConstant_pos K).le)).trans_eq (by field_simp [(smoothHeightConstant_pos K).ne'])
 
 def normalizedSmoothPoweredCoefficient (η T X Y : ℝ) (j : ℤ) (e r k n : ℕ) : ℂ :=
   smoothPoweredCoefficient X Y j e r k n / ((T^η : ℝ) : ℂ)

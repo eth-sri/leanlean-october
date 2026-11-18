@@ -8,14 +8,11 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators SchwartzMap
 open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
+open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseInitialDyadicAssembly
 local notation "Eis"=>ActualEisensteinCubic.O
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
-open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
-open InverseInitialEnergyCallerWindows InverseInitialProfile InverseInitialClippedColumns
-open InverseInitialKernelBridge InverseSecondChildWindows
+open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource InverseInitialEnergyCallerWindows InverseInitialProfile InverseInitialClippedColumns InverseInitialKernelBridge InverseSecondChildWindows
 
 variable {ι:Type*}[DecidableEq ι](p:ι→Eis)
 
@@ -47,9 +44,8 @@ theorem actual_live_caps
     apply Finset.mem_biUnion.mpr
     refine ⟨x,hx,?_⟩
     exact Finset.mem_image.mpr ⟨(N,M),Finset.mem_product.mpr ⟨hN,hM⟩,rfl⟩
-  have hv:=pointSource_valid pool S hdiv hf _ hpnt
   have hc:=InverseInitialRetainedSupport.live_ideal_caps p hp hcop hg hpr Ψ j marks W₁ W₂ Φ
-    Z D m b hZ hW₁ hW₂ (sourcePoint x N M) hv ρ (mul_ne_zero_iff.mp hn).2
+    Z D m b hZ hW₁ hW₂ (sourcePoint x N M) (pointSource_valid pool S hdiv hf _ hpnt) ρ (mul_ne_zero_iff.mp hn).2
   intro i
   refine ⟨sourceNorms_one_le p hp x (hf x hx) i,?_⟩
   fin_cases i

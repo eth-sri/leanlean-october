@@ -50,8 +50,7 @@ theorem box_time_square_integrable (W : Finset ℝ) : Integrable (fun t => boxTi
 theorem box_time_square_bound (W : Finset ℝ)
     (hsep : ∀ t ∈ W, ∀ u ∈ W, t ≠ u → 1 ≤ |t-u|) :
     (∫ t, boxTimeDensity W t^2) ≤ 32*(W.card:ℝ) := by
-  have hh := point_smoothing_energy W 0 hsep
-  simpa only [sub_zero,← box_time_cast,Complex.norm_real,Real.norm_eq_abs,sq_abs] using hh
+  simpa only [sub_zero,← box_time_cast,Complex.norm_real,Real.norm_eq_abs,sq_abs] using (point_smoothing_energy W 0 hsep)
 
 theorem box_time_fourier (W : Finset ℝ) (ξ : ℝ) :
     𝓕 (fun t => (boxTimeDensity W t:ℂ)) ξ =
@@ -74,8 +73,7 @@ theorem box_pair_fourier (W : Finset ℝ) (ξ : ℝ) :
   rw [finite_smooth_fourier _ _ energy_pair_box_integrable,
     box_time_fourier,energy_pair_box_fourier,mul_pow]
   congr 1
-  have hh := centered_pair_character W 0 ξ
-  simpa only [mul_zero,sub_zero,centeredCharacter,finite_time_fourier] using hh
+  simpa only [mul_zero,sub_zero,centeredCharacter,finite_time_fourier] using (centered_pair_character W 0 ξ)
 
 /-- The ordinary Fourier fourth moment of the fixed smoothing is bounded
 by the literal closed-boundary discrete additive energy. -/

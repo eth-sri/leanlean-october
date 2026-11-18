@@ -7,16 +7,14 @@ public import Mathlib.MeasureTheory.Constructions.Polish.Basic
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
 open MeasureTheory Set
+open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
+open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
 local notation "O" => HeckeFamily.O
 
 @[fun_prop] lemma measurable_const_cpow {α : Type*} [MeasurableSpace α]
-    (Q : ℂ) (hQ : Q≠0) (f : α→ℂ) (hf : Measurable f) : Measurable (fun t=>Q^(f t)) :=
-  ((continuous_id.const_cpow (Or.inl hQ)).measurable).comp hf
+    (Q : ℂ) (hQ : Q≠0) (f : α→ℂ) (hf : Measurable f) : Measurable (fun t=>Q^(f t)) := by fun_prop
 
 lemma rowClosedMarked_measurable {α : Type*} [MeasurableSpace α]
     (p : O) (hp : Prime p) [(Ideal.span {p}:Ideal O).IsMaximal]
@@ -95,7 +93,7 @@ lemma continuedCompensatedLocal_measurable {α : Type*} [MeasurableSpace α]
 
 lemma LFunction_measurable (χ : Character) : Measurable (LFunction χ) := by
   apply measurable_of_countable_not_continuousAt
-  apply ((Set.finite_singleton (1:ℂ)).insert 0).countable.mono
+  apply ((Set.finite_singleton 1).insert 0).countable.mono
   intro s hs
   by_contra hn
   have h0 : s≠0 := fun h=>hn (by simp [h])
@@ -104,7 +102,7 @@ lemma LFunction_measurable (χ : Character) : Measurable (LFunction χ) := by
 
 lemma regularizedL_measurable (χ : Character) : Measurable (HeckeReciprocal.regularizedL χ) := by
   apply measurable_of_countable_not_continuousAt
-  apply (Set.countable_singleton (0:ℂ)).mono
+  apply (Set.countable_singleton 0).mono
   intro s hs
   by_contra hn
   exact hs (HeckeReciprocal.regularizedL_differentiableAt χ (by simpa using hn)).continuousAt

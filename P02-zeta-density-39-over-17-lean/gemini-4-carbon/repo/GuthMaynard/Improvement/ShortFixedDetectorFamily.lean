@@ -19,10 +19,9 @@ theorem fixedShortDetectorIndices_card_le {T : ℝ}
     (hD : (shortDetectorDyadicCount T : ℝ) ≤ 5*Real.log T)
     (hJ : (detectorTaylorCutoff T+1 : ℝ) ≤ 12*Real.log T) :
     ((fixedShortDetectorIndices T).card : ℝ) ≤ 60*(Real.log T)^2 := by
-  have h := mul_le_mul hD hJ (by positivity) (by positivity)
   calc
     _ = (shortDetectorDyadicCount T : ℝ)*((detectorTaylorCutoff T : ℝ)+1) := by simp [fixedShortDetectorIndices]
-    _ ≤ (5*Real.log T)*(12*Real.log T) := h
+    _ ≤ (5*Real.log T)*(12*Real.log T) := (mul_le_mul hD hJ (by positivity) (by positivity))
     _ = _ := by ring
 
 /-- Quantitative tail control at the actual family cutoff. -/

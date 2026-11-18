@@ -37,9 +37,8 @@ theorem heathBrownDerivativeMajorant_expand (k : ℕ) (η lambda : ℝ)
 theorem heathBrownDerivativeMajorant_mono_length {k : ℕ} (hk : 3 ≤ k)
     {η L N lambda : ℝ} (hη : 0 ≤ η) (hL : 0 < L) (hLN : L ≤ N) (hlambda : 0 < lambda) :
     heathBrownDerivativeMajorant k η L lambda ≤ heathBrownDerivativeMajorant k η N lambda := by
-  have hN := hL.trans_le hLN
   rw [heathBrownDerivativeMajorant_expand k η lambda hL,
-    heathBrownDerivativeMajorant_expand k η lambda hN]
+    heathBrownDerivativeMajorant_expand k η lambda (hL.trans_le hLN)]
   have hd := (heathBrownDerivativeExponent_bounds hk).2.2
   apply add_le_add
   · apply add_le_add
@@ -98,8 +97,7 @@ theorem heathBrownDerivativeMajorant_le_powerMajorant {k : ℕ} (hk : 3 ≤ k)
           N^(1-heathBrownDerivativeExponent k) + N*T^(-heathBrownInverseExponent k)) := by
     nlinarith [mul_nonneg h₁ hb,mul_nonneg h₁ hd,
       mul_nonneg h₃ ha,mul_nonneg h₃ hb]
-  have hm := mul_le_mul_of_nonneg_left hinner (Real.rpow_nonneg hN.le η)
-  convert hm using 1 <;> ring
+  convert (mul_le_mul_of_nonneg_left hinner (Real.rpow_nonneg hN.le η)) using 1 <;> ring
 
 theorem one_le_heathBrownPowerMajorant {k : ℕ} (hk : 3 ≤ k)
     {η T N : ℝ} (hη : 0 ≤ η) (hT : 0 < T) (hN : 1 ≤ N) :

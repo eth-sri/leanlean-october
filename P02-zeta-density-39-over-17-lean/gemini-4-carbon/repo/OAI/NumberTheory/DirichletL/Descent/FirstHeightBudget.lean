@@ -33,10 +33,9 @@ theorem first_unequal_prefactor (Z:ℝ)(hZ:0<Z)
       (Real.sqrt ((Z^(firstKappa M r ell V delta A₁ B R)*Real.exp ((9/2:ℝ)*(eta*Real.log Z)))⁻¹)*
        Real.sqrt ((Z^(firstKappa M r ell V delta A₂ B R)*Real.exp ((9/2:ℝ)*(eta*Real.log Z)))⁻¹))=1:=by
   rw [first_physical_scalar Z hZ]
-  have he:Real.exp ((9/2:ℝ)*(eta*Real.log Z))=Z^((9/2:ℝ)*eta):=by
+  have he:Real.exp ((9/2)*(eta*Real.log Z))=Z^((9/2)*eta):=by
     rw [Real.rpow_def_of_pos hZ];congr 1;ring
-  rw [he,←Real.rpow_add hZ,←Real.rpow_add hZ,←Real.rpow_add hZ]
-  rw [←Real.rpow_neg hZ.le,←Real.rpow_neg hZ.le,Real.sqrt_eq_rpow,Real.sqrt_eq_rpow,
+  rw [he,←Real.rpow_add hZ,←Real.rpow_add hZ,←Real.rpow_add hZ, ←Real.rpow_neg hZ.le,←Real.rpow_neg hZ.le,Real.sqrt_eq_rpow,Real.sqrt_eq_rpow,
     ←Real.rpow_mul hZ.le,←Real.rpow_mul hZ.le,←Real.rpow_add hZ,←Real.rpow_add hZ]
   convert Real.rpow_zero Z using 1
   congr 1

@@ -24,8 +24,7 @@ second-derivative van der Corput theorem.  The lower and upper curvature
 parameters are explicit functions of the physical height gap and index box.
 -/
 
-open Set
-open RiemannZeta.GuthMaynard
+open Set RiemannZeta.GuthMaynard
 
 namespace MathCollab.Density.Stronger.Atkinson
 

@@ -25,13 +25,12 @@ theorem polynomialGaussian_even (n : ℕ) (y : ℝ) :
 theorem polynomialGaussian_integrable (n : ℕ) : Integrable (polynomialGaussian n) := by
   have hp := (integrable_rpow_mul_exp_neg_mul_sq
     (by norm_num : (0 : ℝ)<1) (show (-1 : ℝ)<(n : ℝ) by linarith [Nat.cast_nonneg (α := ℝ) n])).norm
-  have hg := integrable_exp_neg_mul_sq (b := 1) (by norm_num)
   have he : (fun y : ℝ => ‖y^(n : ℝ)*Real.exp (-1*y^2)‖) =
       fun y : ℝ => |y|^n*Real.exp (-(y^2)) := by
     funext y
     simp [Real.rpow_natCast, norm_mul, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
   rw [he] at hp
-  convert hg.add hp using 1
+  convert (integrable_exp_neg_mul_sq (b := 1) (by norm_num)).add hp using 1
   funext y
   simp [polynomialGaussian, add_mul]
 
@@ -40,11 +39,8 @@ theorem polynomialGaussian_tendsto (n : ℕ) :
   have hp := tendsto_rpow_abs_mul_exp_neg_mul_sq_cocompact
     (by norm_num : (0 : ℝ)<1) (n : ℝ)
   rw [cocompact_eq_atBot_atTop] at hp
-  have hp' := hp.mono_left le_sup_right
-  have hg : Tendsto (fun y : ℝ => Real.exp (-(y^2))) atTop (𝓝 0) :=
-    Real.tendsto_exp_atBot.comp (tendsto_neg_atTop_atBot.comp (tendsto_pow_atTop (by decide)))
   change Tendsto (fun y : ℝ => (1+|y|^n)*Real.exp (-(y^2))) atTop (𝓝 0)
-  simpa [Real.rpow_natCast, add_mul] using hg.add hp'
+  simpa [Real.rpow_natCast, add_mul] using (Real.tendsto_exp_atBot.comp (tendsto_neg_atTop_atBot.comp (tendsto_pow_atTop (by decide)))).add (hp.mono_left le_sup_right)
 
 theorem vertical_integral_eq_of_even_envelope (F : ℂ → ℂ) {a b C : ℝ}
     (E : ℝ → ℝ) (hE : Integrable E) (heven : ∀ y, E (-y)=E y)

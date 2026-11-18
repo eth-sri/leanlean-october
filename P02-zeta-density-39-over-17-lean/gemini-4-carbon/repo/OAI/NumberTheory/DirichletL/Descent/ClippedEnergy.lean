@@ -66,9 +66,7 @@ theorem canonical_clipped_energy
     have hb:1+‖θ+t‖≤(1+‖θ‖)*(1+‖t‖):=by
       have hh:=norm_add_le θ t
       nlinarith [mul_nonneg (norm_nonneg θ) (norm_nonneg t)]
-    calc
-      _≤E*((1+‖θ‖)*(1+‖t‖))^(2*J):=mul_le_mul_of_nonneg_left (pow_le_pow_left₀ (by positivity) hb _) hE
-      _= _:=by rw [mul_pow,pow_mul];ring
+    exact (mul_le_mul_of_nonneg_left (pow_le_pow_left₀ (by positivity) hb _) hE).trans_eq (by rw [mul_pow,pow_mul];ring)
   have hden:Integrable (fun t:ℝ=>(1+‖t‖)^J*‖b t‖):=by
     simpa only [b,density_norm] using AnalyticBridge.schwartz_fourier_one_plus_integrable g J
   have hh:=CenteredMomentHeckeWindowEnergy.finite_weighted_integral_energy b phi

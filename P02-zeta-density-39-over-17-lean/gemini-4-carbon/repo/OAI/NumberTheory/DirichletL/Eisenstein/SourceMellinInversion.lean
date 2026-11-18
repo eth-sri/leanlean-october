@@ -7,80 +7,12 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 
 namespace CubicEisenstein
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
-
-open ActualEisensteinCubic ConcreteTraceCRT CubicKubota
+open CubicKubota
+open scoped MatrixGroups
 local notation "Eis" => ActualEisensteinCubic.O
 
 lemma source_period_of_three_supported
@@ -89,10 +21,10 @@ lemma source_period_of_three_supported
     cubicSourceResidualFunction (upperPoint (z+eisEmbedding a) v hv)=
       cubicSourceResidualFunction (upperPoint z v hv) := by
   rw [cubicSourceResidualFunction_bessel,cubicSourceResidualFunction_bessel]
-  apply congrArg (fun t:ℂ=>(3*(Real.pi:ℂ))*constantArithmeticResidue*(v:ℂ)^(2/3:ℂ)+t)
+  apply congrArg (fun t:ℂ=>(3*(Real.pi:ℂ))*constantArithmeticResidue*(v:ℂ)^(2/3)+t)
   apply tsum_congr
   intro h
-  by_cases hd:(3:Eis)∣h
+  by_cases hd:3∣h
   · obtain ⟨b,rfl⟩:=hd
     have hp:ShortDraftTrace.breveE (cuspFrequency (3*b)*eisEmbedding a)=1:=by
       have he:cuspFrequency (3*b)*eisEmbedding a=cuspFrequency b*(3*eisEmbedding a):=by
@@ -107,7 +39,7 @@ lemma source_period_of_three_supported
 theorem exists_source_coefficient_not_three :
     ∃h:Eis,¬(3:Eis)∣h ∧ sourceResidualFourierCoefficient h≠0 := by
   by_contra hn
-  have hs:∀h:Eis,¬(3:Eis)∣h→sourceResidualFourierCoefficient h=0:=by
+  have hs:∀h:Eis,¬3∣h→sourceResidualFourierCoefficient h=0:=by
     intro h hh
     by_contra hne
     exact hn ⟨h,hh,hne⟩
@@ -122,8 +54,6 @@ end CubicEisenstein
 namespace CompletedGauss
 
 section
-open Filter MeasureTheory
-open scoped Classical BigOperators Topology FourierTransform SchwartzMap ContDiff
 
 lemma compactMellin_vertical_integrable (V : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
     (hsupp : Function.support V⊆Set.Icc a b) (hV : ContDiff ℝ ∞ V) (σ : ℝ) :
@@ -155,8 +85,6 @@ theorem compactMellin_inversion (V : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
 
 end
 
-open Filter MeasureTheory
-open scoped Classical BigOperators Topology ContDiff
 
 lemma positive_cpow_vertical_norm (r σ t : ℝ) (hr : 0<r) :
     ‖(r:ℂ)^((σ:ℂ)+t*Complex.I)‖=r^σ := by
@@ -227,12 +155,11 @@ theorem weightedMellin_inversion {α : Type*} [Countable α]
       mellin V ((σ:ℂ)+t*Complex.I)*(X:ℂ)^((σ:ℂ)+t*Complex.I)*
         (∑'i,c i*(r i:ℂ)^(-((σ:ℂ)+t*Complex.I))) := by
   let M : ℝ→ℂ := fun t=>(X:ℂ)^((σ:ℂ)+t*Complex.I)*mellin V ((σ:ℂ)+t*Complex.I)
-  have hM : Integrable M := vertical_power_mul_integrable _
+  have hM := vertical_power_mul_integrable _
     (compactMellin_vertical_integrable V a b ha hsupp hV σ) X σ hX
   have hi (i : α) : c i*V (r i/X)=(1/(2*Real.pi):ℂ)*
       ∫t : ℝ,c i*(r i:ℂ)^(-((σ:ℂ)+t*Complex.I))*M t := by
-    rw [compactMellin_inversion V a b ha hsupp hV σ _ (div_pos (hr i) hX)]
-    rw [←mul_assoc,mul_comm (c i),mul_assoc,←integral_const_mul]
+    rw [compactMellin_inversion V a b ha hsupp hV σ _ (div_pos (hr i) hX), ←mul_assoc,mul_comm (c i),mul_assoc,←integral_const_mul]
     congr 1
     apply integral_congr_ae
     exact Filter.Eventually.of_forall (fun t=>by
@@ -248,13 +175,10 @@ theorem weightedMellin_inversion {α : Type*} [Countable α]
 
 end CompletedGauss
 
-open Filter MeasureTheory
-open scoped Classical BigOperators Topology
 
 namespace CompletedGauss
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT
 local notation "O" => ActualEisensteinCubic.O
 
 lemma angularFactor_norm_le_one (a : ActualEisensteinCubic.O) : ‖FiniteGaussPhase.angularFactor a‖≤1 := by
@@ -280,7 +204,6 @@ lemma gaussTwo_norm_le_sqrt (I : Ideal ActualEisensteinCubic.O) (hI : primaryGen
   let ψ := eisTraceModChar ShortDraftTrace.breveE ConcreteBreveE.breveE_period_coordinates n hI
   have hN : 0<(Ideal.absNorm I:ℝ) := by
     exact_mod_cast Nat.pos_of_ne_zero (fun h=>primaryGenerator_ne_zero_ideal I hI (Ideal.absNorm_eq_zero_iff.mp h))
-  have hn : ‖eisEmbedding n‖=Real.sqrt (Ideal.absNorm I:ℝ) := primaryGenerator_norm I hI
   have hsum : ‖∑x : ActualEisensteinCubic.O⧸Ideal.span {n},cubicRow I hI (e x)*ψ x‖≤(Ideal.absNorm I:ℝ) := by
     calc
       _≤∑x : ActualEisensteinCubic.O⧸Ideal.span {n},‖cubicRow I hI (e x)*ψ x‖ := norm_sum_le _ _
@@ -295,7 +218,7 @@ lemma gaussTwo_norm_le_sqrt (I : Ideal ActualEisensteinCubic.O) (hI : primaryGen
         rw [←Nat.card_eq_fintype_card,←Submodule.cardQuot_apply,←Ideal.absNorm_apply,
           (primaryGenerator_spec I hI).1]
   change ‖(∑x : ActualEisensteinCubic.O⧸Ideal.span {n},cubicRow I hI (e x)*ψ x)/(‖eisEmbedding n‖:ℂ)‖≤_
-  rw [norm_div,Complex.norm_real,Real.norm_eq_abs,abs_of_nonneg (norm_nonneg _),hn]
+  rw [norm_div,Complex.norm_real,Real.norm_eq_abs,abs_of_nonneg (norm_nonneg _),(primaryGenerator_norm I hI)]
   apply (div_le_iff₀ (Real.sqrt_pos.mpr hN)).mpr
   simpa only [Real.mul_self_sqrt hN.le] using hsum
 
@@ -317,25 +240,20 @@ lemma cubeWeight_norm_le_one (Ψ : ActualEisensteinCubic.O→*ℂ) (hΨ : ∀a,�
   · subst I; simp
   have hN : (1:ℝ)≤(Ideal.absNorm I:ℝ) := by
     exact_mod_cast Nat.one_le_iff_ne_zero.mpr (fun h=>hI (Ideal.absNorm_eq_zero_iff.mp h))
-  have hn : 0<(Ideal.absNorm I:ℝ) := lt_of_lt_of_le zero_lt_one hN
   change ‖star (FiniteGaussPhase.angularFactor (primaryGenerator I))^3*
     Ψ (primaryGenerator I)^3/(Ideal.absNorm I:ℂ)‖≤1
   rw [norm_div,norm_mul,norm_pow,norm_star,norm_pow,Complex.norm_natCast]
-  apply (div_le_one hn).mpr
+  apply (div_le_one (lt_of_lt_of_le zero_lt_one hN)).mpr
   apply le_trans _ hN
-  calc
-    _≤(1:ℝ)*1 := mul_le_mul
+  exact (mul_le_mul
       (pow_le_one₀ (norm_nonneg _) (angularFactor_norm_le_one _))
-      (pow_le_one₀ (norm_nonneg _) (hΨ _)) (pow_nonneg (norm_nonneg _) _) zero_le_one
-    _=1 := one_mul _
+      (pow_le_one₀ (norm_nonneg _) (hΨ _)) (pow_nonneg (norm_nonneg _) _) zero_le_one).trans_eq (one_mul _)
 
 end
 
-open Filter MeasureTheory
-open scoped Classical BigOperators Topology ContDiff
 
 section
-open ActualEisensteinCubic CubicEisenstein
+open CubicEisenstein
 local notation "O" => ActualEisensteinCubic.O
 
 abbrev CompletedMellinIndex := NonzeroIdeal×NonzeroIdeal
@@ -356,12 +274,11 @@ lemma completedMellinCoefficient_norm_le_one (Ψ : ActualEisensteinCubic.O→*�
     (p : CompletedMellinIndex) : ‖completedMellinCoefficient Ψ p‖≤1 := by
   rw [completedMellinCoefficient,norm_mul]
   exact (mul_le_mul_of_nonneg_right (columnWeight_div_sqrt_norm_le_one Ψ hΨ p.1.1)
-    (norm_nonneg _)).trans (by simpa only [one_mul] using cubeWeight_norm_le_one Ψ hΨ p.2.1)
+    (norm_nonneg _)).trans (by simpa using cubeWeight_norm_le_one Ψ hΨ p.2.1)
 
 lemma nonzeroIdeal_norm_rpow_summable (σ : ℝ) (hσ : 1<σ) :
     Summable (fun I : NonzeroIdeal=>(Ideal.absNorm I.1:ℝ)^(-σ)) := by
-  have h := (fullIdealWeight_summable_norm (σ:ℂ) (by simpa using hσ)).subtype (fun I=>I≠0)
-  apply h.congr
+  apply ((fullIdealWeight_summable_norm (σ:ℂ) (by simpa using hσ)).subtype (fun I=>I≠0)).congr
   intro I
   change ‖fullIdealWeight (σ:ℂ) I.1‖=(Ideal.absNorm I.1:ℝ)^(-σ)
   rw [fullIdealWeight,ite_eq_right I.2]
@@ -380,9 +297,7 @@ lemma completedMellinLength_rpow (p : CompletedMellinIndex) (σ : ℝ) :
 theorem completedMellinCoefficient_summable (Ψ : ActualEisensteinCubic.O→*ℂ) (hΨ : ∀a,‖Ψ a‖≤1)
     (σ : ℝ) (hσ : 1<σ) :
     Summable (fun p=>‖completedMellinCoefficient Ψ p‖*(completedMellinLength p)^(-σ)) := by
-  have hI := nonzeroIdeal_norm_rpow_summable σ hσ
-  have hJ := nonzeroIdeal_norm_rpow_summable (3*σ) (by linarith)
-  have hp := hI.mul_of_nonneg hJ (fun I=>Real.rpow_nonneg (nonzeroIdeal_norm_pos I).le _)
+  have hp := (nonzeroIdeal_norm_rpow_summable σ hσ).mul_of_nonneg (nonzeroIdeal_norm_rpow_summable (3*σ) (by linarith)) (fun I=>Real.rpow_nonneg (nonzeroIdeal_norm_pos I).le _)
     (fun J=>Real.rpow_nonneg (nonzeroIdeal_norm_pos J).le _)
   apply hp.of_nonneg_of_le
   · intro p; exact mul_nonneg (norm_nonneg _) (Real.rpow_nonneg (completedMellinLength_pos p).le _)
@@ -399,13 +314,11 @@ theorem completedT_eq_mellin_index (Ψ : ActualEisensteinCubic.O→*ℂ) (W : �
     (hW : HasCompactSupport W) (X : ℝ) (hX : 0<X) :
     completedT Ψ W X=∑'p : CompletedMellinIndex,
       completedMellinCoefficient Ψ p*Vstar W (completedMellinLength p/X) := by
-  have hfull := completedT_summable Ψ W hW X hX
   have hinj : Function.Injective (fun p : CompletedMellinIndex=>(p.1.1,p.2.1)) := by
     intro p q h
     apply Prod.ext <;> apply Subtype.ext
     · exact congrArg Prod.fst h
     · exact congrArg Prod.snd h
-  have hsub := hfull.comp_injective hinj
   calc
     completedT Ψ W X=∑'I : NonzeroIdeal,∑'J : Ideal ActualEisensteinCubic.O,summand Ψ W X I.1 J := by
       symm
@@ -424,7 +337,7 @@ theorem completedT_eq_mellin_index (Ψ : ActualEisensteinCubic.O→*ℂ) (W : �
       intro J hJ hz
       subst J
       exact hJ (summand_zero_right Ψ W X I.1)
-    _=∑'p : CompletedMellinIndex,summand Ψ W X p.1.1 p.2.1 := hsub.tsum_prod.symm
+    _=∑'p : CompletedMellinIndex,summand Ψ W X p.1.1 p.2.1 := ((completedT_summable Ψ W hW X hX).comp_injective hinj).tsum_prod.symm
     _=_ := rfl
 
 theorem completedT_initial_mellin (Ψ : ActualEisensteinCubic.O→*ℂ) (hΨ : ∀a,‖Ψ a‖≤1)
@@ -436,9 +349,7 @@ theorem completedT_initial_mellin (Ψ : ActualEisensteinCubic.O→*ℂ) (hΨ : �
         completedDirichletSeries Ψ ((2:ℂ)+t*Complex.I) := by
   let : Countable ActualEisensteinCubic.O := ActualEisensteinCubic.latticeCoordEquiv.injective.countable
   let : Countable (Ideal ActualEisensteinCubic.O) := ConcretePrimeRowBridge.idealGenerator_injective.countable
-  have hWc : HasCompactSupport W :=
-    HasCompactSupport.of_support_subset_isCompact isCompact_Icc hsupp
-  rw [completedT_eq_mellin_index Ψ W hWc X hX]
+  rw [completedT_eq_mellin_index Ψ W (HasCompactSupport.of_support_subset_isCompact isCompact_Icc hsupp) X hX]
   have h := weightedMellin_inversion completedMellinLength completedMellinLength_pos
     (completedMellinCoefficient Ψ) (3/2)
     (completedMellinCoefficient_summable Ψ hΨ (3/2) (by norm_num))
@@ -456,12 +367,11 @@ theorem completedT_initial_mellin (Ψ : ActualEisensteinCubic.O→*ℂ) (hΨ : �
 end
 
 section
-open ActualEisensteinCubic CubicEisenstein
+open CubicEisenstein
 local notation "O" => ActualEisensteinCubic.O
 
 end
 
-open ActualEisensteinCubic
 local notation "O" => ActualEisensteinCubic.O
 
 lemma weighted_vertical_series_continuous {α : Type*}
@@ -507,15 +417,11 @@ theorem completedT_initial_mellin_integrable (Ψ : ActualEisensteinCubic.O→*�
     simpa only [Complex.VerticalIntegrable,Complex.ofReal_div,Complex.ofReal_ofNat] using
       (compactMellin_vertical_integrable (Vstar W) a b ha (Vstar_support W a b hsupp)
         (Vstar_contDiff W a b ha hsupp hW) (3/2))
-  have hbase := vertical_power_mul_integrable _ hmi X (3/2) hX
-  have hi := hbase.mul_bdd hc.aestronglyMeasurable (Filter.Eventually.of_forall hb)
   simpa only [Complex.ofReal_div,Complex.ofReal_ofNat,completedDirichletSeries_initial,
-    mul_comm (mellin (Vstar W) _)] using hi
+    mul_comm (mellin (Vstar W) _)] using ((vertical_power_mul_integrable _ hmi X (3/2) hX).mul_bdd hc.aestronglyMeasurable (Filter.Eventually.of_forall hb))
 
 end CompletedGauss
 
-open scoped BigOperators Classical
-open Finset AddChar MulChar EisensteinEmbedding
 
 namespace CompletedGauss
 local notation "Eis" => ActualEisensteinCubic.O
@@ -572,10 +478,9 @@ theorem tsum_dualIdealDyads
         f (i.1,⟨n.val,((mem_dualIdealDyad _ _).mp n.property).1⟩,
           ⟨b.val,((mem_dualIdealDyad _ _).mp b.property).1⟩) := by
   let g := f ∘ dualDyadicIndexEquiv.symm
-  have hg : Summable g := dualDyadicIndexEquiv.symm.summable_iff.mpr hf
   calc
     _ = ∑'x,g x := (dualDyadicIndexEquiv.symm.tsum_eq f).symm
-    _ = ∑'i,∑'x,g ⟨i,x⟩ := Summable.tsum_sigma' (fun _=>hasSum_fintype _ |>.summable) hg
+    _ = ∑'i,∑'x,g ⟨i,x⟩ := Summable.tsum_sigma' (fun _=>hasSum_fintype _ |>.summable) (dualDyadicIndexEquiv.symm.summable_iff.mpr hf)
     _ = _ := by
       apply tsum_congr
       intro i

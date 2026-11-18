@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.ExponentPairCorrelationSum
 public import LaterPairs.Native.ExponentPairSourceWeyl
 
@@ -70,7 +79,7 @@ theorem source_exponentialSum_differencing_bound
   intro F T N a L H hN hNT hH hHN ha hb hF
   have hNpos : 0 < N := by linarith
   have hT := hNpos.trans_le hNT
-  have hHpos : 0 < (H : ℝ) := by exact_mod_cast (show 0 < H by omega)
+  have hHpos : 0 < (H : ℝ) := by exact_mod_cast (by omega)
   have hHN' : (H : ℝ) ≤ N := hHN.trans (by nlinarith)
   have hL : (L : ℝ)+1 ≤ 2*N := by
     push_cast at hb

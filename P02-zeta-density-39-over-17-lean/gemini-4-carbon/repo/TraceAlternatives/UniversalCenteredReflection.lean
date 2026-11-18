@@ -21,10 +21,8 @@ theorem reflection_local_energy_universal {η : ℝ} (hη : 0 < η) :
   refine ⟨240*C,by positivity,?_⟩
   intro T t₀ L H hT hL hH hHT W hW _hSep
   have hTp : 0<T := by linarith
-  have hRoot : 0<Real.sqrt T := Real.sqrt_pos.mpr hTp
-  have hLp : 0<L := hRoot.trans_le hL
-  let X : ℝ := H/L
-  have hX : 0<X := div_pos hH hLp
+  have hLp := (Real.sqrt_pos.mpr hTp).trans_le hL
+  let X := H/L
   have hXbound : X≤2*Real.sqrt T := by
     apply (div_le_iff₀ hLp).mpr
     nlinarith [Real.sq_sqrt hTp.le,
@@ -42,19 +40,16 @@ theorem reflection_local_energy_universal {η : ℝ} (hη : 0 < η) :
       apply (div_le_div_iff₀ (by positivity : 0<Real.pi*L) hLp).mpr
       nlinarith [Real.pi_gt_three,mul_pos hH hLp]
     have hMT : (M:ℝ)≤4*Real.sqrt T := by linarith
-    have h := hBound T t₀ hT M hM0 hMT W hW
     have hMono : universalShortProfile T M W.card (discreteAdditiveEnergy W) ≤ 8*S := by
       have hh := universalShortProfile_mono hTp.le (by linarith : T≤2*T)
         (Nat.cast_nonneg M) hMU (Nat.cast_nonneg W.card) (Nat.cast_nonneg (discreteAdditiveEnergy W))
-      have hs := universalShortProfile_scale (by norm_num : (1:ℝ)≤2) hTp.le hX.le
+      have hs := universalShortProfile_scale (by norm_num : (1:ℝ)≤2) hTp.le (div_pos hH hLp).le
         (Nat.cast_nonneg W.card) (Nat.cast_nonneg (discreteAdditiveEnergy W))
-      norm_num only [pow_succ,pow_zero,mul_one] at hs
+      norm_num at hs
       exact hh.trans hs
-    have hGrouped : completePairEnergy M W ≤ C*T^η*
-        universalShortProfile T M W.card (discreteAdditiveEnergy W) := h
     exact (reflection_local_pair_le_three hH M W).trans
       ((mul_le_mul_of_nonneg_left
-        (hGrouped.trans (mul_le_mul_of_nonneg_left hMono (by positivity)))
+        (((hBound T t₀ hT M hM0 hMT W hW)).trans (mul_le_mul_of_nonneg_left hMono (by positivity)))
         (by norm_num : (0:ℝ)≤3)).trans_eq (by ring))
   open MathCollab.Density in
   calc

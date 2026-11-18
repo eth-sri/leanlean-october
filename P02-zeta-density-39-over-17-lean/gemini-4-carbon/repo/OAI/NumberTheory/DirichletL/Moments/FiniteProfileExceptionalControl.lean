@@ -9,8 +9,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptional
-open FourierBridge JointLogSeparation CompletedHeight CenteredMomentLattice
-open EisensteinSchwartzPoisson
+open FourierBridge JointLogSeparation CompletedHeight CenteredMomentLattice EisensteinSchwartzPoisson
 
 theorem frequencyTwist_source_control (S : Finset (ℕ × ℕ)) :
     ∃ n : ℕ, ∃ T : Finset (ℕ × ℕ), ∃ C : ℝ, 0 < C ∧
@@ -18,7 +17,7 @@ theorem frequencyTwist_source_control (S : Finset (ℕ × ℕ)) :
         S.sup (schwartzSeminormFamily ℝ ℝ ℂ) (frequencyTwist g t) ≤
           C * T.sup (schwartzSeminormFamily ℝ ℝ ℂ) g * (1 + ‖t‖)^n := by
   let T := S.biUnion fun z => (Finset.range (z.2+1)).image fun i => (z.1,i)
-  let c : ℕ × ℕ → ℝ := fun z => (2:ℝ)^z.2*(1+2*Real.pi)^z.2*(z.2+1)
+  let c : ℕ × ℕ → ℝ := fun z => 2^z.2*(1+2*Real.pi)^z.2*(z.2+1)
   let C := 1 + ∑ z ∈ S, c z
   have hc (z) : 0 ≤ c z := by dsimp [c]; positivity
   have hC : 0 < C := by
@@ -41,14 +40,13 @@ theorem frequencyTwist_source_control (S : Finset (ℕ × ℕ)) :
     have := Finset.single_le_sum (fun z (_ : z∈S) => hc z) hz
     dsimp [C]; linarith
   calc
-    _ ≤ ((2:ℝ)^z.2*(1+2*Real.pi)^z.2*derivativeSeminormSum g z.1 z.2) *
+    _ ≤ (2^z.2*(1+2*Real.pi)^z.2*derivativeSeminormSum g z.1 z.2) *
         (1+‖t‖)^z.2 := frequencyTwist_seminorm_polynomial g t z.1 z.2
     _ ≤ (c z * T.sup (schwartzSeminormFamily ℝ ℝ ℂ) g) *
         (1+‖t‖)^z.2 := by
-      dsimp only [c]
       exact (mul_le_mul_of_nonneg_right
         (mul_le_mul_of_nonneg_left (hder z hz)
-          (show 0 ≤ (2:ℝ)^z.2*(1+2*Real.pi)^z.2 by positivity))
+          (show 0 ≤ 2^z.2*(1+2*Real.pi)^z.2 by positivity))
         (show 0 ≤ (1+‖t‖)^z.2 by positivity)).trans_eq (by ring)
     _ ≤ (C * T.sup (schwartzSeminormFamily ℝ ℝ ℂ) g) *
         (1+‖t‖)^(S.sup Prod.snd) := by

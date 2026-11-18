@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaExpandedInverseStability
 
 @[expose] public section
@@ -40,7 +50,7 @@ theorem iteratedDeriv_modelPhase_positive_compact_lipschitz
     (fun z hz => (hf z hz).differentiableAt (by simp : (∞ : WithTop ℕ∞) ≠ 0))
     (fun z hz => (hB z hz).trans (le_max_right 1 B))
     (convex_Icc l r) hy hx
-  simpa only [Real.norm_eq_abs] using h
+  simpa using h
 
 def expandedModelPointLower (σ : ℝ) : ℝ := min 1 ((2 : ℝ)^(-σ⁻¹))
 
@@ -61,12 +71,9 @@ theorem modelPhaseInverseSlope_expanded_points
   have hu := modelPhaseInverseSlope_mem hv
   have hw := modelPhaseSlopeRange_positive_window hσ hδ hF hv
   have hlo : 0 < (2 : ℝ)^(-σ)/2 := by positivity
-  have hvp : 0 < v := hlo.trans_le hw.1
-  have hexp : -σ⁻¹ ≤ 0 := neg_nonpos.mpr (inv_nonneg.mpr hσ.le)
-  have hL := Real.rpow_le_rpow_of_nonpos hvp hw.2 hexp
-  have hU := Real.rpow_le_rpow_of_nonpos hlo hw.1 hexp
+  have hexp := neg_nonpos.mpr (inv_nonneg.mpr hσ.le)
   exact ⟨⟨(min_le_left _ _).trans hu.1.le,hu.2.le.trans (le_max_left _ _)⟩,
-    ⟨(min_le_right _ _).trans hL,hU.trans (le_max_right _ _)⟩⟩
+    ⟨(min_le_right _ _).trans (Real.rpow_le_rpow_of_nonpos (hlo.trans_le hw.1) hw.2 hexp),(Real.rpow_le_rpow_of_nonpos hlo hw.1 hexp).trans (le_max_right _ _)⟩⟩
 
 theorem modelPhaseInverse_iteratedDeriv_expanded_reference_error
     {σ : ℝ} (hσ : 0 < σ) (p : ℕ) :
@@ -81,21 +88,15 @@ theorem modelPhaseInverse_iteratedDeriv_expanded_reference_error
     (r := expandedModelPointUpper σ) (expandedModelPointLower_pos σ) σ p
   refine ⟨1+B*A,by nlinarith,?_⟩
   intro F δ P hδ hF hp v hv
-  have hu := modelPhaseInverseSlope_mem hv
   have hw := modelPhaseInverseSlope_expanded_points hσ hδ hF hv
-  have hvpos : 0 < v^(-σ⁻¹) :=
-    (expandedModelPointLower_pos σ).trans_le hw.2.1
-  rw [referenceModelPrimitive_iteratedDeriv σ hvpos p]
-  have he := approximateModelPhase_iteratedDeriv_error hF hu p hp
-  have hd := hdisplacement F δ P hδ hF v hv
-  have h := hLip _ hw.1 _ hw.2
+  rw [referenceModelPrimitive_iteratedDeriv σ ((expandedModelPointLower_pos σ).trans_le hw.2.1) p]
   calc
     _ ≤ |iteratedDeriv (p+1) F (modelPhaseInverseSlope F v)-
         iteratedDeriv p (modelPhase σ) (modelPhaseInverseSlope F v)|+
         |iteratedDeriv p (modelPhase σ) (modelPhaseInverseSlope F v)-
           iteratedDeriv p (modelPhase σ) (v^(-σ⁻¹))| := abs_sub_le _ _ _
-    _ ≤ δ+B*(A*δ) := add_le_add he
-      (h.trans (mul_le_mul_of_nonneg_left hd (zero_le_one.trans hB)))
+    _ ≤ δ+B*(A*δ) := add_le_add (approximateModelPhase_iteratedDeriv_error hF (modelPhaseInverseSlope_mem hv) p hp)
+      ((hLip _ hw.1 _ hw.2).trans (mul_le_mul_of_nonneg_left (hdisplacement F δ P hδ hF v hv) (zero_le_one.trans hB)))
     _ = _ := by ring
 
 end TaoTrudgianYang2025

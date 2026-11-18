@@ -19,12 +19,12 @@ theorem continuedCorrection_first_boundary_x (eps : ℝ) (heps : 0<eps)
     (hxw : 1+eps≤x.re+w.re) :
     AnalyticAt ℂ (fun x=>continuedCorrection S hS η u x w z) x := by
   apply AnalyticAt.mul _ ((unramifiedProduct_first_neighborhood_analytic_x (eps/2) S hfirst
-    η u w z (by linarith) (by linarith)) x (by change max (101/200:ℝ) (1+eps/2-w.re)<x.re; exact max_lt (by linarith) (by linarith)))
+    η u w z (by linarith) (by linarith)) x (by change max (101/200) (1+eps/2-w.re)<x.re; exact max_lt (by linarith) (by linarith)))
   apply Finset.analyticAt_fun_prod
   intro P hP
   exact (ramifiedCorrection_first_analytic_x η u P.val _
     (by exact_mod_cast hS.tail.norm_four P.val (Finset.mem_filter.mp P.property).2)
-    w z (by linarith)) x (by change (1/2:ℝ)<x.re; linarith)
+    w z (by linarith)) x (by change (1/2)<x.re; linarith)
 
 theorem continuedCorrection_first_boundary_w (eps : ℝ) (heps : 0<eps)
     (S : Finset (Ideal O)) (hS : SourceExclusions S) (hfirst : FirstTail (eps/2) S)
@@ -33,7 +33,7 @@ theorem continuedCorrection_first_boundary_w (eps : ℝ) (heps : 0<eps)
     (hxw : 1+eps≤x.re+w.re) :
     AnalyticAt ℂ (fun w=>continuedCorrection S hS η u x w z) w := by
   apply AnalyticAt.mul _ ((unramifiedProduct_first_neighborhood_analytic_w (eps/2) S hfirst
-    η u x z (by linarith) (by linarith)) w (by change max (-(3/200:ℝ)) (1+eps/2-x.re)<w.re; exact max_lt (by linarith) (by linarith)))
+    η u x z (by linarith) (by linarith)) w (by change max (-(3/200)) (1+eps/2-x.re)<w.re; exact max_lt (by linarith) (by linarith)))
   apply Finset.analyticAt_fun_prod
   intro P hP
   exact ((ramifiedCorrection_first_analytic_w η u P.val _
@@ -48,12 +48,12 @@ theorem continuedCorrection_first_boundary_z (eps : ℝ) (heps : 0<eps)
     (hxw : 1+eps≤x.re+w.re) :
     AnalyticAt ℂ (fun z=>continuedCorrection S hS η u x w z) z := by
   apply AnalyticAt.mul _ ((unramifiedProduct_first_neighborhood_analytic_z (eps/2) S hfirst
-    η u x w (by linarith) (by linarith) (by linarith)) z (by change (27/80:ℝ)<z.re; linarith))
+    η u x w (by linarith) (by linarith) (by linarith)) z (by change (27/80)<z.re; linarith))
   apply Finset.analyticAt_fun_prod
   intro P hP
   exact (ramifiedCorrection_first_analytic_z η u P.val _
     (by exact_mod_cast hS.tail.norm_four P.val (Finset.mem_filter.mp P.property).2)
-    x w (by linarith)) z (by change (1/3:ℝ)<z.re; linarith)
+    x w (by linarith)) z (by change (1/3)<z.re; linarith)
 
 end SevenEighths.ProbeHighRowFamily
 

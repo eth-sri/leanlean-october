@@ -50,9 +50,7 @@ def detectorZeros (χ : Character) (T : ℝ) : Set ℂ :=
   {s | s∈HeckeDetectorZeros.rectangle T ∧ LFunction χ s=0 ∧ ¬(χ.residue=1 ∧ s=1)}
 
 lemma detectorZeros_finite (χ : Character) (T : ℝ) : (detectorZeros χ T).Finite := by
-  have ha : AnalyticOnNhd ℂ (detectorEntire χ) Set.univ :=
-    Complex.analyticOnNhd_univ_iff_differentiable.mpr (detectorEntire_entire χ)
-  have hc := ha.preimage_zero_mem_codiscreteWithin
+  have hc := (Complex.analyticOnNhd_univ_iff_differentiable.mpr (detectorEntire_entire χ)).preimage_zero_mem_codiscreteWithin
     (detectorEntire_ne_zero_of_one_lt_re χ (by norm_num : 1<(2:ℂ).re))
     (Set.mem_univ (2:ℂ)) isConnected_univ
   have hf := (HeckeDetectorZeros.rectangle_compact T).finite_sdiff_of_mem_codiscreteWithin

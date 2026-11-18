@@ -68,7 +68,7 @@ theorem heathBrown_cellwise_center_le
       by_cases hα : α ∈ heathBrownCoefficientCell k H f n
       · rw [show heathBrownCellIndicator k H f n α = 1 by
           simp [heathBrownCellIndicator, hα]]
-        simpa only [one_mul] using
+        simpa using
           norm_heathBrown_centerWeyl_le hH hQ hQH hα
       · rw [show heathBrownCellIndicator k H f n α = 0 by
           simp [heathBrownCellIndicator, hα]]
@@ -158,7 +158,7 @@ theorem heathBrown_cellwise_center_lintegral_le
         ENNReal.ofReal_mul hc] at h
       rw [ENNReal.ofReal_sum_of_nonneg] at h
       · simp_rw [ENNReal.ofReal_mul (norm_nonneg _)] at h
-        simpa only [c] using h
+        simpa using h
       · intro j hj
         exact mul_nonneg (norm_nonneg _)
           (heathBrownNu_nonneg N k H f α)
@@ -173,7 +173,7 @@ theorem heathBrown_cellwise_center_lintegral_le
               ENNReal.ofReal ‖heathBrownWeylSum k Q
                 (heathBrownCoefficientCenter k f n)‖ ∂μ) =
         ENNReal.ofReal
-            ((2 : ℝ) ^ (k - 1) *
+            (2 ^ (k - 1) *
               (((H : ℝ) ^ heathBrownCriticalMoment k)⁻¹)) *
           ∑ n ∈ heathBrownInteriorIndices N H,
             ENNReal.ofReal ‖heathBrownWeylSum k Q
@@ -184,7 +184,7 @@ theorem heathBrown_cellwise_center_lintegral_le
           (heathBrownCoefficientMeasure k)
               (heathBrownCoefficientCell k H f n) =
             ENNReal.ofReal
-              ((2 : ℝ) ^ (k - 1) *
+              (2 ^ (k - 1) *
                 (((H : ℝ) ^ heathBrownCriticalMoment k)⁻¹)) := by
         exact measure_heathBrownCoefficientCell_exact hH f (n : ℝ)
       simp_rw [hcell]
@@ -227,7 +227,7 @@ theorem heathBrown_cellwise_center_lintegral_le
     rw [lintegral_finsetSum (Finset.Ico 1 Q) fun j hj => hterm j]
     rfl
   rw [hright] at hmono
-  simpa only [c] using hmono
+  simpa using hmono
 
 
 end

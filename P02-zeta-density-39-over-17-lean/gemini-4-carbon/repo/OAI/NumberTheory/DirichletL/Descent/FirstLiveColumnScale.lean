@@ -11,9 +11,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseFirstGlobalCaps InverseSecondSourceBlocks InverseMomentFirstChildWindows
-open InverseMomentFirstOriginalProfile CompletedHeight
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseFirstGlobalCaps InverseSecondSourceBlocks InverseMomentFirstChildWindows InverseMomentFirstOriginalProfile CompletedHeight
 open ConcreteTraceCRT (eisEmbedding)
 local notation "O"=>ActualEisensteinCubic.O
 
@@ -31,9 +29,7 @@ private theorem dyadic_column_scale {a c z X b : ℝ}
     (ha : 1 ≤ a) (hc : 1 ≤ c) (hz : 1 ≤ z) (hprod : a * c * z ≤ b * X) :
     1 ≤ X / (dyadScale (dyadIndex a) * dyadScale (dyadIndex c) *
       dyadScale (dyadIndex z)) * b := by
-  have hscale : dyadScale (dyadIndex a) * dyadScale (dyadIndex c) *
-      dyadScale (dyadIndex z) ≤ a * c * z :=
-    mul_le_mul
+  have hscale := mul_le_mul
       (mul_le_mul (dyadIndex_bounds a ha).1 (dyadIndex_bounds c hc).1
         (dyadScale_pos _).le (zero_le_one.trans ha))
       (dyadIndex_bounds z hz).1 (dyadScale_pos _).le

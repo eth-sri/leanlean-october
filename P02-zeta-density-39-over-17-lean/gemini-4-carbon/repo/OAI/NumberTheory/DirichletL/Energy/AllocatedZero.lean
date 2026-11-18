@@ -10,10 +10,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.CenteredMomentEnergyAllocatedZero
-open HeckeFamily CenteredMomentEnergyAllocatedChildren CenteredMomentEnergyAllocatedProfiles
-open CenteredMomentAllocatedNaturalSource CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
-open CenteredMomentRetainedProfile CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentFiniteProfileExceptional CenteredMomentInductionEnergy CenteredMomentRetainedEnergy
+open HeckeFamily CenteredMomentEnergyAllocatedChildren CenteredMomentEnergyAllocatedProfiles CenteredMomentAllocatedNaturalSource CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentRetainedProfile CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentFiniteProfileExceptional CenteredMomentInductionEnergy CenteredMomentRetainedEnergy
 open CenteredMomentRadialEligibleEnergy (Radial)
 open QuadraticInitialBound
 local notation "O"=>HeckeFamily.O
@@ -30,9 +27,8 @@ lemma allocatedScale_le (D:Ideal O)
   have hf:1≤(Ideal.absNorm (∏I∈F,I):ℝ):=by
     exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr
       (Finset.prod_ne_zero_iff.mpr hF))
-  have hx:rawScale D a X j≤X:=div_le_self hX.le hn
   exact (div_le_self (by unfold clippedScale;positivity) hf).trans
-    (max_le_max_left 1 hx)
+    (max_le_max_left 1 (div_le_self hX.le hn))
 
 end SevenEighths.CenteredMomentEnergyAllocatedZero
 

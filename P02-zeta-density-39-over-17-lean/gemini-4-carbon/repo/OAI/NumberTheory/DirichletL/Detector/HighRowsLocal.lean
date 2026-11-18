@@ -31,8 +31,7 @@ lemma rowHighPrimeTerm_zero_of_two_le (η : HeckeFamily.Character) (u : O) (x w 
     (P : PrimeIdeal) (e l k m : ℕ) (he : 2≤e) :
     rowHighPrimeTerm η u x w z P ((e,l),(k,m))=0 := by
   by_contra hn
-  have hs := bareIdealHighSummand_support η u x w z (P.val^e) (P.val^l) (P.val^k) (P.val^m) hn
-  have hc := hs.1.eq_zero_or_one_of_pow_of_not_isUnit P.property.not_isUnit
+  have hc := (bareIdealHighSummand_support η u x w z (P.val^e) (P.val^l) (P.val^k) (P.val^m) hn).1.eq_zero_or_one_of_pow_of_not_isUnit P.property.not_isUnit
   omega
 
 theorem rowHighPrimeTerm_tsum_eq_localFactor (η : HeckeFamily.Character) (u : O) (x w z : ℂ)
@@ -41,14 +40,10 @@ theorem rowHighPrimeTerm_tsum_eq_localFactor (η : HeckeFamily.Character) (u : O
       idealRowHighLocalFactor η u P.val x w z := by
   have hs := (rowHighPrimeTerm_summable_norm η u x w z hx hw hz P).of_norm
   rw [hs.tsum_prod,hs.prod.tsum_prod]
-  have he (e l : ℕ) :
-      (∑' b : ℕ×ℕ, rowHighPrimeTerm η u x w z P ((e,l),b))=
-        ∑' k,∑' m,rowHighPrimeTerm η u x w z P ((e,l),(k,m)) :=
-    (hs.prod_factor (e,l)).tsum_prod
+  have he (e l : ℕ) := (hs.prod_factor (e,l)).tsum_prod
   simp_rw [he]
   rw [tsum_eq_sum (s:=Finset.range 2) (fun e he=>by
-    have hh : 2≤e := Nat.le_of_not_gt (by simpa only [Finset.mem_range] using he)
-    simp only [rowHighPrimeTerm_zero_of_two_le η u x w z P e _ _ _ hh,tsum_zero]),
+    simp only [rowHighPrimeTerm_zero_of_two_le η u x w z P e _ _ _ (Nat.le_of_not_gt (by simpa using he)),tsum_zero]),
     ←Fin.sum_univ_eq_sum_range]
   rfl
 

@@ -7,80 +7,16 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 
 namespace CubicEisenstein
 
 section
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups Matrix
+open scoped MatrixGroups Matrix
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT CubicKubota
+open CubicKubota
 local notation "O" => ActualEisensteinCubic.O
 
 def integralRowPair (M : SL(2,O)) : (Fin 2 → O)×(Fin 2 → O) :=
@@ -122,13 +58,12 @@ theorem integral_hyperbolic_sublevel_finite (w : HyperbolicSpace) (C : ℝ) :
 
 theorem subgroup_hyperbolic_sublevel_finite (H : Subgroup (SL(2,O)))
     (w : HyperbolicSpace) (C : ℝ) :
-    Set.Finite {M : H | hyperbolicFrobenius (integralComplexMatrix (M:SL(2,O)) • w)≤C} := by
-  exact Set.Finite.preimage Subtype.val_injective.injOn (integral_hyperbolic_sublevel_finite w C)
+    Set.Finite {M : H | hyperbolicFrobenius (integralComplexMatrix (M:SL(2,O)) • w)≤C} := Set.Finite.preimage Subtype.val_injective.injOn (integral_hyperbolic_sublevel_finite w C)
 
 end
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT CubicKubota
+open CubicKubota
 local notation "O" => ActualEisensteinCubic.O
 
 lemma integralComplexMatrix_injective : Function.Injective integralComplexMatrix := by
@@ -246,12 +181,11 @@ theorem levelThree_action_free (M : levelThree) (w : HyperbolicSpace)
     (hw : complexMatrix M • w=w) : M=1 := by
   induction w using Quotient.inductionOn with | _ g =>
     apply levelThree_unitary_conjugate_eq_one M g
-    have hrel := QuotientGroup.leftRel_apply.mp (Quotient.exact' hw.symm)
-    simpa only [mul_assoc,smul_eq_mul] using hrel
+    simpa only [mul_assoc,smul_eq_mul] using (QuotientGroup.leftRel_apply.mp (Quotient.exact' hw.symm))
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT CubicKubota
+open CubicKubota
 local notation "O" => ActualEisensteinCubic.O
 
 def hyperbolicKeyCoordinates (w : HyperbolicSpace) : Fin 9 → ℝ :=
@@ -264,7 +198,7 @@ def hyperbolicOrderKey (w : HyperbolicSpace) : Lex (Fin 9 → ℝ) := toLex (hyp
 
 lemma hyperbolicOrderKey_injective : Function.Injective hyperbolicOrderKey := by
   intro w u h
-  have hc : hyperbolicKeyCoordinates w=hyperbolicKeyCoordinates u := congrArg ofLex h
+  have hc := congrArg ofLex h
   apply hyperbolicGram_injective
   funext i j
   fin_cases i <;> fin_cases j <;> apply Complex.ext
@@ -365,14 +299,13 @@ lemma hyperbolicFundamentalSet_orbit_unique (H : Subgroup (SL(2,O))) (w : Hyperb
     (hMw : M • w∈hyperbolicFundamentalSet H) : M • w=w := by
   apply hyperbolicOrderKey_injective
   apply le_antisymm
-  · simpa only [inv_smul_smul] using hMw M⁻¹
+  · simpa using hMw M⁻¹
   · exact hw M
 
 lemma subgroup_action_free (H : Subgroup (SL(2,O))) (hH : H≤levelThree) (M : H)
     (w : HyperbolicSpace) (hM : M • w=w) : M=1 := by
-  have he := levelThree_action_free (⟨(M:SL(2,O)),hH M.property⟩ : levelThree) w hM
   apply Subtype.ext
-  exact congrArg (fun N : levelThree => (N:SL(2,O))) he
+  exact congrArg (fun N : levelThree => (N:SL(2,O))) (levelThree_action_free (⟨(M:SL(2,O)),hH M.property⟩ : levelThree) w hM)
 
 theorem hyperbolicFundamentalSet_isFundamentalDomain (H : Subgroup (SL(2,O))) (hH : H≤levelThree) :
     IsFundamentalDomain H (hyperbolicFundamentalSet H) hyperbolicVolume := by
@@ -380,11 +313,9 @@ theorem hyperbolicFundamentalSet_isFundamentalDomain (H : Subgroup (SL(2,O))) (h
   intro w
   obtain ⟨M,hM⟩ := hyperbolicFundamentalSet_covers H w
   refine ⟨M,hM,fun N hN => ?_⟩
-  have he : (N*M⁻¹) • (M • w)=M • w :=
-    hyperbolicFundamentalSet_orbit_unique H (M • w) hM (N*M⁻¹) (by
+  have he := hyperbolicFundamentalSet_orbit_unique H (M • w) hM (N*M⁻¹) (by
       simpa only [mul_smul,inv_smul_smul] using hN)
-  have hNM : N*M⁻¹=1 := subgroup_action_free H hH _ _ he
-  exact mul_inv_eq_one.mp hNM
+  exact mul_inv_eq_one.mp (subgroup_action_free H hH _ _ he)
 
 lemma globalKubotaKernel_le_levelThree : globalKubotaKernel≤levelThree := by
   intro M hM
@@ -396,10 +327,8 @@ theorem globalKubotaKernel_isFundamentalDomain :
 
 end
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
-
-open ActualEisensteinCubic ConcreteTraceCRT CubicKubota
+open CubicKubota
+open scoped MatrixGroups
 local notation "O" => ActualEisensteinCubic.O
 
 instance integralSubgroupMeasurableAction (H : Subgroup (SL(2,O))) :
@@ -454,7 +383,6 @@ lemma hyperbolicEuclideanVolume_ne_zero : hyperbolicEuclideanVolume≠0 := by
     apply withDensity_absolutelyContinuous' hyperbolicDensity_measurable.aemeasurable
     filter_upwards [ae_restrict_mem euclideanUpperHalf_measurable] with p hp
     apply ne_of_gt
-    change 0<ENNReal.ofReal ((p 2)^3)⁻¹
     apply ENNReal.ofReal_pos.mpr
     exact inv_pos.mpr (pow_pos hp 3)
   intro hz
@@ -514,9 +442,7 @@ def kernelQuotientDefect (a b : ℝ) (s : ℂ) : IntegralOrbitQuotient globalKub
 
 end CubicEisenstein
 
-open scoped BigOperators Classical
 namespace CompletedGauss
-open ActualEisensteinCubic
 open IdealMobiusDivisorSum (idealDivisors mem_idealDivisors)
 
 def largeCubeCoefficient (H₀ : ℝ) (B : Ideal O) : ℂ :=
@@ -550,9 +476,7 @@ theorem largeCubeCoefficient_support (H₀ : ℝ) (B : Ideal O)
   have hlarge : H₀ ≤ (Ideal.absNorm H : ℝ) := by
     by_contra hn
     exact hterm (ite_eq_right hn)
-  have hdiv := (mem_idealDivisors hB).mp hH
-  have hpos : 0 < Ideal.absNorm B := Nat.pos_iff_ne_zero.mpr (fun hn => hB (Ideal.absNorm_eq_zero_iff.mp hn))
-  exact hlarge.trans (by exact_mod_cast Nat.le_of_dvd hpos (map_dvd Ideal.absNorm hdiv))
+  exact hlarge.trans (by exact_mod_cast Nat.le_of_dvd (Nat.pos_iff_ne_zero.mpr (fun hn => hB (Ideal.absNorm_eq_zero_iff.mp hn))) (map_dvd Ideal.absNorm ((mem_idealDivisors hB).mp hH)))
 
 theorem large_cube_convolution (H₀ : ℝ) (c : Ideal O →* ℂ) (hc0 : c 0=0)
     (f : Ideal O → ℂ)

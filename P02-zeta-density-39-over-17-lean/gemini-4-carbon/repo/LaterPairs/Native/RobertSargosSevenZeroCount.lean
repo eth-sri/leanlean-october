@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.RobertSargosZeroFibers
 
 @[expose] public section
@@ -31,9 +40,7 @@ theorem exists_robertSargos_seven_zero_count (ε : ℝ) (hε : 0 < ε) :
   have hB : 0 < R*N*H*Q := by positivity
   let U := S.image robertSargosZeroKey
   have hU : (U.card:ℝ) ≤ 30*(R*N*H*Q) := by
-    calc
-      _ ≤ 30*R*H*Q*N := robertSargos_zero_image_card_le S hR hH hQ hN hmem
-      _ = _ := by ring
+    exact (robertSargos_zero_image_card_le S hR hH hQ hN hmem).trans_eq (by ring)
   have hmaps : Set.MapsTo robertSargosZeroKey S U := by
     intro p hp
     exact Finset.mem_image.mpr ⟨p,hp,rfl⟩
@@ -50,7 +57,7 @@ theorem exists_robertSargos_seven_zero_count (ε : ℝ) (hε : 0 < ε) :
   have hHQ : H*Q ≤ R*N*H*Q := by
     have hm := mul_le_mul_of_nonneg_right
       (one_le_mul_of_one_le_of_one_le hR hN) (mul_nonneg hHp.le hQp.le)
-    nlinarith only [hm]
+    nlinarith
   have hpow : (4*H*Q)^ε ≤ (4:ℝ)^ε*(R*N*H*Q)^ε := by
     calc
       _ = (4:ℝ)^ε*(H*Q)^ε := by
@@ -61,7 +68,7 @@ theorem exists_robertSargos_seven_zero_count (ε : ℝ) (hε : 0 < ε) :
     _ = _ := hcardR
     _ ≤ ∑ _z ∈ U, C*(4*H*Q)^ε := Finset.sum_le_sum (fun z _ => hf z)
     _ = (U.card:ℝ)*(C*(4*H*Q)^ε) := by
-      simp only [Finset.sum_const,nsmul_eq_mul]
+      simp
     _ ≤ (30*(R*N*H*Q))*(C*(4*H*Q)^ε) :=
       mul_le_mul_of_nonneg_right hU (by positivity)
     _ ≤ (30*(R*N*H*Q))*(C*((4:ℝ)^ε*(R*N*H*Q)^ε)) :=

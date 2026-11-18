@@ -80,8 +80,7 @@ lemma norm_inv_add_one_sub_inv_le {a R : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) {z : 
 
 lemma summable_one_div_natCast_add_one_sq :
     Summable (fun m : ℕ => 1 / ((m : ℝ) + 1) ^ 2) := by
-  have h := Real.summable_one_div_nat_pow.mpr (one_lt_two : (1 : ℕ) < 2)
-  exact ((summable_nat_add_iff 1).mpr h).congr fun n => by push_cast; ring
+  exact ((summable_nat_add_iff 1).mpr (Real.summable_one_div_nat_pow.mpr (one_lt_two : 1 < 2))).congr fun n => by push_cast; ring
 
 /-- A logarithm of the Euler approximants to the actual Gamma function. -/
 noncomputable def logGammaSeq (z : ℂ) (n : ℕ) : ℂ :=

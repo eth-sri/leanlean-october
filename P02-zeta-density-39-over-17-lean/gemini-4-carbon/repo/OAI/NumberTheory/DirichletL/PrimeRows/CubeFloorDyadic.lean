@@ -22,12 +22,10 @@ lemma bounded_dyadic_power_sum (p : ℝ) (hp : 0<p) :
     have hu : H⁻¹*(2:ℝ)^n≤1 := by
       rw [mul_comm,←div_eq_mul_inv]
       exact (div_le_one hH).mpr (hF n hn)
-    have hh : (1+H⁻¹*(2:ℝ)^n)^(p+1)≤(2:ℝ)^(p+1) :=
-      Real.rpow_le_rpow hd.le (by linarith) (by linarith)
     unfold CompletedDyadic.kernelTerm
     rw [←mul_div_assoc]
     apply (le_div_iff₀ (Real.rpow_pos_of_pos hd _)).mpr
-    simpa only [mul_comm] using mul_le_mul_of_nonneg_left hh
+    simpa only [mul_comm] using mul_le_mul_of_nonneg_left (Real.rpow_le_rpow hd.le (by linarith) (by linarith))
       (Real.rpow_nonneg (show (0:ℝ)≤(2:ℝ)^n by positivity) p)
   calc
     _ ≤ ∑n∈F,(2:ℝ)^(p+1)*CompletedDyadic.kernelTerm H⁻¹ p (p+1) n := Finset.sum_le_sum hpoint
@@ -49,8 +47,7 @@ lemma retained_dyadic_partition (rows : Finset FreeRow) (H : ℝ)
     obtain ⟨n,hn⟩ := exists_dyadicRows 1 (by norm_num) u (hrows u hu).1 (rowNorm_ge_one u)
     refine Finset.mem_biUnion.mpr ⟨n,?_,Finset.mem_inter.mpr ⟨hu,hn⟩⟩
     rw [mem_smallDyadicIndices]
-    have hlo := (mem_dyadicRows.mp hn).2.1
-    simpa only [one_mul] using hlo.trans (hrows u hu).2
+    simpa using ((mem_dyadicRows.mp hn).2.1).trans (hrows u hu).2
 
 lemma retained_dyadic_sum {A : Type*} [AddCommMonoid A] (rows : Finset FreeRow) (H : ℝ)
     (hrows : ∀u∈rows,u.val≠1 ∧ rowNorm u≤H) (f : FreeRow→A) :

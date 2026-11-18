@@ -743,7 +743,7 @@ theorem norm_gmNormalizedPoweredCoeffs_le_one
   have hDenomNorm :
       ‖((C * ((2 ^ k * M ^ k : ℕ) : ℝ) ^ η : ℝ) : ℂ)‖ =
         C * ((2 ^ k * M ^ k : ℕ) : ℝ) ^ η := by
-    simpa only [Complex.norm_real, Real.norm_eq_abs] using abs_of_pos hDenomPos
+    simpa using abs_of_pos hDenomPos
   rw [gmNormalizedPoweredCoeffs, norm_div, hDenomNorm,
     div_le_one hDenomPos]
   exact hCoeff.trans (mul_le_mul_of_nonneg_left hRpow hC.le)
@@ -934,14 +934,12 @@ theorem le_rpow_inv_nat_of_pow_le
     {x y : ℝ} {k : ℕ} (hx : 0 ≤ x)
     (hk : 0 < k) (hxy : x ^ k ≤ y) :
     x ≤ y ^ (1 / (k : ℝ)) := by
-  have hkR : (0 : ℝ) < k := by exact_mod_cast hk
+  have hkR : 0 < k := by exact_mod_cast hk
   have hRoot := Real.rpow_le_rpow (pow_nonneg hx k) hxy
     (by positivity : 0 ≤ (1 / (k : ℝ)))
   calc
     x = (x ^ k) ^ (1 / (k : ℝ)) := by
-      rw [← Real.rpow_natCast]
-      rw [← Real.rpow_mul hx]
-      have hkNe : (k : ℝ) ≠ 0 := ne_of_gt hkR
+      rw [← Real.rpow_natCast, ← Real.rpow_mul hx]
       have hExp : (k : ℝ) * (1 / (k : ℝ)) = 1 := by
         field_simp
       rw [hExp, Real.rpow_one]
@@ -950,10 +948,8 @@ theorem le_rpow_inv_nat_of_pow_le
 theorem pow_rpow_inv_nat
     {x : ℝ} {k : ℕ} (hx : 0 ≤ x) (hk : 0 < k) :
     (x ^ k) ^ (1 / (k : ℝ)) = x := by
-  have hkR : (0 : ℝ) < k := by exact_mod_cast hk
-  have hkNe : (k : ℝ) ≠ 0 := ne_of_gt hkR
-  rw [← Real.rpow_natCast]
-  rw [← Real.rpow_mul hx]
+  have hkR : 0 < k := by exact_mod_cast hk
+  rw [← Real.rpow_natCast, ← Real.rpow_mul hx]
   have hExp : (k : ℝ) * (1 / (k : ℝ)) = 1 := by field_simp
   rw [hExp, Real.rpow_one]
 
@@ -963,11 +959,10 @@ theorem gm_first_root_identity
     (((R ^ 2) ^ (k - 1) * P) * (R ^ 2 * U)) ^
         (1 / (k : ℝ)) =
       P ^ (1 / (k : ℝ)) * R ^ 2 * U ^ (1 / (k : ℝ)) := by
-  have hkSub : k - 1 + 1 = k := Nat.sub_add_cancel hk
-  have hRsq : 0 ≤ R ^ 2 := sq_nonneg R
+  have hRsq := sq_nonneg R
   have hRpow : (R ^ 2) ^ (k - 1) * R ^ 2 = (R ^ 2) ^ k := by
     conv_lhs => rhs; rw [← pow_one (R ^ 2)]
-    rw [← pow_add, hkSub]
+    rw [← pow_add, (Nat.sub_add_cancel hk)]
   rw [show ((R ^ 2) ^ (k - 1) * P) * (R ^ 2 * U) =
       P * ((R ^ 2) ^ k * U) by rw [← hRpow]; ring]
   rw [Real.mul_rpow hP (mul_nonneg (pow_nonneg hRsq k) hU),
@@ -979,7 +974,6 @@ theorem gm_r_exponent_second_identity
     {R : ℝ} {k : ℕ} (hR : 0 < R) (hk : 0 < k) :
     ((R ^ 2) ^ (k - 1) * R) ^ (1 / (k : ℝ)) =
       R ^ (2 - 1 / (k : ℝ)) := by
-  have hkR : (0 : ℝ) < k := by exact_mod_cast hk
   have hkSub : ((k - 1 : ℕ) : ℝ) = (k : ℝ) - 1 := by
     have hNat := congrArg (fun n : ℕ => (n : ℝ))
       (Nat.sub_add_cancel hk)
@@ -990,8 +984,7 @@ theorem gm_r_exponent_second_identity
     rw [← pow_mul]
     conv_lhs => rhs; rw [← pow_one R]
     rw [← pow_add]
-  rw [hbase, ← Real.rpow_natCast R (2 * (k - 1) + 1)]
-  rw [← Real.rpow_mul hR.le]
+  rw [hbase, ← Real.rpow_natCast R (2 * (k - 1) + 1), ← Real.rpow_mul hR.le]
   congr 1
   push_cast
   rw [hkSub]
@@ -1003,17 +996,13 @@ theorem gm_r_exponent_third_identity
     ((R ^ 2) ^ (k - 1) * R ^ (5 / 4 : ℝ)) ^
         (1 / (k : ℝ)) =
       R ^ (2 - 3 / (4 * (k : ℝ))) := by
-  have hkR : (0 : ℝ) < k := by exact_mod_cast hk
   have hkSub : ((k - 1 : ℕ) : ℝ) = (k : ℝ) - 1 := by
     have hNat := congrArg (fun n : ℕ => (n : ℝ))
       (Nat.sub_add_cancel hk)
     push_cast at hNat
     linarith
   rw [← Real.rpow_natCast (R ^ 2) (k - 1),
-    ← Real.rpow_natCast R 2]
-  rw [← Real.rpow_mul hR.le]
-  rw [← Real.rpow_add hR]
-  rw [← Real.rpow_mul hR.le]
+    ← Real.rpow_natCast R 2, ← Real.rpow_mul hR.le, ← Real.rpow_add hR, ← Real.rpow_mul hR.le]
   congr 1
   rw [hkSub]
   field_simp
@@ -1673,11 +1662,9 @@ theorem gmS2ReflectionCoefficient_eq
     gmS2ReflectionCoefficient A N H j =
       8 * (N : ℝ) ^ 2 * A ^ 2 * H ^ 2 /
         ((2 ^ j : ℕ) : ℝ) := by
-  let X : ℝ := ((2 ^ j : ℕ) : ℝ)
+  let X := ((2 ^ j : ℕ) : ℝ)
   have hX : 0 < X := by dsimp only [X]; positivity
   unfold gmS2ReflectionCoefficient
-  change 2 * (((N : ℝ) * A / Real.sqrt X) ^ 2) *
-      (2 * (H : ℝ)) ^ 2 = _
   rw [div_pow, Real.sq_sqrt hX.le]
   field_simp
   ring
@@ -1759,7 +1746,7 @@ theorem gmS2ReflectionCoefficient_mul_source_le_physical
     T ^ (η / (k : ℝ)) * (2 * m) ^ (2 * η)
   have hX : 0 < X := by dsimp only [X]; positivity
   have hn : 0 < n := by
-    simpa only [n] using (Nat.cast_pos.mpr hN : (0 : ℝ) < (N : ℝ))
+    simpa only [n] using (Nat.cast_pos.mpr hN : 0 < (N : ℝ))
   have hh : 0 ≤ h := by positivity
   have hm : 0 ≤ m := by positivity
   have hmUpper : m ≤ X * h / n + 1 := by
@@ -2524,7 +2511,7 @@ theorem gmS2_not_near_inverse_scale
     rw [pow_succ] at hCast
     push_cast at hCast
     simpa [mul_comm] using hCast
-  have hXPos : (0 : ℝ) < ((2 ^ j : ℕ) : ℝ) := by positivity
+  have hXPos : 0 < ((2 ^ j : ℕ) : ℝ) := by positivity
   rw [div_le_iff₀ hXPos]
   have hNReal : 0 ≤ (N : ℝ) := by positivity
   nlinarith

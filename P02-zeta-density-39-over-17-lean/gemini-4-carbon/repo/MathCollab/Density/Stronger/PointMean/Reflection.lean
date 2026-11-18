@@ -12,8 +12,7 @@ public import MathCollab.Density.Stronger.PointMean.OffCriticalPositive
 
 @[expose] public section
 
-open Complex
-open MathCollab.Density.Stronger.Fourth
+open Complex MathCollab.Density.Stronger.Fourth
 open scoped ComplexConjugate
 set_option autoImplicit false
 noncomputable section
@@ -179,10 +178,10 @@ theorem exists_heathBrown_offCritical_minus_strong_le :
     exists_norm_GammaR_heathBrown_reflection_ratio_le
   refine ⟨P, D, hP, hD, ?_⟩
   intro delta t hdelta hdeltaUpper ht
-  let sP : ℂ := ((1 / 2 + delta : ℝ) : ℂ) + (t : ℂ) * I
-  let sR : ℂ := ((1 / 2 + delta : ℝ) : ℂ) + ((-t : ℝ) : ℂ) * I
-  let sL : ℂ := ((1 / 2 - delta : ℝ) : ℂ) + (t : ℂ) * I
-  let q : ℂ := Complex.Gammaℝ sR / Complex.Gammaℝ sL
+  let sP := ((1 / 2 + delta : ℝ) : ℂ) + (t : ℂ) * I
+  let sR := ((1 / 2 + delta : ℝ) : ℂ) + ((-t : ℝ) : ℂ) * I
+  let sL := ((1 / 2 - delta : ℝ) : ℂ) + (t : ℂ) * I
+  let q := Complex.Gammaℝ sR / Complex.Gammaℝ sL
   have hReflect : riemannZeta sL = q * riemannZeta sR := by
     simpa only [sL, sR, q] using
       heathBrown_zeta_displaced_reflection hdelta (by linarith)
@@ -190,26 +189,20 @@ theorem exists_heathBrown_offCritical_minus_strong_le :
     apply Complex.ext <;> simp [sR, sP]
   have hZetaConj : ‖riemannZeta sR‖ = ‖riemannZeta sP‖ := by
     rw [hsRConj, _root_.riemannZeta_conj, norm_conj]
-  have hq := hRatio delta t hdelta hdeltaUpper (by linarith)
-  have hqSq : ‖q‖ ^ (2 : ℕ) ≤
+  have hqSq : ‖q‖ ^ 2 ≤
       Real.exp (2 * (Real.log (t / 2 + 2) + D) * delta) := by
     have hp := pow_le_pow_left₀ (norm_nonneg q)
-      (by simpa only [q, sR, sL] using hq) 2
-    calc
-      ‖q‖ ^ (2 : ℕ) ≤
-          Real.exp ((Real.log (t / 2 + 2) + D) * delta) ^ (2 : ℕ) := hp
-      _ = Real.exp (2 * (Real.log (t / 2 + 2) + D) * delta) := by
+      (by simpa only [q, sR, sL] using (hRatio delta t hdelta hdeltaUpper (by linarith))) 2
+    exact (hp).trans_eq (by
         rw [pow_two, ← Real.exp_add]
         congr 1
-        ring
-  have hplus := hPlus delta t hdelta hdeltaUpper ht
-  change ‖riemannZeta sL‖ ^ (2 : ℕ) ≤ _
+        ring)
   rw [hReflect, norm_mul, mul_pow, hZetaConj]
   calc
-    ‖q‖ ^ (2 : ℕ) * ‖riemannZeta sP‖ ^ (2 : ℕ) ≤
+    ‖q‖ ^ 2 * ‖riemannZeta sP‖ ^ 2 ≤
         Real.exp (2 * (Real.log (t / 2 + 2) + D) * delta) *
           (P * (1 + heathBrownStrongMellinCriticalMoment delta t)) := by
-      exact mul_le_mul hqSq (by simpa only [sP] using hplus)
+      exact mul_le_mul hqSq (by simpa only [sP] using (hPlus delta t hdelta hdeltaUpper ht))
         (by positivity) (by positivity)
     _ = P * Real.exp (2 * (Real.log (t / 2 + 2) + D) * delta) *
           (1 + heathBrownStrongMellinCriticalMoment delta t) := by ring

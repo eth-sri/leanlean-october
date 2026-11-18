@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaBufferedInteriorFrequency
 public import Mathlib.NumberTheory.Harmonic.Bounds
 
@@ -145,7 +155,7 @@ theorem modelPhaseBufferedInteriorBlock_error
         · simp only [Nat.cast_add,Nat.cast_one]
           omega
       · intro n hn
-        simp only [Int.cast_add,Int.cast_natCast]
+        simp
     rw [he]
     exact h
   · have hs : Finset.Ioo A B = ∅ := by

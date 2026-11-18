@@ -13,8 +13,7 @@ open HeckeDyadic
 
 lemma uniform_power_allowance (C p dmin α : ℝ) (hα : 0≤α) (hgap : p<dmin*α) :
     ∀ᶠ Z : ℝ in atTop, ∀ d : ℝ, dmin≤d → C*Z^p≤(Z^d)^α := by
-  have hh := constant_absorbed_eventually C (dmin*α-p) (by linarith)
-  filter_upwards [hh,eventually_ge_atTop (1 : ℝ)] with Z hC hZ d hd
+  filter_upwards [(constant_absorbed_eventually C (dmin*α-p) (by linarith)),eventually_ge_atTop 1] with Z hC hZ d hd
   have hZp : 0<Z := by linarith
   calc
     _ ≤ Z^(dmin*α-p)*Z^p := mul_le_mul_of_nonneg_right hC (Real.rpow_nonneg hZp.le _)
@@ -24,15 +23,13 @@ lemma uniform_power_allowance (C p dmin α : ℝ) (hα : 0≤α) (hgap : p<dmin*
 
 lemma uniform_scale_threshold (dmin A : ℝ) (hd : 0<dmin) :
     ∀ᶠ Z : ℝ in atTop, ∀ d : ℝ, dmin≤d → A≤Z^d := by
-  have hh := constant_absorbed_eventually A dmin hd
-  filter_upwards [hh,eventually_ge_atTop (1 : ℝ)] with Z hA hZ d hd'
+  filter_upwards [(constant_absorbed_eventually A dmin hd),eventually_ge_atTop 1] with Z hA hZ d hd'
   exact hA.trans (Real.rpow_le_rpow_of_exponent_le hZ hd')
 
 lemma uniform_zero_height (dmin τ : ℝ) (I : ℕ) (hgap : τ<dmin/2) :
     ∀ᶠ Z : ℝ in atTop, ∀ d : ℝ, dmin≤d →
       ∀ i : ℕ, i≤I → (3*i : ℕ)*Z^τ≤(Z^d)^(1/2 : ℝ) := by
-  have hh := uniform_power_allowance (3*I : ℕ) τ dmin (1/2) (by norm_num) (by linarith)
-  filter_upwards [hh,eventually_ge_atTop (1 : ℝ)] with Z hZ hZ1 d hd i hi
+  filter_upwards [(uniform_power_allowance (3*I : ℕ) τ dmin (1/2) (by norm_num) (by linarith)),eventually_ge_atTop 1] with Z hZ hZ1 d hd i hi
   have hn : (3*i : ℕ)≤3*I := by omega
   exact (mul_le_mul_of_nonneg_right (by exact_mod_cast hn) (Real.rpow_nonneg (by linarith) _)).trans (hZ d hd)
 
@@ -40,9 +37,8 @@ lemma uniform_height_budget (dmin τ η : ℝ) (I : ℕ) (hτ : 0≤τ)
     (hη : 0≤η) (hgap : 4*τ<dmin*η) :
     ∀ᶠ Z : ℝ in atTop, ∀ d : ℝ, dmin≤d →
       ∀ i : ℕ, i≤I → (3+(3*i+2 : ℕ)*Z^τ)^4≤(Z^d)^η := by
-  have hh := uniform_power_allowance ((3*(I : ℝ)+5)^4*16) (4*τ) dmin η hη hgap
-  filter_upwards [hh,eventually_ge_atTop (1 : ℝ)] with Z hZ hZ1 d hd i hi
-  have hT : 1≤Z^τ := Real.one_le_rpow hZ1 hτ
+  filter_upwards [(uniform_power_allowance ((3*(I : ℝ)+5)^4*16) (4*τ) dmin η hη hgap),eventually_ge_atTop (1 : ℝ)] with Z hZ hZ1 d hd i hi
+  have hT := Real.one_le_rpow hZ1 hτ
   have hp : (1+Z^τ)^4≤16*Z^(4*τ) := by
     calc
       _ ≤ (2*Z^τ)^4 := pow_le_pow_left₀ (by positivity) (by linarith) _

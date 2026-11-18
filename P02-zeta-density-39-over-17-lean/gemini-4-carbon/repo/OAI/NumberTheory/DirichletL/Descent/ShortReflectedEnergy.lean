@@ -10,8 +10,7 @@ noncomputable section
 open scoped BigOperators Classical ContDiff
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve
-open InverseTerminalWidths InverseReflectedPhase CompletedHeight
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve InverseTerminalWidths InverseReflectedPhase CompletedHeight
 local notation "Eis"=>ActualEisensteinCubic.O
 universe v
 
@@ -32,7 +31,7 @@ theorem completed_tuple_mark {σ:Type v} [Fintype σ] [DecidableEq σ]
 
 theorem short_cube_exact_scale (Z N:ℝ) (hZ:1<Z) (H:Ideal Eis) (hH:H≠0):
     Z^(N-3*Real.logb Z (Ideal.absNorm H:ℝ))=Z^N/(Ideal.absNorm H:ℝ)^3 := by
-  have hz:0<Z:=zero_lt_one.trans hZ
+  have hz :=zero_lt_one.trans hZ
   have hn:0<(Ideal.absNorm H:ℝ):=by exact_mod_cast Nat.pos_of_ne_zero (fun hn=>hH (Ideal.absNorm_eq_zero_iff.mp hn))
   rw [Real.rpow_sub hz,show 3*Real.logb Z (Ideal.absNorm H:ℝ)=Real.logb Z (Ideal.absNorm H:ℝ)*3 by ring,
     show Z^(Real.logb Z (Ideal.absNorm H:ℝ)*3)=(Z^(Real.logb Z (Ideal.absNorm H:ℝ)))^3 from

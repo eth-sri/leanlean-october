@@ -9,8 +9,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentEnergyFixedRadialSource
-open HeckeFamily CenteredMomentSourceRow CenteredMomentAbsoluteEnergy CenteredMomentHeckeExpansion
-open QuadraticInitialBound ConcreteTraceCRT
+open HeckeFamily CenteredMomentSourceRow CenteredMomentAbsoluteEnergy CenteredMomentHeckeExpansion QuadraticInitialBound ConcreteTraceCRT
 local notation "O"=>HeckeFamily.O
 
 lemma norm_le_diagonalControl (Φ:𝓢(ℝ,ℂ))(x:ℝ):‖Φ x‖≤diagonalControl Φ:=by
@@ -33,7 +32,7 @@ theorem exists_fixed_bump (b:ℝ)(_hb:0<b):
   obtain ⟨f,hf,_,hs,hone⟩:=exists_contDiff_support_eq_eq_one_iff
     (n:=⊤) isOpen_Ioo isClosed_Icc hsub
   let v:ℝ→ℂ:=fun x=>((f x)^2:ℝ)
-  have hv:ContDiff ℝ ∞ v:=Complex.ofRealCLM.contDiff.comp
+  have hv :=Complex.ofRealCLM.contDiff.comp
     ((by simpa using hf:ContDiff ℝ ∞ f).pow 2)
   have hsupp:Function.support v⊆Set.Icc (-1) (b+1):=by
     intro x hx
@@ -73,9 +72,8 @@ theorem finite_energy_domination (b:ℝ)(Ψ:𝓢(ℝ,ℂ))
   have hre:HasSum (fun z:O=>‖∑I∈S,c I*rowWeight η m A z t I‖^2*
       (Ψ (‖eisEmbedding z‖^2/K)).re)
       (finiteHeckeEnergy η m A t S c Ψ K).re:=by
-    have hh:=Complex.hasSum_re hsumΨ.hasSum
     simpa only [Complex.mul_re,Complex.ofReal_re,Complex.ofReal_im,zero_mul,sub_zero,
-      finiteHeckeEnergy] using hh
+      finiteHeckeEnergy] using (Complex.hasSum_re hsumΨ.hasSum)
   calc
     _≤∑'z:O,‖((‖∑I∈S,c I*rowWeight η m A z t I‖^2:ℝ):ℂ)*
       Φ (‖eisEmbedding z‖^2/K)‖:=norm_tsum_le_tsum_norm hsumΦ.norm

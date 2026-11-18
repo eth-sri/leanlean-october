@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.InverseMomentGlobalPrincipalMass
-open InverseMoment InverseFirstPriorityParents InverseInitialArithmetic
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open InverseMoment InverseFirstPriorityParents InverseInitialArithmetic ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
 local notation "O" => ActualEisensteinCubic.O
 
@@ -25,7 +24,7 @@ lemma physical_principal_exact (Z M r ell V delta A B R j t eta tau eps window l
       Z^(ell+R/2+B+t+loss)=
     Real.exp (window*(1+eps))*
       Z^(r+3*ell+V-B-j+(33/2:ℝ)*eta+tau+eps*(r-A-B-t)+loss) := by
-  have he : Real.exp ((9/2:ℝ)*(eta*Real.log Z))=Z^((9/2:ℝ)*eta) := by
+  have he : Real.exp ((9/2)*(eta*Real.log Z))=Z^((9/2)*eta) := by
     rw [Real.rpow_def_of_pos hZ]
     congr 1
     ring
@@ -34,8 +33,8 @@ lemma physical_principal_exact (Z M r ell V delta A B R j t eta tau eps window l
   unfold physicalPrincipalFactor
   rw [he,Real.mul_rpow (Real.rpow_nonneg hZ.le _) (Real.exp_pos _).le,
     ←Real.rpow_mul hZ.le,hw]
-  have hx : r+3*ell+V-B-j+(33/2:ℝ)*eta+tau+eps*(r-A-B-t)+loss=
-    firstKappa M r ell V delta A B R+(9/2:ℝ)*eta+
+  have hx : r+3*ell+V-B-j+(33/2)*eta+tau+eps*(r-A-B-t)+loss=
+    firstKappa M r ell V delta A B R+(9/2)*eta+
     (firstPhysicalHeight M r ell V delta B j+12*eta+tau)+
     (r-A-B-t)*(1+eps)+(ell+R/2+B+t+loss) := by
     unfold firstKappa firstPhysicalHeight
@@ -68,7 +67,6 @@ theorem original_physical_weighted_source (Jmax : ℕ) (dsmall : ℝ) (hdsmall :
   refine ⟨C,hC,?_⟩
   intro ι _ p hp _ hinj Jo hJo S Z M r ell V delta A B R j t eta tau eps window pi hZ hell heps hB hj hcost hS hb₁ hb₂ hactive hcommon hquot extra negative hextra
   let loss := 7*eta/2+dsmall*(3*ell+B+t+5*eta)+2*eps*(2*ell+B+t+4*eta)
-  have hZp : 0<Z := zero_lt_one.trans_le hZ
   have hh := hsource p hp hinj Jo hJo S Z ell R B t eta (2*eps) loss hZ hell
     (by positivity) (le_refl _) hS hb₁ hb₂ hactive hcommon hquot extra negative hextra
   have hP : 0≤physicalPrincipalFactor Z M r ell V delta A B R j t eta tau eps window := by
@@ -81,7 +79,7 @@ theorem original_physical_weighted_source (Jmax : ℕ) (dsmall : ℝ) (hdsmall :
       Z^(ell+R/2+B+t+loss)) := by ring
     _ = C*(Real.exp (window*(1+eps))*
       Z^(r+3*ell+V-B-j+(33/2:ℝ)*eta+tau+eps*(r-A-B-t)+loss)) := by
-      rw [physical_principal_exact Z M r ell V delta A B R j t eta tau eps window loss hZp]
+      rw [physical_principal_exact Z M r ell V delta A B R j t eta tau eps window loss (zero_lt_one.trans_le hZ)]
     _ ≤ _ := by
       rw [←mul_assoc]
       apply mul_le_mul_of_nonneg_left (Real.rpow_le_rpow_of_exponent_le hZ _) (by positivity)

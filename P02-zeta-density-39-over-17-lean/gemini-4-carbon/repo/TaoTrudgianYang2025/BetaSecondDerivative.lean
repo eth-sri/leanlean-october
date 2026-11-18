@@ -36,7 +36,7 @@ theorem approximateModelPhase_curvature_bounds {σ δ : ℝ} {F : ℝ → ℝ}
   norm_num at he
   rw [abs_le] at he
   have huPos : 0 < u := zero_lt_one.trans_le hu.1
-  have hlow : (2 : ℝ)^(-σ-1) ≤ u^(-σ-1) :=
+  have hlow : 2^(-σ-1) ≤ u^(-σ-1) :=
     Real.rpow_le_rpow_of_nonpos huPos hu.2 (by linarith)
   have hhigh : u^(-σ-1) ≤ 1 :=
     Real.rpow_le_one_of_one_le_of_nonpos hu.1 (by linarith)

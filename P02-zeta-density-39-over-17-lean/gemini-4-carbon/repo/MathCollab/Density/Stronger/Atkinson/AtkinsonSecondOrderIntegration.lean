@@ -47,7 +47,7 @@ theorem IntervalC2Bound.atkinsonRoot_secondOrder {f : ℝ → ℂ} {T b a c M R 
     ‖∫ y in a..c, f y * atkinsonRootKernel T b y‖ ≤
       B * M * (R + (c - a) * R ^ 2) / Real.pi := by
   let w : ℝ → ℂ := fun y => f y * (((atkinsonRootSlope T b y)⁻¹ : ℝ) : ℂ)
-  let k : ℂ := ((2 * Real.pi : ℝ) : ℂ) * I
+  let k := ((2 * Real.pi : ℝ) : ℂ) * I
   have hdi : IntervalIntegrable (deriv w) volume a c := by
     apply ContinuousOn.intervalIntegrable
     rw [uIcc_of_le hac]
@@ -83,14 +83,12 @@ theorem IntervalC2Bound.atkinsonRoot_secondOrder {f : ℝ → ℂ} {T b a c M R 
     calc
       _ = k * (f y * atkinsonRootKernel T b y) *
           ((((atkinsonRootSlope T b y)⁻¹ : ℝ) : ℂ) * (atkinsonRootSlope T b y : ℂ)) := by
-        dsimp only [w]
         ring
       _ = _ := by
         rw [← Complex.ofReal_mul, inv_mul_cancel₀ (hne y hy), Complex.ofReal_one, mul_one]
   rw [he, hwa, hwc, zero_mul, zero_mul, sub_self, zero_sub] at hparts
   have hnorm := congrArg norm hparts
   have hk : ‖k‖ = 2 * Real.pi := by
-    dsimp only [k]
     rw [norm_mul, Complex.norm_real, Real.norm_eq_abs,
       abs_of_pos (by positivity : 0 < 2 * Real.pi), Complex.norm_I, mul_one]
   rw [norm_mul, hk, norm_neg] at hnorm

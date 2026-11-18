@@ -7,12 +7,10 @@ public import OAI.NumberTheory.DirichletL.Detector.FinalAssemblyClass
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology ContDiff
 open Filter Set
+open scoped Classical BigOperators Topology ContDiff
 namespace SevenEighths.ProbeFinalAssembly
-open ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-open ProbeRaySlots HeckeDetectorPhysicalSelection HeckeDetectorAmplitudeFirst HeckeDetectorFiberPartition
+open ProbeHighRowFamily HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary ProbeRaySlots HeckeDetectorPhysicalSelection HeckeDetectorAmplitudeFirst HeckeDetectorFiberPartition
 local notation "O" => HeckeFamily.O
 variable (M : Ideal O) [NeZero M]
 local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
@@ -74,7 +72,7 @@ theorem actual_nonfloor_cube_arithmetic (N n : ℕ) (e eps c b A R dmin dmax rmi
       hdtop hε1 hκ1 hτzero hτheight hwbudget
       φ hφ hφc hφp hφ0 hφne a₀ b₀ B₀ ha₀ hab₀ hB₀ hφs hφB
       εm Δ ν logCost heightCost momentCost hεm hΔ hΔ1 hν hlog hMomentHeight counts
-  let cardCost : ℝ := (HeckeDetectorClassBudget.alphabetBound mesh:ℝ)^N
+  let cardCost := (HeckeDetectorClassBudget.alphabetBound mesh:ℝ)^N
   have hcardCost : 0≤cardCost := by dsimp [cardCost];positivity
   refine ⟨(cardCost+1)*C,by positivity,?_⟩
   intro η
@@ -82,16 +80,14 @@ theorem actual_nonfloor_cube_arithmetic (N n : ℕ) (e eps c b A R dmin dmax rmi
   intro d hd hd' v a C0 hv hv' hdv ha ha' hC0 rows hrows hnorm i hi hnext hcurrent
   dsimp only
   intro t ht hmom
-  let z : ℂ := (17/50:ℂ)+t.1.2*Complex.I
   let Y : Fin N→ℝ := fun j=>Z^(ell j)
   let T : Fin N→Finset ProbePhysical.PrimeIdeal := fun j=>pool (RayQuotient.identityClass M H) S c b (Y j)
-  let Q := physical M H (fun u : FreeRow=>u.val) W (fun _=>b) (fun j=>ell j/d) (fun _=>z) (Z^d)
-  let bound : ℝ := C*C0*(η.modulus.absNorm:ℝ)^(2*eps)*
+  let bound := C*C0*(η.modulus.absNorm:ℝ)^(2*eps)*
     Z^(3/16+Δ-saving-((25/48)*a-181/300+(105/8)*e))
   have hb : 0≤bound := by dsimp [bound];positivity
   have hpart := cubeArithmeticSum_class_uniform S hS hmax η rows T
     (nonfloorPoolOutside M H S N c b Y) W Y a e t Finset.univ (Z^d) ((2*a-1)/2) mesh hmesh
-    (by linarith) (fun j=>ell j/d) Q bound hb (by
+    (by linarith) (fun j=>ell j/d) (physical M H (fun u : FreeRow=>u.val) W (fun _=>b) (fun j=>ell j/d) (fun _=>((17/50:ℂ)+t.1.2*Complex.I)) (Z^d)) bound hb (by
       intro bin hne
       have hp := hclass d hd hd' v a C0 hv ha ha' hC0 rows hrows hnorm i hi hnext hcurrent t ht hmom bin hne
       dsimp only at hp

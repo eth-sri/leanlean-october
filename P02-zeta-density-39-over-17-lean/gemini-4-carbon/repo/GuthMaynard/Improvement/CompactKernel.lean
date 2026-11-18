@@ -23,13 +23,10 @@ theorem compactKernel_mass : ∫ x, compactKernel x = 1 :=
 theorem compactKernel_smooth : ContDiff ℝ ∞ compactKernel :=
   kernelBump.contDiff_normed
 
-theorem compactKernel_compact : HasCompactSupport compactKernel :=
-  kernelBump.hasCompactSupport_normed
 
 theorem compactKernel_zero {x : ℝ} (hx : 2 ≤ |x|) : compactKernel x = 0 := by
-  have hs := kernelBump.support_normed_eq (μ := volume)
   have hn : x ∉ Function.support compactKernel := by
-    rw [show Function.support compactKernel = Metric.ball 0 2 from hs]
+    rw [show Function.support compactKernel = Metric.ball 0 2 from (kernelBump.support_normed_eq (μ := volume))]
     simpa [Metric.mem_ball, Real.dist_eq, not_lt] using hx
   simpa [Function.support] using hn
 
@@ -43,10 +40,6 @@ theorem compactKernel_bound : ∃ B : ℝ, 0 < B ∧ ∀ x, ‖compactKernel x�
 
 theorem compactKernel_schwartz : ∃ ψ : 𝓢(ℝ, ℂ),
     (ψ : ℝ → ℂ) = fun x => (compactKernel x : ℂ) := by
-  have hc : HasCompactSupport (fun x => (compactKernel x : ℂ)) :=
-    compactKernel_compact.comp_left (g := Complex.ofReal) (by simp)
-  have hd : ContDiff ℝ ∞ (fun x => (compactKernel x : ℂ)) :=
-    Complex.ofRealCLM.contDiff.comp compactKernel_smooth
-  exact ⟨hc.toSchwartzMap hd, rfl⟩
+  exact ⟨((kernelBump.hasCompactSupport_normed).comp_left (g := Complex.ofReal) (by simp)).toSchwartzMap (Complex.ofRealCLM.contDiff.comp compactKernel_smooth), rfl⟩
 
 end GuthMaynard.Improvement

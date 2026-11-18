@@ -24,7 +24,7 @@ lemma lowOuterCutoff_small (a b : ℝ) (ha : 0<a) (x : ℝ) (hx : x≤a/2) :
 lemma lowOuterCutoff_large (a b : ℝ) (hb : 0<b) (x : ℝ) (hx : 2*b≤x) :
     lowOuterCutoff a b x=0 := by
   have h : 2-x/b≤0 := by
-    have hh : 2≤x/b := (le_div_iff₀ hb).mpr hx
+    have hh := (le_div_iff₀ hb).mpr hx
     linarith
   simp only [lowOuterCutoff,Real.smoothTransition.zero_of_nonpos h,Complex.ofReal_zero,mul_zero]
 
@@ -71,11 +71,9 @@ lemma physical_window_cutoff_one (W0 W1 : ℝ→ℂ) (a0 b0 a1 b1 : ℝ)
   have h1b := hW1 h1
   apply lowOuterCutoff_one _ _ (mul_pos ha0 ha1) (lt_of_lt_of_le (by norm_num) (le_max_left _ _))
   · rw [physical_ratio_factor B q X Y m hq hY]
-    have hh := mul_le_mul h0b.1 h1b.1 ha1.le (le_trans ha0.le h0b.1)
-    simpa only [mul_comm] using hh
+    simpa only [mul_comm] using (mul_le_mul h0b.1 h1b.1 ha1.le (le_trans ha0.le h0b.1))
   · rw [physical_ratio_factor B q X Y m hq hY]
-    have hh := mul_le_mul h0b.2 h1b.2 (le_trans ha1.le h1b.1) (le_trans ha0.le (h0b.1.trans h0b.2))
-    have hd : (q/Y)*(m/(B*q*X))≤b0*b1 := by simpa only [mul_comm] using hh
+    have hd : (q/Y)*(m/(B*q*X))≤b0*b1 := by simpa only [mul_comm] using (mul_le_mul h0b.2 h1b.2 (le_trans ha1.le h1b.1) (le_trans ha0.le (h0b.1.trans h0b.2)))
     exact hd.trans (le_max_right _ _)
 
 theorem physicalRowWeight_insert_cutoff (C : CalibrationData) (W0 W1 : ℝ→ℂ)

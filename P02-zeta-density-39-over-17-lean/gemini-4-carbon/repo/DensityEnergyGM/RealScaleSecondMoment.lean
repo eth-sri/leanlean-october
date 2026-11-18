@@ -15,9 +15,8 @@ theorem real_dyadic_indices_subset_floor_insert {M : ℝ} (hM : 0 ≤ M) :
     sourceRatioIndices M ⊆ insert (2 * ⌊M⌋₊ + 1) (dyadicInterval ⌊M⌋₊) := by
   intro n hn
   obtain ⟨hl, hu⟩ := (sourceRatioIndices_mem hM n).mp hn
-  have hfloor := Nat.floor_le hM
   have hupper := Nat.lt_floor_add_one M
-  have hnlo : ⌊M⌋₊ < n := by exact_mod_cast hfloor.trans_lt hl
+  have hnlo : ⌊M⌋₊ < n := by exact_mod_cast (Nat.floor_le hM).trans_lt hl
   have hnhiR : (n : ℝ) < 2 * (⌊M⌋₊ : ℝ) + 2 := by linarith
   have hnhi : n < 2 * ⌊M⌋₊ + 2 := by exact_mod_cast hnhiR
   by_cases he : n = 2 * ⌊M⌋₊ + 1

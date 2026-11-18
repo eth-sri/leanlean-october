@@ -15,9 +15,8 @@ public import WeylPort.GrowthAlgebra
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology Finset
+open Complex Filter MeasureTheory Set Topology Finset MathCollab.Density MathCollab.Density.Stronger
 open scoped Interval
-open MathCollab.Density MathCollab.Density.Stronger
 open TaoTrudgianYang2025 (eventually_const_log_pow_le_rpow
   eventually_const_height_log_pow_mul_rpow_le_rpow
   eventually_pointValue_sixth_power_source_range)

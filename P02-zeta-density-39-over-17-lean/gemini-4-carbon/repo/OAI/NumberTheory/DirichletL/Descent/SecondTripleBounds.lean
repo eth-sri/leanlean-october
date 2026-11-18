@@ -23,9 +23,7 @@ theorem actual_second_common_center
     (hG : primeProductNorm p x.second.sourceCommon ≤ Z^(g+eta))
     (hD : Z^(theta-eta) ≤ primeProductNorm p x.second.divisor) :
     -2*eta ≤ g-theta := by
-  have hh : Z^(theta-eta) ≤ Z^(g+eta) :=
-    hD.trans ((primeProductNorm_mono p hp hE).trans hG)
-  have hh' := (Real.rpow_le_rpow_left_iff hZ).mp hh
+  have hh' := (Real.rpow_le_rpow_left_iff hZ).mp (hD.trans ((primeProductNorm_mono p hp hE).trans hG))
   linarith
 
 include hp in

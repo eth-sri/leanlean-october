@@ -12,9 +12,7 @@ public import MathCollab.Density.Stronger.Atkinson.GaussianZetaTail
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+open Complex Filter MeasureTheory Set Topology MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth MathCollab.Density.Contour
 open scoped Interval ComplexConjugate
 set_option autoImplicit false
 noncomputable section
@@ -34,8 +32,7 @@ theorem continuous_zetaSquareFrozenDivisorIntegral {T : ℝ} (hT : 0 < T) :
   apply continuous_tsum (u := fun n => ‖zetaFrozenDivisorCoefficient T n‖)
   · intro n
     simp_rw [zetaSquareFrozenDivisorContribution_eq_phase]
-    have hc : Continuous zetaSquareReflectedGammaPhase :=
-      continuous_iff_continuousAt.mpr (fun t => (hasDerivAt_zetaSquareReflectedGammaPhase t).continuousAt)
+    have hc := continuous_iff_continuousAt.mpr (fun t => (hasDerivAt_zetaSquareReflectedGammaPhase t).continuousAt)
     fun_prop (disch := assumption)
   · exact summable_norm_zetaFrozenDivisorCoefficient hT
   · intro n x
@@ -43,8 +40,7 @@ theorem continuous_zetaSquareFrozenDivisorIntegral {T : ℝ} (hT : 0 < T) :
 
 theorem norm_zetaSquareFrozenDivisorIntegral_le_mass {T : ℝ} (hT : 0 < T) (x : ℝ) :
     ‖zetaSquareFrozenDivisorIntegral T x‖ ≤ ∑' n : ℕ, ‖zetaFrozenDivisorCoefficient T n‖ := by
-  have h := norm_tsum_le_tsum_norm (summable_zetaSquareFrozenDivisorContribution hT x).norm
-  simpa only [norm_zetaSquareFrozenDivisorContribution, zetaSquareFrozenDivisorIntegral] using h
+  simpa only [norm_zetaSquareFrozenDivisorContribution, zetaSquareFrozenDivisorIntegral] using (norm_tsum_le_tsum_norm (summable_zetaSquareFrozenDivisorContribution hT x).norm)
 
 theorem integrable_zetaSquareFrozenDivisor_gaussian {T G : ℝ} (hT : 0 < T) (hG : G ≠ 0) :
     Integrable (fun x : ℝ => zetaSquareFrozenDivisorIntegral T x * (Real.exp (-(x / G) ^ 2) : ℂ)) := by

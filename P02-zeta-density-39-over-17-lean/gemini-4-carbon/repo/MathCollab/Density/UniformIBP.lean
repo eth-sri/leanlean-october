@@ -36,14 +36,11 @@ theorem ibpAmplitude_contDiffAt {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
   induction n generalizing p x with
   | zero => exact hw.contDiffAt.comp _ contDiffAt_snd
   | succ n ih =>
-    have hg : ContDiffAt ℝ ∞
-        (fun z : (ℝ × ℝ) × ℝ => ibpAmplitude w n z.1 z.2 * phaseQuotient z.1 z.2)
-        (p, x) := (ih h).mul (phaseQuotient_contDiffAt h)
     have hf : ContDiffAt ℝ ∞
         (Function.uncurry (fun z : (ℝ × ℝ) × ℝ =>
           fun y : ℝ => ibpAmplitude w n z.1 y * phaseQuotient z.1 y))
         ((p, x), x) := by
-      convert hg.comp ((p, x), x) (show ContDiffAt ℝ ∞
+      convert ((ih h).mul (phaseQuotient_contDiffAt h)).comp ((p, x), x) (show ContDiffAt ℝ ∞
         (fun z : ((ℝ × ℝ) × ℝ) × ℝ => (z.1.1, z.2)) ((p, x), x) from
           contDiffAt_fst.fst.prodMk contDiffAt_snd) using 1
       rfl
@@ -93,7 +90,7 @@ theorem ibpAmplitude_uniform_bound {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w) (
       ‖ibpAmplitude w n p x‖ ≤ C := by
   have hcont : ContinuousOn
       (fun z : (ℝ × ℝ) × ℝ => ‖ibpAmplitude w n z.1 z.2‖)
-      (offBandParameters ×ˢ Icc (1 / 3 : ℝ) 6) := by
+      (offBandParameters ×ˢ Icc (1 / 3) 6) := by
     intro z hz
     have hgap := hz.1.2.2 z.2 hz.2
     have hne : z.1.1 - z.1.2 * z.2 ≠ 0 := by
@@ -272,9 +269,8 @@ theorem ibpIntegral_norm_recurrence {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
     (hws : tsupport w ⊆ Icc (1 / 2 : ℝ) 5)
     {p : ℝ × ℝ} (hp : p ∈ offBandParameters) {R : ℝ} (hR : 0 < R) (n : ℕ) :
     R * ‖ibpIntegral w R p n‖ = ‖ibpIntegral w R p (n+1)‖ := by
-  have hh := congrArg norm (ibpIntegral_recurrence hw hws hp R n)
   simpa only [norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hR,
-    Complex.norm_I, mul_one, norm_neg] using hh
+    Complex.norm_I, mul_one, norm_neg] using (congrArg norm (ibpIntegral_recurrence hw hws hp R n))
 
 /-- Arbitrary-order uniform decay on the fixed compact parameter set. -/
 theorem uniform_normalized_decay {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)

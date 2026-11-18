@@ -28,7 +28,7 @@ lemma decay_le_low (t α : ℝ) (ht : 0 < t) (j : ℕ) :
     ((2 : ℝ)^j)^α / (1 + t * (2 : ℝ)^j)^3 ≤ ((2 : ℝ)^α)^j := by
   rw [← dyadic_rpow]
   exact div_le_self (by positivity) (one_le_pow₀ (by
-    have : 0 ≤ t * (2 : ℝ)^j := by positivity
+    have : 0 ≤ t * 2^j := by positivity
     linarith))
 
 lemma decay_le_high (t α : ℝ) (ht : 0 < t) (j : ℕ) :
@@ -146,16 +146,14 @@ theorem two_power_majorant (B : ℝ → ℝ) (C P Q t α β : ℝ)
     Summable (fun j : ℕ => B ((2 : ℝ)^j) / (1 + t*(2 : ℝ)^j)^3) ∧
     (∑' j : ℕ, B ((2 : ℝ)^j) / (1 + t*(2 : ℝ)^j)^3) ≤
       C * (P*decayConstant α*t^(-α) + Q*decayConstant β*t^(-β)) := by
-  let f (γ : ℝ) (j : ℕ) := ((2 : ℝ)^j)^γ / (1+t*(2 : ℝ)^j)^3
-  have hsα : Summable (f α) := decay_summable t α ht hα3
-  have hsβ : Summable (f β) := decay_summable t β ht hβ3
-  have hs : Summable (fun j => C*(P*f α j+Q*f β j)) :=
-    ((hsα.mul_left P).add (hsβ.mul_left Q)).mul_left C
-  have hle (j : ℕ) : B ((2 : ℝ)^j) / (1+t*(2 : ℝ)^j)^3 ≤
+  let f (γ : ℝ) (j : ℕ) := (2^j)^γ / (1+t*2^j)^3
+  have hsα := decay_summable t α ht hα3
+  have hsβ := decay_summable t β ht hβ3
+  have hs := ((hsα.mul_left P).add (hsβ.mul_left Q)).mul_left C
+  have hle (j : ℕ) : B (2^j) / (1+t*2^j)^3 ≤
       C*(P*f α j+Q*f β j) := by
-    have hi := div_le_div_of_nonneg_right (hB ((2 : ℝ)^j)
-      (one_le_pow₀ (by norm_num))) (by positivity : 0 ≤ (1+t*(2 : ℝ)^j)^3)
-    dsimp [f]
+    have hi := div_le_div_of_nonneg_right (hB (2^j)
+      (one_le_pow₀ (by norm_num))) (by positivity : 0 ≤ (1+t*2^j)^3)
     convert hi using 1
     ring
   have hsum := hs.of_nonneg_of_le
@@ -245,12 +243,11 @@ theorem sieve_poisson_bound (B : ℝ → ℝ) (A M N δ ξ : ℝ)
         A*decayConstant (ξ+δ)*(N^δ*(M/N)*(M/N^2)^(-(ξ+δ))) := by ring
     _ = _ := by
       rw [hid₁, hid₂]
-      have he := congrArg (fun x => A*N^(3*δ)*M^(-δ)*decayConstant (1/3+δ)*x) hmix
-      nlinarith [he]
+      nlinarith [(congrArg (fun x => A*N^(3*δ)*M^(-δ)*decayConstant (1/3+δ)*x) hmix)]
 
 lemma descent_factor_le_one (e d u v : ℝ) (he : 1 ≤ e) (hed : e ≤ d)
     (hv : v ≤ 0) (huv : u+v ≤ 0) : e^u*d^v ≤ 1 := by
-  have hd : 1 ≤ d := he.trans hed
+  have hd := he.trans hed
   by_cases hu : 0 ≤ u
   · calc
       _ ≤ d^u*d^v := mul_le_mul_of_nonneg_right
@@ -266,13 +263,12 @@ lemma monomial_descendant_le (M N e d u v : ℝ) (hM : 0 < M) (hN : 0 < N)
     (M/e)^u*(N/d)^v ≤ M^u*N^v := by
   have he0 : 0 < e := by linarith
   have hd0 : 0 < d := by linarith
-  have hg := descent_factor_le_one e d (-u) (-v) he hed (by linarith) (by linarith)
   calc
     _ = (M^u*N^v)*(e^(-u)*d^(-v)) := by
       rw [Real.div_rpow hM.le he0.le, Real.div_rpow hN.le hd0.le,
         Real.rpow_neg he0.le, Real.rpow_neg hd0.le]
       ring
-    _ ≤ (M^u*N^v)*1 := mul_le_mul_of_nonneg_left hg (by positivity)
+    _ ≤ (M^u*N^v)*1 := mul_le_mul_of_nonneg_left (descent_factor_le_one e d (-u) (-v) he hed (by linarith) (by linarith)) (by positivity)
     _ = _ := mul_one _
 
 lemma mixed_monomial_identity (M N δ : ℝ) (hM : 0 < M) (hN : 0 < N) :
@@ -322,10 +318,9 @@ theorem poisson_envelope_descendant_le (M N e d δ ξ P Q : ℝ)
     (N/d)^(3*δ)*(M/e)^(-δ) *
         (P*((M/e)*(N/d))^(2/3 : ℝ) + Q*(M/e)^(1-ξ)*(N/d)^(2*ξ-1)) ≤
       N^(3*δ)*M^(-δ) * (P*(M*N)^(2/3 : ℝ)+Q*M^(1-ξ)*N^(2*ξ-1)) := by
-  have hm := mul_le_mul_of_nonneg_left (mixed_descendant_le M N e d δ hM hN he hed hδ) hP
   have hs := mul_le_mul_of_nonneg_left
     (secondary_descendant_le M N e d δ ξ hM hN he hed hδ hξ) hQ
-  nlinarith [hm, hs]
+  nlinarith [(mul_le_mul_of_nonneg_left (mixed_descendant_le M N e d δ hM hN he hed hδ) hP), hs]
 
 end
 end SevenEighths.CubicDyadicDecay

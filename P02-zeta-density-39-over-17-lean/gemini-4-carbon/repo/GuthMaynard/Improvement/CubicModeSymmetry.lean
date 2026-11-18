@@ -34,7 +34,7 @@ theorem cubicStripMass_sum_negate (S : Finset (ℤ × (ℤ × ℤ))) (r : ℝ �
 
 theorem signed_box_positive {B K D : ℝ} {m : ℤ × (ℤ × ℤ)}
     (hbox : InSignedCubicBox B K D m) (hm : 0 < m.2.1) : InCubicBox B K D m := by
-  have hm' : (0:ℝ) < (m.2.1:ℝ) := by exact_mod_cast hm
+  have hm' : 0 < (m.2.1:ℝ) := by exact_mod_cast hm
   simpa only [InSignedCubicBox,InCubicBox,abs_of_pos hm'] using hbox
 
 theorem signed_box_negative {B K D : ℝ} {m : ℤ × (ℤ × ℤ)}

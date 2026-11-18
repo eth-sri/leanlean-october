@@ -1,2 +1,0 @@
-module
-public import GuthMaynard.NativeSource.PrimeNumberTheoremAnd.Mathlib.Analysis.Complex.DivisorQuotientRemovable

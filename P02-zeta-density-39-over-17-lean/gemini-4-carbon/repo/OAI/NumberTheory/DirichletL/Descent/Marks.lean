@@ -29,8 +29,7 @@ omit [DecidableEq σ] in
 theorem primeMark_eq_tuple_sum (I : Finset σ) (L : σ → Finset ι)
     (a : σ → ι → ℂ) (A : Finset ι) :
     primeMark I L a A = ∑ p ∈ I.pi L,
-      ∏ i ∈ I.attach, if p i.1 i.2 ∈ A then a i.1 (p i.1 i.2) else 0 := by
-  exact Finset.prod_sum I L (fun i p => if p ∈ A then a i p else 0)
+      ∏ i ∈ I.attach, if p i.1 i.2 ∈ A then a i.1 (p i.1 i.2) else 0 := Finset.prod_sum I L (fun i p => if p ∈ A then a i p else 0)
 
 theorem primeSlot_priority (L A B : Finset ι) (a : ι → ℂ) :
     primeSlot L a (A ∪ B) = primeSlot L a A + primeSlot L a (B \ A) := by
@@ -70,10 +69,7 @@ theorem primeSlot_norm_le (L A : Finset ι) (a : ι → ℂ)
     ‖primeSlot L a A‖ ≤ ((L ∩ A).card : ℝ) := by
   simp only [primeSlot, Finset.sum_ite_mem]
   apply (norm_sum_le _ _).trans
-  calc
-    ∑ p ∈ L ∩ A, ‖a p‖ ≤ ∑ p ∈ L ∩ A, (1 : ℝ) :=
-      Finset.sum_le_sum fun p hp => ha p (Finset.mem_inter.mp hp).1
-    _ = _ := by simp
+  exact (Finset.sum_le_sum fun p hp => ha p (Finset.mem_inter.mp hp).1).trans_eq (by simp)
 
 omit [DecidableEq σ] in
 theorem primeMark_norm_le_divisor_count (I : Finset σ) (L : σ → Finset ι)
@@ -96,13 +92,13 @@ theorem primeMark_norm_le_divisor_count (I : Finset σ) (L : σ → Finset ι)
     _ ≤ ∏ i ∈ I, ((L i ∩ A).card : ℝ) := by
       exact Finset.prod_le_prod₀ (fun i _ => norm_nonneg _)
         (fun i hi => primeSlot_norm_le _ _ _ (ha i hi))
-    _ ≤ ∏ i ∈ I, (2 : ℝ) ^ (L i ∩ A).card := by
+    _ ≤ ∏ i ∈ I, 2 ^ (L i ∩ A).card := by
       apply Finset.prod_le_prod₀ (fun i _ => Nat.cast_nonneg _)
       intro i hi
       exact_mod_cast (Nat.le_of_lt (L i ∩ A).card.lt_two_pow_self)
-    _ = (2 : ℝ) ^ (∑ i ∈ I, (L i ∩ A).card) :=
+    _ = 2 ^ (∑ i ∈ I, (L i ∩ A).card) :=
       Finset.prod_pow_eq_pow_sum _ _ _
-    _ ≤ (2 : ℝ) ^ A.card := pow_le_pow_right₀ (by norm_num) hcard
+    _ ≤ 2 ^ A.card := pow_le_pow_right₀ (by norm_num) hcard
 
 end
 

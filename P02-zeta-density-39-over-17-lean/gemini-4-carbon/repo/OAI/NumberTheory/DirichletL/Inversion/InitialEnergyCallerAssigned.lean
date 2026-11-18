@@ -39,7 +39,7 @@ theorem attach_injective {J : ℕ} :
     Function.Injective (fun z : Source (ι:=ι) 0 × (Fin J→ι) => attach z.1 z.2) := by
   intro x y h
   apply Prod.ext
-  · simpa only [erase_attach] using congrArg erase h
+  · simpa using congrArg erase h
   · exact congrArg Source.assigned h
 
 def attachPair (J₁ J₂ : Finset σ)

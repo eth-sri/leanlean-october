@@ -35,7 +35,7 @@ theorem common_signal_bound (J f : ℝ → ℂ) (a b : ℝ)
     f =O[atTop] (fun x : ℝ => x ^ max a b) := by
   have h₁ := hJ.trans (rpow_isBigO_atTop_of_le (le_max_left a b))
   have h₂ := herror.trans (rpow_isBigO_atTop_of_le (le_max_right a b))
-  simpa only [sub_sub_cancel] using h₁.sub h₂
+  simpa using h₁.sub h₂
 
 theorem common_signal_bound_with_margin (J f : ℝ → ℂ) (β ω σ c : ℝ)
     (hJ : J =O[atTop] (fun x : ℝ => x ^ (7 / 8 + c + ω)))
@@ -53,7 +53,7 @@ theorem signalMellin_convergent (f : ℝ → ℂ) (a c : ℝ)
     MellinConvergent f (-(s + (c : ℂ))) := by
   apply mellinConvergent_of_isBigO_rpow (a := -(a+c))
     (b := (-(s + (c : ℂ))).re - 1) hlocal
-  · simpa only [neg_neg] using htop
+  · simpa using htop
   · simp only [Complex.neg_re, Complex.add_re, Complex.ofReal_re]
     linarith
   · exact hzero _
@@ -69,7 +69,7 @@ theorem signalMellin_analytic (f : ℝ → ℂ) (a c : ℝ)
   have hd : DifferentiableAt ℂ (mellin f) (-(s + (c : ℂ))) := by
     apply mellin_differentiableAt_of_isBigO_rpow (a := -(a+c))
       (b := (-(s + (c : ℂ))).re - 1) hlocal
-    · simpa only [neg_neg] using htop
+    · simpa using htop
     · simp only [Complex.neg_re, Complex.add_re, Complex.ofReal_re]
       change a < s.re at hs
       linarith
@@ -122,13 +122,7 @@ theorem multiplier_ne_zero {H : ℂ → ℂ} {s : ℂ}
 def gaussianMultiplier (H : ℂ → ℂ) (s : ℂ) : ℂ :=
   Complex.exp ((s - 5 / 6) ^ 2) * H s
 
-theorem gaussianMultiplier_analytic {H : ℂ → ℂ} {U : Set ℂ}
-    (hH : AnalyticOnNhd ℂ H U) : AnalyticOnNhd ℂ (gaussianMultiplier H) U := by
-  exact ((analyticOnNhd_id.sub analyticOnNhd_const).pow 2).cexp.mul hH
 
-theorem gaussianMultiplier_ne_zero {H : ℂ → ℂ} {s : ℂ}
-    (hH : ‖H s - 1‖ ≤ (1 / 2 : ℝ)) : gaussianMultiplier H s ≠ 0 :=
-  mul_ne_zero (Complex.exp_ne_zero _) (multiplier_ne_zero hH)
 
 theorem nonzero_of_common_signal (β ω σ c : ℝ) (hω : 0 < ω)
     (L Lregular R H : ℂ → ℂ) (J f : ℝ → ℂ)
@@ -148,17 +142,14 @@ theorem nonzero_of_common_signal (β ω σ c : ℝ) (hω : 0 < ω)
     {ρ : ℂ} (hρ : β - Supremum.continuationMargin β ω σ < ρ.re)
     (hregular : Lregular ρ = R ρ * L ρ) (hRρ : R ρ ≠ 0) : L ρ ≠ 0 := by
   have hboundary := Supremum.continuation_boundary_gt (β := β) (σ := σ) hω
-  have hH' : AnalyticOnNhd ℂ H
-      {s : ℂ | β - Supremum.continuationMargin β ω σ < s.re} :=
-    hH.mono (fun s hs => lt_trans hboundary hs)
   have htop : f =O[atTop] (fun x : ℝ =>
       x ^ ((β - Supremum.continuationMargin β ω σ) + c)) := by
     have hexp : (β - Supremum.continuationMargin β ω σ) + c =
         β + c - Supremum.continuationMargin β ω σ := by ring
     simpa only [hexp] using common_signal_bound_with_margin J f β ω σ c hJ herror
   exact nonzero_of_regularized_signal _ 1 c L Lregular R (gaussianMultiplier H) f
-    hL hR (gaussianMultiplier_analytic hH') hlocal htop hzero heq hρ hregular
-    hRρ (gaussianMultiplier_ne_zero (hcontract ρ (lt_trans hboundary hρ)))
+    hL hR ((((analyticOnNhd_id.sub analyticOnNhd_const).pow 2).cexp.mul (hH.mono (fun s hs => lt_trans hboundary hs)))) hlocal htop hzero heq hρ hregular
+    hRρ ((mul_ne_zero (Complex.exp_ne_zero _) (multiplier_ne_zero (hcontract ρ (lt_trans hboundary hρ)))))
 
 end SevenEighths.Continuation
 

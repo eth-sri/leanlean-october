@@ -9,8 +9,7 @@ namespace OAI
 
 noncomputable section
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve
-open ConcretePrimeRowBridge CubicEisenstein ProbePhase
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve ConcretePrimeRowBridge CubicEisenstein ProbePhase
 local notation "O" => ActualEisensteinCubic.O
 
 lemma supported_completed (c n : O) (hc : Supported (Ideal.span {c}))
@@ -18,9 +17,7 @@ lemma supported_completed (c n : O) (hc : Supported (Ideal.span {c}))
   rw [← Ideal.span_singleton_mul_span_singleton, ← Ideal.span_singleton_pow]
   apply (supported_mul_iff _ _).mpr
   refine ⟨hc,?_⟩
-  have hn2 := (supported_mul_iff _ _).mpr ⟨hn,hn⟩
-  have hn3 := (supported_mul_iff _ _).mpr ⟨hn2,hn⟩
-  simpa only [pow_succ, pow_zero, one_mul] using hn3
+  simpa only [pow_succ, pow_zero, one_mul] using ((supported_mul_iff _ _).mpr ⟨((supported_mul_iff _ _).mpr ⟨hn,hn⟩),hn⟩)
 
 lemma primary_completed (c n : O) (hc : goodLambda^2∣c-1)
     (hn : goodLambda^2∣n-1) : goodLambda^2∣c*n^3-1 := by
@@ -56,16 +53,12 @@ theorem correctedFiniteCoefficient_product (I J : Ideal O)
   let B := d*m^3
   have hAs := supported_completed c n hc hn
   have hBs := supported_completed d m hd hm
-  have hAB : IsCoprime A B := hcop.of_mul_left_left.of_mul_right_left
+  have hAB := hcop.of_mul_left_left.of_mul_right_left
   have hnA : n∣A := by refine ⟨c*n^2,?_⟩; dsimp only [A]; ring
   have hmB : m∣B := by refine ⟨d*m^2,?_⟩; dsimp only [B]; ring
-  have hcA : c∣A := dvd_mul_right c (n^3)
-  have hdB : d∣B := dvd_mul_right d (m^3)
-  have hcd : IsCoprime c d := (hAB.of_isCoprime_of_dvd_left hcA).of_isCoprime_of_dvd_right hdB
-  have hcm : IsCoprime c m := (hAB.of_isCoprime_of_dvd_left hcA).of_isCoprime_of_dvd_right hmB
-  have hnd : IsCoprime n d := (hAB.of_isCoprime_of_dvd_left hnA).of_isCoprime_of_dvd_right hdB
-  have hnm : IsCoprime n m := (hAB.of_isCoprime_of_dvd_left hnA).of_isCoprime_of_dvd_right hmB
-  have hphase := completed_cubic_cross_cancel c n d m hc hn hd hm hpc hpn hpd hpm hcd hcm hnd hnm
+  have hcA := dvd_mul_right c (n^3)
+  have hdB := dvd_mul_right d (m^3)
+  have hphase := completed_cubic_cross_cancel c n d m hc hn hd hm hpc hpn hpd hpm ((hAB.of_isCoprime_of_dvd_left hcA).of_isCoprime_of_dvd_right hdB) ((hAB.of_isCoprime_of_dvd_left hcA).of_isCoprime_of_dvd_right hmB) ((hAB.of_isCoprime_of_dvd_left hnA).of_isCoprime_of_dvd_right hdB) ((hAB.of_isCoprime_of_dvd_left hnA).of_isCoprime_of_dvd_right hmB)
   change sexticPair A B * sexticPair c d^2 * star (reciprocitySign A B)=1 at hphase
   change gaussTwo (I*J) hIJ.2 * star (G (A*B)) *
       reciprocityCoefficient (A*B) (s*r) _ H =

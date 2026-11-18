@@ -10,8 +10,7 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseInitialHighFrequencyTail
-open ActualEisensteinCubic ConcreteTraceCRT FirstPassCubeLabels SecondPassArithmetic
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
+open ActualEisensteinCubic ConcreteTraceCRT FirstPassCubeLabels SecondPassArithmetic InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
 local notation "O"=>ActualEisensteinCubic.O
 
 theorem original_physical_tail (A : ℕ) :
@@ -44,10 +43,10 @@ theorem original_physical_tail (A : ℕ) :
   refine ⟨s,C₀,hC₀,?_⟩
   intro ι σ _ _ p hp _ hcop hg hinj hc Ψ hΨ j slots lists a hdis ha W₁ W₂ Φ
     Z D m L T Γ B₁ B₂ hZ hL hT hΓ hB₁ hB₂ hW₁ hW₂ pool S w hvalid hw hpool hnorm hleft hright htail
-  let R : ℝ := Z^(m-D)*B₁*B₂*(C₀*s.sup (schwartzSeminormFamily ℝ ℝ ℂ) Φ)/
+  let R := Z^(m-D)*B₁*B₂*(C₀*s.sup (schwartzSeminormFamily ℝ ℝ ℂ) Φ)/
     ((min 1 (Z^m/L^3))^2*(1+T)^A)
   have hR : 0≤R := by dsimp [R]; positivity
-  let B : ℝ := Γ*(128*L)^2*R
+  let B := Γ*(128*L)^2*R
   have hB : 0≤B := by dsimp [B]; positivity
   have hkey (k) (hk : k∈sourceKeys S) (ρ : SecondRayIndex) :
       ‖∑h∈sourceFrequencies S k,
@@ -79,10 +78,7 @@ theorem original_physical_tail (A : ℕ) :
     (primeMark slots lists a) W₁ W₂ Φ Z D m x ρ‖≤_
   apply hsum.trans
   rw [←Finset.mul_sum]
-  calc
-    _ ≤ (128*L)^5*(B*(∑ρ : SecondRayIndex,‖secondRayCoefficient ρ‖)) :=
-      mul_le_mul_of_nonneg_right (sourceKeys_card p hp hinj pool S L hL hpool hnorm) (by positivity)
-    _ = _ := by dsimp [B,R]; ring
+  exact (mul_le_mul_of_nonneg_right (sourceKeys_card p hp hinj pool S L hL hpool hnorm) (by positivity)).trans_eq (by dsimp [B,R]; ring)
 
 end SevenEighths.InverseInitialHighFrequencyTail
 

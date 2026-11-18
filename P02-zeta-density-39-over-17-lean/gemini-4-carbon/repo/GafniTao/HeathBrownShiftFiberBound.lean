@@ -38,18 +38,16 @@ theorem heathBrownPositiveShiftFiber_card_cast_le_raw
         ((A * lambda * d / ((k - 2).factorial : ℝ)) * (N - d : ℕ) +
           2 * (4 * (((H : ℝ) ^ (k - 2))⁻¹)) + 3) := by
   let g := heathBrownShiftedDifference f (k - 2) d
-  let theta : ℝ := 4 * (((H : ℝ) ^ (k - 2))⁻¹)
-  let mu : ℝ := lambda * d / ((k - 2).factorial : ℝ)
-  let M : ℝ := A * lambda * d / ((k - 2).factorial : ℝ)
+  let theta := 4 * (((H : ℝ) ^ (k - 2))⁻¹)
+  let mu := lambda * d / ((k - 2).factorial : ℝ)
+  let M := A * lambda * d / ((k - 2).factorial : ℝ)
   have hmu : 0 < mu := by dsimp [mu]; positivity
   have htheta : 0 ≤ theta := by dsimp [theta]; positivity
   have hM : 0 ≤ M := by dsimp [M]; positivity
-  have hg := heathBrown_shiftedDifference_continuousOn hdN hcoord
-  have hgd := heathBrown_shiftedDifference_differentiableOn hdN hcoordd
   have hbounds := heathBrown_shiftedDifference_deriv_bounds
     (by omega : 2 ≤ k) hdN hraw hrawd hcoordd hkBounds
   have hspacing := heathBrown_spacing_card_cast_le hN hmu htheta hM
-    hg hgd (fun x hx => (hbounds x hx).1) (fun x hx => (hbounds x hx).2)
+    (heathBrown_shiftedDifference_continuousOn hdN hcoord) (heathBrown_shiftedDifference_differentiableOn hdN hcoordd) (fun x hx => (hbounds x hx).1) (fun x hx => (hbounds x hx).2)
   have hfiber :
       ((heathBrownPositiveShiftFiber N k H K f d).card : ℝ) ≤
         ((heathBrownSpacingSet (N - d) g theta).card : ℝ) := by
@@ -60,8 +58,8 @@ theorem heathBrownPositiveShiftFiber_card_cast_le_raw
           (heathBrownShiftedDifference f (k - 2) d)
           (4 * (((H : ℝ) ^ (k - 2))⁻¹))).card : ℝ) := by
       exact_mod_cast hnat
-    simpa only [g, theta] using hcast
-  exact hfiber.trans (by simpa only [g, theta, mu, M] using hspacing)
+    simpa using hcast
+  exact hfiber.trans (by simpa using hspacing)
 
 theorem heathBrownPositiveShiftFiber_card_cast_le_harmonic
     {N k H K D d : ℕ} {f : ℝ → ℝ} {A lambda : ℝ}
@@ -90,11 +88,11 @@ theorem heathBrownPositiveShiftFiber_card_cast_le_harmonic
   have hrawBound := heathBrownPositiveShiftFiber_card_cast_le_raw
     (H := H) (K := K) hk hN hd hdN hA hlambda hcoord hcoordd
     hraw hrawd hkBounds
-  let u : ℝ := (((H : ℝ) ^ (k - 2))⁻¹)
-  let fac : ℝ := ((k - 2).factorial : ℝ)
-  let c : ℝ := 8 * fac * u / lambda
-  let b : ℝ := 8 * u + 3
-  let a : ℝ := A * lambda * N / fac
+  let u := (((H : ℝ) ^ (k - 2))⁻¹)
+  let fac := ((k - 2).factorial : ℝ)
+  let c := 8 * fac * u / lambda
+  let b := 8 * u + 3
+  let a := A * lambda * N / fac
   have hfac : 0 < fac := by dsimp [fac]; positivity
   have hdR : 0 < (d : ℝ) := by exact_mod_cast hd
   have hDR : (d : ℝ) ≤ D := by exact_mod_cast hdD
@@ -119,25 +117,18 @@ theorem heathBrownPositiveShiftFiber_card_cast_le_harmonic
     dsimp [c]
     field_simp
     ring
-  rw [show (((H : ℝ) ^ (k - 2))⁻¹) = u by rfl] at hrawBound
-  rw [show ((k - 2).factorial : ℝ) = fac by rfl] at hrawBound
-  rw [hfirst] at hrawBound
+  rw [show (((H : ℝ) ^ (k - 2))⁻¹) = u by rfl, show ((k - 2).factorial : ℝ) = fac by rfl, hfirst] at hrawBound
   have htwoFour : 2 * (4 * u) = 8 * u := by ring
   rw [htwoFour] at hrawBound
   have hfactorNonneg : 0 ≤ ((d : ℝ) + c) / d := by positivity
-  have hmiddle :
-      ((d : ℝ) + c) / d *
-          ((A * lambda * (d : ℝ) / fac) * ((N - d : ℕ) : ℝ) + 8 * u + 3) ≤
-        ((d : ℝ) + c) / d * (b + a * d) :=
-    mul_le_mul_of_nonneg_left hsecond hfactorNonneg
   have hthird :
       ((d : ℝ) + c) / d * (b + a * d) ≤
         ((D : ℝ) + c) / d * (b + a * D) := by
     have hleft : ((d : ℝ) + c) / d ≤ ((D : ℝ) + c) / d := by
       exact div_le_div_of_nonneg_right
-        (by simpa only [add_comm] using add_le_add_right hDR c) hdR.le
+        (by simpa using add_le_add_right hDR c) hdR.le
     have hright : b + a * (d : ℝ) ≤ b + a * D := by
-      simpa only [add_comm] using
+      simpa using
         add_le_add_left (mul_le_mul_of_nonneg_left hDR ha) b
     exact mul_le_mul hleft hright (by positivity) (by positivity)
   calc
@@ -145,7 +136,7 @@ theorem heathBrownPositiveShiftFiber_card_cast_le_harmonic
         ((d : ℝ) + c) / d *
           ((A * lambda * (d : ℝ) / fac) * ((N - d : ℕ) : ℝ) + 8 * u + 3) :=
       hrawBound
-    _ ≤ ((d : ℝ) + c) / d * (b + a * d) := hmiddle
+    _ ≤ ((d : ℝ) + c) / d * (b + a * d) := (mul_le_mul_of_nonneg_left hsecond hfactorNonneg)
     _ ≤ ((D : ℝ) + c) / d * (b + a * D) := hthird
     _ = ((D : ℝ) + c) * (b + a * D) / d := by ring
 

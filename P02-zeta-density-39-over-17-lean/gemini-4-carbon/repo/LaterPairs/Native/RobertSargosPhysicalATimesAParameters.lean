@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.RobertSargosZeroQFloorBudgets
 
 @[expose] public section
@@ -23,14 +32,11 @@ theorem robertSargos_physical_a_times_a_ranges (M H : ℕ) {lam : ℝ}
   obtain ⟨hQ,hR,hRhi,_⟩ := robertSargos_zero_q_floor_budgets M H hlam hsmall hM hHmax
   have hlam1 : lam ≤ 1 := by linarith
   have hH : 0 < H := by
-    have hc := (Real.rpow_pos_of_pos hlam (-(1:ℝ)/7)).trans_le hHmin
-    exact_mod_cast hc
-  have hQM : (⌊lam^(-(3:ℝ)/13)⌋₊:ℝ) ≤ M :=
-    (Nat.floor_le (Real.rpow_nonneg hlam.le _)).trans
+    exact_mod_cast ((Real.rpow_pos_of_pos hlam (-(1:ℝ)/7)).trans_le hHmin)
+  have hQM := (Nat.floor_le (Real.rpow_nonneg hlam.le _)).trans
       ((Real.rpow_le_rpow_of_exponent_ge hlam hlam1
         (by norm_num : -(8:ℝ)/13 ≤ -3/13)).trans hM)
-  have hRH : (⌊lam^(-(1:ℝ)/13)⌋₊:ℝ) ≤ H :=
-    hRhi.trans ((Real.rpow_le_rpow_of_exponent_ge hlam hlam1
+  have hRH := hRhi.trans ((Real.rpow_le_rpow_of_exponent_ge hlam hlam1
       (by norm_num : -(1:ℝ)/7 ≤ -1/13)).trans hHmin)
   exact ⟨hH,hQ,hR,by exact_mod_cast hQM,by exact_mod_cast (show
     (⌊lam^(-(1:ℝ)/13)⌋₊:ℝ) ≤ 2*(H:ℝ) by linarith [Nat.cast_nonneg (α := ℝ) H])⟩
@@ -43,9 +49,9 @@ theorem robertSargos_physical_endpoint_budget (M H : ℕ) {lam : ℝ}
   have hT : 2 ≤ T := (thirteenth_root_physical_scale hlam hsmall).1
   have hT1 : 1 ≤ T := by linarith
   have h2 : T^2 = lam^(-(2:ℝ)/13) := by
-    simpa only [Nat.cast_ofNat] using thirteenth_root_nat_pow hlam 2
+    simpa using thirteenth_root_nat_pow hlam 2
   have h8 : T^8 = lam^(-(8:ℝ)/13) := by
-    simpa only [Nat.cast_ofNat] using thirteenth_root_nat_pow hlam 8
+    simpa using thirteenth_root_nat_pow hlam 8
   have hHM : (H:ℝ) ≤ T^2/2 := by rwa [h2]
   have hMM : T^8 ≤ (M:ℝ) := by rwa [h8]
   have hR : (⌊lam^(-(1:ℝ)/13)⌋₊:ℝ) ≤ T := Nat.floor_le (by positivity)

@@ -9,9 +9,8 @@ public import TaoTrudgianYang2025.ExponentPairBProcess
 @[expose] public section
 set_option autoImplicit false
 noncomputable section
-open Expdb Filter Finset
+open Expdb Filter Finset MathCollab.Density MathCollab.Density.Stronger MathCollab.Density.Stronger.Peaks
 open scoped NNReal
-open MathCollab.Density MathCollab.Density.Stronger MathCollab.Density.Stronger.Peaks
 namespace TaoTrudgianYang2025
 private theorem taoTrudgianYang_fourthNew_half_beta
     {α : ℝ≥0} (hhalf : (α:ℝ)≤1/2) :
@@ -24,30 +23,30 @@ private theorem taoTrudgianYang_fourthNew_half_beta
     norm_num
   by_cases h7 : (α:ℝ)≤1/6
   · have hh := exponentSumGrowthExponent_le_heathBrown_of_derivative
-      GafniTao.heathBrownKthDerivativeTheorem_native (by norm_num : 3≤(7:ℕ)) hpos
+      GafniTao.heathBrownKthDerivativeTheorem_native (by norm_num : 3≤7) hpos
     apply hh.trans
-    rw [heathBrownBetaBound_eq_max (by norm_num : 3≤(7:ℕ))]
+    rw [heathBrownBetaBound_eq_max (by norm_num : 3≤7)]
     norm_num [heathBrownDerivativeExponent,heathBrownInverseExponent]
-    refine ⟨?_,?_,?_⟩ <;> linarith only [h7,α.coe_nonneg]
+    refine ⟨?_,?_,?_⟩ <;> linarith
   by_cases h6 : (α:ℝ)≤3/13
   · have hh := exponentSumGrowthExponent_le_heathBrown_of_derivative
-      GafniTao.heathBrownKthDerivativeTheorem_native (by norm_num : 3≤(6:ℕ)) hpos
+      GafniTao.heathBrownKthDerivativeTheorem_native (by norm_num : 3≤6) hpos
     apply hh.trans
-    rw [heathBrownBetaBound_eq_max (by norm_num : 3≤(6:ℕ))]
+    rw [heathBrownBetaBound_eq_max (by norm_num : 3≤6)]
     norm_num [heathBrownDerivativeExponent,heathBrownInverseExponent]
-    refine ⟨?_,?_,?_⟩ <;> linarith only [lt_of_not_ge h7,h6]
+    refine ⟨?_,?_,?_⟩ <;> linarith
   by_cases h5 : (α:ℝ)≤1/4
   · have hh := exponentSumGrowthExponent_le_heathBrown_firstRow h5
-    linarith only [hh,lt_of_not_ge h6]
+    linarith
   by_cases hlo : (α:ℝ)≤890/3277
   · have hh := exponentSumGrowthExponent_le_heathBrown_secondRow (le_of_not_ge h5) hlo
-    linarith only [hh,hlo]
+    linarith
   by_cases hhi : (α:ℝ)≤17604372/60424193
   · exact HuxleyRationalPhase.exponentSumGrowthExponent_le_huxley_fourthPair_shortRange
       (le_of_not_ge hlo) hhi
   have hh := CubicJointCount.exponentSumGrowthExponent_le_trudgianYang_sixthRow
-    (α:=α) (by linarith only [hhalf])
-  linarith only [hh,lt_of_not_ge hhi]
+    (α:=α) (by linarith)
+  linarith
 
 /-- The fourth new analytic exponent pair, obtained from complete beta
 coverage, not from a rational triangle certificate or an assumed pair. -/

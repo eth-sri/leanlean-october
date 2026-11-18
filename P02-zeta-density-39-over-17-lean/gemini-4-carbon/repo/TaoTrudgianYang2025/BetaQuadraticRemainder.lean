@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaQuadraticTaylor
 
 @[expose] public section
@@ -35,24 +45,23 @@ theorem norm_quadratic_window_remainder_le
     (quadraticTaylorCoefficient_contDiff hW) hT hH
     (abs_quadraticTaylorCoefficient_le h₂)
     (abs_deriv_quadraticTaylorCoefficient_le hW h₃)
-  have htail := norm_betaQuadraticWindow_sub_main hT hH
   rw [integral_weighted_betaQuadraticKernel_taylor hW]
   have he :
       (W 0 : ℂ)*(∫ z in (-H)..H, betaQuadraticKernel T z)+
           (∫ z in (-H)..H, ((z^2*quadraticTaylorCoefficient W z : ℝ) : ℂ)*
             betaQuadraticKernel T z)-
-          (W 0 : ℂ)*((𝐞 (-(1 : ℝ)/8) : ℂ)/(Real.sqrt T : ℂ)) =
+          (W 0 : ℂ)*((𝐞 (-1/8) : ℂ)/(Real.sqrt T : ℂ)) =
       (W 0 : ℂ)*((∫ z in (-H)..H, betaQuadraticKernel T z)-
-          (𝐞 (-(1 : ℝ)/8) : ℂ)/(Real.sqrt T : ℂ))+
+          (𝐞 (-1/8) : ℂ)/(Real.sqrt T : ℂ))+
           ∫ z in (-H)..H, ((z^2*quadraticTaylorCoefficient W z : ℝ) : ℂ)*
             betaQuadraticKernel T z := by ring
   rw [he]
   apply (norm_add_le _ _).trans
   have hmain :
       ‖(W 0 : ℂ)*((∫ z in (-H)..H, betaQuadraticKernel T z)-
-        (𝐞 (-(1 : ℝ)/8) : ℂ)/(Real.sqrt T : ℂ))‖ ≤ M₀*(4/(T*H*Real.pi)) := by
+        (𝐞 (-1/8) : ℂ)/(Real.sqrt T : ℂ))‖ ≤ M₀*(4/(T*H*Real.pi)) := by
     rw [norm_mul,Complex.norm_real,Real.norm_eq_abs]
-    exact mul_le_mul h₀ htail (norm_nonneg _) ((abs_nonneg _).trans h₀)
+    exact mul_le_mul h₀ (norm_betaQuadraticWindow_sub_main hT hH) (norm_nonneg _) ((abs_nonneg _).trans h₀)
   apply (add_le_add hmain hparts).trans_eq
   unfold quadraticRemainderConstant
   field_simp

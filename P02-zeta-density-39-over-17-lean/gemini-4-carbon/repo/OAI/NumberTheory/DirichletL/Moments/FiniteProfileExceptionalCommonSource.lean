@@ -9,18 +9,11 @@ public import OAI.NumberTheory.DirichletL.Moments.CommonExceptionalGates
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
 open Filter
+open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptionalCommon
-open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge UniqueFactorizationMonoid
-open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum
-open CenteredMomentCommonLinearNormalization CenteredMomentCommonPairedSource
-open CenteredMomentCommonExceptionalCost CenteredMomentCommonExceptionalMass CenteredMomentCommonExceptionalGates
-open CenteredMomentExceptionalAsymmetricSource CenteredMomentExceptionalMaskedSource
-open CenteredMomentExceptionalAmplitudePair CenteredMomentExceptionalSourceShell
-open CenteredMomentSecondHeightFamily
-open CenteredMomentFiniteProfileExceptional
+open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge UniqueFactorizationMonoid CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentCommonLinearNormalization CenteredMomentCommonPairedSource CenteredMomentCommonExceptionalCost CenteredMomentCommonExceptionalMass CenteredMomentCommonExceptionalGates CenteredMomentExceptionalAsymmetricSource CenteredMomentExceptionalMaskedSource CenteredMomentExceptionalAmplitudePair CenteredMomentExceptionalSourceShell CenteredMomentSecondHeightFamily CenteredMomentFiniteProfileExceptional
 local notation "O" => HeckeFamily.O
 universe u
 variable {ι:Type u} [Fintype ι] [DecidableEq ι]
@@ -60,7 +53,7 @@ theorem actual_common_exceptional (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)(lo hi:
   intro s v p q hlo hhi hsP hvP hsW₁ hsW₂ hvW₁ hvW₂ C D hC hD R seed hR hsC hsD
     rLeft rRight hsX₁ hsX₂ hsY₁ hsY₂ hvX₁ hvX₂ hvY₁ hvY₂ rows hn hsEx hvEx hsCond hvCond Ds hDs
   let H:=Ka*(rows.card:ℝ)*Z^(2*ε+δ-max (rLeft-Real.logb Z (C.absNorm:ℝ)) 0)
-  have hz:0<Z:=zero_lt_one.trans hZ.1
+  have hz :=zero_lt_one.trans hZ.1
   have hH:0≤H:=by dsimp [H];positivity
   have hb (c:actualAllocations s.pools C)(d:actualAllocations v.pools D):
       (∑L∈Ds,‖(moebius L:ℂ)‖*∑z∈rows,

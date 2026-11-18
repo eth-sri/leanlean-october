@@ -46,20 +46,16 @@ theorem heathBrownPositiveShiftFiber_shift_le
       (heathBrownBlockParameter A lambda N) f d) :
     d ≤ heathBrownShiftBound N k H lambda := by
   have hn' := mem_heathBrownPositiveShiftFiber.mp hn
-  have hp := hn'.2.2
   have hsep := heathBrown_actualBlock_pair_source_separation
-    hk hA hlambda hsmall hg hgd hkBounds hp
-  have hdN : d ≤ N :=
-    le_trans (Nat.le_add_left d n) hn'.2.1
+    hk hA hlambda hsmall hg hgd hkBounds (hn'.2.2)
   have hdReal : (d : ℝ) ≤
       4 * ((k - 1).factorial : ℝ) /
         (lambda * (H : ℝ) ^ (k - 1)) := by
-    simpa only [Nat.cast_add, add_sub_cancel_left, abs_of_nonneg,
-      Nat.cast_nonneg] using hsep
+    simpa using hsep
   have hfloor : d ≤ ⌊4 * ((k - 1).factorial : ℝ) /
       (lambda * (H : ℝ) ^ (k - 1))⌋₊ := by
     exact Nat.le_floor hdReal
-  exact (Nat.le_min).2 ⟨hdN, hfloor⟩
+  exact (Nat.le_min).2 ⟨(le_trans (Nat.le_add_left d n) hn'.2.1), hfloor⟩
 
 theorem heathBrownPositiveShiftFiber_eq_empty_of_shiftBound_lt
     {N k H d : ℕ} {f : ℝ → ℝ} {A lambda : ℝ}
@@ -108,10 +104,9 @@ theorem heathBrown_positiveShift_sum_restrict
     rw [Finset.mem_Icc] at hd ⊢
     exact ⟨hd.1, hd.2.trans (heathBrownShiftBound_le_N N k H lambda)⟩
   · intro d hdBig hdSmall
-    have hdBig' := Finset.mem_Icc.mp hdBig
     have hdOut : heathBrownShiftBound N k H lambda < d := by
       by_contra hnot
-      exact hdSmall (Finset.mem_Icc.mpr ⟨hdBig'.1, Nat.le_of_not_gt hnot⟩)
+      exact hdSmall (Finset.mem_Icc.mpr ⟨(Finset.mem_Icc.mp hdBig).1, Nat.le_of_not_gt hnot⟩)
     rw [heathBrownPositiveShiftFiber_eq_empty_of_shiftBound_lt
       hk hA hlambda hsmall hg hgd hkBounds hdOut]
     rfl

@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.IntegerBoxCount
 
 @[expose] public section
@@ -25,8 +34,7 @@ theorem integer_box_quadruples_card_le
   classical
   let X := S.image Prod.fst
   let Y := S.image Prod.snd
-  have hX : (X.card:ℝ) ≤ (b₁-a₁+1)*(b₂-a₂+1)*(b₃-a₃+1) :=
-    integer_box_triples_card_le X h₁ h₂ h₃
+  have hX := integer_box_triples_card_le X h₁ h₂ h₃
       (fun x hx' => by
         obtain ⟨p,hp,rfl⟩ := Finset.mem_image.mp hx'
         exact hx p hp)
@@ -36,8 +44,7 @@ theorem integer_box_quadruples_card_le
       (fun z hz' => by
         obtain ⟨p,hp,rfl⟩ := Finset.mem_image.mp hz'
         exact hz p hp)
-  have hY : (Y.card:ℝ) ≤ b₄-a₄+1 :=
-    integer_card_le_interval_length_add_one Y h₄ (fun y hy' => by
+  have hY := integer_card_le_interval_length_add_one Y h₄ (fun y hy' => by
       obtain ⟨p,hp,rfl⟩ := Finset.mem_image.mp hy'
       exact hw p hp)
   have hsub : S ⊆ X ×ˢ Y := by
@@ -45,7 +52,7 @@ theorem integer_box_quadruples_card_le
     exact Finset.mem_product.mpr
       ⟨Finset.mem_image.mpr ⟨p,hp,rfl⟩,Finset.mem_image.mpr ⟨p,hp,rfl⟩⟩
   have hc : S.card ≤ X.card*Y.card := by
-    simpa only [Finset.card_product] using Finset.card_le_card hsub
+    simpa using Finset.card_le_card hsub
   have hcR : (S.card:ℝ) ≤ (X.card:ℝ)*(Y.card:ℝ) := by exact_mod_cast hc
   exact hcR.trans (mul_le_mul hX hY (by positivity)
     (mul_nonneg (mul_nonneg (by linarith) (by linarith)) (by linarith)))

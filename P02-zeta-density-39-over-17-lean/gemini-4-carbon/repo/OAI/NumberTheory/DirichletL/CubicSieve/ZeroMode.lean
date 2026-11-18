@@ -6,9 +6,8 @@ public import OAI.NumberTheory.DirichletL.CubicSieve.DualShell
 namespace OAI
 
 namespace SevenEighths.CubicSieve
+open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
-open EisensteinSchwartzPoisson
 noncomputable section
 local notation "O" => ActualEisensteinCubic.O
 
@@ -29,8 +28,7 @@ theorem cubicDualRow_zero_bound {n : Type*} [Fintype n] [DecidableEq n]
     have he : cubicDualRow cols hc a W M 0 =
         (star (cubicDualCoefficient cols hc a j₀) * cubicDualCoefficient cols hc a j₀) *
           paperRadialFourier W 0 := by
-      rw [cubicDualRow_eq_gram]
-      rw [Finset.sum_eq_single j₀]
+      rw [cubicDualRow_eq_gram, Finset.sum_eq_single j₀]
       · rw [Finset.sum_eq_single j₀]
         · simp only [hj₀, cubicRow_one, one_mul, Ideal.span_singleton_zero,
             Ideal.absNorm_bot, Nat.cast_zero, mul_zero, zero_div, ite_eq_left isCoprime_one_left]

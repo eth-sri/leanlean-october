@@ -1,24 +1,23 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.DyadicMomentCutoff
 public import LaterPairs.Native.ZetaMomentKernel
 
 @[expose] public section
 set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
-
- 
-                                                                 
-
-                                                                        
-                                                                         
-                  
-
-
-open MeasureTheory Set
+open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth MeasureTheory Set
 open scoped Interval Classical
 
 noncomputable section
@@ -33,7 +32,7 @@ theorem exists_bourgain_dyadic_amplitude {a x : ℝ} (hx : a ≤ x)
   induction J with
   | zero => simp only [pow_zero, mul_one] at hupper; exact False.elim (not_lt_of_ge hx hupper)
   | succ J ih =>
-    by_cases h : x < a*(2 : ℝ)^J
+    by_cases h : x < a*2^J
     · obtain ⟨j, hj, hlo, hhi⟩ := ih h
       exact ⟨j, Finset.mem_range.mpr (lt_trans (Finset.mem_range.mp hj) (Nat.lt_succ_self J)),
         hlo, hhi⟩

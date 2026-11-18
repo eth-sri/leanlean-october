@@ -1,7 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.PairedEligibleEnergy
 
-set_option linter.privateModule false
 
 @[expose] public section
 
@@ -11,8 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentUniformEligibleEnergy
-open CenteredMomentEligibleEnergy CenteredMomentPairedEligibleEnergy
-open CenteredMomentUniformDivisorShell CenteredMomentSlotRatios
+open CenteredMomentEligibleEnergy CenteredMomentPairedEligibleEnergy CenteredMomentUniformDivisorShell CenteredMomentSlotRatios
 local notation "O" => ActualEisensteinCubic.O
 
 end SevenEighths.CenteredMomentUniformEligibleEnergy

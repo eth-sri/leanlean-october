@@ -8,15 +8,10 @@ public import OAI.NumberTheory.DirichletL.Moments.InductionEnergy
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
+open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentRayMaskedFloor
-open HeckeFamily HeckeDyadic HeckeZeroSupremum QuadraticInitialBound ConcreteTraceCRT
-open CenteredMomentNaturalFixedRaySource CenteredMomentNaturalRowSource
-open CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy
-open CenteredMomentAllocatedNaturalSource CenteredMomentAllocatedNaturalRadial CenteredMomentPrimeSlot
-open CenteredMomentPlainPositiveScale CenteredMomentOriginalRadialComparison
-open CenteredMomentPlainGlobalEnergy CenteredMomentSecondHeightFamily CenteredExceptionalProfile
+open HeckeFamily HeckeDyadic HeckeZeroSupremum QuadraticInitialBound ConcreteTraceCRT CenteredMomentNaturalFixedRaySource CenteredMomentNaturalRowSource CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy CenteredMomentAllocatedNaturalSource CenteredMomentAllocatedNaturalRadial CenteredMomentPrimeSlot CenteredMomentPlainPositiveScale CenteredMomentOriginalRadialComparison CenteredMomentPlainGlobalEnergy CenteredMomentSecondHeightFamily CenteredExceptionalProfile
 open CenteredMomentRadialEligibleEnergy (Radial)
 local notation "O" => HeckeFamily.O
 
@@ -70,10 +65,8 @@ theorem original_masked_positive_floor {α : Type*} [Fintype α] [DecidableEq α
       (dvd_mul_right _ _) (dvd_mul_left _ _)).mpr hh
   let V₁ := CenteredMomentLattice.normPowerProfile W₁ a₀ b₀ ha₀ hs₁ (W₁.smooth ⊤) t
   let V₂ := CenteredMomentLattice.normPowerProfile W₂ a₀ b₀ ha₀ hs₂ (W₂.smooth ⊤) t
-  have hv₁ : Function.support (V₁:ℝ→ℂ)⊆Set.Icc a₀ b₀ :=
-    (CenteredMomentTwist.normPowerProfile_support W₁ a₀ b₀ ha₀ hs₁ (W₁.smooth ⊤) t).trans hs₁
-  have hv₂ : Function.support (V₂:ℝ→ℂ)⊆Set.Icc a₀ b₀ :=
-    (CenteredMomentTwist.normPowerProfile_support W₂ a₀ b₀ ha₀ hs₂ (W₂.smooth ⊤) t).trans hs₂
+  have hv₁ := (CenteredMomentTwist.normPowerProfile_support W₁ a₀ b₀ ha₀ hs₁ (W₁.smooth ⊤) t).trans hs₁
+  have hv₂ := (CenteredMomentTwist.normPowerProfile_support W₂ a₀ b₀ ha₀ hs₂ (W₂.smooth ⊤) t).trans hs₂
   have he := hZ θ w σ v t T (fun i _=>hw i) (fun i _=>hwL i)
     (fun i _=>hσlo i) (fun i _=>hσhi i) hT (fun i _=>hv i)
     η Q r Qbound R hR hQM hQbound hz hexbase hmod hQ V₁ V₂ hv₁ hv₂ X₁ X₂ hX₁ hX₂
@@ -96,8 +89,7 @@ theorem original_masked_positive_floor {α : Type*} [Fintype α] [DecidableEq α
     · simp only [hk,ite_true]
       rw [original_positive_normalized (naturalRow η z (hz z hk)) R hR W₁ W₂
         a₀ b₀ a₀ b₀ ha₀ ha₀ hs₁ hs₂ (W₁.smooth ⊤) (W₂.smooth ⊤)
-        _ _ _ (fun i=>Real.rpow_pos_of_pos hZ0 _) t X₁ X₂ hX₁ hX₂]
-      rw [norm_mul,norm_mul,positive_height_phase_norm X₁ t hX₁,
+        _ _ _ (fun i=>Real.rpow_pos_of_pos hZ0 _) t X₁ X₂ hX₁ hX₂, norm_mul,norm_mul,positive_height_phase_norm X₁ t hX₁,
         positive_height_phase_norm X₂ t hX₂,one_mul,one_mul,naturalCharacter_eq η z (hz z hk)]
     · simp only [hk,ite_false]
   rw [hid]

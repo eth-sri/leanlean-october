@@ -8,10 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.InverseMomentFirstLabelCell
-open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseMomentFirstChildWindows InverseFirstPriorityParents InverseFirstGlobalParents
-open InverseMomentGlobalRetainedGates InverseInitialArithmetic InverseSecondSourceBlocks
-open InverseSecondUniformCutoff
+open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseMomentFirstChildWindows InverseFirstPriorityParents InverseFirstGlobalParents InverseMomentGlobalRetainedGates InverseInitialArithmetic InverseSecondSourceBlocks InverseSecondUniformCutoff
 open ConcreteTraceCRT (eisEmbedding)
 local notation "O" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
@@ -66,7 +63,7 @@ theorem source_row_gates (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (k : Sour
       (actualCellRowRadius Z M ell (columnA Z k negative) (exponent Z l) V (exponent Z j) eta (index p x))) ∧
     (∀d∈keys p S,0≤actualCellRowExponent Z M ell (columnA Z k negative) (exponent Z l) V (exponent Z j) eta d) := by
   intro S
-  have hz : 0<Z := zero_lt_one.trans hZ
+  have hz := zero_lt_one.trans hZ
   have hc : columnScale Z r k l negative*Real.exp window≤
       Z^(r-columnA Z k negative-exponent Z (k 2)-exponent Z l+4*eta) := by
     unfold columnScale

@@ -26,23 +26,21 @@ theorem ray_prime_bounded_scale (W : ℝ→ℂ) (A B lo hi D : ℝ) (hA : 0<A)
   let S := annulusSet B D
   refine ⟨((S.card:ℝ)+1)*Cw,by positivity,?_⟩
   intro χ P σ freq hP hPD hσ hσhi
-  have hp : 0<P := zero_lt_one.trans_le hP
   have hsub : (annulusSet B P).filter (fun I=>Prime I ∧ I∈RayQuotient.identityClass M H)⊆S := by
     intro I hI
     have hi := ConcretePrimeRowBridge.mem_idealsUpTo.mp (Finset.mem_filter.mp hI).1
     apply ConcretePrimeRowBridge.mem_idealsUpTo.mpr
     exact ⟨hi.1,hi.2.trans (Nat.floor_mono (mul_le_mul_of_nonneg_left hPD (le_trans zero_le_one (le_max_left _ _))))⟩
   have hn (I : Ideal O) : ‖idealCoeff χ I*annularWeight W P σ freq I‖≤Cw := by
-    have hc := idealCoeff_norm_le_one χ I
     apply (show ‖idealCoeff χ I*annularWeight W P σ freq I‖≤‖annularWeight W P σ freq I‖ by
-      rw [norm_mul];exact mul_le_of_le_one_left (norm_nonneg _) hc).trans
+      rw [norm_mul];exact mul_le_of_le_one_left (norm_nonneg _) (idealCoeff_norm_le_one χ I)).trans
     by_cases hz : W ((I.absNorm:ℝ)/P)=0
     · simp [annularWeight,hz,hCw.le]
     · have hs := hWs hz
       rw [annularWeight,norm_mul,Complex.norm_cpow_eq_rpow_re_of_pos (hA.trans_le hs.1)]
       simpa only [Complex.neg_re,shift_re] using hprofile σ ⟨hσ,hσhi⟩ _ hs
   have hpow : ‖(P:ℂ)^(-(1/2:ℂ))‖≤1 := by
-    rw [Complex.norm_cpow_eq_rpow_re_of_pos hp]
+    rw [Complex.norm_cpow_eq_rpow_re_of_pos (zero_lt_one.trans_le hP)]
     norm_num only [Complex.neg_re,show ((1/2:ℂ).re)=1/2 by norm_num]
     exact Real.rpow_le_one_of_one_le_of_nonpos hP (by norm_num)
   unfold rayPrimePolynomial
@@ -59,7 +57,7 @@ lemma lifted_scale_power (Z T D P κ loss : ℝ) (hZ : 0<Z) (hT : 0<T) (hD : D�
     (hU : 1<(Z*T)^D) (hP : 0<P) :
     ((Z*T)^D)^(κ*Real.logb ((Z*T)^D) P+2*(loss/(2*D)))=
       P^κ*Z^loss*T^loss := by
-  have hu : 0<(Z*T)^D := zero_lt_one.trans hU
+  have hu := zero_lt_one.trans hU
   rw [Real.rpow_add hu]
   have hs : ((Z*T)^D)^(κ*Real.logb ((Z*T)^D) P)=P^κ := by
     rw [mul_comm κ,Real.rpow_mul hu.le,Real.rpow_logb hu (ne_of_gt hU) hP]

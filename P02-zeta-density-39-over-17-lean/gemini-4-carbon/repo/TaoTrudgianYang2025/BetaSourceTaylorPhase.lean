@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaTaylorRetainedCoverage
 
 @[expose] public section
@@ -55,10 +65,9 @@ theorem modelPhase_source_canonicalTaylorPhase
       (modelPhaseSlopeRange_positive_window hσ hpos hF hw).1
   refine ⟨hcanonical F hF _ hw _ hadmissible.1 hadmissible.2.1 hadmissible.2.2,?_⟩
   intro q hq
-  have hgeom := modelPhaseSharpStationarySet_critical_geometry hσ hsmall hF₁ hT hN ha hb hq
   have hvpos : 0 < (q : ℝ)*N/T :=
     (show 0 < (2 : ℝ)^(-σ)/2 by positivity).trans_le
-      (modelPhaseSlopeRange_positive_window hσ hpos hF hgeom.1).1
+      (modelPhaseSlopeRange_positive_window hσ hpos hF (modelPhaseSharpStationarySet_critical_geometry hσ hsmall hF₁ hT hN ha hb hq).1).1
   exact canonicalTaylorLegendrePhase_agrees Q hA hwpos hvpos hadmissible.1
     (modelPhaseSharpStationarySet_taylor_plateau hσ hsmall hF₁ hT hN ha hb hq)
 

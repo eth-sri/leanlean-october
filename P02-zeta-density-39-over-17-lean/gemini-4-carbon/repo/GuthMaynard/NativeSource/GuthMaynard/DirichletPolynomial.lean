@@ -5,7 +5,10 @@ public import Mathlib.Analysis.SpecialFunctions.Pow.Real
 public import Mathlib.Data.Finset.Interval
 public import Mathlib.Tactic.Linarith
 public import Mathlib.Basic.Real.Basic
-public import GuthMaynard.NativeSource.FiniteDirichletPolynomial
+public import GuthMaynard.NativeSource.CompletedZetaSymmetry
+public import Mathlib.NumberTheory.LSeries.RiemannZeta
+public import Mathlib.Analysis.Complex.Basic
+public import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 
 @[expose] public section
 
@@ -61,8 +64,7 @@ theorem norm_sourceDirichletPoly_conjugateCoeffs
   rw [← hstar, norm_star]
 
 theorem norm_conjugateCoeffs (a : ℕ → ℂ) (n : ℕ) :
-    ‖conjugateCoeffs a n‖ = ‖a n‖ := by
-  exact norm_star _
+    ‖conjugateCoeffs a n‖ = ‖a n‖ := norm_star _
 
 /--
 Twist coefficients by the unimodular phase produced when the ordinate is

@@ -10,9 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentAmplificationAllocationScale
-open CenteredMomentAmplificationAllocationCost CenteredMomentCommonAllocationSum
-open CenteredMomentCommonProfile CenteredMomentSourceLiveColumn CenteredMomentCommonRawScale
-open CenteredMomentAddedZeroUniform
+open CenteredMomentAmplificationAllocationCost CenteredMomentCommonAllocationSum CenteredMomentCommonProfile CenteredMomentSourceLiveColumn CenteredMomentCommonRawScale CenteredMomentAddedZeroUniform
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [Fintype ι]
 
@@ -60,8 +58,7 @@ theorem remainingRaw_exact (S : (ι ⊕ Fin 2) → Finset (Ideal O))
     (hslot : ∀ i,∀ I∈S (Sum.inl i),I≠0 ∧ IsCoprime P I)
     (B : actualAllocations S (P^k)) (scale : ι → ℝ) (Traw : ℝ) :
     remainingRaw B Traw scale=(Traw*∏ i,scale i)/(Ideal.absNorm P:ℝ)^k := by
-  have hb := (allocation_data S (P^k) B (Finset.mem_filter.mp B.property).1).1
-  have he := raw_scale_identity B hb Traw scale
+  have he := raw_scale_identity B ((allocation_data S (P^k) B (Finset.mem_filter.mp B.property).1).1) Traw scale
   rw [rawReduction_exact S P hP k hslot B scale] at he
   have hn : (Ideal.absNorm P:ℝ)≠0 := by
     exact_mod_cast Ideal.absNorm_eq_zero_iff.not.mpr hP

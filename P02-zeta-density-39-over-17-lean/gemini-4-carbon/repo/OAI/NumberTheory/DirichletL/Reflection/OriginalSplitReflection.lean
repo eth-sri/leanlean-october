@@ -65,7 +65,6 @@ theorem actual_marked_slot_split_reflection
                 (rowResidualPart I (Ideal.span {m}*F)),
                 (∏ i : T,w i.val (a.val i))*physical h A T
                   ((originalSlotSplit D R I F (Q*Ideal.span {(72:Eis)}) hR hI hF hm hf hz hbad hcop hpow hmask L hmax hgood T).symm (b,a)) := by
-  dsimp only
   rw [actual_marked_tuple_reflection D R I F Q hR hI hF hm hf hz hbad hcop hpow hmask
     (fun p : ∀ i,L i => slotChoiceFamily L hmax hgood p) hS hSodd Ψ hΨnorm hQ hΨperiod hmLam hm2
     c hc hcQ G N hN hNp C (fun p => ∏ i,w i (p i)) W hWcompact lo hi hlo hsupp hW X hX]
@@ -80,11 +79,11 @@ theorem actual_marked_slot_split_reflection
   intro T hT
   congr 1
   have hs :=
-    (original_supported_slot_sum D R I F (Q*Ideal.span {(72:Eis)}) hR hI hF hm hf hz hbad hcop hpow hmask
+    (original_supported_slot_sum D R I F (Q*Ideal.span {72}) hR hI hF hm hf hz hbad hcop hpow hmask
       L hmax hgood T w (fun p => mixedReflectedValue (C p h A T) (G h).shape
-            (((poolPrimeFamily R (Ideal.span {m}*F) (Q*Ideal.span {(72:Eis)})).restrict A).reflected (rowResidualPart I (Ideal.span {m}*F)) (rowResidualPart_admissible I (Ideal.span {m}*F) hbad) ((slotChoiceFamily L hmax hgood p.val).restrict T)).generator_ne_zero
+            (((poolPrimeFamily R (Ideal.span {m}*F) (Q*Ideal.span {72})).restrict A).reflected (rowResidualPart I (Ideal.span {m}*F)) (rowResidualPart_admissible I (Ideal.span {m}*F) hbad) ((slotChoiceFamily L hmax hgood p.val).restrict T)).generator_ne_zero
             (G h).denominator_ne_zero
-            (((poolPrimeFamily R (Ideal.span {m}*F) (Q*Ideal.span {(72:Eis)})).restrict A).reflected (rowResidualPart I (Ideal.span {m}*F)) (rowResidualPart_admissible I (Ideal.span {m}*F) hbad) ((slotChoiceFamily L hmax hgood p.val).restrict T)).generator_good
+            (((poolPrimeFamily R (Ideal.span {m}*F) (Q*Ideal.span {72})).restrict A).reflected (rowResidualPart I (Ideal.span {m}*F)) (rowResidualPart_admissible I (Ideal.span {m}*F) hbad) ((slotChoiceFamily L hmax hgood p.val).restrict T)).generator_good
             (reflectedExponent (fun b : A => completedLocalExponent R F b.val.val))
             (slotIndices A (PrimeIndex (rowResidualPart I (Ideal.span {m}*F))) T) W X))
   convert hs using 1

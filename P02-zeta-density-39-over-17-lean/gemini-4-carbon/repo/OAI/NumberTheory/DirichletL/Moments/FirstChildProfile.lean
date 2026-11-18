@@ -1,7 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.HeckeColumnWindow
 
-set_option linter.privateModule false
 
 @[expose] public section
 
@@ -11,10 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentFirstChildProfile
-open HeckeFamily CenteredMomentFirstIdealFamily CenteredMomentHeckeColumnWindow
-open CenteredMomentFirstCanonicalFamily CenteredMomentCanonicalFirst CenteredMomentHeckeExpansion
-open CenteredMomentFirstColumns CenteredMomentChildAssembly CenteredMomentSourceRow
-open ActualEisensteinCubic CanonicalQuadraticSieve ConcretePrimeRowBridge RayFourExpansion
+open HeckeFamily CenteredMomentFirstIdealFamily CenteredMomentHeckeColumnWindow CenteredMomentFirstCanonicalFamily CenteredMomentCanonicalFirst CenteredMomentHeckeExpansion CenteredMomentFirstColumns CenteredMomentChildAssembly CenteredMomentSourceRow ActualEisensteinCubic CanonicalQuadraticSieve ConcretePrimeRowBridge RayFourExpansion
 local notation "O" => ActualEisensteinCubic.O
 
 end SevenEighths.CenteredMomentFirstChildProfile

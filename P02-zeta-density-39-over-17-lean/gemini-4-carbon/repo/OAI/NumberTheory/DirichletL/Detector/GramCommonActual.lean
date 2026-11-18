@@ -10,8 +10,7 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbeGramCommon
-open CenteredMomentCorrelation CenteredMomentSupportedCorrelation
-open CenteredMomentCommonSupport CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcreteTraceCRT
+open CenteredMomentCorrelation CenteredMomentSupportedCorrelation CenteredMomentCommonSupport CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcreteTraceCRT
 local notation "O" => ActualEisensteinCubic.O
 
 def actualCommon (C : O) (hC : Supported (Ideal.span {C})) (n₁ n₂ k : O) : ℂ := by
@@ -34,7 +33,7 @@ lemma actualCommon_parameter (C : O) (hC : Supported (Ideal.span {C})) (n₁ n�
   have hh : Ideal.Quotient.mk (Ideal.span {C}) a*Ideal.Quotient.mk _ n₁+
       Ideal.Quotient.mk _ b*Ideal.Quotient.mk _ n₂=1 := by rw [←map_mul,←map_mul,←map_add,hab,map_one]
   rw [actualCommon,fullCorrelation_bezout _ _ _ _ _ hh]
-  simp only [map_mul,map_neg]
+  simp
 
 theorem actual_common_lift_bezout (C n₁ n₂ a b k : O)
     (hC : Supported (Ideal.span {C})) (h₁ : Supported (Ideal.span {n₁}))

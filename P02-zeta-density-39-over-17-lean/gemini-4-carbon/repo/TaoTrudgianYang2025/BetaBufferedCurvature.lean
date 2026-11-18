@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.PhaseWeightedCurvature
 public import TaoTrudgianYang2025.BetaBufferedNonstationary
 public import TaoTrudgianYang2025.BetaStationaryPoint
@@ -45,9 +55,8 @@ theorem norm_modelPhaseBufferedNormalizedMode_curvature
       intro u hu
       have hd := modelPhaseFrequencyPhase_secondDeriv (T := T) (N := 1) (r := q)
         hF (by simpa only [div_one] using hu)
-      change deriv (deriv (modelPhaseFrequencyPhase F T 1 q)) u ≤ _
       rw [hd]
-      norm_num only [one_pow,div_one]
+      norm_num
       have h := mul_le_mul_of_nonneg_left
         (approximateModelPhase_curvature_deriv_bounds hσ hδ hF hu).1 hT.le
       linarith

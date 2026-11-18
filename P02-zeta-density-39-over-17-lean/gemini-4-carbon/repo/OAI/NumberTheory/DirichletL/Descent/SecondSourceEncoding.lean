@@ -6,9 +6,8 @@ public import OAI.NumberTheory.DirichletL.Descent.CubeSource
 namespace OAI
 
 namespace SevenEighths.InverseMoment
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss InverseSecondFibers
 open scoped BigOperators Classical
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss
-open InverseSecondFibers
 open InverseInitialArithmetic (sourceIdeal sourceIdeal_injective)
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O

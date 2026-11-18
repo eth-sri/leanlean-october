@@ -36,23 +36,13 @@ theorem lowSeparatedIntegrand_actual_gram (δ : ℝ) (hδ : 0<δ) (hδ1 : δ<1)
   obtain ⟨K,hK,hgram⟩ := hgram S hS hbad (lowGaussMajorant a₀ b₀ ha₀ hb₀)
   refine ⟨K,hK,?_⟩
   intro W0 X Y hX hY B v hP
-  have hy : 0<Y := lt_of_lt_of_le zero_lt_one hY
-  let Q := lowPhysicalScale (calibrationForSet S hS) X Y
-  have hQ : 0<Q := lowPhysicalScale_pos _ X Y hX hy
-  let A := K*(1+|v|)^J*(Q/Y)*(1+(Y^2/Q)^(1/6:ℝ)+(Y^2/Q)^2/Y)*Y^δ
-  have hbound (σ : RayRing) :
-      (gaussEnergy (lowGaussColumns W1 hW1c Y hy) (fun I=>primaryGenerator I.val)
-        (fun I=>(supported_span_primaryGenerator_iff _).mpr I.property)
-        (lowGaussColumn (calibrationForSet S hS) W1 Y σ v) (lowGaussMajorant a₀ b₀ ha₀ hb₀) Q).re≤A :=
-    (Complex.re_le_norm _).trans (hgram σ v Y Q hY hQ hP)
+  have hy := lt_of_lt_of_le zero_lt_one hY
+  have hbound (σ : RayRing) := (Complex.re_le_norm _).trans (hgram σ v Y (lowPhysicalScale (calibrationForSet S hS) X Y) hY (lowPhysicalScale_pos _ X Y hX hy) hP)
   apply (lowSeparatedIntegrand_actual_energies a₀ b₀ ha₀ hb₀ (calibrationForSet S hS)
     W0 W1 hW1c X Y hX hy B v).trans
   rw [mul_assoc]
   apply mul_le_mul_of_nonneg_left _ (norm_nonneg _)
-  calc
-    _≤∑σ : RayRing,Real.sqrt A*Real.sqrt (∑m∈lowNumeratorRows a₀ b₀ ha₀ hb₀ Q hQ,‖B σ m‖^2) :=
-      Finset.sum_le_sum (fun σ _=>mul_le_mul_of_nonneg_right (Real.sqrt_le_sqrt (hbound σ)) (Real.sqrt_nonneg _))
-    _=_ := (Finset.mul_sum ..).symm
+  exact (Finset.sum_le_sum (fun σ _=>mul_le_mul_of_nonneg_right (Real.sqrt_le_sqrt (hbound σ)) (Real.sqrt_nonneg _))).trans_eq ((Finset.mul_sum ..).symm)
 
 end SevenEighths.ProbePhysical
 end

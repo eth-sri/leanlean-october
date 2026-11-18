@@ -40,11 +40,8 @@ theorem isExponentSumBoundNonAsymptotic_heathBrown_of_derivative
   have hTpos := zero_lt_one.trans_le hT
   have hN : 1 ≤ N := (Real.one_le_rpow hT
     (show 0 ≤ (α : ℝ)-δ by linarith)).trans hs.rpow_sub_le_scale
-  have hNpos := zero_lt_one.trans_le hN
-  have hF := approximateModelPhase_mono hs.isApproximateModelPhase le_rfl hδ₀le
-  have hwindow := heathBrownPowerMajorant_window hk hT hNpos hδ.le hη.le hη₁
+  have hwindow := heathBrownPowerMajorant_window hk hT (zero_lt_one.trans_le hN) hδ.le hη.le hη₁
     hs.scale_le_rpow_add
-  have hLoss : ((α : ℝ)+1)*η+2*δ ≤ ε := by linarith
   have hpow := Real.rpow_le_rpow_of_exponent_le hT
     (show heathBrownBetaBound k α+((α : ℝ)+1)*η+2*δ ≤
       heathBrownBetaBound k α+ε by linarith)
@@ -55,7 +52,7 @@ theorem isExponentSumBoundNonAsymptotic_heathBrown_of_derivative
     have hb : (((a+(b-a)) : ℕ) : ℝ) ≤ 2*N := by
       rw [he]
       exact hs.end_le_two_mul_scale
-    have hsum := hsource F T N a (b-a) hTpos hN hs.scale_le_start hb hF
+    have hsum := hsource F T N a (b-a) hTpos hN hs.scale_le_start hb (approximateModelPhase_mono hs.isApproximateModelPhase le_rfl hδ₀le)
     rw [he] at hsum
     calc
       ‖exponentialSumAt F T N a b‖ ≤ C*heathBrownPowerMajorant k η T N := hsum

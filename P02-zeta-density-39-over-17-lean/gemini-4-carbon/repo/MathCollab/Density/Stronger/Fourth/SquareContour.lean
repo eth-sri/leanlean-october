@@ -13,9 +13,7 @@ public import Mathlib.MeasureTheory.Integral.IntegralEqImproper
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+open Complex Filter MeasureTheory Set Topology MathCollab.Density.Stronger.Fourth MathCollab.Density.Contour
 open scoped Interval
 set_option autoImplicit false
 noncomputable section
@@ -24,11 +22,11 @@ namespace MathCollab.Density.Stronger.Fourth
 theorem norm_hughesYoungAuxiliaryZero_le_polynomial
     {w : ℂ} {R : ℝ} (hR : 1 ≤ R) (hw : ‖w‖ ≤ R) :
     ‖hughesYoungAuxiliaryZero w‖ ≤ 625 * R ^ 8 := by
-  have hw0 : 0 ≤ ‖w‖ := norm_nonneg w
+  have hw0 := norm_nonneg w
   have hsq : ‖w‖ ^ 2 ≤ R ^ 2 := by nlinarith
   have hbase : ‖1 - 4 * w ^ 2‖ ≤ 1 + 4 * R ^ 2 := by
     calc
-      ‖1 - 4 * w ^ 2‖ ≤ ‖(1 : ℂ)‖ + ‖4 * w ^ 2‖ := norm_sub_le _ _
+      ‖1 - 4 * w ^ 2‖ ≤ ‖1‖ + ‖4 * w ^ 2‖ := norm_sub_le _ _
       _ = 1 + 4 * ‖w‖ ^ 2 := by simp [norm_pow]
       _ ≤ 1 + 4 * R ^ 2 := by nlinarith
   have hbaseCoarse : 1 + 4 * R ^ 2 ≤ 5 * R ^ 2 := by
@@ -114,7 +112,7 @@ theorem continuous_zetaSquareContour_vertical (t : ℝ) {c : ℝ} (hc : c ≠ 0)
 theorem gaussianPolynomial_le (u : ℝ) :
     gaussianPolynomial u ≤ 2^14*(Real.exp (-100*u^2)+u^14*Real.exp (-100*u^2)) := by
   have hpoly : (1+|u|)^14 ≤ (2 : ℝ)^14*(1+u^14) := by
-    have heven : |u|^14 = u^14 := (by decide : Even (14 : ℕ)).pow_abs u
+    have heven := (by decide : Even (14 : ℕ)).pow_abs u
     have hpow0 : 0 ≤ u^14 := by rw [← heven]; positivity
     by_cases hu : |u| ≤ 1
     · calc
@@ -125,32 +123,26 @@ theorem gaussianPolynomial_le (u : ℝ) :
         _ = (2 : ℝ)^14*u^14 := by rw [mul_pow, heven]
         _ ≤ _ := by nlinarith
   unfold gaussianPolynomial
-  calc
-    _ ≤ ((2 : ℝ)^14*(1+u^14))*Real.exp (-100*u^2) :=
-      mul_le_mul_of_nonneg_right hpoly (Real.exp_pos _).le
-    _ = _ := by ring
+  exact (mul_le_mul_of_nonneg_right hpoly (Real.exp_pos _).le).trans_eq (by ring)
 
 theorem integrable_gaussianPolynomial : Integrable gaussianPolynomial := by
-  have h0 := integrable_exp_neg_mul_sq (by norm_num : (0 : ℝ) < 100)
   have h14 : Integrable (fun u : ℝ => u^14*Real.exp (-100*u^2)) := by
-    simpa only [Real.rpow_natCast] using
+    simpa using
       integrable_rpow_mul_exp_neg_mul_sq (by norm_num : (0 : ℝ) < 100)
         (by norm_num : (-1 : ℝ) < (14 : ℕ))
-  have hmajor := (h0.add h14).const_mul ((2 : ℝ)^14)
-  apply hmajor.mono' (by unfold gaussianPolynomial; fun_prop)
+  apply (((integrable_exp_neg_mul_sq (by norm_num : (0 : ℝ) < 100)).add h14).const_mul ((2 : ℝ)^14)).mono' (by unfold gaussianPolynomial; fun_prop)
   filter_upwards with u
   rw [Real.norm_of_nonneg (gaussianPolynomial_nonneg u)]
   exact gaussianPolynomial_le u
 
 theorem tendsto_gaussianPolynomial_zero : Tendsto gaussianPolynomial atTop (𝓝 0) := by
-  have hbase : Tendsto (fun u : ℝ => Real.exp (-(1/2 : ℝ)*u)) atTop (𝓝 0) :=
-    Real.tendsto_exp_atBot.comp
+  have hbase := Real.tendsto_exp_atBot.comp
       (tendsto_id.const_mul_atTop_of_neg (by norm_num : -(1/2 : ℝ) < 0))
   have h0 : Tendsto (fun u : ℝ => Real.exp (-100*u^2)) atTop (𝓝 0) := by
     simpa using (rpow_mul_exp_neg_mul_sq_isLittleO_exp_neg
       (by norm_num : (0 : ℝ) < 100) 0).tendsto_zero_of_tendsto hbase
   have h14 : Tendsto (fun u : ℝ => u^14*Real.exp (-100*u^2)) atTop (𝓝 0) := by
-    simpa only [Real.rpow_natCast] using (rpow_mul_exp_neg_mul_sq_isLittleO_exp_neg
+    simpa using (rpow_mul_exp_neg_mul_sq_isLittleO_exp_neg
       (by norm_num : (0 : ℝ) < 100) (14 : ℕ)).tendsto_zero_of_tendsto hbase
   apply squeeze_zero (fun u => gaussianPolynomial_nonneg u) gaussianPolynomial_le
   simpa using (h0.add h14).const_mul ((2 : ℝ)^14)

@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
-open ProbeRow ProbeCompleted CanonicalRowCompletion CanonicalQuadraticSieve CompletedGauss
-open RayFourExpansion InitialMeanSquare SecondPassArithmetic
+open ProbeRow ProbeCompleted CanonicalRowCompletion CanonicalQuadraticSieve CompletedGauss RayFourExpansion InitialMeanSquare SecondPassArithmetic
 local notation "O" => ActualEisensteinCubic.O
 local notation "Id" => Ideal O
 

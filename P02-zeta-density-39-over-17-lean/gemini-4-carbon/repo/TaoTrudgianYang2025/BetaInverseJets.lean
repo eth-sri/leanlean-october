@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaInverseExpressions
 
 @[expose] public section
@@ -29,7 +39,7 @@ theorem contDiffAt_iteratedDeriv_infty {F : ℝ → ℝ} {u : ℝ}
     (hF : ContDiffAt ℝ ∞ F u) (n : ℕ) :
     ContDiffAt ℝ ∞ (iteratedDeriv n F) u := by
   induction n with
-  | zero => simpa only [iteratedDeriv_zero] using hF
+  | zero => simpa using hF
   | succ n hn =>
       rw [iteratedDeriv_succ]
       exact hn.derivWithin (by simp)
@@ -40,7 +50,7 @@ theorem approximateModelPhase_iteratedDeriv_contDiffAt
     {u : ℝ} (hu : u ∈ Ioo (1 : ℝ) 2) (n : ℕ) :
     ContDiffAt ℝ ∞ (iteratedDeriv n F) u := by
   induction n with
-  | zero => simpa only [iteratedDeriv_zero] using approximateModelPhase_contDiffAt hF hu
+  | zero => simpa using approximateModelPhase_contDiffAt hF hu
   | succ n hn =>
       rw [iteratedDeriv_succ]
       exact hn.derivWithin (by simp)
@@ -57,12 +67,10 @@ theorem modelPhaseInverseJet_hasDerivAt
   match j with
   | 0 => exact hi
   | 1 =>
-      have hc := (approximateModelPhase_iteratedDeriv_contDiffAt hF hu 2).differentiableAt (by simp : (∞ : WithTop ℕ∞) ≠ 0)
       have hne : iteratedDeriv 2 F (modelPhaseInverseSlope F v) ≠ 0 := by
         simpa only [iteratedDeriv_succ, iteratedDeriv_zero] using
           approximateModelPhase_secondDeriv_ne_zero hσ hδ hF hu
-      have hh := (hc.hasDerivAt.comp v hi).inv hne
-      convert hh using 1
+      convert ((((approximateModelPhase_iteratedDeriv_contDiffAt hF hu 2).differentiableAt (by simp : (∞ : WithTop ℕ∞) ≠ 0)).hasDerivAt.comp v hi).inv hne) using 1
       · funext w
         simp only [modelPhaseInverseJet, Pi.inv_apply, Function.comp_apply,
           iteratedDeriv_succ, iteratedDeriv_zero]
@@ -70,8 +78,7 @@ theorem modelPhaseInverseJet_hasDerivAt
           iteratedDeriv_succ, iteratedDeriv_zero, Function.comp_apply, div_eq_mul_inv]
         ring
   | n+2 =>
-      have hc := (approximateModelPhase_iteratedDeriv_contDiffAt hF hu (n+2)).differentiableAt (by simp : (∞ : WithTop ℕ∞) ≠ 0)
-      convert hc.hasDerivAt.comp v hi using 1
+      convert ((approximateModelPhase_iteratedDeriv_contDiffAt hF hu (n+2)).differentiableAt (by simp : (∞ : WithTop ℕ∞) ≠ 0)).hasDerivAt.comp v hi using 1
       · rfl
       · simp only [inversePhaseEval, inversePhaseAtomDerivative, modelPhaseInverseJet,
           iteratedDeriv_succ]

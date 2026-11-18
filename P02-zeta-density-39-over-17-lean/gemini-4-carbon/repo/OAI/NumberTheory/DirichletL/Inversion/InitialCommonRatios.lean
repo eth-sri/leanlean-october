@@ -30,8 +30,7 @@ theorem residual_ratio_product (I:Finset σ)(q:∀i∈I,Ideal Eis)
       ∏i∈I.attach,((q i.val i.property).absNorm:ℝ)/Z^(ell i.val) := by
   rw [actual_residual_product I q j hj,Finset.prod_div_distrib]
   have hp : (∏i∈I.attach,Z^(ell i.val))=Z^(z-G) := by
-    rw [←Real.rpow_sum_of_pos hZ]
-    rw [Finset.sum_attach,hell]
+    rw [←Real.rpow_sum_of_pos hZ, Finset.sum_attach,hell]
   rw [hp]
   congr 1
   simp only [survivingProduct,map_prod,Nat.cast_prod]

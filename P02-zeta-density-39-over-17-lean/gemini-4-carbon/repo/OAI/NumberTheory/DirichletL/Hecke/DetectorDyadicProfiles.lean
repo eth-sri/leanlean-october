@@ -14,11 +14,7 @@ open CubicReflectionKernel
 theorem section_deriv_smooth (F : (ℝ × ℝ) → ℝ → ℂ)
     (hF : ContDiff ℝ ∞ (Function.uncurry F)) :
     ContDiff ℝ ∞ (fun p : (ℝ × ℝ) × ℝ => deriv (F p.1) p.2) := by
-  have hFp : ContDiff ℝ ∞
-      (Function.uncurry (fun p : (ℝ × ℝ) × ℝ => F p.1)) :=
-    hF.comp (contDiff_fst.fst.prodMk contDiff_snd)
-  have hd := hFp.fderiv contDiff_snd (by simp : (∞ : ℕ∞ω) + 1 ≤ ∞)
-  simpa only [deriv] using hd.clm_apply (contDiff_const (c := (1 : ℝ)))
+  simpa only [deriv] using ((hF.comp (contDiff_fst.fst.prodMk contDiff_snd)).fderiv contDiff_snd (by simp : (∞ : ℕ∞ω) + 1 ≤ ∞)).clm_apply (contDiff_const (c := (1 : ℝ)))
 
 theorem section_iteratedDeriv_smooth (F : (ℝ × ℝ) → ℝ → ℂ)
     (hF : ContDiff ℝ ∞ (Function.uncurry F)) (j : ℕ) :
@@ -33,28 +29,25 @@ theorem compact_family_deriv_integrable (F : (ℝ × ℝ) → ℝ → ℂ)
     (hF : ContDiff ℝ ∞ (Function.uncurry F)) (K : Set ℝ) (hK : IsCompact K)
     (hsupp : ∀ σ, Function.support (F σ) ⊆ K) (σ : ℝ × ℝ) (j : ℕ) :
     Integrable (iteratedDeriv j (F σ)) := by
-  have hs : ContDiff ℝ ∞ (F σ) := hF.comp (contDiff_const.prodMk contDiff_id)
   have hc : HasCompactSupport (iteratedDeriv j (F σ)) := by
     apply HasCompactSupport.of_support_subset_isCompact hK
     exact (subset_tsupport _).trans ((tsupport_iteratedDeriv_subset (F σ) j).trans
       (closure_minimal (hsupp σ) hK.isClosed))
-  exact (hs.continuous_iteratedDeriv j (by simp)).integrable_of_hasCompactSupport hc
+  exact ((hF.comp (contDiff_const.prodMk contDiff_id)).continuous_iteratedDeriv j (by simp)).integrable_of_hasCompactSupport hc
 
 theorem compact_family_deriv_L1_bound (F : (ℝ × ℝ) → ℝ → ℂ)
     (hF : ContDiff ℝ ∞ (Function.uncurry F)) (K : Set ℝ) (hK : IsCompact K)
     (hsupp : ∀ σ, Function.support (F σ) ⊆ K) (J : Set (ℝ × ℝ)) (hJ : IsCompact J)
     (j : ℕ) :
     ∃ C : ℝ, 0 < C ∧ ∀ σ ∈ J, (∫ u : ℝ, ‖iteratedDeriv j (F σ) u‖) ≤ C := by
-  have hc := (section_iteratedDeriv_smooth F hF j).continuous.norm
-  obtain ⟨M, hM⟩ := (hJ.prod hK).bddAbove_image hc.continuousOn
-  let C : ℝ := (|M| + 1) * (volume.real K + 1)
+  obtain ⟨M, hM⟩ := (hJ.prod hK).bddAbove_image ((section_iteratedDeriv_smooth F hF j).continuous.norm).continuousOn
+  let C := (|M| + 1) * (volume.real K + 1)
   refine ⟨C, by dsimp [C]; positivity, ?_⟩
   intro σ hσ
   have hbound : ∀ u ∈ K, ‖iteratedDeriv j (F σ) u‖ ≤ |M| + 1 := by
     intro u hu
     exact (hM (Set.mem_image_of_mem _ (show (σ, u) ∈ J ×ˢ K from ⟨hσ, hu⟩))).trans (by linarith [le_abs_self M])
-  have hs : Function.support (iteratedDeriv j (F σ)) ⊆ K :=
-    (subset_tsupport _).trans ((tsupport_iteratedDeriv_subset (F σ) j).trans
+  have hs := (subset_tsupport _).trans ((tsupport_iteratedDeriv_subset (F σ) j).trans
       (closure_minimal (hsupp σ) hK.isClosed))
   have hzero : ∀ u, u ∉ K → ‖iteratedDeriv j (F σ) u‖ = 0 := by
     intro u hu
@@ -64,8 +57,7 @@ theorem compact_family_deriv_L1_bound (F : (ℝ × ℝ) → ℝ → ℂ)
     simp [hz]
   have hi := norm_setIntegral_le_of_norm_le_const («μ» := volume) (f := fun u => ‖iteratedDeriv j (F σ) u‖)
     hK.measure_lt_top (C := |M| + 1) (fun u hu => by simpa using hbound u hu)
-  rw [setIntegral_eq_integral_of_forall_compl_eq_zero hzero] at hi
-  rw [Real.norm_of_nonneg (integral_nonneg (fun u => norm_nonneg _))] at hi
+  rw [setIntegral_eq_integral_of_forall_compl_eq_zero hzero, Real.norm_of_nonneg (integral_nonneg (fun u => norm_nonneg _))] at hi
   exact hi.trans (by dsimp [C]; nlinarith [abs_nonneg M])
 
 theorem compact_family_fourier_power_bound (F : (ℝ × ℝ) → ℝ → ℂ)
@@ -132,11 +124,7 @@ lemma logFamily_smooth (V W : ℝ→ℂ) (hV : ContDiff ℝ ∞ V) (hW : ContDif
     ContDiff ℝ ∞ (Function.uncurry (logFamily V W)) := by
   unfold Function.uncurry logFamily ratioProfile
   have he : ContDiff ℝ ∞ (fun p : (ℝ×ℝ)×ℝ => Real.exp (-p.1.2*p.2)) := by fun_prop
-  have hv : ContDiff ℝ ∞ (fun p : (ℝ×ℝ)×ℝ => V (p.1.1*Real.exp (-p.2))) :=
-    hV.comp (by fun_prop)
-  have hw : ContDiff ℝ ∞ (fun p : (ℝ×ℝ)×ℝ => W (Real.exp (-p.2))) :=
-    hW.comp (by fun_prop)
-  exact he.smul (hv.mul hw)
+  exact he.smul ((hV.comp (by fun_prop)).mul (hW.comp (by fun_prop)))
 
 lemma ratioProfile_support (V W : ℝ→ℂ) (R : ℝ) :
     Function.support (ratioProfile V W R)⊆Function.support W := by

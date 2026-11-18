@@ -1,14 +1,13 @@
 module
-public import OAI.NumberTheory.DirichletL.Reflection.Partition
+public import OAI.NumberTheory.DirichletL.Reflection.Cofactor
 
 @[expose] public section
 
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
+open ActualEisensteinCubic CubicEisenstein CompletedGauss ConcreteTraceCRT LocalReflectionBrackets FiniteGaussPhase
 open scoped BigOperators Classical
-open ActualEisensteinCubic CubicEisenstein CompletedGauss ConcreteTraceCRT
-open LocalReflectionBrackets FiniteGaussPhase
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda

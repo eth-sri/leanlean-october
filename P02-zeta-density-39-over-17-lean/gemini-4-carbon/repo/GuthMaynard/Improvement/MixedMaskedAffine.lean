@@ -7,7 +7,7 @@ noncomputable section
 open MeasureTheory Set
 open scoped SchwartzMap FourierTransform ContDiff
 namespace GuthMaynard.Improvement
-open RiemannZeta.GuthMaynard
+open RiemannZeta.GuthMaynard GuthMaynard.NativeMoment
 
 /-- Ordinary smooth compact inputs with independent affine shells. -/
 theorem mixed_compact_affine
@@ -65,14 +65,13 @@ theorem compact_smoothed_mixed_affine (a b C₀ : ℝ)
     intro hh
     exact hx ⟨by linarith [hh.1],by linarith [hh.2]⟩
   have hd : ContDiff ℝ ∞ (smooth (scaledKernel compactKernel δ) g) := by rw [← hf]; exact f.smooth ⊤
-  have hm := smooth_mass hκi hgi hmass
   obtain ⟨W,hW,hb⟩ := compactKernel_bound
   have hl2 := smooth_l2_contraction hκm hκi hκ0 (scaledKernel_bound hδ hb) hmass hgm hgi hg2 hg0
   have hh := h T R K B Q _ S hT hK hKR hB hBR hQ hQK hRT hd (smooth_nonneg hκ0 hg0) hfs
     (hprofile T δ g hT hδ hδ1 hδT hgi hg0 hs) hbox
-  rw [hm] at hh
+  rw [(smooth_mass hκi hgi hmass)] at hh
   have hK0 : 0 ≤ K := by linarith
-  have hR0 : 0 ≤ R := hK0.trans hKR
+  have hR0 := hK0.trans hKR
   exact hh.trans (by gcongr)
 
 /-- The masked affine consumer retains the literal restricted square mass

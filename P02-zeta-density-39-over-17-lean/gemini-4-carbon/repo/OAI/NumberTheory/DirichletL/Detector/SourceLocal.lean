@@ -58,9 +58,9 @@ lemma sourcePrincipalSeries_eq (eta a x w z : ℂ)
       principalFullSeries p hp hg eta a ((Q:ℂ)^(-x)) ((Q:ℂ)^(-w)) (coordV Q z) := by
   dsimp only
   simp only [Complex.ofReal_natCast]
-  let X : ℂ := (Ideal.absNorm (Ideal.span {p}):ℂ)^(-x)
-  let W : ℂ := (Ideal.absNorm (Ideal.span {p}):ℂ)^(-w)
-  let V : ℂ := coordV (Ideal.absNorm (Ideal.span {p})) z
+  let X := (Ideal.absNorm (Ideal.span {p}):ℂ)^(-x)
+  let W := (Ideal.absNorm (Ideal.span {p}):ℂ)^(-w)
+  let V := coordV (Ideal.absNorm (Ideal.span {p})) z
   have hQ : 0 < (Ideal.absNorm (Ideal.span {p}):ℝ) := by
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
       (Ideal.span_singleton_eq_bot.not.mpr hp.ne_zero))
@@ -71,8 +71,6 @@ lemma sourcePrincipalSeries_eq (eta a x w z : ℂ)
     rw [he]
     exact hR
   have hW' : ‖W‖<1 := by simpa only [W, coordW, one_mul, Complex.ofReal_natCast] using hW
-  have he : Summable (fun l => principalInner p hp hg eta a X W V 0 l) :=
-    (principalInner_even_hasSum p hp hg hc eta a X W V hV hr).summable
   have h0 : (fun l => ∑' k, ∑' m, sourcePrincipalTerm p hp hg eta a x w z 0 l k m) =
       (fun l => principalInner p hp hg eta a X W V 0 l +
         if l=0 then zeroIndexSeries p (actualSextic (Ideal.span {p}) hg) W V else 0) := by
@@ -97,8 +95,7 @@ lemma sourcePrincipalSeries_eq (eta a x w z : ℂ)
     exact sourcePrincipalTerm_pos p hp hg eta a x w z 1 l k m (by omega)
   unfold sourcePrincipalSeries principalFullSeries principalMarkedSeries
   simp only [Fin.sum_univ_two, Fin.val_zero, Fin.val_one]
-  rw [h0, h1, he.tsum_add (hasSum_ite_eq 0 _).summable, tsum_ite_eq]
-  rw [zeroIndexSeries_eq p hp _ W V hW' hV]
+  rw [h0, h1, ((principalInner_even_hasSum p hp hg hc eta a X W V hV hr).summable).tsum_add (hasSum_ite_eq 0 _).summable, tsum_ite_eq, zeroIndexSeries_eq p hp _ W V hW' hV]
   change _ = 1/(1-V)+W/(1-W)+((∑' l, principalInner p hp hg eta a X W V 0 l)+
     ∑' l, principalInner p hp hg eta a X W V 1 l)
   ring

@@ -9,9 +9,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentNaturalFixedRaySource
-open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily
-open CenteredMomentDetectorDictionary CenteredMomentNaturalRowSource
-open CenteredExceptionalProfile CenteredMomentSecondHeightFamily ConcretePrimeRowBridge
+open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily CenteredMomentDetectorDictionary CenteredMomentNaturalRowSource CenteredExceptionalProfile CenteredMomentSecondHeightFamily ConcretePrimeRowBridge
 local notation "O" => HeckeFamily.O
 
 variable {Δ : ℝ} {D : Parameters.HighData Δ}
@@ -31,9 +29,8 @@ lemma sourceFixedIdeal_ne_top (F : ProbeFinalAssembly.SourceData D) : sourceFixe
   have hle : F.modulus≤Ideal.span {goodLambda} := by
     apply Ideal.dvd_iff_le.mp
     exact Finset.dvd_prod_of_mem (fun P : Ideal O=>P) hmem
-  have hprime := (F.maximal _ hmem).isPrime
   intro h
-  exact hprime.ne_top (top_le_iff.mp (h ▸ (inf_le_left.trans hle : sourceFixedIdeal F≤Ideal.span {goodLambda})))
+  exact ((F.maximal _ hmem).isPrime).ne_top (top_le_iff.mp (h ▸ (inf_le_left.trans hle : sourceFixedIdeal F≤Ideal.span {goodLambda})))
 
 lemma sourceFixedIdeal_le_modulus (F : ProbeFinalAssembly.SourceData D) : sourceFixedIdeal F≤F.modulus := inf_le_left
 lemma sourceFixedIdeal_le_72 (F : ProbeFinalAssembly.SourceData D) : sourceFixedIdeal F≤Ideal.span {(72:O)} := inf_le_right

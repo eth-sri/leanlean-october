@@ -32,8 +32,7 @@ theorem actualMixedCoefficient_common_branches (F : PrimeFamily φ) (K : Ideal E
         (if IsCoprime K (∏ i, S.ideal i) then 1 else 0) := by
   rw [actualMixedCoefficient_factor F K hK S jF D s hc hcop u m n b hb,
     sourceFrozenPhase_eq_actual,hκ,sourceColumn_eq_sum_frozenBranches]
-  have hfun : actualCuspColumn D s hc u m = A u m := funext (fun n => funext (fun b => hA u m n b))
-  rw [hfun,Finset.mul_sum]
+  rw [(funext (fun n => funext (fun b => hA u m n b))),Finset.mul_sum]
   simp only [Finset.sum_mul]
   apply Finset.sum_congr rfl
   intro e he

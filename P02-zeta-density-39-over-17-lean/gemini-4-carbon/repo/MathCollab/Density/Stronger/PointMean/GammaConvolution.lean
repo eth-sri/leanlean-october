@@ -24,17 +24,13 @@ noncomputable def heathBrownGammaReserveKernel (delta x : ℝ) : ℝ :=
 
 theorem integrable_inv_delta_sq_add_sq {delta : ℝ} (hdelta : 0 < delta) :
     Integrable (fun x : ℝ => (delta ^ 2 + x ^ 2)⁻¹) := by
-  have hbase : Integrable (fun x : ℝ => (1 + (x / delta) ^ 2)⁻¹) :=
-    integrable_inv_one_add_sq.comp_div hdelta.ne'
-  have hscaled := hbase.const_mul (delta ^ 2)⁻¹
-  convert hscaled using 1
+  convert ((integrable_inv_one_add_sq.comp_div hdelta.ne').const_mul (delta ^ 2)⁻¹) using 1
   funext x
   field_simp [hdelta.ne']
 
 theorem integral_inv_delta_sq_add_sq {delta : ℝ} (hdelta : 0 < delta) :
     (∫ x : ℝ, (delta ^ 2 + x ^ 2)⁻¹) = Real.pi / delta := by
   let f : ℝ → ℝ := fun x => (1 + x ^ 2)⁻¹
-  have hchange := MeasureTheory.Measure.integral_comp_div f delta
   calc
     (∫ x : ℝ, (delta ^ 2 + x ^ 2)⁻¹) =
         ∫ x : ℝ, (delta ^ 2)⁻¹ * f (x / delta) := by
@@ -45,7 +41,7 @@ theorem integral_inv_delta_sq_add_sq {delta : ℝ} (hdelta : 0 < delta) :
     _ = (delta ^ 2)⁻¹ * ∫ x : ℝ, f (x / delta) :=
       integral_const_mul _ _
     _ = (delta ^ 2)⁻¹ * (|delta| * ∫ x : ℝ, f x) := by
-      rw [hchange]
+      rw [(MeasureTheory.Measure.integral_comp_div f delta)]
       rfl
     _ = Real.pi / delta := by
       rw [abs_of_pos hdelta]
@@ -63,14 +59,14 @@ theorem heathBrownGammaReserveKernel_sq_le
   have hexp : Real.exp (-|x| / 6) ≤ 1 := by
     rw [Real.exp_le_one_iff]
     linarith [abs_nonneg x]
-  have hexpSq : Real.exp (-|x| / 6) ^ (2 : ℕ) ≤ 1 := by
+  have hexpSq : Real.exp (-|x| / 6) ^ 2 ≤ 1 := by
     nlinarith [Real.exp_pos (-|x| / 6)]
   unfold heathBrownGammaReserveKernel
   calc
-    (Real.exp (-|x| / 6) / (delta + |x|)) ^ (2 : ℕ) =
-        Real.exp (-|x| / 6) ^ (2 : ℕ) / (delta + |x|) ^ (2 : ℕ) :=
+    (Real.exp (-|x| / 6) / (delta + |x|)) ^ 2 =
+        Real.exp (-|x| / 6) ^ 2 / (delta + |x|) ^ 2 :=
       div_pow _ _ _
-    _ ≤ 1 / (delta + |x|) ^ (2 : ℕ) := by
+    _ ≤ 1 / (delta + |x|) ^ 2 := by
       exact (div_le_div_iff_of_pos_right (sq_pos_of_pos hden)).2 hexpSq
     _ ≤ 1 / (delta ^ 2 + x ^ 2) :=
       one_div_le_one_div_of_le hsmall hdenCompare
@@ -82,7 +78,7 @@ theorem integrable_heathBrownGammaReserveKernel_sq
       heathBrownGammaReserveKernel delta x ^ (2 : ℕ)) := by
   apply (integrable_inv_delta_sq_add_sq hdelta).mono'
   · have hcont : Continuous (fun x : ℝ =>
-        heathBrownGammaReserveKernel delta x ^ (2 : ℕ)) := by
+        heathBrownGammaReserveKernel delta x ^ 2) := by
       unfold heathBrownGammaReserveKernel
       apply Continuous.pow
       apply Continuous.div
@@ -133,23 +129,22 @@ theorem heathBrownStrongGammaConvolutionIntegrand_le
   let b := heathBrownGammaReserveKernel delta (u - w)
   have ha : 0 ≤ a := by unfold a heathBrownGammaReserveKernel; positivity
   have hb : 0 ≤ b := by unfold b heathBrownGammaReserveKernel; positivity
-  have hab : a * b ≤ (a ^ (2 : ℕ) + b ^ (2 : ℕ)) / 2 := by
+  have hab : a * b ≤ (a ^ 2 + b ^ 2) / 2 := by
     nlinarith [sq_nonneg (a - b)]
   have hdenW : 0 < delta + |w| := by positivity
   have hdenUW : 0 < delta + |u - w| := by positivity
-  have hreserve := heathBrown_strong_exponential_reserve u w
   have hdiv :
-      (Real.exp (-(4 / 3 : ℝ) * |w|) *
-          Real.exp (-(4 / 3 : ℝ) * |u - w|)) /
+      (Real.exp (-(4 / 3) * |w|) *
+          Real.exp (-(4 / 3) * |u - w|)) /
           ((delta + |w|) * (delta + |u - w|)) ≤
         (Real.exp (-|u|) * Real.exp (-|w| / 6) *
           Real.exp (-|u - w| / 6)) /
           ((delta + |w|) * (delta + |u - w|)) := by
-    exact div_le_div_of_nonneg_right hreserve (by positivity)
+    exact div_le_div_of_nonneg_right (heathBrown_strong_exponential_reserve u w) (by positivity)
   calc
     heathBrownStrongGammaConvolutionIntegrand delta u w =
-        (Real.exp (-(4 / 3 : ℝ) * |w|) *
-          Real.exp (-(4 / 3 : ℝ) * |u - w|)) /
+        (Real.exp (-(4 / 3) * |w|) *
+          Real.exp (-(4 / 3) * |u - w|)) /
           ((delta + |w|) * (delta + |u - w|)) := by
       unfold heathBrownStrongGammaConvolutionIntegrand
       field_simp
@@ -160,11 +155,11 @@ theorem heathBrownStrongGammaConvolutionIntegrand_le
       unfold a b heathBrownGammaReserveKernel
       field_simp
     _ ≤ Real.exp (-|u|) *
-        ((a ^ (2 : ℕ) + b ^ (2 : ℕ)) / 2) := by
+        ((a ^ 2 + b ^ 2) / 2) := by
       gcongr
     _ = Real.exp (-|u|) / 2 *
-        (heathBrownGammaReserveKernel delta w ^ (2 : ℕ) +
-          heathBrownGammaReserveKernel delta (u - w) ^ (2 : ℕ)) := by
+        (heathBrownGammaReserveKernel delta w ^ 2 +
+          heathBrownGammaReserveKernel delta (u - w) ^ 2) := by
       unfold a b
       ring
 

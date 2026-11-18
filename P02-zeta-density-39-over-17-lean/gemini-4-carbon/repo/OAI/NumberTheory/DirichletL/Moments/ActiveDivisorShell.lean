@@ -10,8 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentActiveDivisorShell
-open HeckeFamily CenteredMomentActiveAllocation CenteredMomentDivisorAllocation
-open CenteredMomentDivisorRaw CenteredMomentDivisorBoundary CenteredMomentSlotRatios
+open HeckeFamily CenteredMomentActiveAllocation CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentDivisorBoundary CenteredMomentSlotRatios
 local notation "O" => ActualEisensteinCubic.O
 
 structure Source (ι:Type*) [Fintype ι] where
@@ -53,7 +52,7 @@ theorem Source.active_boundary (s:Source ι) (D:Ideal O) (hD:Squarefree D)
 
 theorem reciprocal_sqrt_log (Z x y:ℝ) (hZ:1<Z) (hx:0<x) (hy:0<y) :
     1/Real.sqrt (x*y)=Z^(-(Real.logb Z x+Real.logb Z y)/2) := by
-  have hz:0<Z:=zero_lt_one.trans hZ
+  have hz :=zero_lt_one.trans hZ
   calc
     _=(x*y)^(-(1/2:ℝ)):=by rw [Real.sqrt_eq_rpow,one_div,Real.rpow_neg (mul_nonneg hx.le hy.le)]
     _=(Z^(Real.logb Z x+Real.logb Z y))^(-(1/2:ℝ)):=by

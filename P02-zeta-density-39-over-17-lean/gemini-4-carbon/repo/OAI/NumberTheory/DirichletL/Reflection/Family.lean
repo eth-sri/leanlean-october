@@ -31,7 +31,6 @@ theorem simultaneous_controlled_matrices_dependent {α Q : Type*} {ι : α → T
   let aa : X → Eis := fun x => (D x.1).matrix x.2 0 0
   let rr : X → Eis := fun x => ∏ i, p x.1 i
   let ss : X → Q := fun x => sector x.1
-  have h3N : (3:Eis) ∣ N := (show (3:Eis) ∣ 9 from ⟨3,by norm_num⟩).trans h9N
   have hacop (x : X) : IsCoprime (aa x) (c*rr x) := by
     refine ⟨(D x.1).matrix x.2 1 1, -(D x.1).matrix x.2 0 1, ?_⟩
     have hd := ((D x.1).matrix x.2).property
@@ -47,8 +46,7 @@ theorem simultaneous_controlled_matrices_dependent {α Q : Type*} {ι : α → T
     exact finiteCrossNumerator_fixed_sector N a c ramifiedTraceLambda
       (p x.1) ((D x.1).lift x.2) (p y.1) ((D y.1).lift y.2)
       hcN ((D x.1).lift_period x.2) ((D y.1).lift_period y.2) (hsector x.1 y.1 h)
-  have hrr (x y : X) (h : ss x = ss y) : N ∣ rr x-rr y :=
-    (dvd_pow_self N (by decide : (2:ℕ) ≠ 0)).trans (hsector x.1 y.1 h)
+  have hrr (x y : X) (h : ss x = ss y) := (dvd_pow_self N (by decide : (2:ℕ) ≠ 0)).trans (hsector x.1 y.1 h)
   have hex : ∃ (b d : X → Eis) (C : Q → Matrix (Fin 2) (Fin 2) (Eis ⧸ Ideal.span {N})),
       (∀ x, aa x*d x-b x*(c*rr x)=1) ∧
       (∀ x, if mode then (9:Eis) ∣ b x ∧ (3:Eis) ∣ d x-1
@@ -62,7 +60,7 @@ theorem simultaneous_controlled_matrices_dependent {α Q : Type*} {ι : α → T
       exact ⟨b,d,C,hd,fun x => ⟨hb x,hz x⟩,hm⟩
     · obtain ⟨b,d,C,hd,hb,hz,hm⟩ := exists_primary_numerator_sector_completions
         N c hc h9N ss aa rr
-        (fun x => (D x.1).numerator_primary h3N (hprimary x.1) hbase x.2)
+        (fun x => (D x.1).numerator_primary ((show (3:Eis) ∣ 9 from ⟨3,by norm_num⟩).trans h9N) (hprimary x.1) hbase x.2)
         (fun x => hprimary x.1) hacop (fun x => hcop x.1) haa hrr
       exact ⟨b,d,C,hd,fun x => ⟨hb x,hz x⟩,hm⟩
   obtain ⟨b,d,C,hdet,hcond,hmat⟩ := hex
@@ -70,10 +68,7 @@ theorem simultaneous_controlled_matrices_dependent {α Q : Type*} {ι : α → T
     controlledCompletionMatrix (aa ⟨x,v⟩) (b ⟨x,v⟩) (c*rr ⟨x,v⟩) (d ⟨x,v⟩) (hdet ⟨x,v⟩)
   refine ⟨mat,fun _ _ => rfl,fun _ _ => rfl,fun x v => hcond ⟨x,v⟩,?_⟩
   intro x y v w hs i j
-  have hs' : ss ⟨x,v⟩ = ss ⟨y,w⟩ := hs
-  have he := (hmat ⟨x,v⟩).trans ((congrArg C hs').trans (hmat ⟨y,w⟩).symm)
-  have he' := congrArg (fun T : Matrix (Fin 2) (Fin 2) (Eis ⧸ Ideal.span {N}) => T i j) he
-  exact Ideal.mem_span_singleton.mp (Ideal.Quotient.eq.mp he')
+  exact Ideal.mem_span_singleton.mp (Ideal.Quotient.eq.mp (congrArg (fun T : Matrix (Fin 2) (Fin 2) (Eis ⧸ Ideal.span {N}) => T i j) ((hmat ⟨x,v⟩).trans ((congrArg C (hs)).trans (hmat ⟨y,w⟩).symm))))
 
 theorem exists_sector_controlled_arithmetic_dependent {α Q : Type*} {ι : α → Type*} [∀ x, Fintype (ι x)]
     (p : ∀ x, ι x → Eis) (N a c : Eis) (mode : Bool)
@@ -121,7 +116,7 @@ theorem exists_sector_templates {α Q : Type*} {ι : α → Type*} [∀ x, Finty
             (Ideal.Quotient.mk _ (-((D x).matrix (fun _ => 1) 1 1)*(D x).U))
             (s.modelDualNumerator u) u) m n b = β (sector x) u m n b := by
   have hbad : ramifiedTraceLambda^3*c ∣ N := by
-    apply (show ramifiedTraceLambda^3*c ∣ (9:Eis)*c from ?_).trans hN
+    apply (show ramifiedTraceLambda^3*c ∣ 9*c from ?_).trans hN
     refine ⟨ramifiedTraceLambda,?_⟩
     rw [← A4_traceLambda_pow_four]
     ring
@@ -138,7 +133,7 @@ theorem exists_sector_templates {α Q : Type*} {ι : α → Type*} [∀ x, Finty
     intro x y hxy
     funext u m n b
     exact controlled_static_array_eq (D x) (D y) hc s hbad
-      ((dvd_pow_self N (by decide : (2:ℕ) ≠ 0)).trans (hsector x y hxy))
+      ((dvd_pow_self N (by decide : 2 ≠ 0)).trans (hsector x y hxy))
       (hmatrix x y hxy 1 1) u m n b
   obtain ⟨κ,hκ⟩ := (Function.factorsThrough_iff _).mp hf
   obtain ⟨β,hβ⟩ := (Function.factorsThrough_iff A).mp ha

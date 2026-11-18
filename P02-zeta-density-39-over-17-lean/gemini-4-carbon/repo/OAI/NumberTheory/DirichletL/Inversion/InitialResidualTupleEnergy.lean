@@ -11,19 +11,10 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.InverseInitialResidualTupleEnergy
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ConcreteTraceCRT
-open CanonicalQuadraticSieve CanonicalRowCompletion CanonicalCoefficientClass
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialProfile
-open InverseInitialEnergyCallerSource InverseInitialEnergyCallerModes InverseInitialEnergyCallerWindows
-open InverseInitialQuotientGeometry InverseInitialClippedColumns InverseInitialEnergyCallerState
-open InverseInitialDyadicAssembly InverseInitialProfileBounds Filter
+open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ConcreteTraceCRT CanonicalQuadraticSieve CanonicalRowCompletion CanonicalCoefficientClass InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialProfile InverseInitialEnergyCallerSource InverseInitialEnergyCallerModes InverseInitialEnergyCallerWindows InverseInitialQuotientGeometry InverseInitialClippedColumns InverseInitialEnergyCallerState InverseInitialDyadicAssembly InverseInitialProfileBounds Filter
 local notation "O"=>ActualEisensteinCubic.O
 
-open InverseInitialPhysicalLimit InverseInitialPhysicalReassembly SecondPassArithmetic InverseInitialRayAttachment
-open MeasureTheory FourierBridge JointLogSeparation InverseInitialOverlapFourier
-open InverseInitialCommonLists InverseInitialCommonRatios InverseInitialCommonTuples
-open InverseInitialOverlap InverseInitialPoissonBridge InverseInitialExcludedPool
-open InverseInitialCommonProfile InverseInitialEnergyCallerWindow
+open InverseInitialPhysicalLimit InverseInitialPhysicalReassembly SecondPassArithmetic InverseInitialRayAttachment MeasureTheory FourierBridge JointLogSeparation InverseInitialOverlapFourier InverseInitialCommonLists InverseInitialCommonRatios InverseInitialCommonTuples InverseInitialOverlap InverseInitialPoissonBridge InverseInitialExcludedPool InverseInitialCommonProfile InverseInitialEnergyCallerWindow
 theorem original_residual_tuple_energy
     (Woriginal W:ℝ→ℂ)(ao bo:ℝ)(hao:0<ao)
     (hso:Function.support Woriginal⊆Set.Icc ao bo)(hWo:ContDiff ℝ ∞ Woriginal)(a₀ b₀ bcap:ℝ)(ha₀:0<a₀)(hbcap:1≤bcap)
@@ -98,7 +89,6 @@ theorem original_residual_tuple_energy
     qelem z al bl primeW hz hqe hprimeW hprimeLive χ hχ hperiod hout
     D m r hm hmcap hDlo hprodj hprod hDeq hmargin₁ hmargin₂ hparent rows hrows
     j hj hspan lo hi jlo jhi hjratio hL hcoeff hFresh hP hcopTuple hPE hsub θ
-  have hZp:0<Z:=zero_lt_one.trans (hZ₀.trans_le hZ)
   have hdisPool:(all:Set σ).PairwiseDisjoint (fun i=>poolList F (L i)):=by
     intro i hi k hk hik
     apply Finset.disjoint_left.mpr
@@ -116,8 +106,6 @@ theorem original_residual_tuple_energy
     have hh:=Finset.sum_sdiff (f:=z) hassigned
     dsimp [assignedCenter]
     linarith
-  have hgj:Ideal.span {primaryGenerator j}=Ideal.span {assignedElement assigned qelem}:=
-    (primaryGenerator_spec j (primaryGenerator_admissible j hj)).1.trans hspan.symm
   have hid (u:O):
       (∑t∈(all\assigned).pi L,(∏i∈(all\assigned).attach,coeff i.val (t i.val i.property))*
         residualNormalizedPolynomial (originalSource Z r bo)
@@ -136,7 +124,7 @@ theorem original_residual_tuple_energy
       (InverseInitialOriginalHeight.child_smooth Woriginal ao bo hao hso hWo θ)
       (reflectionExcludedPrimes q) (reflectionExcludedPrimes_prime q)
       (all\assigned) L hL coeff j hj.1 hP hcopTuple hPE χ hout u Z r
-      (assignedCenter all z) (assignedCenter assigned z) hZp z lo hi hsum jlo jhi hjratio hcoeff
+      (assignedCenter all z) (assignedCenter assigned z) (zero_lt_one.trans (hZ₀.trans_le hZ)) z lo hi hsum jlo jhi hjratio hcoeff
       (fun v yj yc hv hyj hyc hn=>hFresh v yj yc hv hyj hyc
         (InverseInitialOriginalHeight.child_support Woriginal θ hn))
       F hFa (fun I hI=>(Finset.mem_filter.mp (Finset.mem_filter.mp hI).1).2) hsub
@@ -145,7 +133,7 @@ theorem original_residual_tuple_energy
     apply MeasureTheory.integral_congr_ae
     filter_upwards with t
     rw [InverseInitialInputReindex.input_puncture_span p hg Finset.univ (elementCharacter χ)
-      (primaryGenerator j) (assignedElement assigned qelem) hgj]
+      (primaryGenerator j) (assignedElement assigned qelem) ((primaryGenerator_spec j (primaryGenerator_admissible j hj)).1.trans hspan.symm)]
   simpa only [hid] using he
 
 end SevenEighths.InverseInitialResidualTupleEnergy

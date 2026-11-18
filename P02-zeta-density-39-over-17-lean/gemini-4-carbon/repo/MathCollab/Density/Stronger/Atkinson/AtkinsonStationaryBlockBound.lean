@@ -11,8 +11,7 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonDampedDyadic
 
 @[expose] public section
 
-open Complex Set Filter
-open MathCollab.Density.Stronger.Fourth
+open Complex Set Filter MathCollab.Density.Stronger.Fourth
 set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
@@ -66,10 +65,10 @@ theorem exists_atkinsonSourceCutoff_block_bound {δ : ℝ} (hδ : 0 < δ) :
   obtain ⟨B,hB⟩ := Filter.eventually_atTop.mp (eventually_atkinsonSourceCutoff_small hδ)
   refine ⟨C,hC,max 40000 B,le_max_left _ _,?_⟩
   intro T G hT hlower hupper m N hm hcut
-  have hTlarge : 40000 ≤ T := (le_max_left _ _).trans hT
+  have hTlarge := (le_max_left _ _).trans hT
   have hT0 : 0 < T := by linarith
   have hT1 : 1 ≤ T := by linarith
-  have hG : 0 < G := (Real.rpow_pos_of_pos hT0 δ).trans_le hlower
+  have hG := (Real.rpow_pos_of_pos hT0 δ).trans_le hlower
   have hGhi : G ≤ Real.sqrt T := by
     rw [Real.sqrt_eq_rpow]
     exact hupper.trans (Real.rpow_le_rpow_of_exponent_le hT1 (by linarith))

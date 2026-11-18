@@ -7,9 +7,8 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstGlobalPush
 namespace OAI
 
 namespace SevenEighths.InverseMoment
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic FirstCauchyArithmetic RayFourExpansion JointLogSeparation FourierBridge MeasureTheory
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic FirstCauchyArithmetic RayFourExpansion
-open JointLogSeparation FourierBridge MeasureTheory
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 open InverseMomentFirstProfileUniform InverseAmbientProfileTower
@@ -68,13 +67,12 @@ theorem actual_first_moving_family_two_energies_uniform
   obtain ⟨b₃,hb₃⟩ := hmeasure (K*s 6/(s 3*s 4*(s 5)^2*s 7*s 8)) hRad
   obtain ⟨hsep,hWeighted,hMoment⟩ := hb₃ ρ c₁ c₂ θ₁ θ₂ L hρ hc₁ hc₂ hc₁b hc₂b hL
   let g := fun i => rooted (U₀ i) (M₀ i) (InverseClippingProfiles.firstBalancedSlope i) (hU i)
-  let f₁ := rooted g₁ m₁ (-(1/2:ℝ)) hg₁
-  let f₂ := rooted g₂ m₂ (-(1/2:ℝ)) hg₂
+  let f₁ := rooted g₁ m₁ (-(1/2)) hg₁
+  let f₂ := rooted g₂ m₂ (-(1/2)) hg₂
   let den := density g f₁ f₂ b₃ ρ c₁ c₂ θ₁ θ₂ L
-  have hden : Integrable den := first_balanced_density_integrable g f₁ f₂ b₃ ρ c₁ c₂ θ₁ θ₂ L
   have he := actual_first_family_two_energies p hg hp source F selector C₁ C₂ w
     (positiveSource g₁ c₁ θ₁) (positiveSource g₂ c₂ θ₂) ω₁ ω₂ Φ (fun i y => U₀ i (y+ρ i))
-    A₁ A₂ C R K L d h s hpos hs den hden hsep hω₁ hω₂ hcut
+    A₁ A₂ C R K L d h s hpos hs den (first_balanced_density_integrable g f₁ f₂ b₃ ρ c₁ c₂ θ₁ θ₂ L) hsep hω₁ hω₂ hcut
     J B₁ B₂ hB₁ hB₂ hWeighted hleft hright
   have hd : (∫ z : Frequency × (Fin 9 → ℝ),tripleHeight J z.1*coordinateHeight J z.2*‖den z‖) ≤
       Cprofile*((1+‖θ₁‖)^InverseClippingProfiles.momentOrder J *

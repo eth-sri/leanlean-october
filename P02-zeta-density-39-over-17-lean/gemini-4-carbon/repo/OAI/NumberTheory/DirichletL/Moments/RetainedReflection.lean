@@ -10,11 +10,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentRetainedReflection
-open HeckeFamily CenteredMomentReflectionDeletion CenteredMomentReflectionMass
-open CenteredMomentComparisonReflection CenteredMomentReflectionTailMass
-open CenteredMomentSectorLocalization CenteredMomentReflectedTruncation
-open CenteredMomentReflectedAnnuli CenteredMomentNaturalPrimitive CenteredMomentNaturalReflection
-open EisensteinSchwartzPoisson
+open HeckeFamily CenteredMomentReflectionDeletion CenteredMomentReflectionMass CenteredMomentComparisonReflection CenteredMomentReflectionTailMass CenteredMomentSectorLocalization CenteredMomentReflectedTruncation CenteredMomentReflectedAnnuli CenteredMomentNaturalPrimitive CenteredMomentNaturalReflection EisensteinSchwartzPoisson
 local notation "O" => HeckeFamily.O
 local notation "NI" => UnrestrictedIdealReindex.NonzeroIdeal
 
@@ -53,7 +49,7 @@ lemma bounded_columns (η : Character) (F : ℝ→ℂ) (hF : DecayTwo F) :
   intro Y U hY hYU
   apply (hb η F D Y hD hY hF).trans
   rw [normalized_power_eq Y hY 2]
-  norm_num only [Nat.cast_ofNat,show (2:ℝ)-1/2=3/2 by norm_num]
+  norm_num
   exact mul_le_mul_of_nonneg_left (Real.rpow_le_rpow hY.le hYU (by norm_num)) (by positivity)
 
 lemma reflected_column_summable (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
@@ -65,7 +61,7 @@ lemma reflected_column_summable (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
   obtain ⟨C,hC,hb⟩ := bounded_columns χ F hF
   obtain ⟨K,hK,hKb⟩ := coefficient_column_bound 1 (by norm_num)
   let U := Q*(Ideal.absNorm (∏P∈S,P):ℝ)/X
-  have hu : 0<U := div_pos (mul_pos hQ (subset_product_norm_pos S hS)) hX
+  have hu := div_pos (mul_pos hQ (subset_product_norm_pos S hS)) hX
   exact (hKb S hS η ηi (fun E H=>HeckeDyadic.polynomial χ false F
     (Q*(Ideal.absNorm (∏P∈E,P):ℝ)/(X*norm H.val)) 0 0)
     (C*U^(3/2:ℝ)) (by positivity) (by

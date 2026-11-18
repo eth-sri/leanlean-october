@@ -36,10 +36,9 @@ theorem ray_amplitude_bins (W : ℝ→ℂ) (A B : ℝ) (hA : 0<A)
       ‖Q‖≤((Z^d)^r)^(g+mesh) ∧ (0<g → (Z^d)^(2*r*g)≤‖Q‖^2) := by
   obtain ⟨C,hC,hbound⟩ := ray_prime_bin_bound M H hH W A B hA hWs hW
     R dmax τ ε e κ η σmin σmax hR hdmax hτ hε he he' hκ hη hbudget
-  have hbins := actual_bins_eventually C dmin rmin ε mesh hdmin hrmin hmesh hgap
   have hlog := HeckePrimeScale.log_scale_eventually dmin rmin
     (2*(|Real.log A|+|Real.log B|)+1) hdmin hrmin
-  filter_upwards [hbins,hlog,eventually_ge_atTop (1 : ℝ)] with Z hb hl hZ
+  filter_upwards [(actual_bins_eventually C dmin rmin ε mesh hdmin hrmin hmesh hgap),hlog,eventually_ge_atTop 1] with Z hb hl hZ
   intro d hd hd' hU hT χ hχ a i ha ha' hmax r σ freq hr hr' hσ hσ' hQ hf ht
   have hestimate := hbound Z d hZ (hdmin.trans_le hd).le hd' hU hT χ hχ a i
     ha ha' hmax r σ freq (hrmin.trans_le hr).le hr' hσ hσ' (hl d r hd hr) hQ hf ht

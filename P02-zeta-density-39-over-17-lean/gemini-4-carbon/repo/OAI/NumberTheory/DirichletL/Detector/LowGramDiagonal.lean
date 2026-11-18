@@ -7,11 +7,10 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondDiagonal
 namespace OAI
 
 noncomputable section
-open scoped Classical SchwartzMap
 open CompletedGauss
+open scoped Classical SchwartzMap
 namespace SevenEighths.ProbePhysical
-open CanonicalQuadraticSieve RayFourExpansion CenteredMomentGaussEnergy
-open CenteredMomentSupportedCorrelation CenteredMomentSecondDiagonal EisensteinSchwartzPoisson
+open CanonicalQuadraticSieve RayFourExpansion CenteredMomentGaussEnergy CenteredMomentSupportedCorrelation CenteredMomentSecondDiagonal EisensteinSchwartzPoisson
 local notation "O" => ActualEisensteinCubic.O
 local notation "Id" => Ideal O
 
@@ -37,9 +36,7 @@ lemma lowGramZeroMode_eq_source (C : CalibrationData) (W1 : ℝ→ℂ) (hW1 : Ha
   intro s hs
   apply Finset.sum_congr rfl
   intro t ht
-  have hes := congrArg Ideal.absNorm ((primaryGenerator_spec s.val (supported_primaryGenerator_ne_zero s.val s.property)).1)
-  have het := congrArg Ideal.absNorm ((primaryGenerator_spec t.val (supported_primaryGenerator_ne_zero t.val t.property)).1)
-  rw [hes,het]
+  rw [(congrArg Ideal.absNorm ((primaryGenerator_spec s.val (supported_primaryGenerator_ne_zero s.val s.property)).1)),(congrArg Ideal.absNorm ((primaryGenerator_spec t.val (supported_primaryGenerator_ne_zero t.val t.property)).1))]
   calc
     _ = ((lowGaussColumn C W1 Y σ v s*star (lowGaussColumn C W1 Y σ v t))*
         ((Q:ℂ)/((Real.sqrt (Ideal.absNorm s.val:ℝ):ℂ)*(Real.sqrt (Ideal.absNorm t.val:ℝ):ℂ))))*
@@ -57,9 +54,7 @@ lemma lowGramZeroMode_bound (C : CalibrationData) (W1 : ℝ→ℂ) (hW1 : HasCom
     exact (primaryGenerator_spec s.val (supported_primaryGenerator_ne_zero s.val s.property)).2
   · intro s hs t ht h
     apply Subtype.ext
-    have hes := (primaryGenerator_spec s.val (supported_primaryGenerator_ne_zero s.val s.property)).1
-    have het := (primaryGenerator_spec t.val (supported_primaryGenerator_ne_zero t.val t.property)).1
-    rw [←hes,←het]
+    rw [←((primaryGenerator_spec s.val (supported_primaryGenerator_ne_zero s.val s.property)).1),←((primaryGenerator_spec t.val (supported_primaryGenerator_ne_zero t.val t.property)).1)]
     exact congrArg (fun z : O=>Ideal.span {z}) h
 
 theorem lowGramZeroMode_source_bound (a b B : ℝ) (ha : 0<a) (hB : 0≤B) :

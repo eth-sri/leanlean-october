@@ -9,16 +9,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentEnergyAllocatedHomogeneous
-open CenteredMomentEnergyAllocatedClipped
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyAllocatedPaid CenteredMomentEnergyAllocatedProfiles
-open CenteredMomentEnergyAllocatedChildren CenteredMomentEnergyAllocatedZero
-open CenteredMomentInductionEnergy CenteredMomentFiniteProfileExceptional
-open CenteredMomentNaturalFixedRaySource CenteredMomentCommonRadialData
-open CenteredMomentCommonHeightEnvelope CenteredMomentCommonAllocationSum
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
-open CenteredMomentAllocatedNaturalSource CenteredMomentRetainedProfile
-open CenteredMomentAllocatedRayDictionary QuadraticInitialBound
+open CenteredMomentEnergyAllocatedClipped HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyAllocatedPaid CenteredMomentEnergyAllocatedProfiles CenteredMomentEnergyAllocatedChildren CenteredMomentEnergyAllocatedZero CenteredMomentInductionEnergy CenteredMomentFiniteProfileExceptional CenteredMomentNaturalFixedRaySource CenteredMomentCommonRadialData CenteredMomentCommonHeightEnvelope CenteredMomentCommonAllocationSum CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentAllocatedNaturalSource CenteredMomentRetainedProfile CenteredMomentAllocatedRayDictionary QuadraticInitialBound
 local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
 
@@ -73,17 +64,14 @@ theorem actual_clipped_homogeneous_bands (W:ℝ→ℂ)(aslot bslot Mcap bΦ Lslo
     w σ freq v height mesh hmesh hw hwm hwL hσlo hσhi hheight hfreq
     src hmatch C R B D alloc J st hunit hQ hs p X₁ X₂ hX₁ hX₂ hc₁ hc₂ F₁ F₂ hF₁ hF₂
   dsimp only at he ⊢
-  let U:Fin 2→ℝ:=![rawScale D alloc X₁ 0,rawScale D alloc X₂ 1]
+  let U :=![rawScale D alloc X₁ 0,rawScale D alloc X₂ 1]
   have hU:∀i,0<U i:=by
     intro i;fin_cases i
     · exact rawScale_pos D alloc X₁ hX₁ 0
     · exact rawScale_pos D alloc X₂ hX₂ 1
   have hp:(pair D alloc haPlain p v X₁ X₂ hX₁ hX₂).control S≤
       Cp*p.control T*(1+|v|+height)^(2*n):=by
-    have h:=hprofile p U hU v
-    have hpw:(1+‖v‖)^(2*n)≤(1+|v|+height)^(2*n):=
-      pow_le_pow_left₀ (by positivity) (by simp only [Real.norm_eq_abs];linarith) _
-    exact h.trans (mul_le_mul_of_nonneg_left hpw (mul_nonneg hCp.le (p.control_nonneg T)))
+    exact (hprofile p U hU v).trans (mul_le_mul_of_nonneg_left (pow_le_pow_left₀ (by positivity) (by simp only [Real.norm_eq_abs];linarith) _) (mul_nonneg hCp.le (p.control_nonneg T)))
   apply he.trans
   calc
     _≤Cc*(C₀+C₁)*diagonalControl st.radial.profile*

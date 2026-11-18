@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.RobertSargosSymmetricThirdDerivative
 
 @[expose] public section
@@ -55,7 +64,7 @@ theorem robertSargos_zero_r_second_curvature
   have hb := derivative_increment_bounds
     (fun y => robertSargosSymmetricDifference (iteratedDeriv 2 f) y h)
     (fun y => robertSargosSymmetricDifference (iteratedDeriv 3 f) y h)
-    (show x ≤ x+q by linarith) hd
+    (by linarith) hd
     (fun y hy => (hc y hy).1) (fun y hy => (hc y hy).2)
   rw [show (x+q)-x = q by ring] at hb
   simpa only [mul_assoc,mul_comm,mul_left_comm] using hb

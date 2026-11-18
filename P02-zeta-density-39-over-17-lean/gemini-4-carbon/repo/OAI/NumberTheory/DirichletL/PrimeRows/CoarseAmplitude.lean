@@ -17,8 +17,7 @@ variable {ι : Type*} [Fintype ι]
 lemma coarsePrimeCost_image {K : ℕ} (P : Fin K→PrimeIdeal) (hP : Function.Injective P) :
     coarsePrimeCost (Finset.univ.image P)=(8192:ℝ)^K*(∏i,(P i).val.absNorm:ℝ)^3 := by
   unfold coarsePrimeCost
-  rw [Finset.prod_image (by intro a ha b hb hab;exact hP hab)]
-  rw [Finset.prod_mul_distrib,←Finset.prod_pow]
+  rw [Finset.prod_image (by intro a ha b hb hab;exact hP hab), Finset.prod_mul_distrib,←Finset.prod_pow]
   simp
 
 lemma prime_frequency_amplitude_le_one {K : ℕ}
@@ -29,12 +28,12 @@ lemma prime_frequency_amplitude_le_one {K : ℕ}
   have hp (i : Fin K) : 1≤elementNorm (CompletedGauss.primaryGenerator (P i).val) := by
     unfold elementNorm
     exact_mod_cast Nat.one_le_iff_ne_zero.mpr
-      (Ideal.absNorm_eq_zero_iff.not.mpr (by simpa only [Ideal.span_singleton_eq_bot] using
+      (Ideal.absNorm_eq_zero_iff.not.mpr (by simpa using
         (supported_primeGenerator_prime (P i) (outside_prime_supported S hS.bad (P i) (hPS i))).ne_zero))
   have hu : 1≤elementNorm u.val := by
     unfold elementNorm
     exact_mod_cast Nat.one_le_iff_ne_zero.mpr
-      (Ideal.absNorm_eq_zero_iff.not.mpr (by simpa only [Ideal.span_singleton_eq_bot] using u.property.1))
+      (Ideal.absNorm_eq_zero_iff.not.mpr (by simpa using u.property.1))
   rw [norm_mul,norm_prod]
   refine (mul_le_of_le_one_left (norm_nonneg _) ?_).trans ?_
   · apply Finset.prod_le_one₀ (fun _ _=>norm_nonneg _)
@@ -65,16 +64,15 @@ theorem rowAmplitudeOnLines_buffered_polynomial (K : ℕ)
       ‖rowAmplitudeOnLines S hS hmax P hPS η u σ (1-a-6*e) r t‖≤
         C*contourArithmeticCost η u P*(3+|H|)^2*(3+|t.2|)^2 := by
   obtain ⟨C,hC,hbound⟩ := calibrated_physicalRow_buffered_polynomial_growth (ι:=ι) e he he' S hS hfirst hmax
-  refine ⟨C*(8192:ℝ)^K,by positivity,?_⟩
+  refine ⟨C*8192^K,by positivity,?_⟩
   intro η u hu P hP hPS ψ a B H i ha haTop hB hH hbin σ hσ r hr t ht
-  have hw := prime_frequency_amplitude_le_one S hS P hPS u r (by linarith [hr.1]) hr.2 t.1.2
   have hb := hbound η u hu (Finset.univ.image P) (contourTupleOutside S P hPS) ψ a B H i ha haTop hB hH hbin
     ((σ:ℂ)+t.1.1*I) ((((1-a-6*e):ℝ):ℂ)+t.2*I) ((r:ℂ)+t.1.2*I)
     (by simpa using hσ.1) (by simpa using hσ.2) (by simpa using ht) (by simp) (by simpa using hr.1)
   simp only [add_im,ofReal_im,mul_im,ofReal_re,I_im,I_re,mul_one,mul_zero,add_zero,zero_add] at hb
   unfold rowAmplitudeOnLines
   rw [norm_mul]
-  apply (mul_le_of_le_one_left (norm_nonneg _) hw).trans
+  apply (mul_le_of_le_one_left (norm_nonneg _) (prime_frequency_amplitude_le_one S hS P hPS u r (by linarith [hr.1]) hr.2 t.1.2)).trans
   apply hb.trans_eq
   rw [coarsePrimeCost_image P hP]
   unfold contourArithmeticCost
@@ -91,7 +89,6 @@ theorem rowAmplitudeOnLines_first_polynomial (K : ℕ)
   obtain ⟨C,hC,hbound⟩ := calibrated_physicalRow_first_joint_polynomial_growth S hS hfirst hmax
   refine ⟨C*(8192:ℝ)^K,by positivity,?_⟩
   intro η u hu P hP hPS υ hυ r hr t
-  have hw := prime_frequency_amplitude_le_one S hS P hPS u r (by linarith [hr.1]) hr.2 t.1.2
   have hb := hbound η u hu (Finset.univ.image P) (contourTupleOutside S P hPS)
     ((2:ℂ)+t.1.1*I) ((υ:ℂ)+t.2*I) ((r:ℂ)+t.1.2*I)
     (by simp) (by simpa using hυ) (by simpa using hr.1)
@@ -100,15 +97,10 @@ theorem rowAmplitudeOnLines_first_polynomial (K : ℕ)
     exact_mod_cast Nat.one_le_iff_ne_zero.mpr
       (Ideal.absNorm_eq_zero_iff.not.mpr (by simpa only [Ideal.span_singleton_eq_bot] using u.property.1))
   have hη := HeckeLogarithmicInput.modulus_norm_ge_one η
-  have hN46 : ((Ideal.span {u.val}:Ideal O).absNorm:ℝ)^4≤((Ideal.span {u.val}:Ideal O).absNorm:ℝ)^6 :=
-    pow_le_pow_right₀ hN (by norm_num)
   have hη2 : (1:ℝ)≤(η.modulus.absNorm:ℝ)^2 := by nlinarith
-  have hlarge : ((Ideal.span {u.val}:Ideal O).absNorm:ℝ)^4≤
-      (η.modulus.absNorm:ℝ)^2*((Ideal.span {u.val}:Ideal O).absNorm:ℝ)^6 :=
-    hN46.trans (le_mul_of_one_le_left (by positivity) hη2)
   unfold rowAmplitudeOnLines
   rw [norm_mul]
-  apply (mul_le_of_le_one_left (norm_nonneg _) hw).trans
+  apply (mul_le_of_le_one_left (norm_nonneg _) (prime_frequency_amplitude_le_one S hS P hPS u r (by linarith [hr.1]) hr.2 t.1.2)).trans
   apply hb.trans
   rw [coarsePrimeCost_image P hP]
   unfold contourArithmeticCost
@@ -117,7 +109,7 @@ theorem rowAmplitudeOnLines_first_polynomial (K : ℕ)
     _ ≤ (C*(8192:ℝ)^K)*((η.modulus.absNorm:ℝ)^2*((Ideal.span {u.val}:Ideal O).absNorm:ℝ)^6)*
         (∏i,(P i).val.absNorm:ℝ)^3*(3+|t.2|)^2 :=
       mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right
-        (mul_le_mul_of_nonneg_left hlarge (mul_nonneg hC (pow_nonneg (by norm_num) _)))
+        (mul_le_mul_of_nonneg_left ((pow_le_pow_right₀ hN (by norm_num)).trans (le_mul_of_one_le_left (by positivity) hη2)) (mul_nonneg hC (pow_nonneg (by norm_num) _)))
         (pow_nonneg (Finset.prod_nonneg (fun i _ => Nat.cast_nonneg (P i).val.absNorm)) _)) (sq_nonneg _)
     _ = _ := by ring
 

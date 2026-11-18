@@ -13,10 +13,6 @@ noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
 
-omit [DecidableEq ι] in
-@[simp] theorem secondParentOf_attach {Jo : ℕ} (parent : SecondParentSource ι Jo)
-    (x : SecondExpansionData ι) : secondParentOf (attachSecondExpansion parent x) = parent := rfl
-
 def attachedSecondFamily {Jo : ℕ} (parents : Finset (SecondParentSource ι Jo))
     (source : SecondParentSource ι Jo → Finset (SecondExpansionData ι)) :
     Finset (MarkedSecondSource ι Jo 0) :=

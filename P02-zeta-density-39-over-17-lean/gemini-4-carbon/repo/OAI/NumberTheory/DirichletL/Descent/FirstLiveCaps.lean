@@ -16,13 +16,11 @@ local notation "O"=>ActualEisensteinCubic.O
 
 lemma factor_four_bound (a b c d L:ℝ)(ha:1≤a)(hb:1≤b)(hc:1≤c)(hd:1≤d)
     (h:a*b*c*d≤L): a≤L ∧ b≤L ∧ c≤L ∧ d≤L:=by
-  have ha0:0≤a:=zero_le_one.trans ha
-  have hb0:0≤b:=zero_le_one.trans hb
-  have hc0:0≤c:=zero_le_one.trans hc
-  have hd0:0≤d:=zero_le_one.trans hd
-  have hab:1≤a*b:=ha.trans (le_mul_of_one_le_right ha0 hb)
-  have habc:1≤a*b*c:=hab.trans (le_mul_of_one_le_right (mul_nonneg ha0 hb0) hc)
-  have habd:1≤a*b*d:=hab.trans (le_mul_of_one_le_right (mul_nonneg ha0 hb0) hd)
+  have ha0 :=zero_le_one.trans ha
+  have hb0 :=zero_le_one.trans hb
+  have hc0 :=zero_le_one.trans hc
+  have hab :=ha.trans (le_mul_of_one_le_right ha0 hb)
+  have habd :=hab.trans (le_mul_of_one_le_right (mul_nonneg ha0 hb0) hd)
   have ha':a≤a*b*c*d:=by
     calc
       a≤a*b:=le_mul_of_one_le_right ha0 hb
@@ -37,7 +35,7 @@ lemma factor_four_bound (a b c d L:ℝ)(ha:1≤a)(hb:1≤b)(hc:1≤c)(hd:1≤d)
     calc
       c≤a*b*c:=le_mul_of_one_le_left hc0 hab
       _≤a*b*c*d:=le_mul_of_one_le_right (mul_nonneg (mul_nonneg ha0 hb0) hc0) hd
-  exact ⟨ha'.trans h,hb'.trans h,hc'.trans h,(le_mul_of_one_le_left hd0 habc).trans h⟩
+  exact ⟨ha'.trans h,hb'.trans h,hc'.trans h,(le_mul_of_one_le_left (zero_le_one.trans hd) (hab.trans (le_mul_of_one_le_right (mul_nonneg ha0 hb0) hc))).trans h⟩
 
 theorem first_profile_live_factors (W:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))(K L:ℝ)(q:Fin 9→ℝ)
     (hq:∀i,1≤q i)(hW:∀x,W x≠0→x≤L)

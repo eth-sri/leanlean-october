@@ -25,7 +25,7 @@ def signal (χ : Character) (H : ℂ → ℂ) (c : ℝ) (x : ℝ) : ℂ :=
 theorem quotient_differentiableAt (χ : Character) (H : ℂ → ℂ)
     (hH : DifferentiableOn ℂ H {s : ℂ | 7/8 < s.re}) {s : ℂ} (hs : 1 < s.re) :
     DifferentiableAt ℂ (quotient χ H) s :=
-  (hH.differentiableAt ((Complex.isOpen_re_gt (7/8)).mem_nhds (by linarith : (7/8 : ℝ) < s.re))).mul
+  (hH.differentiableAt ((Complex.isOpen_re_gt (7/8)).mem_nhds (by linarith : (7/8) < s.re))).mul
     (HeckeReciprocal.reciprocal_differentiableAt χ
       (lt_of_le_of_lt HeckeZeroSupremum.beta_le_one hs))
 
@@ -34,7 +34,7 @@ theorem quotient_bound (χ : Character) (H : ℂ → ℂ)
     {s : ℂ} (hs : 2 ≤ s.re) :
     ‖quotient χ H s‖ ≤ (3/2) * HeckeReciprocalBound.bound 2 := by
   have hn : ‖H s‖ ≤ 3/2 := by
-    have h := norm_add_le (H s - 1) (1 : ℂ)
+    have h := norm_add_le (H s - 1) 1
     have h' := hH s (by linarith)
     simp only [sub_add_cancel, norm_one] at h
     linarith
@@ -84,7 +84,7 @@ theorem amplitude_continuous_line (χ : Character) (H : ℂ → ℂ)
   intro y
   have hd : DifferentiableAt ℂ (amplitude χ H) ((a : ℂ) + y * I) := by
     unfold amplitude
-    exact (((differentiable_id.sub_const (5/6 : ℂ)).pow 2).cexp.differentiableAt).mul
+    exact (((differentiable_id.sub_const (5/6)).pow 2).cexp.differentiableAt).mul
       (quotient_differentiableAt χ H hH (by simpa using ha))
   have hm : Continuous (fun v : ℝ => (a : ℂ) + v * I) := by fun_prop
   exact hd.continuousAt.comp (f := fun v : ℝ => (a : ℂ) + v * I) hm.continuousAt
@@ -126,15 +126,13 @@ theorem contour_shift (χ : Character) (H : ℂ → ℂ)
     exact (quotient_differentiableAt χ H hH (by linarith [hz.1])).differentiableWithinAt
   · intro a ha y
     rw [norm_gaussianContourIntegrand _ _ _ _ hx]
-    have hxpow : x^(a+c) ≤ x^(2+c) :=
-      Real.rpow_le_rpow_of_exponent_ge hx hx1 (by linarith [ha.1])
     have hexp : Real.exp ((a-5/6)^2) ≤ Real.exp ((B-5/6)^2) := by
       apply Real.exp_le_exp.mpr
       nlinarith [ha.1, ha.2]
     apply mul_le_mul_of_nonneg_right _ (Real.exp_pos _).le
     apply mul_le_mul _ (quotient_bound χ H hb (by simpa using ha.1)) (norm_nonneg _)
       (mul_nonneg (Real.rpow_nonneg hx.le _) (Real.exp_pos _).le)
-    exact mul_le_mul hxpow hexp (Real.exp_pos _).le (Real.rpow_nonneg hx.le _)
+    exact mul_le_mul (Real.rpow_le_rpow_of_exponent_ge hx hx1 (by linarith [ha.1])) hexp (Real.exp_pos _).le (Real.rpow_nonneg hx.le _)
 
 def endpointConstant (B : ℝ) : ℝ :=
   ‖(1 / (2 * Real.pi) : ℂ)‖ * Real.exp ((B-5/6)^2) * quotientBound *

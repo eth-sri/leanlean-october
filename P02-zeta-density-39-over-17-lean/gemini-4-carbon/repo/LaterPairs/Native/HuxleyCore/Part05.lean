@@ -5,31 +5,13 @@ public import LaterPairs.Native.HuxleyCore.Part04
 
 set_option autoImplicit false
 set_option maxHeartbeats 0
-set_option maxErrors 1000
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
-open Filter
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
-open Polynomial
-open Set
-open scoped Classical
-open scoped ContDiff
-open scoped FourierTransform BigOperators
-open scoped Topology
-open Filter
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
-open Polynomial
-open Set
-open scoped Classical
-open scoped ContDiff
-open scoped FourierTransform BigOperators
-open scoped Topology
+open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth Filter Polynomial Set
+open scoped Classical ContDiff FourierTransform BigOperators Topology
 universe huxleyNarrowV
 noncomputable section
 namespace TaoTrudgianYang2025.HuxleyRationalPhase
+open Filter Set Expdb TaoTrudgianYang2025
 open scoped BigOperators FourierTransform Classical ContDiff NNReal
-open Filter
-open Set Expdb TaoTrudgianYang2025
-open scoped BigOperators FourierTransform ContDiff Classical NNReal
 
 
 private theorem eventually_double_difference_actual_family_physical_sieve
@@ -345,7 +327,6 @@ private theorem eventually_double_difference_actual_family_physical_sieve
   have hs0 : 0 ≤ ∑ ip∈V, weight ip*‖val ip‖ :=
     Finset.sum_nonneg (fun ip _ => mul_nonneg (hweight0 ip) (norm_nonneg _))
   have hsum : (∑ ip∈V, weight ip*‖val ip‖) ≤ Real.sqrt Wphys*(Values k) := by
-    change (∑ ip∈V, weight ip*‖val ip‖) ≤ Real.sqrt Wphys*(∑ ip∈V, ‖val ip‖)
     rw [Finset.mul_sum]
     exact Finset.sum_le_sum (fun ip hip =>
       mul_le_mul_of_nonneg_right (hweight ip hip) (norm_nonneg _))
@@ -372,13 +353,13 @@ private theorem double_difference_physical_curvature_growth
     c*T/(4*M^3)*(z-x) ≤ iteratedDeriv 2 f z/2-iteratedDeriv 2 f x/2 := by
   intro Φ f
   let h := fun v => iteratedDeriv 2 f v/2
-  have hjet u (hu : u∈Icc (3/4:ℝ) (9/4)) :=
+  have hjet u (hu : u∈Icc (3/4) (9/4)) :=
     double_difference_cubic_jet_bounds F hu hy hr hs hd hU hc
       hprod hshift hw hsmall hf hlower hjets
   have hreg u (hu : 0 < u) : ContDiffAt ℝ ∞ Φ u :=
     (hjet 1 (by norm_num)).1 u hu
   have hnorm v (hv : v∈Icc (3*M/4) (9*M/4)) :
-      v/M∈Icc (3/4:ℝ) (9/4) := by
+      v/M∈Icc (3/4) (9/4) := by
     constructor
     · apply (le_div_iff₀ hM).mpr
       linarith only [hv.1]
@@ -400,9 +381,8 @@ private theorem double_difference_physical_curvature_growth
       (l:=0) (r:=v+1) (c:=M⁻¹) (d:=0)
       (fun u hu => hreg _ (by
         simpa only [add_zero] using mul_pos (inv_pos.mpr hM) hu.1))
-      (show v∈Ioo (0:ℝ) (v+1) from ⟨hvpos v hv,by linarith⟩) 3
+      (show v∈Ioo 0 (v+1) from ⟨hvpos v hv,by linarith⟩) 3
     have hphysical : iteratedDeriv 3 f v=T/M^3*iteratedDeriv 3 Φ (v/M) := by
-      change iteratedDeriv 3 (fun u => T*Φ (u/M)) v=_
       rw [iteratedDeriv_const_mul_field]
       have he : (fun u => Φ (u/M))=(fun u => Φ (M⁻¹*u+0)) := by
         funext u
@@ -478,17 +458,13 @@ private theorem double_difference_constructed_reference_system_bounded
   obtain ⟨S,hseed,hpoints,hlabels,hsep,hcover,hgaps,hheight⟩ := hbuild L V hLV
   have hinside x (hx : |x| ≤ curvatureScale) : x ∈ Icc (L:ℝ) ((V:ℝ)+1) := by
     have hxI := abs_le.mp hx
-    have hL := Int.floor_le (-curvatureScale)
-    have hV := Int.lt_floor_add_one curvatureScale
     change ((L:ℝ) ≤ x ∧ x ≤ (V:ℝ)+1)
     dsimp only [L,V]
-    constructor <;> linarith only [hxI.1,hxI.2,hL,hV]
+    constructor <;> linarith only [hxI.1,hxI.2,(Int.floor_le (-curvatureScale)),(Int.lt_floor_add_one curvatureScale)]
   have houtside x (hx : x ∈ Icc (L:ℝ) ((V:ℝ)+1)) : |x| ≤ curvatureScale+1 := by
-    have hL := Int.lt_floor_add_one (-curvatureScale)
-    have hV := Int.floor_le curvatureScale
     apply abs_le.mpr
     dsimp only [L,V] at hx
-    constructor <;> linarith only [hx.1,hx.2,hL,hV]
+    constructor <;> linarith only [hx.1,hx.2,(Int.lt_floor_add_one (-curvatureScale)),(Int.floor_le curvatureScale)]
   have hheightScale : 4/δ=4*R^2/U := by
     dsimp only [δ]
     rw [div_div_eq_mul_div]
@@ -641,9 +617,8 @@ private theorem double_difference_physical_source_jets
     have ha := sargos_iteratedDeriv_comp_affine_local (f:=Φ)
       (l:=0) (r:=x+1) (c:=M⁻¹) (d:=0)
       (fun u hu => hj.1 _ (by
-        simpa only [add_zero] using mul_pos (inv_pos.mpr hM) hu.1))
+        simpa using mul_pos (inv_pos.mpr hM) hu.1))
       (show x∈Ioo (0:ℝ) (x+1) from ⟨hxp,by linarith⟩) n
-    change iteratedDeriv n (fun v => T*Φ (v/M)) x=_
     rw [iteratedDeriv_const_mul_field]
     have he : (fun v => Φ (v/M))=(fun v => Φ (M⁻¹*v+0)) := by
       funext v
@@ -655,16 +630,13 @@ private theorem double_difference_physical_source_jets
     ring
   refine ⟨hreg,?_,?_,?_⟩
   · rw [hphysical]
-    have hh := mul_le_mul_of_nonneg_left hj.2.1 (show 0 ≤ T/M^3 by positivity)
-    convert hh using 1
+    convert (mul_le_mul_of_nonneg_left hj.2.1 (show 0 ≤ T/M^3 by positivity)) using 1
     ring
   · rw [hphysical,abs_mul,abs_of_pos (show 0 < T/M^3 by positivity)]
-    have hh := mul_le_mul_of_nonneg_left hj.2.2.1 (show 0 ≤ T/M^3 by positivity)
-    convert hh using 1
+    convert (mul_le_mul_of_nonneg_left hj.2.2.1 (show 0 ≤ T/M^3 by positivity)) using 1
     ring
   · rw [hphysical,abs_mul,abs_of_pos (show 0 < T/M^4 by positivity)]
-    have hh := mul_le_mul_of_nonneg_left hj.2.2.2 (show 0 ≤ T/M^4 by positivity)
-    convert hh using 1
+    convert (mul_le_mul_of_nonneg_left hj.2.2.2 (show 0 ≤ T/M^4 by positivity)) using 1
     ring
 
 private theorem double_difference_chosen_arcs_band_fourier
@@ -822,10 +794,9 @@ private theorem double_difference_chosen_arcs_band_fourier
       (fun w hw => ⟨(by linarith only [(hthree i hi w hw).1,hlambda]),(hthree i hi w hw).2⟩)
       (hm i hi) ⟨(hgeo i hi).1.1.le,(hgeo i hi).1.2.le⟩
     rw [(hroots i hi).2] at hh
-    have hr := mul_le_mul_of_nonneg_left (hgeo i hi).2.1 (show 0 ≤ 3*U₃ by positivity)
     have he : (r i:ℝ)=((r i).num:ℝ)/(q i:ℝ) := by rw [Rat.cast_def]
     rw [he,abs_sub_comm (m i:ℝ) (z i)] at hh
-    exact hh.trans (by linarith only [hr])
+    exact hh.trans (by linarith only [(mul_le_mul_of_nonneg_left (hgeo i hi).2.1 (show 0 ≤ 3*U₃ by positivity))])
   have hGS : G ⊆ S := fun i hi => (Finset.mem_filter.mp hi).1
   have hscale i (hi : i∈G) :
       0 < q i ∧ q i ≤ A i ∧ IsCoprime (r i).num (q i:ℤ) ∧
@@ -897,8 +868,7 @@ private theorem double_difference_chosen_arcs_band_fourier
       (fun i => q i ≤ N ∧ 1 ≤ lambda*(q i:ℝ)^2*N) Src).symm
   change (∑ i∈S,Src i) ≤ _
   rw [hsplit]
-  have hh := add_le_add hk (hbad.trans hbadC)
-  convert hh using 1
+  convert (add_le_add hk (hbad.trans hbadC)) using 1
   dsimp only [Bad]
   ring
 
@@ -941,7 +911,7 @@ private theorem double_difference_dyadic_anchor_center
     constructor <;> linarith only [hx.1,hx.2,hM,hN,hNM]
   have hinc := double_difference_physical_curvature_growth F hr hs hd hy hprod
     hshift hw hsmall hc hU hT hM hxwide hUwide
-    (show x ≤ x+N/16 by linarith only [hN]) hf hlower hjets
+    (by linarith only [hN]) hf hlower hjets
   have hrate : (c*T/(4*M^3))*(N/16)=c/(64*R^2) := by
     rw [←hphase]
     field_simp
@@ -963,7 +933,7 @@ private theorem double_difference_dyadic_anchor_center
     have hv0 : 0 < v := by linarith only [(hsub hv).1,hM]
     exact ((contDiffAt_iteratedDeriv_infty (hreg v hv0) 2).continuousAt.div_const 2).continuousWithinAt
   obtain ⟨z,hz,hzlevel⟩ := intermediate_value_Icc
-    (show x ≤ x+N/16 by linarith only [hN]) hcont htarget
+    (by linarith only [hN]) hcont htarget
   exact ⟨b,hb,hbhalf,hab,hclose',z,hz,hzlevel⟩
 
 private theorem double_difference_dyadic_anchor_source_fourier
@@ -1457,12 +1427,12 @@ private theorem double_difference_two_probe_dyadic_band_card
       · right
         by_contra hno
         have hall : ∀ i, Good j (k-1) i := not_exists_not.mp hno
-        exact Nat.find_min he (show k-1 < k by omega)
+        exact Nat.find_min he (by omega)
           ⟨(Nat.sub_le k 1).trans hk.1,hall⟩
     · exact ⟨none,not_forall.mp hlast⟩
   choose band hband using hchoose
   have hqA k : Acut ≤ Q k :=
-    hAQ.trans (Nat.le_mul_of_pos_right Qbase (pow_pos (by decide : 0 < (2:ℕ)) k))
+    hAQ.trans (Nat.le_mul_of_pos_right Qbase (pow_pos (by decide : 0 < 2) k))
   have hbadcard k :
       ((S.filter (fun j => ∃ i, ¬Good j k i)).card:ℝ) ≤ 2*Cost (Q k) := by
     let Bad := fun i : Fin 2 => S.filter (fun j => ¬Good j k i)
@@ -1477,14 +1447,8 @@ private theorem double_difference_two_probe_dyadic_band_card
     have hh : ((S.filter (fun j => ∃ i, ¬Good j k i)).card:ℝ) ≤
         ((Bad 0).card:ℝ)+((Bad 1).card:ℝ) := by
       exact_mod_cast (Finset.card_le_card hsub).trans (Finset.card_union_le _ _)
-    have hzero := hone 0
-    have hone' := hone 1
-    linarith only [hh,hzero,hone']
+    linarith only [hh,(hone 0),(hone 1)]
   refine ⟨anchor,band,za,hanchor,hroots,?_⟩
-  change (∀ j, match band j with
-    | none => ∃ i, ¬Good j kmax i
-    | some k => k ≤ kmax ∧ (∀ i, Good j k i) ∧
-      (k=0 ∨ ∃ i, ¬Good j (k-1) i)) ∧ _
   refine ⟨hband,?_,?_,?_⟩
   · intro j hjS k hj i q hq hmin
     have hd := hband j
@@ -1503,7 +1467,7 @@ private theorem double_difference_two_probe_dyadic_band_card
       refine Finset.mem_filter.mpr ⟨hjS,?_⟩
       rcases hd.2.2 with hz | hprev
       · omega
-      · simpa only [Nat.add_sub_cancel] using hprev
+      · simpa using hprev
     exact (show ((S.filter (fun j => band j=some (k+1))).card:ℝ) ≤
       ((S.filter (fun j => ∃ i, ¬Good j k i)).card:ℝ) by
         exact_mod_cast Finset.card_le_card hsub).trans (hbadcard k)
@@ -1597,11 +1561,7 @@ private theorem double_difference_two_probe_dyadic_quadratic_density
     have hbound : Cost (Q k) ≤ Cerror*(M*R^2/((N:ℝ)*(Q k:ℝ)^2))*
         (2+Real.log (64*R^2/(c*((Q k:ℝ)/Acut))+1)) := by
       simpa only [mul_one,one_mul,div_one,hthree,hsix,hV] using hh
-    calc
-      _ ≤ 2*(Cerror*(M*R^2/((N:ℝ)*(Q k:ℝ)^2))*
-          (2+Real.log (64*R^2/(c*((Q k:ℝ)/Acut))+1))) :=
-        mul_le_mul_of_nonneg_left hbound (by norm_num)
-      _ = _ := by dsimp only [Density]; ring
+    exact (mul_le_mul_of_nonneg_left hbound (by norm_num)).trans_eq (by dsimp only [Density]; ring)
   refine ⟨anchor,band,za,hanchor,hroots,?_⟩
   intro Good
   exact ⟨hband,htransfer,fun k hk => (hcounts k).trans (hcost k hk),
@@ -1754,7 +1714,7 @@ private theorem double_difference_constructed_reference_gap_factory
     have hscale : 0 < curvatureScale := by dsimp only [curvatureScale]; positivity
     obtain ⟨a,ha,b,hb,hab,hax,hxb,hadj,_hal,_hub⟩ :=
       nativeHuxleyReference_finite_reference_closed_bracket Refs hl hu hlo hhi
-        (show -curvatureScale < curvatureScale by linarith only [hscale])
+        (by linarith only [hscale])
         (abs_le.mp (hcurv y hyY z hz))
     exact ⟨(a,b),Finset.mem_filter.mpr ⟨Finset.mem_product.mpr ⟨ha,hb⟩,hab,hadj⟩,hax,hxb⟩
 
@@ -1926,10 +1886,8 @@ private theorem eventually_double_difference_constructed_reference_weighted_siev
     C₂ C₃ Ct Cc Δ Ccurv D Kres Esize Dbase Tbase hsize hD hΔ hBsize
     Lunit Gamma Cthird Cpack Cfirst Cgap Cmain Ctail Klarge Y Values Wphys WeightedValues Mass
   have hκ : 0 < κ := modelPhaseThirdLower_pos hσ
-  have hNp : (0:ℝ) < N := Nat.cast_pos.mpr hN
   have hRp : 0 < R := zero_lt_one.trans_le hR
   have hUp : (0:ℝ) < Uref := by exact_mod_cast (show 0 < Uref by omega)
-  have hdenom : 0 < σ*(σ+1)+3 := by positivity
   have hBuffer : 0 ≤ Buffer := by dsimp only [Buffer]; positivity
   have hzFull i (hi : i∈S) : z i∈Icc M (2*M) := by
     have hh := hz i hi
@@ -1955,10 +1913,8 @@ private theorem eventually_double_difference_constructed_reference_weighted_siev
     convert hsep0 a ha b hb hab using 1
     ring
   have hcurvScale : Usrc*Tsrc/M^2 ≤ 3*Jref*T/(2*σ*M^2) := by
-    calc
-      _ ≤ Usrc*(E*T)/M^2 := div_le_div_of_nonneg_right
-        (mul_le_mul_of_nonneg_left hsourceScale hUsrc.le) (sq_nonneg M)
-      _ = _ := by dsimp only [Jref]; field_simp
+    exact (div_le_div_of_nonneg_right
+        (mul_le_mul_of_nonneg_left hsourceScale hUsrc.le) (sq_nonneg M)).trans_eq (by dsimp only [Jref]; field_simp)
   have hheight : (Usrc*Tsrc/M^2+1)*(4*R^2/(Uref:ℝ)) ≤
       (3*Jref*T/(2*σ*M^2)+1)*(4*R^2/(Uref:ℝ)) :=
     mul_le_mul_of_nonneg_right (add_le_add hcurvScale le_rfl) (by positivity)
@@ -1980,10 +1936,8 @@ private theorem eventually_double_difference_constructed_reference_weighted_siev
       z i-(A i.1:ℝ)+t∈Ioo (1/2:ℝ) (W i.1-1/2) := by
     have hzz := hz i hi
     rw [hBufferEq] at hzz
-    have hceil := Int.ceil_lt_add_one M
     have htb := abs_le.mp ht
-    change (1/2:ℝ) < z i-(⌈M⌉:ℝ)+t ∧ z i-(⌈M⌉:ℝ)+t < 2*M-(⌈M⌉:ℝ)-1/2
-    constructor <;> linarith only [hzz.1,hzz.2,hceil,htb.1,htb.2]
+    constructor <;> linarith only [hzz.1,hzz.2,(Int.ceil_lt_add_one M),htb.1,htb.2]
   have hx i (hi : i∈S) : z i-(A i.1:ℝ)∈Ioo (1/2:ℝ) (W i.1-1/2) := by
     simpa only [add_zero] using hwindow i hi 0 (by rw [abs_zero]; positivity)
   have hwideL i (hi : i∈S) : z i-(A i.1:ℝ)-Dpad∈Ioo (1/2:ℝ) (W i.1-1/2) := by
@@ -2184,10 +2138,7 @@ private theorem eventually_double_difference_original_selected_block_moment
       round (z i)+(Nlen i:ℤ)=Z i.1+(N:ℤ)*i.2+2*(N:ℤ) :=
     (hgeo i hi).2
   have htol : csrc/(64*R^2) ≤ ε := by
-    calc
-      _ ≤ (4*κ/(Cphys+2))/(64*R^2) :=
-        div_le_div_of_nonneg_right hanchorBudget (by positivity)
-      _ = ε := by dsimp only [ε]; field_simp; ring
+    exact (div_le_div_of_nonneg_right hanchorBudget (by positivity)).trans_eq (by dsimp only [ε]; field_simp; ring)
   have hanchor i (hi : i∈S) : |(anchor i:ℝ)-(rat i:ℝ)| ≤ ε := by
     rw [abs_sub_comm]
     exact ((hrat i hi).2.2.2.1).trans htol
@@ -2256,9 +2207,7 @@ private theorem eventually_double_difference_original_selected_block_moment
     ring
   have herror : (∑ i∈S, (Real.sqrt (Nlen i)*Real.log (2*(Nlen i:ℝ))+
       1/(μ i*(Nlen i:ℝ)^2))) ≤ Error := by
-    calc
-      _ ≤ ∑ _i∈S,PointError := Finset.sum_le_sum hpoint
-      _ = Error := by rw [Finset.sum_const,nsmul_eq_mul]
+    exact (Finset.sum_le_sum hpoint).trans_eq (by rw [Finset.sum_const,nsmul_eq_mul])
   have hError : 0 ≤ Error := mul_nonneg (Nat.cast_nonneg _) hPointError
   have hlog : 0 ≤ 1+Real.log K₀ := by
     have hkpos : 0 < K₀ := NeZero.pos K₀
@@ -2341,10 +2290,8 @@ private theorem double_difference_uniform_source_normalization
     exact hlc2.trans (mul_le_mul_of_nonneg_left (hdet u hu) (sq_nonneg ampl))
   · intro u hu
     rw [hderiv]
-    have hh := mul_le_mul_of_nonneg_left (hnegative u hu) hamplpos.le
-    linarith only [hh,hlc]
+    linarith only [(mul_le_mul_of_nonneg_left (hnegative u hu) hamplpos.le),hlc]
   · intro Traw Tmodel d r s M v hT
-    change Tmodel*(ampl*F (v/M)-ampl*F (v/M+r)-ampl*F (v/M+s)+ampl*F (v/M+r+s))/d=_
     calc
       _ = (Tmodel*ampl)*(F (v/M)-F (v/M+r)-F (v/M+s)+F (v/M+r+s))/d := by ring
       _ = _ := by rw [hT]
@@ -2415,10 +2362,7 @@ private theorem double_difference_colored_common_scale_source
     (mul_pos (by norm_num) (modelPhaseThirdLower_pos (by positivity))) (by positivity))
   have hw₀ : 0 < w₀ := lt_min hw (div_pos hcnew (by positivity))
   have hsmall : 2*Unew*w₀ ≤ cnew/64 := by
-    calc
-      _ ≤ 2*Unew*(cnew/(128*Unew)) :=
-        mul_le_mul_of_nonneg_left (min_le_right _ _) (by positivity)
-      _ = cnew/64 := by field_simp; ring
+    exact (mul_le_mul_of_nonneg_left (min_le_right _ _) (by positivity)).trans_eq (by field_simp; ring)
   refine ⟨w₀,a,cnew,Unew,hw₀,(min_le_left _ _).trans hwcap,ha,hcnew,hUnew,
     hsmall,min_le_right _ _,?_⟩
   intro F hreg happrox hjets hlower hdet hnegative ι S y r s d hd hy hshifts color Cap
@@ -2526,11 +2470,10 @@ private theorem approximateModelPhase_enlarged_double_common_scale_source
   refine ⟨δ,w₀,a,c,U,hδ,hw₀,hwcap,ha,hc,hU,hsmall,hanchor,?_⟩
   intro M F hM hF
   obtain ⟨Fext,hreg,hjets,hbound,hlower,htests,hnegative,hsharp,_hcount⟩ := hbuild M F hM hF
-  have hdet : ∀ u∈Icc (1/2:ℝ) 3,
+  have hdet : ∀ u∈Icc (1/2) 3,
       c₀ ≤ |(iteratedDeriv 5 Fext u)^2-iteratedDeriv 4 Fext u*iteratedDeriv 6 Fext u| := by
     intro u hu
-    have hh := htests u hu (4:Fin 7)
-    simpa [HuxleyModel.tests,abs_sub_comm] using hh
+    simpa [HuxleyModel.tests,abs_sub_comm] using (htests u hu (4:Fin 7))
   exact ⟨Fext,hreg,hsharp,hcolors Fext hreg hjets hbound hlower hdet hnegative⟩
 
 private theorem fourth_pair_capped_terminal_source_window_scales
@@ -2572,13 +2515,9 @@ private theorem fourth_pair_capped_terminal_source_window_scales
   have ht1 := ht.2
   have hu0 := hu.1
   have hu1 := hu.2
-  have h00 := mul_nonneg (sub_nonneg.mpr ht1) (sub_nonneg.mpr hu1)
-  have h01 := mul_nonneg (sub_nonneg.mpr ht1) hu0
-  have h10 := mul_nonneg ht0 (sub_nonneg.mpr hu1)
-  have h11 := mul_nonneg ht0 hu0
   dsimp only [α,h,g₀,ν₀,ν₁,g,ν,β]
   repeat' constructor
-  all_goals nlinarith only [ht0,ht1,hu0,hu1,h00,h01,h10,h11]
+  all_goals nlinarith only [ht0,ht1,hu0,hu1,(mul_nonneg (sub_nonneg.mpr ht1) (sub_nonneg.mpr hu1)),(mul_nonneg (sub_nonneg.mpr ht1) hu0),(mul_nonneg ht0 (sub_nonneg.mpr hu1)),(mul_nonneg ht0 hu0)]
 
 private theorem capped_terminal_physical_error
     {M N R Q qcap : ℝ}
@@ -2839,8 +2778,7 @@ private theorem double_difference_chunk_grid_dyadic_bands
     have hmaps : ∀ p∈E, p.1∈Y := fun p hp => hphase p (Finset.mem_filter.mp hp).1
     have hsum : (∑ y∈Y,((Ey y).card:ℝ))=E.card := by
       simp_rw [hcard]
-      have hh := Finset.sum_fiberwise_of_maps_to hmaps (fun _ => (1:ℝ))
-      simpa only [Finset.sum_const,nsmul_eq_mul,mul_one] using hh
+      simpa only [Finset.sum_const,nsmul_eq_mul,mul_one] using (Finset.sum_fiberwise_of_maps_to hmaps (fun _ => (1:ℝ)))
     change (E.card:ℝ) ≤ _
     rw [←hsum]
     calc
@@ -3218,7 +3156,7 @@ private theorem eventually_double_difference_direct_residue_grid_moment
       iteratedDeriv 2 (f i.1) (za i)/2=(anchor i:ℝ) ∧
       768*(anchor i).den ≤ Q ∧
       24576*R^2 ≤ csrc*(Q:ℝ)*(anchor i).den := (hg.2.2 i hi).2.2.2
-  have hyS i (hi : i∈S) : i.1∈Icc (1:ℝ) 2 := hy (Point i) (hmem i hi)
+  have hyS i (hi : i∈S) : i.1∈Icc 1 2 := hy (Point i) (hmem i hi)
   have hHS i (_hi : i∈S) : H i ≤ N := by dsimp only [H]; omega
   have hden i (hi : i∈S) : 2*(anchor i).den ≤ Q := by
     have hh := (ha i hi).2.2.1
@@ -3239,12 +3177,10 @@ private theorem eventually_double_difference_direct_residue_grid_moment
       iteratedDeriv 2 (f i.1) (za i)/2=(anchor i:ℝ) :=
     ⟨(ha i hi).1,(ha i hi).2.1⟩
   have hcut i (hi : i∈S) : 256*((anchor i).den:ℝ) ≤ (Q:ℝ)/3 := by
-    have hh : (768:ℝ)*((anchor i).den:ℝ) ≤ Q := by exact_mod_cast (ha i hi).2.2.1
+    have hh : 768*((anchor i).den:ℝ) ≤ Q := by exact_mod_cast (ha i hi).2.2.1
     linarith only [hh]
   have hcount i (hi : i∈S) : 256 ≤ (2*ε)*((Q:ℝ)/3)*(anchor i).den := by
-    have hm := (ha i hi).2.2.2
     have hb : csrc*(Cphys+2) ≤ 4*κ := (le_div_iff₀ hCp).mp hanchorBudget
-    have hh := mul_le_mul_of_nonneg_right hm hCp.le
     have hb' := mul_le_mul_of_nonneg_right hb
       (show 0 ≤ (Q:ℝ)*((anchor i).den:ℝ) by positivity)
     have he : (2*ε)*((Q:ℝ)/3)*(anchor i).den =
@@ -3254,7 +3190,7 @@ private theorem eventually_double_difference_direct_residue_grid_moment
       ring
     rw [he]
     apply (le_div_iff₀ (show 0 < 24*(Cphys+2)*R^2 by positivity)).mpr
-    nlinarith only [hh,hb']
+    nlinarith only [(mul_le_mul_of_nonneg_right ((ha i hi).2.2.2) hCp.le),hb']
   exact hfamily S Fsrc rshift sshift H za Q K₀ N R Jsep Z
     (d:=d) (Wmax:=Wmax) (M:=M) (δ:=δ) (Bcut:=Bcut) (Bselect:=Bselect)
     Uref anchor hd hw hwcap hsmallShift hT hM hδ hQ hUbandCap
@@ -3505,13 +3441,9 @@ private theorem eventually_double_difference_all_band_subinterval_moment
   have hsum : (∑ k∈Finset.range (kmax+1),(BandSum k)^12) ≤
       (8:ℝ)^11*∑ k∈Finset.range (kmax+1),
         ∑ r∈Finset.Ico (0:ℤ) 8,FamilyBound k (Grid k r) := by
-    calc
-      _ ≤ ∑ k∈Finset.range (kmax+1),(8:ℝ)^11*
-          ∑ r∈Finset.Ico (0:ℤ) 8,FamilyBound k (Grid k r) :=
-        Finset.sum_le_sum (fun k hk => hBand k (by
+    exact (Finset.sum_le_sum (fun k hk => hBand k (by
           have hh := Finset.mem_range.mp hk
-          omega))
-      _ = _ := by rw [Finset.mul_sum]
+          omega))).trans_eq (by rw [Finset.mul_sum])
   have hReduction :
       (∑ y∈Y, ‖∑ j∈Finset.Ioc (A y) (Bint y),(𝐞 (f y j):ℂ)‖)^12 ≤
         2^11*(((kmax:ℝ)+2)^11*
@@ -3546,7 +3478,7 @@ private theorem double_difference_clamped_triangular_monomials
   have hprod : 0 ≤ H*N/Q := by positivity
   have hVupper : V ≤ 1+H*N/Q := max_le (by linarith only [hprod]) (by linarith)
   have hrecip : 1/lambda=(2*U/c)/H := by dsimp only [lambda,H]; field_simp
-  have hInv : 1 ≤ 1/H := (le_div_iff₀ hH).mpr (by simpa only [one_mul] using hband)
+  have hInv : 1 ≤ 1/H := (le_div_iff₀ hH).mpr (by simpa using hband)
   have hFactor : 2+θ*(H+1/lambda) ≤ Ctri/H := by
     rw [hrecip]
     calc
@@ -3698,7 +3630,6 @@ private theorem double_difference_selected_grid_family_monomials
   have hLam : 0 < lambda := by dsimp only [lambda]; positivity
   have hV : 0 ≤ V := zero_le_one.trans (le_max_left _ _)
   have hUref := (physical_reference_reciprocal_bound hN hQ hB hUlower).1
-  have hTp := zero_lt_one.trans_le hT
   have hTpow : 1 ≤ T^ε := Real.one_le_rpow hT hε
   let Tri := V*D*(2+θ*(H+1/lambda))*Y*(M/N)*(1+delta*Jsep)
   let Pair := Y^2*(C₀*H^2*(R^8/N^4)*
@@ -3733,7 +3664,7 @@ private theorem double_difference_selected_grid_family_monomials
     rw [mul_add]
     exact add_le_add htri hlarge
   have hTproduct : T^ε*T^ε=T^(2*ε) := by
-    rw [←Real.rpow_add hTp]
+    rw [←Real.rpow_add (zero_lt_one.trans_le hT)]
     apply congrArg (fun x : ℝ => T^x)
     ring
   calc
@@ -3960,12 +3891,9 @@ private theorem completed_family_logarithmic_power_bound
       (CF^12*2^11*(C*Cap^11*W^6*CK^12*Cpref+Ce^12))*
         Tp*L^22*(Main+E^12)
  := by
-  have hTnon : 0 ≤ Tp := zero_le_one.trans hTp
-  have hLnon : 0 ≤ L := zero_le_one.trans hL
   have hlogPow : Klog^12 ≤ CK^12*L^12 := by
     simpa only [mul_pow] using pow_le_pow_left₀ hKlog hlog 12
   let A := C*Cap^11*W^6*CK^12*Cpref
-  have hA : 0 ≤ A := by dsimp only [A]; positivity
   have hmainBound : Klog^12*W^6*(C*Cap^11*Qpref) ≤
       A*Tp*L^22*Main := by
     calc
@@ -3983,7 +3911,7 @@ private theorem completed_family_logarithmic_power_bound
       _ ≤ Ce^12*(Tp*L^22)*E^12 := by
         apply mul_le_mul_of_nonneg_right _ (by positivity)
         apply mul_le_mul_of_nonneg_left _ (by positivity)
-        exact (pow_le_pow_right₀ hL (show 12 ≤ 22 by omega)).trans
+        exact (pow_le_pow_right₀ hL (by omega)).trans
           (le_mul_of_one_le_left (by positivity) hTp)
       _ = _ := by ring
   calc
@@ -4016,17 +3944,15 @@ private theorem all_band_logarithmic_power_aggregation
         Tp*L^36*(Main+E^12)
  := by
   classical
-  have hTpowNon : 0 ≤ Tp := zero_le_one.trans hTpow
-  have hLnon : 0 ≤ L := zero_le_one.trans hLlog
   let S := Main+E^12
   have hS : 0 ≤ S := add_nonneg hMass (pow_nonneg hError 12)
   have hES : E^12 ≤ S := le_add_of_nonneg_left hMass
   have hsum :
       (∑ k∈Finset.range (kmax+1),
-        ∑ r∈Finset.Ico (0:ℤ) 8,Family k r) ≤
+        ∑ r∈Finset.Ico 0 8,Family k r) ≤
           (8*Cband*Cfamily)*Tp*L^23*S := by
     calc
-      _ ≤ ∑ k∈Finset.range (kmax+1),∑ _r∈Finset.Ico (0:ℤ) 8,
+      _ ≤ ∑ k∈Finset.range (kmax+1),∑ _r∈Finset.Ico 0 8,
           Cfamily*Tp*L^22*S :=
         Finset.sum_le_sum (fun k hk => Finset.sum_le_sum (fun r _ =>
           hfamily k (by have hh := Finset.mem_range.mp hk; omega) r))
@@ -4048,7 +3974,7 @@ private theorem all_band_logarithmic_power_aggregation
       _ ≤ Cterminal^12*(Tp*L^23)*S := by
         apply mul_le_mul
         · apply mul_le_mul_of_nonneg_left _ (by positivity)
-          exact (pow_le_pow_right₀ hLlog (show 12 ≤ 23 by omega)).trans
+          exact (pow_le_pow_right₀ hLlog (by omega)).trans
             (le_mul_of_one_le_left (by positivity) hTpow)
         · exact hES
         · positivity
@@ -4056,33 +3982,33 @@ private theorem all_band_logarithmic_power_aggregation
       _ = _ := by ring
   have hinside :
       (Term)^12+
-        (8:ℝ)^11*∑ k∈Finset.range (kmax+1),
-          ∑ r∈Finset.Ico (0:ℤ) 8,Family k r ≤
-        (Cterminal^12+(8:ℝ)^12*Cband*Cfamily)*Tp*L^23*S := by
+        8^11*∑ k∈Finset.range (kmax+1),
+          ∑ r∈Finset.Ico 0 8,Family k r ≤
+        (Cterminal^12+8^12*Cband*Cfamily)*Tp*L^23*S := by
     calc
       _ ≤ Cterminal^12*Tp*L^23*S+
-          (8:ℝ)^11*((8*Cband*Cfamily)*Tp*L^23*S) :=
+          8^11*((8*Cband*Cfamily)*Tp*L^23*S) :=
         add_le_add hterminalPow (mul_le_mul_of_nonneg_left hsum (by norm_num))
       _ = _ := by ring
   have houter :
       ((kmax:ℝ)+2)^11*
         ((Term)^12+
-          (8:ℝ)^11*∑ k∈Finset.range (kmax+1),
-            ∑ r∈Finset.Ico (0:ℤ) 8,Family k r) ≤
-        (Cband^11*(Cterminal^12+(8:ℝ)^12*Cband*Cfamily))*
+          8^11*∑ k∈Finset.range (kmax+1),
+            ∑ r∈Finset.Ico 0 8,Family k r) ≤
+        (Cband^11*(Cterminal^12+8^12*Cband*Cfamily))*
           Tp*L^36*S := by
     calc
       _ ≤ (Cband*L)^11*
-          ((Cterminal^12+(8:ℝ)^12*Cband*Cfamily)*Tp*L^23*S) := by
+          ((Cterminal^12+8^12*Cband*Cfamily)*Tp*L^23*S) := by
         exact (mul_le_mul_of_nonneg_left hinside (by positivity)).trans
           (mul_le_mul_of_nonneg_right
             (pow_le_pow_left₀ (by positivity) hbandCount 11) (by positivity))
-      _ = (Cband^11*(Cterminal^12+(8:ℝ)^12*Cband*Cfamily))*
+      _ = (Cband^11*(Cterminal^12+8^12*Cband*Cfamily))*
           Tp*L^34*S := by ring
       _ ≤ _ := by
         exact mul_le_mul_of_nonneg_right
           (mul_le_mul_of_nonneg_left
-            (pow_le_pow_right₀ hLlog (show 34 ≤ 36 by norm_num)) (by positivity)) hS
+            (pow_le_pow_right₀ hLlog (by norm_num)) (by positivity)) hS
   have hendpointPow : Endpoint^12 ≤
       Cendpoint^12*Tp*L^36*S := by
     calc
@@ -4101,9 +4027,9 @@ private theorem all_band_logarithmic_power_aggregation
   calc
     _ ≤ 2^11*(((kmax:ℝ)+2)^11*
         ((Term)^12+
-          (8:ℝ)^11*∑ k∈Finset.range (kmax+1),
-            ∑ r∈Finset.Ico (0:ℤ) 8,Family k r)+Endpoint^12) := hwhole
-    _ ≤ 2^11*((Cband^11*(Cterminal^12+(8:ℝ)^12*Cband*Cfamily))*
+          8^11*∑ k∈Finset.range (kmax+1),
+            ∑ r∈Finset.Ico 0 8,Family k r)+Endpoint^12) := hwhole
+    _ ≤ 2^11*((Cband^11*(Cterminal^12+8^12*Cband*Cfamily))*
         Tp*L^36*S+Cendpoint^12*Tp*L^36*S) :=
       mul_le_mul_of_nonneg_left (add_le_add houter hendpointPow) (by norm_num)
     _ = _ := by dsimp only [S]; ring
@@ -4118,10 +4044,8 @@ private theorem capped_terminal_density_error
     n*Y*Density ≤ (A/(2*q^2))*E*L := by
   have hnval : n=N/8 := by linarith only [hn]
   have hnnon : 0 ≤ n := by rw [hnval]; positivity
-  have hQ : 0 < Q :=
-    lt_of_lt_of_le (mul_pos (by positivity) (lt_min hN (div_pos hM hN))) hcap
   have hphysical := capped_terminal_physical_error (R:=R) hM hN
-    (show 0 < q/2 by positivity) hcap
+    (by positivity) hcap
   calc
     _ ≤ n*Y*(A*M*R^2/(N*Q^2)*L) :=
       mul_le_mul_of_nonneg_left hDensity (mul_nonneg hnnon hY)
@@ -4291,13 +4215,9 @@ private theorem double_difference_finite_source_power_bound
       field_simp
     dsimp only [Density]
     rw [harg]
-    calc
-      _ ≤ 128*CerrorBand*(M*R^2/((N:ℝ)*(Q k:ℝ)^2))*
-          ((3+Real.log (Carg+1))*Llog) :=
-        mul_le_mul_of_nonneg_left (hlogs k hk).1 (by
+    exact (mul_le_mul_of_nonneg_left (hlogs k hk).1 (by
           dsimp only [CerrorBand,CtailBand,ClowBand]
-          positivity)
-      _ = _ := by dsimp only [Cdensity]; ring
+          positivity)).trans_eq (by dsimp only [Cdensity]; ring)
   have hcounts k (hk : k ≤ kmax) :
       ((Chunks.filter (fun p => band p=some (k+1))).card:ℝ) ≤
         (Y.card:ℝ)*(Cdensity*M*R^2/((N:ℝ)*(Q k:ℝ)^2)*Llog) :=
@@ -4379,8 +4299,7 @@ private theorem double_difference_finite_source_power_bound
     have hlogK : 0 ≤ 1+Real.log (Kmesh k) := by
       have hh : (1:ℝ) ≤ Kmesh k := by
         exact_mod_cast (show 1 ≤ Kmesh k by have hh := hK k; omega)
-      have hl := Real.log_nonneg hh
-      linarith only [hl]
+      linarith only [(Real.log_nonneg hh)]
     have hh := completed_family_logarithmic_power_bound
       (CF:=CF) (W:=Wconst) hC hCap hCpref hTpow hLlog hMass
       (mul_nonneg hP hpoint) hlogK (hlogs k hk).2.1 hnum hpe
@@ -4403,7 +4322,7 @@ private theorem double_difference_finite_source_power_bound
       (Y:=(Y.card:ℝ)) (σ:=0) (c:=1) (Nat.cast_nonneg _) hNone hRp hRQ hQN
       hκ (by rfl) (by norm_num) hCphys hBselect hnReal hupper
     have hh' : Endpoint ≤ Cendpoint*((Y.card:ℝ)*(N:ℝ)*((N:ℝ)/R)^((2:ℝ)/3)) := by
-      simpa only [mul_zero,zero_mul,zero_div,add_zero,div_one] using hh
+      simpa using hh
     exact hh'.trans (mul_le_mul_of_nonneg_left hErrorEndpoint hCendpoint)
   have hDensityNon : 0 ≤ Density kmax := by
     clear * - hcsrc hUsrc hM hNp hRp hQp
@@ -4566,15 +4485,12 @@ private theorem eventually_double_difference_all_source_physical_powers
   have hκ : 0 < κ := modelPhaseThirdLower_pos hσ
   have hθ : 0 < θ := by
     clear * - hUsrc hcsrc hκ
-    dsimp only [θ,L]
     positivity
   have hCphys : 0 ≤ Cphys := by
     clear * - hσ
-    dsimp only [Cphys]
     positivity
   have hCap : 0 ≤ Cap := by
     clear * - hθ hcsrc hUsrc
-    dsimp only [Cap,NarrowCap]
     positivity
   have hBselect : 1 ≤ Bselect := by
     have hh : 0 < 168/κ := by positivity
@@ -4621,7 +4537,6 @@ private theorem exists_capped_source_physical_budget
   have hbounds : 1 ≤ Cbudget ∧ Ccap ≤ Cbudget ∧ 36 ≤ Cbudget ∧
       2401*A₄ ≤ Cbudget ∧ 49*A₂ ≤ Cbudget ∧ 2*B+1 ≤ Cbudget ∧
       2*Cbuffer+2*Clinear+10 ≤ Cbudget := by
-    dsimp only [Cbudget]
     refine ⟨?_,?_,?_,?_,?_,?_,?_⟩ <;> linarith only [hcap,hA₄,hA₂,hB,hbuffer,hlinear]
   obtain ⟨hC,hCap,h36,h4,h2,hBsize,hroomSize⟩ := hbounds
   have hCp : 0 < Cbudget := zero_lt_one.trans_le hC
@@ -4659,13 +4574,11 @@ private theorem exists_capped_source_physical_budget
   have hsmall : B*R^2/N^2 ≤ 1/2 := by
     have hCsq : 2*B ≤ Cbudget^2 := by nlinarith only [hBsize,hC]
     have hh := pow_le_pow_left₀ (mul_pos hCp hRp).le hsep 2
-    have hi := mul_le_mul_of_nonneg_right hCsq (sq_nonneg R)
     apply (div_le_iff₀ (sq_pos_of_pos hNp)).mpr
-    nlinarith only [hh,hi]
+    nlinarith only [hh,(mul_le_mul_of_nonneg_right hCsq (sq_nonneg R))]
   let heightCap := N*(N/R)^((2:ℝ)/3)
   have hXnon : 0 ≤ heightCap := by dsimp only [heightCap]; positivity
   have hXcube : heightCap^3=N^5/R^2 := by
-    dsimp only [heightCap]
     have hh : ((N/R)^((2:ℝ)/3))^3=(N/R)^2 := by
       rw [←Real.rpow_natCast,←Real.rpow_mul (div_pos hNp hRp).le]
       norm_num
@@ -4740,10 +4653,8 @@ private theorem exists_capped_source_discrete_budget
   let Dcap := |Dbase|+|Δbase|+1
   have hDcap : 0 ≤ Dcap := by dsimp only [Dcap]; positivity
   have hDb : Dbase ≤ Dcap := by
-    dsimp only [Dcap]
     linarith only [le_abs_self Dbase,abs_nonneg Δbase]
   have hΔb : Δbase ≤ Dcap := by
-    dsimp only [Dcap]
     linarith only [le_abs_self Δbase,abs_nonneg Dbase]
   let H := (2*Bselect)^((3:ℝ)/2)
   have hH : 0 ≤ H := by dsimp only [H]; positivity
@@ -4751,17 +4662,14 @@ private theorem exists_capped_source_discrete_budget
   have hden : 0 < 1+H+4*Dcap := by positivity
   have hq : 0 < qcap := by dsimp only [qcap]; positivity
   have hqone : qcap ≤ 1 := by
-    dsimp only [qcap]
     apply (div_le_iff₀ hden).mpr
     linarith only [hH,hDcap]
   have hqH : qcap*(2*Bselect*1)^((3:ℝ)/2) ≤ 1 := by
     simp only [mul_one]
-    change (1/(1+H+4*Dcap))*H ≤ 1
     rw [one_div_mul_eq_div]
     apply (div_le_iff₀ hden).mpr
     linarith only [hDcap]
   have hqD : 4*Dcap*qcap ≤ 1 := by
-    change 4*Dcap*(1/(1+H+4*Dcap)) ≤ 1
     rw [mul_one_div]
     apply (div_le_iff₀ hden).mpr
     linarith only [hH]
@@ -4908,10 +4816,7 @@ private theorem double_difference_five_monomial_absorption
     exact hweighted a₁ a₂ a₃ a₄ a₅ P₁ P₂ P₃ P₄ P₅ hP₁ hP₂ hP₃ hP₄ hP₅
   have hEM : 0 ≤ Main+ErrorTotal^12 := add_nonneg hMain (by positivity)
   have hMassTotal : MassPower+ErrorTotal^12 ≤ Cmass*(Main+ErrorTotal^12) := by
-    calc
-      _ ≤ Cmass*Main+Cmass*ErrorTotal^12 :=
-        add_le_add hMass (le_mul_of_one_le_left (by positivity) hCmass)
-      _ = _ := (mul_add _ _ _).symm
+    exact (add_le_add hMass (le_mul_of_one_le_left (by positivity) hCmass)).trans_eq ((mul_add _ _ _).symm)
 
   intro hraw
   calc
@@ -4976,9 +4881,8 @@ private theorem eventually_double_difference_uniform_capped_source_bound
   obtain ⟨CF,C,Dtype,_hCF,hC,_hDtype,hfinite⟩ :=
     eventually_double_difference_all_source_physical_powers hcsrc hUsrc hσ hεloss
   let Cphys := σ*(σ+1)+1
-  let c := κ/6
   let J := Cphys/6
-  let B := max 1 (max (2*Real.sqrt J) (8*J*Real.sqrt J/(3*c)))
+  let B := max 1 (max (2*Real.sqrt J) (8*J*Real.sqrt J/(3*(κ/6))))
   let NarrowCap := (4/θ+3)*(8*Usrc/(csrc*θ)+3)
   let Cap := 3*NarrowCap
   let C₂ := modelPhaseJetCoefficient σ 2+δ
@@ -4990,20 +4894,16 @@ private theorem eventually_double_difference_uniform_capped_source_bound
     2*quarticNonlinearResidualConstant σ δ)/κ
   let Esize := κ/(16*(Cphys+2))
   let Dbase := 37*B/2+16*B*Cc+2*Ct+2*Cc+2*quarticNonlinearResidualConstant σ δ
-  let Tbase := (2/κ)*(B+2*quarticReciprocalConstant σ δ)
   let Lunit := 2*κ/Cphys
   let Gamma := Cphys/κ
   let Cthird := Gamma*(32*Kres+9*quarticReciprocalConstant σ δ)
-  let Cpack := 64*Cphys*(Gamma^2*Cthird+Gamma*(modelPhaseJetCoefficient σ 3+δ)/κ)/κ
-  let Cfirst := 128*Cphys*(Gamma^2*Cthird+Gamma*(modelPhaseJetCoefficient σ 3+δ)/κ)/κ^2
-  let Cgap := 64*Cphys*(Gamma^2*B+Gamma*(modelPhaseJetCoefficient σ 3+δ)/κ)/κ
-  let Cmain := 4*(2*Cfirst/Lunit^3)^((3:ℝ)⁻¹)+2
-  let Ctail := 4*Cpack/Lunit^2+Cgap
+  let Cmain := 4*(2*(128*Cphys*(Gamma^2*Cthird+Gamma*(modelPhaseJetCoefficient σ 3+δ)/κ)/κ^2)/Lunit^3)^((3:ℝ)⁻¹)+2
+  let Ctail := 4*(64*Cphys*(Gamma^2*Cthird+Gamma*(modelPhaseJetCoefficient σ 3+δ)/κ)/κ)/Lunit^2+(64*Cphys*(Gamma^2*B+Gamma*(modelPhaseJetCoefficient σ 3+δ)/κ)/κ)
   have hCphys : 0 ≤ Cphys := by clear * - hσ; dsimp only [Cphys]; positivity
   have hB : 0 ≤ B := zero_le_one.trans (le_max_left _ _)
   have hEsize : 0 < Esize := by clear * - hκ hCphys; dsimp only [Esize]; positivity
   let Δbase := 37*B/2+16*B*Cc+2*Ct+2*Cc
-  let Sector := 2*3840*128^2*105*(Dbase+64*Tbase*Esize^2)
+  let Sector := 2*3840*128^2*105*(Dbase+64*((2/κ)*(B+2*quarticReciprocalConstant σ δ))*Esize^2)
   obtain ⟨Bcut,Bselect,hBcut,hBs,hBsSize,hcutMargin,hsize,hcurvAbs⟩ :=
     exists_source_cutoff_margins (Sector:=Sector) hκ (abs_nonneg Ccurv) hCphys hEsize
   have hcurv : 61*Ccurv*Cphys ≤ Bcut :=
@@ -5016,47 +4916,28 @@ private theorem eventually_double_difference_uniform_capped_source_bound
   have hw₀ : 0 < w₀ := lt_min (by norm_num) (by positivity)
   have hwcap : w₀ ≤ 1/4 := min_le_left _ _
   have hwsmall : 2*Usrc*w₀ ≤ csrc/64 := by
-    calc
-      _ ≤ 2*Usrc*(csrc/(128*Usrc)) :=
-        mul_le_mul_of_nonneg_left (min_le_right _ _) (by positivity)
-      _ = _ := by field_simp; norm_num
+    exact (mul_le_mul_of_nonneg_left (min_le_right _ _) (by positivity)).trans_eq (by field_simp; norm_num)
   let Cbase := (1536:ℝ)
   let Cmesh := 2*max 1 (63*Usrc/2)
   have hCm : 1 ≤ Cmesh := by
-    have hh := le_max_left (1:ℝ) (63*Usrc/2)
-    dsimp only [Cmesh]
-    linarith only [hh]
-  let CtailBand := 4*Usrc*(64/csrc)^2+192/csrc
-  let ClowBand := (2*Usrc+csrc/32)*(3072/csrc)^2+3072/csrc
-  let CerrorBand := (768:ℝ)^2*CtailBand+ClowBand
-  let Carg := 512*768/csrc
-  let Cdensity := 128*CerrorBand*(3+Real.log (Carg+1))
-  let Ccard := 16*Cbase^2+8*Cdensity
+    linarith only [(le_max_left (1:ℝ) (63*Usrc/2))]
+  let Cdensity := 128*((768:ℝ)^2*(4*Usrc*(64/csrc)^2+192/csrc)+((2*Usrc+csrc/32)*(3072/csrc)^2+3072/csrc))*(3+Real.log ((512*768/csrc)+1))
   let Cdelta := (16*Usrc/csrc)*Real.sqrt ((Usrc/2)*Cmesh)
   let Ctri := 2+θ*(1+2*Usrc/csrc)
   let C₀ := 60*588*(2*Usrc/csrc)^2
-  let Cpref := Cmesh^12*Cmesh^εloss*(2*Ccard)^10
-  let Wconst := 144*Usrc/(csrc*κ)
-  let CKlog := 3+Real.log (Cmesh+1)
-  let Cerror := 8*(2*Real.sqrt 3*(1+Real.log 6)+72*Usrc/(csrc*κ))
-  let Cfamily := CF^12*2^11*(C*Cap^11*Wconst^6*CKlog^12*Cpref+Cerror^12)
+  let Cpref := Cmesh^12*Cmesh^εloss*(2*(16*Cbase^2+8*Cdensity))^10
+  let Cfamily := CF^12*2^11*(C*Cap^11*(144*Usrc/(csrc*κ))^6*(3+Real.log (Cmesh+1))^12*Cpref+(8*(2*Real.sqrt 3*(1+Real.log 6)+72*Usrc/(csrc*κ)))^12)
   let Cband := 2+1/Real.log 2
-  let Cterminal := Cdensity/(2*qcap^2)
-  let Cendpoint := 112/κ+2/(Cphys+2)+41/4
   let Ctotal := (2:ℝ)^11*
-    (Cband^11*(Cterminal^12+(8:ℝ)^12*Cband*Cfamily)+Cendpoint^12)
+    (Cband^11*((Cdensity/(2*qcap^2))^12+(8:ℝ)^12*Cband*Cfamily)+(112/κ+2/(Cphys+2)+41/4)^12)
   have hθ : 0 < θ := by
     clear * - hUsrc hcsrc hκ
-    dsimp only [θ,L]
     positivity
   have hCap : 0 ≤ Cap := by
     clear * - hθ hUsrc hcsrc
-    dsimp only [Cap,NarrowCap]
     positivity
   have hTotal : 0 ≤ Ctotal := by
     clear * - hC hCap hCm
-    have hl : 0 < Real.log 2 := Real.log_pos (by norm_num)
-    dsimp only [Ctotal,Cband,Cfamily,Cpref]
     positivity
   let a₁ := Ctri*Dtype/Usrc
   let a₂ := Ctri*Dtype
@@ -5065,7 +4946,6 @@ private theorem eventually_double_difference_uniform_capped_source_bound
   let a₅ := C₀*(Cmain+2*Bselect*Ctail)*Usrc^((4:ℝ)/3)
   let Cmass := 1+|a₁|+|a₂|+|a₃|+|a₄|+|a₅|
   have hCmass : 1 ≤ Cmass := by
-    dsimp only [Cmass]
     linarith only [abs_nonneg a₁,abs_nonneg a₂,abs_nonneg a₃,abs_nonneg a₄,abs_nonneg a₅]
   have hAbsorb := eventually_selected_band_logarithmic_absorption
     (C:=|Ctotal| *Cmass) (mul_nonneg (abs_nonneg _) (zero_le_one.trans hCmass)) hε
@@ -5112,7 +4992,6 @@ private theorem eventually_double_difference_uniform_capped_source_bound
     obtain ⟨hsource,hmesh,hU,hwrap,hRQ,hupper,hQN,hUR,hmin,hD,hDelta⟩ := hvalid k hk
     refine ⟨hsource,hmesh,hU,hwrap,hRQ,hupper,hQN,hUR,hmin,?_,hDelta⟩
     convert hD using 1
-    dsimp only [Dbase,Δbase]
     ring
   have hraw :=
     hfiniteT Fsrc rshift sshift Y n N Qbase kmax Kmesh Usel R Jsep
@@ -5155,8 +5034,8 @@ private theorem double_difference_capped_comparable_radius_budgets
     mul_le_mul_of_nonneg_left (pow_le_pow_right₀ hD hi) hCp.le
   have hplain (i : ℕ) (hi : i ≤ 7) : D^i ≤ C*D^7 :=
     (le_mul_of_one_le_left (pow_nonneg hDp.le i) hC).trans (hpow i hi)
-  have hB : C ≤ C*D^7 := by simpa only [pow_zero,mul_one] using hpow 0 (by omega)
-  have hDb : D ≤ C*D^7 := by simpa only [pow_one] using hplain 1 (by omega)
+  have hB : C ≤ C*D^7 := by simpa using hpow 0 (by omega)
+  have hDb : D ≤ C*D^7 := by simpa using hplain 1 (by omega)
   refine ⟨?_,?_,?_,?_,?_,?_,?_,?_,?_,?_⟩
   · have hh := hDb.trans (hRlow.trans hRS)
     nlinarith only [hh,hDp]
@@ -5224,13 +5103,12 @@ private theorem double_difference_capped_radius_error_bound
     D^2*(Y*M/Real.sqrt N+Y*M*R^2/N^2+
       Y*N^2*R^2/M+Y*N*(N/R)^((2:ℝ)/3)) := by
   have hY0 := hYsmall.trans hY
-  have hbase := upperOriginal_upper_radius_error_bound hYsmall hY hM hN hR hS hD hSR hRS
   have hSq := (upperOriginal_comparable_radius_powers hN hR hS hD hSR hRS).1
   have hnew : Ysmall*N^2*S^2/M ≤ D^2*(Y*N^2*R^2/M) := by
     calc
       _ ≤ Y*N^2*(D^2*R^2)/M := by gcongr
       _ = _ := by ring
-  nlinarith only [hbase,hnew]
+  nlinarith only [(upperOriginal_upper_radius_error_bound hYsmall hY hM hN hR hS hD hSR hRS),hnew]
 
 private theorem double_difference_capped_radius_main_bound
     {Ysmall Y M N R S D J T V : ℝ}
@@ -5245,7 +5123,6 @@ private theorem double_difference_capped_radius_main_bound
       Y^11*J*M^10/R^2+Y^11*J*M^11/R^5+
       Y^12*M^10*R^2/N^2*(R/N)^((2:ℝ)/3)*(T/M^2)^((4:ℝ)/3)) := by
   have hY0 := hYsmall.trans hY
-  have hD0 := zero_le_one.trans hD
   have hInv (j : ℕ) : 1/S^j ≤ D^j/R^j := by
     apply (div_le_div_iff₀ (pow_pos hS j) (pow_pos hR j)).mpr
     simpa only [one_mul,mul_pow] using pow_le_pow_left₀ hR.le hRS j
@@ -5266,7 +5143,7 @@ private theorem double_difference_capped_radius_main_bound
       _ ≤ (D*(T/M^2))^((4:ℝ)/3) := by
         apply Real.rpow_le_rpow (by positivity) _ (by norm_num)
         simpa only [mul_div_assoc] using div_le_div_of_nonneg_right hVT (sq_nonneg M)
-      _ = D^((4:ℝ)/3)*(T/M^2)^((4:ℝ)/3) := Real.mul_rpow hD0 (by positivity)
+      _ = D^((4:ℝ)/3)*(T/M^2)^((4:ℝ)/3) := Real.mul_rpow (zero_le_one.trans hD) (by positivity)
       _ ≤ _ := mul_le_mul_of_nonneg_right hDe (by positivity)
   have h₁ : Ysmall^11*M^10*N^2/S^4 ≤ D^8*(Y^11*M^10*N^2/R^4) := by
     calc
@@ -5300,12 +5177,7 @@ private theorem double_difference_capped_radius_main_bound
           (D*(R/N)^((2:ℝ)/3))*(D^2*(T/M^2)^((4:ℝ)/3)) := by gcongr
       _ = D^5*(Y^12*M^10*R^2/N^2*(R/N)^((2:ℝ)/3)*(T/M^2)^((4:ℝ)/3)) := by ring
       _ ≤ _ := mul_le_mul_of_nonneg_right hD58 (by positivity)
-  calc
-    _ ≤ D^8*(Y^11*M^10*N^2/R^4)+D^8*(Y^11*M^11*N^2/R^7)+
-        D^8*(Y^11*J*M^10/R^2)+D^8*(Y^11*J*M^11/R^5)+
-        D^8*(Y^12*M^10*R^2/N^2*(R/N)^((2:ℝ)/3)*(T/M^2)^((4:ℝ)/3)) :=
-      add_le_add (add_le_add (add_le_add (add_le_add h₁ h₂) h₃) h₄) h₅
-    _ = _ := by ring
+  exact (add_le_add (add_le_add (add_le_add (add_le_add h₁ h₂) h₃) h₄) h₅).trans_eq (by ring)
 
 private theorem approximateModelPhase_enlarged_double_capped_quantitative
     {σ ε : ℝ} (hσ : 0 < σ) (hε : 0 < ε) :
@@ -5365,7 +5237,6 @@ private theorem approximateModelPhase_enlarged_double_capped_quantitative
     dsimp only [D]
     have hi : 0 < 1/G := by positivity
     linarith only [hG,hi]
-  have hDp := zero_lt_one.trans_le hD
   have hDG : 1 ≤ D*G := by
     have hi : (1/G)*G=1 := div_mul_cancel₀ 1 hG.ne'
     dsimp only [D]
@@ -5436,7 +5307,7 @@ private theorem approximateModelPhase_enlarged_double_capped_quantitative
     have hγlo : G ≤ γ := le_mul_of_one_le_right hG.le hy₀range.1
     have hγhi : γ ≤ 2*G := by dsimp only [γ]; nlinarith only [hy₀range.2,hG]
     have hγD := hγhi.trans hGD
-    have hDγ : 1 ≤ D*γ := hDG.trans (mul_le_mul_of_nonneg_left hγlo hDp.le)
+    have hDγ : 1 ≤ D*γ := hDG.trans (mul_le_mul_of_nonneg_left hγlo (zero_lt_one.trans_le hD).le)
     let Fsrc := fun w => (1/(σ*(σ+1)*y₀))*Fext w
     let Tnew := T*σ*(σ+1)*y₀
     let Rnew := R*Real.sqrt (1/(σ*(σ+1)*y₀))
@@ -5449,9 +5320,7 @@ private theorem approximateModelPhase_enlarged_double_capped_quantitative
     obtain ⟨hSle,hRle⟩ := upperOriginal_normalized_radius_comparable hRp hRnew hD hγD hDγ hRg
     have hTV : T ≤ D*Tnew := by
       rw [hTnewEq]
-      calc
-        _ ≤ (D*γ)*T := le_mul_of_one_le_left hTp.le hDγ
-        _ = _ := by ring
+      exact (le_mul_of_one_le_left hTp.le hDγ).trans_eq (by ring)
     have hVT : Tnew ≤ D*T := by
       rw [hTnewEq]
       simpa only [mul_comm] using mul_le_mul_of_nonneg_right hγD hTp.le
@@ -5510,23 +5379,16 @@ private theorem approximateModelPhase_enlarged_double_capped_quantitative
       clear * - hYj0 hMp hNp hRnew hJsep hTnew
       positivity
     have hEpow : Enew^12 ≤ D^24*ErrorTotal^12 := by
-      calc
-        _ ≤ (D^2*ErrorTotal)^12 := pow_le_pow_left₀ hEnew0 hEnew 12
-        _ = _ := by rw [mul_pow,←pow_mul]
+      exact (pow_le_pow_left₀ hEnew0 hEnew 12).trans_eq (by rw [mul_pow,←pow_mul])
     have hMainPow : MainNew ≤ D^24*Main :=
       hMainNew.trans (mul_le_mul_of_nonneg_right
         (pow_le_pow_right₀ hD (by norm_num : 8 ≤ 24)) hMain)
     have hTotal : MainNew+Enew^12 ≤ D^24*(Main+ErrorTotal^12) := by
-      calc
-        _ ≤ D^24*Main+D^24*ErrorTotal^12 := add_le_add hMainPow hEpow
-        _ = _ := (mul_add _ _ _).symm
+      exact (add_le_add hMainPow hEpow).trans_eq ((mul_add _ _ _).symm)
     have hTpow : Tnew^ε ≤ (2*G)^ε*T^ε := by
       rw [hTnewEq,Real.mul_rpow hTp.le hγ.le]
-      calc
-        _ ≤ T^ε*(2*G)^ε :=
-          mul_le_mul_of_nonneg_left (Real.rpow_le_rpow hγ.le hγhi hε.le)
-            (Real.rpow_nonneg hTp.le _)
-        _ = _ := mul_comm _ _
+      exact (mul_le_mul_of_nonneg_left (Real.rpow_le_rpow hγ.le hγhi hε.le)
+            (Real.rpow_nonneg hTp.le _)).trans_eq (mul_comm _ _)
     rw [hzNorm]
     calc
       _ = (∑ y∈Yj, ‖∑ l∈Finset.Ioc (A y) (Bint y),
@@ -5593,22 +5455,17 @@ private theorem double_difference_actual_range_le_int_Ioc
     apply Finset.sum_congr rfl
     intro j _
     apply congrArg (fun t : ℝ => (𝐞 t:ℂ))
-    dsimp only [Φ]
     rw [hcoeff]
     simp only [add_div]
   rw [heq]
-  calc
-    _ ≤ 1+‖∑ j∈Finset.Ioc (a:ℤ) ((a+(L-r-s):ℕ):ℤ),
-        Expdb.oscillatory Φ (X*k/M^2) M j‖ :=
-      upperOriginal_norm_exponentialSumAt_le_int_Ioc Φ (X*k/M^2) M
-        a (a+(L-r-s)) (Nat.le_add_right _ _)
-    _ = _ := by
+  exact (upperOriginal_norm_exponentialSumAt_le_int_Ioc Φ (X*k/M^2) M
+        a (a+(L-r-s)) (Nat.le_add_right _ _)).trans_eq (by
       apply congrArg (fun z : ℂ => 1+‖z‖)
       apply Finset.sum_congr rfl
       intro j _
       unfold Expdb.oscillatory
       apply congrArg (fun t : ℝ => (𝐞 t:ℂ))
-      exact (mul_div_assoc _ _ _).symm
+      exact (mul_div_assoc _ _ _).symm)
 
 private theorem double_difference_product_dyadic_actual_family
     (F : ℝ → ℝ) (X : ℝ) {M : ℝ} (hM : 0<M)
@@ -5790,8 +5647,7 @@ public  theorem approximateModelPhase_enlarged_double_product_correlation_moment
   have hT1 : 1≤T := hC.trans hT
   have hTp := zero_lt_one.trans_le hT1
   let Block := (Finset.Ico k (2*k)).filter (fun l => l∈Products)
-  let Kept := Block.filter (fun l => (pick l).1+(pick l).2≤L)
-  let Y := Kept.image (fun l : ℕ => (l:ℝ)/(k:ℝ))
+  let Y := (Block.filter (fun l => (pick l).1+(pick l).2≤L)).image (fun l : ℕ => (l:ℝ)/(k:ℝ))
   let rshift := fun y : ℝ => ((pick ⌊(k:ℝ)*y⌋₊).1:ℝ)/M
   let sshift := fun y : ℝ => ((pick ⌊(k:ℝ)*y⌋₊).2:ℝ)/M
   let Bint := fun y : ℝ =>
@@ -6019,10 +5875,7 @@ private theorem source_product_twice_weyl_doubled_block
     simp only [Finset.mem_filter,Finset.mem_range]
     exact ⟨fun hh => hh.2,fun hl => ⟨(hproduct l hl).2,hl⟩⟩
   have hAll : (∑ l∈Products,‖W (pick l)‖)=∑ l∈Finset.range (H*K),f l := by
-    calc
-      _ = ∑ l∈(Finset.range (H*K)).filter (fun l => l∈Products),‖W (pick l)‖ :=
-        congrArg (fun S : Finset ℕ => ∑ l∈S,‖W (pick l)‖) hFilter.symm
-      _ = _ := by rw [Finset.sum_filter]
+    exact (congrArg (fun S : Finset ℕ => ∑ l∈S,‖W (pick l)‖) hFilter.symm).trans (by rw [Finset.sum_filter])
   have hRange :
       (∑ j∈Finset.range k,f (k+j))=∑ l∈Finset.Ico k (2*k),f l := by
     apply Finset.sum_bij (fun (j:ℕ) _ => k+j)
@@ -6453,7 +6306,6 @@ public  theorem eventually_double_difference_capped_physical_window
   have hB0 := zero_le_one.trans hB
   have hC0 := zero_le_one.trans hC
   have hℓp := hμ.trans_le hμℓ
-  have hv0 := (hℓp.trans_le hℓv).le
   have hhp := hμ.trans_le hμh
   let D := 32+8*B^2+2*B+C+2/w₀
   have hInv : 0<2/w₀ := div_pos (by norm_num) hw₀
@@ -6580,7 +6432,7 @@ public  theorem eventually_double_difference_capped_physical_window
   have pThreshold : C*M^2≤X*J := by
     have hh := hratio (C) 0 0 2 0 1 0 0 0 1 (hC0)
       (by norm_num; nlinarith only [hDC])
-      (by norm_num; linarith only [hMT,hv0])
+      (by norm_num; linarith only [hMT,((hℓp.trans_le hℓv).le)])
     simp only [pow_zero,pow_one,one_mul,mul_one] at hh
     have hh' := hpoly (by positivity) hh
     exact hh'
@@ -6605,8 +6457,7 @@ public  theorem eventually_double_difference_capped_physical_window
         rw [Real.rpow_sub hXp,show 2*h=h*2 by ring,hp]
         ring
   have hW : W≤w₀ := by
-    have hh := hdom (2/w₀) (2*h-ℓ) hDW (by linarith only [hWidth,hhp])
-    have hh' := mul_le_mul_of_nonneg_right hh hw₀.le
+    have hh' := mul_le_mul_of_nonneg_right (hdom (2/w₀) (2*h-ℓ) hDW (by linarith only [hWidth,hhp])) hw₀.le
     have heq : (2/w₀*X^(2*h-ℓ))*w₀=2*X^(2*h-ℓ) := by
       field_simp
     rw [heq,one_mul] at hh'
@@ -6660,8 +6511,7 @@ public  theorem source_product_twice_weyl_normalized_block
   have hHp := zero_lt_one.trans_le hH1
   have hK2 : 2≤H^2 := by nlinarith only [hH]
   have hHK : (H:ℝ)+(H:ℝ)^2<M := by
-    have hh := (div_le_iff₀ hMp).mp hWidth
-    linarith only [hh,hMp]
+    linarith only [((div_le_iff₀ hMp).mp hWidth),hMp]
   have hHKnat : H+H^2≤a := by
     exact_mod_cast (show (H:ℝ)+(H:ℝ)^2≤(a:ℝ) from hHK.le.trans ha)
   have hHshort : H≤L+1 := (by nlinarith only [hH] : H≤H^2).trans hHL
@@ -6752,7 +6602,6 @@ public  theorem double_difference_fourth_twelfth_moment_assembly
     (hMoment : Z^12≤C*X^ε*(Main+E^12))
     (hWeighted : w^72*(E^72+Main^6)≤(2:ℝ)^288*V) :
     S^288≤(2:ℝ)^364*Q^72*C^6*X^(6*ε)*(d^72+V) := by
-  have hXp := zero_lt_one.trans_le hX
   have hC0 := zero_le_one.trans hC
   have hPower : 1≤X^(6*ε) := Real.one_le_rpow hX (by positivity)
   have hCoeff : 1≤(2:ℝ)^293*C^6*X^(6*ε) :=
@@ -6767,7 +6616,7 @@ public  theorem double_difference_fourth_twelfth_moment_assembly
       _ = C^6*X^(6*ε)*(Main+E^12)^6 := by
         rw [mul_pow,mul_pow]
         have hp : (X^ε)^6=X^(6*ε) := by
-          simpa only [Nat.cast_ofNat,mul_comm] using (Real.rpow_mul_natCast hXp.le ε 6).symm
+          simpa only [Nat.cast_ofNat,mul_comm] using (Real.rpow_mul_natCast (zero_lt_one.trans_le hX).le ε 6).symm
         rw [hp]
       _ ≤ C^6*X^(6*ε)*((2:ℝ)^5*(Main^6+(E^12)^6)) :=
         mul_le_mul_of_nonneg_left (add_pow_le hMain (pow_nonneg hE 12) 6) (by positivity)

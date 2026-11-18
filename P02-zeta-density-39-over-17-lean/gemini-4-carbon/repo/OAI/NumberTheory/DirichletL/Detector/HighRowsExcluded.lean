@@ -28,9 +28,7 @@ theorem excludedIdealHighSeries_row_hasProd (S : Finset Id) (hS : ∀P∈S,Prime
       bareIdealHighSummand_row_mul η u x w z _ _ _ _ _ _ _ _ hc]
     ring
   · intro a ha
-    have hh : bareIdealHighSummand η u x w z a.1.1 a.1.2 a.2.1 a.2.2≠0 :=
-      (mul_ne_zero_iff.mp ha).2
-    have hs := bareIdealHighSummand_support η u x w z a.1.1 a.1.2 a.2.1 a.2.2 hh
+    have hs := bareIdealHighSummand_support η u x w z a.1.1 a.1.2 a.2.1 a.2.2 ((mul_ne_zero_iff.mp ha).2)
     exact ⟨hs.2.1.1,hs.2.2.1.1,hs.2.2.2.1.1,hs.2.2.2.2.1⟩
   · exact (markedIdealHighSummand_summable S 1 η u x w z hx hw hz).norm
 

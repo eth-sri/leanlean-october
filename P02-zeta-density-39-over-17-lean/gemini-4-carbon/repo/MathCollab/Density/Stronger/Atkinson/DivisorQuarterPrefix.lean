@@ -11,8 +11,7 @@ public import MathCollab.Density.Stronger.Atkinson.NeumannRemainderSeries
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 noncomputable section
-open Complex Filter
-open MathCollab.Density.Stronger.Fourth
+open Complex Filter MathCollab.Density.Stronger.Fourth
 namespace MathCollab.Density.Stronger.Atkinson
 
 theorem norm_divisorDirichletTerm_quarter_le_prefix {ε : ℝ} (hε : 0 < ε)
@@ -42,9 +41,8 @@ theorem exists_sum_norm_divisorDirichletTerm_quarter_le {ε : ℝ} (hε : 0 < ε
     ∃ C : ℝ, 0 < C ∧ ∀ N : ℕ,
       (∑ n ∈ Finset.range N, ‖divisorDirichletTerm (1/4) n‖) ≤ C*(N:ℝ)^(3/4+ε) := by
   let S : ℝ := ∑' n : ℕ, ‖divisorDirichletTerm ((1+ε : ℝ) : ℂ) n‖
-  have hS : 0 ≤ S := tsum_nonneg (fun _ => norm_nonneg _)
   have hs := (summable_divisorDirichletTerm (s := ((1+ε : ℝ) : ℂ))
-    (by simpa only [Complex.ofReal_re,lt_add_iff_pos_right] using hε)).norm
+    (by simpa using hε)).norm
   refine ⟨1+S,by positivity,?_⟩
   intro N
   have hprefix : (∑ n ∈ Finset.range N, ‖divisorDirichletTerm ((1+ε : ℝ) : ℂ) n‖) ≤ S :=

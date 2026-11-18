@@ -6,12 +6,11 @@ public import OAI.NumberTheory.DirichletL.Energy.CappedWidthInduction
 namespace OAI
 
 noncomputable section
-open scoped Classical
 open Filter
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentEnergyCappedRadialTransport
-open HeckeFamily CenteredMomentEnergyCappedWidthInduction
-open CenteredMomentEnergyBandMonotonicity
+open HeckeFamily CenteredMomentEnergyCappedWidthInduction CenteredMomentEnergyBandMonotonicity
 local notation "O" => HeckeFamily.O
 variable {α : Type*}
 variable (M : Ideal O) [NeZero M]

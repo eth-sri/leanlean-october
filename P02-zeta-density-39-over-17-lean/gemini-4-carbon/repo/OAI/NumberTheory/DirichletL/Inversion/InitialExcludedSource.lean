@@ -19,7 +19,7 @@ def columns (S:Finset (Ideal O))(P j:Ideal O):Finset (Ideal O):=
 theorem quotient_properties {P j n:Ideal O}(hn:Squarefree n)(hg:gcd n P=j):
     Squarefree (idealQuotient j n) ∧ IsCoprime (idealQuotient j n) P ∧
       j*idealQuotient j n=n := by
-  have hjn:j∣n:=hg ▸ GCDMonoid.gcd_dvd_left n P
+  have hjn :=hg ▸ GCDMonoid.gcd_dvd_left n P
   exact ⟨hn.squarefree_of_dvd (idealQuotient_dvd hjn),by
     rw [←hg];exact squarefree_quotient_gcd_coprime n P hn,idealQuotient_mul hjn⟩
 
@@ -51,9 +51,7 @@ theorem sum_reconstruct (S:Finset (Ideal O)){P j:Ideal O}
     intro n hn
     rw [(quotient_properties (mem_original.mp hn).2.1 (mem_original.mp hn).2.2).2.2]
   · intro n hn n' hn' he
-    have h1:=(quotient_properties (mem_original.mp hn).2.1 (mem_original.mp hn).2.2).2.2
-    have h2:=(quotient_properties (mem_original.mp hn').2.1 (mem_original.mp hn').2.2).2.2
-    rw [←h1,←h2,he]
+    rw [←((quotient_properties (mem_original.mp hn).2.1 (mem_original.mp hn).2.2).2.2),←((quotient_properties (mem_original.mp hn').2.1 (mem_original.mp hn').2.2).2.2),he]
 
 theorem cutoff_argument (j c:Ideal O)(X:ℝ):
     ((j*c).absNorm:ℝ)/X=(c.absNorm:ℝ)/(X/(j.absNorm:ℝ)) := by

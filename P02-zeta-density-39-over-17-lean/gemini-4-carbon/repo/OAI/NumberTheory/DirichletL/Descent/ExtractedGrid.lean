@@ -50,8 +50,7 @@ theorem quotientGridSupport_origin (r : Ideal Eis) (hr : r ≠ 0)
     (D : Finset HybridColumnData) (p : Ideal Eis × Ideal Eis) (c : Ideal Eis)
     (hu : (p, c) ∈ quotientGridSupport r (hybridGridSupport D)) :
     ∃ d ∈ D, (d.residualN, d.residualB) = p ∧ d.common = r * c := by
-  have hm := (mem_quotientGridSupport r hr (hybridGridSupport D) p c).mp hu
-  obtain ⟨d, hd, he⟩ := Finset.mem_image.mp hm
+  obtain ⟨d, hd, he⟩ := Finset.mem_image.mp ((mem_quotientGridSupport r hr (hybridGridSupport D) p c).mp hu)
   exact ⟨d, hd, congrArg Prod.fst he, congrArg Prod.snd he⟩
 
 theorem quotientGridCommonSupport_origin (r : Ideal Eis) (hr : r ≠ 0)
@@ -143,8 +142,7 @@ theorem gridDivisorHybridBlock_extract
     simp only [hu, ite_true]
     apply Finset.sum_congr rfl
     intro P hPP
-    have hpgen := (quotientSupport_cubic_admissible R hR Pset hP P hPP).2
-    have hid := hybrid_extracted_block_identity R r k P c p.1 p.2 t hk hpgen a
+    have hid := hybrid_extracted_block_identity R r k P c p.1 p.2 t hk ((quotientSupport_cubic_admissible R hR Pset hP P hPP).2) a
       (extractedGridCoefficient T R t beta)
     simp only [extractedGridCoefficient, huc, ite_true] at hid
     rw [hmask]

@@ -9,12 +9,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentDetectorPlainStateDictionary
-open HeckeFamily HeckeDetectorRawFiber HeckePrimeAnnular
-open CenteredMomentDetectorPlainExceptional CenteredMomentDetectorPlainFiberSource
-open CenteredMomentDetectorPlainSource CenteredMomentDetectorEnergyInitialState
-open CenteredMomentDetectorDictionary CenteredMomentEnergyState
-open CenteredMomentInductionEnergy CenteredMomentRetainedEnergy
-open CenteredMomentSecondHeightFamily ConcretePrimeRowBridge
+open HeckeFamily HeckeDetectorRawFiber HeckePrimeAnnular CenteredMomentDetectorPlainExceptional CenteredMomentDetectorPlainFiberSource CenteredMomentDetectorPlainSource CenteredMomentDetectorEnergyInitialState CenteredMomentDetectorDictionary CenteredMomentEnergyState CenteredMomentInductionEnergy CenteredMomentRetainedEnergy CenteredMomentSecondHeightFamily ConcretePrimeRowBridge
 local notation "O" => HeckeFamily.O
 variable {M:Ideal O}{H:Subgroup (O⧸M)ˣ}{Label Slot:Type*}
 variable {U a ε tstar T allowance:ℝ}{i:ℕ}

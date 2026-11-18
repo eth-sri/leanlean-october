@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.DoubleShiftWeights
 public import LaterPairs.Native.RobertSargosPlaneCorrelation
 
@@ -27,8 +36,6 @@ theorem robertSargos_plane_weighted_gram (a : ℤ → ℤ → ℂ) (M H Q R : �
       ‖∑ t ∈ Finset.range Q ×ˢ Finset.range R,
         robertSargosPaddedPlane a M H (x.1+t.1) (x.2+t.2)‖^2) =
       (Q:ℝ)*R*robertSargosWeightedCorrelations a M H Q R := by
-  have hQp : 0 < (Q:ℝ) := by exact_mod_cast hQ
-  have hRp : 0 < (R:ℝ) := by exact_mod_cast hR
   calc
     _ = ∑ s ∈ Finset.range Q ×ˢ Finset.range R,
         ∑ t ∈ Finset.range Q ×ˢ Finset.range R,

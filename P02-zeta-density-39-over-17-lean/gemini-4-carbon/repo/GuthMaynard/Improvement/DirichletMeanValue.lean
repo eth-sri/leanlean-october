@@ -104,13 +104,12 @@ theorem dirichlet_harmonic_row {X n : ℕ} (hn : n ∈ Finset.Icc 1 X) :
       ∑ m ∈ S.filter (fun m => ¬m<n), ((m-n:ℕ):ℝ)⁻¹ := by
     apply Finset.sum_congr rfl
     intro m hm
-    have hnm : n ≤ m := Nat.le_of_not_gt (Finset.mem_filter.mp hm).2
+    have hnm := Nat.le_of_not_gt (Finset.mem_filter.mp hm).2
     rw [Nat.cast_sub hnm,abs_of_nonpos (by exact_mod_cast (sub_nonpos.mpr (show (n:ℝ) ≤ m by exact_mod_cast hnm)))]
     congr 1
     ring
-  have he := Finset.sum_filter_add_sum_filter_not S (fun m => m<n) (fun m => (|(n:ℝ)-m|)⁻¹)
   change (∑ m ∈ S, (|(n:ℝ)-m|)⁻¹) ≤ _
-  rw [← he,heleft,heright]
+  rw [← (Finset.sum_filter_add_sum_filter_not S (fun m => m<n) (fun m => (|(n:ℝ)-m|)⁻¹)),heleft,heright]
   nlinarith [harmonic_le_one_add_log X]
 
 theorem finiteDirichletPolynomial_continuous (X : ℕ) (c : ℕ → ℂ) :
@@ -149,8 +148,7 @@ theorem dirichlet_off_diagonal {X n m : ℕ} (hn : n ∈ Finset.Icc 1 X)
       rw [abs_of_pos (by exact_mod_cast (sub_pos.mpr (show (m:ℝ) < n by exact_mod_cast hmn)))]
       exact hh.trans (le_abs_self _)
   have hω : Real.log n-Real.log m ≠ 0 := by
-    have hh := lt_of_lt_of_le (div_pos hdist hX0) hgap
-    exact (abs_pos.mp hh)
+    exact (abs_pos.mp (lt_of_lt_of_le (div_pos hdist hX0) hgap))
   simp_rw [dirichletPhase_mul_conj]
   calc
     _ ≤ 2/|Real.log n-Real.log m| := dirichlet_oscillatory_integral hω

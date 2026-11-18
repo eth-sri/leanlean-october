@@ -11,16 +11,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSecondBlockCount
-open CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentCanonicalFirst CenteredMomentSecondCanonicalFrequency
-open CenteredMomentSecondCanonicalNonunit CenteredMomentSecondWholeKernel
-open CenteredMomentSecondActiveDyadic CenteredMomentSecondDyadicPartition
-open CenteredMomentSecondBlockAggregate CenteredMomentSecondActiveCount
-open CenteredMomentSecondSectorFrequency CenteredMomentSecondRetainedRows
-open CenteredMomentSectorLocalization CenteredMomentSecondCanonical
-open CenteredMomentSecondSectorColumns CenteredMomentSecondRetainedAggregate
-open CenteredMomentCompleteCommon CenteredMomentRankinRadical CenteredMomentDyadicCount
-open CenteredMomentSourceRow CenteredMomentFirstSectors CenteredMomentActiveSource
+open CanonicalQuadraticSieve CompletedGauss CenteredMomentCanonicalFirst CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentSecondWholeKernel CenteredMomentSecondActiveDyadic CenteredMomentSecondDyadicPartition CenteredMomentSecondBlockAggregate CenteredMomentSecondActiveCount CenteredMomentSecondSectorFrequency CenteredMomentSecondRetainedRows CenteredMomentSectorLocalization CenteredMomentSecondCanonical CenteredMomentSecondSectorColumns CenteredMomentSecondRetainedAggregate CenteredMomentCompleteCommon CenteredMomentRankinRadical CenteredMomentDyadicCount CenteredMomentSourceRow CenteredMomentFirstSectors CenteredMomentActiveSource
 local notation "O" => ActualEisensteinCubic.O
 
 lemma ideal_norm_ge_one (I : Ideal O) (hI : I≠0) : (1:ℝ)≤Ideal.absNorm I := by
@@ -78,10 +69,9 @@ theorem sourceBlocks_subpower (B L Cr ε : ℝ) (hB : 0≤B) (hL : 0≤L)
   obtain ⟨D₀,hD₀,hcount⟩ := four_indices_subpower (max 1 (4*Cr)) (B+L) ε
     (le_max_left _ _) (add_nonneg hB hL) hε
   refine ⟨D₀,hD₀,?_⟩
-  filter_upwards [hcount,Filter.eventually_ge_atTop (1:ℝ)] with Z hc hZ
+  filter_upwards [hcount,Filter.eventually_ge_atTop 1] with Z hc hZ
   intro C D hC hD U K R H hK hR hH
-  have hA : commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U≠0 :=
-    mul_ne_zero (commonFrequencyGenerator_ne_zero C D hC)
+  have hA := mul_ne_zero (commonFrequencyGenerator_ne_zero C D hC)
       (nonunitFrequencyGenerator_ne_zero C D hC U)
   exact hc _ _ (sourceLower_pos C D hC.1 hD.1 _ hA K hK)
     (sourceLower_le_upper C D _ K R H)

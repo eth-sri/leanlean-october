@@ -56,8 +56,7 @@ theorem joined_inactive_three_blocks {α β : Type*} [Fintype α] [Fintype β]
   have hz : ∀ a, joinedInactiveCoefficient P S j (Sum.inl (e (Sum.inl a)))=0 := by
     intro a
     simp [joinedInactiveCoefficient,he a]
-  have h := inactive_weight_three_blocks e (joinedInactiveCoefficient P S j) hz F
-  refine Eq.trans ?_ h
+  refine Eq.trans ?_ (inactive_weight_three_blocks e (joinedInactiveCoefficient P S j) hz F)
   apply Finset.sum_congr (by ext A; simp only [Finset.mem_univ])
   intro A hA
   congr 1

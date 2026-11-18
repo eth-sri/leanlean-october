@@ -24,12 +24,6 @@ noncomputable def heathBrownShiftedExponentialSum
     (N : ℕ) (f : ℝ → ℝ) (h : ℕ) : ℂ :=
   ∑ n ∈ Finset.Icc 1 N, heathBrownPhase (f ((n + h : ℕ) : ℝ))
 
-@[simp] theorem heathBrownShiftedExponentialSum_zero
-    (N : ℕ) (f : ℝ → ℝ) :
-    heathBrownShiftedExponentialSum N f 0 =
-      heathBrownExponentialSum N f := by
-  simp [heathBrownShiftedExponentialSum, heathBrownExponentialSum]
-
 end
 
 end GafniTao

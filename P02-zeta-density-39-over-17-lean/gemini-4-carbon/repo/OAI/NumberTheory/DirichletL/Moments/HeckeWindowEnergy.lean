@@ -6,12 +6,11 @@ public import OAI.NumberTheory.DirichletL.Moments.HeckeColumnWindow
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
 open MeasureTheory
+open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentHeckeWindowEnergy
-open CanonicalQuadraticSieve CenteredMomentGaussEnergy CenteredMomentHeckeColumnWindow
-open HeckeFamily FourierBridge
+open CanonicalQuadraticSieve CenteredMomentGaussEnergy CenteredMomentHeckeColumnWindow HeckeFamily FourierBridge
 local notation "O" => ActualEisensteinCubic.O
 
 theorem finite_weighted_integral_energy {κ : Type*} [Fintype κ]
@@ -20,7 +19,7 @@ theorem finite_weighted_integral_energy {κ : Type*} [Fintype κ]
     (hφ : ∀ k,Integrable (fun t => b t*φ k t))
     (hbound : ∀ t,(∑ k,‖φ k t‖^2)≤E*(w t)^2) :
     (∑ k,‖∫ t : ℝ,b t*φ k t‖^2)≤E*(∫ t : ℝ,w t*‖b t‖)^2 := by
-  have hn (t : ℝ) : (w t:ℂ)≠0 := Complex.ofReal_ne_zero.mpr (hw t).ne'
+  have hn (t : ℝ) := Complex.ofReal_ne_zero.mpr (hw t).ne'
   have hnorm (t : ℝ) : ‖(w t:ℂ)‖=w t := by
     rw [Complex.norm_real,Real.norm_eq_abs,abs_of_pos (hw t)]
   have he (k : κ) (t : ℝ) : ((w t:ℂ)*b t)*(φ k t/(w t:ℂ))=b t*φ k t := by

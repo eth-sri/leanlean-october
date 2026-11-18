@@ -24,8 +24,8 @@ theorem finiteRatioSecond_eq_difference (A : Finset ℕ) (W : Finset ℝ)
     finiteRatioSecond A W = heathBrownDifferenceMoment A W (fun _ => 1) := by
   have h : heathBrownDifferenceMoment A W (fun _ => 1) =
       ∑ n ∈ A, ∑ m ∈ A, heathBrownMajorantKernel W n m := by
-    simpa only [Complex.ofReal_one, one_mul] using
-      heathBrownDifferenceMoment_ofReal_eq_kernel_sum A W (fun _ => (1 : ℝ))
+    simpa using
+      heathBrownDifferenceMoment_ofReal_eq_kernel_sum A W (fun _ => 1)
   rw [h]
   apply Finset.sum_congr rfl
   intro n hn

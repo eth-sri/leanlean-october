@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.SargosPositiveQuadraticRemainder
 public import LaterPairs.Native.SargosQuarticPhase
 public import LaterPairs.Native.SargosQuarticPoisson
@@ -24,7 +33,6 @@ theorem sargosQuartic_normalized_slope_bound {ε u : ℝ}
     (hε : |ε| ≤ 1/96) (hu : u ∈ Icc (1:ℝ) 2) :
     |sargosQuarticSlope 1 ε u| ≤ 6 := by
   have hu₀ : 0 ≤ u := by linarith [hu.1]
-  have hc := pow_le_pow_left₀ hu₀ hu.2 3
   unfold sargosQuarticSlope
   calc
     _ ≤ |2*1*u|+|4*ε*u^3| := abs_add_le _ _
@@ -32,7 +40,7 @@ theorem sargosQuartic_normalized_slope_bound {ε u : ℝ}
       rw [abs_mul,abs_mul,abs_mul,abs_pow,abs_of_nonneg hu₀]
       norm_num
     _ ≤ 2*2+4*(1/96)*2^3 := by
-      have hh := mul_le_mul (mul_le_mul_of_nonneg_left hε (by norm_num : (0:ℝ) ≤ 4)) hc
+      have hh := mul_le_mul (mul_le_mul_of_nonneg_left hε (by norm_num : (0:ℝ) ≤ 4)) (pow_le_pow_left₀ hu₀ hu.2 3)
         (pow_nonneg hu₀ 3) (by norm_num)
       linarith [hu.2]
     _ ≤ 6 := by norm_num
@@ -40,13 +48,10 @@ theorem sargosQuartic_normalized_slope_bound {ε u : ℝ}
 theorem sargosQuartic_normalized_secondDeriv_bound {ε u : ℝ}
     (hε : |ε| ≤ 1/96) (hu : u ∈ Icc (1:ℝ) 2) :
     |iteratedDeriv 2 (sargosQuarticPhase 1 ε) u| ≤ 6 := by
-  have he : deriv (sargosQuarticPhase 1 ε) = sargosQuarticSlope 1 ε :=
-    funext fun x => (sargosQuarticPhase_hasDerivAt 1 ε x).deriv
-  change |iteratedDeriv (1+1) (sargosQuarticPhase 1 ε) u| ≤ 6
-  rw [iteratedDeriv_succ',iteratedDeriv_one,he,(sargosQuarticSlope_hasDerivAt 1 ε u).deriv]
+  rw [iteratedDeriv_succ',iteratedDeriv_one,(funext fun x => (sargosQuarticPhase_hasDerivAt 1 ε x).deriv),(sargosQuarticSlope_hasDerivAt 1 ε u).deriv]
   have hc := sargosQuarticPhase_curvature
     (by norm_num : (0:ℝ) < 1) (by norm_num : (0:ℝ) < 1)
-    (by simpa using hε) (by simpa only [mul_one] using hu)
+    (by simpa using hε) (by simpa using hu)
   exact abs_le.mpr ⟨by linarith [hc.1],by linarith [hc.2]⟩
 
 theorem sargosQuarticWeightedKernel_normalized (χ : ℝ → ℝ) (T ε u : ℝ) :
@@ -83,8 +88,8 @@ theorem sargosQuarticBufferedKernel_uniform_second_derivative :
       fun x => (χ x : ℂ)*(𝐞 (T*sargosQuarticPhase 1 ε x) : ℂ) :=
     funext fun x => sargosQuarticWeightedKernel_normalized χ T ε x
   by_cases hu : u ∈ tsupport χ
-  · have hu' : u ∈ Ioo (1:ℝ) 2 := modelPhaseBufferedCutoff_tsupport_model hη hl hb hu
-    have huc : u ∈ Icc (1:ℝ) 2 := ⟨hu'.1.le,hu'.2.le⟩
+  · have hu' : u ∈ Ioo 1 2 := modelPhaseBufferedCutoff_tsupport_model hη hl hb hu
+    have huc : u ∈ Icc 1 2 := ⟨hu'.1.le,hu'.2.le⟩
     have hphase := intervalC2Bound_fourierChar_of_derivative_bounds
       (F := sargosQuarticPhase 1 ε) (a := u) (b := u) (K := 6) (by norm_num)
       (fun _ _ => (contDiff_sargosQuarticPhase 1 ε).contDiffAt.of_le
@@ -103,16 +108,15 @@ theorem sargosQuarticBufferedKernel_uniform_second_derivative :
       le_mul_of_one_le_right (by positivity) (by linarith [abs_nonneg T])
     have hR₂ : 1+|T| ≤ η⁻¹*(1+|T|) :=
       le_mul_of_one_le_left (by positivity) hA
-    have hp := ((hcut l b η u u hη).mono le_rfl hR₁).mul (hphase.mono le_rfl hR₂)
     rw [heq]
-    convert hp.second_le u ⟨le_rfl,le_rfl⟩ using 1
+    convert (((hcut l b η u u hη).mono le_rfl hR₁).mul (hphase.mono le_rfl hR₂)).second_le u ⟨le_rfl,le_rfl⟩ using 1
     dsimp [χ,D]
     ring
-  · have hz : sargosQuarticWeightedKernel χ 1 T (T*ε) =ᶠ[𝓝 u] fun _ => (0 : ℂ) := by
+  · have hz : sargosQuarticWeightedKernel χ 1 T (T*ε) =ᶠ[𝓝 u] fun _ => 0 := by
       filter_upwards [notMem_tsupport_iff_eventuallyEq.mp hu] with x hx
       simp only [sargosQuarticWeightedKernel,div_one,hx,Pi.zero_apply,Complex.ofReal_zero,zero_mul]
     rw [hz.iteratedDeriv_eq 2]
-    simp only [iteratedDeriv_const,show (2:ℕ) ≠ 0 by norm_num,ite_false,norm_zero]
+    simp only [iteratedDeriv_const,show 2 ≠ 0 by norm_num,ite_false,norm_zero]
     have hM₀ : 0 ≤ M := by linarith
     have hD₀ : 0 ≤ D := by linarith
     positivity

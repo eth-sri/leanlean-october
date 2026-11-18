@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaBufferedLocalNonstationary
 
 @[expose] public section
@@ -38,8 +48,8 @@ theorem norm_bufferedNormalizedMode_sub_window_le
   let lam := T*(H*modelPhaseCurvatureLower σ/Real.sqrt (σ+1))
   let g : ℝ → ℂ := fun u => (modelPhaseBufferedCutoff l r η u : ℂ)*
     (𝐞 (T*F u-(T*v)*u) : ℂ)
-  have ha : a ∈ Ioo (1 : ℝ) 2 := modelPhaseMorseInverse_mem hleft
-  have hb : b ∈ Ioo (1 : ℝ) 2 := modelPhaseMorseInverse_mem hright
+  have ha : a ∈ Ioo 1 2 := modelPhaseMorseInverse_mem hleft
+  have hb : b ∈ Ioo 1 2 := modelPhaseMorseInverse_mem hright
   have hlam : 0 < lam := by
     dsimp [lam]
     positivity [modelPhaseCurvatureLower_pos hσ]
@@ -50,7 +60,7 @@ theorem norm_bufferedNormalizedMode_sub_window_le
       (by linarith) ha.2 hlam
     left
     intro u hu
-    have hu' : u ∈ Ioo (1 : ℝ) 2 := ⟨by linarith [hu.1],hu.2.trans_lt ha.2⟩
+    have hu' : u ∈ Ioo 1 2 := ⟨by linarith [hu.1],hu.2.trans_lt ha.2⟩
     have hm := hmono hu' ha hu.2
     have hg := mul_le_mul_of_nonneg_left hgap.1 hT.le
     dsimp only [lam,a] at *
@@ -60,7 +70,7 @@ theorem norm_bufferedNormalizedMode_sub_window_le
       hb.1 (by linarith) hlam
     right
     intro u hu
-    have hu' : u ∈ Ioo (1 : ℝ) 2 := ⟨hb.1.trans_le hu.1,by linarith [hu.2]⟩
+    have hu' : u ∈ Ioo 1 2 := ⟨hb.1.trans_le hu.1,by linarith [hu.2]⟩
     have hm := hmono hb hu' hu.1
     have hg := mul_le_mul_of_nonneg_left hgap.2 hT.le
     dsimp only [lam,b] at *

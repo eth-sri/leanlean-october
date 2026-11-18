@@ -39,8 +39,7 @@ theorem varyingAssignedSource_mono {Jo : ℕ}
     (J₁ J₂ : Finset σ) (base₁ base₂ : σ→Finset ι)
     (L₁ L₂ : MarkedSecondSource ι Jo 0→σ→Finset ι) :
     varyingAssignedSource S J₁ J₂ base₁ base₂ L₁ L₂⊆
-      varyingAssignedSource T J₁ J₂ base₁ base₂ L₁ L₂ := by
-  exact Finset.filter_subset_filter _ (assignedSecondSource_mono hST J₁ J₂ base₁ base₂)
+      varyingAssignedSource T J₁ J₂ base₁ base₂ L₁ L₂ := Finset.filter_subset_filter _ (assignedSecondSource_mono hST J₁ J₂ base₁ base₂)
 
 theorem varyingAssignedSource_sum {Jo : ℕ} (source : Finset (MarkedSecondSource ι Jo 0))
     (J₁ J₂ : Finset σ) (base₁ base₂ : σ→Finset ι)

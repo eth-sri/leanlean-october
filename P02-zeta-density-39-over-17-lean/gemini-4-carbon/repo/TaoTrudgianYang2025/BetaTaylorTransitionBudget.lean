@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaTaylorCutoffBudget
 
 @[expose] public section
@@ -56,11 +66,10 @@ theorem smoothTransition_taylor_remainder_uniform_jets (Q : ℕ) :
   have hM : 0 ≤ M := (abs_nonneg _).trans (hb a left_mem_uIcc)
   have hsmall : h^(Q+1-n) ≤ 1 := pow_le_one₀ hh.le hh₁
   have hcoeff : 0 ≤ (2 : ℝ)^n*B*M := by positivity
-  have hmono := pow_le_pow_right₀ (by norm_num : (1 : ℝ) ≤ 2) hn
   calc
     _ ≤ (2 : ℝ)^n*B*M*h^(Q+1-n) := hrem
     _ ≤ (2 : ℝ)^n*B*M := (mul_le_mul_of_nonneg_left hsmall hcoeff).trans_eq (mul_one _)
     _ ≤ _ := mul_le_mul_of_nonneg_right
-      (mul_le_mul_of_nonneg_right hmono (zero_le_one.trans hB)) hM
+      (mul_le_mul_of_nonneg_right (pow_le_pow_right₀ (by norm_num : (1 : ℝ) ≤ 2) hn) (zero_le_one.trans hB)) hM
 
 end TaoTrudgianYang2025

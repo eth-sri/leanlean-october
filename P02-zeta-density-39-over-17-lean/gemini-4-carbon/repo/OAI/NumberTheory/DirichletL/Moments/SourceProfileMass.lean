@@ -9,15 +9,14 @@ noncomputable section
 open scoped BigOperators Classical ContDiff
 
 namespace SevenEighths.CenteredMomentSourceProfileMass
-open ActualEisensteinCubic CenteredMomentPrimary CenteredMomentRectangle
-open CenteredMomentAddedZeroUniform CenteredMomentSourceMass
+open ActualEisensteinCubic CenteredMomentPrimary CenteredMomentRectangle CenteredMomentAddedZeroUniform CenteredMomentSourceMass
 local notation "O" => ActualEisensteinCubic.O
 
  theorem primary_mod_one (χ : MulChar (O ⧸ Ideal.span {(1:O)}) ℂ) (I : Ideal O) :
     primaryIdealCharacter 1 χ I=1 := by
   rw [primaryIdealCharacter_apply]
-  have he : Ideal.Quotient.mk (Ideal.span {(1:O)}) (CompletedGauss.primaryGenerator I)=1 := by
-    rw [← map_one (Ideal.Quotient.mk (Ideal.span {(1:O)}))]
+  have he : Ideal.Quotient.mk (Ideal.span {1}) (CompletedGauss.primaryGenerator I)=1 := by
+    rw [← map_one (Ideal.Quotient.mk (Ideal.span {1}))]
     apply Ideal.Quotient.eq.mpr
     rw [Ideal.span_singleton_one]
     trivial

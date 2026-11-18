@@ -7,12 +7,11 @@ public import OAI.NumberTheory.DirichletL.Moments.Smooth
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff FourierTransform
 open MeasureTheory
+open scoped BigOperators Classical SchwartzMap ContDiff FourierTransform
 
 namespace SevenEighths.CenteredMomentHeckeColumnWindow
-open FourierBridge HeckeFamily CenteredMomentSmooth CenteredMomentGaussEnergy
-open CenteredMomentTwist
+open FourierBridge HeckeFamily CenteredMomentSmooth CenteredMomentGaussEnergy CenteredMomentTwist
 local notation "O" => ActualEisensteinCubic.O
 
 def heightCoeff (τ : Character) (t : ℝ) (I : Ideal O) : ℂ :=
@@ -20,8 +19,7 @@ def heightCoeff (τ : Character) (t : ℝ) (I : Ideal O) : ℂ :=
 
 theorem heightCoeff_add (τ : Character) (I : Ideal O) (hI : I≠0) (t v : ℝ) :
     heightCoeff τ (t+v) I=heightCoeff τ t I*(Ideal.absNorm I:ℂ)^(Complex.I*v) := by
-  have hn : (Ideal.absNorm I:ℂ)≠0 := Nat.cast_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hI)
-  simp only [heightCoeff,Complex.ofReal_add,mul_add,Complex.cpow_add _ _ hn]
+  simp only [heightCoeff,Complex.ofReal_add,mul_add,Complex.cpow_add _ _ (Nat.cast_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hI))]
   ring
 
 theorem heightCoeff_phase (τ : Character) (I : Ideal O) (hI : I≠0)

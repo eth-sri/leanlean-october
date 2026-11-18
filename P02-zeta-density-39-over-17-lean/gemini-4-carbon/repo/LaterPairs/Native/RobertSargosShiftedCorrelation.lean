@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.RobertSargosAverageBoundary
 
 @[expose] public section
@@ -52,7 +61,7 @@ theorem norm_robertSargos_trimmed_shift_error (f : ℝ → ℝ) (M H Q N : ℕ) 
             robertSargosSymmetricDifference f m (h+r)))
         M H Q N h q hN ((mem_robertSargosHOverlap H h r).mp hh).1 hq
         (fun m => le_of_eq (sargos_character_norm _))
-      simpa only [Int.cast_add] using ht
+      simpa using ht
     _ ≤ _ := by
       simp only [Finset.sum_const,nsmul_eq_mul]
       apply mul_le_mul_of_nonneg_right _ (by positivity)

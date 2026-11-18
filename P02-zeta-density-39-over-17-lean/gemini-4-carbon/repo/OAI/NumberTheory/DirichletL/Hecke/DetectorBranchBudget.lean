@@ -30,9 +30,7 @@ theorem inverse_marked_loss (r δ x ε εm mesh ν : ℝ)
     (hε : 0≤ε) (hmesh : 0≤mesh) (hν : 0≤ν) :
     1-δ*r-2*(δ*x)*((1-r)/2-ν)+2*ε+δ*mesh+εm≤
       inverseExponent δ x r+commonLoss ε εm mesh ν := by
-  have hq : 2*(δ*x)≤1 := by nlinarith only [mul_nonneg hδ (sub_nonneg.mpr hx1), hδ1]
-  have hm := mul_le_mul_of_nonneg_right hδ1 hmesh
-  have hn := mul_le_mul_of_nonneg_right hq hν
+  have hq : 2*(δ*x)≤1 := by nlinarith
   unfold inverseExponent commonLoss
   nlinarith
 
@@ -41,7 +39,7 @@ theorem plain_marked_loss (m δ x Δ ε εm mesh ν : ℝ)
     (hε : 0≤ε) (hmesh : 0≤mesh) (hν : 0≤ν) :
     1-2*δ*m-2*(δ*x)*((1-2*m)/(9/2+12*Δ)-ν)+4*ε+δ*mesh+εm≤
       1-2*δ*m-2*(δ*x)*(1-2*m)/(9/2+12*Δ)+commonLoss ε εm mesh ν := by
-  have hq : 2*(δ*x)≤1 := by nlinarith only [mul_nonneg hδ (sub_nonneg.mpr hx1), hδ1]
+  have hq : 2*(δ*x)≤1 := by nlinarith
   have hm := mul_le_mul_of_nonneg_right hδ1 hmesh
   have hn := mul_le_mul_of_nonneg_right hq hν
   unfold commonLoss

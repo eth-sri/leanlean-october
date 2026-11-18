@@ -1,5 +1,6 @@
 module
 public import Mathlib.Algebra.BigOperators.Group.Finset.Interval
+public import Mathlib.Analysis.Complex.ExponentialBounds
 public import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
 public import Mathlib.MeasureTheory.Function.JacobianOneDim
 public import Mathlib.NumberTheory.Harmonic.Bounds
@@ -33,9 +34,8 @@ theorem gmR_eq_gmRPhase_log {W : Finset ℝ} {v : ℝ} (hv : v ≠ 0) :
   unfold gmR gmRPhase
   apply Finset.sum_congr rfl
   intro t ht
-  have hvabs : 0 < |v| := abs_pos.mpr hv
-  rw [Complex.cpow_def_of_ne_zero (Complex.ofReal_ne_zero.mpr hvabs.ne')]
-  rw [← Complex.ofReal_log hvabs.le]
+  have hvabs := abs_pos.mpr hv
+  rw [Complex.cpow_def_of_ne_zero (Complex.ofReal_ne_zero.mpr hvabs.ne'), ← Complex.ofReal_log hvabs.le]
   congr 1
   push_cast
   ring
@@ -46,7 +46,7 @@ theorem gmRPhase_neg (W : Finset ℝ) (x : ℝ) :
   rw [star_sum]
   apply Finset.sum_congr rfl
   intro t ht
-  let z : ℂ := (((t * x : ℝ) : ℂ) * I)
+  let z := (((t * x : ℝ) : ℂ) * I)
   calc
     Complex.exp (((t * -x : ℝ) : ℂ) * I) =
         Complex.exp (star z) := by
@@ -154,10 +154,7 @@ theorem norm_gmPhaseIntervalKernel_le_two_div {a b xi : ℝ}
   have hnum :
       ‖Complex.exp (((xi * b : ℝ) : ℂ) * I) -
           Complex.exp (((xi * a : ℝ) : ℂ) * I)‖ ≤ 2 := by
-    calc
-      _ ≤ ‖Complex.exp (((xi * b : ℝ) : ℂ) * I)‖ +
-          ‖Complex.exp (((xi * a : ℝ) : ℂ) * I)‖ := norm_sub_le _ _
-      _ = 2 := by norm_num [Complex.norm_exp]
+    exact (norm_sub_le _ _).trans_eq (by norm_num [Complex.norm_exp])
   have hden : ‖((xi : ℂ) * I)‖ = |xi| := by
     simp [Real.norm_eq_abs]
   rw [hden]
@@ -904,12 +901,9 @@ theorem gmTraceNonzeroTailAt_mul_mul_eq_tsum_modes
             gmNonzeroScaledTraceMode cutoff N z m.2.2 := by
   rw [gmTraceNonzeroTailAt_eq_tsum_nonzeroScaledTraceMode,
     gmTraceNonzeroTailAt_eq_tsum_nonzeroScaledTraceMode,
-    gmTraceNonzeroTailAt_eq_tsum_nonzeroScaledTraceMode]
-  rw [mul_assoc]
-  rw [tsum_mul_tsum_of_summable_norm
+    gmTraceNonzeroTailAt_eq_tsum_nonzeroScaledTraceMode, mul_assoc, tsum_mul_tsum_of_summable_norm
     (summable_norm_gmNonzeroScaledTraceMode cutoff N hN y)
-    (summable_norm_gmNonzeroScaledTraceMode cutoff N hN z)]
-  rw [tsum_mul_tsum_of_summable_norm
+    (summable_norm_gmNonzeroScaledTraceMode cutoff N hN z), tsum_mul_tsum_of_summable_norm
     (summable_norm_gmNonzeroScaledTraceMode cutoff N hN x)
     ((summable_norm_gmNonzeroScaledTraceMode cutoff N hN y).mul_norm
       (summable_norm_gmNonzeroScaledTraceMode cutoff N hN z))]
@@ -1374,11 +1368,8 @@ theorem one_div_frequencyRadius_add_one_pow_le
   have hRatio : 0 < T ^ (1 + η) / (N : ℝ) := by positivity
   have hRadius : T ^ (1 + η) / (N : ℝ) ≤
       ((gmCubicFrequencyRadius η T N + 1 : ℕ) : ℝ) := by
-    calc
-      T ^ (1 + η) / (N : ℝ) ≤ (gmCubicFrequencyRadius η T N : ℝ) :=
-        ratio_le_gmCubicFrequencyRadius
-      _ ≤ ((gmCubicFrequencyRadius η T N + 1 : ℕ) : ℝ) := by
-        norm_num
+    exact (ratio_le_gmCubicFrequencyRadius).trans (by
+        norm_num)
   exact one_div_le_one_div_of_le (pow_pos hRatio r)
     (pow_le_pow_left₀ hRatio.le hRadius r)
 
@@ -1391,8 +1382,6 @@ theorem gmCubicTail_scale_identity
       (2 : ℝ) ^ (r + 9) * Cᵣ * C₂ ^ 2 * B *
         (T ^ (r + 9) /
           ((N : ℝ) ^ 3 * (T ^ (1 + η)) ^ r)) := by
-  have hN0 : (N : ℝ) ≠ 0 := by exact_mod_cast hN.ne'
-  have hScale : T ^ (1 + η) ≠ 0 := (Real.rpow_pos_of_pos hT _).ne'
   simp only [div_pow]
   field_simp
   simp only [mul_pow, pow_add]
@@ -1403,14 +1392,13 @@ theorem gmCubicTail_scale_ratio_le
     (hr : 109 ≤ η * (r : ℝ)) :
     T ^ (r + 9) / ((N : ℝ) ^ 3 * (T ^ (1 + η)) ^ r) ≤
       1 / T ^ 100 := by
-  have hTpos : 0 < T := lt_of_lt_of_le zero_lt_one hT
   have hNOne : (1 : ℝ) ≤ N := by exact_mod_cast hN
   have hNPow : (1 : ℝ) ≤ (N : ℝ) ^ 3 := by
     simpa using pow_le_pow_left₀ zero_le_one hNOne 3
   have hScalePos : 0 < (T ^ (1 + η)) ^ r := by positivity
   have hScalePower : T ^ (r + 109) ≤ (T ^ (1 + η)) ^ r := by
     rw [← Real.rpow_natCast, ← Real.rpow_natCast,
-      ← Real.rpow_mul hTpos.le]
+      ← Real.rpow_mul (lt_of_lt_of_le zero_lt_one hT).le]
     apply Real.rpow_le_rpow_of_exponent_le hT
     push_cast
     nlinarith
@@ -2001,7 +1989,7 @@ theorem integrable_gmCubicS3ModeSummedIntegrand_slice
     ((N : ℝ) * (m.1 : ℝ)) ((t : ℝ) - (u : ℝ))
   have h2 := integrable_gmTraceOscillation_mul_kernel cutoff
     ((N : ℝ) * (m.2.1 : ℝ)) ((u : ℝ) - (v : ℝ))
-  let c : ℂ := gmTraceOscillation ((N : ℝ) * (m.2.2 : ℝ)) z *
+  let c := gmTraceOscillation ((N : ℝ) * (m.2.2 : ℝ)) z *
     gmTraceKernel cutoff ((v : ℝ) - (t : ℝ)) z
   refine ((h1.mul_prod h2).mul_const c).congr ?_
   filter_upwards with q
@@ -2279,7 +2267,7 @@ theorem norm_iteratedDeriv_gmCubicCutoffSq_scaled_le
     (gmCubicCutoffSqSchwartz cutoff) (v * z)
   simp only [pow_zero, one_mul] at hcut
   change ‖iteratedDeriv n (gmCubicCutoffSq cutoff) (v * z)‖ ≤ _ at hcut
-  have hvpow : ‖v‖ ^ n ≤ (2 : ℝ) ^ n := by
+  have hvpow : ‖v‖ ^ n ≤ 2 ^ n := by
     rw [Real.norm_eq_abs]
     exact pow_le_pow_left₀ (abs_nonneg v) hv n
   exact mul_le_mul hvpow hcut (norm_nonneg _)
@@ -2323,23 +2311,15 @@ private theorem norm_iteratedDeriv_mul_le_sum
     ‖iteratedDeriv n (f * g) x‖ ≤
       ∑ k ∈ Finset.range (n + 1), (n.choose k : ℝ) * F k * G (n - k) := by
   rw [iteratedDeriv_mul hf hg]
-  calc
-    ‖∑ k ∈ Finset.range (n + 1),
-        (n.choose k : ℂ) * iteratedDeriv k f x *
-          iteratedDeriv (n - k) g x‖ ≤
-      ∑ k ∈ Finset.range (n + 1),
-        ‖(n.choose k : ℂ) * iteratedDeriv k f x *
-          iteratedDeriv (n - k) g x‖ := norm_sum_le _ _
-    _ ≤ _ := by
+  exact (norm_sum_le _ _).trans (by
       apply Finset.sum_le_sum
       intro k hk
-      have hkn : k ≤ n := Nat.lt_succ_iff.mp (Finset.mem_range.mp hk)
       rw [norm_mul, norm_mul, Complex.norm_natCast]
       exact mul_le_mul
-        (mul_le_mul_of_nonneg_left (hfBound k hkn) (Nat.cast_nonneg _))
+        (mul_le_mul_of_nonneg_left (hfBound k (Nat.lt_succ_iff.mp (Finset.mem_range.mp hk))) (Nat.cast_nonneg _))
         (hgBound (n - k) (Nat.sub_le n k))
         (norm_nonneg _)
-        (mul_nonneg (Nat.cast_nonneg _) (hF k))
+        (mul_nonneg (Nat.cast_nonneg _) (hF k)))
 
 /- theorem norm_iteratedDeriv_gmCubicZWeight_le
     (cutoff : GMSmoothCutoff) (n : ℕ) {v₁ v₂ : ℝ}
@@ -2441,14 +2421,13 @@ theorem norm_iteratedDeriv_gmCubicZWeight_le
       gmCubicZDerivativeBound cutoff n := by
   let Base : ℕ → ℝ := fun k =>
     SchwartzMap.seminorm ℝ 0 k (gmCubicBaseWeightSchwartz cutoff)
-  let Scaled : ℕ → ℝ := fun k => (2 : ℝ) ^ k *
+  let Scaled : ℕ → ℝ := fun k => 2 ^ k *
     SchwartzMap.seminorm ℝ 0 k (gmCubicCutoffSqSchwartz cutoff)
   let Inner : ℕ → ℝ := fun i =>
     ∑ j ∈ Finset.range (i + 1), (i.choose j : ℝ) * Base j * Scaled (i - j)
   have hBaseNonneg (k : ℕ) : 0 ≤ Base k := by dsimp only [Base]; positivity
   have hScaledNonneg (k : ℕ) : 0 ≤ Scaled k := by dsimp only [Scaled]; positivity
   have hInnerNonneg (k : ℕ) : 0 ≤ Inner k := by
-    dsimp only [Inner]
     exact Finset.sum_nonneg fun j _ =>
       mul_nonneg (mul_nonneg (Nat.cast_nonneg _) (hBaseNonneg j))
         (hScaledNonneg (k - j))
@@ -2532,8 +2511,7 @@ private theorem integral_norm_iteratedFDeriv_gmCubicZWeight_le
       simp [Set.indicator, hz, this]
   rw [show (∫ z : ℝ,
       ‖iteratedFDeriv ℝ p (gmCubicZWeight cutoff v₁ v₂) z‖) =
-      ∫ z : ℝ, f z by rfl]
-  rw [hEq, MeasureTheory.integral_indicator measurableSet_Icc]
+      ∫ z : ℝ, f z by rfl, hEq, MeasureTheory.integral_indicator measurableSet_Icc]
   calc
     (∫ z : ℝ in Set.Icc 1 2, f z) ≤
         ∫ _z : ℝ in Set.Icc 1 2, gmCubicZDerivativeBound cutoff p := by
@@ -2610,10 +2588,9 @@ theorem gmCubicZFourier_far_frequency_pow
   obtain ⟨C, hC, hDecay⟩ := gmCubicZFourier_uniform_decay cutoff n
   refine ⟨C, hC, ?_⟩
   intro T v₁ v₂ ξ hT hv₁ hv₂ hξ
-  have hTpos : 0 < T := lt_of_lt_of_le zero_lt_one hT
-  have hξpos : 0 < |ξ| := (Real.rpow_pos_of_pos hTpos η).trans_le hξ
-  have hpowξ : (T ^ η) ^ n ≤ |ξ| ^ n :=
-    pow_le_pow_left₀ (Real.rpow_nonneg hTpos.le η) hξ n
+  have hTpos := lt_of_lt_of_le zero_lt_one hT
+  have hξpos := (Real.rpow_pos_of_pos hTpos η).trans_le hξ
+  have hpowξ := pow_le_pow_left₀ (Real.rpow_nonneg hTpos.le η) hξ n
   have hpowT : T ^ A ≤ (T ^ η) ^ n := by
     rw [← Real.rpow_natCast, ← Real.rpow_natCast,
       ← Real.rpow_mul hTpos.le]
@@ -2711,19 +2688,18 @@ theorem gmCubicRatioRawIntegrand_eq_zero_of_not_mem_box
     (m : ℤ × (ℤ × ℤ)) {q : (ℝ × ℝ) × ℝ}
     (hq : q ∉ gmCubicRatioBox) :
     gmCubicRatioRawIntegrand cutoff N W m q = 0 := by
-  by_cases hz : q.2 ∈ Set.Icc (1 : ℝ) 2
-  · have hxy : q.1 ∉ Set.Icc (1 / 2 : ℝ) 2 ×ˢ Set.Icc (1 / 2 : ℝ) 2 := by
+  by_cases hz : q.2 ∈ Set.Icc 1 2
+  · have hxy : q.1 ∉ Set.Icc (1 / 2) 2 ×ˢ Set.Icc (1 / 2) 2 := by
       intro hxy
       exact hq ⟨hxy, hz⟩
     simp only [Set.mem_prod, Set.mem_Icc, not_and_or] at hxy
     rcases hxy with hv₁ | hv₂
     · rcases hv₁ with hv₁ | hv₁
       · have hscale : q.1.1 * q.2 ≤ 1 := calc
-          q.1.1 * q.2 ≤ (1 / 2 : ℝ) * q.2 :=
+          q.1.1 * q.2 ≤ (1 / 2) * q.2 :=
             mul_le_mul_of_nonneg_right (not_le.mp hv₁).le (by linarith [hz.1])
           _ ≤ 1 := by nlinarith [hz.2]
-        have hcut : cutoff (q.1.1 * q.2) = 0 :=
-          gmSmoothCutoff_eq_zero_of_le_one cutoff hscale
+        have hcut := gmSmoothCutoff_eq_zero_of_le_one cutoff hscale
         unfold gmCubicRatioRawIntegrand gmCubicRatioMap
         rw [gmCubicS3ModeSummedIntegrand_eq_RPhase]
         simp [hcut]
@@ -2733,18 +2709,16 @@ theorem gmCubicRatioRawIntegrand_eq_zero_of_not_mem_box
           _ ≤ q.1.1 * 1 := mul_le_mul_of_nonneg_right hv₁'.le (by norm_num)
           _ ≤ q.1.1 * q.2 :=
             mul_le_mul_of_nonneg_left hz.1 (by positivity)
-        have hcut : cutoff (q.1.1 * q.2) = 0 :=
-          gmSmoothCutoff_eq_zero_of_two_le cutoff hscale
+        have hcut := gmSmoothCutoff_eq_zero_of_two_le cutoff hscale
         unfold gmCubicRatioRawIntegrand gmCubicRatioMap
         rw [gmCubicS3ModeSummedIntegrand_eq_RPhase]
         simp [hcut]
     · rcases hv₂ with hv₂ | hv₂
       · have hscale : q.1.2 * q.2 ≤ 1 := calc
-          q.1.2 * q.2 ≤ (1 / 2 : ℝ) * q.2 :=
+          q.1.2 * q.2 ≤ (1 / 2) * q.2 :=
             mul_le_mul_of_nonneg_right (not_le.mp hv₂).le (by linarith [hz.1])
           _ ≤ 1 := by nlinarith [hz.2]
-        have hcut : cutoff (q.1.2 * q.2) = 0 :=
-          gmSmoothCutoff_eq_zero_of_le_one cutoff hscale
+        have hcut := gmSmoothCutoff_eq_zero_of_le_one cutoff hscale
         unfold gmCubicRatioRawIntegrand gmCubicRatioMap
         rw [gmCubicS3ModeSummedIntegrand_eq_RPhase]
         simp [hcut]
@@ -2754,8 +2728,7 @@ theorem gmCubicRatioRawIntegrand_eq_zero_of_not_mem_box
           _ ≤ q.1.2 * 1 := mul_le_mul_of_nonneg_right hv₂'.le (by norm_num)
           _ ≤ q.1.2 * q.2 :=
             mul_le_mul_of_nonneg_left hz.1 (by positivity)
-        have hcut : cutoff (q.1.2 * q.2) = 0 :=
-          gmSmoothCutoff_eq_zero_of_two_le cutoff hscale
+        have hcut := gmSmoothCutoff_eq_zero_of_two_le cutoff hscale
         unfold gmCubicRatioRawIntegrand gmCubicRatioMap
         rw [gmCubicS3ModeSummedIntegrand_eq_RPhase]
         simp [hcut]
@@ -2899,11 +2872,7 @@ theorem integrable_gmCubicFourierIntegrand
     (cutoff : GMSmoothCutoff) (N : ℕ) (W : Finset ℝ)
     (m : ℤ × (ℤ × ℤ)) :
     Integrable (gmCubicFourierIntegrand cutoff N W m) (volume.prod volume) := by
-  have hall := integrable_gmCubicRatioIntegrand cutoff N W m
-  have hinner : Integrable (fun q : ℝ × ℝ =>
-      ∫ z : ℝ, gmCubicRatioIntegrand cutoff N W m (q, z))
-      (volume.prod volume) := hall.integral_prod_left
-  refine hinner.congr ?_
+  refine ((integrable_gmCubicRatioIntegrand cutoff N W m).integral_prod_left).congr ?_
   filter_upwards with q
   simpa [gmCubicFourierIntegrand] using
     integral_gmCubicRatioIntegrand_eq_fourier cutoff N W m q.1 q.2
@@ -2945,12 +2914,7 @@ theorem gmCubicS3Mode_eq_fourierIntegral
 
 theorem continuousAt_gmR (W : Finset ℝ) {v : ℝ} (hv : v ≠ 0) :
     ContinuousAt (gmR W) v := by
-  have hlog : ContinuousAt (fun x : ℝ => Real.log |x|) v :=
-    (Real.continuousAt_log (abs_ne_zero.mpr hv)).comp continuous_abs.continuousAt
-  have hphase : ContinuousAt (fun x : ℝ =>
-      gmRPhase W (Real.log |x|)) v :=
-    (continuous_gmRPhase W).continuousAt.comp hlog
-  apply hphase.congr_of_eventuallyEq
+  apply ((continuous_gmRPhase W).continuousAt.comp ((Real.continuousAt_log (abs_ne_zero.mpr hv)).comp continuous_abs.continuousAt)).congr_of_eventuallyEq
   filter_upwards [eventually_ne_nhds hv] with x hx
   exact gmR_eq_gmRPhase_log hx
 
@@ -3138,16 +3102,12 @@ theorem norm_gmCubicFourierIntegrand_slabIntegral_le
     ‖∫ q : ℝ × ℝ in gmCubicCancellationSlab η T N m,
         gmCubicFourierIntegrand cutoff N W m q‖ ≤
       C * gmCubicCancellationMass η T N W m := by
-  have hg : Integrable (fun q : ℝ × ℝ =>
-      C * gmCubicRAmplitude W q)
-      ((volume.prod volume).restrict (gmCubicCancellationSlab η T N m)) :=
-    (integrableOn_gmCubicRAmplitude_cancellationSlab η T N W m).const_mul C
   calc
     ‖∫ q : ℝ × ℝ in gmCubicCancellationSlab η T N m,
         gmCubicFourierIntegrand cutoff N W m q‖ ≤
         ∫ q : ℝ × ℝ in gmCubicCancellationSlab η T N m,
           C * gmCubicRAmplitude W q := by
-      apply MeasureTheory.norm_integral_le_of_norm_le hg
+      apply MeasureTheory.norm_integral_le_of_norm_le ((integrableOn_gmCubicRAmplitude_cancellationSlab η T N W m).const_mul C)
       filter_upwards [ae_restrict_mem
         (measurableSet_gmCubicCancellationSlab η T N m)] with q hq
       exact norm_gmCubicFourierIntegrand_le_on_slab cutoff hC hq
@@ -3176,8 +3136,6 @@ theorem norm_gmCubicFourierIntegrand_offSlabIntegral_le
   have hsFinite : (volume.prod volume) s < (⊤ : ENNReal) :=
     lt_of_le_of_lt (measure_mono hsSub)
       (isCompact_Icc.prod isCompact_Icc).measure_lt_top
-  have hconst : 0 ≤ (C / T ^ A) * (W.card : ℝ) ^ 3 := by
-    positivity
   have hraw := MeasureTheory.norm_setIntegral_le_of_norm_le_const
     (f := gmCubicFourierIntegrand cutoff N W m) hsFinite
       (fun q hq => norm_gmCubicFourierIntegrand_le_off_slab
@@ -3208,15 +3166,12 @@ private theorem cubic_mode_far_error_le
     (hR0 : 0 ≤ R) (hR : R ≤ 2 * T) :
     (N : ℝ) ^ 3 * ((C / T ^ 206) * R ^ 3 * (9 / 4)) ≤
       18 * C / T ^ 200 := by
-  have hTpos : 0 < T := lt_of_lt_of_le zero_lt_one hT
+  have hTpos := lt_of_lt_of_le zero_lt_one hT
   have hN0 : 0 ≤ (N : ℝ) := by positivity
   have hNpow : (N : ℝ) ^ 3 ≤ T ^ 3 := by gcongr
   have hRpow : R ^ 3 ≤ (2 * T) ^ 3 := by gcongr
   have hprod : (N : ℝ) ^ 3 * R ^ 3 ≤ 8 * T ^ 6 := by
-    calc
-      (N : ℝ) ^ 3 * R ^ 3 ≤ T ^ 3 * (2 * T) ^ 3 :=
-        mul_le_mul hNpow hRpow (by positivity) (by positivity)
-      _ = 8 * T ^ 6 := by ring
+    exact (mul_le_mul hNpow hRpow (by positivity) (by positivity)).trans_eq (by ring)
   calc
     (N : ℝ) ^ 3 * ((C / T ^ 206) * R ^ 3 * (9 / 4)) =
         (C * ((N : ℝ) ^ 3 * R ^ 3) * (9 / 4)) / T ^ 206 := by ring
@@ -3553,12 +3508,7 @@ theorem norm_gmCubicS3Mode_cyclic_two
     (m₁ m₂ m₃ : ℤ) :
     ‖gmCubicS3Mode cutoff N W (m₁, (m₂, m₃))‖ =
       ‖gmCubicS3Mode cutoff N W (m₃, (m₁, m₂))‖ := by
-  calc
-    ‖gmCubicS3Mode cutoff N W (m₁, (m₂, m₃))‖ =
-        ‖gmCubicS3Mode cutoff N W (m₂, (m₃, m₁))‖ :=
-      norm_gmCubicS3Mode_cyclic cutoff N W m₁ m₂ m₃
-    _ = ‖gmCubicS3Mode cutoff N W (m₃, (m₁, m₂))‖ :=
-      norm_gmCubicS3Mode_cyclic cutoff N W m₂ m₃ m₁
+  exact (norm_gmCubicS3Mode_cyclic cutoff N W m₁ m₂ m₃).trans (norm_gmCubicS3Mode_cyclic cutoff N W m₂ m₃ m₁)
 
 /-- The six signed permutations generated by cyclic rotation and the
 conjugating transposition.  Their absolute-coordinate triples are exactly
@@ -3739,8 +3689,7 @@ theorem norm_gmCubicS3Mode_eq_of_mem_signedPermutations
         (norm_gmCubicS3Mode_cyclic cutoff N W m.1 m.2.1 m.2.2).symm
 
 theorem gmCubicSignedPermutations_card_le_six (m : ℤ × (ℤ × ℤ)) :
-    (gmCubicSignedPermutations m).card ≤ 6 := by
-  exact Finset.card_le_six
+    (gmCubicSignedPermutations m).card ≤ 6 := Finset.card_le_six
 
 theorem sum_norm_gmCubicSignedPermutations_le
     (cutoff : GMSmoothCutoff) (N : ℕ) (W : Finset ℝ)
@@ -3775,7 +3724,7 @@ private theorem sum_union_le_sum_add
     Finset.sum_le_sum_of_subset_of_nonneg (Finset.sdiff_subset) (by
     intro x hxt hxs
     exact hf x)
-  simpa only [add_comm] using (add_le_add_left hs (∑ x ∈ s, f x))
+  simpa using (add_le_add_left hs (∑ x ∈ s, f x))
 
 private theorem sum_biUnion_le_sum_sum
     {α ι : Type*} [DecidableEq α] [DecidableEq ι]
@@ -3788,7 +3737,7 @@ private theorem sum_biUnion_le_sum_sum
   | @insert i s hi ih =>
       rw [Finset.biUnion_insert, Finset.sum_insert hi]
       exact (sum_union_le_sum_add (t i) (s.biUnion t) f hf).trans (by
-        simpa only [add_comm] using
+        simpa using
           (add_le_add_left ih (∑ x ∈ t i, f x)))
 
 /-- Exact finite sixfold reduction of the complete nonzero frequency box to
@@ -4028,10 +3977,9 @@ theorem two_frequencyRadius_add_one_le_five_rpow
     {η T : ℝ} {N : ℕ} (hT : 1 ≤ T) (hη : 0 ≤ η) (hN : 0 < N) :
     ((2 * gmCubicFrequencyRadius η T N + 1 : ℕ) : ℝ) ≤
       5 * T ^ (1 + η) := by
-  have hTpos : 0 < T := lt_of_lt_of_le zero_lt_one hT
   have hrad := gmCubicFrequencyRadius_cast_lt_rpow_add_one
-    (η := η) hTpos hN
-  have hscaleOne : (1 : ℝ) ≤ T ^ (1 + η) := by
+    (η := η) (lt_of_lt_of_le zero_lt_one hT) hN
+  have hscaleOne : 1 ≤ T ^ (1 + η) := by
     apply Real.one_le_rpow hT
     linarith
   have hcast : ((2 * gmCubicFrequencyRadius η T N + 1 : ℕ) : ℝ) =
@@ -4048,10 +3996,9 @@ theorem card_gmCubicUnbalanced_sourceRadius_le
     ((gmCubicUnbalancedOrderedFrequencyBox
       (gmCubicFrequencyRadius η T N)).card : ℝ) ≤ 125 * T ^ 5 := by
   let H := gmCubicFrequencyRadius η T N
-  have hcardNat := card_gmCubicUnbalancedOrderedFrequencyBox_le H
   have hcard :
       ((gmCubicUnbalancedOrderedFrequencyBox H).card : ℝ) ≤
-        (((2 * H + 1) ^ 3 : ℕ) : ℝ) := by exact_mod_cast hcardNat
+        (((2 * H + 1) ^ 3 : ℕ) : ℝ) := by exact_mod_cast (card_gmCubicUnbalancedOrderedFrequencyBox_le H)
   have hradius := two_frequencyRadius_add_one_le_five_rpow
     (T := T) (N := N) hT hηpos.le hN
   have hpow : (((2 * H + 1) ^ 3 : ℕ) : ℝ) ≤
@@ -4059,15 +4006,15 @@ theorem card_gmCubicUnbalanced_sourceRadius_le
     norm_num only [Nat.cast_pow]
     exact pow_le_pow_left₀ (by positivity) hradius 3
   have hexp : 3 * (1 + η) ≤ 5 := by linarith
-  have hscale : (T ^ (1 + η)) ^ 3 ≤ T ^ (5 : ℕ) := by
+  have hscale : (T ^ (1 + η)) ^ 3 ≤ T ^ 5 := by
     calc
-      (T ^ (1 + η)) ^ 3 = T ^ ((1 + η) * (3 : ℝ)) := by
+      (T ^ (1 + η)) ^ 3 = T ^ ((1 + η) * 3) := by
         rw [← Real.rpow_natCast]
         rw [← Real.rpow_mul (by positivity : 0 ≤ T)]
         norm_num
-      _ ≤ T ^ (5 : ℝ) :=
+      _ ≤ T ^ 5 :=
         Real.rpow_le_rpow_of_exponent_le hT (by nlinarith)
-      _ = T ^ (5 : ℕ) := by norm_num [Real.rpow_natCast]
+      _ = T ^ 5 := by norm_num [Real.rpow_natCast]
   calc
     ((gmCubicUnbalancedOrderedFrequencyBox H).card : ℝ) ≤
         (((2 * H + 1) ^ 3 : ℕ) : ℝ) := hcard
@@ -4081,13 +4028,9 @@ theorem gmCubicUnbalanced_card_error_absorbed
     ((gmCubicUnbalancedOrderedFrequencyBox
         (gmCubicFrequencyRadius η T N)).card : ℝ) *
           (C / T ^ 200) ≤ 125 * C / T ^ 100 := by
-  have hTpos : 0 < T := lt_of_lt_of_le zero_lt_one hT
+  have hTpos := lt_of_lt_of_le zero_lt_one hT
   have hcard := card_gmCubicUnbalanced_sourceRadius_le
     (T := T) (N := N) hT hηpos hηupper hN
-  have hnum :
-      ((gmCubicUnbalancedOrderedFrequencyBox
-        (gmCubicFrequencyRadius η T N)).card : ℝ) * C ≤
-          (125 * T ^ 5) * C := mul_le_mul_of_nonneg_right hcard hC
   calc
     ((gmCubicUnbalancedOrderedFrequencyBox
         (gmCubicFrequencyRadius η T N)).card : ℝ) *
@@ -4096,7 +4039,7 @@ theorem gmCubicUnbalanced_card_error_absorbed
           (gmCubicFrequencyRadius η T N)).card : ℝ) * C) /
             T ^ 200 := by ring
     _ ≤ ((125 * T ^ 5) * C) / T ^ 200 :=
-      div_le_div_of_nonneg_right hnum (by positivity)
+      div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_right hcard hC) (by positivity)
     _ ≤ 125 * C / T ^ 100 := by
       rw [div_le_div_iff₀ (pow_pos hTpos 200) (pow_pos hTpos 100)]
       calc
@@ -4198,9 +4141,9 @@ theorem natAbs_frequencies_le_of_mem_gmCubicFrequencyBox
     {H : ℕ} {m : ℤ × (ℤ × ℤ)} (hm : m ∈ gmCubicFrequencyBox H) :
     m.1.natAbs ≤ H ∧ m.2.1.natAbs ≤ H ∧ m.2.2.natAbs ≤ H := by
   rw [mem_gmCubicFrequencyBox] at hm
-  have h1 : |m.1| ≤ (H : ℤ) := abs_le.mpr ⟨hm.1, hm.2.1⟩
-  have h2 : |m.2.1| ≤ (H : ℤ) := abs_le.mpr ⟨hm.2.2.1, hm.2.2.2.1⟩
-  have h3 : |m.2.2| ≤ (H : ℤ) := abs_le.mpr ⟨hm.2.2.2.2.1, hm.2.2.2.2.2⟩
+  have h1 := abs_le.mpr ⟨hm.1, hm.2.1⟩
+  have h2 := abs_le.mpr ⟨hm.2.2.1, hm.2.2.2.1⟩
+  have h3 := abs_le.mpr ⟨hm.2.2.2.2.1, hm.2.2.2.2.2⟩
   constructor
   · rw [← Int.natCast_natAbs] at h1
     exact_mod_cast h1
@@ -4260,11 +4203,7 @@ theorem gmCubicDyadicIndexPairs_nonempty (H : ℕ) :
 
 theorem gmCubicDyadicIndexPairs_card_le (H : ℕ) :
     (gmCubicDyadicIndexPairs H).card ≤ (Nat.log 2 H + 1) ^ 2 := by
-  calc
-    (gmCubicDyadicIndexPairs H).card ≤
-        ((Finset.range (Nat.log 2 H + 1)) ×ˢ
-          (Finset.range (Nat.log 2 H + 1))).card := Finset.card_filter_le _ _
-    _ = (Nat.log 2 H + 1) ^ 2 := by simp [pow_two]
+  exact (Finset.card_filter_le _ _).trans_eq (by simp [pow_two])
 
 theorem exists_gmCubicOrderedDyadicFrequencyBlock
     {H : ℕ} {m : ℤ × (ℤ × ℤ)}
@@ -4272,12 +4211,10 @@ theorem exists_gmCubicOrderedDyadicFrequencyBlock
     ∃ p ∈ gmCubicDyadicIndexPairs H,
       m ∈ gmCubicDyadicFrequencyBlock H p.1 p.2 := by
   obtain ⟨r, hr, s, hs, hblock⟩ := exists_gmCubicDyadicFrequencyBlock hm
-  have hmord := mem_gmCubicBalancedOrderedFrequencyBox.mp hm
-  have hord := mem_gmCubicOrderedFrequencyBox.mp hmord.1
   have habs : m.1.natAbs ≤ m.2.1.natAbs := by
     rw [← Nat.cast_le (α := ℝ), Nat.cast_natAbs, Nat.cast_natAbs,
       Int.cast_abs, Int.cast_abs]
-    exact hord.2.1
+    exact (mem_gmCubicOrderedFrequencyBox.mp (mem_gmCubicBalancedOrderedFrequencyBox.mp hm).1).2.1
   have hrs : r ≤ s := by
     by_contra hrs
     have hsr : s + 1 ≤ r := by omega
@@ -4393,9 +4330,7 @@ theorem gmCubicLocalBump_one {x : ℝ} (hx : |x| ≤ 1) :
     gmCubicLocalBump x = 1 := by
   unfold gmCubicLocalBump
   apply dfiUnitRedundantBump.one_of_mem_closedBall
-  rw [Metric.mem_closedBall, Real.dist_eq]
-  rw [sub_zero, show dfiUnitRedundantBump.rIn = (1 / 2 : ℝ) by rfl]
-  rw [abs_div]
+  rw [Metric.mem_closedBall, Real.dist_eq, sub_zero, show dfiUnitRedundantBump.rIn = (1 / 2) by rfl, abs_div]
   norm_num
   linarith
 
@@ -4448,7 +4383,7 @@ theorem norm_gmR_le_card_all (W : Finset ℝ) (v : ℝ) :
       ‖∑ t ∈ W, (((|0| : ℝ) : ℂ) ^ ((t : ℂ) * I))‖ ≤
           ∑ t ∈ W, ‖(((|0| : ℝ) : ℂ) ^ ((t : ℂ) * I))‖ :=
         norm_sum_le _ _
-      _ ≤ ∑ _t ∈ W, (1 : ℝ) := by
+      _ ≤ ∑ _t ∈ W, 1 := by
         gcongr with t ht
         by_cases ht0 : t = 0
         · subst t
@@ -4472,7 +4407,7 @@ theorem gmCubicRatioBump_eq_zero_of_not_mem_Icc
   rw [gmCubicRatioBump.support_eq] at hsupp
   rw [Metric.mem_ball, Real.dist_eq] at hsupp
   change |x - 17 / 8| < 2 at hsupp
-  have hxIcc : x ∈ Set.Icc (1 / 8 : ℝ) (33 / 8) := by
+  have hxIcc : x ∈ Set.Icc (1 / 8) (33 / 8) := by
     rw [Set.mem_Icc]
     rcases abs_lt.mp hsupp with ⟨hleft, hright⟩
     constructor <;> linarith
@@ -4543,17 +4478,16 @@ theorem integrable_gmCubicSmoothedRIntegrand
     (hscale : 0 ≤ gmCubicSmoothingScale η T N M) :
     Integrable (gmCubicSmoothedRIntegrand η T N M W v) := by
   let c : ℝ := gmCubicSmoothingScale η T N M * (W.card : ℝ) ^ 2
-  let g : ℝ → ℝ := Set.indicator (Set.Icc (1 / 8 : ℝ) (33 / 8)) (fun _ => c)
-  have hgOn : IntegrableOn (fun _ : ℝ => c) (Set.Icc (1 / 8 : ℝ) (33 / 8)) :=
+  let g : ℝ → ℝ := Set.indicator (Set.Icc (1 / 8) (33 / 8)) (fun _ => c)
+  have hgOn : IntegrableOn (fun _ : ℝ => c) (Set.Icc (1 / 8) (33 / 8)) :=
     continuousOn_const.integrableOn_compact isCompact_Icc
   have hg : Integrable g := by
     exact hgOn.integrable_indicator measurableSet_Icc
   apply hg.mono' (measurable_gmCubicSmoothedRIntegrand
     η T N M W v).aestronglyMeasurable
   filter_upwards with u
-  by_cases hu : u ∈ Set.Icc (1 / 8 : ℝ) (33 / 8)
+  by_cases hu : u ∈ Set.Icc (1 / 8) (33 / 8)
   · have hgu : g u = c := by
-      dsimp only [g]
       exact Set.indicator_of_mem hu _
     rw [hgu]
     rw [Real.norm_eq_abs, abs_of_nonneg
@@ -4561,7 +4495,6 @@ theorem integrable_gmCubicSmoothedRIntegrand
     exact gmCubicSmoothedRIntegrand_le W v u hscale
   · rw [gmCubicSmoothedRIntegrand_eq_zero_of_not_mem_Icc W v hu]
     have hgu : g u = 0 := by
-      dsimp only [g]
       exact Set.indicator_of_notMem hu _
     rw [hgu]
     simp
@@ -4579,9 +4512,7 @@ theorem gmCubicLocalBump_one_on_smoothingNeighborhood
     rw [abs_le]
     constructor <;> linarith [hu.1.1, hu.1.2]
   rw [abs_mul, abs_of_pos hB]
-  calc
-    B * |v - u| ≤ B * (1 / B) := mul_le_mul_of_nonneg_left hwidth hB.le
-    _ = 1 := by field_simp
+  exact (mul_le_mul_of_nonneg_left hwidth hB.le).trans_eq (by field_simp)
 
 theorem gmCubicSmoothedRIntegrand_eq_on_neighborhood
     {η T : ℝ} {N M : ℕ} (W : Finset ℝ) (v : ℝ) {u : ℝ}
@@ -4677,10 +4608,7 @@ theorem measurableSet_gmCubicCancellationSlice
     (η T : ℝ) (N : ℕ) (m : ℤ × (ℤ × ℤ)) (v₁ : ℝ) :
     MeasurableSet (gmCubicCancellationSlice η T N m v₁) := by
   apply measurableSet_Icc.inter
-  exact measurableSet_le
-    (((measurable_const.mul measurable_const).add
-      (measurable_const.mul measurable_id)).add measurable_const).abs
-    measurable_const
+  exact measurableSet_le (by fun_prop) measurable_const
 
 /-- Fubini disintegration of the exact two-dimensional cancellation
 mass into the source `v₁` integral and its moving `v₂` slice. -/
@@ -4757,8 +4685,7 @@ theorem gmCubicCancellationSlice_abs_sub_center_le
     |v₂ - gmCubicCancellationCenter m v₁| ≤
       T ^ η / (N : ℝ) / |(m.2.1 : ℝ)| := by
   have hm₂R : (m.2.1 : ℝ) ≠ 0 := by exact_mod_cast hm₂
-  rw [le_div_iff₀ (abs_pos.mpr hm₂R)]
-  rw [← abs_mul]
+  rw [le_div_iff₀ (abs_pos.mpr hm₂R), ← abs_mul]
   have hid :
       (v₂ - gmCubicCancellationCenter m v₁) * (m.2.1 : ℝ) =
         (m.1 : ℝ) * v₁ + (m.2.1 : ℝ) * v₂ + (m.2.2 : ℝ) := by
@@ -4774,16 +4701,13 @@ theorem gmCubicCancellationRadius_le_smoothingRadius
     (hm₂ : (M : ℝ) ≤ |(m₂ : ℝ)|) :
     T ^ η / (N : ℝ) / |(m₂ : ℝ)| ≤
       1 / gmCubicSmoothingScale η T N M := by
-  have hpow : 0 < T ^ η := Real.rpow_pos_of_pos hT η
+  have hpow := Real.rpow_pos_of_pos hT η
   have hNR : 0 < (N : ℝ) := by exact_mod_cast hN
   have hMR : 0 < (M : ℝ) := by exact_mod_cast hM
-  have hm₂pos : 0 < |(m₂ : ℝ)| := lt_of_lt_of_le hMR hm₂
+  have hm₂pos := lt_of_lt_of_le hMR hm₂
   have hden : (N : ℝ) * (M : ℝ) ≤ (N : ℝ) * |(m₂ : ℝ)| := by
     gcongr
-  have hfirst :
-      T ^ η / ((N : ℝ) * |(m₂ : ℝ)|) ≤
-        T ^ η / ((N : ℝ) * (M : ℝ)) :=
-    div_le_div_of_nonneg_left hpow.le (mul_pos hNR hMR) hden
+  have hfirst := div_le_div_of_nonneg_left hpow.le (mul_pos hNR hMR) hden
   calc
     T ^ η / (N : ℝ) / |(m₂ : ℝ)| =
         T ^ η / ((N : ℝ) * |(m₂ : ℝ)|) := by ring
@@ -4854,7 +4778,6 @@ theorem gmCubicCancellationRadius_le_half_smoothingRadius
     (hm₂ : (M : ℝ) ≤ |(m₂ : ℝ)|) :
     T ^ η / (N : ℝ) / |(m₂ : ℝ)| ≤
       (1 / 2 : ℝ) * (1 / gmCubicSmoothingScale η T N M) := by
-  have hpow : 0 < T ^ η := Real.rpow_pos_of_pos hT η
   have hNR : 0 < (N : ℝ) := by exact_mod_cast hN
   have hMR : 0 < (M : ℝ) := by exact_mod_cast hM
   have hden : (N : ℝ) * (M : ℝ) ≤ (N : ℝ) * |(m₂ : ℝ)| := by
@@ -4863,8 +4786,8 @@ theorem gmCubicCancellationRadius_le_half_smoothingRadius
     T ^ η / (N : ℝ) / |(m₂ : ℝ)| =
         T ^ η / ((N : ℝ) * |(m₂ : ℝ)|) := by ring
     _ ≤ T ^ η / ((N : ℝ) * (M : ℝ)) :=
-      div_le_div_of_nonneg_left hpow.le (mul_pos hNR hMR) hden
-    _ = (1 / 2 : ℝ) * (1 / gmCubicSmoothingScale η T N M) := by
+      div_le_div_of_nonneg_left (Real.rpow_pos_of_pos hT η).le (mul_pos hNR hMR) hden
+    _ = (1 / 2) * (1 / gmCubicSmoothingScale η T N M) := by
       unfold gmCubicSmoothingScale
       field_simp
 
@@ -5014,8 +4937,7 @@ theorem integral_cancellationSlice_norm_gmR_div_sq_le
 theorem norm_gmR_one_div
     (W : Finset ℝ) {v : ℝ} (hv : v ≠ 0) :
     ‖gmR W (1 / v)‖ = ‖gmR W v‖ := by
-  have hinv : 1 / v ≠ 0 := one_div_ne_zero hv
-  rw [gmR_eq_gmRPhase_log hinv, gmR_eq_gmRPhase_log hv]
+  rw [gmR_eq_gmRPhase_log (one_div_ne_zero hv), gmR_eq_gmRPhase_log hv]
   have hlog : Real.log |1 / v| = -Real.log |v| := by
     rw [abs_div, abs_one, one_div]
     exact Real.log_inv |v|
@@ -5108,10 +5030,10 @@ theorem integral_cancellationSlice_amplitude_le_rawSmoothed
     (gmCubicCancellationCenter m v₁) /
       gmCubicSmoothingScale η T N M
   have hA : A ≤ 2 * X := by
-    simpa only [A, X] using integral_cancellationSlice_norm_gmR_div_sq_le
+    simpa using integral_cancellationSlice_norm_gmR_div_sq_le
       W hT hN hM hm₂ hMle hv₁
   have hD : D ≤ Y := by
-    simpa only [D, Y] using integral_cancellationSlice_norm_gmR_sq_le_smoothedRSq_div
+    simpa using integral_cancellationSlice_norm_gmR_sq_le_smoothedRSq_div
       W hT hN hM hm₂ hMle
   have hRewrite :
       (∫ v₂ in gmCubicCancellationSlice η T N m v₁,
@@ -5144,29 +5066,14 @@ theorem integral_cancellationSlice_amplitude_le_rawSmoothed
       (∫ v₂ in gmCubicCancellationSlice η T N m v₁,
           ‖gmR W (v₂ / v₁)‖ * ‖gmR W v₂‖) ≤
         Real.sqrt (2 * X) * Real.sqrt Y := by
-    calc
-      (∫ v₂ in gmCubicCancellationSlice η T N m v₁,
-          ‖gmR W (v₂ / v₁)‖ * ‖gmR W v₂‖) ≤
-          Real.sqrt A * Real.sqrt D := hCS
-      _ ≤ Real.sqrt (2 * X) * Real.sqrt Y := by
+    exact (hCS).trans (by
         exact mul_le_mul (Real.sqrt_le_sqrt hA) (Real.sqrt_le_sqrt hD)
-          (Real.sqrt_nonneg _) (Real.sqrt_nonneg _)
+          (Real.sqrt_nonneg _) (Real.sqrt_nonneg _))
   rw [hRewrite]
   unfold gmCubicRawSmoothedSliceMajorant
-  calc
-    ‖gmR W v₁‖ *
-        (∫ v₂ in gmCubicCancellationSlice η T N m v₁,
-          ‖gmR W (v₂ / v₁)‖ * ‖gmR W v₂‖) ≤
-        ‖gmR W v₁‖ * (Real.sqrt (2 * X) * Real.sqrt Y) :=
-      mul_le_mul_of_nonneg_left hInner (norm_nonneg _)
-    _ = ‖gmR W v₁‖ * Real.sqrt (2 * (gmCubicSmoothedRSq η T N M W
-          (gmCubicReflectedCancellationCenter m v₁) /
-            gmCubicSmoothingScale η T N M)) *
-        Real.sqrt (gmCubicSmoothedRSq η T N M W
-          (gmCubicCancellationCenter m v₁) /
-            gmCubicSmoothingScale η T N M) := by
+  exact (mul_le_mul_of_nonneg_left hInner (norm_nonneg _)).trans_eq (by
       dsimp only [X, Y]
-      ring
+      ring)
 
 /-- The two square-root losses from the slice Cauchy--Schwarz argument
 extract the single reciprocal smoothing scale required in (7.6).  The
@@ -5292,10 +5199,7 @@ theorem measurable_gmCubicSmoothedRIntegrand_uncurry
 theorem measurable_gmCubicSmoothedRSq
     (η T : ℝ) (N M : ℕ) (W : Finset ℝ) :
     Measurable (gmCubicSmoothedRSq η T N M W) := by
-  have hjoint : StronglyMeasurable (fun p : ℝ × ℝ =>
-      gmCubicSmoothedRIntegrand η T N M W p.1 p.2) :=
-    (measurable_gmCubicSmoothedRIntegrand_uncurry η T N M W).stronglyMeasurable
-  exact hjoint.integral_prod_right'.measurable
+  exact ((measurable_gmCubicSmoothedRIntegrand_uncurry η T N M W).stronglyMeasurable).integral_prod_right'.measurable
 
 theorem measurable_gmCubicSmoothedR
     (η T : ℝ) (N M : ℕ) (W : Finset ℝ) :
@@ -5310,29 +5214,26 @@ theorem gmCubicSmoothedRSq_le
     gmCubicSmoothedRSq η T N M W v ≤
       gmCubicSmoothingScale η T N M * (W.card : ℝ) ^ 2 * 4 := by
   let c : ℝ := gmCubicSmoothingScale η T N M * (W.card : ℝ) ^ 2
-  let g : ℝ → ℝ := Set.indicator (Set.Icc (1 / 8 : ℝ) (33 / 8)) (fun _ => c)
-  have hf := integrable_gmCubicSmoothedRIntegrand W v hscale
-  have hgOn : IntegrableOn (fun _ : ℝ => c) (Set.Icc (1 / 8 : ℝ) (33 / 8)) :=
+  let g : ℝ → ℝ := Set.indicator (Set.Icc (1 / 8) (33 / 8)) (fun _ => c)
+  have hgOn : IntegrableOn (fun _ : ℝ => c) (Set.Icc (1 / 8) (33 / 8)) :=
     continuousOn_const.integrableOn_compact isCompact_Icc
   have hg : Integrable g := hgOn.integrable_indicator measurableSet_Icc
   have hpoint : ∀ u : ℝ,
       gmCubicSmoothedRIntegrand η T N M W v u ≤ g u := by
     intro u
-    by_cases hu : u ∈ Set.Icc (1 / 8 : ℝ) (33 / 8)
+    by_cases hu : u ∈ Set.Icc (1 / 8) (33 / 8)
     · have hgu : g u = c := by
-        dsimp only [g]
         exact Set.indicator_of_mem hu _
       rw [hgu]
       exact gmCubicSmoothedRIntegrand_le W v u hscale
     · rw [gmCubicSmoothedRIntegrand_eq_zero_of_not_mem_Icc W v hu]
       have hgu : g u = 0 := by
-        dsimp only [g]
         exact Set.indicator_of_notMem hu _
       rw [hgu]
   calc
     gmCubicSmoothedRSq η T N M W v =
         ∫ u : ℝ, gmCubicSmoothedRIntegrand η T N M W v u := rfl
-    _ ≤ ∫ u : ℝ, g u := integral_mono hf hg hpoint
+    _ ≤ ∫ u : ℝ, g u := integral_mono (integrable_gmCubicSmoothedRIntegrand W v hscale) hg hpoint
     _ = c * 4 := by
       simp [g, c, max_def]
       norm_num
@@ -5381,8 +5282,6 @@ theorem integrableOn_gmCubicSmoothedModeIntegrand
     (gmCubicReflectedCancellationCenter m v₁) hscale
   have hcenter := gmCubicSmoothedRSq_le W
     (gmCubicCancellationCenter m v₁) hscale
-  have hR := norm_gmR_le_card_all W v₁
-  dsimp only [C]
   let S := Real.sqrt
     (gmCubicSmoothingScale η T N M * (W.card : ℝ) ^ 2 * 4)
   have hS : 0 ≤ S := Real.sqrt_nonneg _
@@ -5402,7 +5301,7 @@ theorem integrableOn_gmCubicSmoothedModeIntegrand
           (gmCubicCancellationCenter m v₁)) ≤
       (W.card : ℝ) * S * S := by
         exact mul_le_mul
-          (mul_le_mul hR hRefS (Real.sqrt_nonneg _) (Nat.cast_nonneg _))
+          (mul_le_mul (norm_gmR_le_card_all W v₁) hRefS (Real.sqrt_nonneg _) (Nat.cast_nonneg _))
           hCenterS (Real.sqrt_nonneg _) (mul_nonneg (Nat.cast_nonneg _) hS)
     _ = (W.card : ℝ) * S ^ 2 := by ring
 
@@ -5468,9 +5367,6 @@ theorem two_div_gmCubicSmoothingScale
     2 / gmCubicSmoothingScale η T N M =
       4 * T ^ η / ((N : ℝ) * (M : ℝ)) := by
   unfold gmCubicSmoothingScale
-  have hTpow : T ^ η ≠ 0 := (Real.rpow_pos_of_pos hT η).ne'
-  have hNreal : (N : ℝ) ≠ 0 := by exact_mod_cast hN.ne'
-  have hMreal : (M : ℝ) ≠ 0 := by exact_mod_cast hM.ne'
   field_simp
   ring
 
@@ -5557,10 +5453,9 @@ theorem card_gmCubicDyadicFrequencyBlock_sourceRadius_le
     ((gmCubicDyadicFrequencyBlock
       (gmCubicFrequencyRadius η T N) r s).card : ℝ) ≤ 125 * T ^ 5 := by
   let H := gmCubicFrequencyRadius η T N
-  have hcardNat := card_gmCubicDyadicFrequencyBlock_le H r s
   have hcard :
       ((gmCubicDyadicFrequencyBlock H r s).card : ℝ) ≤
-        (((2 * H + 1) ^ 3 : ℕ) : ℝ) := by exact_mod_cast hcardNat
+        (((2 * H + 1) ^ 3 : ℕ) : ℝ) := by exact_mod_cast (card_gmCubicDyadicFrequencyBlock_le H r s)
   have hradius := two_frequencyRadius_add_one_le_five_rpow
     (T := T) (N := N) hT hη hN
   have hpow : (((2 * H + 1) ^ 3 : ℕ) : ℝ) ≤
@@ -5568,15 +5463,15 @@ theorem card_gmCubicDyadicFrequencyBlock_sourceRadius_le
     norm_num only [Nat.cast_pow]
     exact pow_le_pow_left₀ (by positivity) hradius 3
   have hexp : 3 * (1 + η) ≤ 5 := by linarith
-  have hscale : (T ^ (1 + η)) ^ 3 ≤ T ^ (5 : ℕ) := by
+  have hscale : (T ^ (1 + η)) ^ 3 ≤ T ^ 5 := by
     calc
-      (T ^ (1 + η)) ^ 3 = T ^ ((1 + η) * (3 : ℝ)) := by
+      (T ^ (1 + η)) ^ 3 = T ^ ((1 + η) * 3) := by
         rw [← Real.rpow_natCast]
         rw [← Real.rpow_mul (by positivity : 0 ≤ T)]
         norm_num
-      _ ≤ T ^ (5 : ℝ) :=
+      _ ≤ T ^ 5 :=
         Real.rpow_le_rpow_of_exponent_le hT (by nlinarith)
-      _ = T ^ (5 : ℕ) := by norm_num [Real.rpow_natCast]
+      _ = T ^ 5 := by norm_num [Real.rpow_natCast]
   calc
     ((gmCubicDyadicFrequencyBlock H r s).card : ℝ) ≤
         (((2 * H + 1) ^ 3 : ℕ) : ℝ) := hcard
@@ -5974,12 +5869,11 @@ theorem intervalIntegral_norm_gmRPhase_sq_le_epsilon
   have hpowOne : (1 : ℝ) ≤ (2 * T) ^ ε := by
     simpa using Real.rpow_le_rpow (by norm_num : (0 : ℝ) ≤ 1) hTwoT hε.le
   have hmax : max 1 ((K : ℝ) ^ ε) ≤ (2 * T) ^ ε := max_le hpowOne hpowK
-  have hharm := harmonic_le_epsilon_rpow hε K
   have hharm' : (((harmonic K : ℚ) : ℝ)) ≤
       (1 + ε⁻¹) * 2 ^ ε * T ^ ε := by
     calc
       (((harmonic K : ℚ) : ℝ)) ≤
-          (1 + ε⁻¹) * max 1 ((K : ℝ) ^ ε) := hharm
+          (1 + ε⁻¹) * max 1 ((K : ℝ) ^ ε) := (harmonic_le_epsilon_rpow hε K)
       _ ≤ (1 + ε⁻¹) * (2 * T) ^ ε := by gcongr
       _ = (1 + ε⁻¹) * 2 ^ ε * T ^ ε := by
         rw [Real.mul_rpow (by norm_num : (0 : ℝ) ≤ 2)
@@ -5999,15 +5893,11 @@ theorem setIntegral_norm_gmR_sq_eq_logWeighted (W : Finset ℝ) :
     (∫ u in Set.Icc (1 / 2 : ℝ) 2, ‖gmR W u‖ ^ 2) =
       ∫ x in Real.log (1 / 2 : ℝ)..Real.log 2,
         ‖gmRPhase W x‖ ^ 2 * Real.exp x := by
-  let a : ℝ := Real.log (1 / 2 : ℝ)
-  let b : ℝ := Real.log 2
+  let a := Real.log (1 / 2 : ℝ)
+  let b := Real.log 2
   let g : ℝ → ℝ := fun u => ‖gmR W u‖ ^ 2
   have ha0 : (0 : ℝ) < 1 / 2 := by norm_num
   have hb0 : (0 : ℝ) < 2 := by norm_num
-  have hab : a ≤ b := by
-    dsimp only [a, b]
-    exact Real.strictMonoOn_log.monotoneOn (Set.mem_Ioi.mpr ha0)
-      (Set.mem_Ioi.mpr hb0) (by norm_num)
   have hgCont : ContinuousOn g (Real.exp '' Set.uIcc a b) := by
     rintro u ⟨x, hx, rfl⟩
     exact ((continuousAt_gmR W (Real.exp_ne_zero x)).norm.pow 2).continuousWithinAt
@@ -6025,7 +5915,6 @@ theorem setIntegral_norm_gmR_sq_eq_logWeighted (W : Finset ℝ) :
         simp only [Function.comp_apply, g, gmR_exp_eq_gmRPhase]
       _ = ∫ u in Real.exp a..Real.exp b, g u := hsub
       _ = ∫ u in (1 / 2 : ℝ)..2, ‖gmR W u‖ ^ 2 := by
-        dsimp only [a, b, g]
         rw [Real.exp_log ha0, Real.exp_log hb0]
   rw [MeasureTheory.integral_Icc_eq_integral_Ioc,
     ← intervalIntegral.integral_of_le (by norm_num : (1 / 2 : ℝ) ≤ 2)]
@@ -6202,7 +6091,6 @@ theorem setIntegral_norm_gmR_sq_le_epsilon_budget
   let A : ℝ := |Real.log 2 - Real.log (1 / 2 : ℝ)|
   let D : ℝ := 4 * (1 + ε⁻¹) * 2 ^ ε
   let X : ℝ := T ^ ε
-  have hraw := setIntegral_norm_gmR_sq_le_epsilon hε hT hSep hBase
   have hX : 1 ≤ X := by
     dsimp only [X]
     simpa using Real.rpow_le_rpow (by norm_num : (0 : ℝ) ≤ 1) hT hε.le
@@ -6212,7 +6100,7 @@ theorem setIntegral_norm_gmR_sq_le_epsilon_budget
   calc
     (∫ u in Set.Icc (1 / 2 : ℝ) 2, ‖gmR W u‖ ^ 2) ≤
         2 * (A + D * X) * (W.card : ℝ) := by
-      simpa only [A, D, X] using hraw
+      simpa only [A, D, X] using (setIntegral_norm_gmR_sq_le_epsilon hε hT hSep hBase)
     _ ≤ 2 * ((A + D) * X) * (W.card : ℝ) := by
       gcongr
       calc

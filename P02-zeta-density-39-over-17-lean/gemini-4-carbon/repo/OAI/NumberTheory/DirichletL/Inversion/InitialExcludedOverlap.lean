@@ -7,11 +7,10 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical
 open ActualEisensteinCubic CanonicalQuadraticSieve ConcretePrimeRowBridge UniqueFactorizationMonoid
+open scoped BigOperators Classical
 namespace SevenEighths.InverseInitialExcludedOverlap
-open InverseInitialOverlap InverseInitialPoissonBridge InverseInitialExcludedPool
-open HeckeFamily InverseInitialExcludedPolynomial
+open InverseInitialOverlap InverseInitialPoissonBridge InverseInitialExcludedPool HeckeFamily InverseInitialExcludedPolynomial
 local notation "O"=>ActualEisensteinCubic.O
 
 theorem reconstruct_outside (E:Finset (Ideal O)){P j c:Ideal O}
@@ -47,8 +46,7 @@ theorem deleted_zero_outside (χ:Character)(E:Finset (Ideal O))
   intro hc
   apply hn
   intro Q hQ hd
-  have hu:IsUnit Q:=(hc Q hQ).isRelPrime hd (dvd_refl Q)
-  exact (hE Q hQ).not_isUnit hu
+  exact (hE Q hQ).not_isUnit ((hc Q hQ).isRelPrime hd (dvd_refl Q))
 
 theorem residual_filtered (A E:Finset (Ideal O)){P j:Ideal O}
     (hE:∀Q∈E,Prime Q)(hPs:Squarefree P)(hj:j∣P)(hP:outside E P)

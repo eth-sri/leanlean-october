@@ -44,7 +44,6 @@ theorem sieveNorm_initial (M N : ℝ) (hM : 1 ≤ M) (hN : 1 ≤ N) :
   have hFg : ∀ I ∈ F, ∀ P ∈ UniqueFactorizationMonoid.normalizedFactors I, goodLambda ∉ P :=
     fun I hI P hP => (primaryPrime_spec P
       (primaryPrime_factor_ne_zero I P (hF I hI).2 hP)).2.1
-  have hnat : 1 ≤ ⌈N⌉₊ := Nat.one_le_ceil_iff.mpr (by linarith)
   have hnorm : ∀ I ∈ F, Ideal.absNorm I ≤ ⌈N⌉₊ := by
     intro I hI
     exact Nat.cast_le.mp ((mem_idealRange.mp hI).2.trans (Nat.le_ceil N))
@@ -69,14 +68,11 @@ theorem sieveNorm_initial (M N : ℝ) (hM : 1 ≤ M) (hN : 1 ≤ N) :
     intro J _
     rw [idealSymbol_eq_idealSexticRow_sq F hFp hFg J.val J.property (hF J.val J.property).1 z]
     simp only [aext, dite_eq_left J.property]
-    change a J * (idealSexticRow F hFp hFg J.val z) ^ 2 =
-      (idealSexticRow F hFp hFg J.val z) ^ 2 * a J
     exact mul_comm _ _
   have he := ideal_initial_cubic_sieve F hFp hFg
-    (fun I hI => (hF I hI).1) ⌈N⌉₊ hnat hnorm aext M hM R hR
+    (fun I hI => (hF I hI).1) ⌈N⌉₊ (Nat.one_le_ceil_iff.mpr (by linarith)) hnorm aext M hM R hR
   have heR : (∑ z ∈ R, ‖∑ I ∈ F, aext I * (idealSexticRow F hFp hFg I z) ^ 2‖ ^ 2) =
       ∑ I : idealRange M, ‖∑ J : F, eisEmbedding (CubicJacobiGlobal.idealSymbol J.val (primaryGenerator I.val)) * a J‖ ^ 2 := by
-    dsimp only [R]
     rw [Finset.sum_image (fun I hI J hJ heq => hgen hI hJ heq)]
     simp_rw [hinner]
     exact (Finset.sum_coe_sort _ _).symm

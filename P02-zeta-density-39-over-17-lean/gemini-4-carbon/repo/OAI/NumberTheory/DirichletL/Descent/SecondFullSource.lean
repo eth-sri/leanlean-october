@@ -55,15 +55,9 @@ theorem first_parent_full_second_source
   have hret := truncated_second_attached_variable p hp hcop hg hinj hc hpr parent F Ψ₀ m
     slots lists coeff V rowMajorant X Y R label
   rw [←htest] at hret
-  calc
-    _ = truncatedSecondSource p hp hg hinj F Ψ₀ (secondParentPuncture p m parent)
-        (secondParentLabel p parent) (secondParentDivisor p parent) H₀ rowMajorant Y K +
-        secondSourceTail p hp hg hinj F Ψ₀ (secondParentPuncture p m parent)
-          (secondParentLabel p parent) (secondParentDivisor p parent) H₀ rowMajorant Y K :=
-      first_fresh_parent_radial_truncated p hp hg hinj hc parent F D hq negative χ Ψ m
-        slots lists coeff hD om a b ha hs X height Y hX hY core K
-    _ = _ := congrArg (fun v=>v + secondSourceTail p hp hg hinj F Ψ₀ (secondParentPuncture p m parent)
-        (secondParentLabel p parent) (secondParentDivisor p parent) H₀ rowMajorant Y K) hret
+  exact (first_fresh_parent_radial_truncated p hp hg hinj hc parent F D hq negative χ Ψ m
+        slots lists coeff hD om a b ha hs X height Y hX hY core K).trans (congrArg (fun v=>v + secondSourceTail p hp hg hinj F Ψ₀ (secondParentPuncture p m parent)
+        (secondParentLabel p parent) (secondParentDivisor p parent) H₀ rowMajorant Y K) hret)
 
 end
 end SevenEighths.InverseMoment

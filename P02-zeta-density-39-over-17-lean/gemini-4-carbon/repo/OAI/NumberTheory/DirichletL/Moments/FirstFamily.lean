@@ -10,9 +10,7 @@ noncomputable section
 open scoped Classical
 
 namespace SevenEighths.CenteredMomentFirstFamily
-open HeckeFamily HeckeRowClosure CanonicalRowCompletion CanonicalQuadraticSieve
-open CenteredMomentPrimaryCharacter CenteredMomentSupportedCorrelation
-open CenteredMomentFixedRay CenteredMomentCommonSupport RayFourExpansion
+open HeckeFamily HeckeRowClosure CanonicalRowCompletion CanonicalQuadraticSieve CenteredMomentPrimaryCharacter CenteredMomentSupportedCorrelation CenteredMomentFixedRay CenteredMomentCommonSupport RayFourExpansion
 local notation "O" => ActualEisensteinCubic.O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
@@ -46,13 +44,12 @@ theorem exists_supported_row_presentation (η : Character) (m z : O)
 theorem first_period_contains (η : Character) (m e r : O) :
     let M := η.modulus*Ideal.span {m}*Ideal.span {(72:O)}*Ideal.span {e*r}
     M≤Ideal.span {3*r} ∧ M≤Ideal.span {(12:O)} := by
-  dsimp only
   constructor
   · calc
-      _ ≤ Ideal.span {(72:O)}*Ideal.span {e*r} := by
+      _ ≤ Ideal.span {72}*Ideal.span {e*r} := by
         rw [mul_assoc]
         exact Ideal.mul_le_right
-      _ = Ideal.span {(72:O)*(e*r)} := Ideal.span_singleton_mul_span_singleton _ _
+      _ = Ideal.span {72*(e*r)} := Ideal.span_singleton_mul_span_singleton _ _
       _ ≤ _ := Ideal.span_singleton_le_span_singleton.mpr ⟨24*e,by ring⟩
   · exact (Ideal.mul_le_left.trans Ideal.mul_le_right).trans
       (Ideal.span_singleton_le_span_singleton.mpr ⟨6,by norm_num⟩)

@@ -1,7 +1,7 @@
 module
 public import Mathlib.Geometry.Manifold.PartitionOfUnity
 public import Mathlib.Tactic.Bound
-public import GuthMaynard.NativeSource.PrimeNumberTheoremAnd.Mathlib.Algebra.Notation.Support
+public import Mathlib.Algebra.Notation.Support
 
 @[expose] public section
 

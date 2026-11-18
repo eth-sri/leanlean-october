@@ -22,10 +22,8 @@ theorem crossSymbol_norm [∀ i, (Ideal.span {p i}).IsMaximal]
     (i k : ι) (hik : i ≠ k) : ‖MixedCrossSeparation.crossSymbol p hg i k‖ = 1 := by
   have hnot : p k ∉ Ideal.span {p i} := by
     intro hm
-    have hle : Ideal.span {p k} ≤ Ideal.span {p i} :=
-      Ideal.span_le.mpr (Set.singleton_subset_iff.mpr hm)
     have ht := (hcop hik).sup_eq
-    rw [sup_eq_left.mpr hle] at ht
+    rw [sup_eq_left.mpr (Ideal.span_le.mpr (Set.singleton_subset_iff.mpr hm))] at ht
     exact (inferInstance : (Ideal.span {p i}).IsMaximal).ne_top ht
   have h6 : MixedCrossSeparation.crossSymbol p hg i k ^ 6 = 1 := by
     simpa only [MixedCrossSeparation.crossSymbol,map_pow,ite_eq_right hnot] using

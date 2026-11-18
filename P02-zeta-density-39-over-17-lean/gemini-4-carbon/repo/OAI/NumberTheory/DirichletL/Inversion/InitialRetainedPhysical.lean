@@ -12,12 +12,7 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.InverseInitialRetainedPhysical
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge CanonicalQuadraticSieve
-open CanonicalRowCompletion InverseReflectedPhase InverseMoment InverseInitialClippedColumns
-open CanonicalCoefficientClass ConcreteTraceCRT SecondPassArithmetic FirstPassCubeLabels IdealMobiusDivisorSum
-open InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialProfile InverseInitialEnergyCallerSource
-open InverseInitialEnergyCallerModes
-open InverseInitialQuotientGeometry InverseInitialEnergyCallerGeometry InverseInitialCanonicalState
+open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge CanonicalQuadraticSieve CanonicalRowCompletion InverseReflectedPhase InverseMoment InverseInitialClippedColumns CanonicalCoefficientClass ConcreteTraceCRT SecondPassArithmetic FirstPassCubeLabels IdealMobiusDivisorSum InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialProfile InverseInitialEnergyCallerSource InverseInitialEnergyCallerModes InverseInitialQuotientGeometry InverseInitialEnergyCallerGeometry InverseInitialCanonicalState
 local notation "O"=>ActualEisensteinCubic.O
 
 theorem retained_physical_bound
@@ -94,11 +89,9 @@ theorem retained_physical_bound
   let:∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal:=fun i=>by rw [poolPrimary_span F hFa i];infer_instance
   intro p hp hcop hg σ dec slots hslots lists Hslot a hdis hHslot hP ha z hz hprod Ψ hΨ hperiod
     S hdiv hf j D B v θ H R m η hR hη c₁ c₂ θ₁ θ₂ hc₁ hc₂ hsupport hn w hw labels rows hlabels hrows hneg hchild hclip hReq hstate
-  have hZp:1<Z:=hZ₁.trans_le ((le_max_left _ _).trans hZ)
-  have hD₁:B₁*Z^(cap+1)≤Dpool:=
-    (mul_le_mul_of_nonneg_right (by linarith : B₁≤B₁+B₂) (Real.rpow_nonneg (by linarith) _)).trans hD
-  have hD₂:B₂*Z^(cap+1)≤Dpool:=
-    (mul_le_mul_of_nonneg_right (by linarith : B₂≤B₁+B₂) (Real.rpow_nonneg (by linarith) _)).trans hD
+  have hZp :=hZ₁.trans_le ((le_max_left _ _).trans hZ)
+  have hD₁ := (mul_le_mul_of_nonneg_right (by linarith : B₁≤B₁+B₂) (Real.rpow_nonneg (by linarith) _)).trans hD
+  have hD₂ := (mul_le_mul_of_nonneg_right (by linarith : B₂≤B₁+B₂) (Real.rpow_nonneg (by linarith) _)).trans hD
   have hmoment₁:=hm₁ Z ((le_max_left _ _).trans hZ) Dpool hD₁ slots hslots lists Hslot a hdis hHslot hP ha z hz hprod Ψ hΨ hperiod
   have hmoment₂:=hm₂ Z ((le_max_right _ _).trans hZ) Dpool hD₂ slots hslots lists Hslot a hdis hHslot hP ha z hz hprod Ψ hΨ hperiod
   have hbound:=hphysical p hp hcop hg

@@ -41,10 +41,7 @@ theorem heathBrownNaturalMonomial_eq_center_mul_displacementPhase
     heathBrownNaturalMonomial k h α =
       heathBrownNaturalMonomial k h c *
         heathBrownPhase (heathBrownDisplacementPolynomial c α h) := by
-  have hcoord (j : Fin (k - 1)) :
-      α j = c j +
-        ((heathBrownCoefficientDisplacement c α j : ℝ) : UnitAddCircle) :=
-    (coe_center_add_heathBrownCoefficientDisplacement c α j).symm
+  have hcoord (j : Fin (k - 1)) := (coe_center_add_heathBrownCoefficientDisplacement c α j).symm
   unfold heathBrownNaturalMonomial UnitAddTorus.mFourier
   change (∏ j : Fin (k - 1),
       fourier (h ^ ((j : ℕ) + 1) : ℤ) (α j)) = _
@@ -109,11 +106,9 @@ theorem heathBrown_centerWeyl_abel_identity
           (heathBrownCoefficientWeight c α j -
             heathBrownCoefficientWeight c α (j + 1)) *
               heathBrownWeylSum k j α := by
-  rw [heathBrown_centerWeyl_eq_weighted_cellWeyl]
-  rw [heathBrown_source_abel_identity
+  rw [heathBrown_centerWeyl_eq_weighted_cellWeyl, heathBrown_source_abel_identity
     (fun h => heathBrownCoefficientWeight c α h)
-    (fun h => heathBrownNaturalMonomial k h α) hQ]
-  rw [← heathBrownWeylSum_eq_natural_sum]
+    (fun h => heathBrownNaturalMonomial k h α) hQ, ← heathBrownWeylSum_eq_natural_sum]
   congr 1
   apply Finset.sum_congr rfl
   intro j hj

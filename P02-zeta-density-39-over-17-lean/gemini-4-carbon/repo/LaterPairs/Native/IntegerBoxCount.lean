@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.IntegerIntervalCount
 
 @[expose] public section
@@ -25,16 +34,13 @@ theorem integer_box_triples_card_le
   let X := S.image (fun p => p.1)
   let Y := S.image (fun p => p.2.1)
   let Z := S.image (fun p => p.2.2)
-  have hX : (X.card:ℝ) ≤ b₁-a₁+1 :=
-    integer_card_le_interval_length_add_one X h₁ (fun x hx' => by
+  have hX := integer_card_le_interval_length_add_one X h₁ (fun x hx' => by
       obtain ⟨p,hp,rfl⟩ := Finset.mem_image.mp hx'
       exact hx p hp)
-  have hY : (Y.card:ℝ) ≤ b₂-a₂+1 :=
-    integer_card_le_interval_length_add_one Y h₂ (fun y hy' => by
+  have hY := integer_card_le_interval_length_add_one Y h₂ (fun y hy' => by
       obtain ⟨p,hp,rfl⟩ := Finset.mem_image.mp hy'
       exact hy p hp)
-  have hZ : (Z.card:ℝ) ≤ b₃-a₃+1 :=
-    integer_card_le_interval_length_add_one Z h₃ (fun z hz' => by
+  have hZ := integer_card_le_interval_length_add_one Z h₃ (fun z hz' => by
       obtain ⟨p,hp,rfl⟩ := Finset.mem_image.mp hz'
       exact hz p hp)
   have hsub : S ⊆ X ×ˢ (Y ×ˢ Z) := by
@@ -43,7 +49,7 @@ theorem integer_box_triples_card_le
       Finset.mem_product.mpr ⟨Finset.mem_image.mpr ⟨p,hp,rfl⟩,
         Finset.mem_image.mpr ⟨p,hp,rfl⟩⟩⟩
   have hc : S.card ≤ X.card*(Y.card*Z.card) := by
-    simpa only [Finset.card_product] using Finset.card_le_card hsub
+    simpa using Finset.card_le_card hsub
   have hcR : (S.card:ℝ) ≤ (X.card:ℝ)*((Y.card:ℝ)*(Z.card:ℝ)) := by exact_mod_cast hc
   calc
     _ ≤ (X.card:ℝ)*((Y.card:ℝ)*(Z.card:ℝ)) := hcR

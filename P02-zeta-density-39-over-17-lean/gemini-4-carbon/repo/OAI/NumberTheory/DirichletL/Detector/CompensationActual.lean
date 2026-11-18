@@ -75,8 +75,7 @@ theorem idealCompensatedRatio_eq_continued (S : Finset Id) (hS : SourceExclusion
   have hraw := idealHighLocalFactor_eq_raw η P hs x w z hx hw hz
   have hn := source_idealHighLocalFactor_ne_zero S hS η P hP x w z hx hw hz
   rw [hraw] at hn
-  have hH : idealClosedCorrection η P x w z≠0 :=
-    factor_ne_zero_of_defect _ ((idealClosedCorrection_bound η P (hS.tail.norm_four P hP)
+  have hH := factor_ne_zero_of_defect _ ((idealClosedCorrection_bound η P (hS.tail.norm_four P hP)
       x w z (by linarith) (by linarith) (by linarith)).trans (hS.tail.half ⟨P,hP⟩))
   have he := compensatedReplacement_eq_raw (coordV (Ideal.absNorm P.val) z)
     (coordW (Ideal.absNorm P.val) 1 w) (coordD (Ideal.absNorm P.val) (HeckeFamily.idealCoeff η P.val) 1 x)

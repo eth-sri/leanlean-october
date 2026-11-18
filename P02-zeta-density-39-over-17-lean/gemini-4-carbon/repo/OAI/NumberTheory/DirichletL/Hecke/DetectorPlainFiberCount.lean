@@ -6,11 +6,10 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorInverseFiberCount
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
 open Set
+open scoped Classical BigOperators
 namespace SevenEighths.HeckeDetectorPlainFiberCount
-open HeckeFamily HeckeDyadic HeckeDetectorWitnessRows HeckeDetectorProfiles HeckeDetectorDyadicProfiles
-open HeckeDetectorPhysicalSelection HeckeDetectorRowwisePolynomial
+open HeckeFamily HeckeDyadic HeckeDetectorWitnessRows HeckeDetectorProfiles HeckeDetectorDyadicProfiles HeckeDetectorPhysicalSelection HeckeDetectorRowwisePolynomial
 variable (M : Ideal O) (H : Subgroup (O ⧸ M)ˣ)
 
 theorem plain_fiber_count {Row Label Slot : Type*}
@@ -51,13 +50,11 @@ theorem plain_fiber_count {Row Label Slot : Type*}
     have hh := mul_le_mul_of_nonneg_left hlen (show 0≤6*κplain by positivity)
     dsimp [m]
     linarith
-  have hUp : 0<U := zero_lt_one.trans hU
-  have hDp : 0<U^m := Real.rpow_pos_of_pos hUp _
-  have hE : 0≤C*U^(1+εm) := mul_nonneg hC (Real.rpow_nonneg hUp.le _)
+  have hUp := zero_lt_one.trans hU
   have he := HeckeDetectorFiberEnergy.plain_energy rows χ U a ε tstar T allowance i
     (by linarith) witness label positiveAnnular (U^m) (1/4) (9/4) (C*U^(1+εm))
-    (fun u => ∏ s∈selected,physical M H row W b widths zs U u s) hDp (by norm_num)
-    positiveAnnular_support hE height hheight hfreq (hraw selected hsub hcap')
+    (fun u => ∏ s∈selected,physical M H row W b widths zs U u s) (Real.rpow_pos_of_pos hUp _) (by norm_num)
+    positiveAnnular_support (mul_nonneg hC (Real.rpow_nonneg hUp.le _)) height hheight hfreq (hraw selected hsub hcap')
   have he' : ∑ u∈rows,
       ‖polynomial (χ u label) false positiveAnnular (U^m) (witness u).zero.re (witness u).frequency*
         polynomial (χ u label) false positiveAnnular (U^m) (witness u).zero.re (witness u).frequency*

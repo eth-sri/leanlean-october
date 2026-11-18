@@ -51,16 +51,13 @@ theorem actual_second_inherited_puncture_q0_norm
     ‖ConcreteTraceCRT.eisEmbedding (actualSecondInheritedRadicalPuncture m (actualSecondChild p u v x).1)‖^2 ≤
       (Ideal.absNorm (Ideal.span {m} : Ideal Eis).radical : ℝ) * Ideal.absNorm x.quotient *
         (Ideal.absNorm (actualSecondChild p u v x).1.q0 : ℝ) * primeProductNorm p (x.second.sourceCommon\x.second.divisor) := by
-  have hm' := mul_ne_zero hm (ConcretePrimeRowBridge.idealGenerator_ne_zero x.quotient ht)
   have hb := actual_second_radical_puncture_q0_norm p hp hpr x hE u v
-    (m*ConcretePrimeRowBridge.idealGenerator x.quotient) hm'
-  change ‖ConcreteTraceCRT.eisEmbedding (actualSecondRadicalPuncture
-    (m*ConcretePrimeRowBridge.idealGenerator x.quotient) (actualSecondChild p u v x).1)‖^2 ≤ _
+    (m*ConcretePrimeRowBridge.idealGenerator x.quotient) (mul_ne_zero hm (ConcretePrimeRowBridge.idealGenerator_ne_zero x.quotient ht))
   apply hb.trans
   have ho : (Ideal.absNorm (Ideal.span {m*ConcretePrimeRowBridge.idealGenerator x.quotient}).radical : ℝ) ≤
       (Ideal.absNorm (Ideal.span {m} : Ideal Eis).radical : ℝ)*Ideal.absNorm x.quotient := by
     rw [←Ideal.span_singleton_mul_span_singleton,ConcretePrimeRowBridge.span_idealGenerator]
-    simpa only [mul_one,map_one,Nat.cast_one] using radical_product_norm_le (Ideal.span {m}) 1 1 x.quotient
+    simpa using radical_product_norm_le (Ideal.span {m}) 1 1 x.quotient
       (Ideal.span_singleton_eq_bot.not.mpr hm) one_ne_zero ht Ideal.le_radical
   exact mul_le_mul_of_nonneg_right
     (mul_le_mul_of_nonneg_right ho (Nat.cast_nonneg _)) (primeProductNorm_pos p hp _).le
@@ -118,8 +115,7 @@ theorem actual_second_puncture_width_from_cubes
     (hG : primeProductNorm p x.second.sourceCommon ≤ Z^(g+eta))
     (hD : Z^(theta-eta) ≤ primeProductNorm p x.second.divisor) :
     actualSecondPunctureWidth Z m (actualSecondChild p u v x).1 ≤ Q+ell+t+g-theta+4*eta := by
-  have hp0 := actual_second_inherited_puncture_ne_zero p hp hpr x ht u v m hm
-  have hr0 := radicalGenerator_ne_zero _ hp0
+  have hr0 := radicalGenerator_ne_zero _ (actual_second_inherited_puncture_ne_zero p hp hpr x ht u v m hm)
   change actualSecondInheritedRadicalPuncture m (actualSecondChild p u v x).1 ≠ 0 at hr0
   apply (Real.logb_le_iff_le_rpow hZ (sq_pos_of_pos
     (norm_pos_iff.mpr (ConcreteTraceCRT.eisEmbedding_ne_zero hr0)))).mpr

@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.SargosPrefixKernelBound
 
 @[expose] public section
@@ -32,13 +41,10 @@ theorem sargos_sum_zmod_val {N : ℕ} [NeZero N] (g : ℕ → ℝ) :
 
 theorem sargos_sum_range_inv_le_harmonic (N : ℕ) :
     (∑ j ∈ Finset.range N, (j : ℝ)⁻¹) ≤ (harmonic N : ℝ) := by
-  calc
-    _ ≤ ∑ j ∈ Finset.range (N+1), (j : ℝ)⁻¹ :=
-      Finset.sum_le_sum_of_subset_of_nonneg
-        (Finset.range_mono (Nat.le_succ N)) (fun _ _ _ => by positivity)
-    _ = _ := by
+  exact (Finset.sum_le_sum_of_subset_of_nonneg
+        (Finset.range_mono (Nat.le_succ N)) (fun _ _ _ => by positivity)).trans_eq (by
       rw [Finset.sum_range_succ']
-      simp [harmonic]
+      simp [harmonic])
 
 theorem sum_sargosPrefixMajorant_eq {N : ℕ} [NeZero N] :
     (∑ k : ZMod N, sargosPrefixMajorant k) =

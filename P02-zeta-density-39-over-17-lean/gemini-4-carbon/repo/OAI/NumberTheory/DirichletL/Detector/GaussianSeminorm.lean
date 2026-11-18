@@ -27,28 +27,23 @@ lemma gaussianFixedWindow_contDiff : ContDiff ℝ ∞ gaussianFixedWindow := by
   intro y
   by_cases hy : 0<y
   · have hs : (Real.sqrt y:ℂ)≠0 := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hy).ne'
-    have hf : ContDiffAt ℝ ∞ (fun x : ℝ=>(Real.sqrt x:ℂ)) y :=
-      Complex.ofRealCLM.contDiff.contDiffAt.comp y (Real.contDiffAt_sqrt hy.ne')
     unfold gaussianFixedWindow
     simp only [div_eq_mul_inv]
-    exact gaussianAnnulus_contDiff.contDiffAt.mul (hf.fun_inv hs)
+    exact gaussianAnnulus_contDiff.contDiffAt.mul ((Complex.ofRealCLM.contDiff.contDiffAt.comp y (Real.contDiffAt_sqrt hy.ne')).fun_inv hs)
   · apply contDiffAt_const.congr_of_eventuallyEq
-    filter_upwards [eventually_lt_nhds (show y<(1/2:ℝ) by linarith)] with x hx
+    filter_upwards [eventually_lt_nhds (show y<(1/2) by linarith)] with x hx
     exact gaussianFixedWindow_small x hx.le
 
 lemma gaussianProfile_scaled_smooth (r : ℝ) (hr : 0<r) (y : ℝ) (hy : 0<y) :
     ContDiffAt ℝ ∞ (fun x : ℝ=>gaussianMellinProfile (r*x)) y := by
-  have hf : ContDiffAt ℂ ∞ (fun z : ℂ=>gaussianLog ((r:ℂ)*z)) (y:ℂ) :=
-    (gaussianLog_scaled_analytic r hr (y:ℂ) hy).contDiffAt
-  have hh := (hf.restrict_scalars ℝ).comp y Complex.ofRealCLM.contDiff.contDiffAt
-  simpa only [Function.comp_def,Complex.ofRealCLM_apply,←Complex.ofReal_mul,gaussianLog_ofReal] using hh
+  simpa only [Function.comp_def,Complex.ofRealCLM_apply,←Complex.ofReal_mul,gaussianLog_ofReal] using ((((gaussianLog_scaled_analytic r hr (y:ℂ) hy).contDiffAt).restrict_scalars ℝ).comp y Complex.ofRealCLM.contDiff.contDiffAt)
 
 lemma gaussianDyadicProfile_factor (Z : ℝ) (j : ℕ) :
     gaussianDyadicProfile Z j=(fun y : ℝ=>gaussianFixedWindow y*
       gaussianMellinProfile (((2:ℝ)^j/Z)*y)) := by
   funext y
   unfold gaussianDyadicProfile gaussianFixedWindow
-  rw [show (2:ℝ)^j*y/Z=((2:ℝ)^j/Z)*y by ring]
+  rw [show 2^j*y/Z=(2^j/Z)*y by ring]
   ring
 
 end SevenEighths.ProbePhysical

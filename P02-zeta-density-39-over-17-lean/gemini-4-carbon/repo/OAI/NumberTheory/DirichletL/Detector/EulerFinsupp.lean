@@ -30,9 +30,7 @@ lemma finitePi_fin {β : Type*} (n : ℕ) (f : Fin n→β→ℂ)
     constructor
     · rw [←e.summable_iff]
       simp only [Function.comp_def,he]
-      have hm : Summable (fun v : β×(Fin n→β)=>‖f 0 v.1‖ * ‖∏ i : Fin n,f i.succ (v.2 i)‖) :=
-        (hf 0).mul_of_nonneg ht.1 (fun _=>norm_nonneg _) (fun _=>norm_nonneg _)
-      simpa only [norm_mul] using hm
+      simpa using ((hf 0).mul_of_nonneg ht.1 (fun _=>norm_nonneg _) (fun _=>norm_nonneg _))
     · rw [←e.tsum_eq (fun v=>∏ i,f i (v i))]
       simp only [he]
       rw [←tsum_mul_tsum_of_summable_norm (f:=f 0)
@@ -79,8 +77,7 @@ theorem hasProd_of_summable (f : α→β→ℂ) (h0 : ∀a,f a 0=1)
     (hs : Summable (fun v : α→₀β=>‖v.prod f‖)) :
     HasProd (fun a=>∑' b,f a b) (∑' v : α→₀β,v.prod f) := by
   have hf (a : α) : Summable (fun b=>‖f a b‖) := by
-    have hh := hs.comp_injective (Finsupp.single_injective a)
-    simpa only [Function.comp_def,Finsupp.prod_single_index (h0 a)] using hh
+    simpa only [Function.comp_def,Finsupp.prod_single_index (h0 a)] using (hs.comp_injective (Finsupp.single_injective a))
   have ht : Tendsto (fun S : Finset α=>∑' v : α→₀β,
       if v.support⊆S then v.prod f else 0) atTop (𝓝 (∑' v : α→₀β,v.prod f)) := by
     apply tendsto_tsum_of_dominated_convergence hs

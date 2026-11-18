@@ -111,8 +111,7 @@ theorem wooley_conj_monomialGridSum_pow (q s k Q : ℕ) [NeZero q]
         ZMod.stdAddChar
           (-∑ j : Fin k,
             alpha j * (fordVinogradovPowerVector s k Q y j : ZMod q)) := by
-  have h := congrArg conj (wooleyMonomialGridSum_pow q s k Q alpha)
-  simpa only [map_pow, map_sum, AddChar.map_neg_eq_conj] using h
+  simpa only [map_pow, map_sum, AddChar.map_neg_eq_conj] using (congrArg conj (wooleyMonomialGridSum_pow q s k Q alpha))
 
 /-- The degree-by-degree displacement in the residue ring. -/
 def wooleyModularDisplacement (q s k Q : ℕ)
@@ -245,8 +244,7 @@ theorem wooleyMonomialComplexGridMoment_eq_count
         _ = _ := wooley_sum_grid_character q k
           (wooleyModularDisplacement q s k Q (x, y))
     _ = ((q ^ k : ℕ) : ℂ) * (wooleyModularCount s k Q q : ℂ) := by
-      rw [wooleyModularCount_cast_complex]
-      rw [Fintype.sum_prod_type, Finset.mul_sum]
+      rw [wooleyModularCount_cast_complex, Fintype.sum_prod_type, Finset.mul_sum]
       apply sum_congr rfl
       intro x hx
       rw [Finset.mul_sum]
@@ -294,7 +292,7 @@ theorem wooleyMonomialNormalizedGridMean_eq_count
       (wooleyModularCount s k Q q : ℝ) / ((Q ^ s : ℕ) : ℝ) := by
   rw [wooleyMonomialNormalizedGridMean,
     wooleyMonomialRawGridMoment_eq_count]
-  have hq : 0 < q := NeZero.pos q
+  have hq := NeZero.pos q
   have hqpow : (((q ^ k : ℕ) : ℝ)) ≠ 0 := by positivity
   have hQpow : (((Q ^ s : ℕ) : ℝ)) ≠ 0 := by positivity
   field_simp

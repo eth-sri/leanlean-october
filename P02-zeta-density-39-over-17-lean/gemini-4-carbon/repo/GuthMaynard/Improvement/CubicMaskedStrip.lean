@@ -36,11 +36,10 @@ theorem masked_radial_discard_integral_bound {a : ℝ → ℂ} (ha : ContDiff �
     unfold radialDiscard
     split_ifs with hx
     · have hh := hb p.1 hp.1 p.2 hp.2 (L*((m.1:ℝ)*p.1+(m.2.1:ℝ)*p.2+(m.2.2:ℝ)))
-      have hpow := pow_le_pow_left₀ hH.le hx.le n
       have hr : ‖radialKernel a L m p‖ ≤ C/H^n := by
         rw [radialKernel,radial_integral_fourier]
         apply (le_div_iff₀ (pow_pos hH n)).mpr
-        nlinarith [mul_le_mul_of_nonneg_right hpow (norm_nonneg (𝓕 (radialAmplitude a p.1 p.2) (L*((m.1:ℝ)*p.1+(m.2.1:ℝ)*p.2+(m.2.2:ℝ)))))]
+        nlinarith [mul_le_mul_of_nonneg_right (pow_le_pow_left₀ hH.le hx.le n) (norm_nonneg (𝓕 (radialAmplitude a p.1 p.2) (L*((m.1:ℝ)*p.1+(m.2.1:ℝ)*p.2+(m.2.2:ℝ)))))]
       rw [norm_mul]
       exact mul_le_mul hr (ratioFourierProduct_bound hm h0 hi p) (norm_nonneg _) (by positivity)
     · simp only [norm_zero]

@@ -6,9 +6,8 @@ public import OAI.NumberTheory.DirichletL.CubicSieve.PairPrimes
 namespace OAI
 
 namespace SevenEighths.CubicSieve
+open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson GaussGeneratorTransport
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
-open EisensteinSchwartzPoisson GaussGeneratorTransport
 noncomputable section
 local notation "O" => ActualEisensteinCubic.O
 
@@ -40,8 +39,7 @@ lemma pairPrincipalGauss_eq (I J : Ideal O) (hI : Admissible I) (hJ : Admissible
   let : Finite (O ⧸ (Ideal.span {a}) * (Ideal.span {b})) := finite_quotient_product hI.2 hJ.2
   let : Fintype (O ⧸ (Ideal.span {a}) * (Ideal.span {b})) := Fintype.ofFinite _
   let : Finite (O ⧸ Ideal.span {a}) := finite_quotient_span hI.2
-  let e : (O ⧸ Ideal.span {a * b}) ≃+* (O ⧸ (Ideal.span {a}) * (Ideal.span {b})) :=
-    Ideal.quotEquivOfEq (Ideal.span_singleton_mul_span_singleton a b).symm
+  let e := Ideal.quotEquivOfEq (Ideal.span_singleton_mul_span_singleton a b).symm
   have hnorm : (‖eisEmbedding (a * b)‖ : ℂ) = (‖eisEmbedding a‖ : ℂ) * (‖eisEmbedding b‖ : ℂ) := by
     rw [map_mul, norm_mul, Complex.ofReal_mul]
   dsimp only [principalNormalizedGauss, cubicPairGauss]
@@ -57,13 +55,6 @@ lemma pairPrincipalGauss_eq (I J : Ideal O) (hI : Admissible I) (hJ : Admissible
   rw [← MulChar.star_apply', principalCubicCharacter_mk I hI, principalCubicCharacter_mk J hJ]
   congr 1
 
-lemma pairPrincipalGauss_separation (I J : Ideal O) (hI : Admissible I) (hJ : Admissible J)
-    (hcop : IsCoprime I J) :
-    principalNormalizedGauss (pairPrime I J) (pairPrime_coprime I J hI hJ hcop)
-      (pairPrime_good I J hI hJ) (pairExponent I J)
-      (primaryGenerator I * primaryGenerator J) (pairPrime_modulus I J hI hJ)
-      (mul_ne_zero hI.2 hJ.2) = star (gaussTwo I hI.2) * gaussTwo J hJ.2 := by
-  rw [pairPrincipalGauss_eq I J hI hJ hcop, cubicPairGauss_separation I J hI hJ hcop]
 
 theorem cubic_pair_poisson (I J : Ideal O) (hI : Admissible I) (hJ : Admissible J)
     (hcop : IsCoprime I J) (W : 𝓢(ℝ, ℂ)) (M : ℝ) (hM : 0 < M) :
@@ -119,7 +110,11 @@ theorem cubic_pair_poisson (I J : Ideal O) (hI : Admissible I) (hJ : Admissible 
   rw [hp]
   have hn : (‖eisEmbedding c‖ : ℂ) ≠ 0 :=
     Complex.ofReal_ne_zero.mpr (norm_ne_zero_iff.mpr (eisEmbedding_ne_zero hc0))
-  have hGauss := pairPrincipalGauss_separation I J hI hJ hcop
+  have hGauss : principalNormalizedGauss (pairPrime I J) (pairPrime_coprime I J hI hJ hcop)
+      (pairPrime_good I J hI hJ) (pairExponent I J)
+      (primaryGenerator I * primaryGenerator J) (pairPrime_modulus I J hI hJ)
+      (mul_ne_zero hI.2 hJ.2) = star (gaussTwo I hI.2) * gaussTwo J hJ.2 := by
+    rw [pairPrincipalGauss_eq I J hI hJ hcop, cubicPairGauss_separation I J hI hJ hcop]
   change G / (‖eisEmbedding c‖ : ℂ) = star (gaussTwo I hI.2) * gaussTwo J hJ.2 at hGauss
   have hG := (div_eq_iff hn).mp hGauss
   change ((M / ‖eisEmbedding c‖ ^ 2 : ℝ) : ℂ) * (G * _) = _

@@ -23,8 +23,7 @@ theorem finite_time_integral {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ
 
 theorem finite_time_fourier (W : Finset ℝ) (ξ : ℝ) :
     measureFourier (finiteTimeMeasure W) ξ =
-      ∑ t ∈ W, GuthMaynard.Improvement.phase (-ξ*t) := by
-  exact finite_time_integral W _
+      ∑ t ∈ W, GuthMaynard.Improvement.phase (-ξ*t) := finite_time_integral W _
 
 def finiteCubic (W : Finset ℝ) (K : ℝ → ℂ) : ℂ :=
   ∑ t ∈ W, ∑ u ∈ W, ∑ v ∈ W, K (t-u)*K (u-v)*K (v-t)
@@ -56,8 +55,7 @@ theorem finite_cubic_trace (w : MathCollab.Density.ReflectionCutoff) (L : ℝ) (
       MathCollab.Density.hKernel (reflectionSquare w) L (v-t))
 
 theorem finite_time_mass (W : Finset ℝ) : (finiteTimeMeasure W).real univ = (W.card:ℝ) := by
-  have hh := finite_time_integral W (fun _ => (1:ℝ))
-  simpa only [integral_const,smul_eq_mul,mul_one,Finset.sum_const,nsmul_eq_mul] using hh
+  simpa using (finite_time_integral W (fun _ => (1:ℝ)))
 
 /-- The atomic cubic is the literal ordered triple sum, including all
 repeated indices. No diagonal or short difference is removed. -/

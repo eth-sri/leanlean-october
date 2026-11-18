@@ -8,9 +8,8 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 noncomputable section
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic FirstPassCubeLabels
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion
-open ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic FirstPassCubeLabels
 local notation "O" => ActualEisensteinCubic.O
 
 def indexedIdealMark {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
@@ -59,7 +58,6 @@ theorem finiteCanonicalMarkedRow_complete_global {σ : Type*} [DecidableEq σ]
   have hF := InitialMeanSquare.outsideSquarefree_admissible S D hbad
   let : ∀ i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal :=
     fun i=>by rw [poolPrimary_span F hF i];infer_instance
-  dsimp only
   have he := marked_complete_pool_eq_global S D hbad hSp Ψ m f z W b X hX hW hD
     (indexedIdealMark (fun i:primePool F=>i.val) slots lists a)
   dsimp only at he
@@ -70,9 +68,7 @@ theorem finiteCanonicalMarkedRow_complete_global {σ : Type*} [DecidableEq σ]
     rw [complete_pool_mark F hF slots lists a T,mul_comm]
   rw [hmark] at he
   unfold finiteCanonicalMarkedRow
-  calc
-    _ = _ := he
-    _ = _ := tsum_congr (fun I=>by ring)
+  exact (he).trans (tsum_congr (fun I=>by ring))
 
 end
 end SevenEighths.InverseMoment

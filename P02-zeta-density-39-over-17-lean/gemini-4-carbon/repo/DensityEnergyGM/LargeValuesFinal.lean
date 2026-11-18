@@ -33,7 +33,7 @@ theorem gmCutoffColumnMass_le (cutoff : GMSmoothCutoff) (N : ℕ) :
   unfold gmCutoffColumnMass
   calc
     (∑ n : GMColumn N, cutoff ((n : ℝ) / N) ^ 2) ≤
-        ∑ _n : GMColumn N, (1 : ℝ) := by
+        ∑ _n : GMColumn N, 1 := by
       apply Finset.sum_le_sum
       intro n hn
       have h0 := cutoff.nonneg ((n : ℝ) / N)
@@ -47,8 +47,7 @@ theorem gmMatrix_first_spectral_moment_eq
         (gmMatrix_gram_isHermitian cutoff N W).eigenvalues i) =
       (W.card : ℝ) * gmCutoffColumnMass cutoff N := by
   have hspectral := (gmMatrix_gram_isHermitian cutoff N W).trace_eq_sum_eigenvalues
-  have htrace := gmMatrix_gram_trace_eq_cutoff_sum cutoff N W
-  rw [htrace] at hspectral
+  rw [(gmMatrix_gram_trace_eq_cutoff_sum cutoff N W)] at hspectral
   apply Complex.ofReal_injective
   simpa! only [RCLike.ofReal_eq_complex_ofReal, gmCutoffColumnMass, Complex.ofReal_mul, Complex.ofReal_natCast,
     Complex.ofReal_sum, Complex.ofReal_pow] using hspectral.symm
@@ -70,7 +69,6 @@ theorem gmCubicSpectralDispersion_nonneg
   have hs : s.Nonempty := by
     rcases hW with ⟨t, ht⟩
     exact ⟨⟨t, ht⟩, Finset.mem_univ _⟩
-  have h := sixthMoment_dispersion_nonneg s x hs
   have hsquare : ∀ i : GMRow W, x i ^ 2 =
       (gmMatrix_gram_isHermitian cutoff N W).eigenvalues i := by
     intro i
@@ -80,7 +78,7 @@ theorem gmCubicSpectralDispersion_nonneg
     intro i
     exact gmMatrixSingularValue_sixth cutoff N W i
   simpa only [gmCubicSpectralDispersion, s, x, Finset.card_univ,
-    Fintype.card_coe, hsquare, hsixth] using h
+    Fintype.card_coe, hsquare, hsixth] using (sixthMoment_dispersion_nonneg s x hs)
 
 theorem gmCubicSpectralDispersion_le_trace_pieces
     (cutoff : GMSmoothCutoff) (N : ℕ) (hN : 0 < N)
@@ -95,10 +93,7 @@ theorem gmCubicSpectralDispersion_le_trace_pieces
             (W.card : ℝ) ^ 2 : ℝ) : ℂ)‖ := by
   let H := gmMatrix_gram_isHermitian cutoff N W
   let D := gmCubicSpectralDispersion cutoff N W
-  let A : ℝ :=
-    (∑ i : GMRow W, H.eigenvalues i) ^ 3 / (W.card : ℝ) ^ 2
-  have hCube := Matrix.IsHermitian.trace_cube_eq_sum_eigenvalues_cube H
-  have hSplit := gmMatrix_cubic_trace_split cutoff N hN W
+  let A := (∑ i : GMRow W, H.eigenvalues i) ^ 3 / (W.card : ℝ) ^ 2
   have hComplex : (D : ℂ) =
       (gmCubicZeroMode cutoff N W - gmCubicDiagonalMain cutoff N W) +
       gmCubicS1 cutoff N W + gmCubicS2 cutoff N W +
@@ -106,7 +101,7 @@ theorem gmCubicSpectralDispersion_le_trace_pieces
       (gmCubicDiagonalMain cutoff N W - (A : ℂ)) := by
     dsimp only [D, gmCubicSpectralDispersion, A]
     push_cast
-    rw [← hCube, hSplit]
+    rw [← (Matrix.IsHermitian.trace_cube_eq_sum_eigenvalues_cube H), (gmMatrix_cubic_trace_split cutoff N hN W)]
     ring
   calc
     D = ‖(D : ℂ)‖ := by
@@ -288,16 +283,13 @@ theorem norm_gmCutoffCoeffs_le_one
   intro n hn
   rw [gmCutoffCoeffs, norm_mul, Complex.norm_real, Real.norm_eq_abs,
     abs_of_nonneg (cutoff.nonneg _)]
-  calc
-    cutoff ((n : ℝ) / N) * ‖b n‖ ≤ 1 * 1 :=
-      mul_le_mul (cutoff.bounded _) (hb n hn) (norm_nonneg _) (by norm_num)
-    _ = 1 := by norm_num
+  exact (mul_le_mul (cutoff.bounded _) (hb n hn) (norm_nonneg _) (by norm_num)).trans_eq (by norm_num)
 
 theorem rpow_log_div_log
     {x y : ℝ} (hx : 1 < x) (hy : 0 < y) :
     x ^ (Real.log y / Real.log x) = y := by
   rw [Real.rpow_def_of_pos (zero_lt_one.trans hx)]
-  have hlog : Real.log x ≠ 0 := (Real.log_pos hx).ne'
+  have hlog := (Real.log_pos hx).ne'
   rw [show Real.log x * (Real.log y / Real.log x) = Real.log y by
     field_simp]
   exact Real.exp_log hy
@@ -306,15 +298,13 @@ theorem rpow_three_sub_two_log_ratio
     {x y : ℝ} (hx : 1 < x) (hy : 0 < y) :
     x ^ (3 - 2 * (Real.log y / Real.log x)) = x ^ 3 * y ^ (-2 : ℝ) := by
   let ρ := Real.log y / Real.log x
-  have hxy : x ^ ρ = y := rpow_log_div_log hx hy
-  have hxpos : 0 < x := zero_lt_one.trans hx
-  have hx0 : 0 ≤ x := hxpos.le
+  have hxpos := zero_lt_one.trans hx
   calc
     x ^ (3 - 2 * ρ) = x ^ (3 : ℝ) / x ^ (2 * ρ) := by
       rw [Real.rpow_sub hxpos]
     _ = x ^ (3 : ℝ) / (x ^ ρ) ^ (2 : ℝ) := by
-      rw [show 2 * ρ = ρ * 2 by ring, Real.rpow_mul hx0]
-    _ = x ^ (3 : ℝ) / y ^ (2 : ℝ) := by rw [hxy]
+      rw [show 2 * ρ = ρ * 2 by ring, Real.rpow_mul (hxpos.le)]
+    _ = x ^ (3 : ℝ) / y ^ (2 : ℝ) := by rw [(rpow_log_div_log hx hy)]
     _ = x ^ (3 : ℝ) * y ^ (-2 : ℝ) := by
       rw [Real.rpow_neg hy.le]
       ring
@@ -325,13 +315,11 @@ theorem rpow_three_halves_sub_log_ratio
     x ^ (3 / 2 - Real.log y / Real.log x) =
       x ^ (3 / 2 : ℝ) * y ^ (-1 : ℝ) := by
   let ρ := Real.log y / Real.log x
-  have hxy : x ^ ρ = y := rpow_log_div_log hx hy
-  have hxpos : 0 < x := zero_lt_one.trans hx
-  have hx0 : 0 ≤ x := hxpos.le
+  have hxpos := zero_lt_one.trans hx
   calc
     x ^ (3 / 2 - ρ) = x ^ (3 / 2 : ℝ) / x ^ ρ := by
       rw [Real.rpow_sub hxpos]
-    _ = x ^ (3 / 2 : ℝ) / y := by rw [hxy]
+    _ = x ^ (3 / 2 : ℝ) / y := by rw [(rpow_log_div_log hx hy)]
     _ = x ^ (3 / 2 : ℝ) * y ^ (-1 : ℝ) := by
       rw [Real.rpow_neg_one]
       ring
@@ -760,8 +748,8 @@ theorem gmSection12_eq12_1_roots
     (W.card : ℝ) ≤ gmSection12RootShape A N T V := by
   have hn : (0 : ℝ) < N := by exact_mod_cast hN
   have hw : (0 : ℝ) < W.card := by exact_mod_cast hW.card_pos
-  let D : ℝ := V ^ 6 / (N : ℝ) ^ 3
-  have hD : 0 < D := div_pos (pow_pos hV 6) (pow_pos hn 3)
+  let D := V ^ 6 / (N : ℝ) ^ 3
+  have hD := div_pos (pow_pos hV 6) (pow_pos hn 3)
   let r₁ := ((8 * A) * (N : ℝ) ^ 3 / D) ^ (1 / 3 : ℝ)
   let r₂ := ((8 * A) * (N : ℝ) ^ 2 / D)
   let r₃ := ((8 * A) * (T * (N : ℝ)) / D) ^ (4 / 5 : ℝ)
@@ -797,12 +785,10 @@ theorem gmSection12_eq12_1_roots
   · have hb := gm_solve_monomial hw hD (by norm_num : 0 < (3 : ℝ) - 0)
         (p := 3) (q := 0) (A := 8 * A) (E := (N : ℝ) ^ 3) (by
           rw [show (W.card : ℝ) ^ (3 : ℝ) = (W.card : ℝ) ^ 3 by
-            exact Real.rpow_natCast _ 3]
-          rw [Real.rpow_zero, one_mul]
+            exact Real.rpow_natCast _ 3, Real.rpow_zero, one_mul]
           exact h₁)
     norm_num at hb
     change (W.card : ℝ) ≤ r₁ at hb
-    change (W.card : ℝ) ≤ r₁ + r₂ + r₃ + r₄ + r₅ + r₆ + r₇ + r₈
     exact hb.trans hrs.1
   · have hb := gm_solve_monomial hw hD (by norm_num : 0 < (3 : ℝ) - 2)
         (p := 3) (q := 2) (A := 8 * A) (E := (N : ℝ) ^ 2) (by
@@ -810,64 +796,43 @@ theorem gmSection12_eq12_1_roots
             exact Real.rpow_natCast _ 3,
             show (W.card : ℝ) ^ (2 : ℝ) = (W.card : ℝ) ^ 2 by
               exact Real.rpow_natCast _ 2]
-          calc
-            (W.card : ℝ) ^ 3 * D ≤ 8 * A * ((N : ℝ) ^ 2 * (W.card : ℝ) ^ 2) := h₂
-            _ = (8 * A) * ((W.card : ℝ) ^ 2 * (N : ℝ) ^ 2) := by ring)
+          exact (h₂).trans_eq (by ring))
     norm_num at hb
     change (W.card : ℝ) ≤ r₂ at hb
-    change (W.card : ℝ) ≤ r₁ + r₂ + r₃ + r₄ + r₅ + r₆ + r₇ + r₈
     exact hb.trans hrs.2.1
   · have hb := gm_solve_monomial hw hD (by norm_num : 0 < (3 : ℝ) - 7 / 4)
         (p := 3) (q := 7 / 4) (A := 8 * A) (E := T * (N : ℝ)) (by
           rw [show (W.card : ℝ) ^ (3 : ℝ) = (W.card : ℝ) ^ 3 by
             exact Real.rpow_natCast _ 3]
-          calc
-            (W.card : ℝ) ^ 3 * D ≤
-                8 * A * (T * (N : ℝ) * (W.card : ℝ) ^ (7 / 4 : ℝ)) := h₃
-            _ = (8 * A) * ((W.card : ℝ) ^ (7 / 4 : ℝ) * (T * (N : ℝ))) := by ring)
+          exact (h₃).trans_eq (by ring))
     norm_num at hb
     change (W.card : ℝ) ≤ r₃ at hb
-    change (W.card : ℝ) ≤ r₁ + r₂ + r₃ + r₄ + r₅ + r₆ + r₇ + r₈
     exact hb.trans hrs.2.2.1
   · have hb := gm_solve_monomial hw hD (by norm_num : 0 < (3 : ℝ) - 29 / 16)
         (p := 3) (q := 29 / 16) (A := 8 * A)
         (E := (N : ℝ) ^ 2 * T ^ (1 / 8 : ℝ)) (by
           rw [show (W.card : ℝ) ^ (3 : ℝ) = (W.card : ℝ) ^ 3 by
             exact Real.rpow_natCast _ 3]
-          calc
-            (W.card : ℝ) ^ 3 * D ≤ 8 * A *
-                ((N : ℝ) ^ 2 * (W.card : ℝ) ^ (29 / 16 : ℝ) * T ^ (1 / 8 : ℝ)) := h₄
-            _ = (8 * A) * ((W.card : ℝ) ^ (29 / 16 : ℝ) *
-                ((N : ℝ) ^ 2 * T ^ (1 / 8 : ℝ))) := by ring)
+          exact (h₄).trans_eq (by ring))
     norm_num at hb
     change (W.card : ℝ) ≤ r₄ at hb
-    change (W.card : ℝ) ≤ r₁ + r₂ + r₃ + r₄ + r₅ + r₆ + r₇ + r₈
     exact hb.trans hrs.2.2.2.1
   · have hb := gm_solve_monomial hw hD (by norm_num : 0 < (3 : ℝ) - 3 / 2)
         (p := 3) (q := 3 / 2) (A := 8 * A) (E := T ^ 2) (by
           rw [show (W.card : ℝ) ^ (3 : ℝ) = (W.card : ℝ) ^ 3 by
             exact Real.rpow_natCast _ 3]
-          calc
-            (W.card : ℝ) ^ 3 * D ≤ 8 * A *
-                (T ^ 2 * (W.card : ℝ) ^ (3 / 2 : ℝ)) := h₅
-            _ = (8 * A) * ((W.card : ℝ) ^ (3 / 2 : ℝ) * T ^ 2) := by ring)
+          exact (h₅).trans_eq (by ring))
     norm_num at hb
     change (W.card : ℝ) ≤ r₅ at hb
-    change (W.card : ℝ) ≤ r₁ + r₂ + r₃ + r₄ + r₅ + r₆ + r₇ + r₈
     exact hb.trans hrs.2.2.2.2.1
   · have hb := gm_solve_monomial hw hD (by norm_num : 0 < (3 : ℝ) - 1)
         (p := 3) (q := 1) (A := 8 * A)
         (E := T * (N : ℝ) ^ 3 * V ^ (-2 : ℝ)) (by
           rw [show (W.card : ℝ) ^ (3 : ℝ) = (W.card : ℝ) ^ 3 by
             exact Real.rpow_natCast _ 3]
-          calc
-            (W.card : ℝ) ^ 3 * D ≤ 8 * A *
-                (T * (W.card : ℝ) ^ (1 : ℝ) * (N : ℝ) ^ 3 * V ^ (-2 : ℝ)) := h₆
-            _ = (8 * A) * ((W.card : ℝ) ^ (1 : ℝ) *
-                (T * (N : ℝ) ^ 3 * V ^ (-2 : ℝ))) := by ring)
+          exact (h₆).trans_eq (by ring))
     rw [show (1 : ℝ) / (3 - 1) = 1 / 2 by norm_num] at hb
     have hb' : (W.card : ℝ) ≤ r₆ := by simpa only [r₆] using hb
-    change (W.card : ℝ) ≤ r₁ + r₂ + r₃ + r₄ + r₅ + r₆ + r₇ + r₈
     exact hb'.trans hrs.2.2.2.2.2.1
   · have hb := gm_solve_monomial hw hD (by norm_num : 0 < (3 : ℝ) - 2)
         (p := 3) (q := 2) (A := 8 * A)
@@ -876,14 +841,9 @@ theorem gmSection12_eq12_1_roots
             exact Real.rpow_natCast _ 3,
             show (W.card : ℝ) ^ (2 : ℝ) = (W.card : ℝ) ^ 2 by
               exact Real.rpow_natCast _ 2]
-          calc
-            (W.card : ℝ) ^ 3 * D ≤ 8 * A *
-                (T * (W.card : ℝ) ^ 2 * (N : ℝ) ^ (3 / 2 : ℝ) * V ^ (-1 : ℝ)) := h₇
-            _ = (8 * A) * ((W.card : ℝ) ^ 2 *
-                (T * (N : ℝ) ^ (3 / 2 : ℝ) * V ^ (-1 : ℝ))) := by ring)
+          exact (h₇).trans_eq (by ring))
     norm_num at hb
     change (W.card : ℝ) ≤ r₇ at hb
-    change (W.card : ℝ) ≤ r₁ + r₂ + r₃ + r₄ + r₅ + r₆ + r₇ + r₈
     exact hb.trans hrs.2.2.2.2.2.2.1
   · have hb := gm_solve_monomial hw hD (by norm_num : 0 < (3 : ℝ) - 29 / 16)
         (p := 3) (q := 29 / 16) (A := 8 * A)
@@ -891,16 +851,9 @@ theorem gmSection12_eq12_1_roots
           V ^ (-1 : ℝ)) (by
             rw [show (W.card : ℝ) ^ (3 : ℝ) = (W.card : ℝ) ^ 3 by
               exact Real.rpow_natCast _ 3]
-            calc
-              (W.card : ℝ) ^ 3 * D ≤ 8 * A *
-                  (T ^ (9 / 8 : ℝ) * (W.card : ℝ) ^ (29 / 16 : ℝ) *
-                    (N : ℝ) ^ (3 / 2 : ℝ) * V ^ (-1 : ℝ)) := h₈
-              _ = (8 * A) * ((W.card : ℝ) ^ (29 / 16 : ℝ) *
-                  (T ^ (9 / 8 : ℝ) * (N : ℝ) ^ (3 / 2 : ℝ) *
-                    V ^ (-1 : ℝ))) := by ring)
+            exact (h₈).trans_eq (by ring))
     norm_num at hb
     change (W.card : ℝ) ≤ r₈ at hb
-    change (W.card : ℝ) ≤ r₁ + r₂ + r₃ + r₄ + r₅ + r₆ + r₇ + r₈
     exact hb.trans hrs.2.2.2.2.2.2.2
 
 /-- The eight physical roots in equation (12.1), with the common analytic
@@ -923,9 +876,7 @@ theorem gm_mul_rpow_le_mul
     (B * Q) ^ r ≤ B * Q ^ r := by
   rw [Real.mul_rpow (zero_le_one.trans hB) hQ]
   gcongr
-  calc
-    B ^ r ≤ B ^ (1 : ℝ) := Real.rpow_le_rpow_of_exponent_le hB hr₁
-    _ = B := Real.rpow_one B
+  exact (Real.rpow_le_rpow_of_exponent_le hB hr₁).trans_eq (Real.rpow_one B)
 
 theorem gmSection12RootShape_le_physical
     {A T V : ℝ} {N : ℕ}
@@ -933,8 +884,8 @@ theorem gmSection12RootShape_le_physical
     gmSection12RootShape A N T V ≤
       8 * A * gmEquation12PhysicalRootShape N T V := by
   have hn : (0 : ℝ) < N := by exact_mod_cast hN
-  let D : ℝ := V ^ 6 / (N : ℝ) ^ 3
-  have hD : 0 < D := div_pos (pow_pos hV 6) (pow_pos hn 3)
+  let D := V ^ 6 / (N : ℝ) ^ 3
+  have hD := div_pos (pow_pos hV 6) (pow_pos hn 3)
   have hB : 1 ≤ 8 * A := by nlinarith
   let q₁ := (N : ℝ) ^ 3 / D
   let q₂ := (N : ℝ) ^ 2 / D
@@ -1136,7 +1087,7 @@ theorem gmEquation12PhysicalRootShape_specialize_le
       8 * (N : ℝ) ^ (18 / 5 - 4 * σ) := by
   rw [gmEquation12PhysicalRootShape_specialize (Nat.zero_lt_of_lt hN)]
   have hnOne : (1 : ℝ) ≤ N := by exact_mod_cast (Nat.one_le_iff_ne_zero.mpr (Nat.zero_lt_of_lt hN).ne')
-  let E : ℝ := 18 / 5 - 4 * σ
+  let E := 18 / 5 - 4 * σ
   have h₁ : (N : ℝ) ^ (2 - 2 * σ) ≤ (N : ℝ) ^ E := by
     apply Real.rpow_le_rpow_of_exponent_le hnOne
     dsimp only [E]
@@ -1307,8 +1258,7 @@ theorem gmScaleSet_unit_bin_card_le
     have huBin := (Finset.mem_filter.mp huF).2
     rw [gmScaleSet, Finset.mem_image] at huScale
     obtain ⟨x, hxW, rfl⟩ := huScale
-    have hrecover : x / δ * δ = x := div_mul_cancel₀ x hδ.ne'
-    rw [Finset.mem_filter, hrecover]
+    rw [Finset.mem_filter, (div_mul_cancel₀ x hδ.ne')]
     refine ⟨hxW, ?_⟩
     rw [abs_le]
     constructor
@@ -1324,7 +1274,6 @@ theorem gmScaleSet_unit_bin_card_le
     · intro x hx y hy hxy
       simpa only [Real.dist_eq] using hSep x hx y hy hxy
     · exact hδ.le
-  change F.card ≤ _
   rw [← himageCard]
   exact (Finset.card_le_card hsub).trans (by simpa using hpack)
 
@@ -1455,8 +1404,7 @@ theorem gmSmoothDirichletPoly_shift_eq
   unfold gmSmoothDirichletPoly gmShiftCoeffs
   apply Finset.sum_congr rfl
   intro n hn
-  have hnpos : 0 < n := hN.trans (Finset.mem_Ioc.mp hn).1
-  have hnne : (n : ℂ) ≠ 0 := by exact_mod_cast hnpos.ne'
+  have hnne : (n : ℂ) ≠ 0 := by exact_mod_cast (hN.trans (Finset.mem_Ioc.mp hn).1).ne'
   calc
     _ = cutoff ((n : ℝ) / N) * b n *
         ((n : ℂ) ^ ((s : ℂ) * I) * (n : ℂ) ^ ((u : ℂ) * I)) := by ring
@@ -1473,8 +1421,7 @@ theorem norm_gmShiftCoeffs_le_one
     (hb : ∀ n ∈ dyadicInterval N, ‖b n‖ ≤ 1) :
     ∀ n ∈ dyadicInterval N, ‖gmShiftCoeffs s b n‖ ≤ 1 := by
   intro n hn
-  have hnpos : 0 < n := hN.trans (Finset.mem_Ioc.mp hn).1
-  rw [gmShiftCoeffs, norm_mul, Complex.norm_natCast_cpow_of_pos hnpos]
+  rw [gmShiftCoeffs, norm_mul, Complex.norm_natCast_cpow_of_pos (hN.trans (Finset.mem_Ioc.mp hn).1)]
   simpa using hb n hn
 
 set_option maxHeartbeats 1000000 in
@@ -1652,13 +1599,10 @@ theorem gmProposition3_1_smooth_fullHeight
 /-! ### Classical complementary ranges in the source sign convention -/
 
 theorem gm_inv_rpow_two {V : ℝ} (hV : 0 < V) :
-    V ^ (-2 : ℝ) = 1 / V ^ 2 := by
-  rw [Real.rpow_neg hV.le, Real.rpow_two, inv_eq_one_div]
+    V ^ (-2 : ℝ) = 1 / V ^ 2 := by norm_num
 
 theorem gm_inv_rpow_four {V : ℝ} (hV : 0 < V) :
-    V ^ (-4 : ℝ) = 1 / V ^ 4 := by
-  rw [Real.rpow_neg hV.le, ← Real.rpow_natCast]
-  norm_num
+    V ^ (-4 : ℝ) = 1 / V ^ 4 := by norm_num
 
 theorem gm_classical_min_low
     {N : ℕ} {V B : ℝ} (hN : 0 < N) (hV : 0 < V)
@@ -1672,11 +1616,8 @@ theorem gm_classical_min_low
     congr 1
     ring
   have hVsq : V ^ 2 ≤ B ^ 2 * (N : ℝ) ^ (7 / 5 : ℝ) := by
-    have hs := pow_le_pow_left₀ hV.le hLow 2
-    calc
-      V ^ 2 ≤ (B * (N : ℝ) ^ (7 / 10 : ℝ)) ^ 2 := hs
-      _ = B ^ 2 * (N : ℝ) ^ (7 / 5 : ℝ) := by
-        rw [mul_pow, hpowSeven]
+    exact ((pow_le_pow_left₀ hV.le hLow 2)).trans_eq (by
+        rw [mul_pow, hpowSeven])
   have hpowTwelve : (N : ℝ) * (N : ℝ) ^ (7 / 5 : ℝ) =
       (N : ℝ) ^ (12 / 5 : ℝ) := by
     calc
@@ -1769,15 +1710,12 @@ theorem gm_classical_source_low
     intro t ht
     rw [← norm_sourceDirichletPoly_eq_dirichletPoly_conjugateCoeffs]
     exact hLarge t ht
-  have hraw := hMHH N T V W (conjugateCoeffs b) hN hT hNT hV hb' hSep hBase hLarge'
-  have hmin := gm_classical_min_low hN hV hLow
-  have hBsq : 0 ≤ B ^ 2 := sq_nonneg B
   have hfirst : (N : ℝ) ^ 2 / V ^ 2 = (N : ℝ) ^ 2 * V ^ (-2 : ℝ) := by
     rw [gm_inv_rpow_two hV]
     ring
-  let X : ℝ := (N : ℝ) ^ 2 * V ^ (-2 : ℝ)
-  let Y : ℝ := (N : ℝ) ^ (18 / 5 : ℝ) * V ^ (-4 : ℝ)
-  let Z : ℝ := T * (N : ℝ) ^ (12 / 5 : ℝ) * V ^ (-4 : ℝ)
+  let X := (N : ℝ) ^ 2 * V ^ (-2 : ℝ)
+  let Y := (N : ℝ) ^ (18 / 5 : ℝ) * V ^ (-4 : ℝ)
+  let Z := T * (N : ℝ) ^ (12 / 5 : ℝ) * V ^ (-4 : ℝ)
   have hX : 0 ≤ X := by dsimp only [X]; positivity
   have hY : 0 ≤ Y := by dsimp only [Y]; positivity
   have hZ : 0 ≤ Z := by dsimp only [Z]; positivity
@@ -1785,14 +1723,14 @@ theorem gm_classical_source_low
       T * min ((N : ℝ) / V ^ 2) ((N : ℝ) ^ 4 / V ^ 6) ≤ X + B ^ 2 * Z := by
     rw [hfirst]
     dsimp only [X, Z]
-    have hm := mul_le_mul_of_nonneg_left hmin (zero_le_one.trans hT)
+    have hm := mul_le_mul_of_nonneg_left (gm_classical_min_low hN hV hLow) (zero_le_one.trans hT)
     nlinarith
   have hinner₂ : X + B ^ 2 * Z ≤ (1 + B ^ 2) * (X + Y + Z) := by
-    nlinarith [mul_nonneg hBsq hZ]
+    nlinarith [mul_nonneg (sq_nonneg B) hZ]
   calc
     (W.card : ℝ) ≤ C₀ * T ^ ε *
         ((N : ℝ) ^ 2 / V ^ 2 +
-          T * min ((N : ℝ) / V ^ 2) ((N : ℝ) ^ 4 / V ^ 6)) := hraw
+          T * min ((N : ℝ) / V ^ 2) ((N : ℝ) ^ 4 / V ^ 6)) := (hMHH N T V W (conjugateCoeffs b) hN hT hNT hV hb' hSep hBase hLarge')
     _ ≤ C₀ * T ^ ε * (X + B ^ 2 * Z) :=
       mul_le_mul_of_nonneg_left hinner₁
         (mul_nonneg hC₀.le (Real.rpow_nonneg (zero_le_one.trans hT) ε))
@@ -1831,14 +1769,12 @@ theorem gm_classical_source_high
     intro t ht
     rw [← norm_sourceDirichletPoly_eq_dirichletPoly_conjugateCoeffs]
     exact hLarge t ht
-  have hraw := hMHH N T V W (conjugateCoeffs b) hN hT hNT hV hb' hSep hBase hLarge'
-  have hmin := gm_classical_min_high hN hV hHigh
   have hfirst : (N : ℝ) ^ 2 / V ^ 2 = (N : ℝ) ^ 2 * V ^ (-2 : ℝ) := by
     rw [gm_inv_rpow_two hV]
     ring
-  let X : ℝ := (N : ℝ) ^ 2 * V ^ (-2 : ℝ)
-  let Y : ℝ := (N : ℝ) ^ (18 / 5 : ℝ) * V ^ (-4 : ℝ)
-  let Z : ℝ := T * (N : ℝ) ^ (12 / 5 : ℝ) * V ^ (-4 : ℝ)
+  let X := (N : ℝ) ^ 2 * V ^ (-2 : ℝ)
+  let Y := (N : ℝ) ^ (18 / 5 : ℝ) * V ^ (-4 : ℝ)
+  let Z := T * (N : ℝ) ^ (12 / 5 : ℝ) * V ^ (-4 : ℝ)
   have hX : 0 ≤ X := by dsimp only [X]; positivity
   have hY : 0 ≤ Y := by dsimp only [Y]; positivity
   have hZ : 0 ≤ Z := by dsimp only [Z]; positivity
@@ -1846,13 +1782,13 @@ theorem gm_classical_source_high
       T * min ((N : ℝ) / V ^ 2) ((N : ℝ) ^ 4 / V ^ 6) ≤ X + 4 * Z := by
     rw [hfirst]
     dsimp only [X, Z]
-    have hm := mul_le_mul_of_nonneg_left hmin (zero_le_one.trans hT)
+    have hm := mul_le_mul_of_nonneg_left (gm_classical_min_high hN hV hHigh) (zero_le_one.trans hT)
     nlinarith
   have hinner₂ : X + 4 * Z ≤ 5 * (X + Y + Z) := by nlinarith
   calc
     (W.card : ℝ) ≤ C₀ * T ^ ε *
         ((N : ℝ) ^ 2 / V ^ 2 +
-          T * min ((N : ℝ) / V ^ 2) ((N : ℝ) ^ 4 / V ^ 6)) := hraw
+          T * min ((N : ℝ) / V ^ 2) ((N : ℝ) ^ 4 / V ^ 6)) := (hMHH N T V W (conjugateCoeffs b) hN hT hNT hV hb' hSep hBase hLarge')
     _ ≤ C₀ * T ^ ε * (X + 4 * Z) :=
       mul_le_mul_of_nonneg_left hinner₁
         (mul_nonneg hC₀.le (Real.rpow_nonneg (zero_le_one.trans hT) ε))
@@ -1901,10 +1837,10 @@ theorem gm_classical_source_near_height
     have hmul := mul_le_mul_of_nonneg_right hTN hn.le
     field_simp [hV.ne']
     nlinarith
-  have hTone : 1 ≤ T ^ ε := Real.one_le_rpow hT hε.le
-  let X : ℝ := (N : ℝ) ^ 2 * V ^ (-2 : ℝ)
-  let Y : ℝ := (N : ℝ) ^ (18 / 5 : ℝ) * V ^ (-4 : ℝ)
-  let Z : ℝ := T * (N : ℝ) ^ (12 / 5 : ℝ) * V ^ (-4 : ℝ)
+  have hTone := Real.one_le_rpow hT hε.le
+  let X := (N : ℝ) ^ 2 * V ^ (-2 : ℝ)
+  let Y := (N : ℝ) ^ (18 / 5 : ℝ) * V ^ (-4 : ℝ)
+  let Z := T * (N : ℝ) ^ (12 / 5 : ℝ) * V ^ (-4 : ℝ)
   have hX : 0 ≤ X := by dsimp only [X]; positivity
   have hY : 0 ≤ Y := by dsimp only [Y]; positivity
   have hZ : 0 ≤ Z := by dsimp only [Z]; positivity
@@ -1987,10 +1923,7 @@ theorem gm_source_scale_critical_lower
   have hq := Real.rpow_le_rpow (Nat.cast_nonneg Q) hcast (by norm_num : (0 : ℝ) ≤ 7 / 10)
   rw [Real.mul_rpow (by norm_num : (0 : ℝ) ≤ 2) hn] at hq
   have htwo : (2 : ℝ) ^ (7 / 10 : ℝ) ≤ 2 := by
-    calc
-      (2 : ℝ) ^ (7 / 10 : ℝ) ≤ (2 : ℝ) ^ (1 : ℝ) :=
-        Real.rpow_le_rpow_of_exponent_le (by norm_num) (by norm_num)
-      _ = 2 := Real.rpow_one _
+    exact (Real.rpow_le_rpow_of_exponent_le (by norm_num) (by norm_num)).trans_eq (Real.rpow_one _)
   have hmid : (Q : ℝ) ^ (7 / 10 : ℝ) ≤
       2 * (N : ℝ) ^ (7 / 10 : ℝ) :=
     hq.trans (mul_le_mul_of_nonneg_right htwo (Real.rpow_nonneg hn _))
@@ -2005,10 +1938,7 @@ theorem gm_source_scale_critical_upper
   have hnq := Real.rpow_le_rpow (Nat.cast_nonneg N) hcast (by norm_num : (0 : ℝ) ≤ 4 / 5)
   rw [Real.mul_rpow (by norm_num : (0 : ℝ) ≤ 2) hq0] at hnq
   have htwo : (2 : ℝ) ^ (4 / 5 : ℝ) ≤ 2 := by
-    calc
-      (2 : ℝ) ^ (4 / 5 : ℝ) ≤ (2 : ℝ) ^ (1 : ℝ) :=
-        Real.rpow_le_rpow_of_exponent_le (by norm_num) (by norm_num)
-      _ = 2 := Real.rpow_one _
+    exact (Real.rpow_le_rpow_of_exponent_le (by norm_num) (by norm_num)).trans_eq (Real.rpow_one _)
   have hmid : (N : ℝ) ^ (4 / 5 : ℝ) ≤
       2 * (Q : ℝ) ^ (4 / 5 : ℝ) :=
     hnq.trans (mul_le_mul_of_nonneg_right htwo (Real.rpow_nonneg hq0 _))

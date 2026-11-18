@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.RobertSargosPhysicalATimesAParameters
 public import LaterPairs.Native.RobertSargosWeightedZeroSplit
 public import LaterPairs.Native.RobertSargosZeroQPhysical
@@ -41,18 +50,16 @@ theorem robertSargos_physical_nonzero_a_times_a
   have hzq := robertSargos_zero_q_physical_a_times_a f M H hC hlam hsmall hM hHmax hf hlo hhi
   have he := robertSargos_physical_endpoint_budget M H hlam hsmall hM hHmax
   have ht := robertSargos_trimmed_a_times_a f M H
-    ⌊lam^(-(3:ℝ)/13)⌋₊ ⌊lam^(-(1:ℝ)/13)⌋₊ hQ hR hQM hRH
+    ⌊lam^(-3/13)⌋₊ ⌊lam^(-1/13)⌋₊ hQ hR hQM hRH
   rw [robertSargos_weighted_zero_shift_decomposition f M H _ _ hQ hR,
     mul_add,mul_add,mul_add] at ht
-  have hCp : 0 ≤ C := zero_le_one.trans hC
   have hfactor : 1 ≤ 1+2*Real.pi*C := by
     have hp : 0 ≤ 2*Real.pi*C := by positivity
     linarith
   have hCF : C ≤ C*(1+2*Real.pi*C) := by
-    simpa only [mul_one] using mul_le_mul_of_nonneg_left hfactor hCp
-  have h1F : 1 ≤ C*(1+2*Real.pi*C) := hC.trans hCF
+    simpa using mul_le_mul_of_nonneg_left hfactor (zero_le_one.trans hC)
   have hCM := mul_le_mul_of_nonneg_right hCF (sq_nonneg (M:ℝ))
-  have h1M := mul_le_mul_of_nonneg_right h1F (sq_nonneg (M:ℝ))
+  have h1M := mul_le_mul_of_nonneg_right (hC.trans hCF) (sq_nonneg (M:ℝ))
   nlinarith
 
 end TaoTrudgianYang2025

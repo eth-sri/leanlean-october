@@ -19,7 +19,7 @@ def sourceFourierSignal (μ : ℝ → ℝ) (Λ : ℝ) : ℝ → ℂ := 𝓕⁻ (
 
 theorem sourceFourierSet_measurable {μ : ℝ → ℝ} (h1 : Integrable μ) (Λ : ℝ) :
     MeasurableSet (sourceFourierSet μ Λ) := by
-  have hc : Continuous (𝓕 (fun t => (μ t:ℂ))) := VectorFourier.fourierIntegral_continuous
+  have hc := VectorFourier.fourierIntegral_continuous
     Real.continuous_fourierChar (innerSL ℝ).continuous₂ (Complex.ofRealCLM.integrable_comp h1)
   exact measurableSet_lt measurable_const hc.measurable.norm
 

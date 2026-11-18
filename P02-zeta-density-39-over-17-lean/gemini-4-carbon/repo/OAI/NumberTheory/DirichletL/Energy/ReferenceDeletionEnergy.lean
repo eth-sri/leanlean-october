@@ -10,13 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyReferenceDeletionEnergy
-open HeckeFamily HeckeDyadic ConcreteTraceCRT
-open CenteredMomentEnergyState CenteredMomentEnergyReferenceState
-open CenteredMomentEnergyReferenceSource CenteredMomentEnergyReferenceWeightedEnergy
-open CenteredMomentAllocatedNaturalRadial CenteredMomentNaturalRowSource
-open CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy
-open CenteredMomentOriginalRadialComparison CenteredMomentRadialPolynomialEnergy
-open CenteredMomentCommonMaskRadialEnergy CenteredMomentInductionEnergy
+open HeckeFamily HeckeDyadic ConcreteTraceCRT CenteredMomentEnergyState CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceSource CenteredMomentEnergyReferenceWeightedEnergy CenteredMomentAllocatedNaturalRadial CenteredMomentNaturalRowSource CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy CenteredMomentOriginalRadialComparison CenteredMomentRadialPolynomialEnergy CenteredMomentCommonMaskRadialEnergy CenteredMomentInductionEnergy
 local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
 
@@ -90,7 +84,6 @@ theorem original_energy_weighted_deletion (bslot M:α→ℝ)(hM:∀i,0≤M i)
       s.radial.profile s.radial.scale≤E*(q j)^2:=by
     have hh:=hchildren j.1.val j.1.property j.2.1.val j.2.1.property j.2.2.val j.2.2.property
     have hpow:(q j)^2=((∏I∈j.2.1.val,I).absNorm:ℝ)^p:=by
-      dsimp only [q]
       rw [←Real.rpow_natCast,←Real.rpow_mul (Nat.cast_nonneg _)]
       congr 1
       norm_num

@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.PositiveSlopeChartFibers
 
 @[expose] public section
@@ -34,13 +44,11 @@ theorem modelPhaseSharpStationarySet_grid_window
     (hT : 0 < T) (hN : 0 < N) (ha : N ≤ (a : ℝ)) (hb : (b : ℝ) ≤ 2*N)
     (hq : q ∈ modelPhaseSharpStationarySet F T N a b) :
     (q : ℝ)*N/T ∈ Icc (4*modelPhaseSlopeMesh σ) 2 := by
-  have hgeom := modelPhaseSharpStationarySet_critical_geometry hσ hδ hF hT hN ha hb hq
-  have hwindow := modelPhaseSlopeRange_positive_window hσ hpos hF hgeom.1
-  have he : 4*modelPhaseSlopeMesh σ = (2 : ℝ)^(-σ)/2 := by
+  have he : 4*modelPhaseSlopeMesh σ = 2^(-σ)/2 := by
     unfold modelPhaseSlopeMesh
     ring
   rw [he]
-  exact hwindow
+  exact (modelPhaseSlopeRange_positive_window hσ hpos hF (modelPhaseSharpStationarySet_critical_geometry hσ hδ hF hT hN ha hb hq).1)
 
 theorem modelPhaseSharpStationarySet_positive
     {F : ℝ → ℝ} {σ δ T N : ℝ} {a b : ℕ} {q : ℤ}
@@ -50,12 +58,8 @@ theorem modelPhaseSharpStationarySet_positive
     (hT : 0 < T) (hN : 0 < N) (ha : N ≤ (a : ℝ)) (hb : (b : ℝ) ≤ 2*N)
     (hq : q ∈ modelPhaseSharpStationarySet F T N a b) :
     0 < q := by
-  have hv := (modelPhaseSharpStationarySet_grid_window hσ hδ hpos hF hT hN ha hb hq).1
   have hd := modelPhaseSlopeMesh_pos σ
-  have hvpos : 0 < (q : ℝ)*N/T := lt_of_lt_of_le (by positivity) hv
-  have hqreal : 0 < (q : ℝ) :=
-    (mul_pos_iff_of_pos_right hN).mp ((div_pos_iff_of_pos_right hT).mp hvpos)
-  exact_mod_cast hqreal
+  exact_mod_cast ((mul_pos_iff_of_pos_right hN).mp ((div_pos_iff_of_pos_right hT).mp (lt_of_lt_of_le (by positivity) ((modelPhaseSharpStationarySet_grid_window hσ hδ hpos hF hT hN ha hb hq).1))))
 
 theorem modelPhaseSharpStationarySet_chart_partition
     {F : ℝ → ℝ} {σ δ T N : ℝ} {a b : ℕ}
@@ -84,12 +88,11 @@ theorem modelPhaseSharpStationarySet_chart_coordinate
   have hmem := mem_positiveSlopeChartFiber.mp hq
   have hv := modelPhaseSharpStationarySet_grid_window hσ hδ hpos hF hT hN ha hb hmem.1
   have hd := modelPhaseSlopeMesh_pos σ
-  have hvpos : 0 ≤ (q : ℝ)*N/T := (by positivity : 0 ≤ 4*modelPhaseSlopeMesh σ).trans hv.1
   have hj : j ∈ positiveSlopeChartIndices (modelPhaseSlopeMesh σ) := by
     rw [← hmem.2]
     exact positiveSlopeChartIndex_mem hd hv
   exact positiveSlopeChart_coordinate hd (Finset.mem_Icc.mp hj).1
-    ((positiveSlopeChartIndex_eq_iff hd hvpos j).mp hmem.2)
+    ((positiveSlopeChartIndex_eq_iff hd ((by positivity : 0 ≤ 4*modelPhaseSlopeMesh σ).trans hv.1) j).mp hmem.2)
 
 theorem modelPhaseSharpStationarySet_chart_natural_interval
     {F : ℝ → ℝ} {σ δ T N : ℝ} {a b j : ℕ}
@@ -105,8 +108,7 @@ theorem modelPhaseSharpStationarySet_chart_natural_interval
   classical
   have hlong : (a : ℝ)/N+4*(Real.sqrt T)⁻¹ < (b : ℝ)/N := by
     by_contra h
-    have hempty := modelPhaseSharpStationarySet_of_short (F := F) (le_of_not_gt h)
-    simp only [hempty,positiveSlopeChartFiber,Finset.filter_empty,Finset.not_nonempty_empty] at hne
+    simp only [(modelPhaseSharpStationarySet_of_short (F := F) (le_of_not_gt h)),positiveSlopeChartFiber,Finset.filter_empty,Finset.not_nonempty_empty] at hne
   have hnonneg : ∀ q ∈ positiveSlopeChartFiber (modelPhaseSharpStationarySet F T N a b)
       (modelPhaseSlopeMesh σ) N T j, 0 ≤ q := by
     intro q hq

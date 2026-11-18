@@ -1,8 +1,17 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaSlopeInverse
 public import TaoTrudgianYang2025.BetaClosedSlope
-public import Mathlib
 
 @[expose] public section
 set_option autoImplicit false
@@ -17,18 +26,18 @@ theorem modelPhaseClosedSlope_drop {σ δ : ℝ} {F : ℝ → ℝ}
     {u v : ℝ} (hu : u ∈ Icc (1 : ℝ) 2) (hv : v ∈ Icc (1 : ℝ) 2)
     (huv : u ≤ v) :
     modelPhaseCurvatureLower σ*(v-u) ≤ modelPhaseClosedSlope F u-modelPhaseClosedSlope F v := by
-  have hd : DifferentiableOn ℝ (modelPhaseClosedSlope F) (interior (Icc (1 : ℝ) 2)) := by
+  have hd : DifferentiableOn ℝ (modelPhaseClosedSlope F) (interior (Icc 1 2)) := by
     intro x hx
-    have hx' : x ∈ Ioo (1 : ℝ) 2 := by simpa only [interior_Icc] using hx
+    have hx' : x ∈ Ioo 1 2 := by simpa using hx
     exact (((approximateModelPhase_deriv_contDiffAt hF hx').differentiableAt (by simp)).congr_of_eventuallyEq (modelPhaseClosedSlope_eventuallyEq_deriv hx')).differentiableWithinAt
-  have hb : ∀ x ∈ interior (Icc (1 : ℝ) 2),
+  have hb : ∀ x ∈ interior (Icc 1 2),
       deriv (modelPhaseClosedSlope F) x ≤ -modelPhaseCurvatureLower σ := by
     intro x hx
-    have hx' : x ∈ Ioo (1 : ℝ) 2 := by simpa only [interior_Icc] using hx
+    have hx' : x ∈ Ioo 1 2 := by simpa using hx
     rw [(modelPhaseClosedSlope_eventuallyEq_deriv hx').deriv_eq]
     have h := (approximateModelPhase_curvature_deriv_bounds hσ hδ hF hx').1
     linarith
-  have h := (convex_Icc (1 : ℝ) 2).image_sub_le_mul_sub_of_deriv_le
+  have h := (convex_Icc 1 2).image_sub_le_mul_sub_of_deriv_le
     (modelPhaseClosedSlope_continuousOn hF) hd hb u hu v hv huv
   linarith
 

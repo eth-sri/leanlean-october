@@ -22,15 +22,14 @@ theorem integrable_tsum_of_summable_integral_norm
     (hFint : ∀ n, MeasureTheory.Integrable (F n) measure)
     (hFsum : Summable (fun n => ∫ x, ‖F n x‖ ∂measure)) :
     MeasureTheory.Integrable (fun x => ∑' n, F n x) measure := by
-  have hMeas (n : ℕ) : AEStronglyMeasurable (F n) measure := (hFint n).1
-  have hNormMeas (n : ℕ) : AEMeasurable (fun x => ‖F n x‖ₑ) measure :=
-    (hMeas n).enorm
+  have hMeas (n : ℕ) := (hFint n).1
+  have hNormMeas (n : ℕ) := (hMeas n).enorm
   have hLIntegral : ∑' n, ∫⁻ x, ‖F n x‖ₑ ∂measure ≠ ⊤ := by
     have hEach (n : ℕ) : ∫⁻ x, ‖F n x‖ₑ ∂measure = ‖∫ x, ‖F n x‖ ∂measure‖₊ := by
       dsimp [enorm]
       rw [lintegral_coe_eq_integral _ (hFint n).norm, ENNReal.coe_nnreal_eq,
         coe_nnnorm, Real.norm_of_nonneg (integral_nonneg fun x => norm_nonneg (F n x))]
-      simp only [coe_nnnorm]
+      simp
     rw [funext hEach]
     exact ENNReal.tsum_coe_ne_top_iff_summable.2 <|
       NNReal.summable_coe.1 hFsum.abs
@@ -68,7 +67,7 @@ theorem norm_mollifier_LSeries_term_le_cutoff {ρ : ℂ} (X : ℝ) (n : ℕ)
   · positivity
   · have hnOneNat : 1 ≤ n := Nat.one_le_iff_ne_zero.mpr hn
     have hnOne : (1 : ℝ) ≤ n := by exact_mod_cast hnOneNat
-    have hPow : 1 ≤ (n : ℝ) ^ ρ.re := Real.one_le_rpow hnOne hρ
+    have hPow := Real.one_le_rpow hnOne hρ
     exact (div_le_iff₀ (lt_of_lt_of_le zero_lt_one hPow)).2
       ((norm_mollifierDirichletCoeff_le_cutoff X n).trans
         (by nlinarith [show (0 : ℝ) ≤ ⌊X⌋₊ by positivity]))
@@ -104,8 +103,7 @@ theorem hasSum_smoothedDetector {ρ : ℂ} {X x : ℝ}
     HasSum (fun n : ℕ =>
       LSeries.term (mollifierDirichletCoeff X) ρ n *
         Complex.exp (-((n : ℝ) * x)))
-      (smoothedDetector ρ X x) := by
-  exact (summable_smoothedDetector (X := X) hx hρ).hasSum
+      (smoothedDetector ρ X x) := (summable_smoothedDetector (X := X) hx hρ).hasSum
 
 theorem norm_LSeries_term_div_rpow_eq_add (f : ℕ → ℂ) (ρ s : ℂ) (n : ℕ) :
     ‖LSeries.term f ρ n‖ / (n : ℝ) ^ s.re =
@@ -113,8 +111,7 @@ theorem norm_LSeries_term_div_rpow_eq_add (f : ℕ → ℂ) (ρ s : ℂ) (n : �
   rcases eq_or_ne n 0 with rfl | hn
   · simp
   · have hnPos : (0 : ℝ) < n := by exact_mod_cast Nat.pos_of_ne_zero hn
-    rw [LSeries.norm_term_eq, LSeries.norm_term_eq, ite_eq_right hn, ite_eq_right hn]
-    rw [add_re, Real.rpow_add hnPos]
+    rw [LSeries.norm_term_eq, LSeries.norm_term_eq, ite_eq_right hn, ite_eq_right hn, add_re, Real.rpow_add hnPos]
     field_simp [ne_of_gt (Real.rpow_pos_of_pos hnPos ρ.re),
       ne_of_gt (Real.rpow_pos_of_pos hnPos s.re)]
 
@@ -124,8 +121,7 @@ theorem Gamma_mul_term_div_cpow_eq_add (f : ℕ → ℂ) (ρ s : ℂ) (n : ℕ) 
   rcases eq_or_ne n 0 with rfl | hn
   · simp
   · have hnC : (n : ℂ) ≠ 0 := by exact_mod_cast hn
-    rw [LSeries.term_of_ne_zero hn, LSeries.term_of_ne_zero hn]
-    rw [Complex.ofReal_natCast, Complex.cpow_add _ _ hnC]
+    rw [LSeries.term_of_ne_zero hn, LSeries.term_of_ne_zero hn, Complex.ofReal_natCast, Complex.cpow_add _ _ hnC]
     field_simp [Complex.cpow_ne_zero_iff.mpr (Or.inl hnC)]
 
 set_option maxHeartbeats 800000 in
@@ -175,38 +171,28 @@ L-series uniformly in the ordinate. -/
 def detectorPSeries : ℝ :=
   ∑' n : ℕ, (n : ℝ) ^ (-(6 / 5 : ℝ))
 
-theorem summable_detectorPSeries :
-    Summable (fun n : ℕ => (n : ℝ) ^ (-(6 / 5 : ℝ))) := by
-  exact Real.summable_nat_rpow.mpr (by norm_num)
 
 theorem norm_mollifier_LSeries_le_cutoff_pSeries {z : ℂ} {X : ℝ}
     (hz : 6 / 5 ≤ z.re) :
     ‖LSeries (mollifierDirichletCoeff X) z‖ ≤
       (⌊X⌋₊ : ℝ) * detectorPSeries := by
-  let f : ℕ → ℂ := mollifierDirichletCoeff X
+  let f := mollifierDirichletCoeff X
   have hAbs : 1 < z.re := by linarith
-  have hLS : LSeriesSummable f z :=
-    mollifierDirichletCoeff_LSeriesSummable X hAbs
-  have hNorm : Summable (fun n : ℕ => ‖LSeries.term f z n‖) :=
-    summable_norm_iff.mpr hLS
+  have hNorm := summable_norm_iff.mpr (mollifierDirichletCoeff_LSeriesSummable X hAbs)
   have hTerm (n : ℕ) : ‖LSeries.term f z n‖ ≤
       (⌊X⌋₊ : ℝ) * (n : ℝ) ^ (-(6 / 5 : ℝ)) := by
     rcases eq_or_ne n 0 with rfl | hn
     · simp
     · have hnPos : (0 : ℝ) < n := by exact_mod_cast Nat.pos_of_ne_zero hn
       have hnOne : (1 : ℝ) ≤ n := by exact_mod_cast Nat.one_le_iff_ne_zero.mpr hn
-      have hDen : (n : ℝ) ^ (6 / 5 : ℝ) ≤ (n : ℝ) ^ z.re :=
-        Real.rpow_le_rpow_of_exponent_le hnOne hz
-      rw [LSeries.norm_term_eq, ite_eq_right hn]
-      rw [Real.rpow_neg hnPos.le]
-      have hCoeff := norm_mollifierDirichletCoeff_le_cutoff X n
+      rw [LSeries.norm_term_eq, ite_eq_right hn, Real.rpow_neg hnPos.le]
       have hLeft : ‖f n‖ / (n : ℝ) ^ z.re ≤
           (⌊X⌋₊ : ℝ) / (n : ℝ) ^ z.re := by
-        exact div_le_div_of_nonneg_right hCoeff (Real.rpow_nonneg hnPos.le _)
+        exact div_le_div_of_nonneg_right (norm_mollifierDirichletCoeff_le_cutoff X n) (Real.rpow_nonneg hnPos.le _)
       have hRight : (⌊X⌋₊ : ℝ) / (n : ℝ) ^ z.re ≤
           (⌊X⌋₊ : ℝ) / (n : ℝ) ^ (6 / 5 : ℝ) := by
         exact div_le_div_of_nonneg_left (by positivity) (Real.rpow_pos_of_pos hnPos _)
-          hDen
+          (Real.rpow_le_rpow_of_exponent_le hnOne hz)
       exact hLeft.trans hRight
   calc
     ‖LSeries f z‖ ≤ ∑' n : ℕ, ‖LSeries.term f z n‖ :=
@@ -214,7 +200,7 @@ theorem norm_mollifier_LSeries_le_cutoff_pSeries {z : ℂ} {X : ℝ}
     _ ≤ ∑' n : ℕ, (⌊X⌋₊ : ℝ) *
         (n : ℝ) ^ (-(6 / 5 : ℝ)) := by
       exact hNorm.tsum_le_tsum hTerm
-        (summable_detectorPSeries.mul_left (⌊X⌋₊ : ℝ))
+        ((Real.summable_nat_rpow.mpr (by norm_num)).mul_left (⌊X⌋₊ : ℝ))
     _ = (⌊X⌋₊ : ℝ) * detectorPSeries := by
       rw [detectorPSeries, tsum_mul_left]
 

@@ -31,7 +31,7 @@ theorem logProfile_smooth (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
   intro x
   by_cases hx : x=0
   · subst x
-    have he : logProfile W =ᶠ[nhds (0 : ℝ)] (fun _ => 0) := by
+    have he : logProfile W =ᶠ[nhds 0] (fun _ => 0) := by
       filter_upwards [isOpen_Iio.mem_nhds ha] with y hy
       have hw : W y=0 := by
         by_contra hn

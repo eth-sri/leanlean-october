@@ -76,21 +76,17 @@ lemma compensation_scale_mass_bound {K : ℕ} (η : HeckeFamily.Character) (C : 
       (fun i : SelectedSlot J=>W i.val)
       (fun p i=>elementNorm (p i.val).val/Z^(ell i.val))≤
         (elementNorm C.generator*(128*max 1 b)^K)*Z := by
-  have hz : 0<Z := lt_of_lt_of_le zero_lt_one hZ
-  have hp (p : ∀i,canonicalSlotSupport (T i)) (i : Fin K) : (p i).val≠0 :=
-    canonicalSlotSupport_nonzero _ (hT i) _ (p i).property
+  have hz := lt_of_lt_of_le zero_lt_one hZ
+  have hp (p : ∀i,canonicalSlotSupport (T i)) (i : Fin K) := canonicalSlotSupport_nonzero _ (hT i) _ (p i).property
   have hterm (p : ∀i,canonicalSlotSupport (T i)) :
       ‖compensationSubsetWeight η W (fun i=>Z^(ell i)) (fun i=>(p i).val) J‖*
         (∏i : SelectedSlot J,‖W i.val (elementNorm (p i.val).val/Z^(ell i.val))‖)*
         lowPhysicalScale C (Z^(17/48:ℝ)/elementNorm (slotProduct (fun i=>(p i).val) J))
           (Z^(23/48:ℝ)/elementNorm (slotProduct (fun i=>(p i).val) J))≤
       elementNorm C.generator*Z^(5/6:ℝ) := by
-    have hcoeff : ‖compensationSubsetWeight η W (fun i=>Z^(ell i)) (fun i=>(p i).val) J‖*
-        (∏i : SelectedSlot J,‖W i.val (elementNorm (p i.val).val/Z^(ell i.val))‖)≤1 := (mul_le_of_le_one_left (Finset.prod_nonneg (fun _ _=>norm_nonneg _)) (compensationSubsetWeight_norm_le_one η W hW _ _ (hp p) J)).trans (Finset.prod_le_one₀ (fun _ _=>norm_nonneg _) (fun (i : SelectedSlot J) _=>hW i.val _))
-    have hL := slotProduct_norm_ge_one _ (hp p) J
     rw [lowPhysicalScale_source C Z _ hz]
-    apply (mul_le_of_le_one_left (by unfold elementNorm;positivity) hcoeff).trans
-    exact div_le_self (by unfold elementNorm;positivity) (one_le_pow₀ hL)
+    apply (mul_le_of_le_one_left (by unfold elementNorm;positivity) ((mul_le_of_le_one_left (Finset.prod_nonneg (fun _ _=>norm_nonneg _)) (compensationSubsetWeight_norm_le_one η W hW _ _ (hp p) J)).trans (Finset.prod_le_one₀ (fun _ _=>norm_nonneg _) (fun (i : SelectedSlot J) _=>hW i.val _)))).trans
+    exact div_le_self (by unfold elementNorm;positivity) (one_le_pow₀ (slotProduct_norm_ge_one _ (hp p) J))
   unfold gaussianPhysicalScaleMass
   apply (Finset.sum_le_sum (fun p _=>hterm p)).trans
   simp only [Finset.sum_const,Finset.card_univ,nsmul_eq_mul]

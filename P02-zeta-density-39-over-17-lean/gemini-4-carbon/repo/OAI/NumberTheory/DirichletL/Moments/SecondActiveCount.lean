@@ -11,9 +11,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSecondActiveCount
-open CanonicalQuadraticSieve CenteredMomentSourceRow CenteredMomentActiveSource
-open CenteredMomentFirstSectors CenteredMomentCompleteCommon CenteredMomentRankinScale
-open CenteredMomentRankinRadical
+open CanonicalQuadraticSieve CenteredMomentSourceRow CenteredMomentActiveSource CenteredMomentFirstSectors CenteredMomentCompleteCommon CenteredMomentRankinScale CenteredMomentRankinRadical
 local notation "O" => ActualEisensteinCubic.O
 
 def commonShell (S : Finset (Ideal O)) (β : Ideal O→ℂ) (Y : ℝ) : Finset (Ideal O×Ideal O) :=
@@ -41,8 +39,7 @@ theorem active_common_data (S : Finset (Ideal O)) (β : Ideal O→ℂ) (s : Idea
     (p : Ideal O×Ideal O) (hp : p∈commonShell S β Y) :
     p.1≠0 ∧ p.2≠0 ∧ CompletedGauss.primeSupport p.1=CompletedGauss.primeSupport p.2 ∧
       s∣p.1 ∧ s∣p.2 := by
-  have hm := (Finset.mem_filter.mp hp).1
-  obtain ⟨I,hi,J,hj,hIs,hJs,hβi,hβj,hC,hD⟩ := commonLabel_witnesses S β p.1 p.2 hm
+  obtain ⟨I,hi,J,hj,hIs,hJs,hβi,hβj,hC,hD⟩ := commonLabel_witnesses S β p.1 p.2 ((Finset.mem_filter.mp hp).1)
   have hsR := old_mask_dvd_commonRadical s I J hs hIs.1 hJs.1 (hmask I hi hβi) (hmask J hj hβj)
   refine ⟨hC ▸ commonPart_ne_zero I J,hD ▸ commonPart_ne_zero J I,?_,?_,?_⟩
   · rw [←hC,←hD]

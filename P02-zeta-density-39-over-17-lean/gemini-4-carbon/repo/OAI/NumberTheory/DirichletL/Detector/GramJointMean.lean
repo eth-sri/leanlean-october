@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbeGramCommon
-open ProbePhysical CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion
-open ConcretePrimeRowBridge CenteredMomentCorrelation
+open ProbePhysical CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion ConcretePrimeRowBridge CenteredMomentCorrelation
 local notation "O" => ActualEisensteinCubic.O
 local notation "Id" => Ideal O
 variable {ι : Type*} [Fintype ι]
@@ -44,10 +43,9 @@ lemma jointRemainder_periodic_first (S : Finset Id) (hS : ∀P∈S,P.IsMaximal) 
       jointRemainder S hS σ C k u a b r hr P hg c J m y := by
   have hf := jointFixed_periodic S hS σ C u a b r hr n y m y
     (Ideal.mul_le_left (Ideal.mul_le_left h)) (by simp)
-  have hm := idealRowHom_congr_mod J n m (Ideal.mul_le_right h)
   have hg' := globalExtension_periodic P hg c n y m y k k
     (Ideal.mul_le_right (Ideal.mul_le_left h)) (by simp) (by simp)
-  simp only [jointRemainder,hf,hm,hg']
+  simp only [jointRemainder,hf,(idealRowHom_congr_mod J n m (Ideal.mul_le_right h)),hg']
 
 theorem jointExtension_mean_zero (S : Finset Id) (hS : ∀P∈S,P.IsMaximal) (σ : RayRing)
     (C k : O) (u : Oˣ) (a b : ℕ) (r : O) (hr : Supported (Ideal.span {r}))
@@ -61,9 +59,8 @@ theorem jointExtension_mean_zero (S : Finset Id) (hS : ∀P∈S,P.IsMaximal) (σ
       ∑y : O⧸(jointFixedModulus S hS*(∏i,P i)*J)*p^e,
         jointExtension S hS σ C k u a b r hr P hg c (d*x.out) (d*y.out))=0 := by
   have he0 : e≠0 := by intro h;exact he (h ▸ dvd_zero 6)
-  have he1 : 1≤e := Nat.one_le_iff_ne_zero.mpr he0
   simp_rw [jointExtension_local_factor S hS σ C k u a b r hr P hg c J p hgp e he0 hfactor]
-  apply joint_mean_of_local_factor _ p hgp hchar e e he1 he hcop
+  apply joint_mean_of_local_factor _ p hgp hchar e e (Nat.one_le_iff_ne_zero.mpr he0) he hcop
     (fun x y=>jointRemainder S hS σ C k u a b r hr P hg c J (d*x) (d*y)) _ d
   intro x z y hxz
   apply jointRemainder_periodic_first

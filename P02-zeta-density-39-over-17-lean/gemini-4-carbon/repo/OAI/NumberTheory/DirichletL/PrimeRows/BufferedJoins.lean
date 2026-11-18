@@ -34,7 +34,7 @@ theorem buffered_horizontal_join_arbitrary_decay {K : ℕ}
     W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1 N r hr
   refine ⟨2*C,by positivity,?_⟩
   intro X Y Z hX hY hZ a B H i ha haTop hB hH hbin tx htx
-  let A : ℝ := C*(X^(1/2-r)*scaleBound Z ((51/100)+r-1) (2+r-1)*Y^((1-a-6*e)-1))/height H^N
+  let A := C*(X^(1/2-r)*scaleBound Z ((51/100)+r-1) (2+r-1)*Y^((1-a-6*e)-1))/height H^N
   have hA : 0≤A := by dsimp [A];exact div_nonneg (mul_nonneg hC (by unfold scaleBound;positivity)) (pow_nonneg (height_pos _).le _)
   have hslice (v : ℝ) (hv : v∈Ioc (a+16*e) 2) :=
     hbound X Y Z hX hY hZ a B H i ha haTop hB hH hbin v ⟨hv.1.le,hv.2⟩ tx htx
@@ -53,9 +53,7 @@ theorem buffered_horizontal_join_arbitrary_decay {K : ℕ}
     (fun v q=>continuedRowOnLines S hS hmax P hPS η u W0 W1 X Y Z v (1-a-6*e) r ((tx,q.1),q.2))
     (a+16*e) 2 A (by linarith) hA hm (fun v hv=>(hslice v hv).1) hnorm
   refine ⟨hi,hb.trans ?_⟩
-  calc
-    _ ≤ 2*A := mul_le_mul_of_nonneg_right (by linarith : 2-(a+16*e)≤2) hA
-    _ = _ := by dsimp [A];ring
+  exact (mul_le_mul_of_nonneg_right (by linarith : 2-(a+16*e)≤2) hA).trans_eq (by dsimp [A];ring)
 
 end SevenEighths.ProbeHighRowFamily
 

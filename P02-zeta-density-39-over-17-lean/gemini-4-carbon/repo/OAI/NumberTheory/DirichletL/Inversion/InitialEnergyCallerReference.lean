@@ -7,15 +7,10 @@ namespace OAI
 
 noncomputable section
 
+open MeasureTheory ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic IdealMobiusDivisorSum
 open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory
-open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic IdealMobiusDivisorSum
 namespace SevenEighths.InverseInitialEnergyCallerReference
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialKernelBridge
-open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
-open InverseInitialEnergyCallerCanonical InverseInitialEnergyCallerOpposite InverseInitialProfile
-open InverseInitialEnergyCallerAllocation InverseInitialEnergyCallerAssigned
-open InverseInitialQuotientGeometry InverseInitialClippedColumns InverseInitialEnergyCallerBranch
+open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialKernelBridge InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource InverseInitialEnergyCallerCanonical InverseInitialEnergyCallerOpposite InverseInitialProfile InverseInitialEnergyCallerAllocation InverseInitialEnergyCallerAssigned InverseInitialQuotientGeometry InverseInitialClippedColumns InverseInitialEnergyCallerBranch
 local notation "Eis"=>ActualEisensteinCubic.O
 local instance initialEnergyUnits : Fintype Eisˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
 variable {ι σ:Type*} [DecidableEq ι] [DecidableEq σ]
@@ -91,7 +86,6 @@ theorem actual_physical_reference_bound
   intro ι σ _ _ p hp _ hcop hg hinj hpr hc S hdiv hf pool Ψ hΨ j slots hslots lists a ha
     Z D B v θ H R m η hZ hR hη c₁ c₂ θ₁ θ₂ hc₁ hc₂ hsupport hn
     w hw labels rows hlabels hneg hchild F A ε hA hδ hF hReq hmoment
-  have hZp : 0<Z := zero_lt_one.trans hZ
   have hm : ∀z:JointLogSeparation.Frequency×(Fin 6→ℝ),∀ρ:SecondRayIndex,
       ∀J₁∈slots.powerset,∀J₂∈slots.powerset,∀t∈quotientSet p S,
       normalizedColumnEnergy p hp hcop hg pool (secondRayMinus Ψ ρ) (j*primaryGenerator t)
@@ -131,12 +125,11 @@ theorem actual_physical_reference_bound
   have he : prefactorCenter m D B θ+3*η+F+R+π+(F+ε)≤m+11*η+π+ε := by
     rw [hF,hReq]
     exact InverseInitialEnergyCallerClipping.initial_scalar_le m D B v θ η _ π ε hδ
-  have hexp := Real.rpow_add hZp (prefactorCenter m D B θ+3*η+F+R+π) (F+ε)
   have hpow := Real.rpow_le_rpow_of_exponent_le hZ.le he
   calc
     _=(Cp*(C₁+C₂))*Z^(prefactorCenter m D B θ+3*η+F+R+π+(F+ε))*A*
         ((1+‖θ₁‖)^InverseClippingProfiles.momentOrder (4*J)*
-          (1+‖θ₂‖)^InverseClippingProfiles.momentOrder (4*J)) := by rw [hexp];ring
+          (1+‖θ₂‖)^InverseClippingProfiles.momentOrder (4*J)) := by rw [(Real.rpow_add (zero_lt_one.trans hZ) (prefactorCenter m D B θ+3*η+F+R+π) (F+ε))];ring
     _≤_ := by gcongr
 
 end SevenEighths.InverseInitialEnergyCallerReference

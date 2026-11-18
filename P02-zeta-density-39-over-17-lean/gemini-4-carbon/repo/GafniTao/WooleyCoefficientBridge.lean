@@ -60,7 +60,6 @@ theorem wooleyWeightedConditionedGridMean_one
   unfold wooleyWeightedConditionedGridMean wooleyConditionedGridMean
     wooleyResidueRawMoment
   rw [wooleyWeightedMassSq_one]
-  have hQne : (Q : ℝ) ≠ 0 := by positivity
   simp only [Nat.cast_eq_zero, show Q ≠ 0 by omega, ↓reduceIte]
   simp_rw [wooleyWeightedResidueMassSq_one,
     wooleyWeightedNormalizedResidueGridSum_one]

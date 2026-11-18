@@ -43,11 +43,11 @@ theorem betaModelSample_firstDifference_bounds
       betaModelSample F T N A (n+1)-betaModelSample F T N A n ≤
         -Real.pi*(2 : ℝ)^(-σ)*T/N := by
   have hinside (x : ℝ) (hx : x ∈ Icc (n : ℝ) (n+1)) :
-      (A+x)/N ∈ Ioo (1 : ℝ) 2 := by
+      (A+x)/N ∈ Ioo 1 2 := by
     have hn' : (n : ℝ) ≤ L := by exact_mod_cast hn
     constructor
     · apply (lt_div_iff₀ hN).mpr
-      linarith [hx.1,(Nat.cast_nonneg n : (0 : ℝ) ≤ n)]
+      linarith [hx.1,(Nat.cast_nonneg n : 0 ≤ n)]
     · apply (div_lt_iff₀ hN).mpr
       linarith [hx.2]
   obtain ⟨x,hx,he⟩ := exists_hasDerivAt_eq_slope

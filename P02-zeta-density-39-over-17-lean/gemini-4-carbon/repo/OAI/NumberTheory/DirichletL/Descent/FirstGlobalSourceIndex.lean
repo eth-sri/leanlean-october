@@ -33,14 +33,13 @@ lemma retained_cutoff_enlargement (E : O) (hE : E≠0) (R Y : ℝ) (hRY : R≤Y)
     exact Finset.mem_erase.mpr ⟨hn,(mem_childFrequencyBall E hE Y h).mpr
       (((mem_childFrequencyBall E hE R h).mp hm).trans hRY)⟩
   calc
-    _=∑h∈(childFrequencyBall E R).erase 0,(if h∈childFrequencyBall E R then (1:ℂ) else 0)*f h := by
+    _=∑h∈(childFrequencyBall E R).erase 0,(if h∈childFrequencyBall E R then 1 else 0)*f h := by
       apply Finset.sum_congr rfl
       intro h hh
       simp [(Finset.mem_erase.mp hh).2]
     _=_ := Finset.sum_subset hsub (by
       intro h hh hn
-      have hne := (Finset.mem_erase.mp hh).1
-      have hout : h∉childFrequencyBall E R := fun hm=>hn (Finset.mem_erase.mpr ⟨hne,hm⟩)
+      have hout : h∉childFrequencyBall E R := fun hm=>hn (Finset.mem_erase.mpr ⟨((Finset.mem_erase.mp hh).1),hm⟩)
       simp [hout])
 
 variable (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
@@ -94,10 +93,8 @@ theorem original_retained_global_index
   intro f hf
   have hE := firstPhysicalMultiplier_ne_zero p hp b.support b.leftExponent b.rightExponent
     b.leftBit b.rightBit f (hlabels f hf)
-  have hRY' := hRY ⟨b,⟨C,D⟩⟩ ((mem_firstOriginalOuter pool Q _).mpr ⟨hb,hC,hD⟩) f hf
   rw [show reopenedPhysicalCutoff p b f (R b C f) D=
-    childFrequencyBall (firstPhysicalMultiplier p b.support b.leftExponent b.rightExponent b.leftBit b.rightBit f) (R b C f D) from rfl]
-  rw [retained_cutoff_enlargement _ hE _ Y hRY']
+    childFrequencyBall (firstPhysicalMultiplier p b.support b.leftExponent b.rightExponent b.leftBit b.rightBit f) (R b C f D) from rfl, retained_cutoff_enlargement _ hE _ Y (hRY ⟨b,⟨C,D⟩⟩ ((mem_firstOriginalOuter pool Q _).mpr ⟨hb,hC,hD⟩) f hf)]
   apply Finset.sum_congr rfl
   intro h hh
   simp only [firstOriginalWeight,reopenedPhysicalCutoff]

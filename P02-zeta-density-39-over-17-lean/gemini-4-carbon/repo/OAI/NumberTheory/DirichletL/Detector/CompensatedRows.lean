@@ -41,26 +41,25 @@ lemma compensatedRows_counting_product_integrable {ρ : Type*} [Countable ρ]
     (highRowOnLines η S C (Ideal.span {∏i∈Finset.univ\J,p i}) 3 3 2 (e q.1) q.2*
       sourceMellinWeight W0 W1 (X/elementNorm (∏i∈J,p i)) (Y/elementNorm (∏i∈J,p i))
         (Z*elementNorm (∏i∈Finset.univ\J,p i))
-        ((3:ℂ)+q.2.1.1*Complex.I) ((3:ℂ)+q.2.2*Complex.I) ((2:ℂ)+q.2.1.2*Complex.I))
+        (3+q.2.1.1*Complex.I) (3+q.2.2*Complex.I) (2+q.2.1.2*Complex.I))
   have hF (J : Finset (Fin K)) : Integrable (F J) ((Measure.count:Measure ρ).prod heightMeasure) := by
     apply Integrable.const_mul
     apply highRows_counting_product_integrable e he η S C _ 3 3 2 (by norm_num) (by norm_num) (by norm_num)
       (fun t : HeightSpace=>sourceMellinWeight W0 W1 (X/elementNorm (∏i∈J,p i))
         (Y/elementNorm (∏i∈J,p i)) (Z*elementNorm (∏i∈Finset.univ\J,p i))
-        ((3:ℂ)+t.1.1*Complex.I) ((3:ℂ)+t.2*Complex.I) ((2:ℂ)+t.1.2*Complex.I))
+        (3+t.1.1*Complex.I) (3+t.2*Complex.I) (2+t.1.2*Complex.I))
     · exact sourceMellinWeight_initial_integrable W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
         _ _ _ (div_pos hX (tuple_norm_pos p hp J)) (div_pos hY (tuple_norm_pos p hp J))
         (mul_pos hZ (tuple_norm_pos p hp (Finset.univ\J))) 3 2 3 (by norm_num)
     · exact sourceMellinWeight_initial_continuous W0 W1 a1 b1 ha1 hW1
         _ _ _ (div_pos hX (tuple_norm_pos p hp J)) (div_pos hY (tuple_norm_pos p hp J))
         (mul_pos hZ (tuple_norm_pos p hp (Finset.univ\J))) 3 2 3 (by norm_num)
-  have hi := integrable_finsetSum (Finset.univ:Finset (Fin K)).powerset (fun J _=>hF J)
-  apply hi.congr
+  apply (integrable_finsetSum (Finset.univ:Finset (Fin K)).powerset (fun J _=>hF J)).congr
   apply Filter.Eventually.of_forall
   intro q
   symm
   exact compensatedRow_kernel_subsets η S p hp (e q.1).val
-    (star (C.residueMonoid (e q.1).val)*frequencyWeight ((2:ℂ)+q.2.1.2*Complex.I) (e q.1))
+    (star (C.residueMonoid (e q.1).val)*frequencyWeight (2+q.2.1.2*Complex.I) (e q.1))
     W0 W1 X Y Z hX hY hZ _ _ _
 
 lemma counting_product_integral_tsum {ρ : Type*} [Countable ρ]

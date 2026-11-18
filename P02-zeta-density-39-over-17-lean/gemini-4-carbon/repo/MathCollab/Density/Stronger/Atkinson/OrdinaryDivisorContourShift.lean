@@ -11,9 +11,7 @@ public import MathCollab.Density.Stronger.Atkinson.OrdinaryDivisorMellin
 
 @[expose] public section
 
-open Complex Set MeasureTheory Filter Topology
-open MathCollab.Density.Contour MathCollab.Density.Stronger.PointMean
-open MathCollab.Density.Stronger.Fourth
+open Complex Set MeasureTheory Filter Topology MathCollab.Density.Contour MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
 open scoped Interval
 set_option autoImplicit false
 noncomputable section
@@ -40,14 +38,13 @@ private theorem voronoi_tendsto_rectangleIntegral'_vertical_sub
       (nhds (c * ∫ u : ℝ, f ((a : ℂ) + (u : ℂ) * I))) :=
     (intervalIntegral_tendsto_integral hIntA
       tendsto_neg_atTop_atBot tendsto_id).const_mul c
-  have hEdges := (hBottom.sub hTop).add (hRight.sub hLeft)
   have hExpanded : Tendsto (fun R : ℝ =>
       HIntegral' f a b (-R) - HIntegral' f a b R +
         ((c * ∫ u in (-R)..R, f ((b : ℂ) + (u : ℂ) * I)) -
           c * ∫ u in (-R)..R, f ((a : ℂ) + (u : ℂ) * I))) atTop
       (nhds (c * (∫ u : ℝ, f ((b : ℂ) + (u : ℂ) * I)) -
         c * (∫ u : ℝ, f ((a : ℂ) + (u : ℂ) * I)))) := by
-    simpa only [zero_sub, neg_zero, zero_add] using hEdges
+    simpa only [zero_sub, neg_zero, zero_add] using ((hBottom.sub hTop).add (hRight.sub hLeft))
   have hRectangle : Tendsto (fun R : ℝ =>
       RectangleIntegral' f
         ((a : ℂ) - (R : ℂ) * I) ((b : ℂ) + (R : ℂ) * I)) atTop
@@ -89,8 +86,7 @@ private theorem voronoi_verticalIntegral'_sub_eq_of_eventual_rectangle
   have hLimit := voronoi_tendsto_rectangleIntegral'_vertical_sub
     hBottom hTop hIntA hIntB
   have hConst : Tendsto (fun _R : ℝ => A) atTop (nhds A) := tendsto_const_nhds
-  have hLimitA := hConst.congr' (hFinite.mono fun _ h => h.symm)
-  exact tendsto_nhds_unique hLimit hLimitA
+  exact tendsto_nhds_unique hLimit (hConst.congr' (hFinite.mono fun _ h => h.symm))
 
 
 /-- Actual q=1 contour shift, with both vertical integrals and both edges proved. -/

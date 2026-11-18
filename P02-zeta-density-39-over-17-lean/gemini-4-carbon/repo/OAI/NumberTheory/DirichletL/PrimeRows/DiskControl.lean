@@ -7,11 +7,10 @@ public import OAI.NumberTheory.DirichletL.Hecke.DyadicControl
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology
 open Set Metric
+open scoped Classical Topology
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeLogarithmicInput HeckeLogarithmic HeckeFiniteDeletion
-open HeckeDeletionBounds HeckeReciprocalGrowth
+open HeckeFamily HeckeLogarithmicInput HeckeLogarithmic HeckeFiniteDeletion HeckeDeletionBounds HeckeReciprocalGrowth
 
 lemma poleRemoved_eq_regularizedL (χ : Character) {s : ℂ} (hs : 0<s.re) :
     HeckeOrigin.poleRemoved χ s=HeckeReciprocal.regularizedL χ s := by
@@ -167,21 +166,19 @@ theorem buffered_rectangle_reciprocal_bound (e ε : ℝ)
   obtain ⟨C,hC,hbound⟩ := buffered_regular_control e ε he he' hε
   refine ⟨C,hC,?_⟩
   intro ι _ χ T a H i hT ha ha1 hHT hmax j z hzl hzr hzi
-  have hz : z∈closedBall ((2:ℂ)+z.im*Complex.I) (2-a-6*e) := by
+  have hz : z∈closedBall (2+z.im*Complex.I) (2-a-6*e) := by
     rw [mem_closedBall,dist_eq_norm]
-    have heq : z-((2:ℂ)+z.im*Complex.I)=((z.re-2:ℝ):ℂ) := by apply Complex.ext <;> simp
+    have heq : z-(2+z.im*Complex.I)=((z.re-2:ℝ):ℂ) := by apply Complex.ext <;> simp
     rw [heq,Complex.norm_real,Real.norm_eq_abs,abs_of_nonpos (by linarith)]
     linarith
-  have hb := hbound χ T a i hT ha ha1 hmax j z.im (hzi.trans hHT) z hz
   have hc : presentationComplexity (χ j) z.im≤presentationComplexity (χ j) H := by
     unfold presentationComplexity complexity
-    have hH : 0≤H := (abs_nonneg _).trans hzi
-    rw [abs_of_nonneg hH]
+    rw [abs_of_nonneg ((abs_nonneg _).trans hzi)]
     gcongr
   have hnonneg : 0≤presentationComplexity (χ j) z.im := by
     unfold presentationComplexity complexity
     positivity
-  apply (le_trans (le_add_of_nonneg_left (norm_nonneg _)) hb).trans
+  apply (le_trans (le_add_of_nonneg_left (norm_nonneg _)) (hbound χ T a i hT ha ha1 hmax j z.im (hzi.trans hHT) z hz)).trans
   exact mul_le_mul_of_nonneg_left (Real.rpow_le_rpow hnonneg hc hε.le) hC.le
 
 end SevenEighths.ProbeHighRowFamily

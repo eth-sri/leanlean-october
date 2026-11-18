@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.BetaModelJetEstimates
 
 @[expose] public section
@@ -62,7 +71,7 @@ def aProcessShiftPhase (F : ℝ → ℝ) (σ η u : ℝ) : ℝ :=
 theorem aProcessShiftPhase_contDiffOn {F : ℝ → ℝ} {η : ℝ}
     (hF : ContDiffOn ℝ ∞ F phaseInterval) (hη : 0 ≤ η) (hη₁ : η ≤ 1)
     (σ : ℝ) : ContDiffOn ℝ ∞ (aProcessShiftPhase F σ η) phaseInterval := by
-  have hc (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) :
+  have hc (t : ℝ) (ht : t ∈ Icc 0 1) :
       ContDiffOn ℝ ∞ (fun u => F (aProcessShiftPoint η t u)) phaseInterval := by
     apply hF.comp (by unfold aProcessShiftPoint; fun_prop)
     intro u hu
@@ -78,12 +87,12 @@ theorem aProcessShiftPhase_iteratedDerivWithin {F : ℝ → ℝ} {η u : ℝ}
          iteratedDerivWithin n F phaseInterval (aProcessShiftPoint η 1 u)) := by
   have hf : ContDiffOn ℝ n F phaseInterval :=
     hF.of_le (ENat.natCast_le_of_coe_top_le_withTop le_rfl n)
-  have hc (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) :
+  have hc (t : ℝ) (ht : t ∈ Icc 0 1) :
       ContDiffOn ℝ n (fun u => F (aProcessShiftPoint η t u)) phaseInterval := by
     apply hf.comp (by unfold aProcessShiftPoint; fun_prop)
     intro v hv
     exact aProcessShiftPoint_mem_Icc hη hη₁ ht hv
-  have hd (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) :
+  have hd (t : ℝ) (ht : t ∈ Icc 0 1) :
       iteratedDerivWithin n (fun u => F (aProcessShiftPoint η t u)) phaseInterval u =
         (1-η)^n*iteratedDerivWithin n F phaseInterval (aProcessShiftPoint η t u) :=
     iteratedDerivWithin_comp_affine_of_mapsTo hf uniqueDiffOn_phaseInterval

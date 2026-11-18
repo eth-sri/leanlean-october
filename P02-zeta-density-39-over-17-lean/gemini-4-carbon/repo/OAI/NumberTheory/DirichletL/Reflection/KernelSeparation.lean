@@ -70,8 +70,7 @@ theorem reflected_kernel_uniform_separation (a b : ℝ) (ha : 0<a)
   obtain ⟨he,hi,hm,hp⟩ := hsep θ _ hR
   refine ⟨?_,hi,hm,hp⟩
   intro k p n q hk hp hn hq
-  rw [actual_annular_kernel_identity C QK QP Qn Qb k p n q hQK hQP hQn hQb hk hp hn hq]
-  rw [he]
+  rw [actual_annular_kernel_identity C QK QP Qn Qb k p n q hQK hQP hQn hQb hk hp hn hq, he]
   congr 1
   apply integral_congr_ae
   exact Filter.Eventually.of_forall (fun t => by dsimp only; rw [kernel_mode_separation])

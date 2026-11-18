@@ -31,8 +31,7 @@ theorem weightedScalar_step_two (Q eta a G1 C omega X W V scalar : ℂ)
     weightedScalar Q eta a G1 C omega X W V (Q^6*scalar) e (l+2) k (m+1)=
       evenRatio Q a X V*weightedScalar Q eta a G1 C omega X W V scalar e l k m := by
   unfold weightedScalar evenRatio
-  rw [localCubePhase_step_two C omega hC ho]
-  rw [pow_add (a*X^3/Q) l 2,pow_succ V m]
+  rw [localCubePhase_step_two C omega hC ho, pow_add (a*X^3/Q) l 2,pow_succ V m]
   have hbase : (a*X^3/Q)^2*Q^6=a^2*Q^4*X^6 := by
     field_simp
   linear_combination (-eta*X/G1)^e*(a*X^3/Q)^l*localCubePhase C omega e l k*scalar*W^k*V^m*V*hbase

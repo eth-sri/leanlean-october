@@ -8,15 +8,13 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
-open ProbeRow ProbeCompleted CanonicalRowCompletion CanonicalQuadraticSieve CompletedGauss
-open RayFourExpansion InitialMeanSquare SecondPassArithmetic ActualEisensteinCubic
+open ProbeRow ProbeCompleted CanonicalRowCompletion CanonicalQuadraticSieve CompletedGauss RayFourExpansion InitialMeanSquare SecondPassArithmetic ActualEisensteinCubic
 local notation "O" => ActualEisensteinCubic.O
 local notation "Id" => Ideal O
 
 lemma summand_zero_completedIndex (Ψ : O→*ℂ) (W : ℝ→ℂ) (X : ℝ) (I J : Id)
     (h : completedIndex I J=0) : summand Ψ W X I J=0 := by
-  have hprod : primaryGenerator I*primaryGenerator J^3=0 := h
-  rcases mul_eq_zero.mp hprod with hI|hJ
+  rcases mul_eq_zero.mp (h) with hI|hJ
   · simp only [summand,columnWeight,squarefreeGaussCoefficient,hI,ne_eq,not_true_eq_false,
       and_false,dite_false,zero_mul,zero_div]
   · have hj : primaryGenerator J=0 := (pow_eq_zero_iff (by decide : 3≠0)).mp hJ

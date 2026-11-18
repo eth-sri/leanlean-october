@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaBufferedJets
 public import TaoTrudgianYang2025.AtkinsonPhaseSecondDerivatives
 
@@ -102,14 +112,13 @@ theorem modelPhaseBufferedCutoff_uniform_c2 :
     exact Complex.ofRealCLM.contDiff.contDiffAt.comp x
       (hχ.contDiffAt.of_le (ENat.natCast_le_of_coe_top_le_withTop le_rfl 2))
   · intro x hx
-    simpa only [iteratedDeriv_zero,pow_zero,mul_one,Complex.norm_real,
-      Real.norm_eq_abs] using hjets l r η x hη 0 (by norm_num)
+    simpa using hjets l r η x hη 0 (by norm_num)
   · intro x hx
     have he := iteratedDeriv_ofReal_fun (x := x) (hχ.contDiffAt.of_le
       (ENat.natCast_le_of_coe_top_le_withTop le_rfl 1))
     simp only [iteratedDeriv_one] at he
     rw [he,Complex.norm_real,Real.norm_eq_abs]
-    simpa only [iteratedDeriv_one,pow_one] using hjets l r η x hη 1 (by norm_num)
+    simpa using hjets l r η x hη 1 (by norm_num)
   · intro x hx
     rw [iteratedDeriv_ofReal_fun (hχ.contDiffAt.of_le
       (ENat.natCast_le_of_coe_top_le_withTop le_rfl 2)),Complex.norm_real,Real.norm_eq_abs]

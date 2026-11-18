@@ -7,7 +7,7 @@ noncomputable section
 open MeasureTheory Set
 open scoped SchwartzMap FourierTransform ContDiff
 namespace GuthMaynard.Improvement
-open RiemannZeta.GuthMaynard
+open RiemannZeta.GuthMaynard GuthMaynard.NativeMoment
 
 /-- Independent slope and denominator shells with translation bounded by the outer scale. -/
 def InMixedAffineBox (B Q R C₀ : ℝ) (p : ℤ × (ℤ × ℤ)) : Prop :=
@@ -30,18 +30,14 @@ theorem mixed_finite_box (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 ≤ D β n)
   let M₃ := ⌈C₀*R+1⌉₊
   have hM₃ : 0 < M₃ := Nat.ceil_pos.mpr (by positivity)
   have hM₃r : (M₃:ℝ) ≤ (C₀+2)*R := by
-    have hh := Nat.ceil_lt_add_one (show 0 ≤ C₀*R+1 by positivity)
-    have hBmax := le_refl R
     have hr1 : 1 ≤ R := hK.trans hKR
-    have hmul := mul_le_mul_of_nonneg_left hBmax hC₀
     dsimp only [M₃]
-    nlinarith only [hh,hr1,hmul]
+    nlinarith only [(Nat.ceil_lt_add_one (show 0 ≤ C₀*R+1 by positivity)),hr1,(mul_le_mul_of_nonneg_left (le_refl R) hC₀)]
   have h₁bound : ∀ i : Bool, (twoShell B i:ℝ) ≤ (C₀+2)*R := by
     intro i
     have hb := twoShell_le hB i
-    have hbm := hBR
     have hm : 0 ≤ C₀*R := by positivity
-    nlinarith only [hb,hbm,hm]
+    nlinarith only [hb,(hBR),hm]
   have h₂bound : ∀ i : Bool, (twoShell Q i:ℝ) ≤ (C₀+2)*K := by
     intro i
     have hb := twoShell_le hQ i

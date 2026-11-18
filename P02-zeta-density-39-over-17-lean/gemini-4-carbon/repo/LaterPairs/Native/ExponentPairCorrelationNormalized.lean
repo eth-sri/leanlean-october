@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.ExponentPairCorrelationAllHeights
 
 @[expose] public section
@@ -30,11 +39,9 @@ theorem compressedHeight_main_le
       _ ≤ (σ*T*r/N)/(N/2) :=
         div_le_div_of_nonneg_left hdual.le (by positivity) (by linarith)
       _ = _ := by field_simp
-  have hpow := Real.rpow_le_rpow (div_nonneg hdual.le hNr.le) hratio hq
-  have hscale := Real.rpow_le_rpow hNr.le (show N-r ≤ N by linarith) hp
   calc
     _ ≤ ((2*σ)*(T/N^2)*r)^q*N^p :=
-      mul_le_mul hpow hscale (Real.rpow_nonneg hNr.le _) (by positivity)
+      mul_le_mul (Real.rpow_le_rpow (div_nonneg hdual.le hNr.le) hratio hq) (Real.rpow_le_rpow hNr.le (show N-r ≤ N by linarith) hp) (Real.rpow_nonneg hNr.le _) (by positivity)
     _ = _ := by
       rw [Real.mul_rpow (by positivity) hr.le,
         Real.mul_rpow (by positivity) (by positivity)]
@@ -73,18 +80,16 @@ theorem sourceShiftCorrelation_normalized_bound
   have hNpos : 0 < N := by linarith
   have hrpos : 0 < (r : ℝ) := Nat.cast_pos.mpr hr
   have hhalf : (r : ℝ) ≤ N/2 := hrN.trans (by nlinarith)
-  have hbnd := hbound F T N a L r hT hN hr hrN ha hb hF
   have hmain := compressedHeight_main_le
     (show 0 ≤ k+ε by linarith [hkl.inTriangle.1])
     (show 0 ≤ l+ε by linarith [hkl.inTriangle.2.2.1]) hσ hT hNpos hrpos hhalf
-  have hinv := compressedHeight_inverse_le hσ hT hNpos hrpos
   have hx : 0 ≤ (T/N^2)^(k+ε)*N^(l+ε)*(r : ℝ)^(k+ε) := by positivity
   have hy : 0 ≤ N^2/(T*r) := by positivity
   calc
-    _ ≤ B*(((σ*T*r/N)/(N-r))^(k+ε)*(N-r)^(l+ε)+(N-r)/(σ*T*r/N)) := hbnd
+    _ ≤ B*(((σ*T*r/N)/(N-r))^(k+ε)*(N-r)^(l+ε)+(N-r)/(σ*T*r/N)) := (hbound F T N a L r hT hN hr hrN ha hb hF)
     _ ≤ B*(M*((T/N^2)^(k+ε)*N^(l+ε)*(r : ℝ)^(k+ε))+
         (1/σ)*(N^2/(T*r))) :=
-      mul_le_mul_of_nonneg_left (add_le_add hmain hinv) (zero_le_one.trans hB)
+      mul_le_mul_of_nonneg_left (add_le_add hmain (compressedHeight_inverse_le hσ hT hNpos hrpos)) (zero_le_one.trans hB)
     _ ≤ B*(D*((T/N^2)^(k+ε)*N^(l+ε)*(r : ℝ)^(k+ε))+D*(N^2/(T*r))) :=
       mul_le_mul_of_nonneg_left (add_le_add
         (mul_le_mul_of_nonneg_right hMD hx) (mul_le_mul_of_nonneg_right hiD hy))

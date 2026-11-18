@@ -15,15 +15,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentEnergyFirstHighFourCoefficients
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss ActualEisensteinCubic ConcreteTraceCRT
-open CenteredMomentPrimeElements CenteredMomentPrimePool CenteredMomentFirstAmplificationChoice
-open CenteredMomentAmplificationErrorEnergy CenteredMomentFirstMixedAllowance
-open CenteredMomentFirstPhysicalSource CenteredMomentFirstScale CenteredMomentCanonicalFirst
-open CenteredMomentFirstCanonicalFamily CenteredMomentSecondHeightFamily
-open CenteredMomentSectorLocalization CenteredMomentAmplifiedRetainedRadius
-open CenteredMomentFirstMixedNormalization CenteredMomentFirstMixedNormalizationActual
-open CenteredMomentFirstMixedExceptionalLow CenteredMomentFirstMixedDiagonal
-open CenteredMomentSuccessorPaidParameters
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss ActualEisensteinCubic ConcreteTraceCRT CenteredMomentPrimeElements CenteredMomentPrimePool CenteredMomentFirstAmplificationChoice CenteredMomentAmplificationErrorEnergy CenteredMomentFirstMixedAllowance CenteredMomentFirstPhysicalSource CenteredMomentFirstScale CenteredMomentCanonicalFirst CenteredMomentFirstCanonicalFamily CenteredMomentSecondHeightFamily CenteredMomentSectorLocalization CenteredMomentAmplifiedRetainedRadius CenteredMomentFirstMixedNormalization CenteredMomentFirstMixedNormalizationActual CenteredMomentFirstMixedExceptionalLow CenteredMomentFirstMixedDiagonal CenteredMomentSuccessorPaidParameters
 local notation "O"=>HeckeFamily.O
 local notation "Ray"=>RayFourExpansion.RayCharacter
 
@@ -133,17 +125,14 @@ theorem actual_error_high_cores (η τ:Character)(C D:Ideal O)(hC:Supported C)(h
       (allowance C D Z) Kerror (Mdecl-M0) paid eps saving (Mwidth/4-Real.logb Z (C.absNorm:ℝ)-errorRemoval p Z k) j≤
       Z^(Mdecl-M0+lossVector sigma delta reserve paid eps Mcap saving j) := by
   dsimp only
-  have hz:0<Z:=zero_lt_one.trans hZ
-  have hq:=norm_pos τ.modulus τ.modulus_ne_bot
-  have hc:=norm_pos C hC.1
+  have hz :=zero_lt_one.trans hZ
   have hpdata:=elementPool_data _ (fun Q hQ=>(primePool_data M H Sbad hbad _ _ _ Q hQ).1)
     (fun Q hQ=>(primePool_data M H Sbad hbad _ _ _ Q hQ).2) p hp
-  have hp0:p≠0:=hpdata.1.ne_zero
+  have hp0 :=hpdata.1.ne_zero
   have hr:0<errorCommonRadius Z (Real.logb Z (D.absNorm:ℝ))
       (nominalLog C D (Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E}) K V Z)
       (Real.logb Z (C.absNorm:ℝ)) sigma delta reserve p k:=by unfold errorCommonRadius;positivity
   have hA:Real.logb Z V≤Mdecl:=by linarith
-  have hAcap:Real.logb Z V≤Mcap:=hA.trans hcap
   intro j
   fin_cases j
   · have hh:=error_paid_core p hp0 k hk (τ.modulus.absNorm:ℝ) V (C.absNorm:ℝ) Z (allowance C D Z)
@@ -151,7 +140,7 @@ theorem actual_error_high_cores (η τ:Character)(C D:Ideal O)(hC:Supported C)(h
         (nominalLog C D (Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E}) K V Z)
         (Real.logb Z (C.absNorm:ℝ)) sigma delta reserve p k)
       (Mdecl-(Real.logb Z K+Real.logb Z (η.modulus.absNorm:ℝ))) paid eps saving (Mwidth/4-Real.logb Z (C.absNorm:ℝ)-errorRemoval p Z k)
-      hq hV hc hZ (allowance_nonneg _ _ _) (by linarith)
+      (norm_pos τ.modulus τ.modulus_ne_bot) hV (norm_pos C hC.1) hZ (allowance_nonneg _ _ _) (by linarith)
     simpa [lossVector] using hh
   · have hh:=actual_error_exceptional_uniform_cap η τ C D
       (Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E}) hC hD hCD E rfl
@@ -172,11 +161,10 @@ theorem actual_error_high_cores (η τ:Character)(C D:Ideal O)(hC:Supported C)(h
     apply hh.trans
     apply Real.rpow_le_rpow_of_exponent_le hZ.le
     dsimp [lossVector]
-    have he:=mul_le_mul_of_nonneg_left hAcap heps
+    have he:=mul_le_mul_of_nonneg_left (hA.trans hcap) heps
     linarith
   · have hh:=actual_error_diagonal η τ C D hC hD hCD E K V Z sigma delta reserve 0 hK hV hZ (by norm_num) hmod p hp0 k hk
     simp only [Real.rpow_zero,mul_one,zero_mul,add_zero] at hh
-    have ht:=mul_le_mul_of_nonneg_right hh (Real.rpow_nonneg hz.le (-saving))
     have hcore:errorCores p k (τ.modulus.absNorm:ℝ) V (C.absNorm:ℝ) Z
         (allowance C D Z) (errorCommonRadius Z (Real.logb Z (D.absNorm:ℝ))
           (nominalLog C D (Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E}) K V Z)
@@ -184,7 +172,7 @@ theorem actual_error_high_cores (η τ:Character)(C D:Ideal O)(hC:Supported C)(h
         (Mdecl-(Real.logb Z K+Real.logb Z (η.modulus.absNorm:ℝ))) paid eps saving (Mwidth/4-Real.logb Z (C.absNorm:ℝ)-errorRemoval p Z k) 3≤
         Z^(Real.logb Z V-(Real.logb Z K+Real.logb Z (η.modulus.absNorm:ℝ))+
           sigma+delta+reserve)*Z^(-saving):=by
-      convert ht using 1 ; dsimp [errorCores,reference] ; ring
+      convert (mul_le_mul_of_nonneg_right hh (Real.rpow_nonneg hz.le (-saving))) using 1 ; dsimp [errorCores,reference] ; ring
     apply hcore.trans
     rw [←Real.rpow_add hz]
     apply Real.rpow_le_rpow_of_exponent_le hZ.le
@@ -218,10 +206,9 @@ theorem actual_high_four_coefficients
       56*((Mamp+2*sigma)/(sigma/6)+1872*(Fintype.card Ray:ℝ))*H j*
         Z^(Mdecl-M0+lossVector sigma delta reserve paid eps Mcap saving j+primeLoss) := by
   dsimp only
-  have hz:0<Z:=zero_lt_one.trans hZ
   have hne:(primePool M Hray Sbad (1/2) 1 (Z^(sigma/3))).Nonempty:=by
     apply Finset.card_pos.mp
-    exact_mod_cast (Real.rpow_pos_of_pos hz (sigma/3-primeLoss)).trans_le hcard
+    exact_mod_cast (Real.rpow_pos_of_pos (zero_lt_one.trans hZ) (sigma/3-primeLoss)).trans_le hcard
   have hmain:=actual_main_high_cores η τ C D hC hD hCD E K V Z sigma delta reserve paid eps saving
     Mdecl Mwidth Mcap hK hV hZ hs.le heps hM hcap hactual hwidth hlow hmod
   have herror:=fun (p:elementPool (primePool M Hray Sbad (1/2) 1 (Z^(sigma/3))))

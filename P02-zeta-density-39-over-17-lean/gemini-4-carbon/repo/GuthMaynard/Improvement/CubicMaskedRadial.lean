@@ -16,9 +16,6 @@ def ratioMaskProduct (A B C : Set ℝ) (p : ℝ × ℝ) : ℂ :=
 theorem ratioMaskProduct_measurable {A B C : Set ℝ}
     (hA : MeasurableSet A) (hB : MeasurableSet B) (hC : MeasurableSet C) :
     Measurable (ratioMaskProduct A B C) := by
-  have hAi : Measurable (A.indicator (fun _ : ℝ => (1:ℂ))) := measurable_const.indicator hA
-  have hBi : Measurable (B.indicator (fun _ : ℝ => (1:ℂ))) := measurable_const.indicator hB
-  have hCi : Measurable (C.indicator (fun _ : ℝ => (1:ℂ))) := measurable_const.indicator hC
   unfold ratioMaskProduct mellinFrequency
   fun_prop
 

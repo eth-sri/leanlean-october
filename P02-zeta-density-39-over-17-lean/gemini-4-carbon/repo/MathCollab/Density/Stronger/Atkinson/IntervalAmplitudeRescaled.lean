@@ -20,9 +20,9 @@ theorem exists_intervalC1Bound_rescaled {f : ℝ → ℂ}
     (hf : ∀ x : ℝ, 0 < x → ContDiffAt ℝ 1 f x) :
     ∃ C : ℝ, 0 < C ∧ ∀ T : ℝ, 0 < T →
       IntervalC1Bound (fun x => f (x / T)) (T / 16) T C := by
-  have hfc : ContinuousOn f (Icc (1 / 16 : ℝ) 1) :=
+  have hfc : ContinuousOn f (Icc (1 / 16) 1) :=
     fun x hx => (hf x (by linarith [hx.1])).continuousAt.continuousWithinAt
-  have hdc : ContinuousOn (deriv f) (Icc (1 / 16 : ℝ) 1) := fun x hx =>
+  have hdc : ContinuousOn (deriv f) (Icc (1 / 16) 1) := fun x hx =>
     ((hf x (by linarith [hx.1])).derivWithin (m := 0) (by norm_num)).continuousAt.continuousWithinAt
   obtain ⟨M, hM⟩ := isCompact_Icc.exists_bound_of_continuousOn hfc
   obtain ⟨N, hN⟩ := isCompact_Icc.exists_bound_of_continuousOn hdc
@@ -32,7 +32,7 @@ theorem exists_intervalC1Bound_rescaled {f : ℝ → ℂ}
   have hNC : N ≤ C := by dsimp [C]; linarith [le_abs_self N, abs_nonneg M]
   refine ⟨C, hC, ?_⟩
   intro T hT
-  have hscale (x : ℝ) (hx : x ∈ Icc (T / 16) T) : x / T ∈ Icc (1 / 16 : ℝ) 1 := by
+  have hscale (x : ℝ) (hx : x ∈ Icc (T / 16) T) : x / T ∈ Icc (1 / 16) 1 := by
     constructor
     · exact (le_div_iff₀ hT).mpr (by linarith [hx.1])
     · exact (div_le_one hT).mpr hx.2

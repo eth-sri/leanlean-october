@@ -10,8 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 local notation "O" => ActualEisensteinCubic.O
 namespace SevenEighths.CenteredMomentFourier
-open ActualEisensteinCubic CubicEisenstein ConcreteTraceCRT
-open CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentSupportedCorrelation
+open ActualEisensteinCubic CubicEisenstein ConcreteTraceCRT CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentSupportedCorrelation
 
 def frequencyReduction (d m : O) (h : d ∣ m) : Residue m →+* Residue d :=
   Ideal.Quotient.factor (Ideal.span_singleton_le_span_singleton.mpr h)
@@ -27,10 +26,9 @@ theorem quotientTrace_scaled (d a m : O) (hm : m = d * a)
   subst m
   obtain ⟨h, rfl⟩ := Ideal.Quotient.mk_surjective h
   obtain ⟨x, rfl⟩ := Ideal.Quotient.mk_surjective x
-  have ht := quotientTrace_conductor_scale d a h hd ha (Ideal.Quotient.mk _ x)
   simp only [scaledResidue_mk, frequencyReduction_mk, ← map_mul]
   simpa only [← map_mul, conductorReduction, Ideal.Quotient.factor_mk, mul_assoc,
-    mul_left_comm, mul_comm] using ht
+    mul_left_comm, mul_comm] using (quotientTrace_conductor_scale d a h hd ha (Ideal.Quotient.mk _ x))
 
 def residueGauss (d : O) (hd : d ≠ 0) (χ : MulChar (Residue d) ℂ)
     (h : Residue d) : ℂ :=

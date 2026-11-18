@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.SargosDualTentWindow
 public import LaterPairs.Native.SargosInitialInterval
 public import LaterPairs.Native.SargosLocalAffineJets
@@ -32,7 +41,7 @@ theorem sargos_contDiffOn_iteratedDerivWithin {f : ℝ → ℝ} {s : Set ℝ}
     (hf : ContDiffOn ℝ ∞ f s) (hs : UniqueDiffOn ℝ s) (n : ℕ) :
     ContDiffOn ℝ ∞ (iteratedDerivWithin n f s) s := by
   induction n with
-  | zero => simpa only [iteratedDerivWithin_zero] using hf
+  | zero => simpa using hf
   | succ n hn =>
       rw [iteratedDerivWithin_succ]
       exact hn.derivWithin hs (by simp)

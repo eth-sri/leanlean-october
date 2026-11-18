@@ -8,11 +8,10 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic
+open scoped BigOperators Classical SchwartzMap
 namespace SevenEighths.InverseInitialCommonCutoff
-open InverseMoment InverseInitialCommonProfile InverseInitialCommonRatios
-open InverseInitialOverlapIdealFourier InverseInitialOverlapSource
+open InverseMoment InverseInitialCommonProfile InverseInitialCommonRatios InverseInitialOverlapIdealFourier InverseInitialOverlapSource
 local notation "Eis"=>ActualEisensteinCubic.O
 variable {σ:Type*} [DecidableEq σ]
 

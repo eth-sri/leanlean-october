@@ -76,8 +76,7 @@ theorem gmAffineCentralWeight_eq_one
   apply gmCubicLocalBump_one
   rw [abs_div]
   have hMpos : (0 : ℝ) < 8 * M := by positivity
-  rw [abs_of_pos hMpos]
-  rw [div_le_one hMpos]
+  rw [abs_of_pos hMpos, div_le_one hMpos]
   rcases mem_gmAffineCentralShell.mp hm with ⟨hmLower, hmUpper⟩
   rw [abs_le]
   constructor
@@ -90,8 +89,7 @@ theorem gmAffineCentralWeight_eq_zero_of_not_mem
   apply gmCubicLocalBump_eq_zero_of_two_le_abs
   rw [abs_div]
   have hMpos : (0 : ℝ) < 8 * M := by positivity
-  rw [abs_of_pos hMpos]
-  rw [le_div_iff₀ hMpos]
+  rw [abs_of_pos hMpos, le_div_iff₀ hMpos]
   have hmOutside : m < (-(16 * M : ℕ) : ℤ) ∨ (16 * M : ℤ) < m := by
     rw [mem_gmAffineSmoothCentralShell, not_and_or] at hm
     exact Or.imp lt_of_not_ge lt_of_not_ge hm
@@ -99,12 +97,12 @@ theorem gmAffineCentralWeight_eq_zero_of_not_mem
   · rw [abs_of_nonpos]
     · have hbound : (16 * M : ℤ) ≤ -m := by omega
       have hboundReal : (16 * M : ℝ) ≤ -(m : ℝ) := by exact_mod_cast hbound
-      nlinarith only [hboundReal]
+      nlinarith
     · exact_mod_cast (show m ≤ 0 by omega)
   · rw [abs_of_nonneg]
     · have hboundReal : (16 * M : ℝ) ≤ (m : ℝ) := by
         exact_mod_cast hmUpper.le
-      nlinarith only [hboundReal]
+      nlinarith
     · exact_mod_cast (show (0 : ℤ) ≤ m by omega)
 
 /-! ### A Schwartz central weight and exact Poisson summation -/
@@ -471,10 +469,9 @@ theorem gmAffinePoissonFarMode_le_majorant
     (ell : ℤ) :
     gmAffinePoissonFarMode M hM alpha Q ell ≤
       gmAffinePoissonFarMajorant n M alpha Q ell := by
-  let j : ℤ := ell + ⌊alpha⌋
-  let D : ℝ := (8 * M : ℝ) *
+  let j := ell + ⌊alpha⌋
+  let D := (8 * M : ℝ) *
     SchwartzMap.seminorm ℝ (n + 2) 0 gmAffineLocalBumpDual / Q ^ (n + 2)
-  have hD : 0 ≤ D := by dsimp only [D]; positivity
   by_cases hj0 : j = 0
   · have hex := gmAffinePoissonFarMode_le_exception n hM
       (alpha := alpha) hQ ell
@@ -528,7 +525,7 @@ theorem summable_gmAffinePoissonFarMajorant
 theorem tsum_gmIntDecayProfile_floorTranslate (alpha : ℝ) :
     (∑' ell : ℤ, gmIntDecayProfile 2 (ell + ⌊alpha⌋)) =
       ∑' j : ℤ, gmIntDecayProfile 2 j := by
-  simpa only [Equiv.coe_addRight, add_comm] using
+  simpa using
     (Equiv.addRight (⌊alpha⌋ : ℤ)).tsum_eq (gmIntDecayProfile 2)
 
 theorem tsum_gmAffinePoissonFarMajorant
@@ -539,9 +536,8 @@ theorem tsum_gmAffinePoissonFarMajorant
         2 * ((8 * M : ℝ) *
           SchwartzMap.seminorm ℝ (n + 2) 0 gmAffineLocalBumpDual /
             Q ^ (n + 2)) := by
-  let A : ℝ :=
-    4 * SchwartzMap.seminorm ℝ (n + 2) 0 gmAffineLocalBumpDual / Q ^ n
-  let D : ℝ := (8 * M : ℝ) *
+  let A := 4 * SchwartzMap.seminorm ℝ (n + 2) 0 gmAffineLocalBumpDual / Q ^ n
+  let D := (8 * M : ℝ) *
     SchwartzMap.seminorm ℝ (n + 2) 0 gmAffineLocalBumpDual / Q ^ (n + 2)
   let F : ℤ → ℝ := fun ell => A * gmIntDecayProfile 2 (ell + ⌊alpha⌋)
   let Z : ℤ → ℝ := fun ell => if ell + ⌊alpha⌋ = 0 then D else 0
@@ -585,8 +581,7 @@ theorem tsum_gmAffinePoissonFarMajorant
         · rw [ite_eq_right h, ite_eq_right (by omega)]
       _ = D := tsum_ite_eq (-1 - ⌊alpha⌋) (fun _ : ℤ => D)
   change tsum (fun x : ℤ => (F x + Z x) + L x) = _
-  rw [(hF.add hZ).tsum_add hL, hF.tsum_add hZ, hZsum, hLsum]
-  rw [show (∑' ell : ℤ, F ell) =
+  rw [(hF.add hZ).tsum_add hL, hF.tsum_add hZ, hZsum, hLsum, show (∑' ell : ℤ, F ell) =
       A * (∑' j : ℤ, gmIntDecayProfile 2 j) by
     dsimp only [F]
     rw [tsum_mul_left, tsum_gmIntDecayProfile_floorTranslate]]
@@ -881,14 +876,13 @@ theorem gmAffineCentralWeight_poisson
 theorem gmAffinePositiveShell_ne_zero
     {M : ℕ} (hM : 0 < M) {m : ℤ} (hm : m ∈ gmAffinePositiveShell M) :
     m ≠ 0 := by
-  have hm' := (mem_gmAffinePositiveShell.mp hm).1
-  exact ne_of_gt (lt_of_lt_of_le (by exact_mod_cast hM) hm')
+  exact ne_of_gt (lt_of_lt_of_le (by exact_mod_cast hM) ((mem_gmAffinePositiveShell.mp hm).1))
 
 theorem gmAffineSignedShell_ne_zero
     {M : ℕ} (hM : 0 < M) {m : ℤ} (hm : m ∈ gmAffineSignedShell M) :
     m ≠ 0 := by
   rcases mem_gmAffineSignedShell.mp hm with hmneg | hmpos
-  · have hMposInt : (0 : ℤ) < (M : ℤ) := by exact_mod_cast hM
+  · have hMposInt : 0 < (M : ℤ) := by exact_mod_cast hM
     exact ne_of_lt (hmneg.2.trans_lt (neg_neg_of_pos hMposInt))
   · exact ne_of_gt (lt_of_lt_of_le (by exact_mod_cast hM) hmpos.1)
 
@@ -1328,8 +1322,7 @@ theorem measurableSet_gmAffineMiddleFrequencyRegion (X Y : ℝ) :
     (measurableSet_le continuous_abs.measurable measurable_const)
 
 theorem measurableSet_gmAffineHighFrequencyRegion (Y : ℝ) :
-    MeasurableSet (gmAffineHighFrequencyRegion Y) := by
-  exact measurableSet_lt measurable_const continuous_abs.measurable
+    MeasurableSet (gmAffineHighFrequencyRegion Y) := measurableSet_lt measurable_const continuous_abs.measurable
 
 theorem gmAffine_frequency_regions_union
     (X Y : ℝ) :
@@ -1462,18 +1455,14 @@ theorem integrableOn_gmAffineHighFrequencyRegion_abs_rpow
     {a Y : ℝ} (ha : a < -1) (hY : 0 < Y) :
     IntegrableOn (fun xi : ℝ => |xi| ^ a)
       (gmAffineHighFrequencyRegion Y) := by
-  have hpos : IntegrableOn (fun x : ℝ => x ^ a) (Set.Ioi Y) :=
-    integrableOn_Ioi_rpow_of_lt ha hY
+  have hpos := integrableOn_Ioi_rpow_of_lt ha hY
   have hpos' : IntegrableOn (fun x : ℝ => x ^ a) (Set.Ioi (-(-Y))) := by
-    simpa only [neg_neg] using hpos
-  have hnegRaw : IntegrableOn (fun x : ℝ => (-x) ^ a) (Set.Iio (-Y)) :=
-    hpos'.comp_neg_Iio
+    simpa using hpos
   have hneg : IntegrableOn (fun x : ℝ => |x| ^ a) (Set.Iio (-Y)) := by
-    apply hnegRaw.congr_fun
+    apply (hpos'.comp_neg_Iio).congr_fun
     · intro x hx
-      have hxneg : x < 0 := hx.trans (neg_neg_of_pos hY)
       change (-x) ^ a = |x| ^ a
-      rw [abs_of_neg hxneg]
+      rw [abs_of_neg (hx.trans (neg_neg_of_pos hY))]
     · exact measurableSet_Iio
   have hposAbs : IntegrableOn (fun x : ℝ => |x| ^ a) (Set.Ioi Y) := by
     apply hpos.congr_fun
@@ -1625,14 +1614,13 @@ theorem integrable_gmAffineSmoothTransformSum_sq
     (hM₁ : 0 < M₁) (hM₂ : 0 < M₂) :
     Integrable (fun u : ℝ => gmAffineSmoothTransformSum f M₁ M₂ M₃ u ^ 2) := by
   let g := gmAffineSmoothTransformSchwartz f M₁ M₂ M₃
-  have hg : Integrable (fun u : ℝ => ‖g u‖ ^ (2 : ℝ)) := by
+  have hg : Integrable (fun u : ℝ => ‖g u‖ ^ 2) := by
     simpa using (g.memLp (2 : ENNReal)).integrable_norm_rpow
       (by norm_num : (2 : ENNReal) ≠ 0) ENNReal.ofNat_ne_top
   apply hg.congr
   filter_upwards with u
-  dsimp only [g]
   rw [gmAffineSmoothTransformSchwartz_apply f hM₁ hM₂ u]
-  simp only [Complex.norm_real, Real.norm_eq_abs, Real.rpow_two, sq_abs]
+  simp
 
 /-- The single finite index set underlying the three nested sums in (9.1). -/
 noncomputable def gmAffineIndexSet (M₁ M₂ M₃ : ℕ) : Finset (ℤ × (ℤ × ℤ)) :=
@@ -1745,10 +1733,9 @@ theorem gmAffineTransformIntegral_le_J
     (hscale : (M₁, M₂, M₃) ∈ gmAffineScaleTriples M) :
     gmAffineTransformIntegral f M₁ M₂ M₃ ≤ gmAffineJ f M := by
   let S := gmAffineIntegralValues f M
-  have hS : S.Nonempty := gmAffineIntegralValues_nonempty f hM
   have hmem : gmAffineTransformIntegral f M₁ M₂ M₃ ∈ S := by
     exact Finset.mem_image.mpr ⟨(M₁, M₂, M₃), hscale, rfl⟩
-  rw [gmAffineJ, dite_eq_left hS]
+  rw [gmAffineJ, dite_eq_left (gmAffineIntegralValues_nonempty f hM)]
   exact Finset.le_max' S _ hmem
 
 theorem exists_gmAffineTransformIntegral_eq_J
@@ -1756,10 +1743,8 @@ theorem exists_gmAffineTransformIntegral_eq_J
     ∃ M₁ M₂ M₃,
       (M₁, M₂, M₃) ∈ gmAffineScaleTriples M ∧
       gmAffineTransformIntegral f M₁ M₂ M₃ = gmAffineJ f M := by
-  let S := gmAffineIntegralValues f M
-  have hS : S.Nonempty := gmAffineIntegralValues_nonempty f hM
-  have hmaxMem : S.max' hS ∈ S := Finset.max'_mem S hS
-  obtain ⟨p, hp, hpEq⟩ := Finset.mem_image.mp hmaxMem
+  have hS := gmAffineIntegralValues_nonempty f hM
+  obtain ⟨p, hp, hpEq⟩ := Finset.mem_image.mp (Finset.max'_mem (gmAffineIntegralValues f M) hS)
   refine ⟨p.1, p.2.1, p.2.2, hp, ?_⟩
   rw [gmAffineJ, dite_eq_left hS]
   exact hpEq
@@ -1893,7 +1878,6 @@ theorem card_gmAffinePositiveShell (M : ℕ) :
 theorem card_gmAffineCentralShell (M : ℕ) :
     (gmAffineCentralShell M).card = 16 * M + 1 := by
   rw [gmAffineCentralShell, Int.card_Icc]
-  change ((8 * (M : ℤ)) + 1 - (-(8 * (M : ℤ)))).toNat = 16 * M + 1
   have hcast : ((((8 * (M : ℤ)) + 1 - (-(8 * (M : ℤ)))).toNat : ℕ) : ℤ) =
       (8 * (M : ℤ)) + 1 - (-(8 * (M : ℤ))) := Int.toNat_of_nonneg (by omega)
   omega
@@ -1901,28 +1885,20 @@ theorem card_gmAffineCentralShell (M : ℕ) :
 theorem card_gmAffineSignedShell_le (M : ℕ) :
     (gmAffineSignedShell M).card ≤ 2 * (M + 1) := by
   rw [gmAffineSignedShell]
-  calc
-    ((Finset.Icc (-(2 * M : ℕ) : ℤ) (-(M : ℕ) : ℤ)) ∪
-        Finset.Icc (M : ℤ) (2 * M : ℤ)).card ≤
-        (Finset.Icc (-(2 * M : ℕ) : ℤ) (-(M : ℕ) : ℤ)).card +
-          (Finset.Icc (M : ℤ) (2 * M : ℤ)).card := Finset.card_union_le _ _
-    _ = 2 * (M + 1) := by
+  exact (Finset.card_union_le _ _).trans_eq (by
       simp [Int.card_Icc]
-      omega
+      omega)
 
 theorem card_gmAffineIndexSet_le (M₁ M₂ M₃ : ℕ) :
     (gmAffineIndexSet M₁ M₂ M₃).card ≤
       (2 * (M₁ + 1)) * (M₂ + 1) * (16 * M₃ + 1) := by
-  rw [gmAffineIndexSet]
-  rw [show ((gmAffineSignedShell M₁).product
+  rw [gmAffineIndexSet, show ((gmAffineSignedShell M₁).product
       ((gmAffinePositiveShell M₂).product (gmAffineCentralShell M₃))).card =
       (gmAffineSignedShell M₁).card *
         ((gmAffinePositiveShell M₂).product (gmAffineCentralShell M₃)).card from
-    Finset.card_product _ _]
-  rw [show ((gmAffinePositiveShell M₂).product (gmAffineCentralShell M₃)).card =
+    Finset.card_product _ _, show ((gmAffinePositiveShell M₂).product (gmAffineCentralShell M₃)).card =
       (gmAffinePositiveShell M₂).card * (gmAffineCentralShell M₃).card from
-    Finset.card_product _ _]
-  rw [card_gmAffinePositiveShell, card_gmAffineCentralShell]
+    Finset.card_product _ _, card_gmAffinePositiveShell, card_gmAffineCentralShell]
   simpa only [mul_assoc] using Nat.mul_le_mul_right (16 * M₃ + 1)
     (Nat.mul_le_mul_right (M₂ + 1) (card_gmAffineSignedShell_le M₁))
 
@@ -2060,7 +2036,7 @@ theorem norm_sum_gmAffineCentralPoissonKernel_near_le
     _ = ((gmAffinePoissonNearSet M alpha Q).card : ℝ) *
         ((8 * M : ℝ) *
           SchwartzMap.seminorm ℝ 0 0 gmAffineLocalBumpDual) := by
-      simp only [Finset.sum_const, nsmul_eq_mul]
+      simp
 
 /-- Uniform bound for the retained part of (9.3), before the Region-I
 choice `Q = T^η`. -/
@@ -2543,8 +2519,6 @@ theorem norm_gmAffineSmoothTransformSchwartz_fourier_le_decayEnvelope
       gmAffineFourierDecayEnvelope n f M₁ M₂ M₃ Q / |xi| ^ n := by
   have hdecay := norm_gmAffineSmoothTransformSchwartz_fourier_decay
     n f hM₁ hM₂ hM₃ hQ hxi
-  have hc : (M₂ : ℝ) / (2 * M₁) ≠ 0 := by positivity
-  have hxiAbs : |xi| ≠ 0 := abs_ne_zero.mpr hxi
   refine hdecay.trans_eq ?_
   unfold gmAffineFourierDecayEnvelope
   rw [mul_pow]
@@ -2758,8 +2732,8 @@ theorem mem_gmAffineScaledNearSet_of_lt
     {S : ℝ} (hS : 0 < S) {alpha Q : ℝ} {j : ℤ}
     (hnear : |S * (alpha + j)| < Q) :
     j ∈ gmAffineScaledNearSet S alpha Q := by
-  let k : ℤ := j + ⌊alpha⌋
-  let R : ℤ := ⌈Q / S + 1⌉
+  let k := j + ⌊alpha⌋
+  let R := ⌈Q / S + 1⌉
   have hy : alpha + (j : ℝ) = Int.fract alpha + (k : ℝ) := by
     simpa only [k] using add_int_eq_fract_add_translated alpha j
   have hyabs : |alpha + (j : ℝ)| < Q / S := by
@@ -2774,17 +2748,13 @@ theorem mem_gmAffineScaledNearSet_of_lt
       ring
     rw [hkEq]
     exact (abs_sub _ _).trans_lt (add_lt_add hyabs hfractAbs)
-  have hkUpperReal : (k : ℝ) ≤ (R : ℝ) :=
-    (le_abs_self (k : ℝ)).trans
+  have hkUpperReal := (le_abs_self (k : ℝ)).trans
       ((le_of_lt hkReal).trans (Int.le_ceil (Q / S + 1)))
   have hkLowerReal : -(R : ℝ) ≤ (k : ℝ) := by
-    have hneg : -(R : ℝ) ≤ -|(k : ℝ)| :=
-      neg_le_neg ((le_of_lt hkReal).trans (Int.le_ceil (Q / S + 1)))
-    exact hneg.trans (neg_abs_le (k : ℝ))
+    exact (neg_le_neg ((le_of_lt hkReal).trans (Int.le_ceil (Q / S + 1)))).trans (neg_abs_le (k : ℝ))
   have hkUpper : k ≤ R := by exact_mod_cast hkUpperReal
   have hkLower : -R ≤ k := by exact_mod_cast hkLowerReal
   unfold gmAffineScaledNearSet
-  dsimp only
   rw [Finset.mem_filter, Finset.mem_Icc]
   constructor
   · dsimp only [R, k] at hkUpper hkLower ⊢
@@ -2888,19 +2858,12 @@ theorem norm_gmAffineScaledFarTerm_le_profile
   rw [norm_gmAffineScaledFarTerm]
   split_ifs with hfar
   · let k : ℤ := j + ⌊alpha⌋
-    let C : ℝ := SchwartzMap.seminorm ℝ (n + 2) 0 gmAffineLocalBumpDual
+    let C := SchwartzMap.seminorm ℝ (n + 2) 0 gmAffineLocalBumpDual
     have hy : alpha + (j : ℝ) = Int.fract alpha + (k : ℝ) := by
       simpa only [k] using add_int_eq_fract_add_translated alpha j
     have hkhalf : |(k : ℝ)| / 2 ≤ |alpha + (j : ℝ)| := by
       rw [hy]
       exact half_abs_intCast_le_abs_fract_add alpha k hk0 hkneg
-    have hkabs : 0 < |(k : ℝ)| := abs_pos.mpr (by exact_mod_cast hk0)
-    have hSy : 0 < |S * (alpha + (j : ℝ))| := by
-      have : 0 < |alpha + (j : ℝ)| := lt_of_lt_of_le (by positivity) hkhalf
-      rw [abs_mul, abs_of_pos hS]
-      positivity
-    have hQpow : Q ^ n ≤ |S * (alpha + (j : ℝ))| ^ n :=
-      pow_le_pow_left₀ hQ.le hfar n
     have hkpow : S ^ 2 * (|(k : ℝ)| / 2) ^ 2 ≤
         |S * (alpha + (j : ℝ))| ^ 2 := by
       calc
@@ -2917,7 +2880,7 @@ theorem norm_gmAffineScaledFarTerm_le_profile
         Q ^ n * (S ^ 2 * (|(k : ℝ)| / 2) ^ 2) ≤
           |S * (alpha + (j : ℝ))| ^ (n + 2) := by
       rw [pow_add]
-      exact mul_le_mul hQpow hkpow (by positivity) (by positivity)
+      exact mul_le_mul (pow_le_pow_left₀ hQ.le hfar n) hkpow (by positivity) (by positivity)
     have hbound :
         ‖gmAffineScaledBumpDual S hS (alpha + (j : ℝ))‖ ≤
           (S * C) /
@@ -2939,7 +2902,7 @@ theorem norm_gmAffineScaledFarTerm_le_profile
       ‖gmAffineScaledBumpDual S hS (alpha + (j : ℝ))‖ ≤
           (S * C) / (Q ^ n * (S ^ 2 * (|(k : ℝ)| / 2) ^ 2)) := hbound
       _ = (4 * C / (S * Q ^ n)) * (1 / |(k : ℝ)| ^ 2) := by
-        field_simp [hS.ne', hkabs.ne', hQ.ne']
+        field_simp [hS.ne', (abs_pos.mpr (by exact_mod_cast hk0)).ne', hQ.ne']
         ring
       _ = (4 * C / (S * Q ^ n)) * (1 / |(k : ℝ)| ^ 2) := rfl
   · exact mul_nonneg (by positivity) (by
@@ -2970,10 +2933,9 @@ theorem norm_gmAffineScaledFarTerm_le_majorant
     {alpha Q : ℝ} (hQ : 0 < Q) (j : ℤ) :
     ‖gmAffineScaledFarTerm S hS alpha Q j‖ ≤
       gmAffineScaledFarMajorant n S alpha Q j := by
-  let k : ℤ := j + ⌊alpha⌋
-  let D : ℝ := S * SchwartzMap.seminorm ℝ (n + 2) 0 gmAffineLocalBumpDual /
+  let k := j + ⌊alpha⌋
+  let D := S * SchwartzMap.seminorm ℝ (n + 2) 0 gmAffineLocalBumpDual /
     Q ^ (n + 2)
-  have hD : 0 ≤ D := by dsimp only [D]; positivity
   by_cases hk0 : k = 0
   · have hex := norm_gmAffineScaledFarTerm_le_exception n hS
       (alpha := alpha) hQ j
@@ -3031,15 +2993,14 @@ theorem tsum_gmAffineScaledFarMajorant
           (∑' k : ℤ, gmIntDecayProfile 2 k) +
         2 * (S * SchwartzMap.seminorm ℝ (n + 2) 0 gmAffineLocalBumpDual /
           Q ^ (n + 2)) := by
-  let A : ℝ := 4 * SchwartzMap.seminorm ℝ (n + 2) 0 gmAffineLocalBumpDual /
+  let A := 4 * SchwartzMap.seminorm ℝ (n + 2) 0 gmAffineLocalBumpDual /
     (S * Q ^ n)
-  let D : ℝ := S * SchwartzMap.seminorm ℝ (n + 2) 0 gmAffineLocalBumpDual /
+  let D := S * SchwartzMap.seminorm ℝ (n + 2) 0 gmAffineLocalBumpDual /
     Q ^ (n + 2)
   let F : ℤ → ℝ := fun j => A * gmIntDecayProfile 2 (j + ⌊alpha⌋)
   let Z : ℤ → ℝ := fun j => if j + ⌊alpha⌋ = 0 then D else 0
   let L : ℤ → ℝ := fun j => if j + ⌊alpha⌋ = -1 then D else 0
-  have hF : Summable F :=
-    (summable_gmIntDecayProfile_floorTranslate alpha).mul_left A
+  have hF := (summable_gmIntDecayProfile_floorTranslate alpha).mul_left A
   have hZ : Summable Z := by
     apply (hasSum_single (-⌊alpha⌋) (fun j hj => ?_)).summable
     dsimp only [Z]
@@ -3075,8 +3036,7 @@ theorem tsum_gmAffineScaledFarMajorant
         · rw [ite_eq_right h, ite_eq_right (by omega)]
       _ = D := tsum_ite_eq (-1 - ⌊alpha⌋) (fun _ : ℤ => D)
   change tsum (fun j : ℤ => (F j + Z j) + L j) = _
-  rw [(hF.add hZ).tsum_add hL, hF.tsum_add hZ, hZsum, hLsum]
-  rw [show (∑' j : ℤ, F j) = A * (∑' k : ℤ, gmIntDecayProfile 2 k) by
+  rw [(hF.add hZ).tsum_add hL, hF.tsum_add hZ, hZsum, hLsum, show (∑' j : ℤ, F j) = A * (∑' k : ℤ, gmIntDecayProfile 2 k) by
     dsimp only [F]
     rw [tsum_mul_left, tsum_gmIntDecayProfile_floorTranslate]]
   dsimp only [A, D]
@@ -3362,10 +3322,9 @@ theorem integral_gmAffineSmoothingKernelReal_eq
       rw [integral_const_mul]
     _ = T * (|T⁻¹| * ∫ y : ℝ, gmCubicLocalBump y) := by
       rw [MeasureTheory.Measure.integral_comp_mul_left]
-      simp only [smul_eq_mul]
+      simp
     _ = ∫ y : ℝ, gmCubicLocalBump y := by
-      rw [abs_of_pos (inv_pos.mpr hT)]
-      rw [← mul_assoc, mul_inv_cancel₀ hT.ne', one_mul]
+      rw [abs_of_pos (inv_pos.mpr hT), ← mul_assoc, mul_inv_cancel₀ hT.ne', one_mul]
 
 theorem integral_gmAffineSmoothingKernelReal_le_four
     (T : ℝ) (hT : 0 < T) :
@@ -3413,7 +3372,6 @@ theorem gmAffineTransformIntegral_le_crude_scales
     gmAffineTransformIntegral f M₁ M₂ M₃ ≤
       ((gmAffineIndexSet M₁ M₂ M₃).card : ℝ) ^ 2 *
         ((2 * M₂ : ℝ) / M₁) * ∫ x : ℝ, f x ^ 2 := by
-  have hI : 0 ≤ ∫ x : ℝ, f x ^ 2 := integral_nonneg fun _ => sq_nonneg _
   refine (gmAffineTransformIntegral_le_indexSum hf₂ hM₁ hM₂).trans ?_
   let S := gmAffineIndexSet M₁ M₂ M₃
   have hsum :

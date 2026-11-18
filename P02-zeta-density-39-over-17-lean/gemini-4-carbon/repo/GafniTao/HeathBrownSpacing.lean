@@ -27,8 +27,7 @@ def heathBrownDistanceToInteger (x : ℝ) : ℝ :=
   |x - (round x : ℝ)|
 
 theorem heathBrownDistanceToInteger_nonneg (x : ℝ) :
-    0 ≤ heathBrownDistanceToInteger x := by
-  exact abs_nonneg _
+    0 ≤ heathBrownDistanceToInteger x := abs_nonneg _
 
 /-- On the centered fundamental interval, distance to the nearest integer
 is the ordinary absolute value.  The right endpoint is handled separately

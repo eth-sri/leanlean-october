@@ -35,11 +35,7 @@ lemma literalRawCoefficient_norm (G : PrimeFamily ι)
   split_ifs
   · have hr : 1≤ramifiedScale 1 completedRamifiedStep m := by
       simpa only [ramifiedScale,one_mul] using one_le_pow₀ completedRamifiedStep_gt_one.le (n:=m)
-    have hn : 1≤Real.sqrt (Ideal.absNorm n.val:ℝ) :=
-      (Real.le_sqrt (by norm_num) (Nat.cast_nonneg _)).mpr (by simpa using norm_at_least_one n.val n.property)
-    have hb := norm_at_least_one b.val b.property
-    have hden : 1≤ramifiedScale 1 completedRamifiedStep m*Real.sqrt (Ideal.absNorm n.val:ℝ)*(Ideal.absNorm b.val:ℝ) :=
-      one_le_mul_of_one_le_of_one_le (one_le_mul_of_one_le_of_one_le hr hn) hb
+    have hden := one_le_mul_of_one_le_of_one_le (one_le_mul_of_one_le_of_one_le hr ((Real.le_sqrt (by norm_num) (Nat.cast_nonneg _)).mpr (by simpa using norm_at_least_one n.val n.property))) (norm_at_least_one b.val b.property)
     rw [norm_div,Complex.norm_real,Real.norm_of_nonneg (le_trans zero_le_one hden)]
     apply (div_le_div_of_nonneg_right (literal_mixed_coefficient_crude G D s hc hN hbase hchar j hj S u m n.val b.val)
       (le_trans zero_le_one hden)).trans

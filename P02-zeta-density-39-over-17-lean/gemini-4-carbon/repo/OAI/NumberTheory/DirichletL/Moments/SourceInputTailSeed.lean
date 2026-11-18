@@ -6,14 +6,11 @@ public import OAI.NumberTheory.DirichletL.Moments.SourceInputTailUniform
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
 open Filter
+open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentSourceInputTailSeed
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceInputTailUniform
-open CenteredMomentSupportedTailAggregate CenteredMomentSourceMass
-open CenteredMomentExceptionalAmplitudePair
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData CenteredMomentOriginalCommonHarmonic CenteredMomentSourceInputTailUniform CenteredMomentSupportedTailAggregate CenteredMomentSourceMass CenteredMomentExceptionalAmplitudePair
 local notation "O" => HeckeFamily.O
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 local instance : DecidableEq (ι⊕Fin 2) := Classical.decEq _
@@ -22,10 +19,7 @@ lemma paid_seed_power (Z Bseed saving seedNorm : ℝ) (hZ : 0<Z)
     (hs : 0<seedNorm) (hcap : seedNorm≤Z^Bseed) :
     Z^(-(saving+Bseed))≤Z^(-saving)/seedNorm := by
   apply (le_div_iff₀ hs).mpr
-  calc
-    _≤Z^(-(saving+Bseed))*Z^Bseed :=
-      mul_le_mul_of_nonneg_left hcap (Real.rpow_nonneg hZ.le _)
-    _=Z^(-saving) := by rw [←Real.rpow_add hZ];congr 1;ring
+  exact (mul_le_mul_of_nonneg_left hcap (Real.rpow_nonneg hZ.le _)).trans_eq (by rw [←Real.rpow_add hZ];congr 1;ring)
 
 lemma paid_seed_term (Z Bseed saving seedNorm A : ℝ) (hZ : 0<Z)
     (hs : 0<seedNorm) (hcap : seedNorm≤Z^Bseed) (hA : 0≤A) :

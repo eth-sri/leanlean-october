@@ -10,9 +10,7 @@ public import MathCollab.Density.Stronger.Atkinson.LeadingDivisor
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+open Complex Filter MeasureTheory Set Topology MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth MathCollab.Density.Contour
 open scoped Interval ComplexConjugate
 set_option autoImplicit false
 noncomputable section
@@ -48,8 +46,8 @@ theorem zetaDivisorWeightKernel_neg (q w : ℂ) :
 
 theorem continuous_zetaDivisorWeightKernel_right (q : ℂ) :
     Continuous (fun u : ℝ => zetaDivisorWeightKernel q (1 + (u : ℂ) * I)) := by
-  have hw : Continuous (fun u : ℝ => (1 : ℂ) + (u : ℂ) * I) := by fun_prop
-  have hne : ∀ u : ℝ, (1 : ℂ) + (u : ℂ) * I ≠ 0 := by
+  have hw : Continuous (fun u : ℝ => 1 + (u : ℂ) * I) := by fun_prop
+  have hne : ∀ u : ℝ, 1 + (u : ℂ) * I ≠ 0 := by
     intro u h
     have := congrArg Complex.re h
     norm_num at this
@@ -57,7 +55,7 @@ theorem continuous_zetaDivisorWeightKernel_right (q : ℂ) :
 
 theorem integrable_zetaDivisorWeightEnvelope : Integrable zetaDivisorWeightEnvelope := by
   change Integrable (fun u : ℝ => Real.exp (-99 * u ^ 2) * (1 + |u|) ^ 8)
-  simpa only [zero_sub, neg_mul] using
+  simpa using
     (integrable_exp_sub_mul_sq_mul_add_abs_pow 0 (B := 99) (C := 1) (by norm_num) 8)
 
 theorem norm_zetaDivisorWeightNumerator_right (q : ℂ) (u : ℝ) :
@@ -66,12 +64,12 @@ theorem norm_zetaDivisorWeightNumerator_right (q : ℂ) (u : ℝ) :
         ‖hughesYoungAuxiliaryZero (1 + (u : ℂ) * I)‖ := by
   unfold zetaDivisorWeightNumerator
   rw [norm_mul, norm_mul, Complex.norm_exp, Complex.norm_exp]
-  have he : (100 * ((1 : ℂ) + (u : ℂ) * I) ^ 2).re + (-q * (1 + (u : ℂ) * I)).re =
+  have he : (100 * (1 + (u : ℂ) * I) ^ 2).re + (-q * (1 + (u : ℂ) * I)).re =
       100 - 100 * u ^ 2 - q.re + q.im * u := by
     norm_num [pow_two, mul_re, mul_im]
     ring
   calc
-    _ = Real.exp ((100 * ((1 : ℂ) + (u : ℂ) * I) ^ 2).re +
+    _ = Real.exp ((100 * (1 + (u : ℂ) * I) ^ 2).re +
         (-q * (1 + (u : ℂ) * I)).re) * ‖hughesYoungAuxiliaryZero (1 + (u : ℂ) * I)‖ := by
       rw [Real.exp_add]
       ring
@@ -106,8 +104,8 @@ theorem norm_zetaDivisorWeightKernel_right_le {B : ℝ} (hB : 0 ≤ B)
     {q : ℂ} (hq : |q.im| ≤ B) (u : ℝ) :
     ‖zetaDivisorWeightKernel q (1 + (u : ℂ) * I)‖ ≤
       (625 * Real.exp (100 + B ^ 2 / 2)) * Real.exp (-q.re) * zetaDivisorWeightEnvelope u := by
-  have hw : 1 ≤ ‖(1 : ℂ) + (u : ℂ) * I‖ := by
-    simpa using Complex.abs_re_le_norm ((1 : ℂ) + (u : ℂ) * I)
+  have hw : 1 ≤ ‖1 + (u : ℂ) * I‖ := by
+    simpa using Complex.abs_re_le_norm (1 + (u : ℂ) * I)
   rw [zetaDivisorWeightKernel, norm_div]
   calc
     _ ≤ ‖zetaDivisorWeightNumerator q (1 + (u : ℂ) * I)‖ / 1 := by gcongr

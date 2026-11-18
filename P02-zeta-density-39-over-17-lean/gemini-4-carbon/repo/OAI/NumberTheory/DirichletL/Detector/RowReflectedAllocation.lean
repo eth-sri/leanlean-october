@@ -11,12 +11,10 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.Valuation
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology ComplexConjugate
 open Set Complex
+open scoped Classical BigOperators Topology ComplexConjugate
 namespace SevenEighths.ProbeRowReflectedAllocation
-open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily
-open HeckeFiniteDeletion HeckeReciprocalGrowth HeckeDeletionBounds
-open ProbeRowRadicalConductor
+open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily HeckeFiniteDeletion HeckeReciprocalGrowth HeckeDeletionBounds ProbeRowRadicalConductor
 local notation "O" => HeckeFamily.O
 
 lemma prod_rpow_nonneg {ι : Type*} (T : Finset ι) (q : ι → ℝ)
@@ -130,11 +128,9 @@ theorem buffered_reflected_right_bound (e ε : ℝ)
   obtain ⟨C, hC, hb⟩ := buffered_regular_control e ε he he' hε
   refine ⟨C, hC, ?_⟩
   intro ι _ χ B a i hB ha ha1 hmax j hχ w hw hwi
-  have hwr : (1-conj w).re = a+6*e := by simp; linarith
-  have hwm : (1-conj w).im = w.im := by simp
-  have hz : 1-conj w ∈ Metric.closedBall ((2 : ℂ)+w.im*I) (2-a-6*e) := by
+  have hz : 1-conj w ∈ Metric.closedBall (2+w.im*I) (2-a-6*e) := by
     rw [Metric.mem_closedBall, dist_eq_norm]
-    have heq : 1-conj w-((2 : ℂ)+w.im*I) = ((a+6*e-2 : ℝ) : ℂ) := by
+    have heq : 1-conj w-(2+w.im*I) = ((a+6*e-2 : ℝ) : ℂ) := by
       apply Complex.ext
       · simp; linarith
       · simp
@@ -142,11 +138,10 @@ theorem buffered_reflected_right_bound (e ε : ℝ)
     linarith
   have h := hb χ B a i hB ha ha1 hmax j w.im hwi (1-conj w) hz
   rw [HeckeLogarithmicInput.regular_eq_nonprincipal _ hχ] at h
-  have hH : 0 ≤ (3*i+2 : ℕ)*B := (abs_nonneg _).trans hwi
   have hc : presentationComplexity (χ j) w.im ≤
       presentationComplexity (χ j) ((3*i+2 : ℕ)*B) := by
     unfold presentationComplexity HeckeLogarithmic.complexity
-    rw [abs_of_nonneg hH]
+    rw [abs_of_nonneg ((abs_nonneg _).trans hwi)]
     gcongr
   apply (le_trans (le_add_of_nonneg_right (norm_nonneg _)) h).trans
   exact mul_le_mul_of_nonneg_left (Real.rpow_le_rpow (by
@@ -278,15 +273,13 @@ theorem source_calibrated_reflected_allocation (e ε : ℝ)
       exact mul_le_of_le_one_left (norm_nonneg _) hcal
     have hal := hall k P hP hdis v hv hdiv a e ha he
     rw [← hw] at hal
-    have hprod0 : 0 ≤ ∏ j, ((P j).absNorm : ℝ) ^ (-w.re) :=
-      Finset.prod_nonneg (fun j _ => Real.rpow_nonneg (by positivity) _)
     calc
       _ ≤ (C * (ψ.modulus.absNorm : ℝ) ^ (a-1/2+6*e) *
           ((radical (rowCharacter S hS u).modulus).absNorm : ℝ) ^ (6*e+2*ε) *
           (3+(3*i+2 : ℕ)*B)^2 *
           (presentationComplexity (rowCharacter S hS u) ((3*i+2 : ℕ)*B)) ^ ε) *
           ∏ j, ((P j).absNorm : ℝ) ^ (-w.re) :=
-        mul_le_mul_of_nonneg_right (hweighted.trans hL) hprod0
+        mul_le_mul_of_nonneg_right (hweighted.trans hL) (Finset.prod_nonneg (fun j _ => Real.rpow_nonneg (by positivity) _))
       _ = (C * ((radical (rowCharacter S hS u).modulus).absNorm : ℝ) ^ (6*e+2*ε) *
           (3+(3*i+2 : ℕ)*B)^2 *
           (presentationComplexity (rowCharacter S hS u) ((3*i+2 : ℕ)*B)) ^ ε) *

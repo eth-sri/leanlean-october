@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorHighCount
-public import OAI.NumberTheory.DirichletL.Hecke.DetectorBatchCount
+public import OAI.NumberTheory.DirichletL.Hecke.DetectorBatch
+public import OAI.NumberTheory.DirichletL.Hecke.DetectorCountFromMoments
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorRowCountEndpoint
 
 @[expose] public section
@@ -8,11 +9,10 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorRowCountEndpoint
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators ContDiff
 open Set Filter
+open scoped Classical BigOperators ContDiff
 namespace SevenEighths.HeckeDetectorHighBatchCount
-open HeckeDetectorBatch
-open HeckeFamily HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorRowCount
+open HeckeDetectorBatch HeckeFamily HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorRowCount
 
 theorem high_batch_count_from_raw_moments
     (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)

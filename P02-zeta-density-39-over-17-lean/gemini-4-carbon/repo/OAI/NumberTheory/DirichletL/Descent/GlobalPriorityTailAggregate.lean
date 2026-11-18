@@ -8,11 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseMomentGlobalPriorityTail
-open InverseMoment InverseFirstPriorityParents InverseMomentWholePriorityParents
-open InverseMomentGlobalPrincipalMass InverseInitialArithmetic
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion
-open InversePrioritySecondSource InverseSecondPrincipalCaller InversePrincipalEnergy
-open InverseWholePriorityRetainedSource FirstCauchyArithmetic
+open InverseMoment InverseFirstPriorityParents InverseMomentWholePriorityParents InverseMomentGlobalPrincipalMass InverseInitialArithmetic ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion InversePrioritySecondSource InverseSecondPrincipalCaller InversePrincipalEnergy InverseWholePriorityRetainedSource FirstCauchyArithmetic
 open ConcreteTraceCRT (eisEmbedding)
 local notation "O" => ActualEisensteinCubic.O
 
@@ -54,7 +50,7 @@ theorem global_parent_tail_aggregate_rapid (Jmax : ℕ) (Lcap tau saving : ℝ)
       C*(4:ℝ)^slots.card*(s.sup (schwartzSeminormFamily ℝ ℝ ℂ) rowMajorant)*
         (SchwartzMap.seminorm ℝ 0 0 om)^2*Z^(-saving) := by
   obtain ⟨s,C,hC,hbound⟩ := global_parent_tail_rapid Jmax Lcap tau saving hLcap htau
-  let N : ℝ := (Fintype.card (RayCharacter×RayCharacter):ℝ)*(Fintype.card FirstCoreIndex:ℝ)
+  let N := (Fintype.card (RayCharacter×RayCharacter):ℝ)*(Fintype.card FirstCoreIndex:ℝ)
   have hN : 0<N := by dsimp [N];positivity
   refine ⟨s,(32*512)*N*C,by positivity,?_⟩
   intro ι σ _ _ p hp _ hg hinj hcop hc Jo hJo extra pool source negative Ψ m w slots lists a

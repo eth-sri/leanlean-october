@@ -1,5 +1,5 @@
 module
-public import OAI.NumberTheory.DirichletL.MeanSquare.DiagonalDensity
+public import OAI.NumberTheory.DirichletL.GaussSum.CompletedDyadicRows
 
 @[expose] public section
 
@@ -9,113 +9,39 @@ noncomputable section
 
 namespace InitialMeanSquare
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 
 section
 
-open scoped BigOperators Classical
-open ActualEisensteinCubic SecondPassArithmetic SecondPassIntegration
+open SecondPassArithmetic SecondPassIntegration
 open CanonicalQuadraticSieve (Admissible)
 
 end
 
 section
 
-open MeasureTheory
-open scoped BigOperators Classical
-open ActualEisensteinCubic SecondPassArithmetic SecondPassIntegration JointLogSeparation
-open FirstPassCubeLabels
+open SecondPassArithmetic SecondPassIntegration JointLogSeparation FirstPassCubeLabels
 
 end
 
 section
 
-open scoped BigOperators Classical
 
 section
-open ActualEisensteinCubic SecondPassArithmetic SecondPassIntegration JointLogSeparation
-open FirstPassCubeLabels
+open SecondPassArithmetic SecondPassIntegration JointLogSeparation FirstPassCubeLabels
 
 end
 
-open ActualEisensteinCubic ConcretePrimeRowBridge
+open ConcretePrimeRowBridge
 
 theorem outside_prime_divisor_mem_pool (S : Finset (Ideal O)) (D : ℕ)
     {I Q : Ideal O} (hI : I ∈ outsideIdealsUpTo S D) (hQ : Prime Q)
     (hd : Q ∣ I) : Q ∈ primePool (outsideSquarefreeIdeals S D) := by
-  have hQpos : 1 ≤ Ideal.absNorm Q := Nat.one_le_iff_ne_zero.mpr
+  have hQpos := Nat.one_le_iff_ne_zero.mpr
     (fun hz => hQ.ne_zero (Ideal.absNorm_eq_zero_iff.mp hz))
-  have hQI : Ideal.absNorm Q ≤ Ideal.absNorm I :=
-    Nat.le_of_dvd (mem_outsideIdealsUpTo.mp hI).1 (map_dvd Ideal.absNorm hd)
-  have hQo : Q ∈ outsideIdealsUpTo S D := mem_outsideIdealsUpTo.mpr
-    ⟨hQpos, hQI.trans (mem_outsideIdealsUpTo.mp hI).2.1,
+  have hQo := mem_outsideIdealsUpTo.mpr
+    ⟨hQpos, (Nat.le_of_dvd (mem_outsideIdealsUpTo.mp hI).1 (map_dvd Ideal.absNorm hd)).trans (mem_outsideIdealsUpTo.mp hI).2.1,
       fun P hP hPQ => (mem_outsideIdealsUpTo.mp hI).2.2 P hP (hPQ.trans hd)⟩
   apply mem_primePool_iff.mpr
   refine ⟨Q, Finset.mem_filter.mpr ⟨hQo,hQ.squarefree⟩,?_⟩
@@ -136,11 +62,9 @@ end
 
 section
 
-open MeasureTheory
-open scoped BigOperators Classical
 
 section
-open ActualEisensteinCubic SecondPassArithmetic SecondPassIntegration JointLogSeparation
+open SecondPassArithmetic SecondPassIntegration JointLogSeparation
 open FirstPassCubeLabels (primeProductNorm)
 
 variable {ι : Type*} [DecidableEq ι] (p : ι → O) (hp : ∀ i,p i ≠ 0)
@@ -152,7 +76,7 @@ variable {ι : Type*} [DecidableEq ι] (p : ι → O) (hp : ∀ i,p i ≠ 0)
 
 end
 
-open ActualEisensteinCubic SecondPassArithmetic SecondPassIntegration JointLogSeparation
+open SecondPassArithmetic SecondPassIntegration JointLogSeparation
 open FirstPassCubeLabels (primeProductNorm)
 
 variable {ι : Type*} [DecidableEq ι] (p : ι → O) (hp : ∀ i,p i ≠ 0)
@@ -164,9 +88,7 @@ variable {ι : Type*} [DecidableEq ι] (p : ι → O) (hp : ∀ i,p i ≠ 0)
 
 end
 
-open MeasureTheory
-open scoped BigOperators Classical
-open ActualEisensteinCubic SecondPassArithmetic SecondPassIntegration JointLogSeparation
+open SecondPassArithmetic SecondPassIntegration JointLogSeparation
 open FirstPassCubeLabels (primeProductNorm)
 
 variable {ι : Type*} [DecidableEq ι] (p : ι → O) (hp : ∀ i,p i ≠ 0)

@@ -9,8 +9,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentDivisorRawEnergy
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRectangle CenteredMomentDivisorRows
-open CenteredMomentDivisorRaw CenteredMomentHeckeSlots CenteredMomentHeckeHeight HeckeFamily
+open CenteredMomentDivisorAllocation CenteredMomentDivisorRectangle CenteredMomentDivisorRows CenteredMomentDivisorRaw CenteredMomentHeckeSlots CenteredMomentHeckeHeight HeckeFamily
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
@@ -55,7 +54,6 @@ theorem allocated_raw_energy (η : Character) (m A z : O) (t : ℝ)
       _ _ _ _ hW₁ hW₂ hX₁ hX₂ hY₁ hY₂).trans
     have hh := mul_le_mul_of_nonneg_left
       (selected_slot_product_bound η m A z t D a S hS β M hM hβ) (norm_nonneg R)
-    dsimp only [L]
     rw [norm_mul,norm_prod]
     convert hh using 1 ; ring
   have hraw : 0 < rawRemaining D a T P := mul_pos (div_pos hT (selectedNorm_pos D a))

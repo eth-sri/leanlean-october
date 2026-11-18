@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.ExponentPairDifferencingBound
 
 @[expose] public section
@@ -24,7 +33,6 @@ theorem exists_comparable_source_shift
   have hH₁ : 1 ≤ H := Nat.one_le_iff_ne_zero.mpr (Nat.floor_pos.mpr (by linarith)).ne'
   have hfloor : (H : ℝ) ≤ η*R := Nat.floor_le (by linarith)
   have hfloor' : η*R < (H : ℝ)+1 := Nat.lt_floor_add_one _
-  have hR : 0 < R := by nlinarith
   refine ⟨H,hH₁,hfloor.trans (mul_le_mul_of_nonneg_left hRN hη.le),?_,?_⟩
   · linarith
   · exact hfloor.trans (by nlinarith)

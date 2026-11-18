@@ -17,7 +17,7 @@ lemma cofactor_reindex (p : ι→Eis) (e : κ≃ι) (k : κ) :
   unfold cofactor
   apply Finset.prod_equiv e
   · intro i
-    simp only [Finset.mem_erase,Finset.mem_univ,and_true,ne_eq,EmbeddingLike.apply_eq_iff_eq]
+    simp
   · intro i hi
     rfl
 

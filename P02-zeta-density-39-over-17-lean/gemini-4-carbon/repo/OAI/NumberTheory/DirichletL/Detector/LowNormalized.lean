@@ -49,7 +49,6 @@ theorem original_normalized_compensatedPhysicalProbe_low {K : ℕ}
   have hW1' : Function.support W1⊆Set.Icc a1 (max b1 (a1+1)) := by
     intro y hy
     exact ⟨(hW1 hy).1,(hW1 hy).2.trans (le_max_left _ _)⟩
-  have hab1 : a1<max b1 (a1+1) := lt_of_lt_of_le (by linarith) (le_max_right _ _)
   obtain ⟨Cn,hCn,hnorm⟩ := ProbeHighRowFamily.actual_ray_normalizer_inverse M H hH S hS a b ha hab
     ell hell hsum W hW hcompact hsupp (fun j y=>(hWB j y).1) hne W0 W1 a0 b0 a1 b1 ha0 ha1
     hW0 hW1 hr0 hr1 hp0 hp1 hn0 hn1 (loss/2) (by positivity)
@@ -58,20 +57,17 @@ theorem original_normalized_compensatedPhysicalProbe_low {K : ℕ}
     (fun j=>(hell j).le) hinj hsum.le (RayQuotient.identityClass M H) a b B (loss/2)
     ha hab (by positivity) WC hWC hWCB W0 W1 a0 b0 a1 (max b1 (a1+1))
     (SchwartzMap.seminorm ℝ 0 0 W0) (SchwartzMap.seminorm ℝ 0 0 W1)
-    ha0 ha1 hab1 (by positivity) (by positivity) hW0 hW1' (W0.smooth (⊤ : ℕ∞)) (W1.smooth (⊤ : ℕ∞))
+    ha0 ha1 (lt_of_lt_of_le (by linarith) (le_max_right _ _)) (by positivity) (by positivity) hW0 hW1' (W0.smooth (⊤ : ℕ∞)) (W1.smooth (⊤ : ℕ∞))
     (SchwartzMap.norm_le_seminorm ℝ W0) (SchwartzMap.norm_le_seminorm ℝ W1) η
   refine ⟨Cp*Cn,by positivity,?_⟩
   filter_upwards [hprobe,hnorm,eventually_gt_atTop (0:ℝ)] with Z hp hn hZ
   dsimp only at hn ⊢
   refine ⟨hn.1,?_⟩
   rw [div_eq_mul_inv,norm_mul]
-  calc
-    _≤(Cp*Z^(3/16+loss/2))*(Cn*Z^(loss/2)) :=
-      mul_le_mul hp hn.2 (norm_nonneg _) (by positivity)
-    _=(Cp*Cn)*Z^(3/16+loss) := by
+  exact (mul_le_mul hp hn.2 (norm_nonneg _) (by positivity)).trans_eq (by
       rw [mul_mul_mul_comm,←Real.rpow_add hZ]
       congr 2
-      ring
+      ring)
 
 end SevenEighths.ProbePhysical
 end

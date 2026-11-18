@@ -38,8 +38,7 @@ theorem lowGramRemainders_card (F : Finset O) (G : Id)
     · obtain ⟨r,hr,her⟩ := Finset.mem_image.mp R.property
       obtain ⟨t,ht,het⟩ := Finset.mem_image.mp T.property
       rw [←her,←het,sixthRemainder_valuation,sixthRemainder_valuation,hres r hr P hp,hres t ht P hp]
-  have hh := Fintype.card_le_of_injective code hinj
-  simpa only [Fintype.card_coe,Fintype.card_fun,Fintype.card_fin] using hh
+  simpa using (Fintype.card_le_of_injective code hinj)
 
 theorem lowGramExceptional_raw_count (F : Finset O) (G : Id) (H : ℝ) (hH : 0≤H)
     (hF : ∀z∈F,z≠0)

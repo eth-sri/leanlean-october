@@ -10,77 +10,11 @@ noncomputable section
 
 namespace CubicEisenstein
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 
 section
-open MeasureTheory Set Filter
-open scoped BigOperators Classical ENNReal
-
-open ActualEisensteinCubic ConcreteTraceCRT
+open scoped ENNReal
 
 lemma breveE_embedding_div_traceLambda (n : O) :
     ShortDraftTrace.breveE (eisEmbedding n/eisLam)=1 := by
@@ -117,10 +51,8 @@ lemma trace_mul_integrable (f : ℂ → ℂ) (hf : Integrable f) (freq : ℂ) :
 end
 
 section
-open MeasureTheory Set Filter Module
-open scoped BigOperators Classical ENNReal MatrixGroups Matrix
-
-open ActualEisensteinCubic ConcreteTraceCRT
+open Module
+open scoped ENNReal MatrixGroups Matrix
 
 lemma continuous_inverse_upper_operator (v : ℝ) (hv : 0 < v) :
     Continuous (fun z : ℂ => rowOperator (upperSection z v hv)⁻¹) := by
@@ -132,24 +64,19 @@ lemma continuous_inverse_upper_operator (v : ℝ) (hv : 0 < v) :
     Matrix.vecMul,dotProduct,Fin.sum_univ_two]
   fin_cases i <;> simp only [] <;> fun_prop
 
-lemma continuous_upper_rowBound (v : ℝ) (hv : 0 < v) :
-    Continuous (fun z : ℂ => rowBound (upperSection z v hv)) :=
-  continuous_const.mul (continuous_const.add (continuous_inverse_upper_operator v hv).norm)
 
 lemma norm_mem_periodDomain (z : ℂ) (hz : z ∈ periodDomain) :
     ‖z‖ ≤ ∑ i : Fin 2, ‖periodBasis i‖ := by
-  have heq := (ZSpan.fract_eq_self (b := periodBasis)).mpr hz
-  simpa only [heq] using ZSpan.norm_fract_le periodBasis z
+  simpa only [((ZSpan.fract_eq_self (b := periodBasis)).mpr hz)] using ZSpan.norm_fract_le periodBasis z
 
 lemma exists_upper_rowBound (v : ℝ) (hv : 0 < v) :
     ∃ C : ℝ, 0 < C ∧ ∀ z ∈ periodDomain, rowBound (upperSection z v hv) ≤ C := by
-  let R : ℝ := ∑ i : Fin 2, ‖periodBasis i‖
-  obtain ⟨C,hC⟩ := (isCompact_closedBall (0:ℂ) R).bddAbove_image
-    (continuous_upper_rowBound v hv).continuousOn
+  obtain ⟨C,hC⟩ := (isCompact_closedBall 0 (∑ i : Fin 2, ‖periodBasis i‖)).bddAbove_image
+    ((continuous_const.mul (continuous_const.add (continuous_inverse_upper_operator v hv).norm))).continuousOn
   refine ⟨max 1 C,lt_of_lt_of_le (by norm_num) (le_max_left _ _),?_⟩
   intro z hz
   apply (hC ?_).trans (le_max_right _ _)
-  exact ⟨z,by simpa only [Metric.mem_closedBall,dist_zero_right] using norm_mem_periodDomain z hz,rfl⟩
+  exact ⟨z,by simpa using norm_mem_periodDomain z hz,rfl⟩
 
 lemma continuous_upper_summand (v : ℝ) (hv : 0 < v) (s : ℂ) (x : CuspCosets) :
     Continuous (fun z : ℂ => summand (upperSection z v hv) s x) := by
@@ -173,9 +100,7 @@ lemma upper_summable_majorant (v : ℝ) (hv : 0 < v) (s : ℂ) (hs : 2 < s.re) :
   obtain ⟨C,hC,hbound⟩ := exists_upper_rowBound v hv
   refine ⟨fun x => C^(2*s.re)*‖rowCoordinates (cosetRow x)‖^(-(2*s.re)),?_,?_,?_⟩
   · have hsumm := summable_integer_four_rpow (2*s.re) (by linarith)
-    have hinj : Function.Injective (fun x : CuspCosets => rowCoordinates (cosetRow x)) :=
-      rowCoordinates_injective.comp cosetRow_injective
-    exact (hsumm.comp_injective hinj).mul_left _
+    exact (hsumm.comp_injective (rowCoordinates_injective.comp cosetRow_injective)).mul_left _
   · intro x
     positivity
   · intro z hz x
@@ -215,18 +140,14 @@ theorem hasSum_integral_upperEisenstein (v : ℝ) (hv : 0 < v) (s freq : ℂ) (h
 end
 
 section
-open MeasureTheory Set Filter
-open scoped BigOperators Classical
-
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
+open CubicJacobiGlobal
 
 def shiftedHeightKernel (v : ℝ) (s b z : ℂ) : ℂ :=
   (v:ℂ)^(-s)*hyperbolicKernel s ((z+b)/(v:ℂ))
 
 lemma shiftedHeightKernel_integrable (v : ℝ) (hv : 0 < v) (s b : ℂ) (hs : 1 < s.re) :
     Integrable (shiftedHeightKernel v s b) := by
-  have h := ((hyperbolicKernel_integrable s hs).comp_smul (inv_ne_zero hv.ne')).comp_add_right b
-  apply (h.const_mul ((v:ℂ)^(-s))).congr
+  apply ((((hyperbolicKernel_integrable s hs).comp_smul (inv_ne_zero hv.ne')).comp_add_right b).const_mul ((v:ℂ)^(-s))).congr
   exact Eventually.of_forall fun z => by
     simp only [shiftedHeightKernel,Complex.real_smul,Complex.ofReal_inv,div_eq_mul_inv,mul_comm]
 
@@ -298,10 +219,7 @@ lemma traceIntegral_shiftedHeightKernel (v : ℝ) (hv : 0 < v) (s b freq : ℂ) 
 end
 
 section
-open MeasureTheory Set Filter
-open scoped BigOperators Classical ENNReal Pointwise
-
-open ActualEisensteinCubic ConcreteTraceCRT
+open scoped ENNReal Pointwise
 
 lemma period_integral_translation (f : ℂ → ℂ)
     (hperiod : ∀ (n : O) (z : ℂ), f (z+3*eisEmbedding n)=f z) (b : ℂ) :
@@ -310,11 +228,9 @@ lemma period_integral_translation (f : ℂ → ℂ)
     obtain ⟨m,rfl⟩ := periodEquiv.surjective n
     change f (3*eisEmbedding m+z)=f z
     simpa only [add_comm] using hperiod m z
-  have hD := periodDomain_fundamental.vadd_of_comm b
-  have heq := periodDomain_fundamental.setIntegral_eq hD hperiod'
   have hchange := (measurePreserving_add_left volume b).setIntegral_image_emb
     (measurableEmbedding_const_vadd b) f periodDomain
-  exact hchange.symm.trans heq.symm
+  exact hchange.symm.trans (periodDomain_fundamental.setIntegral_eq (periodDomain_fundamental.vadd_of_comm b) hperiod').symm
 
 lemma breveE_quarter_eq_neg_one : ShortDraftTrace.breveE (1/4:ℂ)=-1 := by
   change Complex.exp (2*Real.pi*Complex.I*((1/4:ℂ)+starRingEnd ℂ (1/4:ℂ)))=-1
@@ -350,10 +266,8 @@ theorem integral_cusp_character (h : O) :
 end
 
 section
-open MeasureTheory Set Filter
-open scoped BigOperators Classical ENNReal
-
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
+open CubicJacobiGlobal
+open scoped ENNReal
 
 def primitiveRowIntegral (v : ℝ) (s freq : ℂ) (c d : O) : ℂ :=
   ∫ z in periodDomain,primitiveTerm z v s c d*ShortDraftTrace.breveE (-freq*z)
@@ -410,11 +324,8 @@ lemma denominator_integral_formula (v : ℝ) (hv : 0 < v) (s : ℂ) (hs : 2 < s.
     (∑' d : AdmissibleDenominator c.1,primitiveRowIntegral v s (cuspFrequency h) c.1 d.1)=
       ((v:ℂ)^(2-s)*sourceFourierKernel s (cuspFrequency h*v))*
         ((‖eisEmbedding c.1‖^2:ℝ):ℂ)^(-s)*arithmeticResidueSum h c.1 := by
-  have hsum : Summable (fun d : AdmissibleDenominator c.1 =>
-      primitiveRowIntegral v s (cuspFrequency h) c.1 d.1) :=
-    (hasSum_primitiveRowIntegrals v hv s (cuspFrequency h) hs).summable.sigma_factor c
   rw [denominator_sum_residues c.1 hc
-    (fun d : O => primitiveRowIntegral v s (cuspFrequency h) c.1 d) hsum]
+    (fun d : O => primitiveRowIntegral v s (cuspFrequency h) c.1 d) ((hasSum_primitiveRowIntegrals v hv s (cuspFrequency h) hs).summable.sigma_factor c)]
   calc
     _ = ∑' r : AdmissibleResidue c.1, ∫ z : ℂ,
         primitiveTerm z v s c.1 (denominatorRep c.1 r.1)*
@@ -430,10 +341,8 @@ lemma denominator_integral_formula (v : ℝ) (hv : 0 < v) (s : ℂ) (hs : 2 < s.
 end
 
 section
-open MeasureTheory Set Filter
-open scoped BigOperators Classical ENNReal Matrix
-
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
+open CubicJacobiGlobal
+open scoped ENNReal Matrix
 
 instance : DiscreteTopology periodLattice := by unfold periodLattice; infer_instance
 instance : IsZLattice ℝ periodLattice := by unfold periodLattice; infer_instance
@@ -442,15 +351,11 @@ lemma summable_embedding_rpow (k : ℝ) (hk : k < -2) :
     Summable (fun n : O => ‖eisEmbedding n‖^k) := by
   have hrank : Module.finrank ℤ periodLattice=2 := by
     rw [ZLattice.rank ℝ periodLattice,Complex.finrank_real_complex]
-  have hs := ZLattice.summable_norm_rpow periodLattice k (by rw [hrank]; norm_num; exact hk)
-  have hcomp := periodEquiv.summable_iff.mpr hs
-  have hscale := hcomp.mul_left (((3:ℝ)^k)⁻¹)
-  apply hscale.congr
+  apply ((periodEquiv.summable_iff.mpr (ZLattice.summable_norm_rpow periodLattice k (by rw [hrank]; norm_num; exact hk))).mul_left (((3:ℝ)^k)⁻¹)).congr
   intro n
   change ((3:ℝ)^k)⁻¹*‖(3:ℂ)*eisEmbedding n‖^k=‖eisEmbedding n‖^k
   rw [norm_mul,show ‖(3:ℂ)‖=(3:ℝ) by norm_num,
-    Real.mul_rpow (by norm_num) (norm_nonneg _)]
-  rw [← mul_assoc,inv_mul_cancel₀ (Real.rpow_pos_of_pos (by norm_num) k).ne',one_mul]
+    Real.mul_rpow (by norm_num) (norm_nonneg _), ← mul_assoc,inv_mul_cancel₀ (Real.rpow_pos_of_pos (by norm_num) k).ne',one_mul]
 
 lemma norm_row_symbol (c d : O) (hc : (3:O) ∣ c) (hd : denominatorCondition c d) :
     ‖eisEmbedding (symbol c d)‖=1 := by
@@ -458,8 +363,6 @@ lemma norm_row_symbol (c d : O) (hc : (3:O) ∣ c) (hd : denominatorCondition c 
   let x := primitiveRowEquiv.symm r
   have heq : (cosetCharacter x)⁻¹=eisEmbedding (symbol c d) := by
     rw [inverse_cosetCharacter_eq_row_symbol]
-    change eisEmbedding (symbol (cosetRow (primitiveRowEquiv.symm r) 0)
-      (cosetRow (primitiveRowEquiv.symm r) 1))=eisEmbedding (symbol c d)
     rw [primitiveRowEquiv_symm_row r]
     rfl
   rw [← heq,norm_inv,norm_cosetCharacter,inv_one]
@@ -480,9 +383,7 @@ lemma norm_arithmeticResidueSum_le (h c : O) (hc : c ≠ 0) (hlevel : (3:O) ∣ 
         ShortDraftTrace.breveE (cuspFrequency h*eisEmbedding (denominatorRep c r.1)/eisEmbedding c)‖ :=
       norm_sum_le _ _
     _ = (Fintype.card (AdmissibleResidue c):ℝ) := by
-      have hr (r : AdmissibleResidue c) :
-          ‖eisEmbedding (symbol c (denominatorRep c r.1))‖=1 :=
-        norm_row_symbol c (denominatorRep c r.1) hlevel r.2
+      have hr (r : AdmissibleResidue c) := norm_row_symbol c (denominatorRep c r.1) hlevel r.2
       simp only [norm_mul,hr,breveE_norm,Finset.sum_const,Finset.card_univ,nsmul_eq_mul,mul_one]
     _ ≤ (Fintype.card (DenominatorResidue c):ℝ) := by
       exact_mod_cast Fintype.card_subtype_le (fun r => denominatorCondition c (denominatorRep c r))
@@ -500,19 +401,15 @@ lemma norm_arithmeticDirichletTerm_le (s : ℂ) (h : O) (c : LevelLower) :
   · have hn : 0 < ‖eisEmbedding c.1‖ := norm_pos_iff.mpr (eisEmbedding_ne_zero hc)
     rw [norm_mul,Complex.norm_cpow_eq_rpow_re_of_pos (sq_pos_of_pos hn)]
     change (‖eisEmbedding c.1‖^2)^(-s.re)*‖arithmeticResidueSum h c.1‖ ≤ _
-    calc
-      _ ≤ (‖eisEmbedding c.1‖^2)^(-s.re)*(9*‖eisEmbedding c.1‖^2) :=
-        mul_le_mul_of_nonneg_left (norm_arithmeticResidueSum_le h c.1 hc c.2) (by positivity)
-      _ = _ := by
-        rw [← Real.rpow_natCast_mul hn.le 2 (-s.re)]
-        rw [show 2-2*s.re=2+2*(-s.re) by ring,Real.rpow_add hn]
-        norm_num only [Nat.cast_ofNat,Real.rpow_two]
-        ring
+    exact (mul_le_mul_of_nonneg_left (norm_arithmeticResidueSum_le h c.1 hc c.2) (by positivity)).trans_eq (by
+        rw [← Real.rpow_natCast_mul hn.le 2 (-s.re), show 2-2*s.re=2+2*(-s.re) by ring,Real.rpow_add hn]
+        norm_num
+        ring)
 
 theorem arithmeticDirichletTerm_summable_norm (s : ℂ) (hs : 2 < s.re) (h : O) :
     Summable (fun c : LevelLower => ‖arithmeticDirichletTerm s h c‖) := by
   have hbase := (summable_embedding_rpow (2-2*s.re) (by linarith)).subtype
-    (fun c : O => (3:O) ∣ c)
+    (fun c : O => 3 ∣ c)
   exact (hbase.mul_left 9).of_nonneg_of_le (fun _ => norm_nonneg _)
     (norm_arithmeticDirichletTerm_le s h)
 
@@ -524,10 +421,7 @@ def scatteringCoefficient (s : ℂ) (h : O) : ℂ :=
 
 end
 
-open MeasureTheory Set Filter
-open scoped BigOperators Classical
-
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
+open CubicJacobiGlobal
 
 lemma zero_lower_integral (v : ℝ) (s : ℂ) (h : O) :
     (∑' d : AdmissibleDenominator 0,primitiveRowIntegral v s (cuspFrequency h) 0 d.1)=
@@ -535,7 +429,7 @@ lemma zero_lower_integral (v : ℝ) (s : ℂ) (h : O) :
   let d0 : AdmissibleDenominator 0 := ⟨1,isCoprime_one_right,by simp⟩
   rw [tsum_eq_single d0]
   · simp only [d0,primitiveRowIntegral,primitiveTerm,map_zero,map_one,zero_mul,zero_add,
-      norm_one,norm_zero,one_pow,zero_pow (by decide : (2:ℕ) ≠ 0),add_zero,
+      norm_one,norm_zero,one_pow,zero_pow (by decide : 2 ≠ 0),add_zero,
       div_one,symbol_one,map_one]
     rw [integral_const_mul,integral_cusp_character,one_mul]
   · intro d hd
@@ -580,7 +474,6 @@ theorem eisensteinFourierCoefficient_formula (v : ℝ) (hv : 0 < v) (s : ℂ) (h
     eisensteinFourierCoefficient v hv s h=(if h=0 then (v:ℂ)^s else 0)+
       (v:ℂ)^(2-s)*sourceFourierKernel s (cuspFrequency h*v)*scatteringCoefficient s h := by
   rw [eisensteinFourierCoefficient,integral_upperEisenstein_arithmetic v hv s hs h,scatteringCoefficient]
-  have hvol : ((9*Real.sqrt 3/2:ℝ):ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr (by positivity)
   split_ifs <;> field_simp ; ring
 
 theorem eisensteinConstantCoefficient_formula (v : ℝ) (hv : 0 < v) (s : ℂ) (hs : 2 < s.re) :

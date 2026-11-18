@@ -52,10 +52,7 @@ theorem atkinsonFullDyadicPhaseBound_le_undamped {T : ℝ} (hT : 0 < T) (G : ℝ
     apply Real.exp_le_one_iff.mpr
     exact div_nonpos_of_nonpos_of_nonneg (neg_nonpos.mpr (mul_nonneg (sq_nonneg G) (Nat.cast_nonneg _)))
       (by positivity)
-  calc
-    _ ≤ (((2^j:ℕ):ℝ)^(-(1/4:ℝ))*1)*atkinsonPhaseBlockMax T (2^j) (2^j) :=
-      mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left he (Real.rpow_nonneg (Nat.cast_nonneg _) _))
-        (atkinsonPhaseBlockMax_nonneg _ _ _)
-    _ = _ := by rw [mul_one]
+  exact (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left he (Real.rpow_nonneg (Nat.cast_nonneg _) _))
+        (atkinsonPhaseBlockMax_nonneg _ _ _)).trans_eq (by rw [mul_one])
 
 end MathCollab.Density.Stronger.Atkinson

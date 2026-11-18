@@ -9,16 +9,11 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentCommonMaskExpansion
-open HeckeFamily CenteredMomentReflectionDeletion CenteredMomentReflectionMass
-open UniqueFactorizationMonoid
+open HeckeFamily CenteredMomentReflectionDeletion CenteredMomentReflectionMass UniqueFactorizationMonoid
 local notation "O" => HeckeFamily.O
 
 def naturalSlot (χ : Character) (pool : Finset (Ideal O)) (β : Ideal O→ℂ) (P : ℝ) : ℂ :=
   (Real.sqrt P:ℂ)⁻¹ * ∑ I∈pool,idealCoeff χ I*β I
-
-def profileSlot (χ : Character) (pool : Finset (Ideal O))
-    (ν : Ideal O→ℂ) (W : ℝ→ℂ) (P : ℝ) : ℂ :=
-  naturalSlot χ pool (fun I=>ν I*W ((I.absNorm:ℝ)/P)) P
 
 lemma outside_prime (R : Finset (Ideal O)) (hR : ∀ I∈R,Prime I)
     (I : Ideal O) (hI : Prime I) : outside R I ↔ I∉R := by
@@ -26,14 +21,12 @@ lemma outside_prime (R : Finset (Ideal O)) (hR : ∀ I∈R,Prime I)
   · intro h hi
     exact h I hi dvd_rfl
   · intro h J hj hd
-    have he : J=I := (prime_dvd_prime_iff_eq (hR J hj) hI).mp hd
-    exact h (he ▸ hj)
+    exact h (((prime_dvd_prime_iff_eq (hR J hj) hI).mp hd) ▸ hj)
 
 lemma deleted_prime (χ : Character) (R : Finset (Ideal O)) (hR : ∀ I∈R,Prime I)
     (I : Ideal O) (hI : Prime I) :
     idealCoeff (χ.excludePrimes R hR) I = if I∈R then 0 else idealCoeff χ I := by
-  have h:=deleted_coefficient χ R hR ⟨I,hI.ne_zero⟩
-  simpa only [outside_prime R hR I hI,ite_not] using h
+  simpa only [outside_prime R hR I hI,ite_not] using (deleted_coefficient χ R hR ⟨I,hI.ne_zero⟩)
 
 theorem naturalSlot_delete (χ : Character) (R : Finset (Ideal O)) (hR : ∀ I∈R,Prime I)
     (pool : Finset (Ideal O)) (hp : ∀ I∈pool,Prime I) (β : Ideal O→ℂ) (P : ℝ) :
@@ -87,8 +80,7 @@ theorem simultaneous_deletion (χ : Character) (R : Finset (Ideal O))
       (fun i=>naturalSlot χ (pool i∩R) (β i) (P i))
     exact (Finset.prod_congr rfl (fun i hi=>naturalSlot_delete χ R hR (pool i) (hp i hi) (β i) (P i))).trans hh
   rw [normalized_finite_deletion_moebius χ R hR W₁ (schwartz_decayTwo W₁) X₁ hX₁,
-    normalized_finite_deletion_moebius χ R hR W₂ (schwartz_decayTwo W₂) X₂ hX₂,hs]
-  rw [Finset.sum_mul_sum,Finset.sum_mul]
+    normalized_finite_deletion_moebius χ R hR W₂ (schwartz_decayTwo W₂) X₂ hX₂,hs, Finset.sum_mul_sum,Finset.sum_mul]
   apply Finset.sum_congr rfl
   intro D₁ hD₁
   rw [Finset.sum_mul]
@@ -134,18 +126,14 @@ lemma slot_point_mass (I : Ideal O) (hI : Prime I) (β : Ideal O→ℂ)
     exact mul_nonneg (mul_nonneg (Real.sqrt_nonneg _) hM) (weight_nonneg _)
   have hN : (0:ℝ)<I.absNorm := by
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hI.ne_zero)
-  have hB : 0≤max 1 b := le_trans zero_le_one (le_max_left _ _)
   have hsqrt : Real.sqrt (I.absNorm:ℝ)≤Real.sqrt (max 1 b)*Real.sqrt P := by
-    rw [←Real.sqrt_mul hB]
+    rw [←Real.sqrt_mul (le_trans zero_le_one (le_max_left _ _))]
     exact Real.sqrt_le_sqrt ((hs hz).trans (mul_le_mul_of_nonneg_right (le_max_right _ _) hP.le))
   have hi : (Real.sqrt P)⁻¹≤Real.sqrt (max 1 b)*weight I := by
     rw [weight,←div_eq_mul_inv,inv_eq_one_div,
       div_le_div_iff₀ (Real.sqrt_pos.mpr hP) (Real.sqrt_pos.mpr hN)]
     simpa using hsqrt
-  calc
-    _≤(Real.sqrt (max 1 b)*weight I)*M :=
-      mul_le_mul hi hβ (norm_nonneg _) (mul_nonneg (Real.sqrt_nonneg _) (weight_nonneg _))
-    _=_ := by ring
+  exact (mul_le_mul hi hβ (norm_nonneg _) (mul_nonneg (Real.sqrt_nonneg _) (weight_nonneg _))).trans_eq (by ring)
 
 lemma slotMass_bound (R pool : Finset (Ideal O)) (hp : ∀I∈pool,Prime I)
     (β : Ideal O→ℂ) (P b M : ℝ) (hP : 0<P) (hM : 0≤M)

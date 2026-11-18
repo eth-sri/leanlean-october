@@ -9,78 +9,13 @@ noncomputable section
 
 namespace SecondPassArithmetic
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 
 section
 
-open scoped BigOperators Classical SchwartzMap
 
 section
-open ActualEisensteinCubic
 open ConcreteTraceCRT (eisEmbedding)
 open RayFourExpansion (RayCharacter)
 
@@ -123,7 +58,6 @@ theorem inputConjugateRow_smoothed_frequency_blocks
 
 end
 
-open ActualEisensteinCubic
 open ConcreteTraceCRT (eisEmbedding)
 open FirstCauchyArithmetic (supportConjugateSum supportMobius)
 open RayFourExpansion (RayCharacter)
@@ -152,8 +86,7 @@ theorem nonzeroRowMajorantSum_eq_sub (P : O → ℂ) (Y : ℝ) (hY : 0 < Y) :
       (∑' z : O, rowMajorant (‖eisEmbedding z‖ ^ 2 / Y) * (↑(‖P z‖ ^ 2) : ℂ)) -
         (↑(‖P 0‖ ^ 2) : ℂ) := by
   have h := (rowMajorant_summable P Y hY).tsum_eq_add_tsum_ite 0
-  have h0 : rowMajorant (0 : ℝ) = 1 := rowMajorant_one 0 (by norm_num)
-  simp only [map_zero, norm_zero, zero_pow (by decide : (2 : ℕ) ≠ 0), zero_div, h0, one_mul] at h
+  simp only [map_zero, norm_zero, zero_pow (by decide : 2 ≠ 0), zero_div, (rowMajorant_one 0 (by norm_num)), one_mul] at h
   change _ = _ + nonzeroRowMajorantSum P Y at h
   rw [h]
   ring
@@ -167,7 +100,7 @@ theorem finite_nonzero_row_energy_le_majorant (P : O → ℂ) (T : Finset O)
   unfold nonzeroRowMajorantSum
   rw [Complex.re_tsum hs]
   calc
-    _ = ∑ z ∈ T, (if z = 0 then (0 : ℂ) else
+    _ = ∑ z ∈ T, (if z = 0 then 0 else
         rowMajorant (‖eisEmbedding z‖ ^ 2 / Y) * (↑(‖P z‖ ^ 2) : ℂ)).re := by
       apply Finset.sum_congr rfl
       intro z hz
@@ -193,9 +126,6 @@ end
 
 section
 
-open scoped BigOperators Classical
-open MeasureTheory
-open ActualEisensteinCubic
 open ConcreteTraceCRT (eisEmbedding)
 open RayFourExpansion (RayCharacter)
 
@@ -203,10 +133,8 @@ end
 
 section
 
-open scoped BigOperators Classical
 
 section
-open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProduct cubeRadical aLabel jLabel j2Label squarefreeLabel b0Label
   bit retained parity b0Exponent)
 
@@ -251,29 +179,8 @@ theorem cubeRadical_dvd_jLabel_b0 (B : Finset ι) (v : ι → ℕ) (ε₁ ε₂ 
   simpa only [cubeRadical, jLabel, b0Label, primeProduct, pow_one, pow_add,
     Finset.prod_mul_distrib] using hd
 
-def actualSecondTuple (B C D E V : Finset ι) (v₁ v₂ : ι → ℕ) (ε₁ ε₂ : ι → Bool)
-    (k : O) : SecondPassFiber.OldTuple where
-  core := ![Ideal.span {jLabel p B (fun i => v₁ i + v₂ i) ε₁ ε₂},
-    ∏ i ∈ C, Ideal.span {p i}, ∏ i ∈ E, Ideal.span {p i},
-    Ideal.span {squarefreeLabel p B (fun i => v₁ i + v₂ i)},
-    Ideal.span {primeProduct p B v₁}, Ideal.span {aLabel p B ε₁},
-    Ideal.span {aLabel p B ε₂}, ∏ i ∈ D, Ideal.span {p i}]
-  v := ∏ i ∈ V, Ideal.span {p i}
-  j2 := Ideal.span {j2Label p B (fun i => v₁ i + v₂ i) ε₁ ε₂}
-  b2 := Ideal.span {primeProduct p B v₂}
-  row := k
-
-def actualSecondLabel (B C E V : Finset ι) (v₁ v₂ : ι → ℕ) (ε₁ ε₂ : ι → Bool) : Ideal O :=
-  Ideal.span {jLabel p B (fun i => v₁ i + v₂ i) ε₁ ε₂} *
-    (∏ i ∈ C, Ideal.span {p i}) * (∏ i ∈ E, Ideal.span {p i}) * (∏ i ∈ V, Ideal.span {p i})
-
-def actualSecondRow (D E : Finset ι) (k : O) : O :=
-  primeSubsetGenerator (fun i => Ideal.span {p i}) D *
-    primeSubsetGenerator (fun i => Ideal.span {p i}) E * k
-
 end
 
-open ActualEisensteinCubic
 open FirstPassCubeLabels (jLabel b0Label primeProductNorm)
 
 @[ext] structure SecondSupportData (ι : Type*) where
@@ -289,33 +196,8 @@ instance {ι : Type*} : Inhabited (SecondSupportData ι) := ⟨⟨∅, ∅, ∅,
 variable {ι : Type*} [DecidableEq ι]
   (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
 
-def secondSupportTuple (B : Finset ι) (v₁ v₂ : ι → ℕ) (ε₁ ε₂ : ι → Bool)
-    (x : SecondSupportData ι) : SecondPassFiber.OldTuple :=
-  actualSecondTuple p B x.common x.firstDivisor x.secondDivisor x.overlap v₁ v₂ ε₁ ε₂ x.frequency
-
-def secondSupportNewLabel (B : Finset ι) (v₁ v₂ : ι → ℕ) (ε₁ ε₂ : ι → Bool)
-    (x : SecondSupportData ι) : Ideal O :=
-  actualSecondLabel p B x.common x.secondDivisor x.overlap v₁ v₂ ε₁ ε₂
-
-def secondSupportRow (x : SecondSupportData ι) : O :=
-  actualSecondRow p x.firstDivisor x.secondDivisor x.frequency
-
-omit [DecidableEq ι] [∀ (i : ι), (span {p i}).IsMaximal] in
-@[simp] theorem secondSupportTuple_newLabel
-    (B : Finset ι) (v₁ v₂ : ι → ℕ) (ε₁ ε₂ : ι → Bool) (x : SecondSupportData ι) :
-    SecondPassFiber.newLabel (secondSupportTuple p B v₁ v₂ ε₁ ε₂ x) =
-      secondSupportNewLabel p B v₁ v₂ ε₁ ε₂ x := rfl
-
-omit [DecidableEq ι] [∀ (i : ι), (span {p i}).IsMaximal] in
-@[simp] theorem secondSupportTuple_newRow
-    (B : Finset ι) (v₁ v₂ : ι → ℕ) (ε₁ ε₂ : ι → Bool) (x : SecondSupportData ι) :
-    SecondPassFiber.newRow (secondSupportTuple p B v₁ v₂ ε₁ ε₂ x) = secondSupportRow p x := rfl
-
 end
 
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap FourierTransform
-open ActualEisensteinCubic
 open JointLogSeparation
 open FirstPassCubeLabels (b0Label)
 

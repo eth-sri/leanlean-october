@@ -17,7 +17,7 @@ lemma canonical_mask_norm_cap (B F R : Ideal Eis) (Z V Q L : ℝ)
     (hF : (Ideal.absNorm F:ℝ)≤Z^V) (hR : (Ideal.absNorm R:ℝ)≤Z^Q)
     (hV : V≤L) (hQ : Q≤L) :
     (Ideal.absNorm (B*F*R):ℝ)≤Z^(2*L+1) := by
-  have hz : 0<Z := lt_of_lt_of_le zero_lt_one hZ
+  have hz := lt_of_lt_of_le zero_lt_one hZ
   rw [map_mul,map_mul,Nat.cast_mul,Nat.cast_mul]
   calc
     _ ≤ Z*Z^V*Z^Q := mul_le_mul
@@ -42,9 +42,8 @@ theorem canonical_actual_arithmetic_caps (L : ℝ) (hL : 0≤L)
       QK≤Z^(4*L+2) ∧ QP≤Z^(4*L+2) ∧ (Z^(N-3*hhat))⁻¹≤Z^(4*L+2) := by
   have hZ1 : 1≤Z := by linarith
   have hZp : 0<Z := by linarith
-  have hmaskn := canonical_mask_norm_cap B F R Z V Q L hZ1 hBn hFn hRn hV hQ
   have hfrozen := original_pool_restricted_cap J I (B*F*R) Q₀ hJ hI
-    (mul_ne_zero (mul_ne_zero hB hF) hR) hpower hmask A Z M (2*L+1) hZp hIn hmaskn
+    (mul_ne_zero (mul_ne_zero hB hF) hR) hpower hmask A Z M (2*L+1) hZp hIn (canonical_mask_norm_cap B F R Z V Q L hZ1 hBn hFn hRn hV hQ)
   refine ⟨hfrozen.trans (Real.rpow_le_rpow_of_exponent_le hZ1 (by linarith)),?_,?_,?_⟩
   · calc
       QK ≤ 2*Z^M := hK

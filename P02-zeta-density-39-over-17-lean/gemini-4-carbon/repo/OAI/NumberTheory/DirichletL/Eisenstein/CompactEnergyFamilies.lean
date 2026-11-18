@@ -8,77 +8,8 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
-
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 
 namespace CubicEisenstein
 
@@ -91,20 +22,17 @@ lemma compact_of_norm_le_compact {E F G : Type*}
     (f : E→L[ℂ]F) (g : E→L[ℂ]G) (hg : IsCompactOperator g)
     (hbound : ∃C : ℝ,∀x,‖f x‖≤C*‖g x‖) : IsCompactOperator f := by
   let S := (LinearMap.range g.toLinearMap).topologicalClosure
-  have hS : IsClosed (S : Set G) := (LinearMap.range g.toLinearMap).isClosed_topologicalClosure
   have hmem : ∀x,g x∈S := fun x => (LinearMap.range g.toLinearMap).le_topologicalClosure ⟨x,rfl⟩
-  let e : E→L[ℂ]S := g.codRestrict S hmem
+  let e := g.codRestrict S hmem
   have he : DenseRange e := by
     rw [DenseRange,Subtype.dense_iff,←Set.range_comp]
-    change closure (Set.range g)⊆closure (Set.range g)
     exact Set.Subset.rfl
-  have hec : IsCompactOperator e := hg.codRestrict hmem hS
-  let q : S→L[ℂ]F := f.toLinearMap.extendOfNorm e.toLinearMap
+  let q := f.toLinearMap.extendOfNorm e.toLinearMap
   have hfq : f=q.comp e := by
     ext x
     exact (LinearMap.extendOfNorm_eq he hbound x).symm
   rw [hfq]
-  exact hec.clm_comp q
+  exact (hg.codRestrict hmem ((LinearMap.range g.toLinearMap).isClosed_topologicalClosure)).clm_comp q
 
 lemma compact_finite_pi {E G ι : Type*} [Fintype ι]
     [NormedAddCommGroup E] [NormedSpace ℂ E]
@@ -118,8 +46,6 @@ lemma compact_finite_pi {E G ι : Type*} [Fintype ι]
   intro x hx
   exact fun i hi => subset_closure ⟨x,hx,rfl⟩
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff SchwartzMap
 
 def kernelChartCore (χ : PositiveChartCutoff) : Set EuclideanSpatial :=
   {p | (1/2 : ℝ)<χ.func p}
@@ -138,10 +64,9 @@ lemma kernelChartCore_subset (χ : PositiveChartCutoff) : kernelChartCore χ⊆t
   linarith
 
 lemma kernelChartCoreImage_open (χ : PositiveChartCutoff) : IsOpen (kernelChartCoreImage χ) := by
-  have hp : kernelChartCore χ⊆euclideanUpperHalf := (kernelChartCore_subset χ).trans χ.positive
   have he : kernelChartCoreImage χ=integralOrbitProjection globalKubotaKernel ''
       (hyperbolicEuclideanCoordinates ⁻¹' kernelChartCore χ) := by
-    rw [←euclideanToHyperbolic_image_positive _ hp,Set.image_image]
+    rw [←euclideanToHyperbolic_image_positive _ ((kernelChartCore_subset χ).trans χ.positive),Set.image_image]
     rfl
   rw [he]
   exact (integralOrbitProjection_openQuotient globalKubotaKernel
@@ -158,7 +83,7 @@ lemma kernelChartCoreImage_cover : (Set.univ : Set KernelQuotient)⊆
   obtain ⟨χ,hχ,hrange,hinj⟩ := kernelChartCutoff_exists
     (hyperbolicEuclideanCoordinates w) (hyperbolicHeight_pos w)
   refine Set.mem_iUnion.mpr ⟨⟨χ,hinj⟩,hyperbolicEuclideanCoordinates w,?_,?_⟩
-  · change (1/2 : ℝ)<χ.func (hyperbolicEuclideanCoordinates w)
+  · change (1/2)<χ.func (hyperbolicEuclideanCoordinates w)
     rw [hχ]
     norm_num
   · simp only [kernelEuclideanProjection,Function.comp_apply,euclideanToHyperbolic_coordinates]
@@ -221,8 +146,7 @@ lemma kernelChartCore_mass_bound (χ : KernelGoodCutoff) : ∃C : ℝ,0≤C ∧
     ∀f : kernelSmoothTests,
       (∫q in kernelChartCoreImage χ.1,‖f.1 q‖^2∂integralQuotientVolume globalKubotaKernel)≤
         C*‖kernelL2Localize χ.1 (kernelSmoothTestsToL2 f)‖^2 := by
-  have hrho : ContinuousOn (fun p : EuclideanSpatial => ((p 2)^3)⁻¹) (tsupport χ.1.func) :=
-    (by fun_prop : Continuous (fun p : EuclideanSpatial => (p 2)^3)).continuousOn.inv₀
+  have hrho := (by fun_prop : Continuous (fun p : EuclideanSpatial => (p 2)^3)).continuousOn.inv₀
       (fun p hp => pow_ne_zero _ (ne_of_gt (χ.1.positive hp)))
   obtain ⟨r,hr⟩ := χ.1.compact.bddAbove_image hrho
   refine ⟨4*max 0 r,by positivity,fun f => ?_⟩
@@ -231,8 +155,6 @@ lemma kernelChartCore_mass_bound (χ : KernelGoodCutoff) : ∃C : ℝ,0≤C ∧
 
 end
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology
 
 def kernelMassRestriction (K : Set KernelQuotient) (hK : MeasurableSet K)
     (f : KernelQuotientL2) : KernelQuotientL2 :=
@@ -328,9 +250,7 @@ lemma integral_le_finite_cover {X ι : Type*} [MeasurableSpace X] [Fintype ι]
       by_cases hx : x∈K
       · rw [Set.indicator_of_mem hx]
         obtain ⟨i,hi⟩ := Set.mem_iUnion.mp (hcover hx)
-        calc
-          g x=(U i).indicator g x := (Set.indicator_of_mem hi g).symm
-          _ ≤ ∑j,(U j).indicator g x := Finset.single_le_sum (fun j hj => hnon j) (Finset.mem_univ i)
+        exact ((Set.indicator_of_mem hi g).symm).trans_le (Finset.single_le_sum (fun j hj => hnon j) (Finset.mem_univ i))
       · rw [Set.indicator_of_notMem hx]
         exact Finset.sum_nonneg (fun i hi => hnon i)
     _ = _ := by
@@ -343,9 +263,6 @@ def kernelEnergyChartFamily (t : Finset KernelGoodCutoff) :
     KernelEnergyGraph→L[ℂ](t→EuclideanL2) :=
   ContinuousLinearMap.pi (fun χ : t => kernelEnergyLocalizeL2 χ.1.1)
 
-lemma kernelEnergyChartFamily_isCompact (t : Finset KernelGoodCutoff) :
-    IsCompactOperator (kernelEnergyChartFamily t) :=
-  compact_finite_pi _ (fun χ => kernelEnergyLocalizeL2_isCompact χ.1.1 χ.1.2)
 
 lemma finite_sum_weighted_norm_sq_le {G ι : Type*} [Fintype ι]
     [NormedAddCommGroup G] (C : ι→ℝ) (hC : ∀i,0≤C i) (x : ι→G) :
@@ -401,7 +318,7 @@ theorem kernelEnergyMassRestriction_isCompact (K : Set KernelQuotient) (hK : IsC
         rw [kernelEnergyMass_core,kernelMassRestriction_smooth_norm_sq]
         exact hbound f)
   apply compact_of_norm_le_compact _ (kernelEnergyChartFamily t)
-    (kernelEnergyChartFamily_isCompact t)
+    ((compact_finite_pi _ (fun χ => kernelEnergyLocalizeL2_isCompact χ.1.1 χ.1.2)))
   refine ⟨Real.sqrt C,fun u => ?_⟩
   have hs := hsq u
   have hc := Real.sq_sqrt hC
@@ -412,11 +329,9 @@ theorem kernelEnergyMassRestriction_isCompact (K : Set KernelQuotient) (hK : IsC
 
 end CubicEisenstein
 
-open scoped BigOperators Classical
 namespace CanonicalRowCompletion
 
 section
-open ActualEisensteinCubic
 open CompletedGauss (actualSextic)
 
 def primeValueHom (w : Ideal ActualEisensteinCubic.O → ℂ) : Ideal ActualEisensteinCubic.O →*₀ ℂ where
@@ -523,7 +438,6 @@ theorem rowTwist_product {ι : Type*} (p : ι → ActualEisensteinCubic.O)
 
 end
 
-open ActualEisensteinCubic
 open CompletedGauss hiding O
 open SecondPassArithmetic hiding O
 
@@ -547,12 +461,10 @@ theorem columnWeight_finset (hpr : ∀i,lambda^2∣p i-1)
     columnWeight (rowTwist Ψ m f z) (Ideal.span {∏i∈S,p i}) * H S =
       canonicalSourceCoefficient p hp hcop hg Ψ m f H S *
         finiteSquarefreeRow (fun i=>Ideal.span {p i}) hg S z := by
-  have hn : (∏i∈S,p i)≠0 := Finset.prod_ne_zero_iff.mpr (fun i _=>hp i)
   have hprimary : lambda^2∣(∏i∈S,p i)-1 := by
-    have h := product_primary (fun i:S=>p i.val) (fun i=>hpr i.val)
-    simpa only [Finset.prod_coe_sort] using h
+    simpa only [Finset.prod_coe_sort] using (product_primary (fun i:S=>p i.val) (fun i=>hpr i.val))
   rw [columnWeight,squarefreeGaussCoefficient_finset p hp hcop hg hpr S,
-    primaryGenerator_span _ hn hprimary,rowTwist_product p hg S]
+    primaryGenerator_span _ (Finset.prod_ne_zero_iff.mpr (fun i _=>hp i)) hprimary,rowTwist_product p hg S]
   simp only [canonicalSourceCoefficient]
   ring
 

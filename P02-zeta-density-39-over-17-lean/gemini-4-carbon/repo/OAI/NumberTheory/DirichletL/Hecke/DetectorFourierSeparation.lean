@@ -21,9 +21,7 @@ lemma phasePolynomial_continuous {α : Type*} (S : Finset α) (a : α → ℂ) (
 
 lemma phasePolynomial_norm {α : Type*} (S : Finset α) (a : α → ℂ) (x : α → ℝ) (t : ℝ) :
     ‖phasePolynomial S a x t‖ ≤ ∑ i ∈ S, ‖a i‖ := by
-  calc
-    _ ≤ ∑ i ∈ S, ‖a i*FourierBridge.logPhase t (x i)‖ := norm_sum_le _ _
-    _ = _ := by simp only [norm_mul, FourierBridge.logPhase_norm, mul_one]
+  exact (norm_sum_le _ _).trans_eq (by simp only [norm_mul, FourierBridge.logPhase_norm, mul_one])
 
 lemma separated_pair_integrable {α β : Type*} (S : Finset α) (T : Finset β)
     (a : α → ℂ) (b : β → ℂ) (x : α → ℝ) (y : β → ℝ) (g : SchwartzMap ℝ ℂ) :

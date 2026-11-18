@@ -45,15 +45,14 @@ theorem exists_source_cube_bins (e B : ℝ) (he : 0<e) (hB : 2<B)
 theorem exists_source_cube_bin_number (e : ℝ) (he : 0<e) :
     ∃n : ℕ,0<n ∧ (49/100:ℝ)≤n*e := by
   refine ⟨⌈(49/100:ℝ)/e⌉₊+1,by omega,?_⟩
-  have hh := Nat.le_ceil ((49/100:ℝ)/e)
-  have hmul := (div_le_iff₀ he).mp hh
+  have hmul := (div_le_iff₀ he).mp (Nat.le_ceil ((49/100:ℝ)/e))
   push_cast
   nlinarith
 
 theorem source_cube_height_eventually (τ : ℝ) (hτ : 0<τ) :
     ∀ᶠ Z : ℝ in atTop,1≤Z ∧ 2<Z^τ := by
-  filter_upwards [eventually_ge_atTop (1:ℝ),
-    (tendsto_rpow_atTop hτ).eventually (eventually_gt_atTop (2:ℝ))] with Z hZ hpow
+  filter_upwards [eventually_ge_atTop 1,
+    (tendsto_rpow_atTop hτ).eventually (eventually_gt_atTop 2)] with Z hZ hpow
   exact ⟨hZ,hpow⟩
 
 end SevenEighths.ProbeHighRowFamily

@@ -8,8 +8,7 @@ set_option autoImplicit false
 noncomputable section
 open Real Filter MeasureTheory Set
 namespace Montgomery.RationalMoment.RightDetector.Physical
-open MathCollab.Density.Stronger MathCollab.Density
-open TaoTrudgianYang2025
+open MathCollab.Density.Stronger MathCollab.Density TaoTrudgianYang2025
 
 /-- The actual complementary zeros obey the two native pair-tail budgets.
 The numerical slack accounts explicitly for the detector denominator and logarithm. -/

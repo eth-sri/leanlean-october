@@ -19,7 +19,7 @@ lemma factor_ne_zero_of_defect (a : ℂ) (ha : ‖a-1‖ ≤ 1/2) : a ≠ 0 := b
 
 lemma norm_log_le_defect (a : ℂ) (ha : ‖a-1‖ ≤ 1/2) :
     ‖Complex.log a‖ ≤ (3/2:ℝ)*‖a-1‖ := by
-  simpa only [add_sub_cancel] using Complex.norm_log_one_add_half_le_self ha
+  simpa using Complex.norm_log_one_add_half_le_self ha
 
 lemma log_summable_of_defect {ι : Type*} (F : ι → ℂ) (b : ι → ℝ)
     (hb : Summable b) (hF : ∀ i, ‖F i-1‖ ≤ b i) (hhalf : ∀ i, b i ≤ 1/2) :
@@ -45,7 +45,7 @@ lemma norm_log_sum_le {ι : Type*} (F : ι → ℂ) (b : ι → ℝ)
   have hs := log_summable_of_defect F b hb hF hhalf
   calc
     _ ≤ ∑' i, ‖Complex.log (F i)‖ := norm_tsum_le_tsum_norm hs
-    _ ≤ ∑' i, (3/2:ℝ)*b i := Summable.tsum_le_tsum
+    _ ≤ ∑' i, (3/2)*b i := Summable.tsum_le_tsum
       (fun i => (norm_log_le_defect _ ((hF i).trans (hhalf i))).trans
         (mul_le_mul_of_nonneg_left (hF i) (by norm_num))) hs (hb.mul_left _)
     _ = _ := tsum_mul_left
@@ -68,8 +68,7 @@ theorem normalProduct_analytic {ι : Type*} (F : ι → ℂ → ℂ) (b : ι →
     intro i
     apply (hF i).differentiableOn.clog
     intro s hs
-    have hsmall : ‖F i s-1‖ < 1 := lt_of_le_of_lt ((hbound i s hs).trans (hhalf i)) (by norm_num)
-    simpa only [add_sub_cancel] using Complex.mem_slitPlane_of_norm_lt_one hsmall
+    simpa using Complex.mem_slitPlane_of_norm_lt_one (lt_of_le_of_lt ((hbound i s hs).trans (hhalf i)) (by norm_num))
   have hd := Complex.differentiableOn_tsum_of_summable_norm (hb.mul_left (3/2)) hlogs hU
     (fun i s hs => (norm_log_le_defect _ ((hbound i s hs).trans (hhalf i))).trans
       (mul_le_mul_of_nonneg_left (hbound i s hs) (by norm_num)))

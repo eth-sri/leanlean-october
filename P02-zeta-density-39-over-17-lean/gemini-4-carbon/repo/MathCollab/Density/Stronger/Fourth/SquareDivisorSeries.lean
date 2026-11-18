@@ -11,8 +11,7 @@ public import Mathlib.MeasureTheory.Integral.DominatedConvergence
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
+open Complex Filter MeasureTheory Set Topology MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
 open scoped Interval
 set_option autoImplicit false
 noncomputable section
@@ -107,8 +106,7 @@ theorem integrable_zetaSquareRightKernel (t : ℝ) : Integrable (zetaSquareRight
   exact Filter.Eventually.of_forall hpoint
 
 theorem summable_divisorDirichletTerm {s : ℂ} (hs : 1 < s.re) :
-    Summable (divisorDirichletTerm s) := by
-  exact divisorLSeries_summable hs
+    Summable (divisorDirichletTerm s) := divisorLSeries_summable hs
 
 theorem tsum_divisorDirichletTerm (s : ℂ) :
     ∑' n : ℕ, divisorDirichletTerm s n =
@@ -159,7 +157,7 @@ theorem integral_norm_zetaSquareDivisorTerm (t : ℝ) (n : ℕ) :
 theorem summable_integral_norm_zetaSquareDivisorTerm (t : ℝ) :
     Summable (fun n : ℕ => ∫ u : ℝ, ‖zetaSquareDivisorTerm t n u‖) := by
   simp_rw [integral_norm_zetaSquareDivisorTerm]
-  exact (summable_divisorDirichletTerm (s := (3 / 2 : ℂ)) (by norm_num)).norm.mul_right _
+  exact (summable_divisorDirichletTerm (s := (3 / 2)) (by norm_num)).norm.mul_right _
 
 theorem tsum_zetaSquareDivisorTerm (t u : ℝ) :
     (∑' n : ℕ, zetaSquareDivisorTerm t n u) =

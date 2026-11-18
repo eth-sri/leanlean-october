@@ -33,7 +33,7 @@ lemma sourceRows_initial_integrable (η : HeckeFamily.Character)
   filter_upwards [hi.prod_left_ae] with p hp
   rw [integral_count_eq_tsum _ hp]
   have he := rawArithmeticSeries_eq_sixth_high S hS hpS hbad D η
-    ((3:ℂ)+p.1.1*Complex.I) ((3:ℂ)+p.2*Complex.I) ((2:ℂ)+p.1.2*Complex.I)
+    (3+p.1.1*Complex.I) (3+p.2*Complex.I) (2+p.1.2*Complex.I)
     (by norm_num [Complex.add_re,Complex.mul_re])
     (by norm_num [Complex.add_re,Complex.mul_re])
     (by norm_num [Complex.add_re,Complex.mul_re])

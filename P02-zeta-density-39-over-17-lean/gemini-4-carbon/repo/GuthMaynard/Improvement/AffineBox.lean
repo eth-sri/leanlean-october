@@ -7,7 +7,7 @@ noncomputable section
 open MeasureTheory Set
 open scoped SchwartzMap
 namespace GuthMaynard.Improvement
-open RiemannZeta.GuthMaynard
+open RiemannZeta.GuthMaynard GuthMaynard.NativeMoment
 
 def twoShell (B : ℝ) (i : Bool) : ℕ := if i then 2*⌊B⌋₊ else ⌊B⌋₊
 

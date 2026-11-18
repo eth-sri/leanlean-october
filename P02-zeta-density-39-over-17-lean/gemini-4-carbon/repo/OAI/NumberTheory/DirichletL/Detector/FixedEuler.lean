@@ -71,7 +71,7 @@ theorem fixedSourcePrincipal_hasProd (S : Finset Id) (hS : ∀P∈S,Prime P)
     (s : ℂ) (hs : 1<s.re) :
     HasProd (fun P : {P : PrimeIdeal // P.val∉S}=>
       (1-CubicEisenstein.fullIdealWeight s P.val.val)⁻¹) (LFunction (fixedSourcePrincipal S hS) s) := by
-  simpa only [one_mul] using
+  simpa using
     LFunction_hasProd_outside (fixedSourcePrincipal S hS) S (fun _=>1) (fixedSourcePrincipal_prime S hS) s hs
 
 theorem excludedTarget_hasProd (η : Character) (S : Finset Id) (hS : ∀P∈S,Prime P)

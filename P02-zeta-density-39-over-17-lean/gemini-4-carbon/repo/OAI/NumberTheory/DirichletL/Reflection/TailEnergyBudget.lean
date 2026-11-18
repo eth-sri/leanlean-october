@@ -26,20 +26,17 @@ theorem actual_row_tail_energy_budget {a c : Eis} {mode : Bool}
   obtain ⟨A,hA⟩ := choose_weighted_rapid_tail_order (17*Lcap) Lcount δ ((saving+Lcount)/2) hδ
   refine ⟨A,?_⟩
   intro φ _ F Z X QK QP nrow nslot hZ hX hQK hQP hnrow hnslot hF hK hP hXi hrow hslot
-  have hz : 0<Z := lt_of_lt_of_le zero_lt_one hZ
+  have hz := lt_of_lt_of_le zero_lt_one hZ
   let cusp := 27*(sourceCuspScale s.index)^2*(Ideal.absNorm (Ideal.span {c}):ℝ)^2
-  have hcusp : 0≤cusp := by dsimp [cusp];positivity
-  have hs := family_tail_polynomial_cap F s Z X QK QP Lcap hz hQK hQP hX hF hK hP hXi
-  have ha := hA Z nslot hZ hnslot hslot
   have hb : nslot*((Ideal.absNorm (∏ i,F.ideal i):ℝ)*QK*QP)*(Z^δ)^(-(A:ℝ))*
         (familyRawScale F s X QK QP^2)⁻¹≤cusp^2*Z^(-((saving+Lcount)/2)) := by
     calc
       _ = (nslot*(Z^δ)^(-(A:ℝ)))*
           (((Ideal.absNorm (∏ i,F.ideal i):ℝ)*QK*QP)*(familyRawScale F s X QK QP^2)⁻¹) := by ring
       _ ≤ (nslot*(Z^δ)^(-(A:ℝ)))*(cusp^2*Z^(17*Lcap)) := by
-        exact mul_le_mul_of_nonneg_left hs (by positivity)
+        exact mul_le_mul_of_nonneg_left (family_tail_polynomial_cap F s Z X QK QP Lcap hz hQK hQP hX hF hK hP hXi) (by positivity)
       _ = cusp^2*(nslot*(Z^δ)^(-(A:ℝ))*Z^(17*Lcap)) := by ring
-      _ ≤ _ := mul_le_mul_of_nonneg_left ha (sq_nonneg _)
+      _ ≤ _ := mul_le_mul_of_nonneg_left (hA Z nslot hZ hnslot hslot) (sq_nonneg _)
   calc
     _ ≤ Z^Lcount*(cusp^2*Z^(-((saving+Lcount)/2)))^2 := by gcongr
     _ = cusp^4*Z^(Lcount+(-((saving+Lcount)/2))*2) := by

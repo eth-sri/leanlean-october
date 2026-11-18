@@ -29,8 +29,7 @@ lemma primeGauss_actual_pow_norm (r : ℕ) (hr : r≠0) (hr6 : r<6) :
   have hcard : (Fintype.card (O ⧸ Ideal.span {p}):ℝ)=Ideal.absNorm (Ideal.span {p}) := by
     rw [←Nat.card_eq_fintype_card];rfl
   rw [hcard] at hn
-  have hn' := (div_eq_one_iff_eq (Real.sqrt_pos.mpr hQ).ne').mp hn
-  simpa only [primeGauss,tsum_fintype,gaussSum,map_one,one_mul] using hn'
+  simpa only [primeGauss,tsum_fintype,gaussSum,map_one,one_mul] using ((div_eq_one_iff_eq (Real.sqrt_pos.mpr hQ).ne').mp hn)
 
 include hc in
 lemma nonprincipal_kzero_norm (n j : ℕ) (hn : n<5) :
@@ -55,12 +54,11 @@ lemma nonprincipal_kone_norm (n j : ℕ) (hn : 0<n) (hn6 : n<6) :
         Complex.norm_eq_one_of_pow_eq_one (actualSextic_neg_one_sq _ hg) (by decide),inv_one,one_mul,
         primeGauss_actual_norm p hp.ne_zero hg hc,norm_mul,norm_pow,Complex.norm_natCast,
         primeGauss_actual_pow_norm p hp hg hc n (by omega) hn6]
-      have hsq := Real.sq_sqrt (Nat.cast_nonneg (Ideal.absNorm (Ideal.span {p})) : (0:ℝ)≤_)
       rw [pow_succ]
       apply le_of_eq
       calc
         _ = (Ideal.absNorm (Ideal.span {p}):ℝ)^n*(Real.sqrt (Ideal.absNorm (Ideal.span {p}):ℝ))^2 := by ring
-        _ = _ := by rw [hsq]
+        _ = _ := by rw [(Real.sq_sqrt (Nat.cast_nonneg (Ideal.absNorm (Ideal.span {p})) : (0:ℝ)≤_))]
     · simp only [mul_zero,norm_zero]
       positivity
   · rw [ite_eq_right (by omega),norm_zero]
@@ -92,7 +90,7 @@ lemma even_base_kzero_norm (m j : ℕ) (hj : j<6) :
 include hc in
 lemma even_base_kone_zero (j : ℕ) (hj : j<6) :
     positiveScalar p hp.ne_zero (actualSextic (Ideal.span {p}) hg) 5 1 j=0 := by
-  rw [positiveScalar_actual_table p hp hg hc,ite_eq_right (by decide : (1:ℕ)≠0)]
+  rw [positiveScalar_actual_table p hp hg hc,ite_eq_right (by decide : 1≠0)]
   by_cases hj1 : 1≤j
   · rw [ite_eq_left ⟨rfl,hj1⟩,gaussValuationTable,ite_eq_right (by decide : ¬6∣5),
       ite_eq_right (by omega : j-1≠5),mul_zero]

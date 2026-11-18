@@ -11,11 +11,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.CenteredMomentAddedZero
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open CenteredMomentRowNorm CenteredMomentFourier CenteredMomentCommonSupport
-open CenteredMomentSupportedCorrelation CenteredMomentGaussEnergy CenteredMomentZeroMode
-open CenteredExceptionalCount CenteredMomentRectangle CenteredMomentExtraction
-open UniqueFactorizationMonoid IdealMobiusDivisorSum
+open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss CenteredMomentRowNorm CenteredMomentFourier CenteredMomentCommonSupport CenteredMomentSupportedCorrelation CenteredMomentGaussEnergy CenteredMomentZeroMode CenteredExceptionalCount CenteredMomentRectangle CenteredMomentExtraction UniqueFactorizationMonoid IdealMobiusDivisorSum
 local notation "O" => ActualEisensteinCubic.O
 
 lemma supported_one_ideal : Supported (1 : Ideal O) := by
@@ -24,7 +20,7 @@ lemma supported_one_ideal : Supported (1 : Ideal O) := by
   simp only [normalizedFactors_one, Multiset.notMem_zero] at hP
 
 lemma supported_one_element : Supported (Ideal.span {(1 : O)}) := by
-  simpa only [Ideal.span_singleton_one, Ideal.one_eq_top] using supported_one_ideal
+  simpa using supported_one_ideal
 
 def tupleProduct {r : ℕ} (v : Fin r → Ideal O) : Ideal O := ∏ i, v i
 

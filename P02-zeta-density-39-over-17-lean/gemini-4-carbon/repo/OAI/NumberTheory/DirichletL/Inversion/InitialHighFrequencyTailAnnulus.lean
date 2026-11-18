@@ -1,5 +1,5 @@
 module
-public import OAI.NumberTheory.DirichletL.Inversion.InitialHighFrequencyTailGeometry
+public import OAI.NumberTheory.DirichletL.Inversion.InitialHighFrequencyTailKernel
 
 @[expose] public section
 
@@ -45,7 +45,7 @@ theorem actual_annulus_high_gate
     (h₁ : C*v*n₁≤b*Z^D) (h₂ : C*v*n₂≤b*Z^D)
     (hfixed : 64*b^2≤Z^η) (hhigh : 4*η+τ≤radialCenter m H θ D B) :
     Z^τ≤(Z^m/(d*v^2*n₁*n₂))*hnorm := by
-  have hz : 0<Z := zero_lt_one.trans_le hZ
+  have hz := zero_lt_one.trans_le hZ
   apply le_trans _ (actual_annulus_radial_lower Z D m B θ H b C d v n₁ n₂ hnorm
     hz hb hd hv hn₁ hn₂ hC hdiv hfreq h₁ h₂)
   apply (le_div_iff₀ (by positivity)).mpr

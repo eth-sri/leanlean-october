@@ -82,14 +82,12 @@ theorem rowClosedMarked_central_remainder (eta a rho x w z : ℂ) (alpha eps : �
     let T := rowMarkedTerm p hp hg eta a ((Q:ℂ)^(-x)) ((Q:ℂ)^(-w)) (coordV Q z) rho j 1 0 1 0
     ‖rowClosedMarked p hp hg eta a ((Q:ℂ)^(-x)) ((Q:ℂ)^(-w)) (coordV Q z) rho j-T/(1-R)‖≤
       128*Q^(1/2-x.re) := by
-  dsimp only
   have h02 := rowBaseFinite_central_remainder p hp hg hc eta a rho x w z alpha eps hQ heta ha hρ halpha halpha1 heps heps1 hx hw hz j 0 2 hj (by omega)
   have h10 := rowBaseFinite_central_remainder p hp hg hc eta a rho x w z alpha eps hQ heta ha hρ halpha halpha1 heps heps1 hx hw hz j 1 0 hj (by omega)
   have h01 := rowBaseFinite_central_remainder p hp hg hc eta a rho x w z alpha eps hQ heta ha hρ halpha halpha1 heps heps1 hx hw hz j 0 1 hj (by omega)
   have h11 := rowBaseFinite_central_remainder p hp hg hc eta a rho x w z alpha eps hQ heta ha hρ halpha halpha1 heps heps1 hx hw hz j 1 1 hj (by omega)
   dsimp only at h02 h10 h01 h11
   norm_num only [and_true,true_and,and_false,false_and,Nat.reduceEqDiff,ite_true,ite_false,sub_zero] at h02 h10 h01 h11
-  have hr := ProbeLocal.inv_one_sub_norm_le_two _ (first_region_R_half _ hQ a x z ha (by rw [hx];linarith) (by rw [hz]))
   simp only [Complex.ofReal_natCast] at *
   unfold rowClosedMarked
   rw [←sub_div,div_eq_mul_inv,norm_mul]
@@ -98,7 +96,7 @@ theorem rowClosedMarked_central_remainder (eta a rho x w z : ℂ) (alpha eps : �
   apply (mul_le_mul_of_nonneg_right ((norm_add_le _ _).trans (add_le_add
     ((norm_add_le _ _).trans (add_le_add ((norm_add_le _ _).trans (add_le_add h02 h10)) h01)) h11)) (norm_nonneg _)).trans
   calc
-    _≤(16*(_ : ℝ)+16*_+16*_+16*_)*2 := mul_le_mul_of_nonneg_left hr (by positivity)
+    _≤(16*(_ : ℝ)+16*_+16*_+16*_)*2 := mul_le_mul_of_nonneg_left (ProbeLocal.inv_one_sub_norm_le_two _ (first_region_R_half _ hQ a x z ha (by rw [hx];linarith) (by rw [hz]))) (by positivity)
     _=_ := by ring
 end SevenEighths.ProbeEuler
 end

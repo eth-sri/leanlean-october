@@ -7,9 +7,8 @@ public import OAI.NumberTheory.DirichletL.Reflection.NormalizedPhysical
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
+open MeasureTheory FourierBridge InverseKernelSourceUniform CompletedDyadic ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve
 open scoped Classical BigOperators ContDiff
-open MeasureTheory FourierBridge InverseKernelSourceUniform CompletedDyadic
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
@@ -139,14 +138,12 @@ theorem normalized_surviving_physical_source_energy_type_uniform
   have hh := hsource X Y B L hX hY hB hL F jF s hc hN hbase hac hF hNF hcharF hj
     G0 D0 u m T θ QK QP Qn Qb hT hQK hQP hQn hQb rows nset bset Pset S hrows D r₀ aw₀ w₀
     hrowcop hproducts hScop hSN hSchar hn hb hP hκ hA hr₀ haw₀ hw₀
-  let branches := survivingFrozenBranches F jF (actualCuspColumn D0 s hc u m) nset bset
   let scalar := Real.exp (M 2/2+M 3)/(ramifiedScale 1 completedRamifiedStep m*Real.sqrt Qn*Qb)*
     smallScalar (kernelCenter (actualKernelCoefficient F s m T) QK QP Qn Qb)
   dsimp only at hh ⊢
   apply hh.trans
   apply mul_le_mul_of_nonneg_right _ (sq_nonneg _)
-  rw [mul_left_comm (scalar^2) (branches.card:ℝ)]
-  rw [Finset.mul_sum]
+  rw [mul_left_comm (scalar^2) ((survivingFrozenBranches F jF (actualCuspColumn D0 s hc u m) nset bset).card:ℝ), Finset.mul_sum]
   apply mul_le_mul_of_nonneg_left _ (Nat.cast_nonneg _)
   apply Finset.sum_le_sum
   intro e he

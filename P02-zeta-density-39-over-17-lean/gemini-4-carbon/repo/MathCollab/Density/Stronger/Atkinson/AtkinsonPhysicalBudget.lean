@@ -138,9 +138,7 @@ theorem atkinsonPhysical_near_scale {H G ℓ : ℝ}
     (Real.sqrt H/G)*(G^2*H^(-(1/2:ℝ))*(74*H*ℓ^2/G^2)^(1:ℝ)) =
       74*(H/G)*ℓ^2 := by
   rw [atkinsonPhysical_cutoff_scale_identity hH hG hℓ]
-  norm_num only [show (1:ℝ)-1/2 = 1/2 by norm_num,
-    show 2*(1:ℝ) = 2 by norm_num,show 2-2*(1:ℝ) = 0 by norm_num,
-    Real.rpow_one,Real.rpow_zero,Real.rpow_two,mul_one]
+  norm_num
   rw [← Real.sqrt_eq_rpow]
   calc
     _ = 74*(Real.sqrt H)^2/G*ℓ^2 := by ring
@@ -152,8 +150,7 @@ theorem atkinsonPhysical_far_scale {H G ℓ L : ℝ}
       74*Real.sqrt (G*L)*ℓ^3 := by
   have hℓ0 : 0 < ℓ := by linarith
   rw [atkinsonPhysical_cutoff_scale_identity hH hG hℓ0]
-  norm_num only [show (3/4:ℝ)-1/2 = 1/4 by norm_num,
-    show 2*(3/4:ℝ) = 3/2 by norm_num,show 2-2*(3/4:ℝ) = 1/2 by norm_num]
+  norm_num
   have hh : H^(-(1/4:ℝ))*H^(1/4:ℝ) = 1 := by
     rw [← Real.rpow_add hH]; norm_num
   have he : (H^(-(1/4:ℝ))*Real.sqrt L)*
@@ -166,10 +163,10 @@ theorem atkinsonPhysical_far_scale {H G ℓ L : ℝ}
       _ = _ := by rw [hh,one_mul]
   rw [he]
   have hc : (74:ℝ)^(3/4:ℝ) ≤ 74 := by
-    simpa only [Real.rpow_one] using Real.rpow_le_rpow_of_exponent_le
+    simpa using Real.rpow_le_rpow_of_exponent_le
       (by norm_num : (1:ℝ) ≤ 74) (by norm_num : (3/4:ℝ) ≤ 1)
   have hl : ℓ^(3/2:ℝ) ≤ ℓ^3 := by
-    simpa only [Real.rpow_ofNat] using Real.rpow_le_rpow_of_exponent_le
+    simpa using Real.rpow_le_rpow_of_exponent_le
       hℓ (by norm_num : (3/2:ℝ) ≤ 3)
   gcongr
 
@@ -199,12 +196,9 @@ theorem atkinsonPhysical_gap_term_zero_le {H G : ℝ} {N : ℕ} (L : ℝ) (R : �
   have hK : 0 ≤ K := by
     simpa only [harmonic_zero,Rat.cast_zero] using atkinson_harmonic_mono
       (Nat.zero_le (Nat.ceil (Real.sqrt (H*(N:ℝ))/G)))
-  have hk : K ≤ 2*Real.log (2*H) := atkinson_harmonic_le_height_log hH hG hlog hN
   have hdiag : P*(N:ℝ)^(3/2:ℝ) ≤ 5476*(H/G)*(Real.log (2*H))^3 := by
-    calc
-      _ ≤ P*B^(3/2:ℝ) := mul_le_mul_of_nonneg_left
-        (Real.rpow_le_rpow (Nat.cast_nonneg N) hcut (by norm_num)) hP
-      _ ≤ _ := atkinsonPhysical_diagonal_scale hH0 hG0 hlog0
+    exact (mul_le_mul_of_nonneg_left
+        (Real.rpow_le_rpow (Nat.cast_nonneg N) hcut (by norm_num)) hP).trans (atkinsonPhysical_diagonal_scale hH0 hG0 hlog0)
   have hnear : (Real.sqrt H/G)*(P*(N:ℝ)^(1:ℝ)) ≤
       74*(H/G)*(Real.log (2*H))^2 := by
     calc
@@ -221,12 +215,9 @@ theorem atkinsonPhysical_gap_term_zero_le {H G : ℝ} {N : ℕ} (L : ℝ) (R : �
         exact mul_le_mul_of_nonneg_left
           (Real.rpow_le_rpow (Nat.cast_nonneg N) hcut (by norm_num)) hP
       _ ≤ _ := atkinsonPhysical_far_scale hH0 hG0 hlog
-  have hd := mul_le_mul_of_nonneg_left hdiag (Nat.cast_nonneg R : (0:ℝ) ≤ _)
   have hn := mul_le_mul
     (mul_le_mul_of_nonneg_left hnear (by positivity : 0 ≤ 120*(R:ℝ)))
-    hk hK (by positivity)
-  have hf := mul_le_mul_of_nonneg_left hfar (by positivity : 0 ≤ 2000*(R:ℝ)^2)
-  have hsum := add_le_add (add_le_add hd hn) hf
+    (atkinson_harmonic_le_height_log hH hG hlog hN) hK (by positivity)
   have he : P*atkinsonPowerGapTerm 0 H G L N R =
       (R:ℝ)*(P*(N:ℝ)^(3/2:ℝ))+
       (120*(R:ℝ)*((Real.sqrt H/G)*(P*(N:ℝ)^(1:ℝ))))*K+
@@ -234,9 +225,8 @@ theorem atkinsonPhysical_gap_term_zero_le {H G : ℝ} {N : ℕ} (L : ℝ) (R : �
     unfold atkinsonPowerGapTerm K
     simp only [add_zero]
     ring
-  change P*atkinsonPowerGapTerm 0 H G L N R ≤ _
   rw [he]
-  apply hsum.trans
+  apply (add_le_add (add_le_add (mul_le_mul_of_nonneg_left hdiag (Nat.cast_nonneg R : (0:ℝ) ≤ _)) hn) (mul_le_mul_of_nonneg_left hfar (by positivity : 0 ≤ 2000*(R:ℝ)^2))).trans
   have hpos : 0 ≤ (R:ℝ)*(H/G)*(Real.log (2*H))^3 := by positivity
   ring_nf at hpos ⊢
   nlinarith
@@ -250,11 +240,6 @@ theorem atkinsonPhysical_gap_budget_log_le {H G η : ℝ} {N : ℕ} (L : ℝ) (R
     G^2*H^(-(1/2:ℝ))*atkinsonPowerGapBudget η H G L N R ≤
       (148000*(1/Real.log 2+1)^2)*H^η*(Real.log (2*H))^5*
         ((R:ℝ)*H/G+(R:ℝ)^2*Real.sqrt (G*L)) := by
-  have hH0 : 0 < H := by linarith
-  have hG0 : 0 < G := by linarith
-  have hlog0 : 0 < Real.log (2*H) := by linarith
-  have hterm := atkinsonPhysical_gap_term_zero_le L R hH hG hlog hN hcut
-  have hpow := Real.rpow_le_rpow (Nat.cast_nonneg N) hN hη
   have hJ := pow_le_pow_left₀ (Nat.cast_nonneg (Nat.clog 2 N) : (0:ℝ) ≤ _)
     (atkinson_clog_le_height_log hH hlog hN) 2
   have ht : G^2*H^(-(1/2:ℝ))*atkinsonPowerGapTerm η H G L N R ≤
@@ -265,8 +250,8 @@ theorem atkinsonPhysical_gap_budget_log_le {H G η : ℝ} {N : ℕ} (L : ℝ) (R
       _ = (N:ℝ)^η*(G^2*H^(-(1/2:ℝ))*atkinsonPowerGapTerm 0 H G L N R) := by ring
       _ ≤ (N:ℝ)^η*(148000*(Real.log (2*H))^3*
           ((R:ℝ)*H/G+(R:ℝ)^2*Real.sqrt (G*L))) :=
-        mul_le_mul_of_nonneg_left hterm (by positivity)
-      _ ≤ _ := mul_le_mul_of_nonneg_right hpow (by positivity)
+        mul_le_mul_of_nonneg_left (atkinsonPhysical_gap_term_zero_le L R hH hG hlog hN hcut) (by positivity)
+      _ ≤ _ := mul_le_mul_of_nonneg_right (Real.rpow_le_rpow (Nat.cast_nonneg N) hN hη) (by positivity)
   unfold atkinsonPowerGapBudget
   calc
     _ = (Nat.clog 2 N:ℝ)^2*

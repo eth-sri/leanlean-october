@@ -32,8 +32,7 @@ theorem mem_heathBrownPositiveShiftFiber
     Finset.mem_Icc]
   constructor
   · intro hn
-    have hp := mem_heathBrownPairCountTwo.mp hn.2
-    exact ⟨hn.1.1, hp.2.1, hn.2⟩
+    exact ⟨hn.1.1, (mem_heathBrownPairCountTwo.mp hn.2).2.1, hn.2⟩
   · intro hn
     exact ⟨⟨hn.1, le_trans (Nat.le_add_right n d) hn.2.1⟩, hn.2.2⟩
 
@@ -46,10 +45,9 @@ theorem heathBrownPositiveShiftFiber_subset_spacingSet
   intro n hn
   rw [mem_heathBrownPositiveShiftFiber] at hn
   simp only [heathBrownSpacingSet, Finset.mem_filter, Finset.mem_Icc]
-  have hp := (mem_heathBrownPairCountTwo.mp hn.2.2)
   refine ⟨⟨hn.1, Nat.le_sub_of_add_le hn.2.1⟩, ?_⟩
   simpa only [heathBrownShiftedDifference_nat, Nat.cast_add] using
-    hp.2.2.2.2.2.1
+    ((mem_heathBrownPairCountTwo.mp hn.2.2)).2.2.2.2.2.1
 
 theorem heathBrownPositiveShiftFiber_card_le_spacingSet
     {N k H K d : ℕ} {f : ℝ → ℝ} :

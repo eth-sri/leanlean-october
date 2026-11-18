@@ -1,5 +1,5 @@
 module
-public import GuthMaynard.AffineSource.LargeValuesAffineHeight
+public import DensityEnergyGM.LargeValuesAffineHeight
 public import GuthMaynard.Improvement.CompactNormalization
 
 @[expose] public section
@@ -8,7 +8,7 @@ noncomputable section
 open MeasureTheory Set
 open scoped SchwartzMap FourierTransform Convolution ContDiff
 namespace GuthMaynard.Improvement
-open RiemannZeta.GuthMaynard
+open GuthMaynard.NativeMoment
 
 /-- The verified height-family endpoint extended to all T>=2 using its actual
 finite affine baseline on the bounded initial height interval. -/

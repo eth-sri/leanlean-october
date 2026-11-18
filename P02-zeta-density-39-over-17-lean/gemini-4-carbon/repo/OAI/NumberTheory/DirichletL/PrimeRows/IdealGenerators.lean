@@ -7,56 +7,8 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-
-open scoped BigOperators Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 
 namespace ConcretePrimeRowBridge
 
@@ -72,7 +24,6 @@ theorem tsum_ideal_eq_tsum_generator (J : Ideal O) (hJ : J ≠ ⊥)
     (∑' u : O, if u ∈ J then f u else 0) =
       ∑' z : O, f (idealGenerator J * z) := by
   let d := idealGenerator J
-  have hd : d ≠ 0 := idealGenerator_ne_zero J hJ
   let F : O → ℂ := fun u => if u ∈ J then f u else 0
   have hrange : Function.support F ⊆ Set.range (fun z : O => d * z) := by
     intro u hu
@@ -82,9 +33,8 @@ theorem tsum_ideal_eq_tsum_generator (J : Ideal O) (hJ : J ≠ ⊥)
     rw [← span_idealGenerator J, Ideal.mem_span_singleton] at huJ
     obtain ⟨z, hz⟩ := huJ
     exact ⟨z, hz.symm⟩
-  have ht := (mul_right_injective₀ hd).tsum_eq hrange
   calc
-    (∑' u : O, if u ∈ J then f u else 0) = ∑' z : O, F (d * z) := ht.symm
+    (∑' u : O, if u ∈ J then f u else 0) = ∑' z : O, F (d * z) := ((mul_right_injective₀ (idealGenerator_ne_zero J hJ)).tsum_eq hrange).symm
     _ = ∑' z : O, f (d * z) := by
       apply tsum_congr
       intro z
@@ -113,8 +63,7 @@ theorem tsum_rowCoprimeMask_subsets
   have hsum (E : Finset ι) :
       Summable (fun u : O => (-1 : ℂ) ^ E.card *
         (if ∀ i ∈ E, u ∈ P i then f u else 0)) := by
-    have hi := hf.indicator {u : O | ∀ i ∈ E, u ∈ P i}
-    simpa only [Set.indicator_apply, Set.mem_ofPred_eq] using hi.mul_left ((-1 : ℂ) ^ E.card)
+    simpa only [Set.indicator_apply, Set.mem_ofPred_eq] using (hf.indicator {u : O | ∀ i ∈ E, u ∈ P i}).mul_left ((-1 : ℂ) ^ E.card)
   simp_rw [hterm]
   rw [Summable.tsum_finsetSum (fun E _ => hsum E)]
   apply Finset.sum_congr rfl
@@ -129,7 +78,6 @@ theorem primeSubsetGenerator_ne_zero {ι : Type*}
     (P : ι → Ideal O) [∀ i, (P i).IsMaximal] (E : Finset ι) :
     primeSubsetGenerator P E ≠ 0 := by
   apply ConcretePrimeRowBridge.idealGenerator_ne_zero
-  change (∏ i ∈ E, P i) ≠ 0
   exact Finset.prod_ne_zero_iff.mpr (fun i _ => NeZero.ne (P i))
 
 theorem tsum_rowCoprimeMask_dilations
@@ -141,8 +89,7 @@ theorem tsum_rowCoprimeMask_dilations
         (UniqueFactorizationMonoid.moebius (∏ i ∈ E, P i) : ℂ) *
           ∑' z : O, f (primeSubsetGenerator P E * z) := by
   rw [tsum_rowCoprimeMask_subsets P S f hf]
-  have hprime (i : ι) : Prime (P i) :=
-    Ideal.prime_of_isPrime (NeZero.ne (P i)) inferInstance
+  have hprime (i : ι) := Ideal.prime_of_isPrime (NeZero.ne (P i)) inferInstance
   apply Finset.sum_congr rfl
   intro E hE
   rw [prime_product_moebius P hprime hinj E]
@@ -158,7 +105,6 @@ theorem tsum_rowCoprimeMask_dilations
       by_cases h : ∀ i ∈ E, u ∈ P i <;> simp [h]
     _ = _ := ConcretePrimeRowBridge.tsum_ideal_eq_tsum_generator _ hJ f
 
-open ConcreteTraceCRT
 
 theorem tsum_masked_radial_dilations
     {ι : Type*} [DecidableEq ι] (P : ι → Ideal O)
@@ -190,7 +136,7 @@ theorem tsum_masked_radial_dilations
       rw [hr, map_mul, norm_mul, mul_pow, div_div_eq_mul_div]
       ring_nf
 
-open ConcreteTraceCRT EisensteinSchwartzPoisson
+open EisensteinSchwartzPoisson
 
 theorem primeSubset_reducedScale_pos {α : Type*}
     (P : α → Ideal O) [∀ i, (P i).IsMaximal] (E : Finset α)
@@ -242,7 +188,6 @@ theorem canonical_masked_radial_poisson
           ∑' h : O, star (finiteSexticRow Q hgood j h) *
             paperRadialFourier W
               (reducedScale * ‖eisEmbedding h‖ ^ 2 / ‖eisEmbedding c‖ ^ 2) := by
-  dsimp only
   rw [canonical_masked_radial_dilations P hinj S Q hcop hgood j W scale hscale]
   apply Finset.sum_congr rfl
   intro E hE
@@ -274,8 +219,7 @@ theorem canonical_masked_radial_poisson_collected
                 (scale * ‖eisEmbedding h‖ ^ 2 /
                   (‖eisEmbedding d‖ ^ 2 * ‖eisEmbedding c‖ ^ 2)) := by
   dsimp only
-  rw [canonical_masked_radial_poisson P hinj S Q hcop hgood hchar j hj0 hj6 W scale hscale]
-  rw [Finset.mul_sum]
+  rw [canonical_masked_radial_poisson P hinj S Q hcop hgood hchar j hj0 hj6 W scale hscale, Finset.mul_sum]
   apply Finset.sum_congr rfl
   intro E hE
   dsimp only
@@ -295,7 +239,6 @@ theorem canonical_masked_radial_poisson_collected
 end ActualEisensteinCubic
 
 namespace GeneralPrimitiveTrace
-open Complex EisensteinEmbedding ConcreteTraceCRT
 open scoped ComplexConjugate
 
 theorem complex_exp_trace_integer {t : ℂ}
@@ -331,7 +274,7 @@ theorem reconstruction (z : ℂ) :
       (omega3 * z / eisLam + conj (omega3 * z / eisLam)) +
       (z / eisLam + conj (z / eisLam)) * omega3 := by
   have hquad := omega3_sq
-  have hl : eisLam ≠ 0 := eisLam_ne_zero
+  have hl := eisLam_ne_zero
   have hcl : conj eisLam = -eisLam := by
     simp only [eisLam, map_add, map_one, map_mul, map_ofNat, omega_conj]
     linear_combination 2 * hquad
@@ -346,16 +289,11 @@ theorem in_coordinate_lattice_of_two_phases (z : ℂ)
     z ∈ coordinateSubring := by
   obtain ⟨b, hb⟩ := phase_integer hz
   obtain ⟨c, hc⟩ := phase_integer hwz
-  change ∃ a b : ℤ, z = (a : ℂ) + (b : ℂ) * omega3
   refine ⟨b + c, b, ?_⟩
-  calc
-    z = (z / eisLam + conj (z / eisLam)) +
-      (omega3 * z / eisLam + conj (omega3 * z / eisLam)) +
-      (z / eisLam + conj (z / eisLam)) * omega3 := reconstruction z
-    _ = ((b + c : ℤ) : ℂ) + (b : ℂ) * omega3 := by
+  exact (reconstruction z).trans (by
       rw [hb, hc]
       push_cast
-      ring
+      ring)
 
 theorem eisTraceModChar_breveE_primitive (c : ActualEisensteinCubic.O) (hc : c ≠ 0) :
     (eisTraceModChar ShortDraftTrace.breveE
@@ -403,11 +341,10 @@ theorem coordinateAddChar_isPrimitive {ι T : Type*} [Fintype ι]
     (coordinateAddChar R e ψ i).IsPrimitive := by
   classical
   intro a ha hshift
-  let b : T := e.symm (Pi.single i a)
+  let b := e.symm (Pi.single i a)
   have hb : b ≠ 0 := by
     intro hz
-    have hh := congrArg (fun z : T => e z i) hz
-    exact ha (by simpa [b] using hh)
+    exact ha (by simpa [b] using (congrArg (fun z : T => e z i) hz))
   apply hψ hb
   ext x
   change ψ (b * x) = 1
@@ -450,7 +387,7 @@ theorem norm_gauss_finite_crt_sq {ι T : Type*} [Fintype ι]
 end IdealGaussCRT
 
 namespace ActualEisensteinCubic
-open ConcreteTraceCRT EisensteinSchwartzPoisson
+open EisensteinSchwartzPoisson
 
 theorem norm_canonicalGaussSum {ι : Type*} [Fintype ι]
     (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
@@ -461,18 +398,17 @@ theorem norm_canonicalGaussSum {ι : Type*} [Fintype ι]
     ‖canonicalGaussSum P hcop hgood j‖ = ‖eisEmbedding (finitePrimeModulus P)‖ := by
   classical
   let c := finitePrimeModulus P
-  have hc0 : c ≠ 0 := finitePrimeModulus_ne_zero P
+  have hc0 := finitePrimeModulus_ne_zero P
   let : Finite (O ⧸ Ideal.span {c}) := finite_quotient_span hc0
   let : Fintype (O ⧸ Ideal.span {c}) := Fintype.ofFinite _
   let (i : ι) : Fintype (O ⧸ P i) := Fintype.ofFinite _
   let (i : ι) : Field (O ⧸ P i) := Ideal.Quotient.field (P i)
-  let e : (O ⧸ Ideal.span {c}) ≃+* ∀ i, O ⧸ P i :=
-    (Ideal.quotEquivOfEq (span_finitePrimeModulus P)).trans
+  let e := (Ideal.quotEquivOfEq (span_finitePrimeModulus P)).trans
       (IdealGaussCRT.quotientProdEquivPi P hcop)
   let χ : ∀ i, MulChar (O ⧸ P i) ℂ := fun i => canonicalSextic (P i) (hgood i) ^ j i
   let ψ := eisTraceModChar ShortDraftTrace.breveE
     ConcreteBreveE.breveE_period_coordinates c hc0
-  have hψ : ψ.IsPrimitive := GeneralPrimitiveTrace.eisTraceModChar_breveE_primitive c hc0
+  have hψ := GeneralPrimitiveTrace.eisTraceModChar_breveE_primitive c hc0
   have hχ : ∀ i, χ i ≠ 1 := fun i =>
     canonicalSextic_pow_ne_one (P i) (hgood i) (hchar i) (hj0 i) (hj6 i)
   have hnormsq := IdealGaussCRT.norm_gauss_finite_crt_sq (fun i => O ⧸ P i)
@@ -494,17 +430,14 @@ theorem norm_canonicalNormalizedGauss {ι : Type*} [Fintype ι]
     (hchar : ∀ i, ringChar (O ⧸ P i) ≠ 2)
     (j : ι → ℕ) (hj0 : ∀ i, j i ≠ 0) (hj6 : ∀ i, j i < 6) :
     ‖canonicalNormalizedGauss P hcop hgood j‖ = 1 := by
-  have hn : ‖eisEmbedding (finitePrimeModulus P)‖ ≠ 0 :=
-    norm_ne_zero_iff.mpr (eisEmbedding_ne_zero (finitePrimeModulus_ne_zero P))
   rw [canonicalNormalizedGauss, norm_div,
     norm_canonicalGaussSum P hcop hgood hchar j hj0 hj6,
-    Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (norm_nonneg _), div_self hn]
+    Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (norm_nonneg _), div_self (norm_ne_zero_iff.mpr (eisEmbedding_ne_zero (finitePrimeModulus_ne_zero P)))]
 
 theorem finiteSquarefreeRow_norm_le_one
     {ι : Type*} (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
     (hgood : ∀ i, lambda ∉ P i) (S : Finset ι) (u : O) :
     ‖finiteSquarefreeRow P hgood S u‖ ≤ 1 := by
-  have hpair := finiteSquarefreeRow_self_pair P hgood S u
   have hmask : ‖rowCoprimeMask P S u‖ ≤ 1 := by
     unfold rowCoprimeMask
     split_ifs <;> simp
@@ -512,7 +445,7 @@ theorem finiteSquarefreeRow_norm_le_one
     calc
       _ = ‖star (finiteSquarefreeRow P hgood S u) *
           finiteSquarefreeRow P hgood S u‖ := by rw [norm_mul, norm_star, pow_two]
-      _ = ‖rowCoprimeMask P S u‖ := congrArg norm hpair
+      _ = ‖rowCoprimeMask P S u‖ := congrArg norm (finiteSquarefreeRow_self_pair P hgood S u)
       _ ≤ 1 := hmask
   nlinarith [norm_nonneg (finiteSquarefreeRow P hgood S u)]
 
@@ -524,7 +457,7 @@ theorem finiteSquarefreeRow_pair_radial_summable
       (star (finiteSquarefreeRow P hgood S u) * finiteSquarefreeRow P hgood T u) *
         W (‖eisEmbedding u‖ ^ 2 / scale)) := by
   have hW : Summable (fun u : O => ‖W (‖eisEmbedding u‖ ^ 2 / scale)‖) := by
-    simpa only [scaledRadialTest_apply] using
+    simpa using
       actual_eisenstein_summable_norm (scaledRadialTest W scale hscale)
   apply Summable.of_norm
   apply Summable.of_nonneg_of_le (fun u => norm_nonneg _) _ hW

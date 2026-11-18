@@ -10,9 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseFirstGlobalCaps InverseSecondSourceBlocks InverseMomentFirstChildWindows
-open InverseMomentFirstOriginalProfile
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseFirstGlobalCaps InverseSecondSourceBlocks InverseMomentFirstChildWindows InverseMomentFirstOriginalProfile
 open ConcreteTraceCRT (eisEmbedding)
 local notation "O"=>ActualEisensteinCubic.O
 variable {ι:Type*}[DecidableEq ι]
@@ -41,7 +39,6 @@ theorem first_live_cell_radius_cap (pool:Finset ι)(Q:Finset (ι→₀ℕ))
     firstCellRadius Z M r ell V eta tau k.1 k.2.2≤Z^(2*Fmax+15*eta+tau):=by
   obtain ⟨⟨x,j⟩,hx,rfl⟩:=Finset.mem_image.mp hk
   have hm:=Finset.mem_product.mp (Finset.mem_filter.mp hx).1
-  have ho: x.1∈firstOriginalOuter pool Q:=(Finset.mem_sigma.mp hm.1).1
   have href:x.1∈refinedOuter p pool Q (sourceIndex (InverseMomentFirstOriginalProfile.originalNorms p) x)
       (labelGate p (dyadIndex (InverseFirstGlobalCaps.jNorm p x.1))):=by
     rw [refinedOuter_label]
@@ -52,7 +49,7 @@ theorem first_live_cell_radius_cap (pool:Finset ι)(Q:Finset (ι→₀ℕ))
   change firstCellRadius Z M r ell V eta tau (sourceIndex (InverseMomentFirstOriginalProfile.originalNorms p) x)
     (dyadIndex (InverseFirstGlobalCaps.jNorm p x.1))≤_
   rw [←first_dyadic_radius_cell p pool Q _ _ x.1 href]
-  exact first_dyadic_original_cap p hp pool Q Z M r ell V eta tau Fmax hZ hbin hM hF hQ x.1 ho
+  exact first_dyadic_original_cap p hp pool Q Z M r ell V eta tau Fmax hZ hbin hM hF hQ x.1 ((Finset.mem_sigma.mp hm.1).1)
 
 end SevenEighths.InverseMoment
 

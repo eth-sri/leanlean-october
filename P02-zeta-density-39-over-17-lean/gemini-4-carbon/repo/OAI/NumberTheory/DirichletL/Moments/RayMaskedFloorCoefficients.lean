@@ -29,7 +29,7 @@ local notation "O" => HeckeFamily.O
     · simp [annularWeight,hz,hB.le]
     · have hs := hWs hz
       rw [annularWeight,norm_mul,Complex.norm_cpow_eq_rpow_re_of_pos (ha.trans_le hs.1)]
-      simpa only [Complex.neg_re,shift_re] using hprofile σ ⟨hσlo,hσhi⟩ _ hs
+      simpa using hprofile σ ⟨hσlo,hσhi⟩ _ hs
   · intro hn
     have hw : W ((I.absNorm:ℝ)/P)≠0 := by
       intro hh

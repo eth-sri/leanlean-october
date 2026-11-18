@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.PhaseSlopePartition
 
 @[expose] public section
@@ -34,7 +44,7 @@ theorem norm_fourierCharIntegral_le_of_curvature_threshold
   have hmono : AntitoneOn (deriv φ) (Icc a b) := by
     intro x hx y hy hxy
     have h := slope_drop_of_deriv_le hdiff hcurv hx hy hxy
-    have hp : 0 ≤ m*(y-x) := mul_nonneg hm.le (sub_nonneg.mpr hxy)
+    have hp := mul_nonneg hm.le (sub_nonneg.mpr hxy)
     linarith
   have hcost : 1/(lam*Real.pi) ≤ 2/(lam*Real.pi)+2*lam/m := by
     have hp : 0 ≤ 1/(lam*Real.pi) := by positivity
@@ -51,8 +61,8 @@ theorem norm_fourierCharIntegral_le_of_curvature_threshold
   obtain ⟨c,d,hac,hcd,hdb,hcl,hdl,hc,hd⟩ :=
     exists_slope_transition_partition hab hlam.le hcont
       (le_of_not_ge hb) (le_of_not_ge ha)
-  have hcb : c ≤ b := hcd.trans hdb
-  have had : a ≤ d := hac.trans hcd
+  have hcb := hcd.trans hdb
+  have had := hac.trans hcd
   have hwidth := slope_transition_width_le hm hdiff hcurv
     (show c ∈ Icc a b from ⟨hac,hcb⟩)
     (show d ∈ Icc a b from ⟨had,hdb⟩) hcd hcl hdl
@@ -111,9 +121,7 @@ theorem norm_fourierCharIntegral_le_of_negative_curvature
     (hφ : ∀ x ∈ Icc a b, ContDiffAt ℝ 2 φ x)
     (hcurv : ∀ x ∈ Icc a b, deriv (deriv φ) x ≤ -m) :
     ‖∫ x in a..b, (𝐞 (φ x) : ℂ)‖ ≤ (2/Real.pi+2)/Real.sqrt m := by
-  have hs : 0 < Real.sqrt m := Real.sqrt_pos.mpr hm
-  have h := norm_fourierCharIntegral_le_of_curvature_threshold hab hm hs hφ hcurv
-  convert h using 1
+  convert (norm_fourierCharIntegral_le_of_curvature_threshold hab hm (Real.sqrt_pos.mpr hm) hφ hcurv) using 1
   have he := Real.sq_sqrt hm.le
   field_simp
   nlinarith [Real.pi_pos]

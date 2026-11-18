@@ -68,17 +68,13 @@ theorem exists_norm_sq_zetaFourthCoeff_le {ε : ℝ} (hε : 0 < ε) :
     ∃ D : ℝ, 0 < D ∧ ∀ c : ℝ, 0 ≤ c → ∀ n : ℕ, 0 < n →
       ‖zetaFourthCoeff c n‖^2 ≤ D*(n:ℝ)^(ε-1) := by
   obtain ⟨C,hC₁,hdiv⟩ := MathCollab.Density.divisor_card_subpower (show 0 < ε/2 by positivity)
-  have hC : 0 < C := zero_lt_one.trans_le hC₁
-  refine ⟨C^2,pow_pos hC 2,?_⟩
+  refine ⟨C^2,pow_pos (zero_lt_one.trans_le hC₁) 2,?_⟩
   intro c hc n hn
   have hn0 : (0:ℝ) < n := by exact_mod_cast hn
   have hn1 : (1:ℝ) ≤ n := by exact_mod_cast hn
   have hbase : ‖zetaFourthCoeff c n‖ ≤ C*(n:ℝ)^(ε/2-(1/2+c)) := by
     rw [norm_zetaFourthCoeff]
-    calc
-      _ ≤ (C*(n:ℝ)^(ε/2))*(n:ℝ)^(-(1/2+c)) :=
-        mul_le_mul_of_nonneg_right (hdiv n hn) (by positivity)
-      _ = _ := by rw [mul_assoc,← Real.rpow_add hn0]; rfl
+    exact (mul_le_mul_of_nonneg_right (hdiv n hn) (by positivity)).trans_eq (by rw [mul_assoc,← Real.rpow_add hn0]; rfl)
   calc
     _ ≤ (C*(n:ℝ)^(ε/2-(1/2+c)))^2 :=
       pow_le_pow_left₀ (norm_nonneg _) hbase 2
@@ -100,17 +96,14 @@ theorem sum_rpow_sub_one_dyadic_le {ε : ℝ} (hε : 0 ≤ ε)
     intro n hn
     have hnN : (N:ℝ) ≤ n := by exact_mod_cast (Finset.mem_Ioc.mp hn).1.le
     have hn2N : (n:ℝ) ≤ 2*(N:ℝ) := by exact_mod_cast (Finset.mem_Ioc.mp hn).2
-    have hn0 : (0:ℝ) < n := hN0.trans_le hnN
+    have hn0 := hN0.trans_le hnN
     rw [Real.rpow_sub_one hn0.ne']
     exact div_le_div₀ (by positivity) (Real.rpow_le_rpow hn0.le hn2N hε) hN0 hnN
-  calc
-    _ ≤ ∑ _n ∈ Finset.Ioc N (2*N), (2*(N:ℝ))^ε/(N:ℝ) :=
-      Finset.sum_le_sum hpoint
-    _ = _ := by
+  exact (Finset.sum_le_sum hpoint).trans_eq (by
       simp only [Finset.sum_const,Nat.card_Ioc,nsmul_eq_mul]
       have heq : 2*N-N = N := by omega
       rw [heq]
-      field_simp
+      field_simp)
 
 theorem exists_sum_sq_zetaFourthCoeff_dyadic_le {ε : ℝ} (hε : 0 < ε) :
     ∃ D : ℝ, 1 ≤ D ∧ ∀ c : ℝ, 0 ≤ c → ∀ N : ℕ, 0 < N →

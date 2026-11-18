@@ -25,17 +25,16 @@ lemma source_compensated_scale_admissible (q Z L : ℝ) (hq : 1≤q) (hZ : 1≤Z
     1≤Z^(23/48:ℝ)/L ∧
     q*Z^(17/48:ℝ)≤Z^(23/48:ℝ) ∧
     L*Z^(23/48:ℝ)≤q^2*(Z^(17/48:ℝ))^2 := by
-  have hz : 0<Z := lt_of_lt_of_le zero_lt_one hZ
-  have hl : 0<L := lt_of_lt_of_le zero_lt_one hL
+  have hz := lt_of_lt_of_le zero_lt_one hZ
   constructor
-  · apply (le_div_iff₀ hl).mpr
-    simpa using hLl.trans (Real.rpow_le_rpow_of_exponent_le hZ (show (11/48:ℝ)≤23/48 by norm_num))
+  · apply (le_div_iff₀ (lt_of_lt_of_le zero_lt_one hL)).mpr
+    simpa using hLl.trans (Real.rpow_le_rpow_of_exponent_le hZ (show (11/48)≤23/48 by norm_num))
   constructor
   · apply (le_div_iff₀ (Real.rpow_pos_of_pos hz (17/48))).mp
     rwa [source_scale_ratio Z hz]
   · calc
-      _≤Z^(11/48:ℝ)*Z^(23/48:ℝ) := mul_le_mul_of_nonneg_right hLl (by positivity)
-      _=(Z^(17/48:ℝ))^2 := source_scale_square Z hz
+      _≤Z^(11/48)*Z^(23/48) := mul_le_mul_of_nonneg_right hLl (by positivity)
+      _=(Z^(17/48))^2 := source_scale_square Z hz
       _≤_ := le_mul_of_one_le_left (by positivity) (one_le_pow₀ hq)
 
 lemma source_compensated_gram_scale (q Z L δ : ℝ) (hq : 1≤q) (hZ : 1≤Z)
@@ -45,11 +44,10 @@ lemma source_compensated_gram_scale (q Z L δ : ℝ) (hq : 1≤q) (hZ : 1≤Z)
         ((Z^(23/48:ℝ)/L)^2/(q*(Z^(17/48:ℝ)/L)*(Z^(23/48:ℝ)/L)))^2/(Z^(23/48:ℝ)/L))*
       (Z^(23/48:ℝ)/L)^δ ≤
         (3*q/L)*Z^(3/8+(23/48)*δ:ℝ) := by
-  have hz : 0<Z := lt_of_lt_of_le zero_lt_one hZ
-  have hq0 : 0<q := lt_of_lt_of_le zero_lt_one hq
-  have hL0 : 0<L := lt_of_lt_of_le zero_lt_one hL
+  have hz := lt_of_lt_of_le zero_lt_one hZ
+  have hL0 := lt_of_lt_of_le zero_lt_one hL
   obtain ⟨_,hqp,ht⟩ := source_compensated_scale_admissible q Z L hq hZ hL hql hLl
-  have hb := compensated_gram_scale_bound q (Z^(17/48:ℝ)) (Z^(23/48:ℝ)) L δ hq0
+  have hb := compensated_gram_scale_bound q (Z^(17/48:ℝ)) (Z^(23/48:ℝ)) L δ (lt_of_lt_of_le zero_lt_one hq)
     (by positivity) (by positivity) hL hδ hqp ht
   apply hb.trans
   have hratio : Z^(23/48:ℝ)/(q*Z^(17/48:ℝ))≤Z^(1/8:ℝ) := by
@@ -93,16 +91,14 @@ lemma eventually_compensated_source_scales (C : CalibrationData) (B : ℝ) :
   filter_upwards [Filter.eventually_ge_atTop (1:ℝ),hq,hb] with Z hZ hq hb
   refine ⟨hZ,hq,?_⟩
   intro L hL hLB
-  have hz : 0<Z := lt_of_lt_of_le zero_lt_one hZ
-  have hl : 0<L := lt_of_lt_of_le zero_lt_one hL
   have hLl : L≤Z^(11/48:ℝ) := calc
     L≤B*Z^(1/6:ℝ) := hLB
     _≤Z^(1/16:ℝ)*Z^(1/6:ℝ) := mul_le_mul_of_nonneg_right hb (by positivity)
-    _=Z^(11/48:ℝ) := by rw [←Real.rpow_add hz];norm_num
+    _=Z^(11/48:ℝ) := by rw [←Real.rpow_add (lt_of_lt_of_le zero_lt_one hZ)];norm_num
   obtain ⟨hy,hp,_⟩ := source_compensated_scale_admissible _ Z L (calibration_elementNorm_ge_one C) hZ hL hq hLl
   refine ⟨hy,?_,fun δ hδ=>lowGramFactor_source_bound C Z L δ hZ hL hq hLl hδ⟩
   rw [lowPhysicalScale,compensated_gram_ratio _ _ _ _ (calibration_elementNorm_pos C)
-    (by positivity) (by positivity) hl]
+    (by positivity) (by positivity) (lt_of_lt_of_le zero_lt_one hL)]
   exact (le_div_iff₀ (mul_pos (calibration_elementNorm_pos C) (by positivity))).mpr (by simpa using hp)
 
 end SevenEighths.ProbePhysical

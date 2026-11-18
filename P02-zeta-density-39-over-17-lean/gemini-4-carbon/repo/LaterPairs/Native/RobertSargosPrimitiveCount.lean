@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.RobertSargosLargeToleranceCount
 public import LaterPairs.Native.RobertSargosSmallToleranceCount
 
@@ -33,14 +42,14 @@ theorem exists_robertSargos_primitive_count (ε : ℝ) (hε : 0 < ε) :
         hs S R H Q δ hR hH hQ ⟨hδ,hsmall⟩ hRH hmem
       _ ≤ (Cs+Cl)*((R*H*Q)^(1+ε)*(1+δ*Q)) := by
         rw [mul_assoc]
-        exact mul_le_mul_of_nonneg_right (by linarith only [hCl]) hnonneg
+        exact mul_le_mul_of_nonneg_right (by linarith) hnonneg
       _ = _ := by ring
   · calc
       _ ≤ Cl*(R*H*Q)^(1+ε)*(1+δ*Q) :=
         hl S R H Q δ hR hH hQ (le_of_not_ge hsmall) hmem
       _ ≤ (Cs+Cl)*((R*H*Q)^(1+ε)*(1+δ*Q)) := by
         rw [mul_assoc]
-        exact mul_le_mul_of_nonneg_right (by linarith only [hCs]) hnonneg
+        exact mul_le_mul_of_nonneg_right (by linarith) hnonneg
       _ = _ := by ring
 
 end TaoTrudgianYang2025

@@ -9,16 +9,11 @@ public import OAI.NumberTheory.DirichletL.Energy.LowBandEmpty
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
 open Filter
+open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyPositiveHighSourceBound
-open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound
-open CenteredMomentInductionEnergy CenteredMomentPrimeSlot
-open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyReferenceLowBands
-open CenteredMomentFiniteProfileExceptional
-open CenteredMomentFirstSourceReduction CenteredMomentAmplificationChildInput
-open CenteredMomentNaturalFixedRaySource CenteredMomentSecondHeightFamily
+open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound CenteredMomentInductionEnergy CenteredMomentPrimeSlot CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyReferenceLowBands CenteredMomentFiniteProfileExceptional CenteredMomentFirstSourceReduction CenteredMomentAmplificationChildInput CenteredMomentNaturalFixedRaySource CenteredMomentSecondHeightFamily
 local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
 local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _

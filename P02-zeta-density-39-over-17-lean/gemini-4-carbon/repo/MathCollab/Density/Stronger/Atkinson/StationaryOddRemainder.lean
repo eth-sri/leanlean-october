@@ -30,8 +30,7 @@ namespace MathCollab.Density.Stronger.Atkinson
 theorem IntervalC2Bound.norm_deriv_sub_le {f : ℝ → ℂ} {a b M R x y : ℝ}
     (hf : IntervalC2Bound f a b M R) (hx : x ∈ Icc a b) (hy : y ∈ Icc a b) :
     ‖deriv f y - deriv f x‖ ≤ M * R ^ 2 * |y - x| := by
-  have hd (z : ℝ) (hz : z ∈ Icc a b) : DifferentiableAt ℝ (deriv f) z :=
-    ((hf.smooth z hz).derivWithin (m := 1) (by norm_num)).differentiableAt (by norm_num)
+  have hd (z : ℝ) (hz : z ∈ Icc a b) := ((hf.smooth z hz).derivWithin (m := 1) (by norm_num)).differentiableAt (by norm_num)
   have hb (z : ℝ) (hz : z ∈ Icc a b) : ‖deriv (deriv f) z‖ ≤ M * R ^ 2 := by
     simpa only [iteratedDeriv_succ, iteratedDeriv_one, iteratedDeriv_zero] using hf.second_le z hz
   simpa only [Real.norm_eq_abs] using
@@ -65,10 +64,8 @@ theorem IntervalC2Bound.norm_sub_linear_le {f : ℝ → ℂ} {a b M R r H y : �
     ring
   rw [he, Real.norm_eq_abs] at h
   apply h.trans
-  calc
-    _ ≤ M * R ^ 2 * H * H := mul_le_mul_of_nonneg_left hy
-      (mul_nonneg (mul_nonneg hf.nonneg (sq_nonneg R)) hH)
-    _ = _ := by ring
+  exact (mul_le_mul_of_nonneg_left hy
+      (mul_nonneg (mul_nonneg hf.nonneg (sq_nonneg R)) hH)).trans_eq (by ring)
 
 theorem norm_exp_real_phase_sub_linear_le (x : ℝ) :
     ‖Complex.exp ((x : ℂ) * I) - 1 - (x : ℂ) * I‖ ≤ 3 * x ^ 2 := by
@@ -81,8 +78,8 @@ theorem norm_exp_real_phase_sub_linear_le (x : ℝ) :
     have h := (norm_sub_le (Complex.exp ((x : ℂ) * I) - 1) ((x : ℂ) * I)).trans
       (add_le_add (norm_sub_le _ _) le_rfl)
     rw [hnorm, norm_one, hxnorm] at h
-    have hx1 : 1 < |x| := lt_of_not_ge hx
-    have hx2 : |x| ^ 2 = x ^ 2 := sq_abs x
+    have hx1 := lt_of_not_ge hx
+    have hx2 := sq_abs x
     nlinarith [sq_nonneg (|x| - 1)]
 
 theorem abs_log_one_add_sub_cubic_le {z : ℝ} (hz : |z| ≤ 1 / 2) :
@@ -143,7 +140,7 @@ theorem norm_atkinsonRootKernel_sub_cubic_le {T y : ℝ} (hT : 0 < T) (b : ℝ)
   let r := atkinsonSaddleRoot (T/(2*Real.pi)) b
   let q := 2 * Real.pi * atkinsonRootQuadratic T b y
   let d := atkinsonRootCubicCorrection T b y
-  have hr : 0 < r := atkinsonSaddleRoot_pos (by positivity) b
+  have hr := atkinsonSaddleRoot_pos (by positivity) b
   have he : atkinsonRootQuadraticKernel T b y * Complex.exp ((d : ℂ) * I) =
       Complex.exp (((q+d : ℝ) : ℂ) * I) := by
     rw [atkinsonRootQuadraticKernel, ← Complex.exp_add]
@@ -184,7 +181,7 @@ theorem norm_atkinsonRootKernel_sub_cubic_le {T y : ℝ} (hT : 0 < T) (b : ℝ)
     rw [hd]
     have hp : 0 ≤ T^2*|y-r|^6/r^6 := by positivity
     calc
-      _ = (4/3 : ℝ) * (T^2*|y-r|^6/r^6) := by ring
+      _ = (4/3) * (T^2*|y-r|^6/r^6) := by ring
       _ ≤ 4 * (T^2*|y-r|^6/r^6) := mul_le_mul_of_nonneg_right (by norm_num) hp
       _ = _ := by ring
   exact (norm_sub_le_norm_sub_add_norm_sub _ _ _).trans (add_le_add hfirst hsecond)

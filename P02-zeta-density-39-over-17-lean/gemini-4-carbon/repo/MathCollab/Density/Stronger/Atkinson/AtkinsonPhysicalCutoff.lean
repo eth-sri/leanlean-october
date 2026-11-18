@@ -36,7 +36,7 @@ theorem atkinsonSourceCutoff_le_small {T G L : ℝ}
   have hratio : L / G ≤ 1 / 1200 := (div_le_iff₀ hG).2 (by linarith)
   have hband : 36 * T * (L / G) ^ 2 ≤ T / 40000 := by
     calc
-      _ ≤ 36 * T * (1 / 1200 : ℝ) ^ 2 := by gcongr
+      _ ≤ 36 * T * (1 / 1200) ^ 2 := by gcongr
       _ = _ := by ring
   have hceil := Nat.ceil_lt_add_one (by positivity : 0 ≤ 36 * T * (L / G) ^ 2)
   change (atkinsonSourceCutoff T G L : ℝ) < 36 * T * (L / G) ^ 2 + 1 at hceil
@@ -46,33 +46,26 @@ theorem eventually_atkinsonSourceCutoff_small {δ : ℝ} (hδ : 0 < δ) :
     ∀ᶠ T : ℝ in atTop, ∀ G : ℝ, T ^ δ ≤ G →
       10000 * (atkinsonSourceCutoff T G (Real.log T) : ℝ) ≤ T := by
   filter_upwards [TaoTrudgianYang2025.eventually_const_log_pow_le_rpow 1200 (by norm_num) 1 hδ,
-    eventually_ge_atTop (40000 : ℝ)] with T hlog hT
+    eventually_ge_atTop 40000] with T hlog hT
   intro G hG
-  have hG0 : 0 < G := (Real.rpow_pos_of_pos (by linarith : 0 < T) δ).trans_le hG
-  apply atkinsonSourceCutoff_le_small hT hG0 (Real.log_nonneg (by linarith))
-  simpa only [pow_one] using hlog.trans hG
+  apply atkinsonSourceCutoff_le_small hT ((Real.rpow_pos_of_pos (by linarith : 0 < T) δ).trans_le hG) (Real.log_nonneg (by linarith))
+  simpa using hlog.trans hG
 
 theorem atkinsonSourceCutoff_log_mono_height {t u G : ℝ}
     (ht : 1 ≤ t) (htu : t ≤ u) (hG : 0 < G) :
     atkinsonSourceCutoff t G (Real.log t) ≤ atkinsonSourceCutoff u G (Real.log u) := by
   apply Nat.ceil_mono
   have ht0 : 0 < t := by linarith
-  have hu0 : 0 < u := ht0.trans_le htu
-  have hlog : Real.log t ≤ Real.log u := Real.log_le_log ht0 htu
-  have hratio := div_le_div_of_nonneg_right hlog hG.le
-  have hs := pow_le_pow_left₀ (div_nonneg (Real.log_nonneg ht) hG.le) hratio 2
-  exact mul_le_mul (mul_le_mul_of_nonneg_left htu (by norm_num)) hs
+  have hu0 := ht0.trans_le htu
+  exact mul_le_mul (mul_le_mul_of_nonneg_left htu (by norm_num)) (pow_le_pow_left₀ (div_nonneg (Real.log_nonneg ht) hG.le) (div_le_div_of_nonneg_right (Real.log_le_log ht0 htu) hG.le) 2)
     (sq_nonneg _) (by positivity)
 
 theorem atkinson_doubled_height_half_power {H δ : ℝ} (hH : 2 ≤ H) (hδ : 0 < δ) :
     (2*H)^(δ/2) ≤ H^δ := by
   have hH0 : 0 < H := by linarith
   rw [Real.mul_rpow (by norm_num : (0:ℝ) ≤ 2) hH0.le]
-  calc
-    (2:ℝ)^(δ/2)*H^(δ/2) ≤ H^(δ/2)*H^(δ/2) :=
-      mul_le_mul_of_nonneg_right
-        (Real.rpow_le_rpow (by norm_num) hH (by linarith)) (Real.rpow_nonneg hH0.le _)
-    _ = H^δ := by rw [← Real.rpow_add hH0]; congr 1; ring
+  exact (mul_le_mul_of_nonneg_right
+        (Real.rpow_le_rpow (by norm_num) hH (by linarith)) (Real.rpow_nonneg hH0.le _)).trans_eq (by rw [← Real.rpow_add hH0]; congr 1; ring)
 
 theorem exists_atkinsonPhysicalCutoff_prefix_geometry {δ : ℝ} (hδ : 0 < δ) :
     ∃ H₀ : ℝ, 40000 ≤ H₀ ∧ ∀ H G : ℝ, H₀ ≤ H → H^δ ≤ G →
@@ -81,19 +74,17 @@ theorem exists_atkinsonPhysicalCutoff_prefix_geometry {δ : ℝ} (hδ : 0 < δ) 
     (eventually_atkinsonSourceCutoff_small (show 0 < δ/2 by linarith))
   refine ⟨max 40000 A,le_max_left _ _,?_⟩
   intro H G hH hG
-  have hlarge : 40000 ≤ H := (le_max_left _ _).trans hH
-  have hAH : A ≤ H := (le_max_right _ _).trans hH
-  have hwidth := (atkinson_doubled_height_half_power (by linarith : 2 ≤ H) hδ).trans hG
-  have hcut := hA (2*H) (by linarith) G hwidth
+  have hlarge := (le_max_left _ _).trans hH
+  have hAH := (le_max_right _ _).trans hH
+  have hcut := hA (2*H) (by linarith) G ((atkinson_doubled_height_half_power (by linarith : 2 ≤ H) hδ).trans hG)
   linarith
 
 theorem atkinson_dyadic_prefix_geometry {H G : ℝ} {j : ℕ}
     (hcut : 2*(atkinsonSourceCutoff (2*H) G (Real.log (2*H)):ℝ)+2 ≤ H)
     (hj : j < Nat.clog 2 (atkinsonSourceCutoff (2*H) G (Real.log (2*H)))) :
     (((2^j)+(2^j)+2:ℕ):ℝ) ≤ H := by
-  have hjN := Nat.pow_lt_of_lt_clog hj
   have hcast : (((2^j):ℕ):ℝ) ≤
-      (atkinsonSourceCutoff (2*H) G (Real.log (2*H)):ℝ) := by exact_mod_cast hjN.le
+      (atkinsonSourceCutoff (2*H) G (Real.log (2*H)):ℝ) := by exact_mod_cast (Nat.pow_lt_of_lt_clog hj).le
   push_cast at hcast ⊢
   linarith
 

@@ -17,8 +17,8 @@ private theorem line_tendsto_punctured :
     Tendsto (fun y : ℝ => (2 : ℂ) - 2 * Real.pi * y * I) (𝓝[≠] 0) (𝓝[≠] (2 : ℂ)) := by
   apply tendsto_nhdsWithin_iff.mpr
   constructor
-  · have h : Continuous (fun y : ℝ => (2 : ℂ) - 2 * Real.pi * y * I) := by fun_prop
-    simpa using (h.tendsto (0 : ℝ)).mono_left nhdsWithin_le_nhds
+  · have h : Continuous (fun y : ℝ => 2 - 2 * Real.pi * y * I) := by fun_prop
+    simpa using (h.tendsto 0).mono_left nhdsWithin_le_nhds
   · filter_upwards [self_mem_nhdsWithin] with y hy
     simp only [Set.mem_compl_iff, Set.mem_singleton_iff] at hy ⊢
     intro h
@@ -58,7 +58,7 @@ theorem targetRegularizer_entire (χ : Character) : Differentiable ℂ (targetRe
   · have he : targetRegularizer χ = fun z : ℂ => z-1 := by funext z; simp [targetRegularizer, h]
     rw [he]
     exact differentiable_id.sub_const 1
-  · have he : targetRegularizer χ = fun _ : ℂ => (1 : ℂ) := by funext z; simp [targetRegularizer, h]
+  · have he : targetRegularizer χ = fun _ : ℂ => 1 := by funext z; simp [targetRegularizer, h]
     rw [he]
     exact differentiable_const 1
 
@@ -111,7 +111,7 @@ theorem nonzero_of_probe_bounds (χ : Character) (H : ℂ → ℂ) (J : ℝ → 
     hH hb (signal_locallyIntegrable χ H hHd hb c) (signal_rapidDecayAtZero χ H hHd hb c)
     hJ herror _ hρ _ (targetRegularizer_ne_zero χ hpole)
   · intro s hs
-    have hs1 : 1 < s.re := (le_max_right a 1).trans_lt hs
+    have hs1 := (le_max_right a 1).trans_lt hs
     have h0 : s ≠ 0 := by intro h; norm_num [h] at hs1
     have h1 : s ≠ 1 := by intro h; norm_num [h] at hs1
     rw [regularL_eq χ h0 (Or.inl h1), signalMellin_eq_amplitude χ H hHd hb c a ha2 htop hs]

@@ -16,8 +16,7 @@ def universalShortProfile (T M R E : ℝ) : ℝ :=
 
 theorem universalShortProfile_nonneg {T M R E : ℝ}
     (hT : 0≤T) (hM : 0≤M) (hR : 0≤R) (hE : 0≤E) :
-    0≤universalShortProfile T M R E := by
-  exact add_nonneg (by positivity) (universalShortSublinearProfile_nonneg hT hM hR hE)
+    0≤universalShortProfile T M R E := add_nonneg (by positivity) (universalShortSublinearProfile_nonneg hT hM hR hE)
 
 /-- The complementary small-amplitude range is bounded without discarding
 its quadratic cardinality factor. -/

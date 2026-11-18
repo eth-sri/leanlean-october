@@ -2,7 +2,16 @@ module
 public import LaterPairs.Native.RobertSargosAffineBandExtras
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.RobertSargosFrequencyFibers
 public import LaterPairs.Native.RobertSargosFrequencyWeightSums
 
@@ -24,16 +33,14 @@ theorem RobertSargosPrimitiveSystem.displacement_natAbs_mem
     (hH : 0 < H) (hQ : 0 < Q) (hδ : δ ≤ 1) :
     p.d.natAbs ∈ Finset.Icc 1 ⌊9*Q⌋₊ := by
   have hd : (p.d.natAbs:ℝ) = |(p.d:ℝ)| := by
-    simpa only [Int.cast_natCast,Int.cast_abs] using
+    simpa using
       congrArg (fun z : ℤ => (z:ℝ)) (Int.natCast_natAbs p.d)
   apply Finset.mem_Icc.mpr
   constructor
   · exact Nat.one_le_iff_ne_zero.mpr (Int.natAbs_ne_zero.mpr h.d_ne_zero)
   · apply (Nat.le_floor_iff (by positivity : 0 ≤ 9*Q)).mpr
     rw [hd]
-    calc
-      _ ≤ (δ+8)*Q := h.displacement_le hH hQ
-      _ ≤ 9*Q := by nlinarith
+    exact (h.displacement_le hH hQ).trans (by nlinarith)
 
 theorem robertSargos_card_le_weighted_frequency_sum
     (S : Finset RobertSargosPoint) {R H Q δ ε A C : ℝ}
@@ -48,7 +55,7 @@ theorem robertSargos_card_le_weighted_frequency_sum
   classical
   let U := S.image robertSargosFrequencyKey
   have hQp : 0 < Q := by linarith
-  have hδ0 : 0 ≤ δ := hδ.1
+  have hδ0 := hδ.1
   have hmaps : Set.MapsTo robertSargosFrequencyKey S U := by
     intro p hp
     exact Finset.mem_image.mpr ⟨p,hp,rfl⟩

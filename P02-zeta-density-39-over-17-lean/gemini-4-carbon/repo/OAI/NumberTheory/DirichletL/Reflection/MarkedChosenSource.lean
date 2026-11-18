@@ -37,9 +37,9 @@ theorem marked_source_of_controlled [Fintype ι]
   have hprod : (∏ i, P.generator i)≠0 := Finset.prod_ne_zero_iff.mpr (fun i _ => P.generator_ne_zero i)
   have hmark : (∏ i∈S, P.generator i)≠0 := Finset.prod_ne_zero_iff.mpr (fun i _ => P.generator_ne_zero i)
   have hQall : Qall≠0 := mul_ne_zero (mul_ne_zero hQ
-    (by simpa only [ne_eq,Ideal.zero_eq_bot,Ideal.span_singleton_eq_bot] using hprod))
-    (by simpa only [ne_eq,Ideal.zero_eq_bot,Ideal.span_singleton_eq_bot] using hmark)
-  let call := ConcretePrimeRowBridge.idealGenerator (Ideal.span {(9:Eis)}*Qall)
+    (by simpa using hprod))
+    (by simpa using hmark)
+  let call := ConcretePrimeRowBridge.idealGenerator (Ideal.span {9}*Qall)
   have hcall : call≠0 := by
     apply ConcretePrimeRowBridge.idealGenerator_ne_zero
     apply mul_ne_zero _ hQall
@@ -47,7 +47,7 @@ theorem marked_source_of_controlled [Fintype ι]
     norm_num
   let : Finite (Eis⧸Ideal.span {call}) := ConcreteTraceCRT.finite_quotient_span hcall
   let : Fintype (Eis⧸Ideal.span {call}) := Fintype.ofFinite _
-  have hcallQ : Ideal.span {call}≤Ideal.span {(9:Eis)}*Qall := by
+  have hcallQ : Ideal.span {call}≤Ideal.span {9}*Qall := by
     rw [ConcretePrimeRowBridge.span_idealGenerator]
   exact markedCompletedT_fixed_active_strata P.generator P.generator_ne_zero P.generator_prime
     P.generator_primary P.generator_good j S φ hφnorm Q hφperiod c hc hcQ G N hN

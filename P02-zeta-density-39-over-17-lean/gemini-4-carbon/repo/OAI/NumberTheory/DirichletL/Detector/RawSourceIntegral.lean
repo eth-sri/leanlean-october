@@ -32,7 +32,7 @@ lemma originalRawOnLines_eq_source (η : HeckeFamily.Character)
       rawSourceOnLines η S hS D W0 W1 X Y Z i (sourceHeightShear.symm p) := by
   rw [originalRawOnLines,rawPhysicalMellinTerm_eq_source η S hS hpS hbad D _ _ _ i.property.1
     i.property.2 W0 W1 X Y Z hX i.val.1]
-  have he : (4:ℂ)+p.1.1*Complex.I+1-((2:ℂ)+p.1.2*Complex.I)=
+  have he : 4+p.1.1*Complex.I+1-(2+p.1.2*Complex.I)=
       3+((p.1.1-p.1.2:ℝ):ℂ)*Complex.I := by push_cast;ring
   have hs : sourceHeightShear.symm p=((p.1.1-p.1.2,p.1.2),p.2) := rfl
   simp only [rawSourceOnLines,initialHighOnLines,he,hs,sourceRawEmbedding,Complex.ofReal_ofNat]
@@ -46,13 +46,13 @@ lemma rawSourceOnLines_integrable (η : HeckeFamily.Character)
     Integrable (fun p : SourceRawIndex S×HeightSpace=>rawSourceOnLines η S hS D W0 W1 X Y Z p.1 p.2)
       ((Measure.count:Measure (SourceRawIndex S)).prod heightMeasure) := by
   have hm (H : NonzeroFrequency) : ‖star ((calibrationForSet S hS).residueMonoid H.val)‖≤1 := by
-    simpa only [norm_star] using (calibrationForSet S hS).residueMonoid_norm_le_one H.val
+    simpa using (calibrationForSet S hS).residueMonoid_norm_le_one H.val
   unfold rawSourceOnLines
   apply initialHigh_counting_product_integrable (sourceRawEmbedding S) (sourceRawEmbedding_injective S)
     S D η (fun H=>star ((calibrationForSet S hS).residueMonoid H.val)) hm 3 3 2
     (by norm_num) (by norm_num) (by norm_num)
     (fun p : HeightSpace=>sourceMellinWeight W0 W1 X Y Z
-      ((3:ℂ)+p.1.1*Complex.I) ((3:ℂ)+p.2*Complex.I) ((2:ℂ)+p.1.2*Complex.I))
+      (3+p.1.1*Complex.I) (3+p.2*Complex.I) (2+p.1.2*Complex.I))
   · exact sourceMellinWeight_initial_integrable W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
       X Y Z hX hY hZ 3 2 3 (by norm_num)
   · exact sourceMellinWeight_initial_continuous W0 W1 a1 b1 ha1 hW1

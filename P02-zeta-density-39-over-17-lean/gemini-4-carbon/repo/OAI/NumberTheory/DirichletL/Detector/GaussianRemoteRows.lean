@@ -53,7 +53,6 @@ theorem gaussianCompletedFamily_crude :
   obtain ⟨C,hC,hb⟩ := gaussianFixedWindow_completed_crude
   refine ⟨C,hC,?_⟩
   intro α ι _ F a S D Ψ hΨ W q V hV T Z hT
-  have hf := gaussianCompletedFamily_integrable F a S D Ψ W q V hV T Z hT
   have hp (t : ℝ) :
       ‖(∑k∈F,a k*correctedCompletedT S (D k) (Ψ k)
         (CompletedHeight.normTwistedSource gaussianFixedWindow t) T*
@@ -79,7 +78,7 @@ theorem gaussianCompletedFamily_crude :
         (∏i,W i (q k i)*logPhase (-t) (Real.log (q k i))))*gaussianJointDensity V hV (T/Z) t‖ :=
       norm_integral_le_integral_norm _
     _ ≤ ∫t : ℝ,(C*T^2*gaussianCompletedFamilyMass F a W q)*‖gaussianJointDensity V hV (T/Z) t‖ :=
-      integral_mono hf.norm ((gaussianJointDensity V hV (T/Z)).integrable.norm.const_mul _) hp
+      integral_mono (gaussianCompletedFamily_integrable F a S D Ψ W q V hV T Z hT).norm ((gaussianJointDensity V hV (T/Z)).integrable.norm.const_mul _) hp
     _ = _ := by simp only [integral_const_mul,gaussianJointMoment,pow_zero,one_mul]
 
 theorem gaussianCompletedFamily_remote (V : SchwartzMap ℝ ℂ)
@@ -99,7 +98,6 @@ theorem gaussianCompletedFamily_remote (V : SchwartzMap ℝ ℂ)
   intro α ι _ F a S D Ψ hΨ W q Z A hZ hA
   obtain ⟨hs,ht⟩ := hg Z A hZ hA
   let M := gaussianCompletedFamilyMass F a W q
-  have hM : 0≤M := gaussianCompletedFamilyMass_nonneg F a W q
   have hb (j : ℕ) :
       (if (2:ℝ)^j/Z≤A⁻¹ ∨ A≤(2:ℝ)^j/Z then
         ‖gaussianCompletedFamilyIntegral F a S D Ψ W q V hV ((2:ℝ)^j) Z‖ else 0)≤
@@ -116,7 +114,7 @@ theorem gaussianCompletedFamily_remote (V : SchwartzMap ℝ ℂ)
   calc
     _ ≤ ∑'j : ℕ,(Cr*M)*gaussianRemoteMoment V hV 0 2 Z A j := hsum.tsum_le_tsum hb (hs.mul_left (Cr*M))
     _ = (Cr*M)*∑'j : ℕ,gaussianRemoteMoment V hV 0 2 Z A j := tsum_mul_left
-    _ ≤ (Cr*M)*(Cg*Z^(2:ℝ)/A^N) := mul_le_mul_of_nonneg_left ht (mul_nonneg hCr.le hM)
+    _ ≤ (Cr*M)*(Cg*Z^(2:ℝ)/A^N) := mul_le_mul_of_nonneg_left ht (mul_nonneg hCr.le (gaussianCompletedFamilyMass_nonneg F a W q))
     _ = _ := by rw [Real.rpow_two];dsimp only [M];ring
 
 end SevenEighths.ProbePhysical

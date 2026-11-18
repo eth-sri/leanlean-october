@@ -1,5 +1,5 @@
 module
-public import GuthMaynard.AffineSource.LargeValuesAffineHeight
+public import DensityEnergyGM.LargeValuesAffineHeight
 
 @[expose] public section
 set_option autoImplicit false
@@ -7,7 +7,7 @@ noncomputable section
 open MeasureTheory Set
 open scoped SchwartzMap FourierTransform
 namespace GuthMaynard.Improvement
-open RiemannZeta.GuthMaynard
+open GuthMaynard.NativeMoment
 
 /-- The manuscript's fixed family of supremum-normalized Fourier constants.
 D is fixed before T and f; the condition is imposed only at nonzero frequency. -/
@@ -105,7 +105,9 @@ theorem fourier_l1_le_mass_and_tail (f : 𝓢(ℝ, ℝ)) (hf : ∀ x, 0 ≤ f x)
   have hcompl : (gmAffineLowFrequencyRegion U)ᶜ = gmAffineHighFrequencyRegion U := by
     ext ξ
     simp [gmAffineLowFrequencyRegion,gmAffineHighFrequencyRegion]
-  have hsplit := integral_add_compl (measurableSet_gmAffineLowFrequencyRegion U) hFi
+  have hm : MeasurableSet (gmAffineLowFrequencyRegion U) :=
+    measurableSet_le continuous_abs.measurable measurable_const
+  have hsplit := integral_add_compl hm hFi
   rw [hcompl] at hsplit
   rw [← hsplit]
   exact add_le_add hlo hhi

@@ -45,8 +45,7 @@ theorem compensationRowTest_low_separated {K : ℕ} (η : HeckeFamily.Character)
           (lowMarkedInverseRow η S hS (Ideal.span {slotProduct p (Finset.univ\J)}) T t) v := by
   unfold compensationRowTest
   simp_rw [physicalRowMonoid_eq_ray]
-  have hC : (calibrationForSet S hS).excluded=S := calibrationForSet_excluded S hS
-  rw [hC]
+  rw [(calibrationForSet_excluded S hS)]
   simp_rw [lowMarkedInverseRow_eq η S hS hbad _ T t hT]
   exact physicalRowWeight_low_separated (calibrationForSet S hS) W0 W1 a0 b0 a1 b1 ha0 ha1
     hW0 hW1 hWs _ _ (div_pos hX (slotProduct_norm_pos p hp J))

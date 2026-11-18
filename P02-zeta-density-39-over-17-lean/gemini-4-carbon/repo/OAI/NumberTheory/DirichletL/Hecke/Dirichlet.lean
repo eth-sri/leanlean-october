@@ -34,9 +34,8 @@ theorem norm_span_dvd (z : O) :
 theorem quotient_unit_of_norm_unit (z : O)
     (hz : IsUnit (Ideal.absNorm (Ideal.span {z}) : ZMod q)) :
     IsUnit (Ideal.Quotient.mk (modulus q) z) := by
-  have hc := (ZMod.isUnit_iff_coprime _ _).mp hz
   have hi : IsCoprime (Ideal.absNorm (Ideal.span {z}) : O ⧸ modulus q) (q : O ⧸ modulus q) := by
-    simpa only [map_natCast] using hc.isCoprime.map (Int.castRingHom (O ⧸ modulus q))
+    simpa using ((ZMod.isUnit_iff_coprime _ _).mp hz).isCoprime.map (Int.castRingHom (O ⧸ modulus q))
   rw [quotient_modulus_zero, isCoprime_zero_right] at hi
   obtain ⟨w, hw⟩ := norm_span_dvd z
   have hn : (Ideal.absNorm (Ideal.span {z}) : O ⧸ modulus q) =
@@ -79,8 +78,7 @@ def character (χ : DirichletCharacter ℂ q) : Character :=
 
 theorem idealCoeff_character (χ : DirichletCharacter ℂ q) (I : Ideal O) (hI : I ≠ 0) :
     idealCoeff (character χ) I = χ (Ideal.absNorm I) := by
-  rw [← ConcretePrimeRowBridge.span_idealGenerator I]
-  rw [idealCoeff_span _ (ConcretePrimeRowBridge.idealGenerator_ne_zero I hI),
+  rw [← ConcretePrimeRowBridge.span_idealGenerator I, idealCoeff_span _ (ConcretePrimeRowBridge.idealGenerator_ne_zero I hI),
     elementCoeff_character, ConcretePrimeRowBridge.span_idealGenerator]
 
 theorem moebius_idealCoeff_character (χ : DirichletCharacter ℂ q) (I : Ideal O) :
@@ -179,7 +177,7 @@ theorem zeta_seven_eighths_of_hecke
   · simpa [h1] using riemannZeta_one_ne_zero
   have h := dirichlet_seven_eighths_of_hecke hH (1 : DirichletCharacter ℂ 1) s hs
     (by simp [h1])
-  simpa only [DirichletCharacter.LFunction_modOne_eq] using h
+  simpa using h
 
 end SevenEighths.HeckeDirichlet
 

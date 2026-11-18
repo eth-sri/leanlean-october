@@ -56,10 +56,8 @@ theorem atkinsonGap_frequency_physical_bounds {H M t u : ℝ}
     atkinsonGapFrequency M t u/(2*Real.pi*M) ≤ (t-u)/Real.sqrt (H*M) ∧
       2*Real.pi*M/atkinsonGapFrequency M t u ≤
         12*Real.sqrt (H*M)/(t-u) := by
-  have hup : 0 < u := hH.trans_le hu
-  have hgap : 0 < t-u := sub_pos.mpr ht
+  have hgap := sub_pos.mpr ht
   have hR : 0 < Real.sqrt (H*M) := by positivity
-  have hs : 0 < Real.sqrt (2*Real.pi*u/M) := by positivity
   obtain ⟨hl,hh⟩ := atkinsonGap_denominator_bounds hH hM hu hu2 ht ht2
   have he : atkinsonGapFrequency M t u/(2*Real.pi*M) =
       (t-u)/(M*Real.sqrt (2*Real.pi*u/M)*(Real.sqrt (t/u)+1)) := by

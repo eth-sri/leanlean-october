@@ -70,9 +70,8 @@ theorem actual_second_normalized_mass (K : ℕ) (ε : ℝ) (hε : 0 < ε) :
     obtain ⟨x,hx,rfl⟩ := Finset.mem_image.mp hγ
     refine ⟨actual_second_q0_power_bound p hp x u v Z ell R j eta hZ
       (h1 x hx) (h2 x hx) (ha x hx) (hJ x hx),hT x hx,?_⟩
-    have hr := second_residual_norm_power_bound p hp _ _ (hE x hx) Z g theta eta hZ (hG x hx) (hD x hx)
     change (Ideal.absNorm (sourceIdeal p (x.second.sourceCommon\x.second.divisor)) : ℝ) ≤ _
-    simpa only [sourceIdeal,←eisEmbedding_norm_sq_eq_absNorm_span,primeProductNorm] using hr
+    simpa only [sourceIdeal,←eisEmbedding_norm_sq_eq_absNorm_span,primeProductNorm] using (second_residual_norm_power_bound p hp _ _ (hE x hx) Z g theta eta hZ (hG x hx) (hD x hx))
   have hm := hb (actualSecondTriples p u v source)
     (Z^(ell+R/2-j+5*eta/2)) (Z^(t+eta)) (Z^(g-theta+2*eta))
     (Real.rpow_pos_of_pos hZ _) (Real.rpow_pos_of_pos hZ _) (Real.rpow_pos_of_pos hZ _) hz hn

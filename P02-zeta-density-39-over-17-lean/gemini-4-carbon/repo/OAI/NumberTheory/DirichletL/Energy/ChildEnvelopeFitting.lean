@@ -9,19 +9,16 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyChildEnvelopeFitting
-open HeckeFamily CenteredMomentFiniteProfileExceptional
-open CenteredMomentInductionEnergy QuadraticInitialBound
-open CenteredMomentSecondNonexceptionalChosenBlock
+open HeckeFamily CenteredMomentFiniteProfileExceptional CenteredMomentInductionEnergy QuadraticInitialBound CenteredMomentSecondNonexceptionalChosenBlock
 local notation "O" => HeckeFamily.O
 
 lemma radical_product_power (R C:Ideal O)(hR:R≠0)(hC:C≠0)
     (Z BR BC ε:ℝ)(hZ:0<Z)(hε:0≤ε)
     (hRN:(R.absNorm:ℝ)≤Z^BR)(hCN:(C.absNorm:ℝ)≤Z^BC):
     ((R*C).radical.absNorm:ℝ)^ε≤Z^((BR+BC)*ε):=by
-  have hRC:R*C≠0:=mul_ne_zero hR hC
   have hr:((R*C).radical.absNorm:ℝ)≤(R*C).absNorm:=by
     exact_mod_cast Nat.le_of_dvd
-      (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hRC))
+      (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr (mul_ne_zero hR hC)))
       (map_dvd Ideal.absNorm (Ideal.dvd_iff_le.mpr (Ideal.le_radical (I:=R*C))))
   have hh:(R*C).absNorm≤Z^(BR+BC):=by
     rw [map_mul,Nat.cast_mul,Real.rpow_add hZ]
@@ -62,12 +59,12 @@ theorem paid_rhs_fit {a b:ℝ}(Cc C₀ C₁:ℝ)(p:Profiles a b)(T:Finset (ℕ×
       (1+(|v|+height))^degree*reference*ratio^((1:ℝ)/6)*Z^exponent≤
     coefficient Cc C₀ C₁ p T height degree Z ((BR+BC)*εmask+loss)*
       reference*ratio^((1:ℝ)/6)*(1+‖v‖)^(2*degree):=by
-  have hZ0:0<Z:=zero_lt_one.trans_le hZ
+  have hZ0 :=zero_lt_one.trans_le hZ
   have hr:=radical_product_power R C hR hC Z BR BC εmask hZ0 hε hRN hCN
   have ht:=independent_height v height hH degree
   have hp:=Real.rpow_le_rpow_of_exponent_le hZ hloss
   have hd:=diagonalControl_nonneg CenteredMomentFirstAmplificationChoice.ballProfile
-  have hsum:0≤C₀+C₁:=add_nonneg h₀ h₁
+  have hsum :=add_nonneg h₀ h₁
   change Cc*((R*C).radical.absNorm:ℝ)^εmask*(C₀+C₁)*
     diagonalControl CenteredMomentFirstAmplificationChoice.ballProfile*(p.control T)^2*
     (1+(|v|+height))^degree*reference*ratio^((1:ℝ)/6)*Z^exponent≤_

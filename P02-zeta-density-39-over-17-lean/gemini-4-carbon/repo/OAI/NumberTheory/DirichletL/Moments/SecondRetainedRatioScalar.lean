@@ -9,14 +9,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondRetainedRatioScalar
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss RayFourExpansion
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonicalScalar
-open CenteredMomentSecondCanonical CenteredMomentCanonicalFirst
-open CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
-open CenteredMomentSecondCanonicalLedger CenteredMomentSecondWholeKernel
-open CenteredMomentSectorLocalization CenteredMomentSecondExceptionalFamily
-open CenteredMomentSecondRadicalBudget CenteredMomentSourceBlockWindows
-open CenteredMomentSourceDyadicShell CenteredMomentHeckeColumnWindow
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss RayFourExpansion CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonicalScalar CenteredMomentSecondCanonical CenteredMomentCanonicalFirst CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalLedger CenteredMomentSecondWholeKernel CenteredMomentSectorLocalization CenteredMomentSecondExceptionalFamily CenteredMomentSecondRadicalBudget CenteredMomentSourceBlockWindows CenteredMomentSourceDyadicShell CenteredMomentHeckeColumnWindow
 local notation "O" => HeckeFamily.O
 
 open CenteredMomentSecondNonexceptionalScalar
@@ -26,9 +19,8 @@ theorem ratio_penalty_le (r a:ℝ) (hr:0<r) (_ha:0≤a) (ha1:a≤1) :
   by_cases h:r≤1
   · have hi:1≤1/r:=(le_div_iff₀ hr).mpr (by linarith)
     rw [max_eq_right hi]
-    have hp: (1/r)^a≤1/r:=Real.rpow_le_self_of_one_le hi ha1
     calc
-      _≤r/(1+r)*(1/r):=mul_le_mul_of_nonneg_left hp (by positivity)
+      _≤r/(1+r)*(1/r):=mul_le_mul_of_nonneg_left (Real.rpow_le_self_of_one_le hi ha1) (by positivity)
       _=1/(1+r):=by field_simp
       _≤1:=(div_le_one (by positivity)).mpr (by linarith)
   · have hi:1/r≤1:=(div_le_one hr).mpr (by linarith)

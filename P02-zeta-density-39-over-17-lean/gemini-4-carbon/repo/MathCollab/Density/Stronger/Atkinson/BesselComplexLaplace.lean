@@ -32,8 +32,7 @@ theorem integrableOn_cpow_mul_cexp_neg_complex_mul_Ioi
     {s a : ℂ} (hs : 0 < s.re) (ha : 0 < a.re) :
     IntegrableOn (fun x : ℝ =>
       (x : ℂ) ^ (s - 1) * cexp (-(a * x))) (Set.Ioi 0) := by
-  have hbase := integrableOn_cpow_mul_exp_neg_mul_Ioi hs ha
-  refine hbase.norm.mono' ?_ ?_
+  refine (integrableOn_cpow_mul_exp_neg_mul_Ioi hs ha).norm.mono' ?_ ?_
   · have hcont : ContinuousOn (fun x : ℝ =>
         (x : ℂ) ^ (s - 1) * cexp (-(a * x))) (Set.Ioi 0) := by
       intro x hx
@@ -85,7 +84,7 @@ theorem hasDerivAt_dfiComplexLaplace
   let bound : ℝ → ℝ := fun x => x ^ s.re * Real.exp (-(r * x))
   have hBoundInt : Integrable bound (volume.restrict (Set.Ioi 0)) := by
     have h := integrableOn_rpow_mul_exp_neg_mul_rpow
-      (p := (1 : ℝ)) (s := s.re) (b := r) (by linarith) (by norm_num) hr
+      (p := 1) (s := s.re) (b := r) (by linarith) (by norm_num) hr
     change IntegrableOn bound (Set.Ioi 0)
     simpa only [bound, neg_mul, Real.rpow_one] using h
   have hBound : ∀ᵐ x ∂(volume.restrict (Set.Ioi 0)),
@@ -110,7 +109,7 @@ theorem hasDerivAt_dfiComplexLaplace
       Real.exp_le_exp.mpr (by nlinarith)
     rw [show x ^ (s.re - 1) * x = x ^ s.re by
       calc
-        x ^ (s.re - 1) * x = x ^ (s.re - 1) * x ^ (1 : ℝ) := by
+        x ^ (s.re - 1) * x = x ^ (s.re - 1) * x ^ 1 := by
           rw [Real.rpow_one]
         _ = x ^ ((s.re - 1) + 1) := (Real.rpow_add hx0 _ _).symm
         _ = x ^ s.re := by congr 1; ring]
@@ -140,7 +139,6 @@ theorem analyticOnNhd_dfiComplexLaplace {s : ℂ} (hs : 0 < s.re) :
 theorem dfiComplexLaplace_ofReal
     {s : ℂ} (hs : 0 < s.re) {r : ℝ} (hr : 0 < r) :
     dfiComplexLaplace s (r : ℂ) = (r : ℂ) ^ (-s) * Gamma s := by
-  have h := integral_cpow_mul_exp_neg_mul_Ioi_eq hs hr
   unfold dfiComplexLaplace
   rw [show (∫ x : ℝ in Set.Ioi 0,
       (x : ℂ) ^ (s - 1) * cexp (-((r : ℂ) * x))) =
@@ -149,8 +147,7 @@ theorem dfiComplexLaplace_ofReal
     apply setIntegral_congr_fun measurableSet_Ioi
     intro x _
     push_cast
-    rfl]
-  rw [h]
+    rfl, (integral_cpow_mul_exp_neg_mul_Ioi_eq hs hr)]
   congr 1
   rw [one_div, Complex.inv_cpow]
   · rw [Complex.cpow_neg]
@@ -164,10 +161,10 @@ theorem dfiComplexLaplace_eq
   let F : ℂ → ℂ := dfiComplexLaplace s
   let G : ℂ → ℂ := fun b => b ^ (-s) * Gamma s
   have hF : AnalyticOnNhd ℂ F U := by
-    simpa only [F, U] using analyticOnNhd_dfiComplexLaplace hs
+    simpa using analyticOnNhd_dfiComplexLaplace hs
   have hGDiff : DifferentiableOn ℂ G U := by
     intro b hb
-    have hbpos : 0 < b.re := by simpa only [U] using! hb
+    have hbpos : 0 < b.re := by simpa using! hb
     dsimp [G]
     exact ((differentiableAt_id.cpow_const
       (Complex.mem_slitPlane_iff.mpr (Or.inl hbpos))).mul

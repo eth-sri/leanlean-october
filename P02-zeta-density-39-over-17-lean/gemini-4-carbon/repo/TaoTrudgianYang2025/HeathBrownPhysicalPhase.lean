@@ -44,9 +44,7 @@ theorem heathBrownPhysicalPhase_contDiffOn {F : ℝ → ℝ} {N A L : ℝ}
     (hF : ContDiffOn ℝ ∞ F phaseInterval)
     (hN : 0 < N) (ha : N ≤ A) (hb : A+L ≤ 2*N) (T s : ℝ) :
     ContDiffOn ℝ ∞ (heathBrownPhysicalPhase F T N A s) (Icc 0 L) := by
-  have hc : ContDiffOn ℝ ∞ (fun x => F ((A+x)/N)) (Icc 0 L) :=
-    hF.comp (by fun_prop) (fun _ hx => heathBrownPhysicalPoint_mem hN ha hb hx)
-  exact contDiffOn_const.mul hc
+  exact contDiffOn_const.mul (hF.comp (by fun_prop) (fun _ hx => heathBrownPhysicalPoint_mem hN ha hb hx))
 
 theorem heathBrownPhysicalPhase_iteratedDeriv
     {F : ℝ → ℝ} {N A L x : ℝ}
@@ -57,11 +55,11 @@ theorem heathBrownPhysicalPhase_iteratedDeriv
       (s*T)/(N^n)*iteratedDeriv n F ((A+x)/N) := by
   have hL : 0 < L := hx.1.trans hx.2
   have hsrc := heathBrownPhysicalPoint_mem_interior hN ha hb hx
-  have hxc : x ∈ Icc (0 : ℝ) L := ⟨hx.1.le,hx.2.le⟩
+  have hxc : x ∈ Icc 0 L := ⟨hx.1.le,hx.2.le⟩
   have hsrcC : (A+x)/N ∈ phaseInterval := ⟨hsrc.1.le,hsrc.2.le⟩
   have hf : ContDiffOn ℝ n F phaseInterval :=
     hF.of_le (ENat.natCast_le_of_coe_top_le_withTop le_rfl n)
-  have hg : ContDiffOn ℝ n (fun y => F ((A+y)/N)) (Icc (0 : ℝ) L) :=
+  have hg : ContDiffOn ℝ n (fun y => F ((A+y)/N)) (Icc 0 L) :=
     hf.comp (by fun_prop) (fun _ hy => heathBrownPhysicalPoint_mem hN ha hb hy)
   have hgAt : ContDiffAt ℝ n (fun y => F ((A+y)/N)) x :=
     (hg x hxc).contDiffAt
@@ -70,7 +68,7 @@ theorem heathBrownPhysicalPhase_iteratedDeriv
     (hf _ hsrcC).contDiffAt
       (mem_of_superset (isOpen_Ioo.mem_nhds hsrc) Ioo_subset_Icc_self)
   have hpoint (y : ℝ) : N⁻¹*y+A/N = (A+y)/N := by ring
-  have hmap : MapsTo (fun y => N⁻¹*y+A/N) (Icc (0 : ℝ) L) phaseInterval := by
+  have hmap : MapsTo (fun y => N⁻¹*y+A/N) (Icc 0 L) phaseInterval := by
     intro y hy
     simpa only [hpoint] using heathBrownPhysicalPoint_mem hN ha hb hy
   have hd := iteratedDerivWithin_comp_affine_of_mapsTo hf
@@ -99,10 +97,8 @@ theorem heathBrownPhysicalPhase_signed_derivative_bounds
     (heathBrownPhysicalPoint_mem_interior hN ha hb hx) p hp hδ
   rw [heathBrownPhysicalPhase_iteratedDeriv hF.1 hN ha hb hx]
   have ht : 0 ≤ T/N^(p+1) := by positivity
-  have hlo := mul_le_mul_of_nonneg_left hs.1 ht
-  have hhi := mul_le_mul_of_nonneg_left hs.2 ht
   constructor
-  · convert hlo using 1 <;> ring
-  · convert hhi using 1 <;> ring
+  · convert (mul_le_mul_of_nonneg_left hs.1 ht) using 1 <;> ring
+  · convert (mul_le_mul_of_nonneg_left hs.2 ht) using 1 <;> ring
 
 end TaoTrudgianYang2025

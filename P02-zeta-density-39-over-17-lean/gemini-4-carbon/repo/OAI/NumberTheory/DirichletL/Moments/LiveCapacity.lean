@@ -20,7 +20,7 @@ namespace SevenEighths.CenteredMomentLiveCapacity
   · exact Or.inl h
   · right
     have hs:=Finset.sum_sdiff hR (f:=w)
-    have hm:=le_max_left (n₁+n₂+6*κ*(∑i∈J,w i)-M) (0:ℝ)
+    have hm:=le_max_left (n₁+n₂+6*κ*(∑i∈J,w i)-M) 0
     change max _ _≤_ at h
     have hh:=hm.trans h
     rw [←hs] at hh

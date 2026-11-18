@@ -9,15 +9,11 @@ public import OAI.NumberTheory.DirichletL.Energy.BandMonotonicity
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
+open scoped Classical BigOperators SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentEnergyCappedWidthInduction
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyWidthRanges
-open CenteredMomentEnergyStageReserveSchedule CenteredMomentEnergyBandMonotonicity
-open CenteredMomentEnergyWidthFloor CenteredMomentFiniteProfileExceptional
-open CenteredMomentNaturalFixedRaySource
+open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyWidthSchedule CenteredMomentEnergyWidthRanges CenteredMomentEnergyStageReserveSchedule CenteredMomentEnergyBandMonotonicity CenteredMomentEnergyWidthFloor CenteredMomentFiniteProfileExceptional CenteredMomentNaturalFixedRaySource
 local notation "O"=>HeckeFamily.O
 
 open CenteredMomentEnergyWidthInduction (remaining lowerAt lengthAt lowerAt_pos child_support child_length)
@@ -27,15 +23,13 @@ lemma bandWidth_le (M B ε:ℝ)(k:ℕ):bandWidth M B ε k≤M:=min_le_left _ _
 lemma bandWidth_le_schedule (M B ε:ℝ)(k:ℕ):bandWidth M B ε k≤width M B ε k:=min_le_right _ _
 lemma bandWidth_nonneg (M B ε:ℝ)(hM:0≤M)(hB:0≤B)(hε:0<ε)(k:ℕ):
     0≤bandWidth M B ε k:=by
-  have hr:0<reserve M B ε:=(bounds M B 0 ε hM hB (by norm_num) hε).2.2.2.1
-  have hs:0<amplification ε:=(bounds M B 0 ε hM hB (by norm_num) hε).1
+  have hr :=(bounds M B 0 ε hM hB (by norm_num) hε).2.2.2.1
+  have hs :=(bounds M B 0 ε hM hB (by norm_num) hε).1
   unfold bandWidth width
   positivity
 lemma bandWidth_terminal (M B ε:ℝ)(hM:0≤M)(hB:0≤B)(hε:0<ε):
     bandWidth M B ε (count M ε)=M:=by
-  have hh: M<width M B ε (count M ε):=
-    (bounds M B 0 ε hM hB (by norm_num) hε).2.2.2.2.2.2.2.2.1
-  exact min_eq_left hh.le
+  exact min_eq_left ((bounds M B 0 ε hM hB (by norm_num) hε).2.2.2.2.2.2.2.2.1).le
 lemma actual_child_band (M B ε parent child:ℝ)(hε:0<ε)(k:ℕ)
     (hp:parent≤bandWidth M B ε (k+1))(hc:child≤parent-amplification ε/2):
     child≤bandWidth M B ε k:=by
@@ -70,12 +64,10 @@ theorem certified_floor (W:ℝ→ℂ)(aslot bslot a b radial Bmask L lo hi Mcap 
     (hκ:2*HeckeZeroSupremum.beta-1≤κ):
     CertifiedBand (α:=α) M H hH W bslot a b radial Bmask L lo hi Mcap κ ε 0:=by
   let Bs:=finalSourceCap Mcap Bmask L ε
-  have hBs:0≤Bs:=sourceCap_nonneg Mcap Bmask L hMcap hmask _
-  have ha0:=lowerAt_pos a b Mcap ε ha 0
   obtain ⟨degree,S,Czero,Cpositive,hCzero,hCpositive,hfloor⟩:=
-    actual_joint_floor (α:=α) M H hH Mcap Bs κ ε hMcap hBs hκ0 hε W aslot bslot
+    actual_joint_floor (α:=α) M H hH Mcap Bs κ ε hMcap (sourceCap_nonneg Mcap Bmask L hMcap hmask _) hκ0 hε W aslot bslot
       haslot hWs hW (lowerAt a b Mcap ε 0) b radial Bmask (lengthAt Mcap Bmask L ε 0)
-      lo hi ha0 hb hrad hmask hbeta hκ
+      lo hi (lowerAt_pos a b Mcap ε ha 0) hb hrad hmask hbeta hκ
   refine ⟨degree,S,?_⟩
   intro η₀ Q hQM _ _ _
   refine ⟨Czero,Cpositive,hCzero,hCpositive,?_⟩

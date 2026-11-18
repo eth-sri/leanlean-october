@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentRetainedProfile
-open CenteredMomentLattice CenteredMomentTwist CenteredMomentHeckeTwist
-open CenteredMomentHeckeHeight CenteredMomentHeckeVolume CenteredMomentHeckeCancellation HeckeFamily
-open EisensteinSchwartzPoisson QuadraticInitialBound
+open CenteredMomentLattice CenteredMomentTwist CenteredMomentHeckeTwist CenteredMomentHeckeHeight CenteredMomentHeckeVolume CenteredMomentHeckeCancellation HeckeFamily EisensteinSchwartzPoisson QuadraticInitialBound
 local notation "O" => ActualEisensteinCubic.O
 
 def dilated (W : ℝ → ℂ) (c : ℝ) : ℝ → ℂ := fun x => W (c * x)
@@ -26,12 +24,11 @@ theorem dilated_support (W : ℝ → ℂ) (a b B c : ℝ) (ha : 0 < a)
     Function.support (dilated W c) ⊆ Set.Icc (a / B) b := by
   intro x hx
   have hv := hs hx
-  have hc0 : 0 < c := lt_of_lt_of_le zero_lt_one hc
-  have hB0 : 0 < B := lt_of_lt_of_le zero_lt_one hB
-  have hx0 : 0 < x := (mul_pos_iff.mp (lt_of_lt_of_le ha hv.1)).resolve_right
+  have hc0 := lt_of_lt_of_le zero_lt_one hc
+  have hx0 := (mul_pos_iff.mp (lt_of_lt_of_le ha hv.1)).resolve_right
     (by intro h; linarith [h.1]) |>.2
   constructor
-  · apply (div_le_iff₀ hB0).mpr
+  · apply (div_le_iff₀ (lt_of_lt_of_le zero_lt_one hB)).mpr
     exact hv.1.trans (by nlinarith)
   · exact (show x ≤ c * x by nlinarith).trans hv.2
 
@@ -39,12 +36,11 @@ theorem seminorm_dilation_le (f g : 𝓢(ℝ, ℂ)) (ζ : ℂ) (c B : ℝ)
     (hζ : ‖ζ‖ = 1) (hc : 1 ≤ c) (hcB : c ≤ B)
     (hg : ∀ x, g x = ζ * f (c * x)) (k n : ℕ) :
     SchwartzMap.seminorm ℝ k n g ≤ B ^ n * SchwartzMap.seminorm ℝ k n f := by
-  have hc0 : 0 ≤ c := le_trans zero_le_one hc
-  have hB0 : 0 ≤ B := hc0.trans hcB
-  have he : (g : ℝ → ℂ) = fun x => ζ * f (c * x) := funext hg
+  have hc0 := le_trans zero_le_one hc
+  have hB0 := hc0.trans hcB
   apply SchwartzMap.seminorm_le_bound' ℝ k n g (by positivity)
   intro x
-  rw [he, iteratedDeriv_const_mul_field,
+  rw [(funext hg), iteratedDeriv_const_mul_field,
     iteratedDeriv_comp_const_smul (f.smooth n), norm_mul, hζ,
     one_mul, norm_smul, Real.norm_eq_abs, abs_of_nonneg (pow_nonneg hc0 n)]
   have hx : |x| ^ k ≤ |c * x| ^ k := by
@@ -73,16 +69,14 @@ theorem normPowerProfile_dilated (W : ℝ → ℂ) (a b B c : ℝ) (ha : 0 < a)
   rw [normPowerProfile_apply, normPowerProfile_apply]
   by_cases hz : W (c * x) = 0
   · simp [dilated, hz]
-  have hc0 : 0 < c := lt_of_lt_of_le zero_lt_one hc
-  have hx : 0 < x := (mul_pos_iff.mp (lt_of_lt_of_le ha (hs hz).1)).resolve_right
+  have hc0 := lt_of_lt_of_le zero_lt_one hc
+  have hx := (mul_pos_iff.mp (lt_of_lt_of_le ha (hs hz).1)).resolve_right
     (by intro h; linarith [h.1]) |>.2
   have hp := Complex.mul_cpow_ofReal_nonneg hc0.le hx.le (Complex.I * t)
   rw [← Complex.ofReal_mul] at hp
   rw [hp]
-  have hn : (c : ℂ) ^ (Complex.I * t) ≠ 0 :=
-    norm_ne_zero_iff.mp (by rw [norm_real_imaginary_power c t hc0]; norm_num)
   dsimp only [dilated]
-  simp only [← mul_assoc, inv_mul_cancel₀ hn, one_mul]
+  simp only [← mul_assoc, inv_mul_cancel₀ (norm_ne_zero_iff.mp (by rw [norm_real_imaginary_power c t hc0]; norm_num)), one_mul]
 
 theorem normPowerProfile_dilated_seminorm (W : ℝ → ℂ) (a b B c : ℝ) (ha : 0 < a)
     (hB : 1 ≤ B) (hc : 1 ≤ c) (hcB : c ≤ B)
@@ -129,12 +123,12 @@ theorem clipDilation_le (b S : ℝ) (hS : 0 < S) (hret : 1 ≤ S * b) :
     clipDilation S ≤ max 1 b := by
   rw [clipDilation, div_le_iff₀ hS]
   apply max_le
-  · exact hret.trans (by nlinarith [le_max_right (1 : ℝ) b])
-  · nlinarith [le_max_left (1 : ℝ) b]
+  · exact hret.trans (by nlinarith [le_max_right 1 b])
+  · nlinarith [le_max_left 1 b]
 
 theorem clipped_source (W : ℝ → ℂ) (S x : ℝ) (hS : 0 < S) :
     dilated W (clipDilation S) (x / clippedScale S) = W (x / S) := by
-  have hclip : clippedScale S ≠ 0 := ne_of_gt (lt_of_lt_of_le zero_lt_one (clippedScale_ge_one S))
+  have hclip := ne_of_gt (lt_of_lt_of_le zero_lt_one (clippedScale_ge_one S))
   unfold dilated clipDilation
   congr 1
   field_simp

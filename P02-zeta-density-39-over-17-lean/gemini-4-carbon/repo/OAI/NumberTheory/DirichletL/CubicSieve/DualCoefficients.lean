@@ -6,9 +6,8 @@ public import OAI.NumberTheory.DirichletL.CubicSieve.FrequencyShell
 namespace OAI
 
 namespace SevenEighths.CubicSieve
+open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
-open EisensteinSchwartzPoisson
 noncomputable section
 local notation "O" => ActualEisensteinCubic.O
 
@@ -31,10 +30,7 @@ lemma cubicDualCoefficient_energy {n : Type*} [Fintype n]
   apply Finset.sum_le_sum
   intro j hj
   rw [cubicDualCoefficient_norm_sq]
-  calc
-    _ ≤ ‖a j‖ ^ 2 / (N / 2) :=
-      div_le_div_of_nonneg_left (sq_nonneg _) (by positivity) (hcols j)
-    _ = _ := by field_simp
+  exact (div_le_div_of_nonneg_left (sq_nonneg _) (by positivity) (hcols j)).trans_eq (by field_simp)
 
 def cubicDualRow {n : Type*} [Fintype n] (cols : n → Ideal O) (hc : ∀ j, Admissible (cols j))
     (a : n → ℂ) (W : 𝓢(ℝ, ℂ)) (M : ℝ) (h : O) : ℂ :=

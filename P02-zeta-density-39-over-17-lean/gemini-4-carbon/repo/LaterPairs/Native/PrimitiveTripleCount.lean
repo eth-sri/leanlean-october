@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.PrimitiveTripleGcdFiber
 
 @[expose] public section
@@ -32,34 +41,31 @@ theorem primitive_linear_triple_card_le_divisor_sum
     refine ⟨?_,hc.ne'⟩
     exact Int.natCast_dvd_natCast.mp (primitive_linear_triple_gcd_dvd
       (hprim p hp) (hline p hp))
-  have hcard : S.card = ∑ g ∈ c.divisors, (S.filter (fun p => f p = g)).card :=
-    Finset.card_eq_sum_card_fiberwise hmaps
   calc
     (S.card:ℝ) = ∑ g ∈ c.divisors, ((S.filter (fun p => f p = g)).card:ℝ) := by
-      exact_mod_cast hcard
+      exact_mod_cast (Finset.card_eq_sum_card_fiberwise hmaps)
     _ ≤ _ := by
       apply Finset.sum_le_sum
       intro g hg
-      have hgc : (g:ℤ) ∣ (c:ℤ) := Int.natCast_dvd_natCast.mpr (Nat.dvd_of_mem_divisors hg)
       have hb := primitive_linear_triple_gcd_fiber_card_le
         (S.filter (fun p => f p = g)) hcoeff (by exact_mod_cast hc)
-        (Nat.pos_of_mem_divisors hg) hgc hV hαβ
+        (Nat.pos_of_mem_divisors hg) (Int.natCast_dvd_natCast.mpr (Nat.dvd_of_mem_divisors hg)) hV hαβ
         (fun p hp => (Finset.mem_filter.mp hp).2)
         (fun p hp => hden p (Finset.mem_filter.mp hp).1)
         (fun p hp => hprim p (Finset.mem_filter.mp hp).1)
         (fun p hp => hline p (Finset.mem_filter.mp hp).1)
         (fun p hp => hratio p (Finset.mem_filter.mp hp).1)
-      simpa only [Int.cast_natCast] using hb
+      simpa using hb
 
 theorem primitive_divisor_bound_identity {c : ℕ} (hc : 0 < c) (K : ℝ) :
     (∑ g ∈ c.divisors, (1+K/((c:ℝ)*g))) =
       (c.divisors.card:ℝ)+K/(c:ℝ)^2*(∑ g ∈ c.divisors, (g:ℝ)) := by
-  have hcr : (0:ℝ) < c := by exact_mod_cast hc
+  have hcr : 0 < c := by exact_mod_cast hc
   calc
     _ = ∑ g ∈ c.divisors, (1+K/(c:ℝ)^2*(c/g:ℕ)) := by
       apply Finset.sum_congr rfl
       intro g hg
-      have hgr : (0:ℝ) < g := by exact_mod_cast Nat.pos_of_mem_divisors hg
+      have hgr : 0 < g := by exact_mod_cast Nat.pos_of_mem_divisors hg
       have he : ((c/g:ℕ):ℝ)*(g:ℝ) = c := by
         exact_mod_cast Nat.div_mul_cancel (Nat.dvd_of_mem_divisors hg)
       congr 1

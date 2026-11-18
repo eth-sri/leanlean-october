@@ -9,21 +9,11 @@ public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalFixedQ
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter MeasureTheory
+open scoped Classical BigOperators SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptionalFixedQ
-open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge UniqueFactorizationMonoid
-open CenteredMomentCommonRadialData CenteredMomentCommonHeightEnvelope
-open CenteredMomentCommonExceptionalCost
-open CenteredMomentCommonPairedSource CenteredMomentExceptionalAmplitudePair
-open CenteredMomentExceptionalSourceShell CenteredMomentCommonWindowColumn
-open CenteredMomentHeckeColumnWindow CenteredMomentSmooth
-open CenteredMomentSecondHeightFamily CenteredMomentLogDyadic
-open CenteredMomentSecondCanonical
-open CenteredMomentCanonicalFirst CenteredMomentSecondCanonicalFrequency
-open CenteredMomentSecondCanonicalNonunit CenteredMomentForcing CenteredMomentChildRows
-open CenteredMomentFiniteProfileExceptional CenteredMomentFiniteProfileExceptionalCommon
+open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge UniqueFactorizationMonoid CenteredMomentCommonRadialData CenteredMomentCommonHeightEnvelope CenteredMomentCommonExceptionalCost CenteredMomentCommonPairedSource CenteredMomentExceptionalAmplitudePair CenteredMomentExceptionalSourceShell CenteredMomentCommonWindowColumn CenteredMomentHeckeColumnWindow CenteredMomentSmooth CenteredMomentSecondHeightFamily CenteredMomentLogDyadic CenteredMomentSecondCanonical CenteredMomentCanonicalFirst CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentForcing CenteredMomentChildRows CenteredMomentFiniteProfileExceptional CenteredMomentFiniteProfileExceptionalCommon
 local notation "O" => HeckeFamily.O
 universe u
 variable {ι:Type u}[Fintype ι][DecidableEq ι]
@@ -82,7 +72,7 @@ theorem actual_canonical_common_window (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)(l
             2*ε+δ-max (max (rLeft-Real.logb Z (C.absNorm:ℝ)) 0)
               (max (rRight-Real.logb Z (D.absNorm:ℝ)) 0))*
     ((C.absNorm:ℝ)*D.absNorm)^θ*(frozenProfile s*frozenProfile v/((C.absNorm:ℝ)*D.absNorm))
-  have hz:0<Z:=zero_lt_one.trans hZ.1
+  have hz :=zero_lt_one.trans hZ.1
   have hF:0≤F:=by
     dsimp only [F]
     exact mul_nonneg (by positivity) (div_nonneg
@@ -98,7 +88,6 @@ theorem actual_canonical_common_window (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)(l
     (withHeight v v.η (v.t+2*Real.pi*(w-θ₂))) p q hslo hshi hlo hhi hsP hvP hsW₁ hsW₂ hvW₁ hvW₂
     C D hC hD R seed hR hsC hsD rLeft rRight hsX₁ hsX₂ hsY₁ hsY₂ hvX₁ hvX₂ hvY₁ hvY₂
     rows hn hsEx hvEx hsCond hvCond η₀ χ U hη m hm hml hm2 hex Cr M hCr hN Ds hDs
-  have hm:=shifted_mass Sprofile s v s.η v.η p q s.t v.t θ₁ θ₂ u w J
   apply hb.trans
   calc
     _=F*profileMass Sprofile (withHeight s s.η (s.t+2*Real.pi*(u-θ₁))).toData
@@ -106,7 +95,7 @@ theorem actual_canonical_common_window (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)(l
       dsimp only [F,frozenProfile,withHeight]
       ring
     _≤F*(mass Sprofile s v p q s.t v.t θ₁ θ₂ J*(1+‖u‖)^J*(1+‖w‖)^J):=
-      mul_le_mul_of_nonneg_left hm hF
+      mul_le_mul_of_nonneg_left (shifted_mass Sprofile s v s.η v.η p q s.t v.t θ₁ θ₂ u w J) hF
     _=_:=by ring
 
 end SevenEighths.CenteredMomentFiniteProfileExceptionalFixedQ

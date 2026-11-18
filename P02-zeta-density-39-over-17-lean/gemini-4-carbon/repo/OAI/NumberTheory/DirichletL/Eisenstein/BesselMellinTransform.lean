@@ -7,79 +7,10 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 
 namespace CubicEisenstein
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology
-open Finset AddChar MulChar EisensteinEmbedding
 
 lemma schlafliBesselK_cubic_scaled_mellin_integrable (s : ℂ) (c : ℝ)
     (hs : 1/3<s.re) (hc : 0<c) :
@@ -106,7 +37,7 @@ lemma source_cubic_bessel_mellin_integrable (s freq : ℂ)
       schlafliBesselK (1/3) (4*Real.pi*‖freq‖*v)) (Set.Ioi 0) volume := by
   have hc : 0<4*Real.pi*‖freq‖ := by positivity
   have ht : 1/3<(2*s+1).re := by norm_num; linarith
-  simpa only [show (2*s+1:ℂ)-1=2*s by ring] using
+  simpa using
     schlafliBesselK_cubic_scaled_mellin_integrable (2*s+1) (4*Real.pi*‖freq‖) ht hc
 
 theorem source_cubic_bessel_mellin (s freq : ℂ)
@@ -126,7 +57,6 @@ theorem source_cubic_bessel_mellin (s freq : ℂ)
 
 end CubicEisenstein
 
-open scoped BigOperators Classical
 
 namespace ShortDraftCRT
 
@@ -142,11 +72,9 @@ theorem exists_fixed_completion (M c r a d0 : R)
   let d : R := d0*u*r+x*v*(M*c)
   have hd : M*c∣d-d0 := by
     refine ⟨v*(x-d0),?_⟩
-    dsimp [d]
     linear_combination d0*huv
   have hdr : r∣d-x := by
     refine ⟨u*(d0-x),?_⟩
-    dsimp [d]
     linear_combination x*huv
   have hcd : c∣a*d-1 := by
     have hdiff : c∣a*(d-d0) := dvd_mul_of_dvd_right
@@ -169,9 +97,7 @@ theorem fixed_completion_congr (M c r r0 a a0 b b0 d d0 : R)
     (hdet : a*d-b*(c*r)=1) (hdet0 : a0*d0-b0*(c*r0)=1)
     (ha : M*c∣a-a0) (hd : M*c∣d-d0) (hrr : M∣r-r0) : M∣b-b0 := by
   have hprod : M*c∣a*d-a0*d0 := by
-    have h1 := dvd_mul_of_dvd_left ha d
-    have h2 := dvd_mul_of_dvd_right hd a0
-    convert dvd_add h1 h2 using 1 ; ring
+    convert dvd_add (dvd_mul_of_dvd_left ha d) (dvd_mul_of_dvd_right hd a0) using 1 ; ring
   have hcancel : M*c∣c*(b*r-b0*r0) := by
     convert hprod using 1
     linear_combination -hdet+hdet0
@@ -179,20 +105,18 @@ theorem fixed_completion_congr (M c r r0 a a0 b b0 d d0 : R)
     rw [mul_comm M c] at hcancel
     exact (mul_dvd_mul_iff_left hc).mp hcancel
   have hsub : M∣(b-b0)*r := by
-    have hsmall := dvd_mul_of_dvd_right hrr b0
-    convert dvd_sub hbr hsmall using 1 ; ring
+    convert dvd_sub hbr (dvd_mul_of_dvd_right hrr b0) using 1 ; ring
   exact hr.dvd_of_dvd_mul_right hsub
 
 end
 
-open scoped BigOperators Classical Matrix
+open scoped Matrix
 
 variable {R : Type*} [CommRing R] [IsDomain R]
 
 omit [IsDomain R] in
 lemma quotient_eq_of_dvd_sub (M x y : R) (h : M ∣ x-y) :
-    Ideal.Quotient.mk (Ideal.span {M}) x = Ideal.Quotient.mk (Ideal.span {M}) y := by
-  exact Ideal.Quotient.eq.mpr (Ideal.mem_span_singleton.mpr h)
+    Ideal.Quotient.mk (Ideal.span {M}) x = Ideal.Quotient.mk (Ideal.span {M}) y := Ideal.Quotient.eq.mpr (Ideal.mem_span_singleton.mpr h)
 
 theorem fixed_completion_matrix_congr (M c r r0 a a0 b b0 d d0 : R)
     (hc : c≠0) (hr : IsCoprime M r)
@@ -228,19 +152,17 @@ theorem exists_fixed_matrix_completion (M c a0 r0 d0 b0 : R)
     refine ⟨b0*r0,?_⟩
     linear_combination hdet0
   have hfixed : c ∣ a*d0-1 := by
-    have hdiff := dvd_mul_of_dvd_left ((dvd_mul_left c M).trans ha) d0
-    convert dvd_add hdiff hbase using 1 ; ring
+    convert dvd_add (dvd_mul_of_dvd_left ((dvd_mul_left c M).trans ha) d0) hbase using 1 ; ring
   obtain ⟨b,d,hdet,hd⟩ := exists_fixed_completion M c r a d0 hfixed hr har
   exact ⟨b,d,hdet,hd,fixed_completion_matrix_congr M c r r0 a a0 b b0 d d0 hc
     hr.of_mul_right_left.symm hdet hdet0 ha hd hrr⟩
 
 end ShortDraftCRT
 
-open scoped BigOperators Classical
 namespace CubicEisenstein
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
+open CubicJacobiGlobal
 local notation "Eis" => ActualEisensteinCubic.O
 
 def conductorReduction (a b:Eis):
@@ -304,8 +226,7 @@ theorem conductorFourier_support (a b:Eis) (ha:a≠0) (hb:b≠0)
     ext x
     obtain ⟨t,rfl⟩:=Ideal.Quotient.mk_surjective x
     simpa only [AddChar.mulShift_apply,←map_mul,AddChar.one_apply,quotientTrace] using hphase t
-  have hd:a*b∣h*a:=Ideal.mem_span_singleton.mp (Ideal.Quotient.eq_zero_iff_mem.mp hz)
-  have hd':a*b∣a*h:=by simpa only [mul_comm h a] using hd
+  have hd':a*b∣a*h:=by simpa only [mul_comm h a] using (Ideal.mem_span_singleton.mp (Ideal.Quotient.eq_zero_iff_mem.mp hz))
   exact (mul_dvd_mul_iff_left ha).mp hd'
 
 lemma conductorReduction_kernel_card (a b:Eis) (ha:a≠0) (_hb:b≠0):
@@ -372,7 +293,7 @@ theorem conductorFourier_lift (a b:Eis) (ha:a≠0) (hb:b≠0)
 end
 section
 
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
+open CubicJacobiGlobal
 local notation "Eis" => ActualEisensteinCubic.O
 
 lemma cubicSymbol_pow_denominator (x p:Eis) (n:ℕ):
@@ -483,7 +404,7 @@ theorem cubicUnitGaussSum_prime_power_lift (p:Eis) (hp:Prime p)
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
+open CubicJacobiGlobal
 local notation "Eis" => ActualEisensteinCubic.O
 
 lemma primeCubicMulChar_cube (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-1):
@@ -522,8 +443,7 @@ lemma primeCubicMulChar_ne_one (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-1):
 
 lemma primeCubicMulChar_order (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-1):
     orderOf (primeCubicMulChar p hp hprimary)=3:=by
-  have hd:=orderOf_dvd_of_pow_eq_one (primeCubicMulChar_cube p hp hprimary)
-  rcases (Nat.dvd_prime Nat.prime_three).mp hd with h1|h3
+  rcases (Nat.dvd_prime Nat.prime_three).mp (orderOf_dvd_of_pow_eq_one (primeCubicMulChar_cube p hp hprimary)) with h1|h3
   · exact False.elim (primeCubicMulChar_ne_one p hp hprimary (orderOf_eq_one_iff.mp h1))
   · exact h3
 
@@ -553,9 +473,7 @@ theorem primeCubicGauss_of_dvd (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-1)
     PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
   let:Field (Eis⧸Ideal.span {p}):=Ideal.Quotient.field _
   let:Fintype (Eis⧸Ideal.span {p}):=Fintype.ofFinite _
-  have hh:Ideal.Quotient.mk (Ideal.span {p}) h=0:=
-    Ideal.Quotient.eq_zero_iff_mem.mpr (Ideal.mem_span_singleton.mpr hph)
-  rw [primeCubicGauss_eq_gaussSum,hh,AddChar.mulShift_zero]
+  rw [primeCubicGauss_eq_gaussSum,(Ideal.Quotient.eq_zero_iff_mem.mpr (Ideal.mem_span_singleton.mpr hph)),AddChar.mulShift_zero]
   split_ifs with he
   · rw [(primeCubicMulChar_pow_eq_one p hp hprimary e).mpr he,gaussSum_one_one,
       Nat.card_units,Nat.cast_sub (Nat.succ_le_of_lt Nat.card_pos),Nat.cast_one]
@@ -600,8 +518,7 @@ theorem primeCubicGauss_one_mul_two (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-
 
 lemma primeCubicGauss_one_eq (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-1) (h:Eis):
     primeCubicGauss p hp hprimary 1 h=cubicUnitGaussSum h p:=by
-  have he:=cubicUnitGaussSum_prime_power_lift p hp hprimary 0 h
-  simpa only [pow_zero,one_mul,pow_one,Nat.zero_add] using he.symm
+  simpa using (cubicUnitGaussSum_prime_power_lift p hp hprimary 0 h).symm
 
 end CubicEisenstein
 

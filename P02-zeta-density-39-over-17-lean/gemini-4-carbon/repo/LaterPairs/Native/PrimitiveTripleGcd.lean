@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.PrimitiveCongruenceCount
 
 @[expose] public section
@@ -18,8 +27,7 @@ theorem primitive_linear_triple_gcd_dvd {a b c u v w : ℤ}
     (hprim : Int.gcd (Int.gcd u v : ℤ) w = 1)
     (hline : a*u+b*v+c*w = 0) :
     (Int.gcd u v : ℤ) ∣ c := by
-  have hs : (Int.gcd u v : ℤ) ∣ a*u+b*v :=
-    dvd_add (dvd_mul_of_dvd_right (Int.gcd_dvd_left u v) a)
+  have hs := dvd_add (dvd_mul_of_dvd_right (Int.gcd_dvd_left u v) a)
       (dvd_mul_of_dvd_right (Int.gcd_dvd_right u v) b)
   have hp : (Int.gcd u v : ℤ) ∣ c*w := by
     have he : c*w = -(a*u+b*v) := by linarith
@@ -41,7 +49,6 @@ theorem primitive_linear_triple_normalized {a b c u v w : ℤ}
       (c/(Int.gcd u v : ℤ))*w = 0 := by
   have hg : (Int.gcd u v : ℤ) ≠ 0 := by
     exact_mod_cast (Int.gcd_pos_of_ne_zero_right u hv.ne').ne'
-  have hc := primitive_linear_triple_gcd_dvd hprim hline
   apply (mul_eq_zero.mp ?_).resolve_right hg
   calc
     (a*(u/(Int.gcd u v : ℤ))+b*(v/(Int.gcd u v : ℤ))+
@@ -51,7 +58,7 @@ theorem primitive_linear_triple_normalized {a b c u v w : ℤ}
       (c/(Int.gcd u v : ℤ)*(Int.gcd u v : ℤ))*w := by ring
     _ = 0 := by
       rw [Int.ediv_mul_cancel (Int.gcd_dvd_left u v),
-        Int.ediv_mul_cancel (Int.gcd_dvd_right u v),Int.ediv_mul_cancel hc]
+        Int.ediv_mul_cancel (Int.gcd_dvd_right u v),Int.ediv_mul_cancel (primitive_linear_triple_gcd_dvd hprim hline)]
       exact hline
 
 theorem primitive_linear_triple_normalized_congruence {a b c u v w : ℤ}
@@ -61,7 +68,7 @@ theorem primitive_linear_triple_normalized_congruence {a b c u v w : ℤ}
       a*(u/(Int.gcd u v : ℤ))+b*(v/(Int.gcd u v : ℤ)) := by
   refine ⟨-w, ?_⟩
   have he := primitive_linear_triple_normalized hv hprim hline
-  nlinarith only [he]
+  nlinarith
 
 end TaoTrudgianYang2025
 

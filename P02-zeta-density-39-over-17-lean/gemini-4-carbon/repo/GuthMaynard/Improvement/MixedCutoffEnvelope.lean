@@ -35,8 +35,7 @@ theorem mixedCutoffKernel_integrable (w : MathCollab.Density.ReflectionCutoff) :
     (MathCollab.Density.mellinLine_eq_cutoffIntegral w s).trans (mixedCutoffKernel_eq w s).symm))
 
 theorem mixedCutoffKernel_measurable (w : MathCollab.Density.ReflectionCutoff) :
-    Measurable (mixedCutoffKernel w) := by
-  exact (logModulated_measurable w.complex_smooth.continuous.measurable).stronglyMeasurable.integral_prod_right'.measurable
+    Measurable (mixedCutoffKernel w) := (logModulated_measurable w.complex_smooth.continuous.measurable).stronglyMeasurable.integral_prod_right'.measurable
 
 theorem mixedCutoffKernel_bound (w : MathCollab.Density.ReflectionCutoff) (s : ℝ) :
     ‖mixedCutoffKernel w s‖ ≤ ∫ x, ‖(w x:ℂ)‖ := by

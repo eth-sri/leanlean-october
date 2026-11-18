@@ -30,13 +30,8 @@ theorem heathBrownHChoice_cast_le_separated_scale
     (heathBrownHChoice k A lambda : ℝ) ≤
       A ^ (-(1 / (k : ℝ))) *
         lambda ^ (-(1 / (k : ℝ))) := by
-  calc
-    (heathBrownHChoice k A lambda : ℝ) ≤
-        (A * lambda) ^ (-(1 / (k : ℝ))) :=
-      heathBrownHChoice_cast_le_rpow hA hlambda
-    _ = A ^ (-(1 / (k : ℝ))) *
-        lambda ^ (-(1 / (k : ℝ))) := by
-      rw [Real.mul_rpow hA.le hlambda.le]
+  exact (heathBrownHChoice_cast_le_rpow hA hlambda).trans_eq (by
+      rw [Real.mul_rpow hA.le hlambda.le])
 
 theorem heathBrown_floor_endpoint_remainder_le
     {k : ℕ} {A lambda : ℝ}
@@ -89,7 +84,7 @@ theorem norm_heathBrownExponentialSum_le_fourTerm_open_of_vmvt
     hk hN hA hlambda hlambdaOne hepsilon hsmall hlargeH hHN hf hkBounds hC hVMVT
   have hrem := heathBrown_floor_endpoint_remainder_le hA hlambda hlargeH
   let S := heathBrownLemmaOneSourceConstant k A C epsilon
-  let R := (5 / 4 : ℝ) * A ^ (-(1 / (k : ℝ)))
+  let R := (5 / 4) * A ^ (-(1 / (k : ℝ)))
   let P := (N : ℝ) ^ epsilon
   let Q := heathBrownThreeTerm N k lambda
   let L := lambda ^ (-(1 / (k : ℝ)))
@@ -97,16 +92,14 @@ theorem norm_heathBrownExponentialSum_le_fourTerm_open_of_vmvt
     (heathBrownLemmaOneSourceConstant_pos hk hA hC hepsilon).le
   have hR0 : 0 ≤ R := by dsimp only [R]; positivity
   have hPone : 1 ≤ P := by
-    dsimp only [P]
-    exact Real.one_le_rpow (by exact_mod_cast (show 1 ≤ N by omega)) hepsilon.le
+    exact Real.one_le_rpow (by exact_mod_cast (by omega)) hepsilon.le
   have hP0 : 0 ≤ P := le_trans (by norm_num) hPone
   have hQ0 : 0 ≤ Q :=
-    (heathBrownThreeTerm_pos (k := k) (show 1 ≤ N by omega) hlambda).le
+    (heathBrownThreeTerm_pos (k := k) (by omega) hlambda).le
   have hL0 : 0 ≤ L := by dsimp only [L]; positivity
   change (heathBrownHChoice k A lambda : ℝ) + 2 ≤ R * L at hrem
   change ‖heathBrownExponentialSum N f‖ ≤ S * P * Q +
     heathBrownHChoice k A lambda + 2 at hsource
-  change ‖heathBrownExponentialSum N f‖ ≤ (S + R) * P * (L + Q)
   calc
     ‖heathBrownExponentialSum N f‖ ≤ S * P * Q +
         ((heathBrownHChoice k A lambda : ℝ) + 2) := by

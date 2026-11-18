@@ -23,11 +23,11 @@ theorem support_iteratedDeriv_smoothTransition {j : ℕ} (hj : 0 < j) :
   by_contra h
   have hcases : x < 0 ∨ 1 < x := by simpa only [mem_Icc, not_and_or, not_le] using h
   rcases hcases with hleft | hright
-  · have heq : Real.smoothTransition =ᶠ[𝓝 x] fun _ => (0 : ℝ) := by
+  · have heq : Real.smoothTransition =ᶠ[𝓝 x] fun _ => 0 := by
       filter_upwards [Iio_mem_nhds hleft] with y hy
       exact Real.smoothTransition.zero_of_nonpos hy.le
     exact hx (by rw [heq.iteratedDeriv_eq j, iteratedDeriv_const, ite_eq_right (Nat.ne_of_gt hj)])
-  · have heq : Real.smoothTransition =ᶠ[𝓝 x] fun _ => (1 : ℝ) := by
+  · have heq : Real.smoothTransition =ᶠ[𝓝 x] fun _ => 1 := by
       filter_upwards [Ioi_mem_nhds hright] with y hy
       exact Real.smoothTransition.one_of_one_le hy.le
     exact hx (by rw [heq.iteratedDeriv_eq j, iteratedDeriv_const, ite_eq_right (Nat.ne_of_gt hj)])
@@ -40,12 +40,11 @@ theorem exists_norm_iteratedDeriv_smoothTransition_le (j : ℕ) :
     simp only [hj, iteratedDeriv_zero, Real.norm_eq_abs,
       abs_of_nonneg (Real.smoothTransition.nonneg x)]
     exact Real.smoothTransition.le_one x
-  have hc := Real.smoothTransition.contDiff.continuous_iteratedDeriv' j
   obtain ⟨B, hB⟩ := isCompact_Icc.exists_bound_of_continuousOn
-    (hc.continuousOn (s := Icc (0 : ℝ) 1))
+    ((Real.smoothTransition.contDiff.continuous_iteratedDeriv' j).continuousOn (s := Icc 0 1))
   refine ⟨1 + |B|, by positivity, ?_⟩
   intro x
-  by_cases hx : x ∈ Icc (0 : ℝ) 1
+  by_cases hx : x ∈ Icc 0 1
   · exact (hB x hx).trans (by linarith [le_abs_self B])
   · have hz : iteratedDeriv j Real.smoothTransition x = 0 := by
       by_contra hn
@@ -56,10 +55,9 @@ theorem exists_norm_iteratedDeriv_smoothTransition_le (j : ℕ) :
 theorem deriv_smoothTransition_quadratic (c d x : ℝ) :
     deriv (fun y => Real.smoothTransition (c * y ^ 2 + d)) x =
       (2 * c * x) * deriv Real.smoothTransition (c * x ^ 2 + d) := by
-  have hq := (((hasDerivAt_id x).pow 2).const_mul c).add_const d
   have h := (((Real.smoothTransition.contDiff : ContDiff ℝ 2 Real.smoothTransition).differentiable
     (by norm_num)).differentiableAt.hasDerivAt.comp
-    x hq).deriv
+    x ((((hasDerivAt_id x).pow 2).const_mul c).add_const d)).deriv
   convert h using 1
   · rfl
   · simp only [Pi.pow_apply, id_eq]
@@ -69,15 +67,10 @@ theorem iteratedDeriv_two_smoothTransition_quadratic (c d x : ℝ) :
     iteratedDeriv 2 (fun y => Real.smoothTransition (c * y ^ 2 + d)) x =
       (2 * c * x) ^ 2 * iteratedDeriv 2 Real.smoothTransition (c * x ^ 2 + d) +
         (2 * c) * deriv Real.smoothTransition (c * x ^ 2 + d) := by
-  have he : deriv (fun y => Real.smoothTransition (c * y ^ 2 + d)) =
-      fun y => (2 * c * y) * deriv Real.smoothTransition (c * y ^ 2 + d) :=
-    funext (deriv_smoothTransition_quadratic c d)
-  have hq := (((hasDerivAt_id x).pow 2).const_mul c).add_const d
   have hd := ((Real.smoothTransition.contDiff : ContDiff ℝ 2 Real.smoothTransition).differentiable_deriv_two
     (c * x ^ 2 + d)).hasDerivAt
-  have h := (((hasDerivAt_id x).const_mul (2 * c)).mul (hd.comp x hq)).deriv
-  rw [iteratedDeriv_succ, iteratedDeriv_one, he]
-  convert h using 1
+  rw [iteratedDeriv_succ, iteratedDeriv_one, (funext (deriv_smoothTransition_quadratic c d))]
+  convert ((((hasDerivAt_id x).const_mul (2 * c)).mul (hd.comp x ((((hasDerivAt_id x).pow 2).const_mul c).add_const d))).deriv) using 1
   · rfl
   · simp only [iteratedDeriv_succ, iteratedDeriv_zero, Function.comp_apply, Pi.pow_apply, id_eq]
     ring
@@ -111,21 +104,18 @@ theorem exists_intervalC2Bound_quadraticTransition :
     simp only [iteratedDeriv_one] at he
     rw [he, Complex.norm_real, deriv_smoothTransition_quadratic, Real.norm_eq_abs, abs_mul]
     have hb : |deriv Real.smoothTransition (c * u ^ 2 + d)| ≤ A := by
-      simpa only [iteratedDeriv_one, Real.norm_eq_abs] using hfirst (c * u ^ 2 + d)
-    calc
-      _ ≤ (2 * R) * A := mul_le_mul (hpow u hu) hb (abs_nonneg _) (by positivity)
-      _ ≤ M * R := by dsimp [M]; nlinarith
+      simpa using hfirst (c * u ^ 2 + d)
+    exact (mul_le_mul (hpow u hu) hb (abs_nonneg _) (by positivity)).trans (by dsimp [M]; nlinarith)
   · intro u hu
-    have he := iteratedDeriv_ofReal_fun (hs.contDiffAt (x := u))
-    rw [he, Complex.norm_real, iteratedDeriv_two_smoothTransition_quadratic,
+    rw [(iteratedDeriv_ofReal_fun (hs.contDiffAt (x := u))), Complex.norm_real, iteratedDeriv_two_smoothTransition_quadratic,
       Real.norm_eq_abs]
     apply (abs_add_le _ _).trans
     rw [abs_mul, abs_mul, abs_pow, abs_mul (2 : ℝ) c,
       abs_of_nonneg (by norm_num : (0 : ℝ) ≤ 2)]
     have hb1 : |deriv Real.smoothTransition (c * u ^ 2 + d)| ≤ A := by
-      simpa only [iteratedDeriv_one, Real.norm_eq_abs] using hfirst (c * u ^ 2 + d)
+      simpa using hfirst (c * u ^ 2 + d)
     have hb2 : |iteratedDeriv 2 Real.smoothTransition (c * u ^ 2 + d)| ≤ B := by
-      simpa only [Real.norm_eq_abs] using hsecond (c * u ^ 2 + d)
+      simpa using hsecond (c * u ^ 2 + d)
     calc
       _ ≤ (2 * R) ^ 2 * B + (2 * R) * A := by
         exact add_le_add

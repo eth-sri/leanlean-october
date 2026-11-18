@@ -1,7 +1,16 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaAmplitudeMonotonicity
-public import TaoTrudgianYang2025.FiniteWeightVariation
 
 @[expose] public section
 
@@ -80,7 +89,7 @@ theorem finiteVariationBound_modelPhasePhysicalAmplitude
     (hv : ∀ i : ℕ, i ≤ L → (a+i)*N/T ∈ modelPhaseSlopeRange F) :
     FiniteVariationBound (fun i => (modelPhasePhysicalAmplitude F T N (a+i) : ℂ)) L
       ((N/Real.sqrt T)*(Real.sqrt (modelPhaseCurvatureLower σ))⁻¹) := by
-  have hd : δ ≤ min (modelPhaseCurvatureLower σ) 1 := hδ.trans (min_le_left _ _)
+  have hd := hδ.trans (min_le_left _ _)
   have hF₁ := approximateModelPhase_mono hF (by norm_num : 1 ≤ 2) le_rfl
   apply finiteVariationBound_of_antitone (by positivity)
   · intro i hi j hj hij

@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.RobertSargosZeroRBlock
 public import LaterPairs.Native.RobertSargosZeroRMajorant
 
@@ -34,22 +43,20 @@ theorem robertSargos_zero_r_weighted_row_bound
   have hpoint (q : ℤ) (hq : q ∈ (Finset.Ioo (-(Q:ℤ)) Q).erase 0) :
       (1-|(q:ℝ)|/Q)*(robertSargosTrimmedCorrelation f M H q 0).re ≤ B q := by
     have hmem := Finset.mem_erase.mp hq
-    have habs := signed_shift_abs_le hmem.2
     have hs : 4*(H:ℝ)*|(q:ℝ)| *lam ≤ 1 := by
       have hb := mul_le_mul_of_nonneg_right
-        (mul_le_mul_of_nonneg_left habs (show 0 ≤ 4*(H:ℝ) by positivity)) hlam.le
+        (mul_le_mul_of_nonneg_left (signed_shift_abs_le hmem.2) (show 0 ≤ 4*(H:ℝ) by positivity)) hlam.le
       exact hb.trans hscale
     have hb := robertSargos_zero_r_trimmed_correlation_bound f M H q
       hC hH hmem.1 hlam hs hf hlo hhi
-    have hw0 := signed_triangular_weight_nonneg hQ hmem.2
     have hw1 : 1-|(q:ℝ)|/Q ≤ 1 := by
       have hn : 0 ≤ |(q:ℝ)|/Q := by positivity
       linarith
     calc
       _ ≤ (1-|(q:ℝ)|/Q)*‖robertSargosTrimmedCorrelation f M H q 0‖ :=
-        mul_le_mul_of_nonneg_left (Complex.re_le_norm _) hw0
+        mul_le_mul_of_nonneg_left (Complex.re_le_norm _) (signed_triangular_weight_nonneg hQ hmem.2)
       _ ≤ ‖robertSargosTrimmedCorrelation f M H q 0‖ := by
-        simpa only [one_mul] using mul_le_mul_of_nonneg_right hw1 (norm_nonneg _)
+        simpa using mul_le_mul_of_nonneg_right hw1 (norm_nonneg _)
       _ ≤ B q := hb
   calc
     _ ≤ ∑ q ∈ (Finset.Ioo (-(Q:ℤ)) Q).erase 0, B q := Finset.sum_le_sum hpoint

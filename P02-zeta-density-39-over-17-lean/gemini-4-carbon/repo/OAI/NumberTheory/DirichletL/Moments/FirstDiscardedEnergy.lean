@@ -9,11 +9,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstDiscardedEnergy
-open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson ConcretePrimeRowBridge
-open CenteredMomentFirstReduced CenteredMomentSectorLocalization CenteredMomentCorrelation
-open CenteredMomentCommonSupport CenteredMomentCanonicalFirst CenteredMomentSupportedCorrelation
-open CenteredMomentFirstScale CenteredMomentFirstDiscarded CenteredMomentActive
-open CenteredMomentCompleteCommon IdealMobiusDivisorSum
+open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson ConcretePrimeRowBridge CenteredMomentFirstReduced CenteredMomentSectorLocalization CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentCanonicalFirst CenteredMomentSupportedCorrelation CenteredMomentFirstScale CenteredMomentFirstDiscarded CenteredMomentActive CenteredMomentCompleteCommon IdealMobiusDivisorSum
 local notation "O" => ActualEisensteinCubic.O
 
 theorem tripleRow_norm_le_one (a b r : O) (ha : a≠0) (hb : b≠0)
@@ -40,7 +36,7 @@ theorem tripleFourier_norm_le_full (a b r : O) (ha : a≠0) (hb : b≠0) (hr : r
   calc
     _ ≤ ∑ x : Residue (a*(b*r)),‖tripleResidue a b r χa χb G x*
       quotientTrace (a*(b*r)) (mul_ne_zero ha (mul_ne_zero hb hr)) (Ideal.Quotient.mk _ h*x)‖ := norm_sum_le _ _
-    _ ≤ ∑ _x : Residue (a*(b*r)),(1:ℝ) := by
+    _ ≤ ∑ _x : Residue (a*(b*r)),1 := by
       apply Finset.sum_le_sum
       intro x hx
       obtain ⟨z,rfl⟩ := Ideal.Quotient.mk_surjective x
@@ -51,13 +47,9 @@ theorem tripleFourier_norm_le_full (a b r : O) (ha : a≠0) (hb : b≠0) (hr : r
 theorem activeFunction_norm_le_one (I J : Ideal O) (hI : CanonicalQuadraticSieve.Supported I)
     (x : Residue (activeConductor I J)) : ‖activeFunction I J hI x‖≤1 := by
   obtain ⟨z,rfl⟩ := Ideal.Quotient.mk_surjective x
-  calc
-    _ = ‖finiteSexticRow (activePrime I J) (activeGood I J hI)
-        (CenteredMomentCanonicalFirst.activeExponent I J) z‖ :=
-      congrArg norm (principalSexticRow_mk (activePrime I J) (activeCoprime I J)
+  exact (congrArg norm (principalSexticRow_mk (activePrime I J) (activeCoprime I J)
         (activeGood I J hI) (CenteredMomentCanonicalFirst.activeExponent I J)
-        (activeConductor I J) (span_finitePrimeModulus _) z)
-    _ ≤ 1 := QuadraticInitialBound.finiteSexticRow_norm_le_one _ _ _ z
+        (activeConductor I J) (span_finitePrimeModulus _) z)).trans_le (QuadraticInitialBound.finiteSexticRow_norm_le_one _ _ _ z)
 
 theorem scaled_discarded_triple_bound (A : ℕ) :
     ∃ (s : Finset (ℕ × ℕ)) (C : ℝ),0<C ∧

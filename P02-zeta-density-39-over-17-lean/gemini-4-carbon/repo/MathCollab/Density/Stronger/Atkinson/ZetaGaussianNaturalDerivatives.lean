@@ -101,14 +101,11 @@ theorem exists_intervalC2Bound_quadraticGaussian_profile_natural {v : ℝ → �
       (hQ.differentiable (by norm_num)).differentiableAt.hasDerivAt.scomp
         (h := v) u ((hv u hu).differentiableAt (by norm_num)).hasDerivAt
     rw [hd.deriv, norm_smul, Real.norm_eq_abs]
-    calc
-      _ ≤ M * (5 * Real.sqrt Real.pi * G ^ 2) :=
-        mul_le_mul (hprofile u hu).2.1
+    exact (mul_le_mul (hprofile u hu).2.1
           (norm_deriv_zetaGaussianQuadraticIntegral_le_natural hT hG0 hGT (v u))
-          (norm_nonneg _) hM.le
-      _ ≤ _ := by
+          (norm_nonneg _) hM.le).trans (by
         have h := mul_le_mul_of_nonneg_right hA1 (show 0 ≤ Real.sqrt Real.pi * G ^ 2 by positivity)
-        nlinarith
+        nlinarith)
   · intro u hu
     rw [iteratedDeriv_two_comp_real hQ.contDiffAt (hv u hu)]
     apply (norm_add_le _ _).trans

@@ -14,7 +14,7 @@ local notation "O" => ActualEisensteinCubic.O
 theorem eventually_scale_gap (b η ell : ℝ) (hgap : η < ell) :
     ∀ᶠ Z : ℝ in atTop, 1 ≤ Z ∧ b*Z^η < Z^ell := by
   have hg := (tendsto_rpow_atTop (sub_pos.mpr hgap)).eventually (eventually_gt_atTop b)
-  filter_upwards [hg,eventually_ge_atTop (1:ℝ)] with Z hz hZ
+  filter_upwards [hg,eventually_ge_atTop 1] with Z hz hZ
   refine ⟨hZ,?_⟩
   have hZ0 : 0 < Z := zero_lt_one.trans_le hZ
   have hh := mul_lt_mul_of_pos_right hz (Real.rpow_pos_of_pos hZ0 η)
@@ -34,9 +34,7 @@ theorem live_profile_norm_bound (W : ℝ → ℂ) (b Z z η : ℝ) (I : Ideal O)
     (hs : Function.support W ⊆ Set.Iic b)
     (hW : W ((Ideal.absNorm I:ℝ)/Z^z) ≠ 0) :
     (Ideal.absNorm I:ℝ) ≤ b*Z^η := by
-  have hpow : 0 < Z^z := Real.rpow_pos_of_pos (zero_lt_one.trans_le hZ) _
-  have h := (div_le_iff₀ hpow).mp (hs hW)
-  exact h.trans (mul_le_mul_of_nonneg_left (Real.rpow_le_rpow_of_exponent_le hZ hz) hb)
+  exact ((div_le_iff₀ (Real.rpow_pos_of_pos (zero_lt_one.trans_le hZ) _)).mp (hs hW)).trans (mul_le_mul_of_nonneg_left (Real.rpow_le_rpow_of_exponent_le hZ hz) hb)
 
 end SevenEighths.CenteredMomentAmplificationSlotGap
 

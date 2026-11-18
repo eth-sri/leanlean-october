@@ -61,8 +61,7 @@ theorem abs_heathBrownCoefficientDisplacement
     {k : ℕ} (c α : HeathBrownCoefficientTorus k) (j : Fin (k - 1)) :
     |heathBrownCoefficientDisplacement c α j| = dist (α j) (c j) := by
   unfold heathBrownCoefficientDisplacement
-  rw [abs_unitAddCircleCenteredLift]
-  rw [dist_eq_norm]
+  rw [abs_unitAddCircleCenteredLift, dist_eq_norm]
 
 theorem abs_heathBrownCoefficientDisplacement_le_radius
     {k H : ℕ} {f : ℝ → ℝ} {n : ℝ}
@@ -72,8 +71,7 @@ theorem abs_heathBrownCoefficientDisplacement_le_radius
         (heathBrownCoefficientCenter k f n) α j| ≤
       heathBrownCellRadius H j := by
   rw [abs_heathBrownCoefficientDisplacement]
-  have hj := hα j (Set.mem_univ j)
-  simpa only [mem_closedBall, dist_comm] using hj
+  simpa using (hα j (Set.mem_univ j))
 
 
 end

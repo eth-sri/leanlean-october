@@ -1,6 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Inversion.ClippingProfiles
-public import OAI.NumberTheory.DirichletL.Descent.SecondFreshMeasure
+public import OAI.NumberTheory.DirichletL.Descent.SecondKernelMeasure
 public import OAI.NumberTheory.DirichletL.Descent.ProfileIntegral
 
 @[expose] public section
@@ -8,9 +8,8 @@ public import OAI.NumberTheory.DirichletL.Descent.ProfileIntegral
 namespace OAI
 
 noncomputable section
+open MeasureTheory FourierBridge JointLogSeparation EisensteinSchwartzPoisson SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
-open MeasureTheory FourierBridge JointLogSeparation EisensteinSchwartzPoisson
-open SevenEighths.InverseMoment
 
 namespace SevenEighths.InverseInitialProfile
 
@@ -58,8 +57,6 @@ theorem clipped_log_source (W : ℝ → ℂ) (a b : ℝ) (ha : 0 < a)
   simp only [clippedTwist_apply, CubicReflectionKernel.logSchwartz_apply,
     clippedSource, Real.log_exp, Real.exp_add, Real.exp_log hc]
   rw [mul_comm (Real.exp y) c]
-
-def rootExponent (y : Fin 6 → ℝ) : ℝ := -y 1-y 2-(y 4+y 5)/2
 
 def normalizedProfile (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ, ℂ))
     (V : Fin 6 → ℝ → ℂ) (R L : ℝ) (y : Fin 6 → ℝ) : ℂ :=
@@ -146,9 +143,8 @@ theorem family_common_measure
     Φ (secondRootWindows V) secondKernelSlope M hM hb A J
   obtain ⟨C₁, hC₁, h₁⟩ := sourceDensity_moment_uniform g₁ J
   obtain ⟨C₂, hC₂, h₂⟩ := sourceDensity_moment_uniform g₂ J
-  let D : ℝ := ∏ i, ∫ u : ℝ, (1+‖u‖)^J *
+  let D := ∏ i, ∫ u : ℝ, (1+‖u‖)^J *
     ‖(𝓕 (secondRootSchwartz V hV hS i)) u‖
-  have hD : 0 ≤ D := Finset.prod_nonneg (fun i _ => integral_nonneg (fun u => by positivity))
   refine ⟨C₁*C₂*C₃*D, by positivity, ?_⟩
   intro R hR
   obtain ⟨b₃, he, _, hm, _⟩ := hsep R hR
@@ -178,14 +174,9 @@ theorem family_common_measure
     unfold familyDensity
     ring
   · rw [familyDensity_weighted_integral]
-    have h1 := (h₁ c₁ θ₁).2
-    have h2 := (h₂ c₂ θ₂).2
-    have h12 := mul_le_mul h1 h2 (integral_nonneg (fun _ => by positivity))
+    have h12 := mul_le_mul ((h₁ c₁ θ₁).2) ((h₂ c₂ θ₂).2) (integral_nonneg (fun _ => by positivity))
       (mul_nonneg hC₁ (by positivity))
     have hm0 : 0 ≤ (1+R)^A * ∫ t : ℝ, (1+‖t‖)^J * ‖b₃ t‖ := by positivity
-    have h123 := mul_le_mul h12 hm hm0 (by positivity)
-    have h123D := mul_le_mul_of_nonneg_right h123 hD
-    have hnorm : Real.exp (-3*L) ≤ 1 := Real.exp_le_one_iff.mpr (by linarith)
     have heq : (1+R)^A * (Real.exp (-3*L) *
         (∫ t : ℝ, (1+‖t‖)^J * ‖sourceDensity g₁ c₁ θ₁ t‖) *
         (∫ t : ℝ, (1+‖t‖)^J * ‖sourceDensity g₂ c₂ θ₂ t‖) *
@@ -195,8 +186,8 @@ theorem family_common_measure
         ((1+R)^A * ∫ t : ℝ, (1+‖t‖)^J * ‖b₃ t‖) * D) := by ring
     change (1+R)^A * (_ * _ * _ * _ * D) ≤ _
     rw [heq]
-    exact (mul_le_mul_of_nonneg_left h123D (Real.exp_pos _).le).trans
-      ((mul_le_of_le_one_left (by positivity) hnorm).trans_eq (by ring))
+    exact (mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_right (mul_le_mul h12 hm hm0 (by positivity)) (Finset.prod_nonneg (fun i _ => integral_nonneg (fun u => by positivity)))) (Real.exp_pos _).le).trans
+      ((mul_le_of_le_one_left (by positivity) (Real.exp_le_one_iff.mpr (by linarith))).trans_eq (by ring))
 
 theorem clippedSource_conjugate (W : ℝ → ℂ) (c θ x : ℝ) :
     star (clippedSource W c θ x) = clippedSource (fun x => star (W x)) c (-θ) x := by
@@ -274,8 +265,6 @@ theorem physicalKernel_nominal (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ, ℂ))
     (Real.rpow_pos_of_pos hZ _) q hq
   rw [original_column_scale hZ D B v, initial_radial_scale hZ D B v m θ H] at hn
   rw [physicalKernel_eq_secondNorm W₁ W₂ Φ Z D m q hq, hn]
-  change ((Z^(-D)*Z^m : ℝ) : ℂ) *
-      (((Z^θ*Z^v*Z^(columnCenter D B v) : ℝ) : ℂ)⁻¹ * _) = _
   rw [← mul_assoc, ← Complex.ofReal_inv, ← Complex.ofReal_mul,
     ← div_eq_mul_inv, initial_prefactor_scale hZ D B v m θ]
   rfl
@@ -307,8 +296,7 @@ theorem fresh_profile_restore (W₁ W₂ w₁ w₂ : ℝ → ℂ) (Φ : 𝓢(ℝ
   · simp only [secondNormProfile, h1, mul_zero, zero_mul, zero_div]
   by_cases h2 : W₂ (x 0*x 2*x 5) = 0
   · simp only [secondNormProfile, h2, mul_zero, zero_mul, zero_div]
-  have hv := hV (by rw [hw₁ h1]; exact one_ne_zero) (by rw [hw₂ h2]; exact one_ne_zero)
-  simp only [secondNormProfile, hv, hw₁ h1, hw₂ h2, Finset.prod_const_one, one_mul]
+  simp only [secondNormProfile, (hV (by rw [hw₁ h1]; exact one_ne_zero) (by rw [hw₂ h2]; exact one_ne_zero)), hw₁ h1, hw₂ h2, Finset.prod_const_one, one_mul]
 
 def relativeNorm (q : Fin 6 → ℝ) (Z D B v θ H : ℝ) : Fin 6 → ℝ :=
   secondRelativeNorm q (Z^B) (Z^θ) (Z^v) (Z^H) (Z^(columnCenter D B v))
@@ -346,8 +334,7 @@ theorem initial_kernel_restore (W₁ W₂ w₁ w₂ : ℝ → ℂ) (Φ : 𝓢(�
       (Z^(prefactorCenter m D B θ+3*η) : ℝ) * (Real.exp (-3*(η*Real.log Z)) : ℂ) := by
     rw [← Complex.ofReal_mul, initial_normalization_scalar hZ]
   rw [show relativeLog q Z D B v θ H =
-    (fun i => Real.log (relativeNorm q Z D B v θ H i)) by rfl]
-  rw [hn, mul_assoc]
+    (fun i => Real.log (relativeNorm q Z D B v θ H i)) by rfl, hn, mul_assoc]
   simpa only [mul_assoc, relativeNorm] using congrArg
     (fun z : ℂ => (Z^(prefactorCenter m D B θ+3*η) : ℝ) * z) hs
 
@@ -393,7 +380,6 @@ theorem initial_physical_family_common_measure
           ‖familyDensity g g₁ g₂ b₃ c₁ c₂ θ₁ θ₂ (η*Real.log Z) p‖) ≤
         C * ((1+‖θ₁‖)^(InverseClippingProfiles.momentOrder J) *
           (1+‖θ₂‖)^(InverseClippingProfiles.momentOrder J)) := by
-  dsimp only
   obtain ⟨C, hC, hsep⟩ := family_common_measure
     (CubicReflectionKernel.logSchwartz W₁ a b ha hs₁ hW₁)
     (CubicReflectionKernel.logSchwartz W₂ a b ha hs₂ hW₂)
@@ -420,8 +406,7 @@ theorem clipped_column_source_identity (w : ℝ → ℂ) {Z q : ℝ}
     logPhase θ (Real.log (q/Z^N)) * w (q/Z^N) =
       logPhase θ (Real.log (Z^(max 0 N-N))) *
         clippedSource w (Z^(max 0 N-N)) θ (q/Z^(max 0 N)) := by
-  rw [clipped_column_ratio hZ N q]
-  rw [Real.log_mul (ne_of_gt (Real.rpow_pos_of_pos hZ _))
+  rw [clipped_column_ratio hZ N q, Real.log_mul (ne_of_gt (Real.rpow_pos_of_pos hZ _))
     (ne_of_gt (div_pos hq (Real.rpow_pos_of_pos hZ _))), logPhase_add]
   unfold clippedSource
   ring

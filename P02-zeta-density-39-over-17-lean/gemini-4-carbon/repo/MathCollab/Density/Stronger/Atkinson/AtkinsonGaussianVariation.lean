@@ -36,7 +36,7 @@ theorem third_mul_le_arsinh {x : ℝ} (hx : 0 ≤ x) (hx2 : x ≤ 2) : x / 3 ≤
     have hs3 : Real.sqrt (1 + y ^ 2) ≤ 3 :=
       (Real.sqrt_le_iff).2 ⟨by norm_num, by nlinarith [hy.1, hy.2]⟩
     have h := one_div_le_one_div_of_le hs hs3
-    simpa only [one_div] using sub_nonneg.mpr h
+    simpa using sub_nonneg.mpr h
   have h := hm (by norm_num : (0 : ℝ) ∈ Icc 0 2) ⟨hx, hx2⟩ hx
   simp only [Real.arsinh_zero, zero_div, sub_zero] at h
   linarith
@@ -47,8 +47,7 @@ theorem quadraticFrequencyEnvelope_antitone (G : ℝ) :
     AntitoneOn (quadraticFrequencyEnvelope G) (Ici 0) := by
   intro a ha b hb hab
   apply Real.exp_le_exp.mpr
-  have hsq : a^2 ≤ b^2 := pow_le_pow_left₀ ha hab 2
-  have hm := mul_le_mul_of_nonneg_left hsq (sq_nonneg G)
+  have hm := mul_le_mul_of_nonneg_left (pow_le_pow_left₀ ha hab 2) (sq_nonneg G)
   nlinarith
 
 theorem norm_quadraticGaussian_increment_le {T G a b : ℝ}
@@ -85,8 +84,7 @@ def atkinsonSaddleFrequency (T : ℝ) (n : ℕ) : ℝ :=
   2*Real.arsinh (Real.sqrt (Real.pi*(n:ℝ)/(2*T)))
 
 theorem atkinsonSaddleFrequency_nonneg (T : ℝ) (n : ℕ) :
-    0 ≤ atkinsonSaddleFrequency T n := by
-  exact mul_nonneg (by norm_num) (Real.arsinh_nonneg_iff.mpr (Real.sqrt_nonneg _))
+    0 ≤ atkinsonSaddleFrequency T n := mul_nonneg (by norm_num) (Real.arsinh_nonneg_iff.mpr (Real.sqrt_nonneg _))
 
 theorem atkinsonSaddleFrequency_monotone {T : ℝ} (hT : 0 < T) :
     Monotone (atkinsonSaddleFrequency T) := by
@@ -101,8 +99,7 @@ theorem finiteVariationBound_atkinsonSaddleGaussian {T G : ℝ}
     (hT : 0 < T) (hG : 0 < G) (hGT : G^2 ≤ 2*T) (m N : ℕ) :
     FiniteVariationBound (fun i => atkinsonSaddleGaussian T G (m+i)) N
       (2*Real.sqrt Real.pi*G*quadraticFrequencyEnvelope G (atkinsonSaddleFrequency T m)) := by
-  have hm : Monotone (fun i : ℕ => atkinsonSaddleFrequency T (m+i)) :=
-    (atkinsonSaddleFrequency_monotone hT).comp (fun _ _ h => Nat.add_le_add_left h m)
+  have hm := (atkinsonSaddleFrequency_monotone hT).comp (fun _ _ h => Nat.add_le_add_left h m)
   have he : AntitoneOn (fun i => quadraticFrequencyEnvelope G (atkinsonSaddleFrequency T (m+i))) (Iic N) :=
     fun i _ j _ hij => quadraticFrequencyEnvelope_antitone G
       (atkinsonSaddleFrequency_nonneg T _) (atkinsonSaddleFrequency_nonneg T _) (hm hij)
@@ -121,7 +118,7 @@ theorem finiteVariationBound_atkinsonSaddleGaussian {T G : ℝ}
       nlinarith)
     (fun i _ => norm_quadraticGaussian_increment_le hT hG hGT
       (atkinsonSaddleFrequency_nonneg T _) (hm (Nat.le_succ i)))
-  simpa only [Nat.add_zero] using h
+  simpa using h
 
 theorem quadraticFrequencyEnvelope_saddle_le_physical {T : ℝ}
     (hT : 0 < T) (G : ℝ) (n : ℕ) (hn : (n:ℝ) ≤ T) :

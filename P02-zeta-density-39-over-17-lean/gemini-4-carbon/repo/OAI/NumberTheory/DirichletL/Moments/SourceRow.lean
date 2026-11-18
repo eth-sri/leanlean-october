@@ -10,8 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSourceRow
-open CenteredMomentHeckeExpansion CenteredMomentRowNorm HeckeFamily CanonicalRowCompletion
-open CanonicalQuadraticSieve ConcretePrimeRowBridge CompletedGauss
+open CenteredMomentHeckeExpansion CenteredMomentRowNorm HeckeFamily CanonicalRowCompletion CanonicalQuadraticSieve ConcretePrimeRowBridge CompletedGauss
 local notation "O" => ActualEisensteinCubic.O
 
 theorem rowWeight_split (η : Character) (m A z : O) (t : ℝ) (I : Ideal O) :
@@ -27,14 +26,13 @@ theorem rowWeight_zero_of_not_supported (η : Character) (m A z : O) (t : ℝ)
   by_cases h0 : I=0
   · rw [h0,map_zero]
   let n := idealGenerator I
-  have hn : n ≠ 0 := idealGenerator_ne_zero I h0
-  have hs : Ideal.span {n}=I := span_idealGenerator I
+  have hs := span_idealGenerator I
   have hz := rowTwist_zero_of_not_supported (HeckeRowClosure.elementHom η) m 1 (A*z) n
     hmLam hm2 (hs ▸ hI)
   have he : rowTwist (HeckeRowClosure.elementHom η) m 1 (A*z) n =
       idealCoeff η I*idealRowHom (m^6*(A*z)) I := by
     change elementCoeff η n*idealRowHom (m^6*1^4*(A*z)) (Ideal.span {n})=_
-    rw [one_pow,mul_one,hs,← idealCoeff_span η hn,hs]
+    rw [one_pow,mul_one,hs,← idealCoeff_span η (idealGenerator_ne_zero I h0),hs]
   rw [he] at hz
   change (idealCoeff η I*idealRowHom (m^6*(A*z)) I)*(Ideal.absNorm I:ℂ)^(Complex.I*t)=0
   rw [hz,zero_mul]

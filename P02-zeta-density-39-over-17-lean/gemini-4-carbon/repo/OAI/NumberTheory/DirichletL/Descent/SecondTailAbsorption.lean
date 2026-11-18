@@ -13,7 +13,7 @@ lemma second_tail_fixed_cap (Y L cap B P H : ℝ) (order : ℕ)
     (hy : Y≤cap) (hyi : Y⁻¹≤cap) (hl : L≤cap) :
     (128*L)^4*(B^2*(Y*P*(1+L^3/Y)^2/(1+H)^order))≤
       (4*128^4)*B^2*P*cap^13/(1+H)^order := by
-  have hc0 : 0≤cap := zero_le_one.trans hc
+  have hc0 := zero_le_one.trans hc
   have hscale : 1+L^3/Y≤2*cap^4 := by
     calc
       _ ≤ 1+cap^3*cap := by rw [div_eq_mul_inv]; gcongr
@@ -33,7 +33,7 @@ theorem choose_second_tail_order (Lcap tau saving : ℝ) (hL : 0≤Lcap) (htau :
   obtain ⟨order,ho⟩ := exists_nat_gt ((13*Lcap+saving)/tau)
   refine ⟨order,?_⟩
   intro Z Y L B P hZ hY hL0 hB hP hy hyi hl
-  have hz : 0<Z := zero_lt_one.trans_le hZ
+  have hz := zero_lt_one.trans_le hZ
   have hb := second_tail_fixed_cap Y L (Z^Lcap) B P (Z^tau) order hY hL0
     (Real.one_le_rpow hZ hL) hB hP (Real.rpow_pos_of_pos hz _).le hy hyi hl
   have hdecay : (Z^Lcap)^13/(1+Z^tau)^order≤Z^(-saving) := by

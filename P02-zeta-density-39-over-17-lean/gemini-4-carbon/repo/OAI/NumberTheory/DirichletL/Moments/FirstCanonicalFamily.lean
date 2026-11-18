@@ -11,10 +11,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentFirstCanonicalFamily
-open ActualEisensteinCubic ConcretePrimeRowBridge ConcreteTraceCRT
-open CanonicalRowCompletion CanonicalQuadraticSieve HeckeFamily
-open CenteredMomentCanonicalFirst CenteredMomentCompleteCommon CenteredMomentFirstFamily
-open CenteredMomentFirstColumns CenteredMomentPrimitive CenteredMomentCommonSupport RayFourExpansion
+open ActualEisensteinCubic ConcretePrimeRowBridge ConcreteTraceCRT CanonicalRowCompletion CanonicalQuadraticSieve HeckeFamily CenteredMomentCanonicalFirst CenteredMomentCompleteCommon CenteredMomentFirstFamily CenteredMomentFirstColumns CenteredMomentPrimitive CenteredMomentCommonSupport RayFourExpansion
 local notation "O" => ActualEisensteinCubic.O
 
 theorem supported_of_dvd (A B : Ideal O) (hB : Supported B) (hd : A∣B) : Supported A := by
@@ -34,7 +31,7 @@ theorem subsetGenerator_span_dvd (I J : Ideal O) (E : Finset (CommonIndex I J)) 
   rw [commonPart_left_product]
   apply Finset.prod_dvd_prod_of_dvd
   intro P hP
-  simpa only [pow_one] using pow_dvd_pow P.val (leftExponent_pos I J P)
+  simpa using pow_dvd_pow P.val (leftExponent_pos I J P)
 
 theorem subsetGenerator_supported (I J : Ideal O) (hI : Supported I)
     (E : Finset (CommonIndex I J)) :
@@ -63,7 +60,6 @@ theorem exists_canonical_first_pair (η : Character) (m : O) (hm : m≠0)
         elementCoeff τ₁ n=elementCoeff η n*coprimalityMask m n*leftCoefficient e r ρ n*rayCharacter ξ₁ n) ∧
       (∀ n : O,Supported (Ideal.span {n}) → goodLambda^2∣n-1 →
         elementCoeff τ₂ n=elementCoeff η n*coprimalityMask m n*rightCoefficient e r ρ n*rayCharacter ξ₂ n) := by
-  dsimp only
   obtain ⟨τ₁,hM₁,_,h₁⟩ := exists_first_character η m
     (primeSubsetGenerator (fun P : CommonIndex I J => P.val) E) (activeConductor I J) hm
     (subsetGenerator_supported I J hI E) (activeConductor_supported I J hI) hmLam hm2
@@ -88,7 +84,7 @@ theorem first_displayed_norm (η : Character) (m : O) (I J : Ideal O)
     η.modulus.absNorm*(Ideal.span {m}).absNorm*(Ideal.span {(72:O)}).absNorm*
       ((∏ P∈E,P.val).absNorm*(Ideal.span {activeConductor I J}).absNorm) := by
   rw [← Ideal.span_singleton_mul_span_singleton,primeSubsetGenerator,span_idealGenerator]
-  simp only [map_mul]
+  simp
 
 end SevenEighths.CenteredMomentFirstCanonicalFamily
 

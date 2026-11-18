@@ -41,7 +41,7 @@ theorem original_first_zero_physical (ε:ℝ)(hε:0<ε):
   refine ⟨C,hC,?_⟩
   intro ι σ _ _ p hp _ hcop hg hinj hc pool Q labels β Ψ m slots lists a W Φ Z M r ell V eta Γ G
     hZ hell hV hΓ hG hΨ hQ hn hlabels hβ hslots ha hW hs
-  have hz:0<Z:=zero_lt_one.trans hZ
+  have hz :=zero_lt_one.trans hZ
   have hb:=he p hp hcop hg hinj hc pool Q labels β Ψ m slots lists a W Φ Γ G
     (Z^(r+eta)) (Z^M) (Z^(ell+eta)) (Z^(V+eta)) hΓ hG
     (Real.rpow_pos_of_pos hz _) (Real.one_le_rpow hZ.le hell) (Real.one_le_rpow hZ.le hV)

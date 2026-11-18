@@ -37,22 +37,17 @@ theorem norm_neumannLaplaceIntegrand_sub_linear_le (x : ℝ) {t : ℝ} (ht : 0 <
   have h0 : neumannLaplaceIntegrand x t =
       (neumannLaplaceMomentIntegrand x 0 t : ℂ) * neumannLaplaceAmplitude (t / 2) := by
     simp only [neumannLaplaceIntegrand, neumannLaplaceMomentIntegrand, Nat.cast_zero, zero_sub]
-  have h1 := neumannLaplaceMomentIntegrand_eq_mul x 1 ht
-  have h2 := neumannLaplaceMomentIntegrand_eq_mul x 2 ht
   have he : neumannLaplaceIntegrand x t - (neumannLaplaceMomentIntegrand x 0 t : ℂ) +
       I / 4 * (neumannLaplaceMomentIntegrand x 1 t : ℂ) =
         (neumannLaplaceMomentIntegrand x 0 t : ℂ) *
           (neumannLaplaceAmplitude (t / 2) - 1 + (t / 2 : ℝ) * I / 2) := by
-    rw [h0, h1]
+    rw [h0, (neumannLaplaceMomentIntegrand_eq_mul x 1 ht)]
     push_cast
     ring
   rw [he, norm_mul, Complex.norm_real, Real.norm_eq_abs,
     abs_of_nonneg (neumannLaplaceMomentIntegrand_nonneg ht.le 0)]
-  calc
-    _ ≤ neumannLaplaceMomentIntegrand x 0 t * ((3 / 8 : ℝ) * (t / 2) ^ 2) :=
-      mul_le_mul_of_nonneg_left (norm_neumannLaplaceAmplitude_sub_linear_le _)
-        (neumannLaplaceMomentIntegrand_nonneg ht.le 0)
-    _ = _ := by rw [h2]; ring
+  exact (mul_le_mul_of_nonneg_left (norm_neumannLaplaceAmplitude_sub_linear_le _)
+        (neumannLaplaceMomentIntegrand_nonneg ht.le 0)).trans_eq (by rw [(neumannLaplaceMomentIntegrand_eq_mul x 2 ht)]; ring)
 
 theorem norm_neumannLaplaceIntegral_sub_moments_le {x : ℝ} (hx : 0 < x) :
     ‖neumannLaplaceIntegral x -
@@ -75,7 +70,7 @@ theorem norm_neumannLaplaceIntegral_sub_moments_le {x : ℝ} (hx : 0 < x) :
     ring
   rw [← he]
   have h := norm_integral_le_of_norm_le
-    ((integrableOn_neumannLaplaceMomentIntegrand hx 2).const_mul (3 / 32 : ℝ))
+    ((integrableOn_neumannLaplaceMomentIntegrand hx 2).const_mul (3 / 32))
     (by
       filter_upwards [ae_restrict_mem measurableSet_Ioi] with t ht
       exact norm_neumannLaplaceIntegrand_sub_linear_le x ht)

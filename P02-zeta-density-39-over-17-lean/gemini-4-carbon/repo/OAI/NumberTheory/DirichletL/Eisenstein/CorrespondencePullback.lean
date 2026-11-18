@@ -9,79 +9,11 @@ noncomputable section
 
 namespace CubicEisenstein
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 
 section
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups Pointwise Manifold ContDiff ENNReal InnerProductSpace
-open Finset AddChar MulChar EisensteinEmbedding
+open scoped MatrixGroups Pointwise Manifold ENNReal InnerProductSpace
 
 section
 local notation "O" => ActualEisensteinCubic.O
@@ -174,7 +106,7 @@ lemma kernelCorrespondenceFunction_integral (f : KernelQuotient→ℂ) (hf : Mea
     _ = _ := by
       rw [integralCoverMap_measure hJK globalKubotaKernel_le_levelThree,
         integral_smul_measure]
-      simp only [ENNReal.toReal_natCast,Complex.real_smul,Complex.ofReal_natCast]
+      simp
 
 end
 
@@ -195,8 +127,7 @@ lemma coverGradientAt_norm_sq (F : EuclideanSpatial→ℂ) (p : EuclideanSpatial
   change fderiv ℝ (fun x=>(F x).im) p=_ at hi
   unfold coverEnergyDensity euclideanScalarDirichletDensity
   rw [hr,hi,(EuclideanSpace.basisFun (Fin 3) ℝ).norm_dual,
-    (EuclideanSpace.basisFun (Fin 3) ℝ).norm_dual,←mul_add,←Finset.sum_add_distrib]
-  rw [PiLp.norm_sq_eq_of_L2]
+    (EuclideanSpace.basisFun (Fin 3) ℝ).norm_dual,←mul_add,←Finset.sum_add_distrib, PiLp.norm_sq_eq_of_L2]
   change (∑j:Fin 3,‖(p 2:ℂ)*fderiv ℝ F p (EuclideanSpace.basisFun (Fin 3) ℝ j)‖^2)=_
   simp only [norm_mul,mul_pow,Complex.norm_real,Real.norm_eq_abs,sq_abs,Finset.mul_sum]
   apply Finset.sum_congr rfl
@@ -229,25 +160,20 @@ lemma coverGradientAt_sum {ι : Type*} (s : Finset ι) (F : ι→EuclideanSpatia
 lemma norm_sum_sq_le_card {ι E : Type*} [NormedAddCommGroup E]
     (s : Finset ι) (f : ι→E) :
     ‖∑i∈s,f i‖^2≤(s.card:ℝ)*∑i∈s,‖f i‖^2 := by
-  calc
-    _ ≤ (∑i∈s,‖f i‖)^2 := (sq_le_sq₀ (norm_nonneg _) (Finset.sum_nonneg (fun _ _=>norm_nonneg _))).mpr
-      (norm_sum_le _ _)
-    _ ≤ _ := by
-      simpa only [one_mul,one_pow,Finset.sum_const,nsmul_eq_mul,mul_one] using
-        (Finset.sum_mul_sq_le_sq_mul_sq s (fun _=> (1:ℝ)) (fun i=>‖f i‖))
+  exact ((sq_le_sq₀ (norm_nonneg _) (Finset.sum_nonneg (fun _ _=>norm_nonneg _))).mpr
+      (norm_sum_le _ _)).trans (by
+      simpa using
+        (Finset.sum_mul_sq_le_sq_mul_sq s (fun _=> 1) (fun i=>‖f i‖)))
 
 lemma coverEnergyDensity_sum_le {ι : Type*} (s : Finset ι) (F : ι→EuclideanSpatial→ℂ)
     (p : EuclideanSpatial) (hF : ∀i∈s,DifferentiableAt ℝ (F i) p) :
     coverEnergyDensity (fun x=>∑i∈s,F i x) p≤(s.card:ℝ)*∑i∈s,coverEnergyDensity (F i) p := by
   rw [←coverGradientAt_norm_sq _ _ (DifferentiableAt.fun_sum hF),coverGradientAt_sum s F p hF]
-  have hh := norm_sum_sq_le_card s (fun i=>coverGradientAt (F i) p)
-  calc
-    _ ≤ _ := hh
-    _ = _ := by
+  exact ((norm_sum_sq_le_card s (fun i=>coverGradientAt (F i) p))).trans_eq (by
       congr 1
       apply Finset.sum_congr rfl
       intro i hi
-      exact coverGradientAt_norm_sq (F i) p (hF i hi)
+      exact coverGradientAt_norm_sq (F i) p (hF i hi))
 
 lemma kernelTestEnergyDensity_eq_cover (f : kernelSmoothTests) (w : HyperbolicSpace) :
     kernelTestEnergyDensity f w=coverEnergyDensity (kernelTestField f) (hyperbolicEuclideanCoordinates w) := rfl
@@ -255,10 +181,8 @@ lemma kernelTestEnergyDensity_eq_cover (f : kernelSmoothTests) (w : HyperbolicSp
 end
 
 section
-open Filter MeasureTheory
-open scoped BigOperators Classical MatrixGroups Matrix
-
-open ActualEisensteinCubic CubicKubota ConcreteTraceCRT
+open CubicKubota
+open scoped MatrixGroups Matrix
 local notation "Eis" => ActualEisensteinCubic.O
 
 lemma rational_unipotent_upper (n:ℕ) :
@@ -298,7 +222,7 @@ theorem sourceEisenstein_unit_lower (u:Eisˣ) (z:ℂ) (v:ℝ) (hv:0<v) (s:ℂ) :
             upperSection (z+eisEmbedding (↑u⁻¹:Eis)) v hv) s) := by
   rw [sourceEisenstein_four_cusps]
   simp only [←mul_smul,hyperbolicEisenstein_fixed_upper]
-  apply congrArg (fun c:ℂ=>(4:ℂ)⁻¹*(eisenstein
+  apply congrArg (fun c:ℂ=>4⁻¹*(eisenstein
     (integralComplexMatrix (lowerCuspMatrix (u:Eis))*upperSection z v hv) s+c))
   apply Finset.sum_congr rfl
   intro n hn
@@ -341,10 +265,8 @@ lemma integrable_fixed_left_Eisenstein_fourier (g:SL(2,ℂ)) (v:ℝ) (hv:0<v) (s
 end
 
 section
-open Filter MeasureTheory
-open scoped BigOperators Classical MatrixGroups
-
-open ActualEisensteinCubic ConcreteTraceCRT CubicKubota
+open CubicKubota
+open scoped MatrixGroups
 local notation "Eis" => ActualEisensteinCubic.O
 
 def ramifiedCuspGaussSeries (b:Bool) (h:Eis)
@@ -438,8 +360,7 @@ theorem ramifiedSourceEisenstein_fourier (b:Bool) (h:Eis)
 end
 
 section
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
+open scoped MatrixGroups
 
 local notation "Eis" => ActualEisensteinCubic.O
 
@@ -538,16 +459,9 @@ theorem finite_unramified_residue {ι:Type*} [Fintype ι] [DecidableEq ι]
 
 end
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
-
 open CubicKubota
+open scoped MatrixGroups
 
-lemma cuspStrip_integrable_continuous (a b:ℝ) (ha:0<a)
-    (f:HyperbolicSpace→ℂ) (hf:Continuous f) :
-    IntegrableOn f (cuspPeriodStrip a b) hyperbolicVolume :=
-  (hf.continuousOn.integrableOn_compact (cuspHeightCompact_isCompact a b ha)).mono_set
-    (cuspPeriodStrip_subset_heightCompact a b ha)
 
 def sourceArbitraryHeightFamily (M:SL(2,ℂ)) (a b:ℝ) (ha:0<a)
     (ρ:BoundedContinuousFunction ℝ ℂ) (freq s:ℂ) :ℂ :=
@@ -572,7 +486,7 @@ lemma sourceArbitraryHeightFamily_residue_limit (M:SL(2,ℂ)) (a b:ℝ) (ha:0<a)
     Tendsto (fun s:ℂ=>(s-4/3)*sourceArbitraryHeightFamily M a b ha ρ freq s)
       (𝓝[≠] (4/3:ℂ)) (𝓝 (sourceArbitraryHeightFourier M a b ha ρ freq cubicEisensteinResidue)) := by
   have he:=(tendsto_finsetSum Finset.univ (fun i hi=>
-    arbitraryCuspHeightFamily_residue_limit (rationalComplex (rationalBruhatRep i)*M) a b ha ρ freq)).const_mul ((24:ℂ)⁻¹)
+    arbitraryCuspHeightFamily_residue_limit (rationalComplex (rationalBruhatRep i)*M) a b ha ρ freq)).const_mul (24⁻¹)
   convert he using 1
   · funext s
     rw [sourceArbitraryHeightFamily,←Finset.mul_sum]
@@ -588,8 +502,9 @@ lemma sourceProjection_integral (f:HyperbolicSpace→ℂ) (hf:Continuous f)
   have hi (i:RationalBruhatIndex) : IntegrableOn
       (fun w=>f ((rationalComplex (rationalBruhatRep i)*M)•w)*arbitraryCuspWeightedPhase ρ freq w)
       (cuspPeriodStrip a b) hyperbolicVolume :=
-    cuspStrip_integrable_continuous a b ha _ ((hf.comp (continuous_hyperbolic_action _)).mul
-      (arbitraryCuspWeightedPhase_continuous ρ freq))
+    ((((hf.comp (continuous_hyperbolic_action _)).mul
+      (arbitraryCuspWeightedPhase_continuous ρ freq)).continuousOn.integrableOn_compact (cuspHeightCompact_isCompact a b ha)).mono_set
+    (cuspPeriodStrip_subset_heightCompact a b ha))
   calc
     _ = ∫w in cuspPeriodStrip a b,(24:ℂ)⁻¹*∑i:RationalBruhatIndex,
         f ((rationalComplex (rationalBruhatRep i)*M)•w)*arbitraryCuspWeightedPhase ρ freq w∂hyperbolicVolume := by

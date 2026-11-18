@@ -18,8 +18,7 @@ local notation "O" => ActualEisensteinCubic.O
 lemma radialFourier_vertical_inverse (W : SchwartzMap ℝ ℂ) (a b : ℝ) (ha : 0<a)
     (hW : Function.support W⊆Set.Icc a b) (σ r : ℝ) (hσ : 0<σ) (hr : 0<r) :
     paperRadialFourier W r=verticalIntegral σ (fun z=>(r:ℂ)^(-z)*mellin (paperRadialFourier W) z) := by
-  have he := ProbeRadialMellin.radial_mellin_inversion W a b ha hW σ r hσ hr
-  simpa only [mellinInv,verticalIntegral,Complex.real_smul,smul_eq_mul] using he.symm
+  simpa only [mellinInv,verticalIntegral,Complex.real_smul,smul_eq_mul] using (ProbeRadialMellin.radial_mellin_inversion W a b ha hW σ r hσ hr).symm
 
 lemma radial_sum_exchange {ι : Type*} [Countable ι] (W : SchwartzMap ℝ ℂ)
     (a b : ℝ) (ha : 0<a) (hW : Function.support W⊆Set.Icc a b)
@@ -39,7 +38,6 @@ lemma radial_sum_exchange {ι : Type*} [Countable ι] (W : SchwartzMap ℝ ℂ)
   have hsum : Summable (fun i=>∫t : ℝ,‖F i t‖) := by
     simp only [hn,integral_const_mul]
     exact hc.mul_right _
-  have he := integral_tsum_of_summable_integral_norm hF hsum
   simp_rw [radialFourier_vertical_inverse W a b ha hW σ _ hσ (hr _)]
   unfold verticalIntegral
   have hi (i) : c i*(↑(1/(2*Real.pi))*(∫t : ℝ,
@@ -48,7 +46,7 @@ lemma radial_sum_exchange {ι : Type*} [Countable ι] (W : SchwartzMap ℝ ℂ)
     simp only [F,mul_assoc,integral_const_mul]
     ring
   simp_rw [hi]
-  rw [tsum_mul_left,he]
+  rw [tsum_mul_left,(integral_tsum_of_summable_integral_norm hF hsum)]
 
 lemma frequency_rpow_summable (σ : ℝ) (hσ : 1<σ) :
     Summable (fun H : NonzeroFrequency=>(elementNorm H.val)^(-σ)) := by

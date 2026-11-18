@@ -32,7 +32,6 @@ private def heathBrownHolderExponent (s : ℕ) : Bool → ℝ
 private theorem heathBrownHolderExponent_sum
     {s : ℕ} (hs : 1 ≤ s) :
     1 / (2 * (s : ℝ)) + ∑ i : Bool, heathBrownHolderExponent s i = 1 := by
-  have hs0 : (s : ℝ) ≠ 0 := by exact_mod_cast (by omega : s ≠ 0)
   rw [Fintype.sum_bool]
   simp [heathBrownHolderExponent]
   field_simp
@@ -56,27 +55,17 @@ private theorem prod_heathBrownHolderFunction
           (heathBrownHolderFunction B i x) ^
             (heathBrownHolderExponent s i) =
       A x * B x := by
-  have hs0 : (s : ℝ) ≠ 0 := by exact_mod_cast (by omega : s ≠ 0)
-  have htwoS : (2 * (s : ℝ)) ≠ 0 := by positivity
-  have hq : 0 ≤ 1 / (2 * (s : ℝ)) := by positivity
   have hr : 0 ≤ 1 - 1 / (s : ℝ) := by
     have hsR : (1 : ℝ) ≤ s := by exact_mod_cast hs
     exact sub_nonneg.mpr (by
       simpa using one_div_le_one_div_of_le zero_lt_one hsR)
   rw [Fintype.prod_bool]
   simp only [heathBrownHolderFunction, heathBrownHolderExponent]
-  rw [← ENNReal.rpow_natCast, ← ENNReal.rpow_mul]
-  rw [show ((2 * s : ℕ) : ℝ) * (1 / (2 * (s : ℝ))) = 1 by
+  rw [← ENNReal.rpow_natCast, ← ENNReal.rpow_mul, show ((2 * s : ℕ) : ℝ) * (1 / (2 * (s : ℝ))) = 1 by
     push_cast
-    field_simp]
-  rw [ENNReal.rpow_one]
-  rw [← ENNReal.rpow_natCast, ← ENNReal.rpow_mul]
-  rw [show ((2 : ℕ) : ℝ) * (1 / (2 * (s : ℝ))) = 1 / (s : ℝ) by
+    field_simp, ENNReal.rpow_one, ← ENNReal.rpow_natCast, ← ENNReal.rpow_mul, show ((2 : ℕ) : ℝ) * (1 / (2 * (s : ℝ))) = 1 / (s : ℝ) by
     norm_num
-    field_simp]
-  rw [← ENNReal.rpow_add_of_nonneg _ _ hr (by positivity)]
-  rw [show (1 - 1 / (s : ℝ)) + 1 / (s : ℝ) = 1 by ring]
-  rw [ENNReal.rpow_one]
+    field_simp, ← ENNReal.rpow_add_of_nonneg _ _ hr (by positivity), show (1 - 1 / (s : ℝ)) + 1 / (s : ℝ) = 1 by ring, ENNReal.rpow_one]
 
 /-- Heath-Brown's three-factor Hölder inequality, in the exact root form
 used in Lemma 1. -/

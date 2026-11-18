@@ -7,80 +7,12 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 
 namespace CubicEisenstein
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups Matrix Pointwise
-
 open CubicKubota
+open scoped MatrixGroups Matrix Pointwise
 local notation "O" => ActualEisensteinCubic.O
 
 abbrev SourceKernelQuotient := IntegralOrbitQuotient globalKubotaKernel
@@ -185,8 +117,7 @@ lemma kernelSourceAction_measurePreserving (M : levelTwo) :
 end CubicEisenstein
 
 section
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
+open scoped MatrixGroups
 
 namespace CubicEisenstein
 open CubicKubota
@@ -214,14 +145,6 @@ lemma kernelSourcePullback_comp (M N : levelTwo) (F : KernelQuotientL2) :
   rw [hp,hnm]
   exact hn.trans (congrArg F (kernelSourceAction_mul N M q).symm)
 
-lemma kernelSourcePullback_surjective (M : levelTwo) : Function.Surjective (kernelSourcePullback M) := by
-  intro F
-  refine ⟨kernelSourcePullback M⁻¹ F,?_⟩
-  rw [kernelSourcePullback_comp,inv_mul_cancel,kernelSourcePullback_one]
-
-def kernelSourceUnitary (M : levelTwo) : KernelQuotientL2 ≃ₗᵢ[ℂ] KernelQuotientL2 :=
-  LinearIsometryEquiv.ofSurjective (kernelSourcePullback M) (kernelSourcePullback_surjective M)
-
 local notation "O" => ActualEisensteinCubic.O
 
 def kernelSourceProjection : KernelQuotientL2 →L[ℂ] KernelQuotientL2 :=
@@ -245,7 +168,6 @@ lemma kernelSourceProjection_eq_twentyFour (F : KernelQuotientL2) :
 end CubicEisenstein
 
 namespace CubicKubota
-open ActualEisensteinCubic
 
 def sourceLevelInclusion : levelThree→*levelTwo where
   toFun n := ⟨(n:SL(2,ActualEisensteinCubic.O)),levelThree_le_levelTwo n.property⟩
@@ -277,19 +199,16 @@ lemma kernelSourceProjection_ae_eq (F : KernelQuotientL2) :
 end CubicEisenstein
 end
 
-open scoped Classical
 
 namespace CubicEisenstein
 open CubicKubota
 
 end CubicEisenstein
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology ENNReal
-open Finset AddChar MulChar EisensteinEmbedding
+open scoped ENNReal
 
 namespace CubicEisenstein
-open EisensteinSchwartzPoisson ActualEisensteinCubic ConcreteTraceCRT Module
+open EisensteinSchwartzPoisson Module
 
 def periodVector : (Fin 2 → ℝ) ≃L[ℝ] ℂ := periodBasis.equivFunL.symm
 
@@ -318,16 +237,13 @@ lemma periodVector_character (n : Fin 2 → ℤ) (x : Fin 2 → ℝ) :
     ShortDraftTrace.breveE (cuspFrequency (periodFrequencyEquiv n) * periodVector x) =
       Complex.exp (2 * Real.pi * Complex.I *
         ((n 0 : ℂ) * (x 0 : ℂ) + (n 1 : ℂ) * (x 1 : ℂ))) := by
-  have hlam : eisLam ≠ 0 := by
-    exact eisLam_ne_zero
   have harg : cuspFrequency (periodFrequencyEquiv n) * periodVector x =
       (eisEmbedding (dualFrequencyEquiv (n 0,n 1)) *
         ((x 0 : ℂ) + (x 1 : ℂ) * omega3)) / eisLam := by
     rw [cuspFrequency, periodVector_apply, periodFrequencyEquiv_apply]
     field_simp
   rw [harg, ←paperE, paperE_eq_exp, dualFrequencyEquiv_coordinates]
-  have hs : Real.sqrt 3 ≠ 0 := ne_of_gt (Real.sqrt_pos.mpr (by norm_num))
-  have hw : omega3.re = -(1/2:ℝ) := by norm_num [omega3]
+  have hw : omega3.re = -(1/2) := by norm_num [omega3]
   congr 1
   simp only [complexPoint, Complex.mul_im, Complex.add_re, Complex.add_im,
     Complex.ofReal_re, Complex.ofReal_im, Complex.mul_re, hw, omega3_im]

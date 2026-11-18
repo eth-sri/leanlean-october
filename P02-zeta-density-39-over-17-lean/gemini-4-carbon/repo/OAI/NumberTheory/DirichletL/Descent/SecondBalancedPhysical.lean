@@ -7,9 +7,8 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondBalancedSource
 namespace OAI
 
 namespace SevenEighths.InverseMoment
+open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic JointLogSeparation MeasureTheory SchwartzMap
 open scoped BigOperators Classical ContDiff
-open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open JointLogSeparation MeasureTheory SchwartzMap
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 local instance inverseSecondBalancedPhysicalUnits : Fintype Eisˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units

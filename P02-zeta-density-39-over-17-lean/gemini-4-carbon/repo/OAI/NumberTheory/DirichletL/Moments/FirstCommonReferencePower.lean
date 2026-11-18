@@ -10,11 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstCommonReferencePower
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData
-open CenteredMomentAmplificationChildInput CenteredMomentFirstPhysicalSource
-open CenteredMomentFirstAmplificationChoice CenteredMomentCommonAllocationSum
-open CenteredMomentSourceLiveColumn CenteredMomentFirstCommonSourceBudget
-open CenteredMomentFirstCommonSourcePowerBudget
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput CenteredMomentFirstPhysicalSource CenteredMomentFirstAmplificationChoice CenteredMomentCommonAllocationSum CenteredMomentSourceLiveColumn CenteredMomentFirstCommonSourceBudget CenteredMomentFirstCommonSourcePowerBudget
 local notation "O"=>HeckeFamily.O
 local instance {κ:Type*}:DecidableEq κ:=Classical.decEq _
 
@@ -25,13 +21,12 @@ lemma reference_power_identity (b V C q Z allowance ε E:ℝ)(N:ℕ)(α:ℝ)
     (hb:0<b)(hV:0<V)(hC:0<C)(hq:0<q)(hZ:0<Z):
     (q*(V/C)^2*Z^allowance)*normalizedPower b V C q Z allowance ε E N α=
       C^(ε-1)*V*E*(b^N*V/C)^α:=by
-  have hx:0<V/C:=div_pos hV hC
-  have hbN:0<b^N:=pow_pos hb N
+  have hx :=div_pos hV hC
   have hprod:Z^allowance*Z^(-allowance)=1:=by
     rw [←Real.rpow_add hZ,add_neg_cancel,Real.rpow_zero]
   unfold normalizedPower
   rw [Real.rpow_sub hx,Real.rpow_one,Real.rpow_sub hC,Real.rpow_one,
-    show b^N*V/C=b^N*(V/C) by ring,Real.mul_rpow hbN.le hx.le]
+    show b^N*V/C=b^N*(V/C) by ring,Real.mul_rpow (pow_pos hb N).le hx.le]
   field_simp
   calc
     _ = E*(Z^allowance*Z^(-allowance)):=by ring
@@ -55,11 +50,7 @@ theorem common_energy_reference_powers (N:ℕ)(a b ε:ℝ)(ha:0<a)(hb:1≤b)(hε
   refine ⟨Cb,hCb,?_⟩
   intro ι _ s hc hlo hhi C R seed hC hseed τ t L W K Z allowance hK hZ hW n E α hE hα hchild
   have hV:=volume_pos s
-  have hNC:=CenteredMomentFirstScale.norm_pos C hC.1
-  have hq:=CenteredMomentFirstScale.norm_pos τ.modulus τ.modulus_ne_bot
-  have hh:=hbound s hc hlo hhi C R seed hC hseed τ t L W K hK hW n E α hE hα hchild
-  have hh':=(div_le_iff₀ hV).mp hh
-  apply hh'.trans_eq
+  apply ((div_le_iff₀ hV).mp (hbound s hc hlo hhi C R seed hC hseed τ t L W K hK hW n E α hE hα hchild)).trans_eq
   calc
     _ = Cb*(∏i,s.M i)^2*∑j,(C.absNorm:ℝ)^(ε-1)*volume s*E j*
         (b^N*volume s/(C.absNorm:ℝ))^(α j):=by
@@ -75,7 +66,7 @@ theorem common_energy_reference_powers (N:ℕ)(a b ε:ℝ)(ha:0<a)(hb:1≤b)(hε
       apply Finset.sum_congr rfl
       intro j hj
       exact (reference_power_identity b (volume s) (C.absNorm:ℝ) (τ.modulus.absNorm:ℝ)
-        Z allowance ε (E j) N (α j) (zero_lt_one.trans_le hb) hV hNC hq hZ).symm
+        Z allowance ε (E j) N (α j) (zero_lt_one.trans_le hb) hV (CenteredMomentFirstScale.norm_pos C hC.1) (CenteredMomentFirstScale.norm_pos τ.modulus τ.modulus_ne_bot) hZ).symm
     _ = _:=by rw [←Finset.mul_sum];ring
 
 end SevenEighths.CenteredMomentFirstCommonReferencePower

@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.RobertSargosCubicPhase
 public import LaterPairs.Native.SargosKernelTranslation
 
@@ -44,12 +53,11 @@ theorem norm_robertSargos_mixed_sum_eq {ι : Type*} (S : Finset ι)
     2*iteratedDeriv 2 f m*robertSargosLinear (-r) (q i) (h i) (n i)+
       iteratedDeriv 3 f m*robertSargosTaylorQuadratic r (q i) (h i) (n i)+
       robertSargosMixedRemainder f m r (q i) (h i) (n i)
-  let c : ℝ := -2*r*deriv f m-r^3/3*iteratedDeriv 3 f m
+  let c := -2*r*deriv f m-r^3/3*iteratedDeriv 3 f m
   have he (i : ι) :
       robertSargosSymmetricDifference f (m+n i+q i) (h i)-
         robertSargosSymmetricDifference f (m+n i) (h i+r) = c+φ i := by
     rw [robertSargos_mixed_taylor_identity]
-    dsimp [c,φ]
     ring
   simp only [he]
   exact norm_sum_character_add_constant S w φ c

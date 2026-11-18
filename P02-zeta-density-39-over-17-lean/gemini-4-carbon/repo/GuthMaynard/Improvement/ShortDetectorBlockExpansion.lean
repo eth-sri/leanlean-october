@@ -35,8 +35,7 @@ theorem shortDetectorBlock_eq_normalized {N : ℕ} (hN : 0 < N) (ρ : ℂ) (T : 
 
 theorem norm_normalizedShortDetectorBlock {N : ℕ} (hN : 0 < N) (ρ : ℂ) (T : ℝ) :
     ‖normalizedShortDetectorBlock ρ T N‖ = (N : ℝ)^ρ.re*‖shortDetectorBlock ρ T N‖ := by
-  rw [shortDetectorBlock_eq_normalized hN, norm_mul, Complex.norm_natCast_cpow_of_pos hN, Complex.neg_re]
-  rw [← mul_assoc, ← Real.rpow_add (by exact_mod_cast hN : (0 : ℝ) < N)]
+  rw [shortDetectorBlock_eq_normalized hN, norm_mul, Complex.norm_natCast_cpow_of_pos hN, Complex.neg_re, ← mul_assoc, ← Real.rpow_add (by exact_mod_cast hN : (0 : ℝ) < N)]
   simp
 
 /-- Genuine summation and finite-sum interchange for the fixed Taylor family. -/

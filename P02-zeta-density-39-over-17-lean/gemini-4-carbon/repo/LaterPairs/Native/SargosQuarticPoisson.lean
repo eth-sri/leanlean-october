@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.SargosQuarticPhase
 
 @[expose] public section
@@ -35,9 +44,8 @@ theorem sargosQuarticWeightedKernel_contDiff {χ : ℝ → ℝ}
     ContDiff ℝ ∞ (sargosQuarticWeightedKernel χ N α γ) := by
   unfold sargosQuarticWeightedKernel sargosQuarticPhase
   simp only [Real.fourierChar_apply]
-  have hw : ContDiff ℝ ∞ (fun x : ℝ => χ (x/N)) := hχ.comp (contDiff_id.div_const N)
   have hp : ContDiff ℝ ∞ (fun x : ℝ => 2*Real.pi*(α*x^2+γ*x^4)) := by fun_prop
-  exact (Complex.ofRealCLM.contDiff.comp hw).mul
+  exact (Complex.ofRealCLM.contDiff.comp (hχ.comp (contDiff_id.div_const N))).mul
     (((Complex.ofRealCLM.contDiff.comp hp).mul contDiff_const).cexp)
 
 theorem sargosQuarticWeightedKernel_zero_of_not_mem {χ : ℝ → ℝ} {N x : ℝ}
@@ -47,7 +55,7 @@ theorem sargosQuarticWeightedKernel_zero_of_not_mem {χ : ℝ → ℝ} {N x : �
     intro h
     have hu := hs h
     apply hx
-    exact ⟨by simpa only [one_mul] using ((lt_div_iff₀ hN).mp hu.1).le,
+    exact ⟨by simpa using ((lt_div_iff₀ hN).mp hu.1).le,
       ((div_lt_iff₀ hN).mp hu.2).le⟩
   simp only [sargosQuarticWeightedKernel,image_eq_zero_of_notMem_tsupport hnot,
     Complex.ofReal_zero,zero_mul]

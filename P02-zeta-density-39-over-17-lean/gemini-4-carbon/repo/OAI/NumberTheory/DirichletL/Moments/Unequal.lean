@@ -24,7 +24,6 @@ theorem divisor_congruence (v t k : A) (hv : v ≠ 0)
   obtain ⟨x, rfl⟩ := Ideal.Quotient.mk_surjective x
   obtain ⟨y, rfl⟩ := Ideal.Quotient.mk_surjective y
   rw [scaledResidue_congruence, scaledResidue_mk, ← map_add, Ideal.Quotient.eq, Ideal.mem_span_singleton]
-  change (v * t) * v ∣ v * x - (v * t) * y - v * k ↔ v * t ∣ x - (t * y + k)
   rw [show (v * t) * v = v * (v * t) by ring,
     show v * x - (v * t) * y - v * k = v * (x - (t * y + k)) by ring]
   exact mul_dvd_mul_iff_left hv
@@ -38,7 +37,7 @@ theorem fullCorrelation_divisor (v t k : A) (hv : v ≠ 0)
   unfold fullModulusCorrelation fullCorrelation
   simp_rw [divisor_congruence v t k hv]
   rw [Finset.sum_comm]
-  simp only [Finset.sum_ite_eq', Finset.mem_univ, ite_true]
+  simp
 
 theorem fullCorrelation_divisor_constant (v t k : A) (hv : v ≠ 0)
     [Fintype (Residue (v * t))] [Fintype (Residue v)]
@@ -60,9 +59,7 @@ theorem divisor_lift_constant (p v t k : A) (hpt : p ∣ t)
   intro y
   obtain ⟨y, rfl⟩ := Ideal.Quotient.mk_surjective y
   rw [scaledResidue_mk, ← map_add, hχ, hχ, map_add, map_mul]
-  have ht : Ideal.Quotient.mk (Ideal.span {p}) t = 0 :=
-    Ideal.Quotient.eq_zero_iff_mem.mpr (Ideal.mem_span_singleton.mpr hpt)
-  rw [ht, zero_mul, zero_add]
+  rw [(Ideal.Quotient.eq_zero_iff_mem.mpr (Ideal.mem_span_singleton.mpr hpt)), zero_mul, zero_add]
 
 omit [IsDomain A] in
 theorem lifted_character_sum_zero (p v : A) (hpv : p ∣ v)
@@ -93,8 +90,7 @@ theorem fullCorrelation_divisor_eq_zero (p v t k : A) (hv : v ≠ 0)
 
 end Domain
 section Eisenstein
-open ActualEisensteinCubic ConcreteTraceCRT CanonicalQuadraticSieve CanonicalRowCompletion
-open CenteredMomentSupportedCorrelation CenteredMomentCanonical CompletedGauss
+open ActualEisensteinCubic ConcreteTraceCRT CanonicalQuadraticSieve CanonicalRowCompletion CenteredMomentSupportedCorrelation CenteredMomentCanonical CompletedGauss
 open ConcretePrimeRowBridge hiding O
 local notation "O" => ActualEisensteinCubic.O
 
@@ -188,7 +184,7 @@ theorem unequal_prime_power_norm_le (p : O) [(Ideal.span {p}).IsMaximal]
       (QuadraticInitialBound.norm_finite_character_le_one _ _)
     _ ≤ ∑ y : Residue (p ^ j), ‖supportedModulusCharacter (p ^ j)
         (supported_power p hp j) y‖ := norm_sum_le _ _
-    _ ≤ ∑ _y : Residue (p ^ j), (1 : ℝ) := Finset.sum_le_sum
+    _ ≤ ∑ _y : Residue (p ^ j), 1 := Finset.sum_le_sum
       (fun y _ => QuadraticInitialBound.norm_finite_character_le_one _ _)
     _ = _ := by
       rw [← Nat.cast_pow, ← map_pow Ideal.absNorm,

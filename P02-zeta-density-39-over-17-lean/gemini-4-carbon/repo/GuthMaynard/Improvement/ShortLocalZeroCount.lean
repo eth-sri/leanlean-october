@@ -5,9 +5,8 @@ module
 public import MathCollab.Density.LocalZeroCount
 
 @[expose] public section
-open Complex Filter Set MeasureTheory MathCollab.Density
+open Complex Filter Set MeasureTheory MathCollab.Density MathCollab.Density.ZetaGrowth
 open scoped Topology BigOperators
-open MathCollab.Density.ZetaGrowth
 set_option autoImplicit false
 noncomputable section
 namespace GuthMaynard.Improvement
@@ -50,10 +49,10 @@ theorem short_zeta_unit_bin_sum_le_jensen (σ T : ℝ) (z : ℤ)
       constructor
       · linarith [hρ₀Rect.1.2.2.1, hρ₀Data.2.2]
       · linarith [hρ₀Rect.1.2.2.2, hρ₀Data.2.1]
-    let c : ℂ := 2 + I * (((z : ℝ) + 1/2 : ℝ) : ℂ)
-    let U : Set ℂ := Metric.closedBall c (7/4 : ℝ)
-    have hUCompact : IsCompact U := isCompact_closedBall c (7/4 : ℝ)
-    have hUPre : IsPreconnected U := (convex_closedBall c (7/4 : ℝ)).isPreconnected
+    let c := 2 + I * (((z : ℝ) + 1/2 : ℝ) : ℂ)
+    let U := Metric.closedBall c (7/4 : ℝ)
+    have hUCompact := isCompact_closedBall c (7/4 : ℝ)
+    have hUPre := (convex_closedBall c (7/4 : ℝ)).isPreconnected
     have hcU : c ∈ U := by
       simp only [U, Metric.mem_closedBall, dist_self]
       norm_num
@@ -102,21 +101,16 @@ theorem short_zeta_unit_bin_sum_le_jensen (σ T : ℝ) (z : ℤ)
       have himUpper : (ρ - c).im ≤ 1/2 := by
         norm_num [c]
         linarith [hρData.2.2]
-      rw [mul_self_le_mul_self_iff (norm_nonneg _) (by norm_num)]
-      rw [Complex.norm_mul_self_eq_normSq, normSq_apply]
+      rw [mul_self_le_mul_self_iff (norm_nonneg _) (by norm_num), Complex.norm_mul_self_eq_normSq, normSq_apply]
       nlinarith [sq_nonneg ((ρ - c).re + 7/5), sq_nonneg ((ρ - c).im + 1/2),
         sq_nonneg ((ρ - c).im - 1/2)]
-    let V : Set ℂ := Metric.closedBall c (3/2 : ℝ)
-    have hVCompact : IsCompact V := isCompact_closedBall c (3/2 : ℝ)
-    have hVPre : IsPreconnected V := (convex_closedBall c (3/2 : ℝ)).isPreconnected
+    let V := Metric.closedBall c (3/2 : ℝ)
     have hcV : c ∈ V := by
       simp only [V, Metric.mem_closedBall, dist_self]
       norm_num
-    have hVAnalytic : AnalyticOnNhd ℂ riemannZeta V :=
-      hUAnalytic.mono (Metric.closedBall_subset_closedBall (by norm_num : (3/2 : ℝ) ≤ 7/4))
     have hSV : ∀ ρ ∈ S, ρ ∈ V := by simpa [V] using hSU
-    have hBridge := finset_analyticOrderNatAt_le_finsum_divisor hVAnalytic hVCompact
-      hVPre hcV hcOrder S hSV
+    have hBridge := finset_analyticOrderNatAt_le_finsum_divisor (hUAnalytic.mono (Metric.closedBall_subset_closedBall (by norm_num : (3/2 : ℝ) ≤ 7/4))) (isCompact_closedBall c (3/2 : ℝ))
+      ((convex_closedBall c (3/2 : ℝ)).isPreconnected) hcV hcOrder S hSV
     have hM : 1 ≤ 100 * T ^ (3 : ℝ) := by
       norm_num [Real.rpow_natCast]
       have hT2 : 1 ≤ T ^ (2 : ℕ) := by nlinarith
@@ -142,12 +136,8 @@ theorem short_zeta_unit_bin_sum_le_jensen (σ T : ℝ) (z : ℤ)
       norm_num
     apply div_le_div_of_nonneg_right _ hLogDen.le
     have hMPos : 0 < 100 * T ^ (3 : ℕ) := by positivity
-    have hcNormPos : 0 < ‖riemannZeta c‖ := norm_pos_iff.mpr hcNe
-    have hRatioLe : (100 * T ^ (3 : ℕ)) / ‖riemannZeta c‖ ≤
-        (100 * T ^ (3 : ℕ)) / (0.6 : ℝ) :=
-      div_le_div_of_nonneg_left hMPos.le (by norm_num) hcLower
     exact Real.log_le_log
-      (div_pos hMPos (by simpa [c] using hcNormPos)) (by simpa [c] using hRatioLe)
+      (div_pos hMPos (by simpa [c] using (norm_pos_iff.mpr hcNe))) (by simpa [c] using (div_le_div_of_nonneg_left hMPos.le (by norm_num) hcLower))
 
 /-- A single logarithmic multiplicity constant for every actual zero bin.
 Both the large-height Jensen estimate and the bounded-height range are proved. -/

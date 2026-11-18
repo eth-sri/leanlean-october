@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaSecondDerivative
 public import Mathlib.Analysis.Calculus.ContDiff.Deriv
 public import Mathlib.Analysis.Calculus.InverseFunctionTheorem.Deriv
@@ -38,8 +48,7 @@ theorem approximateModelPhase_contDiffAt {σ δ : ℝ} {P : ℕ} {F : ℝ → �
 theorem approximateModelPhase_deriv_contDiffAt {σ δ : ℝ} {P : ℕ} {F : ℝ → ℝ}
     (hF : IsApproximateModelPhaseFunction F σ P δ)
     {u : ℝ} (hu : u ∈ Ioo (1 : ℝ) 2) :
-    ContDiffAt ℝ ∞ (deriv F) u := by
-  exact (approximateModelPhase_contDiffAt hF hu).derivWithin (by simp)
+    ContDiffAt ℝ ∞ (deriv F) u := (approximateModelPhase_contDiffAt hF hu).derivWithin (by simp)
 
 theorem approximateModelPhase_deriv_strictAntiOn {σ δ : ℝ} {F : ℝ → ℝ}
     (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
@@ -49,7 +58,7 @@ theorem approximateModelPhase_deriv_strictAntiOn {σ δ : ℝ} {F : ℝ → ℝ}
   · exact fun u hu =>
       (approximateModelPhase_deriv_contDiffAt hF hu).continuousAt.continuousWithinAt
   · intro u hu
-    have hui : u ∈ Ioo (1 : ℝ) 2 := by simpa using hu
+    have hui : u ∈ Ioo 1 2 := by simpa using hu
     have hb := (approximateModelPhase_curvature_deriv_bounds hσ hδ hF hui).1
     have hp := modelPhaseCurvatureLower_pos hσ
     linarith
@@ -112,8 +121,7 @@ theorem modelPhaseInverseSlope_contDiffAt {σ δ : ℝ} {F : ℝ → ℝ}
     ContDiffAt ℝ ∞ (modelPhaseInverseSlope F) v := by
   rcases hv with ⟨u, hu, rfl⟩
   have hc := approximateModelPhase_deriv_contDiffAt hF hu
-  have hd := hc.hasStrictDerivAt (by simp : (∞ : WithTop ℕ∞) ≠ 0)
-  have he := hd.hasStrictFDerivAt_equiv
+  have he := (hc.hasStrictDerivAt (by simp : (∞ : WithTop ℕ∞) ≠ 0)).hasStrictFDerivAt_equiv
     (approximateModelPhase_secondDeriv_ne_zero hσ hδ hF hu)
   have hg : ∀ᶠ x in 𝓝 u, modelPhaseInverseSlope F (deriv F x) = x := by
     filter_upwards [isOpen_Ioo.mem_nhds hu] with x hx

@@ -7,9 +7,8 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 noncomputable section
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic FirstPassCubeLabels
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion
-open ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic FirstPassCubeLabels
 local notation "O" => ActualEisensteinCubic.O
 
 def markedReopenedCubeBin {σ : Type*} [DecidableEq σ]
@@ -42,7 +41,6 @@ theorem original_marked_split_to_bins {σ : Type*} [DecidableEq σ]
           markedCompletedT Ψrow W (X/(Ideal.absNorm H:ℝ)^3) (fun I=>mark (H^3*I)) else 0) +
       markedReopenedCubeBin S D ((outsideIdealsUpTo S D).image (cubeIndex F)) Ψ m f z W X H₀ slots lists a := by
   rw [outsideCanonicalMarkedRow_reopened S D hbad hSp Ψ m f z W hWc b X H₀ hX hW hD]
-  dsimp only
   rw [sum_outside_cubeIndex S D]
   rfl
 

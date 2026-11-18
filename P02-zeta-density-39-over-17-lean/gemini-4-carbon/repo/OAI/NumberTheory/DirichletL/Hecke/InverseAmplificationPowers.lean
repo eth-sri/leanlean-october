@@ -38,19 +38,17 @@ theorem amplified_energy_power (U A b p r κ : ℝ) (hU : 0<U) :
 
 theorem fixed_multiplier_lower (U A p : ℝ) (hU : 1≤U) (hA : 0≤A) (hp : 0≤p) :
     A≤A*U^p := by
-  simpa only [mul_one] using mul_le_mul_of_nonneg_left (Real.one_le_rpow hU hp) hA
+  simpa using mul_le_mul_of_nonneg_left (Real.one_le_rpow hU hp) hA
 
 theorem amplified_norm_dominates (U A b c r : ℝ) (hU : 1≤U) (hbA : 1≤b*A) :
     (U^r)^(1+c)≤U*(b*(A*U^(amplificationPower c r)))^6 := by
-  have hUp : 0<U := zero_lt_one.trans_le hU
+  have hUp := zero_lt_one.trans_le hU
   rw [amplified_norm_power U A b _ hUp,←Real.rpow_mul hUp.le]
   have he : r*(1+c)≤1+6*amplificationPower c r := by
     have hh := le_max_right 0 (((1+c)*r-1)/6)
     unfold amplificationPower
     nlinarith
-  have hp := Real.rpow_le_rpow_of_exponent_le hU he
-  have hconst : (1 : ℝ)≤(b*A)^6 := one_le_pow₀ hbA
-  exact hp.trans (le_mul_of_one_le_left (Real.rpow_nonneg hUp.le _) hconst)
+  exact (Real.rpow_le_rpow_of_exponent_le hU he).trans (le_mul_of_one_le_left (Real.rpow_nonneg hUp.le _) (one_le_pow₀ hbA))
 
 end SevenEighths.HeckeInverseAmplification
 

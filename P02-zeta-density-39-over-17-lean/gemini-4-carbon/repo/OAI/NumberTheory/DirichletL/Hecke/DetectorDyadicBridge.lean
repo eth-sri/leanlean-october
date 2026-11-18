@@ -16,17 +16,15 @@ open HeckeFamily HeckeDyadic HeckeDetectorFourier
 lemma norm_phase (x D : ℝ) (hx : 0<x) (hD : 0<D) (s : ℂ) (t : ℝ) :
     (x : ℂ)^(-s)*FourierBridge.logPhase t (Real.log (x/D)) =
       (D : ℂ)^(-s)*((x/D : ℝ) : ℂ)^(-HeckeDyadic.shift s.re (2*Real.pi*t-s.im)) := by
-  have hxD : 0<x/D := div_pos hx hD
+  have hxD := div_pos hx hD
   rw [Complex.cpow_def_of_ne_zero (Complex.ofReal_ne_zero.mpr hx.ne'),
     Complex.cpow_def_of_ne_zero (Complex.ofReal_ne_zero.mpr hD.ne'),
-    Complex.cpow_def_of_ne_zero (Complex.ofReal_ne_zero.mpr hxD.ne')]
-  rw [← Complex.ofReal_log hx.le, ← Complex.ofReal_log hD.le,
+    Complex.cpow_def_of_ne_zero (Complex.ofReal_ne_zero.mpr hxD.ne'), ← Complex.ofReal_log hx.le, ← Complex.ofReal_log hD.le,
     ← Complex.ofReal_log hxD.le]
   unfold FourierBridge.logPhase HeckeDyadic.shift
   rw [← Complex.exp_add, ← Complex.exp_add, Real.log_div hx.ne' hD.ne']
   congr 1
-  have hs : s=(s.re : ℂ)+(s.im : ℂ)*I := (Complex.re_add_im s).symm
-  rw [hs]
+  rw [((Complex.re_add_im s).symm)]
   simp only [add_re, ofReal_re, mul_re, ofReal_im, I_re, I_im, mul_zero,
     sub_zero, add_zero, add_im, mul_im, mul_one, zero_add]
   push_cast
@@ -55,9 +53,8 @@ lemma polynomial_eq_finite (χ : Character) (inverse : Bool) (W : ℝ→ℂ)
     apply hJ
     dsimp only [f]
     rw [coefficient_zero, zero_mul, zero_mul]
-  have he := tsum_subtype_eq_of_support_subset hf
   change (∑' J : {J : Ideal O // J≠0}, f J.val)=_
-  apply he.trans
+  apply (tsum_subtype_eq_of_support_subset hf).trans
   apply tsum_eq_sum
   intro J hJ
   by_cases hj : J=0

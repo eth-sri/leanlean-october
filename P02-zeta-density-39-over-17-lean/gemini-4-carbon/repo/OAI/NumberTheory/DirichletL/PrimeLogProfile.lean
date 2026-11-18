@@ -60,7 +60,7 @@ theorem profile_smooth (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
   intro y
   by_cases hy : y=0
   · subst y
-    have he : profile W A =ᶠ[nhds (0 : ℝ)] (fun _ => 0) := by
+    have he : profile W A =ᶠ[nhds 0] (fun _ => 0) := by
       filter_upwards [(isOpen_Iio.mem_nhds ha)] with y hy
       have hw : W y=0 := by
         by_contra hh
@@ -76,8 +76,6 @@ def logFamily (W : ℝ→ℂ) (p : ℝ×ℝ) (u : ℝ) : ℂ :=
 
 theorem logFamily_smooth (W : ℝ→ℂ) (hW : ContDiff ℝ ∞ W) :
     ContDiff ℝ ∞ (Function.uncurry (logFamily W)) := by
-  change ContDiff ℝ ∞ (fun p : (ℝ×ℝ)×ℝ =>
-    Real.exp (-p.1.2*p.2) • (W (Real.exp (-p.2)) * (p.1.1 : ℂ) * safeInverse (1-p.1.1*p.2)))
   exact (Real.contDiff_exp.comp (contDiff_fst.snd.neg.mul contDiff_snd)).smul
     (((hW.comp (Real.contDiff_exp.comp contDiff_snd.neg)).mul
       (Complex.ofRealCLM.contDiff.comp contDiff_fst.fst)).mul
@@ -107,7 +105,7 @@ theorem uniform_mellin_decay (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
     (logFamily W) (logFamily_smooth W hW)
     (Icc (-Real.log b) (-Real.log a)) isCompact_Icc
     (logFamily_support W a b ha hWs)
-    ((Icc (0 : ℝ) 1) ×ˢ (Icc lo hi)) (isCompact_Icc.prod isCompact_Icc) j
+    ((Icc 0 1) ×ˢ (Icc lo hi)) (isCompact_Icc.prod isCompact_Icc) j
   refine ⟨(1+2*Real.pi)^j*C,by positivity,?_⟩
   intro A hA σ hσ t
   rw [CubicReflectionKernel.mellin_eq_logFamily_fourier]
@@ -137,7 +135,7 @@ theorem profile_eq_log_division (W : ℝ→ℂ) (a b P : ℝ) (ha : 0<a)
   by_cases hy : W y=0
   · simp [profile,hy]
   have hs := hWs hy
-  have hyp : 0<y := ha.trans_le hs.1
+  have hyp := ha.trans_le hs.1
   have hlogs : |Real.log y|≤|Real.log a|+|Real.log b| := by
     apply abs_le.mpr
     constructor
@@ -155,7 +153,7 @@ theorem profile_eq_log_division (W : ℝ→ℂ) (a b P : ℝ) (ha : 0<a)
     (hhalf.trans (le_abs_self _))
   rw [profile,hi,Real.log_mul (ne_of_gt hP) (ne_of_gt hyp)]
   push_cast
-  have hn : (Real.log P : ℂ)≠0 := Complex.ofReal_ne_zero.mpr hp.ne'
+  have hn := Complex.ofReal_ne_zero.mpr hp.ne'
   have hn' : (Real.log P : ℂ)+(Real.log y : ℂ)≠0 := by
     have : 0<Real.log P+Real.log y := by
       linarith [(abs_le.mp hlogs).1,abs_nonneg (Real.log a),abs_nonneg (Real.log b)]

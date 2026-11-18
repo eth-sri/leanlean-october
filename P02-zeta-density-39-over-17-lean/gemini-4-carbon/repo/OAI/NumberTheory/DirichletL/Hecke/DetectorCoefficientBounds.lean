@@ -9,13 +9,11 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.HeckeDetectorCoefficientBounds
-open HeckeFamily HeckeDetectorFourier HeckeDetectorTail
-open ConcretePrimeRowBridge
+open HeckeFamily HeckeDetectorFourier HeckeDetectorTail ConcretePrimeRowBridge
 local notation "O" => HeckeFamily.O
 
 lemma annular_norm_le_two (V : ℝ → ℂ) (hV : ∀ x, ‖V x‖ ≤ 1) (x : ℝ) :
-    ‖DyadicTransfer.annularCutoff V x‖ ≤ 2 := by
-  exact (norm_sub_le _ _).trans (by linarith [hV x,hV (2*x)])
+    ‖DyadicTransfer.annularCutoff V x‖ ≤ 2 := (norm_sub_le _ _).trans (by linarith [hV x,hV (2*x)])
 
 lemma inverseCoefficient_norm_le_two (χ : Character) (V : ℝ → ℂ)
     (hV : ∀ x, ‖V x‖ ≤ 1) (Dstar D : ℝ) (s : ℂ) (hs : 0 ≤ s.re) (I : Ideal O) :
@@ -34,10 +32,8 @@ lemma plainCoefficient_norm_le_two (χ : Character) (V : ℝ → ℂ)
     (hV : ∀ x, ‖V x‖ ≤ 1) (N : ℝ) (s : ℂ) (hs : 0 ≤ s.re) (I : Ideal O) :
     ‖plainCoefficient χ (DyadicTransfer.annularCutoff V) N s I‖ ≤ 2 := by
   simp only [plainCoefficient,norm_mul]
-  calc
-    _ ≤ (1 : ℝ)*2 := mul_le_mul (weighted_norm_le_one χ s hs I)
-      (annular_norm_le_two V hV _) (norm_nonneg _) (by norm_num)
-    _ = _ := by norm_num
+  exact (mul_le_mul (weighted_norm_le_one χ s hs I)
+      (annular_norm_le_two V hV _) (norm_nonneg _) (by norm_num)).trans_eq (by norm_num)
 
 def expandedSet (U : ℝ) : Finset (Ideal O) := idealsUpTo ⌈16*U^21⌉₊
 

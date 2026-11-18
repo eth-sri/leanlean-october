@@ -1,6 +1,6 @@
 module
-public import GuthMaynard.NativeSource.GuthMaynard.ClassicalDichotomy
-public import GuthMaynard.NativeSource.GuthMaynard.WeylZeta
+public import GuthMaynard.NativeSource.GuthMaynard.VanDerCorput
+public import Mathlib.Analysis.Real.Pi.Bounds
 
 @[expose] public section
 
@@ -166,95 +166,5 @@ theorem norm_logarithmicPhase_prefix_le_div
       dsimp only [δ]
       field_simp [show t ≠ 0 by linarith, hAReal.ne']
       ring
-
-/-- The sharp-cutoff Type-I coefficients on a dyadic block are exactly a
-decreasing real weight, followed (if necessary) by zeros. -/
-theorem dirichletPoly_classicalZetaLongLineCoeff_eq_terminal
-    (C N : ℕ) (σ t : ℝ) (hN : 0 < N) :
-    dirichletPoly N (classicalZetaLongLineCoeff C σ) t =
-      ∑ i ∈ Finset.range N,
-        (if N + 1 + i ≤ C then
-          ((N + 1 + i : ℝ) ^ (-σ) : ℝ) •
-            unitaryPhase (logarithmicPhase t (N + 1 + i))
-        else 0) := by
-  unfold dirichletPoly
-  rw [dyadicInterval_eq_Ico_succ, Finset.sum_Ico_eq_sum_range]
-  have hLength : 2 * N + 1 - (N + 1) = N := by omega
-  rw [hLength]
-  apply Finset.sum_congr rfl
-  intro i hi
-  have hm : 0 < N + 1 + i := by omega
-  by_cases hmC : N + 1 + i ≤ C
-  · rw [ite_eq_left hmC, classicalZetaLongLineCoeff_term C (N + 1 + i) σ t hm hmC]
-    have hcastReal : ((N + 1 + i : ℕ) : ℝ) = (N : ℝ) + 1 + (i : ℝ) := by
-      push_cast
-      ring
-    rw [← hcastReal]
-    rw [Complex.real_smul,
-      unitaryPhase_logarithmicPhase_eq_cpow t (N + 1 + i) hm]
-    rw [Complex.ofReal_cpow (Nat.cast_nonneg (N + 1 + i))]
-    simp only [Complex.ofReal_natCast]
-    rw [← Complex.cpow_add _ _ (by exact_mod_cast hm.ne')]
-    congr 2
-    push_cast
-    ring
-  · rw [ite_eq_right hmC, classicalZetaLongLineCoeff, ite_eq_right hmC, zero_mul]
-
-/-- Concrete terminal estimate for the actual sharp Type-I dyadic block.
-It remains valid when the sharp upper cutoff stops inside the block. -/
-theorem norm_terminal_classicalZetaLongLineCoeff_le
-    (C N : ℕ) (σ t : ℝ) (hσ : 0 ≤ σ) (hN : 0 < N)
-    (hNC : N < C) (htOne : 1 ≤ t) (htN : t ≤ (N : ℝ)) :
-    ‖dirichletPoly N (classicalZetaLongLineCoeff C σ) t‖ ≤
-      (N + 1 : ℝ) ^ (-σ) * (6 * Real.pi * (N : ℝ) / t) := by
-  let f : ℕ → ℝ := fun i =>
-    if N + 1 + i ≤ C then (N + 1 + i : ℝ) ^ (-σ) else 0
-  let g : ℕ → ℂ := fun i =>
-    unitaryPhase (logarithmicPhase t (N + 1 + i))
-  have hanti : ∀ i, i + 1 < N → f (i + 1) ≤ f i := by
-    intro i hi
-    dsimp only [f]
-    by_cases hnext : N + 1 + (i + 1) ≤ C
-    · have hcurrent : N + 1 + i ≤ C := by omega
-      rw [ite_eq_left hnext, ite_eq_left hcurrent]
-      apply Real.rpow_le_rpow_of_nonpos
-      · positivity
-      · exact_mod_cast (show N + 1 + i ≤ N + 1 + (i + 1) by omega)
-      · linarith
-    · rw [ite_eq_right hnext]
-      positivity
-  have hBound := norm_weighted_sum_le_of_antitone f g N
-    (6 * Real.pi * (N : ℝ) / t) hN
-    (by
-      intro i hi
-      dsimp only [f]
-      split_ifs
-      · positivity
-      · exact le_rfl)
-    hanti
-    (by
-      intro j hj
-      dsimp only [g]
-      exact norm_logarithmicPhase_prefix_le_div N j t hN hj htOne htN)
-  rw [dirichletPoly_classicalZetaLongLineCoeff_eq_terminal C N σ t hN]
-  have hStart : N + 1 ≤ C := by omega
-  simpa only [f, g, ite_eq_left hStart, Nat.cast_add, Nat.cast_one, Nat.cast_ofNat,
-    Nat.cast_zero, add_zero, ite_smul, zero_smul] using hBound
-
-/-- A block whose asserted detector threshold exceeds the terminal
-Kusmin--Landau majorant must lie strictly below the height.  This is the
-case-splitting form consumed by the finite density reduction. -/
-theorem typeI_scale_lt_height_of_large
-    (C N : ℕ) (σ t V : ℝ) (hσ : 0 ≤ σ) (hN : 0 < N)
-    (hNC : N < C) (htOne : 1 ≤ t)
-    (hLarge : V ≤ ‖dirichletPoly N (classicalZetaLongLineCoeff C σ) t‖)
-    (hMajorant :
-      (N + 1 : ℝ) ^ (-σ) * (6 * Real.pi * (N : ℝ) / t) < V) :
-    (N : ℝ) < t := by
-  by_contra hNot
-  have htN : t ≤ (N : ℝ) := le_of_not_gt hNot
-  have hUpper := norm_terminal_classicalZetaLongLineCoeff_le
-    C N σ t hσ hN hNC htOne htN
-  linarith
 
 end GuthMaynard.NativeMoment

@@ -21,7 +21,7 @@ theorem shortTwistedNorm_fourth_le {H : ℝ} (hH : 0 ≤ H) (t : ℝ) :
   have hp : shortTwistedNorm H t ≤ zetaMomentCriticalNorm t*(2*H^((1:ℝ)/100)) := by
     unfold shortTwistedNorm zetaMomentCriticalNorm
     rw [norm_mul]
-    simpa only [Complex.ofReal_div,Complex.ofReal_one,Complex.ofReal_ofNat] using
+    simpa using
       mul_le_mul_of_nonneg_left hm (norm_nonneg (riemannZeta ((1/2:ℂ)+(t:ℂ)*Complex.I)))
   have hh := pow_le_pow_left₀ (show 0 ≤ shortTwistedNorm H t by unfold shortTwistedNorm; positivity) hp 4
   have he : (H^((1:ℝ)/100))^4 = H^((1:ℝ)/25) := by

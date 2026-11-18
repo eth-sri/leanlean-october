@@ -9,9 +9,8 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondBalancedSource
 namespace OAI
 
 namespace SevenEighths.InverseMoment
+open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic JointLogSeparation MeasureTheory SchwartzMap InverseInitialClippedColumns
 open scoped BigOperators Classical ContDiff
-open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open JointLogSeparation MeasureTheory SchwartzMap InverseInitialClippedColumns
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 local instance inverseSecondDeletedMovingPhysicalUnitsUniform : Fintype Eisˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
@@ -98,12 +97,11 @@ theorem actual_second_deleted_moving_physical_recursive_uniform_types
   let f₁ := rooted g₁ m₁ (-(1/2:ℝ)) hg₁
   let f₂ := rooted g₂ m₂ (-(1/2:ℝ)) hg₂
   let den := density g f₁ f₂ b₃ ρ c₁ c₂ θ₁ θ₂ L
-  have hden : Integrable den := balanced_density_integrable g f₁ f₂ b₃ ρ c₁ c₂ θ₁ θ₂ L
   have he := actual_second_deleted_physical_recursive p hp hcop hg hpr hinj hc source hs
     pool Ψ m z slots₁ slots₂ lists₁ lists₂ a₁ a₂ deleted₁ deleted₂
     (fun x => star (positiveSource g₁ c₁ θ₁ x)) (positiveSource g₂ c₂ θ₂) ω₁ ω₂ Φ
     G E V B Y R L Z N Vlabel εchild (fun i y => U₀ i (y+ρ i)) den w labels K J A
-    hd₁ hd₂ hZ hG hE hV hB hX hden (by simpa only [star_star] using hsep)
+    hd₁ hd₂ hZ hG hE hV hB hX (balanced_density_integrable g f₁ f₂ b₃ ρ c₁ c₂ θ₁ θ₂ L) (by simpa only [star_star] using hsep)
     hrows hω₁ hω₂ hcut hΨ hw ha₁ ha₂ hlabels ho hslots₁ hslots₂ hA hWeighted hleft hright
   have hd : (∫ t : Frequency × (Fin 6 → ℝ),tripleHeight J t.1*coordinateHeight J t.2*‖den t‖) ≤
       C*((1+‖θ₁‖)^InverseClippingProfiles.momentOrder J *

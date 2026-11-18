@@ -8,12 +8,11 @@ public import OAI.NumberTheory.DirichletL.Inversion.SecondChildWindows
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
 open MeasureTheory FourierBridge
+open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
 
 namespace SevenEighths.InverseMoment
-open InverseInitialClippedColumns InverseInitialOverlapFourier SecondPassIntegration JointLogSeparation
-open ActualEisensteinCubic FirstPassCubeLabels CompletedGauss
+open InverseInitialClippedColumns InverseInitialOverlapFourier SecondPassIntegration JointLogSeparation ActualEisensteinCubic FirstPassCubeLabels CompletedGauss
 local notation "O"=>ActualEisensteinCubic.O
 
 theorem clipped_fixed_window (W:ℝ→ℂ) (lo hi b:ℝ) (hlo:0<lo) (hb:1≤b)
@@ -21,10 +20,10 @@ theorem clipped_fixed_window (W:ℝ→ℂ) (lo hi b:ℝ) (hlo:0<lo) (hb:1≤b)
     ∃(wFresh:𝓢(ℝ,ℂ))(af bf:ℝ),0<af ∧ af≤bf ∧ HasCompactSupport (wFresh:ℝ→ℂ) ∧
       tsupport (wFresh:ℝ→ℂ)⊆Set.Icc af bf ∧
       ∀c,1≤c→c≤b→∀y,0<y→wFresh y*W (c*y)=W (c*y):=by
-  have hb0:0<b:=zero_lt_one.trans_le hb
+  have hb0 :=zero_lt_one.trans_le hb
   let a:=lo/b
   let B:=a+|hi|+1
-  have ha:0<a:=div_pos hlo hb0
+  have ha :=div_pos hlo hb0
   obtain ⟨wFresh,hc,hone,hs⟩:=InverseSecondChildWindows.positive_cutoff a B ha (by dsimp [B];linarith [abs_nonneg hi])
   refine ⟨wFresh,a/2,B+1,half_pos ha,by dsimp [B];linarith [abs_nonneg hi],hc,hs,?_⟩
   intro c hc hcb y hy
@@ -33,10 +32,8 @@ theorem clipped_fixed_window (W:ℝ→ℂ) (lo hi b:ℝ) (hlo:0<lo) (hb:1≤b)
   have hw:=hW hz
   have hay:a≤y:=by
     apply (div_le_iff₀ hb0).mpr
-    calc
-      lo≤c*y:=hw.1
-      _≤y*b:=by nlinarith
-  have hyhi:y≤hi:=le_trans (by nlinarith) hw.2
+    exact (hw.1).trans (by nlinarith)
+  have hyhi :=le_trans (by nlinarith) hw.2
   have hyB:y≤B:=by dsimp [B];linarith [le_abs_self hi]
   rw [hone y ⟨hay,hyB⟩,one_mul]
 
@@ -116,8 +113,7 @@ theorem canonical_clipped_fourier
   apply Finset.sum_congr rfl
   intro U hU
   rw [clipped_test_fourier W lo hi hlo hs hW wFresh c θ _ hc
-    (div_pos (FirstPassCubeLabels.primeProductNorm_pos p hp U) hX) (hwFresh _ (div_pos (FirstPassCubeLabels.primeProductNorm_pos p hp U) hX))]
-  rw [←integral_const_mul,←integral_const_mul]
+    (div_pos (FirstPassCubeLabels.primeProductNorm_pos p hp U) hX) (hwFresh _ (div_pos (FirstPassCubeLabels.primeProductNorm_pos p hp U) hX)), ←integral_const_mul,←integral_const_mul]
   apply integral_congr_ae
   filter_upwards with t
   ring

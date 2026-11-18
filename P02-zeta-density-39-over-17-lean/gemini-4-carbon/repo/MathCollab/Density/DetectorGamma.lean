@@ -128,15 +128,14 @@ theorem integrable_detectorGammaMajorant : Integrable detectorGammaMajorant := b
     intro t ht
     simp [detectorGammaMajorant, abs_of_pos (show 0 < t from ht)]
   have hn : IntegrableOn (fun t : ℝ => 48*(1+(-t))^2*Real.exp (-(-t))) (Iic 0) := by
-    have hci : IntegrableOn (fun t : ℝ => 48*(1+t)^2*Real.exp (-t)) (Ici (-(0 : ℝ))) := by
+    have hci : IntegrableOn (fun t : ℝ => 48*(1+t)^2*Real.exp (-t)) (Ici (-0)) := by
       simpa using ((integrableOn_Ici_iff_integrableOn_Ioi (by finiteness)).mpr hp)
     exact hci.comp_neg_Iic
   have hnabs : IntegrableOn detectorGammaMajorant (Iic 0) := by
     apply hn.congr_fun _ measurableSet_Iic
     intro t ht
     simp [detectorGammaMajorant, abs_of_nonpos (show t ≤ 0 from ht)]
-  have h := hnabs.union hpabs
-  simpa only [Iic_union_Ioi, integrableOn_univ] using h
+  simpa using (hnabs.union hpabs)
 
 /-- The mass constant is fixed before beta; no gamma estimate is a premise. -/
 theorem uniform_detector_gamma_mass :

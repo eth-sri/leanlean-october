@@ -100,8 +100,7 @@ theorem genericBlock_eq_normalized {N : ℕ} (hN : 0 < N) (ρ : ℂ) (a : ℕ �
 
 theorem norm_normalizedGenericBlock {N : ℕ} (hN : 0 < N) (ρ : ℂ) (a : ℕ → ℂ) :
     ‖normalizedGenericBlock ρ a N‖ = (N : ℝ)^ρ.re*‖genericBlock ρ a N‖ := by
-  rw [genericBlock_eq_normalized hN, norm_mul, Complex.norm_natCast_cpow_of_pos hN, Complex.neg_re]
-  rw [← mul_assoc, ← Real.rpow_add (by exact_mod_cast hN : (0 : ℝ) < N)]
+  rw [genericBlock_eq_normalized hN, norm_mul, Complex.norm_natCast_cpow_of_pos hN, Complex.neg_re, ← mul_assoc, ← Real.rpow_add (by exact_mod_cast hN : (0 : ℝ) < N)]
   simp
 
 /-- Genuine summation and finite-sum interchange for the fixed Taylor family. -/

@@ -11,9 +11,7 @@ public import MathCollab.Density.Stronger.Atkinson.FrozenWindow
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+open Complex Filter MeasureTheory Set Topology MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth MathCollab.Density.Contour
 open scoped Interval ComplexConjugate ContDiff
 set_option autoImplicit false
 noncomputable section
@@ -29,10 +27,9 @@ theorem norm_zetaFrozenDivisorQuadraticSum_sub_short_le {T G L : ℝ}
   let f := fun n : ℕ => zetaFrozenDivisorCoefficient T n * zetaSquareReflectedGammaPhase T *
     zetaGaussianQuadraticIntegral T G (Real.log (n : ℝ) - Real.log (T / (2 * Real.pi)))
   let B := Real.sqrt Real.pi * G * Real.exp (-L ^ 2 / 8)
-  have hf : Summable f := summable_zetaFrozenDivisorQuadraticTerm hT hG hGT
+  have hf := summable_zetaFrozenDivisorQuadraticTerm hT hG hGT
   have hc := summable_norm_zetaFrozenDivisorCoefficient hT
-  have hpoint (n : {n : ℕ // n ∉ S}) : ‖f n‖ ≤ ‖zetaFrozenDivisorCoefficient T n‖ * B :=
-    norm_zetaQuadraticDivisorTerm_off_band_le hT hG hGT hL n.2
+  have hpoint (n : {n : ℕ // n ∉ S}) := norm_zetaQuadraticDivisorTerm_off_band_le hT hG hGT hL n.2
   change ‖(∑' n, f n) - ∑ n ∈ S, f n‖ ≤ _
   rw [← hf.sum_add_tsum_subtype_compl S, add_sub_cancel_left]
   calc

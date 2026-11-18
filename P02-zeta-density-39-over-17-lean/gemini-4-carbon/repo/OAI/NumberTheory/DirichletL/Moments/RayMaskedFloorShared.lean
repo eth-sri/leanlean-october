@@ -9,15 +9,10 @@ public import OAI.NumberTheory.DirichletL.Moments.AllocatedNaturalRadial
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
+open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentRayMaskedFloor
-open HeckeFamily HeckeDyadic HeckeZeroSupremum QuadraticInitialBound ConcreteTraceCRT
-open CenteredMomentNaturalFixedRaySource CenteredMomentNaturalRowSource
-open CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy
-open CenteredMomentAllocatedNaturalSource CenteredMomentAllocatedNaturalRadial CenteredMomentPrimeSlot
-open CenteredMomentPlainPositiveScale CenteredMomentOriginalRadialComparison
-open CenteredMomentPlainGlobalEnergy CenteredMomentSecondHeightFamily CenteredExceptionalProfile
+open HeckeFamily HeckeDyadic HeckeZeroSupremum QuadraticInitialBound ConcreteTraceCRT CenteredMomentNaturalFixedRaySource CenteredMomentNaturalRowSource CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy CenteredMomentAllocatedNaturalSource CenteredMomentAllocatedNaturalRadial CenteredMomentPrimeSlot CenteredMomentPlainPositiveScale CenteredMomentOriginalRadialComparison CenteredMomentPlainGlobalEnergy CenteredMomentSecondHeightFamily CenteredExceptionalProfile
 open CenteredMomentRadialEligibleEnergy (Radial)
 local notation "O" => HeckeFamily.O
 
@@ -70,8 +65,7 @@ theorem masked_natural_pair_slots {α : Type*} [DecidableEq α]
       (1+|t|+T)^J*Z^(loss+κ*(∑i∈F,w i))
   have hd := diagonalControl_nonneg r.profile
   have hE : 0≤E := by dsimp [E]; positivity
-  have hp (i : α) (hi : i∈F) (I : Ideal O) (hI : I∈primePool M H b (Z^(w i))) : Prime I :=
-    (Finset.mem_filter.mp hI).2.1
+  have hp (i : α) (hi : i∈F) (I : Ideal O) (hI : I∈primePool M H b (Z^(w i))) := (Finset.mem_filter.mp hI).2.1
   have hc (i : α) (hi : i∈F) (I : Ideal O) (hI : I∈primePool M H b (Z^(w i))) :=
     hcoeff (relativeCharacter M H hH η₀ (θ i)) (Z^(w i)) (σ i) (v i) t
       (Real.rpow_pos_of_pos hZ0 _) (hσlo i hi) (hσhi i hi) I (hp i hi I hI).ne_zero

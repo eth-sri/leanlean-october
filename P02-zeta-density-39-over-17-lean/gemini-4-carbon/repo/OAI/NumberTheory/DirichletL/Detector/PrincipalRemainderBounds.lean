@@ -8,12 +8,10 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators Topology
 open Complex Set MeasureTheory Filter
+open scoped Classical BigOperators Topology
 namespace SevenEighths.ProbePrincipalRemainderBounds
-open HeckeFamily ProbePhysical ProbeEuler ProbeLocal CompletedGauss
-open ProbeFiniteProductBounds ProbeFiniteProductX PrincipalMellinResidues
-open PrincipalMellinGrowth ProbeMellinBoundary ProbePrincipalContours
+open HeckeFamily ProbePhysical ProbeEuler ProbeLocal CompletedGauss ProbeFiniteProductBounds ProbeFiniteProductX PrincipalMellinResidues PrincipalMellinGrowth ProbeMellinBoundary ProbePrincipalContours
 local notation "Id" => Ideal ActualEisensteinCubic.O
 
 lemma active_prime_sum_bound (T : Finset PrimeIdeal) (W : ℝ→ℝ)
@@ -66,7 +64,7 @@ def slotConstant {ι : Type*} (J : Finset ι) (c d B ξ : ℝ) : ℝ :=
 
 lemma slotConstant_nonneg {ι : Type*} (J : Finset ι) {c d B ξ : ℝ}
     (hc : 0<c) (hd : c≤d) (hB : 0≤B) : 0≤slotConstant J c d B ξ := by
-  have hd0 : 0≤d := hc.le.trans hd
+  have hd0 := hc.le.trans hd
   unfold slotConstant
   apply mul_nonneg (by norm_num)
   exact Finset.prod_nonneg (fun _ _=>by positivity)
@@ -85,8 +83,7 @@ theorem window_sharp_bound {ι : Type*} (η : Character) (S : Finset Id)
       windowMultiplier η J T (fun j x=>(W j x:ℂ)) P s w z‖≤
       slotConstant J c d B ξ * ∏j∈J,(P j)^ξ := by
   let A (j : ι) := (T j).filter (fun p=>W j ((Ideal.absNorm p.val:ℝ)/P j)≠0)
-  have hA (j : ι) (hj : j∈J) (p : PrimeIdeal) (hp : p∈A j) : c*P j≤(Ideal.absNorm p.val:ℝ) :=
-    (le_div_iff₀ (hP j hj)).mp ((hsupp j hj) (Finset.mem_filter.mp hp).2).1
+  have hA (j : ι) (hj : j∈J) (p : PrimeIdeal) (hp : p∈A j) := (le_div_iff₀ (hP j hj)).mp ((hsupp j hj) (Finset.mem_filter.mp hp).2).1
   have he : windowMultiplier η J T (fun j x=>(W j x:ℂ)) P s w z =
       slotMultiplier η J A (fun j p=>(W j ((Ideal.absNorm p.val:ℝ)/P j):ℂ)) s w z := by
     unfold windowMultiplier slotMultiplier
@@ -526,8 +523,7 @@ lemma source_scale_identity {ι : Type*} (J : Finset ι) (ell : ι→ℝ)
   have hp : (∏j∈J,(Z^(ell j))^ξ)=Z^((1/6)*ξ) := by
     simp only [←Real.rpow_mul hZ.le]
     rw [←Real.rpow_sum_of_pos hZ,←Finset.sum_mul,hell]
-  rw [hp,scalePower,←Real.rpow_mul hZ.le,←Real.rpow_mul hZ.le]
-  rw [←Real.rpow_add hZ,←Real.rpow_add hZ,←Real.rpow_add hZ]
+  rw [hp,scalePower,←Real.rpow_mul hZ.le,←Real.rpow_mul hZ.le, ←Real.rpow_add hZ,←Real.rpow_add hZ,←Real.rpow_add hZ]
   congr 1
   ring
 
@@ -570,9 +566,8 @@ theorem source_remainders_power_bound {ι : Type*}
     W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1 a e ha hβ he hehi
   refine ⟨C,hC,?_⟩
   intro ell hell W hW hsupp T hT Z hZ hthreshold hmod
-  dsimp only
   have hh := hbound W hW hsupp (fun j=>Z^(ell j)) (fun _ _=>Real.rpow_pos_of_pos hZ _)
-    hthreshold hmod T hT (Z^(17/48:ℝ)) (Z^(23/48:ℝ)) Z
+    hthreshold hmod T hT (Z^(17/48)) (Z^(23/48)) Z
     (Real.rpow_pos_of_pos hZ _) (Real.rpow_pos_of_pos hZ _) hZ
   dsimp only at hh
   rw [source_w_scale_identity J ell hell Z a e hZ,source_z_scale_identity J ell hell Z a hZ] at hh
@@ -610,7 +605,6 @@ theorem source_remainders_strict_saving {ι : Type*}
     W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1 (HeckeZeroSupremum.beta+e) e ha (by linarith) he (by linarith)
   refine ⟨C,hC,?_⟩
   intro ell hell W hW hsupp T hT Z hZ hthreshold hmod
-  dsimp only
   have hh := hbound ell hell W hW hsupp T hT Z (by linarith) hthreshold hmod
   dsimp only at hh
   constructor

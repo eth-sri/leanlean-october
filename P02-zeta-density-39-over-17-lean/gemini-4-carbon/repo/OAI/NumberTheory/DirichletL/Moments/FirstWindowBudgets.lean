@@ -17,13 +17,11 @@ lemma sqrt_sum_le {α:Type*}(s:Finset α)(E:α→ℝ)(hE:∀i∈s,0≤E i):
   | empty => simp
   | @insert a s ha ih =>
     rw [Finset.sum_insert ha,Finset.sum_insert ha]
-    have he:0≤E a:=hE a (Finset.mem_insert_self _ _)
-    have hs:0≤∑i∈s,E i:=Finset.sum_nonneg (fun i hi=>hE i (Finset.mem_insert_of_mem hi))
     have hadd:Real.sqrt (E a+∑i∈s,E i)≤Real.sqrt (E a)+Real.sqrt (∑i∈s,E i):=by
       apply Real.sqrt_le_iff.mpr
       constructor
       · positivity
-      · nlinarith [Real.sq_sqrt he,Real.sq_sqrt hs,
+      · nlinarith [Real.sq_sqrt (hE a (Finset.mem_insert_self _ _)),Real.sq_sqrt (Finset.sum_nonneg (fun i hi=>hE i (Finset.mem_insert_of_mem hi))),
           mul_nonneg (Real.sqrt_nonneg (E a)) (Real.sqrt_nonneg (∑i∈s,E i))]
     exact hadd.trans (add_le_add le_rfl (ih (fun i hi=>hE i (Finset.mem_insert_of_mem hi))))
 
@@ -49,12 +47,7 @@ theorem windowBudget_pair_sum {α β:Type*}(s:Finset α)(u:Finset β)
   intro i hi
   rw [Finset.mul_sum]
 
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve
-open CenteredMomentFirstPhysicalSource CenteredMomentFirstPhysicalDyadicRows
-open CenteredMomentSourceRow CenteredMomentSecondHeightFamily CenteredMomentFirstAmplificationChoice
-open CenteredMomentCanonicalFirst CenteredMomentCommonSupport CenteredMomentGaussEnergy
-open CenteredMomentLogDyadic CenteredMomentSecondWindowBudget RayFourExpansion CompletedGauss
-open CenteredMomentChildAssembly CenteredMomentMobiusRegroup CenteredMomentSectorLocalization
+open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve CenteredMomentFirstPhysicalSource CenteredMomentFirstPhysicalDyadicRows CenteredMomentSourceRow CenteredMomentSecondHeightFamily CenteredMomentFirstAmplificationChoice CenteredMomentCanonicalFirst CenteredMomentCommonSupport CenteredMomentGaussEnergy CenteredMomentLogDyadic RayFourExpansion CompletedGauss CenteredMomentChildAssembly CenteredMomentMobiusRegroup CenteredMomentSectorLocalization
 local notation "O" => HeckeFamily.O
 universe u
 

@@ -26,7 +26,6 @@ lemma canonical_dyad_cost (loss : ℝ) (hl : 0<loss) :
   obtain ⟨C,hC,hbound⟩ := bounded_dyadic_power_sum loss hl
   refine ⟨C,hC,?_⟩
   intro Z v hZ hv
-  have hZp : 0<Z := zero_lt_one.trans_le hZ
   calc
     _ = ∑k∈smallDyadicIndices (Z^v),(1:ℝ) := by simp
     _ ≤ ∑k∈smallDyadicIndices (Z^v),((2:ℝ)^k)^loss := by
@@ -36,7 +35,7 @@ lemma canonical_dyad_cost (loss : ℝ) (hl : 0<loss) :
     _ ≤ C*(Z^v)^loss := hbound _ (by positivity) _ (fun k hk=>mem_smallDyadicIndices.mp hk)
     _ ≤ C*Z^loss := by
       apply mul_le_mul_of_nonneg_left _ hC.le
-      rw [←Real.rpow_mul hZp.le]
+      rw [←Real.rpow_mul (zero_lt_one.trans_le hZ).le]
       exact Real.rpow_le_rpow_of_exponent_le hZ (by nlinarith)
 
 lemma sourceDyad_geometry_eventually (dmin dmax margin vmax : ℝ)
@@ -54,7 +53,7 @@ lemma sourceDyad_geometry_eventually (dmin dmax margin vmax : ℝ)
     (tendsto_rpow_atTop (show 0<(1/100:ℝ)-dmin by linarith)).eventually (eventually_ge_atTop (2:ℝ)),
     (tendsto_rpow_atTop hmargin).eventually (eventually_ge_atTop (2:ℝ))] with Z hZ hsmall hmarginZ
   intro rows hrows k hne
-  have hZp : 0<Z := zero_lt_one.trans hZ
+  have hZp := zero_lt_one.trans hZ
   obtain ⟨u,hu⟩ := hne
   have hur := (Finset.mem_inter.mp hu).1
   have hud := mem_dyadicRows.mp (Finset.mem_inter.mp hu).2
@@ -72,9 +71,7 @@ lemma sourceDyad_geometry_eventually (dmin dmax margin vmax : ℝ)
     apply (Real.rpow_le_rpow_left_iff hZ).mp
     rw [sourceDyad_scale hZ]
     have hh : 2*Z^dmin≤Z^(1/100:ℝ) := by
-      calc
-        _ ≤ Z^((1/100:ℝ)-dmin)*Z^dmin := mul_le_mul_of_nonneg_right hsmall (by positivity)
-        _ = _ := by rw [←Real.rpow_add hZp];congr 1;ring
+      exact (mul_le_mul_of_nonneg_right hsmall (by positivity)).trans_eq (by rw [←Real.rpow_add hZp];congr 1;ring)
     linarith [(hrows u hur).2.1]
   have hnorm : ∀u∈rows∩dyadicRows 1 k,
       Z^(sourceDyadExponent Z k)≤rowNorm u ∧ rowNorm u≤2*Z^(sourceDyadExponent Z k) := by

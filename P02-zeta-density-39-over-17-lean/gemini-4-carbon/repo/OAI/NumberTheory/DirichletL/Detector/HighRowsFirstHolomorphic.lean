@@ -13,7 +13,6 @@ lemma first_open_region_denominators (Q : ℝ) (A eta v x z : ℂ)
     (hx : 1/2≤x.re) (hz : 1/3≤z.re) :
     1-coordR Q A x z≠0 ∧ 1-coordV Q z≠0 ∧ 1-coordD Q eta v x≠0 := by
   have hQ0 : 0<Q := by linarith
-  have hQ1 : 1≤Q := by linarith
   have hR : ‖coordR Q A x z‖≤1/2 := by
     apply (coordR_norm_le Q hQ0 A x z hA).trans
     apply rpow_le_half Q _ hQ

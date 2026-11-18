@@ -13,8 +13,7 @@ open HeckeFamily CenteredMomentEnergyState CenteredMomentNaturalRowSource
 
 lemma radical_power {Z Bmask bΦ:ℝ}(s:NaturalState Z Bmask bΦ)(d:ℝ)(hd:0≤d):
     (s.puncture.radical.absNorm:ℝ)^d≤Z^(Bmask*d):=by
-  have hh:=Real.rpow_le_rpow (Nat.cast_nonneg _) s.radical_bound hd
-  simpa only [←Real.rpow_mul (zero_lt_one.trans_le s.base_ge_one).le] using hh
+  simpa only [←Real.rpow_mul (zero_lt_one.trans_le s.base_ge_one).le] using (Real.rpow_le_rpow (Nat.cast_nonneg _) s.radical_bound hd)
 
 lemma conductor_power {Z Bmask bΦ:ℝ}(s:NaturalState Z Bmask bΦ)
     (Mcap d:ℝ)(hs:s.width≤Mcap)(hd:0≤d):
@@ -50,7 +49,7 @@ lemma physical_slot_product {α:Type*}[Fintype α](Z:ℝ)(hZ:1≤Z)(w:α→ℝ)(
 lemma short_slot_mass {α:Type*}[Fintype α]{Z Bmask bΦ:ℝ}(s:NaturalState Z Bmask bΦ)
     (Mcap:ℝ)(hs:s.width≤Mcap)(w:α→ℝ)(hwidth:(∑i,w i)≤Mcap):
     max 1 s.radial.scale*Z^(s.width/4)*(∏i,Z^(w i))≤Z^(s.width+5*Mcap/4):=by
-  have hz:0<Z:=zero_lt_one.trans_le s.base_ge_one
+  have hz :=zero_lt_one.trans_le s.base_ge_one
   calc
     _≤Z^s.width*Z^(Mcap/4)*Z^Mcap:=by
       apply mul_le_mul (mul_le_mul (radial_scale s)
@@ -62,9 +61,8 @@ lemma short_slot_mass {α:Type*}[Fintype α]{Z Bmask bΦ:ℝ}(s:NaturalState Z B
 
 lemma log_interval (Z L d:ℝ)(hZ:1≤Z)(hL:0≤L)(hd:0<d):
     1+2*(L*Real.log Z)≤(1+2*L/d)*Z^d:=by
-  have hlog:=Real.log_le_rpow_div (zero_le_one.trans hZ) hd
   have hone:=Real.one_le_rpow hZ hd.le
-  have hh:=mul_le_mul_of_nonneg_left hlog (show 0≤2*L by positivity)
+  have hh:=mul_le_mul_of_nonneg_left (Real.log_le_rpow_div (zero_le_one.trans hZ) hd) (show 0≤2*L by positivity)
   calc
     _≤Z^d+2*L*(Z^d/d):=by nlinarith
     _=(1+2*L/d)*Z^d:=by ring

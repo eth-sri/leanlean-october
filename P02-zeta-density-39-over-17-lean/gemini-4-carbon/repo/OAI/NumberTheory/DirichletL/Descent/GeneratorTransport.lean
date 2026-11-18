@@ -43,9 +43,7 @@ theorem finiteCanonicalMarkedRow_label_transfer (F : Finset ι) (Ψ : Eis →* �
 theorem generator_eq_unit_primary (I : Ideal Eis) (e : Eis)
     (he : Ideal.span {e} = I) (hI : primaryGenerator I ≠ 0) :
     ∃ u : Eisˣ, e = (u:Eis)*primaryGenerator I := by
-  have ha : Associated (primaryGenerator I) e :=
-    Ideal.span_singleton_eq_span_singleton.mp ((primaryGenerator_spec I hI).1.trans he.symm)
-  obtain ⟨u,hu⟩ := ha
+  obtain ⟨u,hu⟩ := (Ideal.span_singleton_eq_span_singleton.mp ((primaryGenerator_spec I hI).1.trans he.symm))
   exact ⟨u,by simpa only [mul_comm] using hu.symm⟩
 
 end

@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.RobertSargosConjugateGram
 public import LaterPairs.Native.SignedEvenSum
 
@@ -37,7 +46,6 @@ theorem robertSargos_even_gram_positive (a : ℤ → ℂ) (M H : ℕ) (hH : 0 < 
     intro h hh
     have ht := Finset.mem_Ioo.mp hh
     have hi : h ∈ Finset.Ioo (-(H:ℤ)) H := Finset.mem_Ioo.mpr ⟨by omega,ht.2⟩
-    have hp : (H:ℝ) ≠ 0 := by positivity
     rw [signed_shift_weight_real hi,abs_of_nonneg (by exact_mod_cast le_of_lt ht.1)]
     field_simp
   rw [hs]

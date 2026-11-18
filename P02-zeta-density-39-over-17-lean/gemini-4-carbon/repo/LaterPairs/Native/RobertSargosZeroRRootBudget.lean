@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.SecondDerivativeScale
 
 @[expose] public section
@@ -42,8 +51,8 @@ theorem zero_r_a_times_a_row_budget {M H Q R C lam : ℝ}
     (8*M*H/(Q*R))*
       (2*H*Q+24*C*M*H*Real.sqrt (4*H*lam)*Q*Real.sqrt Q+
         96*H*Real.sqrt Q/Real.sqrt (2*H*lam)) ≤ 1168*C*M^2 := by
-  have hq0 : Q ≠ 0 := hQ.ne'
-  have hr0 : R ≠ 0 := hR.ne'
+  have hq0 := hQ.ne'
+  have hr0 := hR.ne'
   have hd : (8*M*H/(Q*R))*(2*H*Q) ≤ 16*M^2 := by
     have hh := mul_le_mul_of_nonneg_left ((div_le_iff₀ hR).mpr hdiag)
       (show 0 ≤ 16*M by positivity)

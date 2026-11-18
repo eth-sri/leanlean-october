@@ -10,8 +10,7 @@ public import MathCollab.Density.AbelZetaGrowth
 
 @[expose] public section
 
-open Complex
-open MathCollab.Density.GammaBounds MathCollab.Density.ZetaGrowth
+open Complex MathCollab.Density.GammaBounds MathCollab.Density.ZetaGrowth
 set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
@@ -20,7 +19,7 @@ theorem norm_Gamma_voronoi_strip_sharp {a t : ℝ}
     (ha : 1 / 2 ≤ a) (ha' : a ≤ 3 / 2) :
     ‖Complex.Gamma ((a : ℂ) + (t : ℂ) * I)‖ ≤
       12 * (1 + |t|) * Real.exp (-(Real.pi * |t|) / 2) := by
-  let z : ℂ := (1 / 2 : ℂ) + (t : ℂ) * I
+  let z := (1 / 2) + (t : ℂ) * I
   have hz : z ≠ 0 := by
     intro h
     have hr := congrArg Complex.re h
@@ -72,7 +71,7 @@ theorem norm_voronoiFactor_one_le {s : ℂ}
       Complex.norm_cpow_eq_rpow_re_of_pos (by positivity)]
     apply Real.rpow_le_one_of_one_le_of_nonpos
     · nlinarith [Real.pi_gt_three]
-    · simpa using (show 0 ≤ s.re by linarith)
+    · simpa using (by linarith)
   have hG := norm_Gamma_voronoi_strip_sharp (t := s.im) hs hs'
   rw [Complex.re_add_im] at hG
   simpa only [dfiPeriodicArchimedeanFactor, Nat.cast_one, one_cpow, one_mul,
@@ -89,17 +88,13 @@ theorem norm_voronoiFactor_one_mul_cos_le {s : ℂ}
     norm_num
   rw [him] at hc
   rw [norm_mul]
-  calc
-    _ ≤ (12 * (1 + |s.im|) * Real.exp (-(Real.pi * |s.im|) / 2)) *
-        Real.exp (Real.pi * |s.im| / 2) :=
-      mul_le_mul (norm_voronoiFactor_one_le hs hs') hc (norm_nonneg _) (by positivity)
-    _ = _ := by
-      rw [mul_assoc, ← Real.exp_add, show -(Real.pi * |s.im|) / 2 + Real.pi * |s.im| / 2 = 0 by ring, Real.exp_zero, mul_one]
+  exact (mul_le_mul (norm_voronoiFactor_one_le hs hs') hc (norm_nonneg _) (by positivity)).trans_eq (by
+      rw [mul_assoc, ← Real.exp_add, show -(Real.pi * |s.im|) / 2 + Real.pi * |s.im| / 2 = 0 by ring, Real.exp_zero, mul_one])
 
 theorem norm_riemannZeta_voronoi_strip {σ u : ℝ}
     (hσ : -(1/2 : ℝ) ≤ σ) (hσ' : σ ≤ 3/2) (hu : 1 ≤ |u|) :
     ‖riemannZeta ((σ : ℂ) + (u : ℂ) * I)‖ ≤ 240 * (1 + |u|)^2 := by
-  let z : ℂ := (σ : ℂ) + (u : ℂ) * I
+  let z := (σ : ℂ) + (u : ℂ) * I
   have hre : z.re = σ := by simp [z]
   have him : z.im = u := by simp [z]
   by_cases hr : 1/2 ≤ σ
@@ -134,8 +129,7 @@ theorem norm_riemannZeta_voronoi_strip {σ u : ℝ}
     rw [show 2 * dfiPeriodicArchimedeanFactor 1 (1-z) *
       Complex.cos (Real.pi * (1-z) / 2) * riemannZeta (1-z) =
       2 * (dfiPeriodicArchimedeanFactor 1 (1-z) * Complex.cos (Real.pi * (1-z) / 2)) *
-        riemannZeta (1-z) by ring]
-    rw [norm_mul, norm_mul, norm_ofNat]
+        riemannZeta (1-z) by ring, norm_mul, norm_mul, norm_ofNat]
     calc
       _ ≤ 2 * (12 * (1 + |u|)) * (10 * (1 + |u|)) := by
         apply mul_le_mul _ (by linarith) (norm_nonneg _) (by positivity)

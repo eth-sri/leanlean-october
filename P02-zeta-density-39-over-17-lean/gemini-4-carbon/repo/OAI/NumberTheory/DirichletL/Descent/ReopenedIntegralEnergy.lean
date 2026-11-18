@@ -7,9 +7,8 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 noncomputable section
+open MeasureTheory ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge CanonicalCubeSeparation JointLogSeparation FirstPassCubeLabels SecondPassArithmetic
 open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory ActualEisensteinCubic CompletedGauss CanonicalRowCompletion
-open ConcretePrimeRowBridge CanonicalCubeSeparation JointLogSeparation FirstPassCubeLabels SecondPassArithmetic
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
   (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
@@ -27,8 +26,7 @@ theorem varying_separated_canonical_integrable
     multiplicityRow (fun i => Ideal.span {p i}) hg pool v z ^ 3 *
       canonicalSourceCoefficient p hp hcop hg Ψ m f (fun _ => 1) T *
       finiteSquarefreeRow (fun i => Ideal.span {p i}) hg T z*mark v T
-  have hi := reopening_finite_sum_integrable Q pool.powerset β A n (primeProductNorm p) B ell b V
-  convert hi using 1
+  convert (reopening_finite_sum_integrable Q pool.powerset β A n (primeProductNorm p) B ell b V) using 1
   funext ξ
   rw [varyingReopenedRow_integrand p hp hcop hg]
   simp only [A,Finset.mul_sum,columnLog]
@@ -55,10 +53,7 @@ theorem varying_separated_canonical_family_energy
       (B^2*ell)⁻¹ * E*(∫ ξ : ℝ, ‖b ξ‖*(1+|ξ|)^d)^2 := by
   have hb : Integrable (fun ξ : ℝ => ‖b ξ‖*(1+|ξ|)^d) := by
     simpa only [Real.norm_eq_abs,mul_comm] using weighted_schwartz_integrable b d
-  have hφ (I : Ideal O) (z : O) : Integrable (fun ξ : ℝ => b ξ *
-      varyingReopenedRow p hp hcop hg pool Q (separatedCubeCoefficient (β I) n B ξ)
-        Ψ m (idealGenerator I) (fun v T => mark v T*frequencyTwist V ξ (columnLog p ell T)) z) :=
-    varying_separated_canonical_integrable p hp hcop hg pool Q (β I) n mark Ψ m (idealGenerator I) z b V B ell
+  have hφ (I : Ideal O) (z : O) := varying_separated_canonical_integrable p hp hcop hg pool Q (β I) n mark Ψ m (idealGenerator I) z b V B ell
   have hm := rowFamilyEnergy_integral_polynomial labels K hK b
     (fun I z ξ => varyingReopenedRow p hp hcop hg pool Q (separatedCubeCoefficient (β I) n B ξ)
       Ψ m (idealGenerator I) (fun v T => mark v T*frequencyTwist V ξ (columnLog p ell T)) z)

@@ -33,14 +33,10 @@ theorem hasDerivAt_deriv_zetaGaussianQuadraticIntegral (T : ℝ) {G : ℝ}
       ((((v : ℂ) ^ 2 / (4 * zetaGaussianQuadraticCoefficient T G ^ 2)) -
         1 / (2 * zetaGaussianQuadraticCoefficient T G)) *
           zetaGaussianQuadraticIntegral T G v) v := by
-  have he : deriv (zetaGaussianQuadraticIntegral T G) = fun w : ℝ =>
-      -(w : ℂ) / (2 * zetaGaussianQuadraticCoefficient T G) *
-        zetaGaussianQuadraticIntegral T G w :=
-    funext (fun w => (hasDerivAt_zetaGaussianQuadraticIntegral T hG w).deriv)
   have h := (((hasDerivAt_id v).ofReal_comp.neg).div_const
     (2 * zetaGaussianQuadraticCoefficient T G)).mul
       (hasDerivAt_zetaGaussianQuadraticIntegral T hG v)
-  rw [he]
+  rw [(funext (fun w => (hasDerivAt_zetaGaussianQuadraticIntegral T hG w).deriv))]
   convert h using 1
   · rfl
   · simp only [Complex.ofReal_one, Pi.neg_apply, id_eq]
@@ -53,16 +49,13 @@ theorem norm_iteratedDeriv_two_zetaGaussianQuadraticIntegral_le {T G : ℝ}
         (Real.sqrt Real.pi * G * Real.exp (-(G * v) ^ 2 / 8)) := by
   have hcoef := inverse_norm_zetaGaussianQuadraticCoefficient_le T hG.ne'
   have hcoef0 : 0 ≤ 1 / ‖zetaGaussianQuadraticCoefficient T G‖ := by positivity
-  have hsq := pow_le_pow_left₀ hcoef0 hcoef 2
   have hp : ‖(v : ℂ) ^ 2 / (4 * zetaGaussianQuadraticCoefficient T G ^ 2) -
       1 / (2 * zetaGaussianQuadraticCoefficient T G)‖ ≤
       v ^ 2 * G ^ 4 / 4 + G ^ 2 / 2 := by
     apply (norm_sub_le _ _).trans
     simp only [norm_div, norm_mul, norm_pow, norm_one, norm_ofNat,
       Complex.norm_real, Real.norm_eq_abs, sq_abs]
-    have h1 := mul_le_mul_of_nonneg_left hsq (show 0 ≤ v ^ 2 / 4 by positivity)
-    have h2 := mul_le_mul_of_nonneg_left hcoef (by norm_num : (0 : ℝ) ≤ 1 / 2)
-    convert add_le_add h1 h2 using 1 <;> ring
+    convert add_le_add (mul_le_mul_of_nonneg_left (pow_le_pow_left₀ hcoef0 hcoef 2) (show 0 ≤ v ^ 2 / 4 by positivity)) (mul_le_mul_of_nonneg_left hcoef (by norm_num : (0 : ℝ) ≤ 1 / 2)) using 1 <;> ring
   rw [iteratedDeriv_succ, iteratedDeriv_one,
     (hasDerivAt_deriv_zetaGaussianQuadraticIntegral T hG.ne' v).deriv, norm_mul]
   exact mul_le_mul hp (norm_zetaGaussianQuadraticIntegral_le hT hG hGT v)

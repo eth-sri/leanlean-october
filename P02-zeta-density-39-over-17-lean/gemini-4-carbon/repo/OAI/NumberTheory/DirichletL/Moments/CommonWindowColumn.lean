@@ -8,16 +8,11 @@ public import OAI.NumberTheory.DirichletL.Moments.CommonHeightEnvelope
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
 open MeasureTheory
+open scoped Classical BigOperators SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentCommonWindowColumn
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData
-open CenteredMomentCommonHeightEnvelope CenteredMomentCommonPairedSource
-open CenteredMomentCommonLinearSource CenteredMomentExceptionalAmplitudePair
-open CenteredMomentSourceRow CenteredMomentSourceMass CenteredMomentSourceProfileMass
-open CenteredMomentFirstSectors CenteredMomentRowNorm CenteredMomentHeckeColumnWindow
-open CenteredMomentExceptionalWholeWindow CenteredMomentSmooth
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData CenteredMomentCommonHeightEnvelope CenteredMomentCommonPairedSource CenteredMomentCommonLinearSource CenteredMomentExceptionalAmplitudePair CenteredMomentSourceRow CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentFirstSectors CenteredMomentRowNorm CenteredMomentHeckeColumnWindow CenteredMomentExceptionalWholeWindow CenteredMomentSmooth
 local notation "O" => HeckeFamily.O
 local instance {ι:Type*} : DecidableEq (ι⊕Fin 2) := Classical.decEq _
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
@@ -45,7 +40,6 @@ theorem coefficient_polynomial (s:Input ι)(C:Ideal O)(hC:Supported C)(R seed L:
       (fun I=>coefficient s C hC R seed L I*heightCoeff η t I) z=
       normalizedColumn (withHeight s η t) C hC R seed L z:=by
   unfold normalizedColumn sourceColumn
-  dsimp only [withHeight,Input.pools,columns]
   simp only [coefficient,mul_assoc,rowPolynomial_factor,Input.pools,columns]
   rfl
 

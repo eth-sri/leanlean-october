@@ -49,7 +49,7 @@ theorem IntervalC1Bound.mono {f : ℝ → ℂ} {a b M N : ℝ}
 theorem intervalC1Bound_const (c : ℂ) (a b : ℝ) :
     IntervalC1Bound (fun _ : ℝ => c) a b ‖c‖ := by
   refine ⟨norm_nonneg _, fun _ _ => contDiffAt_const, fun _ _ => le_rfl, ?_⟩
-  simp only [deriv_const, norm_zero, intervalIntegral.integral_zero, norm_nonneg]
+  simp
 
 theorem IntervalC1Bound.mul {f g : ℝ → ℂ} {a b M N : ℝ}
     (hf : IntervalC1Bound f a b M) (hg : IntervalC1Bound g a b N) (hab : a ≤ b) :
@@ -99,8 +99,7 @@ theorem intervalC1Bound_ofReal_of_deriv_nonneg {f : ℝ → ℝ} {a b M : ℝ}
     IntervalC1Bound (fun x => (f x : ℂ)) a b M := by
   have hfd (x : ℝ) (hx : x ∈ Icc a b) :=
     ((hf x hx).differentiableAt (by norm_num)).hasDerivAt
-  have hcast (x : ℝ) (hx : x ∈ Icc a b) :
-      deriv (fun y => (f y : ℂ)) x = ((deriv f x : ℝ) : ℂ) := (hfd x hx).ofReal_comp.deriv
+  have hcast (x : ℝ) (hx : x ∈ Icc a b) := (hfd x hx).ofReal_comp.deriv
   have hfi : IntervalIntegrable (deriv f) volume a b := by
     apply ContinuousOn.intervalIntegrable
     rw [uIcc_of_le hab]
@@ -131,8 +130,7 @@ theorem intervalC1Bound_ofReal_of_deriv_nonpos {f : ℝ → ℝ} {a b M : ℝ}
     IntervalC1Bound (fun x => (f x : ℂ)) a b M := by
   have hfd (x : ℝ) (hx : x ∈ Icc a b) :=
     ((hf x hx).differentiableAt (by norm_num)).hasDerivAt
-  have hcast (x : ℝ) (hx : x ∈ Icc a b) :
-      deriv (fun y => (f y : ℂ)) x = ((deriv f x : ℝ) : ℂ) := (hfd x hx).ofReal_comp.deriv
+  have hcast (x : ℝ) (hx : x ∈ Icc a b) := (hfd x hx).ofReal_comp.deriv
   have hfi : IntervalIntegrable (deriv f) volume a b := by
     apply ContinuousOn.intervalIntegrable
     rw [uIcc_of_le hab]

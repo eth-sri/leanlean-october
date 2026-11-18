@@ -6,12 +6,11 @@ public import OAI.NumberTheory.DirichletL.Moments.HeckeWindowEnergy
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
 open MeasureTheory
+open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentSmoothedWindowEnergy
-open CanonicalQuadraticSieve CenteredMomentGaussEnergy CenteredMomentHeckeColumnWindow
-open CenteredMomentHeckeWindowEnergy HeckeFamily FourierBridge
+open CanonicalQuadraticSieve CenteredMomentGaussEnergy CenteredMomentHeckeColumnWindow CenteredMomentHeckeWindowEnergy HeckeFamily FourierBridge
 local notation "O" => ActualEisensteinCubic.O
 
 theorem gaussEnergy_hasSum_re {α : Type*} (S : Finset α) (a : α → O)
@@ -19,8 +18,7 @@ theorem gaussEnergy_hasSum_re {α : Type*} (S : Finset α) (a : α → O)
     (U : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K) :
     HasSum (fun z : O => ‖gaussPolynomial S a ha c z‖^2*
       (U (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re) (gaussEnergy S a ha c U K).re := by
-  have hs := Complex.hasSum_re (gaussEnergy_summable S a ha c U K hK).hasSum
-  simpa only [gaussEnergy,Complex.mul_re,Complex.ofReal_re,Complex.ofReal_im,zero_mul,sub_zero] using hs
+  simpa only [gaussEnergy,Complex.mul_re,Complex.ofReal_re,Complex.ofReal_im,zero_mul,sub_zero] using (Complex.hasSum_re (gaussEnergy_summable S a ha c U K hK).hasSum)
 
 theorem finite_weighted_le_gaussEnergy {α : Type*} (S : Finset α) (a : α → O)
     (ha : ∀ i,Supported (Ideal.span {a i})) (c : α → ℂ)
@@ -54,8 +52,7 @@ theorem smoothed_window_energy_from_shifted {α : Type*}
       (logPhase (θ-w) (Real.log X)*gaussPolynomial S a ha
         (fun i => β i*heightCoeff τ (t+2*Real.pi*(w-θ)) (Ideal.span {a i})) z)
     have hi (z : rows) : Integrable (fun w => columnDensity V hVc hVs w*φ z w) := by
-      have h := (gauss_column_integrable S a ha β τ t θ X hX V hVc hVs z).const_mul (Real.sqrt (u z):ℂ)
-      convert h using 1
+      convert ((gauss_column_integrable S a ha β τ t θ X hX V hVc hVs z).const_mul (Real.sqrt (u z):ℂ)) using 1
       funext w
       dsimp only [φ]
       ring
@@ -80,8 +77,7 @@ theorem smoothed_window_energy_from_shifted {α : Type*}
     simp only [he,hnorm] at hh
     rw [Finset.sum_coe_sort rows (fun z : O => u z*‖gaussPolynomial S a ha c z‖^2)] at hh
     simpa only [mul_comm] using hh
-  have hs := gaussEnergy_hasSum_re S a ha c U K hK
-  rw [← hs.tsum_eq]
+  rw [← (gaussEnergy_hasSum_re S a ha c U K hK).tsum_eq]
   exact Real.tsum_le_of_sum_le (fun z => mul_nonneg (sq_nonneg _) (hU z)) hfin
 
 theorem smoothed_window_energy_from_height {α : Type*}

@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaStationaryPoint
 public import Mathlib.Analysis.SpecialFunctions.Sqrt
 
@@ -70,7 +80,7 @@ theorem modelPhaseStationaryPoint_amplitude_scale
     (Real.sqrt (-deriv (deriv (modelPhaseFrequencyPhase F T N r))
       (modelPhaseStationaryPoint F T N r)))⁻¹ =
         (N/Real.sqrt T)*modelPhaseStationaryAmplitude F (r*N/T) := by
-  have hx : modelPhaseStationaryPoint F T N r / N ∈ Ioo (1 : ℝ) 2 := by
+  have hx : modelPhaseStationaryPoint F T N r / N ∈ Ioo 1 2 := by
     rw [modelPhaseStationaryPoint_div hN.ne']
     exact modelPhaseInverseSlope_mem hv
   rw [modelPhaseFrequencyPhase_secondDeriv hF hx,modelPhaseStationaryPoint_div hN.ne',

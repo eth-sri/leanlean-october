@@ -15,7 +15,7 @@ theorem numerator_bound_of_log {r : ℚ} (hr : 0 < r)
   have hrat : (r.num.natAbs : ℝ)/(r.den : ℝ) = (r : ℝ) := by
     have hh := positiveRatPair_ratio hr
     change (r.num.natAbs : ℚ)/(r.den : ℚ) = r at hh
-    simpa only [Rat.cast_div, Rat.cast_natCast] using congrArg (fun q : ℚ => (q : ℝ)) hh
+    simpa using congrArg (fun q : ℚ => (q : ℝ)) hh
   have hval : (r : ℝ) ≤ Real.exp 1 := by
     rw [← Real.exp_log hrR]
     exact Real.exp_le_exp.mpr (le_trans (le_abs_self _) hlog)

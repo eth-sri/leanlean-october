@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.RobertSargosNormalizationGeometry
 
 @[expose] public section
@@ -19,8 +28,8 @@ theorem RobertSargosReducedSystem.normalized {R H Q δ : ℝ}
     {j k : ℕ} (hj : j = robertSargosCoefficientGcd p)
     (hk : k = robertSargosFrequencyGcd p) :
     RobertSargosReducedSystem (R/j) (H/j) (Q/k) δ (robertSargosNormalize j k p) := by
-  have hjp : 0 < j := hj ▸ h.coefficient_gcd_pos
-  have hkp : 0 < k := hk ▸ h.frequency_gcd_pos
+  have hjp := hj ▸ h.coefficient_gcd_pos
+  have hkp := hk ▸ h.frequency_gcd_pos
   have hjR : (0:ℝ) < j := by exact_mod_cast hjp
   have hkR : (0:ℝ) < k := by exact_mod_cast hkp
   have hdj : (j:ℤ) ∣ p.r ∧ (j:ℤ) ∣ p.h₁ ∧ (j:ℤ) ∣ p.h₂ := by
@@ -69,10 +78,7 @@ theorem RobertSargosReducedSystem.normalized {R H Q δ : ℝ}
       hcast p.h₂ j hdj.2.2,hcast p.q₂ k hdk.2.2,
       robertSargos_reduced_div _ _ _ _ _ _ _ _ hjR.ne' hkR.ne',
       abs_div,abs_of_pos (mul_pos hjR (sq_pos_of_pos hkR))]
-    calc
-      _ ≤ (δ*H*Q^2)/((j:ℝ)*(k:ℝ)^2) :=
-        div_le_div_of_nonneg_right h.near (by positivity)
-      _ = _ := by field_simp
+    exact (div_le_div_of_nonneg_right h.near (by positivity)).trans_eq (by field_simp)
 
 end TaoTrudgianYang2025
 

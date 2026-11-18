@@ -8,74 +8,13 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-
-open scoped BigOperators Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 
 namespace MixedCrossSeparation
 
 abbrev O := ActualEisensteinCubic.O
-open ActualEisensteinCubic ConcreteTraceCRT FiniteGaussPhase MixedGaussConversion
+open FiniteGaussPhase MixedGaussConversion
 
 private theorem ordered_cross_partition {ι : Type*} [Fintype ι] [DecidableEq ι]
     (x : ι → ι → ℂ) (l : ι → ℂ) (A B : Finset ι)
@@ -106,7 +45,7 @@ private theorem ordered_cross_partition {ι : Type*} [Fintype ι] [DecidableEq �
       · subst k; simp [hn]
       · simp [hk, or_comm]
     rw [he, ite_eq_right hn, Finset.prod_union (hd.symm.mono_left (Finset.erase_subset _ _))]
-    simp only [pow_one]
+    simp
   have hpA : (∏ i ∈ A, ((∏ k ∈ Finset.univ.erase i,
       x i k ^ (if i ∈ A then 5 else 1)) * l i)) =
       (∏ i ∈ A, (∏ k ∈ A.erase i, x i k ^ 5) * l i) *
@@ -132,8 +71,7 @@ private theorem ordered_cross_partition {ι : Type*} [Fintype ι] [DecidableEq �
             x i k ^ (if i ∈ A then 5 else 1)) * l i)) := by
       rw [← Finset.prod_union hd, hu]
     _ = _ := by
-      rw [hpA, hpB]
-      rw [Finset.prod_comm (s := B) (t := A)]
+      rw [hpA, hpB, Finset.prod_comm (s := B) (t := A)]
       simp only [Finset.prod_mul_distrib]
       ring
 
@@ -239,7 +177,6 @@ theorem activeConvertedGauss_separated
     GaussGeneratorTransport.activeConvertedGauss p hp hg S T =
       convertedColumnBlock q hq hgood A true * convertedColumnBlock q hq hgood B false *
         quadraticCrossPhase q hgood A B := by
-  dsimp only
   have h := mixed_converted_gauss_separation (fun i : activeSupport S T => p i.val)
     (fun i => hp i.val) (fun i => hg i.val) (fun i => decide (i.val ∈ S \ T))
     (fun i => hprimary i.val)
@@ -251,7 +188,6 @@ theorem activeConvertedGauss_separated
   · ext k; simp
   · intro k hk; rfl
 
-open ActualEisensteinCubic ConcreteTraceCRT FiniteGaussPhase MixedGaussConversion
 open QuadraticGaussRay ActualEisensteinCoordinates
 
 private theorem prod_subtype_erase {ι M : Type*} [DecidableEq ι] [CommMonoid M]
@@ -303,7 +239,7 @@ theorem quadraticBlock_eq_productGauss
   apply Finset.prod_congr
   · ext k; simp
   · intro k hk
-    exact (MulChar.pow_apply' _ (by decide : (3 : ℕ) ≠ 0) _).symm
+    exact (MulChar.pow_apply' _ (by decide : 3 ≠ 0) _).symm
 
 theorem quadraticBlock_eq_rayValue
     {ι : Type*} [DecidableEq ι]
@@ -403,11 +339,10 @@ theorem quadraticCrossPhase_eq_rayPair
     have hn := norm_quadraticBlock p hp hcop hg hchar B
     rw [hz, norm_zero] at hn
     exact zero_ne_one hn
-  have h := quadraticBlock_union p hp hg A B hd
   have hdiv : quadraticCrossPhase p hg A B = quadraticBlock p hp hg (A ∪ B) /
       (quadraticBlock p hp hg A * quadraticBlock p hp hg B) := by
     apply (eq_div_iff (mul_ne_zero hA0 hB0)).mpr
-    rw [h]
+    rw [(quadraticBlock_union p hp hg A B hd)]
     ring
   rw [hdiv, quadraticBlock_eq_rayValue p hp hcop hg hchar (A ∪ B),
     quadraticBlock_eq_rayValue p hp hcop hg hchar A,
@@ -417,31 +352,27 @@ theorem quadraticCrossPhase_eq_rayPair
 
 end MixedCrossSeparation
 
-open scoped BigOperators Classical
 
 namespace CoprimeMobiusExtension
 
 theorem sum_subset_sign {ι : Type*} [DecidableEq ι] (S : Finset ι) :
     (∑ D ∈ S.powerset, (-1 : ℂ) ^ D.card) = if S = ∅ then 1 else 0 := by
-  have hp := Finset.prod_sub (fun _ : ι => (1 : ℂ)) (fun _ => 1) S
   by_cases hS : S = ∅
   · simp [hS]
   · have hc : S.card ≠ 0 := Finset.card_ne_zero.mpr (Finset.nonempty_iff_ne_empty.mpr hS)
-    simpa [hS, hc] using hp.symm
+    simpa [hS, hc] using (Finset.prod_sub (fun _ : ι => (1 : ℂ)) (fun _ => 1) S).symm
 
 theorem disjoint_indicator_expansion {ι : Type*} [DecidableEq ι]
     (B S T : Finset ι) (hS : S ⊆ B) (_hT : T ⊆ B) :
     (if Disjoint S T then (1 : ℂ) else 0) =
       ∑ D ∈ B.powerset, if D ⊆ S ∧ D ⊆ T then (-1 : ℂ) ^ D.card else 0 := by
-  have hsub : (S ∩ T).powerset ⊆ B.powerset :=
-    Finset.powerset_mono.mpr (Finset.inter_subset_left.trans hS)
   have heq : (∑ D ∈ B.powerset, if D ⊆ S ∧ D ⊆ T then (-1 : ℂ) ^ D.card else 0) =
       ∑ D ∈ (S ∩ T).powerset, (-1 : ℂ) ^ D.card := by
     calc
       _ = ∑ D ∈ (S ∩ T).powerset,
             if D ⊆ S ∧ D ⊆ T then (-1 : ℂ) ^ D.card else 0 := by
         symm
-        apply Finset.sum_subset hsub
+        apply Finset.sum_subset (Finset.powerset_mono.mpr (Finset.inter_subset_left.trans hS))
         intro D hD hnot
         have hn : ¬(D ⊆ S ∧ D ⊆ T) := by
           simpa only [Finset.mem_powerset, Finset.subset_inter_iff] using hnot
@@ -463,12 +394,12 @@ theorem double_sum_disjoint_expansion {ι : Type*} [DecidableEq ι]
           if D ⊆ S ∧ D ⊆ T then Z S T else 0 := by
   have hp (S T : Finset ι) (hS : S ∈ B.powerset) (hT : T ∈ B.powerset) :
       (if Disjoint S T then Z S T else 0) =
-        ∑ D ∈ B.powerset, (-1 : ℂ) ^ D.card *
+        ∑ D ∈ B.powerset, (-1) ^ D.card *
           if D ⊆ S ∧ D ⊆ T then Z S T else 0 := by
     calc
-      _ = (if Disjoint S T then (1 : ℂ) else 0) * Z S T := by split_ifs <;> simp
+      _ = (if Disjoint S T then 1 else 0) * Z S T := by split_ifs <;> simp
       _ = (∑ D ∈ B.powerset,
-          if D ⊆ S ∧ D ⊆ T then (-1 : ℂ) ^ D.card else 0) * Z S T := by
+          if D ⊆ S ∧ D ⊆ T then (-1) ^ D.card else 0) * Z S T := by
         rw [disjoint_indicator_expansion B S T (Finset.mem_powerset.mp hS)
           (Finset.mem_powerset.mp hT)]
       _ = _ := by
@@ -478,7 +409,7 @@ theorem double_sum_disjoint_expansion {ι : Type*} [DecidableEq ι]
         split_ifs <;> simp
   calc
     _ = ∑ S ∈ B.powerset, ∑ T ∈ B.powerset, ∑ D ∈ B.powerset,
-        (-1 : ℂ) ^ D.card * if D ⊆ S ∧ D ⊆ T then Z S T else 0 := by
+        (-1) ^ D.card * if D ⊆ S ∧ D ⊆ T then Z S T else 0 := by
       apply Finset.sum_congr rfl
       intro S hS
       exact Finset.sum_congr rfl (fun T hT => hp S T hS hT)
@@ -486,7 +417,7 @@ theorem double_sum_disjoint_expansion {ι : Type*} [DecidableEq ι]
       simp_rw [Finset.mul_sum]
       calc
         _ = ∑ S ∈ B.powerset, ∑ D ∈ B.powerset, ∑ T ∈ B.powerset,
-            (-1 : ℂ) ^ D.card * if D ⊆ S ∧ D ⊆ T then Z S T else 0 := by
+            (-1) ^ D.card * if D ⊆ S ∧ D ⊆ T then Z S T else 0 := by
           apply Finset.sum_congr rfl
           intro S hS
           exact Finset.sum_comm
@@ -503,10 +434,9 @@ theorem sum_supersets {ι : Type*} [DecidableEq ι]
     exact Finset.sdiff_subset_sdiff hS.1 (Finset.Subset.refl _)
   · intro S hS T hT heq
     simp only [Finset.mem_filter, Finset.mem_powerset] at hS hT
-    have he := congrArg (fun U => D ∪ U) heq
-    simpa [Finset.union_sdiff_of_subset hS.2, Finset.union_sdiff_of_subset hT.2] using he
+    simpa [Finset.union_sdiff_of_subset hS.2, Finset.union_sdiff_of_subset hT.2] using (congrArg (fun U => D ∪ U) heq)
   · intro U hU
-    have hUB : U ⊆ B \ D := Finset.mem_powerset.mp hU
+    have hUB := Finset.mem_powerset.mp hU
     refine ⟨D ∪ U, ?_, ?_⟩
     · simp only [Finset.mem_filter, Finset.mem_powerset]
       exact ⟨Finset.union_subset hD (hUB.trans Finset.sdiff_subset), Finset.subset_union_left⟩
@@ -538,7 +468,6 @@ theorem double_sum_disjoint_reindexed {ι : Type*} [DecidableEq ι]
       intro U hU
       exact sum_supersets B D hDB (Z (D ∪ U))
 
-open ActualEisensteinCubic
 
 end CoprimeMobiusExtension
 

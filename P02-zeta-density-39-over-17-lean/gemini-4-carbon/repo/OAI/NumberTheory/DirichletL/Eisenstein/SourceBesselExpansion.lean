@@ -9,78 +9,11 @@ noncomputable section
 
 namespace CubicEisenstein
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 
 section
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
+open scoped MatrixGroups
 
 section
 local notation "Eis" => ActualEisensteinCubic.O
@@ -124,8 +57,8 @@ lemma oppositeHeight_cross_identity (a b:ℝ) (ha:0<a) (ρ:BoundedContinuousFunc
         cuspIntervalWhittakerHeightFactor a b ρ s h) {s:ℂ|1<s.re ∧ 0<s.im} := by
   let domain : Set ℂ := {s | 1<s.re ∧ 0<s.im}
   have hconvex : Convex ℝ domain :=
-    ((convex_Ioi (1:ℝ)).linear_preimage Complex.reCLM.toLinearMap).inter
-      ((convex_Ioi (0:ℝ)).linear_preimage Complex.imCLM.toLinearMap)
+    ((convex_Ioi 1).linear_preimage Complex.reCLM.toLinearMap).inter
+      ((convex_Ioi 0).linear_preimage Complex.imCLM.toLinearMap)
   have hf : AnalyticOnNhd ℂ (fun s=>translatedHeightFamily a b ha ρ h oppositeSource s*
       cuspWhittakerHeightFactor s h) domain := fun s hs=>
     (translatedHeightFamily_analyticAt a b ha ρ h oppositeSource s hs.1.ne' hs.2.ne').mul
@@ -153,27 +86,27 @@ theorem translatedHeightFourier_opposite_residue (a b:ℝ) (ha:0<a) (ρ:BoundedC
     translatedHeightFourier a b ha ρ h oppositeSource cubicEisensteinResidue=
       unramifiedGaussResidue (9*h)*cuspIntervalWhittakerHeightFactor a b ρ (4/3:ℂ) h := by
   have hfixed := (cuspWhittakerHeightFactor_analyticAt h (4/3) (by norm_num)).continuousAt.tendsto.mono_left
-    (show 𝓝[≠] (4/3:ℂ)≤𝓝 (4/3:ℂ) from nhdsWithin_le_nhds)
+    (show 𝓝[≠] (4/3)≤𝓝 (4/3) from nhdsWithin_le_nhds)
   have hvar := (cuspIntervalWhittakerHeightFactor_analyticAt a b ha ρ h (4/3) (by norm_num)).continuousAt.tendsto.mono_left
-    (show 𝓝[≠] (4/3:ℂ)≤𝓝 (4/3:ℂ) from nhdsWithin_le_nhds)
+    (show 𝓝[≠] (4/3)≤𝓝 (4/3) from nhdsWithin_le_nhds)
   have hl:=((translatedHeightFamily_residue_limit a b ha ρ h oppositeSource).mul hfixed).comp upperVertical_tendsto_cubic_punctured
   have hr:=((translatedCuspFamily_residue_limit h oppositeSource 2 3 (by norm_num) (by norm_num)).mul hvar).comp
     upperVertical_tendsto_cubic_punctured
-  have hev : (fun t:ℝ=>((((4/3:ℂ)+(t:ℂ)*Complex.I)-4/3)*
-      translatedHeightFamily a b ha ρ h oppositeSource ((4/3:ℂ)+(t:ℂ)*Complex.I))*
-        cuspWhittakerHeightFactor ((4/3:ℂ)+(t:ℂ)*Complex.I) h)
-      =ᶠ[𝓝[>] (0:ℝ)] (fun t:ℝ=>((((4/3:ℂ)+(t:ℂ)*Complex.I)-4/3)*
-      translatedCuspFamily h oppositeSource 2 3 (by norm_num) (by norm_num) ((4/3:ℂ)+(t:ℂ)*Complex.I))*
-        cuspIntervalWhittakerHeightFactor a b ρ ((4/3:ℂ)+(t:ℂ)*Complex.I) h) := by
+  have hev : (fun t:ℝ=>((((4/3)+(t:ℂ)*Complex.I)-4/3)*
+      translatedHeightFamily a b ha ρ h oppositeSource ((4/3)+(t:ℂ)*Complex.I))*
+        cuspWhittakerHeightFactor ((4/3)+(t:ℂ)*Complex.I) h)
+      =ᶠ[𝓝[>] 0] (fun t:ℝ=>((((4/3)+(t:ℂ)*Complex.I)-4/3)*
+      translatedCuspFamily h oppositeSource 2 3 (by norm_num) (by norm_num) ((4/3)+(t:ℂ)*Complex.I))*
+        cuspIntervalWhittakerHeightFactor a b ρ ((4/3)+(t:ℂ)*Complex.I) h) := by
     filter_upwards [self_mem_nhdsWithin] with t ht
     change 0<t at ht
-    have he:=oppositeHeight_cross_identity a b ha ρ h (show (4/3:ℂ)+(t:ℂ)*Complex.I∈{s:ℂ|1<s.re ∧ 0<s.im} by
+    have he:=oppositeHeight_cross_identity a b ha ρ h (show (4/3)+(t:ℂ)*Complex.I∈{s:ℂ|1<s.re ∧ 0<s.im} by
       constructor
       · norm_num
       · simpa using ht)
-    linear_combination (((4/3:ℂ)+(t:ℂ)*Complex.I)-4/3)*he
-  have heq : translatedHeightFourier a b ha ρ h oppositeSource cubicEisensteinResidue*cuspWhittakerHeightFactor (4/3:ℂ) h=
-      translatedCuspFourier h oppositeSource cubicEisensteinResidue*cuspIntervalWhittakerHeightFactor a b ρ (4/3:ℂ) h :=
+    linear_combination (((4/3)+(t:ℂ)*Complex.I)-4/3)*he
+  have heq : translatedHeightFourier a b ha ρ h oppositeSource cubicEisensteinResidue*cuspWhittakerHeightFactor (4/3) h=
+      translatedCuspFourier h oppositeSource cubicEisensteinResidue*cuspIntervalWhittakerHeightFactor a b ρ (4/3) h :=
     tendsto_nhds_unique_of_eventuallyEq hl hr hev
   apply mul_right_cancel₀ (cuspWhittakerHeightFactor_center_ne_zero h)
   rw [heq,translatedCuspFourier_unramified_residue]
@@ -181,7 +114,7 @@ theorem translatedHeightFourier_opposite_residue (a b:ℝ) (ha:0<a) (ρ:BoundedC
 
 end
 
-open CubicKubota ActualEisensteinCubic ConcreteTraceCRT
+open CubicKubota
 local notation "Eis" => ActualEisensteinCubic.O
 
 lemma rational_height_fourier_right_T (a b:ℝ) (ha:0<a) (ρ:BoundedContinuousFunction ℝ ℂ)
@@ -312,8 +245,6 @@ theorem kernelSourceProjection_height_fourier (a b:ℝ) (ha:0<a) (ρ:BoundedCont
 end
 
 section
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology
 
 section
 local notation "Eis" => ActualEisensteinCubic.O
@@ -373,7 +304,6 @@ lemma sourceResidualFullModeAmplitude_nonzero_density (v:ℝ) (hv:0<v) (h:Eis) (
     sourceResidualFullModeAmplitude v h/(v:ℂ)^3=sourceResidualFourierCoefficient h*
       (schlafliBesselK (1/3) (4*Real.pi*‖cuspFrequency h‖*v)/(v:ℂ)^2) := by
   rw [sourceResidualFullModeAmplitude,ite_eq_right hh]
-  have hv0:(v:ℂ)≠0:=Complex.ofReal_ne_zero.mpr hv.ne'
   field_simp
 
 lemma kernelSourceProjection_height_bessel (a b:ℝ) (ha:0<a) (ρ:BoundedContinuousFunction ℝ ℂ)
@@ -424,13 +354,12 @@ lemma sourceResidualFourierCoefficient_interval_bound (a b : ℝ) (ha : 0<a) :
       ‖sourceResidualFourierCoefficient h‖*
         ‖∫v in Set.Icc a b,schlafliBesselK (1/3) (4*Real.pi*‖cuspFrequency h‖*v)/(v:ℂ)^2‖≤C := by
   obtain ⟨C,hC,hbound⟩ := kernelCuspHeightFourier_uniform_bound a b ha
-  let area : ℂ := ((9*Real.sqrt 3/2:ℝ):ℂ)
-  have harea : 0<‖area‖ := norm_pos_iff.mpr cusp_volume_ne_zero
+  let area := ((9*Real.sqrt 3/2:ℝ):ℂ)
+  have harea := norm_pos_iff.mpr cusp_volume_ne_zero
   refine ⟨C*‖(kernelSourceProjection cubicEisensteinResidue)‖/‖area‖,div_nonneg (mul_nonneg hC (norm_nonneg _)) harea.le,?_⟩
   intro h hh
-  have heq := kernelSourceProjection_height_bessel a b ha (BoundedContinuousFunction.const ℝ (1:ℂ)) h hh
   have hhbound := hbound (BoundedContinuousFunction.const ℝ (1:ℂ)) h (kernelSourceProjection cubicEisensteinResidue)
-  rw [heq] at hhbound
+  rw [(kernelSourceProjection_height_bessel a b ha (BoundedContinuousFunction.const ℝ (1:ℂ)) h hh)] at hhbound
   simp only [BoundedContinuousFunction.const_apply,one_mul,BoundedContinuousFunction.norm_const_eq,
     norm_one,mul_one,norm_mul,mul_assoc] at hhbound
   apply (le_div_iff₀ harea).mpr
@@ -492,8 +421,6 @@ lemma sourceBesselFunction_height_memLp (v:ℝ) (hv:0<v) :
 
 end
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology
 
 local notation "O" => ActualEisensteinCubic.O
 
@@ -545,11 +472,10 @@ lemma projectedResidue_all_fourier_integrals_ae (a b : ℝ) (ha : 0<a) :
   filter_upwards [projectedResidue_all_slice_coefficients_ae a b ha,
     ae_restrict_mem measurableSet_Icc] with v hv hvmem
   intro h
-  have hv0 : (v:ℂ)≠0 := Complex.ofReal_ne_zero.mpr (ha.trans_le hvmem.1).ne'
   have he := hv h
   unfold kernelCuspSliceCoefficient at he
   rw [←mul_div_assoc] at he
-  exact (div_left_inj' (pow_ne_zero 3 hv0)).mp he
+  exact (div_left_inj' (pow_ne_zero 3 (Complex.ofReal_ne_zero.mpr (ha.trans_le hvmem.1).ne'))).mp he
 
 theorem projectedResidue_cell_slices_ae (a b:ℝ) (ha:0<a) :
     ∀ᵐv ∂volume.restrict (Set.Icc a b),
@@ -559,7 +485,7 @@ theorem projectedResidue_cell_slices_ae (a b:ℝ) (ha:0<a) :
   filter_upwards [projectedResidue_all_fourier_integrals_ae a b ha,
     kernelCuspSections_memLp a b ha (kernelSourceProjection cubicEisensteinResidue),
     ae_restrict_mem measurableSet_Icc] with v hfour hL hv
-  have hpos:0<v:=ha.trans_le hv.1
+  have hpos :=ha.trans_le hv.1
   apply periodDomain_L2_ext _ _ hL (sourceBesselFunction_height_memLp v hpos)
   intro h
   rw [hfour h]

@@ -59,7 +59,7 @@ theorem locallyIntegrableOn_abelZetaKernel :
 theorem abelZetaKernel_isBigO_atTop :
     abelZetaKernel =O[atTop] (fun x : ℝ => x ^ (0 : ℝ)) := by
   apply IsBigO.of_bound 1
-  filter_upwards [eventually_ge_atTop (1 : ℝ)] with x hx
+  filter_upwards [eventually_ge_atTop 1] with x hx
   rw [Real.rpow_zero, norm_one, one_mul]
   exact norm_abelZetaKernel_le_one x
 
@@ -126,14 +126,13 @@ theorem integrableOn_abelZetaRemainder_integrand {s : ℂ} (hs : 0 < s.re) :
   have hF : IntegrableOn
       (fun t : ℝ => (t : ℂ) ^ (-s - 1) * abelZetaKernel t) (Ioi (0 : ℝ)) := by
     simpa [MellinConvergent, smul_eq_mul] using mellinConvergent_abelZetaKernel hs
-  have hF' := hF.mono_set (Ioi_subset_Ioi (show (0 : ℝ) ≤ 1 by norm_num))
   rw [integrableOn_congr_fun (s := Ioi (1 : ℝ)) (g := fun t : ℝ =>
       (t : ℂ) ^ (-s - 1) * abelZetaKernel t) (fun t ht => by
         dsimp only
         rw [abelZetaKernel_eq_of_one_lt ht, mul_comm]
         congr 1
         ring_nf) measurableSet_Ioi]
-  exact hF'
+  exact (hF.mono_set (Ioi_subset_Ioi (show (0 : ℝ) ≤ 1 by norm_num)))
 
 /-- The pole-removed zeta function, with its removable value filled in at one. -/
 noncomputable def regularizedRiemannZeta (s : ℂ) : ℂ :=
@@ -151,12 +150,11 @@ theorem differentiableAt_regularizedRiemannZeta (s : ℂ) :
   · subst s
     refine (analyticAt_of_differentiable_on_punctured_nhds_of_continuousAt ?_ ?_).differentiableAt
     · filter_upwards [self_mem_nhdsWithin] with z hz
-      have hbase : DifferentiableAt ℂ (fun w : ℂ => (w - 1) * riemannZeta w) z :=
-        (differentiableAt_id.sub_const 1).mul (differentiableAt_riemannZeta hz)
+      have hbase := (differentiableAt_id.sub_const 1).mul (differentiableAt_riemannZeta hz)
       apply hbase.congr_of_eventuallyEq
       filter_upwards [eventually_ne_nhds hz] with w hw
       simpa using Function.update_of_ne (f := fun w : ℂ => (w - 1) * riemannZeta w)
-        (v := (1 : ℂ)) hw
+        (v := 1) hw
     · rw [continuousAt_update_same]
       exact riemannZeta_residue_one
   · have hbase : DifferentiableAt ℂ (fun w : ℂ => (w - 1) * riemannZeta w) s :=
@@ -164,7 +162,7 @@ theorem differentiableAt_regularizedRiemannZeta (s : ℂ) :
     apply hbase.congr_of_eventuallyEq
     filter_upwards [eventually_ne_nhds hs] with w hw
     simpa using Function.update_of_ne (f := fun w : ℂ => (w - 1) * riemannZeta w)
-      (v := (1 : ℂ)) hw
+      (v := 1) hw
 
 theorem differentiableAt_regularizedAbelZeta {s : ℂ} (hs : 0 < s.re) :
     DifferentiableAt ℂ regularizedAbelZeta s := by
@@ -204,7 +202,6 @@ theorem riemannZeta_eq_abel_of_one_lt_re {s : ℂ} (hs : 1 < s.re) :
   rw [LSeries_one_eq_riemannZeta hs] at hSeries
   have hPower : IntegrableOn (fun t : ℝ => (t : ℂ) ^ (-s)) (Ioi (1 : ℝ)) :=
     integrableOn_Ioi_cpow_of_lt (by simp; linarith) zero_lt_one
-  have hRemainder := integrableOn_abelZetaRemainder_integrand (zero_lt_one.trans hs)
   rw [hSeries]
   congr 1
   calc
@@ -225,7 +222,7 @@ theorem riemannZeta_eq_abel_of_one_lt_re {s : ℂ} (hs : 1 < s.re) :
         _ = (t : ℂ) ^ (-s) := by congr 1; ring
     _ = (∫ t in Ioi (1 : ℝ), (t : ℂ) ^ (-s)) -
         ∫ t in Ioi (1 : ℝ), ((Int.fract t : ℝ) : ℂ) * (t : ℂ) ^ (-(s + 1)) := by
-      rw [integral_sub hPower hRemainder]
+      rw [integral_sub hPower (integrableOn_abelZetaRemainder_integrand (zero_lt_one.trans hs))]
     _ = 1 / (s - 1) - abelZetaRemainder s := by
       rw [integral_Ioi_cpow_neg hs, abelZetaRemainder_eq_integral (zero_lt_one.trans hs)]
 

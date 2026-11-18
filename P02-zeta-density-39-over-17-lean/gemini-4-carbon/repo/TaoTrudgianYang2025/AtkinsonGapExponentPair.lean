@@ -29,8 +29,7 @@ theorem atkinsonGap_oscillatory_identity {M t u : ℝ}
       atkinsonNormalizedGapPhase M t u ((n : ℝ)/M) =
       (atkinsonSourcePhase t n-atkinsonSourcePhase u n)/(2*Real.pi) := by
     unfold atkinsonNormalizedGapPhase atkinsonIndexPhaseDifference
-    rw [show M*((n : ℝ)/M) = n by field_simp]
-    rw [atkinsonIndexRealPhase_natCast,atkinsonIndexRealPhase_natCast]
+    rw [show M*((n : ℝ)/M) = n by field_simp, atkinsonIndexRealPhase_natCast,atkinsonIndexRealPhase_natCast]
     field_simp
   rw [oscillatory,he,Real.fourierChar_apply,unitaryPhase]
   congr 1
@@ -60,7 +59,7 @@ theorem ExponentPair.atkinson_gap_sum_bound {k l ε : ℝ}
   obtain ⟨η,hη,hmodel⟩ := atkinsonNormalizedGapPhase_approximate P hδ
   refine ⟨η,hη,C,hC,?_⟩
   intro M t u a b hM hu htu ht2 hsmall ha hb
-  have hMp : 0 < M := zero_lt_one.trans_le hM
+  have hMp := zero_lt_one.trans_le hM
   have hf := atkinsonGapFrequency_pos hMp hu htu
   have h := hbound (atkinsonGapFrequency M t u/(2*Real.pi)) M
     (atkinsonNormalizedGapPhase M t u) a b (by positivity) hM ha hb

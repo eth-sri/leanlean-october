@@ -18,7 +18,7 @@ def childFrequencyBall (a : Eis) (R : ℝ) : Finset Eis :=
 
 lemma mem_childFrequencyBall (a : Eis) (ha : a ≠ 0) (R : ℝ) (k : Eis) :
     k ∈ childFrequencyBall a R ↔ ‖eisEmbedding (a*k)‖^2 ≤ R := by
-  have hn : 0 < ‖eisEmbedding a‖^2 := sq_pos_of_pos
+  have hn := sq_pos_of_pos
     (norm_pos_iff.mpr (ConcreteTraceCRT.eisEmbedding_ne_zero ha))
   simp only [childFrequencyBall, Finset.mem_filter]
   refine ⟨fun h => h.2, fun h => ⟨?_,h⟩⟩

@@ -7,9 +7,8 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 noncomputable section
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion
-open ConcretePrimeRowBridge
 local notation "O" => ActualEisensteinCubic.O
 
 theorem marked_large_cube_sum_comm (Ψ : O →* ℂ) (W : ℝ → ℂ)
@@ -51,21 +50,18 @@ theorem marked_inner_completed_sum (Ψ : O →* ℂ) (W : ℝ → ℂ) (X : ℝ)
     (∑'I:Ideal O,summand Ψ W X I B*d (I*B^3)) =
       (cubeWeight Ψ B * (Real.sqrt (X/(Ideal.absNorm B:ℝ)^3):ℂ)⁻¹) *
         ∑'I:Ideal O,columnWeight Ψ I * W ((Ideal.absNorm I:ℝ)/(X/(Ideal.absNorm B:ℝ)^3))*d (I*B^3) := by
-  have hN : 0 < (Ideal.absNorm B:ℝ) := lt_of_lt_of_le zero_lt_one (norm_at_least_one B hB)
-  have hY : 0 < X/(Ideal.absNorm B:ℝ)^3 := div_pos hX (pow_pos hN _)
   have ht (I:Ideal O) : summand Ψ W X I B =
       (cubeWeight Ψ B * (Real.sqrt (X/(Ideal.absNorm B:ℝ)^3):ℂ)⁻¹) *
         (columnWeight Ψ I * W ((Ideal.absNorm I:ℝ)/(X/(Ideal.absNorm B:ℝ)^3))) := by
     have harg : (Ideal.absNorm I:ℝ)*(Ideal.absNorm B:ℝ)^3/X =
         (Ideal.absNorm I:ℝ)/(X/(Ideal.absNorm B:ℝ)^3) := by
       rw [div_div_eq_mul_div]
-    have hn := vstar_source_normalization Ψ W (X/(Ideal.absNorm B:ℝ)^3) hY I
     calc
       _ = cubeWeight Ψ B * (columnWeight Ψ I/(Real.sqrt (Ideal.absNorm I:ℝ):ℂ) *
           Vstar W ((Ideal.absNorm I:ℝ)/(X/(Ideal.absNorm B:ℝ)^3))) := by
         rw [summand,harg]
         ring
-      _ = _ := by rw [hn]; ring
+      _ = _ := by rw [(vstar_source_normalization Ψ W (X/(Ideal.absNorm B:ℝ)^3) (div_pos hX (pow_pos (lt_of_lt_of_le zero_lt_one (norm_at_least_one B hB)) _)) I)]; ring
   simp_rw [ht]
   simp only [mul_assoc, tsum_mul_left]
 

@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.RobertSargosFixedDisplacementSafe
 
 @[expose] public section
@@ -44,7 +53,7 @@ theorem robertSargos_fixed_displacement_linear_card_le
     intro p hp
     have hl : (p.2.2:ℝ)*d+(p.1:ℝ)*q₁-(p.2.1:ℝ)*q₂ = 0 := by
       have hli := hline p hp
-      have hh : p.2.2*d+p.1*q₁-p.2.1*q₂ = 0 := by nlinarith only [hli]
+      have hh : p.2.2*d+p.1*q₁-p.2.1*q₂ = 0 := by nlinarith
       exact_mod_cast hh
     have hb := robertSargos_coefficient_linear_source_gap hH hQ hδ (hr p hp)
       (hh₁ p hp) (hh₂ p hp) hq₁ hq₂ hsignR hl (hnear p hp)
@@ -53,11 +62,8 @@ theorem robertSargos_fixed_displacement_linear_card_le
     constructor <;> linarith
   have hb := primitive_linear_triple_card_le_abs_modulus S hc hd hH
     (by linarith : A-e ≤ A+e) (fun p hp => hh₂ p hp) hp
-    (fun p hp => by have hl := hline p hp; nlinarith only [hl]) hratio
-  calc
-    _ ≤ (d.natAbs.divisors.card:ℝ)+
-      4*H^2*((A+e)-(A-e))/(d.natAbs:ℝ)^2*(∑ g ∈ d.natAbs.divisors, (g:ℝ)) := hb
-    _ = _ := by dsimp [e]; field_simp; ring
+    (fun p hp => by have hl := hline p hp; nlinarith) hratio
+  exact (hb).trans_eq (by dsimp [e]; field_simp; ring)
 
 end TaoTrudgianYang2025
 

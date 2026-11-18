@@ -2,7 +2,6 @@ module
 public import OAI.NumberTheory.DirichletL.Moments.ExceptionalSourceShell
 public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalCount
 
-set_option linter.privateModule false
 
 @[expose] public section
 
@@ -12,12 +11,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentExceptionalCanonicalShell
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge
-open CenteredMomentEligibleEnergy CenteredMomentAllocatedDetectorAmplitude
-open CenteredMomentExceptionalAmplitudePair CenteredMomentExceptionalSourceShell
-open CenteredMomentSecondExceptionalCount CenteredMomentCanonicalFirst CenteredMomentSecondCanonical
-open CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
-open CenteredMomentForcing CenteredMomentChildRows UniqueFactorizationMonoid
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge CenteredMomentEligibleEnergy CenteredMomentAllocatedDetectorAmplitude CenteredMomentExceptionalAmplitudePair CenteredMomentExceptionalSourceShell CenteredMomentSecondExceptionalCount CenteredMomentCanonicalFirst CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentForcing CenteredMomentChildRows UniqueFactorizationMonoid
 local notation "O" => HeckeFamily.O
 universe u
 variable {ι:Type u} [Fintype ι] [DecidableEq ι]

@@ -20,7 +20,6 @@ theorem scaled_derivatives_of_decay (F : ℝ → ℂ) (hF : ContDiff ℝ ∞ F)
   let S : ℝ := ∑ j ∈ Finset.range (K+1), (j.factorial : ℝ)*CF*(H^2)^j
   have hm : 0 < m := Real.exp_pos _
   have hH : 1 ≤ H := Real.one_le_exp_iff.mpr hL
-  have hS : 0 ≤ S := by dsimp [S]; positivity
   refine ⟨S/m^K,by positivity,?_⟩
   intro R hR j hj y hy
   have hh := FourierBridge.coupled_factor_uniform_derivative F R 1 y m H CF 0 K j hF
@@ -30,7 +29,6 @@ theorem scaled_derivatives_of_decay (F : ℝ → ℂ) (hF : ContDiff ℝ ∞ F)
     hj hCF (by simpa using hdecay)
   simp only [zero_add, pow_zero, mul_one, one_mul] at hh
   have hs : (j.factorial : ℝ)*CF*(H^2)^j ≤ S := by
-    dsimp only [S]
     apply Finset.single_le_sum (s := Finset.range (K+1))
       (f := fun i => (i.factorial : ℝ)*CF*(H^2)^i) (a := j)
     · intro i hi; positivity

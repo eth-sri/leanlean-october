@@ -9,8 +9,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptional
-open HeckeFamily CenteredMomentHeckeHeight CenteredMomentHeckeVolume
-open CenteredMomentHeckeTwist CenteredMomentExceptionalCappedAmplitude
+open HeckeFamily CenteredMomentHeckeHeight CenteredMomentHeckeVolume CenteredMomentHeckeTwist CenteredMomentExceptionalCappedAmplitude
 local notation "O" => HeckeFamily.O
 theorem row_rectangle_source_control
     (a b ε B : ℝ) (ha : 0<a) (hb : 0≤b) (hε : 0<ε) (hB : 0≤B) :
@@ -37,8 +36,7 @@ theorem row_rectangle_source_control
   refine ⟨C,hC,?_⟩
   intro W₁ W₂ hs₁ hs₂ Z hZ η m A₀ z hm hA hz hmLam hm2 hcond hex t X₁ X₂ Y₁ Y₂ T L hL hX₁ hX₂ hY₁ hY₂ hpX hpY
   obtain ⟨χ,ψ,hχ,hprim,hind,hQψ,hrow⟩ := fixedInducingRow_controlled η Q m A₀ z hm hA hz hmLam hm2 hex
-  have hχnorm : (Ideal.absNorm χ.modulus:ℝ) ≤ Z^B :=
-    (show (Ideal.absNorm χ.modulus:ℝ) ≤ HeckeRowClosure.rowConductorBound η m 1 (A₀*z) by exact_mod_cast hχ).trans hcond
+  have hχnorm := (show (Ideal.absNorm χ.modulus:ℝ) ≤ HeckeRowClosure.rowConductorBound η m 1 (A₀*z) by exact_mod_cast hχ).trans hcond
   simp_rw [rowTwistedSum_eq η χ m A₀ z hrow]
   exact hbound W₁ W₂ hs₁ hs₂ Z hZ η χ ψ hχnorm hQψ hind m A₀ z hmLam hm2 hrow
     t X₁ X₂ Y₁ Y₂ T L hL hX₁ hX₂ hY₁ hY₂ hpX hpY

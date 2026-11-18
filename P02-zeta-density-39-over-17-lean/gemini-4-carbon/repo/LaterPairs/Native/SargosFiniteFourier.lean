@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.SargosPlanarWindow
 
 @[expose] public section
@@ -25,9 +34,7 @@ def sargosPrefixKernel {N : ℕ} [NeZero N] (H : ℕ) (k : ZMod N) : ℂ :=
   (N : ℂ)⁻¹ * ∑ j ∈ Finset.range H, ZMod.stdAddChar (k*(j : ZMod N))
 
 theorem sargos_stdAddChar_norm {N : ℕ} [NeZero N] (k : ZMod N) :
-    ‖ZMod.stdAddChar k‖ = 1 := by
-  rw [ZMod.stdAddChar_apply]
-  exact Circle.norm_coe _
+    ‖ZMod.stdAddChar k‖ = 1 := by norm_num
 
 theorem sargosFinitePrefix_eq_fourier {N : ℕ} [NeZero N]
     (f : ZMod N → ℂ) (H : ℕ) :
@@ -41,7 +48,7 @@ theorem sargosFinitePrefix_eq_fourier {N : ℕ} [NeZero N]
       intro j hj
       conv_lhs => rw [← ZMod.dft.symm_apply_apply f]
       rw [ZMod.invDFT_apply]
-      simp only [smul_eq_mul]
+      simp
     _ = _ := by
       simp_rw [Finset.mul_sum,Finset.sum_mul]
       rw [Finset.sum_comm]

@@ -8,8 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseMomentFirstOriginalProfile
-open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseMomentFirstChildWindows InverseSecondSourceBlocks
+open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseMomentFirstChildWindows InverseSecondSourceBlocks
 open ConcreteTraceCRT (eisEmbedding)
 local notation "O" => ActualEisensteinCubic.O
 
@@ -90,21 +89,14 @@ lemma log_eighth_small_power (ε : ℝ) (hε : 0<ε) :
   refine ⟨(1+1/δ)^8,by positivity,?_⟩
   intro Z hZ
   have hz : 0<Z := by linarith
-  have h1 := Real.one_le_rpow hZ hd.le
-  have hl := Real.log_le_rpow_div hz.le hd
   have hb : 1+Real.log Z ≤ (1+1/δ)*Z^δ := by
-    calc
-      _ ≤ Z^δ+Z^δ/δ := add_le_add h1 hl
-      _=_ := by ring
-  calc
-    _ ≤ ((1+1/δ)*Z^δ)^8 := pow_le_pow_left₀ (by linarith [Real.log_nonneg hZ]) hb 8
-    _=(1+1/δ)^8*Z^ε := by
+    exact (add_le_add (Real.one_le_rpow hZ hd.le) (Real.log_le_rpow_div hz.le hd)).trans_eq (by ring)
+  exact (pow_le_pow_left₀ (by linarith [Real.log_nonneg hZ]) hb 8).trans_eq (by
       have he : (Z^δ)^8=Z^ε := by
         rw [←Real.rpow_natCast,←Real.rpow_mul hz.le]
         congr 1
-        dsimp [δ]
         ring
-      rw [mul_pow,he]
+      rw [mul_pow,he])
 
 theorem live_joint_scalar_small_power (b Lcap ε : ℝ) (hb : 0 ≤ b) (hcap : 0 ≤ Lcap) (hε : 0<ε) :
     ∃ C : ℝ,0<C ∧ ∀ Z r ell F eta tau : ℝ,2 ≤ Z → r ≤ Lcap → ell ≤ Lcap →

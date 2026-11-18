@@ -7,17 +7,11 @@ public import OAI.NumberTheory.DirichletL.Energy.ReferenceDeletionEnergy
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
 open Filter
+open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyZeroUnbalancedOriginalSource
-open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands
-open CenteredMomentEnergyReferenceChild CenteredMomentEnergyZeroUnbalancedOriginalDeleted
-open CenteredMomentEnergyReferenceDeletionEnergy CenteredMomentNaturalRowSource
-open CenteredMomentOriginalRadialComparison CenteredMomentAllocatedNaturalRadial
-open CenteredMomentFiniteProfileExceptional CenteredMomentInductionEnergy
+open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands CenteredMomentEnergyReferenceChild CenteredMomentEnergyZeroUnbalancedOriginalDeleted CenteredMomentEnergyReferenceDeletionEnergy CenteredMomentNaturalRowSource CenteredMomentOriginalRadialComparison CenteredMomentAllocatedNaturalRadial CenteredMomentFiniteProfileExceptional CenteredMomentInductionEnergy
 local notation "O"=>HeckeFamily.O
 
 theorem original_from_low (epsilonDelete:ℝ)(hepsilonDelete:0<epsilonDelete)
@@ -52,7 +46,7 @@ theorem original_from_low (epsilonDelete:ℝ)(hepsilonDelete:0<epsilonDelete)
   filter_upwards [href] with Z hZ
   refine ⟨hZ.1,?_⟩
   intro ε Q degree K hK hlow s hQ hs hxiM p t X₁ X₂ hX₁ hX₂ hshort hlong
-  have hZpos:0<Z:=zero_lt_one.trans hZ.1
+  have hZpos :=zero_lt_one.trans hZ.1
   apply hweight Z Bmask bΦ a b s (p.profile 0) (p.profile 1) ha (by linarith)
     (p.support 0) (p.support 1) (fun _=>∅) (fun _ _=>0) (fun _=>1)
     t X₁ X₂ _ 0
@@ -64,7 +58,7 @@ theorem original_from_low (epsilonDelete:ℝ)(hepsilonDelete:0<epsilonDelete)
   · exact hX₂
   · have hdiag:0≤diagonalControl s.radial.profile:=by unfold diagonalControl;positivity
     have hLpos:0≤L:=by linarith [s.width_nonneg]
-    have hlog:0≤Real.log Z:=(Real.log_pos hZ.1).le
+    have hlog :=(Real.log_pos hZ.1).le
     positivity
   · norm_num
   · intro D₁ hD₁ D₂ hD₂ J hJ

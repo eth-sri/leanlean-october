@@ -49,21 +49,16 @@ theorem wooleyResidueDifference_factorization
       wooleyResidueUnit xi eta *
         (p : ℤ) ^ wooleyResidueValuation xi eta := by
   let d := wooleyResidueDifference xi eta
-  have hnat :
-      p ^ padicValNat p d.natAbs * Nat.divMaxPow d.natAbs p = d.natAbs :=
-    Nat.pow_padicValNat_mul_divMaxPow p d.natAbs
-  have hsign : (Int.sign d) * (d.natAbs : ℤ) = d :=
-    Int.sign_mul_natAbs d
   change d =
     (Int.sign d * (Nat.divMaxPow d.natAbs p : ℤ)) *
       (p : ℤ) ^ padicValNat p d.natAbs
   calc
-    d = Int.sign d * (d.natAbs : ℤ) := hsign.symm
+    d = Int.sign d * (d.natAbs : ℤ) := (Int.sign_mul_natAbs d).symm
     _ = Int.sign d *
         ((Nat.divMaxPow d.natAbs p : ℤ) *
           (p : ℤ) ^ padicValNat p d.natAbs) := by
       congr 1
-      exact_mod_cast (by simpa only [Nat.mul_comm] using hnat.symm)
+      exact_mod_cast (by simpa using (Nat.pow_padicValNat_mul_divMaxPow p d.natAbs).symm)
     _ = _ := by ring
 
 theorem wooleyResidueUnitNat_coprime
@@ -82,8 +77,6 @@ theorem wooleyResidueValuation_lt
     (hsep : wooleyResiduesSeparated nu xi eta) :
     wooleyResidueValuation xi eta < nu := by
   let d := wooleyResidueDifference xi eta
-  have hd : d ≠ 0 := wooleyResidueDifference_ne_zero_of_separated hsep
-  have hn : d.natAbs ≠ 0 := Int.natAbs_ne_zero.mpr hd
   have hnotdvd : ¬ p ^ nu ∣ d.natAbs := by
     intro hdvd
     have hdvdInt : ((p ^ nu : ℕ) : ℤ) ∣ d := by
@@ -96,7 +89,7 @@ theorem wooleyResidueValuation_lt
     exact hsep hmodeq
   have hnotle : ¬ nu ≤ padicValNat p d.natAbs := by
     intro hle
-    exact hnotdvd ((Nat.pow_dvd_iff_le_padicValNat hp.ne_one hn).2 hle)
+    exact hnotdvd ((Nat.pow_dvd_iff_le_padicValNat hp.ne_one (Int.natAbs_ne_zero.mpr (wooleyResidueDifference_ne_zero_of_separated hsep))).2 hle)
   exact Nat.lt_of_not_ge hnotle
 
 theorem wooley_padic_separation
@@ -109,11 +102,8 @@ theorem wooley_padic_separation
   refine ⟨wooleyResidueValuation xi eta,
     wooleyResidueUnit xi eta, wooleyResidueValuation_lt hp hsep, ?_,
     wooleyResidueDifference_factorization xi eta⟩
-  have hcop := wooleyResidueUnitNat_coprime hp hsep
-  have hd : wooleyResidueDifference xi eta ≠ 0 :=
-    wooleyResidueDifference_ne_zero_of_separated hsep
   simpa [wooleyResidueUnit, wooleyResidueUnitNat,
-    Int.natAbs_mul, Int.natAbs_sign, hd] using hcop
+    Int.natAbs_mul, Int.natAbs_sign, (wooleyResidueDifference_ne_zero_of_separated hsep)] using (wooleyResidueUnitNat_coprime hp hsep)
 
 
 end

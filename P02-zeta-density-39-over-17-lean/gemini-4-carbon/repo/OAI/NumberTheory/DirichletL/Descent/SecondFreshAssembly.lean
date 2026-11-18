@@ -1,6 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.SecondSeparatedColumns
-public import OAI.NumberTheory.DirichletL.Descent.SecondFreshMeasure
+public import OAI.NumberTheory.DirichletL.Descent.SecondKernelMeasure
 
 @[expose] public section
 

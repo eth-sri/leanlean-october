@@ -1,5 +1,7 @@
 module
-public import OAI.NumberTheory.DirichletL.Moments.OriginalComparisonEnergy
+public import OAI.NumberTheory.DirichletL.Moments.RetainedWeightedSource
+public import OAI.NumberTheory.DirichletL.Moments.ReflectedChoiceEnergy
+public import OAI.NumberTheory.DirichletL.Moments.OriginalReflectionEnergy
 public import OAI.NumberTheory.DirichletL.Moments.RadialPolynomialEnergy
 
 @[expose] public section
@@ -7,12 +9,10 @@ public import OAI.NumberTheory.DirichletL.Moments.RadialPolynomialEnergy
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
+open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentOriginalRadialComparison
-open HeckeFamily HeckeDyadic ConcreteTraceCRT
-open CenteredMomentScaleSupremum CenteredMomentSectorLocalization
-open CenteredMomentRadialPolynomialEnergy
+open HeckeFamily HeckeDyadic ConcreteTraceCRT CenteredMomentScaleSupremum CenteredMomentSectorLocalization CenteredMomentRadialPolynomialEnergy
 local notation "O" => HeckeFamily.O
 
 def radialEnergy (F : O→ℂ) (keep : O→Prop) (Φ : 𝓢(ℝ,ℂ)) (K : ℝ) : ℝ :=

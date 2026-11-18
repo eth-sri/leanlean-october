@@ -29,11 +29,11 @@ theorem norm_smoothDyadicTerm (a : ℕ → ℂ) (n : ℕ) (j : ℤ) :
 theorem hasSum_norm_smoothDyadicTerm (a : ℕ → ℂ) (n : ℕ) :
     HasSum (fun j : ℤ => ‖smoothDyadicTerm a n j‖) ‖a (n+2)‖ := by
   simpa only [norm_smoothDyadicTerm, mul_one] using
-    (hasSum_smoothDyadicWeight (show (0 : ℝ) < ((n+2 : ℕ) : ℝ) by positivity)).mul_left ‖a (n+2)‖
+    (hasSum_smoothDyadicWeight (show 0 < ((n+2 : ℕ) : ℝ) by positivity)).mul_left ‖a (n+2)‖
 
 theorem hasSum_smoothDyadicTerm (a : ℕ → ℂ) (n : ℕ) :
     HasSum (fun j : ℤ => smoothDyadicTerm a n j) (a (n+2)) := by
-  have hs := (hasSum_smoothDyadicWeight (show (0 : ℝ) < ((n+2 : ℕ) : ℝ) by positivity)).map
+  have hs := (hasSum_smoothDyadicWeight (show 0 < ((n+2 : ℕ) : ℝ) by positivity)).map
     Complex.ofRealCLM Complex.continuous_ofReal
   simpa only [Function.comp_def, Complex.ofRealCLM_apply, Complex.ofReal_one,
     mul_one, smoothDyadicTerm] using hs.mul_left (a (n+2))

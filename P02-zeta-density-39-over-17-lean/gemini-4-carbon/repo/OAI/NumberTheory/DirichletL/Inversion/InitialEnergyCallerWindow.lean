@@ -8,10 +8,8 @@ namespace OAI
 
 noncomputable section
 
+open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve ConcretePrimeRowBridge SevenEighths.InverseInitialOverlap SevenEighths.InverseInitialRayAttachment SevenEighths.InverseInitialPoissonBridge SevenEighths.InverseInitialKernelBridge SevenEighths.InverseInitialEnergyCallerPool
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve ConcretePrimeRowBridge
-open SevenEighths.InverseInitialOverlap SevenEighths.InverseInitialRayAttachment
-open SevenEighths.InverseInitialPoissonBridge SevenEighths.InverseInitialKernelBridge SevenEighths.InverseInitialEnergyCallerPool
 namespace SevenEighths.InverseInitialEnergyCallerWindow
 local notation "Eis" => ActualEisensteinCubic.O
 
@@ -37,8 +35,7 @@ theorem reconstructed_mem_originalSource
     (hc : Admissible c) (hPc : residual P j∣c)
     (hlive : residualOverlapWindow P j W Z z G ((c.absNorm:ℝ)/Z^(r+z-2*G))≠0) :
     reconstruct P j c∈originalSource Z r b := by
-  have hs : Supported (reconstruct P j c) :=
-    (supported_mul_iff _ _).mpr
+  have hs := (supported_mul_iff _ _).mpr
       ⟨admissible_supported (admissible_of_dvd hP hj),
         admissible_supported (admissible_of_dvd hc (idealQuotient_dvd hPc))⟩
   apply Finset.mem_filter.mpr

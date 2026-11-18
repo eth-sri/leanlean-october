@@ -25,10 +25,10 @@ theorem coprime_fourth_insert_product_le {A : Finset ℕ} {e : ℕ}
     · exact pow_le_pow_left₀ (norm_nonneg _) (norm_gmR_le_card_all W _) 4
     · positivity
   have hRow : (∑ m ∈ A, H e m) ≤ (A.card : ℝ) * (W.card : ℝ) ^ 4 := by
-    simpa only [Finset.sum_const, nsmul_eq_mul] using
+    simpa using
       (Finset.sum_le_sum fun m hm => hH e m)
   have hCol : (∑ n ∈ A, H n e) ≤ (A.card : ℝ) * (W.card : ℝ) ^ 4 := by
-    simpa only [Finset.sum_const, nsmul_eq_mul] using
+    simpa using
       (Finset.sum_le_sum fun n hn => hH n e)
   simp only [Finset.sum_filter, Finset.sum_product]
   change (∑ n ∈ insert e A, ∑ m ∈ insert e A, H n m) ≤

@@ -35,9 +35,8 @@ theorem physicalScales_rpow (Z r : ℝ) (hZ : 1<Z) (k : SourceIndex) (l : ℕ) :
       Real.logb Z (dyadScale (k 5)),
       r-Real.logb Z (dyadScale (k 0))-Real.logb Z (dyadScale (k 2))-Real.logb Z (dyadScale l),
       r-Real.logb Z (dyadScale (k 1))-Real.logb Z (dyadScale (k 2))-Real.logb Z (dyadScale l)] i) := by
-  have hz : 0<Z := zero_lt_one.trans hZ
-  have he (n : ℕ) : Z^(Real.logb Z (dyadScale n))=dyadScale n :=
-    Real.rpow_logb hz (ne_of_gt hZ) (dyadScale_pos n)
+  have hz := zero_lt_one.trans hZ
+  have he (n : ℕ) := Real.rpow_logb hz (ne_of_gt hZ) (dyadScale_pos n)
   funext i
   fin_cases i <;> simp [physicalScales,rawScales,he,Real.rpow_sub hz,div_div]
 

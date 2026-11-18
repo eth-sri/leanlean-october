@@ -9,9 +9,7 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseInitialRetainedSupport
-open ActualEisensteinCubic ConcretePrimeRowBridge ConcreteTraceCRT CompletedGauss
-open InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialProfile
-open InverseInitialKernelBridge SecondPassArithmetic
+open ActualEisensteinCubic ConcretePrimeRowBridge ConcreteTraceCRT CompletedGauss InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialProfile InverseInitialKernelBridge SecondPassArithmetic
 local notation "O"=>ActualEisensteinCubic.O
 variable {ι:Type*}[DecidableEq ι](p:ι→O)(hp:∀i,p i≠0)
   [∀i,(Ideal.span {p i}).IsMaximal]
@@ -46,7 +44,7 @@ omit [DecidableEq ι] [∀i,(Ideal.span {p i}).IsMaximal] in
 theorem ideal_coordinates_one (x:Point ι):
     1≤coordinates p x 0 ∧ 1≤coordinates p x 1 ∧ 1≤coordinates p x 2 ∧
     1≤coordinates p x 4 ∧ 1≤coordinates p x 5 := by
-  have hi (S:Finset ι):(1:ℝ)≤((sourceIdeal p S).absNorm:ℝ):=by
+  have hi (S:Finset ι):1≤((sourceIdeal p S).absNorm:ℝ):=by
     exact_mod_cast Nat.one_le_iff_ne_zero.mpr
       (Ideal.absNorm_eq_zero_iff.not.mpr (sourceIdeal_ne_zero p hp S))
   exact ⟨hi _,hi _,hi _,hi _,hi _⟩

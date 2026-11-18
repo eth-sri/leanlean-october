@@ -9,11 +9,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseInitialRayAttachment
-open ActualEisensteinCubic ConcretePrimeRowBridge CanonicalQuadraticSieve
-open CanonicalRowCompletion CompletedGauss UniqueFactorizationMonoid
-open FirstCauchyArithmetic SecondPassArithmetic ConcreteTraceCRT EisensteinSchwartzPoisson
-open InverseInitialOverlap InverseInitialPoissonBridge InverseInitialKernelBridge
-open InverseInitialArithmetic InverseInitialProfile
+open ActualEisensteinCubic ConcretePrimeRowBridge CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss UniqueFactorizationMonoid FirstCauchyArithmetic SecondPassArithmetic ConcreteTraceCRT EisensteinSchwartzPoisson InverseInitialOverlap InverseInitialPoissonBridge InverseInitialKernelBridge InverseInitialArithmetic InverseInitialProfile
 local notation "O" => ActualEisensteinCubic.O
 
 def elementCharacter (η : Ideal O →* ℂ) : O →* ℂ where
@@ -41,16 +37,13 @@ theorem poolPrimary_primary (F : Finset (Ideal O)) (hF : ∀ I ∈ F,Admissible 
 theorem selected_mask (F : Finset (Ideal O)) (j : Ideal O) (hj : Admissible j)
     (A : Finset (primePool F)) (hcop : IsCoprime (∏ i ∈ A,i.val) j) :
     rowCoprimeMask (fun i : primePool F => i.val) A (primaryGenerator j)=1 := by
-  have hspan := (primaryGenerator_spec j (primaryGenerator_admissible j hj)).1
   unfold rowCoprimeMask
   split_ifs with h
   · obtain ⟨i,hi,hm⟩ := h
-    have hd : i.val ∣ ∏ k ∈ A,k.val := Finset.dvd_prod_of_mem _ hi
     have hjd : i.val ∣ j := by
-      rw [Ideal.dvd_iff_le,←hspan]
+      rw [Ideal.dvd_iff_le,←((primaryGenerator_spec j (primaryGenerator_admissible j hj)).1)]
       exact Ideal.span_le.mpr (Set.singleton_subset_iff.mpr hm)
-    have hp : Prime i.val := Ideal.prime_of_isPrime (NeZero.ne i.val) inferInstance
-    exact False.elim (hp.not_isUnit (hcop.isRelPrime hd hjd))
+    exact False.elim ((Ideal.prime_of_isPrime (NeZero.ne i.val) inferInstance).not_isUnit (hcop.isRelPrime (Finset.dvd_prod_of_mem _ hi) hjd))
   · rfl
 
 theorem selected_conjugate_row (F : Finset (Ideal O))
@@ -64,8 +57,6 @@ theorem selected_conjugate_row (F : Finset (Ideal O))
         (fun A => if (∏ i ∈ A,i.val)∈F then H (∏ i ∈ A,i.val) else 0) u := by
   let : ∀ i : primePool F,(Ideal.span {poolPrimary F i}).IsMaximal :=
     fun i => by rw [poolPrimary_span F hF i]; infer_instance
-  have he : (fun i : primePool F => Ideal.span {poolPrimary F i}) =
-      (fun i : primePool F => i.val) := funext (poolPrimary_span F hF)
   dsimp only
   rw [InitialMeanSquare.sum_selected_ideals F (fun I hI => (hF I hI).2.1)]
   erw [initial_input_row]
@@ -74,11 +65,10 @@ theorem selected_conjugate_row (F : Finset (Ideal O))
   intro A hA
   dsimp only
   rw [elementCharacter_product]
-  simp only [he]
+  simp only [(funext (poolPrimary_span F hF))]
   by_cases hAF : (∏ i ∈ A,i.val)∈F
   · simp only [hAF,ite_true]
-    rw [selected_mask F j hj A (hcop _ hAF),mul_one]
-    rw [idealRowHom_eq_idealSexticRow F hF hAF]
+    rw [selected_mask F j hj A (hcop _ hAF),mul_one, idealRowHom_eq_idealSexticRow F hF hAF]
     simp only [supportMobius,idealSexticRow,InitialMeanSquare.pool_support_product]
     ring
   · simp only [hAF,ite_false,mul_zero,zero_mul]
@@ -105,9 +95,7 @@ theorem initial_overlap_weight (Ψ : O →* ℂ) (j : O)
         (supportMobius (fun i => Ideal.span {p i}) T *
           secondInputCoefficient p hg Ψ j 1 1 (fun A => σ (G∪A)) T) *
         star (V (primeProductNorm p (G∪U)/Z^D))*V (primeProductNorm p (G∪T)/Z^D) := by
-  have hrow (A : Finset ι) :
-      finiteSquarefreeRow (fun i => Ideal.span {p i}) hg A 1 = 1 :=
-    finiteSquarefreeRow_one _ hg A
+  have hrow (A : Finset ι) := finiteSquarefreeRow_one _ hg A
   simp only [overlapPairWeight,secondInputCoefficient,initialBeta,initialTest,
     hrow,one_pow,mul_one,star_mul]
   ring
@@ -220,8 +208,7 @@ theorem initial_input_physical
     ∑ G ∈ F.powerset,∑ U ∈ (F\G).powerset,∑ T ∈ (F\G).powerset,
       if Disjoint U T then ∑ E ∈ G.powerset,∑' h : O,
         initialPhysicalMode p hp hcop hg Ψ j σ V Φ Z D m G U T E h else 0 := by
-  have hn := norm_rpow_half_sq hZ D
-  simp only [norm_mul,mul_pow,hn,Complex.ofReal_mul]
+  simp only [norm_mul,mul_pow,(norm_rpow_half_sq hZ D),Complex.ofReal_mul]
   have hs : (∑' u : O,Φ (‖eisEmbedding u‖^2/Z^m)*
       (((Z^(-D) : ℝ) : ℂ)*(‖inputConjugateRow p hg F Ψ j 1 1
         (initialTest p σ V Z D) u‖^2 : ℝ))) =
@@ -242,9 +229,9 @@ theorem initial_input_physical
   intro T hT
   by_cases hUT : Disjoint U T
   · simp only [hUT,ite_true]
-    have hGU : Disjoint G U := Finset.disjoint_of_subset_right
+    have hGU := Finset.disjoint_of_subset_right
       (Finset.mem_powerset.mp hU) disjoint_sdiff_self_right
-    have hGT : Disjoint G T := Finset.disjoint_of_subset_right
+    have hGT := Finset.disjoint_of_subset_right
       (Finset.mem_powerset.mp hT) disjoint_sdiff_self_right
     unfold maskedSecondDual
     simp only [Finset.mul_sum,←tsum_mul_left]

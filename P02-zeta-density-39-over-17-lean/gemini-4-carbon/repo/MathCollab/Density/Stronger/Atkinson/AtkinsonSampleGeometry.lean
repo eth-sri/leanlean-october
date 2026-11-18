@@ -73,8 +73,7 @@ theorem atkinsonSaddleRoot_monotone {A : ℝ} (hA : 0 < A) :
     Monotone (atkinsonSaddleRoot A) := by
   intro b c hbc
   by_contra hn
-  have hlt := lt_of_not_ge hn
-  have hdiv := div_le_div_of_nonneg_left hA.le (atkinsonSaddleRoot_pos hA c) hlt.le
+  have hdiv := div_le_div_of_nonneg_left hA.le (atkinsonSaddleRoot_pos hA c) (lt_of_not_ge hn).le
   have hb := atkinsonSaddleRoot_inverse_identity hA b
   have hc := atkinsonSaddleRoot_inverse_identity hA c
   linarith
@@ -116,8 +115,8 @@ theorem atkinsonRootSample_mem {T : ℝ} (hT : 0 < T) (m N : ℕ)
   have hb := sqrt_nat_small_frequency hT (m+i) hn
   have hp := atkinsonSaddleRoot_small_frequency hT hb
   have hm := atkinsonSaddleRoot_small_frequency hT (b := -Real.sqrt ((m+i:ℕ):ℝ))
-    (by simpa only [abs_neg] using hb)
-  have hs : 0 < Real.sqrt T := Real.sqrt_pos.2 hT
+    (by simpa using hb)
+  have hs := Real.sqrt_pos.2 hT
   constructor
   · constructor
     · apply (le_div_iff₀ hs).2

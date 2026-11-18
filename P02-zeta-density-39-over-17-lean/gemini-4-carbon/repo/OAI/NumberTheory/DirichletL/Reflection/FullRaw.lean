@@ -69,7 +69,6 @@ theorem mixedReflectedValue_eq_fullRaw (G : PrimeFamily ι)
     rfl
   unfold literalRawSeries rawDualKernelTerm literalRawCoefficient thetaRawIndex literalRawScale
   rw [ite_eq_left ⟨t.2.2.1.property.1,t.2.2.1.property.2,t.2.2.2.property⟩,hx]
-  dsimp only
   simp only [ramifiedScale, one_mul]
   ring
 

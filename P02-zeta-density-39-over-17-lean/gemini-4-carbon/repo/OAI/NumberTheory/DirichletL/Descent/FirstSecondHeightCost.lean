@@ -10,8 +10,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseMomentFirstSecondHeightCost
-open InverseMoment InverseAmbientProfileTower JointLogSeparation FourierBridge
-open InverseMomentFirstOriginalProfile
+open InverseMoment InverseAmbientProfileTower JointLogSeparation FourierBridge InverseMomentFirstOriginalProfile
 
 def firstDegree (degree : ℕ) : ℕ := 2*InverseClippingProfiles.momentOrder (2*degree)
 
@@ -67,7 +66,7 @@ lemma log_fourth_small_power (Cbin ε : ℝ) (hε : 0<ε) :
   have hl : 0≤Real.log Z := Real.log_nonneg hZ1
   have hn : |1+Cbin*Real.log Z|≤b*(1+Real.log Z) := by
     calc
-      _≤1+|Cbin| *Real.log Z := by simpa [abs_mul,abs_of_nonneg hl] using abs_add_le (1:ℝ) (Cbin*Real.log Z)
+      _≤1+|Cbin| *Real.log Z := by simpa [abs_mul,abs_of_nonneg hl] using abs_add_le 1 (Cbin*Real.log Z)
       _≤_ := by dsimp [b];nlinarith [abs_nonneg Cbin]
   calc
     _ = |1+Cbin*Real.log Z|^4 := by rw [←abs_pow,abs_of_nonneg (by positivity)]
@@ -106,9 +105,6 @@ theorem stepBudget_small_power (C Cbin Czero Ctail ε : ℝ)
   apply hsum.trans
   have hpow : 0≤Z^(F+48*eta+tau+pi+epschild+ε) := Real.rpow_nonneg hZ0.le _
   have hcoef : Czero+C*A*Clog+Ctail≤(1+Czero+C*Clog+Ctail)*(1+A) := by
-    have hza : 0≤Czero*A := mul_nonneg hz hA
-    have hta : 0≤Ctail*A := mul_nonneg ht hA
-    have hc : 0≤C*Clog := mul_nonneg hC hlog.le
     nlinarith
   convert mul_le_mul_of_nonneg_right hcoef hpow using 1 ; ring
 

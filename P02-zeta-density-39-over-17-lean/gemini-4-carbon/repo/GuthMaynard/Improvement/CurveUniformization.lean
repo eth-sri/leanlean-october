@@ -1,5 +1,6 @@
 module
-public import GuthMaynard.Improvement.ShortDensityUniform
+public import MathCollab.Density.ZetaCounting
+public import Mathlib.Analysis.SpecialFunctions.Pow.Real
 
 @[expose] public section
 

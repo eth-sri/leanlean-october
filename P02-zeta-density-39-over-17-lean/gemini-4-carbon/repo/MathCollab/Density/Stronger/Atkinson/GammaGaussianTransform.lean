@@ -85,8 +85,7 @@ theorem norm_zetaSquareGammaGaussianIntegrand (T G v x : ℝ) :
 
 theorem integrable_zetaSquareGammaGaussianIntegrand (T v : ℝ) {G : ℝ} (hG : G ≠ 0) :
     Integrable (zetaSquareGammaGaussianIntegrand T G v) := by
-  have hc : Continuous zetaSquareReflectedGammaPhase :=
-    continuous_iff_continuousAt.mpr (fun t => (hasDerivAt_zetaSquareReflectedGammaPhase t).continuousAt)
+  have hc := continuous_iff_continuousAt.mpr (fun t => (hasDerivAt_zetaSquareReflectedGammaPhase t).continuousAt)
   have hf : Continuous (zetaSquareGammaGaussianIntegrand T G v) := by
     unfold zetaSquareGammaGaussianIntegrand
     fun_prop (disch := assumption)

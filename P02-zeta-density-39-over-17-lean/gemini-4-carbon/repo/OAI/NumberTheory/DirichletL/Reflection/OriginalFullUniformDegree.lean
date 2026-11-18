@@ -105,7 +105,7 @@ theorem original_sector_full_energy_uniform_degree
   let f := fun K : rows => literalWholeRow G K.val (hrows K.val K.property) S j Pset (E.completion K) s hc₀ W θ X r aw
   let Et := (Pset.card:ℝ)*Ctail*(1+‖θ‖)^degreeTail*((Ideal.absNorm (∏ b,G.ideal b):ℝ)*QK*QP)*
     (Z^δ)^(-(Adecay:ℝ))*(familyRawScale G s X QK QP^2)⁻¹
-  have hzpos : 0<Z := lt_trans zero_lt_one (lt_of_lt_of_le hZ₀ hZ)
+  have hzpos := lt_trans zero_lt_one (lt_of_lt_of_le hZ₀ hZ)
   have hEt : 0≤Et := by dsimp [Et];positivity
   have hΦ : ‖Φ‖=Cshape := by
     dsimp only [Φ,Cshape]

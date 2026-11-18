@@ -9,9 +9,7 @@ noncomputable section
 
 open scoped Classical BigOperators
 namespace SevenEighths.InverseInitialCanonicalState
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT InverseMoment
-open InverseInitialArithmetic InverseInitialQuotientGeometry InverseInitialProfile
-open InverseInitialEnergyCallerState InverseInitialEnergyCallerWindows
+open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT InverseMoment InverseInitialArithmetic InverseInitialQuotientGeometry InverseInitialProfile InverseInitialEnergyCallerState InverseInitialEnergyCallerWindows
 local notation "O"=>ActualEisensteinCubic.O
 local notation "λ₀"=>ConcretePrimeRowBridge.goodLambda
 variable {ι:Type*}[DecidableEq ι](p:ι→O)(hp:∀i,p i≠0)
@@ -52,20 +50,17 @@ theorem actual_window_state
     M≤r+assignedCenter all z+7*η ∧
     N+V-(N+(θ+v))=2*η := by
   dsimp only
-  have hretained:=window_quotient_subset_retained p S ψ Z D B v θ H ht
   have hP: -2*η≤B-θ:=by
     have hn:=(nonempty_radius p hp (retained p S (fun _=>1) (ψ 0) (ψ 1) Z B θ)
-      Z (B-θ) η hZ ⟨t,hretained⟩
+      Z (B-θ) η hZ ⟨t,(window_quotient_subset_retained p S ψ Z D B v θ H ht)⟩
       (retained_quotient_bound p hp S (fun _=>1) (ψ 0) (ψ 1)
         (lo 0) (hi 0) (lo 1) (hi 1) Z B θ η (zero_lt_one.trans hZ)
         (hψ 0) (hψ 1) (hhi 0) hdlo hdiv)).2
     linarith
   have hreg:=assigned_register all assigned hassigned z hz
-  have hj:assignedElement assigned q≠0:=Finset.prod_ne_zero_iff.mpr hq
-  have hnj:=assigned_norm_power assigned q z a b W Z η (zero_lt_one.trans hZ) hW hret hthreshold
   obtain ⟨hm,hQ0,hnorm,hQ⟩:=retained_full_puncture p hp hpr S ψ D v H
     (lo 0) (hi 0) (lo 1) (hi 1) Z B θ η (assignedCenter assigned z) hZ
-    (hψ 0) (hψ 1) (hhi 0) hdlo hdiv (assignedElement assigned q) hj hnj ht
+    (hψ 0) (hψ 1) (hhi 0) hdlo hdiv (assignedElement assigned q) (Finset.prod_ne_zero_iff.mpr hq) (assigned_norm_power assigned q z a b W Z η (zero_lt_one.trans hZ) hW hret hthreshold) ht
   obtain ⟨x,hx,hxt⟩:=Finset.mem_image.mp ht
   obtain ⟨hV,hM⟩:=live_widths_nonnegative p hp hpr S ψ lo hi hψ Z D B v θ H η hZ hhi
     hx (hf x (Finset.mem_filter.mp hx).1)

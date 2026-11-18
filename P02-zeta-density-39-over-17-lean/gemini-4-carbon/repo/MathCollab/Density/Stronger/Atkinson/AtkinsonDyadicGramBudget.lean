@@ -11,10 +11,8 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonPhysicalCutoff
 
 @[expose] public section
 
-open Complex Finset Set Filter
+open Complex Finset Set Filter RiemannZeta.GuthMaynard MathCollab.Density.Stronger.Fourth
 open scoped ComplexConjugate
-open RiemannZeta.GuthMaynard
-open MathCollab.Density.Stronger.Fourth
 set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
@@ -61,6 +59,5 @@ theorem sum_atkinsonUndampedDyadicPhaseBound_sq_le_budget (N : ℕ) (W : Finset 
   rw [mul_pow]
   apply (mul_le_mul_of_nonneg_left (sum_atkinsonPhaseBlockMax_sq_le_gramMax (2^j) (2^j) W)
     (sq_nonneg (w j))).trans_eq
-  dsimp [w]
   ring
 end MathCollab.Density.Stronger.Atkinson

@@ -77,9 +77,6 @@ theorem heathBrown_inverse_critical_eq_two_reciprocal
       2 * heathBrownCriticalReciprocal k := by
   rw [heathBrownCriticalMoment_cast (by omega : 1 ≤ k)]
   unfold heathBrownCriticalReciprocal
-  have hkReal : (2 : ℝ) ≤ k := by exact_mod_cast hk
-  have hk0 : (k : ℝ) ≠ 0 := by linarith
-  have hkm10 : (k : ℝ) - 1 ≠ 0 := by linarith
   field_simp
 
 theorem heathBrown_critical_core_exponent

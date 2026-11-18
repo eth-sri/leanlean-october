@@ -85,9 +85,8 @@ theorem eligiblePool_card_lower (P : Finset (Ideal O)) (hp : ∀ Q ∈ P, Prime 
     (fun Q hQ => hp Q (Finset.mem_filter.mp hQ).1) R hR
     (fun Q hQ => (Finset.mem_filter.mp hQ).2) Z ℓ B hZ hℓ
     (fun Q hQ => hlower Q (Finset.mem_filter.mp hQ).1) hupper
-  have he := Finset.card_filter_add_card_filter_not (s := P) (fun Q => Q ∣ R)
   have her : ((P.filter (fun Q => Q ∣ R)).card : ℝ) + (eligiblePool P R).card = P.card := by
-    exact_mod_cast he
+    exact_mod_cast (Finset.card_filter_add_card_filter_not (s := P) (fun Q => Q ∣ R))
   linarith
 
 theorem eligiblePool_half (P : Finset (Ideal O)) (hp : ∀ Q ∈ P, Prime Q)

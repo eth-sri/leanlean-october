@@ -10,13 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentSecondBlockRadicalHarmonicMass
-open CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentCanonicalFirst CenteredMomentSecondRetainedAggregate CenteredMomentSourceMass
-open CenteredMomentSecondBlockAggregate CenteredMomentSecondBlockCount
-open CenteredMomentSecondActiveCount CenteredMomentActiveSource
-open CenteredMomentFirstSectors CenteredMomentSourceRow
-open CenteredMomentSecondCanonicalNonunit CenteredMomentRankinRadical
-open CenteredMomentCommonHarmonicMass CenteredMomentOriginalCommonHarmonic
+open CanonicalQuadraticSieve CompletedGauss CenteredMomentCanonicalFirst CenteredMomentSecondRetainedAggregate CenteredMomentSourceMass CenteredMomentSecondBlockAggregate CenteredMomentSecondBlockCount CenteredMomentSecondActiveCount CenteredMomentActiveSource CenteredMomentFirstSectors CenteredMomentSourceRow CenteredMomentSecondCanonicalNonunit CenteredMomentRankinRadical CenteredMomentCommonHarmonicMass CenteredMomentOriginalCommonHarmonic
 open CenteredMomentSecondBlockHarmonicMass (ActiveSubsets ActiveBlocks activeSubsetLabel activeSubsetLabel_injective activeSubsetLabel_mem)
 local notation "O" => ActualEisensteinCubic.O
 
@@ -89,7 +83,6 @@ theorem actual_block_radical_mass (B L Cr ε : ℝ) (hB : 0≤B) (hL : 0≤L)
   refine ⟨C₂*C₁,mul_pos hC₂ hC₁,?_⟩
   filter_upwards [hblocks,Filter.eventually_ge_atTop (2:ℝ)] with Z hb hZ
   intro seed hs hs0 S β hm hn K R H hK hR hH
-  have hsum:=hmass Z hZ seed hs hs0 S β hm hn
   rw [active_blocks_sum_eq]
   calc
     _ ≤ ∑p : ActiveLabel S β,∑U : Finset (CommonIndex p.val.1 p.val.2),
@@ -105,7 +98,7 @@ theorem actual_block_radical_mass (B L Cr ε : ℝ) (hB : 0≤B) (hL : 0≤L)
         ∑U : Finset (CommonIndex p.val.1 p.val.2),radicalWeight p.val.1 p.val.2) := by
       simp only [Finset.mul_sum]
     _ ≤ (C₂*Z^(ε/2))*(C₁*Z^(ε/2)/(seed.absNorm:ℝ)) :=
-      mul_le_mul_of_nonneg_left hsum (by positivity)
+      mul_le_mul_of_nonneg_left (hmass Z hZ seed hs hs0 S β hm hn) (by positivity)
     _ = (C₂*C₁)*Z^ε/(seed.absNorm:ℝ) := by
       calc
         _ = (C₂*C₁)*(Z^(ε/2)*Z^(ε/2))/(seed.absNorm:ℝ) := by ring

@@ -17,8 +17,7 @@ def rowNorm (u : FreeRow) : ℝ := (Ideal.span {u.val}:Ideal O).absNorm
 
 lemma rowNorm_ge_one (u : FreeRow) : 1≤rowNorm u := by
   unfold rowNorm
-  have hn : (Ideal.span {u.val}:Ideal O)≠⊥ := Ideal.span_singleton_eq_bot.not.mpr u.property.1
-  exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hn)
+  exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr (Ideal.span_singleton_eq_bot.not.mpr u.property.1))
 
 lemma finite_bounded_freeRows (H : ℝ) : {u : FreeRow | rowNorm u≤H}.Finite := by
   by_contra hs
@@ -57,8 +56,7 @@ lemma dyadicRows_disjoint (A : ℝ) (hA : 0<A) : Pairwise (fun m n=>Disjoint (dy
   intro u hm hn
   rw [mem_dyadicRows] at hm hn
   have hpow (j k : ℕ) (hjk : j<k) : 2*(A*(2:ℝ)^j)≤A*(2:ℝ)^k := by
-    have hh := pow_le_pow_right₀ (by norm_num : (1:ℝ)≤2) (Nat.succ_le_iff.mpr hjk)
-    have := mul_le_mul_of_nonneg_left hh hA.le
+    have := mul_le_mul_of_nonneg_left (pow_le_pow_right₀ (by norm_num : (1:ℝ)≤2) (Nat.succ_le_iff.mpr hjk)) hA.le
     simpa only [pow_succ,mul_assoc,mul_comm,mul_left_comm] using this
   rcases lt_or_gt_of_ne hmn with h|h
   · exact not_lt_of_ge ((hpow m n h).trans hn.2.1) hm.2.2

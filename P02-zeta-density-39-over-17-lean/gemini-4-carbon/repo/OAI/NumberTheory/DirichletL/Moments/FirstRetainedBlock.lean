@@ -9,11 +9,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstRetainedBlock
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge HeckeFamily CompletedGauss CanonicalQuadraticSieve
-open CenteredMomentFirstRetainedPhysical CenteredMomentFirstCommonFourierTransport
-open CenteredMomentFirstPhysicalSource CenteredMomentFirstPhysicalDyadicAssembly
-open CenteredMomentCanonicalFirst CenteredMomentFirstReduced CenteredMomentRowNorm
-open CenteredMomentCommonSupport CenteredMomentSupportedCorrelation CenteredMomentSectorLocalization CenteredMomentFirstScale
+open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge HeckeFamily CompletedGauss CanonicalQuadraticSieve CenteredMomentFirstRetainedPhysical CenteredMomentFirstCommonFourierTransport CenteredMomentFirstPhysicalSource CenteredMomentFirstPhysicalDyadicAssembly CenteredMomentCanonicalFirst CenteredMomentFirstReduced CenteredMomentRowNorm CenteredMomentCommonSupport CenteredMomentSupportedCorrelation CenteredMomentSectorLocalization CenteredMomentFirstScale
 local notation "O"=>ActualEisensteinCubic.O
 
 lemma retained_tsum (R:ℝ)(f:O→ℂ):
@@ -42,7 +38,6 @@ lemma retainedFourierTerm_finite (a b r:O)(ha:a≠0)(hb:b≠0)(hr:r≠0)
         EisensteinSchwartzPoisson.paperRadialFourier W
           ((K/normValue e)*normValue h/normValue (a*(b*r))):=by
   unfold retainedFourierTerm
-  dsimp only
   simp_rw [mul_assoc (retainedWeight R (normValue _):ℂ)]
   rw [retained_tsum]
   simp_rw [Finset.mul_sum]
@@ -89,10 +84,8 @@ theorem fixed_sector_term_block
   unfold fixedRetainedTerm
   generalize_proofs
   simp_rw [retainedFourierTerm_finite]
-  rw [finite_pair_row_sum]
-  rw [retainedInfiniteBlock_eq_finite]
+  rw [finite_pair_row_sum, retainedInfiniteBlock_eq_finite]
   unfold retainedBlock inactiveWeight
-  dsimp only
   simp only [normValue_eq_embedding]
   congr 1
   apply Finset.sum_congr rfl

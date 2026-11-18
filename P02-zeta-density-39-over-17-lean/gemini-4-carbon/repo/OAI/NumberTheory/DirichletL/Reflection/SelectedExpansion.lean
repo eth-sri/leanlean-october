@@ -117,8 +117,7 @@ theorem original_selected_reflected_expansion
           (((poolPrimeFamily R (Ideal.span {m}*F) Q₀).restrict B).reflected K hK (S.restrict T)).generator_good
           (reflectedExponent (fun b : B => completedLocalExponent R F b.val.val))
           (slotIndices B (PrimeIndex K) T) W X := by
-  have hP : Pairwise (Function.onFun IsCoprime (Pall).ideal) :=
-    joined_free_pairwise D.movingIdeal Q₀ D.movingSupported S hS hdis
+  have hP := joined_free_pairwise D.movingIdeal Q₀ D.movingSupported S hS hdis
   have hodd : ∀ i, ringChar (Eis⧸(Pall).ideal i)≠2 := by
     intro i
     cases i with

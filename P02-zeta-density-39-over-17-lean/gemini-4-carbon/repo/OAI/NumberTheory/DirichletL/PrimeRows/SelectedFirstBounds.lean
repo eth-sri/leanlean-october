@@ -8,8 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler
-open CanonicalQuadraticSieve CanonicalRowCompletion
+open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler CanonicalQuadraticSieve CanonicalRowCompletion
 
 lemma compensatedReplacement_crude (V W D M B q : ℂ) (A E : ℝ)
     (hA : 0≤A) (hE : 0≤E) (hV : ‖V‖≤1) (hW : ‖W‖≤A)
@@ -23,15 +22,14 @@ lemma compensatedReplacement_crude (V W D M B q : ℂ) (A E : ℝ)
     rw [norm_one,norm_mul]
     have hm := (mul_le_mul hV hW (norm_nonneg _) (by norm_num)).trans_eq (one_mul A)
     linarith
-  have hi := ProbeLocal.inv_one_sub_norm_le_two D hD
   unfold ProbeLocal.compensatedReplacement
   rw [div_eq_mul_inv,norm_mul]
   calc
     _ ≤ ((‖B-q‖*‖1-V‖*‖1-W‖*‖M‖)+‖q‖*‖1-V*W‖)*2 := by
-      apply mul_le_mul _ hi (norm_nonneg _) (by positivity)
+      apply mul_le_mul _ (ProbeLocal.inv_one_sub_norm_le_two D hD) (norm_nonneg _) (by positivity)
       simpa only [norm_mul] using norm_sub_le ((B-q)*(1-V)*(1-W)*M) (q*(1-V*W))
     _ ≤ ((E+A)*2*(1+A)*388+A*(1+A))*2 := by
-      have hbq : ‖B-q‖≤E+A := (norm_sub_le B q).trans (add_le_add hB hq)
+      have hbq := (norm_sub_le B q).trans (add_le_add hB hq)
       gcongr
     _ = _ := by ring
 

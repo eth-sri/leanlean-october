@@ -14,7 +14,7 @@ theorem coefficient_one_difference_eq_ratio_second (M : ℕ) (W : Finset ℝ) :
       gmDiscreteRatioMoment 2 M W := by
   rw [gmDiscreteRatioMoment_eq_iterated,
     ← sourceCoefficientOne_differenceMoment_eq_gmR_ratioMoment]
-  have hone : conjugateCoeffs (fun _ => (1 : ℂ)) = fun _ => (1 : ℂ) := by
+  have hone : conjugateCoeffs (fun _ => 1) = fun _ => 1 := by
     funext n
     exact star_one ℂ
   simp_rw [norm_sourceDirichletPoly_eq_dirichletPoly_conjugateCoeffs, hone]

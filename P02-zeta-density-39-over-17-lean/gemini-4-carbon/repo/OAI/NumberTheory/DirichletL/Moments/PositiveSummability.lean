@@ -10,11 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentPositiveSummability
-open HeckeFamily CenteredMomentAbsoluteEnergy CenteredMomentSourceMass
-open CenteredMomentHeckeExpansion CenteredMomentHeckeHeight CenteredMomentHeckeSlots
-open CenteredMomentRetainedEnergy CenteredMomentRetainedProfile CenteredMomentDivisorRetained
-open CenteredMomentDivisorRectangle CenteredMomentDivisorExtraction CenteredMomentDivisorAllocation
-open ConcreteTraceCRT
+open HeckeFamily CenteredMomentAbsoluteEnergy CenteredMomentSourceMass CenteredMomentHeckeExpansion CenteredMomentHeckeHeight CenteredMomentHeckeSlots CenteredMomentRetainedEnergy CenteredMomentRetainedProfile CenteredMomentDivisorRetained CenteredMomentDivisorRectangle CenteredMomentDivisorExtraction CenteredMomentDivisorAllocation ConcreteTraceCRT
 local notation "O" => HeckeFamily.O
 
 lemma plain_finite_norm (η:Character) (m A z:O) (t:ℝ) (W:ℝ→ℂ) (b X:ℝ)
@@ -32,9 +28,7 @@ lemma plain_finite_norm (η:Character) (m A z:O) (t:ℝ) (W:ℝ→ℂ) (b X:ℝ)
       simp only [map_zero,zero_mul]
     · have hw:W ((Ideal.absNorm I:ℝ)/X)=0 := by
         by_contra hn
-        have hh:=hs hn
-        have hbound:(Ideal.absNorm I:ℝ)≤b*X:=(div_le_iff₀ hX).mp hh
-        exact hI ((mem_idealBall _ _).mpr ⟨h0,hbound⟩)
+        exact hI ((mem_idealBall _ _).mpr ⟨h0,((div_le_iff₀ hX).mp (hs hn))⟩)
       rw [hw,mul_zero]
 
 lemma slot_finite_norm (η:Character) (m A z:O) (t:ℝ)

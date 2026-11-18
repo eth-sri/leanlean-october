@@ -41,7 +41,7 @@ theorem original_optional_terminal_saving
         F₀ - cstar / 4 := by
   let G := (poolPrimeFamily J (B*F*R) Q₀).restrict A
   let j := fun a : A => completedLocalExponent J F a.val.val
-  have hQ : B*F*R≠0 := mul_ne_zero (mul_ne_zero hB hF) hR
+  have hQ := mul_ne_zero (mul_ne_zero hB hF) hR
   have hj : (fun i => completedLocalExponent I F (G.ideal i))=j := by
     funext i
     exact poolPrimeFamily_fiber_exponent J I F (B*F*R) Q₀ hJ hI hQ hpower hmask i.val

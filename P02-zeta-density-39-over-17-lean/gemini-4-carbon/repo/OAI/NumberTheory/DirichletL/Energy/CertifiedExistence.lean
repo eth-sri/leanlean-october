@@ -10,9 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentEnergyCertifiedExistence
-open HeckeFamily CenteredMomentEnergyCappedWidthInduction
-open CenteredMomentEnergyCappedAnalyticSuccessor CenteredMomentEnergyCappedRadialTransport
-open CenteredMomentEnergyWidthSchedule
+open HeckeFamily CenteredMomentEnergyCappedWidthInduction CenteredMomentEnergyCappedAnalyticSuccessor CenteredMomentEnergyCappedRadialTransport CenteredMomentEnergyWidthSchedule
 local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
 variable (M:Ideal O)[NeZero M]
@@ -34,11 +32,10 @@ theorem certified_bands (W:ℝ→ℂ)(aslot bslot a b radial Bmask L lo hi Mcap 
       haslot hWs hW ha (by linarith) (by linarith) hmask hMcap.le (by linarith) hε hbeta hκ
   | succ k ih =>
     intro hk
-    have hprevious:=ih (Nat.le_of_succ_le hk)
     have hstep:k<count Mcap ε:=by omega
     exact actual_successor (α:=α) M H hH W aslot bslot a b radial Bmask L lo hi Mcap κ ε
       haslot hWs hW hbslot ha haUpper hb hrad hmask hMcap hκ0 hε hbeta hκ
-      k hstep hprevious
+      k hstep (ih (Nat.le_of_succ_le hk))
 
 theorem terminal_certificate (W:ℝ→ℂ)(aslot bslot a b radial Bmask L lo hi Mcap κ ε:ℝ)
     (haslot:0<aslot)(hWs:Function.support W⊆Set.Icc aslot bslot)(hW:ContDiff ℝ ∞ W)

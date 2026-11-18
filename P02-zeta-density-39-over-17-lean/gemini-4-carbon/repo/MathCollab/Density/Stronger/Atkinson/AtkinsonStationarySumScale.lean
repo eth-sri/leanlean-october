@@ -11,8 +11,7 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonFiniteStationaryError
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 noncomputable section
-open Complex Filter
-open MathCollab.Density.Stronger.Fourth
+open Complex Filter MathCollab.Density.Stronger.Fourth
 namespace MathCollab.Density.Stronger.Atkinson
 
 theorem atkinsonSourceCutoff_le_natural {T G L : ℝ}
@@ -58,8 +57,7 @@ theorem atkinsonStationary_cutoff_scale_le {T G L q : ℝ}
   have hT0 : 0 < T := by linarith
   have hG0 : 0 < G := by linarith
   have hL0 : 0 < L := by linarith
-  have hN := atkinsonSourceCutoff_le_natural hT hG0 hupper hL
-  have hmono := Real.rpow_le_rpow (Nat.cast_nonneg (atkinsonSourceCutoff T G L)) hN
+  have hmono := Real.rpow_le_rpow (Nat.cast_nonneg (atkinsonSourceCutoff T G L)) (atkinsonSourceCutoff_le_natural hT hG0 hupper hL)
     (show 0 ≤ q by linarith)
   have hGp : G^(3/2-2*q) ≤ 1 :=
     Real.rpow_le_one_of_one_le_of_nonpos hG (by linarith)
@@ -67,8 +65,7 @@ theorem atkinsonStationary_cutoff_scale_le {T G L q : ℝ}
     rw [← Real.rpow_two]
     exact Real.rpow_le_rpow_of_exponent_le hL (by linarith)
   have h37 : (37:ℝ)^q ≤ 37 := by
-    have h := Real.rpow_le_rpow_of_exponent_le (by norm_num : (1:ℝ) ≤ 37) hq1
-    simpa only [Real.rpow_one] using h
+    simpa using (Real.rpow_le_rpow_of_exponent_le (by norm_num : (1:ℝ) ≤ 37) hq1)
   calc
     _ ≤ G*Real.sqrt G*T^(-(1/2 : ℝ))*(37*T*L^2/G^2)^q :=
       mul_le_mul_of_nonneg_left hmono (by positivity)

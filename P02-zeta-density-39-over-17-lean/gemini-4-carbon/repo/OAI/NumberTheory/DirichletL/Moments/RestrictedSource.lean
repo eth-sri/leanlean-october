@@ -10,11 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentRestrictedSource
-open CanonicalQuadraticSieve CenteredMomentSourceRow CenteredMomentRowNorm
-open CenteredMomentRestrictedEnergy CenteredMomentRestrictedWindow CenteredMomentRestrictedDomain
-open CenteredMomentSourceLiveColumn CenteredMomentSourceProfileMass CenteredMomentSourceMass
-open CenteredMomentAddedZeroUniform CenteredMomentCommonAllocationSum CenteredMomentFirstSectors
-open CenteredMomentOriginalChildEnergy
+open CanonicalQuadraticSieve CenteredMomentSourceRow CenteredMomentRowNorm CenteredMomentRestrictedEnergy CenteredMomentRestrictedWindow CenteredMomentRestrictedDomain CenteredMomentSourceLiveColumn CenteredMomentSourceProfileMass CenteredMomentSourceMass CenteredMomentAddedZeroUniform CenteredMomentCommonAllocationSum CenteredMomentFirstSectors CenteredMomentOriginalChildEnergy
 local notation "O" => ActualEisensteinCubic.O
 
 theorem rowPolynomial_allocation {α γ : Type*} [Fintype γ]
@@ -38,8 +34,7 @@ theorem smoothed_restricted_allocation {α γ : Type*} [Fintype γ] (keep : O �
       (Fintype.card γ:ℝ)*∑ B,‖b B‖^2*(restrictedEnergy keep S a (d B) W K) := by
   let u := fun z : O => if keep z then (W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re else 0
   have hu (z : O) : 0≤u z := by dsimp only [u];split_ifs;exact hW z;exact le_rfl
-  have hs := restricted_hasSum_weighted keep S a ha (fun i => ∑ B,b B*d B i) W K hK
-  rw [← hs.tsum_eq]
+  rw [← (restricted_hasSum_weighted keep S a ha (fun i => ∑ B,b B*d B i) W K hK).tsum_eq]
   apply Real.tsum_le_of_sum_le (fun z => mul_nonneg (sq_nonneg _) (hu z))
   intro rows
   calc
@@ -95,11 +90,9 @@ theorem original_restricted_child_energy (S : (ι ⊕ Fin 2) → Finset (Ideal O
     rw [original_source_punctured_column S hS hp C R s I hC.1
       (Finset.mem_filter.mp I.property).2.1 hsC ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂,Finset.sum_mul]
     simp only [b,d,mul_assoc]
-  have h := smoothed_restricted_allocation keep Finset.univ (sourceGenerator Q) (sourceGenerator_supported Q) b d W K hK hW
-  have he' := funext he
   change (restrictedEnergy keep Finset.univ (sourceGenerator Q) _ W K)≤_
-  rw [he']
-  apply h.trans_eq
+  rw [(funext he)]
+  apply (smoothed_restricted_allocation keep Finset.univ (sourceGenerator Q) (sourceGenerator_supported Q) b d W K hK hW).trans_eq
   rw [Fintype.card_coe]
   apply congrArg (fun x : ℝ => ((actualAllocations S C).card:ℝ)*x)
   apply Finset.sum_congr rfl

@@ -10,15 +10,10 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators SchwartzMap Topology
 open Filter
+open scoped Classical BigOperators SchwartzMap Topology
 namespace SevenEighths.DetectorDictionaryInverseRawInitialGates
-open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseInitialDetectorSource
-open InverseInitialRawDictionary InverseInitialRayAttachment InverseInitialExcludedPeriod
-open InverseInitialExcludedPool InverseInitialExcludedOverlap InverseInitialExcludedPolynomial
-open CanonicalRowCompletion CanonicalCoefficientClass CanonicalQuadraticSieve ConcreteTraceCRT
-open ConcretePrimeRowBridge UniqueFactorizationMonoid IdealMobiusDivisorSum
-open DetectorDictionaryInverseRawGeometry
+open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseInitialDetectorSource InverseInitialRawDictionary InverseInitialRayAttachment InverseInitialExcludedPeriod InverseInitialExcludedPool InverseInitialExcludedOverlap InverseInitialExcludedPolynomial CanonicalRowCompletion CanonicalCoefficientClass CanonicalQuadraticSieve ConcreteTraceCRT ConcretePrimeRowBridge UniqueFactorizationMonoid IdealMobiusDivisorSum DetectorDictionaryInverseRawGeometry
 local notation "O"=>HeckeFamily.O
 
 def basePeriod (data:RowData):ℕ:=(baseCharacter data).period
@@ -28,10 +23,7 @@ def excluded (data:RowData):Finset (Ideal O):=reflectionExcludedPrimes (basePeri
 def deletedBase (data:RowData):Character:=
   (baseCharacter data).excludePrimes (excluded data) (reflectionExcludedPrimes_prime (basePeriod data))
 
-theorem basePeriod_ne_zero (data:RowData):basePeriod data≠0:=Nat.ne_of_gt (Character.period_pos _)
 
-theorem basePeriod_le (data:RowData):Ideal.span {(basePeriod data:O)}≤(baseCharacter data).modulus:=
-  Ideal.span_le.mpr (Set.singleton_subset_iff.mpr (Character.period_mem _))
 
 theorem raw_base_gates (data:RowData):
     deletedPeriod (basePeriod data)≠0 ∧
@@ -40,7 +32,7 @@ theorem raw_base_gates (data:RowData):
     FactorsModulo (fixedBaseConductor (deletedPeriod (basePeriod data)))
       (elementCharacter (idealCoeff (deletedBase data)).toMonoidHom):=
   deleted_physical_base_gates (baseCharacter data) (basePeriod data)
-    (basePeriod_ne_zero data) (basePeriod_le data)
+    ((Nat.ne_of_gt (Character.period_pos _))) ((Ideal.span_le.mpr (Set.singleton_subset_iff.mpr (Character.period_mem _))))
 
 theorem actual_row_fixed_base (data:RowData)(u:NonzeroElement)(I:Ideal O):
     idealCoeff (data.character u) I=idealCoeff (baseCharacter data) I*idealRowHom u.val I:=by
@@ -63,20 +55,16 @@ theorem completeCutoff_tree (H b Btree cap:ℝ):
 
 theorem completeCutoff_columns (H b Btree cap D n:ℝ)(hb:0≤b)(hD:0≤D)
     (hDH:D≤H)(hn:1≤n):b*(D/n)≤(completeCutoff H b Btree cap:ℝ):=by
-  have hn0:0<n:=zero_lt_one.trans_le hn
-  have hdn:D/n≤D:=(div_le_iff₀ hn0).mpr (le_mul_of_one_le_right hD hn)
-  exact (mul_le_mul_of_nonneg_left (hdn.trans hDH) hb).trans
+  exact (mul_le_mul_of_nonneg_left (((div_le_iff₀ (zero_lt_one.trans_le hn)).mpr (le_mul_of_one_le_right hD hn)).trans hDH) hb).trans
     ((le_max_right _ _).trans (Nat.le_ceil _))
 
 theorem excluded_divisor_norm (data:RowData)(j:Ideal O)
     (hj:j∈idealDivisors (∏P∈excluded data,P)):
     1≤(j.absNorm:ℝ) ∧ (j.absNorm:ℝ)≤((∏P∈excluded data,P).absNorm:ℝ):=by
-  have hP:Squarefree (∏P∈excluded data,P):=
-    prime_product_squarefree _ (reflectionExcludedPrimes_prime (basePeriod data))
-  have hd: j∣∏P∈excluded data,P:=(mem_idealDivisors hP.ne_zero).mp hj
-  have hj0:=ne_zero_of_dvd_ne_zero hP.ne_zero hd
+  have hP := prime_product_squarefree _ (reflectionExcludedPrimes_prime (basePeriod data))
+  have hd :=(mem_idealDivisors hP.ne_zero).mp hj
   constructor
-  · exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hj0)
+  · exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr (ne_zero_of_dvd_ne_zero hP.ne_zero hd))
   · exact_mod_cast Nat.le_of_dvd
       (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hP.ne_zero)) (map_dvd Ideal.absNorm hd)
 
@@ -176,10 +164,9 @@ theorem raw_complete_pool (data:RowData)(H D c b Btree cap:ℝ)
   refine ⟨completeCutoff_tree _ _ _ _,?_⟩
   intro j hj u sigma freq
   have hn:= (excluded_divisor_norm data j hj).1
-  have hH0:0<H:=zero_lt_one.trans hH
-  have hD0:0<D:=zero_lt_one.trans_le hD
-  have hn0:0<(j.absNorm:ℝ):=zero_lt_one.trans_le hn
-  have hex:=Real.rpow_logb hH0 hH.ne' (div_pos hD0 hn0)
+  have hH0 :=zero_lt_one.trans hH
+  have hD0 :=zero_lt_one.trans_le hD
+  have hex:=Real.rpow_logb hH0 hH.ne' (div_pos hD0 (zero_lt_one.trans_le hn))
   obtain ⟨_,hr,_,heD⟩:=raw_log_capacity H D c hH hD hc hcap
   have hDH:D≤H:=by
     calc

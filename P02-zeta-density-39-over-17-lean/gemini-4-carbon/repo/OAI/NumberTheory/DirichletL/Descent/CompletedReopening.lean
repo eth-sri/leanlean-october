@@ -7,9 +7,8 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 noncomputable section
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic FirstPassCubeLabels
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion
-open ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic FirstPassCubeLabels
 local notation "O" => ActualEisensteinCubic.O
 
 def outsideCanonicalMarkedRow {σ : Type*} [DecidableEq σ]
@@ -40,11 +39,8 @@ theorem outsideCanonicalMarkedRow_cube_split {σ : Type*} [DecidableEq σ]
           markedCompletedT Ψrow W (X/(Ideal.absNorm H:ℝ)^3) (fun I=>mark (H^3*I)) else 0) +
       ∑ B∈outsideIdealsUpTo S D,largeCubeCoefficient H₀ B*
         ∑' I:Ideal O,summand Ψrow W X I B*mark (I*B^3) := by
-  dsimp only
   unfold outsideCanonicalMarkedRow
-  rw [finiteCanonicalMarkedRow_complete_global S D hbad hSp Ψ m f z W b X hX hW hD]
-  rw [marked_completed_cube_inverse_split _ W hWc X H₀ hX]
-  rw [marked_large_cube_sum_finite S D hSp Ψ (m*excludedGenerator S) f z
+  rw [finiteCanonicalMarkedRow_complete_global S D hbad hSp Ψ m f z W b X hX hW hD, marked_completed_cube_inverse_split _ W hWc X H₀ hX, marked_large_cube_sum_finite S D hSp Ψ (m*excludedGenerator S) f z
     (fun P hP=>P.mul_mem_left m (excludedGenerator_mem S hP)) W hWc b X H₀ hX hW hD]
 
 theorem outsideCanonicalMarkedRow_reopened {σ : Type*} [DecidableEq σ]
@@ -65,7 +61,6 @@ theorem outsideCanonicalMarkedRow_reopened {σ : Type*} [DecidableEq σ]
           (Real.sqrt (X/(Ideal.absNorm B:ℝ)^3):ℂ)⁻¹)*
         ∑' I:Ideal O,columnWeight Ψrow I*W ((Ideal.absNorm I:ℝ)/(X/(Ideal.absNorm B:ℝ)^3))*mark (I*B^3) := by
   rw [outsideCanonicalMarkedRow_cube_split S D hbad hSp Ψ m f z W hWc b X H₀ hX hW hD]
-  dsimp only
   congr 1
   apply Finset.sum_congr rfl
   intro B hB

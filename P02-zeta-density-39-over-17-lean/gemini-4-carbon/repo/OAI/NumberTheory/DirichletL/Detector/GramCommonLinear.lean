@@ -51,7 +51,7 @@ theorem fullCorrelation_bezout_norm [Fintype R] (n₁ n₂ a b k : R) (hab : a*n
   rw [fullCorrelation_bezout n₁ n₂ a b k hab]
   calc
     _ ≤ ∑t : R,‖f (b*k+n₁*t)*star (g (-a*k+n₂*t))‖ := norm_sum_le _ _
-    _ ≤ ∑_t : R,(1:ℝ) := by
+    _ ≤ ∑_t : R,1 := by
       apply Finset.sum_le_sum
       intro t ht
       rw [norm_mul,norm_star]

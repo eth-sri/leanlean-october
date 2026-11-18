@@ -2,7 +2,16 @@ module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import TaoTrudgianYang2025.ModelEndpointEntry
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.ExponentPairShiftPhase
 
 @[expose] public section
@@ -31,9 +40,8 @@ theorem modelPhase_iteratedDeriv_succ_parameter (σ : ℝ) {u : ℝ}
       -σ*iteratedDeriv p (modelPhase (σ+1)) u := by
   have he : deriv (modelPhase σ) =ᶠ[𝓝 u] fun x => -σ*modelPhase (σ+1) x := by
     filter_upwards [isOpen_Ioi.mem_nhds hu] with x hx
-    have hd := (Real.hasDerivAt_rpow_const (Or.inl hx.ne') (p := -σ)).deriv
     change deriv (fun y : ℝ => y^(-σ)) x = -σ*x^(-(σ+1))
-    simpa only [show -σ-1 = -(σ+1) by ring] using hd
+    simpa only [show -σ-1 = -(σ+1) by ring] using ((Real.hasDerivAt_rpow_const (Or.inl hx.ne') (p := -σ)).deriv)
   rw [iteratedDeriv_succ',he.iteratedDeriv_eq p,iteratedDeriv_const_mul_field]
 
 theorem aProcessShiftPhase_iteratedDeriv
@@ -44,11 +52,9 @@ theorem aProcessShiftPhase_iteratedDeriv
       (1-η)^n/(σ*η) *
         (iteratedDeriv n F (aProcessShiftPoint η 0 u)-
          iteratedDeriv n F (aProcessShiftPoint η 1 u)) := by
-  have hi (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) :
-      aProcessShiftPoint η t u ∈ Ioo (1 : ℝ) 2 :=
-    aProcessShiftPoint_mem_Ioo hη hη₁ ht hu
+  have hi (t : ℝ) (ht : t ∈ Icc 0 1) := aProcessShiftPoint_mem_Ioo hη hη₁ ht hu
   have hc (G : ℝ → ℝ) (hG : ContDiffOn ℝ ∞ G phaseInterval)
-      (x : ℝ) (hx : x ∈ Ioo (1 : ℝ) 2) :
+      (x : ℝ) (hx : x ∈ Ioo 1 2) :
       iteratedDerivWithin n G phaseInterval x = iteratedDeriv n G x := by
     apply iteratedDerivWithin_eq_iteratedDeriv uniqueDiffOn_phaseInterval
     · exact ((hG x ⟨hx.1.le,hx.2.le⟩).contDiffAt

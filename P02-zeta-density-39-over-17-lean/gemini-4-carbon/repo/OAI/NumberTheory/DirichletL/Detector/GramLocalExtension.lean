@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbeGramCommon
-open ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open ConcreteTraceCRT ConcretePrimeRowBridge CenteredMomentCorrelation CenteredMomentCanonical
+open ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge CenteredMomentCorrelation CenteredMomentCanonical
 local notation "O" => ActualEisensteinCubic.O
 
 lemma finiteField_local_norm {F : Type*} [Field F] [Fintype F]
@@ -36,12 +35,11 @@ theorem localExtension_periodic (P : Ideal O) [P.IsMaximal] (hg : goodLambda∉P
     localExtension P hg c n₁ n₂ k=localExtension P hg c m₁ m₂ l := by
   have he₁ := Ideal.Quotient.eq.mpr h₁
   have he₂ := Ideal.Quotient.eq.mpr h₂
-  have hek := Ideal.Quotient.eq.mpr hk
   have hm₁ : n₁∈P↔m₁∈P := by
     rw [←Ideal.Quotient.eq_zero_iff_mem,he₁,Ideal.Quotient.eq_zero_iff_mem]
   have hm₂ : n₂∈P↔m₂∈P := by
     rw [←Ideal.Quotient.eq_zero_iff_mem,he₂,Ideal.Quotient.eq_zero_iff_mem]
-  simp only [localExtension,hm₁,hm₂,he₁,he₂,hek]
+  simp only [localExtension,hm₁,hm₂,he₁,he₂,(Ideal.Quotient.eq.mpr hk)]
 
 theorem localExtension_norm (P : Ideal O) [P.IsMaximal] (hg : goodLambda∉P)
     (c : ℕ) (hc : 1≤c) (n₁ n₂ k : O) :

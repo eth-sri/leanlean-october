@@ -58,11 +58,11 @@ theorem exponent_error_le (n : ℕ) :
   | zero => norm_num [exponent]
   | succ n ih =>
     calc
-      exponent (n + 1) - 4 / 3 ≤ (2 / 3 : ℝ) * (exponent n - 4 / 3) :=
+      exponent (n + 1) - 4 / 3 ≤ (2 / 3) * (exponent n - 4 / 3) :=
         step_error_le (exponent_bounds n).1.le
-      _ ≤ (2 / 3 : ℝ) * (2 / 3 : ℝ) ^ (n + 1) :=
+      _ ≤ (2 / 3) * (2 / 3) ^ (n + 1) :=
         mul_le_mul_of_nonneg_left ih (by norm_num)
-      _ = (2 / 3 : ℝ) ^ (n + 1 + 1) := by rw [pow_succ]; ring
+      _ = (2 / 3) ^ (n + 1 + 1) := by rw [pow_succ]; ring
 
 theorem exists_exponent_lt {ε : ℝ} (hε : 0 < ε) :
     ∃ n : ℕ, exponent n < 4 / 3 + ε := by

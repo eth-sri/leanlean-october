@@ -7,82 +7,14 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 
 namespace CubicEisenstein
 
 section
-open scoped BigOperators Classical ContDiff MatrixGroups
-
-open ActualEisensteinCubic CompletedGauss CompletedDyadic CubicKubota CubicJacobiGlobal ConcreteTraceCRT
-open LocalReflectionBrackets ShortDraftCusp
+open CompletedGauss CompletedDyadic CubicKubota CubicJacobiGlobal LocalReflectionBrackets ShortDraftCusp
+open scoped MatrixGroups
 local notation "Eis" => ActualEisensteinCubic.O
 namespace FixedFourierGeometry
 variable {c:Eis} {h:Eis⧸Ideal.span {c}} (G:FixedFourierGeometry c h)
@@ -91,12 +23,11 @@ variable {ι:Type*} [Fintype ι] {p:ι→Eis} {N:Eis}
 end FixedFourierGeometry
 end
 
-open ActualEisensteinCubic CompletedGauss
+open CompletedGauss
 local notation "Eis" => ActualEisensteinCubic.O
 
 end CubicEisenstein
 
-open scoped Classical BigOperators
 
 namespace CompletedGauss
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
@@ -178,7 +109,7 @@ lemma inactive_product_complement (R:Finset ι) (z:ι→ℂ)
   · intro i hi j hj he
     exact Subtype.ext he
   · intro i hi
-    have hnot:i∉R∪B.image Subtype.val:=(Finset.mem_sdiff.mp hi).2
+    have hnot :=(Finset.mem_sdiff.mp hi).2
     have hr:i∉R:=fun h=>hnot (Finset.mem_union_left _ h)
     refine ⟨⟨i,hr⟩,?_,rfl⟩
     simp only [Finset.mem_sdiff,Finset.mem_univ,true_and]
@@ -201,7 +132,7 @@ theorem inactive_weight_optional_active (R:Finset ι) (z:ι→ℂ)
 end CompletedGauss
 
 namespace CanonicalRowCompletion
-open ActualEisensteinCubic CanonicalQuadraticSieve CompletedGauss IdealMobiusDivisorSum
+open CanonicalQuadraticSieve CompletedGauss IdealMobiusDivisorSum
 local notation "Eis" => ActualEisensteinCubic.O
 
 lemma excluded_prime_dvd_row_mask (q:ℕ) (m:Eis) (F P:Ideal Eis)
@@ -216,34 +147,26 @@ lemma residual_prime_not_excluded (q:ℕ) (m:Eis) (F I P:Ideal Eis) (hP:Prime P)
     (hres:P∣rowResidualPart I (Ideal.span {m*excludedGenerator (reflectionExcludedPrimes q)}*F)) :
     P∉reflectionExcludedPrimes q := by
   intro hmem
-  have hn:¬P∣Ideal.span {m*excludedGenerator (reflectionExcludedPrimes q)}*F:=
-    ((prime_dvd_rowResidualPart_iff _ _ P hP).mp hres).2
-  exact hn (excluded_prime_dvd_row_mask q m F P hmem)
+  exact (((prime_dvd_rowResidualPart_iff _ _ P hP).mp hres).2) (excluded_prime_dvd_row_mask q m F P hmem)
 
 lemma residual_coprime_fixed_conductor (q:ℕ) (hq:q≠0) (m:Eis) (F I:Ideal Eis) :
     IsCoprime (Ideal.span {reflectionConductor q})
       (rowResidualPart I (Ideal.span {m*excludedGenerator (reflectionExcludedPrimes q)}*F)) := by
-  let Q:=Ideal.span {m*excludedGenerator (reflectionExcludedPrimes q)}*F
   apply (IdealCoprimeSieveOperator.primeSupport_disjoint_iff
     (Ideal.span_singleton_eq_bot.not.mpr (reflectionConductor_ne_zero q hq))
-    (squarefreeResidualPart_ne_zero (rowSimplePart I) Q)).mp
+    (squarefreeResidualPart_ne_zero (rowSimplePart I) (Ideal.span {m*excludedGenerator (reflectionExcludedPrimes q)}*F))).mp
   apply Finset.disjoint_left.mpr
   intro P hfixed hres
-  have hp:Prime P:=support_prime hfixed
-  have hd:P∣Ideal.span {reflectionConductor q}:=
-    UniqueFactorizationMonoid.dvd_of_mem_normalizedFactors (Multiset.mem_toFinset.mp hfixed)
-  have hr:P∣rowResidualPart I Q:=
-    UniqueFactorizationMonoid.dvd_of_mem_normalizedFactors (Multiset.mem_toFinset.mp hres)
-  exact residual_prime_not_excluded q m F I P hp hr (reflectionConductor_prime_mem q hq P hp hd)
+  have hp :=support_prime hfixed
+  exact residual_prime_not_excluded q m F I P hp (UniqueFactorizationMonoid.dvd_of_mem_normalizedFactors (Multiset.mem_toFinset.mp hres)) (reflectionConductor_prime_mem q hq P hp (UniqueFactorizationMonoid.dvd_of_mem_normalizedFactors (Multiset.mem_toFinset.mp hfixed)))
 
 end CanonicalRowCompletion
 
-open scoped BigOperators Classical
 
 namespace CompletedGauss
 
 section
-open ActualEisensteinCubic CanonicalQuadraticSieve
+open CanonicalQuadraticSieve
 local notation "Eis" => ActualEisensteinCubic.O
 
 def representativeRowFiber (rows:Finset (Ideal Eis)) (I Q:Ideal Eis) : Finset (Ideal Eis) :=
@@ -266,15 +189,14 @@ lemma representativeRowFiber_injective (rows:Finset (Ideal Eis)) (I Q:Ideal Eis)
 
 end
 
-open ActualEisensteinCubic CanonicalQuadraticSieve
+open CanonicalQuadraticSieve
 local notation "Eis" => ActualEisensteinCubic.O
 
 end CompletedGauss
 
-open scoped Classical BigOperators
 
 namespace CompletedGauss.FreeReflection
-open ActualEisensteinCubic CubicEisenstein CanonicalQuadraticSieve
+open CubicEisenstein CanonicalQuadraticSieve
 local notation "Eis" => ActualEisensteinCubic.O
 
 end CompletedGauss.FreeReflection

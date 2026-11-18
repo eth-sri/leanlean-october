@@ -23,10 +23,9 @@ theorem column_outside (A E:Finset (Ideal O)){P j c:Ideal O}
     (hA:∀n∈A,outside E n)(hc:c∈columns A P j):outside E c := by
   obtain ⟨n,hn,rfl⟩:=Finset.mem_image.mp hc
   obtain ⟨hnA,hns,hg⟩:=mem_original.mp hn
-  have hjn:j∣n:=hg ▸ GCDMonoid.gcd_dvd_left n P
   intro Q hQ hd
   rcases (hE Q hQ).dvd_mul.mp hd with hn|hpr
-  · exact hA n hnA Q hQ (hn.trans (idealQuotient_dvd hjn))
+  · exact hA n hnA Q hQ (hn.trans (idealQuotient_dvd (hg ▸ GCDMonoid.gcd_dvd_left n P)))
   · exact hP Q hQ (hpr.trans (idealQuotient_dvd hj))
 
 theorem admissible_mem_excluded_complete (E:Finset (Ideal O)){I:Ideal O}
@@ -44,8 +43,7 @@ theorem exists_excluded_complete_pool {κ:Type*}(A E:Finset (Ideal O))(T:Finset 
     ∃D:ℕ,tupleColumns (originalOutside A E) T P j⊆
       InitialMeanSquare.outsideSquarefreeIdeals E D ∧
       ∀b X:ℝ,0≤b→b≤bmax→0≤X→X≤Xmax→b*X≤(D:ℝ) := by
-  let D:=max (A.sup Ideal.absNorm*T.sup (fun k=>(P k).absNorm)) ⌈bmax*Xmax⌉₊
-  refine ⟨D,?_,?_⟩
+  refine ⟨(max (A.sup Ideal.absNorm*T.sup (fun k=>(P k).absNorm)) ⌈bmax*Xmax⌉₊),?_,?_⟩
   · intro c hc
     obtain ⟨k,hk,hc⟩:=Finset.mem_biUnion.mp hc
     have hcA:c∈columns A (P k) j:=by

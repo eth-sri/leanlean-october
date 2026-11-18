@@ -7,12 +7,10 @@ public import OAI.NumberTheory.DirichletL.Moments.RayMaskedFloorState
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
+open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentEnergyBands
-open HeckeFamily CenteredMomentEnergyState CenteredMomentFiniteProfileExceptional
-open CenteredMomentNaturalFixedRaySource CenteredMomentInductionEnergy
-open CenteredMomentPrimeSlot QuadraticInitialBound
+open HeckeFamily CenteredMomentEnergyState CenteredMomentFiniteProfileExceptional CenteredMomentNaturalFixedRaySource CenteredMomentInductionEnergy CenteredMomentPrimeSlot QuadraticInitialBound
 local notation "O"=>HeckeFamily.O
 
 def length (Z X:ℝ):ℝ:=Real.logb Z (max 1 X)

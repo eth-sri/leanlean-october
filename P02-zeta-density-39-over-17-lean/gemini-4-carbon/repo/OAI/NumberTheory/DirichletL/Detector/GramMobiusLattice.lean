@@ -16,8 +16,7 @@ local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 variable {ι : Type*} [Fintype ι]
 
 lemma primary_product (C d : O) (hC : λ₀^2∣C-1) (hd : λ₀^2∣d-1) : λ₀^2∣C*d-1 := by
-  have h := dvd_add (hC.mul_right d) hd
-  convert h using 1 ; ring
+  convert (dvd_add (hC.mul_right d) hd) using 1 ; ring
 
 end SevenEighths.ProbeGramCommon
 end

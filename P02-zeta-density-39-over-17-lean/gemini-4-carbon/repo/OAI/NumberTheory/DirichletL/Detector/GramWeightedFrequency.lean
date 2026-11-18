@@ -46,8 +46,8 @@ theorem canonical_nonexceptional_weighted (A : ℕ) (hA : 2<A) (a₀ b₀ : ℝ)
   obtain ⟨K,hK,hblock⟩ := hblock W hs hW
   refine ⟨K,hK,?_⟩
   intro S hS σ C k hk d U v H N hH hN
-  let t : ℝ := (Ideal.absNorm (Ideal.span {k.val}):ℝ)/H
-  let L : ℝ := (Ideal.absNorm (jointFixedModulus S hS):ℝ)*Ideal.absNorm C.val*H/N
+  let t := (Ideal.absNorm (Ideal.span {k.val}):ℝ)/H
+  let L := (Ideal.absNorm (jointFixedModulus S hS):ℝ)*Ideal.absNorm C.val*H/N
   have ht : 0≤t := by dsimp [t];positivity
   have hL : 0≤L := by dsimp [L];positivity
   have htp : 0<1+t := by linarith

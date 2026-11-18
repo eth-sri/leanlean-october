@@ -22,7 +22,7 @@ theorem wooleyPadicCount_degree_zero (Q p h : ℕ) :
 
 theorem wooley_mul_ceilDiv_self
     {k h : ℕ} (hk : 1 ≤ k) : (k * h) ⌈/⌉ k = h := by
-  simpa only [nsmul_eq_mul, Nat.cast_id] using
+  simpa using
     (smul_ceilDiv (α := ℕ) (β := ℕ) (a := k) (by omega : 0 < k) h)
 
 /-- The full source-faithful polynomial Corollary 3.2 discharges the exact

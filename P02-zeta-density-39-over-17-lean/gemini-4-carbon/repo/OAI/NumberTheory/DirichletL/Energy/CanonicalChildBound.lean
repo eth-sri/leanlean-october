@@ -10,17 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentEnergyCanonicalChildBound
-open CenteredMomentEnergyAllocatedClipped CenteredMomentEnergyAllocatedHomogeneous
-open CenteredMomentEnergyChildState CenteredMomentSecondNonexceptionalChosenBlock
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyAllocatedPaid CenteredMomentEnergyAllocatedProfiles
-open CenteredMomentEnergyAllocatedChildren CenteredMomentEnergyAllocatedZero
-open CenteredMomentInductionEnergy CenteredMomentFiniteProfileExceptional
-open CenteredMomentNaturalFixedRaySource CenteredMomentCommonRadialData
-open CenteredMomentCommonHeightEnvelope CenteredMomentCommonAllocationSum
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
-open CenteredMomentAllocatedNaturalSource CenteredMomentRetainedProfile
-open CenteredMomentAllocatedRayDictionary QuadraticInitialBound
+open CenteredMomentEnergyAllocatedClipped CenteredMomentEnergyAllocatedHomogeneous CenteredMomentEnergyChildState CenteredMomentSecondNonexceptionalChosenBlock HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyAllocatedPaid CenteredMomentEnergyAllocatedProfiles CenteredMomentEnergyAllocatedChildren CenteredMomentEnergyAllocatedZero CenteredMomentInductionEnergy CenteredMomentFiniteProfileExceptional CenteredMomentNaturalFixedRaySource CenteredMomentCommonRadialData CenteredMomentCommonHeightEnvelope CenteredMomentCommonAllocationSum CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentAllocatedNaturalSource CenteredMomentRetainedProfile CenteredMomentAllocatedRayDictionary QuadraticInitialBound
 local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
 
@@ -74,7 +64,7 @@ theorem actual_canonical_child_bands (W:ℝ→ℂ)(aslot bslot Mcap Lslot εremo
   intro Z hZ εchild Q hQM C₀ C₁ hC₀ hC₁ hzero hpos
     w σ freq v height mesh hmesh hw hwm hwL hσlo hσhi hheight hfreq
     src hmatch C R B D alloc J τ dyad hn hwidth p X₁ X₂ hX₁ hX₂ hc₁ hc₂ F₁ F₂ hF₁ hF₂
-  have hZ1:1<Z:=hZ₀.trans_le hZ
+  have hZ1 :=hZ₀.trans_le hZ
   let st:=canonicalState Z 0 hZ1 τ (internalQ Q η₀) 1 one_ne_zero (by simp) dyad hn
   have he:=hbound Z hZ 0 εchild Q hQM C₀ C₁ hC₀ hC₁ hzero hpos
     w σ freq v height mesh hmesh hw hwm hwL hσlo hσhi hheight hfreq

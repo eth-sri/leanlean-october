@@ -9,19 +9,17 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbeCentralRepeatedProduct
-open ProbeRowReflectedAllocation ProbeRowRadicalConductor HeckeReciprocalGrowth HeckeDeletionBounds
+open HeckeFamily HeckeInverseAmplification ProbeCentralRepeatedProduct ProbeRowReflectedAllocation ProbeRowRadicalConductor HeckeReciprocalGrowth HeckeDeletionBounds
 local notation "O" => HeckeFamily.O
 
 private lemma cost_power_identity (N L A R eps : ℝ) (hN : 0<N) (hL : 0<L) :
     N^A*N^R*L^2*(2*N^2*L^2)^eps=
       (2:ℝ)^eps*N^(A+R+2*eps)*L^(2+2*eps) := by
-  have hp : (2*N^2*L^2)^eps=(2:ℝ)^eps*N^(2*eps)*L^(2*eps) := by
-    rw [Real.mul_rpow (by positivity) (by positivity),Real.mul_rpow (by positivity) (by positivity)]
-    rw [←Real.rpow_two N,←Real.rpow_two L,←Real.rpow_mul hN.le,←Real.rpow_mul hL.le]
+  have hp : (2*N^2*L^2)^eps=2^eps*N^(2*eps)*L^(2*eps) := by
+    rw [Real.mul_rpow (by positivity) (by positivity),Real.mul_rpow (by positivity) (by positivity), ←Real.rpow_two N,←Real.rpow_two L,←Real.rpow_mul hN.le,←Real.rpow_mul hL.le]
   rw [hp]
   calc
-    _ = (2:ℝ)^eps*(N^A*N^R*N^(2*eps))*(L^2*L^(2*eps)) := by ring
+    _ = 2^eps*(N^A*N^R*N^(2*eps))*(L^2*L^(2*eps)) := by ring
     _ = _ := by
       rw [←Real.rpow_add hN,←Real.rpow_add hN,←Real.rpow_two L,←Real.rpow_add hL]
 

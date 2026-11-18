@@ -57,8 +57,7 @@ theorem original_supported_slot_sum (T : Finset σ)
       ∑ a : supportedSlotChoices (fun i : T => L i.val) ((poolPrimeFamily R (Ideal.span {m}*F) Q₀).ideal) (rowResidualPart I (Ideal.span {m}*F)),
         (∏ i : T,w i.val (a.val i))*
         H ((originalSlotSplit D R I F Q₀ hR hI hF hm hf hz hbad hcop hpow hmask L hmax hgood T).symm (b,a)) := by
-  rw [←(originalSlotSplit D R I F Q₀ hR hI hF hm hf hz hbad hcop hpow hmask L hmax hgood T).symm.sum_comp]
-  rw [Fintype.sum_prod_type]
+  rw [←(originalSlotSplit D R I F Q₀ hR hI hF hm hf hz hbad hcop hpow hmask L hmax hgood T).symm.sum_comp, Fintype.sum_prod_type]
   apply Finset.sum_congr rfl
   intro b hb
   rw [Finset.mul_sum]

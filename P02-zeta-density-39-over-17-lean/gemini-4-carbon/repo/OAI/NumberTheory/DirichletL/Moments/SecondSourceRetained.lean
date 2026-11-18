@@ -9,11 +9,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondSourceRetained
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentSourceRow CenteredMomentSecondLocalization CenteredMomentSecondSourceEnergy
-open CenteredMomentFirstSectors CenteredMomentCompleteCommon CenteredMomentSecondSectorColumns
-open CenteredMomentHeckeColumnWindow CenteredMomentSecondSectorRetained CenteredMomentSecondRetainedPair
-open CenteredMomentSecondSectorFrequency CenteredMomentSupport CenteredMomentSectorLocalization
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss CenteredMomentSourceRow CenteredMomentSecondLocalization CenteredMomentSecondSourceEnergy CenteredMomentFirstSectors CenteredMomentCompleteCommon CenteredMomentSecondSectorColumns CenteredMomentHeckeColumnWindow CenteredMomentSecondSectorRetained CenteredMomentSecondRetainedPair CenteredMomentSecondSectorFrequency CenteredMomentSupport CenteredMomentSectorLocalization
 local notation "O" => ActualEisensteinCubic.O
 
 def retainedKernel (I J : Ideal O) (W : 𝓢(ℝ,ℂ)) (K Tsec Z ξ : ℝ) : ℂ :=
@@ -62,12 +58,10 @@ theorem retained_sector_independent (η : Character) (t : ℝ)
               retainedKernel (C*I) (D*J) W K Tsec Z ξ else 0 := by
   rw [←independent_sector_pools C D hC hD hCD S
     (fun I J=>((β (C*I)*heightCoeff η t I)*star (β (D*J)*heightCoeff η t J))*
-      retainedKernel (C*I) (D*J) W K Tsec Z ξ)]
-  rw [pairSector_double_sum C D hC hD hCD _ _
+      retainedKernel (C*I) (D*J) W K Tsec Z ξ), pairSector_double_sum C D hC hD hCD _ _
     (fun I hI=>(Finset.mem_filter.mp hI).2.1) (fun I hI=>(Finset.mem_filter.mp hI).2.1)
     (fun I J=>((β I*heightCoeff η t I)*star (β J*heightCoeff η t J))*
-      retainedKernel I J W K Tsec Z ξ)]
-  rw [Finset.mul_sum]
+      retainedKernel I J W K Tsec Z ξ), Finset.mul_sum]
   apply Finset.sum_congr rfl
   intro I hI
   rw [Finset.mul_sum]

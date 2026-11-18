@@ -9,78 +9,13 @@ noncomputable section
 
 namespace SecondPassArithmetic
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 
 section
 
-open scoped BigOperators Classical
 
 section
-open ActualEisensteinCubic
 
 lemma parity_pair_norm_bounds (s u : Ideal O) (B : ℝ) (hB : 0<B)
     (hs : s≠0) (hu : u≠0)
@@ -91,7 +26,7 @@ lemma parity_pair_norm_bounds (s u : Ideal O) (B : ℝ) (hB : 0<B)
   have hu1 : 1≤(Ideal.absNorm u : ℝ) := by
     exact_mod_cast Nat.one_le_iff_ne_zero.mpr (fun hz => hu (Ideal.absNorm_eq_zero_iff.mp hz))
   have hs0 : 0<(Ideal.absNorm s : ℝ) := by linarith
-  have hsqrt : 0<Real.sqrt (Ideal.absNorm s : ℝ) := Real.sqrt_pos.mpr hs0
+  have hsqrt := Real.sqrt_pos.mpr hs0
   refine ⟨(le_mul_of_one_le_left hs0.le (one_le_pow₀ hu1)).trans h,?_⟩
   apply (le_div_iff₀ hsqrt).mpr
   have hh : ((Ideal.absNorm u : ℝ)*Real.sqrt (Ideal.absNorm s : ℝ))^2≤B^2 := by
@@ -103,10 +38,9 @@ lemma parity_pair_fiber_count (S : Finset (Ideal O × Ideal O)) (B : ℝ) (hB : 
     (s : Ideal O) (hs : s∈S.image Prod.fst) :
     ((S.filter (fun x => x.1=s)).card : ℝ)≤128*B/Real.sqrt (Ideal.absNorm s) := by
   obtain ⟨x,hx,hxs⟩ := Finset.mem_image.mp hs
-  have hnx := parity_pair_norm_bounds x.1 x.2 B hB (hS x hx).1 (hS x hx).2.1 (hS x hx).2.2
   have hu1 : 1≤(Ideal.absNorm x.2 : ℝ) := by
     exact_mod_cast Nat.one_le_iff_ne_zero.mpr (fun hz => (hS x hx).2.1 (Ideal.absNorm_eq_zero_iff.mp hz))
-  have hscale : 1≤B/Real.sqrt (Ideal.absNorm s) := by simpa only [hxs] using hu1.trans hnx.2
+  have hscale : 1≤B/Real.sqrt (Ideal.absNorm s) := by simpa only [hxs] using hu1.trans (parity_pair_norm_bounds x.1 x.2 B hB (hS x hx).1 (hS x hx).2.1 (hS x hx).2.2).2
   let T := S.filter (fun x => x.1=s)
   have hi : Set.InjOn (fun x : Ideal O × Ideal O => x.2) (↑T : Set (Ideal O × Ideal O)) := by
     intro x hx y hy he
@@ -160,7 +94,6 @@ theorem parity_ideal_pair_count (S : Finset (Ideal O × Ideal O)) (B H : ℝ)
         (fun s hs => (hA s hs).2.1)) (by positivity)
     _ = _ := by ring
 
-open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProductNorm primeProduct aLabel squarefreeLabel cubeActiveSupport)
 open ConcreteTraceCRT (eisEmbedding)
 open IdealMobiusDivisorSum (idealDivisors)
@@ -174,9 +107,8 @@ theorem cubeParityKey_norm_product (x : CubeCoordinates ι) :
     (Ideal.absNorm (cubeParityKey p x).2 : ℝ)^2*Ideal.absNorm (cubeParityKey p x).1 =
       ‖eisEmbedding (primeProduct p x.support x.leftExponent)‖^2*
         ‖eisEmbedding (primeProduct p x.support x.rightExponent)‖^2 := by
-  have h := congrArg (fun I : Ideal O => (Ideal.absNorm I : ℝ)) (cubeParityKey_product p x)
   simpa only [cubeProductIdeal,map_mul,map_pow,Nat.cast_mul,Nat.cast_pow,
-    ←eisEmbedding_norm_sq_eq_absNorm_span] using h.symm
+    ←eisEmbedding_norm_sq_eq_absNorm_span] using (congrArg (fun I : Ideal O => (Ideal.absNorm I : ℝ)) (cubeParityKey_product p x)).symm
 
 include hp in
 omit [∀ (i : ι), (span {p i}).IsMaximal] in
@@ -225,7 +157,6 @@ theorem cube_coordinates_parity_count (ε : ℝ) (hε : 0<ε) :
   have hfiber (q : Ideal O × Ideal O) (hq : q∈Q) :
       ((s.filter (fun x => cubeParityKey p x=q)).card : ℝ)≤D^3*B^(ε/2) := by
     have hq0 := hQ q hq
-    have hqprod0 : q.2^2*q.1≠0 := mul_ne_zero (pow_ne_zero _ hq0.2.1) hq0.1
     have hc : ((s.filter (fun x => cubeParityKey p x=q)).card : ℝ)≤
         ((idealDivisors (q.2^2*q.1)).card : ℝ)^3 := by
       exact_mod_cast cubeParityKey_fiber_card p hp hinj (s.filter (fun x => cubeParityKey p x=q)) q
@@ -236,7 +167,7 @@ theorem cube_coordinates_parity_count (ε : ℝ) (hε : 0<ε) :
     calc
       _ ≤ ((idealDivisors (q.2^2*q.1)).card : ℝ)^3 := hc
       _ ≤ (D*(Ideal.absNorm (q.2^2*q.1) : ℝ)^(ε/12))^3 :=
-        pow_le_pow_left₀ (Nat.cast_nonneg _) (hdiv _ hqprod0) 3
+        pow_le_pow_left₀ (Nat.cast_nonneg _) (hdiv _ (mul_ne_zero (pow_ne_zero _ hq0.2.1) hq0.1)) 3
       _ ≤ (D*(B^2)^(ε/12))^3 := by gcongr
       _ = D^3*B^(ε/2) := by
         rw [mul_pow]
@@ -246,9 +177,8 @@ theorem cube_coordinates_parity_count (ε : ℝ) (hε : 0<ε) :
         congr 1
         ring
   have hqcard := parity_ideal_pair_count Q B H hB0 hH hQ hQactive
-  have hlog := descent_normLogBin_small_power (ε/4) (by positivity) (B^2) (one_le_pow₀ hB)
   have hlog' : (normLogBin (B^2)+1 : ℝ)≤(1+1/(ε/4))*B^(ε/2) := by
-    convert hlog using 1
+    convert (descent_normLogBin_small_power (ε/4) (by positivity) (B^2) (one_le_pow₀ hB)) using 1
     rw [←Real.rpow_natCast,←Real.rpow_mul hB0.le]
     congr 2
     ring
@@ -275,14 +205,12 @@ theorem cube_coordinates_parity_count (ε : ℝ) (hε : 0<ε) :
 end
 
 section
-open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProduct cubeActiveSupport)
 open ConcreteTraceCRT (eisEmbedding)
 open IdealMobiusDivisorSum (idealDivisors)
 
 end
 
-open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProductNorm cubeActiveSupport)
 open ConcreteTraceCRT (eisEmbedding)
 
@@ -291,8 +219,6 @@ variable {ι : Type*} [DecidableEq ι]
 
 end
 
-open scoped BigOperators Classical
-open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProductNorm primeProduct cubeActiveSupport)
 open ConcreteTraceCRT (eisEmbedding)
 open IdealMobiusDivisorSum (idealDivisors mem_idealDivisors)

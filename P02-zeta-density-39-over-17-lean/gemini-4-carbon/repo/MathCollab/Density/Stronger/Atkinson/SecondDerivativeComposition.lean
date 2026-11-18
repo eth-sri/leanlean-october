@@ -29,7 +29,7 @@ namespace MathCollab.Density.Stronger.Atkinson
 theorem iteratedDeriv_ofReal_fun {f : ℝ → ℝ} {j : ℕ} {x : ℝ}
     (hf : ContDiffAt ℝ j f x) :
     iteratedDeriv j (fun y => (f y : ℂ)) x = ((iteratedDeriv j f x : ℝ) : ℂ) := by
-  simpa only [Complex.real_smul, mul_one] using! iteratedDeriv_smul_const hf (1 : ℂ)
+  simpa using! iteratedDeriv_smul_const hf (1 : ℂ)
 
 theorem iteratedDeriv_two_comp_real {f : ℝ → ℂ} {g : ℝ → ℝ} {x : ℝ}
     (hf : ContDiffAt ℝ 2 f (g x)) (hg : ContDiffAt ℝ 2 g x) :
@@ -46,9 +46,8 @@ theorem iteratedDeriv_two_comp_real {f : ℝ → ℂ} {g : ℝ → ℝ} {x : ℝ
     (by norm_num)).hasDerivAt
   have hdf := ((hf.derivWithin (m := 1) (by norm_num)).differentiableAt
     (by norm_num)).hasDerivAt
-  have h := hdg.smul (hdf.scomp x (hg.differentiableAt (by norm_num)).hasDerivAt)
   rw [iteratedDeriv_succ, iteratedDeriv_one, he.deriv_eq]
-  convert h.deriv using 1
+  convert (hdg.smul (hdf.scomp x (hg.differentiableAt (by norm_num)).hasDerivAt)).deriv using 1
   · rfl
   · simp only [iteratedDeriv_succ, iteratedDeriv_zero, real_smul, Complex.ofReal_pow,
       Function.comp_apply]
@@ -95,7 +94,7 @@ theorem exists_real_profile_derivative_bound {v : ℝ → ℝ} {a b : ℝ}
   obtain ⟨M, hM, hm⟩ := exists_intervalC2Bound_fixed (f := fun u => (v u : ℂ))
     (fun u hu => Complex.ofRealCLM.contDiff.contDiffAt.comp u (hv u hu))
   have hv0 (u : ℝ) (hu : u ∈ Icc a b) : |v u| ≤ M := by
-    simpa only [Complex.norm_real, Real.norm_eq_abs] using hm.norm_le u hu
+    simpa using hm.norm_le u hu
   have hv1 (u : ℝ) (hu : u ∈ Icc a b) : |deriv v u| ≤ M := by
     have he := iteratedDeriv_ofReal_fun ((hv u hu).of_le (by norm_num : (1 : WithTop ℕ∞) ≤ 2))
     simp only [iteratedDeriv_one] at he
@@ -103,9 +102,8 @@ theorem exists_real_profile_derivative_bound {v : ℝ → ℝ} {a b : ℝ}
     rw [he, Complex.norm_real, Real.norm_eq_abs, mul_one] at hb
     exact hb
   have hv2 (u : ℝ) (hu : u ∈ Icc a b) : |iteratedDeriv 2 v u| ≤ M := by
-    have he := iteratedDeriv_ofReal_fun (hv u hu)
     have hb := hm.second_le u hu
-    rw [he, Complex.norm_real, Real.norm_eq_abs, one_pow, mul_one] at hb
+    rw [(iteratedDeriv_ofReal_fun (hv u hu)), Complex.norm_real, Real.norm_eq_abs, one_pow, mul_one] at hb
     exact hb
   exact ⟨M, hM, fun u hu => ⟨hv0 u hu, hv1 u hu, hv2 u hu⟩⟩
 

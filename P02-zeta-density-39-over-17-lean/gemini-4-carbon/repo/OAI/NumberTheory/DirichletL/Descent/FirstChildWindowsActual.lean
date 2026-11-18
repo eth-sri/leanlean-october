@@ -8,8 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseMomentFirstChildWindows
-open InverseMoment InverseMomentFirstProfileUniform ActualEisensteinCubic
-open FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion
+open InverseMoment InverseMomentFirstProfileUniform ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion
 local notation "O" => ActualEisensteinCubic.O
 
 def actualOuterRatios {ι : Type*} (p : ι→O) (A₁ A₂ C R : ℝ) (d h : O)

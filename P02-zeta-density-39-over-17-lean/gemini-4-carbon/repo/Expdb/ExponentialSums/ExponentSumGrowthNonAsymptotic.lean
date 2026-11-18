@@ -107,9 +107,8 @@ private lemma isModelPhaseFunction_of_approximations
     (VariableObject.isInfinitesimal_iff_forall_pos δ).1 hδ ε hε
   filter_upwards [hP p, hδsmall] with i hip hiδ
   intro u
-  have herror := (happrox i).2 p hip u
   rw [Real.norm_eq_abs] at hiδ
-  exact lt_of_le_of_lt herror ((le_abs_self (δ i)).trans_lt hiδ)
+  exact lt_of_le_of_lt ((happrox i).2 p hip u) ((le_abs_self (δ i)).trans_lt hiδ)
 
 private lemma nonAsymptotic_of_isExponentSumBound
     {α : ℝ≥0} {β : ℝ} (hbound : IsExponentSumBound α β) :
@@ -128,7 +127,7 @@ private lemma nonAsymptotic_of_isExponentSumBound
     omega
   have hCone : ∀ i, 1 ≤ C i := fun i ↦ by
     dsimp [C]
-    have hi : (0 : ℝ) ≤ i := Nat.cast_nonneg i
+    have hi : 0 ≤ i := Nat.cast_nonneg i
     linarith
   choose T N F a b hdata using fun i ↦
     hfailure (δ i) (hδpos i) (P i) (hPone i) (C i) (hCone i)
@@ -194,14 +193,10 @@ private lemma nonAsymptotic_of_isExponentSumBound
     have hbNat : b i < 2 := by exact_mod_cast hblt
     have hsum :
         ‖exponentialSumAt (F i) (T i) (N i) (a i) (b i)‖ ≤ 2 := by
-      calc
-        ‖exponentialSumAt (F i) (T i) (N i) (a i) (b i)‖ ≤
-            (b i : ℝ) + 1 :=
-          norm_exponentialSumAt_le_add_one
-            (F i) (T i) (N i) (a i) (b i)
-        _ ≤ 2 := by
+      exact (norm_exponentialSumAt_le_add_one
+            (F i) (T i) (N i) (a i) (b i)).trans (by
           have : b i ≤ 1 := by omega
-          exact_mod_cast Nat.add_le_add_right this 1
+          exact_mod_cast Nat.add_le_add_right this 1)
     have hpow : 1 ≤ T i ^ (β + ε) :=
       Real.one_le_rpow (hTone i) (by linarith)
     have hCthree : 3 ≤ C i := by

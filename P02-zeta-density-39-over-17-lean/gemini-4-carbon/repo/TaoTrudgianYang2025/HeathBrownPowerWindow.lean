@@ -26,14 +26,13 @@ theorem heathBrown_monomial_window {T N α δ η p r : ℝ}
     (hwindow : N ≤ T^(α+δ)) :
     T^r*N^(p+η) ≤ T^(r+α*p+(α+1)*η+2*δ) := by
   have hTpos := zero_lt_one.trans_le hT
-  have hpow := Real.rpow_le_rpow hN.le hwindow (add_nonneg hp hη)
   have hcost : (α+δ)*(p+η) ≤ α*p+(α+1)*η+2*δ := by
     have h₁ := mul_le_mul_of_nonneg_left hp₁ hδ
     have h₂ := mul_le_mul_of_nonneg_left hη₁ hδ
     nlinarith
   calc
     T^r*N^(p+η) ≤ T^r*(T^(α+δ))^(p+η) :=
-      mul_le_mul_of_nonneg_left hpow (Real.rpow_nonneg hTpos.le _)
+      mul_le_mul_of_nonneg_left (Real.rpow_le_rpow hN.le hwindow (add_nonneg hp hη)) (Real.rpow_nonneg hTpos.le _)
     _ = T^(r+(α+δ)*(p+η)) := by
       rw [← Real.rpow_mul hTpos.le,← Real.rpow_add hTpos]
     _ ≤ _ := Real.rpow_le_rpow_of_exponent_le hT (by linarith)
@@ -44,8 +43,7 @@ theorem heathBrownPowerMajorant_window {k : ℕ} (hk : 3 ≤ k)
     heathBrownPowerMajorant k η T N ≤
       3*T^(heathBrownBetaBound k α+(α+1)*η+2*δ) := by
   have hd := heathBrownDerivativeExponent_bounds hk
-  have hkd : 0 ≤ (k : ℝ)*heathBrownDerivativeExponent k :=
-    mul_nonneg (Nat.cast_nonneg k) hd.1.le
+  have hkd := mul_nonneg (Nat.cast_nonneg k) hd.1.le
   have hp₁ : 0 ≤ 1-(k : ℝ)*heathBrownDerivativeExponent k := by linarith [hd.2.1]
   have hp₂ : 0 ≤ 1-heathBrownDerivativeExponent k := by linarith [hd.2.2]
   have hb₁ : heathBrownDerivativeExponent k+
@@ -94,9 +92,8 @@ theorem heathBrown_epsilon_budget {α ε : ℝ} (hα : 0 ≤ α) (hε : 0 < ε) 
   have hη : 0 < η := lt_min (by norm_num) (div_pos hε (by positivity))
   have hδ : 0 < δ := lt_min (by norm_num) (div_pos hε (by norm_num))
   have hηcost : (α+1)*η ≤ ε/4 := by
-    have he := mul_le_mul_of_nonneg_left (min_le_right 1 (ε/(4*(α+1)))) ha.le
     dsimp only [η]
-    convert he using 1
+    convert (mul_le_mul_of_nonneg_left (min_le_right 1 (ε/(4*(α+1)))) ha.le) using 1
     field_simp
   have hδcost : 2*δ ≤ ε/4 := by
     have hd := min_le_right 1 (ε/8)

@@ -1,6 +1,16 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
-public import TaoTrudgianYang2025.BetaCutoffEstimates
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
+public import TaoTrudgianYang2025.BetaSmoothCutoff
 
 @[expose] public section
 
@@ -37,8 +47,7 @@ theorem anchoredLegendreError_iteratedDeriv
     iteratedDeriv (n+1) (anchoredLegendreError F σ w) v =
       iteratedDeriv (n+1) (modelPhaseLegendreDual F) v -
         iteratedDeriv n (modelPhase σ⁻¹) v := by
-  have hN : ((n+1 : ℕ) : WithTop ℕ∞) ≤ ∞ :=
-    ENat.natCast_le_of_coe_top_le_withTop le_rfl (n+1)
+  have hN := ENat.natCast_le_of_coe_top_le_withTop le_rfl (n+1)
   have hG := (modelPhaseLegendreDual_contDiffAt hσ hδ hF hv).of_le hN
   have hR := (referenceModelPrimitive_contDiffAt σ⁻¹ hp).of_le hN
   unfold anchoredLegendreError

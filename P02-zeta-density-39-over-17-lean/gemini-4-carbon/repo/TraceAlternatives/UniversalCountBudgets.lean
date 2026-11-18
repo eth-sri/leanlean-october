@@ -34,11 +34,11 @@ theorem universalTraceEnergyMargin_of_endpoints {σ a x : ℝ} (j : Fin 3) (i : 
   · have h := mul_le_mul_of_nonneg_left hx hc
     dsimp only [c] at h
     unfold universalTraceEnergyMargin at *
-    linarith only [hlo,h]
+    linarith
   · have h := mul_le_mul_of_nonpos_left hx' (le_of_not_ge hc)
     dsimp only [c] at h
     unfold universalTraceEnergyMargin at *
-    linarith only [hhi,h]
+    linarith
 
 theorem universalTraceEnergy_length_slope_nonneg {σ : ℝ} (hσ : 7873/9370 ≤ σ)
     (j : Fin 3) (i : Fin 5) :
@@ -53,6 +53,6 @@ theorem universalTraceEnergyMargin_mono_length {σ a x y : ℝ} (hσ : 7873/9370
     universalTraceEnergyMargin σ a x j i ≤ universalTraceEnergyMargin σ a y j i := by
   have h := mul_le_mul_of_nonneg_left hxy (universalTraceEnergy_length_slope_nonneg hσ j i)
   unfold universalTraceEnergyMargin
-  linarith only [h]
+  linarith
 
 end Montgomery.RationalMoment

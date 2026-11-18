@@ -12,8 +12,7 @@ open HeckeFamily HeckeDetectorPrimeFamily
 
 theorem idealCoeff_ne_zero_of_coprime (ν : Character) (J : Ideal O)
     (hJ : J≠0) (hc : IsCoprime J ν.modulus) : idealCoeff ν J≠0 := by
-  have hg := ConcretePrimeRowBridge.idealGenerator_ne_zero J hJ
-  rw [←ConcretePrimeRowBridge.span_idealGenerator J,idealCoeff_span ν hg]
+  rw [←ConcretePrimeRowBridge.span_idealGenerator J,idealCoeff_span ν (ConcretePrimeRowBridge.idealGenerator_ne_zero J hJ)]
   apply MulChar.apply_ne_zero_iff.mpr
   apply (IdealCharacter.isUnit_mk_iff_isCoprime ν.modulus _).mpr
   simpa only [ConcretePrimeRowBridge.span_idealGenerator] using hc

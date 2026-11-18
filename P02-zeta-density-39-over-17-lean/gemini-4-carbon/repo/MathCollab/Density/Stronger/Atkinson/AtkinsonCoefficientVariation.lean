@@ -83,11 +83,10 @@ theorem atkinsonFourthRootCoefficient_antitone {T : ℝ} (hT : 0 < T) :
   intro m hm n hn hmn
   have hm0 : (0:ℝ) < m := Nat.cast_pos.mpr (lt_of_lt_of_le Nat.zero_lt_one hm)
   have hmnR : (m:ℝ) ≤ n := by exact_mod_cast hmn
-  have hp := Real.rpow_le_rpow_of_nonpos hm0 hmnR (by norm_num : -(1/4:ℝ) ≤ 0)
   have hq := Real.rpow_le_rpow_of_nonpos (by positivity : 0 < (m:ℝ)+2*T/Real.pi)
     (add_le_add hmnR (le_rfl : 2*T/Real.pi ≤ 2*T/Real.pi)) (by norm_num : -(1/4:ℝ) ≤ 0)
   rw [atkinsonFourthRootCoefficient_eq hT,atkinsonFourthRootCoefficient_eq hT]
-  exact mul_le_mul (mul_le_mul_of_nonneg_left hp (by positivity)) hq
+  exact mul_le_mul (mul_le_mul_of_nonneg_left (Real.rpow_le_rpow_of_nonpos hm0 hmnR (by norm_num : -(1/4:ℝ) ≤ 0)) (by positivity)) hq
     (Real.rpow_nonneg (by positivity) _) (by positivity)
 
 theorem finiteVariationBound_fourthRootCoefficient {T : ℝ} (hT : 0 < T)
@@ -101,7 +100,7 @@ theorem finiteVariationBound_fourthRootCoefficient {T : ℝ} (hT : 0 < T)
     omega
   have h := finiteVariationBound_of_antitone (atkinsonFourthRootCoefficient_nonneg hT m)
     (hanti.antitoneOn (Iic N)) (fun i _ => ⟨atkinsonFourthRootCoefficient_nonneg hT _,by
-      simpa only [Nat.add_zero] using hanti (Nat.zero_le i)⟩)
+      simpa using hanti (Nat.zero_le i)⟩)
   exact h.mono (atkinsonFourthRootCoefficient_le_height hT m)
 
 end MathCollab.Density.Stronger.Atkinson

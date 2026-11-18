@@ -9,8 +9,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentCommonRawCost
-open CenteredMomentCommonRawScale CenteredMomentAllocationCost CenteredMomentSourceLiveColumn
-open CenteredMomentAddedZeroUniform
+open CenteredMomentCommonRawScale CenteredMomentAllocationCost CenteredMomentSourceLiveColumn CenteredMomentAddedZeroUniform
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [Fintype ι]
 
@@ -28,10 +27,9 @@ theorem frozen_normalized_cost (B : Tuple ι) (hB : ∀ i,B i≠0) (C R : Ideal 
   · rw [hz,norm_zero,zero_pow (by decide : 2≠0),zero_div]
     exact div_nonneg (mul_nonneg (sq_nonneg _) (pow_nonneg (zero_le_one.trans (le_max_left _ _)) _)) hN.le
   · have hm := frozenCoefficient_norm B C R ν Wslot P M hν hWnorm hM
-    have hh := (actual_reduction_norm B hB C R hprod ν Wslot P hP a b ha hW hz).2
     have hi : (1:ℝ)/rawReduction B P≤(max 1 b)^Fintype.card ι/(Ideal.absNorm C:ℝ) := by
       apply (div_le_div_iff₀ hR hN).mpr
-      simpa only [one_mul] using hh
+      simpa only [one_mul] using ((actual_reduction_norm B hB C R hprod ν Wslot P hP a b ha hW hz).2)
     calc
       _ ≤ (∏ i,M i)^2/rawReduction B P :=
         div_le_div_of_nonneg_right (pow_le_pow_left₀ (norm_nonneg _) hm _) hR.le

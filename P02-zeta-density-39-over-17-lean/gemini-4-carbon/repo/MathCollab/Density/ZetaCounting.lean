@@ -24,7 +24,7 @@ theorem zeta_analyticOrder_ne_top {ρ : ℂ} (hρ : ρ ≠ 1) :
     analyticOrderAt riemannZeta ρ ≠ ⊤ := by
   intro h
   have he := analyticOn_riemannZeta.eqOn_zero_of_preconnected_of_eventuallyEq_zero
-    (isConnected_compl_singleton_of_one_lt_rank (by simp) (1 : ℂ)).isPreconnected
+    (isConnected_compl_singleton_of_one_lt_rank (by simp) 1).isPreconnected
     (show ρ ∈ ({1}ᶜ : Set ℂ) from hρ) (analyticOrderAt_eq_top.mp h)
   exact (riemannZeta_ne_zero_of_one_le_re (s := 2) (by norm_num)) (he (by simp))
 
@@ -44,7 +44,7 @@ def zetaZeroRegion (σ a b : ℝ) : Set ℂ :=
   {ρ | IsNontrivialZetaZero ρ ∧ σ ≤ ρ.re ∧ a ≤ ρ.im ∧ ρ.im ≤ b}
 
 theorem zetaZeroRegion_finite (σ a b : ℝ) : (zetaZeroRegion σ a b).Finite := by
-  refine ((isCompact_closedBall (0 : ℂ) (1+|a|+|b|)).inter_riemannZetaZeros_finite).subset ?_
+  refine ((isCompact_closedBall 0 (1+|a|+|b|)).inter_riemannZetaZeros_finite).subset ?_
   intro ρ hρ
   refine ⟨?_, hρ.1.1⟩
   rw [Metric.mem_closedBall, dist_zero_right]
@@ -54,17 +54,14 @@ theorem zetaZeroRegion_finite (σ a b : ℝ) : (zetaZeroRegion σ a b).Finite :=
     have ha0 := abs_nonneg a
     have hb0 := abs_nonneg b
     exact abs_le.mpr ⟨by linarith [hρ.2.2.1], by linarith [hρ.2.2.2]⟩
-  calc
-    ‖ρ‖ ≤ |ρ.re|+|ρ.im| := Complex.norm_le_abs_re_add_abs_im ρ
-    _ ≤ 1+|a|+|b| := by rw [abs_of_pos hρ.1.2.1]; linarith [hρ.1.2.2]
+  exact (Complex.norm_le_abs_re_add_abs_im ρ).trans (by rw [abs_of_pos hρ.1.2.1]; linarith [hρ.1.2.2])
 
 /-- Every zero in the region, once as a location; multiplicity enters the sum. -/
 def zetaZeroFinset (σ a b : ℝ) : Finset ℂ := (zetaZeroRegion_finite σ a b).toFinset
 
 theorem mem_zetaZeroFinset {σ a b : ℝ} {ρ : ℂ} :
     ρ ∈ zetaZeroFinset σ a b ↔
-      IsNontrivialZetaZero ρ ∧ σ ≤ ρ.re ∧ a ≤ ρ.im ∧ ρ.im ≤ b := by
-  exact Set.Finite.mem_toFinset (zetaZeroRegion_finite σ a b)
+      IsNontrivialZetaZero ρ ∧ σ ≤ ρ.re ∧ a ≤ ρ.im ∧ ρ.im ≤ b := Set.Finite.mem_toFinset (zetaZeroRegion_finite σ a b)
 
 /-- Count all actual zeros in the slab, with analytic multiplicity. -/
 def zetaSlabCount (σ a b : ℝ) : ℕ :=
@@ -73,10 +70,6 @@ def zetaSlabCount (σ a b : ℝ) : ℕ :=
 /-- The packet's N(σ,T): both signs of the ordinate and both height endpoints. -/
 def zetaDensityCount (σ T : ℝ) : ℕ := zetaSlabCount σ (-T) T
 
-theorem mem_zetaDensityFinset {σ T : ℝ} {ρ : ℂ} :
-    ρ ∈ zetaZeroFinset σ (-T) T ↔
-      IsNontrivialZetaZero ρ ∧ σ ≤ ρ.re ∧ |ρ.im| ≤ T := by
-  rw [mem_zetaZeroFinset, abs_le]
 
 theorem zetaSlabCount_mono {σ σ' a a' b b' : ℝ}
     (hσ : σ' ≤ σ) (ha : a' ≤ a) (hb : b ≤ b') :

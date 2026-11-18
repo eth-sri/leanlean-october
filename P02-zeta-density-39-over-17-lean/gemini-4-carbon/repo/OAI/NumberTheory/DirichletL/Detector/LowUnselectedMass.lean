@@ -28,8 +28,7 @@ lemma canonical_slot_inverse_square : ∃C : ℝ,0<C ∧
   have he : (∑a : canonicalSlotSupport T,elementNorm a.val^(-2:ℝ))=
       ∑I∈Finset.univ.image f,ProbeGramCommon.gramIdealNorm I^(-2:ℝ) := by
     rw [Finset.sum_image (fun P _ Q _ h=>hf h)]
-    have hh := (canonicalSlotEquiv T hT).sum_comp (fun a=>elementNorm a.val^(-2:ℝ))
-    rw [←hh]
+    rw [←((canonicalSlotEquiv T hT).sum_comp (fun a=>elementNorm a.val^(-2:ℝ)))]
     apply Finset.sum_congr rfl
     intro P hP
     rw [canonicalSlotEquiv_norm]

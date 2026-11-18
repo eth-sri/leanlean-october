@@ -11,8 +11,7 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge CanonicalQuadraticSieve
-open CanonicalRowCompletion InverseInitialClippedColumns InverseReflectedPhase
+open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge CanonicalQuadraticSieve CanonicalRowCompletion InverseInitialClippedColumns InverseReflectedPhase
 local notation "O"=>ActualEisensteinCubic.O
 
 def CompletePoolRankMoments (q D:ℕ) {σ:Type}[DecidableEq σ]
@@ -57,10 +56,8 @@ theorem rank_energy_exists_zero (L cstar cutoff eta:ℝ)(hcut:0<cutoff)(K:ℕ)(W
   intro q hq
   refine ⟨1,2,by norm_num,by norm_num,?_⟩
   intro Z hZ D hD σ _ slots hslots lists H a hdis hH hP ha z hz hprod base hb hp
-  dsimp only [CompletePoolRankMoments]
   let F:=InitialMeanSquare.outsideSquarefreeIdeals (reflectionExcludedPrimes q) D
-  have hF:=InitialMeanSquare.outsideSquarefree_admissible (reflectionExcludedPrimes q) D (reflectionExcludedPrimes_bad q)
-  let:∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal:=fun i=>by rw [poolPrimary_span F hF i];infer_instance
+  let:∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal:=fun i=>by rw [poolPrimary_span F (InitialMeanSquare.outsideSquarefree_admissible (reflectionExcludedPrimes q) D (reflectionExcludedPrimes_bad q)) i];infer_instance
   apply canonical_rank_negative
   simp only [rankRowCap,Nat.cast_zero]
   linarith

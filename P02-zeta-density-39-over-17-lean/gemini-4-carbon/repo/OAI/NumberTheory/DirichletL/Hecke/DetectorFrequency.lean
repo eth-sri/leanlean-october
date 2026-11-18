@@ -9,11 +9,10 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorDyadicSupport
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical ContDiff FourierTransform SchwartzMap
 open MeasureTheory
+open scoped BigOperators Classical ContDiff FourierTransform SchwartzMap
 namespace SevenEighths.HeckeDetectorFrequency
-open HeckeFamily HeckeDetectorProfiles HeckeDetectorFourier
-open HeckeDetectorCoefficientBounds HeckeDetectorFinite HeckeDetectorDyadicBridge
+open HeckeFamily HeckeDetectorProfiles HeckeDetectorFourier HeckeDetectorCoefficientBounds HeckeDetectorFinite HeckeDetectorDyadicBridge
 local notation "O" => HeckeFamily.O
 
 theorem dyadic_frequency_bound (Ω : ℝ → ℂ)
@@ -38,8 +37,8 @@ theorem dyadic_frequency_bound (Ω : ℝ → ℂ)
   obtain ⟨Cn,hCn,hbn⟩ := uniform_fourier_moment Ω cutoff cutoff hΩc hΩ L hL hwindow n
   refine ⟨1+C₀,Cn,by linarith,hCn,?_⟩
   intro U Dstar F hU hDstar hF χ s hs j k
-  let D : ℝ := (2 : ℝ)^j
-  let N : ℝ := (2 : ℝ)^k
+  let D := (2 : ℝ)^j
+  let N := (2 : ℝ)^k
   let a := inverseCoefficient χ cutoff (DyadicTransfer.annularCutoff cutoff) Dstar D s
   let b := plainCoefficient χ (DyadicTransfer.annularCutoff cutoff) N s
   let x := fun I : Ideal O => Real.log ((Ideal.absNorm I : ℝ)/D)
@@ -67,16 +66,13 @@ theorem dyadic_frequency_bound (Ω : ℝ → ℂ)
   have hg₀ : (∫ t : ℝ, ‖(𝓕 g) t‖) ≤ C₀ := by
     simpa only [pow_zero,one_mul] using hb₀ (2*D*N/Dstar) (D*N/U^20) (D*N/U^21)
       (by positivity) (by positivity) (by positivity)
-  have hgn : (∫ t : ℝ, (1+‖t‖)^n*‖(𝓕 g) t‖) ≤ Cn :=
-    hbn (2*D*N/Dstar) (D*N/U^20) (D*N/U^21) (by positivity) (by positivity) (by positivity)
-  have hmass := coefficient_mass χ cutoff cutoff_norm_le U Dstar D N hU s hs
   apply hb.trans
   apply add_le_add
   · calc
       _ ≤ ((67108864*U^42)/F^n)*Cn := by
         apply mul_le_mul
-        · exact div_le_div_of_nonneg_right hmass (by positivity)
-        · exact hgn
+        · exact div_le_div_of_nonneg_right (coefficient_mass χ cutoff cutoff_norm_le U Dstar D N hU s hs) (by positivity)
+        · exact (hbn (2*D*N/Dstar) (D*N/U^20) (D*N/U^21) (by positivity) (by positivity) (by positivity))
         · exact integral_nonneg (fun t => by positivity)
         · positivity
       _ = _ := by ring

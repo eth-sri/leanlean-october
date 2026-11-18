@@ -14,8 +14,7 @@ theorem weightedCriticalTwelfth_le_physical_interval {T u : ℝ} (hT : 1 ≤ T)
     weightedCriticalTwelfth 128 u ≤
       (∫ t in Icc 0 (3*T), momentDecay 128 (t-u)*zetaMomentCriticalNorm t^12) +
         (12:ℝ)^12*T^(-114 : ℝ)*Real.pi := by
-  rw [weightedCriticalTwelfth_eq_translated]
-  rw [← integral_add_compl measurableSet_Icc
+  rw [weightedCriticalTwelfth_eq_translated, ← integral_add_compl measurableSet_Icc
     (integrable_translated_critical_twelfth (by norm_num : 14 ≤ 128) u)]
   exact add_le_add le_rfl (weightedCriticalTwelfth_physical_tail hT hu)
 

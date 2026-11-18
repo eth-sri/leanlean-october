@@ -12,8 +12,7 @@ public import MathCollab.Density.RectangleResidue
 
 @[expose] public section
 
-open Complex MeasureTheory Set Filter
-open MathCollab.Density.ZetaGrowth MathCollab.Density.Contour
+open Complex MeasureTheory Set Filter MathCollab.Density.ZetaGrowth MathCollab.Density.Contour
 open scoped BigOperators Topology
 set_option autoImplicit false
 noncomputable section
@@ -126,9 +125,7 @@ theorem differentiableAt_zetaZeroQuotient (ρ s : ℂ) :
     DifferentiableAt ℂ (zetaZeroQuotient ρ) s := by
   have hShift : DifferentiableOn ℂ (shiftedRegularizedZeta ρ) Set.univ :=
     fun z _hz => (differentiableAt_shiftedRegularizedZeta ρ z).differentiableWithinAt
-  have hSlope : DifferentiableOn ℂ
-      (dslope (shiftedRegularizedZeta ρ) 0) Set.univ :=
-    (Complex.differentiableOn_dslope
+  have hSlope := (Complex.differentiableOn_dslope
       (Filter.univ_mem : Set.univ ∈ nhds (0 : ℂ))).2 hShift
   exact differentiableWithinAt_univ.mp (hSlope s (Set.mem_univ s))
 

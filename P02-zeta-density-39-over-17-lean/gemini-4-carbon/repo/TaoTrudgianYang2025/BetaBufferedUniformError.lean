@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaBufferedLogBudget
 
 @[expose] public section
@@ -50,7 +60,6 @@ theorem modelPhase_buffered_source_uniform_error
   have hTpos : 0 < T := zero_lt_one.trans_le hT
   have hη : 0 < (Real.sqrt T)⁻¹ := inv_pos.mpr (Real.sqrt_pos.mpr hTpos)
   have hF₁ := approximateModelPhase_mono hF bufferedLocalStationaryOrder_pos le_rfl
-  have hs := hsource N T a b hNpos hT ha hb hflat F δ hδ hF
   let A := modelPhaseCoreLower σ δ T N
   let B := modelPhaseCoreUpper δ T N
   let L := modelPhaseBufferedSupportLower F ((b : ℝ)/N) ((Real.sqrt T)⁻¹) T N
@@ -94,7 +103,7 @@ theorem modelPhase_buffered_source_uniform_error
       ‖exponentialSumAt F T N a b-
         (∑ q ∈ Finset.Ioo P Q, modelPhaseStationaryMainTerm F T N q)‖ ≤
       A₀*(N/Real.sqrt T)+B₀+3*F₀*Real.log (T+1) := by
-    apply hs.trans
+    apply (hsource N T a b hNpos hT ha hb hflat F δ hδ hF).trans
     have hh := add_le_add (add_le_add (add_le_add
       (show (4+6*E)*N/Real.sqrt T+3+2*E*(σ+1) ≤
         (4+6*E)*N/Real.sqrt T+3+2*E*(σ+1) from le_rfl) hfarlog) hmidlog) houterlog

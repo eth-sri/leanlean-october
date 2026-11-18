@@ -10,8 +10,7 @@ public import MathCollab.Density.Stronger.Fourth.SquareNormalized
 
 @[expose] public section
 
-open Complex
-open MathCollab.Density.Stronger.Fourth
+open Complex MathCollab.Density.Stronger.Fourth
 open scoped ComplexConjugate
 set_option autoImplicit false
 noncomputable section
@@ -48,7 +47,7 @@ theorem vertical_shift_re_le_norm {c : ℝ} (hc : 0 ≤ c) (u : ℝ) :
       Complex.abs_re_le_norm ((c:ℂ)+(u:ℂ)*I)
 theorem norm_complex_sin_le_exp_abs_im (z : ℂ) :
     ‖Complex.sin z‖ ≤ Real.exp |z.im| := by
-  have hraw : ‖(2 : ℂ) * Complex.sin z‖ ≤
+  have hraw : ‖2 * Complex.sin z‖ ≤
       Real.exp z.im + Real.exp (-z.im) := by
     rw [Complex.two_sin]
     calc
@@ -66,8 +65,8 @@ theorem norm_inv_gamma_critical_half_le (t : ℝ) :
   let p := afeCriticalPoint t / 2
   have hp : 0 < p.re := by norm_num [p, afeCriticalPoint]
   have hq : 0 < (1 - p).re := by norm_num [p, afeCriticalPoint]
-  have hGp : Complex.Gamma p ≠ 0 := Complex.Gamma_ne_zero_of_re_pos hp
-  have hGq : Complex.Gamma (1 - p) ≠ 0 := Complex.Gamma_ne_zero_of_re_pos hq
+  have hGp := Complex.Gamma_ne_zero_of_re_pos hp
+  have hGq := Complex.Gamma_ne_zero_of_re_pos hq
   have href := Complex.Gamma_mul_Gamma_one_sub p
   have hsin : Complex.sin ((Real.pi : ℂ) * p) ≠ 0 := by
     intro h

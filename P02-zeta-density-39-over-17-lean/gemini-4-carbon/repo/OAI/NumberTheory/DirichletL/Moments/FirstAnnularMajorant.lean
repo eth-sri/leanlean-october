@@ -21,7 +21,7 @@ lemma weight_bounds (x:ℝ):0≤weight x ∧ weight x≤1:=by
   constructor
   · exact mul_nonneg h₁.1 (sub_nonneg.mpr h₂.2)
   · exact (mul_le_mul_of_nonneg_left (sub_le_self _ h₂.1) h₁.1).trans
-      (by simpa only [mul_one] using h₁.2)
+      (by simpa using h₁.2)
 
 lemma weight_zero_low (x:ℝ)(hx:x≤1/8):weight x=0:=by
   rw [weight,cutoff_one (4*x) (by linarith),sub_self,mul_zero]

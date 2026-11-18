@@ -11,8 +11,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical SchwartzMap
 namespace SevenEighths.InverseSecondUniformCutoff
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseMoment InverseSecondSourceBlocks InverseSecondFibers CompletedGauss
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseMoment InverseSecondSourceBlocks InverseSecondFibers CompletedGauss
 open ConcreteTraceCRT (eisEmbedding)
 local notation "O" => ActualEisensteinCubic.O
 
@@ -45,12 +44,9 @@ theorem uniform_radius_bound {ι : Type*} [DecidableEq ι]
     uniformSecondRadius p Z delta eta G E L (Z^(Hc+12*eta+tau)) (Z^tau)≤
       Z^(2*(s-g)-Hc+delta+2*theta+eta) := by
   have hratio : primeProductNorm p E/primeProductNorm p G≤Z^(theta-g+2*eta) := by
-    calc
-      _≤Z^(theta+eta)/Z^(g-eta):=div_le_div₀
-        (Real.rpow_pos_of_pos hZ _).le hE (Real.rpow_pos_of_pos hZ _) hG
-      _= _:=by rw [←Real.rpow_sub hZ];congr 1;ring
-  have hratio0 : 0≤primeProductNorm p E/primeProductNorm p G :=
-    div_nonneg (primeProductNorm_pos p hp E).le (primeProductNorm_pos p hp G).le
+    exact (div_le_div₀
+        (Real.rpow_pos_of_pos hZ _).le hE (Real.rpow_pos_of_pos hZ _) hG).trans_eq (by rw [←Real.rpow_sub hZ];congr 1;ring)
+  have hratio0 := div_nonneg (primeProductNorm_pos p hp E).le (primeProductNorm_pos p hp G).le
   have hsq (x : ℝ) : (Z^x)^2=Z^(2*x) := by
     rw [pow_two,←Real.rpow_add hZ]
     congr 1
@@ -93,13 +89,10 @@ theorem actual_cell_uniform_source_gates {ι : Type*} [DecidableEq ι]
       (actualCellRowRadius Z M ell A t V j eta d) := by
   have hk : ∀x∈source,x.second.frequency≠0 := fun x hx=>(Finset.mem_erase.mp (hgate x hx)).1
   intro d x hx
-  have hxs:=cell_subset p source d hx
-  have hE:=(actual_cell_norm_centers p hp source hk d x hx Z eta hZ heta hbin 1).2
-  have hG:=(actual_cell_norm_centers p hp source hk d x hx Z eta hZ heta hbin 0).1
   have hr:=uniform_radius_childM p hp x.second.sourceCommon x.second.divisor
     Z M r ell V delta A B j t (secondCellExponent Z d 0) (secondCellExponent Z d 1) eta tau L
-    (zero_lt_one.trans hZ) hL0 (by simpa [outerNorms] using hE) (by simpa [outerNorms] using hG) hL
-  have hb:=(mem_nonzeroChildFrequencyBall _ (actualSecondMultiplier_ne_zero p x) _ _).mp (hgate x hxs)
+    (zero_lt_one.trans hZ) hL0 (by simpa [outerNorms] using ((actual_cell_norm_centers p hp source hk d x hx Z eta hZ heta hbin 1).2)) (by simpa [outerNorms] using ((actual_cell_norm_centers p hp source hk d x hx Z eta hZ heta hbin 0).1)) hL
+  have hb:=(mem_nonzeroChildFrequencyBall _ (actualSecondMultiplier_ne_zero p x) _ _).mp (hgate x (cell_subset p source d hx))
   exact (mem_nonzeroChildFrequencyBall _ (actualSecondMultiplier_ne_zero p x) _ _).mpr ⟨hb.1,hb.2.trans hr⟩
 
 end SevenEighths.InverseSecondUniformCutoff

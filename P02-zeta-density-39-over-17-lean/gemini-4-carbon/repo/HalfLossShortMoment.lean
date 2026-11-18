@@ -23,7 +23,7 @@ theorem shortTwistedNorm_fourth_half_loss_le {H : ℝ} (hH : 0 ≤ H) (t : ℝ) 
       (2*Real.sqrt (2*H^((1:ℝ)/100))) := by
     unfold shortTwistedNorm zetaMomentCriticalNorm
     rw [norm_mul]
-    simpa only [Complex.ofReal_div,Complex.ofReal_one,Complex.ofReal_ofNat] using
+    simpa using
       mul_le_mul_of_nonneg_left hm (norm_nonneg (riemannZeta ((1/2:ℂ)+(t:ℂ)*Complex.I)))
   have hh := pow_le_pow_left₀ (show 0 ≤ shortTwistedNorm H t by unfold shortTwistedNorm; positivity) hp 4
   have he : (2*Real.sqrt (2*H^((1:ℝ)/100)))^4=64*H^((1:ℝ)/50) := by
@@ -34,7 +34,7 @@ theorem shortTwistedNorm_fourth_half_loss_le {H : ℝ} (hH : 0 ≤ H) (t : ℝ) 
       _ = 64*(H^((1:ℝ)/100))^2 := by ring
       _ = _ := by rw [Montgomery.RationalMoment.adjacent_rpow_nat hH]; norm_num
   rw [mul_pow,he] at hh
-  nlinarith only [hh]
+  nlinarith
 
 /-- Constants precede height; the norm and integration interval are literal. -/
 theorem half_loss_short_moment {ε : ℝ} (hε : 0 < ε) :

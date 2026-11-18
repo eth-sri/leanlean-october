@@ -99,11 +99,10 @@ theorem detectorBlockCoefficients_pow_LSeries_sum {N k : ℕ} (hN : 0 < N)
     rw [LSeries.term_def₀ ((detectorBlockCoefficients T N j)^k).map_zero]
     have hz : ((detectorBlockCoefficients T N j)^k) n = 0 := by
       by_contra hh
-      have hu := (detectorBlockCoefficients_pow_support T N j k n hh).2
       have hl : N^k < n := by
         obtain ⟨l, rfl⟩ := Nat.exists_eq_succ_of_ne_zero hk.ne'
         exact detectorBlockCoefficients_pow_lower hN T j l n hh
-      exact hn (Finset.mem_Ioc.mpr ⟨hl, hu⟩)
+      exact hn (Finset.mem_Ioc.mpr ⟨hl, ((detectorBlockCoefficients_pow_support T N j k n hh).2)⟩)
     rw [hz, zero_mul]
 
 /-- A powered component is detected on one of its k fixed dyadic pieces,

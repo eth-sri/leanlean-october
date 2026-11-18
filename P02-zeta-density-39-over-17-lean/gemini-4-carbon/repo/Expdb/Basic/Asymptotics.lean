@@ -1,6 +1,8 @@
 module
 
-public import Expdb.Basic.Definitions
+public import Mathlib.Analysis.Complex.Circle
+public import Mathlib.Analysis.Normed.Field.Basic
+public import Mathlib.Topology.MetricSpace.Pseudo.Defs
 public import Mathlib.Analysis.Asymptotics.Theta
 public import Mathlib.Analysis.SpecificLimits.Basic
 public import Mathlib.Order.Filter.Basic
@@ -117,8 +119,6 @@ private theorem isEqUpToInfinitesimal_iff_tendsto_sub
     (X Y : VariableObject E) :
     (X =o Y) ↔ Tendsto (fun i ↦ X i - Y i) atTop (nhds 0) := by
   rw [IsEqUpToInfinitesimal, VariableObject.IsInfinitesimal]
-  change Tendsto (fun i ↦ ‖X i - Y i‖) atTop (nhds 0) ↔
-    Tendsto (fun i ↦ X i - Y i) atTop (nhds 0)
   exact tendsto_zero_iff_norm_tendsto_zero.symm
 
 /-- The relation `=o` is reflexive. -/

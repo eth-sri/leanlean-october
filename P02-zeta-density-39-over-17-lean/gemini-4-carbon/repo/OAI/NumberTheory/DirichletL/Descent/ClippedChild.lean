@@ -8,12 +8,11 @@ public import OAI.NumberTheory.DirichletL.Inversion.AmbientProfileTower
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
 open MeasureTheory FourierBridge
+open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
 
 namespace SevenEighths.InverseMoment
-open InverseInitialClippedColumns JointLogSeparation InverseAmbientProfileTower
-open InverseSecondSourceBlocks
+open InverseInitialClippedColumns JointLogSeparation InverseAmbientProfileTower InverseSecondSourceBlocks
 local notation "O"=>ActualEisensteinCubic.O
 
 def secondChildHeight (right:Bool)(t:Ambient (Fin 6)):ℝ :=
@@ -59,9 +58,8 @@ theorem canonical_actual_child_uniform
   refine ⟨C,hC,?_⟩
   intro ι σ _ _ p hp _ hcop hg hpr pool Ψ m slots lists a labels rows D hD Z X F E d right t hZ hX hgeom hE hmoment
   obtain ⟨hc1,hcb⟩:=second_cell_clipping_ratio Z X b d hZ hX hb hgeom
-  have hz:0<Z:=zero_lt_one.trans hZ
   exact (hbound p hp hcop hg hpr pool Ψ m slots lists a labels rows D hD
-    _ (secondChildHeight right t) _ Z F E hc1 hcb (Real.rpow_pos_of_pos hz _) hE hmoment).trans
+    _ (secondChildHeight right t) _ Z F E hc1 hcb (Real.rpow_pos_of_pos (zero_lt_one.trans hZ) _) hE hmoment).trans
       (mul_le_mul_of_nonneg_left (second_child_height_budget (2*J) right t) (mul_nonneg hC.le hE))
 
 end SevenEighths.InverseMoment

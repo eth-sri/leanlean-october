@@ -13,8 +13,7 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonCarrierIntegrals
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 noncomputable section
-open Complex MeasureTheory Set
-open MathCollab.Density.Stronger.Fourth
+open Complex MeasureTheory Set MathCollab.Density.Stronger.Fourth
 namespace MathCollab.Density.Stronger.Atkinson
 
 def atkinsonCorrectionSum (T G L : ℝ) : ℂ := ∑' n : ℕ, atkinsonCorrectionTerm T G L n
@@ -38,7 +37,7 @@ theorem summable_atkinsonCorrectionTerm {T G L : ℝ}
     Summable (atkinsonCorrectionTerm T G L) := by
   obtain ⟨C, _, hbound⟩ := exists_norm_atkinsonCorrectionTerm_le
   exact Summable.of_norm_bounded
-    ((summable_divisorDirichletTerm (s := (5 / 4 : ℂ)) (by norm_num)).norm.mul_left (C * G))
+    ((summable_divisorDirichletTerm (s := (5 / 4)) (by norm_num)).norm.mul_left (C * G))
     (hbound T G L hT hG hGT hL hwidth)
 
 theorem exists_norm_atkinsonCorrectionSum_le :
@@ -46,15 +45,13 @@ theorem exists_norm_atkinsonCorrectionSum_le :
       0 < L → 8 * L ≤ G → ‖atkinsonCorrectionSum T G L‖ ≤ C * G := by
   obtain ⟨C, hC, hbound⟩ := exists_norm_atkinsonCorrectionTerm_le
   let S : ℝ := ∑' n : ℕ, ‖divisorDirichletTerm (5 / 4) n‖
-  have hS : 0 ≤ S := tsum_nonneg (fun _ => norm_nonneg _)
   refine ⟨C * (1 + S), by positivity, ?_⟩
   intro T G L hT hG hGT hL hwidth
   have hs := summable_atkinsonCorrectionTerm hT hG hGT hL hwidth
-  have hd := (summable_divisorDirichletTerm (s := (5 / 4 : ℂ)) (by norm_num)).norm
   calc
     _ ≤ ∑' n : ℕ, ‖atkinsonCorrectionTerm T G L n‖ := norm_tsum_le_tsum_norm hs.norm
     _ ≤ ∑' n : ℕ, (C * G) * ‖divisorDirichletTerm (5 / 4) n‖ :=
-      hs.norm.tsum_le_tsum (hbound T G L hT hG hGT hL hwidth) (hd.mul_left _)
+      hs.norm.tsum_le_tsum (hbound T G L hT hG hGT hL hwidth) (((summable_divisorDirichletTerm (s := (5 / 4)) (by norm_num)).norm).mul_left _)
     _ = C * G * S := tsum_mul_left
     _ ≤ _ := by nlinarith
 

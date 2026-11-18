@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.IntegerTripleNormalization
 public import LaterPairs.Native.RobertSargosReducedSystem
 
@@ -80,7 +89,7 @@ theorem RobertSargosReducedSystem.coefficient_gcd_le {R H Q δ : ℝ}
   have hc : (robertSargosCoefficientGcd p:ℝ) ≤ p.r.natAbs := by
     exact_mod_cast integerTripleGcd_le_natAbs h.r_ne_zero
   have he : (p.r.natAbs:ℝ) = |(p.r:ℝ)| := by
-    simpa only [Int.cast_natCast,Int.cast_abs] using
+    simpa using
       congrArg (fun z : ℤ => (z:ℝ)) (Int.natCast_natAbs p.r)
   exact hc.trans (he.trans_le h.r_bound)
 

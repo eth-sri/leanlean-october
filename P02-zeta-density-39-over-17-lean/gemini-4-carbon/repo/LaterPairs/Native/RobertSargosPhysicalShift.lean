@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.ThirdDerivativeRpowScale
 
 @[expose] public section
@@ -35,12 +44,11 @@ theorem robertSargos_physical_floor_shift
   have hRp : 0 < lam^(-(2:ℝ)/13) := by positivity
   have htwo : 2 ≤ ⌊lam^(-(2:ℝ)/13)⌋₊ :=
     Nat.le_floor (by norm_num; linarith)
-  have hfloor := Nat.floor_le hRp.le
   have hnear := Nat.lt_floor_add_one (lam^(-(2:ℝ)/13))
   have hfloor1 : (1:ℝ) ≤ ⌊lam^(-(2:ℝ)/13)⌋₊ := by
     exact_mod_cast (show 1 ≤ ⌊lam^(-(2:ℝ)/13)⌋₊ by omega)
   have hRM := (Real.rpow_le_rpow_of_exponent_ge hlam
     (show lam ≤ 1 by linarith) (show -(8:ℝ)/13 ≤ -(2:ℝ)/13 by norm_num)).trans hM
-  exact ⟨htwo,Nat.floor_le_of_le hRM,by linarith,hfloor⟩
+  exact ⟨htwo,Nat.floor_le_of_le hRM,by linarith,(Nat.floor_le hRp.le)⟩
 
 end TaoTrudgianYang2025

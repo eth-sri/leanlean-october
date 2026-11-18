@@ -13,16 +13,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondBlockAggregate
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge
-open CenteredMomentSourceRow CenteredMomentFirstSectors CenteredMomentCanonicalFirst
-open CenteredMomentSecondLocalization CenteredMomentSecondSectorFrequency
-open CenteredMomentSecondSectorRetained CenteredMomentSecondSectorColumns
-open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency
-open CenteredMomentSecondCanonicalNonunit CenteredMomentHeckeColumnWindow
-open CenteredMomentSectorLocalization CenteredMomentActiveSource
-open CenteredMomentSecondRetainedAggregate CenteredMomentSecondRetainedRows
-open CenteredMomentSecondActiveDyadic CenteredMomentSecondDyadicPartition
-open CenteredMomentSecondPhysicalWindow CenteredMomentSecondPhysicalBlock CenteredMomentSecondWholeKernel
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge CenteredMomentSourceRow CenteredMomentFirstSectors CenteredMomentCanonicalFirst CenteredMomentSecondLocalization CenteredMomentSecondSectorFrequency CenteredMomentSecondSectorRetained CenteredMomentSecondSectorColumns CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentHeckeColumnWindow CenteredMomentSectorLocalization CenteredMomentActiveSource CenteredMomentSecondRetainedAggregate CenteredMomentSecondRetainedRows CenteredMomentSecondActiveDyadic CenteredMomentSecondDyadicPartition CenteredMomentSecondPhysicalWindow CenteredMomentSecondPhysicalBlock CenteredMomentSecondWholeKernel
 local notation "O" => ActualEisensteinCubic.O
 
 abbrev ActiveLabel (S : Finset (Ideal O)) (β : Ideal O→ℂ) :=
@@ -68,8 +59,7 @@ theorem sector_finite_blocks (η : Character) (t : ℝ)
         physicalBlock η t (activeSource S β) β C D hC hD U R (retainedRows R A) W K
           (fun i=>(n i:ℤ)) := by
   dsimp only
-  have hA : commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U≠0 :=
-    mul_ne_zero (commonFrequencyGenerator_ne_zero C D hC)
+  have hA := mul_ne_zero (commonFrequencyGenerator_ne_zero C D hC)
       (nonunitFrequencyGenerator_ne_zero C D hC U)
   unfold physicalBlock
   conv_rhs => rw [Finset.sum_comm]

@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.ExponentPairShiftJets
 
 @[expose] public section
@@ -55,7 +64,6 @@ theorem modelPhase_jet_difference_error
   have hb (x : ℝ) (hx : x ∈ Icc v w) :
       ‖deriv f x‖ ≤ δ+σ*modelPhaseJetCoefficient (σ+1) (p+1)*η := by
     rw [(hd x hx).deriv,Real.norm_eq_abs]
-    have he := approximateModelPhase_iteratedDeriv_error hF (hxI hx) (p+1) hp
     have hl := iteratedDeriv_modelPhase_lipschitz (show 0 ≤ σ+1 by linarith)
       hu (hxI hx) p
     have hl' : |R-iteratedDeriv p (modelPhase (σ+1)) x| ≤
@@ -73,7 +81,7 @@ theorem modelPhase_jet_difference_error
           |σ*(R-iteratedDeriv p (modelPhase (σ+1)) x)| := abs_add_le _ _
       _ ≤ δ+σ*(modelPhaseJetCoefficient (σ+1) (p+1)*η) := by
         rw [abs_mul,abs_of_pos hσ]
-        exact add_le_add he (mul_le_mul_of_nonneg_left hl' hσ.le)
+        exact add_le_add (approximateModelPhase_iteratedDeriv_error hF (hxI hx) (p+1) hp) (mul_le_mul_of_nonneg_left hl' hσ.le)
       _ = _ := by ring
   have hm := Convex.norm_image_sub_le_of_norm_deriv_le
     (fun x hx => (hd x hx).differentiableAt) hb (convex_Icc v w)

@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.SignedSquareRootSums
 
 @[expose] public section
@@ -44,11 +53,6 @@ theorem sum_robertSargos_zero_r_majorant
     (show 0 ≤ 12*C*M*H*Real.sqrt (4*(H:ℝ)*lam) by positivity)
   have hi := mul_le_mul_of_nonneg_left (sum_signed_inverse_sqrt_le Q)
     (show 0 ≤ 24*H/Real.sqrt (2*(H:ℝ)*lam) by positivity)
-  calc
-    _ ≤ (2*(Q:ℝ))*H+
-        (12*C*M*H*Real.sqrt (4*(H:ℝ)*lam))*(2*(Q:ℝ)*Real.sqrt Q)+
-        (24*H/Real.sqrt (2*(H:ℝ)*lam))*(4*Real.sqrt Q) :=
-      add_le_add (add_le_add hc hs) hi
-    _ = _ := by ring
+  exact (add_le_add (add_le_add hc hs) hi).trans_eq (by ring)
 
 end TaoTrudgianYang2025

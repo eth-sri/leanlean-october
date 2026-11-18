@@ -21,10 +21,8 @@ theorem integrable_logProfile {f : ℝ → ℂ} {σ : ℝ}
   have himage : Real.exp ∘ Neg.neg '' (univ : Set ℝ) = Ioi 0 := by
     rw [Set.image_comp, Set.image_univ_of_surjective neg_surjective,
       Set.image_univ, Real.range_exp]
-  have hinj : univ.InjOn (Real.exp ∘ Neg.neg) :=
-    Real.exp_injective.injOn.comp neg_injective.injOn (univ.mapsTo_univ _)
   rw [MellinConvergent, ← himage,
-    integrableOn_image_iff_integrableOn_abs_deriv_smul MeasurableSet.univ hder hinj] at hf
+    integrableOn_image_iff_integrableOn_abs_deriv_smul MeasurableSet.univ hder (Real.exp_injective.injOn.comp neg_injective.injOn (univ.mapsTo_univ _))] at hf
   have heq (u : ℝ) :
       |-(Real.exp (-u))| • ((Real.exp (-u) : ℂ) ^ ((σ : ℂ) - 1) • f (Real.exp (-u))) =
         Real.exp (-σ * u) • f (Real.exp (-u)) := by

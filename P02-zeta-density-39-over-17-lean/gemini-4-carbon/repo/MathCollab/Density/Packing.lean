@@ -117,9 +117,9 @@ theorem decay_le_floor_majorant (x : ℝ) :
     have ha := abs_nonneg x
     have hb := abs_nonneg (⌊x⌋ : ℝ)
     nlinarith
-  apply (div_le_div_iff₀ (by positivity : (0 : ℝ) < (1+|x|)^2)
-    (by positivity : (0 : ℝ) < (1+|(⌊x⌋ : ℝ)|)^2)).2
-  simpa only [one_mul] using hp
+  apply (div_le_div_iff₀ (by positivity : 0 < (1+|x|)^2)
+    (by positivity : 0 < (1+|(⌊x⌋ : ℝ)|)^2)).2
+  simpa using hp
 
 theorem separated_decay_row {U : Finset ℝ} (hsep : oneSeparated U) (t : ℝ) :
     (∑ u ∈ U, 1/(1+|t-u|)^2) ≤ separationMass := by
@@ -135,9 +135,7 @@ theorem separated_decay_row {U : Finset ℝ} (hsep : oneSeparated U) (t : ℝ) :
 
 theorem separated_decay_pairs {U : Finset ℝ} (hsep : oneSeparated U) :
     (∑ t ∈ U, ∑ u ∈ U, 1/(1+|t-u|)^2) ≤ separationMass * U.card := by
-  calc
-    _ ≤ ∑ _t ∈ U, separationMass := Finset.sum_le_sum (fun t _ => separated_decay_row hsep t)
-    _ = _ := by simp [mul_comm]
+  exact (Finset.sum_le_sum (fun t _ => separated_decay_row hsep t)).trans_eq (by simp [mul_comm])
 
 theorem LargeValueData.local_card_le {κ : ℝ} (d : LargeValueData κ) {U : Finset ℝ}
     (hU : U ⊆ d.W) : (U.card : ℝ) ≤ localDiameter U ∧ localDiameter U ≤ d.T+1 := by

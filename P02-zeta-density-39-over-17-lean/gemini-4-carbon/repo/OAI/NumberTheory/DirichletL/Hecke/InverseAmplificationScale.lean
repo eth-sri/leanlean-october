@@ -50,8 +50,7 @@ theorem scaleSum_deriv (χ : Character) (W : ℝ→ℂ) (S : Finset (Ideal O))
       HasDerivAt (fun t => coefficient χ true J*W ((J.absNorm : ℝ)*Real.exp (-t)))
         (coefficient χ true J*(deriv W ((J.absNorm : ℝ)*Real.exp (-l))*
           (-((J.absNorm : ℝ)*Real.exp (-l)) : ℝ))) l := by
-    have hy := ((hasDerivAt_id l).neg.exp).const_mul (J.absNorm : ℝ)
-    convert ((hW _).hasDerivAt.scomp l hy).const_mul (coefficient χ true J) using 1
+    convert ((hW _).hasDerivAt.scomp l (((hasDerivAt_id l).neg.exp).const_mul (J.absNorm : ℝ))).const_mul (coefficient χ true J) using 1
     · rfl
     · change coefficient χ true J*(deriv W ((J.absNorm : ℝ)*Real.exp (-l))*
           (-((J.absNorm : ℝ)*Real.exp (-l)) : ℝ))=

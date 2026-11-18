@@ -12,9 +12,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentAmplification
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT CanonicalRowCompletion
-open CanonicalQuadraticSieve ConcretePrimeRowBridge ProbePrimePower ProbePhysical
-open CenteredMomentUnequal
+open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT CanonicalRowCompletion CanonicalQuadraticSieve ConcretePrimeRowBridge ProbePrimePower ProbePhysical CenteredMomentUnequal
 local notation "O" => ActualEisensteinCubic.O
 
 theorem gauss_prime_power_one (p : O) (hp : Prime p) [(Ideal.span {p}).IsMaximal]
@@ -41,8 +39,6 @@ theorem gauss_prime_power_six (p : O) (hp : Prime p) [(Ideal.span {p}).IsMaximal
       else if n = 6 then (Ideal.absNorm (Ideal.span {p}) : ℂ)^6 *
         primeGauss p hp.ne_zero (actualSextic (Ideal.span {p}) hg) 1 else 0 := by
   rw [sexticGauss_prime_power p hp hg,actualSextic_primePowerGauss_at_pow p hp hg hc]
-  have h6 : actualSextic (Ideal.span {p}) hg ^ 6 = 1 :=
-    (actualSextic_pow_eq_one_iff _ hg hc 6).mpr dvd_rfl
   by_cases hn5 : n = 5
   · subst n
     norm_num
@@ -50,7 +46,7 @@ theorem gauss_prime_power_six (p : O) (hp : Prime p) [(Ideal.span {p}).IsMaximal
   · by_cases hn6 : n = 6
     · subst n
       simp only [hn5,show ¬6 ∣ 6+1 by decide,ite_false,ite_true,
-        pow_succ (actualSextic (Ideal.span {p}) hg) 6,h6,one_mul]
+        pow_succ (actualSextic (Ideal.span {p}) hg) 6,((actualSextic_pow_eq_one_iff _ hg hc 6).mpr dvd_rfl),one_mul]
     · rw [ite_eq_right hn5,ite_eq_right hn6]
       by_cases hd : 6 ∣ n+1
       · have hlarge : 6 < n := by omega

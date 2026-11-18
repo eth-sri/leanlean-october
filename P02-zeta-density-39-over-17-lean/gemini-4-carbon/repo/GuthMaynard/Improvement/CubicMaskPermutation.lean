@@ -49,9 +49,9 @@ theorem maskedSpatialCubicMode_integrable {a : ℝ → ℂ} {μ : ℝ → ℝ}
   have hmf : Measurable mellinFrequency := by unfold mellinFrequency; fun_prop
   have hsp := spatialCubicMode_measurable ha.measurable hi L m
   have hmasks : Measurable (maskedSpatialCubicMode a μ L m A B C) := by
-    have hAi : Measurable (A.indicator (fun _ : ℝ => (1:ℂ))) := measurable_const.indicator hA
-    have hBi : Measurable (B.indicator (fun _ : ℝ => (1:ℂ))) := measurable_const.indicator hB
-    have hCi : Measurable (C.indicator (fun _ : ℝ => (1:ℂ))) := measurable_const.indicator hC
+    have hAi : Measurable (A.indicator (fun _ : ℝ => 1)) := measurable_const.indicator hA
+    have hBi : Measurable (B.indicator (fun _ : ℝ => 1)) := measurable_const.indicator hB
+    have hCi : Measurable (C.indicator (fun _ : ℝ => 1)) := measurable_const.indicator hC
     unfold maskedSpatialCubicMode
     fun_prop
   apply (spatialCubicMode_integrable ha hs hm h0 hi L m).norm.mono' hmasks.aestronglyMeasurable

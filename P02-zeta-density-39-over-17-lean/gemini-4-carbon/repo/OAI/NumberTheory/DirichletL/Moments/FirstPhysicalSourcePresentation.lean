@@ -9,9 +9,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstPhysicalSource
-open ActualEisensteinCubic ConcreteTraceCRT HeckeFamily CanonicalQuadraticSieve
-open CenteredMomentSecondHeightFamily CenteredMomentCanonicalFirst
-open CenteredMomentFirstCanonicalFamily
+open ActualEisensteinCubic ConcreteTraceCRT HeckeFamily CanonicalQuadraticSieve CenteredMomentSecondHeightFamily CenteredMomentCanonicalFirst CenteredMomentFirstCanonicalFamily
 local notation "O"=>ActualEisensteinCubic.O
 
 def fixedPresentationCost : ℝ:=
@@ -20,7 +18,7 @@ def fixedPresentationCost : ℝ:=
 theorem fixedPresentationCost_pos : 0<fixedPresentationCost:=by
   apply mul_pos
   · exact_mod_cast Nat.pos_of_ne_zero
-      (Ideal.absNorm_eq_zero_iff.not.mpr (by simpa only [Ideal.span_singleton_eq_bot] using fixedBadMask_ne_zero))
+      (Ideal.absNorm_eq_zero_iff.not.mpr (by simpa using fixedBadMask_ne_zero))
   · exact_mod_cast Nat.pos_of_ne_zero
       (Ideal.absNorm_eq_zero_iff.not.mpr (by simp))
 

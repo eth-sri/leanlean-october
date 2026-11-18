@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 
 @[expose] public section
 set_option autoImplicit false
@@ -29,9 +38,7 @@ theorem iteratedDeriv_two_real_inv {g : ℝ → ℝ} {x : ℝ}
   have he : deriv (fun y => (g y)⁻¹) =ᶠ[𝓝 x] fun y => -deriv g y / (g y) ^ 2 := by
     filter_upwards [hg.eventually (by norm_num), hg.continuousAt.eventually_ne hne] with y hgy hy
     exact deriv_fun_inv'' (hgy.differentiableAt (by norm_num)) hy
-  have hd := (hg.differentiableAt (by norm_num)).hasDerivAt
-  have hdd := ((hg.derivWithin (m := 1) (by norm_num)).differentiableAt (by norm_num)).hasDerivAt
-  have h := (hdd.neg.div (hd.pow 2) (pow_ne_zero 2 hne)).deriv
+  have h := ((((hg.derivWithin (m := 1) (by norm_num)).differentiableAt (by norm_num)).hasDerivAt).neg.div (((hg.differentiableAt (by norm_num)).hasDerivAt).pow 2) (pow_ne_zero 2 hne)).deriv
   change deriv (fun y => -deriv g y / (g y) ^ 2) x = _ at h
   dsimp only [Pi.neg_apply, Pi.pow_apply] at h
   rw [iteratedDeriv_succ, iteratedDeriv_one, he.deriv_eq, h]

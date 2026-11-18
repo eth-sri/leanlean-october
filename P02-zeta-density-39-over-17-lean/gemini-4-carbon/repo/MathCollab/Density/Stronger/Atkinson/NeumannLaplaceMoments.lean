@@ -47,7 +47,7 @@ theorem neumannLaplaceMomentIntegrand_eq_mul (x : ℝ) (k : ℕ) {t : ℝ} (ht :
     neumannLaplaceMomentIntegrand x k t =
       neumannLaplaceMomentIntegrand x 0 t * t ^ k := by
   unfold neumannLaplaceMomentIntegrand
-  rw [show (k : ℝ) - 1 / 2 = -(1 / 2 : ℝ) + k by ring, Real.rpow_add ht, Real.rpow_natCast]
+  rw [show (k : ℝ) - 1 / 2 = -(1 / 2) + k by ring, Real.rpow_add ht, Real.rpow_natCast]
   norm_num
   ring
 
@@ -68,7 +68,7 @@ theorem neumannLaplaceMoment_zero {x : ℝ} (hx : 0 < x) :
 
 theorem neumannLaplaceMoment_one {x : ℝ} (hx : 0 < x) :
     neumannLaplaceMoment x 1 = (Real.sqrt Real.pi / 2) * x ^ (-(3 / 2 : ℝ)) := by
-  have hg := Real.Gamma_add_one (s := (1 / 2 : ℝ)) (by norm_num)
+  have hg := Real.Gamma_add_one (s := (1 / 2)) (by norm_num)
   rw [Real.Gamma_one_half_eq] at hg
   rw [neumannLaplaceMoment_eq_gamma hx]
   norm_num at hg ⊢
@@ -77,8 +77,8 @@ theorem neumannLaplaceMoment_one {x : ℝ} (hx : 0 < x) :
 
 theorem neumannLaplaceMoment_two {x : ℝ} (hx : 0 < x) :
     neumannLaplaceMoment x 2 = (3 * Real.sqrt Real.pi / 4) * x ^ (-(5 / 2 : ℝ)) := by
-  have hg := Real.Gamma_add_one (s := (1 / 2 : ℝ)) (by norm_num)
-  have hg' := Real.Gamma_add_one (s := (3 / 2 : ℝ)) (by norm_num)
+  have hg := Real.Gamma_add_one (s := (1 / 2)) (by norm_num)
+  have hg' := Real.Gamma_add_one (s := (3 / 2)) (by norm_num)
   rw [Real.Gamma_one_half_eq] at hg
   norm_num at hg hg'
   rw [hg] at hg'
@@ -105,7 +105,7 @@ theorem neumannRayCoefficient_eq : neumannRayCoefficient = (1 + I) / 2 := by
 
 theorem norm_neumannRayCoefficient_le_one : ‖neumannRayCoefficient‖ ≤ 1 := by
   rw [neumannRayCoefficient_eq, norm_div]
-  have h := norm_add_le (1 : ℂ) I
+  have h := norm_add_le 1 I
   norm_num at h ⊢
   linarith
 

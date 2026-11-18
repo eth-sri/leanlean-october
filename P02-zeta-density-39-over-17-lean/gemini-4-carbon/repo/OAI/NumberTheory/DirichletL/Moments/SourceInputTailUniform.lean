@@ -9,16 +9,11 @@ public import OAI.NumberTheory.DirichletL.Moments.ExceptionalAmplitudePair
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
+open scoped Classical BigOperators SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentSourceInputTailUniform
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass CenteredMomentSourceRow
-open CenteredMomentSourceZeroEnergy CenteredMomentSourceLiveColumn CenteredMomentSupportedZeroEnergy
-open CenteredMomentSourceProfileMassUniform CenteredMomentSourceProfileMass
-open CenteredMomentSupportedTailAggregate CenteredMomentSectorLocalization
-open CenteredMomentExceptionalAmplitudePair CenteredMomentNaturalRadialCutoff
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass CenteredMomentSourceRow CenteredMomentSourceZeroEnergy CenteredMomentSourceLiveColumn CenteredMomentSupportedZeroEnergy CenteredMomentSourceProfileMassUniform CenteredMomentSourceProfileMass CenteredMomentSupportedTailAggregate CenteredMomentSectorLocalization CenteredMomentExceptionalAmplitudePair CenteredMomentNaturalRadialCutoff
 local notation "O"=>HeckeFamily.O
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 local instance : DecidableEq (ι⊕Fin 2):=Classical.decEq _
@@ -65,7 +60,6 @@ theorem input_mass (hi:ι→ℝ)(whi:ℝ)(hhi:∀i,0≤hi i)(hwhi:0≤whi)
     (profileCoefficient R s.ν s.W s.P W₁ W₂ s.X₁ s.X₂ s.Y₁ s.Y₂ 1 1 seed)
   unfold coefficient
   rw [he₁,he₂]
-  change (∑I∈_,‖finiteColumnCoefficient _ _ I‖)≤_
   apply (hc.trans hm).trans_eq
   simp only [map_one,Nat.cast_one,one_mul,div_one,plainControl,volume]
   ring
@@ -127,7 +121,7 @@ lemma eventually_tail_threshold (HN ξ:ℝ)(hξ:0<ξ):
   rw [←add_div]
   apply (div_lt_iff₀ (Real.log_pos hZ)).mpr
   have ht:0<ξ/4:=by linarith
-  have hh:2*HN+Real.log (4:ℝ)<Real.log Z*(ξ/4):=(div_lt_iff₀ ht).mp hlog
+  have hh :=(div_lt_iff₀ ht).mp hlog
   nlinarith
 
 lemma choose_tail_order (B ξ saving:ℝ)(hB:0≤B)(hξ:0<ξ):
@@ -136,17 +130,15 @@ lemma choose_tail_order (B ξ saving:ℝ)(hB:0≤B)(hξ:0<ξ):
         (1+Real.exp (2*HN))^2*Z^(-saving):=by
   obtain ⟨Adec,hAdec⟩:=exists_nat_ge ((5*B+saving)/(ξ/4))
   have horder:5*B-(ξ/4)*(Adec:ℝ)≤-saving:=by
-    have hh:5*B+saving≤(Adec:ℝ)*(ξ/4):=(div_le_iff₀ (by linarith:0<ξ/4)).mp hAdec
+    have hh :=(div_le_iff₀ (by linarith:0<ξ/4)).mp hAdec
     linarith
   refine ⟨Adec,?_⟩
   intro HN Z V Tsec hZ hV hVcap hT hTcap
-  have hz:0<Z:=zero_lt_one.trans_le hZ
-  have hk:=kernel_inverse_cap HN Z B Tsec hZ hB hT hTcap
-  have hd:=reciprocal_cutoff_bound Z (ξ/4) Adec hz
+  have hz :=zero_lt_one.trans_le hZ
   calc
     _≤(Z^B)^3*((1+Real.exp (2*HN))^2*(Z^B)^2)*Z^(-(ξ/4)*(Adec:ℝ)):=by
-      apply mul_le_mul _ hd (by positivity) (by positivity)
-      apply mul_le_mul (pow_le_pow_left₀ hV.le hVcap 3) hk
+      apply mul_le_mul _ (reciprocal_cutoff_bound Z (ξ/4) Adec hz) (by positivity) (by positivity)
+      apply mul_le_mul (pow_le_pow_left₀ hV.le hVcap 3) (kernel_inverse_cap HN Z B Tsec hZ hB hT hTcap)
         (inv_nonneg.mpr (sq_nonneg _)) (by positivity)
     _=(1+Real.exp (2*HN))^2*Z^(5*B-(ξ/4)*(Adec:ℝ)):=by
       rw [←Real.rpow_mul_natCast hz.le,←Real.rpow_mul_natCast hz.le]

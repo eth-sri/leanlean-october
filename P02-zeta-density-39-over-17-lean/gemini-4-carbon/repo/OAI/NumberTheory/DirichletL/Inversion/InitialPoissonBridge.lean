@@ -9,9 +9,7 @@ noncomputable section
 
 open scoped BigOperators Classical SchwartzMap ContDiff
 namespace SevenEighths.InverseInitialPoissonBridge
-open ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion
-open ConcretePrimeRowBridge ConcreteTraceCRT EisensteinSchwartzPoisson
-open UniqueFactorizationMonoid InverseInitialOverlap
+open ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge ConcreteTraceCRT EisensteinSchwartzPoisson UniqueFactorizationMonoid InverseInitialOverlap
 local notation "Eis" => ActualEisensteinCubic.O
 
 def rowPolynomial (F : Finset (Ideal Eis)) (A : Ideal Eis → ℂ) (u : Eis) : ℂ :=
@@ -31,9 +29,6 @@ theorem idealRowHom_eq_idealSexticRow
   let : ∀ q : primePool F, q.val.IsMaximal := primePool_maximal F (pool_positive F hF)
   conv_lhs => rw [← idealSupport_product_eq F hI (hF I hI).2.1]
   rw [map_prod]
-  change (∏ q ∈ idealSupport F I, idealRowHom u q.val) =
-    ∏ q ∈ idealSupport F I, CompletedGauss.actualSextic q.val (primePool_good F (pool_good F hF) q)
-      (Ideal.Quotient.mk q.val u)
   apply Finset.prod_congr rfl
   intro q hq
   exact idealRowHom_prime u q.val (primePool_good F (pool_good F hF) q)
@@ -68,9 +63,8 @@ theorem columns_admissible (S : Finset (Ideal Eis)) {P j : Ideal Eis}
     {c : Ideal Eis} (hc : c ∈ columns S P j) : Admissible c := by
   obtain ⟨n,hn,rfl⟩ := Finset.mem_image.mp hc
   obtain ⟨hnS,hns,hg⟩ := mem_original.mp hn
-  have hjn : j ∣ n := hg ▸ GCDMonoid.gcd_dvd_left n P
   have hs := (supported_mul_iff (idealQuotient j n) (residual P j)).mpr
-    ⟨supported_of_dvd (hS n hnS hns) (idealQuotient_dvd hjn),
+    ⟨supported_of_dvd (hS n hnS hns) (idealQuotient_dvd (hg ▸ GCDMonoid.gcd_dvd_left n P)),
      supported_of_dvd (admissible_supported hP) (idealQuotient_dvd hj)⟩
   exact ⟨hs.1,(column_properties hP.2.1 hj hns hg).1,hs.2⟩
 

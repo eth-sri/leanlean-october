@@ -4,8 +4,7 @@ public import PeakWidthPowers
 public import MathCollab.Density.Stronger.Peaks.WidthRanges
 
 @[expose] public section
-open Filter Finset
-open MathCollab.Density MathCollab.Density.Stronger MathCollab.Density.Stronger.Peaks
+open Filter Finset MathCollab.Density MathCollab.Density.Stronger MathCollab.Density.Stronger.Peaks
 set_option autoImplicit false
 noncomputable section
 namespace Montgomery.CriticalPeak
@@ -28,7 +27,7 @@ theorem exists_pointValue_card_le_source_range
   let K : ℝ := 16*P*C+1
   have hK : 0 < K := by dsimp only [K]; positivity
   have hKsize : 16*P*C ≤ K := by dsimp only [K]; linarith
-  have hq : 0 < (1/4:ℝ)+κ := by linarith
+  have hq : 0 < (1/4)+κ := by linarith
   obtain ⟨B₁,hB₁⟩ := eventually_atTop.mp
     (eventually_pointValue_log_scales (P := P) hK hq)
   let D₁ : ℝ := D*(K*(16*P)^2+K^g*(16*P)^b)
@@ -45,15 +44,13 @@ theorem exists_pointValue_card_le_source_range
   have hDen : 0 < K*L^2 := by positivity
   have hG : 0 < G := by dsimp only [G]; positivity
   have hGlo : (2*H)^(1/4+κ) ≤ G := by
-    dsimp only [G]
     exact (le_div_iff₀ hDen).mpr (by simpa only [L,mul_comm] using hLower)
   have hGhi : G ≤ H^(1/2-δ) := by
-    dsimp only [G]
     exact (div_le_iff₀ hDen).mpr (by simpa only [L,mul_comm] using hUpper)
   have hGH : G ≤ H := by
     calc
       G ≤ H^(1/2-δ) := hGhi
-      _ ≤ H^(1:ℝ) := Real.rpow_le_rpow_of_exponent_le hH1 (by linarith)
+      _ ≤ H^1 := Real.rpow_le_rpow_of_exponent_le hH1 (by linarith)
       _ = H := Real.rpow_one H
   have hfit : 2*(Real.log (3*H))^2 ≤ G :=
     hlogFit.trans ((Real.rpow_le_rpow hH0.le (by linarith) hq.le).trans hGlo)
@@ -71,13 +68,8 @@ theorem exists_pointValue_card_le_source_range
     · exact (Real.rpow_le_rpow ht0 hthi hq.le).trans hGlo
   have hOnePow : 1 ≤ (2*H)^(1/4+κ) :=
     Real.one_le_rpow (by linarith) hq.le
-  have hLowerSimple : K*L^2 ≤ V^2 := by
-    have hm := mul_le_mul_of_nonneg_left hOnePow hDen.le
-    have hLower' : K*L^2*(2*H)^(1/4+κ) ≤ V^2 := hLower
-    nlinarith
   have hVsize : 2*P*Real.log (3*H) ≤ V^2 := by
     have hm := mul_le_mul_of_nonneg_right hPL hL.le
-    change 2*P*L ≤ V^2
     change 2*P*L ≤ K*L*L at hm
     nlinarith
   have herr : C*G*Real.log (3*H) ≤ V^2/(16*P*Real.log (3*H)) :=
@@ -103,7 +95,6 @@ theorem exists_pointValue_card_le_source_range
       apply mul_le_mul_of_nonneg_left _ (by positivity)
       nlinarith [mul_nonneg hkx hy,mul_nonneg hky hx]
     _ = D₁*H^ν*(H*(Real.log (3*H))^4/V^6+H^a*(Real.log (3*H))^(2*g+b)/V^(2*g+2*b)) := by
-      dsimp only [D₁,L]
       ring
 
 

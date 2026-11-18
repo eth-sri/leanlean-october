@@ -9,13 +9,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyCanonicalAnnularLower
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss CenteredMomentCanonicalFirst
-open CenteredMomentFirstAmplifiedFourCoefficients CenteredMomentFirstAmplificationChoice
-open CenteredMomentPrimeElements CenteredMomentSectorLocalization
-open CenteredMomentEnergyFirstRawScaleAdmission CenteredMomentEnergyAmplifiedChildWidth
-open CenteredMomentAmplificationChildInput CenteredMomentCommonRadialData
-open CenteredMomentCommonAllocationSum CenteredMomentFirstChildProfileControl
-open CenteredMomentSecondChildPowerBudget
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss CenteredMomentCanonicalFirst CenteredMomentFirstAmplifiedFourCoefficients CenteredMomentFirstAmplificationChoice CenteredMomentPrimeElements CenteredMomentSectorLocalization CenteredMomentEnergyFirstRawScaleAdmission CenteredMomentEnergyAmplifiedChildWidth CenteredMomentAmplificationChildInput CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentFirstChildProfileControl CenteredMomentSecondChildPowerBudget
 local notation "O"=>HeckeFamily.O
 local notation "Ray"=>RayFourExpansion.RayCharacter
 local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
@@ -24,8 +18,7 @@ lemma parent_lower_ge {ι:Type*}[Fintype ι](s:Input ι)(Z r:ℝ)(hZ:1<Z)
     (hX₁:Z^r≤s.X₁)(hX₂:Z^r≤s.X₂)(hY₁:Z^r≤s.Y₁)(hY₂:Z^r≤s.Y₂):
     r≤parentLower s Z:=by
   have h (x:ℝ)(hx:Z^r≤x):r≤Real.logb Z x:=by
-    have hh:=Real.logb_le_logb_of_le hZ (Real.rpow_pos_of_pos (zero_lt_one.trans hZ) r) hx
-    simpa only [Real.logb_rpow (zero_lt_one.trans hZ) hZ.ne'] using hh
+    simpa only [Real.logb_rpow (zero_lt_one.trans hZ) hZ.ne'] using (Real.logb_le_logb_of_le hZ (Real.rpow_pos_of_pos (zero_lt_one.trans hZ) r) hx)
   exact le_min (le_min (h _ hX₁) (h _ hX₂)) (le_min (h _ hY₁) (h _ hY₂))
 
 lemma exceptional_cap_antitone (Z r s:ℝ)(hZ:1≤Z)(hrs:r≤s):
@@ -85,7 +78,6 @@ theorem actual_source_coefficients_lower {ι:Type*}[Fintype ι]
       (fun j=>Hcoef j*mainPowers q Z Kmain (sigma/3) deficit paid saving newr j)
       (fun p i _χ j=>Hcoef j*errorPowers p (errorIndex i+1) q Z (Kerr p i) deficit paid saving
         (newr-errorRemoval p Z (errorIndex i+1)) j) alpha j:=by
-  dsimp only
   have hr:=parent_lower_ge src Z r hZ hX₁ hX₂ hY₁ hY₂
   apply source_coefficients_mono P _ (by positivity)
   · intro j
@@ -121,7 +113,6 @@ theorem actual_high_annular_sum {ι:Type*}[Fintype ι]
       (fun p i _χ j=>Hcoef j*errorPowers p (errorIndex i+1) q Z (Kerr p i) deficit paid saving
         (newr-errorRemoval p Z (errorIndex i+1)) j) (powers eps) j*
       (volume input)^(powers eps j))*mass input^2:=by
-  dsimp only
   have h:=actual_source_coefficients_lower src P C D E K Z sigma delta reserve Mamp
     (τ.modulus.absNorm:ℝ) deficit paid saving (Mwidth/4) hZ hsigma hMamp hX₁ hX₂ hY₁ hY₂
     Hcoef hH (powers eps)

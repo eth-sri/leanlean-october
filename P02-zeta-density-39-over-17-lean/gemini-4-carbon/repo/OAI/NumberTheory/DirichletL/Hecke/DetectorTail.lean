@@ -6,16 +6,15 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorWitnessArithmetic
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical Topology
 open Filter
+open scoped BigOperators Classical Topology
 namespace SevenEighths.HeckeDetectorTail
-open HeckeFamily HeckeDetectorWitnessArithmetic CompletedGauss
-open IdealMobiusDivisorSum UniqueFactorizationMonoid
+open HeckeFamily HeckeDetectorWitnessArithmetic CompletedGauss IdealMobiusDivisorSum UniqueFactorizationMonoid
 local notation "O" => HeckeFamily.O
 
 lemma exponential_cubic_bound (x Y : ℝ) (hx : 0 < x) (hY : 0 < Y) :
     x * Real.exp (-x/Y) ≤ 6*Y^3/x^2 := by
-  have he := Real.pow_div_factorial_le_exp (x/Y) (show 0 ≤ x/Y by positivity) 3
+  have he := Real.pow_div_factorial_le_exp (x/Y) (by positivity) 3
   norm_num only [Nat.factorial_succ, Nat.factorial_zero, Nat.cast_mul, Nat.cast_one,
     Nat.cast_ofNat] at he
   have hh := mul_le_mul_of_nonneg_right he (Real.exp_pos (-(x/Y))).le
@@ -156,7 +155,7 @@ theorem terminalRemainder_bound (χ : Character) (V T : ℝ → ℂ) (B BT : ℝ
     apply Real.exp_le_exp.mpr
     have hc : (-((Ideal.absNorm I : ℝ) : ℂ)/(2*(Y : ℂ))).re =
         -(Ideal.absNorm I : ℝ)/(2*Y) := by
-      rw [show (2 : ℂ)*(Y : ℂ) = ((2*Y : ℝ) : ℂ) by push_cast; rfl,
+      rw [show 2*(Y : ℂ) = ((2*Y : ℝ) : ℂ) by push_cast; rfl,
         ←Complex.ofReal_neg,←Complex.ofReal_div,Complex.ofReal_re]
     rw [hc]
     exact div_le_div_of_nonneg_right (by linarith [lt_of_not_ge hI]) (by positivity)
@@ -205,10 +204,9 @@ theorem terminalRemainder_uniform_small (B BT ε : ℝ)
       (∀ x : ℝ, 0 ≤ x → x ≤ 1 → T x = 1) →
       ∀ (D : ℝ) (s : ℂ), 0 ≤ s.re →
       ‖∑' I, terminalRemainder χ V T D (U^20) (U^21) s I‖ < ε := by
-  let C : ℝ := 6144*B*(1+B)*(1+BT)*(∑' I : Ideal O, ‖CubicEisenstein.fullIdealWeight 2 I‖)
+  let C := 6144*B*(1+B)*(1+BT)*(∑' I : Ideal O, ‖CubicEisenstein.fullIdealWeight 2 I‖)
   have ht : Tendsto (fun U : ℝ => C*(U^60*Real.exp (-U/2))) atTop (𝓝 0) := by
-    have h := (tendsto_rpow_mul_exp_neg_mul_atTop_nhds_zero 60 (1/2) (by norm_num)).const_mul C
-    convert h using 1
+    convert ((tendsto_rpow_mul_exp_neg_mul_atTop_nhds_zero 60 (1/2) (by norm_num)).const_mul C) using 1
     · ext U
       rw [show (60 : ℝ) = ((60 : ℕ) : ℝ) by norm_num,Real.rpow_natCast]
       congr 2

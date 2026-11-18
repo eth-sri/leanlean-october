@@ -25,8 +25,7 @@ theorem norm_atkinsonPrefixGram_le_max (m N j : ℕ) (hj : j ≤ N) (t u : ℝ) 
 
 theorem atkinsonPrefixGramMax_nonneg (m N : ℕ) (t u : ℝ) :
     0 ≤ atkinsonPrefixGramMax m N t u := by
-  have h := norm_atkinsonPrefixGram_le_max m N 0 (Nat.zero_le N) t u
-  simpa [atkinsonPrefixGram] using h
+  simpa [atkinsonPrefixGram] using (norm_atkinsonPrefixGram_le_max m N 0 (Nat.zero_le N) t u)
 
 theorem atkinsonPrefixGramMax_self (m N : ℕ) (t : ℝ) :
     atkinsonPrefixGramMax m N t t = (N:ℝ) := by

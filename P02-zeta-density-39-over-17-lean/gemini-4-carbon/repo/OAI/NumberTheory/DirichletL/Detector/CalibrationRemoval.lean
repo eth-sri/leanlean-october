@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CubicEisenstein GaussianShiftedPartition CanonicalRowCompletion
-open CanonicalQuadraticSieve ConcreteTraceCRT
-open CenteredMomentCommonSupport CenteredMomentFourier CenteredMomentSupportedCorrelation
+open ActualEisensteinCubic CubicEisenstein GaussianShiftedPartition CanonicalRowCompletion CanonicalQuadraticSieve ConcreteTraceCRT CenteredMomentCommonSupport CenteredMomentFourier CenteredMomentSupportedCorrelation
 local notation "O" => ActualEisensteinCubic.O
 
 lemma sexticGauss_unit_scale (s : O) (hs : Supported (Ideal.span {s}))
@@ -36,8 +34,7 @@ lemma movingQuotient_unit_scale (A s : O) (hs : Supported (Ideal.span {s}))
       idealRowHom b (Ideal.span {A}) * (idealRowHom b (Ideal.span {s}))⁻¹ *
         movingQuotient A s (supportedElement_ne_zero s hs) x := by
   obtain ⟨m,rfl⟩ := Ideal.Quotient.mk_surjective x
-  rw [← map_mul, movingQuotient_mk, movingQuotient_mk, idealRowHom_argument_mul]
-  rw [show -(b*m)=b*(-m) by ring, sexticGauss_unit_scale s hs b (-m) hcop]
+  rw [← map_mul, movingQuotient_mk, movingQuotient_mk, idealRowHom_argument_mul, show -(b*m)=b*(-m) by ring, sexticGauss_unit_scale s hs b (-m) hcop]
   ring
 
 def barePhysicalFourier (A s : O) (hA : A≠0) (hs : s≠0) (H : O) : ℂ :=
@@ -93,7 +90,6 @@ theorem actualCongruenceCoefficient_calibration_factor (S : Finset (Ideal O))
         (Real.sqrt (elementNorm C.generator):ℂ) * C.tau *
         idealRowHom C.generator (Ideal.span {A}) * (idealRowHom C.generator (Ideal.span {s}))⁻¹) *
       bareCongruenceCoefficient A s hA H := by
-  dsimp only
   have he := actualPhysicalFourier_calibration_factor S hS A s hA hs hcop H
   dsimp only at he
   rw [actualPhysicalFourier_eq, barePhysicalFourier_eq] at he

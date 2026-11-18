@@ -7,12 +7,10 @@ public import OAI.NumberTheory.DirichletL.Detector.FiniteProductBounds
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
 open Complex MeasureTheory
+open scoped Classical BigOperators
 namespace SevenEighths.ProbePrincipalResidueActual
-open HeckeFamily PrincipalMellinResidues PrincipalSignalComparison
-open ProbeFiniteProductBounds ProbeEuler ProbeLocal HeckeSignal ProbePhysical Continuation
-open ActualEisensteinCubic CompletedGauss
+open HeckeFamily PrincipalMellinResidues PrincipalSignalComparison ProbeFiniteProductBounds ProbeEuler ProbeLocal HeckeSignal ProbePhysical Continuation ActualEisensteinCubic CompletedGauss
 
 def residueWeights {κ : Type*} (W : κ → ℝ → ℝ) (scale : κ → ℝ)
     (j : κ) (p : PrimeIdeal) : ℝ :=
@@ -23,8 +21,7 @@ theorem actual_window_residue {κ : Type*} (η : Character) (S : Finset κ)
     windowMultiplier η S T (fun j t => (W j t : ℂ)) scale s 1 (1/6) =
       slotProduct S T (residueWeights W scale) (fun _ p => Ideal.absNorm p.val)
         (fun _ p => actualAPhase η (primaryGenerator p.val))
-        (fun _ p => idealCoeff η p.val) s := by
-  exact window_at_residue η S T W scale s
+        (fun _ p => idealCoeff η p.val) s := window_at_residue η S T W scale s
 
 theorem normalized_actual_window_residue {κ : Type*}
     (E : Finset (Ideal HeckeFamily.O)) (hE : SourceExclusions E) (η : Character)

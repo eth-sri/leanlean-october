@@ -9,8 +9,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CanonicalQuadraticSieve
-open InverseInitialArithmetic InverseSecondSourceBlocks InverseSecondFibers
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CanonicalQuadraticSieve InverseInitialArithmetic InverseSecondSourceBlocks InverseSecondFibers
 local notation "O"=>ActualEisensteinCubic.O
 variable {ι:Type*}[DecidableEq ι](p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
 variable (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
@@ -19,11 +18,11 @@ variable (hc:∀i,ringChar (O⧸Ideal.span {p i})≠2)
 include hp hg hc in
 omit [DecidableEq ι] in
 lemma canonical_source_prime_supported (i:ι):Supported (Ideal.span {p i}) :=by
-  have hn:(Ideal.span {p i}:Ideal O)≠0:=Ideal.span_singleton_eq_bot.not.mpr (hp i)
+  have hn :=Ideal.span_singleton_eq_bot.not.mpr (hp i)
   refine ⟨hn,?_⟩
   intro P hP
   obtain ⟨hprime,hle⟩:=(Ideal.mem_normalizedFactors_iff hn).mp hP
-  have he:Ideal.span {p i}=P:=(inferInstance:(Ideal.span {p i}:Ideal O).IsMaximal).eq_of_le hprime.ne_top hle
+  have he :=(inferInstance:(Ideal.span {p i}:Ideal O).IsMaximal).eq_of_le hprime.ne_top hle
   subst P
   exact ⟨hg i,hc i⟩
 

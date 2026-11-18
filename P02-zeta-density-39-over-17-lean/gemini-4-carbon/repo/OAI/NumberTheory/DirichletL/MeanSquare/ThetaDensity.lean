@@ -1,5 +1,6 @@
 module
-public import OAI.NumberTheory.DirichletL.RowCompletion.InitialDensity
+public import OAI.NumberTheory.DirichletL.RowCompletion.DensityTransfer
+public import OAI.NumberTheory.DirichletL.Eisenstein.SeedHeight
 
 @[expose] public section
 
@@ -7,94 +8,24 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 
 namespace InitialMeanSquare
 
 section
 
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap ContDiff
-open ActualEisensteinCubic ConcretePrimeRowBridge CanonicalQuadraticSieve
-open SecondPassArithmetic SecondPassIntegration JointLogSeparation
+open ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic SecondPassIntegration JointLogSeparation
 open FirstPassCubeLabels (primeProductNorm columnLog)
 
 end
 
 section
-open ActualEisensteinCubic ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic SecondPassIntegration
+open ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic SecondPassIntegration
 open FirstPassCubeLabels (columnLog)
 
 end
 
-open ActualEisensteinCubic
 open ConcretePrimeRowBridge hiding O
 open CanonicalQuadraticSieve hiding O
 open SecondPassArithmetic hiding O
@@ -103,8 +34,7 @@ open CanonicalRowCompletion
 end InitialMeanSquare
 
 namespace CubicEisenstein
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff MatrixGroups
+open scoped MatrixGroups
 
 lemma cuspBarrierField_local_model (p : SpatialCoordinates) (hp : 0<p 2) :
     (cuspBarrierField 2 3 =ᶠ[𝓝 p] (fun _ => 1)) ∨
@@ -113,8 +43,7 @@ lemma cuspBarrierField_local_model (p : SpatialCoordinates) (hp : 0<p 2) :
   by_cases hx : ∃x : FullCuspClasses,1<rowHeight (fullCuspRow x) p
   · obtain ⟨x,hx⟩ := hx
     refine Or.inr ⟨x,hx,?_⟩
-    have hc := (rowHeight_contDiffAt _ (fullCuspRow_ne_zero x) p hp).continuousAt
-    filter_upwards [hc.eventually_const_lt hx,(continuous_apply 2).continuousAt.eventually_const_lt hp] with q hq hpos
+    filter_upwards [((rowHeight_contDiffAt _ (fullCuspRow_ne_zero x) p hp).continuousAt).eventually_const_lt hx,(continuous_apply 2).continuousAt.eventually_const_lt hp] with q hq hpos
     change 1+fullCuspProfileField (cuspBarrierProfile 2 3) q=_
     rw [fullCuspProfileField_eq _ q hpos,fullCuspProfileSum_eq_single _
       (fun v hv => cuspBarrierProfile_zero 2 3 (by norm_num) v (by linarith)) _ x
@@ -125,7 +54,7 @@ lemma cuspBarrierField_local_model (p : SpatialCoordinates) (hp : 0<p 2) :
       rw [eventually_all_finset]
       intro x hxT
       apply (rowHeight_contDiffAt _ (fullCuspRow_ne_zero x) p hp).continuousAt.eventually_lt_const
-      have hn : rowHeight (fullCuspRow x) p≤1 := not_lt.mp (fun h => hx ⟨x,h⟩)
+      have hn := not_lt.mp (fun h => hx ⟨x,h⟩)
       linarith
     filter_upwards [hT,hsmall] with q hq hqT
     change 1+fullCuspProfileField (cuspBarrierProfile 2 3) q=1
@@ -215,9 +144,8 @@ lemma kernelBarrier_scaled_fderiv_bound :
   have he : ∀q : SpatialCoordinates,0<q 2→ f (WithLp.toLp 2 q)=(cuspBarrierField 2 3 q:ℂ) := by
     intro q hq
     exact congrArg Complex.ofReal (cuspBarrier_euclidean_eq 2 3 (WithLp.toLp 2 q) hq)
-  have ha := axisSlice_eventuallyEq_of_positive _ _ he p.ofLp hp j
   change ‖(p 2:ℂ)*fderiv ℝ f p (euclideanCoordinateVector j)‖≤_
-  rw [←(euclideanAxisSlice_derivatives f hf p hp j).1,ha.deriv_eq]
+  rw [←(euclideanAxisSlice_derivatives f hf p hp j).1,(axisSlice_eventuallyEq_of_positive _ _ he p.ofLp hp j).deriv_eq]
   change _≤D*cuspBarrier 2 3 (euclideanToHyperbolic p)
   rw [cuspBarrier_euclidean_eq 2 3 p hp]
   exact hbound p.ofLp hp j
@@ -228,22 +156,18 @@ lemma kernelBarrier_scaled_real_fderiv_bound :
         (euclideanCoordinateVector j)|≤D*kernelQuotientBarrier 2 3 (kernelEuclideanProjection p) := by
   obtain ⟨D,hD,hbound⟩ := kernelBarrier_scaled_fderiv_bound
   refine ⟨D,hD,fun p hp j => ?_⟩
-  have hphi := (cuspBarrier_euclidean_contDiffAt 2 3 (by norm_num) (by norm_num) p hp).differentiableAt (by simp)
-  have he := (Complex.ofRealCLM.hasFDerivAt.comp p hphi.hasFDerivAt).fderiv
   have hh := hbound p hp j
   change ‖(p 2:ℂ)*fderiv ℝ (Complex.ofRealCLM ∘ (fun q => cuspBarrier 2 3 (euclideanToHyperbolic q))) p
       (euclideanCoordinateVector j)‖≤_ at hh
-  rw [he] at hh
-  simpa only [ContinuousLinearMap.comp_apply,Complex.ofRealCLM_apply,←Complex.ofReal_mul,
-    Complex.norm_real,Real.norm_eq_abs] using! hh
+  rw [((Complex.ofRealCLM.hasFDerivAt.comp p ((cuspBarrier_euclidean_contDiffAt 2 3 (by norm_num) (by norm_num) p hp).differentiableAt (by simp)).hasFDerivAt).fderiv)] at hh
+  simpa using! hh
 
 lemma kernelExhaustionProfile_euler_bounded :
     ∃C : ℝ,0≤C ∧ ∀n : ℕ,∀v : ℝ,|v*deriv (kernelExhaustionProfile n) v|≤C := by
   obtain ⟨C,hC,hbound⟩ := cuspTransition_euler_bounded 1 2 (by norm_num)
   refine ⟨C,hC,fun n v => ?_⟩
-  let c : ℝ := (n:ℝ)+1
-  have hc : c≠0 := by dsimp [c]; positivity
-  have hd := (hasDerivAt_const v (1:ℝ)).sub
+  let c := (n:ℝ)+1
+  have hd := (hasDerivAt_const v 1).sub
     (((cuspTransition_contDiff 1 2).differentiable (by simp) (v/c)).hasDerivAt.comp v
       ((hasDerivAt_id v).div_const c))
   change HasDerivAt (kernelExhaustionProfile n) (0-deriv (cuspTransition 1 2) (v/c)*(1/c)) v at hd
@@ -260,13 +184,9 @@ lemma kernelExhaustionCutoff_scaled_fderiv_bound :
   obtain ⟨B,hB,hprofile⟩ := kernelExhaustionProfile_euler_bounded
   refine ⟨D*B,mul_nonneg hD hB,fun n p hp j => ?_⟩
   let phi : EuclideanSpatial→ℝ := fun q => kernelQuotientBarrier 2 3 (kernelEuclideanProjection q)
-  have hphi : DifferentiableAt ℝ phi p :=
-    (cuspBarrier_euclidean_contDiffAt 2 3 (by norm_num) (by norm_num) p hp).differentiableAt (by simp)
-  have hP := ((kernelExhaustionProfile_smooth n).differentiable (by simp) (phi p)).hasDerivAt
-  have hd := (hP.ofReal_comp.hasFDerivAt.comp p hphi.hasFDerivAt).fderiv
   change ‖(p 2:ℂ)*fderiv ℝ ((fun v => (kernelExhaustionProfile n v:ℂ)) ∘ phi) p
     (euclideanCoordinateVector j)‖≤D*B
-  rw [hd]
+  rw [(((((kernelExhaustionProfile_smooth n).differentiable (by simp) (phi p)).hasDerivAt).ofReal_comp.hasFDerivAt.comp p ((cuspBarrier_euclidean_contDiffAt 2 3 (by norm_num) (by norm_num) p hp).differentiableAt (by simp)).hasFDerivAt).fderiv)]
   change ‖(p 2:ℂ)*((fderiv ℝ phi p (euclideanCoordinateVector j):ℝ) •
     ((deriv (kernelExhaustionProfile n) (phi p):ℝ):ℂ))‖≤D*B
   rw [Complex.real_smul,←Complex.ofReal_mul,←Complex.ofReal_mul,Complex.norm_real,Real.norm_eq_abs]
@@ -282,13 +202,11 @@ lemma kernelExhaustionCutoff_scaled_fderiv_bound :
 
 end CubicEisenstein
 
-open scoped BigOperators Classical SchwartzMap
 namespace SixthPowerAverage
-open ActualEisensteinCubic
 open ConcretePrimeRowBridge hiding O
 open EisensteinSchwartzPoisson hiding O
 open IdealMobiusDivisorSum hiding O
-open ConcreteTraceCRT ShortDraftHeckeBridge
+open ShortDraftHeckeBridge
 open QuadraticInitialBound hiding O
 
 def totientDensity (I : Ideal ActualEisensteinCubic.O) : ℂ :=

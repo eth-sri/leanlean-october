@@ -9,16 +9,11 @@ public import OAI.NumberTheory.DirichletL.Moments.DetectorDictionaryUniformTests
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap Topology
 open Filter
+open scoped Classical BigOperators SchwartzMap Topology
 
 namespace SevenEighths.CenteredMomentDetectorEnergyInitialState
-open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily
-open CenteredMomentEnergyState CenteredMomentRadialEligibleEnergy
-open CenteredMomentSecondHeightFamily CenteredExceptionalProfile
-open CenteredMomentNaturalFixedRaySource ConcretePrimeRowBridge
-open CenteredMomentDetectorPlainFiberSource CenteredMomentDetectorDictionary
-open CenteredMomentFiniteProfileExceptional
+open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily CenteredMomentEnergyState CenteredMomentRadialEligibleEnergy CenteredMomentSecondHeightFamily CenteredExceptionalProfile CenteredMomentNaturalFixedRaySource ConcretePrimeRowBridge CenteredMomentDetectorPlainFiberSource CenteredMomentDetectorDictionary CenteredMomentFiniteProfileExceptional
 local notation "O"=>HeckeFamily.O
 
 def initialKeep (η:Character)(Q:Ideal O)(z:O):Prop:=
@@ -84,7 +79,7 @@ theorem source_label_modulus_eventually (F:ProbeFinalAssembly.SourceData D)
     apply Filter.eventually_all.mpr
     intro label
     exact (tendsto_rpow_atTop (mul_pos (by norm_num) hδ)).eventually (eventually_ge_atTop _)
-  filter_upwards [hc,eventually_gt_atTop (1:ℝ)] with Z hz hZ
+  filter_upwards [hc,eventually_gt_atTop 1] with Z hz hZ
   refine ⟨hZ,?_⟩
   intro label d hd
   apply (hz label).trans
@@ -92,8 +87,7 @@ theorem source_label_modulus_eventually (F:ProbeFinalAssembly.SourceData D)
   exact Real.rpow_le_rpow_of_exponent_le hZ.le (mul_le_mul_of_nonneg_right hd hδ.le)
 
 lemma source_keep_iff (F:ProbeFinalAssembly.SourceData D)(η:Character)(u:FreeRow):
-    initialKeep η (internalQ (sourceFixedIdeal F) η) u.val↔¬sourceExceptional F η u:=by
-  exact and_iff_right u.property.1
+    initialKeep η (internalQ (sourceFixedIdeal F) η) u.val↔¬sourceExceptional F η u:= and_iff_right u.property.1
 
 lemma source_fixed_gates (F:ProbeFinalAssembly.SourceData D)(η:Character):
     internalQ (sourceFixedIdeal F) η≠0 ∧

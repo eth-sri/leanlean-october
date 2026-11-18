@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaReflectionEnvelope
 public import TaoTrudgianYang2025.BetaClosedDuality
 
@@ -24,10 +34,8 @@ open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean 
 theorem exponentPairLine_reflected_le {k l α : ℝ}
     (hslope : 1/2 ≤ l-k) (hα : 1/2 ≤ α) :
     1/2-(1-α)+exponentPairLine k l (1-α) ≤ exponentPairLine k l α := by
-  have h := mul_nonneg (show 0 ≤ 2*α-1 by linarith)
-    (show 0 ≤ l-k-1/2 by linarith)
   unfold exponentPairLine
-  nlinarith only [h]
+  nlinarith
 
 theorem exponentPair_of_beta_bound_half {k l : ℝ}
     (htri : InExponentPairTriangle k l) (hslope : 1/2 ≤ l-k)
@@ -58,11 +66,9 @@ theorem exponentPair_of_beta_bound_half {k l : ℝ}
     have hout := exponentSumGrowthExponent_le_iff_nonAsymptotic.mpr
       (isExponentSumBoundNonAsymptotic_reflect_nonnegative hγ hinput hn)
     rw [hdouble] at hout
-    calc
-      exponentSumGrowthExponent α ≤ exponentPairLine k l γ+1/2-(γ:ℝ) := hout
-      _ ≤ exponentPairLine k l α := by
+    exact (hout).trans (by
         have hb := exponentPairLine_reflected_le hslope (le_of_not_ge hhalf)
         rw [hγreal]
-        linarith
+        linarith)
 
 end TaoTrudgianYang2025

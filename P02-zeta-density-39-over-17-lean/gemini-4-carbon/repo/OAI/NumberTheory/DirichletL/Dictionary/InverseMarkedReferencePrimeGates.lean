@@ -10,10 +10,7 @@ noncomputable section
 
 open scoped Classical BigOperators Topology
 namespace SevenEighths.DetectorDictionaryInverseMarkedReference
-open HeckeFamily HeckeInverseAmplification InverseInitialDetectorSource
-open InverseInitialRawDictionary InverseInitialPhysicalSlots
-open DetectorDictionaryInverseRawInitialGates InverseInitialExcludedPeriod
-open InverseInitialExcludedPool InverseInitialExcludedOverlap Filter CanonicalQuadraticSieve CanonicalRowCompletion
+open HeckeFamily HeckeInverseAmplification InverseInitialDetectorSource InverseInitialRawDictionary InverseInitialPhysicalSlots DetectorDictionaryInverseRawInitialGates InverseInitialExcludedPeriod InverseInitialExcludedPool InverseInitialExcludedOverlap Filter CanonicalQuadraticSieve CanonicalRowCompletion
 local notation "O"=>HeckeFamily.O
 
 theorem deleted_large_eventually {Label Slot:Type*}[Fintype Label][Fintype Slot]
@@ -27,7 +24,7 @@ theorem deleted_large_eventually {Label Slot:Type*}[Fintype Label][Fintype Slot]
     apply Filter.eventually_all.mpr
     intro s
     exact (tendsto_rpow_atTop (hell s)).eventually (eventually_gt_atTop _)
-  filter_upwards [eventually_ge_atTop (1:ℝ),ht] with Z hZ ht
+  filter_upwards [eventually_ge_atTop 1,ht] with Z hZ ht
   refine ⟨hZ,?_⟩
   intro d hd j s
   rw [←Real.rpow_mul (by linarith:0≤Z),mul_div_cancel₀ _ hd.ne']
@@ -49,7 +46,7 @@ theorem deleted_source_live_prime {Δ:ℝ}{D:Parameters.HighData Δ}
       ‖star (primeProfile F.W X ζ P)/idealCoeff (deletedBase data) P‖≤1 := by
   have hd:=livePrime_data M H F.W 1 2 X hX F.complex_support P hP
   have hcop:=ProbeRaySlots.prime_coprime_of_norm_gt (deletedBase data) ⟨P,hd.1⟩
-    (hlarge.trans_le (by simpa only [one_mul] using hd.2.2.1))
+    (hlarge.trans_le (by simpa using hd.2.2.1))
   have hn:=PrincipalSignalComparison.idealCoeff_norm_one_of_coprime (deletedBase data) P hd.1.ne_zero hcop
   have hne:=HeckeDetectorRelativePrime.idealCoeff_ne_zero_of_coprime (deletedBase data) P hd.1.ne_zero hcop
   have hout:outside (excluded data) P := by

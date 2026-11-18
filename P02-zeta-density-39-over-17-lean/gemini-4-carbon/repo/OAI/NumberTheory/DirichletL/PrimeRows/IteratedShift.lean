@@ -42,13 +42,12 @@ theorem rowIntegral_w_shift {K : ℕ}
   have he : Function.Injective e := fun a b h=>Subtype.ext (congrArg (fun v : NonzeroFrequency=>v.val) h)
   have hF := compensatedRows_counting_product_integrable e he η S (calibrationForSet S hmax) p hp
     W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1 X Y Z hX hY hZ
-  have hi : Integrable (compensatedRowOnLines η S (calibrationForSet S hmax) p W0 W1 X Y Z (e u))
-      heightMeasure := (Measure.ae_count_iff.mp hF.prod_right_ae) u
+  have hi := (Measure.ae_count_iff.mp hF.prod_right_ae) u
   have heq (q : ℝ×ℝ) :
       (∫t : ℝ,compensatedRowOnLines η S (calibrationForSet S hmax) p W0 W1 X Y Z (e u) (q,t))=
         shiftedRowInner S hS hmax P hPS η u W0 W1 X Y Z l q := by
     have hs := nonprincipal_w_integral_eq eps heps S hS hfirst hmax P hPS η u hu W0 W1
-      a1 b1 ha1 hW1 X Y Z hY ((3:ℂ)+q.1*I) ((2:ℂ)+q.2*I) l 3 hl3 hl
+      a1 b1 ha1 hW1 X Y Z hY (3+q.1*I) (2+q.2*I) l 3 hl3 hl
       (by norm_num) (by norm_num) (by norm_num;linarith)
     unfold shiftedRowInner
     rw [hs]

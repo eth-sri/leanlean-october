@@ -20,8 +20,7 @@ def cubicDyadicClasses (U : ℝ) : Finset (ℕ × (ℕ × ℕ)) :=
 theorem integer_dyadic_bounds {m : ℤ} (hm : m ≠ 0) :
     (2:ℝ)^(integerDyadicIndex m) ≤ |(m:ℝ)| ∧
       |(m:ℝ)| < 2*(2:ℝ)^(integerDyadicIndex m) := by
-  have hp : 0 < m.natAbs := Int.natAbs_pos.mpr hm
-  have hh := MathCollab.Density.log2_block_bounds hp
+  have hh := MathCollab.Density.log2_block_bounds (Int.natAbs_pos.mpr hm)
   have he : (m.natAbs:ℝ) = |(m:ℝ)| := by rw [Nat.cast_natAbs,Int.cast_abs]
   rw [← he]
   constructor

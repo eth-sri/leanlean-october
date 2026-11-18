@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaBufferedUniformError
 
 @[expose] public section
@@ -23,16 +33,10 @@ open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean 
 
 theorem one_add_log_add_one_le_rpow {T ε : ℝ} (hT : 1 ≤ T) (hε : 0 < ε) :
     1+Real.log (T+1) ≤ (1+(2 : ℝ)^ε/ε)*T^ε := by
-  have hTpos : 0 < T := zero_lt_one.trans_le hT
-  have hp : 1 ≤ T^ε := Real.one_le_rpow hT hε.le
-  have hlog := Real.log_le_rpow_div (show 0 ≤ T+1 by linarith) hε
   have hpow := Real.rpow_le_rpow (show 0 ≤ T+1 by linarith)
     (show T+1 ≤ 2*T by linarith) hε.le
-  rw [Real.mul_rpow (by norm_num : (0 : ℝ) ≤ 2) hTpos.le] at hpow
-  have hd := div_le_div_of_nonneg_right hpow hε.le
-  calc
-    _ ≤ T^ε+((2 : ℝ)^ε*T^ε)/ε := add_le_add hp (hlog.trans hd)
-    _ = _ := by ring
+  rw [Real.mul_rpow (by norm_num : (0 : ℝ) ≤ 2) (zero_lt_one.trans_le hT).le] at hpow
+  exact (add_le_add (Real.one_le_rpow hT hε.le) ((Real.log_le_rpow_div (show 0 ≤ T+1 by linarith) hε).trans (div_le_div_of_nonneg_right hpow hε.le))).trans_eq (by ring)
 
 theorem modelPhase_buffered_source_power_error
     {σ ε : ℝ} (hσ : 0 < σ) (hε : 0 < ε) :
@@ -49,24 +53,22 @@ theorem modelPhase_buffered_source_power_error
             modelPhaseStationaryMainTerm F T N q)‖ ≤
           C*(N/Real.sqrt T+T^ε) := by
   obtain ⟨M,hM,hsource⟩ := modelPhase_buffered_source_uniform_error hσ
-  let K := 1+(2 : ℝ)^ε/ε
+  let K := 1+2^ε/ε
   have hK : 1 ≤ K := by
-    have h : 0 ≤ (2 : ℝ)^ε/ε := by positivity
+    have h : 0 ≤ 2^ε/ε := by positivity
     dsimp [K]
     linarith
   refine ⟨M*K,by nlinarith,?_⟩
   intro N T a b hN hT ha hb hflat F δ hδ hF
-  have h := hsource N T a b hN hT ha hb hflat F δ hδ hF
   have hx : 0 ≤ N/Real.sqrt T := by positivity
-  have hlog := one_add_log_add_one_le_rpow hT hε
   have hleft : N/Real.sqrt T ≤ K*(N/Real.sqrt T) := by
-    simpa only [one_mul] using mul_le_mul_of_nonneg_right hK hx
-  apply h.trans
+    simpa using mul_le_mul_of_nonneg_right hK hx
+  apply (hsource N T a b hN hT ha hb hflat F δ hδ hF).trans
   calc
     M*(N/Real.sqrt T+1+Real.log (T+1)) =
         M*(N/Real.sqrt T+(1+Real.log (T+1))) := by ring
     _ ≤ M*(K*(N/Real.sqrt T)+K*T^ε) :=
-      mul_le_mul_of_nonneg_left (add_le_add hleft hlog) (zero_le_one.trans hM)
+      mul_le_mul_of_nonneg_left (add_le_add hleft (one_add_log_add_one_le_rpow hT hε)) (zero_le_one.trans hM)
     _ = _ := by ring
 
 def modelPhaseSharpStationarySet (F : ℝ → ℝ) (T N : ℝ) (a b : ℕ) : Finset ℤ := by
@@ -105,17 +107,16 @@ theorem modelPhase_source_sharp_comparison
   obtain ⟨M,hM,hsource⟩ := modelPhase_buffered_source_power_error hσ hε
   refine ⟨max M 5,hM.trans (le_max_left _ _),?_⟩
   intro N T a b hN hT ha hb F δ hδ hF
-  have hNpos : 0 < N := zero_lt_one.trans_le hN
-  have hTpos : 0 < T := zero_lt_one.trans_le hT
+  have hTpos := zero_lt_one.trans_le hT
   have hx : 0 ≤ N/Real.sqrt T := by positivity
-  have hp : 1 ≤ T^ε := Real.one_le_rpow hT hε.le
+  have hp := Real.one_le_rpow hT hε.le
   by_cases hlong : (a : ℝ)/N+4*(Real.sqrt T)⁻¹ < (b : ℝ)/N
   · rw [modelPhaseSharpStationarySet_of_long hlong]
     exact (hsource N T a b hN hT ha hb hlong F δ hδ hF).trans
       (mul_le_mul_of_nonneg_right (le_max_left _ _) (by positivity))
   · have hshort := le_of_not_gt hlong
     rw [modelPhaseSharpStationarySet_of_short hshort,Finset.sum_empty,sub_zero]
-    have hs := norm_exponentialSumAt_le_buffered_short hNpos
+    have hs := norm_exponentialSumAt_le_buffered_short (zero_lt_one.trans_le hN)
       (show 0 ≤ (Real.sqrt T)⁻¹ by positivity) F T a b hshort
     calc
       _ ≤ 4*(N/Real.sqrt T)+1 := hs.trans_eq (by ring)

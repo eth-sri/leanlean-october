@@ -27,10 +27,8 @@ theorem smoothDetectorBlock_index_pos {ρ : ℂ} {X Y : ℝ} {j : ℤ}
 
 theorem smoothHalfScale_zero_eq {j : ℤ} (hj : 0 < j) :
     (2 : ℝ)^j = 2*(smoothHalfScale j 0 : ℝ) := by
-  have hjn : 1 ≤ j.toNat := by omega
-  have he : j = (j.toNat : ℤ) := (Int.toNat_of_nonneg hj.le).symm
   simp only [smoothHalfScale, add_zero, Nat.cast_pow, Nat.cast_ofNat]
-  conv_lhs => rw [he, zpow_natCast, show j.toNat = j.toNat-1+1 by omega, pow_succ]
+  conv_lhs => rw [((Int.toNat_of_nonneg hj.le).symm), zpow_natCast, show j.toNat = j.toNat-1+1 by omega, pow_succ]
   ring
 
 theorem smoothHalfScale_one_eq (j : ℤ) :
@@ -42,12 +40,11 @@ theorem smoothHalfScale_bounds {j : ℤ} (hj : 0 < j) {e : ℕ} (he : e < 2) :
     (2 : ℝ)^j/2 ≤ smoothHalfScale j e ∧
       (smoothHalfScale j e : ℝ) ≤ (2 : ℝ)^j := by
   have hz := smoothHalfScale_zero_eq hj
-  have h1 := smoothHalfScale_one_eq j
-  have hp : (0 : ℝ) < smoothHalfScale j 0 := by exact_mod_cast smoothHalfScale_pos j 0
+  have hp : 0 < smoothHalfScale j 0 := by exact_mod_cast smoothHalfScale_pos j 0
   have hh : e = 0 ∨ e = 1 := by omega
   rcases hh with rfl | rfl
   · constructor <;> linarith
-  · rw [h1]
+  · rw [(smoothHalfScale_one_eq j)]
     push_cast
     constructor <;> linarith
 
@@ -97,14 +94,13 @@ theorem smoothTaylorArithmetic_support (X Y : ℝ) (j : ℤ) (e r n : ℕ)
     n ∈ Finset.Ioc (smoothHalfScale j e) (2*smoothHalfScale j e) := by
   by_contra hh
   apply hn
-  change (if n ∈ Finset.Ioc (smoothHalfScale j e) (2*smoothHalfScale j e) then _ else 0) = 0
   exact ite_eq_right hh
 
 theorem smoothTaylorArithmetic_norm_le (X : ℝ) {Y : ℝ} (hY : 0 < Y)
     (j : ℤ) (e r n : ℕ) : ‖smoothTaylorArithmetic X Y j e r n‖ ≤ (n.divisors.card : ℝ) := by
   change ‖if n ∈ Finset.Ioc (smoothHalfScale j e) (2*smoothHalfScale j e) then _ else 0‖ ≤ _
   split_ifs with hn
-  · exact norm_smoothShortTaylorCoefficient_le X ((2 : ℝ)^j) hY (smoothHalfScale_pos j e) hn r
+  · exact norm_smoothShortTaylorCoefficient_le X (2^j) hY (smoothHalfScale_pos j e) hn r
   · simp
 
 theorem smoothTaylorArithmetic_LSeries (X Y : ℝ) (j : ℤ) (e r : ℕ) (s : ℂ) :

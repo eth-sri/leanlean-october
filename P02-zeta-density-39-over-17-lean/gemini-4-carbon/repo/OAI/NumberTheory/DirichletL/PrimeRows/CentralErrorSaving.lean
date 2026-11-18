@@ -16,7 +16,7 @@ variable {ι : Type*} [Fintype ι]
 lemma central_source_crude_scale {Z a e : ℝ} (hZ : 1≤Z) (ha : 0≤a) (he : 0≤e) :
     (Z^(17/48:ℝ))^(1/2-(17/50:ℝ))*Z^(2+(17/50:ℝ)-1)*
       (Z^(23/48:ℝ))^((1-a-6*e)-1)≤Z^(2:ℝ) := by
-  have hZ0 : 0<Z := lt_of_lt_of_le zero_lt_one hZ
+  have hZ0 := lt_of_lt_of_le zero_lt_one hZ
   simp_rw [←Real.rpow_mul hZ0.le]
   rw [←Real.rpow_add hZ0,←Real.rpow_add hZ0]
   exact Real.rpow_le_rpow_of_exponent_le hZ (by nlinarith)
@@ -25,9 +25,7 @@ lemma central_prime_product_bound {K : ℕ} (P : Fin K→PrimeIdeal)
     (Z b : ℝ) (hZ : 0<Z) (_hb : 0≤b) (length : Fin K→ℝ)
     (hlength : ∑j,length j=(1/6:ℝ)) (hP : ∀j,((P j).val.absNorm:ℝ)≤b*Z^(length j)) :
     (∏j,((P j).val.absNorm:ℝ))≤b^K*Z^(1/6:ℝ) := by
-  calc
-    _ ≤ ∏j,b*Z^(length j) := Finset.prod_le_prod₀ (fun j _=>Nat.cast_nonneg _) (fun j _=>hP j)
-    _ = _ := by rw [Finset.prod_mul_distrib,Finset.prod_const,Finset.card_univ,Fintype.card_fin,←Real.rpow_sum_of_pos hZ,hlength]
+  exact (Finset.prod_le_prod₀ (fun j _=>Nat.cast_nonneg _) (fun j _=>hP j)).trans_eq (by rw [Finset.prod_mul_distrib,Finset.prod_const,Finset.card_univ,Fintype.card_fin,←Real.rpow_sum_of_pos hZ,hlength])
 
 lemma central_arithmetic_cost_bound {K : ℕ} (η : Character) (u : FreeRow) (P : Fin K→PrimeIdeal)
     (Z b ζ : ℝ) (hZ : 1≤Z) (hb : 0≤b) (hζ : ζ≤1/48)

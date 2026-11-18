@@ -15,7 +15,7 @@ open MathCollab.Density.Stronger.Atkinson
 theorem contDiffAt_atkinsonNormalizedGapPhase {M t u x : ℝ}
     (hM : 0 < M) (hu : 0 < u) (htu : u < t) (hx : 0 < x) :
     ContDiffAt ℝ ∞ (atkinsonNormalizedGapPhase M t u) x := by
-  have ht : 0 < t := hu.trans htu
+  have ht := hu.trans htu
   unfold atkinsonNormalizedGapPhase atkinsonIndexPhaseDifference atkinsonIndexRealPhase
   fun_prop (disch := positivity)
 
@@ -31,7 +31,7 @@ theorem atkinsonNormalizedGapPhase_approximate (P : ℕ) {ε : ℝ} (hε : 0 < �
   obtain ⟨δ,hδ,hjets⟩ := atkinsonGapSlopeProfile_uniform_finite_jets P hε
   refine ⟨δ,hδ,?_⟩
   intro M t u hM hu htu ht2 hq
-  have hr : t/u ∈ Icc (1 : ℝ) 2 := by
+  have hr : t/u ∈ Icc 1 2 := by
     constructor
     · exact (le_div_iff₀ hu).mpr (by linarith)
     · exact (div_le_iff₀ hu).mpr ht2

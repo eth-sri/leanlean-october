@@ -52,7 +52,6 @@ theorem heathBrown_source_shift_omitted_card
   let T := Finset.Icc (1 + h) (N - H + h)
   have hTS : T ⊆ S := by
     exact heathBrown_source_shift_interval_subset hHN hh
-  have hinter : T ∩ S = T := Finset.inter_eq_left.mpr hTS
   have hcardS : S.card = N := by
     dsimp only [S]
     simp [Nat.card_Icc]
@@ -60,7 +59,7 @@ theorem heathBrown_source_shift_omitted_card
     dsimp only [T]
     simp [Nat.card_Icc]
     omega
-  rw [Finset.card_sdiff, hinter, hcardS, hcardT]
+  rw [Finset.card_sdiff, (Finset.inter_eq_left.mpr hTS), hcardS, hcardT]
   omega
 
 /-- A fixed source shift omits at most `H` unit-modulus summands. -/

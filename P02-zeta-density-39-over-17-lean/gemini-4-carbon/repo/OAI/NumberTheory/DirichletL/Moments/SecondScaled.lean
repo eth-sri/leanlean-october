@@ -11,10 +11,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondScaled
-open CanonicalRowCompletion CanonicalQuadraticSieve CenteredMomentSupportedCorrelation
-open CenteredMomentChildAssembly CenteredMomentMobiusRegroup CenteredMomentFixedRay
-open CenteredMomentRowNorm CenteredMomentSmooth CenteredMomentPlainChildEnergy RayFourExpansion
-open CenteredMomentSecondDescent CenteredMomentProductCRT CenteredMomentUnequal CenteredMomentPartition
+open CanonicalRowCompletion CanonicalQuadraticSieve CenteredMomentSupportedCorrelation CenteredMomentChildAssembly CenteredMomentMobiusRegroup CenteredMomentFixedRay CenteredMomentRowNorm CenteredMomentSmooth CenteredMomentPlainChildEnergy RayFourExpansion CenteredMomentSecondDescent CenteredMomentProductCRT CenteredMomentUnequal CenteredMomentPartition
 local notation "O" => ActualEisensteinCubic.O
 
 def movingCoefficient {α : Type*} (A : O) (a : α → O) (c : α → ℂ) (i : α) : ℂ :=

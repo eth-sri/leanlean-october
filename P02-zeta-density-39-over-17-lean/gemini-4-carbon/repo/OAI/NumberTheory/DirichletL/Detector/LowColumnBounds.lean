@@ -42,15 +42,12 @@ lemma lowGaussColumns_card (W1 : ℝ→ℂ) (hW1 : HasCompactSupport W1) (Y : �
     (a b : ℝ) (hW : Function.support W1⊆Set.Icc a b) :
     ((lowGaussColumns W1 hW1 Y (lt_of_lt_of_le zero_lt_one hY)).card:ℝ)≤128*max 1 b*Y := by
   let F := lowGaussColumns W1 hW1 Y (lt_of_lt_of_le zero_lt_one hY)
-  have hH : 1≤max 1 b*Y := one_le_mul_of_one_le_of_one_le (le_max_left _ _) hY
-  have hh := DescentFiberCost.finite_ideal_count_real (F.image Subtype.val) (max 1 b*Y) hH
+  have hh := DescentFiberCost.finite_ideal_count_real (F.image Subtype.val) (max 1 b*Y) (one_le_mul_of_one_le_of_one_le (le_max_left _ _) hY)
     (by intro I hI;obtain ⟨s,hs,rfl⟩ := Finset.mem_image.mp hI;exact s.property.1)
     (by
       intro I hI
       obtain ⟨s,hs,rfl⟩ := Finset.mem_image.mp hI
-      have hw := (hW ((lowGaussColumns_mem W1 hW1 Y _ s).mp hs)).2
-      have hn : (Ideal.absNorm s.val:ℝ)≤b*Y := (div_le_iff₀ (lt_of_lt_of_le zero_lt_one hY)).mp hw
-      exact hn.trans (mul_le_mul_of_nonneg_right (le_max_right _ _) (le_trans zero_le_one hY)))
+      exact ((div_le_iff₀ (lt_of_lt_of_le zero_lt_one hY)).mp ((hW ((lowGaussColumns_mem W1 hW1 Y _ s).mp hs)).2)).trans (mul_le_mul_of_nonneg_right (le_max_right _ _) (le_trans zero_le_one hY)))
   rw [Finset.card_image_of_injective _ Subtype.val_injective] at hh
   simpa only [mul_assoc,F] using hh
 
@@ -96,7 +93,7 @@ theorem lowGaussColumn_l2_bound (a b B : ℝ) (ha : 0<a) (hB : 0≤B) :
   have hC : 0<C := by dsimp only [C];positivity
   refine ⟨C,hC,?_⟩
   intro S hS W1 hW1 hW hWB Y hY σ v
-  have hy : 0<Y := lt_of_lt_of_le zero_lt_one hY
+  have hy := lt_of_lt_of_le zero_lt_one hY
   have hcoef (s : {I : Id // Supported I}) := lowGaussColumn_norm_bound S hS W1 a b B ha hB hW hWB Y hy σ v s
   calc
     _ ≤ ∑_s∈lowGaussColumns W1 hW1 Y hy,(B*a^(-(1/2:ℝ))/Y)^2 := by

@@ -12,8 +12,7 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonPowerIntegral
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 noncomputable section
-open Complex MeasureTheory Set
-open MathCollab.Density.Stronger.Fourth
+open Complex MeasureTheory Set MathCollab.Density.Stronger.Fourth
 namespace MathCollab.Density.Stronger.Atkinson
 
 theorem exists_norm_atkinsonPowerPair_le (α : ℝ) (c d : ℂ) :
@@ -26,13 +25,10 @@ theorem exists_norm_atkinsonPowerPair_le (α : ℝ) (c d : ℂ) :
   intro T G L b hT hG hGT hL hwidth
   apply (norm_add_le _ _).trans
   rw [norm_mul, norm_mul]
-  calc
-    _ ≤ ‖c‖ * (C * G * T ^ (-α)) + ‖d‖ * (C * G * T ^ (-α)) :=
-      add_le_add
+  exact (add_le_add
         (mul_le_mul_of_nonneg_left (hbound T G L b hT hG hGT hL hwidth) (norm_nonneg _))
-        (mul_le_mul_of_nonneg_left (hbound T G L (-b) hT hG hGT hL hwidth) (norm_nonneg _))
-    _ ≤ _ := by
+        (mul_le_mul_of_nonneg_left (hbound T G L (-b) hT hG hGT hL hwidth) (norm_nonneg _))).trans (by
       have hb : 0 ≤ C * G * T ^ (-α) := by positivity
-      nlinarith
+      nlinarith)
 
 end MathCollab.Density.Stronger.Atkinson

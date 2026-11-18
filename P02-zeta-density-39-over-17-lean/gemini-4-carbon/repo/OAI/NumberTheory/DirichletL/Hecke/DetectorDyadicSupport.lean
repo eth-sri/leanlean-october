@@ -7,11 +7,10 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorFinite
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
 open Set
+open scoped Classical BigOperators
 namespace SevenEighths.HeckeDetectorDyadicBridge
-open HeckeFamily HeckeDetectorFinite HeckeDetectorPartition
-open CompletedGauss ConcretePrimeRowBridge
+open HeckeFamily HeckeDetectorFinite HeckeDetectorPartition CompletedGauss ConcretePrimeRowBridge
 local notation "O" => HeckeFamily.O
 
 def fourierSet (U : ℝ) : Finset (Ideal O) := idealsUpTo ⌈16*U⌉₊
@@ -35,9 +34,8 @@ lemma annular_covered (U D : ℝ) (hD : 0<D) (hDU : D≤8*U)
     J∈fourierSet U := by
   apply mem_idealsUpTo.mpr
   refine ⟨Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hJ),?_⟩
-  have hr : (J.absNorm : ℝ)/D<2 := lt_of_not_ge (fun hn => hw (hW _ hn))
   have hn : (J.absNorm : ℝ)≤16*U := by
-    have hh := (div_lt_iff₀ hD).mp hr
+    have hh := (div_lt_iff₀ hD).mp (lt_of_not_ge (fun hn => hw (hW _ hn)))
     linarith
   exact_mod_cast hn.trans (Nat.le_ceil (16*U))
 
@@ -51,11 +49,9 @@ lemma inverse_annular_covered (U D Dstar : ℝ) (hD : 0<D) (hDU : D≤8*U)
 lemma scales_le_eight_terminal (U : ℝ) (j k : ℕ)
     (hprod : (2 : ℝ)^j*(2 : ℝ)^k<8*U) :
     (2 : ℝ)^j≤8*U ∧ (2 : ℝ)^k≤8*U := by
-  have hj : 1≤(2 : ℝ)^j := one_le_pow₀ (by norm_num)
-  have hk : 1≤(2 : ℝ)^k := one_le_pow₀ (by norm_num)
   constructor
-  · exact (le_mul_of_one_le_right (by positivity) hk).trans hprod.le
-  · exact (le_mul_of_one_le_left (by positivity) hj).trans hprod.le
+  · exact (le_mul_of_one_le_right (by positivity) (one_le_pow₀ (by norm_num))).trans hprod.le
+  · exact (le_mul_of_one_le_left (by positivity) (one_le_pow₀ (by norm_num))).trans hprod.le
 
 theorem dyadicBlock_eq_fourier_rectangle (χ : Character) (V T : ℝ→ℂ)
     (D Y U : ℝ) (hU : 0<U) (hT : ∀ x : ℝ, 2≤x → T x=0)
@@ -69,8 +65,8 @@ theorem dyadicBlock_eq_fourier_rectangle (χ : Character) (V T : ℝ→ℂ)
   calc
     _ = ∑ p∈fourierSet U ×ˢ fourierSet U,
         pairCoefficient χ V T D Y U s p *
-          DyadicTransfer.annularCutoff V ((p.1.absNorm : ℝ)/(2 : ℝ)^j) *
-          DyadicTransfer.annularCutoff V ((p.2.absNorm : ℝ)/(2 : ℝ)^k) := by
+          DyadicTransfer.annularCutoff V ((p.1.absNorm : ℝ)/2^j) *
+          DyadicTransfer.annularCutoff V ((p.2.absNorm : ℝ)/2^k) := by
       apply Finset.sum_subset (pairSet_subset_fourier U hU.le)
       intro p hp hn
       rw [pairCoefficient_support χ V T D Y U hU hT s p hn, zero_mul, zero_mul]

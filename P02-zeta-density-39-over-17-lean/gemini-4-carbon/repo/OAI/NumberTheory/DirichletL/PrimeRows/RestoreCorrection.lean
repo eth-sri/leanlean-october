@@ -36,8 +36,7 @@ theorem continuedCorrection_first_hasProd (eps : ℝ) (S : Finset (Ideal O))
       excludedCorrection S η u P.val x w z) (continuedCorrection S hS η u x w z) := by
     convert hp using 1
     · funext P
-      have hs := outside_prime_supported S hS.bad P.val P.property
-      simp only [excludedCorrection,ite_eq_right P.property,supportedCorrection,dite_eq_left hs,
+      simp only [excludedCorrection,ite_eq_right P.property,supportedCorrection,dite_eq_left (outside_prime_supported S hS.bad P.val P.property),
         ramifiedFactor,unramifiedFactor]
       split_ifs <;> simp
     · rfl
@@ -56,7 +55,6 @@ theorem continuedCorrection_restore (eps : ℝ) (S : Finset (Ideal O))
     continuedCorrection S hS η u x w z=
       continuedCorrection (markExclusions S T) (markedSourceExclusions S hS T) η u x w z*
         ∏P∈T,supportedCorrection η u P x w z := by
-  have hlarge := continuedCorrection_first_hasProd eps S hS htail η u x w z hx hz hw hxw
   have hsmall := continuedCorrection_first_hasProd eps (markExclusions S T)
     (markedSourceExclusions S hS T) (marked_firstTail eps S htail T)
     η u x w z hx hz hw hxw
@@ -65,8 +63,8 @@ theorem continuedCorrection_restore (eps : ℝ) (S : Finset (Ideal O))
     have hh := hasProd_prod_of_ne_finset_one (s:=T)
       (f:=fun P : PrimeIdeal=>if P∈T then supportedCorrection η u P x w z else 1)
       (L:=SummationFilter.unconditional PrimeIdeal) (fun P hP=>ite_eq_right hP)
-    simpa only [Finset.prod_ite_mem,Finset.inter_self] using hh
-  apply hlarge.unique
+    simpa using hh
+  apply (continuedCorrection_first_hasProd eps S hS htail η u x w z hx hz hw hxw).unique
   convert hsmall.mul hfinite using 1
   funext P
   simp only [excludedCorrection,mem_markExclusions]

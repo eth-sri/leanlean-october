@@ -20,15 +20,12 @@ theorem positiveRatPair_ratio {r : ℚ} (hr : 0 < r) : pairRatio (positiveRatPai
 
 theorem positiveRatPair_properties {r : ℚ} (hr : 0 < r) :
     0 < (positiveRatPair r).1 ∧ 0 < (positiveRatPair r).2 ∧
-      Nat.Coprime (positiveRatPair r).1 (positiveRatPair r).2 := by
-  exact ⟨Int.natAbs_pos.mpr (Rat.num_pos.mpr hr).ne', r.pos, r.reduced⟩
+      Nat.Coprime (positiveRatPair r).1 (positiveRatPair r).2 := ⟨Int.natAbs_pos.mpr (Rat.num_pos.mpr hr).ne', r.pos, r.reduced⟩
 
 theorem positive_rational_log_gap {r s : ℚ} (hr : 0 < r) (hs : 0 < s) (hne : r ≠ s)
     {H L : ℝ} (hrH : (r.den : ℝ) ≤ H) (hsH : (s.den : ℝ) ≤ H)
     (hrL : Real.log (r : ℝ) ≤ L) (hsL : Real.log (s : ℝ) ≤ L) :
     1 / (Real.exp L * H ^ 2) ≤ |Real.log (r : ℝ) - Real.log (s : ℝ)| := by
-  have hpr := positiveRatPair_properties hr
-  have hps := positiveRatPair_properties hs
   have hrepr (q : ℚ) (hq : 0 < q) :
       ((positiveRatPair q).1 : ℝ) / (positiveRatPair q).2 = q := by
     have hh := congrArg (fun x : ℚ => (x : ℝ)) (positiveRatPair_ratio hq)
@@ -39,7 +36,7 @@ theorem positive_rational_log_gap {r s : ℚ} (hr : 0 < r) (hs : 0 < s) (hne : r
     intro he
     apply hne
     rw [← positiveRatPair_ratio hr, he, positiveRatPair_ratio hs]
-  have hh := rational_log_separation (U := Real.exp L) hpr hps hpq hrH hsH
+  have hh := rational_log_separation (U := Real.exp L) (positiveRatPair_properties hr) (positiveRatPair_properties hs) hpq hrH hsH
     (by rw [hrepr r hr]; exact hu r hr hrL)
     (by rw [hrepr s hs]; exact hu s hs hsL)
   simpa only [hrepr r hr, hrepr s hs] using hh
@@ -138,8 +135,8 @@ theorem rational_product_bounds (A : Finset ℚ) (k H : ℕ) {L : ℝ}
     {q : ℚ} (hq : q ∈ rationalProducts A k) :
     0 < q ∧ q.den ≤ H ^ k ∧ |Real.log (q : ℝ)| ≤ (k : ℝ) * L := by
   obtain ⟨x, hx, rfl⟩ := mem_image.mp hq
-  have hxA (j : Fin k) : x j ∈ A := Fintype.mem_piFinset.mp hx j
-  have hpos (j : Fin k) : (0 : ℝ) < (x j : ℝ) := by exact_mod_cast (hA (x j) (hxA j)).1
+  have hxA (j : Fin k) := Fintype.mem_piFinset.mp hx j
+  have hpos (j : Fin k) : 0 < (x j : ℝ) := by exact_mod_cast (hA (x j) (hxA j)).1
   refine ⟨Finset.prod_pos (fun j _ => (hA (x j) (hxA j)).1), ?_, ?_⟩
   · calc
       _ ≤ ∏ j, (x j).den := rational_product_denominator univ x

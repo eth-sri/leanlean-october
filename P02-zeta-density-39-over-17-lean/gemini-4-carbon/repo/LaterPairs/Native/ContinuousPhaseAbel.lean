@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.SargosSlowAbel
 
 @[expose] public section
@@ -50,14 +59,14 @@ theorem continuous_character_range_variation
       ‖fordAdditiveCharacter (u (A+(j+1))) -
         fordAdditiveCharacter (u (A+j))‖ ≤ 2*Real.pi*K := by
     have hjN : (j:ℝ)+1 ≤ N := by
-      exact_mod_cast (show j+1 ≤ N by have := Finset.mem_range.mp hj; omega)
+      exact_mod_cast (by have := Finset.mem_range.mp hj; omega)
     have hx : A+j ∈ Icc A (A+N) := by
       constructor <;> linarith [Nat.cast_nonneg (α := ℝ) j]
     have hy : A+(j+1) ∈ Icc A (A+N) := by
       constructor <;> linarith [Nat.cast_nonneg (α := ℝ) j]
     have hs := Convex.norm_image_sub_le_of_norm_hasDerivWithin_le
       (fun x hx => (hu x hx).hasDerivWithinAt)
-      (fun x hx => by simpa only [Real.norm_eq_abs] using hd x hx)
+      (fun x hx => by simpa using hd x hx)
       (convex_Icc A (A+N)) hx hy
     have hsub : A+(j+1)-(A+j) = 1 := by ring
     simp only [Real.norm_eq_abs,hsub,abs_one,mul_one] at hs
@@ -86,7 +95,7 @@ theorem norm_continuous_perturbed_phase_prefix
   rw [he]
   exact norm_weighted_range_of_prefix_bound _ _ N hB hg
     (le_of_eq (sargos_character_norm _))
-    (by simpa only [Nat.cast_add,Nat.cast_one] using
+    (by simpa using
       continuous_character_range_variation u u' A N hK hu hd)
 
 end TaoTrudgianYang2025

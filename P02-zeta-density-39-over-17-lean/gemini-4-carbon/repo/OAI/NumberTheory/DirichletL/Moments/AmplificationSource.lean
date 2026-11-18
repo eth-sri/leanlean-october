@@ -10,10 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentAmplificationSource
-open CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge CompletedGauss
-open CenteredMomentAmplificationGlobal CenteredMomentAmplificationShortening
-open CenteredMomentAmplificationAllocation CenteredMomentGaussEnergy
-open CenteredMomentSupportedCorrelation CenteredMomentSourceRow CenteredMomentLiveDomain
+open CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge CompletedGauss CenteredMomentAmplificationGlobal CenteredMomentAmplificationShortening CenteredMomentAmplificationAllocation CenteredMomentGaussEnergy CenteredMomentSupportedCorrelation CenteredMomentSourceRow CenteredMomentLiveDomain
 local notation "O" => ActualEisensteinCubic.O
 
  theorem primeRoot_ne_zero (p : O) (hp : p ≠ 0) (k : ℕ) : primeRoot p k ≠ 0 := by
@@ -46,7 +43,7 @@ theorem original_error_shortening {α : Type*} (S : Finset α) (a : α → O)
   · simp only [ite_eq_left hv]
     let r := primeRemainder p hp (a i) (supported_element_ne_zero _ (ha i))
     have hr := primeRemainder_supported p hp (a i) (ha i)
-    have hcop : IsCoprime p r := hp.irreducible.coprime_iff_not_dvd.mpr
+    have hcop := hp.irreducible.coprime_iff_not_dvd.mpr
       (primeRemainder_spec p hp (a i) (supported_element_ne_zero _ (ha i))).2
     have hf : a i=p^(n+1)*r := by
       simpa only [hv] using (primeRemainder_spec p hp (a i) (supported_element_ne_zero _ (ha i))).1
@@ -55,9 +52,8 @@ theorem original_error_shortening {α : Type*} (S : Finset α) (a : α → O)
     have he' : gaussRow (a i) (ha i) h-gaussRow (a i) (ha i) (p^6*h) =
         primeRoot p (n+1)*(errorScalar p hp.ne_zero n h *
           (residualCharacter p (n+1) r*gaussRow r hr h)) := by
-      have hh := (div_eq_iff (primeRoot_ne_zero p hp.ne_zero (n+1))).mp he
       simp only [hf,errorScalar]
-      exact hh.trans (by ring)
+      exact ((div_eq_iff (primeRoot_ne_zero p hp.ne_zero (n+1))).mp he).trans (by ring)
     rw [he']
     ring
   · simp only [ite_eq_right hv,zero_mul,mul_zero]

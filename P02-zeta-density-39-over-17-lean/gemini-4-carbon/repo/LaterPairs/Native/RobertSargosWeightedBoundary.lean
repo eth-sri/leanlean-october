@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.RobertSargosCorrelationBoundary
 public import LaterPairs.Native.TriangularShiftBounds
 
@@ -73,16 +82,13 @@ theorem robertSargos_trimmed_a_times_a (f : ℝ → ℝ) (M H Q R : ℕ)
           (1-|(q:ℝ)|/Q)*(1-|(r:ℝ)|/R)*
             (robertSargosTrimmedCorrelation f M H q r).re) +
       16*(M:ℝ)*(H:ℝ)^2*R := by
-  have hs := robertSargos_symmetric_a_times_a f M H Q R hQ hR hQM hRH
   have he := mul_le_mul_of_nonneg_left (robertSargos_weighted_endpoint_error f M H Q R hQ hR)
     (show 0 ≤ 8*(M:ℝ)*H/((Q:ℝ)*R) by positivity)
   have hcancel : (8*(M:ℝ)*H/((Q:ℝ)*R))*(2*(H:ℝ)*Q*(R:ℝ)^2) =
       16*(M:ℝ)*(H:ℝ)^2*R := by
-    have hq : (Q:ℝ) ≠ 0 := by positivity
-    have hr : (R:ℝ) ≠ 0 := by positivity
     field_simp
     ring
   rw [mul_add,hcancel] at he
-  exact hs.trans he
+  exact (robertSargos_symmetric_a_times_a f M H Q R hQ hR hQM hRH).trans he
 
 end TaoTrudgianYang2025

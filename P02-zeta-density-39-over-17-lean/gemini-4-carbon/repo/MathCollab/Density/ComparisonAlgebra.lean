@@ -51,8 +51,8 @@ theorem norm_sum_mul_sq_le {ι : Type*} (S : Finset ι) (a f : ι → ℂ)
     apply Finset.sum_le_sum
     intro n hn
     rw [norm_mul]
-    simpa only [one_mul] using mul_le_mul_of_nonneg_right (ha n hn) (norm_nonneg (f n))
-  have hcs := Finset.sum_mul_sq_le_sq_mul_sq S (fun _ => (1 : ℝ)) (fun n => ‖f n‖)
+    simpa using mul_le_mul_of_nonneg_right (ha n hn) (norm_nonneg (f n))
+  have hcs := Finset.sum_mul_sq_le_sq_mul_sq S (fun _ => 1) (fun n => ‖f n‖)
   simp only [one_mul, one_pow, Finset.sum_const, nsmul_eq_mul, mul_one] at hcs
   exact (pow_le_pow_left₀ (norm_nonneg _) hnorm 2).trans hcs
 

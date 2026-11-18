@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.RobertSargosWeightedScale
 
 @[expose] public section
@@ -23,9 +32,9 @@ theorem exists_robertSargos_primitive_count_conic_weight (ε : ℝ) (hε : 0 < �
   classical
   obtain ⟨C,hC,hfiber⟩ := exists_robertSargos_frequency_fiber_conic_bound
     (ε/2) (by linarith)
-  refine ⟨C*(180*(1+2/ε)*(9:ℝ)^ε),by positivity,?_⟩
+  refine ⟨C*(180*(1+2/ε)*9^ε),by positivity,?_⟩
   intro S R H Q δ hR hH hQ hδ hmem
-  have hδ0 : 0 ≤ δ := hδ.1
+  have hδ0 := hδ.1
   have hQp : 0 < Q := by linarith
   have hf : ∀ z : ℤ × ℤ × ℤ,
       ((S.filter (fun p => robertSargosFrequencyKey p = z)).card:ℝ) ≤
@@ -39,7 +48,7 @@ theorem exists_robertSargos_primitive_count_conic_weight (ε : ℝ) (hε : 0 < �
         (⌊9*Q⌋₊:ℝ)^ε*((⌊9*Q⌋₊:ℝ)+8*H^2*δ)) :=
       robertSargos_card_le_weighted_frequency_sum S hH hQ hδ hR hε
         (by positivity) hC.le hmem hf
-    _ ≤ C*((180*(1+2/ε)*(9:ℝ)^ε)*Q^ε*Q*
+    _ ≤ C*((180*(1+2/ε)*9^ε)*Q^ε*Q*
         (1+(δ*Q+99*R*Q/H))*(Q+8*H^2*δ)) :=
       mul_le_mul_of_nonneg_left
         (robertSargos_weighted_sum_scale hQ (by positivity) hε (by positivity)) hC.le
@@ -53,9 +62,9 @@ theorem exists_robertSargos_primitive_count_linear_weight (ε : ℝ) (hε : 0 < 
   classical
   obtain ⟨C,hC,hfiber⟩ := exists_robertSargos_frequency_fiber_linear_bound
     (ε/2) (by linarith)
-  refine ⟨C*(180*(1+2/ε)*(9:ℝ)^ε),by positivity,?_⟩
+  refine ⟨C*(180*(1+2/ε)*9^ε),by positivity,?_⟩
   intro S R H Q δ hR hH hQ hδ hmem
-  have hδ0 : 0 ≤ δ := hδ.1
+  have hδ0 := hδ.1
   have hQp : 0 < Q := by linarith
   have hf : ∀ z : ℤ × ℤ × ℤ,
       ((S.filter (fun p => robertSargosFrequencyKey p = z)).card:ℝ) ≤
@@ -69,7 +78,7 @@ theorem exists_robertSargos_primitive_count_linear_weight (ε : ℝ) (hε : 0 < 
         (⌊9*Q⌋₊:ℝ)^ε*((⌊9*Q⌋₊:ℝ)+72*H*R)) :=
       robertSargos_card_le_weighted_frequency_sum S hH hQ hδ hR hε
         (by positivity) hC.le hmem hf
-    _ ≤ C*((180*(1+2/ε)*(9:ℝ)^ε)*Q^ε*Q*
+    _ ≤ C*((180*(1+2/ε)*9^ε)*Q^ε*Q*
         (1+(δ*Q+99*R*Q/H))*(Q+72*H*R)) :=
       mul_le_mul_of_nonneg_left
         (robertSargos_weighted_sum_scale hQ (by positivity) hε (by positivity)) hC.le

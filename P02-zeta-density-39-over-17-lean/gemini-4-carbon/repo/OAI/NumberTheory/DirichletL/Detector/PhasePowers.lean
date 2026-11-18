@@ -12,7 +12,7 @@ open ActualEisensteinCubic ActualEisensteinCoordinates QuadraticGaussRay Quadrat
 local notation "O" => ActualEisensteinCubic.O
 
 lemma residue_one_mod_four : residue (1 : O) = (1, 0) := by
-  have he : (1 : O) = eval 1 0 := by simp [eval]
+  have he : 1 = eval 1 0 := by simp [eval]
   rw [he, residue_eval]
   norm_num
 
@@ -23,7 +23,7 @@ lemma odd_residue_one : EisensteinEPrimaryPhase.odd (residue (1 : O)) := by
 lemma odd_residue_pow (a : O) (ha : EisensteinEPrimaryPhase.odd (residue a)) (n : ℕ) :
     EisensteinEPrimaryPhase.odd (residue (a ^ n)) := by
   induction n with
-  | zero => simpa only [pow_zero] using odd_residue_one
+  | zero => simpa using odd_residue_one
   | succ n ih =>
     rw [pow_succ, residue_mul]
     exact odd_mul _ _ ih ha
@@ -61,8 +61,7 @@ lemma G_one : G (1 : O) = 1 := by
     change breveGaussianFourTerms 1 0 = 1
     rw [breveGaussianFourTerms_formula]
     norm_num
-  have he := G_cube (1 : O) odd_residue_one (cubicTwo_isUnit_of_odd 1 odd_residue_one)
-  simpa only [one_pow, hq] using he
+  simpa only [one_pow, hq] using (G_cube (1 : O) odd_residue_one (cubicTwo_isUnit_of_odd 1 odd_residue_one))
 
 theorem G_pow (a : O) (ha : EisensteinEPrimaryPhase.odd (residue a)) (n : ℕ) :
     G (a ^ n) = G a ^ n * reciprocitySign a a ^ (n.choose 2) := by
@@ -89,7 +88,7 @@ theorem G_completed_prime_power (a : O) (ha : EisensteinEPrimaryPhase.odd (resid
       G a ^ e * G (a ^ 3) ^ l * reciprocitySign a a ^ (e * l + l.choose 2) := by
   have hc : e = 0 ∨ e = 1 := by omega
   rcases hc with rfl | rfl
-  · simpa only [zero_add, zero_mul, pow_zero, one_mul] using G_cube_power a ha l
+  · simpa using G_cube_power a ha l
   · rw [pow_add, pow_one, G_mul a (a ^ (3 * l)) ha (odd_residue_pow a ha _),
       G_cube_power a ha l, pow_mul, reciprocitySign_pow_right a (a ^ 3) ha l,
       reciprocitySign_cube_right a a ha ha]

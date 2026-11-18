@@ -5,8 +5,7 @@ public import MathCollab.Density.DetectorEstimates
 
 @[expose] public section
 
-open Complex MeasureTheory Set Filter
-open MathCollab.Density.ZetaGrowth MathCollab.Density.Contour
+open Complex MeasureTheory Set Filter MathCollab.Density.ZetaGrowth MathCollab.Density.Contour
 open scoped BigOperators Topology ContDiff
 set_option autoImplicit false
 noncomputable section
@@ -37,8 +36,7 @@ theorem continuous_smoothDetectorKernel_line {ψ : ℝ → ℝ} {a b : ℝ}
     Continuous (fun t : ℝ => smoothDetectorKernel ψ ρ X N q ((u : ℂ)+(t : ℂ)*I)) := by
   let line := fun t : ℝ => (u : ℂ)+(t : ℂ)*I
   have hl : Continuous line := by dsimp [line]; fun_prop
-  have hm : Continuous (mellin (fun y => (dampedCutoff ψ q y : ℂ))) :=
-    (Complex.analyticOnNhd_univ_iff_differentiable.mp
+  have hm := (Complex.analyticOnNhd_univ_iff_differentiable.mp
       (dampedCutoff_mellin_entire hψ ha hs q)).continuous
   unfold smoothDetectorKernel
   apply Continuous.mul
@@ -59,8 +57,7 @@ theorem continuous_smoothDetectorKernel_line {ψ : ℝ → ℝ} {a b : ℝ}
       (by fun_prop)
     intro he
     apply hp
-    have hh := congrArg Complex.re he
-    simpa [line] using hh
+    simpa [line] using (congrArg Complex.re he)
 
 /-- Absolute convergence on a fixed vertical line away from the zeta pole.
 No moment or pointwise subconvexity hypothesis is used. -/
@@ -111,7 +108,7 @@ theorem integrable_smoothDetectorKernel_left {ψ : ℝ → ℝ} {a b : ℝ}
       (((1/2-ρ.re : ℝ) : ℂ)+(t : ℂ)*I)) := by
   apply integrable_smoothDetectorKernel_line hψ ha hb hs ρ X (1/2-ρ.re) hN hq
   · linarith
-  · rw [show ρ.re+(1/2-ρ.re)-1 = -(1/2 : ℝ) by ring]
+  · rw [show ρ.re+(1/2-ρ.re)-1 = -(1/2) by ring]
     norm_num
 
 theorem integrable_smoothDetectorKernel_right {ψ : ℝ → ℝ} {a b : ℝ}

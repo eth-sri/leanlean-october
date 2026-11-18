@@ -33,9 +33,7 @@ theorem HybridColumnData.common_eq_gcd (d : HybridColumnData) :
 
 theorem HybridColumnData.residual_product_squarefree (d : HybridColumnData) :
     Squarefree (d.residualN * d.residualB) := by
-  have hm := (squarefree_mul_iff.mp d.n_squarefree).2.2
-  have hh := (squarefree_mul_iff.mp d.g_squarefree).2.2
-  exact squarefree_mul_iff.mpr ⟨d.residual_coprime.isRelPrime, hm, hh⟩
+  exact squarefree_mul_iff.mpr ⟨d.residual_coprime.isRelPrime, ((squarefree_mul_iff.mp d.n_squarefree).2.2), ((squarefree_mul_iff.mp d.g_squarefree).2.2)⟩
 
 theorem HybridColumnData.primary_factors (d : HybridColumnData)
     (hn : CompletedGauss.primaryGenerator (d.common * d.residualN) ≠ 0)

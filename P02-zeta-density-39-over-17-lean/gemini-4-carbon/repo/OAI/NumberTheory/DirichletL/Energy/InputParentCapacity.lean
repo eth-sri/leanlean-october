@@ -10,8 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentEnergyInputParentCapacity
-open CenteredMomentEnergyBands CenteredMomentCommonRadialData
-open CenteredMomentAmplificationChildInput
+open CenteredMomentEnergyBands CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput
 variable {ι:Type*} [Fintype ι]
 
 lemma raw_log_le_length (Z X:ℝ)(hZ:1<Z)(hX:0<X):
@@ -40,8 +39,7 @@ theorem postmask_length (Z X D:ℝ)(hZ:1<Z)(hD:1≤D):
 lemma postmask_length_le (Z X D:ℝ)(hZ:1<Z)(hD:1≤D):
     length Z (max 1 X/D)≤length Z X := by
   rw [postmask_length Z X D hZ hD]
-  have hm:0≤min (Real.logb Z D) (length Z X):=
-    le_min (Real.logb_nonneg hZ hD) (length_nonneg Z X hZ)
+  have hm := le_min (Real.logb_nonneg hZ hD) (length_nonneg Z X hZ)
   linarith
 
 theorem input_volume_log (s:Input ι)(Z:ℝ):

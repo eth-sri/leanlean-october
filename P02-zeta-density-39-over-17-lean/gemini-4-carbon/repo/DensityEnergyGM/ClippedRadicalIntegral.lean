@@ -26,9 +26,9 @@ theorem clippedRadicalTail_mono {R K K' A B s : ℝ}
 
 theorem clippedRadicalTail_integrable (R K A B Y : ℝ) :
     IntegrableOn (clippedRadicalTail R K A B) (Ioc 0 Y) := by
-  have hfinite : volume (Ioc (0 : ℝ) Y) < ⊤ := by simp
-  let : IsFiniteMeasure (volume.restrict (Ioc (0 : ℝ) Y)) :=
-    ⟨by simpa only [Measure.restrict_apply_univ] using hfinite⟩
+  have hfinite : volume (Ioc 0 Y) < ⊤ := by simp
+  let : IsFiniteMeasure (volume.restrict (Ioc 0 Y)) :=
+    ⟨by simpa using hfinite⟩
   have hmeas : Measurable (clippedRadicalTail R K A B) := by
     unfold clippedRadicalTail
     fun_prop
@@ -42,11 +42,9 @@ theorem radical_tail_le_rational {K A B s : ℝ}
     (hK : 0 ≤ K) (hA : 0 ≤ A) (hB : 0 ≤ B) (hs : 0 < s) :
     Real.sqrt (K * (A ^ 2 / s ^ 2 + B / s ^ 4)) ≤
       Real.sqrt K * (A * s⁻¹ + Real.sqrt B * (s⁻¹) ^ 2) := by
-  have hKs := Real.sq_sqrt hK
-  have hBs := Real.sq_sqrt hB
   have hK0 := Real.sqrt_nonneg K
   have hB0 := Real.sqrt_nonneg B
-  have hsInv : 0 ≤ s⁻¹ := inv_nonneg.mpr hs.le
+  have hsInv := inv_nonneg.mpr hs.le
   have hRight : 0 ≤ Real.sqrt K * (A * s⁻¹ + Real.sqrt B * (s⁻¹) ^ 2) := by positivity
   have hInside : 0 ≤ K * (A ^ 2 / s ^ 2 + B / s ^ 4) := by positivity
   have hLeft := Real.sq_sqrt hInside
@@ -55,18 +53,17 @@ theorem radical_tail_le_rational {K A B s : ℝ}
   have hSq : (Real.sqrt K * (A * s⁻¹ + Real.sqrt B * s⁻¹ ^ 2)) ^ 2 =
       K * (A ^ 2 / s ^ 2 + B / s ^ 4) +
         2 * K * A * Real.sqrt B * s⁻¹ ^ 3 := by
-    rw [mul_pow]
-    rw [hKs]
+    rw [mul_pow, (Real.sq_sqrt hK)]
     calc
       K * (A * s⁻¹ + Real.sqrt B * s⁻¹ ^ 2) ^ 2 =
           K * (A ^ 2 * s⁻¹ ^ 2 + Real.sqrt B ^ 2 * s⁻¹ ^ 4) +
             2 * K * A * Real.sqrt B * s⁻¹ ^ 3 := by ring
-      _ = _ := by rw [hBs]; simp only [div_eq_mul_inv, inv_pow]
+      _ = _ := by rw [(Real.sq_sqrt hB)]; simp only [div_eq_mul_inv, inv_pow]
   nlinarith
 
 theorem integral_inv_sq_of_pos {x Y : ℝ} (hx : 0 < x) (hY : 0 < Y) :
     (∫ s in x..Y, (s⁻¹) ^ 2) = x⁻¹ - Y⁻¹ := by
-  have h := integral_zpow (a := x) (b := Y) (n := (-2 : ℤ))
+  have h := integral_zpow (a := x) (b := Y) (n := (-2))
     (Or.inr ⟨by norm_num, notMem_uIcc_of_lt hx hY⟩)
   norm_num [zpow_neg, one_div] at h ⊢
   linarith
@@ -122,8 +119,7 @@ theorem clipped_radical_integral_cutoff {R K A B x Y : ℝ}
 
 theorem clipped_radical_integral_cap {R K A B Y : ℝ} (hY : 0 ≤ Y) :
     (∫ s in Ioc 0 Y, clippedRadicalTail R K A B s) ≤ R ^ 2 * Y := by
-  have hInt : IntervalIntegrable (clippedRadicalTail R K A B) volume 0 Y :=
-    (intervalIntegrable_iff_integrableOn_Ioc_of_le hY).mpr
+  have hInt := (intervalIntegrable_iff_integrableOn_Ioc_of_le hY).mpr
       (clippedRadicalTail_integrable R K A B Y)
   rw [← intervalIntegral.integral_of_le hY]
   have h := intervalIntegral.integral_mono_on hY hInt intervalIntegrable_const
@@ -185,16 +181,13 @@ theorem clipped_radical_integral_log_bound {R K A B Y T : ℝ}
     have hprod : 1 ≤ Real.sqrt K * Real.sqrt B := by nlinarith
     simpa only [Real.sqrt_one] using Real.sqrt_le_sqrt hprod
   have hQpos : 0 < Q := by linarith
-  have hArgPos : 0 < Y * R / Q := div_pos (mul_pos hY hR) hQpos
   have hArg : Y * R / Q ≤ T ^ 3 := by
     apply (div_le_iff₀ hQpos).mpr
-    have hprod : Y * R ≤ T * (2 * T) :=
-      mul_le_mul hYT hRT hR.le (by linarith)
     have hTcube : T * (2 * T) ≤ T ^ 3 := by nlinarith [sq_nonneg T]
     have hQmul : T ^ 3 ≤ T ^ 3 * Q := by nlinarith [show 0 ≤ T ^ 3 by positivity]
-    exact hprod.trans (hTcube.trans hQmul)
+    exact (mul_le_mul hYT hRT hR.le (by linarith)).trans (hTcube.trans hQmul)
   have hLog : Real.log (Y * R / Q) ≤ 3 * Real.log T := by
-    have h := Real.log_le_log hArgPos hArg
+    have h := Real.log_le_log (div_pos (mul_pos hY hR) hQpos) hArg
     simpa only [Real.log_pow, Nat.cast_ofNat] using h
   have hLogMax : max 0 (Real.log (Y * R / Q)) ≤ 3 * Real.log T := by
     exact max_le (mul_nonneg (by norm_num) (Real.log_nonneg (by linarith))) hLog

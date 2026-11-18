@@ -36,8 +36,8 @@ theorem large_physical_dyad_bound (K : ℕ) (δ a b B r : ℝ)
     S hS hmax hfirst W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
   refine ⟨C,hC,?_⟩
   intro η Z U hZ hU R hR T hT hdis length hl0 hl W hWS hWB
-  have hZ0 : 0<Z := lt_of_lt_of_le zero_lt_one hZ
-  have hYp (i : Fin K) : 1≤Z^(length i) := Real.one_le_rpow hZ (hl0 i)
+  have hZ0 := lt_of_lt_of_le zero_lt_one hZ
+  have hYp (i : Fin K) := Real.one_le_rpow hZ (hl0 i)
   have hh := (hmain η U hU R hR T hT hdis (fun i=>Z^(length i)) hYp W hWS hWB
     (Z^(17/48:ℝ)) (Z^(23/48:ℝ)) Z (Real.rpow_pos_of_pos hZ0 _) (Real.rpow_pos_of_pos hZ0 _) hZ0).2
   apply hh.trans_eq

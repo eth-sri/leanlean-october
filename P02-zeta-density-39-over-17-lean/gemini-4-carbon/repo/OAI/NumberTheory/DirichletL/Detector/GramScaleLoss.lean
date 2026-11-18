@@ -24,17 +24,14 @@ lemma nonexceptional_scale_identity (M P Y δ : ℝ) (hM : 0<M) (hP : 0<P) (hY :
 lemma nonexceptional_scale_loss (M P Y δ : ℝ) (hM : 1≤M) (hP : 1≤P) (hY : 0<Y)
     (hδ : 0≤δ) :
     P*(Y/(M*P))^(-1+δ)≤M*(P^2/Y)*Y^δ := by
-  have hm : 0<M := lt_of_lt_of_le zero_lt_one hM
-  have hp : 0<P := lt_of_lt_of_le zero_lt_one hP
-  rw [nonexceptional_scale_identity M P Y δ hm hp hY]
+  have hm := lt_of_lt_of_le zero_lt_one hM
+  rw [nonexceptional_scale_identity M P Y δ hm (lt_of_lt_of_le zero_lt_one hP) hY]
   have hmp : M^(1-δ)≤M := by
     simpa only [Real.rpow_one] using Real.rpow_le_rpow_of_exponent_le hM (show 1-δ≤1 by linarith)
   have hpp : P^(2-δ)≤P^2 := by
     simpa only [Real.rpow_two] using Real.rpow_le_rpow_of_exponent_le hP (show 2-δ≤2 by linarith)
-  calc
-    _≤M*P^2*Y^(-1+δ) := mul_le_mul_of_nonneg_right
-      (mul_le_mul hmp hpp (by positivity) hm.le) (by positivity)
-    _=_ := by rw [Real.rpow_add hY,Real.rpow_neg_one];ring
+  exact (mul_le_mul_of_nonneg_right
+      (mul_le_mul hmp hpp (by positivity) hm.le) (by positivity)).trans_eq (by rw [Real.rpow_add hY,Real.rpow_neg_one];ring)
 
 end SevenEighths.ProbeGramCommon
 end

@@ -11,9 +11,7 @@ public import MathCollab.Density.Stronger.Fourth.GammaShiftAmplitude
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+open Complex Filter MeasureTheory Set Topology MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth MathCollab.Density.Contour
 open scoped Interval ComplexConjugate
 set_option autoImplicit false
 noncomputable section
@@ -78,23 +76,21 @@ theorem zetaSquareRightKernel_normalized_reflected (t u : ℝ) :
 
 theorem norm_rightContour_shift_le {t u : ℝ} (ht : 4 ≤ t) (hu : |u| ≤ t / 4) :
     ‖(1 : ℂ) + (u : ℂ) * I‖ ≤ t / 2 := by
-  have h := norm_add_le (1 : ℂ) ((u : ℂ) * I)
+  have h := norm_add_le 1 ((u : ℂ) * I)
   simp [Real.norm_eq_abs] at h
   linarith
 
 private theorem near_shift_exponent_le {t u : ℝ} (ht : 4 ≤ t) :
     zetaGammaShiftError t (1 + (u : ℂ) * I) + u * (Real.pi / 2) ≤ 20 + 10 * u ^ 2 := by
   have ht0 : 0 < t := by linarith
-  have hw : ‖(1 : ℂ) + (u : ℂ) * I‖ ≤ 1 + |u| := by
-    simpa [Real.norm_eq_abs] using norm_add_le (1 : ℂ) ((u : ℂ) * I)
+  have hw : ‖1 + (u : ℂ) * I‖ ≤ 1 + |u| := by
+    simpa [Real.norm_eq_abs] using norm_add_le 1 ((u : ℂ) * I)
   have hB : zetaGammaShiftError t (1 + (u : ℂ) * I) ≤
       (17 * (1 + |u|) + 2 * (1 + |u|) ^ 2) / 4 := by
     unfold zetaGammaShiftError
     gcongr
   have hpi : u * (Real.pi / 2) ≤ 2 * |u| := by
-    calc
-      _ ≤ |u| * (Real.pi / 2) := mul_le_mul_of_nonneg_right (le_abs_self _) (by positivity)
-      _ ≤ _ := by nlinarith [Real.pi_lt_four, abs_nonneg u]
+    exact (mul_le_mul_of_nonneg_right (le_abs_self _) (by positivity)).trans (by nlinarith [Real.pi_lt_four, abs_nonneg u])
   nlinarith [sq_abs u, sq_nonneg (|u| - 1)]
 
 /-- The height power in the leading exponential cancels the inverse-height

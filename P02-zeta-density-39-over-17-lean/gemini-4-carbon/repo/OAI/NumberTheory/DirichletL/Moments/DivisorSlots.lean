@@ -8,8 +8,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentDivisorSlots
-open IdealMobiusDivisorSum CenteredMomentDivisorAllocation CenteredMomentDivisorExtraction
-open CenteredMomentHeckeExpansion CenteredMomentHeckeHeight CenteredMomentHeckeSlots HeckeFamily
+open IdealMobiusDivisorSum CenteredMomentDivisorAllocation CenteredMomentDivisorExtraction CenteredMomentHeckeExpansion CenteredMomentHeckeHeight CenteredMomentHeckeSlots HeckeFamily
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
 
@@ -39,7 +38,7 @@ theorem selected_slot_bound (η : Character) (m A z : O) (t : ℝ)
   · rw [norm_mul]
     exact (mul_le_mul (hβ P h.1) (row_twisted_coefficient_norm η m A z t P hP.ne_zero)
       (norm_nonneg _) hM).trans_eq (mul_one M)
-  · simpa only [norm_zero] using hM
+  · simpa using hM
 
 theorem selectedDivisor_empty (D : Ideal O) (s : Finset ι) (a : Allocation D s) (i : ι)
     (he : selectedPrimes D s a i=∅) : selectedDivisor D s a i=1 := by

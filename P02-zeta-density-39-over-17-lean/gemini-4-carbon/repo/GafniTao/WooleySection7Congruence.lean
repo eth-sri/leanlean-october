@@ -57,7 +57,7 @@ theorem wooleyIntegerTupleDisplacement_polynomial_add
         (fun x => (f + g).eval (point x)) xy =
       wooleyIntegerTupleDisplacement R (fun x => f.eval (point x)) xy +
         wooleyIntegerTupleDisplacement R (fun x => g.eval (point x)) xy := by
-  simpa only [eval_add] using
+  simpa using
     wooleyIntegerTupleDisplacement_add R
       (fun x => f.eval (point x)) (fun x => g.eval (point x)) xy
 
@@ -69,7 +69,7 @@ theorem wooleyIntegerTupleDisplacement_polynomial_C_mul
         (fun x => (C z * f).eval (point x)) xy =
       z * wooleyIntegerTupleDisplacement R
         (fun x => f.eval (point x)) xy := by
-  simpa only [eval_mul, eval_C] using
+  simpa using
     wooleyIntegerTupleDisplacement_smul R z
       (fun x => f.eval (point x)) xy
 

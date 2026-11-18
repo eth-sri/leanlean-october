@@ -33,7 +33,7 @@ theorem quotient_inf_card_le_mul (I J : Ideal R) [Finite (R ⧸ I)] [Finite (R �
     apply Ideal.Quotient.eq_zero_iff_mem.mpr
     exact ⟨Ideal.Quotient.eq_zero_iff_mem.mp (congrArg Prod.fst hx),
       Ideal.Quotient.eq_zero_iff_mem.mp (congrArg Prod.snd hx)⟩
-  simpa only [Nat.card_prod] using Nat.card_le_card_of_injective f hf
+  simpa using Nat.card_le_card_of_injective f hf
 
 noncomputable def quotientComapEquiv (M : Ideal R) (I : Ideal (R ⧸ M)) :
     R ⧸ I.comap (Ideal.Quotient.mk M) ≃+* (R ⧸ M) ⧸ I :=
@@ -41,9 +41,6 @@ noncomputable def quotientComapEquiv (M : Ideal R) (I : Ideal (R ⧸ M)) :
     ⟨Ideal.quotientMap_injective,
       Ideal.quotientMap_surjective Ideal.Quotient.mk_surjective⟩
 
-theorem quotient_comap_card (M : Ideal R) (I : Ideal (R ⧸ M)) :
-    Nat.card (R ⧸ I.comap (Ideal.Quotient.mk M)) = Nat.card ((R ⧸ M) ⧸ I) :=
-  Nat.card_congr (quotientComapEquiv M I).toEquiv
 
 end QuotientBounds
 
@@ -58,7 +55,7 @@ theorem primitive_of_maximal_descent (χ : MulChar R ℂ) (I : Ideal R)
   let : Finite (R ⧸ I) := Finite.of_surjective _ (Ideal.Quotient.mk_surjective (I := I))
   apply (primitiveOnIdeals_iff_no_descent φ).mpr
   intro J hJ hdesc
-  let K : Ideal R := J.comap (Ideal.Quotient.mk I)
+  let K := J.comap (Ideal.Quotient.mk I)
   have hK : FactorsThroughIdeal χ K := by
     apply (factorsThroughIdeal_iff χ K).mpr
     intro u hu
@@ -66,19 +63,17 @@ theorem primitive_of_maximal_descent (χ : MulChar R ℂ) (I : Ideal R)
       change Ideal.Quotient.mk I ((u : R) - 1) ∈ J at hu
       change Ideal.Quotient.mk I (u : R) - 1 ∈ J
       simpa only [map_sub, map_one] using hu
-    have heq := congrArg (fun f : Rˣ →* ℂˣ => ((f u : ℂˣ) : ℂ)) hφ
-    exact heq.symm.trans ((factorsThroughIdeal_iff φ J).mp hdesc _ huJ)
+    exact (congrArg (fun f : Rˣ →* ℂˣ => ((f u : ℂˣ) : ℂ)) hφ).symm.trans ((factorsThroughIdeal_iff φ J).mp hdesc _ huJ)
   have hIK : I ≤ K := by
     intro x hx
     change Ideal.Quotient.mk I x ∈ J
     rw [Ideal.Quotient.eq_zero_iff_mem.mpr hx]
     exact J.zero_mem
-  have hKI : K ≤ I := hI.2 hK hIK
   apply hJ
   apply le_antisymm _ bot_le
   intro x hx
   obtain ⟨r, rfl⟩ := Ideal.Quotient.mk_surjective x
-  exact Ideal.Quotient.eq_zero_iff_mem.mpr (hKI hx)
+  exact Ideal.Quotient.eq_zero_iff_mem.mpr ((hI.2 hK hIK) hx)
 
 theorem exists_primitive_quotient_above (χ : MulChar R ℂ) (J : Ideal R)
     (hJ : FactorsThroughIdeal χ J) :
@@ -119,7 +114,7 @@ theorem absNorm_inf_le_mul (I J : Ideal A) [Finite (A ⧸ I)] [Finite (A ⧸ J)]
 
 theorem absNorm_comap_eq_quotient_card (M : Ideal A) (I : Ideal (A ⧸ M)) :
     (I.comap (Ideal.Quotient.mk M)).absNorm = Nat.card ((A ⧸ M) ⧸ I) := by
-  simpa only [Ideal.absNorm_apply, Submodule.cardQuot_apply] using quotient_comap_card M I
+  simpa only [Ideal.absNorm_apply, Submodule.cardQuot_apply] using (Nat.card_congr (quotientComapEquiv M I).toEquiv)
 
 theorem exists_primitive_residue_quotient_above_with_norm_and_mask
     (M : Ideal A) [Finite (A ⧸ M)] (χ : MulChar (A ⧸ M) ℂ)

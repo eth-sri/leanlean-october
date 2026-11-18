@@ -110,8 +110,7 @@ private lemma dist_smoothL2_le_mul_dist_smoothBCF (hK : IsCompact K) (hKm : Meas
         (F : E → ℝ) =ᵐ[(volume : Measure E)]
           fun x : E =>
             smoothFun (E := E) (K := K) ψ u x - smoothFun (E := E) (K := K) ψ v x := by
-      have h := hsub.trans (hu.sub hv)
-      filter_upwards [h] with x hx
+      filter_upwards [(hsub.trans (hu.sub hv))] with x hx
       simpa [Pi.sub_apply] using hx
     exact MeasureTheory.ae_restrict_of_ae (μ := (volume : Measure E)) (s := s) hF
   have hFs_ae : ((Fs : E → ℝ) =ᵐ[μs] g) := by
@@ -181,8 +180,7 @@ private lemma dist_smoothL2_le_mul_dist_smoothBCF (hK : IsCompact K) (hKm : Meas
           (F : E → ℝ) =ᵐ[(volume : Measure E)]
             fun x : E =>
               smoothFun (E := E) (K := K) ψ u x - smoothFun (E := E) (K := K) ψ v x := by
-        have h := hsub.trans (hu.sub hv)
-        filter_upwards [h] with x hx
+        filter_upwards [(hsub.trans (hu.sub hv))] with x hx
         simpa [Pi.sub_apply] using hx
       simpa [g] using hF
     filter_upwards [hF_ae_full] with x hx
@@ -341,7 +339,6 @@ theorem smoothL2_image_closedBall_isCompact (hK : IsCompact K) (hKm : Measurable
       have hdist :
           dist (smoothL2 (E := E) (K := K) ψ hK hKm hψc hψcs u)
               (smoothL2 (E := E) (K := K) ψ hK hKm hψc hψcs (uOf f')) < ε := by
-        have hle := hdist_smoothL2_le u (uOf f')
         have hf_eq :
             smoothBCF (E := E) (K := K) (ψ := ψ) hK hKm hψc hψcs (uOf f') = f := by
           simpa [f'] using huOfEq f'
@@ -361,7 +358,7 @@ theorem smoothL2_image_closedBall_isCompact (hK : IsCompact K) (hKm : Measurable
               _ = mS * ε / mS := (mul_div_assoc mS ε mS).symm
               _ = ε := by simpa using (mul_div_cancel_left₀ ε hmS_ne)
           simpa [hmul] using this
-        exact lt_of_le_of_lt hle this
+        exact lt_of_le_of_lt (hdist_smoothL2_le u (uOf f')) this
       refine mem_iUnion.2 ?_
       refine ⟨smoothL2 (E := E) (K := K) ψ hK hKm hψc hψcs (uOf f'), ?_⟩
       refine mem_iUnion.2 ?_

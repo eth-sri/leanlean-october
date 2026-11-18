@@ -9,16 +9,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondPhysicalLedger
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonicalScalar
-open CenteredMomentSecondCanonical CenteredMomentCanonicalFirst
-open CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
-open CenteredMomentSecondWholeKernel CenteredMomentSectorLocalization
-open CenteredMomentSourceBlockWindows CenteredMomentSecondPhysicalCost
-open CenteredMomentSupport CenteredMomentHeckeColumnWindow
-open CenteredMomentSecondCanonicalLedger CenteredMomentForcing
-open CenteredMomentSecondSectorFrequency CenteredMomentFirstWholeKernel
-open CenteredMomentSmooth
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonicalScalar CenteredMomentSecondCanonical CenteredMomentCanonicalFirst CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentSecondWholeKernel CenteredMomentSectorLocalization CenteredMomentSourceBlockWindows CenteredMomentSecondPhysicalCost CenteredMomentSupport CenteredMomentHeckeColumnWindow CenteredMomentSecondCanonicalLedger CenteredMomentForcing CenteredMomentSecondSectorFrequency CenteredMomentFirstWholeKernel CenteredMomentSmooth
 local notation "O" => ActualEisensteinCubic.O
 
 theorem physicalBlock_effective_window (η:Character) (t:ℝ)
@@ -32,10 +23,8 @@ theorem physicalBlock_effective_window (η:Character) (t:ℝ)
   split_ifs at hz with hpart
   · obtain ⟨I,hI,hIs⟩:=Finset.exists_ne_zero_of_sum_ne_zero hz
     obtain ⟨J,hJ,hterm⟩:=Finset.exists_ne_zero_of_sum_ne_zero hIs
-    have hk: ((_:ℂ)*((_:ℝ):ℂ))≠0:=(mul_ne_zero_iff.mp hterm).2
-    have hw: (_:ℝ)≠0:=Complex.ofReal_ne_zero.mp (mul_ne_zero_iff.mp hk).2
     exact (dyadicWeight_support (n 0)
-      (mul_ne_zero_iff.mp (mul_ne_zero_iff.mp (mul_ne_zero_iff.mp hw).1).1).1).2
+      (mul_ne_zero_iff.mp (mul_ne_zero_iff.mp (mul_ne_zero_iff.mp (Complex.ofReal_ne_zero.mp (mul_ne_zero_iff.mp ((mul_ne_zero_iff.mp hterm).2)).2)).1).1).1).2
   · exact False.elim (hz rfl)
 
 lemma logb_one_add_sixth (Z x:ℝ) (hZ:1<Z) (hx:0<x) :
@@ -119,16 +108,11 @@ theorem actual_physical_log_ledger (η:Character) (t:ℝ)
   have hv:(0:ℝ)<Ideal.absNorm (Ideal.span {nonunitFrequencyGenerator C D U}):=by
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
       (by simpa only [Ideal.span_singleton_eq_bot] using nonunitFrequencyGenerator_ne_zero C D hC U))
-  have hu:=common_product_pos C D hC U
-  have hp:=common_product_pos C D hC Finset.univ
-  have hf:0<forcingNorm C D U:=common_product_pos C D hC _
   have hw:=physicalBlock_scale_lower η t S β C D hC hD U R rows W K n a H ha hlower hne
   have hl:a*H/(C.absNorm:ℝ)≤dyadicScale (n 2):=by
-    have hh: H/(C.absNorm:ℝ)*a≤dyadicScale (n 2):=(le_div_iff₀ ha).mp hw.1
-    convert hh using 1; ring
+    convert ((le_div_iff₀ ha).mp hw.1) using 1; ring
   have hr:a*H/(D.absNorm:ℝ)≤dyadicScale (n 3):=by
-    have hh: H/(D.absNorm:ℝ)*a≤dyadicScale (n 3):=(le_div_iff₀ ha).mp hw.2
-    convert hh using 1; ring
+    convert ((le_div_iff₀ ha).mp hw.2) using 1; ring
   have hk:=physicalBlock_effective_window η t S β C D hC hD U R rows W K n hne
   have he:secondEffectiveScale C D (commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U) K=
       K*(Ideal.absNorm (Ideal.span {commonFrequencyGenerator C D}):ℝ)*
@@ -143,7 +127,7 @@ theorem actual_physical_log_ledger (η:Character) (t:ℝ)
     (Ideal.absNorm (Ideal.span {nonunitFrequencyGenerator C D U}):ℝ)
     (forcingNorm C D U) (Ideal.absNorm (∏P:CommonIndex C D,P.val):ℝ)
     K H a (dyadicScale (n 0)) (dyadicScale (n 1)) (dyadicScale (n 2)) (dyadicScale (n 3))
-    hZ hc hd hg hu hv hf hp hK hH ha (dyadicScale_pos _) (dyadicScale_pos _)
+    hZ hc hd hg (common_product_pos C D hC U) hv (common_product_pos C D hC _) (common_product_pos C D hC Finset.univ) hK hH ha (dyadicScale_pos _) (dyadicScale_pos _)
     (dyadicScale_pos _) (dyadicScale_pos _) hk.le hl hr
   change _≤Real.logb Z H/3+5*Real.logb Z K/6-2*Real.logb Z a/3-saving C D U Z at hb
   convert hb using 1

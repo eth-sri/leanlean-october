@@ -34,7 +34,6 @@ lemma lowGaussMajorant_on_rows (a b : ℝ) (ha : 0<a) (hb : 0<b) (Q : ℝ) (hQ :
     (m : O) (hm : m∈lowNumeratorRows a b ha hb Q hQ) :
     lowGaussMajorant a b ha hb (‖ConcreteTraceCRT.eisEmbedding m‖^2/Q)=1 := by
   have hh := lowOuterCutoff_support a b ha hb ((lowNumeratorRows_mem a b ha hb Q hQ m).mp hm)
-  change lowOuterCutoff (a/2) (2*b) (‖ConcreteTraceCRT.eisEmbedding m‖^2/Q)=1
   rw [ActualEisensteinCubic.eisEmbedding_norm_sq_eq_absNorm_span]
   exact lowOuterCutoff_one _ _ (by positivity) (by positivity) _ hh.1 hh.2
 
@@ -75,12 +74,10 @@ lemma lowSeparatedIntegrand_source_cauchy (a b : ℝ) (ha : 0<a) (hb : 0<b)
     simp only [mul_assoc]
   rw [he,norm_mul]
   apply mul_le_mul_of_nonneg_left _ (norm_nonneg _)
-  calc
-    _ ≤ ∑σ : RayRing,‖∑m∈R,lowNumeratorWeight C (lowOuterCutoff a b) X Y m v*lowRayAmplitude C W1 Y σ m v*B σ m‖ := norm_sum_le _ _
-    _ ≤ _ := Finset.sum_le_sum (fun σ _=>CenteredMomentCauchy.bounded_row_cauchy R
+  exact (norm_sum_le _ _).trans (Finset.sum_le_sum (fun σ _=>CenteredMomentCauchy.bounded_row_cauchy R
       (fun m=>lowNumeratorWeight C (lowOuterCutoff a b) X Y m v) (fun m=>lowRayAmplitude C W1 Y σ m v) (B σ)
       (fun m _=>lowNumeratorWeight_norm C _ (lowOuterCutoff_norm a b)
-        (lowOuterCutoff_small a b ha 0 (by positivity)) X Y hX hY m v))
+        (lowOuterCutoff_small a b ha 0 (by positivity)) X Y hX hY m v)))
 
 theorem lowSeparatedIntegrand_actual_energies (a b : ℝ) (ha : 0<a) (hb : 0<b)
     (C : CalibrationData) (W0 W1 : ℝ→ℂ) (hW1 : HasCompactSupport W1)

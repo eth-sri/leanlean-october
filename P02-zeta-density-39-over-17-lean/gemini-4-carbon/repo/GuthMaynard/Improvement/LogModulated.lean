@@ -24,10 +24,7 @@ theorem logModulated_deriv {a : ℝ → ℂ}
     (ha : ContDiffOn ℝ ∞ a (Ioi 0)) (s : ℝ) {x : ℝ} (hx : 0 < x) :
     deriv (logModulated a s) x =
       logModulated (deriv a) s x + (s:ℂ)*Complex.I*logModulated (fun x => a x/(x:ℂ)) s x := by
-  have hd : HasDerivAt a (deriv a x) x :=
-    ((ha.contDiffAt (isOpen_Ioi.mem_nhds hx)).differentiableAt (by simp)).hasDerivAt
-  have he := (((Real.hasDerivAt_log hx.ne').ofReal_comp).const_mul ((s:ℂ)*Complex.I)).cexp
-  have hh := (hd.mul he).deriv
+  have hh := ((((ha.contDiffAt (isOpen_Ioi.mem_nhds hx)).differentiableAt (by simp)).hasDerivAt).mul ((((Real.hasDerivAt_log hx.ne').ofReal_comp).const_mul ((s:ℂ)*Complex.I)).cexp)).deriv
   change deriv (logModulated a s) x = _ at hh
   rw [hh]
   unfold logModulated

@@ -38,22 +38,18 @@ theorem uniform_buffered_x_slice_decay (K : ℕ)
   refine ⟨81*A0*D,by positivity,?_⟩
   intro η u hu P hP hPS ψ X Y Z hX hY hZ a B H i ha haTop hB hH hbin σ hσ tx htx
   let A := A0*contourArithmeticCost η u P
-  have hA : 0≤A := mul_nonneg hA0 (contourArithmeticCost_nonneg η u P)
-  have hrow := hrow0 η u hu P hP hPS ψ a B H i ha haTop hB hH hbin
+  have hA := mul_nonneg hA0 (contourArithmeticCost_nonneg η u P)
   let G := fun q : ℝ×ℝ=>rowAmplitudeOnLines S hS hmax P hPS η u σ (1-a-6*e) r ((tx,q.1),q.2)
-  have hG : Measurable G := (rowAmplitudeOnLines_measurable S hS hmax P hPS η u σ (1-a-6*e) r).comp (by fun_prop)
   have hb (q : ℝ×ℝ) : ‖G q‖≤(9*A*(3+|H|)^2)*jointHeight tx q.1 q.2^2 := by
     have hh : 3+|q.2|≤3*jointHeight tx q.1 q.2 := by
       unfold jointHeight
       linarith [abs_nonneg tx,abs_nonneg q.1,abs_nonneg q.2]
-    apply (hrow σ hσ r ⟨hr,hr1⟩ ((tx,q.1),q.2) htx.le).trans
-    calc
-      _ ≤ (A*(3+|H|)^2)*(3*jointHeight tx q.1 q.2)^2 := mul_le_mul_of_nonneg_left
-        (pow_le_pow_left₀ (by positivity) hh 2) (by positivity)
-      _ = _ := by ring
+    apply ((hrow0 η u hu P hP hPS ψ a B H i ha haTop hB hH hbin) σ hσ r ⟨hr,hr1⟩ ((tx,q.1),q.2) htx.le).trans
+    exact (mul_le_mul_of_nonneg_left
+        (pow_le_pow_left₀ (by positivity) hh 2) (by positivity)).trans_eq (by ring)
   have ht := hprofile σ ⟨by linarith [hσ.1],hσ.2⟩ r ⟨le_rfl,le_rfl⟩ (1-a-6*e)
     ⟨by linarith,by linarith⟩ .s tx (9*A*(3+|H|)^2) (by positivity)
-    X Y Z hX hY hZ G hG.aestronglyMeasurable hb
+    X Y Z hX hY hZ G ((rowAmplitudeOnLines_measurable S hS hmax P hPS η u σ (1-a-6*e) r).comp (by fun_prop)).aestronglyMeasurable hb
   have ht' : Integrable (fun q : ℝ×ℝ=>continuedRowOnLines S hS hmax P hPS η u W0 W1 X Y Z
         σ (1-a-6*e) r ((tx,q.1),q.2)) (volume.prod volume) ∧
       (∫q : ℝ×ℝ,‖continuedRowOnLines S hS hmax P hPS η u W0 W1 X Y Z
@@ -61,14 +57,13 @@ theorem uniform_buffered_x_slice_decay (K : ℕ)
         (9*A*(3+|H|)^2)*D*(X^(1/2-r)*Z^(σ+r-1)*Y^((1-a-6*e)-1))/height tx^(N+2) := by
     simpa only [sliceMap,G,continuedRowOnLines_eq_amplitude] using ht
   refine ⟨ht'.1,ht'.2.trans ?_⟩
-  have hH0 : 0≤H := htx ▸ abs_nonneg tx
-  have hheight : height tx=height H := by simp [height,htx,abs_of_nonneg hH0]
+  have hheight : height tx=height H := by simp [height,htx,abs_of_nonneg (htx ▸ abs_nonneg tx)]
   have hpow : (3+|H|)^2≤9*(height H)^2 := by
     have hh : 3+|H|≤3*height H := by unfold height;linarith [abs_nonneg H]
     have hh' := pow_le_pow_left₀ (by positivity) hh 2
     norm_num [mul_pow] at hh'
     exact hh'
-  have hden : 0<height H := height_pos H
+  have hden := height_pos H
   rw [hheight]
   calc
     _ ≤ (9*A*(9*(height H)^2))*D*(X^(1/2-r)*Z^(σ+r-1)*Y^((1-a-6*e)-1))/height H^(N+2) := by

@@ -1,5 +1,5 @@
 module
-public import OAI.NumberTheory.DirichletL.MeanSquare.RetainedDensity
+public import OAI.NumberTheory.DirichletL.MeanSquare.CanonicalDensity
 
 @[expose] public section
 
@@ -7,93 +7,23 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
-
-open scoped BigOperators Classical SchwartzMap ContDiff
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 namespace InitialMeanSquare
-open ActualEisensteinCubic ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic SecondPassIntegration
+open ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic SecondPassIntegration
 open FirstPassCubeLabels (columnLog)
 
 end InitialMeanSquare
 
-open scoped BigOperators Classical
 namespace SecondPassArithmetic
 
 section
-open ActualEisensteinCubic
 open FirstPassCubeLabels
 open ConcreteTraceCRT (eisEmbedding)
 
 lemma firstTail_inverse_scale_bound (K D U:ℝ) (hK:0<K) (hD:0<D) (hU:D≤U):
     ((min 1 (K/D))⁻¹)^2≤(1+U/K)^2 := by
-  have hU0:0≤U/K:=div_nonneg (hD.le.trans hU) hK.le
+  have hU0 :=div_nonneg (hD.le.trans hU) hK.le
   have hi:(min 1 (K/D))⁻¹≤1+U/K:=by
     by_cases h:1≤K/D
     · rw [min_eq_left h,inv_one];linarith
@@ -109,24 +39,19 @@ lemma firstTail_scalar_bound (K D E U₁ U₂ lengthScale B G₁ G₂ P H:ℝ) (
       (P/((min 1 (K/(D*E*U₁*U₂)))^2*(1+H)^A))≤
     (128*lengthScale)^2*(G₁*G₂*K)*P*(1+lengthScale^3*B^4/K)^2/(1+H)^A := by
   have hden:D*E*U₁*U₂≤lengthScale^3*B^4:=by
-    calc
-      _ ≤ (lengthScale*B^2)*B^2*lengthScale*lengthScale:=mul_le_mul
+    exact (mul_le_mul
         (mul_le_mul (mul_le_mul hDb hEb hE.le (mul_nonneg hL (sq_nonneg _))) hU₁b hU₁.le (by positivity))
-        hU₂b hU₂.le (by positivity)
-      _ = _:=by ring
-  have hi:=firstTail_inverse_scale_bound K (D*E*U₁*U₂) (lengthScale^3*B^4) hK (by positivity) hden
+        hU₂b hU₂.le (by positivity)).trans_eq (by ring)
   have hpref:(128*U₁)*(128*U₂)*(G₁*G₂*K)≤(128*lengthScale)^2*(G₁*G₂*K):=by
     apply mul_le_mul_of_nonneg_right _ (by positivity)
-    calc
-      _ ≤ (128*lengthScale)*(128*lengthScale):=mul_le_mul (mul_le_mul_of_nonneg_left hU₁b (by norm_num))
-        (mul_le_mul_of_nonneg_left hU₂b (by norm_num)) (by positivity) (by positivity)
-      _ = _:=by ring
+    exact (mul_le_mul (mul_le_mul_of_nonneg_left hU₁b (by norm_num))
+        (mul_le_mul_of_nonneg_left hU₂b (by norm_num)) (by positivity) (by positivity)).trans_eq (by ring)
   calc
     _ = ((128*U₁)*(128*U₂)*(G₁*G₂*K))*P*((min 1 (K/(D*E*U₁*U₂)))⁻¹)^2/(1+H)^A:=by
       simp only [div_eq_mul_inv,mul_inv_rev,inv_pow];ring
     _ ≤ _:=by
       apply div_le_div_of_nonneg_right _ (by positivity)
-      exact mul_le_mul (mul_le_mul_of_nonneg_right hpref hP) hi (sq_nonneg _) (by positivity)
+      exact mul_le_mul (mul_le_mul_of_nonneg_right hpref hP) (firstTail_inverse_scale_bound K (D*E*U₁*U₂) (lengthScale^3*B^4) hK (by positivity) hden) (sq_nonneg _) (by positivity)
 
 variable {ι:Type*} [DecidableEq ι]
   (p:ι→ActualEisensteinCubic.O) (hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
@@ -192,7 +117,6 @@ lemma sourceMobiusDivisor_norm_le_one (D:Finset ι):
 end
 section
 
-open ActualEisensteinCubic
 open FirstPassCubeLabels
 open ConcreteTraceCRT (eisEmbedding)
 
@@ -207,7 +131,6 @@ end
 end
 section
 
-open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProduct)
 open ConcreteTraceCRT (eisEmbedding)
 
@@ -221,7 +144,6 @@ end
 
 end
 
-open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProduct)
 open ConcreteTraceCRT (eisEmbedding)
 

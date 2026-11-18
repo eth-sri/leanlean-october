@@ -9,12 +9,7 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.InverseInitialTotalRows
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ConcreteTraceCRT
-open CanonicalQuadraticSieve CanonicalRowCompletion CanonicalCoefficientClass
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialProfile
-open InverseInitialEnergyCallerSource InverseInitialEnergyCallerModes InverseInitialEnergyCallerWindows
-open InverseInitialQuotientGeometry InverseInitialClippedColumns InverseInitialEnergyCallerState
-open InverseInitialDyadicAssembly InverseInitialProfileBounds Filter
+open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ConcreteTraceCRT CanonicalQuadraticSieve CanonicalRowCompletion CanonicalCoefficientClass InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialProfile InverseInitialEnergyCallerSource InverseInitialEnergyCallerModes InverseInitialEnergyCallerWindows InverseInitialQuotientGeometry InverseInitialClippedColumns InverseInitialEnergyCallerState InverseInitialDyadicAssembly InverseInitialProfileBounds Filter
 local notation "O"=>ActualEisensteinCubic.O
 
 open InverseInitialPhysicalLimit InverseInitialPhysicalReassembly SecondPassArithmetic InverseInitialRayAttachment
@@ -73,7 +68,7 @@ theorem original_input_rows_fourier_bound
   intro p hp hcop hg σ dec all assigned hassigned hK lists Hslot coeff hdis hHs hPs hac
     qelem z al bl primeW hz hqe hprimeW hprimeLive Ψ hΨ hperiod
     D m r hm hmcap hDlo hprodj hprod hDeq hmargin₁ hmargin₂ hparent rows hrows y θ
-  have hZp:1<Z:=hZ₀.trans_le hZ
+  have hZp :=hZ₀.trans_le hZ
   have he:=henergy Z hZ Dpool hD all assigned hassigned hK lists Hslot
     (fun i P=>coeff i P*FourierBridge.logPhase (-θ) (y i P)) hdis hHs hPs
     (by intro i hi P hP;simpa only [norm_mul,FourierBridge.logPhase_norm,mul_one] using hac i hi P hP)

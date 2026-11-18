@@ -73,13 +73,12 @@ theorem log_polynomial_eq_finite (χ : Character) (W : ℝ→ℂ) (a b D σ freq
 theorem fixed_profile_norm_bound (W : ℝ→ℂ) (hW : Continuous W)
     (a b lo hi : ℝ) (ha : 0<a) :
     ∃ B : ℝ, 0<B ∧ ∀ σ∈Icc lo hi, ∀ y∈Icc a b, ‖W y‖*y^(-σ)≤B := by
-  let K : Set (ℝ×ℝ) := Icc lo hi ×ˢ Icc a b
-  have hK : IsCompact K := isCompact_Icc.prod isCompact_Icc
+  let K := Icc lo hi ×ˢ Icc a b
   have hc : ContinuousOn (fun p : ℝ×ℝ => ‖W p.2‖*p.2^(-p.1)) K := by
     apply (hW.comp continuous_snd).norm.continuousOn.mul
     exact continuous_snd.continuousOn.rpow continuous_fst.neg.continuousOn
       (fun p hp => Or.inl (ne_of_gt (ha.trans_le hp.2.1)))
-  obtain ⟨M,hM⟩ := hK.bddAbove_image hc
+  obtain ⟨M,hM⟩ := (isCompact_Icc.prod isCompact_Icc).bddAbove_image hc
   refine ⟨|M|+1,by positivity,?_⟩
   intro σ hσ y hy
   exact (hM (Set.mem_image_of_mem _ (show (σ,y)∈K from ⟨hσ,hy⟩))).trans
@@ -96,8 +95,7 @@ theorem extraction_bound (ε : ℝ) (hε : 0<ε) :
   obtain ⟨C,hC,herr⟩ := HeckePrimePowers.prime_extraction_error ε hε
   refine ⟨C,hC,?_⟩
   intro χ W a b D σ freq B ha hD hWs hlarge hB hWbound
-  have hDp : 0<D := lt_of_lt_of_le zero_lt_one hD
-  have hX : 1≤max 1 b*D := hD.trans (le_mul_of_one_le_left hDp.le (le_max_left _ _))
+  have hDp := lt_of_lt_of_le zero_lt_one hD
   have hnorm (I : Ideal O) (hI : I∈annulusSet b D) : (I.absNorm : ℝ)≤max 1 b*D := by
     exact (Nat.cast_le.mpr (mem_idealsUpTo.mp hI).2).trans
       (Nat.floor_le (by positivity))
@@ -105,11 +103,10 @@ theorem extraction_bound (ε : ℝ) (hε : 0<ε) :
     by_cases hz : W ((I.absNorm : ℝ)/D)=0
     · simpa [annularWeight,hz] using hB
     · have hs := hWs hz
-      have hy : 0<(I.absNorm : ℝ)/D := ha.trans_le hs.1
-      rw [annularWeight,norm_mul,Complex.norm_cpow_eq_rpow_re_of_pos hy]
+      rw [annularWeight,norm_mul,Complex.norm_cpow_eq_rpow_re_of_pos (ha.trans_le hs.1)]
       simpa only [Complex.neg_re,shift_re] using hWbound _ hs
   have hb := herr χ (annulusSet b D) (annularWeight W D σ freq) (max 1 b*D) B
-    hX hB hnorm hw
+    (hD.trans (le_mul_of_one_le_left hDp.le (le_max_left _ _))) hB hnorm hw
   have hn : ‖(D : ℂ)^(-(1/2 : ℂ))‖=D^(-(1/2 : ℝ)) := by
     rw [Complex.norm_cpow_eq_rpow_re_of_pos hDp]
     norm_num

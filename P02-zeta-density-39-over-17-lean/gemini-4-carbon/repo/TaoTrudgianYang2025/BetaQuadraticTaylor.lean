@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaQuadraticParts
 
 @[expose] public section
@@ -71,7 +81,7 @@ theorem integral_weighted_betaQuadraticKernel_taylor
     (Complex.continuous_ofReal.comp ((continuous_id.pow 2).mul hV)).mul hK
   have he : (fun z : ℝ => (W z : ℂ)*betaQuadraticKernel T z) =
       (fun z : ℝ => (W 0 : ℂ)*betaQuadraticKernel T z+
-        ((deriv W (0 : ℝ) : ℝ) : ℂ)*((z : ℂ)*betaQuadraticKernel T z)+
+        ((deriv W 0 : ℝ) : ℂ)*((z : ℂ)*betaQuadraticKernel T z)+
         ((z^2*quadraticTaylorCoefficient W z : ℝ) : ℂ)*betaQuadraticKernel T z) := by
     funext z
     have h := segmentTaylorAverage_second_global hW 0 z
@@ -84,11 +94,11 @@ theorem integral_weighted_betaQuadraticKernel_taylor
     ring
   rw [he,intervalIntegral.integral_add
     (((hK.const_mul (W 0 : ℂ)).intervalIntegrable (-H) H).add
-      ((hlinear.const_mul ((deriv W (0 : ℝ) : ℝ) : ℂ)).intervalIntegrable (-H) H))
+      ((hlinear.const_mul ((deriv W 0 : ℝ) : ℂ)).intervalIntegrable (-H) H))
     (hquad.intervalIntegrable (-H) H),
     intervalIntegral.integral_add
       ((hK.const_mul (W 0 : ℂ)).intervalIntegrable (-H) H)
-      ((hlinear.const_mul ((deriv W (0 : ℝ) : ℝ) : ℂ)).intervalIntegrable (-H) H),
+      ((hlinear.const_mul ((deriv W 0 : ℝ) : ℂ)).intervalIntegrable (-H) H),
     intervalIntegral.integral_const_mul,intervalIntegral.integral_const_mul,
     integral_betaQuadraticKernel_odd,mul_zero,add_zero]
 

@@ -467,8 +467,7 @@ private theorem lemma_aachmonophase {a b : ℝ} (ha : a < b) (φ : ℝ → ℝ) 
     (hg_cont : ContinuousOn g (Set.Icc a b)) (hg_mon : AntitoneOn (fun t ↦ |g t|) (Set.Icc a b)) :
     ‖∫ t in Set.Icc a b, h t * e (φ t)‖ ≤ |g a| / π := by
   let F : ℝ → ℂ := fun t ↦ (1 / (2 * Real.pi * I)) * (exp (2 * Real.pi * I * φ t))
-  have h_integral_bound : ‖∫ t in Set.Icc a b, (g t : ℂ) * (deriv F t)‖ ≤ (⨆ t ∈ Set.Icc a b, ‖F t‖) * (2 * |g a|) :=
-    lemma_IBP_bound_abs_antitone ha g F hg_cont hg_mon <|
+  have h_integral_bound := lemma_IBP_bound_abs_antitone ha g F hg_cont hg_mon <|
       ContDiffOn.mul contDiffOn_const <| contDiff_exp.comp_contDiffOn <|
         ContDiffOn.mul contDiffOn_const <| ofRealCLM.contDiff.comp_contDiffOn hφ_C1
   have h_deriv_F : ∀ t ∈ Set.Ioo a b, deriv F t = (exp (2 * Real.pi * I * φ t)) * (deriv φ t) := by

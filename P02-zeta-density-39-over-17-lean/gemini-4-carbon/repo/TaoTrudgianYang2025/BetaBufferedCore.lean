@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaBufferedFourierTail
 public import TaoTrudgianYang2025.BetaBufferedNonstationarySums
 public import TaoTrudgianYang2025.IntegerFourierWindows
@@ -64,9 +74,7 @@ theorem modelPhase_buffered_poisson_core
   let A := modelPhaseCoreLower σ δ T N
   let B := modelPhaseCoreUpper δ T N
   let f : ℤ → ℂ := fun q => modelPhaseFourierMode χ F T N q
-  have hAB : A ≤ B :=
-    modelPhaseCoreLower_le_upper hσ.le (approximateModelPhase_tolerance_nonneg hF) hT.le hN
-  have hsplit := sum_int_interval_three_parts f hRA hAB hBR
+  have hsplit := sum_int_interval_three_parts f hRA (modelPhaseCoreLower_le_upper hσ.le (approximateModelPhase_tolerance_nonneg hF) hT.le hN) hBR
   rw [sum_int_Ico_eq_reverse_range f hRA,sum_int_Ioc_eq_forward_range f hBR] at hsplit
   have hext := norm_bufferedModes_exterior_blocks_le_log hσ hδ hF hT hN hη
     ((one_le_div hN).mpr ha) ((div_le_iff₀ hN).mpr hb)
@@ -88,7 +96,6 @@ theorem modelPhase_buffered_poisson_core
     rw [hsplit]
     simp only [sub_neg_eq_add]
     abel
-  change ‖exponentialSumAt F T N a b-(∑ q ∈ Finset.Icc A B, f q)‖ ≤ _
   rw [heq]
   exact (norm_add_le _ _).trans (add_le_add hsource hext')
 

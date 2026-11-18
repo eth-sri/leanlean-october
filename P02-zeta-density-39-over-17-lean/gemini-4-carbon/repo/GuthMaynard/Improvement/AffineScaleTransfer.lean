@@ -8,14 +8,14 @@ noncomputable section
 open MeasureTheory
 open scoped SchwartzMap
 namespace GuthMaynard.Improvement
-open RiemannZeta.GuthMaynard
+open RiemannZeta.GuthMaynard GuthMaynard.NativeMoment
 
 theorem fourier_sup_family_mono (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 ≤ D β n)
     {T S : ℝ} (hT : 0 ≤ T) (hTS : T ≤ S) {f : 𝓢(ℝ, ℝ)}
     (hf : FourierSupFamily D T f) : FourierSupFamily D S f := by
   intro β hβ n ξ hξ
   have hd := hD β n
-  have hS : 0 ≤ S := hT.trans hTS
+  have hS := hT.trans hTS
   exact (hf β hβ n ξ hξ).trans (by gcongr)
 
 set_option maxHeartbeats 600000 in

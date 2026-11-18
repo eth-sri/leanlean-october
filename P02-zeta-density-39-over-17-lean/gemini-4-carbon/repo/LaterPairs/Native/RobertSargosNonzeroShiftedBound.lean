@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.RobertSargosNonzeroShiftReorder
 
 @[expose] public section
@@ -25,10 +34,9 @@ theorem robertSargos_nonzero_weighted_shifted_re (f : ℝ → ℝ) (M H Q R N : 
             (robertSargosNonzeroShiftedTriple f H Q N r m).re := by
   have he := congrArg Complex.re (robertSargos_nonzero_weighted_shifted_reorder f M H Q R N)
   have hi : (N:ℂ)⁻¹ = (((N:ℝ)⁻¹:ℝ):ℂ) := by
-    simp only [Complex.ofReal_inv,Complex.ofReal_natCast]
+    simp
   rw [hi] at he
-  simpa only [Complex.re_sum,Complex.mul_re,Complex.ofReal_re,Complex.ofReal_im,
-    zero_mul,sub_zero] using he
+  simpa using he
 
 theorem robertSargos_nonzero_weighted_shifted_re_le (f : ℝ → ℝ) (M H Q R N : ℕ)
     (hR : 0 < R) :
@@ -48,7 +56,7 @@ theorem robertSargos_nonzero_weighted_shifted_re_le (f : ℝ → ℝ) (M H Q R N
   have hw : 1-|(r:ℝ)|/R ≤ 1 := sub_le_self _ (by positivity)
   exact (mul_le_mul_of_nonneg_left (Complex.re_le_norm _)
     (signed_triangular_weight_nonneg hR (Finset.mem_erase.mp hr).2)).trans
-      (by simpa only [one_mul] using (mul_le_mul_of_nonneg_right hw
+      (by simpa using (mul_le_mul_of_nonneg_right hw
         (norm_nonneg (robertSargosNonzeroShiftedTriple f H Q N r m))))
 
 end TaoTrudgianYang2025

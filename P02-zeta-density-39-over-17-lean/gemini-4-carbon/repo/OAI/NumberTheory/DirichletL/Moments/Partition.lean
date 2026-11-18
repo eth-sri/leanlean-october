@@ -33,9 +33,7 @@ theorem fullModulusCorrelation_swap (u v h : A)
   · simp only [hc, (not_congr he).mp hc, ite_false, star_zero]
 end Domain
 
-open ActualEisensteinCubic ConcreteTraceCRT CanonicalQuadraticSieve
-open CenteredMomentSupportedCorrelation CenteredMomentUnequal CenteredMomentLocal
-open CenteredMomentProductCRT
+open ActualEisensteinCubic ConcreteTraceCRT CanonicalQuadraticSieve CenteredMomentSupportedCorrelation CenteredMomentUnequal CenteredMomentLocal CenteredMomentProductCRT
 open ConcretePrimeRowBridge hiding O
 local notation "O" => ActualEisensteinCubic.O
 
@@ -57,14 +55,12 @@ theorem prime_power_norm_le_min (p : O) [(Ideal.span {p}).IsMaximal]
       (p ^ min c d * k)‖ ≤ (Ideal.absNorm (Ideal.span {p}) : ℝ) ^ min c d := by
   rcases lt_trichotomy c d with hcd | heq | hdc
   · have he : c + (d - c) = d := Nat.add_sub_of_le hcd.le
-    have h := unequal_prime_power_norm_le p hp hg hc (show 1 ≤ d - c by omega) (-k)
     rw [actualCorrelation_norm_swap]
-    simpa only [← pow_add, he, min_eq_left hcd.le, mul_neg] using h
+    simpa only [← pow_add, he, min_eq_left hcd.le, mul_neg] using (unequal_prime_power_norm_le p hp hg hc (show 1 ≤ d - c by omega) (-k))
   · subst d
     simpa only [min_self] using equal_prime_power_norm_le p hp hg hchar hc k
   · have he : d + (c - d) = c := Nat.add_sub_of_le hdc.le
-    have h := unequal_prime_power_norm_le p hp hg hd (show 1 ≤ c - d by omega) k
-    simpa only [← pow_add, he, min_eq_right hdc.le] using h
+    simpa only [← pow_add, he, min_eq_right hdc.le] using (unequal_prime_power_norm_le p hp hg hd (show 1 ≤ c - d by omega) k)
 
 theorem prime_power_partition_norm_le (p : O) [(Ideal.span {p}).IsMaximal]
     (hp : Supported (Ideal.span {p})) (hg : goodLambda ∉ Ideal.span {p})
@@ -90,7 +86,6 @@ theorem supported_product (a : ι → O) (ha : ∀ i, Supported (Ideal.span {a i
     | empty =>
       simp only [Finset.prod_empty, Ideal.span_singleton_one]
       rw [← Ideal.one_eq_top]
-      change Supported (1 : Ideal O)
       refine ⟨one_ne_zero, ?_⟩
       intro P hP
       simp only [UniqueFactorizationMonoid.normalizedFactors_one,

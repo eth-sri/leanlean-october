@@ -8,11 +8,10 @@ public import OAI.NumberTheory.DirichletL.Detector.RayPoolThresholds
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology ContDiff
 open Complex Filter
+open scoped Classical BigOperators Topology ContDiff
 namespace SevenEighths.ProbePrincipalNormalized
-open HeckeFamily ProbePhysical CompletedGauss ProbeFiniteProductBounds
-open PrincipalMellinResidues PrincipalSignalComparison ProbePrincipalResidueActual ProbeRaySlots
+open HeckeFamily ProbePhysical CompletedGauss ProbeFiniteProductBounds PrincipalMellinResidues PrincipalSignalComparison ProbePrincipalResidueActual ProbeRaySlots
 local notation "Id" => Ideal HeckeFamily.O
 
 lemma normalized_error (A R F N : ℂ) (c d v : ℝ)
@@ -85,7 +84,6 @@ theorem actual_ray_principal_comparison {K : ℕ}
     dsimp only [normer]
     rw [mul_inv_rev,norm_mul,←Complex.ofReal_inv,norm_real]
     simpa only [hsum,Real.norm_eq_abs,mul_comm] using mul_le_mul_of_nonneg_left hmass.2 (norm_nonneg cs⁻¹)
-  have hh := normalized_error _ _ _ normer _ _ _ (by positivity) hraw hinv hr.2.2
   have hpw : (c*Z^ellMin)^(-(7/8:ℝ))=c^(-(7/8:ℝ))*Z^(-(7/8:ℝ)*ellMin) := by
     rw [Real.mul_rpow hc.le (Real.rpow_nonneg hZ0.le _),←Real.rpow_mul hZ0.le]
     congr 2;ring
@@ -94,11 +92,10 @@ theorem actual_ray_principal_comparison {K : ℕ}
     rw [Real.rpow_add hZ0];ring
   have heq2 : D*Z^(HeckeZeroSupremum.beta+e-11/16)*(c*Z^ellMin)^(-(7/8:ℝ))=
       (D*c^(-(7/8:ℝ)))*Z^(HeckeZeroSupremum.beta-11/16+e-(7/8)*ellMin) := by
-    rw [hpw]
-    rw [show HeckeZeroSupremum.beta-11/16+e-(7/8)*ellMin=
+    rw [hpw, show HeckeZeroSupremum.beta-11/16+e-(7/8)*ellMin=
       (HeckeZeroSupremum.beta+e-11/16)+(-(7/8:ℝ)*ellMin) by ring,Real.rpow_add hZ0]
     ring
-  apply hh.trans
+  apply (normalized_error _ _ _ normer _ _ _ (by positivity) hraw hinv hr.2.2).trans
   rw [heq1,heq2]
   have h1 : C0/e*‖cs⁻¹‖≤C := by
     dsimp [C]

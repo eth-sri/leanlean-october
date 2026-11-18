@@ -36,20 +36,17 @@ theorem markedPhysicalProbe_eq_poisson (η : HeckeFamily.Character) (C : Calibra
   split_ifs with h
   · dsimp only
     congr 1
-    have ha := supported_primaryGenerator_ne_zero s.val s.property
-    have has := (supported_span_primaryGenerator_iff s.val).mpr s.property
     have hn : elementNorm (primaryGenerator s.val) = (Ideal.absNorm s.val:ℝ) := by
       unfold elementNorm
-      rw [(primaryGenerator_spec s.val ha).1]
+      rw [(primaryGenerator_spec s.val (supported_primaryGenerator_ne_zero s.val s.property)).1]
     have hb : 0<elementNorm C.generator := by
       unfold elementNorm
       exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
         (Ideal.span_singleton_eq_bot.not.mpr C.generator_ne_zero))
     have hs : 0<(Ideal.absNorm s.val:ℝ) := by
       exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr s.property.1)
-    have hK : 0<elementNorm C.generator*(Ideal.absNorm s.val:ℝ)*X := mul_pos (mul_pos hb hs) hX
-    simpa only [hn] using inner_mellin_poisson η C D (primaryGenerator s.val) has
-      W₀ hWc hWs (elementNorm C.generator*(Ideal.absNorm s.val:ℝ)*X) Z hK hZ
+    simpa only [hn] using inner_mellin_poisson η C D (primaryGenerator s.val) ((supported_span_primaryGenerator_iff s.val).mpr s.property)
+      W₀ hWc hWs (elementNorm C.generator*(Ideal.absNorm s.val:ℝ)*X) Z (mul_pos (mul_pos hb hs) hX) hZ
   · rfl
 
 end SevenEighths.ProbePhysical

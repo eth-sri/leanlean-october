@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 
 namespace SevenEighths.CenteredMomentEnergySourceCapSchedule
-open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyWidthRanges
-open CenteredMomentEnergyFirstLiveAdmission
+open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyWidthRanges CenteredMomentEnergyFirstLiveAdmission
 
 lemma count_pos (M ε:ℝ):0<count M ε:=by
   unfold count CenteredMomentFirstSecondLossParameters.depth

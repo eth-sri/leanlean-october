@@ -10,8 +10,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondSourceBlocks
-open InverseSecondFibers CompletedGauss
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondSourceBlocks InverseSecondFibers CompletedGauss
 open ConcreteTraceCRT (eisEmbedding)
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι] (p : ι→O) (hp : ∀i,p i≠0)
@@ -30,11 +29,9 @@ theorem actual_cell_row_decrease {Jo Jn : ℕ}
     (hJ : Z^(j-eta)≤‖eisEmbedding (jLabel p x.cube.support
       (fun i=>x.cube.leftExponent i+x.cube.rightExponent i) x.cube.leftBit x.cube.rightBit)‖^2) :
     childM M ell A t (secondCellExponent Z d 0) (secondCellExponent Z d 1) V j eta+3*cutoff/2≤M := by
-  have hG := (actual_cell_norm_centers p hp source hk d x hx Z eta hZ heta hbin 0).2
-  have hD := (actual_cell_norm_centers p hp source hk d x hx Z eta hZ heta hbin 1).1
   have hh := actual_second_row_decrease p hp x (hs.second_divisor x (cell_subset p source d hx)) Z M ell A t
     (secondCellExponent Z d 0) (secondCellExponent Z d 1) V j eta cutoff hZ hA ht hterminal hsmall
-    (by simpa [outerNorms] using hG) (by simpa [outerNorms] using hD) h1 h2 hJ
+    (by simpa [outerNorms] using ((actual_cell_norm_centers p hp source hk d x hx Z eta hZ heta hbin 0).2)) (by simpa [outerNorms] using ((actual_cell_norm_centers p hp source hk d x hx Z eta hZ heta hbin 1).1)) h1 h2 hJ
   linarith
 
 theorem actual_cell_triple_puncture_nonzero

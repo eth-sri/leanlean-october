@@ -8,8 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler ProbeRow
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcretePrimeRowBridge
+open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler ProbeRow CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcretePrimeRowBridge
 local notation "O" => HeckeFamily.O
 
 theorem continued_selected_tuple_bound (K : ℕ) (eps a b r B : ℝ) (heps : 0<eps)
@@ -25,12 +24,11 @@ theorem continued_selected_tuple_bound (K : ℕ) (eps a b r B : ℝ) (heps : 0<e
           (star (idealCoeff η (P i).val.val)*((P i).val.val.absNorm:ℂ)^x)
           (((P i).val.val.absNorm:ℂ)^(-w))‖)
       ≤C*((Ideal.span {u.val}:Ideal O).absNorm:ℝ)^eps*∏i,(Y i)^r := by
-  let d : ℝ := eps/((K:ℝ)+1)
-  have hd : 0<d := div_pos heps (by positivity)
-  obtain ⟨C,hC,hmain⟩ := continued_selected_slot_bound d a b r B hd ha hb hr hB
+  let d := eps/((K:ℝ)+1)
+  obtain ⟨C,hC,hmain⟩ := continued_selected_slot_bound d a b r B (div_pos heps (by positivity)) ha hb hr hB
   refine ⟨C^K,pow_pos hC K,?_⟩
   intro η u T hT Y hY W hWS hWB x w z hx hw hz
-  let N : ℝ := ((Ideal.span {u.val}:Ideal O).absNorm:ℝ)
+  let N := ((Ideal.span {u.val}:Ideal O).absNorm:ℝ)
   have hN : 1≤N := by
     dsimp [N]
     exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr

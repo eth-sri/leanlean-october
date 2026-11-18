@@ -101,14 +101,14 @@ theorem dyadicStep_div_pow_tendsto (x : ℝ) :
 
 theorem hasSum_smoothDyadicWeight_nonneg_scales (x : ℝ) :
     HasSum (fun n : ℕ => smoothDyadicWeight (x/(2 : ℝ)^n)) (1-dyadicStep (2*x)) := by
-  have hs : HasSum (fun n : ℕ => smoothDyadicWeight (x/(2 : ℝ)^(n+1))) (1-dyadicStep x) := by
+  have hs : HasSum (fun n : ℕ => smoothDyadicWeight (x/2^(n+1))) (1-dyadicStep x) := by
     apply (hasSum_iff_tendsto_nat_of_nonneg
       (fun n => (smoothDyadicWeight_bounds _).1) _).mpr
     simp_rw [smoothDyadicWeight_div_pow_succ,
-      Finset.sum_range_sub (fun n : ℕ => dyadicStep (x/(2 : ℝ)^n)), pow_zero, div_one]
+      Finset.sum_range_sub (fun n : ℕ => dyadicStep (x/2^n)), pow_zero, div_one]
     exact (dyadicStep_div_pow_tendsto x).sub_const _
-  have hh : HasSum (fun n : ℕ => smoothDyadicWeight (x/(2 : ℝ)^n))
-      (smoothDyadicWeight (x/(2 : ℝ)^0)+(1-dyadicStep x)) := hs.zero_add
+  have hh : HasSum (fun n : ℕ => smoothDyadicWeight (x/2^n))
+      (smoothDyadicWeight (x/2^0)+(1-dyadicStep x)) := hs.zero_add
   convert hh using 1
   simp only [pow_zero, div_one, smoothDyadicWeight]
   ring
@@ -126,14 +126,14 @@ theorem hasSum_smoothDyadicWeight_neg_scales {x : ℝ} (hx : 0 < x) :
     HasSum (fun n : ℕ => smoothDyadicWeight (x*(2 : ℝ)^(n+1))) (dyadicStep (2*x)) := by
   apply (hasSum_iff_tendsto_nat_of_nonneg
     (fun n => (smoothDyadicWeight_bounds _).1) _).mpr
-  have he (n : ℕ) : smoothDyadicWeight (x*(2 : ℝ)^(n+1)) =
-      dyadicStep ((2*x)*(2 : ℝ)^n)-dyadicStep ((2*x)*(2 : ℝ)^(n+1)) := by
+  have he (n : ℕ) : smoothDyadicWeight (x*2^(n+1)) =
+      dyadicStep ((2*x)*2^n)-dyadicStep ((2*x)*2^(n+1)) := by
     rw [smoothDyadicWeight, pow_succ]
     congr 1 <;> congr 1 <;> ring
-  simp_rw [he, Finset.sum_range_sub' (fun n : ℕ => dyadicStep ((2*x)*(2 : ℝ)^n)),
+  simp_rw [he, Finset.sum_range_sub' (fun n : ℕ => dyadicStep ((2*x)*2^n)),
     pow_zero, mul_one]
-  simpa only [sub_zero] using
-    (dyadicStep_mul_pow_tendsto (show 0 < 2*x by positivity)).const_sub (dyadicStep (2*x))
+  simpa using
+    (dyadicStep_mul_pow_tendsto (by positivity)).const_sub (dyadicStep (2*x))
 
 /-- Genuine absolute summation over every integer dyadic scale. -/
 theorem hasSum_smoothDyadicWeight {x : ℝ} (hx : 0 < x) :

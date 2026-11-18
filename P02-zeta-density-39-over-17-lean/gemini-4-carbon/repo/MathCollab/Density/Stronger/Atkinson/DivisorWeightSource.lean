@@ -10,9 +10,7 @@ public import MathCollab.Density.Stronger.Atkinson.DivisorWeightReflection
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+open Complex Filter MeasureTheory Set Topology MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth MathCollab.Density.Contour
 open scoped Interval ComplexConjugate
 set_option autoImplicit false
 noncomputable section
@@ -54,7 +52,6 @@ theorem zetaSquareLeadingDivisorTerm_eq_weightKernel (t : ℝ) (n : ℕ) (u : �
   rw [divisorDirichletTerm_add_eq_mul_exp]
   unfold zetaSquareLeadingRightKernel zetaDivisorWeightKernel zetaDivisorWeightNumerator
     zetaDivisorWeightArgument
-  dsimp only
   rw [show -((Real.log (n : ℝ) : ℂ) - zetaGammaLeadingLog t) * (1 + (u : ℂ) * I) =
       -((Real.log (n : ℝ) : ℂ)) * (1 + (u : ℂ) * I) +
         (1 + (u : ℂ) * I) * zetaGammaLeadingLog t by ring, Complex.exp_add]

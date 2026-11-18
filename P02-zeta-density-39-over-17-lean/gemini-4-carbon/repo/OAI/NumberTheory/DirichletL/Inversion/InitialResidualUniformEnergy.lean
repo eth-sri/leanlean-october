@@ -11,19 +11,10 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.InverseInitialResidualUniformEnergy
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ConcreteTraceCRT
-open CanonicalQuadraticSieve CanonicalRowCompletion CanonicalCoefficientClass
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialProfile
-open InverseInitialEnergyCallerSource InverseInitialEnergyCallerModes InverseInitialEnergyCallerWindows
-open InverseInitialQuotientGeometry InverseInitialClippedColumns InverseInitialEnergyCallerState
-open InverseInitialDyadicAssembly InverseInitialProfileBounds Filter
+open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ConcreteTraceCRT CanonicalQuadraticSieve CanonicalRowCompletion CanonicalCoefficientClass InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialProfile InverseInitialEnergyCallerSource InverseInitialEnergyCallerModes InverseInitialEnergyCallerWindows InverseInitialQuotientGeometry InverseInitialClippedColumns InverseInitialEnergyCallerState InverseInitialDyadicAssembly InverseInitialProfileBounds Filter
 local notation "O"=>ActualEisensteinCubic.O
 
-open InverseInitialPhysicalLimit InverseInitialPhysicalReassembly SecondPassArithmetic InverseInitialRayAttachment
-open MeasureTheory FourierBridge JointLogSeparation InverseInitialOverlapFourier
-open InverseInitialCommonLists InverseInitialCommonRatios InverseInitialCommonTuples
-open InverseInitialOverlap InverseInitialPoissonBridge InverseInitialExcludedPool
-open InverseInitialCommonProfile InverseInitialEnergyCallerWindow
+open InverseInitialPhysicalLimit InverseInitialPhysicalReassembly SecondPassArithmetic InverseInitialRayAttachment MeasureTheory FourierBridge JointLogSeparation InverseInitialOverlapFourier InverseInitialCommonLists InverseInitialCommonRatios InverseInitialCommonTuples InverseInitialOverlap InverseInitialPoissonBridge InverseInitialExcludedPool InverseInitialCommonProfile InverseInitialEnergyCallerWindow
 theorem original_residual_uniform_energy
     (Woriginal:ℝ→ℂ)(ao bo:ℝ)(hao:0<ao)(hab:ao≤bo)
     (hso:Function.support Woriginal⊆Set.Icc ao bo)(hWo:ContDiff ℝ ∞ Woriginal)
@@ -71,9 +62,8 @@ theorem original_residual_uniform_energy
         C*Z^(m+15*η+π+eps+loss)*((1+‖θ‖)^degree)^2 := by
   obtain ⟨W,A,B,Bnorm,hA,hAB,hBn,hWc,hWs,hWb,hFresh⟩:=
     InverseInitialUniformFresh.exists_uniform_fresh K ao bo hao hab
-  have hs:Function.support (W:ℝ→ℂ)⊆Set.Icc A B:=(subset_tsupport (W:ℝ→ℂ)).trans hWs
   obtain ⟨J,Btree,hBtree,henergy⟩:=InverseInitialResidualTupleEnergy.original_residual_tuple_energy
-    Woriginal W ao bo hao hso hWo A B 1 hA le_rfl hs (W.smooth ⊤) Φ hΦ hone Bnorm hBn hWb
+    Woriginal W ao bo hao hso hWo A B 1 hA le_rfl ((subset_tsupport (W:ℝ→ℂ)).trans hWs) (W.smooth ⊤) Φ hΦ hone Bnorm hBn hWb
     cap gap eps π η τ loss hcap hgap heps hπ hη hηone hηsmall hτ hτsmall hloss K
   refine ⟨J,?_⟩
   intro q hq
@@ -83,14 +73,13 @@ theorem original_residual_uniform_energy
     qelem z al bl primeW hz hqe hprimeW hprimeLive χ hχ hperiod hout
     D m r hm hmcap hDlo hprodj hprod hDeq hmargin₁ hmargin₂ hparent rows hrows
     j hj hspan hjratio hL hcoeff hP hcopTuple hPE θ
-  have hZp:0<Z:=zero_lt_one.trans (hZ₀.trans_le hZ)
   obtain ⟨Dpool,hfloor,hcover⟩:=InverseInitialResidualPool.exists_original_complete_pool
-    q Z r bo cap Btree hZp (zero_le_one.trans hBtree) ((all\assigned).pi L)
+    q Z r bo cap Btree (zero_lt_one.trans (hZ₀.trans_le hZ)) (zero_le_one.trans hBtree) ((all\assigned).pi L)
     (fun t=>j*survivingProduct (all\assigned) t) j hP (fun t _=>dvd_mul_right j _) hPE
   exact henergy Z hZ Dpool hfloor all assigned hassigned hK L Hslot coeff hdis hHs hPs hac
     qelem z al bl primeW hz hqe hprimeW hprimeLive χ hχ hperiod hout
     D m r hm hmcap hDlo hprodj hprod hDeq hmargin₁ hmargin₂ hparent rows hrows
-    j hj hspan (fun _=>1) (fun _=>2) 1 ((2:ℝ)^K) hjratio hL hcoeff
+    j hj hspan (fun _=>1) (fun _=>2) 1 (2^K) hjratio hL hcoeff
     (hFresh (all\assigned) ((Finset.card_le_card Finset.sdiff_subset).trans hK) Woriginal hso)
     hP hcopTuple hPE hcover θ
 

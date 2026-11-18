@@ -28,7 +28,7 @@ lemma activeTupleDyad_bounds (tuples : Finset (σ→Ideal Eis)) (H : ℝ)
   rw [he] at hh
   constructor
   · exact max_le (hn p hpt).1 hh.1.le
-  · have ht : (2:ℝ)^i.val/2≤divisorDyadicScale i.val := le_max_right _ _
+  · have ht : 2^i.val/2≤divisorDyadicScale i.val := le_max_right _ _
     linarith [hh.2]
 
 omit [DecidableEq σ] in
@@ -44,8 +44,7 @@ lemma slotTupleProduct_norm_bound (L : σ→Finset (Ideal Eis)) (H : σ→ℝ)
     (hzero : ∀ i,∀ P∈L i,P≠0) (hH : ∀ i,∀ P∈L i,(Ideal.absNorm P:ℝ)≤H i)
     (p : σ→Ideal Eis) (hp : ∀ i,p i∈L i) :
     1≤(Ideal.absNorm (slotTupleProduct p):ℝ) ∧ (Ideal.absNorm (slotTupleProduct p):ℝ)≤∏ i,H i := by
-  have hn : slotTupleProduct p≠0 := Finset.prod_ne_zero_iff.mpr (fun i _ => hzero i _ (hp i))
-  refine ⟨QuadraticMainBoundary.norm_one_le hn,?_⟩
+  refine ⟨QuadraticMainBoundary.norm_one_le (Finset.prod_ne_zero_iff.mpr (fun i _ => hzero i _ (hp i))),?_⟩
   change (Ideal.absNorm (∏ i,p i):ℝ)≤_
   rw [map_prod,Nat.cast_prod]
   exact Finset.prod_le_prod₀ (fun i _ => Nat.cast_nonneg _) (fun i _ => hH i _ (hp i))

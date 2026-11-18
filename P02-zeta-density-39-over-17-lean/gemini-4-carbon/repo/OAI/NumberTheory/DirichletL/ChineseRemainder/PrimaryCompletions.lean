@@ -7,80 +7,14 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 
 namespace ShortDraftCRT
-open scoped BigOperators Classical Matrix MatrixGroups
+open scoped Matrix MatrixGroups
 
 section
-open ActualEisensteinCubic CubicEisenstein CubicJacobiGlobal
+open CubicEisenstein CubicJacobiGlobal
 local notation "Eis" => ActualEisensteinCubic.O
 
 lemma primary_coprime_nine (a:Eis) (ha:lambda^2∣a-1) : IsCoprime a (9:Eis) := by
@@ -88,27 +22,22 @@ lemma primary_coprime_nine (a:Eis) (ha:lambda^2∣a-1) : IsCoprime a (9:Eis) := 
   simpa only [show (3:Eis)*3=9 by norm_num] using h3.mul_right h3
 
 lemma nine_coprime_of_not_lambda_dvd (c:Eis) (hc:¬lambda∣c) : IsCoprime (9:Eis) c := by
-  have hL:IsCoprime lambda c:=
-    PrimaryIdealUnitReindex.lambda_prime_actual.irreducible.coprime_iff_not_dvd.mpr hc
-  have h3:IsCoprime (3:Eis) c:=(hL.mul_left hL).of_isCoprime_of_dvd_left
+  have hL := PrimaryIdealUnitReindex.lambda_prime_actual.irreducible.coprime_iff_not_dvd.mpr hc
+  have h3 :=(hL.mul_left hL).of_isCoprime_of_dvd_left
     (by simpa only [pow_two] using three_dvd_lambda_sq)
   simpa only [show (3:Eis)*3=9 by norm_num] using h3.mul_left h3
 
-lemma primary_numerator_controlled_inverse (c a:Eis)
-    (ha:lambda^2∣a-1) (hac:IsCoprime a c) :
-    ∃d0:Eis,(9:Eis)*c∣a*d0-1 :=
-  exists_controlled_inverse 9 c a ((primary_coprime_nine a ha).mul_right hac)
 
 lemma completion_primary_lower_right (a b c d:Eis)
     (hdet:a*d-b*c=1) (ha:(3:Eis)∣a-1) (hb:(3:Eis)∣b) : (3:Eis)∣d-1 := by
-  have had:(3:Eis)∣a*d-1:=by
+  have had:3∣a*d-1:=by
     convert dvd_mul_of_dvd_left hb c using 1
     linear_combination hdet
   convert dvd_sub had (dvd_mul_of_dvd_left ha d) using 1 ; ring
 
 lemma completion_negative_upper_right (a b c d:Eis)
     (hdet:a*d-b*c=1) (hc:(3:Eis)∣c-1) (hd:(3:Eis)∣d) : (3:Eis)∣b+1 := by
-  have hbc:(3:Eis)∣b*c+1:=by
+  have hbc:3∣b*c+1:=by
     convert dvd_mul_of_dvd_right hd a using 1
     linear_combination -hdet
   convert dvd_sub hbc (dvd_mul_of_dvd_right hc b) using 1 ; ring
@@ -119,7 +48,7 @@ theorem exists_primary_numerator_completion (M c a:Eis)
       ∀r:Eis,IsCoprime r (M*c)→IsCoprime a r→lambda^2∣r-1→
       ∃b d:Eis,a*d-b*(c*r)=1 ∧ M*c∣d-d0 ∧ (9:Eis)∣b ∧
         (3:Eis)∣d-1 ∧ (3:Eis)∣c*r-c := by
-  obtain ⟨d0,hd0⟩:=primary_numerator_controlled_inverse c a ha hac
+  obtain ⟨d0,hd0⟩:=(exists_controlled_inverse 9 c a ((primary_coprime_nine a ha).mul_right hac))
   refine ⟨d0,hd0,?_⟩
   intro r hr har hprimary
   obtain ⟨b,d,hdet,hd,hb⟩:=exists_fixed_completion_upper_right 9 M c r a d0 hc h9M hr har hd0
@@ -146,15 +75,14 @@ theorem exists_primary_denominator_completion (M c a:Eis)
         (9:Eis)∣a*d ∧ (9:Eis)∣b*(c*r)+1 ∧ (3:Eis)∣b+1 ∧ (3:Eis)∣c*r-1 := by
   have hcl:¬lambda∣c:=by
     intro hd
-    have hcL:IsCoprime lambda c:=
-      (primary_coprime_three c hc).symm.of_isCoprime_of_dvd_left
+    have hcL := (primary_coprime_three c hc).symm.of_isCoprime_of_dvd_left
         ((dvd_pow_self lambda (by decide : (2:ℕ)≠0)).trans lambda_sq_dvd_three)
     exact PrimaryIdealUnitReindex.lambda_prime_actual.not_isUnit (hcL.isUnit_of_dvd hd)
   obtain ⟨d0,hzero,hinv,hcomp⟩:=exists_unramified_denominator_completion M c a h9M hcl hac
   refine ⟨d0,hzero,hinv,?_⟩
   intro r hr har hpr
   obtain ⟨b,d,hdet,hd,hBd,had,hbc⟩:=hcomp r hr har
-  have hc3:(3:Eis)∣c*r-1:=three_dvd_primary_sub_one _ (primary_mul c r hc hpr)
+  have hc3 :=three_dvd_primary_sub_one _ (primary_mul c r hc hpr)
   exact ⟨b,d,hdet,hd,hBd,had,hbc,completion_negative_upper_right a b (c*r) d hdet hc3
     ((show (3:Eis)∣9 from ⟨3,by norm_num⟩).trans hBd),hc3⟩
 
@@ -177,17 +105,16 @@ theorem exists_fixed_matrix_completion_controlled
   intro a r ha hrr hr har
   obtain ⟨b,d,hdet,hd,hmat⟩:=exists_fixed_matrix_completion M c a0 r0 d0 b0 hc hdet0
     a r ha hrr hr har
-  have hbd:B∣b-b0:=hBM.trans (fixed_completion_congr M c r r0 a a0 b b0 d d0 hc
+  have hbd :=hBM.trans (fixed_completion_congr M c r r0 a a0 b b0 d d0 hc
     hr.of_mul_right_left.symm hdet hdet0 ha hd hrr)
-  have hdd:N∣d-d0:=(hNM.trans (dvd_mul_right M c)).trans hd
   refine ⟨b,d,hdet,hd,?_,?_,hmat⟩
   · convert dvd_add hbd hb0 using 1 ; ring
-  · convert dvd_add hdd hd0 using 1 ; ring
+  · convert dvd_add ((hNM.trans (dvd_mul_right M c)).trans hd) hd0 using 1 ; ring
 
 end
 
 section
-open ActualEisensteinCubic CubicEisenstein CubicJacobiGlobal CubicKubota ShortDraftCusp
+open CubicEisenstein CubicJacobiGlobal CubicKubota ShortDraftCusp
 local notation "Eis" => ActualEisensteinCubic.O
 
 def controlledCompletionMatrix (a b c d:Eis) (hdet:a*d-b*c=1) : SL(2,Eis) :=
@@ -195,7 +122,7 @@ def controlledCompletionMatrix (a b c d:Eis) (hdet:a*d-b*c=1) : SL(2,Eis) :=
 
 end
 
-open ActualEisensteinCubic CubicEisenstein CubicJacobiGlobal
+open CubicEisenstein CubicJacobiGlobal
 local notation "Eis" => ActualEisensteinCubic.O
 
 theorem exists_primary_numerator_sector_completions {ι Q:Type*}
@@ -209,7 +136,6 @@ theorem exists_primary_numerator_sector_completions {ι Q:Type*}
       (∀i,a i*d i-b i*(c*r i)=1) ∧ (∀i,(9:Eis)∣b i) ∧ (∀i,(3:Eis)∣d i-1) ∧
       ∀i,(!![a i,b i;c*r i,d i]:Matrix (Fin 2) (Fin 2) Eis).map
         (Ideal.Quotient.mk (Ideal.span {M}))=C (sector i) := by
-  have h3M:(3:Eis)∣M:=(show (3:Eis)∣9 from ⟨3,by norm_num⟩).trans h9M
   have hlocal (q:Q) :
       ∃C:Matrix (Fin 2) (Fin 2) (Eis⧸Ideal.span {M}),
       ∀i,sector i=q→∃b d:Eis,a i*d-b*(c*r i)=1 ∧ (9:Eis)∣b ∧ (3:Eis)∣d-1 ∧
@@ -224,9 +150,9 @@ theorem exists_primary_numerator_sector_completions {ι Q:Type*}
       refine ⟨(!![a j,b0;c*r j,d0]:Matrix (Fin 2) (Fin 2) Eis).map
         (Ideal.Quotient.mk (Ideal.span {M})),?_⟩
       intro i hi
-      have hs:sector i=sector j:=hi.trans hj.symm
+      have hs :=hi.trans hj.symm
       obtain ⟨b,d,hdet,_,hb,hd,hmat⟩:=exists_fixed_matrix_completion_controlled
-        9 3 M c (a j) (r j) b0 d0 0 1 hc h9M h3M hdet0 (by simpa using hb0) hd0
+        9 3 M c (a j) (r j) b0 d0 0 1 hc h9M ((show (3:Eis)∣9 from ⟨3,by norm_num⟩).trans h9M) hdet0 (by simpa using hb0) hd0
         (a i) (r i) (ha i j hs) (hrr i j hs) (hr i) (hcop i).of_mul_right_right
       exact ⟨b,d,hdet,by simpa using hb,hd,hmat⟩
     · refine ⟨0,?_⟩
@@ -247,8 +173,6 @@ theorem exists_primary_denominator_sector_completions {ι Q:Type*}
       (∀i,a i*d i-b i*(c*r i)=1) ∧ (∀i,(3:Eis)∣b i+1) ∧ (∀i,(9:Eis)∣d i) ∧
       ∀i,(!![a i,b i;c*r i,d i]:Matrix (Fin 2) (Fin 2) Eis).map
         (Ideal.Quotient.mk (Ideal.span {M}))=C (sector i) := by
-  have hc:c≠0:=primary_ne_zero c hcPrimary
-  have h3M:(3:Eis)∣M:=(show (3:Eis)∣9 from ⟨3,by norm_num⟩).trans h9M
   have hlocal (q:Q) :
       ∃C:Matrix (Fin 2) (Fin 2) (Eis⧸Ideal.span {M}),
       ∀i,sector i=q→∃b d:Eis,a i*d-b*(c*r i)=1 ∧ (3:Eis)∣b+1 ∧ (9:Eis)∣d ∧
@@ -263,9 +187,9 @@ theorem exists_primary_denominator_sector_completions {ι Q:Type*}
       refine ⟨(!![a j,b0;c*r j,d0]:Matrix (Fin 2) (Fin 2) Eis).map
         (Ideal.Quotient.mk (Ideal.span {M})),?_⟩
       intro i hi
-      have hs:sector i=sector j:=hi.trans hj.symm
+      have hs :=hi.trans hj.symm
       obtain ⟨b,d,hdet,_,hb,hd,hmat⟩:=exists_fixed_matrix_completion_controlled
-        3 9 M c (a j) (r j) b0 d0 (-1) 0 hc h3M h9M hdet0
+        3 9 M c (a j) (r j) b0 d0 (-1) 0 (primary_ne_zero c hcPrimary) ((show (3:Eis)∣9 from ⟨3,by norm_num⟩).trans h9M) h9M hdet0
         (by simpa using hb0) (by simpa using hd0)
         (a i) (r i) (ha i j hs) (hrr i j hs) (hr i) (hcop i).of_mul_right_right
       exact ⟨b,d,hdet,by simpa using hb,by simpa using hd,hmat⟩
@@ -280,9 +204,8 @@ theorem exists_primary_denominator_sector_completions {ι Q:Type*}
 end ShortDraftCRT
 
 namespace CubicEisenstein
-open scoped Classical BigOperators ContDiff MatrixGroups
-
 open CompletedGauss CompletedDyadic
+open scoped MatrixGroups
 
 theorem sum_smoothedKernel_common_cusp {ι:Type*} [Fintype ι]
     (d:ι→SourceCuspDatum) (w:ι→ℂ) (j:Fin 3) (Q:ℝ)
@@ -319,23 +242,19 @@ theorem sum_smoothedKernel_common_cusp {ι:Type*} [Fintype ι]
   rw [Finset.mul_sum,Finset.mul_sum]
   apply Finset.sum_congr rfl
   intro i hi
-  have hn:=(d i).smoothedFullCoefficient_normalization p
-  dsimp only [F]
   calc
     _=w i*(((d i).multiplier*((d i).heightScale:ℂ)*(sourceCuspScale (d i).index:ℂ)^2)*
       sourceCuspRadialCoefficient (d i).index (d i).dualPoint (thetaFullFrequency p))*
       CubicReflectionKernel.paperKernel (Vstar W)
         (X*sourceCuspRadialLength (thetaFullFrequency p)/
           (27*(sourceCuspScale (d i).index)^2*(d i).heightScale^2)):=by ring
-    _=_:=by rw [hn,hj i,hQ i]; ring
+    _=_:=by rw [((d i).smoothedFullCoefficient_normalization p),hj i,hQ i]; ring
 
 end CubicEisenstein
 
-open scoped Classical BigOperators
 
 namespace CanonicalRowCompletion
-open ActualEisensteinCubic CanonicalQuadraticSieve ConcretePrimeRowBridge
-open UniqueFactorizationMonoid
+open CanonicalQuadraticSieve ConcretePrimeRowBridge
 local notation "Eis" => ActualEisensteinCubic.O
 
 def coprimalityMask (m:Eis) : Eis→*ℂ where
@@ -369,8 +288,7 @@ lemma idealRowHom_prime_sixth_mask (m:Eis) (P:Ideal Eis) [P.IsMaximal] (hg:lambd
     idealRowHom (m^6) P=if IsCoprime P (Ideal.span {m}) then 1 else 0 := by
   rw [idealRowHom_prime _ P hg]
   have hm:=canonicalSextic_sixth_power_mask P hg m
-  rw [hm]
-  rw [SixthPowerAverage.prime_coprime_span_iff]
+  rw [hm, SixthPowerAverage.prime_coprime_span_iff]
   by_cases hm:m∈P <;> simp [hm]
 
 theorem idealRowHom_sixth_mask (m:Eis) (I:Ideal Eis) (hI:Supported I) :
@@ -411,13 +329,12 @@ lemma rowTwist_extract_sixth_mask (Ψ:Eis→*ℂ) (m f z n:Eis)
 
 end CanonicalRowCompletion
 
-open scoped BigOperators Classical MatrixGroups Matrix
+open scoped MatrixGroups Matrix
 
 namespace ShortDraftCusp
 
 section
-open ActualEisensteinCubic CubicKubota CubicEisenstein ConcreteTraceCRT CubicJacobiGlobal
-open CompletedGauss CanonicalRowCompletion
+open CubicKubota CubicEisenstein CubicJacobiGlobal CompletedGauss CanonicalRowCompletion
 local notation "Eis" => ActualEisensteinCubic.O
 
 theorem embedded_symbol_product {ι : Type*} [Fintype ι]
@@ -438,7 +355,7 @@ theorem conjugate_symbol_product {ι : Type*} [Fintype ι]
   rw [embedded_symbol_product p hg a,star_prod]
   apply Finset.prod_congr rfl
   intro i hi
-  rw [star_pow,MulChar.star_apply',MulChar.pow_apply' _ (by decide : (2:ℕ)≠0)]
+  rw [star_pow,MulChar.star_apply',MulChar.pow_apply' _ (by decide : 2≠0)]
 
 theorem conjugate_symbol_product_frequency {ι : Type*} [Fintype ι]
     (p : ι→Eis) [∀i,(Ideal.span {p i}).IsMaximal]
@@ -453,7 +370,7 @@ theorem conjugate_symbol_product_frequency {ι : Type*} [Fintype ι]
 
 end
 
-open ActualEisensteinCubic CubicEisenstein ConcreteTraceCRT FiniteGaussPhase
+open CubicEisenstein FiniteGaussPhase
 local notation "Eis" => ActualEisensteinCubic.O
 
 lemma A4_field_inverse {F : Type*} [Field F] (a d B : F) (σ ε : Fˣ) (h x : F)
@@ -463,10 +380,6 @@ lemma A4_field_inverse {F : Type*} [Field F] (a d B : F) (σ ε : Fˣ) (h x : F)
     intro hz
     rw [ha,hz,mul_zero,zero_mul] at had
     exact zero_ne_one had
-  have hB : B≠0 := by
-    intro hz
-    rw [hz,zero_mul,zero_mul] at hε
-    exact neg_ne_zero.mpr (one_ne_zero : (1:F)≠0) hε.symm
   have hd : d=((σ:F)*h)⁻¹ := eq_inv_of_mul_eq_one_right (ha ▸ had)
   have he : (ε:F)=-(B*(σ:F))⁻¹ := by
     have heq : (B*(σ:F))*(-(ε:F))=1 := by linear_combination -hε
@@ -493,13 +406,11 @@ lemma A4_active_local {ι : Type*} [Fintype ι] (p : ι→Eis)
         (Ideal.Quotient.mk (Ideal.span {p i}) (ramifiedTraceLambda^3*c0*cofactor p i))⁻¹*
         Ideal.Quotient.mk (Ideal.span {p i}) x =
       ((ε i:Eis⧸Ideal.span {p i})*Ideal.Quotient.mk (Ideal.span {p i}) x)*(h i)⁻¹ := by
-  have hz : Ideal.Quotient.mk (Ideal.span {p i}) (∏k,p k)=0 :=
-    Ideal.Quotient.eq_zero_iff_mem.mpr (Ideal.mem_span_singleton.mpr
+  have hz := Ideal.Quotient.eq_zero_iff_mem.mpr (Ideal.mem_span_singleton.mpr
       (Finset.dvd_prod_of_mem p (Finset.mem_univ i)))
   have had : Ideal.Quotient.mk (Ideal.span {p i}) a*
       Ideal.Quotient.mk (Ideal.span {p i}) d=1 := by
-    have he := congrArg (Ideal.Quotient.mk (Ideal.span {p i})) hdet
-    simpa only [map_sub,map_mul,map_one,hz,mul_zero,sub_zero] using he
+    simpa only [map_sub,map_mul,map_one,hz,mul_zero,sub_zero] using (congrArg (Ideal.Quotient.mk (Ideal.span {p i})) hdet)
   exact A4_field_inverse _ _ _ (σ i) (ε i) (h i) _ had (ha i) (hε i)
 
 lemma A4_complement_inverse {ι : Type*} [Fintype ι] (p : ι→Eis)

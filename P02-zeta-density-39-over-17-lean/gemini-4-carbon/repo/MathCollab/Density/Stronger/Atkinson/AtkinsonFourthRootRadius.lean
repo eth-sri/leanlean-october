@@ -53,11 +53,9 @@ theorem atkinsonSymmetricRadiusScale_balance {T G : ℝ} (hT : 1 ≤ T)
       G*(atkinsonSymmetricRadiusScale T G)^2 ≤ Real.sqrt T ∧
       (atkinsonSymmetricRadiusScale T G)^4 ≤ Real.sqrt T := by
   have hT0 : 0 < T := by linarith
-  have hG : 0 < G := (Real.rpow_pos_of_pos hT0 _).trans_le hlower
-  have hs := Real.sqrt_nonneg T
+  have hG := (Real.rpow_pos_of_pos hT0 _).trans_le hlower
   have hX := atkinsonSymmetricRadiusScale_pos hT0 hG
   have hXsq := atkinsonSymmetricRadiusScale_sq hT0 hG
-  have hX4 := atkinsonSymmetricRadiusScale_fourth hT0 hG
   have hq : (T^(1/4 : ℝ))^2 = Real.sqrt T := by
     rw [← Real.rpow_natCast,← Real.rpow_mul hT0.le,Real.sqrt_eq_rpow]
     norm_num
@@ -71,9 +69,9 @@ theorem atkinsonSymmetricRadiusScale_balance {T G : ℝ} (hT : 1 ≤ T)
       rw [hXsq]
       exact (le_div_iff₀ hG).2 (by simpa using hupper)
     nlinarith
-  · rw [hX4]
+  · rw [(atkinsonSymmetricRadiusScale_fourth hT0 hG)]
     apply (div_le_iff₀ (sq_pos_of_pos hG)).2
-    nlinarith [mul_le_mul_of_nonneg_left hGsq hs,Real.sq_sqrt hT0.le]
+    nlinarith [mul_le_mul_of_nonneg_left hGsq (Real.sqrt_nonneg T),Real.sq_sqrt hT0.le]
 
 theorem exists_atkinsonPowerIntegral_fourthRoot_width (α : ℝ) :
     ∃ C : ℝ, 0 < C ∧ ∀ T G L b : ℝ, 1 ≤ T →
@@ -85,11 +83,9 @@ theorem exists_atkinsonPowerIntegral_fourthRoot_width (α : ℝ) :
   refine ⟨C,hC,?_⟩
   intro T G L b hT hlower hupper hL hwidth hb
   have hT0 : 0 < T := by linarith
-  have hG : 0 < G := (Real.rpow_pos_of_pos hT0 _).trans_le hlower
-  have hG1 : 1 ≤ G := (Real.one_le_rpow hT (by norm_num : (0:ℝ) ≤ 1/4)).trans hlower
   have hGT : G^2 ≤ 2*T := by nlinarith [Real.sq_sqrt hT0.le]
   obtain ⟨hX,hGX,hXS⟩ := atkinsonSymmetricRadiusScale_balance hT hlower hupper
-  have h := hbound T G L b (atkinsonSymmetricRadiusScale T G) hT hG1 hGT hL hwidth
+  have h := hbound T G L b (atkinsonSymmetricRadiusScale T G) hT ((Real.one_le_rpow hT (by norm_num : (0:ℝ) ≤ 1/4)).trans hlower) hGT hL hwidth
     hX hGX hXS hb
   apply h.trans_eq
   rw [Real.rpow_sub hT0]
@@ -111,6 +107,6 @@ theorem exists_atkinsonPowerIntegral_fourthRoot_pair (α : ℝ) :
   intro T G L hT hlower hupper hL hwidth n hn
   have hb := sqrt_nat_small_frequency (by linarith : 0 < T) n hn
   exact ⟨hbound T G L (Real.sqrt n) hT hlower hupper hL hwidth hb,
-    hbound T G L (-Real.sqrt n) hT hlower hupper hL hwidth (by simpa only [abs_neg])⟩
+    hbound T G L (-Real.sqrt n) hT hlower hupper hL hwidth (by simpa)⟩
 
 end MathCollab.Density.Stronger.Atkinson

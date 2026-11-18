@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.ThirdDerivativeRpowScale
 
 @[expose] public section
@@ -51,11 +60,9 @@ theorem small_block_third_derivative_budget {M H C lam : ℝ}
     (hfirst : H^7*lam ≤ 1) (hsecond : H^5 ≤ M^3*lam) :
     H*(1+20*C*(M*(4*H*lam)^((1:ℝ)/6)+
       Real.sqrt M*(2*H*lam)^(-(1:ℝ)/6))) ≤ 61*C*M := by
-  have h1 := mul_le_mul_of_nonneg_left (small_block_sixth_root hH.le hlam.le hfirst) hM
-  have h2 := small_block_inverse_sixth_root hM hH hlam hsecond
   have h3 := mul_le_mul_of_nonneg_right hC hM
-  have hsum := mul_le_mul_of_nonneg_left (add_le_add h1 h2)
-    (show 0 ≤ 20*C by positivity)
+  have hsum := mul_le_mul_of_nonneg_left (add_le_add (mul_le_mul_of_nonneg_left (small_block_sixth_root hH.le hlam.le hfirst) hM) (small_block_inverse_sixth_root hM hH hlam hsecond))
+    (by positivity)
   nlinarith
 
 end TaoTrudgianYang2025

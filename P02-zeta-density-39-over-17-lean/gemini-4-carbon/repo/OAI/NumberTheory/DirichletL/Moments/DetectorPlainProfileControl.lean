@@ -9,8 +9,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentDetectorPlainProfileControl
-open CenteredMomentDetectorEnergyInitialState CenteredMomentDetectorDictionary
-open CenteredMomentFiniteProfileExceptional
+open CenteredMomentDetectorEnergyInitialState CenteredMomentDetectorDictionary CenteredMomentFiniteProfileExceptional
 
 theorem paired_control (S:Finset (ℕ×ℕ)):
     ∃J:ℕ,∃C:ℝ,0<C ∧ ∀reverse:Bool,∀j k:ℕ,j+k≤2 →
@@ -19,18 +18,13 @@ theorem paired_control (S:Finset (ℕ×ℕ)):
   obtain ⟨J,C,hC,h⟩:=detectorSchwartz_uniform S
   refine ⟨4*J,C^4,by positivity,?_⟩
   intro reverse j k hjk σ hσ t
-  have hj:=h reverse j (by omega) σ hσ t
-  have hk:=h reverse k (by omega) σ hσ t
   have hp:(detectorProfiles reverse j k σ t).control S≤(C*(1+‖t‖)^J)^2:=by
     simpa only [detectorProfiles,Profiles.control,sourceControl,Fin.zero_eta,ite_true,
       show ¬((1:Fin 2)=0) by decide,ite_false,pow_two] using
-      mul_le_mul hj hk (sourceControl_nonneg S (detectorSchwartz reverse k σ t)) (by positivity)
-  have hs:=pow_le_pow_left₀ (Profiles.control_nonneg _ _) hp 2
-  calc
-    _≤((C*(1+‖t‖)^J)^2)^2:=hs
-    _=C^4*(1+‖t‖)^(4*J):=by
+      mul_le_mul (h reverse j (by omega) σ hσ t) (h reverse k (by omega) σ hσ t) (sourceControl_nonneg S (detectorSchwartz reverse k σ t)) (by positivity)
+  exact ((pow_le_pow_left₀ (Profiles.control_nonneg _ _) hp 2)).trans_eq (by
       rw [←pow_mul,mul_pow,←pow_mul]
-      congr 2 ; omega
+      congr 2 ; omega)
 
 theorem source_height_factor (S:Finset (ℕ×ℕ)):
     ∃J:ℕ,∃C:ℝ,0<C ∧ ∀degree:ℕ,∀reverse:Bool,∀j k:ℕ,j+k≤2 →

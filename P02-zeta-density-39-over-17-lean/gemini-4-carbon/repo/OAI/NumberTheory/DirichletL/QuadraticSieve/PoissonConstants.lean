@@ -9,76 +9,12 @@ noncomputable section
 
 namespace CanonicalQuadraticSieve
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 
 section
 
-open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic IdealCoprimeSieveOperator DivisorBlockCauchy EisensteinSchwartzPoisson
+open IdealCoprimeSieveOperator DivisorBlockCauchy EisensteinSchwartzPoisson
 
 theorem list_exists_positive_bound (xs : List ℝ) :
     ∃ H : ℝ, 1≤H ∧ ∀x∈xs, x≤H := by
@@ -359,12 +295,11 @@ theorem selectedPoisson_upper (C C1 M X η : ℝ)
   have hX0 : 0<X := by linarith
   have hP : 1≤M*X := by nlinarith
   have hP0 : 0<M*X := by positivity
-  have hR : 1≤(M*X)^η := Real.one_le_rpow hP hη
+  have hR := Real.one_le_rpow hP hη
   have hT : 4≤selectedPoissonT C M X η := by dsimp [selectedPoissonT]; nlinarith
   refine ⟨hT,by dsimp [selectedPoissonT]; nlinarith,?_⟩
   have hXP : X≤M*X := by nlinarith
-  have hfrac : X^2/M≤(M*X)^2 :=
-    (div_le_self (sq_nonneg _) hM).trans (pow_le_pow_left₀ hX0.le hXP 2)
+  have hfrac := (div_le_self (sq_nonneg _) hM).trans (pow_le_pow_left₀ hX0.le hXP 2)
   have hrpow : (M*X)^η≤M*X := by
     simpa only [Real.rpow_one] using Real.rpow_le_rpow_of_exponent_le hP hη1
   calc
@@ -427,7 +362,7 @@ theorem power_cutoff_dominates (P T η : ℝ) (l : ℕ)
     P^4≤T^l := by
   have hp0 : 0<P := by linarith
   calc
-    P^4 = P^(4:ℝ) := by rw [Real.rpow_ofNat]
+    P^4 = P^4 := by rw [Real.rpow_ofNat]
     _ ≤ P^(η*l) := Real.rpow_le_rpow_of_exponent_le hP hpow
     _ = (P^η)^l := by rw [Real.rpow_mul hp0.le,Real.rpow_natCast]
     _ ≤ T^l := pow_le_pow_left₀ (Real.rpow_nonneg hp0.le _) hT l
@@ -438,10 +373,9 @@ theorem poisson_truncation_small (P T η K M N C1 : ℝ) (l : ℕ)
     (hKP : K≤C1*P^3) (hMP : M≤P) (hNP : N≤P) :
     K*M/T^l≤C1 ∧ K*N/T^l≤C1 := by
   have hp0 : 0<P := by linarith
-  have htpos : 0<T := lt_of_lt_of_le (Real.rpow_pos_of_pos hp0 _) hT
   have hcut := power_cutoff_dominates P T η l hP hT hpow
   have hb (Y : ℝ) (hY : 0≤Y) (hYP : Y≤P) : K*Y/T^l≤C1 := by
-    apply (div_le_iff₀ (pow_pos htpos _)).mpr
+    apply (div_le_iff₀ (pow_pos (lt_of_lt_of_le (Real.rpow_pos_of_pos hp0 _) hT) _)).mpr
     calc
       K*Y ≤ (C1*P^3)*P := by gcongr
       _ = C1*P^4 := by ring
@@ -493,13 +427,12 @@ theorem selectedPoisson_tail_shape (C B M X q η : ℝ) (A : ℕ)
       _ ≤ (M*q)*(B*(M*X)^2) := by nlinarith [show 0≤B*(M*X)^2 by positivity]
   have hu : (M*X)^η≤1+(M/((B*q)*(X/q)*(X/q)))*selectedPoissonK C M X η := by
     rw [selectedPoisson_radial_identity C B M X q η hM0 hX0 hq0 hB0]
-    have hp : 0≤(M*X)^η := Real.rpow_nonneg (by positivity) _
     have hb : (M*X)^η≤selectedPoissonT C M X η*q/B := by
       apply (le_div_iff₀ hB0).mpr
       dsimp [selectedPoissonT]
       calc
         (M*X)^η*B = B*(M*X)^η := by ring
-        _ ≤ C*(M*X)^η := mul_le_mul_of_nonneg_right hC hp
+        _ ≤ C*(M*X)^η := mul_le_mul_of_nonneg_right hC (Real.rpow_nonneg (by positivity) _)
         _ ≤ C*(M*X)^η*q := le_mul_of_one_le_right (by positivity) hq
     linarith
   exact poisson_tail_abstract B (M*X) _ _ η M A hB hP hM0.le ht hu hA
@@ -513,7 +446,7 @@ theorem selectedPoisson_principal_shape (C M X N η α : ℝ)
   have hM0 : 0<M := by linarith
   have hX0 : 0<X := by linarith
   have hP : 1≤M*X := by nlinarith
-  have hpow : 1≤(M*X)^η := Real.one_le_rpow hP hη
+  have hpow := Real.one_le_rpow hP hη
   have hT : 1≤selectedPoissonT C M X η := by dsimp [selectedPoissonT]; nlinarith
   have hT0 : 0<selectedPoissonT C M X η := by linarith
   have hK0 : 0<selectedPoissonK C M X η := by unfold selectedPoissonK; positivity
@@ -544,8 +477,7 @@ theorem selectedPoisson_principal_shape (C M X N η α : ℝ)
 
 end
 
-open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic IdealCoprimeSieveOperator DivisorBlockCauchy EisensteinSchwartzPoisson
+open IdealCoprimeSieveOperator DivisorBlockCauchy EisensteinSchwartzPoisson
 
 def poissonShape (M X α : ℝ) : ℝ := M+X+X^(2*α-1)*M^(1-α)
 def poissonShapeConstant (B C1 : ℝ) : ℝ := 2+4*C1^3+B^2+C1

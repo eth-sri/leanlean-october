@@ -28,8 +28,7 @@ theorem localCorrection_eq_normalization (η : Character) (u : FreeRow) (P : Pri
 lemma lift_outside_hasProd (S : Finset (Ideal O)) (f : PrimeIdeal→ℂ) (a : ℂ)
     (h : HasProd (fun P : {P : PrimeIdeal // P.val∉S}=>f P.val) a) :
     HasProd (fun P : PrimeIdeal=>if P.val∈S then 1 else f P) a := by
-  have hh := (hasProd_subtype_iff_mulIndicator (s:={P : PrimeIdeal | P.val∉S}) (f:=f)).mp h
-  convert hh using 1
+  convert ((hasProd_subtype_iff_mulIndicator (s:={P : PrimeIdeal | P.val∉S}) (f:=f)).mp h) using 1
   funext P
   simp only [Set.mulIndicator,Set.mem_ofPred_eq]
   split_ifs <;> simp_all
@@ -45,8 +44,7 @@ theorem localNormalization_hasProd (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P
     (LFunction_ne_zero_of_one_lt_re (fixedSourcePrincipal S hS) hz)
   have hW := (rowCharacter_hasProd S hS hbad u w hw).inv₀
     (LFunction_ne_zero_of_one_lt_re (rowCharacter S hS u) hw)
-  have hD := targetRow_hasProd S hS hbad η u x hx
-  simpa only [localNormalization,inv_inv,div_eq_mul_inv] using (hZ.mul hW).mul hD
+  simpa only [localNormalization,inv_inv,div_eq_mul_inv] using (hZ.mul hW).mul (targetRow_hasProd S hS hbad η u x hx)
 
 end SevenEighths.ProbeHighRowFamily
 

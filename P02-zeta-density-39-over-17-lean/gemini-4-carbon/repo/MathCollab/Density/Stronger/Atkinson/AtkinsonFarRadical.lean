@@ -26,10 +26,8 @@ namespace MathCollab.Density.Stronger.Atkinson
 theorem atkinson_far_inverse_sqrt {Q d lam : ℝ}
     (hQ : 0 < Q) (hd : 0 < d) (hlam : d/(320*Q) ≤ lam) :
     1/Real.sqrt lam ≤ 20*Real.sqrt (Q/d) := by
-  have hi := one_div_le_one_div_of_le (by positivity : 0 < d/(320*Q)) hlam
   have hi' : 1/lam ≤ 400*(Q/d) := by
-    have h := hi.trans_eq (by rw [one_div_div])
-    have h' : 1/lam ≤ 320*(Q/d) := h.trans_eq (by ring)
+    have h' : 1/lam ≤ 320*(Q/d) := ((one_div_le_one_div_of_le (by positivity : 0 < d/(320*Q)) hlam).trans_eq (by rw [one_div_div])).trans_eq (by ring)
     nlinarith [div_pos hQ hd]
   calc
     _ = Real.sqrt (1/lam) := by rw [Real.sqrt_div (by norm_num), Real.sqrt_one]
@@ -40,11 +38,9 @@ theorem atkinson_far_second_factor {Q d lam : ℝ}
     (hQ : 0 < Q) (hd : 0 < d) (hdQ : d ≤ Q) (hlam : d/(320*Q) ≤ lam) :
     2*Real.pi/Real.sqrt lam+2*(Real.sqrt lam/lam+1) ≤
       202*Real.sqrt (Q/d) := by
-  have hi := atkinson_far_inverse_sqrt hQ hd hlam
-  have hy : 1 ≤ Real.sqrt (Q/d) :=
-    Real.one_le_sqrt.mpr ((le_div_iff₀ hd).mpr (by simpa using hdQ))
+  have hy := Real.one_le_sqrt.mpr ((le_div_iff₀ hd).mpr (by simpa using hdQ))
   have hc : 2*Real.pi+2 ≤ 10 := by linarith [Real.pi_lt_four]
-  have hm := mul_le_mul hc hi (by positivity : 0 ≤ 1/Real.sqrt lam) (by norm_num : (0:ℝ) ≤ 10)
+  have hm := mul_le_mul hc (atkinson_far_inverse_sqrt hQ hd hlam) (by positivity : 0 ≤ 1/Real.sqrt lam) (by norm_num : (0:ℝ) ≤ 10)
   calc
     _ = (2*Real.pi+2)*(1/Real.sqrt lam)+2 := by rw [Real.sqrt_div_self']; ring
     _ ≤ 10*(20*Real.sqrt (Q/d))+2 := by linarith
@@ -72,8 +68,7 @@ theorem atkinson_far_min_bProcess {M R d lam upper : ℝ}
   · have hsecond := atkinson_far_second_factor hQ hd hdQ hlam
     have hdiv := div_le_self (mul_nonneg hM.le hupper0)
       (show (1:ℝ) ≤ 2*Real.pi by linarith [Real.pi_gt_three])
-    have hmul := mul_le_mul_of_nonneg_left hupper hM.le
-    have hmul' : M*upper ≤ 4*(d/R) := hmul.trans_eq (by field_simp)
+    have hmul' : M*upper ≤ 4*(d/R) := (mul_le_mul_of_nonneg_left hupper hM.le).trans_eq (by field_simp)
     have hr : 1 ≤ d/R := (le_div_iff₀ hR).mpr (by simpa using hRd)
     have hfirst : M*upper/(2*Real.pi)+2 ≤ 6*(d/R) := by linarith
     have hprod := mul_le_mul hfirst hsecond (by positivity)

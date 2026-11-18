@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.ExponentPairWeylSum
 
 @[expose] public section
@@ -34,8 +43,7 @@ theorem sargosPaddedSequence_zero (a : ℤ → ℂ) (M : ℕ) {n : ℤ}
 theorem sargos_even_shift_sum (a : ℤ → ℂ) (M H h : ℕ) (hh : h < H) :
     (∑ n ∈ Finset.Ico (-(2*(H:ℤ))) M, sargosPaddedSequence a M (n+2*h)) =
       ∑ n ∈ Finset.Ico (0:ℤ) M, a n := by
-  have he := sum_paddedShift_eq a M (2*H) (2*h) (by omega)
-  simpa only [paddedShift,sargosPaddedSequence,Nat.cast_mul,Nat.cast_ofNat] using he
+  simpa only [paddedShift,sargosPaddedSequence,Nat.cast_mul,Nat.cast_ofNat] using (sum_paddedShift_eq a M (2*H) (2*h) (by omega))
 
 theorem sargos_even_shift_averaging (a : ℤ → ℂ) (M H : ℕ) :
     (H:ℝ)^2*‖∑ n ∈ Finset.Ico (0:ℤ) M, a n‖^2 ≤
@@ -45,7 +53,6 @@ theorem sargos_even_shift_averaging (a : ℤ → ℂ) (M H : ℕ) :
   let U : ℤ → ℂ := fun n => ∑ h ∈ Finset.range H, sargosPaddedSequence a M (n+2*h)
   have hs : (∑ n ∈ Finset.Ico (-(2*(H:ℤ))) M, U n) =
       H • (∑ n ∈ Finset.Ico (0:ℤ) M, a n) := by
-    dsimp [U]
     rw [Finset.sum_comm]
     calc
       _ = ∑ _h ∈ Finset.range H, ∑ n ∈ Finset.Ico (0:ℤ) M, a n := by

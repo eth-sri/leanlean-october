@@ -10,10 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentSourceBlockWindows
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondSectorColumns
-open CenteredMomentCanonicalFirst CenteredMomentSectorLocalization
-open CenteredMomentSourceDyadicShell CenteredMomentHeckeColumnWindow
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss CenteredMomentSecondPhysicalBlock CenteredMomentSecondSectorColumns CenteredMomentCanonicalFirst CenteredMomentSectorLocalization CenteredMomentSourceDyadicShell CenteredMomentHeckeColumnWindow
 local notation "O" => ActualEisensteinCubic.O
 
  theorem physicalBlock_column_witnesses (η:Character) (t:ℝ)
@@ -29,15 +26,12 @@ local notation "O" => ActualEisensteinCubic.O
   split_ifs at hz with hpart
   · obtain ⟨I,hI,hIs⟩:=Finset.exists_ne_zero_of_sum_ne_zero hz
     obtain ⟨J,hJ,hterm⟩:=Finset.exists_ne_zero_of_sum_ne_zero hIs
-    have hcoeff: (β (C*I)*heightCoeff η t I)*star (β (D*J)*heightCoeff η t J)≠0:=
-      (mul_ne_zero_iff.mp (mul_ne_zero_iff.mp hterm).1).2
-    have hl:β (C*I)≠0:=(mul_ne_zero_iff.mp (mul_ne_zero_iff.mp hcoeff).1).1
+    have hcoeff := (mul_ne_zero_iff.mp (mul_ne_zero_iff.mp hterm).1).2
     have hr:β (D*J)≠0:=by
       intro hh
       exact hcoeff (by rw [hh,zero_mul,star_zero,mul_zero])
-    have hk: ((_:ℂ)*((_:ℝ):ℂ))≠0:=(mul_ne_zero_iff.mp hterm).2
-    have hw: (_:ℝ)≠0:=Complex.ofReal_ne_zero.mp (mul_ne_zero_iff.mp hk).2
-    exact ⟨I,J,hl,hr,(mul_ne_zero_iff.mp (mul_ne_zero_iff.mp hw).1).2,(mul_ne_zero_iff.mp hw).2⟩
+    have hw :=Complex.ofReal_ne_zero.mp (mul_ne_zero_iff.mp ((mul_ne_zero_iff.mp hterm).2)).2
+    exact ⟨I,J,((mul_ne_zero_iff.mp (mul_ne_zero_iff.mp hcoeff).1).1),hr,(mul_ne_zero_iff.mp (mul_ne_zero_iff.mp hw).1).2,(mul_ne_zero_iff.mp hw).2⟩
   · exact False.elim (hz rfl)
 
  theorem physicalBlock_scale_lower (η:Character) (t:ℝ)

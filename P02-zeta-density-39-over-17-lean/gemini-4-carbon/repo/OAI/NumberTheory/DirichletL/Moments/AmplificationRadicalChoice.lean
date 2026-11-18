@@ -7,20 +7,10 @@ public import OAI.NumberTheory.DirichletL.Moments.AmplifiedRetainedRadius
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
+open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentAmplificationRadicalChoice
-open HeckeFamily HeckeRowClosure CanonicalQuadraticSieve ConcreteTraceCRT
-open ConcretePrimeRowBridge CompletedGauss RayFourExpansion
-open CenteredMomentFirstAmplificationChoice CenteredMomentAmplificationRadicalFamily
-open CenteredMomentAmplifiedRetainedRadius CenteredMomentAmplificationActiveFactor
-open CenteredMomentPrimePool CenteredMomentPrimeElements CenteredMomentAmplificationEligibility
-open CenteredMomentAmplificationEnergy CenteredMomentGaussEnergy
-open CenteredMomentSourceRow CenteredMomentGaussNormalization
-open CenteredMomentAmplificationErrorEnergy CenteredMomentAmplificationGlobal
-open CenteredMomentSectorLocalization CenteredMomentOriginalChildEnergy
-open CenteredMomentFirstScale
-open CenteredMomentChildRows CenteredMomentHeckeExpansion
+open HeckeFamily HeckeRowClosure CanonicalQuadraticSieve ConcreteTraceCRT ConcretePrimeRowBridge CompletedGauss RayFourExpansion CenteredMomentFirstAmplificationChoice CenteredMomentAmplificationRadicalFamily CenteredMomentAmplifiedRetainedRadius CenteredMomentAmplificationActiveFactor CenteredMomentPrimePool CenteredMomentPrimeElements CenteredMomentAmplificationEligibility CenteredMomentAmplificationEnergy CenteredMomentGaussEnergy CenteredMomentSourceRow CenteredMomentGaussNormalization CenteredMomentAmplificationErrorEnergy CenteredMomentAmplificationGlobal CenteredMomentSectorLocalization CenteredMomentOriginalChildEnergy CenteredMomentFirstScale CenteredMomentChildRows CenteredMomentHeckeExpansion
 local notation "O"=>ActualEisensteinCubic.O
 local instance {ι : Type*} : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
@@ -52,12 +42,9 @@ theorem exists_pool_error_families {ι : Type*} [Fintype ι]
   rw [←Finset.sum_coe_sort (elementPool P)]
   apply Finset.sum_le_sum
   intro p hp
-  have h0 := (hτ p 0).2 D hS hprime (hslot p p.property) t T Z sigma D0 cLog hT hZ hsigma j
-  have h5 := (hτ p 1).2 D hS hprime (hslot p p.property) t T Z sigma D0 cLog hT hZ hsigma j
-  have h6 := (hτ p 2).2 D hS hprime (hslot p p.property) t T Z sigma D0 cLog hT hZ hsigma j
   simpa only [errorEnergy,Finset.sum_add_distrib,Fin.sum_univ_three,
     show errorIndex 0=0 from rfl,show errorIndex 1=5 from rfl,show errorIndex 2=6 from rfl,Nat.reduceAdd] using
-    add_le_add (add_le_add h0 h5) h6
+    add_le_add (add_le_add ((hτ p 0).2 D hS hprime (hslot p p.property) t T Z sigma D0 cLog hT hZ hsigma j) ((hτ p 1).2 D hS hprime (hslot p p.property) t T Z sigma D0 cLog hT hZ hsigma j)) ((hτ p 2).2 D hS hprime (hslot p p.property) t T Z sigma D0 cLog hT hZ hsigma j)
 
 theorem eventually_original_source_amplification {ι : Type*} [Fintype ι]
     (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
@@ -104,10 +91,9 @@ theorem eventually_original_source_amplification {ι : Type*} [Fintype ι]
       (fun Q hQ => (hdata Q hQ).2.1) p hp
     exact original_slot_coprime D Z sigma b eta hZ.le hb hsep z hz hlen hsupp hslot hprime
       (Ideal.span {p}) (hdata _ hd.2.1).1 (hdata _ hd.2.1).2.2.1
-  have he := herr D hS hprime hcop t T Z sigma D0 cLog hT hZ hsigma.le j
   apply (hamp Finset.univ (sourceGenerator D.columns) (sourceGenerator_supported D.columns)
     (D.coefficient η m t T) D.R D.s hR0 hs0 hR hs j hK D0 cLog).trans
-  exact mul_le_mul_of_nonneg_left (add_le_add le_rfl he) (by positivity)
+  exact mul_le_mul_of_nonneg_left (add_le_add le_rfl (herr D hS hprime hcop t T Z sigma D0 cLog hT hZ hsigma.le j)) (by positivity)
 
 theorem eventually_original_amplification {ι : Type*} [Fintype ι]
     (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
@@ -199,8 +185,7 @@ theorem eventually_original_amplification_common {ι : Type*} [Fintype ι]
     I J E hE K X Tsec hK hX hsec j hj hMdyad
   let K0 := nominalLog I J E K X Z
   let kdyad := Real.logb Z (dyadicScale j)
-  have henclose : kdyad≤K0+frequencyLoss Z Csec xi :=
-    retained_nominal_upper I J E hE K X Z Csec Tsec xi hK hX hZ
+  have henclose := retained_nominal_upper I J E hE K X Z Csec Tsec xi hK hX hZ
       (zero_lt_one.trans_le hC) hsec j hj
   have hδ := frequencyLoss_nonneg Z Csec xi hZ hC hxi
   have he := henergy D hS hprime hsupp z hz hlen hR0 hs0 hR hs t T

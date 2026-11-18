@@ -51,8 +51,6 @@ def wooleyIntMatrixMod {r : ℕ} (A : Matrix (Fin r) (Fin r) ℤ) (q : ℕ) :
 theorem wooleyIntMatrixMod_det {r q : ℕ}
     (A : Matrix (Fin r) (Fin r) ℤ) :
     (A.det : ZMod q) = (wooleyIntMatrixMod A q).det := by
-  change (Int.castRingHom (ZMod q)) A.det =
-    ((Int.castRingHom (ZMod q)).mapMatrix A).det
   exact (Int.castRingHom (ZMod q)).map_det A
 
 /-- The paper's factorial scaling and row factorization, entry for entry. -/

@@ -24,15 +24,11 @@ theorem second_moment_quarter_shape {M T : ℝ} (hM : 0 ≤ M) (hT : 0 ≤ T) :
     (M ^ (36 / 5 : ℝ) + (2 * T) * M ^ (24 / 5 : ℝ)) ^ (1 / 4 : ℝ) ≤
       M ^ (9 / 5 : ℝ) + (2 : ℝ) ^ (1 / 4 : ℝ) *
         T ^ (1 / 4 : ℝ) * M ^ (6 / 5 : ℝ) := by
-  calc
-    _ ≤ (M ^ (36 / 5 : ℝ)) ^ (1 / 4 : ℝ) +
-        ((2 * T) * M ^ (24 / 5 : ℝ)) ^ (1 / 4 : ℝ) :=
-      Real.rpow_add_le_add_rpow (by positivity) (by positivity) (by norm_num) (by norm_num)
-    _ = _ := by
+  exact (Real.rpow_add_le_add_rpow (by positivity) (by positivity) (by norm_num) (by norm_num)).trans_eq (by
       rw [Real.mul_rpow (by positivity : 0 ≤ 2 * T) (by positivity),
         Real.mul_rpow (by norm_num : (0 : ℝ) ≤ 2) hT,
         ← Real.rpow_mul hM, ← Real.rpow_mul hM]
-      norm_num
+      norm_num)
 
 theorem energy_height_rpow {E C T : ℝ} (δ p : ℝ)
     (hE : 0 ≤ E) (hC : 0 ≤ C) (hT : 0 ≤ T) :

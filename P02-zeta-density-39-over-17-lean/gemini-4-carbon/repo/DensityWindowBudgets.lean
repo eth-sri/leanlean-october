@@ -3,7 +3,6 @@ public import FiniteCubicLargeValues
 public import DiscreteAdditiveEnergy
 public import GuthMaynard.Improvement.MomentScalarClosure
 public import GuthMaynard.Improvement.WeakShortDensity
-public import RefinedDensity
 
 @[expose] public section
 

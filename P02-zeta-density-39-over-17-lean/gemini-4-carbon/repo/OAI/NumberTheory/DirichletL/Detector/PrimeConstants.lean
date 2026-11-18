@@ -34,10 +34,9 @@ theorem localGamma_one_two_signal (p : O) (hp : p ≠ 0)
     (hprimary : goodLambda^2 ∣ p-1) :
     localGamma p hp hg 1 * localGamma p hp hg 2 =
       -FiniteGaussPhase.angularFactor p * MixedGaussConversion.localG p hp hg := by
-  have he := breveGamma1_gamma2_eq_neg_alpha_G (Ideal.span {p}) hg hc p rfl hp hprimary
   simpa only [localGamma, ConcreteBreveE.normalizedTraceGauss, pow_one,
     breveGamma1, breveGamma2, MixedGaussConversion.localG, FiniteGaussPhase.angularFactor,
-    neg_div] using he
+    neg_div] using (breveGamma1_gamma2_eq_neg_alpha_G (Ideal.span {p}) hg hc p rfl hp hprimary)
 
 lemma actualSextic_pow_six_mul_add (P : Ideal O) [P.IsMaximal]
     (hg : goodLambda ∉ P) (hc : ringChar (O ⧸ P) ≠ 2) (r j : ℕ) :

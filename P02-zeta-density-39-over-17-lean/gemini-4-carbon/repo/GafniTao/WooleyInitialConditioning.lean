@@ -463,8 +463,7 @@ def wooleyInitialNu (epsilon Lambda : ℝ) (H : ℕ) : ℕ :=
 theorem wooley_initialNu_lower
     {epsilon Lambda : ℝ} {H : ℕ} :
     4 * epsilon * (H : ℝ) / Lambda ≤
-      (wooleyInitialNu epsilon Lambda H : ℝ) := by
-  exact Nat.le_ceil _
+      (wooleyInitialNu epsilon Lambda H : ℝ) := Nat.le_ceil _
 
 /-- Quantitative absorption of the contracted copy of `U`. -/
 theorem wooley_absorb_contraction

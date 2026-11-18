@@ -35,11 +35,11 @@ theorem smoothLongZeroFinset_eventually_detects_mean {σ a δ η : ℝ}
         48*C*Real.sqrt (detectorX δ T)*Real.log T*weightedCriticalMean 128 ρ.im := by
   obtain ⟨C, hC, hcover⟩ := smooth_long_mean_or_short_powered_cover hw hδ hδ' hη 128 (by norm_num)
   refine ⟨C, hC, ?_⟩
-  filter_upwards [eventually_ge_atTop (0 : ℝ), hcover] with T hT hc
+  filter_upwards [eventually_ge_atTop 0, hcover] with T hT hc
   intro ρ hρ
   obtain ⟨hzmem, hnot⟩ := Finset.mem_sdiff.mp hρ
   obtain ⟨hz, hβ, hγ, hγ'⟩ := mem_zetaZeroFinset.mp hzmem
-  have habs : |ρ.im| = ρ.im := abs_of_nonneg (hT.trans hγ)
+  have habs := abs_of_nonneg (hT.trans hγ)
   rcases hc ρ hβ hz.2.2 (by rwa [habs]) (by rwa [habs]) hz.1 with hmean | hshort
   · exact hmean
   · exact False.elim (hnot (Finset.mem_filter.mpr ⟨hzmem, hshort⟩))

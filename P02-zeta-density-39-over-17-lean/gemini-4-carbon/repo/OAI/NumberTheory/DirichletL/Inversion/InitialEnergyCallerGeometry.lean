@@ -9,12 +9,10 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
+open scoped BigOperators Classical
 namespace SevenEighths.InverseInitialEnergyCallerGeometry
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
-open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
-open InverseInitialProfile InverseInitialClippedColumns ConcreteTraceCRT
+open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource InverseInitialProfile InverseInitialClippedColumns ConcreteTraceCRT
 local notation "Eis"=>ActualEisensteinCubic.O
 variable {ι:Type*}[DecidableEq ι]
   (p:ι→Eis)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
@@ -27,10 +25,9 @@ theorem outerCoefficient_nonzero_coprime
     IsCoprime (sourceIdeal p x.overlap) (sourceIdeal p x.common) := by
   apply sourceIdeal_coprime_of_not_mem p
   intro i hi hc
-  have hmc : j*(∏k∈x.common,p k)∈Ideal.span {p i} := Ideal.mul_mem_left _ j hc
   have hz : rowCoprimeMask (fun i=>Ideal.span {p i}) x.overlap (j*(∏k∈x.common,p k))=0 := by
     simp only [rowCoprimeMask,ite_eq_left (show ∃i∈x.overlap,j*(∏k∈x.common,p k)∈Ideal.span {p i}
-      from ⟨i,hi,hmc⟩)]
+      from ⟨i,hi,(Ideal.mul_mem_left _ j hc)⟩)]
   apply hn
   simp only [outerCoefficient,initialColumn,hz,mul_zero,zero_mul,star_zero]
 
@@ -53,8 +50,7 @@ theorem initial_child_row_norm (hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p
     change primaryGenerator (sourceIdeal p x.divisor)*((u:Eis)^5*x.frequency)=
       (u:Eis)^5*(primaryGenerator (sourceIdeal p x.divisor)*x.frequency)
     ring
-  rw [he,GaussGeneratorTransport.norm_eisEmbedding_unit_mul,map_mul,norm_mul,mul_pow]
-  rw [eisEmbedding_norm_sq_eq_absNorm_span,sourceIdeal_gen p hp hpr]
+  rw [he,GaussGeneratorTransport.norm_eisEmbedding_unit_mul,map_mul,norm_mul,mul_pow, eisEmbedding_norm_sq_eq_absNorm_span,sourceIdeal_gen p hp hpr]
   rfl
 
 include hp in

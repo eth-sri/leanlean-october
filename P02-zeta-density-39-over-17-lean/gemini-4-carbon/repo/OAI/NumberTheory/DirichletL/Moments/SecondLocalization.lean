@@ -10,11 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondLocalization
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcreteTraceCRT EisensteinSchwartzPoisson
-open CenteredMomentSourceRow CenteredMomentHeckeColumnWindow CenteredMomentSecondSourceEnergy
-open CenteredMomentSecondSourcePoisson CenteredMomentSecondWholeKernel CenteredMomentSecondTail
-open CenteredMomentFirstLocalization CenteredMomentSectorLocalization CenteredMomentSupportedCorrelation
-open CenteredMomentSupportedTailAggregate CenteredMomentSourceSecondZeroEnergy CenteredMomentSecondDiagonal
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcreteTraceCRT EisensteinSchwartzPoisson CenteredMomentSourceRow CenteredMomentHeckeColumnWindow CenteredMomentSecondSourceEnergy CenteredMomentSecondSourcePoisson CenteredMomentSecondWholeKernel CenteredMomentSecondTail CenteredMomentFirstLocalization CenteredMomentSectorLocalization CenteredMomentSupportedCorrelation CenteredMomentSupportedTailAggregate CenteredMomentSourceSecondZeroEnergy CenteredMomentSecondDiagonal
 local notation "O" => ActualEisensteinCubic.O
 
 def secondRetainedPair (I J : Ideal O) (hI : Supported I) (hJ : Supported J)
@@ -37,9 +33,7 @@ theorem secondSourceKernel_split (I J : Ideal O) (hI : Supported I) (hJ : Suppor
       secondDiscardedPair I J hI hJ W K Tsec Z ξ := by
   have hpI := (supported_span_primaryGenerator_iff I).mpr hI
   have hpJ := (supported_span_primaryGenerator_iff J).mpr hJ
-  have hk : 0<K/((Ideal.absNorm I:ℝ)*(Ideal.absNorm J:ℝ)) :=
-    div_pos hK (mul_pos (CenteredMomentFirstScale.norm_pos I hI.1) (CenteredMomentFirstScale.norm_pos J hJ.1))
-  have hs := lattice_fourier_split W _ hk
+  have hs := lattice_fourier_split W _ (div_pos hK (mul_pos (CenteredMomentFirstScale.norm_pos I hI.1) (CenteredMomentFirstScale.norm_pos J hJ.1)))
     (fun h => actualCorrelation (primaryGenerator I) (primaryGenerator J) hpI hpJ (-h))
     _ (fun h => CenteredMomentTail.actualCorrelation_norm_le _ _ hpI hpJ (-h))
     (frequencyRadius Tsec Z ξ)

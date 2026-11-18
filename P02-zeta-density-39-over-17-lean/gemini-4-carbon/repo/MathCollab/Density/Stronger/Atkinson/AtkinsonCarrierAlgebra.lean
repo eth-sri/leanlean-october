@@ -14,8 +14,7 @@ public import MathCollab.Density.Stronger.Atkinson.NeumannRemainderSeries
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 noncomputable section
-open Complex MeasureTheory Set
-open MathCollab.Density.Stronger.Fourth
+open Complex MeasureTheory Set MathCollab.Density.Stronger.Fourth
 namespace MathCollab.Density.Stronger.Atkinson
 
 theorem neumannTwoTerm_complex_exp (z : ℝ) :
@@ -37,8 +36,7 @@ theorem atkinson_bessel_argument_rpow {x : ℝ} (hx : 0 < x) {n : ℕ} (hn : 0 <
       atkinsonBesselScale α n * x ^ (-α) := by
   have hn0 : (0 : ℝ) < n := by positivity
   rw [Real.mul_rpow (by positivity : 0 ≤ 4 * Real.pi) (Real.sqrt_nonneg _),
-    Real.sqrt_eq_rpow, ← Real.rpow_mul (by positivity : 0 ≤ x * n)]
-  rw [show (1 / 2 : ℝ) * (-2 * α) = -α by ring, Real.mul_rpow hx.le hn0.le]
+    Real.sqrt_eq_rpow, ← Real.rpow_mul (by positivity : 0 ≤ x * n), show (1 / 2 : ℝ) * (-2 * α) = -α by ring, Real.mul_rpow hx.le hn0.le]
   unfold atkinsonBesselScale
   ring
 

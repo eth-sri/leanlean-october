@@ -36,10 +36,7 @@ theorem gaussianPhysicalFamily_mass_bound (a0 b0 a1 b1 B0 B1 : ℝ)
   rw [Finset.mul_sum]
   apply Finset.sum_le_sum
   intro k hk
-  calc
-    _ ≤ (‖a k‖*(∏i,‖W i (q k i)‖))*(K*lowPhysicalScale (calibrationForSet S hS) (X k) (Y k)) :=
-      mul_le_mul_of_nonneg_left (hb S hS W0 W1 hW1c hW0 hW1 hWB0 hWB1 (X k) (Y k) (hX k hk) (hY k hk)) (by positivity)
-    _ = _ := by ring
+  exact (mul_le_mul_of_nonneg_left (hb S hS W0 W1 hW1c hW0 hW1 hWB0 hWB1 (X k) (Y k) (hX k hk) (hY k hk)) (by positivity)).trans_eq (by ring)
 
 theorem gaussianPhysicalFamily_remote_polynomial (V : SchwartzMap ℝ ℂ)
     (hV : HasCompactSupport (V:ℝ→ℂ)) (N : ℕ)

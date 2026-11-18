@@ -16,8 +16,7 @@ theorem ford_sum_Icc_one_eq_fin
   have hset : Finset.Icc 1 M = Finset.Ico 1 (M + 1) := by
     ext a
     simp
-  rw [hset, Finset.sum_Ico_eq_sum_range]
-  rw [Fin.sum_univ_eq_sum_range (fun n => f (n + 1)) M]
+  rw [hset, Finset.sum_Ico_eq_sum_range, Fin.sum_univ_eq_sum_range (fun n => f (n + 1)) M]
   apply Finset.sum_congr rfl
   intro a ha
   congr 1

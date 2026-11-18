@@ -7,86 +7,17 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-
-open scoped BigOperators Classical SchwartzMap
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 namespace SecondPassArithmetic
 
 section
-open ActualEisensteinCubic
 open FirstPassCubeLabels (actualFirstKernel originalLabelColumn cubeActiveSupport dilationLabel)
 open ConcreteTraceCRT (eisEmbedding)
 
 end
 section
 
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory
-open ActualEisensteinCubic
 open ConcreteTraceCRT (eisEmbedding)
 open RayFourExpansion (RayCharacter)
 
@@ -97,9 +28,7 @@ theorem exists_rowMajorant : ∃ W : 𝓢(ℝ, ℂ),
   obtain ⟨U, hUc, hUs, hUone, hUts, hUzero⟩ :=
     FourierBridge.exists_complex_smooth_cutoff 1 (by norm_num)
   let f : ℝ → ℂ := fun s => U s * star (U s)
-  have hfc : HasCompactSupport f := hUc.mul_right
-  have hfs : ContDiff ℝ ∞ f := hUs.mul (Complex.conjCLE.contDiff.comp hUs)
-  refine ⟨hfc.toSchwartzMap hfs, ?_, ?_, ?_⟩
+  refine ⟨(hUc.mul_right).toSchwartzMap (hUs.mul (Complex.conjCLE.contDiff.comp hUs)), ?_, ?_, ?_⟩
   · intro s
     change 0 ≤ (U s * star (U s)).re
     simp only [Complex.mul_re, Complex.star_def, Complex.conj_re, Complex.conj_im]
@@ -112,7 +41,7 @@ theorem exists_rowMajorant : ∃ W : 𝓢(ℝ, ℂ),
     change U s * star (U s) = 0
     have hUz : U s = 0 := by
       by_contra hne
-      have hu := hUts (subset_tsupport U (by exact hne))
+      have hu := hUts (subset_tsupport U (hne))
       norm_num at hu
       linarith [hu.2]
     simp [hUz]
@@ -206,7 +135,6 @@ theorem firstCoreInputRow_finite_le_second_poisson
 
 end
 
-open ActualEisensteinCubic
 open FirstCauchyArithmetic (supportMobius)
 
 variable {ι : Type*} [DecidableEq ι]
@@ -236,8 +164,7 @@ theorem secondPreKernelPair_eq_children
     secondPreKernelPair p hp hcop hg F Ψ₁ Ψ₂ m r c d e k₁ k₂ K =
       ∑ V ∈ F.powerset, secondCommonWeight p hp hcop hg Ψ₁ Ψ₂ m r c d e k₁ k₂ V *
         secondChildKernelPair p hp hcop hg F V Ψ₁ Ψ₂ m r c d e k₁ k₂ K := by
-  have hprime (i : ι) : Prime (Ideal.span {p i}) :=
-    Ideal.prime_of_isPrime (NeZero.ne (Ideal.span {p i})) inferInstance
+  have hprime (i : ι) := Ideal.prime_of_isPrime (NeZero.ne (Ideal.span {p i})) inferInstance
   unfold secondPreKernelPair
   rw [CoprimeMobiusExtension.double_sum_disjoint_reindexed]
   apply Finset.sum_congr rfl
@@ -248,9 +175,9 @@ theorem secondPreKernelPair_eq_children
   intro N hN
   apply Finset.sum_congr rfl
   intro M hM
-  have hdN : Disjoint V N := Finset.disjoint_of_subset_right
+  have hdN := Finset.disjoint_of_subset_right
     (Finset.mem_powerset.mp hN) disjoint_sdiff_self_right
-  have hdM : Disjoint V M := Finset.disjoint_of_subset_right
+  have hdM := Finset.disjoint_of_subset_right
     (Finset.mem_powerset.mp hM) disjoint_sdiff_self_right
   rw [secondPreColumn_union p hp hcop hg hpr Ψ₁ m r c d e k₁ (fun _ => 1) V N hdN,
     secondPreColumn_union p hp hcop hg hpr Ψ₂ m r c d e k₂ (fun _ => 1) V M hdM, star_mul]
@@ -318,9 +245,8 @@ theorem secondKernelPair_eq_children
 end SecondPassArithmetic
 
 namespace CubicEisenstein
-open scoped BigOperators Classical MatrixGroups Matrix
-
-open ActualEisensteinCubic CubicKubota ConcreteTraceCRT CubicJacobiGlobal
+open CubicKubota CubicJacobiGlobal
+open scoped MatrixGroups Matrix
 
 def denominatorCondition (c d : O) : Prop := IsCoprime c d ∧ (3 : O) ∣ d-1
 abbrev AdmissibleDenominator (c : O) := {d : O // denominatorCondition c d}
@@ -331,18 +257,18 @@ lemma denominatorCondition_shift (c d n : O) :
   constructor
   · rintro ⟨⟨a,b,h⟩,hd⟩
     refine ⟨⟨a+b*3*n,b,by linear_combination h⟩, ?_⟩
-    have h3 : (3 : O) ∣ 3*c*n := ⟨c*n,by ring⟩
+    have h3 : 3 ∣ 3*c*n := ⟨c*n,by ring⟩
     convert dvd_sub hd h3 using 1 ; ring
   · rintro ⟨⟨a,b,h⟩,hd⟩
     refine ⟨⟨a-b*3*n,b,by linear_combination h⟩, ?_⟩
-    have h3 : (3 : O) ∣ 3*c*n := ⟨c*n,by ring⟩
+    have h3 : 3 ∣ 3*c*n := ⟨c*n,by ring⟩
     convert dvd_add hd h3 using 1 ; ring
 
 lemma row_symbol_shift (c d n : O) (hc : (3 : O) ∣ c) (hd : (3 : O) ∣ d-1) :
     symbol c (d+3*c*n)=symbol c d := by
-  have hdn : (3 : O) ∣ d+3*c*n-1 := by
-    convert dvd_add hd (show (3 : O) ∣ 3*c*n from ⟨c*n,by ring⟩) using 1 ; ring
-  have h9 : (9 : O) ∣ d+3*c*n-d := by
+  have hdn : 3 ∣ d+3*c*n-1 := by
+    convert dvd_add hd (show 3 ∣ 3*c*n from ⟨c*n,by ring⟩) using 1 ; ring
+  have h9 : 9 ∣ d+3*c*n-d := by
     obtain ⟨c0,rfl⟩ := hc
     exact ⟨c0*n,by ring⟩
   exact symbol_denominator_congr c (d+3*c*n) d
@@ -422,9 +348,8 @@ theorem denominator_sum_residues (c : O) (hc : c ≠ 0) (f : O → ℂ)
     (hf : Summable (fun d : AdmissibleDenominator c => f d.1)) :
     (∑' d : AdmissibleDenominator c, f d.1)=
       ∑' r : AdmissibleResidue c, ∑' n : O, f (denominatorRep c r.1+3*c*n) := by
-  have hsum := (residueDenominatorEquiv c hc).summable_iff.mpr hf
   exact ((residueDenominatorEquiv c hc).tsum_eq
-    (fun d : AdmissibleDenominator c => f d.1)).symm.trans hsum.tsum_prod
+    (fun d : AdmissibleDenominator c => f d.1)).symm.trans ((residueDenominatorEquiv c hc).summable_iff.mpr hf).tsum_prod
 
 lemma primitiveTerm_shift (z : ℂ) (v : ℝ) (s : ℂ) (c d n : O)
     (hc : (3 : O) ∣ c) (hd : (3 : O) ∣ d-1) :
@@ -444,11 +369,11 @@ lemma denominator_zero_unique (d : AdmissibleDenominator 0) : d.1=1 := by
 
 end CubicEisenstein
 
-open MeasureTheory Set Module
-open scoped BigOperators Classical ENNReal
+open Module
+open scoped ENNReal
 
 namespace CubicEisenstein
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinEmbedding EisensteinSchwartzPoisson
+open EisensteinSchwartzPoisson
 local notation "O" => ActualEisensteinCubic.O
 
 def periodBasis : Basis (Fin 2) ℝ ℂ :=
@@ -471,11 +396,9 @@ lemma periodDomain_measurable : MeasurableSet periodDomain :=
   ZSpan.fundamentalDomain_measurableSet periodBasis
 
 lemma three_embedding_mem (n : O) : 3*eisEmbedding n ∈ periodLattice := by
-  have hzero : periodBasis 0 ∈ periodLattice := Submodule.subset_span ⟨0,rfl⟩
-  have hone : periodBasis 1 ∈ periodLattice := Submodule.subset_span ⟨1,rfl⟩
   have h := periodLattice.add_mem
-    (periodLattice.smul_mem (ActualEisensteinCoordinates.coords n).1 hzero)
-    (periodLattice.smul_mem (ActualEisensteinCoordinates.coords n).2 hone)
+    (periodLattice.smul_mem (ActualEisensteinCoordinates.coords n).1 (Submodule.subset_span ⟨0,rfl⟩))
+    (periodLattice.smul_mem (ActualEisensteinCoordinates.coords n).2 (Submodule.subset_span ⟨1,rfl⟩))
   rw [periodBasis_zero,periodBasis_one] at h
   convert h using 1
   conv_lhs => rw [← ActualEisensteinCoordinates.eval_coords n,eisEmbedding_eval]
@@ -506,8 +429,7 @@ def periodEquiv : O ≃ periodLattice := Equiv.ofBijective _ periodPoint_bijecti
 
 theorem integral_eq_period_integrals (f : ℂ → ℂ) (hf : Integrable f) :
     (∫ z : ℂ, f z)=∑' n : O,∫ z in periodDomain,f (z+3*eisEmbedding n) := by
-  rw [periodDomain_fundamental.integral_eq_tsum'' f hf]
-  rw [← periodEquiv.tsum_eq]
+  rw [periodDomain_fundamental.integral_eq_tsum'' f hf, ← periodEquiv.tsum_eq]
   apply tsum_congr
   intro n
   apply setIntegral_congr_fun periodDomain_measurable
@@ -517,8 +439,7 @@ theorem integral_eq_period_integrals (f : ℂ → ℂ) (hf : Integrable f) :
 
 theorem lintegral_eq_period_lintegrals (f : ℂ → ℝ≥0∞) :
     (∫⁻ z : ℂ, f z)=∑' n : O,∫⁻ z in periodDomain,f (z+3*eisEmbedding n) := by
-  rw [periodDomain_fundamental.lintegral_eq_tsum'' f]
-  rw [← periodEquiv.tsum_eq]
+  rw [periodDomain_fundamental.lintegral_eq_tsum'' f, ← periodEquiv.tsum_eq]
   apply tsum_congr
   intro n
   apply setLIntegral_congr_fun periodDomain_measurable

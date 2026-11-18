@@ -16,11 +16,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseFirstGlobalCaps InverseSecondSourceBlocks InverseMomentFirstChildWindows
-open InverseMomentFirstOriginalProfile InverseMomentFirstProfileUniform InverseMomentFirstLabelCell
-open InverseMomentFirstSecondHeightCost
-open InverseAmbientProfileTower JointLogSeparation FourierBridge CompletedHeight
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseFirstGlobalCaps InverseSecondSourceBlocks InverseMomentFirstChildWindows InverseMomentFirstOriginalProfile InverseMomentFirstProfileUniform InverseMomentFirstLabelCell InverseMomentFirstSecondHeightCost InverseAmbientProfileTower JointLogSeparation FourierBridge CompletedHeight
 open ConcreteTraceCRT (eisEmbedding)
 local notation "O"=>ActualEisensteinCubic.O
 
@@ -98,9 +94,7 @@ theorem actual_long_parent_energy
   have hQ:∀v∈Q,‖eisEmbedding (primeProduct p v.support v)‖^2≤Z^(ell+eta) := by
     intro v hv
     apply (hQhi v hv).trans
-    calc
-      Real.exp 1*Z^ell≤Z^eta*Z^ell:=mul_le_mul_of_nonneg_right hbinExp (Real.rpow_nonneg hz.le _)
-      _=Z^(ell+eta):=by rw [Real.rpow_add hz];ring
+    exact (mul_le_mul_of_nonneg_right hbinExp (Real.rpow_nonneg hz.le _)).trans_eq (by rw [Real.rpow_add hz];ring)
   have hβ:∀I∈labels,∀v∈Q,
       ‖actualLongCoefficient p Ψ mCoef H₀ (Z^ell) ξ I v‖≤Ccoef*(Real.exp 1*Z^ell)^epsFirst := by
     intro I hI v hv

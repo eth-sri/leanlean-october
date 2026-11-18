@@ -8,8 +8,7 @@ namespace OAI
 
 noncomputable section
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve
-open ConcretePrimeRowBridge CubicEisenstein ProbePhase
+open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve ConcretePrimeRowBridge CubicEisenstein ProbePhase
 local notation "O" => ActualEisensteinCubic.O
 
 def reciprocityCoefficient (A s : O) (hA : A≠0) (H : O) : ℂ :=

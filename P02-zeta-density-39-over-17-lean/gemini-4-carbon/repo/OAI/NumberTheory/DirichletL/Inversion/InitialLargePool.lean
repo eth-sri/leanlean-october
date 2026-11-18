@@ -7,13 +7,10 @@ namespace OAI
 
 noncomputable section
 
+open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve ConcretePrimeRowBridge FirstCauchyArithmetic SecondPassArithmetic UniqueFactorizationMonoid CanonicalRowCompletion
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve ConcretePrimeRowBridge
-open FirstCauchyArithmetic SecondPassArithmetic UniqueFactorizationMonoid CanonicalRowCompletion
 namespace SevenEighths.InverseInitialLargePool
-open InverseInitialOverlap InverseInitialPoissonBridge InverseInitialKernelBridge
-open InverseInitialRayAttachment InverseInitialArithmetic InverseInitialCommonPool
-open InverseInitialEnergyCallerWindow InverseInitialCommonForcing InverseInitialCommonTuples
+open InverseInitialOverlap InverseInitialPoissonBridge InverseInitialKernelBridge InverseInitialRayAttachment InverseInitialArithmetic InverseInitialCommonPool InverseInitialEnergyCallerWindow InverseInitialCommonForcing InverseInitialCommonTuples
 local notation "Eis"=>ActualEisensteinCubic.O
 local notation "O"=>ActualEisensteinCubic.O
 theorem selected_conjugate_row_supported (F : Finset (Ideal O))
@@ -28,23 +25,19 @@ theorem selected_conjugate_row_supported (F : Finset (Ideal O))
         (fun A => if (∏ i ∈ A,i.val)∈F then H (∏ i ∈ A,i.val) else 0) u := by
   let : ∀ i : primePool F,(Ideal.span {poolPrimary F i}).IsMaximal :=
     fun i => by rw [poolPrimary_span F hF i]; infer_instance
-  have he : (fun i : primePool F => Ideal.span {poolPrimary F i}) =
-      (fun i : primePool F => i.val) := funext (poolPrimary_span F hF)
   dsimp only
-  rw [InitialMeanSquare.sum_selected_ideals F (fun I hI => (hF I hI).2.1)]
-  rw [initial_input_row (poolPrimary F) (poolPrimary_good F hF)]
+  rw [InitialMeanSquare.sum_selected_ideals F (fun I hI => (hF I hI).2.1), initial_input_row (poolPrimary F) (poolPrimary_good F hF)]
   unfold supportConjugateSum
   apply Finset.sum_congr rfl
   intro A hA
   dsimp only
   rw [elementCharacter_product]
-  simp only [he]
+  simp only [(funext (poolPrimary_span F hF))]
   by_cases hAF : (∏ i ∈ A,i.val)∈F
   · simp only [hAF,ite_true]
     by_cases hh:H (∏i∈A,i.val)=0
     · simp only [hh,mul_zero,zero_mul]
-    rw [selected_mask F j hj A (hcop _ hAF hh),mul_one]
-    rw [idealRowHom_eq_idealSexticRow F hF hAF]
+    rw [selected_mask F j hj A (hcop _ hAF hh),mul_one, idealRowHom_eq_idealSexticRow F hF hAF]
     simp only [supportMobius,idealSexticRow,InitialMeanSquare.pool_support_product]
     ring
   · simp only [hAF,ite_false,mul_zero,zero_mul]

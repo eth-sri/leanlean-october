@@ -36,12 +36,10 @@ lemma sector_arithmetic_prescribed (F : PrimeFamily φ) (rows Pset : Finset (Ide
       cuspColumn_eq := fun K P hp => (hcommon ⟨(K,P),hp⟩ x0).2
     },rfl⟩
   · let F0 : PrimeFamily (ULift.{v} φ) := ⟨fun x => F.ideal x.down,fun x => F.maximal x.down,fun x => F.good x.down⟩
-    let e : ULift.{v} φ ≃ φ := Equiv.ulift
-    let D0' := reindexControlled D0 e
     exact ⟨{
       referenceIndex := ULift.{v} φ
       referencePrimes := F0
-      referenceArithmetic := D0'
+      referenceArithmetic := (reindexControlled D0 (Equiv.ulift))
       completion := D
       fixedFactor_eq := fun K P hp => (hn ⟨⟨(K,P),hp⟩⟩).elim
       cuspColumn_eq := fun K P hp => (hn ⟨⟨(K,P),hp⟩⟩).elim
@@ -88,7 +86,6 @@ theorem exists_global_sector_completion (F : PrimeFamily φ) (rows Pset : Finset
     · dsimp only [Ds,D]
       exact (hκ (lift x)).trans ((congrArg κ ((hsector x).trans (hsector y).symm)).trans (hκ (lift y)).symm)
     · intro u m n b
-      dsimp only [Ds,D]
       exact (hA (lift x) u m n b).trans
         ((congrArg (fun q => A q u m n b) ((hsector x).trans (hsector y).symm)).trans
           (hA (lift y) u m n b).symm)

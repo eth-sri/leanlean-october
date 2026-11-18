@@ -79,7 +79,7 @@ theorem scaled_modulated_poisson
       (A⁻¹ : ℝ) • ∑' j : ℤ,
         FourierTransform.fourier psi ((j - y) / A) := by
   have hscaled_compact : HasCompactSupport (fun x : ℝ => psi (A * x)) := by
-    let Au : ℝˣ := Units.mk0 A hA.ne'
+    let Au := Units.mk0 A hA.ne'
     simpa only [Function.comp_apply, Units.smul_def, Au, Units.val_mk0] using!
       hpsi_compact.comp_homeomorph (Homeomorph.smul Au)
   have hcompact : HasCompactSupport
@@ -96,7 +96,7 @@ theorem scaled_modulated_poisson
           Complex.ofRealCLM.contDiff.comp
             (show ContDiff ℝ ∞ (fun x : ℝ => 2 * Real.pi * (y * x)) by fun_prop)
       · exact contDiff_const
-  let h : SchwartzMap ℝ ℂ := hcompact.toSchwartzMap hsmooth
+  let h := hcompact.toSchwartzMap hsmooth
   calc
     ∑' ell : ℤ, psi (A * ell) * sourcePhase (y * ell) =
         ∑' ell : ℤ, h ell := by rfl

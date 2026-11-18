@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.SecondDerivativeScale
 
 @[expose] public section
@@ -22,15 +31,15 @@ theorem zero_r_physical_polynomial_budgets {T M H Q R lam : ℝ}
       H^5*Q*lam ≤ R^2 ∧ H^3 ≤ M^2*R^2*Q*lam := by
   have hT1 : 1 ≤ T := by linarith
   have hTp : 0 < T := by linarith
-  have hMp : 0 < M := (pow_pos hTp 8).trans_le hM
-  have hQp : 0 < Q := lt_of_lt_of_le (by positivity) hQmin
-  have hRp : 0 < R := lt_of_lt_of_le (by positivity) hR
-  have hT8 : 2 ≤ T^8 := hT.trans (by
-    simpa only [pow_one] using pow_le_pow_right₀ hT1 (by norm_num : 1 ≤ 8))
+  have hMp := (pow_pos hTp 8).trans_le hM
+  have hQp := lt_of_lt_of_le (by positivity) hQmin
+  have hRp := lt_of_lt_of_le (by positivity) hR
+  have hT8 := hT.trans (by
+    simpa using pow_le_pow_right₀ hT1 (by norm_num : 1 ≤ 8))
   have hcurv : 4*H*Q*lam ≤ 1 := by
     have hprod := mul_le_mul hHmax hQmax hQp.le (by positivity : 0 ≤ T^2/2)
     have hprodLam := mul_le_mul_of_nonneg_right hprod hlam.le
-    have hp := mul_le_mul_of_nonneg_right hT8 (show 0 ≤ T^5 by positivity)
+    have hp := mul_le_mul_of_nonneg_right hT8 (by positivity)
     have hpLam := mul_le_mul_of_nonneg_right hp hlam.le
     nlinarith [hscale]
   have hdiag : H^2 ≤ M*R := by
@@ -58,7 +67,7 @@ theorem zero_r_physical_polynomial_budgets {T M H Q R lam : ℝ}
       calc
         _ = (T^8/8)*(T^13*lam) := by rw [hscale,mul_one]
         _ = _ := by ring
-    have hlow : T^8/8 ≤ M^2*R^2*Q*lam := he.trans_le hprodLam
+    have hlow := he.trans_le hprodLam
     nlinarith
   exact ⟨hcurv,hdiag,hpos,hinv⟩
 

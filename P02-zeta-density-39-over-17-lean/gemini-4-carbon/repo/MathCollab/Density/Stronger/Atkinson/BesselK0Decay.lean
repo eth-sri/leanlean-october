@@ -45,12 +45,10 @@ theorem abs_dfiBesselK0_exp_le {x : ℝ} (hx : 2 ≤ x) :
 
 theorem exp_neg_le_factorial_div_pow {x : ℝ} (hx : 0 < x) (k : ℕ) :
     Real.exp (-x) ≤ (k.factorial : ℝ) / x ^ k := by
-  have h := Real.pow_div_factorial_le_exp x hx.le k
   have hf : (0 : ℝ) < k.factorial := by exact_mod_cast Nat.factorial_pos k
-  have hp : 0 < x ^ k := pow_pos hx k
   rw [Real.exp_neg, inv_eq_one_div]
-  apply (div_le_div_iff₀ (Real.exp_pos x) hp).mpr
-  have hmul := (div_le_iff₀ hf).mp h
+  apply (div_le_div_iff₀ (Real.exp_pos x) (pow_pos hx k)).mpr
+  have hmul := (div_le_iff₀ hf).mp (Real.pow_div_factorial_le_exp x hx.le k)
   nlinarith
 
 def zetaBesselK0PowerConstant (k : ℕ) : ℝ :=
@@ -65,13 +63,10 @@ theorem abs_dfiBesselK0_pow_le {x : ℝ} (hx : 2 ≤ x) (k : ℕ) :
   have he := exp_neg_le_factorial_div_pow (show 0 < x / 2 by linarith) (2 * k)
   rw [← neg_div] at he
   apply (abs_dfiBesselK0_exp_le hx).trans
-  calc
-    _ ≤ 2 * (((2 * k).factorial : ℝ) / (x / 2) ^ (2 * k)) :=
-      mul_le_mul_of_nonneg_left he (by norm_num)
-    _ = _ := by
+  exact (mul_le_mul_of_nonneg_left he (by norm_num)).trans_eq (by
       unfold zetaBesselK0PowerConstant
       rw [div_pow, div_div_eq_mul_div, pow_mul]
-      ring
+      ring)
 
 /-- The source's coarse positive support links the Bessel argument to
 both physical height and the positive arithmetic index. -/

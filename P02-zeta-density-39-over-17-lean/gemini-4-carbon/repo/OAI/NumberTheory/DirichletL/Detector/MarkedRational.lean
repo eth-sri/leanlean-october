@@ -7,8 +7,7 @@ namespace OAI
 
 noncomputable section
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open ProbeEuler ProbeRow ConcretePrimeRowBridge
+open ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ProbeEuler ProbeRow ConcretePrimeRowBridge
 local notation "O" => ActualEisensteinCubic.O
 
 def idealMarkedClosed (η : HeckeFamily.Character) (P : PrimeIdeal) (x w z : ℂ) : ℂ :=
@@ -21,11 +20,10 @@ theorem idealMarkedLocalFactor_rational (η : HeckeFamily.Character) (P : PrimeI
     (hs : Supported P.val) (x w z : ℂ) (hx : 3/2<x.re) (hz : 1/6<z.re) :
     idealMarkedLocalFactor η P x w z=idealMarkedClosed η P x w z := by
   let p := primaryGenerator P.val
-  have hp : Prime p := supported_primeGenerator_prime P hs
-  have hspan : Ideal.span {p}=P.val := span_primaryGenerator_of_supported P.val hs
+  have hp := supported_primeGenerator_prime P hs
+  have hspan := span_primaryGenerator_of_supported P.val hs
   let : (Ideal.span {p}:Ideal O).IsMaximal := PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
-  have hsp : Supported (Ideal.span {p}) := hspan.symm ▸ hs
-  have hg := supported_prime_data p hp hsp
+  have hg := supported_prime_data p hp (hspan.symm ▸ hs)
   have hQ2 : (2:ℝ)≤Ideal.absNorm (Ideal.span {p}) := by
     rw [hspan]
     exact_mod_cast SmoothMobiusCorrection.prime_norm_two_le P

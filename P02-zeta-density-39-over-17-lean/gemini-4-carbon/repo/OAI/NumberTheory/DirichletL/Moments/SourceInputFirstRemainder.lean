@@ -7,15 +7,11 @@ public import OAI.NumberTheory.DirichletL.Moments.SourceInputFirstSectorTailNatu
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
+open scoped Classical BigOperators SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentSourceInputFirstRemainder
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass CenteredMomentSourceRow
-open CenteredMomentExceptionalAmplitudePair CenteredMomentSourceInputTailUniform
-open CenteredMomentSourceInputZeroUniform CenteredMomentSourceInputFirstSectorTail
-open CenteredMomentFirstEnergy EisensteinSchwartzPoisson
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass CenteredMomentSourceRow CenteredMomentExceptionalAmplitudePair CenteredMomentSourceInputTailUniform CenteredMomentSourceInputZeroUniform CenteredMomentSourceInputFirstSectorTail CenteredMomentFirstEnergy EisensteinSchwartzPoisson
 local notation "O"=>HeckeFamily.O
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 local instance : DecidableEq (ι⊕Fin 2):=Classical.decEq _
@@ -43,14 +39,11 @@ theorem original_first_remainder (hi:ι→ℝ)(wlo whi B ε ξ saving:ℝ)
   filter_upwards [htail] with Z hZ
   refine ⟨hZ.1,?_⟩
   intro s W₁ W₂ he₁ he₂ hs₁ hs₂ hshi m A hml hm2 R seed Φ K hK hVcap hKi
-  have hd:=hdiag Z hZ.1.le s W₁ W₂ he₁ he₂ hs₁ hs₂ hshi hVcap m A R seed Φ K hK.le
-  have ht:=hZ.2 s W₁ W₂ he₁ he₂ hs₁ hs₂ hshi m A R seed Φ K hK hVcap hKi
   rw [CenteredMomentFirstSectorLocalization.finiteHeckeEnergy_sector_localized
     s.η m A s.t hml hm2 (finiteColumns (Fintype.piFinset s.pools))
-    (coefficient s R seed) Φ K (volume s.toData) Z ξ hK]
-  rw [show ∀a b c:ℂ,a+b+c-b=a+c by intros;ring]
+    (coefficient s R seed) Φ K (volume s.toData) Z ξ hK, show ∀a b c:ℂ,a+b+c-b=a+c by intros;ring]
   exact ((div_le_div_of_nonneg_right (norm_add_le _ _) (volume_pos s).le).trans_eq
-    (add_div _ _ _)).trans (add_le_add hd ht)
+    (add_div _ _ _)).trans (add_le_add (hdiag Z hZ.1.le s W₁ W₂ he₁ he₂ hs₁ hs₂ hshi hVcap m A R seed Φ K hK.le) (hZ.2 s W₁ W₂ he₁ he₂ hs₁ hs₂ hshi m A R seed Φ K hK hVcap hKi))
 
 end SevenEighths.CenteredMomentSourceInputFirstRemainder
 

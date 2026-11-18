@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Eisenstein.LocalCutoffs
-public import OAI.NumberTheory.DirichletL.MeanSquare.HarmonicAggregation
+public import OAI.NumberTheory.DirichletL.GaussSum.BranchScaling
+public import OAI.NumberTheory.DirichletL.CubicSieve.RadialWindows
 
 @[expose] public section
 
@@ -8,85 +9,16 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-
-open scoped BigOperators Classical SchwartzMap ContDiff
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 namespace SecondPassArithmetic
 
 section
-open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProduct dilationLabel)
 open ConcreteTraceCRT (eisEmbedding)
 
 end
 
-open ActualEisensteinCubic
 open ConcreteTraceCRT (eisEmbedding)
 
 def firstFrequencyDisk (R:ℝ) : Finset O :=
@@ -109,8 +41,7 @@ lemma outside_firstFrequencyDisk (R:ℝ) (h:O) (hh:h∉firstFrequencyDisk R) :
 end SecondPassArithmetic
 
 namespace CubicEisenstein
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff SchwartzMap LineDeriv
+open scoped LineDeriv
 
 lemma euclideanCoordinateVector_eq_basis (j : Fin 3) :
     euclideanCoordinateVector j=EuclideanSpace.basisFun (Fin 3) ℝ j := by
@@ -175,12 +106,11 @@ lemma kernelLocalizedDensity_le (χ : PositiveChartCutoff) (f : kernelSmoothTest
     kernelLocalizedDensity χ f p≤
       (M+2*D)*‖kernelTestField f p‖^2+
         2*A*kernelTestEnergyDensity f (euclideanToHyperbolic p) := by
-  have he := kernelLocalizedField_energy_bound χ f p hp
   have he' : (p 2)^2*(∑j : Fin 3,‖fderiv ℝ (kernelLocalizedField χ f) p
       (EuclideanSpace.basisFun (Fin 3) ℝ j)‖^2)≤
       (p 2)^2*(2*A*kernelTestEnergyDensity f (euclideanToHyperbolic p)+
         2*D*‖kernelTestField f p‖^2) := by
-    refine he.trans ?_
+    refine (kernelLocalizedField_energy_bound χ f p hp).trans ?_
     calc
       _ ≤ 2*(A*(p 2)^2)*kernelTestEnergyDensity f (euclideanToHyperbolic p)+
           2*(p 2)^2*D*‖kernelTestField f p‖^2 := by
@@ -200,8 +130,7 @@ lemma kernelEuclideanProjection_volume_integrable (S : Set EuclideanSpatial)
     (hheight : ∀p∈S,p 2≤b) (g : KernelQuotient→ℝ)
     (hg : Integrable g (integralQuotientVolume globalKubotaKernel)) :
     IntegrableOn (fun p => g (kernelEuclideanProjection p)) S volume := by
-  have hm := kernelEuclideanProjection_measurePreserving_on S hS hpos hinj
-  have hh := (hm.integrable_comp_of_integrable hg.integrableOn).smul_measure
+  have hh := ((kernelEuclideanProjection_measurePreserving_on S hS hpos hinj).integrable_comp_of_integrable hg.integrableOn).smul_measure
     (c := ENNReal.ofReal (b^3)) ENNReal.ofReal_ne_top
   exact hh.mono_measure (euclideanVolume_le_heightCube_hyperbolic S hS hpos b hb hheight)
 
@@ -223,7 +152,6 @@ theorem kernelLocalizedH1_norm_sq_le (χ : PositiveChartCutoff)
       ((kernelQuotientEnergyDensity_integrable f).const_mul _)
   have hGn : ∀q,0≤G q := by
     intro q
-    dsimp only [G]
     positivity [kernelQuotientEnergyDensity_nonneg f q]
   have hS := χ.compact.measurableSet
   have hGI := kernelEuclideanProjection_volume_integrable (tsupport χ.func) hS χ.positive
@@ -241,7 +169,6 @@ theorem kernelLocalizedH1_norm_sq_le (χ : PositiveChartCutoff)
       kernelEuclideanProjection_volume_integral_le (tsupport χ.func) hS χ.positive hinj
         b hb hheight G hG hGn
     _ = _ := by
-      dsimp only [G]
       rw [integral_add (((kernelSmoothTests_memLp f).norm.integrable_sq).const_mul _)
         ((kernelQuotientEnergyDensity_integrable f).const_mul _),integral_const_mul,integral_const_mul,
         ←kernelSmoothTestsToL2_norm_sq]
@@ -318,8 +245,6 @@ def kernelLocalizedH1Linear (χ : PositiveChartCutoff) : kernelSmoothTests →�
 
 end CubicEisenstein
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff
 
 namespace CubicEisenstein
 
@@ -343,7 +268,6 @@ def kernelEnergyGraphCore : kernelSmoothTests →ₗ[ℂ] KernelEnergyGraph :=
 
 lemma kernelEnergyGraphCore_dense : DenseRange kernelEnergyGraphCore := by
   rw [DenseRange,Subtype.dense_iff,←Set.range_comp]
-  change closure (Set.range kernelEnergyCore)⊆closure (Set.range kernelEnergyCore)
   rfl
 
 def kernelEnergyMass : KernelEnergyGraph →L[ℂ] KernelQuotientL2 :=
@@ -385,7 +309,6 @@ lemma kernelLocalizedH1_graph_bound (χ : PositiveChartCutoff)
   have hh := hbound f
   rw [←kernelEnergyGraphCore_norm_sq] at hh
   apply (sq_le_sq₀ (norm_nonneg _) (mul_nonneg (Real.sqrt_nonneg C) (norm_nonneg _))).mp
-  change ‖kernelLocalizedH1 χ f‖^2≤(Real.sqrt C*‖kernelEnergyGraphCore f‖)^2
   rw [mul_pow,Real.sq_sqrt hC]
   exact hh
 
@@ -399,8 +322,7 @@ lemma kernelEnergyLocalize_core (χ : PositiveChartCutoff)
 
 end CubicEisenstein
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff SchwartzMap LineDeriv
+open scoped LineDeriv
 
 namespace CubicEisenstein
 

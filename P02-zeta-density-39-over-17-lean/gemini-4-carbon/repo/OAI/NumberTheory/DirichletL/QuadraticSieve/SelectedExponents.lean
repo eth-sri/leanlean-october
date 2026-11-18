@@ -8,87 +8,20 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-
-open scoped BigOperators Classical SchwartzMap
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 namespace CanonicalQuadraticSieve
-open ActualEisensteinCubic IdealCoprimeSieveOperator
+open IdealCoprimeSieveOperator
 
 end CanonicalQuadraticSieve
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups Matrix Pointwise
+open scoped MatrixGroups Matrix Pointwise
 
 namespace CubicEisenstein
 
 lemma hyperbolicHeight_continuous : Continuous hyperbolicHeight := by
   apply Continuous.quotient_lift
-  have he (i j : Fin 2) : Continuous (fun g : SL(2,ℂ) => g i j) :=
-    (continuous_apply j).comp ((continuous_apply i).comp continuous_complexSL_coe)
+  have he (i j : Fin 2) := (continuous_apply j).comp ((continuous_apply i).comp continuous_complexSL_coe)
   apply Continuous.inv₀
   · exact ((he 1 0).norm.pow 2).add ((he 1 1).norm.pow 2)
   · intro g
@@ -101,8 +34,7 @@ lemma hyperbolicGram_upperPoint (z : ℂ) (v : ℝ) (hv : 0<v) :
     hyperbolicGram (upperPoint z v hv) 0 1=z/(v:ℂ) := by
   change matrixGram (upperSection z v hv) 0 1=_
   rw [←matrixCross_eq_gram]
-  have hh := matrixCross_upperSection (1:SL(2,ℂ)) z v hv
-  simpa [Matrix.one_apply] using hh
+  simpa [Matrix.one_apply] using (matrixCross_upperSection (1:SL(2,ℂ)) z v hv)
 
 def hyperbolicHorizontal (w : HyperbolicSpace) : ℂ :=
   hyperbolicGram w 0 1*(hyperbolicHeight w:ℂ)
@@ -156,8 +88,7 @@ lemma fundamentalSet_measure_le_cover (H : Subgroup (SL(2,ActualEisensteinCubic.
   refine ⟨M⁻¹,?_,hw⟩
   exact ⟨M • w,hM,inv_smul_smul M w⟩
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups Matrix Pointwise ENNReal
+open scoped ENNReal
 
 def spatialHeightSplit : EuclideanSpatial ≃ᵐ ℝ × (Fin 2 → ℝ) :=
   (MeasurableEquiv.toLp 2 (Fin 3 → ℝ)).symm.trans
@@ -230,23 +161,18 @@ lemma hyperbolicCuspBox_volume_le (a : ℝ) (ha : 0<a) :
   intro j hj
   fin_cases j
   · change -1≤p 0 ∧ p 0≤1
-    have hh := (Complex.abs_re_le_norm ((p 0:ℂ)+Complex.I*(p 1:ℂ))).trans hB.1
-    simpa using abs_le.mp hh
+    simpa using abs_le.mp ((Complex.abs_re_le_norm ((p 0:ℂ)+Complex.I*(p 1:ℂ))).trans hB.1)
   · change -1≤p 1 ∧ p 1≤1
-    have hh := (Complex.abs_im_le_norm ((p 0:ℂ)+Complex.I*(p 1:ℂ))).trans hB.1
-    simpa using abs_le.mp hh
+    simpa using abs_le.mp ((Complex.abs_im_le_norm ((p 0:ℂ)+Complex.I*(p 1:ℂ))).trans hB.1)
 
-lemma hyperbolicCuspBox_volume_lt_top (a : ℝ) (ha : 0<a) :
-    hyperbolicVolume (hyperbolicCuspBox a)<⊤ :=
-  (hyperbolicCuspBox_volume_le a ha).trans_lt (ENNReal.mul_lt_top (by norm_num) ENNReal.ofReal_lt_top)
 
 theorem hyperbolicFundamentalSet_volume_lt_top (H : Subgroup (SL(2,O)))
     (hH : H≤CubicKubota.levelThree) [H.FiniteIndex] :
     hyperbolicVolume (hyperbolicFundamentalSet H)<⊤ := by
   obtain ⟨S,hS⟩ := finiteIndex_ford_cover H
-  let a : ℝ := Real.sqrt (2/3)/2
+  let a := Real.sqrt (2/3)/2
   have ha : 0<a := by dsimp [a]; positivity
-  let B : Set HyperbolicSpace := ⋃r∈S,integralComplexMatrix r⁻¹ • hyperbolicCuspBox a
+  let B := ⋃r∈S,integralComplexMatrix r⁻¹ • hyperbolicCuspBox a
   have hcover : ∀w,∃M:H,M • w∈B := by
     intro w
     obtain ⟨M,r,hr,z,v,hv,hM,hz,hfloor⟩ := hS w
@@ -268,7 +194,7 @@ theorem hyperbolicFundamentalSet_volume_lt_top (H : Subgroup (SL(2,O)))
   apply ENNReal.sum_lt_top.mpr
   intro r hr
   rw [measure_smul]
-  exact hyperbolicCuspBox_volume_lt_top a ha
+  exact ((hyperbolicCuspBox_volume_le a ha).trans_lt (ENNReal.mul_lt_top (by norm_num) ENNReal.ofReal_lt_top))
 
 lemma integralQuotientVolume_univ (H : Subgroup (SL(2,O))) :
     integralQuotientVolume H Set.univ=hyperbolicVolume (hyperbolicFundamentalSet H) := by
@@ -292,7 +218,7 @@ section
 theorem improved_threshold_ge_column (α N M : ℝ) (hα : 1≤α) (hN : 1≤N)
     (hM : N^(2-1/α)≤M) : N≤M := by
   have hp : 1≤2-1/α := by
-    have hh : 1/α≤1 := (div_le_one (by linarith : 0<α)).mpr hα
+    have hh := (div_le_one (by linarith : 0<α)).mpr hα
     linarith
   calc
     N = N^(1:ℝ) := (Real.rpow_one N).symm
@@ -310,10 +236,7 @@ theorem improved_threshold_main (α N M : ℝ) (hα : 1≤α) (hN : 1≤N)
     (hM : N^(2-1/α)≤M) : N^(2*α-1)*M^(1-α)≤M := by
   have hNM := improved_threshold_ge_column α N M hα hN hM
   have hM0 : 0<M := by linarith
-  have hh := improved_threshold_power α N M (by linarith) (by linarith) hM
-  calc
-    _ ≤ M^α*M^(1-α) := mul_le_mul_of_nonneg_right hh (Real.rpow_nonneg hM0.le _)
-    _ = M := by rw [←Real.rpow_add hM0]; simp
+  exact (mul_le_mul_of_nonneg_right (improved_threshold_power α N M (by linarith) (by linarith) hM) (Real.rpow_nonneg hM0.le _)).trans_eq (by rw [←Real.rpow_add hM0]; simp)
 
 theorem improved_threshold_shape (α N M : ℝ) (hα : 1≤α) (hN : 1≤N)
     (hM : N^(2-1/α)≤M) : M+N+N^(2*α-1)*M^(1-α)≤3*M := by
@@ -339,14 +262,12 @@ theorem improved_threshold_low (α C η N M : ℝ) (hα : 0<α) (hC : 0<C)
   have hk0 : 0≤selectedPoissonK C M N η := by
     unfold selectedPoissonK selectedPoissonT
     positivity
-  calc
-    _ ≤ (C*(M*N)^η*N^(1/α))^α := Real.rpow_le_rpow hk0 hk hα.le
-    _ = _ := by
+  exact (Real.rpow_le_rpow hk0 hk hα.le).trans_eq (by
       rw [Real.mul_rpow (by positivity : 0≤C*(M*N)^η) (by positivity),
         Real.mul_rpow hC.le (by positivity),←Real.rpow_mul (by positivity : 0≤M*N),
         ←Real.rpow_mul hN.le]
       have he : (1/α)*α=1 := by field_simp
-      rw [he,Real.rpow_one]
+      rw [he,Real.rpow_one])
 
 theorem sieveNorm_large_rows (M N : ℝ) (hM : 1≤M) (hN : 1≤N) (hlarge : N^2≤M) :
     sieveNorm M N≤5*QuadraticInitialBound.initialSieveConstant*M := by
@@ -415,7 +336,7 @@ theorem hasSieveExponent_of_threshold_band (β : ℝ) (_hβ1 : 1≤β) (hβ2 : �
     have hRadd : R≤M+N^β := max_le (by linarith) (by linarith)
     exact hmono.trans (hb.trans (by gcongr ; linarith))
 
-open ActualEisensteinCubic CompletedGauss
+open CompletedGauss
 
 theorem hasSieveExponent_of_shell_threshold (β : ℝ) (hβ1 : 1≤β) (hβ2 : β≤2)
     (hshell : ∀ρ : ℝ, 0<ρ → ∃C : ℝ, 0<C ∧ ∀M X : ℝ,
@@ -503,7 +424,7 @@ theorem hasSieveExponent_of_shell_threshold (β : ℝ) (hβ1 : 1≤β) (hβ2 : �
 
 end
 
-open ActualEisensteinCubic IdealCoprimeSieveOperator DivisorBlockCauchy
+open IdealCoprimeSieveOperator DivisorBlockCauchy
 
 def fixedBadNorm : ℝ := Ideal.absNorm (∏P∈fixedBadPrimes,P)
 def fixedCutoffBase : ℝ := max 4 fixedBadNorm

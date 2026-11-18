@@ -14,7 +14,7 @@ def ratioBox : Set (ℝ × ℝ) := Icc (1/10:ℝ) 10 ×ˢ Icc (1/10:ℝ) 10
 
 theorem ratio_box_volume : volume.real ratioBox = (99/10:ℝ)^2 := by
   rw [ratioBox,Measure.real,Measure.volume_eq_prod,Measure.prod_prod,ENNReal.toReal_mul]
-  change volume.real (Icc (1/10:ℝ) 10)*volume.real (Icc (1/10:ℝ) 10) = _
+  change volume.real (Icc (1/10) 10)*volume.real (Icc (1/10) 10) = _
   rw [Real.volume_real_Icc_of_le (by norm_num)]
   norm_num
 

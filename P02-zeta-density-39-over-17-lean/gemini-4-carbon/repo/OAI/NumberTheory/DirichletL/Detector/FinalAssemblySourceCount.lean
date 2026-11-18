@@ -7,12 +7,10 @@ public import OAI.NumberTheory.DirichletL.Detector.FinalAssemblyCountParameters
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators ContDiff
 open Set Filter
+open scoped Classical BigOperators ContDiff
 namespace SevenEighths.ProbeFinalAssembly
-open HeckeFamily HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorBatch HeckeDetectorWitnessRows
-open HeckeDetectorPhysicalSelection HeckeDetectorAmplitudeFirst HeckeDetectorRowCount HeckeDetectorAdaptiveCutoff
-open ProbeHighRowFamily
+open HeckeFamily HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorBatch HeckeDetectorWitnessRows HeckeDetectorPhysicalSelection HeckeDetectorAmplitudeFirst HeckeDetectorRowCount HeckeDetectorAdaptiveCutoff ProbeHighRowFamily
 
 theorem balanced_source_count_from_raw_moments
     (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
@@ -45,8 +43,8 @@ theorem balanced_source_count_from_raw_moments
   refine ⟨K,hK,?_⟩
   filter_upwards [eventually_all_rpow_ge hcount dmin hdmin,hpref,
     source_count_frequency_eventually n dmax τ heightCost hdmax hτ hh,
-    eventually_all_rpow_ge (eventually_gt_atTop (1:ℝ)) dmin hdmin,
-    eventually_ge_atTop (1:ℝ)] with Z hcount hpref hfreq hU hZ
+    eventually_all_rpow_ge (eventually_gt_atTop 1) dmin hdmin,
+    eventually_ge_atTop 1] with Z hcount hpref hfreq hU hZ
   intro d hd hd' a ε Δ ν C q i hi ha haδ ha' hε hε' hΔ hΔ' hν hC Slot B hslots hbin hne hq hmom
   have hcard := hcount d hd a ε (Z^τ) ((Z^d)^(τ/(2*dmax))) Δ ν
     (C*Z^momentCost) (Z^heightCost) q i (hU d hd) ha haδ hε hε' hΔ hΔ' hν (by positivity)
@@ -83,8 +81,8 @@ theorem high_source_count_from_raw_moments
   refine ⟨K,hK,?_⟩
   filter_upwards [eventually_all_rpow_ge hcount dmin hdmin,hpref,
     source_count_frequency_eventually n dmax τ heightCost hdmax hτ hh,
-    eventually_all_rpow_ge (eventually_gt_atTop (1:ℝ)) dmin hdmin,
-    eventually_ge_atTop (1:ℝ)] with Z hcount hpref hfreq hU hZ
+    eventually_all_rpow_ge (eventually_gt_atTop 1) dmin hdmin,
+    eventually_ge_atTop 1] with Z hcount hpref hfreq hU hZ
   intro d hd hd' a ε Δ C q i hi ha ha' hε hε' hC Slot B hslots hbin hmom
   have hcard := hcount d hd a ε (Z^τ) ((Z^d)^(τ/(2*dmax))) Δ
     (C*Z^momentCost) (Z^heightCost) q i (hU d hd) ha ha' hε hε' (by positivity)
@@ -126,17 +124,15 @@ theorem adaptive_source_count_from_raw_moments
     M H hH S φ hφ hφc hφp hφ0 hφne a₀ b₀ B₀ ha₀ hab₀ hB₀ hφs hφB εm hεm
     Label N n dmin dmax τ logCost heightCost momentCost binWidth hdmin hdmax hτ hl hh hb counts
   refine ⟨max KB KH,lt_of_lt_of_le hKB (le_max_left _ _),?_⟩
-  filter_upwards [hbalanced,hhigh,eventually_ge_atTop (1:ℝ)] with Z hb hh hZ
+  filter_upwards [hbalanced,hhigh,eventually_ge_atTop 1] with Z hb hh hZ
   intro d hd hd' a ε Δ ν C q i hi ha ha' hε hε' hΔ hΔ' hν hC Slot B hslots hbin hne hq hmom
   by_cases hδ : 2*a-1≤5/6
   · simp only [ite_eq_left hδ] at hmom
-    have hc := hb d hd hd' a ε Δ ν C q i hi ha hδ ha' hε hε' hΔ hΔ' hν hC B hslots hbin hne hq hmom
     simp only [adaptiveRowExponent,ite_eq_left hδ]
-    exact hc.trans (by gcongr;exact le_max_left _ _)
+    exact (hb d hd hd' a ε Δ ν C q i hi ha hδ ha' hε hε' hΔ hΔ' hν hC B hslots hbin hne hq hmom).trans (by gcongr;exact le_max_left _ _)
   · simp only [ite_eq_right hδ] at hmom
-    have hc := hh d hd hd' a ε Δ C q i hi (lt_of_not_ge hδ) ha' hε hε' hC B hslots hbin hmom
     simp only [adaptiveRowExponent,ite_eq_right hδ]
-    exact hc.trans (by gcongr;exact le_max_right _ _)
+    exact (hh d hd hd' a ε Δ C q i hi (lt_of_not_ge hδ) ha' hε hε' hC B hslots hbin hmom).trans (by gcongr;exact le_max_right _ _)
 
 end SevenEighths.ProbeFinalAssembly
 

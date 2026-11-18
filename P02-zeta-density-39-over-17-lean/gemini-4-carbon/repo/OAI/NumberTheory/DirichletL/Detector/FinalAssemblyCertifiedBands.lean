@@ -10,17 +10,11 @@ public import OAI.NumberTheory.DirichletL.Energy.CappedWidthInduction
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ComplexConjugate
 open Filter
+open scoped Classical BigOperators SchwartzMap ComplexConjugate
 
 namespace SevenEighths.ProbeFinalAssemblyCertifiedBands
-open HeckeFamily HeckeDyadic HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorBatch
-open ProbeFinalAssembly ProbeHighRowFamily Parameters
-open CenteredMomentEnergyBands CenteredMomentEnergyState
-open CenteredMomentEnergyCappedWidthInduction CenteredMomentEnergyWidthRanges
-open CenteredMomentEnergyWidthSchedule CenteredMomentDetectorPlainMomentParameters
-open CenteredMomentDetectorEnergyInitialState CenteredMomentNaturalFixedRaySource
-open ProbeDetectorPlainMarkedFineField ProbeDetectorPlainUnmarkedField
+open HeckeFamily HeckeDyadic HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorBatch ProbeFinalAssembly ProbeHighRowFamily Parameters CenteredMomentEnergyBands CenteredMomentEnergyState CenteredMomentEnergyCappedWidthInduction CenteredMomentEnergyWidthRanges CenteredMomentEnergyWidthSchedule CenteredMomentDetectorPlainMomentParameters CenteredMomentDetectorEnergyInitialState CenteredMomentNaturalFixedRaySource ProbeDetectorPlainMarkedFineField ProbeDetectorPlainUnmarkedField
 local notation "O"=>HeckeFamily.O
 
 def detectorMesh (Δ t:ℝ):ℝ:=fineMesh 2 0 1 (3/4+2*Δ) (t/4)
@@ -147,11 +141,9 @@ theorem fine_moments_of_certified (h:DetectorCertifiedBands):FineMomentInput:=by
   obtain ⟨hp,hz⟩:=plain_inputs F (h hβ D hfine F)
   exact source_moments F counts (detectorMesh Δ D.t) (detectorMesh_pos hΔ D.t_pos) hfine hp hz
 
-theorem chosen_moments_of_certified (h:DetectorCertifiedBands):ChosenMomentInput:=
-  chosen_input_of_fine (fine_moments_of_certified h)
 
 theorem zeta_of_certified (h:DetectorCertifiedBands)(s:ℂ)(hs:(7/8:ℝ)<s.re):riemannZeta s≠0:=
-  zeta_of_chosen_moments (chosen_moments_of_certified h) s hs
+  zeta_of_chosen_moments ((chosen_input_of_fine (fine_moments_of_certified h))) s hs
 
 end SevenEighths.ProbeFinalAssemblyCertifiedBands
 

@@ -37,8 +37,7 @@ theorem indexedSlotAssignment_injective (I : Finset σ) :
     Function.Injective (indexedSlotAssignment (ι:=ι) I) := by
   intro q r h
   funext i hi
-  have he := congrFun h (I.equivFin ⟨i,hi⟩)
-  simpa [indexedSlotAssignment] using he
+  simpa [indexedSlotAssignment] using (congrFun h (I.equivFin ⟨i,hi⟩))
 
 theorem indexedSlotAssignment_support (I : Finset σ) (L : σ → Finset ι)
     (A : Finset ι) (q : ∀ i ∈ I, ι) (hq : q ∈ I.pi (fun i => L i ∩ A))

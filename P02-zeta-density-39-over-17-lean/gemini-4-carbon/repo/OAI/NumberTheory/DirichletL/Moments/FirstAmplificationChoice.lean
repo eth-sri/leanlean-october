@@ -12,27 +12,21 @@ public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
 open Filter
+open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentFirstAmplificationChoice
-open HeckeFamily CanonicalQuadraticSieve ConcreteTraceCRT
-open CenteredMomentSectorLocalization CenteredMomentPrimePool
-open CenteredMomentPrimeElements CenteredMomentAmplificationEligibility
-open CenteredMomentAmplificationEnergy CenteredMomentGaussEnergy
-open CenteredMomentSourceRow CenteredMomentGaussNormalization
-open CenteredMomentAmplificationOriginalErrors CenteredMomentAmplificationErrorEnergy
-open CenteredMomentAmplificationGlobal CenteredMomentAmplificationSlotGap
+open HeckeFamily CanonicalQuadraticSieve ConcreteTraceCRT CenteredMomentSectorLocalization CenteredMomentPrimePool CenteredMomentPrimeElements CenteredMomentAmplificationEligibility CenteredMomentAmplificationEnergy CenteredMomentGaussEnergy CenteredMomentSourceRow CenteredMomentGaussNormalization CenteredMomentAmplificationOriginalErrors CenteredMomentAmplificationErrorEnergy CenteredMomentAmplificationGlobal CenteredMomentAmplificationSlotGap
 local notation "O" => ActualEisensteinCubic.O
 
 abbrev ballProfile : 𝓢(ℝ,ℂ) := QuadraticInitialBound.sieveCutoff
 
 theorem ballProfile_nonneg (x : ℝ) : 0 ≤ (ballProfile x).re := by
-  simpa only [ballProfile,QuadraticInitialBound.sieveCutoff_apply,Complex.ofReal_re]
+  simpa
     using (QuadraticInitialBound.sieveBump.nonneg (x:=x))
 
 theorem ballProfile_le_one (x : ℝ) : (ballProfile x).re ≤ 1 := by
-  simpa only [ballProfile,QuadraticInitialBound.sieveCutoff_apply,Complex.ofReal_re]
+  simpa
     using (QuadraticInitialBound.sieveBump.le_one (x:=x))
 
 theorem ballProfile_one (x : ℝ) (hx : 0≤x) (hx1 : x≤1) : ballProfile x=1 := by
@@ -80,23 +74,16 @@ theorem eventually_log_card_power (c ell loss : ℝ)
     (hc : 0<c) (hell : 0<ell) (hloss : 0<loss) :
     ∀ᶠ Z : ℝ in atTop,
       Z^(ell-loss)≤c*Z^ell/Real.log (Z^ell) := by
-  have hb := (isLittleO_log_rpow_atTop hloss).bound (div_pos hc hell)
-  filter_upwards [hb,eventually_gt_atTop (1:ℝ)] with Z hbound hZ
-  have hz : 0<Z := zero_lt_one.trans hZ
-  have hlog : 0<Real.log Z := Real.log_pos hZ
-  have hpow : 0<Z^loss := Real.rpow_pos_of_pos hz _
+  filter_upwards [((isLittleO_log_rpow_atTop hloss).bound (div_pos hc hell)),eventually_gt_atTop (1:ℝ)] with Z hbound hZ
+  have hz := zero_lt_one.trans hZ
+  have hlog := Real.log_pos hZ
   have hh : ell*Real.log Z≤c*Z^loss := by
     have hh' : Real.log Z≤(c/ell)*Z^loss := by
-      simpa only [Real.norm_eq_abs,abs_of_pos hlog,abs_of_pos hpow] using hbound
-    calc
-      _ ≤ ell*((c/ell)*Z^loss) := mul_le_mul_of_nonneg_left hh' hell.le
-      _ = _ := by field_simp
+      simpa only [Real.norm_eq_abs,abs_of_pos hlog,abs_of_pos (Real.rpow_pos_of_pos hz _)] using hbound
+    exact (mul_le_mul_of_nonneg_left hh' hell.le).trans_eq (by field_simp)
   rw [Real.log_rpow hz]
   apply (le_div_iff₀ (mul_pos hell hlog)).mpr
-  calc
-    _ ≤ Z^(ell-loss)*(c*Z^loss) :=
-      mul_le_mul_of_nonneg_left hh (Real.rpow_nonneg hz.le _)
-    _ = _ := by rw [mul_left_comm,←Real.rpow_add hz,sub_add_cancel]
+  exact (mul_le_mul_of_nonneg_left hh (Real.rpow_nonneg hz.le _)).trans_eq (by rw [mul_left_comm,←Real.rpow_add hz,sub_add_cancel])
 
 section Pool
 variable (M : Ideal O) [NeZero M]
@@ -134,7 +121,7 @@ theorem eventually_actual_pool (Sbad : Finset (Ideal O))
     (tendsto_rpow_atTop he).eventually (eventually_ge_atTop (2*(cap/(ell/2)))),
     eventually_scale_gap b eta (ell/2) hgap,eventually_gt_atTop (1:ℝ)]
     with Z hcard hlarge htwo hcap hslot hZ
-  have hz : 0<Z := zero_lt_one.trans hZ
+  have hz := zero_lt_one.trans hZ
   have hlarge' : Z^(ell/2)≤(primePool M H Sbad (1/2) 1 (Z^ell)).card := by
     simpa only [show ell-ell/2=ell/2 by ring] using hlarge
   have hp : (primePool M H Sbad (1/2) 1 (Z^ell)).Nonempty := by
@@ -267,8 +254,7 @@ theorem amplified_ball_majorant (Z sigma D0 c : ℝ) (hZ : 1<Z) (hs : 0≤sigma)
 theorem gaussEnergy_ball_nonneg {α : Type*} (S : Finset α) (a : α→O)
     (ha : ∀i,Supported (Ideal.span {a i})) (c : α→ℂ) (Y : ℝ) (hY : 0<Y) :
     0≤(gaussEnergy S a ha c ballProfile Y).re := by
-  have hs := CenteredMomentSmoothedWindowEnergy.gaussEnergy_hasSum_re S a ha c ballProfile Y hY
-  rw [←hs.tsum_eq]
+  rw [←(CenteredMomentSmoothedWindowEnergy.gaussEnergy_hasSum_re S a ha c ballProfile Y hY).tsum_eq]
   exact tsum_nonneg (fun h => mul_nonneg (sq_nonneg _) (ballProfile_nonneg _))
 
 theorem errorEnergy_nonneg {α : Type*} (S : Finset α) (a : α→O)
@@ -377,13 +363,7 @@ theorem eventually_dyadic_amplification (M : Ideal O) [NeZero M]
     hZ hsigma hM (fun Q hQ => (hdata Q hQ).2.2.1)
     (fun Q hQ => (hdata Q hQ).2.2.2) hR hs hsize n hK
 
-open CenteredMomentSourceProfileMass CenteredMomentSourceMass
-open CenteredMomentAddedZeroUniform CenteredMomentOriginalChildEnergy
-open CenteredMomentCommonAllocationSum CenteredMomentSourceLiveColumn
-open CenteredMomentAmplificationLiveMask CenteredMomentHeckeExpansion
-open ConcretePrimeRowBridge CanonicalRowCompletion RayFourExpansion
-open HeckeRowClosure CenteredMomentChildRows CenteredMomentHeckeColumnWindow
-open CenteredMomentAmplificationActiveFamily CenteredMomentAmplificationActiveFactor
+open CenteredMomentSourceProfileMass CenteredMomentSourceMass CenteredMomentAddedZeroUniform CenteredMomentOriginalChildEnergy CenteredMomentCommonAllocationSum CenteredMomentSourceLiveColumn CenteredMomentAmplificationLiveMask CenteredMomentHeckeExpansion ConcretePrimeRowBridge CanonicalRowCompletion RayFourExpansion HeckeRowClosure CenteredMomentChildRows CenteredMomentHeckeColumnWindow CenteredMomentAmplificationActiveFamily CenteredMomentAmplificationActiveFactor
 
 local instance {ι : Type*} : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
@@ -465,9 +445,8 @@ theorem original_slot_coprime {ι : Type*} [Fintype ι]
   intro i I hI
   have hW := hslot i I hI
   rw [hlen] at hW
-  have hN := live_profile_norm_bound (D.slot i) b Z (z i) eta I hb hZ (hz i) (hsupp i) hW
   exact ((HeckeInverseAmplification.prime_coprime_iff ⟨Q,hQ⟩ I).mpr
-    (amplifier_not_dvd_slot Q I hQ (hprime i I hI) Z (sigma/6) eta b hgap hQN hN)).symm
+    (amplifier_not_dvd_slot Q I hQ (hprime i I hI) Z (sigma/6) eta b hgap hQN (live_profile_norm_bound (D.slot i) b Z (z i) eta I hb hZ (hz i) (hsupp i) hW))).symm
 
 namespace OriginalData
 variable {ι : Type*} [Fintype ι]
@@ -527,8 +506,7 @@ theorem active_gaussPolynomial (D : OriginalData ι) (η : Character) (m : O)
     gaussPolynomial Finset.univ (sourceGenerator D.columns)
       (sourceGenerator_supported D.columns) (D.coefficient η m t T) h := by
   unfold coefficient
-  rw [D.active_beta]
-  rw [CenteredMomentLiveDomain.source_gaussPolynomial D.active.columns
+  rw [D.active_beta, CenteredMomentLiveDomain.source_gaussPolynomial D.active.columns
     (fun I => (Real.sqrt T:ℂ)⁻¹*(D.beta I*rowWeight η m 1 1 t I)) h,
     CenteredMomentLiveDomain.source_gaussPolynomial D.columns
     (fun I => (Real.sqrt T:ℂ)⁻¹*(D.beta I*rowWeight η m 1 1 t I)) h]
@@ -553,10 +531,7 @@ theorem active_gaussEnergy (D : OriginalData ι) (η : Character) (m : O)
 
 end OriginalData
 
-open CenteredMomentFirstScale CenteredMomentCanonicalFirst CenteredMomentCompleteCommon
-open CenteredMomentFirstCanonicalFamily CenteredMomentFirstExtractedLedger
-open CenteredMomentDescentLedger CenteredMomentCommonSupport
-open CenteredMomentFirstColumns CenteredMomentRankinRadical ActualEisensteinCubic
+open CenteredMomentFirstScale CenteredMomentCanonicalFirst CenteredMomentCompleteCommon CenteredMomentFirstCanonicalFamily CenteredMomentFirstExtractedLedger CenteredMomentDescentLedger CenteredMomentCommonSupport CenteredMomentFirstColumns CenteredMomentRankinRadical ActualEisensteinCubic
 
 def nominalLog (I J E : Ideal O) (K X Z : ℝ) : ℝ :=
   Real.logb Z (firstNominalScale I J E K X)
@@ -568,7 +543,7 @@ theorem canonical_active_log_le (η τ : Character) (m : O) (I J : Ideal O)
     0≤Real.logb Z (τ.modulus.absNorm:ℝ) ∧
     Real.logb Z ((Ideal.span {activeConductor I J}).absNorm:ℝ)≤
       Real.logb Z (τ.modulus.absNorm:ℝ) := by
-  have hpos : 0<τ.modulus.absNorm := Nat.pos_of_ne_zero
+  have hpos := Nat.pos_of_ne_zero
     (Ideal.absNorm_eq_zero_iff.not.mpr τ.modulus_ne_bot)
   have hd : Ideal.span {activeConductor I J}∣τ.modulus := by
     rw [hmod,←Ideal.span_singleton_mul_span_singleton]

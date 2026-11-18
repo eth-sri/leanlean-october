@@ -48,9 +48,7 @@ theorem fordTentFourierCoefficient_of_ne_zero
       (((Real.sin (Real.pi * (n : ℝ) * w)) ^ 2 /
         (Real.pi ^ 2 * w * (n : ℝ) ^ 2) : ℝ) : ℂ) := by
   have hnR : (n : ℝ) ≠ 0 := by exact_mod_cast hn
-  have harg : Real.pi * (n : ℝ) * w ≠ 0 :=
-    mul_ne_zero (mul_ne_zero Real.pi_ne_zero hnR) hw
-  simp only [fordTentFourierCoefficient, Real.sinc_of_ne_zero harg]
+  simp only [fordTentFourierCoefficient, Real.sinc_of_ne_zero (mul_ne_zero (mul_ne_zero Real.pi_ne_zero hnR) hw)]
   norm_cast
   field_simp [Real.pi_ne_zero, hnR, hw]
   push_cast
@@ -58,14 +56,12 @@ theorem fordTentFourierCoefficient_of_ne_zero
 
 theorem summable_fordTentFourierCoefficient {w : ℝ} (hw : 0 < w) :
     Summable (fordTentFourierCoefficient w) := by
-  let C : ℝ := 1 / (Real.pi ^ 2 * w)
+  let C := 1 / (Real.pi ^ 2 * w)
   have hC : 0 ≤ C := by
     dsimp [C]
     positivity
-  have hmajor : Summable (fun n : ℤ => C * (1 / (n : ℝ) ^ 2)) :=
-    (Real.summable_one_div_int_pow.mpr (by norm_num : 1 < 2)).mul_left C
-  refine hmajor.of_norm_bounded_eventually ?_
-  filter_upwards [Filter.eventually_cofinite_ne (0 : ℤ)] with n hn
+  refine ((Real.summable_one_div_int_pow.mpr (by norm_num : 1 < 2)).mul_left C).of_norm_bounded_eventually ?_
+  filter_upwards [Filter.eventually_cofinite_ne 0] with n hn
   rw [fordTentFourierCoefficient_of_ne_zero hw.ne' hn]
   have hnR : (n : ℝ) ≠ 0 := by exact_mod_cast hn
   have hden : 0 < Real.pi ^ 2 * w * (n : ℝ) ^ 2 := by positivity
@@ -252,19 +248,13 @@ private theorem support_fordTentCharacterIntegrand_subset
     {w : ℝ} (hw : 0 < w) (n : ℤ) :
     Function.support (fordTentCharacterIntegrand w n) ⊆ Set.Ioc (-w) w := by
   intro x hx
-  have hmul :
-      ((max 0 (1 - |x| / w) : ℝ) : ℂ) *
-          fordAdditiveCharacter (-((n : ℝ) * x)) ≠ 0 := hx
-  have htentC : ((max 0 (1 - |x| / w) : ℝ) : ℂ) ≠ 0 :=
-    (mul_ne_zero_iff.mp hmul).1
-  have htent : max 0 (1 - |x| / w) ≠ 0 := by exact_mod_cast htentC
+  have htent : max 0 (1 - |x| / w) ≠ 0 := by exact_mod_cast ((mul_ne_zero_iff.mp (hx)).1)
   have hlinear : 0 < 1 - |x| / w := by
     by_contra hnot
-    have hle : 1 - |x| / w ≤ 0 := le_of_not_gt hnot
     apply htent
-    exact max_eq_left hle
+    exact max_eq_left (le_of_not_gt hnot)
   have habsdiv : |x| / w < 1 := by linarith
-  have habs : |x| < w := (div_lt_one hw).mp habsdiv
+  have habs := (div_lt_one hw).mp habsdiv
   exact ⟨(abs_lt.mp habs).1, (abs_lt.mp habs).2.le⟩
 
 private theorem ford_fourier_coe_eq_character (n : ℤ) (x : ℝ) :

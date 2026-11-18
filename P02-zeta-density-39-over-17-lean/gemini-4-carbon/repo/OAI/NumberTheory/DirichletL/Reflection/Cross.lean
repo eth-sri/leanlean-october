@@ -63,8 +63,7 @@ theorem ordered_cross_partition_on {ι : Type*} [Fintype ι] [DecidableEq ι]
             x i k ^ (if i ∈ A then a else b)) * l i)) := by
       rw [← Finset.prod_union hd, hu]
     _ = _ := by
-      rw [hpA, hpB]
-      rw [Finset.prod_comm (s := B) (t := A)]
+      rw [hpA, hpB, Finset.prod_comm (s := B) (t := A)]
       simp only [Finset.prod_mul_distrib]
       ring
 
@@ -92,7 +91,6 @@ theorem ordered_cross_frozen_partition {ι : Type*} [Fintype ι] [DecidableEq ι
       · subst k; simp [hn]
       · simp [hk,or_assoc]
     rw [he,Finset.prod_union (hF.mono_left (Finset.erase_subset _ _))]
-    dsimp [ll]
     ring
   rw [hx,ordered_cross_partition_on x ll a b R P (R ∪ P) hRP rfl]
   congr 2

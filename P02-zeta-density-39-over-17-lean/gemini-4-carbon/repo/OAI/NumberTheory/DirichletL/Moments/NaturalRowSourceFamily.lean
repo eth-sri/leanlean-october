@@ -10,8 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentNaturalRowSource
-open HeckeFamily HeckeRowClosure CanonicalRowCompletion ConcretePrimeRowBridge
-open CenteredMomentSecondHeightFamily CenteredMomentFixedRowMask CenteredExceptionalProfile
+open HeckeFamily HeckeRowClosure CanonicalRowCompletion ConcretePrimeRowBridge CenteredMomentSecondHeightFamily CenteredMomentFixedRowMask CenteredExceptionalProfile
 local notation "O" => HeckeFamily.O
 
 structure NaturalRow (η : Character) (z : O) where
@@ -26,7 +25,7 @@ def naturalRow (η : Character) (z : O) (hz : z≠0) : NaturalRow η z := by
 
 lemma NaturalRow.ideal {η : Character} {z : O} (F : NaturalRow η z) (I : Ideal O) :
     idealCoeff F.character I=idealCoeff η I*idealRowHom (fixedBadMask^6*z) I := by
-  simpa only [one_pow,mul_one] using idealCoeff_eq_row η F.character fixedBadMask 1 z F.element I
+  simpa using idealCoeff_eq_row η F.character fixedBadMask 1 z F.element I
 
 lemma NaturalRow.element_zero {η : Character} {z : O} (F : NaturalRow η z) :
     elementCoeff F.character 0=0 := by
@@ -41,7 +40,7 @@ lemma NaturalRow.masked_element {η : Character} {z : O} (F : NaturalRow η z)
     elementCoeff (excluded F.character R) n=
       rowTwist (elementHom η) (fixedBadMask*idealGenerator R) 1 z n := by
   rw [excluded_element_generator F.character F.element_zero R hR,F.element]
-  simpa only [one_mul] using
+  simpa using
     (row_mask_mul η fixedBadMask (idealGenerator R) 1 z n
       (dvd_mul_right _ _) (dvd_mul_left _ _)).symm
 
@@ -49,7 +48,7 @@ lemma NaturalRow.masked_ideal {η : Character} {z : O} (F : NaturalRow η z)
     (R : Ideal O) (hR : R≠0) (I : Ideal O) :
     idealCoeff (excluded F.character R) I=
       idealCoeff η I*idealRowHom ((fixedBadMask*idealGenerator R)^6*z) I := by
-  simpa only [one_pow,mul_one] using idealCoeff_eq_row η (excluded F.character R)
+  simpa using idealCoeff_eq_row η (excluded F.character R)
     (fixedBadMask*idealGenerator R) 1 z (F.masked_element R hR) I
 
 theorem NaturalRow.nonprincipal {η : Character} {z : O} (F : NaturalRow η z)
@@ -62,14 +61,13 @@ theorem NaturalRow.nonprincipal {η : Character} {z : O} (F : NaturalRow η z)
       fixedBadMask_ne_zero (idealGenerator_ne_zero R hR) one_ne_zero hz
       (dvd_mul_right _ _) (dvd_mul_left _ _)).mpr h)
   exact CenteredMomentNonprincipalGate.actual_row_nonprincipal η F.character Q fixedBadMask 1 z
-    (by simpa only [one_mul] using F.element) hbase
+    (by simpa using F.element) hbase
 
 def fixedConductorFactor : ℕ := (Ideal.span {fixedBadMask}).absNorm*(Ideal.span {(72:O)}).absNorm
 
 lemma NaturalRow.natural_modulus_bound {η : Character} {z : O} (F : NaturalRow η z) :
     F.character.modulus.absNorm≤η.modulus.absNorm*fixedConductorFactor*(Ideal.span {z}).absNorm := by
-  have hh:=F.modulus_bound
-  simpa [rowConductorBound,fixedConductorFactor,Ideal.span_singleton_one,mul_assoc] using hh
+  simpa [rowConductorBound,fixedConductorFactor,Ideal.span_singleton_one,mul_assoc] using (F.modulus_bound)
 
 theorem NaturalRow.modulus_power_bound {η : Character} {z : O} (F : NaturalRow η z)
     (Z m q Cz : ℝ) (hZ : 0<Z) (_hCz : 0≤Cz)
@@ -80,11 +78,8 @@ theorem NaturalRow.modulus_power_bound {η : Character} {z : O} (F : NaturalRow 
       (η.modulus.absNorm:ℝ)*(fixedConductorFactor:ℝ)*((Ideal.span {z}).absNorm:ℝ) :=
     by exact_mod_cast F.natural_modulus_bound
   apply hb.trans
-  calc
-    _≤(Z^m*(fixedConductorFactor:ℝ))*(Cz*Z^q) :=
-      mul_le_mul (mul_le_mul_of_nonneg_right hη (Nat.cast_nonneg _)) hz
-        (Nat.cast_nonneg _) (mul_nonneg (Real.rpow_nonneg hZ.le _) (Nat.cast_nonneg _))
-    _=(fixedConductorFactor:ℝ)*Cz*Z^(m+q) := by rw [Real.rpow_add hZ]; ring
+  exact (mul_le_mul (mul_le_mul_of_nonneg_right hη (Nat.cast_nonneg _)) hz
+        (Nat.cast_nonneg _) (mul_nonneg (Real.rpow_nonneg hZ.le _) (Nat.cast_nonneg _))).trans_eq (by rw [Real.rpow_add hZ]; ring)
 
 end SevenEighths.CenteredMomentNaturalRowSource
 

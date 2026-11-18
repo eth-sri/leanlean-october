@@ -42,12 +42,9 @@ theorem norm_heathBrownPhase_sub_le (a b : ℝ) :
     push_cast
     ring
   rw [hexp]
-  calc
-    ‖Complex.exp (Complex.I * (2 * Real.pi * (a - b) : ℝ)) - 1‖ ≤
-        ‖(2 * Real.pi * (a - b) : ℝ)‖ := h
-    _ = 2 * Real.pi * |a - b| := by
+  exact (h).trans_eq (by
       rw [Real.norm_eq_abs, abs_mul, abs_mul, abs_of_nonneg (by positivity : 0 ≤ (2 : ℝ)),
-        abs_of_nonneg Real.pi_pos.le]
+        abs_of_nonneg Real.pi_pos.le])
 
 /-- Mean-value estimate in the exact form used between consecutive integer
 arguments of the Abel weight. -/

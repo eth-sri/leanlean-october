@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaLegendreTaylorExtension
 public import TaoTrudgianYang2025.BetaPhaseNormalization
 
@@ -41,7 +51,7 @@ theorem canonicalTaylorLegendrePhase_agrees
     taylorPastedExtension (anchoredLegendreError F σ w) (Q+1) _ _ h v = _
   rw [taylorPastedExtension_agrees _ (Q+1) hh hplateau]
   unfold anchoredLegendreError
-  nlinarith only [he]
+  nlinarith
 
 theorem canonicalTaylorLegendrePhase_uniformity
     {σ A : ℝ} (hσ : 0 < σ) (hA : 0 < A) (hA₂ : A ≤ 2)
@@ -61,12 +71,12 @@ theorem canonicalTaylorLegendrePhase_uniformity
   have hB : 0 < B := phaseRescalingBudget_pos _ _ _
   have hCpos : 0 < C := zero_lt_one.trans_le hC
   let δ := min (min (modelPhaseCurvatureLower σ) 1)
-    (min (min ((2 : ℝ)^(-σ)/2) 1) (ε/(B*C)))
+    (min (min (2^(-σ)/2) 1) (ε/(B*C)))
   have hd : 0 < δ := lt_min
     (lt_min (modelPhaseCurvatureLower_pos hσ) zero_lt_one)
     (lt_min (lt_min (by positivity) zero_lt_one) (div_pos hε (mul_pos hB hCpos)))
   have hsmall : δ ≤ min (modelPhaseCurvatureLower σ) 1 := min_le_left _ _
-  have hpos : δ ≤ min ((2 : ℝ)^(-σ)/2) 1 :=
+  have hpos : δ ≤ min (2^(-σ)/2) 1 :=
     (min_le_right _ _).trans (min_le_left _ _)
   have hbudget : δ ≤ ε/(B*C) := (min_le_right _ _).trans (min_le_right _ _)
   refine ⟨δ,hd,hsmall,hpos,?_⟩
@@ -75,7 +85,7 @@ theorem canonicalTaylorLegendrePhase_uniformity
   apply referencePlusCorrection_approximate
     (rescaledPhaseCorrection_contDiff hsmooth σ⁻¹ A) σ⁻¹ Q
   intro u hu n hn
-  have hv : A*u ∈ Icc (0 : ℝ) 4 := by
+  have hv : A*u ∈ Icc 0 4 := by
     constructor
     · exact mul_nonneg hA.le (zero_le_one.trans hu.1)
     · nlinarith [hu.1,hu.2]

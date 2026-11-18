@@ -7,8 +7,7 @@ namespace OAI
 
 noncomputable section
 namespace SevenEighths.ProbePhase
-open ActualEisensteinCubic ActualEisensteinCoordinates CompletedGauss CubicEisenstein
-open CanonicalRowCompletion CanonicalQuadraticSieve ConcretePrimeRowBridge
+open ActualEisensteinCubic ActualEisensteinCoordinates CompletedGauss CubicEisenstein CanonicalRowCompletion CanonicalQuadraticSieve ConcretePrimeRowBridge
 local notation "O" => ActualEisensteinCubic.O
 
 lemma reciprocitySign_star (a b : O) : star (reciprocitySign a b)=reciprocitySign a b := by
@@ -62,11 +61,6 @@ theorem completed_cubic_cross_cancel (c n d m : O)
     (hnd : IsCoprime n d) (hnm : IsCoprime n m) :
     sexticPair (c*n^3) (d*m^3) * sexticPair c d^2 *
       star (reciprocitySign (c*n^3) (d*m^3)) = 1 := by
-  have hcd3 := sexticPair_cube_supported c d hc hd hpc hpd hcd
-  have hcm3 := sexticPair_cube_supported c m hc hm hpc hpm hcm
-  have hnd3 := sexticPair_cube_supported n d hn hd hpn hpd hnd
-  have hnm3 := sexticPair_cube_supported n m hn hm hpn hpm hnm
-  have hRnm := reciprocitySign_sq n m (supported_residue_odd n hn) (supported_residue_odd m hm)
   have he : sexticPair (c*n^3) (d*m^3)*sexticPair c d^2 =
       reciprocitySign (c*n^3) (d*m^3) := by
     calc
@@ -77,7 +71,7 @@ theorem completed_cubic_cross_cancel (c n d m : O)
           sexticPair_cube_right]
         ring
       _ = reciprocitySign c d * reciprocitySign c m * reciprocitySign n d * reciprocitySign n m := by
-        rw [hcd3,hcm3,hnd3,hnm3,pow_succ,hRnm,one_mul]
+        rw [(sexticPair_cube_supported c d hc hd hpc hpd hcd),(sexticPair_cube_supported c m hc hm hpc hpm hcm),(sexticPair_cube_supported n d hn hd hpn hpd hnd),(sexticPair_cube_supported n m hn hm hpn hpm hnm),pow_succ,(reciprocitySign_sq n m (supported_residue_odd n hn) (supported_residue_odd m hm)),one_mul]
       _ = _ := by
         rw [reciprocitySign_mul_left, reciprocitySign_mul_right, reciprocitySign_mul_right,
           reciprocitySign_cube_right c m (supported_residue_odd c hc) (supported_residue_odd m hm),

@@ -10,11 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentSourceInputReindex
-open HeckeFamily CanonicalQuadraticSieve
-open CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput
-open CenteredMomentFirstAmplificationChoice CenteredMomentOriginalChildEnergy
-open CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentAddedZeroUniform
-open CenteredMomentCommonAllocationSum CenteredMomentCommonProfile
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput CenteredMomentFirstAmplificationChoice CenteredMomentOriginalChildEnergy CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentAddedZeroUniform CenteredMomentCommonAllocationSum CenteredMomentCommonProfile
 local notation "O" => HeckeFamily.O
 variable {α β : Type*} [Fintype α] [Fintype β]
 local instance {κ : Type*} : DecidableEq κ := Classical.decEq _
@@ -114,8 +110,7 @@ lemma coefficient_map (e : α≃β) (s : Input α) (R seed : Ideal O) :
   unfold OriginalData.beta finiteColumnCoefficient
   change (∑v∈(Fintype.piFinset (reindex e s).pools).filter (fun v=>finiteTupleProduct v=I),
     (original (reindex e s) R seed).profile v)=_
-  rw [←pools_map,Finset.filter_image]
-  rw [Finset.sum_image (fun v _ w _ h => (tupleMap e).injective h)]
+  rw [←pools_map,Finset.filter_image, Finset.sum_image (fun v _ w _ h => (tupleMap e).injective h)]
   simp only [tupleMap_product,profile_map]
   rfl
 

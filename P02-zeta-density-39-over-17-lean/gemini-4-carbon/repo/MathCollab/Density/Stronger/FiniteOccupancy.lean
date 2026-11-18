@@ -62,12 +62,11 @@ theorem sum_nat_occupancy_le_of_superlevels
       ((S.filter (fun x => m ≤ f x)).card : ℝ) ≤ B / (m : ℝ)^2) :
     ((∑ x ∈ S, f x) : ℝ) ≤ 2*B := by
   classical
-  let M : ℕ := S.sup f
+  let M := S.sup f
   have hM : ∀ x ∈ S, f x ≤ M := fun x hx => Finset.le_sup hx
-  have he := sum_nat_occupancy_eq_sum_superlevel S f M hM
   have heReal : ((∑ x ∈ S, f x) : ℝ) =
       ∑ m ∈ Finset.Icc 1 M, ((S.filter (fun x => m ≤ f x)).card : ℝ) := by
-    exact_mod_cast he
+    exact_mod_cast (sum_nat_occupancy_eq_sum_superlevel S f M hM)
   rw [heReal]
   calc
     _ ≤ ∑ m ∈ Finset.Icc 1 M, B / (m : ℝ)^2 := by

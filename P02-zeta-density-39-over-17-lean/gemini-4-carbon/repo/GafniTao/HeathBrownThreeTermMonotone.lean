@@ -57,14 +57,11 @@ theorem heathBrown_sourceScale_main_mono
         (N : ℝ) ^ epsilon * heathBrownThreeTerm N k lambda := by
   have hM0 : (0 : ℝ) ≤ M := by positivity
   have hMNReal : (M : ℝ) ≤ N := by exact_mod_cast hMN
-  have hpow := Real.rpow_le_rpow hM0 hMNReal hepsilon.le
   have hthree := heathBrownThreeTerm_mono hM hMN
     (by omega : 2 ≤ k) hlambda
-  have hthreeM0 : 0 ≤ heathBrownThreeTerm M k lambda :=
-    (heathBrownThreeTerm_pos (k := k) hM hlambda).le
   simpa only [mul_assoc] using
     (mul_le_mul_of_nonneg_left
-      (mul_le_mul hpow hthree hthreeM0 (by positivity)) hconstant)
+      (mul_le_mul (Real.rpow_le_rpow hM0 hMNReal hepsilon.le) hthree ((heathBrownThreeTerm_pos (k := k) hM hlambda).le) (by positivity)) hconstant)
 
 
 end

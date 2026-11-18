@@ -9,8 +9,7 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseInitialCanonicalEnergy
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT CanonicalQuadraticSieve
-open InverseMoment InverseInitialClippedColumns SecondPassArithmetic CanonicalCoefficientClass
+open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT CanonicalQuadraticSieve InverseMoment InverseInitialClippedColumns SecondPassArithmetic CanonicalCoefficientClass
 local notation "O"=>ActualEisensteinCubic.O
 variable {ι σ:Type}[DecidableEq ι][DecidableEq σ]
   (p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
@@ -24,9 +23,7 @@ theorem normalization_change (pool:Finset ι)(Ψ:O→*ℂ)(m:O)
     (X Z F G:ℝ)(hZ:0<Z):
     normalizedColumnEnergy p hp hcop hg pool Ψ m slots lists a labels rows w W X Z F=
       Z^(G-F)*normalizedColumnEnergy p hp hcop hg pool Ψ m slots lists a labels rows w W X Z G := by
-  have he:Z^F*normalizedColumnEnergy p hp hcop hg pool Ψ m slots lists a labels rows w W X Z F=
-      Z^G*normalizedColumnEnergy p hp hcop hg pool Ψ m slots lists a labels rows w W X Z G:=
-    (columnEnergy_normalization p hp hcop hg pool Ψ m slots lists a labels rows w W X hZ F).symm.trans
+  have he := (columnEnergy_normalization p hp hcop hg pool Ψ m slots lists a labels rows w W X hZ F).symm.trans
       (columnEnergy_normalization p hp hcop hg pool Ψ m slots lists a labels rows w W X hZ G)
   apply mul_left_cancel₀ (Real.rpow_pos_of_pos hZ F).ne'
   rw [←mul_assoc,←Real.rpow_add hZ,show F+(G-F)=G by ring]

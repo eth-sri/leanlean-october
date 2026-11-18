@@ -16,7 +16,7 @@ theorem actual_complete_step_cost (L eta epsChild:ℝ)(hL:0≤L)(heta:0<eta)
     2*L*firstPassEpsilon L eta≤eta ∧
     (epsChild+60*eta)+2*L*firstPassEpsilon L eta+eta≤epsChild+62*eta := by
   have hd:0<10*L+32:=by positivity
-  have hp:0<firstPassEpsilon L eta:=div_pos heta hd
+  have hp :=div_pos heta hd
   have he:firstPassEpsilon L eta*(10*L+32)=eta:=by unfold firstPassEpsilon;field_simp
   have hb:2*L+7*eta≤10*L+32:=by linarith
   have hc:=mul_le_mul_of_nonneg_left hb hp.le

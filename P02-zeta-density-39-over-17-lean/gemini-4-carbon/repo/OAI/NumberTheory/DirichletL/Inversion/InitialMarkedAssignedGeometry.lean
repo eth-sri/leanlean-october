@@ -10,8 +10,7 @@ noncomputable section
 
 open scoped Classical BigOperators
 namespace SevenEighths.InverseInitialMarkedAssignedGeometry
-open HeckeFamily ConcretePrimeRowBridge
-open DetectorDictionaryInverseMarkedReference InverseInitialQuotientGeometry
+open HeckeFamily ConcretePrimeRowBridge DetectorDictionaryInverseMarkedReference InverseInitialQuotientGeometry
 local notation "O"=>HeckeFamily.O
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 
@@ -68,15 +67,15 @@ omit [Fintype ι] [DecidableEq ι] in
   rw [assigned_ratio_product L J x U hU ell]
   constructor
   · have hh:=Finset.prod_le_prod₀ (s:=Finset.univ)
-      (f:=fun _i:↥J=>(1:ℝ)) (g:=fun i=>((x i).val.absNorm:ℝ)/U^(ell i.val))
+      (f:=fun _i:↥J=>1) (g:=fun i=>((x i).val.absNorm:ℝ)/U^(ell i.val))
       (fun _ _=>zero_le_one) (fun i _=>(hL i.val i.property _ (x i).property).1)
-    simpa only [Finset.prod_const_one] using hh
+    simpa using hh
   · calc
-      _≤∏_i:↥J,(2:ℝ):=Finset.prod_le_prod₀
+      _≤∏_i:↥J,2:=Finset.prod_le_prod₀
         (fun i _=>(zero_le_one.trans (hL i.val i.property _ (x i).property).1))
         (fun i _=>(hL i.val i.property _ (x i).property).2)
-      _=(2:ℝ)^J.card:=by simp
-      _≤(2:ℝ)^K:=pow_le_pow_right₀ (by norm_num) hK
+      _=2^J.card:=by simp
+      _≤2^K:=pow_le_pow_right₀ (by norm_num) hK
 
 end SevenEighths.InverseInitialMarkedAssignedGeometry
 

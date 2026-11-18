@@ -123,7 +123,7 @@ theorem canonical_original_inactive_energy_uniform_degree
         (slotChoiceFamily (fun i : T => lists i.val) (fun i => hmax i.val) (fun i => hgood i.val) p.val)).generator_good
       (reflectedExponent (fun b : A => completedLocalExponent J F b.val.val)) (slotIndices A (PrimeIndex K.val) T)
       (CompletedHeight.normTwistedSource W θ) (Z^(N-3*hhat))
-  have hzpos : 0<Z := lt_trans zero_lt_one (lt_of_lt_of_le hZ₀ hZ)
+  have hzpos := lt_trans zero_lt_one (lt_of_lt_of_le hZ₀ hZ)
   apply supported_inactive_source_energy rows lists T FF H (fun i P hP => (hprime i P hP).ne_zero)
     hH w hw f (C*(1+‖θ‖)^degree*Z^(N+V-cstar/8-O₀/2)) (by positivity)
   intro b

@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.RobertSargosFixedDisplacementLoss
 public import LaterPairs.Native.RobertSargosFrequencyCoordinates
 
@@ -39,9 +48,9 @@ theorem exists_robertSargos_frequency_fiber_conic_bound (ε : ℝ) (hε : 0 < ε
       (fun t ht => by
         have hl := (hT t ht).linear
         dsimp [robertSargosFromFrequencyKey] at hl
-        nlinarith only [hl])
+        nlinarith)
       (fun t ht => (hT t ht).near)
-    have hcard : T.card = S.card := robertSargos_frequency_fiber_image_card S hfix
+    have hcard := robertSargos_frequency_fiber_image_card S hfix
     rwa [hcard] at hb
   · rw [Finset.not_nonempty_iff_eq_empty.mp hs]
     simp only [Finset.card_empty,Nat.cast_zero]
@@ -72,9 +81,9 @@ theorem exists_robertSargos_frequency_fiber_linear_bound (ε : ℝ) (hε : 0 < �
       (fun t ht => by
         have hl := (hT t ht).linear
         dsimp [robertSargosFromFrequencyKey] at hl
-        nlinarith only [hl])
+        nlinarith)
       (fun t ht => (hT t ht).near)
-    have hcard : T.card = S.card := robertSargos_frequency_fiber_image_card S hfix
+    have hcard := robertSargos_frequency_fiber_image_card S hfix
     rwa [hcard] at hb
   · rw [Finset.not_nonempty_iff_eq_empty.mp hs]
     simp only [Finset.card_empty,Nat.cast_zero]

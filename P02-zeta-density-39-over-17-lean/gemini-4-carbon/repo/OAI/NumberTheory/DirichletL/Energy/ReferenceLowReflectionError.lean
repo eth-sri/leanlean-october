@@ -7,20 +7,11 @@ public import OAI.NumberTheory.DirichletL.Energy.ReferenceLowError
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
 open Filter
+open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyReferenceLowReflectionError
-open HeckeFamily HeckeDyadic ConcreteTraceCRT
-open CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyReferenceLowBands CenteredMomentEnergyReferenceState
-open CenteredMomentEnergyReferenceLowMoments CenteredMomentEnergyReferenceLowWindow
-open CenteredMomentEnergyReferenceHomogeneous CenteredMomentNaturalRowSource
-open CenteredMomentNaturalFixedRaySource CenteredMomentInductionEnergy
-open CenteredMomentPrimeSlot CenteredMomentFiniteProfileExceptional QuadraticInitialBound
-open CenteredMomentOriginalRadialComparison CenteredMomentCommonMaskExpansion
-open CenteredMomentCommonMaskEnergy CenteredMomentAllocatedNaturalRadial
-open CenteredMomentScaleSupremum CenteredMomentSectorLocalization
+open HeckeFamily HeckeDyadic ConcreteTraceCRT CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyReferenceLowBands CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowMoments CenteredMomentEnergyReferenceLowWindow CenteredMomentEnergyReferenceHomogeneous CenteredMomentNaturalRowSource CenteredMomentNaturalFixedRaySource CenteredMomentInductionEnergy CenteredMomentPrimeSlot CenteredMomentFiniteProfileExceptional QuadraticInitialBound CenteredMomentOriginalRadialComparison CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy CenteredMomentAllocatedNaturalRadial CenteredMomentScaleSupremum CenteredMomentSectorLocalization
 local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
 variable (M:Ideal O)[NeZero M]
@@ -90,7 +81,7 @@ theorem reference_from_low_with_error
     (fun i _=>Real.rpow_pos_of_pos (zero_lt_one.trans hZ.1) _)
     (fun i _=>hσlo i) (fun i _=>hσhi i)
     (fun i _ I hI=>(Finset.mem_filter.mp hI).2.1) s.radial.nonneg
-  have hZpos:0<Z:=zero_lt_one.trans hZ.1
+  have hZpos :=zero_lt_one.trans hZ.1
   have hcoeff:0≤D*(max 1 ((fixedConductorFactor:ℝ)*bΦ*Z^s.width))^(2*epsilon)*
       (sourceControl Slong Wlong)^2*(1+‖t‖)^(2*nlong)*Z^(-2*saving):=by positivity
   apply hh.trans

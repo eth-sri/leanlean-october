@@ -12,14 +12,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.CenteredMomentEnergyAllocatedChildren
-open HeckeFamily HeckeDyadic ConcreteTraceCRT
-open CenteredMomentNaturalRowSource CenteredMomentNaturalFixedRaySource
-open CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy
-open CenteredMomentAllocatedNaturalSource CenteredMomentAllocatedNaturalRadial
-open CenteredMomentDetectorDictionary CenteredMomentHeckeSlots CenteredMomentWholeSlotDeletion
-open CenteredMomentSecondHeightFamily CenteredMomentHeckeHeight
-open CenteredMomentOriginalRadialComparison CenteredMomentInductionEnergy
-open CenteredMomentCommonRadialData CenteredMomentCommonHeightEnvelope
+open HeckeFamily HeckeDyadic ConcreteTraceCRT CenteredMomentNaturalRowSource CenteredMomentNaturalFixedRaySource CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy CenteredMomentAllocatedNaturalSource CenteredMomentAllocatedNaturalRadial CenteredMomentDetectorDictionary CenteredMomentHeckeSlots CenteredMomentWholeSlotDeletion CenteredMomentSecondHeightFamily CenteredMomentHeckeHeight CenteredMomentOriginalRadialComparison CenteredMomentInductionEnergy CenteredMomentCommonRadialData CenteredMomentCommonHeightEnvelope
 open CenteredMomentRadialEligibleEnergy (Radial)
 local notation "O"=>HeckeFamily.O
 
@@ -80,14 +73,11 @@ lemma natural_subset_radial_eq_energy (η:Character)(r:Radial)(hz:∀z,r.keep z�
   have hh:=natural_radial_eq_energy (α:=F) η r hz W₁ W₂
     (fun i:F=>pool i) (fun i:F=>β i) (fun i:F=>P i) X₁ X₂ hX₁ hX₂
     (fun i=>hP i i.property)
-  have hp (z:O):(∏i:F,naturalSlot (naturalCharacter η z) (pool i) (β i) (P i))=
-      ∏i∈F,naturalSlot (naturalCharacter η z) (pool i) (β i) (P i):=
-    Finset.prod_coe_sort F (fun i:α=>naturalSlot (naturalCharacter η z) (pool i) (β i) (P i))
+  have hp (z:O) := Finset.prod_coe_sort F (fun i:α=>naturalSlot (naturalCharacter η z) (pool i) (β i) (P i))
   simp_rw [hp] at hh
   exact hh
 
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentDivisorRetained
-open CenteredMomentRetainedProfile CenteredMomentCommonAllocationSum
+open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentDivisorRetained CenteredMomentRetainedProfile CenteredMomentCommonAllocationSum
 
 def allocatedEnergy (η:Character)(r:Radial)(D:Ideal O)
     (a:Allocation D (Finset.univ:Finset (α⊕Fin 2))) (V₁ V₂:Plain)

@@ -74,9 +74,8 @@ theorem actual_row_nonprincipal (η χ : Character) (m f z : O)
   refine nonprincipal_of_local_factor χ (η.modulus * Ideal.span {m} * Ideal.span {(72 : O)}) J P
       ?_ φ ?_ hJ hg hchar hc hc6 hcop ?_
   · have hd3 : λ₀ ^ 2 ∣ (3 : O) := ActualEisensteinCubic.lambda_sq_dvd_three
-    have hd72 : λ₀ ^ 2 ∣ (72 : O) := hd3.trans ⟨24, by norm_num⟩
     exact Ideal.mul_le_right.trans ((Ideal.span_singleton_le_iff_mem _).mpr
-      (Ideal.mem_span_singleton.mpr hd72))
+      (Ideal.mem_span_singleton.mpr (hd3.trans ⟨24, by norm_num⟩)))
   · intro x y hxy
     change ((HeckeRowClosure.elementHom η x * coprimalityMask m x) * numeratorBadTwist u a b r hr x) =
       ((HeckeRowClosure.elementHom η y * coprimalityMask m y) * numeratorBadTwist u a b r hr y)
@@ -96,22 +95,19 @@ theorem extract_prime_power (I : Ideal O) (hI : CanonicalQuadraticSieve.Supporte
       CanonicalQuadraticSieve.Supported J ∧ IsCoprime J P := by
   let S := (normalizedFactors I).toFinset
   let J := ∏ Q ∈ S.erase P, Q ^ (normalizedFactors I).count Q
-  have hPS : P ∈ S := Multiset.mem_toFinset.mpr hP
   have hsplit : I = P ^ (normalizedFactors I).count P * J := by
     calc
       I = (normalizedFactors I).prod := (Ideal.prod_normalizedFactors_eq_self hI.1).symm
       _ = ∏ Q ∈ S, Q ^ (normalizedFactors I).count Q := Finset.prod_multiset_count _
       _ = P ^ (normalizedFactors I).count P * J :=
-        (Finset.mul_prod_erase S (fun Q => Q ^ (normalizedFactors I).count Q) hPS).symm
-  have hgood := supported_factors_good I hI P hP
-  let : P.IsMaximal := hgood.1
+        (Finset.mul_prod_erase S (fun Q => Q ^ (normalizedFactors I).count Q) (Multiset.mem_toFinset.mpr hP)).symm
+  let : P.IsMaximal := (supported_factors_good I hI P hP).1
   refine ⟨J, hsplit, ?_, ?_⟩
   · exact (CanonicalQuadraticSieve.supported_mul_iff _ _).mp (hsplit ▸ hI) |>.2
   · apply IsCoprime.prod_left
     intro Q hQ
     obtain ⟨hQP, hQS⟩ := Finset.mem_erase.mp hQ
-    have hgoodQ := supported_factors_good I hI Q (Multiset.mem_toFinset.mp hQS)
-    let : Q.IsMaximal := hgoodQ.1
+    let : Q.IsMaximal := (supported_factors_good I hI Q (Multiset.mem_toFinset.mp hQS)).1
     exact (Ideal.isCoprime_of_isMaximal hQP).pow_left
 
 open UniqueFactorizationMonoid in
@@ -130,9 +126,8 @@ theorem principal_row_multiplicity (η χ : Character) (m f z : O)
   have hgood := supported_factors_good (Ideal.span {r}) hr P hP
   let : P.IsMaximal := hgood.1
   obtain ⟨J, hsplit, hJ, hJP⟩ := extract_prime_power _ hr P hP
-  have hc : 1 ≤ (normalizedFactors (Ideal.span {r})).count P := Multiset.count_pos.mpr hP
   exact actual_row_nonprincipal η χ m f z hmLam hm2 u a b r hr hpr hx P J
-    hgood.2.1 hgood.2.2 hJ hc hc6 hsplit ((hcop.mul_left hJP).pow_right) hχ hprincipal
+    hgood.2.1 hgood.2.2 hJ (Multiset.count_pos.mpr hP) hc6 hsplit ((hcop.mul_left hJP).pow_right) hχ hprincipal
 
 open UniqueFactorizationMonoid in
 

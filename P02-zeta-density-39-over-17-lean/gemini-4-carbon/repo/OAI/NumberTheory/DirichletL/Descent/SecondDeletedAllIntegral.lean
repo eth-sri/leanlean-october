@@ -6,9 +6,8 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondDeletedAllModes
 namespace OAI
 
 namespace SevenEighths.InverseMoment
+open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic JointLogSeparation MeasureTheory
 open scoped BigOperators Classical
-open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open JointLogSeparation MeasureTheory
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 local instance inverseSecondDeletedAllIntegralUnits : Fintype Eisˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
@@ -54,7 +53,7 @@ theorem actual_second_deleted_all_modes_integral
     (36*(2:ℝ)^slots₁.card*(2:ℝ)^slots₂.card*A*
       ∑ γ∈actualSecondTriples p 1 1 source,tripleDivisorWeight K γ)*
       ∫ t : Frequency × (Fin 6 → ℝ),tripleHeight J t.1*coordinateHeight J t.2*‖density t‖ := by
-  let C := 36*(2:ℝ)^slots₁.card*(2:ℝ)^slots₂.card*A*
+  let C := 36*2^slots₁.card*2^slots₂.card*A*
     ∑ γ∈actualSecondTriples p 1 1 source,tripleDivisorWeight K γ
   have hb (t : Frequency × (Fin 6 → ℝ)) :
       ‖secondDeletedFullModeSum p hp hcop hg source sector pool Ψ m z slots₁ slots₂ lists₁ lists₂ a₁ a₂ deleted₁ deleted₂

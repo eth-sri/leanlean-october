@@ -95,19 +95,16 @@ theorem logarithmicCorrelationBound_le_simple
     logarithmicCorrelationBound t A N r <=
       100 * ((N : Real) * Real.sqrt (t * r / (8 * A ^ 3)) +
         1 / Real.sqrt (t * r / (8 * A ^ 3))) := by
-  let x : Real := t * r / (8 * A ^ 3)
+  let x := t * r / (8 * A ^ 3)
   have hx : 0 < x := by
     dsimp only [x]
     positivity
-  have hx1 : x <= 1 := hsmall
   have hMN : ((N - r - 1 : Nat) : Real) <= N := by exact_mod_cast Nat.sub_le N (r + 1)
   have hsecond : 0 <=
       2 * Real.pi / Real.sqrt x + 2 * (Real.sqrt x / x + 1) := by positivity
   have hfirst :
       ((N - r - 1 : Nat) : Real) * (32 * x) / (2 * Real.pi) + 2 <=
         (N : Real) * (32 * x) / (2 * Real.pi) + 2 := by gcongr
-  have hraw := mul_le_mul_of_nonneg_right hfirst hsecond
-  have hproduct := vdc_product_bound (N : Real) x (Nat.cast_nonneg N) hx hx1
   unfold logarithmicCorrelationBound
   change
     ((N - r - 1 : Nat) : Real) * (4 * t * r / A ^ 3) / (2 * Real.pi) + 2 |> fun q =>
@@ -119,7 +116,7 @@ theorem logarithmicCorrelationBound_le_simple
     field_simp [hA.ne']
     ring
   rw [show t * (r : Real) / (8 * A ^ 3) = x by rfl, h32]
-  exact hraw.trans hproduct
+  exact (mul_le_mul_of_nonneg_right hfirst hsecond).trans (vdc_product_bound (N : Real) x (Nat.cast_nonneg N) hx (hsmall))
 
 /-- Uniform correlation majorant on shifts below `H`. -/
 noncomputable def simpleLogarithmicCorrelationBound
@@ -133,7 +130,7 @@ theorem logarithmicCorrelationBound_le_uniform
     (hsmall : t * H / (8 * A ^ 3) <= 1) :
     logarithmicCorrelationBound t A N r <=
       simpleLogarithmicCorrelationBound t A N H := by
-  let q : Real := t / (8 * A ^ 3)
+  let q := t / (8 * A ^ 3)
   have hq : 0 < q := by dsimp only [q]; positivity
   have hqr : t * (r : Real) / (8 * A ^ 3) = q * r := by
     dsimp only [q]
@@ -154,8 +151,7 @@ theorem logarithmicCorrelationBound_le_uniform
   have hsqrtLow : Real.sqrt q <= Real.sqrt (q * r) := by
     apply Real.sqrt_le_sqrt
     nlinarith
-  have hinv : 1 / Real.sqrt (q * r) <= 1 / Real.sqrt q :=
-    one_div_le_one_div_of_le (Real.sqrt_pos.2 hq) hsqrtLow
+  have hinv := one_div_le_one_div_of_le (Real.sqrt_pos.2 hq) hsqrtLow
   unfold simpleLogarithmicCorrelationBound
   dsimp only
   rw [hqr] at hbase
@@ -231,10 +227,7 @@ theorem simpleLogarithmicCorrelationBound_le_four_hundred
     rw [Real.sqrt_le_iff]
     exact ⟨by positivity, hqH_le⟩
   have hfirst : (A : Real) * Real.sqrt (q * H) <= Y := by
-    calc
-      (A : Real) * Real.sqrt (q * H) <= (A : Real) * (Y / (A : Real)) :=
-        mul_le_mul_of_nonneg_left hsqrtHigh hAreal.le
-      _ = Y := by field_simp
+    exact (mul_le_mul_of_nonneg_left hsqrtHigh hAreal.le).trans_eq (by field_simp)
   have hA3_le_Y5 : (A : Real) ^ 3 <= Y ^ 5 := by
     calc
       (A : Real) ^ 3 = (A : Real) ^ 2 * A := by ring
@@ -271,15 +264,12 @@ theorem classicalWeylShiftLength_spec
   have hYpos : 0 < Y := lt_of_lt_of_le zero_lt_one hY
   have hxOne : (1 : Real) <= (A : Real) / Y := by
     rw [le_div_iff₀ hYpos]
-    simpa only [one_mul] using hYA
+    simpa using hYA
   have hpos : 0 < Nat.floor ((A : Real) / Y) := Nat.floor_pos.mpr hxOne
   have hfloor : ((Nat.floor ((A : Real) / Y) : Nat) : Real) <= (A : Real) / Y :=
     Nat.floor_le (by positivity)
   have hHY : ((Nat.floor ((A : Real) / Y) : Nat) : Real) * Y <= A := by
-    calc
-      ((Nat.floor ((A : Real) / Y) : Nat) : Real) * Y <= ((A : Real) / Y) * Y :=
-        mul_le_mul_of_nonneg_right hfloor hYpos.le
-      _ = A := by field_simp
+    exact (mul_le_mul_of_nonneg_right hfloor hYpos.le).trans_eq (by field_simp)
   have hHle : Nat.floor ((A : Real) / Y) <= A := by
     have hcast : ((Nat.floor ((A : Real) / Y) : Nat) : Real) <= A := by
       calc
@@ -293,7 +283,7 @@ theorem classicalWeylShiftLength_spec
     exact_mod_cast hcast
   have hxLt : (A : Real) / Y <
       ((Nat.floor ((A : Real) / Y) + 1 : Nat) : Real) :=
-    by simpa only [Nat.cast_add, Nat.cast_one] using
+    by simpa using
       (Nat.lt_floor_add_one ((A : Real) / Y))
   have hfloorOne : (1 : Real) <= ((Nat.floor ((A : Real) / Y) : Nat) : Real) := by
     exact_mod_cast hpos

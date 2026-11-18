@@ -25,8 +25,7 @@ def lowInverseMass (C : CalibrationData) (a b : ℝ) (ha : 0<a) (hb : 0<b)
 
 lemma low_mellin_normalizer_norm (Q : ℝ) (_hQ : 0<Q) :
     ‖(Real.sqrt Q:ℂ)⁻¹*(1/(2*Real.pi):ℂ)‖=(Real.sqrt Q)⁻¹/(2*Real.pi) := by
-  rw [norm_mul,norm_inv,Complex.norm_real,Real.norm_eq_abs,abs_of_nonneg (Real.sqrt_nonneg _)]
-  rw [norm_div,norm_one,norm_mul]
+  rw [norm_mul,norm_inv,Complex.norm_real,Real.norm_eq_abs,abs_of_nonneg (Real.sqrt_nonneg _), norm_div,norm_one,norm_mul]
   norm_num [Complex.norm_real,Real.norm_eq_abs,abs_of_pos Real.pi_pos]
   ring
 
@@ -60,10 +59,9 @@ theorem compensation_tuple_actual_gram (δ : ℝ) (hδ : 0<δ) (hδ1 : δ<1)
           (div_pos hY (lowUnselectedProduct_norm_pos slots hslots J a))
           (lowSelectedInverseRow Finset.univ (lowSelectedWeight η slots J W P t)
             η S hS (lowSelectedIdeal slots J) T t) := by
-  have hW1c : HasCompactSupport W1 := HasCompactSupport.of_support_subset_isCompact isCompact_Icc hW1
   intro S hS hbad
   obtain ⟨C,hC,hgram⟩ := lowSeparatedIntegral_actual_gram δ hδ hδ1 a1 b1 M ha1 hab1 hM
-    W1 hW1c hW1 hW1s hWM (a0*a1) (max 1 (b0*b1)) (mul_pos ha0 ha1)
+    W1 (HasCompactSupport.of_support_subset_isCompact isCompact_Icc hW1) hW1 hW1s hWM (a0*a1) (max 1 (b0*b1)) (mul_pos ha0 ha1)
     (lt_of_lt_of_le zero_lt_one (le_max_left _ _)) W0 a0 b0 ha0 hW0 hW0s S hS hbad
   refine ⟨C,hC,?_⟩
   intro K η slots hslots J W P X Y T t hX hY hT hYs hPs

@@ -13,8 +13,7 @@ public import MathCollab.Density.Stronger.Atkinson.IntervalAmplitudeRescaled
 
 @[expose] public section
 
-open Complex MeasureTheory Set
-open MathCollab.Density.Stronger.Fourth
+open Complex MeasureTheory Set MathCollab.Density.Stronger.Fourth
 open scoped ContDiff
 set_option autoImplicit false
 noncomputable section
@@ -51,11 +50,10 @@ def atkinsonPowerProfile (α u : ℝ) : ℂ :=
 
 theorem contDiffAt_atkinsonPowerProfile (α : ℝ) {u : ℝ} (hu : 0 < u) :
     ContDiffAt ℝ 1 (atkinsonPowerProfile α) u := by
-  have hm := contDiffAt_zetaMainMellinProfile hu
   have hp : ContDiffAt ℝ 1 (fun v : ℝ => v ^ (-α)) u := by
     fun_prop (disch := exact hu.ne')
   unfold atkinsonPowerProfile
-  exact (Complex.ofRealCLM.contDiff.contDiffAt.comp u hp).mul hm
+  exact (Complex.ofRealCLM.contDiff.contDiffAt.comp u hp).mul (contDiffAt_zetaMainMellinProfile hu)
 
 theorem exists_intervalC2Bound_atkinsonPowerRootProfile (α : ℝ) :
     ∃ C : ℝ, 0 < C ∧

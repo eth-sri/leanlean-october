@@ -12,15 +12,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyOriginalSource
-open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge
-open CenteredMomentEligibleEnergy CenteredMomentCommonRadialData
-open CenteredMomentSourceRectangle CenteredMomentSourceRectangleMask
-open CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentSourceRow
-open CenteredMomentHeckeExpansion CenteredMomentHeckeSlots CenteredMomentRetainedEnergy
-open CenteredMomentHeckeHeight
-open CenteredMomentDivisorRowEnergy CenteredMomentSecondHeightFamily
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceRectangleEnergy
-open CenteredMomentPositiveSummability CenteredMomentPlainEnergy CenteredMomentRowNorm
+open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge CenteredMomentEligibleEnergy CenteredMomentCommonRadialData CenteredMomentSourceRectangle CenteredMomentSourceRectangleMask CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentSourceRow CenteredMomentHeckeExpansion CenteredMomentHeckeSlots CenteredMomentRetainedEnergy CenteredMomentHeckeHeight CenteredMomentDivisorRowEnergy CenteredMomentSecondHeightFamily CenteredMomentOriginalCommonHarmonic CenteredMomentSourceRectangleEnergy CenteredMomentPositiveSummability CenteredMomentPlainEnergy CenteredMomentRowNorm
 local notation "O" => HeckeFamily.O
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 local instance energyOriginalSourceDecidableSum : DecidableEq (ι⊕Fin 2) := Classical.decEq _
@@ -67,8 +59,7 @@ lemma input_polynomial_difference (s : Input ι) (R : Ideal O) (z : O) :
         ∏i,rowSlot s.η (fixedBadMask*idealGenerator R) 1 z (s.slots i)
           (s.toData.coefficient i) s.t := by
   unfold coefficient
-  rw [input_tuplePool]
-  rw [source_polynomial_eq_maskedRectangle s.η fixedBadMask 1 z s.t
+  rw [input_tuplePool, source_polynomial_eq_maskedRectangle s.η fixedBadMask 1 z s.t
     (dvd_mul_right _ _) (dvd_mul_left _ _) s.slots s.plain₁ s.plain₂ R 1
     s.ν s.W s.P s.W₁ s.W₂ s.X₁ s.X₂ s.Y₁ s.Y₂ 1 1 s.coverage₁ s.coverage₂]
   simp only [map_one,Nat.cast_one,div_one,maskedRectangle,one_dvd,ite_true,one_mul]

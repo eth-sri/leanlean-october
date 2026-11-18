@@ -9,8 +9,7 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseInitialInputRadial
-open ActualEisensteinCubic FirstCauchyArithmetic SecondPassArithmetic ConcreteTraceCRT
-open InverseInitialConjugateEnergy
+open ActualEisensteinCubic FirstCauchyArithmetic SecondPassArithmetic ConcreteTraceCRT InverseInitialConjugateEnergy
 local notation "O"=>ActualEisensteinCubic.O
 variable {ι:Type*}[DecidableEq ι](p:ι→O)[∀i,(Ideal.span {p i}).IsMaximal]
   (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
@@ -38,8 +37,7 @@ theorem finite_rows_le_input_norm (pool:Finset ι)(Ψ:O→*ℂ)(j:O)(test:Finset
     (∑u∈rows,‖a*inputConjugateRow p hg pool Ψ j 1 1 test u‖^2)≤
       ‖∑'u:O,Φ (‖eisEmbedding u‖^2/Y)*
         (‖a*inputConjugateRow p hg pool Ψ j 1 1 test u‖^2:ℝ)‖:=by
-  have hs:=input_energy_summable p hg pool Ψ j test a Φ Y hY
-  have hr:=Complex.hasSum_re hs.hasSum
+  have hr:=Complex.hasSum_re (input_energy_summable p hg pool Ψ j test a Φ Y hY).hasSum
   have hfin:(∑u∈rows,‖a*inputConjugateRow p hg pool Ψ j 1 1 test u‖^2)=
       ∑u∈rows,(Φ (‖eisEmbedding u‖^2/Y)*
         (‖a*inputConjugateRow p hg pool Ψ j 1 1 test u‖^2:ℝ)).re:=by

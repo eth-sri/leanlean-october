@@ -38,11 +38,11 @@ theorem gmTraceEnergyMargin_of_endpoints {σ a x : ℝ} (j : Fin 3) (i : Fin 5)
   · have h := mul_le_mul_of_nonneg_left hx hc
     dsimp only [c] at h
     unfold gmTraceEnergyMargin at *
-    linarith only [hlo,h]
+    linarith
   · have h := mul_le_mul_of_nonpos_left hx' (le_of_not_ge hc)
     dsimp only [c] at h
     unfold gmTraceEnergyMargin at *
-    linarith only [hhi,h]
+    linarith
 
 theorem gmTraceEnergy_length_slope_nonneg {σ : ℝ} (hσ : 4/5 ≤ σ)
     (j : Fin 3) (i : Fin 5) :
@@ -57,6 +57,6 @@ theorem gmTraceEnergyMargin_mono_length {σ a x y : ℝ} (hσ : 4/5 ≤ σ)
     gmTraceEnergyMargin σ a x j i ≤ gmTraceEnergyMargin σ a y j i := by
   have h := mul_le_mul_of_nonneg_left hxy (gmTraceEnergy_length_slope_nonneg hσ j i)
   unfold gmTraceEnergyMargin
-  linarith only [h]
+  linarith
 
 end Montgomery.RationalMoment

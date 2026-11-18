@@ -7,9 +7,8 @@ namespace OAI
 
 noncomputable section
 
+open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic SevenEighths.InverseMoment SevenEighths.InverseInitialArithmetic
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
-open SevenEighths.InverseMoment SevenEighths.InverseInitialArithmetic
 namespace SevenEighths.InverseInitialEnergyCallerFamily
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
@@ -26,15 +25,13 @@ theorem common_killed (G E V : Finset ι) (_hE : E⊆G) (j d t : Eis)
       apply (Ideal.dvd_iff_le.mp (source_prime_dvd p E i hiE))
       rw [←hd]
       exact Ideal.subset_span (Set.mem_singleton d)
-    have hh := (Ideal.span {p i}).mul_mem_left ((j*t)*(∏ k∈V,p k)) he
-    convert hh using 1 ; ring
+    convert ((Ideal.span {p i}).mul_mem_left ((j*t)*(∏ k∈V,p k)) he) using 1 ; ring
   · have hit : i∈G\E := Finset.mem_sdiff.mpr ⟨hi,hiE⟩
     have he : t∈Ideal.span {p i} := by
       apply (Ideal.dvd_iff_le.mp (source_prime_dvd p (G\E) i hit))
       rw [←ht]
       exact Ideal.subset_span (Set.mem_singleton t)
-    have hh := (Ideal.span {p i}).mul_mem_left (j*(d*∏ k∈V,p k)) he
-    convert hh using 1 ; ring
+    convert ((Ideal.span {p i}).mul_mem_left (j*(d*∏ k∈V,p k)) he) using 1 ; ring
 
 theorem marked_child_original_lists (F G E V : Finset ι) (hE : E⊆G)
     (Ψ : Eis →* ℂ) (j d t h : Eis)

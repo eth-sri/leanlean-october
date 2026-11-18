@@ -6,9 +6,8 @@ public import OAI.NumberTheory.DirichletL.Reflection.CubeSlotSource
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
+open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve InverseMoment IdealMobiusDivisorSum
 open scoped Classical BigOperators
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve InverseMoment
-open IdealMobiusDivisorSum
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 variable {σ : Type*} [Fintype σ] [DecidableEq σ]
@@ -35,7 +34,7 @@ lemma cubeAbsorbedCoefficient_norm (H : Ideal Eis) (hH : H≠0)
       intro i hi
       calc
         _ ≤ ∑ P : cubeDivList H (L i.val),‖w i.val ⟨P.val,(Finset.mem_filter.mp P.property).1⟩‖ := norm_sum_le _ _
-        _ ≤ ∑ _P : cubeDivList H (L i.val),(1:ℝ) := Finset.sum_le_sum (fun P _ => hw _ _)
+        _ ≤ ∑ _P : cubeDivList H (L i.val),1 := Finset.sum_le_sum (fun P _ => hw _ _)
         _ = ((cubeDivList H (L i.val)).card:ℝ) := by simp
         _ ≤ _ := Nat.cast_le.mpr (cubeDivList_card H hH _)
     _ = ((idealDivisors H).card:ℝ)^(Fintype.card {i // i∉T}) := by simp
@@ -50,7 +49,7 @@ lemma cubeAbsorbedCoefficient_mass (H : Ideal Eis) (hH : H≠0)
   calc
     _ ≤ ∑ _T : Finset σ,((idealDivisors H).card:ℝ)^rmax :=
       Finset.sum_le_sum (fun T _ => cubeAbsorbedCoefficient_norm H hH L w hw T rmax hr)
-    _ = (2:ℝ)^(Fintype.card σ)*((idealDivisors H).card:ℝ)^rmax := by
+    _ = 2^(Fintype.card σ)*((idealDivisors H).card:ℝ)^rmax := by
       simp [Fintype.card_finset]
     _ ≤ _ := mul_le_mul_of_nonneg_right (pow_le_pow_right₀ (by norm_num) hr) (by positivity)
 

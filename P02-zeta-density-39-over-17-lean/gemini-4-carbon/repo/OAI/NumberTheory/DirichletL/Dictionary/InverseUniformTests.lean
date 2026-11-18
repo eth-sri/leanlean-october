@@ -32,13 +32,10 @@ lemma inverseDetectorTest_apply (scaled reverse : Bool) (n : ℕ) (R σ t x : �
     inverseDetectorTest scaled reverse n R σ t x=
       if scaled then scaleProfile (twistProfile (baseProfile reverse n cutoff positiveAnnular R) σ t) x
       else twistProfile (baseProfile reverse n cutoff positiveAnnular R) σ t x := by
-  have he : (inverseDetectorSchwartz reverse n R σ t : ℝ→ℂ)=
-      twistProfile (baseProfile reverse n cutoff positiveAnnular R) σ t :=
-    funext (inverseDetectorSchwartz_apply reverse n R σ t)
   cases scaled
   · exact inverseDetectorSchwartz_apply _ _ _ _ _ _
   · change scaleCLM (inverseDetectorSchwartz reverse n R σ t) x=_
-    rw [scaleCLM_apply,he]
+    rw [scaleCLM_apply,(funext (inverseDetectorSchwartz_apply reverse n R σ t))]
     rfl
 
 theorem inverseDetectorTest_uniform (S : Finset (ℕ×ℕ)) :

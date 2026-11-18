@@ -28,17 +28,14 @@ lemma eventually_low_physical_scales {K : ℕ} (ell : Fin K→ℝ) (hell : ∀i,
       (Filter.eventually_ge_atTop ((max 1 b)^K))] with Z hZ hc
   refine ⟨hZ,?_⟩
   intro slots hn hnorm J p
-  have hl : 0<elementNorm (slotProduct (fun i=>(p i).val) J) :=
-    slotProduct_norm_pos _ (fun i=>hn i _ (p i).property) J
+  have hl := slotProduct_norm_pos _ (fun i=>hn i _ (p i).property) J
   have hb := lowUnselectedProduct_norm_bound ell hell hsum (max 1 b) Z (le_max_left _ _) hZ.le
     slots (fun i n hm=>(hnorm i n hm).trans (mul_le_mul_of_nonneg_right (le_max_right _ _) (by positivity)))
     J (fun i=>p i.val)
   rw [←slotProduct_subtype (fun i=>(p i).val) J] at hb
   have hLX : elementNorm (slotProduct (fun i=>(p i).val) J)≤Z^(17/48:ℝ) := by
     apply hb.trans
-    calc
-      _≤Z^(3/16:ℝ)*Z^(1/6:ℝ) := mul_le_mul_of_nonneg_right hc (by positivity)
-      _=_ := by rw [←Real.rpow_add (lt_trans zero_lt_one hZ)];norm_num
+    exact (mul_le_mul_of_nonneg_right hc (by positivity)).trans_eq (by rw [←Real.rpow_add (lt_trans zero_lt_one hZ)];norm_num)
   constructor
   · exact (one_le_div hl).mpr hLX
   · exact (one_le_div hl).mpr (hLX.trans
@@ -47,7 +44,7 @@ lemma eventually_low_physical_scales {K : ℕ} (ell : Fin K→ℝ) (hell : ∀i,
 lemma low_remote_power (Z ell ε : ℝ) (N : ℕ) (hZ : 1≤Z) (hell : ell≤1/6)
     (hN : 13/3≤(ε/2)*(N:ℝ)) :
     Z*(Z^(1+ell))^2/(Z^(ε/2))^N≤Z^(-1:ℝ) := by
-  have hz : 0<Z := lt_of_lt_of_le zero_lt_one hZ
+  have hz := lt_of_lt_of_le zero_lt_one hZ
   have hsq : (Z^(1+ell))^2=Z^(2*(1+ell)) := by
     rw [←Real.rpow_natCast,←Real.rpow_mul hz.le]
     congr 1

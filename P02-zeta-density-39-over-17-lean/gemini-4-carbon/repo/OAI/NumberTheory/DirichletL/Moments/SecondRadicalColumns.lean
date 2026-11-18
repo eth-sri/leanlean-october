@@ -9,12 +9,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSecondRadicalColumns
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
-open CenteredMomentSecondCanonicalLedger CenteredMomentSecondMovingSupport CenteredMomentSecondSixthReduction
-open CenteredMomentSecondSixthSource CenteredMomentSecondRadicalFamily CenteredMomentSecondHeightFamily
-open CenteredMomentChildRows CenteredMomentHeckeColumnWindow RayFourExpansion
-open CenteredMomentCanonicalFirst
+open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalLedger CenteredMomentSecondMovingSupport CenteredMomentSecondSixthReduction CenteredMomentSecondSixthSource CenteredMomentSecondRadicalFamily CenteredMomentSecondHeightFamily CenteredMomentChildRows CenteredMomentHeckeColumnWindow RayFourExpansion CenteredMomentCanonicalFirst
 local notation "O" => ActualEisensteinCubic.O
 
 theorem sixthFactor_span_dvd_right (C D : Ideal O) (hC : Supported C) (hD : Supported D)
@@ -25,8 +20,6 @@ theorem sixthFactor_span_dvd_right (C D : Ideal O) (hC : Supported C) (hD : Supp
   apply Finset.prod_dvd_prod_of_dvd
   intro P hP
   apply pow_dvd_pow
-  have hd := rightExponent_pos C D P
-  have hm : min (leftExponent C D P) (rightExponent C D P)≤rightExponent C D P := min_le_right _ _
   unfold fixedExponent
   split_ifs <;> omega
 

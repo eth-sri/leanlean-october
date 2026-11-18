@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaTaylorJets
 public import TaoTrudgianYang2025.BetaInverseExpressions
 
@@ -54,8 +64,7 @@ theorem modelPhaseMorseJet_hasDerivAt
       (inversePhaseEval (morseAtomDerivative j) (modelPhaseMorseJet F v u)) u := by
   have hA := modelPhaseAveragedCurvature_contDiffAt hF hv hu
   have hp := modelPhaseAveragedCurvature_pos hσ hδ hF hv hu
-  have hd := (hA.differentiableAt (by simp : (∞ : WithTop ℕ∞) ≠ 0)).hasDerivAt
-  have hq := hd.sqrt hp.ne'
+  have hq := ((hA.differentiableAt (by simp : (∞ : WithTop ℕ∞) ≠ 0)).hasDerivAt).sqrt hp.ne'
   match j with
   | 0 => exact (hasDerivAt_id u).sub_const _
   | 1 =>

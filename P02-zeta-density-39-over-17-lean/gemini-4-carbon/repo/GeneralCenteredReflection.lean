@@ -45,7 +45,7 @@ theorem reflection_complete_pair_general {K : ℕ} (hK : 1 ≤ K)
     obtain ⟨hn1,hn2⟩ := mem_Ico.mp hn
     have hlo : (M:ℝ) ≤ n := by exact_mod_cast hn1
     have hhi : (n:ℝ) ≤ 2*(M:ℝ)-1 := by
-      have hh : n+1 ≤ 2*M := hn2
+      have hh := hn2
       have hr : (n:ℝ)+1 ≤ 2*(M:ℝ) := by exact_mod_cast hh
       linarith
     exact ⟨lt_of_lt_of_le hM hn1,by linarith,by linarith⟩
@@ -100,9 +100,8 @@ theorem reflection_local_energy_general {K : ℕ} (hK : 1 ≤ K)
       apply (div_le_div_iff₀ (by positivity : 0 < Real.pi*L) hLp).mpr
       nlinarith [Real.pi_gt_three,mul_pos hH hLp]
     have hMT : (M:ℝ) ≤ 4*T := by
-      have hh : H/L ≤ H := div_le_self hH.le hL
+      have hh := div_le_self hH.le hL
       linarith
-    have hh := hbound T t₀ hT M hM0 hMT W hW hsep
     have hm : (M:ℝ)^2 ≤ 4*(H/L)^2 := by nlinarith [sq_nonneg ((M:ℝ)-2*(H/L))]
     have hp : C*T^η*((M:ℝ)*(W.card:ℝ)^2+(M:ℝ)^2*(W.card:ℝ)^(2-1/(K:ℝ))+
         (M:ℝ)*T^(1/(2*(K:ℝ)))*(W.card:ℝ)^(2-(2*(K:ℝ)+1)/(2*K*(K+1)))) ≤
@@ -120,7 +119,7 @@ theorem reflection_local_energy_general {K : ℕ} (hK : 1 ≤ K)
               (H/L)*T^(1/(2*(K:ℝ)))*(W.card:ℝ)^(2-(2*(K:ℝ)+1)/(2*K*(K+1)))) := by nlinarith
           exact (mul_le_mul_of_nonneg_left hi (by positivity : 0 ≤ C*T^η)).trans_eq (by ring)
     exact (reflection_local_pair_le_three hH M W).trans
-      ((mul_le_mul_of_nonneg_left (hh.trans hp) (by norm_num : (0:ℝ) ≤ 3)).trans_eq (by ring))
+      ((mul_le_mul_of_nonneg_left ((hbound T t₀ hT M hM0 hMT W hW hsep).trans hp) (by norm_num : (0:ℝ) ≤ 3)).trans_eq (by ring))
   open MathCollab.Density in
   calc
     localReflectionEnergy L H W ≤ ∑ _M ∈ reflectionBlocks L H,
@@ -144,12 +143,11 @@ theorem centered_shell_general (w : MathCollab.Density.ReflectionCutoff)
         C*T^η*adjacentCenteredBudget K T L W.card + B*(W.card:ℝ)^2*L^(2-2*(A:ℝ)) := by
   obtain ⟨C,hC,hbound⟩ := reflection_local_energy_general hK hη
   obtain ⟨B,hB,href⟩ := MathCollab.Density.uniform_reflection w hA
-  let F : ℝ := (20000/Real.pi^2)*(MathCollab.Density.mellinMass w)^2
+  let F := (20000/Real.pi^2)*(MathCollab.Density.mellinMass w)^2
   have hF : 0 ≤ F := by dsimp [F]; positivity
   refine ⟨1+2*F*C,4*B^2,by positivity,by positivity,?_⟩
   intro T t₀ L H hT hL hH hHT W hW hsep
   have hLp : 0 < L := by linarith
-  have he := (href L H W hLp hH).1
   have hb := hbound T t₀ L H hT hL hH hHT W hW hsep
   have hm : F*(L^2/H)*MathCollab.Density.localReflectionEnergy L H W ≤
       (2*F*C)*T^η*adjacentCenteredBudget K T L W.card := by
@@ -169,7 +167,7 @@ theorem centered_shell_general (w : MathCollab.Density.ReflectionCutoff)
             2*(L*(W.card:ℝ)^2+T*(W.card:ℝ)^(2-1/(K:ℝ))+
             L*T^(1/(2*(K:ℝ)))*(W.card:ℝ)^(2-(2*(K:ℝ)+1)/(2*K*(K+1)))) := by nlinarith
         exact (mul_le_mul_of_nonneg_left hi (by positivity : 0 ≤ F*C*T^η)).trans_eq (by ring)
-  exact he.trans (add_le_add (hm.trans (by
+  exact ((href L H W hLp hH).1).trans (add_le_add (hm.trans (by
     apply mul_le_mul_of_nonneg_right _ (adjacentCenteredBudget_nonneg K (by linarith) (by linarith) (Nat.cast_nonneg _))
     gcongr
     linarith)) le_rfl)

@@ -53,7 +53,7 @@ theorem mem_smoothPoweredIndices {σ δ T : ℝ} {q : (ℤ × ℕ × ℕ) × ℕ
 
 theorem smoothTaylorIndices_card_eventually {σ : ℝ} (hσ : 3/4 < σ) :
     ∀ᶠ T : ℝ in atTop, ((smoothTaylorIndices σ T).card : ℝ) ≤ 144*(Real.log T)^2 := by
-  filter_upwards [eventually_ge_atTop (1 : ℝ), Real.tendsto_log_atTop.eventually_ge_atTop 1,
+  filter_upwards [eventually_ge_atTop 1, Real.tendsto_log_atTop.eventually_ge_atTop 1,
     log_sq_eventually_le_height] with T hT hlog hsq
   have hYlo : 1 ≤ detectorY σ T := Real.one_le_rpow hT (smoothingExponent_pos hσ).le
   have hYhi : detectorY σ T ≤ T := by

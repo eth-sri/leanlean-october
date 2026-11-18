@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators ContDiff
 namespace SevenEighths.CenteredMomentPrimeSlotBound
-open HeckeFamily HeckeRowClosure HeckeZeroSupremum CenteredExceptionalProfile
-open CenteredMomentPrimeSlot CenteredMomentWholeSlotDeletion CenteredMomentRayNonprincipal
-open ConcretePrimeRowBridge
+open HeckeFamily HeckeRowClosure HeckeZeroSupremum CenteredExceptionalProfile CenteredMomentPrimeSlot CenteredMomentWholeSlotDeletion CenteredMomentRayNonprincipal ConcretePrimeRowBridge
 local notation "O" => HeckeFamily.O
 variable (M:Ideal O) [NeZero M]
 local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)

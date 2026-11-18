@@ -10,9 +10,8 @@ public import MathCollab.Density.Stronger.Atkinson.VoronoiMellinKernel
 
 @[expose] public section
 
-open Complex Finset Set Filter Topology MeasureTheory
+open Complex Finset Set Filter Topology MeasureTheory Classical
 open scoped BigOperators ContDiff FourierTransform SchwartzMap Topology
-open Classical
 set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
@@ -22,20 +21,18 @@ theorem DFIVoronoiTestFunction.eventuallyEq_zero_atTop
     g =ᶠ[atTop] 0 := by
   filter_upwards [eventually_gt_atTop hg.upper] with x hx
   by_contra hne
-  have hs := hg.support_subset hne
-  exact (not_lt_of_ge hs.2) hx
+  exact (not_lt_of_ge (hg.support_subset hne).2) hx
 
 theorem DFIVoronoiTestFunction.eventuallyEq_zero_atZero
     {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) :
     EventuallyEq (nhdsWithin (0 : ℝ) (Set.Ioi 0)) g 0 := by
-  have hnear : ∀ᶠ x : ℝ in nhds (0 : ℝ), x < hg.lower :=
+  have hnear : ∀ᶠ x : ℝ in nhds 0, x < hg.lower :=
     isOpen_Iio.mem_nhds hg.lower_pos
-  have hnear' : ∀ᶠ x : ℝ in nhdsWithin (0 : ℝ) (Set.Ioi 0), x < hg.lower :=
+  have hnear' : ∀ᶠ x : ℝ in nhdsWithin 0 (Set.Ioi 0), x < hg.lower :=
     hnear.filter_mono nhdsWithin_le_nhds
   filter_upwards [hnear'] with x hx
   by_contra hne
-  have hs := hg.support_subset hne
-  exact (not_lt_of_ge hs.1) hx
+  exact (not_lt_of_ge (hg.support_subset hne).1) hx
 
 theorem DFIVoronoiTestFunction.isBigO_atTop
     {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) (a : ℝ) :
@@ -48,7 +45,7 @@ theorem DFIVoronoiTestFunction.isBigO_atZero
     Asymptotics.IsBigO (nhdsWithin (0 : ℝ) (Set.Ioi 0)) g
       (fun x : ℝ => x ^ (-b)) := by
   exact (Asymptotics.isBigO_zero (fun x : ℝ => x ^ (-b))
-    (nhdsWithin (0 : ℝ) (Set.Ioi 0))).congr'
+    (nhdsWithin 0 (Set.Ioi 0))).congr'
     hg.eventuallyEq_zero_atZero.symm EventuallyEq.rfl
 
 theorem DFIVoronoiTestFunction.mellinConvergent

@@ -10,9 +10,7 @@ public import MathCollab.Density.Stronger.Atkinson.SmoothDivisorMass
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+open Complex Filter MeasureTheory Set Topology MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth MathCollab.Density.Contour
 open scoped Interval ComplexConjugate ContDiff
 set_option autoImplicit false
 noncomputable section
@@ -31,8 +29,7 @@ theorem zetaDivisorLatticePhase_nat (n : ℕ) : zetaDivisorLatticePhase n = 1 :=
   unfold zetaDivisorLatticePhase
   rw [show ((-2 * Real.pi * (n : ℝ) : ℝ) : ℂ) * I = -((n : ℂ) * (2 * Real.pi * I)) by
     push_cast
-    ring]
-  rw [Complex.exp_neg, Complex.exp_nat_mul_two_pi_mul_I, inv_one]
+    ring, Complex.exp_neg, Complex.exp_nat_mul_two_pi_mul_I, inv_one]
 
 theorem contDiff_zetaDivisorLatticePhase : ContDiff ℝ ∞ zetaDivisorLatticePhase := by
   have hcast : ContDiff ℝ ∞ (fun x : ℝ => (x : ℂ)) := Complex.ofRealCLM.contDiff

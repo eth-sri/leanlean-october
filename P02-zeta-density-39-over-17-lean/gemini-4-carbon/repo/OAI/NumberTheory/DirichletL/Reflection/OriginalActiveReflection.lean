@@ -68,22 +68,21 @@ theorem actual_marked_active_reflection
                     ((poolPrimeFamily R (Ideal.span {m}*F) (Q*Ideal.span {(72:Eis)})).restrict A)
                     T (C h A T) (G h).shape (G h).denominator_ne_zero
                     (fun b : A => completedLocalExponent R F b.val.val) W X (b,a) := by
-  let Call := fun (p : originalSlotChoices D (Q*Ideal.span {(72:Eis)}) L)
+  let Call := fun (p : originalSlotChoices D (Q*Ideal.span {72}) L)
     (h : Eis⧸Ideal.span {c})
-    (A : Finset (FreeReflection.pool R (Ideal.span {m}*F) (Q*Ideal.span {(72:Eis)}))) (T : Finset σ) =>
-      originalSplitControlled D R I F (Q*Ideal.span {(72:Eis)}) hR hI hF hm hf hz hbad hcop hpow hmask L hmax hgood
-        ((poolPrimeFamily R (Ideal.span {m}*F) (Q*Ideal.span {(72:Eis)})).restrict A) T (C h A T) p
+    (A : Finset (FreeReflection.pool R (Ideal.span {m}*F) (Q*Ideal.span {72}))) (T : Finset σ) =>
+      originalSplitControlled D R I F (Q*Ideal.span {72}) hR hI hF hm hf hz hbad hcop hpow hmask L hmax hgood
+        ((poolPrimeFamily R (Ideal.span {m}*F) (Q*Ideal.span {72})).restrict A) T (C h A T) p
   rw [actual_marked_slot_split_reflection D R I F Q hR hI hF hm hf hz hbad hcop hpow hmask
     L hmax hgood hS hSodd Ψ hΨnorm hQ hΨperiod hmLam hm2 c hc hcQ G N hN hNp Call
     w W hWcompact lo hi hlo hsupp hW X hX]
-  dsimp only
   apply congrArg (fun z : ℂ => thetaDerivativeScalar⁻¹*z)
   apply Finset.sum_congr rfl
   intro h hh
   apply congrArg (fun z : ℂ => fixedThetaRowCoeff c hc (D.fixedFactor Ψ Q) h*z)
   apply Finset.sum_congr rfl
   intro A hA
-  apply congrArg (fun z : ℂ => frozenInactiveWeight R F (Ideal.span {m}*F) (Q*Ideal.span {(72:Eis)}) A*z)
+  apply congrArg (fun z : ℂ => frozenInactiveWeight R F (Ideal.span {m}*F) (Q*Ideal.span {72}) A*z)
   apply Finset.sum_congr rfl
   intro T hT
   apply Finset.sum_congr rfl
@@ -93,17 +92,16 @@ theorem actual_marked_active_reflection
   apply Finset.sum_congr rfl
   intro a ha
   apply congrArg (fun z : ℂ => (∏ i : T,w i.val (a.val i))*z)
-  dsimp only [Call]
-  have hv := originalSplitControlled_physical D R I F (Q*Ideal.span {(72:Eis)})
+  have hv := originalSplitControlled_physical D R I F (Q*Ideal.span {72})
     hR hI hF hm hf hz hbad hcop hpow hmask L hmax hgood
-    ((poolPrimeFamily R (Ideal.span {m}*F) (Q*Ideal.span {(72:Eis)})).restrict A) T (C h A T)
-    ((originalSlotSplit D R I F (Q*Ideal.span {(72:Eis)}) hR hI hF hm hf hz hbad hcop hpow hmask L hmax hgood T).symm (b,a))
+    ((poolPrimeFamily R (Ideal.span {m}*F) (Q*Ideal.span {72})).restrict A) T (C h A T)
+    ((originalSlotSplit D R I F (Q*Ideal.span {72}) hR hI hF hm hf hz hbad hcop hpow hmask L hmax hgood T).symm (b,a))
     (G h).shape (G h).denominator_ne_zero (fun b : A => completedLocalExponent R F b.val.val) W X
   exact hv.trans (congrArg
-    (originalSplitPhysical R I F (Q*Ideal.span {(72:Eis)}) hbad L hmax hgood
-      ((poolPrimeFamily R (Ideal.span {m}*F) (Q*Ideal.span {(72:Eis)})).restrict A) T (C h A T)
+    (originalSplitPhysical R I F (Q*Ideal.span {72}) hbad L hmax hgood
+      ((poolPrimeFamily R (Ideal.span {m}*F) (Q*Ideal.span {72})).restrict A) T (C h A T)
       (G h).shape (G h).denominator_ne_zero (fun b : A => completedLocalExponent R F b.val.val) W X)
-    ((originalSlotSplit D R I F (Q*Ideal.span {(72:Eis)}) hR hI hF hm hf hz hbad hcop hpow hmask L hmax hgood T).apply_symm_apply (b,a)))
+    ((originalSlotSplit D R I F (Q*Ideal.span {72}) hR hI hF hm hf hz hbad hcop hpow hmask L hmax hgood T).apply_symm_apply (b,a)))
 
 end
 end SevenEighths.InverseReflectedPhase

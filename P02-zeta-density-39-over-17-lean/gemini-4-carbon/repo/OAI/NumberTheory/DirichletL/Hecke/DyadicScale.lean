@@ -25,7 +25,7 @@ theorem presentationComplexity_le_of_modulus_le (χ : Character) (U H : ℝ)
     (hQ : (χ.modulus.absNorm : ℝ)≤U) :
     presentationComplexity χ H≤2*U^2*(3+|H|)^2 := by
   have hR := (radical_norm_le_modulus χ).trans hQ
-  have hU : 0≤U := (Nat.cast_nonneg χ.modulus.absNorm).trans hQ
+  have hU := (Nat.cast_nonneg χ.modulus.absNorm).trans hQ
   unfold presentationComplexity complexity
   calc
     _ ≤ U*(2*U*(3+|H|)^2) := by gcongr
@@ -35,18 +35,14 @@ theorem reflected_conductor_cost (χ : Character) (U a e ε : ℝ)
     (hQ : (χ.modulus.absNorm : ℝ)≤U) (ha : 1/2≤a) (he : 0≤e) (hε : 0≤ε) :
     (χ.modulus.absNorm : ℝ)^(a-1/2+6*e)*
       ((radical χ.modulus).absNorm : ℝ)^(6*e+2*ε)≤U^(a-1/2+12*e+2*ε) := by
-  have hU : 0<U := lt_of_lt_of_le zero_lt_one
+  have hU := lt_of_lt_of_le zero_lt_one
     ((HeckeLogarithmicInput.modulus_norm_ge_one χ).trans hQ)
-  have hR := (radical_norm_le_modulus χ).trans hQ
-  calc
-    _ ≤ U^(a-1/2+6*e)*U^(6*e+2*ε) :=
-      mul_le_mul (Real.rpow_le_rpow (by positivity) hQ (by linarith))
-        (Real.rpow_le_rpow (by positivity) hR (by positivity))
-        (Real.rpow_nonneg (by positivity) _) (Real.rpow_nonneg hU.le _)
-    _ = _ := by
+  exact (mul_le_mul (Real.rpow_le_rpow (by positivity) hQ (by linarith))
+        (Real.rpow_le_rpow (by positivity) ((radical_norm_le_modulus χ).trans hQ) (by positivity))
+        (Real.rpow_nonneg (by positivity) _) (Real.rpow_nonneg hU.le _)).trans_eq (by
       rw [←Real.rpow_add hU]
       congr 1
-      ring
+      ring)
 
 theorem positive_scale_exponent (U a e r : ℝ) (hU : 0<U) :
     (U^r)^(a+6*e-1/2)=U^((a-1/2+6*e)*r) := by

@@ -27,8 +27,7 @@ def wooleyMonogradeProduct (k r : ℕ) (X : ℕ → ℝ) : ℝ :=
 theorem wooleyMonogradeProduct_nonneg
     {k r : ℕ} {X : ℕ → ℝ}
     (hX : ∀ j ∈ wooleyGradeRange r, 0 ≤ X j) :
-    0 ≤ wooleyMonogradeProduct k r X := by
-  exact Finset.prod_nonneg fun j hj => Real.rpow_nonneg (hX j hj) _
+    0 ≤ wooleyMonogradeProduct k r X := Finset.prod_nonneg fun j hj => Real.rpow_nonneg (hX j hj) _
 
 theorem wooleyMonogradeProduct_one
     {k : ℕ} (X : ℕ → ℝ) :

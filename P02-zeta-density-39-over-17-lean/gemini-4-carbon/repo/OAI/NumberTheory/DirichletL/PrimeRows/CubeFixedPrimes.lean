@@ -7,11 +7,10 @@ public import OAI.NumberTheory.DirichletL.Detector.RayPoolDisjoint
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology ContDiff
 open Filter Set
+open scoped Classical BigOperators Topology ContDiff
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-open ProbeRaySlots ProbeCentralAllSlots HeckePrimeAmplitudeBins
+open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary ProbeRaySlots ProbeCentralAllSlots HeckePrimeAmplitudeBins
 local notation "O" => HeckeFamily.O
 variable (M : Ideal O) [NeZero M]
 local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
@@ -19,8 +18,7 @@ variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 omit [NeZero M] in
 theorem fixedPoolOutside (S : Finset (Ideal O)) (N : ℕ) (c b : ℝ) (Y : Fin N→ℝ) :
-    ∀j P,P∈pool (RayQuotient.identityClass M H) S c b (Y j) → P.val∉S :=
-  fun j P hP=>(mem_pool _ S c b (Y j) P).mp hP |>.2.2.2
+    ∀j P,P∈pool (RayQuotient.identityClass M H) S c b (Y j) → P.val∉S := by simp
 
 theorem actual_fixed_cube_prime_bound (N n : ℕ) (e eps c b A R dmin dmax rmin τ ε κ cost mesh δ margin loss : ℝ)
     (he : 0<e) (he1 : e<1/1000) (heps : 0<eps) (hc : 0<c) (hcb : c≤b) (hA : 0≤A)
@@ -65,8 +63,7 @@ theorem actual_fixed_cube_prime_bound (N n : ℕ) (e eps c b A R dmin dmax rmin 
   intro d hd hd' u hu hulo hcal huhi a i hi ha ha1 hbin
   dsimp only
   intro t ht
-  have hd0 : 0<d := hdmin.trans_le hd
-  have hZp : 0<Z := zero_lt_one.trans_le hZ
+  have hd0 := hdmin.trans_le hd
   have hr (j : Fin N) : rmin≤ell j/d := by
     apply (le_div_iff₀ hd0).mpr
     exact (by nlinarith [mul_le_mul_of_nonneg_right hd' hrmin.le] : rmin*d≤dmax*rmin).trans (hello j)
@@ -74,10 +71,9 @@ theorem actual_fixed_cube_prime_bound (N n : ℕ) (e eps c b A R dmin dmax rmin 
     apply (div_le_iff₀ hd0).mpr
     exact (hellhi j).trans (by nlinarith [mul_le_mul_of_nonneg_right hd hR])
   have heq (j : Fin N) : (Z^d)^(ell j/d)=Z^(ell j) := by
-    rw [←Real.rpow_mul hZp.le,mul_div_cancel₀ _ hd0.ne']
+    rw [←Real.rpow_mul (zero_lt_one.trans_le hZ).le,mul_div_cancel₀ _ hd0.ne']
   have hb := hbound d hd hd' u hu hulo hcal huhi a i hi ha ha1 hbin (fun j=>ell j/d) hr hr'
-  have hfun : (fun j : Fin N => (Z^d)^(ell j/d)) = (fun j => Z^(ell j)) := funext heq
-  rw [hfun] at hb
+  rw [(funext heq)] at hb
   exact hb hdis t ht
 
 end SevenEighths.ProbeHighRowFamily

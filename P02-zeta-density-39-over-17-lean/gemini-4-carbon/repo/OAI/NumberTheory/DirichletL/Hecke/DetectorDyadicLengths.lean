@@ -30,8 +30,8 @@ lemma dyadic_scale_bounds (U : ℝ) (hU : 8≤U) (j k : ℕ)
       U^(Real.logb U ((2 : ℝ)^j))=(2 : ℝ)^j ∧
       U^(Real.logb U ((2 : ℝ)^k))=(2 : ℝ)^k := by
   obtain ⟨hj,hk⟩ := HeckeDetectorDyadicBridge.scales_le_eight_terminal (U^21) j k hprod
-  obtain ⟨hr,hr',he⟩ := log_scale_bounds U ((2 : ℝ)^j) hU (one_le_pow₀ (by norm_num)) hj
-  obtain ⟨hm,hm',he'⟩ := log_scale_bounds U ((2 : ℝ)^k) hU (one_le_pow₀ (by norm_num)) hk
+  obtain ⟨hr,hr',he⟩ := log_scale_bounds U (2^j) hU (one_le_pow₀ (by norm_num)) hj
+  obtain ⟨hm,hm',he'⟩ := log_scale_bounds U (2^k) hU (one_le_pow₀ (by norm_num)) hk
   exact ⟨hr,hr',hm,hm',he,he'⟩
 
 lemma support_exponents (U t r m ε : ℝ) (hU : 1<U) (hcost : 8≤U^ε)
@@ -56,7 +56,7 @@ lemma truncation_scale (U t : ℝ) (hU : 2≤U) (ht : 1≤t) (ht' : t≤3/2) :
   have hU1 : 1≤U := by linarith
   constructor
   · apply hU.trans
-    simpa only [Real.rpow_one] using Real.rpow_le_rpow_of_exponent_le hU1 ht
+    simpa using Real.rpow_le_rpow_of_exponent_le hU1 ht
   · exact Real.rpow_le_rpow_of_exponent_le hU1 ht'
 
 end SevenEighths.HeckeDetectorDyadicGeometry

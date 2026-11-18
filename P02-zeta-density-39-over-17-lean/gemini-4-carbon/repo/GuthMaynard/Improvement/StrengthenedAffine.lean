@@ -7,7 +7,7 @@ noncomputable section
 open MeasureTheory Set
 open scoped SchwartzMap FourierTransform ContDiff
 namespace GuthMaynard.Improvement
-open RiemannZeta.GuthMaynard
+open RiemannZeta.GuthMaynard GuthMaynard.NativeMoment
 
 /-- Literal supremum norm for ordinary real inputs. For the compact smooth
 inputs of the endpoint, boundedness and agreement with the Schwartz
@@ -22,7 +22,7 @@ theorem sourceSup_eq_seminorm (f : 𝓢(ℝ, ℝ)) :
     sourceSup f = SchwartzMap.seminorm ℝ 0 0 (gmAffineComplexify f) := by
   have hbound : ∀ x, |f x| ≤ SchwartzMap.seminorm ℝ 0 0 (gmAffineComplexify f) := by
     intro x
-    simpa only [gmAffineComplexify_apply,Complex.norm_real,Real.norm_eq_abs] using
+    simpa using
       SchwartzMap.norm_le_seminorm (𝕜 := ℝ) (gmAffineComplexify f) x
   have hbdd : BddAbove (Set.range (fun x => |f x|)) :=
     ⟨_,by rintro y ⟨x,rfl⟩; exact hbound x⟩
@@ -31,6 +31,6 @@ theorem sourceSup_eq_seminorm (f : 𝓢(ℝ, ℝ)) :
   · exact csSup_le (Set.range_nonempty _) (by rintro y ⟨x,rfl⟩; exact hbound x)
   · apply SchwartzMap.seminorm_le_bound' (𝕜 := ℝ) 0 0 _ ((abs_nonneg (f 0)).trans (hle 0))
     intro x
-    simpa only [pow_zero,iteratedDeriv_zero,one_mul,gmAffineComplexify_apply,Complex.norm_real,Real.norm_eq_abs] using hle x
+    simpa using hle x
 
 end GuthMaynard.Improvement

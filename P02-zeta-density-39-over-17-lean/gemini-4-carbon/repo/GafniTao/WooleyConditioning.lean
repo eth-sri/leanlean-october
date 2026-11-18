@@ -57,10 +57,10 @@ theorem wooley_sourceValue_cast_injective
     Function.Injective
       (fun n : Fin Q => ((((n : ℕ) + 1 : ℕ) : ZMod q))) := by
   intro m n hmn
-  have hmQ : (m : ℕ) + 1 ≤ Q := Nat.succ_le_iff.mpr m.isLt
-  have hnQ : (n : ℕ) + 1 ≤ Q := Nat.succ_le_iff.mpr n.isLt
-  have hm : (m : ℕ) + 1 < q := lt_of_le_of_lt hmQ hQq
-  have hn : (n : ℕ) + 1 < q := lt_of_le_of_lt hnQ hQq
+  have hmQ := Nat.succ_le_iff.mpr m.isLt
+  have hnQ := Nat.succ_le_iff.mpr n.isLt
+  have hm := lt_of_le_of_lt hmQ hQq
+  have hn := lt_of_le_of_lt hnQ hQq
   have hval := congrArg ZMod.val hmn
   rw [ZMod.val_natCast_of_lt hm, ZMod.val_natCast_of_lt hn] at hval
   exact Fin.ext (by omega)
@@ -97,8 +97,7 @@ theorem wooleyResidueRawMoment_eq_modulusPow_mul_mass
     (hs : 1 ≤ s) (hQqH : Q < qH) (xi : ZMod qH) :
     wooleyResidueRawMoment s k Q qB qH xi =
       ((qB ^ k : ℕ) : ℝ) * (wooleyResidueMassSq Q qH xi : ℝ) := by
-  have hcard := wooleyResidueClass_card_le_one hQqH xi
-  rcases Nat.le_one_iff_eq_zero_or_eq_one.mp hcard with hzero | hone
+  rcases Nat.le_one_iff_eq_zero_or_eq_one.mp (wooleyResidueClass_card_le_one hQqH xi) with hzero | hone
   · have hmass : wooleyResidueMassSq Q qH xi = 0 := hzero
     have hs0 : s ≠ 0 := by omega
     simp [wooleyResidueRawMoment, wooleyNormalizedResidueGridSum, hmass,
@@ -114,13 +113,10 @@ theorem wooley_conditioned_grid_mean_eq_one
     wooleyConditionedGridMean s k Q qB qH = 1 := by
   rw [wooleyConditionedGridMean]
   simp_rw [wooleyResidueRawMoment_eq_modulusPow_mul_mass hs hQqH]
-  have hqB : 0 < qB := NeZero.pos qB
-  have hqpow : (((qB ^ k : ℕ) : ℝ)) ≠ 0 := by positivity
   have hmassSquare (xi : ZMod qH) :
       (wooleyResidueMassSq Q qH xi : ℝ) ^ 2 =
         (wooleyResidueMassSq Q qH xi : ℝ) := by
-    have hc := wooleyResidueClass_card_le_one hQqH xi
-    rcases Nat.le_one_iff_eq_zero_or_eq_one.mp hc with hz | ho
+    rcases Nat.le_one_iff_eq_zero_or_eq_one.mp (wooleyResidueClass_card_le_one hQqH xi) with hz | ho
     · simp [wooleyResidueMassSq, hz]
     · simp [wooleyResidueMassSq, ho]
   have hterm (xi : ZMod qH) :
@@ -133,7 +129,6 @@ theorem wooley_conditioned_grid_mean_eq_one
     simpa [pow_two] using hmassSquare xi
   simp_rw [hterm]
   rw [← Nat.cast_sum, wooley_sum_residueMassSq]
-  have hQR : (Q : ℝ) ≠ 0 := by positivity
   field_simp
 
 

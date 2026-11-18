@@ -13,10 +13,8 @@ public import Mathlib.Analysis.Calculus.Deriv.Star
 
 @[expose] public section
 
-open Complex MeasureTheory
+open Complex MeasureTheory MathCollab.Density.Stronger.Fourth MathCollab.Density.Stronger.Fourth.Digamma
 open scoped ComplexConjugate
-open MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Stronger.Fourth.Digamma
 set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
@@ -62,8 +60,8 @@ private theorem hasDerivAt_gammaCritical (t : ℝ) :
     HasDerivAt (fun u : ℝ => Complex.Gammaℝ (afeCriticalPoint u))
       (Complex.Gammaℝ (afeCriticalPoint t) *
         ((-Complex.log (Real.pi : ℂ) + Complex.digamma (afeCriticalPoint t / 2)) / 2) * I) t := by
-  have hinner : HasDerivAt (fun z : ℂ => (1 / 2 : ℂ) + z * I) I (t : ℂ) := by
-    simpa using ((hasDerivAt_id (t : ℂ)).mul_const I).const_add (1 / 2 : ℂ)
+  have hinner : HasDerivAt (fun z : ℂ => (1 / 2) + z * I) I (t : ℂ) := by
+    simpa using ((hasDerivAt_id (t : ℂ)).mul_const I).const_add (1 / 2)
   exact ((hasDerivAt_gammaReal (by norm_num [afeCriticalPoint])).comp (t : ℂ) hinner).comp_ofReal
 
 /-- Exact phase differential equation, with a real-valued frequency. -/

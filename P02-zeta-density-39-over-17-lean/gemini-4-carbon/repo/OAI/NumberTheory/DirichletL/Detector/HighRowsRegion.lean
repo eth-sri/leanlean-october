@@ -8,8 +8,7 @@ namespace OAI
 
 noncomputable section
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open ProbeEuler ProbeRow ConcretePrimeRowBridge ProbePrimePower
+open ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ProbeEuler ProbeRow ConcretePrimeRowBridge ProbePrimePower
 local notation "O" => ActualEisensteinCubic.O
 
 lemma row_initial_geometric (η : HeckeFamily.Character) (p : O) (hp : Prime p)
@@ -21,13 +20,11 @@ lemma row_initial_geometric (η : HeckeFamily.Character) (p : O) (hp : Prime p)
     ‖coordV Q z‖<1 ∧ ‖coordR Q ((actualACube η p)^2) x z‖<1 ∧
       ‖coordW Q rho w‖<1 ∧ ‖coordD Q (targetMonoid η p) rho x‖<1 := by
   dsimp only
-  have hP : Prime (Ideal.span {p}:Ideal O) := (Ideal.prime_span_singleton_iff).mpr hp
   have hQ2 : (2:ℝ)≤Ideal.absNorm (Ideal.span {p}) := by
-    exact_mod_cast SmoothMobiusCorrection.prime_norm_two_le ⟨_,hP⟩
+    exact_mod_cast SmoothMobiusCorrection.prime_norm_two_le ⟨_,((Ideal.prime_span_singleton_iff).mpr hp)⟩
   have hQ0 : (0:ℝ)<Ideal.absNorm (Ideal.span {p}) := by linarith
   have hQ1 : (1:ℝ)<Ideal.absNorm (Ideal.span {p}) := by linarith
-  have hn : ‖actualSextic (Ideal.span {p}) hg (Ideal.Quotient.mk _ b)‖≤1 :=
-    (Complex.norm_eq_one_of_pow_eq_one (actualSextic_unit_six p b hg hc hb) (by decide)).le
+  have hn := (Complex.norm_eq_one_of_pow_eq_one (actualSextic_unit_six p b hg hc hb) (by decide)).le
   refine ⟨?_,?_,?_,?_⟩
   · rw [coordV_norm _ hQ0]
     exact Real.rpow_lt_one_of_one_lt_of_neg hQ1 (by linarith)

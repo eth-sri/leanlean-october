@@ -42,15 +42,15 @@ theorem positiveScalar_kone_jzero (p : O) (hp : Prime p)
   simp only [positiveScalar, Nat.one_ne_zero, ite_false]
   rw [pow_one]
   simp only [pow_zero, pow_one]
-  refine (tsum_congr (g := fun _ => (0:ℂ)) ?_).trans tsum_zero
+  refine (tsum_congr (g := fun _ => 0) ?_).trans tsum_zero
   intro d
   rw [dite_eq_right]
   intro hd
   have hd2 : p ∣ p^(n+1)*representative p d :=
     (dvd_pow_self p (by omega : n+1 ≠ 0)).mul_right _
-  have hunit : p ∣ (1:O) := by
+  have hunit : p ∣ 1 := by
     have := dvd_add hd hd2
-    simpa only [sub_add_cancel] using this
+    simpa using this
   exact hp.not_isUnit (isUnit_iff_dvd_one.mpr hunit)
 
 theorem positiveScalar_kone_convolution (p : O) (hp : p ≠ 0)

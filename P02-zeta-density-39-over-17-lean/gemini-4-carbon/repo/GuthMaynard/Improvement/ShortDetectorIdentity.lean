@@ -8,8 +8,7 @@ public import MathCollab.Density.DetectorIdentity
 
 @[expose] public section
 
-open Complex MeasureTheory Set Filter
-open MathCollab.Density MathCollab.Density.Contour
+open Complex MeasureTheory Set Filter MathCollab.Density MathCollab.Density.Contour
 open scoped BigOperators Topology
 set_option autoImplicit false
 noncomputable section

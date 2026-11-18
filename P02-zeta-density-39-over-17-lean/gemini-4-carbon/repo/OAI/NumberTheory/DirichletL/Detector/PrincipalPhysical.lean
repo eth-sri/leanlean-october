@@ -8,11 +8,10 @@ public import OAI.NumberTheory.DirichletL.Detector.CanonicalPhysicalRows
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
 open Complex MeasureTheory
+open scoped Classical BigOperators
 namespace SevenEighths.ProbePrincipalPhysical
-open HeckeFamily ProbePhysical CompletedGauss ProbeFiniteProductBounds CanonicalQuadraticSieve
-open PrincipalMellinResidues ProbeMellinBoundary ProbePrincipalContours
+open HeckeFamily ProbePhysical CompletedGauss ProbeFiniteProductBounds CanonicalQuadraticSieve PrincipalMellinResidues ProbeMellinBoundary ProbePrincipalContours
 local notation "Id" => Ideal HeckeFamily.O
 
 lemma slotMultiplier_as_tuples {K : ℕ} (η : Character) (T : Fin K→Finset PrimeIdeal)
@@ -97,7 +96,6 @@ theorem principal_physical_pool_ordered {K : ℕ} (η : Character)
         (fun w => F s w z*LFunction π (6*z)*LFunction π w)))+
       R*verticalIntegral a (fun s => verticalIntegral (33/200) (fun z => F s 1 z*LFunction π (6*z)))+
       R^2/6*verticalIntegral a (fun s => F s 1 (1/6)) := by
-  dsimp only
   rw [principal_physical_pool_initial η S hS T hT hdis b W0 W1 a0 b0 a1 b1
     ha0 ha1 hW0 hW1 X Y Z hX hY hZ]
   exact ProbePrincipalTransport.source_initial_joint_ordered_at_a η S hS Finset.univ T b

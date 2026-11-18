@@ -15,8 +15,7 @@ open HeckeFamily HeckeLogarithmic HeckeReciprocalGrowth
 theorem presentationComplexity_mono_height (χ : Character) {t H : ℝ}
     (ht : |t|≤H) : presentationComplexity χ t≤presentationComplexity χ H := by
   unfold presentationComplexity complexity
-  have hH : 0≤H := (abs_nonneg t).trans ht
-  rw [abs_of_nonneg hH]
+  rw [abs_of_nonneg ((abs_nonneg t).trans ht)]
   gcongr
 
 theorem buffered_rectangle_control (e ε : ℝ)
@@ -33,16 +32,14 @@ theorem buffered_rectangle_control (e ε : ℝ)
   obtain ⟨C,hC,hbound⟩ := HeckeDyadicControl.buffered_original_control e ε he he' hε
   refine ⟨C,hC,?_⟩
   intro ι _ χ hχ T a i hT ha ha' hmax j z hzl hzr hzi
-  have hz6 : z ∈ closedBall ((2 : ℂ)+z.im*I) (2-a-6*e) := by
+  have hz6 : z ∈ closedBall (2+z.im*I) (2-a-6*e) := by
     rw [mem_closedBall,dist_eq_norm]
-    have heq : z-((2 : ℂ)+z.im*I)=((z.re-2 : ℝ) : ℂ) := by
+    have heq : z-(2+z.im*I)=((z.re-2 : ℝ) : ℂ) := by
       apply Complex.ext <;> simp
     rw [heq,Complex.norm_real,Real.norm_eq_abs,abs_of_nonpos (by linarith : z.re-2≤0)]
     linarith
-  have hz2 : z ∈ closedBall ((2 : ℂ)+z.im*I) (2-a-2*e) :=
-    closedBall_subset_closedBall (by linarith) hz6
   refine ⟨HeckeDetectorZeros.nonzero_on_buffered_disk χ hχ T a e i hT ha he
-    hmax j z.im hzi hz2, ?_⟩
+    hmax j z.im hzi (closedBall_subset_closedBall (by linarith) hz6), ?_⟩
   apply (hbound χ hχ T a i hT ha ha' hmax j z.im hzi z hz6).trans
   apply mul_le_mul_of_nonneg_left _ hC.le
   apply Real.rpow_le_rpow
@@ -59,7 +56,7 @@ theorem translated_rectangle_mem {a e σ freq l r H T : ℝ}
   have hs' : s.re ∈ Icc l r ∧ s.im ∈ Icc (-T) T := by
     change s.re ∈ uIcc l r ∧ s.im ∈ uIcc (-T) T at hs
     simpa [uIcc_of_le hlr,uIcc_of_le (by linarith : -T≤T)] using hs
-  have hsi : |s.im|≤T := abs_le.mpr hs'.2
+  have hsi := abs_le.mpr hs'.2
   constructor
   · simp only [add_re,shift_re]
     linarith [hs'.1.1]

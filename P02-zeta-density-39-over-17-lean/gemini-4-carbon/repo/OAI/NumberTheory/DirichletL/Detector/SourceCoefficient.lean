@@ -8,8 +8,7 @@ namespace OAI
 
 noncomputable section
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve
-open ProbePhase ProbeRow ConcretePrimeRowBridge
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve ProbePhase ProbeRow ConcretePrimeRowBridge
 local notation "O" => ActualEisensteinCubic.O
 
 def sourceHighCoefficient (C : CalibrationData) (η : HeckeFamily.Character)
@@ -32,10 +31,8 @@ theorem sourceHighCoefficient_eq_bare (S : Finset (Ideal O)) (hS : ∀ P∈S,P.I
     sourceHighCoefficient (calibrationForSet S hS) η I hI A s (supportedElement_ne_zero A hA) u a =
       bareSourceCoefficient η I hI A s (supportedElement_ne_zero A hA) (u*a^6) := by
   let C := calibrationForSet S hS
-  have ha : IsCoprime C.generator a :=
-    hH.of_isCoprime_of_dvd_right (by refine ⟨u*a^5,?_⟩; ring)
   have hval : C.residueMonoid (u*a^6)=C.residueMonoid u := by
-    rw [map_mul,map_pow,calibrationForSet_residue_sixth S hS a ha,mul_one]
+    rw [map_mul,map_pow,calibrationForSet_residue_sixth S hS a (hH.of_isCoprime_of_dvd_right (by refine ⟨u*a^5,?_⟩; ring)),mul_one]
   have he := calibration_coefficient_cancel S hS A s hA hs hcop (u*a^6) hH
   dsimp only at he
   dsimp only [C] at hval

@@ -47,7 +47,7 @@ lemma primitive_redundant_norm (M C : Ideal O) (hM : M≠0) (hC : C≠0) (hCM : 
     C.absNorm*(redundantIdeal M C).absNorm≤M.absNorm := by
   have h := Nat.le_of_dvd (Nat.pos_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hM))
     (map_dvd Ideal.absNorm (primitive_redundant_dvd M C hM hC hCM))
-  simpa only [map_mul] using h
+  simpa using h
 
 lemma coprime_support_iff (I M : Ideal O) (hM : M≠0) :
     IsCoprime I M ↔ ∀P∈primeSupport M,IsCoprime I P := by

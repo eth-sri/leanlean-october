@@ -10,9 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseFirstGlobalCaps InverseSecondSourceBlocks InverseMomentFirstChildWindows
-open InverseMomentFirstOriginalProfile
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseFirstGlobalCaps InverseSecondSourceBlocks InverseMomentFirstChildWindows InverseMomentFirstOriginalProfile
 open ConcreteTraceCRT (eisEmbedding)
 local notation "O"=>ActualEisensteinCubic.O
 variable {ι:Type*}[DecidableEq ι]
@@ -30,7 +28,7 @@ theorem first_dyadic_radius_cell (pool:Finset ι)(Q:Finset (ι→₀ℕ))
       firstCellRadius Z M r ell V eta tau k j:=by
   rw [refinedOuter_label] at hx
   obtain ⟨hx,hj⟩:=Finset.mem_filter.mp hx
-  have hg:outerGate p k x:=(Finset.mem_filter.mp hx).2
+  have hg :=(Finset.mem_filter.mp hx).2
   have hC:=hg 2
   have hD:=hg 3
   change dyadIndex (primeProductNorm p x.2.1)=k 2 at hC

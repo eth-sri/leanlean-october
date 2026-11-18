@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaBufferedSharpSource
 
 @[expose] public section
@@ -35,8 +45,7 @@ theorem modelPhaseCore_natAbs_bounds
     have h := mul_le_mul_of_nonneg_left (show (-1 : ℝ) ≤ (2 : ℝ)^(-σ)-δ by linarith) hK
     nlinarith
   have ha₁ : (T/N)*((2 : ℝ)^(-σ)-δ) ≤ T/N := by
-    have h := mul_le_mul_of_nonneg_left (show (2 : ℝ)^(-σ)-δ ≤ 1 by linarith) hK
-    simpa only [mul_one] using h
+    simpa using (mul_le_mul_of_nonneg_left (show (2 : ℝ)^(-σ)-δ ≤ 1 by linarith) hK)
   have hb₀ : 0 ≤ (T/N)*(1+δ) := by positivity
   have hb₁ : (T/N)*(1+δ) ≤ 2*T := by nlinarith
   have hfa := Int.floor_le ((T/N)*((2 : ℝ)^(-σ)-δ))
@@ -53,12 +62,12 @@ theorem modelPhaseSharpRadius_le_polynomial
     ((⌈C*T*(1+T)^2/N⌉₊+(modelPhaseCoreLower σ δ T N).natAbs+
       (modelPhaseCoreUpper δ T N).natAbs+1 : ℕ) : ℝ) ≤
       (C+4)*(T+1)^3 := by
-  have hNpos : 0 < N := zero_lt_one.trans_le hN
+  have hNpos := zero_lt_one.trans_le hN
   have hX : 0 ≤ C*T*(1+T)^2/N := by positivity
   have hceil := Nat.ceil_lt_add_one hX
   have hc := modelPhaseCore_natAbs_bounds hσ hδ hδ₁ hT hN
   have hdiv := div_le_self (show 0 ≤ C*T*(1+T)^2 by positivity) hN
-  have hm := mul_le_mul_of_nonneg_left (show T ≤ T+1 by linarith)
+  have hm := mul_le_mul_of_nonneg_left (by linarith)
     (show 0 ≤ C*(T+1)^2 by positivity)
   have hXupper : C*T*(1+T)^2/N ≤ C*(T+1)^3 := by nlinarith
   have hp : T+1 ≤ (T+1)^3 := by
@@ -70,7 +79,6 @@ theorem log_nat_le_polynomial_budget
     {n : ℕ} {K T : ℝ} (hK : 1 ≤ K) (hT : 0 ≤ T)
     (hn : (n : ℝ) ≤ K*(T+1)^3) :
     Real.log (n : ℝ) ≤ Real.log K+3*Real.log (T+1) := by
-  have hKpos : 0 < K := zero_lt_one.trans_le hK
   have hTpos : 0 < T+1 := by linarith
   by_cases hz : n = 0
   · rw [hz,Nat.cast_zero,Real.log_zero]
@@ -78,8 +86,8 @@ theorem log_nat_le_polynomial_budget
     have hlT := Real.log_nonneg (show 1 ≤ T+1 by linarith)
     linarith
   · have h := Real.log_le_log (show 0 < (n : ℝ) by exact_mod_cast Nat.pos_of_ne_zero hz) hn
-    rw [Real.log_mul hKpos.ne' (pow_ne_zero _ hTpos.ne'),Real.log_pow] at h
-    norm_num only [Nat.cast_ofNat] at h
+    rw [Real.log_mul (zero_lt_one.trans_le hK).ne' (pow_ne_zero _ hTpos.ne'),Real.log_pow] at h
+    norm_num at h
     exact h
 
 theorem modelPhaseSharpFarLengths_le_polynomial
@@ -92,12 +100,11 @@ theorem modelPhaseSharpFarLengths_le_polynomial
       ((((R : ℤ)-B).toNat : ℕ) : ℝ) ≤ (C+6)*(T+1)^3 := by
   intro A B R
   have hc := modelPhaseCore_natAbs_bounds hσ hδ hδ₁ hT hN
-  have hr : (R : ℝ) ≤ (C+4)*(T+1)^3 :=
-    modelPhaseSharpRadius_le_polynomial hσ hδ hδ₁ hT hN hC
+  have hr := modelPhaseSharpRadius_le_polynomial hσ hδ hδ₁ hT hN hC
   have ha : (A : ℝ) ≤ (A.natAbs : ℝ) := by
-    simpa only [Nat.cast_natAbs,Int.cast_abs] using le_abs_self (A : ℝ)
+    simpa using le_abs_self (A : ℝ)
   have hb : -(B : ℝ) ≤ (B.natAbs : ℝ) := by
-    simpa only [Nat.cast_natAbs,Int.cast_abs] using neg_le_abs (B : ℝ)
+    simpa using neg_le_abs (B : ℝ)
   have hzA : 0 ≤ A+(R : ℤ) := by dsimp [R]; omega
   have hzB : 0 ≤ (R : ℤ)-B := by dsimp [R]; omega
   have heA : ((A+(R : ℤ)).toNat : ℝ) = (A : ℝ)+(R : ℝ) := by
@@ -107,8 +114,8 @@ theorem modelPhaseSharpFarLengths_le_polynomial
   rw [heA,heB]
   have hp : T+1 ≤ (T+1)^3 := by
     nlinarith [sq_nonneg T,mul_nonneg hT (sq_nonneg T)]
-  have hcA : (A.natAbs : ℝ) ≤ T+1 := hc.1
-  have hcB : (B.natAbs : ℝ) ≤ 2*T+1 := hc.2
+  have hcA := hc.1
+  have hcB := hc.2
   constructor <;> nlinarith
 
 theorem modelPhaseBufferedInnerLengths_le
@@ -129,12 +136,6 @@ theorem modelPhaseBufferedInnerLengths_le
   intro A B L U P Q
   have hi := modelPhaseBufferedSupport_inside_core hσ hδ hF hT hN hη hl hr hflat
   have he := modelPhaseBufferedBand_endpoints hσ hδ hF hT hN hη hl hr hflat
-  have hAL : A ≤ L := hi.1
-  have hUB : U ≤ B := hi.2
-  have hLP : L ≤ P := he.1
-  have hPU : P ≤ U := he.2.1
-  have hLQ : L ≤ Q := he.2.2.1
-  have hQU : Q ≤ U := he.2.2.2
   have hc := modelPhaseCore_card_le hσ.le (approximateModelPhase_tolerance_nonneg hF)
     (hδ.trans (min_le_right _ _)) hT.le hN
   have hleft : (Finset.Ico A L).card ≤ (Finset.Icc A B).card := by

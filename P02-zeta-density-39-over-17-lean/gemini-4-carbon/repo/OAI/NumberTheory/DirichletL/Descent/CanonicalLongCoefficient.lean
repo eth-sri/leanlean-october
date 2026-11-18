@@ -9,8 +9,7 @@ noncomputable section
 
 open scoped BigOperators Classical
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
-open CanonicalQuadraticSieve CanonicalCubeSeparation FirstPassCubeLabels SecondPassArithmetic
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge CanonicalQuadraticSieve CanonicalCubeSeparation FirstPassCubeLabels SecondPassArithmetic
 local notation "O"=>ActualEisensteinCubic.O
 
 def actualLongCoefficient {ι:Type*}(p:ι→O)(Ψ:O→*ℂ)(m:O)(H₀ B ξ:ℝ)
@@ -35,14 +34,11 @@ theorem actualLongCoefficient_uniform (eps:ℝ)(heps:0<eps) :
   rw [eisEmbedding_norm_sq_eq_absNorm_span] at hlo hhi
   have hh:=hbound H₀ (rowTwist Ψ m (idealGenerator I) 1)
     (rowTwist_norm Ψ hΨ m (idealGenerator I) 1) _ hne
-  have hb:‖reopenedCubeCoefficient H₀ (rowTwist Ψ m (idealGenerator I) 1)
-      (Ideal.span {primeProduct p v.support v})‖≤C*(Real.exp 1*B)^eps :=
-    hh.trans (mul_le_mul_of_nonneg_left (Real.rpow_le_rpow (by positivity) hhi heps.le) hC.le)
   have hs:=separatedCubeCoefficient_bound
     (fun u:ι→₀ℕ=>reopenedCubeCoefficient H₀ (rowTwist Ψ m (idealGenerator I) 1)
       (Ideal.span {primeProduct p u.support u}))
     (fun u:ι→₀ℕ=>(Ideal.absNorm (Ideal.span {primeProduct p u.support u}):ℝ)) B ξ
-    (C*(Real.exp 1*B)^eps) hB (by positivity) v hlo hhi hb
+    (C*(Real.exp 1*B)^eps) hB (by positivity) v hlo hhi (hh.trans (mul_le_mul_of_nonneg_left (Real.rpow_le_rpow (by positivity) hhi heps.le) hC.le))
   unfold actualLongCoefficient
   convert hs using 1 ; ring
 

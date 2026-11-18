@@ -5,13 +5,8 @@ public import OAI.NumberTheory.DirichletL.Arithmetic.EisensteinCoordinates
 
 namespace OAI
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
+open MulChar AddChar Filter Asymptotics MeasureTheory Real
+open scoped BigOperators Topology FourierTransform SchwartzMap
 
 noncomputable section
 
@@ -38,11 +33,9 @@ private theorem lambda_prime : Prime lambda := by
   exact (IsCyclotomicExtension.zeta_spec 3 ℚ K).zeta_sub_one_prime'
 
 theorem lambda_maximal : lambdaIdeal.IsMaximal := by
-  have hp : lambdaIdeal.IsPrime :=
-    Ideal.isPrime_span_singleton_of_prime lambda_prime
   have hne : lambdaIdeal ≠ ⊥ := by
     exact Ideal.span_singleton_eq_bot.not.mpr lambda_prime.ne_zero
-  exact hp.isMaximal hne
+  exact (Ideal.isPrime_span_singleton_of_prime lambda_prime).isMaximal hne
 
 theorem lambda_card : Nat.card (O ⧸ lambdaIdeal) = 3 := by
   let : Fact (Nat.Prime 3) := ⟨Nat.prime_three⟩

@@ -8,74 +8,8 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap FourierTransform
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 namespace JointLogSeparation
 
 end JointLogSeparation
@@ -83,14 +17,9 @@ end JointLogSeparation
 namespace SecondPassIntegration
 
 section
-open ActualEisensteinCubic SecondPassArithmetic JointLogSeparation
+open SecondPassArithmetic JointLogSeparation
 open SecondPassFiber (OldTuple newLabel newRow Valid)
 open FourierBridge (logPhase)
-
-def tupleOuterWeight (V : Fin 7 → ℝ → ℂ) (w : OldTuple → ℂ)
-    (z ud ue uv kap : OldTuple → ℝ) (q : Frequency) (x : OldTuple) : ℂ :=
-  w x * outerWindow V (z x) (ud x) (ue x) (uv x) (kap x) *
-    logPhase (q.1 + q.2.1) (z x) * logPhase q.2.2 (kap x - ud x - 2 * ue x - 2 * uv x)
 
 variable {ι : Type*} [DecidableEq ι]
   (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
@@ -99,7 +28,7 @@ variable {ι : Type*} [DecidableEq ι]
 
 end
 
-open ActualEisensteinCubic SecondPassArithmetic JointLogSeparation
+open SecondPassArithmetic JointLogSeparation
 open SecondPassFiber (OldTuple newLabel newRow Valid)
 
 variable {ι : Type*} [DecidableEq ι]
@@ -111,8 +40,6 @@ end SecondPassIntegration
 
 section
 
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
 namespace JointLogSeparation
 
 lemma sqrt_exp_half (s : ℝ) : Real.sqrt (Real.exp s) = Real.exp (s / 2) := by
@@ -124,15 +51,13 @@ lemma sqrt_exp_half (s : ℝ) : Real.sqrt (Real.exp s) = Real.exp (s / 2) := by
 end JointLogSeparation
 
 namespace SecondPassIntegration
-open ActualEisensteinCubic JointLogSeparation FirstPassCubeLabels
+open JointLogSeparation FirstPassCubeLabels
 
 end SecondPassIntegration
 end
 
-open scoped BigOperators Classical
 namespace CanonicalQuadraticSieve
 
-open ActualEisensteinCubic
 
 lemma lambdaIdeal_maximal : (Ideal.span {lambda} : Ideal O).IsMaximal :=
   PrincipalIdealRing.isMaximal_of_irreducible PrimaryIdealUnitReindex.lambda_prime_actual.irreducible
@@ -141,7 +66,7 @@ lemma twoIdeal_maximal : (Ideal.span {(2 : O)} : Ideal O).IsMaximal := by
   simpa only [cubicTwoIdeal, Ideal.span_singleton_neg] using cubicTwoIdeal_isMaximal
 
 lemma twoIdeal_characteristic : ringChar (O ⧸ Ideal.span {(2 : O)}) = 2 := by
-  rw [← Ideal.span_singleton_neg (2 : O)]
+  rw [← Ideal.span_singleton_neg 2]
   exact cubicTwoIdeal_residue_char
 
 theorem supported_span_iff (z : O) :
@@ -197,9 +122,9 @@ theorem badPrime_mask (z : O) :
   rw [supported_span_iff]
   simp only [rowCoprimeMask, Finset.mem_univ, true_and, Bool.exists_bool, badPrime,
     Bool.false_eq_true, ite_false, ite_true, Ideal.mem_span_singleton]
-  by_cases hLam : lambda ∣ z <;> by_cases htwo : (2 : O) ∣ z <;> simp [hLam, htwo]
+  by_cases hLam : lambda ∣ z <;> by_cases htwo : 2 ∣ z <;> simp [hLam, htwo]
 
-open ActualEisensteinCubic CompletedGauss FiniteSieveOperator
+open CompletedGauss FiniteSieveOperator
 
 theorem highKernelNorm_mono {M N K M' N' K' : ℝ}
     (hM : M ≤ M') (hN : N ≤ N') (hK : K' ≤ K) :
@@ -225,8 +150,7 @@ theorem highKernel_family_squared_norm_le {m n : Type*} [Fintype m] [Fintype n]
   let c : n → idealRange N := fun j => ⟨cols j, mem_idealRange.mpr (hcols j)⟩
   have hri : Function.Injective r := fun i j h => hr (congrArg Subtype.val h)
   have hci : Function.Injective c := fun i j h => hc (congrArg Subtype.val h)
-  have h := FiniteSieveRestriction.submatrix_norm_le r hri c hci (highKernelMatrix M N K)
-  exact pow_le_pow_left₀ (norm_nonneg _) h 2
+  exact pow_le_pow_left₀ (norm_nonneg _) (FiniteSieveRestriction.submatrix_norm_le r hri c hci (highKernelMatrix M N K)) 2
 theorem highKernel_quotient_family_squared_norm_le {m n : Type*} [Fintype m] [Fintype n]
     [DecidableEq m] [DecidableEq n]
     (D : Ideal O) (hD : D ≠ 0) (rows : m → Ideal O) (cols : n → Ideal O)
@@ -253,7 +177,7 @@ theorem highKernel_quotientMatrix_squared_norm_le {m n : Type*} [Fintype m] [Fin
     (hcols : ∀ j, Admissible (cols j) ∧ (Ideal.absNorm (cols j) : ℝ) ≤ N) :
     ‖FiniteSieveOperator.operator (quotientMatrix D rows cols)‖ ^ 2 ≤
       highKernelNorm M (N / (Ideal.absNorm D : ℝ)) K := by
-  let S : Finset n := Finset.univ.filter (fun j => D ∣ cols j)
+  let S := Finset.univ.filter (fun j => D ∣ cols j)
   let A : Matrix m S ℂ := fun i j =>
     quadraticRow (idealQuotient D (cols j.val)) (primaryGenerator (rows i))
   have hnorm : ‖FiniteSieveOperator.operator A‖ ^ 2 ≤
@@ -276,17 +200,13 @@ theorem highKernel_quotientMatrix_squared_norm_le {m n : Type*} [Fintype m] [Fin
       quadraticRow (idealQuotient D (cols j)) (primaryGenerator (rows i)) * a j)]
     simp only [S, Finset.sum_filter, ite_mul, zero_mul]
   simp_rw [hinner]
-  have henergy := FiniteSieveOperator.energy_bound A (fun j : S => a j.val)
-  apply henergy.trans
-  calc
-    _ ≤ highKernelNorm M (N / (Ideal.absNorm D : ℝ)) K * ∑ j : S, ‖a j.val‖ ^ 2 :=
-      mul_le_mul_of_nonneg_right hnorm (by positivity)
-    _ ≤ _ := by
+  apply (FiniteSieveOperator.energy_bound A (fun j : S => a j.val)).trans
+  exact (mul_le_mul_of_nonneg_right hnorm (by positivity)).trans (by
       apply mul_le_mul_of_nonneg_left _ (highKernelNorm_nonneg _ _ _)
       rw [Finset.sum_coe_sort S (fun j : n => ‖a j‖ ^ 2)]
-      exact Finset.sum_le_univ_sum_of_nonneg (fun j => sq_nonneg ‖a j‖)
+      exact Finset.sum_le_univ_sum_of_nonneg (fun j => sq_nonneg ‖a j‖))
 
-open ActualEisensteinCubic CompletedGauss FiniteSieveOperator IdealCoprimeSieveOperator
+open IdealCoprimeSieveOperator
 
 def totalQuotient (D I : Ideal O) : Ideal O := if D ∣ I then idealQuotient D I else 1
 
@@ -300,7 +220,7 @@ theorem totalQuotient_norm_le (D I : Ideal O) (hI : Admissible I)
     (Ideal.absNorm (totalQuotient D I) : ℝ) ≤ N := by
   by_cases h : D ∣ I
   · rw [totalQuotient, ite_eq_left h]
-    have hn : 0 < Ideal.absNorm I := Nat.pos_iff_ne_zero.mpr
+    have hn := Nat.pos_iff_ne_zero.mpr
       (fun hz => hI.1 (Ideal.absNorm_eq_zero_iff.mp hz))
     exact (Nat.cast_le.mpr (Nat.le_of_dvd hn (map_dvd Ideal.absNorm (idealQuotient_dvd h)))).trans hIN
   · simpa only [totalQuotient, ite_eq_right h, map_one, Nat.cast_one] using hN

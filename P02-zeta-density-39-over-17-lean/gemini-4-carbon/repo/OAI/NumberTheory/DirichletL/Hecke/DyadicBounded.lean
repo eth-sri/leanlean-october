@@ -33,7 +33,6 @@ theorem buffered_polynomial_bound (e ε : ℝ)
   refine ⟨C,hC,?_⟩
   intro ι _ χ hχ T a i hT ha ha' hmax j inverse W A B hA hWs hW
     D σ freq V C₂ Cn n hD hV hfreq hC₂ hCn hm₂ hmn
-  dsimp only
   let K := C*(presentationComplexity (χ j) ((3*i+2 : ℕ)*T))^ε
   have hK : 0≤K := mul_nonneg hC.le (Real.rpow_nonneg (by
     unfold presentationComplexity HeckeLogarithmic.complexity

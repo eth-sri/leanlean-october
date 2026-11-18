@@ -10,9 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentUncenteredTerminal
-open HeckeFamily CenteredMomentAbsoluteEnergy CenteredMomentSourceRow
-open CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentAddedZeroUniform
-open CenteredMomentRectangle
+open HeckeFamily CenteredMomentAbsoluteEnergy CenteredMomentSourceRow CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentAddedZeroUniform CenteredMomentRectangle
 local notation "O" => ActualEisensteinCubic.O
 
 def uncenteredProfileCoefficient {ι : Type*} [Fintype ι]
@@ -27,7 +25,6 @@ def uncenteredProfileCoefficient {ι : Type*} [Fintype ι]
 def comparisonScale (b : ℝ) : ℝ := 1/(2*max 1 b)
 
 lemma comparisonScale_pos (b : ℝ) : 0<comparisonScale b := by
-  have hb : 0<max 1 b := zero_lt_one.trans_le (le_max_left _ _)
   unfold comparisonScale
   positivity
 

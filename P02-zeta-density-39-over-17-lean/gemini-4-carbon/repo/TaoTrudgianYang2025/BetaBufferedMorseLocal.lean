@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaMorseWeightJets
 public import TaoTrudgianYang2025.BetaBufferedCutoff
 public import TaoTrudgianYang2025.BetaQuadraticLocalRemainder
@@ -34,19 +44,19 @@ theorem modelPhaseMorseWindow_mem_and_inverse
     z ∈ modelPhaseMorseRange F v ∧
       |modelPhaseMorseInverse F v z-modelPhaseInverseSlope F v| < d := by
   let u₀ := modelPhaseInverseSlope F v
-  have hu₀ : u₀ ∈ Ioo (1 : ℝ) 2 := modelPhaseInverseSlope_mem hv
-  have ha : u₀-d ∈ Ioo (1 : ℝ) 2 := ⟨hl,by dsimp [u₀]; linarith⟩
-  have hb : u₀+d ∈ Ioo (1 : ℝ) 2 := ⟨by dsimp [u₀]; linarith,hr⟩
-  have hs : Icc (u₀-d) (u₀+d) ⊆ Ioo (1 : ℝ) 2 := by
+  have hu₀ : u₀ ∈ Ioo 1 2 := modelPhaseInverseSlope_mem hv
+  have ha : u₀-d ∈ Ioo 1 2 := ⟨hl,by dsimp [u₀]; linarith⟩
+  have hb : u₀+d ∈ Ioo 1 2 := ⟨by dsimp [u₀]; linarith,hr⟩
+  have hs : Icc (u₀-d) (u₀+d) ⊆ Ioo 1 2 := by
     intro u hu
     exact ⟨ha.1.trans_le hu.1,hu.2.trans_lt hb.2⟩
   have hm := modelPhaseMorseCoordinate_strictMonoOn hσ hδ hF hv
   have hwa : modelPhaseMorseCoordinate F v (u₀-d) < 0 := by
     simpa only [u₀,modelPhaseMorseCoordinate_at_inverse] using
-      hm ha hu₀ (show u₀-d < u₀ by linarith)
+      hm ha hu₀ (by linarith)
   have hwb : 0 < modelPhaseMorseCoordinate F v (u₀+d) := by
     simpa only [u₀,modelPhaseMorseCoordinate_at_inverse] using
-      hm hu₀ hb (show u₀ < u₀+d by linarith)
+      hm hu₀ hb (by linarith)
   have hba := (modelPhaseMorseCoordinate_bounds hσ hδ hF hv ha).1
   have hbb := (modelPhaseMorseCoordinate_bounds hσ hδ hF hv hb).1
   change Real.sqrt (modelPhaseCurvatureLower σ)*|u₀-d-u₀| ≤ _ at hba
@@ -56,7 +66,7 @@ theorem modelPhaseMorseWindow_mem_and_inverse
   have hc : ContinuousOn (modelPhaseMorseCoordinate F v) (Icc (u₀-d) (u₀+d)) :=
     fun u hu => (modelPhaseMorseCoordinate_contDiffAt hσ hδ hF hv (hs hu)).continuousAt.continuousWithinAt
   have hz' : z ∈ modelPhaseMorseRange F v := by
-    obtain ⟨u,hu,he⟩ := intermediate_value_Icc (show u₀-d ≤ u₀+d by linarith) hc
+    obtain ⟨u,hu,he⟩ := intermediate_value_Icc (by linarith) hc
       (show z ∈ Icc (modelPhaseMorseCoordinate F v (u₀-d))
         (modelPhaseMorseCoordinate F v (u₀+d)) by constructor <;> linarith [hz.1,hz.2])
     exact ⟨u,hs hu,he⟩
@@ -80,10 +90,7 @@ theorem iteratedDeriv_bufferedMorseWeight_of_flat
       iteratedDeriv (n+1) (modelPhaseMorseInverse F v) z := by
   rw [iteratedDeriv_modelPhaseMorseWeight_eq hσ hδ hF hv hz,iteratedDeriv_succ']
   apply Filter.EventuallyEq.iteratedDeriv_eq
-  have hi := (modelPhaseMorseInverse_contDiffAt hσ hδ hF hv hz).continuousAt
-  have hn : ∀ᶠ x in 𝓝 z, modelPhaseMorseInverse F v x ∈ Ioo (l+2*η) (r-2*η) :=
-    hi (isOpen_Ioo.mem_nhds ⟨hl,hr⟩)
-  filter_upwards [hn] with x hx
+  filter_upwards [(((modelPhaseMorseInverse_contDiffAt hσ hδ hF hv hz).continuousAt) (isOpen_Ioo.mem_nhds ⟨hl,hr⟩))] with x hx
   simp only [modelPhaseMorseAmplitude,modelPhaseBufferedCutoff_one hη hx.1.le hx.2.le,one_mul]
 
 theorem bufferedMorseWeight_local_jet_bound
@@ -101,12 +108,12 @@ theorem bufferedMorseWeight_local_jet_bound
       morseInverseDerivativeBound σ (n+1) := by
   have hF₁ := approximateModelPhase_mono hF ((morseInverseDerivativeOrder_pos (n+1)).trans hP) le_rfl
   obtain ⟨hz',hi⟩ := modelPhaseMorseWindow_mem_and_inverse hσ hδ hF₁ hv hd
-    (show 1 < modelPhaseInverseSlope F v-d by linarith)
-    (show modelPhaseInverseSlope F v+d < 2 by linarith) hH hz
+    (by linarith)
+    (by linarith) hH hz
   have hi' := abs_lt.mp hi
   rw [iteratedDeriv_bufferedMorseWeight_of_flat hσ hδ hF₁ hv hz' hη
-    (show l+2*η < modelPhaseMorseInverse F v z by linarith [hi'.1])
-    (show modelPhaseMorseInverse F v z < r-2*η by linarith [hi'.2]) n]
+    (by linarith [hi'.1])
+    (by linarith [hi'.2]) n]
   exact modelPhaseMorseInverse_iteratedDeriv_bound hσ hδ hF hv hz' (n+1) hP
 
 def bufferedLocalStationaryOrder : ℕ :=
@@ -135,9 +142,8 @@ theorem bufferedMorseWeight_local_window_remainder
       quadraticRemainderConstant H (morseInverseDerivativeBound σ 1)
         (morseInverseDerivativeBound σ 3) (morseInverseDerivativeBound σ 4)/T := by
   have hF₁ := approximateModelPhase_mono hF bufferedLocalStationaryOrder_pos le_rfl
-  have hs := modelPhaseBufferedCutoff_tsupport_model hη hl hr
   have hW := modelPhaseMorseWeight_contDiff (modelPhaseBufferedCutoff_contDiff l r η)
-    hs hσ hδ hF₁ hv
+    (modelPhaseBufferedCutoff_tsupport_model hη hl hr) hσ hδ hF₁ hv
   have hzero : modelPhaseMorseWeight (modelPhaseBufferedCutoff l r η) F v 0 =
       modelPhaseStationaryAmplitude F v := by
     rw [modelPhaseMorseWeight_eq (zero_mem_modelPhaseMorseRange hv),
@@ -150,11 +156,10 @@ theorem bufferedMorseWeight_local_window_remainder
     fun z hz => bufferedMorseWeight_local_jet_bound hσ hδ hF hv hη hl hr hd
       hleft hright hsmall hz n hn
   have h₀ := hb 0 (by simp only [Nat.reduceAdd,bufferedLocalStationaryOrder]; omega) 0
-    (show (0 : ℝ) ∈ Icc (-H) H by constructor <;> linarith)
+    (show 0 ∈ Icc (-H) H by constructor <;> linarith)
   have h₂ := hb 2 (by simp only [Nat.reduceAdd,bufferedLocalStationaryOrder]; omega)
   have h₃ := hb 3 (by simp only [Nat.reduceAdd,bufferedLocalStationaryOrder]; omega)
-  have h := norm_quadratic_window_remainder_le_local hW hT hH h₀ h₂ h₃
-  simpa only [hzero] using h
+  simpa only [hzero] using (norm_quadratic_window_remainder_le_local hW hT hH h₀ h₂ h₃)
 
 theorem bufferedMorseWeight_local_window_remainder_inverse
     {F : ℝ → ℝ} {σ δ v l r η d H T : ℝ}

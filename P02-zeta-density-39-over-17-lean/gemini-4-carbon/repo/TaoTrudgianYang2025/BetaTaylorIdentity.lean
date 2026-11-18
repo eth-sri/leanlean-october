@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaTaylorAverage
 public import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
 
@@ -55,8 +65,7 @@ theorem segmentTaylorAverage_second
       (by simp : (∞ : WithTop ℕ∞) ≠ 0)
     have hg : HasDerivAt (fun t : ℝ => a+t*(x-a)) (x-a) t := by
       simpa only [one_mul,id_eq] using ((hasDerivAt_id t).mul_const (x-a)).const_add a
-    have hw := ((hasDerivAt_const t (1 : ℝ)).sub (hasDerivAt_id t)).mul_const (x-a)
-    have h := (h₁.hasDerivAt.comp t hg).add (hw.mul (h₂.hasDerivAt.comp t hg))
+    have h := (h₁.hasDerivAt.comp t hg).add ((((hasDerivAt_const t (1 : ℝ)).sub (hasDerivAt_id t)).mul_const (x-a)).mul (h₂.hasDerivAt.comp t hg))
     convert h using 1
     · rfl
     · dsimp [p,Function.comp_def]

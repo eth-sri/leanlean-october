@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.CenteredMomentFirstAnnularGeometry
-open CenteredMomentSectorLocalization CenteredMomentFirstAnnularMajorant
-open CenteredMomentFirstAnnularEnergy CenteredMomentGaussEnergy CanonicalQuadraticSieve
+open CenteredMomentSectorLocalization CenteredMomentFirstAnnularMajorant CenteredMomentFirstAnnularEnergy CenteredMomentGaussEnergy CanonicalQuadraticSieve
 
 local notation "O"=>HeckeFamily.O
 
@@ -34,10 +33,9 @@ lemma bands_log_cap (H Z A:ℝ)(hH:0<H)(hZ:1<Z)(hcap:8*H≤Z^A)
 
 lemma bands_nonempty (H:ℝ)(hH:0<H):(bands H).Nonempty:=by
   by_contra hn
-  have he:bands H=∅:=Finset.not_nonempty_iff_eq_empty.mp hn
   have hp:=weighted_partition H (H/2) hH
-  have hr:(H/2)/H=(1/2:ℝ):=by field_simp
-  rw [hr,profile_one _ (by norm_num) (by norm_num),he] at hp
+  have hr:(H/2)/H=(1/2):=by field_simp
+  rw [hr,profile_one _ (by norm_num) (by norm_num),(Finset.not_nonempty_iff_eq_empty.mp hn)] at hp
   norm_num at hp
 
 theorem common_bound {α:Type*}(S:Finset α)(a:α→O)
@@ -55,8 +53,7 @@ theorem common_bound_auto {α:Type*}(S:Finset α)(a:α→O)
     (hb:∀j∈bands H,(∑' z : O, dyadicWeight j (normValue z)*‖gaussPolynomial S a ha c z‖^2)≤B):
     (gaussEnergy S a ha c profile H).re≤7*B:=by
   obtain ⟨j,hj⟩:=bands_nonempty H hH
-  have hB:0≤B:=(tsum_nonneg (fun z=>mul_nonneg (dyadicWeight_bounds j _).1 (sq_nonneg _))).trans (hb j hj)
-  exact common_bound S a ha c H B hH hB hb
+  exact common_bound S a ha c H B hH ((tsum_nonneg (fun z=>mul_nonneg (dyadicWeight_bounds j _).1 (sq_nonneg _))).trans (hb j hj)) hb
 
 end SevenEighths.CenteredMomentFirstAnnularGeometry
 

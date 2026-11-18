@@ -10,8 +10,7 @@ noncomputable section
 
 open scoped Classical BigOperators
 namespace SevenEighths.DetectorDictionaryInverseMarkedReference
-open HeckeFamily IdealMobiusDivisorSum UniqueFactorizationMonoid
-open InverseInitialConjugateEnergy InverseInitialPoissonBridge
+open HeckeFamily IdealMobiusDivisorSum UniqueFactorizationMonoid InverseInitialConjugateEnergy InverseInitialPoissonBridge
 local notation "O"=>HeckeFamily.O
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 
@@ -30,14 +29,12 @@ theorem tuple_product_squarefree (P:ι→Ideal O)(hP:∀i,Prime (P i))
 omit [DecidableEq ι] in
 theorem tuple_product_support (P:ι→Ideal O)(hP:∀i,Prime (P i))
     (_hinj:Function.Injective P) : primeSupport (∏i,P i)=Finset.univ.image P := by
-  have hn:(∏i,P i)≠0:=Finset.prod_ne_zero_iff.mpr (fun i hi=>(hP i).ne_zero)
   ext Q
-  rw [primeSupport,Multiset.mem_toFinset,mem_normalizedFactors_iff hn,Finset.mem_image]
+  rw [primeSupport,Multiset.mem_toFinset,mem_normalizedFactors_iff (Finset.prod_ne_zero_iff.mpr (fun i hi=>(hP i).ne_zero)),Finset.mem_image]
   constructor
   · rintro ⟨hQ,hd⟩
     obtain ⟨i,hi,hd⟩:=(hQ.dvd_finsetProd_iff P).mp hd
-    have he:Q=P i:=associated_iff_eq.mp (hQ.associated_of_dvd (hP i) hd)
-    exact ⟨i,hi,he.symm⟩
+    exact ⟨i,hi,(associated_iff_eq.mp (hQ.associated_of_dvd (hP i) hd)).symm⟩
   · rintro ⟨i,hi,rfl⟩
     exact ⟨hP i,Finset.dvd_prod_of_mem P hi⟩
 

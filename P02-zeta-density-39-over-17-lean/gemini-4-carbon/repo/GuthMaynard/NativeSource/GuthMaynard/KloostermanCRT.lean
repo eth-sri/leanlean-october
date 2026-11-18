@@ -1,5 +1,9 @@
 module
-public import GuthMaynard.NativeSource.GuthMaynard.QuadraticDivisor
+public import Mathlib.Analysis.Fourier.ZMod
+public import Mathlib.Data.Int.Interval
+public import Mathlib.Data.Nat.Totient
+public import Mathlib.NumberTheory.LSeries.Dirichlet
+public import Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral
 public import Mathlib.Data.Int.GCD
 
 @[expose] public section
@@ -13,9 +17,8 @@ units and their inverses through the Chinese remainder equivalence, and then
 factors the complete Kloosterman sum at coprime moduli.
 -/
 
-open Complex
+open Complex Classical
 open scoped BigOperators
-open Classical
 
 namespace GuthMaynard.NativeMoment
 

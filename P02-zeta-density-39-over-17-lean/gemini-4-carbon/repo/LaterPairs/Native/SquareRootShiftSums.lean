@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 
 @[expose] public section
 set_option autoImplicit false
@@ -34,7 +43,7 @@ theorem sum_shift_inverse_sqrt_le (H : ℕ) :
     ∑ r ∈ Finset.Icc 1 (H-1), 1/Real.sqrt (r:ℝ) ≤ 2*Real.sqrt H := by
   exact (sum_inverse_sqrt_Icc (H-1)).trans
     (mul_le_mul_of_nonneg_left (Real.sqrt_le_sqrt (by
-      exact_mod_cast (show H-1 ≤ H by omega))) (by norm_num))
+      exact_mod_cast (by omega))) (by norm_num))
 
 theorem sum_shift_sqrt_le (H : ℕ) :
     ∑ r ∈ Finset.Icc 1 (H-1), Real.sqrt (r:ℝ) ≤ (H:ℝ)*Real.sqrt H := by
@@ -46,7 +55,7 @@ theorem sum_shift_sqrt_le (H : ℕ) :
       apply Finset.sum_le_sum
       intro r hr
       apply Real.sqrt_le_sqrt
-      exact_mod_cast (show r ≤ H by have := Finset.mem_Icc.mp hr; omega)
+      exact_mod_cast (by have := Finset.mem_Icc.mp hr; omega)
     _ = ((Finset.Icc 1 (H-1)).card:ℝ)*Real.sqrt H := by simp
     _ ≤ _ := mul_le_mul_of_nonneg_right (by exact_mod_cast hc) (Real.sqrt_nonneg _)
 

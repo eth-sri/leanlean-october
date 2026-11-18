@@ -31,7 +31,6 @@ theorem modelPhaseJetCoefficient_pos {σ : ℝ} (hσ : 0 < σ) (p : ℕ) :
   rw [descPochhammer_eval_eq_prod_range]
   apply Finset.prod_ne_zero_iff.mpr
   intro i _
-  have hi : (0 : ℝ) ≤ i := Nat.cast_nonneg i
   linarith
 
 theorem modelPhaseJetSign_abs (σ : ℝ) (p : ℕ) :
@@ -68,16 +67,14 @@ theorem modelPhase_signed_referenceJet_bounds {σ : ℝ} (hσ : 0 < σ)
     ⟨hu.1.le,hu.2.le⟩] at he
   rw [he,← mul_assoc,modelPhaseJetSign_coefficient]
   have hneg : -σ-(p : ℝ) ≤ 0 := by
-    have hp : (0 : ℝ) ≤ p := Nat.cast_nonneg p
+    have hp : 0 ≤ p := Nat.cast_nonneg p
     linarith
-  have hlo := Real.rpow_le_rpow_of_nonpos (zero_lt_one.trans hu.1) hu.2.le hneg
-  have hhi := Real.rpow_le_one_of_one_le_of_nonpos hu.1.le hneg
   have hcoef := (modelPhaseJetCoefficient_pos hσ p).le
   constructor
-  · have h := mul_le_mul_of_nonneg_left hlo hcoef
+  · have h := mul_le_mul_of_nonneg_left (Real.rpow_le_rpow_of_nonpos (zero_lt_one.trans hu.1) hu.2.le hneg) hcoef
     dsimp only [modelPhaseJetLower]
     linarith
-  · simpa only [mul_one] using mul_le_mul_of_nonneg_left hhi hcoef
+  · simpa using mul_le_mul_of_nonneg_left (Real.rpow_le_one_of_one_le_of_nonpos hu.1.le hneg) hcoef
 
 theorem approximateModelPhase_signedJet_bounds
     {σ δ : ℝ} {P : ℕ} {F : ℝ → ℝ}
@@ -87,11 +84,10 @@ theorem approximateModelPhase_signedJet_bounds
     modelPhaseJetLower σ p ≤ modelPhaseJetSign σ p * iteratedDeriv (p+1) F u ∧
       modelPhaseJetSign σ p * iteratedDeriv (p+1) F u ≤
         modelPhaseJetCoefficient σ p+1 := by
-  have he := approximateModelPhase_iteratedDeriv_error hF hu p hp
   have hs : |modelPhaseJetSign σ p * iteratedDeriv (p+1) F u -
       modelPhaseJetSign σ p * iteratedDeriv p (modelPhase σ) u| ≤ δ := by
     rw [← mul_sub,abs_mul,modelPhaseJetSign_abs,one_mul]
-    exact he
+    exact (approximateModelPhase_iteratedDeriv_error hF hu p hp)
   rw [abs_le] at hs
   have hb := modelPhase_signed_referenceJet_bounds hσ hu p
   have hd₀ := hδ.trans (min_le_left _ _)

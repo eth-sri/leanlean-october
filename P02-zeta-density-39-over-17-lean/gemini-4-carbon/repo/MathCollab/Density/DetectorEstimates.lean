@@ -180,12 +180,7 @@ theorem norm_detectorKernel_horizontal {ρ : ℂ} {X Y u t : ℝ}
 
 theorem tendsto_detector_horizontal_majorant (C : ℝ) :
     Tendsto (fun R : ℝ => C*(1+R)^3*Real.exp (-R)) atTop (𝓝 0) := by
-  have h0 := Real.tendsto_pow_mul_exp_neg_atTop_nhds_zero 0
-  have h1 := Real.tendsto_pow_mul_exp_neg_atTop_nhds_zero 1
-  have h2 := Real.tendsto_pow_mul_exp_neg_atTop_nhds_zero 2
-  have h3 := Real.tendsto_pow_mul_exp_neg_atTop_nhds_zero 3
-  have h := (((h0.add (h1.const_mul 3)).add (h2.const_mul 3)).add h3).const_mul C
-  convert h using 1
+  convert (((((Real.tendsto_pow_mul_exp_neg_atTop_nhds_zero 0).add ((Real.tendsto_pow_mul_exp_neg_atTop_nhds_zero 1).const_mul 3)).add ((Real.tendsto_pow_mul_exp_neg_atTop_nhds_zero 2).const_mul 3)).add (Real.tendsto_pow_mul_exp_neg_atTop_nhds_zero 3)).const_mul C) using 1
   · funext R
     ring
   · simp

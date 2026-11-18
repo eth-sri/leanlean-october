@@ -10,9 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstChildBound
-open CanonicalQuadraticSieve CenteredMomentSupportedCorrelation CenteredMomentFirstAssembly
-open CenteredMomentFirstColumns CenteredMomentGaussEnergy CenteredMomentReflectedChild
-open CenteredMomentChildAssembly CenteredMomentMobiusRegroup CenteredMomentSmooth RayFourExpansion
+open CanonicalQuadraticSieve CenteredMomentSupportedCorrelation CenteredMomentFirstAssembly CenteredMomentFirstColumns CenteredMomentGaussEnergy CenteredMomentReflectedChild CenteredMomentChildAssembly CenteredMomentMobiusRegroup CenteredMomentSmooth RayFourExpansion
 local notation "O" => ActualEisensteinCubic.O
 
 private theorem weighted_norm_sum {α : Type*} (S : Finset α) (a f : α → ℂ)
@@ -38,11 +36,11 @@ theorem finite_first_ray_divisor_bound (L : Finset (Ideal O))
     calc
       _ ≤ ∑ χ : RayCharacter, ∑ ξ : RayCharacter,
           ‖pairCoeff (firstPhaseTable) χ ξ‖*(C*(B₁ I*B₂ I)) := by
-        have h := weighted_norm_sum Finset.univ (fun _ : RayCharacter => (1 : ℂ))
+        have h := weighted_norm_sum Finset.univ (fun _ : RayCharacter => 1)
           (fun χ => ∑ ξ : RayCharacter, pairCoeff (firstPhaseTable) χ ξ*F I χ ξ) r hr
           (fun χ => ∑ ξ : RayCharacter, ‖pairCoeff (firstPhaseTable) χ ξ‖*(C*(B₁ I*B₂ I)))
           (fun χ _ => weighted_norm_sum Finset.univ _ _ r hr _ (fun ξ _ => hF I hI χ ξ))
-        simpa only [one_mul,norm_one] using h
+        simpa using h
       _ = (∑ χ : RayCharacter, ∑ ξ : RayCharacter, ‖pairCoeff (firstPhaseTable) χ ξ‖)*
           (C*(B₁ I*B₂ I)) := by simp only [Finset.sum_mul]
       _ ≤ _ := by

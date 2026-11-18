@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.RobertSargosCubicPhase
 
 @[expose] public section
@@ -34,7 +43,7 @@ theorem abs_iteratedDeriv_robertSargosCubicRemainder_le
   change |iteratedDeriv j
     (fun z => (fun x => f x-finiteTaylorPolynomial f 3 m x) (m+z)) y| ≤ _
   rw [iteratedDeriv_comp_const_add j (fun x => f x-finiteTaylorPolynomial f 3 m x) m]
-  simpa only [add_sub_cancel_left] using
+  simpa using
     abs_iteratedDeriv_finiteTaylorPolynomial_remainder_le_finite
       (f := f) (a := m) (x := m+y) (M := B) (Q := 3) hj hf hb
 
@@ -63,6 +72,6 @@ theorem robertSargos_cubic_remainder_radius_jets
   · have he : j = 4 := by omega
     subst j
     rw [iteratedDeriv_four_robertSargosCubicRemainder (hf _ Set.right_mem_uIcc)]
-    simpa only [Nat.sub_self,pow_zero,mul_one] using hb (m+y) Set.right_mem_uIcc
+    simpa using hb (m+y) Set.right_mem_uIcc
 
 end TaoTrudgianYang2025

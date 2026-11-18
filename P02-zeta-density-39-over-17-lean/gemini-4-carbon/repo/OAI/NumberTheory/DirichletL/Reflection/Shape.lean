@@ -19,10 +19,9 @@ lemma shapeArgument_mul (x y : Eis) : shapeArgument (x*y) = shapeArgument x*shap
   exact mul_div_mul_comm _ _ _ _
 
 lemma shapeArgument_norm (z : Eis) (hz : z ≠ 0) : ‖shapeArgument z‖ = 1 := by
-  have hne : ‖eisEmbedding z‖^2 ≠ 0 := pow_ne_zero _ (norm_ne_zero_iff.mpr (eisEmbedding_ne_zero hz))
   rw [shapeArgument,norm_div,norm_pow,Complex.norm_real,Real.norm_of_nonneg (Nat.cast_nonneg _),
     ← eisEmbedding_norm_sq_eq_absNorm_span]
-  exact div_self hne
+  exact div_self (pow_ne_zero _ (norm_ne_zero_iff.mpr (eisEmbedding_ne_zero hz)))
 
 lemma stratumShapeFactor_mul {H : Matrix.SpecialLinearGroup (Fin 2) Eis}
     (s : FixedCuspShape H) (c r P : Eis) :
@@ -41,8 +40,7 @@ lemma actual_shape_separation {φ σ : Type*} [Fintype φ] [Fintype σ]
       s.stratumShapeFactor (c*primaryGenerator (∏ i, F.ideal i))*
         shapeArgument (primaryGenerator K)*shapeArgument (primaryGenerator (∏ i, S.ideal i)) := by
   rw [(F.reflected K hK S).generator_product,F.reflected_product K hK S,
-    primaryGenerator_mul,primaryGenerator_mul]
-  rw [show c*(primaryGenerator (∏ i, F.ideal i)*primaryGenerator K*primaryGenerator (∏ i, S.ideal i)) =
+    primaryGenerator_mul,primaryGenerator_mul, show c*(primaryGenerator (∏ i, F.ideal i)*primaryGenerator K*primaryGenerator (∏ i, S.ideal i)) =
     (c*primaryGenerator (∏ i, F.ideal i))*primaryGenerator K*primaryGenerator (∏ i, S.ideal i) by ring]
   exact stratumShapeFactor_mul s _ _ _
 

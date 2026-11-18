@@ -94,7 +94,7 @@ theorem adjacent_high_moment {U H R : ℝ} {K : ℕ}
     (Real.log_nonneg (by norm_num : (1:ℝ) ≤ 2))
   have hb : (K:ℝ)*Real.log U ≤
       (K:ℝ)*Real.log 2+2*(K:ℝ)*Real.log H+(2*(K:ℝ)-1)*Real.log R := by
-    linarith only [hl,hh]
+    linarith
   convert hb using 1; field_simp; ring
 
 end Montgomery.RationalMoment

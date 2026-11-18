@@ -29,7 +29,7 @@ theorem norm_exponentialSumAt_le_firstDerivative
     (hscale : T ≤ N/4) :
     ‖exponentialSumAt F T N a b‖ ≤ modelPhaseFirstDerivativeConstant σ*(N/T) := by
   have hratio : 1 ≤ N/T := (le_div_iff₀ hT).mpr (by linarith)
-  let K : ℝ := 2/(2 : ℝ)^(-σ)
+  let K : ℝ := 2/2^(-σ)
   have hK : 0 < K := by dsimp [K]; positivity
   change ‖exponentialSumAt F T N a b‖ ≤ (K+3)*(N/T)
   by_cases hlong : a+3 ≤ b

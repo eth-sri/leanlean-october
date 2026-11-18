@@ -7,14 +7,10 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic IdealMobiusDivisorSum
+open scoped BigOperators Classical
 namespace SevenEighths.InverseInitialEnergyCallerUnits
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialKernelBridge
-open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
-open InverseInitialEnergyCallerCanonical InverseInitialEnergyCallerOpposite InverseInitialProfile
-open InverseInitialEnergyCallerAllocation InverseInitialEnergyCallerAssigned
-open InverseInitialQuotientGeometry InverseInitialClippedColumns InverseInitialEnergyCallerBranch
+open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialKernelBridge InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource InverseInitialEnergyCallerCanonical InverseInitialEnergyCallerOpposite InverseInitialProfile InverseInitialEnergyCallerAllocation InverseInitialEnergyCallerAssigned InverseInitialQuotientGeometry InverseInitialClippedColumns InverseInitialEnergyCallerBranch
 local notation "Eis"=>ActualEisensteinCubic.O
 local instance initialEnergyUnits : Fintype Eisˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
 variable {ι σ:Type*} [DecidableEq ι] [DecidableEq σ]
@@ -37,7 +33,7 @@ theorem quotientSet_mono {J:ℕ}{S T:Finset (Source (ι:=ι) J)}(hst:S⊆T) :
     quotientSet p S⊆quotientSet p T := Finset.image_subset_image hst
 
 theorem unit_sector_card : Fintype.card Eisˣ=6 := by
-  simpa only [Nat.card_eq_fintype_card] using PrimaryIdealUnitReindex.card_units_eq_six
+  simpa using PrimaryIdealUnitReindex.card_units_eq_six
 
 theorem all_units_bound (N:ℕ)(U π:ℝ)(hU:0≤U)(hπ:0<π) :
     ∃C:ℝ,0<C ∧ ∀{ι σ:Type*}[DecidableEq ι][DecidableEq σ]

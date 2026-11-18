@@ -8,8 +8,7 @@ namespace OAI
 
 noncomputable section
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open ProbeEuler ProbeRow ConcretePrimeRowBridge
+open ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ProbeEuler ProbeRow ConcretePrimeRowBridge
 local notation "O" => ActualEisensteinCubic.O
 
 lemma supported_primeGenerator_prime (P : PrimeIdeal) (hs : Supported P.val) :
@@ -20,10 +19,7 @@ lemma supported_primeGenerator_prime (P : PrimeIdeal) (hs : Supported P.val) :
 
 lemma targetMonoid_primaryGenerator (η : HeckeFamily.Character) (I : Ideal O) (hs : Supported I) :
     targetMonoid η (primaryGenerator I)=HeckeFamily.idealCoeff η I := by
-  calc
-    _ = HeckeFamily.idealCoeff η (Ideal.span {primaryGenerator I}) :=
-      (HeckeFamily.idealCoeff_span η (supported_primaryGenerator_ne_zero I hs)).symm
-    _ = _ := by rw [span_primaryGenerator_of_supported I hs]
+  exact ((HeckeFamily.idealCoeff_span η (supported_primaryGenerator_ne_zero I hs)).symm).trans (by rw [span_primaryGenerator_of_supported I hs])
 
 def idealClosedCorrection (η : HeckeFamily.Character) (P : PrimeIdeal) (x w z : ℂ) : ℂ :=
   unramifiedClosed (Ideal.absNorm P.val) (actualAPhase η (primaryGenerator P.val))
@@ -36,12 +32,11 @@ theorem idealHighLocalFactor_rational (η : HeckeFamily.Character) (P : PrimeIde
       (1-HeckeFamily.idealCoeff η P.val*(Q:ℂ)^(-x)) /
         ((1-(Q:ℂ)^(-6*z))*(1-(Q:ℂ)^(-w))) * idealClosedCorrection η P x w z := by
   let p := primaryGenerator P.val
-  have hp : Prime p := supported_primeGenerator_prime P hs
-  have hspan : Ideal.span {p}=P.val := span_primaryGenerator_of_supported P.val hs
+  have hp := supported_primeGenerator_prime P hs
+  have hspan := span_primaryGenerator_of_supported P.val hs
   let : (Ideal.span {p}:Ideal O).IsMaximal := PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
-  have hsp : Supported (Ideal.span {p}) := hspan.symm ▸ hs
+  have hsp := hspan.symm ▸ hs
   have hg := supported_prime_data p hp hsp
-  have hprimary := (primaryGenerator_spec P.val (supported_primaryGenerator_ne_zero P.val hs)).2
   have hQ2 : (2:ℝ)≤Ideal.absNorm (Ideal.span {p}) := by
     rw [hspan]
     exact_mod_cast SmoothMobiusCorrection.prime_norm_two_le P
@@ -62,10 +57,9 @@ theorem idealHighLocalFactor_rational (η : HeckeFamily.Character) (P : PrimeIde
     exact Real.rpow_lt_one_of_one_lt_of_neg hQ1 (by linarith)
   have hD : 1-coordD (Ideal.absNorm (Ideal.span {p})) (targetMonoid η p) 1 x≠0 := by
     intro he
-    have hh : coordD (Ideal.absNorm (Ideal.span {p})) (targetMonoid η p) 1 x=1 := (sub_eq_zero.mp he).symm
-    rw [hh,norm_one] at hDnorm
+    rw [((sub_eq_zero.mp he).symm),norm_one] at hDnorm
     exact lt_irrefl _ hDnorm
-  have he := idealHighLocalFactor_euler_identity η p hp hg.1 hg.2 hprimary hsp x w z hV hR hW hD
+  have he := idealHighLocalFactor_euler_identity η p hp hg.1 hg.2 ((primaryGenerator_spec P.val (supported_primaryGenerator_ne_zero P.val hs)).2) hsp x w z hV hR hW hD
   dsimp only at he ⊢
   rw [hspan,actualACube_sq,targetMonoid_primaryGenerator η P.val hs] at he
   simpa only [coordD,coordV,coordW,star_one,mul_one,one_mul,idealClosedCorrection,p] using he

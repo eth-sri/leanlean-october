@@ -40,8 +40,7 @@ theorem gmCubicRWeightFunction_eq
     (W : Finset ℝ) {u : ℝ} (hu : 0 < u) :
     gmCubicRWeightFunction W u = gmCubicRatioBump u * ‖gmR W u‖ ^ 2 := by
   unfold gmCubicRWeightFunction
-  rw [gmR_eq_gmRPhase_log hu.ne']
-  rw [abs_of_pos hu]
+  rw [gmR_eq_gmRPhase_log hu.ne', abs_of_pos hu]
 
 theorem contDiff_gmCubicRWeightFunction (W : Finset ℝ) :
     ContDiff ℝ ∞ (gmCubicRWeightFunction W) := by
@@ -58,9 +57,7 @@ theorem contDiff_gmCubicRWeightFunction (W : Finset ℝ) :
         gmCubicRatioBump_eq_zero_of_not_mem_Icc hnot]
     exact contDiffAt_const.congr_of_eventuallyEq hzero
   · have hlog : ContDiffAt ℝ ∞ Real.log u := Real.contDiffAt_log.2 hu
-    have hphase : ContDiffAt ℝ ∞ (fun x : ℝ => gmRPhase W (Real.log x)) u :=
-      (contDiff_gmRPhase W).contDiffAt.comp u hlog
-    exact gmCubicRatioBump.contDiff.contDiffAt.mul (hphase.norm_sq ℂ)
+    exact gmCubicRatioBump.contDiff.contDiffAt.mul (((contDiff_gmRPhase W).contDiffAt.comp u hlog).norm_sq ℂ)
 
 theorem hasCompactSupport_gmCubicRWeightFunction (W : Finset ℝ) :
     HasCompactSupport (gmCubicRWeightFunction W) := by
@@ -102,7 +99,7 @@ theorem gmCubicSmoothedRSqSchwartz_apply
   unfold gmCubicSmoothedRSq gmCubicSmoothedRIntegrand
   apply integral_congr_ae
   filter_upwards with u
-  by_cases hu : u ∈ Set.Icc (1 / 8 : ℝ) (33 / 8)
+  by_cases hu : u ∈ Set.Icc (1 / 8) (33 / 8)
   · have hupos : 0 < u := lt_of_lt_of_le (by norm_num) hu.1
     rw [gmCubicRWeightSchwartz_apply, gmCubicRWeightFunction_eq W hupos]
     ring
@@ -209,7 +206,6 @@ theorem three_fourths_card_le_norm_gmRPhase
     {T : ℝ} {W : Finset ℝ} (hW : InBaseInterval T W) {x : ℝ}
     (hx : T * |x| ≤ 1 / 4) :
     (3 / 4 : ℝ) * W.card ≤ ‖gmRPhase W x‖ := by
-  have herr := norm_gmRPhase_sub_card_le hW x
   have htri :
       ‖(W.card : ℂ)‖ ≤
         ‖gmRPhase W x - (W.card : ℂ)‖ + ‖gmRPhase W x‖ := by
@@ -226,7 +222,7 @@ theorem three_fourths_card_le_norm_gmRPhase
   have herr' :
       ‖gmRPhase W x - (W.card : ℂ)‖ ≤ (W.card : ℝ) / 4 := by
     calc
-      _ ≤ (W.card : ℝ) * T * |x| := herr
+      _ ≤ (W.card : ℝ) * T * |x| := (norm_gmRPhase_sub_card_le hW x)
       _ ≤ (W.card : ℝ) * (1 / 4) :=
         by simpa [mul_assoc] using mul_le_mul_of_nonneg_left hx hcard
       _ = (W.card : ℝ) / 4 := by ring
@@ -274,18 +270,17 @@ theorem norm_gmR_ge_three_fourths_card_on_coherenceInterval
     gmCubicCoherenceRadius_pos hTpos
   have hrUpper : gmCubicCoherenceRadius T ≤ 1 / 16 := by
     unfold gmCubicCoherenceRadius
-    rw [div_le_iff₀ (by positivity : (0 : ℝ) < 16 * T)]
+    rw [div_le_iff₀ (by positivity : 0 < 16 * T)]
     nlinarith
   have huLower : 1 / 2 ≤ u := by linarith [hu.1]
   have huPos : 0 < u := lt_of_lt_of_le (by norm_num) huLower
   have huDist : |u - 1| ≤ gmCubicCoherenceRadius T := by
     rw [abs_le]
     constructor <;> linarith [hu.1, hu.2]
-  have hlog := abs_log_le_two_mul_abs_sub_one huLower
   have hscale : T * |Real.log u| ≤ 1 / 4 := by
     calc
       T * |Real.log u| ≤ T * (2 * |u - 1|) :=
-        mul_le_mul_of_nonneg_left hlog hTpos.le
+        mul_le_mul_of_nonneg_left (abs_log_le_two_mul_abs_sub_one huLower) hTpos.le
       _ ≤ T * (2 * gmCubicCoherenceRadius T) := by gcongr
       _ = 1 / 8 := by
         unfold gmCubicCoherenceRadius
@@ -304,9 +299,9 @@ theorem gmCubicRWeightSchwartz_ge_card_sq_half_on_coherenceInterval
   have hTpos : 0 < T := zero_lt_one.trans_le hT
   have hrUpper : gmCubicCoherenceRadius T ≤ 1 / 16 := by
     unfold gmCubicCoherenceRadius
-    rw [div_le_iff₀ (by positivity : (0 : ℝ) < 16 * T)]
+    rw [div_le_iff₀ (by positivity : 0 < 16 * T)]
     nlinarith
-  have huRatio : u ∈ Set.Icc (1 / 4 : ℝ) 4 := by
+  have huRatio : u ∈ Set.Icc (1 / 4) 4 := by
     constructor <;> linarith [hu.1, hu.2]
   have huPos : 0 < u := lt_of_lt_of_le (by norm_num) huRatio.1
   have hnorm :=
@@ -366,8 +361,7 @@ noncomputable def gmCubicRatioBumpComplexFunction (u : ℝ) : ℂ :=
   gmCubicRatioBump u
 
 theorem contDiff_gmCubicRatioBumpComplexFunction :
-    ContDiff ℝ ∞ gmCubicRatioBumpComplexFunction := by
-  exact Complex.ofRealCLM.contDiff.comp gmCubicRatioBump.contDiff
+    ContDiff ℝ ∞ gmCubicRatioBumpComplexFunction := Complex.ofRealCLM.contDiff.comp gmCubicRatioBump.contDiff
 
 theorem hasCompactSupport_gmCubicRatioBumpComplexFunction :
     HasCompactSupport gmCubicRatioBumpComplexFunction := by
@@ -426,7 +420,7 @@ theorem contDiff_gmCubicPairMellinAtom (d : ℝ) :
   · have hzero : gmCubicPairMellinAtom d =ᶠ[nhds u] 0 := by
       have hu' : u < 1 / 8 := (le_of_not_gt hu).trans_lt (by norm_num)
       filter_upwards [Iio_mem_nhds hu'] with y hy
-      have hnot : y ∉ Set.Icc (1 / 8 : ℝ) (33 / 8) := by
+      have hnot : y ∉ Set.Icc (1 / 8) (33 / 8) := by
         intro hmem
         exact (not_lt_of_ge hmem.1) hy
       simp [gmCubicPairMellinAtom, gmCubicRatioBumpComplexFunction,
@@ -437,35 +431,26 @@ theorem norm_iteratedDeriv_ofReal_cpow_mul_I_le_eight
     (d : ℝ) (n : ℕ) {u : ℝ} (hu : 1 / 8 ≤ u) :
     ‖iteratedDeriv n (fun y : ℝ => (y : ℂ) ^ ((d : ℂ) * I)) u‖ ≤
       8 ^ n * (|d| + n) ^ n := by
-  have huPos : 0 < u := (by norm_num : (0 : ℝ) < 1 / 8).trans_le hu
+  have huPos := (by norm_num : (0 : ℝ) < 1 / 8).trans_le hu
   rw [iteratedDeriv_ofReal_cpow ((d : ℂ) * I) n huPos, norm_mul]
-  have hcoeff := norm_gmCpowDerivativeCoeff_le ((d : ℂ) * I) n
   have hpow : ‖(u : ℂ) ^ ((d : ℂ) * I - n)‖ ≤ 8 ^ n := by
     rw [Complex.norm_cpow_eq_rpow_re_of_pos huPos]
     have hre : (((d : ℂ) * I - n).re) = -(n : ℝ) := by simp
     rw [hre]
-    have hmono : u ^ (-(n : ℝ)) ≤ (1 / 8 : ℝ) ^ (-(n : ℝ)) :=
-      Real.rpow_le_rpow_of_nonpos (by norm_num) hu
+    have hmono := Real.rpow_le_rpow_of_nonpos (by norm_num) hu
         (neg_nonpos.mpr (Nat.cast_nonneg n))
-    calc
-      u ^ (-(n : ℝ)) ≤ (1 / 8 : ℝ) ^ (-(n : ℝ)) := hmono
-      _ = 8 ^ n := by
+    exact (hmono).trans_eq (by
         rw [Real.rpow_neg_eq_inv_rpow, Real.rpow_natCast]
-        norm_num
-  calc
-    ‖gmCpowDerivativeCoeff ((d : ℂ) * I) n‖ *
-          ‖(u : ℂ) ^ ((d : ℂ) * I - n)‖ ≤
-        (‖((d : ℂ) * I)‖ + n) ^ n * 8 ^ n :=
-      mul_le_mul hcoeff hpow (norm_nonneg _) (by positivity)
-    _ = 8 ^ n * (|d| + n) ^ n := by
+        norm_num)
+  exact (mul_le_mul (norm_gmCpowDerivativeCoeff_le ((d : ℂ) * I) n) hpow (norm_nonneg _) (by positivity)).trans_eq (by
       simp [Real.norm_eq_abs]
-      ring
+      ring)
 
 theorem gmCubicMellinDerivativePower_le
     (d : ℝ) {k n : ℕ} (hkn : k ≤ n) :
     (|d| + k) ^ k ≤
       (n + 1 : ℝ) ^ n * (1 + |d|) ^ n := by
-  let B : ℝ := (n + 1) * (1 + |d|)
+  let B := (n + 1) * (1 + |d|)
   have hBOne : 1 ≤ B := by
     dsimp only [B]
     nlinarith [abs_nonneg d, (show (0 : ℝ) ≤ n by positivity)]
@@ -524,12 +509,11 @@ theorem norm_iteratedDeriv_gmCubicPairMellinAtom_le
   have hbumpSmooth : ContDiffAt ℝ n gmCubicRatioBumpComplexFunction u :=
     contDiff_gmCubicRatioBumpComplexFunction.contDiffAt.of_le
       (by exact_mod_cast le_top)
-  have hphaseSmooth := contDiffAt_ofReal_cpow_mul_I_public d n huPos
   unfold gmCubicPairMellinAtom
   change ‖iteratedDeriv n
       (gmCubicRatioBumpComplexFunction *
         fun y : ℝ => (y : ℂ) ^ ((d : ℂ) * I)) u‖ ≤ _
-  rw [iteratedDeriv_mul hbumpSmooth hphaseSmooth]
+  rw [iteratedDeriv_mul hbumpSmooth (contDiffAt_ofReal_cpow_mul_I_public d n huPos)]
   calc
     ‖∑ i ∈ Finset.range (n + 1),
         (n.choose i : ℂ) *
@@ -584,8 +568,7 @@ theorem gmCubicPairMellinAtom_eq_exp
       gmCubicRatioBump u *
         Complex.exp ((((d * Real.log u : ℝ) : ℂ) * I)) := by
   unfold gmCubicPairMellinAtom gmCubicRatioBumpComplexFunction
-  rw [Complex.cpow_def_of_ne_zero (Complex.ofReal_ne_zero.mpr hu.ne')]
-  rw [← Complex.ofReal_log hu.le]
+  rw [Complex.cpow_def_of_ne_zero (Complex.ofReal_ne_zero.mpr hu.ne'), ← Complex.ofReal_log hu.le]
   congr 2
   push_cast
   ring
@@ -640,8 +623,7 @@ theorem norm_iteratedDeriv_gmAffineComplexify_cubicRWeight_le
       iteratedDeriv n (gmAffineComplexify (gmCubicRWeightSchwartz W)) u =
         ∑ t ∈ W, ∑ s ∈ W,
           iteratedDeriv n (gmCubicPairMellinAtom (t - s)) u := by
-    rw [gmAffineComplexify_cubicRWeight_eq_pair_sum]
-    rw [iteratedDeriv_fun_sum]
+    rw [gmAffineComplexify_cubicRWeight_eq_pair_sum, iteratedDeriv_fun_sum]
     · apply Finset.sum_congr rfl
       intro t ht
       rw [iteratedDeriv_fun_sum]
@@ -670,14 +652,10 @@ theorem norm_iteratedDeriv_gmAffineComplexify_cubicRWeight_le
         rw [abs_le]
         constructor <;> linarith [htBounds.1, htBounds.2, hsBounds.1, hsBounds.2]
       have hone : 1 + |t - s| ≤ 2 * T := by linarith
-      calc
-        ‖iteratedDeriv n (gmCubicPairMellinAtom (t - s)) u‖ ≤
-            gmCubicPairMellinDerivativeConstant n * (1 + |t - s|) ^ n :=
-          norm_iteratedDeriv_gmCubicPairMellinAtom_le n (t - s) u
-        _ ≤ gmCubicPairMellinDerivativeConstant n * (2 * T) ^ n := by
+      exact (norm_iteratedDeriv_gmCubicPairMellinAtom_le n (t - s) u).trans (by
           exact mul_le_mul_of_nonneg_left
             (pow_le_pow_left₀ (by positivity) hone n)
-            (gmCubicPairMellinDerivativeConstant_nonneg n)
+            (gmCubicPairMellinDerivativeConstant_nonneg n))
     _ = gmCubicPairMellinDerivativeConstant n * (2 * T) ^ n * W.card ^ 2 := by
       simp
       ring
@@ -692,7 +670,7 @@ theorem integral_norm_iteratedFDeriv_gmAffineComplexify_cubicRWeight_le
   let f : ℝ → ℝ := fun u => ‖iteratedFDeriv ℝ p
     (gmAffineComplexify (gmCubicRWeightSchwartz W)) u‖
   have hfInt : Integrable f := by
-    simpa only [f, pow_zero, one_mul] using
+    simpa using
       (SchwartzMap.integrable_pow_mul_iteratedFDeriv volume
         (gmAffineComplexify (gmCubicRWeightSchwartz W)) 0 p)
   have hsupport : Function.support f ⊆ Set.Icc (1 / 8 : ℝ) (33 / 8) := by
@@ -732,8 +710,7 @@ theorem integral_norm_iteratedFDeriv_gmAffineComplexify_cubicRWeight_le
       rw [Set.indicator_of_notMem hu, this]
   rw [show (∫ u : ℝ, ‖iteratedFDeriv ℝ p
       (gmAffineComplexify (gmCubicRWeightSchwartz W)) u‖) =
-      ∫ u : ℝ, f u by rfl]
-  rw [hEq, MeasureTheory.integral_indicator measurableSet_Icc]
+      ∫ u : ℝ, f u by rfl, hEq, MeasureTheory.integral_indicator measurableSet_Icc]
   calc
     (∫ u : ℝ in Set.Icc (1 / 8 : ℝ) (33 / 8), f u) ≤
         ∫ _u : ℝ in Set.Icc (1 / 8 : ℝ) (33 / 8),
@@ -806,15 +783,8 @@ theorem pow_mul_norm_fourier_gmCubicRWeight_le
       gcongr with p hp
       have hpn : p ≤ n := Nat.lt_succ_iff.mp (Finset.mem_range.mp hp)
       have hTpow : T ^ p ≤ T ^ n := pow_le_pow_right₀ hT hpn
-      calc
-        (∫ u : ℝ, ‖iteratedFDeriv ℝ p
-            (gmAffineComplexify (gmCubicRWeightSchwartz W)) u‖) ≤
-            4 * (gmCubicPairMellinDerivativeConstant p *
-              (2 * T) ^ p * W.card ^ 2) :=
-          integral_norm_iteratedFDeriv_gmAffineComplexify_cubicRWeight_le
-            hT hW p
-        _ ≤ (4 * gmCubicPairMellinDerivativeConstant p * 2 ^ p) *
-              T ^ n * W.card ^ 2 := by
+      exact (integral_norm_iteratedFDeriv_gmAffineComplexify_cubicRWeight_le
+            hT hW p).trans (by
           have hpow : (2 * T) ^ p ≤ 2 ^ p * T ^ n := by
             rw [mul_pow]
             exact mul_le_mul_of_nonneg_left hTpow (by positivity)
@@ -832,7 +802,7 @@ theorem pow_mul_norm_fourier_gmCubicRWeight_le
               mul_le_mul_of_nonneg_right
                 (mul_le_mul_of_nonneg_left hpow hcoef) hcard
             _ = (4 * gmCubicPairMellinDerivativeConstant p * 2 ^ p) *
-                  T ^ n * W.card ^ 2 := by ring
+                  T ^ n * W.card ^ 2 := by ring)
     _ = gmCubicRWeightFourierConstant n * T ^ n * W.card ^ 2 := by
       unfold gmCubicRWeightFourierConstant
       calc
@@ -862,10 +832,7 @@ theorem card_sq_le_sixteen_mul_T_mul_integral_gmCubicRWeightSchwartz
   have hmass :=
     card_sq_div_sixteen_mul_le_integral_gmCubicRWeightSchwartz hT hW
   rw [div_le_iff₀ hden] at hmass
-  calc
-    (W.card : ℝ) ^ 2 ≤
-        (∫ u : ℝ, gmCubicRWeightSchwartz W u) * (16 * T) := hmass
-    _ = 16 * T * ∫ u : ℝ, gmCubicRWeightSchwartz W u := by ring
+  exact (hmass).trans_eq (by ring)
 
 /-! ### The source-faithful pre-smoothing support truncation -/
 
@@ -893,8 +860,7 @@ noncomputable def gmCubicPreSmoothingWindowComplexFunction (u : ℝ) : ℂ :=
   gmCubicPreSmoothingWindow u
 
 theorem contDiff_gmCubicPreSmoothingWindowComplexFunction :
-    ContDiff ℝ ∞ gmCubicPreSmoothingWindowComplexFunction := by
-  exact Complex.ofRealCLM.contDiff.comp gmCubicPreSmoothingWindow.contDiff
+    ContDiff ℝ ∞ gmCubicPreSmoothingWindowComplexFunction := Complex.ofRealCLM.contDiff.comp gmCubicPreSmoothingWindow.contDiff
 
 theorem hasCompactSupport_gmCubicPreSmoothingWindowComplexFunction :
     HasCompactSupport gmCubicPreSmoothingWindowComplexFunction := by
@@ -1056,14 +1022,14 @@ theorem integral_gmCubicNormalizedRWeightSchwartz
   simp_rw [gmCubicNormalizedRWeightSchwartz_apply]
   calc
     (∫ u : ℝ, gmCubicRWeightSchwartz W (3 * u - 11 / 16)) =
-        |(3 : ℝ)⁻¹| *
+        |3⁻¹| *
           ∫ y : ℝ, gmCubicRWeightSchwartz W (y - 11 / 16) := by
-      simpa only [Function.comp_apply, smul_eq_mul] using
+      simpa using
         (MeasureTheory.Measure.integral_comp_mul_left
-          (fun y : ℝ => gmCubicRWeightSchwartz W (y - 11 / 16)) (3 : ℝ))
-    _ = |(3 : ℝ)⁻¹| * ∫ x : ℝ, gmCubicRWeightSchwartz W x := by
+          (fun y : ℝ => gmCubicRWeightSchwartz W (y - 11 / 16)) 3)
+    _ = |3⁻¹| * ∫ x : ℝ, gmCubicRWeightSchwartz W x := by
       rw [integral_sub_right_eq_self]
-    _ = (1 / 3 : ℝ) * ∫ x : ℝ, gmCubicRWeightSchwartz W x := by
+    _ = (1 / 3) * ∫ x : ℝ, gmCubicRWeightSchwartz W x := by
       norm_num
 
 theorem integral_sq_gmCubicNormalizedRWeightSchwartz
@@ -1073,16 +1039,16 @@ theorem integral_sq_gmCubicNormalizedRWeightSchwartz
   simp_rw [gmCubicNormalizedRWeightSchwartz_apply]
   calc
     (∫ u : ℝ, gmCubicRWeightSchwartz W (3 * u - 11 / 16) ^ 2) =
-        |(3 : ℝ)⁻¹| *
+        |3⁻¹| *
           ∫ y : ℝ, gmCubicRWeightSchwartz W (y - 11 / 16) ^ 2 := by
-      simpa only [Function.comp_apply, smul_eq_mul] using
+      simpa using
         (MeasureTheory.Measure.integral_comp_mul_left
           (fun y : ℝ => gmCubicRWeightSchwartz W (y - 11 / 16) ^ 2)
-          (3 : ℝ))
-    _ = |(3 : ℝ)⁻¹| * ∫ x : ℝ, gmCubicRWeightSchwartz W x ^ 2 := by
+          3)
+    _ = |3⁻¹| * ∫ x : ℝ, gmCubicRWeightSchwartz W x ^ 2 := by
       rw [integral_sub_right_eq_self
-        (fun x : ℝ => gmCubicRWeightSchwartz W x ^ 2) (11 / 16 : ℝ)]
-    _ = (1 / 3 : ℝ) * ∫ x : ℝ, gmCubicRWeightSchwartz W x ^ 2 := by
+        (fun x : ℝ => gmCubicRWeightSchwartz W x ^ 2) (11 / 16)]
+    _ = (1 / 3) * ∫ x : ℝ, gmCubicRWeightSchwartz W x ^ 2 := by
       norm_num
 
 /-- The complete Section 10 source mass is bounded by the literal
@@ -1348,14 +1314,14 @@ theorem pow_mul_norm_fourier_gmCubicNormalizedRWeight_le
   rw [habs, mul_pow]
   calc
     (3 ^ n * |xi / 3| ^ n) *
-          ((1 / 3 : ℝ) *
+          ((1 / 3) *
             ‖fourier (gmAffineComplexify
               (gmCubicRWeightSchwartz W)) (xi / 3)‖) =
-        ((1 / 3 : ℝ) * 3 ^ n) *
+        ((1 / 3) * 3 ^ n) *
           (|xi / 3| ^ n *
             ‖fourier (gmAffineComplexify
               (gmCubicRWeightSchwartz W)) (xi / 3)‖) := by ring
-    _ ≤ ((1 / 3 : ℝ) * 3 ^ n) *
+    _ ≤ ((1 / 3) * 3 ^ n) *
           (gmCubicRWeightFourierConstant n * T ^ n * W.card ^ 2) := by
       exact mul_le_mul_of_nonneg_left hbase (by positivity)
     _ ≤ 3 ^ n * gmCubicRWeightFourierConstant n * T ^ n * W.card ^ 2 := by
@@ -1420,9 +1386,8 @@ theorem gmCubicNormalizedRWeight_heightFourierMassFamilyAtDepth_zero
   intro epsilon hepsilon n
   unfold GMAffineHeightFourierMassBound
   simp only [pow_zero, one_mul]
-  let mass : ℝ := ∫ u : ℝ, gmCubicNormalizedRWeightSchwartz W u
+  let mass := ∫ u : ℝ, gmCubicNormalizedRWeightSchwartz W u
   have hmass : 0 ≤ mass := by
-    dsimp only [mass]
     exact integral_nonneg (gmCubicNormalizedRWeightSchwartz_nonneg W)
   have hcard :=
     card_sq_le_fortyeight_mul_T_mul_integral_normalizedRWeight hT hW
@@ -1432,8 +1397,6 @@ theorem gmCubicNormalizedRWeight_heightFourierMassFamilyAtDepth_zero
       (mul_nonneg (by positivity)
         (gmCubicRWeightFourierConstant_nonneg n))
       (pow_nonneg (zero_le_one.trans hT) n)
-  have hepsPow : 1 ≤ T ^ epsilon :=
-    Real.one_le_rpow hT (le_of_lt hepsilon)
   have hscale : T ^ n * T ≤ T ^ epsilon * T ^ (n + 2) := by
     calc
       T ^ n * T = T ^ (n + 1) := by rw [pow_succ]
@@ -1441,7 +1404,7 @@ theorem gmCubicNormalizedRWeight_heightFourierMassFamilyAtDepth_zero
         pow_le_pow_right₀ hT (Nat.le_succ (n + 1))
       _ ≤ T ^ epsilon * T ^ (n + 2) := by
         exact le_mul_of_one_le_left
-          (pow_nonneg (zero_le_one.trans hT) (n + 2)) hepsPow
+          (pow_nonneg (zero_le_one.trans hT) (n + 2)) (Real.one_le_rpow hT (le_of_lt hepsilon))
   calc
     SchwartzMap.seminorm ℝ n 0
         (fourier (gmAffineComplexify
@@ -1462,7 +1425,6 @@ theorem gmCubicNormalizedRWeight_heightFourierMassFamilyAtDepth_zero
         T ^ epsilon * T ^ (n + 2) *
           ∫ u : ℝ, gmCubicNormalizedRWeightSchwartz W u := by
       unfold gmCubicNormalizedHeightProfileConstant
-      dsimp only [mass]
       ring
 
 /-- The normalized complete Section 10 source.  Its physical convolution
@@ -1541,7 +1503,7 @@ theorem gmCubicNormalizedAffineSource_supportedOn
   have hsupp := gmAffineTildeSchwartz_supportedOn h3B
     (gmCubicNormalizedRWeightSchwartz W)
     (gmCubicNormalizedRWeight_supportedOn W)
-  have hout : GMAffineSupportedOn (1 / 4 : ℝ) (9 / 4)
+  have hout : GMAffineSupportedOn (1 / 4) (9 / 4)
       (gmAffineTildeSchwartz (3 * B) h3B
         (gmCubicNormalizedRWeightSchwartz W)) :=
     hsupp.mono (by linarith) (by linarith)
@@ -1763,8 +1725,7 @@ theorem mem_gmAffineSignedShell_of_abs_bounds
     · have h : (z : ℝ) ≤ -(M : ℕ) := by linarith
       exact_mod_cast h
   · right
-    have hz0 : 0 ≤ (z : ℝ) := le_of_not_ge hz
-    rw [abs_of_nonneg hz0] at hLower hUpper
+    rw [abs_of_nonneg (le_of_not_ge hz)] at hLower hUpper
     constructor
     · exact_mod_cast hLower
     · exact_mod_cast hUpper
@@ -1811,11 +1772,8 @@ theorem abs_directTriple_central_le
         (-16 * (m.2.2 : ℝ) + 11 * (m.2.1 : ℝ)) by
     simp [gmCubicNormalizedDirectTriple]]
   rw [abs_mul, hsign, one_mul]
-  calc
-    |-16 * (m.2.2 : ℝ) + 11 * (m.2.1 : ℝ)| ≤
-        |-16 * (m.2.2 : ℝ)| + |11 * (m.2.1 : ℝ)| := abs_add_le _ _
-    _ = 16 * |(m.2.2 : ℝ)| + 11 * |(m.2.1 : ℝ)| := by
-      simp [abs_mul]
+  exact (abs_add_le _ _).trans_eq (by
+      simp [abs_mul])
 
 theorem abs_reflectedTriple_central_le
     {m : ℤ × (ℤ × ℤ)} (hb : m.2.1 ≠ 0) :
@@ -1830,11 +1788,8 @@ theorem abs_reflectedTriple_central_le
         (-16 * (m.1 : ℝ) + 11 * (m.2.1 : ℝ)) by
     simp [gmCubicNormalizedReflectedTriple]]
   rw [abs_mul, hsign, one_mul]
-  calc
-    |-16 * (m.1 : ℝ) + 11 * (m.2.1 : ℝ)| ≤
-        |-16 * (m.1 : ℝ)| + |11 * (m.2.1 : ℝ)| := abs_add_le _ _
-    _ = 16 * |(m.1 : ℝ)| + 11 * |(m.2.1 : ℝ)| := by
-      simp [abs_mul]
+  exact (abs_add_le _ _).trans_eq (by
+      simp [abs_mul])
 
 /-- The `gmCubicDirectAffineScales` definition used by the source-facing construction in `LargeValuesS3Refined`. -/
 def gmCubicDirectAffineScales (r s : ℕ) : ℕ × (ℕ × ℕ) :=
@@ -1857,9 +1812,7 @@ theorem gmCubicNormalizedDirectTriple_mem_indexSet
         (gmCubicDirectAffineScales r s).2.2 := by
   have hmBlock := mem_gmCubicDyadicFrequencyBlock.mp hm
   have hmBalanced := mem_gmCubicBalancedOrderedFrequencyBox.mp hmBlock.1
-  have hmOrdered := mem_gmCubicOrderedFrequencyBox.mp hmBalanced.1
-  have hmNZ := mem_gmCubicNonzeroFrequencyBox.mp hmOrdered.1
-  have hb := hmNZ.2.2.1
+  have hb := (mem_gmCubicNonzeroFrequencyBox.mp (mem_gmCubicOrderedFrequencyBox.mp hmBalanced.1).1).2.2.1
   have haLower : ((2 ^ r : ℕ) : ℝ) ≤ |(m.1 : ℝ)| := by
     rw [show |(m.1 : ℝ)| = (m.1.natAbs : ℝ) by
       simp only [Nat.cast_natAbs, Int.cast_abs]]
@@ -1917,8 +1870,8 @@ theorem gmCubicDirectAffineScales_mem_terminal
   rw [mem_gmAffineScaleTriples]
   dsimp only [gmCubicDirectAffineScales, gmCubicAffineTerminalScale]
   have hp : 2 ^ r ≤ 2 ^ s :=
-    Nat.pow_le_pow_right (by omega : 0 < (2 : ℕ)) hrs
-  have hpos : 0 < 2 ^ s := pow_pos (by omega : 0 < (2 : ℕ)) _
+    Nat.pow_le_pow_right (by omega : 0 < 2) hrs
+  have hpos : 0 < 2 ^ s := pow_pos (by omega : 0 < 2) _
   refine ⟨Nat.one_le_iff_ne_zero.mpr (by positivity), ?_,
     Nat.one_le_iff_ne_zero.mpr (by positivity), ?_,
     Nat.one_le_iff_ne_zero.mpr (by positivity), ?_⟩
@@ -1941,7 +1894,7 @@ theorem gmCubicNormalizedReflectedTriple_mem_indexSet
   have hmNZ := mem_gmCubicNonzeroFrequencyBox.mp hmOrdered.1
   have hb := hmNZ.2.2.1
   have hc := hmNZ.2.2.2
-  have hcAbs : m.2.2.natAbs ≠ 0 := Int.natAbs_ne_zero.mpr hc
+  have hcAbs := Int.natAbs_ne_zero.mpr hc
   let q := Nat.log 2 m.2.2.natAbs
   have hcLowerNat : 2 ^ q ≤ m.2.2.natAbs := by
     exact Nat.pow_log_le_self 2 hcAbs
@@ -2139,13 +2092,7 @@ theorem gmCubicDyadicFrequencyBlock_denominator_split
       (fun m => 0 < m.2.1), F m) +
     ∑ m ∈ (gmCubicDyadicFrequencyBlock H r s).filter
       (fun m => m.2.1 < 0), F m
-  calc
-    (∑ m ∈ gmCubicDyadicFrequencyBlock H r s, F m) =
-        (∑ m ∈ (gmCubicDyadicFrequencyBlock H r s).filter
-          (fun m => 0 < m.2.1), F m) +
-        ∑ m ∈ (gmCubicDyadicFrequencyBlock H r s).filter
-          (fun m => ¬ 0 < m.2.1), F m := hsplit.symm
-    _ = _ := by
+  exact (hsplit.symm).trans (by
       congr 1
       apply Finset.sum_congr
       · ext m
@@ -2159,7 +2106,7 @@ theorem gmCubicDyadicFrequencyBlock_denominator_split
           omega
         · simp [hm]
       · intro m hm
-        rfl
+        rfl)
 
 theorem sum_gmCubicDirectAffineSource_le_two_transform
     {B : ℝ} (hB : 0 < B) (W : Finset ℝ)
@@ -2207,11 +2154,7 @@ theorem sum_gmCubicDirectAffineSource_le_two_transform
     · intro p
       unfold F gmAffineTerm f
       exact gmCubicNormalizedAffineSourceSchwartz_nonneg B hB W _
-  rw [gmCubicDyadicFrequencyBlock_denominator_split]
-  rw [gmAffineTransformSum_eq_indexSum]
-  change (∑ m ∈ gmCubicPositiveDenominatorBlock H r s, F (G m)) +
-      (∑ m ∈ gmCubicNegativeDenominatorBlock H r s, F (G m)) ≤
-    2 * ∑ p ∈ U, F p
+  rw [gmCubicDyadicFrequencyBlock_denominator_split, gmAffineTransformSum_eq_indexSum]
   linarith
 
 theorem log_natAbs_third_mem_Icc_of_mem_dyadicBlock
@@ -2221,8 +2164,7 @@ theorem log_natAbs_third_mem_Icc_of_mem_dyadicBlock
   have hmBlock := mem_gmCubicDyadicFrequencyBlock.mp hm
   have hmBalanced := mem_gmCubicBalancedOrderedFrequencyBox.mp hmBlock.1
   have hmOrdered := mem_gmCubicOrderedFrequencyBox.mp hmBalanced.1
-  have hmNZ := mem_gmCubicNonzeroFrequencyBox.mp hmOrdered.1
-  have hcAbs : m.2.2.natAbs ≠ 0 := Int.natAbs_ne_zero.mpr hmNZ.2.2.2
+  have hcAbs : m.2.2.natAbs ≠ 0 := Int.natAbs_ne_zero.mpr (mem_gmCubicNonzeroFrequencyBox.mp hmOrdered.1).2.2.2
   let q := Nat.log 2 m.2.2.natAbs
   have hqLower : 2 ^ q ≤ m.2.2.natAbs :=
     Nat.pow_log_le_self 2 hcAbs
@@ -2230,17 +2172,17 @@ theorem log_natAbs_third_mem_Icc_of_mem_dyadicBlock
     Nat.lt_pow_succ_log_self (by omega : 1 < 2) m.2.2.natAbs
   have hbcNat : m.2.1.natAbs ≤ m.2.2.natAbs := by
     have hcast : (m.2.1.natAbs : ℝ) ≤ (m.2.2.natAbs : ℝ) := by
-      simpa only [Nat.cast_natAbs, Int.cast_abs] using hmOrdered.2.2
+      simpa using hmOrdered.2.2
     exact_mod_cast hcast
   have hsLower : s ≤ q := by
     by_contra hnot
     have hqs : q + 1 ≤ s := by omega
     have hp : 2 ^ (q + 1) ≤ 2 ^ s :=
-      Nat.pow_le_pow_right (by omega : 0 < (2 : ℕ)) hqs
+      Nat.pow_le_pow_right (by omega : 0 < 2) hqs
     omega
   have hbalancedNat : m.2.2.natAbs ≤ 5 * m.2.1.natAbs := by
     have hcast : (m.2.2.natAbs : ℝ) ≤ 5 * (m.2.1.natAbs : ℝ) := by
-      simpa only [Nat.cast_natAbs, Int.cast_abs] using hmBalanced.2
+      simpa using hmBalanced.2
     exact_mod_cast hcast
   have hcLt : m.2.2.natAbs < 2 ^ (s + 4) := by
     calc
@@ -2438,16 +2380,12 @@ theorem integral_sq_gmCubicReflectedAffineAggregate_le_sixteen_J
           positivity)
         (by
           rw [mem_gmAffineScaleTriples]
-          have hqMem := Finset.mem_Icc.mp hq
-          have hqPow : 2 ^ q ≤ 2 ^ (s + 3) :=
-            Nat.pow_le_pow_right (by omega : 0 < (2 : ℕ)) hqMem.2
           unfold gmCubicAffineTerminalScale
-          have hsPos : 0 < 2 ^ s := pow_pos (by norm_num : 0 < (2 : ℕ)) s
           refine ⟨Nat.one_le_iff_ne_zero.mpr (by positivity), ?_,
             Nat.one_le_iff_ne_zero.mpr (by positivity), ?_,
             Nat.one_le_iff_ne_zero.mpr (by positivity), ?_⟩
           · calc
-              16 * 2 ^ q ≤ 16 * 2 ^ (s + 3) := Nat.mul_le_mul_left 16 hqPow
+              16 * 2 ^ q ≤ 16 * 2 ^ (s + 3) := Nat.mul_le_mul_left 16 (Nat.pow_le_pow_right (by omega : 0 < 2) (Finset.mem_Icc.mp hq).2)
               _ = 128 * 2 ^ s := by rw [pow_add]; norm_num; ring
           · omega
           · omega)
@@ -2515,7 +2453,7 @@ theorem setIntegral_sq_gmCubicDirectAffineTransform_le_J
     · unfold gmCubicDirectAffineScales
       positivity
   calc
-    (∫ u in Set.Icc (1 / 2 : ℝ) 2, D u) ≤ ∫ u : ℝ, D u := by
+    (∫ u in Set.Icc (1 / 2) 2, D u) ≤ ∫ u : ℝ, D u := by
       exact integral_mono_measure Measure.restrict_le_self
         (Filter.Eventually.of_forall fun _ => sq_nonneg _) hDInt
     _ = gmAffineTransformIntegral f
@@ -2541,14 +2479,14 @@ theorem setIntegral_sq_gmCubicReflectedAffineAggregate_inv_le_sixtyfour_J
     (fun u => sq_nonneg (gmCubicReflectedAffineAggregate f s u))
   have hglobal := integral_sq_gmCubicReflectedAffineAggregate_le_sixteen_J
     (f := f) (s := s)
-  have hrestrict : (∫ u in Set.Icc (1 / 2 : ℝ) 2, R u) ≤ ∫ u : ℝ, R u := by
+  have hrestrict : (∫ u in Set.Icc (1 / 2) 2, R u) ≤ ∫ u : ℝ, R u := by
     exact integral_mono_measure Measure.restrict_le_self
       (Filter.Eventually.of_forall fun _ => sq_nonneg _) hRInt
   calc
-    (∫ u in Set.Icc (1 / 2 : ℝ) 2,
+    (∫ u in Set.Icc (1 / 2) 2,
         gmCubicReflectedAffineAggregate f s u⁻¹ ^ 2) =
-        ∫ u in Set.Icc (1 / 2 : ℝ) 2, R u⁻¹ := rfl
-    _ ≤ 4 * ∫ u in Set.Icc (1 / 2 : ℝ) 2, R u := hinv
+        ∫ u in Set.Icc (1 / 2) 2, R u⁻¹ := rfl
+    _ ≤ 4 * ∫ u in Set.Icc (1 / 2) 2, R u := hinv
     _ ≤ 4 * ∫ u : ℝ, R u :=
       mul_le_mul_of_nonneg_left hrestrict (by norm_num)
     _ ≤ 4 * (16 * gmAffineJ f (gmCubicAffineTerminalScale s)) := by

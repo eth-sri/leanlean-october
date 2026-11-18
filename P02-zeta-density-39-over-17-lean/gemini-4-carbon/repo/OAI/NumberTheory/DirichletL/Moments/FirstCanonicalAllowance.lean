@@ -10,10 +10,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentFirstCanonicalAllowance
-open ActualEisensteinCubic CanonicalQuadraticSieve ConcreteTraceCRT
-open CenteredMomentActive CenteredMomentCanonicalFirst CenteredMomentCompleteCommon
-open CenteredMomentSecondCanonical CenteredMomentFirstCanonicalFamily
-open CenteredMomentRankinRadical CenteredMomentCommonAllowance
+open ActualEisensteinCubic CanonicalQuadraticSieve ConcreteTraceCRT CenteredMomentActive CenteredMomentCanonicalFirst CenteredMomentCompleteCommon CenteredMomentSecondCanonical CenteredMomentFirstCanonicalFamily CenteredMomentRankinRadical CenteredMomentCommonAllowance
 local notation "O" => ActualEisensteinCubic.O
 
 theorem activeConductor_span_product (I J : Ideal O) :
@@ -32,8 +29,7 @@ theorem active_generator_ideal_product (I J : Ideal O) (hI : Supported I) :
   exact (activeConductor_span_product I J).symm
 
 theorem common_ideal_product (I J : Ideal O) :
-    (∏ P : CommonIndex I J, P.val) = commonRadical I J := by
-  exact Finset.prod_coe_sort (s := commonSupport I J) (f := fun P : Ideal O => P)
+    (∏ P : CommonIndex I J, P.val) = commonRadical I J := Finset.prod_coe_sort (s := commonSupport I J) (f := fun P : Ideal O => P)
 
 theorem common_generator_ideal_product (I J : Ideal O) (hI : Supported I) :
     (∏ P : CommonIndex I J, Ideal.span {commonPrime I J P}) = commonRadical I J := by

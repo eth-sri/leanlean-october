@@ -18,8 +18,7 @@ theorem initial_denominator_bound (C d v n₁ n₂ L : ℝ)
     d*v^2*n₁*n₂≤L^3 := by
   have h₁' : v*n₁≤L := by nlinarith [mul_nonneg (sub_nonneg.mpr hC) (mul_nonneg hv hn₁)]
   have h₂' : v*n₂≤L := by nlinarith [mul_nonneg (sub_nonneg.mpr hC) (mul_nonneg hv hn₂)]
-  have hh := mul_le_mul h₁' h₂' (mul_nonneg hv hn₂) hL
-  have he := mul_le_mul hdL hh (by positivity) hL
+  have he := mul_le_mul hdL (mul_le_mul h₁' h₂' (mul_nonneg hv hn₂) hL) (by positivity) hL
   nlinarith
 
 theorem initial_scalar_bound (Z D m d v n₁ n₂ : ℝ) (hZ : 0<Z)
@@ -28,11 +27,8 @@ theorem initial_scalar_bound (Z D m d v n₁ n₂ : ℝ) (hZ : 0<Z)
   have hroot : 1≤Real.sqrt (n₁*n₂) := by
     rw [Real.one_le_sqrt]
     exact one_le_mul_of_one_le_of_one_le hn₁ hn₂
-  have hden : 1≤d*v*Real.sqrt (n₁*n₂) :=
-    one_le_mul_of_one_le_of_one_le (one_le_mul_of_one_le_of_one_le hd hv) hroot
   rw [Complex.norm_real,Real.norm_eq_abs,abs_of_nonneg (by positivity)]
-  have h := div_le_self (show 0≤Z^(-D)*Z^m by positivity) hden
-  apply h.trans_eq
+  apply (div_le_self (show 0≤Z^(-D)*Z^m by positivity) (one_le_mul_of_one_le_of_one_le (one_le_mul_of_one_le_of_one_le hd hv) hroot)).trans_eq
   rw [←Real.rpow_add hZ]
   congr 1
   ring

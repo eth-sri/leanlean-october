@@ -29,9 +29,8 @@ theorem priority_cell_physical_budget
       Z^(2*(max 0 N+Vchild)+eps)≤
     C*‖ray‖*Z^(r+3*ell+V+48*eta+tau+pi+eps) := by
   intro N Vchild
-  have hz:0<Z:=zero_lt_one.trans hZ
   have hclip:=second_cell_clipping_width Z (Z^(r-A-B-t)) b eta d hZ
-    (Real.rpow_pos_of_pos hz _) hb hsource hthreshold
+    (Real.rpow_pos_of_pos (zero_lt_one.trans hZ) _) hb hsource hthreshold
   rw [second_cell_formal_column Z r A B t d hZ] at hclip
   have he:=physical_block_scalar_budget Z hZ.le M r ell V delta A B R j t
     (secondCellExponent Z d 0) (secondCellExponent Z d 1) (secondCellExponent Z d 2)

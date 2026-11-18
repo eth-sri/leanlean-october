@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaBufferedCutoff
 
 @[expose] public section
@@ -41,8 +51,7 @@ theorem iteratedDeriv_modelPhaseBufferedCutoff
   rw [heq,iteratedDeriv_fun_mul (by fun_prop) (by fun_prop)]
   apply Finset.sum_congr rfl
   intro j _
-  rw [iteratedDeriv_smoothTransition_affine,iteratedDeriv_smoothTransition_affine]
-  rw [show η⁻¹*u+(-l/η-1) = (u-l)/η-1 by ring,
+  rw [iteratedDeriv_smoothTransition_affine,iteratedDeriv_smoothTransition_affine, show η⁻¹*u+(-l/η-1) = (u-l)/η-1 by ring,
     show (-η⁻¹)*u+(r/η-1) = (r-u)/η-1 by ring]
 
 theorem abs_iteratedDeriv_modelPhaseBufferedCutoff_le
@@ -62,25 +71,22 @@ theorem abs_iteratedDeriv_modelPhaseBufferedCutoff_le
     _ ≤ ∑ j ∈ Finset.range (n+1), (n.choose j : ℝ)*(M^2*(η⁻¹)^n) := by
       apply Finset.sum_le_sum
       intro j hj
-      have hjn : j ≤ n := Nat.lt_succ_iff.mp (Finset.mem_range.mp hj)
+      have hjn := Nat.lt_succ_iff.mp (Finset.mem_range.mp hj)
       rw [abs_mul,abs_mul,abs_mul,abs_mul,abs_pow,abs_pow,abs_neg,
         abs_of_nonneg (inv_nonneg.mpr hη.le),abs_of_nonneg (Nat.cast_nonneg _)]
       have hleft := mul_le_mul_of_nonneg_left (hb ((u-l)/η-1) j hjn)
         (pow_nonneg (inv_nonneg.mpr hη.le) j)
       have hright := mul_le_mul_of_nonneg_left (hb ((r-u)/η-1) (n-j) (Nat.sub_le _ _))
         (pow_nonneg (inv_nonneg.mpr hη.le) (n-j))
-      calc
-        _ ≤ (n.choose j : ℝ)*((η⁻¹)^j*M)*((η⁻¹)^(n-j)*M) :=
-          mul_le_mul (mul_le_mul_of_nonneg_left hleft (Nat.cast_nonneg _)) hright
+      exact (mul_le_mul (mul_le_mul_of_nonneg_left hleft (Nat.cast_nonneg _)) hright
             (mul_nonneg (pow_nonneg (inv_nonneg.mpr hη.le) _) (abs_nonneg _))
-            (mul_nonneg (Nat.cast_nonneg _) (mul_nonneg (pow_nonneg (inv_nonneg.mpr hη.le) _) hM))
-        _ = (n.choose j : ℝ)*(M^2*(η⁻¹)^n) := by
+            (mul_nonneg (Nat.cast_nonneg _) (mul_nonneg (pow_nonneg (inv_nonneg.mpr hη.le) _) hM))).trans_eq (by
           have hp : (η⁻¹)^j*(η⁻¹)^(n-j) = (η⁻¹)^n := by
             rw [← pow_add,Nat.add_sub_of_le hjn]
           calc
             _ = (n.choose j : ℝ)*(M^2*((η⁻¹)^j*(η⁻¹)^(n-j))) := by ring
-            _ = _ := by rw [hp]
-    _ = (2 : ℝ)^n*M^2*(η⁻¹)^n := by
+            _ = _ := by rw [hp])
+    _ = 2^n*M^2*(η⁻¹)^n := by
       rw [← Finset.sum_mul,← Nat.cast_sum,Nat.sum_range_choose,Nat.cast_pow,Nat.cast_ofNat]
       ring
 

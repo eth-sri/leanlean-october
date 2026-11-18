@@ -11,8 +11,7 @@ public import MathCollab.Density.Stronger.Atkinson.ZetaQuadraticLogGaussianVaria
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set
-open MathCollab.Density.Stronger.Fourth
+open Complex Filter MeasureTheory Set MathCollab.Density.Stronger.Fourth
 open scoped ContDiff
 set_option autoImplicit false
 noncomputable section
@@ -40,7 +39,7 @@ theorem zetaAtkinsonMainWeight_carrier {T x : ℝ} (hT : 0 < T) (hx : 0 < x) (G 
   rw [zetaAtkinsonMainWeight_eq_amplitude hT hx G L,
     zetaAtkinsonDivisorTest_eq_amplitude_phase T G L hx]
   simp only [zetaAtkinsonPhase, mul_zero, zero_mul, add_zero]
-  have hxC : (x : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hx.ne'
+  have hxC := Complex.ofReal_ne_zero.mpr hx.ne'
   field_simp
 
 theorem exists_intervalC1Bound_zetaAtkinsonMainWeight :
@@ -62,7 +61,6 @@ theorem exists_intervalC1Bound_zetaAtkinsonMainWeight :
         hphase hinterval).mul (intervalC1Bound_zetaQuadraticLogGaussian hT0 hG hGT) hinterval
   apply h.mono
   have hp : 0 ≤ 256 * C * Real.sqrt Real.pi * G * Real.sqrt T := by positivity
-  have hl := mul_le_mul_of_nonneg_left (sourceLogWeight_le_three_log hlog) hp
-  convert hl using 1 <;> ring
+  convert (mul_le_mul_of_nonneg_left (sourceLogWeight_le_three_log hlog) hp) using 1 <;> ring
 
 end MathCollab.Density.Stronger.Atkinson

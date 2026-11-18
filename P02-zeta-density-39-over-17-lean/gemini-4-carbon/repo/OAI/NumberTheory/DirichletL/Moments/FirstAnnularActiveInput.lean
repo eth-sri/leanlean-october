@@ -8,9 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.CenteredMomentFirstAnnularInput
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentGaussEnergy
-open CenteredMomentAmplificationChildInput CenteredMomentFirstAmplificationChoice
-open CenteredMomentCommonRadialData CenteredMomentSecondHeightFamily
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentGaussEnergy CenteredMomentAmplificationChildInput CenteredMomentFirstAmplificationChoice CenteredMomentCommonRadialData CenteredMomentSecondHeightFamily
 
 variable {ι:Type*}[Fintype ι]
 

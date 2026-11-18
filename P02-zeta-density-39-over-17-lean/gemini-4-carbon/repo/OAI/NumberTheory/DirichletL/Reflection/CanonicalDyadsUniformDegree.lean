@@ -77,8 +77,7 @@ theorem canonical_dyadic_geometry_uniform_uniform_degree
   let Hslot := Z^z₀
   let G := (poolPrimeFamily J (B*F*R) Q₀).restrict A
   let jF := fun b : A => completedLocalExponent J F b.val.val
-  have hz : 1<Z := lt_of_lt_of_le hZ₀ hZ
-  have hzp : 0<Z := lt_trans zero_lt_one hz
+  have hzp := lt_trans zero_lt_one (lt_of_lt_of_le hZ₀ hZ)
   have hrowNorm : ∀ K∈rows,1≤(Ideal.absNorm K:ℝ) ∧ (Ideal.absNorm K:ℝ)≤Hrow :=
     fun K hK => original_residual_norm_bounds parents J (B*F*R) hbad (Z^M) hparents K (hsub hK)
   have htupleNorm : ∀ p∈tuples,1≤(Ideal.absNorm (slotTupleProduct p):ℝ) ∧
@@ -92,12 +91,10 @@ theorem canonical_dyadic_geometry_uniform_uniform_degree
   let Tc := activeTupleDyad tuples Hslot j
   let hm := fun p hp k => hmax p (activeTupleDyad_subset tuples Hslot j hp) k
   let hg := fun p hp k => hgood p (activeTupleDyad_subset tuples Hslot j hp) k
-  have hTc : Tc.Nonempty := hj
+  have hTc := hj
   have hRi : ∀ K∈Rc,Admissible K := fun K hK => hrows K (divisorDyadicBin_subset rows Hrow i hK)
-  have hti : Set.InjOn slotTupleProduct (↑Tc : Set (σ→Ideal Eis)) :=
-    hinj.mono (activeTupleDyad_subset tuples Hslot j)
+  have hti := hinj.mono (activeTupleDyad_subset tuples Hslot j)
   have hKr := divisorDyadicBin_bounds rows Hrow hrowNorm i
-  have hPr := activeTupleDyad_bounds tuples Hslot htupleNorm j
   obtain ⟨K,hK⟩ := hi
   obtain ⟨I,hI,heI⟩ := Finset.mem_image.mp (hsub (divisorDyadicBin_subset rows Hrow i hK))
   obtain ⟨hIp,hpow,hmask⟩ := Finset.mem_filter.mp hI
@@ -147,7 +144,7 @@ theorem canonical_dyadic_geometry_uniform_uniform_degree
       intro P hP
       obtain ⟨p,hp,rfl⟩ := Finset.mem_image.mp hP
       refine ⟨(hPnorm p (activeTupleDyad_subset tuples Hslot j hp)).1,?_⟩
-      convert hPr p hp using 1 ; ring_nf)
+      convert (activeTupleDyad_bounds tuples Hslot htupleNorm j) p hp using 1 ; ring_nf)
     (fun K hK => hr K (divisorDyadicBin_subset rows Hrow i hK))
     (fun p hp => haw p (activeTupleDyad_subset tuples Hslot j hp))
   exact hb

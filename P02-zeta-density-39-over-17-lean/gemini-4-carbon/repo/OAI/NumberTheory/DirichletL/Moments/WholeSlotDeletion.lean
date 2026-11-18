@@ -56,9 +56,7 @@ theorem selectedProduct_energy_remove {α:Type*} (J R:Finset α) (hR:R⊆J)
         ‖selectedProduct (J\R) η m A z W₁ W₂ S β P t X₁ X₂‖^2 := by
   rw [selectedProduct_remove J R hR,norm_mul,mul_pow,norm_prod,←Finset.prod_pow]
   apply mul_le_mul_of_nonneg_right _ (sq_nonneg _)
-  calc
-    _≤∏i∈R,B i*Z^(κ*w i):=Finset.prod_le_prod₀ (fun i _=>sq_nonneg _) hslot
-    _=_:=by rw [Finset.prod_mul_distrib,←Real.rpow_sum_of_pos hZ,Finset.mul_sum]
+  exact (Finset.prod_le_prod₀ (fun i _=>sq_nonneg _) hslot).trans_eq (by rw [Finset.prod_mul_distrib,←Real.rpow_sum_of_pos hZ,Finset.mul_sum])
 
 end SevenEighths.CenteredMomentWholeSlotDeletion
 

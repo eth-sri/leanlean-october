@@ -23,13 +23,9 @@ theorem whole_slots {α : Type*} (s : Finset α) (w g : α→ℝ) (G mesh : ℝ)
     · obtain ⟨a,ha,hmax⟩ := s.exists_max_image g hs
       by_cases hza : z≤w a
       · refine ⟨∅,Finset.empty_subset _,by simpa using hz,?_⟩
-        have hzmesh : z≤mesh := hza.trans (hwm a ha)
-        have hprod := mul_le_mul hqG hzmesh hz hG
-        simpa only [Finset.sum_empty] using (sub_nonpos.mpr hprod)
-      have haz : w a<z := lt_of_not_ge hza
+        simpa only [Finset.sum_empty] using (sub_nonpos.mpr (mul_le_mul hqG (hza.trans (hwm a ha)) hz hG))
       let s' := s.erase a
-      have hss : s'⊂s := Finset.erase_ssubset ha
-      have hsub : s'⊆s := Finset.erase_subset a s
+      have hsub := Finset.erase_subset a s
       have hsum : ∑ i∈s, w i=w a+∑ i∈s', w i := by
         simpa [s',add_comm] using (Finset.sum_erase_add s w ha).symm
       have hgain : ∑ i∈s, w i*g i=w a*g a+∑ i∈s', w i*g i := by
@@ -37,23 +33,17 @@ theorem whole_slots {α : Type*} (s : Finset α) (w g : α→ℝ) (G mesh : ℝ)
       let W := ∑ i∈s', w i
       let A := ∑ i∈s', w i*g i
       have hW : 0<W := by rw [hsum] at hzs; dsimp [W]; linarith
-      have hA : 0≤A := Finset.sum_nonneg (fun i hi => mul_nonneg (hw i (hsub hi)) (hg i (hsub hi)))
       have hAg : A≤W*g a := by
-        calc
-          _ ≤ ∑ i∈s', w i*g a := Finset.sum_le_sum (fun i hi =>
-            mul_le_mul_of_nonneg_left (hmax i (hsub hi)) (hw i (hsub hi)))
-          _ = _ := by dsimp [W]; rw [Finset.sum_mul]
+        exact (Finset.sum_le_sum (fun i hi =>
+            mul_le_mul_of_nonneg_left (hmax i (hsub hi)) (hw i (hsub hi)))).trans_eq (by dsimp [W]; rw [Finset.sum_mul])
       let q' := A/W
-      have hq' : 0≤q' := div_nonneg hA hW.le
-      have hq'a : q'≤g a := (div_le_iff₀ hW).mpr (by simpa [mul_comm] using hAg)
-      have hq'G : q'≤G := hq'a.trans (hgG a ha)
-      have he : q'*W=A := div_mul_cancel₀ A hW.ne'
-      have hz' : 0≤z-w a := sub_nonneg.mpr haz.le
+      have hq'a := (div_le_iff₀ hW).mpr (by simpa [mul_comm] using hAg)
+      have he := div_mul_cancel₀ A hW.ne'
       have hzs' : z-w a≤∑ i∈s', w i := by rw [hsum] at hzs; linarith
-      obtain ⟨T,hTs,hTz,hTgain⟩ := ih s' hss
+      obtain ⟨T,hTs,hTz,hTgain⟩ := ih s' (Finset.erase_ssubset ha)
         (fun i hi => hw i (hsub hi)) (fun i hi => hwm i (hsub hi))
         (fun i hi => hg i (hsub hi)) (fun i hi => hgG i (hsub hi))
-        q' (z-w a) hq' hq'G hz' hzs' he.le
+        q' (z-w a) (div_nonneg (Finset.sum_nonneg (fun i hi => mul_nonneg (hw i (hsub hi)) (hg i (hsub hi)))) hW.le) (hq'a.trans (hgG a ha)) (sub_nonneg.mpr (lt_of_not_ge hza).le) hzs' he.le
       have haT : a∉T := fun h => (Finset.mem_erase.mp (hTs h)).1 rfl
       refine ⟨insert a T,Finset.insert_subset_iff.mpr ⟨ha,hTs.trans hsub⟩,?_,?_⟩
       · rw [Finset.sum_insert haT]

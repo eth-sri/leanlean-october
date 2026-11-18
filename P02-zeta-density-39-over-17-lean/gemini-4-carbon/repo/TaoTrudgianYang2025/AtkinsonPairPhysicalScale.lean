@@ -24,7 +24,7 @@ theorem atkinsonPhysical_pair_scale_identity {H G ℓ L : ℝ}
   have hGe : 2-2*(l+1/2-k/2) = 1+k-2*l := by ring
   rw [hGe,hℓe]
   calc
-    _ = (74:ℝ)^(l+1/2-k/2)*ℓ^(2*l+1-k)*
+    _ = 74^(l+1/2-k/2)*ℓ^(2*l+1-k)*
         (L^k*(H^(-k/2)*H^(l+1/2-k/2-1/2))*G^(1+k-2*l)) := by ring
     _ = _ := by rw [hh]
 
@@ -39,15 +39,12 @@ theorem atkinsonPhysical_pair_scale_le {H G ℓ L k l : ℝ}
     rcases hpair with ⟨hk,_,_,hl,_⟩
     linarith
   have hc : (74:ℝ)^(l+1/2-k/2) ≤ 5476 := by
-    calc
-      _ ≤ (74:ℝ)^(2:ℝ) :=
-        Real.rpow_le_rpow_of_exponent_le (by norm_num) hp
-      _ = _ := by norm_num
+    exact (Real.rpow_le_rpow_of_exponent_le (by norm_num) hp).trans_eq (by norm_num)
   have he : 2*l+1-k ≤ 3 := by
     rcases hpair with ⟨hk,_,_,hl,_⟩
     linarith
   have hlp : ℓ^(2*l+1-k) ≤ ℓ^3 := by
-    simpa only [Real.rpow_ofNat] using
+    simpa using
       Real.rpow_le_rpow_of_exponent_le hℓ he
   apply mul_le_mul_of_nonneg_right _ (by positivity)
   exact mul_le_mul hc hlp (by positivity) (by norm_num)

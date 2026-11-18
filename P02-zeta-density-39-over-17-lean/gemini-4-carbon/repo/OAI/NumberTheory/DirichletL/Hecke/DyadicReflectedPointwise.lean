@@ -41,9 +41,9 @@ theorem reflected_polynomial_bound (e ε : ℝ)
   intro ι _ χ hχ T a i hT ha ha' hmax j W A B hA hWs hW
     D σ freq V C₂ Cn n hD hV hfreq hC₂ hCn hm₂ hmn
   dsimp only
-  let H : ℝ := (3*i+2 : ℕ)*T
-  let Q : ℝ := (χ j).modulus.absNorm
-  let R : ℝ := (radical (χ j).modulus).absNorm
+  let H := (3*i+2 : ℕ)*T
+  let Q := (χ j).modulus.absNorm
+  let R := (radical (χ j).modulus).absNorm
   let Kg := Cg*Q^(3/5 : ℝ)*R^(1/10+ε)*(3+H)^2
   let Kr := Cr*Q^(a-1/2+6*e)*R^(6*e+2*ε)*(3+H)^2*
     (presentationComplexity (χ j) H)^ε
@@ -67,7 +67,7 @@ theorem reflected_polynomial_bound (e ε : ℝ)
     exact (hmem hs).2.2
   have hcentral (t : ℝ) (ht : t∈Icc (-V) V) :
       ‖series (χ j) false (((1-a-6*e-σ : ℝ) : ℂ)+t*I+shift σ freq)‖≤Kr := by
-    have him : |t-freq|≤H := (abs_sub _ _).trans (by
+    have him := (abs_sub _ _).trans (by
       have ht' := abs_le.mpr ht
       change |t|+|freq|≤H
       linarith)

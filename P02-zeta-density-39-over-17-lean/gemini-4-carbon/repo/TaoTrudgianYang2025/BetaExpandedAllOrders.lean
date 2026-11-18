@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaExpandedJetBounds
 
 @[expose] public section
@@ -74,12 +84,10 @@ theorem modelPhaseLegendreDual_expanded_allOrder_uniformity
     (inversePhaseDerivativeExpression n)
   refine ⟨C,hC,?_⟩
   intro F δ hδ hpos hF v hv
-  have hw := modelPhaseSlopeRange_positive_window hσ hpos hF hv
-  have hvpos : 0 < v := (show 0 < (2 : ℝ)^(-σ)/2 by positivity).trans_le hw.1
   have hP : 1 ≤ inversePhaseOrder (inversePhaseDerivativeExpression n)+1 := by omega
   rw [iteratedDeriv_modelPhaseLegendreDual_formula hσ hδ
     (approximateModelPhase_mono hF hP le_rfl) hv n,
-    iteratedDeriv_modelPhase_expanded_inverseJet_formula hσ hvpos n]
+    iteratedDeriv_modelPhase_expanded_inverseJet_formula hσ ((show 0 < (2 : ℝ)^(-σ)/2 by positivity).trans_le (modelPhaseSlopeRange_positive_window hσ hpos hF hv).1) n]
   exact hbound F δ _ hδ hpos hP hF (by omega) v hv
 
 end TaoTrudgianYang2025

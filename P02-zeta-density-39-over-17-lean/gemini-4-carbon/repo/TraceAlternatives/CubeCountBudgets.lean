@@ -34,11 +34,11 @@ theorem cubeTraceEnergyMargin_of_endpoints {σ a x : ℝ} (j : Fin 2) (i : Fin 5
   · have h := mul_le_mul_of_nonneg_left hx hc
     dsimp only [c] at h
     unfold cubeTraceEnergyMargin at *
-    linarith only [hlo,h]
+    linarith
   · have h := mul_le_mul_of_nonpos_left hx' (le_of_not_ge hc)
     dsimp only [c] at h
     unfold cubeTraceEnergyMargin at *
-    linarith only [hhi,h]
+    linarith
 
 theorem cubeTraceEnergy_length_slope_nonneg {σ : ℝ} (hσ : 13/16 ≤ σ)
     (j : Fin 2) (i : Fin 5) :
@@ -53,6 +53,6 @@ theorem cubeTraceEnergyMargin_mono_length {σ a x y : ℝ} (hσ : 13/16 ≤ σ)
     cubeTraceEnergyMargin σ a x j i ≤ cubeTraceEnergyMargin σ a y j i := by
   have h := mul_le_mul_of_nonneg_left hxy (cubeTraceEnergy_length_slope_nonneg hσ j i)
   unfold cubeTraceEnergyMargin
-  linarith only [h]
+  linarith
 
 end Montgomery.RationalMoment

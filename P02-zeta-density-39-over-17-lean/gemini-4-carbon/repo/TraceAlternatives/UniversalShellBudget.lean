@@ -54,16 +54,14 @@ theorem universal_shell_budget_le {T L H R E : ℝ}
   have h2 := universal_shell_monomial (b:=0) (s:=2) hT hL hH hHT (by norm_num) (by norm_num)
   have h3 := universal_shell_monomial (b:=1/6) (s:=4/3) hT hL hH hHT (by norm_num) (by norm_num)
   have h4 := universal_shell_monomial (b:=1/16) (s:=3/2) hT hL hH hHT (by norm_num) (by norm_num)
-  norm_num only [Real.rpow_zero,Real.rpow_ofNat,mul_one,Real.rpow_one,
-    show (0+3/2-1:ℝ)=1/2 by norm_num,show (2-3/2:ℝ)=1/2 by norm_num,
-    show (0+2-1:ℝ)=1 by norm_num,show (2-2:ℝ)=0 by norm_num] at h1 h2
-  norm_num only [show (1/6+4/3-1:ℝ)=1/2 by norm_num,show (2-4/3:ℝ)=2/3 by norm_num] at h3
-  norm_num only [show (1/16+3/2-1:ℝ)=9/16 by norm_num,show (2-3/2:ℝ)=1/2 by norm_num] at h4
+  norm_num at h1 h2
+  norm_num at h3
+  norm_num at h4
   have ha := mul_le_mul_of_nonneg_right h1 (sq_nonneg R)
   have hb := mul_le_mul_of_nonneg_right h2 (Real.rpow_nonneg hE (1/2))
   have hc := mul_le_mul_of_nonneg_right h3 (by positivity : (0:ℝ) ≤ R*E^(1/4:ℝ))
   have hd := mul_le_mul_of_nonneg_right h4 (by positivity : (0:ℝ) ≤ R^(19/12:ℝ)*E^(5/48:ℝ))
   unfold universalLocalReflectionBudget universalShortProfile universalShortSublinearProfile universalCenteredBudget
-  nlinarith only [ha,hb,hc,hd]
+  nlinarith
 
 end Montgomery.RationalMoment

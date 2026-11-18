@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaUniformityFull
 public import TaoTrudgianYang2025.HeathBrownPairSecants
 
@@ -22,7 +32,7 @@ theorem heathBrownPairK_le_derivative {r : ℝ} (hr : 3 ≤ r) :
   have h3 : 0 ≤ r-2 := by linarith
   have h4 : 0 ≤ r+1 := by linarith
   have hp : 0 ≤ (r-1)*(r-2)*(r+1) := by positivity
-  nlinarith only [hp]
+  nlinarith
 
 theorem heathBrownPairRight_derivative {r : ℝ} (hr : 3 ≤ r) :
     (heathBrownPairRight r-r)/(r*(r-1)) = -1/(r*(r+1)) := by
@@ -43,7 +53,7 @@ theorem heathBrownPairSecant_first_term {r τ : ℝ} (hr : 3 ≤ r)
   unfold heathBrownPairSecant at hjoin ⊢
   rw [sub_div] at hright ⊢
   simp only [div_eq_mul_inv] at hm hright hjoin ⊢
-  nlinarith only [hm,hjoin,hright]
+  nlinarith
 
 theorem heathBrownPairSecant_second_term {r τ : ℝ} (hr : 3 ≤ r)
     (hτ : heathBrownPairLeft r ≤ τ) :
@@ -59,7 +69,7 @@ theorem heathBrownPairSecant_third_term {r τ : ℝ} (hr : 3 ≤ r)
     -2*τ/(r^2*(r-1)) ≤ heathBrownPairSecant r τ := by
   have h0 : 0 < r := by linarith
   have h1 : 0 < r-1 := by linarith
-  have ht : r/2 ≤ τ := (heathBrownPairLeft_half hr).trans hτ
+  have ht := (heathBrownPairLeft_half hr).trans hτ
   have heq : -2*(r/2)/(r^2*(r-1)) = -1/(r*(r-1)) := by
     field_simp
   have hle : -2*τ/(r^2*(r-1)) ≤ -1/(r*(r-1)) := by

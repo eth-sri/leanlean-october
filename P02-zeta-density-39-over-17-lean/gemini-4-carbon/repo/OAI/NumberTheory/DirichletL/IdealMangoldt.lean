@@ -23,8 +23,7 @@ theorem primeBase_spec {I : Ideal O} (hI : IsPrimePow I) :
 
 theorem primeBase_pow {P : Ideal O} (hP : Prime P) {k : ℕ} (hk : 0 < k) :
     primeBase (P ^ k) = P := by
-  have hpow : IsPrimePow (P ^ k) := ⟨P, k, hP, hk, rfl⟩
-  obtain ⟨hQ, l, hl, heq⟩ := primeBase_spec hpow
+  obtain ⟨hQ, l, hl, heq⟩ := primeBase_spec (⟨P, k, hP, hk, rfl⟩)
   apply associated_iff_eq.mp
   apply hQ.associated_of_dvd hP
   exact hQ.dvd_of_dvd_pow (heq ▸ dvd_pow_self (primeBase (P ^ k)) hl.ne')
@@ -59,14 +58,13 @@ theorem isPrimePow_absNorm {I : Ideal O} (hI : IsPrimePow I) :
   exact (isPrimePow_nat_iff _).mpr ⟨p, n * k, hp, mul_pos hn hk, rfl⟩
 
 theorem value_eq_zero_of_norm_not_primePow {I : Ideal O}
-    (hI : ¬IsPrimePow (Ideal.absNorm I)) : value I = 0 := by
-  exact ite_eq_right (fun h => hI (isPrimePow_absNorm h))
+    (hI : ¬IsPrimePow (Ideal.absNorm I)) : value I = 0 := ite_eq_right (fun h => hI (isPrimePow_absNorm h))
 
 theorem prime_mem_primesOver_of_dvd_norm {P : Ideal O} (hP : Prime P)
     {p : ℕ} (hp : p.Prime) (hd : p ∣ Ideal.absNorm P) :
     P ∈ (Ideal.span {(p : ℤ)}).primesOver O := by
   obtain ⟨Q, hQ, hQu, hQP⟩ := Ideal.exists_isMaximal_dvd_of_dvd_absNorm' hp P hd
-  have heq : P = Q := (Ideal.isPrime_of_prime hP).isMaximal hP.ne_zero |>.eq_of_le
+  have heq := (Ideal.isPrime_of_prime hP).isMaximal hP.ne_zero |>.eq_of_le
     hQ.ne_top (Ideal.dvd_iff_le.mp hQP)
   subst Q
   exact ⟨Ideal.isPrime_of_prime hP, ⟨hQu.symm⟩⟩
@@ -91,9 +89,9 @@ theorem primeBase_injective_on_norm {I J : Ideal O} (hI : IsPrimePow I)
   have hkl : k = l := by
     apply Nat.pow_right_injective (SmoothMobiusCorrection.prime_norm_two_le ⟨_, hP⟩)
     have hnI : Ideal.absNorm (primeBase I) ^ k = Ideal.absNorm I := by
-      simpa only [map_pow] using congrArg Ideal.absNorm hPk
+      simpa using congrArg Ideal.absNorm hPk
     have hnJ : Ideal.absNorm (primeBase I) ^ l = Ideal.absNorm J := by
-      simpa only [map_pow] using congrArg Ideal.absNorm hPl
+      simpa using congrArg Ideal.absNorm hPl
     exact hnI.trans (hn.trans hnJ.symm)
   exact hPk.symm.trans ((congrArg (primeBase I ^ ·) hkl).trans hPl)
 
@@ -135,8 +133,7 @@ def primesOver (p : ℕ) [Fact p.Prime] : Finset (Ideal O) :=
   Set.Finite.mem_toFinset _
 
 theorem primesOver_card (p : ℕ) [Fact p.Prime] :
-    (primesOver p).card = ((Ideal.span {(p : ℤ)}).primesOver O).ncard := by
-  exact (Set.ncard_eq_toFinset_card _).symm
+    (primesOver p).card = ((Ideal.span {(p : ℤ)}).primesOver O).ncard := (Set.ncard_eq_toFinset_card _).symm
 
 theorem primesOver_log_sum_le (p : ℕ) [hp : Fact p.Prime] :
     ∑ P ∈ primesOver p, Real.log (Ideal.absNorm P) ≤ 2 * Real.log p := by

@@ -18,13 +18,11 @@ theorem initial_height_bound (J:ℕ)(z:JointLogSeparation.Frequency×(Fin 6→�
     (h:ℝ)(hh:h = -leftHeight z ∨ h=rightHeight z) :
     (1+‖h‖)^(2*J)≤tripleHeight (4*J) z.1*coordinateHeight (4*J) z.2 := by
   have hb := child_height_moment_bound (2*J) z
-  have hl : 1≤(1+‖leftHeight z‖)^(2*J) := one_le_pow₀ (by linarith [norm_nonneg (leftHeight z)])
-  have hr : 1≤(1+‖rightHeight z‖)^(2*J) := one_le_pow₀ (by linarith [norm_nonneg (rightHeight z)])
   rw [show 2*(2*J)=4*J by omega] at hb
   rcases hh with rfl|rfl
   · rw [norm_neg]
-    exact (le_mul_of_one_le_right (by positivity) hr).trans hb
-  · exact (le_mul_of_one_le_left (by positivity) hl).trans hb
+    exact (le_mul_of_one_le_right (by positivity) (one_le_pow₀ (by linarith [norm_nonneg (rightHeight z)]))).trans hb
+  · exact (le_mul_of_one_le_left (by positivity) (one_le_pow₀ (by linarith [norm_nonneg (leftHeight z)]))).trans hb
 
 theorem initial_raw_uniform
     (W:ℝ→ℂ)(lo b:ℝ)(hlo:0<lo)(hb:1≤b)

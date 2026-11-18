@@ -59,8 +59,7 @@ theorem operator_centered_measure_integral {E : Type*} [NormedAddCommGroup E]
 
 theorem operator_centered_sample_pos {l u L : ℝ} (hl : 0 < l) (hL : 0 < L)
     {m : ℤ} (hm : m ∈ Finset.Icc ⌈l*L⌉ ⌊u*L⌋) : 0 < (m:ℝ)/L := by
-  have hh : l*L ≤ (m:ℝ) := Int.ceil_le.mp (Finset.mem_Icc.mp hm).1
-  exact div_pos ((mul_pos hl hL).trans_le hh) hL
+  exact div_pos ((mul_pos hl hL).trans_le (Int.ceil_le.mp (Finset.mem_Icc.mp hm).1)) hL
 
 /-- The scalar kernel of the signed-amplitude positive-measure presentation
 is literally the full centered kernel, without Poisson expansion. -/

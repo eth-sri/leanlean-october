@@ -46,7 +46,7 @@ theorem continuedRowOnLines_z_transport {K : ℕ}
     (X Y Z : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z) :
     (∫p : HeightSpace,continuedRowOnLines S hS hmax P hPS η u W0 W1 X Y Z σ υ l p ∂heightMeasure)=
       ∫p : HeightSpace,continuedRowOnLines S hS hmax P hPS η u W0 W1 X Y Z σ υ r p ∂heightMeasure := by
-  have hi (q : ℝ) (hq : (17/50:ℝ)≤q) :
+  have hi (q : ℝ) (hq : (17/50)≤q) :
       Integrable (continuedRowOnLines S hS hmax P hPS η u W0 W1 X Y Z σ υ q) heightMeasure :=
     continuedPhysicalRowKernel_integrable e σ υ q he he' hσ hσβ hυ hq S hS hmax hfirst P hP hPS η u hu
       W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1 X Y Z hX hY hZ
@@ -75,8 +75,8 @@ theorem rowIntegral_wz_transport {K : ℕ}
       (fun i=>CompletedGauss.primaryGenerator (P i).val) W0 W1 X Y Z u=
       ((1/(2*Real.pi):ℝ):ℂ)^3*
         ∫p : HeightSpace,continuedRowOnLines S hS hmax P hPS η u W0 W1 X Y Z 3 υ r p ∂heightMeasure := by
-  have hβ : HeckeZeroSupremum.beta+8*(1/2000:ℝ)≤3 := by linarith [HeckeZeroSupremum.beta_le_one]
-  have hi (q : ℝ) (hq : (17/50:ℝ)≤q) :
+  have hβ : HeckeZeroSupremum.beta+8*(1/2000)≤3 := by linarith [HeckeZeroSupremum.beta_le_one]
+  have hi (q : ℝ) (hq : (17/50)≤q) :
       Integrable (continuedRowOnLines S hS hmax P hPS η u W0 W1 X Y Z 3 υ q) heightMeasure :=
     continuedPhysicalRowKernel_integrable (1/2000) 3 υ q (by norm_num) (by norm_num) (by norm_num) hβ hυ hq
       S hS hmax hfirst P hP hPS η u hu W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1 X Y Z hX hY hZ

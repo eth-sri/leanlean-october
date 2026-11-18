@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.SargosCharacterGap
 
 @[expose] public section
@@ -55,14 +64,11 @@ theorem sargos_geometric_kernel_product_le_two {N : ℕ} [NeZero N]
     ‖∑ j ∈ Finset.range H, ZMod.stdAddChar (k*(j : ZMod N))‖*
       ‖ZMod.stdAddChar k-1‖ ≤ 2 := by
   rw [← norm_mul,sargos_sum_stdAddChar_mul_sub_one]
-  calc
-    _ ≤ ‖(ZMod.stdAddChar k)^H‖+‖(1 : ℂ)‖ := norm_sub_le _ _
-    _ = 2 := by rw [norm_pow,sargos_stdAddChar_norm]; norm_num
+  exact (norm_sub_le _ _).trans_eq (by rw [norm_pow,sargos_stdAddChar_norm]; norm_num)
 
 theorem norm_sargosPrefixKernel_le_inv_distance {N : ℕ} [NeZero N]
     (H : ℕ) {k : ZMod N} (hk : k ≠ 0) :
     ‖sargosPrefixKernel H k‖ ≤ 1/sargosResidueDistance k := by
-  have hd := sargosResidueDistance_pos hk
   have hK : ‖sargosPrefixKernel H k‖ =
       ‖∑ j ∈ Finset.range H, ZMod.stdAddChar (k*(j : ZMod N))‖/(N : ℝ) := by
     rw [sargosPrefixKernel,norm_mul,norm_inv,Complex.norm_natCast]
@@ -75,7 +81,7 @@ theorem norm_sargosPrefixKernel_le_inv_distance {N : ℕ} [NeZero N]
           ‖ZMod.stdAddChar k-1‖ :=
         mul_le_mul_of_nonneg_left (sargos_stdAddChar_sub_one_lower k) (norm_nonneg _)
       _ ≤ 2 := sargos_geometric_kernel_product_le_two H k
-  apply (le_div_iff₀ hd).mpr
+  apply (le_div_iff₀ (sargosResidueDistance_pos hk)).mpr
   nlinarith
 
 theorem sargosPrefixMajorant_nonneg {N : ℕ} [NeZero N] (k : ZMod N) :

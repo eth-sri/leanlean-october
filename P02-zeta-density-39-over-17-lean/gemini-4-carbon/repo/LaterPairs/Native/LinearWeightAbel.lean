@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.AtkinsonMainPartialSummation
 
 @[expose] public section
@@ -19,7 +28,7 @@ theorem norm_linear_weighted_range_le (a : ℕ → ℂ) (H : ℕ) (hH : 0 < H)
     (B : ℝ) (hp : ∀ L ≤ H, ‖∑ n ∈ Finset.range L, a n‖ ≤ B) :
     ‖∑ n ∈ Finset.range H, ((1-(n:ℝ)/H : ℝ):ℂ)*a n‖ ≤ B := by
   let w : ℕ → ℂ := fun n => ((1-(n:ℝ)/H : ℝ):ℂ)
-  have hpos : (0:ℝ) < H := by exact_mod_cast hH
+  have hpos : 0 < H := by exact_mod_cast hH
   have hlast : ‖w (H-1)‖ = 1/(H:ℝ) := by
     have he : 1-((H-1:ℕ):ℝ)/H = 1/(H:ℝ) := by
       rw [Nat.cast_sub (by omega),Nat.cast_one]

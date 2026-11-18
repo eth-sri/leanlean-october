@@ -21,12 +21,11 @@ theorem second_correlated_column_denominator {ι : Type*} [DecidableEq ι]
     (primeProductNorm p E)^2 * (primeProductNorm p S * primeProductNorm p T) ≤
       (primeProductNorm p E/primeProductNorm p G)^2 * L^2 := by
   have hG0 := (primeProductNorm_pos p hp G).ne'
-  have hbound := second_whole_column_denominator p hp G G S T Finset.Subset.rfl hGS hGT L hL hS hT
   calc
     _ = (primeProductNorm p E/primeProductNorm p G)^2 *
       ((primeProductNorm p G)^2 * (primeProductNorm p S*primeProductNorm p T)) := by
         field_simp
-    _ ≤ _ := mul_le_mul_of_nonneg_left hbound (sq_nonneg _)
+    _ ≤ _ := mul_le_mul_of_nonneg_left (second_whole_column_denominator p hp G G S T Finset.Subset.rfl hGS hGT L hL hS hT) (sq_nonneg _)
 
 def correlatedSecondRadius {ι : Type*} [DecidableEq ι] (p : ι → O)
     (d : O) (G E : Finset ι) (L Y H : ℝ) : ℝ :=

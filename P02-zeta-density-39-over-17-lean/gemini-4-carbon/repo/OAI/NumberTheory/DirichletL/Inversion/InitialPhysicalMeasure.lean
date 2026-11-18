@@ -10,11 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
 
 namespace SevenEighths.InverseInitialPhysicalMeasure
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ConcreteTraceCRT
-open FirstPassCubeLabels FirstCauchyArithmetic SecondPassArithmetic
-open InverseMoment InverseInitialArithmetic InverseInitialRayAttachment
-open InverseInitialKernelBridge InverseInitialProfile InverseInitialClippedColumns
-open MeasureTheory FourierBridge JointLogSeparation
+open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ConcreteTraceCRT FirstPassCubeLabels FirstCauchyArithmetic SecondPassArithmetic InverseMoment InverseInitialArithmetic InverseInitialRayAttachment InverseInitialKernelBridge InverseInitialProfile InverseInitialClippedColumns MeasureTheory FourierBridge JointLogSeparation
 local notation "O" => ActualEisensteinCubic.O
 
 @[ext] structure Point (ι : Type*) where
@@ -94,7 +90,7 @@ theorem child_normalized (hpr : ∀ i,goodLambda^2∣p i-1) (x : Point ι)
     (divisor_span p x) (quotient_span p hp hpr x)
   have hgen : primaryGenerator (sourceIdeal p x.divisor)≠0 := by
     rw [sourceIdeal_gen p hp hpr];exact Finset.prod_ne_zero_iff.mpr (fun i _=>hp i)
-  have hu' : u=unitSector p hp hpr x := Units.val_injective
+  have hu' := Units.val_injective
     (mul_right_cancel₀ hgen (hu.symm.trans (unitSector_spec p hp hpr x)))
   simpa only [hu',quotient] using he H N
 
@@ -267,14 +263,12 @@ theorem physicalBlock_integral
   let c := fun a : Point ι × SecondRayIndex => w a.1*barePair p hp hcop hg hpr Ψ j σ a.1 a.2 *
     (star (ω₁ (columnRatio p a.1.left Z D B v))*ω₂ (columnRatio p a.1.right Z D B v))
   let y := fun a : Point ι × SecondRayIndex => relativeLog (coordinates p a.1) Z D B v θ H
-  have he := family_density_finite_sum S g g₁ g₂ b₃ c₁ c₂ θ₁ θ₂ (η*Real.log Z) c y
   have hpnt (x : Point ι) (hx : x∈source) (ρ : SecondRayIndex) :
       w x*physicalTerm p hp hcop hg Ψ j σ (clippedSource W₁ c₁ θ₁) (clippedSource W₂ c₂ θ₂) Φ Z D m x ρ =
       (Z^(prefactorCenter m D B θ+3*η):ℝ)*c (x,ρ)*
         ∫ z : Frequency × (Fin 6→ℝ),familyDensity g g₁ g₂ b₃ c₁ c₂ θ₁ θ₂ (η*Real.log Z) z *
           pureProfileMode secondLeftSlope secondRightSlope secondKernelSlope (y (x,ρ)) z.1 z.2 := by
-    rw [physicalTerm_extracted p hp hcop hg hpr Ψ j σ _ _ Φ Z D m x (hs x hx) ρ]
-    rw [hid (fun r=>star (ω₁ r)) ω₂ (coordinates p x) (coordinates_pos p hp x (hs x hx))
+    rw [physicalTerm_extracted p hp hcop hg hpr Ψ j σ _ _ Φ Z D m x (hs x hx) ρ, hid (fun r=>star (ω₁ r)) ω₂ (coordinates p x) (coordinates_pos p hp x (hs x hx))
       (hω₁ x hx) (hω₂ x hx) (hcut x hx)]
     dsimp only [c,y,barePair]
     rw [relative_column_left,relative_column_right]
@@ -292,7 +286,7 @@ theorem physicalBlock_integral
     intro ρ hρ
     rw [hpnt x hx ρ]
     ring
-  rw [hsumeq,he]
+  rw [hsumeq,(family_density_finite_sum S g g₁ g₂ b₃ c₁ c₂ θ₁ θ₂ (η*Real.log Z) c y)]
   congr 1
   apply integral_congr_ae
   filter_upwards with z

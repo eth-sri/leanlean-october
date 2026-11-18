@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaTaylorStationaryMain
 
 @[expose] public section
@@ -51,14 +61,13 @@ theorem sourceStationaryChart_bound_of_exponentSumBound
   obtain ⟨η,hη,hsmall,hpos,hcanonical⟩ :=
     modelPhase_source_canonicalTaylorPhase hσ hA hA₂ Q hdβ
   let d := min (modelPhaseAmplitudeTolerance σ) (min η dβ)
-  let P := max 2 (legendreFiniteInputOrder (Q+2))
   have hd : 0 < d := lt_min (modelPhaseAmplitudeTolerance_pos hσ) (lt_min hη hdβ)
   have hdamp : d ≤ modelPhaseAmplitudeTolerance σ := min_le_left _ _
   have hdη : d ≤ η := (min_le_right _ _).trans (min_le_left _ _)
   have hddβ : d ≤ dβ := (min_le_right _ _).trans (min_le_right _ _)
   have hdsmall := hdη.trans hsmall
   have hdpos := hdη.trans hpos
-  refine ⟨d,hd,hdsmall,hdpos,P,le_max_left _ _,C,hC,?_⟩
+  refine ⟨d,hd,hdsmall,hdpos,(max 2 (legendreFiniteInputOrder (Q+2))),le_max_left _ _,C,hC,?_⟩
   intro T N F a b hT hN ha hb hlong hF
   dsimp only
   intro hTC hlow hhigh

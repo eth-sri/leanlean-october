@@ -10,9 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSourceRectangleMask
-open HeckeFamily CanonicalRowCompletion CanonicalQuadraticSieve ConcretePrimeRowBridge
-open CenteredMomentSourceRow CenteredMomentHeckeExpansion CenteredMomentSourceRectangle
-open CenteredMomentDivisorRowEnergy CenteredMomentRectangle CenteredMomentExtraction
+open HeckeFamily CanonicalRowCompletion CanonicalQuadraticSieve ConcretePrimeRowBridge CenteredMomentSourceRow CenteredMomentHeckeExpansion CenteredMomentSourceRectangle CenteredMomentDivisorRowEnergy CenteredMomentRectangle CenteredMomentExtraction
 local notation "O" => ActualEisensteinCubic.O
 
 theorem rowWeight_ideal_mask (η : Character) (m A z : O) (t : ℝ)
@@ -49,8 +47,7 @@ theorem fullMaskedRectangle_eq_maskedRectangle {ι : Type*} [Fintype ι] [Decida
   intro I
   apply tsum_congr
   intro J
-  rw [idealRectangle_extract]
-  rw [mul_right_comm (if IsCoprime _ R then (1:ℂ) else 0) _,rowWeight_ideal_mask η m A z t hmLam hm2]
+  rw [idealRectangle_extract, mul_right_comm (if IsCoprime _ R then 1 else 0) _,rowWeight_ideal_mask η m A z t hmLam hm2]
   ring
 
 theorem source_polynomial_eq_maskedRectangle {ι : Type*} [Fintype ι] [DecidableEq ι]

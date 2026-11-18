@@ -98,7 +98,6 @@ theorem wooleySourcePolynomial_section7_hard_of_lower_bound
       norm_cast
       exact Nat.pow_le_pow_right hpPrime.pos
         wooley_section7_BPrimeNat_le_zero
-    have hloss := Real.rpow_le_rpow (by positivity) hbase (sq_nonneg epsilon)
     have hcond : 0 ≤ wooleySourcePolynomialConditionedMean
         (wooleyTriangular r)
         (p ^ wooleySection7BPrimeNat k r a b gammaVal)
@@ -114,7 +113,7 @@ theorem wooleySourcePolynomial_section7_hard_of_lower_bound
               (Finset.sum_nonneg fun alphaPrime halphaPrime =>
                 pow_nonneg (norm_nonneg _) _)))
     have hscaled := mul_le_mul_of_nonneg_right
-      (mul_le_mul_of_nonneg_left hloss hC.le) hcond
+      (mul_le_mul_of_nonneg_left (Real.rpow_le_rpow (by positivity) hbase (sq_nonneg epsilon)) hC.le) hcond
     exact hbound.trans (by
       simpa only [coeff, wooleySection7Coefficient, wooleySection7HPrime] using hscaled)
   obtain ⟨gammaVal, hgammaVal, hlocal⟩ :=
@@ -136,7 +135,6 @@ theorem wooleySourcePolynomial_section7_hard_of_lower_bound
     hgammaVal (hBPrime gammaVal hgammaVal)
     hEpsilonZero
   have hsum : 0 ≤ fiberSum := by
-    dsimp only [fiberSum]
     exact Finset.sum_nonneg fun _ _ => mul_nonneg
       (wooleySourceResidueMassSq_nonneg gamma _ _)
       (wooleySourcePolynomialMixedResidueMoment_nonneg
@@ -149,7 +147,6 @@ theorem wooleySourcePolynomial_section7_hard_of_lower_bound
             wooleyTriangular r) ≤
         C * (p : ℝ) ^ (k ^ 2 * nu) :=
     mul_le_mul_of_nonneg_left hpower hC.le
-  have hscaled := mul_le_mul_of_nonneg_right hcoeff hsum
   calc
     wooleySourceResidueMassSq gamma (p ^ a) xi *
         wooleySourcePolynomialMixedResidueMoment
@@ -161,7 +158,7 @@ theorem wooleySourcePolynomial_section7_hard_of_lower_bound
             wooleyTriangular r * fiberSum := by
       simpa only [fiberSum] using hlocal
     _ ≤ (C * (p : ℝ) ^ (k ^ 2 * nu)) * fiberSum := by
-      simpa only [mul_assoc] using hscaled
+      simpa only [mul_assoc] using (mul_le_mul_of_nonneg_right hcoeff hsum)
 
 end
 

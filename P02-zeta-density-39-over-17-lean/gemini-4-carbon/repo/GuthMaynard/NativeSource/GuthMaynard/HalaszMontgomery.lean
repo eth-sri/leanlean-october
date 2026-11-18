@@ -32,26 +32,21 @@ theorem halasz_montgomery_lemma_of_mean_value
   rcases hMeanValue with ⟨C, hC, hMeanValue⟩
   refine ⟨C, hC, ?_⟩
   intro N T V W a hN hT hV hSep hTar hBound
-  have h_mean := hMeanValue N T W a hN hT hSep hTar
   have h_bound_sq : ∀ t ∈ W, V^2 ≤ ‖∑ n ∈ Ioc N (2 * N), a n * (n : ℂ) ^ (-(t : ℂ) * I)‖^2 := by
     intro t ht
     have ht_bound := hBound t ht
-    have hV_nonneg : 0 ≤ V := le_of_lt hV
+    have hV_nonneg := le_of_lt hV
     nlinarith
   have h_sum_V2 : (W.card : ℝ) * V^2 ≤ ∑ t ∈ W, ‖∑ n ∈ Ioc N (2 * N), a n * (n : ℂ) ^ (-(t : ℂ) * I)‖^2 := by
     calc (W.card : ℝ) * V^2 = ∑ t ∈ W, V^2 := by
           simp only [sum_const, nsmul_eq_mul]
       _ ≤ ∑ t ∈ W, ‖∑ n ∈ Ioc N (2 * N), a n * (n : ℂ) ^ (-(t : ℂ) * I)‖^2 := sum_le_sum h_bound_sq
-  have h_combined :
-      (W.card : ℝ) * V^2 ≤
-        C * (T + (N : ℝ)) * ∑ n ∈ Ioc N (2 * N), ‖a n‖^2 :=
-    le_trans h_sum_V2 h_mean
   have h_V2_inv_pos : 0 < V^(-2 : ℝ) := by
     apply Real.rpow_pos_of_pos hV
   have h_final :
       (W.card : ℝ) * V^2 * V^(-2 : ℝ) ≤
         (C * (T + (N : ℝ)) * (∑ n ∈ Ioc N (2 * N), ‖a n‖^2)) * V^(-2 : ℝ) := by
-    exact mul_le_mul_of_nonneg_right h_combined (le_of_lt h_V2_inv_pos)
+    exact mul_le_mul_of_nonneg_right (le_trans h_sum_V2 (hMeanValue N T W a hN hT hSep hTar)) (le_of_lt h_V2_inv_pos)
   have h_V2_cancel : V^2 * V^(-2 : ℝ) = 1 := by
     rw [← Real.rpow_two, ← Real.rpow_add hV]
     norm_num

@@ -7,9 +7,8 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondSectorAssembly
 namespace OAI
 
 namespace SevenEighths.InverseMoment
+open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic JointLogSeparation MeasureTheory
 open scoped BigOperators Classical
-open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open JointLogSeparation MeasureTheory
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 local instance inverseSecondDeletedAllModesUnits : Fintype Eisˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units

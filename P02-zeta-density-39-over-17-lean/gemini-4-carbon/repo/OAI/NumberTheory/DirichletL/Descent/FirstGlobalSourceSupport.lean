@@ -36,8 +36,7 @@ lemma canonicalCubeResidual_zero_overlap (b : CubeCoordinates ι) (C U : Finset 
     simp only [canonicalCubeResidual,originalLabelColumn,hz,mul_zero,zero_mul]
   · have hm : aLabel p b.support (if negative then b.rightBit else b.leftBit)*(∏j∈C,p j)∈Ideal.span {p i} :=
       Ideal.mem_span_singleton.mpr (dvd_mul_of_dvd_right (Finset.dvd_prod_of_mem p hiC) _)
-    have hz := first_squarefree_row_zero_mem p hg U i hi _ hm
-    simp only [canonicalCubeResidual,originalLabelColumn,hz,zero_pow (by norm_num : 4≠0),mul_zero,zero_mul]
+    simp only [canonicalCubeResidual,originalLabelColumn,(first_squarefree_row_zero_mem p hg U i hi _ hm),zero_pow (by norm_num : 4≠0),mul_zero,zero_mul]
 
 lemma firstCanonicalCoefficient_zero_overlap (b : CubeCoordinates ι) (C U : Finset ι)
     (negative : Bool) (Ψ : O→*ℂ) (m d : O) (H : Finset ι→ℂ) (x : Ideal O×O)

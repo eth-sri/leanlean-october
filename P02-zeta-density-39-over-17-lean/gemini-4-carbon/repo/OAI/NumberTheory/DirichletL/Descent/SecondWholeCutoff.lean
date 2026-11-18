@@ -19,15 +19,12 @@ theorem second_whole_column_denominator {ι : Type*} [DecidableEq ι]
     (hS : primeProductNorm p (G ∪ S) ≤ L)
     (hT : primeProductNorm p (G ∪ T) ≤ L) :
     (primeProductNorm p E)^2 * (primeProductNorm p S * primeProductNorm p T) ≤ L^2 := by
-  have hE := primeProductNorm_mono p hp hEG
-  have hE0 := (primeProductNorm_pos p hp E).le
-  have hS0 := (primeProductNorm_pos p hp S).le
   have hT0 := (primeProductNorm_pos p hp T).le
   rw [primeProductNorm_union p G S hGS] at hS
   rw [primeProductNorm_union p G T hGT] at hT
   calc
     _ ≤ (primeProductNorm p G)^2 * (primeProductNorm p S * primeProductNorm p T) :=
-      mul_le_mul_of_nonneg_right (pow_le_pow_left₀ hE0 hE 2) (mul_nonneg hS0 hT0)
+      mul_le_mul_of_nonneg_right (pow_le_pow_left₀ ((primeProductNorm_pos p hp E).le) (primeProductNorm_mono p hp hEG) 2) (mul_nonneg ((primeProductNorm_pos p hp S).le) hT0)
     _ = (primeProductNorm p G * primeProductNorm p S) *
       (primeProductNorm p G * primeProductNorm p T) := by ring
     _ ≤ L*L := mul_le_mul hS hT (mul_nonneg (primeProductNorm_pos p hp G).le hT0) hL

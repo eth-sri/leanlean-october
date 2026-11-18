@@ -37,8 +37,7 @@ theorem heathBrownIntegratedWeyl_le_majorant
     {N k H s Q : ℕ} (hH : 2 ≤ H) (hQH : Q ≤ H) (hs : 1 ≤ s)
     (f : ℝ → ℝ) :
     heathBrownIntegratedWeyl N k H Q f ≤
-      heathBrownIntegratedMajorant N k H s f := by
-  exact heathBrown_integratedWeyl_le_source_moments N k H hH f hQH hs
+      heathBrownIntegratedMajorant N k H s f := heathBrown_integratedWeyl_le_source_moments N k H hH f hQH hs
 
 theorem card_Ico_one_le (Q : ℕ) :
     (Finset.Ico 1 Q).card ≤ Q := by

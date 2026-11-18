@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaBufferedLocalNonstationary
 public import Mathlib.NumberTheory.Harmonic.Bounds
 
@@ -44,8 +54,8 @@ theorem norm_modelPhaseBufferedFourierMode_of_support_gap
     ‖modelPhaseFourierMode (modelPhaseBufferedCutoff l r η) F T N q‖ ≤
       4/(d*Real.pi) := by
   have hab : l+η ≤ r-η := by linarith
-  have ha : l+η ∈ Ioo (1 : ℝ) 2 := ⟨by linarith,by linarith⟩
-  have hb : r-η ∈ Ioo (1 : ℝ) 2 := ⟨by linarith,by linarith⟩
+  have ha : l+η ∈ Ioo 1 2 := ⟨by linarith,by linarith⟩
+  have hb : r-η ∈ Ioo 1 2 := ⟨by linarith,by linarith⟩
   have hm := (approximateModelPhase_deriv_strictAntiOn hσ hδ hF).antitoneOn
   have hg : (∀ u ∈ Icc (l+η) (r-η), N*d ≤ T*deriv F u-q*N) ∨
       (∀ u ∈ Icc (l+η) (r-η), T*deriv F u-q*N ≤ -(N*d)) := by
@@ -53,14 +63,14 @@ theorem norm_modelPhaseBufferedFourierMode_of_support_gap
     rcases hgap with hp | hn
     · left
       intro u hu
-      have hu' : u ∈ Ioo (1 : ℝ) 2 := ⟨ha.1.trans_le hu.1,hu.2.trans_lt hb.2⟩
+      have hu' : u ∈ Ioo 1 2 := ⟨ha.1.trans_le hu.1,hu.2.trans_lt hb.2⟩
       have hs := mul_le_mul_of_nonneg_left (hm hu' hb hu.2) hT.le
       have h := mul_le_mul_of_nonneg_right hp hN.le
       rw [sub_mul,he] at h
       nlinarith
     · right
       intro u hu
-      have hu' : u ∈ Ioo (1 : ℝ) 2 := ⟨ha.1.trans_le hu.1,hu.2.trans_lt hb.2⟩
+      have hu' : u ∈ Ioo 1 2 := ⟨ha.1.trans_le hu.1,hu.2.trans_lt hb.2⟩
       have hs := mul_le_mul_of_nonneg_left (hm ha hu' hu.1) hT.le
       have h := mul_le_mul_of_nonneg_right hn hN.le
       rw [add_mul,he] at h

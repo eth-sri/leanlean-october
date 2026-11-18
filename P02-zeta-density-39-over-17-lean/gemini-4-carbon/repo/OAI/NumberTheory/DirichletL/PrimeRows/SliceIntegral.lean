@@ -29,13 +29,12 @@ theorem source_profile_arithmetic_slices (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1
     slo shi zlo zhi wlo whi hzlo J N
   refine ⟨K,hK,?_⟩
   intro σ hσ ξ hξ υ hυ axis T A hA X Y Z hX hY hZ G hG hGb
-  let E : ℝ := X^(1/2-ξ)*Z^(σ+ξ-1)*Y^(υ-1)
+  let E := X^(1/2-ξ)*Z^(σ+ξ-1)*Y^(υ-1)
   have hE : 0≤E := by dsimp [E];positivity
   let S := fun q : ℝ×ℝ=>sourceScale X Y Z ((σ:ℂ)+(sliceMap axis T q).1.1*I)
     ((υ:ℂ)+(sliceMap axis T q).2*I) ((ξ:ℂ)+(sliceMap axis T q).1.2*I)
   have hc : Continuous (fun p : HeightSpace => (((σ:ℂ)+p.1.1*I,(υ:ℂ)+p.2*I),(ξ:ℂ)+p.1.2*I)) := by fun_prop
-  have hS0 := (sourceScale_continuous X Y Z hX hY hZ).comp (hc.comp (sliceMap_continuous axis T))
-  have hS : Continuous S := by simpa only [S,Function.comp_def] using hS0
+  have hS : Continuous S := by simpa only [S,Function.comp_def] using ((sourceScale_continuous X Y Z hX hY hZ).comp (hc.comp (sliceMap_continuous axis T)))
   have hSn (q : ℝ×ℝ) : ‖S q‖=E := by
     dsimp only [S]
     rw [sourceScale_norm X Y Z hX hY hZ]
@@ -56,11 +55,8 @@ theorem source_profile_arithmetic_slices (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1
     ring
   dsimp only
   refine ⟨heq.symm ▸ hi,?_⟩
-  have hnorm := congrArg (fun f : ℝ×ℝ→ℂ => ∫q : ℝ×ℝ,‖f q‖ ∂volume.prod volume) heq
-  rw [hnorm]
-  calc
-    _ ≤ (E*A)*K/height T^N := hb
-    _ = _ := by dsimp [E];ring
+  rw [(congrArg (fun f : ℝ×ℝ→ℂ => ∫q : ℝ×ℝ,‖f q‖ ∂volume.prod volume) heq)]
+  exact (hb).trans_eq (by dsimp [E];ring)
 
 end SevenEighths.ProbeHighRowFamily
 

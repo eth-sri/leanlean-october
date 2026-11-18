@@ -22,9 +22,7 @@ theorem norm_atkinsonRootPhase_integral_right {T b a c : ℝ}
     (hr : atkinsonSaddleRoot (T / (2 * Real.pi)) b + 1 ≤ a) :
     ‖∫ y in a..c, Complex.exp (2 * Real.pi * I * (atkinsonRootPhase T b y : ℂ))‖ ≤
       1 / (2 * Real.pi) := by
-  have hd (y : ℝ) (hy : y ∈ Icc a c) :
-      deriv (atkinsonRootPhase T b) y = atkinsonRootSlope T b y :=
-    (hasDerivAt_atkinsonRootPhase T b (ha.trans_le hy.1)).deriv
+  have hd (y : ℝ) (hy : y ∈ Icc a c) := (hasDerivAt_atkinsonRootPhase T b (ha.trans_le hy.1)).deriv
   apply norm_phaseIntegral_le_of_negative_slope hac (by norm_num : (0 : ℝ) < 2)
     (fun y hy => contDiffAt_atkinsonRootPhase T b (ha.trans_le hy.1))
   · intro y hy
@@ -40,9 +38,7 @@ theorem norm_atkinsonRootPhase_integral_left {T b a c : ℝ}
     (hr : c ≤ atkinsonSaddleRoot (T / (2 * Real.pi)) b - 1) :
     ‖∫ y in a..c, Complex.exp (2 * Real.pi * I * (atkinsonRootPhase T b y : ℂ))‖ ≤
       1 / (2 * Real.pi) := by
-  have hd (y : ℝ) (hy : y ∈ Icc a c) :
-      deriv (atkinsonRootPhase T b) y = atkinsonRootSlope T b y :=
-    (hasDerivAt_atkinsonRootPhase T b (ha.trans_le hy.1)).deriv
+  have hd (y : ℝ) (hy : y ∈ Icc a c) := (hasDerivAt_atkinsonRootPhase T b (ha.trans_le hy.1)).deriv
   apply norm_phaseIntegral_le_of_positive_slope hac (by norm_num : (0 : ℝ) < 2)
     (fun y hy => contDiffAt_atkinsonRootPhase T b (ha.trans_le hy.1))
   · intro y hy

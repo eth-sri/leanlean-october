@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaStationaryMain
 
 @[expose] public section
@@ -29,6 +39,6 @@ theorem modelPhaseStationaryBlock_eq_range (F : ℝ → ℝ) (T N : ℝ) (a L : 
       ∑ i ∈ Finset.range (L+1), modelPhaseStationaryMainTerm F T N ((a : ℝ)+i) := by
   rw [modelPhaseStationaryBlock,RiemannZeta.GuthMaynard.sum_Icc_eq_shifted_range _ a (a+L)
     (Nat.le_add_right a L)]
-  simp only [Nat.add_sub_cancel_left,Nat.cast_add]
+  simp
 
 end TaoTrudgianYang2025

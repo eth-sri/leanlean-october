@@ -125,7 +125,7 @@ lemma ZetaSum_aux1 {a b : ℕ} {s : ℂ} (s_ne_one : s ≠ 1) (s_ne_zero : s ≠
     fun x hx ↦ ZetaSum_aux1φDiff (xpos x hx)
   have φderiv : ∀ x ∈ [[(a : ℝ), b]], deriv φ x = φ' x := by
     exact fun x hx ↦ ZetaSum_aux1φderiv s_ne_zero (xpos x hx)
-  have derivφCont : ContinuousOn (deriv φ) [[a, b]] := ZetaSum_aux1derivφCont s_ne_zero ha
+  have derivφCont := ZetaSum_aux1derivφCont s_ne_zero ha
   convert sum_eq_int_deriv (by linarith) (by exact_mod_cast ha.2) φDiff derivφCont using 1
   · congr <;> simp only [Nat.floor_natCast]
   · rw [Nat.floor_natCast, Nat.floor_natCast, ← intervalIntegral.integral_const_mul]
@@ -184,7 +184,7 @@ lemma ZetaSum_aux1_5b {a b : ℝ} (apos : 0 < a) (a_lt_b : a < b) {s : ℂ} (σp
 open MeasureTheory in
 lemma measurable_floor_add_half_sub : Measurable fun (u : ℝ) ↦ ↑⌊u⌋ + 1 / 2 - u := by
   refine Measurable.add ?_ measurable_const |>.sub measurable_id
-  exact Measurable.comp (by exact fun _ _ ↦ trivial) Int.measurable_floor
+  exact Measurable.comp (fun _ _ ↦ trivial) Int.measurable_floor
 
 open MeasureTheory in
 lemma ZetaSum_aux1_5c {a b : ℝ} {s : ℂ} :
@@ -229,8 +229,7 @@ lemma Finset.Ioc_eq_Ico (M N : ℕ) : Finset.Ioc N M = Finset.Ico (N + 1) (M + 1
 lemma finsetSum_tendsto_tsum {N : ℕ} {f : ℕ → ℂ} (hf : Summable f) :
     Tendsto (fun (k : ℕ) ↦ ∑ n ∈ Finset.Ico N k, f n) atTop (𝓝 (∑' (n : ℕ), f (n + N))) := by
   have := Summable.hasSum_iff_tendsto_nat hf (m := ∑' (n : ℕ), f n) |>.mp hf.hasSum
-  have const := tendsto_const_nhds (α := ℕ) (x := ∑ i ∈ Finset.range N, f i) (f := atTop)
-  have := Filter.Tendsto.sub this const
+  have := Filter.Tendsto.sub this (tendsto_const_nhds (α := ℕ) (x := ∑ i ∈ Finset.range N, f i) (f := atTop))
   rw [← hf.sum_add_tsum_nat_add N, add_comm, add_sub_cancel_right] at this
   apply this.congr'
   filter_upwards [Filter.mem_atTop (N + 1)]
@@ -277,7 +276,7 @@ lemma integrableOn_of_Zeta0_fun {N : ℕ} (N_pos : 0 < N) {s : ℂ} (s_re_gt : 0
     convert hc; simp only [← Complex.norm_real]; simp
   · apply integrableOn_Ioi_cpow_iff (by positivity) |>.mpr (by simp [s_re_gt])
   · refine Measurable.add ?_ measurable_const |>.sub (by fun_prop) |>.aestronglyMeasurable
-    exact Measurable.comp (by exact fun _ _ ↦ trivial) Int.measurable_floor
+    exact Measurable.comp (fun _ _ ↦ trivial) Int.measurable_floor
 
 lemma ZetaSum_aux2 {N : ℕ} (N_pos : 0 < N) {s : ℂ} (s_re_gt : 1 < s.re) :
     ∑' (n : ℕ), 1 / (n + N + 1 : ℂ) ^ s =
@@ -535,7 +534,7 @@ lemma HasDerivAtZeta0 {N : ℕ} (Npos : 0 < N) {s : ℂ} (reS_pos : 0 < s.re) (s
   · have houter := HasDerivAt_cpow_over_var N (z := 1 - s)
       (by rw [sub_ne_zero]; exact s_ne_one.symm)
     have hinner : HasDerivAt (fun z : ℂ => 1 - z) (-1) s := by
-      simpa only [zero_sub, id_eq] using (hasDerivAt_const s (1 : ℂ)).fun_sub (hasDerivAt_id s)
+      simpa using (hasDerivAt_const s 1).fun_sub (hasDerivAt_id s)
     convert houter.comp s hinner using 1
     · rfl
     · ring
@@ -555,7 +554,7 @@ lemma HolomorphicOn_riemannZeta :
   exact (differentiableAt_riemannZeta hz).differentiableWithinAt
 
 lemma isPathConnected_aux : IsPathConnected {z : ℂ | z ≠ 1 ∧ 0 < z.re} := by
-  use (2 : ℂ)
+  use 2
   constructor
   · simp
   intro w hw; simp only [ne_eq, mem_ofPred_eq] at hw
@@ -618,14 +617,14 @@ lemma Zeta0EqZeta {N : ℕ} (N_pos : 0 < N) {s : ℂ} (reS_pos : 0 < s.re) (s_ne
     apply (HolomorphicOn_riemannZeta.analyticOnNhd isOpen_ne).mono
     simp only [ne_eq, ofPred_subset_ofPred, and_imp, U]
     exact fun a ha _ ↦ ha
-  have g_an : AnalyticOnNhd ℂ g U := (HolomorphicOn_riemannZeta0 N_pos).analyticOnNhd isOpen_aux
+  have g_an := (HolomorphicOn_riemannZeta0 N_pos).analyticOnNhd isOpen_aux
   have preconU : IsPreconnected U := by
     apply IsConnected.isPreconnected
     apply (IsOpen.isConnected_iff_isPathConnected isOpen_aux).mpr isPathConnected_aux
-  have h2 : (2 : ℂ) ∈ U := by simp [U]
+  have h2 : 2 ∈ U := by simp [U]
   have s_mem : s ∈ U := by simp [U, reS_pos, s_ne_one]
   convert (AnalyticOnNhd.eqOn_of_preconnected_of_eventuallyEq f_an g_an preconU h2 ?_ s_mem).symm
-  have u_mem : {z : ℂ | 1 < z.re} ∈ 𝓝 (2 : ℂ) := by
+  have u_mem : {z : ℂ | 1 < z.re} ∈ 𝓝 2 := by
     apply mem_nhds_iff.mpr
     use {z : ℂ | 1 < z.re}
     simp only [ofPred_subset_ofPred, imp_self, forall_const, mem_ofPred_eq, re_ofNat,

@@ -62,8 +62,7 @@ theorem varying_reopened_smoothed_source {ι : Type*} [DecidableEq ι]
       intro v₂ hv₂
       apply Finset.sum_congr rfl
       intro v₁ hv₁
-      have hs : v₁.support∪v₂.support ⊆ pool := Finset.union_subset (hQ v₁ hv₁) (hQ v₂ hv₂)
-      simp_rw [canonicalCubeCorrelation_eq_blocks p hp hcop hg hinj hpr pool v₁ v₂ hs,
+      simp_rw [canonicalCubeCorrelation_eq_blocks p hp hcop hg hinj hpr pool v₁ v₂ (Finset.union_subset (hQ v₁ hv₁) (hQ v₂ hv₂)),
         Finset.mul_sum]
       rw [Finset.sum_comm]
       apply Finset.sum_congr rfl

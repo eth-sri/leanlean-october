@@ -49,7 +49,7 @@ theorem summable_pair_norm_rpow {k : ℝ} (hk : 2 < k) :
 theorem summable_normForm_neg_rpow {σ : ℝ} (hσ : 1 < σ) :
     Summable (fun n : ℤ × ℤ => normForm n.1 n.2 ^ (-σ)) := by
   have hmajor := (summable_pair_norm_rpow (k := 2 * σ) (by linarith)).mul_left
-    ((1 / 2 : ℝ) ^ (-σ))
+    ((1 / 2) ^ (-σ))
   apply Summable.of_nonneg_of_le
     (fun n => Real.rpow_nonneg (normForm_nonneg _ _) _) _ hmajor
   intro n
@@ -58,16 +58,13 @@ theorem summable_normForm_neg_rpow {σ : ℝ} (hσ : 1 < σ) :
     simp [normForm, Real.zero_rpow (by linarith : -σ ≠ 0),
       Real.zero_rpow (by linarith : -(2 * σ) ≠ 0)]
   · have hnpos : 0 < ‖n‖ := norm_pos_iff.mpr hn
-    calc
-      normForm n.1 n.2 ^ (-σ) ≤ ((1 / 2 : ℝ) * ‖n‖ ^ 2) ^ (-σ) :=
-        Real.rpow_le_rpow_of_nonpos (by positivity) (normForm_ge_half_norm_sq n)
-          (by linarith)
-      _ = (1 / 2 : ℝ) ^ (-σ) * ‖n‖ ^ (-(2 * σ)) := by
+    exact (Real.rpow_le_rpow_of_nonpos (by positivity) (normForm_ge_half_norm_sq n)
+          (by linarith)).trans_eq (by
         rw [Real.mul_rpow (by norm_num) (sq_nonneg _)]
         congr 1
         rw [← Real.rpow_two, ← Real.rpow_mul (norm_nonneg _)]
         congr 1
-        ring
+        ring)
 
 theorem summable_one_div_normForm_rpow {σ : ℝ} (hσ : 1 < σ) :
     Summable (fun n : ℤ × ℤ => 1 / normForm n.1 n.2 ^ σ) := by

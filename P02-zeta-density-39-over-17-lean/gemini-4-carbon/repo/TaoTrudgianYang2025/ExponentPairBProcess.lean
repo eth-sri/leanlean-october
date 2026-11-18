@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaReflectionEnvelope
 public import TaoTrudgianYang2025.BetaClosedDuality
 
@@ -49,9 +59,8 @@ theorem ExponentPair.bProcess {k l : ℝ} (h : ExponentPair k l) :
     apply NNReal.coe_injective
     rw [NNReal.coe_sub hγNN,hγreal]
     norm_num
-  have hline := exponentSumGrowthExponent_le_exponentPairLine_closed h γ hγ
   have hinput : IsExponentSumBoundNonAsymptotic γ (exponentPairLine k l γ) :=
-    exponentSumGrowthExponent_le_iff_nonAsymptotic.mp hline
+    exponentSumGrowthExponent_le_iff_nonAsymptotic.mp (exponentSumGrowthExponent_le_exponentPairLine_closed h γ hγ)
   have hnonneg : 0 ≤ exponentPairLine k l γ+1/2-(γ : ℝ) := by
     rw [hγreal,exponentPairLine_bProcess]
     have hk : 0 ≤ k := h.inTriangle.1

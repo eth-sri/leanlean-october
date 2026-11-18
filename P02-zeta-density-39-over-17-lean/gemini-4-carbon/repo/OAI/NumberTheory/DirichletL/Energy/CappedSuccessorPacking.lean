@@ -7,16 +7,11 @@ public import OAI.NumberTheory.DirichletL.Energy.StageMonotonicity
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
 open Filter
+open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyCappedSuccessorPacking
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyCappedWidthInduction CenteredMomentEnergyWidthInduction
-open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyWidthRanges
-open CenteredMomentEnergyStageReserveSchedule CenteredMomentEnergyBandMonotonicity
-open CenteredMomentEnergyStageMonotonicity CenteredMomentEnergyReferenceLowBands
-open CenteredMomentEnergyPositiveHighSourceBound CenteredMomentNaturalFixedRaySource
+open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyCappedWidthInduction CenteredMomentEnergyWidthInduction CenteredMomentEnergyWidthSchedule CenteredMomentEnergyWidthRanges CenteredMomentEnergyStageReserveSchedule CenteredMomentEnergyBandMonotonicity CenteredMomentEnergyStageMonotonicity CenteredMomentEnergyReferenceLowBands CenteredMomentEnergyPositiveHighSourceBound CenteredMomentNaturalFixedRaySource
 local notation "O"=>HeckeFamily.O
 variable {α:Type*}
 variable (M:Ideal O)[NeZero M]
@@ -54,12 +49,7 @@ theorem certified_from_stages
     CenteredMomentEnergyCappedWidthInduction.CertifiedBand (α:=α) M H hH
       W bslot a b radial Bmask L lo hi Mcap κ ε (k+1):=by
   let Bs:=finalSourceCap Mcap Bmask L ε
-  have hBs:0≤Bs:=sourceCap_nonneg Mcap Bmask L hMcap hmask _
-  have hr:0<reserve Mcap Bs ε:=(bounds Mcap Bs κ ε hMcap hBs hκ hε).2.2.2.1
-  have hlower:lowerAt a b Mcap ε k≤lowerAt a b Mcap ε (k+1):=
-    CenteredMomentEnergyProfiles.lower_antitone a b ha (by unfold remaining;omega)
-  have hlength:lengthAt Mcap Bmask L ε (k+1)≤lengthAt Mcap Bmask L ε k:=
-    range_mono Mcap Bmask L hMcap hmask (by unfold remaining;omega)
+  have hr :=(bounds Mcap Bs κ ε hMcap (sourceCap_nonneg Mcap Bmask L hMcap hmask _) hκ hε).2.2.2.1
   have hloss:stageLoss Mcap Bs ε k≤stageLoss Mcap Bs ε (k+1):=by
     unfold stageLoss
     rw [loss_succ]
@@ -99,7 +89,7 @@ theorem certified_from_stages
       (bandWidth Mcap Bs ε k) _ _ κ Z η₀ Q J S Cp
     · exact positiveAt_transport (α:=α) M H hH W bslot _ _ _ _ _ _ _ _ _ _ κ Z
         _ _ _ _ _ _ _ η₀ Q Jold J Sold S Cop Cp hold.1.le
-        hlower le_rfl le_rfl le_rfl hlength le_rfl hloss hJo hSo hCop.le hCop' hold.2.2
+        (CenteredMomentEnergyProfiles.lower_antitone a b ha (by unfold remaining;omega)) le_rfl le_rfl le_rfl (range_mono Mcap Bmask L hMcap hmask (by unfold remaining;omega)) le_rfl hloss hJo hSo hCop.le hCop' hold.2.2
     · exact positiveLowAt_transport (α:=α) M H hH W bslot _ _ _ _ _ _ _ _ _ _ κ Z
         _ _ _ _ _ _ _ η₀ Q Jl J Sl S Cl Cp hold.1.le
         le_rfl le_rfl le_rfl le_rfl le_rfl le_rfl hel hJl hSl hCl.le hCl' hl

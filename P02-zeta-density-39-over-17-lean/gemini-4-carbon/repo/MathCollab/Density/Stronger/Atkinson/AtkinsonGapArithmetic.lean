@@ -10,10 +10,8 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonGapBudget
 
 @[expose] public section
 
-open Complex Finset Set Filter
+open Complex Finset Set Filter RiemannZeta.GuthMaynard MathCollab.Density.Stronger.Fourth
 open scoped ComplexConjugate
-open RiemannZeta.GuthMaynard
-open MathCollab.Density.Stronger.Fourth
 set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
@@ -48,15 +46,13 @@ theorem exists_atkinsonGapBudget_le_arithmetic {η : ℝ} (hη : 0 < η) :
     apply Finset.sum_le_sum
     intro j hj
     have hM : (0:ℝ) < ((2^j:ℕ):ℝ) := by positivity
-    have hS : 0 ≤ ∑ t ∈ W, ∑ u ∈ W, atkinsonPrefixGapMajorant (2^j) (2^j) t u :=
-      Finset.sum_nonneg (fun t ht => Finset.sum_nonneg
+    have hS := Finset.sum_nonneg (fun t ht => Finset.sum_nonneg
         (fun u hu => hnonneg j (Finset.mem_range.mp hj) t ht u hu))
-    have he := henergy (2^j) (2^j) (pow_pos (by norm_num) _) le_rfl
     calc
       _ ≤ (((2^j:ℕ):ℝ)^(-(1/4:ℝ)))^2*(C*((2^j:ℕ):ℝ)^(1+η))*
           ∑ t ∈ W, ∑ u ∈ W, atkinsonPrefixGapMajorant (2^j) (2^j) t u :=
         mul_le_mul_of_nonneg_right
-          (mul_le_mul_of_nonneg_left he (sq_nonneg _)) hS
+          (mul_le_mul_of_nonneg_left (henergy (2^j) (2^j) (pow_pos (by norm_num) _) le_rfl) (sq_nonneg _)) hS
       _ = C*((((2^j:ℕ):ℝ)^(-(1/4:ℝ)))^2*((2^j:ℕ):ℝ)^(1+η))*
           ∑ t ∈ W, ∑ u ∈ W, atkinsonPrefixGapMajorant (2^j) (2^j) t u := by ring
       _ = _ := by rw [atkinson_quarter_energy_power hM]; ring

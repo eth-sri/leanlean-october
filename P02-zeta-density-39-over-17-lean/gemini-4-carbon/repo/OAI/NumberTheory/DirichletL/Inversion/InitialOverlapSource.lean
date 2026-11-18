@@ -48,10 +48,9 @@ theorem insert_original_fresh
   · simp only [hw,mul_zero]
   have hcoord : ∀i∈I,tupleCoordinate I y q i∈Set.Icc (lo i) (hi i) := by
     intro i hi
-    have hn := Finset.prod_ne_zero_iff.mp hz ⟨i,hi⟩ (Finset.mem_attach _ _)
     have hcoeff : a i (q i hi)≠0 := by
       intro he
-      apply hn
+      apply (Finset.prod_ne_zero_iff.mp hz ⟨i,hi⟩ (Finset.mem_attach _ _))
       split_ifs
       · exact he
       · rfl

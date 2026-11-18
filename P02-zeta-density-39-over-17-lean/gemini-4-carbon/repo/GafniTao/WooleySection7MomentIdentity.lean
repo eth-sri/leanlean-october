@@ -375,12 +375,7 @@ theorem wooleySourceInsertedNormalizedRealAverage_eq_mass_mul_raw
         (wooleySourceMassSq right)⁻¹ ^ S *
           wooleySourceInsertedRealAverage
             leftPhi rightPhi Psi q qPrime R S left right := by
-  have htwist (alpha : Fin k → ZMod q) :
-      wooleySourceMassSq
-          (wooleySourceTwist left
-            (fun n => wooleySourcePolynomialPhase leftPhi alpha n)) =
-        wooleySourceMassSq left :=
-    wooleySourceMassSq_twist left _
+  have htwist (alpha : Fin k → ZMod q) := wooleySourceMassSq_twist left _
       (fun n => wooleySourcePolynomialPhase_norm leftPhi alpha n)
   have hleftNorm (alpha : Fin k → ZMod q)
       (beta : Fin r → ZMod qPrime) :
@@ -431,21 +426,10 @@ theorem wooleySourceInsertedNormalizedRealAverage_eq_mass_mul_raw
                       (2 * S)) := by
             apply Finset.sum_congr rfl
             intro alpha halpha
-            rw [← Finset.mul_sum]
-            rw [← Finset.sum_mul]
+            rw [← Finset.mul_sum, ← Finset.sum_mul]
             ring
       _ = _ := by
-        calc
-          _ = (wooleySourceMassSq left)⁻¹ ^ R *
-              (wooleySourceMassSq right)⁻¹ ^ S *
-                ∑ alpha : Fin k → ZMod q,
-                  ((↑(qPrime ^ r))⁻¹ : ℝ) *
-                    ∑ beta : Fin r → ZMod qPrime,
-                      ‖wooleySection7AuxiliaryRawSum
-                        leftPhi Psi left alpha beta‖ ^ (2 * R) *
-                        ‖wooleySourcePolynomialSum
-                          rightPhi right alpha‖ ^ (2 * S) :=
-            (Finset.mul_sum
+        exact ((Finset.mul_sum
               (Finset.univ : Finset (Fin k → ZMod q))
               (fun alpha =>
                 ((↑(qPrime ^ r))⁻¹ : ℝ) *
@@ -455,8 +439,7 @@ theorem wooleySourceInsertedNormalizedRealAverage_eq_mass_mul_raw
                       ‖wooleySourcePolynomialSum rightPhi right alpha‖ ^
                         (2 * S))
               ((wooleySourceMassSq left)⁻¹ ^ R *
-                (wooleySourceMassSq right)⁻¹ ^ S)).symm
-          _ = _ := by
+                (wooleySourceMassSq right)⁻¹ ^ S)).symm).trans (by
             congr 1
             exact (Finset.mul_sum
               (Finset.univ : Finset (Fin k → ZMod q))
@@ -466,7 +449,7 @@ theorem wooleySourceInsertedNormalizedRealAverage_eq_mass_mul_raw
                     leftPhi Psi left alpha beta‖ ^ (2 * R) *
                     ‖wooleySourcePolynomialSum rightPhi right alpha‖ ^
                       (2 * S))
-              ((↑(qPrime ^ r))⁻¹ : ℝ)).symm
+              ((↑(qPrime ^ r))⁻¹ : ℝ)).symm)
   rw [hsum]
   ring
 

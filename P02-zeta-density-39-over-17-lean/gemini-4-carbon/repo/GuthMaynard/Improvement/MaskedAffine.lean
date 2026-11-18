@@ -8,7 +8,7 @@ noncomputable section
 open MeasureTheory Set
 open scoped SchwartzMap FourierTransform ContDiff
 namespace GuthMaynard.Improvement
-open RiemannZeta.GuthMaynard
+open RiemannZeta.GuthMaynard GuthMaynard.NativeMoment
 
 /-- Smoothness and compact support for arbitrary integrable compact inputs;
 no regularity of a measurable mask boundary is required. -/

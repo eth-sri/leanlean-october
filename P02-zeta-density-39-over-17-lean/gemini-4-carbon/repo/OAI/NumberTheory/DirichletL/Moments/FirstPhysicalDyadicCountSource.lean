@@ -11,16 +11,14 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstPhysicalDyadicCount
-open CenteredMomentFirstPhysicalDyadicAssembly CenteredMomentFirstScale
-open CenteredMomentCanonicalFirst CenteredMomentSectorLocalization
-open CenteredMomentSourceInputFirstTailUniform
+open CenteredMomentFirstPhysicalDyadicAssembly CenteredMomentFirstScale CenteredMomentCanonicalFirst CenteredMomentSectorLocalization CenteredMomentSourceInputFirstTailUniform
 local notation "O"=>ActualEisensteinCubic.O
 
 lemma local_frequency_radius_cap (I J:Ideal O)(E:Finset (CommonIndex I J))
     (K V Z B ξ:ℝ)(hK:0<K)(hV:0≤V)(hZ:1≤Z)
     (hVcap:V≤Z^B)(hKcap:K⁻¹≤Z^B):
     frequencyRadius (firstNominalScale I J (∏P∈E,P.val) K V) Z ξ≤Z^(3*B+ξ/2) := by
-  have hz:0<Z:=zero_lt_one.trans_le hZ
+  have hz :=zero_lt_one.trans_le hZ
   have hT:V^2/K≤Z^(3*B):=by
     rw [div_eq_mul_inv]
     apply (mul_le_mul (pow_le_pow_left₀ hV hVcap 2) hKcap
@@ -30,10 +28,8 @@ lemma local_frequency_radius_cap (I J:Ideal O)(E:Finset (CommonIndex I J))
     norm_num
     ring
   unfold frequencyRadius
-  calc
-    _≤Z^(3*B)*Z^(ξ/2):=mul_le_mul_of_nonneg_right
-      ((first_nominal_scale_le I J E K V hK).trans hT) (Real.rpow_nonneg hz.le _)
-    _=_:=by rw [←Real.rpow_add hz]
+  exact (mul_le_mul_of_nonneg_right
+      ((first_nominal_scale_le I J E K V hK).trans hT) (Real.rpow_nonneg hz.le _)).trans_eq (by rw [←Real.rpow_add hz])
 
 theorem original_local_blocks_subpower (B Hcap ξ ε:ℝ)
     (hB:0≤B)(hHcap:0≤Hcap)(hξ:0≤ξ)(hε:0<ε):
@@ -46,14 +42,13 @@ theorem original_local_blocks_subpower (B Hcap ξ ε:ℝ)
   obtain ⟨C₀,hC₀,hcount⟩:=original_blocks_subpower Hcap (3*B+ξ/2) 1 ε
     hHcap (by positivity) (by norm_num) hε
   refine ⟨C₀,hC₀,?_⟩
-  filter_upwards [hcount,Filter.eventually_ge_atTop (1:ℝ)] with Z hcount hZ
+  filter_upwards [hcount,Filter.eventually_ge_atTop 1] with Z hcount hZ
   intro C D hC hD E K V H hK hV hH hVcap hKcap hHbound
   exact hcount C D hC hD E K _ H hK hH
-    (by simpa only [one_mul] using (local_frequency_radius_cap C D E K V Z B ξ
+    (by simpa using (local_frequency_radius_cap C D E K V Z B ξ
       hK hV hZ hVcap hKcap)) hHbound
 
-open CenteredMomentCommonRadialData CenteredMomentOriginalCommonHarmonic
-open CenteredMomentExceptionalAmplitudePair
+open CenteredMomentCommonRadialData CenteredMomentOriginalCommonHarmonic CenteredMomentExceptionalAmplitudePair
 
 lemma input_radius_cap {ι:Type*}[Fintype ι][DecidableEq ι]
     (hi:ι→ℝ)(b₁ b₂ B Z:ℝ)(s:Input ι)
@@ -91,7 +86,7 @@ theorem original_input_local_blocks_subpower {ι:Type*}[Fintype ι][DecidableEq 
   obtain ⟨C₀,hC₀,hcount⟩:=original_local_blocks_subpower B (B+1) ξ ε
     hB (by positivity) hξ hε
   refine ⟨C₀,hC₀,?_⟩
-  filter_upwards [hcount,Filter.eventually_ge_atTop (1:ℝ),
+  filter_upwards [hcount,Filter.eventually_ge_atTop 1,
     Filter.eventually_ge_atTop ((∏i,hi i)*b₁*b₂)] with Z hcount hZ hfixed
   intro s hhi hb₁ hb₂ hH C D hC hD E K hK hV hKi
   exact hcount C D hC hD E K _ _ hK (volume_pos s.toData).le hH hV hKi

@@ -15,8 +15,7 @@ def gaussianJointDensity (V : SchwartzMap ℝ ℂ) (hV : HasCompactSupport (V:�
 
 lemma gaussianProfile_positive_smooth : ContDiffOn ℝ ∞ gaussianMellinProfile (Set.Ioi 0) := by
   intro y hy
-  have hh := (gaussianProfile_scaled_smooth 1 (by norm_num) y hy).contDiffWithinAt (s:=Set.Ioi 0)
-  simpa only [one_mul] using hh
+  simpa using ((gaussianProfile_scaled_smooth 1 (by norm_num) y hy).contDiffWithinAt (s:=Set.Ioi 0))
 
 lemma gaussianLogWindow_eq_positive (V : SchwartzMap ℝ ℂ) (hV : HasCompactSupport (V:ℝ→ℂ))
     (R : ℝ) (hR : 0<R) : gaussianLogWindow V hV R=
@@ -57,7 +56,7 @@ theorem gaussian_coupled_family {ι : Type*} [Fintype ι]
   refine ⟨V,hV,?_,?_⟩
   · intro R hR y
     apply gaussian_coupled_separation W a y V hV R hR
-    exact FourierBridge.coupled_cutoff_active W φ a y M hwindow (by simpa only [T] using hφone)
+    exact FourierBridge.coupled_cutoff_active W φ a y M hwindow (by simpa using hφone)
   · intro A J
     obtain ⟨C,hC,hbound⟩ := gaussianLogWindow_fourier_moment V hV (T+1) (by linarith) hbox A J
     refine ⟨C,hC,?_⟩

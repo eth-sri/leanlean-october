@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaBufferedNonstationary
 public import TaoTrudgianYang2025.BetaMorseWindowIntegral
 
@@ -33,7 +43,6 @@ theorem IntervalC1Bound.fourierChar_of_closed_slope_gap
     (k := fun x => (𝐞 (φ x) : ℂ))
     (by
       intro x hx
-      have hc := (hφ x hx).continuousAt
       simp only [Real.fourierChar_apply]
       fun_prop)
     (B := 1/(lam*Real.pi)) (by
@@ -59,14 +68,13 @@ theorem norm_buffered_subinterval_nonstationary
     ‖∫ u in a..b, (modelPhaseBufferedCutoff l r η u : ℂ)*
       (𝐞 (T*F u-q*u) : ℂ)‖ ≤ 4/(lam*Real.pi) := by
   let φ : ℝ → ℝ := fun u => T*F u-q*u
-  have hs : Icc a b ⊆ Ioo (1 : ℝ) 2 :=
+  have hs : Icc a b ⊆ Ioo 1 2 :=
     fun u hu => ⟨ha.trans_le hu.1,hu.2.trans_lt hb⟩
-  have hd {u : ℝ} (hu : u ∈ Ioo (1 : ℝ) 2) :
+  have hd {u : ℝ} (hu : u ∈ Ioo 1 2) :
       deriv φ u = T*deriv F u-q := by
-    have hFu := (approximateModelPhase_contDiffAt hF hu).differentiableAt (by simp)
     simpa only [φ,mul_one,Pi.sub_def,id_eq] using
-      ((hFu.hasDerivAt.const_mul T).sub ((hasDerivAt_id u).const_mul q)).deriv
-  have hφ : ∀ u ∈ Ioo (1 : ℝ) 2, ContDiffAt ℝ 2 φ u := by
+      ((((approximateModelPhase_contDiffAt hF hu).differentiableAt (by simp)).hasDerivAt.const_mul T).sub ((hasDerivAt_id u).const_mul q)).deriv
+  have hφ : ∀ u ∈ Ioo 1 2, ContDiffAt ℝ 2 φ u := by
     intro u hu
     exact (contDiffAt_const.mul ((approximateModelPhase_contDiffAt hF hu).of_le
       (ENat.natCast_le_of_coe_top_le_withTop le_rfl 2))).sub

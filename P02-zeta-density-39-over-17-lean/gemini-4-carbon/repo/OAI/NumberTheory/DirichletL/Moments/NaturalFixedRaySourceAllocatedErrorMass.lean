@@ -1,5 +1,6 @@
 module
-public import OAI.NumberTheory.DirichletL.Moments.NaturalFixedRaySourceAllocatedProfile
+public import OAI.NumberTheory.DirichletL.Moments.NaturalFixedRaySourceDetectorProfile
+public import OAI.NumberTheory.DirichletL.Moments.AllocatedNaturalSource
 public import OAI.NumberTheory.DirichletL.Moments.OriginalReflectionErrorMass
 public import OAI.NumberTheory.DirichletL.Moments.OriginalRadialComparison
 
@@ -10,10 +11,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentNaturalFixedRaySource
-open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound
-open CenteredMomentAllocatedNaturalSource CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy
-open CenteredMomentCounting CenteredMomentAbsoluteEnergy CenteredMomentComparisonReflection
-open CenteredMomentOriginalReflectionErrorMass
+open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound CenteredMomentAllocatedNaturalSource CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy CenteredMomentCounting CenteredMomentAbsoluteEnergy CenteredMomentComparisonReflection CenteredMomentOriginalReflectionErrorMass
 local notation "O" => HeckeFamily.O
 
 theorem naturalSlot_ideal_bound (χ : Character) (pool : Finset (Ideal O))

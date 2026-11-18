@@ -23,13 +23,11 @@ theorem heathBrownShiftBound_cast_le
   let x : ℝ := 4 * ((k - 1).factorial : ℝ) /
     (lambda * (H : ℝ) ^ (k - 1))
   let Q : ℕ := ⌊x⌋₊
-  change ((min N Q : ℕ) : ℝ) ≤ x
   have hmin : min N Q ≤ Q := min_le_right _ _
   have hminCast : ((min N Q : ℕ) : ℝ) ≤ (Q : ℝ) := by
     exact_mod_cast hmin
   have hxnonneg : 0 ≤ x := by dsimp only [x]; positivity
   have hfloor : (Q : ℝ) ≤ x := by
-    dsimp only [Q]
     exact Nat.floor_le hxnonneg
   exact hminCast.trans hfloor
 
@@ -37,9 +35,7 @@ theorem inv_pow_succ_le_inv_pow
     {H r : ℕ} (hH : 1 ≤ H) :
     (((H : ℝ) ^ (r + 1))⁻¹) ≤ (((H : ℝ) ^ r)⁻¹) := by
   have hbase : (1 : ℝ) ≤ H := by exact_mod_cast hH
-  have hpow : (H : ℝ) ^ r ≤ (H : ℝ) ^ (r + 1) :=
-    pow_le_pow_right₀ hbase (Nat.le_succ r)
-  exact inv_anti₀ (by positivity) hpow
+  exact inv_anti₀ (by positivity) (pow_le_pow_right₀ hbase (Nat.le_succ r))
 
 theorem heathBrownShiftBound_cast_le_previous_power
     {N k H : ℕ} {lambda : ℝ}
@@ -74,29 +70,17 @@ theorem heathBrown_shift_plus_c_le
     (D : ℝ) + c ≤
       12 * ((k - 1).factorial : ℝ) *
         (((H : ℝ) ^ (k - 2))⁻¹) / lambda := by
-  dsimp only
   have hD := heathBrownShiftBound_cast_le_previous_power
     (N := N) (k := k) (H := H) hk hlambda hH
   have hfactNat : (k - 2).factorial ≤ (k - 1).factorial :=
     Nat.factorial_le (by omega)
-  have hfact : ((k - 2).factorial : ℝ) ≤ (k - 1).factorial := by
-    exact_mod_cast hfactNat
   have hc :
       8 * ((k - 2).factorial : ℝ) *
           (((H : ℝ) ^ (k - 2))⁻¹) / lambda ≤
         8 * ((k - 1).factorial : ℝ) *
           (((H : ℝ) ^ (k - 2))⁻¹) / lambda := by
     gcongr
-  calc
-    (heathBrownShiftBound N k H lambda : ℝ) +
-        8 * ((k - 2).factorial : ℝ) *
-          (((H : ℝ) ^ (k - 2))⁻¹) / lambda ≤
-      4 * ((k - 1).factorial : ℝ) *
-          (((H : ℝ) ^ (k - 2))⁻¹) / lambda +
-        8 * ((k - 1).factorial : ℝ) *
-          (((H : ℝ) ^ (k - 2))⁻¹) / lambda := add_le_add hD hc
-    _ = 12 * ((k - 1).factorial : ℝ) *
-        (((H : ℝ) ^ (k - 2))⁻¹) / lambda := by ring
+  exact (add_le_add hD hc).trans_eq (by ring)
 
 theorem heathBrown_b_plus_aD_le
     {N k H : ℕ} {A lambda : ℝ}
@@ -114,14 +98,14 @@ theorem heathBrown_b_plus_aD_le
     have hHone : (1 : ℝ) ≤ H := by exact_mod_cast (by omega : 1 ≤ H)
     have hHcast : (8 : ℝ) ≤ H := by exact_mod_cast hH
     have hpow : (H : ℝ) ≤ (H : ℝ) ^ (k - 2) := by
-      simpa only [pow_one] using
+      simpa using
         pow_le_pow_right₀ hHone (by omega : 1 ≤ k - 2)
     exact hHcast.trans hpow
   have hpowPos : 0 < (H : ℝ) ^ (k - 2) := by positivity
   have hb : 8 * (((H : ℝ) ^ (k - 2))⁻¹) + 3 ≤ 4 := by
     have h8div : 8 / ((H : ℝ) ^ (k - 2)) ≤ 1 := by
       rw [div_le_iff₀ hpowPos]
-      simpa only [one_mul] using hpowLower
+      simpa using hpowLower
     rw [← div_eq_mul_inv]
     linarith
   have hD := heathBrownShiftBound_cast_le

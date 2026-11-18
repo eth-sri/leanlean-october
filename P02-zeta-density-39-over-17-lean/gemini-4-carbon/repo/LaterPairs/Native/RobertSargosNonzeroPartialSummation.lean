@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.RobertSargosCorrelationBoundary
 public import LaterPairs.Native.RobertSargosNonzeroShiftReorder
 public import LaterPairs.Native.RobertSargosPhysicalNonzeroShiftedTriple
@@ -47,7 +56,7 @@ theorem robertSargos_overlap_sum_range {A : Type*} [AddCommMonoid A]
       ∑ y ∈ Finset.range (robertSargosHOverlap H r).card,
         v (max (H:ℤ) (H-r)+y) := by
   rw [robertSargosHOverlap,sargos_sum_Icc_eq_range]
-  simp only [Int.card_Icc]
+  simp
 
 theorem robertSargos_nonzero_triple_rectangles (f : ℝ → ℝ)
     (H Q N : ℕ) (r m : ℤ) :
@@ -72,7 +81,7 @@ theorem robertSargos_nonzero_triple_rectangles (f : ℝ → ℝ)
   rw [robertSargos_nonzero_q_split]
   simp_rw [robertSargos_overlap_sum_range,sargos_sum_Icc_eq_range]
   have hn : ((N:ℤ)+1-1).toNat = N := by omega
-  simp only [hn,Int.cast_add,Int.cast_sub,Int.cast_one,Int.cast_natCast]
+  simp
 
 theorem robertSargos_overlap_rectangle_bounds (H : ℕ) (r : ℤ)
     (hne : (robertSargosHOverlap H r).Nonempty) :
@@ -131,7 +140,7 @@ theorem robertSargos_physical_nonzero_common_prefix
         ∑ m ∈ robertSargosCommonMInterval M H Q Q,
           ‖robertSargosSignedPolynomialPrefix f H Q r m positive X Y N‖ := by
   let S := robertSargosCommonMInterval M H Q Q
-  let B : ℝ := ((max (H:ℤ) (H-r):ℤ):ℝ)
+  let B := ((max (H:ℤ) (H-r):ℤ):ℝ)
   let Y := (robertSargosHOverlap H r).card
   let D := 16*(1+648*Real.pi*C)^3
   let W := fun (positive : Bool) (m : ℤ) =>
@@ -156,14 +165,14 @@ theorem robertSargos_physical_nonzero_common_prefix
   have hXp : 0 < Q-1 := by omega
   have hYp : 0 < Y := by omega
   have hQp : 0 < Q := by omega
-  have hne : (robertSargosHOverlap H r).Nonempty := Finset.card_pos.mp hYp
+  have hne := Finset.card_pos.mp hYp
   obtain ⟨hBlo,hBhi,hBrlo,hBrhi⟩ := robertSargos_overlap_rectangle_bounds H r hne
   have hHQ : H ≤ Q := by
     have h := robertSargos_floor_half_height hlam hsmall hH
     rw [← hQeq] at h
     have h' : (H:ℝ) ≤ Q := by linarith [Nat.cast_nonneg (α := ℝ) H]
     exact_mod_cast h'
-  have hYQ : Y ≤ Q := (robertSargos_h_overlap_card H r).trans hHQ
+  have hYQ := (robertSargos_h_overlap_card H r).trans hHQ
   have hXm : ((Q-1:ℕ):ℝ) = (Q:ℝ)-1 := by
     rw [Nat.cast_sub (by omega : 1 ≤ Q),Nat.cast_one]
   have hrect (b : Bool) :

@@ -48,7 +48,7 @@ theorem markedCompletedT_prime_product_twists {ι : Type*}
   have he : markedCompletedT Ψ W X
       (fun A => ∏ i ∈ S, if Ideal.span {p i} ∣ A then 1 else 0) =
       markedCompletedT Ψ W X (fun A =>
-        ∑ T ∈ S.powerset, (-1 : ℂ) ^ T.card *
+        ∑ T ∈ S.powerset, (-1) ^ T.card *
           (∏ i ∈ T, coprimalityMask (p i)) (primaryGenerator A)) := by
     apply markedCompletedT_congr_primary
     intro A hA

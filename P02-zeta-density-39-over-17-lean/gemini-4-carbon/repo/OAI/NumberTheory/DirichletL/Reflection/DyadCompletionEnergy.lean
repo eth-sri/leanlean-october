@@ -73,7 +73,7 @@ theorem physical_dyad_selection_energy (E : ℝ→ℝ) (hE : ∀ θ,0≤E θ)
           apply Finset.sum_eq_zero
           intro p hp
           exact (hj ⟨p.val,p.property⟩).elim
-        simp_rw [hzero,norm_zero,zero_pow (by norm_num : (2:ℕ)≠0),Finset.sum_const_zero]
+        simp_rw [hzero,norm_zero,zero_pow (by norm_num : 2≠0),Finset.sum_const_zero]
         exact hE θ
     · let D : CellCompletion (N:=N) (a:=a) (c:=c) (mode:=mode) G rows hrows tuples hmax hgood Hrow Hslot i j :=
         fun K p hp => (hi ⟨K.val,K.property⟩).elim

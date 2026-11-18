@@ -23,21 +23,21 @@ theorem exists_shellIndex {U : Finset ℝ} {x : ℝ} (hx : 1 ≤ x) (hxU : x ≤
   have hxp : 0 < ⌊x⌋₊ := (Nat.one_le_floor_iff x).2 hx
   have hDp : 0 < ⌊intervalSpan U⌋₊ := (Nat.one_le_floor_iff _).2 (hx.trans hxU)
   have hb := log2_block_bounds hxp
-  have hlow : (2 : ℝ)^⌊x⌋₊.log2 ≤ x := by
-    have hh : (2 : ℝ)^⌊x⌋₊.log2 ≤ (⌊x⌋₊ : ℝ) := by exact_mod_cast hb.1
+  have hlow : 2^⌊x⌋₊.log2 ≤ x := by
+    have hh : 2^⌊x⌋₊.log2 ≤ (⌊x⌋₊ : ℝ) := by exact_mod_cast hb.1
     exact hh.trans (Nat.floor_le (by linarith))
   refine ⟨⌊x⌋₊.log2, ?_, hlow, ?_⟩
   · apply Finset.mem_filter.mpr
     refine ⟨Finset.mem_range.mpr ?_, hlow.trans hxU⟩
     have hh := (Nat.le_log2 hDp.ne').2 (hb.1.trans (Nat.floor_mono hxU))
     omega
-  · have hi : (⌊x⌋₊ : ℝ)+1 ≤ 2*(2 : ℝ)^⌊x⌋₊.log2 := by exact_mod_cast hb.2
+  · have hi : (⌊x⌋₊ : ℝ)+1 ≤ 2*2^⌊x⌋₊.log2 := by exact_mod_cast hb.2
     exact (Nat.lt_floor_add_one x).trans_le hi
 
 theorem shellIndices_sum_le (U : Finset ℝ) :
     (∑ k ∈ shellIndices U, (2 : ℝ)^k) ≤ 2*localDiameter U := by
   let n := ⌊intervalSpan U⌋₊
-  have hn : (n : ℝ) ≤ intervalSpan U := Nat.floor_le (intervalSpan_nonneg U)
+  have hn := Nat.floor_le (intervalSpan_nonneg U)
   have hpow : (2 : ℝ)^n.log2 ≤ localDiameter U := by
     by_cases hp : 0 < n
     · have hh : (2 : ℝ)^n.log2 ≤ n := by exact_mod_cast (log2_block_bounds hp).1

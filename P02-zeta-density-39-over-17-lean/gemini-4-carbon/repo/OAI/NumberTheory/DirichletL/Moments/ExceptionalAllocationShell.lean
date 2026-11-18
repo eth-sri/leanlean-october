@@ -9,9 +9,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentExceptionalAllocationShell
-open CenteredMomentActiveDivisorShell CenteredMomentDivisorAllocation
-open CenteredMomentDivisorRaw CenteredMomentDivisorBoundary CenteredMomentSlotRatios
-open CenteredMomentUniformDivisorShell
+open CenteredMomentActiveDivisorShell CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentDivisorBoundary CenteredMomentSlotRatios CenteredMomentUniformDivisorShell
 local notation "O" => ActualEisensteinCubic.O
 
 lemma exact_max_cancellation (r r₁ : ℝ) :
@@ -38,7 +36,7 @@ theorem active_exceptional_weight {ι κ : Type*} [Fintype ι] [Fintype κ]
     (b : Allocation D (Finset.univ : Finset (κ⊕Fin 2)))
     (_ha : a∈s.active D) (hb : b∈v.active D) (Z r : ℝ) (hZ : 1<Z) :
     exceptionalWeight s v D a b Z r ≤ Z^(v.allowance Z-r)/(Ideal.absNorm D:ℝ) := by
-  have hz : 0<Z := zero_lt_one.trans hZ
+  have hz := zero_lt_one.trans hZ
   have hn : (0:ℝ)<Ideal.absNorm D := by
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hD.ne_zero)
   have hv := v.active_boundary D hD b hb Z hZ
@@ -66,8 +64,7 @@ theorem actual_exceptional_shell {ι κ : Type*} [Fintype ι] [Fintype κ]
     (ι:=κ⊕Fin 2) (N+2) (by omega) ε hε
   refine ⟨256*C₁*C₂,by positivity,?_⟩
   intro s v Ds hD T Z r hT hZ hlo hhi
-  have ht : 0<T := zero_lt_one.trans_le hT
-  have hz : 0<Z := zero_lt_one.trans hZ
+  have ht := zero_lt_one.trans_le hT
   have hc₁ (D : Ideal O) (hd : D∈Ds) : ((s.active D).card:ℝ)≤C₁*(Ideal.absNorm D:ℝ)^ε := by
     apply (show ((s.active D).card:ℝ)≤Fintype.card (Allocation D (Finset.univ:Finset (ι⊕Fin 2))) by
       exact_mod_cast Finset.card_le_univ _).trans
@@ -83,11 +80,9 @@ theorem actual_exceptional_shell {ι κ : Type*} [Fintype ι] [Fintype κ]
   have hp (D : Ideal O) (hd : D∈Ds) :
       (∑a∈s.active D,∑b∈v.active D,exceptionalWeight s v D a b Z r)≤
         (C₁*C₂)*(2*T)^(2*ε)*(Z^(v.allowance Z-r)/T) := by
-    have hn : (0:ℝ)<Ideal.absNorm D := ht.trans_le (hlo D hd)
+    have hn := ht.trans_le (hlo D hd)
     have he : (Ideal.absNorm D:ℝ)^ε*(Ideal.absNorm D:ℝ)^ε=(Ideal.absNorm D:ℝ)^(2*ε) := by
       rw [←Real.rpow_add hn]; congr 1; ring
-    have hpow : (Ideal.absNorm D:ℝ)^(2*ε)≤(2*T)^(2*ε) :=
-      Real.rpow_le_rpow hn.le (hhi D hd).le (by positivity)
     calc
       _ ≤ ∑_a∈s.active D,∑_b∈v.active D,Z^(v.allowance Z-r)/(Ideal.absNorm D:ℝ) :=
         Finset.sum_le_sum (fun a ha=>Finset.sum_le_sum (fun b hb=>
@@ -97,8 +92,8 @@ theorem actual_exceptional_shell {ι κ : Type*} [Fintype ι] [Fintype κ]
           (Z^(v.allowance Z-r)/(Ideal.absNorm D:ℝ)) :=
         mul_le_mul_of_nonneg_right (mul_le_mul (hc₁ D hd) (hc₂ D hd) (by positivity) (by positivity)) (by positivity)
       _ = (C₁*C₂)*(Ideal.absNorm D:ℝ)^(2*ε)*(Z^(v.allowance Z-r)/(Ideal.absNorm D:ℝ)) := by rw [←he]; ring
-      _ ≤ _ := mul_le_mul (mul_le_mul_of_nonneg_left hpow (by positivity))
-        (div_le_div_of_nonneg_left (Real.rpow_nonneg hz.le _) ht (hlo D hd)) (by positivity) (by positivity)
+      _ ≤ _ := mul_le_mul (mul_le_mul_of_nonneg_left (Real.rpow_le_rpow hn.le (hhi D hd).le (by positivity)) (by positivity))
+        (div_le_div_of_nonneg_left (Real.rpow_nonneg (zero_lt_one.trans hZ).le _) ht (hlo D hd)) (by positivity) (by positivity)
   calc
     _ ≤ ∑_D∈Ds,(C₁*C₂)*(2*T)^(2*ε)*(Z^(v.allowance Z-r)/T) := Finset.sum_le_sum hp
     _ = (Ds.card:ℝ)*((C₁*C₂)*(2*T)^(2*ε)*(Z^(v.allowance Z-r)/T)) := by simp

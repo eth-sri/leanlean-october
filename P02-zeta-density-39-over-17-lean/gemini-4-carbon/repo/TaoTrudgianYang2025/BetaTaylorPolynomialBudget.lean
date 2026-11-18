@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaTaylorPolynomialRemainder
 
 @[expose] public section
@@ -24,27 +34,22 @@ theorem abs_finiteTaylorPolynomial_le
     (hD : 1 ≤ D) (hx : |x-a| ≤ D)
     (hb : ∀ j ≤ Q, |iteratedDeriv j f a| ≤ M) :
     |finiteTaylorPolynomial f Q a x| ≤ (Q+1 : ℕ)*D^Q*M := by
-  have hM : 0 ≤ M := (abs_nonneg _).trans (hb 0 (Nat.zero_le Q))
   rw [finiteTaylorPolynomial,taylor_within_apply]
   calc
     _ ≤ ∑ j ∈ Finset.range (Q+1),
         |((j.factorial : ℝ)⁻¹*(x-a)^j)*iteratedDeriv j f a| := by
-      simpa only [smul_eq_mul,iteratedDerivWithin_univ] using
+      simpa using
         Finset.abs_sum_le_sum_abs (fun j => ((j.factorial : ℝ)⁻¹*(x-a)^j)*
           iteratedDeriv j f a) (Finset.range (Q+1))
     _ ≤ ∑ _j ∈ Finset.range (Q+1), D^Q*M := by
       apply Finset.sum_le_sum
       intro j hj
-      have hjQ : j ≤ Q := Nat.lt_succ_iff.mp (Finset.mem_range.mp hj)
-      have hfac : (1 : ℝ) ≤ (j.factorial : ℝ) := by
+      have hjQ := Nat.lt_succ_iff.mp (Finset.mem_range.mp hj)
+      have hfac : 1 ≤ (j.factorial : ℝ) := by
         exact_mod_cast Nat.succ_le_of_lt (Nat.factorial_pos j)
-      have hinv : (j.factorial : ℝ)⁻¹ ≤ 1 :=
-        (inv_le_one₀ (Nat.cast_pos.mpr (Nat.factorial_pos j))).mpr hfac
-      have hp : |x-a|^j ≤ D^Q :=
-        (pow_le_pow_left₀ (abs_nonneg _) hx j).trans (pow_le_pow_right₀ hD hjQ)
       rw [abs_mul,abs_mul,abs_inv,Nat.abs_cast,abs_pow]
       have hc : (j.factorial : ℝ)⁻¹*|x-a|^j ≤ D^Q := by
-        exact (mul_le_mul hinv hp (pow_nonneg (abs_nonneg _) j) zero_le_one).trans_eq (one_mul _)
+        exact (mul_le_mul ((inv_le_one₀ (Nat.cast_pos.mpr (Nat.factorial_pos j))).mpr hfac) ((pow_le_pow_left₀ (abs_nonneg _) hx j).trans (pow_le_pow_right₀ hD hjQ)) (pow_nonneg (abs_nonneg _) j) zero_le_one).trans_eq (one_mul _)
       exact mul_le_mul hc (hb j hjQ) (abs_nonneg _) (pow_nonneg (zero_le_one.trans hD) Q)
     _ = _ := by rw [Finset.sum_const,Finset.card_range,nsmul_eq_mul]; ring
 
@@ -56,7 +61,7 @@ theorem abs_iteratedDeriv_finiteTaylorPolynomial_le
   rw [iteratedDeriv_finiteTaylorPolynomial f a hn]
   have h := abs_finiteTaylorPolynomial_le (f := iteratedDeriv n f) (M := M) (Q-n) hD hx ?_
   · have hM : 0 ≤ M := (abs_nonneg _).trans (hb 0 (Nat.zero_le Q))
-    have hcount : ((Q-n+1 : ℕ) : ℝ) ≤ ((Q+1 : ℕ) : ℝ) := by exact_mod_cast (show Q-n+1 ≤ Q+1 by omega)
+    have hcount : ((Q-n+1 : ℕ) : ℝ) ≤ ((Q+1 : ℕ) : ℝ) := by exact_mod_cast (by omega)
     have hp := pow_le_pow_right₀ hD (Nat.sub_le Q n)
     exact h.trans (mul_le_mul_of_nonneg_right
       (mul_le_mul hcount hp (pow_nonneg (zero_le_one.trans hD) _) (Nat.cast_nonneg _)) hM)

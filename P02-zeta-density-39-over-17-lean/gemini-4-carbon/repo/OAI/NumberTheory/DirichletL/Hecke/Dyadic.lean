@@ -73,8 +73,7 @@ theorem series_eq_tsum (χ : Character) (inverse : Bool) {s : ℂ} (hs : 1 < s.r
     rw [← he]
     apply tsum_congr
     intro I
-    have hI : I.val ≠ 0 := I.property
-    rw [CubicEisenstein.fullIdealWeight, ite_eq_right hI]
+    rw [CubicEisenstein.fullIdealWeight, ite_eq_right (I.property)]
     simp only [norm, Complex.ofReal_natCast]
   rw [hc]
   cases inverse

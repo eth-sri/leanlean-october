@@ -11,9 +11,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyReferenceState
-open HeckeFamily ConcreteTraceCRT CenteredMomentEnergyState
-open CenteredMomentRadialEligibleEnergy CenteredMomentOriginalRadialComparison
-open CenteredMomentNaturalRowSource CenteredMomentAllocatedNaturalRadial
+open HeckeFamily ConcreteTraceCRT CenteredMomentEnergyState CenteredMomentRadialEligibleEnergy CenteredMomentOriginalRadialComparison CenteredMomentNaturalRowSource CenteredMomentAllocatedNaturalRadial
 local notation "O"=>HeckeFamily.O
 
 def effectiveRadial (r:Radial):Radial:=

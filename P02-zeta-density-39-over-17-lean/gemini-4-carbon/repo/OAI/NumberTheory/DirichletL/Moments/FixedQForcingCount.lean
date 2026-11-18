@@ -10,13 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFixedQForcingCount
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge
-open CenteredMomentForcing CenteredMomentChildRows CenteredMomentRankinRadical
-open CenteredMomentSecondExceptionalCount CenteredMomentCanonicalFirst
-open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalNonunit
-open CenteredMomentSecondCanonicalLedger CenteredMomentSupport
-open CenteredMomentSourceRow
-open UniqueFactorizationMonoid IdealMobiusDivisorSum
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge CenteredMomentForcing CenteredMomentChildRows CenteredMomentRankinRadical CenteredMomentSecondExceptionalCount CenteredMomentCanonicalFirst CenteredMomentSecondCanonical CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalLedger CenteredMomentSupport CenteredMomentSourceRow UniqueFactorizationMonoid IdealMobiusDivisorSum
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
@@ -57,22 +51,15 @@ lemma goodIdeal_ne_zero (Q : Ideal O) (P : ι → Ideal O) (hp : ∀ i, Prime (P
     (c d : ι → ℕ) (V : Finset ι) : goodIdeal Q P c d V ≠ 0 :=
   Finset.prod_ne_zero_iff.mpr (fun i _ => (hp i).ne_zero)
 
-lemma good_valuation_two (Q : Ideal O) (P : ι → Ideal O) (hp : ∀ i, Prime (P i))
-    (hinj : Function.Injective P) (c d : ι → ℕ) (V : Finset ι) (i : ι)
-    (hi : i ∈ goodSet Q P c d V) :
-    CenteredExceptionalCount.valuation (movingIdeal P c d V) (P i) = 2 :=
-  forcing_valuation_two P hp hinj c d V i (Finset.mem_filter.mp hi).1
 
 omit [Fintype ι] [DecidableEq ι] in
 lemma forcing_split (Q : Ideal O) (P : ι → Ideal O) (c d : ι → ℕ) (V : Finset ι) :
-    goodIdeal Q P c d V * excludedIdeal Q P c d V = forcingIdeal P c d V := by
-  exact Finset.prod_filter_mul_prod_filter_not _ _ _
+    goodIdeal Q P c d V * excludedIdeal Q P c d V = forcingIdeal P c d V := Finset.prod_filter_mul_prod_filter_not _ _ _
 
 lemma prime_dvd_of_not_coprime (Q P : Ideal O) (hP : Prime P) (h : ¬IsCoprime Q P) : P ∣ Q := by
   let : P.IsMaximal := (Ideal.isPrime_of_prime hP).isMaximal hP.ne_zero
   have hs : Q ⊔ P ≠ ⊤ := by simpa only [Ideal.isCoprime_iff_sup_eq] using h
-  have he : P = Q ⊔ P := Ideal.IsMaximal.eq_of_le inferInstance hs le_sup_right
-  exact Ideal.dvd_iff_le.mpr (le_sup_left.trans_eq he.symm)
+  exact Ideal.dvd_iff_le.mpr (le_sup_left.trans_eq (Ideal.IsMaximal.eq_of_le inferInstance hs le_sup_right).symm)
 
 omit [Fintype ι] [DecidableEq ι] in
 lemma excludedIdeal_dvd_radical (Q : Ideal O) (hQ : Q ≠ 0)
@@ -82,10 +69,9 @@ lemma excludedIdeal_dvd_radical (Q : Ideal O) (hQ : Q ≠ 0)
     (prime_product_squarefree P hp hinj _)).mpr
   intro R hR
   obtain ⟨i,hi,rfl⟩ := prime_product_mem P hp _ R (Multiset.mem_toFinset.mp hR)
-  have hd := prime_dvd_of_not_coprime Q (P i) (hp i) (Finset.mem_filter.mp hi).2
   have hm : P i ∈ IdealMobiusDivisorSum.primeSupport Q := by
     simpa only [IdealMobiusDivisorSum.primeSupport, Multiset.mem_toFinset, mem_normalizedFactors_iff hQ,
-      hp i, true_and] using hd
+      hp i, true_and] using (prime_dvd_of_not_coprime Q (P i) (hp i) (Finset.mem_filter.mp hi).2)
   exact Finset.dvd_prod_of_mem id (Finset.mem_inter.mpr ⟨hm,hm⟩)
 
 omit [Fintype ι] [DecidableEq ι] in
@@ -102,12 +88,8 @@ lemma forcing_norm_le (Q : Ideal O) (hQ : Q ≠ 0)
     (c d : ι → ℕ) (V : Finset ι) :
     (Ideal.absNorm (forcingIdeal P c d V) : ℝ) ≤
       (Ideal.absNorm (goodIdeal Q P c d V) : ℝ) * Ideal.absNorm (commonRadical Q Q) := by
-  have hd := map_dvd Ideal.absNorm (forcing_dvd_good_mul_radical Q hQ P hp hinj c d V)
-  have hn : (goodIdeal Q P c d V) * commonRadical Q Q ≠ 0 :=
-    mul_ne_zero (goodIdeal_ne_zero Q P hp c d V) (commonRadical_ne_zero Q Q)
-  have hh := Nat.le_of_dvd (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hn)) hd
   exact_mod_cast (show Ideal.absNorm (forcingIdeal P c d V) ≤
-    Ideal.absNorm (goodIdeal Q P c d V) * Ideal.absNorm (commonRadical Q Q) by simpa using hh)
+    Ideal.absNorm (goodIdeal Q P c d V) * Ideal.absNorm (commonRadical Q Q) by simpa using (Nat.le_of_dvd (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr (mul_ne_zero (goodIdeal_ne_zero Q P hp c d V) (commonRadical_ne_zero Q Q)))) (map_dvd Ideal.absNorm (forcing_dvd_good_mul_radical Q hQ P hp hinj c d V))))
 
 lemma fixed_radical_power_loss (Z M f g r : ℝ) (hZ : 1 < Z)
     (hf : 0 < f) (hg : 0 < g) (hr : 0 < r) (hfg : f ≤ g*r) :
@@ -146,8 +128,7 @@ theorem actual_forcing_exceptional_count_fixedQ (p : ι → O)
     apply Ideal.span_singleton_eq_bot.not.mp
     rw [movingElement_span]
     exact movingIdeal_ne_zero _ hp c d V
-  have hG0 : G ≠ 0 := goodIdeal_ne_zero Q P hp c d V
-  have hGn : (0:ℝ) < Ideal.absNorm G := CenteredExceptionalCount.norm_pos hG0
+  have hGn := CenteredExceptionalCount.norm_pos (goodIdeal_ne_zero Q P hp c d V)
   have hb := separated_exceptional_count η χ Q hQ0 hQ hQ72
     m (movingElement p c d V) e hm hA hmLam hm2 he rows hrows hex G
     (goodIdeal_squarefree Q P hp hinj c d V) (by
@@ -156,7 +137,7 @@ theorem actual_forcing_exceptional_count_fixedQ (p : ι → O)
       obtain ⟨hif,hQi⟩ := Finset.mem_filter.mp hi
       obtain ⟨hl,h2,hd⟩ := hgood i hif
       refine ⟨hl,h2,hQi,hd,?_⟩
-      rw [movingElement_span,good_valuation_two Q P hp hinj c d V i hi])
+      rw [movingElement_span,(forcing_valuation_two P hp hinj c d V i (Finset.mem_filter.mp hi).1)])
     Z Cr M (2*Real.logb Z (Ideal.absNorm G:ℝ)) (zero_lt_one.trans hZ) hCr (by
       rw [show (2*Real.logb Z (Ideal.absNorm G:ℝ))/2=Real.logb Z (Ideal.absNorm G:ℝ) by ring,
         Real.rpow_logb (zero_lt_one.trans hZ) hZ.ne' hGn]) hN
@@ -168,17 +149,10 @@ theorem actual_forcing_exceptional_count_fixedQ (p : ι → O)
   have hf : (0:ℝ) < Ideal.absNorm (forcingIdeal P c d V) := by
     apply CenteredExceptionalCount.norm_pos
     exact Finset.prod_ne_zero_iff.mpr (fun i _ => (hp i).ne_zero)
-  have hr : (0:ℝ) < Ideal.absNorm (commonRadical Q Q) :=
-    CenteredExceptionalCount.norm_pos (commonRadical_ne_zero Q Q)
-  have hs := fixed_radical_power_loss Z M _ _ _ hZ hf hGn hr
+  have hs := fixed_radical_power_loss Z M _ _ _ hZ hf hGn (CenteredExceptionalCount.norm_pos (commonRadical_ne_zero Q Q))
     (forcing_norm_le Q hQ0 P hp hinj c d V)
   apply hb'.trans
-  calc
-    _ ≤ (768*(6:ℝ)^(normalizedFactors Q).toFinset.card*Cr^(1/6:ℝ))*
-        ((Ideal.absNorm (commonRadical Q Q):ℝ)^(2/3:ℝ)*
-          Z^((M-4*Real.logb Z (Ideal.absNorm (forcingIdeal P c d V):ℝ))/6)) :=
-      mul_le_mul_of_nonneg_left hs (by positivity)
-    _ = _ := by ring
+  exact (mul_le_mul_of_nonneg_left hs (by positivity)).trans_eq (by ring)
 
 theorem actual_canonical_exceptional_count_fixedQ (η : Character) (χ : RayFourExpansion.RayCharacter)
     (C D : Ideal O) (hC : Supported C) (U : Finset (CommonIndex C D))

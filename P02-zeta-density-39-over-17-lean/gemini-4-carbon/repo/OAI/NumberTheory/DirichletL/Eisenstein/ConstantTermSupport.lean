@@ -7,78 +7,13 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 
 namespace CubicEisenstein
-open MeasureTheory Set Filter
-open scoped BigOperators Classical
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal UniqueFactorizationMonoid
+open CubicJacobiGlobal
 
 lemma multiset_cube_remainder {α : Type*} [DecidableEq α] (s : Multiset α) (p : α)
     (hdiv : ∀ q, q ≠ p → 3 ∣ s.count q) :
@@ -105,18 +40,16 @@ lemma constant_coefficient_unramified_count [NormalizationMonoid O]
     (q : O) (hq : q ≠ normalize lambda) : 3 ∣ (normalizedFactors c).count q := by
   by_cases hmem : q ∈ normalizedFactors c
   · have hprime := prime_of_normalized_factor q hmem
-    let P : Ideal O := Ideal.span {q}
+    let P := Ideal.span {q}
     let : P.IsMaximal := PrincipalIdealRing.isMaximal_of_irreducible hprime.irreducible
     have hg : lambda ∉ P := by
       intro hl
-      have ha : Associated q lambda :=
-        hprime.associated_of_dvd residue_lambda_prime (Ideal.mem_span_singleton.mp hl)
       apply hq
       exact (normalize_normalized_factor q hmem).symm.trans
-        (normalize_eq_normalize_iff_associated.mpr ha)
+        (normalize_eq_normalize_iff_associated.mpr (hprime.associated_of_dvd residue_lambda_prime (Ideal.mem_span_singleton.mp hl)))
     obtain ⟨p,hP,hprimary,-⟩ := cubicJacobi_exists_primary_generator P hg
-    have hqp : Associated q p := Ideal.span_singleton_eq_span_singleton.mp hP
-    have hp : Prime p := hqp.prime_iff.mp hprime
+    have hqp := Ideal.span_singleton_eq_span_singleton.mp hP
+    have hp := hqp.prime_iff.mp hprime
     obtain ⟨b,hfactor,hpb⟩ := (FiniteMultiplicity.of_prime_left hp hc).exists_eq_pow_mul_and_not_dvd
     have hd := constant_coefficient_primary_prime_exponent c p b (multiplicity p c)
       hc hlevel hp hprimary hpb hfactor hA
@@ -138,9 +71,7 @@ theorem constant_coefficient_cube_reduction (c : O) (hc : c ≠ 0)
   have hprod : s.prod=(normalize lambda)^r*t.prod^3 := by
     rw [ht,Multiset.prod_add,Multiset.prod_nsmul,Multiset.prod_singleton,Multiset.prod_nsmul]
   have hassoc : Associated (lambda^r*t.prod^3) c := by
-    have hnorm : Associated ((normalize lambda)^r*t.prod^3) (lambda^r*t.prod^3) :=
-      (normalize_associated lambda).pow_pow.mul_right _
-    apply hnorm.symm.trans
+    apply ((normalize_associated lambda).pow_pow.mul_right _).symm.trans
     rw [← hprod]
     exact prod_normalizedFactors hc
   obtain ⟨u,hu⟩ := hassoc
@@ -151,7 +82,7 @@ theorem constant_coefficient_cube_reduction (c : O) (hc : c ≠ 0)
 end
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicRamified
+open CubicJacobiGlobal CubicRamified
 
 lemma constant_coefficient_ramified_equation (c : O) (hc : c ≠ 0) (hlevel : (3:O) ∣ c)
     (hA : arithmeticResidueSum 0 c ≠ 0) (u : Oˣ) (r : ℕ) (a : O) (ha : a ≠ 0)
@@ -214,9 +145,8 @@ theorem arithmeticResidueSum_ne_zero_implies_cube (c : O) (hc : c ≠ 0)
     intro hz
     rw [hz,zero_pow (by decide : (3:ℕ) ≠ 0),mul_zero] at hfactor
     exact hc hfactor
-  have h01 := constant_coefficient_ramified_equation c hc hlevel hA u r a ha hfactor 0 1
   have husign := unit_eq_sign_of_symbol_class u (by
-    simpa only [cubicExp_zero,one_pow,mul_one] using h01)
+    simpa only [cubicExp_zero,one_pow,mul_one] using (constant_coefficient_ramified_equation c hc hlevel hA u r a ha hfactor 0 1))
   have h10 := constant_coefficient_ramified_equation c hc hlevel hA u r a ha hfactor 1 0
   have hωr : omega^r=1 := by
     rcases husign with hu | hu
@@ -224,7 +154,7 @@ theorem arithmeticResidueSum_ne_zero_implies_cube (c : O) (hc : c ≠ 0)
         cubicExp,Int.reduceMod,Int.toNat_one,pow_one] using h10
     · simpa only [hu,symbol_neg_one _ (primaryCoord_primary 1 0),one_mul,
         cubicExp,Int.reduceMod,Int.toNat_one,pow_one] using h10
-  have hdiv : 3 ∣ r := (omega_primitive.pow_eq_one_iff_dvd r).mp hωr
+  have hdiv := (omega_primitive.pow_eq_one_iff_dvd r).mp hωr
   have hr0 : r=0 := by omega
   rw [hr0,pow_zero,mul_one] at hfactor
   rcases husign with hu | hu
@@ -236,7 +166,7 @@ theorem arithmeticResidueSum_ne_zero_implies_cube (c : O) (hc : c ≠ 0)
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
+open CubicJacobiGlobal
 
 theorem arithmeticResidueSum_ne_zero_iff_cube (c : O) (hc : c ≠ 0) (hlevel : (3:O) ∣ c) :
     arithmeticResidueSum 0 c ≠ 0 ↔ ∃ a : O,c=a^3 := by
@@ -248,11 +178,10 @@ theorem arithmeticResidueSum_ne_zero_iff_cube (c : O) (hc : c ≠ 0) (hlevel : (
 
 end CubicEisenstein
 
-open scoped BigOperators Classical
 namespace CanonicalQuadraticSieve
 
 section
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge
+open CompletedGauss ConcretePrimeRowBridge
 
 def idealZeroMask (D : Ideal O) (z : O) : ℂ :=
   if ∃ P ∈ UniqueFactorizationMonoid.normalizedFactors D, z ∈ P then 0 else 1
@@ -263,8 +192,7 @@ theorem idealSupport_singleton_univ (D : Ideal O) :
   intro P
   apply (mem_idealSupport_iff {D} D P).mpr
   obtain ⟨I, hI, hP⟩ := mem_primePool_iff.mp P.property
-  have hID : I = D := Finset.mem_singleton.mp hI
-  simpa only [hID] using hP
+  simpa only [(Finset.mem_singleton.mp hI)] using hP
 
 theorem singleton_rowCoprimeMask_eq_idealZeroMask (D : Ideal O) (z : O) :
     rowCoprimeMask (fun P : primePool {D} => P.val) Finset.univ z = idealZeroMask D z := by
@@ -273,11 +201,9 @@ theorem singleton_rowCoprimeMask_eq_idealZeroMask (D : Ideal O) (z : O) :
     constructor
     · rintro ⟨P, _, hz⟩
       obtain ⟨I, hI, hP⟩ := mem_primePool_iff.mp P.property
-      have hID : I = D := Finset.mem_singleton.mp hI
-      exact ⟨P.val, hID ▸ hP, hz⟩
+      exact ⟨P.val, (Finset.mem_singleton.mp hI) ▸ hP, hz⟩
     · rintro ⟨P, hP, hz⟩
-      have hp : P ∈ primePool {D} := mem_primePool_iff.mpr ⟨D, Finset.mem_singleton_self D, hP⟩
-      exact ⟨⟨P, hp⟩, Finset.mem_univ _, hz⟩
+      exact ⟨⟨P, (mem_primePool_iff.mpr ⟨D, Finset.mem_singleton_self D, hP⟩)⟩, Finset.mem_univ _, hz⟩
   simp only [rowCoprimeMask, idealZeroMask, he]
 
 theorem canonical_quadraticRow_star (D : Ideal O) (hD : Admissible D) (z : O) :
@@ -345,8 +271,7 @@ theorem gcdMaskPrimes_mask (D : Ideal O) (z : O) :
 end
 section
 
-open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss ConcretePrimeRowBridge ActualEisensteinCoordinates
-open EisensteinSchwartzPoisson GaussGeneratorTransport QuadraticUnitInvariance
+open CompletedGauss ConcretePrimeRowBridge ActualEisensteinCoordinates EisensteinSchwartzPoisson GaussGeneratorTransport QuadraticUnitInvariance
 
 theorem canonical_same_ray_pair_poisson
     {α : Type*} [DecidableEq α]
@@ -397,8 +322,7 @@ theorem canonical_same_ray_pair_poisson
     A B hd hr W M hM
   simpa only [hn, hrowI, hrowJ] using ht
 
-open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss ConcretePrimeRowBridge ActualEisensteinCoordinates
-open EisensteinSchwartzPoisson GaussGeneratorTransport QuadraticUnitInvariance PrimaryIdealUnitReindex
+open PrimaryIdealUnitReindex
 
 theorem canonical_pair_unit_invariant (I J : Ideal O) (hI : Admissible I) (hJ : Admissible J)
     (hray : columnRay I = columnRay J) (u : Oˣ) (z : O) :
@@ -444,7 +368,7 @@ theorem canonical_masked_pair_summable {α : Type*} (R : α → Ideal O) (S : Fi
     Summable (fun z : O => rowCoprimeMask R S z *
       (quadraticRow I z * quadraticRow J z) * W (‖eisEmbedding z‖ ^ 2 / M)) := by
   have hW : Summable (fun z : O => ‖W (‖eisEmbedding z‖ ^ 2 / M)‖) := by
-    simpa only [scaledRadialTest_apply] using
+    simpa using
       actual_eisenstein_summable_norm (scaledRadialTest W M hM)
   apply Summable.of_norm
   apply Summable.of_nonneg_of_le (fun z => norm_nonneg _) _ hW
@@ -468,7 +392,6 @@ theorem canonical_pair_lattice_eq_primary_ideal_sum
       rowCoprimeMask R S (primaryGenerator lengthScale.val) *
       (quadraticRow I (primaryGenerator lengthScale.val) * quadraticRow J (primaryGenerator lengthScale.val)) *
       W ((Ideal.absNorm lengthScale.val : ℝ) / M) := by
-  have hs := canonical_masked_pair_summable R S I J W M hM
   have hu (u : Oˣ) (lengthScale : GoodIdeal) :
       rowCoprimeMask R S (u.val * primaryGenerator lengthScale.val) *
         (quadraticRow I (u.val * primaryGenerator lengthScale.val) * quadraticRow J (u.val * primaryGenerator lengthScale.val)) *
@@ -478,7 +401,7 @@ theorem canonical_pair_lattice_eq_primary_ideal_sum
         W (‖eisEmbedding (primaryGenerator lengthScale.val)‖ ^ 2 / M) := by
     rw [rowCoprimeMask_unit_mul, canonical_pair_unit_invariant I J hI hJ hray,
       norm_eisEmbedding_unit_mul]
-  have ht := tsum_ramified_mask_unit_invariant _ hs hu
+  have ht := tsum_ramified_mask_unit_invariant _ (canonical_masked_pair_summable R S I J W M hM) hu
   change (∑' z : O, if lambda ∣ z then (0 : ℂ) else _) = _ at ht
   have hn (lengthScale : GoodIdeal) := primaryGenerator_norm_sq lengthScale.val lengthScale.property
   simpa only [hn] using ht
@@ -511,7 +434,6 @@ theorem canonical_mask_lattice_eq_six_all_ideals
   let f : Ideal O → ℂ := fun lengthScale => rowCoprimeMask R S (primaryGenerator lengthScale) *
     (quadraticRow I (primaryGenerator lengthScale) * quadraticRow J (primaryGenerator lengthScale)) *
     W ((Ideal.absNorm lengthScale : ℝ) / M)
-  change (∑' lengthScale : GoodIdeal, f lengthScale.val) = ∑' lengthScale : Ideal O, f lengthScale
   have hsub : (∑' lengthScale : GoodIdeal, f lengthScale.val) =
       ∑' lengthScale : Ideal O, ({lengthScale : Ideal O | primaryGenerator lengthScale ≠ 0} : Set (Ideal O)).indicator f lengthScale :=
     tsum_subtype _ f
@@ -522,14 +444,12 @@ theorem canonical_mask_lattice_eq_six_all_ideals
   · exact Set.indicator_of_mem hg f
   · rw [Set.indicator_of_notMem hg]
     have hz : primaryGenerator lengthScale = 0 := not_not.mp hg
-    dsimp only [f]
     rw [hz, hmask 0 (dvd_zero _)]
-    simp only [zero_mul]
+    simp
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss ConcretePrimeRowBridge
-open EisensteinSchwartzPoisson GaussGeneratorTransport PrimaryIdealUnitReindex
+open CompletedGauss ConcretePrimeRowBridge EisensteinSchwartzPoisson GaussGeneratorTransport PrimaryIdealUnitReindex
 
 theorem badPrime_injective : Function.Injective badPrime := by
   have hgood : lambda ∉ (Ideal.span {(2 : O)} : Ideal O) := by

@@ -42,8 +42,7 @@ theorem sum_quotientSupport {A : Type*} [AddCommMonoid A]
 theorem quotientSupport_nonzero (D : Ideal Eis) (hD : D ≠ 0)
     (S : Finset (Ideal Eis)) (hS : ∀ I ∈ S, I ≠ 0)
     (J : Ideal Eis) (hJ : J ∈ quotientSupport D S) : J ≠ 0 := by
-  have h := hS (D * J) ((mem_quotientSupport D J hD S).mp hJ)
-  exact (mul_ne_zero_iff.mp h).2
+  exact (mul_ne_zero_iff.mp (hS (D * J) ((mem_quotientSupport D J hD S).mp hJ))).2
 
 theorem quotientSupport_quadratic_admissible (D : Ideal Eis) (hD : D ≠ 0)
     (S : Finset (Ideal Eis)) (hS : ∀ I ∈ S, CanonicalQuadraticSieve.Admissible I)
@@ -78,14 +77,12 @@ theorem quotientSupport_shell (D : Ideal Eis) (hD : D ≠ 0)
     (J : Ideal Eis) (hJ : J ∈ quotientSupport D S) :
     max 1 (L / (Ideal.absNorm D : ℝ)) ≤ (Ideal.absNorm J : ℝ) ∧
       (Ideal.absNorm J : ℝ) ≤ 2 * max 1 (L / (Ideal.absNorm D : ℝ)) := by
-  have hDJ := (mem_quotientSupport D J hD S).mp hJ
   have hnD : 0 < (Ideal.absNorm D : ℝ) := by
     exact_mod_cast Nat.pos_of_ne_zero (fun hz => hD (Ideal.absNorm_eq_zero_iff.mp hz))
-  have hJ0 := quotientSupport_nonzero D hD S hS0 J hJ
   have hnJ : 1 ≤ (Ideal.absNorm J : ℝ) := by
     exact_mod_cast Nat.one_le_iff_ne_zero.mpr
-      (fun hz => hJ0 (Ideal.absNorm_eq_zero_iff.mp hz))
-  have hs := hS (D * J) hDJ
+      (fun hz => (quotientSupport_nonzero D hD S hS0 J hJ) (Ideal.absNorm_eq_zero_iff.mp hz))
+  have hs := hS (D * J) ((mem_quotientSupport D J hD S).mp hJ)
   simp only [map_mul, Nat.cast_mul] at hs
   constructor
   · refine max_le hnJ ((div_le_iff₀ hnD).mpr ?_)

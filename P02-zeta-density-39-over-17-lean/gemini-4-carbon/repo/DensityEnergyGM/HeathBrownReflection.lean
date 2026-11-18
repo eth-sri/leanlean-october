@@ -1782,20 +1782,13 @@ theorem heathBrownSourceNearSum_le
     heathBrownSourceNearSum Cnear T W Q ≤
       8 * (W.card : ℝ) * Cnear ^ 2 * (Q : ℝ) ^ 2 := by
   unfold heathBrownSourceNearSum
-  let A : ℝ := 4 * (W.card : ℝ) * Cnear ^ 2 * (Q : ℝ) ^ 2
+  let A := 4 * (W.card : ℝ) * Cnear ^ 2 * (Q : ℝ) ^ 2
   have hA : 0 ≤ A := by dsimp only [A]; positivity
   have hgeom := sum_if_div_two_pow_le_two_mul A hA
     (fun j => 2 ^ (j + 1) ≤ Q)
     (Nat.log 2 (Nat.floor T) + 1)
-  calc
-    (∑ j ∈ Finset.range (Nat.log 2 (Nat.floor T) + 1),
-        if 2 ^ (j + 1) ≤ Q then
-          4 * (W.card : ℝ) * Cnear ^ 2 * (Q : ℝ) ^ 2 /
-            ((2 ^ j : ℕ) : ℝ)
-        else 0) ≤ 2 * A := hgeom
-    _ = 8 * (W.card : ℝ) * Cnear ^ 2 * (Q : ℝ) ^ 2 := by
-      dsimp only [A]
-      ring
+  exact (hgeom).trans_eq (by
+      ring)
 
 theorem heathBrownSourceTransitionSum_le
     (T : ℝ) (W : Finset ℝ) (Q H : ℕ) (hQ : 4 ≤ Q)
@@ -1888,14 +1881,13 @@ theorem heathBrownFixedReflectionLength_lower
     2 ^ j * H ≤ Q * heathBrownFixedReflectionLength Q H j := by
   let A : ℕ := 2 ^ j * H
   have hCeil : A ≤ Q * CeilDiv.ceilDiv A Q := by
-    simpa only [nsmul_eq_mul,Nat.cast_id] using
+    simpa using
       (le_smul_ceilDiv (b := A) (a := Q) hQ)
   have hCeilLe : CeilDiv.ceilDiv A Q ≤
       max 1 (CeilDiv.ceilDiv A Q) := le_max_right _ _
-  have hMul := Nat.mul_le_mul_left Q hCeilLe
   unfold heathBrownFixedReflectionLength
   rw [← Nat.ceilDiv_eq_add_pred_div]
-  exact hCeil.trans hMul
+  exact hCeil.trans (Nat.mul_le_mul_left Q hCeilLe)
 
 theorem heathBrownFixedReflectionLength_upper
     (Q H j : ℕ) (hQ : 0 < Q) (hH : 0 < H) :
@@ -2958,7 +2950,6 @@ theorem heathBrownSourceReflectedErrorSum_le_sharp_uniform
       (Nat.log 2 (Nat.floor T) + 1 : ℕ) *
         (8 * (W.card : ℝ) * T *
           (heathBrownSharpUniformReflectionError K L D q Q H T) ^ 2) := by
-  have hTNonneg : 0 ≤ T := zero_le_one.trans hT
   have hSharpNonneg : 0 ≤
       heathBrownSharpUniformReflectionError K L D q Q H T := by
     unfold heathBrownSharpUniformReflectionError
@@ -2994,27 +2985,20 @@ theorem heathBrownSourceReflectedErrorSum_le_sharp_uniform
                 (((2 ^ j : ℕ) : ℝ)) K L D := by
             unfold heathBrownReflectionBinError
             positivity
-          have hErrSq :
-              (heathBrownReflectionBinError q Q
-                (heathBrownFixedReflectionLength Q H j) H
-                (((2 ^ (j + 1) : ℕ) : ℝ))
-                (((2 ^ j : ℕ) : ℝ)) K L D) ^ 2 ≤
-                (heathBrownSharpUniformReflectionError K L D q Q H T) ^ 2 :=
-            pow_le_pow_left₀ hRawNonneg hErr 2
-          have hCardNat := heathBrownDifferenceBin_card_le W j hSep
+          have hErrSq := pow_le_pow_left₀ hRawNonneg hErr 2
           have hPowFloor := two_pow_le_floor_of_mem_difference_range
             hj hStationary.1
           have hPowT : (((2 ^ j : ℕ) : ℝ)) ≤ T := by
             calc
               (((2 ^ j : ℕ) : ℝ)) ≤ (Nat.floor T : ℝ) := by
                 exact_mod_cast hPowFloor
-              _ ≤ T := Nat.floor_le hTNonneg
+              _ ≤ T := Nat.floor_le (zero_le_one.trans hT)
           have hCardReal : ((heathBrownDifferenceBin W j).card : ℝ) ≤
               (W.card : ℝ) * (4 * T) := by
             calc
               ((heathBrownDifferenceBin W j).card : ℝ) ≤
                   (W.card : ℝ) * (2 * (((2 ^ (j + 1) : ℕ) : ℝ))) := by
-                exact_mod_cast hCardNat
+                exact_mod_cast (heathBrownDifferenceBin_card_le W j hSep)
               _ = (W.card : ℝ) * (4 * (((2 ^ j : ℕ) : ℝ))) := by
                 rw [pow_succ]
                 push_cast
@@ -3288,13 +3272,12 @@ theorem heathBrownSmoothingHeight_rpow_one_sub_order_le
     exact_mod_cast heathBrownSmoothingHeight_pos T η
   have hPowPos : 0 < T ^ η :=
     Real.rpow_pos_of_pos (by linarith) _
-  have hLower := rpow_le_heathBrownSmoothingHeight T η
   have hqReal : (1 : ℝ) ≤ q := by exact_mod_cast (show 1 ≤ q by omega)
   have hNonpos : 1 - (q : ℝ) ≤ 0 := by linarith
   have hReverse :
       (heathBrownSmoothingHeight T η : ℝ) ^ (1 - (q : ℝ)) ≤
         (T ^ η) ^ (1 - (q : ℝ)) :=
-    Real.rpow_le_rpow_of_nonpos hPowPos hLower hNonpos
+    Real.rpow_le_rpow_of_nonpos hPowPos (rpow_le_heathBrownSmoothingHeight T η) hNonpos
   have hBudget := heathBrownReflectionDerivativeOrder_budget
     (A := A) (η := η) hη
   have hExponent : η * (1 - (q : ℝ)) ≤ -(A + 4) := by linarith
@@ -3325,7 +3308,7 @@ theorem one_div_heathBrownSmoothingHeight_pow_order_le
         ← Real.rpow_neg (by positivity)]
     _ ≤ H ^ (1 - (q : ℝ)) := hMono
     _ ≤ T ^ (-(A + 4)) := by
-      simpa only [H, q] using
+      simpa using
         heathBrownSmoothingHeight_rpow_one_sub_order_le
           (A := A) (η := η) (T := T) hη hT
 
@@ -3343,27 +3326,27 @@ theorem heathBrownSharpUniformReflectionError_smoothing_le
   let q : ℕ := heathBrownReflectionDerivativeOrder A η
   let H : ℕ := heathBrownSmoothingHeight T η
   have hTPos : 0 < T := by linarith
-  have hQReal : (0 : ℝ) < Q := by exact_mod_cast hQ
+  have hQReal : 0 < Q := by exact_mod_cast hQ
   have hPowOne : 1 ≤ T ^ η := Real.one_le_rpow hT hη.le
   have hHeight : (H : ℝ) ≤ 2 * T ^ η := by
-    simpa only [H] using heathBrownSmoothingHeight_le_two_rpow hT hη.le
+    simpa using heathBrownSmoothingHeight_le_two_rpow hT hη.le
   have hEtaPow : T ^ η ≤ T := by
-    simpa only [Real.rpow_one] using
+    simpa using
       Real.rpow_le_rpow_of_exponent_le hT hηOne
   have hHeightFour : (H : ℝ) + 2 ≤ 4 * T := by
     nlinarith
   have hHeightSq : ((H : ℝ) + 2) ^ 2 ≤ 16 * T ^ 2 := by
     nlinarith [sq_nonneg ((H : ℝ) + 2), sq_nonneg T]
   have hDecayOne : (H : ℝ) ^ (1 - (q : ℝ)) ≤ T ^ (-(A + 4)) := by
-    simpa only [H, q] using
+    simpa using
       heathBrownSmoothingHeight_rpow_one_sub_order_le
         (A := A) (η := η) (T := T) hη hT
   have hDecayInv : 1 / (H : ℝ) ^ q ≤ T ^ (-(A + 4)) := by
-    simpa only [H, q] using
+    simpa using
       one_div_heathBrownSmoothingHeight_pow_order_le
         (A := A) (η := η) (T := T) hη hT
-  have hTfour : T ^ 2 * T ^ 2 = T ^ (4 : ℕ) := by ring
-  have hAbsorb : T ^ (4 : ℕ) * T ^ (-(A + 4)) = T ^ (-A) := by
+  have hTfour : T ^ 2 * T ^ 2 = T ^ 4 := by ring
+  have hAbsorb : T ^ 4 * T ^ (-(A + 4)) = T ^ (-A) := by
     rw [← Real.rpow_natCast, ← Real.rpow_add hTPos]
     congr 1
     norm_num
@@ -3379,35 +3362,35 @@ theorem heathBrownSharpUniformReflectionError_smoothing_le
           · exact div_le_self hK (by exact_mod_cast hQ)
       _ = 16 * K * T ^ (-A) := by
         rw [show K * T ^ 2 * (16 * T ^ 2) * T ^ (-(A + 4)) =
-            16 * K * (T ^ (4 : ℕ) * T ^ (-(A + 4))) by ring,
+            16 * K * (T ^ 4 * T ^ (-(A + 4))) by ring,
           hAbsorb]
   have hSecond :
-      L / (Q : ℝ) * (3 : ℝ) ^ (q + 2) * T ^ 2 / (H : ℝ) ^ q ≤
-        L * (3 : ℝ) ^ (q + 2) * T ^ (-A) := by
-    have hTtwoFour : T ^ 2 ≤ T ^ (4 : ℕ) := by
+      L / (Q : ℝ) * 3 ^ (q + 2) * T ^ 2 / (H : ℝ) ^ q ≤
+        L * 3 ^ (q + 2) * T ^ (-A) := by
+    have hTtwoFour : T ^ 2 ≤ T ^ 4 := by
       have hTtwoOne : 1 ≤ T ^ 2 := by nlinarith [sq_nonneg T]
       nlinarith [sq_nonneg (T ^ 2 - 1)]
     rw [div_eq_mul_inv]
     calc
-      L / (Q : ℝ) * (3 : ℝ) ^ (q + 2) * T ^ 2 *
+      L / (Q : ℝ) * 3 ^ (q + 2) * T ^ 2 *
           ((H : ℝ) ^ q)⁻¹ ≤
-        L * (3 : ℝ) ^ (q + 2) * T ^ (4 : ℕ) * T ^ (-(A + 4)) := by
+        L * 3 ^ (q + 2) * T ^ 4 * T ^ (-(A + 4)) := by
           have hInv : ((H : ℝ) ^ q)⁻¹ ≤ T ^ (-(A + 4)) := by
-            simpa only [one_div] using hDecayInv
+            simpa using hDecayInv
           gcongr
           exact div_le_self hL (by exact_mod_cast hQ)
-      _ = L * (3 : ℝ) ^ (q + 2) * T ^ (-A) := by
-        rw [show L * (3 : ℝ) ^ (q + 2) * T ^ (4 : ℕ) * T ^ (-(A + 4)) =
-            L * (3 : ℝ) ^ (q + 2) *
-              (T ^ (4 : ℕ) * T ^ (-(A + 4))) by ring,
+      _ = L * 3 ^ (q + 2) * T ^ (-A) := by
+        rw [show L * 3 ^ (q + 2) * T ^ 4 * T ^ (-(A + 4)) =
+            L * 3 ^ (q + 2) *
+              (T ^ 4 * T ^ (-(A + 4))) by ring,
           hAbsorb]
   have hThird :
       (Q : ℝ) * D / (H : ℝ) ^ q ≤ 2 * D * T ^ (-A) := by
-    have hToneFour : T ≤ T ^ (4 : ℕ) := by
+    have hToneFour : T ≤ T ^ 4 := by
       calc
         T = T * 1 := by ring
         _ ≤ T * T ^ 3 := mul_le_mul_of_nonneg_left (one_le_pow₀ hT) hTPos.le
-        _ = T ^ (4 : ℕ) := by ring
+        _ = T ^ 4 := by ring
     rw [div_eq_mul_inv]
     have hQD : (Q : ℝ) * D ≤ (2 * T) * D :=
       mul_le_mul_of_nonneg_right hQT hD
@@ -3419,14 +3402,14 @@ theorem heathBrownSharpUniformReflectionError_smoothing_le
         mul_le_mul_of_nonneg_right hQD hInvNonneg
       _ ≤ (2 * T) * D * T ^ (-(A + 4)) := by
         have hInv : ((H : ℝ) ^ q)⁻¹ ≤ T ^ (-(A + 4)) := by
-          simpa only [one_div] using hDecayInv
+          simpa using hDecayInv
         exact mul_le_mul_of_nonneg_left hInv hLeadNonneg
-      _ ≤ 2 * D * (T ^ (4 : ℕ) * T ^ (-(A + 4))) := by
+      _ ≤ 2 * D * (T ^ 4 * T ^ (-(A + 4))) := by
         have hDecayNonneg : 0 ≤ T ^ (-(A + 4)) := Real.rpow_nonneg hTPos.le _
         calc
           (2 * T) * D * T ^ (-(A + 4)) =
               2 * D * (T * T ^ (-(A + 4))) := by ring
-          _ ≤ 2 * D * (T ^ (4 : ℕ) * T ^ (-(A + 4))) := by
+          _ ≤ 2 * D * (T ^ 4 * T ^ (-(A + 4))) := by
             gcongr
       _ = 2 * D * T ^ (-A) := by rw [hAbsorb]
   unfold heathBrownSharpUniformReflectionError
@@ -3471,13 +3454,10 @@ theorem heathBrownWeightedSetMoment_mono
       heathBrownMajorantKernel W n m
   have hf : ∀ n m, 0 ≤ f n m := by
     intro n m
-    dsimp only [f]
     exact mul_nonneg
       (mul_nonneg (heathBrownHalfWeight_nonneg n)
         (heathBrownHalfWeight_nonneg m))
       (heathBrownMajorantKernel_nonneg W n m)
-  change (∑ n ∈ s, ∑ m ∈ s, f n m) ≤
-    ∑ n ∈ t, ∑ m ∈ t, f n m
   calc
     (∑ n ∈ s, ∑ m ∈ s, f n m) ≤
         ∑ n ∈ s, ∑ m ∈ t, f n m := by
@@ -3724,8 +3704,6 @@ theorem heathBrownLocalRecurrenceProfile_components
       (4 * (heathBrownCorrectedCommonScale Q H T : ℕ) : ℝ) ^ η :=
     Real.rpow_nonneg (by positivity) _
   have hℓ : 0 ≤ ((Nat.log 2 (Nat.floor T) + 1 : ℕ) : ℝ) := by positivity
-  have hH : 0 ≤ (H : ℝ) := by positivity
-  have hc : 0 ≤ (heathBrownCorrectedCommonExponent Q H T : ℝ) := by positivity
   constructor
   · nlinarith
   constructor
@@ -6177,9 +6155,7 @@ private lemma cast_four_mul_sq_pow_three (P : ℕ) :
   push_cast
   ring
 
-private lemma pow_two_succ_eq_two_mul (q : ℕ) : 2 ^ (q + 1) = 2 * 2 ^ q := by
-  rw [pow_succ]
-  omega
+private lemma pow_two_succ_eq_two_mul (q : ℕ) : 2 ^ (q + 1) = 2 * 2 ^ q := by ring
 
 private lemma zero_le_sixty_four : (0 : ℝ) ≤ 64 := by
   norm_num
@@ -6976,7 +6952,7 @@ private lemma rpow_five_four_mul_rpow_one_four (x : ℝ) (hx : 0 < x) :
 private lemma rpow_half_mul_rpow_half (x : ℝ) (hx : 0 < x) :
     x ^ (1 / 2 : ℝ) * x ^ (1 / 2 : ℝ) = x := by
   calc
-    _ = x ^ (1 : ℝ) := by
+    _ = x ^ 1 := by
       rw [← Real.rpow_add hx]
       congr 1
       norm_num
@@ -6989,14 +6965,13 @@ private lemma heathBrown_reciprocal_absorption
       R ^ (5 / 4 : ℝ) * T ^ (1 / 2 : ℝ) := by
   apply (div_le_iff₀ hQ).2
   have hTargetNonneg : 0 ≤ R ^ (5 / 4 : ℝ) * T ^ (1 / 2 : ℝ) := by positivity
-  have hMul := mul_le_mul_of_nonneg_left hScale hTargetNonneg
   calc
     R * Real.sqrt R * T =
         (R ^ (5 / 4 : ℝ) * T ^ (1 / 2 : ℝ)) *
           (R ^ (1 / 4 : ℝ) * T ^ (1 / 2 : ℝ)) := by
       rw [mul_mul_mul_comm, rpow_five_four_mul_rpow_one_four R hR,
         rpow_half_mul_rpow_half T hT]
-    _ ≤ (R ^ (5 / 4 : ℝ) * T ^ (1 / 2 : ℝ)) * Q := hMul
+    _ ≤ (R ^ (5 / 4 : ℝ) * T ^ (1 / 2 : ℝ)) * Q := (mul_le_mul_of_nonneg_left hScale hTargetNonneg)
     _ = R ^ (5 / 4 : ℝ) * T ^ (1 / 2 : ℝ) * Q := by ring
 
 set_option maxHeartbeats 800000 in

@@ -7,16 +7,8 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical
 
 namespace ShortDraftLatticeCount
 
@@ -31,7 +23,7 @@ theorem finite_lattice_count (S : Finset (ℤ × ℤ)) (D R : ℕ)
     (hR : 2 * D < R ^ 2)
     (hS : ∀ x ∈ S, q x ≤ D) :
     S.card ≤ (2 * R + 1) ^ 2 := by
-  let I : Finset ℤ := Finset.Icc (-(R : ℤ)) (R : ℤ)
+  let I := Finset.Icc (-(R : ℤ)) (R : ℤ)
   have hbox : S ⊆ I.product I := by
     intro x hx
     rcases x with ⟨a, b⟩
@@ -81,16 +73,12 @@ theorem actual_eisenstein_count
           (ActualEisensteinCoordinates.coords y).1
           (ActualEisensteinCoordinates.coords y).2 := by rw [hxy]
       _ = y := ActualEisensteinCoordinates.eval_coords y
-  have himage : (S.image ActualEisensteinCoordinates.coords).card = S.card :=
-    Finset.card_image_of_injective S hinj
   have hbound : ∀ v ∈ S.image ActualEisensteinCoordinates.coords,
       q v ≤ D := by
     intro v hv
     obtain ⟨x, hx, rfl⟩ := Finset.mem_image.mp hv
     exact hS x hx
-  calc
-    S.card = (S.image ActualEisensteinCoordinates.coords).card := himage.symm
-    _ ≤ 64 * (D + 1) := finite_lattice_count_linear _ D hbound
+  exact ((Finset.card_image_of_injective S hinj).symm).trans_le (finite_lattice_count_linear _ D hbound)
 
 end ShortDraftLatticeCount
 
@@ -141,18 +129,13 @@ theorem qO_mul (x y : O) :
   rw [hxy, coords_eval]
   exact ShortDraft.eisenstein_norm_mul (coords x) (coords y)
 
-theorem qO_nonneg (x : O) : 0 ≤ q (coords x) := by
-  exact ShortDraft.eisenstein_norm_nonneg (coords x)
+theorem qO_nonneg (x : O) : 0 ≤ q (coords x) := ShortDraft.eisenstein_norm_nonneg (coords x)
 
 theorem qO_pos {x : O} (hx : x ≠ 0) : 0 < q (coords x) := by
   have hne : q (coords x) ≠ 0 := by
     intro hzero
-    have hc : coords x = (0, 0) :=
-      (ShortDraft.eisenstein_norm_eq_zero_iff (coords x)).mp hzero
     apply hx
-    calc
-      x = eval (coords x).1 (coords x).2 := (eval_coords x).symm
-      _ = 0 := by simp [hc, eval]
+    exact ((eval_coords x).symm).trans (by simp [((ShortDraft.eisenstein_norm_eq_zero_iff (coords x)).mp hzero), eval])
   exact lt_of_le_of_ne (qO_nonneg x) (Ne.symm hne)
 
 def qNat (x : O) : ℕ := (q (coords x)).toNat
@@ -214,7 +197,7 @@ theorem finite_divisible_count
       x.1 = p * quotient x := hrep x
       _ = p * quotient y := by rw [hxy]
       _ = y.1 := (hrep y).symm
-  let T : Finset O := S.attach.image quotient
+  let T := S.attach.image quotient
   have hcard : T.card = S.card := by
     simpa [T] using Finset.card_image_of_injective S.attach hinj
   have hT : ∀ m ∈ T, qNat (p * m) ≤ D := by
@@ -222,14 +205,11 @@ theorem finite_divisible_count
     obtain ⟨x, _, rfl⟩ := Finset.mem_image.mp hm
     rw [← hrep x]
     exact hnorm x.1 x.2
-  calc
-    S.card = T.card := hcard.symm
-    _ ≤ 64 * (D / qNat p + 1) := finite_multiples_count p hp T D hT
+  exact (hcard.symm).trans_le (finite_multiples_count p hp T D hT)
 
 end ShortDraftLatticeCount
 
 namespace IdealGaussCRT
-open AddChar MulChar
 
 end IdealGaussCRT
 
@@ -261,49 +241,22 @@ theorem prime_sixth_row_approx
   have hnorm : ∀ n ∈ S, qNat n ≤ D := by
     intro n hn
     exact hcolnorm n (Finset.mem_filter.mp hn).1
-  have hcount := finite_divisible_count p hp S D hdiv hnorm
   calc
     ‖(∑ n ∈ columns, weight n) -
       (∑ n ∈ columns,
         weight n * finiteSquarefreeRow P hgood (support n) (p ^ 6))‖ ≤
         ∑ n ∈ S, ‖weight n‖ :=
       finiteSquarefreeRow_difference_norm P hgood columns support weight p
-    _ ≤ ∑ n ∈ S, (1 : ℝ) := by
+    _ ≤ ∑ n ∈ S, 1 := by
       apply Finset.sum_le_sum
       intro n hn
       exact hweight n (Finset.mem_filter.mp hn).1
     _ = (S.card : ℝ) := by simp
-    _ ≤ (64 * (D / qNat p + 1) : ℕ) := by exact_mod_cast hcount
+    _ ≤ (64 * (D / qNat p + 1) : ℕ) := by exact_mod_cast (finite_divisible_count p hp S D hdiv hnorm)
 
 end
 
-theorem prime_sixth_row_approx_maximal
-    {ι : Type*} (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
-    (hgood : ∀ i, lambda ∉ P i)
-    (columns : Finset O) (support : O → Finset ι)
-    (weight : O → ℂ) (p : O) (hp : p ≠ 0)
-    (hprime : (Ideal.span {p} : Ideal O).IsMaximal)
-    (D : ℕ)
-    (hsupport : ∀ n ∈ columns, ∀ i ∈ support n, n ∈ P i)
-    (hcolnorm : ∀ n ∈ columns, ShortDraftLatticeCount.qNat n ≤ D)
-    (hweight : ∀ n ∈ columns, ‖weight n‖ ≤ 1) :
-    ‖(∑ n ∈ columns, weight n) -
-      (∑ n ∈ columns,
-        weight n * finiteSquarefreeRow P hgood (support n) (p ^ 6))‖ ≤
-      (64 * (D / ShortDraftLatticeCount.qNat p + 1) : ℕ) := by
-  apply prime_sixth_row_approx P hgood columns support weight p hp D
-    ?_ hcolnorm hweight
-  intro n hn ⟨i, hi, hpi⟩
-  have hle : (Ideal.span {p} : Ideal O) ≤ P i :=
-    (Ideal.span_singleton_le_iff_mem (P i)).mpr hpi
-  have hne : P i ≠ ⊤ := (inferInstance : (P i).IsMaximal).ne_top
-  have heq : (Ideal.span {p} : Ideal O) = P i := hprime.eq_of_le hne hle
-  have hnP : n ∈ Ideal.span {p} := by
-    rw [heq]
-    exact hsupport n hn i hi
-  exact Ideal.mem_span_singleton.mp hnP
 
-open AddChar MulChar
 
 end ActualEisensteinCubic
 

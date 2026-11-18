@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.InverseTerminalWidths
-open ActualEisensteinCubic CompletedGauss UniqueFactorizationMonoid
-open InverseMoment CanonicalQuadraticSieve
+open ActualEisensteinCubic CompletedGauss UniqueFactorizationMonoid InverseMoment CanonicalQuadraticSieve
 local notation "O" => ActualEisensteinCubic.O
 
 lemma norm_one_le (I : Ideal O) (hI : I ≠ 0) : (1 : ℝ) ≤ Ideal.absNorm I := by
@@ -23,14 +22,12 @@ theorem physical_residual_width (I Q : Ideal O) (hI : I ≠ 0)
     (hres : Z ^ H / CH ≤ (Ideal.absNorm (rowResidualPart I Q) : ℝ)) :
     H ≤ M - O₀ + Real.log (CH * Ck * CO) / Real.log Z := by
   have hz0 : 0 < Z := by linarith
-  have hp := (div_le_iff₀ hCO).mp hpow
-  have hr := (div_le_iff₀ hCH).mp hres
   have hs : Z ^ (H + O₀) ≤ (CH * Ck * CO) * Z ^ M := by
     calc
       _ = Z ^ H * Z ^ O₀ := Real.rpow_add hz0 _ _
       _ ≤ ((Ideal.absNorm (rowResidualPart I Q) : ℝ) * CH) *
           ((Ideal.absNorm (rowPowerfulPart I) : ℝ) * CO) :=
-        mul_le_mul hr hp (Real.rpow_nonneg hz0.le _) (by positivity)
+        mul_le_mul ((div_le_iff₀ hCH).mp hres) ((div_le_iff₀ hCO).mp hpow) (Real.rpow_nonneg hz0.le _) (by positivity)
       _ = (CH * CO) * ((Ideal.absNorm (rowPowerfulPart I) : ℝ) *
           (Ideal.absNorm (rowResidualPart I Q) : ℝ)) := by ring
       _ ≤ (CH * CO) * (Ideal.absNorm I : ℝ) :=
@@ -47,16 +44,11 @@ theorem constant_log_error (C η : ℝ) (_hC : 0 < C) (hη : 0 < η) :
     ∃ Z₀ : ℝ, 1 < Z₀ ∧ ∀ Z : ℝ, Z₀ ≤ Z → Real.log C / Real.log Z ≤ η := by
   refine ⟨max 2 (Real.exp (Real.log C / η)), lt_of_lt_of_le (by norm_num) (le_max_left _ _), ?_⟩
   intro Z hZ
-  have hz : 1 < Z := lt_of_lt_of_le (by norm_num) ((le_max_left _ _).trans hZ)
-  have he : Real.exp (Real.log C / η) ≤ Z := (le_max_right _ _).trans hZ
-  have hl := Real.log_le_log (Real.exp_pos _) he
+  have hl := Real.log_le_log (Real.exp_pos _) ((le_max_right _ _).trans hZ)
   rw [Real.log_exp] at hl
-  apply (div_le_iff₀ (Real.log_pos hz)).mpr
+  apply (div_le_iff₀ (Real.log_pos (lt_of_lt_of_le (by norm_num) ((le_max_left _ _).trans hZ)))).mpr
   have hh := (div_le_iff₀ hη).mp hl
   nlinarith
-
-def activeCharge (j : ℕ) (e : Fin 3) : ℤ :=
-  if j = 4 then (if e = 2 then -2 else 1) else if j = 0 then 1 else 2
 
 def normWidth (Z : ℝ) (I : Ideal O) : ℝ := Real.logb Z (Ideal.absNorm I : ℝ)
 

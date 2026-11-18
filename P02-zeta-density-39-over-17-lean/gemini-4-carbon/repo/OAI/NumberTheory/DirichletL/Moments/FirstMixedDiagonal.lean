@@ -9,14 +9,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstMixedDiagonal
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss ActualEisensteinCubic ConcreteTraceCRT
-open CenteredMomentFirstPhysicalSource CenteredMomentFirstCanonicalFamily CenteredMomentFirstScale
-open CenteredMomentFirstMixedAllowance CenteredMomentFirstMixedExceptionalCap
-open CenteredMomentFirstMixedNormalization CenteredMomentFirstMixedNormalizationActual
-open CenteredMomentFirstExceptionalPrefactor CenteredMomentDescentLedger
-open CenteredMomentSectorLocalization CenteredMomentFirstAmplificationChoice
-open CenteredMomentAmplifiedRetainedRadius CenteredMomentCanonicalFirst CenteredMomentSecondHeightFamily
-open CenteredMomentAmplificationErrorEnergy
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss ActualEisensteinCubic ConcreteTraceCRT CenteredMomentFirstPhysicalSource CenteredMomentFirstCanonicalFamily CenteredMomentFirstScale CenteredMomentFirstMixedAllowance CenteredMomentFirstMixedExceptionalCap CenteredMomentFirstMixedNormalization CenteredMomentFirstMixedNormalizationActual CenteredMomentFirstExceptionalPrefactor CenteredMomentDescentLedger CenteredMomentSectorLocalization CenteredMomentFirstAmplificationChoice CenteredMomentAmplifiedRetainedRadius CenteredMomentCanonicalFirst CenteredMomentSecondHeightFamily CenteredMomentAmplificationErrorEnergy
 local notation "O"=>HeckeFamily.O
 
 theorem actual_common_diagonal (η τ:Character)(C D:Ideal O)(hC:Supported C)(hD:Supported D)
@@ -95,11 +88,11 @@ theorem actual_error_diagonal (η τ:Character)(C D:Ideal O)(hC:Supported C)(hD:
       ((τ.modulus.absNorm:ℝ)*(V/(C.absNorm:ℝ))^2*Z^(allowance C D Z))≤
       Z^(Real.logb Z V-(Real.logb Z K+Real.logb Z (η.modulus.absNorm:ℝ))+
         sigma+delta+reserve+eps*Real.logb Z V):=by
-  have hz:0<Z:=zero_lt_one.trans hZ
+  have hz :=zero_lt_one.trans hZ
   have hpv:=normValue_pos p hp
   have hcpos:=norm_pos C hC.1
   have hqpos:=norm_pos _ τ.modulus_ne_bot
-  have hl:0≤Real.logb Z (normValue p):=Real.logb_nonneg hZ (normValue_ge_one p hp)
+  have hl :=Real.logb_nonneg hZ (normValue_ge_one p hp)
   have hw:0≤errorRemoval p Z k:=by unfold errorRemoval;positivity
   have hwo:0≤errorMoving p Z k:=by unfold errorMoving;split_ifs <;> positivity
   have hh:=actual_common_diagonal η τ C D hC hD hCD E K V Z

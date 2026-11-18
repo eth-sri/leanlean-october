@@ -56,8 +56,7 @@ theorem finiteCentralCubeRows_supported_split {K : ℕ}
   unfold finiteCentralCubeRows
   apply Finset.sum_congr rfl
   intro u hu
-  have hg := ((mem_supportedFloorRows S hmax R grid u).mp hu).2.2
-  simp only [hg,Nat.cast_zero,mul_zero,add_zero]
+  simp only [(((mem_supportedFloorRows S hmax R grid u).mp hu).2.2),Nat.cast_zero,mul_zero,add_zero]
 
 lemma normalized_nonfloor_error (A F Cfloor Cnon N : ℂ) (E B : ℝ)
     (hE : ‖A/N-F-(Cfloor+Cnon)/N‖≤E) (hB : ‖Cfloor/N‖≤B) :

@@ -23,16 +23,14 @@ theorem calibrated_physicalRow_w_growth (eps : ℝ)
         physicalCompensatedRow S hS T hT η u x w z‖≤C*(3+|w.im|)^2 := by
   obtain ⟨Cn,hCn,hn⟩ := calibrated_numerator_positive_growth (1/2) 1 (by norm_num) (by norm_num) S hS hmax
   obtain ⟨Ch,hCh,hh⟩ := unselectedCorrection_first_subpower 1 (by norm_num)
-  let N : ℝ := ((Ideal.span {u.val}:Ideal O).absNorm:ℝ)
+  let N := ((Ideal.span {u.val}:Ideal O).absNorm:ℝ)
   let A : T→ℝ := fun P=>961*((P.val.val.absNorm:ℝ)^(1/2:ℝ)+1)
-  let L : ℝ := ‖LFunction (fixedSourcePrincipal S hS.prime) (6*z)‖*
+  let L := ‖LFunction (fixedSourcePrincipal S hS.prime) (6*z)‖*
     ‖HeckeReciprocal.reciprocal ((targetRow η u).excludePrimes S hS.prime) x‖
-  let C : ℝ := L*(Cn*N^(3/5+1:ℝ))*(Ch*N)*∏P:T,A P
+  let C := L*(Cn*N^(3/5+1:ℝ))*(Ch*N)*∏P:T,A P
   have hC : 0≤C := by dsimp [C,L,A,N];positivity
   refine ⟨1+C,by linarith,?_⟩
   intro w hw
-  have hn' := hn u hu w hw
-  have hh' := hh eps S hS hfirst T η u x w z (by linarith) (by linarith) hz (by linarith)
   have hg : ‖∏P∈T.attach,continuedCompensatedLocal η u P.val
       (outside_prime_supported S hS.bad P.val (hT P.val P.property)) x w z
       (star (idealCoeff η P.val.val)*(P.val.val.absNorm:ℂ)^x)
@@ -70,15 +68,13 @@ theorem calibrated_physicalRow_w_growth (eps : ℝ)
     ring
   rw [he,norm_mul,norm_mul,norm_mul]
   have hh'' : ‖continuedCorrection (markExclusions S T) (markedSourceExclusions S hS T) η u x w z‖≤Ch*N := by
-    simpa only [Real.rpow_one] using hh'
-  have hn'' : ‖star ((calibrationForSet S hmax).residueMonoid u.val)*
-      HeckeOrigin.continued (rowCharacter S hS.prime u) w‖≤Cn*N^(3/5+1:ℝ)*(3+|w.im|)^2 := hn'
+    simpa only [Real.rpow_one] using (hh eps S hS hfirst T η u x w z (by linarith) (by linarith) hz (by linarith))
   calc
     _ ≤ L*(Cn*N^(3/5+1:ℝ)*(3+|w.im|)^2)*(Ch*N)*(∏P:T,A P) := by
       rw [norm_mul]
       apply mul_le_mul _ hg (norm_nonneg _) (by dsimp [L,N];positivity)
       apply mul_le_mul _ hh'' (norm_nonneg _) (by dsimp [L,N];positivity)
-      exact mul_le_mul_of_nonneg_left hn'' (by positivity)
+      exact mul_le_mul_of_nonneg_left ((hn u hu w hw)) (by positivity)
     _ = C*(3+|w.im|)^2 := by dsimp [C];ring
     _ ≤ (1+C)*(3+|w.im|)^2 := mul_le_mul_of_nonneg_right (by linarith) (sq_nonneg _)
 

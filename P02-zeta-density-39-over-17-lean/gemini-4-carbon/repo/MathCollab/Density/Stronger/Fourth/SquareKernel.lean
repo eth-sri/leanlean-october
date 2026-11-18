@@ -11,9 +11,7 @@ public import MathCollab.Density.Stronger.Fourth.SquareKernelFar
 
 @[expose] public section
 
-open Complex Set MeasureTheory
-open MathCollab.Density.Stronger
-open MathCollab.Density.Stronger.Fourth.Digamma
+open Complex Set MeasureTheory MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth.Digamma
 set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Fourth
@@ -76,13 +74,12 @@ theorem exists_norm_zetaFourthKernel_near_le {c : ℝ} (hc : 0 < c) :
   have hpole := norm_zetaSquarePoleShift_le ht0 hwsmall
   have herr : zetaGammaShiftError t w ≤ E :=
     zetaGammaShiftError_le_quadratic ht hc.le u hw
-  have hlead := exp_zetaGammaLeadingLog_vertical_le ht0 hc.le u
   have hgamma :
       ‖(Complex.Gammaℝ (afeCriticalPoint (-t)+w) /
         Complex.Gammaℝ (afeCriticalPoint (-t)))^2‖ ≤
       Real.exp E * (t^c*Real.exp (Real.pi*|u|/2)) := by
     exact (norm_gammaReal_shift_sq_le_exp ht hwre hwsmall).trans
-      (mul_le_mul (Real.exp_le_exp.mpr herr) hlead
+      (mul_le_mul (Real.exp_le_exp.mpr herr) (exp_zetaGammaLeadingLog_vertical_le ht0 hc.le u)
         (Real.exp_pos _).le (Real.exp_pos _).le)
   have hwlower : c ≤ ‖w‖ := vertical_shift_re_le_norm hc.le u
   have hpoly : R^8*Real.exp (D*|u|) ≤ Real.exp Q*Real.exp (u^2) := by
@@ -145,9 +142,7 @@ theorem integrable_zetaFourthKernel_vertical {t c : ℝ}
     (hc : 0 < c) (ht : 4 ≤ t) (hct : 4*c ≤ t) :
     Integrable (fun u : ℝ => zetaFourthKernel t ((c:ℂ)+(u:ℂ)*I)) := by
   obtain ⟨K,_,hK⟩ := exists_norm_zetaFourthKernel_le hc
-  have hg : Integrable (fun u : ℝ => K*t^c*Real.exp (-98*u^2)) :=
-    (integrable_exp_neg_mul_sq (by norm_num : (0:ℝ) < 98)).const_mul (K*t^c)
-  exact hg.mono' (continuous_zetaFourthKernel_vertical t hc).aestronglyMeasurable
+  exact ((integrable_exp_neg_mul_sq (by norm_num : (0:ℝ) < 98)).const_mul (K*t^c)).mono' (continuous_zetaFourthKernel_vertical t hc).aestronglyMeasurable
     (Filter.Eventually.of_forall (fun u => hK t u ht hct))
 
 theorem exists_integral_norm_zetaFourthKernel_le {c : ℝ} (hc : 0 < c) :
@@ -158,13 +153,8 @@ theorem exists_integral_norm_zetaFourthKernel_le {c : ℝ} (hc : 0 < c) :
   obtain ⟨K,hK,hbound⟩ := exists_norm_zetaFourthKernel_le hc
   refine ⟨K,hK,?_⟩
   intro t ht hct
-  have hg : Integrable (fun u : ℝ => K*t^c*Real.exp (-98*u^2)) :=
-    (integrable_exp_neg_mul_sq (by norm_num : (0:ℝ) < 98)).const_mul (K*t^c)
-  calc
-    _ ≤ ∫ u : ℝ, K*t^c*Real.exp (-98*u^2) :=
-      integral_mono (integrable_zetaFourthKernel_vertical hc ht hct).norm hg
-        (fun u => hbound t u ht hct)
-    _ = _ := by rw [integral_const_mul, integral_gaussian]
+  exact (integral_mono (integrable_zetaFourthKernel_vertical hc ht hct).norm ((integrable_exp_neg_mul_sq (by norm_num : (0:ℝ) < 98)).const_mul (K*t^c))
+        (fun u => hbound t u ht hct)).trans_eq (by rw [integral_const_mul, integral_gaussian])
 
 
 end MathCollab.Density.Stronger.Fourth

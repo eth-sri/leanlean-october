@@ -6,11 +6,10 @@ public import OAI.NumberTheory.DirichletL.Detector.LowGramProfile
 namespace OAI
 
 noncomputable section
-open scoped Classical SchwartzMap
 open CompletedGauss
+open scoped Classical SchwartzMap
 namespace SevenEighths.ProbePhysical
-open CanonicalQuadraticSieve RayFourExpansion CenteredMomentGaussEnergy
-open CenteredMomentSupportedCorrelation EisensteinSchwartzPoisson ConcreteTraceCRT
+open CanonicalQuadraticSieve RayFourExpansion CenteredMomentGaussEnergy CenteredMomentSupportedCorrelation EisensteinSchwartzPoisson ConcreteTraceCRT
 local notation "O" => ActualEisensteinCubic.O
 local notation "Id" => Ideal O
 
@@ -54,17 +53,14 @@ theorem lowGram_source_poisson (C : CalibrationData) (W1 : ℝ→ℂ)
   intro s hs
   apply Finset.sum_congr rfl
   intro t ht
-  have hes := congrArg Ideal.absNorm ((primaryGenerator_spec s.val (supported_primaryGenerator_ne_zero s.val s.property)).1)
-  have het := congrArg Ideal.absNorm ((primaryGenerator_spec t.val (supported_primaryGenerator_ne_zero t.val t.property)).1)
-  rw [hes,het,←mul_assoc,lowGram_pair_prefactor C W1 Y hY σ v Q s t,mul_assoc]
+  rw [(congrArg Ideal.absNorm ((primaryGenerator_spec s.val (supported_primaryGenerator_ne_zero s.val s.property)).1)),(congrArg Ideal.absNorm ((primaryGenerator_spec t.val (supported_primaryGenerator_ne_zero t.val t.property)).1)),←mul_assoc,lowGram_pair_prefactor C W1 Y hY σ v Q s t,mul_assoc]
 
 theorem lowGram_kernel_scale (Y Q : ℝ) (hY : 0<Y) (hQ : 0<Q)
     (s t : {I : Id // Supported I}) (h : O) :
     Q*‖eisEmbedding h‖^2/‖eisEmbedding (primaryGenerator s.val*primaryGenerator t.val)‖^2=
       ‖eisEmbedding h‖^2/((Y^2/Q)*((Ideal.absNorm s.val:ℝ)/Y)*((Ideal.absNorm t.val:ℝ)/Y)) := by
   simp_rw [ActualEisensteinCubic.eisEmbedding_norm_sq_eq_absNorm_span]
-  rw [←Ideal.span_singleton_mul_span_singleton]
-  rw [(primaryGenerator_spec s.val (supported_primaryGenerator_ne_zero s.val s.property)).1,
+  rw [←Ideal.span_singleton_mul_span_singleton, (primaryGenerator_spec s.val (supported_primaryGenerator_ne_zero s.val s.property)).1,
     (primaryGenerator_spec t.val (supported_primaryGenerator_ne_zero t.val t.property)).1,map_mul,Nat.cast_mul]
   field_simp
 

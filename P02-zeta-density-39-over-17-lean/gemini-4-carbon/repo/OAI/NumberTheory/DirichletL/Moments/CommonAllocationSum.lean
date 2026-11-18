@@ -9,8 +9,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentCommonAllocationSum
-open CenteredMomentCommonAllocation CenteredMomentCommonAllocationBox CenteredMomentSupport
-open IdealMobiusDivisorSum
+open CenteredMomentCommonAllocation CenteredMomentCommonAllocationBox CenteredMomentSupport IdealMobiusDivisorSum
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [Fintype ι]
 
@@ -55,9 +54,7 @@ theorem sum_actual_allocations (S : ι → Finset (Ideal O))
   have hp : (∏ i,v i)=C*a := by
     by_contra hh
     exact hne (ite_eq_right hh)
-  have he := (tuple_products v C a hC ha hCa hp).1
-  have hb := (Finset.mem_filter.mp hv).2
-  simpa only [hb] using he
+  simpa only [((Finset.mem_filter.mp hv).2)] using ((tuple_products v C a hC ha hCa hp).1)
 
 theorem original_coefficient_allocated (S : ι → Finset (Ideal O))
     (hS : ∀ i,∀ I∈S i,I≠0) (C a : Ideal O) (hC : C≠0) (ha : a≠0)
@@ -67,8 +64,7 @@ theorem original_coefficient_allocated (S : ι → Finset (Ideal O))
         ∑ u∈residualBoxes S C B
           (allocation_data S C B (Finset.mem_filter.mp B.property).1).1,
           if (∏ i,u i)=a then F (fun i => B.val i*u i) else 0 := by
-  rw [sum_actual_allocations S C a hC ha hCa F]
-  rw [← Finset.sum_coe_sort (actualAllocations S C)
+  rw [sum_actual_allocations S C a hC ha hCa F, ← Finset.sum_coe_sort (actualAllocations S C)
     (fun B => ∑ v∈sourceFiber S C B,if (∏ i,v i)=C*a then F v else 0)]
   apply Finset.sum_congr rfl
   intro B hB
@@ -89,14 +85,14 @@ theorem actualAllocations_card (S : ι → Finset (Ideal O)) (C : Ideal O) (hC :
     apply Subtype.ext
     funext i
     exact congrArg Subtype.val (congrFun he i)
-  simpa only [Fintype.card_coe,Fintype.card_fun] using Fintype.card_le_of_injective f hf
+  simpa using Fintype.card_le_of_injective f hf
 
 theorem actualAllocations_small_power [Nonempty ι] (ε : ℝ) (hε : 0<ε) :
     ∃ D : ℝ,0<D ∧ ∀ (S : ι → Finset (Ideal O)) (C : Ideal O),C≠0 →
       ((actualAllocations S C).card:ℝ)≤D*(Ideal.absNorm C:ℝ)^ε := by
   have hr : (0:ℝ)<Fintype.card ι := by exact_mod_cast Fintype.card_pos
   let δ := ε/(Fintype.card ι:ℝ)
-  have hδ : 0<δ := div_pos hε hr
+  have hδ := div_pos hε hr
   obtain ⟨D,hD,hdiv⟩ := IdealDivisorBound.ideal_divisor_small_power δ hδ
   refine ⟨D^(Fintype.card ι),pow_pos hD _,?_⟩
   intro S C hC

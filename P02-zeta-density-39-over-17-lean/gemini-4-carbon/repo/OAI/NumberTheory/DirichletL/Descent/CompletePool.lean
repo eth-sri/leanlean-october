@@ -8,9 +8,8 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 noncomputable section
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic FirstPassCubeLabels
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion
-open ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic FirstPassCubeLabels
 local notation "O" => ActualEisensteinCubic.O
 
 theorem marked_selected_column_sum (F : Finset (Ideal O))
@@ -20,13 +19,11 @@ theorem marked_selected_column_sum (F : Finset (Ideal O))
     let hp := CanonicalQuadraticSieve.poolPrimary_ne_zero F hF
     letI : ∀i:ConcretePrimeRowBridge.primePool F,(Ideal.span {p i}).IsMaximal :=
       fun i=>by rw [CanonicalQuadraticSieve.poolPrimary_span F hF i]; infer_instance
-    let hcop := CanonicalQuadraticSieve.poolPrimary_coprime F hF
     let hg := CanonicalQuadraticSieve.poolPrimary_good F hF
     (∑I∈F,columnWeight (rowTwist Ψ m f z) I * W (Ideal.absNorm I)*d I) =
       ∑S∈(Finset.univ:Finset (ConcretePrimeRowBridge.primePool F)).powerset,
-        canonicalSourceCoefficient p hp hcop hg Ψ m f (fun T=>InitialMeanSquare.selectedIdealTest F W T*d (∏i∈T,i.val)) S *
+        canonicalSourceCoefficient p hp (CanonicalQuadraticSieve.poolPrimary_coprime F hF) hg Ψ m f (fun T=>InitialMeanSquare.selectedIdealTest F W T*d (∏i∈T,i.val)) S *
           finiteSquarefreeRow (fun i=>Ideal.span {p i}) hg S z := by
-  dsimp only
   let : ∀i:ConcretePrimeRowBridge.primePool F,
       (Ideal.span {CanonicalQuadraticSieve.poolPrimary F i}).IsMaximal :=
     fun i=>by rw [CanonicalQuadraticSieve.poolPrimary_span F hF i]; infer_instance
@@ -36,9 +33,7 @@ theorem marked_selected_column_sum (F : Finset (Ideal O))
   have hspan : (Ideal.span {∏i∈S,CanonicalQuadraticSieve.poolPrimary F i}) = ∏i∈S,i.val := by
     rw [FiniteGaussPhase.span_finset_prod]
     exact Finset.prod_congr rfl (fun i _=>CanonicalQuadraticSieve.poolPrimary_span F hF i)
-  have hpr (i:ConcretePrimeRowBridge.primePool F) :
-      ConcretePrimeRowBridge.goodLambda^2∣CanonicalQuadraticSieve.poolPrimary F i-1 :=
-    (primaryPrime_spec i.val (CanonicalQuadraticSieve.poolPrimary_ne_zero F hF i)).2.2.2
+  have hpr (i:ConcretePrimeRowBridge.primePool F) := (primaryPrime_spec i.val (CanonicalQuadraticSieve.poolPrimary_ne_zero F hF i)).2.2.2
   have h := columnWeight_finset (CanonicalQuadraticSieve.poolPrimary F)
     (CanonicalQuadraticSieve.poolPrimary_ne_zero F hF)
     (CanonicalQuadraticSieve.poolPrimary_coprime F hF)
@@ -92,9 +87,8 @@ theorem marked_complete_pool_eq_global (S : Finset (Ideal O)) (D : ℕ)
   intro T hT
   rw [canonicalSourceCoefficient_fixed_mask _ _ _ _ Ψ m (excludedGenerator S) f _ T
     (outside_pool_fixed_mask S D hbad hSp T)]
-  have ht := InitialMeanSquare.selectedIdealTest_outside S D hbad hSp W b X hX hW hD T
   simp only [canonicalSourceCoefficient,secondChildColumn]
-  rw [ht]
+  rw [(InitialMeanSquare.selectedIdealTest_outside S D hbad hSp W b X hX hW hD T)]
   ring
 
 end

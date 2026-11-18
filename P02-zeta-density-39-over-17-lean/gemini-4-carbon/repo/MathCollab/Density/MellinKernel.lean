@@ -237,8 +237,7 @@ theorem norm_reflectionKernel_sq_le {H : ℝ} (hH : 0 < H) (v r : ℝ) :
   rw [he] at hh
   have hs : 0 < Real.sqrt (H/20) := Real.sqrt_pos.2 (by positivity)
   have hs2 := Real.sq_sqrt (show 0 ≤ H/20 by positivity)
-  have hb := (le_div_iff₀ hs).1 hh
-  have hb2 := mul_self_le_mul_self (mul_nonneg (norm_nonneg _) hs.le) hb
+  have hb2 := mul_self_le_mul_self (mul_nonneg (norm_nonneg _) hs.le) ((le_div_iff₀ hs).1 hh)
   have hn : 0 ≤ ‖reflectionKernel H v r‖ := norm_nonneg _
   apply (le_div_iff₀ hH).2
   nlinarith [sq_nonneg ‖reflectionKernel H v r‖]

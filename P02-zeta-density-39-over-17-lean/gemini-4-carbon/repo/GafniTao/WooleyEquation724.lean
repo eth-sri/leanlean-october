@@ -128,11 +128,7 @@ theorem wooley_equation_7_24_of_local
           intro xiPrime hxiPrime
           ring
     have hinv : 0 ≤ (wooleySourceMassSq gamma)⁻¹ ^ 2 := sq_nonneg _
-    calc
-      (wooleySourceMassSq gamma)⁻¹ ^ 2 * _ ≤
-          (wooleySourceMassSq gamma)⁻¹ ^ 2 * (D * _) :=
-        mul_le_mul_of_nonneg_left hsum hinv
-      _ = D * ((wooleySourceMassSq gamma)⁻¹ ^ 2 * _) := by ring
+    exact (mul_le_mul_of_nonneg_left hsum hinv).trans_eq (by ring)
 
 
 end

@@ -57,8 +57,7 @@ lemma highRowOnLines_bound (η : HeckeFamily.Character) (S : Finset Id) (C : Cal
     (fun H=>by simpa only [norm_star] using C.residueMonoid_norm_le_one H.val) σ υ ξ (u,q) t
   have hs := Summable.of_nonneg_of_le (fun q=>norm_nonneg _) hb hm
   apply (norm_tsum_le_tsum_norm hs).trans
-  have he := hs.tsum_le_tsum hb hm
-  simpa only [initialHighMajorant,tsum_mul_left] using he
+  simpa only [initialHighMajorant,tsum_mul_left] using (hs.tsum_le_tsum hb hm)
 
 lemma highRows_counting_product_integrable {ρ : Type*} [Countable ρ]
     [MeasurableSpace ρ] [MeasurableSingletonClass ρ]

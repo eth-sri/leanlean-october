@@ -34,8 +34,7 @@ theorem card_le_card_sqrt (W : Finset ℝ) : (W.card:ℝ) ≤ (W.card:ℝ)*Real.
   by_cases hz : W.card=0
   · simp [hz]
   have hR : (1:ℝ) ≤ W.card := by exact_mod_cast (show 1 ≤ W.card by omega)
-  have hs : 1 ≤ Real.sqrt (W.card:ℝ) := (Real.one_le_sqrt).mpr hR
-  nlinarith [mul_le_mul_of_nonneg_left hs (Nat.cast_nonneg W.card)]
+  nlinarith [mul_le_mul_of_nonneg_left ((Real.one_le_sqrt).mpr hR) (Nat.cast_nonneg W.card)]
 
 /-- Full finite-set centered cubic, with fixed cutoff support [1/2,5].
 The literal additive energy, diagonal and all near-diagonal triples are

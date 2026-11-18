@@ -11,9 +11,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondWholeKernel
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson CompletedGauss
-open CanonicalQuadraticSieve CenteredMomentSourceRow CenteredMomentScale CenteredMomentSmooth
-open CenteredMomentFirstWholeKernel CenteredMomentSupportedCorrelation
+open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson CompletedGauss CanonicalQuadraticSieve CenteredMomentSourceRow CenteredMomentScale CenteredMomentSmooth CenteredMomentFirstWholeKernel CenteredMomentSupportedCorrelation
 local notation "O" => ActualEisensteinCubic.O
 
 def secondEffectiveScale (C D : Ideal O) (A : O) (K : ℝ) : ℝ :=
@@ -47,13 +45,12 @@ theorem common_normalized_kernel (W : 𝓢(ℝ,ℂ)) (V : Fin 4 → ℝ → ℂ)
       (K:ℂ)/((Real.sqrt C:ℂ)*(Real.sqrt D:ℂ)*(Real.sqrt A₀:ℂ)*(Real.sqrt B₀:ℂ))*
         wholeKernel W V (K₀*H₀/(A₀*B₀))
           (Real.log (k/K₀)) (Real.log (H/H₀)) (Real.log (a/A₀)) (Real.log (b/B₀)) := by
-  rw [wholeKernel_actual W V k H a b K₀ H₀ A₀ B₀ hk hH ha hb hK₀ hH₀ hA₀ hB₀]
-  rw [Real.sqrt_mul hC.le a,Real.sqrt_mul hD.le b]
+  rw [wholeKernel_actual W V k H a b K₀ H₀ A₀ B₀ hk hH ha hb hK₀ hH₀ hA₀ hB₀, Real.sqrt_mul hC.le a,Real.sqrt_mul hD.le b]
   simp only [Complex.ofReal_mul,windows]
-  have hc : (Real.sqrt C:ℂ)≠0 := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hC).ne'
-  have hd : (Real.sqrt D:ℂ)≠0 := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hD).ne'
-  have haa : (Real.sqrt A₀:ℂ)≠0 := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hA₀).ne'
-  have hbb : (Real.sqrt B₀:ℂ)≠0 := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hB₀).ne'
+  have hc := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hC).ne'
+  have hd := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hD).ne'
+  have haa := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hA₀).ne'
+  have hbb := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hB₀).ne'
   field_simp
 
 theorem second_frequency_whole_kernel (C D a b : Ideal O)
@@ -71,7 +68,6 @@ theorem second_frequency_whole_kernel (C D a b : Ideal O)
         wholeKernel W V (K₀*H₀/(A₀*B₀))
           (Real.log (k/K₀)) (Real.log (‖eisEmbedding h‖^2/H₀))
           (Real.log ((Ideal.absNorm a:ℝ)/A₀)) (Real.log ((Ideal.absNorm b:ℝ)/B₀)) := by
-  dsimp only
   rw [second_kernel_argument C D a b hC hD ha hb]
   simp only [map_mul,Nat.cast_mul]
   have he := common_normalized_kernel W V (secondEffectiveScale C D A K) (‖eisEmbedding h‖^2)

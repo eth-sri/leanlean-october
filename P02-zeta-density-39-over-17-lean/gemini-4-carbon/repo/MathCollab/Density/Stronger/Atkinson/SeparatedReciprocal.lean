@@ -11,10 +11,8 @@ public import Mathlib.NumberTheory.Harmonic.Bounds
 
 @[expose] public section
 
-open Complex Finset Set Filter
+open Complex Finset Set Filter RiemannZeta.GuthMaynard MathCollab.Density.Stronger.Fourth
 open scoped ComplexConjugate
-open RiemannZeta.GuthMaynard
-open MathCollab.Density.Stronger.Fourth
 set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
@@ -29,8 +27,7 @@ theorem separated_subset_card_le_one_of_diameter
   rw [Finset.card_le_one]
   intro x hx y hy
   by_contra hxy
-  have hlarge := hSep x (hSW hx) y (hSW hy) hxy
-  exact (not_lt_of_ge hlarge) (hdiam x hx y hy)
+  exact (not_lt_of_ge (hSep x (hSW hx) y (hSW hy) hxy)) (hdiam x hx y hy)
 
 /-- A unit-width annulus about a point contains at most one separated point on
 each side. -/

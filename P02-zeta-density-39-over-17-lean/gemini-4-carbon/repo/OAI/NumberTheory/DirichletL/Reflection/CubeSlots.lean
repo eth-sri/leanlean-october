@@ -20,7 +20,7 @@ lemma prime_dvd_cube_mul (P H A : Ideal Eis) (hP : Prime P) :
     · exact Or.inl (hP.dvd_of_dvd_pow h)
     · exact Or.inr h
   · rintro (h|h)
-    · exact dvd_mul_of_dvd_left (dvd_pow h (by decide : (3:ℕ)≠0)) A
+    · exact dvd_mul_of_dvd_left (dvd_pow h (by decide : 3≠0)) A
     · exact dvd_mul_of_dvd_right h _
 
 variable {σ : Type*} [Fintype σ] [DecidableEq σ]
@@ -35,8 +35,7 @@ lemma cube_shifted_mark (H A : Ideal Eis) (S : PrimeFamily σ) :
   rw [cubeActiveSlots,Finset.prod_filter]
   apply Finset.prod_congr rfl
   intro i hi
-  have hp : Prime (S.ideal i) := Ideal.prime_of_isPrime (NeZero.ne _) inferInstance
-  rw [prime_dvd_cube_mul _ H A hp]
+  rw [prime_dvd_cube_mul _ H A (Ideal.prime_of_isPrime (NeZero.ne _) inferInstance)]
   by_cases hh : S.ideal i∣H
   · simp only [hh,true_or,ite_true,not_true_eq_false,ite_false]
   · simp only [hh,false_or,not_false_eq_true,ite_true]

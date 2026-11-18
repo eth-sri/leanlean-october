@@ -21,9 +21,7 @@ theorem int_Icc_floor_ceil_card_cast_le
     {a b : ℝ} (hab : a ≤ b) :
     ((Finset.Icc ⌊a⌋ ⌈b⌉).card : ℝ) ≤ b - a + 3 := by
   have hfloorCeil : ⌊a⌋ ≤ ⌈b⌉ := by
-    have hreal : (⌊a⌋ : ℝ) ≤ (⌈b⌉ : ℝ) :=
-      (Int.floor_le a).trans (hab.trans (Int.le_ceil b))
-    exact_mod_cast hreal
+    exact_mod_cast ((Int.floor_le a).trans (hab.trans (Int.le_ceil b)))
   have hcardInt : ((Finset.Icc ⌊a⌋ ⌈b⌉).card : ℤ) =
       ⌈b⌉ + 1 - ⌊a⌋ := by
     exact Int.card_Icc_of_le (a := ⌊a⌋) (b := ⌈b⌉)
@@ -32,8 +30,8 @@ theorem int_Icc_floor_ceil_card_cast_le
       (⌈b⌉ : ℝ) + 1 - (⌊a⌋ : ℝ) := by
     exact_mod_cast hcardInt
   rw [hcardReal]
-  have hceil : (⌈b⌉ : ℝ) ≤ b + 1 := (Int.ceil_lt_add_one b).le
-  have hfloor : a - 1 ≤ (⌊a⌋ : ℝ) := (Int.sub_one_lt_floor a).le
+  have hceil := (Int.ceil_lt_add_one b).le
+  have hfloor := (Int.sub_one_lt_floor a).le
   linarith
 
 theorem heathBrown_spacing_card_cast_le
@@ -61,7 +59,6 @@ theorem heathBrown_spacing_card_cast_le
       mul_nonneg hmu.le (sub_nonneg.mpr hNge)
     linarith
   have hlohi : lo ≤ hi := by dsimp [lo, hi]; linarith
-  have hinterval := int_Icc_floor_ceil_card_cast_le hlohi
   have hspread := heathBrown_upper_slope hg hgd hderivUpper hOneI hNI
     (by exact_mod_cast hN)
   have hNminus : (N : ℝ) - 1 ≤ N := by linarith
@@ -69,13 +66,13 @@ theorem heathBrown_spacing_card_cast_le
     hspread.trans (mul_le_mul_of_nonneg_left hNminus hM)
   have hinterval' : ((Finset.Icc ⌊lo⌋ ⌈hi⌉).card : ℝ) ≤
       M * N + 2 * theta + 3 := by
-    apply hinterval.trans
+    apply (int_Icc_floor_ceil_card_cast_le hlohi).trans
     dsimp [lo, hi]
     linarith
   have hfloor : ((⌊max 0 z⌋₊ + 1 : ℕ) : ℝ) ≤ z + 1 := by
     push_cast
     rw [max_eq_right hz]
-    simpa only [add_comm] using add_le_add_right (Nat.floor_le hz) 1
+    simpa using add_le_add_right (Nat.floor_le hz) 1
   have hexact := heathBrown_spacing_card_le_exact (theta := theta)
     hN hmu hg hgd hderivLower
   have hcast : ((heathBrownSpacingSet N g theta).card : ℝ) ≤

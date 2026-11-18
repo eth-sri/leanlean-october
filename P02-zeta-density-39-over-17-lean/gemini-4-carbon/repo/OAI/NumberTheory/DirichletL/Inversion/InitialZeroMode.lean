@@ -10,9 +10,7 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseInitialZeroMode
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open ConcreteTraceCRT EisensteinSchwartzPoisson InverseMoment
-open InverseInitialRayAttachment
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic ConcreteTraceCRT EisensteinSchwartzPoisson InverseMoment InverseInitialRayAttachment
 local notation "O"=>ActualEisensteinCubic.O
 local notation "λ₀"=>ConcretePrimeRowBridge.goodLambda
 
@@ -31,7 +29,7 @@ theorem marked_coefficient_mass (eps b B:ℝ)(heps:0<eps)(hb:0<b)(_hB:0≤B):
   refine ⟨128*b*(Cm*b^(eps/2)*B)^2+1,by positivity,?_⟩
   intro ι σ _ _ p hp _ hcop hg hinj pool Ψ hΨ m c d slots lists a hdis ha W hW hs X hX
   let T:=pool.powerset.filter (fun A=>W (primeProductNorm p A/X)≠0)
-  have hXb:0<b*X:=mul_pos hb hX
+  have hXb :=mul_pos hb hX
   have hnorm:∀A∈T,primeProductNorm p A≤b*X:=by
     intro A hA
     exact (div_le_iff₀ hX).mp (hs _ (Finset.mem_filter.mp hA).2)

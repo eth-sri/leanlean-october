@@ -79,9 +79,8 @@ theorem abs_atkinsonRootSlope_zero_le_band {T G L y : ℝ}
     (hT : 0 < T) (hG : 0 < G) (hL : 0 < L) (hwidth : 8 * L ≤ G)
     (hy : y ∈ Icc (atkinsonRootBandLower T G L) (atkinsonRootBandUpper T G L)) :
     |atkinsonRootSlope T 0 y| ≤ 6 * Real.sqrt T * (L / G) := by
-  have hy0 := (atkinsonRootBandLower_pos hT G L).trans_le hy.1
   have hlog := zetaDivisorBand_log_bound hT (atkinsonRootBand_square_mem hT hy)
-  rw [← zetaAtkinsonSaddle_inverse_root hT hy0] at hlog
+  rw [← zetaAtkinsonSaddle_inverse_root hT ((atkinsonRootBandLower_pos hT G L).trans_le hy.1)] at hlog
   have hb := abs_frequency_le_of_saddle_log_bound hT hG hL hwidth hlog
   have he : atkinsonRootSlope T 0 y = -2 * (y - (T / (2 * Real.pi)) / y) := by
     unfold atkinsonRootSlope

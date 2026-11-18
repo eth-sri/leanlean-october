@@ -24,14 +24,12 @@ theorem horizontal_join_bound (χ : Character) (inverse : Bool) (W : ℝ → ℂ
   have hb : ‖mellin W ((x : ℂ)+y*I)‖≤C/(1+|y|)^n := by
     apply (le_div_iff₀ (by positivity : 0<(1+|y|)^n)).mpr
     simpa [mul_comm] using hm x hx'
-  have hpow : D^(x+σ-1/2)≤D^(r+σ-1/2) :=
-    Real.rpow_le_rpow_of_exponent_le hD (by linarith [hx'.2])
   rw [integrand_norm χ inverse W D σ freq (by linarith)]
   simp only [add_re, ofReal_re, mul_re, ofReal_im, I_re, mul_zero, I_im, zero_mul,
     sub_self, add_zero]
   calc
     _ ≤ (C/(1+|y|)^n)*D^(r+σ-1/2)*K :=
-      mul_le_mul (mul_le_mul hb hpow (by positivity) (by positivity))
+      mul_le_mul (mul_le_mul hb (Real.rpow_le_rpow_of_exponent_le hD (by linarith [hx'.2])) (by positivity) (by positivity))
         (hs x hx') (norm_nonneg _) (by positivity)
     _ = _ := by ring
 

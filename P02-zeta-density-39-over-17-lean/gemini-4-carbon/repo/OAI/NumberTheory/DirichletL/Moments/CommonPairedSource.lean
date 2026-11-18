@@ -9,10 +9,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentCommonPairedSource
-open HeckeFamily UniqueFactorizationMonoid CanonicalQuadraticSieve
-open CenteredMomentCommonLinearSource CenteredMomentCommonLinearNormalization
-open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum
-open CenteredMomentExceptionalMaskedSource CenteredMomentExceptionalAmplitudePair
+open HeckeFamily UniqueFactorizationMonoid CanonicalQuadraticSieve CenteredMomentCommonLinearSource CenteredMomentCommonLinearNormalization CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentExceptionalMaskedSource CenteredMomentExceptionalAmplitudePair
 local notation "O" => HeckeFamily.O
 variable {ι κ:Type*} [Fintype ι] [DecidableEq ι] [Fintype κ] [DecidableEq κ]
 
@@ -26,7 +23,7 @@ theorem norm_column (s:Input ι)(C:Ideal O)(hC:Supported C)(R seed L:Ideal O)
         ‖maskedAmplitude (commonData s C R B) L z‖:=by
   unfold normalizedColumn
   rw [source_normalized s C hC R seed L hseed]
-  simpa only [norm_mul] using norm_sum_le
+  simpa using norm_sum_le
     (Finset.univ:Finset (actualAllocations s.pools C))
     (fun B=>commonScalar s C R B*maskedAmplitude (commonData s C R B) L z)
 
@@ -69,15 +66,8 @@ theorem whole_paired_columns (s:Input ι)(v:Input κ)(C D:Ideal O)(hC:Supported 
           ∑L∈Ds,‖(moebius L:ℂ)‖*∑z∈rows,
             ‖maskedAmplitude (commonData s C R B) L z‖*
               ‖maskedAmplitude (commonData v D R E) L z‖:=by
-  calc
-    _≤∑L∈Ds,‖(moebius L:ℂ)‖*
-      ∑B:actualAllocations s.pools C,∑E:actualAllocations v.pools D,
-        (‖commonScalar s C R B‖*‖commonScalar v D R E‖)*
-          ∑z∈rows,‖maskedAmplitude (commonData s C R B) L z‖*
-            ‖maskedAmplitude (commonData v D R E) L z‖:=
-      Finset.sum_le_sum (fun L hL=>mul_le_mul_of_nonneg_left
-        (paired_columns s v C D hC hD R seed L hsC hsD rows) (norm_nonneg _))
-    _=_:=by
+  exact (Finset.sum_le_sum (fun L hL=>mul_le_mul_of_nonneg_left
+        (paired_columns s v C D hC hD R seed L hsC hsD rows) (norm_nonneg _))).trans_eq (by
       simp only [Finset.mul_sum]
       rw [Finset.sum_comm]
       apply Finset.sum_congr rfl
@@ -89,7 +79,7 @@ theorem whole_paired_columns (s:Input ι)(v:Input κ)(C D:Ideal O)(hC:Supported 
       intro L hL
       apply Finset.sum_congr rfl
       intro z hz
-      ring
+      ring)
 
 end SevenEighths.CenteredMomentCommonPairedSource
 

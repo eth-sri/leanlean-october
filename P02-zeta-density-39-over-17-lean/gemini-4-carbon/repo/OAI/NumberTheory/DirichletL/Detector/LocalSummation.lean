@@ -17,9 +17,7 @@ lemma hasSum_geometric_tail (f : ℕ → ℂ) (a : ℕ) (B V : ℂ) (hV : ‖V�
     HasSum f (B/(1-V)) := by
   have ht : HasSum (fun n => f (n+a)) (B/(1-V)) := by
     simpa only [hf, div_eq_mul_inv] using (hasSum_geometric_of_norm_lt_one hV).mul_left B
-  have hs : (∑ i ∈ Finset.range a, f i) = 0 :=
-    Finset.sum_eq_zero (fun i hi => hz i (Finset.mem_range.mp hi))
-  simpa only [hs, zero_add] using ht.sum_range_add
+  simpa only [(Finset.sum_eq_zero (fun i hi => hz i (Finset.mem_range.mp hi))), zero_add] using ht.sum_range_add
 
 lemma tsum_two_of_rest_zero (f : ℕ → ℂ) (hf : ∀ k, f (k+2)=0) :
     (∑' k, f k) = f 0+f 1 := by

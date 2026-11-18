@@ -8,11 +8,10 @@ public import OAI.NumberTheory.DirichletL.Hecke.ModulusRefinement
 namespace OAI
 
 noncomputable section
-open scoped Classical ContDiff
 open Filter Asymptotics
+open scoped Classical ContDiff
 namespace SevenEighths.ProbeFinalAssembly
-open HeckeFamily ProbePhysical ProbeRaySlots PrincipalSignalComparison PrincipalMellinResidues
-open ProbePrincipalResidueActual
+open HeckeFamily ProbePhysical ProbeRaySlots PrincipalSignalComparison PrincipalMellinResidues ProbePrincipalResidueActual
 local notation "O" => HeckeFamily.O
 
 def normalizedProbe {K : ℕ} (M : Ideal O) [NeZero M] [Finite (O ⧸ M)]

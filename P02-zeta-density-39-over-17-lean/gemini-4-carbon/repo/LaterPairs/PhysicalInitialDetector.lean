@@ -9,8 +9,7 @@ set_option autoImplicit false
 set_option maxHeartbeats 1200000
 noncomputable section
 namespace Montgomery.RationalMoment.RightDetector
-open MathCollab.Density.Stronger
-open MathCollab.Density
+open MathCollab.Density.Stronger MathCollab.Density
 
 /-- The actual contour detector is uniformly small for the stronger curve's
 parameters. The Weyl input is proved and discharged; no moment is assumed. -/

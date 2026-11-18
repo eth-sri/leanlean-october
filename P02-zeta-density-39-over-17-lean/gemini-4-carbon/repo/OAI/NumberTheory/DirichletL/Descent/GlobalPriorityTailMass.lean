@@ -8,9 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.InverseMomentGlobalPriorityTail
-open InverseMoment InverseFirstPriorityParents InverseInitialArithmetic
-open InverseMomentGlobalPrincipalMass
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open InverseMoment InverseFirstPriorityParents InverseInitialArithmetic InverseMomentGlobalPrincipalMass ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
 local notation "O" => ActualEisensteinCubic.O
 
@@ -32,14 +30,13 @@ theorem original_tail_mass (Jmax : ℕ) :
   obtain ⟨C,hC,hraw⟩ := original_weighted_mass Jmax 1 (by norm_num)
   refine ⟨C,hC,?_⟩
   intro ι _ p hp _ hinj Jo hJo S Z L hZ hL hS hb₁ hb₂ hactive hcommon hquot extra negative hextra
-  have hz : 0<Z := zero_lt_one.trans_le hZ
   have hh := hraw p hp hinj Jo hJo S (Z^L) (Z^L) (Z^L) (Z^L) 1
     (Real.one_le_rpow hZ hL) (by positivity) (by positivity) (by positivity)
     (by norm_num) hS hb₁ hb₂ hactive hcommon hquot extra negative hextra
   simp only [Real.rpow_one] at hh
   apply hh.trans_eq
   have he : Z^(13*L)=(Z^L)^13 := by
-    rw [←Real.rpow_mul_natCast hz.le]
+    rw [←Real.rpow_mul_natCast (zero_lt_one.trans_le hZ).le]
     congr 1
     norm_num
     ring

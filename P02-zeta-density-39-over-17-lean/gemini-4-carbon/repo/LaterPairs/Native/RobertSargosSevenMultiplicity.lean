@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.IntegerIntervalCount
 public import LaterPairs.Native.RobertSargosSevenSystem
 
@@ -25,7 +34,7 @@ theorem robertSargos_displacement_fiber_card_le
   have hinj : Set.InjOn RobertSargosSevenPoint.n₂ S := by
     intro p hp q hq he
     exact robertSargos_displacement_joint_injective ((hfix p hp).trans (hfix q hq).symm) he
-  have hcard : T.card = S.card := Finset.card_image_of_injOn hinj
+  have hcard := Finset.card_image_of_injOn hinj
   have ht : ∀ n ∈ T, (n:ℝ) ∈ Set.Icc 1 N := by
     intro n hn
     obtain ⟨p,hp,rfl⟩ := Finset.mem_image.mp hn

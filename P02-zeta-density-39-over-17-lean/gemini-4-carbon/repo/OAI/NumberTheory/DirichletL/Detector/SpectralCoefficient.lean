@@ -8,8 +8,7 @@ namespace OAI
 
 noncomputable section
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve
-open ProbeCompleted ProbeRow ProbePhase ConcretePrimeRowBridge CubicEisenstein
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve ProbeCompleted ProbeRow ProbePhase ConcretePrimeRowBridge CubicEisenstein
 local notation "O" => ActualEisensteinCubic.O
 
 lemma rayMask_supported (a : O) (ha : Supported (Ideal.span {a})) : RayFourExpansion.rayMask a=1 := by
@@ -57,7 +56,6 @@ theorem spectralSummand_source_coefficient (S : Finset (Ideal O)) (D I J : Ideal
         (fullIdealWeight t I*fullIdealWeight (3*t) J) := by
   have hA := supported_completed _ _ ((supported_span_primaryGenerator_iff I).mpr hI)
     ((supported_span_primaryGenerator_iff J).mpr hJ)
-  have hb := baseRowCoefficient_unit_apply η C s hs (completedIndex I J) hA hcop
   have hangle : FiniteGaussPhase.angularFactor (completedIndex I J)=
       FiniteGaussPhase.angularFactor (primaryGenerator I)*FiniteGaussPhase.angularFactor (primaryGenerator J)^3 := by
     rw [completedIndex,angularFactor_mul,show primaryGenerator J^3=(primaryGenerator J*primaryGenerator J)*primaryGenerator J by ring,
@@ -67,7 +65,7 @@ theorem spectralSummand_source_coefficient (S : Finset (Ideal O)) (D I J : Ideal
       baseRowCoefficient η C.Xi s hs (primaryGenerator J)^3=
         targetMonoid η (completedIndex I J)*(C.Xi (completedIndex I J))⁻¹*reciprocitySign (completedIndex I J) s := by
     rw [←map_pow,←map_mul]
-    exact hb
+    exact (baseRowCoefficient_unit_apply η C s hs (completedIndex I J) hA hcop)
   unfold spectralSummand CompletedGauss.columnWeight
   rw [completedCorrection_supported I J hI hJ,squarefreeGaussCoefficient_eq I hsf
     (supported_primaryGenerator_ne_zero I hI)]

@@ -22,10 +22,8 @@ theorem sublinear_energy_power_solve {E A V p : ℝ}
         E ^ p * (E ^ (1 - p) * V ^ 2) = E * V ^ 2 := by rw [← mul_assoc, hId]
         _ ≤ A * E ^ p := h
         _ = E ^ p * A := mul_comm _ _
-    have hBase : E ^ (1 - p) ≤ A / V ^ 2 :=
-      (le_div_iff₀ (sq_pos_of_pos hV)).mpr hCancel
     have hRaise := Real.rpow_le_rpow (Real.rpow_nonneg hE (1 - p))
-      hBase (show 0 ≤ 1 / (1 - p) by positivity)
+      ((le_div_iff₀ (sq_pos_of_pos hV)).mpr hCancel) (show 0 ≤ 1 / (1 - p) by positivity)
     have hPower : (E ^ (1 - p)) ^ (1 / (1 - p)) = E := by
       rw [← Real.rpow_mul hE]
       have hExp : (1 - p) * (1 / (1 - p)) = 1 := by

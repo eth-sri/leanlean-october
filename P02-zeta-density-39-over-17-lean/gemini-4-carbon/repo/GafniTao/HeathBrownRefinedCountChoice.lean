@@ -52,7 +52,6 @@ theorem heathBrownPairCount_card_cast_le_at_chosen_scale
       4 * K *
         (N + 2 * (((D : ℝ) + c) * (b + a * D) *
           (1 + Real.log N))) := by
-  dsimp only
   have hwidth := heathBrown_width_le_half_of_eight_le hk hlargeH
   exact heathBrownPairCount_card_cast_le_refined_raw
     hk hN (heathBrownHChoice_pos (by omega) hA hlambda hsmall)

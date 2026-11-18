@@ -84,8 +84,7 @@ theorem one_time_losses (M B κ ε:ℝ)(hM:0≤M)(hB:0≤B)(hκ:0≤κ)(hε:0<ε
   have hx:=reserve_cost M B ε (10*B+7) hM hB hε (by unfold scale;linarith [Nat.cast_nonneg (α:=ℝ) (count M ε)])
   have hy:=reserve_cost M B ε (M+2) hM hB hε (by unfold scale;linarith [Nat.cast_nonneg (α:=ℝ) (count M ε)])
   have htheta:=mul_le_mul_of_nonneg_left ht (show 0≤2*(5*B+1) by positivity)
-  have hmul:es*A≤reserve M B ε*M:=
-    (mul_le_mul_of_nonneg_left hA he0).trans (mul_le_mul_of_nonneg_right hes hM)
+  have hmul := (mul_le_mul_of_nonneg_left hA he0).trans (mul_le_mul_of_nonneg_right hes hM)
   constructor
   · unfold exceptional
     nlinarith
@@ -126,8 +125,6 @@ lemma next_paid_loss (M B κ ε:ℝ)(hM:0≤M)(hB:0≤B)(hκ:0≤κ)(hε:0<ε)
     loss M B ε k+edge 0 er d e d1 d2 theta κ (mesh M B κ ε)+other≤
       loss M B ε (k+1):=by
   have hb:=bounds M B κ ε hM hB hκ hε
-  have hr:=hb.2.2.2.1
-  have hm:=hb.2.2.2.2.2.2.1
   rw [loss_succ]
   unfold edge
   linarith

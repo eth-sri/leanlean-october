@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.PrimitiveTripleCount
 
 @[expose] public section
@@ -24,7 +33,7 @@ theorem primitive_linear_triple_card_le_abs_modulus
     (hratio : ∀ p ∈ S, α ≤ (p.1:ℝ)/p.2.1 ∧ (p.1:ℝ)/p.2.1 ≤ β) :
     (S.card:ℝ) ≤ (c.natAbs.divisors.card:ℝ)+
       4*V^2*(β-α)/(c.natAbs:ℝ)^2*(∑ g ∈ c.natAbs.divisors, (g:ℝ)) := by
-  have hcN : 0 < c.natAbs := Int.natAbs_pos.mpr hc
+  have hcN := Int.natAbs_pos.mpr hc
   rcases lt_or_gt_of_ne hc with hneg | hpos
   · have hcn : (c.natAbs:ℤ) = -c := by rw [Int.natCast_natAbs,abs_of_neg hneg]
     have hp : Int.gcd (Int.gcd (-a) (-b) : ℤ) c.natAbs = 1 := by
@@ -33,7 +42,7 @@ theorem primitive_linear_triple_card_le_abs_modulus
     intro p hp
     rw [hcn]
     have hl := hline p hp
-    nlinarith only [hl]
+    nlinarith
   · have hcn : (c.natAbs:ℤ) = c := by rw [Int.natCast_natAbs,abs_of_pos hpos]
     have hp : Int.gcd (Int.gcd a b : ℤ) c.natAbs = 1 := by rwa [hcn]
     apply primitive_linear_triple_card_le S hp hcN hV hαβ hden hprim _ hratio

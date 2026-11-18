@@ -12,9 +12,7 @@ public import MathCollab.Density.Stronger.Fourth.SquareDivisorSeries
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+open Complex Filter MeasureTheory Set Topology MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth MathCollab.Density.Contour
 open scoped Interval ComplexConjugate
 set_option autoImplicit false
 noncomputable section
@@ -29,7 +27,7 @@ theorem zetaSquareKernelErrorMajorant_nonneg (u : ℝ) :
 
 theorem integrable_zetaSquareKernelErrorMajorant : Integrable zetaSquareKernelErrorMajorant := by
   change Integrable (fun u : ℝ => Real.exp (-90 * u ^ 2) * (1 + |u|) ^ 12)
-  simpa only [zero_sub, neg_mul] using
+  simpa using
     (integrable_exp_sub_mul_sq_mul_add_abs_pow 0 (B := 90) (C := 1) (by norm_num) 12)
 
 private theorem gaussian_fusion_le {u b : ℝ} (hb : b ≤ 64 + 10 * u ^ 2) :
@@ -48,7 +46,7 @@ theorem exists_norm_normalized_zetaSquareRightKernel_far_le :
   have ht0 : 0 ≤ t := by linarith
   have hpoly : 3 + |t| + |u| ≤ 5 * (1 + |u|) := by rw [abs_of_nonneg ht0]; linarith
   have he : Real.pi * t ≤ 64 + 10 * u ^ 2 := by
-    have hpi : Real.pi * t ≤ 4 * t := mul_le_mul_of_nonneg_right Real.pi_lt_four.le ht0
+    have hpi := mul_le_mul_of_nonneg_right Real.pi_lt_four.le ht0
     nlinarith [sq_nonneg (|u| - 8), sq_abs u]
   have hd := hden t
   rw [abs_of_nonneg ht0] at hd
@@ -70,7 +68,7 @@ theorem exists_norm_normalized_zetaSquareRightKernel_far_le :
 theorem continuous_zetaSquareLeadingRightKernel (t : ℝ) :
     Continuous (zetaSquareLeadingRightKernel t) := by
   have haux := differentiable_hughesYoungAuxiliaryZero.continuous
-  have hw : ∀ u : ℝ, (1 : ℂ) + (u : ℂ) * I ≠ 0 := by
+  have hw : ∀ u : ℝ, 1 + (u : ℂ) * I ≠ 0 := by
     intro u h
     have := congrArg Complex.re h
     norm_num at this
@@ -83,10 +81,9 @@ theorem norm_zetaSquareLeadingRightKernel {t : ℝ} (ht : 0 < t) (u : ℝ) :
       Real.exp (100 - 100 * u ^ 2) * ‖hughesYoungAuxiliaryZero (1 + (u : ℂ) * I)‖ /
         ‖(1 : ℂ) + (u : ℂ) * I‖ * (t / (2 * Real.pi) * Real.exp (u * (Real.pi / 2))) := by
   unfold zetaSquareLeadingRightKernel
-  dsimp only
   rw [norm_mul, norm_mul, norm_zetaSquareReflectedGammaPhase, mul_one,
     norm_div, norm_mul, Complex.norm_exp, Complex.norm_exp, zetaGammaLeadingLog_mul_re]
-  have he : (100 * ((1 : ℂ) + (u : ℂ) * I) ^ 2).re = 100 - 100 * u ^ 2 := by
+  have he : (100 * (1 + (u : ℂ) * I) ^ 2).re = 100 - 100 * u ^ 2 := by
     norm_num [pow_two, Complex.mul_re, Complex.mul_im]
     ring
   rw [he]
@@ -100,12 +97,12 @@ theorem exists_norm_zetaSquareLeadingRightKernel_far_le :
   refine ⟨2500 * Real.exp 164, by positivity, ?_⟩
   intro t u ht hu
   have ht0 : 0 < t := by linarith
-  let R : ℝ := 1 + |u|
+  let R := 1 + |u|
   have hR : 1 ≤ R := by dsimp [R]; linarith [abs_nonneg u]
-  have hw : ‖(1 : ℂ) + (u : ℂ) * I‖ ≤ R := by
-    simpa [R, Real.norm_eq_abs] using norm_add_le (1 : ℂ) ((u : ℂ) * I)
-  have hwlower : 1 ≤ ‖(1 : ℂ) + (u : ℂ) * I‖ := by
-    simpa using Complex.abs_re_le_norm ((1 : ℂ) + (u : ℂ) * I)
+  have hw : ‖1 + (u : ℂ) * I‖ ≤ R := by
+    simpa [R, Real.norm_eq_abs] using norm_add_le 1 ((u : ℂ) * I)
+  have hwlower : 1 ≤ ‖1 + (u : ℂ) * I‖ := by
+    simpa using Complex.abs_re_le_norm (1 + (u : ℂ) * I)
   have haux := norm_hughesYoungAuxiliaryZero_le_polynomial hR hw
   have htR : t / (2 * Real.pi) ≤ 4 * R := by
     calc
@@ -123,7 +120,7 @@ theorem exists_norm_zetaSquareLeadingRightKernel_far_le :
     _ = 2500 * (Real.exp (100 - 100 * u ^ 2) * Real.exp (u * (Real.pi / 2))) * R ^ 9 := by ring
     _ ≤ 2500 * (Real.exp 164 * Real.exp (-90 * u ^ 2)) * R ^ 12 := by
       exact mul_le_mul (mul_le_mul_of_nonneg_left (gaussian_fusion_le he) (by norm_num))
-        (pow_le_pow_right₀ hR (show (9 : ℕ) ≤ 12 by norm_num)) (by positivity) (by positivity)
+        (pow_le_pow_right₀ hR (by norm_num)) (by positivity) (by positivity)
     _ = _ := by unfold zetaSquareKernelErrorMajorant; dsimp [R]; ring
 
 /-- A single integrable error majorant for the complete reflected source
@@ -170,7 +167,7 @@ theorem integrable_zetaSquareLeadingRightKernel {t : ℝ} (ht : 4 ≤ t) :
     (zetaSquareGammaNormalization t)).sub (integrable_zetaSquareRightKernel_error ht)
   convert h using 1
   funext u
-  simp only [Pi.sub_apply, sub_sub_cancel]
+  simp
 
 /-- The whole-line integrated absolute error has one uniform constant.
 This supplies an honest `O(1)` kernel remainder before the divisor series

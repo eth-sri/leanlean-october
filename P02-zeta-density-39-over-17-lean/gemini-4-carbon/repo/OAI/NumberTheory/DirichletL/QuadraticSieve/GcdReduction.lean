@@ -7,75 +7,10 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-
-open scoped BigOperators Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 namespace CanonicalQuadraticSieve
-open ActualEisensteinCubic CompletedGauss FiniteSieveOperator IdealCoprimeSieveOperator DivisorBlockCauchy
+open CompletedGauss FiniteSieveOperator IdealCoprimeSieveOperator DivisorBlockCauchy
 
 def gcdPool {n : Type*} [Fintype n] (cols : n → Ideal O) : Finset (Ideal O) :=
   Finset.univ.image (fun p : n × n => gcd (cols p.1) (cols p.2))
@@ -142,10 +77,7 @@ theorem sectorCoefficient_energy {n r : Type*} [Fintype n] [Fintype r] [Decidabl
 
 private theorem norm_sum_square_card {r : Type*} [Fintype r] (f : r → ℂ) :
     ‖∑ c, f c‖ ^ 2 ≤ (Fintype.card r : ℝ) * ∑ c, ‖f c‖ ^ 2 := by
-  have h := Finset.sum_mul_sq_le_sq_mul_sq Finset.univ (fun _ : r => (1 : ℝ)) (fun c => ‖f c‖)
-  have hh : ‖∑ c, f c‖ ^ 2 ≤ (∑ c, ‖f c‖) ^ 2 :=
-    pow_le_pow_left₀ (norm_nonneg _) (norm_sum_le _ _) 2
-  exact hh.trans (by simpa using h)
+  exact (pow_le_pow_left₀ (norm_nonneg _) (norm_sum_le _ _) 2).trans (by simpa using (Finset.sum_mul_sq_le_sq_mul_sq Finset.univ (fun _ : r => 1) (fun c => ‖f c‖)))
 
 theorem sector_energy_bound {m n r : Type*} [Fintype m] [Fintype n] [Fintype r] [DecidableEq r]
     (A : Matrix m n ℂ) (σ : n → r) (a : n → ℂ) :
@@ -170,8 +102,7 @@ theorem sector_energy_bound {m n r : Type*} [Fintype m] [Fintype n] [Fintype r] 
 end FiniteSieveRestriction
 
 namespace CanonicalQuadraticSieve
-open ActualEisensteinCubic CompletedGauss IdealCoprimeSieveOperator DivisorBlockCauchy
-open FiniteSieveRestriction
+open CompletedGauss IdealCoprimeSieveOperator DivisorBlockCauchy FiniteSieveRestriction
 
 def columnRay (I : Ideal O) : EisensteinEPrimaryPhase.Coord := ActualEisensteinCoordinates.residue (primaryGenerator I)
 
@@ -207,10 +138,7 @@ end FiniteSieveOperator
 
 namespace CanonicalQuadraticSieve
 
-open ActualEisensteinCubic CompletedGauss FiniteSieveOperator
-open IdealCoprimeSieveOperator DivisorBlockCauchy
-
-open ActualEisensteinCubic CompletedGauss FiniteSieveOperator IdealCoprimeSieveOperator DivisorBlockCauchy
+open CompletedGauss FiniteSieveOperator IdealCoprimeSieveOperator DivisorBlockCauchy
 
 def weightedGcdBlock {m n : Type*} [Fintype m] [Fintype n]
     (D : Ideal O) (rows : m → Ideal O) (cols : n → Ideal O) (w : m → ℂ) (a : n → ℂ) : ℂ :=
@@ -305,24 +233,21 @@ theorem sector_weighted_energy_bound {m n r : Type*} [Fintype m] [Fintype n] [Fi
       (Fintype.card r : ℝ) * ∑ c, ∑ i, v i * ‖∑ j, A i j * sectorCoefficient σ c a j‖ ^ 2 := by
   have hi (i : m) : ‖∑ j, A i j * a j‖ ^ 2 ≤
       (Fintype.card r : ℝ) * ∑ c, ‖∑ j, A i j * sectorCoefficient σ c a j‖ ^ 2 := by
-    simpa only [Fintype.sum_unique] using sector_energy_bound (fun _ : Unit => A i) σ a
-  calc
-    _ ≤ ∑ i, v i * ((Fintype.card r : ℝ) * ∑ c, ‖∑ j, A i j * sectorCoefficient σ c a j‖ ^ 2) :=
-      Finset.sum_le_sum (fun i _ => mul_le_mul_of_nonneg_left (hi i) (hv i))
-    _ = _ := by
+    simpa using sector_energy_bound (fun _ : Unit => A i) σ a
+  exact (Finset.sum_le_sum (fun i _ => mul_le_mul_of_nonneg_left (hi i) (hv i))).trans_eq (by
       simp only [Finset.mul_sum]
       rw [Finset.sum_comm]
       apply Finset.sum_congr rfl
       intro c _
       apply Finset.sum_congr rfl
       intro i _
-      ring
+      ring)
 end FiniteSieveRestriction
 
 namespace CanonicalQuadraticSieve
 
 section
-open ActualEisensteinCubic CompletedGauss IdealCoprimeSieveOperator DivisorBlockCauchy FiniteSieveRestriction
+open CompletedGauss IdealCoprimeSieveOperator DivisorBlockCauchy FiniteSieveRestriction
 
 theorem weighted_energy_eq_gcd_blocks {m n : Type*} [Fintype m] [Fintype n]
     (rows : m → Ideal O) (cols : n → Ideal O) (v : m → ℝ) (a : n → ℂ) :
@@ -383,18 +308,17 @@ theorem highKernel_weighted_energy_ray_gcd_reduction {m n : Type*} [Fintype m] [
         W * highKernelNorm M (N / G) K * (supportConstant ε hε * divisorConstant ε hε) *
           (N ^ ε) ^ 2 * ∑ j, ‖a j‖ ^ 2) := by
   let σ : n → EisensteinEPrimaryPhase.Coord := fun j => columnRay (cols j)
-  let C := W * highKernelNorm M (N / G) K * (supportConstant ε hε * divisorConstant ε hε) * (N ^ ε) ^ 2
   have hs := sector_weighted_energy_bound
     (fun i j => quadraticRow (cols j) (primaryGenerator (rows i))) σ a v (fun i => (hv i).1)
   have hcard : Fintype.card EisensteinEPrimaryPhase.Coord = 16 := by decide
   rw [hcard] at hs
-  norm_num only [Nat.cast_ofNat] at hs
+  norm_num at hs
   apply hs.trans
   apply mul_le_mul_of_nonneg_left _ (by norm_num)
   calc
     _ ≤ ∑ c : EisensteinEPrimaryPhase.Coord,
         ((∑ D ∈ (gcdPool cols).filter (fun D => (Ideal.absNorm D : ℝ) ≤ G),
-          ‖weightedRayGcdBlock D c rows cols v a‖) + C * ∑ j, ‖sectorCoefficient σ c a j‖ ^ 2) := by
+          ‖weightedRayGcdBlock D c rows cols v a‖) + (W * highKernelNorm M (N / G) K * (supportConstant ε hε * divisorConstant ε hε) * (N ^ ε) ^ 2) * ∑ j, ‖sectorCoefficient σ c a j‖ ^ 2) := by
       apply Finset.sum_le_sum
       intro c _
       exact highKernel_weighted_energy_gcd_reduction ε hε G hG rows cols hr hc M N K hN hrows hcols v W hW hv
@@ -403,7 +327,7 @@ theorem highKernel_weighted_energy_ray_gcd_reduction {m n : Type*} [Fintype m] [
 
 end
 
-open ActualEisensteinCubic CompletedGauss IdealCoprimeSieveOperator DivisorBlockCauchy
+open CompletedGauss IdealCoprimeSieveOperator DivisorBlockCauchy
 
 end CanonicalQuadraticSieve
 

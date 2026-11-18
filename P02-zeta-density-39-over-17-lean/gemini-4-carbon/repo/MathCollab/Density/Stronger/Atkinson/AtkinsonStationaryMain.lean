@@ -48,8 +48,7 @@ theorem exists_norm_atkinsonFiniteStationaryMain_sub_main_le (α : ℝ) :
   obtain ⟨C, hC, hbound⟩ := exists_intervalC1Bound_atkinsonPowerWeight_root α
   refine ⟨C, hC, ?_⟩
   intro T G L b H hT hG hGT hL hH hr
-  have hc : 1 < atkinsonSaddleCurvature T b := one_lt_atkinsonSaddleCurvature hT b
-  have hW := (hbound T G L hT hG hGT hL).norm_le _ hr
+  have hc := one_lt_atkinsonSaddleCurvature hT b
   have hF := norm_atkinsonQuadraticWindow_sub_gaussianValue_le (by linarith : 0 <
     atkinsonSaddleCurvature T b) hH
   have htail : 2 / (atkinsonSaddleCurvature T b * H * Real.pi) ≤ 2 / (H * Real.pi) := by
@@ -57,7 +56,7 @@ theorem exists_norm_atkinsonFiniteStationaryMain_sub_main_le (α : ℝ) :
     nlinarith [mul_pos hH Real.pi_pos]
   unfold atkinsonFiniteStationaryMain atkinsonStationaryMain
   rw [← mul_sub, norm_mul, norm_mul, norm_mul, Complex.norm_ofNat, norm_atkinsonRootKernel, mul_one]
-  apply (mul_le_mul (mul_le_mul_of_nonneg_left hW (by norm_num : (0 : ℝ) ≤ 2))
+  apply (mul_le_mul (mul_le_mul_of_nonneg_left ((hbound T G L hT hG hGT hL).norm_le _ hr) (by norm_num : (0 : ℝ) ≤ 2))
     (hF.trans htail) (norm_nonneg _) (by positivity)).trans_eq
   ring
 

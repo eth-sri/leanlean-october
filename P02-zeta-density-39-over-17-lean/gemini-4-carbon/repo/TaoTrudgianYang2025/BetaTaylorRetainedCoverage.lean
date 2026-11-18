@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaCanonicalTaylorLegendre
 
 @[expose] public section
@@ -62,8 +72,8 @@ theorem modelPhaseSharpStationarySet_taylor_plateau
   have hη : 0 < (Real.sqrt T)⁻¹ := by positivity
   have hc := modelPhaseCurvatureLower_pos hσ
   have hd : 0 ≤ N/(T*(σ+1)) := by positivity
-  have ha' : 1 ≤ (a : ℝ)/N := (one_le_div hN).mpr ha
-  have hb' : (b : ℝ)/N ≤ 2 := (div_le_iff₀ hN).mpr hb
+  have ha' := (one_le_div hN).mpr ha
+  have hb' := (div_le_iff₀ hN).mpr hb
   have huL : 1+2*(Real.sqrt T)⁻¹ ≤ modelPhaseInverseSlope F ((q : ℝ)*N/T) := by
     linarith [hg.2.1]
   have huR : modelPhaseInverseSlope F ((q : ℝ)*N/T) ≤ 2-2*(Real.sqrt T)⁻¹ := by
@@ -88,8 +98,8 @@ theorem modelPhaseTaylorWidth_source_admissible
       modelPhaseClosedSlope F 2+4*modelPhaseTaylorWidth σ ((Real.sqrt T)⁻¹) <
         modelPhaseClosedSlope F 1 := by
   have hη : 0 < (Real.sqrt T)⁻¹ := by positivity
-  have ha' : 1 ≤ (a : ℝ)/N := (one_le_div hN).mpr ha
-  have hb' : (b : ℝ)/N ≤ 2 := (div_le_iff₀ hN).mpr hb
+  have ha' := (one_le_div hN).mpr ha
+  have hb' := (div_le_iff₀ hN).mpr hb
   have hη₁ : (Real.sqrt T)⁻¹ < 1 := by linarith
   exact modelPhaseTaylorWidth_admissible hσ hδ hF hη hη₁
 

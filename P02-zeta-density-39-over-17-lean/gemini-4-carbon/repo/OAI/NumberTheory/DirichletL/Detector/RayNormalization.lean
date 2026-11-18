@@ -15,26 +15,19 @@ local notation "Id" => Ideal HeckeFamily.O
 
 theorem log_power_absorption (c ell d : ℝ) (hc : 0<c) (hell : 0<ell) (hd : 0<d) :
     ∀ᶠZ : ℝ in atTop,Z^(ell/6-d)≤c*(Z^ell)^(1/6:ℝ)/Real.log (Z^ell) := by
-  have hh := (isLittleO_log_rpow_atTop hd).bound (div_pos hc hell)
-  filter_upwards [hh,eventually_gt_atTop (1:ℝ)] with Z hZ hZ1
+  filter_upwards [((isLittleO_log_rpow_atTop hd).bound (div_pos hc hell)),eventually_gt_atTop (1:ℝ)] with Z hZ hZ1
   have hZ0 : 0<Z := by linarith
-  have hlog : 0<Real.log Z := Real.log_pos hZ1
-  have hzd : 0<Z^d := Real.rpow_pos_of_pos hZ0 _
+  have hlog := Real.log_pos hZ1
   have hb : ell*Real.log Z≤c*Z^d := by
     have hb' : Real.log Z≤(c/ell)*Z^d := by
-      simpa only [Real.norm_eq_abs,abs_of_pos hlog,abs_of_pos hzd] using hZ
-    calc
-      _ ≤ ell*((c/ell)*Z^d) := mul_le_mul_of_nonneg_left hb' hell.le
-      _ = _ := by field_simp
+      simpa only [Real.norm_eq_abs,abs_of_pos hlog,abs_of_pos (Real.rpow_pos_of_pos hZ0 _)] using hZ
+    exact (mul_le_mul_of_nonneg_left hb' hell.le).trans_eq (by field_simp)
   rw [Real.log_rpow hZ0,←Real.rpow_mul hZ0.le]
   apply (le_div_iff₀ (mul_pos hell hlog)).mpr
-  calc
-    Z^(ell/6-d)*(ell*Real.log Z) ≤ Z^(ell/6-d)*(c*Z^d) :=
-      mul_le_mul_of_nonneg_left hb (Real.rpow_nonneg hZ0.le _)
-    _ = c*Z^(ell*(1/6:ℝ)) := by
+  exact (mul_le_mul_of_nonneg_left hb (Real.rpow_nonneg hZ0.le _)).trans_eq (by
       rw [mul_left_comm,←Real.rpow_add hZ0]
       congr 1
-      ring_nf
+      ring_nf)
 
 theorem principalScalar_inverse_of_slot_bounds {ι : Type*} (J : Finset ι)
     (ell mass : ι→ℝ) (Z d eps : ℝ) (hZ : 1≤Z) (_hd : 0≤d)

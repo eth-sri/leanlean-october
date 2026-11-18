@@ -59,7 +59,7 @@ theorem atkinsonRootSlope_derivative_bounds {T y : ℝ} (hT : 0 < T)
     (hy : Real.sqrt T / 4 ≤ y) (b : ℝ) :
     |deriv (atkinsonRootSlope T b) y| ≤ 8 ∧
       |iteratedDeriv 2 (atkinsonRootSlope T b) y| ≤ 64 / Real.sqrt T := by
-  have hS : 0 < Real.sqrt T := Real.sqrt_pos.2 hT
+  have hS := Real.sqrt_pos.2 hT
   have hy0 : 0 < y := by linarith
   have hT16 : T ≤ 16 * y ^ 2 := by nlinarith [Real.sq_sqrt hT.le]
   have hfrac : T / (Real.pi * y ^ 2) ≤ 6 := by
@@ -92,8 +92,6 @@ theorem intervalC2Bound_atkinsonSlope_reciprocal_band {T G L B : ℝ}
         (3 / B) (32 * (G / Real.sqrt T)) := by
   have hG0 : 0 < G := by linarith
   have hL0 : 0 < L := by linarith
-  have hS : 0 < Real.sqrt T := Real.sqrt_pos.2 hT
-  have hB0 : 0 < B := (by positivity : 0 < 6 * Real.sqrt T * (L / G)).trans_le hB
   have hBG : 6 * L ≤ B * (G / Real.sqrt T) := by
     calc
       _ = (6 * Real.sqrt T * (L / G)) * (G / Real.sqrt T) := by field_simp
@@ -108,7 +106,7 @@ theorem intervalC2Bound_atkinsonSlope_reciprocal_band {T G L B : ℝ}
     rw [Real.sqrt_div hT.le] at h
     norm_num at h
     exact h
-  refine intervalC2Bound_real_reciprocal hB0 (by positivity) ?_ hslope ?_ ?_
+  refine intervalC2Bound_real_reciprocal ((by positivity : 0 < 6 * Real.sqrt T * (L / G)).trans_le hB) (by positivity) ?_ hslope ?_ ?_
   · intro y hy
     have hy0 := (atkinsonRootBandLower_pos hT G L).trans_le hy.1
     unfold atkinsonRootSlope
@@ -120,7 +118,7 @@ theorem intervalC2Bound_atkinsonSlope_reciprocal_band {T G L B : ℝ}
     apply (atkinsonRootSlope_derivative_bounds hT (hmem y hy) b).2.trans
     calc
       _ ≤ (1024 * (B * (G / Real.sqrt T)) * G) / Real.sqrt T := by
-        apply div_le_div_of_nonneg_right _ hS.le
+        apply div_le_div_of_nonneg_right _ (Real.sqrt_pos.2 hT).le
         nlinarith
       _ = _ := by ring
 

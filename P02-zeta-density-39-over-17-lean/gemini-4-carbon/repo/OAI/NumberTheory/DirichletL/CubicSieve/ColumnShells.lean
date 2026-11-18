@@ -6,9 +6,8 @@ public import OAI.NumberTheory.DirichletL.CubicSieve.QuotientColumns
 namespace OAI
 
 namespace SevenEighths.CubicSieve
+open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge CanonicalQuadraticSieve FiniteSieveRestriction
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
-open CanonicalQuadraticSieve FiniteSieveRestriction
 noncomputable section
 local notation "O" => ActualEisensteinCubic.O
 
@@ -54,22 +53,12 @@ theorem cubic_energy_column_shells {n : Type*} [Fintype n]
       (columnDyadicLength N + 1 : ℝ)*∑ l : Fin (columnDyadicLength N + 1),
         ‖∑ j : CubicColumnShell cols N l, cubicRow (cols j.val) z*a j.val‖^2 := by
     rw [← Fintype.sum_fiberwise (cubicColumnLabel cols N) (fun j => cubicRow (cols j) z*a j)]
-    calc
-      _ ≤ (∑ l : Fin (columnDyadicLength N + 1),
-          ‖∑ j : CubicColumnShell cols N l, cubicRow (cols j.val) z*a j.val‖)^2 :=
-        pow_le_pow_left₀ (norm_nonneg _) (norm_sum_le _ _) 2
-      _ ≤ _ := by
-        simpa only [one_mul, one_pow, Finset.sum_const, nsmul_eq_mul, mul_one,
-          Finset.card_univ, Fintype.card_fin, Nat.cast_add, Nat.cast_one] using
-          (Finset.sum_mul_sq_le_sq_mul_sq Finset.univ (fun _ => (1 : ℝ))
+    exact (pow_le_pow_left₀ (norm_nonneg _) (norm_sum_le _ _) 2).trans (by
+        simpa using
+          (Finset.sum_mul_sq_le_sq_mul_sq Finset.univ (fun _ => 1)
             (fun l : Fin (columnDyadicLength N + 1) =>
-              ‖∑ j : CubicColumnShell cols N l, cubicRow (cols j.val) z*a j.val‖))
-  calc
-    _ ≤ ∑ z ∈ R, (columnDyadicLength N + 1 : ℝ)*
-        ∑ l : Fin (columnDyadicLength N + 1),
-          ‖∑ j : CubicColumnShell cols N l, cubicRow (cols j.val) z*a j.val‖^2 :=
-      Finset.sum_le_sum (fun z hz => hp z)
-    _ = _ := by rw [← Finset.mul_sum, Finset.sum_comm]
+              ‖∑ j : CubicColumnShell cols N l, cubicRow (cols j.val) z*a j.val‖)))
+  exact (Finset.sum_le_sum (fun z hz => hp z)).trans_eq (by rw [← Finset.mul_sum, Finset.sum_comm])
 
 end
 end SevenEighths.CubicSieve

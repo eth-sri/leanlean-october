@@ -10,8 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSecondDiagonal
-open CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentSupportedCorrelation
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
+open CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentSupportedCorrelation CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
 local notation "O" => ActualEisensteinCubic.O
 
 theorem full_zero_off_diagonal (u v : O)
@@ -32,21 +31,17 @@ theorem full_zero_off_diagonal (u v : O)
     · rw [hx0,zero_mul]
     by_cases hy0 : ψ (Ideal.Quotient.mk _ y) = 0
     · rw [hy0,star_zero,mul_zero]
-    have hux : IsCoprime u x := ((Ideal.isCoprime_span_singleton_iff x u).mp
+    have hux := ((Ideal.isCoprime_span_singleton_iff x u).mp
       ((IdealCharacter.isUnit_mk_iff_isCoprime _ _).mp (MulChar.apply_ne_zero_iff.mp hx0))).symm
-    have hvy : IsCoprime v y := ((Ideal.isCoprime_span_singleton_iff y v).mp
+    have hvy := ((Ideal.isCoprime_span_singleton_iff y v).mp
       ((IdealCharacter.isUnit_mk_iff_isCoprime _ _).mp (MulChar.apply_ne_zero_iff.mp hy0))).symm
     simp only [sub_zero] at hc
     have hu : u ∣ v*x := by
-      have he := dvd_add ((dvd_mul_right u v).trans hc) (dvd_mul_right u y)
-      convert he using 1 ; ring
+      convert (dvd_add ((dvd_mul_right u v).trans hc) (dvd_mul_right u y)) using 1 ; ring
     have hv : v ∣ u*y := by
-      have he := dvd_sub (dvd_mul_right v x) ((dvd_mul_left v u).trans hc)
-      convert he using 1 ; ring
-    have huv := hux.dvd_of_dvd_mul_right hu
-    have hvu := hvy.dvd_of_dvd_mul_right hv
-    exact False.elim (hne (le_antisymm (Ideal.span_singleton_le_span_singleton.mpr hvu)
-      (Ideal.span_singleton_le_span_singleton.mpr huv)))
+      convert (dvd_sub (dvd_mul_right v x) ((dvd_mul_left v u).trans hc)) using 1 ; ring
+    exact False.elim (hne (le_antisymm (Ideal.span_singleton_le_span_singleton.mpr (hvy.dvd_of_dvd_mul_right hv))
+      (Ideal.span_singleton_le_span_singleton.mpr (hux.dvd_of_dvd_mul_right hu))))
   · rfl
 
 theorem full_same_zero (u : O) (hu : u ≠ 0) [Fintype (Residue u)]
@@ -94,8 +89,7 @@ theorem actual_same_zero_norm_le (u : O) (hu : Supported (Ideal.span {u})) :
     ‖actualCorrelation u u hu hu 0‖ ≤ (Ideal.absNorm (Ideal.span {u}) : ℝ) := by
   let := ConcreteTraceCRT.finite_quotient_span (supported_element_ne_zero u hu)
   let : Fintype (Residue u) := Fintype.ofFinite _
-  have hb := full_same_zero_norm_le u (supported_element_ne_zero u hu) (supportedModulusCharacter u hu)
-  simpa only [actualCorrelation,supportedCorrelation,Ideal.absNorm_apply,Submodule.cardQuot_apply,Nat.card_eq_fintype_card] using hb
+  simpa only [actualCorrelation,supportedCorrelation,Ideal.absNorm_apply,Submodule.cardQuot_apply,Nat.card_eq_fintype_card] using (full_same_zero_norm_le u (supported_element_ne_zero u hu) (supportedModulusCharacter u hu))
 
 theorem divisible_ideal_card (S : Finset (Ideal O)) (s : Ideal O) (hs : s ≠ 0)
     (hS : ∀ I ∈ S, I ≠ 0) (hdiv : ∀ I ∈ S, s ∣ I)

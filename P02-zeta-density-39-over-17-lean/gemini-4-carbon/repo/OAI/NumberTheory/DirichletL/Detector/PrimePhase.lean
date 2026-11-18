@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.ProbePhase
-open ActualEisensteinCubic ActualEisensteinCoordinates CompletedGauss
-open ConcreteTraceCRT ConcretePrimeRowBridge QuadraticGaussRay FiniteGaussPhase CubicEisenstein
+open ActualEisensteinCubic ActualEisensteinCoordinates CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge QuadraticGaussRay FiniteGaussPhase CubicEisenstein
 local notation "O" => ActualEisensteinCubic.O
 
 theorem normalizedTraceGauss_eq_normalizedGauss (p : O) (hp : p ≠ 0)
@@ -59,20 +58,17 @@ theorem normalizedTraceGauss_three_sq (p : O) (hp : p ≠ 0)
   let : Field (O ⧸ Ideal.span {p}) := Ideal.Quotient.field _
   let : Fintype (O ⧸ Ideal.span {p}) := Fintype.ofFinite _
   let χ := actualSextic (Ideal.span {p}) hg
-  have h6 : χ ^ 6 = 1 := (ProbePrimePower.actualSextic_pow_eq_one_iff _ hg hc 6).mpr (by decide)
   have h3 : χ ^ 3 ≠ 1 := fun h => (by decide : ¬6 ∣ 3)
     ((ProbePrimePower.actualSextic_pow_eq_one_iff _ hg hc 3).mp h)
   have hi : (χ ^ 3)⁻¹ = χ ^ 3 := by
     apply inv_eq_of_mul_eq_one_right
     rw [← pow_add]
-    exact h6
-  have hψ : (quotientTrace p hp).IsPrimitive :=
-    GeneralPrimitiveTrace.eisTraceModChar_breveE_primitive p hp
+    exact ((ProbePrimePower.actualSextic_pow_eq_one_iff _ hg hc 6).mpr (by decide))
+  have hψ := GeneralPrimitiveTrace.eisTraceModChar_breveE_primitive p hp
   have he := ProbeGauss.normalizedGauss_inverse_pair (χ ^ 3) (quotientTrace p hp) h3 hψ
   rw [hi, ← pow_two] at he
-  rw [normalizedTraceGauss_eq_normalizedGauss]
-  rw [he]
-  simp only [MulChar.pow_apply' _ (by decide : (3 : ℕ) ≠ 0), ← map_pow]
+  rw [normalizedTraceGauss_eq_normalizedGauss, he]
+  simp only [MulChar.pow_apply' _ (by decide : 3 ≠ 0), ← map_pow]
   norm_num
   rfl
 

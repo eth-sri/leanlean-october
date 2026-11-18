@@ -10,15 +10,12 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstAmplifiedRadiusLower
-open CenteredMomentAmplifiedRetainedRadius CenteredMomentSectorLocalization
-open CenteredMomentFirstAmplificationChoice CenteredMomentFirstScale
-open CenteredMomentFirstPhysicalDyadicRows
+open CenteredMomentAmplifiedRetainedRadius CenteredMomentSectorLocalization CenteredMomentFirstAmplificationChoice CenteredMomentFirstScale CenteredMomentFirstPhysicalDyadicRows
 local notation "O" => ActualEisensteinCubic.O
 
 lemma base_radius_identity (Z K0 Csec xi : ℝ) (hZ : 1<Z) (hC : 0<Csec) :
     Z^(K0+frequencyLoss Z (32*Csec) xi)=128*Csec*Z^K0*Z^(xi/2) := by
-  have h := source_enclosure_power Z (32*Csec) K0 xi 1 hZ (by positivity) zero_lt_one
-  simpa only [Real.logb_one,sub_zero,div_one] using h.symm.trans (by ring)
+  simpa using (source_enclosure_power Z (32*Csec) K0 xi 1 hZ (by positivity) zero_lt_one).symm.trans (by ring)
 
 lemma retained_base_le (Z K0 Csec Tsec xi H0 : ℝ) (hZ : 1<Z) (hC : 0<Csec)
     (hsec : Tsec≤Csec*Z^K0) (hrow : H0≤4*frequencyRadius Tsec Z xi) :
@@ -42,10 +39,10 @@ theorem common_radii_lower (Z d K0 c sigma reserve Csec Tsec xi H0 : ℝ)
   constructor
   · apply hb.trans
     apply Real.rpow_le_rpow_of_exponent_le hZ.le
-    linarith [le_max_right (d-c) (0:ℝ)]
+    linarith [le_max_right (d-c) 0]
   · apply hb.trans
     apply Real.rpow_le_rpow_of_exponent_le hZ.le
-    linarith [le_max_right (d-c-2*errorRemoval p Z k+errorMoving p Z k) (0:ℝ)]
+    linarith [le_max_right (d-c-2*errorRemoval p Z k+errorMoving p Z k) 0]
 
 theorem actual_retained_radii_lower (I J E : Ideal O) (hE : E≠0)
     (K X Z Csec Tsec xi d c sigma reserve : ℝ)

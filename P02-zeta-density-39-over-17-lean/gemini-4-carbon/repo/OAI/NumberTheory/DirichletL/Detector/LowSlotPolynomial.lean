@@ -35,8 +35,7 @@ lemma lowSlotJoin_weight {K : ℕ} (η : HeckeFamily.Character) (slots : Fin K�
       selectedSlotFactor W P (lowSlotJoin slots J a b) J t=
         lowUnselectedWeight slots J W P a*lowSelectedWeight η slots J W P t b := by
   unfold compensationSubsetWeight compensationSubsetCoefficient
-  rw [lowSlotJoin_unselectedProduct,lowSlotJoin_selectedProduct,lowSlotJoin_selectedFactor]
-  rw [←Finset.prod_coe_sort J (fun i=>W i (elementNorm (lowSlotJoin slots J a b i)/P i))]
+  rw [lowSlotJoin_unselectedProduct,lowSlotJoin_selectedProduct,lowSlotJoin_selectedFactor, ←Finset.prod_coe_sort J (fun i=>W i (elementNorm (lowSlotJoin slots J a b i)/P i))]
   simp only [lowSlotJoin_unselected]
   unfold lowUnselectedWeight lowSelectedWeight
   ring
@@ -107,7 +106,6 @@ theorem compensation_tuple_low_polynomial {K : ℕ} (η : HeckeFamily.Character)
       rw [compensationRowTest_join_low η S hS hbad W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1 hWs
         slots hslots J a b X Y T t hX hY hT]
       have hw := lowSlotJoin_weight η slots J W P t a b
-      dsimp only [C,Ω,L,N]
       linear_combination (Real.sqrt (lowPhysicalScale (calibrationForSet S hS)
         (X/elementNorm (∏i : J,(a i).val)) (Y/elementNorm (∏i : J,(a i).val))):ℂ)⁻¹*
         (1/(2*Real.pi):ℂ)*(∫v : ℝ,lowSeparatedIntegrand (calibrationForSet S hS) W0 W1

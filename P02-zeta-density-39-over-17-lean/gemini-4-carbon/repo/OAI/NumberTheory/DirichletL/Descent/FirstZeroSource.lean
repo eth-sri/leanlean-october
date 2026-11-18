@@ -34,10 +34,10 @@ theorem first_variable_zero_common_bound
         H₁ H₂ W K‖≤
       if cubeActiveSupport b.support (fun i=>b.leftExponent i+b.rightExponent i) b.leftBit b.rightBit=∅ then
         (128*(L))*(labels.card:ℝ)*(Γ*(G₁*G₂*|K| *‖paperRadialFourier W 0‖)) else 0 := by
-  let z (C:Finset ι) (I:Ideal O):ℂ:=canonicalCubeDualZero p hp hcop hg pool b C Ψ₁ Ψ₂ m₁ m₂
+  let z (C:Finset ι) (I:Ideal O) :=canonicalCubeDualZero p hp hcop hg pool b C Ψ₁ Ψ₂ m₁ m₂
     (ConcretePrimeRowBridge.idealGenerator I)
     H₁ H₂ W K
-  let Q:ℝ:=Γ*(G₁*G₂*|K| *‖paperRadialFourier W 0‖)
+  let Q :=Γ*(G₁*G₂*|K| *‖paperRadialFourier W 0‖)
   have hQ:0≤Q:=by dsimp [Q];positivity
   have heq : (∑C∈(pool\b.support).powerset,∑I∈labels,a C I*z C I)=
       ∑C∈boundedPrimeSupports p (pool\b.support) (L),∑I∈labels,a C I*z C I := by
@@ -112,17 +112,15 @@ theorem full_variable_first_zero_bound (ε : ℝ) (hε : 0<ε) :
   let Q:=Γ*(G₁*G₂*|K| *‖paperRadialFourier W 0‖)
   let good:=fun b:CubeCoordinates ι=>cubeActiveSupport b.support (fun i=>b.leftExponent i+b.rightExponent i) b.leftBit b.rightBit=∅
   have hQ:0≤Q:=by dsimp [Q];positivity
-  have hlabel:(labels.card:ℝ)≤128*F:=DescentFiberCost.finite_ideal_count_real labels F hF hI0 hIF
   have hbcount:((bs.filter good).card:ℝ)≤C*B^(1+ε):=by
     have h:=hcount p hp hinj (bs.filter good) B 1 hB (by norm_num)
       (fun b hb=>hadm b (Finset.mem_filter.mp hb).1)
       (fun b hb=>hb1 b (Finset.mem_filter.mp hb).1)
       (fun b hb=>hb2 b (Finset.mem_filter.mp hb).1)
       (fun b hb=>by
-        have he : cubeActiveSupport b.support (fun i=>b.leftExponent i+b.rightExponent i) b.leftBit b.rightBit=∅ := (Finset.mem_filter.mp hb).2
-        rw [he]
+        rw [((Finset.mem_filter.mp hb).2)]
         simp)
-    simpa only [mul_one] using h
+    simpa using h
   calc
     _ ≤ ∑b∈bs,‖∑D∈(pool\b.support).powerset,∑I∈labels,a b D I*
         canonicalCubeDualZero p hp hcop hg pool b D Ψ₁ Ψ₂ m₁ m₂
@@ -138,7 +136,7 @@ theorem full_variable_first_zero_bound (ε : ℝ) (hε : 0<ε) :
     _ ≤ (C*B^(1+ε))*((128*(L))*(128*F)*Q):=by
       apply mul_le_mul hbcount _ (by positivity) (by positivity)
       exact mul_le_mul_of_nonneg_right
-        (mul_le_mul_of_nonneg_left hlabel (by positivity)) hQ
+        (mul_le_mul_of_nonneg_left (DescentFiberCost.finite_ideal_count_real labels F hF hI0 hIF) (by positivity)) hQ
     _ = _ := by dsimp [Q];ring
 
 end SevenEighths.InverseMoment

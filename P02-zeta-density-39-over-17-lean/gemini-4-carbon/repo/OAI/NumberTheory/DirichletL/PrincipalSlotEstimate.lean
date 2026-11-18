@@ -31,8 +31,8 @@ theorem principal_correction_defect {Q : ℝ} {A η s : ℂ}
   have h := unramifiedClosed_second_region_bound Q A η 1 s 1 (1 / 6)
     (by linarith) hA hη (by simp) hs (by norm_num) (by norm_num)
   calc
-    _ ≤ 240 * Q ^ (-(363 / 200 : ℝ)) := h
-    _ ≤ 240 * Q ^ (-1 : ℝ) := mul_le_mul_of_nonneg_left
+    _ ≤ 240 * Q ^ (-(363 / 200)) := h
+    _ ≤ 240 * Q ^ (-1) := mul_le_mul_of_nonneg_left
       (Real.rpow_le_rpow_of_exponent_le hQ1 (by norm_num)) (by norm_num)
     _ ≤ 1 / 2 := by
       rw [Real.rpow_neg_one, ← div_eq_mul_inv]
@@ -67,12 +67,11 @@ theorem unit_phase_inverse (η : ℂ) (hη : ‖η‖ = 1) : star η * η = 1 :=
 
 theorem principal_coord_cancellation {Q : ℝ} (hQ : 0 < Q) (η s : ℂ) (hη : ‖η‖ = 1) :
     (star η * (Q : ℂ) ^ s) * coordD Q η 1 s = 1 := by
-  have hQ0 : (Q : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hQ.ne'
   unfold coordD
   simp only [star_one, mul_one]
   calc
     _ = (star η * η) * ((Q : ℂ) ^ s * (Q : ℂ) ^ (-s)) := by ring
-    _ = 1 := by rw [unit_phase_inverse η hη, ← Complex.cpow_add _ _ hQ0]; simp
+    _ = 1 := by rw [unit_phase_inverse η hη, ← Complex.cpow_add _ _ (Complex.ofReal_ne_zero.mpr hQ.ne')]; simp
 
 theorem principal_V {Q : ℝ} : coordV Q (1 / 6) = (Q : ℂ)⁻¹ := by
   norm_num [coordV, Complex.cpow_neg_one]
@@ -219,35 +218,28 @@ theorem principal_replacement_error {Q : ℝ} {A η s : ℂ}
   have hVhalf : ‖coordV Q (1 / 6)‖ ≤ 1 / 2 := by
     rw [hV]; exact rpow_le_half Q (-1) hQ4 (by norm_num)
   have hD := coordD_norm_le Q hQ0 η 1 s hη.le (by simp)
-  have hDhalf := hD.trans (rpow_le_half Q (-s.re) hQ4 (by linarith))
   have hWq : coordW Q 1 1 = (Q : ℂ) ^ (-1 : ℂ) := by simp [coordW]
   have hq : ‖(Q : ℂ) ^ (-1 : ℂ)‖ ≤ 1 := by
     rw [Complex.cpow_neg_one, ← principal_V]; linarith
   have hW : ‖coordW Q 1 1‖ ≤ 1 := by rw [hWq]; exact hq
   have hVT : ‖coordV Q (1 / 6)‖ ≤ Q ^ (-(7 / 8 : ℝ)) := by
     rw [hV]; exact Real.rpow_le_rpow_of_exponent_le hQ1 (by norm_num)
-  have hDT : ‖coordD Q η 1 s‖ ≤ Q ^ (-(7 / 8 : ℝ)) :=
-    hD.trans (Real.rpow_le_rpow_of_exponent_le hQ1 (by linarith))
   have hE := principal_marked_error_bounds hQ hA hη hs
   exact compensated_unit_error_bound _ _ _ _ _ _ _ (Real.rpow_nonneg hQ0.le _)
-    hVhalf hW hDhalf hq hVT hDT hE.1 hE.2
+    hVhalf hW (hD.trans (rpow_le_half Q (-s.re) hQ4 (by linarith))) hq hVT (hD.trans (Real.rpow_le_rpow_of_exponent_le hQ1 (by linarith))) hE.1 hE.2
     (principal_coord_cancellation hQ0 η s hη) hWq
 
 theorem principal_slot_error {Q : ℝ} {A η s : ℂ}
     (hQ : 480 ≤ Q) (hA : ‖A‖ ≤ 1) (hη : ‖η‖ = 1) (hs : 7 / 8 ≤ s.re) :
     ‖principalSlot Q A η s + 1‖ ≤ 1440 * Q ^ (-(7 / 8 : ℝ)) := by
   have hn := principal_correction_ne_zero hQ hA hη.le hs
-  have he := principal_replacement_error hQ hA hη hs
-  have hi := principal_correction_inverse_bound hQ hA hη.le hs
   have hid : principalSlot Q A η s + 1 =
       (principalReplacement Q A η s + unramifiedClosed Q A η 1 s 1 (1 / 6)) *
         (unramifiedClosed Q A η 1 s 1 (1 / 6))⁻¹ := by
     unfold principalSlot
     field_simp
   rw [hid, norm_mul]
-  calc
-    _ ≤ (720 * Q ^ (-(7 / 8 : ℝ))) * 2 := mul_le_mul he hi (norm_nonneg _) (by positivity)
-    _ = _ := by ring
+  exact (mul_le_mul (principal_replacement_error hQ hA hη hs) (principal_correction_inverse_bound hQ hA hη.le hs) (norm_nonneg _) (by positivity)).trans_eq (by ring)
 
 theorem weighted_slot_error {ι : Type*} (S : Finset ι) (w : ι → ℝ) (B : ι → ℂ)
     (δ : ℝ) (hw : ∀ i ∈ S, 0 ≤ w i) (hB : ∀ i ∈ S, ‖B i + 1‖ ≤ δ) :
@@ -291,7 +283,7 @@ theorem product_error {κ : Type*} (S : Finset κ) (F : κ → ℂ)
     have hSF : ∀ i ∈ S, ‖F i - 1‖ ≤ δ := fun i hi => hF i (Finset.mem_insert_of_mem hi)
     have hprod := ih hSF
     have haN : ‖F a‖ ≤ 1 + δ := by
-      have h := norm_sub_norm_le (F a) (1 : ℂ)
+      have h := norm_sub_norm_le (F a) 1
       simp only [norm_one] at h
       linarith
     rw [Finset.prod_insert ha, Finset.card_insert_of_notMem ha]
@@ -337,7 +329,7 @@ theorem fixed_product_relative_error {κ : Type*} (S : Finset κ)
   rw [principalScalar_eq, ← Finset.prod_div_distrib]
   apply product_error S _ δ hδ
   intro i hi
-  have hMi : (M i : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr (hM i hi).ne'
+  have hMi := Complex.ofReal_ne_zero.mpr (hM i hi).ne'
   have hid : W i / (-(M i : ℂ)) - 1 = -(W i + (M i : ℂ)) / (M i : ℂ) := by
     field_simp
     ring
@@ -409,9 +401,9 @@ theorem region_correction_defect {Q : ℝ} {A η s w z : ℂ}
   have hQ0 : 0 < Q := by linarith
   have hQ1 : 1 ≤ Q := by linarith
   calc
-    _ ≤ 240 * Q ^ (-(363 / 200 : ℝ)) :=
+    _ ≤ 240 * Q ^ (-(363 / 200)) :=
       unramifiedClosed_second_region_bound Q A η 1 s w z (by linarith) hA hη (by simp) hs hw hz
-    _ ≤ 240 * Q ^ (-1 : ℝ) := mul_le_mul_of_nonneg_left
+    _ ≤ 240 * Q ^ (-1) := mul_le_mul_of_nonneg_left
       (Real.rpow_le_rpow_of_exponent_le hQ1 (by norm_num)) (by norm_num)
     _ ≤ 1 / 2 := by
       rw [Real.rpow_neg_one, ← div_eq_mul_inv]
@@ -533,17 +525,13 @@ theorem region_slot_error {Q : ℝ} {A η s w z : ℂ}
     (hw : 19 / 20 ≤ w.re) (hz : 33 / 200 ≤ z.re) :
     ‖regionSlot Q A η s w z + 1‖ ≤ 1440 * Q ^ (-(7 / 8 : ℝ)) := by
   have hn := region_correction_ne_zero hQ hA hη.le hs hw hz
-  have he := region_replacement_error hQ hA hη hs hw hz
-  have hi := region_correction_inverse_bound hQ hA hη.le hs hw hz
   have hid : regionSlot Q A η s w z + 1 =
       (regionReplacement Q A η s w z + unramifiedClosed Q A η 1 s w z) *
         (unramifiedClosed Q A η 1 s w z)⁻¹ := by
     unfold regionSlot
     field_simp
   rw [hid, norm_mul]
-  calc
-    _ ≤ (720 * Q ^ (-(7 / 8 : ℝ))) * 2 := mul_le_mul he hi (norm_nonneg _) (by positivity)
-    _ = _ := by ring
+  exact (mul_le_mul (region_replacement_error hQ hA hη hs hw hz) (region_correction_inverse_bound hQ hA hη.le hs hw hz) (norm_nonneg _) (by positivity)).trans_eq (by ring)
 
 @[simp] theorem region_slot_at_residue (Q : ℝ) (A η s : ℂ) :
     regionSlot Q A η s 1 (1 / 6) = principalSlot Q A η s := rfl
@@ -571,9 +559,8 @@ theorem weighted_region_slot_norm {ι : Type*} (S : Finset ι) (b Q : ι → ℝ
       apply Finset.sum_le_sum
       intro i hi
       have hQi : 0 < Q i := by linarith [hQ i hi]
-      have he := region_slot_norm_le (hP.trans (hQ i hi)) (hA i hi) (hη i hi) hs hw hz
       have he' : ‖regionSlot (Q i) (A i) (η i) s w z‖ ≤ 1 + 1440 * P ^ (-(7 / 8 : ℝ)) := by
-        apply he.trans
+        apply (region_slot_norm_le (hP.trans (hQ i hi)) (hA i hi) (hη i hi) hs hw hz).trans
         apply add_le_add le_rfl
         apply mul_le_mul_of_nonneg_left _ (by norm_num)
         exact Real.rpow_le_rpow_of_nonpos (by linarith) (hQ i hi) (by norm_num)

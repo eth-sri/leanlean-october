@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.ExponentPairEpsilonBudget
 public import LaterPairs.Native.ExponentPairIntegerOptimization
 
@@ -63,9 +72,8 @@ theorem source_exponentialSum_aProcess_bound
     (show η ≤ 1 by linarith) hB
     (show 1 ≤ 1+Real.log N by have := Real.log_nonneg hN₁; linarith)
     hbalance htrivial (fun H hH hHN => by
-      have hh := hbound F T N a L H hN hNT hH hHN ha hb hF
       dsimp [M]
-      convert hh using 1
+      convert (hbound F T N a L H hN hNT hH hHN ha hb hF) using 1
       ring)
   have hcost : N^2/R =
       (T/N)^((k+ε)/(k+ε+1))*N^(1+(l+ε)/(k+ε+1)) :=

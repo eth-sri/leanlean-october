@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.RobertSargosCorrelationBoundary
 public import LaterPairs.Native.RobertSargosZeroRFloorBudgets
 
@@ -30,7 +39,7 @@ theorem robertSargos_zero_zero_bound (f : ℝ → ℝ) (M H : ℕ) :
       have := ((mem_robertSargosHOverlap H h 0).mp hh).1
       simp only [Finset.mem_Ico] at this
       omega
-    have hs : robertSargosMOverlap M h 0 0 ⊆ Finset.Icc (1:ℤ) M := by
+    have hs : robertSargosMOverlap M h 0 0 ⊆ Finset.Icc 1 M := by
       intro m hm
       simp only [robertSargosMOverlap,add_zero,sub_zero,max_self,min_self,Finset.mem_Icc] at hm ⊢
       omega
@@ -56,18 +65,17 @@ theorem zero_zero_floor_scale {lam : ℝ} (hlam : 0 < lam) (hsmall : lam ≤ 1/8
     dsimp [T]
     linarith
   have h2 : T^2 = lam^(-(2:ℝ)/13) := by
-    simpa only [Nat.cast_ofNat] using thirteenth_root_nat_pow hlam 2
+    simpa using thirteenth_root_nat_pow hlam 2
   have h3 : T^3 = lam^(-(3:ℝ)/13) := by
-    simpa only [Nat.cast_ofNat] using thirteenth_root_nat_pow hlam 3
+    simpa using thirteenth_root_nat_pow hlam 3
   obtain ⟨_,hQ,_⟩ := positive_floor_half_bounds
     (show 1 ≤ T^3 from one_le_pow₀ hT)
   obtain ⟨_,hR,_⟩ := positive_floor_half_bounds hT
-  have hprod := mul_le_mul hQ hR (by positivity) (by positivity)
   have hh : (H:ℝ) ≤ T^2/2 := by rwa [h2]
   have hs := mul_self_le_mul_self (Nat.cast_nonneg H) hh
   rw [← h3]
   change (H:ℝ)^2 ≤ (⌊T^3⌋₊:ℝ)*(⌊T⌋₊:ℝ)
-  nlinarith [hprod]
+  nlinarith [(mul_le_mul hQ hR (by positivity) (by positivity))]
 
 theorem robertSargos_zero_zero_physical_a_times_a (f : ℝ → ℝ) (M H : ℕ)
     {lam : ℝ} (hlam : 0 < lam) (hsmall : lam ≤ 1/8192)
@@ -81,7 +89,7 @@ theorem robertSargos_zero_zero_physical_a_times_a (f : ℝ → ℝ) (M H : ℕ)
     dsimp [R]
     exact_mod_cast (positive_floor_half_bounds (show 1 ≤ lam^(-(1:ℝ)/13) by linarith)).1
   have h3 : (lam^(-(1:ℝ)/13))^3 = lam^(-(3:ℝ)/13) := by
-    simpa only [Nat.cast_ofNat] using thirteenth_root_nat_pow hlam 3
+    simpa using thirteenth_root_nat_pow hlam 3
   have hQ : 0 < Q := by
     dsimp [Q]
     have h1 : 1 ≤ lam^(-(3:ℝ)/13) := by
@@ -95,7 +103,6 @@ theorem robertSargos_zero_zero_physical_a_times_a (f : ℝ → ℝ) (M H : ℕ)
   refine hb.trans ?_
   rw [div_mul_eq_mul_div]
   apply (div_le_iff₀ (mul_pos hQ hR)).mpr
-  have hm := mul_le_mul_of_nonneg_left hs (show 0 ≤ 8*(M:ℝ)^2 by positivity)
-  convert hm using 1; ring
+  convert (mul_le_mul_of_nonneg_left hs (show 0 ≤ 8*(M:ℝ)^2 by positivity)) using 1; ring
 
 end TaoTrudgianYang2025

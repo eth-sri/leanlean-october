@@ -7,59 +7,13 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 
 namespace EisensteinSchwartzPoisson
 
 section
-open MeasureTheory
-open scoped FourierTransform SchwartzMap RealInnerProductSpace
+open scoped RealInnerProductSpace
 
 def inverseJacobian (A : ℂ ≃L[ℝ] ℂ) : ℝ :=
   |(LinearMap.det (A : ℂ →ₗ[ℝ] ℂ))⁻¹|
@@ -100,9 +54,6 @@ def translateSchwartz (f : 𝓢(ℂ, ℂ)) (b : ℂ) : 𝓢(ℂ, ℂ) :=
   SchwartzMap.compCLMOfAntilipschitz ℂ (g := fun z : ℂ => z + b)
     (by fun_prop) (isometry_add_right b).antilipschitzWith f
 
-@[simp] theorem translateSchwartz_apply (f : 𝓢(ℂ, ℂ)) (b z : ℂ) :
-    translateSchwartz f b z = f (z + b) := rfl
-
 theorem fourier_translate (f : ℂ → ℂ) (b w : ℂ) :
     𝓕 (fun z => f (z + b)) w =
       Real.fourierChar (inner ℝ b w) • 𝓕 f w := by
@@ -122,8 +73,7 @@ theorem fourier_affinePullback (f : 𝓢(ℂ, ℂ)) (A : ℂ ≃L[ℝ] ℂ) (b w
         (Real.fourierChar (inner ℝ b (dualMap A w)) • (𝓕 f) (dualMap A w)) := by
   rw [congrFun (SchwartzMap.fourier_coe _) w]
   change 𝓕 ((fun z => f (z + b)) ∘ A) w = _
-  rw [fourier_comp_linearEquiv, fourier_translate]
-  rw [congrFun (SchwartzMap.fourier_coe f) (dualMap A w)]
+  rw [fourier_comp_linearEquiv, fourier_translate, congrFun (SchwartzMap.fourier_coe f) (dualMap A w)]
 
 theorem affine_lattice_poisson (f : 𝓢(ℂ, ℂ)) (A : ℂ ≃L[ℝ] ℂ) (b : ℂ) :
     (∑' p : ℤ × ℤ, f (A (complexPoint (p.1 : ℝ) (p.2 : ℝ)) + b)) =
@@ -196,9 +146,6 @@ def complexMulEquiv (c : ℂ) (hc : c ≠ 0) : ℂ ≃L[ℝ] ℂ :=
 @[simp] theorem complexMulEquiv_apply (c : ℂ) (hc : c ≠ 0) (z : ℂ) :
     complexMulEquiv c hc z = c * z := rfl
 
-@[simp] theorem complexMulEquiv_symm_apply (c : ℂ) (hc : c ≠ 0) (z : ℂ) :
-    (complexMulEquiv c hc).symm z = c⁻¹ * z := rfl
-
 theorem complexMulEquiv_det (c : ℂ) (hc : c ≠ 0) :
     LinearMap.det ((complexMulEquiv c hc) : ℂ →ₗ[ℝ] ℂ) = Complex.normSq c := by
   rw [← LinearMap.det_toMatrix Complex.basisOneI, Matrix.det_fin_two]
@@ -222,8 +169,7 @@ theorem scaledBasisEquiv_det (w : ℂ) (hw : w.im ≠ 0) (c : ℂ) (hc : c ≠ 0
 end
 
 section
-open MeasureTheory EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open scoped FourierTransform SchwartzMap RealInnerProductSpace
+open scoped RealInnerProductSpace
 abbrev O := ActualEisensteinCubic.O
 
 def eisensteinLatticeMap (c : ℂ) (hc : c ≠ 0) : ℂ ≃L[ℝ] ℂ :=
@@ -236,11 +182,8 @@ theorem eisensteinLatticeMap_point (c : ℂ) (hc : c ≠ 0) (p : ℤ × ℤ) :
 
 theorem eisenstein_inverseJacobian (c : ℂ) (hc : c ≠ 0) :
     inverseJacobian (eisensteinLatticeMap c hc) = 2 / (Real.sqrt 3 * ‖c‖ ^ 2) := by
-  have hs : 0 < Real.sqrt 3 := Real.sqrt_pos.mpr (by norm_num)
-  have hn : 0 < ‖c‖ ^ 2 := sq_pos_of_pos (norm_pos_iff.mpr hc)
   unfold inverseJacobian eisensteinLatticeMap
-  rw [scaledBasisEquiv_det, omega3_im, Complex.normSq_eq_norm_sq]
-  rw [abs_of_pos (inv_pos.mpr (mul_pos hn (div_pos hs (by norm_num))))]
+  rw [scaledBasisEquiv_det, omega3_im, Complex.normSq_eq_norm_sq, abs_of_pos (inv_pos.mpr (mul_pos (sq_pos_of_pos (norm_pos_iff.mpr hc)) (div_pos (Real.sqrt_pos.mpr (by norm_num)) (by norm_num))))]
   field_simp
 
 def eisensteinDualFrequency (c : ℂ) (hc : c ≠ 0) (p : ℤ × ℤ) : ℂ :=
@@ -273,11 +216,9 @@ theorem actual_eisenstein_coset_poisson (f : 𝓢(ℂ, ℂ)) (b c : O) (hc : c �
 
 theorem actual_eisenstein_coset_summable_norm (f : 𝓢(ℂ, ℂ)) (b c : O) (hc : c ≠ 0) :
     Summable (fun z : O => ‖f (eisEmbedding (b + c * z))‖) := by
-  let A := eisensteinLatticeMap (eisEmbedding c) (eisEmbedding_ne_zero hc)
-  have hp := plane_lattice_summable_norm (affinePullback f A (eisEmbedding b))
   have hpair : Summable (fun p : ℤ × ℤ =>
       ‖f (eisEmbedding (b + c * latticeCoordEquiv.symm p))‖) := by
-    convert hp using 1
+    convert (plane_lattice_summable_norm (affinePullback f (eisensteinLatticeMap (eisEmbedding c) (eisEmbedding_ne_zero hc)) (eisEmbedding b))) using 1
     funext p
     rw [affinePullback_apply]
     apply congrArg norm
@@ -297,12 +238,10 @@ theorem actual_eisenstein_periodic_summable (f : 𝓢(ℂ, ℂ))
     {R : Type*} [Fintype R] (q : O → R) (P : R → ℂ) :
     Summable (fun z : O => P (q z) * f (eisEmbedding z)) := by
   classical
-  let C : ℝ := ∑ r : R, ‖P r‖
-  have hP (r : R) : ‖P r‖ ≤ C :=
-    Finset.single_le_sum (fun a _ => norm_nonneg (P a)) (Finset.mem_univ r)
+  have hP (r : R) := Finset.single_le_sum (fun a _ => norm_nonneg (P a)) (Finset.mem_univ r)
   apply Summable.of_norm
   apply Summable.of_nonneg_of_le (fun z => norm_nonneg _) _
-    ((actual_eisenstein_summable_norm f).mul_left C)
+    ((actual_eisenstein_summable_norm f).mul_left (∑ r : R, ‖P r‖))
   intro z
   rw [norm_mul]
   exact mul_le_mul_of_nonneg_right (hP (q z)) (norm_nonneg _)
@@ -347,8 +286,7 @@ theorem dual_lattice_summable_norm (f : 𝓢(ℂ, ℂ)) (A : ℂ ≃L[ℝ] ℂ) 
     rw [fourier_affinePullback]
     simp [ abs_of_pos hJ]
   simp_rw [hn] at hp
-  have hi := hp.mul_left (inverseJacobian A)⁻¹
-  simpa only [← mul_assoc, inv_mul_cancel₀ hJ.ne', one_mul] using hi
+  simpa only [← mul_assoc, inv_mul_cancel₀ hJ.ne', one_mul] using (hp.mul_left (inverseJacobian A)⁻¹)
 
 theorem finite_phase_sum {R : Type*} [Fintype R]
     (f : 𝓢(ℂ, ℂ)) (A : ℂ ≃L[ℝ] ℂ) (b : R → ℂ) (P : R → ℂ) :
@@ -397,8 +335,7 @@ theorem actual_eisenstein_periodic_fourier (f : 𝓢(ℂ, ℂ)) (c : O) (hc : c 
 
 end
 
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open scoped FourierTransform SchwartzMap RealInnerProductSpace
+open scoped RealInnerProductSpace
 
 theorem dualMap_trans (A B : ℂ ≃L[ℝ] ℂ) (z : ℂ) :
     dualMap (A.trans B) z = dualMap B (dualMap A z) := by
@@ -442,7 +379,7 @@ theorem eisensteinDualFrequency_explicit (c : ℂ) (hc : c ≠ 0) (p : ℤ × �
     apply Complex.ext
     · rfl
     · simp only [complexPoint, omega3_im]
-      have hr : omega3.re = -(1 / 2 : ℝ) := by norm_num [omega3]
+      have hr : omega3.re = -(1 / 2) := by norm_num [omega3]
       rw [hr]
       ring
   rw [he]
@@ -466,8 +403,6 @@ theorem actual_eisenstein_poisson_explicit (f : 𝓢(ℂ, ℂ)) (c : O) (hc : c 
   simpa only [eisensteinDualFrequency_explicit, explicitDualFrequency] using
     actual_eisenstein_periodic_fourier f c hc P
 
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open scoped FourierTransform SchwartzMap RealInnerProductSpace ContDiff
 
 def radialTest (W : 𝓢(ℝ, ℂ)) : 𝓢(ℂ, ℂ) :=
   SchwartzMap.compCLM ℂ (Function.hasTemperateGrowth_norm_sq ℂ)
@@ -478,17 +413,8 @@ def radialTest (W : 𝓢(ℝ, ℂ)) : 𝓢(ℂ, ℂ) :=
 @[simp] theorem radialTest_apply (W : 𝓢(ℝ, ℂ)) (z : ℂ) :
     radialTest W z = W (‖z‖ ^ 2) := rfl
 
-def compactRadialTest (W : ℝ → ℂ) (hWc : HasCompactSupport W)
-    (hWs : ContDiff ℝ ∞ W) : 𝓢(ℂ, ℂ) :=
-  radialTest (hWc.toSchwartzMap hWs)
-
-@[simp] theorem compactRadialTest_apply (W : ℝ → ℂ) (hWc : HasCompactSupport W)
-    (hWs : ContDiff ℝ ∞ W) (z : ℂ) :
-    compactRadialTest W hWc hWs z = W (‖z‖ ^ 2) := rfl
-
 end EisensteinSchwartzPoisson
 
-open scoped BigOperators Classical
 
 namespace IdealGaussCRT
 

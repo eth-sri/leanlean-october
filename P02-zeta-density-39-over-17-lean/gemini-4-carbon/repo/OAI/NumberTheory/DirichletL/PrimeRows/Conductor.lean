@@ -36,10 +36,7 @@ theorem targetRow_conductor (η : Character) (u : FreeRow) :
   let : Finite (O ⧸ η.modulus) := Ring.HasFiniteQuotients.finiteQuotient η.modulus_ne_bot
   let : Finite (O ⧸ (rawRow u).modulus) := Ring.HasFiniteQuotients.finiteQuotient (rawRow u).modulus_ne_bot
   change (η.modulus⊓(rawRow u).modulus).absNorm≤_
-  calc
-    _ ≤ η.modulus.absNorm*(rawRow u).modulus.absNorm :=
-      FiniteConductor.absNorm_inf_le_mul _ _
-    _ ≤ _ := by simpa only [mul_assoc] using Nat.mul_le_mul_left η.modulus.absNorm (rawRow_conductor u)
+  exact (FiniteConductor.absNorm_inf_le_mul _ _).trans (by simpa only [mul_assoc] using Nat.mul_le_mul_left η.modulus.absNorm (rawRow_conductor u))
 
 theorem targetRow_excluded_conductor (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
     (η : Character) (u : FreeRow) :

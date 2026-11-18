@@ -55,7 +55,7 @@ theorem norm_atkinsonRootKernel_integral_le_four {T : ℝ} (hT : 0 < T)
     (b : ℝ) {a c : ℝ} (ha : 0 < a) (hac : a ≤ c) :
     ‖∫ y in a..c, atkinsonRootKernel T b y‖ ≤ 4 := by
   let r := atkinsonSaddleRoot (T / (2 * Real.pi)) b
-  have hsmall : 1 / (2 * Real.pi) ≤ (1 : ℝ) := by
+  have hsmall : 1 / (2 * Real.pi) ≤ 1 := by
     apply (div_le_one (by positivity : 0 < 2 * Real.pi)).2
     linarith [Real.pi_gt_three]
   by_cases hleft : c ≤ r - 1

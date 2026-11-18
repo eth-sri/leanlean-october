@@ -10,14 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstAmplifiedCapacityRadius
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss ActualEisensteinCubic
-open CenteredMomentSecondHeightFamily
-open CenteredMomentFirstMixedNormalizationActual CenteredMomentFirstPhysicalSource
-open CenteredMomentFirstExceptionalPrefactor CenteredMomentFirstNonexceptionalPrefactor
-open CenteredMomentFirstCanonicalFamily CenteredMomentSectorLocalization
-open CenteredMomentCanonicalFirst CenteredMomentFirstScale ConcreteTraceCRT
-open CenteredMomentAmplifiedRetainedRadius CenteredMomentFirstAmplificationChoice
-open CenteredMomentCommonRadiusSaving
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss ActualEisensteinCubic CenteredMomentSecondHeightFamily CenteredMomentFirstMixedNormalizationActual CenteredMomentFirstPhysicalSource CenteredMomentFirstExceptionalPrefactor CenteredMomentFirstNonexceptionalPrefactor CenteredMomentFirstCanonicalFamily CenteredMomentSectorLocalization CenteredMomentCanonicalFirst CenteredMomentFirstScale ConcreteTraceCRT CenteredMomentAmplifiedRetainedRadius CenteredMomentFirstAmplificationChoice CenteredMomentCommonRadiusSaving
 local notation "O"=>HeckeFamily.O
 
 lemma enlarged_gain_extraction (c d w wo sigma branch delta reserve:ℝ)
@@ -48,12 +41,11 @@ theorem actual_reference_shift (η τ:Character)(C D:Ideal O)
   have hq:=norm_pos τ.modulus τ.modulus_ne_bot
   have hE:=norm_pos _ (subsetGenerator_supported C D hC E).1
   have hR:=active_norm_pos C D
-  have hz:0<Z:=zero_lt_one.trans hZ
   have hh:=actual_reference_width η τ C D hC E K Z hK hZ hmod
   dsimp only
   rw [nominal_equal_support C D _ hC.1 hD.1 hCD K V]
   simp (disch := positivity) only [Real.logb_mul,Real.logb_div,Real.logb_pow,
-    Real.logb_rpow hz hZ.ne'] at hh ⊢
+    Real.logb_rpow (zero_lt_one.trans hZ) hZ.ne'] at hh ⊢
   norm_num at hh ⊢
   linarith
 
@@ -79,7 +71,6 @@ theorem actual_main_reference_shift (η τ:Character)(C D:Ideal O)
     (Real.logb Z (D.absNorm:ℝ)) 0 0 sigma 2 delta reserve (by norm_num) (by norm_num)
   dsimp only at hh ⊢
   simp only [Real.rpow_zero,mul_one,one_mul,Real.logb_one,add_zero,sub_zero] at hh hg
-  change _≤_
   rw [mainCommonRadius]
   simp only [Real.logb_rpow (zero_lt_one.trans hZ) hZ.ne'] at hh ⊢
   norm_num at hg

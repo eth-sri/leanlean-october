@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.HeckeDetectorFinite
-open HeckeFamily HeckeDetectorWitnessArithmetic HeckeDetectorTail HeckeDetectorPartition
-open CompletedGauss ConcretePrimeRowBridge
+open HeckeFamily HeckeDetectorWitnessArithmetic HeckeDetectorTail HeckeDetectorPartition CompletedGauss ConcretePrimeRowBridge
 local notation "O" => HeckeFamily.O
 
 def pairSet (U : ℝ) : Finset (Ideal O × Ideal O) :=
@@ -36,29 +35,22 @@ theorem pairCoefficient_support (χ : Character) (V T : ℝ → ℂ) (D Y U : �
   · change pairCoefficient χ V T D Y U s (p.1,p.2) = 0
     rw [h2]
     exact pairCoefficient_zero_right χ V T D Y U s p.1
-  have hprod : p.1*p.2 ≠ 0 := mul_ne_zero h1 h2
-  have hnpos : 0 < Ideal.absNorm (p.1*p.2) := Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hprod)
+  have hnpos := Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr (mul_ne_zero h1 h2))
   have hnorm : 2*U ≤ (Ideal.absNorm (p.1*p.2) : ℝ) := by
     by_contra h
     have hb : Ideal.absNorm (p.1*p.2) ≤ ⌈2*U⌉₊ := by
       exact_mod_cast (le_trans (lt_of_not_ge h).le (Nat.le_ceil (2*U)))
-    have hh1 : Ideal.absNorm p.1 ≤ Ideal.absNorm (p.1*p.2) :=
-      Nat.le_of_dvd hnpos (map_dvd Ideal.absNorm (dvd_mul_right p.1 p.2))
-    have hh2 : Ideal.absNorm p.2 ≤ Ideal.absNorm (p.1*p.2) :=
-      Nat.le_of_dvd hnpos (map_dvd Ideal.absNorm (dvd_mul_left p.2 p.1))
     apply hp
     exact Finset.mem_product.mpr
-      ⟨mem_idealsUpTo.mpr ⟨Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr h1),hh1.trans hb⟩,
-       mem_idealsUpTo.mpr ⟨Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr h2),hh2.trans hb⟩⟩
-  have hz := hT ((Ideal.absNorm (p.1*p.2) : ℝ)/U) ((le_div_iff₀ hU).mpr hnorm)
-  simp only [pairCoefficient,hz,mul_zero]
+      ⟨mem_idealsUpTo.mpr ⟨Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr h1),(Nat.le_of_dvd hnpos (map_dvd Ideal.absNorm (dvd_mul_right p.1 p.2))).trans hb⟩,
+       mem_idealsUpTo.mpr ⟨Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr h2),(Nat.le_of_dvd hnpos (map_dvd Ideal.absNorm (dvd_mul_left p.2 p.1))).trans hb⟩⟩
+  simp only [pairCoefficient,(hT ((Ideal.absNorm (p.1*p.2) : ℝ)/U) ((le_div_iff₀ hU).mpr hnorm)),mul_zero]
 
 theorem pair_fiber (χ : Character) (V T : ℝ → ℂ) (D Y U : ℝ) (s : ℂ) (I : Ideal O) :
     (∑' p : MulFiber I, pairCoefficient χ V T D Y U s p.val) =
       terminalTerm χ V T D Y U s I := by
-  have h := weighted_fiber χ V D s I
   unfold terminalTerm exponentialTerm
-  rw [←h,←tsum_mul_right,←tsum_mul_right,←tsum_mul_right]
+  rw [←(weighted_fiber χ V D s I),←tsum_mul_right,←tsum_mul_right,←tsum_mul_right]
   apply tsum_congr
   intro p
   simp only [pairCoefficient,p.property]
@@ -92,7 +84,7 @@ theorem terminal_sum_eq_dyadic (χ : Character) (V T : ℝ → ℂ) (D Y U : ℝ
     (∑' I : Ideal O, terminalTerm χ V T D Y U s I) =
       ∑ j ∈ Finset.range (length (⌈2*U⌉₊ : ℝ)+1),
         ∑ k ∈ Finset.range (length (⌈2*U⌉₊ : ℝ)+1), dyadicBlock χ V T D Y U s j k := by
-  have hX : (0 : ℝ) < ⌈2*U⌉₊ := lt_of_lt_of_le (by positivity) (Nat.le_ceil (2*U))
+  have hX := lt_of_lt_of_le (by positivity) (Nat.le_ceil (2*U))
   rw [terminal_sum_eq_pair_sum χ V T D Y U hU hT s]
   apply actual_pair_reassembly χ V T hV hVzero D Y U _ _ hX hX s
   intro p hp
@@ -124,16 +116,14 @@ theorem nonzero_block_scale_bounds (χ : Character) (V T : ℝ → ℂ) (D Y U :
     (2 : ℝ)^j < 4*D ∧ D/8 < (2 : ℝ)^j*(2 : ℝ)^k ∧
       (2 : ℝ)^j*(2 : ℝ)^k < 8*U := by
   obtain ⟨p,hp,hne⟩ := Finset.exists_ne_zero_of_sum_ne_zero hb
-  have hk := (mul_ne_zero_iff.mp hne).2
-  have hj := (mul_ne_zero_iff.mp (mul_ne_zero_iff.mp hne).1).2
   have hc := (mul_ne_zero_iff.mp (mul_ne_zero_iff.mp hne).1).1
   simp only [pairCoefficient,ne_eq,mul_eq_zero,not_or] at hc
   obtain ⟨⟨⟨⟨⟨hmu,hfirst⟩,hweight⟩,hexp⟩,hproduct⟩,hterminal⟩ := hc
   apply pair_scale_bounds V T hV hVzero hT
     (Ideal.absNorm p.1) (Ideal.absNorm p.2) D U (by positivity) (by positivity)
-    hD hU j k hj hk hfirst
-  · simpa only [map_mul,Nat.cast_mul] using hproduct
-  · simpa only [map_mul,Nat.cast_mul] using hterminal
+    hD hU j k ((mul_ne_zero_iff.mp (mul_ne_zero_iff.mp hne).1).2) ((mul_ne_zero_iff.mp hne).2) hfirst
+  · simpa using hproduct
+  · simpa using hterminal
 
 end SevenEighths.HeckeDetectorFinite
 

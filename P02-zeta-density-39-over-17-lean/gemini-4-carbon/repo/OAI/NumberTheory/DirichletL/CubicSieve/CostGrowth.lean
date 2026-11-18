@@ -32,9 +32,7 @@ theorem HasCubicExponent.frequencyCost_bound {ξ : ℝ} (h : HasCubicExponent ξ
   have hfac : 0 ≤ 2*C*IdealCoprimeSieveOperator.supportConstant ε hε*Y^ε := by
     have hp := (IdealCoprimeSieveOperator.supportConstant_pos ε hε).le
     positivity
-  have hh := mul_le_mul_of_nonneg_left hs hfac
-  have he := add_le_add_left hh ((X*(2/Y))*‖paperRadialFourier rowMajorant 0‖)
-  convert he using 1 <;> try dsimp only [frequencyCost, frequencyMajorant]
+  convert (add_le_add_left (mul_le_mul_of_nonneg_left hs hfac) ((X*(2/Y))*‖paperRadialFourier rowMajorant 0‖)) using 1 <;> try dsimp only [frequencyCost, frequencyMajorant]
   all_goals ring
 
 theorem frequencyCost_descendant_of_bound (C ε A δ ξ M N d e : ℝ)

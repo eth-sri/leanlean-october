@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.RobertSargosFourthGeometry
 
 @[expose] public section
@@ -27,22 +36,22 @@ theorem robertSargos_displacement_positive {r q₁ q₂ h₁ h₂ d H Q δ : ℝ
     (hlin : r*d+h₁*q₁-h₂*q₂ = 0)
     (hnear : |robertSargosReduced r q₁ q₂ h₁ h₂ d| ≤ δ*H*Q^2) :
     |d| ≤ (δ+8)*Q := by
-  have hhp₁ : 0 ≤ h₁ := hH.le.trans hh₁.1
-  have hhp₂ : 0 ≤ h₂ := hH.le.trans hh₂.1
-  have hqp₁ : 0 ≤ q₁ := hQ.le.trans hq₁.1
-  have hqp₂ : 0 ≤ q₂ := hQ.le.trans hq₂.1
+  have hhp₁ := hH.le.trans hh₁.1
+  have hhp₂ := hH.le.trans hh₂.1
+  have hqp₁ := hQ.le.trans hq₁.1
+  have hqp₂ := hQ.le.trans hq₂.1
   have hb₁ : 0 ≤ h₁*q₁^2 ∧ h₁*q₁^2 ≤ 8*H*Q^2 := by
     constructor
     · positivity
     · have hs := sq_le_sq₀ hqp₁ (by positivity : 0 ≤ 2*Q) |>.mpr hq₁.2
       have hm := mul_le_mul hh₁.2 hs (sq_nonneg q₁) (by positivity : 0 ≤ 2*H)
-      nlinarith only [hm]
+      nlinarith
   have hb₂ : 0 ≤ h₂*q₂^2 ∧ h₂*q₂^2 ≤ 8*H*Q^2 := by
     constructor
     · positivity
     · have hs := sq_le_sq₀ hqp₂ (by positivity : 0 ≤ 2*Q) |>.mpr hq₂.2
       have hm := mul_le_mul hh₂.2 hs (sq_nonneg q₂) (by positivity : 0 ≤ 2*H)
-      nlinarith only [hm]
+      nlinarith
   have htail : |h₁*q₁^2-h₂*q₂^2| ≤ 8*H*Q^2 := by
     apply abs_le.mpr
     constructor <;> linarith [hb₁.1,hb₁.2,hb₂.1,hb₂.2]
@@ -59,7 +68,7 @@ theorem robertSargos_displacement_positive {r q₁ q₂ h₁ h₂ d H Q δ : ℝ
         ring
       _ ≤ |robertSargosReduced r q₁ q₂ h₁ h₂ d|+|h₁*q₁^2-h₂*q₂^2| :=
         abs_sub _ _
-      _ ≤ _ := by nlinarith only [hnear,htail]
+      _ ≤ _ := by nlinarith
   apply (mul_le_mul_iff_left₀ (mul_pos hH hQ)).mp
   calc
     |d| * (H*Q) ≤ (h₁*q₁+h₂*q₂)*|d| := by
@@ -81,10 +90,10 @@ theorem robertSargos_displacement_same_sign {r q₁ q₂ h₁ h₂ d H Q δ : �
     exact robertSargos_displacement_positive hH hQ hh₁ hh₂ hq₁ hq₂ hlin hnear
   · rw [abs_of_neg hn.1] at hq₁
     rw [abs_of_neg hn.2] at hq₂
-    have hl : r*(-d)+h₁*(-q₁)-h₂*(-q₂) = 0 := by linarith only [hlin]
+    have hl : r*(-d)+h₁*(-q₁)-h₂*(-q₂) = 0 := by linarith
     have he : |robertSargosReduced r (-q₁) (-q₂) h₁ h₂ (-d)| ≤ δ*H*Q^2 := by
       rwa [robertSargosReduced_neg]
-    simpa only [abs_neg] using
+    simpa using
       robertSargos_displacement_positive hH hQ hh₁ hh₂ hq₁ hq₂ hl he
 
 end TaoTrudgianYang2025

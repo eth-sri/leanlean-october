@@ -7,9 +7,8 @@ public import OAI.NumberTheory.DirichletL.Descent.Canonical
 namespace OAI
 
 namespace SevenEighths.InverseMoment
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic EisensteinSchwartzPoisson
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open EisensteinSchwartzPoisson
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
@@ -56,7 +55,7 @@ theorem secondSourcePairKernel_profile {ι : Type*} [DecidableEq ι]
         ‖eisEmbedding k‖^2, primeProductNorm p N, primeProductNorm p M] := by
   have hs (S : Finset ι) : ‖eisEmbedding (∏ i ∈ S, p i)‖ = Real.sqrt (primeProductNorm p S) := by
     simp only [primeProductNorm, Real.sqrt_sq_eq_abs, abs_of_nonneg (norm_nonneg _)]
-  have hV : 0 ≤ primeProductNorm p V := (primeProductNorm_pos p hp V).le
+  have hV := (primeProductNorm_pos p hp V).le
   have hroots : Real.sqrt (primeProductNorm p V*primeProductNorm p N) *
       Real.sqrt (primeProductNorm p V*primeProductNorm p M) =
       primeProductNorm p V * Real.sqrt (primeProductNorm p N) * Real.sqrt (primeProductNorm p M) := by
@@ -72,8 +71,7 @@ theorem secondSourcePairKernel_profile {ι : Type*} [DecidableEq ι]
         (primeProductNorm p V*primeProductNorm p M))) =
       Y * ‖eisEmbedding k‖^2 / (‖eisEmbedding e‖^2 * (primeProductNorm p V)^2 *
         primeProductNorm p N * primeProductNorm p M) := by ring
-  rw [harg]
-  rw [← Complex.ofReal_mul, hroots]
+  rw [harg, ← Complex.ofReal_mul, hroots]
   push_cast
   ring_nf
 

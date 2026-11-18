@@ -10,12 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstAllocationGaussEnergy
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentFirstAmplificationChoice
-open CenteredMomentFirstPhysicalSource CenteredMomentSourceRow
-open CenteredMomentCommonAllocationSum CenteredMomentSourceLiveColumn
-open CenteredMomentCommonRawScale CenteredMomentAddedZeroUniform
-open CenteredMomentGaussEnergy CenteredMomentSmoothedWindowEnergy
-open CenteredMomentOriginalChildEnergy CenteredMomentHeckeColumnWindow
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentFirstAmplificationChoice CenteredMomentFirstPhysicalSource CenteredMomentSourceRow CenteredMomentCommonAllocationSum CenteredMomentSourceLiveColumn CenteredMomentCommonRawScale CenteredMomentAddedZeroUniform CenteredMomentGaussEnergy CenteredMomentSmoothedWindowEnergy CenteredMomentOriginalChildEnergy CenteredMomentHeckeColumnWindow
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [Fintype ι]
 local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
@@ -145,18 +140,15 @@ theorem frozen_normalized_bound (N : ℕ) (a b : ℝ) (ha : 0<a)
       (max 1 b)^N/(Ideal.absNorm C:ℝ)*(frozenControl B.val M)^2 := by
   have hB := (allocation_data D.S C B.val (Finset.mem_filter.mp B.property).1).1
   have hR := rawReduction_pos B.val hB D.lengths hP
-  have hN := CenteredMomentFirstScale.norm_pos C hC
   by_cases hz : frozenCoefficient B.val C D.R D.nu D.slot D.lengths=0
   · rw [hz,norm_zero,zero_pow (by decide : 2≠0),zero_div]
     positivity
   · have hm := frozen_norm_bound D C B M hM hν hWnorm
     have hh := (actual_reduction_norm B.val hB C D.R
       (Finset.mem_filter.mp B.property).2 D.nu D.slot D.lengths hP a b ha hW hz).2
-    have he : (max 1 b)^Fintype.card ι≤(max 1 b)^N :=
-      pow_le_pow_right₀ (le_max_left _ _) hcard
-    have hi : (1:ℝ)/rawReduction B.val D.lengths ≤ (max 1 b)^N/(Ideal.absNorm C:ℝ) := by
-      apply (div_le_div_iff₀ hR hN).mpr
-      simpa only [one_mul] using hh.trans (mul_le_mul_of_nonneg_right he hR.le)
+    have hi : 1/rawReduction B.val D.lengths ≤ (max 1 b)^N/(Ideal.absNorm C:ℝ) := by
+      apply (div_le_div_iff₀ hR (CenteredMomentFirstScale.norm_pos C hC)).mpr
+      simpa using hh.trans (mul_le_mul_of_nonneg_right (pow_le_pow_right₀ (le_max_left _ _) hcard) hR.le)
     calc
       _ ≤ (frozenControl B.val M)^2/rawReduction B.val D.lengths :=
         div_le_div_of_nonneg_right (pow_le_pow_left₀ (norm_nonneg _) hm _) hR.le
@@ -176,9 +168,8 @@ theorem normalized_common_energy_allocation (D : OriginalData ι)
       ((actualAllocations D.S C).card:ℝ) * ∑ B : actualAllocations D.S C,
         (‖frozenCoefficient B.val C D.R D.nu D.slot D.lengths‖^2/rawReduction B.val D.lengths) *
           (allocatedEnergy D C L B τ t W K/rawVolume (allocatedData D C L B)) := by
-  have hV := rawVolume_pos D hX₁ hX₂ hB₁ hB₂ hP
   have he := div_le_div_of_nonneg_right
-    (common_energy_allocation D hS hp C hC hseed τ t L W K hK hW) hV.le
+    (common_energy_allocation D hS hp C hC hseed τ t L W K hK hW) (rawVolume_pos D hX₁ hX₂ hB₁ hB₂ hP).le
   apply he.trans_eq
   rw [mul_div_assoc,Finset.sum_div]
   apply congrArg (fun x : ℝ => ((actualAllocations D.S C).card:ℝ)*x)

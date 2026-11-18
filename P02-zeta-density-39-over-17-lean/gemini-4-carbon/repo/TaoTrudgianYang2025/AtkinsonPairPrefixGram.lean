@@ -35,7 +35,6 @@ theorem ExponentPair.atkinson_physical_gap_sum_bound {k l ε : ℝ}
   have hq : Real.pi*M/(2*u) < η :=
     (div_le_div_of_nonneg_left (by positivity) (by positivity : 0 < 2*H)
       (by linarith : 2*H ≤ 2*u)).trans_lt hsmall
-  have h := hbound M t u a b hM hup htu htU hq ha hb
   obtain ⟨hf,hi⟩ := atkinsonGap_frequency_physical_bounds hH hMp hu hu2 htu htU
   have hfp := atkinsonGapFrequency_pos hMp hup htu
   have hp : (atkinsonGapFrequency M t u/(2*Real.pi*M))^(k+ε)*M^(l+ε) ≤
@@ -43,15 +42,11 @@ theorem ExponentPair.atkinson_physical_gap_sum_bound {k l ε : ℝ}
     mul_le_mul_of_nonneg_right
       (Real.rpow_le_rpow (by positivity) hf (by linarith [hpair.inTriangle.1]))
       (Real.rpow_nonneg hMp.le _)
-  apply h.trans
-  calc
-    _ ≤ C*(((t-u)/Real.sqrt (H*M))^(k+ε)*M^(l+ε)+
-        12*Real.sqrt (H*M)/(t-u)) :=
-      mul_le_mul_of_nonneg_left (add_le_add hp hi) (by linarith)
-    _ ≤ _ := by
+  apply (hbound M t u a b hM hup htu htU hq ha hb).trans
+  exact (mul_le_mul_of_nonneg_left (add_le_add hp hi) (by linarith)).trans (by
       have hn : 0 ≤ C*(((t-u)/Real.sqrt (H*M))^(k+ε)*M^(l+ε)) := by positivity
       ring_nf at hn ⊢
-      nlinarith
+      nlinarith)
 
 theorem atkinsonPrefixGram_succ_eq_sum (M j : ℕ) (t u : ℝ) :
     atkinsonPrefixGram M (j+1) u t =
@@ -82,7 +77,7 @@ theorem ExponentPair.atkinson_prefixGramMax_bound {k l ε : ℝ}
     unfold atkinsonPrefixGramMax
     apply Finset.sup'_le
     intro j hj
-    have hjM : j ≤ M := Nat.le_of_lt_succ (Finset.mem_range.mp hj)
+    have hjM := Nat.le_of_lt_succ (Finset.mem_range.mp hj)
     cases j with
     | zero =>
       simp only [atkinsonPrefixGram,Finset.range_zero,Finset.sum_empty,norm_zero]

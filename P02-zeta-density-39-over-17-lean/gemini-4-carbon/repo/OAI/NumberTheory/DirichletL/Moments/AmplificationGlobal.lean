@@ -11,9 +11,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentAmplificationGlobal
-open CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge
-open CenteredMomentSupportedCorrelation CenteredMomentUnequal CenteredMomentGaussEnergy
-open CenteredMomentAmplification ProbePhysical
+open CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge CenteredMomentSupportedCorrelation CenteredMomentUnequal CenteredMomentGaussEnergy CenteredMomentAmplification ProbePhysical
 local notation "O" => ActualEisensteinCubic.O
 
 theorem full_column_unchanged (p : O) (hp : Prime p) [(Ideal.span {p}).IsMaximal]
@@ -121,7 +119,6 @@ theorem eligible_pool_average {β : Type*} (P : Finset β) (hP : P.Nonempty)
     (hid : ∀ p ∈ P, H = A p + E₁ p + E₆ p + E₇ p) :
     ‖H‖^2 ≤ (4 / (P.card : ℝ)) *
       ∑ p ∈ P, (‖A p‖^2 + ‖E₁ p‖^2 + ‖E₆ p‖^2 + ‖E₇ p‖^2) := by
-  have hc : (0 : ℝ) < P.card := Nat.cast_pos.mpr hP.card_pos
   have hb : (P.card : ℝ)*‖H‖^2 ≤ 4 *
       ∑ p ∈ P, (‖A p‖^2 + ‖E₁ p‖^2 + ‖E₆ p‖^2 + ‖E₇ p‖^2) := by
     have hb := Finset.sum_le_sum (s := P) (fun p hp => show ‖H‖^2 ≤
@@ -130,7 +127,7 @@ theorem eligible_pool_average {β : Type*} (P : Finset β) (hP : P.Nonempty)
         exact norm_four_sum_sq _ _ _ _)
     simpa only [Finset.sum_const,nsmul_eq_mul,← Finset.mul_sum] using hb
   rw [div_mul_eq_mul_div]
-  apply (le_div_iff₀ hc).mpr
+  apply (le_div_iff₀ (Nat.cast_pos.mpr hP.card_pos)).mpr
   convert hb using 1 ; ring
 
 theorem polynomial_pool_bound {α : Type*} (S : Finset α) (a : α → O)

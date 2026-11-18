@@ -7,80 +7,11 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 
 namespace CubicEisenstein
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
-
-open ConcreteTraceCRT
+open scoped MatrixGroups
 local notation "O" => ActualEisensteinCubic.O
 
 theorem sourceCusp_average_enlarged_affine (M : SL(2,ActualEisensteinCubic.O)) (b : ActualEisensteinCubic.O) (hb : b≠0)
@@ -102,8 +33,7 @@ theorem sourceCusp_average_complex_upper (M : SL(2,ActualEisensteinCubic.O)) (T 
       sourceCuspConstant M*((v/‖T 1 1‖^2:ℝ):ℂ)^(2/3:ℂ) := by
   have hcoord (z : ℂ) : (T 0 0*(3*(eisEmbedding b*z))+T 0 1)/T 1 1=
       3*(eisEmbedding d*z+(T 0 1/T 1 1)/3) := by
-    rw [add_div]
-    rw [show T 0 0*(3*(eisEmbedding b*z))/T 1 1=
+    rw [add_div, show T 0 0*(3*(eisEmbedding b*z))/T 1 1=
       3*((T 0 0/T 1 1)*eisEmbedding b)*z by ring,hscale]
     ring
   simp_rw [complex_upper_triangular_action T hT,hcoord]
@@ -131,11 +61,11 @@ end CubicEisenstein
 
 section
 
-open scoped Classical MatrixGroups BigOperators
+open scoped MatrixGroups
 namespace CubicEisenstein
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicKubota
+open CubicJacobiGlobal CubicKubota
 local notation "Eis" => ActualEisensteinCubic.O
 
 def cubeCuspTriangular {A:SL(2,Eis)} {p q:Eis} (d:CubeCuspData A p q) (hp:p≠0) : SL(2,ℂ) :=
@@ -202,9 +132,7 @@ lemma cubeCuspTriangular_entries {A:SL(2,Eis)} {p q:Eis} (d:CubeCuspData A p q) 
   have hd:cubeCuspTriangular d hp 0 0*cubeCuspTriangular d hp 1 1=1:=by
     simpa only [Matrix.det_fin_two,h10,mul_zero,sub_zero] using (cubeCuspTriangular d hp).property
   rw [h00] at hd
-  have hnon:(cubeDilationRoot p)⁻¹*eisEmbedding p^d.exponent.val≠0:=
-    mul_ne_zero (inv_ne_zero hz) (pow_ne_zero _ (eisEmbedding_ne_zero hp))
-  apply mul_left_cancel₀ hnon
+  apply mul_left_cancel₀ (mul_ne_zero (inv_ne_zero hz) (pow_ne_zero _ (eisEmbedding_ne_zero hp)))
   rw [hd]
   have hpow:eisEmbedding p^d.exponent.val*eisEmbedding p^(3-d.exponent.val)=eisEmbedding p^3:=by
     rw [←pow_add,Nat.add_sub_of_le (by omega:d.exponent.val≤3)]
@@ -214,7 +142,7 @@ lemma cubeCuspTriangular_entries {A:SL(2,Eis)} {p q:Eis} (d:CubeCuspData A p q) 
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicKubota
+open CubicJacobiGlobal CubicKubota
 local notation "Eis" => ActualEisensteinCubic.O
 
 lemma cubeCuspTriangular_integral_scale {A:SL(2,Eis)} {p q:Eis}
@@ -223,7 +151,7 @@ lemma cubeCuspTriangular_integral_scale {A:SL(2,Eis)} {p q:Eis}
       eisEmbedding (p^(2*d.exponent.val)) := by
   obtain ⟨h00,_,h11⟩:=cubeCuspTriangular_entries d hp
   rw [h00,h11,map_pow,map_pow]
-  have he:eisEmbedding p≠0:=eisEmbedding_ne_zero hp
+  have he :=eisEmbedding_ne_zero hp
   have hz:=cubeDilationRoot_ne_zero p hp
   have hpow:eisEmbedding p^3=eisEmbedding p^d.exponent.val*eisEmbedding p^(3-d.exponent.val):=by
     rw [←pow_add,Nat.add_sub_of_le (by omega:d.exponent.val≤3)]
@@ -276,7 +204,7 @@ lemma cubeCuspTriangular_height {A:SL(2,Eis)} {p q:Eis}
 end CubicEisenstein
 
 namespace CubicKubota
-open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein CubicJacobiGlobal CubicRamified
+open CubicEisenstein CubicJacobiGlobal CubicRamified
 local notation "Eis" => ActualEisensteinCubic.O
 
 lemma levelTwo_primary_shift_cases (A:levelTwo) :
@@ -292,7 +220,7 @@ lemma levelTwo_primary_shift_cases (A:levelTwo) :
             simpa only [Matrix.det_fin_two] using (A:SL(2,Eis)).property
         rw [←hd]
         exact dvd_sub (dvd_mul_of_dvd_left ha _) (dvd_mul_of_dvd_right hc _)
-      have hl:lambda∣(1:Eis):=(dvd_pow_self lambda (by decide:2≠0)).trans
+      have hl :=(dvd_pow_self lambda (by decide:2≠0)).trans
         (lambda_sq_dvd_three.trans h1)
       exact (residue_lambda_prime.not_isUnit (isUnit_of_dvd_one hl)).elim
     · refine ⟨1,Or.inl ?_⟩
@@ -304,7 +232,7 @@ lemma levelTwo_primary_shift_cases (A:levelTwo) :
 
 end CubicKubota
 namespace CubicEisenstein
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicKubota
+open CubicJacobiGlobal CubicKubota
 local notation "Eis" => ActualEisensteinCubic.O
 
 lemma rationalComplex_S_sq_action (w:HyperbolicSpace) :
@@ -379,7 +307,7 @@ theorem exists_primary_cusp_shift (A:levelTwo) :
 end CubicEisenstein
 
 namespace CubicKubota
-open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein CubicJacobiGlobal
+open CubicEisenstein CubicJacobiGlobal
 local notation "Eis" => ActualEisensteinCubic.O
 
 lemma matrix_mul_upper_first_column (A T:SL(2,Eis)) (hT:T 1 0=0) (i:Fin 2) :
@@ -423,9 +351,8 @@ namespace CubicEisenstein
 
 section
 
-open MeasureTheory
-open scoped Classical MatrixGroups BigOperators
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicKubota
+open CubicJacobiGlobal CubicKubota
+open scoped MatrixGroups
 local notation "Eis" => ActualEisensteinCubic.O
 
 lemma cubeAverage_continuous (p:Eis) (hp:p≠0) (F:HyperbolicSpace→ℂ) (hF:Continuous F) :
@@ -468,8 +395,7 @@ lemma cubeAverage_cusp_integral (p:Eis) (hp:p≠0) (F:HyperbolicSpace→ℂ) (hF
 
 end
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups InnerProductSpace
+open scoped MatrixGroups InnerProductSpace
 
 theorem kernelSourceProjection_variationalResolvent (F : KernelQuotientL2) :
     kernelVariationalResolvent (kernelSourceProjection F)=
@@ -489,7 +415,7 @@ theorem kernelSourceProjection_operatorGraph (F G : KernelQuotientL2)
 theorem kernelSourceProjection_eigenvector (F : KernelQuotientL2)
     (eigenvalue : ℂ) (hF : (F,eigenvalue • F)∈kernelEnergyLaplacian.graph) :
     (kernelSourceProjection F,eigenvalue • kernelSourceProjection F)∈kernelEnergyLaplacian.graph := by
-  simpa only [map_smul] using kernelSourceProjection_operatorGraph F (eigenvalue • F) hF
+  simpa using kernelSourceProjection_operatorGraph F (eigenvalue • F) hF
 
 theorem kernelSourceProjection_cubicEisensteinResidue_eigenvector :
     (kernelSourceProjection cubicEisensteinResidue,
@@ -498,11 +424,10 @@ theorem kernelSourceProjection_cubicEisensteinResidue_eigenvector :
 
 end CubicEisenstein
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
+open scoped MatrixGroups
 
 namespace CubicEisenstein
-open ConcreteTraceCRT CubicKubota EisensteinCuspModThree
+open CubicKubota EisensteinCuspModThree
 local notation "O" => ActualEisensteinCubic.O
 
 def sourceCuspLeadingCoefficient (M : SL(2,ActualEisensteinCubic.O)) : ℂ :=
@@ -549,9 +474,8 @@ theorem sourceCuspRemainder_bound_all (K a : ℝ)
   exact hK j _ v hv hav
 
 lemma sourceCuspConstant_one : sourceCuspConstant (1:SL(2,ActualEisensteinCubic.O))=sourcePrincipalCuspConstant := by
-  have h := sourceCuspRepresentative_average (0:Fin 3) 1 (by norm_num)
   simpa only [sourceCuspConstant,cuspRepresentative,cuspParameter,lowerCuspMatrix_zero,
-    ite_true,Complex.ofReal_one,Complex.one_cpow,mul_one] using h
+    ite_true,Complex.ofReal_one,Complex.one_cpow,mul_one] using (sourceCuspRepresentative_average (0:Fin 3) 1 (by norm_num))
 
 lemma sourceCuspLeadingCoefficient_one :
     sourceCuspLeadingCoefficient (1:SL(2,ActualEisensteinCubic.O))=(3*(Real.pi:ℂ))*constantArithmeticResidue := by
@@ -578,9 +502,7 @@ theorem sourceCuspRemainder_principal_cubic_decay (a : ℝ) (ha : 0<a) :
 
 end CubicEisenstein
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups Pointwise ENNReal InnerProductSpace
-open Finset AddChar MulChar EisensteinEmbedding
+open scoped Pointwise ENNReal InnerProductSpace
 
 namespace CubicEisenstein
 local notation "O" => ActualEisensteinCubic.O
@@ -610,13 +532,9 @@ lemma integralCoverFiber_integrable {H K : Subgroup (SL(2,ActualEisensteinCubic.
     (hf : Integrable f (integralQuotientVolume H)) (q : IntegralCoverCosets H K) :
     IntegrableOn (fun w=>f (integralCoverFiberPoint H K q w))
       (hyperbolicFundamentalSet K) hyperbolicVolume := by
-  have hD := (integralCoverDomain_projection_measurePreserving hHK hK).integrable_comp_of_integrable hf
-  have hS : IntegrableOn (fun w=>f (integralOrbitProjection H w))
-      (integralCoverSheet H K q) hyperbolicVolume :=
-    IntegrableOn.mono_set hD (Set.subset_iUnion (integralCoverSheet H K) q)
   apply ((integralCoverSheet_measurePreserving H K q).integrable_comp
     (hmeas.comp (integralCoverFiberPoint_measurable H K q)).aestronglyMeasurable).mp
-  simpa only [IntegrableOn,Function.comp_def,integralCoverFiberPoint_rep_smul] using hS
+  simpa only [IntegrableOn,Function.comp_def,integralCoverFiberPoint_rep_smul] using (IntegrableOn.mono_set ((integralCoverDomain_projection_measurePreserving hHK hK).integrable_comp_of_integrable hf) (Set.subset_iUnion (integralCoverSheet H K) q))
 
 theorem integralCoverTraceFunction_integrable {H K : Subgroup (SL(2,ActualEisensteinCubic.O))}
     (hHK : H≤K) (hK : K≤CubicKubota.levelThree) [H.IsFiniteRelIndex K]
@@ -626,7 +544,6 @@ theorem integralCoverTraceFunction_integrable {H K : Subgroup (SL(2,ActualEisens
   let : Fintype (IntegralCoverCosets H K) := Fintype.ofFinite _
   apply ((quotient_projection_measurePreserving K).integrable_comp
     (integralCoverTraceFunction_measurable H K f hmeas).aestronglyMeasurable).mp
-  change Integrable (fun w=>∑q : IntegralCoverCosets H K,f (integralCoverFiberPoint H K q w)) _
   exact integrable_finsetSum Finset.univ (fun q _=>integralCoverFiber_integrable hHK hK f hmeas hf q)
 
 lemma integralCoverFiber_integral (H K : Subgroup (SL(2,ActualEisensteinCubic.O)))

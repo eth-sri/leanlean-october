@@ -8,8 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.CenteredMomentReflectionMass
-open CenteredMomentReflectionDeletion HeckeFamily UniqueFactorizationMonoid
-open IdealMobiusDivisorSum
+open CenteredMomentReflectionDeletion HeckeFamily UniqueFactorizationMonoid IdealMobiusDivisorSum
 local notation "O" => HeckeFamily.O
 
 def weight (I : Ideal O) : ℝ := (Real.sqrt (I.absNorm : ℝ))⁻¹
@@ -20,12 +19,12 @@ lemma weight_mul (I J : Ideal O) : weight (I*J) = weight I * weight J := by
 lemma weight_one : weight (1 : Ideal O) = 1 := by simp [weight]
 lemma weight_pow (I : Ideal O) (n : ℕ) : weight (I^n) = weight I ^ n := by
   induction n with
-  | zero => simpa only [pow_zero] using weight_one
+  | zero => simpa using weight_one
   | succ n ih => rw [pow_succ,weight_mul,ih,pow_succ]
 lemma weight_prod (S : Finset (Ideal O)) (f : Ideal O → Ideal O) :
     weight (∏ P ∈ S,f P) = ∏ P ∈ S,weight (f P) := by
   induction S using Finset.induction_on with
-  | empty => simpa only [Finset.prod_empty] using weight_one
+  | empty => simpa using weight_one
   | @insert P S h ih => simp only [Finset.prod_insert h,weight_mul,ih]
 lemma prime_weight_lt_one (P : Ideal O) (hP : Prime P) : weight P < 1 := by
   have h : (1:ℝ) < P.absNorm := by
@@ -66,10 +65,7 @@ lemma hasSum_geometric_pi {α : Type*} [Fintype α] (r : α → ℝ)
     HasSum (fun n : β → ℕ => ∏ a,r a ^ n a) (∏ a,(1-r a)⁻¹)) ?_ ?_ ?_ α r hr hr1
   · intro α β _ e ih r hr hr1
     let : Fintype α := Fintype.ofEquiv β e.symm
-    have h := ih (r ∘ e) (fun a => hr (e a)) (fun a => hr1 (e a))
-    let E : (β → ℕ) ≃ (α → ℕ) := Equiv.arrowCongr e.symm (Equiv.refl ℕ)
-    have he := E.hasSum_iff.mpr h
-    convert he using 1
+    convert ((Equiv.arrowCongr e.symm (Equiv.refl ℕ)).hasSum_iff.mpr (ih (r ∘ e) (fun a => hr (e a)) (fun a => hr1 (e a)))) using 1
     · funext n
       exact (e.prod_comp (fun b => r b ^ n b)).symm
     · exact (e.prod_comp (fun b => (1-r b)⁻¹)).symm
@@ -80,9 +76,7 @@ lemma hasSum_geometric_pi {α : Type*} [Fintype α] (r : α → ℝ)
     have ht := ih (fun a => r (some a)) (fun a => hr (some a)) (fun a => hr1 (some a))
     have hs := h0.summable.mul_of_nonneg ht.summable (fun n => pow_nonneg (hr none) n)
       (fun n => Finset.prod_nonneg (fun a _ => pow_nonneg (hr (some a)) (n a)))
-    have hp := h0.mul ht hs
-    have he := (Equiv.piOptionEquivProd (β := fun _ : Option α => ℕ)).hasSum_iff.mpr hp
-    simpa only [Function.comp_def, Fintype.prod_option, Equiv.piOptionEquivProd_apply] using he
+    simpa only [Function.comp_def, Fintype.prod_option, Equiv.piOptionEquivProd_apply] using ((Equiv.piOptionEquivProd (β := fun _ : Option α => ℕ)).hasSum_iff.mpr (h0.mul ht hs))
 
 lemma smooth_summable (S : Finset (Ideal O)) (hS : ∀ P ∈ S,Prime P) :
     Summable (fun I : SmoothIdeal S => weight I.val.val) := by
@@ -106,8 +100,7 @@ lemma deletion_mass (S : Finset (Ideal O)) :
   exact (Finset.prod_one_add S).symm
 
 def localMass (P : Ideal O) : ℝ := (1+weight P)/(1-weight P)
-lemma localMass_nonneg (P : Ideal O) (hP : Prime P) : 0 ≤ localMass P := by
-  exact div_nonneg (by linarith [weight_nonneg P]) (sub_pos.mpr (prime_weight_lt_one P hP)).le
+lemma localMass_nonneg (P : Ideal O) (hP : Prime P) : 0 ≤ localMass P := div_nonneg (by linarith [weight_nonneg P]) (sub_pos.mpr (prime_weight_lt_one P hP)).le
 lemma prime_weight_le (P : Ideal O) (hP : Prime P) : weight P ≤ 3/4 := by
   have hn : (2:ℝ) ≤ P.absNorm := by
     exact_mod_cast (SmoothMobiusCorrection.prime_norm_two_le ⟨P,hP⟩ : 2 ≤ P.absNorm)
@@ -216,8 +209,7 @@ lemma coefficient_mass_le_euler (η ηi : Character) (S : Finset (Ideal O))
 
 lemma coefficient_mass_summable (η ηi : Character) (S : Finset (Ideal O))
     (hS : ∀ P ∈ S,Prime P) :
-    Summable (fun H : SmoothIdeal S => ∑ D ∈ S.powerset,‖coefficient η ηi S D H‖) := by
-  exact summable_sum (fun D hD => coefficient_summable_norm η ηi S hS D (Finset.mem_powerset.mp hD))
+    Summable (fun H : SmoothIdeal S => ∑ D ∈ S.powerset,‖coefficient η ηi S D H‖) := summable_sum (fun D hD => coefficient_summable_norm η ηi S hS D (Finset.mem_powerset.mp hD))
 
 theorem reflection_mass_subpower (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ (S : Finset (Ideal O)) (_hS : ∀ P ∈ S,Prime P)

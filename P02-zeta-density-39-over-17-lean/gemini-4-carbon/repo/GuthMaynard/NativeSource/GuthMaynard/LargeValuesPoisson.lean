@@ -30,33 +30,21 @@ noncomputable def gmTraceKernel (cutoff : GMSmoothCutoff) (t x : ℝ) : ℂ :=
 lemma gmSmoothCutoff_eq_zero_of_lt_one (cutoff : GMSmoothCutoff)
     {x : ℝ} (hx : x < 1) : cutoff x = 0 := by
   by_contra hne
-  have hxSupport : x ∈ Function.support cutoff := hne
-  have hxIcc := cutoff.support hxSupport
-  exact (not_le_of_gt hx) hxIcc.1
+  exact (not_le_of_gt hx) (cutoff.support (hne)).1
 
 theorem gmSmoothCutoff_eq_zero_at_one (cutoff : GMSmoothCutoff) :
     cutoff 1 = 0 := by
   by_contra hne
-  have hSupportNhd : Function.support cutoff ∈ 𝓝 (1 : ℝ) :=
-    cutoff.smooth.continuous.isOpen_support.mem_nhds hne
-  have hIccNhd : Set.Icc (1 : ℝ) 2 ∈ 𝓝 (1 : ℝ) :=
-    Filter.mem_of_superset hSupportNhd cutoff.support
-  have hInterior : (1 : ℝ) ∈ interior (Set.Icc (1 : ℝ) 2) :=
-    mem_interior_iff_mem_nhds.mpr hIccNhd
+  have hInterior := mem_interior_iff_mem_nhds.mpr (Filter.mem_of_superset (cutoff.smooth.continuous.isOpen_support.mem_nhds hne) cutoff.support)
   rw [interior_Icc] at hInterior
-  exact (lt_irrefl (1 : ℝ)) hInterior.1
+  exact (lt_irrefl 1) hInterior.1
 
 theorem gmSmoothCutoff_eq_zero_at_two (cutoff : GMSmoothCutoff) :
     cutoff 2 = 0 := by
   by_contra hne
-  have hSupportNhd : Function.support cutoff ∈ 𝓝 (2 : ℝ) :=
-    cutoff.smooth.continuous.isOpen_support.mem_nhds hne
-  have hIccNhd : Set.Icc (1 : ℝ) 2 ∈ 𝓝 (2 : ℝ) :=
-    Filter.mem_of_superset hSupportNhd cutoff.support
-  have hInterior : (2 : ℝ) ∈ interior (Set.Icc (1 : ℝ) 2) :=
-    mem_interior_iff_mem_nhds.mpr hIccNhd
+  have hInterior := mem_interior_iff_mem_nhds.mpr (Filter.mem_of_superset (cutoff.smooth.continuous.isOpen_support.mem_nhds hne) cutoff.support)
   rw [interior_Icc] at hInterior
-  exact (lt_irrefl (2 : ℝ)) hInterior.2
+  exact (lt_irrefl 2) hInterior.2
 
 theorem gmSmoothCutoff_eq_zero_of_le_one (cutoff : GMSmoothCutoff)
     {x : ℝ} (hx : x ≤ 1) : cutoff x = 0 := by
@@ -69,8 +57,7 @@ theorem gmSmoothCutoff_eq_zero_of_two_le (cutoff : GMSmoothCutoff)
   rcases hx.eq_or_lt with rfl | hx
   · exact gmSmoothCutoff_eq_zero_at_two cutoff
   · by_contra hne
-    have hxSupport := cutoff.support hne
-    exact (not_le_of_gt hx) hxSupport.2
+    exact (not_le_of_gt hx) (cutoff.support hne).2
 
 theorem contDiff_gmTraceKernel (cutoff : GMSmoothCutoff) (t : ℝ) :
     ContDiff ℝ ∞ (gmTraceKernel cutoff t) := by
@@ -337,7 +324,7 @@ theorem hasCompactSupport_gmScaledTraceKernel (cutoff : GMSmoothCutoff)
     HasCompactSupport (gmScaledTraceKernel cutoff t N) := by
   apply HasCompactSupport.intro (isCompact_Icc : IsCompact (Set.Icc N (2 * N)))
   intro x hx
-  have hNotScaled : x / N ∉ Set.Icc (1 : ℝ) 2 := by
+  have hNotScaled : x / N ∉ Set.Icc 1 2 := by
     intro hScaled
     apply hx
     rw [Set.mem_Icc] at hScaled ⊢

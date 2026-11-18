@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.RobertSargosSymmetricArray
 
 @[expose] public section
@@ -69,8 +78,6 @@ theorem robertSargos_symmetric_array_inner (f : ℝ → ℝ) (M H : ℕ) (m h q 
             robertSargosSymmetricDifference f m (h+r))).re
       else 0 := by
   rw [real_inner_comm,real_inner_eq_re_inner ℂ,RCLike.inner_apply]
-  change (robertSargosSymmetricArray f M H (m+q) h*
-    conj (robertSargosSymmetricArray f M H m (h+r))).re = _
   rw [robertSargos_symmetric_array_product]
   split_ifs <;> rfl
 

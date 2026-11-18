@@ -7,8 +7,7 @@ set_option autoImplicit false
 set_option maxHeartbeats 1200000
 noncomputable section
 namespace Montgomery.RationalMoment
-open GuthMaynard.Improvement
-open Finset
+open GuthMaynard.Improvement Finset
 theorem adjacent_upper_large_values {σ a p α δ : ℝ}
     (hw : AdjacentWindow σ a p α) (hδ : 0 < δ) (hδ' : δ ≤ 1/100) :
     ∃ C : ℝ, 0 < C ∧ ∀ (H N t₀ : ℝ) (b : ℕ → ℂ) (W : Finset ℝ),
@@ -52,13 +51,12 @@ theorem adjacent_upper_large_values {σ a p α δ : ℝ}
         rw [← Real.rpow_add hH0]
       _ = _ := by rw [hw.mean_identity]
   obtain ⟨_hdiv2,_hdiv4,hdivM⟩ := short_density_height_budgets hH0 hN0 σ δ
-  have hmean := separated_second_moment hN hH0.le b hb W hloc hsep
   have hcard : (W.card:ℝ)*(N^σ*H^(-2*δ))^2 ≤ 102*N*(H+N*Real.log (2*N)) := by
     calc
       _ = ∑ _t ∈ W, (N^σ*H^(-2*δ))^2 := by simp
       _ ≤ ∑ t ∈ W, ‖boundedPolynomial N b t‖^2 :=
         sum_le_sum (fun t ht => pow_le_pow_left₀ hV.le (hlarge t ht) 2)
-      _ ≤ _ := hmean
+      _ ≤ _ := (separated_second_moment hN hH0.le b hb W hloc hsep)
   have hc : (W.card:ℝ) ≤ 102*((H*N^(1-2*σ)+N^(2-2*σ)*Real.log (2*N))*H^(4*δ)) := by
     have hh := (le_div_iff₀ (sq_pos_of_pos hV)).mpr hcard
     have he : 102*N*(H+N*Real.log (2*N))/(N^σ*H^(-2*δ))^2 =

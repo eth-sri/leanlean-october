@@ -21,11 +21,8 @@ def selectedDivisor (D : Ideal O) (s : Finset ι) (a : Allocation D s) (i : ι) 
 theorem selected_divides_factor (D : Ideal O) (s : Finset ι) (v : ι → Ideal O)
     (a : Allocation D s) (hn : allocationTerm D s v a ≠ 0)
     (P : primeSupport D) (i : ι) (hi : i ∈ (a P).val) : (P:Ideal O)∣v i := by
-  have hP := (Finset.prod_ne_zero_iff.mp hn) P (Finset.mem_univ P)
-  have hprod := (mul_ne_zero_iff.mp hP).2
-  have hfactor := (Finset.prod_ne_zero_iff.mp hprod) i hi
   by_contra h
-  exact hfactor (by simp only [ite_eq_right h])
+  exact ((Finset.prod_ne_zero_iff.mp ((mul_ne_zero_iff.mp ((Finset.prod_ne_zero_iff.mp hn) P (Finset.mem_univ P))).2)) i hi) (by simp only [ite_eq_right h])
 
 theorem selectedDivisor_ne_zero (D : Ideal O) (s : Finset ι) (a : Allocation D s) (i : ι) :
     selectedDivisor D s a i ≠ 0 :=

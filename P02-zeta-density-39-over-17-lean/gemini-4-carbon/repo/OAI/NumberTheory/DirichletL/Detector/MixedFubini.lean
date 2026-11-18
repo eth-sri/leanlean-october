@@ -42,13 +42,9 @@ lemma quadShuffle_preserving {A B C D : Type*} [MeasurableSpace A] [MeasurableSp
     (μC : Measure C) (μD : Measure D) [SFinite μA] [SFinite μB] [SFinite μC] [SFinite μD] :
     MeasurePreserving (quadShuffle : (A×B)×(C×D) ≃ᵐ (A×C)×(B×D))
       ((μA.prod μB).prod (μC.prod μD)) ((μA.prod μC).prod (μB.prod μD)) := by
-  have h1 := measurePreserving_prodAssoc μA μB (μC.prod μD)
-  have h2 := (MeasurePreserving.id μA).prod ((measurePreserving_prodAssoc μB μC μD).symm MeasurableEquiv.prodAssoc)
   have h3 := (MeasurePreserving.id μA).prod
     ((Measure.measurePreserving_swap (μ:=μB) (ν:=μC)).prod (MeasurePreserving.id μD))
-  have h4 := (MeasurePreserving.id μA).prod (measurePreserving_prodAssoc μC μB μD)
-  have h5 := (measurePreserving_prodAssoc μA μC (μB.prod μD)).symm MeasurableEquiv.prodAssoc
-  exact h5.comp (h4.comp (h3.comp (h2.comp h1)))
+  exact ((measurePreserving_prodAssoc μA μC (μB.prod μD)).symm MeasurableEquiv.prodAssoc).comp (((MeasurePreserving.id μA).prod (measurePreserving_prodAssoc μC μB μD)).comp (h3.comp (((MeasurePreserving.id μA).prod ((measurePreserving_prodAssoc μB μC μD).symm MeasurableEquiv.prodAssoc)).comp (measurePreserving_prodAssoc μA μB (μC.prod μD)))))
 
 def physicalNestingEquiv {A B C D E F : Type*} [MeasurableSpace A] [MeasurableSpace B]
     [MeasurableSpace C] [MeasurableSpace D] [MeasurableSpace E] [MeasurableSpace F] :
@@ -74,15 +70,12 @@ lemma physicalNesting_preserving {A B C D E F : Type*} [MeasurableSpace A] [Meas
     MeasurePreserving (physicalNestingEquiv : (A×(B×C))×((D×E)×F) ≃ᵐ A×(F×(D×(B×(E×C)))))
       ((μA.prod (μB.prod μC)).prod ((μD.prod μE).prod μF))
       (μA.prod (μF.prod (μD.prod (μB.prod (μE.prod μC))))) := by
-  have h1 := measurePreserving_prodAssoc μA (μB.prod μC) ((μD.prod μE).prod μF)
   have hr := (Measure.measurePreserving_swap (μ:=(μB.prod μC).prod (μD.prod μE)) (ν:=μF)).comp
     ((measurePreserving_prodAssoc (μB.prod μC) (μD.prod μE) μF).symm MeasurableEquiv.prodAssoc)
-  have hq := quadShuffle_preserving μB μC μD μE
   have hs := (Measure.measurePreserving_swap (μ:=μB) (ν:=μD)).prod
     (Measure.measurePreserving_swap (μ:=μC) (ν:=μE))
-  have ha := measurePreserving_prodAssoc μD μB (μE.prod μC)
   exact ((MeasurePreserving.id μA).prod
-    (((MeasurePreserving.id μF).prod (ha.comp (hs.comp hq))).comp hr)).comp h1
+    (((MeasurePreserving.id μF).prod ((measurePreserving_prodAssoc μD μB (μE.prod μC)).comp (hs.comp (quadShuffle_preserving μB μC μD μE)))).comp hr)).comp (measurePreserving_prodAssoc μA (μB.prod μC) ((μD.prod μE).prod μF))
 
 lemma integral_count_eq_tsum {A : Type*} [Countable A] [MeasurableSpace A]
     [MeasurableSingletonClass A] (f : A→ℂ) (hf : Integrable f Measure.count) :

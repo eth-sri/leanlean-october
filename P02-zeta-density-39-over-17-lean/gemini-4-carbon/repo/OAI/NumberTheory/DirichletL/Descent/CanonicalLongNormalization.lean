@@ -11,9 +11,7 @@ noncomputable section
 
 open scoped BigOperators Classical
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
-open CanonicalQuadraticSieve FirstPassCubeLabels SecondPassArithmetic
-open InverseSecondFibers IdealMobiusDivisorSum InverseInitialClippedColumns
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge CanonicalQuadraticSieve FirstPassCubeLabels SecondPassArithmetic InverseSecondFibers IdealMobiusDivisorSum InverseInitialClippedColumns
 local notation "O"=>ActualEisensteinCubic.O
 
 theorem child_ball_unit_mem (u:Oˣ)(R:ℝ)(k:O) :
@@ -50,14 +48,13 @@ theorem canonical_ball_generator_energy
   obtain ⟨u,hu⟩:=generator_eq_unit_primary I (idealGenerator I) (span_idealGenerator I) hI
   let P:O→ℝ:=fun k=>
     ‖finiteCanonicalMarkedRow p hp hcop hg pool Ψ m (primaryGenerator I) k slots lists a W X‖^2
-  have hrot:=child_ball_unit_sum (u^4) K P
   have he (k:O):
       ‖finiteCanonicalMarkedRow p hp hcop hg pool Ψ m (idealGenerator I) k slots lists a W X‖^2=
       P (((u^4:Oˣ):O)*k) := by
     rw [hu,finiteCanonicalMarkedRow_label_transfer]
     rfl
   simp only [he]
-  exact hrot.symm
+  exact (child_ball_unit_sum (u^4) K P).symm
 
 end SevenEighths.InverseMoment
 

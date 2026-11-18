@@ -25,7 +25,7 @@ theorem slotTupleProduct_injective_on
     rw [← he]
     exact Finset.dvd_prod_of_mem p (Finset.mem_univ i)
   obtain ⟨j, hj, hd⟩ := ((hp i (p i) (hpL i)).dvd_finsetProd_iff q).mp hdiv
-  have hpq : p i = q j := associated_iff_eq.mp
+  have hpq := associated_iff_eq.mp
     ((hp i (p i) (hpL i)).associated_of_dvd (hp j (q j) (hqL j)) hd)
   have hij : i = j := by
     by_contra hne

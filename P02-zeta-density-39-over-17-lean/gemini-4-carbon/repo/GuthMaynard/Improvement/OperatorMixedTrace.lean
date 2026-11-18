@@ -61,10 +61,8 @@ theorem mixedFrequencyIntegrand_integrable (μ ν₀ ν₁ : Measure ℝ)
     (mixedFrequencyIntegrand_measurable hA hB hf hg).aestronglyMeasurable
   filter_upwards with p
   simp only [mixedFrequencyIntegrand,norm_mul,phase_norm,mul_one]
-  calc
-    _ ≤ B₀*B₁*B₁ := mul_le_mul (mul_le_mul (hbA _) (hbB _) (norm_nonneg _) hB₀)
-      (hbB _) (norm_nonneg _) (mul_nonneg hB₀ hB₁)
-    _ = _ := by ring
+  exact (mul_le_mul (mul_le_mul (hbA _) (hbB _) (norm_nonneg _) hB₀)
+      (hbB _) (norm_nonneg _) (mul_nonneg hB₀ hB₁)).trans_eq (by ring)
 
 /-- Time integration of the absolute-integrable six-variable mixed integrand. -/
 theorem mixedFrequencyIntegrand_time_integral (μ : Measure ℝ) [SFinite μ]

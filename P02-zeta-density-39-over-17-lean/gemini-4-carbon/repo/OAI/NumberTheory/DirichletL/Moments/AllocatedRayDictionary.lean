@@ -10,12 +10,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.CenteredMomentAllocatedRayDictionary
-open HeckeFamily CenteredMomentCommonRadialData CenteredMomentCommonHeightEnvelope
-open CenteredMomentCommonAllocationSum CenteredMomentDivisorAllocation
-open CenteredMomentCommonMaskEnergy CenteredMomentInductionEnergy
-open CenteredMomentNaturalFixedRaySource CenteredMomentPrimeSlot HeckePrimeAnnular
-open CenteredMomentAllocatedNaturalSource CenteredMomentRetainedProfile
-open CenteredMomentHeckeTwist CenteredMomentHeckeCancellation
+open HeckeFamily CenteredMomentCommonRadialData CenteredMomentCommonHeightEnvelope CenteredMomentCommonAllocationSum CenteredMomentDivisorAllocation CenteredMomentCommonMaskEnergy CenteredMomentInductionEnergy CenteredMomentNaturalFixedRaySource CenteredMomentPrimeSlot HeckePrimeAnnular CenteredMomentAllocatedNaturalSource CenteredMomentRetainedProfile CenteredMomentHeckeTwist CenteredMomentHeckeCancellation
 local notation "O" => HeckeFamily.O
 
 variable {α : Type*} [Fintype α] [DecidableEq α]
@@ -101,8 +96,7 @@ theorem common_energy (τ : Character) (v : ℝ) (C R : Ideal O)
       fun i => primePool M H bslot (Z^(w i.val.val)) := by
     funext i
     exact h.pool i.val.val
-  have hhc := congrArg (fun f => fun i : remaining s C B L a J => heightCoefficient (f i) v) hc
-  rw [hhc, hp, hs]
+  rw [(congrArg (fun f => fun i : remaining s C B L a J => heightCoefficient (f i) v) hc), hp, hs]
   rw [CenteredMomentEnergySlotHeight.inherited_height_energy τ m A W₁ W₂ _ _ _ _ _ _
     (fun i => h.scale i.val.val ▸ s.P_pos i.val.val)
     (fun i I hI => (s.prime i.val.val I (by rw [h.pool]; exact hI)).ne_zero)

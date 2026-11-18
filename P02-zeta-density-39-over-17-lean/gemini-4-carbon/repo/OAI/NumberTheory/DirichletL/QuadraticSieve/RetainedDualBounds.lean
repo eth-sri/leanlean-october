@@ -9,79 +9,14 @@ noncomputable section
 
 namespace CanonicalQuadraticSieve
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 
 section
 
-open scoped BigOperators Classical SchwartzMap
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
-open TruncatedPrincipalPoisson IdealMobiusDivisorSum
+open ConcretePrimeRowBridge EisensteinSchwartzPoisson TruncatedPrincipalPoisson IdealMobiusDivisorSum
 
 def primePoolDensity (G : Ideal O) : ℂ :=
   ∏ P : primePool {G}, (1-(1:ℂ)/(Ideal.absNorm P.val:ℂ))
@@ -183,8 +118,7 @@ theorem unrestrictedDualPrincipalTruncation_eq
 end
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
-open TruncatedPrincipalPoisson UnrestrictedIdealReindex GaussGeneratorTransport
+open ConcretePrimeRowBridge EisensteinSchwartzPoisson TruncatedPrincipalPoisson UnrestrictedIdealReindex GaussGeneratorTransport
 
 theorem dualPrincipalIdeal_truncated_all_conductors
     (I J : Ideal O) (hI : Admissible I) (hJ : Admissible J)
@@ -236,8 +170,7 @@ theorem dualPrincipalIdeal_truncated_all_conductors
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
-open TruncatedPrincipalPoisson IdealCoprimeSieveOperator
+open ConcretePrimeRowBridge EisensteinSchwartzPoisson TruncatedPrincipalPoisson IdealCoprimeSieveOperator
 
 theorem unrestrictedDualPrincipal_error_uniform (l : ℕ) :
     ∃ (s : Finset (ℕ × ℕ)) (C : ℝ), 0 < C ∧
@@ -375,11 +308,11 @@ theorem retained_dual_principal_difference (l : ℕ) :
     (fun i => (hrows i).1.ne_zero) (fun j => (hcols j).1) (fun k => (hcols k).1)
   have hsplit := retainedDualPrincipalSum_symmetric_truncation W rows cols a M F N T hM hF
     (fun i => (hrows i).1.ne_zero) (fun j => (hcols j).1)
-  change (6:ℂ)*retainedDualPrincipalSum W rows cols a M F =
+  change 6*retainedDualPrincipalSum W rows cols a M F =
     unrestrictedDualPrincipalTruncation W rows cols cols a a M F Z +
     unrestrictedDualTruncatedMiddle W rows cols cols a a M F Y Z (T^4) +
     unrestrictedDualPrincipalErrorSum rows cols a W M F N T at hsplit
-  have heq : (6:ℂ)*retainedDualPrincipalSum W rows cols a M F -
+  have heq : 6*retainedDualPrincipalSum W rows cols a M F -
       paperRadialFourier W 0*unrestrictedPrincipalDensity rows cols cols a a (M/F) =
       -(paperRadialFourier W 0*unrestrictedLargePrincipalSum rows cols cols a a M F Z) -
       (W 0*unrestrictedSmallPrincipalSum rows cols cols a a M F (fun d i => (Ideal.absNorm d:ℝ)≤Z i)) +
@@ -528,8 +461,7 @@ theorem retained_dual_principal_global (l : ℕ) :
 
 end
 
-open scoped BigOperators Classical
-open ActualEisensteinCubic QuadraticSquarefreeKernel CompletedGauss
+open QuadraticSquarefreeKernel CompletedGauss
 
 def highSquareParts (M K : ℝ) : Finset (Ideal O) := (highKernelRange M K).image squarePart
 
@@ -552,9 +484,8 @@ theorem highSquareParts_bounds (M K : ℝ) (hK : 0 < K) (A : Ideal O)
   have hsquare : (Ideal.absNorm (squarePart I) : ℝ)^2 ≤ M/K := by
     apply (le_div_iff₀ hK).mpr
     exact (mul_le_mul_of_nonneg_left hlarge.le (sq_nonneg _)).trans hprod
-  have hM : 0 ≤ M/K := (sq_nonneg _).trans hsquare
   have hroot : (Ideal.absNorm (squarePart I) : ℝ) ≤ Real.sqrt (M/K) := by
-    nlinarith [Real.sq_sqrt hM,Real.sqrt_nonneg (M/K)]
+    nlinarith [Real.sq_sqrt ((sq_nonneg _).trans hsquare),Real.sqrt_nonneg (M/K)]
   refine ⟨hparts.1,hna,hroot,?_⟩
   apply (le_div_iff₀ (by positivity : 0 < (Ideal.absNorm (squarePart I) : ℝ)^2)).mpr
   nlinarith
@@ -563,8 +494,7 @@ theorem highSquarePart_fiber_row_bounds (M K : ℝ) (A I : Ideal O)
     (hI : I ∈ highKernelRange M K) (hA : squarePart I = A) :
     Admissible (squarefreePart I) ∧
       (Ideal.absNorm (squarefreePart I) : ℝ) ≤ M/(Ideal.absNorm A : ℝ)^2 := by
-  have hs := (mem_highKernelRange.mp hI).1
-  have hparts := (supported_square_parts I).mp hs
+  have hparts := (supported_square_parts I).mp ((mem_highKernelRange.mp hI).1)
   have hna : 0 < (Ideal.absNorm A : ℝ) := by
     rw [←hA]
     exact_mod_cast Nat.pos_of_ne_zero (fun h => hparts.1.1 (Ideal.absNorm_eq_zero_iff.mp h))
@@ -590,13 +520,11 @@ theorem highSquarePartFiber_energy (M N K : ℝ) (A : Ideal O)
     intro I I' heq
     dsimp only at heq
     apply Subtype.ext
-    have hI := (Finset.mem_filter.mp I.property).2
-    have hI' := (Finset.mem_filter.mp I'.property).2
     calc
       I.val = A^2 * squarefreePart I.val := by
-        simpa only [hI] using (squarePart_sq_mul_squarefreePart I.val).symm
+        simpa only [((Finset.mem_filter.mp I.property).2)] using (squarePart_sq_mul_squarefreePart I.val).symm
       _ = A^2 * squarefreePart I'.val := by rw [heq]
-      _ = I'.val := by simpa only [hI'] using squarePart_sq_mul_squarefreePart I'.val
+      _ = I'.val := by simpa only [((Finset.mem_filter.mp I'.property).2)] using squarePart_sq_mul_squarefreePart I'.val
   have hnorm : ‖FiniteSieveOperator.operator B‖^2 ≤
       sieveNorm (M/(Ideal.absNorm A : ℝ)^2) N := by
     apply family_squared_norm_le (fun I : S => squarefreePart I.val)
@@ -611,9 +539,8 @@ theorem highSquarePartFiber_energy (M N K : ℝ) (A : Ideal O)
       ∑ J : idealRange N, B I J * b J := by
     apply Finset.sum_congr rfl
     intro J _
-    have hI := (Finset.mem_filter.mp I.property).2
     have he : I.val = A^2 * squarefreePart I.val := by
-      simpa only [hI] using (squarePart_sq_mul_squarefreePart I.val).symm
+      simpa only [((Finset.mem_filter.mp I.property).2)] using (squarePart_sq_mul_squarefreePart I.val).symm
     rw [he, canonical_quadraticRow_primary_squarefree J.val
       (mem_idealRange.mp J.property).1]
     change _ = quadraticRow J.val (primaryGenerator (squarefreePart I.val)) *

@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.CenteredMomentReflectionWeightedEnergy
-open HeckeFamily CenteredMomentReflectionDeletion CenteredMomentReflectionMass
-open CenteredMomentReflectedAnnuli
+open HeckeFamily CenteredMomentReflectionDeletion CenteredMomentReflectionMass CenteredMomentReflectedAnnuli
 local notation "O" => HeckeFamily.O
 
 abbrev Index (S : Finset (Ideal O)) := (S.powerset × SmoothIdeal S) × ℤ
@@ -233,7 +232,6 @@ theorem actual_masked_reflection_energy (ε : ℝ) (hε : 0<ε) :
     rw [←Real.rpow_natCast,←Real.rpow_mul hR0]
     congr 1
     ring
-  dsimp [M]
   rw [mul_pow,hr]
 
 theorem actual_reflection_energy (ε : ℝ) (hε : 0<ε) :
@@ -248,7 +246,7 @@ theorem actual_reflection_energy (ε : ℝ) (hε : 0<ε) :
   obtain ⟨C,hC,h⟩ := actual_masked_reflection_energy ε hε
   refine ⟨C,hC,?_⟩
   intro ι _ S hS η ηi B hB R E hR hcap f hselection
-  simpa only [norm_one,one_mul] using
+  simpa using
     h S hS η ηi B hB R E hR hcap (fun _ _=>1) f (by intro i a;simp) hselection
 
 end SevenEighths.CenteredMomentReflectionWeightedEnergy

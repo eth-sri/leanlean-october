@@ -7,81 +7,13 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
-
-open scoped BigOperators Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 
 namespace CanonicalRowCompletion
 
 section
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve CubicEisenstein
+open CompletedGauss CanonicalQuadraticSieve CubicEisenstein
 local notation "Eis" => ActualEisensteinCubic.O
 namespace GoodMaskRowData
 variable {m f z:Eis} (D:GoodMaskRowData m f z)
@@ -97,7 +29,7 @@ end GoodMaskRowData
 end
 section
 
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve CubicEisenstein
+open CompletedGauss CanonicalQuadraticSieve CubicEisenstein
 local notation "Eis" => ActualEisensteinCubic.O
 namespace GoodMaskRowData
 variable {m f z:Eis} (D:GoodMaskRowData m f z)
@@ -180,16 +112,15 @@ theorem inactive_weight_nonresidual_subsets (e:α⊕β ≃ γ) (z:γ → ℂ)
 
 end CanonicalRowCompletion
 
-open scoped BigOperators Classical ContDiff
 
 namespace CompletedGauss
-open ActualEisensteinCubic CubicEisenstein CanonicalQuadraticSieve CompletedDyadic LocalReflectionBrackets
+open CubicEisenstein CanonicalQuadraticSieve CompletedDyadic LocalReflectionBrackets
 local notation "Eis" => ActualEisensteinCubic.O
 
 end CompletedGauss
 
 namespace CubicEisenstein
-open ActualEisensteinCubic CompletedGauss CompletedDyadic CanonicalQuadraticSieve
+open CompletedGauss CompletedDyadic CanonicalQuadraticSieve
 local notation "Eis" => ActualEisensteinCubic.O
 namespace FixedFourierGeometry
 variable {c:Eis} {h:Eis⧸Ideal.span {c}} (G:FixedFourierGeometry c h)
@@ -198,11 +129,9 @@ variable {ι:Type*} [Fintype ι] {p:ι→Eis} {N:Eis}
 end FixedFourierGeometry
 end CubicEisenstein
 
-open scoped Classical BigOperators ContDiff
 
 namespace CanonicalRowCompletion
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve CanonicalCoefficientClass
-open ConcretePrimeRowBridge SecondPassArithmetic
+open CompletedGauss CanonicalQuadraticSieve CanonicalCoefficientClass ConcretePrimeRowBridge SecondPassArithmetic
 local notation "Eis" => ActualEisensteinCubic.O
 
 lemma normTwistedSource_contDiff (W:ℝ→ℂ) (a b:ℝ) (ha:0<a)
@@ -217,10 +146,9 @@ lemma normTwistedSource_contDiff (W:ℝ→ℂ) (a b:ℝ) (ha:0<a)
 
 end CanonicalRowCompletion
 
-open scoped Classical BigOperators
 
 namespace CompletedGauss.ReflectedBranchData
-open ActualEisensteinCubic CanonicalQuadraticSieve CompletedDyadic
+open CanonicalQuadraticSieve CompletedDyadic
 local notation "Eis" => ActualEisensteinCubic.O
 variable {levelBound K:ℝ} {I F Q:Ideal Eis}
 variable (d:ReflectedBranchData levelBound K I F Q)
@@ -230,7 +158,6 @@ variable (W:ℝ→ℂ) (X ρ q:ℝ) (k:idealRange (completedResidualScale K I Q)
 
 end CompletedGauss.ReflectedBranchData
 
-open scoped BigOperators Classical
 
 namespace CanonicalRowCompletion
 variable {α β γ:Type*} [Fintype α] [Fintype β] [Fintype γ]
@@ -252,7 +179,7 @@ lemma optionalPrimeActive_completeActiveSet (e:α⊕β ≃ γ) (B:Finset β) :
   simp only [Finset.mem_union,residualActivePrimes_not_inr,false_or,Finset.mem_image]
   constructor
   · rintro ⟨b',hb',he⟩
-    have hb:b'=b:=Sum.inr.inj (e.injective he)
+    have hb :=Sum.inr.inj (e.injective he)
     exact hb ▸ hb'
   · intro hb
     exact ⟨b,hb,rfl⟩
@@ -269,10 +196,9 @@ noncomputable def selectedActiveEquiv (e:α⊕β ≃ γ) (B:Finset β) :
 
 end CanonicalRowCompletion
 
-open scoped BigOperators Classical
 
 namespace CanonicalRowCompletion.ActualFiber
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve CubicEisenstein
+open CompletedGauss CanonicalQuadraticSieve CubicEisenstein
 local notation "Eis" => ActualEisensteinCubic.O
 
 def maskElement (q:ℕ) (m:Eis) : Eis := m*excludedGenerator (reflectionExcludedPrimes q)

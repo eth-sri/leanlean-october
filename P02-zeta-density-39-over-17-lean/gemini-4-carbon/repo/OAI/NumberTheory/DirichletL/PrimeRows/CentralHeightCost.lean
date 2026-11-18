@@ -20,8 +20,8 @@ theorem cube_height_power_eventually (n : ℕ) (τ p loss : ℝ)
     (loss-τ*p) (by linarith)
   filter_upwards [hh,eventually_ge_atTop (1:ℝ)] with Z hC hZ
   intro i hi
-  have hZp : 0<Z := zero_lt_one.trans_le hZ
-  have hpow : 1≤Z^τ := Real.one_le_rpow hZ hτ.le
+  have hZp := zero_lt_one.trans_le hZ
+  have hpow := Real.one_le_rpow hZ hτ.le
   have hi' : (i:ℝ)≤n := by exact_mod_cast hi
   have hx : 3+(3*i+2:ℕ)*Z^τ≤(3*(n:ℝ)+5)*Z^τ := by push_cast;nlinarith
   calc

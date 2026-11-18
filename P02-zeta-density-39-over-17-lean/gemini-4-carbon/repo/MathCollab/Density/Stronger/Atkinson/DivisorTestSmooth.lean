@@ -11,9 +11,7 @@ public import MathCollab.Density.Stronger.Atkinson.ShortDivisorGeometry
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+open Complex Filter MeasureTheory Set Topology MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth MathCollab.Density.Contour
 open scoped Interval ComplexConjugate ContDiff
 set_option autoImplicit false
 noncomputable section
@@ -45,7 +43,7 @@ theorem contDiffAt_zetaShortDivisorTestFunction (T : ℝ) {G x : ℝ}
     (hG : G ≠ 0) (hx : 0 < x) :
     ContDiffAt ℝ ∞ (zetaShortDivisorTestFunction T G) x := by
   have hlog : ContDiffAt ℝ ∞ Real.log x := Real.contDiffAt_log.mpr hx.ne'
-  have hpow := contDiffAt_ofReal_cpow_positive ((-1 / 2 : ℂ) + (T : ℂ) * I) hx
+  have hpow := contDiffAt_ofReal_cpow_positive ((-1 / 2) + (T : ℂ) * I) hx
   have hcastlog : ContDiffAt ℝ ∞ (fun y : ℝ => (Real.log y : ℂ)) x :=
     Complex.ofRealCLM.contDiff.contDiffAt.comp x hlog
   have hweight : ContDiffAt ℝ ∞

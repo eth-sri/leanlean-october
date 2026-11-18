@@ -1,7 +1,16 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaSourceChartBound
-public import TaoTrudgianYang2025.PointMeanLemmaThreeEdges
 
 @[expose] public section
 
@@ -36,9 +45,8 @@ theorem eventually_reflected_power_windows {A k δ : ℝ}
     (D := k^(α-δ)/A) (a := 1-δ/2) (b := 1) (by linarith)
   have hupper := eventually_const_mul_rpow_le_rpow
     (D := A/k^(α+δ)) (a := 1) (b := 1+δ/2) (by linarith)
-  filter_upwards [hlower,hupper,eventually_gt_atTop (0 : ℝ)] with T hlo hhi hT
+  filter_upwards [hlower,hupper,eventually_gt_atTop 0] with T hlo hhi hT
   intro N hN hlow hhigh
-  have hklo : 0 < k^(α-δ) := Real.rpow_pos_of_pos hk _
   have hkhi : 0 < k^(α+δ) := Real.rpow_pos_of_pos hk _
   have hleft : k^(α-δ)*T^(1-δ/2) ≤ A*T := by
     have hh := mul_le_mul_of_nonneg_left hlo hA.le

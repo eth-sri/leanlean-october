@@ -76,11 +76,8 @@ theorem gmSourcePieces_partition (N : ℕ) (b : ℕ → ℂ) (t : ℝ) :
   classical
   rw [sourceDirichletPoly]
   let f : ℕ → ℂ := fun n => b n * (n : ℂ) ^ ((t : ℂ) * I)
-  change (∑ n ∈ dyadicInterval N, f n) = _
   rw [← Finset.sum_filter_add_sum_filter_not (s := dyadicInterval N)
-    (p := fun n => 5 * n ≤ 6 * N) (f := f)]
-  rw [add_assoc]
-  rw [← Finset.sum_filter_add_sum_filter_not
+    (p := fun n => 5 * n ≤ 6 * N) (f := f), add_assoc, ← Finset.sum_filter_add_sum_filter_not
     (s := (dyadicInterval N).filter fun n => ¬ 5 * n ≤ 6 * N)
     (p := fun n => 5 * n ≤ 9 * N) (f := f)]
   congr 1
@@ -107,8 +104,7 @@ theorem gmSourceLeftPiece_mem_dyadic {N n : ℕ} (hN : 30 ≤ N)
   omega
 
 theorem gmSourceMiddlePiece_mem_dyadic {N n : ℕ}
-    (hn : n ∈ gmSourceMiddlePiece N) : n ∈ dyadicInterval N := by
-  exact (Finset.mem_filter.mp hn).1
+    (hn : n ∈ gmSourceMiddlePiece N) : n ∈ dyadicInterval N := (Finset.mem_filter.mp hn).1
 
 theorem gmSourceRightPiece_mem_dyadic {N n : ℕ} (hN : 30 ≤ N)
     (hn : n ∈ gmSourceRightPiece N) :
@@ -122,9 +118,8 @@ theorem gmSourceLeftPiece_mem_core {N n : ℕ} (hN : 30 ≤ N)
     (hn : n ∈ gmSourceLeftPiece N) :
     ((n : ℝ) / gmSourceLeftScale N) ∈
       Set.Icc (6 / 5 : ℝ) (9 / 5 : ℝ) := by
-  have hn' := hn
   simp only [gmSourceLeftPiece, Finset.mem_filter, dyadicInterval,
-    Finset.mem_Ioc] at hn'
+    Finset.mem_Ioc] at (hn)
   have hQpos : 0 < gmSourceLeftScale N := by
     dsimp only [gmSourceLeftScale]
     omega
@@ -164,9 +159,8 @@ theorem gmSourceRightPiece_mem_core {N n : ℕ} (hN : 30 ≤ N)
     (hn : n ∈ gmSourceRightPiece N) :
     ((n : ℝ) / gmSourceRightScale N) ∈
       Set.Icc (6 / 5 : ℝ) (9 / 5 : ℝ) := by
-  have hn' := hn
   simp only [gmSourceRightPiece, Finset.mem_filter, dyadicInterval,
-    Finset.mem_Ioc] at hn'
+    Finset.mem_Ioc] at (hn)
   have hQpos : 0 < gmSourceRightScale N := by
     dsimp only [gmSourceRightScale]
     omega

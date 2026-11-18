@@ -50,13 +50,13 @@ theorem operator_conjugate_norm_le (A : Matrix m n ℂ) :
   apply ContinuousLinearMap.opNorm_le_bound _ (norm_nonneg _)
   intro x
   rw [operator_conjugate_apply, norm_conjugateVector]
-  simpa only [norm_conjugateVector] using (operator A).le_opNorm (conjugateVector x)
+  simpa using (operator A).le_opNorm (conjugateVector x)
 
 omit [DecidableEq m] in
 theorem operator_conjugate_norm (A : Matrix m n ℂ) :
     ‖operator (fun i j => star (A i j))‖ = ‖operator A‖ := by
   apply le_antisymm (operator_conjugate_norm_le A)
-  simpa only [star_star] using operator_conjugate_norm_le (fun i j => star (A i j))
+  simpa using operator_conjugate_norm_le (fun i j => star (A i j))
 
 theorem operator_conjTranspose_norm (A : Matrix m n ℂ) :
     ‖operator A.conjTranspose‖ = ‖operator A‖ := by
@@ -82,10 +82,8 @@ theorem squaredNorm_reciprocity (A : Matrix m n ℂ) (B : Matrix n m ℂ)
 omit [DecidableEq m] in
 theorem energy_le_squaredNorm (A : Matrix m n ℂ) (c : n → ℂ) :
     (∑ i, ‖∑ j, A i j * c j‖ ^ 2) ≤ squaredNorm A * ∑ j, ‖c j‖ ^ 2 := by
-  let x : EuclideanSpace ℂ n := WithLp.toLp 2 c
-  have h := (operator A).le_opNorm x
-  have hs := pow_le_pow_left₀ (norm_nonneg _) h 2
-  simpa only [squaredNorm, mul_pow, EuclideanSpace.norm_sq_eq, operator_apply, x] using hs
+  let x := WithLp.toLp 2 c
+  simpa only [squaredNorm, mul_pow, EuclideanSpace.norm_sq_eq, operator_apply, x] using (pow_le_pow_left₀ (norm_nonneg _) ((operator A).le_opNorm x) 2)
 
 end
 end SevenEighths.CubicSieve

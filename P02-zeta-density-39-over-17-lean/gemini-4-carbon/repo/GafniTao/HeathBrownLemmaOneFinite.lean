@@ -23,13 +23,11 @@ theorem heathBrown_H_mul_exponentialSum_norm_le
     (H : ℝ) * ‖heathBrownExponentialSum N f‖ ≤
       ‖∑ h ∈ Finset.Icc 1 H, heathBrownSourceShiftSum N H f h‖ +
         (H : ℝ) ^ 2 := by
-  have herror := norm_heathBrown_source_average_sub_le hHN f
   have htri := norm_le_norm_add_norm_sub
     (∑ h ∈ Finset.Icc 1 H, heathBrownSourceShiftSum N H f h)
     ((H : ℂ) * heathBrownExponentialSum N f)
-  rw [norm_mul, norm_natCast] at htri
-  rw [norm_sub_rev] at htri
-  exact htri.trans (add_le_add le_rfl herror)
+  rw [norm_mul, norm_natCast, norm_sub_rev] at htri
+  exact htri.trans (add_le_add le_rfl (norm_heathBrown_source_average_sub_le hHN f))
 
 /-- Source-faithful finite form of Heath-Brown Lemma 1 prior to the two
 number-theoretic inputs.  Every factor is literal and all endpoint loss is

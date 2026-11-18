@@ -11,9 +11,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentEnergyFirstStageLossBudget
-open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyStageReserveSchedule
-open CenteredMomentSuccessorPaidParameters
-open CenteredMomentEnergyFirstGaussianProfileWeights CenteredMomentFirstAmplifiedFourCoefficients
+open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyStageReserveSchedule CenteredMomentSuccessorPaidParameters CenteredMomentEnergyFirstGaussianProfileWeights CenteredMomentFirstAmplifiedFourCoefficients
 
 def sourcePaid (Bcap emask ell er delta reserveAmp thetaSource thetaClip κ mesh:ℝ):ℝ:=
   (Bcap+Bcap)*emask+ell+er+(delta+reserveAmp+thetaSource)/6+thetaClip/3+κ*mesh
@@ -41,8 +39,8 @@ theorem literal_four_budget (M Bcap Bcommon κ ε:ℝ)
         epsSrc*Bcommon+primeLoss+physicalLoss+highReflection+zeroReflection≤
       stageLoss M Bcap ε (k+1):=by
   have hb:=bounds M Bcap κ ε hM hB hκ hε
-  have hr:0<reserve M Bcap ε:=hb.2.2.2.1
-  have hs:0≤amplification ε:=hb.1.le
+  have hr :=hb.2.2.2.1
+  have hs :=hb.1.le
   have hother:epsSrc*Bcommon+primeLoss+physicalLoss≤48*reserve M Bcap ε:=by linarith
   have hextra:epsSrc*Bcommon+primeLoss+physicalLoss+highReflection+zeroReflection≤
       50*reserve M Bcap ε:=by linarith

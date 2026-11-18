@@ -9,9 +9,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentAmplificationLocal
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT CanonicalRowCompletion
-open CanonicalQuadraticSieve ConcretePrimeRowBridge ProbePrimePower ProbePhysical
-open CenteredMomentUnequal CenteredMomentAmplification CenteredMomentSupportedCorrelation
+open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT CanonicalRowCompletion CanonicalQuadraticSieve ConcretePrimeRowBridge ProbePrimePower ProbePhysical CenteredMomentUnequal CenteredMomentAmplification CenteredMomentSupportedCorrelation
 local notation "O" => ActualEisensteinCubic.O
 
 def centralLocal (p : O) (hp : p ≠ 0) (n : ℕ) (h : O) : ℂ :=
@@ -88,8 +86,6 @@ theorem centralLocal_one_norm_sq (p : O) (hp : Prime p) [(Ideal.span {p}).IsMaxi
     gauss_prime_power_one p hp hg hc]
   simp only [ite_true,zero_add,pow_one,norm_div,Complex.norm_natCast,div_pow,
     primeGauss_actual_norm_sq p hp hg hc]
-  have hn : (Ideal.absNorm (Ideal.span {p}) : ℝ) ≠ 0 := Nat.cast_ne_zero.mpr
-    (Ideal.absNorm_eq_zero_iff.not.mpr hs.1)
   field_simp
 
 theorem centralLocal_seven_norm_sq (p : O) (hp : Prime p) [(Ideal.span {p}).IsMaximal]
@@ -98,8 +94,6 @@ theorem centralLocal_seven_norm_sq (p : O) (hp : Prime p) [(Ideal.span {p}).IsMa
     ‖centralLocal p hp.ne_zero 6 (h*p^6)‖^2 = (Ideal.absNorm (Ideal.span {p}) : ℝ)⁻¹ := by
   rw [centralLocal_unit_norm p hp hs 6 h (p^6) hph,centralLocal_seven p hp hg hc,
     norm_div,Complex.norm_natCast,div_pow,primeGauss_actual_norm_sq p hp hg hc]
-  have hn : (Ideal.absNorm (Ideal.span {p}) : ℝ) ≠ 0 := Nat.cast_ne_zero.mpr
-    (Ideal.absNorm_eq_zero_iff.not.mpr hs.1)
   field_simp
 
 theorem centralLocal_six_norm_sq (p : O) (hp : Prime p) [(Ideal.span {p}).IsMaximal]
@@ -107,8 +101,7 @@ theorem centralLocal_six_norm_sq (p : O) (hp : Prime p) [(Ideal.span {p}).IsMaxi
     (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2) (h : O) (hph : ¬p ∣ h) :
     ‖centralLocal p hp.ne_zero 5 (h*p^6)‖^2 =
       (1 - (Ideal.absNorm (Ideal.span {p}) : ℝ)⁻¹)^2 := by
-  rw [centralLocal_unit_norm p hp hs 5 h (p^6) hph,centralLocal_six p hp hg hc]
-  rw [← Complex.ofReal_natCast,← Complex.ofReal_inv,← Complex.ofReal_one,← Complex.ofReal_sub,
+  rw [centralLocal_unit_norm p hp hs 5 h (p^6) hph,centralLocal_six p hp hg hc, ← Complex.ofReal_natCast,← Complex.ofReal_inv,← Complex.ofReal_one,← Complex.ofReal_sub,
     Complex.norm_real,Real.norm_eq_abs,sq_abs]
 
 end SevenEighths.CenteredMomentAmplificationLocal

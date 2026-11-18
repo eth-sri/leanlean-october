@@ -45,8 +45,7 @@ theorem element_family_squared_norm_le {m n : Type*} [Fintype m] [Fintype n]
   let c : n → idealRange N := fun j => ⟨cols j, mem_idealRange.mpr (hcols j)⟩
   have hri : Function.Injective r := fun i j h => hr (congrArg Subtype.val h)
   have hci : Function.Injective c := fun i j h => hc (congrArg Subtype.val h)
-  have h := FiniteSieveRestriction.submatrix_norm_le r hri c hci (elementMatrix M N)
-  exact pow_le_pow_left₀ (norm_nonneg _) h 2
+  exact pow_le_pow_left₀ (norm_nonneg _) (FiniteSieveRestriction.submatrix_norm_le r hri c hci (elementMatrix M N)) 2
 
 lemma sieveNorm_le_elementSieveNorm (M N : ℝ) : sieveNorm M N ≤ elementSieveNorm M N := by
   apply element_family_squared_norm_le
@@ -97,7 +96,6 @@ theorem elementSieveNorm_initial (M N : ℝ) (hM : 1 ≤ M) (hN : 1 ≤ N) :
   have hFg : ∀ I ∈ F, ∀ P ∈ UniqueFactorizationMonoid.normalizedFactors I, goodLambda ∉ P :=
     fun I hI P hP => (primaryPrime_spec P
       (primaryPrime_factor_ne_zero I P (hF I hI).2 hP)).2.1
-  have hnat : 1 ≤ ⌈N⌉₊ := Nat.one_le_ceil_iff.mpr (by linarith)
   have hnorm : ∀ I ∈ F, Ideal.absNorm I ≤ ⌈N⌉₊ := by
     intro I hI
     exact Nat.cast_le.mp ((mem_idealRange.mp hI).2.trans (Nat.le_ceil N))
@@ -122,7 +120,7 @@ theorem elementSieveNorm_initial (M N : ℝ) (hM : 1 ≤ M) (hN : 1 ≤ N) :
     simp only [aext, dite_eq_left J.property]
     exact mul_comm _ _
   have he := ideal_initial_cubic_sieve F hFp hFg
-    (fun I hI => (hF I hI).1) ⌈N⌉₊ hnat hnorm aext M hM (elementRange M) hR
+    (fun I hI => (hF I hI).1) ⌈N⌉₊ (Nat.one_le_ceil_iff.mpr (by linarith)) hnorm aext M hM (elementRange M) hR
   have hea : (∑ I ∈ F, ‖aext I‖ ^ 2) = ∑ J : F, ‖a J‖ ^ 2 := by
     rw [← Finset.sum_coe_sort]
     apply Finset.sum_congr rfl

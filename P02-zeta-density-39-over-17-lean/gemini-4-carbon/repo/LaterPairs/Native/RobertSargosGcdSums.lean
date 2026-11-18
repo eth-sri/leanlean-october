@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.RobertSargosDisplacementSums
 
 @[expose] public section
@@ -38,25 +47,18 @@ theorem exists_robertSargos_gcd_harmonic_bound (ε : ℝ) (hε : 0 < ε) :
   have hHp : 0 < H := by linarith
   have hQp : 0 < Q := by linarith
   have hB : 0 < R*H*Q := by positivity
-  have hRB : R ≤ R*H*Q :=
-    (le_mul_of_one_le_right hRp.le hH).trans
+  have hRB := (le_mul_of_one_le_right hRp.le hH).trans
       (le_mul_of_one_le_right (by positivity : 0 ≤ R*H) hQ)
   have hQB : Q ≤ R*H*Q := by
     have hm := mul_le_mul_of_nonneg_right
       (one_le_mul_of_one_le_of_one_le hR hH) hQp.le
-    nlinarith only [hm]
-  have hJ : 1 ≤ ⌊R⌋₊ := (Nat.one_le_floor_iff R).mpr hR
-  have hL : 1 ≤ ⌊2*Q⌋₊ := (Nat.one_le_floor_iff (2*Q)).mpr (by linarith)
-  have hJbound : (⌊R⌋₊:ℝ) ≤ R*H*Q := (Nat.floor_le hRp.le).trans hRB
-  have hLbound : (⌊2*Q⌋₊:ℝ) ≤ 2*(R*H*Q) :=
-    (Nat.floor_le (by positivity : 0 ≤ 2*Q)).trans
+    nlinarith
+  have hLbound := (Nat.floor_le (by positivity : 0 ≤ 2*Q)).trans
       (mul_le_mul_of_nonneg_left hQB (by norm_num))
-  have hfirst : (harmonic ⌊R⌋₊:ℝ) ≤ K*(R*H*Q)^η :=
-    (harmonic_le_rpow_loss η hη hJ).trans
+  have hfirst := (harmonic_le_rpow_loss η hη ((Nat.one_le_floor_iff R).mpr hR)).trans
       (mul_le_mul_of_nonneg_left
-        (Real.rpow_le_rpow (Nat.cast_nonneg _) hJbound hη.le) hK.le)
-  have hsecond : (harmonic ⌊2*Q⌋₊:ℝ) ≤ K*(2*(R*H*Q))^η :=
-    (harmonic_le_rpow_loss η hη hL).trans
+        (Real.rpow_le_rpow (Nat.cast_nonneg _) ((Nat.floor_le hRp.le).trans hRB) hη.le) hK.le)
+  have hsecond := (harmonic_le_rpow_loss η hη ((Nat.one_le_floor_iff (2*Q)).mpr (by linarith))).trans
       (mul_le_mul_of_nonneg_left
         (Real.rpow_le_rpow (Nat.cast_nonneg _) hLbound hη.le) hK.le)
   have hsq : (R*H*Q)^η*(R*H*Q)^η = (R*H*Q)^ε := by

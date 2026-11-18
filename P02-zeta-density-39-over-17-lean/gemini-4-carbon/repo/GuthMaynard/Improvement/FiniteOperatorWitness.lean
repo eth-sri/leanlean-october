@@ -17,10 +17,9 @@ theorem finiteWitnessWeight_bounds (b : OrthonormalBasis ι ℂ E) {v : κ → E
     (hv : Orthonormal ℂ v) (i : ι) :
     0 ≤ finiteWitnessWeight b v i ∧ finiteWitnessWeight b v i ≤ 1 := by
   refine ⟨Finset.sum_nonneg (fun _ _ => sq_nonneg _), ?_⟩
-  have hh := hv.sum_inner_products_le (s := Finset.univ) (b i)
   unfold finiteWitnessWeight
   simp_rw [norm_inner_symm (b i)]
-  simpa only [b.orthonormal.norm_eq_one, one_pow] using hh
+  simpa using (hv.sum_inner_products_le (s := Finset.univ) (b i))
 
 theorem finiteWitnessWeight_sum (b : OrthonormalBasis ι ℂ E) {v : κ → E}
     (hv : Orthonormal ℂ v) : ∑ i, finiteWitnessWeight b v i = Fintype.card κ := by

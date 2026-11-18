@@ -82,10 +82,7 @@ theorem WooleySourceSequence.Admissible.twist
     (wooleySourceTwist gamma phase).Admissible := by
   intro n
   rw [wooleySourceTwist_apply, norm_mul]
-  calc
-    ‖gamma n‖ * ‖phase n‖ ≤ ‖gamma n‖ * 1 :=
-      mul_le_mul_of_nonneg_left (hphase n) (norm_nonneg _)
-    _ ≤ 1 := by simpa using hgamma n
+  exact (mul_le_mul_of_nonneg_left (hphase n) (norm_nonneg _)).trans (by simpa using hgamma n)
 
 theorem wooleySourcePolynomialPhase_norm
     {k q : ℕ} [NeZero q] (phi : WooleyPolynomialSystem k)

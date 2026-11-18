@@ -7,81 +7,13 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
-
-open scoped BigOperators Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 
 namespace CubicEisenstein
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicRamified
+open CubicJacobiGlobal CubicRamified
 local notation "Eis" => ActualEisensteinCubic.O
 
 def ramifiedTraceLambda : Eis := 1+2*omega
@@ -92,27 +24,24 @@ lemma ramifiedEmbedding_traceLambda : eisEmbedding ramifiedTraceLambda=eisLam :=
 
 lemma primary_add_three (a r : Eis) (ha : lambda^2∣a-1) :
     lambda^2∣a+3*r-1 := by
-  have h3 : (3:Eis)∣a-1 := three_dvd_lambda_sq.trans ha
   exact lambda_sq_dvd_three.trans (by
-    convert dvd_add h3 (dvd_mul_right (3:Eis) r) using 1 ;ring)
+    convert dvd_add (three_dvd_lambda_sq.trans ha) (dvd_mul_right 3 r) using 1 ;ring)
 
 end
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicRamified
+open CubicJacobiGlobal CubicRamified
 local notation "Eis" => ActualEisensteinCubic.O
 
 def ninthCuspFrequency (h : Eis) : ℂ := cuspFrequency h/3
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicRamified CompletedGauss
+open CubicJacobiGlobal CubicRamified CompletedGauss
 local notation "Eis" => ActualEisensteinCubic.O
 
 end CubicEisenstein
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology
 
 namespace CubicEisenstein
 
@@ -138,8 +67,7 @@ lemma cuspTransition_dilate_second (A v : ℝ) (hA : A≠0) :
     funext x
     exact cuspTransition_dilate_deriv A x hA
   rw [he]
-  have hc := (contDiff_infty_iff_deriv.mp (cuspTransition_contDiff 1 2)).2
-  have hd := (((hc.differentiable (by simp) (v/A)).hasDerivAt).comp v
+  have hd := (((((contDiff_infty_iff_deriv.mp (cuspTransition_contDiff 1 2)).2).differentiable (by simp) (v/A)).hasDerivAt).comp v
     ((hasDerivAt_id v).div_const A)).div_const A
   simp only [Function.comp_def,id_eq] at hd
   convert hd.deriv using 1; field_simp
@@ -150,9 +78,8 @@ def cuspBaseDefectFactor (s : ℂ) (x : ℝ) : ℂ :=
 
 lemma cuspBaseDefectFactor_continuous (s : ℂ) : Continuous (cuspBaseDefectFactor s) := by
   have h1 := (contDiff_infty_iff_deriv.mp (cuspTransition_contDiff 1 2)).2
-  have h2 := (contDiff_infty_iff_deriv.mp h1).2
   unfold cuspBaseDefectFactor
-  exact ((Complex.continuous_ofReal.pow 2).mul (Complex.continuous_ofReal.comp h2.continuous)).add
+  exact ((Complex.continuous_ofReal.pow 2).mul (Complex.continuous_ofReal.comp ((contDiff_infty_iff_deriv.mp h1).2).continuous)).add
     ((continuous_const.mul Complex.continuous_ofReal).mul (Complex.continuous_ofReal.comp h1.continuous))
 
 lemma cuspBaseDefectFactor_compact (s : ℂ) : HasCompactSupport (cuspBaseDefectFactor s) := by
@@ -205,8 +132,7 @@ theorem smoothCuspSeedDefect_dilate_bound :
   obtain ⟨C,hC,hbound⟩ := cuspSeedDefectProfile_dilate_bound
   exact ⟨C,hC,fun A hA w => cuspCutoffCorrection_norm_le _ _ (by positivity) (hbound A hA) w⟩
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology InnerProductSpace
+open scoped InnerProductSpace
 
 lemma movingDefect_product_bound
     (f : KernelQuotient→ℂ) (K C : ℝ) (hK : 0≤K) (hC : 0≤C)
@@ -220,19 +146,17 @@ lemma movingDefect_product_bound
   | _ w =>
     change ‖f (integralOrbitProjection globalKubotaKernel w)‖*
       ‖smoothCuspSeedDefect A (2*A) (4/3) w‖≤_
-    have hApos : 0<A := zero_lt_one.trans hA
+    have hApos := zero_lt_one.trans hA
     by_cases hz : smoothCuspSeedDefect A (2*A) (4/3) w=0
     · rw [hz,norm_zero,mul_zero]
       positivity
     obtain ⟨r,hr,hr'⟩ := smoothCuspSeedDefect_support A (2*A) (4/3) (by linarith) w hz
-    have hheight : 0<cosetHeight r w := hApos.trans_le hr
+    have hheight := hApos.trans_le hr
     have hf : ‖f (integralOrbitProjection globalKubotaKernel w)‖≤K/A^3 := by
       apply (hdec w r (hA.trans_le hr)).trans
       apply div_le_div_of_nonneg_left hK (pow_pos hApos 3)
       exact pow_le_pow_left₀ hApos.le hr 3
-    calc
-      _ ≤ (K/A^3)*(C*A^2) := mul_le_mul hf (hbound A hA.le w) (norm_nonneg _) (by positivity)
-      _ = K*C/A := by field_simp
+    exact (mul_le_mul hf (hbound A hA.le w) (norm_nonneg _) (by positivity)).trans_eq (by field_simp)
 
 lemma movingDefect_inner_bound
     (F : KernelQuotientL2) (f : KernelQuotient→ℂ)
@@ -325,11 +249,11 @@ theorem cubicEisensteinResidue_orthogonal_of_cusp_chart_decay
 
 end CubicEisenstein
 
-open scoped Classical MatrixGroups
+open scoped MatrixGroups
 namespace CubicKubota
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein
+open CubicEisenstein
 local notation "Eis" => ActualEisensteinCubic.O
 
 lemma exists_congruent_cusp_completion (A : SL(2,Eis)) (x y : Eis)
@@ -394,7 +318,7 @@ lemma cusp_completion_upper_factor (A N : SL(2,Eis)) (q g x y : Eis)
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein CubicRamified
+open CubicEisenstein CubicRamified
 local notation "Eis" => ActualEisensteinCubic.O
 
 private lemma bounded_power_factor (p a : Eis) (n : ℕ) :
@@ -435,8 +359,7 @@ lemma cube_average_cusp_reduction (A : SL(2,Eis)) (p q : Eis)
     · simpa [h] using hbC
     · exact ((hp.coprime_iff_not_dvd.mpr h).symm.pow_right).mul_right hbC
   have hpow (k:ℕ):(3:Eis)∣p^k-1 := by
-    have hd:(3:Eis)∣p-1:=CubicJacobiGlobal.three_dvd_primary_sub_one p hprimary
-    simpa using hd.trans (sub_dvd_pow_sub_pow p 1 k)
+    simpa using (CubicJacobiGlobal.three_dvd_primary_sub_one p hprimary).trans (sub_dvd_pow_sub_pow p 1 k)
   have hbA:(3:Eis)∣b-A 0 0 := by
     have h1:(3:Eis)∣a-A 0 0:=by
       refine ⟨q*A 1 0,?_⟩

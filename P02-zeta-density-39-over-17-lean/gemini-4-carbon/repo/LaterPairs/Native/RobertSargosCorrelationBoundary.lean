@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.IntegerIntervalBoundary
 public import LaterPairs.Native.RobertSargosSymmetricATimesA
 
@@ -44,9 +53,8 @@ theorem robertSargos_h_overlap_card (H : ℕ) (r : ℤ) :
     (robertSargosHOverlap H r).card ≤ H := by
   have hs : robertSargosHOverlap H r ⊆ Finset.Ico (H:ℤ) (2*H) :=
     fun h hh => ((mem_robertSargosHOverlap H h r).mp hh).1
-  have hc := Finset.card_le_card hs
   have hi : 2*(H:ℤ)-H = H := by omega
-  simpa only [Int.card_Ico,hi,Int.toNat_natCast] using hc
+  simpa only [Int.card_Ico,hi,Int.toNat_natCast] using (Finset.card_le_card hs)
 
 theorem norm_robertSargos_correlation_endpoint_error (f : ℝ → ℝ) (M H : ℕ)
     (q r : ℤ) :

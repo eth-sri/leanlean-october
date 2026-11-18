@@ -22,7 +22,6 @@ theorem supported_power_count (a ε : ℝ) (ha : 0 < a) (hε : 0 < ε) :
   intro Q hQ S hS hs X hX hN
   have hf : ∀ I ∈ S,primeSupport I ∈ (primeSupport Q).powerset :=
     fun I hI => Finset.mem_powerset.mpr (hs I hI)
-  have he := Finset.card_eq_sum_card_fiberwise hf
   have hfiber (R : Finset (Ideal O)) (hR : R ∈ (primeSupport Q).powerset) :
       ((S.filter (fun I => primeSupport I=R)).card:ℝ) ≤ C*X^a := by
     apply hcount R _ (fun P hP => support_prime ((Finset.mem_powerset.mp hR) hP))
@@ -31,9 +30,9 @@ theorem supported_power_count (a ε : ℝ) (ha : 0 < a) (hε : 0 < ε) :
       (fun I hI => hN I (Finset.mem_filter.mp hI).1)
   calc
     _ = ∑ R ∈ (primeSupport Q).powerset,((S.filter (fun I => primeSupport I=R)).card:ℝ) := by
-      exact_mod_cast he
+      exact_mod_cast (Finset.card_eq_sum_card_fiberwise hf)
     _ ≤ ∑ _R ∈ (primeSupport Q).powerset,C*X^a := Finset.sum_le_sum hfiber
-    _ = (2:ℝ)^(primeSupport Q).card*(C*X^a) := by simp
+    _ = 2^(primeSupport Q).card*(C*X^a) := by simp
     _ ≤ (D*(Ideal.absNorm Q:ℝ)^ε)*(C*X^a) :=
       mul_le_mul_of_nonneg_right (hsub Q hQ) (mul_nonneg hC.le (Real.rpow_nonneg hX.le _))
     _ = _ := by ring

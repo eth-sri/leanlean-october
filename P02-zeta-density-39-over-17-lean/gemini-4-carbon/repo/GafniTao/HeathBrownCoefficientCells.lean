@@ -56,7 +56,7 @@ theorem two_mul_heathBrownCellRadius_le_one
       (2 : ℝ) ≤ (H : ℝ) := by exact_mod_cast hH
       _ ≤ (H : ℝ) ^ (j + 1) := by
         have hHreal : (1 : ℝ) ≤ H := by exact_mod_cast (by omega : 1 ≤ H)
-        simpa only [pow_one] using
+        simpa using
           (pow_le_pow_right₀ hHreal (by omega : 1 ≤ j + 1))
   have hpowPos : 0 < (H : ℝ) ^ (j + 1) := by positivity
   rw [mul_inv_le_iff₀ hpowPos]
@@ -74,9 +74,7 @@ theorem measure_heathBrownCoefficientCell
   have hhaar : (@AddCircle.haarAddCircle 1 inferInstance) = volume := by
     rw [AddCircle.volume_eq_smul_haarAddCircle]
     simp
-  rw [hhaar]
-  rw [AddCircle.volume_closedBall]
-  rw [min_eq_right (two_mul_heathBrownCellRadius_le_one hH j)]
+  rw [hhaar, AddCircle.volume_closedBall, min_eq_right (two_mul_heathBrownCellRadius_le_one hH j)]
 
 
 end

@@ -15,9 +15,7 @@ theorem partition (V : ℝ → ℂ)
     (hlarge : ∀ y : ℝ, 2 ≤ y → V y = 0)
     (n J : ℕ) (hn : 1 ≤ n) (hJ : (n : ℝ) ≤ (2 : ℝ)^J) :
     (∑ j ∈ Finset.range (J+1), annularCutoff V ((n : ℝ)/(2 : ℝ)^j)) = 1 := by
-  rw [partial_partition]
-  rw [hsmall _ (by positivity) ((div_le_one (by positivity)).mpr hJ)]
-  rw [hlarge _ (by exact_mod_cast (show 2 ≤ 2*n by omega))]
+  rw [partial_partition, hsmall _ (by positivity) ((div_le_one (by positivity)).mpr hJ), hlarge _ (by exact_mod_cast (by omega))]
   ring
 
 theorem finite_pair_reassembly {A : Type*} (S : Finset A) (a : A → ℂ)
@@ -34,12 +32,12 @@ theorem finite_pair_reassembly {A : Type*} (S : Finset A) (a : A → ℂ)
   symm
   calc
     _ = ∑ p ∈ S, ∑ j ∈ Finset.range (J+1), ∑ k ∈ Finset.range (K+1),
-        a p * annularCutoff V ((n p : ℝ)/(2 : ℝ)^j) *
-          annularCutoff V ((m p : ℝ)/(2 : ℝ)^k) := by
+        a p * annularCutoff V ((n p : ℝ)/2^j) *
+          annularCutoff V ((m p : ℝ)/2^k) := by
       calc
         _ = ∑ j ∈ Finset.range (J+1), ∑ p ∈ S, ∑ k ∈ Finset.range (K+1),
-            a p * annularCutoff V ((n p : ℝ)/(2 : ℝ)^j) *
-              annularCutoff V ((m p : ℝ)/(2 : ℝ)^k) := by
+            a p * annularCutoff V ((n p : ℝ)/2^j) *
+              annularCutoff V ((m p : ℝ)/2^k) := by
           apply Finset.sum_congr rfl
           intro j hj
           exact Finset.sum_comm
@@ -60,12 +58,11 @@ theorem annular_support (V : ℝ → ℂ)
     (hne : annularCutoff V (x/(2 : ℝ)^j) ≠ 0) :
     (2 : ℝ)^j / 2 < x ∧ x < 2*(2 : ℝ)^j := by
   have hp : 0 < (2 : ℝ)^j := by positivity
-  have hy : 0 ≤ x/(2 : ℝ)^j := div_nonneg hx hp.le
   have hlo : 1/2 < x/(2 : ℝ)^j := by
     by_contra h
     have hh := le_of_not_gt h
     apply hne
-    rw [annularCutoff, hsmall _ hy (by linarith), hsmall _ (by positivity) (by linarith)]
+    rw [annularCutoff, hsmall _ (div_nonneg hx hp.le) (by linarith), hsmall _ (by positivity) (by linarith)]
     ring
   have hhi : x/(2 : ℝ)^j < 2 := by
     by_contra h
@@ -166,8 +163,7 @@ theorem exists_large_pair (J K : ℕ) (F : ℕ → ℕ → ℂ) :
       ‖∑ j ∈ Finset.range (J+1), ∑ k ∈ Finset.range (K+1), F j k‖ ≤
         ((J+1 : ℕ) : ℝ)*((K+1 : ℕ) : ℝ)*‖F j k‖ := by
   let S := (Finset.range (J+1)) ×ˢ (Finset.range (K+1))
-  have hS : S.Nonempty := ⟨(0,0), by simp [S]⟩
-  obtain ⟨p,hp,hmax⟩ := S.exists_max_image (fun p => ‖F p.1 p.2‖) hS
+  obtain ⟨p,hp,hmax⟩ := S.exists_max_image (fun p => ‖F p.1 p.2‖) (⟨(0,0), by simp [S]⟩)
   obtain ⟨hj,hk⟩ := Finset.mem_product.mp hp
   refine ⟨p.1,hj,p.2,hk,?_⟩
   calc

@@ -27,8 +27,7 @@ lemma literalRawScale_reflected (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admis
     (S : PrimeFamily σ) (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (X : ℝ) :
     literalRawScale (F.reflected K hK S) s X=
       actualKernelCoefficient F s 0 X/((Ideal.absNorm K:ℝ)^2*(Ideal.absNorm (∏ i,S.ideal i):ℝ)^2) := by
-  have hh := actual_theta_kernel_argument F K hK S s 0 X 1 1
-  simpa only [map_one,Nat.cast_one,one_pow,mul_one,ramifiedScale,pow_zero,literalRawScale] using hh
+  simpa only [map_one,Nat.cast_one,one_pow,mul_one,ramifiedScale,pow_zero,literalRawScale] using (actual_theta_kernel_argument F K hK S s 0 X 1 1)
 
 lemma familyRawScale_le_literal (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admissible K)
     (S : PrimeFamily σ) (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
@@ -50,9 +49,8 @@ lemma reflected_norm_le_centers (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admis
       (Ideal.absNorm (∏ i,F.ideal i):ℝ)*QK*QP := by
   rw [F.reflected_product]
   simp only [map_mul,Nat.cast_mul]
-  have hk : 0≤QK := le_trans (Nat.cast_nonneg _) hKr
   exact mul_le_mul (mul_le_mul_of_nonneg_left hKr (Nat.cast_nonneg _)) hPr
-    (Nat.cast_nonneg _) (mul_nonneg (Nat.cast_nonneg _) hk)
+    (Nat.cast_nonneg _) (mul_nonneg (Nat.cast_nonneg _) (le_trans (Nat.cast_nonneg _) hKr))
 
 theorem original_family_dyadic_tail (lo hi : ℝ) (hlo : 0<lo) (A : ℕ)
     (W : ℝ→ℂ) (hWs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W) :

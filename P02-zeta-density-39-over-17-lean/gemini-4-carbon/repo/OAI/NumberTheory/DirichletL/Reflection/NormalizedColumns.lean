@@ -57,10 +57,7 @@ lemma normalizedFrozenColumn_norm_le_one (F : PrimeFamily φ) (jF : φ → ℕ) 
     ‖normalizedFrozenColumn F jF e A n b‖ ≤ 1 := by
   have hp := frozenBranchScale_pos F jF e
   rw [normalizedFrozenColumn,norm_mul,norm_inv,Complex.norm_real,Real.norm_eq_abs,abs_of_pos hp]
-  calc
-    _ ≤ (frozenBranchScale F jF e)⁻¹*frozenBranchScale F jF e :=
-      mul_le_mul_of_nonneg_left (frozenBranchColumn_norm_le F jF e A hA n b) (inv_nonneg.mpr hp.le)
-    _ = 1 := inv_mul_cancel₀ hp.ne'
+  exact (mul_le_mul_of_nonneg_left (frozenBranchColumn_norm_le F jF e A hA n b) (inv_nonneg.mpr hp.le)).trans_eq (inv_mul_cancel₀ hp.ne')
 
 lemma frozenBranchColumn_eq_normalized (F : PrimeFamily φ) (jF : φ → ℕ) (e : φ → Fin 3)
     (A : Ideal Eis → Ideal Eis → ℂ) (n b : Ideal Eis) :

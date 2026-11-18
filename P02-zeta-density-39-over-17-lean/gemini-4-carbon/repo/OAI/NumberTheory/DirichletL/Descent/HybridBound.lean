@@ -80,9 +80,7 @@ theorem supportedHybridRow_energy_sieve_norm (ε : ℝ) (hε : 0 < ε) :
   obtain ⟨C₁, hC₁, hlogs⟩ := hybrid_log_cost_bound ε hε
   refine ⟨C₀ * C₁, mul_pos hC₀ hC₁, ?_⟩
   intro K N B L hK hN hB rows S Pset a beta hrows hS hP ha hbeta
-  have hb := he K N B L hK hN hB rows S Pset a beta hrows hS hP ha hbeta
-  have hs : 0 ≤ CubicSieve.sieveNorm N (2 * L) := sq_nonneg _
-  apply hb.trans
+  apply (he K N B L hK hN hB rows S Pset a beta hrows hS hP ha hbeta).trans
   calc
     _ = C₀ * (K ^ (ε / 9) * (K * (N * B) * N) ^ (ε / 9) *
         (columnDyadicLength K + 1 : ℝ) ^ 2 * (columnDyadicLength N + 1 : ℝ) ^ 2 *
@@ -93,7 +91,7 @@ theorem supportedHybridRow_energy_sieve_norm (ε : ℝ) (hε : 0 < ε) :
         (mul_le_mul_of_nonneg_right
           (mul_le_mul_of_nonneg_right
             (mul_le_mul_of_nonneg_left (hlogs K N B hK hN hB) hC₀.le)
-            (by positivity)) (by linarith)) hs
+            (by positivity)) (by linarith)) (sq_nonneg _)
     _ = _ := by ring
 
 theorem hybridRow_energy_sieve_norm (ε : ℝ) (hε : 0 < ε) :

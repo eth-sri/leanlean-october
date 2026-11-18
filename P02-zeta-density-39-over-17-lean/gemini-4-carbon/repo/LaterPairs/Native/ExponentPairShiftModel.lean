@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.ExponentPairDifferenceError
 
 @[expose] public section
@@ -48,9 +57,9 @@ theorem aProcessShiftPhase_jet_error
   let C := modelPhaseJetCoefficient (σ+1) (p+1)
   let J := modelPhaseJetCoefficient (σ+1) p
   let a := (1-η)^(p+1)
-  have hv : v ∈ Ioo (1 : ℝ) 2 :=
+  have hv : v ∈ Ioo 1 2 :=
     aProcessShiftPoint_mem_Ioo hη.le hη₁ (by norm_num) hu
-  have hw : w ∈ Ioo (1 : ℝ) 2 :=
+  have hw : w ∈ Ioo 1 2 :=
     aProcessShiftPoint_mem_Ioo hη.le hη₁ (by norm_num) hu
   have hdiff : w-v = η := by dsimp [v,w,aProcessShiftPoint]; ring
   have hle : v ≤ w := by linarith
@@ -60,10 +69,9 @@ theorem aProcessShiftPhase_jet_error
   rw [hdiff] at he
   have hden : 0 < σ*η := mul_pos hσ hη
   have hquot : |D/(σ*η)-R| ≤ δ/σ+C*η := by
-    have hq := div_le_div_of_nonneg_right he hden.le
     have hleft : D/(σ*η)-R = (D-σ*η*R)/(σ*η) := by field_simp
     rw [hleft,abs_div,abs_of_pos hden]
-    convert hq using 1
+    convert (div_le_div_of_nonneg_right he hden.le) using 1
     dsimp [C]
     field_simp
   have ha0 : 0 ≤ a := pow_nonneg (by linarith) _

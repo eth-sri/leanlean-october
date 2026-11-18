@@ -43,7 +43,7 @@ theorem logarithmicKernel_eq_shifted_phaseSum (N : ℕ) (t : ℝ) (hN : 0 < N) :
   rw [sum_Ico_eq_sum_range]
   have hlength : 2 * N + 1 - (N + 1) = N := by omega
   rw [hlength]
-  simp only [Nat.cast_add, Nat.cast_one]
+  simp
 
 @[simp] theorem logarithmicKernel_zero (N : ℕ) :
     logarithmicKernel N 0 = (N : ℂ) := by
@@ -54,9 +54,7 @@ theorem logarithmicKernel_eq_shifted_phaseSum (N : ℕ) (t : ℝ) (hN : 0 < N) :
   exact_mod_cast (show 2 * N + 1 - (N + 1) = N by omega)
 
 theorem norm_logarithmicKernel_zero (N : ℕ) :
-    ‖logarithmicKernel N 0‖ = (N : ℝ) := by
-  rw [logarithmicKernel_zero]
-  simp
+    ‖logarithmicKernel N 0‖ = (N : ℝ) := by simp
 
 /-- Reversing the frequency conjugates the logarithmic kernel. -/
 theorem logarithmicKernel_neg (N : ℕ) (t : ℝ) :
@@ -91,10 +89,7 @@ private theorem log_succ_sub_log_bounds (m : ℕ) (hm : 0 < m) :
   have hmReal : 0 < (m : ℝ) := by exact_mod_cast hm
   have hsuccReal : 0 < ((m + 1 : ℕ) : ℝ) := by positivity
   have hratio : 0 < (((m + 1 : ℕ) : ℝ) / (m : ℝ)) := by positivity
-  have hlog :
-      Real.log (((m + 1 : ℕ) : ℝ) / (m : ℝ)) =
-        Real.log ((m + 1 : ℕ) : ℝ) - Real.log (m : ℝ) :=
-    Real.log_div hsuccReal.ne' hmReal.ne'
+  have hlog := Real.log_div hsuccReal.ne' hmReal.ne'
   constructor
   · calc
       1 / ((m : ℝ) + 1) =
@@ -106,14 +101,10 @@ private theorem log_succ_sub_log_bounds (m : ℕ) (hm : 0 < m) :
         Real.one_sub_inv_le_log_of_pos hratio
       _ = Real.log ((m + 1 : ℕ) : ℝ) - Real.log (m : ℝ) := hlog
   · rw [← hlog]
-    calc
-      Real.log (((m + 1 : ℕ) : ℝ) / (m : ℝ)) ≤
-          ((m + 1 : ℕ) : ℝ) / (m : ℝ) - 1 :=
-        Real.log_le_sub_one_of_pos hratio
-      _ = 1 / (m : ℝ) := by
+    exact (Real.log_le_sub_one_of_pos hratio).trans_eq (by
         push_cast
         field_simp [hmReal.ne']
-        ring
+        ring)
 
 /-- The first-derivative estimate for the dyadic logarithmic kernel.  Its
 numerical factor is deliberately generous; the decisive feature is harmonic decay in
@@ -348,7 +339,6 @@ theorem logarithmic_B_process_majorant_le
             (t / (9 * (N : ℝ) ^ 2)) + 1) := by
     positivity
   have hfirstUpperNonneg : 0 ≤ t / (N : ℝ) + 2 := by positivity
-  have hmul := mul_le_mul hfirst hsecond hsecondNonneg hfirstUpperNonneg
   have htDiv : t / (N : ℝ) ≤ y := by
     rw [div_le_iff₀ hNreal]
     rw [← hySq]
@@ -357,7 +347,7 @@ theorem logarithmic_B_process_majorant_le
     rw [div_le_iff₀ hy]
     simpa only [pow_two] using hNLeYSq
   have hyOne : 1 ≤ y := by
-    have hNone : (1 : ℝ) ≤ N := by exact_mod_cast hN
+    have hNone : 1 ≤ N := by exact_mod_cast hN
     nlinarith [hNLeYSq]
   have hexpand :
       (t / (N : ℝ) + 2) * (30 * (N : ℝ) / y + 2) =
@@ -369,7 +359,7 @@ theorem logarithmic_B_process_majorant_le
         (2 * Real.pi / Real.sqrt (t / (9 * (N : ℝ) ^ 2)) +
           2 * (Real.sqrt (t / (9 * (N : ℝ) ^ 2)) /
             (t / (9 * (N : ℝ) ^ 2)) + 1)) ≤
-        (t / (N : ℝ) + 2) * (30 * (N : ℝ) / y + 2) := hmul
+        (t / (N : ℝ) + 2) * (30 * (N : ℝ) / y + 2) := (mul_le_mul hfirst hsecond hsecondNonneg hfirstUpperNonneg)
     _ = 30 * y + 2 * (t / (N : ℝ)) + 60 * ((N : ℝ) / y) + 4 := hexpand
     _ ≤ 100 * y := by nlinarith
 

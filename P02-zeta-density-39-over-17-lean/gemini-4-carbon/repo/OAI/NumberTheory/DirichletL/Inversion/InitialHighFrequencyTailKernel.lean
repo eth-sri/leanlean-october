@@ -9,8 +9,7 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseInitialHighFrequencyTail
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
-open InverseInitialProfile
+open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson InverseInitialProfile
 local notation "O" => ActualEisensteinCubic.O
 
 private theorem finite_sum_le_tsum_subtype (F : Finset O) (P : O → Prop)
@@ -22,9 +21,8 @@ private theorem finite_sum_le_tsum_subtype (F : Finset O) (P : O → Prop)
     intro x y h
     exact Subtype.ext (congrArg (fun z : {h // P h} => z.val) h)
   rw [← Finset.sum_coe_sort F]
-  have ht : Summable (fun h : F => b h.val) := (hasSum_fintype _).summable
-  simpa only [tsum_fintype] using
-    ht.tsum_le_tsum_of_inj f hf (fun h _ => hb h.val) (fun _ => le_rfl) hs
+  simpa using
+    ((hasSum_fintype _).summable).tsum_le_tsum_of_inj f hf (fun h _ => hb h.val) (fun _ => le_rfl) hs
 
 theorem finite_radial_tail (A : ℕ) :
     ∃ (s : Finset (ℕ×ℕ)) (C : ℝ), 0<C ∧
@@ -82,7 +80,7 @@ theorem physical_frequency_tail (A : ℕ) :
   obtain ⟨s,C₀,hC₀,hbound⟩ := finite_radial_tail A
   refine ⟨s,C₀,hC₀,?_⟩
   intro W₁ W₂ Φ Z D m C d v n₁ n₂ T Γ hZ hd hv hn₁ hn₂ hT hΓ F a hF ha
-  let b : ℂ := ((Z^(-D)*Z^m/(d*v*Real.sqrt (n₁*n₂)):ℝ):ℂ)*
+  let b := ((Z^(-D)*Z^m/(d*v*Real.sqrt (n₁*n₂)):ℝ):ℂ)*
         W₁ (C*v*n₁/Z^D)*W₂ (C*v*n₂/Z^D)
   simp_rw [physicalKernel_frequency,←mul_assoc]
   simpa only [b,←mul_assoc] using hbound Φ (Z^m/(d*v^2*n₁*n₂)) T (Γ*‖b‖) (by positivity) hT
@@ -96,8 +94,7 @@ theorem correlated_scale_lower (Y C d v n₁ n₂ L : ℝ)
     (h₁ : C*v*n₁≤L) (h₂ : C*v*n₂≤L) :
     Y*C^2/(d*L^2) ≤ Y/(d*v^2*n₁*n₂) := by
   apply (div_le_div_iff₀ (by positivity) (by positivity)).mpr
-  have hh := mul_le_mul h₁ h₂ (by positivity) hL.le
-  nlinarith [mul_le_mul_of_nonneg_left hh (show 0≤Y*d by positivity)]
+  nlinarith [mul_le_mul_of_nonneg_left (mul_le_mul h₁ h₂ (by positivity) hL.le) (by positivity)]
 
 end SevenEighths.InverseInitialHighFrequencyTail
 

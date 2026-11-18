@@ -15,8 +15,7 @@ public import MathCollab.Density.Stronger.PointMean.MellinVertical
 
 @[expose] public section
 
-open Complex Set MeasureTheory Filter Topology
-open MathCollab.Density.Contour
+open Complex Set MeasureTheory Filter Topology MathCollab.Density.Contour
 open scoped Interval
 set_option autoImplicit false
 noncomputable section
@@ -64,14 +63,13 @@ private theorem tendsto_rectangleIntegral'_vertical_sub
       (nhds (c * ∫ u : ℝ, f ((a : ℂ) + (u : ℂ) * I))) :=
     (intervalIntegral_tendsto_integral hIntA
       tendsto_neg_atTop_atBot tendsto_id).const_mul c
-  have hEdges := (hBottom.sub hTop).add (hRight.sub hLeft)
   have hExpanded : Tendsto (fun R : ℝ =>
       HIntegral' f a b (-R) - HIntegral' f a b R +
         ((c * ∫ u in (-R)..R, f ((b : ℂ) + (u : ℂ) * I)) -
           c * ∫ u in (-R)..R, f ((a : ℂ) + (u : ℂ) * I))) atTop
       (nhds (c * (∫ u : ℝ, f ((b : ℂ) + (u : ℂ) * I)) -
         c * (∫ u : ℝ, f ((a : ℂ) + (u : ℂ) * I)))) := by
-    simpa only [zero_sub, neg_zero, zero_add] using hEdges
+    simpa only [zero_sub, neg_zero, zero_add] using ((hBottom.sub hTop).add (hRight.sub hLeft))
   have hRectangle : Tendsto (fun R : ℝ =>
       RectangleIntegral' f
         ((a : ℂ) - (R : ℂ) * I) ((b : ℂ) + (R : ℂ) * I)) atTop
@@ -113,8 +111,7 @@ private theorem verticalIntegral'_sub_eq_of_eventual_rectangle
   have hLimit := tendsto_rectangleIntegral'_vertical_sub
     hBottom hTop hIntA hIntB
   have hConst : Tendsto (fun _R : ℝ => A) atTop (nhds A) := tendsto_const_nhds
-  have hLimitA := hConst.congr' (hFinite.mono fun _ h => h.symm)
-  exact tendsto_nhds_unique hLimit hLimitA
+  exact tendsto_nhds_unique hLimit (hConst.congr' (hFinite.mono fun _ h => h.symm))
 
 noncomputable def heathBrownIntermediateLine (delta : ℝ) : ℝ :=
   (1 / 2 - delta) / 2
@@ -139,11 +136,9 @@ theorem heathBrown_movingPole_vertical_shift
         VerticalIntegral' (heathBrownZetaSquareMellinIntegrand s)
           (heathBrownIntermediateLine delta) =
       heathBrownMovingPoleResidue s := by
-  let d : ℝ := heathBrownIntermediateLine delta
-  let f : ℂ → ℂ := heathBrownZetaSquareMellinIntegrand s
-  have hd : 0 < d := heathBrown_intermediateLine_pos hdeltaUpper
-  have hdUpper : d ≤ 1 / 4 :=
-    heathBrown_intermediateLine_le_quarter hdelta.le
+  let d := heathBrownIntermediateLine delta
+  let f := heathBrownZetaSquareMellinIntegrand s
+  have hd := heathBrown_intermediateLine_pos hdeltaUpper
   have hpRe : (heathBrownMovingPole s).re = 1 / 2 - delta := by
     simp [heathBrownMovingPole, hsRe]
     ring
@@ -164,7 +159,7 @@ theorem heathBrown_movingPole_vertical_shift
   have hIntD : Integrable (fun u : ℝ =>
       f ((d : ℂ) + (u : ℂ) * I)) := by
     apply integrable_heathBrownZetaSquareMellinIntegrand_plus
-      (s := s) (delta := d) hd hdUpper
+      (s := s) (delta := d) hd (heathBrown_intermediateLine_le_quarter hdelta.le)
     · rw [hsRe]
       dsimp only [d, heathBrownIntermediateLine]
       linarith
@@ -172,20 +167,20 @@ theorem heathBrown_movingPole_vertical_shift
       dsimp only [d, heathBrownIntermediateLine]
       linarith
   have hIntTwo : Integrable (fun u : ℝ =>
-      f (((2 : ℝ) : ℂ) + (u : ℂ) * I)) := by
+      f ((2 : ℂ) + (u : ℂ) * I)) := by
     apply integrable_heathBrownZetaSquareMellinIntegrand_right
     rw [hsRe]
     linarith
   have hFinite : ∀ᶠ R : ℝ in atTop,
       RectangleIntegral' f
-        ((d : ℂ) - (R : ℂ) * I) (((2 : ℝ) : ℂ) + (R : ℂ) * I) =
+        ((d : ℂ) - (R : ℂ) * I) ((2 : ℂ) + (R : ℂ) * I) =
           heathBrownMovingPoleResidue s := by
     filter_upwards [eventually_gt_atTop
       (max 0 |(heathBrownMovingPole s).im|)] with R hR
     apply heathBrown_movingPole_finite_rectangle hd hdp hpc
-    · linarith [le_max_left (0 : ℝ) |(heathBrownMovingPole s).im|]
-    · linarith [le_max_right (0 : ℝ) |(heathBrownMovingPole s).im|]
-  simpa only [f, d] using verticalIntegral'_sub_eq_of_eventual_rectangle
+    · linarith [le_max_left 0 |(heathBrownMovingPole s).im|]
+    · linarith [le_max_right 0 |(heathBrownMovingPole s).im|]
+  simpa using verticalIntegral'_sub_eq_of_eventual_rectangle
     hBottom hTop hIntD hIntTwo hFinite
 
 theorem heathBrown_gammaPole_vertical_shift
@@ -196,11 +191,9 @@ theorem heathBrown_gammaPole_vertical_shift
         (heathBrownIntermediateLine delta) -
       VerticalIntegral' (heathBrownZetaSquareMellinIntegrand s) (-delta) =
         riemannZeta s ^ 2 := by
-  let d : ℝ := heathBrownIntermediateLine delta
-  let f : ℂ → ℂ := heathBrownZetaSquareMellinIntegrand s
-  have hd : 0 < d := heathBrown_intermediateLine_pos hdeltaUpper
-  have hdUpper : d ≤ 1 / 4 :=
-    heathBrown_intermediateLine_le_quarter hdelta.le
+  let d := heathBrownIntermediateLine delta
+  let f := heathBrownZetaSquareMellinIntegrand s
+  have hd := heathBrown_intermediateLine_pos hdeltaUpper
   have hpRe : (heathBrownMovingPole s).re = 1 / 2 - delta := by
     simp [heathBrownMovingPole, hsRe]
     ring
@@ -230,7 +223,7 @@ theorem heathBrown_gammaPole_vertical_shift
   have hIntD : Integrable (fun u : ℝ =>
       f ((d : ℂ) + (u : ℂ) * I)) := by
     apply integrable_heathBrownZetaSquareMellinIntegrand_plus
-      (s := s) (delta := d) hd hdUpper
+      (s := s) (delta := d) hd (heathBrown_intermediateLine_le_quarter hdelta.le)
     · rw [hsRe]
       dsimp only [d, heathBrownIntermediateLine]
       linarith
@@ -241,11 +234,11 @@ theorem heathBrown_gammaPole_vertical_shift
       RectangleIntegral' f
         (((-delta : ℝ) : ℂ) - (R : ℂ) * I)
         ((d : ℂ) + (R : ℂ) * I) = riemannZeta s ^ 2 := by
-    filter_upwards [eventually_gt_atTop (0 : ℝ)] with R hR
+    filter_upwards [eventually_gt_atTop 0] with R hR
     rw [show (((-delta : ℝ) : ℂ)) = (-delta : ℂ) by norm_num]
     exact heathBrown_gammaPole_finite_rectangle
       (s := s) hdelta (by linarith) hd hdp hR
-  simpa only [f, d] using verticalIntegral'_sub_eq_of_eventual_rectangle
+  simpa using verticalIntegral'_sub_eq_of_eventual_rectangle
     hBottom hTop hIntMinus hIntD hFinite
 
 /-- Exact completed form of the two residue shifts. -/

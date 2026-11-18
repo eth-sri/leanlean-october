@@ -2,7 +2,16 @@ module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import MathCollab.Density.Stronger.Atkinson.SeparatedReciprocal
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.AdditiveEnergy
 
 @[expose] public section
@@ -40,10 +49,7 @@ theorem sum_zetaMomentKernel_le_harmonic
   let shell : ℝ → ℕ := fun t => ⌊|t - u|⌋₊
   have hmaps : ∀ t ∈ S, shell t ∈ Finset.range (N + 1) := by
     intro t ht
-    have hr := hRange t (Finset.mem_of_mem_erase ht)
-    have hfloor : ((shell t : ℕ) : ℝ) ≤ (N : ℝ) :=
-      (Nat.floor_le (abs_nonneg _)).trans hr
-    have : shell t ≤ N := by exact_mod_cast hfloor
+    have : shell t ≤ N := by exact_mod_cast ((Nat.floor_le (abs_nonneg _)).trans (hRange t (Finset.mem_of_mem_erase ht)))
     simpa only [Finset.mem_range] using Nat.lt_succ_of_le this
   have hoff : (∑ t ∈ S, zetaMomentKernel t u) ≤ 2 * (harmonic (N + 1) : ℝ) := by
     rw [← Finset.sum_fiberwise_of_maps_to hmaps (fun t => zetaMomentKernel t u)]
@@ -67,9 +73,8 @@ theorem sum_zetaMomentKernel_le_harmonic
           _ ≤ ∑ _t ∈ {t ∈ S | shell t = k}, 1 / ((k : ℝ) + 1) := by
             apply Finset.sum_le_sum
             intro t ht
-            have htk := (Finset.mem_filter.mp ht).2
             have hl : (k : ℝ) ≤ |t - u| := by
-              rw [← htk]
+              rw [← ((Finset.mem_filter.mp ht).2)]
               exact Nat.floor_le (abs_nonneg _)
             unfold zetaMomentKernel
             rw [abs_sub_comm u t]

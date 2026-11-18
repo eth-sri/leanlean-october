@@ -92,18 +92,14 @@ theorem highValuationTerm_eq_prod (η : HeckeFamily.Character) (x w z : ℂ)
     simp only [highValuationTerm,highIdeals_zero,Prod.fst_one,Prod.snd_one,
       bareIdealHighSummand_one,Finsupp.prod_zero_index]
   | @single_add P b v hP hb ih =>
-    have hv : v P=0 := Finsupp.notMem_support_iff.mp hP
-    have hc := prime_coprime_highIdeals P v hv
-    have hpow : IsCoprime (P.val^b.1.1*P.val^b.1.2*P.val^b.2.1*P.val^b.2.2)
-        ((highIdeals v).1.1*(highIdeals v).1.2*(highIdeals v).2.1*(highIdeals v).2.2) :=
-      ((hc.pow_left.mul_left hc.pow_left).mul_left hc.pow_left).mul_left hc.pow_left
+    have hc := prime_coprime_highIdeals P v (Finsupp.notMem_support_iff.mp hP)
     have hd : Disjoint (Finsupp.single P b).support v.support := by
       rw [Finsupp.support_single _ hb]
       exact Finset.disjoint_singleton_left.mpr hP
     rw [Finsupp.prod_add_index_of_disjoint hd,Finsupp.prod_single_index (highPrimeTerm_zero η x w z P),←ih]
     unfold highValuationTerm
     rw [highIdeals_add,highIdeals_single]
-    exact bareIdealHighSummand_mul η x w z _ _ _ _ _ _ _ _ hpow
+    exact bareIdealHighSummand_mul η x w z _ _ _ _ _ _ _ _ (((hc.pow_left.mul_left hc.pow_left).mul_left hc.pow_left).mul_left hc.pow_left)
 
 theorem highValuationTerm_summable_norm (η : HeckeFamily.Character) (x w z : ℂ)
     (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) :

@@ -57,7 +57,7 @@ theorem integrable_heathBrownCellIndicator
     Integrable (heathBrownCellIndicator k H f n)
       (heathBrownCoefficientMeasure k) := by
   unfold heathBrownCellIndicator heathBrownCoefficientMeasure
-  exact (integrable_const (1 : ℝ)).indicator
+  exact (integrable_const 1).indicator
     (measurableSet_heathBrownCoefficientCell k H f n)
 
 theorem integrable_heathBrownNu
@@ -94,9 +94,7 @@ theorem integral_heathBrownNu
         (heathBrownCoefficientMeasure k).real
           (heathBrownCoefficientCell k H f 1) := by
     unfold heathBrownCoefficientMeasure
-    have hn := measure_heathBrownCoefficientCell (k := k) (H := H) hH f (n : ℝ)
-    have h1 := measure_heathBrownCoefficientCell (k := k) (H := H) hH f (1 : ℝ)
-    simpa only [Measure.real] using congrArg ENNReal.toReal (hn.trans h1.symm)
+    simpa only [Measure.real] using congrArg ENNReal.toReal ((measure_heathBrownCoefficientCell (k := k) (H := H) hH f (n : ℝ)).trans (measure_heathBrownCoefficientCell (k := k) (H := H) hH f 1).symm)
   simp_rw [hmeasure]
   rw [Finset.sum_const, card_heathBrownInteriorIndices]
   simp [nsmul_eq_mul]

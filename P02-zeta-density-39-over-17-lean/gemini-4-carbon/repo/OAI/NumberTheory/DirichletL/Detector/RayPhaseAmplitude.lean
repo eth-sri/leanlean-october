@@ -18,8 +18,7 @@ lemma pool_sum_complex (C : Set Id) (S : Finset Id) (a b x : ℝ) (f : Id→ℂ)
   · intro P hP;exact Finset.mem_subtype.mp hP
   · intro P hP Q hQ he;exact Subtype.ext he
   · intro P hP
-    have hp : Prime P := ((mem_annularPrimeIdeals C a b x P).mp (Finset.mem_sdiff.mp hP).1).2.1
-    exact ⟨⟨P,hp⟩,Finset.mem_subtype.mpr hP,rfl⟩
+    exact ⟨⟨P,(((mem_annularPrimeIdeals C a b x P).mp (Finset.mem_sdiff.mp hP).1).2.1)⟩,Finset.mem_subtype.mpr hP,rfl⟩
   · intro P hP;rfl
 
 theorem weighted_pool_eq_annular (C : Set Id) (S : Finset Id)
@@ -107,9 +106,8 @@ theorem central_phase_norm (M : Id) [NeZero M]
 theorem power_fixed_exclusions (S : Finset Id) (a ellMin : ℝ) (ha : 0<a) (hmin : 0<ellMin)
     {ι : Type*} (ell : ι→ℝ) (hell : ∀j,ellMin≤ell j) :
     ∀ᶠZ : ℝ in Filter.atTop,∀j,∀P∈S,(P.absNorm:ℝ)≤a*Z^(ell j) := by
-  have ht := (tendsto_rpow_atTop hmin).const_mul_atTop ha
-  filter_upwards [ht.eventually (Filter.eventually_ge_atTop (∑P∈S,(P.absNorm:ℝ))),
-    Filter.eventually_ge_atTop (1:ℝ)] with Z hnorm hZ j P hP
+  filter_upwards [((tendsto_rpow_atTop hmin).const_mul_atTop ha).eventually (Filter.eventually_ge_atTop (∑P∈S,(P.absNorm:ℝ))),
+    Filter.eventually_ge_atTop 1] with Z hnorm hZ j P hP
   calc
     (P.absNorm:ℝ) ≤ ∑Q∈S,(Q.absNorm:ℝ) := Finset.single_le_sum (fun Q _=>Nat.cast_nonneg _) hP
     _ ≤ a*Z^ellMin := hnorm

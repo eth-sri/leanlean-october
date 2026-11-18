@@ -2,15 +2,14 @@ module
 public import OAI.NumberTheory.DirichletL.Descent.SecondSupportedEnergy
 public import OAI.NumberTheory.DirichletL.Descent.SecondPuncture
 
-set_option linter.privateModule false
 
 @[expose] public section
 
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
 open InverseSecondFibers SecondPassArithmetic
+open scoped BigOperators Classical
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]

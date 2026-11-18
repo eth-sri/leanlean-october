@@ -48,8 +48,7 @@ lemma tuple_source_scalar {K : ℕ} (η : HeckeFamily.Character) (p : Fin K→O)
     congr 1
     ring
   simp only [he,hf,Finset.prod_mul_distrib]
-  have hc := Finset.prod_sdiff (Finset.subset_univ J) (f:=fun i : Fin K=>(elementNorm (p i):ℂ)^(z-1))
-  rw [←hc]
+  rw [←(Finset.prod_sdiff (Finset.subset_univ J) (f:=fun i : Fin K=>(elementNorm (p i):ℂ)^(z-1)))]
   ring
 
 end SevenEighths.ProbePhysical

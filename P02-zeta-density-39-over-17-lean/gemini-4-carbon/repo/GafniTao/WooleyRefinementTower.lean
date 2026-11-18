@@ -42,8 +42,7 @@ theorem wooleyResidueLift_mem
   apply ZMod.val_injective
   rw [ZMod.val_natCast]
   unfold wooleyResidueLift
-  rw [ZMod.val_natCast]
-  rw [Nat.mod_mod_of_dvd _ (pow_dvd_pow p (Nat.le_add_right a H))]
+  rw [ZMod.val_natCast, Nat.mod_mod_of_dvd _ (pow_dvd_pow p (Nat.le_add_right a H))]
   simp [Nat.add_mod, Nat.mod_eq_of_lt xi.val_lt]
 
 theorem wooleyResidueLift_injective
@@ -54,13 +53,10 @@ theorem wooleyResidueLift_injective
       p ^ a * zeta1.val + xi.val ≡ p ^ a * zeta2.val + xi.val
         [MOD p ^ (a + H)] := by
     exact (ZMod.natCast_eq_natCast_iff _ _ _).mp heq
-  have hmul : p ^ a * zeta1.val ≡ p ^ a * zeta2.val
-      [MOD p ^ (a + H)] := hmod.add_right_cancel' xi.val
+  have hmul := hmod.add_right_cancel' xi.val
   rw [pow_add] at hmul
-  have hzmod : zeta1.val ≡ zeta2.val [MOD p ^ H] :=
-    Nat.ModEq.mul_left_cancel' (pow_ne_zero a (NeZero.ne p)) hmul
   apply ZMod.val_injective
-  exact Nat.ModEq.eq_of_lt_of_lt hzmod zeta1.val_lt zeta2.val_lt
+  exact Nat.ModEq.eq_of_lt_of_lt (Nat.ModEq.mul_left_cancel' (pow_ne_zero a (NeZero.ne p)) hmul) zeta1.val_lt zeta2.val_lt
 
 /-- The source's `zeta` parameterization is a bijection onto the refinement
 fiber above `xi`. -/

@@ -34,17 +34,14 @@ def compensationRowTest {K : ℕ} (η : HeckeFamily.Character) (C : CalibrationD
 lemma gaussian_slot_window_split {K : ℕ} (W : Fin K→ℝ→ℂ) (q : Fin K→ℝ) (J : Finset (Fin K)) :
     (∏i,W i (q i))=(∏i∈J,W i (q i))*(∏i : SelectedSlot J,W i.val (q i.val)) := by
   rw [Finset.prod_coe_sort (Finset.univ\J) (fun i=>W i (q i))]
-  have hh := Finset.prod_sdiff (Finset.subset_univ J) (f:=fun i=>W i (q i))
-  simpa only [mul_comm] using hh.symm
+  simpa only [mul_comm] using (Finset.prod_sdiff (Finset.subset_univ J) (f:=fun i=>W i (q i))).symm
 
 lemma gaussian_compensation_scale {K : ℕ} (P : Fin K→ℝ) (hP : ∀i,0<P i)
     (p : Fin K→O) (J : Finset (Fin K)) (Z : ℝ) :
     (Z*∏i∈Finset.univ\J,P i)*(∏i : SelectedSlot J,elementNorm (p i.val)/P i.val)=
       Z*elementNorm (slotProduct p (Finset.univ\J)) := by
-  rw [←Finset.prod_coe_sort (Finset.univ\J) P]
-  rw [gaussian_selected_scale Z (fun i : SelectedSlot J=>P i.val)
-    (fun i : SelectedSlot J=>elementNorm (p i.val)) (fun i=>hP i.val)]
-  rw [Finset.prod_coe_sort (Finset.univ\J) (fun i=>elementNorm (p i)),elementNorm_slotProduct]
+  rw [←Finset.prod_coe_sort (Finset.univ\J) P, gaussian_selected_scale Z (fun i : SelectedSlot J=>P i.val)
+    (fun i : SelectedSlot J=>elementNorm (p i.val)) (fun i=>hP i.val), Finset.prod_coe_sort (Finset.univ\J) (fun i=>elementNorm (p i)),elementNorm_slotProduct]
 
 theorem compensation_subset_common {K : ℕ} {α : Type*}
     (J : Finset (Fin K)) (W : Fin K→ℝ→ℂ)
@@ -62,7 +59,6 @@ theorem compensation_subset_common {K : ℕ} {α : Type*}
         compensationRowTest η C W0 W1 (p k) J X Y ((2:ℝ)^j) t*
           selectedSlotFactor W P (p k) J t)*
             gaussianJointDensity V hV ((2:ℝ)^j/(Z*∏i∈Finset.univ\J,P i)) t := by
-  have hbase : 0<Z*∏i∈Finset.univ\J,P i := mul_pos hZ (Finset.prod_pos (fun i _=>hP i))
   have hh := physical_selected_gaussian_reassembly
     (fun i : SelectedSlot J=>W i.val) V hV hsep η C W0 W1 hW0 hW1 F
     (fun k=>compensationSubsetWeight η W P (p k) J)
@@ -70,7 +66,7 @@ theorem compensation_subset_common {K : ℕ} {α : Type*}
     (fun k=>X/elementNorm (slotProduct (p k) J)) (fun k=>Y/elementNorm (slotProduct (p k) J))
     (fun k hk=>div_pos hX (slotProduct_norm_pos (p k) (hp k hk) J))
     (fun k hk=>div_pos hY (slotProduct_norm_pos (p k) (hp k hk) J))
-    (Z*∏i∈Finset.univ\J,P i) hbase
+    (Z*∏i∈Finset.univ\J,P i) (mul_pos hZ (Finset.prod_pos (fun i _=>hP i)))
     (fun k (i : SelectedSlot J)=>elementNorm (p k i.val)/P i.val)
     (fun k hk i=>div_pos (physicalElementNorm_pos _ (hp k hk i.val)) (hP i.val))
   calc

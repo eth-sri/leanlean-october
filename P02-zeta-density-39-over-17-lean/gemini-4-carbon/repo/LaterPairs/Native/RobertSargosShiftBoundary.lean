@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.IntegerIntervalShift
 public import LaterPairs.Native.RobertSargosShiftSupport
 
@@ -29,9 +38,9 @@ theorem norm_robertSargos_shifted_boundary (w : ℤ → ℂ) (M H Q N : ℕ) (h 
     _ ≤ ∑ m ∈ robertSargosShiftedMInterval M h q n \ robertSargosCommonMInterval M H Q N,
         ‖w (m+n)‖ := norm_sum_le _ _
     _ ≤ ∑ _m ∈ robertSargosShiftedMInterval M h q n \ robertSargosCommonMInterval M H Q N,
-        (1:ℝ) := Finset.sum_le_sum (fun m _ => hw (m+n))
+        1 := Finset.sum_le_sum (fun m _ => hw (m+n))
     _ ≤ _ := by
-      simpa only [Finset.sum_const,nsmul_eq_mul,mul_one] using
+      simpa using
         robertSargos_shifted_boundary_card M H Q N h q n hh hq hn
 
 theorem robertSargos_m_overlap_zero_source (M : ℕ) (h q : ℤ) :

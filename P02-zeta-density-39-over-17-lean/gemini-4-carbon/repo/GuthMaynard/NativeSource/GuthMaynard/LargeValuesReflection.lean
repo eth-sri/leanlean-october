@@ -94,8 +94,7 @@ private noncomputable def gmCutoffSqComplex
   (cutoff x : ℂ) ^ 2
 
 private theorem contDiff_gmCutoffSqComplex (cutoff : GMSmoothCutoff) :
-    ContDiff ℝ ∞ (gmCutoffSqComplex cutoff) := by
-  exact (Complex.ofRealCLM.contDiff.comp cutoff.smooth).pow 2
+    ContDiff ℝ ∞ (gmCutoffSqComplex cutoff) := (Complex.ofRealCLM.contDiff.comp cutoff.smooth).pow 2
 
 private theorem hasCompactSupport_gmCutoffSqComplex
     (cutoff : GMSmoothCutoff) :
@@ -123,8 +122,7 @@ private theorem gmTraceKernel_eq_cutoffSq_mul_cpow
     gmTraceKernel cutoff t x =
       gmCutoffSqComplex cutoff x * (x : ℂ) ^ ((t : ℂ) * I) := by
   unfold gmTraceKernel gmCutoffSqComplex
-  rw [Complex.cpow_def_of_ne_zero (Complex.ofReal_ne_zero.mpr hx.ne')]
-  rw [← Complex.ofReal_log hx.le]
+  rw [Complex.cpow_def_of_ne_zero (Complex.ofReal_ne_zero.mpr hx.ne'), ← Complex.ofReal_log hx.le]
   congr 2
   push_cast
   ring
@@ -156,7 +154,7 @@ private theorem mellinDerivativePower_le (t : ℝ) {k n : ℕ} (hkn : k ≤ n) :
     (|t| + k) ^ k ≤
       (n + 1 : ℝ) ^ n * (1 + |t|) ^ n := by
   let B : ℝ := (n + 1) * (1 + |t|)
-  have hn0 : (0 : ℝ) ≤ n := Nat.cast_nonneg n
+  have hn0 : 0 ≤ n := Nat.cast_nonneg n
   have hBOne : 1 ≤ B := by
     dsimp only [B]
     nlinarith [abs_nonneg t]
@@ -322,8 +320,7 @@ private theorem integral_norm_iteratedFDeriv_gmTraceKernel_le
     · have : f x = 0 := not_ne_iff.mp fun hne => hx (hsupport hne)
       simp [Set.indicator, hx, this]
   rw [show (∫ x : ℝ, ‖iteratedFDeriv ℝ p
-      (gmTraceKernel cutoff t) x‖) = ∫ x : ℝ, f x by rfl]
-  rw [hEq, MeasureTheory.integral_indicator measurableSet_Icc]
+      (gmTraceKernel cutoff t) x‖) = ∫ x : ℝ, f x by rfl, hEq, MeasureTheory.integral_indicator measurableSet_Icc]
   calc
     (∫ x : ℝ in Set.Icc 1 2, f x) ≤
         ∫ _x : ℝ in Set.Icc 1 2, D * (1 + |t|) ^ p := by
@@ -515,8 +512,7 @@ private theorem integrable_gmMellinReflectionIntegrand
       (fun _v : ℝ => (m : ℝ))
       (volume.restrict (Set.uIoc (N : ℝ) (2 * N * M))) := by
     exact MeasureTheory.integrableOn_const (hs := by simp)
-  have hDom := hConst.mul_prod hH.norm
-  apply hDom.mono'
+  apply (hConst.mul_prod hH.norm).mono'
   · have hElementary : AEStronglyMeasurable
         (fun z : ℝ × ℝ =>
           (z.1 / (N * m) : ℂ)⁻¹ *
@@ -542,12 +538,12 @@ private theorem integrable_gmMellinReflectionIntegrand
           |>.const_mul (m : ℝ)).measurable)]
     filter_upwards [MeasureTheory.ae_restrict_mem measurableSet_uIoc] with v hv
     filter_upwards with r
-    let z : ℝ × ℝ := (v, r)
+    let z := (v, r)
     have hvIoc : v ∈ Set.Ioc (N : ℝ) (2 * N * M) := by
       simpa only [Set.uIoc_of_le hAB] using hv
     have hvLower : (N : ℝ) ≤ z.1 := by
       simpa only [z] using hvIoc.1.le
-    have hvPos : 0 < z.1 := (by exact_mod_cast hN : (0 : ℝ) < N).trans_le hvLower
+    have hvPos := (by exact_mod_cast hN : (0 : ℝ) < N).trans_le hvLower
     rw [show ‖Function.uncurry
         (gmMellinReflectionIntegrand cutoff t (N * m)) z‖ =
         ((N * m : ℝ) / z.1) * ‖gmCutoffMellin cutoff z.2‖ by
@@ -590,16 +586,14 @@ private theorem gmCutoffPhase_eq_mellinIntegral
         Complex.exp ((((t * Real.log v - 2 * Real.pi * v : ℝ) : ℂ) * I)) =
       (1 / (2 * Real.pi) : ℝ) •
         ∫ r : ℝ, gmMellinReflectionIntegrand cutoff t q v r := by
-  have hratio : 0 < v / q := div_pos hv hq
-  rw [gmCutoffSq_eq_verticalMellinIntegral cutoff hratio]
-  rw [smul_mul_assoc]
+  have hratio := div_pos hv hq
+  rw [gmCutoffSq_eq_verticalMellinIntegral cutoff hratio, smul_mul_assoc]
   congr 1
   rw [← MeasureTheory.integral_mul_const]
   congr 1
   funext r
   unfold gmMellinReflectionIntegrand gmCutoffMellin
-  rw [Complex.cpow_def_of_ne_zero (Complex.ofReal_ne_zero.mpr hratio.ne')]
-  rw [← Complex.ofReal_log hratio.le]
+  rw [Complex.cpow_def_of_ne_zero (Complex.ofReal_ne_zero.mpr hratio.ne'), ← Complex.ofReal_log hratio.le]
   have hExpLog : Complex.exp ((Real.log (v / q) : ℝ) : ℂ) = (v / q : ℝ) := by
     rw [← Complex.ofReal_exp, Real.exp_log hratio]
   have hRatioInv : (((v / q : ℝ) : ℂ))⁻¹ = (q : ℂ) * (v : ℂ)⁻¹ := by
@@ -610,14 +604,12 @@ private theorem gmCutoffPhase_eq_mellinIntegral
     field_simp [Complex.ofReal_ne_zero.mpr hq.ne',
       Complex.ofReal_ne_zero.mpr hv.ne']
   have hsplit :
-      (Real.log (v / q) : ℂ) * -((1 : ℂ) + (r : ℂ) * I) =
+      (Real.log (v / q) : ℂ) * -(1 + (r : ℂ) * I) =
         -(Real.log (v / q) : ℂ) +
           -(((r * Real.log (v / q) : ℝ) : ℂ) * I) := by
     push_cast
     ring
-  rw [hsplit, Complex.exp_add, Complex.exp_neg, hExpLog]
-  rw [hRatioInv]
-  rw [hRatioInvC]
+  rw [hsplit, Complex.exp_add, Complex.exp_neg, hExpLog, hRatioInv, hRatioInvC]
 
 /-- Exact Mellin-reflection identity for the cutoff-weighted common
 interval.  This is the Fubini step in Guth--Maynard Lemma 6.2. -/
@@ -754,9 +746,7 @@ theorem hasDerivAt_gmReflectionPrimitive {tau v : ℝ} (hv : v ≠ 0) :
     convert (Real.hasDerivAt_log hv).const_mul tau |>.fun_sub
       ((hasDerivAt_id v).const_mul (2 * Real.pi)) using 1
     all_goals simp only [div_eq_mul_inv, mul_one, id_eq]
-  have hExp := (hReal.ofReal_comp.mul_const I).cexp.const_mul I⁻¹
-  change HasDerivAt (gmReflectionPrimitive tau) _ v
-  convert hExp using 1
+  convert ((hReal.ofReal_comp.mul_const I).cexp.const_mul I⁻¹) using 1
   · funext y
     rfl
   · field_simp [Complex.I_ne_zero]
@@ -769,9 +759,7 @@ theorem hasDerivAt_gmReflectionRatio {tau v : ℝ}
       (fun x : ℝ => tau - 2 * Real.pi * x) (-2 * Real.pi) v := by
     convert (hasDerivAt_id v).const_mul (2 * Real.pi) |>.const_sub tau using 1
     all_goals simp only [id_eq, mul_one, neg_mul]
-  have hInv := (hLinear.inv hv).ofReal_comp
-  change HasDerivAt (gmReflectionRatio tau) _ v
-  convert hInv using 1
+  convert ((hLinear.inv hv).ofReal_comp) using 1
   · funext x
     simp [gmReflectionRatio]
   · push_cast
@@ -884,8 +872,7 @@ theorem norm_gmReflectionPrimitive (tau v : ℝ) :
 
 theorem norm_gmReflectionRatio (tau v : ℝ) :
     ‖gmReflectionRatio tau v‖ = |tau - 2 * Real.pi * v|⁻¹ := by
-  rw [gmReflectionRatio, norm_inv, Complex.norm_real]
-  rw [Real.norm_eq_abs]
+  rw [gmReflectionRatio, norm_inv, Complex.norm_real, Real.norm_eq_abs]
 
 /-- On the positive axis, the rescaled reflection integrand has norm `1/v`.
 This is the amplitude estimate used both near and away from its stationary
@@ -1913,13 +1900,12 @@ theorem integrable_gmPositiveDualModeIntegrand
     have hNReal : (0 : ℝ) < N := by exact_mod_cast hN
     have hMReal : (1 : ℝ) ≤ M := by exact_mod_cast hm.trans hmM
     nlinarith
-  have hProd := integrable_gmMellinReflectionIntegrand cutoff t hN hm hmM
   have hInner : Integrable (fun r : ℝ =>
       ∫ v in (N : ℝ)..(2 * N * M : ℝ),
         gmMellinReflectionIntegrand cutoff t (N * m) v r) := by
     simpa only [intervalIntegral.integral_of_le hAB, Set.uIoc_of_le hAB,
       Function.uncurry_apply_pair] using
-      hProd.integral_prod_right
+      (integrable_gmMellinReflectionIntegrand cutoff t hN hm hmM).integral_prod_right
   have hSimplified : Integrable (fun r : ℝ =>
       ((N * m : ℕ) : ℂ) * ((N * m : ℕ) : ℂ) ^ ((r : ℂ) * I) *
         gmCutoffMellin cutoff r *

@@ -9,12 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentOriginalReflectionApproximation
-open HeckeFamily CenteredMomentReflectionDeletion CenteredMomentReflectionMass
-open CenteredMomentComparisonReflection CenteredMomentReflectionTailMass
-open CenteredMomentSectorLocalization CenteredMomentReflectedTruncation
-open CenteredMomentReflectedAnnuli CenteredMomentNaturalPrimitive
-open CenteredMomentRetainedReflection CenteredMomentTwistedReflection
-open EisensteinSchwartzPoisson
+open HeckeFamily CenteredMomentReflectionDeletion CenteredMomentReflectionMass CenteredMomentComparisonReflection CenteredMomentReflectionTailMass CenteredMomentSectorLocalization CenteredMomentReflectedTruncation CenteredMomentReflectedAnnuli CenteredMomentNaturalPrimitive CenteredMomentRetainedReflection CenteredMomentTwistedReflection EisensteinSchwartzPoisson
 local notation "O" => HeckeFamily.O
 
 def finiteAnnularColumn (η : Character) (F : ℝ→ℂ) (R Y : ℝ) : ℂ :=
@@ -37,7 +32,7 @@ def retainedOriginal (χ ψ : Character) (W : ℝ→ℂ) (X R t : ℝ) : ℂ :=
 lemma radical_le_original (χ ψ : Character)
     (hcap : ψ.modulus.absNorm*(redundantIdeal χ.modulus ψ.modulus).absNorm≤χ.modulus.absNorm) :
     (Ideal.absNorm (redundantIdeal χ.modulus ψ.modulus):ℝ)≤(χ.modulus.absNorm:ℝ) := by
-  have hp : 1≤ψ.modulus.absNorm := Nat.one_le_iff_ne_zero.mpr
+  have hp := Nat.one_le_iff_ne_zero.mpr
     (Ideal.absNorm_eq_zero_iff.not.mpr ψ.modulus_ne_bot)
   exact_mod_cast (show (redundantIdeal χ.modulus ψ.modulus).absNorm≤χ.modulus.absNorm by
     nlinarith)

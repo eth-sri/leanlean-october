@@ -39,11 +39,9 @@ theorem finite_triple_support_reindex (T : Finset ((M × H) × C))
     · exact (Finset.mem_filter.mp hu).2.trans (Finset.mem_filter.mp hv).2.symm
     · exact he
   · intro c hc
-    have hpc := (Finset.mem_filter.mp hc).2
-    exact ⟨(p, c), Finset.mem_filter.mpr ⟨hpc, rfl⟩, rfl⟩
+    exact ⟨(p, c), Finset.mem_filter.mpr ⟨((Finset.mem_filter.mp hc).2), rfl⟩, rfl⟩
   · intro u hu
-    have hup := (Finset.mem_filter.mp hu).2
-    simp only [← hup, Prod.eta]
+    simp only [← ((Finset.mem_filter.mp hu).2), Prod.eta]
 
 end FiniteGrid
 
@@ -53,16 +51,12 @@ def HybridColumnData.gridIndex (d : HybridColumnData) :
 theorem HybridColumnData.gridIndex_injective_on_square (t : Ideal Eis) :
     Set.InjOn HybridColumnData.gridIndex {d | d.square = t} := by
   intro d hd e he hg
-  have hm : d.residualN = e.residualN := congrArg (fun u => u.1.1) hg
-  have hh : d.residualB = e.residualB := congrArg (fun u => u.1.2) hg
-  have hc : d.common = e.common := congrArg Prod.snd hg
-  have ht : d.square = e.square := hd.trans he.symm
   cases d
   cases e
-  cases hc
-  cases hm
-  cases hh
-  cases ht
+  cases (congrArg Prod.snd hg)
+  cases (congrArg (fun u => u.1.1) hg)
+  cases (congrArg (fun u => u.1.2) hg)
+  cases (hd.trans he.symm)
   rfl
 
 def hybridGridSupport (D : Finset HybridColumnData) :

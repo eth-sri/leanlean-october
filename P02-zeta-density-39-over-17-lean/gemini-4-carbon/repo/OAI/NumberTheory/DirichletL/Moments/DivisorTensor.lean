@@ -8,8 +8,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentDivisorTensor
-open IdealMobiusDivisorSum CenteredMomentDivisorAllocation CenteredMomentDivisorExtraction
-open CenteredMomentHeckeExpansion CenteredMomentHeckeHeight CenteredMomentMask HeckeFamily
+open IdealMobiusDivisorSum CenteredMomentDivisorAllocation CenteredMomentDivisorExtraction CenteredMomentHeckeExpansion CenteredMomentHeckeHeight CenteredMomentMask HeckeFamily
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
 
@@ -32,10 +31,7 @@ theorem allocationTerm_eq_ite (D : Ideal O) (s : Finset ι) (v : ι → Ideal O)
     have he : (∏ i ∈ (a P).val,if (P:Ideal O)∣v i then (1:ℂ) else 0)=1 := by
       apply Finset.prod_eq_one
       intro i hi
-      have his : i ∈ s := (Finset.mem_powerset.mp (Finset.mem_of_mem_erase (a P).property)) hi
-      have hPi : (P:Ideal O)∣selectedDivisor D s a i :=
-        Finset.dvd_prod_of_mem _ (Finset.mem_filter.mpr ⟨Finset.mem_univ P,hi⟩)
-      rw [ite_eq_left (hPi.trans (hh i his))]
+      rw [ite_eq_left ((Finset.dvd_prod_of_mem _ (Finset.mem_filter.mpr ⟨Finset.mem_univ P,hi⟩)).trans (hh i ((Finset.mem_powerset.mp (Finset.mem_of_mem_erase (a P).property)) hi)))]
     rw [he,mul_one]
   · rw [ite_eq_right hh]
     by_contra hn

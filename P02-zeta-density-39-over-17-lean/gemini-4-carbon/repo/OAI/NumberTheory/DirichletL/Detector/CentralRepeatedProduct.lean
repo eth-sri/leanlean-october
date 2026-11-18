@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeCentralRepeatedProduct
-open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily ProbePhysical
-open CanonicalQuadraticSieve CompletedGauss ProbeRowReflectedAllocation
-open HeckeDeletionBounds HeckeReciprocalGrowth
+open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily ProbePhysical CanonicalQuadraticSieve CompletedGauss ProbeRowReflectedAllocation HeckeDeletionBounds HeckeReciprocalGrowth
 local notation "O" => HeckeFamily.O
 
 def rowCost (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P) (u : FreeRow)
@@ -78,7 +76,7 @@ theorem selected_repeated_product (e eps : ℝ) (he : 0<e) (he1 : e<1/1000)
   obtain ⟨ψ,hle,hprim,hmask,hactive,hb⟩ := hbound S hS hmax hbad u hu
   have hi : Function.Injective (fun j=>(P j).val) := fun j l h=>hdis (Subtype.ext h)
   have hdiv (j : Fin k) := actual_multiplicity_divisor u (primaryGenerator (P j).val) (supported_primeGenerator_prime (P j) (hs j))
-  have hspan (j : Fin k) : (Ideal.span {primaryGenerator (P j).val}:Ideal O)=(P j).val := span_primaryGenerator_of_supported (P j).val (hs j)
+  have hspan (j : Fin k) := span_primaryGenerator_of_supported (P j).val (hs j)
   have hb' := hb η twists T a i hT ha ha1 hbin k (fun j=>(P j).val) (fun j=>(P j).property) hi
     (fun j=>multiplicity (primaryGenerator (P j).val) u.val) (fun j=>(hr j).2)
     (fun j=>by have hd := (hdiv j).1;rw [hspan j] at hd;exact hd) w hw hwi

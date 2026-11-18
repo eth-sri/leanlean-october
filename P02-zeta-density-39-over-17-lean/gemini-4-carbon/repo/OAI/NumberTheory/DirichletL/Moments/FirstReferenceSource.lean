@@ -8,21 +8,11 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstNonexceptionalLocalWeight
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
 open Filter
+open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstReferenceSource
-open ActualEisensteinCubic HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge
-open CenteredMomentCommonRadialData CenteredMomentOriginalCommonHarmonic
-open CenteredMomentFirstPhysicalSource CenteredMomentFirstPhysicalDyadicAssembly
-open CenteredMomentFirstPhysicalDyadicCount CenteredMomentFirstRetainedNorm
-open CenteredMomentFirstNonexceptionalWeightSum CenteredMomentFirstNonexceptionalLocalWeightSum
-open CenteredMomentFirstPhysicalActiveDictionary CenteredMomentFirstSourceReduction
-open CenteredMomentFirstInactiveRadicalMass CenteredMomentFirstDiscardedEnergy
-open CenteredMomentSecondRetainedAggregate CenteredMomentActiveSource CenteredMomentSourceRow
-open CenteredMomentSourceMass CenteredMomentCanonicalFirst CenteredMomentFirstSectors
-open CenteredMomentSecondRetainedRows CenteredMomentSectorLocalization CenteredMomentLogDyadic
-open CenteredMomentExceptionalAmplitudePair CenteredMomentRankinRadical
+open ActualEisensteinCubic HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge CenteredMomentCommonRadialData CenteredMomentOriginalCommonHarmonic CenteredMomentFirstPhysicalSource CenteredMomentFirstPhysicalDyadicAssembly CenteredMomentFirstPhysicalDyadicCount CenteredMomentFirstRetainedNorm CenteredMomentFirstNonexceptionalWeightSum CenteredMomentFirstNonexceptionalLocalWeightSum CenteredMomentFirstPhysicalActiveDictionary CenteredMomentFirstSourceReduction CenteredMomentFirstInactiveRadicalMass CenteredMomentFirstDiscardedEnergy CenteredMomentSecondRetainedAggregate CenteredMomentActiveSource CenteredMomentSourceRow CenteredMomentSourceMass CenteredMomentCanonicalFirst CenteredMomentFirstSectors CenteredMomentSecondRetainedRows CenteredMomentSectorLocalization CenteredMomentLogDyadic CenteredMomentExceptionalAmplitudePair CenteredMomentRankinRadical
 local notation "O"=>ActualEisensteinCubic.O
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 local instance : DecidableEq (ι⊕Fin 2):=Classical.decEq _
@@ -76,15 +66,13 @@ theorem original_block_sum (hi:ι→ℝ)(b₁ b₂ B ξ ε:ℝ)
   obtain ⟨Cd,hCd,hd⟩:=original_input_local_blocks_subpower hi b₁ b₂ B ξ (ε/2) hB hξ (by linarith)
   obtain ⟨Cm,hCm,hm⟩:=actual_inactive_radical_mass (B+1) (ε/2) (by linarith) (by linarith)
   refine ⟨Cd*Cm,mul_pos hCd hCm,?_⟩
-  filter_upwards [hd,eventually_ge_atTop (2:ℝ),eventually_ge_atTop ((∏i,hi i)*b₁*b₂)] with Z hd hZ hfixed
+  filter_upwards [hd,eventually_ge_atTop 2,eventually_ge_atTop ((∏i,hi i)*b₁*b₂)] with Z hd hZ hfixed
   intro s R seed hs hs0 hz₁ hz₂ hhi hb₁ hb₂ hH W K A hK hA hV hKi hblock
   have hZ1:1≤Z:=by linarith
-  have hcap:=input_radius_cap hi b₁ b₂ B Z s hhi hb₁ hb₂ hZ1 hfixed hV
   have hmass:=hm Z hZ seed hs hs0
     (finiteColumns (Fintype.piFinset s.pools)) (CenteredMomentOriginalCommonHarmonic.coefficient s R seed)
     (fun I _ hI=>original_column_mask s R seed I hI)
-    (fun I _ hI=>(original_column_norm s R seed I hz₁ hz₂ hI).2.trans hcap) 0 (le_refl _)
-  have hf:∀p E,0≤radicalWeight s R seed p E:=radicalWeight_nonneg s R seed
+    (fun I _ hI=>(original_column_norm s R seed I hz₁ hz₂ hI).2.trans (input_radius_cap hi b₁ b₂ B Z s hhi hb₁ hb₂ hZ1 hfixed hV)) 0 (le_refl _)
   have hsector (p:Labels s R seed)(E:Finset (CommonIndex p.val.1 p.val.2))
       (hE:E∈inactiveSubsets p.val.1 p.val.2):
       (∑n:SourceBlocks s R seed K Z ξ p E,‖originalBlock s R seed W K Z ξ p E n‖/volume s.toData)≤
@@ -97,9 +85,9 @@ theorem original_block_sum (hi:ι→ℝ)(b₁ b₂ B ξ ε:ℝ)
       _≤∑_n:SourceBlocks s R seed K Z ξ p E,A*radicalWeight s R seed p E:=
         Finset.sum_le_sum (fun n _=>hblock p E hE n)
       _ = (Fintype.card (SourceBlocks s R seed K Z ξ p E):ℝ)*(A*radicalWeight s R seed p E) := by
-        simp only [Finset.sum_const,Finset.card_univ,nsmul_eq_mul]
+        simp
       _ ≤ (Cd*Z^(ε/2))*(A*radicalWeight s R seed p E) :=
-        mul_le_mul_of_nonneg_right hcard (mul_nonneg hA (hf p E))
+        mul_le_mul_of_nonneg_right hcard (mul_nonneg hA ((radicalWeight_nonneg s R seed) p E))
       _ = _ := (mul_assoc _ _ _).symm
   rw [physicalMass_eq_sum]
   simp only [Finset.sum_div]

@@ -4,7 +4,10 @@ public import Mathlib.Basic.Real.Basic
 public import Mathlib.Analysis.SpecialFunctions.Pow.Complex
 public import Mathlib.Analysis.SpecialFunctions.Pow.NNReal
 public import GuthMaynard.NativeSource.GuthMaynard.ZeroDetector
-public import GuthMaynard.NativeSource.GuthMaynard.Asymptotics
+public import Mathlib.Analysis.Asymptotics.Defs
+public import Mathlib.Analysis.Asymptotics.Lemmas
+public import Mathlib.Analysis.SpecialFunctions.Pow.Real
+public import Mathlib.Analysis.SpecialFunctions.Log.Basic
 public import GuthMaynard.NativeSource.GuthMaynard.Pigeonhole
 public import GuthMaynard.NativeSource.GuthMaynard.DirichletPolynomial
 public import Mathlib.Tactic

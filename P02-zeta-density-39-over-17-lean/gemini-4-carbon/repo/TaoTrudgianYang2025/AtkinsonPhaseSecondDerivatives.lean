@@ -1,6 +1,14 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import Mathlib
 
 @[expose] public section
@@ -14,8 +22,7 @@ def atkinsonPhaseExponential (T v : ℝ) : ℂ := Complex.exp ((T * v : ℝ) * I
 theorem hasDerivAt_atkinsonPhaseExponential (T v : ℝ) :
     HasDerivAt (atkinsonPhaseExponential T)
       ((T : ℂ) * I * atkinsonPhaseExponential T v) v := by
-  have h := ((((hasDerivAt_id v).const_mul T).ofReal_comp).mul_const I).cexp
-  convert h using 1
+  convert (((((hasDerivAt_id v).const_mul T).ofReal_comp).mul_const I).cexp) using 1
   · rfl
   · simp only [atkinsonPhaseExponential, Complex.ofReal_mul, mul_one, id_eq]
     ring
@@ -23,12 +30,8 @@ theorem hasDerivAt_atkinsonPhaseExponential (T v : ℝ) :
 theorem iteratedDeriv_two_atkinsonPhaseExponential (T v : ℝ) :
     iteratedDeriv 2 (atkinsonPhaseExponential T) v =
       ((T : ℂ) * I) ^ 2 * atkinsonPhaseExponential T v := by
-  have he : deriv (atkinsonPhaseExponential T) =
-      fun w => (T : ℂ) * I * atkinsonPhaseExponential T w :=
-    funext (fun w => (hasDerivAt_atkinsonPhaseExponential T w).deriv)
-  have h := (hasDerivAt_atkinsonPhaseExponential T v).const_mul ((T : ℂ) * I)
-  rw [iteratedDeriv_succ, iteratedDeriv_one, he]
-  convert h.deriv using 1
+  rw [iteratedDeriv_succ, iteratedDeriv_one, (funext (fun w => (hasDerivAt_atkinsonPhaseExponential T w).deriv))]
+  convert ((hasDerivAt_atkinsonPhaseExponential T v).const_mul ((T : ℂ) * I)).deriv using 1
   ring
 
 theorem norm_atkinsonPhaseExponential_derivatives (T v : ℝ) :

@@ -2,7 +2,6 @@ module
 public import OAI.NumberTheory.DirichletL.Moments.RadialEligibleEnergy
 public import OAI.NumberTheory.DirichletL.Moments.DivisorRawEnergy
 
-set_option linter.privateModule false
 
 @[expose] public section
 
@@ -12,10 +11,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentRadialCenteredEnergy
-open HeckeFamily CenteredMomentEligibleEnergy CenteredMomentRadialEligibleEnergy
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentDivisorRawEnergy
-open CenteredMomentDivisorExtraction CenteredMomentDivisorRowEnergy CenteredMomentDivisorRectangle
-open CenteredMomentHeckeSlots CenteredMomentPositiveSummability CenteredMomentActiveAllocation
+open HeckeFamily CenteredMomentEligibleEnergy CenteredMomentRadialEligibleEnergy CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentDivisorRawEnergy CenteredMomentDivisorExtraction CenteredMomentDivisorRowEnergy CenteredMomentDivisorRectangle CenteredMomentHeckeSlots CenteredMomentPositiveSummability CenteredMomentActiveAllocation
 local notation "O" => ActualEisensteinCubic.O
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 

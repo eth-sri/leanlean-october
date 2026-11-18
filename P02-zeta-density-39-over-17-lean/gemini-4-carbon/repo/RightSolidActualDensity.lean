@@ -40,9 +40,8 @@ theorem density_right_solid_first {σ ε : ℝ}
     (hl : 7/9 ≤ σ) (hr : σ ≤ 29359/37574) (hε : 0 < ε) :
     ∃ C : ℝ,0 < C ∧ ∀ T : ℝ,2 ≤ T →
       (zetaDensityCount σ T:ℝ) ≤ C*T^(3*(1-σ)/(11*σ-7)+ε) := by
-  have hh := density_right_solid hl (hr.trans (by norm_num : (29359:ℝ)/37574 ≤ 4/5)) hε
   simpa only [rightSolidLengthExponent,ite_eq_left hr,
-    show 3*(1/(11*σ-7))*(1-σ)=3*(1-σ)/(11*σ-7) by ring] using hh
+    show 3*(1/(11*σ-7))*(1-σ)=3*(1-σ)/(11*σ-7) by ring] using (density_right_solid hl (hr.trans (by norm_num : (29359:ℝ)/37574 ≤ 4/5)) hε)
 
 theorem density_right_solid_second {σ ε : ℝ}
     (hl : 29359/37574 ≤ σ) (hr : σ ≤ 1015/1294) (hε : 0 < ε) :
@@ -107,10 +106,9 @@ theorem density_right_solid_fifth {σ ε : ℝ}
     (hl : 467/586 ≤ σ) (hr : σ ≤ 4/5) (hε : 0 < ε) :
     ∃ C : ℝ,0 < C ∧ ∀ T : ℝ,2 ≤ T →
       (zetaDensityCount σ T:ℝ) ≤ C*T^(2168*(1-σ)/(2282*σ-631)+ε) := by
-  have hh := density_right_solid (by linarith : (7:ℝ)/9 ≤ σ) hr hε
-  have h₁ : ¬σ ≤ (29359:ℝ)/37574 := by linarith
-  have h₂ : ¬σ ≤ (1015:ℝ)/1294 := by linarith
-  have h₃ : ¬σ ≤ (353:ℝ)/447 := by linarith
+  have h₁ : ¬σ ≤ 29359/37574 := by linarith
+  have h₂ : ¬σ ≤ 1015/1294 := by linarith
+  have h₃ : ¬σ ≤ 353/447 := by linarith
   have he : 3*rightSolidLengthExponent σ*(1-σ)=2168*(1-σ)/(2282*σ-631) := by
     unfold rightSolidLengthExponent
     rw [ite_eq_right h₁,ite_eq_right h₂,ite_eq_right h₃]
@@ -121,5 +119,5 @@ theorem density_right_solid_fifth {σ ε : ℝ}
     · rw [show 6846*σ-1893=3*(2282*σ-631) by ring]
       simp only [div_eq_mul_inv,mul_inv_rev]
       ring
-  simpa only [he] using hh
+  simpa only [he] using (density_right_solid (by linarith : 7/9 ≤ σ) hr hε)
 end Montgomery.RationalMoment.RightDetector

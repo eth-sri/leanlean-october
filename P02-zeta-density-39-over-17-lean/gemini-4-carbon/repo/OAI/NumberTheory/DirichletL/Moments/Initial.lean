@@ -1,7 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.Bridge
 
-set_option linter.privateModule false
 
 @[expose] public section
 
@@ -11,10 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 local notation "O" => ActualEisensteinCubic.O
 namespace SevenEighths.CenteredMomentInitial
-open ActualEisensteinCubic ConcretePrimeRowBridge ConcreteTraceCRT EisensteinSchwartzPoisson
-open CanonicalRowCompletion CanonicalQuadraticSieve
-open CenteredMomentCommonSupport CenteredMomentFourier CenteredMomentSupportedCorrelation
-open CenteredMomentPrimitive CenteredMomentBridge
+open ActualEisensteinCubic ConcretePrimeRowBridge ConcreteTraceCRT EisensteinSchwartzPoisson CanonicalRowCompletion CanonicalQuadraticSieve CenteredMomentCommonSupport CenteredMomentFourier CenteredMomentSupportedCorrelation CenteredMomentPrimitive CenteredMomentBridge
 
 variable {ι : Type*}
 

@@ -33,7 +33,7 @@ theorem atkinsonSymmetricError_le_physical {T G H b : ℝ}
     atkinsonSymmetricError T b (G/Real.sqrt T) H ≤
       4/(H*Real.pi) + 4*G^2*H^3/T + 216*G*H^5/T +
         1296*H^5/T + 11664*H^7/T := by
-  have hs : 0 < Real.sqrt T := Real.sqrt_pos.2 hT
+  have hs := Real.sqrt_pos.2 hT
   have hr := atkinsonSaddleRoot_pos (by positivity : 0 < T/(2*Real.pi)) b
   have hlo := (atkinsonSaddleRoot_small_frequency hT hb).1
   have h3 : 8*(G/Real.sqrt T)*T*H^5/(atkinsonSaddleRoot (T/(2*Real.pi)) b)^3 ≤
@@ -79,7 +79,7 @@ theorem atkinsonSymmetric_error_le_of_power_balance {T G X : ℝ}
   have hg2 : G^2*X^4 ≤ T := by nlinarith [sq_le_sq₀ (by positivity : 0 ≤ G*X^2) hs |>.2 hGX]
   have hg6 : G*X^6 ≤ T := by nlinarith [mul_le_mul hGX hXS (by positivity) hs]
   have hx8 : X^8 ≤ T := by nlinarith [sq_le_sq₀ (by positivity : 0 ≤ X^4) hs |>.2 hXS]
-  have hx6 : X^6 ≤ T := (pow_le_pow_right₀ hX (by norm_num : (6:ℕ) ≤ 8)).trans hx8
+  have hx6 := (pow_le_pow_right₀ hX (by norm_num : 6 ≤ 8)).trans hx8
   have hfirst : 4/((X/12)*Real.pi) ≤ 16/X := by
     apply (div_le_div_iff₀ (by positivity) hX0).2
     nlinarith [Real.pi_gt_three]
@@ -110,17 +110,14 @@ theorem exists_atkinsonPowerIntegral_symmetric_balance (α : ℝ) :
   refine ⟨20*C,by positivity,?_⟩
   intro T G L b X hT hG hGT hL hwidth hX hGX hXS hb
   have hT0 : 0 < T := by linarith
-  have hX0 : 0 < X := by linarith
   have hXpow : X ≤ X^4 := by
-    simpa only [pow_one] using pow_le_pow_right₀ hX (by norm_num : (1:ℕ) ≤ 4)
-  have hXle : X ≤ Real.sqrt T := hXpow.trans hXS
+    simpa using pow_le_pow_right₀ hX (by norm_num : (1:ℕ) ≤ 4)
   obtain ⟨hleft,hright,hwindow⟩ :=
     atkinsonSaddleRoot_small_frequency_window hT0 hb (show X/12 ≤ Real.sqrt T/12 by linarith)
-  have h := hbound T G L b (X/12) hT0 hG hGT hL hwidth (by positivity) hleft hright hwindow
   have he := (atkinsonSymmetricError_le_physical (G := G) (H := X/12)
     hT0 (by linarith) (by positivity) hb).trans
     (atkinsonSymmetric_error_le_of_power_balance hT0 (by linarith) hX hGX hXS)
-  apply h.trans ((mul_le_mul_of_nonneg_left he (by positivity)).trans_eq ?_)
+  apply (hbound T G L b (X/12) hT0 hG hGT hL hwidth (by positivity) hleft hright hwindow).trans ((mul_le_mul_of_nonneg_left he (by positivity)).trans_eq ?_)
   ring
 
 end MathCollab.Density.Stronger.Atkinson

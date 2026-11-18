@@ -7,9 +7,8 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondSourceProfile
 namespace OAI
 
 namespace SevenEighths.InverseMoment
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss InverseSecondFibers
 open scoped BigOperators Classical
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss
-open InverseSecondFibers
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
@@ -52,8 +51,7 @@ theorem actual_second_split_child_uniform
   refine ⟨u,v,?_⟩
   intro F Ψ m k A hA slots lists a W X
   dsimp only
-  rw [secondExpansionQuotient_of_subset p x.second hE]
-  rw [actual_second_split_fixed_family p hp hcop hg F x.cube.support x.firstCommon
+  rw [secondExpansionQuotient_of_subset p x.second hE, actual_second_split_fixed_family p hp hcop hg F x.cube.support x.firstCommon
     x.firstDivisor x.second.sourceCommon x.second.divisor x.second.overlap A hCB hD hE hA
     (fun i => x.cube.leftExponent i+x.cube.rightExponent i) x.cube.leftBit x.cube.rightBit
     x.cube.support_pos Ψ m k slots lists a W X]

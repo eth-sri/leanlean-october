@@ -8,8 +8,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.InverseInitialExcludedEnergy
-open HeckeFamily HeckeDyadic InverseInitialExcludedPolynomial
-open IdealMobiusDivisorSum UniqueFactorizationMonoid
+open HeckeFamily HeckeDyadic InverseInitialExcludedPolynomial IdealMobiusDivisorSum UniqueFactorizationMonoid
 local notation "O"=>HeckeFamily.O
 
 def deletionWeight (χ:Character)(j:Ideal O):ℂ:=
@@ -19,19 +18,16 @@ theorem deletionWeight_norm_le_one (χ:Character){j:Ideal O}(hj:j≠0):
     ‖deletionWeight χ j‖≤1 := by
   have hn:1≤(j.absNorm:ℝ):=by
     exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hj)
-  have hp:0<(j.absNorm:ℝ):=lt_of_lt_of_le zero_lt_one hn
   have hw:‖(j.absNorm:ℂ)^(-(1/2:ℂ))‖≤1:=by
-    rw [←Complex.ofReal_natCast,Complex.norm_cpow_eq_rpow_re_of_pos hp]
+    rw [←Complex.ofReal_natCast,Complex.norm_cpow_eq_rpow_re_of_pos (lt_of_lt_of_le zero_lt_one hn)]
     apply Real.rpow_le_one_of_one_le_of_nonpos hn
     norm_num
   dsimp [deletionWeight]
   rw [norm_mul,norm_mul]
-  calc
-    _≤1*1:=mul_le_mul
+  exact (mul_le_mul
       (by simpa only [one_mul] using (mul_le_mul (CubicEisenstein.norm_ideal_moebius_le_one j)
         (idealCoeff_norm_le_one χ j) (norm_nonneg _) zero_le_one)) hw
-      (norm_nonneg _) (by positivity)
-    _=1:=one_mul _
+      (norm_nonneg _) (by positivity)).trans_eq (one_mul _)
 
 theorem marked_pointwise (χ:Character)(S:Finset (Ideal O))(hS:∀P∈S,Prime P)
     (W:ℝ→ℂ)(X σ t b:ℝ)(hX:0<X)(hW:∀x,W x≠0→x≤b)(mark:ℂ):

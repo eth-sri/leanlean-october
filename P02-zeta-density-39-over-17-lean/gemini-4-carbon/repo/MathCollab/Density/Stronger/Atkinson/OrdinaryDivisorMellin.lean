@@ -11,8 +11,7 @@ public import MathCollab.Density.Stronger.Fourth.SquareSource
 
 @[expose] public section
 
-open Complex Set Filter Topology MeasureTheory
-open MathCollab.Density.Stronger.Fourth
+open Complex Set Filter Topology MeasureTheory MathCollab.Density.Stronger.Fourth
 open scoped BigOperators
 set_option autoImplicit false
 noncomputable section
@@ -109,8 +108,7 @@ theorem divisorWeight_mul_mellinInv
       mul_assoc, ← MeasureTheory.integral_const_mul]
     congr 2
     funext u
-    rw [LSeries.term_of_ne_zero hn]
-    rw [show ((n : ℝ) : ℂ) = (n : ℂ) by norm_cast, cpow_neg,
+    rw [LSeries.term_of_ne_zero hn, show ((n : ℝ) : ℂ) = (n : ℂ) by norm_cast, cpow_neg,
       div_eq_mul_inv]
     ring
 

@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.ContinuousPhaseAbel
 public import LaterPairs.Native.ThirteenthRootScales
 
@@ -25,25 +34,18 @@ theorem third_derivative_square_root_block_budget {N μ : ℝ}
       _ = μ^(-(1:ℝ)/3) := by rw [← Real.rpow_add hμ]; congr 1; ring
       _ ≤ _ := Real.rpow_le_rpow_of_exponent_ge hμ hμ1 (by norm_num)
   have hsqrt : Real.sqrt N ≤ μ^(-(1:ℝ)/4) := by
-    calc
-      _ ≤ Real.sqrt (μ^(-(1:ℝ)/2)) := Real.sqrt_le_sqrt hmax
-      _ = _ := by rw [Real.sqrt_eq_rpow,← Real.rpow_mul hμ.le]; congr 1; ring
+    exact (Real.sqrt_le_sqrt hmax).trans_eq (by rw [Real.sqrt_eq_rpow,← Real.rpow_mul hμ.le]; congr 1; ring)
   have hsecond : Real.sqrt N*μ^(-(1:ℝ)/6) ≤ μ^(-(5:ℝ)/12) := by
-    calc
-      _ ≤ μ^(-(1:ℝ)/4)*μ^(-(1:ℝ)/6) :=
-        mul_le_mul_of_nonneg_right hsqrt (Real.rpow_nonneg hμ.le _)
-      _ = _ := by rw [← Real.rpow_add hμ]; congr 1; ring
+    exact (mul_le_mul_of_nonneg_right hsqrt (Real.rpow_nonneg hμ.le _)).trans_eq (by rw [← Real.rpow_add hμ]; congr 1; ring)
   linarith
 
 theorem abel_square_root_block_variation {N K D μ : ℝ}
     (hN : 0 ≤ N) (hD : 0 ≤ D) (hμ : 0 < μ)
     (hmax : N ≤ μ^(-(1:ℝ)/2)) (hslow : K ≤ D*Real.sqrt μ) :
     K*N ≤ D := by
-  calc
-    _ ≤ (D*Real.sqrt μ)*μ^(-(1:ℝ)/2) := mul_le_mul hslow hmax hN (by positivity)
-    _ = D := by
+  exact (mul_le_mul hslow hmax hN (by positivity)).trans_eq (by
       rw [mul_assoc,Real.sqrt_eq_rpow,← Real.rpow_add hμ]
-      norm_num
+      norm_num)
 
 theorem third_derivative_abel_block_budget {N C K D μ : ℝ}
     (hN : 0 ≤ N) (hC : 0 ≤ C) (hD : 0 ≤ D)
@@ -52,13 +54,12 @@ theorem third_derivative_abel_block_budget {N C K D μ : ℝ}
     (1+2*Real.pi*K*N)*(20*C*(N*μ^((1:ℝ)/6)+Real.sqrt N*μ^(-(1:ℝ)/6))) ≤
       40*C*(1+2*Real.pi*D)*μ^(-(5:ℝ)/12) := by
   have hv := abel_square_root_block_variation hN hD hμ hmax hslow
-  have hb := third_derivative_square_root_block_budget hμ hμ1 hmax
   have hfactor : 1+2*Real.pi*K*N ≤ 1+2*Real.pi*D := by
     nlinarith [Real.pi_pos]
   have hm := mul_le_mul hfactor
-    (mul_le_mul_of_nonneg_left hb (show 0 ≤ 20*C by positivity))
-    (show 0 ≤ 20*C*(N*μ^((1:ℝ)/6)+Real.sqrt N*μ^(-(1:ℝ)/6)) by positivity)
-    (show 0 ≤ 1+2*Real.pi*D by positivity)
+    (mul_le_mul_of_nonneg_left (third_derivative_square_root_block_budget hμ hμ1 hmax) (by positivity))
+    (show 0 ≤ 20*C*(N*μ^(1/6)+Real.sqrt N*μ^(-1/6)) by positivity)
+    (by positivity)
   convert hm using 1; ring
 
 theorem square_root_block_floor {μ : ℝ} (hμ : 0 < μ) (hμ1 : μ ≤ 1) :
@@ -68,6 +69,6 @@ theorem square_root_block_floor {μ : ℝ} (hμ : 0 < μ) (hμ1 : μ ≤ 1) :
   apply positive_floor_half_bounds
   have he := Real.rpow_le_rpow_of_exponent_ge hμ hμ1
     (show -(1:ℝ)/2 ≤ 0 by norm_num)
-  simpa only [Real.rpow_zero] using he
+  simpa using he
 
 end TaoTrudgianYang2025

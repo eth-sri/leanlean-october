@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical HeckeReciprocalGrowth HeckeDeletionBounds
-open ProbeRowRadicalConductor
+open HeckeFamily HeckeInverseAmplification ProbePhysical HeckeReciprocalGrowth HeckeDeletionBounds ProbeRowRadicalConductor
 local notation "O" => HeckeFamily.O
 
 lemma presentationComplexity_norm_bound (χ : Character) (H : ℝ) :
@@ -23,10 +22,7 @@ lemma presentationComplexity_norm_bound (χ : Character) (H : ℝ) :
     exact_mod_cast Nat.le_of_dvd (Nat.pos_iff_ne_zero.mpr
       (Ideal.absNorm_eq_zero_iff.not.mpr χ.modulus_ne_bot)) (map_dvd Ideal.absNorm hd)
   unfold presentationComplexity HeckeLogarithmic.complexity
-  calc
-    _ ≤ (χ.modulus.absNorm:ℝ)*(2*χ.modulus.absNorm*(3+|H|)^2) :=
-      mul_le_mul_of_nonneg_right hn (by positivity)
-    _ = _ := by ring
+  exact (mul_le_mul_of_nonneg_right hn (by positivity)).trans_eq (by ring)
 
 lemma target_complexity_norm_bound (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
     (η : Character) (u : FreeRow) (H : ℝ) (hH : 0≤H) :
@@ -52,10 +48,8 @@ lemma target_complexity_power_bound (S : Finset (Ideal O)) (hS : ∀P∈S,Prime 
     (target_complexity_norm_bound S hS η u H hH) heps
   apply hb.trans_eq
   rw [show 2*((fixedConductorConstant S:ℝ)*η.modulus.absNorm*rowNorm u)^2*(3+H)^2=
-    (2*(fixedConductorConstant S:ℝ)^2)*(η.modulus.absNorm:ℝ)^2*rowNorm u^2*(3+H)^2 by ring]
-  rw [Real.mul_rpow (by unfold rowNorm;positivity) (by positivity),
-    Real.mul_rpow (by positivity) (by unfold rowNorm;positivity),Real.mul_rpow (by positivity) (by positivity)]
-  rw [←Real.rpow_two (η.modulus.absNorm:ℝ),←Real.rpow_two (rowNorm u),←Real.rpow_two (3+H),
+    (2*(fixedConductorConstant S:ℝ)^2)*(η.modulus.absNorm:ℝ)^2*rowNorm u^2*(3+H)^2 by ring, Real.mul_rpow (by unfold rowNorm;positivity) (by positivity),
+    Real.mul_rpow (by positivity) (by unfold rowNorm;positivity),Real.mul_rpow (by positivity) (by positivity), ←Real.rpow_two (η.modulus.absNorm:ℝ),←Real.rpow_two (rowNorm u),←Real.rpow_two (3+H),
     ←Real.rpow_mul (by positivity : (0:ℝ)≤η.modulus.absNorm),
     ←Real.rpow_mul (rowNorm_ge_one u |>.trans' (by norm_num : (0:ℝ)≤1)),
     ←Real.rpow_mul (by linarith : 0≤3+H)]

@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.AdditiveEnergy
 public import LaterPairs.Native.PrimitiveCongruenceSpacing
 
@@ -50,10 +59,9 @@ theorem primitive_congruence_card_le (S : Finset (ℤ × ℤ))
     have hs := primitive_linear_congruence_ratio_spacing hprim hc hV
       (hden p hp).1 (hden q hq).1 (hden p hp).2 (hden q hq).2
       (hpair p hp) (hpair q hq) (hcong p hp) (hcong q hq) hpq
-    change 1 ≤ |((p.1:ℝ)/p.2)/ε-((q.1:ℝ)/q.2)/ε|
     rw [← sub_div,abs_div,abs_of_pos hε]
     apply (le_div_iff₀ hε).mpr
-    simpa only [one_mul,ε] using hs
+    simpa using hs
   have hmem : ∀ x ∈ W, α/ε ≤ x ∧ x ≤ β/ε := by
     intro x hx
     obtain ⟨p,hp,rfl⟩ := Finset.mem_image.mp hx
@@ -63,8 +71,6 @@ theorem primitive_congruence_card_le (S : Finset (ℤ × ℤ))
     (sub_nonneg.mpr (div_le_div_of_nonneg_right hαβ hε.le)) hmem
   have hcard : W.card = S.card := Finset.card_image_of_injOn hinj
   rw [hcard] at hb
-  calc
-    (S.card:ℝ) ≤ β/ε-α/ε+1 := hb
-    _ = 1+4*V^2*(β-α)/c := by dsimp [ε]; field_simp; ring
+  exact (hb).trans_eq (by dsimp [ε]; field_simp; ring)
 
 end TaoTrudgianYang2025

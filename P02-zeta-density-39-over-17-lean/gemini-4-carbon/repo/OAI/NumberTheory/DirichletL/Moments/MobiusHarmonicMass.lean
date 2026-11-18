@@ -7,20 +7,18 @@ public import OAI.NumberTheory.DirichletL.Moments.DivisorBoundary
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
 open Filter
+open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentMobiusHarmonicMass
-open CenteredMomentWholeDivisorShell CenteredMomentSectorLocalization
-open CenteredMomentDivisorBoundary CenteredMomentMobiusRegroup UniqueFactorizationMonoid
+open CenteredMomentWholeDivisorShell CenteredMomentSectorLocalization CenteredMomentDivisorBoundary CenteredMomentMobiusRegroup UniqueFactorizationMonoid
 local notation "O" => ActualEisensteinCubic.O
 
 lemma shell_mass (Ds:Finset (Ideal O)) (n:ℤ) (hn:n∈selectedShells Ds) :
     (∑D∈shell Ds n,‖(moebius D:ℂ)‖/(Ideal.absNorm D:ℝ))≤256 := by
-  have ht:1≤dyadicScale n:=
-    (selected_scale_bounds Ds (∑D∈Ds,(Ideal.absNorm D:ℝ))
+  have ht := (selected_scale_bounds Ds (∑D∈Ds,(Ideal.absNorm D:ℝ))
       (fun D hD _=>Finset.single_le_sum (fun D _=>Nat.cast_nonneg _) hD) n hn).1
-  have htp:0<dyadicScale n:=zero_lt_one.trans_le ht
+  have htp :=zero_lt_one.trans_le ht
   have hcard:=divisor_dyad_card (shell Ds n) (dyadicScale n) ht
     (fun D hd=>(shell_member_data Ds n D hd).2.2.2.1)
     (fun D hd=>(shell_member_data Ds n D hd).2.2.2.2.2)
@@ -28,8 +26,7 @@ lemma shell_mass (Ds:Finset (Ideal O)) (n:ℤ) (hn:n∈selectedShells Ds) :
     _≤∑D∈shell Ds n,1/dyadicScale n:=by
       apply Finset.sum_le_sum
       intro D hd
-      have hh:=(shell_member_data Ds n D hd).2.2.2.2.1
-      exact div_le_div₀ (by norm_num) (moebius_norm_le_one D) htp hh
+      exact div_le_div₀ (by norm_num) (moebius_norm_le_one D) htp ((shell_member_data Ds n D hd).2.2.2.2.1)
     _=((shell Ds n).card:ℝ)/dyadicScale n:=by simp [div_eq_mul_inv]
     _≤256:=(div_le_iff₀ htp).mpr hcard
 
@@ -46,7 +43,7 @@ lemma shell_mass (Ds:Finset (Ideal O)) (n:ℤ) (hn:n∈selectedShells Ds) :
   simp only [mul_one_div] at he
   rw [he]
   calc
-    _≤∑n∈selectedShells Ds,(256:ℝ):=Finset.sum_le_sum (fun n hn=>shell_mass Ds n hn)
+    _≤∑n∈selectedShells Ds,256:=Finset.sum_le_sum (fun n hn=>shell_mass Ds n hn)
     _=((selectedShells Ds).card:ℝ)*256:=by simp
     _≤(C*Z^δ)*256:=mul_le_mul_of_nonneg_right (hZ.2 Ds hn) (by norm_num)
     _=_:=by ring

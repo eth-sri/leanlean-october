@@ -66,8 +66,8 @@ theorem sector_normalized_literal_energy
   refine ⟨degree,C₀,C,Z₀,hC₀,hC,hZ₀,?_⟩
   intro φ σ _ _ Z hZ F jF hN hbase hac hF hNF hcharF hj rows Pset S hrows E
     hrowcop hprod hScop hSN hSchar u i T θ QK QP r aw hT hQK hQP hKr hPr hr haw
-  have hkp : 0<QK := lt_of_lt_of_le zero_lt_one hQK
-  have hpp : 0<QP := lt_of_lt_of_le (by norm_num : (0:ℝ)<2) hQP
+  have hkp := lt_of_lt_of_le zero_lt_one hQK
+  have hpp := lt_of_lt_of_le (by norm_num : (0:ℝ)<2) hQP
   have hp : ∀ P∈Pset,CubicSieve.Admissible P ∧ QP/2≤(Ideal.absNorm P:ℝ) ∧ (Ideal.absNorm P:ℝ)≤2*(QP/2) := by
     intro P hP
     simpa only [mul_div_cancel₀ _ (by norm_num : (2:ℝ)≠0)] using hPr P hP

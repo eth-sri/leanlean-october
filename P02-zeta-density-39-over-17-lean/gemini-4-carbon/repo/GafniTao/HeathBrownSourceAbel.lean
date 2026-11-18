@@ -31,11 +31,7 @@ theorem heathBrown_source_abel_identity
       · subst H
         simp
       · have hHpos : 1 ≤ H := Nat.one_le_iff_ne_zero.mpr hHzero
-        have hih := ih hHpos
-        rw [Finset.sum_Icc_succ_top (by omega : 1 ≤ H + 1)]
-        rw [Finset.sum_Icc_succ_top (by omega : 1 ≤ H + 1)]
-        rw [Finset.sum_Ico_succ_top (by omega : 1 ≤ H)]
-        rw [hih]
+        rw [Finset.sum_Icc_succ_top (by omega : 1 ≤ H + 1), Finset.sum_Icc_succ_top (by omega : 1 ≤ H + 1), Finset.sum_Ico_succ_top (by omega : 1 ≤ H), (ih hHpos)]
         ring
 
 /-- Partial-sum form of finite Abel summation.  Each edge keeps its own

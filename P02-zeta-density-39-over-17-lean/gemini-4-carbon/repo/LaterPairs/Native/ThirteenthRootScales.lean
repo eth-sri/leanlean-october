@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.RobertSargosPhysicalShift
 
 @[expose] public section
@@ -35,7 +44,7 @@ theorem thirteenth_root_physical_scale {lam : ℝ}
 
 theorem positive_floor_half_bounds {X : ℝ} (hX : 1 ≤ X) :
     0 < ⌊X⌋₊ ∧ X/2 ≤ (⌊X⌋₊:ℝ) ∧ (⌊X⌋₊:ℝ) ≤ X := by
-  have hp : 0 < ⌊X⌋₊ := Nat.floor_pos.mpr hX
+  have hp := Nat.floor_pos.mpr hX
   have h1 : (1:ℝ) ≤ ⌊X⌋₊ := by exact_mod_cast hp
   have hn := Nat.lt_floor_add_one X
   exact ⟨hp,by linarith,Nat.floor_le (by linarith)⟩

@@ -32,7 +32,7 @@ lemma rawTailWeight_summable (q : ℝ) (hq : 1<q) : Summable (rawTailWeight q) :
 
 lemma tail_power_gain (A : ℕ) (T x : ℝ) (hT : 0<T) (hTx : T≤x) :
     x^(-((A+2:ℕ):ℝ))≤T^(-(A:ℝ))*(x^2)⁻¹ := by
-  have hx : 0<x := lt_of_lt_of_le hT hTx
+  have hx := lt_of_lt_of_le hT hTx
   rw [show -((A+2:ℕ):ℝ)=-(A:ℝ)+(-2) by push_cast; ring,Real.rpow_add hx]
   rw [show x^(-2:ℝ)=(x^2)⁻¹ by rw [Real.rpow_neg hx.le,Real.rpow_two]]
   exact mul_le_mul_of_nonneg_right (Real.rpow_le_rpow_of_nonpos hT hTx (neg_nonpos.mpr (Nat.cast_nonneg A))) (by positivity)

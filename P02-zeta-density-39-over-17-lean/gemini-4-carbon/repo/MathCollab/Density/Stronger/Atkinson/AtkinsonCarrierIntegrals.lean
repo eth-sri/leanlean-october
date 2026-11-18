@@ -12,8 +12,7 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonCarrierAlgebra
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 noncomputable section
-open Complex MeasureTheory Set
-open MathCollab.Density.Stronger.Fourth
+open Complex MeasureTheory Set MathCollab.Density.Stronger.Fourth
 namespace MathCollab.Density.Stronger.Atkinson
 
 theorem norm_atkinsonPowerIntegrand (T G L α b x : ℝ) :
@@ -51,10 +50,7 @@ theorem integrable_atkinsonPowerIntegrand {T G L : ℝ}
     exact hz
   have hb := hB x (support_zetaSmoothDivisorTest_physical hT hG hL hwidth hs)
   rw [Real.norm_eq_abs] at hb
-  calc
-    _ ≤ ‖zetaAtkinsonDivisorTest T G L x‖ * B :=
-      mul_le_mul_of_nonneg_left hb (norm_nonneg _)
-    _ = _ := mul_comm _ _
+  exact (mul_le_mul_of_nonneg_left hb (norm_nonneg _)).trans_eq (mul_comm _ _)
 
 def atkinsonTwoTermCarrierIntegral (T G L : ℝ) (n : ℕ) : ℂ :=
   (Real.sqrt Real.pi / Real.pi : ℂ) *
@@ -78,7 +74,7 @@ theorem integral_zetaAtkinsonTwoTermIntegrand_eq_carriers {T G L : ℝ}
     (3 / 4) (Real.sqrt n)).integrableOn (s := Ioi 0)
   have h3m := (integrable_atkinsonPowerIntegrand hT hG hL hwidth
     (3 / 4) (-Real.sqrt n)).integrableOn (s := Ioi 0)
-  have he := setIntegral_congr_fun (μ := volume) (s := Ioi (0 : ℝ)) measurableSet_Ioi
+  have he := setIntegral_congr_fun (μ := volume) (s := Ioi 0) measurableSet_Ioi
     (fun x hx => zetaAtkinsonTwoTermIntegrand_eq_carriers
       (T := T) (G := G) (L := L) (x := x) hx hn)
   rw [he, integral_const_mul]

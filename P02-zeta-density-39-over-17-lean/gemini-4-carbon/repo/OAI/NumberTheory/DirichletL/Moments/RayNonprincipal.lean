@@ -23,17 +23,14 @@ theorem product_principal_descent (χ θ:Character)
   intro u hu
   obtain ⟨q,hq,hqu⟩ := (Ideal.mem_map_iff_of_surjective
     (Ideal.Quotient.mk χ.modulus) Ideal.Quotient.mk_surjective).mp hu
-  let a:O := 1+q
+  let a := 1+q
   have ha:Ideal.Quotient.mk χ.modulus a=(u:O⧸χ.modulus) := by
     dsimp [a]; rw [map_add,map_one,hqu]; ring
   have hθa:Ideal.Quotient.mk θ.modulus a=1 := by
     simp only [a,map_add,map_one,Ideal.Quotient.eq_zero_iff_mem.mpr hq,add_zero]
-  have hcχ:IsCoprime (Ideal.span {a}) χ.modulus :=
-    (IdealCharacter.isUnit_mk_iff_isCoprime _ _).mp (ha ▸ u.isUnit)
-  have hcθ:IsCoprime (Ideal.span {a}) θ.modulus :=
-    (IdealCharacter.isUnit_mk_iff_isCoprime _ _).mp (hθa ▸ isUnit_one)
-  have hcp:IsCoprime (Ideal.span {a}) (χ.product θ).modulus :=
-    (hcχ.mul_right hcθ).of_isCoprime_of_dvd_right
+  have hcχ := (IdealCharacter.isUnit_mk_iff_isCoprime _ _).mp (ha ▸ u.isUnit)
+  have hcθ := (IdealCharacter.isUnit_mk_iff_isCoprime _ _).mp (hθa ▸ isUnit_one)
+  have hcp := (hcχ.mul_right hcθ).of_isCoprime_of_dvd_right
       (Ideal.dvd_iff_le.mpr Ideal.mul_le_inf)
   have hv:elementCoeff (χ.product θ) a=1 := by
     change (χ.product θ).residue _=1

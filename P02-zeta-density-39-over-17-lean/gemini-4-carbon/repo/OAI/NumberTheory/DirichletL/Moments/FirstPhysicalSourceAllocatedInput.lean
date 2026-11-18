@@ -11,12 +11,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstPhysicalSource
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentSourceRow ConcretePrimeRowBridge
-open CenteredMomentFirstAmplificationChoice CenteredMomentCommonRadialData
-open CenteredMomentAmplificationChildInput CenteredMomentCommonAllocationSum
-open CenteredMomentSourceLiveColumn CenteredMomentOriginalChildEnergy
-open CenteredMomentSmoothedWindowEnergy CenteredMomentGaussEnergy
-open CenteredMomentHeckeColumnWindow CenteredMomentAddedZeroUniform
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentSourceRow ConcretePrimeRowBridge CenteredMomentFirstAmplificationChoice CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput CenteredMomentCommonAllocationSum CenteredMomentSourceLiveColumn CenteredMomentOriginalChildEnergy CenteredMomentSmoothedWindowEnergy CenteredMomentGaussEnergy CenteredMomentHeckeColumnWindow CenteredMomentAddedZeroUniform
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [Fintype ι]
 local instance firstAllocatedInputDecidableEq {κ : Type*} : DecidableEq κ := Classical.decEq _
@@ -39,8 +34,7 @@ lemma allocated_input_columns (s : Input ι) (C R seed L : Ideal O)
       (original (child s C R B τ t) (R*C) L).columns ∧
     (allocatedData (original s R seed) C L B).beta=
       (original (child s C R B τ t) (R*C) L).beta := by
-  have hh := child_columns s C R L B τ t
-  simpa only [OriginalData.columns,OriginalData.beta,allocated_pools,allocated_profile,original] using hh
+  simpa only [OriginalData.columns,OriginalData.beta,allocated_pools,allocated_profile,original] using (child_columns s C R L B τ t)
 
 lemma allocated_input_volume (s : Input ι) (C R seed L : Ideal O)
     (B : actualAllocations s.pools C) (τ : Character) (t : ℝ) :

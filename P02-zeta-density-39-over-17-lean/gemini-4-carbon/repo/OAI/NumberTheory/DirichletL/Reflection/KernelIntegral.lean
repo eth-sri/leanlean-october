@@ -59,8 +59,7 @@ theorem kernel_finite_contraction {κ : Type*} (source : Finset κ) (coeff value
   rw [integral_finsetSum source (fun j _ => hint j),Finset.mul_sum]
   apply Finset.sum_congr rfl
   intro j hj
-  rw [he j hj]
-  rw [← mul_assoc,mul_comm (coeff j) scalar,mul_assoc]
+  rw [he j hj, ← mul_assoc,mul_comm (coeff j) scalar,mul_assoc]
   apply congrArg (fun z : ℂ => scalar*z)
   rw [← integral_const_mul]
   apply integral_congr_ae

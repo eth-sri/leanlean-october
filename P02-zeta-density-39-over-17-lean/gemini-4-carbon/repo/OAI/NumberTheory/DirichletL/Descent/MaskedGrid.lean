@@ -28,7 +28,7 @@ theorem maskedGridHybridRow_mobius (T : Grid) (Pset : Finset (Ideal Eis))
         ((moebius D.1 : ℂ) * (moebius D.2 : ℂ)) *
           gridDivisorHybridBlock T Pset a beta t k D.1 D.2 := by
   have hm (P c : Ideal Eis) :
-      (if IsCoprime k (P * c) then (1 : ℂ) else 0) =
+      (if IsCoprime k (P * c) then 1 else 0) =
       ∑ D ∈ (idealDivisors k) ×ˢ (idealDivisors k),
         if D.1 ∣ P ∧ D.2 ∣ c then (moebius D.1 : ℂ) * (moebius D.2 : ℂ) else 0 := by
     rw [hybrid_double_mask_mobius k P c hk, Finset.sum_product]
@@ -99,11 +99,9 @@ theorem maskedGridHybridRow_divisor_energy (ε : ℝ) (hε : 0 < ε) :
     exact Finset.mem_biUnion.mpr ⟨k, hk, hD⟩
   · intro k hk D hD
     rw [norm_mul]
-    calc
-      _ ≤ 1 * 1 := mul_le_mul
+    exact (mul_le_mul
         (QuadraticInitialBound.norm_ideal_moebius_le_one D.1)
-        (QuadraticInitialBound.norm_ideal_moebius_le_one D.2) (norm_nonneg _) (by norm_num)
-      _ = 1 := by norm_num
+        (QuadraticInitialBound.norm_ideal_moebius_le_one D.2) (norm_nonneg _) (by norm_num)).trans_eq (by norm_num)
   · intro k hk
     have hd := (hdiv k (hrows k hk).1).trans
       (mul_le_mul_of_nonneg_left

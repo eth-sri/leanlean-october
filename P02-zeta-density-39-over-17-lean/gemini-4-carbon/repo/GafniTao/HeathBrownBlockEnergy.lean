@@ -49,8 +49,6 @@ theorem heathBrownFrequencyEnergy_le_block_energies
   let c := heathBrownTriangularFourierCoefficient B C rs.1 rs.2
   let V : ℕ → ℂ := fun i =>
     ∑ n ∈ heathBrownBlock N K i, heathBrownFourierAtom g₁ g₂ rs n
-  have hc : 0 ≤ c :=
-    heathBrownTriangularFourierCoefficient_nonneg hB hC rs.1 rs.2
   have hsplit := heathBrownFourierAtom_sum_eq_block_sums
     (N := N) (K := K) hK g₁ g₂ rs
   have hcs := ford_norm_sum_sq_le_card_mul_sum_norm_sq
@@ -62,7 +60,7 @@ theorem heathBrownFrequencyEnergy_le_block_energies
       simp only [heathBrownFrequencyEnergy, c, V]
       rw [hsplit]
     _ ≤ c * ((K : ℝ) * ∑ i ∈ Finset.range K, ‖V i‖ ^ 2) :=
-      mul_le_mul_of_nonneg_left hcs hc
+      mul_le_mul_of_nonneg_left hcs (heathBrownTriangularFourierCoefficient_nonneg hB hC rs.1 rs.2)
     _ = (K : ℝ) * ∑ i ∈ Finset.range K,
         heathBrownFrequencyEnergy B C g₁ g₂
           (heathBrownBlock N K i) rs := by

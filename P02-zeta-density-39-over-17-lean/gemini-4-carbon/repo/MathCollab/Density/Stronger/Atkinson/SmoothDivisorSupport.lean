@@ -10,9 +10,7 @@ public import MathCollab.Density.Stronger.Atkinson.SmoothDivisorTest
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+open Complex Filter MeasureTheory Set Topology MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth MathCollab.Density.Contour
 open scoped Interval ComplexConjugate ContDiff
 set_option autoImplicit false
 noncomputable section
@@ -27,11 +25,9 @@ theorem zetaDivisorBandEdge_outer_bounds {T G L : ℝ}
   have hr : 2 * L / G ≤ 1 / 4 := by
     apply (div_le_iff₀ hG).mpr
     linarith
-  have hlo := Real.add_one_le_exp (-(2 * L / G))
-  have hhi := exp_sub_one_le_two_mul hr0 (by linarith : 2 * L / G ≤ 1)
   have hA : 0 < T / (2 * Real.pi) := by positivity
-  have hl := mul_le_mul_of_nonneg_left hlo hA.le
-  have hu := mul_le_mul_of_nonneg_left hhi hA.le
+  have hl := mul_le_mul_of_nonneg_left (Real.add_one_le_exp (-(2 * L / G))) hA.le
+  have hu := mul_le_mul_of_nonneg_left (exp_sub_one_le_two_mul hr0 (by linarith : 2 * L / G ≤ 1)) hA.le
   unfold zetaDivisorBandEdge
   rw [show -2 * L / G = -(2 * L / G) by ring]
   have hhalfeq : T / (4 * Real.pi) = (T / (2 * Real.pi)) / 2 := by ring
@@ -58,13 +54,13 @@ theorem eventually_zetaSmoothDivisorTest_support_physical {δ : ℝ} (hδ : 0 < 
       0 < G ∧ 0 < Real.log T ∧ 8 * Real.log T ≤ G ∧
         Function.support (zetaSmoothDivisorTest T G (Real.log T)) ⊆ Icc (T / 16) T := by
   filter_upwards [eventually_const_log_pow_le_rpow 8 (by norm_num) 1 hδ,
-    eventually_ge_atTop (16 : ℝ)] with T hlog hT
+    eventually_ge_atTop 16] with T hlog hT
   refine ⟨hT, ?_⟩
   intro G hG
   have hT0 : 0 < T := by linarith
   have hG0 : 0 < G := (Real.rpow_pos_of_pos hT0 δ).trans_le hG
   have hlog0 : 0 < Real.log T := Real.log_pos (by linarith)
-  have hwidth : 8 * Real.log T ≤ G := by simpa only [pow_one] using hlog.trans hG
+  have hwidth : 8 * Real.log T ≤ G := by simpa using hlog.trans hG
   exact ⟨hG0, hlog0, hwidth, support_zetaSmoothDivisorTest_physical hT0 hG0 hlog0 hwidth⟩
 
 end MathCollab.Density.Stronger.Atkinson

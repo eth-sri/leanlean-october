@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 
 @[expose] public section
 set_option autoImplicit false
@@ -45,16 +54,11 @@ theorem exists_dyadic_count_sq_le_rpow {ε : ℝ} (hε : 0 < ε) :
     have h := (le_div_iff₀ ha).mp hl
     nlinarith
   have hcount : (M:ℝ)+1 ≤ C*((2:ℝ)^M)^a := by
-    calc
-      _ ≤ ((2:ℝ)^M)^a/(a*Real.log 2)+((2:ℝ)^M)^a := add_le_add hm hp
-      _ = _ := by dsimp [C]; ring
-  calc
-    _ ≤ (C*((2:ℝ)^M)^a)^2 :=
-      pow_le_pow_left₀ (by positivity) hcount 2
-    _ = _ := by
+    exact (add_le_add hm hp).trans_eq (by dsimp [C]; ring)
+  exact (pow_le_pow_left₀ (by positivity) hcount 2).trans_eq (by
       rw [mul_pow,← Real.rpow_mul_natCast (by positivity : (0:ℝ) ≤ (2:ℝ)^M)]
       congr 2
       dsimp [a]
-      norm_num
+      norm_num)
 
 end TaoTrudgianYang2025

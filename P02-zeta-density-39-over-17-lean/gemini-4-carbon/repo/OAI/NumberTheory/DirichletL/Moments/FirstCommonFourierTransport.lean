@@ -9,11 +9,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstCommonFourierTransport
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge CanonicalQuadraticSieve
-open CenteredMomentCanonicalFirst CenteredMomentCompleteCommon CenteredMomentFirstReduced
-open CenteredMomentSupportedCorrelation
-open CenteredMomentCommonSupport CenteredMomentFirstLocalization CenteredMomentFirstScale
-open CenteredMomentSectorLocalization CenteredMomentFirstCommonTransport
+open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge CanonicalQuadraticSieve CenteredMomentCanonicalFirst CenteredMomentCompleteCommon CenteredMomentFirstReduced CenteredMomentSupportedCorrelation CenteredMomentCommonSupport CenteredMomentFirstLocalization CenteredMomentFirstScale CenteredMomentSectorLocalization CenteredMomentFirstCommonTransport
 local notation "O"=>ActualEisensteinCubic.O
 
 theorem quotient_function_heq (r r':O)(hr:r'=r)
@@ -42,7 +38,7 @@ theorem retainedFourierTerm_transport (a b r r':O)(ha:a≠0)(hb:b≠0)(hr:r≠0)
     retainedFourierTerm a b r' ha hb hr' χa χb G' e E W K R=
       retainedFourierTerm a b r ha hb hr χa χb G e E W K R:=by
   subst r'
-  have hg:G'=G:=eq_of_heq (quotient_function_heq r r rfl G G' hG)
+  have hg :=eq_of_heq (quotient_function_heq r r rfl G G' hG)
   subst G'
   rfl
 
@@ -76,15 +72,6 @@ theorem canonicalRetainedTerm_fixed (I J:Ideal O)(hI:Supported I)(hJ:Supported J
     (primeSubsetGenerator (fun P:CommonIndex I J=>P.val) E) (∏P∈E,P.val) W K
     (frequencyRadius (firstNominalScale I J (∏P∈E,P.val) K X) Z ξ)
   exact hh.symm
-
-def inactiveEquiv (I J:Ideal O):
-    CenteredMomentFirstDiscardedEnergy.inactiveSubsets I J ≃
-      CenteredMomentFirstDiscardedEnergy.inactiveSubsets (commonPart I J) (commonPart J I):=
-  (Equiv.finsetCongr (commonEquiv I J)).subtypeEquiv (fun E=>(mappedSubset_inactive I J E).symm)
-
-@[simp] theorem inactiveEquiv_val (I J:Ideal O)
-    (E:CenteredMomentFirstDiscardedEnergy.inactiveSubsets I J):
-    (inactiveEquiv I J E).val=mappedSubset I J E.val:=rfl
 
 theorem canonicalRetainedPair_fixed (I J:Ideal O)(hI:Supported I)(hJ:Supported J)
     (W:𝓢(ℝ,ℂ))(K X Z ξ:ℝ):

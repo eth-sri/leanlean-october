@@ -9,9 +9,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentRadialPointwiseEnergy
-open CenteredMomentEligibleEnergy CenteredMomentRadialEligibleEnergy
-open CenteredMomentActiveDivisorShell CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
-open CenteredMomentSlotRatios CenteredMomentUniformDivisorShell
+open CenteredMomentEligibleEnergy CenteredMomentRadialEligibleEnergy CenteredMomentActiveDivisorShell CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentSlotRatios CenteredMomentUniformDivisorShell
 local notation "O" => ActualEisensteinCubic.O
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 
@@ -37,7 +35,6 @@ lemma inverse_reduction (s:Data ι) (D:Ideal O) (hD:Squarefree D)
   intro s r D hD E Z hE hZ hc
   have hn:0<(Ideal.absNorm D:ℝ):=by
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hD.ne_zero)
-  have hp:0≤(Ideal.absNorm D:ℝ)^ε:=Real.rpow_nonneg hn.le _
   have hsz:((s.toSource.active D).card:ℝ)≤C₂*(Ideal.absNorm D:ℝ)^ε:=by
     apply (show ((s.toSource.active D).card:ℝ)≤Fintype.card (Allocation D (Finset.univ:Finset (ι⊕Fin 2))) by
       exact_mod_cast Finset.card_le_univ _).trans
@@ -52,17 +49,13 @@ lemma inverse_reduction (s:Data ι) (D:Ideal O) (hD:Squarefree D)
       _=((s.toSource.active D).card:ℝ)*(Z^(s.toSource.allowance Z)/(Ideal.absNorm D:ℝ)):=by simp
       _≤_:=mul_le_mul_of_nonneg_right hsz (div_nonneg (Real.rpow_nonneg (by linarith) _) hn.le)
   apply (henergy s r D hD E hE hc).trans
-  calc
-    _≤C₁*(Ideal.absNorm D:ℝ)^ε*s.profileFactor*E*
-        ((C₂*(Ideal.absNorm D:ℝ)^ε)*(Z^(s.toSource.allowance Z)/(Ideal.absNorm D:ℝ))):=
-      mul_le_mul_of_nonneg_left hs (mul_nonneg (mul_nonneg (mul_nonneg hC₁.le hp) s.profile_nonneg) hE)
-    _=_:=by
+  exact (mul_le_mul_of_nonneg_left hs (mul_nonneg (mul_nonneg (mul_nonneg hC₁.le (Real.rpow_nonneg hn.le _)) s.profile_nonneg) hE)).trans_eq (by
       have he:(Ideal.absNorm D:ℝ)^ε*(Ideal.absNorm D:ℝ)^ε=(Ideal.absNorm D:ℝ)^(2*ε):=by
         rw [←Real.rpow_add hn];congr 1;ring
       calc
         _=(C₁*C₂)*((Ideal.absNorm D:ℝ)^ε*(Ideal.absNorm D:ℝ)^ε)*
           Z^(s.toSource.allowance Z)*(s.profileFactor*E)/(Ideal.absNorm D:ℝ):=by ring
-        _=_:=by rw [he]
+        _=_:=by rw [he])
 
 end SevenEighths.CenteredMomentRadialPointwiseEnergy
 

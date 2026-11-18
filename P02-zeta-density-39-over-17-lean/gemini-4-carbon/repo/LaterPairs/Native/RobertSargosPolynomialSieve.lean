@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.RobertSargosNonzeroPartialSummation
 public import LaterPairs.Native.RobertSargosTaylorCount
 public import LaterPairs.Native.SargosDoubleLargeSieve
@@ -63,7 +72,7 @@ theorem robertSargos_box_frequency_bounds {A : ℝ} {r q h n : ℝ} {Q : ℕ}
       |robertSargosTaylorQuadratic r q h n| ≤ 13*A*(Q:ℝ)^2 := by
   have hQ : (0:ℝ) ≤ Q := Nat.cast_nonneg _
   have hlin : |h*q-r*n| ≤ |h| *|q| +|r| *|n| := by
-    simpa only [abs_mul] using abs_sub (h*q) (r*n)
+    simpa using abs_sub (h*q) (r*n)
   have hq2 : |q|^2 ≤ (Q:ℝ)^2 := pow_le_pow_left₀ (abs_nonneg _) hq 2
   have hn2 : |n|^2 ≤ (Q:ℝ)^2 := pow_le_pow_left₀ (abs_nonneg _) hn 2
   have hr2 : |r|^2 ≤ A^2 := pow_le_pow_left₀ (abs_nonneg _) hr 2
@@ -138,15 +147,13 @@ theorem robertSargos_prefix_box_log_lt (H Q : ℕ) (r : ℤ)
     (hX : X ≤ Q-1) (hY : Y ≤ (robertSargosHOverlap H r).card)
     (p : ℤ × ℤ × ℤ) (hp : p ∈ robertSargosPrefixBox H Q r positive X Y N) :
     Nat.log 2 p.1.natAbs < Nat.clog 2 Q := by
-  have hs := (robertSargos_prefix_box_support H Q r positive X Y N hX hY p hp).1
-  have hq := Finset.mem_erase.mp hs
+  have hq := Finset.mem_erase.mp ((robertSargos_prefix_box_support H Q r positive X Y N hX hY p hp).1)
   have hqi := Finset.mem_Ioo.mp hq.2
-  have hi : |p.1| < (Q:ℤ) := abs_lt.mpr ⟨hqi.1,hqi.2⟩
   have hn : p.1.natAbs < Q := by
-    have hc : (p.1.natAbs:ℤ) < Q := by simpa only [Int.natCast_natAbs] using hi
+    have hc : (p.1.natAbs:ℤ) < Q := by simpa using (abs_lt.mpr ⟨hqi.1,hqi.2⟩)
     exact_mod_cast hc
   exact Nat.log_lt_of_lt_pow ((Int.natAbs_pos.mpr hq.1).ne')
-    (hn.trans_le (Nat.le_pow_clog (by norm_num : 1 < (2:ℕ)) Q))
+    (hn.trans_le (Nat.le_pow_clog (by norm_num : 1 < 2) Q))
 
 theorem robertSargos_dyadic_prefix_q_range (H Q : ℕ) (r : ℤ)
     (positive : Bool) (X Y N j : ℕ)
@@ -154,14 +161,12 @@ theorem robertSargos_dyadic_prefix_q_range (H Q : ℕ) (r : ℤ)
     (p : ℤ × ℤ × ℤ) (hp : p ∈ robertSargosDyadicPrefixBox H Q r positive X Y N j) :
     |(p.1:ℝ)| ∈ Icc ((2:ℝ)^j) (2*(2:ℝ)^j) := by
   have hp' := Finset.mem_filter.mp hp
-  have hs := (robertSargos_prefix_box_support H Q r positive X Y N hX hY p hp'.1).1
-  have hne := (Finset.mem_erase.mp hs).1
-  have hlo := Nat.pow_log_le_self 2 ((Int.natAbs_pos.mpr hne).ne')
+  have hlo := Nat.pow_log_le_self 2 ((Int.natAbs_pos.mpr ((Finset.mem_erase.mp ((robertSargos_prefix_box_support H Q r positive X Y N hX hY p hp'.1).1)).1)).ne')
   have hhi := Nat.lt_pow_succ_log_self (by norm_num : 1 < (2:ℕ)) p.1.natAbs
   rw [hp'.2] at hlo hhi
   rw [pow_succ] at hhi
   have he : (p.1.natAbs:ℝ) = |(p.1:ℝ)| := by
-    simpa only [Int.cast_natCast,Int.cast_abs] using
+    simpa using
       congrArg (fun n : ℤ => (n:ℝ)) (Int.natCast_natAbs p.1)
   constructor
   · have h : (2:ℝ)^j ≤ p.1.natAbs := by exact_mod_cast hlo
@@ -181,8 +186,7 @@ theorem robertSargos_prefix_box_frequency_bounds {A : ℝ}
   obtain ⟨hq,hh,hn,_⟩ := robertSargos_prefix_box_support H Q r positive X Y N hX hY p hp
   have hqi := Finset.mem_Ioo.mp (Finset.mem_erase.mp hq).2
   have hq' : |(p.1:ℝ)| ≤ Q := by
-    have hi : |p.1| ≤ (Q:ℤ) := (abs_lt.mpr ⟨hqi.1,hqi.2⟩).le
-    exact_mod_cast hi
+    exact_mod_cast ((abs_lt.mpr ⟨hqi.1,hqi.2⟩).le)
   have hhi := Finset.mem_Ico.mp ((mem_robertSargosHOverlap H p.2.1 r).mp hh).1
   have hh' : |(p.2.1:ℝ)| ≤ 2*A := by
     have hlo' : (H:ℝ) ≤ (p.2.1:ℝ) := by exact_mod_cast hhi.1
@@ -191,12 +195,12 @@ theorem robertSargos_prefix_box_frequency_bounds {A : ℝ}
     linarith
   have hni := Finset.mem_Icc.mp hn
   have hn' : |(p.2.2:ℝ)| ≤ Q := by
-    have hlo' : (1:ℝ) ≤ (p.2.2:ℝ) := by exact_mod_cast hni.1
+    have hlo' : 1 ≤ (p.2.2:ℝ) := by exact_mod_cast hni.1
     have hhi' : (p.2.2:ℝ) ≤ N := by exact_mod_cast hni.2
     have hN' : (N:ℝ) ≤ Q := by exact_mod_cast hN
     rw [abs_of_nonneg (by linarith)]
     exact hhi'.trans hN'
-  simpa only [Int.cast_sub,Int.cast_mul] using
+  simpa using
     robertSargos_box_frequency_bounds hA hAQ hr hq' hh' hn'
 
 def robertSargosSievePoint
@@ -266,8 +270,7 @@ theorem robertSargos_sieve_collisions_system (R H Q : ℕ) (positive : ℤ → B
     robertSargos_dyadic_prefix_q_range H Q r (positive r) (X r) (Y r) (N r) j (hX r) (hY r) b hb,
     hhs a hha,hhs b hhb,hns a hna,hns b hnb,?_,hlinear,hnear⟩
   · change |(r:ℝ)| ≤ R
-    have h : |r| ≤ (R:ℤ) := (abs_lt.mpr ⟨hri'.1,hri'.2⟩).le
-    exact_mod_cast h
+    exact_mod_cast ((abs_lt.mpr ⟨hri'.1,hri'.2⟩).le)
   · change 0 < a.1*b.1
     cases hsign : positive r <;> simp only [hsign,Bool.false_eq_true,ite_false,ite_true] at hsa hsb
     · exact mul_pos_of_neg_of_neg hsa hsb
@@ -276,7 +279,7 @@ theorem robertSargos_sieve_collisions_system (R H Q : ℕ) (positive : ℤ → B
 theorem robertSargos_taylor_count_scale_mono {a b s t ε : ℝ}
     (ha : 0 < a) (hb : 0 ≤ b) (hs : 0 < s) (hst : s ≤ t) (hε : 0 ≤ ε) :
     (a*s)^(1+ε)*(1+b/s) ≤ (a*t)^(1+ε)*(1+b/t) := by
-  have ht : 0 < t := hs.trans_le hst
+  have ht := hs.trans_le hst
   have expand (x : ℝ) (hx : 0 < x) :
       (a*x)^(1+ε)*(1+b/x) = (a*x)^ε*a*(x+b) := by
     rw [add_comm 1 ε,Real.rpow_add_one (mul_pos ha hx).ne']
@@ -301,7 +304,7 @@ theorem exists_robertSargos_sieve_collisions_count (ε : ℝ) (hε : 0 < ε) :
   obtain ⟨C,hC,hcount⟩ := exists_robertSargos_taylor_count ε hε
   refine ⟨C,hC,?_⟩
   intro R H Q positive X Y N j E hR hH hQ hE hRH hX hY hN
-  apply hcount _ R H ((2:ℝ)^j) Q E
+  apply hcount _ R H (2^j) Q E
   · exact_mod_cast hR
   · exact_mod_cast hH
   · exact one_le_pow₀ (by norm_num) 
@@ -321,17 +324,13 @@ theorem exists_robertSargos_sieve_collisions_uniform (ε : ℝ) (hε : 0 < ε) :
   obtain ⟨C,hC,hcount⟩ := exists_robertSargos_sieve_collisions_count ε hε
   refine ⟨C,hC,?_⟩
   intro R H Q positive X Y N j E hR hH hQ hE hRH hX hY hN hj
-  have hRp : (0:ℝ) < R := by exact_mod_cast (show 0 < R by omega)
-  have hHp : (0:ℝ) < H := by exact_mod_cast (show 0 < H by omega)
-  have hQp : (0:ℝ) < Q := by exact_mod_cast (show 0 < Q by omega)
   have hpow : (2:ℝ)^j ≤ Q := by exact_mod_cast (Nat.pow_lt_of_lt_clog hj).le
   have hmono := robertSargos_taylor_count_scale_mono
     (a := (R:ℝ)*Q*H) (b := (E+12*R*(H:ℝ)^2)/H)
     (s := (2:ℝ)^j) (t := (Q:ℝ)) (by positivity) (by positivity)
     (by positivity) hpow hε.le
-  have hm := mul_le_mul_of_nonneg_left hmono hC.le
   apply (hcount R H Q positive X Y N j E hR hH hQ hE hRH hX hY hN).trans
-  simpa only [div_div,mul_assoc] using hm
+  simpa only [div_div,mul_assoc] using (mul_le_mul_of_nonneg_left hmono hC.le)
 
 theorem robertSargos_polynomial_character_coordinates (f : ℝ → ℝ) (m r : ℤ)
     (p : ℤ × ℤ × ℤ) :
@@ -428,19 +427,14 @@ theorem exists_robertSargos_counted_polynomial_sieve (ε : ℝ) (hε : 0 < ε) :
   refine ⟨16384*K,by positivity,?_⟩
   intro f M R H Q positive X Y N A C lam hM hR hH hQ hA hC hlam hAQ hHA hRA hRH
     hX hY hN hf hlo hhi
-  have hMp : (0:ℝ) < M := by exact_mod_cast (show 0 < M by omega)
   have hE : 0 ≤ 1/(C*lam*M) := by positivity
   have hc :
       (∑ j ∈ Finset.range (Nat.clog 2 Q),
         ((robertSargosSieveCollisions R H Q positive X Y N j (1/(C*lam*M))).card:ℝ)) ≤
       (Nat.clog 2 Q:ℝ)*
         (K*((R:ℝ)*Q*H*Q)^(1+ε)*(1+(1/(C*lam*M)+12*R*(H:ℝ)^2)/((H:ℝ)*Q))) := by
-    calc
-      _ ≤ ∑ _j ∈ Finset.range (Nat.clog 2 Q),
-          K*((R:ℝ)*Q*H*Q)^(1+ε)*(1+(1/(C*lam*M)+12*R*(H:ℝ)^2)/((H:ℝ)*Q)) :=
-        Finset.sum_le_sum (fun j hj => hcount R H Q positive X Y N j _
-          hR hH hQ hE hRH hX hY hN (Finset.mem_range.mp hj))
-      _ = _ := by simp
+    exact (Finset.sum_le_sum (fun j hj => hcount R H Q positive X Y N j _
+          hR hH hQ hE hRH hX hY hN (Finset.mem_range.mp hj))).trans_eq (by simp)
   have hb := robertSargos_polynomial_sieve f M R H Q positive X Y N
     hM hQ hA hC hlam hAQ hHA hRA hX hY hN hf hlo hhi
   have hm := mul_le_mul_of_nonneg_left hc (show 0 ≤
@@ -486,7 +480,7 @@ theorem robertSargos_spacing_source_interval (S : Finset ℤ) (L : ℕ)
       HasDerivAt (fun t => g (t+1)) (gp (x+1)) x := by
     convert (hg (x+1) (hin x hx)).comp x ((hasDerivAt_id x).add_const 1) using 1
     · rfl
-    · simp only [mul_one]
+    · simp
   have hbound := heathBrown_spacing_card_cast_le
     (N := L-1) (g := fun t => g (t+1)) hN hmu htheta hV
     (fun x hx => (hder x hx).continuousAt.continuousWithinAt)
@@ -547,7 +541,7 @@ theorem robertSargos_shifted_second_derivative (f : ℝ → ℝ) (M : ℕ)
   refine ⟨?_,?_,?_⟩
   · convert ((hd₂.comp x ((hasDerivAt_id x).add_const k)).sub hd₁).const_mul 2 using 1
     · rfl
-    · simp only [mul_one]
+    · simp
   · nlinarith [hinc.1]
   · nlinarith [hinc.2]
 
@@ -667,8 +661,7 @@ theorem robertSargos_sample_pairs_shift_count (f : ℝ → ℝ) (M : ℕ)
     rcases lt_trichotomy a b with hab | hab | hab
     · exact Finset.mem_union_right _ (Finset.mem_union_left _ (hpos a b hab hp))
     · subst b
-      have ha := (Finset.mem_product.mp (Finset.mem_filter.mp hp).1).1
-      exact Finset.mem_union_left _ (Finset.mem_image.mpr ⟨a,ha,rfl⟩)
+      exact Finset.mem_union_left _ (Finset.mem_image.mpr ⟨a,((Finset.mem_product.mp (Finset.mem_filter.mp hp).1).1),rfl⟩)
     · have hs := sargos_periodic_pair_swap _ _ _ theta delta hp
       exact Finset.mem_union_right _ (Finset.mem_union_right _
         (Finset.mem_image.mpr ⟨(b,a),hpos b a hab hs,rfl⟩))
@@ -819,8 +812,7 @@ private theorem robertSargos_spacing_scale_budgets (M Q : ℕ) {T lam : ℝ}
     exact_mod_cast h
   · rwa [hnorm5] at hprod
   · have h := mul_le_mul_of_nonneg_left hfloor2 hlam.le
-    have h' := mul_le_mul_of_nonneg_left hT1013 hlam.le
-    nlinarith only [h,h',hnorm]
+    nlinarith only [h,(mul_le_mul_of_nonneg_left hT1013 hlam.le),hnorm]
   · rw [hthetaLam] at htheta
     exact htheta.trans (mul_le_mul_of_nonneg_left hM hlam.le)
 
@@ -853,8 +845,7 @@ theorem robertSargos_physical_sample_spacing (f : ℝ → ℝ) (M : ℕ)
   rw [← h3] at hfloor
   have hM' : T^8 ≤ M := by rwa [h8]
   have hM1 : 1 ≤ M := by
-    have h := (one_le_pow₀ hT1 : 1 ≤ T^8).trans hM'
-    exact_mod_cast h
+    exact_mod_cast ((one_le_pow₀ hT1 : 1 ≤ T^8).trans hM')
   obtain ⟨htheta,htheta1,hKM,hthetaK,hlamK,hthetaM⟩ :=
     robertSargos_spacing_scale_budgets M ⌊lam^(-(3:ℝ)/13)⌋₊ hT hlam hn (by simpa only [h3] using hfloor) hM'
   rw [← h2]

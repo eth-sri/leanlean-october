@@ -35,21 +35,8 @@ theorem wooleySourcePolynomialConditionedMean_polynomialTwist_expand
             (wooleySourceTwist
               (wooleySourceResidueSequence left qH zeta)
               (fun n => wooleySourcePolynomialPhase leftPhi alpha n)) := by
-  have hphase : ∀ n,
-      ‖wooleySourcePolynomialPhase leftPhi alpha n‖ = 1 :=
-    wooleySourcePolynomialPhase_norm leftPhi alpha
-  have hmassTwist :
-      wooleySourceMassSq
-          (wooleySourceTwist left
-            (fun n => wooleySourcePolynomialPhase leftPhi alpha n)) =
-        wooleySourceMassSq left :=
-    wooleySourceMassSq_twist left _ hphase
-  have hresidue (zeta : ZMod qH) :
-      wooleySourceResidueMassSq
-          (wooleySourceTwist left
-            (fun n => wooleySourcePolynomialPhase leftPhi alpha n))
-          qH zeta = wooleySourceResidueMassSq left qH zeta :=
-    wooleySourceResidueMassSq_twist left _ hphase qH zeta
+  have hphase := wooleySourcePolynomialPhase_norm leftPhi alpha
+  have hresidue (zeta : ZMod qH) := wooleySourceResidueMassSq_twist left _ hphase qH zeta
   have hsum (zeta : ZMod qH) (beta : Fin r → ZMod qPrime) :
       wooleySourceNormalizedPolynomialResidueSum Psi
           (wooleySourceTwist left
@@ -63,7 +50,7 @@ theorem wooleySourcePolynomialConditionedMean_polynomialTwist_expand
       wooleySourceResidueSequence_twist]
   unfold wooleySourcePolynomialConditionedMean
     wooleySourcePolynomialMean
-  rw [hmassTwist, ite_eq_right hleft]
+  rw [(wooleySourceMassSq_twist left _ hphase), ite_eq_right hleft]
   simp_rw [hresidue, hsum]
   rw [← mul_assoc, mul_inv_cancel₀ hleft, one_mul]
 

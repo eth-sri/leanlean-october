@@ -7,84 +7,17 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-
-open scoped BigOperators Classical SchwartzMap ContDiff
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 namespace InitialMeanSquare
 
 section
-open ActualEisensteinCubic ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic
+open ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic
 open FirstPassCubeLabels (columnLog)
 
 end
 
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap ContDiff
-open ActualEisensteinCubic SecondPassArithmetic SecondPassIntegration JointLogSeparation
+open SecondPassArithmetic SecondPassIntegration JointLogSeparation
 open FirstPassCubeLabels (primeProductNorm columnLog)
 open ConcreteTraceCRT (eisEmbedding)
 
@@ -96,7 +29,6 @@ end
 
 end InitialMeanSquare
 
-open scoped BigOperators
 namespace FiniteOverlapDecomposition
 variable {ι : Type*} [DecidableEq ι]
 
@@ -150,13 +82,11 @@ theorem sum_pair_split_cube {β : Type*} [AddCommMonoid β]
   apply Finset.sum_congr rfl
   intro A₁ hA₁
   rw [sum_pair_eq_overlap]
-  simp only [Finset.union_assoc]
+  simp
 
 end FiniteOverlapDecomposition
 
-open scoped BigOperators Classical
 namespace SecondPassArithmetic
-open ActualEisensteinCubic
 open MixedCrossSeparation (columnCoefficient)
 open FirstPassCubeLabels
 
@@ -245,12 +175,8 @@ theorem canonicalSourceCoefficient_cube_split
           (multiplicativeCoreColumn p Ψ m (fun U => H ((A∪C)∪U)))
           (∏i∈C,p i) f S) := by
   dsimp only
-  have hAC : Disjoint (B.filter fun i => if negative then ε₂ i else ε₁ i) C :=
-    hCB.symm.mono_left (Finset.filter_subset _ _)
-  have hAS : Disjoint (B.filter fun i => if negative then ε₂ i else ε₁ i) S :=
-    hSB.symm.mono_left (Finset.filter_subset _ _)
   rw [canonicalSourceCoefficient_union p hp hcop hg hpr Ψ m f H _ S
-    (Finset.disjoint_union_left.mpr ⟨hAS,hSC.symm⟩)]
+    (Finset.disjoint_union_left.mpr ⟨(hSB.symm.mono_left (Finset.filter_subset _ _)),hSC.symm⟩)]
   have hA : (∏i∈B.filter (fun i => if negative then ε₂ i else ε₁ i),p i) =
       aLabel p B (if negative then ε₂ else ε₁) := by
     cases negative <;> simp only [Bool.false_eq_true,ite_false,ite_true,aLabel,primeProduct,
@@ -259,15 +185,13 @@ theorem canonicalSourceCoefficient_cube_split
       apply Finset.prod_congr rfl
       intro i hi
       split_ifs <;> simp_all
-  rw [Finset.prod_union hAC,hA]
+  rw [Finset.prod_union (hCB.symm.mono_left (Finset.filter_subset _ _)),hA]
   simp only [originalLabelColumn,cubeRadical,commonProduct_mask p hg hinj S B,ite_eq_left hSB,mul_one]
   ring
 
 end SecondPassArithmetic
 
-open scoped BigOperators Classical SchwartzMap
 namespace FirstPassCubeLabels
-open ActualEisensteinCubic
 open ConcreteTraceCRT (eisEmbedding eisEmbedding_ne_zero)
 open EisensteinSchwartzPoisson (paperRadialFourier)
 open MixedCrossSeparation (columnCoefficient columnPrimeCoprime)
@@ -293,7 +217,7 @@ lemma canonicalPairMode_summable (N P B : Finset ι) (v : ι→ℕ) (ε₁ ε₂
   let S := (N∪P)∪cubeActiveSupport B v ε₁ ε₂
   let e := threeBlockExponent N P v ε₁ ε₂
   let t := K/(‖eisEmbedding d‖^2*primeProductNorm p S)
-  have ht : 0<t := div_pos hK (mul_pos
+  have ht := div_pos hK (mul_pos
     (sq_pos_of_pos (norm_pos_iff.mpr (eisEmbedding_ne_zero hd))) (primeProductNorm_pos p hp S))
   have hs : Summable (fun h : O => paperRadialFourier W (t*‖eisEmbedding h‖^2)*star (blockRow p hg S e h)) := by
     apply Summable.of_norm
@@ -302,7 +226,7 @@ lemma canonicalPairMode_summable (N P B : Finset ι) (v : ι→ℕ) (ε₁ ε₂
     intro h
     rw [norm_mul,norm_star]
     exact mul_le_of_le_one_right (norm_nonneg _) (blockRow_norm_le_one p hg S e h)
-  let a : ℂ := (V₁ (columnLog p X₁ N)*V₂ (columnLog p X₂ P))*
+  let a := (V₁ (columnLog p X₁ N)*V₂ (columnLog p X₂ P))*
     ((K:ℂ)/(‖eisEmbedding (∏i∈S,p i)‖:ℂ))*
     (star (columnCoefficient p hp hcop hg N*C₁ N)*(columnCoefficient p hp hcop hg P*C₂ P)*
     FiniteGaussPhase.canonicalProductGauss (fun i:S => p i.val) (fun i=>hp i.val)
@@ -326,7 +250,6 @@ lemma actualFirstKernel_summable (F B : Finset ι) (v : ι→ℕ) (ε₁ ε₂ :
   intro P hP
   by_cases hNP : Disjoint N P
   · simp only [hNP,ite_true]
-    change Summable (canonicalPairMode p hp hcop hg N P B v ε₁ ε₂ C₁ C₂ W V₁ V₂ X₁ X₂ K d)
     exact
       canonicalPairMode_summable p hp hcop hg N P B v ε₁ ε₂ C₁ C₂ W V₁ V₂ X₁ X₂ K hK d hd
   · simp only [hNP,ite_false]
@@ -431,9 +354,7 @@ theorem disjointCanonicalSource_poisson
 
 end FirstPassCubeLabels
 
-open scoped BigOperators Classical SchwartzMap
 namespace SecondPassArithmetic
-open ActualEisensteinCubic
 open FirstPassCubeLabels
 open MixedCrossSeparation (columnCoefficient)
 open ConcreteTraceCRT (eisEmbedding)
@@ -601,7 +522,7 @@ lemma canonicalSourceCoefficient_norm_le_one
     columnCoefficient_norm_one p hp hcop hg hc,one_mul]
   calc
     ‖Ψ (∏i∈S,p i)‖*‖rowCoprimeMask (fun i=>Ideal.span {p i}) S m‖*
-      ‖finiteSquarefreeRow (fun i=>Ideal.span {p i}) hg S f‖^4 ≤ (1:ℝ)*1*1^4 := by
+      ‖finiteSquarefreeRow (fun i=>Ideal.span {p i}) hg S f‖^4 ≤ 1*1*1^4 := by
       exact mul_le_mul
         (mul_le_mul (hΨ _) hm (norm_nonneg _) (by norm_num))
         (pow_le_pow_left₀ (norm_nonneg _) (finiteSquarefreeRow_norm_le_one _ hg _ _) 4)

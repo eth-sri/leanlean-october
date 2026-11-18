@@ -46,14 +46,13 @@ theorem finite_cube_arbitrary_saving (K : ℕ) (τ saving b ζ A : ℝ)
     S hS hmax hfirst W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
   refine ⟨128*(128*b)^K*A^K*C,by positivity,?_⟩
   intro η Z hZ R hR T hT hdis length hl hp W hW a B H idx ψ hbin
-  have hZ0 : 0<Z := lt_of_lt_of_le zero_lt_one hZ
+  have hZ0 := lt_of_lt_of_le zero_lt_one hZ
   have hrange : Z^((13/16:ℝ)+ζ)≤Z := by
     simpa using Real.rpow_le_rpow_of_exponent_le hZ (show (13/16:ℝ)+ζ≤1 by linarith)
-  have hcR : (R.card:ℝ)≤128*Z := freeRow_count R Z hZ (by
+  have hcR := freeRow_count R Z hZ (by
     intro u hu
     exact (hR u hu).2.trans hrange)
-  have hcT : (Fintype.card (∀j,T j):ℝ)≤(128*b)^K*Z :=
-    (central_prime_tuple_count T Z b hZ0 hb.le length hl hp).trans
+  have hcT := (central_prime_tuple_count T Z b hZ0 hb.le length hl hp).trans
       (mul_le_mul_of_nonneg_left (by simpa using Real.rpow_le_rpow_of_exponent_le hZ (show (1/6:ℝ)≤1 by norm_num)) (by positivity))
   let E := C*(η.modulus.absNorm:ℝ)^2*Z^(-(saving+2))
   have hE : 0≤E := by dsimp [E];positivity
@@ -68,9 +67,7 @@ theorem finite_cube_arbitrary_saving (K : ℕ) (τ saving b ζ A : ℝ)
       (a u) (B u) (H u) (idx u) ha ha' hB hHlo hH hzero
   have hw (P : ∀j,T j) : ‖∏j,W j (((P j).val.val.absNorm:ℝ)/Z^(length j))‖≤A^K := by
     rw [norm_prod]
-    calc
-      _ ≤ ∏j : Fin K,A := Finset.prod_le_prod₀ (fun j _=>norm_nonneg _) (fun j _=>hW j _)
-      _ = _ := by simp
+    exact (Finset.prod_le_prod₀ (fun j _=>norm_nonneg _) (fun j _=>hW j _)).trans_eq (by simp)
   unfold finitePhysicalRows finiteCentralCubeRows
   rw [←Finset.sum_sub_distrib]
   calc

@@ -53,9 +53,7 @@ theorem comparison_extension_bound (w : ComparisonCutoff) {T : ℝ} {N M : ℕ}
 
 theorem dyadicPolynomial_norm_le (M : ℕ) (v : ℝ) : ‖dyadicPolynomial M v‖ ≤ M := by
   have hc : (Finset.Ico M (2*M)).card = M := by simp; omega
-  calc
-    _ ≤ ∑ q ∈ Finset.Ico M (2*M), ‖dirichletPhase ((q : ℝ)/M) v‖ := norm_sum_le _ _
-    _ = _ := by simp only [norm_dirichletPhase, Finset.sum_const, nsmul_eq_mul, mul_one, hc]
+  exact (norm_sum_le _ _).trans_eq (by simp only [norm_dirichletPhase, Finset.sum_const, nsmul_eq_mul, mul_one, hc])
 
 theorem detecting_pair_division_bound {T V : ℝ} {N : ℕ} {a : ℕ → ℂ}
     (hV : 0 < V) {t u : ℝ} (ht : V ≤ ‖detectingPolynomial N a t‖)

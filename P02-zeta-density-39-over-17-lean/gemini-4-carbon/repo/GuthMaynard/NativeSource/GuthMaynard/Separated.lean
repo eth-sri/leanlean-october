@@ -106,7 +106,7 @@ theorem separated_selection : SeparatedSelectionProp := by
 
   have W_even_sub_S : W_even ⊆ S := by
     intro x hx
-    have hx2 : x ∈ (S_even.image (fun t => ⌊t⌋)).image g_even := hx
+    have hx2 := hx
     rw [Finset.mem_image] at hx2
     rcases hx2 with ⟨z, hz, rfl⟩
     rw [Finset.mem_image] at hz
@@ -152,10 +152,10 @@ theorem separated_selection : SeparatedSelectionProp := by
 
   have H_floor : ∀ x ∈ W_even, ⌊x⌋ ∈ S_even.image (fun t => ⌊t⌋) ∧ x = g_even ⌊x⌋ := by
     intro x hx
-    have hx2 : x ∈ (S_even.image (fun t => ⌊t⌋)).image g_even := hx
+    have hx2 := hx
     rw [Finset.mem_image] at hx2
     rcases hx2 with ⟨z, hz, rfl⟩
-    have hz2 : ⌊g_even z⌋ = z := g_even_floor z hz
+    have hz2 := g_even_floor z hz
     rw [hz2]
     exact ⟨hz, rfl⟩
 
@@ -212,9 +212,8 @@ theorem separated_selection : SeparatedSelectionProp := by
     apply Finset.card_image_of_injOn
     intro z1 hz1 z2 hz2 hz
     have hz1_eq := g_even_floor z1 hz1
-    have hz2_eq := g_even_floor z2 hz2
     rw [hz] at hz1_eq
-    rw [← hz2_eq, hz1_eq]
+    rw [← (g_even_floor z2 hz2), hz1_eq]
 
   have S_even_card_le : S_even.card ≤ L * W_even.card := by
     have eq1 : S_even = (S_even.image (fun t => ⌊t⌋)).biUnion (fun z => S_even.filter (fun t => ⌊t⌋ = z)) := by
@@ -234,17 +233,15 @@ theorem separated_selection : SeparatedSelectionProp := by
       intro a ha hax hay
       rw [hax] at hay
       exact hxy hay
-    rw [W_even_card]
-    rw [eq2]
+    rw [W_even_card, eq2]
     have eq3 : ∑ z ∈ S_even.image (fun t => ⌊t⌋), (S_even.filter (fun t => ⌊t⌋ = z)).card ≤ ∑ z ∈ S_even.image (fun t => ⌊t⌋), L := by
       apply Finset.sum_le_sum
       intro i hi
-      have H_L_i := H_L i
       have sub_S : S_even.filter (fun t => ⌊t⌋ = i) ⊆ S.filter (fun t => ⌊t⌋ = i) := by
         intro t ht
         simp only [Finset.mem_filter] at ht ⊢
         exact ⟨(Finset.mem_filter.mp ht.1).1, ht.2⟩
-      exact le_trans (Finset.card_le_card sub_S) H_L_i
+      exact le_trans (Finset.card_le_card sub_S) (H_L i)
     have eq4 : ∑ z ∈ S_even.image (fun t => ⌊t⌋), L = L * (S_even.image (fun t => ⌊t⌋)).card := by
       simp only [Finset.sum_const, smul_eq_mul]
       ring
@@ -261,7 +258,7 @@ theorem separated_selection : SeparatedSelectionProp := by
 
   have W_odd_sub_S : W_odd ⊆ S := by
     intro x hx
-    have hx2 : x ∈ (S_odd.image (fun t => ⌊t⌋)).image g_odd := hx
+    have hx2 := hx
     rw [Finset.mem_image] at hx2
     rcases hx2 with ⟨z, hz, rfl⟩
     rw [Finset.mem_image] at hz
@@ -307,10 +304,10 @@ theorem separated_selection : SeparatedSelectionProp := by
 
   have H_floor_odd : ∀ x ∈ W_odd, ⌊x⌋ ∈ S_odd.image (fun t => ⌊t⌋) ∧ x = g_odd ⌊x⌋ := by
     intro x hx
-    have hx2 : x ∈ (S_odd.image (fun t => ⌊t⌋)).image g_odd := hx
+    have hx2 := hx
     rw [Finset.mem_image] at hx2
     rcases hx2 with ⟨z, hz, rfl⟩
-    have hz2 : ⌊g_odd z⌋ = z := g_odd_floor z hz
+    have hz2 := g_odd_floor z hz
     rw [hz2]
     exact ⟨hz, rfl⟩
 
@@ -367,9 +364,8 @@ theorem separated_selection : SeparatedSelectionProp := by
     apply Finset.card_image_of_injOn
     intro z1 hz1 z2 hz2 hz
     have hz1_eq := g_odd_floor z1 hz1
-    have hz2_eq := g_odd_floor z2 hz2
     rw [hz] at hz1_eq
-    rw [← hz2_eq, hz1_eq]
+    rw [← (g_odd_floor z2 hz2), hz1_eq]
 
   have S_odd_card_le : S_odd.card ≤ L * W_odd.card := by
     have eq1 : S_odd = (S_odd.image (fun t => ⌊t⌋)).biUnion (fun z => S_odd.filter (fun t => ⌊t⌋ = z)) := by
@@ -389,17 +385,15 @@ theorem separated_selection : SeparatedSelectionProp := by
       intro a ha hax hay
       rw [hax] at hay
       exact hxy hay
-    rw [W_odd_card]
-    rw [eq2]
+    rw [W_odd_card, eq2]
     have eq3 : ∑ z ∈ S_odd.image (fun t => ⌊t⌋), (S_odd.filter (fun t => ⌊t⌋ = z)).card ≤ ∑ z ∈ S_odd.image (fun t => ⌊t⌋), L := by
       apply Finset.sum_le_sum
       intro i hi
-      have H_L_i := H_L i
       have sub_S : S_odd.filter (fun t => ⌊t⌋ = i) ⊆ S.filter (fun t => ⌊t⌋ = i) := by
         intro t ht
         simp only [Finset.mem_filter] at ht ⊢
         exact ⟨(Finset.mem_filter.mp ht.1).1, ht.2⟩
-      exact le_trans (Finset.card_le_card sub_S) H_L_i
+      exact le_trans (Finset.card_le_card sub_S) (H_L i)
     have eq4 : ∑ z ∈ S_odd.image (fun t => ⌊t⌋), L = L * (S_odd.image (fun t => ⌊t⌋)).card := by
       simp only [Finset.sum_const, smul_eq_mul]
       ring

@@ -44,14 +44,13 @@ theorem original_reopened_marked_zero_bound (ε : ℝ) (hε : 0<ε) :
   intro ι σ _ _ p hp _ hcop hg hinj hc pool Q labels β Ψ m slots lists a W Φ Γ G L K B F
     hΓ hG hL hB hF hΨ hQ hn hFlabels hβ hslots ha hW hs
   have hb := reopenedCubeFamily_cube_norms p Q B hQ
-  have hcoeff := reopenedPairCoefficient_bound Q labels β Γ hΓ hβ
   have hh := he p hp hcop hg hinj hc pool (reopenedCubeFamily Q) labels
     (reopenedPairCoefficient β) Ψ Ψ m m (fun _ U=>W (primeProductNorm p U))
     (fun _ U=>W (primeProductNorm p U))
     (fun b=>b.rightExponent.support) (fun b=>b.leftExponent.support)
     slots lists a Φ (Γ^2) G G L K B F (sq_nonneg _) hG hG hL hB hF hΨ hΨ
     (reopenedCubeFamily_admissible Q) (fun b hb'=> (hb b hb').1) (fun b hb'=> (hb b hb').2)
-    hn hFlabels (fun b hb C hC I hI=>hcoeff b hb C I hI) hslots ha
+    hn hFlabels (fun b hb C hC I hI=>(reopenedPairCoefficient_bound Q labels β Γ hΓ hβ) b hb C I hI) hslots ha
     (fun _ _=>Finset.subset_union_right) (fun _ _=>Finset.subset_union_left)
     (fun _ _=>hW) (fun _ _=>hW) (fun _ _=>hs) (fun _ _=>hs)
   simpa only [reopenedPhysicalSourceSum,Finset.union_comm,pow_two] using hh

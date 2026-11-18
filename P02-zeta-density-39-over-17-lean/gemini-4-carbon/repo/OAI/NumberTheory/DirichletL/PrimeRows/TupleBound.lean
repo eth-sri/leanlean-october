@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical
-open CanonicalQuadraticSieve
+open HeckeFamily HeckeInverseAmplification ProbePhysical CanonicalQuadraticSieve
 local notation "O" => HeckeFamily.O
 
 theorem continued_selected_tuple_with_correction (K : ℕ) (δ a b r B : ℝ)
@@ -35,7 +34,7 @@ theorem continued_selected_tuple_with_correction (K : ℕ) (δ a b r B : ℝ)
   obtain ⟨C₂,hC₂,hcorr⟩ := unselectedCorrection_first_subpower (δ/2) (by linarith)
   refine ⟨C₂*C₁,mul_pos hC₂ hC₁,?_⟩
   intro eps S hS hfirst η u T hT Y hY W hWS hWB x w z hx hw hz hxw
-  let N : ℝ := ((Ideal.span {u.val}:Ideal O).absNorm:ℝ)
+  let N := ((Ideal.span {u.val}:Ideal O).absNorm:ℝ)
   have hN : 0<N := by
     dsimp [N]
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr

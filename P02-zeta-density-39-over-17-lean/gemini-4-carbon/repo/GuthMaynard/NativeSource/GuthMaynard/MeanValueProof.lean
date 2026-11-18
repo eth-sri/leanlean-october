@@ -26,9 +26,7 @@ lemma integral_cexp_int (k : ℤ) :
   · subst k
     simp
   · simp only [hk, ite_false]
-    have hc : Complex.I * (k : ℂ) ≠ 0 :=
-      mul_ne_zero Complex.I_ne_zero (Int.cast_ne_zero.mpr hk)
-    rw [integral_exp_mul_complex hc]
+    rw [integral_exp_mul_complex (mul_ne_zero Complex.I_ne_zero (Int.cast_ne_zero.mpr hk))]
     have hcexp :
         Complex.exp (Complex.I * (k : ℂ) * (((2 * Real.pi : ℝ) : ℂ))) = 1 := by
       rw [show Complex.I * (k : ℂ) * (((2 * Real.pi : ℝ) : ℂ)) =
@@ -52,8 +50,7 @@ lemma integral_conj_fourier_term_mul_fourier_term (a b : ℂ) (n m : ℤ) :
     rw [show (conj a * Complex.exp (- (Complex.I * (n : ℂ) * (x : ℂ)))) *
           (b * Complex.exp (Complex.I * (m : ℂ) * (x : ℂ))) =
         (conj a * b) * (Complex.exp (- (Complex.I * (n : ℂ) * (x : ℂ))) *
-          Complex.exp (Complex.I * (m : ℂ) * (x : ℂ))) by ring]
-    rw [← Complex.exp_add]
+          Complex.exp (Complex.I * (m : ℂ) * (x : ℂ))) by ring, ← Complex.exp_add]
     congr 1
     push_cast
     ring_nf
@@ -245,8 +242,7 @@ lemma integral_sawtooth_conj_fourier_mul_fourier (a b : ℂ) (n m : ℤ) :
     rw [show (conj a * Complex.exp (- (Complex.I * (n : ℂ) * (x : ℂ)))) *
           (b * Complex.exp (Complex.I * (m : ℂ) * (x : ℂ))) =
         (conj a * b) * (Complex.exp (- (Complex.I * (n : ℂ) * (x : ℂ))) *
-          Complex.exp (Complex.I * (m : ℂ) * (x : ℂ))) by ring]
-    rw [← Complex.exp_add]
+          Complex.exp (Complex.I * (m : ℂ) * (x : ℂ))) by ring, ← Complex.exp_add]
     congr 1
     push_cast
     ring_nf
@@ -316,7 +312,6 @@ lemma norm_sawtooth_conj_trigPoly_mul_trigPoly_le
     (hx : x ∈ Set.Icc (0 : ℝ) (2 * Real.pi)) :
     ‖((Real.pi - x : ℝ) : ℂ) * (conj (trigPoly s a x) * trigPoly s b x)‖ ≤
       Real.pi * (‖trigPoly s a x‖ ^ 2 + ‖trigPoly s b x‖ ^ 2) := by
-  have hpi : 0 ≤ Real.pi := Real.pi_pos.le
   have hw : |Real.pi - x| ≤ Real.pi := by
     rw [abs_le]
     constructor <;> linarith [hx.1, hx.2]
@@ -330,7 +325,7 @@ lemma norm_sawtooth_conj_trigPoly_mul_trigPoly_le
     _ ≤ Real.pi * (‖trigPoly s a x‖ * ‖trigPoly s b x‖) :=
       mul_le_mul_of_nonneg_right hw (mul_nonneg (norm_nonneg _) (norm_nonneg _))
     _ ≤ Real.pi * (‖trigPoly s a x‖ ^ 2 + ‖trigPoly s b x‖ ^ 2) :=
-      mul_le_mul_of_nonneg_left huv hpi
+      mul_le_mul_of_nonneg_left huv (Real.pi_pos.le)
 
 theorem hilbertForm_norm_le (s : Finset ℤ) (a b : ℤ → ℂ) :
     ‖hilbertForm s a b‖ ≤
@@ -397,22 +392,20 @@ theorem nat_hilbertForm_norm_le (s : Finset ℕ) (a b : ℕ → ℂ) :
     ‖∑ m ∈ s, ∑ n ∈ s, if n = m then 0 else
         conj (a n) * b m / (((m : ℤ) - (n : ℤ) : ℤ) : ℂ)‖ ≤
       Real.pi * ((∑ n ∈ s, ‖a n‖ ^ 2) + ∑ n ∈ s, ‖b n‖ ^ 2) := by
-  let sz : Finset ℤ := s.image (fun n : ℕ => (n : ℤ))
+  let sz := s.image (fun n : ℕ => (n : ℤ))
   let az : ℤ → ℂ := fun z => if 0 ≤ z then a z.toNat else 0
   let bz : ℤ → ℂ := fun z => if 0 ≤ z then b z.toNat else 0
-  have h := hilbertForm_norm_le sz az bz
-  simpa [hilbertForm, sz, az, bz] using h
+  simpa [hilbertForm, sz, az, bz] using (hilbertForm_norm_le sz az bz)
 
 lemma abs_inv_log_sub_sub_div_le_one {x y : ℝ} (hx : 0 < x) (hy : 0 < y)
     (hxy : x ≠ y) :
     |(Real.log y - Real.log x)⁻¹ - x / (y - x)| ≤ 1 := by
   rcases lt_or_gt_of_ne hxy with hlt | hgt
   · let d := y - x
-    have hd : 0 < d := sub_pos.mpr hlt
-    have hr : 0 < y / x := div_pos hy hx
+    have hd := sub_pos.mpr hlt
+    have hr := div_pos hy hx
     have hlog : Real.log y - Real.log x = Real.log (y / x) := by
       rw [Real.log_div hy.ne' hx.ne']
-    have hLpos : 0 < Real.log (y / x) := Real.log_pos ((one_lt_div hx).2 hlt)
     have hLower : d / y ≤ Real.log (y / x) := by
       have := Real.one_sub_inv_le_log_of_pos hr
       dsimp [d]
@@ -426,29 +419,23 @@ lemma abs_inv_log_sub_sub_div_le_one {x y : ℝ} (hx : 0 < x) (hy : 0 < y)
     have hInvLower : x / d ≤ (Real.log (y / x))⁻¹ := by
       calc
         x / d = (d / x)⁻¹ := by rw [inv_div]
-        _ ≤ (Real.log (y / x))⁻¹ := inv_anti₀ hLpos hUpper
+        _ ≤ (Real.log (y / x))⁻¹ := inv_anti₀ (Real.log_pos ((one_lt_div hx).2 hlt)) hUpper
     have hInvUpper : (Real.log (y / x))⁻¹ ≤ y / d := by
-      calc
-        (Real.log (y / x))⁻¹ ≤ (d / y)⁻¹ :=
-          inv_anti₀ (div_pos hd hy) hLower
-        _ = y / d := by rw [inv_div]
-    rw [hlog]
-    rw [abs_le]
+      exact (inv_anti₀ (div_pos hd hy) hLower).trans_eq (by rw [inv_div])
+    rw [hlog, abs_le]
     constructor
     · linarith
     · have hyd : y / d = x / d + 1 := by
-        have hone : (1 : ℝ) = d / d := (div_self hd.ne').symm
-        rw [hone, ← add_div]
+        rw [((div_self hd.ne').symm), ← add_div]
         dsimp [d]
         ring
       linarith
   · let d := x - y
-    have hd : 0 < d := sub_pos.mpr hgt
-    have hr : 0 < x / y := div_pos hx hy
+    have hd := sub_pos.mpr hgt
+    have hr := div_pos hx hy
     have hlog : Real.log y - Real.log x = -Real.log (x / y) := by
       rw [Real.log_div hx.ne' hy.ne']
       ring
-    have hLpos : 0 < Real.log (x / y) := Real.log_pos ((one_lt_div hy).2 hgt)
     have hLower : d / x ≤ Real.log (x / y) := by
       have := Real.one_sub_inv_le_log_of_pos hr
       dsimp [d]
@@ -462,22 +449,17 @@ lemma abs_inv_log_sub_sub_div_le_one {x y : ℝ} (hx : 0 < x) (hy : 0 < y)
     have hInvLower : y / d ≤ (Real.log (x / y))⁻¹ := by
       calc
         y / d = (d / y)⁻¹ := by rw [inv_div]
-        _ ≤ (Real.log (x / y))⁻¹ := inv_anti₀ hLpos hUpper
+        _ ≤ (Real.log (x / y))⁻¹ := inv_anti₀ (Real.log_pos ((one_lt_div hy).2 hgt)) hUpper
     have hInvUpper : (Real.log (x / y))⁻¹ ≤ x / d := by
-      calc
-        (Real.log (x / y))⁻¹ ≤ (d / x)⁻¹ :=
-          inv_anti₀ (div_pos hd hx) hLower
-        _ = x / d := by rw [inv_div]
+      exact (inv_anti₀ (div_pos hd hx) hLower).trans_eq (by rw [inv_div])
     rw [hlog]
     have hnegInv : (-Real.log (x / y))⁻¹ = -(Real.log (x / y))⁻¹ := by
       rw [inv_neg]
     rw [hnegInv]
     have hyx : y - x = -d := by dsimp [d]; ring
-    rw [hyx, div_neg]
-    rw [abs_le]
+    rw [hyx, div_neg, abs_le]
     have hxd : x / d = y / d + 1 := by
-      have hone : (1 : ℝ) = d / d := (div_self hd.ne').symm
-      rw [hone, ← add_div]
+      rw [((div_self hd.ne').symm), ← add_div]
       dsimp [d]
       ring
     constructor
@@ -492,9 +474,7 @@ lemma norm_complex_log_kernel_error_le_one {n m : ℕ} (hn : 0 < n) (hm : 0 < m)
     (show (0 : ℝ) < n by exact_mod_cast hn)
     (show (0 : ℝ) < m by exact_mod_cast hm)
     (by exact_mod_cast hnm)
-  rw [← Complex.ofReal_natCast, ← Complex.ofReal_intCast]
-  rw [← Complex.ofReal_div, ← Complex.ofReal_sub]
-  rw [Complex.norm_real, Real.norm_eq_abs]
+  rw [← Complex.ofReal_natCast, ← Complex.ofReal_intCast, ← Complex.ofReal_div, ← Complex.ofReal_sub, Complex.norm_real, Real.norm_eq_abs]
   norm_cast at hreal ⊢
 
 /-- The `logHilbertQuad` definition used by the source-facing construction in `MeanValueProof`. -/
@@ -527,8 +507,7 @@ lemma logHilbertQuad_eq_main_add_error (N : ℕ) (a : ℕ → ℂ) :
   by_cases hnm : n = m
   · simp [hnm]
   · simp only [hnm, ite_false]
-    rw [div_eq_mul_inv]
-    rw [← Complex.ofReal_inv]
+    rw [div_eq_mul_inv, ← Complex.ofReal_inv]
     ring
 
 lemma logKernelErrorQuad_norm_le (N : ℕ) (a : ℕ → ℂ) (hN : 0 < N) :
@@ -536,7 +515,7 @@ lemma logKernelErrorQuad_norm_le (N : ℕ) (a : ℕ → ℂ) (hN : 0 < N) :
       (N : ℝ) * ∑ n ∈ Finset.Ioc N (2 * N), ‖a n‖ ^ 2 := by
   let s := Finset.Ioc N (2 * N)
   have hterm : ∀ m ∈ s, ∀ n ∈ s,
-      ‖if n = m then (0 : ℂ) else conj (a n) * a m *
+      ‖if n = m then 0 else conj (a n) * a m *
         (((((Real.log m - Real.log n)⁻¹ : ℝ) : ℂ)) -
           (n : ℂ) / (((m : ℤ) - (n : ℤ) : ℤ) : ℂ))‖ ≤
         ‖a n‖ * ‖a m‖ := by
@@ -544,10 +523,7 @@ lemma logKernelErrorQuad_norm_le (N : ℕ) (a : ℕ → ℂ) (hN : 0 < N) :
     by_cases hnm : n = m
     · simp [hnm, mul_nonneg]
     · simp only [hnm, ite_false, norm_mul, norm_conj]
-      have hnPos : 0 < n := lt_trans hN (Finset.mem_Ioc.mp hn).1
-      have hmPos : 0 < m := lt_trans hN (Finset.mem_Ioc.mp hm).1
-      have hk := norm_complex_log_kernel_error_le_one hnPos hmPos hnm
-      exact (mul_le_mul_of_nonneg_left hk
+      exact (mul_le_mul_of_nonneg_left (norm_complex_log_kernel_error_le_one (lt_trans hN (Finset.mem_Ioc.mp hn).1) (lt_trans hN (Finset.mem_Ioc.mp hm).1) hnm)
         (mul_nonneg (norm_nonneg (a n)) (norm_nonneg (a m)))).trans_eq (mul_one _)
   calc
     ‖logKernelErrorQuad N a‖ ≤
@@ -614,31 +590,24 @@ lemma natMainQuad_norm_le (N : ℕ) (a : ℕ → ℂ) (hN : 0 < N) :
       (5 * Real.pi) * (N : ℝ) *
         ∑ n ∈ Finset.Ioc N (2 * N), ‖a n‖ ^ 2 := by
   let s := Finset.Ioc N (2 * N)
-  let H : ℂ := ∑ m ∈ s, ∑ n ∈ s,
+  let H := ∑ m ∈ s, ∑ n ∈ s,
     if n = m then 0 else conj (natScaledCoeff N a n) * a m /
       (((m : ℤ) - (n : ℤ) : ℤ) : ℂ)
   have hHilbert : ‖H‖ ≤ Real.pi *
       ((∑ n ∈ s, ‖natScaledCoeff N a n‖ ^ 2) + ∑ n ∈ s, ‖a n‖ ^ 2) := by
     exact nat_hilbertForm_norm_le s (natScaledCoeff N a) a
-  have hScaled := natScaledCoeff_l2_le N a hN
   have hH : ‖H‖ ≤ 5 * Real.pi * ∑ n ∈ s, ‖a n‖ ^ 2 := by
-    have hpi := Real.pi_pos.le
     calc
       ‖H‖ ≤ Real.pi *
           ((∑ n ∈ s, ‖natScaledCoeff N a n‖ ^ 2) + ∑ n ∈ s, ‖a n‖ ^ 2) := hHilbert
       _ ≤ Real.pi * (4 * (∑ n ∈ s, ‖a n‖ ^ 2) + ∑ n ∈ s, ‖a n‖ ^ 2) := by
-        apply mul_le_mul_of_nonneg_left _ hpi
-        exact add_le_add (by simpa [s] using hScaled) le_rfl
+        apply mul_le_mul_of_nonneg_left _ (Real.pi_pos.le)
+        exact add_le_add (by simpa [s] using (natScaledCoeff_l2_le N a hN)) le_rfl
       _ = 5 * Real.pi * ∑ n ∈ s, ‖a n‖ ^ 2 := by ring
   rw [natMainQuad_eq_scaled_hilbert N a hN]
-  change ‖(N : ℂ) * H‖ ≤ _
   rw [norm_mul, Complex.norm_natCast]
   have hNnonneg : (0 : ℝ) ≤ N := by positivity
-  calc
-    (N : ℝ) * ‖H‖ ≤ (N : ℝ) *
-        (5 * Real.pi * ∑ n ∈ s, ‖a n‖ ^ 2) := mul_le_mul_of_nonneg_left hH hNnonneg
-    _ = (5 * Real.pi) * (N : ℝ) *
-        ∑ n ∈ Finset.Ioc N (2 * N), ‖a n‖ ^ 2 := by simp [s]; ring
+  exact (mul_le_mul_of_nonneg_left hH hNnonneg).trans_eq (by simp [s]; ring)
 
 theorem logHilbertQuad_norm_le (N : ℕ) (a : ℕ → ℂ) (hN : 0 < N) :
     ‖logHilbertQuad N a‖ ≤
@@ -810,8 +779,7 @@ lemma integral_conj_dirichletTime_mul_dirichletTime
       intro n hn
       exact integral_conj_dirichlet_term_mul_dirichlet_term T a
         (lt_of_le_of_lt (Nat.zero_le N) (Finset.mem_Ioc.mp hn).1)
-        (lt_of_le_of_lt (Nat.zero_le N) (Finset.mem_Ioc.mp hm).1)]
-    rw [show
+        (lt_of_le_of_lt (Nat.zero_le N) (Finset.mem_Ioc.mp hm).1), show
         (∑ m ∈ Finset.Ioc N (2 * N), ∑ n ∈ Finset.Ioc N (2 * N),
           if n = m then (T : ℂ) * (conj (a n) * a n) else
             Complex.I *
@@ -874,7 +842,7 @@ theorem integral_norm_sq_dirichletTime_le (N : ℕ) (T : ℝ) (a : ℕ → ℂ)
     (∫ t : ℝ in 0..T, ‖dirichletTime N a t‖ ^ 2) ≤
       (T + 2 * (5 * Real.pi + 1) * (N : ℝ)) *
         ∑ n ∈ Finset.Ioc N (2 * N), ‖a n‖ ^ 2 := by
-  let S : ℝ := ∑ n ∈ Finset.Ioc N (2 * N), ‖a n‖ ^ 2
+  let S := ∑ n ∈ Finset.Ioc N (2 * N), ‖a n‖ ^ 2
   have hS : 0 ≤ S := by
     dsimp [S]
     positivity
@@ -909,7 +877,7 @@ theorem integral_norm_sq_dirichletTime_le (N : ℕ) (T : ℝ) (a : ℕ → ℂ)
           logHilbertQuad_norm_le N (endpointTwist T a) hN)
           (by simpa [S] using logHilbertQuad_norm_le N a hN)
       _ = 2 * (5 * Real.pi + 1) * (N : ℝ) * S := by ring
-  let L : ℝ := ∫ t : ℝ in 0..T, ‖dirichletTime N a t‖ ^ 2
+  let L := ∫ t : ℝ in 0..T, ‖dirichletTime N a t‖ ^ 2
   have hcast := ofReal_integral_norm_sq_dirichletTime N T a
   change L ≤ (T + 2 * (5 * Real.pi + 1) * (N : ℝ)) * S
   change ((L : ℝ) : ℂ) = _ at hcast
@@ -935,16 +903,11 @@ lemma local_sample_le_energy (g : ℝ → ℂ) (t : ℝ)
   have hderivBound : ∀ y : ℝ, ‖deriv h y‖ ≤ q y := by
     intro y
     have hy := (hg y).hasDerivAt.norm_sq
-    have hderiv := hy.deriv
-    rw [hderiv, Real.norm_eq_abs, abs_mul, abs_of_nonneg (by norm_num : (0 : ℝ) ≤ 2)]
+    rw [(hy.deriv), Real.norm_eq_abs, abs_mul, abs_of_nonneg (by norm_num : (0 : ℝ) ≤ 2)]
     have hinner : |inner ℝ (g y) (deriv g y)| ≤ ‖g y‖ * ‖deriv g y‖ :=
       abs_real_inner_le_norm _ _
-    dsimp [q]
-    calc
-      2 * |inner ℝ (g y) (deriv g y)| ≤ 2 * (‖g y‖ * ‖deriv g y‖) :=
-        mul_le_mul_of_nonneg_left hinner (by norm_num)
-      _ ≤ ‖g y‖ ^ 2 + ‖deriv g y‖ ^ 2 := by
-        nlinarith [sq_nonneg (‖g y‖ - ‖deriv g y‖)]
+    exact (mul_le_mul_of_nonneg_left hinner (by norm_num)).trans (by
+        nlinarith [sq_nonneg (‖g y‖ - ‖deriv g y‖)])
   have hpoint : ∀ x ∈ Set.Icc t (t + 1), h t ≤ h x + ∫ y : ℝ in t..t + 1, q y := by
     intro x hx
     have htx : t ≤ x := hx.1
@@ -958,8 +921,6 @@ lemma local_sample_le_energy (g : ℝ → ℂ) (t : ℝ)
     have hmono : (∫ y : ℝ in t..x, q y) ≤ ∫ y : ℝ in t..t + 1, q y := by
       apply intervalIntegral.integral_mono_interval le_rfl htx hx.2
       · exact Filter.Eventually.of_forall fun y => by
-          change 0 ≤ q y
-          dsimp [q]
           positivity
       · exact hqCont.intervalIntegrable (μ := MeasureTheory.volume) t (t + 1)
     have hbasic : h t ≤ h x + ‖h x - h t‖ := by
@@ -1016,7 +977,7 @@ lemma sum_local_intervalIntegrals_le (T : ℝ) (W : Finset ℝ) (q : ℝ → ℝ
     rcases lt_or_gt_of_ne hxy with hxylt | hyxlt
     · have : 1 ≤ y - x := by
         rw [abs_of_nonpos (sub_nonpos.mpr hxylt.le)] at hdist
-        simpa only [neg_sub] using hdist
+        simpa using hdist
       linarith
     · have : 1 ≤ x - y := by
         rw [abs_of_nonneg (sub_nonneg.mpr hyxlt.le)] at hdist
@@ -1075,8 +1036,7 @@ lemma centeredDirichletTime_eq (N : ℕ) (a : ℕ → ℂ) (t : ℝ) :
   rw [show Complex.exp (Complex.I * (t : ℂ) * (Real.log N : ℂ)) *
       (a n * Complex.exp (-(Complex.I * (t : ℂ) * (Real.log n : ℂ)))) =
     a n * (Complex.exp (Complex.I * (t : ℂ) * (Real.log N : ℂ)) *
-      Complex.exp (-(Complex.I * (t : ℂ) * (Real.log n : ℂ)))) by ring]
-  rw [← Complex.exp_add]
+      Complex.exp (-(Complex.I * (t : ℂ) * (Real.log n : ℂ)))) by ring, ← Complex.exp_add]
   congr 1
   push_cast
   ring_nf
@@ -1096,7 +1056,7 @@ lemma hasDerivAt_centeredDirichletTime (N : ℕ) (a : ℕ → ℂ) (t : ℝ) :
   unfold centeredDirichletTime
   apply HasDerivAt.fun_sum
   intro n hn
-  let c : ℂ := Complex.I * ((Real.log N - Real.log n : ℝ) : ℂ)
+  let c := Complex.I * ((Real.log N - Real.log n : ℝ) : ℂ)
   have hexp : HasDerivAt (fun x : ℝ => Complex.exp (c * (x : ℂ)))
       (Complex.exp (c * (t : ℂ)) * c) t := by
     convert (Complex.hasDerivAt_exp (c * (t : ℂ))).comp t
@@ -1105,7 +1065,6 @@ lemma hasDerivAt_centeredDirichletTime (N : ℕ) (a : ℕ → ℂ) (t : ℝ) :
   convert hexp.const_mul (a n) using 1
   · funext y
     congr 2
-    dsimp [c]
     ring
   · dsimp [centeredDerivCoeff, c]
     ring_nf
@@ -1135,8 +1094,8 @@ lemma abs_log_ratio_le_one (N n : ℕ) (hN : 0 < N) (hn : n ∈ Finset.Ioc N (2 
     (lt_of_le_of_lt (Nat.zero_le N) (Finset.mem_Ioc.mp hn).1)
   have hNn : (N : ℝ) ≤ n := by exact_mod_cast (Finset.mem_Ioc.mp hn).1.le
   have hn2N : (n : ℝ) ≤ 2 * N := by exact_mod_cast (Finset.mem_Ioc.mp hn).2
-  have hlogNn : Real.log N ≤ Real.log n := Real.log_le_log hNR hNn
-  have hlogn2N : Real.log n ≤ Real.log (2 * N) := Real.log_le_log hnR hn2N
+  have hlogNn := Real.log_le_log hNR hNn
+  have hlogn2N := Real.log_le_log hnR hn2N
   have hlogTwo : Real.log 2 ≤ 1 := by
     have h := Real.log_le_sub_one_of_pos (x := (2 : ℝ)) (by norm_num)
     norm_num at h ⊢
@@ -1162,8 +1121,7 @@ lemma centeredDerivCoeff_l2_le (N : ℕ) (a : ℕ → ℂ) (hN : 0 < N) :
 lemma nat_cpow_neg_mul_I_eq (n : ℕ) (t : ℝ) (hn : 0 < n) :
     (n : ℂ) ^ (-(t : ℂ) * Complex.I) =
       Complex.exp (-(Complex.I * (t : ℂ) * (Real.log n : ℂ))) := by
-  rw [Complex.cpow_def_of_ne_zero (by exact_mod_cast hn.ne')]
-  rw [← Complex.natCast_log]
+  rw [Complex.cpow_def_of_ne_zero (by exact_mod_cast hn.ne'), ← Complex.natCast_log]
   congr 1
   ring
 
@@ -1175,12 +1133,12 @@ theorem montgomery_mean_value_estimate (N : ℕ) (T : ℝ) (W : Finset ℝ) (a :
       a n * (n : ℂ) ^ (-(t : ℂ) * Complex.I)‖ ^ 2) ≤
       (3 * (2 + 2 * (5 * Real.pi + 1))) * (T + (N : ℝ)) *
         ∑ n ∈ Finset.Ioc N (2 * N), ‖a n‖ ^ 2 := by
-  let g : ℝ → ℂ := centeredDirichletTime N a
-  let b : ℕ → ℂ := centeredDerivCoeff N a
+  let g := centeredDirichletTime N a
+  let b := centeredDerivCoeff N a
   let q : ℝ → ℝ := fun x => 2 * ‖g x‖ ^ 2 + ‖deriv g x‖ ^ 2
-  let S : ℝ := ∑ n ∈ Finset.Ioc N (2 * N), ‖a n‖ ^ 2
-  let K : ℝ := 2 * (5 * Real.pi + 1)
-  let U : ℝ := T + 1
+  let S := ∑ n ∈ Finset.Ioc N (2 * N), ‖a n‖ ^ 2
+  let K := 2 * (5 * Real.pi + 1)
+  let U := T + 1
   have hS : 0 ≤ S := by
     dsimp [S]
     positivity
@@ -1196,8 +1154,8 @@ theorem montgomery_mean_value_estimate (N : ℕ) (T : ℝ) (W : Finset ℝ) (a :
     intro n hn
     rw [nat_cpow_neg_mul_I_eq n t
       (lt_of_le_of_lt (Nat.zero_le N) (Finset.mem_Ioc.mp hn).1)]
-  have hgDiff : Differentiable ℝ g := differentiable_centeredDirichletTime N a
-  have hgdCont : Continuous (deriv g) := continuous_deriv_centeredDirichletTime N a
+  have hgDiff := differentiable_centeredDirichletTime N a
+  have hgdCont := continuous_deriv_centeredDirichletTime N a
   have hqCont : Continuous q := by
     dsimp [q]
     exact (hgDiff.continuous.norm.fun_pow 2).const_mul 2 |>.add (hgdCont.norm.fun_pow 2)
@@ -1224,24 +1182,20 @@ theorem montgomery_mean_value_estimate (N : ℕ) (T : ℝ) (W : Finset ℝ) (a :
     exact integral_norm_sq_dirichletTime_le N (T + 1) (centeredDerivCoeff N a)
       hN (by linarith)
   have hFactor : 0 ≤ U + K * (N : ℝ) := by positivity
-  have hDeriv : (∫ x : ℝ in 0..U, ‖deriv g x‖ ^ 2) ≤
-      (U + K * (N : ℝ)) * S :=
-    hDerivRaw.trans (mul_le_mul_of_nonneg_left hbL2 hFactor)
   have hGlobal : (∫ x : ℝ in 0..U, q x) ≤ 3 * (U + K * (N : ℝ)) * S := by
     dsimp [q]
     rw [intervalIntegral.integral_add
       ((hgDiff.continuous.norm.fun_pow 2).const_mul 2 |>.intervalIntegrable
         (μ := MeasureTheory.volume) 0 U)
-      (hgdCont.norm.fun_pow 2 |>.intervalIntegrable (μ := MeasureTheory.volume) 0 U)]
-    rw [intervalIntegral.integral_const_mul]
+      (hgdCont.norm.fun_pow 2 |>.intervalIntegrable (μ := MeasureTheory.volume) 0 U), intervalIntegral.integral_const_mul]
     calc
       2 * (∫ x : ℝ in 0..U, ‖g x‖ ^ 2) +
           ∫ x : ℝ in 0..U, ‖deriv g x‖ ^ 2 ≤
           2 * ((U + K * (N : ℝ)) * S) + (U + K * (N : ℝ)) * S := by
-        exact add_le_add (mul_le_mul_of_nonneg_left hMain (by norm_num)) hDeriv
+        exact add_le_add (mul_le_mul_of_nonneg_left hMain (by norm_num)) (hDerivRaw.trans (mul_le_mul_of_nonneg_left hbL2 hFactor))
       _ = 3 * (U + K * (N : ℝ)) * S := by ring
   have hScale : U + K * (N : ℝ) ≤ (2 + K) * (T + (N : ℝ)) := by
-    have hNR : (0 : ℝ) < N := by exact_mod_cast hN
+    have hNR : 0 < N := by exact_mod_cast hN
     dsimp [U]
     nlinarith
   calc

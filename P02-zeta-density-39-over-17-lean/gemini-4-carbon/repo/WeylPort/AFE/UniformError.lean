@@ -165,8 +165,7 @@ theorem norm_critical_lower_integrals_uniform {x y t : ℝ}
 noncomputable def criticalAFEConstant : ℝ :=
   criticalPoissonConstant + 3 + 24/Real.pi + 1/(1-Real.exp (-Real.pi))
 
-theorem norm_chi_criticalPoint (t : ℝ) : ‖chi (criticalPoint t)‖ = 1 := by
-  exact norm_critical_chi_product t
+theorem norm_chi_criticalPoint (t : ℝ) : ‖chi (criticalPoint t)‖ = 1 := norm_critical_chi_product t
 
 /-- A bounded error for the actual zeta AFE, with an unrestricted dual cutoff. -/
 theorem norm_critical_afe_uniform {x y t : ℝ}

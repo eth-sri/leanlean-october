@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.ContinuousSecondDerivativeRange
 public import LaterPairs.Native.RobertSargosZeroRCurvature
 
@@ -51,7 +60,7 @@ theorem robertSargos_zero_r_second_derivative_prefix
     (fun x => robertSargosSymmetricDifference (iteratedDeriv 2 f) (x+q) h-
       robertSargosSymmetricDifference (iteratedDeriv 2 f) x h)
     A N hC (by positivity) hscale
-    (fun x hx => by simpa only [iteratedDeriv_zero] using hj 0 (by norm_num) x hx)
+    (fun x hx => by simpa using hj 0 (by norm_num) x hx)
     (fun x hx => hj 1 (by norm_num) x hx)
     (fun x hx => (hc x hx).1) (fun x hx => (hc x hx).2)
 

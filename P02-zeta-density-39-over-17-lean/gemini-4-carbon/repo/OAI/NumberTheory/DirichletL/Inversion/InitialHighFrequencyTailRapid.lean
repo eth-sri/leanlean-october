@@ -10,8 +10,7 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseInitialHighFrequencyTail
-open ActualEisensteinCubic ConcreteTraceCRT FirstPassCubeLabels SecondPassArithmetic
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
+open ActualEisensteinCubic ConcreteTraceCRT FirstPassCubeLabels SecondPassArithmetic InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
 local notation "O"=>ActualEisensteinCubic.O
 
 theorem original_physical_tail_rapid (Lcap saving τ : ℝ) (hτ : 0<τ) :
@@ -40,17 +39,14 @@ theorem original_physical_tail_rapid (Lcap saving τ : ℝ) (hτ : 0<τ) :
       C₀*Γ*B₁*B₂*s.sup (schwartzSeminormFamily ℝ ℝ ℂ) Φ*Z^(-saving) := by
   obtain ⟨A,hA⟩ := initial_tail_rapid_order Lcap saving τ hτ
   obtain ⟨s,C₀,hC₀,hraw⟩ := original_physical_tail A
-  let R : ℝ := ∑ρ : SecondRayIndex,‖secondRayCoefficient ρ‖
-  have hR : 0≤R := Finset.sum_nonneg (fun _ _=>norm_nonneg _)
+  let R := ∑ρ : SecondRayIndex,‖secondRayCoefficient ρ‖
   refine ⟨s,128^7*(R+1)*C₀,by positivity,?_⟩
   intro ι σ _ _ p hp _ hcop hg hinj hc Ψ hΨ j slots lists a hdis ha W₁ W₂ Φ
     Z D m L Γ B₁ B₂ hZ hL hcap hsize hm hmd hΓ hB₁ hB₂ hW₁ hW₂ pool S w
     hvalid hw hpool hnorm hleft hright htail
-  have hz : 0<Z := zero_lt_one.trans_le hZ
   have hb := hraw p hp hcop hg hinj hc Ψ hΨ j slots lists a hdis ha W₁ W₂ Φ
-    Z D m L (Z^τ) Γ B₁ B₂ hz hL (by positivity) hΓ hB₁ hB₂ hW₁ hW₂
+    Z D m L (Z^τ) Γ B₁ B₂ (zero_lt_one.trans_le hZ) hL (by positivity) hΓ hB₁ hB₂ hW₁ hW₂
     pool S w hvalid hw hpool hnorm hleft hright htail
-  have hs : 0≤s.sup (schwartzSeminormFamily ℝ ℝ ℂ) Φ := apply_nonneg _ _
   apply hb.trans
   calc
     _ = ((128*L)^7*Z^(m-D)/((min 1 (Z^m/L^3))^2*(1+Z^τ)^A))*

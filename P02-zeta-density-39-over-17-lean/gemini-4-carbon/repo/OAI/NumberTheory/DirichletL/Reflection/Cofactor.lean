@@ -6,9 +6,8 @@ public import OAI.NumberTheory.DirichletL.Reflection.Local
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
+open ActualEisensteinCubic CubicEisenstein CompletedGauss ConcreteTraceCRT LocalReflectionBrackets FiniteGaussPhase
 open scoped BigOperators Classical
-open ActualEisensteinCubic CubicEisenstein CompletedGauss ConcreteTraceCRT
-open LocalReflectionBrackets FiniteGaussPhase
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
@@ -40,9 +39,8 @@ theorem controlled_marked_phase [∀ i, (Ideal.span {p i}).IsMaximal]
   have he : Ideal.Quotient.mk (Ideal.span {p i}) (ramifiedTraceLambda^3*c0)*
       Ideal.Quotient.mk _ (cofactor p i)*(D.sigma i : Eis ⧸ Ideal.span {p i})*
       (D.epsilon i : Eis ⧸ Ideal.span {p i}) = -1 := by
-    simpa only [map_mul] using D.epsilon_value i
+    simpa using D.epsilon_value i
   rw [marked_local_phase _ _ _ _ _ _ he]
-  change _ = _
   simp only [markedPrimeScalar, cofactor, map_prod, Finset.prod_pow,
     MixedCrossSeparation.crossSymbol]
 
@@ -55,11 +53,11 @@ theorem controlled_residual_phase [∀ i, (Ideal.span {p i}).IsMaximal]
           ∏ k ∈ Finset.univ.erase i, MixedCrossSeparation.crossSymbol p hg i k ^ 4 := by
   have hs : (D.sigma i : Eis ⧸ Ideal.span {p i}) =
       Ideal.Quotient.mk _ (ramifiedTraceLambda^2*c0)*Ideal.Quotient.mk _ (cofactor p i) := by
-    simpa only [map_mul] using D.sigma_value i
+    simpa using D.sigma_value i
   have he : Ideal.Quotient.mk (Ideal.span {p i}) (ramifiedTraceLambda^3*c0)*
       Ideal.Quotient.mk _ (cofactor p i)*(D.sigma i : Eis ⧸ Ideal.span {p i})*
       (D.epsilon i : Eis ⧸ Ideal.span {p i}) = -1 := by
-    simpa only [map_mul] using D.epsilon_value i
+    simpa using D.epsilon_value i
   rw [residual_local_phase _ _ _ _ _ _ _ hs he]
   simp only [residualPrimeScalar, cofactor, map_prod, Finset.prod_pow,
     MixedCrossSeparation.crossSymbol]

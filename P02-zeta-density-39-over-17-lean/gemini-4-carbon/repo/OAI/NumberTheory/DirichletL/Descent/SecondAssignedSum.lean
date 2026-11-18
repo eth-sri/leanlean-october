@@ -12,8 +12,7 @@ variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
 
 omit [DecidableEq ι] [DecidableEq σ] in
 lemma indexedSlotAssignment_apply (I : Finset σ) (q : ∀ i ∈ I,ι) (i : σ) (hi : i ∈ I) :
-    indexedSlotAssignment I q (I.equivFin ⟨i,hi⟩) = q i hi := by
-  exact congrArg (fun j : I => q j.val j.property) ((I.equivFin).symm_apply_apply ⟨i,hi⟩)
+    indexedSlotAssignment I q (I.equivFin ⟨i,hi⟩) = q i hi := congrArg (fun j : I => q j.val j.property) ((I.equivFin).symm_apply_apply ⟨i,hi⟩)
 
 def eraseSecondSlots {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn) : MarkedSecondSource ι Jo 0 where
   cube := x.cube

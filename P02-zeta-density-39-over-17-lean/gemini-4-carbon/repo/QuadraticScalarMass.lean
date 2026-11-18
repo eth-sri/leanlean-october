@@ -20,9 +20,8 @@ lemma quadratic_mass_scalar {m P b k Z : ℝ}
       nlinarith only [hh',hZk]
     · have hmax : (m/P)/2 ≤ max (m/P-b) 0 := by
         exact (by linarith only [hh] : (m/P)/2 ≤ m/P-b).trans (le_max_left _ _)
-      have hmaxsq := pow_le_pow_left₀ (by positivity : 0 ≤ (m/P)/2) hmax 2
       have hbound : (max (m/P-b) 0)^2 ≤ Z/k := (le_div_iff₀ hk).mpr (by nlinarith only [hgate])
-      nlinarith only [hmaxsq,hbound,sq_nonneg b]
+      nlinarith only [(pow_le_pow_left₀ (by positivity : 0 ≤ (m/P)/2) hmax 2),hbound,sq_nonneg b]
   have he : P^2*(m/P)^2=m^2 := by field_simp
   calc
     _ = P^2*(m/P)^2 := he.symm

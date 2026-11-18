@@ -15,7 +15,7 @@ lemma PrimeFamily.level_coprime {ι : Type*} (P : PrimeFamily ι)
     (Q : Ideal Eis) (c : Eis) (hcQ : Ideal.span {c}=Ideal.span {(9:Eis)}*Q)
     (hQ : ∀ i, IsCoprime Q (P.ideal i)) (i : ι) :
     IsCoprime (Ideal.span {(9:Eis)*c}) (P.ideal i) := by
-  have h9 : IsCoprime (Ideal.span {(9:Eis)}) (P.ideal i) := by
+  have h9 : IsCoprime (Ideal.span {9}) (P.ideal i) := by
     rw [← P.generator_span i]
     apply (Ideal.isCoprime_span_singleton_iff _ _).mpr
     exact (ShortDraftCRT.primary_coprime_nine _ (P.generator_primary i)).symm

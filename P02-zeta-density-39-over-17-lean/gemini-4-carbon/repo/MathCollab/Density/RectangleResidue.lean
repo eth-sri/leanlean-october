@@ -34,11 +34,9 @@ theorem mem_Rect {z w : ℂ} (zRe_lt_wRe : z.re ≤ w.re) (zIm_lt_wIm : z.im ≤
   rw [Rectangle, uIcc_of_le zRe_lt_wRe, uIcc_of_le zIm_lt_wIm]
   exact and_assoc
 
-theorem Set.left_not_mem_uIoo {a b : ℝ} : a ∉ Set.uIoo a b :=
-  fun ⟨h1, h2⟩ ↦ (left_lt_sup.mp h2) (le_of_not_ge (inf_lt_left.mp h1))
+theorem Set.left_not_mem_uIoo {a b : ℝ} : a ∉ Set.uIoo a b := by simp
 
-theorem Set.right_not_mem_uIoo {a b : ℝ} : b ∉ Set.uIoo a b :=
-  fun ⟨h1, h2⟩ ↦ (right_lt_sup.mp h2) (le_of_not_ge (inf_lt_right.mp h1))
+theorem Set.right_not_mem_uIoo {a b : ℝ} : b ∉ Set.uIoo a b := by simp
 
 theorem Set.ne_left_of_mem_uIoo {a b c : ℝ} (hc : c ∈ Set.uIoo a b) : c ≠ a :=
   fun h ↦ Set.left_not_mem_uIoo (h ▸ hc)
@@ -67,15 +65,7 @@ theorem rectangle_mem_nhds_iff {z w p : ℂ} :
   simp_rw [← mem_interior_iff_mem_nhds, Rectangle, Complex.interior_reProdIm, uIoo, uIcc,
     interior_Icc]
 
-theorem mapsTo_rectangleBorder_left_re (z w : ℂ) :
-    MapsTo (fun (y : ℝ) => ↑z.re + ↑y * I) [[z.im, w.im]] (RectangleBorder z w) :=
-  (Set.mapsTo_image _ _).mono subset_rfl fun _ ↦
-    by simp_all [verticalSegment_eq, RectangleBorder]
 
-theorem mapsTo_rectangleBorder_right_re (z w : ℂ) :
-    MapsTo (fun (y : ℝ) => ↑w.re + ↑y * I) [[z.im, w.im]] (RectangleBorder z w) :=
-  (Set.mapsTo_image _ _).mono subset_rfl fun _ ↦
-    by simp_all [verticalSegment_eq, RectangleBorder]
 
 theorem mapsTo_rectangleBorder_left_im (z w : ℂ) :
     MapsTo (fun (x : ℝ) => ↑x + z.im * I) [[z.re, w.re]] (RectangleBorder z w) :=
@@ -165,8 +155,10 @@ theorem ContinuousOn.rectangleBorder_integrable (hf : ContinuousOn f (RectangleB
     RectangleBorderIntegrable f z w :=
   ⟨(hf.comp (by fun_prop) (mapsTo_rectangleBorder_left_im z w)).intervalIntegrable,
     (hf.comp (by fun_prop) (mapsTo_rectangleBorder_right_im z w)).intervalIntegrable,
-    (hf.comp (by fun_prop) (mapsTo_rectangleBorder_right_re z w)).intervalIntegrable,
-    (hf.comp (by fun_prop) (mapsTo_rectangleBorder_left_re z w)).intervalIntegrable⟩
+    (hf.comp (by fun_prop) (((Set.mapsTo_image _ _).mono subset_rfl fun _ ↦
+    by simp_all [verticalSegment_eq, RectangleBorder]))).intervalIntegrable,
+    (hf.comp (by fun_prop) (((Set.mapsTo_image _ _).mono subset_rfl fun _ ↦
+    by simp_all [verticalSegment_eq, RectangleBorder]))).intervalIntegrable⟩
 
 omit [NormedSpace ℂ E] in
 theorem ContinuousOn.rectangleBorderIntegrable (hf : ContinuousOn f (Rectangle z w)) :
@@ -202,8 +194,7 @@ theorem Complex.inv_re_add_im : (x + y * I)⁻¹ = (x - I * y) / (x ^ 2 + y ^ 2)
   rw [Complex.inv_def, div_eq_mul_inv]
   congr <;> simp [conj_ofReal, normSq] <;> ring
 
-theorem sq_add_sq_ne_zero (hy : y ≠ 0) : x ^ 2 + y ^ 2 ≠ 0 := by
-  linarith [sq_nonneg x, sq_pos_iff.mpr hy]
+theorem sq_add_sq_ne_zero (hy : y ≠ 0) : x ^ 2 + y ^ 2 ≠ 0 := by positivity
 
 theorem continuous_self_div_sq_add_sq (hy : y ≠ 0) :
     Continuous fun x => x / (x ^ 2 + y ^ 2) :=
@@ -278,20 +269,15 @@ theorem ResidueTheoremAtOrigin' {z w c : ℂ}
     (h1 : z.re < 0) (h2 : z.im < 0) (h3 : 0 < w.re) (h4 : 0 < w.im) :
     RectangleIntegral (fun s => c / s) z w = 2 * I * π * c := by
   simp only [RectangleIntegral, HIntegral, VIntegral, smul_eq_mul]
-  rw [integral_const_div_re_add_self h1.ne, integral_const_div_re_add_self h3.ne.symm]
-  rw [integral_const_div_self_add_im h2.ne, integral_const_div_self_add_im h4.ne.symm]
+  rw [integral_const_div_re_add_self h1.ne, integral_const_div_re_add_self h3.ne.symm, integral_const_div_self_add_im h2.ne, integral_const_div_self_add_im h4.ne.symm]
   have l1 : z.im * w.re⁻¹ = (w.re * z.im⁻¹)⁻¹ := by group
-  have l3 := arctan_inv_of_neg <| mul_neg_of_pos_of_neg h3 <| inv_lt_zero.mpr h2
   have l4 : w.im * z.re⁻¹ = (z.re * w.im⁻¹)⁻¹ := by group
-  have l6 := arctan_inv_of_neg <| mul_neg_of_neg_of_pos h1 <| inv_pos.mpr h4
   have r1 : z.im * z.re⁻¹ = (z.re * z.im⁻¹)⁻¹ := by group
-  have r3 := arctan_inv_of_pos <| mul_pos_of_neg_of_neg h1 <| inv_lt_zero.mpr h2
   have r4 : w.im * w.re⁻¹ = (w.re * w.im⁻¹)⁻¹ := by group
-  have r6 := arctan_inv_of_pos <| mul_pos h3 <| inv_pos.mpr h4
   ring_nf
   simp only [one_div, inv_I, mul_neg, neg_mul, I_sq, neg_neg, arctan_neg, ofReal_neg,
     sub_neg_eq_add]
-  rw [l1, l3, l4, l6, r1, r3, r4, r6]
+  rw [l1, (arctan_inv_of_neg <| mul_neg_of_pos_of_neg h3 <| inv_lt_zero.mpr h2), l4, (arctan_inv_of_neg <| mul_neg_of_neg_of_pos h1 <| inv_pos.mpr h4), r1, (arctan_inv_of_pos <| mul_pos_of_neg_of_neg h1 <| inv_lt_zero.mpr h2), r4, (arctan_inv_of_pos <| mul_pos h3 <| inv_pos.mpr h4)]
   ring_nf
   simp only [I_sq, ofReal_sub, ofReal_mul, ofReal_ofNat, ofReal_div, ofReal_neg, ofReal_one]
   ring_nf
@@ -321,8 +307,6 @@ theorem ResidueTheoremOnRectangleWithSimplePole {f g : ℂ → ℂ} {z w p A : �
         disjoint_singleton_right.mpr
           (not_mem_rectangleBorder_of_rectangle_mem_nhds pInRectInterior)⟩
   rw [RectangleIntegral'_congr this]
-  have t1 : RectangleBorderIntegrable g z w :=
-    gHolo.rectangleBorderIntegrable
   have t2 : HolomorphicOn (fun s ↦ A / (s - p)) (Rectangle z w \ {p}) := by
     apply DifferentiableOn.mono (t := {p}ᶜ)
     · apply DifferentiableOn.div
@@ -333,10 +317,7 @@ theorem ResidueTheoremOnRectangleWithSimplePole {f g : ℂ → ℂ} {z w p A : �
           exact hx
     · rintro s ⟨_, hs⟩
       exact hs
-  have t3 : RectangleBorderIntegrable (fun s ↦ A / (s - p)) z w :=
-    HolomorphicOn.rectangleBorderIntegrable' t2 pInRectInterior
-  rw [RectangleIntegral', RectangleBorderIntegrable.add t1 t3, smul_add]
-  rw [gHolo.vanishesOnRectangle (by rfl), smul_zero, zero_add]
+  rw [RectangleIntegral', RectangleBorderIntegrable.add (gHolo.rectangleBorderIntegrable) (HolomorphicOn.rectangleBorderIntegrable' t2 pInRectInterior), smul_add, gHolo.vanishesOnRectangle (by rfl), smul_zero, zero_add]
   exact ResidueTheoremInRectangle zRe_le_wRe zIm_le_wIm pInRectInterior
 
 

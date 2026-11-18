@@ -8,82 +8,14 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 
 namespace CubicEisenstein
 
 section
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups Matrix Pointwise
-
 open CubicKubota
+open scoped MatrixGroups Matrix Pointwise
 local notation "O" => ActualEisensteinCubic.O
 
 lemma globalKubotaKernel_conjugate_mem (M : levelThree) (N : globalKubotaKernel) :
@@ -180,10 +112,8 @@ lemma kernelLevelAction_measurePreserving (M : levelThree) :
 
 end
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
-
 open CubicKubota
+open scoped MatrixGroups
 
 def kernelLevelPullback (M : levelThree) : KernelQuotientL2 →ₗᵢ[ℂ] KernelQuotientL2 :=
   Lp.compMeasurePreservingₗᵢ ℂ (kernelLevelAction M) (kernelLevelAction_measurePreserving M)
@@ -198,9 +128,8 @@ lemma kernelLevelPullback_of_remainder_ae (M : levelThree) (a b : ℝ) (s : ℂ)
     (hF : F=ᵐ[integralQuotientVolume globalKubotaKernel]
       fun q => kernelQuotientEisenstein s hs q-kernelQuotientSeed a b s q) :
     kernelLevelPullback M F=complexCharacter M • F := by
-  have hcomp := (kernelLevelAction_measurePreserving M).quasiMeasurePreserving.ae_eq_comp hF
   apply Lp.ext
-  filter_upwards [kernelLevelPullback_ae_eq M F,hcomp,hF,Lp.coeFn_smul (complexCharacter M) F]
+  filter_upwards [kernelLevelPullback_ae_eq M F,((kernelLevelAction_measurePreserving M).quasiMeasurePreserving.ae_eq_comp hF),hF,Lp.coeFn_smul (complexCharacter M) F]
     with q hp hc hf hsmul
   change _=complexCharacter M*F q at hsmul
   rw [hp,hsmul,hf]
@@ -242,12 +171,11 @@ lemma thetaApproach_tendsto_complex_punctured :
       (𝓝[>] (0:ℝ)) (𝓝[≠] (4/3:ℂ)) := by
   apply tendsto_nhdsWithin_iff.mpr
   constructor
-  · have hh : Continuous (fun t : ℝ => (4/3:ℂ)+(t:ℂ)+(t:ℂ)*Complex.I) := by fun_prop
-    have ht := (hh.tendsto 0).mono_left (show 𝓝[>] (0:ℝ)≤𝓝 0 from nhdsWithin_le_nhds)
-    simpa only [Complex.ofReal_zero,zero_mul,add_zero] using ht
+  · have hh : Continuous (fun t : ℝ => (4/3)+(t:ℂ)+(t:ℂ)*Complex.I) := by fun_prop
+    have ht := (hh.tendsto 0).mono_left (show 𝓝[>] 0≤𝓝 0 from nhdsWithin_le_nhds)
+    simpa using ht
   · filter_upwards [self_mem_nhdsWithin] with t ht
     change 0<t at ht
-    change (4/3:ℂ)+(t:ℂ)+(t:ℂ)*Complex.I≠(4/3:ℂ)
     intro he
     have him := congrArg Complex.im he
     simp at him
@@ -261,19 +189,17 @@ lemma kernelEisensteinResidueVector_character_of_initial_overlap (M : levelThree
     kernelLevelPullback M (kernelEisensteinResidueVector a b ha hab)=
       complexCharacter M • kernelEisensteinResidueVector a b ha hab := by
   have hlim := (kernelEisensteinResidueVector_limit a b ha hab).comp thetaApproach_tendsto_complex_punctured
-  have hl := (kernelLevelPullback M).continuous.continuousAt.tendsto.comp hlim
-  have hr := hlim.const_smul (complexCharacter M)
   have hevent :
       (fun t : ℝ => kernelLevelPullback M
-        (((4/3:ℂ)+(t:ℂ)+(t:ℂ)*Complex.I-4/3) •
-          kernelEisensteinL2Correction a b ha hab ((4/3:ℂ)+(t:ℂ)+(t:ℂ)*Complex.I)))
-      =ᶠ[𝓝[>] (0:ℝ)]
+        (((4/3)+(t:ℂ)+(t:ℂ)*Complex.I-4/3) •
+          kernelEisensteinL2Correction a b ha hab ((4/3)+(t:ℂ)+(t:ℂ)*Complex.I)))
+      =ᶠ[𝓝[>] 0]
       (fun t : ℝ => complexCharacter M •
-        (((4/3:ℂ)+(t:ℂ)+(t:ℂ)*Complex.I-4/3) •
-          kernelEisensteinL2Correction a b ha hab ((4/3:ℂ)+(t:ℂ)+(t:ℂ)*Complex.I))) := by
+        (((4/3)+(t:ℂ)+(t:ℂ)*Complex.I-4/3) •
+          kernelEisensteinL2Correction a b ha hab ((4/3)+(t:ℂ)+(t:ℂ)*Complex.I))) := by
     filter_upwards [self_mem_nhdsWithin] with t ht
     change 0<t at ht
-    have hs : (4/3:ℂ)+(t:ℂ)+(t:ℂ)*Complex.I∈cuspUpperParameterRegion := by
+    have hs : (4/3)+(t:ℂ)+(t:ℂ)*Complex.I∈cuspUpperParameterRegion := by
       simp only [cuspUpperParameterRegion,Set.mem_ofPred_eq,Complex.add_re,Complex.add_im,
         Complex.mul_re,Complex.mul_im,Complex.ofReal_re,Complex.ofReal_im,Complex.I_re,
         Complex.I_im,mul_zero,mul_one,sub_zero,add_zero]
@@ -281,7 +207,7 @@ lemma kernelEisensteinResidueVector_character_of_initial_overlap (M : levelThree
       exact ht
     rw [map_smul,kernelCorrection_character_of_initial_overlap M a b ha hab hoverlap _ hs]
     exact smul_comm _ _ _
-  exact tendsto_nhds_unique_of_eventuallyEq hl hr hevent
+  exact tendsto_nhds_unique_of_eventuallyEq ((kernelLevelPullback M).continuous.continuousAt.tendsto.comp hlim) (hlim.const_smul (complexCharacter M)) hevent
 
 lemma kernelCuspAverageFamily_eq_of_initial_overlap (a b : ℝ) (ha : 0<a) (hab : a<b)
     (s : ℂ) (hs : 2<s.re)
@@ -295,12 +221,9 @@ lemma kernelCuspAverageFamily_eq_of_initial_overlap (a b : ℝ) (ha : 0<a) (hab 
     change kernelQuotientSeed a b s q+kernelEisensteinL2Correction a b ha hab s q=_
     rw [hq]
     ring
-  have hm := kernelProjection_cuspPeriodStrip_measurePreserving 5 6 (by norm_num)
-  have hrestr := ae_restrict_of_ae hcorrected (s := kernelCuspStripSet)
-  have hp := hm.quasiMeasurePreserving.ae_eq_comp hrestr
   rw [kernelCuspAverageFamily_actual_integral]
   apply integral_congr_ae
-  filter_upwards [hp] with w hw
+  filter_upwards [((kernelProjection_cuspPeriodStrip_measurePreserving 5 6 (by norm_num)).quasiMeasurePreserving.ae_eq_comp (ae_restrict_of_ae hcorrected (s := kernelCuspStripSet)))] with w hw
   exact hw.trans (kernelQuotientEisenstein_mk s hs w)
 
 lemma kernelEisensteinResidueVector_nonzero_character_of_initial_overlap (a b : ℝ)
@@ -320,9 +243,7 @@ lemma kernelEisensteinResidueVector_nonzero_character_of_initial_overlap (a b : 
 
 end CubicEisenstein
 
-open scoped BigOperators
 namespace QuadraticAllOddCRT
-open ActualEisensteinCubic
 open QuadraticGaussRay hiding O
 open ActualEisensteinCoordinates hiding O omega
 open EisensteinEPrimaryPhase (Coord odd)
@@ -415,18 +336,15 @@ theorem quadraticRayValue_mul (r s : Coord) (hr : odd r) (hs : odd s) :
 
 end QuadraticAllOddCRT
 
-open scoped BigOperators Classical
 namespace CanonicalRowCompletion
 
 section
-open ActualEisensteinCubic
 open CompletedGauss hiding O
 open CanonicalQuadraticSieve hiding O
 open CubicJacobiGlobal hiding O
 open QuadraticGaussRay hiding O
 open QuadraticAllOddCRT
 open ActualEisensteinCoordinates hiding O omega
-open UniqueFactorizationMonoid
 
 lemma supported_factors_good (I : Ideal ActualEisensteinCubic.O) (hI : Supported I) :
     ∀P∈normalizedFactors I,P.IsMaximal ∧ lambda∉P ∧ ringChar (ActualEisensteinCubic.O⧸P)≠2 := by
@@ -435,8 +353,7 @@ lemma supported_factors_good (I : Ideal ActualEisensteinCubic.O) (hI : Supported
   exact ⟨(Ideal.isPrime_of_prime hp).isMaximal hp.ne_zero,hI.2 P hP⟩
 
 lemma idealRowHom_one_supported (I : Ideal ActualEisensteinCubic.O) (hI : Supported I) : idealRowHom 1 I=1 := by
-  have h := CanonicalUnitEuler.idealRowHom_unit_norm (1:ActualEisensteinCubic.Oˣ) I hI.1 (supported_factors_good I hI)
-  simpa using h
+  simpa using (CanonicalUnitEuler.idealRowHom_unit_norm (1:ActualEisensteinCubic.Oˣ) I hI.1 (supported_factors_good I hI))
 
 lemma supported_prime_data (p : ActualEisensteinCubic.O) (hp : Prime p) (hs : Supported (Ideal.span {p})) :
     lambda∉(Ideal.span {p}:Ideal ActualEisensteinCubic.O) ∧ ringChar (ActualEisensteinCubic.O⧸Ideal.span {p})≠2 := by
@@ -497,7 +414,6 @@ theorem idealRowHom_prime_reciprocity (p q : ActualEisensteinCubic.O) (hp : Prim
 
 end
 
-open ActualEisensteinCubic
 open CompletedGauss hiding O
 open CanonicalQuadraticSieve hiding O
 open CubicJacobiGlobal hiding O

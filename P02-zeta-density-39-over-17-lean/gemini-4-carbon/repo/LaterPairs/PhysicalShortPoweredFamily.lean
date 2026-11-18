@@ -11,8 +11,7 @@ open scoped BigOperators Topology ComplexConjugate
 set_option autoImplicit false
 noncomputable section
 namespace Montgomery.RationalMoment.RightDetector.Physical
-open MathCollab.Density.Stronger
-open MathCollab.Density
+open MathCollab.Density.Stronger MathCollab.Density
 
 /- This bound is fixed by sigma and delta, before T and any zero. -/
 /- The complete finite powered family, restricted by scale conditions that
@@ -38,7 +37,7 @@ theorem mem_smoothPoweredIndices {a δ T : ℝ} {q : (ℤ × ℕ × ℕ) × ℕ 
 
 theorem smoothTaylorIndices_card_eventually {σ a : ℝ} (hw : PhysicalDetectorWindow σ a) :
     ∀ᶠ T : ℝ in atTop, ((smoothTaylorIndices a T).card : ℝ) ≤ 144*(Real.log T)^2 := by
-  filter_upwards [eventually_ge_atTop (1 : ℝ), Real.tendsto_log_atTop.eventually_ge_atTop 1,
+  filter_upwards [eventually_ge_atTop 1, Real.tendsto_log_atTop.eventually_ge_atTop 1,
     log_sq_eventually_le_height] with T hT hlog hsq
   have hYlo : 1 ≤ detectorY a T := Real.one_le_rpow hT (smoothingExponent_pos_physical hw).le
   have hYhi : detectorY a T ≤ T := by
@@ -78,14 +77,14 @@ theorem smoothPoweredFamily_admissible {σ a η : ℝ}
       (smoothPoweredFamilyScale q : ℝ) ≤ (2 : ℝ)^(smoothPowerBound a δ)*T^(smoothingExponent a) ∧
       (smoothPoweredFamilyScale q : ℝ) ≤ T ∧
       ∀ n : ℕ, ‖smoothPoweredFamilyCoefficient η a δ T q n‖ ≤ 1 := by
-  filter_upwards [eventually_ge_atTop (1 : ℝ),
-    fixed_scale_factor_eventually_below_height (C := (2 : ℝ)^(smoothPowerBound a δ)) (smoothingExponent_lt_one_physical hw),
+  filter_upwards [eventually_ge_atTop 1,
+    fixed_scale_factor_eventually_below_height (C := 2^(smoothPowerBound a δ)) (smoothingExponent_lt_one_physical hw),
     normalizedSmoothPoweredCoefficient_eventually hη (smoothPowerBound a δ)] with T hT hupper hnorm
   intro q hq
   obtain ⟨_, _, hkK, hl, hlo, hhi⟩ := mem_smoothPoweredIndices.mp hq
   have hs := bounded_power_piece_scales (Nat.cast_nonneg (smoothHalfScale q.1.1 q.1.2.1)) hkK hl hlo hhi
   have he : (smoothPoweredFamilyScale q : ℝ) =
-      (2 : ℝ)^q.2.2*(smoothHalfScale q.1.1 q.1.2.1 : ℝ)^q.2.1 := by
+      2^q.2.2*(smoothHalfScale q.1.1 q.1.2.1 : ℝ)^q.2.1 := by
     simp [smoothPoweredFamilyScale]
   refine ⟨by rw [he]; exact hs.1, by rw [he]; exact hs.2, ?_, ?_⟩
   · rw [he]
@@ -119,7 +118,7 @@ theorem smooth_long_or_short_powered_cover {σ a δ η : ℝ}
   · have hc : smoothingExponent a/2 = 3*a/4 := by unfold smoothingExponent; ring
     obtain ⟨k, hk, hkK, hklo, hkhi⟩ := hpower (smoothHalfScale p.1 p.2.1)
       hlo (by rw [← hc]; exact hhi)
-    have hkK' : k ≤ smoothPowerBound a δ := hkK
+    have hkK' := hkK
     have hupper : (smoothHalfScale p.1 p.2.1 : ℝ)^k ≤ T^(smoothingExponent a) := by
       simpa only [smoothingExponent] using hkhi
     obtain ⟨l, hl, hh⟩ := hheight σ (detectorX δ T) (detectorY a T) ρ.im

@@ -5,31 +5,13 @@ public import LaterPairs.Native.HuxleyCore.Part05
 
 set_option autoImplicit false
 set_option maxHeartbeats 0
-set_option maxErrors 1000
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
-open Filter
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
-open Polynomial
-open Set
-open scoped Classical
-open scoped ContDiff
-open scoped FourierTransform BigOperators
-open scoped Topology
-open Filter
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
-open Polynomial
-open Set
-open scoped Classical
-open scoped ContDiff
-open scoped FourierTransform BigOperators
-open scoped Topology
+open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth Filter Polynomial Set
+open scoped Classical ContDiff FourierTransform BigOperators Topology
 universe huxleyNarrowV
 noncomputable section
 namespace TaoTrudgianYang2025.HuxleyRationalPhase
+open Filter Set Expdb TaoTrudgianYang2025
 open scoped BigOperators FourierTransform Classical ContDiff NNReal
-open Filter
-open Set Expdb TaoTrudgianYang2025
-open scoped BigOperators FourierTransform ContDiff Classical NNReal
 
 
 public  theorem capped_short_nonAsymptotic_of_window_margins
@@ -510,9 +492,8 @@ theorem exponentSumGrowthExponent_le_huxley_fourthPair_shortRange
   have hden : 0<(17604372:ℝ)/60424193-(890:ℝ)/3277 := by norm_num
   have ht : t∈Icc (0:ℝ) 1 := by
     refine ⟨div_nonneg (sub_nonneg.mpr hα) hden.le,?_⟩
-    exact (div_le_one hden).mpr (by linarith only [hα₁])
+    exact (div_le_one hden).mpr (by linarith)
   have hαeq : (α:ℝ)=(1-t)*(890/3277)+t*(17604372/60424193) := by
-    dsimp only [t]
     ring
   exact Expdb.exponentSumGrowthExponent_le_iff_nonAsymptotic.mpr
     (fourth_pair_capped_short_nonAsymptotic ht hαeq)

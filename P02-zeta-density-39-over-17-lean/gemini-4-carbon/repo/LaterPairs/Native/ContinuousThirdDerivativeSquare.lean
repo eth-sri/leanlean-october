@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.ContinuousThirdDerivativeWeyl
 public import LaterPairs.Native.ThirdDerivativeFloor
 public import LaterPairs.Native.ThirdDerivativeRootScale
@@ -28,7 +37,6 @@ theorem continuous_third_derivative_square_bound
     (hhi : ∀ x ∈ Icc A (A+N), F''' x ≤ C*μ) :
     ‖∑ n ∈ Finset.range N, fordAdditiveCharacter (F (A+n))‖^2 ≤
       52*C*(N:ℝ)^2/R+384*N*R := by
-  have hRp : 0 < R := zero_lt_one.trans_le hR
   by_cases hRN : R ≤ N
   · obtain ⟨hpos,hHN,hlow,hupper,hHμ⟩ :=
       third_derivative_floor_shift N hR hRN hμ hscale
@@ -36,16 +44,13 @@ theorem continuous_third_derivative_square_bound
       (zero_le_one.trans hC) hμ hHμ hF hF' hF'' hlo hhi
     have hn := third_derivative_weyl_normalize (H := (⌊R⌋₊:ℝ)) (Nat.cast_nonneg N)
       (by exact_mod_cast hpos) (by exact_mod_cast hHN) (zero_le_one.trans hC) hμ
-      (by simpa only [Nat.cast_add] using hb)
-    exact third_derivative_optimized_square_scale (Nat.cast_nonneg N) hRp hC hμ
+      (by simpa using hb)
+    exact third_derivative_optimized_square_scale (Nat.cast_nonneg N) (zero_lt_one.trans_le hR) hC hμ
       hlow hupper hscale hn
   · have hNR : (N:ℝ) ≤ R := (lt_of_not_ge hRN).le
     have htriv :
         ‖∑ n ∈ Finset.range N, fordAdditiveCharacter (F (A+n))‖ ≤ N := by
-      calc
-        _ ≤ ∑ n ∈ Finset.range N, ‖fordAdditiveCharacter (F (A+n))‖ :=
-          norm_sum_le _ _
-        _ = N := by simp [fordAdditiveCharacter,Complex.norm_exp]
+      exact (norm_sum_le _ _).trans_eq (by simp [fordAdditiveCharacter,Complex.norm_exp])
     have hsq := pow_le_pow_left₀ (norm_nonneg _) htriv 2
     have hNRmul := mul_le_mul_of_nonneg_left hNR (Nat.cast_nonneg (α := ℝ) N)
     have hpositive : 0 ≤ 52*C*(N:ℝ)^2/R := by positivity

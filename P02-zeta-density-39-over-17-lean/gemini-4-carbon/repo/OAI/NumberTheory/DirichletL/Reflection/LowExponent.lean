@@ -54,16 +54,11 @@ theorem original_surviving_low_exponent
   intro hscale hret hsurv
   let G := (poolPrimeFamily J Q Q₀).restrict A
   let j := fun b : A => completedLocalExponent J F b.val.val
-  have hz : 1<Z := lt_of_lt_of_le hZ₀ hZ
-  have hpair := (poolPrimeFamily J Q Q₀).restrict_pairwise (poolPrimeFamily_pairwise J Q Q₀) A
-  obtain ⟨hv,hell,hel,hwidth⟩ := hgates G hpair j column e Z X QK QP δ i hZ hX hK hP hret hsurv
+  have hz := lt_of_lt_of_le hZ₀ hZ
+  obtain ⟨hv,hell,hel,hwidth⟩ := hgates G ((poolPrimeFamily J Q Q₀).restrict_pairwise (poolPrimeFamily_pairwise J Q Q₀) A) j column e Z X QK QP δ i hZ hX hK hP hret hsurv
   rw [←heH,←heza,←heN] at hwidth
   have hH := physical_residual_width I Q hI Z (5/6-2*d) O₀ H Ck CO CH hz hCk hCO hCH hIn hPow hRow
   have hA := original_optional_powerful_width J I Q Q₀ hJ hI hQ hpower hmask A Z hz
-  have hN0 := normWidth_nonneg Z hz _ (frozenExtracted_ne_zero G j e 1)
-  have hS0 := normWidth_nonneg Z hz _ (frozenExtracted_ne_zero G j e 0)
-  have hB0 := normWidth_nonneg Z hz _ (frozenExtracted_ne_zero G j e 2)
-  have hNA := frozenExtracted_width_le G j e 1 Z hz
   have ht := ProbeLowReflected.compensated_reflected_exponent_with_length d ell0 O₀ H
     (normWidth Z (∏ b,G.ideal b)) (normWidth Z (frozenExtracted G j e 1))
     (normWidth Z (frozenExtracted G j e 0)) (normWidth Z (frozenExtracted G j e 2)) za
@@ -71,7 +66,7 @@ theorem original_surviving_low_exponent
     (Real.logb Z (((2:ℝ)^i.2.1)/Ideal.absNorm (frozenExtracted G j e 2)))
     (ramifiedWidth Z i.1) shift (5*η)
     hd hd1 (by positivity) (by linarith) (by linarith) (by linarith)
-    hN0 hNA hS0 hB0 (by linarith) (by linarith) (by linarith) (by linarith) (by linarith) (hshift.trans (by linarith)) ?_
+    (normWidth_nonneg Z hz _ (frozenExtracted_ne_zero G j e 1)) (frozenExtracted_width_le G j e 1 Z hz) (normWidth_nonneg Z hz _ (frozenExtracted_ne_zero G j e 0)) (normWidth_nonneg Z hz _ (frozenExtracted_ne_zero G j e 2)) (by linarith) (by linarith) (by linarith) (by linarith) (by linarith) (hshift.trans (by linarith)) ?_
   · have hb := retained_extracted_log_budget (familyRawScale G s X QK QP) Z δ Lscale Lrow Lslot η
       (kK*QK) (kP*QP) (familyRawScale_pos G s hc₀ X QK QP hX hK hP) hz
       (mul_pos hkK hK) (mul_pos hkP hP) hscale hconst hrowcap hslotcap i hret

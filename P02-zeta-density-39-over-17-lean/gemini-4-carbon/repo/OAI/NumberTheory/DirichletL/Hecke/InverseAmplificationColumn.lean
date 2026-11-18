@@ -30,8 +30,7 @@ theorem prime_reciprocal_identity (χ ψ : Character) (P : SmoothMobiusCorrectio
   have hχ := LFunction_ne_zero_of_one_lt_re χ hs
   have hψ := LFunction_ne_zero_of_one_lt_re ψ hs
   apply (mul_right_cancel₀ hψ)
-  rw [mul_assoc,inv_mul_cancel₀ hψ,mul_one,hL]
-  rw [←mul_assoc,inv_mul_cancel₀ hχ,one_mul]
+  rw [mul_assoc,inv_mul_cancel₀ hψ,mul_one,hL, ←mul_assoc,inv_mul_cancel₀ hχ,one_mul]
 
 lemma rescaled_power (D N : ℝ) (hD : 0<D) (hN : 0<N) (w : ℂ) :
     (D : ℂ)^(w-(1/2 : ℂ))*(N : ℂ)^(-w)=
@@ -39,10 +38,8 @@ lemma rescaled_power (D N : ℝ) (hD : 0<D) (hN : 0<N) (w : ℂ) :
   rw [Complex.cpow_def_of_ne_zero (Complex.ofReal_ne_zero.mpr hD.ne'),
     Complex.cpow_def_of_ne_zero (Complex.ofReal_ne_zero.mpr hN.ne'),
     Complex.cpow_def_of_ne_zero (Complex.ofReal_ne_zero.mpr hN.ne'),
-    Complex.cpow_def_of_ne_zero (Complex.ofReal_ne_zero.mpr (div_pos hD hN).ne')]
-  rw [←Complex.ofReal_log hD.le,←Complex.ofReal_log hN.le,
-    ←Complex.ofReal_log (div_pos hD hN).le,Real.log_div hD.ne' hN.ne']
-  rw [←Complex.exp_add,←Complex.exp_add]
+    Complex.cpow_def_of_ne_zero (Complex.ofReal_ne_zero.mpr (div_pos hD hN).ne'), ←Complex.ofReal_log hD.le,←Complex.ofReal_log hN.le,
+    ←Complex.ofReal_log (div_pos hD hN).le,Real.log_div hD.ne' hN.ne', ←Complex.exp_add,←Complex.exp_add]
   congr 1
   push_cast
   ring

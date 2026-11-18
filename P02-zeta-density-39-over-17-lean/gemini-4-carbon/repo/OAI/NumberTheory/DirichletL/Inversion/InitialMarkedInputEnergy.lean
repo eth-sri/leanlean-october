@@ -1,5 +1,6 @@
 module
-public import OAI.NumberTheory.DirichletL.Inversion.InitialOverlapEnergy
+public import OAI.NumberTheory.DirichletL.Inversion.InitialOverlapInputFourier
+public import OAI.NumberTheory.DirichletL.Descent.CommonMeasure
 
 @[expose] public section
 
@@ -7,12 +8,10 @@ namespace OAI
 
 noncomputable section
 
+open MeasureTheory FourierBridge ActualEisensteinCubic FirstCauchyArithmetic SecondPassArithmetic FirstPassCubeLabels
 open scoped BigOperators Classical SchwartzMap FourierTransform
-open MeasureTheory FourierBridge ActualEisensteinCubic FirstCauchyArithmetic SecondPassArithmetic
-open FirstPassCubeLabels
 namespace SevenEighths.InverseInitialMarkedInputEnergy
-open InverseMoment InverseInitialOverlapFourier
-open InverseInitialRayAttachment InverseInitialArithmetic
+open InverseMoment InverseInitialOverlapFourier InverseInitialRayAttachment InverseInitialArithmetic
 local notation "Eis"=>ActualEisensteinCubic.O
 variable {ι σ:Type*} [DecidableEq ι] [DecidableEq σ]
   (p:ι→Eis) [∀i,(Ideal.span {p i}).IsMaximal]

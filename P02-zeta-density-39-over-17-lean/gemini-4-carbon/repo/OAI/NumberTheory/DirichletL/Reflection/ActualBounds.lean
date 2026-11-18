@@ -30,8 +30,7 @@ lemma two_block_phase_bounds (F : PrimeFamily φ) (S : PrimeFamily σ) (jF : φ 
     simpa only [PrimeFamily.generator_span] using hcop
   have hch : ∀ i, ringChar (Eis ⧸ Ideal.span {(F.sum S).generator i}) ≠ 2 := by
     intro i
-    have he := congrArg (fun I : Ideal Eis => ringChar (Eis ⧸ I)) ((F.sum S).generator_span i)
-    exact he.symm ▸ hchar i
+    exact (congrArg (fun I : Ideal Eis => ringChar (Eis ⧸ I)) ((F.sum S).generator_span i)).symm ▸ hchar i
   have hd : Disjoint (Finset.univ.image (Sum.inr : σ → φ ⊕ σ)) (Finset.univ.image Sum.inl) := by
     simp only [Finset.disjoint_left,Finset.mem_image,Finset.mem_univ,true_and]
     rintro i ⟨k,rfl⟩ ⟨f,h⟩
@@ -62,9 +61,8 @@ lemma actualRowPhase_norm_le_one (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admi
     cases i with
     | inl f => exact hcharF f
     | inr P => exact (hK.2.2 P.val (Multiset.mem_toFinset.mp P.property)).2
-  have hh := (two_block_phase_bounds F (PrimeFamily.residual K hK) jF s hc hN hbase hac hcp hNp hchar u m).1
   unfold actualRowPhase
-  convert hh using 1 ; congr 2 <;> ext i <;> simp
+  convert ((two_block_phase_bounds F (PrimeFamily.residual K hK) jF s hc hN hbase hac hcp hNp hchar u m).1) using 1 ; congr 2 <;> ext i <;> simp
 
 lemma actualFrozenPhase_norm_le_one (F : PrimeFamily φ) (jF : φ → ℕ) (κ : ℂ) (hκ : ‖κ‖ ≤ 1)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode))
@@ -79,8 +77,7 @@ lemma actualFrozenPhase_norm_le_one (F : PrimeFamily φ) (jF : φ → ℕ) (κ :
     simpa only [PrimeFamily.generator_span] using hF
   have hch : ∀ i, ringChar (Eis ⧸ Ideal.span {F.generator i}) ≠ 2 := by
     intro i
-    have he := congrArg (fun I : Ideal Eis => ringChar (Eis ⧸ I)) (F.generator_span i)
-    exact he.symm ▸ hcharF i
+    exact (congrArg (fun I : Ideal Eis => ringChar (Eis ⧸ I)) (F.generator_span i)).symm ▸ hcharF i
   rw [actualFrozenPhase,norm_mul,norm_mul,norm_star,
     frozenCore_norm D _ _ hch hcp _ _ (fun i _ => hj i),ramifiedBlock_norm,mul_one,mul_one]
   exact hκ

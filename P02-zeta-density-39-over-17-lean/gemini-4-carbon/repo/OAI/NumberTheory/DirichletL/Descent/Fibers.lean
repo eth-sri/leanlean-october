@@ -47,13 +47,10 @@ theorem finite_expansion_energy {κ ι : Type*} [DecidableEq ι]
         C * ∑ i ∈ active k, ‖F k i‖ ^ 2 := by
     have hb : ‖∑ i ∈ active k, w k i * F k i‖ ^ 2 ≤
         ((active k).card : ℝ) * ∑ i ∈ active k, ‖w k i * F k i‖ ^ 2 := by
-      calc
-        _ ≤ (∑ i ∈ active k, ‖w k i * F k i‖) ^ 2 :=
-          pow_le_pow_left₀ (norm_nonneg _) (norm_sum_le _ _) 2
-        _ ≤ _ := by
-          simpa only [one_mul, one_pow, Finset.sum_const, nsmul_eq_mul, mul_one] using
-            Finset.sum_mul_sq_le_sq_mul_sq (active k) (fun _ => (1 : ℝ))
-              (fun i => ‖w k i * F k i‖)
+      exact (pow_le_pow_left₀ (norm_nonneg _) (norm_sum_le _ _) 2).trans (by
+          simpa using
+            Finset.sum_mul_sq_le_sq_mul_sq (active k) (fun _ => 1)
+              (fun i => ‖w k i * F k i‖))
     have hsum : (∑ i ∈ active k, ‖w k i * F k i‖ ^ 2) ≤
         ∑ i ∈ active k, ‖F k i‖ ^ 2 := by
       apply Finset.sum_le_sum

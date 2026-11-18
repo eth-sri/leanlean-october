@@ -8,8 +8,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentDivisorRectangle
-open CenteredMomentDivisorAllocation CenteredMomentDivisorExtraction CenteredMomentDivisorTensor
-open CenteredMomentHeckeExpansion CenteredMomentMask CenteredMomentRectangle HeckeFamily
+open CenteredMomentDivisorAllocation CenteredMomentDivisorExtraction CenteredMomentDivisorTensor CenteredMomentHeckeExpansion CenteredMomentMask CenteredMomentRectangle HeckeFamily
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
@@ -42,7 +41,7 @@ theorem double_selected_reindex (D₁ D₂ : Ideal O) (h₁ : D₁ ≠ 0) (h₂ 
       (if D₁∣I then (1:ℂ) else 0)*(if D₂∣J then 1 else 0)*F I J) =
       ∑' I : Ideal O,∑' J : Ideal O,F (D₁*I) (D₂*J) := by
   have he (I J : Ideal O) :
-      (if D₁∣I then (1:ℂ) else 0)*(if D₂∣J then 1 else 0)*F I J =
+      (if D₁∣I then 1 else 0)*(if D₂∣J then 1 else 0)*F I J =
         if D₁∣I then (if D₂∣J then F I J else 0) else 0 := by
     split_ifs <;> simp
   simp_rw [he]

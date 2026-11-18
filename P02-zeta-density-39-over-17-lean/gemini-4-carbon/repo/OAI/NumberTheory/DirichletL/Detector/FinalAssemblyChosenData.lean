@@ -1,5 +1,5 @@
 module
-public import OAI.NumberTheory.DirichletL.Detector.FinalAssembly
+public import OAI.NumberTheory.DirichletL.Detector.FinalAssemblyFixedHigh
 public import OAI.NumberTheory.DirichletL.ParametersHighDataFine
 
 @[expose] public section
@@ -53,7 +53,7 @@ theorem chosen_data_height {Δ:ℝ}(D:HighData Δ)(F:SourceData D)
   intro η
   obtain ⟨C,hC,hbound⟩:=hbound η
   refine ⟨C*2^J,by positivity,?_⟩
-  filter_upwards [hbound τ hτ htau1,eventually_ge_atTop (1:ℝ)] with Z hb hZ
+  filter_upwards [hbound τ hτ htau1,eventually_ge_atTop 1] with Z hb hZ
   exact hb.mono_constant (by linarith)
     (polynomial_height_absorption C Z τ J D.t hC.le hZ hτ.le hJ (by linarith))
 

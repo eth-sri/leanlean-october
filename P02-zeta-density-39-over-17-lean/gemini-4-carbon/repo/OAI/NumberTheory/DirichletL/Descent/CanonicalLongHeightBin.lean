@@ -10,10 +10,7 @@ noncomputable section
 
 open scoped BigOperators Classical SchwartzMap ContDiff
 namespace SevenEighths.InverseMoment
-open MeasureTheory ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
-open CanonicalQuadraticSieve CanonicalCubeSeparation FirstPassCubeLabels SecondPassArithmetic
-open InverseMomentFirstLabelCell InverseMomentFirstSecondHeightCost CompletedHeight
-open FourierBridge JointLogSeparation
+open MeasureTheory ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge CanonicalQuadraticSieve CanonicalCubeSeparation FirstPassCubeLabels SecondPassArithmetic InverseMomentFirstLabelCell InverseMomentFirstSecondHeightCost CompletedHeight FourierBridge JointLogSeparation
 local notation "O"=>ActualEisensteinCubic.O
 
 theorem actual_marked_bin_height
@@ -86,30 +83,22 @@ theorem actual_marked_bin_height
   refine ⟨Ccoef,C*Cm,hCcoef,mul_nonneg hC hCm,?_⟩
   intro theta σ _ S D hbad hSp
   let F:=InitialMeanSquare.outsideSquarefreeIdeals S D
-  have hF:=InitialMeanSquare.outsideSquarefree_admissible S D hbad
   let : ∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal:=
-    fun i=>by rw [poolPrimary_span F hF i];infer_instance
+    fun i=>by rw [poolPrimary_span F (InitialMeanSquare.outsideSquarefree_admissible S D hbad) i];infer_instance
   dsimp only
   intro Q labels Ψ m slots lists weights Z M r ell V H₀ pi epschild A loss lossFinal
     hZ hbins hbinExp hM hFcap hMcap hell hV hr hbZ hQlo hQhi hrcap hellcap hVcap hwin
     hpi hpieta hemcost hedcost hechild hsave hloss hcard hpar hprincipal hretained htail
     hΨ hA hsf hn hlabels hslots hweights hD hleft hright
   have hT:=CanonicalRowCompletion.normTwistedSource_contDiff W a₀ b₀ ha₀ hsW hW theta
-  have hsT:Function.support (normTwistedSource W theta)⊆Set.Icc a₀ b₀:=
-    (normTwistedSource_support W theta).trans hsW
-  have hbnd:=hbin (normTwistedSource W theta) hsT hT S D hbad hSp
+  have hbnd:=hbin (normTwistedSource W theta) ((normTwistedSource_support W theta).trans hsW) hT S D hbad hSp
     Q labels Ψ m slots lists weights Z M r ell V H₀ pi epschild A loss lossFinal
     hZ hbins hbinExp hM hFcap hMcap hell hV hr hbZ hQlo hQhi hrcap hellcap hVcap hwin
     hpi hpieta hemcost hedcost hechild hsave hloss hcard hpar hprincipal hretained htail
     hΨ hA hsf hn hlabels hslots hweights hD hleft hright
   have hz:0<Z:=by linarith
   apply hbnd.trans
-  calc
-    _ ≤ C*(Ccoef*(Real.exp 1*Z^ell)^epsFirst)^2*(1+A)*Z^(r+3*ell+V+lossFinal)*
-        (Cm*(1+‖theta‖)^(2*(InverseClippingProfiles.momentOrder (firstDegree degree)+
-          (volume:Measure ℝ).integrablePower))) :=
-      mul_le_mul_of_nonneg_left (hmoment theta hT) (by positivity)
-    _ = _ := by ring
+  exact (mul_le_mul_of_nonneg_left (hmoment theta hT) (by positivity)).trans_eq (by ring)
 
 end SevenEighths.InverseMoment
 

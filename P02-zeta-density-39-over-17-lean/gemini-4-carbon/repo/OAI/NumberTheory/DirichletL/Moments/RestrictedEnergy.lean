@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical SchwartzMap
 namespace SevenEighths.CenteredMomentRestrictedEnergy
-open CanonicalQuadraticSieve CanonicalRowCompletion CenteredMomentRowNorm
-open CenteredMomentPlainEnergy CenteredMomentPlainChildEnergy CenteredMomentCauchy CenteredMomentSmooth
-open ConcreteTraceCRT
+open CanonicalQuadraticSieve CanonicalRowCompletion CenteredMomentRowNorm CenteredMomentPlainEnergy CenteredMomentPlainChildEnergy CenteredMomentCauchy CenteredMomentSmooth ConcreteTraceCRT
 local notation "O" => ActualEisensteinCubic.O
 
 def restrictedEnergy {α : Type*} (keep : O → Prop) (S : Finset α) (a : α → O)
@@ -55,7 +53,7 @@ theorem finite_negative_energy_le_restricted {α : Type*} (keep : O → Prop)
   have he := finite_energy_le_restricted keep S a ha c W K hK (rows.image Neg.neg)
     (by intro z hz; obtain ⟨w,hw,rfl⟩ := Finset.mem_image.mp hz; exact hkeep w hw) hW
     (by intro z hz; obtain ⟨w,hw,rfl⟩ := Finset.mem_image.mp hz
-        simpa only [map_neg,norm_neg] using hmajor w hw)
+        simpa using hmajor w hw)
   rwa [Finset.sum_image (fun x hx y hy hxy => neg_injective hxy)] at he
 
 def nonexceptional (η : HeckeFamily.Character) (χ : RayFourExpansion.RayCharacter)
@@ -80,7 +78,7 @@ theorem nonexceptional_ray_independent (η : HeckeFamily.Character)
     nonexceptional η χ Q m A₀ z ↔ nonexceptional η ξ Q m A₀ z := by
   have h₁ := nonexceptional_reflection η χ ξ Q hQ m A₀ z hmLam hm2
   have h₂ := nonexceptional_reflection η ξ ξ Q hQ m A₀ (-z) hmLam hm2
-  simpa only [neg_neg] using h₁.trans h₂
+  simpa using h₁.trans h₂
 
 theorem whole_kernel_restricted_child_bound (W : 𝓢(ℝ, ℂ)) (V : Fin 4 → ℝ → ℂ)
     (M : Fin 4 → ℝ) (hM : ∀ i, 0 ≤ M i)
@@ -120,17 +118,8 @@ theorem whole_kernel_restricted_child_bound (W : 𝓢(ℝ, ℂ)) (V : Fin 4 → 
     (fun i => c i * columnPhase (V 2) (u i) t) U K hK rows hkeep₁ hU hmajor).trans (hleft t)
   have hR' := (finite_negative_energy_le_restricted keep₂ T b hb
     (fun j => d j * star (columnPhase (V 3) (v j) t)) U K hK rows hkeep₂ hU hmajor).trans (hright t)
-  have hl : Real.sqrt (∑ z ∈ rows,
-      ‖rowPolynomial S a (fun i => c i * columnPhase (V 2) (u i) t) z‖ ^ 2) ≤
-      E₁ * (1 + ‖t‖) ^ J₁ := (Real.sqrt_le_iff).mpr ⟨by positivity, hL⟩
-  have hr : Real.sqrt (∑ z ∈ rows,
-      ‖rowPolynomial T b (fun j => d j * star (columnPhase (V 3) (v j) t)) (-z)‖ ^ 2) ≤
-      E₂ * (1 + ‖t‖) ^ J₂ := (Real.sqrt_le_iff).mpr ⟨by positivity, hR'⟩
   simp only [leftColumn_eq_rowPolynomial, rightColumn_eq_star_rowPolynomial, norm_star]
-  calc
-    _ ≤ (E₁ * (1 + ‖t‖) ^ J₁) * (E₂ * (1 + ‖t‖) ^ J₂) :=
-      mul_le_mul hl hr (Real.sqrt_nonneg _) (by positivity)
-    _ = _ := by rw [pow_add]; ring
+  exact (mul_le_mul ((Real.sqrt_le_iff).mpr ⟨by positivity, hL⟩) ((Real.sqrt_le_iff).mpr ⟨by positivity, hR'⟩) (Real.sqrt_nonneg _) (by positivity)).trans_eq (by rw [pow_add]; ring)
 
 end SevenEighths.CenteredMomentRestrictedEnergy
 

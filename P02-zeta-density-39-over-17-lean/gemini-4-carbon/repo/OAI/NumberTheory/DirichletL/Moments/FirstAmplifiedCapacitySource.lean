@@ -12,18 +12,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstAmplifiedCapacitySource
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge ActualEisensteinCubic
-open CenteredMomentSourceLiveColumn
-open CenteredMomentFirstAmplifiedCapacityRadius CenteredMomentSecondCapacitySourceShift
-open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum
-open CenteredMomentCommonProfile CenteredMomentCommonRawScale
-open CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps
-open CenteredMomentFirstAmplificationChoice CenteredMomentSectorLocalization
-open CenteredMomentFirstPhysicalSource CenteredMomentSecondHeightFamily
-open CenteredMomentFirstCanonicalFamily CenteredMomentFirstScale CenteredMomentCanonicalFirst
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonical
-open CenteredMomentSecondCanonicalScalar CenteredMomentSecondRadicalBudget
-open CenteredMomentAmplifiedRetainedRadius
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge ActualEisensteinCubic CenteredMomentSourceLiveColumn CenteredMomentFirstAmplifiedCapacityRadius CenteredMomentSecondCapacitySourceShift CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentCommonProfile CenteredMomentCommonRawScale CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps CenteredMomentFirstAmplificationChoice CenteredMomentSectorLocalization CenteredMomentFirstPhysicalSource CenteredMomentSecondHeightFamily CenteredMomentFirstCanonicalFamily CenteredMomentFirstScale CenteredMomentCanonicalFirst CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonical CenteredMomentSecondCanonicalScalar CenteredMomentSecondRadicalBudget CenteredMomentAmplifiedRetainedRadius
 local notation "O"=>HeckeFamily.O
 variable {ι:Type*}[Fintype ι]
 local instance {κ:Type*}:DecidableEq κ:=Classical.decEq _
@@ -47,8 +36,7 @@ theorem inherited_affine_parent (s:Input ι)(C _R:Ideal O)(B:actualAllocations s
     Real.logb Z (volume s)+(6*κ-1)*
       (∑i:CenteredMomentCommonProfile.liveIndices B.val,Real.logb Z (s.P i))≤M := by
   have hp:=CenteredMomentEnergyInputParentCapacity.input_affine_capacity s Z κ M hZ hcap
-  have hs:=CenteredMomentAllocatedChildCapacity.common_slot_logs_le s C B Z hZ hP
-  have hh:=mul_le_mul_of_nonneg_left hs (by linarith:0≤6*κ-1)
+  have hh:=mul_le_mul_of_nonneg_left (CenteredMomentAllocatedChildCapacity.common_slot_logs_le s C B Z hZ hP) (by linarith:0≤6*κ-1)
   linarith
 
 end SevenEighths.CenteredMomentFirstAmplifiedCapacitySource

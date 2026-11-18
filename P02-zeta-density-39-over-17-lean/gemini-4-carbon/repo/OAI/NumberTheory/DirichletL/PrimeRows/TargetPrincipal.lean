@@ -38,10 +38,8 @@ theorem principal_target_row_norm_bound (η : Character) (u : FreeRow)
     (hs : Supported (Ideal.span {u.val})) (hp : (targetRow η u).residue=1) :
     rowNorm u≤(HeckeExceptionalRows.bound (targetPrincipalSupport η):ℝ) := by
   obtain ⟨v,hv⟩ := exists_supported_primary_unit u.val hs
-  let r : O := (v:O)*u.val
-  have hspan : (Ideal.span {r}:Ideal O)=Ideal.span {u.val} :=
-    Ideal.span_singleton_mul_left_unit v.isUnit u.val
-  have hr : Supported (Ideal.span {r}) := hspan.symm ▸ hs
+  let r := (v:O)*u.val
+  have hspan := Ideal.span_singleton_mul_left_unit v.isUnit u.val
   have hx : (1:O)^4*u.val=(v⁻¹:Oˣ).val*λ₀^0*(2:O)^0*r := by simp [r]
   let η0 := (fixedSourcePrincipal ∅ (by simp)).product η.inverse
   have hmod : η0.modulus=η.modulus := by
@@ -52,7 +50,7 @@ theorem principal_target_row_norm_bound (η : Character) (u : FreeRow)
     rw [hp,inv_one]
   have hfixed := HeckeRowNonprincipal.principal_row_fixed_support η0 (targetRow η u).inverse
     rowMaskElement 1 u.val rowMaskElement_ne_zero (dvd_mul_left _ _) (dvd_mul_right _ _)
-    v⁻¹ 0 0 r hr hv hx (inverse_target_elementCoeff η u) hinv (fun P _=>hspan.symm ▸ u.property.2 P)
+    v⁻¹ 0 0 r (hspan.symm ▸ hs) hv hx (inverse_target_elementCoeff η u) hinv (fun P _=>hspan.symm ▸ u.property.2 P)
   rw [hmod] at hfixed
   have hn := HeckeExceptionalRows.row_norm_bound (targetPrincipalSupport η) (targetPrincipalSupport_prime η) hfixed
   rw [hspan] at hn
@@ -67,8 +65,7 @@ theorem excluded_target_nonprincipal_eventually (η : Character) (d : ℝ) (hd :
     (eventually_gt_atTop (HeckeExceptionalRows.bound (targetPrincipalSupport η):ℝ))]
     with Z hZ u hu hs S hS
   intro hp
-  have hp' := (HeckeFiniteDeletion.principal_iff_of_mask _ _ (excludePrimes_mask (targetRow η u) S hS)).mp hp
-  exact not_lt_of_ge (principal_target_row_norm_bound η u hs hp') (hZ.trans_le hu)
+  exact not_lt_of_ge (principal_target_row_norm_bound η u hs ((HeckeFiniteDeletion.principal_iff_of_mask _ _ (excludePrimes_mask (targetRow η u) S hS)).mp hp)) (hZ.trans_le hu)
 
 end SevenEighths.ProbeHighRowFamily
 

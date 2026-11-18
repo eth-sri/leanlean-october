@@ -34,15 +34,11 @@ theorem whole_cube_marked_test_uniform (ε : ℝ) (hε : 0<ε) :
   intro ι σ _ _ p hp _ hcop slots lists a hslots ha extra test E G L hE hG hL he hb hs U
   by_cases hz : test U=0
   · simp only [hz,mul_zero,norm_zero];positivity
-  have hnorm : primeProductNorm p (extra∪U)≤E*L :=
-    (primeProductNorm_union_le_mul p hp extra U).trans
+  have hnorm := (primeProductNorm_union_le_mul p hp extra U).trans
       (mul_le_mul he (hs U hz) (primeProductNorm_pos p hp U).le hE)
   have hnorm0 := (primeProductNorm_pos p hp (extra∪U)).le
   rw [norm_mul]
-  calc
-    _ ≤ (Cm*(primeProductNorm p (extra∪U))^ε)*G :=
-      mul_le_mul (hmark p hp hcop slots lists a hslots ha _) (hb U) (norm_nonneg _) (by positivity)
-    _ ≤ _ := by gcongr
+  exact (mul_le_mul (hmark p hp hcop slots lists a hslots ha _) (hb U) (norm_nonneg _) (by positivity)).trans (by gcongr)
 
 end
 end SevenEighths.InverseMoment

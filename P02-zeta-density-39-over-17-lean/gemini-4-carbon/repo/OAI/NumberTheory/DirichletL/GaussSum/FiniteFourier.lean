@@ -8,17 +8,11 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
+open MulChar AddChar Filter Asymptotics MeasureTheory Real
+open scoped BigOperators Topology FourierTransform SchwartzMap
 
 namespace ShortDraftFiniteGaussFourier
 open scoped Classical
-open AddChar MulChar
 variable {F : Type*} [Field F] [Fintype F]
 
 theorem gauss_transform (χ : MulChar F ℂ) (ψ : AddChar F ℂ)
@@ -81,10 +75,8 @@ theorem cubic_roots_surjective (ρ : R →+* F) (ζ : R)
   have hη : ((η : Fˣ) : F) ^ 3 = 1 := by
     exact (mem_rootsOfUnity' 3 (η : Fˣ)).mp η.property
   obtain ⟨j, _, hj⟩ := hζF.eq_pow_of_pow_eq_one hη
-  let z : rootsOfUnity 3 R := rootsOfUnity.mkOfPowEq ζ hζ.pow_eq_one
-  refine ⟨z ^ j, ?_⟩
+  refine ⟨(rootsOfUnity.mkOfPowEq ζ hζ.pow_eq_one) ^ j, ?_⟩
   apply rootsOfUnity.coe_injective
-  change ρ (ζ ^ j) = ((η : Fˣ) : F)
   rw [map_pow]
   exact hj
 
@@ -113,7 +105,6 @@ private theorem euler_jacobi_sum_zero (m : ℕ)
   apply Finset.sum_eq_zero
   intro j hj
   have he : m + (m - j) < Fintype.card F - 1 := by
-    have hle : m - j ≤ m := Nat.sub_le m j
     omega
   calc
     (∑ x : F, x ^ m * ((-x) ^ (m - j) * ↑(m.choose j))) =
@@ -154,8 +145,7 @@ theorem cubicResidueChar_reduce_unit (ρ : R →+* F) (ζ : R)
   simp only [cubicResidueChar, MulChar.ofUnitHom_coe, MonoidHom.comp_apply]
   change ρ (((e.symm (euler_to_roots m hq u) : rootsOfUnity 3 R) : Rˣ) : R) =
     (u : F) ^ m
-  have he := e.apply_symm_apply (euler_to_roots m hq u)
-  have he' := congrArg (fun v : rootsOfUnity 3 F => ((v : Fˣ) : F)) he
+  have he' := congrArg (fun v : rootsOfUnity 3 F => ((v : Fˣ) : F)) (e.apply_symm_apply (euler_to_roots m hq u))
   change ρ (((e.symm (euler_to_roots m hq u) : rootsOfUnity 3 R) : Rˣ) : R) =
     (((euler_to_roots m hq u : rootsOfUnity 3 F) : Fˣ) : F) at he'
   change ρ (((e.symm (euler_to_roots m hq u) : rootsOfUnity 3 R) : Rˣ) : R) =
@@ -171,9 +161,7 @@ theorem cubicResidueChar_pow_three (ρ : R →+* F) (ζ : R)
   rw [(cubicResidueChar ρ ζ hζ hζF m hq).pow_apply_coe,
     MulChar.one_apply_coe]
   simp only [cubicResidueChar, MulChar.ofUnitHom_coe, MonoidHom.comp_apply]
-  let v : rootsOfUnity 3 R :=
-    (cubic_roots_equiv ρ ζ hζ hζF).symm (euler_to_roots m hq u)
-  change (((v : Rˣ) : R) ^ 3) = 1
+  let v := (cubic_roots_equiv ρ ζ hζ hζF).symm (euler_to_roots m hq u)
   exact (mem_rootsOfUnity' 3 (v : Rˣ)).mp v.property
 
 end ActualCubicChar
@@ -201,8 +189,7 @@ noncomputable instance quotientFintype (P : Ideal O) [P.IsMaximal] :
 noncomputable instance quotientField (P : Ideal O) [P.IsMaximal] :
     Field (O ⧸ P) := Ideal.Quotient.field P
 
-theorem omega_primitive : IsPrimitiveRoot omega 3 := by
-  exact (IsCyclotomicExtension.zeta_spec 3 ℚ K).toInteger_isPrimitiveRoot
+theorem omega_primitive : IsPrimitiveRoot omega 3 := (IsCyclotomicExtension.zeta_spec 3 ℚ K).toInteger_isPrimitiveRoot
 
 def traceLambda : O := 1 + 2 * omega
 
@@ -237,10 +224,8 @@ theorem card_sub_one_div_three (P : Ideal O) [P.IsMaximal]
   let : Field (O ⧸ P) := Ideal.Quotient.field P
   let : Fintype (O ⧸ P) := Fintype.ofFinite _
   let hζ := omega_reduced_primitive P hgood
-  let u : (O ⧸ P)ˣ := (hζ.isUnit (by decide)).unit
-  have hu : IsPrimitiveRoot u 3 := hζ.isUnit_unit (by decide)
-  have h := orderOf_dvd_natCard u
-  rw [← hu.eq_orderOf] at h
+  have h := orderOf_dvd_natCard ((hζ.isUnit (by decide)).unit)
+  rw [← (hζ.isUnit_unit (by decide)).eq_orderOf] at h
   simpa only [Nat.card_eq_fintype_card, Fintype.card_units] using h
 
 noncomputable def cubicChar (P : Ideal O) [P.IsMaximal]
@@ -292,10 +277,8 @@ theorem cubicChar_pow_three (P : Ideal O) [P.IsMaximal]
   let : Fintype (O ⧸ P) := Fintype.ofFinite _
   let m := (Fintype.card (O ⧸ P) - 1) / 3
   have hq : Fintype.card (O ⧸ P) - 1 = m * 3 :=
-    (Nat.div_mul_cancel (by simpa only [Nat.card_eq_fintype_card] using
+    (Nat.div_mul_cancel (by simpa using
       card_sub_one_div_three P hgood)).symm
-  change ActualCubicChar.cubicResidueChar (Ideal.Quotient.mk P) omega
-    omega_primitive (omega_reduced_primitive P hgood) m hq ^ 3 = 1
   exact ActualCubicChar.cubicResidueChar_pow_three
     (Ideal.Quotient.mk P) omega omega_primitive
     (omega_reduced_primitive P hgood) m hq
@@ -327,9 +310,7 @@ theorem cubicChar_ne_one (P : Ideal O) [P.IsMaximal]
 
 theorem cubicChar_order (P : Ideal O) [P.IsMaximal]
     (hgood : lambda ∉ P) : orderOf (cubicChar P hgood) = 3 := by
-  have hdvd : orderOf (cubicChar P hgood) ∣ 3 :=
-    orderOf_dvd_of_pow_eq_one (cubicChar_pow_three P hgood)
-  rcases (Nat.dvd_prime Nat.prime_three).mp hdvd with h1 | h3
+  rcases (Nat.dvd_prime Nat.prime_three).mp (orderOf_dvd_of_pow_eq_one (cubicChar_pow_three P hgood)) with h1 | h3
   · exact False.elim ((cubicChar_ne_one P hgood) (orderOf_eq_one_iff.mp h1))
   · exact h3
 
@@ -366,42 +347,6 @@ theorem cubicJacobi_mem_prime (P : Ideal O) [P.IsMaximal]
   simp only [Nat.card_eq_fintype_card]
   exact ActualCubicChar.euler_jacobi_sum_zero m hm
 
-theorem cubicJacobi_product (P : Ideal O) [P.IsMaximal]
-    (hgood : lambda ∉ P) :
-    jacobiSum (cubicChar P hgood) (cubicChar P hgood) *
-      jacobiSum (cubicChar P hgood)⁻¹ (cubicChar P hgood)⁻¹ =
-        (Nat.card (O ⧸ P) : O) := by
-  classical
-  let : Field (O ⧸ P) := Ideal.Quotient.field P
-  let : Fintype (O ⧸ P) := Fintype.ofFinite _
-  let ι : O →+* K := algebraMap O K
-  let ψ := (cubicChar P hgood).ringHomComp ι
-  have hchar : ringChar K ≠ ringChar (O ⧸ P) := by
-    rw [ringChar.eq_zero]
-    exact (CharP.char_is_prime (O ⧸ P) (ringChar (O ⧸ P))).ne_zero.symm
-  have hψ : ψ ≠ 1 :=
-    (MulChar.ringHomComp_ne_one_iff RingOfIntegers.coe_injective).mpr
-      (cubicChar_ne_one P hgood)
-  have hχ2 : cubicChar P hgood * cubicChar P hgood ≠ 1 := by
-    intro h
-    have hd : orderOf (cubicChar P hgood) ∣ 2 := by
-      rw [← pow_two] at h
-      exact orderOf_dvd_of_pow_eq_one h
-    rw [cubicChar_order P hgood] at hd
-    norm_num at hd
-  have hψ2 : ψ * ψ ≠ 1 := by
-    rw [show ψ * ψ =
-      (cubicChar P hgood * cubicChar P hgood).ringHomComp ι by
-        exact (MulChar.ringHomComp_mul _ _ _).symm]
-    exact (MulChar.ringHomComp_ne_one_iff RingOfIntegers.coe_injective).mpr hχ2
-  have hprod := jacobiSum_mul_jacobiSum_inv hchar hψ hψ hψ2
-  apply RingOfIntegers.coe_injective
-  change ι (jacobiSum (cubicChar P hgood) (cubicChar P hgood) *
-      jacobiSum (cubicChar P hgood)⁻¹ (cubicChar P hgood)⁻¹) =
-    ι (Nat.card (O ⧸ P) : O)
-  rw [map_mul, ← jacobiSum_ringHomComp, ← jacobiSum_ringHomComp,
-    ← MulChar.ringHomComp_inv]
-  simpa only [ψ, Nat.card_eq_fintype_card, map_natCast] using hprod
 
 noncomputable def conjK : K ≃ₐ[ℚ] K :=
   IsCyclotomicExtension.fromZetaAut
@@ -413,8 +358,6 @@ noncomputable def conjO : O ≃+* O :=
 
 theorem conjO_omega : conjO omega = omega ^ 2 := by
   apply RingOfIntegers.coe_injective
-  change conjK (IsCyclotomicExtension.zeta 3 ℚ K) =
-    (IsCyclotomicExtension.zeta 3 ℚ K) ^ 2
   exact IsCyclotomicExtension.fromZetaAut_spec
     ((IsCyclotomicExtension.zeta_spec 3 ℚ K).pow_of_coprime 2 (by decide))
     (Polynomial.cyclotomic.irreducible_rat (by decide))
@@ -459,7 +402,32 @@ theorem cubicJacobi_mul_conj (P : Ideal O) [P.IsMaximal]
       conjO (jacobiSum (cubicChar P hgood) (cubicChar P hgood)) =
         (Nat.card (O ⧸ P) : O) := by
   rw [cubicJacobi_conj P hgood]
-  exact cubicJacobi_product P hgood
+  classical
+    let : Field (O ⧸ P) := Ideal.Quotient.field P
+    let : Fintype (O ⧸ P) := Fintype.ofFinite _
+    let ι : O →+* K := algebraMap O K
+    let ψ := (cubicChar P hgood).ringHomComp ι
+    have hchar : ringChar K ≠ ringChar (O ⧸ P) := by
+      rw [ringChar.eq_zero]
+      exact (CharP.char_is_prime (O ⧸ P) (ringChar (O ⧸ P))).ne_zero.symm
+    have hψ := (MulChar.ringHomComp_ne_one_iff RingOfIntegers.coe_injective).mpr
+        (cubicChar_ne_one P hgood)
+    have hχ2 : cubicChar P hgood * cubicChar P hgood ≠ 1 := by
+      intro h
+      have hd : orderOf (cubicChar P hgood) ∣ 2 := by
+        rw [← pow_two] at h
+        exact orderOf_dvd_of_pow_eq_one h
+      rw [cubicChar_order P hgood] at hd
+      norm_num at hd
+    have hψ2 : ψ * ψ ≠ 1 := by
+      rw [show ψ * ψ =
+        (cubicChar P hgood * cubicChar P hgood).ringHomComp ι by
+          exact (MulChar.ringHomComp_mul _ _ _).symm]
+      exact (MulChar.ringHomComp_ne_one_iff RingOfIntegers.coe_injective).mpr hχ2
+    apply RingOfIntegers.coe_injective
+    rw [map_mul, ← jacobiSum_ringHomComp, ← jacobiSum_ringHomComp,
+      ← MulChar.ringHomComp_inv]
+    simpa using (jacobiSum_mul_jacobiSum_inv hchar hψ hψ hψ2)
 
 end
 
@@ -470,13 +438,6 @@ noncomputable def quadraticCharO (P : Ideal O) [P.IsMaximal] :
   letI : Fintype (O ⧸ P) := Fintype.ofFinite _
   exact (quadraticChar (O ⧸ P)).ringHomComp (Int.castRingHom O)
 
-theorem quadraticCharO_sq (P : Ideal O) [P.IsMaximal] :
-    quadraticCharO P ^ 2 = 1 := by
-  classical
-  let : Field (O ⧸ P) := Ideal.Quotient.field P
-  let : Fintype (O ⧸ P) := Fintype.ofFinite _
-  change ((quadraticChar (O ⧸ P)).ringHomComp (Int.castRingHom O)) ^ 2 = 1
-  exact ((quadraticChar_isQuadratic (O ⧸ P)).comp (Int.castRingHom O)).sq_eq_one
 
 noncomputable def sexticChar (P : Ideal O) [P.IsMaximal]
     (hgood : lambda ∉ P) : MulChar (O ⧸ P) O :=
@@ -488,7 +449,11 @@ theorem sexticChar_powers (P : Ideal O) [P.IsMaximal]
     sexticChar P hgood ^ 3 = quadraticCharO P ∧
     sexticChar P hgood ^ 6 = 1 := by
   have hc := cubicChar_pow_three P hgood
-  have hq := quadraticCharO_sq P
+  have hq : quadraticCharO P ^ 2 = 1 := by
+    classical
+      let : Field (O ⧸ P) := Ideal.Quotient.field P
+      let : Fintype (O ⧸ P) := Fintype.ofFinite _
+      exact ((quadraticChar_isQuadratic (O ⧸ P)).comp (Int.castRingHom O)).sq_eq_one
   let c := cubicChar P hgood
   let q := quadraticCharO P
   have htwo : (c ^ 2 * q) ^ 2 = c := by
@@ -508,13 +473,10 @@ theorem sexticChar_powers (P : Ideal O) [P.IsMaximal]
 
 theorem lambda_not_dvd_two : ¬ lambda ∣ (2 : O) := by
   let : Fact (Nat.Prime 3) := ⟨Nat.prime_three⟩
-  have hprime : Prime lambda :=
-    (IsCyclotomicExtension.zeta_spec 3 ℚ K).zeta_sub_one_prime'
-  let I : Ideal O := Ideal.span {lambda}
+  have hprime := (IsCyclotomicExtension.zeta_spec 3 ℚ K).zeta_sub_one_prime'
+  let I := Ideal.span {lambda}
   have hI : I.IsMaximal := by
-    have hp : I.IsPrime := Ideal.isPrime_span_singleton_of_prime hprime
-    have hne : I ≠ ⊥ := Ideal.span_singleton_eq_bot.not.mpr hprime.ne_zero
-    exact hp.isMaximal hne
+    exact (Ideal.isPrime_span_singleton_of_prime hprime).isMaximal (Ideal.span_singleton_eq_bot.not.mpr hprime.ne_zero)
   let : I.IsMaximal := hI
   let : Field (O ⧸ I) := Ideal.Quotient.field I
   let : Fintype (O ⧸ I) := Fintype.ofFinite _
@@ -526,12 +488,9 @@ theorem lambda_not_dvd_two : ¬ lambda ∣ (2 : O) := by
         (by decide)]
     norm_num
   intro hdiv
-  have hmem : (2 : O) ∈ I := (Ideal.mem_span_singleton).mpr hdiv
-  have hzero : (2 : O ⧸ I) = 0 := (Ideal.Quotient.eq_zero_iff_mem).mpr hmem
   have hchar : ringChar (O ⧸ I) = 2 := by
-    have hdvd : ringChar (O ⧸ I) ∣ 2 := (ringChar.spec (O ⧸ I) 2).mp hzero
     exact (Nat.prime_dvd_prime_iff_eq
-      (CharP.char_is_prime (O ⧸ I) (ringChar (O ⧸ I))) Nat.prime_two).mp hdvd
+      (CharP.char_is_prime (O ⧸ I) (ringChar (O ⧸ I))) Nat.prime_two).mp ((ringChar.spec (O ⧸ I) 2).mp ((Ideal.Quotient.eq_zero_iff_mem).mpr ((Ideal.mem_span_singleton).mpr hdiv)))
   have heven := FiniteField.even_card_of_char_two hchar
   rw [← Nat.card_eq_fintype_card, hcard] at heven
   norm_num at heven
@@ -546,8 +505,7 @@ private theorem conjK_ne_refl : conjK ≠ AlgEquiv.refl := by
       rfl
     exact conjO_omega.symm.trans hc
   have hw1 : omega = 1 := by
-    have hunit : IsUnit omega := omega_primitive.isUnit (by decide)
-    apply (mul_left_cancel₀ hunit.ne_zero)
+    apply (mul_left_cancel₀ (omega_primitive.isUnit (by decide)).ne_zero)
     calc
       omega * omega = omega ^ 2 := by ring
       _ = omega := hw
@@ -569,19 +527,16 @@ private theorem galois_univ_pair [DecidableEq (K ≃ₐ[ℚ] K)] :
   rw [Finset.card_univ, galois_card_two, Finset.card_pair]
   exact conjK_ne_refl.symm
 
-private theorem norm_eq_mul_conjK (p : O) :
-    ((Algebra.norm ℚ (p : K) : ℚ) : K) = (p : K) * conjK (p : K) := by
-  classical
-  let : IsGalois ℚ K := IsCyclotomicExtension.isGalois {3} ℚ K
-  have h := Algebra.norm_eq_prod_automorphisms ℚ (p : K)
-  rw [galois_univ_pair, Finset.prod_pair conjK_ne_refl.symm] at h
-  simpa using h
 
 theorem norm_int_eq_mul_conjO (p : O) :
     ((Algebra.norm ℤ p : ℤ) : O) = p * conjO p := by
   apply NumberField.RingOfIntegers.coe_injective
-  change ((Algebra.norm ℤ p : ℤ) : K) = (p : K) * conjK (p : K)
-  have h := norm_eq_mul_conjK p
+  have h : ((Algebra.norm ℚ (p : K) : ℚ) : K) = (p : K) * conjK (p : K) := by
+    classical
+      let : IsGalois ℚ K := IsCyclotomicExtension.isGalois {3} ℚ K
+      have h := Algebra.norm_eq_prod_automorphisms ℚ (p : K)
+      rw [galois_univ_pair, Finset.prod_pair conjK_ne_refl.symm] at h
+      simpa using h
   rw [← Algebra.coe_norm_int p] at h
   exact h
 
@@ -605,11 +560,9 @@ private theorem generator_mul_conj_eq_sign_card (P : Ideal O) [P.IsMaximal]
     nlinarith [hsq]
   rcases mul_eq_zero.mp hzero with hpos | hneg
   · left
-    have heq : Algebra.norm ℤ p = (Nat.card (O ⧸ P) : ℤ) := sub_eq_zero.mp hpos
-    simp [← norm_int_eq_mul_conjO p, heq]
+    simp [← norm_int_eq_mul_conjO p, (sub_eq_zero.mp hpos)]
   · right
-    have heq : Algebra.norm ℤ p = -(Nat.card (O ⧸ P) : ℤ) := add_eq_zero_iff_eq_neg.mp hneg
-    simp [← norm_int_eq_mul_conjO p, heq]
+    simp [← norm_int_eq_mul_conjO p, (add_eq_zero_iff_eq_neg.mp hneg)]
 
 theorem cubicJacobi_unit_multiple_of_principal (P : Ideal O) [P.IsMaximal]
     (hgood : lambda ∉ P) (p : O) (hP : P = Ideal.span {p}) :
@@ -650,7 +603,7 @@ theorem cubicJacobi_unit_multiple_of_principal (P : Ideal O) [P.IsMaximal]
       rw [mul_neg, h]
       ring
   refine ⟨hvunit.unit, ?_⟩
-  simpa only [hvunit.unit_spec] using hv
+  simpa using hv
 
 theorem cubicJacobi_eq_neg_primary_generator_of_principal (P : Ideal O) [P.IsMaximal]
     (hgood : lambda ∉ P) (p : O) (hP : P = Ideal.span {p})
@@ -690,7 +643,6 @@ theorem cubicJacobi_generates_prime (P : Ideal O) [P.IsMaximal]
   let J := jacobiSum (cubicChar P hgood) (cubicChar P hgood)
   have hnormJ : Algebra.norm ℤ J = (Nat.card (O ⧸ P) : ℤ) := by
     apply (Int.cast_injective : Function.Injective (Int.cast : ℤ → O))
-    change ((Algebra.norm ℤ J : ℤ) : O) = (Nat.card (O ⧸ P) : O)
     rw [norm_int_eq_mul_conjO]
     exact cubicJacobi_mul_conj P hgood
   have habsJ : Ideal.absNorm (Ideal.span {J}) = Nat.card (O ⧸ P) := by
@@ -698,10 +650,7 @@ theorem cubicJacobi_generates_prime (P : Ideal O) [P.IsMaximal]
     simp
   have habsP : Ideal.absNorm P = Nat.card (O ⧸ P) := by
     rw [Ideal.absNorm_apply, Submodule.cardQuot_apply]
-  have hle : Ideal.span {J} ≤ P :=
-    (Ideal.span_singleton_le_iff_mem P).mpr (cubicJacobi_mem_prime P hgood)
-  obtain ⟨Q, hQ⟩ := (Ideal.dvd_iff_le).mpr hle
-  have hq : Nat.card (O ⧸ P) ≠ 0 := Nat.card_pos.ne'
+  obtain ⟨Q, hQ⟩ := (Ideal.dvd_iff_le).mpr ((Ideal.span_singleton_le_iff_mem P).mpr (cubicJacobi_mem_prime P hgood))
   have hQnorm : Ideal.absNorm Q = 1 := by
     have heq : Nat.card (O ⧸ P) = Nat.card (O ⧸ P) * Ideal.absNorm Q := by
       calc
@@ -709,10 +658,8 @@ theorem cubicJacobi_generates_prime (P : Ideal O) [P.IsMaximal]
         _ = Ideal.absNorm (P * Q) := by rw [hQ]
         _ = Ideal.absNorm P * Ideal.absNorm Q := map_mul Ideal.absNorm P Q
         _ = Nat.card (O ⧸ P) * Ideal.absNorm Q := by rw [habsP]
-    exact (mul_left_cancel₀ hq (heq.symm.trans (by ring)))
-  have hQtop : Q = ⊤ := Ideal.absNorm_eq_one_iff.mp hQnorm
-  change P = Ideal.span {J}
-  rw [hQ, hQtop, ← Ideal.one_eq_top, mul_one]
+    exact (mul_left_cancel₀ (Nat.card_pos.ne') (heq.symm.trans (by ring)))
+  rw [hQ, (Ideal.absNorm_eq_one_iff.mp hQnorm), ← Ideal.one_eq_top, mul_one]
 
 theorem cubicJacobi_exists_primary_generator (P : Ideal O) [P.IsMaximal]
     (hgood : lambda ∉ P) :
@@ -740,8 +687,8 @@ theorem cubicGauss_cube {E : Type*} [Field E] (ι : O →+* E)
   let : Fintype (O ⧸ P) := Fintype.ofFinite _
   let χ := cubicChar P hgood
   let ξ := χ.ringHomComp ι
-  have hχ3 : χ ^ 3 = 1 := cubicChar_pow_three P hgood
-  have hχne : χ ≠ 1 := cubicChar_ne_one P hgood
+  have hχ3 := cubicChar_pow_three P hgood
+  have hχne := cubicChar_ne_one P hgood
   have hχ2 : χ * χ ≠ 1 := by
     intro h
     have hd : orderOf χ ∣ 2 := by
@@ -749,7 +696,7 @@ theorem cubicGauss_cube {E : Type*} [Field E] (ι : O →+* E)
       exact orderOf_dvd_of_pow_eq_one h
     rw [cubicChar_order P hgood] at hd
     norm_num at hd
-  have hξne : ξ ≠ 1 := (MulChar.ringHomComp_ne_one_iff hι).mpr hχne
+  have hξne := (MulChar.ringHomComp_ne_one_iff hι).mpr hχne
   have hξ2 : ξ * ξ ≠ 1 := by
     rw [show ξ * ξ = (χ * χ).ringHomComp ι by
       exact (MulChar.ringHomComp_mul χ χ ι).symm]
@@ -761,8 +708,7 @@ theorem cubicGauss_cube {E : Type*} [Field E] (ι : O →+* E)
     change (χ.ringHomComp ι)⁻¹ = (χ.ringHomComp ι) ^ 2
     rw [MulChar.ringHomComp_inv, MulChar.ringHomComp_pow, hχinv]
   have hξmul : ξ * ξ = ξ⁻¹ := by rw [hξinv, pow_two]
-  have hχneg : χ (-1) = 1 :=
-    MulChar.val_neg_one_eq_one_of_odd_order (by decide : Odd 3) hχ3
+  have hχneg := MulChar.val_neg_one_eq_one_of_odd_order (by decide : Odd 3) hχ3
   have hξneg : ξ (-1) = 1 := by
     change ι (χ (-1)) = 1
     rw [hχneg, map_one]
@@ -776,8 +722,7 @@ theorem cubicGauss_cube {E : Type*} [Field E] (ι : O →+* E)
     simpa only [Nat.card_eq_fintype_card] using h
   have hJ : jacobiSum ξ ξ = -(ι p) := by
     change jacobiSum (χ.ringHomComp ι) (χ.ringHomComp ι) = -(ι p)
-    rw [jacobiSum_ringHomComp]
-    rw [cubicJacobi_eq_neg_primary_generator_of_principal P hgood p hP hprimary,
+    rw [jacobiSum_ringHomComp, cubicJacobi_eq_neg_primary_generator_of_principal P hgood p hP hprimary,
       map_neg]
   have hgj : gaussSum ξ⁻¹ ψ * jacobiSum ξ ξ = gaussSum ξ ψ * gaussSum ξ ψ := by
     simpa only [hξmul] using jacobiSum_mul_nontrivial hξ2 ψ
@@ -794,14 +739,13 @@ theorem primary_generator_mul_conj_eq_card (P : Ideal O) [P.IsMaximal]
   have h := cubicJacobi_mul_conj P hgood
   rw [cubicJacobi_eq_neg_primary_generator_of_principal P hgood p hP hprimary,
     map_neg] at h
-  simpa only [neg_mul_neg] using h
+  simpa using h
 
 theorem quadraticCharO_ne_one (P : Ideal O) [P.IsMaximal]
     (hchar : ringChar (O ⧸ P) ≠ 2) : quadraticCharO P ≠ 1 := by
   classical
   let : Field (O ⧸ P) := Ideal.Quotient.field P
   let : Fintype (O ⧸ P) := Fintype.ofFinite _
-  change (quadraticChar (O ⧸ P)).ringHomComp (Int.castRingHom O) ≠ 1
   exact (MulChar.ringHomComp_ne_one_iff
     (Int.cast_injective (α := O))).2 (quadraticChar_ne_one hchar)
 
@@ -809,10 +753,7 @@ theorem sexticChar_order (P : Ideal O) [P.IsMaximal]
     (hgood : lambda ∉ P) (hchar : ringChar (O ⧸ P) ≠ 2) :
     orderOf (sexticChar P hgood) = 6 := by
   have h2 := (sexticChar_powers P hgood).1
-  have h3 := (sexticChar_powers P hgood).2.1
-  have h6 := (sexticChar_powers P hgood).2.2
-  have hdiv : orderOf (sexticChar P hgood) ∣ 6 :=
-    orderOf_dvd_of_pow_eq_one h6
+  have hdiv := orderOf_dvd_of_pow_eq_one ((sexticChar_powers P hgood).2.2)
   have hne2 : orderOf (sexticChar P hgood) ≠ 2 := by
     intro he
     have hχ2 := pow_orderOf_eq_one (sexticChar P hgood)
@@ -821,7 +762,7 @@ theorem sexticChar_order (P : Ideal O) [P.IsMaximal]
   have hne3 : orderOf (sexticChar P hgood) ≠ 3 := by
     intro he
     have hχ3 := pow_orderOf_eq_one (sexticChar P hgood)
-    rw [he, h3] at hχ3
+    rw [he, ((sexticChar_powers P hgood).2.1)] at hχ3
     exact quadraticCharO_ne_one P hchar hχ3
   have hne1 : orderOf (sexticChar P hgood) ≠ 1 := by
     intro he
@@ -831,8 +772,8 @@ theorem sexticChar_order (P : Ideal O) [P.IsMaximal]
   have hne0 : orderOf (sexticChar P hgood) ≠ 0 := by
     intro he
     norm_num [he] at hdiv
-  have hpos : 0 < orderOf (sexticChar P hgood) := Nat.pos_of_ne_zero hne0
-  have hle : orderOf (sexticChar P hgood) ≤ 6 := Nat.le_of_dvd (by norm_num) hdiv
+  have hpos := Nat.pos_of_ne_zero hne0
+  have hle := Nat.le_of_dvd (by norm_num) hdiv
   have hne4 : orderOf (sexticChar P hgood) ≠ 4 := by
     intro he
     norm_num [he] at hdiv

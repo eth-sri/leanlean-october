@@ -7,27 +7,18 @@ public import OAI.NumberTheory.DirichletL.Energy.ReferenceDeletionEnergy
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
 open Filter
+open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyReferenceRobustOriginal
-open HeckeFamily HeckeDyadic ConcreteTraceCRT
-open CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands
-open CenteredMomentEnergyDeletedRobustGeometry CenteredMomentEnergyReferenceLowReflectionError
-open CenteredMomentEnergyReferenceLowDirect CenteredMomentEnergyReferenceChild
-open CenteredMomentNaturalFixedRaySource CenteredMomentNaturalRowSource
-open CenteredMomentCommonMaskEnergy CenteredMomentCommonMaskExpansion
-open CenteredMomentOriginalRadialComparison CenteredMomentAllocatedNaturalRadial
-open CenteredMomentFiniteProfileExceptional QuadraticInitialBound CenteredMomentPrimeSlot
+open HeckeFamily HeckeDyadic ConcreteTraceCRT CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands CenteredMomentEnergyDeletedRobustGeometry CenteredMomentEnergyReferenceLowReflectionError CenteredMomentEnergyReferenceLowDirect CenteredMomentEnergyReferenceChild CenteredMomentNaturalFixedRaySource CenteredMomentNaturalRowSource CenteredMomentCommonMaskEnergy CenteredMomentCommonMaskExpansion CenteredMomentOriginalRadialComparison CenteredMomentAllocatedNaturalRadial CenteredMomentFiniteProfileExceptional QuadraticInitialBound CenteredMomentPrimeSlot
 local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
 variable (M:Ideal O)[NeZero M]
 local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
-open CenteredMomentEnergyReferenceRobustDeletedEnergy CenteredMomentEnergyReferenceDeletionEnergy
-open CenteredMomentInductionEnergy
+open CenteredMomentEnergyReferenceRobustDeletedEnergy CenteredMomentEnergyReferenceDeletionEnergy CenteredMomentInductionEnergy
 theorem original_reference_from_low_robust
     (epsilonDelete:ℝ)(hepsilonDelete:0<epsilonDelete)
     (Wslot:ℝ→ℂ)(aslot bslot lo hi:ℝ)
@@ -83,7 +74,7 @@ theorem original_reference_from_low_robust
   refine ⟨hZ.1,?_⟩
   intro Lslot ε κ η₀ Q K hK hlow θ w σ freq t height hw hwL hσlo hσhi hheight hfreq hκ
     s hQ hs hxiM W₁ W₂ hs₁ hs₂ X₁ X₂ hX₁ hX₂ hlarge hcap
-  have hZpos:0<Z:=zero_lt_one.trans hZ.1
+  have hZpos :=zero_lt_one.trans hZ.1
   have hp:=comparison_positive Z s.width X₁ X₂ hZpos hX₁ hX₂
   apply hweight Z Bmask bΦ a b s W₁ W₂ ha (by linarith) hs₁ hs₂
     (fun i=>primePool M H bslot (Z^(w i)))
@@ -95,21 +86,19 @@ theorem original_reference_from_low_robust
   · intro i
     exact Real.rpow_pos_of_pos hZpos _
   · intro i I hI
-    have hpI:Prime I:=(Finset.mem_filter.mp hI).2.1
     have hh:=(hslot (relativeCharacter M H hH η₀ (θ i)) (Z^(w i)) (σ i) (freq i) 0
-      (Real.rpow_pos_of_pos hZpos _) (hσlo i) (hσhi i) I hpI.ne_zero).1
+      (Real.rpow_pos_of_pos hZpos _) (hσlo i) (hσhi i) I ((Finset.mem_filter.mp hI).2.1).ne_zero).1
     simpa only [heightCoefficient,Complex.ofReal_zero,mul_zero,Complex.cpow_zero,mul_one] using hh
   · intro i I hI hn
-    have hpI:Prime I:=(Finset.mem_filter.mp hI).2.1
     have hh:=(hslot (relativeCharacter M H hH η₀ (θ i)) (Z^(w i)) (σ i) (freq i) 0
-      (Real.rpow_pos_of_pos hZpos _) (hσlo i) (hσhi i) I hpI.ne_zero).2
+      (Real.rpow_pos_of_pos hZpos _) (hσlo i) (hσhi i) I ((Finset.mem_filter.mp hI).2.1).ne_zero).2
     apply hh
     simpa only [heightCoefficient,Complex.ofReal_zero,mul_zero,Complex.cpow_zero,mul_one] using hn
   · exact hp.1
   · exact hp.2
   · have hdiag:0≤diagonalControl s.radial.profile:=by unfold diagonalControl;positivity
     have hLpos:0≤L:=by linarith [s.width_nonneg]
-    have hlog:0≤Real.log Z:=(Real.log_pos hZ.1).le
+    have hlog :=(Real.log_pos hZ.1).le
     positivity
   · norm_num
   · intro D₁ hD₁ D₂ hD₂ J hJ

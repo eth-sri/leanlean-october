@@ -10,9 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptionalCommon
-open CenteredMomentExceptionalAmplitudePair CenteredMomentCommonRadialData
-open CenteredMomentCommonHeightEnvelope CenteredMomentHeckeWindowEnergy
-open HeckeFamily CenteredMomentAllocatedDetectorAmplitude CenteredMomentFiniteProfileExceptional
+open CenteredMomentExceptionalAmplitudePair CenteredMomentCommonRadialData CenteredMomentCommonHeightEnvelope CenteredMomentHeckeWindowEnergy HeckeFamily CenteredMomentAllocatedDetectorAmplitude CenteredMomentFiniteProfileExceptional
 universe u
 
 def mass {lo hi:ℝ} (R:Finset (ℕ×ℕ)) {ι κ:Type u}[Fintype ι][Fintype κ]
@@ -39,14 +37,11 @@ theorem shifted_mass {lo hi:ℝ} (R:Finset (ℕ×ℕ))
     profileMass R (withHeight s η (t₁+2*Real.pi*(u-θ₁))).toData
       (withHeight v τ (t₂+2*Real.pi*(w-θ₂))).toData p q J≤
       mass R s v p q t₁ t₂ θ₁ θ₂ J*(1+‖u‖)^J*(1+‖w‖)^J:=by
-  have hp:=pow_le_pow_left₀ (by positivity) (norm_height_shift t₁ θ₁ u) J
-  have hq:=pow_le_pow_left₀ (by positivity) (norm_height_shift t₂ θ₂ w) J
-  have hh:=mul_le_mul hp hq (by positivity)
+  have hh:=mul_le_mul (pow_le_pow_left₀ (by positivity) (norm_height_shift t₁ θ₁ u) J) (pow_le_pow_left₀ (by positivity) (norm_height_shift t₂ θ₂ w) J) (by positivity)
     (pow_nonneg (mul_nonneg (heightCost_pos t₁ θ₁).le (by positivity)) _)
-  have hcontrol:=mul_nonneg (Profiles.control_nonneg p R) (Profiles.control_nonneg q R)
   have hs:=mul_le_mul_of_nonneg_right
     (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right
-      (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hh hcontrol)
+      (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hh (mul_nonneg (Profiles.control_nonneg p R) (Profiles.control_nonneg q R)))
         (slotControl_nonneg s.toData))
       (slotControl_nonneg v.toData)) (Real.sqrt_nonneg (volume s.toData)))
       (Real.sqrt_nonneg (volume v.toData))

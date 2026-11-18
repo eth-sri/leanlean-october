@@ -25,7 +25,7 @@ lemma sexticGauss_norm_le (s : O) (hs : s≠0) (m : O) : ‖sexticGauss s hs m�
   calc
     _ ≤ ∑d : O⧸Ideal.span {s},‖idealRowHom (GaussianShiftedPartition.representative s d) (Ideal.span {s})*
       quotientTrace s hs (Ideal.Quotient.mk _ m*d)‖ := norm_sum_le _ _
-    _ ≤ ∑_d : O⧸Ideal.span {s},(1:ℝ) := Finset.sum_le_sum (fun d _=>by
+    _ ≤ ∑_d : O⧸Ideal.span {s},1 := Finset.sum_le_sum (fun d _=>by
       rw [norm_mul,(quotientTrace s hs).norm_apply,mul_one]
       exact idealRowHom_norm _ _)
     _ = _ := by simp [elementNorm,Ideal.absNorm_apply,Submodule.cardQuot_apply,Nat.card_eq_fintype_card]
@@ -50,25 +50,18 @@ lemma physicalRowWeight_crude_point (C : CalibrationData) (W0 W1 : ℝ→ℂ)
     ‖physicalRowWeight C W0 W1 X Y r‖≤B0*B1*‖C.tau‖⁻¹/Y := by
   have hq : (0:ℝ)<Ideal.absNorm r.1.val := by
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr r.1.property.1)
-  have hb := calibration_elementNorm_ge_one C
-  have hscale : 0<elementNorm C.generator*(Ideal.absNorm r.1.val:ℝ)*X :=
-    physicalRowScale_pos C X (lt_of_lt_of_le zero_lt_one hX) r.1
   have hqscale : (Ideal.absNorm r.1.val:ℝ)≤elementNorm C.generator*(Ideal.absNorm r.1.val:ℝ)*X := by
-    have hbx : 1≤elementNorm C.generator*X := one_le_mul_of_one_le_of_one_le hb hX
+    have hbx := one_le_mul_of_one_le_of_one_le (calibration_elementNorm_ge_one C) hX
     nlinarith
-  have hsqrt := Real.sqrt_le_sqrt hqscale
   have hrad : (Real.sqrt (elementNorm C.generator*(Ideal.absNorm r.1.val:ℝ)*X))⁻¹*
       (Real.sqrt (Ideal.absNorm r.1.val:ℝ))⁻¹*(Ideal.absNorm r.1.val:ℝ)≤1 := by
-    have hspos : 0<Real.sqrt (elementNorm C.generator*(Ideal.absNorm r.1.val:ℝ)*X)*
-      Real.sqrt (Ideal.absNorm r.1.val:ℝ) := mul_pos (Real.sqrt_pos.mpr hscale) (Real.sqrt_pos.mpr hq)
     calc
       _ = (Ideal.absNorm r.1.val:ℝ)/(Real.sqrt (elementNorm C.generator*(Ideal.absNorm r.1.val:ℝ)*X)*
         Real.sqrt (Ideal.absNorm r.1.val:ℝ)) := by simp only [div_eq_mul_inv,mul_inv_rev];ring
-      _ ≤ 1 := (div_le_one hspos).mpr (by nlinarith [mul_le_mul_of_nonneg_right hsqrt (Real.sqrt_nonneg (Ideal.absNorm r.1.val:ℝ)), Real.sq_sqrt hq.le])
+      _ ≤ 1 := (div_le_one (mul_pos (Real.sqrt_pos.mpr (physicalRowScale_pos C X (lt_of_lt_of_le zero_lt_one hX) r.1)) (Real.sqrt_pos.mpr hq))).mpr (by nlinarith [mul_le_mul_of_nonneg_right (Real.sqrt_le_sqrt hqscale) (Real.sqrt_nonneg (Ideal.absNorm r.1.val:ℝ)), Real.sq_sqrt hq.le])
   have hg := sexticGauss_norm_le (primaryGenerator r.1.val) (supported_primaryGenerator_ne_zero r.1.val r.1.property) (-r.2)
-  have he := (primaryGenerator_spec r.1.val (supported_primaryGenerator_ne_zero r.1.val r.1.property)).1
   unfold elementNorm at hg
-  rw [he] at hg
+  rw [((primaryGenerator_spec r.1.val (supported_primaryGenerator_ne_zero r.1.val r.1.property)).1)] at hg
   rw [physicalRowWeight_arithmetic_form]
   simp only [norm_mul,norm_inv,Complex.norm_real,Real.norm_eq_abs,abs_of_pos hY,
     abs_of_nonneg (Real.sqrt_nonneg _)]
@@ -90,17 +83,10 @@ lemma lowNumeratorRows_card (a b : ℝ) (ha : 0<a) (hb : 0<b) (Q : ℝ) (hQ : 1�
   have hh := DescentFiberCost.finite_element_count_real (lowNumeratorRows a b ha hb Q (lt_of_lt_of_le zero_lt_one hQ)) _ hscale
     (by
       intro m hm
-      have h := (lowOuterCutoff_support a b ha hb ((lowNumeratorRows_mem a b ha hb Q (lt_of_lt_of_le zero_lt_one hQ) m).mp hm)).2
-      have hn := (div_le_iff₀ (lt_of_lt_of_le zero_lt_one hQ)).mp h
       rw [ActualEisensteinCubic.eisEmbedding_norm_sq_eq_absNorm_span]
-      change elementNorm m≤2*max 1 b*Q
-      exact hn.trans (by gcongr;exact le_max_right _ _))
+      exact ((div_le_iff₀ (lt_of_lt_of_le zero_lt_one hQ)).mp ((lowOuterCutoff_support a b ha hb ((lowNumeratorRows_mem a b ha hb Q (lt_of_lt_of_le zero_lt_one hQ) m).mp hm)).2)).trans (by gcongr;exact le_max_right _ _))
   convert hh using 1 ; ring
 
-lemma lowPhysicalScale_ge_one (C : CalibrationData) (X Y : ℝ) (hX : 1≤X) (hY : 1≤Y) :
-    1≤lowPhysicalScale C X Y :=
-  one_le_mul_of_one_le_of_one_le
-    (one_le_mul_of_one_le_of_one_le (calibration_elementNorm_ge_one C) hX) hY
 
 lemma physicalRowWeight_source_rectangle (C : CalibrationData) (W0 W1 : ℝ→ℂ)
     (hW1c : HasCompactSupport W1) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
@@ -136,19 +122,19 @@ theorem physicalRowWeight_source_mass (a0 b0 a1 b1 B0 B1 : ℝ)
   refine ⟨K,by dsimp only [K];positivity,?_⟩
   intro S hS W0 W1 hW1c hW0 hW1 hWB0 hWB1 X Y hX hY
   let C := calibrationForSet S hS
-  have hx : 0<X := lt_of_lt_of_le zero_lt_one hX
-  have hy : 0<Y := lt_of_lt_of_le zero_lt_one hY
+  have hx := lt_of_lt_of_le zero_lt_one hX
+  have hy := lt_of_lt_of_le zero_lt_one hY
   let Q := lowPhysicalScale C X Y
-  have hQ : 1≤Q := lowPhysicalScale_ge_one C X Y hX hY
+  have hQ := (one_le_mul_of_one_le_of_one_le
+    (one_le_mul_of_one_le_of_one_le (calibration_elementNorm_ge_one C) hX) hY)
   let F := lowGaussColumns W1 hW1c Y hy
   let R := lowNumeratorRows (a0*a1) (max 1 (b0*b1)) (mul_pos ha0 ha1)
     (lt_of_lt_of_le zero_lt_one (le_max_left _ _)) Q (lowPhysicalScale_pos C X Y hx hy)
   have hzero (r : PhysicalRowIndex) (hr : r∉F×ˢR) : ‖physicalRowWeight C W0 W1 X Y r‖=0 := by
     rw [physicalRowWeight_source_rectangle C W0 W1 hW1c a0 b0 a1 b1 ha0 ha1 hW0 hW1 X Y hx hy r hr,norm_zero]
   have hpoint (r : PhysicalRowIndex) : ‖physicalRowWeight C W0 W1 X Y r‖≤B0*B1/Y := by
-    have h := physicalRowWeight_crude_point C W0 W1 B0 B1 hB0 hB1 hWB0 hWB1 X Y hX hy r
-    simpa only [C,calibrationForSet_tau_norm,inv_one,mul_one] using h
-  have hF : (F.card:ℝ)≤128*max 1 b1*Y := lowGaussColumns_card W1 hW1c Y hY a1 b1 hW1
+    simpa only [C,calibrationForSet_tau_norm,inv_one,mul_one] using (physicalRowWeight_crude_point C W0 W1 B0 B1 hB0 hB1 hWB0 hWB1 X Y hX hy r)
+  have hF := lowGaussColumns_card W1 hW1c Y hY a1 b1 hW1
   have hR : (R.card:ℝ)≤256*max 1 (b0*b1)*Q := by
     simpa only [R,max_eq_right (le_max_left 1 (b0*b1))] using lowNumeratorRows_card (a0*a1) (max 1 (b0*b1)) (mul_pos ha0 ha1)
       (lt_of_lt_of_le zero_lt_one (le_max_left _ _)) Q hQ

@@ -10,12 +10,11 @@ namespace SevenEighths.ProbeEuler
 
 lemma rpow_le_half (Q a : ℝ) (hQ : 4 ≤ Q) (ha : a ≤ -(1/2)) : Q^a ≤ 1/2 := by
   have hQ0 : 0 < Q := by linarith
-  have hs : 0 < Real.sqrt Q := Real.sqrt_pos.mpr hQ0
   have hs2 := Real.sq_sqrt hQ0.le
   calc
     Q^a ≤ Q^(-(1/2:ℝ)) := Real.rpow_le_rpow_of_exponent_le (by linarith) ha
     _ = (Real.sqrt Q)⁻¹ := by rw [Real.rpow_neg hQ0.le, ← Real.sqrt_eq_rpow]
-    _ ≤ 1/2 := by rw [← one_div, div_le_iff₀ hs]; nlinarith [Real.sqrt_nonneg Q]
+    _ ≤ 1/2 := by rw [← one_div, div_le_iff₀ (Real.sqrt_pos.mpr hQ0)]; nlinarith [Real.sqrt_nonneg Q]
 
 theorem unramifiedClosed_second_region_bound (Q : ℝ) (A eta v x w z : ℂ)
     (hQ : 4 ≤ Q) (hA : ‖A‖ ≤ 1) (heta : ‖eta‖ ≤ 1) (hv : ‖v‖ ≤ 1)

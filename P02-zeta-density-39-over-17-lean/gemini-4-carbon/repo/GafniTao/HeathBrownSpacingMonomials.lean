@@ -80,8 +80,7 @@ theorem heathBrown_spacing_monomial_identity
   dsimp only
   let r := heathBrownCriticalReciprocal k
   have hNpos : (0 : ℝ) < N := by exact_mod_cast (show 0 < N by omega)
-  have hlambdaNonneg : 0 ≤ lambda := hlambda.le
-  have hNnonneg : (0 : ℝ) ≤ N := hNpos.le
+  have hlambdaNonneg := hlambda.le
   have hkr : (k : ℝ) ≠ 0 := by positivity
   rw [mul_add, mul_add]
   have hfirst :
@@ -93,9 +92,7 @@ theorem heathBrown_spacing_monomial_identity
   have hmiddlePower :
       (lambda * (N : ℝ) ^ 2) ^ r =
         lambda ^ r * (N : ℝ) ^ (2 * r) := by
-    rw [Real.mul_rpow hlambdaNonneg (by positivity)]
-    rw [← Real.rpow_natCast]
-    rw [← Real.rpow_mul hNnonneg]
+    rw [Real.mul_rpow hlambdaNonneg (by positivity), ← Real.rpow_natCast, ← Real.rpow_mul (hNpos.le)]
     norm_num
   have hmiddle :
       (N : ℝ) ^ (1 - 2 * r) *

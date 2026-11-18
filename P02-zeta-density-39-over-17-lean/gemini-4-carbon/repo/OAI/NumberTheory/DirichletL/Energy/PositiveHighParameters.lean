@@ -10,18 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyPositiveHighParameters
-open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentInductionEnergy
-open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands
-open CenteredMomentEnergyReferenceLivePower CenteredMomentEnergyOriginalSource
-open CenteredMomentEnergyPositiveHighSource CenteredMomentEnergyOriginalProfileControl
-open CenteredMomentEnergyOriginalHighReflectionSymmetric
-open CenteredMomentEnergyFixedRadialReduction CenteredMomentEnergyPhysicalEntry
-open CenteredMomentCommonRadialData CenteredMomentSourceRow
-open CenteredMomentFirstSourceReduction CenteredMomentSourceInputTailUniform
-open CenteredMomentFiniteProfileExceptional CenteredMomentSecondHeightFamily
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass
-open CenteredMomentNaturalFixedRaySource CenteredMomentPrimeSlot
+open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentInductionEnergy CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands CenteredMomentEnergyReferenceLivePower CenteredMomentEnergyOriginalSource CenteredMomentEnergyPositiveHighSource CenteredMomentEnergyOriginalProfileControl CenteredMomentEnergyOriginalHighReflectionSymmetric CenteredMomentEnergyFixedRadialReduction CenteredMomentEnergyPhysicalEntry CenteredMomentCommonRadialData CenteredMomentSourceRow CenteredMomentFirstSourceReduction CenteredMomentSourceInputTailUniform CenteredMomentFiniteProfileExceptional CenteredMomentSecondHeightFamily CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass CenteredMomentNaturalFixedRaySource CenteredMomentPrimeSlot
 local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
 local instance : DecidableEq (α⊕Fin 2):=Classical.decEq _
@@ -42,10 +31,8 @@ lemma actual_width_le (hZ:1<Z):
     Real.logb Z s.radial.scale+Real.logb Z (s.character.modulus.absNorm:ℝ)≤s.width:=by
   have hn:0<(s.character.modulus.absNorm:ℝ):=by
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr s.character.modulus_ne_bot)
-  have hc:Real.logb Z (s.character.modulus.absNorm:ℝ)≤s.characterWidth:=
-    (Real.logb_le_iff_le_rpow hZ hn).mpr s.modulus_bound
   rw [s.scale_eq,Real.logb_rpow (zero_lt_one.trans hZ) hZ.ne']
-  exact add_le_add_right hc _
+  exact add_le_add_right ((Real.logb_le_iff_le_rpow hZ hn).mpr s.modulus_bound) _
 
 lemma actual_conductor_scale (hZ:1<Z):
     s.radial.scale*(s.character.modulus.absNorm:ℝ)≤Z^s.width:=by

@@ -8,8 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.InverseMomentGlobalPrincipalMass
-open InverseMoment InverseFirstPriorityParents InverseInitialArithmetic
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open InverseMoment InverseFirstPriorityParents InverseInitialArithmetic ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
 local notation "O" => ActualEisensteinCubic.O
 
@@ -56,14 +55,14 @@ theorem original_source_card (Jmax : ℕ) (eps : ℝ) (heps : 0<eps) :
   let bs := S.image Source.cube
   let cs := S.image Source.firstCommon
   let ts := S.image Source.quotientSupport
-  have hbcount : (bs.card:ℝ)≤Cb*B^(1+eps)*H := hcube p hp hinj bs B H hB hH
+  have hbcount := hcube p hp hinj bs B H hB hH
     (by intro b hb;obtain ⟨x,hx,rfl⟩ := Finset.mem_image.mp hb;exact (hS x hx).admissible)
     (by intro b hb;obtain ⟨x,hx,rfl⟩ := Finset.mem_image.mp hb;exact hleft x hx)
     (by intro b hb;obtain ⟨x,hx,rfl⟩ := Finset.mem_image.mp hb;exact hright x hx)
     (by intro b hb;obtain ⟨x,hx,rfl⟩ := Finset.mem_image.mp hb;exact hactive x hx)
-  have hccount : (cs.card:ℝ)≤128*V := support_family_card p hp hinj cs V hV
+  have hccount := support_family_card p hp hinj cs V hV
     (by intro A hA;obtain ⟨x,hx,rfl⟩ := Finset.mem_image.mp hA;exact hcommon x hx)
-  have htcount : (ts.card:ℝ)≤128*T := support_family_card p hp hinj ts T hT
+  have htcount := support_family_card p hp hinj ts T hT
     (by intro A hA;obtain ⟨x,hx,rfl⟩ := Finset.mem_image.mp hA;exact hquot x hx)
   have hsub : Q⊆bs×ˢ(cs×ˢts) := by
     intro q hq

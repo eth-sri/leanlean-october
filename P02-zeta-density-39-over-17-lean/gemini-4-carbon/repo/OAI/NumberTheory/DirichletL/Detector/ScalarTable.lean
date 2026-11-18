@@ -57,9 +57,7 @@ theorem zero_index_scalar (p : O) (_hp : Prime p)
   by_cases hj : j=0
   · simp [hj]
   · rw [ite_eq_right hj]
-    have hz : Ideal.Quotient.mk (Ideal.span {p}) (p^j) = 0 :=
-      Ideal.Quotient.eq_zero_iff_mem.mpr (Ideal.mem_span_singleton.mpr (dvd_pow_self p hj))
-    rw [hz, MulChar.map_zero]
+    rw [(Ideal.Quotient.eq_zero_iff_mem.mpr (Ideal.mem_span_singleton.mpr (dvd_pow_self p hj))), MulChar.map_zero]
 
 end SevenEighths.ProbePrimePower
 end

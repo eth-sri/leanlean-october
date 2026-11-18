@@ -16,38 +16,28 @@ namespace GuthMaynard.Improvement
 def short_detectorPSeries : ℝ :=
   ∑' n : ℕ, (n : ℝ) ^ (-(9 / 8 : ℝ))
 
-theorem short_summable_detectorPSeries :
-    Summable (fun n : ℕ => (n : ℝ) ^ (-(9 / 8 : ℝ))) := by
-  exact Real.summable_nat_rpow.mpr (by norm_num)
 
 theorem short_norm_mollifier_LSeries_le_cutoff_pSeries {z : ℂ} {X : ℝ}
     (hz : 9 / 8 ≤ z.re) :
     ‖LSeries (mollifierDirichletCoeff X) z‖ ≤
       (⌊X⌋₊ : ℝ) * short_detectorPSeries := by
-  let f : ℕ → ℂ := mollifierDirichletCoeff X
+  let f := mollifierDirichletCoeff X
   have hAbs : 1 < z.re := by linarith
-  have hLS : LSeriesSummable f z :=
-    mollifierDirichletCoeff_LSeriesSummable X hAbs
-  have hNorm : Summable (fun n : ℕ => ‖LSeries.term f z n‖) :=
-    summable_norm_iff.mpr hLS
+  have hNorm := summable_norm_iff.mpr (mollifierDirichletCoeff_LSeriesSummable X hAbs)
   have hTerm (n : ℕ) : ‖LSeries.term f z n‖ ≤
       (⌊X⌋₊ : ℝ) * (n : ℝ) ^ (-(9 / 8 : ℝ)) := by
     rcases eq_or_ne n 0 with rfl | hn
     · simp
     · have hnPos : (0 : ℝ) < n := by exact_mod_cast Nat.pos_of_ne_zero hn
       have hnOne : (1 : ℝ) ≤ n := by exact_mod_cast Nat.one_le_iff_ne_zero.mpr hn
-      have hDen : (n : ℝ) ^ (9 / 8 : ℝ) ≤ (n : ℝ) ^ z.re :=
-        Real.rpow_le_rpow_of_exponent_le hnOne hz
-      rw [LSeries.norm_term_eq, ite_eq_right hn]
-      rw [Real.rpow_neg hnPos.le]
-      have hCoeff := norm_mollifierDirichletCoeff_le_cutoff X n
+      rw [LSeries.norm_term_eq, ite_eq_right hn, Real.rpow_neg hnPos.le]
       have hLeft : ‖f n‖ / (n : ℝ) ^ z.re ≤
           (⌊X⌋₊ : ℝ) / (n : ℝ) ^ z.re := by
-        exact div_le_div_of_nonneg_right hCoeff (Real.rpow_nonneg hnPos.le _)
+        exact div_le_div_of_nonneg_right (norm_mollifierDirichletCoeff_le_cutoff X n) (Real.rpow_nonneg hnPos.le _)
       have hRight : (⌊X⌋₊ : ℝ) / (n : ℝ) ^ z.re ≤
           (⌊X⌋₊ : ℝ) / (n : ℝ) ^ (9 / 8 : ℝ) := by
         exact div_le_div_of_nonneg_left (by positivity) (Real.rpow_pos_of_pos hnPos _)
-          hDen
+          (Real.rpow_le_rpow_of_exponent_le hnOne hz)
       exact hLeft.trans hRight
   calc
     ‖LSeries f z‖ ≤ ∑' n : ℕ, ‖LSeries.term f z n‖ :=
@@ -55,7 +45,7 @@ theorem short_norm_mollifier_LSeries_le_cutoff_pSeries {z : ℂ} {X : ℝ}
     _ ≤ ∑' n : ℕ, (⌊X⌋₊ : ℝ) *
         (n : ℝ) ^ (-(9 / 8 : ℝ)) := by
       exact hNorm.tsum_le_tsum hTerm
-        (short_summable_detectorPSeries.mul_left (⌊X⌋₊ : ℝ))
+        ((Real.summable_nat_rpow.mpr (by norm_num)).mul_left (⌊X⌋₊ : ℝ))
     _ = (⌊X⌋₊ : ℝ) * short_detectorPSeries := by
       rw [short_detectorPSeries, tsum_mul_left]
 
@@ -234,12 +224,10 @@ theorem short_smoothedDetector_eq_rightContour {ρ : ℂ} {X Y : ℝ}
   congr 1
   apply integral_congr_ae
   filter_upwards with u
-  let s : ℂ := ((1/2 : ℝ) : ℂ)+(u : ℂ)*I
+  let s := ((1/2 : ℝ) : ℂ)+(u : ℂ)*I
   have hAbs : 1 < (ρ+s).re := by simp [s]; linarith
   have hPow : ((1/Y : ℝ) : ℂ)^(-s) = (Y : ℂ)^s := by
     simpa using GammaMellin.cpow_neg_div_eq_reverse_cpow (x := 1) (by norm_num) hY s
-  change ((1/Y : ℝ) : ℂ)^(-s) *
-    (Complex.Gamma s * LSeries (mollifierDirichletCoeff X) (ρ+s)) = detectorKernel ρ X Y s
   rw [hPow, ← riemannZeta_mul_zetaMollifier_eq_LSeries X hAbs]
   unfold detectorKernel
   ring

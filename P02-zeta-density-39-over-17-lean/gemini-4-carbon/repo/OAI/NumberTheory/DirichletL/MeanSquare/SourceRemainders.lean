@@ -8,82 +8,14 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 
 namespace InitialMeanSquare
 
 section
 
-open MeasureTheory
-open scoped BigOperators Classical
-open ActualEisensteinCubic SecondPassArithmetic SecondPassIntegration JointLogSeparation
+open SecondPassArithmetic SecondPassIntegration JointLogSeparation
 open FirstPassCubeLabels (primeProductNorm)
 
 section
@@ -99,24 +31,20 @@ end
 end
 
 section
-open ActualEisensteinCubic SecondPassArithmetic SecondPassIntegration
+open SecondPassArithmetic SecondPassIntegration
 open FirstPassCubeLabels (primeProductNorm)
 open ConcreteTraceCRT (eisEmbedding)
 
 end
 
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap ContDiff
-open ActualEisensteinCubic SecondPassArithmetic SecondPassIntegration JointLogSeparation
+open SecondPassArithmetic SecondPassIntegration JointLogSeparation
 open FirstPassCubeLabels (primeProductNorm columnLog)
 
 end InitialMeanSquare
 
-open scoped BigOperators Classical SchwartzMap
 namespace FirstPassCubeLabels
 
 section
-open ActualEisensteinCubic
 open ConcreteTraceCRT (eisEmbedding eisEmbedding_ne_zero)
 open EisensteinSchwartzPoisson (paperRadialFourier)
 open MixedCrossSeparation (columnCoefficient columnPrimeCoprime)
@@ -178,22 +106,14 @@ lemma canonicalPairMode_norm_le
         (‖C₁ N‖*‖C₂ P‖))*
       ‖paperRadialFourier W ((K/(‖eisEmbedding d‖^2*
         primeProductNorm p ((N∪P)∪cubeActiveSupport B v ε₁ ε₂)))*‖eisEmbedding h‖^2)‖ := by
-  have hn : 0<‖eisEmbedding (∏i∈(N∪P)∪cubeActiveSupport B v ε₁ ε₂,p i)‖ :=
-    norm_pos_iff.mpr (eisEmbedding_ne_zero (Finset.prod_ne_zero_iff.mpr (fun i hi=>hp i)))
   have ha : K*‖eisEmbedding h‖^2/(‖eisEmbedding d‖^2*
       primeProductNorm p ((N∪P)∪cubeActiveSupport B v ε₁ ε₂)) =
       (K/(‖eisEmbedding d‖^2*primeProductNorm p ((N∪P)∪cubeActiveSupport B v ε₁ ε₂)))*
         ‖eisEmbedding h‖^2 := by ring
   simp only [canonicalPairMode,norm_mul,norm_div,Complex.norm_real,Real.norm_eq_abs,
-    abs_of_pos hK,abs_of_pos hn,ha]
-  calc
-    _ ≤ (‖V₁ (columnLog p X₁ N)‖*‖V₂ (columnLog p X₂ P)‖*
-        (K/‖eisEmbedding (∏i∈(N∪P)∪cubeActiveSupport B v ε₁ ε₂,p i)‖))*
-      ‖paperRadialFourier W ((K/(‖eisEmbedding d‖^2*
-        primeProductNorm p ((N∪P)∪cubeActiveSupport B v ε₁ ε₂)))*‖eisEmbedding h‖^2)‖*
-      (‖C₁ N‖*‖C₂ P‖) := mul_le_mul_of_nonneg_left
-        (threeGaussRowFactor_norm_le p hp hcop hg hc N P B v ε₁ ε₂ C₁ C₂ d h) (by positivity)
-    _ = _ := by ring
+    abs_of_pos hK,abs_of_pos (norm_pos_iff.mpr (eisEmbedding_ne_zero (Finset.prod_ne_zero_iff.mpr (fun i hi=>hp i)))),ha]
+  exact (mul_le_mul_of_nonneg_left
+        (threeGaussRowFactor_norm_le p hp hcop hg hc N P B v ε₁ ε₂ C₁ C₂ d h) (by positivity)).trans_eq (by ring)
 
 end
 
@@ -222,21 +142,18 @@ theorem full_uniform_canonicalPairMode_remainder (A : ℕ) :
   let scale := K/(‖eisEmbedding d‖^2*primeProductNorm p S)
   let c := ‖V₁ (columnLog p X₁ N)‖*‖V₂ (columnLog p X₂ P)‖*
         (K/‖eisEmbedding (∏i∈S,p i)‖)*(‖C₁ N‖*‖C₂ P‖)
-  have hscale : 0<scale := div_pos hK (mul_pos
+  have hscale := div_pos hK (mul_pos
     (sq_pos_of_pos (norm_pos_iff.mpr (eisEmbedding_ne_zero hd))) (primeProductNorm_pos p hp S))
   have hc0 : 0≤c := by dsimp [c]; positivity
-  let small : Set O := {h|h∉T}
-  let large : Set O := {h|H≤scale*‖eisEmbedding h‖^2}
+  let small := {h|h∉T}
+  let large := {h|H≤scale*‖eisEmbedding h‖^2}
   let f : small→large := fun h=>⟨h.val,hT h.val h.property⟩
   have hfi : Function.Injective f := by
     intro a b hab
     exact Subtype.ext (congrArg (fun x:large=>x.val) hab)
   have hrad := EisensteinSchwartzPoisson.paperRadialFourier_lattice_summable_norm W scale hscale
   have hmajor := (hrad.subtype small).mul_left c
-  have hpnt (h:small) :
-      ‖canonicalPairMode p hp hcop hg N P B v ε₁ ε₂ C₁ C₂ W V₁ V₂ X₁ X₂ K d h.val‖≤
-      c*‖paperRadialFourier W (scale*‖eisEmbedding h.val‖^2)‖ :=
-    canonicalPairMode_norm_le p hp hcop hg hc N P B v ε₁ ε₂ C₁ C₂ W V₁ V₂ X₁ X₂ K hK d h.val
+  have hpnt (h:small) := canonicalPairMode_norm_le p hp hcop hg hc N P B v ε₁ ε₂ C₁ C₂ W V₁ V₂ X₁ X₂ K hK d h.val
   have hsmall := Summable.of_nonneg_of_le (fun _=>norm_nonneg _) hpnt hmajor
   calc
     _ ≤ ∑'h:small,‖canonicalPairMode p hp hcop hg N P B v ε₁ ε₂ C₁ C₂ W V₁ V₂ X₁ X₂ K d h.val‖ :=
@@ -251,7 +168,6 @@ theorem full_uniform_canonicalPairMode_remainder (A : ℕ) :
 
 end
 
-open ActualEisensteinCubic
 open ConcreteTraceCRT (eisEmbedding eisEmbedding_ne_zero)
 open SecondPassArithmetic (firstFrequencyDisk outside_firstFrequencyDisk columnLog_norm_upper)
 

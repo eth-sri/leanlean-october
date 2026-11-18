@@ -97,7 +97,7 @@ theorem rational_energy_dilated_cover {K : ℕ} (hK : 1 ≤ K)
     exact Real.rpow_le_rpow_of_exponent_le hT hhi
   have hbalance2 : T ≤ (T^m)^k*W.card := by
     rw [hHk, hRpow, ← Real.rpow_add hTp]
-    simpa only [Real.rpow_one] using
+    simpa using
       Real.rpow_le_rpow_of_exponent_le hT (show 1 ≤ (k : ℝ)*m+r by linarith)
   have hh := hbound (k-1) (T^m) (Real.rpow_pos_of_pos hTp _) H hH hHpow
     T t₀ hTp.le A hA W hW hsep

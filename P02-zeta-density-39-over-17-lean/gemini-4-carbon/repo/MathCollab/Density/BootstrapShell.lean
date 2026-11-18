@@ -27,15 +27,12 @@ theorem local_comparison_from_supremum (w : ComparisonCutoff) {κ : ℝ} (d : La
         (localSet U H j).card * ((d.N : ℝ)^2*(M : ℝ)^2+4*(d.N : ℝ)*H) := by
   have hHp : 0 < H := by linarith
   have hNp : (0 : ℝ) < d.N := by exact_mod_cast d.N_pos
-  have hLp : 0 < L := hNp.trans_le hL
   have hscale := reflection_recursive_scale d.N_pos (by linarith [d.T_ge_two]) hL hHp hHT hM
-  have hMp := (reflectionBlock_scale_bounds hLp hHp hM).1
   have hUW := localSet_subset_original hU H j
   by_cases hne : (localSet U H j).Nonempty
   · have hfamily := mem_bootstrapFamily.mpr ⟨hUW, hne⟩
-    have hQ := kernelEnergy_le_bootstrapBound w.toReflectionCutoff d hfamily hscale
     have hS := (uniform_comparison w).choose_spec.2 d.T d.V d.N M d.a (localSet U H j)
-      d.N_pos hMp hscale.2 d.V_pos (oneSeparated_subset d.separated hUW) d.coefficients
+      d.N_pos ((reflectionBlock_scale_bounds (hNp.trans_le hL) hHp hM).1) hscale.2 d.V_pos (oneSeparated_subset d.separated hUW) d.coefficients
       (fun t ht => d.large t (hUW ht))
     have hB := bootstrapBound_nonneg w.toReflectionCutoff d hW
     have hb := bootstrapScalar_nonneg d.T d.V d.N
@@ -51,7 +48,7 @@ theorem local_comparison_from_supremum (w : ComparisonCutoff) {κ : ℝ} (d : La
               (((d.N : ℝ)*M)^2+4*(d.N : ℝ)*H)) := by
         apply add_le_add le_rfl
         apply mul_le_mul_of_nonneg_left _ (sq_nonneg _)
-        exact hQ.trans (mul_le_mul_of_nonneg_left hdd (by positivity))
+        exact (kernelEnergy_le_bootstrapBound w.toReflectionCutoff d hfamily hscale).trans (mul_le_mul_of_nonneg_left hdd (by positivity))
       _ = _ := by ring
   · simp only [Finset.not_nonempty_iff_eq_empty.mp hne, completePairEnergy, Finset.sum_empty,
       Finset.card_empty, Nat.cast_zero, mul_zero, zero_mul, add_zero, le_refl]
@@ -80,10 +77,10 @@ theorem localReflectionEnergy_from_supremum (w : ComparisonCutoff) {κ : ℝ} (d
   let C := comparisonConstant w
   let F := 16*C*b*(d.N : ℝ)*H+B*b^3*(16*(d.N : ℝ)^2*H+4*(d.N : ℝ)*L^2)
   have hHp : 0 < H := by linarith
-  have hLp : 0 < L := (by exact_mod_cast d.N_pos : (0 : ℝ) < d.N).trans_le hL
-  have hb : 0 ≤ b := bootstrapScalar_nonneg d.T d.V d.N
-  have hB : 0 ≤ B := bootstrapBound_nonneg w.toReflectionCutoff d hW
-  have hC : 0 ≤ C := comparisonConstant_nonneg w
+  have hLp := (by exact_mod_cast d.N_pos : (0 : ℝ) < d.N).trans_le hL
+  have hb := bootstrapScalar_nonneg d.T d.V d.N
+  have hB := bootstrapBound_nonneg w.toReflectionCutoff d hW
+  have hC := comparisonConstant_nonneg w
   have hF : 0 ≤ F := by dsimp [F]; positivity
   have hblock (M : ℕ) (hM : M ∈ reflectionBlocks L H) (j : ℤ) :
       (L^2/H)*completePairEnergy M (localSet U H j) ≤ F*(localSet U H j).card := by

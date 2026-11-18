@@ -12,10 +12,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentOriginalCommonHarmonic
-open HeckeFamily CanonicalQuadraticSieve
-open CenteredMomentCommonRadialData CenteredMomentSourceProfileMass CenteredMomentSourceMass
-open CenteredMomentSupportedZeroEnergy CenteredMomentSourceZeroEnergy CenteredMomentAddedZeroUniform
-open CenteredMomentSecondActiveCount CenteredMomentActiveSource CenteredMomentCommonHarmonicMass
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData CenteredMomentSourceProfileMass CenteredMomentSourceMass CenteredMomentSupportedZeroEnergy CenteredMomentSourceZeroEnergy CenteredMomentAddedZeroUniform CenteredMomentSecondActiveCount CenteredMomentActiveSource CenteredMomentCommonHarmonicMass
 local notation "O" => ActualEisensteinCubic.O
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 local instance : DecidableEq (ι⊕Fin 2) := Classical.decEq _
@@ -63,10 +60,8 @@ omit [DecidableEq ι] in
       seed∣C ∧ seed∣D ∧ (Ideal.absNorm C:ℝ)≤sourceRadius s ∧ (Ideal.absNorm D:ℝ)≤sourceRadius s:=by
   let S:=finiteColumns (Fintype.piFinset s.pools)
   let β:=coefficient s R seed
-  have hm (I:Ideal O) (_:I∈S) (hI:β I≠0):seed∣I:=original_column_mask s R seed I hI
-  have hp:(C,D)∈commonShell S β (Ideal.absNorm (CenteredMomentRankinRadical.commonRadical C D):ℝ):=
-    Finset.mem_filter.mpr ⟨hlabel,le_rfl⟩
-  have hh:=active_common_data S β seed hs hm _ (C,D) hp
+  have hm (I:Ideal O) (_:I∈S) (hI:β I≠0) :=original_column_mask s R seed I hI
+  have hh:=active_common_data S β seed hs hm _ (C,D) (Finset.mem_filter.mpr ⟨hlabel,le_rfl⟩)
   have hn:=commonLabel_norm_bounds S β (sourceRadius s)
     (fun I _ hI=>(original_column_norm s R seed I hz₁ hz₂ hI).2) C D hlabel
   exact ⟨hh.1,hh.2.1,hh.2.2.1,hh.2.2.2.1,hh.2.2.2.2,hn⟩

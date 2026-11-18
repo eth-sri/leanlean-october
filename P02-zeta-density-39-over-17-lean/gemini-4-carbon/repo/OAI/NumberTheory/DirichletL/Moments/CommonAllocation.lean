@@ -10,8 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentCommonAllocation
-open CenteredMomentSupport CenteredMomentCommonSectors CenteredMomentExtraction
-open CenteredMomentHeckeExpansion CenteredMomentRectangle HeckeFamily IdealMobiusDivisorSum
+open CenteredMomentSupport CenteredMomentCommonSectors CenteredMomentExtraction CenteredMomentHeckeExpansion CenteredMomentRectangle HeckeFamily IdealMobiusDivisorSum
 local notation "O" => ActualEisensteinCubic.O
 
 theorem extract_coprime_product (C a : Ideal O) (hC : C≠0) (ha : a≠0)
@@ -31,8 +30,7 @@ theorem tuple_products {ι : Type*} [Fintype ι] (v : ι → Ideal O) (C a : Ide
     (hC : C≠0) (ha : a≠0) (hCa : IsCoprime C a) (hv : ∏ i,v i=C*a) :
     (∏ i,supportExtract (v i) (primeSupport C))=C ∧
       (∏ i,supportResidual (v i) (primeSupport C))=a := by
-  have hv0 : ∏ i,v i≠0 := hv.symm ▸ mul_ne_zero hC ha
-  have hi (i : ι) : v i≠0 := Finset.prod_ne_zero_iff.mp hv0 i (Finset.mem_univ _)
+  have hi (i : ι) := Finset.prod_ne_zero_iff.mp (hv.symm ▸ mul_ne_zero hC ha) i (Finset.mem_univ _)
   constructor
   · rw [← supportExtract_prod Finset.univ v (fun i _ => hi i),hv]
     exact extract_coprime_product C a hC ha hCa

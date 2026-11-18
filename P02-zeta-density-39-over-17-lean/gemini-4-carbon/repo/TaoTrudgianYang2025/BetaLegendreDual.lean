@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaSlopeInverse
 
 @[expose] public section
@@ -39,8 +49,7 @@ theorem modelPhaseLegendreDual_hasDerivAt {σ δ : ℝ} {F : ℝ → ℝ}
     {v : ℝ} (hv : v ∈ modelPhaseSlopeRange F) :
     HasDerivAt (modelPhaseLegendreDual F) (modelPhaseInverseSlope F v) v := by
   have hi := (modelPhaseInverseSlope_hasStrictDerivAt hσ hδ hF hv).hasDerivAt
-  have hf := (approximateModelPhase_contDiffAt hF (modelPhaseInverseSlope_mem hv)).differentiableAt (by simp : (∞ : WithTop ℕ∞) ≠ 0)
-  convert ((hasDerivAt_id v).mul hi).sub (hf.hasDerivAt.comp v hi) using 1
+  convert ((hasDerivAt_id v).mul hi).sub (((approximateModelPhase_contDiffAt hF (modelPhaseInverseSlope_mem hv)).differentiableAt (by simp : (∞ : WithTop ℕ∞) ≠ 0)).hasDerivAt.comp v hi) using 1
   · rfl
   · rw [deriv_modelPhaseInverseSlope_apply hv, id_eq]
     ring

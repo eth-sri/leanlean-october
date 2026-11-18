@@ -14,7 +14,7 @@ def weightedCriticalMean (A : ℕ) (γ : ℝ) : ℝ :=
 
 theorem integrable_weightedCriticalMean (A : ℕ) (hA : 3 ≤ A) (γ : ℝ) :
     Integrable (fun t : ℝ => ‖riemannZeta ((1/2 : ℂ)+((γ+t : ℝ) : ℂ)*I)‖/(1+|t|)^A) := by
-  have hc : Continuous (fun t : ℝ => ‖riemannZeta ((1/2 : ℂ)+((γ+t : ℝ) : ℂ)*I)‖/(1+|t|)^A) := by
+  have hc : Continuous (fun t : ℝ => ‖riemannZeta ((1/2)+((γ+t : ℝ) : ℂ)*I)‖/(1+|t|)^A) := by
     apply Continuous.div
     · apply Continuous.norm
       apply continuous_iff_continuousAt.mpr
@@ -31,9 +31,9 @@ theorem integrable_weightedCriticalMean (A : ℕ) (hA : 3 ≤ A) (γ : ℝ) :
   apply Filter.Eventually.of_forall
   intro t
   rw [Real.norm_of_nonneg (by positivity : 0 ≤
-    ‖riemannZeta ((1/2 : ℂ)+((γ+t : ℝ) : ℂ)*I)‖/(1+|t|)^A)]
+    ‖riemannZeta ((1/2)+((γ+t : ℝ) : ℂ)*I)‖/(1+|t|)^A)]
   have hzt := norm_riemannZeta_critical_le_linear (γ+t)
-  have hz : ‖riemannZeta ((1/2 : ℂ)+((γ+t : ℝ) : ℂ)*I)‖ ≤ 4*(1+|γ|)*(1+|t|) := by
+  have hz : ‖riemannZeta ((1/2)+((γ+t : ℝ) : ℂ)*I)‖ ≤ 4*(1+|γ|)*(1+|t|) := by
     have hab := abs_add_le γ t
     nlinarith [mul_nonneg (abs_nonneg γ) (abs_nonneg t)]
   have hp : (1+|t|)^3 ≤ (1+|t|)^A := pow_le_pow_right₀ (by linarith [abs_nonneg t]) hA
@@ -82,14 +82,13 @@ theorem uniform_smoothMollifierBlock_mean_bound {ψ : ℝ → ℝ} {a b : ℝ}
       ‖smoothMollifierBlock ψ ρ X N q‖ ≤ ‖smoothDetectorResidue ψ ρ X N q‖ +
         C*Real.sqrt X*N^(1/2-ρ.re)*weightedCriticalMean A ρ.im := by
   obtain ⟨C,hC,h⟩ := uniform_smoothDetector_critical_integral_bound hψ ha hb hs A hA
-  let c : ℂ := ((1/(2*Real.pi) : ℝ) : ℂ)
+  let c := ((1/(2*Real.pi) : ℝ) : ℂ)
   refine ⟨‖c‖*C, by positivity, ?_⟩
   intro ρ X N q hβ hβ' hX hN hq
   rw [smoothMollifierBlock_contour_identity hψ ha hb hs X hN hq hβ hβ']
   apply (norm_add_le _ _).trans
   apply add_le_add le_rfl
   rw [norm_mul]
-  have hh := mul_le_mul_of_nonneg_left (h ρ X N q hβ hβ'.le hX hN hq) (norm_nonneg c)
-  simpa only [mul_assoc] using hh
+  simpa only [mul_assoc] using (mul_le_mul_of_nonneg_left (h ρ X N q hβ hβ'.le hX hN hq) (norm_nonneg c))
 
 end MathCollab.Density.Stronger

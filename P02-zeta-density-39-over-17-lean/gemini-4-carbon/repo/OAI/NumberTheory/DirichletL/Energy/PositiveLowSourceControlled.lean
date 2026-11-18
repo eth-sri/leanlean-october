@@ -9,15 +9,11 @@ public import OAI.NumberTheory.DirichletL.Energy.LowBandEmpty
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
 open Filter
+open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyPositiveLowSourceControlled
-open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyReferenceLowBands
-open CenteredMomentEnergyNaturalLowSourceBound CenteredMomentFiniteProfileExceptional
-open CenteredMomentFirstSourceReduction CenteredMomentAmplificationChildInput
-open CenteredMomentNaturalFixedRaySource CenteredMomentSecondHeightFamily
+open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyReferenceLowBands CenteredMomentEnergyNaturalLowSourceBound CenteredMomentFiniteProfileExceptional CenteredMomentFirstSourceReduction CenteredMomentAmplificationChildInput CenteredMomentNaturalFixedRaySource CenteredMomentSecondHeightFamily
 local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
 local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
@@ -56,7 +52,7 @@ theorem actual_low_stages_from_physical
   refine ⟨hZ.1,?_⟩
   intro Bmask L Lslot rho κ e η₀ Q S J Cphysical Cprevious hκ hCphysical hCprevious he hsave hold hmass
   let Cm:=Cphysical+Cprevious/Cfixed
-  have hdiv:0≤Cprevious/Cfixed:=div_nonneg hCprevious hCfixed.le
+  have hdiv :=div_nonneg hCprevious hCfixed.le
   have hCm:0≤Cm:=by dsimp [Cm];positivity
   have hcc:Cphysical≤Cm:=by dsimp [Cm];linarith
   have heq:Cfixed*(Cm+1)=Cfixed*(Cphysical+1)+Cprevious:=by
@@ -67,9 +63,7 @@ theorem actual_low_stages_from_physical
     rw [heq]
     have hh:0≤Cfixed*(Cphysical+1):=by positivity
     linarith
-  have hold':PositiveAt (α:=α) M H hH W bslot a b bΦ Bmask L Lslot lo hi rho e κ Z η₀ Q
-      J (insert (0,0) S) (Cfixed*(Cm+1)):=
-    positiveAt_transport (α:=α) M H hH W bslot a b bΦ Bmask L Lslot lo hi rho e κ Z
+  have hold' := positiveAt_transport (α:=α) M H hH W bslot a b bΦ Bmask L Lslot lo hi rho e κ Z
       a b bΦ Bmask L rho e η₀ Q J J S (insert (0,0) S) Cprevious (Cfixed*(Cm+1)) hZ.1.le
       le_rfl le_rfl le_rfl le_rfl le_rfl le_rfl le_rfl le_rfl (Finset.subset_insert _ _)
       hCprevious hprev hold
@@ -79,11 +73,10 @@ theorem actual_low_stages_from_physical
       p X₁ X₂ hX₁ hX₂ hc₁ hc₂ hcap hlow
     have hh:=hmass T θ w σ freq t height hw hwL hσlo hσhi hheight hfreq state hQ hlo hs
       p X₁ X₂ hX₁ hX₂ hc₁ hc₂ hcap hlow
-    have hz:0≤Z:=zero_le_one.trans hZ.1.le
+    have hz :=zero_le_one.trans hZ.1.le
     apply hh.trans
     gcongr
-  have hh:=hZ.2 Bmask L Lslot rho κ e η₀ Q S J Cm hκ hCm he hsave hold' hmass'
-  simpa only [heq] using hh
+  simpa only [heq] using (hZ.2 Bmask L Lslot rho κ e η₀ Q S J Cm hκ hCm he hsave hold' hmass')
 
 end SevenEighths.CenteredMomentEnergyPositiveLowSourceControlled
 

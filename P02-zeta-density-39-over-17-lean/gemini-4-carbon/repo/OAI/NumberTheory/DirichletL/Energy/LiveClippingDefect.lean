@@ -11,8 +11,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyLiveClippingDefect
-open HeckeFamily CenteredMomentHeckeHeight CenteredMomentRetainedEnergy
-open CenteredMomentEnergyBands CenteredMomentFiniteProfileExceptional
+open HeckeFamily CenteredMomentHeckeHeight CenteredMomentRetainedEnergy CenteredMomentEnergyBands CenteredMomentFiniteProfileExceptional
 local notation "O" => HeckeFamily.O
 
 theorem rowTwistedSum_support_witness (η : Character) (m A z : O)
@@ -68,14 +67,13 @@ theorem positiveSlotRow_profiles_scales (η : Character) (m A z : O)
 
 theorem length_le_raw_add_endpoint (Z X b : ℝ) (hZ : 1 < Z) (hX : 0 < X)
     (hs : 1 ≤ b * X) : length Z X ≤ Real.logb Z X + Real.logb Z (max 1 b) := by
-  have hB : 0 < max 1 b := zero_lt_one.trans_le (le_max_left _ _)
   have hc : max 1 X ≤ max 1 b * X := by
     apply max_le
     · exact hs.trans (mul_le_mul_of_nonneg_right (le_max_right _ _) hX.le)
-    · simpa using mul_le_mul_of_nonneg_right (le_max_left (1 : ℝ) b) hX.le
+    · simpa using mul_le_mul_of_nonneg_right (le_max_left 1 b) hX.le
   have hh := Real.logb_le_logb_of_le hZ
-    (zero_lt_one.trans_le (le_max_left (1 : ℝ) X)) hc
-  rw [Real.logb_mul hB.ne' hX.ne'] at hh
+    (zero_lt_one.trans_le (le_max_left 1 X)) hc
+  rw [Real.logb_mul (zero_lt_one.trans_le (le_max_left _ _)).ne' hX.ne'] at hh
   simpa [length, add_comm] using hh
 
 theorem total_clipping_defect (Z X₁ X₂ b : ℝ) (hZ : 1 < Z)
@@ -178,8 +176,6 @@ theorem robust_slot_budgets (M total ell kappa defect : ℝ)
     (hlarge : 5*M/6-defect ≤ total+ell)
     (hcap : total+ell+(6*kappa-1)*ell ≤ M) :
     ell ≤ M/21+2*defect/7 ∧ (6*kappa-1)*ell ≤ M/6+defect := by
-  have hkell : 7/2*ell ≤ (6*kappa-1)*ell :=
-    mul_le_mul_of_nonneg_right (by linarith) hell
   constructor <;> nlinarith
 
 theorem robust_defect_le_width (M xi defect : ℝ) (hM : 0 ≤ M) (hxi : 0 ≤ xi)
@@ -207,13 +203,9 @@ theorem robust_reflected_low (M short along ell z kappa xi defect reflected : �
       reflected+short+6*kappa*z ≤ 13*M/14+xi+11*defect/7 := by
   have haz : 0 < along := by
     by_contra hn
-    have ha : along ≤ 0 := le_of_not_gt hn
-    rw [max_eq_left ha] at hhigh
+    rw [max_eq_left (le_of_not_gt hn)] at hhigh
     linarith
   rw [max_eq_right haz.le] at hhigh
-  have hzbudget : (6*kappa-1)*z ≤ M/6+defect :=
-    (mul_le_mul_of_nonneg_left hze (by linarith)).trans hbudget
-  have hzcap : z ≤ M/21+2*defect/7 := hze.trans he
   refine ⟨haz, ?_⟩
   by_cases hr : 0 ≤ M-along+xi
   · rw [max_eq_right hr] at href
@@ -228,8 +220,7 @@ theorem robust_reflected_low_admissible (M xi defect short reflected z kappa : �
     reflected+short+z ≤ 5*M/6 ∧ reflected+short+6*kappa*z ≤ M := by
   constructor <;> linarith
 
-open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceDeletionBudget
-open CenteredMomentEnergyReferenceDeletionCapacity
+open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceDeletionBudget CenteredMomentEnergyReferenceDeletionCapacity
 
 theorem robust_deleted_reference_cases (Z M X₁ X₂ ell z κ ξ e reflected : ℝ)
     (hZ : 1 < Z) (hM : 0 ≤ M) (hX₁ : 0 < X₁) (hX₂ : 0 < X₂)
@@ -246,7 +237,6 @@ theorem robust_deleted_reference_cases (Z M X₁ X₂ ell z κ ξ e reflected : 
     (0 < Real.logb Z (comparisonSecond Z M X₁ X₂ / ((∏ I ∈ D₂, I).absNorm : ℝ)) ∧
       reflected+short+z ≤ 16*M/21+ξ+4*e/7 ∧
       reflected+short+6*κ*z ≤ 13*M/14+ξ+11*e/7) := by
-  dsimp only
   have hb := robust_balanced_long_nonneg M (Real.logb Z (X₁*X₂)) ell κ ξ e
     hM hell hκ hξ hlarge hcap hreserve
   have hpos := comparison_positive Z M X₁ X₂ (zero_lt_one.trans hZ) hX₁ hX₂
@@ -268,7 +258,6 @@ theorem robust_deleted_reference_cases (Z M X₁ X₂ ell z κ ξ e reflected : 
   by_cases hlo : length Z (comparisonFirst Z M / ((∏ I ∈ D₁, I).absNorm : ℝ))+
       length Z (comparisonSecond Z M X₁ X₂ / ((∏ I ∈ D₂, I).absNorm : ℝ))+z ≤ 5*M/6
   · refine Or.inl ⟨hlo, ?_⟩
-    have hkc := mul_le_mul_of_nonneg_left hze (by linarith : 0 ≤ 6*κ)
     nlinarith
   · apply Or.inr
     obtain ⟨hellbound, hslot⟩ := robust_slot_budgets M (Real.logb Z (X₁*X₂)) ell κ e

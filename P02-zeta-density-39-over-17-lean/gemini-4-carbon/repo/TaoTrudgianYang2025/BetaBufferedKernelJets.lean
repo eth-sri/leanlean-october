@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaFourierCarrierBounds
 public import TaoTrudgianYang2025.BetaTaylorJets
 public import TaoTrudgianYang2025.BetaFourierModes
@@ -55,7 +65,7 @@ theorem modelPhaseBufferedKernel_uniform_second_derivative
     funext x
     simp only [modelPhaseWeightedKernel,div_one]
   by_cases hu : u ∈ tsupport χ
-  · have hu' : u ∈ Ioo (1 : ℝ) 2 :=
+  · have hu' : u ∈ Ioo 1 2 :=
       modelPhaseBufferedCutoff_tsupport_model hη hl hr hu
     have hphase := intervalC2Bound_fourierChar_of_derivative_bounds (a := u) (b := u) hK
       (F := F) (fun x hx => by
@@ -87,11 +97,11 @@ theorem modelPhaseBufferedKernel_uniform_second_derivative
     convert hp.second_le u ⟨le_rfl,le_rfl⟩ using 1
     dsimp [χ,D]
     ring
-  · have hz : modelPhaseWeightedKernel χ F T 1 =ᶠ[𝓝 u] fun _ => (0 : ℂ) := by
+  · have hz : modelPhaseWeightedKernel χ F T 1 =ᶠ[𝓝 u] fun _ => 0 := by
       filter_upwards [notMem_tsupport_iff_eventuallyEq.mp hu] with x hx
       simp only [modelPhaseWeightedKernel,div_one,hx,Pi.zero_apply,Complex.ofReal_zero,zero_mul]
     rw [hz.iteratedDeriv_eq 2]
-    simp only [iteratedDeriv_const,show (2 : ℕ) ≠ 0 by norm_num,ite_false,norm_zero]
+    simp only [iteratedDeriv_const,show 2 ≠ 0 by norm_num,ite_false,norm_zero]
     have hM₀ : 0 ≤ M := by linarith
     have hD₀ : 0 ≤ D := by linarith
     positivity

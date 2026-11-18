@@ -8,9 +8,8 @@ public import OAI.NumberTheory.DirichletL.Descent.Basic
 namespace OAI
 
 noncomputable section
+open ActualEisensteinCubic IdealMobiusDivisorSum CompletedGauss CanonicalQuadraticSieve SevenEighths.InverseMoment SevenEighths.InverseInitialArithmetic
 open scoped BigOperators Classical
-open ActualEisensteinCubic IdealMobiusDivisorSum CompletedGauss CanonicalQuadraticSieve
-open SevenEighths.InverseMoment SevenEighths.InverseInitialArithmetic
 namespace SevenEighths.InverseInitialQuotientGeometry
 
 local notation "Eis" => ActualEisensteinCubic.O
@@ -47,7 +46,6 @@ theorem quotientSet_eq_initial {J : ℕ} (S : Finset (Source (ι:=ι) J))
   rw [initialQuotientSet, Finset.image_image]
   apply Finset.image_congr
   intro x hx
-  change idealQuotient (sourceIdeal p x.divisor) (sourceIdeal p x.common) = _
   exact source_quotient p hp x.common x.divisor (hdiv x hx)
 
 include hp in
@@ -76,12 +74,8 @@ theorem retained_norm_windows {J : ℕ} (S : Finset (Source (ι:=ι) J))
     (Ideal.absNorm (sourceIdeal p x.common) : ℝ) ≤ bC*Z^B ∧
       ad*Z^θ ≤ (Ideal.absNorm (sourceIdeal p x.divisor) : ℝ) := by
   have hn := (Finset.mem_filter.mp hx).2
-  have hnC : ψC ((Ideal.absNorm (sourceIdeal p x.common) : ℝ)/Z^B) ≠ 0 :=
-    (mul_ne_zero_iff.mp (mul_ne_zero_iff.mp hn).1).2
-  have hnd : ψd ((Ideal.absNorm (sourceIdeal p x.divisor) : ℝ)/Z^θ) ≠ 0 :=
-    (mul_ne_zero_iff.mp hn).2
-  exact ⟨(div_le_iff₀ (Real.rpow_pos_of_pos hZ _)).mp (hC hnC).2,
-    (le_div_iff₀ (Real.rpow_pos_of_pos hZ _)).mp (hd hnd).1⟩
+  exact ⟨(div_le_iff₀ (Real.rpow_pos_of_pos hZ _)).mp (hC ((mul_ne_zero_iff.mp (mul_ne_zero_iff.mp hn).1).2)).2,
+    (le_div_iff₀ (Real.rpow_pos_of_pos hZ _)).mp (hd ((mul_ne_zero_iff.mp hn).2)).1⟩
 
 include hp in
 omit [∀ i, (Ideal.span {p i}).IsMaximal] in
@@ -108,9 +102,7 @@ theorem retained_quotient_bound {J : ℕ} (S : Finset (Source (ι:=ι) J))
     calc
       _ = Z^(-η)*Z^θ := by rw [←Real.rpow_add hZ]; congr 1; ring
       _ ≤ _ := mul_le_mul_of_nonneg_right hdlo (Real.rpow_pos_of_pos hZ _).le
-  calc
-    _ ≤ Z^(B+η)/Z^(θ-η) := div_le_div₀ (by positivity) hc (Real.rpow_pos_of_pos hZ _) he
-    _ = _ := by rw [←Real.rpow_sub hZ]; congr 1; ring
+  exact (div_le_div₀ (by positivity) hc (Real.rpow_pos_of_pos hZ _) he).trans_eq (by rw [←Real.rpow_sub hZ]; congr 1; ring)
 
 include hp in
 omit [∀ i, (Ideal.span {p i}).IsMaximal] in
@@ -119,9 +111,8 @@ theorem nonempty_radius {J : ℕ} (S : Finset (Source (ι:=ι) J)) (Z P η : ℝ
     (hnorm : ∀ t ∈ quotientSet p S, (Ideal.absNorm t : ℝ) ≤ Z^(P+2*η)) :
     1 ≤ Z^(P+2*η) ∧ 0 ≤ P+2*η := by
   obtain ⟨t,ht⟩ := hne
-  have ht0 := quotientSet_nonzero p hp S t ht
   have hn : (1:ℝ) ≤ Ideal.absNorm t := by
-    exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr ht0)
+    exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr (quotientSet_nonzero p hp S t ht))
   have hh := hn.trans (hnorm t ht)
   refine ⟨hh,?_⟩
   exact (Real.rpow_le_rpow_left_iff hZ).mp (by simpa only [Real.rpow_zero] using hh)
@@ -181,9 +172,8 @@ theorem assigned_norm_bound {σ : Type*} (slots : Finset σ) (q : σ → Eis)
   have hb : ∀ i ∈ slots, (Ideal.absNorm (Ideal.span {q i}) : ℝ) ≤ b i*Z^(z i) := by
     intro i hi
     exact (div_le_iff₀ (Real.rpow_pos_of_pos hZ _)).mp (hW i hi (hret i hi)).2
-  have hp := Finset.prod_le_prod₀ (fun i _ => (Nat.cast_nonneg (Ideal.absNorm (Ideal.span {q i})))) hb
   simpa only [assignedElement,FiniteGaussPhase.span_finset_prod,map_prod,Nat.cast_prod,
-    Finset.prod_mul_distrib,←Real.rpow_sum_of_pos hZ,assignedCenter] using hp
+    Finset.prod_mul_distrib,←Real.rpow_sum_of_pos hZ,assignedCenter] using (Finset.prod_le_prod₀ (fun i _ => (Nat.cast_nonneg (Ideal.absNorm (Ideal.span {q i})))) hb)
 
 theorem assigned_norm_power {σ : Type*} (slots : Finset σ) (q : σ → Eis)
     (z a b : σ → ℝ) (W : σ → ℝ → ℂ) (Z η : ℝ) (hZ : 0 < Z)
@@ -193,9 +183,7 @@ theorem assigned_norm_power {σ : Type*} (slots : Finset σ) (q : σ → Eis)
     (Ideal.absNorm (Ideal.span {assignedElement slots q}) : ℝ) ≤
       Z^(assignedCenter slots z+η) := by
   apply (assigned_norm_bound slots q z a b W Z hZ hW hret).trans
-  calc
-    _ ≤ Z^η*Z^(assignedCenter slots z) := mul_le_mul_of_nonneg_right hthreshold (by positivity)
-    _ = _ := by rw [←Real.rpow_add hZ]; congr 1; ring
+  exact (mul_le_mul_of_nonneg_right hthreshold (by positivity)).trans_eq (by rw [←Real.rpow_add hZ]; congr 1; ring)
 
 include hp in
 omit [∀ i, (Ideal.span {p i}).IsMaximal] in

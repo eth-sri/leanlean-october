@@ -26,8 +26,7 @@ lemma physicalDyadNorm_nonneg {K : ℕ} (S : Finset (Ideal O)) (hS : SourceExclu
     (hmax : ∀P∈S,P.IsMaximal) (η : Character) (R : Finset FreeRow)
     (T : Fin K→Finset PrimeIdeal) (hT : ∀i P,P∈T i→P.val∉S)
     (W : Fin K→ℝ→ℂ) (Y : Fin K→ℝ) (x w z : ℂ) :
-    0≤physicalDyadNorm S hS hmax η R T hT W Y x w z := by
-  exact Finset.sum_nonneg fun u hu=>Finset.sum_nonneg fun P hP=>norm_nonneg _
+    0≤physicalDyadNorm S hS hmax η R T hT W Y x w z := Finset.sum_nonneg fun u hu=>Finset.sum_nonneg fun P hP=>norm_nonneg _
 
 lemma physicalDyadNorm_onLines_aestronglyMeasurable {K : ℕ}
     (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
@@ -45,7 +44,7 @@ lemma physicalDyadNorm_onLines_aestronglyMeasurable {K : ℕ}
         (fun i=>(P i).val) (fun i=>hT i (P i).val (P i).property) W Y σ υ r heightMeasure).norm.const_mul
           (((Ideal.span {u.val}:Ideal O).absNorm:ℝ)^(-r)))) using 1
   ext p
-  simp only [Finset.sum_apply]
+  simp
 
 theorem calibrated_physical_dyad_integral (K : ℕ) (e δ a b r B σ υ : ℝ)
     (he : 0<e) (he' : e<1/1000) (hδ : 0<δ) (hδ' : δ≤1)

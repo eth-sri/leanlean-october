@@ -7,9 +7,8 @@ public import OAI.NumberTheory.DirichletL.CubicSieve.DescentEnergy
 namespace OAI
 
 namespace SevenEighths.CubicSieve
+open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge CanonicalQuadraticSieve IdealMobiusDivisorSum SecondPassArithmetic
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
-open CanonicalQuadraticSieve IdealMobiusDivisorSum SecondPassArithmetic
 noncomputable section
 local notation "O" => ActualEisensteinCubic.O
 
@@ -93,9 +92,8 @@ lemma compact_gcd_mobius_descent {n : Type*} [Fintype n]
     have hh := (mem_idealDivisors (primaryGenerator_ne_zero_ideal D hD)).mp hE
     rw [he, zero_dvd_iff] at hh
     exact primaryGenerator_ne_zero_ideal D hD hh
-  have hgen := idealGenerator_ne_zero E hE0
   congr 1
-  rw [dividedMajorant_tsum _ _ hgen M hM, span_idealGenerator]
+  rw [dividedMajorant_tsum _ _ (idealGenerator_ne_zero E hE0) M hM, span_idealGenerator]
   apply majorant_coprime_tsum
   have hNE : 0 < (Ideal.absNorm E : ℝ) := by
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hE0)
@@ -131,11 +129,7 @@ theorem finite_energy_le_compact_descendants {n : Type*} [Fintype n]
     cubic_weighted_energy_eq_gcd_blocks (rowMajorantBall M) _ cols a]
   have he (D : Ideal O) (hD : D ∈ gcdPool cols) :=
     compact_gcd_mobius_descent D (gcdPool_cubic_admissible cols hc D hD).2 cols hc a M hM
-  calc
-    _ ≤ ∑ D ∈ gcdPool cols,
-        ‖∑ z ∈ rowMajorantBall M, rowMajorant (‖eisEmbedding z‖^2 / M) *
-          ∑ j, ∑ k, cubicGcdTerm D cols a z j k‖ := norm_sum_le _ _
-    _ ≤ _ := by
+  exact (norm_sum_le _ _).trans (by
       apply Finset.sum_le_sum
       intro D hD
       rw [he D hD]
@@ -144,7 +138,7 @@ theorem finite_energy_le_compact_descendants {n : Type*} [Fintype n]
       intro E hE
       rw [norm_mul]
       exact (mul_le_mul_of_nonneg_right (QuadraticInitialBound.norm_ideal_moebius_le_one E)
-        (norm_nonneg _)).trans_eq (one_mul _)
+        (norm_nonneg _)).trans_eq (one_mul _))
 
 end
 end SevenEighths.CubicSieve

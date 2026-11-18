@@ -28,9 +28,6 @@ namespace MathCollab.Density.Stronger.Atkinson
 
 theorem fresnelGaussianValue_eq_cartesian {c : ℝ} (hc : 0 < c) :
     fresnelGaussianValue c = (1 - I) / ((2 * Real.sqrt c : ℝ) : ℂ) := by
-  have hs : 0 < Real.sqrt c := Real.sqrt_pos.2 hc
-  have hsC : (Real.sqrt c : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hs.ne'
-  have hcC : (c : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hc.ne'
   have hsq : ((1 - I) / ((2 * Real.sqrt c : ℝ) : ℂ)) ^ 2 =
       -I / ((2 * c : ℝ) : ℂ) := by
     push_cast
@@ -53,8 +50,6 @@ theorem fresnelGaussianValue_eq_phase {c : ℝ} (hc : 0 < c) :
     show -Real.pi / 4 = -(Real.pi / 4) by ring,
     Real.cos_neg, Real.sin_neg, Real.cos_pi_div_four, Real.sin_pi_div_four,
     Real.sqrt_mul (by norm_num : (0 : ℝ) ≤ 2)]
-  have hs : (Real.sqrt c : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.2 hc).ne'
-  have htwo : (Real.sqrt 2 : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr (by positivity)
   push_cast
   field_simp
   ring

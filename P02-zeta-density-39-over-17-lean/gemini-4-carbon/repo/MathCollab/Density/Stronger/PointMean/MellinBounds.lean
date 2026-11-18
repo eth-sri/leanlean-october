@@ -14,8 +14,7 @@ public import Mathlib.Analysis.SpecialFunctions.Exp
 
 @[expose] public section
 
-open Complex Filter ArithmeticFunction
-open MathCollab.Density.Stronger.Fourth.Digamma
+open Complex Filter ArithmeticFunction MathCollab.Density.Stronger.Fourth.Digamma
 open scoped BigOperators Topology
 set_option autoImplicit false
 noncomputable section
@@ -28,7 +27,7 @@ noncomputable def heathBrownSmoothedDivisorMajorant : ℝ :=
 
 theorem summable_heathBrownSmoothedDivisorMajorant :
     Summable (fun n : ℕ => (n : ℝ) * Real.exp (-(n : ℝ))) := by
-  simpa only [pow_one, one_mul, neg_one_mul] using
+  simpa using
     (Real.summable_pow_mul_exp_neg_nat_mul 1 (show (0 : ℝ) < 1 by norm_num))
 
 theorem heathBrownSmoothedDivisorMajorant_nonneg :
@@ -78,14 +77,9 @@ theorem norm_heathBrownSmoothedDivisorSeries_le
     ‖heathBrownSmoothedDivisorSeries s‖ ≤
       heathBrownSmoothedDivisorMajorant := by
   unfold heathBrownSmoothedDivisorSeries heathBrownSmoothedDivisorMajorant
-  calc
-    ‖∑' n : ℕ, heathBrownSmoothedDivisorTerm s n‖ ≤
-        ∑' n : ℕ, ‖heathBrownSmoothedDivisorTerm s n‖ :=
-      norm_tsum_le_tsum_norm (summable_norm_heathBrownSmoothedDivisorTerm hs)
-    _ ≤ ∑' n : ℕ, (n : ℝ) * Real.exp (-(n : ℝ)) :=
-      (summable_norm_heathBrownSmoothedDivisorTerm hs).tsum_le_tsum
+  exact (norm_tsum_le_tsum_norm (summable_norm_heathBrownSmoothedDivisorTerm hs)).trans ((summable_norm_heathBrownSmoothedDivisorTerm hs).tsum_le_tsum
         (norm_heathBrownSmoothedDivisorTerm_le hs)
-        summable_heathBrownSmoothedDivisorMajorant
+        summable_heathBrownSmoothedDivisorMajorant)
 
 theorem exists_norm_Gamma_heathBrown_residue_strip_le :
     ∃ C : ℝ, 0 < C ∧ ∀ (a v : ℝ), 5 / 4 ≤ a → a ≤ 3 / 2 →

@@ -23,7 +23,6 @@ theorem norm_weighted_sum_le_of_antitone
     (hanti : forall i, i + 1 < N -> f (i + 1) <= f i)
     (hpartial : forall j, j <= N -> ‖∑ i ∈ Finset.range j, g i‖ <= B) :
     ‖∑ i ∈ Finset.range N, f i • g i‖ <= f 0 * B := by
-  have hparts := Finset.sum_Ico_by_parts f g hN
   rw [Finset.range_eq_Ico]
   calc
     ‖∑ i ∈ Finset.Ico 0 N, f i • g i‖ =
@@ -31,12 +30,12 @@ theorem norm_weighted_sum_le_of_antitone
           f 0 • (∑ i ∈ Finset.range 0, g i) -
           ∑ i ∈ Finset.Ico 0 (N - 1),
             (f (i + 1) - f i) • (∑ j ∈ Finset.range (i + 1), g j)‖ :=
-      congrArg norm hparts
+      congrArg norm (Finset.sum_Ico_by_parts f g hN)
     _ = ‖(f (N - 1) : Complex) * (∑ i ∈ Finset.range N, g i) -
         ∑ i ∈ Finset.Ico 0 (N - 1),
           ((f (i + 1) - f i : Real) : Complex) *
             (∑ j ∈ Finset.range (i + 1), g j)‖ := by
-      simp only [Finset.sum_range_zero, Complex.real_smul, mul_zero, sub_zero]
+      simp
     _ <= ‖(f (N - 1) : Complex) * (∑ i ∈ Finset.range N, g i)‖ +
         ‖∑ i ∈ Finset.Ico 0 (N - 1),
           ((f (i + 1) - f i : Real) : Complex) * (∑ j ∈ Finset.range (i + 1), g j)‖ :=
@@ -59,8 +58,7 @@ theorem norm_weighted_sum_le_of_antitone
             intro i hi
             have hi' := Finset.mem_Ico.mp hi
             rw [norm_mul, norm_real, Real.norm_eq_abs,
-              abs_of_nonpos (sub_nonpos.mpr (hanti i (by omega)))]
-            rw [neg_sub]
+              abs_of_nonpos (sub_nonpos.mpr (hanti i (by omega))), neg_sub]
             exact mul_le_mul_of_nonneg_left (hpartial (i + 1) (by omega))
               (sub_nonneg.mpr (hanti i (by omega)))
     _ = f 0 * B := by
@@ -75,7 +73,7 @@ theorem logarithmicSum_eq_sum_range (t : Real) (A N : Nat) :
       ∑ n ∈ Finset.range N, unitaryPhase (logarithmicPhase t (A + n)) := by
   unfold logarithmicSum phaseSum
   rw [Finset.sum_Ico_eq_sum_range]
-  simp only [Nat.add_sub_cancel_left, Nat.cast_add]
+  simp
 
 /-- The actual critical-line Dirichlet block on `[A, A + N)`. -/
 noncomputable def criticalLineWeylBlock (Y : Real) (A N : Nat) : Complex :=
@@ -89,8 +87,7 @@ theorem criticalLineTerm_eq_cpow (Y : Real) (m : Nat) (hm : 0 < m) :
   have hw : (1 / Real.sqrt m : Real) =
       (m : Real) ^ (-(1 / 2 : Real)) := by
     rw [Real.sqrt_eq_rpow, one_div, Real.rpow_neg (Nat.cast_nonneg m)]
-  rw [Complex.real_smul, unitaryPhase_logarithmicPhase_eq_cpow _ _ hm, hw]
-  rw [Complex.ofReal_cpow (Nat.cast_nonneg m)]
+  rw [Complex.real_smul, unitaryPhase_logarithmicPhase_eq_cpow _ _ hm, hw, Complex.ofReal_cpow (Nat.cast_nonneg m)]
   simp only [Complex.ofReal_natCast]
   rw [← Complex.cpow_add _ _ (by exact_mod_cast Nat.ne_of_gt hm)]
   congr 2
@@ -105,7 +102,7 @@ theorem criticalLineWeylBlock_eq_cpow
   unfold criticalLineWeylBlock
   apply Finset.sum_congr rfl
   intro n _hn
-  simpa only [Nat.cast_add] using criticalLineTerm_eq_cpow Y (A + n) (by omega)
+  simpa using criticalLineTerm_eq_cpow Y (A + n) (by omega)
 
 /-- Abel summation transfers the uniform prefix Weyl estimate to the genuine
 `n^(-1/2-it)` critical-line weight. -/

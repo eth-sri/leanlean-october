@@ -64,13 +64,11 @@ theorem factorsThroughIdeal_iff (χ : MulChar R ℂ) (I : Ideal R) :
       exact ⟨φ.toUnitHom, hφ⟩
     · rintro ⟨φ, hφ⟩
       refine ⟨MulChar.ofUnitHom φ, ?_⟩
-      simpa only [MulChar.toUnitHom_eq, MulChar.ofUnitHom_eq,
-        Equiv.apply_symm_apply] using hφ
+      simpa using hφ
   rw [hfactor, exists_character_factor_iff]
   constructor
   · intro h u hu
-    have hunit := h ((quotientUnits_eq_one_iff I u).mpr hu)
-    exact congrArg Units.val hunit
+    exact congrArg Units.val (h ((quotientUnits_eq_one_iff I u).mpr hu))
   · intro h u hu
     apply Units.ext
     exact h u ((quotientUnits_eq_one_iff I u).mp hu)

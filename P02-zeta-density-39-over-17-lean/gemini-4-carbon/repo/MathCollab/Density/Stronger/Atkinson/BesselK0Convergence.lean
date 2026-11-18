@@ -29,8 +29,7 @@ theorem integrableOn_cpow_mul_exp_neg_mul_Ioi
       (x : ℂ) ^ (s - 1) * Complex.exp (-(x : ℂ))
     rw [Complex.ofReal_exp, Complex.ofReal_neg]
     ring
-  have hscaled : MellinConvergent (fun x => f (a * x)) s :=
-    (MellinConvergent.comp_mul_left (f := f) (s := s) ha).2 hbase
+  have hscaled := (MellinConvergent.comp_mul_left (f := f) (s := s) ha).2 hbase
   unfold MellinConvergent at hscaled
   refine hscaled.congr_fun ?_ measurableSet_Ioi
   intro x _

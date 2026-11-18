@@ -1,7 +1,16 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaTaylorGlobal
-public import TaoTrudgianYang2025.FresnelEvaluation
 public import Mathlib.Analysis.Fourier.FourierTransformDeriv
 
 @[expose] public section
@@ -53,7 +62,6 @@ theorem integral_betaQuadraticKernel_odd (T H : ℝ) :
   have h := intervalIntegral.integral_comp_neg f (a := -H) (b := H)
   simp_rw [hodd] at h
   rw [intervalIntegral.integral_neg,neg_neg] at h
-  change (∫ z in (-H)..H, f z) = 0
   linear_combination -h/2
 
 theorem integral_betaQuadraticKernel_eq_window (T H : ℝ) :
@@ -70,7 +78,7 @@ theorem norm_betaQuadraticWindow_sub_main {T H : ℝ} (hT : 0 < T) (hH : 0 < H) 
       (𝐞 (-(1 : ℝ)/8) : ℂ)/(Real.sqrt T : ℂ)‖ ≤ 4/(T*H*Real.pi) := by
   have h := norm_atkinsonQuadraticWindow_sub_fresnel_le (by linarith : 0 < T/2) hH
   rw [integral_betaQuadraticKernel_eq_window]
-  have he : (𝐞 (-(1 : ℝ)/8) : ℂ) = Complex.exp (((-Real.pi/4 : ℝ) : ℂ)*Complex.I) := by
+  have he : (𝐞 (-1/8) : ℂ) = Complex.exp (((-Real.pi/4 : ℝ) : ℂ)*Complex.I) := by
     rw [Real.fourierChar_apply]
     congr 1
     push_cast

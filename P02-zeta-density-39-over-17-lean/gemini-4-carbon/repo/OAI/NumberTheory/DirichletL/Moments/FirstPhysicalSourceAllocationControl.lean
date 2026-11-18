@@ -11,10 +11,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstPhysicalSource
-open CenteredMomentFirstAllocationGaussEnergy CenteredMomentCommonAllocationSum
-open CenteredMomentSourceLiveColumn CenteredMomentCommonRadialData
-open CenteredMomentAmplificationChildInput CenteredMomentSourceMass
-open CenteredMomentCommonProfile CenteredMomentAddedZeroUniform
+open CenteredMomentFirstAllocationGaussEnergy CenteredMomentCommonAllocationSum CenteredMomentSourceLiveColumn CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput CenteredMomentSourceMass CenteredMomentCommonProfile CenteredMomentAddedZeroUniform
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [Fintype ι]
 local instance firstAllocationControlDecidableEq {κ : Type*} : DecidableEq κ := Classical.decEq _
@@ -52,7 +49,7 @@ theorem allocated_control_mass (N : ℕ) (ε : ℝ) (hε : 0<ε) :
     (N+2) (ε/2) (half_pos hε)
   refine ⟨D^2,sq_pos_of_pos hD,?_⟩
   intro κ _ hn s C R hC τ t
-  have hN : (0:ℝ)<Ideal.absNorm C := CenteredMomentFirstScale.norm_pos C hC
+  have hN := CenteredMomentFirstScale.norm_pos C hC
   have hh := hcard (ι:=κ⊕Fin 2) (by simp only [Fintype.card_sum,Fintype.card_fin];omega)
     s.pools C hC
   have hs := pow_le_pow_left₀ (Nat.cast_nonneg (actualAllocations s.pools C).card) hh 2

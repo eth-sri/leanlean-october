@@ -52,8 +52,7 @@ theorem reflected_finite_source_uniform
     (reciprocalKernelWindows windows M) QK QP Qn Qb k p n q
   intro j hj
   rw [reciprocal_source_window_identity windows M QK QP Qn Qb
-    (k j) (p j) (n j) (q j) r hQn hQb (hn j hj).2.2.1 (hn j hj).2.2.2 hr]
-  rw [mul_assoc,he (k j) (p j) (n j) (q j) (hn j hj).1 (hn j hj).2.1 (hn j hj).2.2.1 (hn j hj).2.2.2,
+    (k j) (p j) (n j) (q j) r hQn hQb (hn j hj).2.2.1 (hn j hj).2.2.2 hr, mul_assoc,he (k j) (p j) (n j) (q j) (hn j hj).1 (hn j hj).2.1 (hn j hj).2.2.1 (hn j hj).2.2.2,
     Complex.ofReal_mul]
   ring
 

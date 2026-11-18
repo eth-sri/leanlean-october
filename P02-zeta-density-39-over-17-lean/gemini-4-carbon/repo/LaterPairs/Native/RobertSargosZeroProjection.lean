@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.IntegerQuadrupleCount
 public import LaterPairs.Native.RobertSargosSevenSystem
 
@@ -38,9 +47,6 @@ theorem robertSargos_zero_image_card_le
     (hR : 1 ≤ R) (hH : 1 ≤ H) (hQ : 1 ≤ Q) (hN : 1 ≤ N)
     (hmem : ∀ p ∈ S, RobertSargosSevenSystem R H Q N δ p) :
     ((S.image robertSargosZeroKey).card:ℝ) ≤ 30*R*H*Q*N := by
-  have hR0 : 0 ≤ R := by linarith
-  have hH0 : 0 ≤ H := by linarith
-  have hQ0 : 0 ≤ Q := by linarith
   have hN0 : 0 ≤ N := by linarith
   have hb := integer_box_quadruples_card_le (S.image robertSargosZeroKey)
     (a₁ := -R) (b₁ := R) (a₂ := H) (b₂ := 2*H)

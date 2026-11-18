@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.ContinuousDerivativeBounds
 
 @[expose] public section
@@ -24,7 +33,7 @@ theorem third_derivative_shift_curvature
     h*μ ≤ F'' (x+h)-F'' x ∧ F'' (x+h)-F'' x ≤ h*Λ := by
   have hin (y : ℝ) (hy : y ∈ Icc x (x+h)) : y ∈ Icc a b :=
     ⟨hx.trans hy.1,hy.2.trans hxb⟩
-  have hb := derivative_increment_bounds F'' F''' (show x ≤ x+h by linarith)
+  have hb := derivative_increment_bounds F'' F''' (by linarith)
     (fun y hy => hder y (hin y hy))
     (fun y hy => hlo y (hin y hy))
     (fun y hy => hhi y (hin y hy))
@@ -35,7 +44,6 @@ theorem hasDerivAt_shift_difference
     (hx : HasDerivAt F (F' x) x)
     (hxh : HasDerivAt F (F' (x+h)) (x+h)) :
     HasDerivAt (fun y => F (y+h)-F y) (F' (x+h)-F' x) x := by
-  have he := hxh.comp x ((hasDerivAt_id x).add_const h)
-  convert he.sub hx using 1 <;> first | rfl | ring
+  convert (hxh.comp x ((hasDerivAt_id x).add_const h)).sub hx using 1 <;> first | rfl | ring
 
 end TaoTrudgianYang2025

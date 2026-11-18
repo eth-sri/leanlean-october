@@ -15,10 +15,8 @@ local notation "O"=>HeckeFamily.O
 lemma divisor_norm {Z Bmask bΦ:ℝ}(s:NaturalState Z Bmask bΦ)
     (D:Finset (Ideal O))(hD:D∈(CompletedGauss.primeSupport s.puncture).powerset):
     1≤((∏P∈D,P).absNorm:ℝ) ∧ ((∏P∈D,P).absNorm:ℝ)≤Z^Bmask:=by
-  have hs:D⊆IdealMobiusDivisorSum.primeSupport s.puncture:=Finset.mem_powerset.mp hD
-  have hn:=IdealMobiusDivisorSum.support_product_ne_zero hs
-  have hp:0<(∏P∈D,P).absNorm:=Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hn)
-  refine ⟨by exact_mod_cast hp,?_⟩
+  have hs :=Finset.mem_powerset.mp hD
+  refine ⟨by exact_mod_cast (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr (IdealMobiusDivisorSum.support_product_ne_zero hs))),?_⟩
   apply le_trans _ s.puncture_bound
   exact_mod_cast Nat.le_of_dvd
     (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr s.puncture_ne_zero))
@@ -38,9 +36,8 @@ theorem divisor_reflection_range {Z Bmask bΦ:ℝ}(s:NaturalState Z Bmask bΦ)
       Z^a=Y/((∏P∈D,P).absNorm:ℝ):=by
   dsimp only
   obtain ⟨hn,hcap⟩:=divisor_norm s D hD
-  have hp:0<((∏P∈D,P).absNorm:ℝ):=zero_lt_one.trans_le hn
-  have hlogN:Real.logb Z ((∏P∈D,P).absNorm:ℝ)≤Bmask:=
-    (Real.logb_le_iff_le_rpow hZ hp).mpr hcap
+  have hp :=zero_lt_one.trans_le hn
+  have hlogN := (Real.logb_le_iff_le_rpow hZ hp).mpr hcap
   have hlogY:=Real.logb_nonneg hZ hY
   refine ⟨by linarith,by linarith,divided_scale_power Z Y _ hZ (zero_lt_one.trans_le hY) hp⟩
 

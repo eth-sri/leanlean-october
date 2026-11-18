@@ -7,13 +7,10 @@ public import OAI.NumberTheory.DirichletL.Detector.FinalAssemblyCollected
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology ContDiff
 open Filter Set
+open scoped Classical BigOperators Topology ContDiff
 namespace SevenEighths.ProbeFinalAssembly
-open ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-open ProbeRaySlots HeckeDetectorPhysicalSelection HeckeDetectorAmplitudeFirst HeckeDetectorFiberPartition
-open PrincipalMellinResidues PrincipalSignalComparison ProbePrincipalResidueActual
+open ProbeHighRowFamily HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary ProbeRaySlots HeckeDetectorPhysicalSelection HeckeDetectorAmplitudeFirst HeckeDetectorFiberPartition PrincipalMellinResidues PrincipalSignalComparison ProbePrincipalResidueActual
 local notation "O" => HeckeFamily.O
 variable (M : Ideal O) [NeZero M]
 local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
@@ -107,9 +104,8 @@ theorem actual_high_probe_from_raw_moments (N : ℕ) (e eps c b A R dmin dmax rm
         HeckeSignal.signal (η.excludePrimes S hS.prime) (sourceCorrection η S) (-11/16) Z‖≤
         (Ct+C*C0*(η.modulus.absNorm:ℝ)^(2*eps))*Z^(HeckeZeroSupremum.beta-11/16-sigma) := by
   let : NeZero (∏P∈S,P) := ⟨fixedPrimeProduct_ne_zero S hS.prime⟩
-  have hmin : 0<dmax*rmin := mul_pos (hdmin.trans_le hdRange) hrmin
   obtain ⟨n,hn,htransport⟩ := actual_nonfloor_probe_transport M H hH N e (1/4) c b A ζ 1 τ (dmax*rmin) nu
-    he he1 (by norm_num) (by norm_num) hζ hζ1 hτ hc hcb hA hmin hnu hβ S hS hmax hfirst
+    he he1 (by norm_num) (by norm_num) hζ hζ1 hτ hc hcb hA (mul_pos (hdmin.trans_le hdRange) hrmin) hnu hβ S hS hmax hfirst
     ell hello hell hellsum W hW hcompact hWs hWB hne W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
     hr0 hr1 hp0 hp1 hn0 hn1 sigma hsigma hgeometric hprincipal hwindow (by linarith)
     eps R dmin dmax rmin ε κ cost mesh margin loss heps hR hdmin hdmax hdRange hrmin hε hκ hcost hmesh hmargin
@@ -151,13 +147,7 @@ theorem actual_high_probe_from_raw_moments (N : ℕ) (e eps c b A R dmin dmax rm
       (sourceDetectorFamily S hS.prime η u (rayCubeFamily M H hH u)) ((3*idx u:ℕ)*Z^τ) := by
     intro u hu
     simpa only [Nat.cast_mul,Nat.cast_ofNat] using (hbins u).2.2.1
-  have hglobal := (hb C0 hC0 rows hrows idx grid hlabel hnext hcurrent hmom).2
-  have hexp : Z^(3/16+(HeckeZeroSupremum.beta-7/8)-saving+nu+dyadCost)≤
-      Z^(HeckeZeroSupremum.beta-11/16-sigma) :=
-    Real.rpow_le_rpow_of_exponent_le hZ (by linarith)
-  have hcentral' := hglobal.trans (mul_le_mul_of_nonneg_left hexp (by positivity))
-  have hsum := (norm_add_le _ _).trans (add_le_add herror hcentral')
-  simpa only [rows,sub_add_cancel,add_mul] using hsum
+  simpa only [rows,sub_add_cancel,add_mul] using ((norm_add_le _ _).trans (add_le_add herror (((hb C0 hC0 rows hrows idx grid hlabel hnext hcurrent hmom).2).trans (mul_le_mul_of_nonneg_left (Real.rpow_le_rpow_of_exponent_le hZ (by linarith)) (by positivity)))))
 
 end SevenEighths.ProbeFinalAssembly
 

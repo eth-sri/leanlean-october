@@ -77,7 +77,6 @@ theorem extracted_residual_coprime (I J : Ideal O) (S : Finset (Ideal O)) :
 theorem common_support_residual_coprime (I J : Ideal O) :
     let S := primeSupport I ∩ primeSupport J
     IsCoprime (supportResidual I S) (supportResidual J S) := by
-  dsimp only
   apply (IdealCoprimeSieveOperator.primeSupport_disjoint_iff
     (supportResidual_ne_zero I _) (supportResidual_ne_zero J _)).mp
   rw [supportResidual_support, supportResidual_support]

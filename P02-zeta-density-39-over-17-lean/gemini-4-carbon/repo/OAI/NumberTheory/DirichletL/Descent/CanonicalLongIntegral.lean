@@ -7,10 +7,8 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 noncomputable section
+open MeasureTheory ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic FirstPassCubeLabels CanonicalCubeSeparation JointLogSeparation
 open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory ActualEisensteinCubic CompletedGauss CanonicalRowCompletion
-open ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic FirstPassCubeLabels
-open CanonicalCubeSeparation JointLogSeparation
 local notation "O" => ActualEisensteinCubic.O
 
 theorem actual_long_bin_normalized_energy
@@ -78,8 +76,7 @@ theorem actual_long_bin_normalized_energy
     rw [←Real.rpow_mul_natCast hZ.le,←Real.rpow_add hZ,←Real.rpow_neg hZ.le,
       ←Real.rpow_add hZ,←Real.rpow_add hZ]
     convert Real.rpow_zero Z using 2 ; ring
-  have hh:=mul_le_mul_of_nonneg_left hbnd (Real.rpow_nonneg hZ.le (-Vheight))
-  apply hh.trans_eq
+  apply (mul_le_mul_of_nonneg_left hbnd (Real.rpow_nonneg hZ.le (-Vheight))).trans_eq
   calc
     _=(Z^(-Vheight)*((Z^cubeLength)^2*Z^r)⁻¹*Z^(r+2*cubeLength+Vheight))*
       E*(∫ξ:ℝ,‖reopeningCoefficient W a b ha hs hW ξ‖*(1+|ξ|)^d)^2 := by ring

@@ -30,7 +30,7 @@ theorem atkinsonRootBand_derivative_bracket {T G L : ℝ}
       (32 * (G / Real.sqrt T)) ^ 2 ≤ 4128 * L * (G / Real.sqrt T) := by
   have hG0 : 0 < G := by linarith
   have hL0 : 0 < L := by linarith
-  have hS : 0 < Real.sqrt T := Real.sqrt_pos.2 hT
+  have hS := Real.sqrt_pos.2 hT
   have hlen := atkinsonRootBand_length_le hT hG0 hL0 hwidth
   calc
     _ ≤ 32 * (G / Real.sqrt T) + (4 * Real.sqrt T * (L / G)) *
@@ -52,8 +52,8 @@ theorem exists_norm_atkinsonPowerIntegral_band_secondOrder_le (α : ℝ) :
   intro T G L b hT hG hGT hL hwidth hb
   have hG0 : 0 < G := by linarith
   have hL0 : 0 < L := by linarith
-  have hS : 0 < Real.sqrt T := Real.sqrt_pos.2 hT
-  have hb0 : 0 < b := (by positivity : 0 < 6 * Real.sqrt T * (L / G)).trans_le hb
+  have hS := Real.sqrt_pos.2 hT
+  have hb0 := (by positivity : 0 < 6 * Real.sqrt T * (L / G)).trans_le hb
   have ha := atkinsonRootBandLower_pos hT G L
   have hab := atkinsonRootBand_order hT hG0 hL0.le
   have hfend := atkinsonPowerWeight_rootBand_endpoints hT hG0 hL0 α
@@ -107,7 +107,7 @@ theorem exists_norm_atkinsonPowerIntegral_index_band_secondOrder_le (α : ℝ) :
     have hn0 : 0 ≤ Real.sqrt (n : ℝ) := Real.sqrt_nonneg _
     nlinarith [Real.sq_sqrt (Nat.cast_nonneg (α := ℝ) n),
       show 0 ≤ 6 * Real.sqrt T * (L / G) by positivity]
-  simpa only [Real.sq_sqrt (Nat.cast_nonneg (α := ℝ) n)] using
+  simpa using
     hbound T G L (Real.sqrt n) hT hG hGT hL hwidth hb
 
 theorem exists_norm_atkinsonPowerPair_band_secondOrder_le (α : ℝ) (cPlus cMinus : ℂ) :

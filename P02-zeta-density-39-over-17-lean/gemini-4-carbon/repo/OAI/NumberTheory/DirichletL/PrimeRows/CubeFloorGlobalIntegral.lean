@@ -7,11 +7,10 @@ public import OAI.NumberTheory.DirichletL.Detector.CentralExponent
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology ContDiff
 open Filter Set
+open scoped Classical BigOperators Topology ContDiff
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-open ProbeRaySlots HeckeDetectorPhysicalSelection
+open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary ProbeRaySlots HeckeDetectorPhysicalSelection
 local notation "O" => HeckeFamily.O
 variable (M : Ideal O) [NeZero M]
 local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
@@ -19,8 +18,7 @@ variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 omit [NeZero M] in
 theorem globalFloorIntegralPoolOutside (S : Finset (Ideal O)) (N : ℕ) (c b : ℝ) (Y : Fin N→ℝ) :
-    ∀j P,P∈pool (RayQuotient.identityClass M H) S c b (Y j) → P.val∉S :=
-  fun j P hP=>(mem_pool _ S c b (Y j) P).mp hP |>.2.2.2
+    ∀j P,P∈pool (RayQuotient.identityClass M H) S c b (Y j) → P.val∉S := by simp
 
 theorem actual_global_floor_cube_norm (N n : ℕ) (e eps c b A R dmin dmax rmin τ ε κ cost mesh δ margin loss : ℝ)
     (he : 0<e) (he1 : e<1/1000) (heps : 0<eps) (hc : 0<c) (hcb : c≤b) (hA : 0≤A)
@@ -61,13 +59,13 @@ theorem actual_global_floor_cube_norm (N n : ℕ) (e eps c b A R dmin dmax rmin 
   filter_upwards [hbound η,source_cube_height_eventually τ hτ] with Z hb hZ
   intro d hd hd' v hv rows hrows hnorm i hi hbin
   dsimp only
-  have hZp : 0<Z := zero_lt_one.trans_le hZ.1
+  have hZp := zero_lt_one.trans_le hZ.1
   let Yp : Fin N→ℝ := fun j=>Z^(ell j)
   let T : Fin N→Finset PrimeIdeal := fun j=>pool (RayQuotient.identityClass M H) S c b (Yp j)
   have hheight : (3*i+1:ℕ)*Z^τ≤(3*i+2:ℕ)*Z^τ := by
     apply mul_le_mul_of_nonneg_right _ (Real.rpow_nonneg hZp.le _)
     exact_mod_cast (show 3*i+1≤3*i+2 by omega)
-  let mass : ℝ := Ca*(η.modulus.absNorm:ℝ)^(2*eps)*Z^(v*(67/100+12*e+eps*(N+8))+loss-1/40+mesh/6)
+  let mass := Ca*(η.modulus.absNorm:ℝ)^(2*eps)*Z^(v*(67/100+12*e+eps*(N+8))+loss-1/40+mesh/6)
   have hp := hprofile e (51/100) (Z^τ) ((3*i+1:ℕ)*Z^τ) i he he1 le_rfl (by norm_num)
     hZ.2 hheight S hS hmax hfirst η rows (fun u hu=>(hrows u hu).1) T
     (globalFloorIntegralPoolOutside M H S N c b Yp) (rayCubeFamily M H hH) hbin W Yp

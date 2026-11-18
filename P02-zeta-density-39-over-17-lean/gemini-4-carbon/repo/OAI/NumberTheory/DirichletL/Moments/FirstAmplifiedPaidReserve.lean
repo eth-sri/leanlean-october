@@ -9,13 +9,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstAmplifiedPaidReserve
-open HeckeFamily CanonicalQuadraticSieve
-open CenteredMomentFirstAmplifiedPaidAdmission CenteredMomentFirstAmplifiedCapacitySource
-open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentCommonProfile
-open CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps
-open CenteredMomentFirstPhysicalSource CenteredMomentSecondCanonicalScalar CenteredMomentFirstScale
-open CenteredMomentSecondRadicalBudget
-open CenteredMomentFirstSecondActiveErrorGates CenteredMomentFirstAnnularInput
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentFirstAmplifiedPaidAdmission CenteredMomentFirstAmplifiedCapacitySource CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentCommonProfile CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps CenteredMomentFirstPhysicalSource CenteredMomentSecondCanonicalScalar CenteredMomentFirstScale CenteredMomentSecondRadicalBudget CenteredMomentFirstSecondActiveErrorGates CenteredMomentFirstAnnularInput
 local notation "O"=>HeckeFamily.O
 local instance {ι:Type*}:DecidableEq ι:=Classical.decEq _
 
@@ -132,12 +126,11 @@ theorem eventually_actual_amplified_reserves (N:ℕ)(lower upper cost0 a0 theta:
     hlower hcost0 ha0 htheta
   refine ⟨Z0,hZ0,?_⟩
   intro Z hZZ ι _ s hn hl hu C D R hC hD B τ t delta reserve cost a hd hr hc ha
-  have hchild:Fintype.card (liveIndices B.val)≤N:=(live_card_le B.val).trans hn
+  have hchild :=(live_card_le B.val).trans hn
   refine ⟨hbound Z hZZ s (child s C R B τ t) hn hchild hl hu C D hC hD
     delta reserve cost a hd hr hc ha,?_⟩
   intro Q k Bp υ v
-  have herr:Fintype.card (liveIndices Bp.val)≤N:=(live_card_le Bp.val).trans hchild
-  exact hbound Z hZZ s (errorInput s C R B τ t Q k Bp υ v) hn herr hl hu C D hC hD
+  exact hbound Z hZZ s (errorInput s C R B τ t Q k Bp υ v) hn ((live_card_le Bp.val).trans hchild) hl hu C D hC hD
     delta reserve cost a hd hr hc ha
 
 end SevenEighths.CenteredMomentFirstAmplifiedPaidReserve

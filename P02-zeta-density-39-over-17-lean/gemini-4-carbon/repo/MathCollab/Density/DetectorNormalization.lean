@@ -78,7 +78,7 @@ theorem normalizedPoweredCoefficient_eventually {η : ℝ} (hη : 0 < η) :
     ∀ᶠ T : ℝ in atTop, ∀ N j k n : ℕ,
       0 < N → k ≤ 4 → (n : ℝ) ≤ densityAmbient T →
         ‖normalizedPoweredCoefficient η T N j k n‖ ≤ 1 := by
-  filter_upwards [eventually_ge_atTop (1 : ℝ), poweredDetectorCoefficient_eventually_le hη]
+  filter_upwards [eventually_ge_atTop 1, poweredDetectorCoefficient_eventually_le hη]
     with T hT hb
   intro N j k n hN hk hn
   rw [normalizedPoweredCoefficient, norm_div, Complex.norm_real, Real.norm_eq_abs,

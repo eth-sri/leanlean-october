@@ -19,9 +19,8 @@ identity (1.3).  Equation (1.4), shifted domination, and both lower-bound
 terms in (1.5) are then proved from the same exact finite count.
 -/
 
-open Finset
+open Finset MeasureTheory
 open scoped BigOperators ComplexConjugate
-open MeasureTheory
 
 namespace GafniTao
 
@@ -53,29 +52,23 @@ theorem fordVinogradovPowerVector_bounds
     (s : ℤ) ≤ fordVinogradovPowerVector s k Q x j ∧
       fordVinogradovPowerVector s k Q x j ≤
         (s : ℤ) * (Q : ℤ) ^ ((j : ℕ) + 1) := by
-  let d : ℕ := (j : ℕ) + 1
+  let d := (j : ℕ) + 1
   have htermLower (i : Fin s) :
-      (1 : ℤ) ≤ ((x i : ℕ) + 1 : ℤ) ^ d := by
+      1 ≤ ((x i : ℕ) + 1 : ℤ) ^ d := by
     apply one_le_pow₀
     omega
   have htermUpper (i : Fin s) :
       ((x i : ℕ) + 1 : ℤ) ^ d ≤ (Q : ℤ) ^ d := by
-    have hbase : (x i : ℕ) + 1 ≤ Q := Nat.succ_le_iff.mpr (x i).isLt
-    have hpow : ((x i : ℕ) + 1) ^ d ≤ Q ^ d := Nat.pow_le_pow_left hbase d
-    exact_mod_cast hpow
+    exact_mod_cast (Nat.pow_le_pow_left (Nat.succ_le_iff.mpr (x i).isLt) d)
   constructor
   · change (s : ℤ) ≤ ∑ i : Fin s, ((x i : ℕ) + 1 : ℤ) ^ d
     calc
-      (s : ℤ) = ∑ _i : Fin s, (1 : ℤ) := by simp
+      (s : ℤ) = ∑ _i : Fin s, 1 := by simp
       _ ≤ ∑ i : Fin s, ((x i : ℕ) + 1 : ℤ) ^ d :=
         Finset.sum_le_sum fun i _hi => htermLower i
   · change (∑ i : Fin s, ((x i : ℕ) + 1 : ℤ) ^ d) ≤
       (s : ℤ) * (Q : ℤ) ^ d
-    calc
-      (∑ i : Fin s, ((x i : ℕ) + 1 : ℤ) ^ d) ≤
-          ∑ _i : Fin s, (Q : ℤ) ^ d :=
-        Finset.sum_le_sum fun i _hi => htermUpper i
-      _ = (s : ℤ) * (Q : ℤ) ^ d := by simp
+    exact (Finset.sum_le_sum fun i _hi => htermUpper i).trans_eq (by simp)
 
 /-! ## The normalized-Haar identity, equation (1.3) -/
 
@@ -136,8 +129,7 @@ theorem ford_prod_monomial_eq
   induction (Finset.univ : Finset (Fin s)) using Finset.induction_on with
   | empty => simp [UnitAddTorus.mFourier_zero]
   | @insert a t ha ih =>
-      rw [Finset.prod_insert ha, Finset.sum_insert ha]
-      rw [UnitAddTorus.mFourier_add]
+      rw [Finset.prod_insert ha, Finset.sum_insert ha, UnitAddTorus.mFourier_add]
       exact congrArg (fun z => fordVinogradovMonomial (x a) α * z) ih
 
 theorem ford_vinogradov_weyl_pow
@@ -155,8 +147,7 @@ theorem ford_conj_vinogradov_weyl_pow
     conj (fordVinogradovWeylSum k Q α) ^ s =
       ∑ y : FordVinogradovTuple s Q,
         UnitAddTorus.mFourier (-fordVinogradovPowerVector s k Q y) α := by
-  have h := congrArg conj (ford_vinogradov_weyl_pow s k Q α)
-  simpa only [map_pow, map_sum, UnitAddTorus.mFourier_neg] using h
+  simpa only [map_pow, map_sum, UnitAddTorus.mFourier_neg] using (congrArg conj (ford_vinogradov_weyl_pow s k Q α))
 
 theorem ford_pair_character
     {s k Q : ℕ} (x y : FordVinogradovTuple s Q)
@@ -231,8 +222,7 @@ theorem ford_vinogradov_torus_mean_eq (s k Q : ℕ) :
 
 theorem ford_pow_mul_conj_pow (z : ℂ) (s : ℕ) :
     z ^ s * conj z ^ s = ((‖z‖ : ℝ) : ℂ) ^ (2 * s) := by
-  rw [← mul_pow, Complex.mul_conj']
-  rw [← pow_mul]
+  rw [← mul_pow, Complex.mul_conj', ← pow_mul]
 
 theorem ford_vinogradov_torus_real_mean_eq (s k Q : ℕ) :
     ∫ α : UnitAddTorus (Fin k), ‖fordVinogradovWeylSum k Q α‖ ^ (2 * s)

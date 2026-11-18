@@ -7,9 +7,8 @@ public import OAI.NumberTheory.DirichletL.Descent.DensityAssembly
 namespace OAI
 
 namespace SevenEighths.InverseMoment
+open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion JointLogSeparation FourierBridge MeasureTheory
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion
-open JointLogSeparation FourierBridge MeasureTheory
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
@@ -63,11 +62,9 @@ theorem first_block_modes_eq_columns (F : Finset ι) (selector : Finset ι → �
       apply Finset.sum_congr rfl
       intro V hV
       rw [first_common_source_mode]
-      dsimp only [H]
       ring
     _ = _ := by
       rw [firstCommonColumn_pair]
-      dsimp only [H]
       ring
 
 theorem first_block_normalized_density (F : Finset ι) (selector : Finset ι → ℂ)

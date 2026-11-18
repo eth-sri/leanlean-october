@@ -132,13 +132,11 @@ theorem exists_pointValue_card_le_with_width
       (((pointClusterBins H G W).filter
         (fun n => m ≤ (pointCluster H G W n).card)).card:ℝ) ≤ B/(m:ℝ)^2 := by
     intro m hm
-    have hc := hcount H G V W m hH hG hGH hV hfit hwidth hVsize herr hsep hrange hlarge hm
-    have hm1 : (1:ℝ) ≤ (m:ℝ) := by exact_mod_cast hm
-    have hp := occupancy_inverse_power_budget (a := a) (g := g) hHpos hG hA hm1 hb
+    have hm1 : 1 ≤ (m:ℝ) := by exact_mod_cast hm
     calc
-      _ ≤ 2*D*H^ν*(H/(G*((m:ℝ)*A)^2)+H^a/(G^g*((m:ℝ)*A)^b)) := hc
+      _ ≤ 2*D*H^ν*(H/(G*((m:ℝ)*A)^2)+H^a/(G^g*((m:ℝ)*A)^b)) := (hcount H G V W m hH hG hGH hV hfit hwidth hVsize herr hsep hrange hlarge hm)
       _ ≤ 2*D*H^ν*((H/(G*A^2)+H^a/(G^g*A^b))/(m:ℝ)^2) :=
-        mul_le_mul_of_nonneg_left hp (by positivity)
+        mul_le_mul_of_nonneg_left (occupancy_inverse_power_budget (a := a) (g := g) hHpos hG hA hm1 hb) (by positivity)
       _ = B/(m:ℝ)^2 := by dsimp only [B]; ring
   have hsum := sum_nat_occupancy_le_of_superlevels
     (pointClusterBins H G W) (fun n => (pointCluster H G W n).card) hB hsuper

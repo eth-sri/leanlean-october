@@ -7,29 +7,11 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstMixedRightTransport
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
 open Filter
+open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyFirstRightAdmission
-open HeckeFamily CanonicalQuadraticSieve ConcreteTraceCRT ConcretePrimeRowBridge
-open ActualEisensteinCubic CenteredMomentCanonicalFirst CenteredMomentSourceMass
-open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum
-open CenteredMomentCommonProfile CenteredMomentAmplificationChildInput
-open CenteredMomentAmplificationChildSourceCaps CenteredMomentOriginalCommonHarmonic
-open CenteredMomentFirstSecondInputGates CenteredMomentFirstSecondActiveErrorGates
-open CenteredMomentFirstPhysicalSource CenteredMomentFirstPhysicalDyadicRows
-open CenteredMomentFirstAmplifiedRadiusLower CenteredMomentFirstScale
-open CenteredMomentFirstAmplificationChoice CenteredMomentAmplifiedRetainedRadius
-open CenteredMomentFirstAnnularInput CenteredMomentSectorLocalization
-open CenteredMomentSecondInputCapacitySource CenteredMomentFirstSourceConductorCaps
-open CenteredMomentEnergyInputParentCapacity CenteredMomentEnergyBands
-open CenteredMomentEnergyAmplifiedChildWidth CenteredMomentSecondHeightFamily
-open CenteredMomentSourceLiveColumn CenteredMomentActiveSource
-open CenteredMomentPrimePool CenteredMomentPrimeElements
-open CenteredMomentAmplificationRadicalFamily CenteredMomentAmplificationActiveFactor
-open CenteredMomentChildRows CompletedGauss RayFourExpansion
-open CenteredMomentLogDyadic CenteredMomentRowNorm
-open CenteredMomentEnergyFirstLiveAdmission CenteredMomentFirstMixedRightTransport
+open HeckeFamily CanonicalQuadraticSieve ConcreteTraceCRT ConcretePrimeRowBridge ActualEisensteinCubic CenteredMomentCanonicalFirst CenteredMomentSourceMass CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentCommonProfile CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps CenteredMomentOriginalCommonHarmonic CenteredMomentFirstSecondInputGates CenteredMomentFirstSecondActiveErrorGates CenteredMomentFirstPhysicalSource CenteredMomentFirstPhysicalDyadicRows CenteredMomentFirstAmplifiedRadiusLower CenteredMomentFirstScale CenteredMomentFirstAmplificationChoice CenteredMomentAmplifiedRetainedRadius CenteredMomentFirstAnnularInput CenteredMomentSectorLocalization CenteredMomentSecondInputCapacitySource CenteredMomentFirstSourceConductorCaps CenteredMomentEnergyInputParentCapacity CenteredMomentEnergyBands CenteredMomentEnergyAmplifiedChildWidth CenteredMomentSecondHeightFamily CenteredMomentSourceLiveColumn CenteredMomentActiveSource CenteredMomentPrimePool CenteredMomentPrimeElements CenteredMomentAmplificationRadicalFamily CenteredMomentAmplificationActiveFactor CenteredMomentChildRows CompletedGauss RayFourExpansion CenteredMomentLogDyadic CenteredMomentRowNorm CenteredMomentEnergyFirstLiveAdmission CenteredMomentFirstMixedRightTransport
 local notation "O" => HeckeFamily.O
 local instance {ι : Type*} : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
@@ -83,16 +65,13 @@ theorem eventually_right_main_packet (N : ℕ) (b b₁ b₂ l a A P : ℝ)
   intro ι _ _ s hc he hs hW₁ hW₂ κ hκ hPs hcapacity hη R seed0 hR hRN hseed
     C D hC hD hlabel E ξ₁ ξ₂ F K Csec Tsec σ ξ reserve hK hCsec hσ hξ hξ1
     hreserve hsec rows W n hn hblock B t innerL hB
-  dsimp only
   have hh := hz.2 s hc he hs hW₁ hW₂ κ hκ hPs hcapacity hη R seed0 hR hRN hseed
     C D hC hD hlabel E ξ₁ ξ₂ F F.right (Or.inr rfl)
     K Csec Tsec σ ξ reserve hK hCsec hσ hξ hξ1 hreserve hsec rows W n hn hblock
     true B t hB
   refine ⟨right_modulus s.η C D hC E ξ₁ ξ₂ F, ?_,
     main_lower_support N l a hl ha s hc hs hW₁ hW₂ D R innerL B F.right t⟩
-  have hr : Ready (child s D R B F.right t) (R*D)
-      (columnMainRadius C D E K (volume s) Z σ (frequencyLoss Z (32*Csec) ξ) reserve true)
-      Z ξ (readyBudget A P) := hh.1
+  have hr := hh.1
   rw [main_radius_right] at hr
   exact hr
 

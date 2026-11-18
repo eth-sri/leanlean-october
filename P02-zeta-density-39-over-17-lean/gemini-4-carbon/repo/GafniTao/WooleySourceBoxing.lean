@@ -35,9 +35,8 @@ theorem wooleySource_natAbs_le_radius
 theorem wooleySource_neg_radius_le
     (gamma : WooleySourceSequence) {n : ℤ} (hn : n ∈ gamma.support) :
     -(wooleySourceRadius gamma : ℤ) ≤ n := by
-  have habs := wooleySource_natAbs_le_radius gamma hn
   have hcast : (n.natAbs : ℤ) ≤ (wooleySourceRadius gamma : ℤ) := by
-    exact_mod_cast habs
+    exact_mod_cast (wooleySource_natAbs_le_radius gamma hn)
   have hnabs : -(n.natAbs : ℤ) ≤ n := by
     by_cases hn0 : 0 ≤ n
     · exact (neg_nonpos.mpr (by positivity)).trans hn0
@@ -94,8 +93,7 @@ theorem wooleyBoxedSourceSequence_support_subset
     (↑(wooleyBoxedSourceSequence gamma).support : Set ℤ) ⊆
       Set.range (wooleyBoxIndexEmbedding (wooleySourceBoxLength gamma)) := by
   intro y hy
-  have hyne : wooleyBoxedSourceSequence gamma y ≠ 0 :=
-    Finsupp.mem_support_iff.mp hy
+  have hyne := Finsupp.mem_support_iff.mp hy
   have hnmem :
       y - ((wooleySourceRadius gamma + 1 : ℕ) : ℤ) ∈ gamma.support := by
     apply Finsupp.mem_support_iff.mpr

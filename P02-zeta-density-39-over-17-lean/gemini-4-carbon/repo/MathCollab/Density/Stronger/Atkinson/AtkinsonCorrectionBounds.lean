@@ -15,8 +15,7 @@ public import MathCollab.Density.Stronger.Atkinson.NeumannRemainderSeries
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 noncomputable section
-open Complex MeasureTheory Set
-open MathCollab.Density.Stronger.Fourth
+open Complex MeasureTheory Set MathCollab.Density.Stronger.Fourth
 namespace MathCollab.Density.Stronger.Atkinson
 
 def atkinsonCorrectionIntegral (T G L : ℝ) (n : ℕ) : ℂ :=
@@ -35,7 +34,7 @@ theorem exists_norm_atkinsonPowerPair_far_le (α : ℝ) (c d : ℂ) :
   obtain ⟨C, hC, hbound⟩ := exists_norm_atkinsonPowerIntegral_far_le α
   refine ⟨(1 + ‖c‖ + ‖d‖) * C, by positivity, ?_⟩
   intro T G L b hT hG hGT hL hwidth hb
-  have hb0 : 0 < b := (by positivity : 0 < 8 * Real.sqrt T).trans_le hb
+  have hb0 := (by positivity : 0 < 8 * Real.sqrt T).trans_le hb
   have h := hbound T G L b hT hG hGT hL hwidth hb
   apply (norm_add_le _ _).trans
   rw [norm_mul, norm_mul]
@@ -68,7 +67,7 @@ theorem exists_norm_atkinsonCorrectionPair_le :
   intro T G L hT hG hGT hL hwidth n hn
   have hT0 : 0 < T := by linarith
   have hn0 : (0 : ℝ) < n := by exact_mod_cast hn
-  have hsn : 0 < Real.sqrt (n : ℝ) := Real.sqrt_pos.2 hn0
+  have hsn := Real.sqrt_pos.2 hn0
   by_cases hb : 8 * Real.sqrt T ≤ Real.sqrt (n : ℝ)
   · apply (hfar T G L (Real.sqrt n) hT0 hG hGT hL hwidth hb).trans
     apply div_le_div_of_nonneg_right _ hsn.le
@@ -86,7 +85,7 @@ theorem exists_norm_atkinsonCorrectionPair_le :
       _ ≤ 8 * C * G := by
         have h := mul_le_mul_of_nonneg_left (atkinson_correction_height_absorb hT)
           (show 0 ≤ 8 * C * G by positivity)
-        simpa only [mul_one] using h
+        simpa using h
       _ ≤ _ := by nlinarith
 
 theorem exists_norm_atkinsonCorrectionTerm_le :
@@ -94,7 +93,7 @@ theorem exists_norm_atkinsonCorrectionTerm_le :
       0 < L → 8 * L ≤ G → ∀ n : ℕ,
         ‖atkinsonCorrectionTerm T G L n‖ ≤ C * G * ‖divisorDirichletTerm (5 / 4) n‖ := by
   obtain ⟨C, hC, hbound⟩ := exists_norm_atkinsonCorrectionPair_le
-  let q : ℝ := Real.sqrt Real.pi / Real.pi
+  let q := Real.sqrt Real.pi / Real.pi
   have hq : 0 < q := by dsimp [q]; positivity
   refine ⟨2 * Real.pi * q * (4 * Real.pi) ^ (-(3 / 2 : ℝ)) / 8 * C, by positivity, ?_⟩
   intro T G L hT hG hGT hL hwidth n
@@ -112,7 +111,7 @@ theorem exists_norm_atkinsonCorrectionTerm_le :
   have hs : ‖(atkinsonBesselScale (3 / 4) n : ℂ)‖ = atkinsonBesselScale (3 / 4) n := by
     rw [Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (atkinsonBesselScale_nonneg _ _)]
   have hd := norm_divisorDirichletTerm_real (5 / 4) n
-  norm_num only [Complex.ofReal_div, Complex.ofReal_ofNat] at hd
+  norm_num at hd
   rw [atkinsonCorrectionTerm, atkinsonCorrectionIntegral, norm_mul, norm_mul, norm_mul,
     norm_mul, hpi, hqn, norm_div, norm_ofNat, hs, hd]
   calc
@@ -125,7 +124,7 @@ theorem exists_norm_atkinsonCorrectionTerm_le :
     _ = (2 * Real.pi * q * (4 * Real.pi) ^ (-(3 / 2 : ℝ)) / 8 * C) * G *
         (‖divisorWeight n‖ * ((n : ℝ) ^ (-(3 / 4 : ℝ)) / Real.sqrt n)) := by
       unfold atkinsonBesselScale
-      norm_num only [show (-2 : ℝ) * (3 / 4) = -(3 / 2) by norm_num]
+      norm_num
       ring
     _ = _ := by rw [hpow]
 

@@ -9,16 +9,8 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical
 
 namespace EisensteinEmbedding
 
@@ -55,7 +47,7 @@ theorem omega3_im_ne_zero : omega3.im ≠ 0 := by
 theorem lam_ne_zero (w : ℂ) (hw : w ^ 2 + w + 1 = 0) :
     1 + 2 * w ≠ 0 := by
   intro h
-  have hw' : w = -(1 : ℂ) / 2 := by linear_combination h / 2
+  have hw' : w = -1 / 2 := by linear_combination h / 2
   rw [hw'] at hw
   norm_num at hw
 
@@ -84,13 +76,12 @@ theorem embedding_gen (w : ℂ) (hw : w ^ 2 + w + 1 = 0) :
     embedding w hw pb.gen = w := by
   exact pb.lift_gen w (by
     rw [pb_minpoly]
-    simpa only [map_add, map_pow, map_one, Polynomial.aeval_X] using hw)
+    simpa using hw)
 
 theorem pb_dim : pb.dim = 2 := by
   have hζ := IsCyclotomicExtension.zeta_spec 3 ℚ K
-  have hdim := hζ.integralPowerBasis_dim
   have htot : Nat.totient 3 = 2 := by decide
-  simpa only [pb, htot] using hdim
+  simpa only [pb, htot] using (hζ.integralPowerBasis_dim)
 
 theorem exists_ab (x : O) : ∃ a b : ℤ, x = a + b * pb.gen := by
   let i0 : Fin pb.dim := ⟨0, by rw [pb_dim]; decide⟩
@@ -128,8 +119,7 @@ theorem embedding_injective (w : ℂ) (hw : w ^ 2 + w + 1 = 0)
     simp only [Complex.add_im, Complex.intCast_im, zero_add,
       Complex.mul_im, Complex.intCast_re, Complex.intCast_im,
       zero_mul, add_zero, Complex.zero_im] at himz
-    have hbc : (b : ℝ) = 0 := (mul_eq_zero.mp himz).resolve_right him
-    exact_mod_cast hbc
+    exact_mod_cast ((mul_eq_zero.mp himz).resolve_right him)
   have ha : a = 0 := by
     rw [hb, Int.cast_zero, zero_mul, add_zero] at hz
     exact_mod_cast hz
@@ -264,7 +254,7 @@ theorem finite_quotient_product {a b : O} (ha : a ≠ 0) (hb : b ≠ 0) :
     Finite (O ⧸ (Ideal.span {a}) * (Ideal.span {b})) := by
   apply Ring.HasFiniteQuotients.finiteQuotient
   intro h
-  have hab : a * b = 0 := Ideal.span_singleton_eq_bot.mp (by
+  have hab := Ideal.span_singleton_eq_bot.mp (by
     simpa only [Ideal.span_singleton_mul_span_singleton] using h)
   exact mul_ne_zero ha hb hab
 
@@ -279,9 +269,6 @@ theorem breveE_period_coordinates :
       ShortDraftTrace.breveE
         (((c : ℂ) + (d : ℂ) * omega3) / eisLam) = 1 := by
   intro c d
-  change ShortDraftTrace.breveE
-    (((c : ℂ) + (d : ℂ) * ShortDraftTrace.ω₃) /
-      (1 + 2 * ShortDraftTrace.ω₃)) = 1
   exact ShortDraftTrace.breveE_period_lam c d
 
 end ConcreteBreveE
@@ -300,11 +287,10 @@ theorem eisEmbedding_conjO (x : O) :
     intro h
     rw [h, zero_pow (by decide)] at hz3
     exact zero_ne_one hz3
-  have hznorm : ‖z‖ = 1 := Complex.norm_eq_one_of_pow_eq_one hz3 (by decide)
   have hzstar : star z = z ^ 2 := by
     apply mul_left_cancel₀ hz0
     calc
-      z * star z = 1 := by rw [← starRingEnd_apply, Complex.mul_conj', hznorm]; norm_num
+      z * star z = 1 := by rw [← starRingEnd_apply, Complex.mul_conj', (Complex.norm_eq_one_of_pow_eq_one hz3 (by decide))]; norm_num
       _ = z * z ^ 2 := by rw [← pow_succ', hz3]
   have hhom : ι.comp conjO.toRingHom = (starRingEnd ℂ).comp ι := by
     apply RingHom.toIntAlgHom_injective
@@ -313,8 +299,7 @@ theorem eisEmbedding_conjO (x : O) :
     change ι (conjO omega) = star (ι omega)
     rw [conjO_omega, map_pow]
     exact hzstar.symm
-  have hx := congrArg (fun f : O →+* ℂ => f x) hhom
-  exact hx
+  exact (congrArg (fun f : O →+* ℂ => f x) hhom)
 
 theorem cubicGauss_normalized_cube_eis (P : Ideal O) [P.IsMaximal]
     (hgood : lambda ∉ P) (p : O) (hP : P = Ideal.span {p})
@@ -345,9 +330,6 @@ theorem cubicGauss_normalized_cube_eis (P : Ideal O) [P.IsMaximal]
   rw [div_pow, hg, hq]
   field_simp
 
-open AddChar MulChar
-
-open AddChar MulChar
 
 noncomputable def canonicalSextic (P : Ideal O) [P.IsMaximal]
     (hgood : lambda ∉ P) : MulChar (O ⧸ P) ℂ :=
@@ -387,9 +369,9 @@ theorem canonical_A5_jfour (P : Ideal O) [P.IsMaximal]
   let : Field (O ⧸ P) := Ideal.Quotient.field P
   let : Fintype (O ⧸ P) := Fintype.ofFinite _
   let χ := canonicalSextic P hgood
-  have hχ4 : χ ^ 4 ≠ 1 := canonicalSextic_pow_ne_one P hgood hchar
+  have hχ4 := canonicalSextic_pow_ne_one P hgood hchar
     (by decide : (4:ℕ) ≠ 0) (by decide : (4:ℕ) < 6)
-  have hχ6 : χ ^ 6 = 1 := canonicalSextic_pow_six P hgood
+  have hχ6 := canonicalSextic_pow_six P hgood
   have hsum :
       (∑ h : (O ⧸ P)ˣ,
         (∑ t : O ⧸ P, (χ ^ 4) t * ψ (-(h * t))) *
@@ -426,7 +408,7 @@ theorem canonical_A5_jzero_active (P : Ideal O) [P.IsMaximal]
   let : Field (O ⧸ P) := Ideal.Quotient.field P
   let : Fintype (O ⧸ P) := Fintype.ofFinite _
   let χ := canonicalSextic P hgood
-  have hχ2 : χ ^ 2 ≠ 1 := canonicalSextic_pow_ne_one P hgood hchar
+  have hχ2 := canonicalSextic_pow_ne_one P hgood hchar
     (by decide : (2:ℕ) ≠ 0) (by decide : (2:ℕ) < 6)
   have hsum :
       (∑ h : (O ⧸ P)ˣ,
@@ -440,9 +422,8 @@ theorem canonical_A5_jzero_active (P : Ideal O) [P.IsMaximal]
     rw [Finset.mul_sum]
     apply Finset.sum_congr rfl
     intro h _
-    have hh : (h : O ⧸ P) ≠ 0 := Units.ne_zero h
     rw [pow_zero, ShortDraftLocal.trivial_fourier_coefficient ψ hψ h,
-      ite_eq_right hh, map_mul]
+      ite_eq_right (Units.ne_zero h), map_mul]
     ring
   dsimp
   rw [hsum, ShortDraftLocal.active_zero_local_row χ ψ hχ2 ε x]
@@ -452,9 +433,8 @@ end ActualEisensteinCubic
 
 namespace PrimitiveTrace
 
-open Complex
-open scoped ComplexConjugate
 open EisensteinEmbedding ConcreteTraceCRT
+open scoped ComplexConjugate
 
 private theorem complex_exp_trace_integer {t : ℂ}
     (ht : Complex.exp (2 * Real.pi * Complex.I * t) = 1) :
@@ -489,7 +469,7 @@ private theorem reconstruction (z : ℂ) :
       (omega3 * z / eisLam + conj (omega3 * z / eisLam)) +
       (z / eisLam + conj (z / eisLam)) * omega3 := by
   have hquad := omega3_sq
-  have hl : eisLam ≠ 0 := eisLam_ne_zero
+  have hl := eisLam_ne_zero
   have hcl : conj eisLam = -eisLam := by
     simp only [eisLam, map_add, map_one, map_mul, map_ofNat, omega_conj]
     linear_combination 2 * hquad
@@ -504,16 +484,11 @@ private theorem in_coordinate_lattice_of_two_phases (z : ℂ)
     z ∈ coordinateSubring := by
   obtain ⟨b, hb⟩ := phase_integer hz
   obtain ⟨c, hc⟩ := phase_integer hwz
-  change ∃ a b : ℤ, z = (a : ℂ) + (b : ℂ) * omega3
   refine ⟨b + c, b, ?_⟩
-  calc
-    z = (z / eisLam + conj (z / eisLam)) +
-      (omega3 * z / eisLam + conj (omega3 * z / eisLam)) +
-      (z / eisLam + conj (z / eisLam)) * omega3 := reconstruction z
-    _ = ((b + c : ℤ) : ℂ) + (b : ℂ) * omega3 := by
+  exact (reconstruction z).trans (by
       rw [hb, hc]
       push_cast
-      ring
+      ring)
 
 theorem eisTraceModChar_breveE_ne_one
     (P : Ideal O) [P.IsMaximal] (p : O)

@@ -10,79 +10,14 @@ noncomputable section
 
 namespace CanonicalQuadraticSieve
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 
 section
 
-open scoped BigOperators Classical SchwartzMap
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson CompletedGauss
-open IdealMobiusDivisorSum
+open ConcretePrimeRowBridge EisensteinSchwartzPoisson CompletedGauss IdealMobiusDivisorSum
 
 def smallPrincipalMajorant {n p : Type} [Fintype n] [Fintype p]
     {α : ℝ} (hexp : HasSieveExponent α) (deltaLoss : ℝ) (hδ : 0 < deltaLoss)
@@ -113,7 +48,7 @@ lemma smallPrincipalMajorant_mono {n p : Type} [Fintype n] [Fintype p]
   have he1 := divisorEnergyFactor_nonneg ε hε N a b
   have hc := (divisorExponentConstant_pos hexp deltaLoss hδ).le
   have ha0 : 0 ≤ α-1/2 := by linarith
-  have hB0 : 0 ≤ B := hB'.trans hB
+  have hB0 := hB'.trans hB
   unfold smallPrincipalMajorant
   gcongr
 
@@ -247,28 +182,20 @@ theorem HasSieveExponent.unrestricted_small_principal_sum {α : ℝ} (hexp : Has
         (fun i : {i // σ i = E} => rows i.val) left right a b M F (fun d i => P d i.val) := by
     unfold unrestrictedSmallPrincipalSum
     exact (Fintype.sum_fiberwise σ _).symm
-  have hb (E : fixedBadPrimes.powerset) :
-      ‖unrestrictedSmallPrincipalSum (fun i : {i // σ i = E} => rows i.val)
-        left right a b M F (fun d i => P d i.val)‖ ≤
-      smallPrincipalMajorant hexp deltaLoss hδ ε hε B N M F U a b :=
-    hexp.small_principal_sector hα deltaLoss hδ ε hε B N M F U hB hN hM hF hU
+  have hb (E : fixedBadPrimes.powerset) := hexp.small_principal_sector hα deltaLoss hδ ε hε B N M F U hB hN hM hF hU
       (fun i : {i // σ i = E} => rows i.val) left right (fun i k h => Subtype.ext (hr h)) hl hri
       (fun i => hrows i.val) hleft hright hray a b (fun d i => P d i.val) (fun d i => hP d i.val)
       E (fun i => i.property)
   rw [hs]
   apply (norm_sum_le _ _).trans
-  calc
-    _ ≤ ∑ _E : fixedBadPrimes.powerset, smallPrincipalMajorant hexp deltaLoss hδ ε hε B N M F U a b :=
-      Finset.sum_le_sum (fun E _ => hb E)
-    _ = _ := by
+  exact (Finset.sum_le_sum (fun E _ => hb E)).trans_eq (by
       simp only [Finset.sum_const, Finset.card_univ, nsmul_eq_mul, Fintype.card_coe, fixedBadPrimes_powerset_card]
-      norm_num
+      norm_num)
 
 end
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
-open TruncatedPrincipalPoisson IdealMobiusDivisorSum
+open ConcretePrimeRowBridge EisensteinSchwartzPoisson TruncatedPrincipalPoisson IdealMobiusDivisorSum
 
 theorem weightedDivisorCorrection_coprime_mask (G C : Ideal O)
     (hG : G ≠ 0) (hC : C ≠ 0) (hGC : IsCoprime G C) (X Z : ℝ) :
@@ -285,7 +212,6 @@ theorem weightedDivisorCorrection_coprime_mask (G C : Ideal O)
   apply Finset.sum_congr rfl
   intro d hd
   have hqG := (mem_idealDivisors hG).mp hq
-  have hdC := (mem_idealDivisors hC).mp hd
   have hq0 : q ≠ 0 := by intro he; rw [he,zero_dvd_iff] at hqG; exact hG hqG
   have hNq : 0 < (Ideal.absNorm q:ℝ) := by
     exact_mod_cast Nat.pos_iff_ne_zero.mpr (fun he => hq0 (Ideal.absNorm_eq_zero_iff.mp he))
@@ -297,7 +223,7 @@ theorem weightedDivisorCorrection_coprime_mask (G C : Ideal O)
       simpa only [mul_comm] using hz
     · intro hz
       simpa only [mul_comm] using (div_lt_iff₀ hNq).mp hz
-  simp only [map_mul,Nat.cast_mul,hlow,(hGC.mono hqG hdC).isRelPrime.moebius_mul,Int.cast_mul]
+  simp only [map_mul,Nat.cast_mul,hlow,(hGC.mono hqG ((mem_idealDivisors hC).mp hd)).isRelPrime.moebius_mul,Int.cast_mul]
   by_cases hp : Z/(Ideal.absNorm q:ℝ) < (Ideal.absNorm d:ℝ)
   · simp only [hp,ite_true]
     push_cast
@@ -415,8 +341,7 @@ theorem HasSieveExponent.masked_source_large_principal_sum {α : ℝ} (hexp : Ha
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson CompletedGauss
-open IdealMobiusDivisorSum
+open ConcretePrimeRowBridge EisensteinSchwartzPoisson CompletedGauss IdealMobiusDivisorSum
 
 lemma smallPrincipalMajorant_bad_scale {n p : Type} [Fintype n] [Fintype p]
     {α : ℝ} (hexp : HasSieveExponent α) (hα : 1/2 ≤ α) (deltaLoss : ℝ) (hδ : 0 < deltaLoss)
@@ -609,28 +534,19 @@ theorem HasSieveExponent.unrestricted_large_principal_sum {α : ℝ} (hexp : Has
         (fun i : {i // σ i = E} => rows i.val) left right a b M F (fun i => Z i.val) := by
     unfold unrestrictedLargePrincipalSum
     exact (Fintype.sum_fiberwise σ _).symm
-  have hb (E : fixedBadPrimes.powerset) :
-      ‖unrestrictedLargePrincipalSum (fun i : {i // σ i = E} => rows i.val)
-        left right a b M F (fun i => Z i.val)‖ ≤
-      smallPrincipalMajorant hexp deltaLoss hδ ε hε B N M F (1/2) a b :=
-    hexp.large_principal_sector hα deltaLoss hδ ε hε B N M F T hB hN hM hF hT
+  have hb (E : fixedBadPrimes.powerset) := hexp.large_principal_sector hα deltaLoss hδ ε hε B N M F T hB hN hM hF hT
       (fun i : {i // σ i = E} => rows i.val) left right (fun i k h => Subtype.ext (hr h)) hl hri
       (fun i => hrows i.val) hleft hright hray a b (fun i => Z i.val) (fun i => hZ i.val)
       E (fun i => i.property)
   rw [hs]
   apply (norm_sum_le _ _).trans
-  calc
-    _ ≤ ∑ _E : fixedBadPrimes.powerset, smallPrincipalMajorant hexp deltaLoss hδ ε hε B N M F (1/2) a b :=
-      Finset.sum_le_sum (fun E _ => hb E)
-    _ = _ := by
+  exact (Finset.sum_le_sum (fun E _ => hb E)).trans_eq (by
       simp only [Finset.sum_const,Finset.card_univ,nsmul_eq_mul,Fintype.card_coe,fixedBadPrimes_powerset_card]
-      norm_num
+      norm_num)
 
 end
 
-open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
-open TruncatedPrincipalPoisson IdealCoprimeSieveOperator
+open ConcretePrimeRowBridge EisensteinSchwartzPoisson TruncatedPrincipalPoisson IdealCoprimeSieveOperator
 
 lemma unrestrictedPairTerm_norm_le {m n p : Type}
     (rows : m → Ideal O) (left : n → Ideal O) (right : p → Ideal O)
@@ -640,11 +556,9 @@ lemma unrestrictedPairTerm_norm_le {m n p : Type}
   unfold unrestrictedPairTerm
   split_ifs with hc
   · simp only [unrestrictedPairCharacter,norm_mul,norm_star]
-    calc
-      _ ≤ (‖a j‖*‖b k‖)*(1*1) := mul_le_mul_of_nonneg_left
+    exact (mul_le_mul_of_nonneg_left
         (mul_le_mul (quadraticRow_norm_le_one _ _) (quadraticRow_norm_le_one _ _)
-          (norm_nonneg _) (by norm_num)) (by positivity)
-      _ = _ := by ring
+          (norm_nonneg _) (by norm_num)) (by positivity)).trans_eq (by ring)
   · simp only [norm_zero]
     positivity
 

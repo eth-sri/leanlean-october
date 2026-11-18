@@ -178,9 +178,7 @@ theorem isCompact_closure_extendByZeroL2_image_of_forall_exists_translationInteg
                     - extendByZeroL2 (E := E) (K := K) hKm u‖ ^ 2
               ∂kernelMeasure (E := E) ψ ≤ (ε / 2) ^ 2) :
     IsCompact (closure (extendByZeroL2 (E := E) (K := K) hKm '' A)) := by
-  have ht :
-      TotallyBounded (extendByZeroL2 (E := E) (K := K) hKm '' A) :=
-    totallyBounded_extendByZeroL2_image_of_forall_exists_translationIntegral_small
+  have ht := totallyBounded_extendByZeroL2_image_of_forall_exists_translationIntegral_small
       (E := E) (K := K) hK hKm hR hA hApprox
   exact (ht.closure).isCompact_of_isClosed isClosed_closure
 

@@ -44,8 +44,7 @@ theorem reopening_twisted_moment_squared (W:ℝ→ℂ)(a b:ℝ)(ha:0<a)
   obtain ⟨C,hC,he⟩:=reopening_twisted_moment W a b ha hs hW J
   refine ⟨C^2,sq_nonneg _,?_⟩
   intro theta hT
-  have hh:=pow_le_pow_left₀ (integral_nonneg (fun ξ=>by positivity)) (he theta hT) 2
-  simpa only [mul_pow,←pow_mul,Nat.mul_comm] using hh
+  simpa only [mul_pow,←pow_mul,Nat.mul_comm] using (pow_le_pow_left₀ (integral_nonneg (fun ξ=>by positivity)) (he theta hT) 2)
 
 end SevenEighths.InverseMoment
 

@@ -2,7 +2,16 @@ module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import GuthMaynard.AffineSource.Foundation
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.PrimitiveTripleCount
 
 @[expose] public section
@@ -32,7 +41,6 @@ theorem exists_primitive_divisor_bound (ε : ℝ) (hε : 0 < ε) :
   obtain ⟨C,hC,hdiv⟩ := RiemannZeta.GuthMaynard.divisorCountBound_native ε hε
   refine ⟨C,hC,?_⟩
   intro n K hn hK
-  have hnr : (0:ℝ) < n := by exact_mod_cast hn
   calc
     _ ≤ (n.divisors.card:ℝ)+K/(n:ℝ)^2*((n:ℝ)*(n.divisors.card:ℝ)) :=
       add_le_add le_rfl (mul_le_mul_of_nonneg_left (sum_divisors_cast_le_mul_card n)

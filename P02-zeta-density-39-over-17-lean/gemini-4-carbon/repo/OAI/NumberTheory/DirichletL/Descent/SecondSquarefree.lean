@@ -43,9 +43,8 @@ lemma prime_span_coprime_of_not_mem (i : ι) (c : Eis) (hc : c ∉ Ideal.span {p
     IsCoprime (Ideal.span {p i}) (Ideal.span {c} : Ideal Eis) := by
   apply Ideal.isCoprime_iff_sup_eq.mpr
   by_contra hne
-  have he := (inferInstance : (Ideal.span {p i}).IsMaximal).eq_of_le hne le_sup_left
   apply hc
-  rw [he]
+  rw [((inferInstance : (Ideal.span {p i}).IsMaximal).eq_of_le hne le_sup_left)]
   exact (show Ideal.span {c} ≤ (Ideal.span {p i} : Ideal Eis) ⊔ Ideal.span {c} from le_sup_right)
     (Ideal.subset_span (by simp))
 
@@ -71,8 +70,7 @@ theorem secondInputCoefficient_zero_of_label_mem (Ψ : Eis →* ℂ) (m c d : Ei
     secondInputCoefficient p hg Ψ m c d H S = 0 := by
   have hz : rowCoprimeMask (fun i => Ideal.span {p i}) S c = 0 := by
     simp only [rowCoprimeMask,ite_eq_left (show ∃ i ∈ S,c ∈ Ideal.span {p i} from ⟨i,hi,hc⟩)]
-  have hr := row_zero_of_mask_zero (fun i => Ideal.span {p i}) hg S c hz
-  simp only [secondInputCoefficient,hr,zero_pow (by decide : (4:ℕ) ≠ 0),mul_zero,zero_mul]
+  simp only [secondInputCoefficient,(row_zero_of_mask_zero (fun i => Ideal.span {p i}) hg S c hz),zero_pow (by decide : (4:ℕ) ≠ 0),mul_zero,zero_mul]
 
 theorem secondPreColumn_zero_of_mask_label_mem (Ψ : Eis →* ℂ) (m c d e k : Eis)
     (H : Finset ι → ℂ) (S : Finset ι) (i : ι) (hi : i ∈ S)
@@ -83,8 +81,7 @@ theorem secondPreColumn_zero_of_mask_label_mem (Ψ : Eis →* ℂ) (m c d e k : 
     simp only [secondPreColumn,hz,mul_zero,zero_mul]
   · have hz : rowCoprimeMask (fun i => Ideal.span {p i}) S c = 0 := by
       simp only [rowCoprimeMask,ite_eq_left (show ∃ i ∈ S,c ∈ Ideal.span {p i} from ⟨i,hi,hc⟩)]
-    have hr := row_zero_of_mask_zero (fun i => Ideal.span {p i}) hg S c hz
-    simp only [secondPreColumn,hr,zero_pow (by decide : (4:ℕ) ≠ 0),mul_zero,zero_mul]
+    simp only [secondPreColumn,(row_zero_of_mask_zero (fun i => Ideal.span {p i}) hg S c hz),zero_pow (by decide : (4:ℕ) ≠ 0),mul_zero,zero_mul]
 
 theorem secondSignedSourceWeight_nonzero_masks
     (Ψ : Eis →* ℂ) (m c d : Eis) (z : SecondRayIndex) (x : SecondExpansionData ι)

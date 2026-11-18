@@ -43,8 +43,7 @@ theorem literalWholeRow_eq_active_tuples
         (F.reflected K.val (hrows K.val K.property) (tuplePrimeFamily tuples hne hmax hgood (slotTupleProduct p.val))).generator_good
         (reflectedExponent jF) (slotIndices φ (PrimeIndex K.val) σ)
         (CompletedHeight.normTwistedSource W θ) X else 0 := by
-  rw [literalWholeRow_eq_pairs F rows _ _ hrows jF D s hc W θ X r _ K,Finset.sum_image hinj]
-  rw [←Finset.sum_coe_sort tuples]
+  rw [literalWholeRow_eq_pairs F rows _ _ hrows jF D s hc W θ X r _ K,Finset.sum_image hinj, ←Finset.sum_coe_sort tuples]
   apply Finset.sum_congr rfl
   intro p hp
   simp only [literalPairEntry,dite_eq_left K.property,

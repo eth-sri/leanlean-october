@@ -27,8 +27,7 @@ noncomputable def heathBrownInteriorShift (f : ℝ → ℝ) (x : ℝ) : ℝ :=
 theorem iteratedDeriv_heathBrownInteriorShift
     (k : ℕ) (f : ℝ → ℝ) :
     iteratedDeriv k (heathBrownInteriorShift f) =
-      fun x => iteratedDeriv k f (x + 1) := by
-  exact iteratedDeriv_comp_add_const k f 1
+      fun x => iteratedDeriv k f (x + 1) := iteratedDeriv_comp_add_const k f 1
 
 theorem heathBrownInteriorShift_contDiffOn
     {N k : ℕ} {f : ℝ → ℝ}
@@ -36,11 +35,11 @@ theorem heathBrownInteriorShift_contDiffOn
     ContDiffOn ℝ k (heathBrownInteriorShift f)
       (Set.Ioo (-1 : ℝ) ((N : ℝ) - 1)) := by
   have hmap : Set.MapsTo (fun x : ℝ => x + 1)
-      (Set.Ioo (-1 : ℝ) ((N : ℝ) - 1)) (Set.Ioo 0 (N : ℝ)) := by
+      (Set.Ioo (-1) ((N : ℝ) - 1)) (Set.Ioo 0 (N : ℝ)) := by
     intro x hx
     constructor <;> linarith [hx.1, hx.2]
   have hshift : ContDiffOn ℝ k (fun x : ℝ => x + 1)
-      (Set.Ioo (-1 : ℝ) ((N : ℝ) - 1)) :=
+      (Set.Ioo (-1) ((N : ℝ) - 1)) :=
     (contDiff_id.add contDiff_const).contDiffOn
   unfold heathBrownInteriorShift
   simpa only [Function.comp_def] using
@@ -119,7 +118,7 @@ theorem heathBrownExponentialSum_interior_identity
       simp only [Finset.mem_Icc, not_and_or, not_le]
       omega
     rw [← Finset.insert_Icc_add_one_left_eq_Icc honeN]
-    simpa only [Nat.reduceAdd, Nat.cast_one] using
+    simpa using
       (Finset.sum_insert hnot
         (f := fun n : ℕ => heathBrownPhase (f n)))
   calc
@@ -134,7 +133,7 @@ theorem heathBrownExponentialSum_interior_identity
           (∑ n ∈ Finset.Icc 1 (N - 2), heathBrownPhase (f (n + 1))) +
           heathBrownPhase (f N) := by
       rw [sum_Icc_two_sub_one_eq_shifted N hN]
-      simp only [Nat.cast_add, Nat.cast_one]
+      simp
 
 theorem norm_heathBrownExponentialSum_le_interior_add_two
     {N : ℕ} (hN : 2 ≤ N) (f : ℝ → ℝ) :
@@ -148,13 +147,9 @@ theorem norm_heathBrownExponentialSum_le_interior_add_two
         ‖heathBrownPhase (f 1)‖ +
           ‖heathBrownExponentialSum (N - 2) (heathBrownInteriorShift f)‖ +
           ‖heathBrownPhase (f N)‖ := by
-      calc
-        _ ≤ ‖heathBrownPhase (f 1) +
-              heathBrownExponentialSum (N - 2) (heathBrownInteriorShift f)‖ +
-              ‖heathBrownPhase (f N)‖ := norm_add_le _ _
-        _ ≤ _ := by
+      exact (norm_add_le _ _).trans (by
           gcongr
-          exact norm_add_le _ _
+          exact norm_add_le _ _)
     _ = ‖heathBrownExponentialSum (N - 2) (heathBrownInteriorShift f)‖ + 2 := by
       rw [norm_heathBrownPhase, norm_heathBrownPhase]
       ring

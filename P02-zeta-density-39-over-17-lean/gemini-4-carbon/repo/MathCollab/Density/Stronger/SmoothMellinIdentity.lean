@@ -47,8 +47,7 @@ theorem integrable_scaled_mellin_line {ψ : ℝ → ℝ} {a b N : ℝ}
     Integrable (fun u : ℝ => (N : ℂ)^((σ : ℂ)+u*I) *
       mellin (fun y => (dampedCutoff ψ q y : ℂ)) ((σ : ℂ)+u*I)) := by
   have hm := dampedCutoff_integrable_mellin_line hψ ha hb hs σ q
-  have hpow : Continuous (fun u : ℝ => (N : ℂ)^((σ : ℂ)+u*I)) :=
-    (by fun_prop : Continuous (fun u : ℝ => (σ : ℂ)+u*I)).const_cpow
+  have hpow := (by fun_prop : Continuous (fun u : ℝ => (σ : ℂ)+u*I)).const_cpow
       (Or.inl (Complex.ofReal_ne_zero.mpr hN.ne'))
   refine (hm.norm.const_mul (N^σ)).mono'
     (hpow.aestronglyMeasurable.mul hm.aestronglyMeasurable) ?_

@@ -14,15 +14,11 @@ local notation "Id" => Ideal HeckeFamily.O
 
 lemma annular_power_separation (a b r s : ℝ) (ha : 0<a) (hrs : r<s) :
     ∀ᶠZ : ℝ in atTop,b*Z^r<a*Z^s := by
-  have hh := (tendsto_rpow_atTop (show 0<s-r by linarith)).eventually (eventually_gt_atTop (b/a))
-  filter_upwards [hh,eventually_gt_atTop (0:ℝ)] with Z hZ hZ0
+  filter_upwards [((tendsto_rpow_atTop (show 0<s-r by linarith)).eventually (eventually_gt_atTop (b/a))),eventually_gt_atTop (0:ℝ)] with Z hZ hZ0
   have ht : b<a*Z^(s-r) := by
     have h := (div_lt_iff₀ ha).mp hZ
     nlinarith
-  have hp : 0<Z^r := Real.rpow_pos_of_pos hZ0 _
-  calc
-    b*Z^r < (a*Z^(s-r))*Z^r := mul_lt_mul_of_pos_right ht hp
-    _=a*Z^s := by rw [mul_assoc,←Real.rpow_add hZ0];congr 1;congr 1;ring
+  exact (mul_lt_mul_of_pos_right ht (Real.rpow_pos_of_pos hZ0 _)).trans_eq (by rw [mul_assoc,←Real.rpow_add hZ0];congr 1;congr 1;ring)
 
 theorem power_pools_eventually_disjoint {ι : Type*} [Fintype ι]
     (C : Set Id) (S : Finset Id) (a b ell : ι→ℝ)

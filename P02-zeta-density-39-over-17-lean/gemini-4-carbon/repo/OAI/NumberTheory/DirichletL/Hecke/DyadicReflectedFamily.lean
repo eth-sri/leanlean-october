@@ -37,12 +37,9 @@ theorem LFunction_eq_of_mask_entire (χ ψ : Character) (hχ : χ.residue≠1)
       if IsCoprime J χ.modulus then idealCoeff ψ J else 0) (s : ℂ) :
     LFunction χ s=LFunction ψ s*factors χ.modulus ψ s := by
   have hψ : ψ.residue≠1 := fun h => hχ ((principal_iff_of_mask χ ψ hmask).mpr h)
-  have ha := LFunction_entire_nonprincipal χ hχ
-  have hb : Differentiable ℂ (fun z => LFunction ψ z*factors χ.modulus ψ z) :=
-    (LFunction_entire_nonprincipal ψ hψ).mul (factors_differentiable _ _)
   have he : LFunction χ=(fun z => LFunction ψ z*factors χ.modulus ψ z) := by
-    apply (Complex.analyticOnNhd_univ_iff_differentiable.mpr ha).eq_of_eventuallyEq
-      (Complex.analyticOnNhd_univ_iff_differentiable.mpr hb) (z₀ := (2 : ℂ))
+    apply (Complex.analyticOnNhd_univ_iff_differentiable.mpr (LFunction_entire_nonprincipal χ hχ)).eq_of_eventuallyEq
+      (Complex.analyticOnNhd_univ_iff_differentiable.mpr ((LFunction_entire_nonprincipal ψ hψ).mul (factors_differentiable _ _))) (z₀ := (2 : ℂ))
     filter_upwards [(Complex.isOpen_re_gt 1).mem_nhds (by norm_num : (1 : ℝ)<(2 : ℂ).re)] with z hz
     exact LFunction_eq_of_mask_right χ ψ hmask hz
   exact congr_fun he s
@@ -90,8 +87,7 @@ theorem original_reflected_subpower (ε : ℝ) (hε : 0<ε) :
   have hd₁ := hleft χ.modulus ψ s
   have hd₂ : ‖(factors χ.modulus ψ (1-conj s))⁻¹‖≤
       Cr*((HeckeDeletionBounds.radical χ.modulus).absNorm : ℝ)^ε := by
-    have h := hright χ.modulus ψ (1-conj s) (by simp; linarith)
-    exact (le_add_of_nonneg_left (norm_nonneg _)).trans h
+    exact (le_add_of_nonneg_left (norm_nonneg _)).trans (hright χ.modulus ψ (1-conj s) (by simp; linarith))
   have hd : ‖factors χ.modulus ψ s‖*‖(factors χ.modulus ψ (1-conj s))⁻¹‖≤
       (Cl*Cr)*((HeckeDeletionBounds.radical χ.modulus).absNorm : ℝ)^(max (-s.re) 0+2*ε) := by
     calc
@@ -109,8 +105,6 @@ theorem original_reflected_subpower (ε : ℝ) (hε : 0<ε) :
           _ = (Cl*Cr)*(((HeckeDeletionBounds.radical χ.modulus).absNorm : ℝ)^(max (-s.re) 0+ε)*
               ((HeckeDeletionBounds.radical χ.modulus).absNorm : ℝ)^ε) := by ring
           _ = _ := by rw [he]
-  have hQ' : (ψ.modulus.absNorm : ℝ)^(1/2-s.re)≤(χ.modulus.absNorm : ℝ)^(1/2-s.re) :=
-    Real.rpow_le_rpow (by positivity) (by exact_mod_cast hQ) (by linarith)
   calc
     _ ≤ Cg*(ψ.modulus.absNorm : ℝ)^(1/2-s.re)*(3+|s.im|)^2*
         ‖LFunction χ (1-conj s)‖*

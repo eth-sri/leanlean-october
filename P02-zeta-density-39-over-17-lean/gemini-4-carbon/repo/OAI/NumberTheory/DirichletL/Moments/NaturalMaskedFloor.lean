@@ -12,12 +12,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentNaturalMaskedFloor
-open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound
-open CenteredMomentPlainPositiveEnergy CenteredMomentPlainGlobalEnergy
-open CenteredMomentCommonMaskRadialEnergy CenteredMomentOriginalRadialComparison
-open CenteredMomentNaturalRowSource CenteredMomentSecondHeightFamily CenteredExceptionalProfile
-open CenteredMomentCoreFloor CenteredMomentLattice CenteredMomentTwist
-open CenteredMomentAllocatedNaturalSource HeckeInverseAmplification
+open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound CenteredMomentPlainPositiveEnergy CenteredMomentPlainGlobalEnergy CenteredMomentCommonMaskRadialEnergy CenteredMomentOriginalRadialComparison CenteredMomentNaturalRowSource CenteredMomentSecondHeightFamily CenteredExceptionalProfile CenteredMomentCoreFloor CenteredMomentLattice CenteredMomentTwist CenteredMomentAllocatedNaturalSource HeckeInverseAmplification
 open CenteredMomentRadialEligibleEnergy (Radial)
 local notation "O" => HeckeFamily.O
 
@@ -94,7 +89,7 @@ theorem natural_masked_floor (a b ε : ℝ) (ha : 0<a) (hb : 0≤b) (hε : 0<ε)
   obtain ⟨S,C,hC,hpair⟩ := excluded_pair a b ε ha hb hε
   obtain ⟨n,T,Ct,hCt,ht⟩ :=
     CenteredMomentFiniteProfileExceptional.normPowerProfile_source_control a b ha S
-  let F : ℝ := fixedConductorFactor
+  let F := fixedConductorFactor
   have hF : 0<F := by
     unfold F fixedConductorFactor
     norm_cast
@@ -105,7 +100,7 @@ theorem natural_masked_floor (a b ε : ℝ) (ha : 0<a) (hb : 0≤b) (hε : 0<ε)
         (Ideal.span_singleton_eq_bot.not.mpr (by norm_num : (72:O)≠0)))
   refine ⟨4*n,T,C*Ct^4*F^4,by positivity,?_⟩
   intro W₁ W₂ hs₁ hs₂ η Q R r bΦ hR hbΦ hsΦ hz hex Z m q ρ t X₁ X₂ hZ hm hq hscale hρ hX₁ hX₂ hη
-  let r' : Radial := {r with keep := fun z=>r.keep z ∧ r.profile (‖eisEmbedding z‖^2/r.scale)≠0}
+  let r' := {r with keep := fun z=>r.keep z ∧ r.profile (‖eisEmbedding z‖^2/r.scale)≠0}
   let χ : O→Character := fun z=>if hz:z≠0 then (naturalRow η z hz).character else η
   have hχ (z:O) (h:r'.keep z) : (χ z).residue≠1 := by
     have hn := hz z h.1
@@ -121,8 +116,8 @@ theorem natural_masked_floor (a b ε : ℝ) (ha : 0<a) (hb : 0≤b) (hε : 0<ε)
       (naturalRow η z hn).modulus_power_bound Z q m bΦ (zero_lt_one.trans_le hZ) hbΦ hη hh
   let V₁ := normPowerProfile W₁ a b ha hs₁ (W₁.smooth ⊤) t
   let V₂ := normPowerProfile W₂ a b ha hs₂ (W₂.smooth ⊤) t
-  have hv₁ : Function.support (V₁:ℝ→ℂ)⊆Set.Icc a b := (normPowerProfile_support W₁ a b ha hs₁ (W₁.smooth ⊤) t).trans hs₁
-  have hv₂ : Function.support (V₂:ℝ→ℂ)⊆Set.Icc a b := (normPowerProfile_support W₂ a b ha hs₂ (W₂.smooth ⊤) t).trans hs₂
+  have hv₁ := (normPowerProfile_support W₁ a b ha hs₁ (W₁.smooth ⊤) t).trans hs₁
+  have hv₂ := (normPowerProfile_support W₂ a b ha hs₂ (W₂.smooth ⊤) t).trans hs₂
   have he := hpair V₁ V₂ hv₁ hv₂ χ r' R (F*bΦ*Z^(m+q)) X₁ X₂ hR
     (by positivity) hX₁ hX₂ hχ hmod
   have hid : zeroEnergy η (fixedBadMask*ConcretePrimeRowBridge.idealGenerator R) 1 t W₁ W₂ X₁ X₂ r =

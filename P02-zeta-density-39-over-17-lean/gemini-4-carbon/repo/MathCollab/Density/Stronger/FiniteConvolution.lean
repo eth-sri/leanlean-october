@@ -40,11 +40,9 @@ theorem finiteBlock_pow_lower {f : ArithmeticFunction ℂ} {N : ℕ} (hN : 0 < N
   | succ k ih =>
     rw [pow_succ, ArithmeticFunction.mul_apply] at hn
     obtain ⟨p, hp, hmul⟩ := Finset.exists_ne_zero_of_sum_ne_zero hn
-    have ha := ih p.1 (left_ne_zero_of_mul hmul)
-    have hb := hs p.2 (right_ne_zero_of_mul hmul)
     rw [← (Nat.mem_divisorsAntidiagonal.mp hp).1, pow_succ]
-    exact Nat.mul_lt_mul_of_pos_right ha hN |>.trans_le
-      (Nat.mul_le_mul_left _ (Finset.mem_Ioc.mp hb).1.le)
+    exact Nat.mul_lt_mul_of_pos_right (ih p.1 (left_ne_zero_of_mul hmul)) hN |>.trans_le
+      (Nat.mul_le_mul_left _ (Finset.mem_Ioc.mp (hs p.2 (right_ne_zero_of_mul hmul))).1.le)
 
 theorem finiteBlock_pow_LSeriesSummable {f : ArithmeticFunction ℂ} {N : ℕ}
     (hs : ∀ n, f n ≠ 0 → n ∈ Finset.Ioc N (2*N)) (k : ℕ) (s : ℂ) :
@@ -93,11 +91,10 @@ theorem finiteBlock_pow_LSeries_sum {f : ArithmeticFunction ℂ} {N k : ℕ}
     rw [LSeries.term_def₀ (f^k).map_zero]
     have hz : (f^k) n = 0 := by
       by_contra hh
-      have hu := (finiteBlock_pow_support hs k n hh).2
       have hl : N^k < n := by
         obtain ⟨l, rfl⟩ := Nat.exists_eq_succ_of_ne_zero hk.ne'
         exact finiteBlock_pow_lower hN hs l n hh
-      exact hn (Finset.mem_Ioc.mpr ⟨hl, hu⟩)
+      exact hn (Finset.mem_Ioc.mpr ⟨hl, ((finiteBlock_pow_support hs k n hh).2)⟩)
     rw [hz, zero_mul]
 
 /-- One of k fixed pieces detects the powered block at the same ordinate,

@@ -17,16 +17,13 @@ def smoothShortCoefficient (X Y N : ℝ) (n : ℕ) : ℂ :=
 
 theorem norm_smoothShortCoefficient_le (X N : ℝ) {Y : ℝ} (hY : 0 < Y) (n : ℕ) :
     ‖smoothShortCoefficient X Y N n‖ ≤ (n.divisors.card : ℝ) := by
-  have he : Real.exp (-(n : ℝ)/Y) ≤ 1 := Real.exp_le_one_iff.mpr
+  have he := Real.exp_le_one_iff.mpr
     (div_nonpos_of_nonpos_of_nonneg (neg_nonpos.mpr (Nat.cast_nonneg n)) hY.le)
   have hw := smoothDyadicWeight_bounds ((n : ℝ)/N)
   rw [smoothShortCoefficient, norm_mul, norm_mul, Complex.norm_real, Complex.norm_real,
     Real.norm_eq_abs, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _), abs_of_nonneg hw.1]
-  calc
-    _ ≤ (n.divisors.card : ℝ)*1*1 :=
-      mul_le_mul (mul_le_mul (mollifierCoefficient_norm_le X n) he
-        (by positivity) (by positivity)) hw.2 hw.1 (by positivity)
-    _ = _ := by ring
+  exact (mul_le_mul (mul_le_mul (mollifierCoefficient_norm_le X n) he
+        (by positivity) (by positivity)) hw.2 hw.1 (by positivity)).trans_eq (by ring)
 
 theorem smoothShortCoefficient_zero_of_le_half (X Y : ℝ) {N : ℝ} (hN : 0 < N)
     {n : ℕ} (hn : (n : ℝ) ≤ N/2) : smoothShortCoefficient X Y N n = 0 := by
@@ -35,7 +32,7 @@ theorem smoothShortCoefficient_zero_of_le_half (X Y : ℝ) {N : ℝ} (hN : 0 < N
 
 theorem smoothShortCoefficient_zero_of_two_le (X Y : ℝ) {N : ℝ} (hN : 0 < N)
     {n : ℕ} (hn : 2*N ≤ (n : ℝ)) : smoothShortCoefficient X Y N n = 0 := by
-  have hr : (3/2 : ℝ) ≤ (n : ℝ)/N := (le_div_iff₀ hN).mpr (by linarith)
+  have hr : (3/2) ≤ (n : ℝ)/N := (le_div_iff₀ hN).mpr (by linarith)
   simp [smoothShortCoefficient, smoothDyadicWeight_zero_of_ge hr]
 
 theorem smoothShortCoefficient_support (X Y : ℝ) {N : ℝ} (hN : 0 < N)

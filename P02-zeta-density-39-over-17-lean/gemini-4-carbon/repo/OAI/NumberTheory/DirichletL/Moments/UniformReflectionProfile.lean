@@ -7,12 +7,10 @@ public import OAI.NumberTheory.DirichletL.Moments.DetectorDictionaryUniformTests
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff ComplexConjugate
 open MeasureTheory
+open scoped Classical BigOperators SchwartzMap ContDiff ComplexConjugate
 namespace SevenEighths.CenteredMomentUniformReflectionProfile
-open HeckeFamily FourierBridge EisensteinSchwartzPoisson
-open CenteredMomentReflectedProfileMeasure CenteredMomentReflectedPairEnergy
-open CenteredMomentReflectedUniformPair CenteredMomentOneReflectionEnergy
+open HeckeFamily FourierBridge EisensteinSchwartzPoisson CenteredMomentReflectedProfileMeasure CenteredMomentReflectedPairEnergy CenteredMomentReflectedUniformPair CenteredMomentOneReflectionEnergy
 
 theorem source_separation (V : ℝ→ℂ) (M : ℝ) (hM : 0≤M)
     (hV : ∀y,V y≠0 → |y|≤M) (A J : ℕ) :
@@ -62,7 +60,6 @@ theorem actual_one_uniform (V : ℝ→ℂ) (M : ℝ) (hM : 0≤M)
     have he : (fun v : ℝ=>(V y*logPhase v y)*(e i*d i v))=
         (fun v=>e i*((V y*logPhase v y)*d i v)) := by funext v;ring
     rw [he,integral_const_mul,←hid i y]
-    dsimp [F]
     ring
   have hsource (i : ι) : HeckeDyadic.polynomial (χ i) false
       (fun x=>logWindow V x*((1+s i)^A:ℂ)*paperRadialFourier (G i) (s i*x))
@@ -73,13 +70,11 @@ theorem actual_one_uniform (V : ℝ→ℂ) (M : ℝ) (hM : 0≤M)
       ←integral_mul_const]
     apply integral_congr_ae
     filter_upwards [] with v
-    dsimp [φ]
     ring
   have hint (i : ι) : Integrable (fun v : ℝ=>(e i • d i) v*φ i v) := by
     have hh := (plain_density_integrable V M (X i) (hX i) hV (χ i) (e i • d i)).mul_const (P i)
     apply hh.congr
     filter_upwards [] with v
-    dsimp [φ]
     ring
   have hpoint (i : ι) : ∀v,‖(e i • d i) v‖≤envelope (K*D) J v := by
     have hh := normalized_density_bound A 0 J (s i) 0 (K*D) (hs i) (d i)

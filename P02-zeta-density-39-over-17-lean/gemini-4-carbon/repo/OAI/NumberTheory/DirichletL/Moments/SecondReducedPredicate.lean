@@ -11,11 +11,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSecondReducedPredicate
-open HeckeFamily HeckeRowClosure CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open CenteredExceptionalProfile CenteredMomentFixedRowMask CenteredMomentRestrictedEnergy
-open CenteredMomentSecondFamilyTransport CenteredMomentSecondHeightFamily CenteredMomentChildRows
-open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
-open CenteredMomentSecondSixthReduction CenteredMomentCanonicalFirst RayFourExpansion
+open HeckeFamily HeckeRowClosure CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss CenteredExceptionalProfile CenteredMomentFixedRowMask CenteredMomentRestrictedEnergy CenteredMomentSecondFamilyTransport CenteredMomentSecondHeightFamily CenteredMomentChildRows CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentSecondSixthReduction CenteredMomentCanonicalFirst RayFourExpansion
 local notation "O" => ActualEisensteinCubic.O
 
 theorem fixed_mask_change (η : Character) (Q : Ideal O) (m n A z : O)
@@ -23,10 +19,9 @@ theorem fixed_mask_change (η : Character) (Q : Ideal O) (m n A z : O)
     (hmLam:ConcretePrimeRowBridge.goodLambda∣m) (hm2:(2:O)∣m)
     (hnLam:ConcretePrimeRowBridge.goodLambda∣n) (hn2:(2:O)∣n) :
     FixedInducingRow η Q m A z ↔ FixedInducingRow η Q n A z := by
-  have h1:=fixedInducingRow_mul_mask_iff η Q m n A z hm hn hA hz hmLam hm2
   have h2:=fixedInducingRow_mul_mask_iff η Q n m A z hn hm hA hz hnLam hn2
   rw [mul_comm n m] at h2
-  exact h1.symm.trans h2
+  exact (fixedInducingRow_mul_mask_iff η Q m n A z hm hn hA hz hmLam hm2).symm.trans h2
 
 theorem actual_reduced_inducing_iff (η τ : Character) (χ : RayCharacter)
     (C D : Ideal O) (hC:Supported C) (U:Finset (CommonIndex C D))

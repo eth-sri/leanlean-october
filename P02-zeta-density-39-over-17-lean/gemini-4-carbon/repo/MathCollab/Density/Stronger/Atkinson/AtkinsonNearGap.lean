@@ -56,9 +56,7 @@ theorem atkinson_near_slope_upper {H u M : ℝ}
     have hn' : (2*Real.pi+Real.pi^2)*(2*u) ≤ 100*H := by nlinarith
     exact (div_le_div_of_nonneg_right hn' hM.le).trans_eq (by ring)
   unfold atkinsonIndexSlopeUpper
-  calc
-    _ ≤ Real.sqrt (100*(H/M)) := Real.sqrt_le_sqrt hrad
-    _ = _ := by rw [Real.sqrt_mul (by norm_num)]; norm_num
+  exact (Real.sqrt_le_sqrt hrad).trans_eq (by rw [Real.sqrt_mul (by norm_num)]; norm_num)
 
 theorem atkinson_near_half_period {H t u : ℝ} {M : ℕ}
     (hH : 0 < H) (hHu : H ≤ u) (hM : 0 < M)
@@ -66,8 +64,7 @@ theorem atkinson_near_half_period {H t u : ℝ} {M : ℕ}
     atkinsonIndexFirstDerivativeUpper u t M ((M:ℝ)+(M:ℝ)+1) ≤ Real.pi := by
   have hMr : 0 < (M:ℝ) := by exact_mod_cast hM
   have hM1 : (1:ℝ) ≤ M := by exact_mod_cast hM
-  have hs := atkinson_near_slope_lower hH hHu hM1
-  have hscale := mul_le_mul_of_nonneg_left hs hMr.le
+  have hscale := mul_le_mul_of_nonneg_left (atkinson_near_slope_lower hH hHu hM1) hMr.le
   rw [atkinson_mul_sqrt_div hMr] at hscale
   have hden : 0 < (M:ℝ)*atkinsonIndexSlopeLower u ((M:ℝ)+(M:ℝ)+1) :=
     mul_pos hMr (atkinsonIndexSlopeLower_pos (hH.trans_le hHu) (by positivity))
@@ -81,19 +78,16 @@ theorem atkinsonOrderedPrefixGapMajorant_le_near {H t u : ℝ} {M : ℕ}
     atkinsonOrderedPrefixGapMajorant M M t u ≤ 60*Real.sqrt (H*(M:ℝ))/(t-u) := by
   have hMr : 0 < (M:ℝ) := by exact_mod_cast hM
   have hM1 : (1:ℝ) ≤ M := by exact_mod_cast hM
-  have hu : 0 < u := hH.trans_le hHu
-  have hsmall := atkinson_near_half_period hH hHu hM hgap
-  have hs := atkinson_near_slope_upper hH hu.le huH hMr
+  have hu := hH.trans_le hHu
   have hb : 2*((M:ℝ)+(M:ℝ)+1) ≤ 6*(M:ℝ) := by linarith
-  have hn := mul_le_mul hb hs (atkinsonIndexSlopeUpper_pos hu hMr).le (by positivity)
   have hn' : 2*((M:ℝ)+(M:ℝ)+1)*atkinsonIndexSlopeUpper u M ≤
       60*Real.sqrt (H*(M:ℝ)) := by
     calc
-      _ ≤ 6*(M:ℝ)*(10*Real.sqrt (H/(M:ℝ))) := hn
+      _ ≤ 6*(M:ℝ)*(10*Real.sqrt (H/(M:ℝ))) := (mul_le_mul hb (atkinson_near_slope_upper hH hu.le huH hMr) (atkinsonIndexSlopeUpper_pos hu hMr).le (by positivity))
       _ = 60*((M:ℝ)*Real.sqrt (H/(M:ℝ))) := by ring
       _ = _ := by rw [atkinson_mul_sqrt_div hMr]
   unfold atkinsonOrderedPrefixGapMajorant
-  rw [ite_eq_left hsmall]
+  rw [ite_eq_left (atkinson_near_half_period hH hHu hM hgap)]
   apply (min_le_right _ _).trans ((min_le_right _ _).trans _)
   rw [atkinsonPrefixFirstDerivativeMajorant_eq_gap hu htu hM]
   exact div_le_div_of_nonneg_right hn' (sub_pos.mpr htu).le
@@ -108,7 +102,7 @@ theorem atkinsonPrefixGapMajorant_le_near {H t u : ℝ} {M : ℕ}
   rcases lt_or_gt_of_ne hne with htu | hut
   · rw [max_eq_right htu.le, min_eq_left htu.le, abs_of_neg (sub_neg.mpr htu)] at *
     have hg : u-t ≤ Real.sqrt (H*(M:ℝ)) := by linarith
-    simpa only [neg_sub] using
+    simpa using
       atkinsonOrderedPrefixGapMajorant_le_near hH htH hHt htu hM hg
   · rw [max_eq_left hut.le, min_eq_right hut.le, abs_of_pos (sub_pos.mpr hut)] at *
     exact atkinsonOrderedPrefixGapMajorant_le_near hH huH hHu hut hM hgap

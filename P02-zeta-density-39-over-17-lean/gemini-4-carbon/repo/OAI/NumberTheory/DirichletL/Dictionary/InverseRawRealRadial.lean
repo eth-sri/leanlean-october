@@ -22,7 +22,7 @@ theorem exists_real_raw_radial_majorant:
   obtain ⟨f,hf,_,hs,hone⟩:=exists_contDiff_support_eq_eq_one_iff
     (n:=⊤) isOpen_Ioo isClosed_Icc hsub
   let v:ℝ→ℂ:=fun x=>((f x)^2:ℝ)
-  have hv:ContDiff ℝ ∞ v:=Complex.ofRealCLM.contDiff.comp
+  have hv :=Complex.ofRealCLM.contDiff.comp
     ((by simpa using hf:ContDiff ℝ ∞ f).pow 2)
   have hsupp:Function.support v⊆Set.Icc (-1) 2:=by
     intro x hx

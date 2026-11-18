@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.HeathBrownPairLocalBound
 public import TaoTrudgianYang2025.HeathBrownPairTriangle
 public import TaoTrudgianYang2025.BetaHalfDuality
@@ -27,9 +37,6 @@ theorem heathBrownBetaBound_reciprocal_scale {j : ℕ} (hj : 3 ≤ j)
     τ*heathBrownBetaBound j α =
       1+max ((τ-(j:ℝ))/((j:ℝ)*(j-1)))
         (max (-1/((j:ℝ)*(j-1))) (-2*τ/((j:ℝ)^2*(j-1)))) := by
-  have hjr : (3:ℝ) ≤ j := by exact_mod_cast hj
-  have h0 : (j:ℝ) ≠ 0 := by linarith
-  have h1 : (j:ℝ)-1 ≠ 0 := by linarith
   have hf : τ*((1-(j:ℝ)*α)/((j:ℝ)*(j-1))) =
       (τ-(j:ℝ))/((j:ℝ)*(j-1)) := by
     calc

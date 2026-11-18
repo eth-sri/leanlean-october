@@ -8,77 +8,11 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-
-open scoped BigOperators Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 namespace SecondPassArithmetic
 
 section
-open ActualEisensteinCubic
 open SecondPassFiber (newLabel newRow)
 open ConcretePrimeRowBridge (idealGenerator)
 local instance : Fintype Oˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
@@ -90,7 +24,6 @@ variable {ι : Type*} [DecidableEq ι]
 
 end
 
-open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProductNorm b0Label jLabel cubeRadical)
 open ConcretePrimeRowBridge (idealGenerator span_idealGenerator)
 open SecondPassFiber (newLabel newRow)
@@ -124,8 +57,7 @@ theorem secondChildColumn_zero_of_mask_label_mem (Ψ : O →* ℂ) (m f y : O)
     simp only [secondChildColumn,hz,mul_zero,zero_mul]
   · have hz : rowCoprimeMask (fun i => Ideal.span {p i}) S f=0 := by
       simp only [rowCoprimeMask,ite_eq_left (show ∃ i∈S,f ∈ Ideal.span {p i} from ⟨i,hi,hf⟩)]
-    have hr := FirstPassCubeLabels.row_zero_of_mask_zero (fun i => Ideal.span {p i}) hg S f hz
-    simp only [secondChildColumn,hr,zero_pow (by decide : (4 : ℕ) ≠ 0),mul_zero,zero_mul]
+    simp only [secondChildColumn,(FirstPassCubeLabels.row_zero_of_mask_zero (fun i => Ideal.span {p i}) hg S f hz),zero_pow (by decide : (4 : ℕ) ≠ 0),mul_zero,zero_mul]
 
 theorem fixedChildRow_restore_killed_pool (F B : Finset ι) (Ψ : O →* ℂ)
     (m f y : O) (H : Finset ι → ℂ) (hB : ∀ i∈B,m*f ∈ Ideal.span {p i}) :
@@ -145,12 +77,10 @@ theorem fixedChildRow_restore_killed_pool (F B : Finset ι) (Ψ : O →* ℂ)
 
 end SecondPassArithmetic
 
-open scoped BigOperators Classical SchwartzMap
 namespace CanonicalQuadraticSieve
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
-open TruncatedPrincipalPoisson IdealMobiusDivisorSum
+open ConcretePrimeRowBridge EisensteinSchwartzPoisson TruncatedPrincipalPoisson IdealMobiusDivisorSum
 
 variable {m n p : Type} [Fintype m] [Fintype n] [Fintype p]
   [DecidableEq m] [DecidableEq n] [DecidableEq p]
@@ -198,8 +128,7 @@ theorem signedProductDivisorSum_le_rectangles (S T : Finset (Ideal O))
     apply Finset.sum_congr rfl
     intro k _
     rw [← divisorPool_filter K (left j*right k) (mul_ne_zero (hleft j) (hright k)) (hK j k),
-      Finset.sum_filter, Finset.mul_sum]
-    rw [Finset.sum_coe_sort K (fun d => (UniqueFactorizationMonoid.moebius d:ℂ)*
+      Finset.sum_filter, Finset.mul_sum, Finset.sum_coe_sort K (fun d => (UniqueFactorizationMonoid.moebius d:ℂ)*
       (if P d i then if d ∣ left j*right k then originalTerm rows left right a b 1 1 i j k * H d i j k else 0 else 0))]
     apply Finset.sum_congr rfl
     intro d _
@@ -327,26 +256,22 @@ theorem HasSieveExponent.small_principal_divisor_sum {α : ℝ} (hexp : HasSieve
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
-open TruncatedPrincipalPoisson IdealMobiusDivisorSum
+open ConcretePrimeRowBridge EisensteinSchwartzPoisson TruncatedPrincipalPoisson IdealMobiusDivisorSum
 
 lemma source_large_cut_lower (M B b N T d : ℝ)
     (hM : 0 < M) (_hB : 0 < B) (hb : 0 < b) (hbB : b ≤ B) (hN : 0 ≤ N) (hT : 0 < T)
     (hd : T*Real.sqrt (M/b) ≤ d) :
     Real.sqrt (M/B)*N ≤ ((4*N/T)/4)*d := by
-  have hs : Real.sqrt (M/B) ≤ Real.sqrt (M/b) :=
-    Real.sqrt_le_sqrt (div_le_div_of_nonneg_left hM.le hb hbB)
-  have hsd : Real.sqrt (M/B) ≤ d/T := (le_div_iff₀ hT).mpr (by nlinarith)
+  have hs := Real.sqrt_le_sqrt (div_le_div_of_nonneg_left hM.le hb hbB)
   calc
-    _ ≤ (d/T)*N := mul_le_mul_of_nonneg_right hsd hN
+    _ ≤ (d/T)*N := mul_le_mul_of_nonneg_right ((le_div_iff₀ hT).mpr (by nlinarith)) hN
     _ = _ := by ring
 
 lemma dual_large_cut_lower (M F B b N T d : ℝ)
     (hM : 0 < M) (hF : 0 < F) (hB : 0 < B) (hb : 0 < b) (hbB : b ≤ B)
     (hN : 0 < N) (hT : 0 < T) (hd : T*(N*Real.sqrt (F/(M*b))) ≤ d) :
     Real.sqrt ((M/F)/B)*N ≤ ((4*M/(F*T))/4)*d := by
-  have hs : Real.sqrt (F/(M*B)) ≤ Real.sqrt (F/(M*b)) :=
-    Real.sqrt_le_sqrt (div_le_div_of_nonneg_left hF.le (by positivity) (mul_le_mul_of_nonneg_left hbB hM.le))
+  have hs := Real.sqrt_le_sqrt (div_le_div_of_nonneg_left hF.le (by positivity) (mul_le_mul_of_nonneg_left hbB hM.le))
   have hnd : N*Real.sqrt (F/(M*B)) ≤ d/T := by
     apply (le_div_iff₀ hT).mpr
     calc

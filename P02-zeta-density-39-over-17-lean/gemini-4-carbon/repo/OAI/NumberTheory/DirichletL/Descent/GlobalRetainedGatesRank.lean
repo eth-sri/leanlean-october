@@ -8,9 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.InverseMomentGlobalRetainedGates
-open InverseMoment InverseFirstPriorityParents InverseMomentWholePriorityParents
-open InverseWholePriorityRetainedSource InversePrioritySecondSource InverseInitialArithmetic
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondSourceBlocks
+open InverseMoment InverseFirstPriorityParents InverseMomentWholePriorityParents InverseWholePriorityRetainedSource InversePrioritySecondSource InverseInitialArithmetic ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondSourceBlocks
 open ConcreteTraceCRT (eisEmbedding)
 local notation "O" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ] {Jo : ℕ}
@@ -32,8 +30,6 @@ theorem supported_row_rank_decrease (hp : ∀i,p i≠0)
   intro source d hd
   obtain ⟨x,hx⟩ := (mem_keys_iff p source d).mp hd
   have hxs := cell_subset p source d hx
-  have hs := supported_conditions p hp extra original hvalid hextra negative J lists pool cutoff b X
-  have hk := supported_frequency_ne_zero p extra original negative J lists pool cutoff b X
   have hb₁ := supported_original_property p extra original negative J lists pool cutoff b X
     (fun q _ _ _=>‖eisEmbedding (primeProduct p q.support q.leftExponent)‖^2≤Z^(ell+eta)) h1
   have hb₂ := supported_original_property p extra original negative J lists pool cutoff b X
@@ -41,7 +37,7 @@ theorem supported_row_rank_decrease (hp : ∀i,p i≠0)
   have hj := supported_original_property p extra original negative J lists pool cutoff b X
     (fun q _ _ _=>Z^(j-eta)≤‖eisEmbedding (jLabel p q.support
       (fun i=>q.leftExponent i+q.rightExponent i) q.leftBit q.rightBit)‖^2) hJ
-  exact actual_cell_row_decrease p hp source hs hk d x hx Z M ell A t V j eta shortCutoff
+  exact actual_cell_row_decrease p hp source (supported_conditions p hp extra original hvalid hextra negative J lists pool cutoff b X) (supported_frequency_ne_zero p extra original negative J lists pool cutoff b X) d x hx Z M ell A t V j eta shortCutoff
     hZ hA ht heta hbin hterminal hsmall (hb₁ x hxs) (hb₂ x hxs) (hj x hxs)
 
 end SevenEighths.InverseMomentGlobalRetainedGates

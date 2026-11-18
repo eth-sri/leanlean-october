@@ -10,9 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSourceAllocationEnergy
-open CanonicalQuadraticSieve CenteredMomentGaussEnergy
-open CenteredMomentSourceLiveColumn CenteredMomentSourceProfileMass CenteredMomentSourceMass
-open CenteredMomentAddedZeroUniform CenteredMomentCommonAllocationSum
+open CanonicalQuadraticSieve CenteredMomentGaussEnergy CenteredMomentSourceLiveColumn CenteredMomentSourceProfileMass CenteredMomentSourceMass CenteredMomentAddedZeroUniform CenteredMomentCommonAllocationSum
 local notation "O" => ActualEisensteinCubic.O
 
  theorem gaussPolynomial_allocation {α γ : Type*} [Fintype γ]

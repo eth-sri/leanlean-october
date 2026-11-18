@@ -70,11 +70,9 @@ theorem heathBrownPairCountTwoDiagonal_card_le
   let s := heathBrownPairCountTwoDiagonal N k H K f
   have hinj : Set.InjOn Prod.fst (s : Set (ℕ × ℕ)) := by
     intro p hp q hq hpq
-    have hpd : p.1 = p.2 := (Finset.mem_filter.mp hp).2
-    have hqd : q.1 = q.2 := (Finset.mem_filter.mp hq).2
     apply Prod.ext
     · exact hpq
-    · simpa [← hpd, ← hqd] using hpq
+    · simpa [← ((Finset.mem_filter.mp hp).2), ← ((Finset.mem_filter.mp hq).2)] using hpq
   have himage : s.image Prod.fst ⊆ Finset.Icc 1 N := by
     intro n hn
     rw [Finset.mem_image] at hn
@@ -181,26 +179,15 @@ theorem heathBrownPairCountTwo_card_le_shift_sum
   let fibers := heathBrownAllPositiveShiftFibers N k H K f
   have hdiag : dset.card ≤ N := heathBrownPairCountTwoDiagonal_card_le
   have hpos : pset.card ≤ fibers.card := by
-    calc
-      pset.card ≤ (fibers.image heathBrownPairOfPositiveShift).card :=
-        Finset.card_le_card heathBrownPairCountTwoPositive_subset_shiftImage
-      _ ≤ fibers.card := Finset.card_image_le
+    exact (Finset.card_le_card heathBrownPairCountTwoPositive_subset_shiftImage).trans (Finset.card_image_le)
   have hneg : nset.card ≤ fibers.card := by
-    calc
-      nset.card ≤ (fibers.image heathBrownPairOfNegativeShift).card :=
-        Finset.card_le_card heathBrownPairCountTwoNegative_subset_shiftImage
-      _ ≤ fibers.card := Finset.card_image_le
+    exact (Finset.card_le_card heathBrownPairCountTwoNegative_subset_shiftImage).trans (Finset.card_image_le)
   calc
     (heathBrownPairCountTwo N k H K f).card ≤
         (dset ∪ (pset ∪ nset)).card :=
       Finset.card_le_card heathBrownPairCountTwo_subset_three_parts
     _ ≤ dset.card + (pset.card + nset.card) := by
-      calc
-        (dset ∪ (pset ∪ nset)).card ≤
-            dset.card + (pset ∪ nset).card :=
-          Finset.card_union_le dset (pset ∪ nset)
-        _ ≤ dset.card + (pset.card + nset.card) :=
-          Nat.add_le_add_left (Finset.card_union_le pset nset) _
+      exact (Finset.card_union_le dset (pset ∪ nset)).trans (Nat.add_le_add_left (Finset.card_union_le pset nset) _)
     _ ≤ N + (fibers.card + fibers.card) := by omega
     _ = N + 2 * ∑ d ∈ Finset.Icc 1 N,
         (heathBrownPositiveShiftFiber N k H K f d).card := by

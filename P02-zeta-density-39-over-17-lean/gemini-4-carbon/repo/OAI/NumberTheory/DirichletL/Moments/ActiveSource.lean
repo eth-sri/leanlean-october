@@ -8,9 +8,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical SchwartzMap
 namespace SevenEighths.CenteredMomentActiveSource
-open CanonicalQuadraticSieve CenteredMomentSourceRow CenteredMomentGaussEnergy
-open CenteredMomentLiveDomain CenteredMomentOriginalChildEnergy CenteredMomentSecondLocalization
-open CenteredMomentFirstSectors CenteredMomentCompleteCommon
+open CanonicalQuadraticSieve CenteredMomentSourceRow CenteredMomentGaussEnergy CenteredMomentLiveDomain CenteredMomentOriginalChildEnergy CenteredMomentSecondLocalization CenteredMomentFirstSectors CenteredMomentCompleteCommon
 local notation "O" => ActualEisensteinCubic.O
 
 def activeSource (S : Finset (Ideal O)) (β : Ideal O → ℂ) : Finset (Ideal O) :=
@@ -95,13 +93,12 @@ theorem residualPool_data (S : Finset (Ideal O)) (β : Ideal O → ℂ)
   have hm := (mem_residualPool C hC _ a).mp ha
   obtain ⟨hm,hsa⟩ := Finset.mem_filter.mp hm
   obtain ⟨hm,hβ⟩ := (mem_activeSource S β (C*a)).mp hm
-  have ha0 : a≠0 := right_ne_zero_of_mul hsa.1
-  have hpos := CenteredMomentFirstScale.norm_pos C hC
+  have ha0 := right_ne_zero_of_mul hsa.1
   have hab := hH (C*a) hm hβ
   rw [map_mul,Nat.cast_mul] at hab
   refine ⟨hm,hβ,hsa,ha0,?_,?_⟩
   · exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr ha0)
-  · exact (le_div_iff₀ hpos).mpr (by simpa only [mul_comm] using hab)
+  · exact (le_div_iff₀ (CenteredMomentFirstScale.norm_pos C hC)).mpr (by simpa only [mul_comm] using hab)
 
 end SevenEighths.CenteredMomentActiveSource
 

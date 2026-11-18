@@ -10,8 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentEnergyZeroReferenceGeometry
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceDivisors
+open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceDivisors
 local notation "O"=>HeckeFamily.O
 
 lemma low_or_reflected (M short along xi:ℝ)(hM:0≤M)(hs:short≤M/4)(_hxi:0≤xi)
@@ -50,15 +49,12 @@ theorem actual_deleted_gates {Z Bmask bΦ:ℝ}(s:NaturalState Z Bmask bΦ)
     s.width≤Mcap+Bmask+along ∧ max 0 (s.width-along+xi)≤L ∧
     ((along≤L ∧ length Z (Z^short)+length Z (Z^along)≤5*s.width/6) ∨
       (0<along ∧ max 0 (s.width-along+xi)+length Z (Z^short)≤5*s.width/6)):=by
-  dsimp only
-  have hZ0:0<Z:=zero_lt_one.trans hZ
+  have hZ0 :=zero_lt_one.trans hZ
   obtain ⟨hn₁,hc₁⟩:=divisor_norm s D₁ hD₁
   obtain ⟨hn₂,hc₂⟩:=divisor_norm s D₂ hD₂
   have hl₁:=Real.logb_nonneg hZ hn₁
   have hl₂:=Real.logb_nonneg hZ hn₂
-  have hu₂:Real.logb Z ((∏P∈D₂,P).absNorm:ℝ)≤Bmask:=
-    (Real.logb_le_iff_le_rpow hZ (zero_lt_one.trans_le hn₂)).mpr hc₂
-  have hM:=s.width_nonneg
+  have hu₂ := (Real.logb_le_iff_le_rpow hZ (zero_lt_one.trans_le hn₂)).mpr hc₂
   have hL0:0≤L:=by linarith
   have he₁:Z^(s.width/4-Real.logb Z ((∏P∈D₁,P).absNorm:ℝ))=
       comparisonFirst Z s.width/((∏P∈D₁,P).absNorm:ℝ):=by
@@ -82,11 +78,11 @@ theorem actual_deleted_gates {Z Bmask bΦ:ℝ}(s:NaturalState Z Bmask bΦ)
   rcases low_or_reflected s.width
     (s.width/4-Real.logb Z ((∏P∈D₁,P).absNorm:ℝ))
     (Real.logb Z (X₁*X₂)-s.width/4-Real.logb Z ((∏P∈D₂,P).absNorm:ℝ))
-    xi hM (by linarith) hxi hxiM with hd|hr
+    xi (s.width_nonneg) (by linarith) hxi hxiM with hd|hr
   · refine Or.inl ⟨?_,hd⟩
-    have hh₁:=le_max_right (0:ℝ)
+    have hh₁:=le_max_right 0
       (Real.logb Z (X₁*X₂)-s.width/4-Real.logb Z ((∏P∈D₂,P).absNorm:ℝ))
-    have hh₂:=le_max_left (0:ℝ) (s.width/4-Real.logb Z ((∏P∈D₁,P).absNorm:ℝ))
+    have hh₂:=le_max_left 0 (s.width/4-Real.logb Z ((∏P∈D₁,P).absNorm:ℝ))
     linarith
   · exact Or.inr hr
 

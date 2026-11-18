@@ -1,3 +1,0 @@
-module
-public import GuthMaynard.NativeSource.PrimeNumberTheoremAnd.Mathlib.Analysis.Complex.DivisorQuotientConvergence
-public import Mathlib.Analysis.Complex.RemovableSingularity

@@ -34,13 +34,10 @@ theorem exists_uniform_polynomial_exponent :
     (K := 2*uniformConstant) (p := 1) (by norm_num)
   refine ⟨M, hM, ?_⟩
   intro η hp a e t ha he z hz
-  have hz2 : z ∈ closedBall ((2 : ℂ)+t*Complex.I) (2-a-2*e) :=
-    ball_subset_closedBall.trans (closedBall_subset_closedBall (by linarith)) hz
-  have h := regular_disk_growth η hp a e t ha he.le hz2
   have hQ : (η.modulus.absNorm : ℝ)^(3/5 : ℝ) ≤ (η.modulus.absNorm : ℝ) := by
     simpa using Real.rpow_le_rpow_of_exponent_le (modulus_norm_ge_one η)
       (show (3/5 : ℝ)≤1 by norm_num)
-  apply h.trans
+  apply (regular_disk_growth η hp a e t ha he.le (ball_subset_closedBall.trans (closedBall_subset_closedBall (by linarith)) hz)).trans
   calc
     _ ≤ (4*uniformConstant)*(η.modulus.absNorm : ℝ)*(3+|t|)^2 := by
       gcongr
@@ -67,7 +64,7 @@ theorem disk_control_of_euler_log (e A ε : ℝ)
   · have hB := LogarithmicControl.outerConstant_ge_one he he' hA hM
     positivity
   · intro η hp a t E ha ha' hzero hE hEL hEb
-    exact hb a (complexity η t) (regular η) E ((2 : ℂ)+t*Complex.I) ha ha'
+    exact hb a (complexity η t) (regular η) E (2+t*Complex.I) ha ha'
       (complexity_ge_exp η t) (regular_disk_differentiable η ha he) hzero
       (hpoly η hp a e t ha he) hE hEL hEb
 

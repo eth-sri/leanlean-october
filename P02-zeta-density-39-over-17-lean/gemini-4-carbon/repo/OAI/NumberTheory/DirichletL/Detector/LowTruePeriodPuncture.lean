@@ -24,14 +24,12 @@ lemma physicalRayPeriodicBase_support (η : HeckeFamily.Character) (S : Finset I
       D.numeratorUnit D.numeratorLambda D.numeratorTwo D.numeratorGood D.numeratorSupported n))*
       _≠0 at hn
   have ha := left_ne_zero_of_mul hn
-  have heta := right_ne_zero_of_mul (left_ne_zero_of_mul ha)
-  have hres := left_ne_zero_of_mul (star_ne_zero.mp (right_ne_zero_of_mul ha))
   have hc : IsCoprime C.generator n := by
     apply (Ideal.isCoprime_span_singleton_iff _ _).mp
     exact ((IdealCharacter.isUnit_mk_iff_isCoprime _ _).mp
-      (C.residue.apply_ne_zero_iff.mp hres)).symm
+      (C.residue.apply_ne_zero_iff.mp (left_ne_zero_of_mul (star_ne_zero.mp (right_ne_zero_of_mul ha))))).symm
   exact lowBaseModulus_coprime η C D (calibration_generator_bad S hS hbad).1
-    (calibration_generator_bad S hS hbad).2 n hc heta
+    (calibration_generator_bad S hS hbad).2 n hc (right_ne_zero_of_mul (left_ne_zero_of_mul ha))
 
 def lowTruePeriodGenerator (η : HeckeFamily.Character) (S : Finset Id)
     (hS : ∀P∈S,P.IsMaximal) : O := ConcretePrimeRowBridge.idealGenerator (lowPeriodIdeal η S hS)
@@ -83,8 +81,7 @@ lemma lowReflectionPeriod_ne_zero (η : HeckeFamily.Character) (S : Finset Id)
 lemma lowReflectionPeriod_actual (η : HeckeFamily.Character) (S : Finset Id)
     (hS : ∀P∈S,P.IsMaximal) (σ : RayRing) (χ : RayCharacter) :
     CanonicalCoefficientClass.FactorsModulo (lowReflectionPeriod η S hS) (physicalRayPeriodicBase η S hS σ χ) ∧
-      ∀n : O,‖physicalRayPeriodicBase η S hS σ χ n‖≤1 := by
-  exact ⟨lowPeriodicBase_periodic η _ _ _ _ _ χ,lowPeriodicBase_norm η _ _ _ _ _ χ⟩
+      ∀n : O,‖physicalRayPeriodicBase η S hS σ χ n‖≤1 := ⟨lowPeriodicBase_periodic η _ _ _ _ _ χ,lowPeriodicBase_norm η _ _ _ _ _ χ⟩
 
 def lowReflectionMask (η : HeckeFamily.Character) (S : Finset Id)
     (hS : ∀P∈S,P.IsMaximal) : O :=

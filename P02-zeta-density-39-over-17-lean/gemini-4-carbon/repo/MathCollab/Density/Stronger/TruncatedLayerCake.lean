@@ -61,9 +61,8 @@ theorem integral_le_log_of_truncated_tail
       μ.real {x | t ≤ f x} ≤ C/max A t) :
     (∫ x, f x ∂μ) ≤ C*(1+Real.log (M/A)) := by
   rw [hfi.integral_eq_integral_Ioc_meas_le hfn hfm]
-  have hcont := continuous_const_div_max (C := C) hA
   have hi : IntegrableOn (fun t : ℝ => C/max A t) (Ioc 0 M) :=
-    (hcont.intervalIntegrable 0 M).1
+    ((continuous_const_div_max (C := C) hA).intervalIntegrable 0 M).1
   calc
     _ ≤ ∫ t in Ioc 0 M, C/max A t := by
       apply integral_mono_of_nonneg

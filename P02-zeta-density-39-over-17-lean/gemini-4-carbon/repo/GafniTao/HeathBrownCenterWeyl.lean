@@ -41,9 +41,7 @@ theorem fordVinogradovMonomial_center_eq_phase
     fordVinogradovMonomial h (heathBrownCoefficientCenter k f n) =
       heathBrownPhase
         (heathBrownReducedTaylorPolynomial k f n ((h : ℕ) + 1)) := by
-  rw [heathBrownReducedTaylorPolynomial_eq_fin_sum hk]
-  rw [heathBrownPhase_eq_fordAdditiveCharacter]
-  rw [fordAdditiveCharacter_sum Finset.univ]
+  rw [heathBrownReducedTaylorPolynomial_eq_fin_sum hk, heathBrownPhase_eq_fordAdditiveCharacter, fordAdditiveCharacter_sum Finset.univ]
   unfold fordVinogradovMonomial UnitAddTorus.mFourier fordVinogradovExponent
   change
     (∏ j : Fin (k - 1),
@@ -67,7 +65,7 @@ theorem heathBrownWeylSum_center_eq_reducedTaylorPolynomialSum
   rw [ford_sum_Icc_one_eq_fin]
   apply Finset.sum_congr rfl
   intro h hh
-  simpa only [Nat.cast_add, Nat.cast_one] using
+  simpa using
     fordVinogradovMonomial_center_eq_phase hk f n h
 
 theorem norm_heathBrownWeylSum_center_eq_TaylorPolynomialSum

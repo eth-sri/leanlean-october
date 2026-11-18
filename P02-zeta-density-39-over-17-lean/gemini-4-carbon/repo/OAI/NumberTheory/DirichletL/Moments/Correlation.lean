@@ -55,7 +55,7 @@ theorem fullCorrelation_fourier (ψ : AddChar R ℂ) (hψ : ψ.IsPrimitive)
       (f x * ψ (h * left x) * (star (ψ (h * right y)) * star (g y))) * ψ (-(h * j)) =
         (f x * star (g y)) * ψ (h * (left x - right y - j)) := by
     have hs : star (ψ (h * right y)) = ψ (-(h * right y)) := by
-      simpa only [← starRingEnd_apply] using (AddChar.map_neg_eq_conj ψ (h * right y)).symm
+      simpa using (AddChar.map_neg_eq_conj ψ (h * right y)).symm
     rw [hs]
     calc
       _ = (f x * star (g y)) *
@@ -179,14 +179,13 @@ theorem sum_reduction (π : A →+* B) (hπ : Function.Surjective π) (f : B →
       intro x hx
       rw [(Finset.mem_filter.mp hx).2]
     _ = _ := by
-      have hc := AddMonoidHom.card_fiber_eq_of_mem_range π (hπ y) (hπ 0)
       simp only [Finset.sum_const, nsmul_eq_mul]
-      rw [hc]
+      rw [(AddMonoidHom.card_fiber_eq_of_mem_range π (hπ y) (hπ 0))]
       rfl
 
 theorem reductionMultiplicity_mul_card (π : A →+* B) (hπ : Function.Surjective π) :
     reductionMultiplicity π * Fintype.card B = Fintype.card A := by
-  have h := sum_reduction π hπ (fun _ => (1 : ℂ))
+  have h := sum_reduction π hπ (fun _ => 1)
   simp only [Finset.sum_const, Finset.card_univ, nsmul_eq_mul, mul_one] at h
   exact_mod_cast h.symm
 
@@ -223,10 +222,7 @@ theorem fullCorrelation_reduction_unit_right (π : A →+* B)
   have hright := fullCorrelation_unit_right (Units.map π.toMonoidHom u) (π v) (π k) f g
   change fullCorrelation _ (fun y : B => π u * y) _ _ _ = _ at hright
   rw [hright]
-  change (∑ x : A, f (π x) * star (g (π ((↑u⁻¹ : A) * (v * x - k))))) =
-    (reductionMultiplicity π : ℂ) *
-      ∑ x : B, f x * star (g (π (↑u⁻¹ : A) * (π v * x - π k)))
-  simpa only [map_mul, map_sub] using
+  simpa using
     sum_reduction π hπ (fun x => f x * star (g (π (↑u⁻¹ : A) * (π v * x - π k))))
 
 theorem fullCorrelation_reduction_unit_left (π : A →+* B)
@@ -235,8 +231,7 @@ theorem fullCorrelation_reduction_unit_left (π : A →+* B)
         (fun x => f (π x)) (fun y => g (π y)) k =
       (reductionMultiplicity π : ℂ) *
         fullCorrelation (fun x : B => π v * x) (fun y : B => π u * y) f g (π k) := by
-  rw [fullCorrelation_swap, fullCorrelation_reduction_unit_right π hπ v u (-k) g f]
-  rw [fullCorrelation_swap (fun x : B => π v * x) (fun y : B => π u * y) f g (π k)]
+  rw [fullCorrelation_swap, fullCorrelation_reduction_unit_right π hπ v u (-k) g f, fullCorrelation_swap (fun x : B => π v * x) (fun y : B => π u * y) f g (π k)]
   simp only [map_neg, star_mul, star_natCast]
   ring
 

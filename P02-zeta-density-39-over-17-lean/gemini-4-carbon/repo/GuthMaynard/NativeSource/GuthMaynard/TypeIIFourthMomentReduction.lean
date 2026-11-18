@@ -1,15 +1,10 @@
 module
-public import GuthMaynard.NativeSource.GuthMaynard.ClassicalDensity
-public import GuthMaynard.NativeSource.GuthMaynard.ExtractSeparated
-public import GuthMaynard.NativeSource.GuthMaynard.ScaledSeparated
-public import GuthMaynard.NativeSource.GuthMaynard.TypeIIContour
+public import Mathlib.Analysis.SpecialFunctions.ImproperIntegrals
 
 @[expose] public section
 
-open Asymptotics Filter MeasureTheory Topology
-open Complex Finset
+open Asymptotics Filter MeasureTheory Topology Complex Finset Classical
 open scoped BigOperators Interval
-open Classical
 
 namespace GuthMaynard.NativeMoment
 
@@ -80,8 +75,7 @@ theorem integral_abs_rpow_compl_Icc {a H : ℝ} (ha : a < -1) (hH : 0 < H) :
 
 theorem integrableOn_abs_rpow_compl_Icc {a H : ℝ} (ha : a < -1) (hH : 0 < H) :
     IntegrableOn (fun u : ℝ => |u| ^ a) (Set.Icc (-H) H)ᶜ := by
-  have hPosInt : IntegrableOn (fun u : ℝ => u ^ a) (Set.Ioi H) :=
-    integrableOn_Ioi_rpow_of_lt ha hH
+  have hPosInt := integrableOn_Ioi_rpow_of_lt ha hH
   have hPosAbs : IntegrableOn (fun u : ℝ => |u| ^ a) (Set.Ioi H) := by
     apply hPosInt.congr_fun
     · intro u hu
@@ -90,9 +84,8 @@ theorem integrableOn_abs_rpow_compl_Icc {a H : ℝ} (ha : a < -1) (hH : 0 < H) :
     · exact measurableSet_Ioi
   have hNegAbs : IntegrableOn (fun u : ℝ => |u| ^ a) (Set.Iio (-H)) := by
     have hPosInt' : IntegrableOn (fun u : ℝ => u ^ a) (Set.Ioi (-(-H))) := by
-      simpa only [neg_neg] using hPosInt
-    have h : IntegrableOn (fun u : ℝ => (-u) ^ a) (Set.Iio (-H)) :=
-      hPosInt'.comp_neg_Iio (c := -H)
+      simpa using hPosInt
+    have h := hPosInt'.comp_neg_Iio (c := -H)
     apply h.congr_fun
     intro u hu
     change (-u) ^ a = |u| ^ a

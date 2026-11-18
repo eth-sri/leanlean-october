@@ -9,9 +9,7 @@ open Finset
 namespace Montgomery.RationalMoment
 
 theorem cyclic_probability_mass {N d : ℕ} [NeZero N] :
-    (∑ _x : Fin d → ZMod N, ∏ _j : Fin d, (N : ℝ)⁻¹) = 1 := by
-  rw [← Fintype.prod_sum (fun (_ : Fin d) (_ : ZMod N) => (N : ℝ)⁻¹)]
-  simp [ZMod.card, NeZero.ne N]
+    (∑ _x : Fin d → ZMod N, ∏ _j : Fin d, (N : ℝ)⁻¹) = 1 := by norm_num
 
 theorem rational_coefficient_energy_one (A : Finset ℚ) (hA : ∀ r ∈ A, 0 < r)
     (c : ℚ → ℂ) : rationalCoefficientEnergy A 1 c = ∑ r ∈ A, ‖c r‖^2 := by

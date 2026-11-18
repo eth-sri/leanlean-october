@@ -24,13 +24,11 @@ theorem rational_energy_bound_one : RationalEnergyBound 1 := by
 theorem rational_energy_bound_double {k : ℕ} (hk : 0 < k)
     (hbound : RationalEnergyBound k) : RationalEnergyBound (2*k) := by
   intro η hη
-  have hkR : (0 : ℝ) < k := by exact_mod_cast hk
   obtain ⟨C, hC, htwo⟩ := rational_coefficient_energy_two_subpower (show 0 < η/(2*k) by positivity)
   obtain ⟨D, hD, hkbound⟩ := hbound (η/4) (by positivity)
   refine ⟨C*D^2, by positivity, ?_⟩
   intro H hH A hA c
   let S : ℝ := ∑ r ∈ A, ‖c r‖^2
-  have hS : 0 ≤ S := sum_nonneg (fun _ _ => sq_nonneg _)
   have hH0 : 0 < H := by linarith
   have he := htwo (H^k) (one_le_pow₀ hH) (rationalProducts A k)
     (rational_product_height A k hA) (rationalPowerCoefficient A k c)

@@ -44,12 +44,11 @@ theorem exists_atkinsonLeading_source_band_bound {δ : ℝ} (hδ : 0 < δ) :
     intro G hlower hupper N hN
     obtain ⟨hG0, hlog0, hwidth, _⟩ := hsupport.2 G hlower
     have hT : 1 ≤ T := by linarith [hsupport.1]
-    have hG : 1 ≤ G := (Real.one_le_rpow hT hδ.le).trans hlower
     have hGT := (hscale.2.2 G hG0 hupper).1
-    apply (hbound T G (Real.log T) hT hG hGT hscale.2.1 hwidth N hN).trans
+    apply (hbound T G (Real.log T) hT ((Real.one_le_rpow hT hδ.le).trans hlower) hGT hscale.2.1 hwidth N hN).trans
     have h := mul_le_mul_of_nonneg_left
       (atkinsonBand_tail_scale_le hT hG0.le hGT hlog0.le
-        (by simpa only [one_mul, pow_one] using hlog)) hC.le
+        (by simpa using hlog)) hC.le
     convert h using 1 <;> ring
   obtain ⟨B, hB⟩ := eventually_atTop.mp hev
   refine ⟨2 * C, by positivity, max 16 B, le_max_left _ _, ?_⟩

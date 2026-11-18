@@ -8,9 +8,7 @@ namespace OAI
 
 namespace SevenEighths.IdealCharacter
 
-open SevenEighths.FiniteFourier SevenEighths.FiniteConductor
-open SevenEighths.ConductorPresentation
-open Submodule.IsPrincipal
+open SevenEighths.FiniteFourier SevenEighths.FiniteConductor SevenEighths.ConductorPresentation Submodule.IsPrincipal
 open scoped Classical
 
 noncomputable section
@@ -33,16 +31,13 @@ theorem isUnit_mk_iff_isCoprime (M : Ideal A) (a : A) :
   · intro h
     obtain ⟨b, hb⟩ := isUnit_iff_exists_inv'.mp h
     obtain ⟨b, rfl⟩ := Ideal.Quotient.mk_surjective b
-    have hba : b * a - 1 ∈ M :=
-      (Ideal.Quotient.mk_eq_one_iff_sub_mem _).mp (by simpa only [map_mul] using hb)
-    refine ⟨b, -(b * a - 1), M.neg_mem hba, ?_⟩
+    refine ⟨b, -(b * a - 1), M.neg_mem ((Ideal.Quotient.mk_eq_one_iff_sub_mem _).mp (by simpa only [map_mul] using hb)), ?_⟩
     ring
   · rintro ⟨b, c, hc, hbc⟩
     apply isUnit_iff_exists_inv'.mpr
     refine ⟨Ideal.Quotient.mk M b, ?_⟩
-    have h := congrArg (Ideal.Quotient.mk M) hbc
     simpa only [map_add, map_mul, Ideal.Quotient.eq_zero_iff_mem.mpr hc,
-      add_zero, map_one] using h
+      add_zero, map_one] using (congrArg (Ideal.Quotient.mk M) hbc)
 
 section Principal
 
@@ -116,9 +111,8 @@ theorem norm_residue_le_one (M : Ideal A) [Finite (A ⧸ M)]
   let : Fintype (A ⧸ M)ˣ := Fintype.ofFinite _
   by_cases ha : IsUnit a
   · obtain ⟨u, rfl⟩ := ha
-    have h := Complex.norm_eq_one_of_mem_rootsOfUnity (χ.apply_mem_rootsOfUnity u)
     have hn : ‖χ (u : A ⧸ M)‖ = 1 := by
-      simpa only [MulChar.coe_equivToUnitHom] using h
+      simpa using (Complex.norm_eq_one_of_mem_rootsOfUnity (χ.apply_mem_rootsOfUnity u))
     exact hn.le
   · rw [MulChar.map_nonunit χ ha, norm_zero]
     exact zero_le_one
@@ -198,8 +192,7 @@ theorem ofResidue_product (M N : Ideal A)
   · simp only [hI, ofResidue_bot, mul_zero]
   · have hg : generator I ≠ 0 := fun h => hI ((eq_bot_iff_generator_eq_zero I).mpr h)
     conv_lhs => rw [← Ideal.span_singleton_generator I]
-    rw [ofResidue_span _ _ _ hg, ResidueCharacter.product_mk]
-    rw [← ofResidue_span M χ hχ hg, ← ofResidue_span N ψ hψ hg,
+    rw [ofResidue_span _ _ _ hg, ResidueCharacter.product_mk, ← ofResidue_span M χ hχ hg, ← ofResidue_span N ψ hψ hg,
       Ideal.span_singleton_generator]
 
 section Primitive
@@ -217,8 +210,7 @@ theorem exists_primitive_associate (M : Ideal A) [Finite (A ⧸ M)]
   obtain ⟨K, φ, hMK, hK, hprimitive, hnorm, hmask⟩ := exists_primitive_presentation M χ
   have hφ : UnitInvariant K φ := by
     intro u
-    have h := hmask (u : A)
-    simpa only [hχ u, u.isUnit.map (Ideal.Quotient.mk M), ite_true] using h.symm
+    simpa only [hχ u, u.isUnit.map (Ideal.Quotient.mk M), ite_true] using (hmask (u : A)).symm
   exact ⟨K, φ, hφ, hMK, hK, hprimitive, hnorm,
     ofResidue_source_mask M K χ φ hχ hφ hmask,
     ofResidue_finite_deletion M K χ φ hχ hφ hmask⟩

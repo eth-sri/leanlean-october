@@ -8,8 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.InverseMomentGlobalPrincipalMass
-open InverseMoment InverseFirstPriorityParents InverseInitialArithmetic
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open InverseMoment InverseFirstPriorityParents InverseInitialArithmetic ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
 local notation "O" => ActualEisensteinCubic.O
 
@@ -52,16 +51,14 @@ theorem original_weighted_mass (Jmax : ℕ) (eps : ℝ) (heps : 0<eps) :
   obtain ⟨C,hC,hcount⟩ := original_source_card Jmax eps heps
   refine ⟨C,hC,?_⟩
   intro ι _ p hp _ hinj Jo hJo S B H V T a hB hH hV hT ha hS hb₁ hb₂ hactive hcommon hquot extra negative hextra
-  have hcard := hcount p hp hinj Jo hJo S B H V T hB hH hV hT hS hb₁ hb₂ hactive hcommon hquot
-  have hBp : 0<B := zero_lt_one.trans_le hB
   calc
     _ ≤ ∑_x∈S,(B^2*V*T)^a := Finset.sum_le_sum (fun x hx=>
       Real.rpow_le_rpow (primeProductNorm_pos p hp _).le
-        (principalSupport_norm p hp extra negative x (hS x hx) (hextra x hx) B V T hBp.le hV.le
+        (principalSupport_norm p hp extra negative x (hS x hx) (hextra x hx) B V T (zero_lt_one.trans_le hB).le hV.le
           (hb₁ x hx) (hb₂ x hx) (hcommon x hx) (hquot x hx)) ha)
     _ = (S.card:ℝ)*(B^2*V*T)^a := by simp
     _ ≤ (C*B^(1+eps)*H*V*T*(B^2*V*T)^eps)*(B^2*V*T)^a :=
-      mul_le_mul_of_nonneg_right hcard (by positivity)
+      mul_le_mul_of_nonneg_right (hcount p hp hinj Jo hJo S B H V T hB hH hV hT hS hb₁ hb₂ hactive hcommon hquot) (by positivity)
     _ = _ := by rw [mul_assoc,←Real.rpow_add (by positivity : 0<B^2*V*T)]
 
 lemma weighted_mass_power (Z ell R Bfirst t eta eps a : ℝ) (hZ : 0<Z) :

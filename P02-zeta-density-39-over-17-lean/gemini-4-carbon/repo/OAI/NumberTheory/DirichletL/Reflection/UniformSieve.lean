@@ -38,8 +38,8 @@ theorem bounded_column_hybrid_energy_extracted_type_uniform (ε : ℝ) (hε : 0 
   let D2 := frozenExtracted F jF e 2
   let Yq := extractedDualScale D1 Y
   let Bq := extractedDualScale D2 B
-  have hD1 : D1 ≠ 0 := frozenExtracted_ne_zero F jF e 1
-  have hD2 : D2 ≠ 0 := frozenExtracted_ne_zero F jF e 2
+  have hD1 := frozenExtracted_ne_zero F jF e 1
+  have hD2 := frozenExtracted_ne_zero F jF e 2
   have hnq : ∀ n ∈ quotientSupport D1 nset, CubicSieve.Admissible n ∧ (Ideal.absNorm n:ℝ) ≤ Yq := by
     intro n hn'
     exact ⟨quotientSupport_cubic_admissible D1 hD1 nset (fun n h => (hn n h).1) n hn',
@@ -54,13 +54,11 @@ theorem bounded_column_hybrid_energy_extracted_type_uniform (ε : ℝ) (hε : 0 
     intro P hP'
     rw [norm_mul]
     exact (mul_le_of_le_one_left (norm_nonneg _) (ha P hP')).trans (extractedSlotFactor_norm_le_one D1 D2 P)
-  have hcolumn : ∀ n b, ‖extractedFrozenColumn F jF e A n b‖ ≤ 1 :=
-    extractedFrozenColumn_norm_le_one F jF e A hA
   have hh := he X Yq Bq L hX (le_max_left _ _) (le_max_left _ _) hL rows
     (quotientSupport D1 nset) (quotientSupport D2 bset) Pset
     (fun P => aP P*extractedSlotFactor D1 D2 P)
     (extractedFrozenColumn F jF e A)
-    hrows hnq hbq hP hacoeff (fun n _ b _ => hcolumn n b)
+    hrows hnq hbq hP hacoeff (fun n _ b _ => (extractedFrozenColumn_norm_le_one F jF e A hA) n b)
   apply le_trans (Finset.sum_le_sum (fun K hK => ?_))
     ((by rw [← Finset.mul_sum]; exact mul_le_mul_of_nonneg_left hh (sq_nonneg _)) :
       (∑ K ∈ rows, (frozenBranchScale F jF e)^2*
@@ -70,12 +68,11 @@ theorem bounded_column_hybrid_energy_extracted_type_uniform (ε : ℝ) (hε : 0 
   rw [hybridRow_frozen_extraction F hF jF e _ nset bset Pset
     (fun n h => (hn n h).1.2) (fun b h => (hb b h).1) aP K (hrows K hK).1
     (fun P h => (hP P h).1.2)]
-  have hp := frozenBranchScale_pos F jF e
   have hs := extractedRowFactor_norm_le_one D1 D2 K
   have hs2 : ‖extractedRowFactor D1 D2 K‖^2 ≤ 1 := by
     have h0 := norm_nonneg (extractedRowFactor D1 D2 K)
     nlinarith
-  simp only [norm_mul,Complex.norm_real,Real.norm_eq_abs,abs_of_pos hp,mul_pow]
+  simp only [norm_mul,Complex.norm_real,Real.norm_eq_abs,abs_of_pos (frozenBranchScale_pos F jF e),mul_pow]
   change (frozenBranchScale F jF e)^2*‖extractedRowFactor D1 D2 K‖^2* _ ≤ _
   calc
     _ ≤ ((frozenBranchScale F jF e)^2*1)*_ := by gcongr
@@ -115,8 +112,7 @@ theorem actual_weighted_reflected_branch_energy_type_uniform (ε : ℝ) (hε : 0
   refine ⟨C,hC,?_⟩
   intro φ σ _ _ X Y B L hX _hY _hB hL F jF e s hc hN hbase hac hF hNF hcharF hj
     ι _ G0 D0 u m rows nset bset Pset S r aw w hrows hrowcop _hproducts hScop hSN hSchar hn hb hP hr haw hw
-  have hfrozen : ‖actualFrozenPhase F jF D0.fixedFactor s u m‖ ≤ 1 :=
-    actualFrozenPhase_norm_le_one F jF D0.fixedFactor (D0.fixedFactor_norm hN G0.generator_product_primary hbase).le
+  have hfrozen := actualFrozenPhase_norm_le_one F jF D0.fixedFactor (D0.fixedFactor_norm hN G0.generator_product_primary hbase).le
       s hc hN hbase hac hF hNF hcharF hj u m
   have hrow (K : Ideal Eis) (hK : K ∈ rows) : ‖actualRowPhaseExtension F jF s u m K‖ ≤ 1 := by
     rw [actualRowPhaseExtension,dite_eq_left (hrows K hK).1]
@@ -127,9 +123,8 @@ theorem actual_weighted_reflected_branch_energy_type_uniform (ε : ℝ) (hε : 0
     exact (mul_le_of_le_one_left (norm_nonneg _)
       (two_block_phase_bounds F (S P) jF s hc hN hbase hac (hScop P hP) (hSN P hP) (hSchar P hP) u m).2).trans
       (haw P hP)
-  have hcol := actualCuspWeightedColumn_norm_le_one G0 D0 s hc u m w hw
   apply le_trans (Finset.sum_le_sum (fun K hK => ?_))
-    (he X Y B L hX hL F hF jF e (fun n b => actualCuspColumn D0 s hc u m n b*w n b) hcol
+    (he X Y B L hX hL F hF jF e (fun n b => actualCuspColumn D0 s hc u m n b*w n b) (actualCuspWeightedColumn_norm_le_one G0 D0 s hc u m w hw)
       rows nset bset Pset (fun P => actualSlotPhase F (S P) jF s u m*aw P) hrows hn hb hP hslot)
   have hphase : ‖(-1:ℂ)^(Fintype.card σ)*actualFrozenPhase F jF D0.fixedFactor s u m*
       actualRowPhaseExtension F jF s u m K*r K‖ ≤ 1 := by

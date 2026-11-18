@@ -5,8 +5,7 @@ public import TaoTrudgianYang2025.AtkinsonPairNativePacket
 @[expose] public section
 set_option autoImplicit false
 noncomputable section
-open Filter Finset
-open MathCollab.Density MathCollab.Density.Stronger MathCollab.Density.Stronger.Peaks
+open Filter Finset MathCollab.Density MathCollab.Density.Stronger MathCollab.Density.Stronger.Peaks
 namespace Montgomery.CriticalPeak
 
 /-- Restricted actual critical-line peak count with arbitrary fixed natural log cap. -/

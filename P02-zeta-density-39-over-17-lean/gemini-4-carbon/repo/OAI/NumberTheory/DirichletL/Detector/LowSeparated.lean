@@ -57,11 +57,10 @@ theorem physicalRowWeight_low_separated (C : CalibrationData) (W0 W1 : ℝ→ℂ
     (∑'r : PhysicalRowIndex,physicalRowWeight C W0 W1 X Y r*B (physicalIdealRay r.1) r.2)=
       (Real.sqrt (lowPhysicalScale C X Y):ℂ)⁻¹*(1/(2*Real.pi):ℂ)*
         ∫v : ℝ,lowSeparatedIntegrand C W0 W1 (lowOuterCutoff (a0*a1) (max 1 (b0*b1))) X Y B v := by
-  have hW1c : HasCompactSupport W1 := HasCompactSupport.of_support_subset_isCompact isCompact_Icc hW1
   have hΩ := lowOuterCutoff_compact (a0*a1) (max 1 (b0*b1)) (mul_pos ha0 ha1)
     (lt_of_lt_of_le (by norm_num) (le_max_left _ _))
   rw [physicalRowWeight_tsum_low_mellin C W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1 hWs X Y hX hY]
-  simp_rw [lowSeparatedIntegrand_eq C W0 W1 _ hW1c hΩ X Y hX hY B]
+  simp_rw [lowSeparatedIntegrand_eq C W0 W1 _ (HasCompactSupport.of_support_subset_isCompact isCompact_Icc hW1) hΩ X Y hX hY B]
 
 end SevenEighths.ProbePhysical
 end

@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
-open ConcreteTraceCRT ProbeRow CanonicalRowCompletion CanonicalQuadraticSieve CompletedGauss
-open RayFourExpansion InitialMeanSquare SecondPassArithmetic CanonicalCoefficientClass
+open ConcreteTraceCRT ProbeRow CanonicalRowCompletion CanonicalQuadraticSieve CompletedGauss RayFourExpansion InitialMeanSquare SecondPassArithmetic CanonicalCoefficientClass
 local notation "O" => ActualEisensteinCubic.O
 local notation "Id" => Ideal O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
@@ -78,15 +77,13 @@ theorem lowArithmeticCoefficient_periodic (S : Finset Id) (hS : ∀P∈S,P.IsMax
   let C := calibrationForSet S hS
   have hn := supported_primaryGenerator_ne_zero s.val s.property
   have he := (primaryGenerator_spec s.val hn).1
-  have hp := (primaryGenerator_spec s.val hn).2
-  have hsupp := (supported_span_primaryGenerator_iff s.val).mpr s.property
   have hb := calibration_generator_bad S hS hbad
   by_cases hc : IsCoprime C.generator (primaryGenerator s.val)
   · have hguard : ∀P∈C.excluded,¬P∣s.val := by
       rw [show C.excluded=S from calibrationForSet_excluded S hS,←he]
       exact (calibration_coprime_iff_excluded_span S hS _).mp hc
     rw [lowArithmeticCoefficient,ite_eq_left hguard,
-      gramPeriodicMonoid_primary C C.generator (calibrationLowData S hS) hb.1 hb.2 _ hsupp hp hc,he]
+      gramPeriodicMonoid_primary C C.generator (calibrationLowData S hS) hb.1 hb.2 _ ((supported_span_primaryGenerator_iff s.val).mpr s.property) ((primaryGenerator_spec s.val hn).2) hc,he]
     ring
   · have hguard : ¬∀P∈C.excluded,¬P∣s.val := by
       rw [show C.excluded=S from calibrationForSet_excluded S hS,←he]

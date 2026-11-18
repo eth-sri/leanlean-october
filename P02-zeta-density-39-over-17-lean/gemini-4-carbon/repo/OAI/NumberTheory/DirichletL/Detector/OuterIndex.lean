@@ -21,8 +21,6 @@ def sourceOuterEquiv (S : Finset (Ideal O)) : SourceOuter S ≃
 lemma sourceOuter_tsum (S : Finset (Ideal O)) (f : {I : Ideal O // Supported I}→ℂ) :
     (∑'K : {I : Ideal O // Supported I},if ∀P∈S,¬P∣K.val then f K else 0)=
       ∑'K : SourceOuter S,f ⟨K.val,K.property.1⟩ := by
-  have hs := tsum_subtype {K : {I : Ideal O // Supported I} | ∀P∈S,¬P∣K.val} f
-  have he := (sourceOuterEquiv S).tsum_eq (fun K=>f K.val)
   calc
     _ = ∑' K : {I : Ideal O // Supported I},
         Set.indicator {K | ∀ P ∈ S, ¬P ∣ K.val} f K := by
@@ -30,7 +28,7 @@ lemma sourceOuter_tsum (S : Finset (Ideal O)) (f : {I : Ideal O // Supported I}�
       intro K
       simp only [Set.indicator, Set.mem_ofPred_eq]
       split_ifs <;> rfl
-    _ = _ := hs.symm.trans he.symm
+    _ = _ := (tsum_subtype {K : {I : Ideal O // Supported I} | ∀P∈S,¬P∣K.val} f).symm.trans ((sourceOuterEquiv S).tsum_eq (fun K=>f K.val)).symm
 
 end SevenEighths.ProbePhysical
 end

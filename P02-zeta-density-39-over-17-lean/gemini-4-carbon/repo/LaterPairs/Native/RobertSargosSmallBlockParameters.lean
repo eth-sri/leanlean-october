@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.ThirdDerivativeRpowScale
 
 @[expose] public section
@@ -22,13 +31,10 @@ theorem robertSargos_small_block_parameters {M H lam : ℝ}
   have hHtoM := Real.rpow_le_rpow_of_exponent_ge hlam hlam1
     (show -(8:ℝ)/13 ≤ -(1:ℝ)/7 by norm_num)
   have hfirst : H^7*lam ≤ 1 := by
-    calc
-      _ ≤ (lam^(-(1:ℝ)/7))^7*lam :=
-        mul_le_mul_of_nonneg_right (pow_le_pow_left₀ hH hHM 7) hlam.le
-      _ = 1 := by
+    exact (mul_le_mul_of_nonneg_right (pow_le_pow_left₀ hH hHM 7) hlam.le).trans_eq (by
         rw [← Real.rpow_mul_natCast hlam.le]
         norm_num
-        rw [Real.rpow_neg_one,inv_mul_cancel₀ hlam.ne']
+        rw [Real.rpow_neg_one,inv_mul_cancel₀ hlam.ne'])
   have hsecond : H^5 ≤ M^3*lam := by
     calc
       _ ≤ (lam^(-(1:ℝ)/7))^5 := pow_le_pow_left₀ hH hHM 5

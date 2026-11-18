@@ -33,8 +33,7 @@ theorem sourceRowTerm_pos (p : O) (hp : Prime p) [(Ideal.span {p}:Ideal O).IsMax
 
 end SevenEighths.ProbeEuler
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve
-open ConcretePrimeRowBridge CubicEisenstein ProbePhase ProbeEuler ProbePrimePower ProbeRow
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve ConcretePrimeRowBridge CubicEisenstein ProbePhase ProbeEuler ProbePrimePower ProbeRow
 local notation "O" => ActualEisensteinCubic.O
 
 theorem bareSourceCoefficient_unit_frequency (η : HeckeFamily.Character)
@@ -92,7 +91,7 @@ theorem bareSourceCoefficient_row_weighted_prime (η : HeckeFamily.Character) (p
   rw [ha] at hpdiag ⊢
   linear_combination -((actualSextic (Ideal.span {p}) hg (Ideal.Quotient.mk _ b))^k /
       (actualSextic (Ideal.span {p}) hg (Ideal.Quotient.mk _ b))^(e+3*l)) *
-    ((-1:ℂ)^e*((localGamma p hp.ne_zero hg 1)⁻¹)^e*(targetMonoid η p)^e) *
+    ((-1)^e*((localGamma p hp.ne_zero hg 1)⁻¹)^e*(targetMonoid η p)^e) *
     sourceScalar p hp hg (e+3*l) k (j+6*m) *
     (Ideal.absNorm (Ideal.span {p}):ℂ)^(-(x+1/2)*(e:ℂ)-(1+3*x)*(l:ℂ)-w*(k:ℂ)-6*z*(m:ℂ)) * hpdiag
 
@@ -105,11 +104,8 @@ theorem bareIdealHighCoefficient_row_at_prime (η : HeckeFamily.Character) (p : 
       (by rw [← Ideal.span_singleton_pow,primaryGenerator_prime_power p hp.ne_zero hprimary e];
           exact pow_ne_zero _ hp.ne_zero)
       (p^(e+3*l)) (p^k) (pow_ne_zero _ hp.ne_zero) (u*p^(6*m)) := by
-  have hguard : Squarefree ((Ideal.span {p})^e) ∧ Supported ((Ideal.span {p})^e) ∧
-      Supported ((Ideal.span {p})^l) ∧ Supported ((Ideal.span {p})^k) ∧ Supported ((Ideal.span {p})^m) :=
-    ⟨prime_power_small_squarefree p hp e he,supported_pow hs e,supported_pow hs l,supported_pow hs k,supported_pow hs m⟩
   unfold bareIdealHighCoefficient
-  rw [dite_eq_left hguard]
+  rw [dite_eq_left (⟨prime_power_small_squarefree p hp e he,supported_pow hs e,supported_pow hs l,supported_pow hs k,supported_pow hs m⟩)]
   simp only [primaryGenerator_prime_power p hp.ne_zero hprimary]
   have hA : p^e*(p^l)^3=p^(e+3*l) := by rw [←pow_mul,Nat.mul_comm l 3,←pow_add]
   have hH : (p^m)^6=p^(6*m) := by rw [←pow_mul,Nat.mul_comm m 6]

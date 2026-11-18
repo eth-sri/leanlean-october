@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.ExponentPairOptimizedSource
 
 @[expose] public section
@@ -51,9 +60,8 @@ theorem isExponentPairEstimateNonAsymptotic_aProcess
   refine ⟨δ,hδ,P,by omega,C,hC,?_⟩
   intro T N F a b hsetup
   have hN := hsetup.one_le_scale
-  have hNpos := zero_lt_one.trans_le hN
   have hNT := hsetup.scale_le_param
-  have hratio : 1 ≤ T/N := (le_div_iff₀ hNpos).mpr (by simpa using hNT)
+  have hratio : 1 ≤ T/N := (le_div_iff₀ (zero_lt_one.trans_le hN)).mpr (by simpa using hNT)
   let Y := (T/N)^(k/(2*k+2)+ε)*N^(l/(2*k+2)+1/2+ε)
   have hY : 1 ≤ Y := by
     have h₁ := Real.one_le_rpow hratio (show 0 ≤ k/(2*k+2)+ε by linarith [ht.1])

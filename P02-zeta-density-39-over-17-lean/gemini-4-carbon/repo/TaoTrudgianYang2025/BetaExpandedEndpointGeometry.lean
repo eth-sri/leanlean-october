@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaTaylorPastedUniform
 
 @[expose] public section
@@ -25,8 +35,7 @@ theorem modelPhaseClosedSlope_positive_window
     {u : ℝ} (hu : u ∈ phaseInterval) :
     modelPhaseClosedSlope F u ∈ Icc ((2 : ℝ)^(-σ)/2) 2 := by
   have he := abs_le.mp (modelPhaseClosedSlope_model_error hF hu)
-  have hp : 0 < u := zero_lt_one.trans_le hu.1
-  have hlow := Real.rpow_le_rpow_of_nonpos hp hu.2 (neg_nonpos.mpr hσ.le)
+  have hlow := Real.rpow_le_rpow_of_nonpos (zero_lt_one.trans_le hu.1) hu.2 (neg_nonpos.mpr hσ.le)
   have hhigh := Real.rpow_le_one_of_one_le_of_nonpos hu.1 (neg_nonpos.mpr hσ.le)
   have hd₁ := hδ.trans (min_le_left _ _)
   have hd₂ := hδ.trans (min_le_right _ _)

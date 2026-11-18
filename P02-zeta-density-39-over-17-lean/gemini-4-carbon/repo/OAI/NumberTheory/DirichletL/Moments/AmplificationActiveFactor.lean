@@ -10,10 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentAmplificationActiveFactor
-open CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge CompletedGauss
-open CenteredMomentAmplificationShortening CenteredMomentSupportedCorrelation
-open CenteredMomentAmplificationSourceDomain CenteredMomentAmplificationSourcePool
-open CenteredMomentSourceRow
+open CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge CompletedGauss CenteredMomentAmplificationShortening CenteredMomentSupportedCorrelation CenteredMomentAmplificationSourceDomain CenteredMomentAmplificationSourcePool CenteredMomentSourceRow
 local notation "O" => ActualEisensteinCubic.O
 
 def errorMovingExponent (n : ℕ) : ℕ := if n=5 then 0 else 1
@@ -23,12 +20,11 @@ theorem residual_six_unit (p u : O)
     (hcop : IsCoprime p u) : residualCharacter p 6 u=residualCharacter p 0 u := by
   have hx := idealRowHom_sixth_mask u (Ideal.span {p}) hp
   rw [idealRowHom_argument_pow u 6 _ hp,Ideal.isCoprime_span_singleton_iff,ite_eq_left hcop] at hx
-  have hphase := supported_phase_sq p u hp hu
   unfold residualCharacter
   norm_num only
   calc
     _ = (sexticReciprocityPhase p u^2)^3*(idealRowHom u (Ideal.span {p})^6)^2 := by ring
-    _ = 1 := by rw [hphase,hx];norm_num
+    _ = 1 := by rw [(supported_phase_sq p u hp hu),hx];norm_num
     _ = _ := by simp
 
 theorem residual_seven_unit (p u : O)
@@ -36,13 +32,12 @@ theorem residual_seven_unit (p u : O)
     (hcop : IsCoprime p u) : residualCharacter p 7 u=residualCharacter p 1 u := by
   have hx := idealRowHom_sixth_mask u (Ideal.span {p}) hp
   rw [idealRowHom_argument_pow u 6 _ hp,Ideal.isCoprime_span_singleton_iff,ite_eq_left hcop] at hx
-  have hphase := supported_phase_sq p u hp hu
   unfold residualCharacter
   norm_num only
   calc
     _ = (sexticReciprocityPhase p u^2)^3*sexticReciprocityPhase p u*
         (idealRowHom u (Ideal.span {p})^6)^2*idealRowHom u (Ideal.span {p})^2 := by ring
-    _ = _ := by rw [hphase,hx];ring
+    _ = _ := by rw [(supported_phase_sq p u hp hu),hx];ring
 
 theorem error_residual_factor (p u : O)
     (hp : Supported (Ideal.span {p})) (hu : Supported (Ideal.span {u}))

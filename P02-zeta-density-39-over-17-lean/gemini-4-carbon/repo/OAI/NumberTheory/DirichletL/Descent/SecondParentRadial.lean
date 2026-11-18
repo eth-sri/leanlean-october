@@ -55,8 +55,7 @@ theorem first_fresh_parent_radial_truncated
         intro U hU
         rw [firstCoreTest_coefficient p hp hg hinj slots lists coeff D U hD om a b ha hs negative X t hX]
       _ = _ := fresh_input_parent_mask p hg parent F D hq Ψ₀ m H₀ k
-  rw [firstFreshSecondPoisson_fixed_pool p hp hg hinj hc (hY:=hY)]
-  rw [←inputConjugateRow_smoothed_second_poisson p hg hp hinj hc _ _ _ _ _ _ _ _ hY]
+  rw [firstFreshSecondPoisson_fixed_pool p hp hg hinj hc (hY:=hY), ←inputConjugateRow_smoothed_second_poisson p hg hp hinj hc _ _ _ _ _ _ _ _ hY]
   change (∑' k : Eis,rowMajorant (‖ConcreteTraceCRT.eisEmbedding k‖^2/Y)*
     (‖inputConjugateRow p hg F Ψ₀ m₀ (secondParentLabel p parent)
       (secondParentDivisor p parent) H k‖^2 : ℝ)) = _

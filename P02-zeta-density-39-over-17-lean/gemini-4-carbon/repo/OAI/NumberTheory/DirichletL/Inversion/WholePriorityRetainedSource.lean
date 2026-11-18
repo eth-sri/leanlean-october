@@ -9,10 +9,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseWholePriorityRetainedSource
-open ActualEisensteinCubic SecondPassArithmetic FirstPassCubeLabels FirstCauchyArithmetic
-open InverseMoment InverseInitialArithmetic InverseFirstPriorityParents InversePrioritySecondSource
-open InverseMomentWholePriorityParents InverseMomentWholePriorityPhysical
-open InverseWholePriorityValidSource RayFourExpansion InversePrincipalEnergy InverseSecondPrincipalCaller
+open ActualEisensteinCubic SecondPassArithmetic FirstPassCubeLabels FirstCauchyArithmetic InverseMoment InverseInitialArithmetic InverseFirstPriorityParents InversePrioritySecondSource InverseMomentWholePriorityParents InverseMomentWholePriorityPhysical InverseWholePriorityValidSource RayFourExpansion InversePrincipalEnergy InverseSecondPrincipalCaller
 local notation "O" => ActualEisensteinCubic.O
 variable {ι σ κ : Type*} [DecidableEq ι] [DecidableEq σ] [DecidableEq κ]
 variable {Jo : ℕ} (p : ι→O) [∀ i,(Ideal.span {p i}).IsMaximal]
@@ -199,13 +196,10 @@ theorem priorityOuter_norm (b : CubeCoordinates ι) (negative : Bool) (Ψ : O→
     (selector : Finset ι→ℂ) (r : RayCharacter×RayCharacter) (core : FirstCoreIndex) (D : Finset ι)
     (hselector : ‖selector D‖≤1) (hΨ : ‖Ψ (∏ i∈D,p i)‖≤1) :
     ‖(priorityOuter p hg b negative Ψ m selector r core D:ℂ)‖≤coefficientBound := by
-  have hr : ‖crossCoeff r.1 r.2‖≤512 :=
-    (Finset.single_le_sum (fun j _=>norm_nonneg (crossCoeff r.1 j)) (Finset.mem_univ r.2)).trans
+  have hr := (Finset.single_le_sum (fun j _=>norm_nonneg (crossCoeff r.1 j)) (Finset.mem_univ r.2)).trans
       ((Finset.single_le_sum (fun j _=>Finset.sum_nonneg (fun k _=>norm_nonneg (crossCoeff j k)))
         (Finset.mem_univ r.1)).trans crossCoeff_sum_norm_le)
-  have hc : ‖firstCoreOuter p hg b.support (fun i=>b.leftExponent i+b.rightExponent i)
-      b.leftBit b.rightBit negative Ψ m D core‖≤32*512 :=
-    (Finset.single_le_sum (fun c _=>norm_nonneg (firstCoreOuter p hg b.support
+  have hc := (Finset.single_le_sum (fun c _=>norm_nonneg (firstCoreOuter p hg b.support
       (fun i=>b.leftExponent i+b.rightExponent i) b.leftBit b.rightBit negative Ψ m D c))
       (Finset.mem_univ core)).trans
       (firstCoreOuter_mass p hg b.support _ b.leftBit b.rightBit negative Ψ m D hΨ)

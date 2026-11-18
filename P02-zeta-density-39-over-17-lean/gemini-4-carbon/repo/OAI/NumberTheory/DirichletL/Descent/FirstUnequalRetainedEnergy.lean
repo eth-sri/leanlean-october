@@ -2,16 +2,14 @@ module
 public import OAI.NumberTheory.DirichletL.Descent.FirstUnequalMovingEnergy
 public import OAI.NumberTheory.DirichletL.Descent.FirstActualSecondEnergy
 
-set_option linter.privateModule false
 
 @[expose] public section
 
 namespace OAI
 
 namespace SevenEighths.InverseMoment
+open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion JointLogSeparation FourierBridge MeasureTheory
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion
-open JointLogSeparation FourierBridge MeasureTheory
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 open InverseMomentFirstProfileUniform InverseAmbientProfileTower

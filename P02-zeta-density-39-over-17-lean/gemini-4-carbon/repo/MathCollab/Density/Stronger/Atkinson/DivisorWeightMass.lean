@@ -10,9 +10,7 @@ public import MathCollab.Density.Stronger.Atkinson.DivisorWeightVariation
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+open Complex Filter MeasureTheory Set Topology MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth MathCollab.Density.Contour
 open scoped Interval ComplexConjugate
 set_option autoImplicit false
 noncomputable section
@@ -35,7 +33,7 @@ theorem norm_divisorCritical_mul_ratio_rpow {A : ℝ} (hA : 0 < A)
   simp only [divisorDirichletTerm, LSeries.norm_term_eq, hn.ne', ite_false,
     afeCriticalPoint, add_re, ofReal_re, mul_re, ofReal_im, I_re, I_im,
     mul_zero, zero_mul, sub_zero, add_zero]
-  norm_num only [div_ofNat_re, one_re]
+  norm_num
   rw [Real.div_rpow hA.le hnR.le, Real.rpow_add hnR]
   ring
 
@@ -45,10 +43,7 @@ theorem norm_divisorCritical_mul_min_le {A θ : ℝ} (hA : 0 < A)
       A ^ θ * ‖divisorDirichletTerm ((1 / 2 + θ : ℝ) : ℂ) n‖ := by
   by_cases hn : n = 0
   · simp [hn, divisorDirichletTerm, LSeries.term]
-  calc
-    _ ≤ ‖divisorDirichletTerm (afeCriticalPoint t) n‖ * (A / (n : ℝ)) ^ θ :=
-      mul_le_mul_of_nonneg_left (min_one_le_rpow (by positivity) hθ hθ1) (norm_nonneg _)
-    _ = _ := norm_divisorCritical_mul_ratio_rpow hA t θ (Nat.pos_of_ne_zero hn)
+  exact (mul_le_mul_of_nonneg_left (min_one_le_rpow (by positivity) hθ hθ1) (norm_nonneg _)).trans_eq (norm_divisorCritical_mul_ratio_rpow hA t θ (Nat.pos_of_ne_zero hn))
 
 theorem summable_divisorCritical_min {A θ : ℝ} (hA : 0 < A)
     (hθ : 1 / 2 < θ) (hθ1 : θ ≤ 1) (t : ℝ) :

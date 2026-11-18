@@ -17,7 +17,6 @@ theorem amplificationPower_nonneg (c r : ℝ) : 0≤amplificationPower c r := le
 theorem amplificationPower_upper (c r R : ℝ) (hc : c≤1) (hr : 0≤r)
     (hrR : r≤R) : amplificationPower c r≤R/3 := by
   apply max_le (by linarith)
-  have hh := mul_le_mul_of_nonneg_right hc hr
   nlinarith
 
 theorem amplified_exponent (c r : ℝ) :
@@ -37,7 +36,6 @@ theorem amplified_exponent_le (c r R : ℝ) (hc : 0≤c) (hrR : r≤R)
     unfold sourceExponent
     nlinarith [mul_nonneg hc hR]
   · have hh := le_max_right 1 ((1+5*r)/6)
-    have hh' := mul_le_mul_of_nonneg_left hrR hc
     unfold sourceExponent
     nlinarith
 

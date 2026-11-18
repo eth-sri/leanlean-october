@@ -2,7 +2,6 @@ module
 public import OAI.NumberTheory.DirichletL.Moments.AllocatedCenteredCapped
 public import OAI.NumberTheory.DirichletL.Moments.NaturalFixedRaySourceDetectorCapped
 
-set_option linter.privateModule false
 
 @[expose] public section
 
@@ -12,10 +11,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentAllocatedDetectorCapped
-open HeckeFamily CenteredMomentDetectorDictionary CenteredMomentNaturalFixedRaySource
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentDivisorRawEnergy
-open CenteredMomentDivisorRectangle CenteredMomentAllocatedCenteredCapped
-open ConcretePrimeRowBridge CenteredMomentExceptionalCappedAmplitude
+open HeckeFamily CenteredMomentDetectorDictionary CenteredMomentNaturalFixedRaySource CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentDivisorRawEnergy CenteredMomentDivisorRectangle CenteredMomentAllocatedCenteredCapped ConcretePrimeRowBridge CenteredMomentExceptionalCappedAmplitude
 local notation "O" => HeckeFamily.O
 
 end SevenEighths.CenteredMomentAllocatedDetectorCapped

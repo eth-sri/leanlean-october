@@ -30,7 +30,7 @@ omit [DecidableEq σ] in
 lemma tupleRepresentative_product (tuples : Finset (σ→Ideal Eis)) (hne : tuples.Nonempty)
     (P : Ideal Eis) (hP : P∈tuples.image slotTupleProduct) :
     slotTupleProduct (tupleRepresentative tuples hne P)=P := by
-  have h : ∃ p∈tuples, slotTupleProduct p=P := Finset.mem_image.mp hP
+  have h := Finset.mem_image.mp hP
   simp only [tupleRepresentative,dite_eq_left h]
   exact h.choose_spec.2
 

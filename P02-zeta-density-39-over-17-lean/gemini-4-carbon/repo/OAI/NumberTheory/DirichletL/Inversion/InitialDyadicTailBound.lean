@@ -9,10 +9,7 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseInitialDyadicTailBound
-open ActualEisensteinCubic ConcreteTraceCRT FirstPassCubeLabels SecondPassArithmetic
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
-open InverseInitialEnergyCallerSource InverseInitialDyadicAssembly InverseInitialProfile
-open InverseInitialRetainedSupport InverseInitialHighFrequencyTail
+open ActualEisensteinCubic ConcreteTraceCRT FirstPassCubeLabels SecondPassArithmetic InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialEnergyCallerSource InverseInitialDyadicAssembly InverseInitialProfile InverseInitialRetainedSupport InverseInitialHighFrequencyTail
 local notation "O"=>ActualEisensteinCubic.O
 
 theorem actual_high_mass_tail (Lcap saving τ : ℝ) (hτ : 0<τ) :
@@ -45,14 +42,14 @@ theorem actual_high_mass_tail (Lcap saving τ : ℝ) (hτ : 0<τ) :
   intro ι σ _ _ p hp _ hcop hg hinj hc hpr Ψ hΨ j slots lists weights hdis hwgt W₁ W₂ Φ
     Z D m η bW Γ B₁ B₂ hZ hη hbW hfixed hcap hsize hm hmd hΓ hB₁ hB₂ hW₁ hW₂ hs₁ hs₂
     pool S w hcommon hoverlap hdiv hfreq hw a b ha hrange
-  let wt : Point ι→ℂ := ((fun x=>w x*(windowMass (tailWindows a b Z D m (4*η+τ))
+  let wt := ((fun x=>w x*(windowMass (tailWindows a b Z D m (4*η+τ))
     (sourceNorms p x):ℂ))∘erasePoint)
-  let live (x : Point ι) : Prop := ∃ρ : SecondRayIndex,
+  let live (x : Point ι) := ∃ρ : SecondRayIndex,
     wt x*physicalTerm p hp hcop hg Ψ j (primeMark slots lists weights) W₁ W₂ Φ Z D m x ρ≠0
   let F := (pointSource pool S).filter live
-  have hmem (x) (hx : x∈F) : x∈pointSource pool S := (Finset.mem_filter.mp hx).1
-  have hvalid (x) (hx : x∈F) : Valid x := pointSource_valid pool S hdiv hfreq x (hmem x hx)
-  have hold (x) (hx : x∈F) : erasePoint x∈S := pointSource_erase_mem pool S x (hmem x hx)
+  have hmem (x) (hx : x∈F) := (Finset.mem_filter.mp hx).1
+  have hvalid (x) (hx : x∈F) := pointSource_valid pool S hdiv hfreq x (hmem x hx)
+  have hold (x) (hx : x∈F) := pointSource_erase_mem pool S x (hmem x hx)
   have hgeometry (x) (hx : x∈F) :
       (coordinates p x 0≤bW*Z^D ∧ coordinates p x 1≤bW*Z^D ∧
        coordinates p x 2≤bW*Z^D ∧ coordinates p x 4≤bW*Z^D ∧ coordinates p x 5≤bW*Z^D) ∧

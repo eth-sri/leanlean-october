@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.PositiveSlopeCharts
 
 @[expose] public section
@@ -92,8 +102,8 @@ theorem positiveSlopeChartFiber_Ioo_natural_interval {x y : ℤ} {d N T : ℝ} {
   let s := positiveSlopeChartFiber (Finset.Ioo x y) d N T j
   let lo := s.min' hne
   let hi := s.max' hne
-  have hlo : 0 ≤ lo := hnonneg _ (Finset.min'_mem s hne)
-  have horder : lo ≤ hi := Finset.min'_le_max' s hne
+  have hlo := hnonneg _ (Finset.min'_mem s hne)
+  have horder := Finset.min'_le_max' s hne
   refine ⟨lo.toNat,hi.toNat-lo.toNat,?_⟩
   rw [show lo.toNat+(hi.toNat-lo.toNat) = hi.toNat by omega]
   exact (positiveSlopeChartFiber_Ioo_eq_Icc hd hN hT hne).trans

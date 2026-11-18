@@ -11,11 +11,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseSecondSourceBlocks InverseSecondPrincipalCaller InverseSecondProfileUniform
-open FourierBridge CompletedHeight SecondPassIntegration JointLogSeparation
-open InverseInitialClippedColumns InverseSecondFibers InverseInitialArithmetic
-open InverseWholePriorityRetainedSource RayFourExpansion FirstCauchyArithmetic
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondSourceBlocks InverseSecondPrincipalCaller InverseSecondProfileUniform FourierBridge CompletedHeight SecondPassIntegration JointLogSeparation InverseInitialClippedColumns InverseSecondFibers InverseInitialArithmetic InverseWholePriorityRetainedSource RayFourExpansion FirstCauchyArithmetic
 local notation "Eis"=>ActualEisensteinCubic.O
 theorem global_priority_filtered_all_rays_uniform_types
     (om:𝓢(ℝ,ℂ)) (lo hi:ℝ) (hlo:0<lo)
@@ -106,7 +102,7 @@ theorem global_priority_filtered_all_rays_uniform_types
     Y R L Z X εchild Vlabel ell Ractive j tcount eta M r V delta Acol Bfirst tau pi b ρ t labels A source hhib
     haassigned hρ hL hZ hX hY heta hbin hrows hcube₁ hcube₂ hactive hj hquot hΨ
     ha₁ ha₂ hlabels ho hslots₁ hslots₂ hA hYe hXe hLe hVe hZ2 hb hthreshold hnorm hgeom hmass hleft hright
-  let P:=Z^(firstKappa M r ell V delta Acol Bfirst Ractive)*Real.exp ((9/2:ℝ)*(eta*Real.log Z))
+  let P:=Z^(firstKappa M r ell V delta Acol Bfirst Ractive)*Real.exp ((9/2)*(eta*Real.log Z))
   let H:= (1+‖t‖)^(2*InverseClippingProfiles.momentOrder J)*(1+Cbin*Real.log Z)^4*
     Z^(r+3*ell+V+48*eta+tau+pi+εchild)
   let S:SecondRayIndex→ℂ:=fun z=>(Y:ℂ)*secondRayCoefficient z *
@@ -114,7 +110,6 @@ theorem global_priority_filtered_all_rays_uniform_types
         wholeRow p hp hcop hg extra pool negative Ψ₀ m slots assigned lists a
           (principalWindow om lo hi hlo hsupport negative t) X Y z x
   have hP:0≤P:=by dsimp [P];positivity
-  have hH:0≤H:=by dsimp [H];positivity
   have hz (z:SecondRayIndex):P*‖S z‖≤C*A*H*‖secondRayCoefficient z‖:=by
     have h:=he p hp hcop hg hpr hinj hc extra pool original hvalid hextra w hwOriginal
       Ψ m ray core slots assigned lists a cutoff z

@@ -34,12 +34,11 @@ theorem rowwise_scales {ι : Type*} (rows : Finset ι) (χ : ι→Character)
       ‖polynomial (χ i) true (scaleProfile W) (Real.exp t) 0 0‖^2≤E) :
     ∑ i∈rows, ‖polynomial (χ i) true W (Real.exp (l i)) 0 0‖^2≤(1+2*(hi-lo))*E := by
   let S := scaleSupport hi b
-  have hsp := scaleProfile_support W a b hWs
   have eq0 (i : ι) (t : ℝ) (ht : t∈Icc lo hi) :=
     scaleSum_eq_polynomial (χ i) W S t (scaleSupport_cover W a b hi t hb hWs ht.2)
   have eq1 (i : ι) (t : ℝ) (ht : t∈Icc lo hi) :=
     scaleSum_eq_polynomial (χ i) (scaleProfile W) S t
-      (scaleSupport_cover (scaleProfile W) a b hi t hb hsp ht.2)
+      (scaleSupport_cover (scaleProfile W) a b hi t hb (scaleProfile_support W a b hWs) ht.2)
   have hh := rowwise_energy rows (fun i => scaleSum (χ i) W S)
     (fun i => scaleSum (χ i) (scaleProfile W) S)
     (fun i hi => scaleSum_continuous (χ i) W S hW.continuous)

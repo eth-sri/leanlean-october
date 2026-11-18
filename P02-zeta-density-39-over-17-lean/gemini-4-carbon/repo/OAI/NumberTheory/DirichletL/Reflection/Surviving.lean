@@ -79,11 +79,9 @@ theorem surviving_forced_norms (F : PrimeFamily φ)
   obtain ⟨hd1,hd2,_⟩ := frozenBranchColumn_divisibility F hF jF e A n b (hn n hn').1 (hb b hb').1 hz
   have hn0 : n≠0 := by intro h; exact (hn n hn').1 (by rw [h,primaryGenerator_zero])
   have hb0 : b≠0 := by intro h; exact (hb b hb').1 (by rw [h,primaryGenerator_zero])
-  have hnpos : 0<Ideal.absNorm n := Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hn0)
-  have hbpos : 0<Ideal.absNorm b := Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hb0)
   constructor
-  · exact le_trans (by exact_mod_cast Nat.le_of_dvd hnpos (map_dvd Ideal.absNorm hd1)) (hn n hn').2
-  · exact le_trans (by exact_mod_cast Nat.le_of_dvd hbpos (map_dvd Ideal.absNorm hd2)) (hb b hb').2
+  · exact le_trans (by exact_mod_cast Nat.le_of_dvd (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hn0)) (map_dvd Ideal.absNorm hd1)) (hn n hn').2
+  · exact le_trans (by exact_mod_cast Nat.le_of_dvd (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hb0)) (map_dvd Ideal.absNorm hd2)) (hb b hb').2
 
 theorem surviving_extracted_scales (F : PrimeFamily φ)
     (hF : Pairwise (Function.onFun IsCoprime F.ideal)) (jF : φ→ℕ)

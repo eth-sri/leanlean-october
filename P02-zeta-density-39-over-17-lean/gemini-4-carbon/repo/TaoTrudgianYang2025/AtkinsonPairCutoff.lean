@@ -43,16 +43,14 @@ theorem exists_atkinsonPhysicalCutoff_pair_geometry {δ η : ℝ}
     have hn := Nat.cast_nonneg (α := ℝ) (atkinsonSourceCutoff (2*H) G (Real.log (2*H)))
     linarith
   refine ⟨hlog,hN,?_⟩
-  have hcut := atkinsonPhysicalCutoff_le_natural hH1 hG hupper hlog
-  have hs := pow_le_pow_left₀ hpow.le hwidth 2
   calc
     _ ≤ Real.pi*(74*H*(Real.log (2*H))^2/G^2)/(2*H) :=
-      div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_left hcut Real.pi_pos.le) (by positivity)
+      div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_left (atkinsonPhysicalCutoff_le_natural hH1 hG hupper hlog) Real.pi_pos.le) (by positivity)
     _ = 37*Real.pi*(Real.log (2*H))^2/G^2 := by field_simp; ring
     _ ≤ 37*Real.pi*H^δ/G^2 :=
       div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_left hlogpow (by positivity)) (sq_nonneg G)
     _ ≤ 37*Real.pi*H^δ/(H^δ)^2 :=
-      div_le_div_of_nonneg_left (by positivity) (sq_pos_of_pos hpow) hs
+      div_le_div_of_nonneg_left (by positivity) (sq_pos_of_pos hpow) (pow_le_pow_left₀ hpow.le hwidth 2)
     _ = 37*Real.pi/H^δ := by field_simp
     _ < η := (div_lt_iff₀ hpow).2 (by
       have h := (div_lt_iff₀ hη).mp hpowlarge
@@ -77,8 +75,6 @@ theorem ExponentPair.atkinson_physical_gram_budget {k l δ ν : ℝ}
     (eventually_atkinson_height_log_pow_le_rpow 5 (show 0 < ν/2 by linarith))
   let K := 10000*C*(1/Real.log 2+1)^2
   have hK : 0 < K := by
-    have h2 : 0 < Real.log 2 := Real.log_pos (by norm_num)
-    dsimp [K]
     positivity
   refine ⟨D*K,mul_pos hD hK,max A B,hA.trans (le_max_left _ _),?_⟩
   intro H G L W hH hwidth hupper hL hLH hsep hrange hdiam

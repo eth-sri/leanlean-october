@@ -26,9 +26,8 @@ lemma lowGaussColumn_row (C : CalibrationData) (W1 : ℝ→ℂ) (Y : ℝ)
     (if physicalIdealRay s=σ then lowAdditiveCoefficient C W1 Y s m v else 0)=
       lowGaussColumn C W1 Y σ v s*
         gaussRow (primaryGenerator s.val) ((supported_span_primaryGenerator_iff s.val).mpr s.property) (-m) := by
-  have he := (primaryGenerator_spec s.val (supported_primaryGenerator_ne_zero s.val s.property)).1
   unfold lowGaussColumn gaussRow
-  rw [congrArg Ideal.absNorm he]
+  rw [congrArg Ideal.absNorm ((primaryGenerator_spec s.val (supported_primaryGenerator_ne_zero s.val s.property)).1)]
   split_ifs
   · rw [lowAdditiveCoefficient_eq]
     simp only [div_eq_mul_inv]

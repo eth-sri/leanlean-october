@@ -56,8 +56,6 @@ lemma zRowScalar_bounded {K : ℕ}
     ‖(Y:ℂ)^(w-1)‖*Real.exp ((|x.re|+r+1)^2)*‖mellin W1 w‖*
     (∏i,B i)*scaleBound (elementNorm u.val) (-r) (-l)
   have hB (i : Fin K) : 0≤B i := (scaleBound_pos _ _ _).le
-  have hBP : 0≤∏i,B i := Finset.prod_nonneg (fun i _=>hB i)
-  have hscale (a b c : ℝ) : 0≤scaleBound a b c := (scaleBound_pos _ _ _).le
   refine ⟨max A 0,le_max_right _ _,?_⟩
   intro v hv t
   have hXb := cpow_le_scaleBound hX (1/2-((v:ℂ)+t*I))
@@ -101,11 +99,9 @@ theorem continuedPhysicalRowKernel_z_cauchy {K : ℕ}
     rw [norm_mul,norm_star]
     exact (mul_le_of_le_one_left (norm_nonneg _)
       ((calibrationForSet S hmax).residueMonoid_norm_le_one _)).trans (hrow _ (by simpa using hl.trans hv.1))
-  have hm' : ‖mellin (EisensteinSchwartzPoisson.paperRadialFourier W0) ((v:ℂ)+t*I)‖≤D*cauchy t :=
-    CubicReflectionKernel.weighted_two_to_cauchy (norm_nonneg _) t (hm v hv t)
   rw [continuedPhysicalRowKernel_z_factor,norm_mul,norm_mul]
   calc
-    _ ≤ A*(D*cauchy t)*C := mul_le_mul (mul_le_mul (hscalar v hv t) hm' (norm_nonneg _) hA)
+    _ ≤ A*(D*cauchy t)*C := mul_le_mul (mul_le_mul (hscalar v hv t) (CubicReflectionKernel.weighted_two_to_cauchy (norm_nonneg _) t (hm v hv t)) (norm_nonneg _) hA)
       hr (norm_nonneg _) (mul_nonneg hA (mul_nonneg hD.le (cauchy_nonneg t)))
     _ = _ := by ring
 

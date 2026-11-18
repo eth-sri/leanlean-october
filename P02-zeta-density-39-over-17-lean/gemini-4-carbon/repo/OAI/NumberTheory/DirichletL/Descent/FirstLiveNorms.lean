@@ -46,14 +46,8 @@ theorem original_live_norm_caps
           (primeProductNorm_pos p hp _).le
       _≤L*B^2:=mul_le_mul hcommon hsup (primeProductNorm_pos p hp _).le
         ((primeProductNorm_pos p hp _).le.trans hcommon)
-  have hactive:activeNorm p x≤B^2:=
-    (primeProductNorm_mono p hp (Finset.filter_subset _ _)).trans hsup
   have hE:=firstPhysicalMultiplier_ne_zero p hp x.1.1.support x.1.1.leftExponent x.1.1.rightExponent
     x.1.1.leftBit x.1.1.rightBit x.2.1 (hlabels _ hf)
-  have hh0:x.2.2≠0:=(Finset.mem_erase.mp hrow).1
-  have hh:=((mem_nonzeroChildFrequencyBall _ hE Y x.2.2).mp hrow).2
-  have hfreqnorm:‖eisEmbedding x.2.2‖^2≤Y:=
-    (element_norm_le_of_dvd (mul_ne_zero hE hh0) (dvd_mul_left x.2.2 _)).trans hh
   have hj:InverseFirstGlobalCaps.jNorm p x.1≤B^2:=by
     have hd:=jLabel_dvd_cube_product p x.1.1.support x.1.1.leftExponent x.1.1.rightExponent
       x.1.1.leftBit x.1.1.rightBit x.1.1.support_pos
@@ -69,8 +63,8 @@ theorem original_live_norm_caps
   · exact hcommon
   · simpa [originalNorms,InverseMomentFirstChildWindows.sourceNorms,divisorElement,
       primeSubsetGenerator_norm_eq_productNorm] using hdiv
-  · exact hactive
-  · exact hfreqnorm
+  · exact ((primeProductNorm_mono p hp (Finset.filter_subset _ _)).trans hsup)
+  · exact ((element_norm_le_of_dvd (mul_ne_zero hE ((Finset.mem_erase.mp hrow).1)) (dvd_mul_left x.2.2 _)).trans (((mem_nonzeroChildFrequencyBall _ hE Y x.2.2).mp hrow).2))
 
 end SevenEighths.InverseMomentFirstLiveCaps
 

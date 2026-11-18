@@ -21,8 +21,7 @@ def smallDyadicIndices (L : ℝ) : Finset ℕ :=
   · intro hn
     refine ⟨?_,hn⟩
     by_contra h
-    have hp := pow_le_pow_right₀ (by norm_num : (1:ℝ)≤2) (not_lt.mp h)
-    exact not_lt_of_ge (hp.trans hn) (Nat.find_spec (pow_unbounded_of_one_lt L (by norm_num : (1:ℝ)<2)))
+    exact not_lt_of_ge ((pow_le_pow_right₀ (by norm_num : (1:ℝ)≤2) (not_lt.mp h)).trans hn) (Nat.find_spec (pow_unbounded_of_one_lt L (by norm_num : (1:ℝ)<2)))
 
 def smallDyadicRows (L : ℝ) (n : ℕ) : Finset FreeRow := (dyadicRows 1 n).filter (fun u=>rowNorm u<L)
 
@@ -40,15 +39,13 @@ lemma small_rows_biUnion (L : ℝ) :
   · intro hu
     obtain ⟨n,hn,hu⟩ := Finset.mem_biUnion.mp hu
     have hh := mem_smallDyadicRows.mp hu
-    have hm := mem_dyadicRows.mp hh.1
-    exact mem_rowBand.mpr ⟨hm.1,rowNorm_ge_one u,hh.2⟩
+    exact mem_rowBand.mpr ⟨(mem_dyadicRows.mp hh.1).1,rowNorm_ge_one u,hh.2⟩
   · intro hu
     have hh := mem_rowBand.mp hu
     obtain ⟨n,hn⟩ := exists_dyadicRows 1 (by norm_num) u hh.1 hh.2.1
     refine Finset.mem_biUnion.mpr ⟨n,?_,mem_smallDyadicRows.mpr ⟨hn,hh.2.2⟩⟩
     rw [mem_smallDyadicIndices]
-    have hlo := (mem_dyadicRows.mp hn).2.1
-    simpa only [one_mul] using hlo.trans hh.2.2.le
+    simpa using ((mem_dyadicRows.mp hn).2.1).trans hh.2.2.le
 
 lemma sum_small_dyadicRows (L : ℝ) (f : FreeRow→ℂ) :
     (∑u∈rowBand 1 L,f u)=∑n∈smallDyadicIndices L,∑u∈smallDyadicRows L n,f u := by

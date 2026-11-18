@@ -42,7 +42,7 @@ lemma reciprocalWindow_reconstruct (w : ℝ→ℂ) (α M y : ℝ) :
 
 lemma reciprocal_norm_log (Q q : ℝ) (hQ : 0<Q) (hq : 0<q) :
     Real.exp (-(1/2:ℝ)*Real.log (q/Q)) = Real.sqrt Q/Real.sqrt q := by
-  rw [show -(1/2:ℝ)*Real.log (q/Q) = Real.log (q/Q)*(-(1/2:ℝ)) by ring,
+  rw [show -(1/2)*Real.log (q/Q) = Real.log (q/Q)*(-(1/2)) by ring,
     ← Real.rpow_def_of_pos (div_pos hq hQ),Real.div_rpow hq.le hQ.le,
     Real.rpow_neg hq.le,Real.rpow_neg hQ.le,← Real.sqrt_eq_rpow,← Real.sqrt_eq_rpow]
   field_simp
@@ -82,7 +82,6 @@ lemma reciprocal_window_product (windows : Fin 4→ℝ→ℂ) (M y : Fin 4→ℝ
     (∏ i, windows i (y i)) *
       ((Real.exp (-(1/2:ℝ)*y 2):ℂ)*(Real.exp (-y 3):ℂ)) =
     (Real.exp (M 2/2+M 3):ℂ)*(∏ i, reciprocalKernelWindows windows M i (y i)) := by
-  have h2 := reciprocalWindow_reconstruct (windows 2) (1/2) (M 2) (y 2)
   have h3 := reciprocalWindow_reconstruct (windows 3) 1 (M 3) (y 3)
   have hp : (Real.exp (M 2/2+M 3):ℂ) =
       (Real.exp ((1/2:ℝ)*M 2):ℂ)*(Real.exp (1*M 3):ℂ) := by
@@ -104,7 +103,7 @@ lemma reciprocal_window_product (windows : Fin 4→ℝ→ℂ) (M y : Fin 4→ℝ
     _ = windows 0 (y 0)*windows 1 (y 1)*
       (windows 2 (y 2)*(Real.exp (-(1/2:ℝ)*y 2):ℂ))*
       (windows 3 (y 3)*(Real.exp (-y 3):ℂ)) := by ring
-    _ = _ := by rw [h2,h3]; ring
+    _ = _ := by rw [(reciprocalWindow_reconstruct (windows 2) (1/2) (M 2) (y 2)),h3]; ring
 
 theorem reciprocal_source_window_identity (windows : Fin 4→ℝ→ℂ) (M : Fin 4→ℝ)
     (QK QP Qn Qb k p n b r : ℝ) (hQn : 0<Qn) (hQb : 0<Qb)
@@ -118,14 +117,12 @@ theorem reciprocal_source_window_identity (windows : Fin 4→ℝ→ℂ) (M : Fin
       ((Real.exp (-(1/2:ℝ)*Real.log (n/Qn)):ℂ)*(Real.exp (-Real.log (b/Qb)):ℂ)) = _ at hp
   rw [reciprocal_norm_log Qn n hQn hn,reciprocal_cube_log Qb b hQb hb] at hp
   have he := congrArg (fun z : ℂ => z/((r*Real.sqrt Qn*Qb:ℝ):ℂ)) hp
-  have hn0 := (Real.sqrt_pos.mpr hn).ne'
-  have hQn0 := (Real.sqrt_pos.mpr hQn).ne'
   simp only [Complex.ofReal_mul,Complex.ofReal_div] at he ⊢
-  have hrC : (r:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hr.ne'
-  have hbC : (b:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hb.ne'
-  have hQbC : (Qb:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hQb.ne'
-  have hnC : (Real.sqrt n:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hn0
-  have hQnC : (Real.sqrt Qn:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hQn0
+  have hrC := Complex.ofReal_ne_zero.mpr hr.ne'
+  have hbC := Complex.ofReal_ne_zero.mpr hb.ne'
+  have hQbC := Complex.ofReal_ne_zero.mpr hQb.ne'
+  have hnC := Complex.ofReal_ne_zero.mpr ((Real.sqrt_pos.mpr hn).ne')
+  have hQnC := Complex.ofReal_ne_zero.mpr ((Real.sqrt_pos.mpr hQn).ne')
   convert he using 1 <;> field_simp
 
 end

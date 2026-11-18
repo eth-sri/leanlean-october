@@ -38,8 +38,7 @@ theorem norm_of_oriented_coefficients (χ ψ : Character) (reverse : Bool)
       intro J
       simpa only [Bool.true_eq,ite_true,idealCoeff_inverse_conj] using hc J
     rw [polynomial_eq_of_idealCoeff χ ψ.inverse hc' inv W D σ freq]
-    have hh := polynomial_inverse_norm ψ inv (fun x => conj (W x)) D σ (-freq) hD
-    simpa only [orientedProfile,orientedFrequency,Bool.true_eq,ite_true,conj_conj,neg_neg] using hh
+    simpa only [orientedProfile,orientedFrequency,Bool.true_eq,ite_true,conj_conj,neg_neg] using (polynomial_inverse_norm ψ inv (fun x => conj (W x)) D σ (-freq) hD)
 
 theorem orientedFrequency_abs (reverse : Bool) (freq : ℝ) :
     |orientedFrequency reverse freq|=|freq| := by cases reverse <;> simp [orientedFrequency]

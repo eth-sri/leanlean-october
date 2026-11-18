@@ -51,8 +51,7 @@ theorem principalRegularization_logDeriv (F : ℂ → ℂ) (residue : ℂ)
     {s : ℂ} (hs : s ≠ 1) (hF : AnalyticAt ℂ F s) (hF0 : F s ≠ 0) :
     -deriv (principalRegularization F residue) s / principalRegularization F residue s =
       -deriv F s / F s - 1 / (s - 1) := by
-  have hd := (principalRegularization_eventuallyEq F residue hs).deriv_eq
-  rw [hd, principalRegularization, Function.update_of_ne hs,
+  rw [((principalRegularization_eventuallyEq F residue hs).deriv_eq), principalRegularization, Function.update_of_ne hs,
     deriv_fun_mul (by fun_prop) hF.differentiableAt, deriv_sub_const, deriv_id'', one_mul]
   field_simp
   ring

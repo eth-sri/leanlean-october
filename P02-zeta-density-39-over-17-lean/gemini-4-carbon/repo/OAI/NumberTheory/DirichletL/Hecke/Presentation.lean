@@ -70,12 +70,9 @@ theorem principalResidue_ne_one (η : Character) (hη : η.residue ≠ 1) :
 
 theorem LFunction_principalCharacter (η : Character) (hη : η.residue ≠ 1) (s : ℂ) :
     LFunction (principalCharacter η) s = LFunction η s := by
-  have hp : (principalCharacter η).residue ≠ 1 := principalResidue_ne_one η hη
-  have ha := LFunction_entire_nonprincipal (principalCharacter η) hp
-  have hb := LFunction_entire_nonprincipal η hη
   have he : LFunction (principalCharacter η) = LFunction η := by
-    apply (Complex.analyticOnNhd_univ_iff_differentiable.mpr ha).eq_of_eventuallyEq
-      (Complex.analyticOnNhd_univ_iff_differentiable.mpr hb) (z₀ := (2 : ℂ))
+    apply (Complex.analyticOnNhd_univ_iff_differentiable.mpr (LFunction_entire_nonprincipal (principalCharacter η) (principalResidue_ne_one η hη))).eq_of_eventuallyEq
+      (Complex.analyticOnNhd_univ_iff_differentiable.mpr (LFunction_entire_nonprincipal η hη)) (z₀ := (2 : ℂ))
     filter_upwards [(Complex.isOpen_re_gt 1).mem_nhds (by norm_num : (1 : ℝ) < (2 : ℂ).re)] with z hz
     unfold LFunction
     congr 1

@@ -27,9 +27,8 @@ theorem coprime_dyadic_adjacent_second {η : ℝ} (hη : 0 < η) :
   by_cases he : Q.Nonempty
   · obtain ⟨q,hq⟩ := he
     have h2M : 0 ≤ 2*M := by positivity
-    have hf : (⌊2*M⌋₊:ℝ) ≤ 2*M := Nat.floor_le h2M
-    have hH : 1 ≤ ⌊2*M⌋₊ :=
-      (show 1 ≤ q.2 from (hQ q hq).2.1).trans
+    have hf := Nat.floor_le h2M
+    have hH := (show 1 ≤ q.2 from (hQ q hq).2.1).trans
         ((Nat.le_floor_iff h2M).mpr (hQ q hq).2.2.2.2.2.2)
     have hrat : ∀ r ∈ Q.image pairRatio,
         0 < r ∧ r.den ≤ ⌊2*M⌋₊ ∧ |Real.log (r:ℝ)| ≤ 1 := by

@@ -24,7 +24,6 @@ theorem vertical_integral_eq_of_shifted_polynomial_gaussian_bound (F : ℂ→ℂ
       ‖G ((x:ℂ)+t*I)‖≤C*polynomialGaussian n t := by
     have heq : (x:ℂ)+t*I-(q:ℂ)*I=(x:ℂ)+(t-q)*I := by ring
     simpa only [G,heq,sub_add_cancel,Complex.ofReal_sub] using hbound x hx (t-q)
-  have hi := vertical_integral_eq_of_polynomial_gaussian_bound G n hab hg hbnd
   have heq (x : ℝ) : (∫t : ℝ,G ((x:ℂ)+t*I))=∫t : ℝ,F ((x:ℂ)+t*I) := by
     have hg' : (fun t : ℝ=>G ((x:ℂ)+t*I))=(fun t : ℝ=>F ((x:ℂ)+(t+(-q))*I)) := by
       funext t
@@ -34,7 +33,7 @@ theorem vertical_integral_eq_of_shifted_polynomial_gaussian_bound (F : ℂ→ℂ
     rw [hg']
     simpa only [Complex.ofReal_add,Complex.ofReal_neg] using
       (integral_add_right_eq_self (fun t : ℝ=>F ((x:ℂ)+t*I)) (-q) (μ:=volume))
-  simpa only [heq] using hi
+  simpa only [heq] using (vertical_integral_eq_of_polynomial_gaussian_bound G n hab hg hbnd)
 
 lemma shifted_height_two (t q : ℝ) :
     (3+|t|)^2≤2*(3+|q|)^2*(1+|t+q|^2) := by

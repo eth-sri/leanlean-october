@@ -10,8 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic FirstCauchyArithmetic
-open InverseFirstPriorityParents InverseFirstGlobalParents
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic FirstCauchyArithmetic InverseFirstPriorityParents InverseFirstGlobalParents
 local notation "O"=>ActualEisensteinCubic.O
 variable {ι σ:Type}[DecidableEq ι][DecidableEq σ]
 
@@ -43,8 +42,7 @@ theorem original_subset_canonical_priority
     negative Ψ m slots lists a om X t Y hY
   rw [show originalSubsetSource outer=outer.image ofOriginal from rfl,
     Finset.sum_image (fun _ _ _ _ h=>ofOriginal_injective h)] at he
-  have hs (k:FirstOriginalOuter ι): originalSelector selector (ofOriginal k)=selector k :=
-    originalSelector_ofOriginal_fun selector k
+  have hs (k:FirstOriginalOuter ι) := originalSelector_ofOriginal_fun selector k
   simp_rw [hs] at he
   simpa only [originalSubsetSource,ofOriginal,originalSelector,toOriginal,eraseFirstQuotient] using he
 

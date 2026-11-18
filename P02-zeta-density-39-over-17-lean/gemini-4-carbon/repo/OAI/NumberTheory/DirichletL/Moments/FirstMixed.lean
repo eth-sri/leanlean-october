@@ -9,14 +9,13 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentFirstMixed
-open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein
-open CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentFourier
+open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentFourier
 local notation "O" => ActualEisensteinCubic.O
 
 theorem frequencyReduction_comp (d n M : O) (hd : d∣n) (hn : n∣M) (x : Residue M) :
     frequencyReduction d n hd (frequencyReduction n M hn x)=frequencyReduction d M (hd.trans hn) x := by
   obtain ⟨x,rfl⟩ := Ideal.Quotient.mk_surjective x
-  simp only [frequencyReduction_mk]
+  simp
 
 theorem three_factor_mixed_fourier (a b c : O) (ha : a ≠ 0) (hb : b ≠ 0) (hc : c ≠ 0)
     (habc : IsCoprime a (b*c)) (hbc : IsCoprime b c)

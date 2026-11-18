@@ -10,9 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentNaturalRowSource
-open HeckeFamily CenteredMomentSecondHeightFamily ConcretePrimeRowBridge
-open CenteredMomentHeckeHeight CenteredMomentHeckeTwist CenteredMomentHeckeSlots
-open CenteredMomentRetainedEnergy CenteredMomentRetainedProfile
+open HeckeFamily CenteredMomentSecondHeightFamily ConcretePrimeRowBridge CenteredMomentHeckeHeight CenteredMomentHeckeTwist CenteredMomentHeckeSlots CenteredMomentRetainedEnergy CenteredMomentRetainedProfile
 local notation "O" => HeckeFamily.O
 
 lemma NaturalRow.masked_plain {η : Character} {z : O} (F : NaturalRow η z)
@@ -20,7 +18,7 @@ lemma NaturalRow.masked_plain {η : Character} {z : O} (F : NaturalRow η z)
     rowTwistedSum η (fixedBadMask*idealGenerator R) 1 z W t X=
       twistedIdealSum (excluded F.character R) W t X := by
   exact rowTwistedSum_eq η (excluded F.character R) (fixedBadMask*idealGenerator R) 1 z
-    (by simpa only [one_mul] using F.masked_element R hR) W t X
+    (by simpa using F.masked_element R hR) W t X
 
 lemma NaturalRow.masked_slot {η : Character} {z : O} (F : NaturalRow η z)
     (R : Ideal O) (hR : R≠0) (S : Finset (Ideal O)) (β : Ideal O→ℂ) (t : ℝ) :

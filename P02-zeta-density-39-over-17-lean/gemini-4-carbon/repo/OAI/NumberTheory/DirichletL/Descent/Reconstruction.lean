@@ -60,9 +60,7 @@ theorem supportedHybridRow_reconstruct
   rw [hybrid_finite_column_reindex S (fun p hp => ⟨(hS p hp).1, (hS p hp).2.1⟩)]
   apply Finset.sum_congr rfl
   intro d hd
-  have hdS := (mem_hybridColumnSupport S d).mp hd
-  have hdprim := hS d.reconstruct hdS
-  have hct := (d.primary_factors hdprim.2.2.1 hdprim.2.2.2).2.2.2.2
+  have hdprim := hS d.reconstruct ((mem_hybridColumnSupport S d).mp hd)
   apply Finset.sum_congr rfl
   intro P hPP
   unfold reconstructedHybridTerm
@@ -71,7 +69,7 @@ theorem supportedHybridRow_reconstruct
       beta (d.common * d.residualN) ((d.common * d.residualB) * d.square ^ 2) * z)
     (hybrid_original_kernel_decomposition k P
     (d.common * d.residualN) ((d.common * d.residualB) * d.square ^ 2)
-    d.common d.residualN d.residualB d.square hk (hP P hPP) hdprim.2.2.1 rfl rfl hct)
+    d.common d.residualN d.residualB d.square hk (hP P hPP) hdprim.2.2.1 rfl rfl ((d.primary_factors hdprim.2.2.1 hdprim.2.2.2).2.2.2.2))
 
 end
 end SevenEighths.InverseMoment

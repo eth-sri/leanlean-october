@@ -9,27 +9,14 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstAnnularInputAmplification
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
+open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentFirstAmplifiedPowerBudget
-open HeckeFamily HeckeRowClosure CanonicalQuadraticSieve ConcreteTraceCRT
-open ConcretePrimeRowBridge CompletedGauss RayFourExpansion
-open CenteredMomentFirstAmplificationChoice CenteredMomentAmplificationRadicalFamily
-open CenteredMomentAmplifiedRetainedRadius CenteredMomentAmplificationActiveFactor
-open CenteredMomentPrimePool CenteredMomentPrimeElements CenteredMomentAmplificationEligibility
-open CenteredMomentAmplificationEnergy CenteredMomentGaussEnergy
-open CenteredMomentSourceRow CenteredMomentGaussNormalization
-open CenteredMomentAmplificationErrorEnergy CenteredMomentAmplificationGlobal
-open CenteredMomentSectorLocalization CenteredMomentOriginalChildEnergy
-open CenteredMomentFirstScale
-open CenteredMomentChildRows CenteredMomentHeckeExpansion
+open HeckeFamily HeckeRowClosure CanonicalQuadraticSieve ConcreteTraceCRT ConcretePrimeRowBridge CompletedGauss RayFourExpansion CenteredMomentFirstAmplificationChoice CenteredMomentAmplificationRadicalFamily CenteredMomentAmplifiedRetainedRadius CenteredMomentAmplificationActiveFactor CenteredMomentPrimePool CenteredMomentPrimeElements CenteredMomentAmplificationEligibility CenteredMomentAmplificationEnergy CenteredMomentGaussEnergy CenteredMomentSourceRow CenteredMomentGaussNormalization CenteredMomentAmplificationErrorEnergy CenteredMomentAmplificationGlobal CenteredMomentSectorLocalization CenteredMomentOriginalChildEnergy CenteredMomentFirstScale CenteredMomentChildRows CenteredMomentHeckeExpansion
 local notation "O"=>ActualEisensteinCubic.O
 local instance {ι : Type*} : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
-open CenteredMomentAmplificationChildInput CenteredMomentCommonRadialData
-open CenteredMomentCommonAllocationSum CenteredMomentSecondHeightFamily
-
-open CenteredMomentFirstAnnularInput CenteredMomentFirstErrorAllocationPower
+open CenteredMomentAmplificationChildInput CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentSecondHeightFamily CenteredMomentFirstAnnularInput CenteredMomentFirstErrorAllocationPower
 theorem eventually_input_power_amplification {ι : Type*} [Fintype ι]
     (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
     (hH : RayOrthogonality.globalUnits M≤H)
@@ -108,7 +95,6 @@ theorem eventually_input_power_amplification {ι : Type*} [Fintype ι]
         hsupp (original s R seed).active_slot
         (fun j Q hQ=>s.prime j Q ((original s R seed).active_subset _ hQ))
         (Ideal.span {p.val}) (hdata _ hd.2.1).1 (hdata _ hd.2.1).2.2.1
-    have hq:Prime (Ideal.span {p.val}):=(hdata _ hd.2.1).1
     calc
       _≤∑χ:RayCharacter,((errorIndex i+1+1:ℕ):ℝ)*
           (∑j,aerror p i χ j*(volume (activeInput s)/
@@ -117,7 +103,7 @@ theorem eventually_input_power_amplification {ι : Type*} [Fintype ι]
         apply Finset.sum_le_sum
         intro χ hχ
         apply le_trans (Finset.sum_le_sum (fun B _=>herr p i χ B))
-        exact budget_sum_le (activeInput s) (Ideal.span {p.val}) hq (errorIndex i+1) hcop R
+        exact budget_sum_le (activeInput s) (Ideal.span {p.val}) ((hdata _ hd.2.1).1) (errorIndex i+1) hcop R
           (fun _=>τ p i χ) (fun _=>s.t) 4 (aerror p i χ) α (haerr p i χ)
       _=_:=by
         simp only [CenteredMomentFirstChildProfileControl.mass,activeInput]

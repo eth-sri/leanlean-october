@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.ExponentPairWeylSum
 
 @[expose] public section
@@ -49,16 +58,14 @@ theorem robertSargos_plane_averaging (a : ℤ → ℤ → ℂ) (M H Q R : ℕ) :
   let T := Finset.range Q ×ˢ Finset.range R
   let U : ℤ × ℤ → ℂ := fun x =>
     ∑ t ∈ T, robertSargosPaddedPlane a M H (x.1+t.1) (x.2+t.2)
-  let S : ℂ := ∑ m ∈ Finset.Ico (0:ℤ) M, ∑ h ∈ Finset.Ico (0:ℤ) H, a m h
+  let S := ∑ m ∈ Finset.Ico (0:ℤ) M, ∑ h ∈ Finset.Ico (0:ℤ) H, a m h
   have hs : (∑ x ∈ A, U x) = (Q*R) • S := by
-    dsimp only [U]
     rw [Finset.sum_comm]
     calc
       _ = ∑ _t ∈ T, S := by
         apply Finset.sum_congr rfl
         intro t ht
         have ht' := Finset.mem_product.mp ht
-        dsimp only [A,S]
         rw [Finset.sum_product]
         exact robertSargos_plane_shift_sum a M H Q R t.1 t.2
           (Finset.mem_range.mp ht'.1) (Finset.mem_range.mp ht'.2)
@@ -70,7 +77,6 @@ theorem robertSargos_plane_averaging (a : ℤ → ℤ → ℂ) (M H Q R : ℕ) :
     norm_num [Int.card_Ico]
     norm_cast
   have hc : (A.card:ℝ) = (((M+Q)*(H+R):ℕ):ℝ) := by
-    dsimp only [A]
     rw [Finset.card_product,Nat.cast_mul,hcm,hch,Nat.cast_mul]
   have ht := norm_sum_sq_le_card_mul_sum_norm_sq A U
   rw [hs,hc,RCLike.norm_nsmul ℂ,nsmul_eq_mul] at ht

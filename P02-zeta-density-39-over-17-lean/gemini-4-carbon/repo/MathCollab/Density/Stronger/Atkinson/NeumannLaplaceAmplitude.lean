@@ -39,7 +39,7 @@ theorem norm_neumannLaplaceAmplitude_le_one (u : ℝ) :
     convert Complex.norm_cpow_real (1 + (u : ℂ) * I) (-(1 / 2 : ℝ)) using 1
     norm_num
   rw [hn]
-  simpa only [Real.one_rpow] using
+  simpa using
     Real.rpow_le_rpow_of_nonpos zero_lt_one hz (by norm_num : -(1 / 2 : ℝ) ≤ 0)
 
 theorem neumann_sqrt_re_ge_one (u : ℝ) :
@@ -91,9 +91,9 @@ theorem norm_neumannLaplaceAmplitude_sub_linear_le (u : ℝ) :
     ring
   have heqNorm : 2 * ‖w‖ * ‖neumannLaplaceAmplitude u - 1 + (u : ℂ) * I / 2‖ =
       ‖w - 1‖ ^ 2 * ‖w + 2‖ := by
-    simpa only [norm_mul, norm_pow, Complex.norm_ofNat] using congrArg norm heq
+    simpa using congrArg norm heq
   have hplus : ‖w + 2‖ ≤ ‖w‖ + 2 := by
-    simpa only [Complex.norm_ofNat] using norm_add_le w 2
+    simpa using norm_add_le w 2
   have hbound : 2 * ‖w‖ * ‖neumannLaplaceAmplitude u - 1 + (u : ℂ) * I / 2‖ ≤
       2 * ‖w‖ * ((3 / 8 : ℝ) * u ^ 2) := by
     rw [heqNorm]

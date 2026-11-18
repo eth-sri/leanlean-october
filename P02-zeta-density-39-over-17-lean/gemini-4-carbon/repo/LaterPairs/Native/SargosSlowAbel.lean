@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.AtkinsonMainPartialSummation
 public import LaterPairs.Native.SargosSlowCharacter
 
@@ -34,7 +43,6 @@ theorem sargos_sum_Ioc_eq_range {A : Type*} [AddCommMonoid A]
   · intro n hn
     rw [Finset.mem_Ioc] at hn
     have hn0 : 0 ≤ n-(N : ℤ)-1 := by omega
-    have hc := Int.toNat_of_nonneg hn0
     refine ⟨(n-(N : ℤ)-1).toNat,Finset.mem_range.mpr (by omega),?_⟩
     omega
   · intro j hj

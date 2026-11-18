@@ -8,76 +8,9 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-
-open scoped BigOperators Classical SchwartzMap
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 namespace SecondPassArithmetic
-open ActualEisensteinCubic
 open FirstPassCubeLabels
 
 variable {ι : Type*} [DecidableEq ι]
@@ -87,9 +20,7 @@ variable {ι : Type*} [DecidableEq ι]
 
 end SecondPassArithmetic
 
-open scoped BigOperators Classical SchwartzMap
 namespace FirstPassCubeLabels
-open ActualEisensteinCubic
 
 variable {ι:Type*} (p:ι→O) (B:Finset ι) (v:ι→ℕ) (ε₁ ε₂:ι→Bool)
 
@@ -98,7 +29,7 @@ end FirstPassCubeLabels
 namespace SecondPassArithmetic
 
 section
-open ActualEisensteinCubic FirstPassCubeLabels
+open FirstPassCubeLabels
 
 namespace CubeCoordinates
 variable {ι:Type*}
@@ -109,7 +40,6 @@ end CubeCoordinates
 end
 section
 
-open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProductNorm actualFirstKernel originalLabelColumn cubeActiveSupport dilationLabel columnLog)
 open ConcreteTraceCRT (eisEmbedding)
 
@@ -123,17 +53,14 @@ end
 
 end
 
-open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProduct dilationLabel)
 open ConcreteTraceCRT (eisEmbedding)
 
 end SecondPassArithmetic
 
 namespace CubicEisenstein
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology ENNReal
-
 open RellichKondrachov.Analysis.FunctionalSpaces.Sobolev.Euclidean
+open scoped ENNReal
 
 local instance : MeasurableSpace EuclideanSpatial := borel EuclideanSpatial
 local instance : BorelSpace EuclideanSpatial := ⟨rfl⟩
@@ -198,8 +125,7 @@ theorem euclidean_C1c_family_precompact (K : Set EuclideanSpatial) (hK : IsCompa
 
 end CubicEisenstein
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff Manifold ENNReal InnerProductSpace
+open scoped Manifold ENNReal InnerProductSpace
 
 namespace CubicEisenstein
 
@@ -254,8 +180,7 @@ lemma kernelGradientToL2_inner (f g : kernelSmoothTests) :
 lemma kernelGradientToL2_norm_sq (f : kernelSmoothTests) :
     ‖kernelGradientToL2 f‖^2=kernelDirichletEnergy f := by
   have hh := kernelGradientToL2_inner f f
-  rw [inner_self_eq_norm_sq_to_K,kernelDirichletForm_self] at hh
-  rw [RCLike.ofReal_eq_complex_ofReal,←Complex.ofReal_pow] at hh
+  rw [inner_self_eq_norm_sq_to_K,kernelDirichletForm_self, RCLike.ofReal_eq_complex_ofReal,←Complex.ofReal_pow] at hh
   exact Complex.ofReal_injective hh
 
 def kernelGradientLinear : kernelSmoothTests →ₗ[ℂ] KernelGradientL2 where
@@ -271,12 +196,6 @@ def kernelGradientLinear : kernelSmoothTests →ₗ[ℂ] KernelGradientL2 where
     filter_upwards [kernelGradientToL2_coe (c•f),kernelGradientToL2_coe f,
       Lp.coeFn_smul c (kernelGradientToL2 f)] with w hcf hf hsmul
     simp only [RingHom.id_apply,hcf,hsmul,Pi.smul_apply,hf,map_smul]
-
-def kernelInitialGradientGraph : Submodule ℂ (KernelQuotientL2 × KernelGradientL2) :=
-  LinearMap.range (kernelSmoothTestsToL2.prod kernelGradientLinear)
-
-def kernelInitialGradient : KernelQuotientL2 →ₗ.[ℂ] KernelGradientL2 :=
-  kernelInitialGradientGraph.toLinearPMap
 
 end CubicEisenstein
 

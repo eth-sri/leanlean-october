@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentHeckeTwist
-open HeckeFamily CenteredMomentHeckeVolume CenteredMomentHeckeCancellation
-open CenteredMomentLattice CenteredMomentCounting CenteredMomentTwist
-open EisensteinSchwartzPoisson
+open HeckeFamily CenteredMomentHeckeVolume CenteredMomentHeckeCancellation CenteredMomentLattice CenteredMomentCounting CenteredMomentTwist EisensteinSchwartzPoisson
 local notation "O" => ActualEisensteinCubic.O
 
 def twistedIdealSum (χ : Character) (W : ℝ → ℂ) (t X : ℝ) : ℂ :=
@@ -92,8 +90,7 @@ theorem twisted_actual_volumeCoefficient_norm_le (η χ ψ : Character) (Q : Ide
     ‖density (fixedPeriod Q) (fixedPeriod_ne_zero Q hQ) ψ χ.modulus * paperRadialFourier (normPowerProfile W a b ha hs hW t) 0‖ ≤
       128 * b * M := by
   let V := normPowerProfile W a b ha hs hW t
-  have hV : Function.support (V : ℝ → ℂ) ⊆ Set.Iic b :=
-    (normPowerProfile_support W a b ha hs hW t).trans (fun _ hx => (hs hx).2)
+  have hV := (normPowerProfile_support W a b ha hs hW t).trans (fun _ hx => (hs hx).2)
   exact norm_linear_coefficient_le (fun X => idealSum χ V X)
     _ (128 * b * M) (volumeControl Q χ V) (volumeControl_nonneg Q χ V)
     (fun X hX => actual_induced_volume η χ ψ Q hQ hQψ hind m A₀ z hmLam hm2 hrow V b X hX hV)
@@ -130,8 +127,6 @@ theorem actual_twisted_rectangle_saving
   let m₂ := fun X : ℝ => (X : ℂ) ^ (1 + Complex.I * t) * v₂
   have hE₁ := volumeControl_nonneg Q χ V₁
   have hE₂ := volumeControl_nonneg Q χ V₂
-  have hE : 0 ≤ E := add_nonneg hE₁ hE₂
-  have hC : 0 ≤ C := mul_nonneg (by norm_num) (add_nonneg (mul_nonneg hb₁ hM₁) (mul_nonneg hb₂ hM₂))
   have hC₁ : 128 * b₁ * M₁ ≤ C := by dsimp only [C]; nlinarith [mul_nonneg hb₂ hM₂]
   have hC₂ : 128 * b₂ * M₂ ≤ C := by dsimp only [C]; nlinarith [mul_nonneg hb₁ hM₁]
   have he₁ (X : ℝ) (hX : L ≤ X) : ‖twistedIdealSum χ W₁ t X - m₁ X‖ ≤ E := by
@@ -152,8 +147,7 @@ theorem actual_twisted_rectangle_saving
     simp only [Complex.add_re, Complex.one_re, Complex.mul_re, Complex.I_re, zero_mul,
       Complex.ofReal_im, mul_zero, sub_self, add_zero, Real.rpow_one]
     nlinarith [mul_le_mul_of_nonneg_left hv (le_trans hL.le hX)]
-  have habs₂ (X : ℝ) (hX : L ≤ X) : ‖twistedIdealSum χ W₂ t X‖ ≤ C * X :=
-    (twistedIdealSum_absolute χ W₂ a₂ b₂ M₂ ha₂ hb₂ hM₂ hs₂ hW₂ hbound₂ t X
+  have habs₂ (X : ℝ) (hX : L ≤ X) := (twistedIdealSum_absolute χ W₂ a₂ b₂ M₂ ha₂ hb₂ hM₂ hs₂ hW₂ hbound₂ t X
       (lt_of_lt_of_le hL hX)).trans (mul_le_mul_of_nonneg_right hC₂ (le_trans hL.le hX))
   have hmain : m₁ X₁ * m₂ X₂ = m₁ Y₁ * m₂ Y₂ := by
     have hpow := CenteredMoment.volume_products_eq
@@ -161,7 +155,7 @@ theorem actual_twisted_rectangle_saving
       (le_trans hL.le hY₁) (le_trans hL.le hY₂) (hprodX.trans hprodY.symm)
     simpa only [CenteredMoment.volumeTerm, one_mul, m₁, m₂] using hpow
   exact CenteredMoment.centered_saving_of_approx _ _ _ _ _ _ _ _
-    X₁ X₂ Y₁ Y₂ T L C E hmain hC hE (he₁ X₁ hX₁) (he₂ X₂ hX₂)
+    X₁ X₂ Y₁ Y₂ T L C E hmain (mul_nonneg (by norm_num) (add_nonneg (mul_nonneg hb₁ hM₁) (mul_nonneg hb₂ hM₂))) (add_nonneg hE₁ hE₂) (he₁ X₁ hX₁) (he₂ X₂ hX₂)
     (he₁ Y₁ hY₁) (he₂ Y₂ hY₂) (habs₂ X₂ hX₂) (hmain₁ X₁ hX₁)
     (habs₂ Y₂ hY₂) (hmain₁ Y₁ hY₁) hL hX₁ hX₂ hY₁ hY₂ hprodX hprodY
 

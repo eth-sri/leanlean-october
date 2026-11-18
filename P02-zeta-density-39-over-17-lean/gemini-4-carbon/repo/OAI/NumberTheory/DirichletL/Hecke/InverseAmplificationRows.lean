@@ -1,5 +1,6 @@
 module
-public import OAI.NumberTheory.DirichletL.Hecke.DetectorRowSpecialization
+public import OAI.NumberTheory.DirichletL.Hecke.RowClosure
+public import OAI.NumberTheory.DirichletL.Hecke.Dyadic
 
 @[expose] public section
 
@@ -62,7 +63,7 @@ theorem rowMap_injective : Function.Injective rowMap := by
     (Ideal.span_singleton_eq_bot.not.mpr p.1.property.1)
     (Ideal.span_singleton_eq_bot.not.mpr q.1.property.1)
     p.2.property q.2.property p.1.property.2 q.1.property.2 he
-  have ha : p.2=q.2 := Subtype.ext hd.2
+  have ha := Subtype.ext hd.2
   apply Prod.ext
   · apply Subtype.ext
     change p.1.val*(ConcretePrimeRowBridge.idealGenerator p.2.val)^6=

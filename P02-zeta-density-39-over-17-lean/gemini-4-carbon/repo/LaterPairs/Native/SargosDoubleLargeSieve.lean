@@ -2,7 +2,16 @@ module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import MathCollab.Density.Stronger.Atkinson.FiniteWeightedGram
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.SargosDualTentKernel
 public import LaterPairs.Native.SargosPlanarWindow
 
@@ -87,9 +96,6 @@ theorem integral_sargosTentPacket {a b : ℝ} (ha : 0 < a) (hb : 0 < b) (c d : �
     (fun y : ℝ => sargosRealTent b (y-d)),
     integral_sargosRealTent_shift ha,integral_sargosRealTent_shift hb]
 
-theorem sargosTentPacket_nonneg (a b c d : ℝ) (p : ℝ × ℝ) :
-    0 ≤ sargosTentPacket a b c d p :=
-  mul_nonneg (sargosRealTent_nonneg _ _) (sargosRealTent_nonneg _ _)
 
 theorem sargosTentPacket_le_one {a b : ℝ} (ha : 0 < a) (hb : 0 < b)
     (c d : ℝ) (p : ℝ × ℝ) : sargosTentPacket a b c d p ≤ 1 := by
@@ -179,7 +185,7 @@ theorem sargosTentCloud_sq_pointwise {ι : Type*} (S : Finset ι)
         sargosTentPacket a b (x ij.1) (y ij.1) p := by
   classical
   let w := fun i => sargosTentPacket a b (x i) (y i) p
-  have hw i : 0 ≤ w i := sargosTentPacket_nonneg _ _ _ _ _
+  have hw i : 0 ≤ w i := (mul_nonneg (sargosRealTent_nonneg _ _) (sargosRealTent_nonneg _ _))
   have hw1 i : w i ≤ 1 := sargosTentPacket_le_one ha hb _ _ _
   have hn : ‖sargosTentCloud S z x y a b p‖ ≤ ∑ i ∈ S, w i := by
     apply (norm_sum_le _ _).trans
@@ -217,7 +223,6 @@ theorem sargosTentCloud_energy_le_nearPairs {ι : Type*} (S : Finset ι)
   have hW : Integrable W (volume.prod volume) :=
     integrable_finsetSum _ (fun ij _ => integrable_sargosTentPacket ha hb _ _)
   have he : (∫ p : ℝ × ℝ, W p ∂(volume.prod volume)) = a*b*(P.card:ℝ) := by
-    dsimp only [W]
     rw [integral_finsetSum _ (fun ij _ => integrable_sargosTentPacket ha hb _ _)]
     simp only [integral_sargosTentPacket ha hb,Finset.sum_const,nsmul_eq_mul]
     ring
@@ -229,10 +234,7 @@ theorem sargosTentCloud_energy_le_nearPairs {ι : Type*} (S : Finset ι)
       rw [Real.norm_eq_abs,abs_of_nonneg (sq_nonneg _)]
       exact hpt p)
   refine ⟨hi,?_⟩
-  calc
-    _ ≤ ∫ p : ℝ × ℝ, W p ∂(volume.prod volume) :=
-      integral_mono_ae hi hW (Filter.Eventually.of_forall hpt)
-    _ = _ := he
+  exact (integral_mono_ae hi hW (Filter.Eventually.of_forall hpt)).trans_eq (he)
 
 theorem sargosTentCloud_fourier_pairing {ι κ : Type*}
     (S : Finset ι) (T : Finset κ) (z : ι → ℂ) (w : κ → ℂ)
@@ -274,10 +276,8 @@ private theorem sargos_norm_integral_mul_sq {α : Type*} [MeasurableSpace α]
     (hiG : Integrable (fun p => ‖G p‖^2) μ) :
     ‖∫ p, F p*G p ∂μ‖^2 ≤
       (∫ p, ‖F p‖^2 ∂μ)*(∫ p, ‖G p‖^2 ∂μ) := by
-  have hF2 := (memLp_two_iff_integrable_sq_norm hF).mpr hiF
-  have hG2 := (memLp_two_iff_integrable_sq_norm hG).mpr hiG
   have hh := integral_mul_norm_le_Lp_mul_Lq Real.HolderConjugate.two_two
-    (by simpa using hF2) (by simpa using hG2)
+    (by simpa using ((memLp_two_iff_integrable_sq_norm hF).mpr hiF)) (by simpa using ((memLp_two_iff_integrable_sq_norm hG).mpr hiG))
   have hn := norm_integral_le_integral_norm (μ := μ) (fun p => F p*G p)
   simp only [norm_mul] at hn
   have hs :
@@ -285,12 +285,9 @@ private theorem sargos_norm_integral_mul_sq {α : Type*} [MeasurableSpace α]
         Real.sqrt (∫ p, ‖F p‖^2 ∂μ)*Real.sqrt (∫ p, ‖G p‖^2 ∂μ) := by
     apply hn.trans
     simpa only [Real.rpow_two,← Real.sqrt_eq_rpow] using hh
-  calc
-    _ ≤ (Real.sqrt (∫ p, ‖F p‖^2 ∂μ)*Real.sqrt (∫ p, ‖G p‖^2 ∂μ))^2 :=
-      pow_le_pow_left₀ (norm_nonneg _) hs 2
-    _ = _ := by
+  exact (pow_le_pow_left₀ (norm_nonneg _) hs 2).trans_eq (by
       rw [mul_pow,Real.sq_sqrt (integral_nonneg (fun _ => sq_nonneg _)),
-        Real.sq_sqrt (integral_nonneg (fun _ => sq_nonneg _))]
+        Real.sq_sqrt (integral_nonneg (fun _ => sq_nonneg _))])
 
 theorem sargosTentCloud_zero_outside {ι : Type*} (S : Finset ι)
     (z : ι → ℂ) (x y : ι → ℝ) {a b c d δ lambda : ℝ}
@@ -346,9 +343,8 @@ theorem sargos_tent_weighted_bilinear_bound {ι κ : Type*}
       dsimp [U,D,L]
       congr 2 <;> ring
     rw [heU] at hp
-    have hf := sargosTentCloud_zero_outside S z x y ha hb hx hy p hp
     change F p*G p = 0
-    rw [show F p = 0 from hf,zero_mul]
+    rw [show F p = 0 from (sargosTentCloud_zero_outside S z x y ha hb hx hy p hp),zero_mul]
   obtain ⟨hiF,hFB⟩ := sargosTentCloud_energy_le_nearPairs S z x y ha hb hz
   have hiG : Integrable (fun p : ℝ × ℝ => ‖G p‖^2) ν := by
     simpa only [ν,U,Measure.prod_restrict] using
@@ -397,17 +393,16 @@ theorem sargos_double_large_sieve_rectangle {ι κ : Type*}
   let K := fun j => sargosSincKernel a (u j)*sargosSincKernel b (v j)
   let w' := fun j => (t:ℂ)*w j/(K j:ℂ)
   have ht : 0 < t := by dsimp [t]; positivity
-  have hK j (hj : j ∈ T) : t ≤ K j :=
-    sargosSincKernel_rectangle_lower ha hb (hu j hj) (hv j hj)
+  have hK j (hj : j ∈ T) := sargosSincKernel_rectangle_lower ha hb (hu j hj) (hv j hj)
   have hw' : ∀ j ∈ T, ‖w' j‖ ≤ 1 := by
     intro j hj
-    have hk : 0 < K j := ht.trans_le (hK j hj)
+    have hk := ht.trans_le (hK j hj)
     dsimp only [w']
     rw [norm_div,norm_mul,Complex.norm_real,Complex.norm_real,
       Real.norm_eq_abs,Real.norm_eq_abs,abs_of_pos ht,abs_of_pos hk]
     apply (div_le_one hk).mpr
     exact (mul_le_mul_of_nonneg_left (hw j hj) ht.le).trans
-      (by simpa only [mul_one] using hK j hj)
+      (by simpa using hK j hj)
   have hbound := sargos_tent_weighted_bilinear_bound
     S T z w' x y u v ha hb hδ hlambda hz hw' hx hy
   have he :
@@ -459,7 +454,6 @@ theorem sargos_double_large_sieve_sum_norm {ι κ : Type*}
     intro i _
     calc
       _ = z i*A i := by
-        dsimp only [A]
         rw [Finset.mul_sum]
         apply Finset.sum_congr rfl
         intro j _
@@ -525,7 +519,7 @@ theorem sargos_integer_nearPairs_subset {ι : Type*} (S : Finset ι)
   have h : |((u p.1-u p.2:ℤ):ℝ)| < 1 := by
     rw [Int.cast_sub]
     exact hp'.2.1.trans_lt hA
-  have hi : |u p.1-u p.2| < (1:ℤ) := by exact_mod_cast h
+  have hi : |u p.1-u p.2| < 1 := by exact_mod_cast h
   have hi' := abs_lt.mp hi
   omega
 
@@ -614,17 +608,14 @@ theorem sargos_double_large_sieve_family {ρ ι κ : Type*}
   let C := 16384*(1+X₁)*(1+mu*X₂)*
     ((sargosPeriodicNearPairs S x y (1/X₁) (1/X₂)).card:ℝ)
   let N := fun r => ((sargosIntegerNearPairs (T r) (u r) (v r) (1/mu)).card:ℝ)
-  have hbound r (hr : r ∈ R) : (A r)^2 ≤ C*N r :=
-    sargos_double_large_sieve_integer S (T r) (w r) x y (u r) (v r)
+  have hbound r (hr : r ∈ R) := sargos_double_large_sieve_integer S (T r) (w r) x y (u r) (v r)
       hX₁ hX₂ hmu (hw r hr) hy (hu r hr) (hv r hr)
-  have hcs := sq_sum_le_card_mul_sum_sq (s := R) (f := A)
   calc
-    _ ≤ (R.card:ℝ)*∑ r ∈ R, (A r)^2 := hcs
+    _ ≤ (R.card:ℝ)*∑ r ∈ R, (A r)^2 := (sq_sum_le_card_mul_sum_sq (s := R) (f := A))
     _ ≤ (R.card:ℝ)*∑ r ∈ R, C*N r :=
       mul_le_mul_of_nonneg_left (Finset.sum_le_sum hbound) (Nat.cast_nonneg _)
     _ = _ := by
       rw [← Finset.mul_sum]
-      dsimp only [C,N]
       ring
 
                                                                                      
@@ -654,8 +645,7 @@ theorem sargos_double_large_sieve_partition {ρ ι κ : Type*}
   let N := fun k => ∑ r ∈ R,
     ((sargosIntegerNearPairs ((T r).filter (fun j => label r j = k))
       (u r) (v r) (1/mu)).card:ℝ)
-  have hb (k : ℕ) : (A k)^2 ≤ C*N k :=
-    sargos_double_large_sieve_family R S (fun r => (T r).filter (fun j => label r j = k))
+  have hb (k : ℕ) := sargos_double_large_sieve_family R S (fun r => (T r).filter (fun j => label r j = k))
       w x y u v hX₁ hX₂ hmu
       (fun r hr j hj => hw r hr j (Finset.mem_filter.mp hj).1) hy
       (fun r hr j hj => hu r hr j (Finset.mem_filter.mp hj).1)
@@ -678,7 +668,6 @@ theorem sargos_double_large_sieve_partition {ρ ι κ : Type*}
         rw [← he]
         exact norm_sum_le _ _
       _ = _ := by
-        dsimp only [A]
         simp_rw [Finset.sum_comm (s := S) (t := Finset.range J)]
         rw [Finset.sum_comm]
   calc
@@ -686,13 +675,12 @@ theorem sargos_double_large_sieve_partition {ρ ι κ : Type*}
       pow_le_pow_left₀
         (Finset.sum_nonneg (fun _ _ => Finset.sum_nonneg (fun _ _ => norm_nonneg _))) hs 2
     _ ≤ (J:ℝ)*∑ k ∈ Finset.range J, (A k)^2 := by
-      simpa only [Finset.card_range] using sq_sum_le_card_mul_sum_sq
+      simpa using sq_sum_le_card_mul_sum_sq
         (s := Finset.range J) (f := A)
     _ ≤ (J:ℝ)*∑ k ∈ Finset.range J, C*N k :=
       mul_le_mul_of_nonneg_left (Finset.sum_le_sum (fun k _ => hb k)) (Nat.cast_nonneg _)
     _ = _ := by
       rw [← Finset.mul_sum]
-      dsimp only [C,N]
       ring
 
 end TaoTrudgianYang2025

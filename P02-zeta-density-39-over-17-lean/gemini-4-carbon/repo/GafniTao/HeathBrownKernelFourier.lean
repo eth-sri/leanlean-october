@@ -28,8 +28,7 @@ theorem heathBrownHat_eq_fordTent (B x : ℝ) :
   unfold heathBrownHat fordTent
   rw [heathBrownDistanceToInteger_eq_unitAddCircle_norm]
   simp only [div_eq_mul_inv]
-  rw [mul_comm B⁻¹ ‖(x : UnitAddCircle)‖]
-  rw [max_comm]
+  rw [mul_comm B⁻¹ ‖(x : UnitAddCircle)‖, max_comm]
 
 theorem heathBrownHatFourierCoefficient_eq_fordTent
     {B : ℝ} (hB : 0 < B) (r : ℤ) :
@@ -63,8 +62,7 @@ theorem summable_norm_heathBrownHatFourierTerm
     Summable (fun r : ℤ =>
       ‖(heathBrownHatFourierCoefficient B r : ℂ) *
         fordAdditiveCharacter ((r : ℝ) * x)‖) := by
-  have hs := summable_fordTentFourierCoefficient hB
-  convert hs.norm using 1
+  convert (summable_fordTentFourierCoefficient hB).norm using 1
   funext r
   rw [heathBrownHatFourierCoefficient_eq_fordTent hB, norm_mul]
   unfold fordAdditiveCharacter

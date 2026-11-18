@@ -8,14 +8,10 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic IdealMobiusDivisorSum
+open scoped BigOperators Classical
 namespace SevenEighths.InverseInitialEnergyCallerAllSlots
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialKernelBridge
-open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
-open InverseInitialEnergyCallerCanonical InverseInitialEnergyCallerOpposite InverseInitialProfile
-open InverseInitialEnergyCallerAllocation InverseInitialEnergyCallerAssigned
-open InverseInitialQuotientGeometry InverseInitialClippedColumns InverseInitialEnergyCallerBranch
+open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialKernelBridge InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource InverseInitialEnergyCallerCanonical InverseInitialEnergyCallerOpposite InverseInitialProfile InverseInitialEnergyCallerAllocation InverseInitialEnergyCallerAssigned InverseInitialQuotientGeometry InverseInitialClippedColumns InverseInitialEnergyCallerBranch
 local notation "Eis"=>ActualEisensteinCubic.O
 variable {ι σ:Type*} [DecidableEq ι] [DecidableEq σ]
   (p:ι→Eis)(hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
@@ -85,7 +81,7 @@ theorem all_slots_bound (N:ℕ)(U π:ℝ)(hU:0≤U)(hπ:0<π) :
   refine ⟨C*4^N,by positivity,?_⟩
   intro ι σ _ _ p hp _ hcop hg hinj hpr hc S u hdiv hu pool Ψ hΨ j slots hslots lists a ha ω₁ ω₂
     Z D B v θ H R hZ hR hn ρ z w hw labels rows hlabels hneg hchild F E hE hmoment
-  have hZp : 0<Z := zero_lt_one.trans_le hZ
+  have hZp := zero_lt_one.trans_le hZ
   let bound := C*‖secondRayCoefficient ρ‖*Z^(F+R+π)*E
   have hb (J₁:Finset σ)(hJ₁:J₁∈slots.powerset)(J₂:Finset σ)(hJ₂:J₂∈slots.powerset) :
       ‖∑x∈S,w x*allocatedMode p hp hcop hg u pool Ψ j slots J₁ J₂ lists a ω₁ ω₂

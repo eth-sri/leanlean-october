@@ -83,13 +83,12 @@ theorem exponentialTerm_tail (χ : Character) (V : ℝ → ℂ) (D : ℝ) (hD : 
     (hVzero : ∀ x : ℝ, 2 ≤ x → V x = 0) (s : ℂ) (Y : ℝ) (I : Ideal O) :
     exponentialTerm χ V D s Y I * (1 - V (2 * (Ideal.absNorm I : ℝ) / D)) =
       exponentialTerm χ V D s Y I - if I = 1 then Complex.exp (-1 / (Y : ℂ)) else 0 := by
-  have h := cutoffCoefficient_tail V D hD hV hVzero I
   unfold exponentialTerm
   calc
     _ = (cutoffCoefficient V D I * (1 - V (2 * (Ideal.absNorm I : ℝ) / D))) *
         IdealEuler.weighted (idealCoeff χ) s I * Complex.exp (-((Ideal.absNorm I : ℝ) : ℂ) / (Y : ℂ)) := by ring
     _ = _ := by
-      rw [h]
+      rw [(cutoffCoefficient_tail V D hD hV hVzero I)]
       by_cases hI : I = 1
       · subst I
         simp only [ite_true, map_one, Nat.cast_one, Complex.ofReal_one, mul_one]
@@ -104,7 +103,7 @@ theorem exponential_sum_tail (χ : Character) (V : ℝ → ℂ) (D : ℝ) (hD : 
       (∑' I : Ideal O, exponentialTerm χ V D s Y I) - Complex.exp (-1 / (Y : ℂ)) := by
   simp_rw [exponentialTerm_tail χ V D hD hV hVzero s Y]
   rw [hsum.tsum_sub ((hasSum_ite_eq (1 : Ideal O) (Complex.exp (-1 / (Y : ℂ)))).summable)]
-  simp only [tsum_ite_eq]
+  simp
 
 end SevenEighths.HeckeDetectorWitnessArithmetic
 

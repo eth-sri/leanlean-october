@@ -57,7 +57,7 @@ theorem detectingPolynomial_norm_le {N : ℕ} {a : ℕ → ℂ}
     ‖detectingPolynomial N a t‖ ≤ N := by
   calc
     _ ≤ ∑ n ∈ Finset.Ioc N (2*N), ‖a n * dirichletPhase ((n : ℝ)/N) t‖ := norm_sum_le _ _
-    _ ≤ ∑ n ∈ Finset.Ioc N (2*N), (1 : ℝ) := by
+    _ ≤ ∑ n ∈ Finset.Ioc N (2*N), 1 := by
       apply Finset.sum_le_sum
       intro n hn
       simpa only [norm_mul, norm_dirichletPhase, mul_one] using ha n hn

@@ -17,8 +17,7 @@ theorem central_correction_threshold (eps : ℝ) (heps : 0<eps) :
   have hh : Tendsto (fun Q : ℝ=>198*Q^(-10*eps)) atTop (nhds 0) := by
     simpa only [mul_zero,neg_mul] using
       (tendsto_rpow_neg_atTop (show 0<10*eps by positivity)).const_mul (198:ℝ)
-  have he := hh.eventually (eventually_lt_nhds (by norm_num : (0:ℝ)<1/2))
-  obtain ⟨Q0,hQ0⟩ := Filter.eventually_atTop.mp he
+  obtain ⟨Q0,hQ0⟩ := Filter.eventually_atTop.mp (hh.eventually (eventually_lt_nhds (by norm_num : (0:ℝ)<1/2)))
   refine ⟨max 480 Q0,le_max_left _ _,?_⟩
   intro Q hQ
   exact (hQ0 Q ((le_max_right _ _).trans hQ)).le

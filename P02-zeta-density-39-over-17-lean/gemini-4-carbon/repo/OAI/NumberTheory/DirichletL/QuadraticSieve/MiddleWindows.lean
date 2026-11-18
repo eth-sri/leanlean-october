@@ -9,78 +9,14 @@ noncomputable section
 
 namespace CanonicalQuadraticSieve
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 
 section
 
-open scoped BigOperators Classical SchwartzMap
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
+open EisensteinSchwartzPoisson
 
 variable {m n p : Type} [Fintype m] [Fintype n] [Fintype p]
   [DecidableEq m] [DecidableEq n] [DecidableEq p]
@@ -182,15 +118,14 @@ theorem HasSieveExponent.dual_middle_window
 end
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson FourierBridge
+open EisensteinSchwartzPoisson FourierBridge
 
 theorem large_principal_scale_shape (X N Q D V : ℝ) (hD : 0 < D)
     (hcut : X * N ≤ V * D) :
     (X / D) * (N + Q * D) ≤ V + X * Q := by
-  have hh : X * N / D ≤ V := (div_le_iff₀ hD).mpr hcut
   calc
     _ = X * N / D + X * Q := by field_simp
-    _ ≤ _ := add_le_add hh le_rfl
+    _ ≤ _ := add_le_add ((div_le_iff₀ hD).mpr hcut) le_rfl
 
 variable {m n p : Type} [Fintype m] [Fintype n] [Fintype p]
   [DecidableEq m] [DecidableEq n] [DecidableEq p]
@@ -246,14 +181,13 @@ theorem HasSieveExponent.large_principal_correction {α : ℝ} (hexp : HasSieveE
         (V + Real.sqrt M * B ^ (α - 1 / 2)) := by
   have hb := principalCorrectionAt_bound ε hε S T D₁ D₂ B N M hD₁ hD₂ hB hN hM hS hT
     rows left right hr hl hri hrows hleft hright a b
-  have hc := divisor_cost_with_constant hexp deltaLoss hδ ε hε B N D₁ D₂ hB hN hD₁ hD₂ hD₁N hD₂N a b
   have hf := divisorEnergyFactor_nonneg ε hε N a b
   have hconst := (divisorExponentConstant_pos hexp deltaLoss hδ).le
   calc
     _ ≤ (2 * Real.sqrt (M / B) / (D₁ * D₂)) *
         (divisorEnergyFactor ε hε N a b *
           (divisorExponentConstant hexp deltaLoss hδ * (B * N) ^ deltaLoss * (N + B ^ α * (D₁ * D₂)))) :=
-      hb.trans (mul_le_mul_of_nonneg_left hc (by positivity))
+      hb.trans (mul_le_mul_of_nonneg_left (divisor_cost_with_constant hexp deltaLoss hδ ε hε B N D₁ D₂ hB hN hD₁ hD₂ hD₁N hD₂N a b) (by positivity))
     _ = (2 * divisorEnergyFactor ε hε N a b * (divisorExponentConstant hexp deltaLoss hδ * (B * N) ^ deltaLoss)) *
         ((Real.sqrt (M / B) / (D₁ * D₂)) * (N + B ^ α * (D₁ * D₂))) := by ring
     _ ≤ (2 * divisorEnergyFactor ε hε N a b * (divisorExponentConstant hexp deltaLoss hδ * (B * N) ^ deltaLoss)) *
@@ -264,7 +198,7 @@ theorem HasSieveExponent.large_principal_correction {α : ℝ} (hexp : HasSieveE
 end
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
+open EisensteinSchwartzPoisson
 
 variable {m n p : Type} [Fintype m] [Fintype n] [Fintype p]
   [DecidableEq m] [DecidableEq n] [DecidableEq p]
@@ -395,7 +329,7 @@ theorem HasSieveExponent.original_middle_pool {α : ℝ} (hexp : HasSieveExponen
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
+open EisensteinSchwartzPoisson
 
 variable {m n p : Type} [Fintype m] [Fintype n] [Fintype p]
   [DecidableEq m] [DecidableEq n] [DecidableEq p]
@@ -518,8 +452,7 @@ theorem HasSieveExponent.dual_middle_pool {α : ℝ} (hexp : HasSieveExponent α
 
 end
 
-open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
+open EisensteinSchwartzPoisson
 
 theorem norm_double_sum_real_factor {n p : Type*} [Fintype n] [Fintype p]
     (u : n → p → ℂ) (z : ℂ) (c : ℝ) (hc : 0 ≤ c) :
@@ -566,8 +499,7 @@ theorem originalProductDivisorMiddleAt_le_window
   have hp (i : m) := originalColumnSum_divisor_rectangles K S T rows left right a b i
     hleft hright hS hT P (fun d i _ _ => originalPrincipalKernel W rows M h d i)
   apply (Finset.sum_le_sum (fun i _ => hp i)).trans_eq
-  rw [originalMiddleWindowAt_eq_finset]
-  rw [Finset.sum_comm]
+  rw [originalMiddleWindowAt_eq_finset, Finset.sum_comm]
   apply Finset.sum_congr rfl
   intro D hD
   rw [Finset.sum_comm]

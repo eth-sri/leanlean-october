@@ -40,8 +40,7 @@ theorem shortDetectorCoefficient_norm_le {T : ℝ} (hT : 0 < T) (n : ℕ) :
   unfold shortDetectorCoefficient
   split_ifs with h
   · rw [norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
-    have he : Real.exp (-(n : ℝ)/(T^(1/2:ℝ))) ≤ 1 := Real.exp_le_one_iff.mpr (div_nonpos_of_nonpos_of_nonneg (neg_nonpos.mpr (Nat.cast_nonneg n)) (Real.rpow_pos_of_pos hT (1/2:ℝ)).le)
-    exact (mul_le_mul (mollifierCoefficient_norm_le _ _) he (by positivity) (by positivity)).trans_eq (mul_one _)
+    exact (mul_le_mul (mollifierCoefficient_norm_le _ _) (Real.exp_le_one_iff.mpr (div_nonpos_of_nonpos_of_nonneg (neg_nonpos.mpr (Nat.cast_nonneg n)) (Real.rpow_pos_of_pos hT (1/2)).le)) (by positivity) (by positivity)).trans_eq (mul_one _)
   · simp
 
 theorem shortDetectorX_one_le {T : ℝ} (hT : 1 ≤ T) : 1 ≤ (2*T^((100:ℝ)⁻¹)) := by

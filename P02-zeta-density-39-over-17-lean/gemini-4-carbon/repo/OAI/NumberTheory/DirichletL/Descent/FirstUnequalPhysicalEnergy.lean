@@ -7,9 +7,8 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstUnequalEnergy
 namespace OAI
 
 namespace SevenEighths.InverseMoment
+open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion JointLogSeparation FourierBridge MeasureTheory
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion
-open JointLogSeparation FourierBridge MeasureTheory
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι κ : Type*} [DecidableEq ι]
@@ -65,8 +64,7 @@ theorem actual_first_family_two_energies (hp : ∀ i,p i ≠ 0)
     ring_nf
     exact Real.exp_zero
   have hn' := congrArg (fun a : ℝ => Real.exp ((9/2:ℝ)*L)*a) hn
-  rw [←mul_assoc,hexp,one_mul] at hn'
-  rw [←mul_assoc,←div_eq_mul_inv] at hn'
+  rw [←mul_assoc,hexp,one_mul, ←mul_assoc,←div_eq_mul_inv] at hn'
   rw [hn']
   exact mul_le_mul_of_nonneg_left hb (by have := firstRootScale_pos s hs; positivity)
 

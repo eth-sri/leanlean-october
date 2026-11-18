@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.ExponentPairShiftDistanceSum
 
 @[expose] public section
@@ -35,7 +44,7 @@ theorem interval_weyl_differencing_sum
   let s := Ico (-(H : ℤ)) (N : ℤ)
   let b : ℤ → ℕ → ℂ := fun n h => paddedShift a N n h
   let u : ℤ → ℂ := fun n => ∑ h ∈ range H, b n h
-  let S : ℂ := ∑ n ∈ Ico (0 : ℤ) N, a n
+  let S := ∑ n ∈ Ico (0 : ℤ) N, a n
   have hsum : ∑ n ∈ s, u n = H • S := by
     dsimp [u,b,s]
     rw [sum_comm]
@@ -91,10 +100,7 @@ theorem interval_weyl_differencing_sum
       (sum_shift_distance_row_le C N (mem_range.mp hh) hC)
   have htotal : (∑ h ∈ range H, ∑ k ∈ range H, ∑ n ∈ s, ⟪b n h,b n k⟫_ℝ) ≤
       (H : ℝ)*N+2*H*∑ r ∈ Icc 1 (H-1), C r := by
-    calc
-      _ ≤ ∑ _h ∈ range H, ((N : ℝ)+2*∑ r ∈ Icc 1 (H-1), C r) :=
-        sum_le_sum hrow
-      _ = _ := by simp only [sum_const,card_range,nsmul_eq_mul]; ring
+    exact (sum_le_sum hrow).trans_eq (by simp only [sum_const,card_range,nsmul_eq_mul]; ring)
   have hcard : (s.card : ℝ) = ((N+H : ℕ) : ℝ) := by
     dsimp [s]
     norm_num [Int.card_Ico]

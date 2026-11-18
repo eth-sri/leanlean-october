@@ -116,7 +116,7 @@ lemma gaussian_selected_completed_integrable {ι : Type*} [Fintype ι]
   let hf := correctedSummand_fixed_finite S D Ψ T hT
   have hz (p : Id×Id) (hp : p∉hf.toFinset) :
       correctedSummand S D Ψ gaussianFixedWindow T p.1 p.2=0 := by
-    simpa only [Set.Finite.mem_toFinset,Function.mem_support,not_not] using hp
+    simpa using hp
   have hr (t : ℝ) : correctedCompletedT S D Ψ
       (CompletedHeight.normTwistedSource gaussianFixedWindow t) T=
       ∑p∈hf.toFinset,correctedSummand S D Ψ
@@ -142,22 +142,22 @@ theorem gaussian_selected_completed {ι : Type*} [Fintype ι]
         (CompletedHeight.normTwistedSource gaussianFixedWindow t) ((2:ℝ)^j)*
         (∏i,W i (q i)*logPhase (-t) (Real.log (q i)))*
           gaussianJointDensity V hV ((2:ℝ)^j/Z) t := by
-  let hf := correctedSummand_fixed_finite S D Ψ ((2:ℝ)^j) (by positivity)
+  let hf := correctedSummand_fixed_finite S D Ψ (2^j) (by positivity)
   have hz (p : Id×Id) (hp : p∉hf.toFinset) :
-      correctedSummand S D Ψ gaussianFixedWindow ((2:ℝ)^j) p.1 p.2=0 := by
-    simpa only [Set.Finite.mem_toFinset,Function.mem_support,not_not] using hp
-  have hl : correctedCompletedT S D Ψ (gaussianDyadicProfile (Z*∏i,q i) j) ((2:ℝ)^j)=
-      ∑p∈hf.toFinset,correctedSummand S D Ψ (gaussianDyadicProfile (Z*∏i,q i) j) ((2:ℝ)^j) p.1 p.2 := by
+      correctedSummand S D Ψ gaussianFixedWindow (2^j) p.1 p.2=0 := by
+    simpa using hp
+  have hl : correctedCompletedT S D Ψ (gaussianDyadicProfile (Z*∏i,q i) j) (2^j)=
+      ∑p∈hf.toFinset,correctedSummand S D Ψ (gaussianDyadicProfile (Z*∏i,q i) j) (2^j) p.1 p.2 := by
     exact tsum_eq_sum (fun p hp=>by rw [correctedSummand_gaussian_factor,hz p hp,mul_zero])
   have hr (t : ℝ) : correctedCompletedT S D Ψ
-      (CompletedHeight.normTwistedSource gaussianFixedWindow t) ((2:ℝ)^j)=
+      (CompletedHeight.normTwistedSource gaussianFixedWindow t) (2^j)=
       ∑p∈hf.toFinset,correctedSummand S D Ψ
-        (CompletedHeight.normTwistedSource gaussianFixedWindow t) ((2:ℝ)^j) p.1 p.2 := by
+        (CompletedHeight.normTwistedSource gaussianFixedWindow t) (2^j) p.1 p.2 := by
     exact tsum_eq_sum (fun p hp=>by rw [correctedSummand_normTwisted,hz p hp,mul_zero])
   have hi (p : Id×Id) : Integrable (fun t : ℝ=>
-      correctedSummand S D Ψ (CompletedHeight.normTwistedSource gaussianFixedWindow t) ((2:ℝ)^j) p.1 p.2*
+      correctedSummand S D Ψ (CompletedHeight.normTwistedSource gaussianFixedWindow t) (2^j) p.1 p.2*
         (∏i,W i (q i)*logPhase (-t) (Real.log (q i)))*
-          gaussianJointDensity V hV ((2:ℝ)^j/Z) t) := by
+          gaussianJointDensity V hV (2^j/Z) t) := by
     simp_rw [correctedSummand_normTwisted]
     exact gaussian_slot_integrable W q _ _ _
   rw [hl,Finset.mul_sum]

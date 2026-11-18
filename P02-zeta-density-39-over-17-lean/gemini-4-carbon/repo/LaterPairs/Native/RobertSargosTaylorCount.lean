@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.RobertSargosSevenCount
 public import LaterPairs.Native.RobertSargosTaylorSystem
 
@@ -27,11 +36,9 @@ theorem robertSargos_taylor_remainder_le {R H r h : ℝ}
     (hr : |r| ≤ R) (hh : |h| ≤ 2*H) :
     |r*h^2+r^2*h| ≤ 6*R*H^2 := by
   have hr2 : r^2 ≤ R^2 := by
-    have ht := sq_le_sq₀ (abs_nonneg r) hR |>.mpr hr
-    simpa only [sq_abs] using ht
+    simpa using (sq_le_sq₀ (abs_nonneg r) hR |>.mpr hr)
   have hh2 : h^2 ≤ (2*H)^2 := by
-    have ht := sq_le_sq₀ (abs_nonneg h) (by positivity : 0 ≤ 2*H) |>.mpr hh
-    simpa only [sq_abs] using ht
+    simpa using (sq_le_sq₀ (abs_nonneg h) (by positivity : 0 ≤ 2*H) |>.mpr hh)
   have hR2 : R^2 ≤ R*H := by nlinarith [mul_nonneg hR (sub_nonneg.mpr hRH)]
   calc
     _ ≤ |r*h^2|+|r^2*h| := abs_add_le _ _
@@ -120,8 +127,6 @@ theorem exists_robertSargos_taylor_count (ε : ℝ) (hε : 0 < ε) :
   have hscale : E+12*R*H^2 = δ*H*Q^2 := by
     dsimp [δ]
     field_simp
-  have hcard : (S.image robertSargosReverseR).card = S.card :=
-    Finset.card_image_of_injective S robertSargos_reverseR_injective
   have ht := hcount (S.image robertSargosReverseR) R H Q N δ hR hH hQ hN hδ hRH
     (by
       intro p hp
@@ -130,6 +135,6 @@ theorem exists_robertSargos_taylor_count (ε : ℝ) (hε : 0 < ε) :
   have hfactor : 1+δ*Q = 1+(E+12*R*H^2)/(H*Q) := by
     dsimp [δ]
     field_simp
-  rwa [hcard,hfactor] at ht
+  rwa [(Finset.card_image_of_injective S robertSargos_reverseR_injective),hfactor] at ht
 
 end TaoTrudgianYang2025

@@ -71,10 +71,7 @@ theorem canonical_probe_exists_ray_cube (K : ℕ) (e δ a b B ζ saving τ : ℝ
     (rayCubeFamily M H hH)
   refine ⟨idx,grid,hlabel,hbins,?_,herror⟩
   intro u hu hcal
-  have hs := calibration_nonzero_supported S hmax hS.bad u.val hcal
-  have hnp : ∀θ,(rayCubeFamily M H hH u θ).residue≠1 :=
-    hlarge u (mem_rowBand.mp hu).2.1 hs H hH
-  refine ⟨hnp,?_,?_⟩
+  refine ⟨(hlarge u (mem_rowBand.mp hu).2.1 (calibration_nonzero_supported S hmax hS.bad u.val hcal) H hH),?_,?_⟩
   · exact ProbeRayCharacterFamily.raw_twisted_conductor M H hH u
   · intro hnp'
     exact (ProbeRayCharacterFamily.source_nonprincipal_maximum_dominates S hS.prime η u

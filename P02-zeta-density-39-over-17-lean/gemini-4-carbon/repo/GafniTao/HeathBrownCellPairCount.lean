@@ -23,9 +23,7 @@ theorem unitAddCircle_dist_real_coe
     (a b : ℝ) :
     dist (a : UnitAddCircle) (b : UnitAddCircle) =
       heathBrownDistanceToInteger (a - b) := by
-  rw [dist_eq_norm]
-  rw [← QuotientAddGroup.mk_sub]
-  rw [UnitAddCircle.norm_eq]
+  rw [dist_eq_norm, ← QuotientAddGroup.mk_sub, UnitAddCircle.norm_eq]
   rfl
 
 theorem heathBrown_center_coordinate_dist
@@ -101,11 +99,6 @@ theorem heathBrownOverlappingCellPairs_subset_pairCount
   intro j hj
   exact heathBrown_cell_intersection_derivative_bound hj hp.2
 
-theorem card_heathBrownOverlappingCellPairs_le_pairCount
-    {N k H : ℕ} (f : ℝ → ℝ) :
-    (heathBrownOverlappingCellPairs N k H f).card ≤
-      (heathBrownPairCount N k H f).card :=
-  Finset.card_le_card (heathBrownOverlappingCellPairs_subset_pairCount f)
 
 theorem integral_heathBrownNu_sq_le_pairCount
     (N k H : ℕ) (hH : 2 ≤ H) (f : ℝ → ℝ) :
@@ -114,10 +107,9 @@ theorem integral_heathBrownNu_sq_le_pairCount
       ((heathBrownPairCount N k H f).card : ℝ) *
         (heathBrownCoefficientMeasure k).real
           (heathBrownCoefficientCell k H f 1) := by
-  have hover := integral_heathBrownNu_sq_le_overlap_count N k H hH f
-  refine hover.trans ?_
+  refine (integral_heathBrownNu_sq_le_overlap_count N k H hH f).trans ?_
   apply mul_le_mul_of_nonneg_right
-  · exact_mod_cast card_heathBrownOverlappingCellPairs_le_pairCount f
+  · exact_mod_cast (Finset.card_le_card (heathBrownOverlappingCellPairs_subset_pairCount f))
   · exact measureReal_nonneg
 
 

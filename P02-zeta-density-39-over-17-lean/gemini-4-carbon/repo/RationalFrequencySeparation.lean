@@ -17,7 +17,7 @@ theorem ordered_ratio_gap {a b c d : ℕ} (hb : 0 < b) (hd : 0 < d)
     1 / H ^ 2 ≤ (c : ℝ) / d - (a : ℝ) / b := by
   have hbR : (0 : ℝ) < b := by exact_mod_cast hb
   have hdR : (0 : ℝ) < d := by exact_mod_cast hd
-  have hH : 0 < H := hbR.trans_le hbH
+  have hH := hbR.trans_le hbH
   have hcross : a * d < c * b := by
     exact_mod_cast (div_lt_div_iff₀ hbR hdR).mp hlt
   have hgap : (1 : ℝ) ≤ (c : ℝ) * b - (a : ℝ) * d := by

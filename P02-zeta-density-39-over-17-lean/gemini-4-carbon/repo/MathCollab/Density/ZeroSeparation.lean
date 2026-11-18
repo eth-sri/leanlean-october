@@ -16,8 +16,7 @@ namespace MathCollab.Density
 def ordinateBin (ρ : ℂ) : ℤ := ⌊ρ.im⌋
 
 theorem ordinateBin_eq_iff {ρ : ℂ} {k : ℤ} :
-    ordinateBin ρ = k ↔ (k : ℝ) ≤ ρ.im ∧ ρ.im < (k : ℝ)+1 := by
-  exact Int.floor_eq_iff
+    ordinateBin ρ = k ↔ (k : ℝ) ≤ ρ.im ∧ ρ.im < (k : ℝ)+1 := Int.floor_eq_iff
 
 /-- Half the occupied bins have a common parity, including for negative indices. -/
 theorem occupied_bins_parity (K : Finset ℤ) :

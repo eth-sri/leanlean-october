@@ -6,9 +6,8 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondModeEnergy
 namespace OAI
 
 namespace SevenEighths.InverseMoment
+open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic JointLogSeparation MeasureTheory SchwartzMap
 open scoped BigOperators Classical
-open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open JointLogSeparation MeasureTheory SchwartzMap
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
@@ -31,12 +30,8 @@ theorem second_geometric_energy_of_bound (K : ℕ) (labels : Finset (Ideal Eis))
     apply Finset.sum_le_sum
     intro γ hγ
     simpa only [mul_comm] using mul_le_mul_of_nonneg_left (hP γ hγ) (tripleDivisorWeight_nonneg K γ)
-  calc
-    _ ≤ Real.sqrt (E*∑ γ ∈ Γ,tripleDivisorWeight K γ) *
-        Real.sqrt (E*∑ γ ∈ Γ,tripleDivisorWeight K γ) :=
-      mul_le_mul (Real.sqrt_le_sqrt (hb F hF)) (Real.sqrt_le_sqrt (hb G hG))
-        (Real.sqrt_nonneg _) (Real.sqrt_nonneg _)
-    _ = _ := Real.mul_self_sqrt (mul_nonneg hE (Finset.sum_nonneg (fun γ _ => tripleDivisorWeight_nonneg K γ)))
+  exact (mul_le_mul (Real.sqrt_le_sqrt (hb F hF)) (Real.sqrt_le_sqrt (hb G hG))
+        (Real.sqrt_nonneg _) (Real.sqrt_nonneg _)).trans_eq (Real.mul_self_sqrt (mul_nonneg hE (Finset.sum_nonneg (fun γ _ => tripleDivisorWeight_nonneg K γ))))
 
 end
 end SevenEighths.InverseMoment

@@ -55,9 +55,7 @@ theorem IntervalC2Bound.atkinsonSymmetricApproximation {f : ℝ → ℂ}
         ∫ y in (atkinsonSaddleRoot (T/(2*Real.pi)) b-H)..
           (atkinsonSaddleRoot (T/(2*Real.pi)) b+H), atkinsonRootQuadraticKernel T b y‖ ≤
       (M/2)*atkinsonSymmetricError T b R H := by
-  have hlocal := hf.atkinsonLocalSymmetric hT b hH.le hleft hright hwindow
-  have htail := hv.atkinsonRoot_sub_local hT b ha hH hleft hright
-  apply (norm_sub_le_norm_sub_add_norm_sub _ _ _).trans ((add_le_add htail hlocal).trans_eq ?_)
+  apply (norm_sub_le_norm_sub_add_norm_sub _ _ _).trans ((add_le_add (hv.atkinsonRoot_sub_local hT b ha hH hleft hright) (hf.atkinsonLocalSymmetric hT b hH.le hleft hright hwindow)).trans_eq ?_)
   unfold atkinsonSymmetricError
   ring
 
@@ -101,12 +99,10 @@ theorem exists_atkinsonPowerIntegral_symmetric_approximation (α : ℝ) :
   intro T G L b H hT hG hGT hL hwidth hH hleft hright hwindow
   have hG0 : 0 < G := by linarith
   have hL0 : 0 < L := by linarith
-  have hf := hfinite T G L b H hT hG hGT hL hwidth hH hleft hright hwindow
-  have hm := hmain T G L b H hT hG0 hGT hL0 hH ⟨by linarith,by linarith⟩
-  have hm' := hm.trans (mul_le_mul_of_nonneg_left
+  have hm' := (hmain T G L b H hT hG0 hGT hL0 hH ⟨by linarith,by linarith⟩).trans (mul_le_mul_of_nonneg_left
     (atkinsonSymmetricError_tail_le (R := G/Real.sqrt T) hT (by positivity) hH.le b)
     (by positivity))
-  apply (norm_sub_le_norm_sub_add_norm_sub _ _ _).trans ((add_le_add hf hm').trans_eq ?_)
+  apply (norm_sub_le_norm_sub_add_norm_sub _ _ _).trans ((add_le_add (hfinite T G L b H hT hG hGT hL hwidth hH hleft hright hwindow) hm').trans_eq ?_)
   ring
 
 end MathCollab.Density.Stronger.Atkinson

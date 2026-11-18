@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaMorseSupport
 public import TaoTrudgianYang2025.BetaModelJetEstimatesFull
 
@@ -42,7 +52,7 @@ theorem abs_segmentTaylorAverage_le
     (ha : a ∈ Ioo l r) (hx : x ∈ Ioo l r) (k : ℕ)
     (hb : ∀ u ∈ Ioo l r, |iteratedDeriv k f u| ≤ M) :
     |segmentTaylorAverage f a k x| ≤ M := by
-  have hpoint : ∀ᵐ t ∂volume.restrict (Icc (0 : ℝ) 1),
+  have hpoint : ∀ᵐ t ∂volume.restrict (Icc 0 1),
       ‖(1-t)*t^k*iteratedDeriv k f (a+t*(x-a))‖ ≤ M := by
     filter_upwards [ae_restrict_mem measurableSet_Icc] with t ht
     have hf : 0 ≤ (1-t)*t^k := mul_nonneg (by linarith [ht.2]) (pow_nonneg ht.1 k)
@@ -52,8 +62,7 @@ theorem abs_segmentTaylorAverage_le
     rw [norm_mul,Real.norm_eq_abs,abs_of_nonneg hf]
     exact (mul_le_of_le_one_left (norm_nonneg _) hf').trans
       (hb _ (affineSegment_mem_Ioo ha hx ht))
-  have h := norm_integral_le_of_norm_le_const hpoint
-  simpa [segmentTaylorAverage,Real.norm_eq_abs,Measure.real] using h
+  simpa [segmentTaylorAverage,Real.norm_eq_abs,Measure.real] using (norm_integral_le_of_norm_le_const hpoint)
 
 theorem approximateModelPhase_iteratedDeriv_abs_le
     {σ δ : ℝ} {P : ℕ} {F : ℝ → ℝ}
@@ -76,7 +85,7 @@ theorem iteratedDeriv_modelPhaseAveragedCurvature
     (hv : v ∈ modelPhaseSlopeRange F) (hu : u ∈ Ioo (1 : ℝ) 2) (k : ℕ) :
     iteratedDeriv k (modelPhaseAveragedCurvature F v) u =
       -2*segmentTaylorAverage (deriv (deriv F)) (modelPhaseInverseSlope F v) k u := by
-  have hj : ∀ x ∈ Ioo (1 : ℝ) 2, ContDiffAt ℝ ∞ (deriv (deriv F)) x := by
+  have hj : ∀ x ∈ Ioo 1 2, ContDiffAt ℝ ∞ (deriv (deriv F)) x := by
     intro x hx
     simpa only [iteratedDeriv_succ,iteratedDeriv_zero] using
       approximateModelPhase_iteratedDeriv_contDiffAt hF hx 2

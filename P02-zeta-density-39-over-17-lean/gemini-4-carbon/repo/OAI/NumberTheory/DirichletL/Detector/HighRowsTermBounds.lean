@@ -15,7 +15,7 @@ lemma sourceWeightedScalar_norm_le (Q : ℝ) (hQ : 0<Q)
     (hgamma : ‖gamma‖=1) (hC : ‖C‖=1) (ho : ‖omega‖=1) (e l k m : ℕ) :
     ‖sourceWeightedScalar Q eta a gamma C omega x w z scalar e l k m‖≤
       ‖scalar‖*Q^(-(x.re+1/2)*(e:ℝ)-(1+3*x.re)*(l:ℝ)-w.re*(k:ℝ)-6*z.re*(m:ℝ)) := by
-  let coeff : ℂ := (-1:ℂ)^e*gamma^(-(e:ℤ))*eta^e*(a*C)^l*
+  let coeff := (-1:ℂ)^e*gamma^(-(e:ℤ))*eta^e*(a*C)^l*
     omega^((((e+3*l)*k:ℕ):ℤ)-(e*l+l.choose 2:ℕ))
   have hn : ‖coeff‖≤1 := by
     simp only [coeff,norm_mul,norm_pow,norm_zpow,hgamma,hC,ho,norm_neg,norm_one,

@@ -10,10 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSecondSectorFrequency
-open HeckeFamily CanonicalQuadraticSieve
-open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
-open CenteredMomentSecondSectorColumns CenteredMomentSecondSectorChildren CenteredMomentSupport
-open CenteredMomentHeckeColumnWindow CenteredMomentSecondLedger CenteredMomentCanonicalFirst
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentSecondSectorColumns CenteredMomentSecondSectorChildren CenteredMomentSupport CenteredMomentHeckeColumnWindow CenteredMomentSecondLedger CenteredMomentCanonicalFirst
 local notation "O" => ActualEisensteinCubic.O
 
 def sectorFrequency (η : Character) (t : ℝ) (S : Finset (Ideal O)) (β : Ideal O→ℂ)
@@ -31,9 +28,8 @@ theorem sectorFrequency_zero_of_common (η : Character) (t : ℝ)
     (hCD : CompletedGauss.primeSupport C=CompletedGauss.primeSupport D)
     (F : O→Ideal O→Ideal O→ℂ) (j : O) (hj : idealCorrelation C D hC hD j=0) :
     sectorFrequency η t S β C D hC hD F j=0 := by
-  have he := sector_correlation_children η t S β C D hC hD hCD 1 {j} (fun _=>1) F
   simpa only [Finset.sum_singleton,one_mul,hj,zero_mul,mul_zero,Finset.sum_const_zero,
-    sectorFrequency] using he
+    sectorFrequency] using (sector_correlation_children η t S β C D hC hD hCD 1 {j} (fun _=>1) F)
 
 theorem sectorFrequency_common_support (η : Character) (t : ℝ)
     (S : Finset (Ideal O)) (β : Ideal O→ℂ) (C D : Ideal O) (hC : Supported C) (hD : Supported D)
@@ -68,10 +64,7 @@ theorem sectorFrequency_tsum_partition (η : Character) (t : ℝ)
       ∑ U : Finset (CommonIndex C D),if canonicalPartition C D U w then
         sectorFrequency η t S β C D hC hD F (commonFrequencyGenerator C D*w) else 0 := by
     simp [canonicalPartition,eq_comm]
-  calc
-    _ = ∑' w : O,∑ U : Finset (CommonIndex C D),if canonicalPartition C D U w then
-        sectorFrequency η t S β C D hC hD F (commonFrequencyGenerator C D*w) else 0 := tsum_congr he
-    _ = _ := Summable.tsum_finsetSum (fun U _=>hs.indicator {w | canonicalPartition C D U w})
+  exact (tsum_congr he).trans (Summable.tsum_finsetSum (fun U _=>hs.indicator {w | canonicalPartition C D U w}))
 
 theorem sectorFrequency_partition_nonunit (η : Character) (t : ℝ)
     (S : Finset (Ideal O)) (β : Ideal O→ℂ) (C D : Ideal O) (hC : Supported C) (hD : Supported D)
@@ -90,8 +83,7 @@ theorem sectorFrequency_partition_nonunit (η : Character) (t : ℝ)
       exact hw (by simp only [f,ite_eq_right hn])
     obtain ⟨h,hh⟩ := nonunitFrequencyGenerator_dvd C D hC U w hp
     exact ⟨h,hh.symm⟩
-  have he := (mul_right_injective₀ (nonunitFrequencyGenerator_ne_zero C D hC U)).tsum_eq hs
-  simpa only [f,mul_assoc] using he.symm
+  simpa only [f,mul_assoc] using ((mul_right_injective₀ (nonunitFrequencyGenerator_ne_zero C D hC U)).tsum_eq hs).symm
 
 end SevenEighths.CenteredMomentSecondSectorFrequency
 

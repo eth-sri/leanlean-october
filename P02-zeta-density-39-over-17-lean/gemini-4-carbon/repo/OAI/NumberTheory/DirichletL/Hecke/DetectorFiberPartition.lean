@@ -1,6 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorRawFiber
-public import OAI.NumberTheory.DirichletL.Hecke.DetectorDynamicSelection
+public import OAI.NumberTheory.DirichletL.Hecke.DetectorWitnessRows
 
 @[expose] public section
 
@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.HeckeDetectorFiberPartition
-open HeckeFamily HeckeInverseAmplification HeckeDetectorRawFiber
-open HeckeDetectorSupportedWitness HeckeDetectorWitnessRows HeckeDetectorPhysicalSelection
+open HeckeFamily HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorSupportedWitness HeckeDetectorWitnessRows HeckeDetectorPhysicalSelection
 
 abbrev BinLabel {Slot : Type*} (slots : Finset Slot) (cap mesh : ℝ) :=
   slots → ↥(HeckePrimeAmplitudeBins.labels cap mesh)
@@ -58,9 +57,7 @@ theorem fixed_bin {Row Label Slot : Type*}
     (s : Slot) (hs : s∈slots) :
     HeckePrimeAmplitudeBins.amplitude (U^(widths s)) ((2*a-1)/2) mesh (physical u s)=
       binValue slots ((2*a-1)/2) mesh bin s := by
-  have he := (Finset.mem_filter.mp hu).2.1
-  have hv := congrArg (fun f : BinLabel slots ((2*a-1)/2) mesh => (f ⟨s,hs⟩).val) he
-  simpa only [amplitudeLabel,binValue,dite_eq_left hs] using hv
+  simpa only [amplitudeLabel,binValue,dite_eq_left hs] using (congrArg (fun f : BinLabel slots ((2*a-1)/2) mesh => (f ⟨s,hs⟩).val) ((Finset.mem_filter.mp hu).2.1))
 
 def toFiber (M : Ideal O) (H : Subgroup (O ⧸ M)ˣ) {Label Slot : Type*}
     (rows : Finset FreeRow) (χ : FreeRow→Label→Character)

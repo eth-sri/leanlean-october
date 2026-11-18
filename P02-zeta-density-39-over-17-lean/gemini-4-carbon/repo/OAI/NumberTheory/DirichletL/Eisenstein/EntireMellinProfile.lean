@@ -7,81 +7,11 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 
 namespace CubicEisenstein
-open scoped BigOperators Classical
-open MeasureTheory
-open Finset AddChar MulChar EisensteinEmbedding
-
-open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss
+open CompletedGauss
 local notation "Eis" => ActualEisensteinCubic.O
 
 lemma finite_mellin_entire {ι : Type*} [Fintype ι] (f : ι→ℝ→ℂ) (weight : ι→ℂ)
@@ -112,7 +42,7 @@ lemma thetaTwistedCuspProfile_mellin_entire (Ψ : Eis→*ℂ) (c : Eis) (hc : c�
       Differentiable ℂ (mellin (thetaTwistedCuspProfile Ψ c hc)) := by
   apply finite_mellin_entire
   intro h
-  have he : thetaFourierTranslation c h=(-3:ℂ)*eisEmbedding (Quotient.out h)/eisEmbedding c := by
+  have he : thetaFourierTranslation c h=(-3)*eisEmbedding (Quotient.out h)/eisEmbedding c := by
     rw [thetaFourierTranslation,TraceLambdaPhase.eisLam_sq]
   rw [he]
   exact conjugateSource_finite_twist_cusp_mellin_entire (Quotient.out h) c hc
@@ -139,8 +69,7 @@ theorem completedBesselProfile_mellin_entire_of_periodic
     simp only [smul_eq_mul,he v hv]
   constructor
   · intro s
-    have hi := (hf.1 s).const_smul thetaDerivativeScalar⁻¹
-    apply hi.congr_fun _ measurableSet_Ioi
+    apply ((hf.1 s).const_smul thetaDerivativeScalar⁻¹).congr_fun _ measurableSet_Ioi
     intro v hv
     simp only [smul_eq_mul,he v hv]
   · rw [show mellin (completedBesselProfile Ψ thetaBesselScale)=
@@ -150,8 +79,6 @@ theorem completedBesselProfile_mellin_entire_of_periodic
 end CubicEisenstein
 
 namespace CompletedGauss
-open Filter MeasureTheory
-open scoped Classical BigOperators Topology ContDiff
 
 lemma mellin_eq_of_positive_eq (F G : ℝ→ℂ) (hFG : ∀v : ℝ,0<v→F v=G v) (s : ℂ) :
     mellin F s=mellin G s := by
@@ -188,10 +115,9 @@ lemma besselSmoothingIntegrand_finite_sum {ι : Type*} [Fintype ι]
     (hG : ∀i,MellinConvergent (G i) (2*s)) :
     besselSmoothingIntegrand F q V X s=
       ∑i,w i*besselSmoothingIntegrand (G i) q V X s := by
-  have hm := mellin_eq_of_positive_eq F (fun v=>∑i,w i*G i v) hFG (2*s)
   have hd : continuedBesselDirichlet F q s=
       continuedBesselDirichlet (fun v=>∑i,w i*G i v) q s := by
-    simp only [continuedBesselDirichlet,hm]
+    simp only [continuedBesselDirichlet,(mellin_eq_of_positive_eq F (fun v=>∑i,w i*G i v) hFG (2*s))]
   rw [besselSmoothingIntegrand,hd,continuedBesselDirichlet_finite_sum G w q s hG,
     Finset.mul_sum]
   apply Finset.sum_congr rfl
@@ -206,20 +132,18 @@ theorem besselSmoothingIntegrand_finite_integrable {ι : Type*} [Fintype ι]
     (hG : ∀i,∀t : ℝ,MellinConvergent (G i) (2*((σ:ℂ)+t*Complex.I)))
     (hi : ∀i,Integrable (fun t : ℝ=>besselSmoothingIntegrand (G i) q V X ((σ:ℂ)+t*Complex.I))) :
     Integrable (fun t : ℝ=>besselSmoothingIntegrand F q V X ((σ:ℂ)+t*Complex.I)) := by
-  have hsum := integrable_finsetSum Finset.univ (fun i _=>(hi i).const_mul (w i))
-  apply hsum.congr
+  apply (integrable_finsetSum Finset.univ (fun i _=>(hi i).const_mul (w i))).congr
   filter_upwards with t
   exact (besselSmoothingIntegrand_finite_sum F G w hFG q V X _ (fun i=>hG i t)).symm
 
 end CompletedGauss
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
+open scoped MatrixGroups
 
 namespace CubicEisenstein
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CompletedGauss
+open CubicJacobiGlobal CompletedGauss
 local notation "Eis" => ActualEisensteinCubic.O
 
 def unramifiedResidualCoefficient (h:Eis) :ℂ:=cubicBesselNormalizer h*unramifiedGaussResidue h
@@ -287,10 +211,9 @@ theorem unramifiedResidualCoefficient_prime_product_norm {ι:Type*}
   | empty=>simp
   | @insert i s hi ih=>
     have hpi:=hp i (Finset.mem_insert_self _ _)
-    have hpri:=hprimary i (Finset.mem_insert_self _ _)
     have hps:∀j∈s,Prime (p j):=fun j hj=>hp j (Finset.mem_insert_of_mem hj)
     have hprs:∀j∈s,lambda^2∣p j-1:=fun j hj=>hprimary j (Finset.mem_insert_of_mem hj)
-    have hcpi:IsCoprime (p i) (∏j∈s,p j):=IsCoprime.prod_right (fun j hj=>
+    have hcpi :=IsCoprime.prod_right (fun j hj=>
       hpair i (Finset.mem_insert_self _ _) j (Finset.mem_insert_of_mem hj) (by intro he;subst j;exact hi hj))
     have hpb:¬p i∣h*(∏j∈s,p j):=by
       intro hd
@@ -298,7 +221,7 @@ theorem unramifiedResidualCoefficient_prime_product_norm {ι:Type*}
       · exact hph i (Finset.mem_insert_self _ _) hd
       · exact hpi.not_isUnit (hcpi.isUnit_of_dvd hd)
     rw [Finset.prod_insert hi,show h*(p i*(∏j∈s,p j))=(h*(∏j∈s,p j))*p i by ring,
-      unramifiedResidualCoefficient_prime_norm (p i) hpi hpri _ hpb]
+      unramifiedResidualCoefficient_prime_norm (p i) hpi (hprimary i (Finset.mem_insert_self _ _)) _ hpb]
     exact ih hps hprs (fun j hj k hk hjk=>hpair j (Finset.mem_insert_of_mem hj) k (Finset.mem_insert_of_mem hk) hjk)
       (fun j hj=>hph j (Finset.mem_insert_of_mem hj))
 
@@ -316,17 +239,12 @@ theorem unramifiedResidualCoefficient_squarefree_cube_norm (I J:Ideal Eis)
   · exact fun P hP=>(primaryPrime_spec P (primaryPrime_factor_ne_zero I P hI (Multiset.mem_toFinset.mp hP))).2.2.2
   · exact primaryPrime_support_coprime I hI
   · intro P hP hd
-    have hp:=primaryPrime_isPrime_of_mem I P hI hP
-    have hpp:lambda^2∣primaryPrime P-1:=
-      (primaryPrime_spec P (primaryPrime_factor_ne_zero I P hI (Multiset.mem_toFinset.mp hP))).2.2.2
-    have hc:IsCoprime (u.val*lambda^m) (primaryPrime P):=
-      (ramified_primary_coprime u m _ hpp).of_mul_left_right
-    exact hp.not_isUnit (hc.symm.isUnit_of_dvd hd)
+    exact (primaryPrime_isPrime_of_mem I P hI hP).not_isUnit (((ramified_primary_coprime u m _ ((primaryPrime_spec P (primaryPrime_factor_ne_zero I P hI (Multiset.mem_toFinset.mp hP))).2.2.2)).of_mul_left_right).symm.isUnit_of_dvd hd)
 
 end
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
+open CubicJacobiGlobal
 local notation "Eis" => ActualEisensteinCubic.O
 
 def threeRamifiedUnit :Eisˣ:=-(ramifiedOmegaUnit^2)
@@ -343,10 +261,9 @@ lemma three_eq_ramifiedUnit : (3:Eis)=(threeRamifiedUnit:Eis)*lambda^2 := by
     _=_:=by ring
 
 lemma trace_eq_ramifiedUnit : ramifiedTraceLambda=(traceRamifiedUnit:Eis)*lambda := by
-  have hw:=ramified_omega_relation
   simp only [traceRamifiedUnit,Units.val_neg,ramifiedOmegaUnit_val]
   change 1+2*omega=-omega*(omega-1)
-  linear_combination hw
+  linear_combination (ramified_omega_relation)
 
 def ramifiedSixUnit (side:Bool) :RamifiedSixBranch→Eisˣ
   | .inl _=>threeRamifiedUnit*ramifiedCuspRoot side
@@ -420,12 +337,10 @@ theorem ramifiedBesselValue_prime_power_vanish (side:Bool) (p:Eis) (hp:Prime p)
       apply Finset.sum_eq_zero
       intro i hi
       rw [ramifiedSixIndex_multiplier]
-      have hc:IsCoprime ((ramifiedSixUnit side i:Eis)*lambda^(ramifiedSixPower i)) p:=
-        (ramified_primary_coprime (ramifiedSixUnit side i) (ramifiedSixPower i) p hpp).of_mul_left_right
       have hnot:¬p∣((ramifiedSixUnit side i:Eis)*lambda^(ramifiedSixPower i))*h:=by
         intro hd
         rcases hp.dvd_mul.mp hd with hd|hd
-        · exact hp.not_isUnit (hc.symm.isUnit_of_dvd hd)
+        · exact hp.not_isUnit (((ramified_primary_coprime (ramifiedSixUnit side i) (ramifiedSixPower i) p hpp).of_mul_left_right).symm.isUnit_of_dvd hd)
         · exact hph hd
       rw [←mul_assoc,unramifiedGaussResidue_prime_power_table p hp hpp _ hnot,hk]
       norm_num
@@ -434,7 +349,7 @@ theorem ramifiedBesselValue_prime_power_vanish (side:Bool) (p:Eis) (hp:Prime p)
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
+open CubicJacobiGlobal
 local notation "Eis" => ActualEisensteinCubic.O
 
 lemma ramified_norm_third (u:Eisˣ) (m:ℕ) :
@@ -455,10 +370,8 @@ lemma ramified_norm_third (u:Eisˣ) (m:ℕ) :
 lemma cubicBesselNormalizer_ramified_mul_norm (h:Eis) (u:Eisˣ) (m:ℕ) :
     ‖cubicBesselNormalizer (h*(u.val*lambda^m))‖=
       ‖cubicBesselNormalizer h‖*(3:ℝ)^((m:ℝ)/6) := by
-  have hp:0<‖eisEmbedding (u.val*lambda^m)‖:=
-    norm_pos_iff.mpr (eisEmbedding_ne_zero (ramifiedElement_ne_zero u m))
   rw [cubicBesselNormalizer_mul,norm_mul]
-  have he:=Complex.norm_cpow_eq_rpow_re_of_pos hp (1/3:ℂ)
+  have he:=Complex.norm_cpow_eq_rpow_re_of_pos (norm_pos_iff.mpr (eisEmbedding_ne_zero (ramifiedElement_ne_zero u m))) (1/3:ℂ)
   have hre:(1/3:ℂ).re=(1/3:ℝ):=by norm_num
   rw [hre,ramified_norm_third] at he
   rw [he]
@@ -493,11 +406,9 @@ theorem unramifiedResidualCoefficient_squarefree_cube_bound (I J:Ideal Eis)
 
 end CubicEisenstein
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
 
 namespace CubicEisenstein
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CompletedGauss
+open CubicJacobiGlobal CompletedGauss
 local notation "Eis" => ActualEisensteinCubic.O
 
 lemma ramifiedSixWeight_norm_le_one (side:Bool) (h:Eis)
@@ -545,11 +456,9 @@ lemma ramifiedSix_normalized_term_bound (side:Bool) (I J:Ideal Eis)
     dsimp only [idx]
     rw [ramifiedSixIndex_multiplier,mul_comm]
     exact cubicBesselNormalizer_ramified_mul_norm h (ramifiedSixUnit side i) (ramifiedSixPower i)
-  have hp:1≤(3:ℝ)^((ramifiedSixPower i:ℝ)/6):=
-    Real.one_le_rpow (by norm_num) (by positivity)
   have hcle:‖cubicBesselNormalizer h‖≤‖cubicBesselNormalizer idx‖:=by
     rw [hc]
-    exact le_mul_of_one_le_right (norm_nonneg _) hp
+    exact le_mul_of_one_le_right (norm_nonneg _) (Real.one_le_rpow (by norm_num) (by positivity))
   have hnorm:‖unramifiedResidualCoefficient idx‖≤
       unramifiedCoefficientBaseBound*(3:ℝ)^(((ramifiedSixPower i+m:ℕ):ℝ)/6)*
         ‖eisEmbedding (primaryGenerator J)‖:=by

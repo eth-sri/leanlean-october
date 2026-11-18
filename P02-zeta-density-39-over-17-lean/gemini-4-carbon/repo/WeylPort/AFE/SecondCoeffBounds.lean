@@ -1,7 +1,7 @@
 module
 /- McColm source pin 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1, MIT-0. -/
 public import WeylPort.AFE.SecondCoefficients
-public import WeylPort.AFE.PartIISignReview
+public import WeylPort.AFE.AlternatingHarmonic
 
 @[expose] public section
 

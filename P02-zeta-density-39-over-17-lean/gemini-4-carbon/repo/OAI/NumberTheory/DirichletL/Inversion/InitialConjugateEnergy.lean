@@ -9,10 +9,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseInitialConjugateEnergy
-open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve
-open ConcretePrimeRowBridge CompletedGauss ConcreteTraceCRT
-open InverseInitialOverlap InverseInitialPoissonBridge InverseInitialRayAttachment
-open UniqueFactorizationMonoid IdealMobiusDivisorSum
+open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve ConcretePrimeRowBridge CompletedGauss ConcreteTraceCRT InverseInitialOverlap InverseInitialPoissonBridge InverseInitialRayAttachment UniqueFactorizationMonoid IdealMobiusDivisorSum
 local notation "O" => ActualEisensteinCubic.O
 
 def conjugateIdealCharacter (η : Ideal O →* ℂ) : Ideal O →* ℂ where
@@ -79,7 +76,6 @@ theorem originalFixedPolynomial_norm_sq_conjugatedResidual (S : Finset (Ideal O)
 theorem admissible_row_four_le_one (I : Ideal O) (hI : Admissible I) (u : O) :
     ‖idealRowHom u I‖^4 ≤ 1 := by
   have he := norm_idealRowHom_four_eq_two I hI u
-  have hs : 0≤‖idealRowHom u I‖^2 := sq_nonneg _
   have ht : ‖idealRowHom u I‖^4=(‖idealRowHom u I‖^2)^2 := by ring
   rw [ht] at he ⊢
   nlinarith
@@ -155,9 +151,8 @@ theorem original_energy_summable (S : Finset (Ideal O)) {P j : Ideal O}
     (η : Ideal O →* ℂ) (a : Ideal O → ℂ) (W : ℝ → ℂ) {Z : ℝ} (hZ : 0<Z)
     (r z G : ℝ) (Φ : 𝓢(ℝ,ℂ)) {Y : ℝ} (hY : 0<Y) :
     Summable (fun u => radialWeight Φ Y u*‖originalFixedPolynomial S P j η a W Z r z u‖^2) := by
-  have hs := original_fixed_overlap_smoothed_summable S hP hj hS η a W hZ r z G Φ Y hY
   simpa only [radialWeight,Complex.mul_re,Complex.ofReal_re,Complex.ofReal_im,
-    mul_zero,sub_zero] using (Complex.hasSum_re hs.hasSum).summable
+    mul_zero,sub_zero] using (Complex.hasSum_re (original_fixed_overlap_smoothed_summable S hP hj hS η a W hZ r z G Φ Y hY).hasSum).summable
 
 theorem conjugatedResidual_energy_summable (S : Finset (Ideal O)) {P j : Ideal O}
     (hP : Admissible P) (hj : j∣P) (hS : ∀ n∈S,Squarefree n → Supported n)
@@ -224,7 +219,7 @@ theorem original_smoothed_overlap_triangle (S : Finset (Ideal O)) {P : Ideal O}
     Real.sqrt (smoothedEnergy Φ Y (originalTotalPolynomial S P η a W Z r z)) ≤
       ∑ j∈idealDivisors P,Z^(-G j)*‖η j‖^2*
         Real.sqrt (smoothedEnergy Φ Y (conjugatedResidual S P j η a W Z r z (G j))) := by
-  have hjd (j : Ideal O) (hj : j∈idealDivisors P) : j∣P := (mem_idealDivisors hP.1).mp hj
+  have hjd (j : Ideal O) (hj : j∈idealDivisors P) := (mem_idealDivisors hP.1).mp hj
   have hs := weighted_overlap_triangle (idealDivisors P) (radialWeight Φ Y)
     (radialWeight_nonneg Φ hΦ hY) (fun j => originalFixedPolynomial S P j η a W Z r z)
     (fun j hj => original_energy_summable S hP (hjd j hj) hS η a W hZ r z (G j) Φ hY)
@@ -248,7 +243,7 @@ theorem real_smoothed_sum_eq (Φ : 𝓢(ℝ,ℂ))
   have he : Φ (‖eisEmbedding u‖^2/Y) = (radialWeight Φ Y u : ℂ) := by
     apply Complex.ext
     · rfl
-    · simpa only [Complex.ofReal_im] using hΦ _ (div_nonneg (sq_nonneg _) hY.le)
+    · simpa using hΦ _ (div_nonneg (sq_nonneg _) hY.le)
   rw [he,Complex.ofReal_mul]
 
 end SevenEighths.InverseInitialConjugateEnergy

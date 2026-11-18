@@ -30,12 +30,7 @@ theorem contDiffAt_atkinsonGapSlopeProfile_jet (n : ℕ)
   | zero => simpa only [iteratedDeriv_zero] using
       contDiffAt_atkinsonGapSlopeProfile hr hx hqr hqx
   | succ n ih =>
-    have hj := ih hr hx hqr hqx
-    have hinner : ContDiffAt ℝ ∞
-        (fun z : (ℝ × ℝ × ℝ) × ℝ =>
-          iteratedDeriv n (atkinsonGapSlopeProfile z.1.1 z.1.2.1) z.2)
-        ((q,r,x),x) :=
-      hj.comp ((q,r,x),x)
+    have hinner := (ih hr hx hqr hqx).comp ((q,r,x),x)
         (f := fun z : (ℝ × ℝ × ℝ) × ℝ => (z.1.1,z.1.2.1,z.2))
         (by fun_prop)
     have hd := ContDiffAt.fderiv
@@ -44,8 +39,7 @@ theorem contDiffAt_atkinsonGapSlopeProfile_jet (n : ℕ)
       (g := fun p : ℝ × ℝ × ℝ => p.2.2)
       hinner (by fun_prop : ContDiffAt ℝ ∞ (fun p : ℝ × ℝ × ℝ => p.2.2) (q,r,x))
       (by simp : (∞ : ℕ∞ω)+1 ≤ ∞)
-    have he := hd.clm_apply (contDiffAt_const (c := (1 : ℝ)))
-    simpa only [iteratedDeriv_succ,fderiv_apply_one_eq_deriv] using he
+    simpa only [iteratedDeriv_succ,fderiv_apply_one_eq_deriv] using (hd.clm_apply (contDiffAt_const (c := 1)))
 
 theorem atkinsonGapSlopeProfile_jet_zero (n : ℕ) (r x : ℝ) :
     iteratedDeriv n (atkinsonGapSlopeProfile 0 r) x =
@@ -69,16 +63,15 @@ theorem atkinsonGapSlopeProfile_uniform_jet (n : ℕ) {ε : ℝ} (hε : 0 < ε) 
     subst q
     exact (contDiffAt_atkinsonGapSlopeProfile_jet n
       (by linarith [hr.1]) (by linarith [hx.1])
-      (by simpa using (show 0 < r by linarith [hr.1]))
+      (by simpa using (by linarith [hr.1]))
       (by norm_num)).continuousAt
-  have hu := hS.uniformContinuousAt_of_continuousAt f hc (Metric.dist_mem_uniformity hε)
-  obtain ⟨δ,hδ,hbound⟩ := Metric.uniformity_basis_dist.mem_iff.mp hu
+  obtain ⟨δ,hδ,hbound⟩ := Metric.uniformity_basis_dist.mem_iff.mp (hS.uniformContinuousAt_of_continuousAt f hc (Metric.dist_mem_uniformity hε))
   refine ⟨δ,hδ,?_⟩
   intro q r x hq hr hx
-  have hdist : dist ((0 : ℝ),r,x) (q,r,x) < δ := by
+  have hdist : dist (0,r,x) (q,r,x) < δ := by
     simpa only [dist_prod_same_right,Real.dist_eq,zero_sub,abs_neg] using hq
-  have h := @hbound (((0 : ℝ),r,x),(q,r,x)) hdist
-    (show ((0 : ℝ),r,x) ∈ S from ⟨rfl,hr,hx⟩)
+  have h := @hbound ((0,r,x),(q,r,x)) hdist
+    (show (0,r,x) ∈ S from ⟨rfl,hr,hx⟩)
   change dist (iteratedDeriv n (atkinsonGapSlopeProfile 0 r) x)
     (iteratedDeriv n (atkinsonGapSlopeProfile q r) x) < ε at h
   rw [atkinsonGapSlopeProfile_jet_zero] at h

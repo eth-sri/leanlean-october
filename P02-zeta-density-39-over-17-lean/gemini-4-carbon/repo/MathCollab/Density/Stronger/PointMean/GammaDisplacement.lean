@@ -12,8 +12,7 @@ public import Mathlib.Analysis.ODE.Gronwall
 
 @[expose] public section
 
-open Complex Set
-open MathCollab.Density.Stronger.Fourth MathCollab.Density.Stronger.Fourth.Digamma
+open Complex Set MathCollab.Density.Stronger.Fourth MathCollab.Density.Stronger.Fourth.Digamma
 set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.PointMean
@@ -28,7 +27,7 @@ theorem re_digamma_le_log_height_add_four {z : ℂ}
     linarith
   have hlog := Real.log_le_log (by linarith : 0 < ‖z‖) hnorm
   have hd := norm_digamma_sub_log_le hz hy
-  have he : 4 / |z.im| ≤ (4 : ℝ) :=
+  have he : 4 / |z.im| ≤ 4 :=
     (div_le_iff₀ (zero_lt_one.trans_le hy)).2 (by linarith)
   have hr := Complex.re_le_norm (Complex.digamma z - Complex.log z)
   simp only [Complex.sub_re, Complex.log_re] at hr
@@ -36,10 +35,8 @@ theorem re_digamma_le_log_height_add_four {z : ℂ}
 
 private theorem real_inner_self_mul (x y : ℂ) :
     inner ℝ x (x * y) = ‖x‖ ^ 2 * y.re := by
-  rw [real_inner_eq_re_inner ℂ, RCLike.inner_apply']
-  rw [show starRingEnd ℂ x * (x * y) =
-      (starRingEnd ℂ x * x) * y by ring]
-  rw [Complex.conj_mul']
+  rw [real_inner_eq_re_inner ℂ, RCLike.inner_apply', show starRingEnd ℂ x * (x * y) =
+      (starRingEnd ℂ x * x) * y by ring, Complex.conj_mul']
   change (((↑‖x‖ : ℂ) ^ 2) * y).re = ‖x‖ ^ 2 * y.re
   rw [← Complex.ofReal_pow, Complex.re_ofReal_mul]
 

@@ -13,9 +13,8 @@ public import MathCollab.Density.Stronger.FiniteOccupancy
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology Finset
+open Complex Filter MeasureTheory Set Topology Finset MathCollab.Density MathCollab.Density.Stronger
 open scoped Interval
-open MathCollab.Density MathCollab.Density.Stronger
 open TaoTrudgianYang2025 (eventually_const_log_pow_le_rpow
   eventually_const_height_log_pow_mul_rpow_le_rpow
   eventually_pointValue_sixth_power_source_range)
@@ -43,7 +42,7 @@ theorem exists_atkinsonLocalMeanExcess_card_le_above_fourthRoot
       (∀ t ∈ W, Y ≤ atkinsonLocalMeanExcess G t (C*G*Real.log t)) →
       (W.card:ℝ) ≤ D*H^ν*(H/(G*Y^2)+H^2/Y^6) := by
   obtain ⟨C,hC,D,hD,B,hB,hsource⟩ :=
-    hPacket δ κ (ν/3) hδ hκ (show 0 < ν/3 by linarith)
+    hPacket δ κ (ν/3) hδ hκ (by linarith)
   refine ⟨C,hC,2*D+32*D^3,by positivity,B,hB,?_⟩
   intro H G Y W hH hG hY hSep hrange hlarge
   have hH1 : 1 ≤ H := by linarith [hB.trans hH]
@@ -106,7 +105,6 @@ theorem localMean_lower_bound_of_peak_mass
     (hV : 2*P*L ≤ V^2)
     (hsource : V^2*R ≤ P*L*(R+4*I)) :
     2*R*(V^2/(16*P*L)) ≤ I := by
-  have hmul := mul_le_mul_of_nonneg_right hV hR
   have hm : V^2*R ≤ 8*P*L*I := by nlinarith
   have hden : 0 < 8*P*L := by positivity
   calc
@@ -135,7 +133,7 @@ theorem exists_pointCluster_superlevel_entry
   have hL : 0 < Real.log (3*H) := Real.log_pos (by linarith)
   have hI := localMean_lower_bound_of_peak_mass hP hL (Nat.cast_nonneg _)
     hVsize (hsource H G V W n hH hG hGH hV hfit hsep hrange hlarge hn)
-  have hm1 : (1:ℝ) ≤ (m:ℝ) := by exact_mod_cast hm
+  have hm1 : 1 ≤ (m:ℝ) := by exact_mod_cast hm
   have hmr : (m:ℝ) ≤ ((pointCluster H G W n).card:ℝ) := by exact_mod_cast hocc
   have hA : 0 ≤ V^2/(16*P*Real.log (3*H)) := by positivity
   have hma := mul_le_mul_of_nonneg_right hmr hA
@@ -224,7 +222,6 @@ theorem occupancy_inverse_power_budget {H G A m : ℝ}
     (hG : 0 < G) (hA : 0 < A) (hm : 1 ≤ m) :
     H/(G*(m*A)^2)+H^2/(m*A)^6 ≤
       (H/(G*A^2)+H^2/A^6)/m^2 := by
-  have hm0 : 0 < m := by linarith
   have hp : m^2 ≤ m^6 := pow_le_pow_right₀ hm (by omega)
   rw [mul_pow, mul_pow]
   calc
@@ -266,13 +263,11 @@ theorem exists_pointValue_card_le_with_width
       (((pointClusterBins H G W).filter
         (fun n => m ≤ (pointCluster H G W n).card)).card:ℝ) ≤ B/(m:ℝ)^2 := by
     intro m hm
-    have hc := hcount H G V W m hH hG hGH hV hfit hwidth hVsize herr hsep hrange hlarge hm
-    have hm1 : (1:ℝ) ≤ (m:ℝ) := by exact_mod_cast hm
-    have hp := occupancy_inverse_power_budget (H := H) hG hA hm1
+    have hm1 : 1 ≤ (m:ℝ) := by exact_mod_cast hm
     calc
-      _ ≤ 2*D*H^ν*(H/(G*((m:ℝ)*A)^2)+H^2/((m:ℝ)*A)^6) := hc
+      _ ≤ 2*D*H^ν*(H/(G*((m:ℝ)*A)^2)+H^2/((m:ℝ)*A)^6) := (hcount H G V W m hH hG hGH hV hfit hwidth hVsize herr hsep hrange hlarge hm)
       _ ≤ 2*D*H^ν*((H/(G*A^2)+H^2/A^6)/(m:ℝ)^2) :=
-        mul_le_mul_of_nonneg_left hp (by positivity)
+        mul_le_mul_of_nonneg_left (occupancy_inverse_power_budget (H := H) hG hA hm1) (by positivity)
       _ = B/(m:ℝ)^2 := by dsimp only [B]; ring
   have hsum := sum_nat_occupancy_le_of_superlevels
     (pointClusterBins H G W) (fun n => (pointCluster H G W n).card) hB hsuper

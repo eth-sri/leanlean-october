@@ -1,7 +1,8 @@
 module
 public import OAI.NumberTheory.DirichletL.Inversion.InitialConjugateEnergy
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorDyadicBridge
-public import OAI.NumberTheory.DirichletL.Hecke.DetectorRowSpecialization
+public import OAI.NumberTheory.DirichletL.Hecke.RowClosure
+public import OAI.NumberTheory.DirichletL.Hecke.Dyadic
 
 @[expose] public section
 
@@ -10,9 +11,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.InverseInitialRawDictionary
-open HeckeFamily HeckeDyadic HeckeDetectorDyadicBridge HeckeRowClosure
-open InverseInitialPoissonBridge InverseInitialConjugateEnergy
-open ConcretePrimeRowBridge CompletedGauss UniqueFactorizationMonoid
+open HeckeFamily HeckeDyadic HeckeDetectorDyadicBridge HeckeRowClosure InverseInitialPoissonBridge InverseInitialConjugateEnergy ConcretePrimeRowBridge CompletedGauss UniqueFactorizationMonoid
 local notation "O" => HeckeFamily.O
 
 def twistedProfile (W : ℝ → ℂ) (σ freq : ℝ) (x : ℝ) : ℂ :=
@@ -23,10 +22,9 @@ theorem finite_source_cover (W : ℝ → ℂ) (D b : ℝ) (hD : 0<D)
     (hi : W ((I.absNorm:ℝ)/D)≠0) : I∈idealsUpTo ⌈D*b⌉₊ := by
   apply mem_idealsUpTo.mpr
   refine ⟨Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hI),?_⟩
-  have hb := (div_le_iff₀ hD).mp (hW _ hi)
   have hn : (I.absNorm:ℝ)≤(⌈D*b⌉₊:ℝ) := by
     calc
-      (I.absNorm:ℝ)≤D*b := by simpa only [mul_comm] using hb
+      (I.absNorm:ℝ)≤D*b := by simpa only [mul_comm] using ((div_le_iff₀ hD).mp (hW _ hi))
       _≤(⌈D*b⌉₊:ℝ) := Nat.le_ceil _
   exact_mod_cast hn
 
@@ -97,13 +95,12 @@ theorem fixedBase_zero_unsupported (η : Character) (m f : O)
     change idealCoeff η 0*_=0
     rw [map_zero,zero_mul]
   let n := ConcretePrimeRowBridge.idealGenerator I
-  have hn : n≠0 := ConcretePrimeRowBridge.idealGenerator_ne_zero I hi
-  have hs : Ideal.span {n}=I := ConcretePrimeRowBridge.span_idealGenerator I
+  have hs := ConcretePrimeRowBridge.span_idealGenerator I
   have he := CanonicalRowCompletion.rowTwist_zero_of_not_supported
     (elementHom η) m f 1 n hmLam hm2 (by rwa [hs])
   change elementCoeff η n*CanonicalRowCompletion.idealRowHom (m^6*f^4*1)
     (Ideal.span {n})=0 at he
-  rw [mul_one,hs,←idealCoeff_span η hn,hs] at he
+  rw [mul_one,hs,←idealCoeff_span η (ConcretePrimeRowBridge.idealGenerator_ne_zero I hi),hs] at he
   exact he
 
 end SevenEighths.InverseInitialRawDictionary

@@ -18,8 +18,7 @@ def canonicalSlotSupport (T : Finset PrimeIdeal) : Finset O :=
 lemma primaryPrime_injective {P Q : PrimeIdeal} (hP : Supported P.val) (hQ : Supported Q.val)
     (h : primaryGenerator P.val=primaryGenerator Q.val) : P=Q := by
   apply Subtype.ext
-  have hh := congrArg (fun a : O=>Ideal.span {a}) h
-  simpa only [span_primaryGenerator_of_supported _ hP,span_primaryGenerator_of_supported _ hQ] using hh
+  simpa only [span_primaryGenerator_of_supported _ hP,span_primaryGenerator_of_supported _ hQ] using (congrArg (fun a : O=>Ideal.span {a}) h)
 
 lemma canonicalSlotSupport_nonzero (T : Finset PrimeIdeal) (hT : ∀P∈T,Supported P.val)
     (a : O) (ha : a∈canonicalSlotSupport T) : a≠0 := by
@@ -54,16 +53,11 @@ def canonicalTupleEquiv {K : ℕ} (T : Fin K→Finset PrimeIdeal)
     (∀i,↥(T i)) ≃ (∀i,↥(canonicalSlotSupport (T i))) :=
   Equiv.piCongrRight (fun i=>canonicalSlotEquiv (T i) (hT i))
 
-@[simp] lemma canonicalTupleEquiv_val {K : ℕ} (T : Fin K→Finset PrimeIdeal)
-    (hT : ∀i P,P∈T i→Supported P.val) (P : ∀i,↥(T i)) (i : Fin K) :
-    (canonicalTupleEquiv T hT P i).val=primaryGenerator (P i).val.val := rfl
-
 theorem sum_canonical_element_tuples {K : ℕ} (T : Fin K→Finset PrimeIdeal)
     (hT : ∀i P,P∈T i→Supported P.val)
     (F : (Fin K→O)→ℂ) :
     (∑p : (∀i,↥(canonicalSlotSupport (T i))),F (fun i=>(p i).val))=
-      ∑P : (∀i,↥(T i)),F (fun i=>primaryGenerator (P i).val.val) := by
-  exact ((canonicalTupleEquiv T hT).sum_comp (fun p=>F (fun i=>(p i).val))).symm
+      ∑P : (∀i,↥(T i)),F (fun i=>primaryGenerator (P i).val.val) := ((canonicalTupleEquiv T hT).sum_comp (fun p=>F (fun i=>(p i).val))).symm
 
 theorem sum_canonical_weighted_tuples {K : ℕ} (T : Fin K→Finset PrimeIdeal)
     (hT : ∀i P,P∈T i→Supported P.val) (W : Fin K→ℝ→ℂ) (Y : Fin K→ℝ)

@@ -41,8 +41,7 @@ theorem finite_pair_mobius {α β : Type*} (S : Finset α) (T : Finset β)
       (if IsCoprime (A i) (B j) then F i j else 0) =
         ∑ D ∈ divisorPool T B, (moebius D : ℂ) *
           (if D ∣ A i ∧ D ∣ B j then F i j else 0) := by
-    have hm := congrArg (fun z : ℂ => z * F i j) (mobius_on_pool T B hB j hj (A i))
-    simpa only [ite_mul, one_mul, zero_mul, Finset.sum_mul, mul_ite, mul_zero] using hm
+    simpa only [ite_mul, one_mul, zero_mul, Finset.sum_mul, mul_ite, mul_zero] using (congrArg (fun z : ℂ => z * F i j) (mobius_on_pool T B hB j hj (A i)))
   calc
     _ = ∑ i ∈ S, ∑ j ∈ T, ∑ D ∈ divisorPool T B, (moebius D : ℂ) *
         (if D ∣ A i ∧ D ∣ B j then F i j else 0) := by

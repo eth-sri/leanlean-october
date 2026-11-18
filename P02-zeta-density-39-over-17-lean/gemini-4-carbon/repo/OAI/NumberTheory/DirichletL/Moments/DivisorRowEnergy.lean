@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentDivisorRowEnergy
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRows CenteredMomentDivisorFullMask
-open CenteredMomentDivisorEnergy CenteredMomentHeckeExpansion CenteredMomentRectangle HeckeFamily
+open CenteredMomentDivisorAllocation CenteredMomentDivisorRows CenteredMomentDivisorFullMask CenteredMomentDivisorEnergy CenteredMomentHeckeExpansion CenteredMomentRectangle HeckeFamily
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
@@ -39,7 +38,7 @@ theorem actual_allocated_energy (N : ℕ) (hslots : Fintype.card ι ≤ N)
   refine ⟨C,hC,?_⟩
   intro η m A t S β D hD W₁ W₂ b₁ b₂ X₁ X₂ Y₁ Y₂ hW₁ hW₂ hX₁ hX₂ hY₁ hY₂ rows ω hω
   have hc : (Finset.univ : Finset (ι ⊕ Fin 2)).card ≤ N+2 := by
-    simpa only [Finset.card_univ,Fintype.card_sum,Fintype.card_fin] using Nat.add_le_add_right hslots 2
+    simpa using Nat.add_le_add_right hslots 2
   have hrow (z : O) :
       ‖maskedRectangle η m A z t S β D W₁ W₂ X₁ X₂ Y₁ Y₂‖^2 ≤
         (Fintype.card (Allocation D (Finset.univ : Finset (ι ⊕ Fin 2))):ℝ)*
@@ -48,14 +47,10 @@ theorem actual_allocated_energy (N : ℕ) (hslots : Fintype.card ι ≤ N)
     unfold maskedRectangle
     rw [full_mask_eq_allocated_rectangles η m A z t S β D hD W₁ W₂ b₁ b₂
       _ _ _ _ hW₁ hW₂ hX₁ hX₂ hY₁ hY₂]
-    calc
-      _ ≤ (∑ a : Allocation D (Finset.univ : Finset (ι ⊕ Fin 2)),
-          ‖allocatedRectangle η m A z t S β D a W₁ W₂ X₁ X₂ Y₁ Y₂‖)^2 :=
-        pow_le_pow_left₀ (norm_nonneg _) (norm_sum_le _ _) 2
-      _ ≤ _ := by simpa using
+    exact (pow_le_pow_left₀ (norm_nonneg _) (norm_sum_le _ _) 2).trans (by simpa using
         (Finset.sum_mul_sq_le_sq_mul_sq Finset.univ
-          (fun _a : Allocation D (Finset.univ : Finset (ι ⊕ Fin 2)) => (1:ℝ))
-          (fun a => ‖allocatedRectangle η m A z t S β D a W₁ W₂ X₁ X₂ Y₁ Y₂‖))
+          (fun _a : Allocation D (Finset.univ : Finset (ι ⊕ Fin 2)) => 1)
+          (fun a => ‖allocatedRectangle η m A z t S β D a W₁ W₂ X₁ X₂ Y₁ Y₂‖)))
   calc
     _ ≤ ∑ z ∈ rows,ω z*((Fintype.card (Allocation D (Finset.univ : Finset (ι ⊕ Fin 2))):ℝ)*
         ∑ a : Allocation D (Finset.univ : Finset (ι ⊕ Fin 2)),

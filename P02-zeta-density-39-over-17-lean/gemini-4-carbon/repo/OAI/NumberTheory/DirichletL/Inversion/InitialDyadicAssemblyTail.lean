@@ -7,14 +7,11 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators SchwartzMap
 open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
+open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseInitialDyadicAssembly
 local notation "Eis"=>ActualEisensteinCubic.O
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
-open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
-open InverseInitialEnergyCallerWindows InverseInitialProfile InverseInitialClippedColumns
-open CenteredMomentSectorLocalization CenteredMomentDyadicCount
+open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource InverseInitialEnergyCallerWindows InverseInitialProfile InverseInitialClippedColumns CenteredMomentSectorLocalization CenteredMomentDyadicCount
 
 def windowMass {a b:Fin 4→ℝ}(F:Finset (Windows a b))(q:Fin 4→ℝ) : ℝ :=
   ∑k∈F,∏i:Fin 4,dyadicWeight (k i).val (q i)
@@ -108,9 +105,7 @@ theorem tail_mass_live_bounds (a b:Fin 4→ℝ)(Z D m L:ℝ)(hZ:1<Z)
   obtain ⟨k,hk,hne⟩:=windowMass_ne_zero_exists _ _ hn
   refine ⟨k,hk,(Finset.mem_filter.mp hk).2,?_⟩
   intro i
-  have hi:(dyadicWeight (k i).val (sourceNorms p x i):ℂ)≠0 :=
-    Finset.prod_ne_zero_iff.mp hne i (Finset.mem_univ i)
-  have hr:dyadicWeight (k i).val (sourceNorms p x i)≠0 := by exact_mod_cast hi
+  have hr:dyadicWeight (k i).val (sourceNorms p x i)≠0 := by exact_mod_cast (Finset.prod_ne_zero_iff.mp hne i (Finset.mem_univ i))
   rw [exponent_scale Z hZ]
   exact dyadicWeight_support (k i).val hr
 
@@ -164,8 +159,7 @@ theorem actual_physical_retained_tail
       ((fun x=>w x*(windowMass (tailWindows (fun _=>1) (physicalCaps b Z D T) Z D m L)
         (sourceNorms p x):ℂ))∘erasePoint) Ψ j marks W₁ W₂ Φ Z D m := by
   rw [actual_physical_partition p hp hcop hg hpr pool S hdiv hf w Ψ j marks W₁ W₂ Φ
-    Z D m b T hZ hW₁ hW₂ hT]
-  rw [window_sum_split (fun _=>1) (physicalCaps b Z D T) Z D m L]
+    Z D m b T hZ hW₁ hW₂ hT, window_sum_split (fun _=>1) (physicalCaps b Z D T) Z D m L]
   congr 1
   exact sum_windowBlock_eq_mass p hp hcop hg pool
     (cappedSource p S (fun _=>1) (physicalCaps b Z D T)) _ _ _ w Ψ j marks W₁ W₂ Φ Z D m hZ

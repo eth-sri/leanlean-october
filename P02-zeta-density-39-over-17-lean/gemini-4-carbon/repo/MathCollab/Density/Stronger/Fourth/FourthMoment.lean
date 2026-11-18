@@ -11,9 +11,8 @@ public import MathCollab.Density.Stronger.Fourth.SquarePrefix
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
+open Complex Filter MeasureTheory Set Topology MathCollab.Density.Stronger
 open scoped Interval
-open MathCollab.Density.Stronger
 set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Fourth
@@ -86,9 +85,7 @@ theorem zeta_fourth_dyadic :
   have hlast : H^(1+7*q) ≤ H^(1+η) :=
     Real.rpow_le_rpow_of_exponent_le hH1 (by linarith)
   have hlinear : H ≤ H^(1+η) := by
-    calc
-      H = H^(1:ℝ) := (Real.rpow_one H).symm
-      _ ≤ _ := Real.rpow_le_rpow_of_exponent_le hH1 (by linarith)
+    exact ((Real.rpow_one H).symm).trans_le (Real.rpow_le_rpow_of_exponent_le hH1 (by linarith))
   calc
     _ ≤ ∫ t in H..2*H, 8*Kg*(2*H)^(2*q)*F t+8*Kt^2 :=
       intervalIntegral.integral_mono_on (by linarith)

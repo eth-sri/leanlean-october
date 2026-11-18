@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaBufferedRetainedGeometry
 
 @[expose] public section
@@ -38,7 +48,7 @@ theorem real_rpow_lipschitz_on_positive_compact
     (fun z hz => (hf z hz).differentiableAt (by simp : (∞ : WithTop ℕ∞) ≠ 0))
     (fun z hz => (hB z hz).trans (le_max_right 1 B))
     (convex_Icc l r) hy hx
-  simpa only [Real.norm_eq_abs] using h
+  simpa using h
 
 theorem modelPhaseInverseSlope_expanded_model_error
     {σ : ℝ} (hσ : 0 < σ) :

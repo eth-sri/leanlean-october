@@ -23,9 +23,8 @@ theorem raw_log_capacity (H D c : ℝ) (hH : 1<H) (hD : 1≤D) (hc : 0<c)
     (hcap : D^(1+c)≤H) :
     0≤Real.logb H D ∧ Real.logb H D≤1-capacityGap c ∧
     2*Real.logb H D≤3-capacityGap c ∧ H^(Real.logb H D)=D := by
-  have hHp : 0<H:=zero_lt_one.trans hH
-  have hDp : 0<D:=zero_lt_one.trans_le hD
-  have hlogH : 0<Real.log H:=Real.log_pos hH
+  have hDp :=zero_lt_one.trans_le hD
+  have hlogH :=Real.log_pos hH
   have hh:=Real.log_le_log (Real.rpow_pos_of_pos hDp (1+c)) hcap
   rw [Real.log_rpow hDp] at hh
   have hr : Real.logb H D≤1/(1+c) := by
@@ -40,7 +39,7 @@ theorem raw_log_capacity (H D c : ℝ) (hH : 1<H) (hD : 1≤D) (hc : 0<c)
     ring
   have hg:=(capacityGap_pos c hc).le
   exact ⟨div_nonneg (Real.log_nonneg hD) hlogH.le,hr.trans_eq he,
-    by linarith [hr.trans_eq he],Real.rpow_logb hHp (ne_of_gt hH) hDp⟩
+    by linarith [hr.trans_eq he],Real.rpow_logb (zero_lt_one.trans hH) (ne_of_gt hH) hDp⟩
 
 theorem raw_fixed_reserves (c κ : ℝ) (hc : 0<c) (hκ : 0<κ) :
     ∃η τ π ε : ℝ,0<η ∧ 0<τ ∧ 0<π ∧ 0<ε ∧
@@ -58,12 +57,10 @@ theorem raw_fixed_reserves (c κ : ℝ) (hc : 0<c) (hκ : 0<κ) :
 
 theorem raw_output_budget (H D κ e : ℝ) (hH : 1≤H) (hκ : 0≤κ) (he : e≤κ) :
     H^(1+e)≤H*(H*max 1 D)^κ := by
-  have hHp : 0<H:=zero_lt_one.trans_le hH
+  have hHp :=zero_lt_one.trans_le hH
   rw [Real.rpow_add hHp,Real.rpow_one]
   apply mul_le_mul_of_nonneg_left _ hHp.le
-  calc
-    H^e≤H^κ:=Real.rpow_le_rpow_of_exponent_le hH he
-    _≤(H*max 1 D)^κ:=Real.rpow_le_rpow hHp.le (by nlinarith [le_max_left 1 D]) hκ
+  exact (Real.rpow_le_rpow_of_exponent_le hH he).trans (Real.rpow_le_rpow hHp.le (by nlinarith [le_max_left 1 D]) hκ)
 
 end SevenEighths.DetectorDictionaryInverseRawGeometry
 

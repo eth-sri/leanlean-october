@@ -8,74 +8,9 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-
-open scoped BigOperators Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 namespace FirstPassCubeLabels
-open ActualEisensteinCubic
 open MixedCrossSeparation (crossSymbol quadraticCrossPhase columnPrimeCoprime)
 open FiniteGaussPhase (canonicalProductGauss)
 
@@ -139,7 +74,6 @@ theorem gaussBlock_three_cube_partition {ι : Type*} [DecidableEq ι]
     intro k hk
     rw [hP i hi, hC k hk]
     rfl
-  change gaussBlock p hp hg ((N ∪ P) ∪ C) e = _
   rw [gaussBlock_union p hp hg (N ∪ P) C hNPC, gaussBlock_union p hp hg N P hNP,
     blockCross_union_left p hg N P C hNP,
     gaussBlock_congr p hp hg N e (fun _ => 5) hN,
@@ -197,20 +131,14 @@ theorem gaussBlock_eq_mobius_converted {ι : Type*} [DecidableEq ι]
     have ht := (hcop hne).sup_eq
     rw [hik, sup_idem] at ht
     exact (inferInstance : (Ideal.span {p k}).IsMaximal).ne_top ht
-  have hprime (i : ι) : Prime (Ideal.span {p i}) :=
-    Ideal.prime_of_isPrime (NeZero.ne (Ideal.span {p i})) inferInstance
+  have hprime (i : ι) := Ideal.prime_of_isPrime (NeZero.ne (Ideal.span {p i})) inferInstance
   rw [FirstCauchyArithmetic.supportMobius,
     prime_product_moebius (fun i => Ideal.span {p i}) hprime hinj S]
   unfold gaussBlock MixedCrossSeparation.convertedColumnBlock
   rw [← Finset.prod_neg]
   apply Finset.prod_congr rfl
   intro i hi
-  have hl := MixedGaussConversion.neg_localGauss_eq_converted (p i) (hp i) (hg i) (hc i) (hpr i) side
-  change (∏ k ∈ S.erase i, crossSymbol p hg i k ^ (if side then 5 else 1)) *
-      MixedGaussConversion.localGauss (p i) (hp i) (hg i) (if side then 5 else 1) =
-    -((∏ k ∈ S.erase i, crossSymbol p hg i k ^ (if side then 5 else 1)) *
-      MixedGaussConversion.convertedLocal (p i) (hp i) (hg i) side)
-  rw [← hl]
+  rw [← (MixedGaussConversion.neg_localGauss_eq_converted (p i) (hp i) (hg i) (hc i) (hpr i) side)]
   ring
 
 theorem a_weighted_three_cube_gauss {ι : Type*} [DecidableEq ι]
@@ -241,8 +169,6 @@ theorem a_weighted_three_cube_gauss {ι : Type*} [DecidableEq ι]
   have hconvP := gaussBlock_eq_mobius_converted p hp hcop hg hc hpr P false
   simp only [Bool.false_eq_true, ↓reduceIte] at hconvN hconvP
   rw [hconvN, hconvP]
-  have hn := MixedCrossSeparation.columnCoefficient_cancel_true p hp hcop hg hc hpr N
-  have hp' := MixedCrossSeparation.columnCoefficient_cancel_false p hp hcop hg hc hpr P
   simp only [FirstCauchyArithmetic.firstPassColumnMinus, FirstCauchyArithmetic.firstPassColumnPlus,
     star_mul, star_star, FirstCauchyArithmetic.star_supportMobius]
   calc
@@ -260,12 +186,12 @@ theorem a_weighted_three_cube_gauss {ι : Type*} [DecidableEq ι]
         quadraticCrossPhase p hg P (cubeOddSupport B v ε₁ ε₂) *
         star (finiteSquarefreeRow (fun i => Ideal.span {p i}) hg N (crtLabel p B v ε₁ ε₂ true)) *
         finiteSquarefreeRow (fun i => Ideal.span {p i}) hg P (crtLabel p B v ε₁ ε₂ false)) := by ring
-    _ = _ := by rw [hn, hp']; ring
+    _ = _ := by rw [(MixedCrossSeparation.columnCoefficient_cancel_true p hp hcop hg hc hpr N), (MixedCrossSeparation.columnCoefficient_cancel_false p hp hcop hg hc hpr P)]; ring
 
 end FirstPassCubeLabels
 
 namespace QuadraticGaussRay
-open EisensteinEPrimaryPhase ActualEisensteinCoordinates ActualEisensteinCubic
+open EisensteinEPrimaryPhase ActualEisensteinCoordinates
 
 theorem quadraticRayValue_square (r : Coord) (hr : odd r) :
     quadraticRayValue (mul r r) = 1 := by
@@ -318,10 +244,10 @@ theorem disjoint_gram_expansion {ι n : Type*} [DecidableEq ι] [Fintype n]
         (↑(‖∑ j, if D ⊆ support j then z j else 0‖ ^ 2) : ℂ) := by
   have hp (j k : n) :
       (if Disjoint (support j) (support k) then star (z j) * z k else 0) =
-      ∑ D ∈ B.powerset, (-1 : ℂ) ^ D.card *
+      ∑ D ∈ B.powerset, (-1) ^ D.card *
         (if D ⊆ support j ∧ D ⊆ support k then star (z j) * z k else 0) := by
     calc
-      _ = (if Disjoint (support j) (support k) then (1 : ℂ) else 0) * (star (z j) * z k) := by
+      _ = (if Disjoint (support j) (support k) then 1 else 0) * (star (z j) * z k) := by
         split_ifs <;> simp
       _ = _ := by
         rw [disjoint_indicator_expansion B _ _ (hs j) (hs k), Finset.sum_mul]
@@ -331,13 +257,13 @@ theorem disjoint_gram_expansion {ι n : Type*} [DecidableEq ι] [Fintype n]
   simp_rw [hp]
   calc
     _ = ∑ j, ∑ D ∈ B.powerset, ∑ k,
-        (-1 : ℂ) ^ D.card *
+        (-1) ^ D.card *
           (if D ⊆ support j ∧ D ⊆ support k then star (z j) * z k else 0) := by
       apply Finset.sum_congr rfl
       intro j _
       exact Finset.sum_comm
     _ = ∑ D ∈ B.powerset, ∑ j, ∑ k,
-        (-1 : ℂ) ^ D.card *
+        (-1) ^ D.card *
           (if D ⊆ support j ∧ D ⊆ support k then star (z j) * z k else 0) :=
       Finset.sum_comm
     _ = _ := by
@@ -369,22 +295,6 @@ theorem masked_coefficient_energy {ι n : Type*} [DecidableEq ι] [Fintype n]
   rw [← Finset.sum_filter, heq]
   simp
 
-theorem weighted_energy_bound {m n : Type*} [Fintype m] [Fintype n]
-    [DecidableEq m] [DecidableEq n]
-    (A : Matrix m n ℂ) (a : n → ℂ) (w : m → ℂ) (W : ℝ)
-    (hW : 0 ≤ W) (hw : ∀ i, ‖w i‖ ≤ W) :
-    ‖∑ i, w i * (↑(‖∑ j, A i j * a j‖ ^ 2) : ℂ)‖ ≤
-      W * ‖operator A‖ ^ 2 * ∑ j, ‖a j‖ ^ 2 := by
-  calc
-    _ ≤ ∑ i, ‖w i * (↑(‖∑ j, A i j * a j‖ ^ 2) : ℂ)‖ := norm_sum_le _ _
-    _ ≤ ∑ i, W * ‖∑ j, A i j * a j‖ ^ 2 := by
-      apply Finset.sum_le_sum
-      intro i _
-      rw [norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (sq_nonneg _)]
-      exact mul_le_mul_of_nonneg_right (hw i) (sq_nonneg _)
-    _ = W * ∑ i, ‖∑ j, A i j * a j‖ ^ 2 := (Finset.mul_sum ..).symm
-    _ ≤ _ := by
-      simpa only [mul_assoc] using mul_le_mul_of_nonneg_left (energy_bound A a) hW
 
 theorem coprime_gram_operator_bound {ι m n : Type*} [DecidableEq ι]
     [Fintype m] [Fintype n] [DecidableEq m] [DecidableEq n]
@@ -398,7 +308,7 @@ theorem coprime_gram_operator_bound {ι m n : Type*} [DecidableEq ι]
   have heq : (∑ i, w i * (∑ j, ∑ k,
       if Disjoint (support j) (support k) then
         star (A i j * a j) * (A i k * a k) else 0)) =
-      ∑ D ∈ B.powerset, (-1 : ℂ) ^ D.card *
+      ∑ D ∈ B.powerset, (-1) ^ D.card *
         ∑ i, w i * (↑(‖∑ j, A i j * (if D ⊆ support j then a j else 0)‖ ^ 2) : ℂ) := by
     simp_rw [disjoint_gram_expansion B support hs, Finset.mul_sum]
     rw [Finset.sum_comm]
@@ -415,14 +325,23 @@ theorem coprime_gram_operator_bound {ι m n : Type*} [DecidableEq ι]
     ring
   rw [heq]
   calc
-    _ ≤ ∑ D ∈ B.powerset, ‖(-1 : ℂ) ^ D.card *
+    _ ≤ ∑ D ∈ B.powerset, ‖(-1) ^ D.card *
         ∑ i, w i * (↑(‖∑ j, A i j * (if D ⊆ support j then a j else 0)‖ ^ 2) : ℂ)‖ := norm_sum_le _ _
     _ ≤ ∑ D ∈ B.powerset,
         W * ‖operator A‖ ^ 2 * ∑ j, ‖if D ⊆ support j then a j else 0‖ ^ 2 := by
       apply Finset.sum_le_sum
       intro D _
       simp only [norm_mul, norm_pow, norm_neg, norm_one, one_pow, one_mul]
-      exact weighted_energy_bound A (fun j => if D ⊆ support j then a j else 0) w W hW hw
+      calc
+          _ ≤ ∑ i, ‖w i * (↑(‖∑ j, A i j * (fun j => if D ⊆ support j then a j else 0) j‖ ^ 2) : ℂ)‖ := norm_sum_le _ _
+          _ ≤ ∑ i, W * ‖∑ j, A i j * (fun j => if D ⊆ support j then a j else 0) j‖ ^ 2 := by
+            apply Finset.sum_le_sum
+            intro i _
+            rw [norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (sq_nonneg _)]
+            exact mul_le_mul_of_nonneg_right (hw i) (sq_nonneg _)
+          _ = W * ∑ i, ‖∑ j, A i j * (fun j => if D ⊆ support j then a j else 0) j‖ ^ 2 := (Finset.mul_sum ..).symm
+          _ ≤ _ := by
+            simpa only [mul_assoc] using mul_le_mul_of_nonneg_left (energy_bound A (fun j => if D ⊆ support j then a j else 0)) hW
     _ = _ := by
       rw [← Finset.mul_sum, masked_coefficient_energy B support hs a]
 
@@ -431,13 +350,12 @@ end CoprimeSieveOperator
 namespace IdealCoprimeSieveOperator
 abbrev O := ActualEisensteinCubic.O
 open IdealMobiusDivisorSum CoprimeSieveOperator FiniteSieveOperator
-open UniqueFactorizationMonoid
 
 theorem primeSupport_disjoint_iff {I J : Ideal O} (hI : I ≠ 0) (hJ : J ≠ 0) :
     Disjoint (primeSupport I) (primeSupport J) ↔ IsCoprime I J := by
   constructor
   · intro h
-    have hr : IsRelPrime I J := (isRelPrime_iff_no_prime_factors hI).mpr (by
+    have hr := (isRelPrime_iff_no_prime_factors hI).mpr (by
       intro P hPI hPJ hP
       apply Finset.disjoint_left.mp h
       · apply Multiset.mem_toFinset.mpr
@@ -471,7 +389,7 @@ theorem ideal_coprime_gram_operator_bound {m n : Type*}
       if IsCoprime (column j) (column k) then
         star (A i j * a j) * (A i k * a k) else 0)‖ ≤
       W * ‖operator A‖ ^ 2 * (supportConstant ε hε * N ^ ε) * ∑ j, ‖a j‖ ^ 2 := by
-  let B : Finset (Ideal O) := Finset.univ.biUnion (fun j => primeSupport (column j))
+  let B := Finset.univ.biUnion (fun j => primeSupport (column j))
   have hs (j : n) : primeSupport (column j) ⊆ B := by
     intro P hP
     exact Finset.mem_biUnion.mpr ⟨j, Finset.mem_univ j, hP⟩
@@ -494,7 +412,6 @@ open ConcretePrimeRowBridge
 
 end IdealCoprimeSieveOperator
 
-open scoped BigOperators Classical
 namespace QuadraticMainOperatorBound
 abbrev O := ActualEisensteinCubic.O
 open IdealMobiusDivisorSum QuadraticMainBoundary IdealCoprimeSieveOperator FiniteSieveOperator
@@ -508,12 +425,10 @@ theorem mainWeight_norm_le (K : ℝ) (hK : 0 < K) (H D E : Ideal O)
   · simp [mainWeight, hc]
   have hn : K < (Ideal.absNorm (H * D * E) : ℝ) := by
     exact lt_of_not_ge (fun h => hc (cutoffDifference_eq_zero_of_product_le K hD hE h))
-  have hsq : 0 < Real.sqrt K := Real.sqrt_pos.mpr hK
-  have hle := Real.sqrt_le_sqrt hn.le
   rw [mainWeight, cutoffDifference_eq_neg_one_of_nonzero K H D hD hc]
   simp only [norm_div, Complex.ofReal_neg, Complex.ofReal_one, norm_neg, norm_one,
     Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (Real.sqrt_nonneg _)]
-  exact one_div_le_one_div_of_le hsq hle
+  exact one_div_le_one_div_of_le (Real.sqrt_pos.mpr hK) (Real.sqrt_le_sqrt hn.le)
 
 theorem main_difference_operator_bound {m n : Type*}
     [Fintype m] [Fintype n] [DecidableEq m] [DecidableEq n]
@@ -580,7 +495,7 @@ theorem main_difference_operator_bound {m n : Type*}
       exact (norm_sum_le _ _).trans (Finset.sum_le_sum (fun E hE => hterm D hD E hE))
     _ = _ := by simp only [Finset.sum_const, nsmul_eq_mul, B]; ring
 
-open ConcretePrimeRowBridge ActualEisensteinCubic
+open ConcretePrimeRowBridge
 
 theorem ideal_quadraticRow_norm_le_one (F : Finset (Ideal O))
     (hFpos : ∀ I ∈ F, I ≠ ⊥)

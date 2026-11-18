@@ -8,11 +8,8 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialArithmetic
 namespace OAI
 
 noncomputable section
+open ActualEisensteinCubic ConcretePrimeRowBridge ConcreteTraceCRT EisensteinSchwartzPoisson UniqueFactorizationMonoid CanonicalQuadraticSieve SevenEighths.InverseInitialPoissonBridge SevenEighths.InverseInitialOverlap SevenEighths.InverseInitialProfile
 open scoped BigOperators Classical SchwartzMap ContDiff
-open ActualEisensteinCubic ConcretePrimeRowBridge ConcreteTraceCRT
-open EisensteinSchwartzPoisson UniqueFactorizationMonoid CanonicalQuadraticSieve
-open SevenEighths.InverseInitialPoissonBridge SevenEighths.InverseInitialOverlap
-open SevenEighths.InverseInitialProfile
 namespace SevenEighths.InverseInitialKernelBridge
 
 local notation "Eis" => ActualEisensteinCubic.O
@@ -20,21 +17,6 @@ local notation "N" => fun I : Ideal Eis => (Ideal.absNorm I : ℝ)
 variable {ι : Type*} [DecidableEq ι] (P : ι → Ideal Eis)
   [∀ i, (P i).IsMaximal] (hinj : Function.Injective P)
   (hg : ∀ i, goodLambda ∉ P i)
-
-def pairRow (S T : Finset ι) (h : Eis) : ℂ :=
-  finiteSexticRow (activePrimes P S T) (fun i => hg i.val) (activeExponent S T) h
-
-def pairGauss (S T : Finset ι) : ℂ :=
-  canonicalNormalizedGauss (activePrimes P S T)
-    (activePrimes_pairwise_isCoprime P hinj S T) (fun i => hg i.val) (activeExponent S T)
-
-def pairCoordinates (S T E : Finset ι) (h : Eis) : Fin 6 → ℝ :=
-  ![N (∏ i ∈ S∩T,P i), N (∏ i ∈ E,P i), 1, ‖eisEmbedding h‖^2,
-    N (∏ i ∈ S\T,P i), N (∏ i ∈ T\S,P i)]
-
-def pairArithmetic (S T E : Finset ι) (h : Eis) : ℂ :=
-  pairGauss P hinj hg S T * (moebius (∏ i ∈ E,P i) : ℂ) *
-    pairRow P hg S T (primeSubsetGenerator P E) * star (pairRow P hg S T h)
 
 private theorem physicalKernel_vector (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ))
     (Z D m q₀ q₁ q₂ q₃ q₄ q₅ : ℝ) :

@@ -59,11 +59,10 @@ lemma lowRowMellinIntegrand_nonzero_form (C : CalibrationData) (W0 W1 Ω : ℝ�
           (((Ideal.absNorm r.1.val:ℝ)/Y:ℝ):ℂ)^((v:ℂ)*Complex.I)*mellin W0 ((v:ℂ)*Complex.I)) := by
   have hq : (0:ℝ)<Ideal.absNorm r.1.val := by
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr r.1.property.1)
-  have hqc : (((Ideal.absNorm r.1.val:ℝ)/Y:ℝ):ℂ)≠0 := Complex.ofReal_ne_zero.mpr (div_pos hq hY).ne'
   unfold lowRowMellinIntegrand lowAdditiveCoefficient
   rw [ite_eq_left hc]
   dsimp only
-  rw [Complex.cpow_add _ _ hqc]
+  rw [Complex.cpow_add _ _ (Complex.ofReal_ne_zero.mpr (div_pos hq hY).ne')]
   ring
 
 lemma lowRowMellinIntegrand_integrable (C : CalibrationData) (W0 W1 Ω : ℝ→ℂ)
@@ -156,8 +155,7 @@ lemma lowArithmeticCoefficient_norm (C : CalibrationData) (s : {I : Id // Suppor
   · simp only [div_eq_mul_inv,mul_inv_rev,norm_mul,norm_inv]
     have hi := calibration_residue_inverse_norm C (primaryGenerator s.val)
     rw [norm_inv] at hi
-    have hh := (mul_le_of_le_one_left (inv_nonneg.mpr (norm_nonneg _)) (idealRowHom_norm C.generator s.val)).trans hi
-    simpa only [mul_assoc] using mul_le_of_le_one_left (inv_nonneg.mpr (norm_nonneg C.tau)) hh
+    simpa only [mul_assoc] using mul_le_of_le_one_left (inv_nonneg.mpr (norm_nonneg C.tau)) ((mul_le_of_le_one_left (inv_nonneg.mpr (norm_nonneg _)) (idealRowHom_norm C.generator s.val)).trans hi)
   · simp
 
 lemma lowArithmeticCoefficient_source_norm (S : Finset Id) (hS : ∀P∈S,P.IsMaximal)

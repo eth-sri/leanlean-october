@@ -2,7 +2,16 @@ module
 public import TaoTrudgianYang2025.ExponentPairBProcess
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.AdditiveEnergy
 public import LaterPairs.Native.ClassicalSecondDerivativePair
 public import LaterPairs.Native.DyadicMomentCutoff
@@ -37,26 +46,23 @@ theorem norm_sum_Ico_le_of_long_intervals (g : ℕ → ℂ) {A B a b : ℕ} {K :
     (hlong : ∀ u v : ℕ, A ≤ u → u ≤ v → v ≤ B →
       (B-A:ℕ) ≤ 2*(v-u) → ‖∑ n ∈ Finset.Ico u v, g n‖ ≤ K) :
     ‖∑ n ∈ Finset.Ico a b, g n‖ ≤ 4*K := by
-  have hAB : A ≤ B := hAa.trans (hab.trans hbB)
-  have hfull := hlong A B le_rfl hAB le_rfl (by omega)
+  have hfull := hlong A B le_rfl (hAa.trans (hab.trans hbB)) le_rfl (by omega)
   have hprefix (t : ℕ) (hAt : A ≤ t) (htB : t ≤ B) :
       ‖∑ n ∈ Finset.Ico A t, g n‖ ≤ 2*K := by
     by_cases hlen : B-A ≤ 2*(t-A)
     · have h := hlong A t le_rfl hAt htB hlen
       linarith
     · have htail := hlong t B hAt htB le_rfl (by omega)
-      have he := Finset.sum_Ico_consecutive g hAt htB
       have he' : ∑ n ∈ Finset.Ico A t, g n =
           (∑ n ∈ Finset.Ico A B, g n)-(∑ n ∈ Finset.Ico t B, g n) := by
-        linear_combination he
+        linear_combination (Finset.sum_Ico_consecutive g hAt htB)
       rw [he']
       exact (norm_sub_le _ _).trans (by linarith)
   have ha := hprefix a hAa (hab.trans hbB)
   have hb := hprefix b (hAa.trans hab) hbB
-  have he := Finset.sum_Ico_consecutive g hAa hab
   have he' : ∑ n ∈ Finset.Ico a b, g n =
       (∑ n ∈ Finset.Ico A b, g n)-(∑ n ∈ Finset.Ico A a, g n) := by
-    linear_combination he
+    linear_combination (Finset.sum_Ico_consecutive g hAa hab)
   rw [he']
   exact (norm_sub_le _ _).trans (by linarith)
 
@@ -100,12 +106,11 @@ theorem exists_robertSargos_model_tail_bound {σ η : ℝ} (hσ : 0 < σ) (hη :
   have hLp : (0:ℝ) < L := (Real.rpow_pos_of_pos hlam _).trans_le hlen
   have hLN : (L:ℝ) ≤ N := by linarith
   have hupper : (a:ℝ)+(2*N-(a:ℝ)) ≤ 2*N := by linarith
-  have hfd := heathBrownPhysicalPhase_contDiffOn hF.1 hN ha hupper T (modelPhaseJetSign σ 3)
   have hint (x : ℝ) (hx : x ∈ Icc (1:ℝ) L) :
       x ∈ Ioo (0:ℝ) (2*N-(a:ℝ)) := by constructor <;> linarith [hx.1,hx.2]
   have hf : ∀ x ∈ Icc (1:ℝ) L, ContDiffAt ℝ 4 f x := by
     intro x hx
-    exact ((hfd.of_le (ENat.natCast_le_of_coe_top_le_withTop le_rfl 4))
+    exact (((heathBrownPhysicalPhase_contDiffOn hF.1 hN ha hupper T (modelPhaseJetSign σ 3)).of_le (ENat.natCast_le_of_coe_top_le_withTop le_rfl 4))
       x ⟨(hint x hx).1.le,(hint x hx).2.le⟩).contDiffAt
       (mem_of_superset (isOpen_Ioo.mem_nhds (hint x hx)) Ioo_subset_Icc_self)
   have hj (x : ℝ) (hx : x ∈ Icc (1:ℝ) L) :
@@ -142,7 +147,7 @@ theorem heathBrownSourceTail_eq_Ico (F : ℝ → ℝ) (T N : ℝ) {u v : ℕ}
     simp only [Finset.mem_Icc]
     omega
   · intro n hn
-    simp only [Nat.cast_add]
+    simp
 
 theorem exists_robertSargos_model_sum_bound {σ η : ℝ} (hσ : 0 < σ) (hη : 0 < η) :
     ∃ δ : ℝ, 0 < δ ∧ ∃ K : ℝ, 0 < K ∧
@@ -221,9 +226,8 @@ theorem exists_robertSargos_model_sum_bound {σ η : ℝ} (hσ : 0 < σ) (hη : 
     apply (norm_sum_le _ _).trans
     simp only [norm_oscillatory,Finset.sum_const,nsmul_eq_mul,mul_one]
     exact_mod_cast hcard
-  have he := Finset.sum_inter_add_sum_sdiff S I (fun n => oscillatory F T N n)
   change ‖∑ n ∈ S, oscillatory F T N n‖ ≤ _
-  rw [← he]
+  rw [← (Finset.sum_inter_add_sum_sdiff S I (fun n => oscillatory F T N n))]
   have hn := (norm_add_le _ _).trans (add_le_add hcore hboundary)
   dsimp only [U] at hn
   nlinarith only [hn]
@@ -235,7 +239,7 @@ theorem robertSargos_model_main_power {c T N η : ℝ}
   rw [Real.div_rpow (mul_nonneg hc.le hT.le) (pow_nonneg hN.le _),
     Real.mul_rpow hc.le hT.le,← Real.rpow_natCast N 4,
     ← Real.rpow_mul hN.le]
-  norm_num only [Nat.cast_ofNat]
+  norm_num
   rw [div_eq_mul_inv,← Real.rpow_neg hN.le]
   calc
     _ = c^((1:ℝ)/13)*T^((1:ℝ)/13)*(N^(1+η)*N^(-((4:ℝ)*(1/13)))) := by ring_nf
@@ -248,7 +252,7 @@ theorem robertSargos_model_length_power {c T N : ℝ}
   rw [Real.div_rpow (mul_nonneg hc.le hT.le) (pow_nonneg hN.le _),
     Real.mul_rpow hc.le hT.le,← Real.rpow_natCast N 4,
     ← Real.rpow_mul hN.le]
-  norm_num only [Nat.cast_ofNat]
+  norm_num
   rw [div_eq_mul_inv,div_eq_mul_inv,← Real.rpow_neg hN.le,
     ← Real.rpow_neg_one]
   calc
@@ -274,7 +278,7 @@ theorem eventually_robertSargos_model_length {c a : ℝ}
     (show 0 ≤ 8*c^(-(8:ℝ)/13)*T^(-(8:ℝ)/13) by positivity)
   have hratio : (c*T/N^4)^(-(8:ℝ)/13)/N ≤ 1/8 := by
     rw [robertSargos_model_length_power hc hT hN]
-    nlinarith only [hscale,hmono,hpow]
+    nlinarith
   have h := (div_le_iff₀ hN).mp hratio
   linarith
 
@@ -357,8 +361,7 @@ theorem exponentPair_robertSargos : ExponentPair (1/13) (10/13) := by
       ring
     · have hclassical := exponentPair_half_half.aProcess.aProcess.bProcess.aProcess
       norm_num at hclassical
-      have h := exponentSumGrowthExponent_le_exponentPairLine_closed hclassical α (by linarith)
-      apply h.trans
+      apply (exponentSumGrowthExponent_le_exponentPairLine_closed hclassical α (by linarith)).trans
       unfold exponentPairLine
       linarith
   · have hz : α = 0 := NNReal.coe_injective (le_antisymm (le_of_not_gt hα) α.coe_nonneg)
@@ -372,8 +375,8 @@ theorem exponentSumGrowthExponent_le_bourgain_short_of_robertSargos
     {alpha : ℝ≥0} (halpha : (alpha:ℝ) ≤ 17/42) :
     exponentSumGrowthExponent alpha ≤ 13/84+(alpha:ℝ)/2 := by
   have hb := exponentSumGrowthExponent_le_exponentPairLine_closed
-    exponentPair_robertSargos alpha (by linarith only [halpha] : (alpha:ℝ) ≤ 1)
+    exponentPair_robertSargos alpha (by linarith : (alpha:ℝ) ≤ 1)
   unfold exponentPairLine at hb
-  linarith only [hb,halpha]
+  linarith
 
 end TaoTrudgianYang2025

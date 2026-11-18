@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.RobertSargosWideFrequencyCount
 
 @[expose] public section
@@ -20,17 +29,11 @@ theorem robertSargos_wide_frequency_loss_algebra {R H Q δ ε : ℝ}
     H^ε*(R*H^2+δ*R*H*Q^2) ≤ (R*H*Q)^(1+ε)*(1+δ*Q) := by
   have hHp : 0 < H := by linarith
   have hB : 0 < R*H*Q := by positivity
-  have hHB : H ≤ R*H*Q :=
-    (le_mul_of_one_le_left hHp.le hR).trans
+  have hHB := (le_mul_of_one_le_left hHp.le hR).trans
       (le_mul_of_one_le_right (by positivity : 0 ≤ R*H) hQ)
-  have hp := Real.rpow_le_rpow hHp.le hHB hε
   have hs : R*H^2+δ*R*H*Q^2 ≤ (R*H*Q)*(1+δ*Q) := by
-    have hm := mul_le_mul_of_nonneg_left hHQ (by positivity : 0 ≤ R*H)
-    nlinarith only [hm]
-  calc
-    _ ≤ (R*H*Q)^ε*((R*H*Q)*(1+δ*Q)) :=
-      mul_le_mul hp hs (by positivity) (Real.rpow_nonneg hB.le _)
-    _ = _ := by rw [Real.rpow_add hB,Real.rpow_one]; ring
+    nlinarith
+  exact (mul_le_mul (Real.rpow_le_rpow hHp.le hHB hε) hs (by positivity) (Real.rpow_nonneg hB.le _)).trans_eq (by rw [Real.rpow_add hB,Real.rpow_one]; ring)
 
 theorem exists_robertSargos_primitive_count_wide_frequency (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ (S : Finset RobertSargosPoint) (R H Q δ : ℝ),
@@ -40,9 +43,8 @@ theorem exists_robertSargos_primitive_count_wide_frequency (ε : ℝ) (hε : 0 <
   obtain ⟨C,hC,hcount⟩ := exists_robertSargos_primitive_count_coefficient_bound ε hε
   refine ⟨C,hC,?_⟩
   intro S R H Q δ hR hH hQ hδ hRH hHQ hmem
-  have hb := hcount S R H Q δ hR hH (by linarith) hδ hRH hmem
   calc
-    _ ≤ C*H^ε*(R*H^2+δ*R*H*Q^2) := hb
+    _ ≤ C*H^ε*(R*H^2+δ*R*H*Q^2) := (hcount S R H Q δ hR hH (by linarith) hδ hRH hmem)
     _ = C*(H^ε*(R*H^2+δ*R*H*Q^2)) := by ring
     _ ≤ C*((R*H*Q)^(1+ε)*(1+δ*Q)) :=
       mul_le_mul_of_nonneg_left (robertSargos_wide_frequency_loss_algebra

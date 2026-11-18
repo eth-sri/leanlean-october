@@ -7,77 +7,11 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-
-open scoped BigOperators Classical SchwartzMap ContDiff
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 namespace SecondPassArithmetic
 
 section
-open ActualEisensteinCubic
 open JointLogSeparation
 open FirstPassCubeLabels (jLabel)
 open SecondPassIntegration (elementNorm)
@@ -90,15 +24,11 @@ variable {ι : Type*} [DecidableEq ι]
 end
 section
 
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap FourierTransform
-open ActualEisensteinCubic
 open FirstPassCubeLabels (b0Label)
 open JointLogSeparation
 
 end
 
-open ActualEisensteinCubic
 open FirstPassCubeLabels (columnLog primeProductNorm b0Label jLabel)
 open ConcreteTraceCRT (eisEmbedding)
 open RayFourExpansion (RayCharacter)
@@ -114,10 +44,8 @@ include hp
 end SecondPassArithmetic
 
 namespace CubicEisenstein
-open Filter
-open scoped BigOperators Classical MatrixGroups Matrix Topology
-
-open ActualEisensteinCubic CubicKubota ConcreteTraceCRT
+open CubicKubota
+open scoped MatrixGroups Matrix
 
 abbrev UpperCoordinates := {p : ℂ × ℝ // 0 < p.2}
 
@@ -183,22 +111,19 @@ lemma coordinate_summable_majorant (C a b : ℝ) (hC : 0 < C)
   let weight (t : ℝ) (x : CuspCosets) :=
     C^(2*t)*‖rowCoordinates (cosetRow x)‖^(-(2*t))
   have hsum (t : ℝ) (ht : 2<t) : Summable (weight t) := by
-    have hinj : Function.Injective (fun x : CuspCosets => rowCoordinates (cosetRow x)) :=
-      rowCoordinates_injective.comp cosetRow_injective
-    exact ((summable_integer_four_rpow (2*t) (by linarith)).comp_injective hinj).mul_left _
+    exact ((summable_integer_four_rpow (2*t) (by linarith)).comp_injective (rowCoordinates_injective.comp cosetRow_injective)).mul_left _
   refine ⟨fun x => weight a x + weight b x,(hsum a ha).add (hsum b hb),?_,?_⟩
   · intro x
-    dsimp [weight]
     positivity
   · intro p hbound hpa hpb x
     apply (norm_summand_strip (coordinateSection p.1) a b p.2 hpa hpb x).trans
     apply add_le_add
     · apply (norm_summand_bound (coordinateSection p.1) (a:ℂ) (by simpa using lt_trans (by norm_num) ha) x).trans
       exact mul_le_mul_of_nonneg_right
-        (Real.rpow_le_rpow (rowBound_pos _).le hbound (by simpa only [Complex.ofReal_re] using (show 0 ≤ 2*a by linarith))) (by positivity)
+        (Real.rpow_le_rpow (rowBound_pos _).le hbound (by simpa using (by linarith))) (by positivity)
     · apply (norm_summand_bound (coordinateSection p.1) (b:ℂ) (by simpa using lt_trans (by norm_num) hb) x).trans
       exact mul_le_mul_of_nonneg_right
-        (Real.rpow_le_rpow (rowBound_pos _).le hbound (by simpa only [Complex.ofReal_re] using (show 0 ≤ 2*b by linarith))) (by positivity)
+        (Real.rpow_le_rpow (rowBound_pos _).le hbound (by simpa using (by linarith))) (by positivity)
 
 theorem coordinate_eisenstein_continuousAt (p : UpperCoordinates × ℂ) (hp : 2 < p.2.re) :
     ContinuousAt (fun q : UpperCoordinates × ℂ => eisenstein (coordinateSection q.1) q.2) p := by
@@ -235,8 +160,6 @@ theorem upperEisenstein_joint_continuousAt (p : UpperCoordinates × ℂ)
 
 end CubicEisenstein
 
-open Filter
-open scoped BigOperators Classical Topology
 
 namespace CubicEisenstein
 
@@ -268,16 +191,12 @@ lemma hasDerivAt_deriv_logRatioPower (s : ℂ) (f g df dg : ℝ → ℝ) (x ddf 
         (s^2 * ((df x/f x-dg x/g x : ℝ):ℂ)^2 +
          s * (((ddf*f x-df x*df x)/(f x)^2 -
            (ddg*g x-dg x*dg x)/(g x)^2 : ℝ):ℂ))) x := by
-  have hnear : ∀ᶠ t in 𝓝 x, f t ≠ 0 ∧ g t ≠ 0 :=
-    ((hf x).continuousAt.eventually_ne hf0).and ((hg x).continuousAt.eventually_ne hg0)
   have heq : (deriv (fun t => logRatioPower s (f t) (g t))) =ᶠ[𝓝 x]
       (fun t => logRatioPower s (f t) (g t) * s * ((df t/f t-dg t/g t : ℝ):ℂ)) := by
-    filter_upwards [hnear] with t ht
+    filter_upwards [(((hf x).continuousAt.eventually_ne hf0).and ((hg x).continuousAt.eventually_ne hg0))] with t ht
     exact (hasDerivAt_logRatioPower s (hf t) (hg t) ht.1 ht.2).deriv
-  have hfirst := hasDerivAt_logRatioPower s (hf x) (hg x) hf0 hg0
-  have hsecond := ((hdf.div (hf x) hf0).sub (hdg.div (hg x) hg0)).ofReal_comp
   apply HasDerivAt.congr_of_eventuallyEq _ heq
-  convert (hfirst.mul_const s).mul hsecond using 1 ;
+  convert ((hasDerivAt_logRatioPower s (hf x) (hg x) hf0 hg0).mul_const s).mul (((hdf.div (hf x) hf0).sub (hdg.div (hg x) hg0)).ofReal_comp) using 1 ;
     simp only [Pi.sub_apply,Pi.div_apply] ; ring
 
 def quadraticHeightDenominator (A B C D x y v : ℝ) : ℝ :=

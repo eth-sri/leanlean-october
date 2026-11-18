@@ -6,9 +6,8 @@ public import OAI.NumberTheory.DirichletL.Descent.ControlledMultiplier
 namespace OAI
 
 namespace SevenEighths.InverseMoment
+open CompletedGauss CubicEisenstein ConcreteTraceCRT CubicKubota CompletedDyadic CubicJacobiGlobal ShortDraftCusp FiniteGaussPhase LocalReflectionBrackets
 open scoped BigOperators Classical ContDiff MatrixGroups
-open CompletedGauss CubicEisenstein ConcreteTraceCRT CubicKubota CompletedDyadic
-open CubicJacobiGlobal ShortDraftCusp FiniteGaussPhase LocalReflectionBrackets
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
@@ -59,21 +58,13 @@ theorem mixed_smoothed_eq_reflected (D : ControlledStratumArithmetic p N a0 c0 m
     (hW : ContDiff ℝ ∞ W) (X : ℝ) (hX : 0 < X) :
     mixedSmoothedValue D hN hr hbase s hp hc0 hg j S W X =
       mixedReflectedValue D s hp hc0 hg j S W X := by
-  have hden : c0 * (∏ i, p i) ≠ 0 :=
-    mul_ne_zero hc0 (Finset.prod_ne_zero_iff.mpr (fun i _ => hp i))
-  have hmat (v : ∀ i, (Eis ⧸ Ideal.span {p i})ˣ) :
-      (D.sourceGamma hN hr hbase v : SL(2, Eis)) *
-        ControlledStratumArithmetic.fixedCusp a0 c0 mode = D.matrix v :=
-    D.sourceGamma_mul hN hr hbase v
-  have hchar (v : ∀ i, (Eis ⧸ Ideal.span {p i})ˣ) :
-      levelTwoComplexCharacter (D.sourceGamma hN hr hbase v) =
-        complexCharacter (D.relativeGamma hN hr hbase v) :=
-    D.sourceGamma_character hN hr hbase v
+  have hmat (v : ∀ i, (Eis ⧸ Ideal.span {p i})ˣ) := D.sourceGamma_mul hN hr hbase v
+  have hchar (v : ∀ i, (Eis ⧸ Ideal.span {p i})ˣ) := D.sourceGamma_character hN hr hbase v
   have hC : ∀ v, ((D.sourceGamma hN hr hbase v : SL(2, Eis)) *
       ControlledStratumArithmetic.fixedCusp a0 c0 mode) 1 0 = c0 * ∏ i, p i := by
     intro v
     exact (congrArg (fun M : SL(2, Eis) => M 1 0) (hmat v)).trans (D.denominator v)
-  have he := s.sum_smoothedKernel_integral_phase (D.sourceGamma hN hr hbase) _ hden hC
+  have he := s.sum_smoothedKernel_integral_phase (D.sourceGamma hN hr hbase) _ (mul_ne_zero hc0 (Finset.prod_ne_zero_iff.mpr (fun i _ => hp i))) hC
     (fullLocalFourierWeight hp (mixedPrimeFunction p hg j S)) W lo hi hlo hsupp hW X hX
   change mixedSmoothedValue D hN hr hbase s hp hc0 hg j S W X = _ at he
   rw [he]

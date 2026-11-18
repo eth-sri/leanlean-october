@@ -29,7 +29,7 @@ theorem quotient_polynomial_bound (χ : Character) (H : ℂ → ℂ)
     {s : ℂ} (hs : a ≤ s.re ∧ s.re ≤ 2) :
     ‖quotient χ H s‖ ≤ ((3/2)*C)*(1+|s.im|^n) := by
   have hnorm : ‖H s‖ ≤ 3/2 := by
-    have ht := norm_add_le (H s-1) (1 : ℂ)
+    have ht := norm_add_le (H s-1) 1
     rw [sub_add_cancel, norm_one] at ht
     linarith [hb s (ha.trans_le hs.1)]
   unfold quotient

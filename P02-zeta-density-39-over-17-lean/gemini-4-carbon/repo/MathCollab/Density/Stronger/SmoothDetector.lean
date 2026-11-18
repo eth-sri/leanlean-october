@@ -109,10 +109,9 @@ theorem smoothDetectorBlock_scale_tail_bound {ρ : ℂ} (X : ℝ) {Y R : ℝ} (K
     (hY : 0 < Y) (hρ : 0 ≤ ρ.re) (hK : (K : ℝ) ≤ R/2) :
     (∑' j : ℤ, if R < (2 : ℝ)^j then ‖smoothDetectorBlock ρ X Y j‖ else 0) ≤
       (⌊X⌋₊ : ℝ)*Real.exp (-(K : ℝ)/Y)*(1-Real.exp (-1/Y))⁻¹ := by
-  have h1 := smoothDyadicBlock_scale_tail_le (summable_norm_detectorTerm_tail X hY hρ) R
   have h2 := shifted_indicator_tail_le (summable_norm_detectorTerm X hY hρ)
     (fun n => norm_nonneg (detectorTerm ρ X Y n)) hK
-  exact h1.trans (h2.trans (tsum_norm_detector_tail_le X K hY hρ))
+  exact (smoothDyadicBlock_scale_tail_le (summable_norm_detectorTerm_tail X hY hρ) R).trans (h2.trans (tsum_norm_detector_tail_le X K hY hρ))
 
 /-- Quantitative truncation of the dyadic scales for arbitrary independent
 scales X,Y in the required range. The cutoff does not enter the smooth weight. -/
@@ -181,15 +180,12 @@ theorem mem_smoothScaleIndices {R : ℝ} {j : ℤ} :
 theorem smoothScaleIndices_nonempty {R : ℝ} (hR : 1 ≤ R) :
     (smoothScaleIndices R).Nonempty := by
   refine ⟨0, mem_smoothScaleIndices.mpr ?_⟩
-  simpa only [zpow_zero] using And.intro (le_refl (0 : ℤ)) hR
+  simpa only [zpow_zero] using And.intro (le_refl 0) hR
 
 theorem smoothScaleIndices_card_le {R : ℝ} (hR : 1 ≤ R) :
     ((smoothScaleIndices R).card : ℝ) ≤ Real.log R/Real.log 2+2 := by
-  have hlog : 0 ≤ Real.log R/Real.log 2 :=
-    div_nonneg (Real.log_nonneg hR) (Real.log_pos (by norm_num : (1 : ℝ) < 2)).le
   have hc : (0 : ℤ) ≤ ⌈Real.log R/Real.log 2⌉ := by
-    have hh := Int.ceil_mono hlog
-    simpa only [Int.ceil_zero] using hh
+    simpa using (Int.ceil_mono (div_nonneg (Real.log_nonneg hR) (Real.log_pos (by norm_num : (1 : ℝ) < 2)).le))
   have hcard := Finset.card_le_card (Finset.filter_subset
     (fun j : ℤ => (2 : ℝ)^j ≤ R) (Finset.Icc 0 ⌈Real.log R/Real.log 2⌉))
   have hcardR : ((smoothScaleIndices R).card : ℝ) ≤
@@ -197,9 +193,8 @@ theorem smoothScaleIndices_card_le {R : ℝ} (hR : 1 ≤ R) :
   have he : ((Finset.Icc (0 : ℤ) ⌈Real.log R/Real.log 2⌉).card : ℝ) =
       (⌈Real.log R/Real.log 2⌉ : ℝ)+1 := by
     rw [Int.card_Icc]
-    norm_num only [sub_zero]
-    have hh := Int.toNat_of_nonneg (show (0 : ℤ) ≤ ⌈Real.log R/Real.log 2⌉+1 by omega)
-    exact_mod_cast hh
+    norm_num
+    exact_mod_cast (Int.toNat_of_nonneg (show (0 : ℤ) ≤ ⌈Real.log R/Real.log 2⌉+1 by omega))
   rw [he] at hcardR
   have hceil := Int.ceil_lt_add_one (Real.log R/Real.log 2)
   linarith
@@ -212,18 +207,17 @@ theorem smoothDetectorBlock_norm_partition {ρ : ℂ} (X : ℝ) {Y : ℝ}
   classical
   let f := fun j : ℤ => ‖smoothDetectorBlock ρ X Y j‖
   let g := fun j : ℤ => if j ∈ smoothScaleIndices R then f j else 0
-  let h := fun j : ℤ => if R < (2 : ℝ)^j then f j else 0
-  have hf := summable_norm_smoothDetectorBlock X hY hρ
+  let h := fun j : ℤ => if R < 2^j then f j else 0
   have hg : Summable g := summable_of_ne_finset_zero (s := smoothScaleIndices R)
     (fun j hj => ite_eq_right hj)
-  have hh : Summable h := hf.of_nonneg_of_le
+  have hh : Summable h := (summable_norm_smoothDetectorBlock X hY hρ).of_nonneg_of_le
     (fun j => by dsimp [h, f]; split_ifs <;> positivity)
     (fun j => by dsimp [h, f]; split_ifs <;> simp)
   have he (j : ℤ) : f j = g j+h j := by
     by_cases hj : j ∈ smoothScaleIndices R
     · have hle := (mem_smoothScaleIndices.mp hj).2
       simp only [g, h, ite_eq_left hj, ite_eq_right (not_lt.mpr hle), add_zero]
-    · by_cases hlarge : R < (2 : ℝ)^j
+    · by_cases hlarge : R < 2^j
       · simp only [g, h, ite_eq_right hj, ite_eq_left hlarge, zero_add]
       · have hjneg : j ≤ 0 := by
           by_contra h
@@ -277,7 +271,7 @@ theorem smoothScaleIndices_card_le_log {T R : ℝ}
   have hTpos : 0 < T := by linarith
   have hl := Real.log_le_log (show 0 < R by linarith) hRT
   rw [Real.log_pow] at hl
-  norm_num only [Nat.cast_ofNat] at hl
+  norm_num at hl
   have htwo : (1/2 : ℝ) ≤ Real.log 2 := by linarith [Real.log_two_gt_d9]
   have hratio : Real.log R/Real.log 2 ≤ 4*Real.log T := by
     apply (div_le_iff₀ (Real.log_pos (by norm_num : (1 : ℝ) < 2))).mpr

@@ -57,8 +57,7 @@ lemma primeValuations_pow (I : Id) (n : ℕ) :
   simp [idealFromValuations]
 
 lemma idealFromValuations_add (v w : PrimeIdeal →₀ ℕ) :
-    idealFromValuations (v+w)=idealFromValuations v*idealFromValuations w := by
-  exact Finsupp.prod_add_index' (fun _=>pow_zero _) (fun _ _ _=>pow_add _ _ _)
+    idealFromValuations (v+w)=idealFromValuations v*idealFromValuations w := Finsupp.prod_add_index' (fun _=>pow_zero _) (fun _ _ _=>pow_add _ _ _)
 
 @[simp] lemma idealFromValuations_single (P : PrimeIdeal) (n : ℕ) :
     idealFromValuations (Finsupp.single P n)=P.val^n := by
@@ -128,12 +127,6 @@ def highValuationEquiv : ((NonzeroIdeal×NonzeroIdeal)×(NonzeroIdeal×NonzeroId
     (Equiv.prodCongr nonzeroIdealValuationEquiv nonzeroIdealValuationEquiv)
     (Equiv.prodCongr nonzeroIdealValuationEquiv nonzeroIdealValuationEquiv)).trans
       ((Equiv.prodCongr finsuppPairEquiv finsuppPairEquiv).trans finsuppPairEquiv)
-
-@[simp] lemma highValuationEquiv_apply
-    (a : (NonzeroIdeal×NonzeroIdeal)×(NonzeroIdeal×NonzeroIdeal)) (P : PrimeIdeal) :
-    highValuationEquiv a P =
-      ((primeValuations a.1.1.val P,primeValuations a.1.2.val P),
-        (primeValuations a.2.1.val P,primeValuations a.2.2.val P)) := rfl
 
 end SevenEighths.ProbePhysical
 end

@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical ComplexConjugate
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification HeckeRowClosure CanonicalRowCompletion
-open ProbePhysical
+open HeckeFamily HeckeInverseAmplification HeckeRowClosure CanonicalRowCompletion ProbePhysical
 
 def momentData (η : Character) : RowData where
   η := η
@@ -26,7 +25,7 @@ def momentElement (u : FreeRow) : NonzeroElement := ⟨u.val,u.property.1⟩
 theorem momentData_coeff (η : Character) (u : FreeRow) (I : Ideal O) :
     idealCoeff ((momentData η).character (momentElement u)) I=
       idealCoeff η I*idealRowHom (rowMaskElement^6*u.val) I := by
-  simpa only [momentData,momentElement,one_pow,mul_one] using
+  simpa using
     idealCoeff_eq_row η ((momentData η).character (momentElement u)) rowMaskElement 1 u.val
       ((momentData η).character_spec (momentElement u)) I
 

@@ -38,12 +38,11 @@ theorem actual_marked_row_eq_joined {σ : Type*} [Fintype σ]
     markedCompletedT (rowTwist Ψ m f z) W X (fun A => ∏ i, if S.ideal i∣A then (1:ℂ) else 0)=
       markedCompletedT (D.fixedFactor Ψ Q*unmarkedSexticTwist G.generator G.generator_good j markedSumSlots)
         W X (fun A => ∏ i∈markedSumSlots, if Ideal.span {G.generator i}∣A then (1:ℂ) else 0) := by
-  dsimp only
   rw [actual_marked_row_fixed_factor D Ψ Q hmLam hm2,
-    free_row_eq_joined_unmarked D.movingIdeal (Q*Ideal.span {(72:Eis)}) D.movingSupported S]
+    free_row_eq_joined_unmarked D.movingIdeal (Q*Ideal.span {72}) D.movingSupported S]
   congr 1
   funext A
-  exact (joined_whole_prime_mark (freePrimeFamily D.movingIdeal (Q*Ideal.span {(72:Eis)}) D.movingSupported) S A).symm
+  exact (joined_whole_prime_mark (freePrimeFamily D.movingIdeal (Q*Ideal.span {72}) D.movingSupported) S A).symm
 
 lemma joined_free_pairwise {σ : Type*} [Fintype σ]
     (I Q : Ideal Eis) (hI : Supported I) (S : PrimeFamily σ)

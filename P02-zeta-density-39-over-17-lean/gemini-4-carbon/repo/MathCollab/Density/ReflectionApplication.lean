@@ -43,18 +43,17 @@ theorem reflection_scale_error_power {T L : ℝ} (hT : 2 ≤ T)
     (hL : T^(1/3 : ℝ) ≤ L) : L^(-318 : ℝ) ≤ T^(-106 : ℝ) := by
   have hTp : 0 < T := by linarith
   have hp : 0 < T^(1/3 : ℝ) := Real.rpow_pos_of_pos hTp _
-  have hh := Real.rpow_le_rpow_of_nonpos hp hL (by norm_num : (-318 : ℝ) ≤ 0)
   have he : (T^(1/3 : ℝ))^(-318 : ℝ) = T^(-106 : ℝ) := by
     rw [← Real.rpow_mul hTp.le]
     norm_num
-  exact hh.trans_eq he
+  exact (Real.rpow_le_rpow_of_nonpos hp hL (by norm_num : (-318 : ℝ) ≤ 0)).trans_eq he
 
 theorem reflection_error_specialization {T L r : ℝ} (hT : 2 ≤ T)
     (hL : T^(1/3 : ℝ) ≤ L) (hr : 0 ≤ r) (hrT : r ≤ T+1) :
     r^2*L^(-318 : ℝ) ≤ (9/4)*T^(-104 : ℝ) ∧
       r*L^(-318 : ℝ) ≤ (3/2)*T^(-105 : ℝ) := by
   have hTp : 0 < T := by linarith
-  have hLp : 0 < L := (Real.rpow_pos_of_pos hTp _).trans_le hL
+  have hLp := (Real.rpow_pos_of_pos hTp _).trans_le hL
   have hr' : r ≤ (3/2)*T := by linarith
   have hp := reflection_scale_error_power hT hL
   have he₂ : T^2*T^(-106 : ℝ) = T^(-104 : ℝ) := by

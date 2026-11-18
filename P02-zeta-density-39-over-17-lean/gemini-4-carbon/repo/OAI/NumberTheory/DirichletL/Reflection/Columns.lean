@@ -51,9 +51,6 @@ theorem sourceColumn_eq_sum_frozenBranches (F : PrimeFamily φ) (K : Ideal Eis) 
   let : DecidableEq (φ ⊕ (PrimeIndex K ⊕ σ)) := Classical.decEq _
   unfold sourceColumn frozenIndices
   rw [Finset.prod_image Sum.inl_injective.injOn]
-  change actualCuspColumn D s hc u m n b *
-    (∏ i, bracket (actualSextic (Ideal.span {F.generator i}) (F.generator_good i)) (jF i)
-      (Ideal.Quotient.mk _ (primaryGenerator n*(primaryGenerator b)^3))) = _
   exact (congrArg (actualCuspColumn D s hc u m n b * ·)
     (prod_bracket_eq_full_branches (fun i => Ideal.span {F.generator i}) F.generator_good
       jF (primaryGenerator n) (primaryGenerator b))).trans (Finset.mul_sum _ _ _)
@@ -62,12 +59,9 @@ theorem frozenBranchColumn_norm_le (F : PrimeFamily φ) (jF : φ → ℕ) (e : �
     (A : Ideal Eis → Ideal Eis → ℂ) (hA : ∀ n b, ‖A n b‖ ≤ 1) (n b : Ideal Eis) :
     ‖frozenBranchColumn F jF e A n b‖ ≤ frozenBranchScale F jF e := by
   rw [frozenBranchColumn,norm_mul]
-  calc
-    _ ≤ 1*‖reflectedBranch (fun i => Ideal.span {F.generator i}) F.generator_good jF e
-        (primaryGenerator n) (primaryGenerator b)‖ := mul_le_mul_of_nonneg_right (hA n b) (norm_nonneg _)
-    _ ≤ _ := by
+  exact (mul_le_mul_of_nonneg_right (hA n b) (norm_nonneg _)).trans (by
       rw [one_mul]
-      exact reflectedBranch_norm_bound _ F.generator_good jF e _ _
+      exact reflectedBranch_norm_bound _ F.generator_good jF e _ _)
 
 end
 end SevenEighths.InverseReflectedPhase

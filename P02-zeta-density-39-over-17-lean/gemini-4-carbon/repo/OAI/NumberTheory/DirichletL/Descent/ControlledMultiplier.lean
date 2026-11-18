@@ -6,9 +6,8 @@ public import OAI.NumberTheory.DirichletL.Descent.ActiveReflection
 namespace OAI
 
 namespace SevenEighths.InverseMoment
+open CompletedGauss CubicEisenstein ConcreteTraceCRT CubicKubota CubicJacobiGlobal ShortDraftCusp FiniteGaussPhase LocalReflectionBrackets
 open scoped BigOperators Classical
-open CompletedGauss CubicEisenstein ConcreteTraceCRT CubicKubota
-open CubicJacobiGlobal ShortDraftCusp FiniteGaussPhase LocalReflectionBrackets
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda

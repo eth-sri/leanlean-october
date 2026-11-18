@@ -50,9 +50,9 @@ theorem fiber_lengths {Row Label : Type*} (rows : Finset Row) (hne : rows.Nonemp
     let m := Real.logb U ((2 : ℝ)^K.val)
     tstar-r-ε≤m ∧ r≤tstar+ε ∧ m≤1/2+75*ε ∧ tstar-1/2-76*ε≤r ∧ 0≤m := by
   obtain ⟨u,hu⟩ := hne
-  have hr : (w u).r=Real.logb U ((2 : ℝ)^J.val) := by
+  have hr : (w u).r=Real.logb U (2^J.val) := by
     rw [(w u).toWitness.left_exponent hU,hJ u hu]
-  have hm : (w u).m=Real.logb U ((2 : ℝ)^K.val) := by
+  have hm : (w u).m=Real.logb U (2^K.val) := by
     rw [(w u).toWitness.right_exponent hU,hK u hu]
   exact hr ▸ hm ▸ ⟨(w u).product_length_lower,(w u).inverse_length_upper,
     (w u).plain_length_upper,(w u).inverse_length_lower,(w u).plain_length_lower⟩

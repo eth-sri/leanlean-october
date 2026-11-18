@@ -10,9 +10,7 @@ public import MathCollab.Density.Stronger.Atkinson.SourceLogScales
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+open Complex Filter MeasureTheory Set Topology MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth MathCollab.Density.Contour
 open scoped Interval ComplexConjugate ContDiff
 set_option autoImplicit false
 noncomputable section
@@ -29,7 +27,7 @@ theorem source_log_monomial_le_one {T G δ : ℝ} (hT : 1 ≤ T)
     _ ≤ (T ^ (1 / 2 - δ) * T ^ (δ / 2)) * T ^ (-1 / 2 + δ / 4) := by gcongr
     _ = T ^ ((1 / 2 - δ + δ / 2) + (-1 / 2 + δ / 4)) := by
       rw [← Real.rpow_add hT0, ← Real.rpow_add hT0]
-    _ ≤ T ^ (0 : ℝ) := Real.rpow_le_rpow_of_exponent_le hT (by linarith)
+    _ ≤ T ^ 0 := Real.rpow_le_rpow_of_exponent_le hT (by linarith)
     _ = _ := Real.rpow_zero T
 
 theorem source_scaled_window_square_le {T G δ : ℝ} (hT : 1 ≤ T) (hG : 0 ≤ G)
@@ -61,13 +59,11 @@ theorem source_scaled_window_fourth_le {T G δ : ℝ} (hT : 1 ≤ T) (hG : 0 ≤
     (hlog4 : (Real.log T) ^ 4 ≤ T ^ (δ / 2)) :
     T ^ (1 / 2 + δ / 4) * (G * Real.log T) ^ 4 / T ^ 2 ≤ G := by
   have hT0 : 0 < T := by linarith
-  have hratio : (G * Real.log T) ^ 2 / T ≤ 1 :=
-    (div_le_one hT0).mpr (source_window_square_le_height hT hG hδ hwidth hlog hlog4)
   calc
     _ = (T ^ (1 / 2 + δ / 4) * (G * Real.log T) ^ 2 / T) *
         ((G * Real.log T) ^ 2 / T) := by ring
     _ ≤ G * 1 := mul_le_mul (source_scaled_window_square_le hT hG hδ hwidth hlog hlog4)
-      hratio (by positivity) hG
+      ((div_le_one hT0).mpr (source_window_square_le_height hT hG hδ hwidth hlog hlog4)) (by positivity) hG
     _ = _ := mul_one G
 
 theorem source_scaled_quadratic_phase_error_le {T G δ : ℝ} (hT : 1 ≤ T) (hG : 0 ≤ G)

@@ -10,9 +10,7 @@ public import MathCollab.Density.Stronger.Atkinson.DivisorWeightMass
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+open Complex Filter MeasureTheory Set Topology MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth MathCollab.Density.Contour
 open scoped Interval ComplexConjugate
 set_option autoImplicit false
 noncomputable section
@@ -29,9 +27,8 @@ def zetaSquareFrozenDivisorIntegral (T x : ℝ) : ℂ :=
 theorem summable_zetaSquareFrozenDivisorContribution {T : ℝ} (hT : 0 < T) (x : ℝ) :
     Summable (zetaSquareFrozenDivisorContribution T x) := by
   apply summable_norm_iff.mp
-  have h := summable_norm_source_divisor_weight hT (-(T + x))
   simpa only [zetaSquareFrozenDivisorContribution, norm_mul,
-    norm_zetaSquareReflectedGammaPhase, mul_one] using h
+    norm_zetaSquareReflectedGammaPhase, mul_one] using (summable_norm_source_divisor_weight hT (-(T + x)))
 
 theorem norm_zetaSquareDivisor_freezing_error (T x : ℝ) (n : ℕ) :
     ‖zetaSquareLeadingDivisorContribution (T + x) n - zetaSquareFrozenDivisorContribution T x n‖ =
@@ -48,7 +45,7 @@ theorem min_self_inv_le_min_one (a : ℝ) : min a a⁻¹ ≤ min 1 a := by
     exact min_le_left _ _
   · rw [min_eq_left (le_of_not_ge ha)]
     apply (min_le_right _ _).trans
-    simpa only [one_div, inv_one] using one_div_le_one_div_of_le zero_lt_one (le_of_not_ge ha)
+    simpa using one_div_le_one_div_of_le zero_lt_one (le_of_not_ge ha)
 
 theorem exists_norm_zetaSquareDivisor_freezing_error_le :
     ∃ C : ℝ, 0 < C ∧ ∀ T : ℝ, 0 < T → ∀ x : ℝ, |x| ≤ T / 2 → ∀ n : ℕ,
@@ -63,7 +60,7 @@ theorem exists_norm_zetaSquareDivisor_freezing_error_le :
   · simp [hn, divisorDirichletTerm, LSeries.term]
   have hm : min (T / (2 * Real.pi * (n : ℝ))) ((2 * Real.pi * (n : ℝ)) / T) ≤
       min 1 (T / (2 * Real.pi * (n : ℝ))) := by
-    simpa only [inv_div] using min_self_inv_le_min_one (T / (2 * Real.pi * (n : ℝ)))
+    simpa using min_self_inv_le_min_one (T / (2 * Real.pi * (n : ℝ)))
   calc
     _ ≤ ‖divisorDirichletTerm (afeCriticalPoint (-(T + x))) n‖ *
         (C * (|x| / T) * min (T / (2 * Real.pi * (n : ℝ))) ((2 * Real.pi * (n : ℝ)) / T)) :=

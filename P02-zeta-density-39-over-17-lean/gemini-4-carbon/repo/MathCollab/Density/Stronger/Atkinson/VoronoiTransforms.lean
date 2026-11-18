@@ -66,7 +66,7 @@ theorem differentiableAt_dfiVoronoiPlusMultiplier_of_re_lt_one
   have hfactor := (differentiableAt_dfiPeriodicArchimedeanFactor_of_re_pos q
     (s := 1 - z) (by simpa using sub_pos.mpr hz)).comp z hinner
   unfold dfiVoronoiPlusMultiplier
-  exact ((differentiableAt_const (c := (2 : ℂ))).mul
+  exact ((differentiableAt_const (c := 2)).mul
     (differentiableAt_const (c := (q : ℂ)))).mul (hfactor.pow 2)
 
 /-- DFI's negative-sign Bessel transform in its canonical Mellin--Barnes

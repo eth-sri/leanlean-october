@@ -8,8 +8,7 @@ namespace OAI
 
 noncomputable section
 namespace SevenEighths.ProbeRow
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve
-open ProbeCompleted
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve ProbeCompleted
 local notation "O" => ActualEisensteinCubic.O
 
 def baseRowCoefficient (η : HeckeFamily.Character) (Xi : O →* ℂ)
@@ -37,7 +36,6 @@ theorem spectralSummand_row_separation (S : Finset (Ideal O)) (D I J : Ideal O)
   have hr : rowCoefficient η Xi s hs m =
       ((idealRowHom m).toMonoidHom.comp principalIdealHom.toMonoidHom) *
         baseRowCoefficient η Xi s hs := by
-    change _ * _ = _ * _
     exact mul_comm _ _
   rw [hr, spectralSummand_mul_fixed_twist]
   rfl

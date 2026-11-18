@@ -10,8 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentCommonProfile
-open ActualEisensteinCubic CenteredMomentSourceProfileMass CenteredMomentAddedZeroUniform
-open CenteredMomentCommonPrimeSlots CenteredMomentCommonAllocationBox
+open ActualEisensteinCubic CenteredMomentSourceProfileMass CenteredMomentAddedZeroUniform CenteredMomentCommonPrimeSlots CenteredMomentCommonAllocationBox
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [Fintype ι]
 
@@ -46,8 +45,7 @@ theorem slot_profiles_split (B u : Tuple ι)
     (∏ i,β i (B (Sum.inl i)*u (Sum.inl i)))=
       (∏ i∈Finset.univ.filter (fun i => B (Sum.inl i)≠1),β i (B (Sum.inl i)))*
         ∏ i : liveIndices B,β i.val (u (Sum.inl i.val)) := by
-  rw [Finset.prod_coe_sort (liveIndices B) (fun i => β i (u (Sum.inl i)))]
-  rw [← Finset.prod_filter_mul_prod_filter_not Finset.univ (fun i => B (Sum.inl i)=1)
+  rw [Finset.prod_coe_sort (liveIndices B) (fun i => β i (u (Sum.inl i))), ← Finset.prod_filter_mul_prod_filter_not Finset.univ (fun i => B (Sum.inl i)=1)
     (fun i => β i (B (Sum.inl i)*u (Sum.inl i))),mul_comm]
   apply congrArg₂ (·*·)
   · apply Finset.prod_congr rfl
@@ -72,10 +70,9 @@ theorem profile_common_allocation (B u : Tuple ι) (C R s : Ideal O)
     rw [finiteTupleProduct,Finset.prod_mul_distrib]
     change finiteTupleProduct B*finiteTupleProduct u=_
     rw [hB,remaining_product B u hf]
-  have hdiv : s∣C*finiteTupleProduct (remainingTuple B u) := dvd_mul_of_dvd_left hsC _
   unfold profileCoefficient
   rw [slot_profiles_split B u hf (fun i I => ν i I*Wslot i ((Ideal.absNorm I:ℝ)/P i)),hprod]
-  simp only [hdiv,ite_true,one_dvd,mul_one,remainingTuple_slot,remainingTuple_plain,
+  simp only [(dvd_mul_of_dvd_left hsC _),ite_true,one_dvd,mul_one,remainingTuple_slot,remainingTuple_plain,
     IsCoprime.mul_left_iff]
   rw [mul_assoc B₁,mul_assoc B₂]
   by_cases hC : IsCoprime C R <;>

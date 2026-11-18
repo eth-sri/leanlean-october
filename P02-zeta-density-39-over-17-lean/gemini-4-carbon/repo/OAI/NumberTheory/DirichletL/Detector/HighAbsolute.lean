@@ -17,11 +17,9 @@ def frequencyWeight (z : ℂ) (u : NonzeroFrequency) : ℂ := (elementNorm u.val
 
 lemma frequencyWeight_norm (z : ℂ) (u : NonzeroFrequency) :
     ‖frequencyWeight z u‖=‖eisEmbedding u.val‖^(-2*z.re) := by
-  have hn : 0<‖eisEmbedding u.val‖ := norm_pos_iff.mpr (eisEmbedding_ne_zero u.property)
+  have hn := norm_pos_iff.mpr (eisEmbedding_ne_zero u.property)
   unfold frequencyWeight elementNorm
-  have hN : (Ideal.absNorm (Ideal.span {u.val}):ℝ)=‖eisEmbedding u.val‖^2 :=
-    (eisEmbedding_norm_sq_eq_absNorm_span u.val).symm
-  rw [hN,
+  rw [((eisEmbedding_norm_sq_eq_absNorm_span u.val).symm),
     Complex.norm_cpow_eq_rpow_re_of_pos (sq_pos_of_pos hn), Complex.neg_re,
     ← Real.rpow_natCast_mul hn.le 2]
   congr 1
@@ -41,13 +39,7 @@ lemma highAbsoluteMajorant_nonneg (x w z : ℂ) (p : (Id×Id)×(Id×Id)) :
 
 lemma highAbsoluteMajorant_summable (x w z : ℂ)
     (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) : Summable (highAbsoluteMajorant x w z) := by
-  have h1 := fullIdealWeight_summable_norm (x-1/2) (by norm_num [Complex.sub_re,Complex.div_re]; linarith)
-  have h2 := fullIdealWeight_summable_norm (3*x-2) (by norm_num [Complex.sub_re,Complex.mul_re]; linarith)
-  have h3 := fullIdealWeight_summable_norm (w-1) (by simp only [Complex.sub_re,Complex.one_re]; linarith)
-  have h4 := fullIdealWeight_summable_norm (6*z) (by norm_num [Complex.mul_re]; linarith)
-  have h12 := h1.mul_of_nonneg h2 (fun _=>norm_nonneg _) (fun _=>norm_nonneg _)
-  have h34 := h3.mul_of_nonneg h4 (fun _=>norm_nonneg _) (fun _=>norm_nonneg _)
-  have hall := h12.mul_of_nonneg h34
+  have hall := ((fullIdealWeight_summable_norm (x-1/2) (by norm_num [Complex.sub_re,Complex.div_re]; linarith)).mul_of_nonneg (fullIdealWeight_summable_norm (3*x-2) (by norm_num [Complex.sub_re,Complex.mul_re]; linarith)) (fun _=>norm_nonneg _) (fun _=>norm_nonneg _)).mul_of_nonneg ((fullIdealWeight_summable_norm (w-1) (by simp only [Complex.sub_re,Complex.one_re]; linarith)).mul_of_nonneg (fullIdealWeight_summable_norm (6*z) (by norm_num [Complex.mul_re]; linarith)) (fun _=>norm_nonneg _) (fun _=>norm_nonneg _))
     (fun _=>mul_nonneg (norm_nonneg _) (norm_nonneg _))
     (fun _=>mul_nonneg (norm_nonneg _) (norm_nonneg _))
   unfold highAbsoluteMajorant
@@ -69,7 +61,6 @@ theorem fullHighSummand_summable (S : Finset Id) (D : Id) (η : HeckeFamily.Char
   have hcoeff := (markedIdealHighSummand_norm_le S D η p.1.val x w z
     p.2.1.1 p.2.1.2 p.2.2.1 p.2.2.2).trans
     (bareIdealHighSummand_norm_le η p.1.val x w z p.2.1.1 p.2.1.2 p.2.2.1 p.2.2.2)
-  change _≤‖frequencyWeight z p.1‖*highAbsoluteMajorant x w z p.2
   calc
     _ ≤ (1*‖frequencyWeight z p.1‖)*highAbsoluteMajorant x w z p.2 := by
       apply mul_le_mul

@@ -89,7 +89,7 @@ theorem wooley_section8_weight_complement
     {k r : ℕ} (hrk : r < k) :
     1 - 1 / ((k - r + 1 : ℕ) : ℝ) =
       ((k - r : ℕ) : ℝ) / ((k - r + 1 : ℕ) : ℝ) := by
-  have hd : (0 : ℝ) < (k - r + 1 : ℕ) := by positivity
+  have hd : 0 < (k - r + 1 : ℕ) := by positivity
   field_simp [ne_of_gt hd]
   push_cast
   rw [Nat.cast_sub hrk.le]

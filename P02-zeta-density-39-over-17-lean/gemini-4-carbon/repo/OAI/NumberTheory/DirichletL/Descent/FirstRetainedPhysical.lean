@@ -88,7 +88,7 @@ theorem canonical_first_physical_split
   · rw [canonical_retained_physical p hp hcop hg hinj hc hpr pool b hb C hC]
   · intro D hD
     apply (mem_childFrequencyBall _ (firstPhysicalMultiplier_ne_zero p hp _ _ _ _ _ f hf) _ _).mpr
-    simpa only [mul_zero,map_zero,norm_zero,zero_pow (by decide : 2≠0)] using hR D
+    simpa using hR D
 
 end
 end SevenEighths.InverseMoment

@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical SchwartzMap
 namespace SevenEighths.CenteredMomentPlainChildEnergy
-open CanonicalQuadraticSieve CanonicalRowCompletion CenteredMomentRowNorm CenteredMomentPlainEnergy CenteredMomentCauchy
-open CenteredMomentSmooth
+open CanonicalQuadraticSieve CanonicalRowCompletion CenteredMomentRowNorm CenteredMomentPlainEnergy CenteredMomentCauchy CenteredMomentSmooth
 local notation "O" => ActualEisensteinCubic.O
 
 theorem leftColumn_eq_rowPolynomial {α : Type*} (S : Finset α) (a : α → O)

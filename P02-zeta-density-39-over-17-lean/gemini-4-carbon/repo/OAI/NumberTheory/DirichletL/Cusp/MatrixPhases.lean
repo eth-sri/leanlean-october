@@ -6,13 +6,8 @@ public import OAI.NumberTheory.DirichletL.Arithmetic.EisensteinIdeals
 
 namespace OAI
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
+open MulChar AddChar Filter Asymptotics MeasureTheory Real
+open scoped BigOperators Topology FourierTransform SchwartzMap
 noncomputable section
 
 namespace ShortDraftCusp
@@ -61,11 +56,9 @@ theorem norm_normalized_gaussSum (χ : MulChar F ℂ) (ψ : AddChar F ℂ)
     ‖((Real.sqrt (Fintype.card F) : ℝ) : ℂ)⁻¹ * gaussSum χ ψ‖ = 1 := by
   have hcard : (0 : ℝ) < Fintype.card F := by
     exact_mod_cast Fintype.card_pos_iff.mpr ⟨(0 : F)⟩
-  have hsqrt : Real.sqrt (Fintype.card F) ≠ 0 :=
-    ne_of_gt (Real.sqrt_pos.2 hcard)
   rw [norm_mul, norm_inv, Complex.norm_real, Real.norm_eq_abs,
     abs_of_pos (Real.sqrt_pos.2 hcard), norm_gaussSum_eq_sqrt_card χ ψ hχ hψ]
-  exact inv_mul_cancel₀ hsqrt
+  exact inv_mul_cancel₀ (ne_of_gt (Real.sqrt_pos.2 hcard))
 
 end ShortDraftGauss
 
@@ -128,8 +121,7 @@ theorem quadratic_gauss_as_square_phase (ψ : AddChar F ℂ)
   rw [hfiber]
   simp_rw [hcount, add_mul]
   rw [Finset.sum_add_distrib]
-  have hzero : (∑ y : F, ψ y) = 0 := AddChar.sum_eq_zero_of_ne_one hψ
-  simp only [one_mul, hzero, add_zero]
+  simp only [one_mul, (AddChar.sum_eq_zero_of_ne_one hψ), add_zero]
   rfl
 
 end ShortDraftQuadraticGauss
@@ -142,8 +134,6 @@ end ShortDraftQuotientPhase
 namespace EisensteinEPrimaryPhase
 
 abbrev Coord := ZMod 4 × ZMod 4
-abbrev Bit := ZMod 2
-
 def mul (x y : Coord) : Coord :=
   (x.1 * y.1 - x.2 * y.2,
    x.1 * y.2 + x.2 * y.1 - x.2 * y.2)
@@ -152,10 +142,6 @@ def odd (x : Coord) : Prop := x.1.val % 2 = 1 ∨ x.2.val % 2 = 1
 
 instance : DecidablePred odd := fun x =>
   inferInstanceAs (Decidable (x.1.val % 2 = 1 ∨ x.2.val % 2 = 1))
-
-def rep (e f : Bit) : Coord :=
-  if f = 0 then (if e = 0 then (1, 0) else (-1, 0))
-  else (if e = 0 then (1, 2) else (-1, -2))
 
 def norm (x : Coord) : ZMod 4 :=
   x.1 * x.1 - x.1 * x.2 + x.2 * x.2
@@ -189,8 +175,7 @@ def pb : PowerBasis ℤ O := hζ.integralPowerBasis
 private theorem pb_dim : pb.dim = 2 := by
   simp [pb, Nat.totient_prime Nat.prime_three]
 
-theorem pb_gen : pb.gen = omega := by
-  exact hζ.integralPowerBasis_gen
+theorem pb_gen : pb.gen = omega := hζ.integralPowerBasis_gen
 
 theorem exists_coordinates (x : O) :
     ∃ a b : ℤ, x = (a : O) + (b : O) * omega := by
@@ -259,10 +244,8 @@ theorem eval_mul (a b c d : ℤ) :
 theorem eval_congr_mod_four {a b c d : ℤ}
     (ha : (a : ZMod 4) = c) (hb : (b : ZMod 4) = d) :
     ∃ z : O, eval a b - eval c d = 4 * z := by
-  have ha4 : (4 : ℤ) ∣ a-c := (ZMod.intCast_eq_intCast_iff_dvd_sub c a 4).mp ha.symm
-  have hb4 : (4 : ℤ) ∣ b-d := (ZMod.intCast_eq_intCast_iff_dvd_sub d b 4).mp hb.symm
-  obtain ⟨u, hu⟩ := ha4
-  obtain ⟨v, hv⟩ := hb4
+  obtain ⟨u, hu⟩ := ((ZMod.intCast_eq_intCast_iff_dvd_sub c a 4).mp ha.symm)
+  obtain ⟨v, hv⟩ := ((ZMod.intCast_eq_intCast_iff_dvd_sub d b 4).mp hb.symm)
   refine ⟨(u : O) + (v : O) * omega, ?_⟩
   dsimp [eval]
   rw [show a = c + 4*u by omega, show b = d + 4*v by omega]
@@ -312,7 +295,7 @@ theorem residue_lift (v : EisensteinEPrimaryPhase.Coord) :
   simp [lift, residue_eval]
 
 private theorem residue_two : residue (2 : O) = (2, 0) := by
-  have h : eval 2 0 = (2 : O) := by simp [eval]
+  have h : eval 2 0 = 2 := by simp [eval]
   rw [← h, residue_eval]
   norm_num
 

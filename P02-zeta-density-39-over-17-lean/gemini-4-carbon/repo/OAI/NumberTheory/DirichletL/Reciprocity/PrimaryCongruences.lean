@@ -7,74 +7,8 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 
 section
 
@@ -85,19 +19,19 @@ local notation "Eis" => ActualEisensteinCubic.O
 
 lemma integer_congruence_primary_cases (c : Eis) (r : ℤ) (h : (3:Eis)∣c-(r:Eis)) :
     (3:Eis)∣c ∨ lambda^2∣c-1 ∨ lambda^2∣(-c)-1 := by
-  have hr : (3:ℤ)∣r ∨ (3:ℤ)∣r-1 ∨ (3:ℤ)∣r+1 := by omega
+  have hr : 3∣r ∨ 3∣r-1 ∨ 3∣r+1 := by omega
   rcases hr with hr|hr|hr
   · left
     obtain ⟨t,ht⟩:=hr
-    have hn:(3:Eis)∣(r:Eis):=⟨(t:Eis),by exact_mod_cast ht⟩
+    have hn:3∣(r:Eis):=⟨(t:Eis),by exact_mod_cast ht⟩
     simpa using dvd_add h hn
   · right;left
     obtain ⟨t,ht⟩:=hr
-    have hn:(3:Eis)∣(r:Eis)-1:=⟨(t:Eis),by exact_mod_cast ht⟩
+    have hn:3∣(r:Eis)-1:=⟨(t:Eis),by exact_mod_cast ht⟩
     exact lambda_sq_dvd_three.trans (by simpa using dvd_add h hn)
   · right;right
     obtain ⟨t,ht⟩:=hr
-    have hn:(3:Eis)∣(r:Eis)+1:=⟨(t:Eis),by exact_mod_cast ht⟩
+    have hn:3∣(r:Eis)+1:=⟨(t:Eis),by exact_mod_cast ht⟩
     apply lambda_sq_dvd_three.trans
     convert dvd_neg.mpr (dvd_add h hn) using 1 ; ring
 
@@ -174,7 +108,6 @@ lemma levelTwo_cube_comparison_phase (A N:levelTwo) (p q:Eis) (j:ℕ) (hj:j≤3)
   let a:=eisEmbedding (symbol ((A:SL(2,Eis)) 1 0) p)
   let b:=eisEmbedding (symbol ((N:SL(2,Eis)) 0 0) p)
   have ha3:a^3=1:=by
-    dsimp [a]
     rw [←map_pow,symbol_cube_of_isCoprime _ _ hp hC,map_one]
   have hpow:a^j*a^(3-j)=1:=by rw [←pow_add,Nat.add_sub_of_le hj,ha3]
   have hbal:=levelTwo_cube_phase_balance A N p q j hp hA hN hx hc
@@ -185,16 +118,14 @@ lemma levelTwo_cube_comparison_phase (A N:levelTwo) (p q:Eis) (j:ℕ) (hj:j≤3)
       _=(levelTwoComplexCharacter N*a^j)*a^(3-j):=(mul_assoc _ _ _).symm
       _=(levelTwoComplexCharacter A*b^(3-j))*a^(3-j):=by rw [hbal]
       _=_:=by rw [mul_pow];ring
-  have hcomp:=levelTwo_comparison_character A N hNA
   have hbase:levelTwoComplexCharacter A≠0:=by
     intro he
     have hh:=levelTwoComplexCharacter_cube A
     rw [he] at hh
     norm_num at hh
   rw [symbol_mul_numerator _ _ _ hp,map_mul]
-  change complexCharacter ⟨(N:SL(2,Eis))*(A:SL(2,Eis))⁻¹,hNA⟩=(b*a)^(3-j)
   apply mul_right_cancel₀ hbase
-  rw [hcomp,he]
+  rw [(levelTwo_comparison_character A N hNA),he]
   ring
 
 end CubicKubota
@@ -260,7 +191,7 @@ theorem ramified_symbol_primary_shift (j n : ℕ) (a x : Eis) (ha : lambda^2∣a
     push_cast
     ring
   rw [hsum,ramifiedSymbol_primaryCoord,ramifiedSymbol_primaryCoord]
-  have ht := breveE_real_trace_of_O (3:ℝ) (ramifiedAffineParameter j n*x)
+  have ht := breveE_real_trace_of_O 3 (ramifiedAffineParameter j n*x)
   norm_num only [Complex.ofReal_ofNat] at ht
   rw [ht,hx,ramifiedAffineParameter_coords,←embedding_cubicExp,←map_mul,←cubicExp_add]
   apply congrArg eisEmbedding
@@ -290,15 +221,13 @@ lemma ramifiedTraceLambda_square : ramifiedTraceLambda^2=(-3:Eis) := by
 lemma ramified_character_coprime (j n : ℕ) (r a : Eis)
     (hr : r=omega^j*ramifiedTraceLambda^n ∨ r=-(omega^j*ramifiedTraceLambda^n))
     (ha : lambda^2∣a-1) : IsCoprime r a := by
-  have hc3 := (primary_coprime_three a ha).symm
-  have ht : ramifiedTraceLambda∣(3:Eis) := by
+  have ht : ramifiedTraceLambda∣3 := by
     refine ⟨-ramifiedTraceLambda,?_⟩
     linear_combination ramifiedTraceLambda_square
-  have hcT := hc3.of_isCoprime_of_dvd_left ht
   have hcW : IsCoprime omega a := by
     refine ⟨omega^2,0,?_⟩
     rw [zero_mul,add_zero,←pow_succ,omega_primitive.pow_eq_one]
-  have hc : IsCoprime (omega^j*ramifiedTraceLambda^n) a := hcW.pow_left.mul_left hcT.pow_left
+  have hc : IsCoprime (omega^j*ramifiedTraceLambda^n) a := hcW.pow_left.mul_left (((primary_coprime_three a ha).symm).of_isCoprime_of_dvd_left ht).pow_left
   rcases hr with rfl|rfl
   · exact hc
   · exact hc.neg_left
@@ -342,17 +271,14 @@ lemma ramifiedAffineGauss_factor (h h1 q r a k : Eis) (j n : ℕ)
   intro x
   let t := GaussianShiftedPartition.representative a x.val
   have hs : symbol (a+3*t) a=symbol (3*t) a := symbol_congr ⟨1,by ring⟩
-  change (eisEmbedding (symbol r (a+3*t))*eisEmbedding (symbol (a+3*t) a))*
-    ShortDraftTrace.breveE (ninthCuspFrequency h*eisEmbedding (a+3*t)/eisEmbedding (q*a))=_
   rw [ramified_symbol_primary_shift_signed j n r a t hr hprimary,hs,
     symbol_mul_numerator _ _ _ hprimary]
   rw [map_mul eisEmbedding (symbol 3 a) (symbol t a)]
-  have hp := affineCusp_phase_identity h h1 q a k (ramifiedAffineParameter j n) t ha hq hh hk
   calc
     _ = (eisEmbedding (symbol r a)*eisEmbedding (symbol 3 a)*eisEmbedding (symbol t a))*
       (ShortDraftTrace.breveE (eisEmbedding (ramifiedAffineParameter j n*t)/eisLam/3)*
         ShortDraftTrace.breveE (ninthCuspFrequency h*eisEmbedding (a+3*t)/eisEmbedding (q*a))) := by ring
-    _ = _ := by rw [hp];ring
+    _ = _ := by rw [(affineCusp_phase_identity h h1 q a k (ramifiedAffineParameter j n) t ha hq hh hk)];ring
 
 theorem ramifiedAffineGauss_eq_unramified (h h1 q r a k : Eis) (j n : ℕ)
     (ha : a≠0) (hprimary : lambda^2∣a-1) (hq : q≠0)
@@ -365,30 +291,26 @@ theorem ramifiedAffineGauss_eq_unramified (h h1 q r a k : Eis) (j n : ℕ)
   have hcop := ramified_character_coprime j n r a hr hprimary
   have hcop3 : IsCoprime (3*r^2) a := (primary_coprime_three a hprimary).symm.mul_left hcop.pow_left
   have hp := cubicUnitGaussSum_phase_shift k (r^2) a ha hprimary hcop3
-  have hc := symbol_cube_of_isCoprime r a hprimary hcop
   have hchars : eisEmbedding (symbol (r^2) a)*eisEmbedding (symbol (3*r^2) a)=
       eisEmbedding (symbol r a)*eisEmbedding (symbol 3 a) := by
     rw [←map_mul,←symbol_mul_numerator _ _ a hprimary,
       show r^2*(3*r^2)=3*r^4 by ring,symbol_mul_numerator _ _ a hprimary,
-      symbol_pow_numerator _ _ hprimary 4,pow_succ,hc,one_mul,map_mul]
+      symbol_pow_numerator _ _ hprimary 4,pow_succ,(symbol_cube_of_isCoprime r a hprimary hcop),one_mul,map_mul]
     ring
   rw [hchars] at hp
   have hcong : a∣k*(9*r^2)-3*r^2*h1 := by
     refine ⟨3*r^2*ramifiedAffineParameter j n,?_⟩
     linear_combination 3*r^2*hk
-  have hg := cubicUnitGaussSum_frequency_congr (k*(9*r^2)) (3*r^2*h1) a ha hcong
   calc
     _ = ShortDraftTrace.breveE (ninthCuspFrequency h/eisEmbedding q)*
       (eisEmbedding (symbol r a)*eisEmbedding (symbol 3 a)*cubicUnitGaussSum k a) := by ring
-    _ = _ := by rw [hp,hg]
+    _ = _ := by rw [hp,(cubicUnitGaussSum_frequency_congr (k*(9*r^2)) (3*r^2*h1) a ha hcong)]
 
 end
 
 section
-open Filter MeasureTheory
+open Filter MeasureTheory ConcreteTraceCRT
 open scoped BigOperators Classical Topology Pointwise
-
-open ConcreteTraceCRT
 local notation "O" => ActualEisensteinCubic.O
 
 def eisensteinUnitRotation (u : ActualEisensteinCubic.Oˣ) : ℂ≃ₗᵢ[ℝ]ℂ where
@@ -446,10 +368,9 @@ theorem period_integral_unit_rotation (f : ℂ→ℂ)
     obtain ⟨m,rfl⟩ := periodEquiv.surjective n
     change f (3*eisEmbedding m+z)=f z
     simpa only [add_comm] using hp m z
-  have heq := periodDomain_fundamental.setIntegral_eq (periodDomain_unit_rotation u) hperiod
   have hchange := (eisensteinUnitRotation u).measurePreserving.setIntegral_image_emb
     (eisensteinUnitRotation u).toHomeomorph.measurableEmbedding f periodDomain
-  exact hchange.symm.trans heq.symm
+  exact hchange.symm.trans (periodDomain_fundamental.setIntegral_eq (periodDomain_unit_rotation u) hperiod).symm
 
 theorem period_integral_unit_affine (f : ℂ→ℂ)
     (hp : ∀n : ActualEisensteinCubic.O,∀z : ℂ,f (z+3*eisEmbedding n)=f z) (u : ActualEisensteinCubic.Oˣ) (b : ℂ) :
@@ -464,10 +385,8 @@ theorem period_integral_unit_affine (f : ℂ→ℂ)
 end
 
 section
-open Filter MeasureTheory
+open Filter MeasureTheory ConcreteTraceCRT
 open scoped BigOperators Classical Topology MatrixGroups
-
-open ConcreteTraceCRT
 local notation "O" => ActualEisensteinCubic.O
 
 lemma integral_upper_triangular_action (T : SL(2,ActualEisensteinCubic.O)) (hc : T 1 0=0)
@@ -512,7 +431,6 @@ theorem period_integral_upper_triangular
   have he (z : ℂ) : F (integralComplexMatrix T • upperPoint (3*z) v hv)=
       f (eisEmbedding (↑(u^2):ActualEisensteinCubic.O)*z+eisEmbedding (T 0 0*T 0 1)/3) := by
     rw [integral_upper_triangular_action T hc]
-    dsimp only [f]
     congr 2
     simp only [Units.val_pow_eq_pow_val,map_pow]
     ring
@@ -551,7 +469,7 @@ lemma series_scaled_three_average_zero (coeff : SubexponentialBesselCoefficients
       volume.real periodDomain*(C*Real.exp (-(Real.pi*v)*‖cuspFrequency h‖)) := by
     have hh := integral_mono_ae (hi h).norm (integrable_const (C*Real.exp (-(Real.pi*v)*‖cuspFrequency h‖)))
       (Eventually.of_forall (hfbound h))
-    simpa only [setIntegral_const,smul_eq_mul] using hh
+    simpa using hh
   have hs : Summable (fun h : ActualEisensteinCubic.O => ∫z in periodDomain,‖f h z‖) := by
     apply Summable.of_nonneg_of_le (fun h => integral_nonneg (fun z => norm_nonneg _)) hnorm
     exact ((summable_exp_neg_cuspFrequency_norm (Real.pi*v) (mul_pos Real.pi_pos hv)).mul_left C).mul_left
@@ -665,9 +583,8 @@ theorem sourceCusp_average_all (M : SL(2,ActualEisensteinCubic.O)) (v : ℝ) (hv
     (∫z in periodDomain,cubicSourceResidualFunction (integralComplexMatrix M • upperPoint (3*z) v hv))=
       sourceCuspConstant M*(v:ℂ)^(2/3:ℂ) := by
   obtain ⟨G,j,T,hT,_,_,hM⟩ := three_cusp_decomposition M
-  have h1 := sourceCusp_average_of_decomposition M G j T hT hM 1 (by norm_num)
   have hc : sourceCuspConstant M=levelTwoComplexCharacter G*(if j=0 then sourcePrincipalCuspConstant else 0) := by
-    simpa only [sourceCuspConstant,Complex.ofReal_one,Complex.one_cpow,mul_one] using h1
+    simpa only [sourceCuspConstant,Complex.ofReal_one,Complex.one_cpow,mul_one] using (sourceCusp_average_of_decomposition M G j T hT hM 1 (by norm_num))
   rw [hc]
   exact sourceCusp_average_of_decomposition M G j T hT hM v hv
 

@@ -7,11 +7,10 @@ public import OAI.NumberTheory.DirichletL.Detector.PrincipalRemainderBounds
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
 open Complex MeasureTheory
+open scoped Classical BigOperators
 namespace SevenEighths.ProbePrincipalPhysical
-open HeckeFamily ProbePhysical CompletedGauss ProbeFiniteProductBounds
-open PrincipalMellinResidues PrincipalSignalComparison ProbeMellinBoundary ProbePrincipalContours
+open HeckeFamily ProbePhysical CompletedGauss ProbeFiniteProductBounds PrincipalMellinResidues PrincipalSignalComparison ProbeMellinBoundary ProbePrincipalContours
 local notation "Id" => Ideal HeckeFamily.O
 
 theorem physical_principal_residue_remainder {K : ℕ}

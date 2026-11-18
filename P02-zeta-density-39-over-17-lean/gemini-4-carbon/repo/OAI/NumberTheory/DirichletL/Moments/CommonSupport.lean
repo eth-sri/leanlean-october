@@ -43,10 +43,7 @@ theorem isUnit_residue_of_coprime (d a : A) (h : IsCoprime d a) :
     IsUnit (Ideal.Quotient.mk (Ideal.span {d}) a) := by
   obtain ⟨u, v, huv⟩ := h
   apply IsUnit.of_mul_eq_one (Ideal.Quotient.mk (Ideal.span {d}) v)
-  have hd : Ideal.Quotient.mk (Ideal.span {d}) d = 0 :=
-    Ideal.Quotient.eq_zero_iff_mem.mpr (Ideal.subset_span (Set.mem_singleton d))
-  have hm := congrArg (Ideal.Quotient.mk (Ideal.span {d})) huv
-  simpa only [map_add, map_mul, map_one, hd, mul_zero, zero_mul, zero_add, mul_comm] using hm
+  simpa only [map_add, map_mul, map_one, (Ideal.Quotient.eq_zero_iff_mem.mpr (Ideal.subset_span (Set.mem_singleton d))), mul_zero, zero_mul, zero_add, mul_comm] using (congrArg (Ideal.Quotient.mk (Ideal.span {d})) huv)
 
 lemma residue_eq_zero_iff_dvd (d n : A) :
     Ideal.Quotient.mk (Ideal.span {d}) n = 0 ↔ d ∣ n := by
@@ -59,17 +56,13 @@ theorem full_congruence_split (D E a b x y j : A)
       Ideal.Quotient.mk (Ideal.span {a}) (E * b * x) = Ideal.Quotient.mk _ j ∧
       Ideal.Quotient.mk (Ideal.span {b}) (D * a * y) = Ideal.Quotient.mk _ (-j) := by
   rw [full_product_congruence D E a b _ ha hb hab]
-  have hzeroa : Ideal.Quotient.mk (Ideal.span {a}) a = 0 :=
-    (residue_eq_zero_iff_dvd a a).mpr dvd_rfl
-  have hzerob : Ideal.Quotient.mk (Ideal.span {b}) b = 0 :=
-    (residue_eq_zero_iff_dvd b b).mpr dvd_rfl
   have heq : (E * b) * x - (D * a) * y - j = E * (b * x) - D * (a * y) - j := by ring
   refine and_congr (by rw [heq]) (and_congr ?_ ?_)
   · rw [← residue_eq_zero_iff_dvd]
-    simp only [map_sub, map_mul, hzeroa, mul_zero, zero_mul, sub_zero]
+    simp only [map_sub, map_mul, ((residue_eq_zero_iff_dvd a a).mpr dvd_rfl), mul_zero, zero_mul, sub_zero]
     exact sub_eq_zero
   · rw [← residue_eq_zero_iff_dvd]
-    simp only [map_sub, map_mul, hzerob, mul_zero, zero_mul, zero_sub, map_neg]
+    simp only [map_sub, map_mul, ((residue_eq_zero_iff_dvd b b).mpr dvd_rfl), mul_zero, zero_mul, zero_sub, map_neg]
     constructor <;> intro h <;> linear_combination -h
 
 theorem sum_residual_constraints
@@ -99,8 +92,7 @@ theorem sum_residual_constraints
   rw [Finset.sum_mul, Finset.sum_mul]
   apply Finset.sum_congr rfl
   intro x _
-  rw [Finset.sum_comm]
-  rw [Finset.sum_mul, Finset.sum_mul]
+  rw [Finset.sum_comm, Finset.sum_mul, Finset.sum_mul]
   apply Finset.sum_congr rfl
   intro y _
   by_cases h : p x y
@@ -183,7 +175,6 @@ theorem fullModulusCorrelation_extract (D E a b : A)
       scaledCommonCorrelation D E a b χD χE j *
         χa ((↑α⁻¹ : Residue a) * Ideal.Quotient.mk _ j) *
         star (χb ((↑β⁻¹ : Residue b) * Ideal.Quotient.mk _ (-j))) := by
-  dsimp only
   let e₁ := principalCRT D a (IsCoprime.mul_left_iff.mp ha).1
   let e₂ := principalCRT E b (IsCoprime.mul_left_iff.mp hb).2
   let α := residueUnit a (E * b) (((IsCoprime.mul_left_iff.mp ha).2.symm).mul_right hab)
@@ -230,8 +221,7 @@ theorem fullModulusCorrelation_complete_support (D E a b : A)
         (χb (Ideal.Quotient.mk _ D) * star (χD (Ideal.Quotient.mk _ b))) *
         (χb (Ideal.Quotient.mk _ a) * star (χa (Ideal.Quotient.mk _ b))) *
         χa (Ideal.Quotient.mk _ j) * star (χb (Ideal.Quotient.mk _ (-j))) := by
-  rw [fullModulusCorrelation_extract D E a b ha hb hab χD χE χa χb χDa χEb hχDa hχEb j]
-  rw [scaledCommonCorrelation_eq D E a b (IsCoprime.mul_left_iff.mp hb).1
+  rw [fullModulusCorrelation_extract D E a b ha hb hab χD χE χa χb χDa χEb hχDa hχEb j, scaledCommonCorrelation_eq D E a b (IsCoprime.mul_left_iff.mp hb).1
     (IsCoprime.mul_left_iff.mp ha).2 χD χE j]
   simp only [map_mul, character_unit_inverse, residueUnit_coe, star_mul, star_star]
   ring

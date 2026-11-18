@@ -23,8 +23,6 @@ theorem differentiableOn_of_exp_eq {U : Set ℂ} (hU : IsOpen U)
     (hg : ContinuousOn g U) (he : EqOn (Complex.exp ∘ g) L U) :
     DifferentiableOn ℂ g U := by
   intro z hz
-  have hgc : ContinuousAt g z := (hg z hz).continuousAt (hU.mem_nhds hz)
-  have hLc : DifferentiableAt ℂ L z := (hL z hz).differentiableAt (hU.mem_nhds hz)
   have hs := Complex.hasStrictDerivAt_exp (g z)
   let inv := hs.localInverse Complex.exp (Complex.exp (g z)) (g z)
     (Complex.exp_ne_zero _)
@@ -32,10 +30,9 @@ theorem differentiableOn_of_exp_eq {U : Set ℂ} (hU : IsOpen U)
     rw [← he hz]
     exact (hs.to_localInverse (Complex.exp_ne_zero _)).hasDerivAt.differentiableAt
   have heq : (fun w ↦ inv (L w)) =ᶠ[𝓝 z] g := by
-    have hlocal := hgc.eventually (hs.eventually_left_inverse (Complex.exp_ne_zero _))
-    filter_upwards [hlocal, hU.mem_nhds hz] with w hw hwU
+    filter_upwards [(((hg z hz).continuousAt (hU.mem_nhds hz)).eventually (hs.eventually_left_inverse (Complex.exp_ne_zero _))), hU.mem_nhds hz] with w hw hwU
     simpa only [← he hwU, Function.comp_apply] using hw
-  exact ((hi.comp z hLc).congr_of_eventuallyEq heq.symm).differentiableWithinAt
+  exact ((hi.comp z ((hL z hz).differentiableAt (hU.mem_nhds hz))).congr_of_eventuallyEq heq.symm).differentiableWithinAt
 
 theorem exists_holomorphic_log {L : ℂ → ℂ} {c : ℂ} {R : ℝ} (hR : 0 < R)
     (hL : DifferentiableOn ℂ L (ball c R))
@@ -94,15 +91,14 @@ theorem borel_caratheodory_closedBall {g : ℂ → ℂ} {c : ℂ} {r R M A : ℝ
     {z : ℂ} (hz : z ∈ closedBall c r) :
     ‖g z‖ ≤ 2 * M * r / (R - r) + A * (R + r) / (R - r) := by
   have hzn : ‖z - c‖ ≤ r := by simpa [mem_closedBall, dist_eq_norm] using hz
-  have hzR : ‖z - c‖ < R := hzn.trans_lt hrR
-  have hRp : 0 < R := hr.trans_lt hrR
+  have hRp := hr.trans_lt hrR
   have hg' : DifferentiableOn ℂ (fun w ↦ g (c + w)) (ball 0 R) := by
     apply hg.comp ((differentiable_const c).add differentiable_id).differentiableOn
     intro w hw
     simpa [mem_ball, dist_eq_norm] using hw
   have hb := Complex.borelCaratheodory hM hg' (fun w hw ↦ hRe _ (by
     simpa [mem_ball, dist_eq_norm] using hw)) (hr.trans_lt hrR)
-    (show z - c ∈ ball 0 R by simpa using hzR)
+    (show z - c ∈ ball 0 R by simpa using (hzn.trans_lt hrR))
   simp only [add_sub_cancel, add_zero] at hb
   refine hb.trans ?_
   apply add_le_add
@@ -119,11 +115,9 @@ theorem three_circles {g : ℂ → ℂ} {c z : ℂ} {r R S A B : ℝ}
       (Real.log R - Real.log r)) *
       B ^ ((Real.log ‖z - c‖ - Real.log r) / (Real.log R - Real.log r)) := by
   let F : ℂ → ℂ := fun w ↦ g (c + Complex.exp w)
-  have hRp : 0 < R := hr.trans hrR
-  have hlog : Real.log r < Real.log R := Real.log_lt_log hr hrR
   have hmap (w : ℂ) (hw : w.re ≤ Real.log R) : c + Complex.exp w ∈ closedBall c R := by
     simp only [mem_closedBall, dist_eq_norm, add_sub_cancel_left, Complex.norm_exp]
-    exact (Real.exp_le_exp.mpr hw).trans_eq (Real.exp_log hRp)
+    exact (Real.exp_le_exp.mpr hw).trans_eq (Real.exp_log (hr.trans hrR))
   have hclosed : closure (HadamardThreeLines.verticalStrip (Real.log r) (Real.log R)) ⊆
       HadamardThreeLines.verticalClosedStrip (Real.log r) (Real.log R) := by
     apply closure_minimal
@@ -134,9 +128,7 @@ theorem three_circles {g : ℂ → ℂ} {c z : ℂ} {r R S A B : ℝ}
       (HadamardThreeLines.verticalStrip (Real.log r) (Real.log R)) := by
     apply DifferentiableOn.diffContOnCl
     intro w hw
-    have hm := hmap w (hclosed hw).2
-    have hm' : c + Complex.exp w ∈ ball c S :=
-      closedBall_subset_ball hRS hm
+    have hm' := closedBall_subset_ball hRS (hmap w (hclosed hw).2)
     exact ((hg _ hm').differentiableAt (isOpen_ball.mem_nhds hm')).comp w
       ((differentiableAt_const c).add (Complex.differentiable_exp w)) |>.differentiableWithinAt
   have hbound : BddAbove ((norm ∘ F) ''
@@ -144,8 +136,7 @@ theorem three_circles {g : ℂ → ℂ} {c z : ℂ} {r R S A B : ℝ}
     refine ⟨B, ?_⟩
     rintro _ ⟨w, hw, rfl⟩
     exact hb _ (hmap w hw.2)
-  have hzn : 0 < ‖z - c‖ := hr.trans_le hzr
-  have hz0 : z - c ≠ 0 := norm_pos_iff.mp hzn
+  have hzn := hr.trans_le hzr
   have hw : Complex.log (z - c) ∈
       HadamardThreeLines.verticalClosedStrip (Real.log r) (Real.log R) := by
     change Real.log r ≤ (Complex.log (z - c)).re ∧
@@ -153,8 +144,8 @@ theorem three_circles {g : ℂ → ℂ} {c z : ℂ} {r R S A B : ℝ}
     simp only [Complex.log_re]
     exact ⟨Real.log_le_log hr hzr, Real.log_le_log hzn hzR⟩
   have h := HadamardThreeLines.norm_le_interp_of_mem_verticalClosedStrip'
-    hlog hw hd hbound (a := A) (b := B) ?_ ?_
-  · simpa [F, Complex.exp_log hz0, Complex.log_re] using h
+    (Real.log_lt_log hr hrR) hw hd hbound (a := A) (b := B) ?_ ?_
+  · simpa [F, Complex.exp_log (norm_pos_iff.mp hzn), Complex.log_re] using h
   · intro w hw
     apply ha
     simp only [mem_preimage, mem_singleton_iff] at hw
@@ -273,8 +264,7 @@ theorem exp_sublinear_le {θ K ε : ℝ} (hθ : 0 ≤ θ) (hθ' : θ < 1)
   let Y := max 1 X
   refine ⟨Real.exp (K * Y ^ θ), Real.exp_pos _, ?_⟩
   intro x hx
-  have hxp : 0 < x := zero_lt_one.trans_le hx
-  have hYp : 0 < Y := zero_lt_one.trans_le (le_max_left _ _)
+  have hxp := zero_lt_one.trans_le hx
   by_cases hxy : x ≤ Y
   · have h1 : Real.exp (K * x ^ θ) ≤ Real.exp (K * Y ^ θ) := by
       apply Real.exp_le_exp.mpr
@@ -292,7 +282,7 @@ theorem exp_sublinear_le {θ K ε : ℝ} (hθ : 0 ≤ θ) (hθ' : θ < 1)
       rw [heq]
       exact mul_le_mul_of_nonneg_right hlarge.le hxp.le
     exact (Real.exp_le_exp.mpr hlin).trans (le_mul_of_one_le_left
-      (Real.exp_pos _).le (Real.one_le_exp (mul_nonneg hK (Real.rpow_nonneg hYp.le _))))
+      (Real.exp_pos _).le (Real.one_le_exp (mul_nonneg hK (Real.rpow_nonneg (zero_lt_one.trans_le (le_max_left _ _)).le _))))
 
 def outerConstant (e A M : ℝ) : ℝ := (4 * M + 4 * A) / e
 
@@ -309,11 +299,9 @@ theorem outer_log_bound {g : ℂ → ℂ} {c : ℂ} {a e A M T : ℝ}
     (hRe : ∀ z ∈ ball c (2 - a - 3 * e), (g z).re ≤ M * T)
     (hc : ‖g c‖ ≤ A) {z : ℂ} (hz : z ∈ closedBall c (2 - a - 4 * e)) :
     ‖g z‖ ≤ outerConstant e A M * T := by
-  have hAp : 0 ≤ A := zero_le_one.trans hA
-  have hMp : 0 < M := zero_lt_one.trans_le hM
-  have hTp : 0 < T := zero_lt_one.trans_le hT
+  have hAp := zero_le_one.trans hA
   have hb := borel_caratheodory_closedBall (by linarith : 0 ≤ 2 - a - 4 * e)
-    (by linarith : 2 - a - 4 * e < 2 - a - 3 * e) (mul_pos hMp hTp) hAp
+    (by linarith : 2 - a - 4 * e < 2 - a - 3 * e) (mul_pos (zero_lt_one.trans_le hM) (zero_lt_one.trans_le hT)) hAp
     (hg.mono (ball_subset_ball (by linarith))) hRe hc hz
   have hgap : 2 - a - 3 * e - (2 - a - 4 * e) = e := by ring
   rw [hgap] at hb

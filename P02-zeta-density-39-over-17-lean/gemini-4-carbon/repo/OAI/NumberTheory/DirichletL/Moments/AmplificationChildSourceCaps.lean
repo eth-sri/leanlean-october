@@ -8,16 +8,11 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondLocalization
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
 open Filter
+open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentAmplificationChildSourceCaps
-open ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData
-open CenteredMomentFirstAmplificationChoice CenteredMomentHeckeColumnWindow
-open CenteredMomentCommonAllocationSum CenteredMomentCommonRawScale
-open CenteredMomentCommonProfile CenteredMomentSourceLiveColumn CenteredMomentAddedZeroUniform
-open CenteredMomentAmplificationChildInput CenteredMomentOriginalCommonHarmonic
-open CenteredMomentSourceMass CenteredMomentSecondHeightFamily CenteredMomentSectorLocalization
+open ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData CenteredMomentFirstAmplificationChoice CenteredMomentHeckeColumnWindow CenteredMomentCommonAllocationSum CenteredMomentCommonRawScale CenteredMomentCommonProfile CenteredMomentSourceLiveColumn CenteredMomentAddedZeroUniform CenteredMomentAmplificationChildInput CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass CenteredMomentSecondHeightFamily CenteredMomentSectorLocalization
 local notation "O" => HeckeFamily.O
 variable {ι : Type*} [Fintype ι]
 local instance {κ : Type*} : DecidableEq κ := Classical.decEq _
@@ -46,17 +41,15 @@ theorem common_volume (s : Input ι) (C R : Ideal O) (B : actualAllocations s.po
     CenteredMomentAmplificationChildInput.volume (child s C R B τ t)=
       CenteredMomentAmplificationChildInput.volume s/rawReduction B.val s.P := by
   have hh:=raw_scale_identity B.val (alloc_ne s C B) (s.X₁*s.X₂) s.P
-  have hr:=rawReduction_pos B.val (alloc_ne s C B) s.P s.P_pos
-  apply (eq_div_iff hr.ne').mpr
+  apply (eq_div_iff (rawReduction_pos B.val (alloc_ne s C B) s.P s.P_pos).ne').mpr
   change _ = CenteredMomentAmplificationChildInput.volume s at hh
   rw [←hh]
   congr 1
   unfold CenteredMomentAmplificationChildInput.volume child commonData remainingRaw plainNorm
-  dsimp only
   ring
 
 lemma live_card_le (B : Tuple ι) : Fintype.card (liveIndices B)≤Fintype.card ι := by
-  simpa only [Fintype.card_coe] using (Finset.card_le_univ (liveIndices B))
+  simpa using (Finset.card_le_univ (liveIndices B))
 
 theorem common_volume_le (N : ℕ) (b : ℝ) (hb : 1≤b) (s : Input ι)
     (hcard : Fintype.card ι≤N) (hs : s.upper≤b)
@@ -64,23 +57,21 @@ theorem common_volume_le (N : ℕ) (b : ℝ) (hb : 1≤b) (s : Input ι)
     (hne : frozenCoefficient B.val C R s.ν s.W s.P≠0) :
     CenteredMomentAmplificationChildInput.volume (child s C R B τ t)≤
       b^N*CenteredMomentAmplificationChildInput.volume s/(C.absNorm:ℝ) := by
-  have hc:=norm_ge_one C (allocation_ne s C B)
   have hr:=rawReduction_pos B.val (alloc_ne s C B) s.P s.P_pos
   have hn:=(actual_reduction_norm B.val (alloc_ne s C B) C R (allocation_product s C B)
     s.ν s.W s.P s.P_pos s.lower b s.lower_pos
     (fun i x hx=>⟨(s.slot_support i hx).1,((s.slot_support i hx).2).trans hs⟩) hne).2
   rw [max_eq_right hb] at hn
-  have hn':(C.absNorm:ℝ)≤b^N*rawReduction B.val s.P := hn.trans
+  have hn' := hn.trans
     (mul_le_mul_of_nonneg_right (pow_le_pow_right₀ hb hcard) hr.le)
   rw [common_volume]
-  apply (div_le_div_iff₀ hr (zero_lt_one.trans_le hc)).mpr
+  apply (div_le_div_iff₀ hr (zero_lt_one.trans_le (norm_ge_one C (allocation_ne s C B)))).mpr
   nlinarith [CenteredMomentAmplificationChildInput.volume_pos s]
 
 theorem radius_le (N : ℕ) (b b₁ b₂ : ℝ) (hb : 1≤b) (h₁ : 0≤b₁) (_h₂ : 0≤b₂)
     (s : Input ι) (hc : Fintype.card ι≤N) (hhi : ∀i,0≤s.hi i) (hhib : ∀i,s.hi i≤b)
     (hs₁ : 0≤s.b₁) (hs₂ : 0≤s.b₂) (hb₁ : s.b₁≤b₁) (hb₂ : s.b₂≤b₂) :
     0≤CenteredMomentOriginalCommonHarmonic.sourceRadius s ∧ CenteredMomentOriginalCommonHarmonic.sourceRadius s≤(b^N*b₁*b₂)*CenteredMomentAmplificationChildInput.volume s := by
-  have hp:0≤∏i,s.hi i:=Finset.prod_nonneg (fun i _=>hhi i)
   have hp':(∏i,s.hi i)≤b^N := by
     calc
       _ ≤ ∏i:ι,b := Finset.prod_le_prod₀ (fun i _=>hhi i) (fun i _=>hhib i)
@@ -92,7 +83,7 @@ theorem radius_le (N : ℕ) (b b₁ b₂ : ℝ) (hb : 1≤b) (h₁ : 0≤b₁) (
   have he:CenteredMomentOriginalCommonHarmonic.sourceRadius s=((∏i,s.hi i)*s.b₁*s.b₂)*CenteredMomentAmplificationChildInput.volume s := by
     unfold CenteredMomentOriginalCommonHarmonic.sourceRadius CenteredMomentAmplificationChildInput.volume; ring
   rw [he]
-  exact ⟨mul_nonneg (mul_nonneg (mul_nonneg hp hs₁) hs₂)
+  exact ⟨mul_nonneg (mul_nonneg (mul_nonneg (Finset.prod_nonneg (fun i _=>hhi i)) hs₁) hs₂)
     (CenteredMomentAmplificationChildInput.volume_pos s).le,
     mul_le_mul_of_nonneg_right hpp (CenteredMomentAmplificationChildInput.volume_pos s).le⟩
 
@@ -134,13 +125,11 @@ def twiceChild (s : Input ι) (C R : Ideal O) (B : actualAllocations s.pools C)
   child (child s C R B τ t) (Q^k) (R*C) Bp υ v
 
 theorem puncture_norm (R C Q : Ideal O) (k : ℕ) :
-    (((R*C)*(Q^k)).absNorm:ℝ)=(R.absNorm:ℝ)*(C.absNorm:ℝ)*(Q.absNorm:ℝ)^k := by
-  simp only [map_mul,map_pow,Nat.cast_mul,Nat.cast_pow]
+    (((R*C)*(Q^k)).absNorm:ℝ)=(R.absNorm:ℝ)*(C.absNorm:ℝ)*(Q.absNorm:ℝ)^k := by simp
 
 theorem eventual_geometry (G ε : ℝ) (hG : 1≤G) (hε : 0<ε) :
     ∀ᶠZ:ℝ in atTop,1<Z ∧ G≤Z^ε ∧ G^2≤Z^ε := by
-  have hh:=(Filter.tendsto_atTop.1 (tendsto_rpow_atTop hε)) (G^2)
-  filter_upwards [eventually_gt_atTop (1:ℝ),hh] with Z hZ hpow
+  filter_upwards [eventually_gt_atTop 1,((Filter.tendsto_atTop.1 (tendsto_rpow_atTop hε)) (G^2))] with Z hZ hpow
   exact ⟨hZ,(by nlinarith : G≤G^2).trans hpow,hpow⟩
 
 theorem polynomial_caps (G V X H K Z A D ε ξ : ℝ)
@@ -151,20 +140,17 @@ theorem polynomial_caps (G V X H K Z A D ε ξ : ℝ)
     0<frequencyRadius (X^2/K) Z ξ ∧
     frequencyRadius (X^2/K) Z ξ≤Z^(2*A+D+ε+ξ/2) := by
   have hz:=hZ.trans' zero_lt_one
-  have hgp:G≤Z^ε := (by nlinarith : G≤G^2).trans hGp
-  have hvpow:0<Z^A:=Real.rpow_pos_of_pos hz A
-  have hrpow:0<Z^ε:=Real.rpow_pos_of_pos hz ε
+  have hvpow :=Real.rpow_pos_of_pos hz A
   have hcap:G*V≤Z^(A+ε) := by
     rw [Real.rpow_add hz]
-    nlinarith [mul_le_mul hgp hVp hV.le hrpow.le]
+    nlinarith [mul_le_mul ((by nlinarith : G≤G^2).trans hGp) hVp hV.le (Real.rpow_pos_of_pos hz ε).le]
   have hsq:X^2≤G^2*(Z^A)^2 := by nlinarith [mul_le_mul_of_nonneg_left hVp (by linarith : 0≤G)]
   have ht:X^2/K≤Z^(2*A+D+ε) := by
     have hm:=mul_le_mul hsq hKp (inv_nonneg.mpr hK.le)
       (mul_nonneg (sq_nonneg _) (sq_nonneg _))
-    have hg:=mul_le_mul_of_nonneg_right hGp (mul_nonneg (sq_nonneg (Z^A)) (Real.rpow_nonneg hz.le D))
     calc
       _ ≤ (G^2*(Z^A)^2)*Z^D := by simpa only [div_eq_mul_inv] using hm
-      _ ≤ (Z^ε*(Z^A)^2)*Z^D := by nlinarith [hg]
+      _ ≤ (Z^ε*(Z^A)^2)*Z^D := by nlinarith [(mul_le_mul_of_nonneg_right hGp (mul_nonneg (sq_nonneg (Z^A)) (Real.rpow_nonneg hz.le D)))]
       _ = _ := by rw [pow_two,←Real.rpow_add hz,←Real.rpow_add hz,←Real.rpow_add hz];congr 1;ring
   refine ⟨hXV.trans hcap,hHV.trans hcap,ht,?_,?_⟩
   · exact mul_pos (div_pos (sq_pos_of_pos hX) hK) (Real.rpow_pos_of_pos hz _)

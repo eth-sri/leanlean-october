@@ -6,16 +6,11 @@ public import OAI.NumberTheory.DirichletL.Moments.ExceptionalAsymmetricSource
 
 namespace OAI
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
 open Filter
+open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptionalCommon
-open HeckeFamily CenteredMomentEligibleEnergy CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
-open CenteredMomentAllocatedDetectorAmplitude CenteredMomentExceptionalAmplitudePair
-open CenteredMomentExceptionalAllocationShell CenteredMomentExceptionalWholeSource
-open CenteredMomentExceptionalMaskedSource UniqueFactorizationMonoid CenteredMomentDivisorExtraction
-open CenteredMomentDivisorRectangle CenteredMomentExceptionalAsymmetricSource
-open CenteredMomentFiniteProfileExceptional
+open HeckeFamily CenteredMomentEligibleEnergy CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentAllocatedDetectorAmplitude CenteredMomentExceptionalAmplitudePair CenteredMomentExceptionalAllocationShell CenteredMomentExceptionalWholeSource CenteredMomentExceptionalMaskedSource UniqueFactorizationMonoid CenteredMomentDivisorExtraction CenteredMomentDivisorRectangle CenteredMomentExceptionalAsymmetricSource CenteredMomentFiniteProfileExceptional
 local notation "O" => HeckeFamily.O
 universe u
 variable {ι:Type u} [Fintype ι] [DecidableEq ι]
@@ -166,7 +161,6 @@ theorem actual_whole_asymmetric (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)(lo hi:ι
     _≤A*(Cs*Z^(δ-max r 0)):=mul_le_mul_of_nonneg_left (hZ.2 I L s.toSource v.toSource hlo hhi Ds hDs (max r 0)) hA
     _=_:=by
       rw [show 2*ε+δ-max r 0=2*ε+(δ-max r 0) by ring,Real.rpow_add hz]
-      dsimp [A]
       ring
 
 theorem actual_masked_asymmetric (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)(lo hi:ι→ℝ)(ε δ B Lbound:ℝ)

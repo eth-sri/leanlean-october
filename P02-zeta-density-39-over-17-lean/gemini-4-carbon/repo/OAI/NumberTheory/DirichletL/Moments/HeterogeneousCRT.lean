@@ -66,9 +66,7 @@ theorem fullCorrelation_three_equiv {ι X Y R : Type*} [Fintype ι]
   have he : left x - right y = k ↔
       (fun i => li i (eX x i)) - (fun i => ri i (eY y i)) = eR k := by
     rw [← eR.injective.eq_iff, map_sub]
-    have hleft : eR (left x) = fun i => li i (eX x i) := funext (hl x)
-    have hright : eR (right y) = fun i => ri i (eY y i) := funext (hr y)
-    rw [hleft, hright]
+    rw [(funext (hl x)), (funext (hr y))]
   simp only [he]
 
 end SevenEighths.CenteredMomentHeterogeneousCRT

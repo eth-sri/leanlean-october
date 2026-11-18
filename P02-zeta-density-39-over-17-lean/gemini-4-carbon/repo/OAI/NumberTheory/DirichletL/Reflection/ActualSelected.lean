@@ -60,12 +60,12 @@ theorem actual_marked_selected_reflection
           (((poolPrimeFamily R (Ideal.span {m}*F) (Q*Ideal.span {(72:Eis)})).restrict B).reflected K hK (S.restrict T)).generator_good
           (reflectedExponent (fun b : B => completedLocalExponent R F b.val.val))
           (slotIndices B (PrimeIndex K) T) W X := by
-  have hQ0 : (Q*Ideal.span {(72:Eis)})≠0 := by
+  have hQ0 : (Q*Ideal.span {72})≠0 := by
     apply mul_ne_zero hQ
     simp only [ne_eq,Ideal.zero_eq_bot,Ideal.span_singleton_eq_bot]
     norm_num
   exact (actual_marked_row_eq_joined D S Ψ Q hmLam hm2 W X).trans
-    (original_selected_reflected_expansion D R I F (Q*Ideal.span {(72:Eis)}) hR hI hF hm hf hz hbad hcop hpow hmask S
+    (original_selected_reflected_expansion D R I F (Q*Ideal.span {72}) hR hI hF hm hf hz hbad hcop hpow hmask S
       hS hSodd hdis (D.fixedFactor Ψ Q) (D.fixedFactor_norm Ψ Q hΨnorm) hQ0
       (D.fixedFactor_periodic Ψ Q hΨperiod) c hc hcQ G N hN hNp C W hWcompact lo hi hlo hsupp hW X hX)
 end

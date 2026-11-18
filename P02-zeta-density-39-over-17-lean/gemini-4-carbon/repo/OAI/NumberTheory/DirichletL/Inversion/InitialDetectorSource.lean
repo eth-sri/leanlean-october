@@ -11,8 +11,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical ComplexConjugate
 namespace SevenEighths.InverseInitialDetectorSource
-open HeckeFamily HeckeDyadic HeckeInverseAmplification HeckeDetectorCoefficientTransfer
-open InverseInitialRawDictionary InverseInitialConjugateEnergy
+open HeckeFamily HeckeDyadic HeckeInverseAmplification HeckeDetectorCoefficientTransfer InverseInitialRawDictionary InverseInitialConjugateEnergy
 local notation "O" => HeckeFamily.O
 
 def baseCharacter (data : RowData) : Character := data.character ⟨1,one_ne_zero⟩

@@ -9,9 +9,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseFirstGlobalCaps InverseSecondSourceBlocks InverseMomentFirstChildWindows
-open InverseMomentFirstOriginalProfile
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseFirstGlobalCaps InverseSecondSourceBlocks InverseMomentFirstChildWindows InverseMomentFirstOriginalProfile
 open ConcreteTraceCRT (eisEmbedding)
 local notation "O"=>ActualEisensteinCubic.O
 
@@ -33,14 +31,10 @@ theorem first_live_cell_radius_one {ι:Type}[DecidableEq ι]
   have hweight:firstOriginalWeight p β cutoff x.1 x.2≠0:=by
     intro hh
     exact hnon (sourceSummand_zero_of_weight p hp hcop hg β cutoff Ψ m mark W Φ K x j hh)
-  have hrow:=original_weight_frequency p β cutoff x hweight
   obtain ⟨ho,hf⟩:=Finset.mem_sigma.mp hx
   obtain ⟨hI,hfreq⟩:=(mem_firstRetainedSource p labels x.1.1 Y x.2).mp hf
-  have hfreq0:x.2.2≠0:=(Finset.mem_erase.mp hfreq).1
   have hE:=firstPhysicalMultiplier_ne_zero p hp x.1.1.support x.1.1.leftExponent x.1.1.rightExponent
     x.1.1.leftBit x.1.1.rightBit x.2.1 (hlabels _ hI)
-  have hn:= (mem_childFrequencyBall _ hE _ _).mp hrow
-  have hone:=EisensteinSchwartzPoisson.one_le_eisenstein_norm_sq _ (mul_ne_zero hE hfreq0)
   have href:x.1∈refinedOuter p pool Q (sourceIndex (InverseMomentFirstOriginalProfile.originalNorms p) x)
       (labelGate p (dyadIndex (InverseFirstGlobalCaps.jNorm p x.1))):=by
     rw [refinedOuter_label]
@@ -49,7 +43,7 @@ theorem first_live_cell_radius_one {ι:Type}[DecidableEq ι]
   change 1≤firstCellRadius Z M r ell V eta tau (sourceIndex (InverseMomentFirstOriginalProfile.originalNorms p) x)
     (dyadIndex (InverseFirstGlobalCaps.jNorm p x.1))
   rw [←first_dyadic_radius_cell p pool Q _ _ x.1 href]
-  exact hone.trans hn
+  exact (EisensteinSchwartzPoisson.one_le_eisenstein_norm_sq _ (mul_ne_zero hE ((Finset.mem_erase.mp hfreq).1))).trans ((mem_childFrequencyBall _ hE _ _).mp (original_weight_frequency p β cutoff x hweight))
 
 end SevenEighths.InverseMoment
 

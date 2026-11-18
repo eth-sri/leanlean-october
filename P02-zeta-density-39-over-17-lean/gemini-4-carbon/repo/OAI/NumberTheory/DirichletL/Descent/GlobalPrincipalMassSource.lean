@@ -8,8 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.InverseMomentGlobalPrincipalMass
-open InverseMoment InverseFirstPriorityParents InverseInitialArithmetic
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open InverseMoment InverseFirstPriorityParents InverseInitialArithmetic ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
 local notation "O" => ActualEisensteinCubic.O
 
@@ -46,7 +45,7 @@ theorem original_weighted_source (Jmax : ℕ) (delta : ℝ) (hdelta : 0<delta) :
   obtain ⟨C,hC,hraw⟩ := original_weighted_mass Jmax delta hdelta
   refine ⟨C,hC,?_⟩
   intro ι _ p hp _ hinj Jo hJo S Z ell R Bfirst t eta a loss hZ hell ha hloss hS hb₁ hb₂ hactive hcommon hquot extra negative hextra
-  have hZp : 0<Z := zero_lt_one.trans_le hZ
+  have hZp := zero_lt_one.trans_le hZ
   have hh := hraw p hp hinj Jo hJo S (Z^(ell+eta)) (Z^((R+eta)/2))
     (Z^(Bfirst+eta)) (Z^(t+eta)) a (Real.one_le_rpow hZ hell)
     (Real.rpow_nonneg hZp.le _) (Real.rpow_pos_of_pos hZp _)

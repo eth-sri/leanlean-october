@@ -7,98 +7,25 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 
 namespace SecondPassArithmetic
 
 section
 
-open scoped BigOperators Classical
-open MeasureTheory
-open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProduct)
 open ConcreteTraceCRT (eisEmbedding)
 open RayFourExpansion (RayCharacter)
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT
 
 end SecondPassArithmetic
 
-open MeasureTheory
-open scoped BigOperators Classical
 namespace CanonicalRowCompletion
 
 section
-open ActualEisensteinCubic
 open CompletedGauss hiding O
 open ConcretePrimeRowBridge hiding O columnWeight
 open CanonicalQuadraticSieve hiding O
@@ -146,10 +73,8 @@ theorem rowFamilyEnergy_integral_polynomial
   have hψ (x : labels × R) : Integrable (fun t => b t*ψ x t) := by
     convert (hφ x.1.val x.2.val).const_mul (w x.2.val : ℂ) using 1
     funext t
-    dsimp only [ψ]
     ring
   have hψbound (t : ℝ) : (∑ x : labels × R, ‖ψ x t‖^2) ≤ E*(1+|t|)^(2*d) := by
-    change (∑ x : labels × R, ‖(w x.2.val : ℂ)*φ x.1.val x.2.val t‖^2) ≤ _
     rw [hsum (fun I z => φ I z t)]
     exact hbound t
   have hi (x : labels × R) :
@@ -157,7 +82,6 @@ theorem rowFamilyEnergy_integral_polynomial
     rw [← integral_const_mul]
     apply integral_congr_ae
     filter_upwards [] with t
-    dsimp only [ψ]
     ring
   have hm := finite_integral_energy_polynomial b ψ d E hE hb hψ hψbound
   simp_rw [hi] at hm
@@ -176,9 +100,6 @@ theorem rowFamilyEnergy_const_mul (labels : Finset (Ideal ActualEisensteinCubic.
 end
 section
 
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic
 open CompletedGauss hiding O
 open ConcretePrimeRowBridge hiding O columnWeight
 open SecondPassArithmetic hiding O
@@ -193,7 +114,6 @@ variable {ι : Type*} [DecidableEq ι]
 end
 
 section
-open ActualEisensteinCubic
 open CompletedGauss hiding O
 open ConcretePrimeRowBridge hiding O columnWeight
 open CanonicalQuadraticSieve hiding O
@@ -202,9 +122,6 @@ open ConcreteTraceCRT (eisEmbedding)
 
 end
 
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap ContDiff
-open ActualEisensteinCubic
 open CompletedGauss hiding O
 open ConcretePrimeRowBridge hiding O columnWeight
 open CanonicalQuadraticSieve hiding O
@@ -214,9 +131,7 @@ open CanonicalCubeSeparation JointLogSeparation
 
 end CanonicalRowCompletion
 
-open scoped BigOperators Classical
 namespace SecondPassArithmetic
-open ActualEisensteinCubic
 open ConcreteTraceCRT (eisEmbedding)
 open FirstPassCubeLabels (primeProduct)
 

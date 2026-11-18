@@ -7,16 +7,8 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical
 
 namespace ActualEisensteinCubic
 
@@ -71,7 +63,6 @@ end ActualEisensteinCubic
 
 namespace ShortDraftLocal
 
-open AddChar MulChar
 
 theorem general_inversion_gauss {F : Type*} [Field F] [Fintype F] [DecidableEq F]
     (χ : MulChar F ℂ) (ψ : AddChar F ℂ) (j : ℕ) (a : F) :
@@ -95,7 +86,7 @@ theorem general_inversion_gauss {F : Type*} [Field F] [Fintype F] [DecidableEq F
       rw [← hchar, MulChar.inv_apply']
     _ = gaussSum (χ ^ (j + 2)) (ψ.mulShift a) := by
       rw [gaussSum_eq_units_sum]
-      simp only [AddChar.mulShift_apply]
+      simp
 
 theorem sextic_fourier_theta_row_general
     {F : Type*} [Field F] [Fintype F] [DecidableEq F]
@@ -138,7 +129,6 @@ namespace ActualEisensteinCubic
 
 section
 
-open AddChar MulChar
 
 theorem canonical_A5_nonexceptional (P : Ideal O) [P.IsMaximal]
     (hgood : lambda ∉ P) (hchar : ringChar (O ⧸ P) ≠ 2)
@@ -159,20 +149,19 @@ theorem canonical_A5_nonexceptional (P : Ideal O) [P.IsMaximal]
   let : Field (O ⧸ P) := Ideal.Quotient.field P
   let : Fintype (O ⧸ P) := Fintype.ofFinite _
   let χ := canonicalSextic P hgood
-  have hχj : χ ^ j ≠ 1 :=
-    canonicalSextic_pow_ne_one P hgood hchar hj0 hj6
+  have hχj := canonicalSextic_pow_ne_one P hgood hchar hj0 hj6
   have hχj2 : χ ^ (j + 2) ≠ 1 := by
     have hcases : j = 1 ∨ j = 2 ∨ j = 3 ∨ j = 5 := by omega
     rcases hcases with rfl | rfl | rfl | rfl
     · exact canonicalSextic_pow_ne_one P hgood hchar
-        (by decide : (3:ℕ) ≠ 0) (by decide : (3:ℕ) < 6)
+        (by decide : 3 ≠ 0) (by decide : 3 < 6)
     · exact canonicalSextic_pow_ne_one P hgood hchar
-        (by decide : (4:ℕ) ≠ 0) (by decide : (4:ℕ) < 6)
+        (by decide : 4 ≠ 0) (by decide : 4 < 6)
     · exact canonicalSextic_pow_ne_one P hgood hchar
-        (by decide : (5:ℕ) ≠ 0) (by decide : (5:ℕ) < 6)
+        (by decide : 5 ≠ 0) (by decide : 5 < 6)
     · have hχ1 : χ ≠ 1 := by
-        simpa only [pow_one, χ] using canonicalSextic_pow_ne_one P hgood hchar
-          (by decide : (1:ℕ) ≠ 0) (by decide : (1:ℕ) < 6)
+        simpa using canonicalSextic_pow_ne_one P hgood hchar
+          (by decide : 1 ≠ 0) (by decide : 1 < 6)
       have hχ7 : χ ^ (5 + 2) = χ := by
         calc
           χ ^ (5 + 2) = χ ^ (6 + 1) := by congr 1
@@ -180,7 +169,6 @@ theorem canonical_A5_nonexceptional (P : Ideal O) [P.IsMaximal]
           _ = χ := by rw [canonicalSextic_pow_six P hgood, one_mul]
       rw [hχ7]
       exact hχ1
-  dsimp
   rw [Nat.card_eq_fintype_card]
   exact ShortDraftLocal.sextic_fourier_theta_row_general χ ψ j hχj hχj2 σ ε x
 
@@ -232,7 +220,6 @@ end AnalyticBridge
 
 namespace JacobiQuadratic
 
-open Finset
 
 variable {F : Type*} [Field F] [Fintype F] [DecidableEq F]
 
@@ -282,14 +269,13 @@ theorem jacobi_quadratic (χ : MulChar F ℂ)
     jacobiSum χ ((quadraticChar F).ringHomComp (Int.castRingHom ℂ)) =
       χ (4 : F) * jacobiSum χ χ := by
   classical
-  let q : MulChar F ℂ := (quadraticChar F).ringHomComp (Int.castRingHom ℂ)
+  let q := (quadraticChar F).ringHomComp (Int.castRingHom ℂ)
   have hsum0 : (∑ y : F, χ (1 - y)) = 0 := by
     have ht := (Equiv.sum_comp (oneSub (F := F)) χ)
     change (∑ y : F, χ ((oneSub (F := F)) y)) = 0
     exact ht.trans (MulChar.sum_eq_zero_of_ne_one hχ)
-  have hfiber := square_fiber χ hchar
   have hsq : (∑ t : F, χ (1 - t ^ 2)) = jacobiSum χ q := by
-    rw [hfiber]
+    rw [(square_fiber χ hchar)]
     simp_rw [add_mul]
     rw [Finset.sum_add_distrib]
     simp only [one_mul, hsum0, add_zero]
@@ -304,14 +290,12 @@ theorem jacobi_quadratic (χ : MulChar F ℂ)
       congr 1
       change 4 * x * (1 - x) = 1 - (2 * x - 1) ^ 2
       ring
-  calc
-    jacobiSum χ q = ∑ x : F, χ (4 * x * (1 - x)) := hsq.symm.trans hchange
-    _ = χ (4 : F) * jacobiSum χ χ := by
+  exact (hsq.symm.trans hchange).trans (by
       rw [jacobiSum, Finset.mul_sum]
       apply Finset.sum_congr rfl
       intro x _
       simp only [ map_mul]
-      ring
+      ring)
 
 theorem gauss_sextic_relation (χ : MulChar F ℂ) (ψ : AddChar F ℂ)
     (hchar : ringChar F ≠ 2) (hψ : ψ.IsPrimitive)
@@ -327,7 +311,7 @@ theorem gauss_sextic_relation (χ : MulChar F ℂ) (ψ : AddChar F ℂ)
   let g4 := gaussSum (χ ^ 4) ψ
   let J11 := jacobiSum χ χ
   let J13 := jacobiSum χ (χ ^ 3)
-  have hprod2 : χ * χ = χ ^ 2 := (pow_two χ).symm
+  have hprod2 := (pow_two χ).symm
   have hprod4 : χ * χ ^ 3 = χ ^ 4 := by group
   have hJ12 : g2 * J11 = g1 * g1 := by
     have h := jacobiSum_mul_nontrivial (by rw [hprod2]; exact hχ2) ψ

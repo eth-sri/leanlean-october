@@ -12,9 +12,7 @@ public import Mathlib.Analysis.Complex.CauchyIntegral
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+open Complex Filter MeasureTheory Set Topology MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth MathCollab.Density.Contour
 open scoped Interval ComplexConjugate ContDiff
 set_option autoImplicit false
 noncomputable section
@@ -24,9 +22,7 @@ namespace MathCollab.Density.Stronger.Atkinson
 theorem hasDerivAt_zetaDivisorWeightKernel_complex (q : ℂ) {w : ℂ} (hw : w ≠ 0) :
     HasDerivAt (fun z : ℂ => zetaDivisorWeightKernel z w)
       (-zetaDivisorWeightNumerator q w) q := by
-  have he := ((hasDerivAt_id q).neg.mul_const w).cexp
-  have h := (he.const_mul (Complex.exp (100 * w ^ 2) * hughesYoungAuxiliaryZero w)).div_const w
-  convert h using 1
+  convert (((((hasDerivAt_id q).neg.mul_const w).cexp).const_mul (Complex.exp (100 * w ^ 2) * hughesYoungAuxiliaryZero w)).div_const w) using 1
   · rfl
   · unfold zetaDivisorWeightNumerator
     norm_num

@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaBufferedMorseLocal
 
 @[expose] public section
@@ -38,11 +48,10 @@ theorem integral_inverseMorse_window
     intro z hz
     exact ((modelPhaseMorseInverse_contDiffAt hσ hδ hF hv (hs' hz)).derivWithin (m := ∞)
       (by simp)).continuousAt.continuousWithinAt
-  have hi : modelPhaseMorseInverse F v '' uIcc (-H) H ⊆ Ioo (1 : ℝ) 2 := by
+  have hi : modelPhaseMorseInverse F v '' uIcc (-H) H ⊆ Ioo 1 2 := by
     rintro u ⟨z,hz,rfl⟩
     exact modelPhaseMorseInverse_mem (hs' hz)
-  have he := intervalIntegral.integral_deriv_smul_comp' hd hc (hg.mono hi)
-  simpa only [Function.comp_def,Complex.real_smul] using he.symm
+  simpa using (intervalIntegral.integral_deriv_smul_comp' hd hc (hg.mono hi)).symm
 
 theorem modelPhaseMorse_window_integral
     {χ F : ℝ → ℝ} {σ δ v H : ℝ}
@@ -55,7 +64,7 @@ theorem modelPhaseMorse_window_integral
       (χ u : ℂ)*(𝐞 (T*F u-(T*v)*u) : ℂ)) =
       (𝐞 (-T*modelPhaseLegendreDual F v) : ℂ)*
         ∫ z in (-H)..H, (modelPhaseMorseWeight χ F v z : ℂ)*betaQuadraticKernel T z := by
-  have hg : ContinuousOn (fun u => (χ u : ℂ)*(𝐞 (T*F u-(T*v)*u) : ℂ)) (Ioo (1 : ℝ) 2) := by
+  have hg : ContinuousOn (fun u => (χ u : ℂ)*(𝐞 (T*F u-(T*v)*u) : ℂ)) (Ioo 1 2) := by
     intro u hu
     have hc := (approximateModelPhase_contDiffAt hF hu).continuousAt
     have he : ContinuousAt (fun u => (χ u : ℂ)*(𝐞 (T*F u-(T*v)*u) : ℂ)) u := by

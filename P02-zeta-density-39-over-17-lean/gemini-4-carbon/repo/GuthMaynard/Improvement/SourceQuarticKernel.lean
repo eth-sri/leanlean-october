@@ -23,7 +23,7 @@ theorem source_quartic_weight_decay (q : ℕ) :
   simp only [norm_iteratedFDeriv_zero,Real.norm_eq_abs] at hh
   apply (le_div_iff₀ (by positivity : 0 < (1+|t|)^q)).mpr
   dsimp [sourceQuarticWeight]
-  have he : (1+|t|)^q*‖sourceReproducingKernel t‖ ≤ C := hh
+  have he := hh
   nlinarith
 
 /-- Bounded overlap is the audited separated-decay packing theorem,

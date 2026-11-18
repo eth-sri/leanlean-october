@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.CenteredMomentFirstAnnularEnergy
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentGaussEnergy
-open CenteredMomentFirstAnnularMajorant CenteredMomentSectorLocalization
-open CenteredMomentCanonicalFirst CenteredMomentSmoothedWindowEnergy
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentGaussEnergy CenteredMomentFirstAnnularMajorant CenteredMomentSectorLocalization CenteredMomentCanonicalFirst CenteredMomentSmoothedWindowEnergy
 local notation "O"=>HeckeFamily.O
 
 variable {α:Type*}
@@ -33,10 +31,9 @@ theorem energy_partition (S:Finset α)(a:α→O)(ha:∀i,Supported (Ideal.span {
     (gaussEnergy S a ha c profile H).re=
       ∑j∈bands H,∑'z:O,dyadicWeight j (normValue z)*
         (‖gaussPolynomial S a ha c z‖^2*(profile (normValue z/H)).re):=by
-  have hs:=weighted_summable S a ha c H hH
   have hj (j:ℤ):Summable (fun z:O=>dyadicWeight j (normValue z)*
       (‖gaussPolynomial S a ha c z‖^2*(profile (normValue z/H)).re)):=by
-    apply hs.of_nonneg_of_le
+    apply (weighted_summable S a ha c H hH).of_nonneg_of_le
     · intro z
       exact mul_nonneg (dyadicWeight_bounds j _).1 (mul_nonneg (sq_nonneg _) (profile_nonneg _))
     · intro z
@@ -50,14 +47,9 @@ theorem energy_partition (S:Finset α)(a:α→O)(ha:∀i,Supported (Ideal.span {
           ((∑j∈bands H,dyadicWeight j (normValue z))*(profile (normValue z/H)).re):=by
         rw [←weighted_partition H (normValue z) hH]
       _=_:=by ring
-  have hsum:=gaussEnergy_hasSum_re S a ha c profile H hH
-  rw [←hsum.tsum_eq]
+  rw [←(gaussEnergy_hasSum_re S a ha c profile H hH).tsum_eq]
   simp_rw [←normValue_eq_embedding]
-  calc
-    _ = ∑'z:O, ∑j∈bands H,dyadicWeight j (normValue z)*
-        (‖gaussPolynomial S a ha c z‖^2*(profile (normValue z/H)).re) :=
-      tsum_congr he
-    _ = _ := Summable.tsum_finsetSum (fun j _=>hj j)
+  exact (tsum_congr he).trans (Summable.tsum_finsetSum (fun j _=>hj j))
 
 theorem energy_le_dyadic (S:Finset α)(a:α→O)(ha:∀i,Supported (Ideal.span {a i}))
     (c:α→ℂ)(H:ℝ)(hH:0<H):

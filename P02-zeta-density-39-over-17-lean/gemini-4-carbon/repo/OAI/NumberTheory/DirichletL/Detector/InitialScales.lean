@@ -21,13 +21,10 @@ lemma sourceMellinWeight_eq_scale (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ) (x
 
 lemma sourceScale_continuous (X Y Z : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z) :
     Continuous (fun q : (ℂ × ℂ) × ℂ =>sourceScale X Y Z q.1.1 q.1.2 q.2) := by
-  have hx : (X:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hX.ne'
-  have hy : (Y:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hY.ne'
-  have hz : (Z:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hZ.ne'
   unfold sourceScale
-  exact (((by fun_prop : Continuous (fun q : (ℂ × ℂ) × ℂ =>(1/2:ℂ)-q.2)).const_cpow (Or.inl hx)).mul
-    (((by fun_prop : Continuous (fun q : (ℂ × ℂ) × ℂ =>q.1.1+q.2-1)).const_cpow (Or.inl hz)))) |>.mul
-      ((by fun_prop : Continuous (fun q : (ℂ × ℂ) × ℂ =>q.1.2-1)).const_cpow (Or.inl hy))
+  exact (((by fun_prop : Continuous (fun q : (ℂ × ℂ) × ℂ =>(1/2)-q.2)).const_cpow (Or.inl (Complex.ofReal_ne_zero.mpr hX.ne'))).mul
+    (((by fun_prop : Continuous (fun q : (ℂ × ℂ) × ℂ =>q.1.1+q.2-1)).const_cpow (Or.inl (Complex.ofReal_ne_zero.mpr hZ.ne'))))) |>.mul
+      ((by fun_prop : Continuous (fun q : (ℂ × ℂ) × ℂ =>q.1.2-1)).const_cpow (Or.inl (Complex.ofReal_ne_zero.mpr hY.ne')))
 
 lemma sourceScale_norm (X Y Z : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z) (x w z : ℂ) :
     ‖sourceScale X Y Z x w z‖=X^(1/2-z.re)*Z^(x.re+z.re-1)*Y^(w.re-1) := by

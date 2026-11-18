@@ -26,8 +26,6 @@ lemma original_exponent_identity (a d R q : ℝ) :
 lemma relative_extend (δ d R q ζ : ℝ) (hζ : 0≤ζ) (hd : d≤13/16+ζ)
     (hslo : 0≤R+δ/2-17/50) (hshi : R+δ/2-17/50≤2) :
     relativeExponent δ d R q≤relativeExponent δ (13/16) R q+2*ζ := by
-  have hh := mul_le_mul_of_nonneg_right (show d-13/16≤ζ by linarith) hslo
-  have hh' := mul_le_mul_of_nonneg_left hshi hζ
   unfold relativeExponent
   nlinarith
 

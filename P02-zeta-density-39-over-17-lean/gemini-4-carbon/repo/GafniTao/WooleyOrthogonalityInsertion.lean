@@ -70,16 +70,7 @@ private theorem finite_insert_redundant_average
     A * ∑ i : I, ∑ omega : Ω, weight omega * first i omega =
       A * (E * ∑ i : I, ∑ j : J, ∑ omega : Ω,
         weight omega * first i omega * second j omega) := by
-  have hleft :
-      A * ∑ i : I, ∑ omega : Ω, weight omega * first i omega =
-        ∑ omega : Ω, if P omega then weight omega else 0 :=
-    finite_weighted_filter A weight first P hfirst
-  have hinner (i : I) :
-      E * ∑ j : J, ∑ omega : Ω,
-          (weight omega * first i omega) * second j omega =
-        ∑ omega : Ω,
-          if Q omega then weight omega * first i omega else 0 :=
-    finite_weighted_filter E (fun omega => weight omega * first i omega)
+  have hinner (i : I) := finite_weighted_filter E (fun omega => weight omega * first i omega)
       second Q hsecond
   have hright :
       A * (E * ∑ i : I, ∑ j : J, ∑ omega : Ω,
@@ -106,8 +97,8 @@ private theorem finite_insert_redundant_average
             apply Finset.sum_congr rfl
             intro omega homega
             by_cases hQ : Q omega
-            · simp only [ite_eq_left hQ]
-            · simp only [ite_eq_right hQ, zero_mul]
+            · simp
+            · simp
       _ = ∑ omega : Ω,
           if P omega then (if Q omega then weight omega else 0) else 0 :=
             finite_weighted_filter A
@@ -115,7 +106,7 @@ private theorem finite_insert_redundant_average
               first P hfirst
   calc
     A * ∑ i : I, ∑ omega : Ω, weight omega * first i omega =
-        ∑ omega : Ω, if P omega then weight omega else 0 := hleft
+        ∑ omega : Ω, if P omega then weight omega else 0 := (finite_weighted_filter A weight first P hfirst)
     _ = ∑ omega : Ω,
         if P omega then (if Q omega then weight omega else 0) else 0 := by
           apply Finset.sum_congr rfl

@@ -9,8 +9,7 @@ open scoped BigOperators Topology ComplexConjugate
 set_option autoImplicit false
 noncomputable section
 namespace Montgomery.RationalMoment.RightDetector
-open MathCollab.Density.Stronger
-open MathCollab.Density
+open MathCollab.Density.Stronger MathCollab.Density
 
 /-- Original smooth scale, half choice, and Taylor index: all chosen from a
 finite set before the zero. -/

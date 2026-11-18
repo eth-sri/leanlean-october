@@ -22,13 +22,11 @@ def wooleyIterationTheta (mu : ℝ) (H : ℕ) : ℕ :=
 
 theorem wooley_iterationTheta_lower
     {mu : ℝ} {H : ℕ} :
-    mu * (H : ℝ) ≤ (wooleyIterationTheta mu H : ℝ) := by
-  exact Nat.le_ceil _
+    mu * (H : ℝ) ≤ (wooleyIterationTheta mu H : ℝ) := Nat.le_ceil _
 
 theorem wooley_iterationTheta_lt_add_one
     {mu : ℝ} {H : ℕ} (hmu : 0 ≤ mu) :
-    (wooleyIterationTheta mu H : ℝ) < mu * (H : ℝ) + 1 := by
-  exact Nat.ceil_lt_add_one (mul_nonneg hmu (Nat.cast_nonneg H))
+    (wooleyIterationTheta mu H : ℝ) < mu * (H : ℝ) + 1 := Nat.ceil_lt_add_one (mul_nonneg hmu (Nat.cast_nonneg H))
 
 theorem wooley_initialNu_lt_add_one
     {epsilon Lambda : ℝ} {H : ℕ}

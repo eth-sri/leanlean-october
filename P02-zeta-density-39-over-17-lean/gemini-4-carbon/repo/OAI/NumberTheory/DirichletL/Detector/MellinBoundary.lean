@@ -23,7 +23,7 @@ lemma cauchy_nonneg (t : ℝ) : 0≤cauchy t := by unfold cauchy; positivity
 lemma cauchy_integrable : Integrable cauchy := integrable_inv_one_add_sq
 lemma cauchy_tendsto : Tendsto cauchy atTop (𝓝 0) := by
   exact tendsto_inv_atTop_zero.comp
-    (tendsto_atTop_add_const_left atTop (1:ℝ) (tendsto_pow_atTop (by decide : 2≠0)))
+    (tendsto_atTop_add_const_left atTop 1 (tendsto_pow_atTop (by decide : 2≠0)))
 
 theorem boundaryControl_of_cauchy (F : ℂ → ℂ) {a b C : ℝ}
     (ha : Continuous (fun t : ℝ => F ((a:ℂ)+t*I)))
@@ -43,12 +43,11 @@ theorem boundaryControl_of_cauchy (F : ℂ → ℂ) {a b C : ℝ}
     apply intervalIntegral.norm_integral_le_of_norm_le_const
     intro x hx
     have ht : |ε*T|=T := by rw [abs_mul,hε,one_mul,abs_of_nonneg (by linarith)]
-    have hh := hjoin x (uIoc_subset_uIcc hx) (ε*T) (by simpa [ht] using hT)
     have he : cauchy (ε*T)=cauchy T := by
       unfold cauchy
       have hs : (ε*T)^2=T^2 := by nlinarith [sq_abs (ε*T)]
       rw [hs]
-    simpa [he] using hh
+    simpa [he] using (hjoin x (uIoc_subset_uIcc hx) (ε*T) (by simpa [ht] using hT))
   refine ⟨hi ha, (cauchy_integrable.const_mul C).mono' hb.aestronglyMeasurable
     (Eventually.of_forall hlb), ?_, ?_⟩
   · simpa using hj (-1) (by norm_num)
@@ -76,7 +75,7 @@ theorem boundaryControl_of_pole_product (F V G : ℂ → ℂ) {a b p C D δ : �
     linarith
   have hc (x : ℝ) (hx : x∈uIcc a b) (hd : δ≤|x-p|) :
       Continuous (fun t : ℝ => F ((x:ℂ)+t*I)) := by
-    have hn (t : ℝ) : (x:ℂ)+t*I≠p := hne x t (hd.trans (pole_distance_vertical p x t))
+    have hn (t : ℝ) := hne x t (hd.trans (pole_distance_vertical p x t))
     have hv := hV.comp_continuous (by fun_prop : Continuous (fun t : ℝ => (x:ℂ)+t*I))
       (by intro t; simpa using hx)
     have hg := hG.comp_continuous (by fun_prop : Continuous (fun t : ℝ => (x:ℂ)+t*I))
@@ -85,13 +84,12 @@ theorem boundaryControl_of_pole_product (F V G : ℂ → ℂ) {a b p C D δ : �
       (fun t => (hF x hx t (hn t)).symm)
   have hbound (x : ℝ) (hx : x∈uIcc a b) (t : ℝ)
       (hd : δ≤‖(x:ℂ)+t*I-p‖) (hboundary : x=a ∨ x=b ∨ 1≤|t|) : ‖F ((x:ℂ)+t*I)‖≤(C*D/δ)*cauchy t := by
-    have hn := hne x t hd
     have hv : height t^2 * (height t^J*‖V ((x:ℂ)+t*I)‖)≤C := by
       simpa [pow_add, mul_assoc, mul_left_comm, mul_comm] using hVbd x hx t
     have hv' := CubicReflectionKernel.weighted_two_to_cauchy
       (mul_nonneg (pow_nonneg (height_pos t).le _) (norm_nonneg _)) t hv
     change height t^J*‖V ((x:ℂ)+t*I)‖≤C*cauchy t at hv'
-    rw [hF x hx t hn, norm_div, norm_mul]
+    rw [hF x hx t (hne x t hd), norm_div, norm_mul]
     apply (div_le_div₀ (mul_nonneg (norm_nonneg _) (mul_nonneg hD (pow_nonneg (height_pos t).le _)))
       (mul_le_mul_of_nonneg_left (hGbd x hx t hboundary) (norm_nonneg _)) hδ hd).trans
     calc
@@ -332,9 +330,8 @@ lemma gaussianMoment_integrable (n : ℕ) : Integrable (gaussianMoment n) := by
   · apply Eventually.of_forall
     intro u
     rw [Real.norm_eq_abs, abs_of_nonneg (gaussianMoment_nonneg n u)]
-    have h := add_pow_le (by norm_num : (0:ℝ)≤1) (abs_nonneg u) n
     simpa [gaussianMoment,height,Continuation.polynomialGaussian,mul_assoc] using
-      mul_le_mul_of_nonneg_right h (Real.exp_pos (-(u^2))).le
+      mul_le_mul_of_nonneg_right (add_pow_le (by norm_num : (0:ℝ)≤1) (abs_nonneg u) n) (Real.exp_pos (-(u^2))).le
 
 lemma jointHeight_le_shear (t v w : ℝ) :
     jointHeight t v w≤2*height (t+v)*height v*height w := by
@@ -391,13 +388,8 @@ def jointEnvelope (J : ℕ) (p : HeightSpace) : ℝ :=
 lemma jointEnvelope_integrable (J : ℕ) : Integrable (jointEnvelope J) heightMeasure := by
   have hp : MeasurePreserving (fun p : ℝ×ℝ => (p.1+p.2,p.2))
       (volume.prod volume) (volume.prod volume) := by
-    have hp0 : MeasurePreserving (fun p : ℝ×ℝ => (p.2,p.2+p.1))
-        (volume.prod volume) (volume.prod volume) := measurePreserving_prod_add_swap volume volume
-    have hp1 := (Measure.measurePreserving_swap (μ:=(volume : Measure ℝ)) (ν:=volume)).comp hp0
-    simpa only [Function.comp_def,Prod.swap,add_comm] using! hp1
-  have ht := hp.prod (MeasurePreserving.id (volume : Measure ℝ))
-  have hi := ((gaussianMoment_integrable J).mul_prod cauchy_integrable).mul_prod cauchy_integrable
-  exact ht.integrable_comp_of_integrable hi
+    simpa only [Function.comp_def,Prod.swap,add_comm] using! ((Measure.measurePreserving_swap (μ:=(volume : Measure ℝ)) (ν:=volume)).comp (measurePreserving_prod_add_swap volume volume))
+  exact (hp.prod (MeasurePreserving.id (volume : Measure ℝ))).integrable_comp_of_integrable (((gaussianMoment_integrable J).mul_prod cauchy_integrable).mul_prod cauchy_integrable)
 
 def onLines (W0 W1 : SchwartzMap ℝ ℂ) (σ ξ υ : ℝ) (p : HeightSpace) : ℂ :=
   profile W0 W1 ((σ:ℂ)+p.1.1*I) ((υ:ℂ)+p.2*I) ((ξ:ℂ)+p.1.2*I)
@@ -443,8 +435,7 @@ lemma realGaussian_le {slo shi zlo zhi σ ξ : ℝ} (hσ : σ∈Icc slo shi) (h�
     rw [abs_le]
     constructor <;> linarith [neg_abs_le σ,le_abs_self σ,neg_abs_le ξ,le_abs_self ξ]
   apply Real.exp_le_exp.mpr
-  have hp := pow_le_pow_left₀ (abs_nonneg (σ+ξ-1)) hh 2
-  simpa [sq_abs] using hp
+  simpa [sq_abs] using (pow_le_pow_left₀ (abs_nonneg (σ+ξ-1)) hh 2)
 
 lemma profile_moment_majorant (W0 W1 : SchwartzMap ℝ ℂ) (J : ℕ)
     {slo shi zlo zhi σ ξ υ C D : ℝ} (hσ : σ∈Icc slo shi) (hξ : ξ∈Icc zlo zhi)
@@ -462,7 +453,7 @@ lemma profile_moment_majorant (W0 W1 : SchwartzMap ℝ ℂ) (J : ℕ)
         Real.exp (-((p.1.1+p.1.2)^2))*
         ‖mellin (paperRadialFourier W0) ((ξ:ℂ)+p.1.2*I)‖*‖mellin W1 ((υ:ℂ)+p.2*I)‖) := by ring
     _ ≤ realGaussianBound slo shi zlo zhi *
-        ((2:ℝ)^J*C*D*(gaussianMoment J (p.1.1+p.1.2)*cauchy p.1.2*cauchy p.2)) :=
+        (2^J*C*D*(gaussianMoment J (p.1.1+p.1.2)*cauchy p.1.2*cauchy p.2)) :=
       mul_le_mul (realGaussian_le hσ hξ) hb
         (by have := (jointHeight_pos p.1.1 p.1.2 p.2).le; positivity)
         (realGaussianBound_pos _ _ _ _).le
@@ -485,17 +476,14 @@ theorem profile_uniform_moments (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ
   refine ⟨A*(1+|∫p, jointEnvelope J p ∂heightMeasure|),by positivity,?_⟩
   intro σ hσ ξ hξ υ hυ
   have hbound := profile_moment_majorant W0 W1 J hσ hξ hC.le hD.le (hR ξ hξ) (hW υ hυ)
-  have hc := onLines_continuous W0 W1 a1 b1 ha1 hW1 σ ξ υ (hzlo.trans_le hξ.1)
   have hf : Integrable (fun p : HeightSpace => jointHeight p.1.1 p.1.2 p.2^J*
       ‖onLines W0 W1 σ ξ υ p‖) heightMeasure := by
     apply ((jointEnvelope_integrable J).const_mul A).mono'
     · exact ((by unfold jointHeight; fun_prop : Continuous (fun p : HeightSpace =>
-        jointHeight p.1.1 p.1.2 p.2^J)).mul hc.norm).aestronglyMeasurable
+        jointHeight p.1.1 p.1.2 p.2^J)).mul (onLines_continuous W0 W1 a1 b1 ha1 hW1 σ ξ υ (hzlo.trans_le hξ.1)).norm).aestronglyMeasurable
     · apply Eventually.of_forall
       intro p
-      have hn : 0≤jointHeight p.1.1 p.1.2 p.2^J*‖onLines W0 W1 σ ξ υ p‖ :=
-        mul_nonneg (pow_nonneg (jointHeight_pos _ _ _).le _) (norm_nonneg _)
-      rw [Real.norm_eq_abs,abs_of_nonneg hn]
+      rw [Real.norm_eq_abs,abs_of_nonneg (mul_nonneg (pow_nonneg (jointHeight_pos _ _ _).le _) (norm_nonneg _))]
       exact hbound p
   refine ⟨hf,?_⟩
   calc
@@ -521,8 +509,7 @@ lemma weighted_tail_pointwise (f : HeightSpace → ℂ) (J N : ℕ) {T : ℝ} (h
     jointHeight p.1.1 p.1.2 p.2^J*‖f p‖ ≤
       (jointHeight p.1.1 p.1.2 p.2^(J+N)*‖f p‖)/(1+T)^N := by
   apply (le_div_iff₀ (by positivity)).mpr
-  have hn := pow_le_pow_left₀ (by linarith : 0≤1+T) (height_le_joint_on_tail hp) N
-  have hh := mul_le_mul_of_nonneg_left hn
+  have hh := mul_le_mul_of_nonneg_left (pow_le_pow_left₀ (by linarith : 0≤1+T) (height_le_joint_on_tail hp) N)
     (mul_nonneg (pow_nonneg (jointHeight_pos p.1.1 p.1.2 p.2).le J) (norm_nonneg (f p)))
   convert hh using 1 ; rw [pow_add] ; ring
 
@@ -540,11 +527,10 @@ theorem profile_uniform_tails (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ)
   refine ⟨K,hK,?_⟩
   intro σ hσ ξ hξ υ hυ T hT
   obtain ⟨hi,hb⟩ := hM σ hσ ξ hξ υ hυ
-  have hi0 := (hM0 σ hσ ξ hξ υ hυ).1
   calc
     _ ≤ ∫p : HeightSpace in outsideBox T,
         (jointHeight p.1.1 p.1.2 p.2^(J+N)*‖onLines W0 W1 σ ξ υ p‖)/(1+T)^N ∂heightMeasure := by
-      apply setIntegral_mono_on hi0.integrableOn (hi.div_const _).integrableOn (outsideBox_measurable T)
+      apply setIntegral_mono_on ((hM0 σ hσ ξ hξ υ hυ).1).integrableOn (hi.div_const _).integrableOn (outsideBox_measurable T)
       intro p hp
       exact weighted_tail_pointwise _ J N hT hp
     _ = (∫p : HeightSpace in outsideBox T,
@@ -566,8 +552,7 @@ theorem profile_arithmetic_integrable (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1
     Integrable (fun p => G p*onLines W0 W1 σ ξ υ p) heightMeasure := by
   obtain ⟨K,hK,hM⟩ := profile_uniform_moments W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
     σ σ ξ ξ υ υ hξ J
-  have hi := (hM σ ⟨le_rfl,le_rfl⟩ ξ ⟨le_rfl,le_rfl⟩ υ ⟨le_rfl,le_rfl⟩).1
-  apply (hi.const_mul A).mono'
+  apply (((hM σ ⟨le_rfl,le_rfl⟩ ξ ⟨le_rfl,le_rfl⟩ υ ⟨le_rfl,le_rfl⟩).1).const_mul A).mono'
   · exact hG.mul (onLines_continuous W0 W1 a1 b1 ha1 hW1 σ ξ υ hξ).aestronglyMeasurable
   · apply Eventually.of_forall
     intro p
@@ -619,11 +604,7 @@ lemma jointEnvelope_slice_le (axis : SliceAxis) (J : ℕ) (T : ℝ) (q : ℝ×�
 
 lemma pairEnvelope_integrable (J : ℕ) :
     Integrable (fun q : ℝ×ℝ => gaussianMoment J (q.1+q.2)*cauchy q.2) (volume.prod volume) := by
-  have hp0 : MeasurePreserving (fun p : ℝ×ℝ => (p.2,p.2+p.1))
-      (volume.prod volume) (volume.prod volume) := measurePreserving_prod_add_swap volume volume
-  have hp1 := (Measure.measurePreserving_swap (μ:=(volume : Measure ℝ)) (ν:=volume)).comp hp0
-  have hi := hp1.integrable_comp_of_integrable ((gaussianMoment_integrable J).mul_prod cauchy_integrable)
-  simpa only [Function.comp_def,Prod.swap,add_comm] using! hi
+  simpa only [Function.comp_def,Prod.swap,add_comm] using! (((Measure.measurePreserving_swap (μ:=(volume : Measure ℝ)) (ν:=volume)).comp (measurePreserving_prod_add_swap volume volume)).integrable_comp_of_integrable ((gaussianMoment_integrable J).mul_prod cauchy_integrable))
 
 lemma sliceEnvelope_integrable (axis : SliceAxis) (J : ℕ) (T : ℝ) :
     Integrable (sliceEnvelope axis J T) (volume.prod volume) := by
@@ -652,8 +633,7 @@ lemma weighted_slice_pointwise (f : HeightSpace → ℂ) (axis : SliceAxis) (J N
     (jointHeight (sliceMap axis T q).1.1 (sliceMap axis T q).1.2 (sliceMap axis T q).2^(J+N)*
       ‖f (sliceMap axis T q)‖)/height T^N := by
   apply (le_div_iff₀ (pow_pos (height_pos T) N)).mpr
-  have hn := pow_le_pow_left₀ (height_pos T).le (slice_height_le axis T q) N
-  have hh := mul_le_mul_of_nonneg_left hn
+  have hh := mul_le_mul_of_nonneg_left (pow_le_pow_left₀ (height_pos T).le (slice_height_le axis T q) N)
     (mul_nonneg (pow_nonneg (jointHeight_pos (sliceMap axis T q).1.1
       (sliceMap axis T q).1.2 (sliceMap axis T q).2).le J) (norm_nonneg (f (sliceMap axis T q))))
   convert hh using 1 ; rw [pow_add] ; ring

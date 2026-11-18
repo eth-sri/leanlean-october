@@ -10,8 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentDivisorFullMask
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRectangle CenteredMomentDivisorRows
-open CenteredMomentHeckeExpansion CenteredMomentRectangle HeckeFamily
+open CenteredMomentDivisorAllocation CenteredMomentDivisorRectangle CenteredMomentDivisorRows CenteredMomentHeckeExpansion CenteredMomentRectangle HeckeFamily
 local notation "O" => ActualEisensteinCubic.O
 
  theorem annular_hasFiniteSupport (W : ℝ → ℂ) (b X : ℝ) (hX : 0 < X)
@@ -19,8 +18,7 @@ local notation "O" => ActualEisensteinCubic.O
     (fun I : Ideal O => W ((Ideal.absNorm I:ℝ)/X)).HasFiniteSupport := by
   apply (Ideal.finite_setOfPred_absNorm_le (S := O) (Nat.ceil (b*X))).subset
   intro I hI
-  have hn := (div_le_iff₀ hX).mp (hs hI)
-  exact_mod_cast hn.trans (Nat.le_ceil (b*X))
+  exact_mod_cast ((div_le_iff₀ hX).mp (hs hI)).trans (Nat.le_ceil (b*X))
 
 theorem rectangle_hasFiniteSupport (W₁ W₂ : ℝ → ℂ) (b₁ b₂ X₁ X₂ Y₁ Y₂ : ℝ)
     (hW₁ : Function.support W₁ ⊆ Set.Iic b₁) (hW₂ : Function.support W₂ ⊆ Set.Iic b₂)
@@ -80,7 +78,7 @@ theorem full_mask_eq_allocated_rectangles (η : Character) (m A z : O) (t : ℝ)
       ∑ a : Allocation D (Finset.univ : Finset (ι ⊕ Fin 2)),
         allocatedRectangle η m A z t S β D a W₁ W₂ X₁ X₂ Y₁ Y₂ := by
   have he (v : (i : ι) → S i) (I J : Ideal O) :
-      (if D∣(∏ i,(v i:Ideal O))*I*J then (1:ℂ) else 0) =
+      (if D∣(∏ i,(v i:Ideal O))*I*J then 1 else 0) =
         ∑ a : Allocation D (Finset.univ : Finset (ι ⊕ Fin 2)),
           allocationTerm D Finset.univ (factorTuple (fun i => v i) I J) a := by
     rw [← factorTuple_product]

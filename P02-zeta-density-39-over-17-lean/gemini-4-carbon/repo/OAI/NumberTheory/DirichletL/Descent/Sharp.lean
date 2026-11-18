@@ -25,17 +25,13 @@ theorem hybrid_sharp_cubic_factor (ε : ℝ) (hε : 0 < ε) :
   have hL0 : 0 < L := by linarith
   let Q := K * N * B * L
   have hQ0 : 0 < Q := by dsimp only [Q]; positivity
-  have hKNB : K * N * B ≤ Q := le_mul_of_one_le_right (by positivity) hL
   have hNL : N * L ≤ Q := by
-    have hKB : 1 ≤ K * B := one_le_mul_of_one_le_of_one_le hK hB
-    have hh := le_mul_of_one_le_left (by positivity : 0 ≤ N * L) hKB
+    have hh := le_mul_of_one_le_left (by positivity : 0 ≤ N * L) (one_le_mul_of_one_le_of_one_le hK hB)
     convert hh using 1 ; dsimp only [Q] ; ring
   have hdouble (t : ℝ) : (N * (2 * L)) ^ t = (2 : ℝ) ^ t * (N * L) ^ t := by
     rw [show N * (2 * L) = 2 * (N * L) by ring, Real.mul_rpow (by norm_num) (by positivity)]
   have h23 : (2 : ℝ) ^ (2 / 3 : ℝ) ≤ 2 := by
-    calc
-      _ ≤ (2 : ℝ) ^ (1 : ℝ) := Real.rpow_le_rpow_of_exponent_le (by norm_num) (by norm_num)
-      _ = 2 := Real.rpow_one _
+    exact (Real.rpow_le_rpow_of_exponent_le (by norm_num) (by norm_num)).trans_eq (Real.rpow_one _)
   have hshape : N + 2 * L + (N * (2 * L)) ^ (2 / 3 : ℝ) ≤
       2 * (N + L + (N * L) ^ (2 / 3 : ℝ)) := by
     rw [hdouble]
@@ -44,15 +40,14 @@ theorem hybrid_sharp_cubic_factor (ε : ℝ) (hε : 0 < ε) :
   have hcost : (K * N * B) ^ (ε / 2) * (N * L) ^ (ε / 2) ≤ Q ^ ε := by
     calc
       _ ≤ Q ^ (ε / 2) * Q ^ (ε / 2) := by
-        exact mul_le_mul (Real.rpow_le_rpow (by positivity) hKNB (by positivity))
+        exact mul_le_mul (Real.rpow_le_rpow (by positivity) (le_mul_of_one_le_right (by positivity) hL) (by positivity))
           (Real.rpow_le_rpow (by positivity) hNL (by positivity))
           (Real.rpow_nonneg (by positivity) _) (Real.rpow_nonneg hQ0.le _)
       _ = _ := by rw [← Real.rpow_add hQ0]; congr 1; ring
-  have hh := hb N (2 * L) hN (by linarith)
   calc
     _ ≤ (K * N * B) ^ (ε / 2) *
         (C * (N * (2 * L)) ^ (ε / 2) * (N + 2 * L + (N * (2 * L)) ^ (2 / 3 : ℝ))) :=
-      mul_le_mul_of_nonneg_left hh (Real.rpow_nonneg (by positivity) _)
+      mul_le_mul_of_nonneg_left (hb N (2 * L) hN (by linarith)) (Real.rpow_nonneg (by positivity) _)
     _ ≤ (K * N * B) ^ (ε / 2) *
         (C * (N * (2 * L)) ^ (ε / 2) * (2 * (N + L + (N * L) ^ (2 / 3 : ℝ)))) := by
       gcongr

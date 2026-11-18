@@ -27,7 +27,7 @@ theorem reflection_complete_pair_dilated_short_range {K : ℕ} (hK : 1 ≤ K)
     obtain ⟨hn1,hn2⟩ := mem_Ico.mp hn
     have hlo : (M:ℝ) ≤ n := by exact_mod_cast hn1
     have hhi : (n:ℝ) ≤ 2*(M:ℝ)-1 := by
-      have hh : n+1 ≤ 2*M := hn2
+      have hh := hn2
       have hr : (n:ℝ)+1 ≤ 2*(M:ℝ) := by exact_mod_cast hh
       linarith
     exact ⟨lt_of_lt_of_le hM hn1,by linarith,by linarith⟩
@@ -110,18 +110,17 @@ theorem centered_shell_dilated_short_range (w : MathCollab.Density.ReflectionCut
         C*T^η*L*(W.card : ℝ)^2 + B*(W.card : ℝ)^2*L^(2-2*(A:ℝ)) := by
   obtain ⟨C,hC,hbound⟩ := reflection_local_energy_dilated_short_range hK hη hD
   obtain ⟨B,hB,href⟩ := MathCollab.Density.uniform_reflection w hA
-  let F : ℝ := (20000/Real.pi^2)*(MathCollab.Density.mellinMass w)^2
+  let F := (20000/Real.pi^2)*(MathCollab.Density.mellinMass w)^2
   have hF : 0 ≤ F := by dsimp [F]; positivity
   refine ⟨1+F*C,4*B^2,by positivity,by positivity,?_⟩
   intro T t₀ L H hT hL hH W hR hlen hW hsep
-  have he := (href L H W hL hH).1
   have hb := hbound T t₀ L H hT hL hH W hR hlen hW hsep
   have hm : F*(L^2/H)*MathCollab.Density.localReflectionEnergy L H W ≤
       (F*C)*T^η*L*(W.card : ℝ)^2 := by
     calc
       _ ≤ F*(L^2/H)*(C*T^η*(H/L)*(W.card : ℝ)^2) := by gcongr
       _ = _ := by field_simp
-  exact he.trans (add_le_add (hm.trans (by gcongr; linarith)) le_rfl)
+  exact ((href L H W hL hH).1).trans (add_le_add (hm.trans (by gcongr; linarith)) le_rfl)
 
 
 end Montgomery.RationalMoment

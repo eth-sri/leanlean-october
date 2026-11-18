@@ -7,9 +7,8 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialClippedColumns
 namespace OAI
 
 namespace SevenEighths.InverseMoment
+open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss JointLogSeparation IdealMobiusDivisorSum InverseInitialClippedColumns
 open scoped BigOperators Classical
-open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss
-open JointLogSeparation IdealMobiusDivisorSum InverseInitialClippedColumns
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 

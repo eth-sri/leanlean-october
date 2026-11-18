@@ -28,22 +28,18 @@ theorem probe_dfiBesselY0Osc_eq_integral_sin_real (x : ℝ) :
     (hFcont.continuousOn.integrableOn_Icc (μ := volume)).mono_set
       Set.Ioc_subset_Icc_self
   have him := integral_im hFInt
-  change (∫ u in Set.Ioc (0 : ℝ) (Real.pi / 2), (F u).im) =
-      (∫ u in Set.Ioc (0 : ℝ) (Real.pi / 2), F u).im at him
+  change (∫ u in Set.Ioc 0 (Real.pi / 2), (F u).im) =
+      (∫ u in Set.Ioc 0 (Real.pi / 2), F u).im at him
   unfold dfiBesselY0Osc
-  rw [intervalIntegral.integral_of_le (by positivity : (0 : ℝ) ≤ Real.pi / 2)]
-  rw [intervalIntegral.integral_of_le (by positivity : (0 : ℝ) ≤ Real.pi / 2)]
-  calc
-    (∫ u in Set.Ioc (0 : ℝ) (Real.pi / 2), F u).im =
-        ∫ u in Set.Ioc (0 : ℝ) (Real.pi / 2), (F u).im := him.symm
-    _ = ∫ u in Set.Ioc (0 : ℝ) (Real.pi / 2),
-        Real.sin (x * Real.cos u) := by
+  rw [intervalIntegral.integral_of_le (by positivity : 0 ≤ Real.pi / 2)]
+  rw [intervalIntegral.integral_of_le (by positivity : 0 ≤ Real.pi / 2)]
+  exact (him.symm).trans (by
       apply setIntegral_congr_fun measurableSet_Ioc
       intro u hu
       dsimp [F]
       rw [show I * ((x : ℂ) * Real.cos u) =
           (((x * Real.cos u : ℝ) : ℂ)) * I by push_cast; ring]
-      exact Complex.exp_ofReal_mul_I_im (x * Real.cos u)
+      exact Complex.exp_ofReal_mul_I_im (x * Real.cos u))
 
 theorem probe_dfiBesselY0Osc_eq_integral_sin (x : ℝ) :
     (dfiBesselY0Osc x : ℂ) =
@@ -54,13 +50,13 @@ theorem probe_abs_dfiBesselY0Osc_le_halfPi (x : ℝ) :
     |dfiBesselY0Osc x| ≤ Real.pi / 2 := by
   rw [probe_dfiBesselY0Osc_eq_integral_sin_real]
   have h := intervalIntegral.norm_integral_le_of_norm_le_const
-    (a := (0 : ℝ)) (b := Real.pi / 2)
-    (C := (1 : ℝ)) (f := fun u : ℝ => Real.sin (x * Real.cos u))
+    (a := 0) (b := Real.pi / 2)
+    (C := 1) (f := fun u : ℝ => Real.sin (x * Real.cos u))
     (fun u _ => by
       rw [Real.norm_eq_abs]
       exact Real.abs_sin_le_one _)
   simp only [one_mul, sub_zero, Real.norm_eq_abs] at h
-  rw [abs_of_nonneg (by positivity : (0 : ℝ) ≤ Real.pi / 2)] at h
+  rw [abs_of_nonneg (by positivity : 0 ≤ Real.pi / 2)] at h
   exact h
 
 theorem probe_aestronglyMeasurable_dfiBesselY0Osc :
@@ -72,12 +68,10 @@ theorem probe_aestronglyMeasurable_dfiBesselY0Osc :
         (volume.restrict (Set.Ioc 0 (Real.pi / 2)))) := by
     rw [Measure.prod_restrict]
     exact (by fun_prop : Continuous F).aestronglyMeasurable
-  have hInt := hF.integral_prod_right'
-  refine hInt.congr ?_
+  refine (hF.integral_prod_right').congr ?_
   filter_upwards [ae_restrict_mem measurableSet_Ioi] with x hx
-  dsimp [F]
   rw [probe_dfiBesselY0Osc_eq_integral_sin,
-    intervalIntegral.integral_of_le (by positivity : (0 : ℝ) ≤ Real.pi / 2)]
+    intervalIntegral.integral_of_le (by positivity : 0 ≤ Real.pi / 2)]
 
 theorem probe_aestronglyMeasurable_dfiBesselY0Tail :
     AEStronglyMeasurable (fun x : ℝ => (dfiBesselY0Tail x : ℂ))
@@ -96,10 +90,8 @@ theorem probe_aestronglyMeasurable_dfiBesselY0Tail :
       · intro p
         exact ne_of_gt (Real.sqrt_pos.2 (by positivity))
     exact (Complex.continuous_ofReal.comp hreal).aestronglyMeasurable
-  have hInt := hF.integral_prod_right'
-  refine hInt.congr ?_
+  refine (hF.integral_prod_right').congr ?_
   filter_upwards [ae_restrict_mem measurableSet_Ioi] with x hx
-  dsimp [F]
   unfold dfiBesselY0Tail
   exact integral_ofReal
 
@@ -112,7 +104,7 @@ theorem probe_aestronglyMeasurable_dfiBesselY0 :
   convert hsub.const_mul (((2 / Real.pi : ℝ) : ℂ)) using 1
   ext x
   push_cast
-  simp only [Pi.sub_apply]
+  simp
 
 theorem probe_abs_dfiBesselY0_le_quarter_near
     {x : ℝ} (hx : x ∈ Set.Ioc (0 : ℝ) 1) :
@@ -165,10 +157,6 @@ theorem probe_mellinConvergent_dfiBesselY0
   have hfMeas : AEStronglyMeasurable f
       (volume.restrict (Set.Ioi 0)) :=
     hpowMeas.mul probe_aestronglyMeasurable_dfiBesselY0
-  have hC : 0 ≤ C := by
-    dsimp [C]
-    exact mul_nonneg (div_nonneg (by norm_num) Real.pi_pos.le)
-      (add_nonneg (by positivity) (Real.Gamma_pos_of_pos (by norm_num)).le)
   have hsmallBase : IntegrableOn
       (fun x : ℝ => C * x ^ (s.re - 5 / 4)) (Set.Ioc 0 1) := by
     rw [integrableOn_Ioc_iff_integrableOn_Ioo]
@@ -181,7 +169,6 @@ theorem probe_mellinConvergent_dfiBesselY0
   have hsmall : IntegrableOn f (Set.Ioc 0 1) := by
     refine hsmallBase.mono' hsmallMeas ?_
     filter_upwards [ae_restrict_mem measurableSet_Ioc] with x hx
-    dsimp [f]
     rw [norm_mul, Complex.norm_cpow_eq_rpow_re_of_pos hx.1,
       show (s - 1).re = s.re - 1 by simp,
       Complex.norm_real, Real.norm_eq_abs]
@@ -215,23 +202,18 @@ theorem probe_mellinConvergent_dfiBesselY0
     refine hfarBase.mono' hfarMeas ?_
     filter_upwards [ae_restrict_mem measurableSet_Ioi] with x hx
     have hxPos : 0 < x := zero_lt_one.trans hx
-    dsimp [f]
     rw [norm_mul, Complex.norm_cpow_eq_rpow_re_of_pos hxPos,
       show (s - 1).re = s.re - 1 by simp,
       Complex.norm_real, Real.norm_eq_abs]
-    calc
-      x ^ (s.re - 1) * |dfiBesselY0 x| ≤
-          x ^ (s.re - 1) * (7 / Real.sqrt x) :=
-        mul_le_mul_of_nonneg_left (abs_dfiBesselY0_le_seven_div_sqrt hxPos)
-          (Real.rpow_nonneg hxPos.le _)
-      _ = 7 * x ^ (s.re - 3 / 2) := by
+    exact (mul_le_mul_of_nonneg_left (abs_dfiBesselY0_le_seven_div_sqrt hxPos)
+          (Real.rpow_nonneg hxPos.le _)).trans_eq (by
         rw [Real.sqrt_eq_rpow, div_eq_mul_inv,
           ← Real.rpow_neg hxPos.le]
         rw [show x ^ (s.re - 1) * (7 * x ^ (-(1 / 2 : ℝ))) =
           7 * (x ^ (s.re - 1) * x ^ (-(1 / 2 : ℝ))) by ring,
           ← Real.rpow_add hxPos]
         congr 2
-        ring
+        ring)
   unfold MellinConvergent
   rw [← Set.Ioc_union_Ioi_eq_Ioi (show (0 : ℝ) ≤ 1 by norm_num),
     integrableOn_union]
@@ -263,7 +245,6 @@ theorem probe_tendsto_damped_dfiBesselY0_mellin
       ‖F n x‖ ≤ ‖f x‖ := by
     intro n
     filter_upwards [ae_restrict_mem measurableSet_Ioi] with x hx
-    dsimp [F]
     rw [norm_mul, Complex.norm_real, Real.norm_eq_abs,
       abs_of_pos (Real.exp_pos _)]
     apply mul_le_of_le_one_right (norm_nonneg _)
@@ -282,8 +263,7 @@ theorem probe_tendsto_damped_dfiBesselY0_mellin
     have hexp : Tendsto
         (fun n : ℕ => (Real.exp (-(1 / ((n : ℝ) + 1)) * x) : ℂ)) atTop
         (𝓝 1) := by
-      have hreal := Real.continuous_exp.continuousAt.tendsto.comp harg
-      have hcast := Complex.continuous_ofReal.continuousAt.tendsto.comp hreal
+      have hcast := Complex.continuous_ofReal.continuousAt.tendsto.comp (Real.continuous_exp.continuousAt.tendsto.comp harg)
       change Tendsto
         (fun n : ℕ => (Real.exp (-(1 / ((n : ℝ) + 1)) * x) : ℂ)) atTop
         (𝓝 ((Real.exp 0 : ℝ) : ℂ)) at hcast
@@ -294,7 +274,6 @@ theorem probe_tendsto_damped_dfiBesselY0_mellin
   refine h.congr' (Eventually.of_forall fun n => ?_)
   apply setIntegral_congr_fun measurableSet_Ioi
   intro x _
-  dsimp [F, f]
   ring
 
 theorem probe_integrableOn_cos_cpow_neg_Ioc
@@ -314,7 +293,7 @@ theorem probe_integrableOn_cos_cpow_neg_Ioc
     congr 2
     ring
   have hiff := integrableOn_image_iff_integrableOn_abs_deriv_smul
-    (s := Set.Ioo (0 : ℝ) (Real.pi / 2)) (f := Real.sin)
+    (s := Set.Ioo 0 (Real.pi / 2)) (f := Real.sin)
     (f' := Real.cos) measurableSet_Ioo
     (fun x _ => Real.hasDerivAt_sin x |>.hasDerivWithinAt)
     (fun x hx y hy hxy => by
@@ -326,9 +305,8 @@ theorem probe_integrableOn_cos_cpow_neg_Ioc
           exact ⟨(neg_nonpos.mpr (by positivity : 0 ≤ Real.pi / 2)).trans hy.1.le,
             hy.2.le⟩) hxy) g
   rw [image_sin_Ioo_zero_halfPi] at hiff
-  have htrans := hiff.mp hg
   rw [integrableOn_Ioc_iff_integrableOn_Ioo]
-  refine htrans.congr_fun ?_ measurableSet_Ioo
+  refine (hiff.mp hg).congr_fun ?_ measurableSet_Ioo
   intro u hu
   dsimp [g]
   exact cos_mul_one_sub_sin_sq_cpow s hu
@@ -391,19 +369,16 @@ theorem probe_integrableOn_tail_rpow_div_sqrt
       · fun_prop
       · exact ne_of_gt (Real.sqrt_pos.2 (by positivity))
     · filter_upwards [ae_restrict_mem measurableSet_Ioi] with t ht
-      have htPos : 0 < t := zero_lt_one.trans ht
+      have htPos := zero_lt_one.trans ht
       rw [Real.norm_eq_abs, abs_of_nonneg (div_nonneg
         (Real.rpow_nonneg htPos.le _) (Real.sqrt_nonneg _))]
       have hsqrt : t ≤ Real.sqrt (1 + t ^ 2) := by
         have hsquare := Real.sq_sqrt (by positivity : 0 ≤ 1 + t ^ 2)
         nlinarith [Real.sqrt_nonneg (1 + t ^ 2)]
-      calc
-        t ^ (-r) / Real.sqrt (1 + t ^ 2) ≤ t ^ (-r) / t :=
-          div_le_div_of_nonneg_left (Real.rpow_nonneg htPos.le _)
-            htPos hsqrt
-        _ = t ^ (-r - 1) := by
+      exact (div_le_div_of_nonneg_left (Real.rpow_nonneg htPos.le _)
+            htPos hsqrt).trans_eq (by
           rw [div_eq_mul_inv, ← Real.rpow_neg_one t, ← Real.rpow_add htPos]
-          congr 1
+          congr 1)
 
 theorem probe_tendsto_damped_tail_factor
     {s : ℂ} (hs : 0 < s.re) (hsUpper : s.re < 1) :
@@ -442,7 +417,6 @@ theorem probe_tendsto_damped_tail_factor
     have hε : 0 < ε n := by dsimp [ε]; positivity
     have hsum : 0 < ε n + t := add_pos hε ht
     have hsqrt : 0 < Real.sqrt (1 + t ^ 2) := by positivity
-    dsimp [F, bound]
     rw [norm_div, Complex.norm_cpow_eq_rpow_re_of_pos hsum,
       show (-s).re = -s.re by simp,
       Complex.norm_real, Real.norm_eq_abs, abs_of_pos hsqrt]
@@ -477,7 +451,7 @@ theorem probe_norm_damped_sineFactor_le
     ‖(((ε : ℂ) - I * c) ^ (-s) -
         ((ε : ℂ) + I * c) ^ (-s)) / (2 * I)‖ ≤
       Real.exp (Real.pi * |s.im|) * c ^ (-s.re) := by
-  let K : ℝ := Real.exp (Real.pi * |s.im|)
+  let K := Real.exp (Real.pi * |s.im|)
   have hbaseBound : ∀ z : ℂ, |z.im| = c → c ≤ ‖z‖ := by
     intro z hz
     rw [← hz]
@@ -490,8 +464,6 @@ theorem probe_norm_damped_sineFactor_le
       intro hz0
       rw [hz0, norm_zero] at hnorm
       linarith
-    have hnum : ‖z‖ ^ (-s.re) ≤ c ^ (-s.re) :=
-      Real.rpow_le_rpow_of_nonpos hc hnorm (neg_nonpos.mpr hs)
     have harg : -(Complex.arg z * (-s).im) ≤ Real.pi * |s.im| := by
       rw [show (-s).im = -s.im by simp]
       calc
@@ -502,12 +474,11 @@ theorem probe_norm_damped_sineFactor_le
           (Complex.abs_arg_le_pi z) (abs_nonneg _)
     rw [Complex.norm_cpow_of_ne_zero hz, div_eq_mul_inv,
       ← Real.exp_neg]
-    dsimp [K]
     calc
       ‖z‖ ^ (-s).re * Real.exp (-(Complex.arg z * (-s).im)) ≤
           c ^ (-s.re) * Real.exp (Real.pi * |s.im|) := by
         apply mul_le_mul
-        · simpa using hnum
+        · simpa using (Real.rpow_le_rpow_of_nonpos hc hnorm (neg_nonpos.mpr hs))
         · exact Real.exp_le_exp.mpr harg
         · positivity
         · positivity
@@ -529,7 +500,6 @@ theorem probe_norm_damped_sineFactor_le
       · exact hpowBound _ hminusIm
       · exact hpowBound _ hplusIm
     _ = Real.exp (Real.pi * |s.im|) * c ^ (-s.re) := by
-      dsimp [K]
       ring
 
 theorem probe_tendsto_damped_osc_factor
@@ -603,11 +573,9 @@ theorem probe_tendsto_damped_osc_factor
     have hneg : -(Real.pi / 2) < u :=
       (neg_nonpos.mpr (by positivity : 0 ≤ Real.pi / 2)).trans_lt hu.1
     have hcos : 0 < Real.cos u := Real.cos_pos_of_mem_Ioo ⟨hneg, hu.2⟩
-    have hlim := (tendsto_dfiDampedSineFactor s hcos).comp hepsWithin
-    have heq := dfiDampedSineFactor_limit_eq s hcos
     dsimp [F, f]
-    rw [← heq]
-    exact hlim
+    rw [← (dfiDampedSineFactor_limit_eq s hcos)]
+    exact ((tendsto_dfiDampedSineFactor s hcos).comp hepsWithin)
   have h := tendsto_integral_of_dominated_convergence
     bound hFMeas hboundInt hBound hLim
   simpa only [F, f, ε, bound, K] using h
@@ -660,7 +628,6 @@ theorem probe_integrableOn_damped_osc_joint
     rw [Measure.prod_restrict]
     filter_upwards [ae_restrict_mem
       (measurableSet_Ioi.prod measurableSet_Ioc)] with p hp
-    dsimp [F, G]
     rw [norm_mul, norm_mul, Complex.norm_cpow_eq_rpow_re_of_pos hp.1]
     rw [show (s - 1).re = s.re - 1 by simp]
     have hExp : ‖((Real.exp (-ε * p.1) : ℝ) : ℂ)‖ =
@@ -715,28 +682,22 @@ theorem probe_integrableOn_eps_add_rpow_div_sqrt
           · exact ne_of_gt (Real.sqrt_pos.2 (by positivity))).aestronglyMeasurable
             measurableSet_Ioi)
     · filter_upwards [ae_restrict_mem measurableSet_Ioi] with t ht
-      have htPos : 0 < t := zero_lt_one.trans ht
-      have hsumPos : 0 < ε + t := add_pos hε htPos
+      have htPos := zero_lt_one.trans ht
       rw [Real.norm_eq_abs, abs_of_nonneg (div_nonneg
-        (Real.rpow_nonneg (one_div_nonneg.mpr hsumPos.le) _) (Real.sqrt_nonneg _))]
+        (Real.rpow_nonneg (one_div_nonneg.mpr (add_pos hε htPos).le) _) (Real.sqrt_nonneg _))]
       have hinv : 1 / (ε + t) ≤ 1 / t := by
         exact one_div_le_one_div_of_le htPos (by linarith)
       have hpow : (1 / (ε + t)) ^ r ≤ t ^ (-r) := by
-        calc
-          (1 / (ε + t)) ^ r ≤ (1 / t) ^ r :=
-            Real.rpow_le_rpow (by positivity) hinv hr.le
-          _ = t ^ (-r) := by
-            rw [one_div, Real.inv_rpow htPos.le, ← Real.rpow_neg htPos.le]
+        exact (Real.rpow_le_rpow (by positivity) hinv hr.le).trans_eq (by
+            rw [one_div, Real.inv_rpow htPos.le, ← Real.rpow_neg htPos.le])
       have hsqrt : t ≤ Real.sqrt (1 + t ^ 2) := by
         have hsquare := Real.sq_sqrt (by positivity : 0 ≤ 1 + t ^ 2)
         nlinarith [Real.sqrt_nonneg (1 + t ^ 2)]
-      have hinvSqrt : 1 / Real.sqrt (1 + t ^ 2) ≤ 1 / t :=
-        one_div_le_one_div_of_le htPos hsqrt
       calc
         (1 / (ε + t)) ^ r / Real.sqrt (1 + t ^ 2) =
             (1 / (ε + t)) ^ r * (1 / Real.sqrt (1 + t ^ 2)) := by ring
         _ ≤ t ^ (-r) * (1 / t) :=
-          mul_le_mul hpow hinvSqrt (by positivity) (Real.rpow_nonneg htPos.le _)
+          mul_le_mul hpow (one_div_le_one_div_of_le htPos hsqrt) (by positivity) (Real.rpow_nonneg htPos.le _)
         _ = t ^ (-r - 1) := by
           rw [one_div, ← Real.rpow_neg_one t, ← Real.rpow_add htPos]
           congr 1
@@ -794,11 +755,10 @@ theorem probe_integrableOn_damped_tail_joint
           (Real.Gamma s.re)
       refine hout.congr_fun ?_ measurableSet_Ioi
       intro t ht
-      have hgamma := Real.integral_rpow_mul_exp_neg_mul_Ioi hs (add_pos hε ht)
       have hgamma' : (∫ x in Set.Ioi (0 : ℝ),
           x ^ (s.re - 1) * Real.exp (-(ε + t) * x)) =
           (1 / (ε + t)) ^ s.re * Real.Gamma s.re := by
-        convert hgamma using 1
+        convert (Real.integral_rpow_mul_exp_neg_mul_Ioi hs (add_pos hε ht)) using 1
         ring_nf
       have hnonneg : ∀ x ∈ Set.Ioi (0 : ℝ),
           0 ≤ x ^ (s.re - 1) * Real.exp (-(ε + t) * x) /
@@ -917,7 +877,7 @@ theorem probe_integral_cpow_mul_damped_y0Osc_Ioi
           ↑(dfiBesselY0Osc x) =
         ∫ u in Set.Ioc 0 (Real.pi / 2), F (x, u)
       rw [probe_dfiBesselY0Osc_eq_integral_sin,
-        intervalIntegral.integral_of_le (by positivity : (0 : ℝ) ≤ Real.pi / 2)]
+        intervalIntegral.integral_of_le (by positivity : 0 ≤ Real.pi / 2)]
       rw [← MeasureTheory.integral_const_mul]
     _ = ∫ u : ℝ in Set.Ioc 0 (Real.pi / 2),
           ∫ x : ℝ in Set.Ioi 0, F (x, u) := hswap
@@ -967,9 +927,9 @@ theorem probe_integral_cpow_mul_damped_y0Tail_Ioi
         ∫ t in Set.Ioi 0, F (x, t)
       unfold dfiBesselY0Tail
       have htailCast :
-          ↑(∫ t in Set.Ioi (0 : ℝ),
+          ↑(∫ t in Set.Ioi 0,
               Real.exp (-x * t) / Real.sqrt (1 + t ^ 2)) =
-            ∫ t in Set.Ioi (0 : ℝ),
+            ∫ t in Set.Ioi 0,
               (↑(Real.exp (-x * t) / Real.sqrt (1 + t ^ 2)) : ℂ) := by
         exact integral_ofReal.symm
       rw [htailCast]
@@ -1069,7 +1029,7 @@ theorem probe_integrableOn_damped_y0Osc_mellin
     (x : ℂ) ^ (s - 1) * Real.exp (-ε * x) *
       (dfiBesselY0Osc x : ℂ)
   rw [probe_dfiBesselY0Osc_eq_integral_sin,
-    intervalIntegral.integral_of_le (by positivity : (0 : ℝ) ≤ Real.pi / 2),
+    intervalIntegral.integral_of_le (by positivity : 0 ≤ Real.pi / 2),
     ← MeasureTheory.integral_const_mul]
 
 theorem probe_integrableOn_damped_y0Tail_mellin
@@ -1096,9 +1056,9 @@ theorem probe_integrableOn_damped_y0Tail_mellin
       (dfiBesselY0Tail x : ℂ)
   unfold dfiBesselY0Tail
   have htailCast :
-      ↑(∫ t in Set.Ioi (0 : ℝ),
+      ↑(∫ t in Set.Ioi 0,
           Real.exp (-x * t) / Real.sqrt (1 + t ^ 2)) =
-        ∫ t in Set.Ioi (0 : ℝ),
+        ∫ t in Set.Ioi 0,
           (↑(Real.exp (-x * t) / Real.sqrt (1 + t ^ 2)) : ℂ) := by
     exact integral_ofReal.symm
   rw [htailCast, ← MeasureTheory.integral_const_mul]
@@ -1120,8 +1080,6 @@ theorem probe_integral_cpow_mul_damped_y0_Ioi
           (∫ t : ℝ in Set.Ioi 0,
             ((ε + t : ℝ) : ℂ) ^ (-s) /
               Real.sqrt (1 + t ^ 2)) * Gamma s)) := by
-  have hOscInt := probe_integrableOn_damped_y0Osc_mellin hs hε
-  have hTailInt := probe_integrableOn_damped_y0Tail_mellin hs hε
   have hdecomp : (∫ x : ℝ in Set.Ioi 0,
       (x : ℂ) ^ (s - 1) * Real.exp (-ε * x) *
         (dfiBesselY0 x : ℂ)) =
@@ -1160,7 +1118,7 @@ theorem probe_integral_cpow_mul_damped_y0_Ioi
             (∫ x : ℝ in Set.Ioi 0,
               (x : ℂ) ^ (s - 1) * Real.exp (-ε * x) *
                 (dfiBesselY0Tail x : ℂ))) := by
-        rw [MeasureTheory.integral_sub hOscInt hTailInt]
+        rw [MeasureTheory.integral_sub (probe_integrableOn_damped_y0Osc_mellin hs hε) (probe_integrableOn_damped_y0Tail_mellin hs hε)]
   rw [hdecomp, probe_integral_cpow_mul_damped_y0Osc_Ioi hs hε,
     probe_integral_cpow_mul_damped_y0Tail_Ioi hs hε]
 
@@ -1190,13 +1148,13 @@ theorem probe_integral_cpow_mul_dfiBesselY0_Ioi_eq_beta
       ((ε n + t : ℝ) : ℂ) ^ (-s) / Real.sqrt (1 + t ^ 2)
   let R : ℕ → ℂ := fun n =>
     (2 / Real.pi : ℂ) * (A n * Gamma s - B n * Gamma s)
-  let linf : ℂ := ∫ x : ℝ in Set.Ioi 0,
+  let linf := ∫ x : ℝ in Set.Ioi 0,
     (x : ℂ) ^ (s - 1) * (dfiBesselY0 x : ℂ)
-  let ainf : ℂ := ∫ u : ℝ in Set.Ioc 0 (Real.pi / 2),
+  let ainf := ∫ u : ℝ in Set.Ioc 0 (Real.pi / 2),
     (Real.cos u : ℂ) ^ (-s) * Complex.sin (Real.pi * s / 2)
-  let binf : ℂ := ∫ t : ℝ in Set.Ioi 0,
+  let binf := ∫ t : ℝ in Set.Ioi 0,
     (t : ℂ) ^ (-s) / Real.sqrt (1 + t ^ 2)
-  let rinf : ℂ := (2 / Real.pi : ℂ) *
+  let rinf := (2 / Real.pi : ℂ) *
     (ainf * Gamma s - binf * Gamma s)
   have hL : Tendsto L atTop (𝓝 linf) := by
     simpa only [L, linf, ε] using
@@ -1206,7 +1164,6 @@ theorem probe_integral_cpow_mul_dfiBesselY0_Ioi_eq_beta
   have hB : Tendsto B atTop (𝓝 binf) := by
     simpa only [B, binf, ε] using probe_tendsto_damped_tail_factor hs hsOne
   have hR : Tendsto R atTop (𝓝 rinf) := by
-    dsimp [R, rinf]
     exact ((hA.mul_const (Gamma s)).sub (hB.mul_const (Gamma s))).const_mul
       (2 / Real.pi : ℂ)
   have hEq : ∀ n, L n = R n := by
@@ -1214,8 +1171,7 @@ theorem probe_integral_cpow_mul_dfiBesselY0_Ioi_eq_beta
     have hε : 0 < ε n := by dsimp [ε]; positivity
     simpa only [L, R, A, B] using
       (probe_integral_cpow_mul_damped_y0_Ioi hs hε)
-  have hLR : linf = rinf :=
-    tendsto_nhds_unique (hL.congr' (Eventually.of_forall hEq)) hR
+  have hLR := tendsto_nhds_unique (hL.congr' (Eventually.of_forall hEq)) hR
   dsimp [linf, rinf, ainf, binf] at hLR
   rw [integral_Ioc_eq_integral_Ioo,
     MeasureTheory.integral_mul_const,
@@ -1323,9 +1279,7 @@ theorem probe_y0_beta_combination_eq_k0_beta
       rw [show a + 1 / 2 = 1 - b by dsimp [a, b]; ring, hrefB]
       have htrigBA : Complex.sin (Real.pi * b) =
           Complex.cos (Real.pi * a) := by
-        calc
-          Complex.sin (Real.pi * b) = Complex.cos (Real.pi * s / 2) := htrigB
-          _ = Complex.cos (Real.pi * a) := by rw [htrigA]
+        exact (htrigB).trans (by rw [htrigA])
       rw [htrigBA]
     field_simp [hGah, hGh, hcosA]
     rw [show (a * 2 + 1) / 2 = a + 1 / 2 by ring, hhalfSq]
@@ -1350,10 +1304,9 @@ theorem probe_y0_beta_combination_eq_k0_beta
   rw [neg_mul, hthird]
   rw [show Gamma b * Gamma a / Gamma (1 / 2 : ℂ) =
       Gamma a * Gamma b / Gamma (1 / 2 : ℂ) by ring]
-  have htrig := Complex.sin_sq_add_cos_sq (Real.pi * a)
   have hsinMinus : Complex.sin (Real.pi * a) ^ 2 - 1 =
       -Complex.cos (Real.pi * a) ^ 2 := by
-    nth_rewrite 1 [← htrig]
+    nth_rewrite 1 [← (Complex.sin_sq_add_cos_sq (Real.pi * a))]
     ring
   calc
     Gamma a * Gamma b / Gamma (1 / 2 : ℂ) *
@@ -1375,8 +1328,6 @@ theorem probe_integral_cpow_mul_dfiBesselY0_Ioi_eq
   rw [probe_integral_cpow_mul_dfiBesselY0_Ioi_eq_beta hsLower hsUpper]
   have hs : 0 < s.re := by linarith
   have hsOne : s.re < 1 := by linarith
-  have hbeta := probe_y0_beta_combination_eq_k0_beta hs hsOne
-  have hk := half_beta_mul_Gamma_eq_besselK0MellinSymbol hs
   have hbridge : dfiBesselY0MellinSymbol s =
       -(2 / Real.pi : ℂ) * Complex.cos (Real.pi * s / 2) *
         dfiBesselK0MellinSymbol s := by
@@ -1405,9 +1356,9 @@ theorem probe_integral_cpow_mul_dfiBesselY0_Ioi_eq
             ring
     _ = -(2 / Real.pi : ℂ) * Complex.cos (Real.pi * s / 2) *
           (((1 / 2 : ℂ) * Complex.betaIntegral (1 / 2) (s / 2)) *
-            Gamma s) := by rw [hbeta]; ring
+            Gamma s) := by rw [(probe_y0_beta_combination_eq_k0_beta hs hsOne)]; ring
     _ = -(2 / Real.pi : ℂ) * Complex.cos (Real.pi * s / 2) *
-          dfiBesselK0MellinSymbol s := by rw [hk]
+          dfiBesselK0MellinSymbol s := by rw [(half_beta_mul_Gamma_eq_besselK0MellinSymbol hs)]
     _ = dfiBesselY0MellinSymbol s := hbridge.symm
 
 /-- Absolute Mellin convergence of the square-root-scaled Neumann kernel on

@@ -125,11 +125,11 @@ theorem energy_pair_box_support (t : ℝ) (ht : (1/32:ℝ) < |t|) : energyPairBo
   rw [convolution_def]
   have he : (fun x => energyBox x*energyBox (t-x)) = 0 := by
     funext x
-    by_cases hx : (1/64:ℝ) < |x|
+    by_cases hx : (1/64) < |x|
     · simp [energy_box_support x hx]
-    · have hh : (1/64:ℝ) < |t-x| := by
+    · have hh : (1/64) < |t-x| := by
         have hab := abs_add_le x (t-x)
-        have hn : |x| ≤ 1/64 := le_of_not_gt hx
+        have hn := le_of_not_gt hx
         rw [add_sub_cancel] at hab
         linarith
       simp [energy_box_support (t-x) hh]

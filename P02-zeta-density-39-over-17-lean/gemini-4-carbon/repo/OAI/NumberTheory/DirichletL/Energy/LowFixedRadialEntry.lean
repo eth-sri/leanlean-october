@@ -8,18 +8,11 @@ public import OAI.NumberTheory.DirichletL.Energy.PhysicalEntry
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
 open Filter
+open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyLowFixedRadialEntry
-open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound
-open CenteredMomentCommonRadialData CenteredMomentEnergyZeroComparison
-open CenteredMomentEnergyFixedRadialReduction CenteredMomentEnergyOriginalSource
-open CenteredMomentFirstSourceReduction CenteredMomentSourceInputTailUniform
-open CenteredMomentSourceRow CenteredMomentSecondHeightFamily
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass
-open CenteredMomentEnergyState CenteredMomentEnergyPhysicalEntry
-open CenteredMomentRadialEligibleEnergy CenteredMomentInductionEnergy
+open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound CenteredMomentCommonRadialData CenteredMomentEnergyZeroComparison CenteredMomentEnergyFixedRadialReduction CenteredMomentEnergyOriginalSource CenteredMomentFirstSourceReduction CenteredMomentSourceInputTailUniform CenteredMomentSourceRow CenteredMomentSecondHeightFamily CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass CenteredMomentEnergyState CenteredMomentEnergyPhysicalEntry CenteredMomentRadialEligibleEnergy CenteredMomentInductionEnergy
 local notation "O"=>HeckeFamily.O
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 local instance : DecidableEq (ι⊕Fin 2):=energyOriginalSourceDecidableSum
@@ -55,7 +48,6 @@ theorem original_low_reduction (bΦ:ℝ)(hbΦ:0<bΦ)
   filter_upwards [hred] with Z hz
   refine ⟨hz.1,?_⟩
   intro s W₁ W₂ he₁ he₂ hs₁ hs₂ hsi R r hr hV hK
-  dsimp only
   let hz₁:s.W₁ 0=0:=by rw [he₁];exact CenteredMomentDetectorPlainSource.support_zero W₁ a b ha hs₁
   let hz₂:s.W₂ 0=0:=by rw [he₂];exact CenteredMomentDetectorPlainSource.support_zero W₂ a b ha hs₂
   have hh:=hz.2 (zeroInput s hz₁ hz₂) W₁ W₂ he₁ he₂ hs₁ hs₂ hsi R r hr hV hK

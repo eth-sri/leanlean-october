@@ -12,8 +12,7 @@ public import MathCollab.Density.Stronger.Atkinson.VoronoiMultiplierBounds
 
 @[expose] public section
 
-open Complex Set MeasureTheory Filter Topology
-open MathCollab.Density.Stronger.Fourth
+open Complex Set MeasureTheory Filter Topology MathCollab.Density.Stronger.Fourth
 set_option autoImplicit false
 set_option maxHeartbeats 1000000
 noncomputable section
@@ -48,10 +47,10 @@ theorem DFIVoronoiTestFunction.integrable_voronoiMinusMultiplier
   · apply continuous_iff_continuousAt.mpr
     intro u
     exact (differentiableAt_dfiVoronoiMinusMultiplier_of_re_lt_one 1 (by norm_num)).continuousAt.comp
-      (f := fun v : ℝ => (-1/2 : ℂ)+(v : ℂ)*I) (by fun_prop)
+      (f := fun v : ℝ => (-1/2)+(v : ℂ)*I) (by fun_prop)
   · intro u
     simpa using norm_dfiVoronoiMinusMultiplier_strip_le 1
-      (z := (-1/2 : ℂ)+(u : ℂ)*I) (by norm_num) (by norm_num)
+      (z := (-1/2)+(u : ℂ)*I) (by norm_num) (by norm_num)
 
 theorem DFIVoronoiTestFunction.integrable_voronoiPlusMultiplier
     {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) :
@@ -61,10 +60,10 @@ theorem DFIVoronoiTestFunction.integrable_voronoiPlusMultiplier
   · apply continuous_iff_continuousAt.mpr
     intro u
     exact (differentiableAt_dfiVoronoiPlusMultiplier_of_re_lt_one 1 (by norm_num)).continuousAt.comp
-      (f := fun v : ℝ => (-1/2 : ℂ)+(v : ℂ)*I) (by fun_prop)
+      (f := fun v : ℝ => (-1/2)+(v : ℂ)*I) (by fun_prop)
   · intro u
     simpa using norm_dfiVoronoiPlusMultiplier_strip_le 1
-      (z := (-1/2 : ℂ)+(u : ℂ)*I) (by norm_num) (by norm_num)
+      (z := (-1/2)+(u : ℂ)*I) (by norm_num) (by norm_num)
 
 /-- Absolute convergence of the complete native minus series, including n=0. -/
 theorem DFIVoronoiTestFunction.summable_divisorWeight_voronoiMinus

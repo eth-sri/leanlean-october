@@ -10,9 +10,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve
-open CompletedGauss ConcreteTraceCRT CubicEisenstein GaussianShiftedPartition
-open CenteredMomentCommonSupport CenteredMomentCorrelation CenteredMomentFourier CenteredMomentFirstPoisson
+open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve CompletedGauss ConcreteTraceCRT CubicEisenstein GaussianShiftedPartition CenteredMomentCommonSupport CenteredMomentCorrelation CenteredMomentFourier CenteredMomentFirstPoisson
 local notation "O" => ActualEisensteinCubic.O
 
 lemma gaussTwo_eq_elementFourier (I : Ideal O) (hI : CubicSieve.Admissible I) :
@@ -82,15 +80,13 @@ theorem gaussTwo_coprime_product (I J : Ideal O)
           rw [← CubicSieve.principalCubicCharacter_mk I hI, ← CubicSieve.principalCubicCharacter_mk I hI]
           congr 1
           apply Ideal.Quotient.eq.mpr
-          have hx := Ideal.Quotient.eq.mp (representative_spec (a*b) (Ideal.Quotient.mk _ m))
-          exact Ideal.mem_span_singleton.mpr ((dvd_mul_right a b).trans (Ideal.mem_span_singleton.mp hx))
+          exact Ideal.mem_span_singleton.mpr ((dvd_mul_right a b).trans (Ideal.mem_span_singleton.mp (Ideal.Quotient.eq.mp (representative_spec (a*b) (Ideal.Quotient.mk _ m)))))
         have hj : CubicSieve.cubicRow J (representative (a*b) (Ideal.Quotient.mk _ m)) =
             CubicSieve.cubicRow J m := by
           rw [← CubicSieve.principalCubicCharacter_mk J hJ, ← CubicSieve.principalCubicCharacter_mk J hJ]
           congr 1
           apply Ideal.Quotient.eq.mpr
-          have hx := Ideal.Quotient.eq.mp (representative_spec (a*b) (Ideal.Quotient.mk _ m))
-          exact Ideal.mem_span_singleton.mpr ((dvd_mul_left b a).trans (Ideal.mem_span_singleton.mp hx))
+          exact Ideal.mem_span_singleton.mpr ((dvd_mul_left b a).trans (Ideal.mem_span_singleton.mp (Ideal.Quotient.eq.mp (representative_spec (a*b) (Ideal.Quotient.mk _ m)))))
         rw [hi,hj]
         simp only [frequencyReduction_mk, map_one, one_mul]
         rw [CubicSieve.principalCubicCharacter_mk I hI m, CubicSieve.principalCubicCharacter_mk J hJ m]
@@ -103,9 +99,8 @@ theorem gaussTwo_coprime_product (I J : Ideal O)
         rfl
   rw [gaussTwo_eq_elementFourier (I*J) hIJ, gaussTwo_eq_elementFourier I hI,
     gaussTwo_eq_elementFourier J hJ]
-  have hgen : primaryGenerator (I*J)=a*b := primaryGenerator_mul I J
-  rw [elementFourier_congr _ (a*b) hIJ.2 (mul_ne_zero hI.2 hJ.2) _ 1 hgen, hfour]
-  rw [hgen, map_mul, norm_mul, Complex.ofReal_mul]
+  have hgen := primaryGenerator_mul I J
+  rw [elementFourier_congr _ (a*b) hIJ.2 (mul_ne_zero hI.2 hJ.2) _ 1 hgen, hfour, hgen, map_mul, norm_mul, Complex.ofReal_mul]
   ring
 
 theorem gaussTwo_coprime_product_sextic (I J : Ideal O)

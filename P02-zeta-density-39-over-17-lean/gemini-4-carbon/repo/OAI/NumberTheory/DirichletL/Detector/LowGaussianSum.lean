@@ -18,7 +18,7 @@ lemma low_dyad_norm_split (f : ℕ→ℂ) (p : ℕ→Prop) [DecidablePred p]
     Summable f ∧ ‖∑'j,f j‖≤(∑'j,if p j then 0 else ‖f j‖)+(∑'j,if p j then ‖f j‖ else 0) := by
   have he (j : ℕ) : ‖f j‖=(if p j then 0 else ‖f j‖)+(if p j then ‖f j‖ else 0) := by
     split_ifs <;>ring
-  have hn : Summable (fun j=>‖f j‖) := (hc.add hr).congr (fun j=>(he j).symm)
+  have hn := (hc.add hr).congr (fun j=>(he j).symm)
   refine ⟨hn.of_norm,?_⟩
   apply (norm_tsum_le_tsum_norm hn).trans_eq
   exact (tsum_congr he).trans (hc.tsum_add hr)
@@ -55,10 +55,9 @@ theorem low_all_gaussian_dyads (η : HeckeFamily.Character) (S : Finset Id)
   dsimp only at hc' hr' ⊢
   have hh := low_dyad_norm_split _ (fun j=>lowRemote Z (lowSelectedLength ell J) ε ((2:ℝ)^j)) hc'.1 hr'.1
   refine ⟨hh.1,hh.2.trans ?_⟩
-  have hp : Z^(-1:ℝ)≤Z^(3/16+256*ε) := Real.rpow_le_rpow_of_exponent_le hc.1.le (by linarith)
   calc
     _≤Cc*Z^(3/16+256*ε)+Cr*Z^(-1:ℝ) := add_le_add hc'.2 hr'.2
-    _≤Cc*Z^(3/16+256*ε)+Cr*Z^(3/16+256*ε) := add_le_add le_rfl (mul_le_mul_of_nonneg_left hp hCr.le)
+    _≤Cc*Z^(3/16+256*ε)+Cr*Z^(3/16+256*ε) := add_le_add le_rfl (mul_le_mul_of_nonneg_left (Real.rpow_le_rpow_of_exponent_le hc.1.le (by linarith)) hCr.le)
     _=_ := by ring
 
 end SevenEighths.ProbePhysical

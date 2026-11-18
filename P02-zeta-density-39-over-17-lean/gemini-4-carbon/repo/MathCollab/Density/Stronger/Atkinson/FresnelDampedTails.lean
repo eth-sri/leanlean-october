@@ -60,8 +60,7 @@ theorem intervalC1Bound_gaussian_damping {ε a b : ℝ}
     nlinarith [mul_nonneg hε (sq_nonneg x)]
   · intro x hx
     rw [(hd x).deriv]
-    have hx0 : 0 ≤ x := ha.trans hx.1
-    exact mul_nonpos_of_nonneg_of_nonpos (Real.exp_pos _).le (by nlinarith [mul_nonneg hε hx0])
+    exact mul_nonpos_of_nonneg_of_nonpos (Real.exp_pos _).le (by nlinarith [mul_nonneg hε (ha.trans hx.1)])
 
 theorem norm_fresnelPhase_integral_le {c a b : ℝ} (hc : 0 < c) (ha : 0 < a) (hab : a ≤ b) :
     ‖∫ x in a..b, Complex.exp (2 * Real.pi * I * ((-c * x ^ 2 : ℝ) : ℂ))‖ ≤

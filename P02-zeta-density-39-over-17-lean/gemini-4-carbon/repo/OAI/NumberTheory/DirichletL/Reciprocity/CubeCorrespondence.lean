@@ -7,74 +7,8 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 
 namespace CubicKubota
 
@@ -176,12 +110,10 @@ lemma cubeCorrespondenceRight_injective (p : Eis) (hp : p ≠ 0) :
 lemma cubeCorrespondence_value (p : Eis) (hp : p ≠ 0) (MN : cubeCorrespondence p) :
     value (cubeCorrespondenceLeft p MN) = value (cubeCorrespondenceRight p MN) := by
   have he := cubeCorrespondence_entries p MN
-  let M : levelThree := MN.1.1
-  let N : levelThree := MN.1.2
-  have ha : (M : SL(2,Eis)) 0 0 = (N : SL(2,Eis)) 0 0 :=
-    mul_left_cancel₀ (pow_ne_zero 3 hp) (he.1.trans (mul_comm _ _))
-  have hc : (M : SL(2,Eis)) 1 0 = p^3 * (N : SL(2,Eis)) 1 0 :=
-    he.2.2.1.trans (mul_comm _ _)
+  let M := MN.1.1
+  let N := MN.1.2
+  have ha := mul_left_cancel₀ (pow_ne_zero 3 hp) (he.1.trans (mul_comm _ _))
+  have hc := he.2.2.1.trans (mul_comm _ _)
   have hd : (M : SL(2,Eis)) 0 0 * (M : SL(2,Eis)) 1 1 -
       (M : SL(2,Eis)) 0 1 * (M : SL(2,Eis)) 1 0 = 1 := by
     simpa only [Matrix.det_fin_two] using (M : SL(2,Eis)).property
@@ -198,8 +130,7 @@ lemma cubeCorrespondence_value (p : Eis) (hp : p ≠ 0) (MN : cubeCorrespondence
 
 lemma cubeCorrespondence_character (p : Eis) (hp : p ≠ 0) (MN : cubeCorrespondence p) :
     complexCharacter (cubeCorrespondenceLeft p MN) =
-      complexCharacter (cubeCorrespondenceRight p MN) := by
-  exact congrArg ConcreteTraceCRT.eisEmbedding (cubeCorrespondence_value p hp MN)
+      complexCharacter (cubeCorrespondenceRight p MN) := congrArg ConcreteTraceCRT.eisEmbedding (cubeCorrespondence_value p hp MN)
 
 end
 
@@ -213,33 +144,31 @@ def cubePrincipalLevel (p : Eis) : Subgroup levelThree :=
 
 lemma cubePrincipalLevel_entry (p : Eis) (M : cubePrincipalLevel p) (i j : Fin 2) :
     (3:Eis)*p^3 ∣ ((M.1 : levelThree) : SL(2,Eis)) i j-(if i=j then 1 else 0) := by
-  have hm : Matrix.SpecialLinearGroup.map (n:=Fin 2)
-      (Ideal.Quotient.mk (Ideal.span {(3:Eis)*p^3})) ((M.1 : levelThree) : SL(2,Eis)) = 1 := M.property
-  have h := congrArg (fun N : SL(2,Eis ⧸ Ideal.span {(3:Eis)*p^3}) => N i j) hm
-  change Ideal.Quotient.mk (Ideal.span {(3:Eis)*p^3})
+  have h := congrArg (fun N : SL(2,Eis ⧸ Ideal.span {3*p^3}) => N i j) (M.property)
+  change Ideal.Quotient.mk (Ideal.span {3*p^3})
     (((M.1 : levelThree) : SL(2,Eis)) i j) =
-      (1 : Matrix (Fin 2) (Fin 2) (Eis ⧸ Ideal.span {(3:Eis)*p^3})) i j at h
+      (1 : Matrix (Fin 2) (Fin 2) (Eis ⧸ Ideal.span {3*p^3})) i j at h
   apply Ideal.mem_span_singleton.mp
   apply (Ideal.Quotient.mk_eq_mk_iff_sub_mem _ _).mp
   simpa only [Matrix.one_apply, apply_ite, map_one, map_zero] using h
 
 lemma cubePrincipalLevel_finiteIndex (p : Eis) (hp : p ≠ 0) :
     (cubePrincipalLevel p).FiniteIndex := by
-  let : Finite (Eis ⧸ Ideal.span {(3:Eis)*p^3}) :=
+  let : Finite (Eis ⧸ Ideal.span {3*p^3}) :=
     finite_quotient_span (mul_ne_zero (by norm_num) (pow_ne_zero 3 hp))
   unfold cubePrincipalLevel
   infer_instance
 
 lemma cubePrincipalLevel_left_mate (p : Eis) (M : cubePrincipalLevel p) :
     ∃ N : levelThree, ((M.1 : levelThree),N) ∈ cubeCorrespondence p := by
-  obtain ⟨c,hc⟩ : (3:Eis)*p^3 ∣ ((M.1 : levelThree) : SL(2,Eis)) 1 0 := by
+  obtain ⟨c,hc⟩ : 3*p^3 ∣ ((M.1 : levelThree) : SL(2,Eis)) 1 0 := by
     simpa using cubePrincipalLevel_entry p M 1 0
   let A : SL(2,Eis) := M.1
   let N : SL(2,Eis) := ⟨!![A 0 0,p^3*A 0 1;3*c,A 1 1],by
     have hd := A.property
     rw [Matrix.det_fin_two] at hd
     rw [Matrix.det_fin_two_of]
-    change A 1 0=(3:Eis)*p^3*c at hc
+    change A 1 0=3*p^3*c at hc
     rw [hc] at hd
     linear_combination hd⟩
   have hN : N∈levelThree := by
@@ -247,9 +176,9 @@ lemma cubePrincipalLevel_left_mate (p : Eis) (M : cubePrincipalLevel p) :
     intro i j
     fin_cases i <;> fin_cases j
     · exact levelThree_entry M.1 0 0
-    · change (3:Eis)∣p^3*A 0 1-0
+    · change 3∣p^3*A 0 1-0
       simpa using dvd_mul_of_dvd_right (levelThree_upper M.1) (p^3)
-    · change (3:Eis)∣3*c-0
+    · change 3∣3*c-0
       simp
     · exact levelThree_entry M.1 1 1
   refine ⟨⟨N,hN⟩,?_⟩
@@ -259,21 +188,21 @@ lemma cubePrincipalLevel_left_mate (p : Eis) (M : cubePrincipalLevel p) :
   fin_cases i <;> fin_cases j <;>
     norm_num [cubeDiagonal,N,Matrix.mul_apply,Fin.sum_univ_two]
   · ring
-  · change A 1 0=(3:Eis)*p^3*c at hc
+  · change A 1 0=3*p^3*c at hc
     change A 1 0=3*c*p^3
     rw [hc]
     ring
 
 lemma cubePrincipalLevel_right_mate (p : Eis) (N : cubePrincipalLevel p) :
     ∃ M : levelThree, (M,(N.1 : levelThree)) ∈ cubeCorrespondence p := by
-  obtain ⟨b,hb⟩ : (3:Eis)*p^3 ∣ ((N.1 : levelThree) : SL(2,Eis)) 0 1 := by
+  obtain ⟨b,hb⟩ : 3*p^3 ∣ ((N.1 : levelThree) : SL(2,Eis)) 0 1 := by
     simpa using cubePrincipalLevel_entry p N 0 1
   let A : SL(2,Eis) := N.1
   let M : SL(2,Eis) := ⟨!![A 0 0,3*b;p^3*A 1 0,A 1 1],by
     have hd := A.property
     rw [Matrix.det_fin_two] at hd
     rw [Matrix.det_fin_two_of]
-    change A 0 1=(3:Eis)*p^3*b at hb
+    change A 0 1=3*p^3*b at hb
     rw [hb] at hd
     linear_combination hd⟩
   have hM : M∈levelThree := by
@@ -281,9 +210,9 @@ lemma cubePrincipalLevel_right_mate (p : Eis) (N : cubePrincipalLevel p) :
     intro i j
     fin_cases i <;> fin_cases j
     · exact levelThree_entry N.1 0 0
-    · change (3:Eis)∣3*b-0
+    · change 3∣3*b-0
       simp
-    · change (3:Eis)∣p^3*A 1 0-0
+    · change 3∣p^3*A 1 0-0
       simpa using dvd_mul_of_dvd_right (levelThree_lower N.1) (p^3)
     · exact levelThree_entry N.1 1 1
   refine ⟨⟨M,hM⟩,?_⟩
@@ -293,7 +222,7 @@ lemma cubePrincipalLevel_right_mate (p : Eis) (N : cubePrincipalLevel p) :
   fin_cases i <;> fin_cases j <;>
     norm_num [cubeDiagonal,M,Matrix.mul_apply,Fin.sum_univ_two]
   · ring
-  · change A 0 1=(3:Eis)*p^3*b at hb
+  · change A 0 1=3*p^3*b at hb
     change p^3*(3*b)=A 0 1
     rw [hb]
     ring
@@ -438,9 +367,8 @@ local notation "Eis" => ActualEisensteinCubic.O
 
 end CubicKubota
 
-open Filter MeasureTheory Asymptotics
+open Filter MeasureTheory Asymptotics Finset AddChar MulChar EisensteinEmbedding
 open scoped BigOperators Classical Topology
-open Finset AddChar MulChar EisensteinEmbedding
 
 namespace CubicEisenstein
 local notation "O" => ActualEisensteinCubic.O
@@ -539,7 +467,7 @@ lemma cuspBarProfile_source_isBigO (z : ℂ) :
       (fun v : ℝ=>Real.exp (-residualCuspDecayRate*v)) := by
   obtain ⟨C,hC,hbound⟩ := cubicSourceResidualFunction_wirtingerBar_cusp_decay 1 (by norm_num)
   apply Asymptotics.IsBigO.of_bound C
-  filter_upwards [eventually_ge_atTop (1:ℝ)] with v hv
+  filter_upwards [eventually_ge_atTop 1] with v hv
   have hvp : 0<v := lt_of_lt_of_le (by norm_num) hv
   rw [cuspBarProfile_positive _ _ _ hvp,Real.norm_of_nonneg (Real.exp_pos _).le]
   exact hbound v hvp z hv
@@ -549,7 +477,7 @@ lemma cuspZProfile_source_isBigO (z : ℂ) :
       (fun v : ℝ=>Real.exp (-residualCuspDecayRate*v)) := by
   obtain ⟨C,hC,hbound⟩ := cubicSourceResidualFunction_wirtingerZ_cusp_decay 1 (by norm_num)
   apply Asymptotics.IsBigO.of_bound C
-  filter_upwards [eventually_ge_atTop (1:ℝ)] with v hv
+  filter_upwards [eventually_ge_atTop 1] with v hv
   have hvp : 0<v := lt_of_lt_of_le (by norm_num) hv
   rw [cuspZProfile_positive _ _ _ hvp,Real.norm_of_nonneg (Real.exp_pos _).le]
   exact hbound v hvp z hv

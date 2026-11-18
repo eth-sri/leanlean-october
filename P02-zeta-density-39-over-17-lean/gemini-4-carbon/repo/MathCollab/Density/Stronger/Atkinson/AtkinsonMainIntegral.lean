@@ -11,8 +11,7 @@ public import MathCollab.Density.Stronger.Atkinson.SourceLogScales
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set
-open MathCollab.Density.Stronger.Fourth
+open Complex Filter MeasureTheory Set MathCollab.Density.Stronger.Fourth
 open scoped ContDiff
 set_option autoImplicit false
 noncomputable section
@@ -52,9 +51,7 @@ theorem exists_norm_zetaAtkinsonVoronoiMain_le :
   intro T G L hT hlog hG hGT hL hwidth
   have hT0 : 0 < T := by linarith
   rw [zetaAtkinsonVoronoiMain_eq_reflection hT0 hG hL hwidth]
-  have h := (hweight T G L hT hlog hG hGT hL).reflection_source hT0
-  convert h using 1
-  have hs : Real.sqrt T ≠ 0 := ne_of_gt (Real.sqrt_pos.2 hT0)
+  convert ((hweight T G L hT hlog hG hGT hL).reflection_source hT0) using 1
   field_simp
 
 theorem exists_zetaAtkinsonVoronoiMain_log_bound {δ : ℝ} (hδ : 0 < δ) :

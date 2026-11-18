@@ -9,78 +9,11 @@ noncomputable section
 
 namespace CubicEisenstein
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 
 section
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff Manifold
+open scoped Manifold
 
 lemma kernelCompact_smooth_cutoff (K : Set KernelQuotient) (hK : IsCompact K) :
     ∃χ : KernelQuotient→ℝ,ContMDiff 𝓘(ℝ,SpatialCoordinates) 𝓘(ℝ,ℝ) ∞ χ ∧
@@ -99,8 +32,7 @@ lemma kernelCompact_smooth_cutoff (K : Set KernelQuotient) (hK : IsCompact K) :
 end
 
 section
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
+open scoped MatrixGroups
 
 lemma integral_upper_triangular_height_all (M : SL(2,ActualEisensteinCubic.O))
     (hc : M 1 0=0) (w : HyperbolicSpace) :
@@ -129,24 +61,21 @@ lemma fullCuspHeight_continuous (x : FullCuspClasses) : Continuous (fullCuspHeig
 lemma fullMatrixHeight_eq_of_lower_zero (M N : SL(2,ActualEisensteinCubic.O))
     (h : (M*N⁻¹) 1 0=0) : fullMatrixHeight M=fullMatrixHeight N := by
   funext w
-  have hh := integral_upper_triangular_height_all (M*N⁻¹) h (integralComplexMatrix N • w)
-  simpa only [fullMatrixHeight,map_mul,map_inv,mul_smul,inv_smul_smul] using hh
+  simpa only [fullMatrixHeight,map_mul,map_inv,mul_smul,inv_smul_smul] using (integral_upper_triangular_height_all (M*N⁻¹) h (integralComplexMatrix N • w))
 
 lemma fullCuspOf_eq_iff (M N : SL(2,ActualEisensteinCubic.O)) :
     fullCuspOf M=fullCuspOf N ↔ (M*N⁻¹) 1 0=0 := by
   constructor
   · intro h
     by_contra hc
-    have he : fullMatrixHeight M=fullMatrixHeight N := Quotient.exact h
     let w := upperPoint 0 2 (by norm_num : (0:ℝ)<2)
-    have hh := congrFun he (integralComplexMatrix N⁻¹ • w)
+    have hh := congrFun (Quotient.exact h) (integralComplexMatrix N⁻¹ • w)
     have hp := integral_hyperbolicHeight_mul_le_one (M*N⁻¹) hc w
-    have hN : hyperbolicHeight w=2 := hyperbolicHeight_upperPoint _ _ _
     change hyperbolicHeight (integralComplexMatrix M • (integralComplexMatrix N⁻¹ • w))=
       hyperbolicHeight (integralComplexMatrix N • (integralComplexMatrix N⁻¹ • w)) at hh
     simp only [map_inv,smul_inv_smul] at hh
     simp only [map_mul,map_inv,mul_smul] at hp
-    rw [hh,hN] at hp
+    rw [hh,(hyperbolicHeight_upperPoint _ _ _)] at hp
     norm_num at hp
   · intro h
     exact Quotient.sound (fullMatrixHeight_eq_of_lower_zero M N h)
@@ -230,8 +159,7 @@ lemma fullCuspProfileSum_eq_single (F : ℝ→ℝ) (hF : ∀v≤1,F v=0)
 end
 
 section
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff MatrixGroups
+open scoped MatrixGroups
 
 def cuspBarrierProfile (a b v : ℝ) : ℝ := cuspTransition a b v*(v-1)
 
@@ -251,9 +179,6 @@ lemma cuspBarrierProfile_nonneg (a b : ℝ) (ha : 1≤a) (hab : a<b) (v : ℝ) :
 def cuspBarrier (a b : ℝ) (w : HyperbolicSpace) : ℝ :=
   1+fullCuspProfileSum (cuspBarrierProfile a b) w
 
-lemma cuspBarrier_one_le (a b : ℝ) (ha : 1≤a) (hab : a<b) (w : HyperbolicSpace) :
-    1≤cuspBarrier a b w := by
-  exact le_add_of_nonneg_right (tsum_nonneg (fun x => cuspBarrierProfile_nonneg a b ha hab _))
 
 lemma cuspBarrier_invariant (a b : ℝ) (M : SL(2,ActualEisensteinCubic.O)) (w : HyperbolicSpace) :
     cuspBarrier a b (integralComplexMatrix M • w)=cuspBarrier a b w := by
@@ -279,7 +204,7 @@ def kernelQuotientBarrier (a b : ℝ) : KernelQuotient→ℝ :=
 lemma kernelQuotientBarrier_one_le (a b : ℝ) (ha : 1≤a) (hab : a<b) (q : KernelQuotient) :
     1≤kernelQuotientBarrier a b q := by
   induction q using Quotient.inductionOn with
-  | _ w => exact cuspBarrier_one_le a b ha hab w
+  | _ w => exact (le_add_of_nonneg_right (tsum_nonneg (fun x => cuspBarrierProfile_nonneg a b ha hab _)))
 
 lemma kernelQuotientBarrier_fordCusp (a b : ℝ) (ha : 1≤a) (hab : a<b)
     (M : SL(2,ActualEisensteinCubic.O)) (p : UpperCoordinates) (hp : b<p.1.2) :
@@ -289,8 +214,7 @@ lemma kernelQuotientBarrier_fordCusp (a b : ℝ) (ha : 1≤a) (hab : a<b)
 end
 
 section
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups ContDiff
+open scoped MatrixGroups
 
 lemma principal_high_locally_finite (w : HyperbolicSpace) :
     ∃U : Set HyperbolicSpace,IsOpen U ∧ w∈U ∧ ∃T : Finset CuspCosets,
@@ -374,16 +298,11 @@ lemma fullCuspProfileSum_continuous (F : ℝ→ℝ) (hF : ∀v≤1,F v=0) (hFc :
   apply ContinuousAt.congr _ hT.symm
   exact (continuous_finsetSum T (fun x hx => hFc.comp (fullCuspHeight_continuous x))).continuousAt
 
-lemma cuspBarrier_continuous (a b : ℝ) (ha : 1≤a) (hab : a<b) :
-    Continuous (cuspBarrier a b) :=
-  continuous_const.add (fullCuspProfileSum_continuous _
-    (fun v hv => cuspBarrierProfile_zero a b hab v (hv.trans ha)) (cuspBarrierProfile_smooth a b).continuous)
 
 end
 
 section
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff Manifold MatrixGroups
+open scoped Manifold MatrixGroups
 
 lemma fullCuspHeight_chart_contDiffAt (x : FullCuspClasses) (p : SpatialCoordinates)
     (hp : p∈hyperbolicSpatialChart.target) :
@@ -404,9 +323,7 @@ lemma fullCuspProfileSum_chart_contDiffAt (F : ℝ→ℝ) (hF : ∀v≤1,F v=0)
     (hFc : ContDiff ℝ ∞ F) (p : SpatialCoordinates) (hp : p∈hyperbolicSpatialChart.target) :
     ContDiffAt ℝ ∞ (fun q => fullCuspProfileSum F (hyperbolicSpatialChart.symm q)) p := by
   obtain ⟨T,hT⟩ := fullCuspProfileSum_locally_finite F hF (hyperbolicSpatialChart.symm p)
-  have hc := hyperbolicSpatialChart.continuousAt_symm hp
-  have he := hT.comp_tendsto hc
-  apply ContDiffAt.congr_of_eventuallyEq _ he
+  apply ContDiffAt.congr_of_eventuallyEq _ (hT.comp_tendsto (hyperbolicSpatialChart.continuousAt_symm hp))
   exact ContDiffAt.sum (fun x hx => hFc.contDiffAt.comp p
     (fullCuspHeight_chart_contDiffAt x p hp))
 
@@ -419,26 +336,20 @@ lemma cuspBarrier_chart_contDiffAt (a b : ℝ) (ha : 1≤a) (hab : a<b)
 
 lemma kernelQuotientBarrier_continuous (a b : ℝ) (ha : 1≤a) (hab : a<b) :
     Continuous (kernelQuotientBarrier a b) :=
-  (cuspBarrier_continuous a b ha hab).quotient_lift _
+  ((continuous_const.add (fullCuspProfileSum_continuous _
+    (fun v hv => cuspBarrierProfile_zero a b hab v (hv.trans ha)) (cuspBarrierProfile_smooth a b).continuous))).quotient_lift _
 
 lemma kernelQuotientBarrier_contMDiff (a b : ℝ) (ha : 1≤a) (hab : a<b) :
     ContMDiff 𝓘(ℝ,SpatialCoordinates) 𝓘(ℝ,ℝ) ∞ (kernelQuotientBarrier a b) := by
   intro q
   rw [contMDiffAt_iff]
   refine ⟨(kernelQuotientBarrier_continuous a b ha hab).continuousAt,?_⟩
-  have hq : q∈(kernelQuotientChart q).source := mem_chart_source SpatialCoordinates q
-  have hp : kernelQuotientChart q q∈hyperbolicSpatialChart.target :=
-    ((kernelQuotientChart q).map_source hq).1
-  have hh := cuspBarrier_chart_contDiffAt a b ha hab _ hp
   have he : (fun p => kernelQuotientBarrier a b ((kernelQuotientChart q).symm p))=
       (fun p => cuspBarrier a b (hyperbolicSpatialChart.symm p)) := by
     funext p
     rw [kernelQuotientChart_symm]
     rfl
-  have hh' := (he.symm ▸ hh).contDiffWithinAt (s := Set.univ)
-  simpa only [extChartAt_coe,extChartAt_coe_symm,modelWithCornersSelf_coe,
-    modelWithCornersSelf_coe_symm,Function.id_comp,Function.comp_id,Set.range_id,
-    chartAt_self_eq,kernelSpatial_chartAt,OpenPartialHomeomorph.refl_apply,Function.comp_def,id_eq] using hh'
+  simpa using ((he.symm ▸ (cuspBarrier_chart_contDiffAt a b ha hab _ (((kernelQuotientChart q).map_source (mem_chart_source SpatialCoordinates q)).1))).contDiffWithinAt (s := Set.univ))
 
 lemma cuspBarrier_euclidean_contDiffAt (a b : ℝ) (ha : 1≤a) (hab : a<b)
     (p : EuclideanSpatial) (hp : 0<p 2) :
@@ -448,8 +359,7 @@ lemma cuspBarrier_euclidean_contDiffAt (a b : ℝ) (ha : 1≤a) (hab : a<b)
 
 end
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff MatrixGroups
+open scoped MatrixGroups
 
 def positiveHeightLaplacian (F : ℝ→ℝ) (v : ℝ) : ℝ :=
   v*deriv F v-v^2*deriv (deriv F) v
@@ -459,13 +369,9 @@ def cuspBarrierDefectProfile (a b v : ℝ) : ℝ :=
 
 lemma positiveHeightLaplacian_smooth (F : ℝ→ℝ) (hF : ContDiff ℝ ∞ F) :
     ContDiff ℝ ∞ (positiveHeightLaplacian F) := by
-  have hD : ContDiff ℝ ∞ (deriv F) := (contDiff_infty_iff_deriv.mp hF).2
+  have hD := (contDiff_infty_iff_deriv.mp hF).2
   exact (contDiff_id.mul hD).sub ((contDiff_id.pow 2).mul ((contDiff_infty_iff_deriv.mp hD).2))
 
-lemma cuspBarrierDefectProfile_smooth (a b : ℝ) :
-    ContDiff ℝ ∞ (cuspBarrierDefectProfile a b) :=
-  (positiveHeightLaplacian_smooth _ (cuspBarrierProfile_smooth a b)).sub
-    (cuspBarrierProfile_smooth a b)
 
 lemma cuspBarrierDefectProfile_zero (a b v : ℝ) (hab : a<b) (hv : v<a) :
     cuspBarrierDefectProfile a b v=0 := by
@@ -486,7 +392,7 @@ lemma cuspBarrierDefectProfile_one (a b v : ℝ) (hab : a<b) (hv : b<v) :
   have hd := he.deriv_eq
   have hlin : deriv (fun x : ℝ => x-1)=(fun _ => 1) := by ext x; simp
   have hdd : deriv (deriv (cuspBarrierProfile a b)) v=0 := by
-    simpa only [hlin,deriv_const] using he.deriv.deriv_eq
+    simpa using he.deriv.deriv_eq
   simp only [deriv_sub_const,deriv_id''] at hd
   simp only [cuspBarrierDefectProfile,positiveHeightLaplacian,he.eq_of_nhds,hd,hdd]
   ring
@@ -537,10 +443,9 @@ lemma kernelQuotientBarrierDefect_continuous (a b : ℝ) (ha : 1<a) (hab : a<b) 
   apply Continuous.quotient_lift
   exact continuous_const.add (fullCuspProfileSum_continuous _
     (fun v hv => cuspBarrierDefectProfile_zero a b v hab (hv.trans_lt ha))
-    (cuspBarrierDefectProfile_smooth a b).continuous)
+    (((positiveHeightLaplacian_smooth _ (cuspBarrierProfile_smooth a b)).sub
+    (cuspBarrierProfile_smooth a b))).continuous)
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff MatrixGroups
 
 def fullCuspRow (x : FullCuspClasses) : Fin 2→ℂ :=
   complexBottomRow (integralComplexMatrix x.out)
@@ -577,12 +482,10 @@ lemma fullCuspRows_locally_finite (p : SpatialCoordinates) (hp : 0<p 2) :
     exact hyperbolicSpatialChart.map_source (Set.mem_univ _)
   have he : hyperbolicSpatialChart.symm p=w := by
     rw [hyperbolicSpatialChart_symm_eq ht]
-  have hnear := (hyperbolicSpatialChart.continuousAt_symm ht) (by simpa only [he] using hU.mem_nhds hw)
   refine ⟨T,?_⟩
-  filter_upwards [hnear,hyperbolicSpatialChart.open_target.mem_nhds ht] with q hq hqt
-  have hpos := hyperbolicSpatialChart_target_positive hqt
+  filter_upwards [((hyperbolicSpatialChart.continuousAt_symm ht) (by simpa only [he] using hU.mem_nhds hw)),hyperbolicSpatialChart.open_target.mem_nhds ht] with q hq hqt
   intro x hx
-  rw [fullCuspRow_height x q hpos,←hyperbolicSpatialChart_symm_eq hqt]
+  rw [fullCuspRow_height x q (hyperbolicSpatialChart_target_positive hqt),←hyperbolicSpatialChart_symm_eq hqt]
   exact hT _ hq x hx
 
 lemma cast_profile_deriv (F : ℝ→ℝ) (hF : Differentiable ℝ F) (v : ℝ) :
@@ -591,9 +494,7 @@ lemma cast_profile_deriv (F : ℝ→ℝ) (hF : Differentiable ℝ F) (v : ℝ) :
 
 lemma cast_profile_deriv2 (F : ℝ→ℝ) (hF : ContDiff ℝ ∞ F) (v : ℝ) :
     deriv (deriv (fun y => (F y:ℂ))) v=((deriv (deriv F) v:ℝ):ℂ) := by
-  have he : deriv (fun y => (F y:ℂ))=(fun y => ((deriv F y:ℝ):ℂ)) :=
-    funext (cast_profile_deriv F (hF.differentiable (by simp)))
-  rw [he]
+  rw [(funext (cast_profile_deriv F (hF.differentiable (by simp))))]
   exact cast_profile_deriv (deriv F) (((contDiff_infty_iff_deriv.mp hF).2).differentiable (by simp)) v
 
 lemma fullCuspProfile_row_laplacian (F : ℝ→ℝ) (hF : ContDiff ℝ ∞ F)

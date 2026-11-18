@@ -29,7 +29,7 @@ namespace MathCollab.Density.Stronger.Atkinson
 theorem neumann_cpow_positive_real_mul {r : ℝ} (hr : 0 < r) {z : ℂ}
     (hz : z ≠ 0) (s : ℂ) :
     ((r : ℂ) * z) ^ s = (r : ℂ) ^ s * z ^ s := by
-  have hr0 : (r : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hr.ne'
+  have hr0 := Complex.ofReal_ne_zero.mpr hr.ne'
   rw [Complex.cpow_def_of_ne_zero (mul_ne_zero hr0 hz),
     Complex.log_ofReal_mul hr hz, Complex.ofReal_log hr.le,
     add_mul, Complex.exp_add, ← Complex.cpow_def_of_ne_zero hr0,
@@ -94,7 +94,7 @@ theorem norm_neumannLaplaceIntegrand_le (x : ℝ) {t : ℝ} (ht : 0 ≤ t) :
 theorem integrableOn_neumannLaplaceIntegrand {x : ℝ} (hx : 0 < x) :
     IntegrableOn (neumannLaplaceIntegrand x) (Ioi 0) := by
   have hi : IntegrableOn (fun t : ℝ => t ^ (-(1 / 2 : ℝ)) * Real.exp (-x * t)) (Ioi 0) := by
-    simpa only [Real.rpow_one] using
+    simpa using
       integrableOn_rpow_mul_exp_neg_mul_rpow (by norm_num : -1 < -(1 / 2 : ℝ))
         (by norm_num : 0 < (1 : ℝ)) hx
   have hm : AEStronglyMeasurable (neumannLaplaceIntegrand x) (volume.restrict (Ioi 0)) := by

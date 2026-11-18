@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.SecondDerivativeScale
 
 @[expose] public section
@@ -29,7 +38,7 @@ theorem third_derivative_norm_of_square {S N R C : ℝ}
     dsimp [v]
     rw [mul_pow,Real.sq_sqrt hN,Real.sq_sqrt hR.le]
   have hcu : 52*C ≤ 400*C^2 := by nlinarith
-  have hcv : (384:ℝ) ≤ 400*C^2 := by nlinarith
+  have hcv : 384 ≤ 400*C^2 := by nlinarith
   have hbu := mul_le_mul_of_nonneg_right hcu (sq_nonneg u)
   have hbv := mul_le_mul_of_nonneg_right hcv (sq_nonneg v)
   have hb' : S^2 ≤ 52*C*u^2+384*v^2 := by

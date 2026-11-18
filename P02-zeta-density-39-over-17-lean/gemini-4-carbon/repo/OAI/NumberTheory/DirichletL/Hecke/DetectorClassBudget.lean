@@ -35,7 +35,7 @@ theorem labels_card_le (cap mesh : ℝ) (hcap : cap≤1/2) (hm : 0<mesh) :
 theorem bin_card_le {Slot : Type*} (slots : Finset Slot) (cap mesh : ℝ)
     (hcap : cap≤1/2) (hm : 0<mesh) :
     Fintype.card (BinLabel slots cap mesh)≤(alphabetBound mesh)^slots.card := by
-  simpa only [BinLabel,Fintype.card_fun,Fintype.card_coe] using
+  simpa using
     Nat.pow_le_pow_left (labels_card_le cap mesh hcap hm) slots.card
 
 theorem dyadic_cost_eventually (η : ℝ) (hη : 0<η) :
@@ -49,9 +49,8 @@ theorem dyadic_cost_eventually (η : ℝ) (hη : 0<η) :
   have hs : (Real.log U)^2≤U^η := by
     simpa only [Real.rpow_two,Real.norm_eq_abs,abs_of_nonneg (sq_nonneg (Real.log U)),
       abs_of_nonneg (Real.rpow_nonneg hUp.le _),one_mul] using hlog
-  have hd := HeckeDetectorBudget.source_pair_count_bound U hU
   calc
-    (dyadicLength U : ℝ)^2 ≤ 625*(Real.logb 2 U)^2 := hd
+    (dyadicLength U : ℝ)^2 ≤ 625*(Real.logb 2 U)^2 := (HeckeDetectorBudget.source_pair_count_bound U hU)
     _ = K*(Real.log U)^2 := by unfold K Real.logb; ring
     _ ≤ K*U^η := mul_le_mul_of_nonneg_left hs hK
 

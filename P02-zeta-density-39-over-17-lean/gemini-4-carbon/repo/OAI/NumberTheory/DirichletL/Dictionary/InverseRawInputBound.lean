@@ -9,9 +9,7 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.DetectorDictionaryInverseRawInputBound
-open ConcretePrimeRowBridge ActualEisensteinCubic ConcreteTraceCRT CompletedGauss SecondPassArithmetic CanonicalQuadraticSieve CanonicalRowCompletion
-open CanonicalCoefficientClass InverseMoment InverseInitialProfile InverseInitialRayAttachment
-open InverseInitialQuotientGeometry InverseInitialProfileBounds
+open ConcretePrimeRowBridge ActualEisensteinCubic ConcreteTraceCRT CompletedGauss SecondPassArithmetic CanonicalQuadraticSieve CanonicalRowCompletion CanonicalCoefficientClass InverseMoment InverseInitialProfile InverseInitialRayAttachment InverseInitialQuotientGeometry InverseInitialProfileBounds
 local notation "O"=>ActualEisensteinCubic.O
 
 theorem raw_input_bound
@@ -32,11 +30,10 @@ theorem raw_input_bound
       (‖((Z^(-r/2):ℝ):ℂ)*inputConjugateRow p hg Finset.univ Ψ 1 1 1
         (initialTest p (fun _=>1) (childLogTest W t) Z r) u‖^2:ℝ)‖≤
       C*Z^(1+15*η+π+eps+loss)*(1+‖t‖)^(2*J) := by
-  have hB:0≤SchwartzMap.seminorm ℝ 0 0 W:=apply_nonneg _ _
   have hb:∀x,‖W x‖≤SchwartzMap.seminorm ℝ 0 0 W:=fun x=>by
     simpa only [pow_zero,one_mul,norm_iteratedFDeriv_zero] using W.le_seminorm ℝ 0 0 x
   obtain ⟨degree,Btree,hBtree,hbound⟩:=InverseInitialTotalEnergy.original_input_bound
-    W a b 1 ha le_rfl hs (W.smooth ⊤) Φ _ hB hb 2 gap eps π η τ loss
+    W a b 1 ha le_rfl hs (W.smooth ⊤) Φ _ (apply_nonneg _ _) hb 2 gap eps π η τ loss
     (by norm_num) hgap heps hπ hη hηone hηsmall hτ hτsmall hloss 0
   refine ⟨InverseClippingProfiles.momentOrder (4*degree),Btree,hBtree,?_⟩
   intro q hq
@@ -45,9 +42,8 @@ theorem raw_input_bound
   intro Z hZ Dpool hpool F hF
   let:∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal:=fun i=>by rw [poolPrimary_span F hF i];infer_instance
   intro p hg Ψ hΨ hperiod r t hrlo hr₁ hr₂ hrcap
-  have hZp:1<Z:=hZ₀.trans_le hZ
   have hpool':Btree*Z^((2:ℝ)+1)≤Dpool:=by norm_num;exact hpool
-  have hp:=Real.one_le_rpow hZp.le hη.le
+  have hp:=Real.one_le_rpow (hZ₀.trans_le hZ).le hη.le
   have h:=hbound Z hZ Dpool hpool' (σ:=Fin 0) ∅ ∅ (by simp) (by simp)
     (fun _=>∅) (fun _=>1) (fun _ _=>0) (by simp) (by simp) (by simp) (by simp)
     (fun _=>1) (fun _=>0) (fun _=>1) (fun _=>1) (fun _ _=>0)

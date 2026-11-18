@@ -29,9 +29,8 @@ theorem primeRowMap_injective : Function.Injective primeRowMap := by
 theorem primeRowMap_norm_bound (p : FreeRow×PrimeIdeal) (U V : ℝ)
     (hU : (Ideal.span {p.1.val}).absNorm≤U) (hV : (p.2.val.absNorm : ℝ)≤V) :
     ((Ideal.span {((primeRowMap p).val)}).absNorm : ℝ)≤U*V^6 := by
-  have hn := rowMap_norm (p.1,⟨p.2.val,p.2.property.ne_zero⟩)
   change ((Ideal.span {rowMap (p.1,⟨p.2.val,p.2.property.ne_zero⟩)}).absNorm : ℝ)≤_
-  rw [hn,Nat.cast_mul,Nat.cast_pow]
+  rw [(rowMap_norm (p.1,⟨p.2.val,p.2.property.ne_zero⟩)),Nat.cast_mul,Nat.cast_pow]
   exact mul_le_mul hU (pow_le_pow_left₀ (Nat.cast_nonneg _) hV 6)
     (by positivity) ((Nat.cast_nonneg _).trans hU)
 

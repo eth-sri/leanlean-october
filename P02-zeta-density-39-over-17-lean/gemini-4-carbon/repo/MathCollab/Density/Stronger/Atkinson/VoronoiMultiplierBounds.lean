@@ -46,8 +46,7 @@ theorem norm_Gamma_voronoi_extended_strip {a t : ℝ}
       congr 1
       simp only [z, ofReal_add, ofReal_one]
       ring
-    rw [hrec, norm_mul] at hg
-    rw [mul_assoc] at hg
+    rw [hrec, norm_mul, mul_assoc] at hg
     change ‖z‖ * ‖Gamma z‖ ≤ 12*E at hg
     rw [mul_assoc]
     change ‖Gamma z‖ ≤ 72*E
@@ -76,11 +75,8 @@ theorem norm_dfiPeriodicArchimedeanFactor_strip_le (q : ℕ) [NeZero q]
   simp only [sub_im, one_im, zero_sub, abs_neg] at hG
   unfold dfiPeriodicArchimedeanFactor
   rw [norm_mul, norm_mul]
-  calc
-    _ ≤ ((q:ℝ)*1)*(72*(1+|z.im|)*Real.exp (-(Real.pi*|z.im|)/2)) :=
-      mul_le_mul (mul_le_mul hqp hpp (norm_nonneg _) (by positivity)) hG
-        (norm_nonneg _) (by positivity)
-    _ = _ := by ring
+  exact (mul_le_mul (mul_le_mul hqp hpp (norm_nonneg _) (by positivity)) hG
+        (norm_nonneg _) (by positivity)).trans_eq (by ring)
 
 theorem norm_dfiVoronoiMinusMultiplier_strip_le (q : ℕ) [NeZero q]
     {z : ℂ} (hlo : -(1/2 : ℝ) ≤ z.re) (hhi : z.re ≤ 13/16) :
@@ -112,21 +108,19 @@ theorem norm_dfiVoronoiMinusMultiplier_strip_le (q : ℕ) [NeZero q]
         (Real.exp (-(Real.pi*|z.im|)/2)^2 * Real.exp (Real.pi*|z.im|)) := by ring
     _ = _ := by
       rw [← Real.exp_nat_mul, ← Real.exp_add]
-      norm_num only [Nat.cast_ofNat]
-      rw [show (2:ℝ)*(-(Real.pi*|z.im|)/2)+Real.pi*|z.im| = 0 by ring,
+      norm_num
+      rw [show 2*(-(Real.pi*|z.im|)/2)+Real.pi*|z.im| = 0 by ring,
         Real.exp_zero, mul_one]
 
 theorem norm_dfiVoronoiPlusMultiplier_strip_le (q : ℕ) [NeZero q]
     {z : ℂ} (hlo : -(1/2 : ℝ) ≤ z.re) (hhi : z.re ≤ 13/16) :
     ‖dfiVoronoiPlusMultiplier q z‖ ≤
       10368*(q:ℝ)^3*(1+|z.im|)^2 := by
-  have hF := norm_dfiPeriodicArchimedeanFactor_strip_le q hlo hhi
   have he : Real.exp (-(Real.pi*|z.im|)/2) ≤ 1 := by
     apply Real.exp_le_one_iff.mpr
     have := abs_nonneg z.im
     nlinarith [Real.pi_pos]
-  have hF' : ‖dfiPeriodicArchimedeanFactor q (1-z)‖ ≤ 72*(q:ℝ)*(1+|z.im|) :=
-    hF.trans (mul_le_of_le_one_right (by positivity) he)
+  have hF' := (norm_dfiPeriodicArchimedeanFactor_strip_le q hlo hhi).trans (mul_le_of_le_one_right (by positivity) he)
   unfold dfiVoronoiPlusMultiplier
   rw [norm_mul, norm_mul, norm_pow, Complex.norm_natCast, norm_ofNat]
   calc

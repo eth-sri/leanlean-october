@@ -8,8 +8,7 @@ namespace OAI
 
 noncomputable section
 namespace SevenEighths.ProbePhysical
-open MeasureTheory ActualEisensteinCubic CompletedGauss CanonicalRowCompletion
-open ProbeRow CubicEisenstein CanonicalQuadraticSieve
+open MeasureTheory ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ProbeRow CubicEisenstein CanonicalQuadraticSieve
 local notation "O" => ActualEisensteinCubic.O
 
 theorem CalibrationData.residueMonoid_norm_le_one (C : CalibrationData) (a : O) :
@@ -32,13 +31,10 @@ theorem CalibrationData.Xi_norm_one (C : CalibrationData) (a : O)
   let : Finite (O ⧸ Ideal.span {C.generator}) :=
     ConcreteTraceCRT.finite_quotient_span C.generator_ne_zero
   let : Fintype (O ⧸ Ideal.span {C.generator}) := Fintype.ofFinite _
-  have hu := (CubicEisenstein.isUnit_quotient_span_iff C.generator a).mpr hcop
   have hξ : ‖C.residueMonoid a‖ = 1 := by
-    exact (FiniteRayExpansion.norm_char_unit C.residue hu.unit)
-  have hc : IsCoprime (Ideal.span {a} : Ideal O) (Ideal.span {C.generator}) :=
-    (Ideal.isCoprime_span_singleton_iff a C.generator).mpr hcop.symm
+    exact (FiniteRayExpansion.norm_char_unit C.residue ((CubicEisenstein.isUnit_quotient_span_iff C.generator a).mpr hcop).unit)
   have h6 := idealRowHom_sixth_mask C.generator (Ideal.span {a}) ha
-  rw [idealRowHom_argument_pow _ _ _ ha, ite_eq_left hc] at h6
+  rw [idealRowHom_argument_pow _ _ _ ha, ite_eq_left ((Ideal.isCoprime_span_singleton_iff a C.generator).mpr hcop.symm)] at h6
   change ‖C.residueMonoid a * idealRowHom C.generator (Ideal.span {a})‖ = 1
   rw [norm_mul, hξ, Complex.norm_eq_one_of_pow_eq_one h6 (by decide : (6 : ℕ) ≠ 0), mul_one]
 

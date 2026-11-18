@@ -23,12 +23,7 @@ theorem wooley_refinement_val_mod_of_le
     (xi : ZMod (p ^ a)) {z : ZMod (p ^ a')}
     (hz : z ∈ wooleyResidueRefinementFiber p a a' haa' xi) :
     z.val % (p ^ nu) = xi.val % (p ^ nu) := by
-  have ha := wooley_refinement_val_mod haa' xi hz
-  have hdiv : p ^ nu ∣ p ^ a := pow_dvd_pow p hnua
-  calc
-    z.val % (p ^ nu) = (z.val % (p ^ a)) % (p ^ nu) :=
-      (Nat.mod_mod_of_dvd z.val hdiv).symm
-    _ = xi.val % (p ^ nu) := by rw [ha]
+  exact ((Nat.mod_mod_of_dvd z.val (pow_dvd_pow p hnua)).symm).trans (by rw [(wooley_refinement_val_mod haa' xi hz)])
 
 theorem wooley_refinement_left_separated_iff
     {p nu a a' b : ℕ} [NeZero p] (hnua : nu ≤ a) (haa' : a ≤ a')
@@ -143,7 +138,7 @@ theorem wooleyPolynomial_mixed_left_point_refinement
             wooleyWeightedResidueMassSq gamma eta *
               wooleyPolynomialMixedResidueGridMoment
                 phi s r p B a' b gamma z eta := by
-  let scale : ℝ := (((p ^ B) ^ k : ℕ) : ℝ)⁻¹
+  let scale := (((p ^ B) ^ k : ℕ) : ℝ)⁻¹
   unfold wooleyPolynomialMixedResidueGridMoment
   have hper (alpha : Fin k → ZMod (p ^ B)) :
       wooleyWeightedResidueMassSq gamma xi *
@@ -175,8 +170,7 @@ theorem wooleyPolynomial_mixed_left_point_refinement
       exact mul_nonneg (wooleyWeightedResidueMassSq_nonneg gamma eta)
         (by positivity)
     have hs : 0 ≤ scale := by dsimp [scale]; positivity
-    have hm := mul_le_mul_of_nonneg_right hpoint hv
-    have hsm := mul_le_mul_of_nonneg_left hm hs
+    have hsm := mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_right hpoint hv) hs
     dsimp [scale] at hsm
     calc
       wooleyWeightedResidueMassSq gamma xi *
@@ -222,43 +216,9 @@ theorem wooleyPolynomial_mixed_left_point_refinement
         intro z hz
         ring
   simp_rw [Finset.mul_sum]
-  calc
-    ∑ alpha : Fin k → ZMod (p ^ B),
-        wooleyWeightedResidueMassSq gamma xi *
-          wooleyWeightedResidueMassSq gamma eta *
-            (((((p ^ B) ^ k : ℕ) : ℝ))⁻¹ *
-              (‖wooleyPolynomialNormalizedResidueGridSum
-                  phi (p ^ B) gamma alpha xi‖ ^ (2 * wooleyTriangular r) *
-                ‖wooleyPolynomialNormalizedResidueGridSum
-                  phi (p ^ B) gamma alpha eta‖ ^
-                    (2 * (s - wooleyTriangular r)))) ≤
-      ∑ alpha : Fin k → ZMod (p ^ B),
-        (p ^ (a' - a) : ℝ) ^ wooleyTriangular r *
-          ∑ z ∈ wooleyResidueRefinementFiber p a a' haa' xi,
-            wooleyWeightedResidueMassSq gamma z *
-              wooleyWeightedResidueMassSq gamma eta *
-                (((((p ^ B) ^ k : ℕ) : ℝ))⁻¹ *
-                  (‖wooleyPolynomialNormalizedResidueGridSum
-                      phi (p ^ B) gamma alpha z‖ ^
-                        (2 * wooleyTriangular r) *
-                    ‖wooleyPolynomialNormalizedResidueGridSum
-                      phi (p ^ B) gamma alpha eta‖ ^
-                        (2 * (s - wooleyTriangular r)))) :=
-      Finset.sum_le_sum fun alpha _ => hper alpha
-    _ = ∑ z ∈ wooleyResidueRefinementFiber p a a' haa' xi,
-        ∑ alpha : Fin k → ZMod (p ^ B),
-          (p ^ (a' - a) : ℝ) ^ wooleyTriangular r *
-            (wooleyWeightedResidueMassSq gamma z *
-              wooleyWeightedResidueMassSq gamma eta *
-                (((((p ^ B) ^ k : ℕ) : ℝ))⁻¹ *
-                  (‖wooleyPolynomialNormalizedResidueGridSum
-                      phi (p ^ B) gamma alpha z‖ ^
-                        (2 * wooleyTriangular r) *
-                    ‖wooleyPolynomialNormalizedResidueGridSum
-                      phi (p ^ B) gamma alpha eta‖ ^
-                        (2 * (s - wooleyTriangular r))))) := by
+  exact (Finset.sum_le_sum fun alpha _ => hper alpha).trans_eq (by
       simp_rw [Finset.mul_sum]
-      rw [Finset.sum_comm]
+      rw [Finset.sum_comm])
 
 /-- The exact easy-branch refinement preceding the final estimate in
 Wooley Lemma 7.1. -/
@@ -328,8 +288,8 @@ theorem wooley_section7_easy_exponent_nat
     (hBPrime : wooleySection7BPrimeInt k r a b gamma ≤ (nu : ℤ)) :
     (wooleySection7NextB k r b - a) * wooleyTriangular r ≤
       k ^ 2 * nu := by
-  let n : ℕ := (k - r + 1) * b
-  let d : ℕ := wooleySection7NextB k r b - a
+  let n := (k - r + 1) * b
+  let d := wooleySection7NextB k r b - a
   have hnInt :
       (n : ℤ) - (r : ℤ) * (a : ℤ) -
           ((k - r : ℕ) : ℤ) * (gamma : ℤ) ≤ (nu : ℤ) := by
@@ -378,7 +338,7 @@ theorem wooley_section7_easy_exponent_nat
     simpa [Nat.mul_assoc, Nat.mul_comm, Nat.mul_left_comm] using this
   have hkk : k * k ≤ k * nu * k := by
     have hknu : k ≤ k * nu := by
-      simpa only [Nat.mul_one] using Nat.mul_le_mul_left k hnu
+      simpa using Nat.mul_le_mul_left k hnu
     exact Nat.mul_le_mul_right k hknu
   have hlast : (k * nu + r) * k ≤ 2 * (k ^ 2 * nu) := by
     calc
@@ -387,9 +347,7 @@ theorem wooley_section7_easy_exponent_nat
         exact Nat.add_le_add_left (Nat.mul_le_mul_right k hrk.le) _
       _ ≤ k * nu * k + k * nu * k := Nat.add_le_add_left hkk _
       _ = 2 * (k ^ 2 * nu) := by ring
-  have htwo : 2 * (d * wooleyTriangular r) ≤
-      2 * (k ^ 2 * nu) := htwice.trans (hmiddle.trans hlast)
-  exact le_of_mul_le_mul_left htwo (by norm_num)
+  exact le_of_mul_le_mul_left (htwice.trans (hmiddle.trans hlast)) (by norm_num)
 
 theorem wooleyPolynomialMixedGridMean_nonneg
     {Q p B k s r a b nu : ℕ} [NeZero p] [NeZero (p ^ B)]

@@ -1,5 +1,5 @@
 module
-public import GuthMaynard.Improvement.FiniteSpectral
+public import Mathlib
 
 @[expose] public section
 set_option autoImplicit false

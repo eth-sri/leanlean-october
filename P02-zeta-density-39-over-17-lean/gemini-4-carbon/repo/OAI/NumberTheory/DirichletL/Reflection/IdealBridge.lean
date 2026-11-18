@@ -6,9 +6,8 @@ public import OAI.NumberTheory.DirichletL.Reflection.Branch
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
+open ActualEisensteinCubic CubicEisenstein CompletedGauss LocalReflectionBrackets CanonicalQuadraticSieve CanonicalRowCompletion
 open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein CompletedGauss LocalReflectionBrackets
-open CanonicalQuadraticSieve CanonicalRowCompletion
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
@@ -16,9 +15,8 @@ noncomputable local instance idealBridgeFinite (P : Ideal Eis) [P.IsMaximal] : F
 
 theorem admissible_primeIndex_product (K : Ideal Eis) (hK : Admissible K) :
     (∏ P : PrimeIndex K, P.val) = K := by
-  have hn := (UniqueFactorizationMonoid.squarefree_iff_nodup_normalizedFactors hK.1).mp hK.2.1
   have hv : (CompletedGauss.primeSupport K).val = UniqueFactorizationMonoid.normalizedFactors K := by
-    simpa only [CompletedGauss.primeSupport, Multiset.toFinset_val] using hn.dedup
+    simpa only [CompletedGauss.primeSupport, Multiset.toFinset_val] using ((UniqueFactorizationMonoid.squarefree_iff_nodup_normalizedFactors hK.1).mp hK.2.1).dedup
   calc
     _ = ∏ P ∈ CompletedGauss.primeSupport K, P := Finset.prod_coe_sort _ _
     _ = (CompletedGauss.primeSupport K).val.prod := (Finset.prod_val _).symm
@@ -28,7 +26,7 @@ theorem idealRowHom_cube_eq_quadratic (K : Ideal Eis) (hK : Admissible K) (z : E
     idealRowHom z K ^ 3 = quadraticRow K z := by
   conv_lhs => rw [← admissible_primeIndex_product K hK,map_prod,← Finset.prod_pow]
   rw [quadraticRow_eq_primeIndex K hK]
-  simp only [finiteSexticRow,MulChar.pow_apply' _ (by decide : (3:ℕ) ≠ 0)]
+  simp only [finiteSexticRow,MulChar.pow_apply' _ (by decide : 3 ≠ 0)]
   apply Finset.prod_congr rfl
   intro P hP
   rw [idealRowHom_prime z P.val (admissiblePrimeGood K hK P)]
@@ -43,8 +41,7 @@ theorem residual_bracket_finset {ι : Type*} [Fintype ι]
   have hl (i : ι) : bracket (actualSextic (P i) (hg i)) 1
       (Ideal.Quotient.mk (P i) (primaryGenerator n*(primaryGenerator b)^3)) =
       idealRowHom (primaryGenerator (n*b)) (P i)^3 := by
-    have he := residual_bracket_cube (P i) (hg i) 1 (primaryGenerator n) (primaryGenerator b)
-    simpa only [one_mul,map_one,one_pow,primaryGenerator_mul,idealRowHom_prime _ (P i) (hg i)] using he
+    simpa only [one_mul,map_one,one_pow,primaryGenerator_mul,idealRowHom_prime _ (P i) (hg i)] using (residual_bracket_cube (P i) (hg i) 1 (primaryGenerator n) (primaryGenerator b))
   simp_rw [hl]
   rw [Finset.prod_pow,← map_prod,idealRowHom_cube_eq_quadratic _ hR]
 

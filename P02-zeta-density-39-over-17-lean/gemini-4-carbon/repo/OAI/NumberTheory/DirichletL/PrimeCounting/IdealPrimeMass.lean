@@ -8,8 +8,7 @@ namespace OAI
 
 namespace SevenEighths.PNT.IdealPrimeMass
 
-open ActualEisensteinCubic ArithmeticFunction Filter
-open SevenEighths.IdealMangoldt
+open ActualEisensteinCubic ArithmeticFunction Filter SevenEighths.IdealMangoldt
 open scoped BigOperators Classical Topology
 
 noncomputable section
@@ -21,7 +20,7 @@ def higherClassCoeff (C : Set (Ideal O)) (n : ℕ) : ℝ :=
   classCoeff {I | I ∈ C ∧ ¬Prime I} n
 
 theorem value_prime {P : Ideal O} (hP : Prime P) : value P = Real.log (Ideal.absNorm P) := by
-  simpa only [pow_one] using value_pow hP (k := 1) (by decide)
+  simpa using value_pow hP (k := 1) (by decide)
 
 theorem prime_of_isPrimePow_of_norm_prime {I : Ideal O}
     (hI : IsPrimePow I) (hn : (Ideal.absNorm I).Prime) : Prime I := by
@@ -63,9 +62,6 @@ theorem classCoeff_eq_prime_add_higher (C : Set (Ideal O)) (n : ℕ) :
 @[simp] theorem higherClassCoeff_zero (C : Set (Ideal O)) : higherClassCoeff C 0 = 0 :=
   coeff_eq_zero_of_not_primePow not_isPrimePow_zero _
 
-@[simp] theorem primeClassCoeff_zero (C : Set (Ideal O)) : primeClassCoeff C 0 = 0 :=
-  coeff_eq_zero_of_not_primePow not_isPrimePow_zero _
-
 theorem higherClassCoeff_eq_zero_of_prime (C : Set (Ideal O)) {n : ℕ} (hn : n.Prime) :
     higherClassCoeff C n = 0 := by
   apply Finset.sum_eq_zero
@@ -85,9 +81,8 @@ theorem higherClassCoeff_le_nonprime_vonMangoldt (C : Set (Ideal O)) (n : ℕ) :
 
 theorem summable_nonprime_vonMangoldt_div :
     Summable (fun n : ℕ => (if n.Prime then 0 else vonMangoldt n) / n) := by
-  have h := vonMangoldt.summable_residueClass_non_primes_div (0 : ZMod 1)
   simpa only [vonMangoldt.residueClass, Subsingleton.elim (α := ZMod 1) _ 0,
-    Set.ofPred_true, Set.indicator_univ] using h
+    Set.ofPred_true, Set.indicator_univ] using (vonMangoldt.summable_residueClass_non_primes_div (0 : ZMod 1))
 
 theorem higherClassCoeff_summable_div (C : Set (Ideal O)) :
     Summable (fun n : ℕ => higherClassCoeff C n / n) := by
@@ -99,15 +94,10 @@ theorem higherClassCoeff_summable_div (C : Set (Ideal O)) :
     exact div_le_div_of_nonneg_right (higherClassCoeff_le_nonprime_vonMangoldt C n)
       (Nat.cast_nonneg n)
 
-theorem higherClassCoeff_ratio_tendsto_zero (C : Set (Ideal O)) :
-    Tendsto (fun N : ℕ => cumsum (higherClassCoeff C) N / N) atTop (𝓝 0) :=
-  cumsum_div_tendsto_zero_of_summable_div (higherClassCoeff_nonneg C)
-    (higherClassCoeff_zero C) (higherClassCoeff_summable_div C)
 
 theorem primeClassCoeff_ratio_tendsto (C : Set (Ideal O)) {A : ℝ}
     (h : Tendsto (fun N : ℕ => cumsum (classCoeff C) N / N) atTop (𝓝 A)) :
     Tendsto (fun N : ℕ => cumsum (primeClassCoeff C) N / N) atTop (𝓝 A) := by
-  have h' := h.sub (higherClassCoeff_ratio_tendsto_zero C)
   have heq (N : ℕ) :
       cumsum (classCoeff C) N / N - cumsum (higherClassCoeff C) N / N =
         cumsum (primeClassCoeff C) N / N := by
@@ -117,7 +107,8 @@ theorem primeClassCoeff_ratio_tendsto (C : Set (Ideal O)) {A : ℝ}
     apply Finset.sum_congr rfl
     intro n hn
     rw [classCoeff_eq_prime_add_higher, add_sub_cancel_right]
-  simpa only [heq, sub_zero] using h'
+  simpa only [heq, sub_zero] using (h.sub ((cumsum_div_tendsto_zero_of_summable_div (higherClassCoeff_nonneg C)
+    (higherClassCoeff_zero C) (higherClassCoeff_summable_div C))))
 
 def primeIdealsBelow (C : Set (Ideal O)) (N : ℕ) : Finset (Ideal O) :=
   (Ideal.finite_setOfPred_absNorm_le (S := O) N).toFinset.filter

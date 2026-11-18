@@ -9,11 +9,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentAmplificationSourcePolynomial
-open CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge CompletedGauss
-open CenteredMomentAmplificationGlobal CenteredMomentAmplificationShortening
-open CenteredMomentAmplificationSource CenteredMomentAmplificationSourceDomain
-open CenteredMomentGaussEnergy CenteredMomentSupportedCorrelation
-open CenteredMomentSourceRow CenteredMomentLiveDomain
+open CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge CompletedGauss CenteredMomentAmplificationGlobal CenteredMomentAmplificationShortening CenteredMomentAmplificationSource CenteredMomentAmplificationSourceDomain CenteredMomentGaussEnergy CenteredMomentSupportedCorrelation CenteredMomentSourceRow CenteredMomentLiveDomain
 local notation "O" => ActualEisensteinCubic.O
 
  theorem residual_primaryGaussRow (p : O) (hp : Prime p)
@@ -46,7 +42,6 @@ theorem remainder_polynomial (S : Finset (Ideal O)) (c : Ideal O → ℂ)
         (fun I : supportedColumns (residualColumns S p hp k) =>
           c ((Ideal.span {p})^k*I)*residualCharacter p k (primaryGenerator I)) h := by
   let f : Ideal O → ℂ := fun I => residualCharacter p k (primaryGenerator I)*primaryGaussRow I h
-  have he := residual_column_sum S p hp k c f
   have hl : (∑ I∈valuationColumns S p k,c I*f (residualIdeal p hp I))=
       gaussPolynomial Finset.univ
         (fun I : supportedColumns S => primeRemainder p hp (sourceGenerator S I)
@@ -75,7 +70,7 @@ theorem remainder_polynomial (S : Finset (Ideal O)) (c : Ideal O → ℂ)
         residual_primaryGaussRow p hp hpp I (Finset.mem_filter.mp I.property).2 h]]
     split_ifs with hk <;> simp only [hk, ite_true, ite_false, zero_mul]
     ring
-  refine hl.symm.trans (he.trans ?_)
+  refine hl.symm.trans ((residual_column_sum S p hp k c f).trans ?_)
   have hh := source_gaussPolynomial (residualColumns S p hp k)
     (fun I => c ((Ideal.span {p})^k*I)*residualCharacter p k (primaryGenerator I)) h
   refine Eq.trans ?_ hh.symm

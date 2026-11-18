@@ -191,7 +191,7 @@ theorem gmAffineTildeSchwartz_heightFourierMassFamilyAtDepth_succ
     GMAffineHeightFourierMassFamilyAtDepth T D (depth + 1)
       (gmAffineTildeSchwartz S hS f) := by
   intro epsilon hepsilon n
-  have hcurrent : 0 ≤ (2 : ℝ) ^ depth * D epsilon n :=
+  have hcurrent : 0 ≤ 2 ^ depth * D epsilon n :=
     mul_nonneg (pow_nonneg (by norm_num) _) (hD epsilon n)
   have hnext := gmAffineTildeSchwartz_heightFourierMassBound
     hT hS hcurrent n f hf (hprofile epsilon hepsilon n)
@@ -210,8 +210,7 @@ theorem gmAffineTildeSchwartz_wideDepthSupported_succ
   have hdepth :
       2 * ((depth : ℝ) + 1) / T = 2 * (depth : ℝ) / T + 2 / T := by
     field_simp [hT.ne']
-  have hnext := gmAffineTildeSchwartz_supportedOn hS f hsupp
-  apply hnext.mono
+  apply (gmAffineTildeSchwartz_supportedOn hS f hsupp).mono
   · push_cast
     rw [hdepth]
     nlinarith

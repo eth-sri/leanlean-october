@@ -62,10 +62,9 @@ theorem tsum_frequencyDyads_with_zero (f : O → ℂ) (hf : Summable f) :
   rw [he]
   congr 1
   let g := (fun h : {h : O // h ≠ 0} => f h.val) ∘ frequencyDyadicEquiv.symm
-  have hg : Summable g := frequencyDyadicEquiv.symm.summable_iff.mpr (hf.subtype _)
   calc
     _ = ∑' h, g h := (frequencyDyadicEquiv.symm.tsum_eq _).symm
-    _ = ∑' j, ∑' h, g ⟨j,h⟩ := Summable.tsum_sigma' (fun _ => (hasSum_fintype _).summable) hg
+    _ = ∑' j, ∑' h, g ⟨j,h⟩ := Summable.tsum_sigma' (fun _ => (hasSum_fintype _).summable) (frequencyDyadicEquiv.symm.summable_iff.mpr (hf.subtype _))
     _ = _ := by
       apply tsum_congr
       intro j

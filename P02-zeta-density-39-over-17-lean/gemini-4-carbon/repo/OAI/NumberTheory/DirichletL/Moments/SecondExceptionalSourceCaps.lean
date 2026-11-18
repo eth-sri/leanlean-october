@@ -6,12 +6,11 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalFamilyUniform
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
 open Filter
+open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSecondExceptionalSourceCaps
-open HeckeFamily CenteredMomentSecondExceptionalFamily
-open CenteredMomentSecondExceptionalFamilyUniform
+open HeckeFamily CenteredMomentSecondExceptionalFamily CenteredMomentSecondExceptionalFamilyUniform
 local notation "O" => HeckeFamily.O
 
 theorem eventually_source_caps :
@@ -23,8 +22,7 @@ theorem eventually_source_caps :
   filter_upwards [eventually_gt_atTop (1:ℝ),eventually_ge_atTop (4*fixedExpandedCost)] with Z hZ hfixed
   refine ⟨hZ,?_⟩
   intro η R0 H R B hB hH hR hη hR0 hHN hRN
-  have hz:0<Z:=zero_lt_one.trans hZ
-  have hH2:H^2≤(Z^B)^2:=pow_le_pow_left₀ hH hHN 2
+  have hH2 :=pow_le_pow_left₀ hH hHN 2
   have hbig:B≤5*B+1:=by linarith
   refine ⟨hHN.trans (Real.rpow_le_rpow_of_exponent_le hZ.le hbig),?_⟩
   rw [expandedFactor_real]
@@ -36,7 +34,7 @@ theorem eventually_source_caps :
       calc
         _=Z^(1:ℝ)*Z^B*Z^B*(Z^B*Z^B)*Z^B:=by rw [Real.rpow_one]
         _=Z^(5*B+1):=by
-          repeat rw [←Real.rpow_add hz]
+          repeat rw [←Real.rpow_add (zero_lt_one.trans hZ)]
           congr 1
           ring
 

@@ -17,16 +17,12 @@ theorem min_le_geometric_rpow {a b w : ℝ}
     rw [← Real.rpow_add hb, show w + (1 - w) = 1 by ring, Real.rpow_one]
   by_cases hab : a ≤ b
   · rw [min_eq_left hab]
-    calc
-      a = a ^ w * a ^ (1 - w) := haId.symm
-      _ ≤ _ := mul_le_mul_of_nonneg_left
-        (Real.rpow_le_rpow ha.le hab (by linarith)) (Real.rpow_nonneg ha.le w)
+    exact (haId.symm).trans_le (mul_le_mul_of_nonneg_left
+        (Real.rpow_le_rpow ha.le hab (by linarith)) (Real.rpow_nonneg ha.le w))
   · rw [min_eq_right (le_of_not_ge hab)]
-    calc
-      b = b ^ w * b ^ (1 - w) := hbId.symm
-      _ ≤ _ := mul_le_mul_of_nonneg_right
+    exact (hbId.symm).trans_le (mul_le_mul_of_nonneg_right
         (Real.rpow_le_rpow hb.le (le_of_not_ge hab) hw0)
-        (Real.rpow_nonneg hb.le (1 - w))
+        (Real.rpow_nonneg hb.le (1 - w)))
 
 theorem rpow_half_sq {x : ℝ} (hx : 0 ≤ x) (p : ℝ) :
     (x ^ (p / 2)) ^ 2 = x ^ p := by

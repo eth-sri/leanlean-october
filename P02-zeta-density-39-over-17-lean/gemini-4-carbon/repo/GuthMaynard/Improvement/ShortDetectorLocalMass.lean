@@ -29,12 +29,11 @@ theorem shortTwistedNorm_continuous (H : ℝ) : Continuous (shortTwistedNorm H) 
 
 theorem shortTwistedNorm_bound (H t : ℝ) :
     shortTwistedNorm H t ≤ 4*(⌊2*H^((1:ℝ)/100)⌋₊:ℝ)*(1+|t|) := by
-  have hz := norm_riemannZeta_critical_le_linear t
   have hm := norm_zetaMollifier_le_cutoff (2*H^((1:ℝ)/100))
     (s := (1/2:ℂ)+(t:ℂ)*I) (by norm_num)
   unfold shortTwistedNorm
   rw [norm_mul]
-  convert mul_le_mul hz hm (norm_nonneg _) (by positivity) using 1; ring
+  convert mul_le_mul (norm_riemannZeta_critical_le_linear t) hm (norm_nonneg _) (by positivity) using 1; ring
 
 /-- Exact norm identity: the real power of Y retains the actual beta. -/
 theorem short_detector_kernel_norm {ρ : ℂ} {Y : ℝ} (hY : 0 < Y) (H t : ℝ) :

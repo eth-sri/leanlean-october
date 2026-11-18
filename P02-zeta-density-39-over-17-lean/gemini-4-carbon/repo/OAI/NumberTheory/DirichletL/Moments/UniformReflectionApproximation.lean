@@ -9,11 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentUniformReflectionApproximation
-open HeckeFamily CenteredMomentReflectionDeletion CenteredMomentReflectionMass
-open CenteredMomentComparisonReflection CenteredMomentReflectionTailMass
-open CenteredMomentRetainedReflection CenteredMomentOriginalReflectionApproximation
-open CenteredMomentSectorLocalization CenteredMomentNaturalPrimitive
-open EisensteinSchwartzPoisson
+open HeckeFamily CenteredMomentReflectionDeletion CenteredMomentReflectionMass CenteredMomentComparisonReflection CenteredMomentReflectionTailMass CenteredMomentRetainedReflection CenteredMomentOriginalReflectionApproximation CenteredMomentSectorLocalization CenteredMomentNaturalPrimitive EisensteinSchwartzPoisson
 local notation "O" => HeckeFamily.O
 
 theorem discarded_bound (A B : ℕ) (hB : 2≤B) :
@@ -26,7 +22,6 @@ theorem discarded_bound (A B : ℕ) (hB : 2≤B) :
   obtain ⟨K,hK,hKb⟩ := plain_rapid_bound B hB
   refine ⟨H,K*D,mul_pos hK hD,?_⟩
   intro G χ Y R hY hR
-  have hG : 0≤H.sup (schwartzSeminormFamily ℝ ℝ ℂ) G := apply_nonneg _ _
   have hf : ∀x : ℝ,0<x → x^(B+A)*‖paperRadialFourier G x‖≤
       D*H.sup (schwartzSeminormFamily ℝ ℝ ℂ) G := by
     intro x hx
@@ -95,8 +90,6 @@ theorem deleted_discarded_negligible (xi saving L Cscale epsilon : ℝ)
   obtain ⟨D,hD,hDb⟩ := coefficient_column_bound epsilon hepsilon
   refine ⟨H,D*C,mul_pos hD hC,?_⟩
   intro G S hS η ηi χ Q X Z hZ hQ hX hcap
-  dsimp only
-  have hG : 0≤H.sup (schwartzSeminormFamily ℝ ℝ ℂ) G := apply_nonneg _ _
   have hh := hDb S hS η ηi
     (fun E I=>HeckeDyadic.polynomial χ false
       (fun x=>(discardedWeight (Z^(xi/2)) x:ℂ)*paperRadialFourier G x)
@@ -166,7 +159,6 @@ theorem actual_original_approximation (xi saving L Cscale epsilon : ℝ)
   refine ⟨ψ,g,hp,hnp,hg,hcap,?_⟩
   intro G X Z hX hZ hmod
   let S := redundantSet χ.modulus ψ.modulus
-  have hS : ∀P∈S,Prime P := redundantSet_prime _ _
   have hQ : 0<(ψ.modulus.absNorm:ℝ) := by
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr ψ.modulus_ne_bot)
   have hcap' : (ψ.modulus.absNorm:ℝ)*(Ideal.absNorm (∏P∈S,P):ℝ)≤Cscale*Z^L*X := by
@@ -174,9 +166,7 @@ theorem actual_original_approximation (xi saving L Cscale epsilon : ℝ)
       exact_mod_cast hcap
     exact hc.trans hmod
   rw [hsplit G X (Z^(xi/2)) hX,mul_add,add_sub_cancel_left,norm_mul,hg,one_mul]
-  have hb := (hCb G S hS ψ ψ.inverse χ.inverse _ X Z hZ hQ hX hcap').2
-  apply hb.trans
-  have hG : 0≤H.sup (schwartzSeminormFamily ℝ ℝ ℂ) G := apply_nonneg _ _
+  apply ((hCb G S (redundantSet_prime _ _) ψ ψ.inverse χ.inverse _ X Z hZ hQ hX hcap').2).trans
   apply mul_le_mul_of_nonneg_right _ (by positivity)
   apply mul_le_mul_of_nonneg_left _ (by positivity)
   exact Real.rpow_le_rpow (Nat.cast_nonneg _) (radical_le_original χ ψ hcap) hepsilon.le

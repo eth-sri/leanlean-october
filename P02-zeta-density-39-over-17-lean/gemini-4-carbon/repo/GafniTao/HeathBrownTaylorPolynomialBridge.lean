@@ -27,8 +27,7 @@ noncomputable def heathBrownTaylorDerivativePolynomial
 
 theorem iteratedDeriv_deriv_eq_succ
     (j : ℕ) (f : ℝ → ℝ) :
-    iteratedDeriv j (deriv f) = iteratedDeriv (j + 1) f := by
-  exact (iteratedDeriv_succ' (n := j) (f := f)).symm
+    iteratedDeriv j (deriv f) = iteratedDeriv (j + 1) f := (iteratedDeriv_succ' (n := j) (f := f)).symm
 
 /-- The literal finite sum in the source is Mathlib's ordinary Taylor
 polynomial evaluated at the shifted point. -/

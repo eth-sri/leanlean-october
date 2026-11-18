@@ -63,7 +63,7 @@ theorem fordVinogradovMomentBound_critical_one
   have hQrpow : (Q : ℝ) ≤ (Q : ℝ) ^ (1 + epsilon) := by
     have h := Real.rpow_le_rpow_of_exponent_le hQone
       (show (1 : ℝ) ≤ 1 + epsilon by linarith)
-    simpa only [Real.rpow_one] using h
+    simpa using h
   simpa using hQrpow
 
 /-- The exact `l = 1` member of the critical endpoint family. -/

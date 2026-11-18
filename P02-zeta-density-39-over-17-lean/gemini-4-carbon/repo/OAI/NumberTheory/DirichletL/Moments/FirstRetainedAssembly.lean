@@ -9,13 +9,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstRetainedAssembly
-open ActualEisensteinCubic ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve
-open CenteredMomentFirstRetainedPhysical CenteredMomentFirstRetainedSector
-open CenteredMomentFirstRetainedBlock CenteredMomentFirstSectorTransform CenteredMomentFirstSectors
-open CenteredMomentFirstPhysicalSource CenteredMomentFirstPhysicalDyadicAssembly
-open CenteredMomentSourceRow CenteredMomentCanonicalFirst CenteredMomentFirstReduced CenteredMomentRowNorm
-open CenteredMomentCommonSupport CenteredMomentSupportedCorrelation CenteredMomentHeckeExpansion
-open CenteredMomentSectorLocalization CenteredMomentFirstScale CenteredMomentLogDyadic
+open ActualEisensteinCubic ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve CenteredMomentFirstRetainedPhysical CenteredMomentFirstRetainedSector CenteredMomentFirstRetainedBlock CenteredMomentFirstSectorTransform CenteredMomentFirstSectors CenteredMomentFirstPhysicalSource CenteredMomentFirstPhysicalDyadicAssembly CenteredMomentSourceRow CenteredMomentCanonicalFirst CenteredMomentFirstReduced CenteredMomentRowNorm CenteredMomentCommonSupport CenteredMomentSupportedCorrelation CenteredMomentHeckeExpansion CenteredMomentSectorLocalization CenteredMomentFirstScale CenteredMomentLogDyadic
 local notation "O"=>ActualEisensteinCubic.O
 
 def infiniteSector (η:Character)(m A:O)(t:ℝ)(S:Finset (Ideal O))(c:Ideal O→ℂ)
@@ -31,8 +25,7 @@ theorem retained_energy_blocks (η:Character)(m A:O)(t:ℝ)
         rowWeight η m A 1 t p.val.1*star (rowWeight η m A 1 t p.val.2)*
           infiniteSector η m A t S c p.val.1 p.val.2
             (commonLabels_supported S p).1 (commonLabels_supported S p).2 W K X Z ξ:=by
-  rw [retainedEnergy_common_sectors]
-  rw [←Finset.sum_coe_sort _ (fun p:Ideal O×Ideal O=>
+  rw [retainedEnergy_common_sectors, ←Finset.sum_coe_sort _ (fun p:Ideal O×Ideal O=>
     ∑q∈pairSector p.1 p.2 (supportedColumns S) (supportedColumns S),
       ((c q.1*rowWeight η m A 1 t q.1)*star (c q.2*rowWeight η m A 1 t q.2))*
         retainedKernel q.1 q.2 W K X Z ξ)]

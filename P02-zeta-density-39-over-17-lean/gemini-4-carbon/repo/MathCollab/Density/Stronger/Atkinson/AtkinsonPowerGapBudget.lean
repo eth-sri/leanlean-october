@@ -10,10 +10,8 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonLocalizedPowers
 
 @[expose] public section
 
-open Complex Finset Set Filter
+open Complex Finset Set Filter RiemannZeta.GuthMaynard MathCollab.Density.Stronger.Fourth
 open scoped ComplexConjugate
-open RiemannZeta.GuthMaynard
-open MathCollab.Density.Stronger.Fourth
 set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
@@ -56,23 +54,17 @@ theorem atkinsonPowerGapTerm_mono_index {H G η L : ℝ} {M N : ℕ} (R : ℕ)
     atkinsonPowerGapTerm η H G L M R ≤ atkinsonPowerGapTerm η H G L N R := by
   have hM0 : (0:ℝ) < M := by exact_mod_cast hM
   have hMN0 : (M:ℝ) ≤ N := by exact_mod_cast hMN
-  have hd := Real.rpow_le_rpow hM0.le hMN0 (show 0 ≤ (3/2:ℝ)+η by linarith)
-  have hn := Real.rpow_le_rpow hM0.le hMN0 (show 0 ≤ (1:ℝ)+η by linarith)
-  have hf := Real.rpow_le_rpow hM0.le hMN0 (show 0 ≤ (3/4:ℝ)+η by linarith)
-  have hceil : Nat.ceil (Real.sqrt (H*(M:ℝ))/G) ≤ Nat.ceil (Real.sqrt (H*(N:ℝ))/G) :=
-    Nat.ceil_mono (div_le_div_of_nonneg_right
+  have hceil := Nat.ceil_mono (div_le_div_of_nonneg_right
       (Real.sqrt_le_sqrt (mul_le_mul_of_nonneg_left hMN0 hH.le)) hG.le)
-  have hh := atkinson_harmonic_mono hceil
   have hh0 : (0:ℝ) ≤ (harmonic (Nat.ceil (Real.sqrt (H*(M:ℝ))/G)):ℝ) := by
-    simpa only [harmonic_zero,Rat.cast_zero] using atkinson_harmonic_mono
+    simpa using atkinson_harmonic_mono
       (Nat.zero_le (Nat.ceil (Real.sqrt (H*(M:ℝ))/G)))
-  have h1 := mul_le_mul_of_nonneg_left hd (Nat.cast_nonneg R : (0:ℝ) ≤ _)
   have h2 := mul_le_mul
-    (mul_le_mul_of_nonneg_left hn (by positivity : 0 ≤ 120*(R:ℝ)*Real.sqrt H/G))
-    hh hh0 (by positivity)
-  have h3 := mul_le_mul_of_nonneg_left hf
+    (mul_le_mul_of_nonneg_left (Real.rpow_le_rpow hM0.le hMN0 (show 0 ≤ (1:ℝ)+η by linarith)) (by positivity : 0 ≤ 120*(R:ℝ)*Real.sqrt H/G))
+    (atkinson_harmonic_mono hceil) hh0 (by positivity)
+  have h3 := mul_le_mul_of_nonneg_left (Real.rpow_le_rpow hM0.le hMN0 (show 0 ≤ (3/4:ℝ)+η by linarith))
     (by positivity : 0 ≤ 2000*(R:ℝ)^2*H^(-(1/4:ℝ))*Real.sqrt L)
-  exact add_le_add (add_le_add h1 h2) h3
+  exact add_le_add (add_le_add (mul_le_mul_of_nonneg_left (Real.rpow_le_rpow hM0.le hMN0 (show 0 ≤ (3/2:ℝ)+η by linarith)) (Nat.cast_nonneg R : (0:ℝ) ≤ _)) h2) h3
 
 theorem atkinsonLocalizedGapBudget_le_power {H G η L : ℝ} (N R : ℕ)
     (hH : 0 < H) (hG : 0 < G) (hη : 0 ≤ η) :
@@ -87,7 +79,6 @@ theorem atkinsonLocalizedGapBudget_le_power {H G η L : ℝ} (N R : ℕ)
     rw [atkinson_localized_gap_term_eq hH (pow_pos (by norm_num) _)]
     exact atkinsonPowerGapTerm_mono_index R hH hG hη (pow_pos (by norm_num) _)
       (Nat.pow_lt_of_lt_clog (Finset.mem_range.mp hj)).le
-  have hm := mul_le_mul_of_nonneg_left hs (Nat.cast_nonneg (Nat.clog 2 N) : (0:ℝ) ≤ _)
-  exact hm.trans_eq (by simp; ring)
+  exact (mul_le_mul_of_nonneg_left hs (Nat.cast_nonneg (Nat.clog 2 N) : (0:ℝ) ≤ _)).trans_eq (by simp; ring)
 
 end MathCollab.Density.Stronger.Atkinson

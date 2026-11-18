@@ -10,12 +10,7 @@ noncomputable section
 
 open scoped Classical BigOperators
 namespace SevenEighths.DetectorDictionaryInverseRawInput
-open CompletedGauss
-open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve ConcretePrimeRowBridge
-open ConcreteTraceCRT FirstCauchyArithmetic SecondPassArithmetic IdealMobiusDivisorSum
-open InverseInitialArithmetic InverseInitialRayAttachment InverseInitialConjugateEnergy
-open InverseInitialPoissonBridge InverseInitialExcludedForcing InverseInitialExcludedPool
-open UniqueFactorizationMonoid
+open CompletedGauss ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve ConcretePrimeRowBridge ConcreteTraceCRT FirstCauchyArithmetic SecondPassArithmetic IdealMobiusDivisorSum InverseInitialArithmetic InverseInitialRayAttachment InverseInitialConjugateEnergy InverseInitialPoissonBridge InverseInitialExcludedForcing InverseInitialExcludedPool UniqueFactorizationMonoid
 local notation "O"=>HeckeFamily.O
 
 private theorem admissible_one : Admissible (1:Ideal O):=by
@@ -36,11 +31,9 @@ theorem input_generator_one (F:Finset (Ideal O))(hF:∀I∈F,Admissible I)
   unfold supportConjugateSum
   apply Finset.sum_congr rfl
   intro A hA
-  have he:(fun i:primePool F=>Ideal.span {poolPrimary F i})=(fun i=>i.val):=
-    funext (poolPrimary_span F hF)
   have hm:rowCoprimeMask (fun i:primePool F=>Ideal.span {poolPrimary F i}) A
       (primaryGenerator (1:Ideal O))=1:=by
-    rw [he]
+    rw [(funext (poolPrimary_span F hF))]
     exact selected_mask F 1 admissible_one A isCoprime_one_right
   have ho:rowCoprimeMask (fun i:primePool F=>Ideal.span {poolPrimary F i}) A 1=1:=by
     simp [rowCoprimeMask,Ideal.IsPrime.one_notMem]
@@ -56,18 +49,14 @@ theorem complete_pool_selector (E:Finset (Ideal O))(hE:∀P∈E,Prime P)
   intro F A
   by_cases hw:W (((∏i∈A,i.val).absNorm:ℝ)/Z^r)=0
   · simp only [hw,ite_self]
-  have hF:=InitialMeanSquare.outsideSquarefree_admissible E Dpool hbad
-  have hprod:=InitialMeanSquare.poolProduct_admissible F hF A
-  have hout:outside E (∏i∈A,i.val):=
-    pool_product_outside F E hE
+  have hprod:=InitialMeanSquare.poolProduct_admissible F (InitialMeanSquare.outsideSquarefree_admissible E Dpool hbad) A
+  have hout := pool_product_outside F E hE
       (fun I hI=>(mem_outsideIdealsUpTo.mp (Finset.mem_filter.mp hI).1).2.2) A
-  have hN:((∏i∈A,i.val).absNorm:ℝ)≤(Dpool:ℝ):=
-    ((div_le_iff₀ (Real.rpow_pos_of_pos hZ r)).mp (hW _ hw)).trans hbudget
   have hmem:(∏i∈A,i.val)∈F:=by
     apply Finset.mem_filter.mpr
     refine ⟨mem_outsideIdealsUpTo.mpr ⟨?_,?_,hout⟩,hprod.2.1⟩
     · exact Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hprod.1)
-    · exact_mod_cast hN
+    · exact_mod_cast (((div_le_iff₀ (Real.rpow_pos_of_pos hZ r)).mp (hW _ hw)).trans hbudget)
   exact ite_eq_left hmem
 
 theorem original_complete_star_input
@@ -94,7 +83,7 @@ theorem original_complete_star_input
       initialTest (poolPrimary F) (fun _=>1) (fun x=>star (W x)) Z r:=by
     funext A
     rw [complete_pool_selector E hE Dpool hbad (fun x=>star (W x)) b Z r hZ
-      (fun x hx=>hW x (by simpa only [star_ne_zero] using hx)) hbudget]
+      (fun x hx=>hW x (by simpa using hx)) hbudget]
     simp only [initialTest,one_mul,InitialMeanSquare.poolPrimary_norm F hF]
     rfl
   rw [hselector] at he
@@ -133,8 +122,7 @@ theorem original_complete_child_norm
     (InverseMoment.childLogTest W t) b Z r hZ hw hbudget u
   dsimp only at he
   rw [DetectorDictionaryInverseRawConjugateGates.childLogTest_conjugate] at he
-  have hn:=congrArg (fun z:ℂ=>‖z‖^2) he
-  simpa only [norm_star] using hn
+  simpa using (congrArg (fun z:ℂ=>‖z‖^2) he)
 
 end SevenEighths.DetectorDictionaryInverseRawInput
 

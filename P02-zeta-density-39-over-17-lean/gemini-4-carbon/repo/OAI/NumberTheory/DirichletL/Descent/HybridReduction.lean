@@ -101,7 +101,7 @@ theorem cubic_product_row_bound_of_sieve (ε : ℝ) (hε : 0 < ε) :
   intro N hN pairs Jset Pset mBad S hmap hJset hcubic a
   let E (J : Ideal Eis) := ‖∑ P ∈ Pset, a P * inverseCubicKernel P J‖ ^ 2
   have hfiber (J : Ideal Eis) (hJ : J ∈ Jset) :
-      (∑ _p ∈ pairs with _p.2 * (mBad * _p.1) = J, (1 : ℝ)) ≤ D * N ^ ε := by
+      (∑ _p ∈ pairs with _p.2 * (mBad * _p.1) = J, 1) ≤ D * N ^ ε := by
     have hJ0 := (hJset J hJ).1.1.ne_zero
     have hc : ((pairs.filter (fun p => p.2 * (mBad * p.1) = J)).card : ℝ) ≤
         ((IdealMobiusDivisorSum.idealDivisors J).card : ℝ) :=
@@ -109,7 +109,7 @@ theorem cubic_product_row_bound_of_sieve (ε : ℝ) (hε : 0 < ε) :
     have hd := (hdiv J hJ0).trans (mul_le_mul_of_nonneg_left
       (Real.rpow_le_rpow (Nat.cast_nonneg _) (hJset J hJ).2 hε.le) hD.le)
     exact (by simpa using hc :
-      (∑ _p ∈ pairs with _p.2 * (mBad * _p.1) = J, (1 : ℝ)) ≤
+      (∑ _p ∈ pairs with _p.2 * (mBad * _p.1) = J, 1) ≤
         ((IdealMobiusDivisorSum.idealDivisors J).card : ℝ)).trans hd
   have hf := fiber_energy_bound pairs Jset (fun p => p.2 * (mBad * p.1))
     (fun _ => 1) (fun _ => D * N ^ ε) E hmap (fun _ _ => sq_nonneg _) hfiber
@@ -167,7 +167,6 @@ theorem hybrid_fixed_block_sieve_norm (ε : ℝ) (hε : 0 < ε) :
     B mBad cset coef beta Cbound Ebound hCbound hcount hbeta hH hmc hmap hJ hP hcoef
   let E (h m c : Ideal Eis) := ‖∑ P ∈ Pset,
     coef h P * inverseCubicKernel P (c * (mBad * m))‖ ^ 2
-  have hnorm : 0 ≤ CubicSieve.sieveNorm N L := sq_nonneg _
   have he := hquad K X hK hX rows pairs hrows hpairs B mBad cset Pset coef beta
     Cbound hcount hbeta
   have hpos := positive_triple_enlarge pairs cset Hset cubicPairs E hH hmc
@@ -181,7 +180,7 @@ theorem hybrid_fixed_block_sieve_norm (ε : ℝ) (hε : 0 < ε) :
         intro h hh
         apply (hcube N L hN cubicPairs Jset Pset mBad hmap hJ hP (coef h)).trans
         exact mul_le_mul_of_nonneg_left (hcoef h hh)
-          (mul_nonneg (mul_nonneg hD.le (Real.rpow_nonneg (by linarith) _)) hnorm)
+          (mul_nonneg (mul_nonneg hD.le (Real.rpow_nonneg (by linarith) _)) (sq_nonneg _))
       _ = _ := by simp
   apply he.trans
   calc

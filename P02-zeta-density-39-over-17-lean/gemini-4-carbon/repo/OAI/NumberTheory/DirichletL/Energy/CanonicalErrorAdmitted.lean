@@ -20,54 +20,21 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentEnergyCanonicalErrorAdmitted
-open HeckeFamily ConcreteTraceCRT
-open CenteredMomentEnergyAllocatedChildren CenteredMomentAllocatedNaturalSource
-open CenteredMomentAllocatedNaturalRadial CenteredMomentOriginalRadialComparison
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentRetainedProfile
-open CenteredMomentRadialEligibleEnergy
+open HeckeFamily ConcreteTraceCRT CenteredMomentEnergyAllocatedChildren CenteredMomentAllocatedNaturalSource CenteredMomentAllocatedNaturalRadial CenteredMomentOriginalRadialComparison CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentRetainedProfile CenteredMomentRadialEligibleEnergy
 local notation "O"=>HeckeFamily.O
 local instance {ι:Type*} : DecidableEq (ι⊕Fin 2) := Classical.decEq _
 variable {α:Type*}[Fintype α][DecidableEq α]
 
-open CenteredMomentEnergyCanonicalLiveBound CenteredMomentEnergyCanonicalLiveCapacity
-open CenteredMomentEnergyCanonicalPaidSource CenteredMomentEnergyCanonicalCommonPaid
-open CenteredMomentEnergyCanonicalReferencePaid CenteredMomentEnergyBandSubtypeTransport
+open CenteredMomentEnergyCanonicalLiveBound CenteredMomentEnergyCanonicalLiveCapacity CenteredMomentEnergyCanonicalPaidSource CenteredMomentEnergyCanonicalCommonPaid CenteredMomentEnergyCanonicalReferencePaid CenteredMomentEnergyBandSubtypeTransport
 open CenteredMomentFirstAmplifiedCapacityCommon (ratioPenalty)
-open CenteredMomentEnergyAllocatedClipped CenteredMomentEnergyAllocatedHomogeneous
-open CenteredMomentEnergyChildState CenteredMomentSecondNonexceptionalChosenBlock
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyAllocatedPaid CenteredMomentEnergyAllocatedProfiles
-open CenteredMomentEnergyAllocatedChildren CenteredMomentEnergyAllocatedZero
-open CenteredMomentInductionEnergy CenteredMomentFiniteProfileExceptional
-open CenteredMomentNaturalFixedRaySource CenteredMomentCommonRadialData
-open CenteredMomentCommonHeightEnvelope CenteredMomentCommonAllocationSum
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
-open CenteredMomentAllocatedNaturalSource CenteredMomentRetainedProfile
-open CenteredMomentAllocatedRayDictionary QuadraticInitialBound
-
-open CenteredMomentEnergyCanonicalChildBound CenteredMomentSectorLocalization
+open CenteredMomentEnergyAllocatedClipped CenteredMomentEnergyAllocatedHomogeneous CenteredMomentEnergyChildState CenteredMomentSecondNonexceptionalChosenBlock CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyAllocatedPaid CenteredMomentEnergyAllocatedProfiles CenteredMomentEnergyAllocatedZero CenteredMomentInductionEnergy CenteredMomentFiniteProfileExceptional CenteredMomentNaturalFixedRaySource CenteredMomentCommonRadialData CenteredMomentCommonHeightEnvelope CenteredMomentCommonAllocationSum CenteredMomentAllocatedRayDictionary QuadraticInitialBound CenteredMomentEnergyCanonicalChildBound CenteredMomentSectorLocalization
 variable (M:Ideal O)[NeZero M]
 local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
-open CenteredMomentEnergyCanonicalUniformReference CenteredMomentEnergyAmplifiedRayDictionary
-open CenteredMomentFirstAmplifiedPaidAdmission CenteredMomentFirstAmplifiedCapacityCommon
-open CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps
-open CenteredMomentCanonicalFirst CenteredMomentSecondExceptionalFamily CenteredMomentSourceLiveColumn
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonical CanonicalQuadraticSieve CompletedGauss
-open CanonicalRowCompletion ConcretePrimeRowBridge ActualEisensteinCubic
-open CenteredMomentSecondHeightFamily
-open CenteredMomentFirstCanonicalFamily CenteredMomentFirstScale CenteredMomentAmplifiedRetainedRadius
-
-open CenteredMomentFirstSecondActiveErrorGates CenteredMomentFirstAnnularInput
+open CenteredMomentEnergyCanonicalUniformReference CenteredMomentEnergyAmplifiedRayDictionary CenteredMomentFirstAmplifiedPaidAdmission CenteredMomentFirstAmplifiedCapacityCommon CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps CenteredMomentCanonicalFirst CenteredMomentSecondExceptionalFamily CenteredMomentSourceLiveColumn CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonical CanonicalQuadraticSieve CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge ActualEisensteinCubic CenteredMomentSecondHeightFamily CenteredMomentFirstCanonicalFamily CenteredMomentFirstScale CenteredMomentAmplifiedRetainedRadius CenteredMomentFirstSecondActiveErrorGates CenteredMomentFirstAnnularInput
 open CenteredMomentFirstAmplificationChoice (errorMoving errorRemoval)
-open RayFourExpansion CenteredMomentSourceMass CenteredMomentSecondRetainedAggregate
-open CenteredMomentSecondEnergySplit CenteredMomentGaussNormalization
-open Filter CenteredMomentOriginalCommonHarmonic CenteredMomentActiveSource
-open CenteredMomentSecondLiveBlock CenteredMomentSecondBlockAggregate CenteredMomentSecondWindowSource
-open CenteredMomentFirstChildProfileControl CenteredMomentSecondChildPowerBudget
-open CenteredMomentSecondSourceSeededPowerDescent CenteredMomentSecondReferenceNormalization
-open CenteredMomentFirstNestedSeededGaussianPower CenteredMomentFirstSecondInputGates
+open RayFourExpansion CenteredMomentSourceMass CenteredMomentSecondRetainedAggregate CenteredMomentSecondEnergySplit CenteredMomentGaussNormalization Filter CenteredMomentOriginalCommonHarmonic CenteredMomentActiveSource CenteredMomentSecondLiveBlock CenteredMomentSecondBlockAggregate CenteredMomentSecondWindowSource CenteredMomentFirstChildProfileControl CenteredMomentSecondChildPowerBudget CenteredMomentSecondSourceSeededPowerDescent CenteredMomentSecondReferenceNormalization CenteredMomentFirstNestedSeededGaussianPower CenteredMomentFirstSecondInputGates
 
 theorem actual_error_smaller_gaussian
     (Wslot:ℝ→ℂ)(aslot bslot Mcap Lslot εremove lo hi κ:ℝ)
@@ -163,8 +130,7 @@ theorem actual_error_smaller_gaussian
   refine ⟨n,T,dc,Cc,hCc,J,Sp,Sf,hSp,Cm,Ce,Cd,Ct,hCm,hCe,hCd,hCt,?_⟩
   intro η₀ Q hQM hQ0 hQt hQ72
   obtain ⟨Kc,hKc,Zi,hZi,hi⟩:=hmain η₀ Q hQM hQ0 hQt hQ72
-  let Zw:=CenteredMomentEnergyAmplifiedChildWidth.threshold N upper sigma hupper hsigma
-  refine ⟨Kc,hKc,max Zi Zw,lt_of_lt_of_le hZi (le_max_left _ _),?_⟩
+  refine ⟨Kc,hKc,max Zi (CenteredMomentEnergyAmplifiedChildWidth.threshold N upper sigma hupper hsigma),lt_of_lt_of_le hZi (le_max_left _ _),?_⟩
   intro θ Z hZ εchild C₀ C₁ hC₀ hC₁ hzero hpos w σ freq height mesh hmesh hw hwm hwL
     hσlo hσhi hheight hfreq src hmatch hhi hMs hloSrc hhiSrc hcard hlowerSrc hupperSrc
     hb1 hb2 hb1max hb2max C D R0 hC hD hCD E B τ t hB hmod
@@ -174,9 +140,8 @@ theorem actual_error_smaller_gaussian
   dsimp only
   intro hready seed hseed hseed0 hseedcap p hp₁ hp₂ hX₁ hX₂ hY₁ hY₂ Mdecl Mwidth θclip hθclip
     hcap hMdecl hMwidth hdrop hclip hsourceLower Scols β hScols hβ
-  have hZiZ:Zi≤Z:=(le_max_left _ _).trans hZ
-  have hZw:Zw≤Z:=(le_max_right _ _).trans hZ
-  have hz:1<Z:=hZi.trans_le hZiZ
+  have hZiZ :=(le_max_left _ _).trans hZ
+  have hz :=hZi.trans_le hZiZ
   have hk':k+1=1 ∨ k+1=6 ∨ k+1=7:=by omega
   obtain ⟨family,hfamily,hbound⟩:=hi θ Z hZiZ εchild C₀ C₁ hC₀ hC₁ hzero hpos
     w σ freq height mesh hmesh hw hwm hwL hσlo hσhi hheight hfreq src hmatch hhi hMs
@@ -194,7 +159,7 @@ theorem actual_error_smaller_gaussian
     rw [Real.rpow_logb (zero_lt_one.trans hz) (ne_of_gt hz)
       (norm_pos src.η.modulus src.η.modulus_ne_bot)]
   have hh:=CenteredMomentEnergyAmplifiedChildWidth.error_child_width N upper sigma hupper hsigma
-    Z hZw src hcard hupperSrc C D R0 hC hD hCD E B τ t hB hmod
+    Z ((le_max_right _ _).trans hZ) src hcard hupperSrc C D R0 hC hD hCD E B τ t hB hmod
     prime hprime k hk hslot Bp υ χerr v0 hN K delta reserve ξ
     (Real.logb Z (src.η.modulus.absNorm:ℝ)) Mwidth hK hdelta hreserve hξsmall hη hMwidth
     (activeSource Scols β) β q.val.1 q.val.2 hs.1 hs.2 U (family q U) (hfamily q U)

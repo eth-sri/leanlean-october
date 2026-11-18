@@ -17,13 +17,13 @@ theorem universalShortProfile_double {T M R E : ℝ}
     exact mul_le_mul_of_nonneg_right (by
       have hh := Real.rpow_le_rpow_of_exponent_le (by norm_num : (1:ℝ)≤2)
         (by norm_num : (1/6:ℝ)≤1)
-      simpa only [Real.rpow_one] using hh) (by positivity)
+      simpa using hh) (by positivity)
   have h2b : (2*T)^(1/16:ℝ) ≤ 2*T^(1/16:ℝ) := by
     rw [Real.mul_rpow (by norm_num) hT]
     exact mul_le_mul_of_nonneg_right (by
       have hh := Real.rpow_le_rpow_of_exponent_le (by norm_num : (1:ℝ)≤2)
         (by norm_num : (1/16:ℝ)≤1)
-      simpa only [Real.rpow_one] using hh) (by positivity)
+      simpa using hh) (by positivity)
   have ha := mul_le_mul_of_nonneg_right h2a
     (by positivity : (0:ℝ)≤M^(4/3:ℝ)*R*E^(1/4:ℝ))
   have hb := mul_le_mul_of_nonneg_right h2b

@@ -8,77 +8,11 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-
-open scoped BigOperators Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 namespace SecondPassArithmetic
 
 section
-open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProduct bit parity retained b0Exponent aLabel jLabel j2Label squarefreeLabel b0Label)
 
 variable {ι : Type*} [DecidableEq ι]
@@ -87,7 +21,6 @@ variable (p : ι → O) [∀ i,(Ideal.span {p i}).IsMaximal]
 
 end
 
-open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProductNorm)
 open ConcreteTraceCRT (eisEmbedding)
 
@@ -99,9 +32,8 @@ end
 
 end SecondPassArithmetic
 
-open scoped BigOperators Classical SchwartzMap
 namespace CanonicalQuadraticSieve
-open ActualEisensteinCubic ConcretePrimeRowBridge IdealMobiusDivisorSum EisensteinSchwartzPoisson
+open ConcretePrimeRowBridge IdealMobiusDivisorSum EisensteinSchwartzPoisson
 
 theorem maskedPairDualTail_bound (A : ℕ) :
     ∃ (s : Finset (ℕ×ℕ)) (C : ℝ), 0<C ∧
@@ -168,17 +100,15 @@ theorem maskedPairDualTail_bound (A : ℕ) :
       dual_truncation_prefactor_bound M 1 N (Ideal.absNorm I) (Ideal.absNorm J)
         hM (by norm_num) hN0 ⟨hIl,hIu⟩ ⟨hJl,hJu⟩
   rw [maskedPairDualTail,norm_mul]
-  calc
-    _ ≤ (2*M/N)*(∑ q ∈ idealDivisors G, T) := mul_le_mul hpref
-      ((norm_sum_le _ _).trans (Finset.sum_le_sum hterm)) (norm_nonneg _) (by positivity)
-    _ = _ := by simp only [Finset.sum_const,nsmul_eq_mul,T,t0]; ring
+  exact (mul_le_mul hpref
+      ((norm_sum_le _ _).trans (Finset.sum_le_sum hterm)) (norm_nonneg _) (by positivity)).trans_eq (by simp only [Finset.sum_const,nsmul_eq_mul,T,t0]; ring)
 
 theorem coprime_pair_error_energy {n : Type} [Fintype n]
     (cols : n → Ideal O) (a : n → ℂ) (E : ℝ) (hE : 0≤E)
     (error : n → n → ℂ) (herr : ∀ j k, ‖error j k‖≤E) :
     ‖∑ j, ∑ k, if IsCoprime (cols j) (cols k) then star (a j)*a k*error j k else 0‖ ≤
       (Fintype.card n:ℝ)*E*∑ j, ‖a j‖^2 := by
-  have hcs := Finset.sum_mul_sq_le_sq_mul_sq Finset.univ (fun j : n => ‖a j‖) (fun _ => (1:ℝ))
+  have hcs := Finset.sum_mul_sq_le_sq_mul_sq Finset.univ (fun j : n => ‖a j‖) (fun _ => 1)
   simp only [mul_one,one_pow,Finset.sum_const,Finset.card_univ,nsmul_eq_mul,mul_one] at hcs
   have hs : (∑ j, ∑ k, ‖a j‖*‖a k‖*E) = (∑ j, ‖a j‖)^2*E := by
     simp only [pow_two,Finset.sum_mul,Finset.mul_sum,mul_assoc]
@@ -223,9 +153,7 @@ theorem maskedDualTailFamily_bound (A : ℕ) :
   have hT : 0≤T := by dsimp only [T]; positivity
   have hn := finite_ideal_family_card_bound cols hinj N hN
     (fun j => (hcols j).1) (fun j => (hcols j).2.2)
-  have herr (j k : n) : ‖maskedPairDualTail G (cols j) (cols k) W M K‖≤
-      (2*M/N)*(idealDivisors G).card*T :=
-    hbound G (cols j) (cols k) W M N K hG (hcols j).1 (hcols k).1 hM hN hK
+  have herr (j k : n) := hbound G (cols j) (cols k) W M N K hG (hcols j).1 (hcols k).1 hM hN hK
       (hcols j).2.1 (hcols j).2.2 (hcols k).2.1 (hcols k).2.2
   calc
     _ ≤ (Fintype.card n:ℝ)*((2*M/N)*(idealDivisors G).card*T)*∑ j, ‖a j‖^2 :=
@@ -235,11 +163,9 @@ theorem maskedDualTailFamily_bound (A : ℕ) :
 
 end CanonicalQuadraticSieve
 
-open scoped BigOperators Classical
 namespace SecondPassArithmetic
 
 section
-open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProductNorm)
 open ConcreteTraceCRT (eisEmbedding)
 
@@ -248,7 +174,6 @@ variable {ι : Type*} [DecidableEq ι]
 
 end
 
-open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProductNorm primeProduct)
 open ConcreteTraceCRT (eisEmbedding)
 

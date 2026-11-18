@@ -11,11 +11,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentAllocatedNaturalSource
-open HeckeFamily CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy
-open CenteredMomentNaturalRowSource CenteredMomentRetainedEnergy CenteredMomentRetainedProfile
-open CenteredMomentHeckeTwist CenteredMomentHeckeVolume CenteredMomentHeckeCancellation
-open CenteredMomentDivisorAllocation CenteredMomentDivisorExtraction CenteredMomentDivisorRectangle
-open CenteredMomentDivisorRaw CenteredMomentDivisorRetained
+open HeckeFamily CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy CenteredMomentNaturalRowSource CenteredMomentRetainedEnergy CenteredMomentRetainedProfile CenteredMomentHeckeTwist CenteredMomentHeckeVolume CenteredMomentHeckeCancellation CenteredMomentDivisorAllocation CenteredMomentDivisorExtraction CenteredMomentDivisorRectangle CenteredMomentDivisorRaw CenteredMomentDivisorRetained
 local notation "O" => HeckeFamily.O
 
 structure Plain where
@@ -93,11 +89,7 @@ theorem allocated_normalized (η : Character) (z : O) (hz : z≠0) (R : Ideal O)
   have h:=retained_normalized η z hz R hR V₁ V₂
     (fun i : liveIndices D a=>pool i) (fun i : liveIndices D a=>β i) (fun i : liveIndices D a=>P i)
     (fun i=>hP i) t _ _ (rawScale_pos D a X₁ hX₁ 0) (rawScale_pos D a X₂ hX₂ 1)
-  have hp': (∏i : liveIndices D a,naturalSlot (excluded (naturalRow η z hz).character R)
-      (pool i) (heightCoefficient (β i) t) (P i))=
-      ∏i∈liveIndices D a,naturalSlot (excluded (naturalRow η z hz).character R)
-      (pool i) (heightCoefficient (β i) t) (P i) := Finset.prod_coe_sort (liveIndices D a) (fun i : α=>naturalSlot (excluded (naturalRow η z hz).character R) (pool i) (heightCoefficient (β i) t) (P i))
-  rw [hp'] at h
+  rw [(Finset.prod_coe_sort (liveIndices D a) (fun i : α=>naturalSlot (excluded (naturalRow η z hz).character R) (pool i) (heightCoefficient (β i) t) (P i)))] at h
   exact h
 
 omit [Fintype α] [DecidableEq α] in
@@ -113,27 +105,6 @@ theorem slot_controls (ν : α→Ideal O→ℂ) (W : α→ℝ→ℂ) (P b M : α
     exact (mul_le_mul_of_nonneg_right (hν i I) (norm_nonneg _)).trans (by simpa using hW i _)
   · intro i I hn
     exact (div_le_iff₀ (hP i)).mp (hs i (right_ne_zero_of_mul hn))
-
-def SharedBound (F : Finset α) (b M : α→ℝ) (C ε : ℝ) : Prop :=
-    ∀{ι : Type*} [Fintype ι],
-      ∀(R : Finset (Ideal O))(hR : ∀I∈R,Prime I)(χ : ι→Character)
-        (W₁ W₂ : ι→𝓢(ℝ,ℂ))(X₁ X₂ : ι→ℝ)
-        (pool : ι→α→Finset (Ideal O))(β : ι→α→Ideal O→ℂ)(P : ι→α→ℝ),
-      (∀i,0<X₁ i) → (∀i,0<X₂ i) →
-      (∀i j,j∈F → ∀I∈pool i j,Prime I) → (∀i j,j∈F → 0<P i j) →
-      (∀i j,j∈F → ∀I∈pool i j,‖β i j I‖≤M j) →
-      (∀i j,j∈F → ∀I∈pool i j,β i j I≠0 → (I.absNorm:ℝ)≤b j*P i j) →
-      ∀E : ℝ,0≤E →
-      (∀D₁∈R.powerset,∀D₂∈R.powerset,∀J∈F.powerset,
-        (∑i,‖HeckeDyadic.polynomial (χ i) false (W₁ i)
-          (X₁ i/(Ideal.absNorm (∏I∈D₁,I):ℝ)) 0 0 *
-          HeckeDyadic.polynomial (χ i) false (W₂ i)
-          (X₂ i/(Ideal.absNorm (∏I∈D₂,I):ℝ)) 0 0 *
-          ∏j∈F\J,naturalSlot (χ i) (pool i j) (β i j) (P i j)‖^2)≤E) →
-      (∑i,‖HeckeDyadic.polynomial ((χ i).excludePrimes R hR) false (W₁ i) (X₁ i) 0 0 *
-        HeckeDyadic.polynomial ((χ i).excludePrimes R hR) false (W₂ i) (X₂ i) 0 0 *
-        ∏j∈F,naturalSlot ((χ i).excludePrimes R hR) (pool i j) (β i j) (P i j)‖^2)≤
-        C*(Ideal.absNorm (∏I∈R,I):ℝ)^ε*E
 
 lemma primeSupport_product_radical (R : Ideal O) (hR : R≠0) :
     (∏I∈CompletedGauss.primeSupport R,I)=R.radical := by

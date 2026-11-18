@@ -19,7 +19,7 @@ theorem elementWindow_finite_support (W : ℝ → ℂ) (hW : HasCompactSupport W
   apply (ShortDraftLatticeCount.rowNormBall M).finite_toSet.subset
   intro m hm
   apply ShortDraftLatticeCount.mem_rowNormBall_of_absNorm_le
-  have hnorm : elementNorm m ≤ B * R := (div_le_iff₀ hR).mp (hbound _ hm)
+  have hnorm := (div_le_iff₀ hR).mp (hbound _ hm)
   unfold elementNorm at hnorm
   exact_mod_cast hnorm.trans hM.le
 
@@ -30,8 +30,7 @@ theorem idealWindow_finite_support (W : ℝ → ℂ) (hW : HasCompactSupport W)
   obtain ⟨M, hM⟩ := exists_nat_gt (B * R)
   apply (Ideal.finite_setOfPred_absNorm_le M).subset
   intro I hI
-  have hnorm : (Ideal.absNorm I : ℝ) ≤ B * R := (div_le_iff₀ hR).mp (hbound _ hI)
-  exact_mod_cast hnorm.trans hM.le
+  exact_mod_cast ((div_le_iff₀ hR).mp (hbound _ hI)).trans hM.le
 
 end SevenEighths.ProbePhysical
 end

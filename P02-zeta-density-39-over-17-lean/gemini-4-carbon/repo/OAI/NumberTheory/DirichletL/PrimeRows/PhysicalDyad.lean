@@ -85,7 +85,6 @@ theorem finitePhysicalRows_eq_integral :
   have hi : Integrable (fun t=>∑u∈R,∑P:(∀i,T i),f u P t) heightMeasure :=
     integrable_finsetSum _ hiu
   refine ⟨hi,?_⟩
-  change finitePhysicalRows S hmax η R T W Yp W0 W1 X Y Z=_*(∫t,∑u∈R,∑P:(∀i,T i),f u P t ∂heightMeasure)
   rw [integral_finsetSum R hiu]
   unfold finitePhysicalRows
   rw [Finset.mul_sum]
@@ -129,9 +128,7 @@ theorem norm_finitePhysicalRows_le_absolute :
   have hg (t : HeightSpace) : (∑u∈R,∑P:(∀i,T i),‖f u P t‖)=g t := by
     simp only [f,g,weightedRowOnLines,physicalDyadNorm,norm_mul,Finset.mul_sum,mul_assoc]
   have hgi : Integrable g heightMeasure := by
-    have hh : Integrable (fun t=>∑u∈R,∑P:(∀i,T i),‖f u P t‖) heightMeasure :=
-      integrable_finsetSum R (fun u hu=>integrable_finsetSum Finset.univ (fun P hP=>(hfi u hu P).norm))
-    exact hh.congr (Filter.Eventually.of_forall hg)
+    exact (integrable_finsetSum R (fun u hu=>integrable_finsetSum Finset.univ (fun P hP=>(hfi u hu P).norm))).congr (Filter.Eventually.of_forall hg)
   obtain ⟨hi,heq⟩ := finitePhysicalRows_eq_integral e σ υ r he he' hσ hσβ hσ3 hυ hυ3 hr S hS hmax
     hfirst η R hR T hT hdis W Yp W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1 X Y Z hX hY hZ
   have hp (t : HeightSpace) : ‖∑u∈R,∑P:(∀i,T i),f u P t‖≤g t := by

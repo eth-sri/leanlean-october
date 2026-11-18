@@ -7,9 +7,8 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorPartition
 namespace OAI
 
 namespace SevenEighths.HeckeDetectorFourier
-open MeasureTheory
+open MeasureTheory HeckeFamily HeckeDetectorProfiles
 open scoped BigOperators Classical ContDiff FourierTransform SchwartzMap
-open HeckeFamily HeckeDetectorProfiles
 noncomputable section
 
 def inverseCoefficient (χ : Character) (V W : ℝ → ℂ) (Dstar D : ℝ) (s : ℂ) (I : Ideal O) : ℂ :=

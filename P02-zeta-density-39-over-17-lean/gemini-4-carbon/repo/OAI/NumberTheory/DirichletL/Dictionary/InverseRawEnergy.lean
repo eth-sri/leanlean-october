@@ -7,11 +7,10 @@ public import OAI.NumberTheory.DirichletL.Hecke.InverseAmplificationRaw
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap FourierTransform ContDiff
 open MeasureTheory
+open scoped Classical BigOperators SchwartzMap FourierTransform ContDiff
 namespace SevenEighths.DetectorDictionaryInverseRawFourier
-open HeckeFamily HeckeDyadic InverseMoment InverseInitialClippedColumns
-open InverseInitialOverlapFourier FourierBridge HeckeInverseAmplification
+open HeckeFamily HeckeDyadic InverseMoment InverseInitialClippedColumns InverseInitialOverlapFourier FourierBridge HeckeInverseAmplification
 
 theorem polynomial_clipped_energy {ι : Type*} (rows : Finset ι)
     (χ : ι→Character) (inv : Bool) (A : ι→ℂ)
@@ -39,10 +38,7 @@ theorem polynomial_clipped_energy {ι : Type*} (rows : Finset ι)
     have hh : 1+‖θ+v‖≤(1+‖θ‖)*(1+‖v‖) := by
       have hn:=norm_add_le θ v
       nlinarith [mul_nonneg (norm_nonneg θ) (norm_nonneg v)]
-    calc
-      _≤E*((1+‖θ‖)*(1+‖v‖))^(2*J):=
-        mul_le_mul_of_nonneg_left (pow_le_pow_left₀ (by positivity) hh _) hE
-      _= _:=by rw [mul_pow,pow_mul];ring
+    exact (mul_le_mul_of_nonneg_left (pow_le_pow_left₀ (by positivity) hh _) hE).trans_eq (by rw [mul_pow,pow_mul];ring)
   have hden : Integrable (fun v:ℝ=>(1+‖v‖)^J*‖B v‖) := by
     simpa only [B,density_norm] using AnalyticBridge.schwartz_fourier_one_plus_integrable g J
   have hh:=CenteredMomentHeckeWindowEnergy.finite_weighted_integral_energy B φ
@@ -74,8 +70,7 @@ theorem rawMoment_reference (data : RowData)
     W lo hi hlo hs hW Wref b 1 0 D (C*H*(H*max 1 D)^κ) J (by norm_num) hD
     (by positivity) hWref (by simpa only [one_mul] using hagree) (by
       intro s
-      have hb:=he s H D hH hD hHD rows hrows
-      simpa only [mul_one,one_mul,mul_assoc,mul_left_comm,mul_comm] using hb)
+      simpa only [mul_one,one_mul,mul_assoc,mul_left_comm,mul_comm] using (he s H D hH hD hHD rows hrows))
   have heq : clippedTest W 1 0=W := by
     funext x
     simp [clippedTest,childLogTest,logPhase]

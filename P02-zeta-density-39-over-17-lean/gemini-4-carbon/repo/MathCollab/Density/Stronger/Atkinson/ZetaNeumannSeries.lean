@@ -11,8 +11,7 @@ public import MathCollab.Density.Stronger.Atkinson.NeumannRemainderSeries
 
 @[expose] public section
 
-open Complex MeasureTheory Set
-open MathCollab.Density.Stronger.Fourth
+open Complex MeasureTheory Set MathCollab.Density.Stronger.Fourth
 set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
@@ -35,8 +34,7 @@ theorem zetaAtkinsonY0Term_eq_native {T G L : ℝ}
 theorem summable_zetaAtkinsonY0Term {T G L : ℝ}
     (hT : 0 < T) (hG : 0 < G) (hL : 0 < L) :
     Summable (zetaAtkinsonY0Term T G L) := by
-  have h := (zetaAtkinsonDivisorVoronoiTest hT hG hL).summable_divisorWeight_voronoiMinus
-  apply h.congr
+  apply ((zetaAtkinsonDivisorVoronoiTest hT hG hL).summable_divisorWeight_voronoiMinus).congr
   intro n
   exact (zetaAtkinsonY0Term_eq_native hT hG hL n).symm
 

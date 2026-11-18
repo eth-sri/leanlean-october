@@ -20,8 +20,7 @@ theorem rapid_product_sub (f g : ℝ → ℂ) (a b : ℂ)
   have hg0 : g =O[atTop] (fun _ : ℝ => (1 : ℝ)) := by
     have hc : (fun _ : ℝ => b) =O[atTop] (fun x : ℝ => x ^ (0 : ℝ)) := by
       simpa using (isBigO_const_one ℝ b (atTop : Filter ℝ))
-    have h := (hg 0).add hc
-    simpa using h
+    simpa using ((hg 0).add hc)
   have h₁ := (hf r).mul hg0
   have h₂ := (hg r).const_mul_left a
   have hid : (fun x => f x * g x - a * b) =
@@ -58,14 +57,11 @@ theorem rapid_rescale (f : ℝ → ℂ) (a : ℂ)
     (hf : ∀ r : ℝ, (fun x => f x - a) =O[atTop] (fun x : ℝ => x ^ r))
     {u : ℝ} (hu : 0 < u) (r : ℝ) :
     (fun x => f (u * x) - a) =O[atTop] (fun x : ℝ => x ^ r) := by
-  have ht : Tendsto (fun x : ℝ => u * x) atTop atTop :=
-    (tendsto_const_mul_atTop_of_pos hu).2 tendsto_id
-  have h := (hf r).comp_tendsto ht
   have heq : (fun x : ℝ => (u * x) ^ r) =ᶠ[atTop]
       (fun x : ℝ => u ^ r * x ^ r) := by
-    filter_upwards [eventually_ge_atTop (0 : ℝ)] with x hx
+    filter_upwards [eventually_ge_atTop 0] with x hx
     exact Real.mul_rpow hu.le hx
-  exact h.trans (heq.isBigO.trans ((isBigO_refl (fun x : ℝ => x ^ r) atTop).const_mul_left _))
+  exact ((hf r).comp_tendsto ((tendsto_const_mul_atTop_of_pos hu).2 tendsto_id)).trans (heq.isBigO.trans ((isBigO_refl (fun x : ℝ => x ^ r) atTop).const_mul_left _))
 
 def rescale (P : WeakFEPair ℂ)
     (hPf : ContinuousOn P.f (Ioi 0)) (hPg : ContinuousOn P.g (Ioi 0))
@@ -91,20 +87,6 @@ def rescale (P : WeakFEPair ℂ)
     ring
   hf_top := rapid_rescale P.f P.f₀ P.hf_top hu
   hg_top := rapid_rescale P.g P.g₀ P.hg_top (inv_pos.mpr hu)
-
-def shiftedPair (a b : UnitAddCircle) : WeakFEPair ℂ :=
-  product (HurwitzZeta.hurwitzEvenFEPair a) (HurwitzZeta.hurwitzEvenFEPair b)
-    (Complex.continuous_ofReal.comp_continuousOn (HurwitzZeta.continuousOn_evenKernel a))
-    (Complex.continuous_ofReal.comp_continuousOn (HurwitzZeta.continuousOn_cosKernel a))
-    (Complex.continuous_ofReal.comp_continuousOn (HurwitzZeta.continuousOn_evenKernel b))
-    (Complex.continuous_ofReal.comp_continuousOn (HurwitzZeta.continuousOn_cosKernel b))
-
-@[simp] theorem shiftedPair_k (a b : UnitAddCircle) : (shiftedPair a b).k = 1 := by
-  norm_num [shiftedPair, product, HurwitzZeta.hurwitzEvenFEPair]
-
-@[simp] theorem shiftedPair_f (a b : UnitAddCircle) (t : ℝ) :
-    (shiftedPair a b).f t =
-      (HurwitzZeta.evenKernel a t : ℂ) * (HurwitzZeta.evenKernel b t : ℂ) := rfl
 
 def scaledEvenPair (a : UnitAddCircle) (u : ℝ) (hu : 0 < u) : WeakFEPair ℂ :=
   rescale (HurwitzZeta.hurwitzEvenFEPair a)

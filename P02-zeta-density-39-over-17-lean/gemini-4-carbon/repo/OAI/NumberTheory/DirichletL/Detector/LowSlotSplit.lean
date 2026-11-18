@@ -48,8 +48,7 @@ lemma lowSlotJoin_unselected {K : ℕ} (slots : Fin K→Finset O) (J : Finset (F
 lemma lowSlotJoin_selected {K : ℕ} (slots : Fin K→Finset O) (J : Finset (Fin K))
     (a : LowUnselectedTuple slots J) (b : LowSelectedTuple slots J) (i : SelectedSlot J) :
     lowSlotJoin slots J a b i.val=(b i).val := by
-  have hi : i.val∉J := (Finset.mem_sdiff.mp i.property).2
-  simp only [lowSlotJoin,lowSlotTupleEquiv,Equiv.coe_fn_symm_mk,dite_eq_right hi]
+  simp only [lowSlotJoin,lowSlotTupleEquiv,Equiv.coe_fn_symm_mk,dite_eq_right ((Finset.mem_sdiff.mp i.property).2)]
 
 lemma lowSlotJoin_unselectedProduct {K : ℕ} (slots : Fin K→Finset O) (J : Finset (Fin K))
     (a : LowUnselectedTuple slots J) (b : LowSelectedTuple slots J) :
@@ -78,10 +77,7 @@ theorem sum_lowSlotJoin {K : ℕ} (slots : Fin K→Finset O) (J : Finset (Fin K)
     (F : (Fin K→O)→ℂ) :
     (∑p : (∀i,↥(slots i)),F (fun i=>(p i).val))=
       ∑a : LowUnselectedTuple slots J,∑b : LowSelectedTuple slots J,F (lowSlotJoin slots J a b) := by
-  calc
-    _ = ∑p : LowUnselectedTuple slots J×LowSelectedTuple slots J,F (lowSlotJoin slots J p.1 p.2) :=
-      (Equiv.sum_comp (lowSlotTupleEquiv slots J).symm (fun p=>F (fun i=>(p i).val))).symm
-    _ = _ := Fintype.sum_prod_type _
+  exact ((Equiv.sum_comp (lowSlotTupleEquiv slots J).symm (fun p=>F (fun i=>(p i).val))).symm).trans (Fintype.sum_prod_type _)
 
 end SevenEighths.ProbePhysical
 end

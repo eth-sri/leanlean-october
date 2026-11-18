@@ -8,19 +8,11 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorDyadicGeometry
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
 open Filter
+open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.ProbeDetectorPlainUnmarkedField
-open HeckeDyadic HeckeRowClosure HeckeInverseAmplification
-open CenteredMomentDetectorPlainFiberSource
-open HeckeFamily HeckeDetectorRawFiber HeckeDetectorBatch ProbeHighRowFamily
-open HeckeDetectorRowwisePolynomial HeckeDetectorDyadicProfiles
-open CenteredMomentDetectorDictionary CenteredMomentDetectorEnergyInitialState
-open CenteredMomentDetectorPlainExceptional CenteredMomentDetectorPlainUnmarkedState
-open CenteredMomentDetectorPlainMomentParameters CenteredMomentDetectorPlainProfileControl
-open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentNaturalFixedRaySource
-open QuadraticInitialBound
+open HeckeDyadic HeckeRowClosure HeckeInverseAmplification CenteredMomentDetectorPlainFiberSource HeckeFamily HeckeDetectorRawFiber HeckeDetectorBatch ProbeHighRowFamily HeckeDetectorRowwisePolynomial HeckeDetectorDyadicProfiles CenteredMomentDetectorDictionary CenteredMomentDetectorEnergyInitialState CenteredMomentDetectorPlainExceptional CenteredMomentDetectorPlainUnmarkedState CenteredMomentDetectorPlainMomentParameters CenteredMomentDetectorPlainProfileControl CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentNaturalFixedRaySource QuadraticInitialBound
 local notation "O" => HeckeFamily.O
 
 def radialSupportUpper : ℝ := Classical.choose radialMajorant_support_bound
@@ -31,7 +23,7 @@ theorem radialSupportUpper_spec : 0<radialSupportUpper ∧
 
 lemma unmarked_power_eq (U m e:ℝ)(hU:1≤U):
     U^(max 1 (2*m)+e)=max U ((U^m)^2)*U^e := by
-  have hpos:0<U:=zero_lt_one.trans_le hU
+  have hpos :=zero_lt_one.trans_le hU
   rw [Real.rpow_add hpos]
   congr 1
   have hs:(U^m)^2=U^(2*m):=by
@@ -42,11 +34,11 @@ lemma unmarked_power_eq (U m e:ℝ)(hU:1≤U):
   rw [hs]
   by_cases hm:1≤2*m
   · rw [max_eq_right hm,max_eq_right]
-    simpa only [Real.rpow_one] using Real.rpow_le_rpow_of_exponent_le hU hm
+    simpa using Real.rpow_le_rpow_of_exponent_le hU hm
   · have hm':2*m≤1:=le_of_not_ge hm
     rw [max_eq_left hm',max_eq_left]
     · exact Real.rpow_one U
-    · simpa only [Real.rpow_one] using Real.rpow_le_rpow_of_exponent_le hU hm'
+    · simpa using Real.rpow_le_rpow_of_exponent_le hU hm'
 
 variable {Δ:ℝ}
 

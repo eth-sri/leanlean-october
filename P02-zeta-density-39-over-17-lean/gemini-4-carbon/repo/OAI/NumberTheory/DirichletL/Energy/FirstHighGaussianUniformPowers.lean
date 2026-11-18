@@ -10,16 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyFirstHighGaussianUniformPowers
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss ActualEisensteinCubic ConcreteTraceCRT
-open CenteredMomentPrimeElements CenteredMomentPrimePool CenteredMomentFirstAmplificationChoice
-open CenteredMomentFirstPhysicalSource CenteredMomentFirstScale CenteredMomentCanonicalFirst
-open CenteredMomentFirstCanonicalFamily CenteredMomentSecondHeightFamily CenteredMomentCompleteCommon
-open CenteredMomentSectorLocalization CenteredMomentAmplifiedRetainedRadius
-open CenteredMomentFirstMixedNormalization CenteredMomentFirstMixedNormalizationActual CenteredMomentFirstMixedAllowance
-open CenteredMomentFirstAmplifiedFourCoefficients CenteredMomentFirstCommonReferencePower
-open CenteredMomentEnergyFirstGaussianCoefficients CenteredMomentSecondChildPowerBudget
-open CenteredMomentEnergyFirstGaussianProfileWeights CenteredMomentFiniteProfileExceptional
-open QuadraticInitialBound
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss ActualEisensteinCubic ConcreteTraceCRT CenteredMomentPrimeElements CenteredMomentPrimePool CenteredMomentFirstAmplificationChoice CenteredMomentFirstPhysicalSource CenteredMomentFirstScale CenteredMomentCanonicalFirst CenteredMomentFirstCanonicalFamily CenteredMomentSecondHeightFamily CenteredMomentCompleteCommon CenteredMomentSectorLocalization CenteredMomentAmplifiedRetainedRadius CenteredMomentFirstMixedNormalization CenteredMomentFirstMixedNormalizationActual CenteredMomentFirstMixedAllowance CenteredMomentFirstAmplifiedFourCoefficients CenteredMomentFirstCommonReferencePower CenteredMomentEnergyFirstGaussianCoefficients CenteredMomentSecondChildPowerBudget CenteredMomentEnergyFirstGaussianProfileWeights CenteredMomentFiniteProfileExceptional QuadraticInitialBound
 local notation "O"=>HeckeFamily.O
 local notation "Ray"=>RayFourExpansion.RayCharacter
 
@@ -32,19 +23,17 @@ lemma finite_power_budget (upper nc Z eps Bcommon deficit primeLoss G F seed:ℝ
       (G*H j*Z^(deficit+actualLoss j+primeLoss)))≤
       (upper^N*G*F/seed)*Z^(deficit+eps*Bcommon+primeLoss)*
         ∑j:Fin 4,Z^(srcLoss j+actualLoss j):=by
-  have hz:0<Z:=zero_lt_one.trans hZ
+  have hz :=zero_lt_one.trans hZ
   have hncPow:nc^eps≤Z^(eps*Bcommon):=by
-    have hh:=Real.rpow_le_rpow hnc hncap heps
-    simpa only [←Real.rpow_mul hz.le,mul_comm Bcommon eps] using hh
-  have hu:1≤upper^N:=one_le_pow₀ hupper
+    simpa only [←Real.rpow_mul hz.le,mul_comm Bcommon eps] using (Real.rpow_le_rpow hnc hncap heps)
   have hup (j:Fin 4):(upper^N)^(powers eps j)≤upper^N:=by
     have hp:powers eps j≤1:=by fin_cases j <;> simp [powers] <;> linarith
-    simpa only [Real.rpow_one] using Real.rpow_le_rpow_of_exponent_le hu hp
+    simpa only [Real.rpow_one] using Real.rpow_le_rpow_of_exponent_le (one_le_pow₀ hupper) hp
   rw [Finset.mul_sum,Finset.mul_sum]
   apply Finset.sum_le_sum
   intro j _
   have hj0:=hH j
-  have hu0:0≤upper:=zero_le_one.trans hupper
+  have hu0 :=zero_le_one.trans hupper
   calc
     _≤Z^(eps*Bcommon)*(upper^N*(G*(F*Z^(srcLoss j)/seed)*Z^(deficit+actualLoss j+primeLoss))):=by
       apply mul_le_mul hncPow _ (by positivity) (by positivity)
@@ -55,8 +44,7 @@ lemma finite_power_budget (upper nc Z eps Bcommon deficit primeLoss G F seed:ℝ
       calc
         _=(upper^N*G*F/seed)*(Z^(eps*Bcommon)*Z^(srcLoss j)*Z^(deficit+actualLoss j+primeLoss)):=by ring
         _=_:=by
-          rw [←Real.rpow_add hz, ←Real.rpow_add hz]
-          rw [show eps*Bcommon + srcLoss j + (deficit+actualLoss j+primeLoss) =
+          rw [←Real.rpow_add hz, ←Real.rpow_add hz, show eps*Bcommon + srcLoss j + (deficit+actualLoss j+primeLoss) =
             (deficit+eps*Bcommon+primeLoss)+(srcLoss j+actualLoss j) by ring,
             Real.rpow_add hz]
           ring

@@ -78,7 +78,7 @@ theorem norm_Gamma_centralPoint_le_exp (t : ℝ) :
       (2 * Real.pi) / Real.exp (Real.pi * |t|)
     apply (div_le_div_iff₀ hcosh_pos hexp_pos).2
     nlinarith [Real.pi_pos]
-  have hpi_two : (2 : ℝ) ≤ Real.pi := by linarith [Real.pi_gt_three]
+  have hpi_two : 2 ≤ Real.pi := by linarith [Real.pi_gt_three]
   have hexp_cmp : Real.exp (-(Real.pi * |t|)) ≤ Real.exp (-2 * |t|) := by
     apply Real.exp_le_exp.mpr
     nlinarith [abs_nonneg t]
@@ -102,24 +102,17 @@ theorem norm_betaIntegral_le_real_integral {u v : ℂ} :
     ‖Complex.betaIntegral u v‖ ≤
       ∫ x : ℝ in 0..1, x ^ (u.re - 1) * (1 - x) ^ (v.re - 1) := by
   rw [Complex.betaIntegral]
-  calc
-    ‖∫ x : ℝ in 0..1,
-        (x : ℂ) ^ (u - 1) * (1 - (x : ℂ)) ^ (v - 1)‖ ≤
-        ∫ x : ℝ in 0..1,
-          ‖(x : ℂ) ^ (u - 1) * (1 - (x : ℂ)) ^ (v - 1)‖ :=
-      intervalIntegral.norm_integral_le_integral_norm zero_le_one
-    _ = ∫ x : ℝ in 0..1, x ^ (u.re - 1) * (1 - x) ^ (v.re - 1) := by
+  exact (intervalIntegral.norm_integral_le_integral_norm zero_le_one).trans_eq (by
       apply intervalIntegral.integral_congr_ae
       have hne : ∀ᵐ x : ℝ, x ≠ 1 := by simp [ae_iff, measure_singleton]
       filter_upwards [hne] with x hxne
       intro hx
       simp only [uIoc_of_le zero_le_one] at hx
       rcases hx with ⟨hx0, hx1⟩
-      have hx1lt : x < 1 := hx1.lt_of_ne hxne
       rw [norm_mul, Complex.norm_cpow_eq_rpow_re_of_pos hx0,
         show 1 - (x : ℂ) = ((1 - x : ℝ) : ℂ) by norm_cast,
-        Complex.norm_cpow_eq_rpow_re_of_pos (sub_pos.mpr hx1lt)]
-      simp
+        Complex.norm_cpow_eq_rpow_re_of_pos (sub_pos.mpr (hx1.lt_of_ne hxne))]
+      simp)
 
 theorem betaIntegral_ofReal_eq_ofReal_integral {s d : ℝ} :
     Complex.betaIntegral (s : ℂ) (d : ℂ) =
@@ -131,12 +124,10 @@ theorem betaIntegral_ofReal_eq_ofReal_integral {s d : ℝ} :
   intro hx
   simp only [uIoc_of_le zero_le_one] at hx
   rcases hx with ⟨hx0, hx1⟩
-  have hx1lt : x < 1 := hx1.lt_of_ne hxne
   rw [show (s : ℂ) - 1 = ((s - 1 : ℝ) : ℂ) by norm_cast,
     show (d : ℂ) - 1 = ((d - 1 : ℝ) : ℂ) by norm_cast,
-    show 1 - (x : ℂ) = ((1 - x : ℝ) : ℂ) by norm_cast]
-  rw [← Complex.ofReal_cpow hx0.le,
-    ← Complex.ofReal_cpow (sub_nonneg.mpr hx1lt.le)]
+    show 1 - (x : ℂ) = ((1 - x : ℝ) : ℂ) by norm_cast, ← Complex.ofReal_cpow hx0.le,
+    ← Complex.ofReal_cpow (sub_nonneg.mpr (hx1.lt_of_ne hxne).le)]
   push_cast
   rfl
 
@@ -159,12 +150,7 @@ theorem norm_betaIntegral_le_Gamma_div {u v : ℂ}
     (hu : 0 < u.re) (hv : 0 < v.re) :
     ‖Complex.betaIntegral u v‖ ≤
       Real.Gamma u.re * Real.Gamma v.re / Real.Gamma (u.re + v.re) := by
-  calc
-    ‖Complex.betaIntegral u v‖ ≤
-        ∫ x : ℝ in 0..1, x ^ (u.re - 1) * (1 - x) ^ (v.re - 1) :=
-      norm_betaIntegral_le_real_integral
-    _ = Real.Gamma u.re * Real.Gamma v.re / Real.Gamma (u.re + v.re) :=
-      real_beta_integral_eq_Gamma_div hu hv
+  exact (norm_betaIntegral_le_real_integral).trans_eq (real_beta_integral_eq_Gamma_div hu hv)
 
 theorem Gamma_half_sq : Real.Gamma (1 / 2) ^ 2 = Real.pi := by
   have h := Real.Gamma_mul_Gamma_one_sub (1 / 2 : ℝ)
@@ -178,7 +164,6 @@ theorem one_le_Gamma_half : (1 : ℝ) ≤ Real.Gamma (1 / 2) := by
   nlinarith [Gamma_half_sq, Real.pi_gt_three]
 
 theorem Gamma_half_le_two : Real.Gamma (1 / 2) ≤ 2 := by
-  have hpos := Real.Gamma_pos_of_pos (by norm_num : (0 : ℝ) < 1 / 2)
   nlinarith [Gamma_half_sq, Real.pi_le_four]
 
 theorem Gamma_real_Icc_half_three_half_le_two {s : ℝ}
@@ -191,16 +176,16 @@ theorem Gamma_real_Icc_half_three_half_le_two {s : ℝ}
     by_cases hseq_one : s = 1
     · subst s
       simp
-    have hs_lt_one : s < 1 := lt_of_le_of_ne hs_one hseq_one
-    let a : ℝ := 2 - 2 * s
-    let b : ℝ := 2 * s - 1
+    have hs_lt_one := lt_of_le_of_ne hs_one hseq_one
+    let a := 2 - 2 * s
+    let b := 2 * s - 1
     have ha : 0 < a := by dsimp [a]; linarith
     have hb : 0 < b := by dsimp [b]; linarith
     have hab : a + b = 1 := by dsimp [a, b]; ring
     have hconv := Real.Gamma_mul_add_mul_le_rpow_Gamma_mul_rpow_Gamma
-      (s := (1 / 2 : ℝ)) (t := 1) (a := a) (b := b)
+      (s := (1 / 2)) (t := 1) (a := a) (b := b)
       (by norm_num) (by norm_num) ha hb hab
-    have harg : a * (1 / 2 : ℝ) + b * 1 = s := by
+    have harg : a * (1 / 2) + b * 1 = s := by
       dsimp [a, b]
       ring
     rw [harg, Real.Gamma_one, Real.one_rpow, mul_one] at hconv
@@ -208,15 +193,15 @@ theorem Gamma_real_Icc_half_three_half_le_two {s : ℝ}
       dsimp [a]
       linarith)).trans Gamma_half_le_two
   · have hs_gt_one : 1 < s := lt_of_not_ge hs_one
-    let a : ℝ := 2 - s
-    let b : ℝ := s - 1
+    let a := 2 - s
+    let b := s - 1
     have ha : 0 < a := by dsimp [a]; linarith
     have hb : 0 < b := by dsimp [b]; linarith
     have hab : a + b = 1 := by dsimp [a, b]; ring
     have hconv := Real.Gamma_mul_add_mul_le_rpow_Gamma_mul_rpow_Gamma
-      (s := (1 : ℝ)) (t := 2) (a := a) (b := b)
+      (s := 1) (t := 2) (a := a) (b := b)
       (by norm_num) (by norm_num) ha hb hab
-    have harg : a * (1 : ℝ) + b * 2 = s := by
+    have harg : a * 1 + b * 2 = s := by
       dsimp [a, b]
       ring
     rw [harg, Real.Gamma_one, Real.Gamma_two,
@@ -257,14 +242,11 @@ theorem norm_Gamma_stripPoint_le_four_upper
   have hbeta_four :
       ‖Complex.betaIntegral (stripPoint s t) (d : ℂ)‖ ≤
         4 * Real.Gamma d := by
-    calc
-      ‖Complex.betaIntegral (stripPoint s t) (d : ℂ)‖
-          ≤ Real.Gamma s * Real.Gamma d / Real.Gamma (3 / 2) := hbeta
-      _ ≤ 4 * Real.Gamma d := by
+    exact (hbeta).trans (by
         apply (div_le_iff₀ (Real.Gamma_pos_of_pos (by norm_num : (0 : ℝ) < 3 / 2))).2
         have hsG := Gamma_real_Icc_half_three_half_le_two hslo hshi
         have hdG := Real.Gamma_pos_of_pos hd
-        nlinarith [Gamma_three_half_ge_half]
+        nlinarith [Gamma_three_half_ge_half])
   have hprod := Complex.Gamma_mul_Gamma_eq_betaIntegral hu_re hd_re
   rw [stripPoint_add_real, show s + d = 3 / 2 by dsimp [d]; ring] at hprod
   have hnorm := congrArg norm hprod
@@ -273,9 +255,8 @@ theorem norm_Gamma_stripPoint_le_four_upper
     rw [Complex.Gamma_ofReal, Complex.norm_real, Real.norm_eq_abs,
       abs_of_pos (Real.Gamma_pos_of_pos hd)]
   rw [hGd] at hnorm
-  have hupper_nonneg := norm_nonneg (Complex.Gamma (stripPoint (3 / 2) t))
   have hGd_pos := Real.Gamma_pos_of_pos hd
-  nlinarith [mul_le_mul_of_nonneg_left hbeta_four hupper_nonneg]
+  nlinarith [mul_le_mul_of_nonneg_left hbeta_four (norm_nonneg (Complex.Gamma (stripPoint (3 / 2) t)))]
 
 theorem centralPoint_add_one (t : ℝ) :
     centralPoint t + 1 = stripPoint (3 / 2) t := by
@@ -302,13 +283,9 @@ theorem norm_Gamma_upperPoint_le_exp (t : ℝ) :
   have hnorm := congrArg norm hrec
   rw [norm_mul] at hnorm
   rw [hnorm]
-  calc
-    ‖centralPoint t‖ * ‖Complex.Gamma (centralPoint t)‖
-        ≤ (1 + |t|) * (3 * Real.exp (-|t|)) :=
-      mul_le_mul (norm_centralPoint_le_one_add_abs t)
+  exact (mul_le_mul (norm_centralPoint_le_one_add_abs t)
         (norm_Gamma_centralPoint_le_exp t) (norm_nonneg _)
-        (by positivity)
-    _ = 3 * (1 + |t|) * Real.exp (-|t|) := by ring
+        (by positivity)).trans_eq (by ring)
 
 theorem norm_Gamma_positive_strip_le_exp
     {s t : ℝ} (hslo : 1 / 2 ≤ s) (hshi : s ≤ 3 / 2) :

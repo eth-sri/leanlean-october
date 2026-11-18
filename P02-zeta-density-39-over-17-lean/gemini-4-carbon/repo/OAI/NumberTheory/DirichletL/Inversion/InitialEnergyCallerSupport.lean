@@ -7,10 +7,8 @@ namespace OAI
 
 noncomputable section
 
+open ActualEisensteinCubic CompletedGauss IdealMobiusDivisorSum SevenEighths.InverseMoment SevenEighths.InverseInitialArithmetic SevenEighths.InverseInitialQuotientGeometry SevenEighths.InverseInitialClippedColumns
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss IdealMobiusDivisorSum
-open SevenEighths.InverseMoment SevenEighths.InverseInitialArithmetic
-open SevenEighths.InverseInitialQuotientGeometry SevenEighths.InverseInitialClippedColumns
 namespace SevenEighths.InverseInitialEnergyCallerSupport
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι] (p : ι → Eis)
@@ -77,8 +75,6 @@ theorem actual_sector_signed_pair {J : ℕ}
         Real.sqrt (∑ t ∈ quotientSet p S, ((idealDivisors t).card : ℝ)^J *
         ∑ f ∈ labels, ((idealDivisors f).card : ℝ)^(J+1) * ∑ k ∈ rows, ‖G (t,f,k)‖^2)) := by
   let child := fun x : Source (ι:=ι) J => initialChild (toTuple p (sectorSource u x))
-  have hF := actual_sector_energy p hp hinj hpr S u hdiv hsupport labels rows hlabels hchild F
-  have hG := actual_sector_energy p hp hinj hpr S u hdiv hsupport labels rows hlabels hchild G
   calc
     _ ≤ ∑ x ∈ S, ‖c x * star (F (child x)) * G (child x)‖ := norm_sum_le _ _
     _ ≤ ∑ x ∈ S, A * (‖F (child x)‖ * ‖G (child x)‖) := by
@@ -92,7 +88,7 @@ theorem actual_sector_signed_pair {J : ℕ}
         Real.sqrt (∑ x ∈ S, ‖G (child x)‖^2)) :=
       mul_le_mul_of_nonneg_left (Real.sum_mul_le_sqrt_mul_sqrt S _ _) hA
     _ ≤ _ := mul_le_mul_of_nonneg_left
-      (mul_le_mul (Real.sqrt_le_sqrt hF) (Real.sqrt_le_sqrt hG)
+      (mul_le_mul (Real.sqrt_le_sqrt (actual_sector_energy p hp hinj hpr S u hdiv hsupport labels rows hlabels hchild F)) (Real.sqrt_le_sqrt (actual_sector_energy p hp hinj hpr S u hdiv hsupport labels rows hlabels hchild G))
         (Real.sqrt_nonneg _) (Real.sqrt_nonneg _)) hA
 
 end SevenEighths.InverseInitialEnergyCallerSupport

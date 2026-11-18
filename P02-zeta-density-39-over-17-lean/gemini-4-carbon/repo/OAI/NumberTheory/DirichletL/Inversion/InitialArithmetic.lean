@@ -11,8 +11,7 @@ open scoped BigOperators Classical
 namespace SevenEighths.InverseInitialArithmetic
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open MixedCrossSeparation (columnCoefficient)
-open SevenEighths.InverseMoment SevenEighths.InverseInitialFibers
-open CompletedGauss
+open SevenEighths.InverseMoment SevenEighths.InverseInitialFibers CompletedGauss
 local notation "O" => ActualEisensteinCubic.O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
@@ -31,8 +30,7 @@ theorem initialColumn_eq_secondPre (Ψ : O →* ℂ) (j C d h : O)
     (H : Finset ι→ℂ) (S : Finset ι) :
     initialColumn p hp hcop hg Ψ j C d h H S =
       secondPreColumn p hp hcop hg Ψ (j*C) 1 1 d h H S := by
-  have hone := ActualEisensteinCubic.finiteSquarefreeRow_one (fun i=>Ideal.span {p i}) hg S
-  simp only [initialColumn,secondPreColumn,hone,one_pow,mul_one]
+  simp only [initialColumn,secondPreColumn,(ActualEisensteinCubic.finiteSquarefreeRow_one (fun i=>Ideal.span {p i}) hg S),one_pow,mul_one]
 
 theorem initial_common_extraction (hpr : ∀ i,λ₀^2∣p i-1)
     (Ψ : O →* ℂ) (j t d h : O) (H : Finset ι→ℂ)
@@ -42,7 +40,7 @@ theorem initial_common_extraction (hpr : ∀ i,λ₀^2∣p i-1)
       secondChildColumn p hp hcop hg Ψ (j*t) (d*∏ i∈V,p i) (d*h)
         (fun U=>H (V∪U)) N := by
   simp only [initialColumn_eq_secondPre]
-  simpa only [one_mul] using secondPreColumn_union p hp hcop hg hpr Ψ j t 1 1 d h H V N hVN
+  simpa using secondPreColumn_union p hp hcop hg hpr Ψ j t 1 1 d h H V N hVN
 
 theorem initial_marked_child (F V A : Finset ι) (Ψ : O →* ℂ) (j t d h : O)
     (slots : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
@@ -65,8 +63,7 @@ theorem initial_input_row (F : Finset ι) (Ψ : O →* ℂ) (j : O)
   unfold inputConjugateRow
   congr 1
   funext S
-  have hone := ActualEisensteinCubic.finiteSquarefreeRow_one (fun i=>Ideal.span {p i}) hg S
-  simp only [secondInputCoefficient,hone,one_pow,mul_one]
+  simp only [secondInputCoefficient,(ActualEisensteinCubic.finiteSquarefreeRow_one (fun i=>Ideal.span {p i}) hg S),one_pow,mul_one]
 
 def sourceIdeal (S : Finset ι) : Ideal O := Ideal.span {∏ i∈S,p i}
 
@@ -124,7 +121,6 @@ theorem sourceTuple_valid (hpr : ∀ i,λ₀^2∣p i-1) {J : ℕ}
     rw [sourceIdeal_gen p hp hpr E]
     exact Finset.prod_ne_zero_iff.mpr (fun i _=>hp i)
   · intro i
-    change (sourcePrime p (assigned i)).val∣sourceIdeal p G*sourceIdeal p V
     rcases Finset.mem_union.mp (ha i) with hi|hi
     · exact dvd_mul_of_dvd_left (source_prime_dvd p G (assigned i) hi) _
     · exact dvd_mul_of_dvd_right (source_prime_dvd p V (assigned i) hi) _
@@ -136,8 +132,7 @@ theorem source_quotient (G E : Finset ι) (hEG : E⊆G) :
     CanonicalQuadraticSieve.idealQuotient (sourceIdeal p E) (sourceIdeal p G)=
       sourceIdeal p (G\E) := by
   apply mul_left_cancel₀ (sourceIdeal_ne_zero p hp E)
-  rw [CanonicalQuadraticSieve.idealQuotient_mul (sourceIdeal_dvd p E G hEG)]
-  rw [←sourceIdeal_union p E (G\E) (by exact Finset.disjoint_left.mpr (fun i hi hj=>(Finset.mem_sdiff.mp hj).2 hi)),
+  rw [CanonicalQuadraticSieve.idealQuotient_mul (sourceIdeal_dvd p E G hEG), ←sourceIdeal_union p E (G\E) (by exact Finset.disjoint_left.mpr (fun i hi hj=>(Finset.mem_sdiff.mp hj).2 hi)),
     Finset.union_sdiff_of_subset hEG]
 
 theorem sourceIdeal_injective (hinj : Function.Injective (fun i=>Ideal.span {p i})) :
@@ -159,19 +154,14 @@ def toTuple {J : ℕ} (x : Source (ι:=ι) J) : InitialTuple J :=
 theorem toTuple_injective (hinj : Function.Injective (fun i=>Ideal.span {p i})) {J : ℕ} :
     Function.Injective (toTuple p (J:=J)) := by
   intro x y he
-  have hC := congrArg InitialTuple.common he
-  have hD := congrArg InitialTuple.divisor he
-  have hV := congrArg InitialTuple.residual he
-  have hf := congrArg InitialTuple.frequency he
-  have ha := congrArg InitialTuple.assigned he
   apply Source.ext
-  · exact sourceIdeal_injective p hinj hC
-  · exact sourceIdeal_injective p hinj hD
-  · exact sourceIdeal_injective p hinj hV
-  · exact hf
+  · exact sourceIdeal_injective p hinj (congrArg InitialTuple.common he)
+  · exact sourceIdeal_injective p hinj (congrArg InitialTuple.divisor he)
+  · exact sourceIdeal_injective p hinj (congrArg InitialTuple.residual he)
+  · exact (congrArg InitialTuple.frequency he)
   · funext i
     apply hinj
-    exact congrArg Subtype.val (congrFun ha i)
+    exact congrArg Subtype.val (congrFun (congrArg InitialTuple.assigned he) i)
 
 def sectorSource {J : ℕ} (u : Oˣ) (x : Source (ι:=ι) J) : Source (ι:=ι) J :=
   {x with frequency := (u : O)^5*x.frequency}
@@ -208,13 +198,11 @@ theorem initial_poisson_child_normalized
   have hts : Ideal.span {t}=Ideal.span {primaryGenerator (sourceIdeal p (G\E))} := by
     rw [ht,sourceIdeal_gen p hp hpr (G\E)]
     rfl
-  have hmask := rowCoprimeMask_mul_eq_of_span_eq (fun i=>Ideal.span {p i}) N j hts
   have hchange : secondChildColumn p hp hcop hg Ψ (j*t) (e*∏ i∈V,p i) (e*h) H N =
       secondChildColumn p hp hcop hg Ψ (j*primaryGenerator (sourceIdeal p (G\E)))
         (e*∏ i∈V,p i) (e*h) H N := by
-    simp only [secondChildColumn,hmask]
-  rw [hchange,hu,primaryGenerator_mul,sourceIdeal_gen p hp hpr V]
-  rw [mul_assoc (u:O)]
+    simp only [secondChildColumn,(rowCoprimeMask_mul_eq_of_span_eq (fun i=>Ideal.span {p i}) N j hts)]
+  rw [hchange,hu,primaryGenerator_mul,sourceIdeal_gen p hp hpr V, mul_assoc (u:O)]
   exact secondChildColumn_generator_unit p hp hcop hg Ψ u _ _ _ h H N
 
 end SevenEighths.InverseInitialArithmetic

@@ -7,15 +7,10 @@ namespace OAI
 
 noncomputable section
 
+open MeasureTheory FourierBridge ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve ConcretePrimeRowBridge FirstCauchyArithmetic SecondPassArithmetic FirstPassCubeLabels
 open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
-open MeasureTheory FourierBridge ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve
-open ConcretePrimeRowBridge FirstCauchyArithmetic SecondPassArithmetic FirstPassCubeLabels
 namespace SevenEighths.InverseInitialCommonTransform
-open InverseMoment InverseInitialCommonLists InverseInitialCommonRatios InverseInitialCommonProfile
-open InverseInitialCommonCutoff InverseInitialCommonTuples InverseInitialOverlapFourier
-open InverseInitialOverlapInputFourier InverseInitialRayAttachment InverseInitialArithmetic
-open InverseInitialOverlap InverseInitialPoissonBridge InverseInitialKernelBridge
-open InverseInitialEnergyCallerWindow
+open InverseMoment InverseInitialCommonLists InverseInitialCommonRatios InverseInitialCommonProfile InverseInitialCommonCutoff InverseInitialCommonTuples InverseInitialOverlapFourier InverseInitialOverlapInputFourier InverseInitialRayAttachment InverseInitialArithmetic InverseInitialOverlap InverseInitialPoissonBridge InverseInitialKernelBridge InverseInitialEnergyCallerWindow
 local notation "Eis"=>ActualEisensteinCubic.O
 variable {σ:Type*} [DecidableEq σ]
 
@@ -35,11 +30,9 @@ theorem original_profile_point
         (primeMark I (fun i=>poolList F (L i))
           (fun i q=>a i q.val*logPhase (-t) (Real.log (slotRatio Z ell i q.val))) A*
           childLogTest wFresh t yc) := by
-  have he := common_profile_separation W a₀ b₀ ha₀ hs hW F I L hL a hcop Z hZ ell A yj yc hjpos hc
-  have hcut := tupleProfile_insert_fresh I L a hcop Z ell lo hi W wFresh a₀ b₀ jlo jhi hs ha hFresh yj yc hj hc (∏i∈A,i.val)
-  rw [←hcut]
+  rw [←(tupleProfile_insert_fresh I L a hcop Z ell lo hi W wFresh a₀ b₀ jlo jhi hs ha hFresh yj yc hj hc (∏i∈A,i.val))]
   unfold tupleProfile
-  rw [he,←integral_const_mul]
+  rw [(common_profile_separation W a₀ b₀ ha₀ hs hW F I L hL a hcop Z hZ ell A yj yc hjpos hc),←integral_const_mul]
   apply integral_congr_ae
   filter_upwards with t
   unfold childLogTest

@@ -10,8 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstMixedNormalization
-open CenteredMomentDescentLedger CenteredMomentSectorLocalization
-open CenteredMomentAmplificationErrorEnergy CenteredMomentFirstAmplificationChoice
+open CenteredMomentDescentLedger CenteredMomentSectorLocalization CenteredMomentAmplificationErrorEnergy CenteredMomentFirstAmplificationChoice
 local notation "O" => ActualEisensteinCubic.O
 
 theorem exceptional_reference_identity (Z V C D NE NR K Q w wo B j g ell:ℝ)
@@ -24,8 +23,8 @@ theorem exceptional_reference_identity (Z V C D NE NR K Q w wo B j g ell:ℝ)
     (V/C)*Z^(-wo)*(V/C/Z^w)^((1:ℝ)/3)*(Z^(j+g))^((5:ℝ)/6)*Z^(-ell)/
       (Q*(V/C)^2*Z^B)=
       Z^(Real.logb Z V-5*M/6-firstSaving c (d+K0-j) w q wo B g ell):=by
-  have hz:0<Z:=zero_lt_one.trans hZ
-  have hzlog:Real.log Z≠0:=ne_of_gt (Real.log_pos hZ)
+  have hz :=zero_lt_one.trans hZ
+  have hzlog :=ne_of_gt (Real.log_pos hZ)
   dsimp only
   apply Real.log_injOn_pos
   · simp only [Set.mem_Ioi];positivity
@@ -40,8 +39,7 @@ theorem exceptional_reference_identity (Z V C D NE NR K Q w wo B j g ell:ℝ)
 theorem actual_error_weight (p:O)(hp:p≠0)(Z:ℝ)(hZ:1<Z)(k:ℕ)
     (hk:k=1 ∨ k=6 ∨ k=7):
     localErrorCost p (k-1)≤Z^(-errorMoving p Z k):=by
-  have hn:1≤normValue p:=normValue_ge_one p hp
-  have hnpos:0<normValue p:=normValue_pos p hp
+  have hnpos :=normValue_pos p hp
   have he:Z^(-(Real.logb Z (normValue p)))=(normValue p)⁻¹:=by
     rw [Real.rpow_neg (zero_lt_one.trans hZ).le,
       Real.rpow_logb (zero_lt_one.trans hZ) hZ.ne' hnpos]
@@ -49,8 +47,8 @@ theorem actual_error_weight (p:O)(hp:p≠0)(Z:ℝ)(hZ:1<Z)(k:ℕ)
   · simpa [localErrorCost,errorMoving,normValue] using he.ge
   · norm_num only [Nat.reduceSub,localErrorCost,errorMoving,ite_true,neg_zero,Real.rpow_zero]
     change (1-(normValue p)⁻¹)^2≤1
-    have hi:0≤(normValue p)⁻¹:=inv_nonneg.mpr hnpos.le
-    have hu:(normValue p)⁻¹≤1:=inv_le_one_of_one_le₀ hn
+    have hi :=inv_nonneg.mpr hnpos.le
+    have hu :=inv_le_one_of_one_le₀ (normValue_ge_one p hp)
     nlinarith
   · simpa [localErrorCost,errorMoving,normValue] using he.ge
 

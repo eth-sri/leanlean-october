@@ -10,8 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSecondLedger
-open CanonicalQuadraticSieve CenteredMomentSupportedCorrelation CenteredMomentUnequal
-open CenteredMomentPartition CenteredMomentProductCRT ConcretePrimeRowBridge
+open CanonicalQuadraticSieve CenteredMomentSupportedCorrelation CenteredMomentUnequal CenteredMomentPartition CenteredMomentProductCRT ConcretePrimeRowBridge
 local notation "O" => ActualEisensteinCubic.O
 
 theorem nonzero_unequal_min_six (p : O) [(Ideal.span {p}).IsMaximal]
@@ -24,17 +23,15 @@ theorem nonzero_unequal_min_six (p : O) [(Ideal.span {p}).IsMaximal]
   rcases lt_or_gt_of_ne hcd with hlt | hgt
   · have hz := unequal_prime_power_zero_of_not_six p hp hg hchar hc
       (show 1 ≤ d-c by omega) (by simpa only [min_eq_left hlt.le] using h6) (-k)
-    have he : c+(d-c)=d := Nat.add_sub_of_le hlt.le
     have hn := norm_ne_zero_iff.mpr hne
     rw [actualCorrelation_norm_swap] at hn
     have hz' : actualCorrelation (p^d) (p^c) (supported_power p hp d) (supported_power p hp c)
         (-(p^min c d*k)) = 0 := by
-      simpa only [← pow_add,he,min_eq_left hlt.le,mul_neg] using hz
+      simpa only [← pow_add,(Nat.add_sub_of_le hlt.le),min_eq_left hlt.le,mul_neg] using hz
     exact hn (by rw [hz',norm_zero])
   · have hz := unequal_prime_power_zero_of_not_six p hp hg hchar hd
       (show 1 ≤ c-d by omega) (by simpa only [min_eq_right hgt.le] using h6) k
-    have he : d+(c-d)=c := Nat.add_sub_of_le hgt.le
-    exact hne (by simpa only [← pow_add,he,min_eq_right hgt.le] using hz)
+    exact hne (by simpa only [← pow_add,(Nat.add_sub_of_le hgt.le),min_eq_right hgt.le] using hz)
 
 def localSaving (c d : ℕ) (nonunit : Prop) : ℝ :=
   (c+d : ℝ) - 5*(min c d : ℝ)/6 - 1 +
@@ -75,14 +72,6 @@ theorem localSaving_lower (c d : ℕ) (hc : 1 ≤ c) (hd : 1 ≤ d)
     simp only [localSaving,hcd,false_and,ite_false,add_zero]
     linarith
 
-theorem actual_localSaving_lower (p : O) [(Ideal.span {p}).IsMaximal]
-    (hp : Supported (Ideal.span {p})) (hg : goodLambda ∉ Ideal.span {p})
-    (hchar : ringChar (O ⧸ Ideal.span {p}) ≠ 2)
-    (c d : ℕ) (hc : 1 ≤ c) (hd : 1 ≤ d) (k : O)
-    (hne : actualCorrelation (p^c) (p^d) (supported_power p hp c) (supported_power p hp d)
-      (p^min c d*k) ≠ 0) :
-    ((c:ℝ)+d)/3 ≤ localSaving c d (p ∣ k) :=
-  localSaving_lower c d hc hd (fun hcd => nonzero_unequal_min_six p hp hg hchar c d hc hd hcd k hne) _
 
 section Global
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
@@ -214,8 +203,7 @@ theorem actual_secondSaving_lower (p : ι → O) [∀ i, (Ideal.span {p i}).IsMa
       apply Finset.sum_le_sum
       intro i hi
       apply mul_le_mul_of_nonneg_left
-        (actual_localSaving_lower (p i) (hp i) (hg i) (hchar i) (c i) (d i) (hc i) (hd i)
-          (dividedFrequency p c d w i) (local_nonzero_of_global p hp hcop c d w hne i))
+        ((localSaving_lower (c i) (d i) (hc i) (hd i) (fun hcd => nonzero_unequal_min_six (p i) (hp i) (hg i) (hchar i) (c i) (d i) (hc i) (hd i) hcd (dividedFrequency p c d w i) (local_nonzero_of_global p hp hcop c d w hne i)) _))
       apply Real.logb_nonneg hZ
       exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr (hp i).1)
 

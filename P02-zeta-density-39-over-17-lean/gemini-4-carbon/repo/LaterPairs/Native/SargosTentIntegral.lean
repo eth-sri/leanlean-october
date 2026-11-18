@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.SargosKernelBasic
 
 @[expose] public section
@@ -53,17 +62,16 @@ theorem sargos_integral_symmetric_tent_character
   rw [← intervalIntegral.integral_add_adjacent_intervals
     (hf (-w) 0) (hf 0 w)]
   have hneg :
-      (∫ x in (0 : ℝ)..w, f (-x)) = ∫ x in -w..0, f x := by
+      (∫ x in 0..w, f (-x)) = ∫ x in -w..0, f x := by
     rw [intervalIntegral.integral_comp_neg, neg_zero]
   have hfneg : IntervalIntegrable (fun x : ℝ => f (-x))
       MeasureTheory.volume 0 w := by
-    have hc : Continuous (fun x : ℝ => f (-x)) := hfcont.comp continuous_neg
-    exact hc.intervalIntegrable 0 w
+    exact (hfcont.comp continuous_neg).intervalIntegrable 0 w
   rw [← hneg, ← intervalIntegral.integral_add
     hfneg (hf 0 w)]
   calc
-    (∫ x in (0 : ℝ)..w, f (-x) + f x) =
-        ∫ x in (0 : ℝ)..w,
+    (∫ x in 0..w, f (-x) + f x) =
+        ∫ x in 0..w,
           ((2 * ((1 - x / w) * Real.cos (2 * Real.pi * ξ * x)) : ℝ) : ℂ) := by
       apply intervalIntegral.integral_congr
       intro x hx
@@ -72,15 +80,13 @@ theorem sargos_integral_symmetric_tent_character
         · exact h.1
         · linarith
       simp only [f, abs_neg, abs_of_nonneg hx0]
-      rw [show -(ξ * -x) = ξ * x by ring]
-      rw [← mul_add]
-      rw [fordAdditiveCharacter_pair_eq_cos]
+      rw [show -(ξ * -x) = ξ * x by ring, ← mul_add, fordAdditiveCharacter_pair_eq_cos]
       push_cast
       ring_nf
-    _ = ((∫ x in (0 : ℝ)..w,
+    _ = ((∫ x in 0..w,
           2 * ((1 - x / w) * Real.cos (2 * Real.pi * ξ * x)) : ℝ) : ℂ) :=
       intervalIntegral.integral_ofReal
-    _ = ((2 * ∫ x in (0 : ℝ)..w,
+    _ = ((2 * ∫ x in 0..w,
           (1 - x / w) * Real.cos (2 * Real.pi * ξ * x) : ℝ) : ℂ) := by
       rw [intervalIntegral.integral_const_mul]
 

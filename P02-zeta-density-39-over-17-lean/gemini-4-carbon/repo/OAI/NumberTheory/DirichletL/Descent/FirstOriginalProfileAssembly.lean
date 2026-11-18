@@ -8,8 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseMomentFirstOriginalProfile
-open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseMomentFirstChildWindows CompletedHeight
+open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseMomentFirstChildWindows CompletedHeight
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
 variable (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
@@ -45,8 +44,6 @@ theorem original_retained_sum (pool : Finset ι) (Q : Finset (ι→₀ℕ))
     originalRetainedFamily p hp hcop hg pool Q labels β Ψ m mark W Φ K Y R s=
       ∑x∈firstGlobalRetainedSource p (firstOriginalOuter pool Q) (fun _=>labels) (fun x=>x.1) Y,
         ∑j∈firstCommonIndices pool,sourceSummand p hp hcop hg β R Ψ m mark W Φ K x j := by
-  have hleft : s 0*s 2*s 5*s 7≠0 := ne_of_gt (mul_pos (mul_pos (mul_pos (hs 0) (hs 2)) (hs 5)) (hs 7))
-  have hright : s 1*s 2*s 5*s 8≠0 := ne_of_gt (mul_pos (mul_pos (mul_pos (hs 1) (hs 2)) (hs 5)) (hs 8))
   simp only [originalRetainedFamily,firstFamilyPhysicalRows,firstBlockedPhysicalRows,
     Finset.mul_sum,sourceSummand,weight,coefficient,leftNorm,rightNorm,commonNorm,activeNorm,divisorElement,
     Bool.false_eq_true,ite_true,ite_false,one_mul]
@@ -54,7 +51,7 @@ theorem original_retained_sum (pool : Finset ι) (Q : Finset (ι→₀ℕ))
   intro x hx
   apply Finset.sum_congr rfl
   intro j hj
-  simp only [firstNormProfile,mul_div_cancel₀ _ hleft,mul_div_cancel₀ _ hright]
+  simp only [firstNormProfile,mul_div_cancel₀ _ (ne_of_gt (mul_pos (mul_pos (mul_pos (hs 0) (hs 2)) (hs 5)) (hs 7))),mul_div_cancel₀ _ (ne_of_gt (mul_pos (mul_pos (mul_pos (hs 1) (hs 2)) (hs 5)) (hs 8)))]
   ring
 
 end SevenEighths.InverseMomentFirstOriginalProfile

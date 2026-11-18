@@ -15,9 +15,7 @@ public import Mathlib.NumberTheory.Harmonic.ZetaAsymp
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology ArithmeticFunction
-open MathCollab.Density.Contour MathCollab.Density.Stronger
-open MathCollab.Density.Stronger.Fourth
+open Complex Filter MeasureTheory Set Topology ArithmeticFunction MathCollab.Density.Contour MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
 open scoped ArithmeticFunction.zeta ArithmeticFunction.sigma BigOperators Interval
   LSeries.notation ComplexConjugate
 set_option autoImplicit false
@@ -93,8 +91,7 @@ theorem completedXiNumerator_eq (s : ℂ) (hs0 : s ≠ 0) (hs1 : s ≠ 1) :
     completedXiNumerator s = s * (1 - s) * completedRiemannZeta s := by
   rw [completedRiemannZeta_eq]
   unfold completedXiNumerator
-  have h1m : 1 - s ≠ 0 := sub_ne_zero.mpr hs1.symm
-  field_simp [hs0, h1m]
+  field_simp [hs0, (sub_ne_zero.mpr hs1.symm)]
   ring
 
 theorem completedXiNumerator_one_sub (s : ℂ) :
@@ -108,7 +105,7 @@ theorem differentiable_completedXiNumerator :
   unfold completedXiNumerator
   have hpoly : Differentiable ℂ (fun s : ℂ => s * (1 - s)) := by fun_prop
   exact (hpoly.mul differentiable_completedZeta₀).sub
-    (differentiable_const (c := (1 : ℂ)))
+    (differentiable_const (c := 1))
 
 @[simp] theorem one_sub_afeCriticalPoint (t : ℝ) :
     1 - afeCriticalPoint t = afeCriticalPoint (-t) := by
@@ -212,8 +209,7 @@ theorem differentiable_zetaSquareContourNumerator (t : ℝ) :
       (fun w : ℂ => completedXiNumerator (afeCriticalPoint t + w)) :=
     fun w => differentiable_completedXiNumerator.differentiableAt.comp w
       (hshift w)
-  have haux : Differentiable ℂ hughesYoungAuxiliaryZero :=
-    differentiable_hughesYoungAuxiliaryZero
+  have haux := differentiable_hughesYoungAuxiliaryZero
   fun_prop (disch := assumption)
 
 /-- Functional-equation reflection of the one-sided numerator. -/
@@ -319,7 +315,7 @@ theorem hIntegral_zetaSquare_bottom (t c H : ℝ) :
       rw [← intervalIntegral.integral_neg]
       apply intervalIntegral.integral_congr
       intro x _hx
-      simpa only [ofReal_neg] using hpoint x
+      simpa using hpoint x
     _ = _ := by
       rw [hcomp]
 
@@ -346,13 +342,11 @@ theorem vIntegral_zetaSquare_left (t c H : ℝ) :
       rw [← intervalIntegral.integral_neg]
       apply intervalIntegral.integral_congr
       intro y _hy
-      simpa only [ofReal_neg] using hpoint y
+      simpa using hpoint y
   have hraw' :
       (∫ y in -H..H, f (((-c : ℝ) : ℂ) + (y : ℂ) * I)) =
         -(∫ y in -H..H, g ((c : ℂ) + (y : ℂ) * I)) := by
-    calc
-      _ = -∫ y in -H..H, g ((c : ℂ) + ((-y : ℝ) : ℂ) * I) := hraw
-      _ = _ := by rw [hcomp]
+    exact (hraw).trans (by rw [hcomp])
   unfold VIntegral
   rw [hraw']
   simp [g]

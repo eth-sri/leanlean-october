@@ -44,7 +44,7 @@ theorem hybrid_original_quotient_block (ε : ℝ) (hε : 0 < ε) :
     hrows hn hP ha hpairs hhs hcs hbeta
   let Hset := pairs.image Prod.snd
   let mc := (pairs.image Prod.fst).biUnion fun m => (cset m).image fun c => (m, c)
-  have hRr : R * r ≠ 0 := mul_ne_zero hR hr
+  have hRr := mul_ne_zero hR hr
   have hn0 : ∀ n ∈ nset, n ≠ 0 := fun n hn' => (hn n hn').1.1.ne_zero
   have hP0 : ∀ P ∈ Pset, P ≠ 0 := fun P hP' => (hP P hP').1.1.ne_zero
   have hHcount : (Hset.card : ℝ) ≤ 128 * H := by

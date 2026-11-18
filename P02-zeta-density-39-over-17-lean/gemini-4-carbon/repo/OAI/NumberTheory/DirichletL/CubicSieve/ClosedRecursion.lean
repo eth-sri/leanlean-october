@@ -8,97 +8,26 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
-
-open scoped BigOperators Classical SchwartzMap ContDiff
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 namespace SecondPassArithmetic
 
 section
-open ActualEisensteinCubic FirstPassCubeLabels
+open FirstPassCubeLabels
 open ConcreteTraceCRT (eisEmbedding)
 open JointLogSeparation (frequencyTwist)
 
 end
 
-open ActualEisensteinCubic FirstPassCubeLabels
+open FirstPassCubeLabels
 open ConcreteTraceCRT (eisEmbedding)
 
-open ActualEisensteinCubic FirstPassCubeLabels
 open ConcreteTraceCRT (eisEmbedding)
 open JointLogSeparation (frequencyTwist)
 
 end SecondPassArithmetic
 
-open scoped BigOperators Classical
 namespace CompletedGauss
-open ActualEisensteinCubic UniqueFactorizationMonoid
 
 theorem nonresidual_count_eq_on_fiber (I J Q P : Ideal ActualEisensteinCubic.O)
     (hI : I≠0) (hP : Prime P)
@@ -122,8 +51,7 @@ theorem nonresidual_count_eq_on_fiber (I J Q P : Ideal ActualEisensteinCubic.O)
     by_cases hi : 2≤(normalizedFactors I).count P <;>
       by_cases hj : 2≤(normalizedFactors J).count P <;> simp only [hi,hj,ite_true,ite_false,not_true_eq_false,not_false_eq_true] at ha ht <;> omega
   · have hpi : P∣I := (hP.dvd_mul.mp hpool).resolve_right hpq
-    have hci : 0<(normalizedFactors I).count P :=
-      Multiset.count_pos.mpr ((UniqueFactorizationMonoid.mem_normalizedFactors_iff hI).mpr ⟨hP,hpi⟩)
+    have hci := Multiset.count_pos.mpr ((UniqueFactorizationMonoid.mem_normalizedFactors_iff hI).mpr ⟨hP,hpi⟩)
     simp only [hpq,not_false_eq_true,ite_true] at hr0
     by_cases hi : 2≤(normalizedFactors I).count P <;>
       by_cases hj : 2≤(normalizedFactors J).count P <;> simp only [hi,hj,ite_true,ite_false,not_true_eq_false,not_false_eq_true] at ha hr0 <;> omega
@@ -138,8 +66,7 @@ theorem nonresidual_prime_transport (I J F Q P : Ideal ActualEisensteinCubic.O)
   have hpoolJ : P∣J*Q := by
     rcases hP.dvd_mul.mp hpool with hi|hq
     · have hm := (UniqueFactorizationMonoid.mem_normalizedFactors_iff hI).mpr ⟨hP,hi⟩
-      have hcj : 0<(normalizedFactors J).count P := hc ▸ Multiset.count_pos.mpr hm
-      exact dvd_mul_of_dvd_left ((UniqueFactorizationMonoid.mem_normalizedFactors_iff hJ).mp (Multiset.count_pos.mp hcj)).2 Q
+      exact dvd_mul_of_dvd_left ((UniqueFactorizationMonoid.mem_normalizedFactors_iff hJ).mp (Multiset.count_pos.mp (hc ▸ Multiset.count_pos.mpr hm))).2 Q
     · exact dvd_mul_of_dvd_right hq J
   have hrc : (normalizedFactors (rowResidualPart I Q)).count P=
       (normalizedFactors (rowResidualPart J Q)).count P := by
@@ -147,16 +74,12 @@ theorem nonresidual_prime_transport (I J F Q P : Ideal ActualEisensteinCubic.O)
       normalizedFactors_rowSimplePart,Multiset.count_filter,hc]
   refine ⟨hpoolJ,?_,?_⟩
   · intro hd
-    have hm := (UniqueFactorizationMonoid.mem_normalizedFactors_iff (squarefreeResidualPart_ne_zero (rowSimplePart J) Q)).mpr ⟨hP,hd⟩
-    have hp : 0<(normalizedFactors (rowResidualPart I Q)).count P := hrc.symm ▸ Multiset.count_pos.mpr hm
     exact hr ((UniqueFactorizationMonoid.mem_normalizedFactors_iff (squarefreeResidualPart_ne_zero (rowSimplePart I) Q)).mp
-      (Multiset.count_pos.mp hp)).2
+      (Multiset.count_pos.mp (hrc.symm ▸ Multiset.count_pos.mpr ((UniqueFactorizationMonoid.mem_normalizedFactors_iff (squarefreeResidualPart_ne_zero (rowSimplePart J) Q)).mpr ⟨hP,hd⟩)))).2
   · simp only [completedLocalExponent,hc]
 
 end CompletedGauss
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology
 
 namespace CubicEisenstein
 

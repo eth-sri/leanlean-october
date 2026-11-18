@@ -20,14 +20,12 @@ theorem logAnnulus_smooth : ContDiff ℝ ∞ logAnnulus :=
 theorem logAnnulus_support : Function.support logAnnulus ⊆ Set.Icc (-Real.log 4) 0 := by
   intro x hx
   have hn : annulus (Real.exp x)≠0 := by simpa only [Function.mem_support,logAnnulus,ne_eq,Complex.ofReal_eq_zero] using hx
-  have hlo : 1/4<Real.exp x := lt_of_not_ge (fun h=>hn (annulus_zero_low _ h))
-  have hhi : Real.exp x<1 := lt_of_not_ge (fun h=>hn (annulus_zero_high _ h))
   constructor
   · have hh := Real.strictMonoOn_log (show 1/4∈Set.Ioi (0:ℝ) by norm_num)
-      (Real.exp_pos x) hlo
+      (Real.exp_pos x) (lt_of_not_ge (fun h=>hn (annulus_zero_low _ h)))
     rw [Real.log_exp,Real.log_div (by norm_num) (by norm_num),Real.log_one,zero_sub] at hh
     exact hh.le
-  · exact (Real.exp_lt_one_iff.mp hhi).le
+  · exact (Real.exp_lt_one_iff.mp (lt_of_not_ge (fun h=>hn (annulus_zero_high _ h)))).le
 
 theorem logAnnulus_compact : HasCompactSupport logAnnulus :=
   HasCompactSupport.intro (isCompact_Icc) (fun x hx=>by

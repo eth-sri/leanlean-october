@@ -7,87 +7,20 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 
 namespace FirstPassCubeLabels
 
 section
 
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory
-open ActualEisensteinCubic
 open RayFourExpansion (RayCharacter crossCoeff)
 
-open ActualEisensteinCubic
 open RayFourExpansion (RayCharacter crossCoeff)
 open ConcreteTraceCRT (eisEmbedding)
 
 end
 
-open ActualEisensteinCubic
 open ConcretePrimeRowBridge (conjugateIdealRowSum mobiusIdealColumn
   primePool mem_primePool_iff)
 open FirstCauchyArithmetic (supportIdealFamily supportIdealFamily_pos supportIdealFamily_good
@@ -101,7 +34,6 @@ namespace SecondPassArithmetic
 
 section
 abbrev O := ActualEisensteinCubic.O
-open ActualEisensteinCubic
 open MixedCrossSeparation (columnCoefficient columnG convertedColumnBlock quadraticCrossPhase
   columnPrimeCoprime columnCoefficient_cancel_false columnCoefficient_cancel_true)
 open FirstCauchyArithmetic (supportMobius activeGaussRowFactor)
@@ -183,17 +115,13 @@ theorem mobius_second_gauss_restore {ι : Type*} [DecidableEq ι]
       activeGaussRowFactor p hp hinj hg T S e k =
     quadraticCrossPhase p hg T S * star (secondColumnMinus p hp hcop hg C₁ e k S) *
       secondColumnPlus p hp hcop hg C₂ e k T := by
-  have hprime (i : ι) : Prime (Ideal.span {p i}) :=
-    Ideal.prime_of_isPrime (NeZero.ne (Ideal.span {p i})) inferInstance
-  have hmS := FirstCauchyArithmetic.supportMobius_sq _ hprime hinj S
-  have hmT := FirstCauchyArithmetic.supportMobius_sq _ hprime hinj T
+  have hprime (i : ι) := Ideal.prime_of_isPrime (NeZero.ne (Ideal.span {p i})) inferInstance
   have hr (u : O) :
       finiteSexticRow (activePrimes (fun i => Ideal.span {p i}) T S)
         (fun i => hg i.val) (activeExponent T S) u =
       star (finiteSquarefreeRow (fun i => Ideal.span {p i}) hg T u) *
         finiteSquarefreeRow (fun i => Ideal.span {p i}) hg S u := by
-    have hh := finiteSquarefreeRow_pair_activeSupport (fun i => Ideal.span {p i}) hg T S u
-    simpa [Finset.disjoint_iff_inter_eq_empty.mp hd.symm, rowCoprimeMask] using hh.symm
+    simpa [Finset.disjoint_iff_inter_eq_empty.mp hd.symm, rowCoprimeMask] using (finiteSquarefreeRow_pair_activeSupport (fun i => Ideal.span {p i}) hg T S u).symm
   unfold activeGaussRowFactor
   dsimp only
   rw [FirstCauchyArithmetic.active_productGauss_eq_mobius_converted p hp hinj hg hc hpr,
@@ -213,12 +141,11 @@ theorem mobius_second_gauss_restore {ι : Type*} [DecidableEq ι]
         (columnCoefficient p hp hcop hg T * finiteSquarefreeRow (fun i => Ideal.span {p i}) hg T (-1) *
           star (columnG p hp hcop hg T) * C₂ T * star (finiteSquarefreeRow (fun i => Ideal.span {p i}) hg T e) *
           finiteSquarefreeRow (fun i => Ideal.span {p i}) hg T k)) := by ring
-    _ = _ := by rw [hmS, hmT]; ring
+    _ = _ := by rw [(FirstCauchyArithmetic.supportMobius_sq _ hprime hinj S), (FirstCauchyArithmetic.supportMobius_sq _ hprime hinj T)]; ring
 
 end
 section
 
-open ActualEisensteinCubic
 open MixedCrossSeparation (columnCoefficient)
 open FirstPassCubeLabels (row_union mask_union mask_mul)
 
@@ -254,8 +181,7 @@ theorem second_child_masked (m r c d e k v : O) :
       finiteSquarefreeRow P hg S c ^ 4 * finiteSquarefreeRow P hg S v ^ 4 := by ring
     _ = _ := by
       rw [mask_star_row]
-      have hh := congrArg (fun z : ℂ => (rowCoprimeMask P S m * rowCoprimeMask P S r) * z) hr
-      convert hh using 1 <;> ring
+      convert (congrArg (fun z : ℂ => (rowCoprimeMask P S m * rowCoprimeMask P S r) * z) hr) using 1 <;> ring
 end Masks
 
 variable {ι : Type*} [DecidableEq ι]
@@ -290,7 +216,6 @@ theorem secondPreColumn_union
   have hA := FirstPassCubeLabels.columnCoefficient_union_row_four
     p hp hcop hg hpr N V hd.symm
   rw [Finset.union_comm N V] at hA
-  have hrow := second_child_masked (fun i => Ideal.span {p i}) hg N m r c d e k (∏ i ∈ V, p i)
   simp only [secondPreColumn, secondChildColumn, hA, Finset.prod_union hd,
     map_mul, row_union _ hg V N hd, mask_union _ hg V N hd,
     mul_pow, star_mul, mul_one]
@@ -309,11 +234,10 @@ theorem secondPreColumn_union
           finiteSquarefreeRow (fun i => Ideal.span {p i}) hg N c ^ 4 *
           finiteSquarefreeRow (fun i => Ideal.span {p i}) hg N (∏ i ∈ V, p i) ^ 4) *
         H (V ∪ N)) := by ring
-    _ = _ := by rw [hrow]; ring
+    _ = _ := by rw [(second_child_masked (fun i => Ideal.span {p i}) hg N m r c d e k (∏ i ∈ V, p i))]; ring
 
 end
 
-open ActualEisensteinCubic
 open FirstCauchyArithmetic (supportMobius)
 
 variable {ι : Type*} [DecidableEq ι]

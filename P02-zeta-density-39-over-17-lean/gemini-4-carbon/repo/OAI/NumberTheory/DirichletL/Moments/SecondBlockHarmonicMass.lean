@@ -10,13 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentSecondBlockHarmonicMass
-open CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentCanonicalFirst CenteredMomentSecondRetainedAggregate CenteredMomentSourceMass
-open CenteredMomentSecondBlockAggregate CenteredMomentSecondBlockCount
-open CenteredMomentSecondActiveCount CenteredMomentActiveSource
-open CenteredMomentFirstSectors CenteredMomentSourceRow
-open CenteredMomentSecondCanonicalNonunit CenteredMomentRankinRadical
-open CenteredMomentCommonHarmonicMass CenteredMomentOriginalCommonHarmonic
+open CanonicalQuadraticSieve CompletedGauss CenteredMomentCanonicalFirst CenteredMomentSecondRetainedAggregate CenteredMomentSourceMass CenteredMomentSecondBlockAggregate CenteredMomentSecondBlockCount CenteredMomentSecondActiveCount CenteredMomentActiveSource CenteredMomentFirstSectors CenteredMomentSourceRow CenteredMomentSecondCanonicalNonunit CenteredMomentRankinRadical CenteredMomentCommonHarmonicMass CenteredMomentOriginalCommonHarmonic
 local notation "O" => ActualEisensteinCubic.O
 
 abbrev ActiveSubsets (S : Finset (Ideal O)) (β : Ideal O→ℂ) :=
@@ -37,9 +31,8 @@ def activeSubsetLabel (S : Finset (Ideal O)) (β : Ideal O→ℂ)
 lemma activeSubsetLabel_injective (S : Finset (Ideal O)) (β : Ideal O→ℂ) :
     Function.Injective (activeSubsetLabel S β) := by
   rintro ⟨p,U⟩ ⟨q,V⟩ he
-  have hp : p=q := Subtype.ext (congrArg (fun x=>x.1) he)
-  cases hp
-  have hU : U=V := Finset.image_injective Subtype.val_injective
+  cases (Subtype.ext (congrArg (fun x=>x.1) he))
+  have hU := Finset.image_injective Subtype.val_injective
     (congrArg (fun x=>x.2) he)
   cases hU
   rfl
@@ -48,9 +41,8 @@ lemma active_common_shell (S : Finset (Ideal O)) (β : Ideal O→ℂ) (Y : ℝ)
     (hN : ∀I∈S,β I≠0 → (I.absNorm:ℝ)≤Y) (p : ActiveLabel S β) :
     p.val∈commonShell S β Y := by
   have hs := commonLabels_supported (activeSource S β) _ _ p.property
-  have hn := commonLabel_norm_bounds S β Y hN _ _ p.property
   exact Finset.mem_filter.mpr ⟨p.property,
-    (commonRadical_norm_le _ _ hs.1.1 hs.2.1).trans ((min_le_left _ _).trans hn.1)⟩
+    (commonRadical_norm_le _ _ hs.1.1 hs.2.1).trans ((min_le_left _ _).trans (commonLabel_norm_bounds S β Y hN _ _ p.property).1)⟩
 
 lemma activeSubsetLabel_mem (S : Finset (Ideal O)) (β : Ideal O→ℂ) (Y : ℝ)
     (hN : ∀I∈S,β I≠0 → (I.absNorm:ℝ)≤Y) (q : ActiveSubsets S β) :
@@ -121,7 +113,6 @@ theorem actual_block_harmonic_mass (B L Cr ε : ℝ) (hB : 0≤B) (hL : 0≤L)
   refine ⟨C₂*C₁,mul_pos hC₂ hC₁,?_⟩
   filter_upwards [hblocks,Filter.eventually_ge_atTop (2:ℝ)] with Z hb hZ
   intro seed hs hs0 S β hm hn K R H hK hR hH
-  have hsum:=hmass Z hZ seed hs hs0 S β hm hn
   rw [active_blocks_sum_eq]
   calc
     _ ≤ ∑p : ActiveLabel S β,∑U : Finset (CommonIndex p.val.1 p.val.2),
@@ -137,7 +128,7 @@ theorem actual_block_harmonic_mass (B L Cr ε : ℝ) (hB : 0≤B) (hL : 0≤L)
         ∑U : Finset (CommonIndex p.val.1 p.val.2),pairWeight p.val.1 p.val.2) := by
       simp only [Finset.mul_sum]
     _ ≤ (C₂*Z^(ε/2))*(C₁*Z^(ε/2)/(seed.absNorm:ℝ)) :=
-      mul_le_mul_of_nonneg_left hsum (by positivity)
+      mul_le_mul_of_nonneg_left (hmass Z hZ seed hs hs0 S β hm hn) (by positivity)
     _ = (C₂*C₁)*Z^ε/(seed.absNorm:ℝ) := by
       calc
         _ = (C₂*C₁)*(Z^(ε/2)*Z^(ε/2))/(seed.absNorm:ℝ) := by ring

@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge CanonicalRowCompletion
-open CubicEisenstein GaussianShiftedPartition ProbePrimePower ConcreteTraceCRT
+open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge CanonicalRowCompletion CubicEisenstein GaussianShiftedPartition ProbePrimePower ConcreteTraceCRT
 local notation "O" => ActualEisensteinCubic.O
 
 lemma outerQuotient_prime_power (p : O) [(Ideal.span {p}:Ideal O).IsMaximal]
@@ -33,8 +32,7 @@ lemma sexticGauss_prime_power (p : O) (hp : Prime p) [(Ideal.span {p}:Ideal O).I
     intro d
     have hc := outerQuotient_prime_power p hg (n+1) (by omega) d
     change idealRowHom (representative (p^(n+1)) d) (Ideal.span {p^(n+1)}) = _ at hc
-    rw [hc]
-    rw [(Ideal.Quotient.mk (Ideal.span {p^(n+1)})).map_mul, representative_spec]
+    rw [hc, (Ideal.Quotient.mk (Ideal.span {p^(n+1)})).map_mul, representative_spec]
   rw [he, primePowerGauss_eq_quotientFourier]
   apply quotientFourier_congr
   exact pow_succ' p n
@@ -80,7 +78,7 @@ lemma bareCongruenceCoefficient_outer_one (A : O) (hA : A≠0) (H : O) :
     bareCongruenceCoefficient A 1 hA H=sexticGauss A hA H := by
   have he := barePhysicalFourier_eq A 1 hA one_ne_zero H
   rw [barePhysicalFourier_outer_one] at he
-  simpa only [Ideal.span_singleton_one, ← Ideal.one_eq_top, map_one, Nat.cast_one, one_mul] using he.symm
+  simpa using he.symm
 
 theorem bareCongruenceCoefficient_prime_power (p : O) (hp : Prime p)
     [(Ideal.span {p}:Ideal O).IsMaximal] (hg : goodLambda∉Ideal.span {p}) (n k j : ℕ) :

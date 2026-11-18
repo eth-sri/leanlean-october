@@ -57,7 +57,6 @@ theorem dashed_first_tail_budgets {σ : ℝ}
     1-6*((3*a/4)*(σ-1/2)) ≤ 3*a*(1-σ) ∧
     1+(41/81:ℝ)/(85/189)-(4+(2+4*(41/81))/(85/189))*((3*a/4)*(σ-1/2)) ≤
       3*a*(1-σ) := by
-  dsimp only
   have hd : 0 < 6846*σ-1893 := by linarith
   refine ⟨fraction_detector_threshold hd (by linarith),?_⟩
   rw [show (1:ℝ)+(41/81)/(85/189)=542/255 by norm_num,
@@ -73,7 +72,6 @@ theorem dashed_second_tail_budgets {σ : ℝ}
     1-6*((3*a/4)*(σ-1/2)) ≤ 3*a*(1-σ) ∧
     1+(51/100:ℝ)/(13/30)-(4+(2+4*(51/100))/(13/30))*((3*a/4)*(σ-1/2)) ≤
       3*a*(1-σ) := by
-  dsimp only
   have hd : 0 < 1818*σ-519 := by linarith
   refine ⟨fraction_detector_threshold hd (by linarith),?_⟩
   rw [show (1:ℝ)+(51/100)/(13/30)=283/130 by norm_num,

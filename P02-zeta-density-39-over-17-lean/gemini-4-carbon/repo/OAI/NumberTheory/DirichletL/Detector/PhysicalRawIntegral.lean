@@ -45,9 +45,7 @@ theorem rawNestedPhysicalProbe_eq_integral (η : HeckeFamily.Character)
   simp only [Complex.ofReal_ofNat]
   ring_nf
   congr 1
-  let e : SourceOuter S ≃ SourceOuter (calibrationForSet S hS).excluded :=
-    Equiv.subtypeEquivRight (fun K=>by rw [calibrationForSet_excluded])
-  rw [←e.tsum_eq]
+  rw [←(Equiv.subtypeEquivRight (fun K=>by rw [calibrationForSet_excluded])).tsum_eq]
   apply tsum_congr
   intro K
   apply integral_congr_ae

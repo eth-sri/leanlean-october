@@ -50,11 +50,8 @@ theorem priority_source_scalar_budget (caps:Fin 4→ℝ) (hcaps:∀i,0≤caps i)
   refine ⟨capConstant caps,capConstant_nonneg caps hcaps,?_⟩
   intro ι _ p hp _ Jo Jn source Z M r ell V delta A B Ractive j t eta tau pi eps epsmass b C
     ray hZ hC hb hthreshold hk hnorm hgeom hmass
-  have hZ':1<Z:=lt_of_lt_of_le (by norm_num) hZ
-  have hz:0<Z:=zero_lt_one.trans hZ'
   have hcard:((keys p source).card:ℝ)≤(1+capConstant caps*Real.log Z)^4:=by
-    have h:=keys_card_le_product p hp source hk caps Z hnorm
-    have hr:((keys p source).card:ℝ)≤∏i:Fin 4,((dyadIndex (Z^(caps i)):ℝ)+1):=by exact_mod_cast h
+    have hr:((keys p source).card:ℝ)≤∏i:Fin 4,((dyadIndex (Z^(caps i)):ℝ)+1):=by exact_mod_cast (keys_card_le_product p hp source hk caps Z hnorm)
     apply hr.trans
     calc
       _≤∏_i:Fin 4,(1+capConstant caps*Real.log Z):=
@@ -65,7 +62,7 @@ theorem priority_source_scalar_budget (caps:Fin 4→ℝ) (hcaps:∀i,0≤caps i)
     _≤∑_d∈keys p source,C*‖ray‖*Z^(r+3*ell+V+48*eta+tau+pi+eps):=by
       apply Finset.sum_le_sum
       intro d hd
-      have he:=priority_cell_physical_budget Z hZ' d M r ell V delta A B Ractive j t eta tau pi eps epsmass b C
+      have he:=priority_cell_physical_budget Z (lt_of_lt_of_le (by norm_num) hZ) d M r ell V delta A B Ractive j t eta tau pi eps epsmass b C
         ray hC hb (source_cell_joint_bound p hp source hk b _ hgeom d hd) hthreshold (hmass d hd)
       convert he using 1 ; dsimp only [priorityCellScalar] ; ring
     _= ((keys p source).card:ℝ)*(C*‖ray‖*Z^(r+3*ell+V+48*eta+tau+pi+eps)):=by simp

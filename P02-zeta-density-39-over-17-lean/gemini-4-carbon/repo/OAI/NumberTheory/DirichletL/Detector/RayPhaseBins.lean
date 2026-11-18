@@ -7,11 +7,10 @@ public import OAI.NumberTheory.DirichletL.Hecke.PrimeAmplitudeActual
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology ContDiff
 open Filter Set
+open scoped Classical BigOperators Topology ContDiff
 namespace SevenEighths.ProbeRayPhaseBins
-open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily ProbeRayCharacterFamily
-open HeckePrimeAmplitudeBins ProbeRaySlots
+open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily ProbeRayCharacterFamily HeckePrimeAmplitudeBins ProbeRaySlots
 local notation "O" => HeckeFamily.O
 variable (M : Ideal O) [NeZero M]
 local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
@@ -50,7 +49,7 @@ theorem actual_phase_bins (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
   have ht := ProbeRaySlots.power_fixed_exclusions S A (dmin*rmin) hA (mul_pos hdmin hrmin)
     (fun p : {p : ℝ×ℝ // dmin≤p.1 ∧ rmin≤p.2}=>p.val.1*p.val.2)
     (fun p=>mul_le_mul p.property.1 p.property.2 hrmin.le (hdmin.trans_le p.property.1).le)
-  filter_upwards [hb,hn,ht,eventually_ge_atTop (1:ℝ)] with Z hb hn ht hZ
+  filter_upwards [hb,hn,ht,eventually_ge_atTop 1] with Z hb hn ht hZ
   intro d hd hd' hU hT η u hu hs hcond a i ha ha' hbin r z hr hr' hσ hσ' hf hh
   have hZp : 0<Z := zero_lt_one.trans_le hZ
   have hD : 0<(Z^d)^r := Real.rpow_pos_of_pos (Real.rpow_pos_of_pos hZp _) _

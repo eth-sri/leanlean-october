@@ -52,9 +52,7 @@ lemma frequencyMajorant_geometric (M N : ℝ) (hM : 0 < M) (hN : 1 ≤ N) (j : �
 
 theorem frequencyMajorant_summable (M N : ℝ) (hM : 0 < M) (hN : 1 ≤ N) :
     Summable (frequencyMajorant M N) := by
-  have hg : Summable (fun j : ℕ => (1/4 : ℝ)^j) :=
-    summable_geometric_of_lt_one (by norm_num) (by norm_num)
-  exact (hg.mul_left _).of_nonneg_of_le
+  exact ((summable_geometric_of_lt_one (by norm_num) (by norm_num)).mul_left _).of_nonneg_of_le
     (frequencyMajorant_nonneg M N hM.le) (frequencyMajorant_geometric M N hM hN)
 
 end

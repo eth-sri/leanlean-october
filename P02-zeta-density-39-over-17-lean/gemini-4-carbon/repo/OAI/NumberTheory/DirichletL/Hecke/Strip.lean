@@ -21,7 +21,7 @@ theorem gamma_ratio_left_bound (t : ℝ) :
     ‖Complex.Gamma (1 - ((-(1 / 10) : ℂ) + t * Complex.I)) /
       Complex.Gamma ((-(1 / 10) : ℂ) + t * Complex.I)‖ ≤
         gammaConstant * (3 + |t|) ^ 2 := by
-  let s : ℂ := -(1 / 10) + t * Complex.I
+  let s := -(1 / 10) + t * Complex.I
   have hb := CubicReflectionKernel.Gamma_shifted_pair_bound
     (1 / 2) (3 / 5) (-t) 2 (by norm_num) (by norm_num)
   simp only [Complex.ofReal_neg] at hb
@@ -40,10 +40,9 @@ theorem gamma_ratio_left_bound (t : ℝ) :
     ring
   have hs : ‖s‖ ≤ 1 / 10 + |t| := by
     simpa [s, norm_mul] using norm_add_le (-(1 / 10) : ℂ) ((t : ℂ) * Complex.I)
-  have hf := CubicReflectionKernel.norm_Gamma_shift_factor s 2
   have hf' : ‖∏ k ∈ Finset.range 2, (s + k)‖ ≤ (3 + |t|) ^ 2 := by
     have hs2 : ‖s‖ + (2 : ℝ) ≤ 3 + |t| := by linarith
-    exact hf.trans (pow_le_pow_left₀ (by positivity) hs2 2)
+    exact (CubicReflectionKernel.norm_Gamma_shift_factor s 2).trans (pow_le_pow_left₀ (by positivity) hs2 2)
   change ‖Complex.Gamma (1 - s) / Complex.Gamma s‖ ≤ _
   rw [heq, norm_mul]
   exact (mul_le_mul hf' hb (norm_nonneg _) (sq_nonneg _)).trans_eq (mul_comm _ _)
@@ -202,12 +201,11 @@ theorem normalized_boundary_bound (Q C : ℝ) (hQ : 0 < Q) (hC : 0 ≤ C)
     (hL : ‖L z‖ ≤ C * Q ^ (3 / 5 : ℝ) * (3 + |z.im|) ^ 2) :
     ‖normalized Q L z‖ ≤ 9 * C := by
   have hq := Real.rpow_pos_of_pos hQ (3 / 5 : ℝ)
-  have hn : 0 < ‖z + 2‖ := lt_of_lt_of_le zero_lt_one (shift_norm_lower z hz)
   have hh := height_le_shift_norm z hz
   have hh2 : (3 + |z.im|) ^ 2 ≤ 9 * ‖z + 2‖ ^ 2 := by
     nlinarith [abs_nonneg z.im, norm_nonneg (z + 2)]
   rw [norm_normalized Q hQ]
-  apply (div_le_iff₀ (mul_pos hq (sq_pos_of_pos hn))).mpr
+  apply (div_le_iff₀ (mul_pos hq (sq_pos_of_pos (lt_of_lt_of_le zero_lt_one (shift_norm_lower z hz))))).mpr
   apply hL.trans
   have h := mul_le_mul_of_nonneg_left hh2 (mul_nonneg hC hq.le)
   nlinarith
@@ -232,9 +230,8 @@ theorem uniform_strip_bound_of_edges (Q C : ℝ) (hQ : 0 < Q) (hC : 0 ≤ C)
       apply normalized_boundary_bound Q C hQ hC L w
         (show w ∈ closedStrip from ⟨by rw [hw]; norm_num, by rw [hw]⟩) (hright w hw)
   have hq := Real.rpow_pos_of_pos hQ (3 / 5 : ℝ)
-  have hnz : 0 < ‖z + 2‖ := lt_of_lt_of_le zero_lt_one (shift_norm_lower z hz)
   rw [norm_normalized Q hQ] at hn
-  have hb := (div_le_iff₀ (mul_pos hq (sq_pos_of_pos hnz))).mp hn
+  have hb := (div_le_iff₀ (mul_pos hq (sq_pos_of_pos (lt_of_lt_of_le zero_lt_one (shift_norm_lower z hz))))).mp hn
   have hh := shift_norm_le_height z hz
   have hh2 : ‖z + 2‖ ^ 2 ≤ 4 * (3 + |z.im|) ^ 2 := by
     nlinarith [norm_nonneg (z + 2), abs_nonneg z.im]

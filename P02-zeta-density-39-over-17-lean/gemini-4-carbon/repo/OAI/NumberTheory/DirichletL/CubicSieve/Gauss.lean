@@ -33,7 +33,7 @@ lemma cubicQuotientCharacter_cube (I : Ideal O) (hI : Admissible I) :
   apply DFunLike.ext
   intro x
   obtain ⟨z, rfl⟩ := Ideal.Quotient.mk_surjective x
-  rw [MulChar.pow_apply' _ (by decide : (3 : ℕ) ≠ 0), cubicQuotientCharacter_mk, cubicRow,
+  rw [MulChar.pow_apply' _ (by decide : 3 ≠ 0), cubicQuotientCharacter_mk, cubicRow,
     idealSymbol_cube_mask I z hI.2]
   have hu : IsUnit (Ideal.Quotient.mk I z) ↔ IsCoprime I (Ideal.span {z}) := by
     rw [CubicEisenstein.isUnit_quotient_iff_sup, Ideal.isCoprime_iff_sup_eq]
@@ -44,7 +44,7 @@ lemma cubicQuotientCharacter_cube (I : Ideal O) (hI : Admissible I) :
 lemma cubicQuotientCharacter_neg_one (I : Ideal O) (hI : Admissible I) :
     cubicQuotientCharacter I hI (-1) = 1 := by
   have h3 := congrArg (fun χ : MulChar (O ⧸ I) ℂ => χ (-1)) (cubicQuotientCharacter_cube I hI)
-  rw [MulChar.pow_apply' _ (by decide : (3 : ℕ) ≠ 0), MulChar.one_apply (isUnit_neg_one)] at h3
+  rw [MulChar.pow_apply' _ (by decide : 3 ≠ 0), MulChar.one_apply (isUnit_neg_one)] at h3
   have h2 : cubicQuotientCharacter I hI (-1) ^ 2 = 1 := by rw [← map_pow]; norm_num
   calc
     _ = cubicQuotientCharacter I hI (-1) ^ 2 * cubicQuotientCharacter I hI (-1) := by rw [h2, one_mul]
@@ -79,7 +79,6 @@ lemma gaussTwo_eq_gaussSum (I : Ideal O) (hI : Admissible I) :
     gaussTwo I hI.2 = gaussSum (principalCubicCharacter I hI)
       (eisTraceModChar ShortDraftTrace.breveE ConcreteBreveE.breveE_period_coordinates
         (primaryGenerator I) hI.2) / (‖eisEmbedding (primaryGenerator I)‖ : ℂ) := by
-  dsimp only [gaussTwo, gaussSum, principalCubicCharacter, quotientCharacterTransport, cubicQuotientCharacter]
   congr 1
 
 lemma gaussSum_inverse_of_even {R : Type*} [CommRing R] [Fintype R]

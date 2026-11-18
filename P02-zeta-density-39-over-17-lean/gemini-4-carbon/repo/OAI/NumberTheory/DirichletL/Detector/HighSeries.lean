@@ -8,8 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve
-open CubicEisenstein
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve CubicEisenstein
 local notation "O" => ActualEisensteinCubic.O
 local notation "Id" => Ideal O
 
@@ -77,7 +76,7 @@ theorem bareIdealHighSummand_norm_le (η : HeckeFamily.Character) (u : O) (x w z
           fullIdealWeight_nat_scale _ J h.2.2.1.1 3,
           fullIdealWeight_nat_scale _ K h.2.2.2.1.1 1]
         norm_num only [Nat.cast_one, Nat.cast_ofNat]
-        rw [show x+(1/2:ℂ)-1=x-1/2 by ring,show (1:ℂ)+3*x-3=3*x-2 by ring]
+        rw [show x+(1/2)-1=x-1/2 by ring,show 1+3*x-3=3*x-2 by ring]
   · simp only [bareIdealHighSummand,bareIdealHighCoefficient,dite_eq_right h,zero_mul,norm_zero]
     positivity
 
@@ -99,9 +98,7 @@ theorem bareIdealHighSummand_summable (η : HeckeFamily.Character) (u : O) (x w 
   have h4 := fullIdealWeight_summable_norm (6*z) (by
     norm_num [Complex.mul_re]
     linarith)
-  have h12 := h1.mul_of_nonneg h2 (fun _=>norm_nonneg _) (fun _=>norm_nonneg _)
-  have h34 := h3.mul_of_nonneg h4 (fun _=>norm_nonneg _) (fun _=>norm_nonneg _)
-  have hall := h12.mul_of_nonneg h34
+  have hall := (h1.mul_of_nonneg h2 (fun _=>norm_nonneg _) (fun _=>norm_nonneg _)).mul_of_nonneg (h3.mul_of_nonneg h4 (fun _=>norm_nonneg _) (fun _=>norm_nonneg _))
     (fun _=>mul_nonneg (norm_nonneg _) (norm_nonneg _))
     (fun _=>mul_nonneg (norm_nonneg _) (norm_nonneg _))
   apply Summable.of_norm

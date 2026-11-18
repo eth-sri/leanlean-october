@@ -12,8 +12,7 @@ public import MathCollab.Density.Stronger.Fourth.Coefficients
 
 @[expose] public section
 
-open Complex Set Filter
-open MathCollab.Density.Stronger.Fourth
+open Complex Set Filter MathCollab.Density.Stronger.Fourth
 set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
@@ -51,7 +50,7 @@ theorem hasSum_atkinsonStationaryLeadingTerm {T G L : ℝ}
   apply hasSum_sum_of_ne_finset_zero
   intro n hn
   apply atkinsonStationaryLeadingTerm_eq_zero_after_cutoff hT hG hL hwidth
-  exact Nat.le_of_not_gt (by simpa only [Finset.mem_range] using hn)
+  exact Nat.le_of_not_gt (by simpa using hn)
 
 theorem atkinsonStationaryLeadingSum_eq_finite {T G L : ℝ}
     (hT : 0 < T) (hG : 0 < G) (hL : 0 < L) (hwidth : 8*L ≤ G) :

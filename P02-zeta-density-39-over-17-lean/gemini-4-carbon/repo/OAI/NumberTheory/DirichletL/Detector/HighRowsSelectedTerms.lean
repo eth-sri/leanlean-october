@@ -20,11 +20,9 @@ lemma sourceRowTerm_norm_from_scalar_power (eta a rho x w z : ℂ)
     (hs : ‖sourceScalar p hp hg (e+3*l) k (j+6*m)‖≤2*(Ideal.absNorm (Ideal.span {p}):ℝ)^nu)
     (he : nu-(x.re+1/2)*(e:ℝ)-(1+3*x.re)*(l:ℝ)-w.re*(k:ℝ)-6*z.re*(m:ℝ)≤B) :
     ‖sourceRowTerm p hp hg eta a rho x w z j e l k m‖≤2*(Ideal.absNorm (Ideal.span {p}):ℝ)^B := by
-  have hP : Prime (Ideal.span {p}:Ideal O) := Ideal.prime_span_singleton_iff.mpr hp
-  have hQ2 : (2:ℝ)≤Ideal.absNorm (Ideal.span {p}) := by exact_mod_cast SmoothMobiusCorrection.prime_norm_two_le ⟨_,hP⟩
+  have hQ2 : (2:ℝ)≤Ideal.absNorm (Ideal.span {p}) := by exact_mod_cast SmoothMobiusCorrection.prime_norm_two_le ⟨_,(Ideal.prime_span_singleton_iff.mpr hp)⟩
   have hQ : (0:ℝ)<Ideal.absNorm (Ideal.span {p}) := by linarith
-  have hrho := Complex.norm_eq_one_of_pow_eq_one hρ (by decide : (6:ℕ)≠0)
-  rw [sourceRowTerm,norm_mul,norm_div,norm_pow,norm_pow,hrho,one_pow,one_pow,div_self (by norm_num : (1:ℝ)≠0),one_mul]
+  rw [sourceRowTerm,norm_mul,norm_div,norm_pow,norm_pow,(Complex.norm_eq_one_of_pow_eq_one hρ (by decide : (6:ℕ)≠0)),one_pow,one_pow,div_self (by norm_num : (1:ℝ)≠0),one_mul]
   apply (sourceWeightedScalar_norm_le _ hQ eta a _ _ _ x w z _ heta ha
     (localGamma_norm_one p hp.ne_zero hg hc 1 (by decide) (by decide))
     (by rw [norm_star];exact localGamma_norm_one p hp.ne_zero hg hc 3 (by decide) (by decide))

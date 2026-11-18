@@ -19,8 +19,7 @@ lemma originalResidualRows_reconstruct (rows : Finset (Ideal Eis)) (R Q : Ideal 
     reconstructFiberRow R Q K∈representativeRowFiber rows R Q ∧
       rowResidualPart (reconstructFiberRow R Q K) Q=K := by
   obtain ⟨I,hI,rfl⟩ := Finset.mem_image.mp hK
-  have he := reconstructFiberRow_of_original rows R Q I hI (hrows I (Finset.mem_filter.mp hI).1)
-  rw [he]
+  rw [(reconstructFiberRow_of_original rows R Q I hI (hrows I (Finset.mem_filter.mp hI).1))]
   exact ⟨hI,rfl⟩
 
 lemma originalResidualRows_range (rows : Finset (Ideal Eis)) (R Q : Ideal Eis)

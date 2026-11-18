@@ -75,9 +75,8 @@ lemma sourceMellinWeight_differentiable_w (W0 W1 : SchwartzMap ℝ ℂ)
     Differentiable ℂ (fun w=>sourceMellinWeight W0 W1 X Y Z x w z) := by
   have hm : Differentiable ℂ (mellin W1) := fun w=>
     CubicReflectionKernel.compact_source_mellin_differentiable W1 a b ha hW (W1.smooth (⊤:ℕ∞)) w
-  have hy : (Y:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hY.ne'
   unfold sourceMellinWeight
-  fun_prop (disch := exact Or.inl hy)
+  fun_prop (disch := exact Or.inl (Complex.ofReal_ne_zero.mpr hY.ne'))
 
 theorem continuedPhysicalRowKernel_differentiableAt_w {K : ℕ}
     (eps : ℝ) (heps : 0<eps) (S : Finset (Ideal O)) (hS : SourceExclusions S)

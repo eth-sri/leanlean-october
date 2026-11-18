@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.ExponentPairShiftChoice
 
 @[expose] public section
@@ -39,7 +48,7 @@ theorem integer_shift_optimization
   by_cases hlarge : 2 ≤ η*R
   · obtain ⟨H,hH,hHN,hlower,hupper⟩ :=
       exists_comparable_source_shift hη hη₁ hRN hlarge
-    have hHpos : 0 < (H : ℝ) := by exact_mod_cast (show 0 < H by omega)
+    have hHpos : 0 < (H : ℝ) := by exact_mod_cast (by omega)
     have hinv : N^2/(H : ℝ) ≤ (2/η)*(N^2/R) := by
       calc
         _ ≤ N^2/(η*R/2) :=
@@ -70,7 +79,6 @@ theorem integer_shift_optimization
         nlinarith
   · have hsmall : η*R ≤ 2 := le_of_not_ge hlarge
     have hinv : 9*N^2 ≤ (18/η)*(N^2/R) := by
-      have hh := mul_le_mul_of_nonneg_left hsmall (show 0 ≤ 9*N^2 by positivity)
       rw [show (18/η)*(N^2/R) = 18*N^2/(η*R) by ring]
       apply (le_div_iff₀ (mul_pos hη hR)).mpr
       nlinarith

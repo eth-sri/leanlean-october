@@ -75,21 +75,15 @@ theorem valuation_mod_six_of_unit_agreement (Q K I J P : Ideal O)
     valuation I P % 6 = valuation J P % 6 := by
   obtain ⟨I₀, hsplitI, hI₀, hcI⟩ := split_at_prime I P hI.1
   obtain ⟨J₀, hsplitJ, hJ₀, hcJ⟩ := split_at_prime J P hJ.1
-  have hsI : CanonicalQuadraticSieve.Supported I₀ :=
-    ((CanonicalQuadraticSieve.supported_mul_iff _ _).mp (hsplitI ▸ hI)).2
-  have hsJ : CanonicalQuadraticSieve.Supported J₀ :=
-    ((CanonicalQuadraticSieve.supported_mul_iff _ _).mp (hsplitJ ▸ hJ)).2
   have hpows : actualSextic P hg ^ valuation I P = actualSextic P hg ^ valuation J P := by
     apply MulChar.ext
     intro u
     obtain ⟨n, hn, hcK, hnP⟩ := exists_unit_probe (Q * I₀ * J₀) K P hK
       ((hQP.mul_left hcI).mul_left hcJ) u
     have hval := heq n (Ideal.mul_le_left (Ideal.mul_le_left hn)) hcK
-    have hIn : n - 1 ∈ I₀ := Ideal.mul_le_right (Ideal.mul_le_left hn)
-    have hJn : n - 1 ∈ J₀ := Ideal.mul_le_right hn
     rw [hsplitI, hsplitJ, map_mul, map_mul, map_pow, map_pow,
-      idealRowHom_congr_mod I₀ n 1 hIn, idealRowHom_congr_mod J₀ n 1 hJn,
-      idealRowHom_one_supported I₀ hsI, idealRowHom_one_supported J₀ hsJ,
+      idealRowHom_congr_mod I₀ n 1 (Ideal.mul_le_right (Ideal.mul_le_left hn)), idealRowHom_congr_mod J₀ n 1 (Ideal.mul_le_right hn),
+      idealRowHom_one_supported I₀ (((CanonicalQuadraticSieve.supported_mul_iff _ _).mp (hsplitI ▸ hI)).2), idealRowHom_one_supported J₀ (((CanonicalQuadraticSieve.supported_mul_iff _ _).mp (hsplitJ ▸ hJ)).2),
       mul_one, mul_one, idealRowHom_prime n P hg, hnP] at hval
     simpa only [MulChar.pow_apply_coe] using hval
   have hm := (pow_eq_pow_iff_modEq.mp hpows)
@@ -159,10 +153,9 @@ theorem actual_row_on_fixed_units (η χ : Character) (m f z : O)
     (n : O) (hn : n - 1 ∈ Ideal.span {(72 : O)})
     (hc : IsCoprime (Ideal.span {n}) (Ideal.span {m})) :
     elementCoeff χ n = elementCoeff η n * idealRowHom n (Ideal.span {r}) := by
-  have hd72 : λ₀ ^ 2 ∣ (72 : O) := ActualEisensteinCubic.lambda_sq_dvd_three.trans
+  have hd72 := ActualEisensteinCubic.lambda_sq_dvd_three.trans
     (show (3 : O) ∣ 72 from ⟨24, by norm_num⟩)
-  have hp : λ₀ ^ 2 ∣ n - 1 := hd72.trans (Ideal.mem_span_singleton.mp hn)
-  rw [hχ n, rowTwist_eq_actualPeriodicRow_primary _ _ _ _ hmLam hm2 u a b r hr hpr hx n hp]
+  rw [hχ n, rowTwist_eq_actualPeriodicRow_primary _ _ _ _ hmLam hm2 u a b r hr hpr hx n (hd72.trans (Ideal.mem_span_singleton.mp hn))]
   change ((elementCoeff η n * coprimalityMask m n) * numeratorBadTwist u a b r hr n) *
     idealRowHom n (Ideal.span {r}) = _
   have hm : coprimalityMask m n = 1 := by
@@ -199,25 +192,24 @@ theorem valuation_span_eq_zero_of_not_mem (x : O) (P : Ideal O) (hx : x ∉ P) :
   have hx0 : x ≠ 0 := fun hz => hx (hz ▸ P.zero_mem)
   apply Multiset.count_eq_zero.mpr
   intro hP
-  have hle := ((Ideal.mem_normalizedFactors_iff (Ideal.span_singleton_eq_bot.not.mpr hx0)).mp hP).2
-  exact hx (hle (Ideal.subset_span (by simp)))
+  exact hx ((((Ideal.mem_normalizedFactors_iff (Ideal.span_singleton_eq_bot.not.mpr hx0)).mp hP).2) (Ideal.subset_span (by simp)))
 
 theorem valuation_supported_numerator (x : O) (u : Oˣ) (a b : ℕ) (r : O)
     (hr : r ≠ 0) (hx : x = (u : O) * λ₀ ^ a * (2 : O) ^ b * r)
     (P : Ideal O) (hg : λ₀ ∉ P) (h2 : (2 : O) ∉ P) :
     valuation (Ideal.span {x}) P = valuation (Ideal.span {r}) P := by
   have hu : Ideal.span {(u : O)} = (1 : Ideal O) := by
-    simpa only [Ideal.one_eq_top] using (Ideal.span_singleton_eq_top.mpr u.isUnit)
+    simpa using (Ideal.span_singleton_eq_top.mpr u.isUnit)
   have hl0 : Ideal.span {λ₀} ≠ (0 : Ideal O) :=
     Ideal.span_singleton_eq_bot.not.mpr PrimaryIdealUnitReindex.lambda_prime_actual.ne_zero
-  have h20 : Ideal.span {(2 : O)} ≠ (0 : Ideal O) :=
+  have h20 : Ideal.span {2} ≠ (0 : Ideal O) :=
     Ideal.span_singleton_eq_bot.not.mpr (by norm_num)
   have hr0 : Ideal.span {r} ≠ (0 : Ideal O) := Ideal.span_singleton_eq_bot.not.mpr hr
   rw [hx]
   simp only [← Ideal.span_singleton_mul_span_singleton, ← Ideal.span_singleton_pow, hu, one_mul]
   rw [valuation_mul _ _ _ (mul_ne_zero (pow_ne_zero _ hl0) (pow_ne_zero _ h20)) hr0,
     valuation_mul _ _ _ (pow_ne_zero _ hl0) (pow_ne_zero _ h20), valuation_pow, valuation_pow,
-    valuation_span_eq_zero_of_not_mem λ₀ P hg, valuation_span_eq_zero_of_not_mem (2 : O) P h2]
+    valuation_span_eq_zero_of_not_mem λ₀ P hg, valuation_span_eq_zero_of_not_mem 2 P h2]
   omega
 
 theorem valuation_mod_six_cancel_frozen (A I J P : Ideal O)
@@ -393,8 +385,7 @@ theorem fixed_inducing_remainder_card (η : Character) (Q : Ideal O)
     apply fixed_inducing_rows_same_remainder η Q hQ hQ72 m A z z' hm hA (hT z hz) (hT z' hz')
       hmLam hm2 (hex z hz) (hex z' hz') S houtside
     intro P hP
-    have hh := congrArg (fun f : S → Fin 6 => (f ⟨P, hP⟩).val) he
-    simpa only [code, sixthRemainder_valuation, Nat.mod_mod] using hh
+    simpa only [code, sixthRemainder_valuation, Nat.mod_mod] using (congrArg (fun f : S → Fin 6 => (f ⟨P, hP⟩).val) he)
   have hc := Finset.card_le_card_of_injOn code (t := Finset.univ)
     (fun _ _ => Finset.mem_univ _) hinj
   simpa only [Finset.card_univ, Fintype.card_fun, Fintype.card_fin, Fintype.card_coe, Rs] using hc

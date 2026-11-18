@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.IntegerFourierTails
 
 @[expose] public section
@@ -44,7 +54,6 @@ theorem sum_int_interval_three_parts (f : ℤ → ℂ)
 theorem sum_int_Ico_eq_reverse_range (f : ℤ → ℂ) {a b : ℤ} (hab : a ≤ b) :
     (∑ q ∈ Finset.Ico a b, f q) =
       ∑ n ∈ Finset.range (b-a).toNat, f (b-((n+1 : ℕ) : ℤ)) := by
-  have hlen : ((b-a).toNat : ℤ) = b-a := Int.toNat_of_nonneg (by omega)
   symm
   apply Finset.sum_bij (fun n _ => b-((n+1 : ℕ) : ℤ))
   · intro n hn
@@ -56,7 +65,6 @@ theorem sum_int_Ico_eq_reverse_range (f : ℤ → ℂ) {a b : ℤ} (hab : a ≤ 
     omega
   · intro q hq
     simp only [Finset.mem_Ico] at hq
-    have hc : ((b-q-1).toNat : ℤ) = b-q-1 := Int.toNat_of_nonneg (by omega)
     refine ⟨(b-q-1).toNat,?_,?_⟩
     · simp only [Finset.mem_range]
       omega
@@ -68,7 +76,6 @@ theorem sum_int_Ico_eq_reverse_range (f : ℤ → ℂ) {a b : ℤ} (hab : a ≤ 
 theorem sum_int_Ioc_eq_forward_range (f : ℤ → ℂ) {a b : ℤ} (hab : a ≤ b) :
     (∑ q ∈ Finset.Ioc a b, f q) =
       ∑ n ∈ Finset.range (b-a).toNat, f (a+((n+1 : ℕ) : ℤ)) := by
-  have hlen : ((b-a).toNat : ℤ) = b-a := Int.toNat_of_nonneg (by omega)
   symm
   apply Finset.sum_bij (fun n _ => a+((n+1 : ℕ) : ℤ))
   · intro n hn
@@ -80,7 +87,6 @@ theorem sum_int_Ioc_eq_forward_range (f : ℤ → ℂ) {a b : ℤ} (hab : a ≤ 
     omega
   · intro q hq
     simp only [Finset.mem_Ioc] at hq
-    have hc : ((q-a-1).toNat : ℤ) = q-a-1 := Int.toNat_of_nonneg (by omega)
     refine ⟨(q-a-1).toNat,?_,?_⟩
     · simp only [Finset.mem_range]
       omega

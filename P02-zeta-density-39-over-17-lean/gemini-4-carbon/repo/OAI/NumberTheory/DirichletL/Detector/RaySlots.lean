@@ -7,11 +7,10 @@ public import OAI.NumberTheory.DirichletL.Detector.PrincipalResidueActual
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology ContDiff
 open Filter
+open scoped Classical BigOperators Topology ContDiff
 namespace SevenEighths.ProbeRaySlots
-open HeckeFamily ProbePhysical PNT.AnnularPrimeMass
-open PrincipalSignalComparison ProbePrincipalResidueActual
+open HeckeFamily ProbePhysical PNT.AnnularPrimeMass PrincipalSignalComparison ProbePrincipalResidueActual
 local notation "Id" => Ideal HeckeFamily.O
 
 def pool (C : Set Id) (S : Finset Id) (a b x : ℝ) : Finset PrimeIdeal :=
@@ -37,8 +36,7 @@ lemma pool_sum (C : Set Id) (S : Finset Id) (a b x : ℝ) (f : Id→ℝ) :
   · intro P hP Q hQ he
     exact Subtype.ext he
   · intro P hP
-    have hp : Prime P := ((mem_annularPrimeIdeals C a b x P).mp (Finset.mem_sdiff.mp hP).1).2.1
-    exact ⟨⟨P,hp⟩,Finset.mem_subtype.mpr hP,rfl⟩
+    exact ⟨⟨P,(((mem_annularPrimeIdeals C a b x P).mp (Finset.mem_sdiff.mp hP).1).2.1)⟩,Finset.mem_subtype.mpr hP,rfl⟩
   · intro P hP
     rfl
 
@@ -47,7 +45,7 @@ theorem pool_mass_eq_deleted (C : Set Id) (S : Finset Id) (W : ℝ→ℝ)
     (hsupp : Function.support W⊆Set.Ioo a b) (hx : 0<x) :
     (∑P∈pool C S a b x,W ((Ideal.absNorm P.val:ℝ)/x)*(Ideal.absNorm P.val:ℝ)^(-(5/6:ℝ)))=
       weightedPrimeSumDeleted C S W x := by
-  rw [pool_sum C S a b x (fun P=>W ((Ideal.absNorm P:ℝ)/x)*(Ideal.absNorm P:ℝ)^(-(5/6:ℝ))),
+  rw [pool_sum C S a b x (fun P=>W ((Ideal.absNorm P:ℝ)/x)*(Ideal.absNorm P:ℝ)^(-(5/6))),
     weightedPrimeSumDeleted_eq_annular C S W ha hab hsupp hx]
   norm_num
 
@@ -64,7 +62,7 @@ theorem ray_pool_mass_eventually_positive (S : Finset Id) (W : ℝ→ℝ)
     ∀ᶠx : ℝ in atTop,0<∑P∈pool (RayQuotient.identityClass M H) S a b x,
       W ((Ideal.absNorm P.val:ℝ)/x)*(Ideal.absNorm P.val:ℝ)^(-(5/6:ℝ)) := by
   filter_upwards [RayPrimeNormalizer.eventually_pos M H hH S W hW hc hp hW0 hWne,
-    eventually_gt_atTop (0:ℝ)] with x hx hx0
+    eventually_gt_atTop 0] with x hx hx0
   rw [pool_mass_eq_deleted _ _ _ ha hab hsupp hx0]
   exact hx
 
@@ -77,7 +75,7 @@ theorem ray_pool_mass_eventually_lower_bound (S : Finset Id) (W : ℝ→ℝ)
         W ((Ideal.absNorm P.val:ℝ)/x)*(Ideal.absNorm P.val:ℝ)^(-(5/6:ℝ)) := by
   obtain ⟨c,hc0,hbound⟩ := RayPrimeNormalizer.eventually_lower_bound M H hH S W hW hc hp hW0 hWne
   refine ⟨c,hc0,?_⟩
-  filter_upwards [hbound,eventually_gt_atTop (0:ℝ)] with x hx hx0
+  filter_upwards [hbound,eventually_gt_atTop 0] with x hx hx0
   rw [pool_mass_eq_deleted _ _ _ ha hab hsupp hx0]
   exact hx
 

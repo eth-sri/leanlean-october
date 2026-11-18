@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.RobertSargosSymmetricQuadratic
 public import LaterPairs.Native.RobertSargosSymmetricThirdDerivative
 
@@ -40,10 +49,7 @@ theorem hasDerivAt_robertSargos_zero_q_remainder
       (robertSargosSymmetricDifference (iteratedDeriv 1 f) x h -
         robertSargosSymmetricDifference (iteratedDeriv 1 f) x (h+r) +
           2*r*iteratedDeriv 2 f x) x := by
-  have hdp := hasDerivAt_robertSargos_symmetric_jet (by norm_num : 0 < 4) hp hm
-  have hdr := hasDerivAt_robertSargos_symmetric_jet (by norm_num : 0 < 4) hrp hrm
-  have hd1 := (hasDerivAt_iteratedDeriv_finite (by norm_num : 1 < 4) hx).const_mul (2*r)
-  convert (hdp.sub hdr).add hd1 using 1
+  convert ((hasDerivAt_robertSargos_symmetric_jet (by norm_num : 0 < 4) hp hm).sub (hasDerivAt_robertSargos_symmetric_jet (by norm_num : 0 < 4) hrp hrm)).add ((hasDerivAt_iteratedDeriv_finite (by norm_num : 1 < 4) hx).const_mul (2*r)) using 1
   funext y
   simp only [robertSargosZeroQRemainder,iteratedDeriv_zero,Pi.add_apply,Pi.sub_apply]
 
@@ -81,7 +87,6 @@ theorem abs_robertSargos_zero_q_remainder_derivative_le
 theorem hasDerivAt_robertSargos_zero_q_leading_jet
     {f : ℝ → ℝ} {x r : ℝ} {j : ℕ} (hj : j < 3) (hf : ContDiffAt ℝ 4 f x) :
     HasDerivAt (fun y => -2*r*iteratedDeriv (j+1) f y)
-      (-2*r*iteratedDeriv (j+2) f x) x := by
-  exact (hasDerivAt_iteratedDeriv_finite (show j+1 < 4 by omega) hf).const_mul (-2*r)
+      (-2*r*iteratedDeriv (j+2) f x) x := (hasDerivAt_iteratedDeriv_finite (show j+1 < 4 by omega) hf).const_mul (-2*r)
 
 end TaoTrudgianYang2025

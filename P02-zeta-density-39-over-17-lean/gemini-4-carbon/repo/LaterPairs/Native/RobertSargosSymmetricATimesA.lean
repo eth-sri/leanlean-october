@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.RobertSargosCorrelationSum
 
 @[expose] public section
@@ -24,7 +33,7 @@ theorem robertSargos_symmetric_a_times_a (f : ℝ → ℝ) (M H Q R : ℕ)
             (robertSargosMixedCorrelation f M H q r).re := by
   have hs := robertSargos_source_a_times_a (robertSargosSymmetricArray f M H)
     M (2*H) Q R hQ hR hQM hRH
-    (by simpa only [Nat.cast_mul,Nat.cast_ofNat] using
+    (by simpa using
       robertSargos_symmetric_array_support f M H)
   simp only [Nat.cast_mul,Nat.cast_ofNat] at hs
   rw [robertSargos_symmetric_array_sum] at hs

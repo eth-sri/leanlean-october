@@ -29,8 +29,7 @@ theorem completed_representative_aggregation (L ε : ℝ) (hL : 0≤L) (hε : 0<
     by_cases he : (completedRowFiber parents Q A T).Nonempty
     · obtain ⟨J,hJ⟩ := he
       obtain ⟨hJS,hJA,hJT⟩ := Finset.mem_filter.mp hJ
-      have hh := hf J hJS
-      simpa only [representativeRowFiber,hJA,hJT] using hh
+      simpa only [representativeRowFiber,hJA,hJT] using (hf J hJS)
     · rw [Finset.not_nonempty_iff_eq_empty.mp he,Finset.sum_empty]
       exact mul_nonneg hE (Real.rpow_nonneg (Nat.cast_nonneg _) _)
   rw [←sum_completedRowFibers parents Q f]

@@ -309,8 +309,7 @@ theorem wooleyDegreeOneResidueCollision_residueSequence
   apply Finset.sum_congr rfl
   intro m hm
   simp only [Finset.mem_filter] at hm
-  rw [wooleySourceResidueSequence_apply, ite_eq_left hm.2]
-  rw [ite_eq_left (hn.2.trans hm.2.symm)]
+  rw [wooleySourceResidueSequence_apply, ite_eq_left hm.2, ite_eq_left (hn.2.trans hm.2.symm)]
 
 theorem wooley_sum_residueCollision_residueSequence
     (q : ℕ) [NeZero q] (gamma : WooleySourceSequence) :

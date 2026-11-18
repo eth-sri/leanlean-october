@@ -7,29 +7,14 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical
 
 namespace ActualEisensteinCubic
 
 section
 
-open EisensteinEmbedding ConcreteTraceCRT Complex
+open EisensteinEmbedding ConcreteTraceCRT
 
 theorem actual_fixed_kernel_eq_dualFixedTerm
     (a b k l : ℤ) (η : ℝ) :
@@ -40,8 +25,8 @@ theorem actual_fixed_kernel_eq_dualFixedTerm
         (‖eisEmbedding y‖ ^ 2 : ℂ)) *
       fixedDualPhase c y =
       OscSpecial.dualFixedTerm η (a : ℝ) (b : ℝ) (k,l) := by
-  let c : O := ActualEisensteinCoordinates.eval a b
-  let y : O := dualFrequencyEquiv (k,l)
+  let c := ActualEisensteinCoordinates.eval a b
+  let y := dualFrequencyEquiv (k,l)
   have hnormC : ((‖eisEmbedding y‖ : ℂ)^2) =
       (((k^2+k*l+l^2 : ℤ) : ℂ)) := by
     exact_mod_cast dualFrequencyEquiv_norm_sq k l
@@ -58,7 +43,6 @@ theorem actual_fixed_kernel_eq_dualFixedTerm
   have hphase : fixedDualPhase c y =
       Complex.exp (Complex.I *
         (OscSpecial.phaseAngle (a : ℝ) (b : ℝ) (k,l) : ℂ)) := by
-    have h := breveE_dual_quadratic_real_scale 1 a b k l
     have harg : fixedDualPhase c y =
         Complex.exp (-(2 * Real.pi * Complex.I *
           (((a-b)*k^2+2*a*k*l+b*l^2 : ℤ) : ℂ)) / (4 : ℂ)) := by
@@ -66,7 +50,7 @@ theorem actual_fixed_kernel_eq_dualFixedTerm
         (eisEmbedding (-(ActualEisensteinCoordinates.eval a b *
           (ActualEisensteinCoordinates.eval (k+l) k)^2)) /
           eisLam / (4 : ℂ)) = _
-      simpa using h
+      simpa using (breveE_dual_quadratic_real_scale 1 a b k l)
     rw [harg]
     congr 1
     dsimp [OscSpecial.phaseAngle, OscSpecial.dualTrace]
@@ -76,9 +60,6 @@ theorem actual_fixed_kernel_eq_dualFixedTerm
   rw [hreal, hphase]
   rfl
 
-open EisensteinEmbedding ConcreteTraceCRT Complex
-open scoped Topology
-open Filter
 
 noncomputable def actualVariableDualKernel (a b : ℤ) (η : ℝ) (y : O) : ℂ :=
   Complex.exp (-(Real.pi : ℂ) *
@@ -108,11 +89,10 @@ theorem actual_variable_kernel_eq_dualVarTerm
     (η : ℝ) (hη : 0 < η) (z : ℤ × ℤ) :
     actualVariableDualKernel a b η (dualFrequencyEquiv z) =
       OscSpecial.dualVarTerm η (a : ℝ) (b : ℝ) z := by
-  have hqZ := coordinate_norm_pos_of_nonzero a b hc
   have hq : 0 < OscSpecial.q (a : ℝ) (b : ℝ) := by
     change 0 < (a : ℝ)^2 - (a : ℝ)*(b : ℝ)+(b : ℝ)^2
     exact_mod_cast (show 0 < a^2-a*b+b^2 by
-      simpa only [pow_two] using hqZ)
+      simpa only [pow_two] using (coordinate_norm_pos_of_nonzero a b hc))
   have h := (dual_gaussian_is_actual_trace_phase
     a b z.1 z.2 hc η hη).symm.trans
       (OscSpecial.dualGaussian_eq_dualVarTerm hη hq z)
@@ -134,63 +114,48 @@ theorem actual_dual_phase_error_tendsto_zero
         (∑' y : O, actualVariableDualKernel a b η y) -
         (∑' y : O, actualFixedDualKernel a b η y)‖)
       (𝓝[>] (0 : ℝ)) (𝓝 (0 : ℝ)) := by
-  have hqZ := coordinate_norm_pos_of_nonzero a b hc
   have hq : 0 < OscSpecial.q (a : ℝ) (b : ℝ) := by
     change 0 < (a : ℝ)^2 - (a : ℝ)*(b : ℝ)+(b : ℝ)^2
     exact_mod_cast (show 0 < a^2-a*b+b^2 by
-      simpa only [pow_two] using hqZ)
-  have hbase := OscSpecial.normalized_dual_phase_sum_error_tendsto_zero hq
-  apply hbase.congr'
+      simpa only [pow_two] using (coordinate_norm_pos_of_nonzero a b hc))
+  apply (OscSpecial.normalized_dual_phase_sum_error_tendsto_zero hq).congr'
   filter_upwards [self_mem_nhdsWithin] with η hη
   change 0 < η at hη
   have hvar :
       (∑' y : O, actualVariableDualKernel a b η y) =
         ∑' z : ℤ × ℤ, OscSpecial.dualVarTerm η (a : ℝ) (b : ℝ) z := by
-    calc
-      (∑' y : O, actualVariableDualKernel a b η y) =
-          ∑' z : ℤ × ℤ,
-            actualVariableDualKernel a b η (dualFrequencyEquiv z) :=
-        (dualFrequencyEquiv.tsum_eq (actualVariableDualKernel a b η)).symm
-      _ = _ := by
+    exact ((dualFrequencyEquiv.tsum_eq (actualVariableDualKernel a b η)).symm).trans (by
         apply tsum_congr
         intro z
-        exact actual_variable_kernel_eq_dualVarTerm a b hc η hη z
+        exact actual_variable_kernel_eq_dualVarTerm a b hc η hη z)
   have hfixed :
       (∑' y : O, actualFixedDualKernel a b η y) =
         ∑' z : ℤ × ℤ, OscSpecial.dualFixedTerm η (a : ℝ) (b : ℝ) z := by
-    calc
-      (∑' y : O, actualFixedDualKernel a b η y) =
-          ∑' z : ℤ × ℤ,
-            actualFixedDualKernel a b η (dualFrequencyEquiv z) :=
-        (dualFrequencyEquiv.tsum_eq (actualFixedDualKernel a b η)).symm
-      _ = _ := by
+    exact ((dualFrequencyEquiv.tsum_eq (actualFixedDualKernel a b η)).symm).trans (by
         apply tsum_congr
         intro z
-        exact actual_fixed_kernel_eq_dualFixedTerm_point a b η z
+        exact actual_fixed_kernel_eq_dualFixedTerm_point a b η z)
   rw [hvar, hfixed]
 
 end
 
 section
-open scoped Topology
-open Filter EisensteinEmbedding ConcreteTraceCRT Complex
+open EisensteinEmbedding ConcreteTraceCRT
 
 theorem actualFixedAbelLimit (a b : ℤ)
     (hc : ActualEisensteinCoordinates.eval a b ≠ 0) :
     letI : Finite (O ⧸ Ideal.span {(2 : O)}) :=
       finite_quotient_span (by norm_num : (2 : O) ≠ 0)
     letI : Fintype (O ⧸ Ideal.span {(2 : O)}) := Fintype.ofFinite _
-    let c : O := ActualEisensteinCoordinates.eval a b
     let a2 := (ActualEisensteinCoordinates.coords (2 : O)).1
     let b2 := (ActualEisensteinCoordinates.coords (2 : O)).2
-    let L2 : ℂ := ((2 / (Real.sqrt 3 *
+    let L2 := ((2 / (Real.sqrt 3 *
       (((a2*a2-a2*b2+b2*b2 : ℤ) : ℝ))) : ℝ) : ℂ)
-    let K : ℂ := (((4 / OscSpecial.q (a : ℝ) (b : ℝ) : ℝ) : ℂ) * L2)
     Tendsto (fun η : ℝ => (η : ℂ) *
       (∑' y : O, actualFixedDualKernel a b η y))
       (𝓝[>] (0 : ℝ))
-      (𝓝 (K * ∑ r : O ⧸ Ideal.span {(2 : O)},
-        fixedDualPhase c (GaussianShiftedPartition.representative 2 r))) := by
+      (𝓝 (((((4 / OscSpecial.q (a : ℝ) (b : ℝ) : ℝ) : ℂ) * L2)) * ∑ r : O ⧸ Ideal.span {(2 : O)},
+        fixedDualPhase (ActualEisensteinCoordinates.eval a b) (GaussianShiftedPartition.representative 2 r))) := by
   simpa only [actualFixedDualKernel, mul_comm] using
     variableDualPhase_abel_limit a b hc
 
@@ -198,7 +163,7 @@ end
 
 section
 
-open EisensteinEmbedding ConcreteTraceCRT Complex
+open EisensteinEmbedding ConcreteTraceCRT
 
 theorem actual_oscillatory_poisson_kernel
     (a b : ℤ) (hc : ActualEisensteinCoordinates.eval a b ≠ 0)
@@ -223,32 +188,28 @@ theorem actual_oscillatory_poisson_kernel
 end
 
 section
-open scoped Topology
-open Filter EisensteinEmbedding ConcreteTraceCRT Complex
+open EisensteinEmbedding ConcreteTraceCRT
 
 theorem actualVariableAbelLimit (a b : ℤ)
     (hc : ActualEisensteinCoordinates.eval a b ≠ 0) :
     letI : Finite (O ⧸ Ideal.span {(2 : O)}) :=
       finite_quotient_span (by norm_num : (2 : O) ≠ 0)
     letI : Fintype (O ⧸ Ideal.span {(2 : O)}) := Fintype.ofFinite _
-    let c : O := ActualEisensteinCoordinates.eval a b
     let a2 := (ActualEisensteinCoordinates.coords (2 : O)).1
     let b2 := (ActualEisensteinCoordinates.coords (2 : O)).2
-    let L2 : ℂ := ((2 / (Real.sqrt 3 *
+    let L2 := ((2 / (Real.sqrt 3 *
       (((a2*a2-a2*b2+b2*b2 : ℤ) : ℝ))) : ℝ) : ℂ)
-    let K : ℂ := (((4 / OscSpecial.q (a : ℝ) (b : ℝ) : ℝ) : ℂ) * L2)
     Tendsto (fun η : ℝ => (η : ℂ) *
       ((1 / ((OscSpecial.R η (a : ℝ) (b : ℝ) : ℂ) ^ (1/2 : ℂ))) *
         (∑' y : O, actualVariableDualKernel a b η y)))
       (𝓝[>] (0 : ℝ))
       (𝓝 ((((Real.sqrt (OscSpecial.q (a : ℝ) (b : ℝ)) / 2 : ℝ) : ℂ) *
-        (K * ∑ r : O ⧸ Ideal.span {(2 : O)},
-          fixedDualPhase c (GaussianShiftedPartition.representative 2 r))))) := by
-  have hqZ := coordinate_norm_pos_of_nonzero a b hc
+        (((((4 / OscSpecial.q (a : ℝ) (b : ℝ) : ℝ) : ℂ) * L2)) * ∑ r : O ⧸ Ideal.span {(2 : O)},
+          fixedDualPhase (ActualEisensteinCoordinates.eval a b) (GaussianShiftedPartition.representative 2 r))))) := by
   have hq : 0 < OscSpecial.q (a : ℝ) (b : ℝ) := by
     change 0 < (a : ℝ)^2 - (a : ℝ)*(b : ℝ)+(b : ℝ)^2
     exact_mod_cast (show 0 < a^2-a*b+b^2 by
-      simpa only [pow_two] using hqZ)
+      simpa only [pow_two] using (coordinate_norm_pos_of_nonzero a b hc))
   exact abel_transfer
     (fun η => 1 / ((OscSpecial.R η (a : ℝ) (b : ℝ) : ℂ) ^ (1/2 : ℂ)))
     (fun η => ∑' y : O, actualVariableDualKernel a b η y)
@@ -262,12 +223,11 @@ theorem actualOriginalAbelDualLimit (a b : ℤ)
     letI : Finite (O ⧸ Ideal.span {(2 : O)}) :=
       finite_quotient_span (by norm_num : (2 : O) ≠ 0)
     letI : Fintype (O ⧸ Ideal.span {(2 : O)}) := Fintype.ofFinite _
-    let c : O := ActualEisensteinCoordinates.eval a b
+    let c := ActualEisensteinCoordinates.eval a b
     let a2 := (ActualEisensteinCoordinates.coords (2 : O)).1
     let b2 := (ActualEisensteinCoordinates.coords (2 : O)).2
-    let L2 : ℂ := ((2 / (Real.sqrt 3 *
+    let L2 := ((2 / (Real.sqrt 3 *
       (((a2*a2-a2*b2+b2*b2 : ℤ) : ℝ))) : ℝ) : ℂ)
-    let K : ℂ := (((4 / OscSpecial.q (a : ℝ) (b : ℝ) : ℝ) : ℂ) * L2)
     Tendsto (fun η : ℝ => (η : ℂ) *
       (∑' z : O,
         (eisTraceModChar ShortDraftTrace.breveE
@@ -277,7 +237,7 @@ theorem actualOriginalAbelDualLimit (a b : ℤ)
           (‖eisEmbedding z‖ ^ 2 : ℂ))))
       (𝓝[>] (0 : ℝ))
       (𝓝 ((((Real.sqrt (OscSpecial.q (a : ℝ) (b : ℝ)) / 2 : ℝ) : ℂ) *
-        (K * ∑ r : O ⧸ Ideal.span {(2 : O)},
+        (((((4 / OscSpecial.q (a : ℝ) (b : ℝ) : ℝ) : ℂ) * L2)) * ∑ r : O ⧸ Ideal.span {(2 : O)},
           fixedDualPhase c (GaussianShiftedPartition.representative 2 r))))) := by
   apply (actualVariableAbelLimit a b hc).congr'
   filter_upwards [self_mem_nhdsWithin] with η hη
@@ -317,10 +277,9 @@ theorem full_dual_abel_coefficient (a b : ℤ)
           (((a2*a2-a2*b2+b2*b2 : ℤ) : ℝ))) : ℝ) : ℂ))) =
       (((2 / (Real.sqrt 3 * ‖ConcreteTraceCRT.eisEmbedding c‖) : ℝ) : ℂ) / 2) := by
   dsimp only
-  have hqZ := coordinate_norm_pos_of_nonzero a b hc
   have hq : 0 < OscSpecial.q (a : ℝ) (b : ℝ) := by
     change 0 < (a : ℝ)^2 - (a : ℝ)*(b : ℝ)+(b : ℝ)^2
-    exact_mod_cast (show 0 < a^2-a*b+b^2 by simpa only [pow_two] using hqZ)
+    exact_mod_cast (show 0 < a^2-a*b+b^2 by simpa only [pow_two] using (coordinate_norm_pos_of_nonzero a b hc))
   rw [dual_abel_coefficient a b hq]
   have hqnorm := osc_q_eq_eis_norm_sq a b
   have hsqrt : Real.sqrt (OscSpecial.q (a : ℝ) (b : ℝ)) =
@@ -337,24 +296,23 @@ theorem full_dual_abel_coefficient (a b : ℤ)
   push_cast
   field_simp [hn, hs]
 
-open scoped Topology
-open Filter EisensteinEmbedding ConcreteTraceCRT Complex
+open EisensteinEmbedding ConcreteTraceCRT
 
 theorem quadraticGammaO_eq_fourTerms (a b : ℤ)
     (hc : ActualEisensteinCoordinates.eval a b ≠ 0) :
     quadraticGammaO (ActualEisensteinCoordinates.eval a b) hc =
       breveGaussianFourTerms a b := by
-  let c : O := ActualEisensteinCoordinates.eval a b
-  let n : ℝ := ‖eisEmbedding c‖
-  let q : ℝ := OscSpecial.q (a : ℝ) (b : ℝ)
+  let c := ActualEisensteinCoordinates.eval a b
+  let n := ‖eisEmbedding c‖
+  let q := OscSpecial.q (a : ℝ) (b : ℝ)
   let a2 := (ActualEisensteinCoordinates.coords (2 : O)).1
   let b2 := (ActualEisensteinCoordinates.coords (2 : O)).2
-  let L2 : ℂ := ((2 / (Real.sqrt 3 *
+  let L2 := ((2 / (Real.sqrt 3 *
     (((a2*a2-a2*b2+b2*b2 : ℤ) : ℝ))) : ℝ) : ℂ)
   let : Finite (O ⧸ Ideal.span {(2 : O)}) :=
     finite_quotient_span (by norm_num : (2 : O) ≠ 0)
   let : Fintype (O ⧸ Ideal.span {(2 : O)}) := Fintype.ofFinite _
-  let S : ℂ := ∑ r : O ⧸ Ideal.span {(2 : O)},
+  let S := ∑ r : O ⧸ Ideal.span {(2 : O)},
     fixedDualPhase c (GaussianShiftedPartition.representative 2 r)
   have hEq0 := tendsto_nhds_unique
     (original_abel_gamma_limit c hc)
@@ -369,10 +327,8 @@ theorem quadraticGammaO_eq_fourTerms (a b : ℤ)
     simpa only [c, n, q, a2, b2, L2] using
       full_dual_abel_coefficient a b hc
   have hA : ((2 / (Real.sqrt 3 * n) : ℝ) : ℂ) ≠ 0 := by
-    have hn : 0 < n := norm_pos_iff.mpr (eisEmbedding_ne_zero hc)
-    have hs : 0 < Real.sqrt 3 := Real.sqrt_pos.2 (by norm_num)
     exact_mod_cast (ne_of_gt (div_pos (by norm_num : (0 : ℝ) < 2)
-      (mul_pos hs hn)))
+      (mul_pos (Real.sqrt_pos.2 (by norm_num)) (norm_pos_iff.mpr (eisEmbedding_ne_zero hc)))))
   have hG : quadraticGammaO c hc = S / 2 := by
     apply mul_left_cancel₀ hA
     calc
@@ -382,9 +338,7 @@ theorem quadraticGammaO_eq_fourTerms (a b : ℤ)
       _ = (((2 / (Real.sqrt 3 * n) : ℝ) : ℂ) / 2) * S := by rw [← mul_assoc, hC]
       _ = ((2 / (Real.sqrt 3 * n) : ℝ) : ℂ) * (S / 2) := by ring
   change quadraticGammaO c hc = breveGaussianFourTerms a b
-  calc
-    quadraticGammaO c hc = S / 2 := hG
-    _ = breveGaussianFourTerms a b := fixedDualPhase_four_terms a b
+  exact (hG).trans (fixedDualPhase_four_terms a b)
 
 end
 
@@ -397,9 +351,7 @@ theorem theta_counter_lambda_eq : ActualEisensteinCubic.lambda =
   rw [ActualEisensteinCubic.lambda, ActualEisensteinCoordinates.eval, homega]
   ring
 
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-
-open MulChar AddChar
+open EisensteinEmbedding ConcreteTraceCRT
 
 namespace ShortDraftLocal
 

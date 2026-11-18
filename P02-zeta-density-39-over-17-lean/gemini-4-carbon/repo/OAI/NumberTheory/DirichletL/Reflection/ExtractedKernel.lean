@@ -21,7 +21,7 @@ lemma extractedRowFactor_norm_le_one (D1 D2 K : Ideal Eis) : ‖extractedRowFact
 lemma extractedSlotFactor_norm_le_one (D1 D2 P : Ideal Eis) : ‖extractedSlotFactor D1 D2 P‖ ≤ 1 := by
   unfold extractedSlotFactor
   split_ifs
-  · simpa only [mul_one] using inverseCubicKernel_norm_le_one P D1
+  · simpa using inverseCubicKernel_norm_le_one P D1
   · simp
 
 lemma coprime_product_mask (P D b : Ideal Eis) :

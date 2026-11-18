@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaBufferedPowerError
 
 @[expose] public section
@@ -32,9 +42,9 @@ theorem modelPhaseBufferedPlateau_frequency_gaps
       (q : ℝ)*N/T+N/T ≤ deriv F (l+2*η) := by
   have hi := Finset.mem_Ioo.mp hq
   have hL : (modelPhaseBufferedPlateauLower F r η T N : ℝ)+1 ≤ (q : ℝ) := by
-    exact_mod_cast (show modelPhaseBufferedPlateauLower F r η T N+1 ≤ q by omega)
+    exact_mod_cast (by omega)
   have hU : (q : ℝ)+1 ≤ (modelPhaseBufferedPlateauUpper F l η T N : ℝ) := by
-    exact_mod_cast (show q+1 ≤ modelPhaseBufferedPlateauUpper F l η T N by omega)
+    exact_mod_cast (by omega)
   have hceil := Int.le_ceil ((T/N)*deriv F (r-2*η))
   have hfloor := Int.floor_le ((T/N)*deriv F (l+2*η))
   have hlow : (T/N)*deriv F (r-2*η)+1 ≤ (q : ℝ) := by
@@ -43,7 +53,7 @@ theorem modelPhaseBufferedPlateau_frequency_gaps
   have hupp : (q : ℝ)+1 ≤ (T/N)*deriv F (l+2*η) := by
     dsimp [modelPhaseBufferedPlateauUpper] at hU
     linarith
-  have hs : 0 ≤ N/T := (div_pos hN hT).le
+  have hs := (div_pos hN hT).le
   have he (x : ℝ) : (T/N*x+1)*(N/T) = x+N/T := by field_simp
   constructor
   · have h := mul_le_mul_of_nonneg_right hlow hs
@@ -69,9 +79,9 @@ theorem modelPhaseBufferedPlateau_critical_geometry
       l+2*η+N/(T*(σ+1)) ≤ modelPhaseInverseSlope F ((q : ℝ)*N/T) ∧
       modelPhaseInverseSlope F ((q : ℝ)*N/T)+N/(T*(σ+1)) ≤ r-2*η := by
   have hg := modelPhaseBufferedPlateau_frequency_gaps hT hN hq
-  have ha : l+2*η ∈ Ioo (1 : ℝ) 2 := by constructor <;> linarith
-  have hb : r-2*η ∈ Ioo (1 : ℝ) 2 := by constructor <;> linarith
-  have hw : 0 < N/T := div_pos hN hT
+  have ha : l+2*η ∈ Ioo 1 2 := by constructor <;> linarith
+  have hb : r-2*η ∈ Ioo 1 2 := by constructor <;> linarith
+  have hw := div_pos hN hT
   have hv : (q : ℝ)*N/T ∈ modelPhaseSlopeRange F := by
     rw [modelPhaseSlopeRange_eq_endpoint_Ioo hσ hδ hF]
     have hba := modelPhaseClosedSlope_deriv_bounds hσ hδ hF ha
@@ -106,8 +116,7 @@ theorem modelPhaseSlopeRange_positive_window
     (hF : IsApproximateModelPhaseFunction F σ P δ)
     (hv : v ∈ modelPhaseSlopeRange F) :
     v ∈ Icc ((2 : ℝ)^(-σ)/2) 2 := by
-  have hu := modelPhaseInverseSlope_mem hv
-  have he := approximateModelPhase_firstDeriv_bounds hσ hF hu
+  have he := approximateModelPhase_firstDeriv_bounds hσ hF (modelPhaseInverseSlope_mem hv)
   rw [deriv_modelPhaseInverseSlope_apply hv] at he
   have hd₁ := hδ.trans (min_le_left _ _)
   have hd₂ := hδ.trans (min_le_right _ _)

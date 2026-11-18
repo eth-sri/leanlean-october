@@ -8,10 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.InverseMomentGlobalRetainedGates
-open InverseMoment InverseFirstPriorityParents InverseMomentWholePriorityParents
-open InverseWholePriorityRetainedSource InversePrioritySecondSource InverseInitialArithmetic
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondSourceBlocks
-open InverseSecondFibers CompletedGauss
+open InverseMoment InverseFirstPriorityParents InverseMomentWholePriorityParents InverseWholePriorityRetainedSource InversePrioritySecondSource InverseInitialArithmetic ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondSourceBlocks InverseSecondFibers CompletedGauss
 open ConcreteTraceCRT (eisEmbedding)
 local notation "O" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ] {Jo : ℕ}
@@ -73,8 +70,6 @@ theorem supported_child_margins (hp : ∀i,p i≠0)
         (childM M ell A t (secondCellExponent Z d 0) (secondCellExponent Z d 1) V j eta)
         (actualSecondPunctureWidth Z m γ) z (c-7*eta) := by
   intro source d γ hγ
-  have hs := supported_conditions p hp extra original hvalid hextra negative J lists pool cutoff b (Z^(r-A-B-t))
-  have hk := supported_frequency_ne_zero p extra original negative J lists pool cutoff b (Z^(r-A-B-t))
   have hb₁ := supported_original_property p extra original negative J lists pool cutoff b (Z^(r-A-B-t))
     (fun q _ _ _=>‖eisEmbedding (primeProduct p q.support q.leftExponent)‖^2≤Z^(ell+eta)) h1
   have hb₂ := supported_original_property p extra original negative J lists pool cutoff b (Z^(r-A-B-t))
@@ -83,7 +78,7 @@ theorem supported_child_margins (hp : ∀i,p i≠0)
     (fun _ _ _ I=>(Ideal.absNorm I:ℝ)≤Z^(t+eta)) (by
       intro y hy
       simpa only [sourceIdeal,←eisEmbedding_norm_sq_eq_absNorm_span,primeProductNorm] using hT y hy)
-  exact actual_cell_triple_margins p hp hpr source hs hk d m hm
+  exact actual_cell_triple_margins p hp hpr source (supported_conditions p hp extra original hvalid hextra negative J lists pool cutoff b (Z^(r-A-B-t))) (supported_frequency_ne_zero p extra original negative J lists pool cutoff b (Z^(r-A-B-t))) d m hm
     Z r ell V M Q z c A B t j eta hZ hparent hA ht hV hj heta hbin hQ hb₁ hb₂ hq γ hγ
 
 end SevenEighths.InverseMomentGlobalRetainedGates

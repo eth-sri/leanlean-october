@@ -32,33 +32,25 @@ namespace MathCollab.Density.Stronger.Atkinson
 theorem deriv_zetaQuadraticLogGaussian (T A : ℝ) {G x : ℝ} (hG : G ≠ 0) (hx : 0 < x) :
     deriv (fun y => zetaGaussianQuadraticIntegral T G (Real.log y - Real.log A)) x =
       (1 / x : ℝ) • deriv (zetaGaussianQuadraticIntegral T G) (Real.log x - Real.log A) := by
-  have hq := (hasDerivAt_zetaGaussianQuadraticIntegral T hG (Real.log x - Real.log A)).differentiableAt
-  simpa only [one_div] using!
-    (hq.hasDerivAt.scomp x ((Real.hasDerivAt_log hx.ne').sub_const (Real.log A))).deriv
+  simpa using!
+    (((hasDerivAt_zetaGaussianQuadraticIntegral T hG (Real.log x - Real.log A)).differentiableAt).hasDerivAt.scomp x ((Real.hasDerivAt_log hx.ne').sub_const (Real.log A))).deriv
 
 theorem norm_deriv_zetaQuadraticLogGaussian_le {T G x : ℝ}
     (hT : 0 < T) (hG : 0 < G) (hGT : G ^ 2 ≤ 2 * T) (hx : 0 < x) (A : ℝ) :
     ‖deriv (fun y => zetaGaussianQuadraticIntegral T G (Real.log y - Real.log A)) x‖ ≤
       (2 * Real.sqrt Real.pi * G) *
         ‖deriv (fun y : ℝ => (zetaLogGaussianEnvelope A G y : ℂ)) x‖ := by
-  have he : deriv (fun y : ℝ => (zetaLogGaussianEnvelope A G y : ℂ)) x =
-      ((-(G ^ 2 / 4) * ((Real.log x - Real.log A) / x) * zetaLogGaussianEnvelope A G x : ℝ) : ℂ) :=
-    (hasDerivAt_zetaLogGaussianEnvelope A G hx).ofReal_comp.deriv
   have habs : |-(G ^ 2 / 4) * ((Real.log x - Real.log A) / x) * zetaLogGaussianEnvelope A G x| =
       (G ^ 2 / 4) * (|Real.log x - Real.log A| / x) * zetaLogGaussianEnvelope A G x := by
     rw [abs_mul, abs_mul, abs_neg, abs_of_nonneg (by positivity : 0 ≤ G ^ 2 / 4),
       abs_div, abs_of_pos hx, abs_of_nonneg (zetaLogGaussianEnvelope_bounds A G x).1]
   rw [deriv_zetaQuadraticLogGaussian T A hG.ne' hx, norm_smul, Real.norm_eq_abs,
     abs_of_pos (by positivity : 0 < 1 / x)]
-  calc
-    _ ≤ (1 / x) * ((Real.sqrt Real.pi * G ^ 3 / 2) * |Real.log x - Real.log A| *
-        Real.exp (-(G * (Real.log x - Real.log A)) ^ 2 / 8)) :=
-      mul_le_mul_of_nonneg_left (norm_deriv_zetaGaussianQuadraticIntegral_le hT hG hGT _)
-        (by positivity)
-    _ = _ := by
-      rw [he, Complex.norm_real, Real.norm_eq_abs, habs]
+  exact (mul_le_mul_of_nonneg_left (norm_deriv_zetaGaussianQuadraticIntegral_le hT hG hGT _)
+        (by positivity)).trans_eq (by
+      rw [((hasDerivAt_zetaLogGaussianEnvelope A G hx).ofReal_comp.deriv), Complex.norm_real, Real.norm_eq_abs, habs]
       unfold zetaLogGaussianEnvelope
-      ring
+      ring)
 
 theorem intervalC1Bound_zetaQuadraticLogGaussian {T G : ℝ}
     (hT : 0 < T) (hG : 0 < G) (hGT : G ^ 2 ≤ 2 * T) :

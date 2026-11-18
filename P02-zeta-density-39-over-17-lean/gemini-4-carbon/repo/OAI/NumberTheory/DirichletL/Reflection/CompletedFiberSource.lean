@@ -90,8 +90,8 @@ theorem original_completed_residual_source
   have he := actual_marked_active_reflection D0 J I F Q hJ hI0 hF hm
     (ConcretePrimeRowBridge.span_idealGenerator F) hz hbad
     (hcop K.val K.property) hpow.symm hmask.symm lists hmax hgood hS
-    (fun p i => hodd i _ (p i).property) Ψ hΨnorm hQ hΨperiod hmLam hm2 c hc hcQ.le G ((9:Eis)*c)
-    (fun h => mul_dvd_mul_left (9:Eis) (G h).denominator_dvd)
+    (fun p i => hodd i _ (p i).property) Ψ hΨnorm hQ hΨperiod hmLam hm2 c hc hcQ.le G (9*c)
+    (fun h => mul_dvd_mul_left 9 (G h).denominator_dvd)
     (fun p => markedRowFamily_period D0 (slotChoiceFamily lists hmax hgood p) Q
       (fun i => hperiod i _ (p i).property) c hcQ)
     (fun h A T b p => D h A T K b p)

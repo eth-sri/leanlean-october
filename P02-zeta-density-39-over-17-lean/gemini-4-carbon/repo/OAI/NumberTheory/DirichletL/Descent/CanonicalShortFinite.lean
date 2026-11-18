@@ -10,8 +10,7 @@ noncomputable section
 
 open scoped BigOperators Classical ContDiff
 namespace SevenEighths.InverseCanonicalShortAttachment
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
-open CanonicalQuadraticSieve InverseMoment InverseReflectedPhase InverseTerminalWidths CompletedHeight
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge CanonicalQuadraticSieve InverseMoment InverseReflectedPhase InverseTerminalWidths CompletedHeight
 local notation "Eis"=>ActualEisensteinCubic.O
 universe u v
 theorem actual_complete_short_finite_uniform_degree
@@ -59,10 +58,9 @@ theorem actual_complete_short_finite_uniform_degree
   dsimp only
   let S:=reflectionExcludedPrimes q
   let F:=InitialMeanSquare.outsideSquarefreeIdeals S D
-  have hF : ∀I∈F,Admissible I:=InitialMeanSquare.outsideSquarefree_admissible S D (reflectionExcludedPrimes_bad q)
   let ilists:slots→Finset (Ideal Eis):=fun j=>idealLists F lists j.val
   let iw:∀j,ilists j→ℂ:=fun j=>idealWeights F lists a j.val
-  have hp (j:slots) (P:Ideal Eis) (hP:P∈ilists j) := idealLists_prime_data F hF lists j.val P hP
+  have hp (j:slots) (P:Ideal Eis) (hP:P∈ilists j) := idealLists_prime_data F (InitialMeanSquare.outsideSquarefree_admissible S D (reflectionExcludedPrimes_bad q)) lists j.val P hP
   have hcap : ∀j:slots,∀P∈ilists j,(Ideal.absNorm P:ℝ)≤H j.val := by
     intro j P hP
     obtain ⟨i,hi,rfl⟩:=Finset.mem_image.mp hP
@@ -80,7 +78,7 @@ theorem actual_complete_short_finite_uniform_degree
     (fun j P hP=>(hp j P hP).2.2.1) (fun j P hP=>(hp j P hP).2.2.2)
     (fun j=>hH1 j.val j.property) hcap (by simpa only [Finset.prod_coe_sort] using hprod)
     Ψ hΨ hperiod θ iw hw
-  have hz:0<Z:=zero_lt_one.trans (lt_of_lt_of_le hZ₀ hZ)
+  have hz :=zero_lt_one.trans (lt_of_lt_of_le hZ₀ hZ)
   have hn:‖((Z^(-(N+V)/2):ℝ):ℂ)*((Real.sqrt (Z^N):ℝ):ℂ)‖^2=Z^(-V) := by
     rw [norm_mul,mul_pow,Complex.norm_real,Real.norm_eq_abs,
       abs_of_pos (Real.rpow_pos_of_pos hz _),Complex.norm_real,Real.norm_eq_abs,
@@ -88,9 +86,7 @@ theorem actual_complete_short_finite_uniform_degree
       ←Real.rpow_mul_natCast hz.le,←Real.rpow_add hz]
     congr 1
     ring
-  have hmark:indexedIdealMark (fun i:primePool F=>i.val) slots lists a=tupleDivisibilityMark ilists iw:=
-    funext (indexed_mark_eq_tuple F slots lists a)
-  rw [hmark]
+  rw [(funext (indexed_mark_eq_tuple F slots lists a))]
   change Z^(-V)*(∑f∈labels,secondLabelWeight K f*∑k∈T,
     ‖markedShortCompletedSum (rowTwist Ψ (ActualFiber.maskElement q m) (idealGenerator f) k)
       (normTwistedSource W θ) (Z^N) (Z^hcut) (tupleDivisibilityMark ilists iw)‖^2)≤_

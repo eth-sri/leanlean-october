@@ -9,79 +9,12 @@ noncomputable section
 
 namespace CubicEisenstein
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 
 section
-open scoped BigOperators Classical MatrixGroups
-
-open CubicKubota ActualEisensteinCubic ConcreteTraceCRT
+open CubicKubota
+open scoped MatrixGroups
 local notation "O" => ActualEisensteinCubic.O
 
 def rationalComplex : SL(2,ℤ) →* SL(2,ℂ) := integralComplexMatrix.comp rationalEmbedding
@@ -106,16 +39,6 @@ lemma rationalComplex_S_sq_row (v : Fin 2→ℂ) :
   funext j
   fin_cases j <;> simp [Matrix.vecMul,dotProduct,Fin.sum_univ_two]
 
-lemma hyperbolicEisenstein_S_sq (s : ℂ) (w : HyperbolicSpace) :
-    hyperbolicEisenstein s (rationalComplex (ModularGroup.S^2) • w)=hyperbolicEisenstein s w := by
-  induction w using Quotient.inductionOn with
-  | _ g =>
-    change eisenstein (rationalComplex (ModularGroup.S^2)*g) s=eisenstein g s
-    apply tsum_congr
-    intro x
-    unfold summand
-    rw [←rowOperator_mul,rationalComplex_S_sq_row,map_neg]
-    simp [rowEnergy]
 
 lemma hyperbolicEisenstein_T_pow (s : ℂ) (n : ℕ) (w : HyperbolicSpace) :
     hyperbolicEisenstein s (rationalComplex (ModularGroup.T^n) • w)=hyperbolicEisenstein s w := by
@@ -125,7 +48,14 @@ lemma hyperbolicEisenstein_S_even (s : ℂ) (e : Fin 2) (w : HyperbolicSpace) :
     hyperbolicEisenstein s (rationalComplex (ModularGroup.S^(2*e.val)) • w)=hyperbolicEisenstein s w := by
   fin_cases e
   · simp
-  · exact hyperbolicEisenstein_S_sq s w
+  · induction w using Quotient.inductionOn with
+      | _ g =>
+        change eisenstein (rationalComplex (ModularGroup.S^2)*g) s=eisenstein g s
+        apply tsum_congr
+        intro x
+        unfold summand
+        rw [←rowOperator_mul,rationalComplex_S_sq_row,map_neg]
+        simp [rowEnergy]
 
 lemma hyperbolicEisenstein_bruhat (s : ℂ) (e : Fin 2) (a : Fin 3⊕(Fin 3×Fin 3)) (w : HyperbolicSpace) :
     hyperbolicEisenstein s (rationalComplex (rationalBruhatRep (e,a)) • w)=
@@ -155,9 +85,8 @@ end
 
 section
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology InnerProductSpace MatrixGroups
 open CubicKubota
+open scoped InnerProductSpace MatrixGroups
 local notation "Eis" => ActualEisensteinCubic.O
 
 def translatedCuspCompact (M:levelTwo):Set KernelQuotient:=
@@ -174,8 +103,7 @@ lemma translatedCuspFourier_integral (h:Eis) (M:levelTwo) (F:KernelQuotientL2):
       F (kernelSourceAction M (integralOrbitProjection globalKubotaKernel w))*
         cuspFourierPhase h w∂hyperbolicVolume:=by
   rw [translatedCuspFourier,ContinuousLinearMap.comp_apply,kernelCuspFourier_integral]
-  have hm:=kernelProjection_cuspPeriodStrip_measurePreserving 5 6 (by norm_num)
-  have he:=hm.quasiMeasurePreserving.ae_eq_comp (ae_restrict_of_ae
+  have he:=(kernelProjection_cuspPeriodStrip_measurePreserving 5 6 (by norm_num)).quasiMeasurePreserving.ae_eq_comp (ae_restrict_of_ae
     (kernelSourcePullback_ae_eq M F) (s:=kernelCuspStripSet))
   apply integral_congr_ae
   filter_upwards [he] with w hw
@@ -248,12 +176,9 @@ theorem translatedCuspFamily_initial (h:Eis) (M:levelTwo)
     change kernelQuotientSeed a b s q+kernelEisensteinL2Correction a b ha hab s q=_
     rw [hq]
     ring
-  have hsource:=(kernelSourceAction_measurePreserving M).quasiMeasurePreserving.ae_eq_comp hcorrected
-  have hm:=kernelProjection_cuspPeriodStrip_measurePreserving 5 6 (by norm_num)
-  have he:=hm.quasiMeasurePreserving.ae_eq_comp (ae_restrict_of_ae hsource (s:=kernelCuspStripSet))
   rw [translatedCuspFamily_actual_integral]
   apply integral_congr_ae
-  filter_upwards [he] with w hw
+  filter_upwards [((kernelProjection_cuspPeriodStrip_measurePreserving 5 6 (by norm_num)).quasiMeasurePreserving.ae_eq_comp (ae_restrict_of_ae ((kernelSourceAction_measurePreserving M).quasiMeasurePreserving.ae_eq_comp hcorrected) (s:=kernelCuspStripSet)))] with w hw
   exact congrArg (fun z:ℂ=>z*cuspFourierPhase h w)
     (hw.trans (by dsimp only [Function.comp_def];rw [kernelSourceAction_mk,kernelQuotientEisenstein_mk]))
 
@@ -261,9 +186,8 @@ end
 
 section
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups Matrix
-open CubicKubota ConcreteTraceCRT
+open CubicKubota
+open scoped MatrixGroups Matrix
 local notation "Eis" => ActualEisensteinCubic.O
 
 def oppositeSource:levelTwo:=rationalLift ModularGroup.S
@@ -323,11 +247,7 @@ lemma translatedCuspFamily_opposite_initial (h:Eis) (s:ℂ)
   rw [translatedCuspFamily_initial (3*h) oppositeSource 2 3
     (by norm_num) (by norm_num) (by norm_num) s hs hi,
     opposite_cusp_fourier_average s (by linarith),
-    show (9:Eis)*(3*h)=27*h by ring,unramifiedCubicGaussSeries_twentySeven]
-
-def continuedUnramifiedGauss (h:Eis) (s:ℂ):ℂ:=
-  translatedCuspFamily (3*h) oppositeSource 2 3 (by norm_num) (by norm_num) s/
-    cuspWhittakerHeightFactor s (3*h)
+    show 9*(3*h)=27*h by ring,unramifiedCubicGaussSeries_twentySeven]
 
 def unramifiedGaussResidue (h:Eis):ℂ:=
   translatedCuspFourier (3*h) oppositeSource cubicEisensteinResidue/
@@ -337,8 +257,7 @@ end
 
 section
 
-open scoped BigOperators Classical
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
+open CubicJacobiGlobal
 local notation "Eis" => ActualEisensteinCubic.O
 
 lemma gaussRep_mk_congr (c d : Eis) :
@@ -367,9 +286,7 @@ lemma cubicUnitCRTMap_injective (a b : Eis) (hab : IsCoprime a b) :
     Ideal.Quotient.mk (Ideal.span {a}) (GaussianShiftedPartition.representative (a*b) t.1) at h1
   change Ideal.Quotient.mk (Ideal.span {b}) (GaussianShiftedPartition.representative (a*b) r.1)=
     Ideal.Quotient.mk (Ideal.span {b}) (GaussianShiftedPartition.representative (a*b) t.1) at h2
-  have hdiv : a*b ∣ GaussianShiftedPartition.representative (a*b) r.1-
-      GaussianShiftedPartition.representative (a*b) t.1 :=
-    hab.mul_dvd
+  have hdiv := hab.mul_dvd
       (Ideal.mem_span_singleton.mp ((Ideal.Quotient.mk_eq_mk_iff_sub_mem _ _).mp h1))
       (Ideal.mem_span_singleton.mp ((Ideal.Quotient.mk_eq_mk_iff_sub_mem _ _).mp h2))
   apply Subtype.ext
@@ -425,12 +342,10 @@ lemma residueAdditive_unit_crt (h a b alpha beta d:Eis) (ha:a≠0) (hb:b≠0)
   unfold residueAdditive
   rw [←AddChar.map_add_eq_mul]
   congr 1
-  have hae:=eisEmbedding_ne_zero ha
-  have hbe:=eisEmbedding_ne_zero hb
   have hbeq:=congrArg eisEmbedding hbez
   simp only [map_add,map_mul,map_one] at hbeq
   simp only [cuspFrequency,map_mul,map_ofNat]
-  field_simp [hae,hbe,eisLam_ne_zero]
+  field_simp [(eisEmbedding_ne_zero ha),(eisEmbedding_ne_zero hb),eisLam_ne_zero]
   linear_combination -(eisEmbedding h*eisEmbedding d)*hbeq
 
 lemma cubicUnitCRT_summand (h a b alpha beta:Eis) (ha:a≠0) (hb:b≠0)
@@ -446,9 +361,6 @@ lemma cubicUnitCRT_summand (h a b alpha beta:Eis) (ha:a≠0) (hb:b≠0)
   let xi:=GaussianShiftedPartition.representative b (cubicUnitCRTMap a b r).2.1
   have hdelta:a∣delta-d:=gaussRep_mk_congr a d
   have hxi:b∣xi-d:=gaussRep_mk_congr b d
-  change eisEmbedding (symbol d (a*b))*residueAdditive (3*h) (a*b) d=
-    (eisEmbedding (symbol delta a)*residueAdditive (3*(h*alpha)) a delta)*
-    (eisEmbedding (symbol xi b)*residueAdditive (3*(h*beta)) b xi)
   rw [symbol_mul_denominator,map_mul,symbol_congr hdelta,symbol_congr hxi,
     residueAdditive_unit_crt h a b alpha beta d ha hb hbez,
     residueAdditive_three_congr (h*alpha) a delta d ha hdelta,
@@ -506,18 +418,14 @@ theorem cubicUnitGaussSum_coprime_product (h a b:Eis) (ha:a≠0) (hb:b≠0)
 
 end
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology
-
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CompletedGauss
+open CubicJacobiGlobal CompletedGauss
 open PrimaryIdealUnitReindex (GoodIdeal)
 local notation "Eis" => ActualEisensteinCubic.O
 
 lemma ramifiedCongruence_zero (j : Fin 3) (n : ℕ) :
     ramifiedCongruence (0:Eis) j.val n ↔ j=0 ∧ 3∣n := by
   have hz : ActualEisensteinCoordinates.coords (0:Eis)=(0,0) := by
-    have hh:=ShortDraftLatticeCount.coords_eval 0 0
-    simpa [ActualEisensteinCoordinates.eval] using hh
+    simpa [ActualEisensteinCoordinates.eval] using (ShortDraftLatticeCount.coords_eval 0 0)
   simp only [ramifiedCongruence,hz,add_zero,sub_zero]
   rw [←Int.natCast_dvd_natCast]
   constructor
@@ -530,15 +438,15 @@ lemma ramifiedCongruence_zero (j : Fin 3) (n : ℕ) :
 lemma arithmeticResidueSum_zero_ramified (u : Eisˣ) (n : ℕ) :
     arithmeticResidueSum 0 (u.val*lambda^(n+2))=
       if u=1 ∨ u= -1 then if 3∣n+2 then ((3^(n+2):ℕ):ℂ) else 0 else 0 := by
-  have hp : residueAdditive (0:Eis) 3 1=1 := by
+  have hp : residueAdditive 0 3 1=1 := by
     simp [residueAdditive,cuspFrequency]
   by_cases hu : u=1 ∨ u= -1
   · have hs : (u:Eis)=omega^0 ∨ (u:Eis)=-(omega^0) := by
       rcases hu with rfl|rfl <;> simp
     rw [ramified_arithmetic_explicit_table 0 0 u (n+2) 0 (by omega) hs (by simp),
-      show ramifiedCongruence (0:Eis) 0 (n+2) ↔ 3∣n+2 by
+      show ramifiedCongruence 0 0 (n+2) ↔ 3∣n+2 by
         simpa using ramifiedCongruence_zero (0:Fin 3) (n+2),hp,mul_one,ite_eq_left hu]
-    simp only [Nat.cast_pow,Nat.cast_ofNat]
+    simp
   · obtain ⟨j,hj⟩:=unit_eq_sign_omega u
     have hj0 : j≠0 := by
       intro he
@@ -569,7 +477,7 @@ lemma arithmeticDirichletSeries_zero_separate (s : ℂ) (hs : 2<s.re) :
   rw [ite_eq_right (ramifiedLower_ne_zero u n I),eisEmbedding_norm_sq_eq_absNorm_span,
     Complex.ofReal_natCast,ramifiedLower_span,map_mul,map_pow,ramifiedIdeal_absNorm,
     Nat.cast_mul,Complex.natCast_mul_natCast_cpow]
-  have hp:lambda^2∣primaryGenerator I.1-1:=(primaryGenerator_spec I.1 I.2).2
+  have hp :=(primaryGenerator_spec I.1 I.2).2
   rw [show arithmeticResidueSum 0 (ramifiedLower u n I)=
       eisEmbedding (symbol (u.val*lambda^(n+2)) (primaryGenerator I.1))*
       eisEmbedding (symbol (3*(u.val*lambda^(n+2))) (primaryGenerator I.1))*

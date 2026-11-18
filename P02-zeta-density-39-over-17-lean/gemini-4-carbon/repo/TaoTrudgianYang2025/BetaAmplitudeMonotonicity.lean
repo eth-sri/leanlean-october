@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaCurvatureAmplitude
 
 @[expose] public section
@@ -50,18 +60,15 @@ theorem approximateModelPhase_thirdWithin_bounds
     norm_num [descPochhammer_succ_eval]
     ring
   rw [hcoeff] at he
-  have he' := he
   have huPos : 0 < u := zero_lt_one.trans_le hu.1
-  have hlow : (2 : ℝ)^(-σ-2) ≤ u^(-σ-2) :=
+  have hlow : 2^(-σ-2) ≤ u^(-σ-2) :=
     Real.rpow_le_rpow_of_nonpos huPos hu.2 (by linarith)
   have hhigh : u^(-σ-2) ≤ 1 :=
     Real.rpow_le_one_of_one_le_of_nonpos hu.1 (by linarith)
   have hc : 0 ≤ σ*(σ+1) := by positivity
-  have hl := mul_le_mul_of_nonneg_left hlow hc
-  have hh := mul_le_mul_of_nonneg_left hhigh hc
   have hd₀ := hδ.trans (min_le_left _ _)
   have hd₁ := hδ.trans (min_le_right _ _)
-  rw [abs_le] at he'
+  rw [abs_le] at (he)
   unfold modelPhaseThirdLower at hd₀ ⊢
   constructor <;> nlinarith
 
@@ -72,8 +79,7 @@ theorem approximateModelPhase_thirdDeriv_bounds
     {u : ℝ} (hu : u ∈ Ioo (1 : ℝ) 2) :
     modelPhaseThirdLower σ ≤ deriv (deriv (deriv F)) u ∧
       deriv (deriv (deriv F)) u ≤ σ*(σ+1)+1 := by
-  have hc : ContDiffAt ℝ 3 F u :=
-    (approximateModelPhase_contDiffAt hF hu).of_le
+  have hc := (approximateModelPhase_contDiffAt hF hu).of_le
       (ENat.natCast_le_of_coe_top_le_withTop le_rfl 3)
   have h := approximateModelPhase_thirdWithin_bounds hσ hδ hF ⟨hu.1.le,hu.2.le⟩
   rw [iteratedDerivWithin_eq_iteratedDeriv uniqueDiffOn_phaseInterval hc
@@ -90,7 +96,7 @@ theorem approximateModelPhase_secondDeriv_strictMonoOn
     exact ((approximateModelPhase_deriv_contDiffAt hF hu).derivWithin
       (by simp : (∞ : WithTop ℕ∞)+1 ≤ ∞)).continuousAt.continuousWithinAt
   · intro u hu
-    have hui : u ∈ Ioo (1 : ℝ) 2 := by simpa using hu
+    have hui : u ∈ Ioo 1 2 := by simpa using hu
     exact (modelPhaseThirdLower_pos hσ).trans_le
       (approximateModelPhase_thirdDeriv_bounds hσ hδ hF hui).1
 
@@ -101,10 +107,8 @@ theorem modelPhaseInverseSlope_antitoneOn
     AntitoneOn (modelPhaseInverseSlope F) (modelPhaseSlopeRange F) := by
   intro v hv w hw hvw
   by_contra hn
-  have hlt : modelPhaseInverseSlope F v < modelPhaseInverseSlope F w :=
-    lt_of_not_ge hn
   have h := approximateModelPhase_deriv_strictAntiOn hσ hδ hF
-    (modelPhaseInverseSlope_mem hv) (modelPhaseInverseSlope_mem hw) hlt
+    (modelPhaseInverseSlope_mem hv) (modelPhaseInverseSlope_mem hw) (lt_of_not_ge hn)
   rw [deriv_modelPhaseInverseSlope_apply hv,deriv_modelPhaseInverseSlope_apply hw] at h
   exact (not_lt_of_ge hvw) h
 
@@ -113,14 +117,13 @@ theorem modelPhaseStationaryAmplitude_antitoneOn
     (hδ : δ ≤ modelPhaseAmplitudeTolerance σ)
     (hF : IsApproximateModelPhaseFunction F σ 2 δ) :
     AntitoneOn (modelPhaseStationaryAmplitude F) (modelPhaseSlopeRange F) := by
-  have hd₁ : δ ≤ min (modelPhaseCurvatureLower σ) 1 := hδ.trans (min_le_left _ _)
-  have hd₂ : δ ≤ min (modelPhaseThirdLower σ) 1 := hδ.trans (min_le_right _ _)
+  have hd₁ := hδ.trans (min_le_left _ _)
+  have hd₂ := hδ.trans (min_le_right _ _)
   have hF₁ := approximateModelPhase_mono hF (by norm_num : 1 ≤ 2) le_rfl
   intro v hv w hw hvw
-  have hi := modelPhaseInverseSlope_antitoneOn hσ hd₁ hF₁ hv hw hvw
   have hq : modelPhaseCurvatureAt F v ≤ modelPhaseCurvatureAt F w := by
     exact neg_le_neg ((approximateModelPhase_secondDeriv_strictMonoOn hσ hd₂ hF).monotoneOn
-      (modelPhaseInverseSlope_mem hw) (modelPhaseInverseSlope_mem hv) hi)
+      (modelPhaseInverseSlope_mem hw) (modelPhaseInverseSlope_mem hv) (modelPhaseInverseSlope_antitoneOn hσ hd₁ hF₁ hv hw hvw))
   exact inv_anti₀ (Real.sqrt_pos.mpr (modelPhaseCurvatureAt_pos hσ hd₁ hF₁ hv))
     (Real.sqrt_le_sqrt hq)
 

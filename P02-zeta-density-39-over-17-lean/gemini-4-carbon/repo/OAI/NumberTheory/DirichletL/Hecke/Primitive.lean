@@ -16,7 +16,7 @@ open HeckeFamily
 variable (c : O) [NeZero c]
 
 theorem span_ne_bot : Ideal.span ({c} : Set O) ≠ ⊥ := by
-  simpa only [ne_eq, Ideal.span_singleton_eq_bot] using NeZero.ne c
+  simpa using NeZero.ne c
 
 instance : Fintype (O ⧸ Ideal.span {c}) := by
   letI : Finite (O ⧸ Ideal.span {c}) := Ring.HasFiniteQuotients.finiteQuotient (span_ne_bot c)
@@ -100,10 +100,9 @@ theorem pair_completed_eq_right (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
     (pair c χ hu hp).Λ s = (scale c : ℂ) ^ (-s) *
       HeckeTheta.completed (coefficients (character c χ hu)) s := by
   let w := coefficients (character c χ hu)
-  have h := (pair c χ hu hp).hasMellin hs
   calc
     (pair c χ hu hp).Λ s =
-        mellin (fun t => HeckeTheta.theta w (scale c * t) - w (0,0)) s := h.2.symm
+        mellin (fun t => HeckeTheta.theta w (scale c * t) - w (0,0)) s := ((pair c χ hu hp).hasMellin hs).2.symm
     _ = (scale c : ℂ) ^ (-s) * mellin (fun t => HeckeTheta.theta w t - w (0,0)) s :=
       by simpa only [smul_eq_mul] using
         mellin_comp_mul_left (fun t => HeckeTheta.theta w t - w (0,0)) s (scale_pos c)

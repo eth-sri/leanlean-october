@@ -44,14 +44,11 @@ theorem full_element_extraction_energy {n : Type*} [Fintype n] [DecidableEq n]
   let E : O → ℝ := fun z => ‖∑ j, coef j * elementCharacter (cols j) (hc j) z‖ ^ 2
   have hcover : R ⊆ Finset.univ.image reconstruct := by
     intro z hz
-    let I : Ideal O := Ideal.span {z}
+    let I := Ideal.span {z}
     obtain ⟨u, hu⟩ := element_cubic_extraction z (hR z hz)
     obtain ⟨e, he⟩ := badPart_sector (firstPart I)
     obtain ⟨f, hf⟩ := badPart_sector (secondPart I)
-    let a : firstImage R := ⟨goodPart (firstPart I), Finset.mem_image.mpr ⟨z, hz, rfl⟩⟩
-    let b : secondImage R := ⟨goodPart (secondPart I), Finset.mem_image.mpr ⟨z, hz, rfl⟩⟩
-    let c : cubeImage R := ⟨cubePart I, Finset.mem_image.mpr ⟨z, hz, rfl⟩⟩
-    refine Finset.mem_image.mpr ⟨((u, e, f, c), b, a), Finset.mem_univ _, ?_⟩
+    refine Finset.mem_image.mpr ⟨((u, e, f, (⟨cubePart I, Finset.mem_image.mpr ⟨z, hz, rfl⟩⟩)), (⟨goodPart (secondPart I), Finset.mem_image.mpr ⟨z, hz, rfl⟩⟩), (⟨goodPart (firstPart I), Finset.mem_image.mpr ⟨z, hz, rfl⟩⟩)), Finset.mem_univ _, ?_⟩
     change primaryGenerator (goodPart (firstPart I)) *
       primaryGenerator (goodPart (secondPart I)) ^ 2 *
         (u.val * idealGenerator (cubePart I) ^ 3 *
@@ -62,10 +59,7 @@ theorem full_element_extraction_energy {n : Type*} [Fintype n] [DecidableEq n]
     rw [he, hf]
     ring
   have hsum : (∑ z ∈ R, E z) ≤ ∑ p : T, E (reconstruct p) := by
-    calc
-      _ ≤ ∑ z ∈ Finset.univ.image reconstruct, E z :=
-        Finset.sum_le_sum_of_subset_of_nonneg hcover (fun _ _ _ => sq_nonneg _)
-      _ ≤ _ := Finset.sum_image_le_of_nonneg (fun _ _ => sq_nonneg _)
+    exact (Finset.sum_le_sum_of_subset_of_nonneg hcover (fun _ _ _ => sq_nonneg _)).trans (Finset.sum_image_le_of_nonneg (fun _ _ => sq_nonneg _))
   have hb := element_block_energy_le
     (fun i : firstImage R => i.val) (fun k : secondImage R => k.val)
     (sourceFactor R) cols hc coef

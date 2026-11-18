@@ -53,9 +53,8 @@ lemma zeroIndexSeries_eq (χ : MulChar (O ⧸ Ideal.span {p}) ℂ) (W V : ℂ)
       ring
     rw [he]
     simpa [div_eq_mul_inv] using (hasSum_geometric_of_norm_lt_one hW).mul_left W
-  have hall := HasSum.sum_range_add (f := fun k => ∑' m, zeroIndexTerm p χ W V k m) (k := 1) htail
   simpa only [zeroIndexSeries, Finset.sum_range_one,
-    (zeroIndex_inner_zero p χ W V hV).tsum_eq] using hall.tsum_eq
+    (zeroIndex_inner_zero p χ W V hV).tsum_eq] using (HasSum.sum_range_add (f := fun k => ∑' m, zeroIndexTerm p χ W V k m) (k := 1) htail).tsum_eq
 
 end SevenEighths.ProbeEuler
 end

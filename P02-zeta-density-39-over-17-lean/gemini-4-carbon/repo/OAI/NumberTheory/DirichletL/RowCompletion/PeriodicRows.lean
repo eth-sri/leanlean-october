@@ -7,79 +7,11 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
-
-open scoped BigOperators Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 
 namespace CanonicalRowCompletion
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve CanonicalUnitEuler
+open CompletedGauss CanonicalQuadraticSieve CanonicalUnitEuler
 local notation "Eis" => ActualEisensteinCubic.O
 
 lemma numeratorBadTwist_zero_of_not_supported (u:Eisˣ) (a b:ℕ) (r:Eis)
@@ -124,14 +56,10 @@ lemma actualPeriodicRow_periodic (Ψ:Eis→*ℂ) (Q:Ideal Eis)
       (Q*Ideal.span {m}*Ideal.span {(72:Eis)}*Ideal.span {r})
       (actualPeriodicRow Ψ m u a b r hr) := by
   intro x y hxy
-  have hQ:x-y∈Q:=Ideal.mul_le_left (Ideal.mul_le_left (Ideal.mul_le_left hxy))
-  have hm:x-y∈Ideal.span {m}:=Ideal.mul_le_right (Ideal.mul_le_left (Ideal.mul_le_left hxy))
-  have h72:x-y∈Ideal.span {(72:Eis)}:=Ideal.mul_le_right (Ideal.mul_le_left hxy)
-  have hrxy:x-y∈Ideal.span {r}:=Ideal.mul_le_right hxy
   change ((Ψ x*coprimalityMask m x)*numeratorBadTwist u a b r hr x)*movingNumeratorRow r hr x=
     ((Ψ y*coprimalityMask m y)*numeratorBadTwist u a b r hr y)*movingNumeratorRow r hr y
-  rw [hΨ x y hQ,coprimalityMask_periodic m x y hm,numeratorBadTwist_periodic u a b r hr x y h72,
-    movingNumeratorRow_periodic r hr x y hrxy]
+  rw [hΨ x y (Ideal.mul_le_left (Ideal.mul_le_left (Ideal.mul_le_left hxy))),coprimalityMask_periodic m x y (Ideal.mul_le_right (Ideal.mul_le_left (Ideal.mul_le_left hxy))),numeratorBadTwist_periodic u a b r hr x y (Ideal.mul_le_right (Ideal.mul_le_left hxy)),
+    movingNumeratorRow_periodic r hr x y (Ideal.mul_le_right hxy)]
 
 theorem rowTwist_eq_actualPeriodicRow_primary (Ψ:Eis→*ℂ) (m f z:Eis)
     (hmLam:lambda∣m) (hm2:(2:Eis)∣m) (u:Eisˣ) (a b:ℕ) (r:Eis)
@@ -164,7 +92,7 @@ theorem exists_actual_periodic_row (Ψ:Eis→*ℂ) (Q:Ideal Eis)
   refine ⟨u,a,b,r,hr,hpr,hx,?_,actualPeriodicRow_periodic Ψ Q hΨ m u a b r hr,
     actualPeriodicRow_norm Ψ hΨnorm m u a b r hr,?_⟩
   · exact mul_ne_zero (mul_ne_zero (mul_ne_zero hQ (by
-      simpa only [ne_eq,Ideal.zero_eq_bot,Ideal.span_singleton_eq_bot] using hm))
+      simpa using hm))
       (by simp only [ne_eq,Ideal.zero_eq_bot,Ideal.span_singleton_eq_bot];norm_num)) hr.1
   · exact fun n hpn=>rowTwist_eq_actualPeriodicRow_primary Ψ m f z hmLam hm2 u a b r hr hpr hx n hpn
 
@@ -173,7 +101,7 @@ end CanonicalRowCompletion
 namespace CompletedGauss
 
 section
-open ActualEisensteinCubic IdealMobiusDivisorSum UniqueFactorizationMonoid
+open IdealMobiusDivisorSum
 local notation "Eis" => ActualEisensteinCubic.O
 
 def completedReflectionPool (I Q:Ideal Eis) : Finset (Ideal Eis) :=
@@ -188,9 +116,7 @@ lemma mem_completedReflectionPool (I Q P:Ideal Eis) (hI:I≠0) (hQ:Q≠0) :
 
 lemma completedReflectionPool_maximal (I Q:Ideal Eis) (P:completedReflectionPool I Q) :
     P.val.IsMaximal := by
-  have hm: P.val∈normalizedFactors (I*Q):=
-    Multiset.mem_toFinset.mp (Finset.mem_filter.mp P.property).1
-  have hp:=prime_of_normalized_factor P.val hm
+  have hp:=prime_of_normalized_factor P.val (Multiset.mem_toFinset.mp (Finset.mem_filter.mp P.property).1)
   exact (Ideal.isPrime_of_prime hp).isMaximal hp.ne_zero
 
 lemma completedReflectionPool_good (I Q:Ideal Eis) (P:completedReflectionPool I Q) :
@@ -240,7 +166,7 @@ variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 end
 section
 
-open ActualEisensteinCubic LocalReflectionBrackets
+open LocalReflectionBrackets
 local notation "Eis" => ActualEisensteinCubic.O
 noncomputable local instance reflectionWeightField (P:Ideal Eis) [P.IsMaximal] : Field (Eis⧸P) :=
   Ideal.Quotient.field P
@@ -252,12 +178,12 @@ variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 end
 section
 
-open ActualEisensteinCubic CubicEisenstein CanonicalQuadraticSieve CompletedDyadic
+open CubicEisenstein CanonicalQuadraticSieve CompletedDyadic
 local notation "Eis" => ActualEisensteinCubic.O
 
 end
 
-open ActualEisensteinCubic CubicEisenstein CanonicalQuadraticSieve LocalReflectionBrackets
+open CubicEisenstein CanonicalQuadraticSieve LocalReflectionBrackets
 local notation "Eis" => ActualEisensteinCubic.O
 local instance poolMaximal (I Q:Ideal Eis) (P:completedReflectionPool I Q) : P.val.IsMaximal :=
   completedReflectionPool_maximal I Q P

@@ -1,7 +1,17 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaBufferedCutoff
-public import TaoTrudgianYang2025.BetaPoissonBoundary
+public import TaoTrudgianYang2025.BetaFourierModes
 
 @[expose] public section
 
@@ -49,10 +59,8 @@ theorem modelPhaseBufferedCutoff_one_off_boundary
   classical
   have h : ¬ (n < a+(⌈2*N*η⌉₊ : ℤ) ∨ b-(⌈2*N*η⌉₊ : ℤ) < n) := by
     simpa only [modelPhaseBufferedBoundary,Finset.mem_filter,hn,true_and] using hnot
-  have hl : a+(⌈2*N*η⌉₊ : ℤ) ≤ n := le_of_not_gt (fun h' => h (Or.inl h'))
-  have hr : n ≤ b-(⌈2*N*η⌉₊ : ℤ) := le_of_not_gt (fun h' => h (Or.inr h'))
-  have hl' : (a : ℝ)+(⌈2*N*η⌉₊ : ℝ) ≤ n := by exact_mod_cast hl
-  have hr' : (n : ℝ) ≤ (b : ℝ)-(⌈2*N*η⌉₊ : ℝ) := by exact_mod_cast hr
+  have hl' : (a : ℝ)+(⌈2*N*η⌉₊ : ℝ) ≤ n := by exact_mod_cast (le_of_not_gt (fun h' => h (Or.inl h')))
+  have hr' : (n : ℝ) ≤ (b : ℝ)-(⌈2*N*η⌉₊ : ℝ) := by exact_mod_cast (le_of_not_gt (fun h' => h (Or.inr h')))
   have hm := Nat.le_ceil (2*N*η)
   apply modelPhaseBufferedCutoff_one hη
   · apply (le_div_iff₀ hN).mpr
@@ -115,7 +123,7 @@ theorem norm_modelPhase_source_sub_buffered_le
   rw [hsum]
   calc
     _ ≤ ∑ n ∈ S, ‖E n‖ := norm_sum_le _ _
-    _ ≤ ∑ _n ∈ S, (1 : ℝ) := Finset.sum_le_sum (fun n _ => hnorm n)
+    _ ≤ ∑ _n ∈ S, 1 := Finset.sum_le_sum (fun n _ => hnorm n)
     _ = (S.card : ℝ) := by simp only [Finset.sum_const,nsmul_eq_mul,mul_one]
     _ ≤ 2*(⌈2*N*η⌉₊ : ℝ) := by exact_mod_cast modelPhaseBufferedBoundary_card_le a b ⌈2*N*η⌉₊
     _ ≤ 4*N*η+2 := by

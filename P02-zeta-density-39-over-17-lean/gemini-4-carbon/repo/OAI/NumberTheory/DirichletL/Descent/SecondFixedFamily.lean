@@ -109,22 +109,17 @@ theorem actual_second_split_fixed_family
           (c*e*∏ i ∈ V,p i) (d*e*k) (slots\J) lists a W X := by
   dsimp only
   let d := primeSubsetGenerator (fun i => Ideal.span {p i}) D
-  let e := primeSubsetGenerator (fun i => Ideal.span {p i}) E
   let r := secondMaskQuotient p E G hEG
   let c := (∏ i ∈ C,p i)*jLabel p B v ε₁ ε₂
-  have hd := actual_first_divisor_dvd_child p B C D V hCB hD v ε₁ ε₂ hv m r e
-  have hk := actual_second_extracted_support_killed p B C G E V A hEG hA v ε₁ ε₂ hv m
   have hm : (m*b0Label p B v ε₁ ε₂*d)*r = ((m*b0Label p B v ε₁ ε₂)*r)*d := by ring
   have hX : primeProductNorm p V*X/primeProductNorm p V = X := by
     field_simp [(primeProductNorm_pos p hp V).ne']
   unfold canonicalMarkedSplit
   rw [show m*b0Label p B v ε₁ ε₂*primeSubsetGenerator (fun i => Ideal.span {p i}) D *
-      secondMaskQuotient p E G hEG = ((m*b0Label p B v ε₁ ε₂)*r)*d from hm]
-  rw [hX]
+      secondMaskQuotient p E G hEG = ((m*b0Label p B v ε₁ ε₂)*r)*d from hm, hX]
   apply Finset.sum_congr rfl
   intro J hJ
-  rw [finiteCanonicalMarkedRow_drop_puncture p hp hcop hg F Ψ _ d _ _ hd]
-  rw [finiteCanonicalMarkedRow_restore_lists p hp hcop hg F A Ψ _ _ _ (slots\J) lists a W X hk]
+  rw [finiteCanonicalMarkedRow_drop_puncture p hp hcop hg F Ψ _ d _ _ (actual_first_divisor_dvd_child p B C D V hCB hD v ε₁ ε₂ hv m r (primeSubsetGenerator (fun i => Ideal.span {p i}) E)), finiteCanonicalMarkedRow_restore_lists p hp hcop hg F A Ψ _ _ _ (slots\J) lists a W X (actual_second_extracted_support_killed p B C G E V A hEG hA v ε₁ ε₂ hv m)]
 
 end
 end SevenEighths.InverseMoment

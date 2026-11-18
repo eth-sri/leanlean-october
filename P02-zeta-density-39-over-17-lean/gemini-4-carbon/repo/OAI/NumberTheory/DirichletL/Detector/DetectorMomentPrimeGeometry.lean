@@ -9,12 +9,10 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators Topology
 open Filter
+open scoped Classical BigOperators Topology
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification InverseInitialDetectorSource
-open InverseInitialRawDictionary InverseInitialPhysicalSlots
-open HeckeDetectorBatch HeckeDetectorRawFiber HeckeDetectorFiberPartition
+open HeckeFamily HeckeInverseAmplification InverseInitialDetectorSource InverseInitialRawDictionary InverseInitialPhysicalSlots HeckeDetectorBatch HeckeDetectorRawFiber HeckeDetectorFiberPartition
 local notation "O" => HeckeFamily.O
 
 theorem sourceMoment_physical_scale (Z d ell : ℝ) (hZ : 0≤Z) (hd : d≠0) :
@@ -41,7 +39,7 @@ theorem sourceMoment_separation_eventually {Slot : Type*} [Fintype Slot]
     · filter_upwards [ProbeRaySlots.annular_power_separation 1 2 (ell t) (ell s)
         (by norm_num) hlt] with Z hZ _
       exact Or.inr hZ
-  filter_upwards [hs,eventually_ge_atTop (1:ℝ)] with Z hs hZ
+  filter_upwards [hs,eventually_ge_atTop 1] with Z hs hZ
   refine ⟨hZ,?_⟩
   intro d hd s t hst
   simp only [sourceMoment_physical_scale Z d _ (by linarith) hd.ne']

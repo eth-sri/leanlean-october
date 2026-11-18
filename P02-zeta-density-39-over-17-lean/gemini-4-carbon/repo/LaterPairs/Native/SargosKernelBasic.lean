@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 
 @[expose] public section
 set_option autoImplicit false
@@ -41,7 +50,7 @@ theorem sargos_sinc_sq_majorant (x : ℝ) :
     nlinarith [Real.neg_one_le_sin x,Real.sin_le_one x]
   have he := congrArg (fun y : ℝ => y^2) (sargos_mul_sinc x)
   apply (le_div_iff₀ (by positivity : 0 < 1+x^2)).mpr
-  nlinarith only [hs,ht,he]
+  nlinarith
 
 theorem integrable_sargos_sinc_sq :
     Integrable (fun x : ℝ => Real.sinc x^2) := by
@@ -53,8 +62,7 @@ theorem integrable_sargos_sinc_sq :
     exact sargos_sinc_sq_majorant x)
 
 theorem sargosSincKernel_nonneg {w : ℝ} (hw : 0 ≤ w) (x : ℝ) :
-    0 ≤ sargosSincKernel w x := by
-  exact mul_nonneg hw (sq_nonneg _)
+    0 ≤ sargosSincKernel w x := mul_nonneg hw (sq_nonneg _)
 
 theorem integrable_sargosSincKernel {w : ℝ} (hw : 0 < w) :
     Integrable (sargosSincKernel w) := by

@@ -14,9 +14,6 @@ theorem central_squared_exponents (R a e κ η ε r m : ℝ)
     (hbudget : 12*e*(R+2)+8*κ+2*η≤ε) :
     2*((a-1/2+6*e)*r+2*κ+η)≤(2*a-1)*r+ε ∧
     2*((a-1/2)*(1-m)+6*e*(2-m)+4*κ+η)≤(2*a-1)*(1-m)+ε := by
-  have hEr : e*r≤e*R := mul_le_mul_of_nonneg_left hr he
-  have hEm : 0≤e*m := mul_nonneg he hm
-  have hER : 0≤e*R := mul_nonneg he hR
   constructor <;> nlinarith
 
 theorem indexed_height_bound (i I : ℕ) (hi : i≤I) (T : ℝ) (hT : 0≤T) :
@@ -25,9 +22,7 @@ theorem indexed_height_bound (i I : ℕ) (hi : i≤I) (T : ℝ) (hT : 0≤T) :
   have hlin : 3+(3*i+2 : ℕ)*T≤(3*(I : ℝ)+5)*(1+T) := by
     push_cast
     nlinarith [mul_le_mul_of_nonneg_right hi' hT,Nat.cast_nonneg (α:=ℝ) I]
-  calc
-    _ ≤ ((3*(I : ℝ)+5)*(1+T))^4 := pow_le_pow_left₀ (by positivity) hlin 4
-    _ = _ := mul_pow _ _ _
+  exact (pow_le_pow_left₀ (by positivity) hlin 4).trans_eq (mul_pow _ _ _)
 
 theorem min_plain_bound (X C U δ m ε : ℝ)
     (h₁ : X≤C*U^(δ*m+ε)) (h₂ : X≤C*U^(δ*(1-m)+ε)) :

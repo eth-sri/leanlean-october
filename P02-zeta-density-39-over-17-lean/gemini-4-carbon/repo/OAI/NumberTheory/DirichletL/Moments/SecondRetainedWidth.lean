@@ -10,12 +10,7 @@ noncomputable section
 open scoped Classical BigOperators Topology
 
 namespace SevenEighths.CenteredMomentSecondRetainedWidth
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open CenteredMomentSecondRadicalBudget CenteredMomentSecondCanonical
-open CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalFrequency
-open CenteredMomentSecondHeightFamily CenteredMomentChildRows CenteredMomentCanonicalFirst
-open CenteredMomentSupport
-open CenteredMomentHeckeColumnWindow CenteredMomentSectorLocalization RayFourExpansion
+open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss CenteredMomentSecondRadicalBudget CenteredMomentSecondCanonical CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalFrequency CenteredMomentSecondHeightFamily CenteredMomentChildRows CenteredMomentCanonicalFirst CenteredMomentSupport CenteredMomentHeckeColumnWindow CenteredMomentSectorLocalization RayFourExpansion
 local notation "O" => ActualEisensteinCubic.O
 
 theorem retained_geometry (R : ℝ) (G V z : O)
@@ -24,13 +19,11 @@ theorem retained_geometry (R : ℝ) (G V z : O)
       normValue z≤4*R/(normValue G*normValue V) ∧
       1≤4*R/(normValue G*normValue V) := by
   obtain ⟨hGV,hz⟩:=retained_product_ne_zero R (G*V) z hne
-  have hg:=left_ne_zero_of_mul hGV
-  have hv:=right_ne_zero_of_mul hGV
   have hrow:=retained_norm_enclosure R (G*V) z hGV hne
   rw [normValue_mul] at hrow
   have hn:=normValue_ge_one z hz
   have hr:=retainedWeight_enclosure R _ hne
-  refine ⟨by linarith,hg,hv,hz,hn,hrow,hn.trans hrow⟩
+  refine ⟨by linarith,(left_ne_zero_of_mul hGV),(right_ne_zero_of_mul hGV),hz,hn,hrow,hn.trans hrow⟩
 
 theorem retained_log_budget (η τ : Character) (G V z : O) (U : Ideal O)
     (hU : U≠0)

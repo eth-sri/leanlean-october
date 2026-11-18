@@ -16,10 +16,6 @@ lemma sqrt_extraction_identity (A B C r U V : ℝ)
       (r*Real.sqrt (A*U)*(B*V)) =
       1/(r*Real.sqrt U*V*Real.sqrt (C*B)) := by
   rw [Real.sqrt_mul hA.le,Real.sqrt_mul hC.le]
-  have hsa := (Real.sqrt_pos.mpr hA).ne'
-  have hsb := (Real.sqrt_pos.mpr hB).ne'
-  have hsc := (Real.sqrt_pos.mpr hC).ne'
-  have hsu := (Real.sqrt_pos.mpr hU).ne'
   field_simp
   nlinarith [Real.sq_sqrt hB.le]
 
@@ -37,26 +33,25 @@ theorem extractedOutsideScalar_scale (F : PrimeFamily φ) (jF : φ→ℕ) (e : �
   have hn (v : Fin 3) : (0:ℝ)<Ideal.absNorm (frozenExtracted F jF e v) := by
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr (frozenExtracted_ne_zero F jF e v))
   unfold extractedOutsideScalar frozenBranchScale
-  have hh := sqrt_extraction_identity _ _ _ r U B (hn 1) (hn 2) (hn 0) hr hU hB
   calc
     _ = smallScalar R * ((Real.sqrt (Ideal.absNorm (frozenExtracted F jF e 1):ℝ)*
       Real.sqrt (Ideal.absNorm (frozenExtracted F jF e 2):ℝ)/
       Real.sqrt (Ideal.absNorm (frozenExtracted F jF e 0):ℝ))/
       (r*Real.sqrt ((Ideal.absNorm (frozenExtracted F jF e 1):ℝ)*U)*
         ((Ideal.absNorm (frozenExtracted F jF e 2):ℝ)*B))) := by ring
-    _ = _ := by rw [hh]; ring
+    _ = _ := by rw [(sqrt_extraction_identity _ _ _ r U B (hn 1) (hn 2) (hn 0) hr hU hB)]; ring
 
 lemma power_normalizer {Z : ℝ} (hZ : 1≤Z) (v ell el S₀ B₀ Td : ℝ) :
     smallScalar (Z^(v+3*ell+el-Td)) /
       (Z^(el/3)*Real.sqrt (Z^v)*Z^ell*Real.sqrt (Z^S₀*Z^B₀)) =
       outsideScalar Z v ell el S₀ B₀ Td := by
-  have hZ0 : 0<Z := lt_of_lt_of_le zero_lt_one hZ
+  have hZ0 := lt_of_lt_of_le zero_lt_one hZ
   rw [Real.sqrt_eq_rpow,Real.sqrt_eq_rpow,← Real.rpow_add hZ0,
     ← Real.rpow_mul hZ0.le,← Real.rpow_mul hZ0.le,
     ← Real.rpow_add hZ0,← Real.rpow_add hZ0,← Real.rpow_add hZ0]
   unfold outsideScalar
   rw [div_eq_mul_inv,← Real.rpow_neg hZ0.le]
-  have he : -(el/3+v*(1/2:ℝ)+ell+(S₀+B₀)*(1/2:ℝ)) =
+  have he : -(el/3+v*(1/2)+ell+(S₀+B₀)*(1/2)) =
       -v/2-ell-el/3-(S₀+B₀)/2 := by ring
   rw [he,mul_comm]
 
@@ -67,7 +62,7 @@ theorem extractedOutsideScalar_log_widths (F : PrimeFamily φ) (jF : φ→ℕ) (
         (InverseTerminalWidths.normWidth Z (frozenExtracted F jF e 0))
         (InverseTerminalWidths.normWidth Z (frozenExtracted F jF e 2))
         (Real.logb Z U+3*Real.logb Z B+3*Real.logb Z r-Real.logb Z R) := by
-  have hz0 : 0<Z := lt_trans zero_lt_one hZ
+  have hz0 := lt_trans zero_lt_one hZ
   have hn (v : Fin 3) : (0:ℝ)<Ideal.absNorm (frozenExtracted F jF e v) := by
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr (frozenExtracted_ne_zero F jF e v))
   rw [extractedOutsideScalar_scale F jF e r U B R hr hU hB]
@@ -76,8 +71,7 @@ theorem extractedOutsideScalar_log_widths (F : PrimeFamily φ) (jF : φ→ℕ) (
   unfold InverseTerminalWidths.normWidth
   rw [show 3*Real.logb Z r/3=Real.logb Z r by ring,
     show Real.logb Z U+3*Real.logb Z B+3*Real.logb Z r-
-      (Real.logb Z U+3*Real.logb Z B+3*Real.logb Z r-Real.logb Z R)=Real.logb Z R by ring]
-  rw [Real.rpow_logb hz0 (ne_of_gt hZ) hr,Real.rpow_logb hz0 (ne_of_gt hZ) hU,
+      (Real.logb Z U+3*Real.logb Z B+3*Real.logb Z r-Real.logb Z R)=Real.logb Z R by ring, Real.rpow_logb hz0 (ne_of_gt hZ) hr,Real.rpow_logb hz0 (ne_of_gt hZ) hU,
     Real.rpow_logb hz0 (ne_of_gt hZ) hB,Real.rpow_logb hz0 (ne_of_gt hZ) hR,
     Real.rpow_logb hz0 (ne_of_gt hZ) (hn 0),Real.rpow_logb hz0 (ne_of_gt hZ) (hn 2)]
 

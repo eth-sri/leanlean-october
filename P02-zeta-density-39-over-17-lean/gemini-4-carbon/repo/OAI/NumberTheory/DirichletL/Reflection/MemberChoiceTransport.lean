@@ -46,7 +46,6 @@ theorem member_source_eq_original_choices
         (G.reflected K hK (slotChoiceFamily L hmax hgood p.val)).generator_ne_zero hc
         (G.reflected K hK (slotChoiceFamily L hmax hgood p.val)).generator_good
         (reflectedExponent jF) (slotIndices τ (PrimeIndex K) σ) W X := by
-  let e := supportedSlotTupleEquiv L F K
   have he := sum_subtype_dite_decidable (fun p : fixedSlotTupleSet L F => IsCoprime K (slotTupleProduct p.val))
     (fun p hp => r*fixedTupleCoefficient L w p.val*mixedReflectedValue (D p hp) s
       (G.reflected K hK (memberTupleFamily (fixedSlotTupleSet L F)
@@ -54,7 +53,7 @@ theorem member_source_eq_original_choices
       (G.reflected K hK (memberTupleFamily (fixedSlotTupleSet L F)
         (originalTupleMax L F hmax) (originalTupleGood L F hgood) p)).generator_good
       (reflectedExponent jF) (slotIndices τ (PrimeIndex K) σ) W X)
-  rw [←he,←e.sum_comp]
+  rw [←he,←(supportedSlotTupleEquiv L F K).sum_comp]
   apply Finset.sum_congr rfl
   intro p hp
   change r*fixedTupleCoefficient L w (fun i => (p.val i).val)*_=_

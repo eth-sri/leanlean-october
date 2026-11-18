@@ -62,13 +62,13 @@ theorem modeIntegral_eq_interval {w : ℝ → ℂ}
       Complex.exp (((v * Real.log x - 2 * Real.pi * k * x : ℝ) : ℂ) * Complex.I) := by
   let f : ℝ → ℂ := fun x => w x *
     Complex.exp (((v * Real.log x - 2 * Real.pi * k * x : ℝ) : ℂ) * Complex.I)
-  have hs : Function.support f ⊆ Icc (1 / 2 : ℝ) 5 := by
+  have hs : Function.support f ⊆ Icc (1 / 2) 5 := by
     intro x hx
     apply hws
     apply subset_tsupport w
     intro hwx
     exact hx (by simp [f, hwx])
-  have hi : Function.support f ⊆ Ioc (1 / 3 : ℝ) 6 := by
+  have hi : Function.support f ⊆ Ioc (1 / 3) 6 := by
     intro x hx
     have hh := hs hx
     constructor <;> linarith [hh.1, hh.2]
@@ -117,8 +117,7 @@ def integerPowerMajorant (A : ℕ) (m : ℤ) : ℝ := 1 / |(m : ℝ)| ^ A
 theorem summable_integerPowerMajorant {A : ℕ} (hA : 1 < A) :
     Summable (integerPowerMajorant A) := by
   unfold integerPowerMajorant
-  have hh := (summable_one_div_int_pow.mpr hA).norm
-  simpa only [integerPowerMajorant, Real.norm_eq_abs, abs_div, abs_one, abs_pow] using hh
+  simpa using ((summable_one_div_int_pow.mpr hA).norm)
 
 theorem uniform_discarded_modes {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
     (hws : tsupport w ⊆ Icc (1 / 2 : ℝ) 5) {A : ℕ} (hA : 1 < A) :
@@ -165,13 +164,11 @@ theorem uniform_discarded_modes {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
 
 theorem zero_normalized_mem {k : ℝ} (hk : k ≠ 0) :
     (0, 2 * Real.pi * k / |k|) ∈ offBandParameters := by
-  have ha : 0 < |k| := abs_pos.mpr hk
   have he : abs (2 * Real.pi * k / |k|) = 2 * Real.pi := by
     rw [abs_div, abs_mul, abs_of_pos (by positivity : 0 < 2 * Real.pi), abs_abs]
     field_simp
   refine ⟨by norm_num, he.le, ?_⟩
   intro x hx
-  change (1 / 300 : ℝ) ≤ |0 - 2 * Real.pi * k / |k| * x|
   rw [zero_sub, abs_neg, abs_mul, he, abs_of_pos (by linarith [hx.1] : 0 < x)]
   nlinarith [Real.pi_gt_three, hx.1]
 
@@ -181,7 +178,7 @@ theorem uniform_zero_modeIntegral {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
   obtain ⟨C, hC, hh⟩ := uniform_normalized_decay hw hws A
   refine ⟨C, hC, ?_⟩
   intro k hk
-  have ha : 0 < |k| := abs_pos.mpr hk
+  have ha := abs_pos.mpr hk
   have hbound := hh _ (zero_normalized_mem hk) _ ha
   have heq : ibpIntegral w |k| (0, 2 * Real.pi * k / |k|) 0 = modeIntegral w 0 k := by
     rw [modeIntegral_eq_interval hws]

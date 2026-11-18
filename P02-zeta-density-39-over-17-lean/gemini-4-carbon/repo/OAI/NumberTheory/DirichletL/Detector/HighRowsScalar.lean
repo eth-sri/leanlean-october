@@ -36,7 +36,7 @@ theorem row_squarefree_kone (r m j : ℕ) (hj : j<6) :
         (if 6*r+1<j+6*m then
           (Ideal.absNorm (Ideal.span {p}):ℂ)^(6*r)*((Ideal.absNorm (Ideal.span {p}):ℂ)-1)
         else if j=1 ∧ m=r then -(Ideal.absNorm (Ideal.span {p}):ℂ)^(6*r) else 0) := by
-  rw [positiveScalar_actual_table p hp hg hc,ite_eq_right (by decide : (1:ℕ)≠0)]
+  rw [positiveScalar_actual_table p hp hg hc,ite_eq_right (by decide : 1≠0)]
   by_cases hpos : 1≤j+6*m
   · rw [ite_eq_left ⟨rfl,hpos⟩,gaussValuationTable,ite_eq_left (by omega : 6∣6*r)]
     congr 1

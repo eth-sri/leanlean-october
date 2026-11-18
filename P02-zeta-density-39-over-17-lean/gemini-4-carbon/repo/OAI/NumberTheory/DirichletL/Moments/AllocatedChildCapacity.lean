@@ -12,10 +12,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentAllocatedChildCapacity
-open HeckeFamily CenteredMomentAllocatedNaturalSource CenteredMomentRetainedProfile
-open CenteredMomentDivisorAllocation CenteredMomentDivisorExtraction CenteredMomentDivisorRectangle
-open CenteredMomentDivisorRaw CenteredMomentDivisorRetained CenteredMomentEligibleEnergy
-open CenteredMomentCommonRadialData
+open HeckeFamily CenteredMomentAllocatedNaturalSource CenteredMomentRetainedProfile CenteredMomentDivisorAllocation CenteredMomentDivisorExtraction CenteredMomentDivisorRectangle CenteredMomentDivisorRaw CenteredMomentDivisorRetained CenteredMomentEligibleEnergy CenteredMomentCommonRadialData
 local notation "O" => HeckeFamily.O
 
 def clippingLoss (Z U₁ U₂ : ℝ) : ℝ :=
@@ -27,8 +24,7 @@ lemma clipped_log (Z U : ℝ) (hZ : 1<Z) (hU : 0<U) :
   · rw [clippedScale,max_eq_right h,max_eq_right (neg_nonpos.mpr (Real.logb_nonneg hZ h))]
     ring
   · have hu : U≤1 := (lt_of_not_ge h).le
-    have hl : Real.logb Z U≤0 := Real.logb_nonpos hZ hU.le hu
-    rw [clippedScale,max_eq_left hu,max_eq_left (neg_nonneg.mpr hl),Real.logb_one]
+    rw [clippedScale,max_eq_left hu,max_eq_left (neg_nonneg.mpr (Real.logb_nonpos hZ hU.le hu)),Real.logb_one]
     ring
 
 lemma clipped_pair_log (Z U₁ U₂ : ℝ) (hZ : 1<Z) (h₁ : 0<U₁) (h₂ : 0<U₂) :
@@ -44,18 +40,17 @@ lemma clipping_loss_bound (Z U₁ U₂ b₁ b₂ : ℝ) (hZ : 1<Z)
       clippingLoss Z U₁ U₂≤Real.logb Z (max 1 b₁*max 1 b₂) := by
   have one (U b : ℝ) (hU : 0<U) (hs : 1≤U*b) :
       max (-Real.logb Z U) 0≤Real.logb Z (max 1 b) := by
-    have hb : 0<max 1 b := zero_lt_one.trans_le (le_max_left _ _)
     have hc : clippedScale U≤max 1 b*U := by
       apply max_le
-      · exact hs.trans (by nlinarith [le_max_right (1:ℝ) b])
-      · nlinarith [le_max_left (1:ℝ) b]
+      · exact hs.trans (by nlinarith [le_max_right 1 b])
+      · nlinarith [le_max_left 1 b]
     have hl := Real.logb_le_logb_of_le hZ
       (zero_lt_one.trans_le (clippedScale_ge_one U)) hc
-    rw [clipped_log Z U hZ hU,Real.logb_mul hb.ne' hU.ne'] at hl
+    rw [clipped_log Z U hZ hU,Real.logb_mul (zero_lt_one.trans_le (le_max_left _ _)).ne' hU.ne'] at hl
     linarith
   refine ⟨add_nonneg (le_max_right _ _) (le_max_right _ _),?_⟩
-  rw [Real.logb_mul (ne_of_gt (zero_lt_one.trans_le (le_max_left (1:ℝ) b₁)))
-    (ne_of_gt (zero_lt_one.trans_le (le_max_left (1:ℝ) b₂)))]
+  rw [Real.logb_mul (ne_of_gt (zero_lt_one.trans_le (le_max_left 1 b₁)))
+    (ne_of_gt (zero_lt_one.trans_le (le_max_left 1 b₂)))]
   exact add_le_add (one U₁ b₁ h₁ hs₁) (one U₂ b₂ h₂ hs₂)
 
 lemma profile_polynomial_survives (χ : Character) (V : Plain) (U : ℝ) (hU : 0<U)

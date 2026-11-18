@@ -41,8 +41,7 @@ noncomputable def heathBrownCoefficientWeight
 
 theorem norm_heathBrownCoefficientWeight
     {k : ℕ} (c α : HeathBrownCoefficientTorus k) (q : ℕ) :
-    ‖heathBrownCoefficientWeight c α q‖ = 1 := by
-  exact norm_heathBrownPhase _
+    ‖heathBrownCoefficientWeight c α q‖ = 1 := norm_heathBrownPhase _
 
 end
 

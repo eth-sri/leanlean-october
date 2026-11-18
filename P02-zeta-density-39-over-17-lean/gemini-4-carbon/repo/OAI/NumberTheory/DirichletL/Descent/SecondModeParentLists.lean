@@ -10,8 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic SecondPassArithmetic FirstPassCubeLabels FirstCauchyArithmetic
-open InverseInitialArithmetic CompletedGauss InverseSecondFibers JointLogSeparation
+open ActualEisensteinCubic SecondPassArithmetic FirstPassCubeLabels FirstCauchyArithmetic InverseInitialArithmetic CompletedGauss InverseSecondFibers JointLogSeparation
 local notation "O" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
   (p : ι→O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
@@ -45,7 +44,6 @@ theorem secondCanonicalPolynomial_parent_lists_restore
       slots lists a W X ((actualSecondChild p u v x).1,(actualSecondChild p u v x).2.1,k) := by
   apply finiteCanonicalMarkedRow_restore_lists p hp hcop hg
   intro i hi
-  have hk := actual_parent_deleted_prime_killed p x hb hE m i (hdeleted i hi)
   have he : Ideal.span {actualSecondRawInheritedPuncture p m x*actualSecondRawLabel p x}=
       Ideal.span {actualSecondInheritedPuncture m (actualSecondChild p u v x).1*
         primaryGenerator (actualSecondChild p u v x).2.1} := by
@@ -54,8 +52,7 @@ theorem secondCanonicalPolynomial_parent_lists_restore
     congr 1
     exact actual_second_puncture_span p hp hpr x hE u v
       (m*ConcretePrimeRowBridge.idealGenerator x.quotient)
-  have hk' : Ideal.span {actualSecondRawInheritedPuncture p m x*actualSecondRawLabel p x}≤Ideal.span {p i} :=
-    Ideal.span_le.mpr (by intro z hz; rcases Set.mem_singleton_iff.mp hz with rfl; exact hk)
+  have hk' := Ideal.span_le.mpr (by intro z hz; rcases Set.mem_singleton_iff.mp hz with rfl; exact (actual_parent_deleted_prime_killed p x hb hE m i (hdeleted i hi)))
   rw [he] at hk'
   exact hk' (Ideal.subset_span (by simp))
 

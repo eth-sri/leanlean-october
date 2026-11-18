@@ -59,9 +59,6 @@ theorem first_step_scalar_losses (A r ell aa bb rr t eta pi em ed:ℝ)
     em*(ell+rr/2+t+(16*A+20)+11*eta/2)≤pi ∧
     em*(r-aa-bb-t)+7*eta/2+ed*(3*ell+bb+t+5*eta)+
       2*em*(2*ell+bb+t+4*eta)≤pi+eta/2:=by
-  have hm:=mul_le_mul_of_nonneg_left (show ell+rr/2+t+(16*A+20)+11*eta/2≤20*A+30 by linarith) he
-  have h1:=mul_le_mul_of_nonneg_left (show r-aa-bb-t+2*(2*ell+bb+t+4*eta)≤20*A+30 by linarith) he
-  have h2:=mul_le_mul_of_nonneg_left (show 3*ell+bb+t+5*eta≤20*A+30 by linarith) hd
   constructor <;> nlinarith
 
 end SevenEighths.InverseMoment

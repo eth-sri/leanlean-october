@@ -33,7 +33,7 @@ lemma inactive_choices_mass_bound (L : σ→Finset (Ideal Eis)) (T : Finset σ)
   · intro i hi
     positivity
   · intro i hi
-    simpa only [one_div] using finite_inverse_norm_sum (L i.val) (H i.val) (hzero i.val) (hH i.val)
+    simpa using finite_inverse_norm_sum (L i.val) (H i.val) (hzero i.val) (hH i.val)
 
 end
 end SevenEighths.InverseReflectedPhase

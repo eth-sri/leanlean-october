@@ -6,9 +6,8 @@ public import OAI.NumberTheory.DirichletL.CubicSieve.Mobius
 namespace OAI
 
 namespace SevenEighths.CubicSieve
+open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge CanonicalQuadraticSieve IdealMobiusDivisorSum DivisorBlockCauchy
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
-open CanonicalQuadraticSieve IdealMobiusDivisorSum DivisorBlockCauchy
 noncomputable section
 local notation "O" => ActualEisensteinCubic.O
 

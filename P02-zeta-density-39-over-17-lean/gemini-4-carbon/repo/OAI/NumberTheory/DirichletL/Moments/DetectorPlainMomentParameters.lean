@@ -7,15 +7,11 @@ public import OAI.NumberTheory.DirichletL.Moments.DetectorPlainUnmarkedState
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
 open Filter
+open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentDetectorPlainMomentParameters
-open HeckeFamily HeckeDetectorRawFiber HeckeDetectorBatch ProbeHighRowFamily
-open CenteredMomentDetectorDictionary
-open CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentDetectorEnergyInitialState CenteredMomentDetectorPlainMarkedState
-open CenteredMomentDetectorPlainUnmarkedState CenteredMomentNaturalFixedRaySource
+open HeckeFamily HeckeDetectorRawFiber HeckeDetectorBatch ProbeHighRowFamily CenteredMomentDetectorDictionary CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentDetectorEnergyInitialState CenteredMomentDetectorPlainMarkedState CenteredMomentDetectorPlainUnmarkedState CenteredMomentNaturalFixedRaySource
 local notation "O" => HeckeFamily.O
 
 variable {Δ:ℝ}
@@ -83,7 +79,6 @@ theorem unmarked_state_admission (D:Parameters.HighData Δ)
     s.radial.profile=Φ ∧ s.radial.scale=U ∧ s.radial.keep=initialKeep η Q ∧
     s.width=max 1 (2*F.m)+delta D ∧ 1≤s.width ∧ s.width≤2 ∧
     1≤U^F.m ∧ U^F.m≤U ∧ 2*length U (U^F.m)≤s.width := by
-  dsimp only
   have hf:=actual_fiber_lengths D F hU
   have hw:=width_bands D F.m hf.2.2.1
   have he:(state F η Q Φ bΦ (delta D) hU.le (fixed_parameters D).1.le hs hp hη).width=

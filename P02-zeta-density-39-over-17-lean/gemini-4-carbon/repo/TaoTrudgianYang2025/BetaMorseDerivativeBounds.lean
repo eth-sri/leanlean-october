@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaMorseInverse
 
 @[expose] public section
@@ -26,18 +36,18 @@ theorem approximateModelPhase_slope_gap_upper_abs
     (hF : IsApproximateModelPhaseFunction F σ 1 δ)
     (hu : u ∈ Ioo (1 : ℝ) 2) (hw : w ∈ Ioo (1 : ℝ) 2) :
     |deriv F u-deriv F w| ≤ (σ+1)*|u-w| := by
-  have hd : ∀ x ∈ Ioo (1 : ℝ) 2,
-      HasDerivWithinAt (deriv F) (deriv (deriv F) x) (Ioo (1 : ℝ) 2) x :=
+  have hd : ∀ x ∈ Ioo 1 2,
+      HasDerivWithinAt (deriv F) (deriv (deriv F) x) (Ioo 1 2) x :=
     fun _ hx => ((approximateModelPhase_deriv_contDiffAt hF hx).differentiableAt
       (by simp : (∞ : WithTop ℕ∞) ≠ 0)).hasDerivAt.hasDerivWithinAt
-  have hb : ∀ x ∈ Ioo (1 : ℝ) 2, ‖deriv (deriv F) x‖ ≤ σ+1 := by
+  have hb : ∀ x ∈ Ioo 1 2, ‖deriv (deriv F) x‖ ≤ σ+1 := by
     intro x hx
     have h := approximateModelPhase_curvature_deriv_bounds hσ hδ hF hx
     have hp := modelPhaseCurvatureLower_pos hσ
     rw [Real.norm_eq_abs,abs_of_nonpos (by linarith : deriv (deriv F) x ≤ 0)]
     exact h.2
-  simpa only [Real.norm_eq_abs] using
-    (convex_Ioo (1 : ℝ) 2).norm_image_sub_le_of_norm_hasDerivWithin_le hd hb hw hu
+  simpa using
+    (convex_Ioo 1 2).norm_image_sub_le_of_norm_hasDerivWithin_le hd hb hw hu
 
 theorem modelPhaseMorseCoordinate_deriv_bounds
     {F : ℝ → ℝ} {σ δ v u : ℝ}
@@ -64,11 +74,7 @@ theorem modelPhaseMorseCoordinate_deriv_bounds
         _ ≤ Real.sqrt (modelPhaseCurvatureAt F v)*Real.sqrt (σ+1) :=
           mul_le_mul h₁ (h₁.trans h₂) (Real.sqrt_nonneg _) (Real.sqrt_nonneg _)
     · apply (le_div_iff₀ hsc).mpr
-      calc
-        Real.sqrt (modelPhaseCurvatureAt F v)*Real.sqrt (modelPhaseCurvatureLower σ) ≤
-            Real.sqrt (σ+1)*Real.sqrt (σ+1) :=
-          mul_le_mul h₂ (h₁.trans h₂) (Real.sqrt_nonneg _) (Real.sqrt_nonneg _)
-        _ = σ+1 := by rw [← sq,Real.sq_sqrt hC.le]
+      exact (mul_le_mul h₂ (h₁.trans h₂) (Real.sqrt_nonneg _) (Real.sqrt_nonneg _)).trans_eq (by rw [← sq,Real.sq_sqrt hC.le])
   · have hdist : 0 < |u-modelPhaseInverseSlope F v| :=
       abs_pos.mpr (sub_ne_zero.mpr heq)
     have hp := modelPhaseMorseCoordinate_deriv_pos hσ hδ hF hv hu
@@ -83,11 +89,10 @@ theorem modelPhaseMorseCoordinate_deriv_bounds
       have h := hgl.trans (hrel.symm.le.trans
         (mul_le_mul_of_nonneg_right hd.2 hp.le))
       apply le_of_mul_le_mul_left (a := |u-modelPhaseInverseSlope F v|) ?_ hdist
-      nlinarith only [h]
+      nlinarith
     · apply (le_div_iff₀ hsc).mpr
-      have h := (mul_le_mul_of_nonneg_right hd.1 hp.le).trans (hrel.le.trans hgu)
       apply le_of_mul_le_mul_left (a := |u-modelPhaseInverseSlope F v|) ?_ hdist
-      nlinarith only [h]
+      nlinarith
 
 theorem modelPhaseMorseInverse_deriv_bounds
     {F : ℝ → ℝ} {σ δ v z : ℝ}
@@ -98,13 +103,11 @@ theorem modelPhaseMorseInverse_deriv_bounds
       deriv (modelPhaseMorseInverse F v) z ≤ Real.sqrt (σ+1)/modelPhaseCurvatureLower σ := by
   rw [(modelPhaseMorseInverse_hasStrictDerivAt hσ hδ hF hv hz).hasDerivAt.deriv]
   have h := modelPhaseMorseCoordinate_deriv_bounds hσ hδ hF hv (modelPhaseMorseInverse_mem hz)
-  have hp := modelPhaseMorseCoordinate_deriv_pos hσ hδ hF hv (modelPhaseMorseInverse_mem hz)
-  have hc := modelPhaseCurvatureLower_pos hσ
   have hC : 0 < σ+1 := by linarith
   constructor
-  · have h' := one_div_le_one_div_of_le hp h.2
-    simpa only [one_div,inv_div] using h'
-  · have h' := one_div_le_one_div_of_le (div_pos hc (Real.sqrt_pos.mpr hC)) h.1
-    simpa only [one_div,inv_div] using h'
+  · have h' := one_div_le_one_div_of_le (modelPhaseMorseCoordinate_deriv_pos hσ hδ hF hv (modelPhaseMorseInverse_mem hz)) h.2
+    simpa using h'
+  · have h' := one_div_le_one_div_of_le (div_pos (modelPhaseCurvatureLower_pos hσ) (Real.sqrt_pos.mpr hC)) h.1
+    simpa using h'
 
 end TaoTrudgianYang2025

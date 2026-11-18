@@ -13,33 +13,11 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondDivisorSupport
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter MeasureTheory
+open scoped Classical BigOperators SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptionalFixedQ
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss UniqueFactorizationMonoid
-open CenteredMomentCommonRadialData CenteredMomentCommonWindowColumn CenteredMomentReflectedSource
-open CenteredMomentCommonSectorWindow CenteredMomentSecondSectorColumns
-open CenteredMomentSecondScaled CenteredMomentChildAssembly CenteredMomentRowNorm
-open CenteredMomentHeckeColumnWindow CenteredMomentFirstSectors CenteredMomentSourceRow
-open CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentExceptionalAmplitudePair
-open CenteredMomentLogDyadic RayFourExpansion CenteredMomentSmooth
-open CenteredMomentCommonHeightEnvelope CenteredMomentCommonExceptionalCost
-open CenteredMomentExceptionalSourceShell CenteredMomentSecondHeightFamily
-open CenteredMomentSecondExceptionalPairBound
-open CenteredMomentFiniteProfileExceptional CenteredMomentFiniteProfileExceptionalCommon
-open CenteredMomentFiniteProfileExceptionalPhysical
-open CenteredMomentSecondExceptionalKernel CenteredMomentSecondCanonical
-open CenteredMomentCanonicalFirst CenteredMomentSecondCanonicalFrequency
-open CenteredMomentSecondCanonicalNonunit CenteredMomentForcing CenteredMomentChildRows
-open CenteredMomentSecondPhysicalBlock
-open CenteredMomentSecondWholeKernel CenteredMomentSectorLocalization
-open CenteredMomentSecondDyadicRowSupport
-
-open CenteredMomentSecondExceptionalPhysicalSaving CenteredMomentRankinRadical
-open CenteredMomentSecondExceptionalCommonSaving
-open ConcretePrimeRowBridge CenteredMomentMobiusRegroup CenteredMomentSupportedCorrelation
-open CenteredMomentSupport CenteredMomentSecondCanonicalScalar CenteredMomentSecondDivisorSupport
+open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss UniqueFactorizationMonoid CenteredMomentCommonRadialData CenteredMomentCommonWindowColumn CenteredMomentReflectedSource CenteredMomentCommonSectorWindow CenteredMomentSecondSectorColumns CenteredMomentSecondScaled CenteredMomentChildAssembly CenteredMomentRowNorm CenteredMomentHeckeColumnWindow CenteredMomentFirstSectors CenteredMomentSourceRow CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentExceptionalAmplitudePair CenteredMomentLogDyadic RayFourExpansion CenteredMomentSmooth CenteredMomentCommonHeightEnvelope CenteredMomentCommonExceptionalCost CenteredMomentExceptionalSourceShell CenteredMomentSecondHeightFamily CenteredMomentSecondExceptionalPairBound CenteredMomentFiniteProfileExceptional CenteredMomentFiniteProfileExceptionalCommon CenteredMomentFiniteProfileExceptionalPhysical CenteredMomentSecondExceptionalKernel CenteredMomentSecondCanonical CenteredMomentCanonicalFirst CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentForcing CenteredMomentChildRows CenteredMomentSecondPhysicalBlock CenteredMomentSecondWholeKernel CenteredMomentSectorLocalization CenteredMomentSecondDyadicRowSupport CenteredMomentSecondExceptionalPhysicalSaving CenteredMomentRankinRadical CenteredMomentSecondExceptionalCommonSaving ConcretePrimeRowBridge CenteredMomentMobiusRegroup CenteredMomentSupportedCorrelation CenteredMomentSupport CenteredMomentSecondCanonicalScalar CenteredMomentSecondDivisorSupport
 local notation "O" => HeckeFamily.O
 local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
 universe u
@@ -96,12 +74,11 @@ theorem actual_uniform_exceptional_block (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)
     exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hC.1)
   have hd:1≤(D.absNorm:ℝ):=by
     exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hD.1)
-  have hb:=common_weight_bound Z (C.absNorm:ℝ) (D.absNorm:ℝ) θ B ε δ r hZ.1 hc hd hθ.le hNC hND
   let F:=Ck*profileFactor Sprofile s p J Q K*(volume s.toData)^(1/3:ℝ)*Kphys^(5/6:ℝ)*a^(-2/3:ℝ)/
     (Ideal.absNorm (commonRadical C D):ℝ)
   have hF:0≤F:=by
     have hp:=profileFactor_nonneg Sprofile s p J Q K hK.le
-    have hv:0≤volume s.toData:=(volume_pos s.toData).le
+    have hv :=(volume_pos s.toData).le
     dsimp only [F]
     positivity
   apply hs.trans
@@ -109,7 +86,7 @@ theorem actual_uniform_exceptional_block (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)
     _=F*(Z^(2*ε+δ-max (r-min (Real.logb Z (C.absNorm:ℝ)) (Real.logb Z (D.absNorm:ℝ))) 0)*
       ((C.absNorm:ℝ)*D.absNorm)^θ*Z^(-(Real.logb Z (C.absNorm:ℝ)+Real.logb Z (D.absNorm:ℝ))/3)):=by
       dsimp only [F];ring
-    _≤F*Z^(2*ε+δ+2*B*θ-2*max r 0/3):=mul_le_mul_of_nonneg_left hb hF
+    _≤F*Z^(2*ε+δ+2*B*θ-2*max r 0/3):=mul_le_mul_of_nonneg_left (common_weight_bound Z (C.absNorm:ℝ) (D.absNorm:ℝ) θ B ε δ r hZ.1 hc hd hθ.le hNC hND) hF
     _=_:=by dsimp only [F];ring
 
 end SevenEighths.CenteredMomentFiniteProfileExceptionalFixedQ

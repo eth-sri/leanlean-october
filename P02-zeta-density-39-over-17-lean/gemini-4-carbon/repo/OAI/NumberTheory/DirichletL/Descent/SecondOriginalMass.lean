@@ -34,16 +34,14 @@ theorem actual_second_original_mass (K : ℕ) (ε : ℝ) (hε : 0 < ε) :
   obtain ⟨C,hC,hb⟩ := actual_second_normalized_mass K ε hε
   refine ⟨C,hC,?_⟩
   intro ι _ p hp _ Jo Jn source u v Z ell R j t g theta eta hZ ht hE h1 h2 ha hJ hT hG hD
-  have hm := hb p hp source u v Z ell R j t g theta eta hZ ht hE h1 h2 ha hJ hT hG hD
   let c := ell+R/2-j+t+g-theta+11*eta/2
   calc
     _ = Z^c * (Z^(-c)*(∑ γ∈actualSecondTriples p u v source,tripleDivisorWeight K γ)) := by
       rw [←mul_assoc,←Real.rpow_add hZ,add_neg_cancel,Real.rpow_zero,one_mul]
-    _ ≤ Z^c*(C*Z^(c*ε)) := mul_le_mul_of_nonneg_left hm (Real.rpow_pos_of_pos hZ _).le
+    _ ≤ Z^c*(C*Z^(c*ε)) := mul_le_mul_of_nonneg_left (hb p hp source u v Z ell R j t g theta eta hZ ht hE h1 h2 ha hJ hT hG hD) (Real.rpow_pos_of_pos hZ _).le
     _ = _ := by
       rw [mul_left_comm,←Real.rpow_add hZ]
       congr 2
-      dsimp only [c]
       ring
 
 end

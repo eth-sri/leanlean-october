@@ -11,10 +11,7 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseInitialDyadicTailBound
-open ActualEisensteinCubic ConcreteTraceCRT FirstPassCubeLabels SecondPassArithmetic
-open InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialKernelBridge
-open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
-open InverseInitialDyadicAssembly InverseInitialProfile
+open ActualEisensteinCubic ConcreteTraceCRT FirstPassCubeLabels SecondPassArithmetic InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialKernelBridge InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource InverseInitialDyadicAssembly InverseInitialProfile
 local notation "O"=>ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
 
@@ -22,7 +19,7 @@ theorem pointSource_erase_mem (pool : Finset ι) (S : Finset (Source (ι:=ι) 0)
     (x : Point ι) (hx : x∈pointSource pool S) : erasePoint x∈S := by
   obtain ⟨y,hy,hx⟩ := Finset.mem_biUnion.mp hx
   obtain ⟨⟨N,M⟩,hNM,rfl⟩ := Finset.mem_image.mp hx
-  simpa only [erase_sourcePoint] using hy
+  simpa using hy
 
 theorem pointSource_supports (pool : Finset ι) (S : Finset (Source (ι:=ι) 0))
     (hC : ∀x∈S,x.common⊆pool) (hV : ∀x∈S,x.overlap⊆pool)

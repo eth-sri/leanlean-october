@@ -29,8 +29,7 @@ theorem sixthMoment_dispersion_nonneg {ι : Type*} [DecidableEq ι]
     apply Finset.sum_congr rfl
     intro i hi
     ring
-  rw [sub_nonneg]
-  rw [div_le_iff₀ hcard]
+  rw [sub_nonneg, div_le_iff₀ hcard]
   rw [hpow] at hJensen
   simpa only [mul_comm] using hJensen
 

@@ -8,9 +8,8 @@ public import OAI.NumberTheory.DirichletL.Descent.Sharp
 namespace OAI
 
 namespace SevenEighths.InverseMoment
+open CompletedGauss CanonicalQuadraticSieve SevenEighths.InverseInitialFibers IdealMobiusDivisorSum
 open scoped BigOperators Classical
-open CompletedGauss CanonicalQuadraticSieve SevenEighths.InverseInitialFibers
-open IdealMobiusDivisorSum
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 
@@ -67,9 +66,8 @@ theorem initialChild_fiber_weight {J : ℕ} (source : Finset (InitialTuple J))
       Finset.sum_le_sum (fun x hx => hw x (Finset.mem_filter.mp hx).1)
     _ = ((source.filter (fun x => initialChild x = c)).card : ℝ) := by simp
     _ ≤ initialDivisorWeight J c := by
-      have hh := valid_tuple_card_le_separated _ c.1 c.2.1 c.2.2 ht hf hvalid
       dsimp only [initialDivisorWeight]
-      exact_mod_cast hh
+      exact_mod_cast (valid_tuple_card_le_separated _ c.1 c.2.1 c.2.2 ht hf hvalid)
 
 theorem initial_energy_projection {J : ℕ} (source : Finset (InitialTuple J))
     (hsource : ∀ x ∈ source, InitialSourceValid x)
@@ -90,8 +88,7 @@ theorem initial_energy_projection {J : ℕ} (source : Finset (InitialTuple J))
     intro c hc
     obtain ⟨ht, hfk⟩ := Finset.mem_product.mp hc
     obtain ⟨x, hx, he⟩ := Finset.mem_image.mp ht
-    have ht0 : c.1 ≠ 0 := he ▸ (initialChild_nonzero x (hsource x hx)).1
-    exact initialChild_fiber_weight source hsource c ht0
+    exact initialChild_fiber_weight source hsource c (he ▸ (initialChild_nonzero x (hsource x hx)).1)
       (hlabels c.2.1 (Finset.mem_product.mp hfk).1) w hw
   have he := fiber_energy_bound source (initialQuotientSet source ×ˢ (labels ×ˢ rows))
     initialChild w (initialDivisorWeight J) (fun c => ‖F c‖ ^ 2) hmaps

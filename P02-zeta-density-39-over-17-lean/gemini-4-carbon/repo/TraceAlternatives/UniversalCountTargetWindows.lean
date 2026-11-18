@@ -80,7 +80,7 @@ theorem universalLowMargin_row4 {σ x : ℝ} (hlo : 7873/9370 ≤ σ) (_hhi : σ
     linarith
   have hMono := mul_le_mul_of_nonneg_left hx (show 0 ≤ 5*σ-7/2 by linarith)
   unfold universalLowMargin
-  nlinarith only [hBase,hMono]
+  nlinarith
 
 theorem universalLowMargin_row5 {σ x : ℝ} (hlo : 2018/2375 ≤ σ) (_hhi : σ ≤ 1959705/2298302)
     (hx : 3066/(10848*σ-3645) ≤ x) :
@@ -92,6 +92,6 @@ theorem universalLowMargin_row5 {σ x : ℝ} (hlo : 2018/2375 ≤ σ) (_hhi : σ
     linarith
   have hMono := mul_le_mul_of_nonneg_left hx (show 0 ≤ 5*σ-7/2 by linarith)
   unfold universalLowMargin
-  nlinarith only [hBase,hMono]
+  nlinarith
 
 end Montgomery.RationalMoment

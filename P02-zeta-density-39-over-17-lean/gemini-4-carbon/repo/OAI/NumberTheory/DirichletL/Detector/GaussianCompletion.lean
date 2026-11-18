@@ -18,7 +18,7 @@ def gaussianCompletedProfile (y : ℝ) : ℂ := gaussianMellinProfile y/(Real.sq
 
 lemma gaussianCompleted_Vstar (y : ℝ) (hy : 0<y) :
     Vstar gaussianCompletedProfile y=gaussianMellinProfile y := by
-  have h : (Real.sqrt y:ℂ)≠0 := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hy).ne'
+  have h := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hy).ne'
   simp only [Vstar,gaussianCompletedProfile]
   field_simp
 
@@ -36,8 +36,7 @@ lemma gaussian_mellinSummand (S : Finset Id) (D : Id) (Ψ : O→*ℂ)
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hI)
   have hj : (0:ℝ)<Ideal.absNorm J := by
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hJ)
-  have hq : 0<(Ideal.absNorm I:ℝ)*(Ideal.absNorm J:ℝ)^3/Z :=
-    div_pos (mul_pos hi (pow_pos hj 3)) hZ
+  have hq := div_pos (mul_pos hi (pow_pos hj 3)) hZ
   have hp (v : ℝ) : mellinSummand S D Ψ σ Z (I,J) v=
       (((Ideal.absNorm I:ℝ)*(Ideal.absNorm J:ℝ)^3/Z:ℝ):ℂ)^(-((σ:ℂ)+v*Complex.I))*
       Complex.exp (((σ:ℂ)+v*Complex.I)^2)*
@@ -63,8 +62,7 @@ lemma gaussian_correctedSummand_summable (S : Finset Id) (D : Id) (Ψ : O→*ℂ
   have hi : Summable (fun p : Id×Id=>∫v : ℝ,mellinSummand S D Ψ 2 Z p v) := by
     apply Summable.of_norm
     exact Summable.of_nonneg_of_le (fun _=>norm_nonneg _) (fun p=>norm_integral_le_integral_norm _) hs
-  have hh := hi.mul_left (((1/(2*Real.pi):ℝ):ℂ))
-  simpa only [gaussian_mellinSummand S D Ψ 2 Z hZ] using hh
+  simpa only [gaussian_mellinSummand S D Ψ 2 Z hZ] using (hi.mul_left (((1/(2*Real.pi):ℝ):ℂ)))
 
 theorem spectralRow_eq_gaussianCompleted (S : Finset Id) (D : Id) (Ψ : O→*ℂ)
     (hΨ : ∀n,‖Ψ n‖≤1) (σ : ℝ) (hσ : 1<σ) (Z : ℝ) (hZ : 0<Z) :

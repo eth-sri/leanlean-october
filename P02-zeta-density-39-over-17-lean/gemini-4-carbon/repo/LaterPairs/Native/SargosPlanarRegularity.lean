@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.SargosPlanarNearBound
 
 @[expose] public section
@@ -22,9 +31,7 @@ theorem norm_sargosPlanarSum_le_sum_norm {ι : Type*} (S : Finset ι)
     (z : ι → ℂ) (u v : ι → ℝ) (α γ : ℝ) :
     ‖sargosPlanarSum S z u v α γ‖ ≤ ∑ i ∈ S, ‖z i‖ := by
   unfold sargosPlanarSum
-  calc
-    _ ≤ ∑ i ∈ S, ‖z i*fordAdditiveCharacter (u i*α+v i*γ)‖ := norm_sum_le _ _
-    _ = _ := by simp only [norm_mul,sargos_character_norm,mul_one]
+  exact (norm_sum_le _ _).trans_eq (by simp only [norm_mul,sargos_character_norm,mul_one])
 
 theorem continuous_sargosPlanarNormSq {ι : Type*} (S : Finset ι)
     (z : ι → ℂ) (u v : ι → ℝ) :

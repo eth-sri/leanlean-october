@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.RobertSargosPhysicalATimesAParameters
 
 @[expose] public section
@@ -22,11 +31,11 @@ theorem robertSargos_physical_common_shift_budget (M H : ℕ) {lam : ℝ}
   have hT : 2 ≤ T := (thirteenth_root_physical_scale hlam hsmall).1
   have hT1 : 1 ≤ T := by linarith
   have h2 : T^2 = lam^(-(2:ℝ)/13) := by
-    simpa only [Nat.cast_ofNat] using thirteenth_root_nat_pow hlam 2
+    simpa using thirteenth_root_nat_pow hlam 2
   have h3 : T^3 = lam^(-(3:ℝ)/13) := by
-    simpa only [Nat.cast_ofNat] using thirteenth_root_nat_pow hlam 3
+    simpa using thirteenth_root_nat_pow hlam 3
   have h8 : T^8 = lam^(-(8:ℝ)/13) := by
-    simpa only [Nat.cast_ofNat] using thirteenth_root_nat_pow hlam 8
+    simpa using thirteenth_root_nat_pow hlam 8
   have hHM : (H:ℝ) ≤ T^2/2 := by rwa [h2]
   have hMM : T^8 ≤ (M:ℝ) := by rwa [h8]
   have hQ : (⌊lam^(-(3:ℝ)/13)⌋₊:ℝ) ≤ T^3 := by

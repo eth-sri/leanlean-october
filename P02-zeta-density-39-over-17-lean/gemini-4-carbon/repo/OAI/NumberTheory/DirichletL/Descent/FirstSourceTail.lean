@@ -33,7 +33,6 @@ theorem choose_actual_first_tail_order (Mmax Fmax eta tau saving : ℝ)
   obtain ⟨order,he⟩ := choose_first_tail_order (Mmax+Fmax+3*eta) tau saving (by linarith) htau
   refine ⟨order,?_⟩
   intro ι _ p hp _ b C D hCB hD Z M r ell V G₁ G₂ P hZ hM hMmax hell hV hr hwhole hG₁ hG₂ hP h1 h2 hC
-  dsimp only
   have hz : 0<Z := zero_lt_one.trans_le hZ
   obtain ⟨hk,hki,hd,ha,hu⟩ := first_source_scalar_caps p hp b C D hCB hD
     Z M Mmax Fmax r ell V eta hZ hM hMmax hFm hell hV heta hr hwhole h1 h2 hC

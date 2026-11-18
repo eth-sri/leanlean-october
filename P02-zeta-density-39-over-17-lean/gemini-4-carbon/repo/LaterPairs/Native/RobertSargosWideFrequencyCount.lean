@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.RobertSargosCoefficientFibers
 public import LaterPairs.Native.RobertSargosCoefficientProjection
 
@@ -26,8 +35,6 @@ theorem exists_robertSargos_primitive_count_coefficient_bound (ε : ℝ) (hε : 
   intro S R H Q δ hR hH hQ hδ hRH hmem
   have hHp : 0 < H := by linarith
   let U := S.image robertSargosCoefficientKey
-  have hU : (U.card:ℝ) ≤ 12*R*H^2 :=
-    robertSargos_coefficient_image_card_le S hR hH hmem
   have hf : ∀ z : ℤ × ℤ × ℤ,
       ((S.filter (fun p => robertSargosCoefficientKey p = z)).card:ℝ) ≤
         C*H^ε*(1+δ*Q^2/H) := by
@@ -44,17 +51,16 @@ theorem exists_robertSargos_primitive_count_coefficient_bound (ε : ℝ) (hε : 
   have hmaps : Set.MapsTo robertSargosCoefficientKey S U := by
     intro p hp
     exact Finset.mem_image.mpr ⟨p,hp,rfl⟩
-  have hcard := Finset.card_eq_sum_card_fiberwise hmaps
   have hcardR : (S.card:ℝ) =
       ∑ z ∈ U, ((S.filter (fun p => robertSargosCoefficientKey p = z)).card:ℝ) := by
-    exact_mod_cast hcard
+    exact_mod_cast (Finset.card_eq_sum_card_fiberwise hmaps)
   calc
     _ = _ := hcardR
     _ ≤ ∑ _z ∈ U, (C*H^ε*(1+δ*Q^2/H)) :=
       Finset.sum_le_sum (fun z _ => hf z)
     _ = (U.card:ℝ)*(C*H^ε*(1+δ*Q^2/H)) := by simp
     _ ≤ (12*R*H^2)*(C*H^ε*(1+δ*Q^2/H)) :=
-      mul_le_mul_of_nonneg_right hU (by positivity)
+      mul_le_mul_of_nonneg_right (robertSargos_coefficient_image_card_le S hR hH hmem) (by positivity)
     _ = _ := by field_simp
 
 end TaoTrudgianYang2025

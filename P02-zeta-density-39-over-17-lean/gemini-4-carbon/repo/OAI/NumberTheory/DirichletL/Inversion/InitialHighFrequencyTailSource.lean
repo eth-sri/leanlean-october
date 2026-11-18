@@ -10,8 +10,7 @@ noncomputable section
 
 open scoped Classical BigOperators
 namespace SevenEighths.InverseInitialHighFrequencyTail
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseInitialPhysicalMeasure
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseInitialPhysicalMeasure
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
 
@@ -56,8 +55,7 @@ theorem source_sum_fibers (S : Finset (Point ι)) (f : Point ι→ℂ) :
     intro x hx
     rw [←(Finset.mem_filter.mp hx).2,sourcePoint_key]
   · intro x hx y hy hxy
-    have hk := (Finset.mem_filter.mp hx).2.trans (Finset.mem_filter.mp hy).2.symm
-    rw [←sourcePoint_key x,←sourcePoint_key y,hk,hxy]
+    rw [←sourcePoint_key x,←sourcePoint_key y,((Finset.mem_filter.mp hx).2.trans (Finset.mem_filter.mp hy).2.symm),hxy]
 
 theorem sourceKeys_card
     (p : ι→O) (_hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
@@ -73,9 +71,8 @@ theorem sourceKeys_card
     rw [Fintype.mem_piFinset]
     intro i
     exact Finset.mem_filter.mpr ⟨Finset.mem_powerset.mpr (hpool x hx i),hnorm x hx i⟩
-  have hc := Finset.card_le_card hsub
   have hcast : ((sourceKeys S).card:ℝ)≤(T.card:ℝ)^5 := by
-    exact_mod_cast (by simpa using hc)
+    exact_mod_cast (by simpa using (Finset.card_le_card hsub))
   exact hcast.trans (pow_le_pow_left₀ (by positivity)
     (boundedPrimeSupports_card p hinj pool L hL) 5)
 

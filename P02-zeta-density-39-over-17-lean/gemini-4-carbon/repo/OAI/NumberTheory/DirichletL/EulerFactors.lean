@@ -19,22 +19,18 @@ theorem norm_term_lt_one {N : ℝ} (hN : 1 < N) {a s : ℂ}
     (ha : ‖a‖ ≤ 1) (hs : 0 < s.re) : ‖a * (N : ℂ) ^ (-s)‖ < 1 := by
   rw [norm_mul, Complex.norm_cpow_eq_rpow_re_of_pos (by linarith : 0 < N),
     Complex.neg_re]
-  calc
-    ‖a‖ * N ^ (-s.re) ≤ 1 * N ^ (-s.re) :=
-      mul_le_mul_of_nonneg_right ha (Real.rpow_nonneg (by linarith) _)
-    _ < 1 := by simpa using Real.rpow_lt_one_of_one_lt_of_neg hN (neg_neg_of_pos hs)
+  exact (mul_le_mul_of_nonneg_right ha (Real.rpow_nonneg (by linarith) _)).trans_lt (by simpa using Real.rpow_lt_one_of_one_lt_of_neg hN (neg_neg_of_pos hs))
 
 theorem factor_ne_zero {N : ℝ} (hN : 1 < N) {a s : ℂ}
     (ha : ‖a‖ ≤ 1) (hs : 0 < s.re) : factor N a s ≠ 0 := by
   intro h
-  have heq : a * (N : ℂ) ^ (-s) = 1 := (sub_eq_zero.mp h).symm
   have hlt := norm_term_lt_one hN ha hs
-  rw [heq, norm_one] at hlt
+  rw [((sub_eq_zero.mp h).symm), norm_one] at hlt
   exact (lt_irrefl _ hlt)
 
 theorem differentiable_factor {N : ℝ} (hN : 0 < N) (a : ℂ) :
     Differentiable ℂ (factor N a) := by
-  exact (differentiable_const (1 : ℂ)).sub ((differentiable_const a).mul
+  exact (differentiable_const 1).sub ((differentiable_const a).mul
     (differentiable_id.neg.const_cpow (Or.inl (Complex.ofReal_ne_zero.mpr hN.ne'))))
 
 def deletedProduct {ι : Type*} (S : Finset ι) (N : ι → ℝ) (a : ι → ℂ)
@@ -56,14 +52,13 @@ theorem differentiable_deletedProduct {ι : Type*} (S : Finset ι) (N : ι → �
     change Differentiable ℂ (fun _ : ℂ => (1 : ℂ))
     exact differentiable_const _
   | @insert p S hp ih =>
-    have hpN := hN p (Finset.mem_insert_self p S)
     have hSN : ∀ q ∈ S, 0 < N q := fun q hq => hN q (Finset.mem_insert_of_mem hq)
     have heq : deletedProduct (insert p S) N a =
         fun s => factor (N p) (a p) s * deletedProduct S N a s := by
       funext s
       simp only [deletedProduct, Finset.prod_insert hp]
     rw [heq]
-    exact (differentiable_factor hpN (a p)).mul (ih hSN)
+    exact (differentiable_factor (hN p (Finset.mem_insert_self p S)) (a p)).mul (ih hSN)
 
 end
 

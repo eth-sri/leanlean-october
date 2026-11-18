@@ -42,8 +42,8 @@ theorem integrable_heathBrownStrongMellinCriticalMoment
   apply (integrable_heathBrownMellinCriticalMoment
     (delta := delta) (t := t) hdelta).mono'
   · have hcont : Continuous (fun u : ℝ =>
-        Real.exp (-(4 / 3 : ℝ) * |u|) / (delta + |u|) *
-          zetaMomentCriticalNorm (t + u) ^ (2 : ℕ)) := by
+        Real.exp (-(4 / 3) * |u|) / (delta + |u|) *
+          zetaMomentCriticalNorm (t + u) ^ 2) := by
       apply Continuous.mul
       · apply Continuous.div
         · fun_prop
@@ -53,12 +53,12 @@ theorem integrable_heathBrownStrongMellinCriticalMoment
       · exact (continuous_zetaMomentCriticalNorm.pow 2).comp (by fun_prop)
     exact hcont.aestronglyMeasurable
   · filter_upwards with u
-    have hexp : Real.exp (-(4 / 3 : ℝ) * |u|) ≤ Real.exp (-|u|) := by
+    have hexp : Real.exp (-(4 / 3) * |u|) ≤ Real.exp (-|u|) := by
       apply Real.exp_le_exp.mpr
       nlinarith [abs_nonneg u]
     have hstrong : 0 ≤
-        Real.exp (-(4 / 3 : ℝ) * |u|) / (delta + |u|) *
-          zetaMomentCriticalNorm (t + u) ^ (2 : ℕ) := by positivity
+        Real.exp (-(4 / 3) * |u|) / (delta + |u|) *
+          zetaMomentCriticalNorm (t + u) ^ 2 := by positivity
     rw [Real.norm_eq_abs, abs_of_nonneg hstrong]
     gcongr
 
@@ -93,7 +93,6 @@ theorem exists_norm_heathBrown_leftMellinIntegrand_strong_le :
         ((1 / 2 : ℝ) : ℂ) + ((t + u : ℝ) : ℂ) * I := by
     apply Complex.ext <;> simp
   rw [heathBrownZetaSquareMellinIntegrand, norm_mul, norm_pow, harg]
-  change _ * zetaMomentCriticalNorm (t + u) ^ (2 : ℕ) ≤ _
   calc
     ‖Complex.Gamma (((-delta : ℝ) : ℂ) + (u : ℂ) * I)‖ *
         zetaMomentCriticalNorm (t + u) ^ (2 : ℕ) ≤
@@ -111,10 +110,9 @@ theorem exists_norm_heathBrown_leftVertical_strong_le :
         C * heathBrownStrongMellinCriticalMoment delta t := by
   obtain ⟨B, hB, hPoint⟩ :=
     exists_norm_heathBrown_leftMellinIntegrand_strong_le
-  let D : ℝ := ‖(1 / (2 * Real.pi * I) : ℂ)‖
-  let C : ℝ := D * B
+  let D := ‖(1 / (2 * Real.pi * I) : ℂ)‖
+  let C := D * B
   have hD : 0 < D := by
-    dsimp only [D]
     rw [norm_pos_iff]
     apply one_div_ne_zero
     exact mul_ne_zero
@@ -122,12 +120,12 @@ theorem exists_norm_heathBrown_leftVertical_strong_le :
         (Complex.ofReal_ne_zero.mpr Real.pi_ne_zero)) I_ne_zero
   refine ⟨C, mul_pos hD hB, ?_⟩
   intro delta t hdelta hdeltaUpper
-  let s : ℂ := ((1 / 2 + delta : ℝ) : ℂ) + (t : ℂ) * I
+  let s := ((1 / 2 + delta : ℝ) : ℂ) + (t : ℂ) * I
   let f : ℝ → ℂ := fun u =>
     heathBrownZetaSquareMellinIntegrand s
       (((-delta : ℝ) : ℂ) + (u : ℂ) * I)
-  let g : ℝ → ℝ := fun u => Real.exp (-(4 / 3 : ℝ) * |u|) /
-    (delta + |u|) * zetaMomentCriticalNorm (t + u) ^ (2 : ℕ)
+  let g : ℝ → ℝ := fun u => Real.exp (-(4 / 3) * |u|) /
+    (delta + |u|) * zetaMomentCriticalNorm (t + u) ^ 2
   have hf : Integrable f := by
     apply integrable_heathBrownZetaSquareMellinIntegrand_minus
       (s := s) hdelta hdeltaUpper
@@ -153,15 +151,12 @@ theorem exists_norm_heathBrown_leftVertical_strong_le :
   calc
     ‖(1 / (2 * Real.pi * I) : ℂ)‖ * ‖∫ u : ℝ, f u‖ ≤
         D * ∫ u : ℝ, ‖f u‖ := by
-      dsimp only [D]
       gcongr
       exact norm_integral_le_integral_norm f
     _ ≤ D * (B * ∫ u : ℝ, g u) :=
       mul_le_mul_of_nonneg_left hIntegral hD.le
     _ = C * heathBrownStrongMellinCriticalMoment delta t := by
-      dsimp only [C, D]
       unfold heathBrownStrongMellinCriticalMoment
-      change _ = (_ * B) * ∫ u : ℝ, g u
       ring
 
 theorem exists_heathBrown_offCritical_plus_strong_le :
@@ -194,7 +189,7 @@ theorem exists_heathBrown_offCritical_plus_strong_le :
         V * m := by
     simpa only [s, m] using hVertical delta t hdelta hdeltaUpper
   have hm : 0 ≤ m := heathBrownStrongMellinCriticalMoment_nonneg hdelta
-  change ‖riemannZeta s‖ ^ (2 : ℕ) ≤ C * (1 + m)
+  change ‖riemannZeta s‖ ^ 2 ≤ C * (1 + m)
   rw [← norm_pow, hEq]
   calc
     ‖heathBrownSmoothedDivisorSeries s - heathBrownMovingPoleResidue s -

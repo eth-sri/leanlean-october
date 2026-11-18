@@ -44,7 +44,7 @@ theorem criticalMeanThreshold_eventually {C σ a δ : ℝ}
   have hden : 48*C*Real.sqrt (detectorX δ T)*Real.log T ≤
       (detectorY a T)^((σ-1/2)/2) := by
     calc
-      _ ≤ T^(1/96:ℝ)*T^(δ/2)*T^(1/96:ℝ) := by rw [hsqrt]; gcongr; simpa only [pow_one] using hlog
+      _ ≤ T^(1/96:ℝ)*T^(δ/2)*T^(1/96:ℝ) := by rw [hsqrt]; gcongr; simpa using hlog
       _ = T^(δ/2+1/48) := by
         rw [← Real.rpow_add hTp,← Real.rpow_add hTp]
         congr 1
@@ -52,9 +52,9 @@ theorem criticalMeanThreshold_eventually {C σ a δ : ℝ}
       _ ≤ _ := by rw [hYpow]; exact Real.rpow_le_rpow_of_exponent_le hT1 hexp
   have hb : 1 ≤ criticalMeanThreshold C σ a δ T := by
     unfold criticalMeanThreshold
-    exact (le_div_iff₀ (by positivity)).mpr (by simpa only [one_mul] using hden)
+    exact (le_div_iff₀ (by positivity)).mpr (by simpa using hden)
   refine ⟨hb,le_trans ?_ hb⟩
-  have hp : T ≤ T^125 := by simpa only [pow_one] using
+  have hp : T ≤ T^125 := by simpa using
     (pow_le_pow_right₀ hT1 (by norm_num : 1 ≤ 125))
   rw [Real.rpow_neg hTp.le,show (125:ℝ)=((125:ℕ):ℝ) by norm_num,Real.rpow_natCast,
     ← div_eq_mul_inv]

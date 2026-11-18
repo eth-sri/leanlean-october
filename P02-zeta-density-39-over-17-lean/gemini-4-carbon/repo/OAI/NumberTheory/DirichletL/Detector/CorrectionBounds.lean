@@ -18,7 +18,7 @@ lemma one_sub_ne_zero_of_norm_le_half (a : ℂ) (ha : ‖a‖ ≤ 1/2) : 1 - a �
   norm_num at ha
 
 lemma inv_one_sub_norm_le_two (a : ℂ) (ha : ‖a‖ ≤ 1/2) : ‖(1-a)⁻¹‖ ≤ 2 := by
-  have hl := norm_sub_norm_le (1 : ℂ) a
+  have hl := norm_sub_norm_le 1 a
   simp only [norm_one] at hl
   have hd : 0 < ‖1-a‖ := by linarith
   rw [norm_inv, ← one_div, div_le_iff₀ hd]
@@ -64,9 +64,7 @@ theorem continuedCorrection_defect_bound (V W D Pstar : ℂ)
   rw [continuedCorrection_defect _ _ _ _ (one_sub_ne_zero_of_norm_le_half D hD),
     div_eq_mul_inv, norm_mul]
   have hA : ‖V+W-V*W‖ ≤ ‖V‖+‖W‖+‖V‖*‖W‖ := by
-    calc
-      _ ≤ ‖V+W‖+‖V*W‖ := norm_sub_le _ _
-      _ ≤ _ := by rw [norm_mul]; gcongr; exact norm_add_le V W
+    exact (norm_sub_le _ _).trans (by rw [norm_mul]; gcongr; exact norm_add_le V W)
   have hnum : ‖D*(V+W-V*W)-V*W+(1-V)*(1-W)*(Pstar+D)‖ ≤
       ‖D‖*(‖V‖+‖W‖+‖V‖*‖W‖)+‖V‖*‖W‖+2*(1+‖W‖)*‖Pstar+D‖ := by
     calc

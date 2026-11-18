@@ -52,7 +52,7 @@ theorem hasDerivAt_atkinsonRootPhase (T b : ℝ) {y : ℝ} (hy : 0 < y) :
   convert h using 1
   · rfl
   · unfold atkinsonRootSlope
-    norm_num only [id_eq, Nat.cast_ofNat, Nat.reduceSub, pow_one, mul_one]
+    norm_num
     ring
 
 theorem hasDerivAt_atkinsonRootSlope (T b : ℝ) {y : ℝ} (hy : 0 < y) :
@@ -81,8 +81,7 @@ theorem atkinsonRootSlope_factored {T : ℝ} (hT : 0 < T) (b : ℝ)
     atkinsonRootSlope T b y =
       2 * (atkinsonSaddleRoot (T / (2 * Real.pi)) b - y) *
         (1 + (atkinsonSaddleRoot (T / (2 * Real.pi)) b - b) / y) := by
-  have h := atkinsonSaddleRoot_equation (by positivity : 0 < T / (2 * Real.pi)) b
-  have he := (eq_div_iff (by positivity : (2 * Real.pi : ℝ) ≠ 0)).mp h
+  have he := (eq_div_iff (by positivity : (2 * Real.pi : ℝ) ≠ 0)).mp (atkinsonSaddleRoot_equation (by positivity : 0 < T / (2 * Real.pi)) b)
   generalize atkinsonSaddleRoot (T / (2 * Real.pi)) b = r at *
   unfold atkinsonRootSlope
   field_simp

@@ -6,9 +6,8 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstActualEnergy
 namespace OAI
 
 namespace SevenEighths.InverseMoment
+open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic CoprimeMobiusExtension RayFourExpansion MixedCrossSeparation
 open scoped BigOperators Classical
-open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic CoprimeMobiusExtension
-open RayFourExpansion MixedCrossSeparation
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 
@@ -29,7 +28,6 @@ theorem first_coprime_coupled_reindex {ι : Type*} [DecidableEq ι]
   apply Finset.sum_congr rfl
   intro D hD
   rw [← prime_product_moebius P hprime hinj D]
-  change supportMobius P D * _ = _
   rw [mul_assoc]
   congr 1
   simp only [Finset.mul_sum]
@@ -82,7 +80,7 @@ theorem first_quadratic_coupled_reindex {ι : Type*} [DecidableEq ι]
   have hcop : Pairwise (Function.onFun IsCoprime P) := by
     intro i j hij
     exact Ideal.isCoprime_of_isMaximal (hinj.ne hij)
-  have hprime (i : ι) : Prime (P i) := Ideal.prime_of_isPrime (NeZero.ne (P i)) inferInstance
+  have hprime (i : ι) := Ideal.prime_of_isPrime (NeZero.ne (P i)) inferInstance
   let T := fun (r : RayCharacter × RayCharacter) (S V : Finset ι) => if Disjoint S V then
     H S V * star (supportMobius P S * (star (supportRay p r.1 S)*C₁ S) * star (finiteSquarefreeRow P hg S h)) *
       (supportMobius P V * (supportRay p r.2 V*C₂ V) * star (finiteSquarefreeRow P hg V h)) else 0

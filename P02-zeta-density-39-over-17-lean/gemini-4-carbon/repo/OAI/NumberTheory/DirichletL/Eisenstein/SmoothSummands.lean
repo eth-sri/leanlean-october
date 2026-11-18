@@ -8,75 +8,11 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 
 namespace CubicEisenstein
-open Filter
-open scoped BigOperators Classical Topology Matrix
+open scoped Matrix
 
 def smoothEisenstein (s : ℂ) (p : SpatialCoordinates) : ℂ := ∑'r, smoothSummand s r p
 
@@ -159,8 +95,7 @@ theorem smoothEisenstein_eigenfunction (s : ℂ) (hs : 2<s.re)
   let second := fun (j : Fin 3) (r : CuspCosets) =>
     deriv (deriv (axisSlice (smoothSummand s r) p j)) (p j)
   let first := fun r : CuspCosets => deriv (axisSlice (smoothSummand s r) p 2) (p 2)
-  have hsecond (j : Fin 3) : Summable (second j) := (hterms j).2.1
-  have hfirst : Summable first := (hterms 2).1
+  have hsecond (j : Fin 3) := (hterms j).2.1
   have hsum : Summable (fun r => ∑ j : Fin 3, second j r) := by
     simpa only [Fin.sum_univ_three] using ((hsecond 0).add (hsecond 1)).add (hsecond 2)
   have hcomm : (∑ j : Fin 3, ∑'r,second j r) = ∑'r,∑ j : Fin 3,second j r := by
@@ -169,7 +104,7 @@ theorem smoothEisenstein_eigenfunction (s : ℂ) (hs : 2<s.re)
   simp_rw [fun j => (hterms j).2.2.2.deriv]
   rw [(hterms 2).2.2.1.deriv]
   change (p 2:ℂ)^2*(∑j : Fin 3,∑'r,second j r) - (p 2:ℂ)*(∑'r,first r) = _
-  rw [hcomm,← tsum_mul_left,← tsum_mul_left,← (hsum.mul_left _).tsum_sub (hfirst.mul_left _)]
+  rw [hcomm,← tsum_mul_left,← tsum_mul_left,← (hsum.mul_left _).tsum_sub (((hterms 2).1).mul_left _)]
   change (∑'r,axisLaplacian (smoothSummand s r) p) = _
   simp_rw [smoothSummand_axisLaplacian s _ p hv]
   rw [tsum_mul_left]
@@ -180,8 +115,7 @@ lemma axisSlice_eventuallyEq_of_positive (f g : SpatialCoordinates → ℂ)
     axisSlice f p j =ᶠ[𝓝 (p j)] axisSlice g p j := by
   have hnear : ∀ᶠ t in 𝓝 (p j), 0<(Function.update p j t) 2 := by
     apply ((continuous_apply 2).comp (continuous_axis_update p j)).continuousAt.eventually_const_lt
-    change 0<(Function.update p j (p j)) 2
-    simpa only [Function.update_eq_self] using hv
+    simpa using hv
   filter_upwards [hnear] with t ht
   exact heq _ ht
 
@@ -198,11 +132,9 @@ lemma axisLaplacian_congr_positive (f g : SpatialCoordinates → ℂ)
 
 end CubicEisenstein
 
-open scoped BigOperators Classical SchwartzMap ContDiff
 namespace SecondPassArithmetic
 
 section
-open ActualEisensteinCubic
 open FirstPassCubeLabels (columnLog primeProductNorm b0Label jLabel)
 open ConcreteTraceCRT (eisEmbedding)
 open EisensteinSchwartzPoisson (paperRadialFourier)
@@ -210,7 +142,6 @@ open RayFourExpansion (RayCharacter)
 
 end
 
-open ActualEisensteinCubic
 open FirstPassCubeLabels (columnLog primeProductNorm)
 open ConcreteTraceCRT (eisEmbedding)
 open JointLogSeparation (frequencyTwist frequencyTwist_apply)
@@ -237,11 +168,10 @@ end
 
 end SecondPassArithmetic
 
-open scoped BigOperators Classical
 namespace CanonicalQuadraticSieve
 
 section
-open ActualEisensteinCubic IdealMobiusDivisorSum IdealCoprimeSieveOperator
+open IdealMobiusDivisorSum IdealCoprimeSieveOperator
 
 lemma divisorPool_filter (S : Finset (Ideal O)) (B : Ideal O) (hB : B ≠ 0)
     (hS : ∀ D, D ∣ B → D ∈ S) :
@@ -262,8 +192,7 @@ lemma divisor_product_delta (S T : Finset (Ideal O)) (B C d : Ideal O)
   have hleft : (∑ q ∈ idealDivisors (B*C), if q=d then f q else 0) =
       if d ∣ B*C then f d else 0 := by
     simp [mem_idealDivisors (mul_ne_zero hB hC)]
-  rw [hleft] at hs
-  rw [← divisorPool_filter S B hB hS, ← divisorPool_filter T C hC hT] at hs
+  rw [hleft, ← divisorPool_filter S B hB hS, ← divisorPool_filter T C hC hT] at hs
   simpa only [Finset.sum_filter] using hs.symm
 
 private lemma four_sums_exchange {α β γ deltaLoss : Type*}
@@ -398,7 +327,6 @@ theorem originalColumnSum_divisor_rectangles (K S T : Finset (Ideal O))
 
 end
 
-open ActualEisensteinCubic
 
 lemma positive_ideal_dyadic_exists (N : ℝ) (D : Ideal O)
     (hD : 1 ≤ (Ideal.absNorm D : ℝ)) (hDN : (Ideal.absNorm D : ℝ) ≤ N) :
@@ -499,8 +427,7 @@ theorem columnDivisorPool_norm_bounds {n : Type*} [Fintype n]
     intro hz
     rw [hz,zero_dvd_iff] at hd
     exact hleft j hd
-  have hDN : Ideal.absNorm D ≤ Ideal.absNorm (left j) :=
-    Nat.le_of_dvd (Nat.pos_iff_ne_zero.mpr (fun h => hleft j (Ideal.absNorm_eq_zero_iff.mp h)))
+  have hDN := Nat.le_of_dvd (Nat.pos_iff_ne_zero.mpr (fun h => hleft j (Ideal.absNorm_eq_zero_iff.mp h)))
       (map_dvd Ideal.absNorm hd)
   refine ⟨?_,(Nat.cast_le.mpr hDN).trans (hN j)⟩
   exact_mod_cast Nat.one_le_iff_ne_zero.mpr (fun h => hDz (Ideal.absNorm_eq_zero_iff.mp h))

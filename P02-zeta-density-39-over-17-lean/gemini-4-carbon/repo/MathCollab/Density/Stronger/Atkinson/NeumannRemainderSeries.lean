@@ -12,8 +12,7 @@ public import MathCollab.Density.Stronger.Fourth.SquareDivisorSeries
 
 @[expose] public section
 
-open Complex MeasureTheory Set
-open MathCollab.Density.Stronger.Fourth
+open Complex MeasureTheory Set MathCollab.Density.Stronger.Fourth
 set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
@@ -46,20 +45,17 @@ theorem exists_norm_zetaNeumannRemainderTerm_le :
   have hpi : ‖(-(2 * Real.pi) : ℂ)‖ = 2 * Real.pi := by
     simp [Real.norm_eq_abs, abs_of_pos Real.pi_pos]
   have hd := norm_divisorDirichletTerm_real (5 / 4) n
-  norm_num only [Complex.ofReal_div, Complex.ofReal_ofNat] at hd
+  norm_num at hd
   rw [zetaNeumannRemainderTerm, norm_mul, norm_mul, hpi, hd]
-  calc
-    _ ≤ ‖divisorWeight n‖ * (2 * Real.pi) * (C * G * (n : ℝ) ^ (-(5 / 4 : ℝ))) :=
-      mul_le_mul_of_nonneg_left (hbound T G L hT hG hGT hL hwidth n (Nat.pos_of_ne_zero hn))
-        (by positivity)
-    _ = _ := by ring
+  exact (mul_le_mul_of_nonneg_left (hbound T G L hT hG hGT hL hwidth n (Nat.pos_of_ne_zero hn))
+        (by positivity)).trans_eq (by ring)
 
 theorem summable_zetaNeumannRemainderTerm {T G L : ℝ}
     (hT : 16 ≤ T) (hG : 0 < G) (hGT : G ^ 2 ≤ 2 * T) (hL : 0 < L) (hwidth : 8 * L ≤ G) :
     Summable (zetaNeumannRemainderTerm T G L) := by
   obtain ⟨C, _, hbound⟩ := exists_norm_zetaNeumannRemainderTerm_le
   exact Summable.of_norm_bounded
-    ((summable_divisorDirichletTerm (s := (5 / 4 : ℂ)) (by norm_num)).norm.mul_left (C * G))
+    ((summable_divisorDirichletTerm (s := (5 / 4)) (by norm_num)).norm.mul_left (C * G))
     (hbound T G L hT hG hGT hL hwidth)
 
 theorem zetaAtkinsonTwoTerm_eq_sub {T G L : ℝ}
@@ -81,15 +77,13 @@ theorem exists_norm_tsum_zetaNeumannRemainderTerm_le :
         ‖∑' n : ℕ, zetaNeumannRemainderTerm T G L n‖ ≤ C * G := by
   obtain ⟨C, hC, hbound⟩ := exists_norm_zetaNeumannRemainderTerm_le
   let S : ℝ := ∑' n : ℕ, ‖divisorDirichletTerm (5 / 4) n‖
-  have hS : 0 ≤ S := tsum_nonneg (fun _ => norm_nonneg _)
   refine ⟨C * (1 + S), by positivity, ?_⟩
   intro T G L hT hG hGT hL hwidth
   have hs := summable_zetaNeumannRemainderTerm hT hG hGT hL hwidth
-  have hd := (summable_divisorDirichletTerm (s := (5 / 4 : ℂ)) (by norm_num)).norm
   calc
     _ ≤ ∑' n : ℕ, ‖zetaNeumannRemainderTerm T G L n‖ := norm_tsum_le_tsum_norm hs.norm
     _ ≤ ∑' n : ℕ, (C * G) * ‖divisorDirichletTerm (5 / 4) n‖ :=
-      hs.norm.tsum_le_tsum (hbound T G L hT hG hGT hL hwidth) (hd.mul_left _)
+      hs.norm.tsum_le_tsum (hbound T G L hT hG hGT hL hwidth) (((summable_divisorDirichletTerm (s := (5 / 4)) (by norm_num)).norm).mul_left _)
     _ = C * G * S := tsum_mul_left
     _ ≤ _ := by nlinarith
 

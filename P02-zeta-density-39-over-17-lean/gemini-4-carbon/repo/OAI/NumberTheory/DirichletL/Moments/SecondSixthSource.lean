@@ -9,10 +9,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSecondSixthSource
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
-open CenteredMomentSecondCanonicalLedger CenteredMomentSecondMovingSupport CenteredMomentSecondSixthReduction
-open CenteredMomentCanonicalFirst
+open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalLedger CenteredMomentSecondMovingSupport CenteredMomentSecondSixthReduction CenteredMomentCanonicalFirst
 local notation "O" => ActualEisensteinCubic.O
 
 theorem sixthFactor_span_dvd (C D : Ideal O) (hC : Supported C)
@@ -23,8 +20,6 @@ theorem sixthFactor_span_dvd (C D : Ideal O) (hC : Supported C)
   apply Finset.prod_dvd_prod_of_dvd
   intro P hP
   apply pow_dvd_pow
-  have hc := leftExponent_pos C D P
-  have hm : min (leftExponent C D P) (rightExponent C D P)≤leftExponent C D P := min_le_left _ _
   unfold fixedExponent
   split_ifs <;> omega
 
@@ -53,8 +48,7 @@ def activeExponent (C D : Ideal O) (U : Finset (CommonIndex C D))
 
 theorem activeExponent_pos (C D : Ideal O) (U : Finset (CommonIndex C D))
     (P : ActiveIndex C D U) : 0<activeExponent C D U P := by
-  have hp : ¬6∣fixedExponent C D U P.val := (Finset.mem_filter.mp P.property).2
-  exact Nat.pos_of_ne_zero (fun h=>hp (Nat.dvd_of_mod_eq_zero h))
+  exact Nat.pos_of_ne_zero (fun h=>((Finset.mem_filter.mp P.property).2) (Nat.dvd_of_mod_eq_zero h))
 
 theorem reducedNumerator_active_product (C D : Ideal O) (U : Finset (CommonIndex C D)) :
     reducedNumerator C D U=∏ P : ActiveIndex C D U,activePrime C D U P^activeExponent C D U P := by

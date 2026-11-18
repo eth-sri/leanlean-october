@@ -19,7 +19,7 @@ lemma primeGauss_norm_le (p : O) (hp : p≠0)
   rw [primeGauss,tsum_fintype]
   calc
     _ ≤ ∑ x : O ⧸ Ideal.span {p},‖χ x*quotientTrace p hp (Ideal.Quotient.mk _ h*x)‖ := norm_sum_le _ _
-    _ ≤ ∑ _x : O ⧸ Ideal.span {p},(1:ℝ) := Finset.sum_le_sum fun x _=>by
+    _ ≤ ∑ _x : O ⧸ Ideal.span {p},1 := Finset.sum_le_sum fun x _=>by
       rw [norm_mul,(quotientTrace p hp).norm_apply,mul_one]
       exact QuadraticInitialBound.norm_finite_character_le_one χ x
     _ = _ := by simp [Ideal.absNorm_apply,Submodule.cardQuot_apply,Nat.card_eq_fintype_card]
@@ -40,8 +40,7 @@ lemma primeGauss_actual_norm (p : O) (hp : p≠0) [(Ideal.span {p}:Ideal O).IsMa
   have hcard : (Fintype.card (O ⧸ Ideal.span {p}):ℝ)=Ideal.absNorm (Ideal.span {p}) := by
     rw [←Nat.card_eq_fintype_card];rfl
   rw [hcard] at hn
-  have hn' := (div_eq_one_iff_eq (Real.sqrt_pos.mpr hQ).ne').mp hn
-  simpa only [primeGauss,tsum_fintype,gaussSum,map_one,one_mul] using hn'
+  simpa only [primeGauss,tsum_fintype,gaussSum,map_one,one_mul] using ((div_eq_one_iff_eq (Real.sqrt_pos.mpr hQ).ne').mp hn)
 
 lemma gaussValuationTable_norm_le (Q : ℝ) (hQ : 1≤Q) (G : ℂ) (hG : ‖G‖≤Q)
     (r n j : ℕ) : ‖gaussValuationTable (Q:ℂ) G r n j‖≤2*Q^(n+1) := by
@@ -60,9 +59,7 @@ lemma gaussValuationTable_norm_le (Q : ℝ) (hQ : 1≤Q) (G : ℂ) (hG : ‖G‖
   · rw [ite_eq_right hr]
     by_cases hj : j=n
     · rw [ite_eq_left hj,norm_mul,hpow]
-      calc
-        _ ≤ Q^n*Q := mul_le_mul_of_nonneg_left hG (pow_nonneg hQ0 n)
-        _ ≤ 2*Q^(n+1) := by rw [←pow_succ];nlinarith [pow_nonneg hQ0 (n+1)]
+      exact (mul_le_mul_of_nonneg_left hG (pow_nonneg hQ0 n)).trans (by rw [←pow_succ];nlinarith [pow_nonneg hQ0 (n+1)])
     · rw [ite_eq_right hj,norm_zero]
       positivity
 

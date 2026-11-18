@@ -31,8 +31,7 @@ theorem dividing_list_image (F:Finset (Ideal Eis))(L:Finset (Ideal Eis))
   · intro h
     obtain ⟨hPL,hd⟩ := Finset.mem_filter.mp h
     obtain ⟨i,hi,hd⟩ := (hL P hPL).dvd_finsetProd_iff (fun i:primePool F=>i.val) |>.mp hd
-    have hip : Prime i.val := Ideal.prime_of_isPrime (NeZero.ne i.val) inferInstance
-    have he := (prime_dvd_prime_iff_eq (hL P hPL) hip).mp hd
+    have he := (prime_dvd_prime_iff_eq (hL P hPL) (Ideal.prime_of_isPrime (NeZero.ne i.val) inferInstance)).mp hd
     refine Finset.mem_image.mpr ⟨i,Finset.mem_filter.mpr ⟨?_,hi⟩,he.symm⟩
     exact Finset.mem_filter.mpr ⟨Finset.mem_univ _,he ▸ hPL⟩
 

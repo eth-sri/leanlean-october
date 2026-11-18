@@ -55,7 +55,7 @@ theorem LFunction_one_ne_zero_nonprincipal (χ : Character) (hχ : χ.residue �
     LFunction χ 1 ≠ 0 := by
   by_cases hquad : χ.residue ^ 2 = 1
   · exact LFunction_one_ne_zero_quadratic χ hχ hquad
-  · simpa only [Complex.ofReal_zero, mul_zero, add_zero] using
+  · simpa using
       LFunction_boundary_ne_zero χ 0 (Or.inr hχ) (Or.inr hquad)
 
 theorem LFunction_ne_zero_of_re_eq_one (χ : Character) {s : ℂ}

@@ -32,7 +32,6 @@ lemma inverse_vertical_truncated (c T : ℝ) (hc : c≠0) :
   · have hh := Complex.reCLM.intervalIntegral_comp_comm hi
     change (∫ t : ℝ in -T..T, (((c:ℂ)+t*I)⁻¹).re) = (∫ t : ℝ in -T..T, ((c:ℂ)+t*I)⁻¹).re at hh
     rw [← hh]
-    change (∫ t : ℝ in -T..T, (((c:ℂ)+t*I)⁻¹).re) = _
     have he : (fun t : ℝ => (((c:ℂ)+t*I)⁻¹).re) =
         (fun t : ℝ => c/(c^2+t^2)) := by
       funext t
@@ -43,7 +42,6 @@ lemma inverse_vertical_truncated (c T : ℝ) (hc : c≠0) :
   · have hh := Complex.imCLM.intervalIntegral_comp_comm hi
     change (∫ t : ℝ in -T..T, (((c:ℂ)+t*I)⁻¹).im) = (∫ t : ℝ in -T..T, ((c:ℂ)+t*I)⁻¹).im at hh
     rw [← hh]
-    change (∫ t : ℝ in -T..T, (((c:ℂ)+t*I)⁻¹).im) = _
     have he : (fun t : ℝ => (((c:ℂ)+t*I)⁻¹).im) =
         (fun t : ℝ => -(t/(c^2+t^2))) := by
       funext t
@@ -54,16 +52,12 @@ lemma inverse_vertical_truncated (c T : ℝ) (hc : c≠0) :
 lemma inverse_vertical_limit_pos (c : ℝ) (hc : 0<c) :
     Tendsto (fun T : ℝ => ∫ t : ℝ in -T..T, ((c:ℂ)+t*I)⁻¹) atTop (𝓝 (Real.pi:ℂ)) := by
   simp_rw [inverse_vertical_truncated c _ hc.ne']
-  have ht := Real.tendsto_arctan_atTop.comp (Filter.tendsto_id.atTop_div_const hc)
-  have hh := Complex.continuous_ofReal.continuousAt.tendsto.comp ((ht.mono_right inf_le_left).const_mul 2)
-  convert hh using 1 <;> simp [Function.comp_def]; ring
+  convert (Complex.continuous_ofReal.continuousAt.tendsto.comp (((Real.tendsto_arctan_atTop.comp (Filter.tendsto_id.atTop_div_const hc)).mono_right inf_le_left).const_mul 2)) using 1 <;> simp [Function.comp_def]; ring
 
 lemma inverse_vertical_limit_neg (c : ℝ) (hc : c<0) :
     Tendsto (fun T : ℝ => ∫ t : ℝ in -T..T, ((c:ℂ)+t*I)⁻¹) atTop (𝓝 (-(Real.pi:ℂ))) := by
   simp_rw [inverse_vertical_truncated c _ hc.ne]
-  have ht := Real.tendsto_arctan_atBot.comp (Filter.tendsto_id.atTop_div_const_of_neg hc)
-  have hh := Complex.continuous_ofReal.continuousAt.tendsto.comp ((ht.mono_right inf_le_left).const_mul 2)
-  convert hh using 1 <;> simp [Function.comp_def]; ring
+  convert (Complex.continuous_ofReal.continuousAt.tendsto.comp (((Real.tendsto_arctan_atBot.comp (Filter.tendsto_id.atTop_div_const_of_neg hc)).mono_right inf_le_left).const_mul 2)) using 1 <;> simp [Function.comp_def]; ring
 
 lemma inverse_horizontal_limit (a b p : ℝ) (ε : ℝ) (hε : |ε| = 1) :
     Tendsto (fun T : ℝ => ∫ x : ℝ in a..b,
@@ -77,8 +71,7 @@ lemma inverse_horizontal_limit (a b p : ℝ) (ε : ℝ) (hε : |ε| = 1) :
     intro x hx
     rw [norm_inv]
     apply inv_anti₀ hT
-    have h := Complex.abs_im_le_norm ((x:ℂ)+(ε*T)*I-p)
-    simpa [abs_mul, hε, abs_of_pos hT] using h
+    simpa [abs_mul, hε, abs_of_pos hT] using (Complex.abs_im_le_norm ((x:ℂ)+(ε*T)*I-p))
   · simpa using (tendsto_inv_atTop_zero.mul_const |b-a|)
 
 lemma dslope_eq_sub_pole {A F : ℂ → ℂ} {p z : ℂ} (hz : z≠p)
@@ -99,8 +92,7 @@ lemma dslope_vertical_truncated (A F : ℂ → ℂ) (p x T : ℝ) (hx : x≠p)
     have hn : (x:ℂ)+t*I ≠ p := by
       intro h
       exact hx (by simpa using congrArg Complex.re h)
-    have h := dslope_eq_sub_pole hn (hF _ (by simp))
-    convert h using 1; push_cast; ring
+    convert (dslope_eq_sub_pole hn (hF _ (by simp))) using 1; push_cast; ring
   simp_rw [he]
   rw [intervalIntegral.integral_sub hi.intervalIntegrable
     (((inverse_vertical_continuous (x-p) (sub_ne_zero.mpr hx)).const_mul _).intervalIntegrable _ _),
@@ -124,8 +116,7 @@ lemma rectangle_limits (G : ℂ → ℂ) {a b : ℝ} (hab : a≤b)
     · simpa [smul_eq_mul] using h
     · intro z hz
       simpa [uIcc_of_le hab] using hz.1
-  have hlim := ((hbot.sub htop).add (hb.const_mul I)).sub (ha.const_mul I)
-  have hz : (0:ℂ)-0+I*Vb-I*Va=0 := tendsto_nhds_unique hlim
+  have hz := tendsto_nhds_unique (((hbot.sub htop).add (hb.const_mul I)).sub (ha.const_mul I))
     (by simpa only [hrect] using (tendsto_const_nhds : Tendsto (fun _ : ℝ => (0:ℂ)) atTop (𝓝 0)))
   exact (mul_left_cancel₀ I_ne_zero (show I*Vb=I*Va by simpa using sub_eq_zero.mp hz)).symm
 
@@ -139,8 +130,7 @@ lemma horizontal_quotient_continuousOn (A : ℂ → ℂ) {a b p y : ℝ}
     simpa [uIcc_of_le hab] using hx
   · fun_prop
   · intro x hx h
-    have hh := congrArg Complex.im h
-    exact hy (by simpa using hh)
+    exact hy (by simpa using (congrArg Complex.im h))
 
 lemma dslope_horizontal_limit (A F : ℂ → ℂ) {a b p : ℝ} (hab : a≤b)
     (hA : DifferentiableOn ℂ A {z : ℂ | a≤z.re ∧ z.re≤b})
@@ -190,26 +180,23 @@ theorem verticalIntegral_simple_pole (A F : ℂ → ℂ) {a b p : ℝ}
         (show a<(p:ℂ).re ∧ (p:ℂ).re<b from ⟨hap,hpb⟩))
     intro z hz
     exact ⟨hz.1.le,hz.2.le⟩
-  have hG := (Complex.differentiableOn_dslope hnb).mpr hA
-  have haF := intervalIntegral_tendsto_integral ha tendsto_neg_atTop_atBot tendsto_id
-  have hbF := intervalIntegral_tendsto_integral hb tendsto_neg_atTop_atBot tendsto_id
   have haG : Tendsto (fun T : ℝ => ∫ t : ℝ in -T..T, dslope A (p:ℂ) ((a:ℂ)+t*I))
       atTop (𝓝 ((∫ t : ℝ, F ((a:ℂ)+t*I)) - A p * (-(Real.pi:ℂ)))) := by
     simp_rw [dslope_vertical_truncated A F p a _ hap.ne
       (fun z hz => hF z (by simp [hz]) (by simpa [hz] using hab)
         (by intro h; have := congrArg Complex.re h; simp [hz] at this; exact hap.ne this)) ha]
-    exact haF.sub ((inverse_vertical_limit_neg (a-p) (sub_neg.mpr hap)).const_mul (A p))
+    exact (intervalIntegral_tendsto_integral ha tendsto_neg_atTop_atBot tendsto_id).sub ((inverse_vertical_limit_neg (a-p) (sub_neg.mpr hap)).const_mul (A p))
   have hbG : Tendsto (fun T : ℝ => ∫ t : ℝ in -T..T, dslope A (p:ℂ) ((b:ℂ)+t*I))
       atTop (𝓝 ((∫ t : ℝ, F ((b:ℂ)+t*I)) - A p * (Real.pi:ℂ))) := by
     simp_rw [dslope_vertical_truncated A F p b _ hpb.ne'
       (fun z hz => hF z (by simpa [hz] using hab) (by simp [hz])
         (by intro h; have := congrArg Complex.re h; simp [hz] at this; exact hpb.ne' this)) hb]
-    exact hbF.sub ((inverse_vertical_limit_pos (b-p) (sub_pos.mpr hpb)).const_mul (A p))
+    exact (intervalIntegral_tendsto_integral hb tendsto_neg_atTop_atBot tendsto_id).sub ((inverse_vertical_limit_pos (b-p) (sub_pos.mpr hpb)).const_mul (A p))
   have hbotG := dslope_horizontal_limit A F hab hA hF (-1) (by norm_num)
     (by simpa using hbot)
   have htopG := dslope_horizontal_limit A F hab hA hF 1 (by norm_num)
     (by simpa using htop)
-  have he := rectangle_limits (dslope A p) hab hG haG hbG
+  have he := rectangle_limits (dslope A p) hab ((Complex.differentiableOn_dslope hnb).mpr hA) haG hbG
     (by simpa using hbotG) (by simpa using htopG)
   have he' : (∫ t : ℝ, F ((b:ℂ)+t*I)) =
       (∫ t : ℝ, F ((a:ℂ)+t*I)) + 2*(Real.pi:ℂ)*A p := by
@@ -217,7 +204,7 @@ theorem verticalIntegral_simple_pole (A F : ℂ → ℂ) {a b p : ℝ}
   unfold verticalIntegral
   rw [he']
   push_cast
-  have hpi : (Real.pi:ℂ)≠0 := Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
+  have hpi := Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
   field_simp
   simp only [mul_comm]
 
@@ -278,7 +265,6 @@ theorem verticalIntegral_hecke_six (χ : Character) (K : ℂ → ℂ) {a b : ℝ
       push_cast
       linear_combination h / 6
     rw [HeckeOrigin.poleRemoved_eq χ hz0 hz1]
-    have hden : z-(1/6:ℂ)≠0 := sub_ne_zero.mpr (by simpa using hzp)
     push_cast
     field_simp
 

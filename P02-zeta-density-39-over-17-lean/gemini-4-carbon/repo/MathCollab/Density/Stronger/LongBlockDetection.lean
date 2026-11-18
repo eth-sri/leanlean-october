@@ -12,9 +12,8 @@ namespace MathCollab.Density.Stronger
 
 theorem negligible_residue_le_detector_height :
     ∀ᶠ T : ℝ in atTop, T^(-100 : ℝ) ≤ 1/(48*Real.log T) := by
-  have ht := (isLittleO_log_rpow_atTop (by norm_num : (0:ℝ) < 100)).tendsto_div_nhds_zero
   filter_upwards [eventually_ge_atTop (2 : ℝ),
-    ht.eventually (gt_mem_nhds (by norm_num : (0:ℝ)<1/48))] with T hT hh
+    ((isLittleO_log_rpow_atTop (by norm_num : (0:ℝ) < 100)).tendsto_div_nhds_zero).eventually (gt_mem_nhds (by norm_num : (0:ℝ)<1/48))] with T hT hh
   have hTp : 0 < T := by linarith
   have hlog : 0 < Real.log T := Real.log_pos (by linarith)
   have hp : 48*Real.log T ≤ T^(100 : ℝ) := by

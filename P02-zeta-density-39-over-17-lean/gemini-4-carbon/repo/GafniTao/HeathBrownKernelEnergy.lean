@@ -80,8 +80,7 @@ theorem hasSum_heathBrownPairKernelFourier
           conj (heathBrownFourierAtom g₁ g₂ rs n) =
       (heathBrownTriangularFourierCoefficient B C rs.1 rs.2 : ℂ) *
         (heathBrownFourierAtom g₁ g₂ rs m *
-          conj (heathBrownFourierAtom g₁ g₂ rs n)) by ring_nf]
-  rw [heathBrownFourierAtom_mul_conj]
+          conj (heathBrownFourierAtom g₁ g₂ rs n)) by ring_nf, heathBrownFourierAtom_mul_conj]
   ring_nf
 
 theorem hasSum_heathBrownFinitePairKernelFourier
@@ -118,26 +117,18 @@ theorem heathBrownFinitePairLatticeTerm_eq_energy
           heathBrownFourierAtom g₁ g₂ rs m *
           conj (heathBrownFourierAtom g₁ g₂ rs n)) =
       (heathBrownFrequencyEnergy B C g₁ g₂ S rs : ℂ) := by
-  let c : ℂ :=
-    (heathBrownTriangularFourierCoefficient B C rs.1 rs.2 : ℂ)
-  let Z : ℂ := ∑ n ∈ S, heathBrownFourierAtom g₁ g₂ rs n
+  let c := (heathBrownTriangularFourierCoefficient B C rs.1 rs.2 : ℂ)
+  let Z := ∑ n ∈ S, heathBrownFourierAtom g₁ g₂ rs n
   calc
     (∑ m ∈ S, ∑ n ∈ S,
         c * heathBrownFourierAtom g₁ g₂ rs m *
           conj (heathBrownFourierAtom g₁ g₂ rs n)) =
         c * Z * conj Z := by
-      change (∑ m ∈ S, ∑ n ∈ S,
-          c * heathBrownFourierAtom g₁ g₂ rs m *
-            conj (heathBrownFourierAtom g₁ g₂ rs n)) =
-        c * (∑ m ∈ S, heathBrownFourierAtom g₁ g₂ rs m) *
-          conj (∑ n ∈ S, heathBrownFourierAtom g₁ g₂ rs n)
-      rw [map_sum]
-      rw [show
+      rw [map_sum, show
         c * (∑ m ∈ S, heathBrownFourierAtom g₁ g₂ rs m) *
               (∑ n ∈ S, conj (heathBrownFourierAtom g₁ g₂ rs n)) =
           c * ((∑ m ∈ S, heathBrownFourierAtom g₁ g₂ rs m) *
-              (∑ n ∈ S, conj (heathBrownFourierAtom g₁ g₂ rs n))) by ring_nf]
-      rw [Finset.sum_mul_sum, Finset.mul_sum]
+              (∑ n ∈ S, conj (heathBrownFourierAtom g₁ g₂ rs n))) by ring_nf, Finset.sum_mul_sum, Finset.mul_sum]
       apply Finset.sum_congr rfl
       intro m _hm
       rw [Finset.mul_sum]

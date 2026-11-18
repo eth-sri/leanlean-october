@@ -65,12 +65,12 @@ theorem mixed_model_coefficient [∀ i, (Ideal.span {p i}).IsMaximal]
           (primaryGenerator I) (primaryGenerator J) := by
   rw [mixedActiveBracket_product]
   calc
-    _ = (-1 : ℂ) ^ S.card * (s.amplitude u m I J *
+    _ = (-1) ^ S.card * (s.amplitude u m I J *
       (star D.fixedFactor * ShortDraftCusp.A4BadPhase c0 hc0
         (D.matrix (fun _ => 1) 1 1) D.U (s.modelDualNumerator u m I J)) *
       D.bracketProduct hp hg (markedActiveExponent S j) (s.modelDualNumerator u m I J)) := by ring
     _ = _ :=
-      (congrArg ((-1 : ℂ) ^ S.card * ·)
+      (congrArg ((-1) ^ S.card * ·)
         (D.model_coefficient s hp hc0 hg (markedActiveExponent S j) u m I J)).trans
           (mul_assoc _ _ _).symm
 

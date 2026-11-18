@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaTaylorIdentity
 
 @[expose] public section
@@ -35,7 +45,7 @@ theorem modelPhaseAveragedCurvature_contDiffAt
     (hF : IsApproximateModelPhaseFunction F σ P δ)
     (hv : v ∈ modelPhaseSlopeRange F) (hu : u ∈ Ioo (1 : ℝ) 2) :
     ContDiffAt ℝ ∞ (modelPhaseAveragedCurvature F v) u := by
-  have hj : ∀ x ∈ Ioo (1 : ℝ) 2, ContDiffAt ℝ ∞ (deriv (deriv F)) x := by
+  have hj : ∀ x ∈ Ioo 1 2, ContDiffAt ℝ ∞ (deriv (deriv F)) x := by
     intro x hx
     simpa only [iteratedDeriv_succ,iteratedDeriv_zero] using
       approximateModelPhase_iteratedDeriv_contDiffAt hF hx 2
@@ -52,7 +62,7 @@ theorem modelPhaseStationaryDeficit_eq_averagedCurvature
     (modelPhaseInverseSlope_mem hv) hu
   rw [deriv_modelPhaseInverseSlope_apply hv] at h
   unfold modelPhaseStationaryDeficit modelPhaseAveragedCurvature
-  nlinarith only [h]
+  nlinarith
 
 theorem modelPhaseAveragedCurvature_bounds
     {F : ℝ → ℝ} {σ δ v u : ℝ}
@@ -100,11 +110,9 @@ theorem modelPhaseMorseCoordinate_contDiffAt
     (hF : IsApproximateModelPhaseFunction F σ 1 δ)
     (hv : v ∈ modelPhaseSlopeRange F) (hu : u ∈ Ioo (1 : ℝ) 2) :
     ContDiffAt ℝ ∞ (modelPhaseMorseCoordinate F v) u := by
-  have hp := modelPhaseAveragedCurvature_pos hσ hδ hF hv hu
-  have hc := (modelPhaseAveragedCurvature_contDiffAt hF hv hu).sqrt hp.ne'
   have h : ContDiffAt ℝ ∞ (fun x : ℝ => (x-modelPhaseInverseSlope F v)*
       Real.sqrt (modelPhaseAveragedCurvature F v x)) u :=
-    (contDiffAt_id.sub contDiffAt_const).mul hc
+    (contDiffAt_id.sub contDiffAt_const).mul ((modelPhaseAveragedCurvature_contDiffAt hF hv hu).sqrt (modelPhaseAveragedCurvature_pos hσ hδ hF hv hu).ne')
   apply h.congr_of_eventuallyEq
   filter_upwards [isOpen_Ioo.mem_nhds hu] with x hx
   exact modelPhaseMorseCoordinate_eq_smooth hF hv hx

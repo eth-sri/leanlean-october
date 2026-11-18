@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentUniformOriginalEnergy
-open HeckeFamily CenteredMomentUniformReflectionApproximation CenteredMomentNaturalPrimitive
-open CenteredMomentOriginalReflectionEnergy
+open HeckeFamily CenteredMomentUniformReflectionApproximation CenteredMomentNaturalPrimitive CenteredMomentOriginalReflectionEnergy
 
 theorem actual_original_energy_to_retained (xi saving L Cscale ε : ℝ)
      (hxi : 0<xi) (hscale : 0<Cscale) (hε : 0<ε) :
@@ -32,12 +31,10 @@ theorem actual_original_energy_to_retained (xi saving L Cscale ε : ℝ)
   refine ⟨ψ,fun i=>⟨hp i,hnψ i,hcap i⟩,?_⟩
   intro W X P D Z Rcap hD hZ hR hX hWD hmod hsource
   let B := C*D*Rcap^ε*Z^(-saving)
-  have hB : 0≤B := by dsimp [B];positivity
   have herr (i : ι) :
       ‖HeckeDyadic.polynomial (χ i) false (W i) (X i) 0 0-
         G i*retainedSchwartz (χ i) (ψ i) (W i) (X i) (Z^(xi/2))‖≤B := by
     apply (happrox i (W i) (X i) Z (hX i) hZ (hsource i)).trans
-    dsimp [B]
     apply mul_le_mul_of_nonneg_right _ (by positivity)
     exact mul_le_mul (mul_le_mul_of_nonneg_left (hWD i) hC.le)
       (Real.rpow_le_rpow (Nat.cast_nonneg _) (hmod i) hε.le)
@@ -66,7 +63,6 @@ theorem actual_original_energy_to_retained (xi saving L Cscale ε : ℝ)
       rw [←Real.rpow_natCast,←Real.rpow_mul hr0];congr 1;ring
     have hz : (Z^(-saving))^2=Z^(-2*saving) := by
       rw [←Real.rpow_natCast,←Real.rpow_mul hz0];congr 1;ring
-    dsimp [B]
     rw [mul_pow,mul_pow,mul_pow,hr,hz]
     ring
   convert hh using 1

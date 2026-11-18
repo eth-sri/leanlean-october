@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaSourceChartPhysical
 
 @[expose] public section
@@ -38,13 +48,12 @@ theorem sourceStationaryMain_physical_bound
             C*(N/Real.sqrt T)*T^(β+ε) := by
   classical
   let J := positiveSlopeChartIndices (modelPhaseSlopeMesh σ)
-  have hdmesh := modelPhaseSlopeMesh_pos σ
   have hpow : (2 : ℝ)^(-σ) ≤ 1 :=
     Real.rpow_le_one_of_one_le_of_nonpos (by norm_num) (by linarith)
   have hfour : 4 ∈ J := by
     apply Finset.mem_Icc.mpr
     refine ⟨le_rfl,Nat.le_floor ?_⟩
-    apply (le_div_iff₀ hdmesh).mpr
+    apply (le_div_iff₀ (modelPhaseSlopeMesh_pos σ)).mpr
     unfold modelPhaseSlopeMesh
     norm_num
     linarith

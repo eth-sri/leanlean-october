@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.DoubledBlockPrefixes
 public import LaterPairs.Native.LinearWeightAbel
 
@@ -25,7 +34,7 @@ theorem exists_doubled_block_weighted (a : ℕ → ℂ) (H : ℕ) (hH : 2 ≤ H)
   classical
   obtain ⟨k,hk,hmax⟩ := (Finset.Icc 1 (H/2)).exists_max_image
     (fun k => ‖∑ j ∈ Finset.range k, a (k+j)‖)
-    (by exact ⟨1,Finset.mem_Icc.mpr ⟨le_rfl,by omega⟩⟩)
+    (⟨1,Finset.mem_Icc.mpr ⟨le_rfl,by omega⟩⟩)
   have hk' := Finset.mem_Icc.mp hk
   refine ⟨k,by omega,by omega,?_⟩
   apply norm_linear_weighted_range_le a H (by omega)

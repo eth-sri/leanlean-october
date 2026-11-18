@@ -57,7 +57,7 @@ theorem radical_product_norm_le (I J B R : Ideal Eis) (hI : I ≠ 0) (hB : B ≠
     · exact Ideal.mul_le_right.trans Ideal.le_radical
   have hb := Nat.le_of_dvd (Nat.pos_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr
     (mul_ne_zero (mul_ne_zero hi hB) hR))) (Ideal.absNorm_dvd_absNorm_of_le hle)
-  simpa only [map_mul,Nat.cast_mul] using (show (Ideal.absNorm (I*J*R).radical : ℝ) ≤
+  simpa using (show (Ideal.absNorm (I*J*R).radical : ℝ) ≤
     Ideal.absNorm (I.radical*B*R) from by exact_mod_cast hb)
 
 def actualSecondInheritedPuncture (m : Eis) (γ : InverseSecondFibers.OuterTriple) : Eis :=

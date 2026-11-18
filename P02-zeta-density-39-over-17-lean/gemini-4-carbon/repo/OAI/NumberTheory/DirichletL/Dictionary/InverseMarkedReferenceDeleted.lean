@@ -11,11 +11,7 @@ noncomputable section
 
 open scoped Classical BigOperators
 namespace SevenEighths.DetectorDictionaryInverseMarkedReference
-open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseInitialDetectorSource
-open InverseInitialRawDictionary InverseInitialConjugateEnergy InverseInitialPhysicalSlots
-open InverseInitialMarkedDictionary
-open DetectorDictionaryInverseRawInitialGates InverseInitialExcludedPeriod
-open CanonicalQuadraticSieve CanonicalRowCompletion
+open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseInitialDetectorSource InverseInitialRawDictionary InverseInitialConjugateEnergy InverseInitialPhysicalSlots InverseInitialMarkedDictionary DetectorDictionaryInverseRawInitialGates InverseInitialExcludedPeriod CanonicalQuadraticSieve CanonicalRowCompletion
 local notation "O"=>HeckeFamily.O
 variable {ι:Type*}[Fintype ι]
 
@@ -65,9 +61,6 @@ theorem deleted_physical_slots_norm_initial (data:RowData)(u:NonzeroElement)
     (ConcretePrimeRowBridge.idealsUpTo ⌈Z^r*bW⌉₊)
     (finite_source_cover W (Z^r) bW (Real.rpow_pos_of_pos hZ _) hW) hn
   rw [amplitude_product_eq_tuples M H _ _ _ _ _ _ hZ,←mul_assoc]
-  change ‖polynomial ((data.character u).excludePrimes (excluded data)
-    (reflectionExcludedPrimes_prime (basePeriod data))) true W (Z^r) σ freq*↑(Z^(-(∑i,ell i)/2))*
-    (∑p∈Fintype.piFinset L,A p*star (idealRowHom u.val (∏i,p i)))‖=_
   rw [he]
   unfold deletedSelectedSource
   congr 1
@@ -85,7 +78,7 @@ theorem marked_fixed_deletion (data:RowData)(rows:Finset NonzeroElement)
         ‖polynomial ((data.character u).excludePrimes (excluded data)
           (reflectionExcludedPrimes_prime (basePeriod data))) true W
           (X/(j.absNorm:ℝ)) σ t*mark u‖^2 := by
-  simpa only [one_mul] using InverseInitialExcludedEnergy.marked_family rows data.character
+  simpa using InverseInitialExcludedEnergy.marked_family rows data.character
     (excluded data) (reflectionExcludedPrimes_prime (basePeriod data)) W X σ t bW hX hW mark
     (fun _=>1) (fun _ _=>zero_le_one)
 

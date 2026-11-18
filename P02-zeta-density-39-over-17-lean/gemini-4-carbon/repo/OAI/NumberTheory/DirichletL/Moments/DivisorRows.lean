@@ -9,9 +9,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentDivisorRows
-open CenteredMomentDivisorAllocation CenteredMomentDivisorExtraction CenteredMomentDivisorTensor
-open CenteredMomentDivisorRectangle CenteredMomentHeckeExpansion CenteredMomentHeckeHeight
-open CenteredMomentHeckeSlots CenteredMomentRectangle HeckeFamily
+open CenteredMomentDivisorAllocation CenteredMomentDivisorExtraction CenteredMomentDivisorTensor CenteredMomentDivisorRectangle CenteredMomentHeckeExpansion CenteredMomentHeckeHeight CenteredMomentHeckeSlots CenteredMomentRectangle HeckeFamily
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
@@ -43,8 +41,7 @@ theorem allocatedRectangle_eq_rows (η : Character) (m A z : O) (t : ℝ)
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
       (selectedDivisor_ne_zero D Finset.univ a (Sum.inr j)))
   unfold allocatedRectangle
-  rw [allocated_rectangle_reindex]
-  rw [actual_slot_rectangle_sum η m A z S
+  rw [allocated_rectangle_reindex, actual_slot_rectangle_sum η m A z S
     (fun i I => if selectedSlot D a i∣I then β i I else 0) t W₁ W₂ b₁ b₂
     _ _ _ _ hW₁ hW₂ (div_pos hX₁ (hN 0)) (div_pos hX₂ (hN 1))
     (div_pos hY₁ (hN 0)) (div_pos hY₂ (hN 1))]

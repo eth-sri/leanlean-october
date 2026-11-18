@@ -65,13 +65,11 @@ theorem shortDetectorBlockCoefficients_pow_lower {N : ℕ} (hN : 0 < N)
   | succ k ih =>
     rw [pow_succ, ArithmeticFunction.mul_apply] at hn
     obtain ⟨p, hp, hmul⟩ := Finset.exists_ne_zero_of_sum_ne_zero hn
-    have ha := ih p.1 (left_ne_zero_of_mul hmul)
-    have hb : shortDetectorBlockCoefficients T N j p.2 ≠ 0 := right_ne_zero_of_mul hmul
     have hmem : p.2 ∈ Finset.Ioc N (2*N) := by
       by_contra h
-      exact hb (by simp [shortDetectorBlockCoefficients_apply, h])
+      exact (right_ne_zero_of_mul hmul) (by simp [shortDetectorBlockCoefficients_apply, h])
     rw [← (Nat.mem_divisorsAntidiagonal.mp hp).1, pow_succ]
-    exact Nat.mul_lt_mul_of_pos_right ha hN |>.trans_le (Nat.mul_le_mul_left _ (Finset.mem_Ioc.mp hmem).1.le)
+    exact Nat.mul_lt_mul_of_pos_right (ih p.1 (left_ne_zero_of_mul hmul)) hN |>.trans_le (Nat.mul_le_mul_left _ (Finset.mem_Ioc.mp hmem).1.le)
 
 /-- Finite support, proved for the actual powers, gives absolute convergence. -/
 theorem shortDetectorBlockCoefficients_pow_LSeriesSummable (T : ℝ) (N j k : ℕ) (s : ℂ) :

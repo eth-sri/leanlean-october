@@ -68,8 +68,7 @@ theorem marked_hasProd (T : Finset α) (m f : α→β→ℂ) (h0 : ∀a,f a 0=1)
     (hm : ∀a∈T,∀b,‖m a b‖≤1) :
     HasProd (fun a=>∑'b,markedLocal T m f a b) (∑'v : α→₀β,markedArray T m f v) := by
   have hf (a : α) : Summable (fun b=>‖f a b‖) := by
-    have hh := hs.comp_injective (Finsupp.single_injective a)
-    simpa only [Function.comp_def,Finsupp.prod_single_index (h0 a)] using hh
+    simpa only [Function.comp_def,Finsupp.prod_single_index (h0 a)] using (hs.comp_injective (Finsupp.single_injective a))
   have ht : Tendsto (fun S : Finset α=>∑'v : α→₀β,
       if v.support⊆S then markedArray T m f v else 0) atTop
       (𝓝 (∑'v : α→₀β,markedArray T m f v)) := by

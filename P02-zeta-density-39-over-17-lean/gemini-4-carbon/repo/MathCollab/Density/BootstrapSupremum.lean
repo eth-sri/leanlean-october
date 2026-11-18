@@ -67,14 +67,11 @@ theorem bootstrapValues_bddAbove (w : ReflectionCutoff) {κ : ℝ} (d : LargeVal
   refine ⟨(d.W.card : ℝ)^2*K^2, ?_⟩
   rintro x ⟨U, hU, L, hL, rfl⟩
   have hN : (0 : ℝ) < d.N := by exact_mod_cast d.N_pos
-  have hLp : 0 < L := hN.trans_le hL.1
-  have hn := d.normalization_lower hU hL.1
   have hN1 : (1 : ℝ) ≤ d.N := by exact_mod_cast d.N_pos
-  have hden : 1 ≤ bootstrapScalar d.T d.N d.V * U.card * (L^2+(d.N : ℝ)*localDiameter U) := hN1.trans hn
   have hc : (U.card : ℝ) ≤ d.W.card := by
     exact_mod_cast Finset.card_le_card (mem_bootstrapFamily.mp hU).1
   calc
-    _ ≤ kernelEnergy w L U := div_le_self (kernelEnergy_nonneg _ _ _) hden
+    _ ≤ kernelEnergy w L U := div_le_self (kernelEnergy_nonneg _ _ _) (hN1.trans (d.normalization_lower hU hL.1))
     _ ≤ (U.card : ℝ)^2*K^2 := by
       calc
         _ ≤ ∑ _t ∈ U, ∑ _u ∈ U, K^2 := by
@@ -82,7 +79,7 @@ theorem bootstrapValues_bddAbove (w : ReflectionCutoff) {κ : ℝ} (d : LargeVal
           intro t ht
           apply Finset.sum_le_sum
           intro u hu
-          exact pow_le_pow_left₀ (norm_nonneg _) (hk L hLp hL.2 (t-u)) 2
+          exact pow_le_pow_left₀ (norm_nonneg _) (hk L (hN.trans_le hL.1) hL.2 (t-u)) 2
         _ = _ := by simp; ring
     _ ≤ _ := mul_le_mul_of_nonneg_right (pow_le_pow_left₀ (Nat.cast_nonneg _) hc 2) (sq_nonneg _)
 

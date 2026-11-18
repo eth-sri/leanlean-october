@@ -70,7 +70,7 @@ theorem canonical_large_original_tail (K : ℕ) (δ a b B ζ saving : ℝ)
     S hS hmax hfirst W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
   refine ⟨C,hC,?_⟩
   intro η Z hZ T hT hdis length hl0 hl W hWS hWB
-  apply hmain η Z hZ (dyadicRows (Z^((13/16:ℝ)+ζ))) _ T hT hdis length hl0 hl W hWS hWB
+  apply hmain η Z hZ (dyadicRows (Z^((13/16)+ζ))) _ T hT hdis length hl0 hl W hWS hWB
   intro n u hu
   have hh := mem_dyadicRows.mp hu
   exact ⟨hh.1,hh.2.1,hh.2.2.le⟩

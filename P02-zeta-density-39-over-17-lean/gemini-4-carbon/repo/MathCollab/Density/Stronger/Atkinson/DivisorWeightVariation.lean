@@ -11,9 +11,7 @@ public import MathCollab.Density.Stronger.Atkinson.GammaQuadratic
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+open Complex Filter MeasureTheory Set Topology MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth MathCollab.Density.Contour
 open scoped Interval ComplexConjugate
 set_option autoImplicit false
 noncomputable section
@@ -23,9 +21,7 @@ namespace MathCollab.Density.Stronger.Atkinson
 theorem hasDerivAt_zetaDivisorWeightKernel_real (q : ℂ) {w : ℂ} (hw : w ≠ 0) (v : ℝ) :
     HasDerivAt (fun x : ℝ => zetaDivisorWeightKernel (q + (x : ℂ)) w)
       (-zetaDivisorWeightNumerator (q + (v : ℂ)) w) v := by
-  have he := (((hasDerivAt_id v).ofReal_comp.const_add q).neg.mul_const w).cexp
-  have h := (he.const_mul (Complex.exp (100 * w ^ 2) * hughesYoungAuxiliaryZero w)).div_const w
-  convert h using 1
+  convert ((((((hasDerivAt_id v).ofReal_comp.const_add q).neg.mul_const w).cexp).const_mul (Complex.exp (100 * w ^ 2) * hughesYoungAuxiliaryZero w)).div_const w) using 1
   · rfl
   · unfold zetaDivisorWeightNumerator
     norm_num
@@ -37,7 +33,7 @@ theorem norm_zetaDivisorWeightKernel_real_sub_le {B : ℝ} (hB : 0 ≤ B)
       zetaDivisorWeightKernel q (1 + (u : ℂ) * I)‖ ≤
       (625 * Real.exp (100 + B ^ 2 / 2)) * Real.exp (-q.re + |h|) *
         zetaDivisorWeightEnvelope u * |h| := by
-  let w : ℂ := 1 + (u : ℂ) * I
+  let w := 1 + (u : ℂ) * I
   have hw : w ≠ 0 := by
     intro he
     have := congrArg Complex.re he
@@ -57,7 +53,7 @@ theorem norm_zetaDivisorWeightKernel_real_sub_le {B : ℝ} (hB : 0 ≤ B)
     (fun v _ => (hasDerivAt_zetaDivisorWeightKernel_real q hw v).hasDerivWithinAt)
     hbound (convex_Icc (-|h|) |h|) (x := 0) (y := h)
     (by constructor <;> linarith [abs_nonneg h]) ⟨neg_abs_le h, le_abs_self h⟩
-  simpa only [ofReal_zero, add_zero, sub_zero, Real.norm_eq_abs] using hm
+  simpa using hm
 
 theorem exists_norm_zetaDivisorWeight_real_sub_le {B : ℝ} (hB : 0 ≤ B) :
     ∃ C : ℝ, 0 < C ∧ ∀ q : ℂ, |q.im| ≤ B → ∀ h : ℝ,
@@ -79,12 +75,11 @@ theorem exists_norm_zetaDivisorWeight_real_sub_le {B : ℝ} (hB : 0 ≤ B) :
     rw [← mul_sub, ← integral_sub (integrable_zetaDivisorWeightKernel_right (q + (h : ℂ)))
       (integrable_zetaDivisorWeightKernel_right q)]
   have hiBound : (∫ u : ℝ, ‖e u‖) ≤ (M * Real.exp (-q.re + |h|) * |h|) * J := by
-    have hmajor := (integrable_zetaDivisorWeightEnvelope.const_mul (M * Real.exp (-q.re + |h|) * |h|))
     have hb (u : ℝ) : ‖e u‖ ≤ (M * Real.exp (-q.re + |h|) * |h|) * zetaDivisorWeightEnvelope u := by
       have hm := norm_zetaDivisorWeightKernel_real_sub_le hB hq h u
       dsimp [e, M]
       nlinarith
-    simpa only [integral_const_mul] using integral_mono hi.norm hmajor hb
+    simpa only [integral_const_mul] using integral_mono hi.norm ((integrable_zetaDivisorWeightEnvelope.const_mul (M * Real.exp (-q.re + |h|) * |h|))) hb
   rw [heq, norm_mul]
   have hp : ‖(1 / (2 * Real.pi) : ℂ)‖ = 1 / (2 * Real.pi) := by
     simp [Real.norm_eq_abs, abs_of_pos Real.pi_pos]

@@ -7,13 +7,10 @@ public import OAI.NumberTheory.DirichletL.Energy.State
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
+open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentRayMaskedFloor
-open HeckeFamily HeckeZeroSupremum QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentFiniteProfileExceptional
-open CenteredMomentNaturalFixedRaySource CenteredMomentSecondHeightFamily
-open CenteredMomentPrimeSlot CenteredMomentInductionEnergy
+open HeckeFamily HeckeZeroSupremum QuadraticInitialBound CenteredMomentEnergyState CenteredMomentFiniteProfileExceptional CenteredMomentNaturalFixedRaySource CenteredMomentSecondHeightFamily CenteredMomentPrimeSlot CenteredMomentInductionEnergy
 local notation "O" => HeckeFamily.O
 
 variable (M : Ideal O) [NeZero M]

@@ -23,12 +23,9 @@ theorem pair_cubic_le_log (P : Finset (ℕ × ℕ)) {N : ℕ}
     exact Finset.mem_Icc.mpr ⟨Nat.gcd_pos_of_pos_left _ (hP p hp).1,
       (Nat.gcd_le_left _ (hP p hp).1).trans (hP p hp).2⟩
   have hReciprocal : (∑ d ∈ gcdValues P, (d : ℝ)⁻¹) ≤ 1 + Real.log N := by
-    calc
-      _ ≤ ∑ d ∈ Finset.Icc 1 N, (d : ℝ)⁻¹ :=
-        Finset.sum_le_sum_of_subset_of_nonneg hSub (fun d hd hnot => by positivity)
-      _ ≤ _ := by
+    exact (Finset.sum_le_sum_of_subset_of_nonneg hSub (fun d hd hnot => by positivity)).trans (by
         simpa only [harmonic_eq_sum_Icc, Rat.cast_sum, Rat.cast_inv, Rat.cast_natCast]
-          using harmonic_le_one_add_log N
+          using harmonic_le_one_add_log N)
   rw [sum_by_gcd P (fun p hp => (hP p hp).1)
     (fun r : ℚ => ‖∑ t ∈ W, phase (r : ℝ) t‖ ^ 3)]
   calc

@@ -12,9 +12,6 @@ namespace SevenEighths.ProbeEuler
 open ActualEisensteinCubic CompletedGauss SmoothMobiusCorrection
 local notation "O" => ActualEisensteinCubic.O
 
-def primeDefectBound (P : PrimeIdeal) : ℝ :=
-  240 * (Ideal.absNorm P.val : ℝ) ^ (-(363/200:ℝ))
-
 def smallPrimeSet (N : ℕ) : Finset (Ideal O) :=
   (Ideal.finite_setOfPred_absNorm_le N).toFinset.filter Prime
 

@@ -7,75 +7,10 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-
-open scoped BigOperators Classical SchwartzMap
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 namespace CanonicalQuadraticSieve
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
+open EisensteinSchwartzPoisson
 
 theorem column_sqrt_ratio_bounds (N n : ℝ) (hN : 0 < N) (hn : N / 2 ≤ n ∧ n ≤ N) :
     1 / 4 ≤ Real.sqrt (n / N) ∧ Real.sqrt (n / N) ≤ 2 := by
@@ -109,8 +44,8 @@ theorem dual_middle_argument (M B b N i j F D₁ d D₂ e q : ℝ)
   have hb0 : 0 < b := by linarith
   have hi0 : 0 < i := by linarith
   have hj0 : 0 < j := by linarith
-  have hd0 : 0 < d := hD₁.trans_le hd.1
-  have he0 : 0 < e := hD₂.trans_le he.1
+  have hd0 := hD₁.trans_le hd.1
+  have he0 := hD₂.trans_le he.1
   have hr : 0 < middleRatio B b D₁ d D₂ e := by
     have hh := middleRatio_bounds B b D₁ d D₂ e hB hb hD₁ hd hD₂ he
     linarith
@@ -181,8 +116,7 @@ theorem principal_middle_prefactor_bound (M B b D₁ d D₂ e : ℝ)
     (hD₁ : 0 < D₁) (hd : D₁ ≤ d) (hD₂ : 0 < D₂) (he : D₂ ≤ e) :
     Real.sqrt (M / b) / (d * e) ≤ 2 * Real.sqrt (M / B) / (D₁ * D₂) := by
   have hb0 : 0 < b := by linarith
-  have hd0 : 0 < d := hD₁.trans_le hd
-  have he0 : 0 < e := hD₂.trans_le he
+  have hd0 := hD₁.trans_le hd
   have hq : M / b ≤ 4 * (M / B) := by
     calc
       _ ≤ (4 * M) / B := (div_le_div_iff₀ hb0 hB).mpr (by nlinarith [mul_nonneg hM.le (show 0 ≤ 4 * b - B by linarith)])
@@ -195,7 +129,7 @@ theorem principal_middle_prefactor_bound (M B b D₁ d D₂ e : ℝ)
     rw [hs4] at hh
     exact hh
   calc
-    _ ≤ (2 * Real.sqrt (M / B)) / (d * e) := div_le_div_of_nonneg_right hs (mul_pos hd0 he0).le
+    _ ≤ (2 * Real.sqrt (M / B)) / (d * e) := div_le_div_of_nonneg_right hs (mul_pos hd0 (hD₂.trans_le he)).le
     _ ≤ _ := div_le_div_of_nonneg_left (by positivity) (mul_pos hD₁ hD₂)
       (mul_le_mul hd he hD₂.le hd0.le)
 
@@ -245,8 +179,6 @@ include hD₁ hD₂ hB hN hM hS hT hr hl hri hrows hh
 
 end CanonicalQuadraticSieve
 
-open Filter
-open scoped BigOperators Classical Topology
 
 namespace CubicEisenstein
 
@@ -317,8 +249,7 @@ lemma actual_quadraticHeight_nonneg (u : Fin 2 → ℂ) (x y v : ℝ) :
   rw [Complex.normSq_eq_norm_sq]
   exact le_add_of_nonneg_left (sq_nonneg _)
 
-open Filter
-open scoped BigOperators Classical Topology Matrix
+open scoped Matrix
 
 abbrev SpatialCoordinates := Fin 3 → ℝ
 
@@ -363,7 +294,7 @@ lemma spatial_axis_hasDerivAt_deriv (s : ℂ) (A B C D : ℝ) (p : SpatialCoordi
       (fun t => hasDerivAt_const t (p 2))
       (fun t => quadraticHeightDenominator_hasDerivAt_x A B C D t (p 1) (p 2))
       (hasDerivAt_const (p 0) 0)
-      (by simpa only [id_eq,mul_one] using ((hasDerivAt_id (p 0)).const_mul A |>.add_const B).const_mul 2)
+      (by simpa using ((hasDerivAt_id (p 0)).const_mul A |>.add_const B).const_mul 2)
       hv hq
     simpa [axisSlice,Function.update,spatialHeightPower,spatialLogD,spatialLogDD,heightLogDx,heightLogDxx] using h
   · have h := hasDerivAt_deriv_logRatioPower s (fun _ => p 2)
@@ -372,7 +303,7 @@ lemma spatial_axis_hasDerivAt_deriv (s : ℂ) (A B C D : ℝ) (p : SpatialCoordi
       (fun t => hasDerivAt_const t (p 2))
       (fun t => quadraticHeightDenominator_hasDerivAt_y A B C D (p 0) t (p 2))
       (hasDerivAt_const (p 1) 0)
-      (by simpa only [id_eq,mul_one] using ((hasDerivAt_id (p 1)).const_mul A |>.add_const C).const_mul 2)
+      (by simpa using ((hasDerivAt_id (p 1)).const_mul A |>.add_const C).const_mul 2)
       hv hq
     simpa [axisSlice,Function.update,spatialHeightPower,spatialLogD,spatialLogDD,heightLogDy,heightLogDyy] using h
   · have h := hasDerivAt_deriv_logRatioPower s (fun t => t)
@@ -381,7 +312,7 @@ lemma spatial_axis_hasDerivAt_deriv (s : ℂ) (A B C D : ℝ) (p : SpatialCoordi
       (fun t => hasDerivAt_id t)
       (fun t => quadraticHeightDenominator_hasDerivAt_v A B C D (p 0) (p 1) t)
       (hasDerivAt_const (p 2) 1)
-      (by simpa only [id_eq,mul_one] using (hasDerivAt_id (p 2)).const_mul (2*A))
+      (by simpa using (hasDerivAt_id (p 2)).const_mul (2*A))
       hv hq
     simpa [axisSlice,Function.update,spatialHeightPower,spatialLogD,spatialLogDD,heightLogDv,heightLogDvv,div_eq_mul_inv] using h
 
@@ -436,8 +367,6 @@ lemma row_axis_hasDerivAt_deriv (s : ℂ) (u : Fin 2 → ℂ) (hu : u≠0)
 
 end CubicEisenstein
 
-open Filter
-open scoped BigOperators Classical Topology
 
 namespace CubicEisenstein
 
@@ -454,10 +383,8 @@ lemma hasDerivAt_deriv_tsum_of_bounds {ι : Type*} (f : ι → ℝ → ℂ)
   have hfirstSum (y : ℝ) (hy : y∈U) :=
     hasDerivAt_tsum_of_isPreconnected hM₁ hU hUc
       (fun i z hz => (hfirst i z hz).hasDerivAt) hbound₁ hx hsum hy
-  have hsumFirst : Summable (fun i => deriv (f i) x) :=
-    Summable.of_norm_bounded hM₁ (fun i => hbound₁ i x hx)
   have hsecondSum := hasDerivAt_tsum_of_isPreconnected hM₂ hU hUc
-    (fun i z hz => (hsecond i z hz).hasDerivAt) hbound₂ hx hsumFirst hx
+    (fun i z hz => (hsecond i z hz).hasDerivAt) hbound₂ hx (Summable.of_norm_bounded hM₁ (fun i => hbound₁ i x hx)) hx
   apply hsecondSum.congr_of_eventuallyEq
   filter_upwards [hU.mem_nhds hx] with y hy
   exact (hfirstSum y hy).deriv
@@ -468,10 +395,7 @@ lemma norm_row_axis_deriv (s : ℂ) (u : Fin 2 → ℂ) (hu : u≠0)
       ‖rowSmoothPower s u p‖ * (‖s‖ * (1/(p 2))) := by
   rw [(row_axis_hasDerivAt s u hu p hv j).deriv,norm_mul,norm_mul,
     Complex.norm_real,Real.norm_eq_abs]
-  calc
-    _ ≤ ‖rowSmoothPower s u p‖*‖s‖*(1/(p 2)) :=
-      mul_le_mul_of_nonneg_left (rowLogD_bound u hu p hv j) (by positivity)
-    _ = _ := by ring
+  exact (mul_le_mul_of_nonneg_left (rowLogD_bound u hu p hv j) (by positivity)).trans_eq (by ring)
 
 lemma norm_row_axis_deriv2 (s : ℂ) (u : Fin 2 → ℂ) (hu : u≠0)
     (p : SpatialCoordinates) (hv : 0<p 2) (j : Fin 3) :
@@ -539,8 +463,6 @@ lemma smoothSummand_axis_update (s : ℂ) (r : CuspCosets) (p : SpatialCoordinat
 
 end CubicEisenstein
 
-open Filter
-open scoped BigOperators Classical Topology
 
 namespace CubicEisenstein
 
@@ -567,8 +489,7 @@ lemma continuous_axis_update (p : SpatialCoordinates) (j : Fin 3) :
 lemma smoothSummand_eq_clamped (s : ℂ) (r : CuspCosets) (p : SpatialCoordinates)
     (deltaLoss : ℝ) (hδ : 0<deltaLoss) (hp : deltaLoss≤p 2) :
     smoothSummand s r p = summand (coordinateSection (clampedCoordinates deltaLoss hδ p)) s r := by
-  have hv : 0<p 2 := lt_of_lt_of_le hδ hp
-  simpa only [coordinateSection,clampedCoordinates,max_eq_right hp] using smoothSummand_eq_actual s r p hv
+  simpa only [coordinateSection,clampedCoordinates,max_eq_right hp] using smoothSummand_eq_actual s r p (lt_of_lt_of_le hδ hp)
 
 theorem axis_summable_derivative_bounds (s : ℂ) (hs : 2<s.re)
     (p : SpatialCoordinates) (hv : 0<p 2) (j : Fin 3) :
@@ -622,14 +543,12 @@ theorem axis_summable_derivative_bounds (s : ℂ) (hs : 2<s.re)
 lemma smooth_axis_differentiable_at (s : ℂ) (r : CuspCosets)
     (p : SpatialCoordinates) (j : Fin 3) (t : ℝ) (hv : 0<(Function.update p j t) 2) :
     DifferentiableAt ℝ (axisSlice (smoothSummand s r) p j) t := by
-  have h := smooth_axis_differentiable s r (Function.update p j t) hv j
-  simpa only [smoothSummand_axis_update,Function.update_self] using h
+  simpa only [smoothSummand_axis_update,Function.update_self] using (smooth_axis_differentiable s r (Function.update p j t) hv j)
 
 lemma smooth_axis_deriv_differentiable_at (s : ℂ) (r : CuspCosets)
     (p : SpatialCoordinates) (j : Fin 3) (t : ℝ) (hv : 0<(Function.update p j t) 2) :
     DifferentiableAt ℝ (deriv (axisSlice (smoothSummand s r) p j)) t := by
-  have h := smooth_axis_deriv_differentiable s r (Function.update p j t) hv j
-  simpa only [smoothSummand_axis_update,Function.update_self] using h
+  simpa only [smoothSummand_axis_update,Function.update_self] using (smooth_axis_deriv_differentiable s r (Function.update p j t) hv j)
 
 end CubicEisenstein
 

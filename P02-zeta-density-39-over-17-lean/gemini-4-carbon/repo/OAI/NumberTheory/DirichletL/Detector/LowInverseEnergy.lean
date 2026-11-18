@@ -27,7 +27,7 @@ lemma fixed_correction_energy {ι κ : Type*} [Fintype ι] (R : Finset κ) (c : 
       calc
         _≤(∑χ : ι,‖c χ‖*‖F χ m‖)^2 := by
           apply (sq_le_sq₀ (norm_nonneg _) (Finset.sum_nonneg (fun _ _=>by positivity))).mpr
-          simpa only [norm_mul] using norm_sum_le Finset.univ (fun χ=>c χ*F χ m)
+          simpa using norm_sum_le Finset.univ (fun χ=>c χ*F χ m)
         _≤_ := Finset.sum_mul_sq_le_sq_mul_sq _ _ _
     _=_ := by rw [←Finset.mul_sum,Finset.sum_comm]
 

@@ -91,7 +91,7 @@ theorem norm_dirichletPrefix_pow_two_sq_le (M : ℕ) (a : ℕ → ℂ) (t : ℝ)
   have hQ : 0 ≤ Q := Finset.sum_nonneg (fun _ _ => sq_nonneg _)
   have hS : ‖S‖^2 ≤ (M:ℝ)*Q := by
     simpa [S,Q] using norm_sum_mul_sq_le (Finset.range M)
-      (fun _ => (1:ℂ)) (fun j => dirichletTime (2^j) a t)
+      (fun _ => 1) (fun j => dirichletTime (2^j) a t)
   rw [dirichletPrefix_pow_two]
   change ‖a 1+S‖^2 ≤ 2*((M:ℝ)+1)*(‖a 1‖^2+Q)
   have hnorm := pow_le_pow_left₀ (norm_nonneg _) (norm_add_le (a 1) S) 2
@@ -113,20 +113,15 @@ theorem integral_norm_sq_dirichletPrefix_le_blocks
     simp
   have hconst : IntervalIntegrable (fun _ : ℝ => ‖a 1‖^2) volume A B :=
     intervalIntegrable_const
-  calc
-    _ ≤ ∫ t : ℝ in A..B,
-        2*((M:ℝ)+1)*(‖a 1‖^2+
-          ∑ j ∈ Finset.range M, ‖dirichletTime (2^j) a t‖^2) :=
-      intervalIntegral.integral_mono_on hAB
+  exact (intervalIntegral.integral_mono_on hAB
         (((continuous_dirichletPrefix (2^M) a).norm.pow 2).intervalIntegrable A B)
         ((hconst.add hsum).const_mul _)
-        (fun t _ => norm_dirichletPrefix_pow_two_sq_le M a t)
-    _ = _ := by
+        (fun t _ => norm_dirichletPrefix_pow_two_sq_le M a t)).trans_eq (by
       rw [intervalIntegral.integral_const_mul,
         intervalIntegral.integral_add hconst hsum,
         intervalIntegral.integral_const,
         intervalIntegral.integral_finsetSum (fun j _ => hi j)]
-      rfl
+      rfl)
 
 theorem integral_norm_sq_dirichletPrefix_le
     (M : ℕ) (a : ℕ → ℂ) {A B L : ℝ} (hAB : A ≤ B)
@@ -135,9 +130,9 @@ theorem integral_norm_sq_dirichletPrefix_le
       (∑ n ∈ Finset.Ioc (2^j) (2*(2^j)), ‖a n‖^2) ≤ L) :
     (∫ t : ℝ in A..B, ‖dirichletPrefix (2^M) a t‖^2) ≤
       2*((M:ℝ)+1)^2*(B-A+2*(5*Real.pi+1)*(2:ℝ)^M)*L := by
-  have hL : 0 ≤ L := (sq_nonneg ‖a 1‖).trans hone
-  have hT : 0 ≤ B-A := sub_nonneg.mpr hAB
-  let E : ℝ := (B-A+2*(5*Real.pi+1)*(2:ℝ)^M)*L
+  have hL := (sq_nonneg ‖a 1‖).trans hone
+  have hT := sub_nonneg.mpr hAB
+  let E := (B-A+2*(5*Real.pi+1)*2^M)*L
   have hfirst : (B-A)*‖a 1‖^2 ≤ E := by
     dsimp [E]
     apply mul_le_mul (le_add_of_nonneg_right (by positivity)) hone (sq_nonneg _)
@@ -145,10 +140,9 @@ theorem integral_norm_sq_dirichletPrefix_le
   have hblock : ∀ j ∈ Finset.range M,
       (∫ t : ℝ in A..B, ‖dirichletTime (2^j) a t‖^2) ≤ E := by
     intro j hj
-    have hjM : j ≤ M := (Finset.mem_range.mp hj).le
-    have hp : ((2^j:ℕ):ℝ) ≤ (2:ℝ)^M := by
+    have hp : ((2^j:ℕ):ℝ) ≤ 2^M := by
       norm_cast
-      exact pow_le_pow_right₀ (by decide : (1:ℕ) ≤ 2) hjM
+      exact pow_le_pow_right₀ (by decide : 1 ≤ 2) ((Finset.mem_range.mp hj).le)
     apply (integral_norm_sq_dirichletTime_interval_le (2^j) a
       (by positivity) hAB).trans
     dsimp [E]
@@ -242,7 +236,6 @@ theorem integrable_gaussian_dirichletPrefix_norm_pow
     {b : ℝ} (hb : 0 < b) (N : ℕ) (a : ℕ → ℂ) (t : ℝ) (k : ℕ) :
     Integrable (fun u : ℝ => Real.exp (-b*u^2)*‖dirichletPrefix N a (u-t)‖^k) := by
   let C : ℝ := ∑ n ∈ Finset.Ioc 0 N, ‖a n‖
-  have hC : 0 ≤ C := Finset.sum_nonneg (fun _ _ => norm_nonneg _)
   have hcont : Continuous (fun u : ℝ =>
       Real.exp (-b*u^2)*‖dirichletPrefix N a (u-t)‖^k) :=
     (by fun_prop : Continuous (fun u : ℝ => Real.exp (-b*u^2))).mul

@@ -12,9 +12,8 @@ public import MathCollab.Density.Stronger.Peaks.Inputs
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology Finset
+open Complex Filter MeasureTheory Set Topology Finset MathCollab.Density MathCollab.Density.Stronger
 open scoped Interval
-open MathCollab.Density MathCollab.Density.Stronger
 open TaoTrudgianYang2025 (eventually_const_log_pow_le_rpow
   eventually_const_height_log_pow_mul_rpow_le_rpow
   eventually_pointValue_sixth_power_source_range)
@@ -46,8 +45,7 @@ theorem mem_pointClusterBins_iff {H G : ℝ} {W : Finset ℝ} {n : ℕ} :
     Finset.mem_image, Finset.Nonempty, Finset.mem_filter]
 
 theorem pointCluster_card_partition (H G : ℝ) (W : Finset ℝ) :
-    W.card = ∑ n ∈ pointClusterBins H G W, (pointCluster H G W n).card := by
-  exact Finset.card_eq_sum_card_image (atkinsonHeightBin H (G/2)) W
+    W.card = ∑ n ∈ pointClusterBins H G W, (pointCluster H G W n).card := Finset.card_eq_sum_card_image (atkinsonHeightBin H (G/2)) W
 
 theorem pointCluster_interval {H G : ℝ} {W : Finset ℝ} (n : ℕ)
     (hG : 0 < G) (hlow : ∀ t ∈ W, H ≤ t) :
@@ -70,21 +68,17 @@ theorem pointClusterCenter_range {H G : ℝ} {W : Finset ℝ} {n : ℕ}
     (hn : n ∈ pointClusterBins H G W) :
     H ≤ pointClusterCenter H G n ∧ pointClusterCenter H G n ≤ 2*H := by
   obtain ⟨t,ht⟩ := mem_pointClusterBins_iff.mp hn
-  have htW := pointCluster_subset H G W n ht
-  have hi := pointCluster_interval n hG (fun t ht => (hrange t ht).1) t ht
   constructor
   · unfold pointClusterCenter
     exact le_add_of_nonneg_right (by positivity)
-  · exact hi.1.trans (hrange t htW).2
+  · exact (pointCluster_interval n hG (fun t ht => (hrange t ht).1) t ht).1.trans (hrange t (pointCluster_subset H G W n ht)).2
 
 theorem pointClusterCenter_injective {H G : ℝ} (hG : 0 < G) :
     Function.Injective (pointClusterCenter H G) := by
   intro k l h
   have hm : (k:ℝ)*(G/2) = (l:ℝ)*(G/2) := by
     simpa only [pointClusterCenter, add_right_inj] using h
-  have he : (k:ℝ) = (l:ℝ) :=
-    mul_right_cancel₀ (ne_of_gt (half_pos hG)) hm
-  exact_mod_cast he
+  exact_mod_cast (mul_right_cancel₀ (ne_of_gt (half_pos hG)) hm)
 
 theorem pointClusterCenters_card {H G : ℝ} (hG : 0 < G) (U : Finset ℕ) :
     (pointClusterCenters H G U).card = U.card :=
@@ -95,7 +89,6 @@ theorem pointClusterCenter_gap_of_same_parity {H G : ℝ} {k l : ℕ}
     G ≤ pointClusterCenter H G l-pointClusterCenter H G k := by
   have hk : k+2 ≤ l := by omega
   have hr : (k:ℝ)+2 ≤ (l:ℝ) := by exact_mod_cast hk
-  have hm := mul_le_mul_of_nonneg_right hr hG.le
   unfold pointClusterCenter
   nlinarith
 
@@ -106,7 +99,7 @@ theorem pointClusterCenters_separated {H G : ℝ} (hG : 0 < G)
   obtain ⟨k,hk,rfl⟩ := Finset.mem_image.mp hx
   obtain ⟨l,hl,rfl⟩ := Finset.mem_image.mp hy
   have hne : k ≠ l := by intro h; subst l; exact hxy rfl
-  have he : k%2 = l%2 := (hmod k hk).trans (hmod l hl).symm
+  have he := (hmod k hk).trans (hmod l hl).symm
   rw [Real.dist_eq]
   rcases lt_or_gt_of_ne hne with hkl | hlk
   · rw [abs_sub_comm]

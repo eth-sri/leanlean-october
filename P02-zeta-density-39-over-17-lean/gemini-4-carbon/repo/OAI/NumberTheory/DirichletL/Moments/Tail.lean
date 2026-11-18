@@ -9,9 +9,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 local notation "O" => ActualEisensteinCubic.O
 namespace SevenEighths.CenteredMomentTail
-open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson
-open CenteredMomentCommonSupport CenteredMomentCorrelation CenteredMomentFourier
-open CenteredMomentSupportedCorrelation
+open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson CenteredMomentCommonSupport CenteredMomentCorrelation CenteredMomentFourier CenteredMomentSupportedCorrelation
 
 theorem fullModulusCorrelation_norm_le (u v : O) (_hu : u ≠ 0) (_hv : v ≠ 0)
     [Fintype (Residue u)] [Fintype (Residue v)]
@@ -23,7 +21,7 @@ theorem fullModulusCorrelation_norm_le (u v : O) (_hu : u ≠ 0) (_hv : v ≠ 0)
     _ ≤ ∑ x : Residue u, ‖∑ y : Residue v,
       if scaledResidue u v (u * v) rfl x - scaledResidue v u (u * v) (mul_comm u v) y =
         Ideal.Quotient.mk _ j then χu x * star (χv y) else 0‖ := norm_sum_le _ _
-    _ ≤ ∑ _x : Residue u, ∑ _y : Residue v, (1 : ℝ) := by
+    _ ≤ ∑ _x : Residue u, ∑ _y : Residue v, 1 := by
       apply Finset.sum_le_sum
       intro x hx
       apply (norm_sum_le _ _).trans
@@ -74,9 +72,7 @@ theorem weighted_set_lattice_tail (A : ℕ) :
     exact mul_le_mul_of_nonneg_right
       ((mul_le_of_le_one_left (norm_nonneg _) (hδ h.val h.property)).trans (hc h.val h.property))
       (norm_nonneg _)
-  have hsum : Summable (fun h : D =>
-      ‖δ h.val * c h.val * paperRadialFourier W (K * ‖eisEmbedding h.val‖ ^ 2)‖) :=
-    Summable.of_nonneg_of_le (fun _ => norm_nonneg _) hp ((hs.subtype D).mul_left B)
+  have hsum := Summable.of_nonneg_of_le (fun _ => norm_nonneg _) hp ((hs.subtype D).mul_left B)
   calc
     _ ≤ ∑' h : D, ‖δ h.val * c h.val * paperRadialFourier W (K * ‖eisEmbedding h.val‖ ^ 2)‖ :=
       norm_tsum_le_tsum_norm hsum
@@ -103,8 +99,7 @@ theorem uniform_sector_lattice_tail (A : ℕ) :
   obtain ⟨s, C, hC, ht⟩ := weighted_set_lattice_tail A
   refine ⟨s, C, hC, ?_⟩
   intro W D K₀ T B hK₀ hT hB hD K hK c δ hc hδ
-  have hD' (h : O) (hh : h ∈ D) : T ≤ K * ‖eisEmbedding h‖ ^ 2 :=
-    (hD h hh).trans (mul_le_mul_of_nonneg_right hK (sq_nonneg _))
+  have hD' (h : O) (hh : h ∈ D) := (hD h hh).trans (mul_le_mul_of_nonneg_right hK (sq_nonneg _))
   apply (ht W D K T B (hK₀.trans_le hK) hT hB hD' c δ hc hδ).trans
   apply div_le_div_of_nonneg_left (by positivity)
     (by have : 0 < min 1 K₀ := lt_min zero_lt_one hK₀; positivity)

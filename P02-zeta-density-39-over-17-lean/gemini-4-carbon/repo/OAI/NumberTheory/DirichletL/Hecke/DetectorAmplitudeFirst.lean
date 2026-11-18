@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.HeckeDetectorAmplitudeFirst
-open HeckeFamily HeckeDetectorSupportedWitness HeckeDetectorFiberPartition
-open HeckeDetectorPhysicalSelection HeckeDetectorAdaptiveCutoff
+open HeckeFamily HeckeDetectorSupportedWitness HeckeDetectorFiberPartition HeckeDetectorPhysicalSelection HeckeDetectorAdaptiveCutoff
 
 def amplitudeRows {Row Slot : Type*} (rows : Finset Row) (slots : Finset Slot)
     (U cap mesh : ℝ) (hm : 0<mesh) (widths : Slot→ℝ) (physical : Row→Slot→ℂ)
@@ -30,15 +29,13 @@ theorem rowMean_eq {Row Slot : Type*} (rows : Finset Row) (slots : Finset Slot)
     (bin : BinLabel slots cap mesh) (u : Row)
     (hu : u∈amplitudeRows rows slots U cap mesh hm widths physical bin) :
     rowMean slots U cap mesh widths physical u=classMean slots cap mesh widths bin := by
-  have he := (Finset.mem_filter.mp hu).2
   unfold rowMean classMean weightedMean
   congr 1
   apply Finset.sum_congr rfl
   intro s hs
-  have hv := congrArg (fun f : BinLabel slots cap mesh => (f ⟨s,hs⟩).val) he
   have hval : HeckePrimeAmplitudeBins.amplitude (U^(widths s)) cap mesh (physical u s)=
       binValue slots cap mesh bin s := by
-    simpa only [amplitudeLabel,binValue,dite_eq_left hs] using hv
+    simpa only [amplitudeLabel,binValue,dite_eq_left hs] using (congrArg (fun f : BinLabel slots cap mesh => (f ⟨s,hs⟩).val) ((Finset.mem_filter.mp hu).2))
   exact congrArg (fun x => widths s*x) hval
 
 theorem classMean_bounds {Row Slot : Type*} (rows : Finset Row) (slots : Finset Slot)

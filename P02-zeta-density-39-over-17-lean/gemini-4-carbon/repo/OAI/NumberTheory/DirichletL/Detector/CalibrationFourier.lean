@@ -35,13 +35,12 @@ theorem calibrationFromPrimes_gauss {ι : Type*} [Fintype ι]
       ((calibrationFromPrimes P hcop).residueMonoid h)⁻¹ *
         calibrationGauss (calibrationFromPrimes P hcop) 1 := by
   let b := finitePrimeModulus P
-  have hb : b ≠ 0 := finitePrimeModulus_ne_zero P
+  have hb := finitePrimeModulus_ne_zero P
   let : Finite (O ⧸ Ideal.span {b}) := ConcreteTraceCRT.finite_quotient_span hb
   let : Fintype (O ⧸ Ideal.span {b}) := Fintype.ofFinite _
   let (i : ι) : Field (O ⧸ P i) := Ideal.Quotient.field _
   let (i : ι) : Fintype (O ⧸ P i) := Fintype.ofFinite _
-  let e : (O ⧸ Ideal.span {b}) ≃+* ∀ i, O ⧸ P i :=
-    (Ideal.quotEquivOfEq (span_finitePrimeModulus P)).trans
+  let e := (Ideal.quotEquivOfEq (span_finitePrimeModulus P)).trans
       (IdealGaussCRT.quotientProdEquivPi P hcop)
   let ψ := quotientTrace b hb
   have ht := IdealGaussCRT.gauss_transform_finite_crt_scalar (fun i => O ⧸ P i) e
@@ -77,11 +76,10 @@ theorem calibrationForSet_residue_sixth (S : Finset (Ideal O)) (hS : ∀ P ∈ S
     (a : O) (ha : IsCoprime (calibrationForSet S hS).generator a) :
     (calibrationForSet S hS).residueMonoid a ^ 6 = 1 := by
   let C := calibrationForSet S hS
-  have hu := (isUnit_quotient_span_iff C.generator a).mpr ha
   have h6 := congrArg (fun χ : MulChar (O ⧸ Ideal.span {C.generator}) ℂ =>
     χ (Ideal.Quotient.mk _ a)) (calibrationForSet_pow_six S hS)
   change C.residue (Ideal.Quotient.mk _ a) ^ 6 = 1
-  simpa only [MulChar.pow_apply' _ (by decide : (6 : ℕ) ≠ 0), MulChar.one_apply hu] using h6
+  simpa only [MulChar.pow_apply' _ (by decide : (6 : ℕ) ≠ 0), MulChar.one_apply ((isUnit_quotient_span_iff C.generator a).mpr ha)] using h6
 
 end SevenEighths.ProbePhysical
 end

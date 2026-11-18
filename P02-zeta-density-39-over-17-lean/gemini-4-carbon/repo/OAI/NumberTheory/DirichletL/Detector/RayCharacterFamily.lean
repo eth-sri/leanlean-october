@@ -14,8 +14,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators ComplexConjugate
 namespace SevenEighths.ProbeRayCharacterFamily
-open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily ProbePhysical
-open CanonicalQuadraticSieve CanonicalRowCompletion UniqueFactorizationMonoid
+open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily ProbePhysical CanonicalQuadraticSieve CanonicalRowCompletion UniqueFactorizationMonoid
 local notation "O" => HeckeFamily.O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 variable (M : Ideal O) [NeZero M]
@@ -46,7 +45,7 @@ theorem large_supported_twists_nonprincipal (u : FreeRow)
   have hspan : (Ideal.span {r}:Ideal O)=Ideal.span {u.val} :=
     Ideal.span_singleton_mul_left_unit v.isUnit u.val
   have hr : Supported (Ideal.span {r}) := hspan.symm ▸ hs
-  have hx : (1:O)^4*u.val=(v⁻¹:Oˣ).val*λ₀^0*(2:O)^0*r := by simp [r]
+  have hx : 1^4*u.val=(v⁻¹:Oˣ).val*λ₀^0*2^0*r := by simp [r]
   let η := (fixedSourcePrincipal ∅ (by simp)).product
     (HeckeRayQuotient.character M H hH θ).inverse
   let χ := (HeckePrimeRay.twistedFamily M H hH (rawRow u).inverse θ).inverse
@@ -54,7 +53,6 @@ theorem large_supported_twists_nonprincipal (u : FreeRow)
     HeckePrimeNonprincipal.inverse_twist_elementCoeff _ _ _ _ _ _ (rawRow_elementCoeff u)
   intro hp
   have hprincipal : χ.residue=1 := by
-    change (HeckePrimeRay.twistedFamily M H hH (rawRow u).inverse θ).residue⁻¹=1
     exact congrArg Inv.inv hp |>.trans inv_one
   have hfixed := HeckeRowNonprincipal.principal_row_fixed_support η χ rowMaskElement 1 u.val
     rowMaskElement_ne_zero (dvd_mul_left _ _) (dvd_mul_right _ _) v⁻¹ 0 0 r hr hv hx hχ hprincipal
@@ -83,7 +81,6 @@ theorem canonical_amplitude_raw (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
   congr 1
   apply Finset.sum_congr rfl
   intro P hP
-  have hp := (Finset.mem_filter.mp hP).2.1
   have he : -HeckeDyadic.shift (1-z.re) z.im=z-1 := by
     apply Complex.ext <;> simp [HeckeDyadic.shift]
   simp only [HeckePrimeAnnular.annularWeight,he]
@@ -94,7 +91,7 @@ theorem canonical_amplitude_raw (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
     have hh := (lt_div_iff₀ hD).mp (hW hw).1
     have := hsmall P hPS
     linarith
-  rw [idealCoeff_inverse_conj,rawRow_prime_outside S hS hbad u ⟨P,hp⟩ hPS]
+  rw [idealCoeff_inverse_conj,rawRow_prime_outside S hS hbad u ⟨P,((Finset.mem_filter.mp hP).2.1)⟩ hPS]
   exact mul_assoc _ _ _
 
 omit H hH in
@@ -113,7 +110,7 @@ theorem source_maximum_dominates {ι : Type*} [Fintype ι]
     (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P) (η : Character) (u : FreeRow)
     (ψ : ι→Character) (T : ℝ) :
     detectorMaximum ψ T≤detectorMaximum (sourceDetectorFamily S hS η u ψ) T := by
-  rcases lt_or_ge (51/100:ℝ) (detectorMaximum ψ T) with hm|hm
+  rcases lt_or_ge (51/100) (detectorMaximum ψ T) with hm|hm
   · obtain ⟨j,s,hz,hpole,ht,heq⟩ := detectorMaximum_attained ψ T hm
     rw [←heq]
     exact detector_zero_re_le_maximum (sourceDetectorFamily S hS η u ψ) T (Sum.inr j)

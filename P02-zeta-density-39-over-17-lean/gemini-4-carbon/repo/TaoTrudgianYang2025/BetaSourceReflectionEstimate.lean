@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaSourceMainBound
 
 @[expose] public section
@@ -38,10 +48,9 @@ theorem sourceExponentialSum_reflection_estimate
   obtain ⟨δ,hd,hsmall,hpos,P,hP,C,hC,hmain⟩ :=
     sourceStationaryMain_physical_bound hβ hσ hε
   obtain ⟨D,hD,herror⟩ := modelPhase_source_sharp_comparison hσ hε
-  let Q := max P bufferedLocalStationaryOrder
   let K := max C D
   have hK : 1 ≤ K := hC.trans (le_max_left _ _)
-  refine ⟨δ,hd,hsmall,hpos,Q,hP.trans (le_max_left _ _),K,hK,?_⟩
+  refine ⟨δ,hd,hsmall,hpos,(max P bufferedLocalStationaryOrder),hP.trans (le_max_left _ _),K,hK,?_⟩
   intro T N F a b hTK hN ha hb hlow hhigh hF
   have hT₁ : 1 ≤ T := hK.trans hTK
   have hT : 0 < T := zero_lt_one.trans_le hT₁

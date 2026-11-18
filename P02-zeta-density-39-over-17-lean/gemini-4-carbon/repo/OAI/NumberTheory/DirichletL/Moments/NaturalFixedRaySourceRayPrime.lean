@@ -6,13 +6,11 @@ public import OAI.NumberTheory.DirichletL.Moments.NaturalFixedRaySourceNaturalPr
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators ContDiff Topology
 open Filter
+open scoped Classical BigOperators ContDiff Topology
 
 namespace SevenEighths.CenteredMomentNaturalFixedRaySource
-open HeckeFamily HeckeZeroSupremum CenteredMomentNaturalRowSource
-open CenteredExceptionalProfile CenteredMomentSecondHeightFamily
-open CenteredMomentWholeSlotDeletion CenteredMomentPrimeSlot
+open HeckeFamily HeckeZeroSupremum CenteredMomentNaturalRowSource CenteredExceptionalProfile CenteredMomentSecondHeightFamily CenteredMomentWholeSlotDeletion CenteredMomentPrimeSlot
 local notation "O" => HeckeFamily.O
 variable (M : Ideal O) [NeZero M]
 local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)

@@ -7,71 +7,8 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 
 namespace CanonicalQuadraticSieve
 
@@ -90,7 +27,6 @@ theorem hasSieveExponent_one_of_approximation
   have hN0 : 0<N := by linarith
   have hMN : 1≤M*N := by nlinarith
   have hNmn : N≤M*N := by nlinarith
-  have hQ : 1≤(M*N)^(ε/2) := Real.one_le_rpow hMN he.le
   have hnα : N^α ≤ (M*N)^(ε/2)*N := by
     calc
       _ ≤ N^(1+ε/2) := Real.rpow_le_rpow_of_exponent_le hN hα
@@ -98,7 +34,7 @@ theorem hasSieveExponent_one_of_approximation
       _ ≤ N*(M*N)^(ε/2) := by gcongr
       _ = _ := mul_comm _ _
   have hsum : M+N^α ≤ (M*N)^(ε/2)*(M+N) := by
-    nlinarith [mul_le_mul_of_nonneg_right hQ hM0]
+    nlinarith [mul_le_mul_of_nonneg_right (Real.one_le_rpow hMN he.le) hM0]
   calc
     _ ≤ C*(M*N)^(ε/2)*(M+N^α) := hbound M N hM hN
     _ ≤ C*(M*N)^(ε/2)*((M*N)^(ε/2)*(M+N)) := by gcongr
@@ -151,7 +87,7 @@ theorem hasSieveExponent_one_of_improvement
   linarith
 
 section
-open ActualEisensteinCubic ConcretePrimeRowBridge IdealMobiusDivisorSum EisensteinSchwartzPoisson
+open ConcretePrimeRowBridge IdealMobiusDivisorSum EisensteinSchwartzPoisson
 
 def divisorTwist {n : Type} (cols : n → Ideal O) (a : n → ℂ) (q : Ideal O) : n → ℂ :=
   fun j => a j*quadraticRow (cols j) (idealGenerator q)
@@ -241,7 +177,6 @@ theorem maskedPoissonDifference_norm_le {n : Type} [Fintype n] [DecidableEq n]
       norm_num
       gcongr
 
-open ActualEisensteinCubic ConcretePrimeRowBridge IdealMobiusDivisorSum EisensteinSchwartzPoisson
 open IdealCoprimeSieveOperator
 
 theorem divisorTwist_norm_le {n : Type} (cols : n → Ideal O) (a : n → ℂ)
@@ -306,16 +241,11 @@ theorem centeredRetainedDual_sum_bound (l : ℕ) :
     exact retainedDualMajorant_coefficient_scale_le s C hC.le l hexp deltaLoss hδ ε hε
       (2*K) N M (Ideal.absNorm q:ℝ) T a (divisorTwist cols a q) (quadraticTransformedSquareProfile W)
       (by linarith) (by linarith) hM.le hq1 (by linarith) (divisorTwist_norm_le cols a q)
-  calc
-    _ ≤ ∑_q∈idealDivisors G, (columnDyadicLength K+1:ℕ)*
-        retainedDualMajorant s C l hexp deltaLoss hδ ε hε (2*K) N M 1 T a (quadraticTransformedSquareProfile W) :=
-      Finset.sum_le_sum hqbound
-    _ = _ := by simp only [Finset.sum_const,nsmul_eq_mul]; ring
+  exact (Finset.sum_le_sum hqbound).trans_eq (by simp only [Finset.sum_const,nsmul_eq_mul]; ring)
 
 end
 
-open ActualEisensteinCubic ConcretePrimeRowBridge IdealMobiusDivisorSum EisensteinSchwartzPoisson
-open IdealCoprimeSieveOperator
+open ConcretePrimeRowBridge IdealMobiusDivisorSum EisensteinSchwartzPoisson IdealCoprimeSieveOperator
 
 def poissonComparisonMajorant {n : Type} [Fintype n]
     (sD sS sT : Finset (ℕ×ℕ)) (CD CS CT CP : ℝ) (l A : ℕ)
@@ -357,7 +287,6 @@ theorem HasSieveExponent.masked_poisson_complete {α : ℝ} (hexp : HasSieveExpo
   have hcols0 : ∀j, Admissible (cols j) := fun j => (hcols j).1
   have hcolsu : ∀j, Admissible (cols j) ∧ (Ideal.absNorm (cols j):ℝ)≤N :=
     fun j => ⟨(hcols j).1,(hcols j).2.2⟩
-  have hd := hdual hexp hα deltaLoss hδ ε hε G hG.ne_zero K N M T hK hN hM0 hT cols hc hcols hray a W
   have hs := hsource hexp hα deltaLoss hδ ε hε G hG K N M T hK hN hM0 hT
     (coprimeSquarefreeRange G K)
     (fun I hI => mem_idealRange.mp (coprimeSquarefreeRange_subset_idealRange G hbad K hI))
@@ -374,20 +303,15 @@ theorem HasSieveExponent.masked_poisson_complete {α : ℝ} (hexp : HasSieveExpo
         (Real.sqrt (M/K)*N+Real.sqrt M*K^(α-1/2))*∑j, ‖a j‖^2 := by
     apply hp.trans
     gcongr
-  have hmain := maskedPoissonDifference_norm_le G hG.ne_zero W cols a M K hM0 hcols0 hray hGc hbad
-  apply hmain.trans
+  apply (maskedPoissonDifference_norm_le G hG.ne_zero W cols a M K hM0 hcols0 hray hGc hbad).trans
   change _ ≤ _+_+_+_
-  have hs' : ‖centeredMaskedSource G W cols a M K‖ ≤
-      (columnDyadicLength K+1:ℕ)*sourcePrincipalMajorant sS CS l hexp deltaLoss hδ ε hε G (2*K) N M T a
-        (quadraticSquareProfile W) := hs
-  exact add_le_add (add_le_add (add_le_add hd (mul_le_mul_of_nonneg_left ht (by norm_num))) hs')
+  exact add_le_add (add_le_add (add_le_add (hdual hexp hα deltaLoss hδ ε hε G hG.ne_zero K N M T hK hN hM0 hT cols hc hcols hray a W) (mul_le_mul_of_nonneg_left ht (by norm_num))) (hs))
     (mul_le_mul_of_nonneg_left hp' (norm_nonneg _))
 
 end
 section
 
-open ActualEisensteinCubic ConcretePrimeRowBridge IdealMobiusDivisorSum
-open DivisorBlockCauchy
+open ConcretePrimeRowBridge IdealMobiusDivisorSum DivisorBlockCauchy
 
 theorem gcdRaySupport_energy_eq {n : Type} [Fintype n]
     (cols : n → Ideal O) (a : n → ℂ) (D : Ideal O) (c : EisensteinEPrimaryPhase.Coord) :
@@ -461,15 +385,14 @@ theorem gcdRaySupport_weighted_sum_bound {n : Type} [Fintype n]
 
 end
 
-open ActualEisensteinCubic IdealCoprimeSieveOperator DivisorBlockCauchy
+open IdealCoprimeSieveOperator DivisorBlockCauchy
 
 theorem divisorEnergyFactor_diagonal {n : Type*} [Fintype n]
     (ε : ℝ) (hε : 0<ε) (N : ℝ) (a : n → ℂ) :
     divisorEnergyFactor ε hε N a a =
       (256*(supportConstant ε hε*divisorConstant ε hε)*(N^ε)^2)*∑j, ‖a j‖^2 := by
   unfold divisorEnergyFactor
-  have hs : 0≤∑j, ‖a j‖^2 := Finset.sum_nonneg fun _ _ => sq_nonneg _
-  rw [mul_assoc _ (Real.sqrt _) (Real.sqrt _),Real.mul_self_sqrt hs]
+  rw [mul_assoc _ (Real.sqrt _) (Real.sqrt _),Real.mul_self_sqrt (Finset.sum_nonneg fun _ _ => sq_nonneg _)]
 
 theorem poissonComparisonMajorant_energy_factor {n : Type} [Fintype n]
     (sD sS sT : Finset (ℕ×ℕ)) (CD CS CT CP : ℝ) (l A : ℕ)
@@ -485,9 +408,7 @@ theorem poissonComparisonMajorant_energy_factor {n : Type} [Fintype n]
 
 end CanonicalQuadraticSieve
 
-open scoped BigOperators Classical
 namespace SecondPassArithmetic
-open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProductNorm b0Label jLabel)
 open ConcreteTraceCRT (eisEmbedding)
 

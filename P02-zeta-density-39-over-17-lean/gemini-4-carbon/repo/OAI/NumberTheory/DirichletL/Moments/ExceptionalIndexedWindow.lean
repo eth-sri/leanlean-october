@@ -6,13 +6,11 @@ public import OAI.NumberTheory.DirichletL.Moments.ExceptionalWindowPair
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
 open MeasureTheory
+open scoped Classical BigOperators SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentExceptionalIndexedWindow
-open CenteredMomentExceptionalWindowPair CenteredMomentPlainWindowEnergy
-open CenteredMomentRowNorm CenteredMomentSmooth CenteredMomentHeckeColumnWindow
-open CenteredMomentHeckeWindowEnergy HeckeFamily FourierBridge
+open CenteredMomentExceptionalWindowPair CenteredMomentPlainWindowEnergy CenteredMomentRowNorm CenteredMomentSmooth CenteredMomentHeckeColumnWindow CenteredMomentHeckeWindowEnergy HeckeFamily FourierBridge
 local notation "O" => ActualEisensteinCubic.O
 
 theorem indexed_plain_window_pair {κ α β:Type*}

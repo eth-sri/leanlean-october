@@ -29,9 +29,7 @@ theorem common_pair_count (a ε : ℝ) (ha : 0 < a) (hε : 0 < ε) :
   have hfiber (R : Ideal O) (hRmem : R ∈ S.image rad) :
       ((S.filter (fun v => rad v=R)).card:ℝ) ≤ C*X₁^a*X₂^a*Y^ε := by
     obtain ⟨v,hv,hvR⟩ := Finset.mem_image.mp hRmem
-    have hR0 : R ≠ 0 := hvR ▸ commonRadical_ne_zero v.1 v.2
-    have hRN : (Ideal.absNorm R:ℝ) ≤ Y := hvR ▸ hR v hv
-    have hb := hcount R hR0 (S.filter (fun v => rad v=R))
+    have hb := hcount R (hvR ▸ commonRadical_ne_zero v.1 v.2) (S.filter (fun v => rad v=R))
       (fun v hv => hS v (Finset.mem_filter.mp hv).1)
       (by
         intro w hw
@@ -42,7 +40,7 @@ theorem common_pair_count (a ε : ℝ) (ha : 0 < a) (hε : 0 < ε) :
         exact ⟨Finset.Subset.refl _,Finset.Subset.refl _⟩)
       X₁ X₂ hX₁ hX₂ (fun w hw => hN w (Finset.mem_filter.mp hw).1)
     exact hb.trans (mul_le_mul_of_nonneg_left
-      (Real.rpow_le_rpow (Nat.cast_nonneg _) hRN hε.le) (by positivity))
+      (Real.rpow_le_rpow (Nat.cast_nonneg _) (hvR ▸ hR v hv) hε.le) (by positivity))
   have hrad := old_mask_radical_count S Prod.fst Prod.snd s hs hs0
     (fun v hv => (hS v hv).1) (fun v hv => (hS v hv).2)
     (fun v hv => (hdiv v hv).1) (fun v hv => (hdiv v hv).2) Y hY.le hR
@@ -91,15 +89,13 @@ theorem partitioned_common_pair_count (a ε : ℝ) (ha : 0 < a) (hε : 0 < ε) :
       intro w hw z hz he
       exact Prod.ext ((Finset.mem_filter.mp hw).2.trans (Finset.mem_filter.mp hz).2.symm) he
     have hc : ((S.filter (fun w => w.1=v)).card:ℝ) ≤
-        (2:ℝ)^(primeSupport (commonRadical v.1 v.2)).card := by
+        2^(primeSupport (commonRadical v.1 v.2)).card := by
       have hb := Finset.card_le_card hin
       rw [Finset.card_image_of_injOn hinj,Finset.card_powerset] at hb
       exact_mod_cast hb
     obtain ⟨w,hw,hwe⟩ := Finset.mem_image.mp hv
-    have hb := hpow (commonRadical v.1 v.2) (commonRadical_ne_zero _ _)
-    have hn : (Ideal.absNorm (commonRadical v.1 v.2):ℝ) ≤ Y := hwe ▸ hR w hw
-    exact hc.trans (hb.trans (mul_le_mul_of_nonneg_left
-      (Real.rpow_le_rpow (Nat.cast_nonneg _) hn (by positivity)) hD.le))
+    exact hc.trans ((hpow (commonRadical v.1 v.2) (commonRadical_ne_zero _ _)).trans (mul_le_mul_of_nonneg_left
+      (Real.rpow_le_rpow (Nat.cast_nonneg _) (hwe ▸ hR w hw) (by positivity)) hD.le))
   have he := Finset.card_eq_sum_card_fiberwise
     (fun v (hv : v ∈ S) => Finset.mem_image_of_mem Prod.fst hv)
   calc

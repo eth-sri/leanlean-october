@@ -11,10 +11,7 @@ noncomputable section
 
 open scoped Classical BigOperators Topology SchwartzMap ContDiff
 namespace SevenEighths.ProbeDetectorInverseMarkedField
-open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseMoment
-open HeckeDetectorRawFiber HeckeDetectorBatch HeckeDetectorCoefficientTransfer
-open ProbeHighRowFamily ProbeFinalAssembly Filter
-open DetectorDictionaryInverseMarkedReference DetectorDictionaryInverseClippedUniform
+open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseMoment HeckeDetectorRawFiber HeckeDetectorBatch HeckeDetectorCoefficientTransfer ProbeHighRowFamily ProbeFinalAssembly Filter DetectorDictionaryInverseMarkedReference DetectorDictionaryInverseClippedUniform
 local notation "O"=>HeckeFamily.O
 
 variable (M:Ideal O)[NeZero M]
@@ -51,7 +48,7 @@ theorem source_batch_inverse_marked {Δ:ℝ}{D:Parameters.HighData Δ}
   intro η
   let data:=sourceMomentData M H hH S.S S.exclusions.prime η
   choose C U₀ hC hU₀ hb using fun label=>hreference (data label)
-  let Csum:ℝ:=1+∑label,C label
+  let Csum :=1+∑label,C label
   have hCsum:0<Csum:=by
     have hh:=Finset.sum_nonneg (fun label (_:label∈Finset.univ)=>(hC label).le)
     dsimp [Csum];linarith
@@ -70,8 +67,8 @@ theorem source_batch_inverse_marked {Δ:ℝ}{D:Parameters.HighData Δ}
   intro d hd a ε tstar T allowance i B hdata hprofile0 hupper hwidths hz bin label left right hne
     height hheight F selected hselected hfirst hsecond n hn s hs t ht
   have hd0:0<d:=by linarith
-  have hUone:1<Z^d:=Real.one_lt_rpow hZ hd0
-  have hUp:0<Z^d:=zero_lt_one.trans hUone
+  have hUone :=Real.one_lt_rpow hZ hd0
+  have hUp :=zero_lt_one.trans hUone
   have hprofile:B.profile=(fun _=>(S.W:ℝ→ℂ)) := by
     rw [hprofile0]
     funext j x
@@ -90,14 +87,13 @@ theorem source_batch_inverse_marked {Δ:ℝ}{D:Parameters.HighData Δ}
     intro j hj
     rw [hfw]
     exact hlarge.2 d hd0 label j
-  have hr:0≤F.r:=Real.logb_nonneg hUone (one_le_pow₀ (by norm_num : (1:ℝ)≤2))
   have href (v:ℝ):
       (∑u∈F.rows,‖polynomial (F.family u F.label) true (childLogTest referenceWindow v)
         ((Z^d)^F.r) 0 0*F.physicalProduct selected u‖^2)≤
       (Csum*(Z^d)^(1+D.t))*(1+‖v‖)^(2*Jref) := by
     have hh:=hb label (Z^d) (hscale label d hd) M H F selected hfd
       (by simpa using Finset.card_le_univ selected) (fun j _=>hfp j) (fun j _=>hfu j)
-      (fun j hj=>(F.widths_pos j (hselected hj)).le) (fun j _=>hfe j) hdis hlargeF hr hfirst hsecond v
+      (fun j hj=>(F.widths_pos j (hselected hj)).le) (fun j _=>hfe j) hdis hlargeF (Real.logb_nonneg hUone (one_le_pow₀ (by norm_num : (1:ℝ)≤2))) hfirst hsecond v
     rw [(show 2*Jref=Jref*2 by omega),pow_mul]
 
     apply hh.trans

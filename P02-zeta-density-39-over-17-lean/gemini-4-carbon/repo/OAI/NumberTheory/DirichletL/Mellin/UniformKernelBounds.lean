@@ -7,74 +7,10 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 
 namespace CubicReflectionKernel
-open scoped Classical FourierTransform SchwartzMap ContDiff Topology
-open MeasureTheory Filter Set
 
 theorem compact_family_mul_fourier_power_source_bound (F : ℝ → ℝ → ℂ)
     (hF : ContDiff ℝ ∞ (Function.uncurry F)) (K : Set ℝ) (hK : IsCompact K)
@@ -127,17 +63,13 @@ theorem compact_family_mul_fourier_weighted_source_bound (F : ℝ → ℝ → �
   refine ⟨2 ^ j * (C₀ + Cj), by positivity, ?_⟩
   intro W σ hσ w
   let S := (Finset.Iic (0, j)).sup (schwartzSeminormFamily ℝ ℝ ℂ) W
-  have hS : 0 ≤ S := by dsimp [S]; positivity
   have hsubset : Finset.Iic (0, 0) ⊆ Finset.Iic (0, j) := by
     intro p hp
     exact Finset.mem_Iic.mpr ((Finset.mem_Iic.mp hp).trans (by simp))
-  have hseminorm : (Finset.Iic (0, 0)).sup (schwartzSeminormFamily ℝ ℝ ℂ) W ≤ S :=
-    Seminorm.le_def.mp (Finset.sup_mono hsubset) W
   have hbase : ‖𝓕 (fun u => F σ u * W u) w‖ ≤ C₀ * S := by
     have hh : ‖𝓕 (fun u => F σ u * W u) w‖ ≤ C₀ * (Finset.Iic (0, 0)).sup (schwartzSeminormFamily ℝ ℝ ℂ) W := by
       simpa using h0 W σ hσ w
-    exact hh.trans (mul_le_mul_of_nonneg_left hseminorm hC₀.le)
-  have hpower : |w| ^ j * ‖𝓕 (fun u => F σ u * W u) w‖ ≤ Cj * S := hj W σ hσ w
+    exact hh.trans (mul_le_mul_of_nonneg_left (Seminorm.le_def.mp (Finset.sup_mono hsubset) W) hC₀.le)
   by_cases hw : |w| ≤ 1
   · calc
       _ ≤ 2 ^ j * ‖𝓕 (fun u => F σ u * W u) w‖ :=
@@ -150,7 +82,7 @@ theorem compact_family_mul_fourier_weighted_source_bound (F : ℝ → ℝ → �
       _ ≤ (2 * |w|) ^ j * ‖𝓕 (fun u => F σ u * W u) w‖ :=
         mul_le_mul_of_nonneg_right (pow_le_pow_left₀ (by positivity) (by linarith) j) (norm_nonneg _)
       _ = 2 ^ j * (|w| ^ j * ‖𝓕 (fun u => F σ u * W u) w‖) := by rw [mul_pow, mul_assoc]
-      _ ≤ 2 ^ j * (Cj * S) := mul_le_mul_of_nonneg_left hpower (by positivity)
+      _ ≤ 2 ^ j * (Cj * S) := mul_le_mul_of_nonneg_left (hj W σ hσ w) (by positivity)
       _ ≤ 2 ^ j * ((C₀ + Cj) * S) := by gcongr; linarith
       _ = _ := by dsimp [S]; ring
 
@@ -161,13 +93,11 @@ def negativeLogPullbackCLM (a b : ℝ) : SchwartzMap ℝ ℂ →L[ℝ] SchwartzM
 theorem negativeLogPullbackCLM_eq_actual (a b : ℝ) (ha : 0 < a) (W : SchwartzMap ℝ ℂ)
     (hsupp : Function.support (W : ℝ → ℂ) ⊆ Set.Icc a b) (u : ℝ) :
     negativeLogPullbackCLM a b W u = W (Real.exp (-u)) := by
-  change logPullbackCLM a b W (-u) = _
   exact logPullbackCLM_eq_actual a b ha W hsupp (-u)
 
 def logWeight (a b σ u : ℝ) : ℂ := (Real.exp (-σ * u) * logCutoff a b (-u) : ℝ)
 
 theorem logWeight_smooth (a b : ℝ) : ContDiff ℝ ∞ (Function.uncurry (logWeight a b)) := by
-  change ContDiff ℝ ∞ (fun p : ℝ × ℝ => ((Real.exp (-p.1 * p.2) * logCutoff a b (-p.2) : ℝ) : ℂ))
   exact Complex.ofRealCLM.contDiff.comp
     ((Real.contDiff_exp.comp (contDiff_fst.neg.mul contDiff_snd)).mul
       ((logCutoff a b).contDiff.comp contDiff_snd.neg))
@@ -181,8 +111,7 @@ theorem logWeight_support (a b σ : ℝ) :
   have hm : -u ∈ Function.support (logCutoff a b) := hc
   rw [(logCutoff a b).support_eq] at hm
   change dist (-u) 0 < logRadius a b + 1 at hm
-  change dist u 0 ≤ logRadius a b + 1
-  simpa only [dist_zero_right, norm_neg] using hm.le
+  simpa using hm.le
 
 theorem logWeight_mul_pullback (a b : ℝ) (ha : 0 < a) (W : SchwartzMap ℝ ℂ)
     (hsupp : Function.support (W : ℝ → ℂ) ⊆ Set.Icc a b) (σ u : ℝ) :
@@ -206,10 +135,8 @@ theorem mellin_strip_source_bound (a b : ℝ) (ha : 0 < a) (lo hi : ℝ) (j : �
     (negativeLogPullbackCLM a b) (Finset.Iic (0, j))
   refine ⟨s, (1 + 2 * Real.pi) ^ j * C * D, by positivity, ?_⟩
   intro W hsupp σ hσ t
-  have hfun : (fun u => logWeight a b σ u * negativeLogPullbackCLM a b W u) = mellinLogFamily W σ :=
-    funext (logWeight_mul_pullback a b ha W hsupp σ)
   have hfour := hb (negativeLogPullbackCLM a b W) σ hσ (t / (2 * Real.pi))
-  rw [hfun] at hfour
+  rw [(funext (logWeight_mul_pullback a b ha W hsupp σ))] at hfour
   have ht : |t| = (2 * Real.pi) * |t / (2 * Real.pi)| := by
     rw [abs_div, abs_of_pos (by positivity : 0 < 2 * Real.pi)]
     field_simp
@@ -234,7 +161,7 @@ theorem mellinData_strip_source_bound (a b : ℝ) (ha : 0 < a) (A j : ℕ) :
       ∀ σ ∈ Set.Icc (-(1 / 4 : ℝ)) (A : ℝ), ∀ t : ℝ,
         (1 + |t|) ^ j * ‖mellinData W ((σ : ℂ) + t * Complex.I)‖ ≤
           C * s.sup (schwartzSeminormFamily ℝ ℝ ℂ) W := by
-  let g : ℕ := 4 * A + 4
+  let g := 4 * A + 4
   obtain ⟨Cγ, hCγ, hγ⟩ := gammaMultiplier_strip_bound A
   obtain ⟨s, CV, hCV, hVb⟩ := mellin_strip_source_bound a b ha (-(A : ℝ)) (1 / 4) (g + j)
   refine ⟨s, Cγ * CV, mul_pos hCγ hCV, ?_⟩
@@ -245,13 +172,12 @@ theorem mellinData_strip_source_bound (a b : ℝ) (ha : 0 < a) (A j : ℕ) :
     push_cast
     ring
   rw [heq, abs_neg] at hmb
-  have hgb : ‖gammaMultiplier ((σ : ℂ) + t * Complex.I)‖ ≤ Cγ * (1 + |t|) ^ g := hγ σ hσ t
   rw [mellinData, norm_mul]
   calc
     _ = ((1 + |t|) ^ j * ‖mellin W (-((σ : ℂ) + t * Complex.I))‖) *
         ‖gammaMultiplier ((σ : ℂ) + t * Complex.I)‖ := by ring
     _ ≤ ((1 + |t|) ^ j * ‖mellin W (-((σ : ℂ) + t * Complex.I))‖) *
-        (Cγ * (1 + |t|) ^ g) := mul_le_mul_of_nonneg_left hgb (by positivity)
+        (Cγ * (1 + |t|) ^ g) := mul_le_mul_of_nonneg_left (hγ σ hσ t) (by positivity)
     _ = Cγ * ((1 + |t|) ^ (g + j) * ‖mellin W (-((σ : ℂ) + t * Complex.I))‖) := by
       rw [pow_add]
       ring
@@ -310,10 +236,7 @@ theorem mellinInv_euler_line_source_bound (a b : ℝ) (ha : 0 < a) (A j : ℕ) :
       _ = _ := by rw [integral_const_mul, integral_univ_inv_one_add_sq]
   rw [mellinInv, norm_smul, Real.norm_of_nonneg (by positivity : (0 : ℝ) ≤ 1 / (2 * Real.pi))]
   simp only [smul_eq_mul]
-  calc
-    _ ≤ (1 / (2 * Real.pi)) * ((y ^ (-σ) * (C * Q)) * Real.pi) :=
-      mul_le_mul_of_nonneg_left hint (by positivity)
-    _ = _ := by dsimp [Q]; field_simp
+  exact (mul_le_mul_of_nonneg_left hint (by positivity)).trans_eq (by dsimp [Q]; field_simp)
 
 theorem paperKernel_euler_source_power_decay (a b : ℝ) (ha : 0 < a) (A j : ℕ) :
     ∃ (s : Finset (ℕ × ℕ)) (C : ℝ), 0 < C ∧
@@ -325,8 +248,7 @@ theorem paperKernel_euler_source_power_decay (a b : ℝ) (ha : 0 < a) (A j : ℕ
           C * s.sup (schwartzSeminormFamily ℝ ℝ ℂ) W * x ^ (-(A : ℝ))) := by
   obtain ⟨s, C, hC, hb⟩ := mellinInv_euler_line_source_bound a b ha A j
   let B := max (paperScale ^ (1 / 4 : ℝ)) (paperScale ^ (-(A : ℝ)))
-  have hB : 0 < B := lt_of_lt_of_le (Real.rpow_pos_of_pos paperScale_pos _) (le_max_left _ _)
-  refine ⟨s, C * B, mul_pos hC hB, ?_⟩
+  refine ⟨s, C * B, mul_pos hC (lt_of_lt_of_le (Real.rpow_pos_of_pos paperScale_pos _) (le_max_left _ _)), ?_⟩
   intro W hsupp x hx
   let Q := s.sup (schwartzSeminormFamily ℝ ℝ ℂ) W
   have hQ : 0 ≤ Q := by dsimp [Q]; positivity
@@ -366,9 +288,7 @@ theorem paperKernel_euler_source_power_decay (a b : ℝ) (ha : 0 < a) (A j : ℕ
 
 end CubicReflectionKernel
 
-open scoped BigOperators Classical
 namespace FirstPassCubeLabels
-open ActualEisensteinCubic
 open MixedCrossSeparation (crossSymbol quadraticCrossPhase columnPrimeCoprime)
 open FiniteGaussPhase (canonicalProductGauss canonicalProductGauss_cross_factors)
 open MixedGaussConversion (localGauss)
@@ -481,8 +401,7 @@ theorem columnCoefficient_eq_gaussBlock {ι : Type*} [DecidableEq ι]
       star (FiniteGaussPhase.angularFactor (∏ i ∈ S, p i)) *
         gaussBlock p hp hg S (fun _ => 2) := by
   unfold MixedCrossSeparation.columnCoefficient FiniteGaussPhase.canonicalProductCoefficient
-  rw [Finset.prod_coe_sort]
-  rw [canonicalProductGauss_eq_gaussBlock p hp hcop hg S (fun _ => 2) (fun _ _ => by decide)]
+  rw [Finset.prod_coe_sort, canonicalProductGauss_eq_gaussBlock p hp hcop hg S (fun _ => 2) (fun _ _ => by decide)]
 
 theorem blockCross_two_eq_row_four {ι : Type*}
     (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]

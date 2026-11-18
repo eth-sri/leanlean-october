@@ -8,7 +8,6 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstLiveCountBudget
 public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileLiveAggregate
 public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileLiveEnergy
 
-set_option linter.privateModule false
 
 @[expose] public section
 
@@ -18,11 +17,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseFirstGlobalCaps InverseSecondSourceBlocks InverseMomentFirstChildWindows
-open InverseMomentFirstOriginalProfile InverseMomentFirstProfileUniform InverseMomentFirstLabelCell
-open InverseMomentFirstSecondHeightCost
-open InverseAmbientProfileTower JointLogSeparation FourierBridge CompletedHeight
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseFirstGlobalCaps InverseSecondSourceBlocks InverseMomentFirstChildWindows InverseMomentFirstOriginalProfile InverseMomentFirstProfileUniform InverseMomentFirstLabelCell InverseMomentFirstSecondHeightCost InverseAmbientProfileTower JointLogSeparation FourierBridge CompletedHeight
 open ConcreteTraceCRT (eisEmbedding)
 local notation "O"=>ActualEisensteinCubic.O
 

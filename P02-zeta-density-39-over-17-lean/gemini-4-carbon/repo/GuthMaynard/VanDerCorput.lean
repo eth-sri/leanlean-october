@@ -64,9 +64,7 @@ theorem unitaryPhase_logarithmicPhase_eq_cpow (t : ℝ) (n : ℕ) (hn : 0 < n) :
 
 theorem norm_phaseSum_le_card (f : ℝ → ℝ) (A B : ℕ) :
     ‖phaseSum f A B‖ ≤ (Finset.Ico A B).card := by
-  calc
-    ‖phaseSum f A B‖ ≤ ∑ n ∈ Finset.Ico A B, ‖unitaryPhase (f n)‖ := norm_sum_le _ _
-    _ = (Finset.Ico A B).card := by simp
+  exact (norm_sum_le _ _).trans_eq (by simp)
 
 theorem norm_logarithmicSum_le_length (t : ℝ) (A B : ℕ) :
     ‖logarithmicSum t A B‖ ≤ ((B - A : ℕ) : ℝ) := by

@@ -197,9 +197,8 @@ private theorem sum_bounds_from_differences (f F : ℕ → ℝ)
   have hd : HasSum (fun n => F n - F (n + 1)) (F 0) := by
     apply (hasSum_iff_tendsto_nat_of_nonneg (fun n => (hf (n + 1)).trans (hhi n)) _).mpr
     simpa only [Finset.sum_range_sub', sub_zero] using tendsto_const_nhds.sub hF
-  have ht : Summable (fun n => f (n + 1)) :=
-    Summable.of_nonneg_of_le (fun n => hf (n + 1)) hhi hd.summable
-  have hs : Summable f := (summable_nat_add_iff 1).mp ht
+  have ht := Summable.of_nonneg_of_le (fun n => hf (n + 1)) hhi hd.summable
+  have hs := (summable_nat_add_iff 1).mp ht
   refine ⟨hs, ?_, ?_⟩
   · rw [← hd.tsum_eq]
     exact hd.summable.tsum_le_tsum hlo hs

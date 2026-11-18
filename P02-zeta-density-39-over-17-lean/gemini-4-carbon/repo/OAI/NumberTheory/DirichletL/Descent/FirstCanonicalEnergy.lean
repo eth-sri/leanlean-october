@@ -93,8 +93,7 @@ theorem retained_cube_energy_to_second (ε : ℝ) (hε : 0<ε) :
   · intro z hz
     exact (Finset.mem_erase.mp hz).1
   · intro z hz
-    have hb := ((mem_nonzeroChildFrequencyBall 1 one_ne_zero Y z).mp hz).2
-    simpa only [one_mul,eisEmbedding_norm_sq_eq_absNorm_span] using hb
+    simpa only [one_mul,eisEmbedding_norm_sq_eq_absNorm_span] using (((mem_nonzeroChildFrequencyBall 1 one_ne_zero Y z).mp hz).2)
   · intro x hx
     exact (retainedCubeWeight_norm p hp hcop hg hc b C Ψ₁ Ψ₂ hΨ₁ hΨ₂ m₁ m₂ d a x).trans (ha x hx)
 

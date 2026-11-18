@@ -11,9 +11,8 @@ public import Mathlib.Analysis.MellinInversion
 
 @[expose] public section
 
-open Complex Finset Set Filter Topology MeasureTheory
+open Complex Finset Set Filter Topology MeasureTheory Classical
 open scoped BigOperators ContDiff Topology
-open Classical
 set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
@@ -28,14 +27,5 @@ noncomputable def dfiVoronoiInvWeightIterate :
     ℕ → (ℝ → ℂ) → ℝ → ℂ
   | 0, g => g
   | k + 1, g => dfiVoronoiInvWeight (dfiVoronoiInvWeightIterate k g)
-
-@[simp]
-theorem dfiVoronoiInvWeightIterate_zero (g : ℝ → ℂ) :
-    dfiVoronoiInvWeightIterate 0 g = g := rfl
-
-@[simp]
-theorem dfiVoronoiInvWeightIterate_succ (k : ℕ) (g : ℝ → ℂ) :
-    dfiVoronoiInvWeightIterate (k + 1) g =
-      dfiVoronoiInvWeight (dfiVoronoiInvWeightIterate k g) := rfl
 
 end MathCollab.Density.Stronger.Atkinson

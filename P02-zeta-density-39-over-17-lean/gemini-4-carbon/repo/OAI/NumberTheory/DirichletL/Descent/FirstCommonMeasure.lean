@@ -7,9 +7,8 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstFreshMeasure
 namespace OAI
 
 namespace SevenEighths.InverseMoment
+open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion JointLogSeparation MeasureTheory
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion
-open JointLogSeparation MeasureTheory
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O

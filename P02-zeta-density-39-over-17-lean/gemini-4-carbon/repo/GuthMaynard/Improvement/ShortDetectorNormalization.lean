@@ -72,7 +72,7 @@ theorem shortNormalizedPoweredCoefficient_eventually {η : ℝ} (hη : 0 < η)
     ∀ᶠ T : ℝ in atTop, ∀ N j k n : ℕ,
       0 < N → k ≤ K → (n : ℝ) ≤ T^2 →
         ‖shortNormalizedPoweredCoefficient η T N j k n‖ ≤ 1 := by
-  filter_upwards [eventually_ge_atTop (1 : ℝ), shortPoweredDetectorCoefficient_eventually_le hη hK]
+  filter_upwards [eventually_ge_atTop 1, shortPoweredDetectorCoefficient_eventually_le hη hK]
     with T hT hb
   intro N j k n hN hk hn
   rw [shortNormalizedPoweredCoefficient, norm_div, Complex.norm_real, Real.norm_eq_abs,

@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 
 @[expose] public section
 set_option autoImplicit false
@@ -40,9 +49,7 @@ theorem norm_prefix_le_doubled_blocks (a : ℕ → ℂ) (H J N : ℕ)
       have h2kH : 2*k ≤ H := by dsimp [k]; omega
       have hkJ : k ≤ 2^J := by
         rw [pow_succ] at hNJ
-        dsimp [k]
         omega
-      have hip := ih k hkH hkJ
       have htail : ‖∑ j ∈ Finset.range (N%2), a (k+k+j)‖ ≤ A := by
         have hr : N%2 = 0 ∨ N%2 = 1 := by omega
         rcases hr with hr | hr
@@ -50,7 +57,6 @@ theorem norm_prefix_le_doubled_blocks (a : ℕ → ℂ) (H J N : ℕ)
           exact hA
         · simp only [hr,Finset.sum_range_one,add_zero]
           apply ha
-          dsimp [k]
           omega
       have he : (∑ n ∈ Finset.range N, a n) =
           ((∑ n ∈ Finset.range k, a n)+∑ j ∈ Finset.range k, a (k+j))+
@@ -67,7 +73,7 @@ theorem norm_prefix_le_doubled_blocks (a : ℕ → ℂ) (H J N : ℕ)
             ‖∑ j ∈ Finset.range (N%2), a (k+k+j)‖ :=
           (norm_add_le _ _).trans (add_le_add_left (norm_add_le _ _) _)
         _ ≤ ((J:ℝ)*(A+B)+B)+A :=
-          add_le_add (add_le_add hip (hb k hk h2kH)) htail
+          add_le_add (add_le_add (ih k hkH hkJ) (hb k hk h2kH)) htail
         _ = _ := by push_cast; ring
 
 end TaoTrudgianYang2025

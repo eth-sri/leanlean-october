@@ -93,8 +93,7 @@ lemma extractionBin_scale_product (R : Finset O) (M : ℝ)
       CanonicalQuadraticSieve.divisorDyadicScale j.2.val ^ 2 ≤ M := by
   obtain ⟨z, hz⟩ := hj
   have hzR := (Finset.mem_filter.mp hz).1
-  have hI : (Ideal.span {z} : Ideal O) ≠ 0 :=
-    Ideal.span_singleton_eq_bot.not.mpr (hR z hzR).1
+  have hI := Ideal.span_singleton_eq_bot.not.mpr (hR z hzR).1
   have hh := extractionBin_bounds R M hR j z hz
   have hcube : 1 ≤ (Ideal.absNorm (cubePart (Ideal.span {z})) : ℝ) := by
     exact_mod_cast Nat.one_le_iff_ne_zero.mpr

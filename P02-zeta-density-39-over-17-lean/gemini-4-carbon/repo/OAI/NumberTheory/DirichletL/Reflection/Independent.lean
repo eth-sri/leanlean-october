@@ -6,9 +6,8 @@ public import OAI.NumberTheory.DirichletL.Reflection.Coefficient
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
+open ActualEisensteinCubic CubicEisenstein CompletedGauss LocalReflectionBrackets InverseMoment
 open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein CompletedGauss LocalReflectionBrackets
-open InverseMoment
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
@@ -131,7 +130,7 @@ theorem mixed_coefficient_hybrid_original_exponents [∀ i, (Ideal.span {p i}).I
       inverseCubicKernel (∏ i ∈ S, Ideal.span {p i}) n *
       (if IsCoprime (∏ i ∈ S, Ideal.span {p i}) b then 1 else 0) *
       (if IsCoprime (∏ i ∈ R, Ideal.span {p i}) (∏ i ∈ S, Ideal.span {p i}) then 1 else 0) := by
-  have hd : Disjoint S F := hF.mono_left Finset.subset_union_right
+  have hd := hF.mono_left Finset.subset_union_right
   have he := mixed_coefficient_hybrid D s hp hc hg hcop hprimary R S F hRS hF hu j hRj hR u m n b hb
   obtain ⟨hr,hs,hf⟩ := marked_phases_eq D s hp hg j R S F hd u m
   rw [hr,hs,hf,marked_sourceColumn_eq D s hc hg j S F hd u m n b] at he

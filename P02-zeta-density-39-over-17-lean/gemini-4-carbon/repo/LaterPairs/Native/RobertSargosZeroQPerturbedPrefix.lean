@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.ContinuousPhaseAbel
 public import LaterPairs.Native.RobertSargosZeroQLeading
 
@@ -35,7 +44,6 @@ theorem robertSargos_zero_q_perturbed_prefix
   let μ := 2*|r| *lam
   let B := 20*C*((N:ℝ)*μ^((1:ℝ)/6)+Real.sqrt N*μ^(-(1:ℝ)/6))
   let K := C*lam*(h^3+(h+r)^3)/3
-  have hCp : 0 ≤ C := zero_le_one.trans hC
   have hin (x : ℝ) (hx : x ∈ Icc A (A+N)) :
       x ∈ Icc a b ∧ x+h ∈ Icc a b ∧ x-h ∈ Icc a b ∧
         x+(h+r) ∈ Icc a b ∧ x-(h+r) ∈ Icc a b := by

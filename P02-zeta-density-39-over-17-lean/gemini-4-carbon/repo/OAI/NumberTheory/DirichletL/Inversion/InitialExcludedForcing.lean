@@ -7,15 +7,10 @@ namespace OAI
 
 noncomputable section
 
+open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve ConcretePrimeRowBridge FirstCauchyArithmetic SecondPassArithmetic UniqueFactorizationMonoid
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve ConcretePrimeRowBridge
-open FirstCauchyArithmetic SecondPassArithmetic UniqueFactorizationMonoid
 namespace SevenEighths.InverseInitialExcludedForcing
-open InverseInitialOverlap InverseInitialPoissonBridge InverseInitialKernelBridge
-open InverseInitialRayAttachment InverseInitialArithmetic InverseInitialCommonPool
-open InverseInitialEnergyCallerWindow InverseInitialCommonForcing InverseInitialLargePool
-open InverseInitialExcludedPool InverseInitialExcludedOverlap
-open InverseInitialCommonTuples InverseInitialCommonTransform
+open InverseInitialOverlap InverseInitialPoissonBridge InverseInitialKernelBridge InverseInitialRayAttachment InverseInitialArithmetic InverseInitialCommonPool InverseInitialEnergyCallerWindow InverseInitialCommonForcing InverseInitialLargePool InverseInitialExcludedPool InverseInitialExcludedOverlap InverseInitialCommonTuples InverseInitialCommonTransform
 local notation "O"=>ActualEisensteinCubic.O
 
 theorem pool_product_outside (F E:Finset (Ideal O))(hE:∀Q∈E,Prime Q)
@@ -53,7 +48,6 @@ theorem residual_excluded_forcing
   unfold supportConjugateSum
   apply Finset.sum_congr rfl
   intro A hA
-  have he:=common_selector_window W Z r z G b hZ hW hP hj F hF A
   have hm:rowCoprimeMask (fun i:primePool F=>Ideal.span {poolPrimary F i}) A
       (primaryGenerator j)=rowCoprimeMask (fun i:primePool F=>i.val) A (primaryGenerator j):=by
     congr 1
@@ -63,13 +57,12 @@ theorem residual_excluded_forcing
       ((∏i∈A,i.val)∈columns (originalSource Z r b) P j):=by
     rw [columns_filter _ E hE hP.2.1 hj hPE,Finset.mem_filter]
     exact and_iff_left (pool_product_outside F E hE hFE A)
-  dsimp only
   simp only [hm,hmem]
   linear_combination
     (supportMobius (fun i:primePool F=>Ideal.span {poolPrimary F i}) A *
       elementCharacter η (∏i∈A,poolPrimary F i) *
       star (finiteSquarefreeRow (fun i:primePool F=>Ideal.span {poolPrimary F i})
-        (poolPrimary_good F hF) A u))*he
+        (poolPrimary_good F hF) A u))*(common_selector_window W Z r z G b hZ hW hP hj F hF A)
 
 variable {κ:Type*}
 theorem original_tuples_excluded_input
@@ -94,8 +87,7 @@ theorem original_tuples_excluded_input
   intro S
   let : ∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal :=
     fun i=>by rw [poolPrimary_span F hF i];infer_instance
-  rw [input_finset_sum (poolPrimary F) (poolPrimary_good F hF)]
-  rw [Finset.mul_sum]
+  rw [input_finset_sum (poolPrimary F) (poolPrimary_good F hF), Finset.mul_sum]
   apply Finset.sum_congr rfl
   intro k hk
   rw [residual_excluded_forcing W Z r z G b hZ hW E hE (hP k hk) (hj k hk) (hPE k hk) F hF hFE

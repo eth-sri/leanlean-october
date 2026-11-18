@@ -10,8 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseSecondSourceBlocks InverseInitialArithmetic
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondSourceBlocks InverseInitialArithmetic
 open ConcreteTraceCRT (eisEmbedding)
 local notation "O" => ActualEisensteinCubic.O
 
@@ -29,10 +28,9 @@ theorem second_cell_scale_rpow (Z:ℝ) (d:BlockIndex) (i:Fin 4) (hZ:1<Z):
 theorem second_cell_formal_column (Z r A B t:ℝ) (d:BlockIndex) (hZ:1<Z):
     secondCellColumnExponent Z (Z^(r-A-B-t)) d=
       secondFormalColumn r A B t (secondCellExponent Z d 0) (secondCellExponent Z d 2) := by
-  have hz:0<Z:=zero_lt_one.trans hZ
+  have hz :=zero_lt_one.trans hZ
   apply (Real.rpow_right_inj hz (ne_of_gt hZ)).mp
-  rw [second_cell_column_scale Z _ d hZ (Real.rpow_pos_of_pos hz _)]
-  rw [←second_cell_scale_rpow Z d 0 hZ,←second_cell_scale_rpow Z d 2 hZ,
+  rw [second_cell_column_scale Z _ d hZ (Real.rpow_pos_of_pos hz _), ←second_cell_scale_rpow Z d 0 hZ,←second_cell_scale_rpow Z d 2 hZ,
     ←Real.rpow_add hz,←Real.rpow_sub hz]
   congr 1
   unfold secondFormalColumn

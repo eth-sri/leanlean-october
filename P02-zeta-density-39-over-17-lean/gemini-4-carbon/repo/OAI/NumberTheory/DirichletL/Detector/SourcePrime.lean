@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic ActualEisensteinCoordinates CompletedGauss CanonicalRowCompletion
-open CanonicalQuadraticSieve ConcretePrimeRowBridge CubicEisenstein ConcreteTraceCRT
-open ProbePhase ProbeEuler ProbePrimePower FiniteGaussPhase QuadraticGaussRay
+open ActualEisensteinCubic ActualEisensteinCoordinates CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve ConcretePrimeRowBridge CubicEisenstein ConcreteTraceCRT ProbePhase ProbeEuler ProbePrimePower FiniteGaussPhase QuadraticGaussRay
 local notation "O" => ActualEisensteinCubic.O
 
 theorem gaussTwo_prime_localGamma (p : O) (hp : Prime p)
@@ -56,8 +54,7 @@ lemma angularFactor_pow (p : O) (n : ℕ) : angularFactor (p^n)=angularFactor p^
   simp only [angularFactor,map_pow,norm_pow,Complex.ofReal_pow,div_pow]
 
 lemma gaussTwo_one : gaussTwo (1:Ideal O) (by rw [primaryGenerator_one]; exact one_ne_zero)=1 := by
-  have hI : CubicSieve.Admissible (1:Ideal O) := ⟨squarefree_one,by rw [primaryGenerator_one]; exact one_ne_zero⟩
-  rw [gaussTwo_eq_elementFourier (1:Ideal O) hI]
+  rw [gaussTwo_eq_elementFourier (1:Ideal O) (⟨squarefree_one,by rw [primaryGenerator_one]; exact one_ne_zero⟩)]
   simp only [primaryGenerator_one,map_one,norm_one,Complex.ofReal_one,div_one]
   have hrow (a : O) : CubicSieve.cubicRow (1:Ideal O) a=1 := by
     rw [CubicSieve.cubicRow,←idealRowHom_square,map_one,one_pow]
@@ -76,16 +73,15 @@ lemma gaussTwo_prime_power_small (p : O) (hp : Prime p)
     gaussTwo (Ideal.span {p^e}) hI=localGamma p hp.ne_zero hg 2^e := by
   have hcases : e=0 ∨ e=1 := by omega
   rcases hcases with rfl|rfl
-  · simpa only [pow_zero,Ideal.span_singleton_one,←Ideal.one_eq_top] using gaussTwo_one
-  · have hi : primaryGenerator (Ideal.span {p})≠0 := by simpa only [pow_one] using hI
-    simpa only [pow_one] using gaussTwo_prime_localGamma p hp hg hprimary hi
+  · simpa using gaussTwo_one
+  · have hi : primaryGenerator (Ideal.span {p})≠0 := by simpa using hI
+    simpa using gaussTwo_prime_localGamma p hp hg hprimary hi
 
 lemma corrected_prime_cubic_signal (p : O) (hp : p≠0)
     [(Ideal.span {p}:Ideal O).IsMaximal] (hg : goodLambda∉Ideal.span {p})
     (hchar : ringChar (O ⧸ Ideal.span {p})≠2) (hprimary : goodLambda^2∣p-1)
     (hs : Supported (Ideal.span {p})) :
     localGamma p hp hg 2 * star (angularFactor p) * star (G p) = -(localGamma p hp hg 1)⁻¹ := by
-  have hsig := localGamma_one_two_full_signal p hp hg hchar hprimary
   have hn := localGamma_norm_one p hp hg hchar 1 (by decide) (by decide)
   have hne : localGamma p hp hg 1≠0 := by intro h; rw [h,norm_zero] at hn; norm_num at hn
   have hG : G p*star (G p)=1 := by
@@ -96,7 +92,7 @@ lemma corrected_prime_cubic_signal (p : O) (hp : p≠0)
   calc
     _ = (localGamma p hp hg 1*localGamma p hp hg 2)*star (angularFactor p)*star (G p) := by ring
     _ = -1 := by
-      rw [hsig]
+      rw [(localGamma_one_two_full_signal p hp hg hchar hprimary)]
       calc
         _ = -(angularFactor p*star (angularFactor p))*(G p*star (G p)) := by ring
         _ = _ := by rw [angularFactor_mul_star p hp,hG]; ring

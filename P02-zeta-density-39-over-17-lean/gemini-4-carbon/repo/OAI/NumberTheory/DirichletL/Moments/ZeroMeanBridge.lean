@@ -10,12 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentZeroMeanBridge
-open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson
-open CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge
-open CenteredMomentCommonSupport
-open CenteredMomentFourier CenteredMomentCorrelation CenteredMomentSupportedCorrelation
-open CenteredMomentSectorLocalization CenteredMomentFirstReduced CenteredMomentCanonicalFirst
-open CenteredMomentActive CenteredMomentFirstDiscardedEnergy CenteredMomentFirstLocalization
+open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge CenteredMomentCommonSupport CenteredMomentFourier CenteredMomentCorrelation CenteredMomentSupportedCorrelation CenteredMomentSectorLocalization CenteredMomentFirstReduced CenteredMomentCanonicalFirst CenteredMomentActive CenteredMomentFirstDiscardedEnergy CenteredMomentFirstLocalization
 local notation "O" => ActualEisensteinCubic.O
 
 def quotientMean (a : O) (F : Residue a → ℂ) : ℂ :=
@@ -56,7 +51,6 @@ def dilationMask (e d : O) (F : Residue d → ℂ) (x : Residue (d*e)) : ℂ :=
 theorem dilationMask_sum (e d : O) (he : e ≠ 0) (F : Residue d → ℂ) :
     (∑' x : Residue (d*e), dilationMask e d F x) =
       ∑' y : Residue d, F (Ideal.Quotient.mk _ e * y) := by
-  have hi := scaledResidue_injective d e (d*e) rfl he
   have hz (x : Residue (d*e)) (hx : x ∉ Set.range (scaledResidue d e (d*e) rfl)) :
       dilationMask e d F x = 0 := by
     obtain ⟨z,rfl⟩ := Ideal.Quotient.mk_surjective x
@@ -69,7 +63,7 @@ theorem dilationMask_sum (e d : O) (he : e ≠ 0) (F : Residue d → ℂ) :
     intro x hx
     by_contra hn
     exact hx (hz x hn)
-  rw [← hi.tsum_eq hs]
+  rw [← (scaledResidue_injective d e (d*e) rfl he).tsum_eq hs]
   apply tsum_congr
   intro y
   obtain ⟨z,rfl⟩ := Ideal.Quotient.mk_surjective y
@@ -101,7 +95,7 @@ theorem quotientMean_finite_sum {ι : Type*} [Fintype ι]
   have hh (x : Residue m) : F (frequencyReduction a m haM x) =
       ∑ i, c i * G i (frequencyReduction (d i) m (hdM i) x) := by
     obtain ⟨z,rfl⟩ := Ideal.Quotient.mk_surjective x
-    simpa only [frequencyReduction_mk] using h z
+    simpa using h z
   simp_rw [quotientMean, hh, tsum_fintype]
   rw [Finset.sum_comm, Finset.mul_sum]
   apply Finset.sum_congr rfl
@@ -256,11 +250,9 @@ theorem canonicalZeroPair_eq_original (I J : Ideal O) (hI : Supported I) (hJ : S
       (((K / ‖eisEmbedding (CompletedGauss.primaryGenerator I * CompletedGauss.primaryGenerator J)‖^2 : ℝ) : ℂ) *
         CenteredMomentRowNorm.pairFourier (CompletedGauss.primaryGenerator I) (CompletedGauss.primaryGenerator J)
           hi hj 0) * paperRadialFourier W 0 := by
-  dsimp only
   rw [canonicalZeroPair]
   simp_rw [canonicalZeroTerm_eq_mean]
-  rw [← Finset.sum_mul, ← Finset.mul_sum, ← original_pair_mean I J hI hJ]
-  rw [CenteredMomentZeroMode.pairFourier_zero, quotientMean, ← normValue_eq_embedding,
+  rw [← Finset.sum_mul, ← Finset.mul_sum, ← original_pair_mean I J hI hJ, CenteredMomentZeroMode.pairFourier_zero, quotientMean, ← normValue_eq_embedding,
     Complex.ofReal_div, div_eq_mul_inv]
   ring
 
@@ -269,7 +261,7 @@ theorem quotientMean_congr (a b : O) (ha : a ≠ 0) (hb : b ≠ 0)
     (h : ∀ z : O, F (Ideal.Quotient.mk _ z) = G (Ideal.Quotient.mk _ z)) :
     quotientMean a F = quotientMean b G := by
   have hh := quotientMean_finite_sum a ha F (fun _ : Unit => b) (fun _ => hb)
-    (fun _ => G) (fun _ => (1 : ℂ)) (by intro z; simpa using h z)
+    (fun _ => G) (fun _ => 1) (by intro z; simpa using h z)
   simpa using hh
 
 theorem scaled_pairFourier_eq_mean (a b : O)

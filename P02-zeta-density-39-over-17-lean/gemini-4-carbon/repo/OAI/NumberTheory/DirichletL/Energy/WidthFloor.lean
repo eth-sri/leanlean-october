@@ -7,14 +7,11 @@ public import OAI.NumberTheory.DirichletL.Energy.Bands
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
+open scoped Classical BigOperators SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentEnergyWidthFloor
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyWidthSchedule CenteredMomentFiniteProfileExceptional
-open CenteredMomentNaturalFixedRaySource CenteredMomentInductionEnergy
-open QuadraticInitialBound
+open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyWidthSchedule CenteredMomentFiniteProfileExceptional CenteredMomentNaturalFixedRaySource CenteredMomentInductionEnergy QuadraticInitialBound
 local notation "O"=>HeckeFamily.O
 
 private lemma control_mono {a b:ℝ}(p:Profiles a b){S T:Finset (ℕ×ℕ)}(h:S⊆T):

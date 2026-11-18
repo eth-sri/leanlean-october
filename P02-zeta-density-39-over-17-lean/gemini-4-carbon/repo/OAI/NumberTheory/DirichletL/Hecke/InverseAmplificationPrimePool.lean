@@ -37,9 +37,8 @@ theorem typedPrimePool_norm (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
     (S : Finset (Ideal O)) (a b x : ℝ) (ha : 0≤a) (hab : a≤b) (hx : 0<x)
     (P : PrimeIdeal) (hP : P∈typedPrimePool M H S a b x) :
     (P.val.absNorm : ℝ)≤x*b := by
-  have hh := Finset.mem_subtype.mp hP
   exact (PNT.AnnularPrimeMass.norm_bounds_of_mem_annularPrimeIdeals ha hab hx
-    (Finset.mem_sdiff.mp hh).1).2
+    (Finset.mem_sdiff.mp (Finset.mem_subtype.mp hP)).1).2
 
 theorem eventually_fixed_ray_amplification
     (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
@@ -61,7 +60,7 @@ theorem eventually_fixed_ray_amplification
     φ hφ hφc hφp hφ0 hφne a b B ha hab hB hφs hφB
   have hb : 0<b := ha.trans_le hab
   refine ⟨c,hc,?_⟩
-  filter_upwards [hcard,eventually_gt_atTop (1 : ℝ),eventually_ge_atTop (1/b)] with x hcard hx hxB
+  filter_upwards [hcard,eventually_gt_atTop 1,eventually_ge_atTop (1/b)] with x hcard hx hxB
   intro data rows W wa wb D U E hwa hwb hWs hW hD hrows hraw0 hraw1
   have hx0 : 0<x := zero_lt_one.trans hx
   have hxblog : 1≤x*b := (div_le_iff₀ hb).mp hxB

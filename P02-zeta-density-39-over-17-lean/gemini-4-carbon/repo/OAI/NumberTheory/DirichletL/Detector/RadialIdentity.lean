@@ -25,9 +25,8 @@ lemma actualCongruenceCoefficient_zero_frequency (S : Finset Id)
     actualCongruenceCoefficient (calibrationForSet S hS) A s hA 0=0 := by
   apply actualCongruenceCoefficient_zero_off_calibration S hS A s hA hs hcop
   intro hc
-  have hz := (calibrationForSet_coprime_iff S hS 0).mp hc
   obtain ⟨P,hP⟩ := hSne
-  exact hz P hP P.zero_mem
+  exact ((calibrationForSet_coprime_iff S hS 0).mp hc) P hP P.zero_mem
 
 theorem actualFrequency_mellin_nonzero (C : CalibrationData) (A s : O)
     (hA : A≠0) (hs : s≠0) (W : SchwartzMap ℝ ℂ) (a b : ℝ) (ha : 0<a)
@@ -46,7 +45,7 @@ theorem actualFrequency_mellin_nonzero (C : CalibrationData) (A s : O)
       exact div_pos (mul_pos hK (elementNorm_pos H.val H.property))
         (elementNorm_pos _ (mul_ne_zero (mul_ne_zero C.generator_ne_zero hA) hs)))
     (actualFrequency_moment_summable C A s hA hs K hK σ hσ)
-  simpa only [Complex.ofReal_mul,Complex.ofReal_div] using he
+  simpa using he
 
 theorem actualFrequency_mellin (S : Finset Id) (hS : ∀P∈S,P.IsMaximal) (hSne : S.Nonempty)
     (A s : O) (hA : A≠0) (hs : s≠0)

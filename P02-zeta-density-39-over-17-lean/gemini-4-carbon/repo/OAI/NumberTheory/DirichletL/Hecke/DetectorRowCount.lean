@@ -1,5 +1,6 @@
 module
-public import OAI.NumberTheory.DirichletL.Hecke.DetectorSimultaneous
+public import OAI.NumberTheory.DirichletL.Hecke.DetectorDyadicGeometry
+public import OAI.NumberTheory.DirichletL.Hecke.DetectorDyadicLengths
 
 @[expose] public section
 
@@ -21,9 +22,7 @@ lemma card_of_energy {α : Type*} (rows : Finset α) (F : α→ℂ)
       _ ≤ ∑ u∈rows, ‖F u‖^2 := Finset.sum_le_sum hspike
       _ ≤ _ := henergy
   apply (mul_le_mul_iff_left₀ (Real.rpow_pos_of_pos hU p)).mp
-  calc
-    _ ≤ C*U^b := hs
-    _ = (C*U^(b-p))*U^p := by rw [mul_assoc,←Real.rpow_add hU]; congr 2; ring
+  exact (hs).trans_eq (by rw [mul_assoc,←Real.rpow_add hU]; congr 2; ring)
 
 theorem inverse_count {α : Type*} (rows : Finset α) (χ : α→Character)
     (W : ℝ→ℂ) (D : ℝ) (σ freq : α→ℝ) (P : α→ℂ)
@@ -37,8 +36,7 @@ theorem inverse_count {α : Type*} (rows : Finset α) (χ : α→Character)
       U^((δ*r-εw)+(2*q*z-εp))≤‖polynomial (χ u) true W D (σ u) (freq u)*P u‖^2 := by
     rw [Real.rpow_add hU,norm_mul,mul_pow]
     exact mul_le_mul (hM u hu) (hP u hu) (Real.rpow_nonneg hU.le _) (sq_nonneg _)
-  have hh := card_of_energy rows _ U _ (1+εm) C hU hs henergy
-  convert hh using 1; congr 2; ring
+  convert (card_of_energy rows _ U _ (1+εm) C hU hs henergy) using 1; congr 2; ring
 
 theorem plain_count {α : Type*} (rows : Finset α) (χ : α→Character)
     (W : ℝ→ℂ) (N : ℝ) (σ freq : α→ℝ) (P : α→ℂ)
@@ -56,8 +54,7 @@ theorem plain_count {α : Type*} (rows : Finset α) (χ : α→Character)
     rw [Real.rpow_add hU,Real.rpow_add hU,norm_mul,norm_mul,mul_pow,mul_pow]
     exact mul_le_mul (mul_le_mul (hS u hu) (hS u hu) (Real.rpow_nonneg hU.le _) (sq_nonneg _))
       (hP u hu) (Real.rpow_nonneg hU.le _) (mul_nonneg (sq_nonneg _) (sq_nonneg _))
-  have hh := card_of_energy rows _ U _ (1+εm) C hU hs henergy
-  convert hh using 1; congr 2; ring
+  convert (card_of_energy rows _ U _ (1+εm) C hU hs henergy) using 1; congr 2; ring
 
 end SevenEighths.HeckeDetectorRowCount
 

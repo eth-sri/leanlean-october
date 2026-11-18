@@ -33,7 +33,7 @@ theorem ExponentPair.atkinson_pair_nominal_gram {k l ε : ℝ}
   have hE : 1 ≤ H^(2*ε) := Real.one_le_rpow hH (by positivity)
   have hB : 0 ≤ B := by
     have hh : (0 : ℝ) ≤ (harmonic (Nat.ceil (L/G)) : ℝ) := by
-      simpa only [harmonic_zero,Rat.cast_zero] using
+      simpa using
         atkinson_harmonic_mono (Nat.zero_le (Nat.ceil (L/G)))
     dsimp [B]
     positivity
@@ -94,12 +94,9 @@ theorem ExponentPair.atkinson_dyadic_gram_le_pair_budget {k l ε : ℝ}
     have hms : Real.pi*(M : ℝ)/(2*H) < η :=
       (div_le_div_of_nonneg_right
         (mul_le_mul_of_nonneg_left hMNR Real.pi_pos.le) (by positivity)).trans_lt hsmall
-    have hg := hgram H G L M W hH hG hL hLH hM hMH hsep hrange hdiam hms
-    have he := henergy M M hM le_rfl
     have hS : 0 ≤ ∑ t ∈ W, ∑ u ∈ W, atkinsonPrefixGramMax M M t u :=
       Finset.sum_nonneg (fun t _ => Finset.sum_nonneg
         (fun u _ => atkinsonPrefixGramMax_nonneg M M t u))
-    have hMp := Real.rpow_le_rpow hM0.le hMH hε.le
     have ht := atkinsonPairPowerTerm_mono_index W.card
       (by linarith : 0 ≤ C) hH0.le hG.le hL.le hp hMN
     have hm : ((M : ℝ)^(-(1/4:ℝ)))^2*(M : ℝ)^(1+ε) =
@@ -107,13 +104,11 @@ theorem ExponentPair.atkinson_dyadic_gram_le_pair_budget {k l ε : ℝ}
       rw [atkinson_quarter_energy_power hM0,← Real.rpow_add hM0]
       congr 1
       ring
-    change ((M : ℝ)^(-(1/4:ℝ)))^2*atkinsonBlockCoefficientEnergy M M*
-      (∑ t ∈ W, ∑ u ∈ W, atkinsonPrefixGramMax M M t u) ≤ _
     calc
       _ ≤ ((M : ℝ)^(-(1/4:ℝ)))^2*(D*(M : ℝ)^(1+ε))*
           (∑ t ∈ W, ∑ u ∈ W, atkinsonPrefixGramMax M M t u) :=
         mul_le_mul_of_nonneg_right
-          (mul_le_mul_of_nonneg_left he (sq_nonneg _)) hS
+          (mul_le_mul_of_nonneg_left (henergy M M hM le_rfl) (sq_nonneg _)) hS
       _ = D*(M : ℝ)^ε*((M : ℝ)^(1/2:ℝ)*
           (∑ t ∈ W, ∑ u ∈ W, atkinsonPrefixGramMax M M t u)) := by
         calc
@@ -121,10 +116,10 @@ theorem ExponentPair.atkinson_dyadic_gram_le_pair_budget {k l ε : ℝ}
               (∑ t ∈ W, ∑ u ∈ W, atkinsonPrefixGramMax M M t u) := by ring
           _ = _ := by rw [hm]; ring
       _ ≤ D*(M : ℝ)^ε*(H^(2*ε)*atkinsonPairPowerTerm C k l H G L M W.card) :=
-        mul_le_mul_of_nonneg_left hg (by positivity)
+        mul_le_mul_of_nonneg_left (hgram H G L M W hH hG hL hLH hM hMH hsep hrange hdiam hms) (by positivity)
       _ ≤ D*H^ε*(H^(2*ε)*atkinsonPairPowerTerm C k l H G L N W.card) :=
         mul_le_mul
-          (mul_le_mul_of_nonneg_left hMp hD.le)
+          (mul_le_mul_of_nonneg_left (Real.rpow_le_rpow hM0.le hMH hε.le) hD.le)
           (mul_le_mul_of_nonneg_left ht (by positivity))
           (mul_nonneg (by positivity)
             (atkinsonPairPowerTerm_nonneg (by linarith) hH0.le hG.le hL.le k l M W.card))

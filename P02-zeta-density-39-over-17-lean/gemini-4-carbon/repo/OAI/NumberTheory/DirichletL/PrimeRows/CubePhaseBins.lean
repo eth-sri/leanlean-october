@@ -7,11 +7,10 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.CubeScale
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology ContDiff
 open Filter Set
+open scoped Classical BigOperators Topology ContDiff
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily ProbeRayCharacterFamily
-open HeckePrimeAmplitudeBins ProbeRaySlots
+open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily ProbeRayCharacterFamily HeckePrimeAmplitudeBins ProbeRaySlots
 local notation "O" => HeckeFamily.O
 variable (M : Ideal O) [NeZero M]
 local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
@@ -50,15 +49,12 @@ theorem actual_phase_bins_on_cube (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
   filter_upwards [hb,cube_height_budget_eventually n τ dmin cost hτ hcost hheight,
     ray_cube_conductor_eventually M ν hν,eventually_gt_atTop (0:ℝ)] with Z hb hh hc hZ
   intro d hd hd' hU hT η u hu hcal hrow a i hi ha ha' hbin r t hr hr' ht
-  have hs := calibration_nonzero_supported S hmax hbad u.val hcal
-  have hpow : 0≤Z^τ := Real.rpow_nonneg hZ.le _
   have hbuffer : ((3*i+1:ℕ):ℝ)*Z^τ+Z^τ/2≤(3*i+2:ℕ)*Z^τ := by
     push_cast
     nlinarith
-  have hfreq := (cube_buffered_heights t ((3*i+1:ℕ)*Z^τ) (Z^τ) i ht hpow hbuffer).2.2
-  have hb' := hb d hd hd' hU hT η u hu hs (hc u d hrow) a i ha ha' hbin r
+  have hb' := hb d hd hd' hU hT η u hu (calibration_nonzero_supported S hmax hbad u.val hcal) (hc u d hrow) a i ha ha' hbin r
     ((17/50:ℂ)+t.1.2*Complex.I) hr hr'
-    (by norm_num) (by norm_num) (by simpa using hfreq) (hh i hi d hd)
+    (by norm_num) (by norm_num) (by simpa using ((cube_buffered_heights t ((3*i+1:ℕ)*Z^τ) (Z^τ) i ht (Real.rpow_nonneg hZ.le _) hbuffer).2.2)) (hh i hi d hd)
   exact hb'
 
 end SevenEighths.ProbeHighRowFamily

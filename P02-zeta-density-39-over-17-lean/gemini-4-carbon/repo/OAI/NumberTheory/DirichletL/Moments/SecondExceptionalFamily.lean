@@ -12,22 +12,12 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap Topology
 
 namespace SevenEighths.CenteredMomentSecondExceptionalFamily
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open CenteredMomentSecondCanonical CenteredMomentCanonicalFirst
-open CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
-open CenteredMomentSecondCanonicalLedger CenteredMomentPartitionNorm
-open CenteredMomentSecondHeightFamily CenteredMomentSecondRadicalBudget CenteredMomentSecondRetainedWidth
-open CenteredMomentSecondSixthReduction CenteredMomentSecondSixthSource CenteredMomentSecondRadicalColumns
-open CenteredMomentSecondReducedPredicate CenteredMomentSecondLiveBlock CenteredMomentSecondBlockSupport
-open CenteredMomentSecondPhysicalBlock CenteredMomentHeckeColumnWindow CenteredMomentChildRows
-open CenteredMomentRestrictedEnergy CenteredMomentSectorLocalization RayFourExpansion
-open CenteredExceptionalProfile CenteredMomentReflectedSource
+open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss CenteredMomentSecondCanonical CenteredMomentCanonicalFirst CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalLedger CenteredMomentPartitionNorm CenteredMomentSecondHeightFamily CenteredMomentSecondRadicalBudget CenteredMomentSecondRetainedWidth CenteredMomentSecondSixthReduction CenteredMomentSecondSixthSource CenteredMomentSecondRadicalColumns CenteredMomentSecondReducedPredicate CenteredMomentSecondLiveBlock CenteredMomentSecondBlockSupport CenteredMomentSecondPhysicalBlock CenteredMomentHeckeColumnWindow CenteredMomentChildRows CenteredMomentRestrictedEnergy CenteredMomentSectorLocalization RayFourExpansion CenteredExceptionalProfile CenteredMomentReflectedSource
 local notation "O" => HeckeFamily.O
 
 theorem span_thirty_six_norm : (Ideal.span {(36:O)}).absNorm=1296 := by
-  have h := ActualEisensteinCubic.rational_modulus_card 36 (by norm_num)
   rw [Ideal.absNorm_apply,Submodule.cardQuot_apply]
-  exact h
+  exact (ActualEisensteinCubic.rational_modulus_card 36 (by norm_num))
 
 theorem reflected_modulus_bound (τ:Character) :
     (reflected τ).modulus.absNorm≤1296*τ.modulus.absNorm := by
@@ -88,9 +78,9 @@ theorem selected_nonunit_norm (C D:Ideal O) (hC:Supported C) (hD:Supported D)
     (∏P∈U,P.val).absNorm*(Ideal.span {nonunitFrequencyGenerator C D U}).absNorm≤D.absNorm := by
   obtain ⟨h₁,h₂⟩ := selected_nonunit_dvd C D hC hD hCD U
   constructor
-  · simpa only [map_mul] using Nat.le_of_dvd
+  · simpa using Nat.le_of_dvd
       (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hC.1)) (map_dvd Ideal.absNorm h₁)
-  · simpa only [map_mul] using Nat.le_of_dvd
+  · simpa using Nat.le_of_dvd
       (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hD.1)) (map_dvd Ideal.absNorm h₂)
 
 structure Family (η:Character) (C D:Ideal O) (hC:Supported C) (hD:Supported D)
@@ -188,11 +178,9 @@ theorem expanded_conductor_bounds {η:Character}{C D:Ideal O}{hC:Supported C}{hD
       expandedFactor η*R.absNorm*C.absNorm*D.absNorm*(Ideal.span {z}).absNorm ∧
     expandedConductor (reflected (τ ξ)) R D z≤
       expandedFactor η*R.absNorm*C.absNorm*D.absNorm*(Ideal.span {z}).absNorm := by
-  have hl := (h.physical_conductor_bounds hCD t S β radius rows W K hK n hne χ).2
-  have hr := (h.physical_conductor_bounds hCD t S β radius rows W K hK n hne ξ).1
   have hl' : (τ χ).modulus.absNorm≤1296*(η.modulus.absNorm*fixedFactor*D.absNorm) := by
-    exact hl.trans (Nat.le_mul_of_pos_left _ (by norm_num))
-  have hr' := (reflected_modulus_bound (τ ξ)).trans (Nat.mul_le_mul_left 1296 hr)
+    exact ((h.physical_conductor_bounds hCD t S β radius rows W K hK n hne χ).2).trans (Nat.le_mul_of_pos_left _ (by norm_num))
+  have hr' := (reflected_modulus_bound (τ ξ)).trans (Nat.mul_le_mul_left 1296 ((h.physical_conductor_bounds hCD t S β radius rows W K hK n hne ξ).1))
   constructor
   · calc
       expandedConductor (τ χ) R C z≤

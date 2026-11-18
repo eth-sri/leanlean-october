@@ -12,9 +12,7 @@ namespace SevenEighths.InverseMoment
 
 theorem actual_rank_depth_covers (Mmax cutoff:ℝ)(hcut:0<cutoff):
     Mmax≤rankRowCap (actualDepth Mmax (cutoff/2)) cutoff := by
-  have hceil:=Nat.le_ceil (2*Mmax/(3*(cutoff/2)))
-  have hscaled:2*Mmax≤(⌈2*Mmax/(3*(cutoff/2))⌉₊:ℝ)*(3*(cutoff/2)):=
-    (div_le_iff₀ (by positivity:0<3*(cutoff/2))).mp hceil
+  have hscaled := (div_le_iff₀ (by positivity:0<3*(cutoff/2))).mp (Nat.le_ceil (2*Mmax/(3*(cutoff/2))))
   unfold rankRowCap actualDepth
   push_cast
   nlinarith

@@ -60,20 +60,16 @@ lemma lowPhysicalScale_nominal_bound (C : CalibrationData) (Z L c d : ℝ)
     (hZ : 0<Z) (hc : 0<c) (hL : c*Z^d≤L) :
     lowPhysicalScale C (Z^(17/48:ℝ)/L) (Z^(23/48:ℝ)/L)≤
       (elementNorm C.generator/c^2)*Z^(5/6-2*d:ℝ) := by
-  have hl : 0<L := lt_of_lt_of_le (by positivity) hL
   rw [lowPhysicalScale_source C Z L hZ]
-  calc
-    _≤elementNorm C.generator*Z^(5/6:ℝ)/(c*Z^d)^2 :=
-      div_le_div_of_nonneg_left (by unfold elementNorm;positivity) (by positivity)
-        (pow_le_pow_left₀ (by positivity) hL 2)
-    _=_ := by
+  exact (div_le_div_of_nonneg_left (by unfold elementNorm;positivity) (by positivity)
+        (pow_le_pow_left₀ (by positivity) hL 2)).trans_eq (by
       have hp : (Z^d)^2=Z^(2*d) := by
         rw [←Real.rpow_natCast,←Real.rpow_mul hZ.le]
         congr 1
         push_cast
         ring
       rw [mul_pow,hp,Real.rpow_sub hZ]
-      ring
+      ring)
 
 lemma lowSelectedScale_product {K : ℕ} (ell : Fin K→ℝ) (J : Finset (Fin K))
     (Z : ℝ) (hZ : 0<Z) :
@@ -85,7 +81,7 @@ lemma lowSelectedCaps_product {K : ℕ} (ell : Fin K→ℝ) (hell : ∀i,0≤ell
     (∏i : SelectedSlot J,max 1 (b*Z^(ell i.val)))≤
       (max 1 b)^K*Z^(lowSelectedLength ell J) := by
   have hc : Fintype.card (SelectedSlot J)≤K := by
-    simpa only [Fintype.card_coe,Finset.card_univ,Fintype.card_fin] using Finset.card_le_card (Finset.subset_univ (Finset.univ\J))
+    simpa using Finset.card_le_card (Finset.subset_univ (Finset.univ\J))
   calc
     _≤∏i : SelectedSlot J,max 1 b*Z^(ell i.val) := by
       apply Finset.prod_le_prod₀ (fun _ _=>le_trans zero_le_one (le_max_left _ _))

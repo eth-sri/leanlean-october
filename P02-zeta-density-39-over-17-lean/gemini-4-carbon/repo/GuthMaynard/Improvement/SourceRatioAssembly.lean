@@ -27,10 +27,9 @@ theorem sourceReducedPair_properties {p : ℕ × ℕ} (hp : 0 < p.1 ∧ 0 < p.2)
 
 theorem sourceReducedPair_ratio {p : ℕ × ℕ} (hp : 0 < p.1 ∧ 0 < p.2) :
     ((sourceReducedPair p).1:ℝ)/(sourceReducedPair p).2 = (p.1:ℝ)/p.2 := by
-  have hq := sourceReducedPair_properties hp
   have hleft : (sourceReducedPair p).1 * Nat.gcd p.1 p.2 = p.1 := Nat.div_mul_cancel (Nat.gcd_dvd_left _ _)
   have hright : (sourceReducedPair p).2 * Nat.gcd p.1 p.2 = p.2 := Nat.div_mul_cancel (Nat.gcd_dvd_right _ _)
-  apply (div_eq_div_iff (by exact_mod_cast (Nat.ne_of_gt hq.2.1) : ((sourceReducedPair p).2:ℝ) ≠ 0)
+  apply (div_eq_div_iff (by exact_mod_cast (Nat.ne_of_gt (sourceReducedPair_properties hp).2.1) : ((sourceReducedPair p).2:ℝ) ≠ 0)
     (by exact_mod_cast (Nat.ne_of_gt hp.2) : (p.2:ℝ) ≠ 0)).mpr
   have he : (sourceReducedPair p).1*p.2 = p.1*(sourceReducedPair p).2 := by
     calc

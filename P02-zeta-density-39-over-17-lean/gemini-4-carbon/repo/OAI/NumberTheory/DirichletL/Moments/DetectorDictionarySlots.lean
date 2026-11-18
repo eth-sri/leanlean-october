@@ -10,9 +10,7 @@ noncomputable section
 open scoped Classical BigOperators ComplexConjugate
 
 namespace SevenEighths.CenteredMomentDetectorDictionary
-open HeckeFamily HeckeDyadic HeckeRowClosure CanonicalRowCompletion
-open CenteredMomentHeckeSlots CenteredMomentWholeSlotDeletion CenteredMomentPrimeSlot
-open HeckeDetectorRelativePrime
+open HeckeFamily HeckeDyadic HeckeRowClosure CanonicalRowCompletion CenteredMomentHeckeSlots CenteredMomentWholeSlotDeletion CenteredMomentPrimeSlot HeckeDetectorRelativePrime
 local notation "O" => HeckeFamily.O
 
 def physicalSlotCoefficient (η : Character) (W : ℝ→ℂ) (D : ℝ) (z : ℂ) (P : Ideal O) : ℂ :=
@@ -42,15 +40,12 @@ theorem physical_slot_conj (M : Ideal O) (H : Subgroup (O⧸M)ˣ)
   congr 1
   apply Finset.sum_congr rfl
   intro P hP
-  have hP' : P∈primePool M H b D := hP
   obtain ⟨_,hp,hclass⟩ := Finset.mem_filter.mp hP
   let : P.IsMaximal := (Ideal.isPrime_of_prime hp).isMaximal hp.ne_zero
-  have hg := HeckePrimeRow.identityClass_prime_good M H m hmLam hMm P hclass
-  have hcop := HeckePrimeRow.identityClass_coprime_larger M H hclass hMm
-  rw [idealRowHom_argument_mul,idealRowHom_prime_sixth_mask m P hg,ite_eq_left hcop,one_mul]
+  rw [idealRowHom_argument_mul,idealRowHom_prime_sixth_mask m P (HeckePrimeRow.identityClass_prime_good M H m hmLam hMm P hclass),ite_eq_left (HeckePrimeRow.identityClass_coprime_larger M H hclass hMm),one_mul]
   by_cases hw : W ((P.absNorm:ℝ)/D)=0
   · simp only [physicalSlotCoefficient,hw,zero_mul,map_zero,mul_zero,zero_mul]
-  · have hn := idealCoeff_ne_zero_of_coprime η P hp.ne_zero (hη P hP' hw)
+  · have hn := idealCoeff_ne_zero_of_coprime η P hp.ne_zero (hη P (hP) hw)
     simp only [physicalSlotCoefficient,HeckeDetectorRelativePrime.idealCoeff_inverse,map_mul,starRingEnd_self_apply]
     field_simp
 

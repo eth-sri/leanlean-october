@@ -11,12 +11,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstChildProfileControl
-open HeckeFamily CenteredMomentCommonRadialData CenteredMomentCommonProfile
-open CenteredMomentCommonAllocationSum CenteredMomentEligibleEnergy
-open CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps
-open CenteredMomentCommonRadialPointwise CenteredMomentCommonExceptionalCost
-open CenteredMomentAllocatedDetectorAmplitude CenteredMomentFiniteProfileExceptional
-open CenteredMomentFiniteProfileExceptionalPhysical
+open HeckeFamily CenteredMomentCommonRadialData CenteredMomentCommonProfile CenteredMomentCommonAllocationSum CenteredMomentEligibleEnergy CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps CenteredMomentCommonRadialPointwise CenteredMomentCommonExceptionalCost CenteredMomentAllocatedDetectorAmplitude CenteredMomentFiniteProfileExceptional CenteredMomentFiniteProfileExceptionalPhysical
 local notation "O" => HeckeFamily.O
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
@@ -65,12 +60,8 @@ omit [DecidableEq ι] in
 lemma profile_cost_bound (s : Input ι) (N : ℕ) (b A : ℝ)
     (hb : 1≤b) (hu : s.upper≤b) (hc : Fintype.card ι≤N) (hm : mass s≤A) :
     profileCost s≤(2*(max 1 s.b₁*max 1 s.b₂)*b^N*A^2)*mass s^2 := by
-  have hb0:0≤b:=zero_le_one.trans hb
-  have hp : (max 1 s.upper)^Fintype.card ι≤b^N :=
-    (pow_le_pow_left₀ (by positivity) (max_le hb hu) _).trans (pow_le_pow_right₀ hb hc)
-  have hm2:=pow_le_pow_left₀ (mass_nonneg s) hm 2
-  have h:=mul_le_mul hm2 hp (by positivity) (sq_nonneg A)
-  have h':=(mul_le_mul_of_nonneg_right h
+  have hb0 :=zero_le_one.trans hb
+  have h':=(mul_le_mul_of_nonneg_right (mul_le_mul (pow_le_pow_left₀ (mass_nonneg s) hm 2) ((pow_le_pow_left₀ (by positivity) (max_le hb hu) _).trans (pow_le_pow_right₀ hb hc)) (by positivity) (sq_nonneg A))
     (show 0≤2*(max 1 s.b₁*max 1 s.b₂)*mass s^2 by positivity))
   convert h' using 1 <;> simp only [profileCost,Data.profileFactor,mass]; ring
 
@@ -79,17 +70,11 @@ lemma exceptional_slot_bound (s : Input ι) (N : ℕ) (b A : ℝ)
     (hb : 1≤b) (hu : s.upper≤b) (hc : Fintype.card ι≤N) (hm : mass s≤A) :
     slotControl s.toData^2*frozenProfile s^2≤
       ((128*b)^N)^2*(b^N)^2*A^4*mass s^2 := by
-  have hb0:0≤b:=zero_le_one.trans hb
-  have hp : (max 1 s.upper)^Fintype.card ι≤b^N :=
-    (pow_le_pow_left₀ (by positivity) (max_le hb hu) _).trans (pow_le_pow_right₀ hb hc)
-  have h128 : (1:ℝ)≤128*b := by linarith
-  have hs : slotControl s.toData≤(128*b)^N*mass s^2 :=
-    (slot_control_bound s b hb hu).trans
+  have h128 : 1≤128*b := by linarith
+  have hs := (slot_control_bound s b hb hu).trans
       (mul_le_mul_of_nonneg_right (pow_le_pow_right₀ h128 hc) (sq_nonneg _))
-  have hf : frozenProfile s≤mass s*b^N :=
-    mul_le_mul_of_nonneg_left hp (mass_nonneg s)
   have h:=mul_le_mul (pow_le_pow_left₀ (slotControl_nonneg _) hs 2)
-    (pow_le_pow_left₀ (frozenProfile_nonneg s) hf 2) (sq_nonneg _) (sq_nonneg _)
+    (pow_le_pow_left₀ (frozenProfile_nonneg s) (mul_le_mul_of_nonneg_left ((pow_le_pow_left₀ (by positivity) (max_le hb hu) _).trans (pow_le_pow_right₀ hb hc)) (mass_nonneg s)) 2) (sq_nonneg _) (sq_nonneg _)
   calc
     _≤((128*b)^N*mass s^2)^2*(mass s*b^N)^2:=h
     _=((128*b)^N)^2*(b^N)^2*mass s^4*mass s^2:=by ring
@@ -112,15 +97,13 @@ lemma exceptional_factor_bound {wlo whi : ℝ}
     (hb : 1≤b) (hu : s.upper≤b) (hc : Fintype.card ι≤N) (hm : mass s≤A) :
     profileFactor S s p J Q K≤exceptionalConstant N b J Q K*
       p.control S^2*(1+‖s.t‖)^(2*J)*A^4*mass s^2 := by
-  have h:=exceptional_slot_bound s N b A hb hu hc hm
-  let F:=K*(768*(6:ℝ)^(UniqueFactorizationMonoid.normalizedFactors Q).toFinset.card)*
+  let F:=K*(768*6^(UniqueFactorizationMonoid.normalizedFactors Q).toFinset.card)*
     (1+2*Real.pi)^(4*J)*p.control S^2*(1+‖s.t‖)^(2*J)*
     (∫u:ℝ,(1+‖u‖)^J*‖CenteredMomentHeckeColumnWindow.columnDensity
       CenteredMomentLogDyadic.logAnnulus CenteredMomentLogDyadic.logAnnulus_compact
       CenteredMomentLogDyadic.logAnnulus_smooth u‖)^2
   have hF : 0≤F := by dsimp [F]; positivity
-  have hh:=mul_le_mul_of_nonneg_left h hF
-  convert hh using 1 <;> simp only [profileFactor,exceptionalConstant,F] <;> ring
+  convert (mul_le_mul_of_nonneg_left (exceptional_slot_bound s N b A hb hu hc hm) hF) using 1 <;> simp only [profileFactor,exceptionalConstant,F] <;> ring
 
 end SevenEighths.CenteredMomentFirstChildProfileControl
 

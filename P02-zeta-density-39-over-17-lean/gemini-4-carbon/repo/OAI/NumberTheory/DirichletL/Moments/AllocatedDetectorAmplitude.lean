@@ -10,10 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentAllocatedDetectorAmplitude
-open HeckeFamily CenteredMomentEligibleEnergy CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
-open CenteredMomentDivisorRawEnergy CenteredMomentDivisorRectangle CenteredMomentDivisorExtraction
-open CenteredMomentAllocatedDetectorCapped CenteredMomentDetectorDictionary
-open ConcretePrimeRowBridge CenteredMomentDivisorRows
+open HeckeFamily CenteredMomentEligibleEnergy CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentDivisorRawEnergy CenteredMomentDivisorRectangle CenteredMomentDivisorExtraction CenteredMomentAllocatedDetectorCapped CenteredMomentDetectorDictionary ConcretePrimeRowBridge CenteredMomentDivisorRows
 local notation "O" => HeckeFamily.O
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 
@@ -50,8 +47,7 @@ lemma slot_product_bound (s:Data ι) (D:Ideal O)
 omit [DecidableEq ι] in
 lemma coefficient_support (s:Data ι) (i:ι) (I:Ideal O) (hI:s.coefficient i I≠0):
     (Ideal.absNorm I:ℝ)≤max 0 (s.hi i)*s.P i:=by
-  have hw:s.W i ((Ideal.absNorm I:ℝ)/s.P i)≠0:=right_ne_zero_of_mul hI
-  exact (div_le_iff₀ (s.P_pos i)).mp ((s.support i hw).2.trans (le_max_right _ _))
+  exact (div_le_iff₀ (s.P_pos i)).mp ((s.support i (right_ne_zero_of_mul hI)).2.trans (le_max_right _ _))
 
 end SevenEighths.CenteredMomentAllocatedDetectorAmplitude
 

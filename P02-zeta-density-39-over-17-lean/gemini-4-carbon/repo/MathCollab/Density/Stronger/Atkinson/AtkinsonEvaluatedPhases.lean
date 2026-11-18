@@ -28,7 +28,7 @@ theorem exp_negative_saddle_mul_fresnel (f : ℝ) :
     Complex.exp (((-f - Real.pi / 4 : ℝ) : ℂ) * I) *
       Complex.exp (((-Real.pi / 4 : ℝ) : ℂ) * I) = (-I) * Complex.exp ((-f : ℂ) * I) := by
   have hquarter : Complex.exp (((-Real.pi / 2 : ℝ) : ℂ) * I) = -I := by
-    simpa only [Complex.ofReal_div, Complex.ofReal_neg, Complex.ofReal_ofNat] using
+    simpa using
       Complex.exp_neg_pi_div_two_mul_I
   rw [← hquarter, ← Complex.exp_add, ← Complex.exp_add]
   congr 1
@@ -48,7 +48,7 @@ theorem atkinsonStationaryMain_sqrt {T : ℝ} (hT : 0 < T)
   rw [atkinsonPowerWeight_at_saddle hT G L α n]
   calc
     _ = (2 * atkinsonSaddleProfile T G L α (Real.sqrt n) * atkinsonSaddleGaussian T G n *
-      Complex.exp ((atkinsonCentralPhase T : ℂ) * I) * (-1 : ℂ) ^ n *
+      Complex.exp ((atkinsonCentralPhase T : ℂ) * I) * (-1) ^ n *
         (Complex.exp (((atkinsonSourcePhase T n + Real.pi / 4 : ℝ) : ℂ) * I) *
           Complex.exp (((-Real.pi / 4 : ℝ) : ℂ) * I))) /
             (Real.sqrt (2 * atkinsonSaddleCurvature T (Real.sqrt n)) : ℂ) := by ring
@@ -67,7 +67,7 @@ theorem atkinsonStationaryMain_neg_sqrt {T G : ℝ} (hT : 0 < T) (hG : G ≠ 0)
   rw [atkinsonPowerWeight_at_neg_saddle hT hG L α n]
   calc
     _ = (2 * atkinsonSaddleProfile T G L α (-Real.sqrt n) * atkinsonSaddleGaussian T G n *
-      Complex.exp ((atkinsonCentralPhase T : ℂ) * I) * (-1 : ℂ) ^ n *
+      Complex.exp ((atkinsonCentralPhase T : ℂ) * I) * (-1) ^ n *
         (Complex.exp (((-atkinsonSourcePhase T n - Real.pi / 4 : ℝ) : ℂ) * I) *
           Complex.exp (((-Real.pi / 4 : ℝ) : ℂ) * I))) /
             (Real.sqrt (2 * atkinsonSaddleCurvature T (-Real.sqrt n)) : ℂ) := by ring

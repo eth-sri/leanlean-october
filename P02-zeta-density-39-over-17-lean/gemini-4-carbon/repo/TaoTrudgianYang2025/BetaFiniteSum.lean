@@ -57,8 +57,7 @@ theorem norm_sum_Icc_le_interior_add_three
       ‖∑ n ∈ Finset.range (L+1), z (a+1+n)‖+3 := by
   have heq : (∑ n ∈ Finset.Icc a (a+L+3), z n) =
       ((∑ n ∈ Finset.range (L+1), z (a+1+n))+z a)+z (a+L+2)+z (a+L+3) := by
-    rw [sum_Icc_eq_shifted_range z a (a+L+3) (by omega)]
-    rw [show a+L+3-a+1 = ((L+1)+1)+1+1 by omega,
+    rw [sum_Icc_eq_shifted_range z a (a+L+3) (by omega), show a+L+3-a+1 = ((L+1)+1)+1+1 by omega,
       Finset.sum_range_succ,Finset.sum_range_succ,Finset.sum_range_succ']
     simp only [Nat.add_zero,Nat.add_assoc,Nat.add_left_comm,Nat.add_comm]
   rw [heq]

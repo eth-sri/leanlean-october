@@ -15,7 +15,6 @@ namespace Montgomery.RationalMoment
 theorem fourth_power_with_linear_term (a z : ℂ) {E : ℝ}
     (hE : ‖z‖ ^ 2 ≤ E) :
     ‖a+z‖ ^ 4 ≤ (‖a‖ ^ 2 + 4*E)^2 + 4*‖a‖^2*(conj a*z).re := by
-  have hE0 : 0 ≤ E := (sq_nonneg _).trans hE
   have hr : (conj a*z).re ^ 2 ≤ ‖a‖ ^ 2 * ‖z‖ ^ 2 := by
     simpa only [Complex.normSq_eq_norm_sq, norm_mul, Complex.norm_conj, mul_pow, ← pow_two]
       using Complex.re_sq_le_normSq (conj a*z)
@@ -25,7 +24,7 @@ theorem fourth_power_with_linear_term (a z : ℂ) {E : ℝ}
     ring
   have hid4 : ‖a+z‖ ^ 4 = (‖a‖ ^ 2 + 2*(conj a*z).re + ‖z‖ ^ 2)^2 := by
     rw [show ‖a+z‖ ^ 4 = (‖a+z‖ ^ 2)^2 by ring, hid]
-  have hE2 := (sq_le_sq₀ (sq_nonneg ‖z‖) hE0).mpr hE
+  have hE2 := (sq_le_sq₀ (sq_nonneg ‖z‖) ((sq_nonneg _).trans hE)).mpr hE
   have hm := mul_le_mul_of_nonneg_left hE (sq_nonneg ‖a‖)
   nlinarith [sq_nonneg ((conj a*z).re - ‖z‖^2)]
 

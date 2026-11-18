@@ -8,80 +8,13 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 
 namespace CubicEisenstein
 
 section
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff SchwartzMap LineDeriv
+open scoped LineDeriv
 
 def kernelCoordinateLaplacian (f : kernelSmoothTests) (p : EuclideanSpatial) : ℂ :=
   -(p 2:ℂ)^2*(∑j : Fin 3,
@@ -111,38 +44,30 @@ lemma kernelDirichletForm_sum_right {ι : Type*} (f : kernelSmoothTests)
     kernelDirichletForm f (∑i∈t,g i)=∑i∈t,kernelDirichletForm f (g i) := by
   induction t using Finset.induction_on with
   | empty =>
-    have hz := kernelDirichletForm_smul_right 0 f (0 : kernelSmoothTests)
-    simpa only [Finset.sum_empty,zero_smul,zero_mul] using hz
+    simpa only [Finset.sum_empty,zero_smul,zero_mul] using (kernelDirichletForm_smul_right 0 f (0 : kernelSmoothTests))
   | @insert i t hi ih =>
     simp only [Finset.sum_insert hi,kernelDirichletForm_add_right,ih]
 
 end
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff
 
 lemma kernelL2_inner_toLp_smooth (A : KernelQuotient→ℂ)
     (hA : MemLp A 2 (integralQuotientVolume globalKubotaKernel)) (g : kernelSmoothTests) :
     inner ℂ (hA.toLp A) (kernelSmoothTestsToL2 g)=
       ∫q,star (A q)*g.1 q∂integralQuotientVolume globalKubotaKernel := by
-  calc
-    _ = ∫q,inner ℂ ((hA.toLp A) q) (kernelSmoothTestsToL2 g q)
-        ∂integralQuotientVolume globalKubotaKernel := rfl
-    _ = _ := by
+  exact (rfl).trans (by
       apply integral_congr_ae
       filter_upwards [hA.coeFn_toLp,(kernelSmoothTests_memLp g).coeFn_toLp] with q hq hg
       change inner ℂ ((hA.toLp A) q) (((kernelSmoothTests_memLp g).toLp g.1) q)=_
       rw [hq,hg,RCLike.inner_apply]
-      simp only [RCLike.star_def,mul_comm]
+      simp only [RCLike.star_def,mul_comm])
 
 end CubicEisenstein
 
 section
 
-open scoped BigOperators Classical
-open MeasureTheory
 namespace SecondPassIntegration
-open ActualEisensteinCubic SecondPassArithmetic ConcreteTraceCRT
+open SecondPassArithmetic
 
 variable {ι : Type*} [DecidableEq ι] (p : ι → ActualEisensteinCubic.O) (hp : ∀i,p i≠0)
   [∀i,(Ideal.span {p i}).IsMaximal]
@@ -152,7 +77,7 @@ variable {ι : Type*} [DecidableEq ι] (p : ι → ActualEisensteinCubic.O) (hp 
 end SecondPassIntegration
 
 namespace SecondPassArithmetic
-open ActualEisensteinCubic FirstPassCubeLabels ConcreteTraceCRT
+open FirstPassCubeLabels
 
 variable {ι : Type*} [DecidableEq ι] (p : ι → ActualEisensteinCubic.O) (hp : ∀i,p i≠0)
   [∀i,(Ideal.span {p i}).IsMaximal]
@@ -160,9 +85,7 @@ variable {ι : Type*} [DecidableEq ι] (p : ι → ActualEisensteinCubic.O) (hp 
 end SecondPassArithmetic
 end
 
-open scoped BigOperators Classical
 namespace SecondPassArithmetic
-open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProduct jLabel)
 
 variable {ι : Type*} [DecidableEq ι] (p : ι → ActualEisensteinCubic.O)
@@ -171,9 +94,6 @@ end SecondPassArithmetic
 
 namespace CanonicalRowCompletion
 
-open MeasureTheory
-open scoped BigOperators Classical
-open ActualEisensteinCubic
 open CompletedGauss hiding O
 open ConcretePrimeRowBridge hiding O columnWeight
 open CanonicalQuadraticSieve hiding O
@@ -194,10 +114,7 @@ theorem finite_integral_energy_polynomial {κ : Type*} [Fintype κ]
     simp only [norm_mul,mul_pow,← Finset.mul_sum,Real.sq_sqrt hE]
     have hp : (1+|t|)^(2*d) = ((1+|t|)^d)^2 := by
       rw [← pow_mul,Nat.mul_comm d 2]
-    calc
-      _ ≤ ‖b t‖^2 * (E*(1+|t|)^(2*d)) :=
-        mul_le_mul_of_nonneg_left (hbound t) (sq_nonneg _)
-      _ = _ := by rw [hp]; ring
+    exact (mul_le_mul_of_nonneg_left (hbound t) (sq_nonneg _)).trans_eq (by rw [hp]; ring)
   have he : (∫ t : ℝ, F t) = e.symm (fun k => ∫ t : ℝ, b t*φ k t) := by
     rw [show F = (fun t => e.symm (fun k => b t*φ k t)) from rfl,
       e.symm.integral_comp_comm]
@@ -218,22 +135,17 @@ theorem finite_integral_energy_polynomial {κ : Type*} [Fintype κ]
 theorem norm_add_sum_sq_le {κ : Type*} (s : Finset κ) (a : ℂ) (b : κ → ℂ) :
     ‖a + ∑ k ∈ s, b k‖^2 ≤ 2*(‖a‖^2 + s.card*∑ k ∈ s, ‖b k‖^2) := by
   have hs : ‖∑ k ∈ s, b k‖^2 ≤ (s.card : ℝ)*∑ k ∈ s, ‖b k‖^2 := by
-    calc
-      _ ≤ (∑ k ∈ s, ‖b k‖)^2 :=
-        pow_le_pow_left₀ (norm_nonneg _) (norm_sum_le _ _) 2
-      _ ≤ _ := by
+    exact (pow_le_pow_left₀ (norm_nonneg _) (norm_sum_le _ _) 2).trans (by
         simpa only [one_mul,one_pow,Finset.sum_const,nsmul_eq_mul,mul_one]
-          using Finset.sum_mul_sq_le_sq_mul_sq s (fun _ => (1:ℝ)) (fun k => ‖b k‖)
+          using Finset.sum_mul_sq_le_sq_mul_sq s (fun _ => (1:ℝ)) (fun k => ‖b k‖))
   have ha := pow_le_pow_left₀ (norm_nonneg _) (norm_add_le a (∑ k ∈ s, b k)) 2
   nlinarith [sq_nonneg (‖a‖ - ‖∑ k ∈ s, b k‖)]
 
 end CanonicalRowCompletion
 
-open scoped BigOperators Classical
 namespace CanonicalCoefficientClass
 
 section
-open ActualEisensteinCubic
 open SecondPassArithmetic (rayMonoid conjugateRayMonoid rayMonoid_apply conjugateRayMonoid_apply
   FirstCoreIndex firstCoreTwist sideRayMonoid SecondRayIndex secondRayMinus secondRayPlus)
 open RayFourExpansion (RayCharacter)
@@ -305,7 +217,6 @@ def FactorsModulo (Q : Ideal ActualEisensteinCubic.O) (Ψ : ActualEisensteinCubi
 
 end
 
-open ActualEisensteinCubic
 open ActualEisensteinCoordinates (eval coords eval_coords)
 open ShortDraftLatticeCount (qNat qO_nonneg coords_eval)
 

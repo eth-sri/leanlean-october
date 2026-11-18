@@ -31,8 +31,6 @@ theorem atkinsonPairPowerTerm_physical_le {C H G L k l : ℝ} {N : ℕ} (R : ℕ
   have hK : 0 ≤ K := by
     simpa only [harmonic_zero,Rat.cast_zero] using
       atkinson_harmonic_mono (Nat.zero_le (Nat.ceil (L/G)))
-  have hk : K ≤ 2*Real.log (2*H) :=
-    atkinson_pair_harmonic_le_height_log hH hG hLH hlog
   have hd : P*(N : ℝ)^(3/2:ℝ) ≤ 5476*(H/G)*(Real.log (2*H))^3 := by
     calc
       _ ≤ P*B^(3/2:ℝ) := mul_le_mul_of_nonneg_left
@@ -53,20 +51,17 @@ theorem atkinsonPairPowerTerm_physical_le {C H G L k l : ℝ} {N : ℕ} (R : ℕ
           (mul_le_mul_of_nonneg_left
             (Real.rpow_le_rpow (Nat.cast_nonneg N) hcut hp) hP) (by positivity)
       _ ≤ _ := atkinsonPhysical_pair_scale_le hH0 hG0 hlog hL hpair
-  have h1 := mul_le_mul_of_nonneg_left hd (Nat.cast_nonneg R : (0 : ℝ) ≤ _)
-  have h2 := mul_le_mul_of_nonneg_left hf (by positivity : 0 ≤ C*(R : ℝ)^2)
   have h3 := mul_le_mul
     (mul_le_mul_of_nonneg_left hn (by positivity : 0 ≤ 2*C*(R : ℝ)))
-    hk hK (by positivity)
+    (atkinson_pair_harmonic_le_height_log hH hG hLH hlog) hK (by positivity)
   have he : P*atkinsonPairPowerTerm C k l H G L N R =
       (R : ℝ)*(P*(N : ℝ)^(3/2:ℝ))+
       C*(R : ℝ)^2*((L^k*H^(-k/2))*(P*(N : ℝ)^(l+1/2-k/2)))+
       (2*C*(R : ℝ)*((Real.sqrt H/G)*(P*(N : ℝ))))*K := by
     unfold atkinsonPairPowerTerm K
     ring
-  change P*atkinsonPairPowerTerm C k l H G L N R ≤ _
   rw [he]
-  apply (add_le_add (add_le_add h1 h2) h3).trans
+  apply (add_le_add (add_le_add (mul_le_mul_of_nonneg_left hd (Nat.cast_nonneg R : (0 : ℝ) ≤ _)) (mul_le_mul_of_nonneg_left hf (by positivity : 0 ≤ C*(R : ℝ)^2))) h3).trans
   let X := (R : ℝ)*(H/G)*(Real.log (2*H))^3
   let Y := (R : ℝ)^2*(L^k*H^(l-k)*G^(1+k-2*l))*(Real.log (2*H))^3
   have hX : 0 ≤ X := by dsimp [X]; positivity
@@ -86,7 +81,6 @@ theorem atkinsonPairPowerBudget_physical_log_le {C H G L k l : ℝ} {N : ℕ} (R
     G^2*H^(-(1/2:ℝ))*atkinsonPairPowerBudget C k l H G L N R ≤
       (10000*C*(1/Real.log 2+1)^2)*(Real.log (2*H))^5*
         ((R : ℝ)*H/G+(R : ℝ)^2*L^k*H^(l-k)*G^(1+k-2*l)) := by
-  have ht := atkinsonPairPowerTerm_physical_le R hC hH hG hL hLH hlog hpair hcut
   have hj := pow_le_pow_left₀ (Nat.cast_nonneg (Nat.clog 2 N) : (0 : ℝ) ≤ _)
     (atkinson_clog_le_height_log hH hlog hN) 2
   unfold atkinsonPairPowerBudget
@@ -96,7 +90,7 @@ theorem atkinsonPairPowerBudget_physical_log_le {C H G L k l : ℝ} {N : ℕ} (R
     _ ≤ (Nat.clog 2 N : ℝ)^2*
         (10000*C*(Real.log (2*H))^3*
           ((R : ℝ)*H/G+(R : ℝ)^2*L^k*H^(l-k)*G^(1+k-2*l))) :=
-      mul_le_mul_of_nonneg_left ht (sq_nonneg _)
+      mul_le_mul_of_nonneg_left (atkinsonPairPowerTerm_physical_le R hC hH hG hL hLH hlog hpair hcut) (sq_nonneg _)
     _ ≤ ((1/Real.log 2+1)*Real.log (2*H))^2*
         (10000*C*(Real.log (2*H))^3*
           ((R : ℝ)*H/G+(R : ℝ)^2*L^k*H^(l-k)*G^(1+k-2*l))) :=

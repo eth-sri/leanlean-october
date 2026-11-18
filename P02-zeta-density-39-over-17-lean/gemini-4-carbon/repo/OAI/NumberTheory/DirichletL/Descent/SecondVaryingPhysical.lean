@@ -7,9 +7,8 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondVaryingBalanced
 namespace OAI
 
 namespace SevenEighths.InverseMoment
+open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic JointLogSeparation MeasureTheory SchwartzMap
 open scoped BigOperators Classical ContDiff
-open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open JointLogSeparation MeasureTheory SchwartzMap
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 local instance inverseSecondVaryingPhysicalUnits : Fintype Eisˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
@@ -113,8 +112,7 @@ theorem actual_second_varying_balanced_profile_children
           actualSecondProfileRow p hp hcop hg pool (secondInheritedProfile p x Ψ m z)
             slots₁ slots₂ (lists₁ x) (lists₂ x) a₁ a₂ W₁ W₂ Φ Y (G*V*X)) := by ring
     _ = _ := by
-      rw [he]
-      rw [←mul_assoc]
+      rw [he, ←mul_assoc]
       apply congrArg (fun a : ℂ => ((Y:ℂ)*secondRayCoefficient z*((E*V*X:ℝ):ℂ)⁻¹)*a)
       apply integral_congr_ae
       filter_upwards with t

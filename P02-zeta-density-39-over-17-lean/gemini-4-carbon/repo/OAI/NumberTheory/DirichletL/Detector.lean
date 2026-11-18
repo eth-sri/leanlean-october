@@ -29,11 +29,8 @@ theorem exists_small_increment (M : ℕ → ℝ) {n : ℕ} (hn : 0 < n)
 theorem exists_grid_rounding {base x e : ℝ} (he : 0 < e) (hx : base ≤ x) :
     ∃ k : ℕ, base + e * k ≤ x ∧ x < base + e * k + e := by
   let k := ⌊(x - base) / e⌋₊
-  have hnonneg : 0 ≤ (x - base) / e := div_nonneg (sub_nonneg.mpr hx) he.le
-  have hlo := Nat.floor_le hnonneg
-  have hhi := Nat.lt_floor_add_one ((x - base) / e)
-  have hlo' := (le_div_iff₀ he).mp hlo
-  have hhi' := (div_lt_iff₀ he).mp hhi
+  have hlo' := (le_div_iff₀ he).mp (Nat.floor_le (div_nonneg (sub_nonneg.mpr hx) he.le))
+  have hhi' := (div_lt_iff₀ he).mp (Nat.lt_floor_add_one ((x - base) / e))
   refine ⟨k, ?_, ?_⟩ <;> dsimp [k] <;> nlinarith
 
 theorem exists_buffered_bin (M : ℕ → ℝ) {n : ℕ} (hn : 0 < n)

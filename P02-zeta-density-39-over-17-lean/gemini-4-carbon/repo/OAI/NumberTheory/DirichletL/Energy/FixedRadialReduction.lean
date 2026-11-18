@@ -7,17 +7,11 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstSourceReduction
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
 open Filter
+open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyFixedRadialReduction
-open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound
-open CenteredMomentCommonRadialData CenteredMomentSourceMass
-open CenteredMomentOriginalCommonHarmonic CenteredMomentAmplificationChildInput
-open CenteredMomentEnergyOriginalSource CenteredMomentEnergyFixedRadialEntry
-open CenteredMomentFirstSourceReduction CenteredMomentSourceInputFirstRemainder
-open CenteredMomentSourceInputTailUniform
-open CenteredMomentSourceRow CenteredMomentSecondHeightFamily CenteredMomentRadialEligibleEnergy
+open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound CenteredMomentCommonRadialData CenteredMomentSourceMass CenteredMomentOriginalCommonHarmonic CenteredMomentAmplificationChildInput CenteredMomentEnergyOriginalSource CenteredMomentEnergyFixedRadialEntry CenteredMomentFirstSourceReduction CenteredMomentSourceInputFirstRemainder CenteredMomentSourceInputTailUniform CenteredMomentSourceRow CenteredMomentSecondHeightFamily CenteredMomentRadialEligibleEnergy
 local notation "O"=>HeckeFamily.O
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 local instance : DecidableEq (ι⊕Fin 2):=energyOriginalSourceDecidableSum
@@ -50,10 +44,9 @@ theorem actual_original_reduction (bΦ:ℝ)(hbΦ:0<bΦ)
   intro s W₁ W₂ he₁ he₂ hs₁ hs₂ hsi R r hr hV hK
   have hsource:=hz.2 s W₁ W₂ he₁ he₂ hs₁ hs₂ hsi fixedBadMask 1
     (dvd_mul_right _ _) (dvd_mul_left _ _) R 1 Ψ r.scale r.scale_pos hV hK
-  have hpos:=hentry s R r hr
   have hdom:=mul_le_mul_of_nonneg_left hsource
     (mul_nonneg (by norm_num : (0:ℝ)≤2) (diagonalControl_nonneg r.profile))
-  apply hpos.trans
+  apply (hentry s R r hr).trans
   apply add_le_add _ le_rfl
   simpa only [mul_div_assoc, CenteredMomentAmplificationChildInput.volume,
     CenteredMomentExceptionalAmplitudePair.volume] using hdom

@@ -24,7 +24,6 @@ lemma rowBaseFinite_selected_bound (eta a rho x w z : ℂ)
       ((Ideal.absNorm (Ideal.span {p}):ℂ)^(-w)) (coordV (Ideal.absNorm (Ideal.span {p})) z)
       rho j e l‖≤16*(Ideal.absNorm (Ideal.span {p}):ℝ)^(-x.re+max (1-w.re) 0) := by
   have hpow : 0≤(Ideal.absNorm (Ideal.span {p}):ℝ)^(-x.re+max (1-w.re) 0) := by positivity
-  have hv := ProbeLocal.inv_one_sub_norm_le_two _ (first_region_V_half _ hQ z hz)
   have ht' (k : Fin 2) (m : ℕ) :
       ‖rowMarkedTerm p hp hg eta a ((Ideal.absNorm (Ideal.span {p}):ℂ)^(-x))
         ((Ideal.absNorm (Ideal.span {p}):ℂ)^(-w)) (coordV (Ideal.absNorm (Ideal.span {p})) z)
@@ -45,7 +44,7 @@ lemma rowBaseFinite_selected_bound (eta a rho x w z : ℂ)
           ((Ideal.absNorm (Ideal.span {p}):ℂ)^(-w)) (coordV (Ideal.absNorm (Ideal.span {p})) z)
           rho j e l k.val 2/(1-coordV (Ideal.absNorm (Ideal.span {p})) z)‖≤4*(Ideal.absNorm (Ideal.span {p}):ℝ)^(-x.re+max (1-w.re) 0) := by
         rw [div_eq_mul_inv,norm_mul]
-        exact (mul_le_mul (ht' k 2) hv (norm_nonneg _) (by positivity)).trans_eq (by ring)
+        exact (mul_le_mul (ht' k 2) (ProbeLocal.inv_one_sub_norm_le_two _ (first_region_V_half _ hQ z hz)) (norm_nonneg _) (by positivity)).trans_eq (by ring)
       linarith
     _ = _ := by simp;ring
 

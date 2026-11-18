@@ -41,7 +41,7 @@ theorem FiniteVariationBound.congr {f g : ℕ → ℂ} {N : ℕ} {M : ℝ}
 theorem FiniteVariationBound.mul {f g : ℕ → ℂ} {N : ℕ} {M D : ℝ}
     (hf : FiniteVariationBound f N M) (hg : FiniteVariationBound g N D) :
     FiniteVariationBound (fun i => f i*g i) N (2*M*D) := by
-  have hMD : 0 ≤ M*D := mul_nonneg hf.nonneg hg.nonneg
+  have hMD := mul_nonneg hf.nonneg hg.nonneg
   refine ⟨by nlinarith,?_,?_⟩
   · intro i hi
     rw [norm_mul]
@@ -49,15 +49,13 @@ theorem FiniteVariationBound.mul {f g : ℕ → ℂ} {N : ℕ} {M D : ℝ}
     nlinarith
   · have hstep (i : ℕ) (hi : i ∈ Finset.range N) :
         ‖f (i+1)*g (i+1)-f i*g i‖ ≤ M*‖g (i+1)-g i‖+D*‖f (i+1)-f i‖ := by
-      have hiN : i ≤ N := (Finset.mem_range.mp hi).le
-      have hi1N : i+1 ≤ N := Finset.mem_range.mp hi
       rw [show f (i+1)*g (i+1)-f i*g i =
         f (i+1)*(g (i+1)-g i)+(f (i+1)-f i)*g i by ring]
       apply (norm_add_le _ _).trans
       rw [norm_mul,norm_mul]
       apply add_le_add
-      · exact mul_le_mul_of_nonneg_right (hf.norm_le _ hi1N) (norm_nonneg _)
-      · exact (mul_le_mul_of_nonneg_left (hg.norm_le _ hiN) (norm_nonneg _)).trans_eq (mul_comm _ _)
+      · exact mul_le_mul_of_nonneg_right (hf.norm_le _ (Finset.mem_range.mp hi)) (norm_nonneg _)
+      · exact (mul_le_mul_of_nonneg_left (hg.norm_le _ ((Finset.mem_range.mp hi).le)) (norm_nonneg _)).trans_eq (mul_comm _ _)
     apply (Finset.sum_le_sum hstep).trans
     rw [Finset.sum_add_distrib,← Finset.mul_sum,← Finset.mul_sum]
     have h₁ := mul_le_mul_of_nonneg_left hg.variation_le hf.nonneg

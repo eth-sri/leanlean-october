@@ -40,12 +40,12 @@ theorem measurable_dfiBesselY0 : Measurable dfiBesselY0 := by
       exact ne_of_gt (Real.sqrt_pos.2 (by positivity))
   have hos : Measurable dfiBesselY0Osc := by
     have h := Complex.measurable_im.comp
-      (ho.integral_prod_right' (ν := volume.restrict (Ioc (0 : ℝ) (Real.pi / 2)))).measurable
+      (ho.integral_prod_right' (ν := volume.restrict (Ioc 0 (Real.pi / 2)))).measurable
     unfold dfiBesselY0Osc
-    simp only [intervalIntegral.integral_of_le (by positivity : (0 : ℝ) ≤ Real.pi / 2)]
-    simpa only [Function.comp_def] using! h
+    simp only [intervalIntegral.integral_of_le (by positivity : 0 ≤ Real.pi / 2)]
+    simpa using! h
   have hts : Measurable dfiBesselY0Tail :=
-    (ht.integral_prod_right' (ν := volume.restrict (Ioi (0 : ℝ)))).measurable
+    (ht.integral_prod_right' (ν := volume.restrict (Ioi 0))).measurable
   exact measurable_const.mul (hos.sub hts)
 
 theorem measurable_neumannTwoTerm : Measurable neumannTwoTerm := by
@@ -89,8 +89,7 @@ theorem abs_neumann_source_remainder_le {T x : ℝ} (hT : 16 ≤ T) (hx : T / 16
     rw [← Real.rpow_two, ← Real.rpow_mul hy0.le]
     norm_num
   rw [he, Real.mul_rpow hT0.le hn0.le] at hp
-  have h := mul_le_mul_of_nonneg_left hp neumannTwoTermErrorConstant_pos.le
-  simpa only [mul_assoc] using h
+  simpa only [mul_assoc] using (mul_le_mul_of_nonneg_left hp neumannTwoTermErrorConstant_pos.le)
 
 theorem abs_dfiBesselY0_source_le_seven {T x : ℝ} (hT : 16 ≤ T) (hx : T / 16 ≤ x)
     {n : ℕ} (hn : 0 < n) :
@@ -103,8 +102,6 @@ theorem abs_dfiBesselY0_source_le_seven {T x : ℝ} (hT : 16 ≤ T) (hx : T / 16
 theorem neumann_source_height_absorb {T : ℝ} (hT : 1 ≤ T) :
     T * T ^ (-(5 / 4 : ℝ)) ≤ 1 := by
   have ht0 : 0 < T := by linarith
-  have h := Real.rpow_le_rpow_of_exponent_le hT (by norm_num : -(5 / 4 : ℝ) ≤ -1)
-  have hh := mul_le_mul_of_nonneg_left h ht0.le
-  simpa only [Real.rpow_neg_one, mul_inv_cancel₀ ht0.ne'] using hh
+  simpa only [Real.rpow_neg_one, mul_inv_cancel₀ ht0.ne'] using (mul_le_mul_of_nonneg_left (Real.rpow_le_rpow_of_exponent_le hT (by norm_num : -(5 / 4 : ℝ) ≤ -1)) ht0.le)
 
 end MathCollab.Density.Stronger.Atkinson

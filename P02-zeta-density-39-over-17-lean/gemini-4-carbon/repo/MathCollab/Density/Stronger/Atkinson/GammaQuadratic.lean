@@ -67,11 +67,9 @@ theorem abs_zetaSquareGammaFrequency_linear_error_le {T r x : ℝ}
     |zetaSquareGammaFrequency (T + x) + Real.log (T / (2 * Real.pi)) + x / T| ≤
       18 / T + 2 * r ^ 2 / T ^ 2 := by
   have hT0 : 0 < T := by linarith
-  have hxT : |x| ≤ T / 2 := hx.trans hr
+  have hxT := hx.trans hr
   have ht : 2 ≤ T + x := by have := (abs_le.mp hxT).1; linarith
   have ht0 : 0 < T + x := by linarith
-  have hfreq := abs_zetaSquareGammaFrequency_add_log_le ht
-  have hlog := abs_log_shift_sub_linear_le hT0 hxT
   have hlogdiff : Real.log ((T + x) / (2 * Real.pi)) - Real.log (T / (2 * Real.pi)) =
       Real.log (T + x) - Real.log T := by
     rw [Real.log_div ht0.ne' (mul_ne_zero two_ne_zero Real.pi_ne_zero),
@@ -81,13 +79,13 @@ theorem abs_zetaSquareGammaFrequency_linear_error_le {T r x : ℝ}
       (zetaSquareGammaFrequency (T + x) + Real.log ((T + x) / (2 * Real.pi))) -
       (Real.log (T + x) - Real.log T - x / T) := by rw [← hlogdiff]; ring
   rw [heq]
-  refine (abs_sub _ _).trans ((add_le_add hfreq hlog).trans (add_le_add ?_ ?_))
+  refine (abs_sub _ _).trans ((add_le_add (abs_zetaSquareGammaFrequency_add_log_le ht) (abs_log_shift_sub_linear_le hT0 hxT)).trans (add_le_add ?_ ?_))
   · apply (div_le_div_iff₀ ht0 hT0).mpr
     have := (abs_le.mp hxT).1
     linarith
   · apply div_le_div_of_nonneg_right _ (sq_nonneg T)
     have := sq_le_sq₀ (abs_nonneg x) ((abs_nonneg x).trans hx)
-    have hs : x ^ 2 ≤ r ^ 2 := by simpa only [sq_abs] using this.mpr hx
+    have hs : x ^ 2 ≤ r ^ 2 := by simpa using this.mpr hx
     linarith
 
 private def demodulatedGammaPhase (T x : ℝ) : ℂ :=
@@ -100,8 +98,7 @@ private theorem hasDerivAt_demodulatedGammaPhase {T : ℝ} (hT : T ≠ 0) (x : �
         demodulatedGammaPhase T x) x := by
   have hphase := (hasDerivAt_zetaSquareReflectedGammaPhase (T + x)).scomp x
     ((hasDerivAt_id x).const_add T)
-  have hexp := (((hasDerivAt_zetaSquareGammaQuadraticAngle hT x).ofReal_comp).const_mul I).cexp
-  convert hphase.mul hexp using 1
+  convert hphase.mul ((((hasDerivAt_zetaSquareGammaQuadraticAngle hT x).ofReal_comp).const_mul I).cexp) using 1
   · rfl
   · simp only [Function.comp_apply, one_smul, demodulatedGammaPhase, Complex.ofReal_add]
     ring

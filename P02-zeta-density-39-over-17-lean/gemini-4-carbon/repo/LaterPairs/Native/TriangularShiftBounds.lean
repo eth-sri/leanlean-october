@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.DoubleShiftWeights
 
 @[expose] public section
@@ -24,13 +33,11 @@ theorem signed_shift_abs_le {N : ℕ} {q : ℤ}
 theorem signed_triangular_weight_nonneg {N : ℕ} (hN : 0 < N) {q : ℤ}
     (hq : q ∈ Finset.Ioo (-(N:ℤ)) N) : 0 ≤ 1-|(q:ℝ)|/N := by
   have hp : (0:ℝ) < N := by exact_mod_cast hN
-  have ha := signed_shift_abs_le hq
-  exact sub_nonneg.mpr ((div_le_one hp).mpr ha)
+  exact sub_nonneg.mpr ((div_le_one hp).mpr (signed_shift_abs_le hq))
 
 theorem sum_signed_triangular_weights (N : ℕ) (hN : 0 < N) :
     (∑ q ∈ Finset.Ioo (-(N:ℤ)) N, (1-|(q:ℝ)|/N)) = N := by
-  have hp : (N:ℝ) ≠ 0 := by positivity
-  have ht := sum_signed_shift_differences N (fun _ => (1:ℝ))
+  have ht := sum_signed_shift_differences N (fun _ => 1)
   simp only [Finset.sum_const,Finset.card_range,nsmul_eq_mul,mul_one] at ht
   calc
     _ = ∑ q ∈ Finset.Ioo (-(N:ℤ)) N, (((N-q.natAbs:ℕ):ℝ)/N) := by

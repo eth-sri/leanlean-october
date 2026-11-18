@@ -11,9 +11,7 @@ public import Mathlib.Analysis.SpecialFunctions.SmoothTransition
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+open Complex Filter MeasureTheory Set Topology MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth MathCollab.Density.Contour
 open scoped Interval ComplexConjugate ContDiff
 set_option autoImplicit false
 noncomputable section
@@ -31,9 +29,6 @@ theorem zetaBandCutoff_le_one (a b c d x : ℝ) : zetaBandCutoff a b c d x ≤ 1
   simpa only [one_mul, zetaBandCutoff] using mul_le_mul (Real.smoothTransition.le_one _)
     (Real.smoothTransition.le_one _) (Real.smoothTransition.nonneg _) zero_le_one
 
-theorem contDiff_zetaBandCutoff (a b c d : ℝ) : ContDiff ℝ ∞ (zetaBandCutoff a b c d) :=
-  (Real.smoothTransition.contDiff.comp (by fun_prop)).mul
-    (Real.smoothTransition.contDiff.comp (by fun_prop))
 
 theorem zetaBandCutoff_eq_one {a b c d x : ℝ} (hab : a < b) (hcd : c < d)
     (hbx : b ≤ x) (hxc : x ≤ c) : zetaBandCutoff a b c d x = 1 := by
@@ -92,6 +87,7 @@ theorem support_zetaDivisorBandCutoff {T G L : ℝ} (hT : 0 < T) (hG : 0 < G)
   exact support_zetaBandCutoff (hm (by linarith)) (hm (by linarith))
 
 theorem contDiff_zetaDivisorBandCutoff (T G L : ℝ) :
-    ContDiff ℝ ∞ (zetaDivisorBandCutoff T G L) := contDiff_zetaBandCutoff _ _ _ _
+    ContDiff ℝ ∞ (zetaDivisorBandCutoff T G L) := ((Real.smoothTransition.contDiff.comp (by fun_prop)).mul
+    (Real.smoothTransition.contDiff.comp (by fun_prop)))
 
 end MathCollab.Density.Stronger.Atkinson

@@ -16,16 +16,14 @@ lemma fixed_abs_log_threshold (C η : ℝ) (hη : 0<η) :
     (Real.exp |Real.log C|) η (Real.exp_pos _) hη
   refine ⟨Z₀,hZ₀,?_⟩
   intro Z hZ
-  have hz : 0<Real.log Z := Real.log_pos (lt_of_lt_of_le hZ₀ hZ)
-  have hh := h Z hZ
-  simpa only [Real.logb,Real.log_exp,abs_div,abs_of_pos hz] using hh
+  simpa only [Real.logb,Real.log_exp,abs_div,abs_of_pos (Real.log_pos (lt_of_lt_of_le hZ₀ hZ))] using (h Z hZ)
 
 lemma reflectedExponent_threshold_error (O₀ H S₀ B₀ za v ell el Td err η : ℝ)
     (herr : |err|≤η) :
     InverseTerminalWidths.reflectedExponent O₀ H S₀ B₀ za v ell el (Td+err) ≤
       InverseTerminalWidths.reflectedExponent O₀ H S₀ B₀ za v ell el Td+η/2 := by
-  have hη : 0≤η := (abs_nonneg err).trans herr
-  have he : -η≤err := (abs_le.mp herr).1
+  have hη := (abs_nonneg err).trans herr
+  have he := (abs_le.mp herr).1
   have hh : max 0 (Td-v-3*ell-el) ≤ max 0 (Td+err-v-3*ell-el)+η := by
     apply max_le
     · linarith [le_max_left (0:ℝ) (Td+err-v-3*ell-el)]

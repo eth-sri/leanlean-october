@@ -56,7 +56,7 @@ theorem secondChildSum_marked_canonical
   rw [Finset.sum_comm]
   apply Finset.sum_congr rfl
   intro N hN
-  have hd : Disjoint V N := Finset.disjoint_left.mpr (fun i hi hn =>
+  have hd := Finset.disjoint_left.mpr (fun i hi hn =>
     (Finset.mem_sdiff.mp (Finset.mem_powerset.mp hN hn)).2 hi)
   have hn : primeProductNorm p (V ∪ N) / X = primeProductNorm p N / (X / primeProductNorm p V) := by
     rw [primeProductNorm_union p V N hd]
@@ -113,8 +113,7 @@ theorem secondChildSum_marked_fixed_pool
   apply Finset.sum_congr rfl
   intro J hJ
   congr 1
-  have hV (i : ι) (hi : i ∈ V) : (m * r) * (c * e * ∏ j ∈ V, p j) ∈ Ideal.span {p i} :=
-    Ideal.mem_span_singleton.mpr (dvd_mul_of_dvd_right
+  have hV (i : ι) (hi : i ∈ V) := Ideal.mem_span_singleton.mpr (dvd_mul_of_dvd_right
       (dvd_mul_of_dvd_right (Finset.dvd_prod_of_mem p hi) (c * e)) (m * r))
   rw [finiteCanonicalMarkedRow_restore_pool p hp hcop hg F V Ψ (m * r)
     (c * e * ∏ i ∈ V, p i) (d * e * k) _ _ _ _ _ hV]

@@ -7,82 +7,15 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 
 section
-open scoped BigOperators Classical
 
 namespace CanonicalRowCompletion
 
 section
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve UniqueFactorizationMonoid
+open CompletedGauss CanonicalQuadraticSieve
 local notation "Eis" => ActualEisensteinCubic.O
 
 def freePrimePool (lengthScale Q0:Ideal Eis) : Finset (Ideal Eis) :=
@@ -111,7 +44,7 @@ theorem freePrimePool_eq_residual_union (lengthScale I Q Q0:Ideal Eis)
     obtain ⟨hL,hfree⟩:=Finset.mem_filter.mp hP
     rw [hs] at hL
     obtain ⟨hprod,hgood,hodd⟩:=Finset.mem_filter.mp hL
-    have hp:Prime P:=prime_of_normalized_factor P (Multiset.mem_toFinset.mp hprod)
+    have hp :=prime_of_normalized_factor P (Multiset.mem_toFinset.mp hprod)
     by_cases hr:P∣rowResidualPart I Q
     · exact Finset.mem_union_left _ (Multiset.mem_toFinset.mpr
         ((UniqueFactorizationMonoid.mem_normalizedFactors_iff hk.1).mpr ⟨hp,hr⟩))
@@ -121,8 +54,7 @@ theorem freePrimePool_eq_residual_union (lengthScale I Q Q0:Ideal Eis)
   · intro hP
     rcases Finset.mem_union.mp hP with hr|ht
     · have hfactor:=Multiset.mem_toFinset.mp hr
-      have hp:Prime P:=prime_of_normalized_factor P hfactor
-      have hrow:=rowResidualPart_prime_exponent I Q P hfactor
+      have hp :=prime_of_normalized_factor P hfactor
       have hgood:=hk.2.2 P hfactor
       have hfree:¬Q0≤P:=by
         intro hQP
@@ -133,7 +65,7 @@ theorem freePrimePool_eq_residual_union (lengthScale I Q Q0:Ideal Eis)
       rw [hs]
       apply Finset.mem_filter.mpr
       exact ⟨Multiset.mem_toFinset.mpr ((UniqueFactorizationMonoid.mem_normalizedFactors_iff (mul_ne_zero hI hQ)).mpr
-        ⟨hp,dvd_mul_of_dvd_left (dvd_of_mem_normalizedFactors hrow.1) Q⟩),hgood⟩
+        ⟨hp,dvd_mul_of_dvd_left (dvd_of_mem_normalizedFactors (rowResidualPart_prime_exponent I Q P hfactor).1) Q⟩),hgood⟩
     · obtain ⟨hpool,hfree⟩:=Finset.mem_filter.mp ht
       obtain ⟨hprod,hgood,hodd,_⟩:=Finset.mem_filter.mp hpool
       apply Finset.mem_filter.mpr
@@ -188,7 +120,7 @@ noncomputable def primeUnionEquiv (lengthScale Q0 k:Ideal Eis) (T:Finset (Ideal 
 end
 
 section
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve UniqueFactorizationMonoid
+open CompletedGauss CanonicalQuadraticSieve
 local notation "Eis" => ActualEisensteinCubic.O
 
 variable (I F Q0:Ideal Eis) (hI:I≠0) (hF:Squarefree F)
@@ -234,7 +166,6 @@ lemma goodMaskFreePrimeEquiv_nonresidual_exponent
     (normalizedFactors (goodMaskMovingIdeal g r)).count
       (goodMaskFreePrimeEquiv I F Q0 hI hF m f z hm0 hf hz um am bm g hg hm u a b r hr hx hbad hcop
         (Sum.inr P)).val.val%6=completedLocalExponent I F P.val := by
-  change (normalizedFactors (goodMaskMovingIdeal g r)).count P.val%6=completedLocalExponent I F P.val
   let:P.val.IsMaximal:=FreeReflection.pool_maximal I (Ideal.span {m}*F) Q0 P
   exact goodMaskMovingIdeal_exponent I F hI hF m f z hf hz um am bm g hg hm u a b r hr hx P.val
     (FreeReflection.pool_good I (Ideal.span {m}*F) Q0 P)
@@ -277,8 +208,7 @@ lemma activePrimeUnionMap_bijective (e:α⊕β ≃ γ) (A:Finset γ)
     cases x with
     | inl x=>exact ⟨Sum.inl x,Subtype.ext hx⟩
     | inr x=>
-      have hm:x∈optionalPrimeActive e A:=(mem_optionalPrimeActive e A x).mpr (hx.symm ▸ a.property)
-      exact ⟨Sum.inr ⟨x,hm⟩,Subtype.ext hx⟩
+      exact ⟨Sum.inr ⟨x,((mem_optionalPrimeActive e A x).mpr (hx.symm ▸ a.property))⟩,Subtype.ext hx⟩
 
 noncomputable def activePrimeUnionEquiv (e:α⊕β ≃ γ) (A:Finset γ)
     (hA:∀a:α,e (Sum.inl a)∈A) : α⊕optionalPrimeActive e A ≃ A :=
@@ -287,7 +217,7 @@ noncomputable def activePrimeUnionEquiv (e:α⊕β ≃ γ) (A:Finset γ)
 end
 
 section
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve UniqueFactorizationMonoid
+open CompletedGauss CanonicalQuadraticSieve
 local notation "Eis" => ActualEisensteinCubic.O
 
 def nonresidualPoolEquiv (R I Q Q0:Ideal Eis) (hR:R≠0) (hI:I≠0) (hQ:Q≠0)
@@ -349,7 +279,7 @@ theorem goodMaskFreePrimeFiberEquiv_exponent
 
 end
 
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve UniqueFactorizationMonoid
+open CompletedGauss CanonicalQuadraticSieve
 local notation "Eis" => ActualEisensteinCubic.O
 
 section
@@ -379,26 +309,25 @@ lemma residual_coprime_free_base (q:ℕ) (hq:q≠0) (m:Eis) (F I:Ideal Eis) :
       (rowResidualPart I (Ideal.span {m*excludedGenerator (reflectionExcludedPrimes q)}*F)) := by
   have hc:=residual_coprime_fixed_conductor q hq m F I
   rw [reflectionConductor_ideal] at hc
-  exact hc.of_isCoprime_of_dvd_left (dvd_mul_left _ (Ideal.span {(9:Eis)}))
+  exact hc.of_isCoprime_of_dvd_left (dvd_mul_left _ (Ideal.span {9}))
 
 end CanonicalRowCompletion
 
 local instance (priority := 2000) residualLabelDecidableEq (A B:Type*) : DecidableEq (A⊕B) :=
   Classical.decEq _
 namespace CompletedGauss
-open ActualEisensteinCubic LocalReflectionBrackets
+open LocalReflectionBrackets
 local notation "Eis" => ActualEisensteinCubic.O
 variable {α β:Type*} [Fintype α] [Fintype β]
 
 end CompletedGauss
 end
 
-open scoped BigOperators Classical
 
 local instance (priority := 2000) residualEquivDecidableEq (A B:Type*) : DecidableEq (A⊕B) :=
   Classical.decEq _
 namespace CompletedGauss
-open ActualEisensteinCubic LocalReflectionBrackets
+open LocalReflectionBrackets
 local notation "Eis" => ActualEisensteinCubic.O
 variable {α β ι:Type*} [Fintype α] [Fintype β] [Fintype ι]
 

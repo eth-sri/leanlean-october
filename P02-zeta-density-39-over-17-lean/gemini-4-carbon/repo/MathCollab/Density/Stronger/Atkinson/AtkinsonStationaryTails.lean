@@ -62,14 +62,12 @@ theorem norm_atkinsonRootKernel_integral_right_window {T b a c H : ℝ}
     (hT : 0 < T) (ha : 0 < a) (hac : a ≤ c) (hH : 0 < H)
     (hr : atkinsonSaddleRoot (T / (2 * Real.pi)) b + H ≤ a) :
     ‖∫ y in a..c, atkinsonRootKernel T b y‖ ≤ 1 / (2 * H * Real.pi) := by
-  have hd (y : ℝ) (hy : y ∈ Icc a c) :
-      deriv (atkinsonRootPhase T b) y = atkinsonRootSlope T b y :=
-    (hasDerivAt_atkinsonRootPhase T b (ha.trans_le hy.1)).deriv
+  have hd (y : ℝ) (hy : y ∈ Icc a c) := (hasDerivAt_atkinsonRootPhase T b (ha.trans_le hy.1)).deriv
   apply norm_phaseIntegral_le_of_negative_slope hac (by positivity : 0 < 2 * H)
     (fun y hy => contDiffAt_atkinsonRootPhase T b (ha.trans_le hy.1))
   · intro y hy
     rw [hd y hy]
-    simpa only [neg_mul] using atkinsonRootSlope_le_neg_window hT
+    simpa using atkinsonRootSlope_le_neg_window hT
       (ha.trans_le hy.1) hH.le (hr.trans hy.1)
   · intro x hx y hy hxy
     rw [hd x hx, hd y hy]
@@ -80,9 +78,7 @@ theorem norm_atkinsonRootKernel_integral_left_window {T b a c H : ℝ}
     (hT : 0 < T) (ha : 0 < a) (hac : a ≤ c) (hH : 0 < H)
     (hr : c ≤ atkinsonSaddleRoot (T / (2 * Real.pi)) b - H) :
     ‖∫ y in a..c, atkinsonRootKernel T b y‖ ≤ 1 / (2 * H * Real.pi) := by
-  have hd (y : ℝ) (hy : y ∈ Icc a c) :
-      deriv (atkinsonRootPhase T b) y = atkinsonRootSlope T b y :=
-    (hasDerivAt_atkinsonRootPhase T b (ha.trans_le hy.1)).deriv
+  have hd (y : ℝ) (hy : y ∈ Icc a c) := (hasDerivAt_atkinsonRootPhase T b (ha.trans_le hy.1)).deriv
   apply norm_phaseIntegral_le_of_positive_slope hac (by positivity : 0 < 2 * H)
     (fun y hy => contDiffAt_atkinsonRootPhase T b (ha.trans_le hy.1))
   · intro y hy
@@ -142,8 +138,6 @@ theorem IntervalC1Bound.atkinsonRoot_sub_local {f : ℝ → ℂ} {a c M T H : �
       ← intervalIntegral.integral_add_adjacent_intervals
         (hi hleft huv hright) (hi (hleft.trans huv) hright le_rfl)]
     ring
-  change ‖(∫ y in a..c, f y * atkinsonRootKernel T b y) -
-    (∫ y in (r - H)..(r + H), f y * atkinsonRootKernel T b y)‖ ≤ _
   rw [he]
   apply (norm_add_le _ _).trans ((add_le_add hlow hhigh).trans_eq ?_)
   ring

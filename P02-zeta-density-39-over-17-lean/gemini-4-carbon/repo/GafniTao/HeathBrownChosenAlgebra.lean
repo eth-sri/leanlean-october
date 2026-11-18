@@ -47,7 +47,6 @@ theorem heathBrownChosenFirstFactor_eq
           (A * lambda) ^ (((k - 2 : ℕ) : ℝ) / k)) =
       heathBrownChosenFirstConstant k A *
         lambda ^ (-(2 / (k : ℝ))) := by
-  have hk0 : (k : ℝ) ≠ 0 := by exact_mod_cast (by omega : k ≠ 0)
   have heq : (-1 : ℝ) + ((k - 2 : ℕ) : ℝ) / k =
       -(2 / (k : ℝ)) := by
     rw [Nat.cast_sub (by omega : 2 ≤ k)]
@@ -82,7 +81,6 @@ theorem heathBrownChosenSecondFactor_eq
           (A * lambda) ^ (((k - 1 : ℕ) : ℝ) / k)) =
       heathBrownChosenSecondConstant k A * N *
         lambda ^ (1 - 1 / (k : ℝ)) := by
-  have hk0 : (k : ℝ) ≠ 0 := by exact_mod_cast (by omega : k ≠ 0)
   have heq : ((k - 1 : ℕ) : ℝ) / k =
       1 - 1 / (k : ℝ) := by
     rw [Nat.cast_sub (by omega : 1 ≤ k)]
@@ -116,8 +114,8 @@ theorem heathBrownChosenShiftFactor_le_source_sum
   let L := lambda ^ (-(2 / (k : ℝ)))
   let q := lambda ^ (1 - 3 / (k : ℝ))
   have hk0 : (k : ℝ) ≠ 0 := by exact_mod_cast (by omega : k ≠ 0)
-  have hC₁ : 0 ≤ C₁ := heathBrownChosenFirstConstant_nonneg k hA.le
-  have hC₂ : 0 ≤ C₂ := heathBrownChosenSecondConstant_nonneg k hA.le
+  have hC₁ := heathBrownChosenFirstConstant_nonneg k hA.le
+  have hC₂ := heathBrownChosenSecondConstant_nonneg k hA.le
   have hL : 0 ≤ L := by dsimp only [L]; positivity
   have hexp : 0 ≤ 1 - 3 / (k : ℝ) := by
     have hkReal : (3 : ℝ) ≤ k := by exact_mod_cast hk
@@ -146,25 +144,18 @@ theorem heathBrownChosenShiftFactor_le_source_sum
   rw [hexpand]
   have hterm₂a : C₁ * C₂ * (N : ℝ) * q ≤ C₁ * C₂ * N := by
     have hcoeff : 0 ≤ C₁ * C₂ * (N : ℝ) := by positivity
-    simpa only [mul_one] using mul_le_mul_of_nonneg_left hq hcoeff
+    simpa using mul_le_mul_of_nonneg_left hq hcoeff
   have hcoeff₁ : 4 * C₁ ≤ heathBrownChosenTotalConstant k A := by
     change 4 * C₁ ≤ 4 * C₁ + C₁ * C₂
     nlinarith [mul_nonneg hC₁ hC₂]
   have hcoeff₂ : C₁ * C₂ ≤ heathBrownChosenTotalConstant k A := by
     change C₁ * C₂ ≤ 4 * C₁ + C₁ * C₂
     nlinarith
-  have hterm₁ : 4 * C₁ * L ≤
-      heathBrownChosenTotalConstant k A * L :=
-    mul_le_mul_of_nonneg_right hcoeff₁ hL
+  have hterm₁ := mul_le_mul_of_nonneg_right hcoeff₁ hL
   have hterm₂b : C₁ * C₂ * (N : ℝ) ≤
       heathBrownChosenTotalConstant k A * N := by
     exact mul_le_mul_of_nonneg_right hcoeff₂ (Nat.cast_nonneg N)
-  calc
-    4 * C₁ * L + C₁ * C₂ * (N : ℝ) * q ≤
-        heathBrownChosenTotalConstant k A * L +
-          heathBrownChosenTotalConstant k A * N :=
-      add_le_add hterm₁ (hterm₂a.trans hterm₂b)
-    _ = heathBrownChosenTotalConstant k A * (L + N) := by ring
+  exact (add_le_add hterm₁ (hterm₂a.trans hterm₂b)).trans_eq (by ring)
 
 
 end

@@ -18,8 +18,7 @@ local notation "Eis" => ActualEisensteinCubic.O
   have hc : Pairwise (Function.onFun IsCoprime (fun i : U => Ideal.span {p i.val})) := by
     intro i j hij
     exact hcop (fun he => hij (Subtype.ext he))
-  have he := Fintype.card_congr (productPrimeIndexEquiv (fun i : U => p i.val) hc)
-  simpa only [Finset.prod_coe_sort, PrimeIndex, Fintype.card_coe, CompletedGauss.primeSupport, IdealMobiusDivisorSum.primeSupport] using he.symm
+  simpa only [Finset.prod_coe_sort, PrimeIndex, Fintype.card_coe, CompletedGauss.primeSupport, IdealMobiusDivisorSum.primeSupport] using (Fintype.card_congr (productPrimeIndexEquiv (fun i : U => p i.val) hc)).symm
 
 theorem finite_primeMark_small_power (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
@@ -32,13 +31,9 @@ theorem finite_primeMark_small_power (ε : ℝ) (hε : 0 < ε) :
   obtain ⟨C,hC,hb⟩ := SquarefreeDivisorBound.prime_support_subsets_bound ε hε
   refine ⟨C,hC,?_⟩
   intro ι σ _ _ p hp _ hcop slots lists a hslots ha U
-  have hI : (Ideal.span {∏ i ∈ U, p i} : Ideal Eis) ≠ 0 :=
-    Ideal.span_singleton_eq_bot.not.mpr (Finset.prod_ne_zero_iff.mpr (fun i hi => hp i))
-  have hh := hb (Ideal.span {∏ i ∈ U, p i}) hI
+  have hh := hb (Ideal.span {∏ i ∈ U, p i}) (Ideal.span_singleton_eq_bot.not.mpr (Finset.prod_ne_zero_iff.mpr (fun i hi => hp i)))
   rw [finite_primeSupport_card p hcop U] at hh
-  have hn : (Ideal.absNorm (Ideal.span {∏ i ∈ U, p i}) : ℝ) = primeProductNorm p U :=
-    (ActualEisensteinCubic.eisEmbedding_norm_sq_eq_absNorm_span _).symm
-  rw [hn] at hh
+  rw [((ActualEisensteinCubic.eisEmbedding_norm_sq_eq_absNorm_span _).symm)] at hh
   exact (primeMark_norm_le_divisor_count slots lists a U hslots ha).trans hh
 
 theorem finite_primeMark_extracted_bound (ε : ℝ) (hε : 0 < ε) :
@@ -52,18 +47,14 @@ theorem finite_primeMark_extracted_bound (ε : ℝ) (hε : 0 < ε) :
   obtain ⟨C,hC,hb⟩ := SquarefreeDivisorBound.prime_support_subsets_bound ε hε
   refine ⟨C,hC,?_⟩
   intro ι σ _ _ p hp _ hcop slots lists a hslots ha A U
-  have hI : (Ideal.span {∏ i ∈ U, p i} : Ideal Eis) ≠ 0 :=
-    Ideal.span_singleton_eq_bot.not.mpr (Finset.prod_ne_zero_iff.mpr (fun i hi => hp i))
-  have hh := hb (Ideal.span {∏ i ∈ U, p i}) hI
+  have hh := hb (Ideal.span {∏ i ∈ U, p i}) (Ideal.span_singleton_eq_bot.not.mpr (Finset.prod_ne_zero_iff.mpr (fun i hi => hp i)))
   rw [finite_primeSupport_card p hcop U] at hh
-  have hn : (Ideal.absNorm (Ideal.span {∏ i ∈ U, p i}) : ℝ) = primeProductNorm p U :=
-    (ActualEisensteinCubic.eisEmbedding_norm_sq_eq_absNorm_span _).symm
-  rw [hn] at hh
+  rw [((ActualEisensteinCubic.eisEmbedding_norm_sq_eq_absNorm_span _).symm)] at hh
   calc
-    _ ≤ (2:ℝ)^(A ∪ U).card := primeMark_norm_le_divisor_count _ _ _ _ hslots ha
-    _ ≤ (2:ℝ)^(A.card+U.card) := pow_le_pow_right₀ (by norm_num) (Finset.card_union_le _ _)
-    _ = (2:ℝ)^A.card * (2:ℝ)^U.card := pow_add _ _ _
-    _ ≤ (2:ℝ)^A.card * (C * (primeProductNorm p U)^ε) := mul_le_mul_of_nonneg_left hh (by positivity)
+    _ ≤ 2^(A ∪ U).card := primeMark_norm_le_divisor_count _ _ _ _ hslots ha
+    _ ≤ 2^(A.card+U.card) := pow_le_pow_right₀ (by norm_num) (Finset.card_union_le _ _)
+    _ = 2^A.card * 2^U.card := pow_add _ _ _
+    _ ≤ 2^A.card * (C * (primeProductNorm p U)^ε) := mul_le_mul_of_nonneg_left hh (by positivity)
     _ = _ := by ring
 
 end

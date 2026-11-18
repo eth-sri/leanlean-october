@@ -92,7 +92,7 @@ theorem reciprocal_frequency_row [DecidableEq ι] (S : Finset ι) (ω : ι → �
     (fun i hi j hj hne => by
       have hh := hsep i (mem_of_mem_erase (mem_filter.mp hi).1)
         j (mem_of_mem_erase (mem_filter.mp hj).1) hne
-      simpa only [sub_sub_sub_cancel_right] using hh)
+      simpa using hh)
   have hl : (∑ m ∈ A, |ω n - ω m|⁻¹) = ∑ m ∈ A, (ω n - ω m)⁻¹ := by
     apply sum_congr rfl
     intro m hm
@@ -234,13 +234,7 @@ theorem exponentialPolynomial_derivative (S : Finset ι) (ω : ι → ℝ) (c : 
   all_goals ring
 
 theorem frequency_cost_nonneg {δ D L : ℝ} (hδ : 0 < δ) (hD : 0 ≤ D) :
-    0 ≤ D + 4 * δ⁻¹ * (1 + Real.log ⌊2*L/δ⌋₊) := by
-  by_cases hN : ⌊2*L/δ⌋₊ = 0
-  · simp only [hN, Nat.cast_zero, Real.log_zero, add_zero]
-    positivity
-  · have hN1 : (1 : ℝ) ≤ ⌊2*L/δ⌋₊ := by exact_mod_cast Nat.one_le_iff_ne_zero.mpr hN
-    have hl := Real.log_nonneg hN1
-    positivity
+    0 ≤ D + 4 * δ⁻¹ * (1 + Real.log ⌊2*L/δ⌋₊) := by positivity
 
 /-- Actual values on any one-separated ordinate set, with arbitrary complex
 coefficients. All integral and derivative estimates are discharged. -/

@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.SargosPrefixFourthMajorant
 
 @[expose] public section
@@ -28,6 +37,6 @@ theorem sargos_character_sub_norm_le (x y : ℝ) :
       2*Real.pi*Complex.I*((y-x : ℝ) : ℂ) := by push_cast; ring
   rw [hp] at h
   simpa only [fordAdditiveCharacter,Real.norm_eq_abs,abs_mul,
-    abs_of_nonneg (by positivity : (0 : ℝ) ≤ 2*Real.pi)] using h
+    abs_of_nonneg (by positivity : 0 ≤ 2*Real.pi)] using h
 
 end TaoTrudgianYang2025

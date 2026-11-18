@@ -36,24 +36,20 @@ theorem finset_analyticOrderNatAt_le_finsum_divisor {f : ℂ → ℂ} {U : Set �
     have huS' : u ∉ S := by simpa using huS
     exact hu (by simp [g, huS'])
   have hdFin : Function.HasFiniteSupport d := by
-    have hfin := (divisor f U).finiteSupport hU
-    exact hfin.subset (by
+    exact ((divisor f U).finiteSupport hU).subset (by
       intro u hu
       simpa only [Function.mem_support, d, Int.cast_eq_zero, ne_eq] using hu)
   have hgd : g ≤ d := by
     intro u
     by_cases huS : u ∈ S
     · have huU := hSU u huS
-      have huOrder := hf.analyticOrderAt_ne_top_of_isPreconnected hpre hc huU hcOrder
       simp only [g, d, ite_eq_left huS]
-      rw [hf.divisor_apply huU, ← Nat.cast_analyticOrderNatAt huOrder]
+      rw [hf.divisor_apply huU, ← Nat.cast_analyticOrderNatAt (hf.analyticOrderAt_ne_top_of_isPreconnected hpre hc huU hcOrder)]
       simp
     · simp only [g, ite_eq_right huS]
       change 0 ≤ (divisor f U u : ℝ)
       exact_mod_cast hf.divisor_nonneg u
-  have hle := finsum_le_finsum hgFin hdFin hgd
-  have hgSum : ∑ᶠ u, g u = ∑ u ∈ S, g u :=
-    finsum_eq_sum_of_support_subset g (by
+  have hgSum := finsum_eq_sum_of_support_subset g (by
       intro u hu
       simp only [Function.mem_support, ne_eq] at hu
       by_contra huS
@@ -65,7 +61,7 @@ theorem finset_analyticOrderNatAt_le_finsum_divisor {f : ℂ → ℂ} {U : Set �
   calc
     ((∑ u ∈ S, analyticOrderNatAt f u : ℕ) : ℝ) = ∑ u ∈ S, g u := by simp [g]
     _ = ∑ᶠ u, g u := hgSum.symm
-    _ ≤ ∑ᶠ u, d u := hle
+    _ ≤ ∑ᶠ u, d u := (finsum_le_finsum hgFin hdFin hgd)
     _ = ((∑ᶠ u, divisor f U u : ℤ) : ℝ) := hdSum.symm
 
 theorem zeta_jensen_sphere_bound (T t : ℝ) (hT : T ≥ 8)
@@ -74,7 +70,7 @@ theorem zeta_jensen_sphere_bound (T t : ℝ) (hT : T ≥ 8)
       ‖riemannZeta z‖ ≤ 100 * T ^ (3:ℝ) := by
   intro z hz
   rw [Metric.mem_sphere, dist_eq_norm] at hz
-  let c : ℂ := 2 + I * (t + 1/2)
+  let c := 2 + I * (t + 1/2)
   have hzc : ‖z - c‖ = 7 / 4 := by simpa [c] using hz
   have hreDiff : |z.re - 2| ≤ 7 / 4 := by
     calc
@@ -92,7 +88,6 @@ theorem zeta_jensen_sphere_bound (T t : ℝ) (hT : T ≥ 8)
   have himPos : 1 ≤ z.im := by
     have := (abs_le.mp himDiff).1
     linarith [ht.1]
-  have him : 1 ≤ |z.im| := himPos.trans (le_abs_self z.im)
   have hcNorm : ‖c‖ ≤ t + 5/2 := by
     calc
       ‖c‖ ≤ ‖(2 : ℂ)‖ + ‖I * ((t + 1/2 : ℝ) : ℂ)‖ := by
@@ -111,7 +106,7 @@ theorem zeta_jensen_sphere_bound (T t : ℝ) (hT : T ≥ 8)
       _ ≤ 7/4 + (t + 5/2) := by gcongr
       _ ≤ 3 * T := by linarith [ht.2]
   calc
-    ‖riemannZeta z‖ ≤ 5 * ‖z‖ := norm_riemannZeta_le_five_mul_norm hre him
+    ‖riemannZeta z‖ ≤ 5 * ‖z‖ := norm_riemannZeta_le_five_mul_norm hre (himPos.trans (le_abs_self z.im))
     _ ≤ 15 * T := by nlinarith [norm_nonneg z]
     _ ≤ 100 * T ^ (3 : ℝ) := by
       norm_num [Real.rpow_natCast]

@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.ExponentPairDifferencingBound
 
 @[expose] public section
@@ -27,16 +36,13 @@ theorem aProcessOptimizationScale_pos {q p T N : ℝ}
 theorem aProcessOptimizationScale_le {q p T N : ℝ}
     (hq : 0 ≤ q) (hp : 0 ≤ p) (hN : 1 ≤ N) (hNT : N ≤ T) :
     aProcessOptimizationScale q p T N ≤ N := by
-  have hNpos := zero_lt_one.trans_le hN
-  have hratio : 1 ≤ T/N := (le_div_iff₀ hNpos).mpr (by simpa using hNT)
+  have hratio : 1 ≤ T/N := (le_div_iff₀ (zero_lt_one.trans_le hN)).mpr (by simpa using hNT)
   have hden : 0 < q+1 := by linarith
   have h₁ : (T/N)^(-q/(q+1)) ≤ 1 :=
     Real.rpow_le_one_of_one_le_of_nonpos hratio (div_nonpos_of_nonpos_of_nonneg (by linarith) hden.le)
   have h₂ : N^((1-p+q)/(q+1)) ≤ N := by
-    calc
-      _ ≤ N^(1 : ℝ) := Real.rpow_le_rpow_of_exponent_le hN
-        ((div_le_iff₀ hden).mpr (by linarith))
-      _ = N := Real.rpow_one _
+    exact (Real.rpow_le_rpow_of_exponent_le hN
+        ((div_le_iff₀ hden).mpr (by linarith))).trans_eq (Real.rpow_one _)
   unfold aProcessOptimizationScale
   have hp₂ : 0 ≤ N^((1-p+q)/(q+1)) := by positivity
   exact (mul_le_mul_of_nonneg_right h₁ hp₂).trans (by simpa using h₂)
@@ -52,7 +58,6 @@ theorem aProcessOptimizationScale_log {q p T N : ℝ}
 theorem aProcessOptimizationScale_balance {q p T N : ℝ}
     (hq : 0 ≤ q) (hT : 0 < T) (hN : 0 < N) :
     ((T/N^2)^q*N^p)*(aProcessOptimizationScale q p T N)^(q+1) = N := by
-  have hden : q+1 ≠ 0 := by linarith
   have hratio : 0 < T/N := by positivity
   have hR := aProcessOptimizationScale_pos (q := q) (p := p) hT hN
   have hM : 0 < (T/N^2)^q*N^p := by positivity
@@ -60,8 +65,7 @@ theorem aProcessOptimizationScale_balance {q p T N : ℝ}
   rw [Real.log_mul hM.ne' (Real.rpow_pos_of_pos hR _).ne',
     Real.log_mul (by positivity) (by positivity),
     Real.log_rpow (by positivity),Real.log_rpow hN,Real.log_rpow hR,
-    aProcessOptimizationScale_log hT hN]
-  rw [show T/N^2 = (T/N)/N by ring,Real.log_div hratio.ne' hN.ne']
+    aProcessOptimizationScale_log hT hN, show T/N^2 = (T/N)/N by ring,Real.log_div hratio.ne' hN.ne']
   field_simp
   ring
 
@@ -69,7 +73,6 @@ theorem aProcessOptimizationScale_cost {q p T N : ℝ}
     (hq : 0 ≤ q) (hT : 0 < T) (hN : 0 < N) :
     N^2/aProcessOptimizationScale q p T N =
       (T/N)^(q/(q+1))*N^(1+p/(q+1)) := by
-  have hden : q+1 ≠ 0 := by linarith
   have hratio : 0 < T/N := by positivity
   have hR := aProcessOptimizationScale_pos (q := q) (p := p) hT hN
   apply Real.log_injOn_pos (div_pos (sq_pos_of_pos hN) hR)

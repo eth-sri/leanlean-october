@@ -12,9 +12,8 @@ public import Mathlib.Analysis.Real.Pi.Bounds
 
 @[expose] public section
 
-open Complex Finset Set Filter Topology MeasureTheory
+open Complex Finset Set Filter Topology MeasureTheory Classical
 open scoped BigOperators ContDiff FourierTransform SchwartzMap Topology
-open Classical
 set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
@@ -39,7 +38,6 @@ theorem DFIVoronoiTestFunction.contDiff_mellinKernel
 theorem DFIVoronoiTestFunction.hasCompactSupport_mellinKernel
     {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) (σ : ℝ) :
     HasCompactSupport (dfiVoronoiMellinKernel σ g) := by
-  have hUpperPos : 0 < hg.upper := hg.lower_pos.trans_le hg.lower_le_upper
   apply HasCompactSupport.intro
     (isCompact_Icc : IsCompact (Set.Icc (-Real.log hg.upper) (-Real.log hg.lower)))
   intro u hu
@@ -51,7 +49,7 @@ theorem DFIVoronoiTestFunction.hasCompactSupport_mellinKernel
     constructor
     · have hlog : -u ≤ Real.log hg.upper := by
         apply (Real.exp_le_exp).mp
-        rw [Real.exp_log hUpperPos]
+        rw [Real.exp_log (hg.lower_pos.trans_le hg.lower_le_upper)]
         exact hs.2
       linarith
     · have hlog : Real.log hg.lower ≤ -u := by

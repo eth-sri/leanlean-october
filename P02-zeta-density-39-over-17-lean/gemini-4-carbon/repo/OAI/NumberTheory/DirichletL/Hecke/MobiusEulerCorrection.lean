@@ -9,81 +9,11 @@ noncomputable section
 
 namespace SmoothMobiusCorrection
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
-
-open scoped BigOperators Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 
 section
-open ActualEisensteinCubic
 open IdealMobiusDivisorSum hiding O
-open UniqueFactorizationMonoid
 open CanonicalRowCompletion (primeValueHom primeValueHom_prime)
 
 abbrev PrimeIdeal := {P : Ideal ActualEisensteinCubic.O // Prime P}
@@ -98,8 +28,7 @@ def primeSet (I : Ideal ActualEisensteinCubic.O) : Finset PrimeIdeal :=
   simp only [primeSet, Finset.mem_image, Finset.mem_attach, true_and]
   constructor
   · rintro ⟨Q,hQ⟩
-    have hv := congrArg Subtype.val hQ
-    simpa only [←hv] using Q.property
+    simpa only [←(congrArg Subtype.val hQ)] using Q.property
   · intro h
     exact ⟨⟨P.val,h⟩,rfl⟩
 
@@ -154,7 +83,7 @@ theorem mobiusPrimeCoeff_nonsquarefree (w : Ideal ActualEisensteinCubic.O → �
 
 theorem mobiusPrimeCoeff_primeProduct (w : Ideal ActualEisensteinCubic.O → ℂ) (s : Finset PrimeIdeal) :
     mobiusPrimeCoeff w (primeProduct s) = ∏ P ∈ s, -w P.val := by
-  have hm : (moebius (primeProduct s) : ℂ)=(-1:ℂ)^s.card := by
+  have hm : (moebius (primeProduct s) : ℂ)=(-1)^s.card := by
     rw [(primeProduct_squarefree s).moebius_eq,factors_eq_normalizedFactors,
       factors_primeProduct]
     simp
@@ -190,8 +119,6 @@ theorem mobiusPrimeCoeff_euler (w : Ideal ActualEisensteinCubic.O → ℂ)
 end
 
 section
-open ActualEisensteinCubic
-open Filter
 
 lemma prime_norm_two_le (P : PrimeIdeal) : 2 ≤ Ideal.absNorm P.val := by
   have h0 : Ideal.absNorm P.val ≠ 0 := fun h => P.property.ne_zero (Ideal.absNorm_eq_zero_iff.mp h)
@@ -209,13 +136,11 @@ lemma prime_norm_pos (P : PrimeIdeal) : (0 : ℝ) < Ideal.absNorm P.val := by
 def primeNormPower (P : PrimeIdeal) (s : ℂ) : ℂ := (Ideal.absNorm P.val : ℂ)^(-s)
 
 lemma norm_primeNormPower (P : PrimeIdeal) (s : ℂ) :
-    ‖primeNormPower P s‖=(Ideal.absNorm P.val : ℝ)^(-s.re) := by
-  exact Complex.norm_cpow_eq_rpow_re_of_pos (prime_norm_pos P) (-s)
+    ‖primeNormPower P s‖=(Ideal.absNorm P.val : ℝ)^(-s.re) := Complex.norm_cpow_eq_rpow_re_of_pos (prime_norm_pos P) (-s)
 
 lemma one_sub_ne_zero {x : ℂ} (hx : ‖x‖<1) : 1-x≠0 := by
   intro h
-  have he : x=1 := (sub_eq_zero.mp h).symm
-  simp [he] at hx
+  simp [((sub_eq_zero.mp h).symm)] at hx
 
 lemma prime_norm_series_summable (σ : ℝ) (hσ : 0<σ) :
     Summable (fun P : PrimeIdeal => (Ideal.absNorm P.val:ℝ)^(-(1+σ))) := by
@@ -224,17 +149,14 @@ lemma prime_norm_series_summable (σ : ℝ) (hσ : 0<σ) :
   apply ht.congr
   intro P
   simp only [Function.comp_def,CubicEisenstein.fullIdealWeight,ite_eq_right P.property.ne_zero]
-  simpa only [Complex.neg_re, Complex.add_re, Complex.one_re, Complex.ofReal_re,
-    Complex.ofReal_natCast] using
+  simpa using
     (Complex.norm_cpow_eq_rpow_re_of_pos (prime_norm_pos P) (-(1+(σ:ℂ))))
 
 end
 
 section
-open ActualEisensteinCubic
 open ShortDraftHeckeBridge hiding O
 open IdealMobiusDivisorSum hiding O
-open UniqueFactorizationMonoid
 open CanonicalRowCompletion (primeValueHom primeValueHom_prime)
 
 lemma prod_primeSet {M : Type*} [CommMonoid M] (I : Ideal ActualEisensteinCubic.O) (f : Ideal ActualEisensteinCubic.O→M) :
@@ -247,10 +169,6 @@ lemma prod_primeSet {M : Type*} [CommMonoid M] (I : Ideal ActualEisensteinCubic.
 
 end
 
-open ActualEisensteinCubic
-
-open scoped BigOperators Classical
-open ActualEisensteinCubic
 open ShortDraftHeckeBridge hiding O
 
 lemma normFiber_tsum (a : Ideal ActualEisensteinCubic.O→ℂ) (n : ℕ) :
@@ -259,7 +177,6 @@ lemma normFiber_tsum (a : Ideal ActualEisensteinCubic.O→ℂ) (n : ℕ) :
     (Ideal.finite_setOfPred_absNorm_eq (S := ActualEisensteinCubic.O) n).fintype
   rw [tsum_fintype]
   symm
-  change (∑I∈FiniteSFactor.fiber n,a I)=_
   apply Finset.sum_bij (fun I hI => (⟨I,FiniteSFactor.mem_fiber.mp hI⟩ : {I : Ideal ActualEisensteinCubic.O // Ideal.absNorm I=n}))
   · intro I hI
     exact Finset.mem_univ _
@@ -276,7 +193,7 @@ lemma idealDirichlet_fiber (a : Ideal ActualEisensteinCubic.O→ℂ) (s : ℂ) (
   by_cases hn : n=0
   · subst n
     have hz (I : {I : Ideal ActualEisensteinCubic.O // Ideal.absNorm I=0}) : CubicEisenstein.fullIdealWeight s I.val=0 := by
-      have hI : I.val=0 := Ideal.absNorm_eq_zero_iff.mp I.property
+      have hI := Ideal.absNorm_eq_zero_iff.mp I.property
       simp [CubicEisenstein.fullIdealWeight,hI]
     simp only [hz,mul_zero,tsum_zero,LSeries.term_zero]
   · have ht (I : {I : Ideal ActualEisensteinCubic.O // Ideal.absNorm I=n}) :

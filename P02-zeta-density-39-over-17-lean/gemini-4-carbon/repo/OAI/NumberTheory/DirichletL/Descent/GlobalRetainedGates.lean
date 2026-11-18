@@ -10,9 +10,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.InverseMomentGlobalRetainedGates
-open InverseMoment InverseFirstPriorityParents InverseMomentWholePriorityParents
-open InverseWholePriorityRetainedSource InversePrioritySecondSource InverseInitialArithmetic
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondSourceBlocks
+open InverseMoment InverseFirstPriorityParents InverseMomentWholePriorityParents InverseWholePriorityRetainedSource InversePrioritySecondSource InverseInitialArithmetic ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondSourceBlocks
 open ConcreteTraceCRT (eisEmbedding)
 local notation "O" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ] {Jo : ℕ}
@@ -30,9 +28,8 @@ lemma original_parent_witness
     (x : MarkedSecondSource ι (Jo+(J.card+J.card)) 0)
     (hx : x∈retainedSource p extra original negative J lists pool cutoff) :
     ∃y∈original,forgetAppended (Jo:=Jo) (secondParentOf x)=parent p y := by
-  have hp := ((mem_unifiedSource p pool _ (fun _=>cutoff) x).mp hx).1
-  obtain ⟨y,hy,q,hq,he⟩ := (mem_wholeAssignedParents p (fun x=>extra x.cube) original negative J lists _).mp hp
-  exact ⟨y,hy,by simpa only [forget_attach] using congrArg (forgetAppended (Jo:=Jo)) he.symm⟩
+  obtain ⟨y,hy,q,hq,he⟩ := (mem_wholeAssignedParents p (fun x=>extra x.cube) original negative J lists _).mp (((mem_unifiedSource p pool _ (fun _=>cutoff) x).mp hx).1)
+  exact ⟨y,hy,by simpa using congrArg (forgetAppended (Jo:=Jo)) he.symm⟩
 
 lemma original_coordinates
     (extra : CubeCoordinates ι→Finset ι) (original : Finset (Source ι Jo))

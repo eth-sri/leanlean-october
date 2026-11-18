@@ -23,9 +23,7 @@ theorem kernelCubic_integrable (μ : Measure ℝ) [IsFiniteMeasure μ]
   apply (integrable_const (B^3)).mono' (by fun_prop)
   filter_upwards with t
   simp only [norm_mul]
-  calc
-    _ ≤ B*B*B := mul_le_mul (mul_le_mul (hb _) (hb _) (norm_nonneg _) hB) (hb _) (norm_nonneg _) (by positivity)
-    _ = _ := by ring
+  exact (mul_le_mul (mul_le_mul (hb _) (hb _) (norm_nonneg _) hB) (hb _) (norm_nonneg _) (by positivity)).trans_eq (by ring)
 
 /-- Perturbation of the actual cubic kernel integral. The full mass cubed
 is retained; no normalized absolute error or positive-mass division occurs. -/

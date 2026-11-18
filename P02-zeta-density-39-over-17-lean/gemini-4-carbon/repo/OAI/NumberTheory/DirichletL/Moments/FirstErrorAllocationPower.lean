@@ -10,9 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstErrorAllocationPower
-open HeckeFamily CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum
-open CenteredMomentAmplificationChildInput CenteredMomentFirstChildProfileControl
-open CenteredMomentAmplificationAllocationCost CenteredMomentCommonProfile
+open HeckeFamily CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentAmplificationChildInput CenteredMomentFirstChildProfileControl CenteredMomentAmplificationAllocationCost CenteredMomentCommonProfile
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [Fintype ι]
 local instance {κ : Type*} : DecidableEq κ := Classical.decEq _
@@ -27,7 +25,7 @@ lemma child_mass_eq (s : Input ι) (Q : Ideal O) (hQ : Q≠0) (k : ℕ)
 lemma allocations_card (s : Input ι) (Q : Ideal O) (hQ : Prime Q) (k : ℕ)
     (hslot : ∀i,∀I∈s.slots i,IsCoprime Q I) :
     Fintype.card (actualAllocations s.pools (Q^k))≤k+1 := by
-  simpa only [Fintype.card_coe] using actual_amplification_allocations_card s.pools Q hQ k
+  simpa using actual_amplification_allocations_card s.pools Q hQ k
     (fun i I hI=>⟨(s.prime i I hI).ne_zero,hslot i I hI⟩)
 
 theorem budget_sum_le (s : Input ι) (Q : Ideal O) (hQ : Prime Q) (k : ℕ)

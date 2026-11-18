@@ -1,7 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalCount
 
-set_option linter.privateModule false
 
 @[expose] public section
 
@@ -11,10 +10,7 @@ noncomputable section
 open scoped Classical BigOperators ContDiff
 
 namespace SevenEighths.CenteredMomentSecondExceptionalEnergy
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge
-open CenteredMomentCanonicalFirst CenteredMomentSecondCanonical CenteredMomentSecondCanonicalNonunit
-open CenteredMomentSecondCanonicalFrequency CenteredMomentForcing CenteredMomentChildRows
-open CenteredMomentHeckeSlots CenteredMomentSecondExceptionalCount UniqueFactorizationMonoid
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge CenteredMomentCanonicalFirst CenteredMomentSecondCanonical CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalFrequency CenteredMomentForcing CenteredMomentChildRows CenteredMomentHeckeSlots CenteredMomentSecondExceptionalCount UniqueFactorizationMonoid
 local notation "O" => HeckeFamily.O
 
 end SevenEighths.CenteredMomentSecondExceptionalEnergy

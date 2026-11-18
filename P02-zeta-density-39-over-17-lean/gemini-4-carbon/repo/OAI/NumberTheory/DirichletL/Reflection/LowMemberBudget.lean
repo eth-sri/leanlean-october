@@ -80,7 +80,6 @@ theorem original_low_member_tuple_full_budget
   dsimp only
   intro hFcap hscap hpool rows tuples hne hmax hgood hinj
     hrows hGN hGchar hrowcop hprod hScop hSN hSchar
-  let G := (poolPrimeFamily J Q Q₀).restrict A
   let j := fun b : A => completedLocalExponent J F b.val.val
   obtain ⟨D,hD⟩ := henergy J I F Q Q₀ hJ hI hQ hpower hmask A
     Z O₀ H za Nstar d ell0 shift π Ck CO CH X QK QP Lrow Lslot
@@ -96,7 +95,7 @@ theorem original_low_member_tuple_full_budget
   apply Finset.sum_congr rfl
   intro K hK
   congr 2
-  exact (literalWholeRow_eq_member_tuples tuples hmax hgood G K.val (hrows K.val K.property) hne hinj (D K) s hc₀ j W θ X r aw).symm
+  exact (literalWholeRow_eq_member_tuples tuples hmax hgood ((poolPrimeFamily J Q Q₀).restrict A) K.val (hrows K.val K.property) hne hinj (D K) s hc₀ j W θ X r aw).symm
 end
 end SevenEighths.InverseReflectedPhase
 

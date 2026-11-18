@@ -36,7 +36,6 @@ theorem actual_surviving_retained_gates
   refine ⟨max Z₁ Z₂,lt_of_lt_of_le hZ₁ (le_max_left _ _),?_⟩
   intro φ _ F hF jF A e Z X QK QP δ i hZ hX hQK hQP hi he
   have hz1 := (le_max_left Z₁ Z₂).trans hZ
-  have hz2 := (le_max_right Z₁ Z₂).trans hZ
   have hz := lt_of_lt_of_le hZ₁ hz1
   have hnorm := surviving_forced_norms F hF jF A (reflectedNDyad i.2.2) (reflectedBDyad i.2.1)
     ((2:ℝ)^i.2.2) ((2:ℝ)^i.2.1)
@@ -45,7 +44,7 @@ theorem actual_surviving_retained_gates
   have hp (v : Fin 3) : (0:ℝ)<Ideal.absNorm (frozenExtracted F jF e v) := by
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr (frozenExtracted_ne_zero F jF e v))
   refine ⟨Real.logb_nonneg hz ((one_le_div (hp 1)).mpr hnorm.1),
-    Real.logb_nonneg hz ((one_le_div (hp 2)).mpr hnorm.2),hram Z hz2 i.1,?_⟩
+    Real.logb_nonneg hz ((one_le_div (hp 2)).mpr hnorm.2),hram Z ((le_max_right Z₁ Z₂).trans hZ) i.1,?_⟩
   simpa only [one_mul] using hwidth F jF e Z X QK QP δ i hz1 hX hQK hQP hi
 end
 end SevenEighths.InverseReflectedPhase

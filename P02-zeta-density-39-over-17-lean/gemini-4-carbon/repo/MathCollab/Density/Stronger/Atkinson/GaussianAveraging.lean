@@ -6,12 +6,12 @@ Adapted from source pin 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1.
 Only the listed proof slices are retained. Mathlib retains Apache-2.0 attribution.
 No upstream project or Architect module is imported.
 -/
-public import MathCollab.Density.Stronger.Atkinson.LocalDivisorMean
+public import MathCollab.Density.Stronger.Atkinson.GaussianPolynomial
+public import MathCollab.Density.Stronger.Fourth.SquareDivisorSeries
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
+open Complex Filter MeasureTheory Set Topology MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
 open scoped Interval
 set_option autoImplicit false
 noncomputable section
@@ -30,7 +30,7 @@ theorem zetaGaussianWeight_local_lower {T G t : ℝ} (hG : 0 < G)
   have habs : |(t - T) / G| ≤ 1 := by
     rw [abs_div, abs_of_pos hG, div_le_one hG]
     exact abs_le.mpr ⟨by linarith [ht.1], by linarith [ht.2]⟩
-  have hsq : ((t - T) / G) ^ 2 ≤ 1 := (sq_le_one_iff_abs_le_one _).mpr habs
+  have hsq := (sq_le_one_iff_abs_le_one _).mpr habs
   unfold zetaGaussianWeight
   rw [← Real.exp_add]
   exact Real.one_le_exp_iff.mpr (by linarith)

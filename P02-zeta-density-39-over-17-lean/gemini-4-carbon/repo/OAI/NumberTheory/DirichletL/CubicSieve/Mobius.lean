@@ -39,8 +39,7 @@ lemma sum_divisible_rows (R : Finset O) (d : O) (f : O → ℂ) :
   rw [elementQuotient_mul d z (Finset.mem_filter.mp hz).2]
 
 lemma cubicRow_mul_argument (I : Ideal O) (hI : primaryGenerator I ≠ 0) (x y : O) :
-    cubicRow I (x * y) = cubicRow I x * cubicRow I y := by
-  exact (elementCharacter I hI).map_mul x y
+    cubicRow I (x * y) = cubicRow I x * cubicRow I y := (elementCharacter I hI).map_mul x y
 
 lemma totalQuotient_cubic_admissible (D I : Ideal O) (hI : Admissible I) :
     Admissible (totalQuotient D I) := by

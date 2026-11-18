@@ -46,7 +46,7 @@ theorem bounded_polynomial_norm_le_two_scale {N : ℝ} (hN : 1 ≤ N)
       intro n hn
       simp only [norm_mul, Complex.norm_exp]
       simp
-    _ ≤ ∑ _n ∈ sourceRatioIndices N, (1 : ℝ) := Finset.sum_le_sum ha
+    _ ≤ ∑ _n ∈ sourceRatioIndices N, 1 := Finset.sum_le_sum ha
     _ = ((sourceRatioIndices N).card : ℝ) := by simp
     _ ≤ N + 1 := hCard
     _ ≤ _ := by linarith

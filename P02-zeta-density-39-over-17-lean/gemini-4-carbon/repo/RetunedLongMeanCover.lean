@@ -9,8 +9,7 @@ open scoped BigOperators Topology
 set_option autoImplicit false
 noncomputable section
 namespace Montgomery.RationalMoment.RightDetector
-open MathCollab.Density.Stronger
-open MathCollab.Density
+open MathCollab.Density.Stronger MathCollab.Density
 
 /-- The actual-zero dichotomy with the long alternative expressed as a
 critical-line mean. Both alternatives keep the original ordinate. -/

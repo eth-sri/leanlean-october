@@ -12,9 +12,8 @@ public import Mathlib.Analysis.SpecialFunctions.ImproperIntegrals
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
+open Complex Filter MeasureTheory Set Topology MathCollab.Density.Stronger
 open scoped Interval
-open MathCollab.Density.Stronger
 set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Fourth
@@ -23,7 +22,6 @@ namespace MathCollab.Density.Stronger.Fourth
 theorem tsum_nat_rpow_tail_le {p : ℝ} (hp : p < -1) {N : ℕ} (hN : 0 < N) :
     (∑' j : ℕ, ((j+N+1:ℕ):ℝ)^p) ≤ (N:ℝ)^(p+1)/(-p-1) := by
   have hN0 : (0:ℝ) < N := by exact_mod_cast hN
-  have hi := integrableOn_Ioi_rpow_of_lt hp hN0
   apply Real.tsum_le_of_sum_range_le (fun _ => by positivity)
   intro k
   have hanti : AntitoneOn (fun x : ℝ => x^p) (Icc (N:ℝ) ((N:ℝ)+k)) :=
@@ -36,7 +34,7 @@ theorem tsum_nat_rpow_tail_le {p : ℝ} (hp : p < -1) {N : ℕ} (hN : 0 < N) :
         hanti.sum_le_integral
     _ ≤ ∫ x : ℝ in Ioi (N:ℝ), x^p := by
       rw [intervalIntegral.integral_of_le (le_add_of_nonneg_right (Nat.cast_nonneg k))]
-      apply setIntegral_mono_set hi
+      apply setIntegral_mono_set (integrableOn_Ioi_rpow_of_lt hp hN0)
       · filter_upwards [ae_restrict_mem measurableSet_Ioi] with x hx
         exact Real.rpow_nonneg (hN0.le.trans hx.le) _
       · exact Eventually.of_forall (fun _ hx => hx.1)
@@ -63,7 +61,7 @@ theorem tsum_fourth_divisorWeight_tail_le {b : ℝ} (hb : 3/2 < b)
     (∑' n : {n : ℕ // n ∉ Finset.range (N+1)},
       ((n:ℕ).divisors.card:ℝ)*((n:ℕ):ℝ)^(-(1/2+b))) ≤
       (N:ℝ)^(3/2-b)/(b-3/2) := by
-  have hp : 1/2-b < (-1:ℝ) := by linarith
+  have hp : 1/2-b < (-1) := by linarith
   have hs := (Real.summable_nat_rpow.mpr hp).subtype
     (fun n => n ∉ Finset.range (N+1))
   calc
@@ -76,10 +74,9 @@ theorem tsum_fourth_divisorWeight_tail_le {b : ℝ} (hb : 3/2 < b)
           (fun n : {n : ℕ // n ∉ Finset.range (N+1)} =>
             ((n:ℕ):ℝ)^(1/2-b))).symm
     _ ≤ _ := by
-      have h := tsum_nat_rpow_tail_le hp hN
       have hnum : (1/2-b)+1 = 3/2-b := by ring
       have hden : -(1/2-b)-1 = b-3/2 := by ring
-      simpa only [hnum,hden] using h
+      simpa only [hnum,hden] using (tsum_nat_rpow_tail_le hp hN)
 
 theorem exists_norm_zetaFourthTail_cutoff_le {b : ℝ} (hb : 3/2 < b) :
     ∃ K : ℝ, 0 < K ∧ ∀ t : ℝ, 4 ≤ t → 4*b ≤ t →
@@ -128,7 +125,7 @@ theorem exists_norm_fourthRightPiece_sub_cutoff_le {δ : ℝ} (hδ : 0 < δ) :
       ∀ H : ℝ, H₀ ≤ H → ∀ t : ℝ, H ≤ t → t ≤ 2*H →
       ∀ N : ℕ, H^(1+δ) ≤ (N:ℝ) → ∀ a : ℝ, 0 < a →
       ‖zetaFourthRightPiece t-zetaFourthPrefix t a (Finset.range (N+1))‖ ≤ K := by
-  let b : ℝ := 2+2/δ
+  let b := 2+2/δ
   have hb : 3/2 < b := by
     have h := div_pos (by norm_num : (0:ℝ)<2) hδ
     dsimp [b]
@@ -143,12 +140,11 @@ theorem exists_norm_fourthRightPiece_sub_cutoff_le {δ : ℝ} (hδ : 0 < δ) :
   obtain ⟨A,hA,hbound⟩ := exists_norm_zetaFourthTail_cutoff_le hb
   refine ⟨A*2^b,by positivity,max 4 (4*b),le_max_left _ _,?_⟩
   intro H hH t ht htH N hN a ha
-  have hH4 : 4 ≤ H := (le_max_left _ _).trans hH
-  have hHt : 4*b ≤ H := (le_max_right _ _).trans hH
+  have hH4 := (le_max_left _ _).trans hH
+  have hHt := (le_max_right _ _).trans hH
   have ht0 : 0 ≤ t := by linarith
   have hNpos : 0 < N := by
-    have hNreal : (0:ℝ) < N :=
-      lt_of_lt_of_le (Real.rpow_pos_of_pos (by linarith : 0 < H) _) hN
+    have hNreal := lt_of_lt_of_le (Real.rpow_pos_of_pos (by linarith : 0 < H) _) hN
     exact_mod_cast hNreal
   rw [zetaFourthRightPiece_eq_prefix_add_tail ht0 ha (by linarith : 0 < b)
     (Finset.range (N+1)),add_sub_cancel_left]

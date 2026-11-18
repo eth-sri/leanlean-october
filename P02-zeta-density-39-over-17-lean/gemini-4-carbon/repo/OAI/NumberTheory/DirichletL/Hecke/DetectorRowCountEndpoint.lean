@@ -45,11 +45,9 @@ theorem balanced_count_identity {δ x : ℝ} (hδ : 0≤δ) (hδ' : δ≤5/6)
   have hy : 0≤1/2-x := by linarith
   have hy' : 1/2-x≤1/2 := by linarith
   have hDb : 0<Endpoint.denominator (1/2-x) := by
-    have hh := Endpoint.denominator_bounds hy hy'
-    linarith [hh.1]
+    linarith [(Endpoint.denominator_bounds hy hy').1]
   have hJb : 0<Endpoint.balanceDenominator δ (1/2-x) := by
-    have hh := Endpoint.balanceDenominator_bounds hδ hδ' hy hy'
-    linarith [hh.1]
+    linarith [(Endpoint.balanceDenominator_bounds hδ hδ' hy hy').1]
   have hl : longExponent δ (Endpoint.balancedCutoff δ (1/2-x))=
       Endpoint.balancedRowCount δ (1/2-x) := by
     unfold longExponent Endpoint.balancedRowCount
@@ -64,9 +62,7 @@ theorem balanced_count_identity {δ x : ℝ} (hδ : 0≤δ) (hδ' : δ≤5/6)
     generalize hJd : Endpoint.balanceDenominator δ (1/2-x) = J at *
     have hJdef : J=(5/6-δ)*D+δ*P := by
       rw [←hJd, Endpoint.balanceDenominator, hDd, hPd]
-    have hD : D ≠ 0 := hDb.ne'
-    have hJ : J ≠ 0 := hJb.ne'
-    field_simp [hD,hJ]
+    field_simp [(hDb.ne'),(hJb.ne')]
     rw [hJdef]
     ring
   rw [hl,hs,max_self]
@@ -84,8 +80,6 @@ theorem high_bin_count {B C U δ r ε γ : ℝ}
     have hh := mul_nonpos_of_nonpos_of_nonneg (sub_nonpos.mpr hδ) (sub_nonneg.mpr hr1)
     nlinarith
   · rw [max_eq_left (show (1+5*r)/6≤1 by linarith)]
-    have hh := mul_le_mul_of_nonneg_left hr (show 0≤δ by linarith)
-    have hh' := mul_le_mul_of_nonneg_right hδ' hγ
     nlinarith
 
 end SevenEighths.HeckeDetectorRowCount

@@ -1,5 +1,286 @@
 module
-public import OAI.NumberTheory.DirichletL.Foundation
+public import OAI.NumberTheory.DirichletL.Arithmetic.EisensteinCoordinates
+public import OAI.NumberTheory.DirichletL.Mellin.ExponentialSmoothing
+public import OAI.NumberTheory.DirichletL.Mellin.LogProfiles
+public import OAI.NumberTheory.DirichletL.ChineseRemainder.AdditiveCharacters
+public import OAI.NumberTheory.DirichletL.Arithmetic.EisensteinIdeals
+public import OAI.NumberTheory.DirichletL.Cusp.MatrixPhases
+public import OAI.NumberTheory.DirichletL.GaussSum.FiniteFourier
+public import OAI.NumberTheory.DirichletL.GaussSum.ChineseRemainder
+public import OAI.NumberTheory.DirichletL.Arithmetic.EisensteinEmbedding
+public import OAI.NumberTheory.DirichletL.GaussSum.CubicNormalization
+public import OAI.NumberTheory.DirichletL.GaussSum.SexticNormalization
+public import OAI.NumberTheory.DirichletL.GaussSum.LocalProductAssembly
+public import OAI.NumberTheory.DirichletL.GaussSum.RamifiedTracePhase
+public import OAI.NumberTheory.DirichletL.Arithmetic.LatticeCount
+public import OAI.NumberTheory.DirichletL.GaussSum.QuadraticTrace
+public import OAI.NumberTheory.DirichletL.GaussSum.QuadraticNormalization
+public import OAI.NumberTheory.DirichletL.Poisson.BinaryGaussian
+public import OAI.NumberTheory.DirichletL.GaussSum.GaussianDualLimit
+public import OAI.NumberTheory.DirichletL.GaussSum.GaussianFiberMass
+public import OAI.NumberTheory.DirichletL.Poisson.GaussianMoments
+public import OAI.NumberTheory.DirichletL.Poisson.OscillatoryGaussian
+public import OAI.NumberTheory.DirichletL.PrimeRows.RationalApproximation
+public import OAI.NumberTheory.DirichletL.GaussSum.AbelPhaseLimit
+public import OAI.NumberTheory.DirichletL.GaussSum.ThetaLocalRows
+public import OAI.NumberTheory.DirichletL.Mellin.LocalNonvanishing
+public import OAI.NumberTheory.DirichletL.Arithmetic.NormFiberMellin
+public import OAI.NumberTheory.DirichletL.Hecke.NormFiberCharacters
+public import OAI.NumberTheory.DirichletL.Hecke.LocalEulerIdentities
+public import OAI.NumberTheory.DirichletL.Hecke.PrimeExtraction
+public import OAI.NumberTheory.DirichletL.Mellin.FiniteEulerRestoration
+public import OAI.NumberTheory.DirichletL.PrimeRows.NormFiberExtraction
+public import OAI.NumberTheory.DirichletL.Hecke.FiniteEulerFactors
+public import OAI.NumberTheory.DirichletL.Mellin.CompactScale
+public import OAI.NumberTheory.DirichletL.Mellin.CompactWeights
+public import OAI.NumberTheory.DirichletL.Fourier.PositiveLogProfiles
+public import OAI.NumberTheory.DirichletL.GaussSum.SecondPoissonScale
+public import OAI.NumberTheory.DirichletL.Poisson.EisensteinLattice
+public import OAI.NumberTheory.DirichletL.GaussSum.SexticRadialPoisson
+public import OAI.NumberTheory.DirichletL.PrimeRows.IdealGenerators
+public import OAI.NumberTheory.DirichletL.PrimeRows.ActiveGaussFactorization
+public import OAI.NumberTheory.DirichletL.Poisson.RadialFourier
+public import OAI.NumberTheory.DirichletL.GaussSum.ActiveConductor
+public import OAI.NumberTheory.DirichletL.GaussSum.CubicTrace
+public import OAI.NumberTheory.DirichletL.GaussSum.MixedConversion
+public import OAI.NumberTheory.DirichletL.GaussSum.SquarePhaseFactorization
+public import OAI.NumberTheory.DirichletL.QuadraticSieve.CrossSeparation
+public import OAI.NumberTheory.DirichletL.Arithmetic.IdealMobius
+public import OAI.NumberTheory.DirichletL.GaussSum.CompletedExpansion
+public import OAI.NumberTheory.DirichletL.GaussSum.RayCharacters
+public import OAI.NumberTheory.DirichletL.QuadraticSieve.CoefficientCancellation
+public import OAI.NumberTheory.DirichletL.QuadraticSieve.InitialBound
+public import OAI.NumberTheory.DirichletL.Mellin.ReflectedKernel
+public import OAI.NumberTheory.DirichletL.Arithmetic.SquarefreeDivisors
+public import OAI.NumberTheory.DirichletL.QuadraticSieve.FiniteOperator
+public import OAI.NumberTheory.DirichletL.CubicSieve.CubeLabels
+public import OAI.NumberTheory.DirichletL.QuadraticSieve.MainTermDifference
+public import OAI.NumberTheory.DirichletL.Mellin.InverseContour
+public import OAI.NumberTheory.DirichletL.Mellin.UniformKernelBounds
+public import OAI.NumberTheory.DirichletL.CubicSieve.CrossFactorization
+public import OAI.NumberTheory.DirichletL.CubicSieve.LocalBrackets
+public import OAI.NumberTheory.DirichletL.GaussSum.ReflectionBrackets
+public import OAI.NumberTheory.DirichletL.CubicSieve.RayExpansion
+public import OAI.NumberTheory.DirichletL.QuadraticSieve.CoprimeBilinearBound
+public import OAI.NumberTheory.DirichletL.QuadraticSieve.IdealQuotients
+public import OAI.NumberTheory.DirichletL.CubicSieve.KernelEnergy
+public import OAI.NumberTheory.DirichletL.Reciprocity.CubicJacobi
+public import OAI.NumberTheory.DirichletL.Reciprocity.RamifiedSymbol
+public import OAI.NumberTheory.DirichletL.Poisson.QuadraticProfiles
+public import OAI.NumberTheory.DirichletL.CubicSieve.FirstPassage
+public import OAI.NumberTheory.DirichletL.CubicSieve.RayCoefficients
+public import OAI.NumberTheory.DirichletL.QuadraticSieve.DivisorBlocks
+public import OAI.NumberTheory.DirichletL.CubicSieve.SecondPoisson
+public import OAI.NumberTheory.DirichletL.Eisenstein.Rows
+public import OAI.NumberTheory.DirichletL.Eisenstein.HyperbolicSpace
+public import OAI.NumberTheory.DirichletL.Eisenstein.PrimitiveRows
+public import OAI.NumberTheory.DirichletL.Poisson.PrincipalTruncation
+public import OAI.NumberTheory.DirichletL.Fourier.FrequencyTwists
+public import OAI.NumberTheory.DirichletL.CubicSieve.ChildTransfer
+public import OAI.NumberTheory.DirichletL.CubicSieve.IntegratedTransfer
+public import OAI.NumberTheory.DirichletL.Fourier.TupleWeights
+public import OAI.NumberTheory.DirichletL.QuadraticSieve.GcdReduction
+public import OAI.NumberTheory.DirichletL.QuadraticSieve.AnnularRecursion
+public import OAI.NumberTheory.DirichletL.CubicSieve.RowMajorants
+public import OAI.NumberTheory.DirichletL.Eisenstein.FourierCoefficients
+public import OAI.NumberTheory.DirichletL.QuadraticSieve.PrimePools
+public import OAI.NumberTheory.DirichletL.CubicSieve.FrequencyBlocks
+public import OAI.NumberTheory.DirichletL.CubicSieve.FixedProfiles
+public import OAI.NumberTheory.DirichletL.Eisenstein.ConstantTermSupport
+public import OAI.NumberTheory.DirichletL.QuadraticSieve.SquareParts
+public import OAI.NumberTheory.DirichletL.CubicSieve.ResidualSectors
+public import OAI.NumberTheory.DirichletL.QuadraticSieve.UnrestrictedCharacters
+public import OAI.NumberTheory.DirichletL.CubicSieve.ConjugateProfiles
+public import OAI.NumberTheory.DirichletL.Eisenstein.RamifiedNormWeights
+public import OAI.NumberTheory.DirichletL.QuadraticSieve.PrincipalTruncation
+public import OAI.NumberTheory.DirichletL.CubicSieve.FrequencyCutoffs
+public import OAI.NumberTheory.DirichletL.Eisenstein.ConstantDirichletSeries
+public import OAI.NumberTheory.DirichletL.QuadraticSieve.DyadicColumns
+public import OAI.NumberTheory.DirichletL.QuadraticSieve.TruncatedSecondTransfer
+public import OAI.NumberTheory.DirichletL.CubicSieve.TwistedProfiles
+public import OAI.NumberTheory.DirichletL.Fourier.LogDensity
+public import OAI.NumberTheory.DirichletL.QuadraticSieve.PrincipalDifference
+public import OAI.NumberTheory.DirichletL.CubicSieve.FirstCoreCutoff
+public import OAI.NumberTheory.DirichletL.QuadraticSieve.SpatialDerivatives
+public import OAI.NumberTheory.DirichletL.Eisenstein.SmoothSummands
+public import OAI.NumberTheory.DirichletL.Poisson.LatticeEnvelopes
+public import OAI.NumberTheory.DirichletL.CubicSieve.SupportNorms
+public import OAI.NumberTheory.DirichletL.QuadraticSieve.MiddleWindows
+public import OAI.NumberTheory.DirichletL.QuadraticSieve.GreenIntegrals
+public import OAI.NumberTheory.DirichletL.Eisenstein.GreenIdentity
+public import OAI.NumberTheory.DirichletL.CubicSieve.LogarithmicTargets
+public import OAI.NumberTheory.DirichletL.Eisenstein.CuspIntegration
+public import OAI.NumberTheory.DirichletL.QuadraticSieve.DualMiddleExpansion
+public import OAI.NumberTheory.DirichletL.QuadraticSieve.MaskedPrincipalBounds
+public import OAI.NumberTheory.DirichletL.QuadraticSieve.LogarithmicSectors
+public import OAI.NumberTheory.DirichletL.CubicSieve.SquarefreeTransfer
+public import OAI.NumberTheory.DirichletL.Eisenstein.SmoothCuspCutoffs
+public import OAI.NumberTheory.DirichletL.Eisenstein.SeedDefects
+public import OAI.NumberTheory.DirichletL.CubicSieve.GlobalEncoding
+public import OAI.NumberTheory.DirichletL.CubicSieve.PrincipalNormalization
+public import OAI.NumberTheory.DirichletL.QuadraticSieve.PrincipalMajorants
+public import OAI.NumberTheory.DirichletL.QuadraticSieve.RetainedDualBounds
+public import OAI.NumberTheory.DirichletL.QuadraticSieve.HighKernelGeometry
+public import OAI.NumberTheory.DirichletL.Eisenstein.QuotientTopology
+public import OAI.NumberTheory.DirichletL.CubicSieve.PrincipalDensity
+public import OAI.NumberTheory.DirichletL.QuadraticSieve.CuspCoercivity
+public import OAI.NumberTheory.DirichletL.QuadraticSieve.CommonMasks
+public import OAI.NumberTheory.DirichletL.CubicSieve.ScaleCaps
+public import OAI.NumberTheory.DirichletL.QuadraticSieve.PoissonComparison
+public import OAI.NumberTheory.DirichletL.CubicSieve.ArithmeticBins
+public import OAI.NumberTheory.DirichletL.Eisenstein.HyperbolicVolume
+public import OAI.NumberTheory.DirichletL.CubicSieve.UniformTransfer
+public import OAI.NumberTheory.DirichletL.QuadraticSieve.GlobalBinLoss
+public import OAI.NumberTheory.DirichletL.Eisenstein.FundamentalDomain
+public import OAI.NumberTheory.DirichletL.GaussSum.GlobalScales
+public import OAI.NumberTheory.DirichletL.QuadraticSieve.AnnularLifting
+public import OAI.NumberTheory.DirichletL.QuadraticSieve.PoissonConstants
+public import OAI.NumberTheory.DirichletL.QuadraticSieve.SelectedExponents
+public import OAI.NumberTheory.DirichletL.QuadraticSieve.LogarithmicLoss
+public import OAI.NumberTheory.DirichletL.Eisenstein.CompactProfiles
+public import OAI.NumberTheory.DirichletL.CubicSieve.LiteralSources
+public import OAI.NumberTheory.DirichletL.CubicSieve.PooledRows
+public import OAI.NumberTheory.DirichletL.MeanSquare.TransformedColumns
+public import OAI.NumberTheory.DirichletL.QuadraticSieve.ProductColumns
+public import OAI.NumberTheory.DirichletL.QuadraticSieve.UniformTailBounds
+public import OAI.NumberTheory.DirichletL.CubicSieve.CubeBlocks
+public import OAI.NumberTheory.DirichletL.GaussSum.PowerfulParts
+public import OAI.NumberTheory.DirichletL.MeanSquare.SourceTransfer
+public import OAI.NumberTheory.DirichletL.MeanSquare.LogarithmicBins
+public import OAI.NumberTheory.DirichletL.CubicSieve.RowCaps
+public import OAI.NumberTheory.DirichletL.Eisenstein.SmoothTests
+public import OAI.NumberTheory.DirichletL.CubicSieve.DivisorTargets
+public import OAI.NumberTheory.DirichletL.CubicSieve.NormalizedMass
+public import OAI.NumberTheory.DirichletL.GaussSum.ReflectedBranches
+public import OAI.NumberTheory.DirichletL.Eisenstein.DirichletForm
+public import OAI.NumberTheory.DirichletL.MeanSquare.InputEnergy
+public import OAI.NumberTheory.DirichletL.CubicSieve.QuantitativePassage
+public import OAI.NumberTheory.DirichletL.MeanSquare.OutsideIdeals
+public import OAI.NumberTheory.DirichletL.MeanSquare.PoissonSource
+public import OAI.NumberTheory.DirichletL.CubicSieve.DyadicKernel
+public import OAI.NumberTheory.DirichletL.MeanSquare.ReflectedDyadicSeries
+public import OAI.NumberTheory.DirichletL.GaussSum.BranchScaling
+public import OAI.NumberTheory.DirichletL.CubicSieve.RadialWindows
+public import OAI.NumberTheory.DirichletL.Eisenstein.LocalCutoffs
+public import OAI.NumberTheory.DirichletL.GaussSum.CompletedDyadicRows
+public import OAI.NumberTheory.DirichletL.CubicSieve.PaddedPassage
+public import OAI.NumberTheory.DirichletL.MeanSquare.HighRadialBounds
+public import OAI.NumberTheory.DirichletL.MeanSquare.SourceRemainders
+public import OAI.NumberTheory.DirichletL.CubicSieve.DualZeroMode
+public import OAI.NumberTheory.DirichletL.Eisenstein.VariationalLaplacian
+public import OAI.NumberTheory.DirichletL.MeanSquare.CanonicalDensity
+public import OAI.NumberTheory.DirichletL.MeanSquare.CanonicalTailBounds
+public import OAI.NumberTheory.DirichletL.CubicSieve.ReopenedFibers
+public import OAI.NumberTheory.DirichletL.Eisenstein.CompactEnergyFamilies
+public import OAI.NumberTheory.DirichletL.RowCompletion.SupportBounds
+public import OAI.NumberTheory.DirichletL.CubicSieve.ReopeningSeparation
+public import OAI.NumberTheory.DirichletL.CubicSieve.LogSeparation
+public import OAI.NumberTheory.DirichletL.CubicSieve.CanonicalLogEnergy
+public import OAI.NumberTheory.DirichletL.CubicSieve.RadialProfiles
+public import OAI.NumberTheory.DirichletL.RowCompletion.PolynomialHeight
+public import OAI.NumberTheory.DirichletL.MeanSquare.PolynomialHeight
+public import OAI.NumberTheory.DirichletL.Eisenstein.CoordinateLaplacian
+public import OAI.NumberTheory.DirichletL.CubicSieve.DensityBudgets
+public import OAI.NumberTheory.DirichletL.CubicSieve.RankMargins
+public import OAI.NumberTheory.DirichletL.MeanSquare.UniformPolynomialHeight
+public import OAI.NumberTheory.DirichletL.MeanSquare.UnitRows
+public import OAI.NumberTheory.DirichletL.Eisenstein.CuspHeight
+public import OAI.NumberTheory.DirichletL.Eisenstein.BarrierPotential
+public import OAI.NumberTheory.DirichletL.CubicSieve.ReopeningBounds
+public import OAI.NumberTheory.DirichletL.CubicSieve.CutoffOrders
+public import OAI.NumberTheory.DirichletL.CubicSieve.ClosedRecursion
+public import OAI.NumberTheory.DirichletL.Eisenstein.FredholmAlternative
+public import OAI.NumberTheory.DirichletL.Eisenstein.UnitNormalization
+public import OAI.NumberTheory.DirichletL.RowCompletion.CubicReopening
+public import OAI.NumberTheory.DirichletL.RowCompletion.CompletedEnergy
+public import OAI.NumberTheory.DirichletL.Eisenstein.MeromorphicResolvent
+public import OAI.NumberTheory.DirichletL.RowCompletion.DensityTransfer
+public import OAI.NumberTheory.DirichletL.Eisenstein.SeedHeight
+public import OAI.NumberTheory.DirichletL.MeanSquare.ThetaDensity
+public import OAI.NumberTheory.DirichletL.Mellin.SixthPowerAverage
+public import OAI.NumberTheory.DirichletL.Hecke.MobiusEulerCorrection
+public import OAI.NumberTheory.DirichletL.RowCompletion.ThetaNonvanishing
+public import OAI.NumberTheory.DirichletL.Eisenstein.CutoffApproximation
+public import OAI.NumberTheory.DirichletL.Eisenstein.CuspResidues
+public import OAI.NumberTheory.DirichletL.Eisenstein.ConjugateLevelAction
+public import OAI.NumberTheory.DirichletL.Eisenstein.ScatteringCoefficients
+public import OAI.NumberTheory.DirichletL.Eisenstein.WhittakerContinuation
+public import OAI.NumberTheory.DirichletL.Eisenstein.GaussFactorization
+public import OAI.NumberTheory.DirichletL.Reciprocity.KubotaCharacter
+public import OAI.NumberTheory.DirichletL.Eisenstein.ResidualFourierBounds
+public import OAI.NumberTheory.DirichletL.Eisenstein.RamifiedGaussSeries
+public import OAI.NumberTheory.DirichletL.Eisenstein.SourceProjection
+public import OAI.NumberTheory.DirichletL.Eisenstein.SourceQuotient
+public import OAI.NumberTheory.DirichletL.Eisenstein.ResidualFourierSeries
+public import OAI.NumberTheory.DirichletL.Eisenstein.ScatteringResidues
+public import OAI.NumberTheory.DirichletL.Eisenstein.OppositeCusp
+public import OAI.NumberTheory.DirichletL.Eisenstein.ResidualFourierExpansion
+public import OAI.NumberTheory.DirichletL.Eisenstein.RationalTranslations
+public import OAI.NumberTheory.DirichletL.Eisenstein.CuspAverage
+public import OAI.NumberTheory.DirichletL.Eisenstein.BesselMellinTransform
+public import OAI.NumberTheory.DirichletL.Eisenstein.TranslatedFourierResidues
+public import OAI.NumberTheory.DirichletL.Eisenstein.ResidualCuspDecay
+public import OAI.NumberTheory.DirichletL.Eisenstein.PrimePowerGaussSums
+public import OAI.NumberTheory.DirichletL.Eisenstein.SourceBesselExpansion
+public import OAI.NumberTheory.DirichletL.Eisenstein.BesselDerivatives
+public import OAI.NumberTheory.DirichletL.Eisenstein.InverseCuspCoordinates
+public import OAI.NumberTheory.DirichletL.Eisenstein.ReflectedCuspMellin
+public import OAI.NumberTheory.DirichletL.Eisenstein.ArbitraryCuspPullback
+public import OAI.NumberTheory.DirichletL.Reciprocity.CubeCorrespondence
+public import OAI.NumberTheory.DirichletL.Eisenstein.ConjugateCuspProfiles
+public import OAI.NumberTheory.DirichletL.Eisenstein.CuspDilation
+public import OAI.NumberTheory.DirichletL.Cusp.ResiduesModThree
+public import OAI.NumberTheory.DirichletL.Reciprocity.PrimaryCongruences
+public import OAI.NumberTheory.DirichletL.Eisenstein.CubeResidueStrata
+public import OAI.NumberTheory.DirichletL.Reciprocity.RamifiedCuspPhases
+public import OAI.NumberTheory.DirichletL.Eisenstein.AffineCuspFourier
+public import OAI.NumberTheory.DirichletL.Eisenstein.IntegralCover
+public import OAI.NumberTheory.DirichletL.Eisenstein.CoverTrace
+public import OAI.NumberTheory.DirichletL.Eisenstein.CubeCuspAverage
+public import OAI.NumberTheory.DirichletL.Eisenstein.InverseCorrespondence
+public import OAI.NumberTheory.DirichletL.Eisenstein.CorrespondenceTests
+public import OAI.NumberTheory.DirichletL.Eisenstein.CorrespondencePullback
+public import OAI.NumberTheory.DirichletL.Eisenstein.RamifiedSixBranches
+public import OAI.NumberTheory.DirichletL.Eisenstein.CorrespondenceAdjoint
+public import OAI.NumberTheory.DirichletL.Eisenstein.CorrespondenceEnergy
+public import OAI.NumberTheory.DirichletL.Eisenstein.CubeEigenrelation
+public import OAI.NumberTheory.DirichletL.Eisenstein.ResidualOrthogonality
+public import OAI.NumberTheory.DirichletL.Eisenstein.PrimeRecurrence
+public import OAI.NumberTheory.DirichletL.Eisenstein.PrimeGaussFactors
+public import OAI.NumberTheory.DirichletL.Eisenstein.SquarefreeCoefficients
+public import OAI.NumberTheory.DirichletL.Eisenstein.SourceMellinInversion
+public import OAI.NumberTheory.DirichletL.GaussSum.DualKernelSummability
+public import OAI.NumberTheory.DirichletL.Mellin.VerticalContourShift
+public import OAI.NumberTheory.DirichletL.GaussSum.BesselReflection
+public import OAI.NumberTheory.DirichletL.GaussSum.FiniteTranslations
+public import OAI.NumberTheory.DirichletL.GaussSum.MellinSupport
+public import OAI.NumberTheory.DirichletL.Eisenstein.RamifiedTransform
+public import OAI.NumberTheory.DirichletL.Eisenstein.EntireMellinProfile
+public import OAI.NumberTheory.DirichletL.Eisenstein.RamifiedValuation
+public import OAI.NumberTheory.DirichletL.Eisenstein.SourceCuspKernels
+public import OAI.NumberTheory.DirichletL.Eisenstein.FullFrequencyExpansion
+public import OAI.NumberTheory.DirichletL.Eisenstein.FixedCuspArrays
+public import OAI.NumberTheory.DirichletL.Cusp.WeylRepresentatives
+public import OAI.NumberTheory.DirichletL.ChineseRemainder.PrimaryCompletions
+public import OAI.NumberTheory.DirichletL.Cusp.ResiduePhases
+public import OAI.NumberTheory.DirichletL.ChineseRemainder.FrequencyLifts
+public import OAI.NumberTheory.DirichletL.RowCompletion.PeriodicRows
+public import OAI.NumberTheory.DirichletL.GaussSum.ReflectionPool
+public import OAI.NumberTheory.DirichletL.Eisenstein.FixedConductor
+public import OAI.NumberTheory.DirichletL.RowCompletion.FixedCuspBranches
+public import OAI.NumberTheory.DirichletL.Cusp.StaticReflectionPhases
+public import OAI.NumberTheory.DirichletL.Eisenstein.FixedFrequencyExpansion
+public import OAI.NumberTheory.DirichletL.Eisenstein.FixedThetaTwists
+public import OAI.NumberTheory.DirichletL.GaussSum.FixedRayFibers
+public import OAI.NumberTheory.DirichletL.Eisenstein.ReflectionFibers
+public import OAI.NumberTheory.DirichletL.RowCompletion.ControlledPrimeStrata
+public import OAI.NumberTheory.DirichletL.RowCompletion.FreePrimePools
+public import OAI.NumberTheory.DirichletL.GaussSum.ResidualEquivalence
+public import OAI.NumberTheory.DirichletL.RowCompletion.RowAmplitudes
+public import OAI.NumberTheory.DirichletL.GaussSum.ActiveReindexing
+public import OAI.NumberTheory.DirichletL.RowCompletion.ReflectedFibers
+public import OAI.NumberTheory.DirichletL.RowCompletion.BranchDecoding
+public import OAI.NumberTheory.DirichletL.RowCompletion.ZeroFreeRegion
 public import Mathlib.Analysis.MellinInversion
 
 @[expose] public section
@@ -64,7 +345,7 @@ lemma laplace_mellin_integrable (f : ℝ → ℂ) (s : ℂ) (hs : 0<s.re)
         ‖f r‖*(t^(s.re-1)*Real.exp (-(r*t))) := by
     rw [norm_mul, norm_mul, Complex.norm_cpow_eq_rpow_re_of_pos ht,
       Complex.norm_exp]
-    simp only [Complex.sub_re, Complex.one_re, Complex.neg_re, Complex.ofReal_re]
+    simp
   apply (integrable_prod_iff hm).mpr
   constructor
   · filter_upwards [ae_restrict_mem measurableSet_Ioi] with r hr
@@ -85,15 +366,13 @@ lemma laplace_mellin_integrable (f : ℝ → ℂ) (s : ℂ) (hs : 0<s.re)
       volume.restrict (Ioi 0)] (fun t => ‖f r‖*(t^(s.re-1)*Real.exp (-(r*t)))) := by
         filter_upwards [ae_restrict_mem measurableSet_Ioi] with t ht
         exact hn r t ht
-    rw [integral_congr_ae hi]
-    rw [integral_const_mul, gamma_scaled_integral hs hr]
+    rw [integral_congr_ae hi, integral_const_mul, gamma_scaled_integral hs hr]
     ring
 
 lemma mellin_laplace (f : ℝ → ℂ) (s : ℂ) (hs : 0<s.re)
     (hf : AEStronglyMeasurable f (volume.restrict (Ioi 0)))
     (hconv : MellinConvergent f (1-s)) :
     mellin (laplace f) s = Complex.Gamma s * mellin f (1-s) := by
-  have hi := laplace_mellin_integrable f s hs hf hconv
   calc
     _ = ∫ t : ℝ in Ioi 0, ∫ r : ℝ in Ioi 0,
         f r*((t:ℂ)^(s-1)*Complex.exp (-(r*t:ℝ))) := by
@@ -109,15 +388,14 @@ lemma mellin_laplace (f : ℝ → ℂ) (s : ℂ) (hs : 0<s.re)
       ring
     _ = ∫ r : ℝ in Ioi 0, ∫ t : ℝ in Ioi 0,
         f r*((t:ℂ)^(s-1)*Complex.exp (-(r*t:ℝ))) :=
-      integral_integral_swap hi.swap
+      integral_integral_swap (laplace_mellin_integrable f s hs hf hconv).swap
     _ = ∫ r : ℝ in Ioi 0, f r*((r:ℂ)^(-s)*Complex.Gamma s) := by
       apply setIntegral_congr_fun measurableSet_Ioi
       intro r hr
       dsimp only
       rw [integral_const_mul]
-      have hh := Complex.integral_cpow_mul_exp_neg_mul_Ioi hs hr
       simp only [Complex.ofReal_mul] at *
-      rw [hh, one_div, Complex.inv_cpow_ofReal_nonneg hr.le, Complex.cpow_neg]
+      rw [(Complex.integral_cpow_mul_exp_neg_mul_Ioi hs hr), one_div, Complex.inv_cpow_ofReal_nonneg hr.le, Complex.cpow_neg]
     _ = _ := by
       rw [mellin, ← integral_const_mul]
       apply setIntegral_congr_fun measurableSet_Ioi
@@ -160,7 +438,6 @@ lemma paper_fourier_pairing (f g : ℂ → ℂ) (hf : Integrable f) (hg : Integr
   rw [integral_integral_swap (hi.const_mul ((2/Real.sqrt 3:ℝ):ℂ))]
   apply integral_congr_ae
   exact Eventually.of_forall fun z => by
-    dsimp only
     apply integral_congr_ae
     exact Eventually.of_forall fun u => by dsimp only; rw [mul_comm z u]; ring
 
@@ -190,11 +467,10 @@ lemma radial_isBigO_top (W : SchwartzMap ℝ ℂ) (A : ℕ) :
   obtain ⟨C, hC, hb⟩ := paperRadialFourier_euler_bound W A 0
   apply isBigO_iff.mpr
   refine ⟨C, ?_⟩
-  filter_upwards [eventually_gt_atTop (0:ℝ)] with r hr
+  filter_upwards [eventually_gt_atTop 0] with r hr
   have hh := hb 0 (by omega) r hr
   simp only [LocalLogFourier.eulerDeriv, iteratedDeriv_zero, Real.exp_zero, mul_one] at hh
-  have hp : r^A * ‖paperRadialFourier W r‖ ≤ C :=
-    (mul_le_mul_of_nonneg_right (pow_le_pow_left₀ hr.le (by linarith : r≤1+r) A)
+  have hp := (mul_le_mul_of_nonneg_right (pow_le_pow_left₀ hr.le (by linarith : r≤1+r) A)
       (norm_nonneg _)).trans hh
   rw [Real.norm_eq_abs, abs_of_pos (Real.rpow_pos_of_pos hr _),
     Real.rpow_neg hr.le, Real.rpow_natCast, ← div_eq_mul_inv]
@@ -259,8 +535,7 @@ lemma mellin_reciprocal_laplace (W : ℝ → ℂ) (z : ℂ) :
         laplace W (paperConstant^2*t⁻¹))) := by
     funext t
     simp [Complex.cpow_neg_one, div_eq_mul_inv, smul_eq_mul, mul_assoc]
-  rw [hfun, mellin_const_smul, mellin_cpow_smul]
-  rw [show 1-z+(-1) = -z by ring]
+  rw [hfun, mellin_const_smul, mellin_cpow_smul, show 1-z+(-1) = -z by ring]
   have hh := mellin_comp_inv (fun t : ℝ => laplace W (paperConstant^2*t)) (-z)
   rw [neg_neg] at hh
   rw [hh, mellin_comp_mul_left _ _ (sq_pos_of_pos paperConstant_pos)]
@@ -296,12 +571,11 @@ theorem radial_mellin_gamma (W : SchwartzMap ℝ ℂ) (a b : ℝ) (ha : 0<a)
 lemma paper_prefactor (z : ℂ) :
     (paperConstant:ℂ)*((paperConstant^2:ℝ):ℂ)^(-z) =
       (paperConstant:ℂ)^(1-2*z) := by
-  have hn : (paperConstant:ℂ)≠0 := Complex.ofReal_ne_zero.mpr paperConstant_pos.ne'
   have hh := Complex.cpow_nat_mul' (x := (paperConstant:ℂ)) (n := 2)
     (by simp [Complex.arg_ofReal_of_nonneg paperConstant_pos.le, Real.pi_pos])
     (by simp [Complex.arg_ofReal_of_nonneg paperConstant_pos.le, Real.pi_nonneg]) (-z)
   push_cast
-  rw [← hh, show 1-2*z = 1+2*(-z) by ring, Complex.cpow_add _ _ hn,
+  rw [← hh, show 1-2*z = 1+2*(-z) by ring, Complex.cpow_add _ _ (Complex.ofReal_ne_zero.mpr paperConstant_pos.ne'),
     Complex.cpow_one]
   norm_num
 
@@ -398,7 +672,7 @@ theorem radial_mellin_identity_right (W : SchwartzMap ℝ ℂ) (a b : ℝ) (ha :
     ((paperConstant:ℂ)^(1-2*z)*Complex.Gamma z / Complex.Gamma (1-z))*
       mellin W (1-z)
   have hop : IsOpen D := isOpen_lt continuous_const Complex.continuous_re
-  have hcv : Convex ℝ D := (convex_Ioi (0:ℝ)).linear_preimage Complex.reCLM.toLinearMap
+  have hcv : Convex ℝ D := (convex_Ioi 0).linear_preimage Complex.reCLM.toLinearMap
   have hf : AnalyticOnNhd ℂ (mellin (paperRadialFourier W)) D :=
     (radial_mellin_differentiable W).analyticOnNhd hop
   have hG : DifferentiableOn ℂ G D := by
@@ -411,8 +685,8 @@ theorem radial_mellin_identity_right (W : SchwartzMap ℝ ℂ) (a b : ℝ) (ha :
       (differentiableAt_const _ |>.sub differentiableAt_id)
     have h4 := (CubicReflectionKernel.compact_source_mellin_differentiable W a b ha hW
       (W.smooth ⊤) (1-w)).comp w (differentiableAt_const _ |>.sub differentiableAt_id)
-    simpa only [G, div_eq_mul_inv, Pi.mul_apply, Function.comp_apply] using! (((h1.mul h2).mul h3).mul h4).differentiableWithinAt
-  have hev : mellin (paperRadialFourier W) =ᶠ[𝓝 (1/2:ℂ)] G := by
+    simpa using! (((h1.mul h2).mul h3).mul h4).differentiableWithinAt
+  have hev : mellin (paperRadialFourier W) =ᶠ[𝓝 (1/2)] G := by
     have hstrip : IsOpen {w:ℂ | 0<w.re ∧ w.re<1} :=
       (isOpen_lt continuous_const Complex.continuous_re).inter
         (isOpen_lt Complex.continuous_re continuous_const)
@@ -429,7 +703,7 @@ lemma gamma_quotient_strip (lo hi : ℝ) (hlo : 0<lo) :
   obtain ⟨C,hC,hb⟩ := CubicReflectionKernel.Gamma_pair_strip_bound 1 (by norm_num) A
   refine ⟨2*A+2,C/lo,div_pos hC hlo,?_⟩
   intro σ hσ t
-  have hσ0 : 0<σ := hlo.trans_le hσ.1
+  have hσ0 := hlo.trans_le hσ.1
   have hz : (σ:ℂ)+t*Complex.I≠0 := by
     intro he
     have := congrArg Complex.re he
@@ -444,10 +718,9 @@ lemma gamma_quotient_strip (lo hi : ℝ) (hlo : 0<lo) :
     simpa only [Complex.add_re, Complex.ofReal_re, Complex.mul_re, Complex.ofReal_im,
       Complex.I_re, mul_zero, zero_mul, sub_zero, add_zero] using
       Complex.re_le_norm ((σ:ℂ)+t*Complex.I)
-  have hh' := (mul_le_mul_of_nonneg_right hnorm (norm_nonneg _)).trans hh
   rw [div_mul_eq_mul_div]
   apply (le_div_iff₀ hlo).mpr
-  simpa [div_mul_eq_mul_div, mul_comm] using hh'
+  simpa [div_mul_eq_mul_div, mul_comm] using ((mul_le_mul_of_nonneg_right hnorm (norm_nonneg _)).trans hh)
 
 theorem radial_mellin_strip_decay (W : SchwartzMap ℝ ℂ) (a b : ℝ) (ha : 0<a)
     (hW : Function.support W ⊆ Icc a b) (lo hi : ℝ) (hlo : 0<lo) (N : ℕ) :
@@ -513,8 +786,7 @@ theorem radial_mellin_inverse_integrable (W : SchwartzMap ℝ ℂ) (a b : ℝ) (
   have hi := radial_mellin_vertical_integrable W a b ha hW σ hσ
   apply (hi.norm.const_mul (x^(-σ))).mono'
   · have hm := hi.aestronglyMeasurable
-    have hc : Continuous (fun t : ℝ => (x:ℂ)^(-((σ:ℂ)+t*Complex.I))) :=
-      (by fun_prop : Continuous (fun t : ℝ => -((σ:ℂ)+t*Complex.I))).const_cpow
+    have hc := (by fun_prop : Continuous (fun t : ℝ => -((σ:ℂ)+t*Complex.I))).const_cpow
         (Or.inl (Complex.ofReal_ne_zero.mpr hx.ne'))
     exact hc.aestronglyMeasurable.mul hm
   · exact Eventually.of_forall fun t => by

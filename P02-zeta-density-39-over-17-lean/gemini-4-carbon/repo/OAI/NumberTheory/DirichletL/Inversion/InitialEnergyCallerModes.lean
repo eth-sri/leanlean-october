@@ -8,11 +8,8 @@ namespace OAI
 
 noncomputable section
 
+open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic SevenEighths.InverseMoment SevenEighths.InverseInitialArithmetic SevenEighths.InverseInitialPhysicalMeasure SevenEighths.InverseInitialKernelBridge SevenEighths.InverseInitialEnergyCallerFamily SevenEighths.InverseInitialProfile
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
-open SevenEighths.InverseMoment SevenEighths.InverseInitialArithmetic
-open SevenEighths.InverseInitialPhysicalMeasure SevenEighths.InverseInitialKernelBridge
-open SevenEighths.InverseInitialEnergyCallerFamily SevenEighths.InverseInitialProfile
 namespace SevenEighths.InverseInitialEnergyCallerModes
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
@@ -37,13 +34,9 @@ theorem canonicalColumn_marked_sum
   have hgen (A : Finset ι) : primaryGenerator (sourceIdeal p A)≠0 := by
     rw [sourceIdeal_gen p hp hpr A]
     exact Finset.prod_ne_zero_iff.mpr (fun i _=>hp i)
-  have hd : Ideal.span {primaryGenerator (sourceIdeal p x.divisor)}=sourceIdeal p x.divisor :=
-    (primaryGenerator_spec _ (hgen _)).1
-  have ht : Ideal.span {quotient p x}=sourceIdeal p (x.common\x.divisor) :=
-    (primaryGenerator_spec _ (hgen _)).1
   obtain ⟨u,hu,hsplit⟩ := fresh_initial_split_fixed_family p hp hcop hg hpr
     x.common x.divisor x.overlap hE (primaryGenerator (sourceIdeal p x.divisor))
-    (quotient p x) hd ht (σ:=σ)
+    (quotient p x) ((primaryGenerator_spec _ (hgen _)).1) ((primaryGenerator_spec _ (hgen _)).1) (σ:=σ)
   have hu1 : u=1 := by
     apply Units.val_injective
     apply mul_right_cancel₀ (hgen x.divisor)

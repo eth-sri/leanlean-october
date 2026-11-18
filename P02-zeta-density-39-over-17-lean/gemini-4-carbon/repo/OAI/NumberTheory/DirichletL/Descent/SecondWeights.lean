@@ -37,7 +37,7 @@ theorem secondSignedSourceWeight_norm_le_one
     (x : SecondExpansionData ι) :
     ‖secondSignedSourceWeight p hp hcop hg Ψ m c d z x‖ ≤ 1 := by
   have hinput : ‖secondInputCoefficient p hg Ψ m c d (fun _ => 1) x.sourceCommon‖^2 ≤ 1 := by
-    simpa only [one_pow] using pow_le_pow_left₀ (norm_nonneg _)
+    simpa using pow_le_pow_left₀ (norm_nonneg _)
       ((secondInputCoefficient_norm_le p hg Ψ m c d x.sourceCommon).trans (hΨ _)) 2
   have hμ := QuadraticInitialBound.norm_ideal_moebius_le_one
     (∏ i ∈ x.divisor,Ideal.span {p i})

@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaLegendreDual
 public import Mathlib.Analysis.Calculus.IteratedDeriv.Lemmas
 
@@ -137,9 +147,7 @@ theorem inversePhaseEval_difference_le (e : InversePhaseExpression)
         fun j hj => hy j (hj.trans (le_max_left _ _))
       have hyf : ∀ j ≤ inversePhaseOrder f, |y j| ≤ B :=
         fun j hj => hy j (hj.trans (le_max_right _ _))
-      have he' := he hxe hye (fun j hj => hxy j (hj.trans (le_max_left _ _)))
-      have hf' := hf hxf hyf (fun j hj => hxy j (hj.trans (le_max_right _ _)))
-      have hε : 0 ≤ ε := (abs_nonneg _).trans (hxy 0 (Nat.zero_le _))
+      have hε := (abs_nonneg _).trans (hxy 0 (Nat.zero_le _))
       change |inversePhaseEval e x*inversePhaseEval f x -
         inversePhaseEval e y*inversePhaseEval f y| ≤ _
       calc
@@ -155,9 +163,9 @@ theorem inversePhaseEval_difference_le (e : InversePhaseExpression)
         _ ≤ inversePhaseMagnitude e B*(inversePhaseSensitivity f B*ε) +
             (inversePhaseSensitivity e B*ε)*inversePhaseMagnitude f B :=
           add_le_add
-            (mul_le_mul (inversePhaseEval_abs_le e hxe) hf' (abs_nonneg _)
+            (mul_le_mul (inversePhaseEval_abs_le e hxe) (hf hxf hyf (fun j hj => hxy j (hj.trans (le_max_right _ _)))) (abs_nonneg _)
               (inversePhaseMagnitude_nonneg e hB))
-            (mul_le_mul he' (inversePhaseEval_abs_le f hyf) (abs_nonneg _)
+            (mul_le_mul (he hxe hye (fun j hj => hxy j (hj.trans (le_max_left _ _)))) (inversePhaseEval_abs_le f hyf) (abs_nonneg _)
               (mul_nonneg (inversePhaseSensitivity_nonneg e hB) hε))
         _ = inversePhaseSensitivity (.mul e f) B*ε := by
           dsimp [inversePhaseSensitivity]

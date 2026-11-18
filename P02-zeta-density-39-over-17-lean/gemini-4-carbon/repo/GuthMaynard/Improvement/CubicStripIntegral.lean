@@ -25,8 +25,7 @@ theorem cubicStripMass_measurable {r : ℝ → ℝ} (hr : Measurable r)
         (fun p => r p.2*r (p.2/p.1)) p) := by
     apply Measurable.indicator _ hs
     fun_prop
-  have hi := (hmeas.stronglyMeasurable.integral_prod_right' (ν := volume)).measurable
-  convert hi using 1
+  convert ((hmeas.stronglyMeasurable.integral_prod_right' (ν := volume)).measurable) using 1
   funext v
   rw [cubicStripMass,← integral_indicator (show MeasurableSet {y : ℝ | |L*((m.1:ℝ)*v+(m.2.1:ℝ)*y+(m.2.2:ℝ))| ≤ H} by apply measurableSet_le <;> fun_prop)]
   rfl
@@ -41,10 +40,8 @@ theorem squareSmoothing_bounded_measurable {κ r : ℝ → ℝ} {B : ℝ}
     exact h.stronglyMeasurable.integral_prod_right'.measurable
   · intro z
     refine ⟨squareSmoothing_nonneg hκ0 z,?_⟩
-    calc
-      _ ≤ ∫ y, B*r y^2 := integral_mono (squareSmoothing_integrable hκ hb hr2 z)
-        (hr2.const_mul B) (fun y => mul_le_mul_of_nonneg_right ((le_abs_self _).trans (hb _)) (sq_nonneg _))
-      _ = _ := integral_const_mul _ _
+    exact (integral_mono (squareSmoothing_integrable hκ hb hr2 z)
+        (hr2.const_mul B) (fun y => mul_le_mul_of_nonneg_right ((le_abs_self _).trans (hb _)) (sq_nonneg _))).trans_eq (integral_const_mul _ _)
 
 theorem smoothedStripPair_bounded_measurable {r : ℝ → ℝ} (hr : Measurable r)
     (hr2 : Integrable (fun x => r x^2)) (a : ℝ) {δ : ℝ} (hδ : 0 < δ) :
@@ -67,11 +64,9 @@ theorem smoothedStripPair_bounded_measurable {r : ℝ → ℝ} (hr : Measurable 
   · intro v
     refine ⟨mul_nonneg (Real.sqrt_nonneg _) (Real.sqrt_nonneg _),?_⟩
     unfold smoothedStripPair
-    calc
-      _ ≤ Real.sqrt W*Real.sqrt W := mul_le_mul
+    exact (mul_le_mul
         (Real.sqrt_le_sqrt (hFb _).2) (Real.sqrt_le_sqrt (hFb _).2)
-        (Real.sqrt_nonneg _) (Real.sqrt_nonneg _)
-      _ = _ := Real.mul_self_sqrt hW
+        (Real.sqrt_nonneg _) (Real.sqrt_nonneg _)).trans_eq (Real.mul_self_sqrt hW)
 
 /-- Pointwise transverse bound on the literal strip. The fixed constant
 precedes every density, scale, mode and positive ratio. -/

@@ -48,14 +48,12 @@ lemma lowCommonDyad_norm_of_bound {K : ℕ} (η : HeckeFamily.Character) (C : Ca
   let f := fun t : ℝ=>(∑p : ∀i,slots i,compensationSubsetWeight η W Yp (fun i=>(p i).val) J*
       compensationRowTest η C W0 W1 (fun i=>(p i).val) J X Y U t*
         selectedSlotFactor W Yp (fun i=>(p i).val) J t)*gaussianJointDensity V hV (U/R) t
-  have hi := (JointLogSeparation.weighted_schwartz_integrable (gaussianJointDensity V hV (U/R)) degree).const_mul B
   have hmajor (t : ℝ) : ‖f t‖≤B*((1+‖t‖)^degree*‖gaussianJointDensity V hV (U/R) t‖) := by
     dsimp only [f]
     rw [norm_mul]
     simpa only [mul_assoc] using mul_le_mul_of_nonneg_right (hb t)
       (norm_nonneg (gaussianJointDensity V hV (U/R) t))
-  have hh := norm_integral_le_of_norm_le hi (Filter.Eventually.of_forall hmajor)
-  simpa only [f,lowCommonDyad,gaussianJointMoment,integral_const_mul] using hh
+  simpa only [f,lowCommonDyad,gaussianJointMoment,integral_const_mul] using (norm_integral_le_of_norm_le ((JointLogSeparation.weighted_schwartz_integrable (gaussianJointDensity V hV (U/R)) degree).const_mul B) (Filter.Eventually.of_forall hmajor))
 
 theorem low_central_gaussian_dyad (η : HeckeFamily.Character) (S : Finset Id)
     (hS : ∀P∈S,P.IsMaximal) (hbad : fixedBadPrimes⊆S)

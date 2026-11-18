@@ -29,9 +29,7 @@ lemma literalDyadicBlock_summable (G : PrimeFamily ι)
     (S : Finset ι) (W : ℝ→ℂ) (lo hi : ℝ) (hlo : 0<lo)
     (hWs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W) (X : ℝ) (hX : 0<X) (u : Eisˣ) :
     Summable (literalDyadicBlock G D s hc j S W X u) := by
-  have hs := ((literalRawSeries_summable_norm G D s hc hN hbase hchar j hj S W lo hi hlo hWs hW X hX).of_norm).prod_factor u
-  have hh := (dualDyadicIndexEquiv.symm.summable_iff.mpr hs).sigma
-  apply hh.congr
+  apply ((dualDyadicIndexEquiv.symm.summable_iff.mpr (((literalRawSeries_summable_norm G D s hc hN hbase hchar j hj S W lo hi hlo hWs hW X hX).of_norm).prod_factor u)).sigma).congr
   intro i
   simp only [tsum_fintype,Fintype.sum_prod_type,literalDyadicBlock,Function.comp_apply]
   rfl
@@ -40,12 +38,10 @@ lemma tsum_sub_finset_eq_tail {α : Type*} (f : α→ℂ) (hf : Summable f) (A :
     (∑' i,f i)-(∑ i∈A,f i)=∑' i,if i∉A then f i else 0 := by
   have hh := hf.sum_add_tsum_subtype_compl A
   have ht : (∑' x : {x // x∉A}, f x.val)=∑' i,if i∉A then f i else 0 := by
-    calc
-      _ = ∑' x, ({x | x∉A} : Set α).indicator f x := tsum_subtype {x | x∉A} f
-      _ = _ := by
+    exact (tsum_subtype {x | x∉A} f).trans (by
         apply tsum_congr
         intro i
-        by_cases hi : i∈A <;> simp [hi]
+        by_cases hi : i∈A <;> simp [hi])
   rw [ht] at hh
   exact eq_sub_of_add_eq' hh |>.symm
 

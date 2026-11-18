@@ -7,9 +7,8 @@ public import OAI.NumberTheory.DirichletL.CubicSieve.Algebra
 namespace OAI
 
 namespace SevenEighths.CubicSieve
+open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson CompletedGauss ConcretePrimeRowBridge ShortDraftHeckeBridge QuadraticInitialBound
 open scoped BigOperators Classical SchwartzMap ContDiff
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
-open CompletedGauss ConcretePrimeRowBridge ShortDraftHeckeBridge QuadraticInitialBound
 noncomputable section
 local notation "O" => ActualEisensteinCubic.O
 
@@ -23,7 +22,7 @@ theorem cubicFiniteRow_eq_canonical {α : Type*}
     cubicFiniteRow P hg S z =
       finiteSexticRow (fun i : S => P i.val) (fun i => hg i.val) (fun _ => 2) z := by
   simp only [cubicFiniteRow, finiteSexticRow, finiteSquarefreeRow,
-    MulChar.pow_apply' _ (by decide : (2 : ℕ) ≠ 0), Finset.prod_pow]
+    MulChar.pow_apply' _ (by decide : 2 ≠ 0), Finset.prod_pow]
   rw [Finset.prod_coe_sort (s := S) (f := fun i => actualSextic (P i) (hg i) (Ideal.Quotient.mk (P i) z))]
 
 def activeCubicExponent {α : Type*} [DecidableEq α]
@@ -115,7 +114,7 @@ theorem cubic_pair_summable {α : Type*}
     Summable (fun z : O => (star (cubicFiniteRow P hg S z) * cubicFiniteRow P hg T z) *
       W (‖eisEmbedding z‖ ^ 2 / M)) := by
   have hW : Summable (fun z : O => ‖W (‖eisEmbedding z‖ ^ 2 / M)‖) := by
-    simpa only [scaledRadialTest_apply] using
+    simpa using
       actual_eisenstein_summable_norm (scaledRadialTest W M hM)
   apply Summable.of_norm
   apply Summable.of_nonneg_of_le (fun _ => norm_nonneg _) _ hW
@@ -134,7 +133,7 @@ theorem cubic_gram_diagonal {α : Type*}
   have hMp : 0 < M := by linarith
   have hs := (cubic_pair_summable P hg S S W M hMp).norm
   have hW : Summable (fun z : O => ‖W (‖eisEmbedding z‖ ^ 2 / M)‖) := by
-    simpa only [scaledRadialTest_apply] using
+    simpa using
       actual_eisenstein_summable_norm (scaledRadialTest W M hMp)
   refine (norm_tsum_le_tsum_norm hs).trans ((hs.tsum_le_tsum ?_ hW).trans
     (radial_weight_lattice_bound W M hM))
@@ -197,7 +196,6 @@ theorem cubic_mean_expand {α β : Type*}
     intro n hn
     apply Finset.sum_congr rfl
     intro m hm
-    dsimp [f]
     ring
   rw [tsum_congr heq, Summable.tsum_finsetSum (fun n hn => summable_sum (fun m hm => hf n m))]
   apply Finset.sum_congr rfl
@@ -220,7 +218,7 @@ theorem cubic_initial_mean_bound {α β : Type*} [DecidableEq α] [DecidableEq �
   have hMp : 0 < M := by linarith
   let D := diagonalControl W * M
   let B := pvControl W * N
-  have hB : 0 ≤ B := mul_nonneg (pvControl_nonneg W) hN
+  have hB := mul_nonneg (pvControl_nonneg W) hN
   let K : β → β → ℂ := fun n m => ∑' z : O,
     (star (cubicFiniteRow P hg (support n) z) * cubicFiniteRow P hg (support m) z) *
       W (‖eisEmbedding z‖ ^ 2 / M)
@@ -333,17 +331,14 @@ theorem ideal_initial_cubic_sieve
       rw [ne_eq, Ideal.absNorm_eq_zero_iff]
       exact hFpos I hI
     · exact hnorm I hI
-  have hcardNat : F.card ≤ 64 * (N + 1) :=
-    (Finset.card_le_card hsub).trans (CompactScaleBridge.idealsUpTo_card_le N)
   have hcard : (F.card : ℝ) ≤ 128 * (N : ℝ) := by
-    have hh : (F.card : ℝ) ≤ 64 * ((N : ℝ) + 1) := by exact_mod_cast hcardNat
+    have hh : (F.card : ℝ) ≤ 64 * ((N : ℝ) + 1) := by exact_mod_cast ((Finset.card_le_card hsub).trans (CompactScaleBridge.idealsUpTo_card_le N))
     linarith
   refine hb.trans (mul_le_mul_of_nonneg_right ?_ (Finset.sum_nonneg fun _ _ => sq_nonneg _))
-  have hdiag := diagonalControl_nonneg sieveCutoff
   have hpv := pvControl_nonneg sieveCutoff
   have hmul := mul_le_mul_of_nonneg_left hcard (mul_nonneg hpv (by positivity : (0 : ℝ) ≤ N))
   unfold initialSieveConstant
-  nlinarith [mul_nonneg hdiag (sq_nonneg (N : ℝ)),
+  nlinarith [mul_nonneg (diagonalControl_nonneg sieveCutoff) (sq_nonneg (N : ℝ)),
     mul_nonneg hpv (show 0 ≤ M by linarith)]
 
 end

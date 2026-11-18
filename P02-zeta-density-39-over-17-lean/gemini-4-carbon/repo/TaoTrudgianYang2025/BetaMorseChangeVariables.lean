@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaMorseDerivativeBounds
 public import Mathlib.MeasureTheory.Function.JacobianOneDim
 
@@ -23,8 +33,7 @@ open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean 
 theorem modelPhaseMorseInverse_injOn (F : ℝ → ℝ) (v : ℝ) :
     InjOn (modelPhaseMorseInverse F v) (modelPhaseMorseRange F v) := by
   intro z hz w hw he
-  have h := congrArg (modelPhaseMorseCoordinate F v) he
-  simpa only [modelPhaseMorseCoordinate_inverse hz,modelPhaseMorseCoordinate_inverse hw] using h
+  simpa only [modelPhaseMorseCoordinate_inverse hz,modelPhaseMorseCoordinate_inverse hw] using (congrArg (modelPhaseMorseCoordinate F v) he)
 
 theorem modelPhaseMorseInverse_image
     {F : ℝ → ℝ} {σ δ v : ℝ}

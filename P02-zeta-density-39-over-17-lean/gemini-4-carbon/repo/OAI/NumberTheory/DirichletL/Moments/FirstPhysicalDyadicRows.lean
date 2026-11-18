@@ -10,11 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstPhysicalDyadicRows
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge
-open HeckeFamily CanonicalQuadraticSieve
-open CenteredMomentFirstPhysicalSource CenteredMomentCanonicalFirst
-open CenteredMomentFirstWholeKernel CenteredMomentLogDyadic CenteredMomentSectorLocalization
-open CenteredMomentFirstAmplificationChoice CenteredMomentRowNorm
+open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve CenteredMomentFirstPhysicalSource CenteredMomentCanonicalFirst CenteredMomentFirstWholeKernel CenteredMomentLogDyadic CenteredMomentSectorLocalization CenteredMomentFirstAmplificationChoice CenteredMomentRowNorm
 local notation "O" => HeckeFamily.O
 
 def activeRows (rows : Finset O) (n : Fin 4→ℤ) : Finset O :=
@@ -47,7 +43,7 @@ lemma row_log_window (n : ℤ) (h : O) :
     simp only [map_zero,norm_zero,zero_pow (by decide : 2≠0),zero_div,Real.log_zero,
       logAnnulus,Real.exp_zero]
     rw [annulus_zero_high 1 le_rfl]
-    rw [show normValue (0:O)=0 by simp [normValue_eq_embedding],
+    rw [show normValue 0=0 by simp [normValue_eq_embedding],
       dyadicWeight_zero_nonpos n 0 le_rfl,Complex.ofReal_zero]
   · rw [←normValue_eq_embedding]
     exact (actual_dyadic_log_window n (normValue h)

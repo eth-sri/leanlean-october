@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaMorseJets
 
 @[expose] public section
@@ -82,7 +92,7 @@ theorem modelPhaseMorseJet_abs_le
   | n+3 =>
       have h := abs_iteratedDeriv_modelPhaseAveragedCurvature_le hσ.le hF hv hu (n+1)
         (by omega)
-      have hd : δ ≤ 1 := hδ.trans (min_le_right _ _)
+      have hd := hδ.trans (min_le_right _ _)
       change |iteratedDeriv (n+1) (modelPhaseAveragedCurvature F v) u| ≤ _
       exact h.trans (by dsimp [morseJetMagnitude]; linarith)
 

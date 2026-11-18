@@ -7,73 +7,8 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-
-open scoped BigOperators Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 namespace CanonicalQuadraticSieve
 
 theorem lifting_annular_scale_bounds (j : Fin 7) : 1≤(2:ℝ)^j.val ∧ (2:ℝ)^j.val≤64 := by
@@ -227,7 +162,6 @@ theorem HasSieveExponent.low_threshold {α : ℝ} (hexp : HasSieveExponent α)
 
 end CanonicalQuadraticSieve
 
-open scoped BigOperators Classical
 namespace SecondPassArithmetic
 
 theorem normLogBin_le_log_upper (x Y : ℝ) (hx : 0<x) (hxy : x≤Y) (hY : 1≤Y) :
@@ -245,12 +179,10 @@ theorem sieveNorm_small_columns (M N : ℝ) (hM : 1≤M) (hN : 1≤N) (hN28 : N�
     exact_mod_cast (Nat.ceil_le.mpr hN28 : ⌈N⌉₊≤28)
   have hs : (⌈N⌉₊:ℝ)^2≤784 := by
     nlinarith [Nat.cast_nonneg (α:=ℝ) ⌈N⌉₊]
-  have hc := QuadraticInitialBound.initialSieveConstant_pos
-  have hb := sieveNorm_initial M N hM hN
   have ht : M+(⌈N⌉₊:ℝ)^2≤785*M := by linarith
   calc
-    _ ≤ QuadraticInitialBound.initialSieveConstant*(M+(⌈N⌉₊:ℝ)^2) := hb
-    _ ≤ QuadraticInitialBound.initialSieveConstant*(785*M) := mul_le_mul_of_nonneg_left ht hc.le
+    _ ≤ QuadraticInitialBound.initialSieveConstant*(M+(⌈N⌉₊:ℝ)^2) := (sieveNorm_initial M N hM hN)
+    _ ≤ QuadraticInitialBound.initialSieveConstant*(785*M) := mul_le_mul_of_nonneg_left ht (QuadraticInitialBound.initialSieveConstant_pos).le
     _ = _ := by ring
 
 theorem HasSieveExponent.shell_threshold {α : ℝ} (hexp : HasSieveExponent α)
@@ -293,7 +225,7 @@ theorem HasSieveExponent.shell_threshold {α : ℝ} (hexp : HasSieveExponent α)
       _ ≤ (5*I*M)*∑J,‖a J‖^2 := hmatrix.trans (mul_le_mul_of_nonneg_right hb hE)
       _ = (5*I)*1*M*∑J,‖a J‖^2 := by ring
       _ ≤ _ := hscale (mul_le_mul
-        (show 5*I≤C by dsimp [C]; linarith only [hI,hCL,hCH])
+        (by dsimp [C]; linarith only [hI,hCL,hCH])
         hPρ zero_le_one hC.le)
   by_cases hsmall : N≤28
   · have hb := sieveNorm_small_columns M N hM hN hsmall
@@ -301,7 +233,7 @@ theorem HasSieveExponent.shell_threshold {α : ℝ} (hexp : HasSieveExponent α)
       _ ≤ (785*I*M)*∑J,‖a J‖^2 := hmatrix.trans (mul_le_mul_of_nonneg_right hb hE)
       _ = (785*I)*1*M*∑J,‖a J‖^2 := by ring
       _ ≤ _ := hscale (mul_le_mul
-        (show 785*I≤C by dsimp [C]; linarith only [hI,hCL,hCH])
+        (by dsimp [C]; linarith only [hI,hCL,hCH])
         hPρ zero_le_one hC.le)
   have hupper : M≤N^2 := le_of_not_ge hlarge
   have hK := (selectedPoisson_bounds fixedCutoffBase M N η fixedCutoffBase_bounds.1 hM hN hupper hη.le).2.1
@@ -319,26 +251,24 @@ theorem HasSieveExponent.shell_threshold {α : ℝ} (hexp : HasSieveExponent α)
         (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hp260 hCH.le) hM0)) hE
     _ = (CL+CH)*(M*N)^ρ*M*∑J,‖a J‖^2 := by ring
     _ ≤ _ := hscale (mul_le_mul_of_nonneg_right
-      (show CL+CH≤C by dsimp [C]; linarith only [hI])
+      (by dsimp [C]; linarith only [hI])
       (Real.rpow_nonneg (by positivity) _))
 
 theorem HasSieveExponent.improve {α : ℝ} (hexp : HasSieveExponent α)
     (hα1 : 1≤α) (hα2 : α≤2) : HasSieveExponent (2-1/α) := by
   have hα : 0<α := by linarith
-  have hfrac : 1/α≤1 := (div_le_one hα).mpr hα1
+  have hfrac := (div_le_one hα).mpr hα1
   have hpos : 0≤1/α := by positivity
   apply hasSieveExponent_of_shell_threshold (2-1/α) (by linarith) (by linarith)
   exact hexp.shell_threshold hα1 hα2
 
-open ActualEisensteinCubic CompletedGauss
+open CompletedGauss
 
-theorem hasSieveExponent_one : HasSieveExponent 1 :=
-  hasSieveExponent_one_of_improvement (fun _α hα hα2 h => h.improve hα.le hα2)
 
 theorem sieveNorm_sharp :
     ∀ ε : ℝ, 0<ε → ∃ C : ℝ, 0<C ∧ ∀ M N : ℝ, 1≤M → 1≤N →
       sieveNorm M N≤C*(M*N)^ε*(M+N) := by
-  simpa only [HasSieveExponent,Real.rpow_one] using hasSieveExponent_one
+  simpa only [HasSieveExponent,Real.rpow_one] using (hasSieveExponent_one_of_improvement (fun _α hα hα2 h => h.improve hα.le hα2))
 
 end CanonicalQuadraticSieve
 

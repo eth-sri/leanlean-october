@@ -26,10 +26,8 @@ theorem weightedMean_bounds {Slot : Type*} (slots : Finset Slot) (w g : Slot→�
   constructor
   · exact div_nonneg (Finset.sum_nonneg (fun s hs => mul_nonneg (hw s hs) (hg s hs).1)) hL.le
   · apply (div_le_iff₀ hL).mpr
-    calc
-      _ ≤ ∑ s∈slots,w s*(δ/2) := Finset.sum_le_sum (fun s hs =>
-        mul_le_mul_of_nonneg_left (hg s hs).2 (hw s hs))
-      _ = _ := by rw [←Finset.sum_mul]; ring
+    exact (Finset.sum_le_sum (fun s hs =>
+        mul_le_mul_of_nonneg_left (hg s hs).2 (hw s hs))).trans_eq (by rw [←Finset.sum_mul]; ring)
 
 omit [NeZero M] in
 theorem select_physical_product {Row Slot : Type*} (rows : Finset Row) (hne : rows.Nonempty)

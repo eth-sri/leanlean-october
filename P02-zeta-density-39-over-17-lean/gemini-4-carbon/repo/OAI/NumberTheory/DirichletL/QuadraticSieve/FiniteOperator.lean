@@ -7,72 +7,8 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-
-open scoped BigOperators
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 namespace FiniteSieveOperator
 
 variable {m n : Type*} [Fintype m] [Fintype n] [DecidableEq m] [DecidableEq n]
@@ -123,7 +59,7 @@ theorem diagonal_twist_norm_le (A : Matrix m n ℂ) (l : m → ℂ) (r : n → �
     ‖operator (fun i j => l i * A i j * r j)‖ ≤ ‖operator A‖ := by
   apply ContinuousLinearMap.opNorm_le_bound _ (norm_nonneg _)
   intro x
-  let y : EuclideanSpace ℂ n := WithLp.toLp 2 (fun j => r j * x j)
+  let y := WithLp.toLp 2 (fun j => r j * x j)
   have hy : ‖y‖ ≤ ‖x‖ := by
     apply (sq_le_sq₀ (norm_nonneg _) (norm_nonneg _)).mp
     rw [EuclideanSpace.norm_sq_eq, EuclideanSpace.norm_sq_eq]
@@ -180,17 +116,14 @@ theorem separated_phase_norm_le {κ : Type*} [Fintype κ]
 omit [DecidableEq m] in
 theorem energy_bound (A : Matrix m n ℂ) (u : n → ℂ) :
     (∑ i, ‖∑ j, A i j * u j‖ ^ 2) ≤ ‖operator A‖ ^ 2 * ∑ j, ‖u j‖ ^ 2 := by
-  let x : EuclideanSpace ℂ n := WithLp.toLp 2 u
-  have h := (operator A).le_opNorm x
-  have hs := pow_le_pow_left₀ (norm_nonneg _) h 2
-  simpa only [mul_pow, EuclideanSpace.norm_sq_eq, operator_apply, x, PiLp.toLp_apply] using hs
+  let x := WithLp.toLp 2 u
+  simpa only [mul_pow, EuclideanSpace.norm_sq_eq, operator_apply, x, PiLp.toLp_apply] using (pow_le_pow_left₀ (norm_nonneg _) ((operator A).le_opNorm x) 2)
 
 end FiniteSieveOperator
 
 section
-open scoped BigOperators Classical
 namespace QuadraticInitialBound
-open ActualEisensteinCubic ConcreteTraceCRT RayFourExpansion
+open RayFourExpansion
 
 def quadraticMatrix {ι m n : Type*}
     (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
@@ -266,8 +199,7 @@ theorem quadraticSieveNorm_reverse_le
 
 end QuadraticInitialBound
 
-open scoped BigOperators Classical
-open Filter IdealMobiusDivisorSum UniqueFactorizationMonoid
+open IdealMobiusDivisorSum
 
 namespace IdealDivisorBound
 abbrev O := ActualEisensteinCubic.O
@@ -298,15 +230,12 @@ theorem divisor_card_le_product (I : Ideal O) (hI : I ≠ ⊥) :
 
 theorem linear_le_geometric (b : ℝ) (hb : 1 < b) (n : ℕ) :
     (n : ℝ) + 1 ≤ (1 + (b - 1)⁻¹) * b ^ n := by
-  have hδ : 0 < b - 1 := sub_pos.mpr hb
+  have hδ := sub_pos.mpr hb
   have hn := one_add_mul_sub_le_pow (show (-1 : ℝ) ≤ b by linarith) n
   have hn' : (n : ℝ) ≤ b ^ n / (b - 1) := by
     apply (le_div_iff₀ hδ).mpr
     linarith
-  have h1 : (1 : ℝ) ≤ b ^ n := one_le_pow₀ hb.le
-  calc
-    (n : ℝ) + 1 ≤ b ^ n / (b - 1) + b ^ n := add_le_add hn' h1
-    _ = _ := by ring
+  exact (add_le_add hn' (one_le_pow₀ hb.le)).trans_eq (by ring)
 
 theorem support_norm_two_le {I P : Ideal O} (hP : P ∈ primeSupport I) :
     2 ≤ Ideal.absNorm P := by
@@ -316,9 +245,8 @@ theorem support_norm_two_le {I P : Ideal O} (hP : P ∈ primeSupport I) :
     exact hp.ne_zero (Ideal.absNorm_eq_zero_iff.mp h)
   have h1 : Ideal.absNorm P ≠ 1 := by
     intro h
-    have ht := Ideal.absNorm_eq_one_iff.mp h
     apply hp.not_isUnit
-    rw [ht]
+    rw [(Ideal.absNorm_eq_one_iff.mp h)]
     simpa only [Ideal.one_eq_top] using (show IsUnit (1 : Ideal O) from isUnit_one)
   omega
 
@@ -405,7 +333,6 @@ end IdealDivisorBound
 end
 
 namespace SecondPassFiber
-open scoped BigOperators Classical
 open IdealMobiusDivisorSum ConcretePrimeRowBridge
 
 abbrev O := ActualEisensteinCubic.O
@@ -434,9 +361,7 @@ def newRow (x : OldTuple) : O :=
 
 end SecondPassFiber
 
-open scoped BigOperators Classical
 namespace FirstPassCubeLabels
-open ActualEisensteinCubic
 
 theorem conductorExponent_val (parityBit ε₁ ε₂ : Bool) :
     (conductorExponent parityBit ε₁ ε₂).val = (bit ε₁ + 5 * bit ε₂ + 3 * bit parityBit) % 6 := by
@@ -445,7 +370,6 @@ theorem conductorExponent_val (parityBit ε₁ ε₂ : Bool) :
 theorem cube_pair_exponent_mod (m₁ m₂ : ℕ) (ε₁ ε₂ : Bool) :
     (bit ε₁ + 5 * bit ε₂ + 3 * m₁ + 15 * m₂) % 6 =
       (conductorExponent (parity (m₁ + m₂)) ε₁ ε₂).val := by
-  have hmod := Nat.mod_lt (m₁ + m₂) (by decide : 0 < 2)
   rw [conductorExponent_val]
   cases ε₁ <;> cases ε₂ <;> by_cases h : (m₁ + m₂) % 2 = 1 <;>
     norm_num [parity, bit, h] <;> omega
@@ -570,14 +494,11 @@ theorem cubePairRow_conductor_selection {κ : Type*}
     rw [← principal_product_eq_mask]
     apply Finset.prod_congr rfl
     intro j hj
-    have he : e j = 0 := (Finset.mem_filter.mp hj).2
-    simp only [f, he, ZMod.val_zero, pow_zero]
+    simp only [f, ((Finset.mem_filter.mp hj).2), ZMod.val_zero, pow_zero]
   rw [hlocal, ← Finset.prod_filter_mul_prod_filter_not B (fun j => e j = 0) f, hzero]
   congr 1
   exact (Finset.prod_coe_sort (s := cubeConductorSupport B v₁ v₂ ε₁ ε₂) (f := f)).symm
 
-open scoped SchwartzMap ContDiff
-open ConcreteTraceCRT
 open EisensteinSchwartzPoisson (paperRadialFourier)
 
 end FirstPassCubeLabels

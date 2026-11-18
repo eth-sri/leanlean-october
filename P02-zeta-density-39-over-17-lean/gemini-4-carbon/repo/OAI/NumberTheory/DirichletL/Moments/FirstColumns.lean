@@ -11,8 +11,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentFirstColumns
-open CanonicalRowCompletion CanonicalQuadraticSieve CenteredMomentSupportedCorrelation
-open CenteredMomentFixedRay RayFourExpansion CenteredMomentGaussEnergy
+open CanonicalRowCompletion CanonicalQuadraticSieve CenteredMomentSupportedCorrelation CenteredMomentFixedRay RayFourExpansion CenteredMomentGaussEnergy
 local notation "O" => ActualEisensteinCubic.O
 
 def leftCoefficient (e r : O) (ρ : O → ℂ) (a : O) : ℂ :=
@@ -54,8 +53,7 @@ theorem firstPhaseTable_expansion (a b : O)
     (ha : Supported (Ideal.span {a})) (hb : Supported (Ideal.span {b})) :
     sexticReciprocityPhase a b=∑ χ : RayCharacter,∑ ξ : RayCharacter,
       pairCoeff firstPhaseTable χ ξ*rayCharacter χ a*rayCharacter ξ b := by
-  have hh := pair_phase_expansion firstPhaseTable a b
-  simpa only [supported_rayMask a ha,supported_rayMask b hb,one_mul,firstPhaseTable_mk] using hh
+  simpa only [supported_rayMask a ha,supported_rayMask b hb,one_mul,firstPhaseTable_mk] using (pair_phase_expansion firstPhaseTable a b)
 
 theorem firstPhaseTable_mass :
     (∑ χ : RayCharacter,∑ ξ : RayCharacter,‖pairCoeff firstPhaseTable χ ξ‖)≤256 := by
@@ -63,7 +61,7 @@ theorem firstPhaseTable_mass :
     intro u v
     unfold firstPhaseTable QuadraticAllOddCRT.quadraticRaySign
     split_ifs <;> norm_num
-  simpa only [mul_one] using pairCoeff_sum_norm_le firstPhaseTable 1 hb
+  simpa using pairCoeff_sum_norm_le firstPhaseTable 1 hb
 
 def firstExtension (e r : O) (ρ : O → ℂ) (a b : O) : ℂ :=
   ρ e*sexticReciprocityPhase a b*leftCoefficient e r ρ a*star (rightCoefficient e r ρ b)

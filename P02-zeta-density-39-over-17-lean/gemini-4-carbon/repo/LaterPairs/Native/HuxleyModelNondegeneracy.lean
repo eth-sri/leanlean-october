@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.BetaModelJetEstimates
 public import LaterPairs.Native.ExponentPairShiftUniformity
 
@@ -66,7 +75,6 @@ theorem tests_monomial_ne_zero {a z x : ℝ}
     tests ![z*x^3,-a*z*x^2,a*(a+1)*z*x,-a*(a+1)*(a+2)*z] i ≠ 0 := by
   rw [tests_monomial]
   have ha0 : 0 < a := by linarith
-  have ha1 : 0 < a+1 := by linarith
   have ha2 : 0 < 2*a-1 := by linarith
   fin_cases i <;> dsimp
   · positivity
@@ -90,8 +98,7 @@ private theorem compact_tests_uniform_lower {n m : ℕ} [Nonempty (Fin m)]
     (hne : ∀ v ∈ S, ∀ i, f v i ≠ 0) :
     ∃ δ c : ℝ, 0 < δ ∧ 0 < c ∧
       ∀ w ∈ S, ∀ v : Fin n → ℝ, dist v w ≤ δ → ∀ i, c ≤ |f v i| := by
-  let U := {v : Fin n → ℝ | ∀ i, f v i ≠ 0}
-  have hU : IsOpen U := by
+  have hU : IsOpen ({v : Fin n → ℝ | ∀ i, f v i ≠ 0}) := by
     have hi (i : Fin m) : IsOpen {v : Fin n → ℝ | f v i ≠ 0} :=
       isOpen_ne.preimage (hf i)
     simpa only [Set.iInter_ofPred] using isOpen_iInter_of_finite hi
@@ -135,7 +142,7 @@ theorem reference_tests_positive {σ x : ℝ} (hσ : 0 < σ) (hx : 0 < x) (i : F
       ring
   rw [he]
   have hh := tests_monomial_ne_zero (a:=σ+2) (z:=z) (x:=x)
-    (by linarith only [hσ]) (by dsimp only [z]; positivity) hx i
+    (by linarith) (by dsimp only [z]; positivity) hx i
   simpa only [show σ+2+1=σ+3 by ring,show σ+2+2=σ+4 by ring] using hh
 
                                                                    

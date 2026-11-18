@@ -29,8 +29,6 @@ def cubePart (x : M) : M :=
 theorem count_mod_three (k : ℕ) :
     k = (if k % 3 = 1 then 1 else 0) +
       2 * (if k % 3 = 2 then 1 else 0) + 3 * (k / 3) := by
-  have h := Nat.mod_add_div k 3
-  have hlt := Nat.mod_lt k (by decide : 0 < 3)
   split_ifs <;> omega
 
 omit [Subsingleton Mˣ] in
@@ -39,11 +37,10 @@ private theorem residual_squarefree (x : M) (r : ℕ) :
       (fun p => (normalizedFactors x).count p % 3 = r), p) := by
   apply Finset.squarefree_prod_of_pairwise_isCoprime
   · intro p hp q hq hpq
-    have hp' : p ∈ normalizedFactors x := Multiset.mem_toFinset.mp (Finset.mem_filter.mp hp).1
-    have hq' : q ∈ normalizedFactors x := Multiset.mem_toFinset.mp (Finset.mem_filter.mp hq).1
+    have hp' := Multiset.mem_toFinset.mp (Finset.mem_filter.mp hp).1
     apply (irreducible_of_normalized_factor p hp').isRelPrime_iff_not_dvd.mpr
     intro hd
-    exact hpq (normalizedFactors_eq_of_dvd x p hp' q hq' hd)
+    exact hpq (normalizedFactors_eq_of_dvd x p hp' q (Multiset.mem_toFinset.mp (Finset.mem_filter.mp hq).1) hd)
   · intro p hp
     exact (irreducible_of_normalized_factor p
       (Multiset.mem_toFinset.mp (Finset.mem_filter.mp hp).1)).squarefree
@@ -69,13 +66,10 @@ theorem cubic_factorization (x : M) (hx : x ≠ 0) :
     conv_lhs => rw [count_mod_three ((normalizedFactors x).count p)]
     rw [pow_add, pow_add, Nat.mul_comm 3, pow_mul]
     split_ifs <;> simp [pow_mul]
-  calc
-    x = ∏ p ∈ (normalizedFactors x).toFinset,
-        p ^ (normalizedFactors x).count p := hp.symm
-    _ = firstPart x * secondPart x ^ 2 * cubePart x ^ 3 := by
+  exact (hp.symm).trans (by
       simp_rw [hper]
       simp only [Finset.prod_mul_distrib, Finset.prod_pow]
-      simp only [firstPart, secondPart, cubePart, Finset.prod_filter]
+      simp only [firstPart, secondPart, cubePart, Finset.prod_filter])
 
 end
 end SevenEighths.CubicSieve

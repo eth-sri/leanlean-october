@@ -24,7 +24,7 @@ theorem actual_marked_row_overlap_zero {σ : Type*} [Fintype σ]
     markedCompletedT (rowTwist Ψ m f z) W X
       (fun A => ∏ i, if S.ideal i∣A then (1:ℂ) else 0)=0 := by
   rw [actual_marked_row_fixed_factor D Ψ Q hmLam hm2]
-  exact markedCompletedT_free_overlap_zero D.movingIdeal (Q*Ideal.span {(72:Eis)})
+  exact markedCompletedT_free_overlap_zero D.movingIdeal (Q*Ideal.span {72})
     D.movingSupported S P i hPi (D.fixedFactor Ψ Q) W X
 
 end

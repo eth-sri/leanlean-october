@@ -4,8 +4,7 @@ public import MathCollab.Density.DetectorEstimates
 
 @[expose] public section
 
-open Complex MeasureTheory Set Filter
-open MathCollab.Density.Contour
+open Complex MeasureTheory Set Filter MathCollab.Density.Contour
 open scoped BigOperators Topology
 set_option autoImplicit false
 noncomputable section

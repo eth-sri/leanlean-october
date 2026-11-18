@@ -87,19 +87,17 @@ theorem first_whole_cube_canonical_tail (ε : ℝ) (hε : 0<ε) (order : ℕ) :
   · intro N hN hn
     have ht := canonical_residual_test_nonzero p hg b common true Ψ₁ m₁
       (ConcretePrimeRowBridge.idealGenerator f) _ N hn
-    have hn' := hs₁ _ (mul_ne_zero_iff.mp ht).2
     have he := cube_whole_column_norm p b hb common N hcommon
       (hdis.mono_left (Finset.mem_powerset.mp hN)) true
     simp only [ite_true] at he
-    exact he ▸ hn'
+    exact he ▸ (hs₁ _ (mul_ne_zero_iff.mp ht).2)
   · intro N hN hn
     have ht := canonical_residual_test_nonzero p hg b common false Ψ₂ m₂
       (ConcretePrimeRowBridge.idealGenerator f) _ N hn
-    have hn' := hs₂ _ (mul_ne_zero_iff.mp ht).2
     have he := cube_whole_column_norm p b hb common N hcommon
       (hdis.mono_left (Finset.mem_powerset.mp hN)) false
     simp only [ite_false,Bool.false_eq_true] at he
-    exact he ▸ hn'
+    exact he ▸ (hs₂ _ (mul_ne_zero_iff.mp ht).2)
 
 end
 end SevenEighths.InverseMoment

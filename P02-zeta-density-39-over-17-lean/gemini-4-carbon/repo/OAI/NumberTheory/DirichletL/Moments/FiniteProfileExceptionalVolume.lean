@@ -10,10 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptional
-open HeckeFamily CenteredMomentLattice CenteredMomentHeckeVolume
-open CenteredMomentHeckeCancellation CenteredMomentHeckeHeight
-open CenteredMomentMask
-open QuadraticInitialBound EisensteinSchwartzPoisson
+open HeckeFamily CenteredMomentLattice CenteredMomentHeckeVolume CenteredMomentHeckeCancellation CenteredMomentHeckeHeight CenteredMomentMask QuadraticInitialBound EisensteinSchwartzPoisson
 local notation "O" => HeckeFamily.O
 
 theorem volumeControl_source_control (a b ε B : ℝ)
@@ -34,7 +31,6 @@ theorem volumeControl_source_control (a b ε B : ℝ)
   let A := D*mass*pvConstant*C
   have hmass : 0 ≤ mass := Nat.cast_nonneg _
   have hpv := pvConstant_pos
-  have hA : 0 ≤ A := by dsimp [A]; positivity
   refine ⟨1+A,by positivity,?_⟩
   intro W hs Z hZ χ hnorm t
   have hTS : T.sup (schwartzSeminormFamily ℝ ℝ ℂ) W ≤

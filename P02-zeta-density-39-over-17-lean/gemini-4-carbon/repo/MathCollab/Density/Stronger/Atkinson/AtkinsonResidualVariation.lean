@@ -27,7 +27,7 @@ theorem zetaMainMellinProfile_saddle_eq_root {T : ℝ} (hT : 0 < T) (b : ℝ) :
       atkinsonPowerProfile 0 ((atkinsonSaddleRoot (T/(2*Real.pi)) b/Real.sqrt T)^2) := by
   unfold atkinsonPowerProfile zetaAtkinsonSaddle
   rw [div_pow,Real.sq_sqrt hT.le]
-  simp only [neg_zero,Real.rpow_zero,Complex.ofReal_one,one_mul]
+  simp
 
 theorem exists_finiteVariationBound_saddleMellin :
     ∃ C : ℝ, 0 < C ∧ ∀ T : ℝ, 0 < T → ∀ m N : ℕ,
@@ -44,7 +44,7 @@ theorem exists_finiteVariationBound_saddleMellin :
       FiniteVariationBound (fun i => atkinsonPowerProfile 0 ((u i)^2)) N C := by
     apply finiteVariationBound_comp_of_lipschitz hC.le (by norm_num) hm hr hprofile.norm_le
     intro x hx y hy
-    simpa only [mul_one] using hprofile.norm_sub_le hx hy
+    simpa using hprofile.norm_sub_le hx hy
   constructor
   · apply (hbound _ (Or.inl ((atkinsonPositiveRootSample_monotone hT m).monotoneOn (Iic N)))
       (fun i hi => (atkinsonRootSample_mem hT m N hN i hi).1)).congr

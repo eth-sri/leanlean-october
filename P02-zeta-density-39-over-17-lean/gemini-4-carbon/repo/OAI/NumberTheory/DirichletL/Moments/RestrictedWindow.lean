@@ -7,13 +7,11 @@ public import OAI.NumberTheory.DirichletL.Moments.RestrictedEnergy
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
 open MeasureTheory
+open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentRestrictedWindow
-open CanonicalQuadraticSieve CenteredMomentRowNorm CenteredMomentRestrictedEnergy
-open CenteredMomentPlainWindowEnergy CenteredMomentHeckeColumnWindow CenteredMomentHeckeWindowEnergy
-open HeckeFamily FourierBridge CenteredMomentSmooth
+open CanonicalQuadraticSieve CenteredMomentRowNorm CenteredMomentRestrictedEnergy CenteredMomentPlainWindowEnergy CenteredMomentHeckeColumnWindow CenteredMomentHeckeWindowEnergy HeckeFamily FourierBridge CenteredMomentSmooth
 local notation "O" => ActualEisensteinCubic.O
 
 theorem restricted_hasSum_weighted {α : Type*} (keep : O → Prop)
@@ -64,10 +62,8 @@ theorem restricted_window_energy_from_shifted {α : Type*} (keep : O → Prop)
       (logPhase (θ-w) (Real.log X)*rowPolynomial S a
         (fun i => β i*heightCoeff τ (t+2*Real.pi*(w-θ)) (Ideal.span {a i})) z)
     have hi (z : rows) : Integrable (fun w => columnDensity V hVc hVs w*φ z w) := by
-      have h := (plain_column_integrable S a ha β τ t θ X hX V hVc hVs z).const_mul (Real.sqrt (u z):ℂ)
-      convert h using 1
+      convert ((plain_column_integrable S a ha β τ t θ X hX V hVc hVs z).const_mul (Real.sqrt (u z):ℂ)) using 1
       funext w
-      dsimp only [φ]
       ring
     have hb (w : ℝ) : (∑ z : rows,‖φ z w‖^2)≤E*((1+‖w‖)^J)^2 := by
       simp only [φ]
@@ -94,7 +90,6 @@ theorem restricted_window_energy_from_shifted {α : Type*} (keep : O → Prop)
         ← integral_const_mul]
       apply integral_congr_ae
       filter_upwards [] with w
-      dsimp only [φ]
       ring
     simp only [he,hnorm] at hh
     rw [Finset.sum_coe_sort rows (fun z : O => u z*‖rowPolynomial S a c z‖^2)] at hh
@@ -104,8 +99,7 @@ theorem restricted_window_energy_from_shifted {α : Type*} (keep : O → Prop)
         intro z hz
         exact mul_comm _ _
       _ ≤ _ := hh
-  have hs := restricted_hasSum_weighted keep S a ha c U K hK
-  rw [← hs.tsum_eq]
+  rw [← (restricted_hasSum_weighted keep S a ha c U K hK).tsum_eq]
   exact Real.tsum_le_of_sum_le (fun z => mul_nonneg (sq_nonneg _) (hu z)) hfin
 
 theorem restricted_window_energy_from_height {α : Type*} (keep : O → Prop)

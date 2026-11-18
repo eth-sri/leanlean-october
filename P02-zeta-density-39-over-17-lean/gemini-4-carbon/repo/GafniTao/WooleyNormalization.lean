@@ -41,10 +41,9 @@ theorem wooleyNormalizationExponent_pos
     {k r : ℕ} (hr : 1 ≤ r) (hrk : r < k) :
     0 < wooleyNormalizationExponent k r := by
   unfold wooleyNormalizationExponent
-  have hk : 1 < k := lt_of_le_of_lt hr hrk
-  have hkr : 0 < k - r := Nat.sub_pos_of_lt hrk
+  have hkr := Nat.sub_pos_of_lt hrk
   have hnum : (0 : ℝ) < (k - 1 : ℕ) := by
-    exact_mod_cast Nat.sub_pos_of_lt hk
+    exact_mod_cast Nat.sub_pos_of_lt (lt_of_le_of_lt hr hrk)
   have hden : (0 : ℝ) < (r : ℝ) * (k - r : ℕ) := by
     positivity
   exact div_pos hnum hden
@@ -53,7 +52,7 @@ theorem wooleyNormalizationExponent_le_one
     {k r : ℕ} (hr : 1 ≤ r) (hrk : r < k) :
     wooleyNormalizationExponent k r ≤ 1 := by
   unfold wooleyNormalizationExponent
-  have hkr : 1 ≤ k - r := Nat.one_le_iff_ne_zero.mpr
+  have hkr := Nat.one_le_iff_ne_zero.mpr
     (Nat.ne_of_gt (Nat.sub_pos_of_lt hrk))
   have hden : (0 : ℝ) < (r : ℝ) * (k - r : ℕ) := by positivity
   rw [div_le_one hden]
@@ -68,7 +67,7 @@ theorem wooleyNormalizationExponent_le_one
         ((r : ℝ) - 1) * ((k - r : ℕ) - 1) := by
     rw [hsplit]
     ring
-  norm_num only [Nat.cast_one] at *
+  norm_num at *
   nlinarith [hprod]
 
 theorem wooleyNormalizationExponent_symm
@@ -94,7 +93,7 @@ theorem wooleyNormalizationExponent_one
 theorem wooleyNormalizationExponent_pred
     {k : ℕ} (hk : 2 ≤ k) :
     wooleyNormalizationExponent k (k - 1) = 1 := by
-  rw [wooleyNormalizationExponent_symm (show 1 ≤ k by omega)]
+  rw [wooleyNormalizationExponent_symm (by omega)]
   exact wooleyNormalizationExponent_one hk
 
 /-- The exponent conversion for the `r-1` factor in Wooley (8.4). -/

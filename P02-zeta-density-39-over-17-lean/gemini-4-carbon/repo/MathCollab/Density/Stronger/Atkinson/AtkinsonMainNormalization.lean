@@ -28,7 +28,7 @@ theorem atkinsonStationaryMain_sqrt_normalized {T : ℝ} (hT : 0 < T)
     _ = 2*(atkinsonSaddleProfile T G L (1/4) (Real.sqrt n) /
       (Real.sqrt (2*atkinsonSaddleCurvature T (Real.sqrt n)) : ℂ)) *
         atkinsonSaddleGaussian T G n * Complex.exp ((atkinsonCentralPhase T : ℂ)*I) *
-        (-1:ℂ)^n * Complex.exp ((atkinsonSourcePhase T n : ℂ)*I) := by ring
+        (-1)^n * Complex.exp ((atkinsonSourcePhase T n : ℂ)*I) := by ring
     _ = _ := by rw [atkinsonSaddleProfile_div_curvature hT]; ring
 
 theorem atkinsonStationaryMain_neg_sqrt_normalized {T G : ℝ} (hT : 0 < T)
@@ -43,7 +43,7 @@ theorem atkinsonStationaryMain_neg_sqrt_normalized {T G : ℝ} (hT : 0 < T)
     _ = (-I)*2*(atkinsonSaddleProfile T G L (1/4) (-Real.sqrt n) /
       (Real.sqrt (2*atkinsonSaddleCurvature T (-Real.sqrt n)) : ℂ)) *
         atkinsonSaddleGaussian T G n * Complex.exp ((atkinsonCentralPhase T : ℂ)*I) *
-        (-1:ℂ)^n * Complex.exp ((-atkinsonSourcePhase T n : ℂ)*I) := by ring
+        (-1)^n * Complex.exp ((-atkinsonSourcePhase T n : ℂ)*I) := by ring
     _ = _ := by
       rw [atkinsonSaddleProfile_div_curvature hT,atkinsonCommonSaddleFactor_neg]
       ring

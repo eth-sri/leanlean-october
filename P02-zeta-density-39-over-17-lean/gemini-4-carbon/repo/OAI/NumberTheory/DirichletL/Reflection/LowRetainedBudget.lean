@@ -71,8 +71,8 @@ theorem original_low_sector_retained_budget
   dsimp only
   intro hscap hpool rows Pset S hrows E hGN hGchar hrowcop hprod hScop hSN hSchar θ r aw hqk hqp hKr hPr hr haw
   let G := (poolPrimeFamily J Q Q₀).restrict A
-  have hz' : 1<Z := lt_of_lt_of_le hZ₀ hZ
-  have hzpos : 0<Z := lt_trans zero_lt_one hz'
+  have hz' := lt_of_lt_of_le hZ₀ hZ
+  have hzpos := lt_trans zero_lt_one hz'
   have hs := henergy J I F Q Q₀ hJ hI hQ hpower hmask A
     Z O₀ H za Nstar d ell0 shift δ π Ck CO CH X QK QP Lscale Lrow Lslot
     hZ hCk hCO hCH hX hQK hQP hk hpow hrow hlogH hPowUpper hQwidth hd hd1 hell0 hO hzcap hshift

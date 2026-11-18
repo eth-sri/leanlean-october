@@ -43,9 +43,7 @@ theorem fixedTimeCutoff_one {s : ℝ} (hs : s ∈ Icc (-1:ℝ) 2) : fixedTimeCut
 theorem fixedTimeCutoff_support : tsupport fixedTimeCutoff ⊆ Icc (-2:ℝ) 3 := by
   apply closure_minimal _ isClosed_Icc
   intro s hs
-  have hh : s+2 ∈ tsupport MathCollab.Density.comparisonCutoff :=
-    subset_closure (show s+2 ∈ Function.support MathCollab.Density.comparisonCutoff from hs)
-  have hb := MathCollab.Density.comparisonCutoff.support hh
+  have hb := MathCollab.Density.comparisonCutoff.support (subset_closure (show s+2 ∈ Function.support MathCollab.Density.comparisonCutoff from hs))
   exact ⟨by linarith [hb.1],by linarith [hb.2]⟩
 
 theorem fixedTimeCutoff_compact : HasCompactSupport fixedTimeCutoff :=

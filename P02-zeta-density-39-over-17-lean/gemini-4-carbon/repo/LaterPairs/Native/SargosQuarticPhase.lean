@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.SargosPlanarWindow
 public import LaterPairs.Native.SargosSlowAbel
 
@@ -32,7 +41,6 @@ theorem sargosQuarticPhase_hasDerivAt (α γ x : ℝ) :
 
 theorem sargosQuarticSlope_hasDerivAt (α γ x : ℝ) :
     HasDerivAt (sargosQuarticSlope α γ) (2*α+12*γ*x^2) x := by
-  change HasDerivAt (fun t : ℝ => 2*α*t+4*γ*t^3) (2*α+12*γ*x^2) x
   convert ((hasDerivAt_id x).const_mul (2*α)).add
     (((hasDerivAt_id x).pow 3).const_mul (4*γ)) using 1
   all_goals first | rfl | funext y | (norm_num [id_eq]; ring)
@@ -45,15 +53,11 @@ theorem contDiff_sargosQuarticPhase (α γ : ℝ) :
 theorem sargosQuartic_curvature_error {N α γ x : ℝ}
     (hN : 0 < N) (hα : 0 < α) (hγ : |γ| ≤ α/(96*N^2)) (hx : x ∈ Icc N (2*N)) :
     |12*γ*x^2| ≤ α/2 := by
-  have hx0 : 0 ≤ x := hN.le.trans hx.1
-  have hxsq : x^2 ≤ (2*N)^2 := pow_le_pow_left₀ hx0 hx.2 2
+  have hx0 := hN.le.trans hx.1
   rw [abs_mul,abs_mul,abs_of_pos (by norm_num : (0 : ℝ) < 12),abs_pow,
     abs_of_nonneg hx0]
-  calc
-    _ ≤ 12*(α/(96*N^2))*(2*N)^2 :=
-      mul_le_mul (mul_le_mul_of_nonneg_left hγ (by norm_num)) hxsq
-        (sq_nonneg x) (by positivity)
-    _ = _ := by field_simp; ring
+  exact (mul_le_mul (mul_le_mul_of_nonneg_left hγ (by norm_num)) (pow_le_pow_left₀ hx0 hx.2 2)
+        (sq_nonneg x) (by positivity)).trans_eq (by field_simp; ring)
 
 theorem sargosQuarticPhase_curvature {N α γ x : ℝ}
     (hN : 0 < N) (hα : 0 < α) (hγ : |γ| ≤ α/(96*N^2)) (hx : x ∈ Icc N (2*N)) :

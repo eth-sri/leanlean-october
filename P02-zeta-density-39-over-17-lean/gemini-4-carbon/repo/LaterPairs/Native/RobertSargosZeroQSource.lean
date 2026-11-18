@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.IntegerClosedIntervalPrefix
 public import LaterPairs.Native.RobertSargosCorrelationBoundary
 public import LaterPairs.Native.RobertSargosZeroQFullPrefix
@@ -69,7 +78,7 @@ theorem robertSargos_zero_q_source_bound
         (robertSargosSymmetricDifference f (↑(a+(n:ℤ))) h -
           robertSargosSymmetricDifference f (↑(a+(n:ℤ))) (h+r))‖ ≤
         120*C*(1+2*Real.pi*C)*M*(2*|(r:ℝ)| *lam)^((1:ℝ)/12) := by
-      simpa only [Int.cast_add,Int.cast_natCast] using hp
+      simpa using hp
     have he := sargos_character_norm
       (robertSargosSymmetricDifference f b h-robertSargosSymmetricDifference f b (h+r))
     exact (norm_add_le _ _).trans (by linarith)

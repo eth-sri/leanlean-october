@@ -10,10 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSecondCanonicalScalar
-open CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
-open CenteredMomentCanonicalFirst CenteredMomentPartition CenteredMomentPartitionNorm
-open CenteredMomentSectorLocalization CenteredMomentSupport
+open CanonicalQuadraticSieve CompletedGauss CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentCanonicalFirst CenteredMomentPartition CenteredMomentPartitionNorm CenteredMomentSectorLocalization CenteredMomentSupport
 local notation "O" => ActualEisensteinCubic.O
 
 def normalizer (C D : Ideal O) (U : Finset (CommonIndex C D)) : ℝ :=
@@ -35,10 +32,9 @@ theorem actual_retained_scalar_norm (C D : Ideal O) (hC : Supported C) (hD : Sup
     (U : Finset (CommonIndex C D)) (R : ℝ) (h : O) :
     ‖retainedScalar C D U R h*idealCorrelation C D hC hD
       ((commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U)*h)‖≤1 := by
-  have hs := actual_ideal_partition_scalar C D hC hD hCD U (nonunitFrequencyGenerator C D U*h)
   have hw := retainedWeight_bounds R (normValue ((commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U)*h))
   rw [retainedScalar,mul_right_comm,norm_mul,Complex.norm_real,Real.norm_eq_abs,abs_of_nonneg hw.1]
-  exact (mul_le_of_le_one_left hw.1 (by simpa only [mul_assoc] using hs)).trans hw.2
+  exact (mul_le_of_le_one_left hw.1 (by simpa only [mul_assoc] using (actual_ideal_partition_scalar C D hC hD hCD U (nonunitFrequencyGenerator C D U*h)))).trans hw.2
 
 end SevenEighths.CenteredMomentSecondCanonicalScalar
 

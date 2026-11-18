@@ -12,9 +12,8 @@ public import MathCollab.Density.Stronger.Peaks.ClusterCount
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology Finset
+open Complex Filter MeasureTheory Set Topology Finset MathCollab.Density MathCollab.Density.Stronger
 open scoped Interval
-open MathCollab.Density MathCollab.Density.Stronger
 open TaoTrudgianYang2025 (eventually_const_log_pow_le_rpow
   eventually_const_height_log_pow_mul_rpow_le_rpow
   eventually_pointValue_sixth_power_source_range)
@@ -27,10 +26,9 @@ theorem eventually_pointValue_log_scales {P K q : ℝ}
     (hK : 0 < K) (hq : 0 < q) :
     ∀ᶠ H : ℝ in atTop, 20 ≤ H ∧ 1 ≤ Real.log (3*H) ∧
       2*P ≤ K*Real.log (3*H) ∧ 2*(Real.log (3*H))^2 ≤ H^q := by
-  have hsmall := eventually_const_log_pow_le_rpow (8:ℝ) (by norm_num) 2 hq
   have hlog := Real.tendsto_log_atTop.eventually
     (eventually_ge_atTop (max 1 (2*P/K)))
-  filter_upwards [hsmall,hlog,eventually_ge_atTop (20:ℝ)] with H hs hl hH
+  filter_upwards [(eventually_const_log_pow_le_rpow 8 (by norm_num) 2 hq),hlog,eventually_ge_atTop 20] with H hs hl hH
   have hH0 : 0 < H := by linarith
   have hmono : Real.log H ≤ Real.log (3*H) :=
     Real.log_le_log hH0 (by linarith)
@@ -84,7 +82,7 @@ theorem exists_pointValue_card_le_source_range
   let K : ℝ := 16*P*C+1
   have hK : 0 < K := by dsimp only [K]; positivity
   have hKsize : 16*P*C ≤ K := by dsimp only [K]; linarith
-  have hq : 0 < (1/4:ℝ)+κ := by linarith
+  have hq : 0 < (1/4)+κ := by linarith
   obtain ⟨B₁,hB₁⟩ := eventually_atTop.mp
     (eventually_pointValue_log_scales (P := P) hK hq)
   let D₁ : ℝ := D*(K*(16*P)^2+(16*P)^6)
@@ -101,15 +99,13 @@ theorem exists_pointValue_card_le_source_range
   have hDen : 0 < K*L^2 := by positivity
   have hG : 0 < G := by dsimp only [G]; positivity
   have hGlo : (2*H)^(1/4+κ) ≤ G := by
-    dsimp only [G]
     exact (le_div_iff₀ hDen).mpr (by simpa only [L,mul_comm] using hLower)
   have hGhi : G ≤ H^(1/2-δ) := by
-    dsimp only [G]
     exact (div_le_iff₀ hDen).mpr (by simpa only [L,mul_comm] using hUpper)
   have hGH : G ≤ H := by
     calc
       G ≤ H^(1/2-δ) := hGhi
-      _ ≤ H^(1:ℝ) := Real.rpow_le_rpow_of_exponent_le hH1 (by linarith)
+      _ ≤ H^1 := Real.rpow_le_rpow_of_exponent_le hH1 (by linarith)
       _ = H := Real.rpow_one H
   have hfit : 2*(Real.log (3*H))^2 ≤ G :=
     hlogFit.trans ((Real.rpow_le_rpow hH0.le (by linarith) hq.le).trans hGlo)
@@ -127,13 +123,8 @@ theorem exists_pointValue_card_le_source_range
     · exact (Real.rpow_le_rpow ht0 hthi hq.le).trans hGlo
   have hOnePow : 1 ≤ (2*H)^(1/4+κ) :=
     Real.one_le_rpow (by linarith) hq.le
-  have hLowerSimple : K*L^2 ≤ V^2 := by
-    have hm := mul_le_mul_of_nonneg_left hOnePow hDen.le
-    have hLower' : K*L^2*(2*H)^(1/4+κ) ≤ V^2 := hLower
-    nlinarith
   have hVsize : 2*P*Real.log (3*H) ≤ V^2 := by
     have hm := mul_le_mul_of_nonneg_right hPL hL.le
-    change 2*P*L ≤ V^2
     change 2*P*L ≤ K*L*L at hm
     nlinarith
   have herr : C*G*Real.log (3*H) ≤ V^2/(16*P*Real.log (3*H)) :=
@@ -156,7 +147,6 @@ theorem exists_pointValue_card_le_source_range
       apply mul_le_mul_of_nonneg_left _ (by positivity)
       nlinarith [mul_nonneg hkx hy,mul_nonneg hky hx]
     _ = D₁*H^ν*(H*(Real.log (3*H))^4/V^6+H^2*(Real.log (3*H))^6/V^12) := by
-      dsimp only [D₁,L]
       ring
 
 
@@ -246,17 +236,14 @@ theorem exists_pointValue_twelfth_weighted_card_le_of_inputs
   have hη : 0 < η := lt_min (by positivity) (by norm_num)
   have hηUpper : η ≤ 1/48 := (min_le_right _ _).trans (by norm_num)
   have hηε : η ≤ ε := (min_le_left _ _).trans (by linarith)
-  have h8η : 8*η ≤ ε := by have hh := min_le_left (ε/16) (1/1000:ℝ); dsimp only [η]; linarith
+  have h8η : 8*η ≤ ε := by have hh := min_le_left (ε/16) (1/1000); dsimp only [η]; linarith
   obtain ⟨K,D,B,hK,hD,hB,hcount⟩ :=
     exists_pointValue_card_le_source_range hPointMean hPacket
-      (δ := (1/48:ℝ)) (κ := η) (ν := η)
+      (δ := (1/48)) (κ := η) (ν := η)
       (by norm_num) (by norm_num) hη hη
   obtain ⟨B₁,hGrowth⟩ := eventually_atTop.mp
     (zetaMomentCriticalNorm_eventually_lt_slab_power hη)
-  have hlower := eventually_pointValue_source_lower_range hK hη
-  have hupper := eventually_pointValue_sixth_power_source_range hK hη hηUpper
-  have hbudget := eventually_pointValue_high_budget hD hη
-  obtain ⟨B₂,hB₂⟩ := eventually_atTop.mp (hlower.and (hupper.and hbudget))
+  obtain ⟨B₂,hB₂⟩ := eventually_atTop.mp ((eventually_pointValue_source_lower_range hK hη).and ((eventually_pointValue_sixth_power_source_range hK hη hηUpper).and (eventually_pointValue_high_budget hD hη)))
   refine ⟨max B (max B₁ B₂),le_max_of_le_left hB,?_⟩
   intro H V W hH hV hVlower hsep hrange hlarge
   have hHB : B ≤ H := (le_max_left _ _).trans hH
@@ -274,9 +261,7 @@ theorem exists_pointValue_twelfth_weighted_card_le_of_inputs
       exact (hrange t ht).2)).le
   have hVl : H^(1/8+η) ≤ V :=
     (Real.rpow_le_rpow_of_exponent_le hH1 (by linarith)).trans hVlower
-  have hVsq := pow_le_pow_left₀ (by positivity : 0 ≤ H^(1/8+η)) hVl 2
-  have hVupper := pow_le_pow_left₀ hV.le hVgrowth 2
-  have hc := hcount H V W hHB hV (hl.trans hVsq) (hVupper.trans hu.2)
+  have hc := hcount H V W hHB hV (hl.trans (pow_le_pow_left₀ (by positivity : 0 ≤ H^(1/8+η)) hVl 2)) ((pow_le_pow_left₀ hV.le hVgrowth 2).trans hu.2)
     hsep hrange hlarge
   calc
     (W.card:ℝ)*V^12 ≤

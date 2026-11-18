@@ -1,6 +1,17 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
-public import TaoTrudgianYang2025.BetaLegendreTaylorTransition
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
+public import TaoTrudgianYang2025.BetaExpandedAnchoring
+public import TaoTrudgianYang2025.BetaTaylorTransitionBudget
 
 @[expose] public section
 
@@ -133,7 +144,7 @@ theorem taylorPastedExtension_eventuallyEq_left_polynomial
       finiteTaylorPolynomial f Q (l+2*h) := by
   filter_upwards [Iio_mem_nhds hx] with y hy
   change y < l+h at hy
-  rw [taylorPastedExtension_left_formula f Q hh (show y ≤ r-2*h by linarith),
+  rw [taylorPastedExtension_left_formula f Q hh (by linarith),
     taylorLeftTransition_zero hh hy.le,zero_mul,add_zero]
 
 theorem taylorPastedExtension_eventuallyEq_right_polynomial
@@ -143,7 +154,7 @@ theorem taylorPastedExtension_eventuallyEq_right_polynomial
       finiteTaylorPolynomial f Q (r-2*h) := by
   filter_upwards [Ioi_mem_nhds hx] with y hy
   change r-h < y at hy
-  rw [taylorPastedExtension_right_formula f Q hh (show l+2*h ≤ y by linarith),
+  rw [taylorPastedExtension_right_formula f Q hh (by linarith),
     taylorRightTransition_zero hh hy.le,zero_mul,add_zero]
 
 end TaoTrudgianYang2025

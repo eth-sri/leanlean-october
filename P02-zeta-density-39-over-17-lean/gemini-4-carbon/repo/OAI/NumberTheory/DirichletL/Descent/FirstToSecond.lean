@@ -44,8 +44,7 @@ theorem firstFreshSecondPoisson_fixed_pool
         maskedSecondDual p hg hp hinj G U V rowMajorant Y else 0 := by
   unfold firstFreshSecondPoisson
   rw [← firstCoreInputRow_smoothed_second_poisson p hg hp hinj hc F D B v ε₁ ε₂ negative χ Ψ m
-    H (fun u => ω (Real.exp u)) (columnLog p (primeProductNorm p D*X)) c d r (-t) rowMajorant Y hY]
-  rw [firstCoreInputRow_smoothed_sign p hg F D B v ε₁ ε₂ negative χ Ψ m H
+    H (fun u => ω (Real.exp u)) (columnLog p (primeProductNorm p D*X)) c d r (-t) rowMajorant Y hY, firstCoreInputRow_smoothed_sign p hg F D B v ε₁ ε₂ negative χ Ψ m H
     (fun u => ω (Real.exp u)) (columnLog p (primeProductNorm p D*X)) c d r (-t) rowMajorant Y]
   simp_rw [inputConjugateRow_fixed_pool p hg hinj F D]
   exact inputConjugateRow_smoothed_second_poisson p hg hp hinj hc F

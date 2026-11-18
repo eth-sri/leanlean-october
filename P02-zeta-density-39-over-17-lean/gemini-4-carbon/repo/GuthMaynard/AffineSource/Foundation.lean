@@ -39,9 +39,7 @@ theorem gmCubicLocalBump_one {x : ℝ} (hx : |x| ≤ 1) :
     gmCubicLocalBump x = 1 := by
   unfold gmCubicLocalBump
   apply dfiUnitRedundantBump.one_of_mem_closedBall
-  rw [Metric.mem_closedBall, Real.dist_eq]
-  rw [sub_zero, show dfiUnitRedundantBump.rIn = (1 / 2 : ℝ) by rfl]
-  rw [abs_div]
+  rw [Metric.mem_closedBall, Real.dist_eq, sub_zero, show dfiUnitRedundantBump.rIn = (1 / 2) by rfl, abs_div]
   norm_num
   linarith
 

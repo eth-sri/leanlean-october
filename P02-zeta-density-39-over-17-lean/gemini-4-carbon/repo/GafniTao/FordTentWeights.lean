@@ -1,5 +1,6 @@
 module
-public import GafniTao.FordSpacingCount
+public import Mathlib
+public import Mathlib.Data.Int.Interval
 public import Mathlib.Analysis.Normed.Group.AddCircle
 public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Bounds
 public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Sinc
@@ -28,11 +29,6 @@ def fordTent (x w : ℝ) : ℝ :=
 def fordSincSquareWeight (r M j : ℕ) (x : ℝ) : ℝ :=
   (Real.pi / 2 *
       Real.sinc (Real.pi * x / (2 * ((r * M ^ j : ℕ) : ℝ)))) ^ 2
-
-@[simp]
-theorem fordSincSquareWeight_zero (r M j : ℕ) :
-    fordSincSquareWeight r M j 0 = (Real.pi / 2) ^ 2 := by
-  simp [fordSincSquareWeight]
 
 end
 

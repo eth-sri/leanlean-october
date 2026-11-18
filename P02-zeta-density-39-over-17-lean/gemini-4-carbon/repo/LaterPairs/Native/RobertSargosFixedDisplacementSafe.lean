@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.PrimitiveTripleSignedCount
 public import LaterPairs.Native.RobertSargosConicOrientation
 
@@ -39,7 +48,7 @@ theorem robertSargos_fixed_displacement_safe_card_le
     intro p hp
     have hl : (p.2.2:ℝ)*d+(p.1:ℝ)*q₁-(p.2.1:ℝ)*q₂ = 0 := by
       have hli := hline p hp
-      have hh : p.2.2*d+p.1*q₁-p.2.1*q₂ = 0 := by nlinarith only [hli]
+      have hh : p.2.2*d+p.1*q₁-p.2.1*q₂ = 0 := by nlinarith
       exact_mod_cast hh
     have hb := robertSargos_coefficient_conic_ratio_gap hH hQ hδ
       (hh₂ p hp).1 hq₁ hsafe hl (hnear p hp)
@@ -48,11 +57,8 @@ theorem robertSargos_fixed_displacement_safe_card_le
     constructor <;> linarith
   have hb := primitive_linear_triple_card_le_abs_modulus S hc hd hH
     (by linarith : A-δ ≤ A+δ) (fun p hp => hh₂ p hp) hp
-    (fun p hp => by have hl := hline p hp; nlinarith only [hl]) hratio
-  calc
-    _ ≤ (d.natAbs.divisors.card:ℝ)+
-      4*H^2*((A+δ)-(A-δ))/(d.natAbs:ℝ)^2*(∑ g ∈ d.natAbs.divisors, (g:ℝ)) := hb
-    _ = _ := by ring
+    (fun p hp => by have hl := hline p hp; nlinarith) hratio
+  exact (hb).trans_eq (by ring)
 
 end TaoTrudgianYang2025
 

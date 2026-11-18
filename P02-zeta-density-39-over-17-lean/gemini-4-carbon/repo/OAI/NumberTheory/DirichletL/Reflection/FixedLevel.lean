@@ -1,15 +1,14 @@
 module
 public import OAI.NumberTheory.DirichletL.Reflection.MarkedLevel
 
-set_option linter.privateModule false
 
 @[expose] public section
 
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion
+open scoped Classical BigOperators
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 

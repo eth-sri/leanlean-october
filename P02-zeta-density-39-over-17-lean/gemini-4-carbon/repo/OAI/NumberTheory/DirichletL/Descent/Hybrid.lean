@@ -108,8 +108,7 @@ theorem inverseCubicKernel_eq_zero_of_not_coprime (P n : Ideal Eis)
     inverseCubicKernel P n = 0 := by
   have hc := CubicSieve.idealSymbol_cube_mask P (CompletedGauss.primaryGenerator n) hP
   rw [(CompletedGauss.primaryGenerator_spec n hn).1, ite_eq_right hcop] at hc
-  have hz := (pow_eq_zero_iff (by decide : (3 : ℕ) ≠ 0)).mp hc
-  simp only [inverseCubicKernel, hz, star_zero]
+  simp only [inverseCubicKernel, ((pow_eq_zero_iff (by decide : (3 : ℕ) ≠ 0)).mp hc), star_zero]
 
 theorem hybrid_cubic_column_mask
     (P n b c m h t : Ideal Eis)

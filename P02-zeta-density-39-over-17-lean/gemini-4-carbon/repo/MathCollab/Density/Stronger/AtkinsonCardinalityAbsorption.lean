@@ -84,18 +84,14 @@ theorem atkinson_covered_card_budget {A H G Y : ℝ}
     ((Nat.floor (H/atkinsonAbsorptionLength A G Y)+1:ℕ):ℝ)*
       (2*A*H/(G*Y^2)) ≤
       2*A*H/(G*Y^2)+32*A^3*H^2/Y^6 := by
-  have hL := atkinsonAbsorptionLength_pos hA hG hY
-  have hfloor := Nat.floor_le (div_nonneg hH hL.le)
+  have hfloor := Nat.floor_le (div_nonneg hH (atkinsonAbsorptionLength_pos hA hG hY).le)
   have hc : ((Nat.floor (H/atkinsonAbsorptionLength A G Y)+1:ℕ):ℝ) ≤
       H/atkinsonAbsorptionLength A G Y+1 := by
     push_cast
     linarith
-  calc
-    _ ≤ (H/atkinsonAbsorptionLength A G Y+1)*(2*A*H/(G*Y^2)) :=
-      mul_le_mul_of_nonneg_right hc (by positivity)
-    _ = _ := by
+  exact (mul_le_mul_of_nonneg_right hc (by positivity)).trans_eq (by
       unfold atkinsonAbsorptionLength
       field_simp
-      ring
+      ring)
 
 end MathCollab.Density.Stronger

@@ -9,8 +9,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentAmplificationEnergy
-open CanonicalQuadraticSieve CenteredMomentGaussEnergy
-open CenteredMomentAmplificationGlobal CenteredMomentAmplificationCount
+open CanonicalQuadraticSieve CenteredMomentGaussEnergy CenteredMomentAmplificationGlobal CenteredMomentAmplificationCount
 local notation "O" => ActualEisensteinCubic.O
 
 def eligiblePairs (rows P : Finset O) (allow : O → O → Prop) : Finset (O × O) :=
@@ -104,8 +103,7 @@ theorem gauss_energy_amplification {α : Type*} (S : Finset α) (a : α → O)
       ‖gaussPolynomial S a ha c (p^6*h)‖^2 + errorEnergy S a ha c h p),Finset.mul_sum]
     apply Finset.sum_le_sum
     intro h hh
-    have hn : (P.filter (allow h)).Nonempty := Finset.card_pos.mp (Nat.cast_pos.mp (hκ.trans_le (hsize h hh)))
-    have hb := polynomial_pool_bound S a ha c (P.filter (allow h)) hn
+    have hb := polynomial_pool_bound S a ha c (P.filter (allow h)) (Finset.card_pos.mp (Nat.cast_pos.mp (hκ.trans_le (hsize h hh))))
       (fun p hpP => hp p (Finset.mem_filter.mp hpP).1)
       (fun p hpP => hs p (Finset.mem_filter.mp hpP).1)
       (fun p hpP => hg p (Finset.mem_filter.mp hpP).1)

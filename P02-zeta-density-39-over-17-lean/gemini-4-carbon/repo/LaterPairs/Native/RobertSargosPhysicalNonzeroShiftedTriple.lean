@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.RobertSargosNonzeroShiftError
 public import LaterPairs.Native.RobertSargosNonzeroShiftedBound
 public import LaterPairs.Native.RobertSargosPhysicalCommonShiftBudget
@@ -41,9 +50,7 @@ theorem robertSargos_physical_nonzero_shifted_triple
   obtain ⟨_,hQ,hR,_,_⟩ :=
     robertSargos_physical_a_times_a_ranges M H hlam hsmall hM hHmin hHmax
   have hs := robertSargos_physical_nonzero_a_times_a f M H hC hlam hsmall hM hHmin hHmax hf hlo hhi
-  have hshift := robertSargos_nonzero_weighted_shift_error f M H Q R Q hQ hR hQ
-  have hreal := robertSargos_nonzero_weighted_shifted_re_le f M H Q R Q hR
-  have he := mul_le_mul_of_nonneg_left (hshift.trans (add_le_add_left hreal _))
+  have he := mul_le_mul_of_nonneg_left ((robertSargos_nonzero_weighted_shift_error f M H Q R Q hQ hR hQ).trans (add_le_add_left (robertSargos_nonzero_weighted_shifted_re_le f M H Q R Q hR) _))
     (show 0 ≤ 8*(M:ℝ)*H/((Q:ℝ)*R) by positivity)
   have hcancel : (8*(M:ℝ)*H/((Q:ℝ)*R))*
       ((H:ℝ)*(4*(H:ℝ)+4*Q+2*Q)*Q*R) =
@@ -58,12 +65,11 @@ theorem robertSargos_physical_nonzero_shifted_triple
     ring
   rw [mul_add,hcancel,halg] at he
   have hb := robertSargos_physical_common_shift_budget M H hlam hsmall hM hHmax
-  have hCp : 0 ≤ C := zero_le_one.trans hC
   have hfactor : 1 ≤ 1+2*Real.pi*C := by
     have hp : 0 ≤ 2*Real.pi*C := by positivity
     linarith
   have hCF : C ≤ C*(1+2*Real.pi*C) := by
-    simpa only [mul_one] using mul_le_mul_of_nonneg_left hfactor hCp
+    simpa using mul_le_mul_of_nonneg_left hfactor (zero_le_one.trans hC)
   have h1M := mul_le_mul_of_nonneg_right (hC.trans hCF) (sq_nonneg (M:ℝ))
   dsimp only [Q,R] at he
   nlinarith

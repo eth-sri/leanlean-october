@@ -44,10 +44,7 @@ theorem cutoff_finite_sum (w : ReflectionCutoff) {L : ℝ} (hL : 0 < L) (v : ℝ
     apply tsum_eq_sum
     intro n hn
     have hn' : ⌈5*L⌉₊ < n := by simpa using hn
-    have hbig : 5 < (n : ℝ)/L := (lt_div_iff₀ hL).2 (Nat.lt_of_ceil_lt hn')
-    have hz : w ((n : ℝ)/L) = 0 :=
-      image_eq_zero_of_notMem_tsupport (fun h => (not_le.mpr hbig) (w.support h).2)
-    simp only [hz, Complex.ofReal_zero, zero_mul]
+    simp only [(image_eq_zero_of_notMem_tsupport (fun h => (not_le.mpr ((lt_div_iff₀ hL).2 (Nat.lt_of_ceil_lt hn'))) (w.support h).2)), Complex.ofReal_zero, zero_mul]
   rw [hKernel, he]
   ring
 

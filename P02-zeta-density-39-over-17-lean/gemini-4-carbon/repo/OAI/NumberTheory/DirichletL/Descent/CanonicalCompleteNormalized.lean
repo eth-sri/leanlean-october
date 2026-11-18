@@ -11,8 +11,7 @@ noncomputable section
 
 open scoped BigOperators Classical
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
-open CanonicalQuadraticSieve FirstPassCubeLabels SecondPassArithmetic InverseInitialClippedColumns
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge CanonicalQuadraticSieve FirstPassCubeLabels SecondPassArithmetic InverseInitialClippedColumns
 local notation "O"=>ActualEisensteinCubic.O
 
 theorem normalizedColumnEnergy_eq_generator_sum {ι σ:Type*}[DecidableEq ι][DecidableEq σ]
@@ -59,7 +58,6 @@ theorem outside_complete_normalized_energy {σ:Type*}[DecidableEq σ]
   have hF:=InitialMeanSquare.outsideSquarefree_admissible S D hbad
   let : ∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal:=
     fun i=>by rw [poolPrimary_span F hF i];infer_instance
-  dsimp only
   exact (normalizedColumnEnergy_eq_generator_sum (poolPrimary F) (poolPrimary_ne_zero F hF)
     (poolPrimary_coprime F hF) (poolPrimary_good F hF) Finset.univ Ψ m slots lists a labels
     (fun I hI=>supported_primaryGenerator_ne_zero I (hlabels I hI)) weight W X Z Fexp R hZ).symm

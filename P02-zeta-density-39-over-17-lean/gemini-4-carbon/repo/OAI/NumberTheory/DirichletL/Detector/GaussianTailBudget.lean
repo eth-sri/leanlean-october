@@ -24,14 +24,10 @@ lemma gaussianWeightedMoment_power_bound (V : SchwartzMap ℝ ℂ) (hV : HasComp
   obtain ⟨C,hC,hb⟩ := gaussianJointMoment_power_bound V hV J (A+k)
   refine ⟨C,hC,?_⟩
   intro R hR
-  have hh := mul_le_mul_of_nonneg_left (hb R hR) (Real.rpow_nonneg hR.le k)
-  change R^k*gaussianJointMoment V hV J R≤_
-  calc
-    _ ≤ R^k*(C*R^(-(A+k))) := hh
-    _ = C*R^(-A) := by
+  exact ((mul_le_mul_of_nonneg_left (hb R hR) (Real.rpow_nonneg hR.le k))).trans_eq (by
       rw [←mul_assoc,mul_comm (R^k) C,mul_assoc,←Real.rpow_add hR]
       congr 2
-      ring
+      ring)
 
 lemma gaussianWeightedMoment_polynomial_decay (V : SchwartzMap ℝ ℂ)
     (hV : HasCompactSupport (V:ℝ→ℂ)) (J : ℕ) (k : ℝ) (N : ℕ) :

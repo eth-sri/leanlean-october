@@ -9,79 +9,11 @@ noncomputable section
 
 namespace CubicEisenstein
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 
 section
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups Pointwise Manifold ContDiff ENNReal InnerProductSpace
-open Finset AddChar MulChar EisensteinEmbedding
+open scoped MatrixGroups Pointwise Manifold ENNReal InnerProductSpace
 
 section
 local notation "O" => ActualEisensteinCubic.O
@@ -110,10 +42,6 @@ def kernelCorrespondencePairLift (g : SL(2,ℂ)) (f h : kernelSmoothTests)
   coverDirichletPair (kernelTestField f) (kernelTestField h ∘ euclideanAction g)
     (hyperbolicEuclideanCoordinates w)
 
-lemma kernelCorrespondencePairLift_continuous (g : SL(2,ℂ)) (f h : kernelSmoothTests) :
-    Continuous (kernelCorrespondencePairLift g f h) :=
-  (coverGradientAt_lift_continuous _ (kernelTestField_contDiffAt f)).inner
-    (coverGradientAt_lift_continuous _ (kernelTestField_comp_contDiffAt h g))
 
 variable {H J : Subgroup (SL(2,ActualEisensteinCubic.O))}
     (hHK : H≤globalKubotaKernel) (hJK : J≤globalKubotaKernel)
@@ -159,7 +87,8 @@ lemma kernelCorrespondencePair_projection (f h : kernelSmoothTests) (w : Hyperbo
 omit [H.IsFiniteRelIndex globalKubotaKernel] [J.IsFiniteRelIndex globalKubotaKernel] in
 lemma kernelCorrespondencePair_measurable (f h : kernelSmoothTests) :
     Measurable (kernelCorrespondencePair hHK hJK e g he f h) :=
-  measurable_from_quotient.mpr (kernelCorrespondencePairLift_continuous g f h).measurable
+  measurable_from_quotient.mpr (((coverGradientAt_lift_continuous _ (kernelTestField_contDiffAt f)).inner
+    (coverGradientAt_lift_continuous _ (kernelTestField_comp_contDiffAt h g)))).measurable
 
 omit [H.IsFiniteRelIndex globalKubotaKernel] [J.IsFiniteRelIndex globalKubotaKernel] in
 lemma kernelCorrespondencePair_norm_le (f h : kernelSmoothTests) (q : IntegralOrbitQuotient H) :
@@ -168,10 +97,8 @@ lemma kernelCorrespondencePair_norm_le (f h : kernelSmoothTests) (q : IntegralOr
         kernelQuotientEnergyDensity h (integralCoverMap hJK (integralConjugateMap e g he q)))/2 := by
   induction q using Quotient.inductionOn with
   | _ w =>
-    have hf := (kernelTestField_contDiffAt f (hyperbolicEuclideanCoordinates w) (hyperbolicHeight_pos w)).differentiableAt (by simp)
-    have hh := (kernelTestField_comp_contDiffAt h g (hyperbolicEuclideanCoordinates w) (hyperbolicHeight_pos w)).differentiableAt (by simp)
     have hb := coverDirichletPair_norm_le (kernelTestField f) (kernelTestField h ∘ euclideanAction g)
-      (hyperbolicEuclideanCoordinates w) hf hh
+      (hyperbolicEuclideanCoordinates w) ((kernelTestField_contDiffAt f (hyperbolicEuclideanCoordinates w) (hyperbolicHeight_pos w)).differentiableAt (by simp)) ((kernelTestField_comp_contDiffAt h g (hyperbolicEuclideanCoordinates w) (hyperbolicHeight_pos w)).differentiableAt (by simp))
     rw [coverEnergyDensity_comp g _ _ (hyperbolicHeight_pos w)
       ((kernelTestField_contDiffAt h _ (euclideanAction_positive g _)).differentiableAt (by simp))] at hb
     change ‖kernelCorrespondencePairLift g f h w‖≤
@@ -318,9 +245,7 @@ theorem kernelCorrespondenceForm_adjoint (f h : kernelSmoothTests) :
 end
 
 section
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups InnerProductSpace
-open Finset AddChar MulChar EisensteinEmbedding
+open scoped MatrixGroups InnerProductSpace
 
 local notation "O" => ActualEisensteinCubic.O
 
@@ -359,15 +284,13 @@ lemma kernelCorrespondenceEnergy_pairing_left (u v : KernelEnergyGraph) :
     inner ℂ (kernelCorrespondenceEnergy hHK hJK e g he u) v=
       inner ℂ u (kernelCorrespondenceEnergy hJK hHK e.symm g⁻¹
         (integralCoverIntertwines_inverse e g he) v) := by
-  have hh := congrArg star (kernelCorrespondenceEnergy_pairing hHK hJK e g he v u)
-  simpa only [←starRingEnd_apply,inner_conj_symm] using hh
+  simpa using (congrArg star (kernelCorrespondenceEnergy_pairing hHK hJK e g he v u))
 
 lemma kernelCorrespondenceL2_pairing_left (F G : KernelQuotientL2) :
     inner ℂ (kernelCorrespondenceL2 hHK hJK e g he F) G=
       inner ℂ F (kernelCorrespondenceL2 hJK hHK e.symm g⁻¹
         (integralCoverIntertwines_inverse e g he) G) := by
-  have hh := congrArg star (kernelCorrespondenceL2_pairing hHK hJK e g he G F)
-  simpa only [←starRingEnd_apply,inner_conj_symm] using hh
+  simpa using (congrArg star (kernelCorrespondenceL2_pairing hHK hJK e g he G F))
 
 theorem kernelCorrespondence_variationalSolution (F : KernelQuotientL2) :
     kernelCorrespondenceEnergy hHK hJK e g he (kernelVariationalSolution F)=
@@ -397,17 +320,16 @@ theorem kernelCorrespondence_eigenvector (F : KernelQuotientL2) (eigenvalue : �
     (hF : (F,eigenvalue • F)∈kernelEnergyLaplacian.graph) :
     (kernelCorrespondenceL2 hHK hJK e g he F,
       eigenvalue • kernelCorrespondenceL2 hHK hJK e g he F)∈kernelEnergyLaplacian.graph := by
-  simpa only [map_smul] using kernelCorrespondence_operatorGraph hHK hJK e g he F (eigenvalue • F) hF
+  simpa using kernelCorrespondence_operatorGraph hHK hJK e g he F (eigenvalue • F) hF
 
 end
 
 section
 
-open MeasureTheory
-open scoped Classical MatrixGroups BigOperators
+open scoped MatrixGroups
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicKubota
+open CubicJacobiGlobal CubicKubota
 local notation "Eis" => ActualEisensteinCubic.O
 
 lemma cuspFrequency_mul_right (h c:Eis) : cuspFrequency (h*c)=cuspFrequency h*eisEmbedding c := by
@@ -431,7 +353,7 @@ lemma cusp_character_fractional_period (c:Eis) (hc:c≠0) (h q:Eis) (z:ℂ) :
     field_simp [eisEmbedding_ne_zero hc]
   rw [he]
   have hz:ShortDraftTrace.breveE (-cuspFrequency h*(3*eisEmbedding q))=1:=by
-    simpa only [zero_add,mul_zero,AddChar.map_zero_eq_one] using cuspFrequency_negative_period h q 0
+    simpa using cuspFrequency_negative_period h q 0
   rw [hz,mul_one]
 
 lemma period_fourier_fractional_translation (f:ℂ→ℂ)
@@ -444,16 +366,15 @@ lemma period_fourier_fractional_translation (f:ℂ→ℂ)
   have hg (n:Eis) (z:ℂ):g (z+3*eisEmbedding n)=g z:=by
     dsimp [g]
     rw [hf,cuspFrequency_negative_period]
-  have hi:=period_integral_translation g hg (3*eisEmbedding q/eisEmbedding c)
   have hp (z:ℂ):g (3*eisEmbedding q/eisEmbedding c+z)=
       f (z+3*eisEmbedding q/eisEmbedding c)*ShortDraftTrace.breveE (-cuspFrequency (h*c)*z):=by
     dsimp [g]
     rw [add_comm (3*eisEmbedding q/eisEmbedding c) z,cusp_character_fractional_period c hc]
-  simpa only [hp,g] using hi
+  simpa only [hp,g] using (period_integral_translation g hg (3*eisEmbedding q/eisEmbedding c))
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicKubota
+open CubicJacobiGlobal CubicKubota
 local notation "Eis" => ActualEisensteinCubic.O
 
 lemma cube_upperPoint_continuous (v:ℝ) (hv:0<v) : Continuous (fun z:ℂ=>upperPoint z v hv) := by
@@ -541,9 +462,8 @@ theorem cubeAverage_fourier (p:Eis) (hp:p≠0) (F:HyperbolicSpace→ℂ) (hF:Con
 
 end
 
-open MeasureTheory
-open scoped Classical MatrixGroups BigOperators
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicKubota
+open CubicJacobiGlobal CubicKubota
+open scoped MatrixGroups
 local notation "Eis" => ActualEisensteinCubic.O
 
 theorem cubeSource_fourier (p:Eis) (hp:p≠0) (h:Eis) (v:ℝ) (hv:0<v) :
@@ -578,8 +498,7 @@ lemma cubeSource_amplitude_of_eigenrelation (p:Eis) (hp:p≠0)
     _=_:=by ring
 
 lemma schlafliBesselK_cubic_ne_zero (x:ℝ) (hx:0<x) : schlafliBesselK (1/3:ℂ) x≠0 := by
-  have hp:0<(schlafliBesselK (1/3:ℂ) x).re:=
-    lt_of_lt_of_le (mul_pos cubicBesselLowerConstant_pos (Real.exp_pos _)) (schlafliBesselK_cubic_lower x hx)
+  have hp := lt_of_lt_of_le (mul_pos cubicBesselLowerConstant_pos (Real.exp_pos _)) (schlafliBesselK_cubic_lower x hx)
   intro he
   rw [he,Complex.zero_re] at hp
   exact (lt_irrefl 0) hp

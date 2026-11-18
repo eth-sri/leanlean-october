@@ -52,13 +52,12 @@ theorem secondChildKernelPair_whole_profile {ι σ : Type*} [DecidableEq ι] [De
   intro N hN
   apply Finset.sum_congr rfl
   intro M hM
-  have hVN : Disjoint V N := Finset.disjoint_of_subset_right
+  have hVN := Finset.disjoint_of_subset_right
     (Finset.mem_powerset.mp hN) disjoint_sdiff_self_right
-  have hVM : Disjoint V M := Finset.disjoint_of_subset_right
+  have hVM := Finset.disjoint_of_subset_right
     (Finset.mem_powerset.mp hM) disjoint_sdiff_self_right
   rw [secondSourcePairKernel_mark_factors]
-  have hp := secondSourcePairKernel_profile p hp G V N M hVN hVM e k W₁ W₂ Φ Y
-  rw [← hp]
+  rw [← (secondSourcePairKernel_profile p hp G V N M hVN hVM e k W₁ W₂ Φ Y)]
   ring
 
 end

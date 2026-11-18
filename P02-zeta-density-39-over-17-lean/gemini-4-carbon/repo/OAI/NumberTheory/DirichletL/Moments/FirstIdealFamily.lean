@@ -10,20 +10,16 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentFirstIdealFamily
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge CanonicalRowCompletion
-open CanonicalQuadraticSieve HeckeFamily CenteredMomentHeckeExpansion CenteredMomentSourceRow
-open CenteredMomentCanonicalFirst CenteredMomentFirstCanonicalFamily CenteredMomentFirstColumns
-open CenteredMomentCommonSupport CenteredMomentSupportedCorrelation RayFourExpansion
+open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge CanonicalRowCompletion CanonicalQuadraticSieve HeckeFamily CenteredMomentHeckeExpansion CenteredMomentSourceRow CenteredMomentCanonicalFirst CenteredMomentFirstCanonicalFamily CenteredMomentFirstColumns CenteredMomentCommonSupport CenteredMomentSupportedCorrelation RayFourExpansion
 local notation "O" => ActualEisensteinCubic.O
 
 theorem rowWeight_one_primary (η : Character) (m : O) (t : ℝ)
     (I : Ideal O) (hI : Supported I) :
     rowWeight η m 1 1 t I=elementCoeff η (CompletedGauss.primaryGenerator I)*
       coprimalityMask m (CompletedGauss.primaryGenerator I)*(Ideal.absNorm I:ℂ)^(Complex.I*t) := by
-  have hn := supported_primaryGenerator_ne_zero I hI
   have hs := primary_span_supported I hI
   have he : idealCoeff η I=elementCoeff η (CompletedGauss.primaryGenerator I) := by
-    have hh := idealCoeff_span η hn
+    have hh := idealCoeff_span η (supported_primaryGenerator_ne_zero I hI)
     rw [hs] at hh
     exact hh
   have hm : idealRowHom (m^6) I=coprimalityMask m (CompletedGauss.primaryGenerator I) := by

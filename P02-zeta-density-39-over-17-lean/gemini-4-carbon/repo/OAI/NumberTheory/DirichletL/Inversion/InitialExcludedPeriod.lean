@@ -10,9 +10,7 @@ noncomputable section
 
 open scoped Classical BigOperators
 namespace SevenEighths.InverseInitialExcludedPeriod
-open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve
-open CanonicalCoefficientClass ConcretePrimeRowBridge IdealMobiusDivisorSum
-open UniqueFactorizationMonoid HeckeFamily
+open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve CanonicalCoefficientClass ConcretePrimeRowBridge IdealMobiusDivisorSum UniqueFactorizationMonoid HeckeFamily
 local notation "O" => ActualEisensteinCubic.O
 
 def deletedPeriod (q:ℕ):ℕ := 2592*q^2
@@ -23,12 +21,11 @@ theorem deletedPeriod_ne_zero (q:ℕ)(hq:q≠0):deletedPeriod q≠0 := by
 
 theorem fixed_bad_divides_reflection (q:ℕ)(P:Ideal O)(hP:P∈fixedBadPrimes):
     P∣Ideal.span {reflectionConductor q} := by
-  change P∈({Ideal.span {goodLambda},Ideal.span {(2:O)}}:Finset (Ideal O)) at hP
+  change P∈({Ideal.span {goodLambda},Ideal.span {2}}:Finset (Ideal O)) at hP
   rcases Finset.mem_insert.mp hP with rfl|hP
   · apply Ideal.dvd_iff_le.mpr
     apply Ideal.span_singleton_le_span_singleton.mpr
-    have h3:goodLambda∣(3:O):=CubicEisenstein.halfPrimary_lambda_dvd_three
-    apply h3.trans
+    apply (CubicEisenstein.halfPrimary_lambda_dvd_three).trans
     refine ⟨(864*q:ℕ),?_⟩
     unfold reflectionConductor
     push_cast
@@ -95,7 +92,6 @@ theorem deleted_period_le_modulus (χ:Character)(q:ℕ)(hq:q≠0)
     (hperiod:Ideal.span {(q:O)}≤χ.modulus):
     Ideal.span {(deletedPeriod q:O)}≤
       (χ.excludePrimes (reflectionExcludedPrimes q) (reflectionExcludedPrimes_prime q)).modulus := by
-  change Ideal.span {(deletedPeriod q:O)}≤χ.modulus*(∏P∈reflectionExcludedPrimes q,P)
   rw [deleted_period_ideal]
   exact Ideal.mul_mono hperiod (Ideal.dvd_iff_le.mp (excluded_product_divides_reflection q hq))
 

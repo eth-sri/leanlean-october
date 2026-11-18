@@ -11,11 +11,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.DetectorDictionaryInverseMarkedPhysicalRows
-open HeckeFamily HeckeDyadic HeckeInverseAmplification HeckeDetectorRawFiber
-open HeckeDetectorCoefficientTransfer HeckeDetectorPhysicalSelection
-open InverseInitialPhysicalSlots InverseInitialRawDictionary InverseInitialDetectorSource
-open DetectorDictionaryInverseMarkedReference DetectorDictionaryInverseRawInitialGates
-open InverseInitialExcludedPeriod CanonicalRowCompletion IdealMobiusDivisorSum InverseMoment
+open HeckeFamily HeckeDyadic HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorCoefficientTransfer HeckeDetectorPhysicalSelection InverseInitialPhysicalSlots InverseInitialRawDictionary InverseInitialDetectorSource DetectorDictionaryInverseMarkedReference DetectorDictionaryInverseRawInitialGates InverseInitialExcludedPeriod CanonicalRowCompletion IdealMobiusDivisorSum InverseMoment
 local notation "O"=>HeckeFamily.O
 
  def actualRow (u:FreeRow):NonzeroElement:=⟨u.val,u.property.1⟩
@@ -62,7 +58,7 @@ theorem physicalProduct_eq (F:Fiber M H Label Slot U a ε tstar T allowance i)
             σ (orientedFrequency F.reverse freq) bW
             (fun s:selected=>F.upper s) (fun s:selected=>F.widths s)
             (fun s:selected=>F.external s) u.val‖^2:=by
-  have hU0:0<U:=zero_lt_one.trans hU
+  have hU0 :=zero_lt_one.trans hU
   let mark:NonzeroElement→ℂ:=fun u=>∏s:selected,
     HeckePrimeRow.canonicalPrimeAmplitude M H u.val (F.profile s) (F.upper s)
       (U^(F.widths s)) (F.external s)
@@ -93,9 +89,8 @@ theorem physicalProduct_eq (F:Fiber M H Label Slot U a ε tstar T allowance i)
   rw [actual_rows_sum]
   apply Finset.sum_congr rfl
   intro u hu
-  have hjpos:0<(j.absNorm:ℝ):=zero_lt_one.trans_le (excluded_divisor_norm F.rowData j hj).1
   have hr:U^(shiftedExponent F.rowData U F.r j)=U^F.r/(j.absNorm:ℝ):=
-    by rw [shiftedExponent,Real.rpow_sub hU0,Real.rpow_logb hU0 (ne_of_gt hU) hjpos]
+    by rw [shiftedExponent,Real.rpow_sub hU0,Real.rpow_logb hU0 (ne_of_gt hU) (zero_lt_one.trans_le (excluded_divisor_norm F.rowData j hj).1)]
   have hn:=deleted_physical_slots_norm_initial F.rowData (actualRow u) M H
     (orientedProfile F.reverse W) (fun s:selected=>F.profile s)
     U (shiftedExponent F.rowData U F.r j) σ (orientedFrequency F.reverse freq) bW
@@ -125,8 +120,7 @@ theorem physicalProduct_eq (F:Fiber M H Label Slot U a ε tstar T allowance i)
     apply hW x
     intro hz
     exact hx (by simp only [childLogTest,hz,zero_mul])
-  have hh:=fiber_rows_le_deleted_sources F selected (childLogTest W v) 0 0 bW lower hU hw hV hlarge
-  simpa only [oriented_child,orientedFrequency,neg_zero,ite_self] using hh
+  simpa only [oriented_child,orientedFrequency,neg_zero,ite_self] using (fiber_rows_le_deleted_sources F selected (childLogTest W v) 0 0 bW lower hU hw hV hlarge)
 
 end SevenEighths.DetectorDictionaryInverseMarkedPhysicalRows
 

@@ -53,8 +53,8 @@ theorem compensatedPhysicalProbe_low (η : HeckeFamily.Character) (S : Finset Id
     linarith
   refine ⟨C0,hC0,?_⟩
   filter_upwards [Filter.eventually_all.mpr he] with Z hZ
-  have hz1 : 1<Z := (hZ ∅).1
-  have hz : 0<Z := lt_trans zero_lt_one hz1
+  have hz1 := (hZ ∅).1
+  have hz := lt_trans zero_lt_one hz1
   refine ⟨hz1,?_⟩
   intro T hT hout hdis hnorm
   have hslots : ∀i n,n∈canonicalSlotSupport (T i)→n≠0 := fun i=>canonicalSlotSupport_nonzero _ (hT i)
@@ -72,8 +72,7 @@ theorem compensatedPhysicalProbe_low (η : HeckeFamily.Character) (S : Finset Id
       rw [lowSelectedScale_product ell A Z hz,Real.rpow_add hz,Real.rpow_one]
     rw [hc]
     exact ((hZ A).2 T hT hout hdis hnorm A W hWnorm).2
-  have hh := Finset.sum_le_sum (fun A (_ : A∈(Finset.univ : Finset (Fin K)).powerset)=>hterm A)
-  apply hh.trans
+  apply (Finset.sum_le_sum (fun A (_ : A∈(Finset.univ : Finset (Fin K)).powerset)=>hterm A)).trans
   rw [←Finset.sum_mul]
   exact mul_le_mul_of_nonneg_right (by dsimp [C0];linarith) (Real.rpow_nonneg hz.le _)
 
@@ -98,12 +97,11 @@ theorem original_ray_compensatedPhysicalProbe_low (η : HeckeFamily.Character)
   refine ⟨C,hC,?_⟩
   filter_upwards [he,ProbeRaySlots.power_pools_eventually_disjoint R S (fun _=>a) (fun _=>b) ell
     (fun _=>ha) (fun _=>hab) hinj] with Z hZ hd
-  have hz : 0<Z := lt_trans zero_lt_one hZ.1
   apply hZ.2 _ (fun i=>ProbeRaySlots.pool_supported R S hS a b (Z^(ell i)))
     (fun i P hP=>((ProbeRaySlots.mem_pool R S a b (Z^(ell i)) P).mp hP).2.2.2)
     (fun i j hij=>hd i j hij)
   intro i P hP
-  have hh := ProbeRaySlots.pool_norm_bounds R S ha.le hab (Real.rpow_pos_of_pos hz _) P hP
+  have hh := ProbeRaySlots.pool_norm_bounds R S ha.le hab (Real.rpow_pos_of_pos (lt_trans zero_lt_one hZ.1) _) P hP
   simpa only [mul_comm] using And.intro hh.1.le hh.2
 
 end SevenEighths.ProbePhysical

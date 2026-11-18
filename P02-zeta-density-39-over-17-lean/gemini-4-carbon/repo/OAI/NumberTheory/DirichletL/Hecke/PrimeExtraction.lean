@@ -7,34 +7,8 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius
 
 namespace ShortDraftHeckeBridge
 
@@ -56,13 +30,6 @@ noncomputable def fiber (n : ℕ) : Finset (Ideal O) :=
 theorem mem_fiber {n : ℕ} {I : Ideal O} : I ∈ fiber n ↔ Ideal.absNorm I = n := by
   simp [fiber]
 
-open scoped Classical
-
-open scoped Classical
-
-noncomputable def outsideCoeff (S : Finset (Ideal O))
-    (w : Ideal O → ℂ) (n : ℕ) : ℂ :=
-  ∑ I ∈ fiber n, outsideWeight S w I
 
 end FiniteSFactor
 namespace ShortDraftHeckeBridge
@@ -97,8 +64,7 @@ theorem partial_partition (φ : ℝ → ℂ) (x : ℝ) (K : ℕ) :
   | succ K ih =>
       rw [Finset.sum_range_succ, ih]
       unfold annularCutoff
-      have hpow : (2 : ℝ) ^ (K + 1) ≠ 0 := by positivity
-      have hshift : 2 * (x / (2 : ℝ) ^ (K + 1)) = x / (2 : ℝ) ^ K := by
+      have hshift : 2 * (x / 2 ^ (K + 1)) = x / 2 ^ K := by
         rw [pow_succ]
         field_simp
       rw [hshift]
@@ -106,7 +72,6 @@ theorem partial_partition (φ : ℝ → ℂ) (x : ℝ) (K : ℕ) :
 
 end DyadicTransfer
 
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 
 namespace FiniteSFactor
 

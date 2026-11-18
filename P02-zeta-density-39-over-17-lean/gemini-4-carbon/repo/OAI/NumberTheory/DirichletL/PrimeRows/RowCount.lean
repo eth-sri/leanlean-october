@@ -26,7 +26,7 @@ lemma freeRow_count (R : Finset FreeRow) (H : ℝ) (hH : 1≤H)
 lemma frequencyWeight_ideal_norm (z : ℂ) (u : FreeRow) :
     ‖frequencyWeight z ⟨u.val,u.property.1⟩‖=
       ((Ideal.span {u.val}:Ideal O).absNorm:ℝ)^(-z.re) := by
-  have hN : (0:ℝ)<((Ideal.span {u.val}:Ideal O).absNorm:ℝ) := by
+  have hN : 0<((Ideal.span {u.val}:Ideal O).absNorm:ℝ) := by
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
       (Ideal.span_singleton_eq_bot.not.mpr u.property.1))
   unfold frequencyWeight elementNorm
@@ -49,7 +49,7 @@ lemma dyadic_weighted_rows (a r C U : ℝ) (hC : 0≤C) (hU : 1≤U)
     _ ≤ ∑u∈R,C*ProbeSelectedPrimeSums.annularPower 1 2 (a-r)*U^(a-r) := by
       apply Finset.sum_le_sum
       intro u hu
-      have hN : 0<((Ideal.span {u.val}:Ideal O).absNorm:ℝ) := hU0.trans_le (hR u hu).1
+      have hN := hU0.trans_le (hR u hu).1
       rw [frequencyWeight_ideal_norm,hz]
       calc
         _ ≤ ((Ideal.span {u.val}:Ideal O).absNorm:ℝ)^(-r)*

@@ -12,8 +12,7 @@ public import Mathlib.NumberTheory.Harmonic.ZetaAsymp
 
 @[expose] public section
 
-open Complex Set MeasureTheory Filter Topology
-open MathCollab.Density.Contour
+open Complex Set MeasureTheory Filter Topology MathCollab.Density.Contour
 set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
@@ -45,9 +44,8 @@ theorem DFIVoronoiTestFunction.deriv_ordinaryDivisorMellinNumerator_one
       deriv (mellin g) 1 + 2 * (Real.eulerMascheroniConstant : ℂ) * mellin g 1 := by
   have hz : HasDerivAt riemannZeta₁ (Real.eulerMascheroniConstant : ℂ) 1 := by
     simpa using (differentiable_riemannZeta₁ 1).hasDerivAt
-  have hp := (hz.pow 2).mul (hg.differentiable_mellin 1).hasDerivAt
   change deriv (riemannZeta₁ ^ 2 * mellin g) 1 = _
-  rw [hp.deriv]
+  rw [((hz.pow 2).mul (hg.differentiable_mellin 1).hasDerivAt).deriv]
   simp only [Nat.cast_ofNat, Pi.pow_apply, riemannZeta₁_one, one_pow, mul_one, one_mul]
   ring
 
@@ -57,11 +55,11 @@ theorem DFIVoronoiTestFunction.ordinaryDivisor_laurent_mainTerm
   rw [hg.deriv_ordinaryDivisorMellinNumerator_one, hg.mellin_hasDerivAt_one.deriv,
     mellin_log_smul_apply_one, mellin_apply_one]
   have hlog : IntegrableOn (fun x : ℝ => (Real.log x : ℂ) * g x) (Ioi 0) := by
-    have hc := (mellin_hasDerivAt_of_isBigO_rpow (s := (1 : ℂ)) (a := (2 : ℝ))
-      (b := (0 : ℝ))
+    have hc := (mellin_hasDerivAt_of_isBigO_rpow (s := 1) (a := 2)
+      (b := 0)
       (hg.continuous.locallyIntegrable.locallyIntegrableOn (Ioi 0))
-      (hg.isBigO_atTop (2 : ℝ)) (by norm_num)
-      (hg.isBigO_atZero (0 : ℝ)) (by norm_num)).1
+      (hg.isBigO_atTop 2) (by norm_num)
+      (hg.isBigO_atZero 0) (by norm_num)).1
     simpa [MellinConvergent, smul_eq_mul] using hc
   have hgInt : IntegrableOn g (Ioi 0) :=
     (hg.continuous.integrable_of_hasCompactSupport hg.hasCompactSupport).integrableOn

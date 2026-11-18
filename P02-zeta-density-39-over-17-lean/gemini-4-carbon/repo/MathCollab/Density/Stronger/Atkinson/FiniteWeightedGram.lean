@@ -10,27 +10,22 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonPrefixVectors
 
 @[expose] public section
 
-open Complex Finset Set Filter
+open Complex Finset Set Filter RiemannZeta.GuthMaynard MathCollab.Density.Stronger.Fourth
 open scoped ComplexConjugate
-open RiemannZeta.GuthMaynard
-open MathCollab.Density.Stronger.Fourth
 set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
 noncomputable def phaseAlign (z : ℂ) : ℂ := if z = 0 then 1 else conj z / ‖z‖
 
-theorem norm_conj_eq (z : ℂ) : ‖conj z‖ = ‖z‖ := by
-  change ‖star z‖ = ‖z‖
-  exact norm_star z
+theorem norm_conj_eq (z : ℂ) : ‖conj z‖ = ‖z‖ := by simp
 
 theorem norm_phaseAlign_le_one (z : ℂ) : ‖phaseAlign z‖ ≤ 1 := by
   by_cases hz : z = 0
   · simp [phaseAlign, hz]
   · rw [phaseAlign, ite_eq_right hz, norm_div]
     rw [norm_conj_eq, norm_real]
-    have hzNorm : ‖z‖ ≠ 0 := norm_ne_zero_iff.mpr hz
-    simp [hzNorm]
+    simp [(norm_ne_zero_iff.mpr hz)]
 
 theorem phaseAlign_mul (z : ℂ) : phaseAlign z * z = (‖z‖ : ℂ) := by
   by_cases hz : z = 0
@@ -42,7 +37,6 @@ theorem phaseAlign_mul (z : ℂ) : phaseAlign z * z = (‖z‖ : ℂ) := by
         rw [← Complex.normSq_eq_norm_sq, Complex.normSq_eq_conj_mul_self]
       _ = (‖z‖ : ℂ) := by
         push_cast
-        have hzNorm : ‖z‖ ≠ 0 := norm_ne_zero_iff.mpr hz
         field_simp
 
 /-- Coordinate Cauchy--Schwarz for a finite complex sum. -/

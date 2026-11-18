@@ -7,15 +7,11 @@ public import OAI.NumberTheory.DirichletL.Energy.ZeroUnbalancedOriginalGates
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
 open Filter
+open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyZeroUnbalancedOriginal
-open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyReferenceLowBands CenteredMomentFiniteProfileExceptional
-open CenteredMomentEnergyZeroUnbalancedOriginalPower
-open CenteredMomentEnergyZeroUnbalancedOriginalGates
+open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyReferenceLowBands CenteredMomentFiniteProfileExceptional CenteredMomentEnergyZeroUnbalancedOriginalPower CenteredMomentEnergyZeroUnbalancedOriginalGates
 local notation "O"=>HeckeFamily.O
 
 theorem original_unbalanced_from_zero_low
@@ -79,8 +75,7 @@ theorem original_unbalanced_from_zero_low
         rw [mul_comm X₂ X₁]
         ring
       rw [hh]
-    have hh:=hordered p' X₂ X₁ hX₂ hX₁ hshort (by linarith)
-    simpa only [hswap,hpcontrol] using hh
+    simpa only [hswap,hpcontrol] using (hordered p' X₂ X₁ hX₂ hX₁ hshort (by linarith))
 
 end SevenEighths.CenteredMomentEnergyZeroUnbalancedOriginal
 

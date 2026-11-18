@@ -38,14 +38,12 @@ theorem atkinson_card_le_of_local_packets {A H G Y : ℝ}
             Real.sqrt (G*atkinsonAbsorptionLength A G Y))) :
     (W.card:ℝ) ≤ 2*A*H/(G*Y^2)+32*A^3*H^2/Y^6 := by
   let L := atkinsonAbsorptionLength A G Y
-  have hL : 0 < L := atkinsonAbsorptionLength_pos hA hG hY
+  have hL := atkinsonAbsorptionLength_pos hA hG hY
   have hfiber (k : ℕ) :
       ((atkinsonHeightFiber H L W k).card:ℝ) ≤ 2*A*H/(G*Y^2) := by
     have hsub := atkinsonHeightFiber_subset H L W k
-    have hlocal := atkinsonHeightFiber_interval k hL (fun t ht => (hrange t ht).1)
-    have hp := hpacket (atkinsonHeightFiber H L W k) hsub (H+(k:ℝ)*L) hlocal
     exact atkinson_card_le_of_packet hA hH hG hY
-      (fun t ht => hlarge t (hsub ht)) hp (atkinsonAbsorptionLength_absorbs hA hG)
+      (fun t ht => hlarge t (hsub ht)) (hpacket (atkinsonHeightFiber H L W k) hsub (H+(k:ℝ)*L) (atkinsonHeightFiber_interval k hL (fun t ht => (hrange t ht).1))) (atkinsonAbsorptionLength_absorbs hA hG)
   have hcover := atkinson_card_le_of_height_fibers hL
     (fun t ht => (hrange t ht).2) (fun k _ => hfiber k)
   exact hcover.trans (atkinson_covered_card_budget hA hH hG hY)

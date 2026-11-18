@@ -9,8 +9,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion
-open InverseSecondPrincipalCaller InversePrincipalEnergy InversePrioritySecondSource
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion InverseSecondPrincipalCaller InversePrincipalEnergy InversePrioritySecondSource
 local notation "O"=>ActualEisensteinCubic.O
 
 variable {ι σ:Type*} [DecidableEq ι] [DecidableEq σ]
@@ -100,13 +99,12 @@ theorem priority_tail_parent_uniform (Lcap tau saving:ℝ)(hLcap:0≤Lcap)(htau:
   refine ⟨s,C,hC,?_⟩
   intro ι σ _ _ p hp _ hg hinj hcop hc extra pool negative Ψ m slots assigned lists a hslots ha hΨ
     om lo hi hlo hs X M Y Z t R hX hhi hZ hY hscale hy hyi hx Jo y hR
-  have hpair:=parent_residual_lists_pairwise p extra negative slots assigned lists y hslots
   have hcoeff:∀i∈slots\assigned,∀k∈residualLists p negative (fun i=>lists i\extra y.cube) y i,‖a i k‖≤1:=by
     intro i hi k hk
     exact ha i (Finset.mem_sdiff.mp hi).1 k (parent_residual_lists_subset p extra negative lists y i hk)
   exact hbound p hp hcop hg hinj hc pool Ψ hΨ (secondParentPuncture p m y)
     (secondParentLabel p y) (secondParentDivisor p y) (primeSubsetGenerator_ne_zero _ _)
-    (slots\assigned) _ a hpair hcoeff om rowMajorant lo hi hlo hs negative t X M Y Z R
+    (slots\assigned) _ a (parent_residual_lists_pairwise p extra negative slots assigned lists y hslots) hcoeff om rowMajorant lo hi hlo hs negative t X M Y Z R
     hX hhi hZ hY hscale hy hyi hx hR
 
 end SevenEighths.InverseMoment

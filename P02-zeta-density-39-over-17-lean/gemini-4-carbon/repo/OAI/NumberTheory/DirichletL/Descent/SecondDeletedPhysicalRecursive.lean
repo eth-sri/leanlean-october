@@ -8,9 +8,8 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondBalancedSource
 namespace OAI
 
 namespace SevenEighths.InverseMoment
+open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic JointLogSeparation MeasureTheory SchwartzMap InverseInitialClippedColumns
 open scoped BigOperators Classical ContDiff
-open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open JointLogSeparation MeasureTheory SchwartzMap InverseInitialClippedColumns
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 local instance inverseSecondDeletedPhysicalRecursiveUnits : Fintype Eisˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
@@ -94,14 +93,12 @@ theorem actual_second_deleted_physical_recursive
     ho hslots₁ hslots₂ (mul_nonneg hA (Real.rpow_pos_of_pos hZ _).le) hWeighted
   · intro t J₁ hJ₁ γ hγ
     rw [second_left_normalized_energy p hp hcop hg K (labels.filter Squarefree)
-      (nonzeroChildFrequencyBall 1 R) γ pool Ψ m z (slots₁\J₁) lists₁ a₁ ω₁ Z N Vlabel hZ t]
-    rw [normalized_child_energy_radical_puncture p hp hcop hg pool (secondRayMinus Ψ z)
+      (nonzeroChildFrequencyBall 1 R) γ pool Ψ m z (slots₁\J₁) lists₁ a₁ ω₁ Z N Vlabel hZ t, normalized_child_energy_radical_puncture p hp hcop hg pool (secondRayMinus Ψ z)
       (actualSecondInheritedPuncture m γ)]
     exact (mul_le_mul_of_nonneg_left (hleft t J₁ hJ₁ γ hγ) (Real.rpow_pos_of_pos hZ _).le).trans_eq (he _)
   · intro t J₂ hJ₂ γ hγ
     rw [second_right_normalized_energy p hp hcop hg K (labels.filter Squarefree)
-      R γ pool Ψ m z (slots₂\J₂) lists₂ a₂ ω₂ Z N Vlabel hZ t]
-    rw [normalized_child_energy_radical_puncture p hp hcop hg pool (secondRayPlus Ψ z)
+      R γ pool Ψ m z (slots₂\J₂) lists₂ a₂ ω₂ Z N Vlabel hZ t, normalized_child_energy_radical_puncture p hp hcop hg pool (secondRayPlus Ψ z)
       (actualSecondInheritedPuncture m γ)]
     exact (mul_le_mul_of_nonneg_left (hright t J₂ hJ₂ γ hγ) (Real.rpow_pos_of_pos hZ _).le).trans_eq (he _)
 

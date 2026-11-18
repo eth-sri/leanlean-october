@@ -26,7 +26,6 @@ private theorem ne_pole_of_re_pos {z : ℂ} (hz : 0 < z.re) : ∀ n : ℕ, z ≠
   intro n h
   have hr := congrArg Complex.re h
   simp only [Complex.neg_re, Complex.natCast_re] at hr
-  have hn : 0 ≤ (n : ℝ) := Nat.cast_nonneg n
   linarith
 
 /-- Digamma duplication obtained by differentiating Mathlib's exact Gamma identity. -/
@@ -101,10 +100,7 @@ theorem hasSum_paired_reciprocal {x : ℝ} (hx : 0 < x) :
   ring
 
 private theorem reciprocal_sub_succ {u : ℝ} (hu : 0 < u) :
-    1 / u - 1 / (u + 1) = 1 / (u * (u + 1)) := by
-  have hu1 : u + 1 ≠ 0 := by positivity
-  field_simp
-  ring
+    1 / u - 1 / (u + 1) = 1 / (u * (u + 1)) := by field_simp; ring
 
 private theorem hasSum_reciprocal_unit_difference {x : ℝ} (hx : 0 < x) :
     HasSum (fun n : ℕ => 1 / ((n : ℝ) + x) - 1 / ((↑(n + 1) : ℝ) + x)) (1 / x) := by

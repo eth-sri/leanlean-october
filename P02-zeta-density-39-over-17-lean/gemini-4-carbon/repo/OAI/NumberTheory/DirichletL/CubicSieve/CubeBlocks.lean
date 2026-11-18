@@ -7,79 +7,13 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 
 namespace SecondPassArithmetic
 
 section
 
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory
-open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProduct)
 open ConcreteTraceCRT (eisEmbedding)
 open RayFourExpansion (RayCharacter)
@@ -87,9 +21,6 @@ open RayFourExpansion (RayCharacter)
 end
 section
 
-open scoped BigOperators Classical SchwartzMap
-open MeasureTheory
-open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProductNorm columnLog)
 open RayFourExpansion (RayCharacter crossCoeff)
 
@@ -118,15 +49,13 @@ variable (p : ι → O) [∀ i,(Ideal.span {p i}).IsMaximal]
 
 end
 
-open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProduct)
 open ConcreteTraceCRT (eisEmbedding)
 
 end SecondPassArithmetic
 
-open scoped BigOperators Classical SchwartzMap
 namespace InitialMeanSquare
-open ActualEisensteinCubic SecondPassArithmetic
+open SecondPassArithmetic
 open FirstCauchyArithmetic (supportMobius supportConjugateSum)
 open ConcreteTraceCRT (eisEmbedding)
 
@@ -145,11 +74,10 @@ include hc
 
 end InitialMeanSquare
 
-open scoped BigOperators Classical
 namespace CompletedGauss
 
 section
-open ActualEisensteinCubic CanonicalQuadraticSieve QuadraticSquarefreeKernel UniqueFactorizationMonoid
+open CanonicalQuadraticSieve QuadraticSquarefreeKernel
 
 def PowerfulIdeal (I : Ideal O) : Prop :=
   I≠0 ∧ ∀P∈normalizedFactors I, 2≤(normalizedFactors I).count P
@@ -178,8 +106,7 @@ theorem powerful_exists_square_cube (I : Ideal O) (hI : PowerfulIdeal I) :
   obtain ⟨A,hA⟩ := powerful_squarefree_dvd_squarePart I hI
   have ha : A≠0 := by
     intro hz
-    have h := squarePart_ne_zero hI.1
-    apply h
+    apply (squarePart_ne_zero hI.1)
     rw [hA,hz,mul_zero]
   refine ⟨A,ha,?_⟩
   calc
@@ -205,16 +132,12 @@ theorem powerfulBase_norm_bound (I : Ideal O) (hI : PowerfulIdeal I) (X : ℝ)
     1≤(Ideal.absNorm (squarefreePart I):ℝ) ∧
     (Ideal.absNorm (squarefreePart I):ℝ)≤X ∧
     (Ideal.absNorm (powerfulBase I):ℝ)≤Real.sqrt X/(Ideal.absNorm (squarefreePart I):ℝ) := by
-  have ha := (powerfulBase_spec I hI).1
-  have hb := (squarefree_squarefreePart I).ne_zero
   have ha1 : 1≤(Ideal.absNorm (powerfulBase I):ℝ) := by
-    exact_mod_cast Nat.one_le_iff_ne_zero.mpr (fun hz => ha (Ideal.absNorm_eq_zero_iff.mp hz))
+    exact_mod_cast Nat.one_le_iff_ne_zero.mpr (fun hz => ((powerfulBase_spec I hI).1) (Ideal.absNorm_eq_zero_iff.mp hz))
   have hb1 : 1≤(Ideal.absNorm (squarefreePart I):ℝ) := by
-    exact_mod_cast Nat.one_le_iff_ne_zero.mpr (fun hz => hb (Ideal.absNorm_eq_zero_iff.mp hz))
+    exact_mod_cast Nat.one_le_iff_ne_zero.mpr (fun hz => ((squarefree_squarefreePart I).ne_zero) (Ideal.absNorm_eq_zero_iff.mp hz))
   have hnorm : (Ideal.absNorm (powerfulBase I):ℝ)^2*(Ideal.absNorm (squarefreePart I):ℝ)^3=(Ideal.absNorm I:ℝ) := by
-    have h := congrArg (fun J : Ideal O => (Ideal.absNorm J:ℝ)) (powerfulBase_spec I hI).2
-    simpa only [map_mul,map_pow,Nat.cast_mul,Nat.cast_pow] using h
-  have hX0 : 0≤X := (Nat.cast_nonneg _).trans hX
+    simpa only [map_mul,map_pow,Nat.cast_mul,Nat.cast_pow] using (congrArg (fun J : Ideal O => (Ideal.absNorm J:ℝ)) (powerfulBase_spec I hI).2)
   have hb2 : (Ideal.absNorm (squarefreePart I):ℝ)≤(Ideal.absNorm (squarefreePart I):ℝ)^3 := by
     simpa only [pow_one] using pow_le_pow_right₀ hb1 (show (1:ℕ)≤3 by decide)
   have hab : ((Ideal.absNorm (powerfulBase I):ℝ)*(Ideal.absNorm (squarefreePart I):ℝ))^2≤X := by
@@ -231,11 +154,11 @@ theorem powerfulBase_norm_bound (I : Ideal O) (hI : PowerfulIdeal I) (X : ℝ)
       _ ≤ X := hnorm.trans_le hX
   refine ⟨hb1,hbX,?_⟩
   apply (le_div_iff₀ (by linarith : 0<(Ideal.absNorm (squarefreePart I):ℝ))).mpr
-  nlinarith [Real.sq_sqrt hX0,Real.sqrt_nonneg X]
+  nlinarith [Real.sq_sqrt ((Nat.cast_nonneg _).trans hX),Real.sqrt_nonneg X]
 
 end
 
-open ActualEisensteinCubic CanonicalQuadraticSieve QuadraticSquarefreeKernel
+open CanonicalQuadraticSieve QuadraticSquarefreeKernel
 
 theorem powerful_fiber_count (S : Finset (Ideal O)) (X : ℝ)
     (hS : ∀I∈S,PowerfulIdeal I ∧ (Ideal.absNorm I:ℝ)≤X)
@@ -247,23 +170,21 @@ theorem powerful_fiber_count (S : Finset (Ideal O)) (X : ℝ)
   rw [hIB] at hnorm
   have hAb : 1≤(Ideal.absNorm (powerfulBase I):ℝ) := by
     exact_mod_cast Nat.one_le_iff_ne_zero.mpr (fun hz => (powerfulBase_spec I hi.1).1 (Ideal.absNorm_eq_zero_iff.mp hz))
-  have hscale : 1≤Real.sqrt X/(Ideal.absNorm B:ℝ) := hAb.trans hnorm.2.2
   let T := S.filter (fun I => squarefreePart I=B)
   have hinj : Set.InjOn powerfulBase T := by
     intro J hJ lengthScale hL he
     exact powerfulBase_injective_on_fiber J lengthScale (hS J (Finset.mem_filter.mp hJ).1).1
       (hS lengthScale (Finset.mem_filter.mp hL).1).1
       ((Finset.mem_filter.mp hJ).2.trans (Finset.mem_filter.mp hL).2.symm) he
-  have hcard : (T.image powerfulBase).card=T.card := Finset.card_image_iff.mpr hinj
   have hcount := DescentFiberCost.finite_ideal_count_real (T.image powerfulBase)
-    (Real.sqrt X/(Ideal.absNorm B:ℝ)) hscale (fun J hJ => by
+    (Real.sqrt X/(Ideal.absNorm B:ℝ)) (hAb.trans hnorm.2.2) (fun J hJ => by
       obtain ⟨lengthScale,hL,rfl⟩ := Finset.mem_image.mp hJ
       exact (powerfulBase_spec lengthScale (hS lengthScale (Finset.mem_filter.mp hL).1).1).1) (fun J hJ => by
       obtain ⟨lengthScale,hL,rfl⟩ := Finset.mem_image.mp hJ
       have hp := powerfulBase_norm_bound lengthScale (hS lengthScale (Finset.mem_filter.mp hL).1).1 X
         (hS lengthScale (Finset.mem_filter.mp hL).1).2
       simpa only [(Finset.mem_filter.mp hL).2] using hp.2.2)
-  rw [hcard] at hcount
+  rw [(Finset.card_image_iff.mpr hinj)] at hcount
   simpa only [mul_div_assoc] using hcount
 
 theorem powerful_ideal_count_log (S : Finset (Ideal O)) (X : ℝ) (hX : 1≤X)
@@ -297,13 +218,9 @@ theorem powerful_ideal_count (ε : ℝ) (hε : 0<ε) :
   refine ⟨C,hC,?_⟩
   intro S X hX hS
   apply (powerful_ideal_count_log S X hX hS).trans
-  calc
-    _ ≤ 32768*Real.sqrt X*((2+1/(ε*Real.log 2))*X^ε) :=
-      mul_le_mul_of_nonneg_left (columnDyadicLength_small_power ε hε X hX) (by positivity)
-    _ = C*X^(1/2+ε) := by
+  exact (mul_le_mul_of_nonneg_left (columnDyadicLength_small_power ε hε X hX) (by positivity)).trans_eq (by
       rw [Real.rpow_add (by linarith : 0<X),←Real.sqrt_eq_rpow]
-      dsimp [C]
-      ring
+      ring)
 
 end CompletedGauss
 

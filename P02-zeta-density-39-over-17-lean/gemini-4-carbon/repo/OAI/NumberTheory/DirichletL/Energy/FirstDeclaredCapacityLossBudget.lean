@@ -9,9 +9,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentEnergyFirstDeclaredCapacityLossBudget
-open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyStageReserveSchedule
-open CenteredMomentEnergyFirstStageLossBudget
-open CenteredMomentEnergyFirstGaussianProfileWeights CenteredMomentFirstAmplifiedFourCoefficients
+open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyStageReserveSchedule CenteredMomentEnergyFirstStageLossBudget CenteredMomentEnergyFirstGaussianProfileWeights CenteredMomentFirstAmplifiedFourCoefficients
 
 lemma lossVector_cap (sigma delta reserveAmp paid es M A saving:ℝ)
     (he:0≤es)(hM:0≤M)(hA:0≤A)(j:Fin 4):

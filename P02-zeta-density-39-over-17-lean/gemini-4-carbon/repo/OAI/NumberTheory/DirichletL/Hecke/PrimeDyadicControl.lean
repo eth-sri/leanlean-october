@@ -7,11 +7,10 @@ public import OAI.NumberTheory.DirichletL.Hecke.DeletionDerivative
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology
 open Set Metric Complex
+open scoped Classical Topology
 namespace SevenEighths.HeckePrimeDyadicControl
-open HeckeFamily HeckeLogarithmicInput HeckeLogarithmic HeckeFiniteDeletion
-open HeckeDeletionBounds HeckeReciprocalGrowth
+open HeckeFamily HeckeLogarithmicInput HeckeLogarithmic HeckeFiniteDeletion HeckeDeletionBounds HeckeReciprocalGrowth
 
 theorem logDeriv_eq_of_mask (χ ψ : Character)
     (hmask : ∀ I : Ideal O, idealCoeff χ I =
@@ -100,23 +99,20 @@ theorem buffered_rectangle_control (e : ℝ)
   obtain ⟨B,hB,hbound⟩ := buffered_original_control e he he'
   refine ⟨B,hB,?_⟩
   intro ι _ χ hχ T a i hT ha ha' hmax j z hzl hzr hzi
-  have hz6 : z ∈ closedBall ((2 : ℂ)+z.im*I) (2-a-8*e) := by
+  have hz6 : z ∈ closedBall (2+z.im*I) (2-a-8*e) := by
     rw [mem_closedBall,dist_eq_norm]
-    have heq : z-((2 : ℂ)+z.im*I)=((z.re-2 : ℝ) : ℂ) := by
+    have heq : z-(2+z.im*I)=((z.re-2 : ℝ) : ℂ) := by
       apply Complex.ext <;> simp
     rw [heq,Complex.norm_real,Real.norm_eq_abs,abs_of_nonpos (by linarith : z.re-2≤0)]
     linarith
-  have hz2 : z ∈ closedBall ((2 : ℂ)+z.im*I) (2-a-2*e) :=
-    closedBall_subset_closedBall (by linarith) hz6
   refine ⟨HeckeDetectorZeros.nonzero_on_buffered_disk χ hχ T a e i hT ha he
-    hmax j z.im hzi hz2, ?_⟩
+    hmax j z.im hzi (closedBall_subset_closedBall (by linarith) hz6), ?_⟩
   apply (hbound χ hχ T a i hT ha ha' hmax j z.im hzi z hz6).trans
   apply add_le_add _ le_rfl
   apply mul_le_mul_of_nonneg_left _ hB
   apply Real.log_le_log ((Real.exp_pos 1).trans_le (complexity_ge_exp _ _))
   unfold complexity
-  have hH : 0 ≤ (3*i+2 : ℕ)*T := (abs_nonneg z.im).trans hzi
-  rw [abs_of_nonneg hH]
+  rw [abs_of_nonneg ((abs_nonneg z.im).trans hzi)]
   gcongr
 
 end SevenEighths.HeckePrimeDyadicControl

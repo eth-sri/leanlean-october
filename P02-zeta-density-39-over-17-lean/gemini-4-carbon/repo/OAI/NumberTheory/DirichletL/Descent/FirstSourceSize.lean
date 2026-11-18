@@ -30,8 +30,7 @@ theorem first_source_scalar_caps (b : CubeCoordinates ι) (C D : Finset ι)
     primeProductNorm p (cubeActiveSupport b.support
       (fun i=>b.leftExponent i+b.rightExponent i) b.leftBit b.rightBit)≤Z^cap ∧
     (∀ eps : ι→Bool,Z^(r+eta)/(‖eisEmbedding (aLabel p b.support eps)‖^2*primeProductNorm p C)≤Z^cap) := by
-  dsimp only
-  have hz : 0<Z := zero_lt_one.trans_le hZ
+  have hz := zero_lt_one.trans_le hZ
   have hcap : 0≤Mmax+Fmax+3*eta := by linarith
   refine ⟨Real.rpow_le_rpow_of_exponent_le hZ (by linarith),?_,?_,?_,?_⟩
   · calc
@@ -51,11 +50,7 @@ theorem first_source_scalar_caps (b : CubeCoordinates ι) (C D : Finset ι)
     norm_num
     linarith
   · intro eps
-    have ha := element_norm_ge_one (aLabel p b.support eps) (primeProduct_ne_zero p hp _ _)
-    have hc := primeProductNorm_ge_one p hp C
-    calc
-      _ ≤ Z^(r+eta) := div_le_self (Real.rpow_pos_of_pos hz _).le (one_le_mul_of_one_le_of_one_le ha hc)
-      _ ≤ _ := Real.rpow_le_rpow_of_exponent_le hZ (by linarith)
+    exact (div_le_self (Real.rpow_pos_of_pos hz _).le (one_le_mul_of_one_le_of_one_le (element_norm_ge_one (aLabel p b.support eps) (primeProduct_ne_zero p hp _ _)) (primeProductNorm_ge_one p hp C))).trans (Real.rpow_le_rpow_of_exponent_le hZ (by linarith))
 
 end
 end SevenEighths.InverseMoment

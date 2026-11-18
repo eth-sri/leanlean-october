@@ -42,7 +42,6 @@ theorem localMeanCount_of_pair_packet {k l : ℝ} (hk : 0 < k)
   have hH1 : 1 ≤ H := by linarith [hB.trans hH]
   have hH0 : 0 < H := by linarith
   have hA : 0 < D*H^(ν/(1+1/k)) := by positivity
-  have hL := absorptionLength_pos (k := k) (l := l) hA hH0 hG hY
   have hpacket : ∀ U : Finset ℝ, U ⊆ W → ∀ A : ℝ,
       (∀ t ∈ U, A ≤ t ∧ t ≤ A+absorptionLength k l (D*H^(ν/(1+1/k))) H G Y) →
         (∑ t ∈ U, atkinsonLocalMeanExcess G t (C*G*Real.log t))^2 ≤
@@ -59,7 +58,7 @@ theorem localMeanCount_of_pair_packet {k l : ℝ} (hk : 0 < k)
       constructor <;> linarith [(hlocal t ht).1,(hlocal t ht).2,
         (hlocal u hu).1,(hlocal u hu).2]
     have hs := hsource H G (absorptionLength k l (D*H^(ν/(1+1/k))) H G Y)
-      U hH hG hL hsepU (fun t ht => hrange t (hsub ht)) hdiam
+      U hH hG (absorptionLength_pos (k := k) (l := l) hA hH0 hG hY) hsepU (fun t ht => hrange t (hsub ht)) hdiam
     convert hs using 1
     ring
   have hc := card_le_two_powers hk hA hH0 hG hY

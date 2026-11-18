@@ -12,14 +12,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyZeroReflectionSupport
-open HeckeFamily Filter CenteredMomentNaturalPrimitive EisensteinSchwartzPoisson
-open CenteredMomentReflectionMass CenteredMomentNaturalRowSource CenteredMomentAllocatedNaturalRadial
-open CenteredMomentReflectionDeletion CenteredMomentReflectionWeightedEnergy
-open CenteredMomentReflectedChoiceEnergy CenteredMomentReflectedTruncation
-open CenteredMomentOriginalReflectionApproximation CenteredMomentUniformReflectionApproximation
-open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyReferenceState
-open CenteredMomentEnergyReferenceDivisors CenteredMomentEnergyReferenceLowWindow
-open CenteredMomentEnergyReferenceLowBranchGeometry
+open HeckeFamily Filter CenteredMomentNaturalPrimitive EisensteinSchwartzPoisson CenteredMomentReflectionMass CenteredMomentNaturalRowSource CenteredMomentAllocatedNaturalRadial CenteredMomentReflectionDeletion CenteredMomentReflectionWeightedEnergy CenteredMomentReflectedChoiceEnergy CenteredMomentReflectedTruncation CenteredMomentOriginalReflectionApproximation CenteredMomentUniformReflectionApproximation CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceDivisors CenteredMomentEnergyReferenceLowWindow CenteredMomentEnergyReferenceLowBranchGeometry
 local notation "O" => HeckeFamily.O
 
 def naturalDualScale (χ ψ : Character) (X : ℝ)
@@ -51,7 +44,7 @@ theorem eventually_natural_choice_range (C xi : ℝ) (hC : 0<C) (hxi : 0<xi) :
   intro χ ψ M a hcap hmod D hD H hY n hn
   have h := hZ.2 χ ψ M a hcap hmod ((⟨D,hD⟩,H),n) hY hn
   have hz := Real.log_pos hZ.1
-  have hm : 0≤(M-a+xi)*Real.log Z := h.2.1.trans h.2.2
+  have hm := h.2.1.trans h.2.2
   nlinarith
 
 theorem eventually_natural_source_zero (C xi : ℝ) (hC : 0<C) (hxi : 0<xi) :

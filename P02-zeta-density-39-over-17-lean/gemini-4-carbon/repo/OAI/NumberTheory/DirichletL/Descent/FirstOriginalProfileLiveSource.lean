@@ -8,8 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseMomentFirstOriginalProfile
-open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseMomentFirstChildWindows
+open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseMomentFirstChildWindows
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
 variable (p : ι→O) [∀i,(Ideal.span {p i}).IsMaximal]
@@ -51,10 +50,9 @@ theorem refined_source_radius (hp : ∀i,p i≠0)
       firstGlobalRetainedSource p (refinedOuter p pool Q k gate) (fun _=>labels) (fun x=>x.1) Ychild := by
   intro x hx
   obtain ⟨hxcell,hgate,hweight⟩ := Finset.mem_filter.mp hx
-  have hxold := original_cell_subset p pool Q labels Ysource k hxcell
-  obtain ⟨ho,hf⟩ := Finset.mem_sigma.mp hxold
+  obtain ⟨ho,hf⟩ := Finset.mem_sigma.mp (original_cell_subset p pool Q labels Ysource k hxcell)
   have hm := (mem_firstRetainedSource p labels x.1.1 Ysource x.2).mp hf
-  have houter : x.1∈refinedOuter p pool Q k gate := Finset.mem_filter.mpr ⟨ho,hgate⟩
+  have houter := Finset.mem_filter.mpr ⟨ho,hgate⟩
   have hE := firstPhysicalMultiplier_ne_zero p hp x.1.1.support x.1.1.leftExponent x.1.1.rightExponent
     x.1.1.leftBit x.1.1.rightBit x.2.1 (hn x.2.1 hm.1)
   apply Finset.mem_sigma.mpr

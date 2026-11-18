@@ -9,15 +9,11 @@ public import OAI.NumberTheory.DirichletL.Energy.BandMonotonicity
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
+open scoped Classical BigOperators SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentEnergyWidthInduction
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyWidthRanges
-open CenteredMomentEnergyStageReserveSchedule CenteredMomentEnergyBandMonotonicity
-open CenteredMomentEnergyWidthFloor CenteredMomentFiniteProfileExceptional
-open CenteredMomentNaturalFixedRaySource
+open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyWidthSchedule CenteredMomentEnergyWidthRanges CenteredMomentEnergyStageReserveSchedule CenteredMomentEnergyBandMonotonicity CenteredMomentEnergyWidthFloor CenteredMomentFiniteProfileExceptional CenteredMomentNaturalFixedRaySource
 local notation "O"=>HeckeFamily.O
 
 def remaining (M ε:ℝ)(k:ℕ):ℕ:=count M ε-k

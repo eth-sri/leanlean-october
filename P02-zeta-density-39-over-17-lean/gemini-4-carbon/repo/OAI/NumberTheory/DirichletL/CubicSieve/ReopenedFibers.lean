@@ -7,87 +7,18 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
-
-open scoped BigOperators Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 namespace SecondPassArithmetic
 
 section
-open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProduct)
 open ConcreteTraceCRT (eisEmbedding)
 
 end
 section
 
-open ActualEisensteinCubic FirstPassCubeLabels
+open FirstPassCubeLabels
 open ConcreteTraceCRT (eisEmbedding)
 
 variable {ι : Type*} [DecidableEq ι]
@@ -196,14 +127,14 @@ lemma reopenedPairCoefficient_bound (Q : Finset (ι →₀ ℕ)) (labels : Finse
 end
 section
 
-open ActualEisensteinCubic FirstPassCubeLabels
+open FirstPassCubeLabels
 open ConcreteTraceCRT (eisEmbedding)
 open ConcretePrimeRowBridge (idealGenerator)
 
 end
 section
 
-open ActualEisensteinCubic FirstPassCubeLabels
+open FirstPassCubeLabels
 open ConcreteTraceCRT (eisEmbedding)
 
 section
@@ -213,15 +144,13 @@ end
 
 end
 
-open ActualEisensteinCubic FirstPassCubeLabels
+open FirstPassCubeLabels
 open ConcreteTraceCRT (eisEmbedding)
 open ConcretePrimeRowBridge (idealGenerator)
 
 end SecondPassArithmetic
 
 namespace CubicEisenstein
-open MeasureTheory
-open scoped SchwartzMap
 
 lemma euclideanIntegral_borel_transport (m : MeasurableSpace EuclideanSpatial)
     (hm : @BorelSpace EuclideanSpatial inferInstance m) (g : EuclideanSpatial→ℝ) :
@@ -301,8 +230,6 @@ lemma euclideanNativeLpBorelEquiv_schwartz (f : 𝓢(EuclideanSpatial,ℂ)) :
 
 end CubicEisenstein
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff SchwartzMap
 
 namespace CubicEisenstein
 open RellichKondrachov.Analysis.FunctionalSpaces.Sobolev.Euclidean
@@ -346,18 +273,15 @@ lemma kernelLocalizedRealTest_grad_le (χ : PositiveChartCutoff) (f : kernelSmoo
     (projection : ℂ →L[ℝ] ℝ) (hprojection : ∀z,‖projection z‖≤‖z‖) (p : EuclideanSpatial) :
     ‖grad (kernelLocalizedRealTest χ f projection).1 p‖^2≤
       ∑j : Fin 3,‖fderiv ℝ (kernelLocalizedField χ f) p (EuclideanSpace.basisFun (Fin 3) ℝ j)‖^2 := by
-  have hdiff : DifferentiableAt ℝ (kernelLocalizedField χ f) p :=
-    ((kernelLocalizedField_smooth χ f).differentiable (by simp)).differentiableAt
-  have hd := (projection.hasFDerivAt.comp p hdiff.hasFDerivAt).fderiv
+  have hd := (projection.hasFDerivAt.comp p (((kernelLocalizedField_smooth χ f).differentiable (by simp)).differentiableAt).hasFDerivAt).fderiv
   change fderiv ℝ (kernelLocalizedRealTest χ f projection).1 p=_ at hd
   unfold grad
   rw [LinearIsometryEquiv.norm_map,hd,(EuclideanSpace.basisFun (Fin 3) ℝ).norm_dual]
   apply Finset.sum_le_sum
   intro j hj
   have hh := hprojection (fderiv ℝ (kernelLocalizedField χ f) p (EuclideanSpace.basisFun (Fin 3) ℝ j))
-  change (projection (fderiv ℝ (kernelLocalizedField χ f) p (EuclideanSpace.basisFun (Fin 3) ℝ j)))^2≤_
   simp only [Real.norm_eq_abs] at hh
-  simpa only [sq_abs] using pow_le_pow_left₀ (abs_nonneg _) hh 2
+  simpa using pow_le_pow_left₀ (abs_nonneg _) hh 2
 
 lemma kernelLocalizedRealTest_energy_le (χ : PositiveChartCutoff) (f : kernelSmoothTests)
     (projection : ℂ →L[ℝ] ℝ) (hprojection : ∀z,‖projection z‖≤‖z‖) :
@@ -367,8 +291,7 @@ lemma kernelLocalizedRealTest_energy_le (χ : PositiveChartCutoff) (f : kernelSm
   let g := kernelLocalizedRealTest χ f projection
   rw [sourceC1c_toL2_norm_sq,sourceC1c_toL2Grad_norm_sq,kernelLocalizedH1_norm_sq,
     ←integral_add (memLp_of_mem_C1c («μ» := volume) g.2).norm.integrable_sq
-      (memLp_grad_of_mem_C1c («μ» := volume) g.2).norm.integrable_sq]
-  rw [euclideanNativeIntegral_eq_borel]
+      (memLp_grad_of_mem_C1c («μ» := volume) g.2).norm.integrable_sq, euclideanNativeIntegral_eq_borel]
   have hden := (euclideanNativeIntegrable_iff_borel (kernelLocalizedDensity χ f)).mp
     (kernelLocalizedDensity_integrable χ f)
   apply integral_mono
@@ -465,11 +388,10 @@ theorem kernelLocalizedComplex_family_precompact (χ : PositiveChartCutoff)
     (hfamily : ∀f∈family,‖kernelSmoothTestsToL2 f‖^2+kernelDirichletEnergy f≤B) :
     IsCompact (closure ((fun f => (kernelLocalizedSchwartz χ f).toLp 2 volume) '' family)) := by
   have hr := kernelLocalizedReal_family_precompact χ hinj Complex.reCLM
-    (fun z => by change ‖z.re‖≤‖z‖; simpa only [Real.norm_eq_abs] using Complex.abs_re_le_norm z) family B hB hfamily
+    (fun z => by change ‖z.re‖≤‖z‖; simpa using Complex.abs_re_le_norm z) family B hB hfamily
   have hi := kernelLocalizedReal_family_precompact χ hinj Complex.imCLM
-    (fun z => by change ‖z.im‖≤‖z‖; simpa only [Real.norm_eq_abs] using Complex.abs_im_le_norm z) family B hB hfamily
-  have hc := (hr.prod hi).image kernelComplexL2Assemble.continuous
-  apply hc.closure_of_subset
+    (fun z => by change ‖z.im‖≤‖z‖; simpa using Complex.abs_im_le_norm z) family B hB hfamily
+  apply ((hr.prod hi).image kernelComplexL2Assemble.continuous).closure_of_subset
   rintro _ ⟨f,hf,rfl⟩
   refine ⟨(toL2 («μ» := volume) (kernelLocalizedRealTest χ f Complex.reCLM),
     toL2 («μ» := volume) (kernelLocalizedRealTest χ f Complex.imCLM)),?_,?_⟩
@@ -481,8 +403,7 @@ theorem kernelLocalizedNative_family_precompact (χ : PositiveChartCutoff)
     (family : Set kernelSmoothTests) (B : ℝ) (hB : 0≤B)
     (hfamily : ∀f∈family,‖kernelSmoothTestsToL2 f‖^2+kernelDirichletEnergy f≤B) :
     IsCompact (closure ((fun f => kernelL2Localize χ (kernelSmoothTestsToL2 f)) '' family)) := by
-  have hc := kernelLocalizedComplex_family_precompact χ hinj family B hB hfamily
-  apply (hc.image euclideanNativeLpBorelEquiv.symm.continuous).closure_of_subset
+  apply ((kernelLocalizedComplex_family_precompact χ hinj family B hB hfamily).image euclideanNativeLpBorelEquiv.symm.continuous).closure_of_subset
   rintro _ ⟨f,hf,rfl⟩
   refine ⟨(kernelLocalizedSchwartz χ f).toLp 2 volume,subset_closure ⟨f,hf,rfl⟩,?_⟩
   apply euclideanNativeLpBorelEquiv.injective
@@ -496,18 +417,17 @@ def kernelEnergyLocalizeL2 (χ : PositiveChartCutoff) : KernelEnergyGraph →L[�
 theorem kernelEnergyLocalizeL2_isCompact (χ : PositiveChartCutoff)
     (hinj : Set.InjOn kernelEuclideanProjection (tsupport χ.func)) :
     IsCompactOperator (kernelEnergyLocalizeL2 χ) := by
-  let family : Set kernelSmoothTests := {f | ‖kernelEnergyGraphCore f‖≤2}
+  let family := {f | ‖kernelEnergyGraphCore f‖≤2}
   let C := closure ((fun f => kernelL2Localize χ (kernelSmoothTestsToL2 f)) '' family)
-  have hc : IsCompact C := kernelLocalizedNative_family_precompact χ hinj family 4 (by norm_num) (by
+  have hc := kernelLocalizedNative_family_precompact χ hinj family 4 (by norm_num) (by
     intro f hf
     rw [←kernelEnergyGraphCore_norm_sq]
     change ‖kernelEnergyGraphCore f‖≤2 at hf
     nlinarith [norm_nonneg (kernelEnergyGraphCore f)])
   let T := kernelEnergyLocalizeL2 χ
-  have hclosed : IsClosed (T ⁻¹' C) := hc.isClosed.preimage T.continuous
   have hsub : closure (kernelEnergyGraphCore ''
       (kernelEnergyGraphCore ⁻¹' Metric.ball (0 : KernelEnergyGraph) 2))⊆T ⁻¹' C := by
-    apply hclosed.closure_subset_iff.mpr
+    apply (hc.isClosed.preimage T.continuous).closure_subset_iff.mpr
     rintro _ ⟨f,hf,rfl⟩
     change kernelL2Localize χ (kernelEnergyMass (kernelEnergyGraphCore f))∈C
     rw [kernelEnergyMass_core]

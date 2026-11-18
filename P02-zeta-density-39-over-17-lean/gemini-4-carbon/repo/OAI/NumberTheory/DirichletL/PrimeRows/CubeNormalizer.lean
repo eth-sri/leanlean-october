@@ -6,11 +6,10 @@ public import OAI.NumberTheory.DirichletL.Detector.PrincipalNormalized
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology ContDiff
 open Filter
+open scoped Classical BigOperators Topology ContDiff
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily ProbePhysical ProbeRaySlots PrincipalSignalComparison
-open PrincipalMellinResidues ProbePrincipalResidueActual
+open HeckeFamily ProbePhysical ProbeRaySlots PrincipalSignalComparison PrincipalMellinResidues ProbePrincipalResidueActual
 local notation "O" => HeckeFamily.O
 
 theorem actual_ray_normalizer_inverse {K : ℕ}

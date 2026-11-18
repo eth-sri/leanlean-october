@@ -18,7 +18,7 @@ omit [Fintype ι] [Fintype κ] in
 lemma pullback_generator_eq (e : κ≃ι) (h : (fun k => p (e k))=q) :
     (fun i => q (e.symm i))=p := by
   rw [← h]
-  simp only [Equiv.apply_symm_apply]
+  simp
 
 def pullbackControlled (e : κ≃ι) (h : (fun k => p (e k))=q)
     (D : ControlledStratumArithmetic q N a c mode) :

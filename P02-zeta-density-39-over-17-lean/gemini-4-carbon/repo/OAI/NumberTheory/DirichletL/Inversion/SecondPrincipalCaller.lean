@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
 namespace SevenEighths.InverseSecondPrincipalCaller
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic FourierBridge
-open SecondPassIntegration CompletedHeight
-open InverseMoment InversePrincipalEnergy RayFourExpansion
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic FourierBridge SecondPassIntegration CompletedHeight InverseMoment InversePrincipalEnergy RayFourExpansion
 local notation "Eis" => ActualEisensteinCubic.O
 
 def principalWindow (om : 𝓢(ℝ,ℂ)) (a b : ℝ) (ha : 0<a)
@@ -87,8 +85,7 @@ theorem primeMark_union_of_lists_disjoint (slots : Finset σ) (lists : σ→Fins
   intro i hi
   apply Finset.sum_congr rfl
   intro k hk
-  have hh := Finset.disjoint_left.mp (hD i hi) hk
-  simp only [Finset.mem_union,hh,false_or]
+  simp only [Finset.mem_union,(Finset.disjoint_left.mp (hD i hi) hk),false_or]
 
 include hp in
 

@@ -28,10 +28,9 @@ lemma tuple_scaled_coefficient {K : ℕ} (η : HeckeFamily.Character) (p : Fin K
     (elementNorm (∏i∈Finset.univ\J,p i)) hX hY hZ (tuple_norm_pos p hp J)
     (tuple_norm_pos p hp (Finset.univ\J))
     (star (HeckeFamily.elementCoeff η (∏i∈Finset.univ\J,p i))) x w z
-  have hb := tuple_source_scalar η p hp J x w z
   unfold tuplePhysicalScalar tupleIndexedCoefficient
-  linear_combination (-1:ℂ)^J.card*ha +
-    (-1:ℂ)^J.card*sourceMellinWeight W0 W1 X Y Z x w z*hb
+  linear_combination (-1)^J.card*ha +
+    (-1)^J.card*sourceMellinWeight W0 W1 X Y Z x w z*(tuple_source_scalar η p hp J x w z)
 
 lemma compensatedRow_kernel_subsets {K : ℕ} (η : HeckeFamily.Character) (S : Finset Id)
     (p : Fin K→O) (hp : ∀i,p i≠0) (u : O) (a : ℂ) (W0 W1 : SchwartzMap ℝ ℂ)
@@ -46,8 +45,7 @@ lemma compensatedRow_kernel_subsets {K : ℕ} (η : HeckeFamily.Character) (S : 
   simp only [Finset.mul_sum]
   apply Finset.sum_congr rfl
   intro J hJ
-  have he := tuple_scaled_coefficient η p hp J W0 W1 X Y Z hX hY hZ x w z
-  linear_combination -a*markedIdealHighSeries S (Ideal.span {∏i∈Finset.univ\J,p i}) η u x w z*he
+  linear_combination -a*markedIdealHighSeries S (Ideal.span {∏i∈Finset.univ\J,p i}) η u x w z*(tuple_scaled_coefficient η p hp J W0 W1 X Y Z hX hY hZ x w z)
 
 end SevenEighths.ProbePhysical
 end

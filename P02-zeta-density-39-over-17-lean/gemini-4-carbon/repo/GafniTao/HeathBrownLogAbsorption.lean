@@ -32,19 +32,11 @@ theorem heathBrown_one_add_log_le
         (N : ℝ) ^ (epsilon / 2) := by
   have hNReal : (1 : ℝ) ≤ N := by exact_mod_cast hN
   have hhalf : 0 < epsilon / 2 := by positivity
-  have hone : (1 : ℝ) ≤ (N : ℝ) ^ (epsilon / 2) :=
-    Real.one_le_rpow hNReal hhalf.le
   have hlog := Real.log_le_rpow_div
     (show (0 : ℝ) ≤ N by positivity) hhalf
-  calc
-    1 + Real.log (N : ℝ) ≤
-        (N : ℝ) ^ (epsilon / 2) +
-          (N : ℝ) ^ (epsilon / 2) / (epsilon / 2) :=
-      add_le_add hone hlog
-    _ = heathBrownLogConstant epsilon *
-          (N : ℝ) ^ (epsilon / 2) := by
+  exact (add_le_add (Real.one_le_rpow hNReal hhalf.le) hlog).trans_eq (by
       unfold heathBrownLogConstant
-      field_simp
+      field_simp)
 
 /-- Raising the logarithmic loss to any exponent in `[0,1]` costs at most
 the same `N^(epsilon/2)` budget. -/

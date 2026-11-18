@@ -27,11 +27,9 @@ lemma sourceRowSummand_summable (η : HeckeFamily.Character) (S : Finset Id)
     · exact congrArg (fun t : FullHighIndex=>t.2) h
   have hs := (fullHighSummand_summable S D η x w z hx hw hz
     (fun H=>star (C.residueMonoid H.val))
-    (fun H=>by simpa only [norm_star] using C.residueMonoid_norm_le_one H.val)).comp_injective he
-  have ht := hs.prod
-  apply ht.congr
+    (fun H=>by simpa using C.residueMonoid_norm_le_one H.val)).comp_injective he
+  apply (hs.prod).congr
   intro u
-  dsimp only [Function.comp_def,e]
   exact tsum_mul_left (a:=star (C.residueMonoid u.val)*frequencyWeight z ⟨u.val,u.property.1⟩)
     (f:=fun c : (Id×Id)×(Id×Id)=>markedIdealHighSummand S D η u.val x w z c.1.1 c.1.2 c.2.1 c.2.2)
 
@@ -55,9 +53,8 @@ lemma tupleSourceSeries_common_scale {K : ℕ} (η : HeckeFamily.Character) (S :
   rw [Finset.mul_sum]
   apply Finset.sum_congr rfl
   intro J hJ
-  have he := tuple_source_scalar η p hp J x w z
   unfold tupleIndexedCoefficient
-  linear_combination (-1:ℂ)^J.card*he*
+  linear_combination (-1)^J.card*(tuple_source_scalar η p hp J x w z)*
     sourceRowSeries η S C (Ideal.span {∏i∈Finset.univ\J,p i}) x w z
 
 theorem tupleSourceSeries_eq_rows {K : ℕ} (η : HeckeFamily.Character) (S : Finset Id)
@@ -78,7 +75,6 @@ theorem tupleSourceSeries_eq_rows {K : ℕ} (η : HeckeFamily.Character) (S : Fi
     (f:=f) (fun J _=>hf J)
   unfold sourceRowSeries
   simp only [←tsum_mul_left]
-  change (∑J∈(Finset.univ:Finset (Fin K)).powerset,∑'u,f J u)=_
   rw [←hsum]
   apply tsum_congr
   intro u
@@ -86,7 +82,6 @@ theorem tupleSourceSeries_eq_rows {K : ℕ} (η : HeckeFamily.Character) (S : Fi
   rw [Finset.mul_sum]
   apply Finset.sum_congr rfl
   intro J hJ
-  dsimp only [f]
   ring
 
 end SevenEighths.ProbePhysical

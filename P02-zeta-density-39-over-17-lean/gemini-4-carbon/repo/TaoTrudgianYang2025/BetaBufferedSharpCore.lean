@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaBufferedTransitionBands
 public import TaoTrudgianYang2025.BetaEndpointCore
 
@@ -30,8 +40,8 @@ theorem modelPhaseBufferedSupport_inside_core
     modelPhaseCoreLower σ δ T N ≤ modelPhaseBufferedSupportLower F r η T N ∧
       modelPhaseBufferedSupportUpper F l η T N ≤ modelPhaseCoreUpper δ T N := by
   have he := modelPhaseEndpoints_inside_core hF hT.le hN
-  have ha : l+η ∈ Ioo (1 : ℝ) 2 := by constructor <;> linarith
-  have hb : r-η ∈ Ioo (1 : ℝ) 2 := by constructor <;> linarith
+  have ha : l+η ∈ Ioo 1 2 := by constructor <;> linarith
+  have hb : r-η ∈ Ioo 1 2 := by constructor <;> linarith
   have hL := mul_le_mul_of_nonneg_left
     (modelPhaseClosedSlope_deriv_bounds hσ hδ hF hb).1 (div_pos hT hN).le
   have hU := mul_le_mul_of_nonneg_left
@@ -52,7 +62,6 @@ theorem modelPhaseBufferedTransition_error {σ : ℝ} (hσ : 0 < σ) :
   obtain ⟨C,hC,hmode⟩ := modelPhaseBufferedFourierMode_uniform_curvature hσ
   refine ⟨C,hC,?_⟩
   intro l r η hl hr hη hflat F δ T N hδ hF hT hN
-  have hc := modelPhaseBufferedTransition_card_le hσ hδ hF hT hN hη hl hr hflat
   calc
     _ ≤ ∑ _q ∈ (Finset.Icc (modelPhaseBufferedSupportLower F r η T N)
           (modelPhaseBufferedSupportUpper F l η T N)) \
@@ -62,7 +71,7 @@ theorem modelPhaseBufferedTransition_error {σ : ℝ} (hσ : 0 < σ) :
         hmode l r η hl hr hη F δ T N q hδ hF hT hN)
     _ ≤ _ := by
       rw [Finset.sum_const,nsmul_eq_mul]
-      exact (mul_le_mul_of_nonneg_right hc (by positivity)).trans_eq (by ring)
+      exact (mul_le_mul_of_nonneg_right (modelPhaseBufferedTransition_card_le hσ hδ hF hT hN hη hl hr hflat) (by positivity)).trans_eq (by ring)
 
 theorem modelPhaseBufferedSupportCore_error {σ : ℝ} (hσ : 0 < σ) :
     ∃ C : ℝ, 1 ≤ C ∧ ∃ D : ℝ, 0 < D ∧
@@ -84,8 +93,6 @@ theorem modelPhaseBufferedSupportCore_error {σ : ℝ} (hσ : 0 < σ) :
   intro l r η hl hr hη hflat F δ T N hδ hF hT hN L U A B
   have hF₁ := approximateModelPhase_mono hF bufferedLocalStationaryOrder_pos le_rfl
   have he := modelPhaseBufferedBand_endpoints hσ hδ hF₁ hT hN hη hl hr hflat
-  have hLA : L ≤ A := he.1
-  have hBU : B ≤ U := he.2.2.2
   have hs : Finset.Ioo A B ⊆ Finset.Icc L U := by
     intro q hq
     simp only [Finset.mem_Ioo,Finset.mem_Icc] at hq ⊢
@@ -99,10 +106,8 @@ theorem modelPhaseBufferedSupportCore_error {σ : ℝ} (hσ : 0 < σ) :
     abel
   have hi := hinterior l r η hl hr hη hflat F δ T N A B hδ hF hT hN
     (Int.le_ceil _) (Int.floor_le _)
-  have ht := htransition l r η hl hr hη hflat F δ T N hδ hF₁ hT hN
-  change ‖(∑ q ∈ Finset.Icc L U, f q)-(∑ q ∈ Finset.Ioo A B, main q)‖ ≤ _
   rw [hsplit]
-  exact (norm_add_le _ _).trans (add_le_add hi ht)
+  exact (norm_add_le _ _).trans (add_le_add hi (htransition l r η hl hr hη hflat F δ T N hδ hF₁ hT hN))
 
 theorem modelPhaseBufferedSharpCore_error {σ : ℝ} (hσ : 0 < σ) :
     ∃ C : ℝ, 1 ≤ C ∧ ∃ D : ℝ, 0 < D ∧
@@ -127,16 +132,14 @@ theorem modelPhaseBufferedSharpCore_error {σ : ℝ} (hσ : 0 < σ) :
   have hF₁ := approximateModelPhase_mono hF bufferedLocalStationaryOrder_pos le_rfl
   have hi := modelPhaseBufferedSupport_inside_core hσ hδ hF₁ hT hN hη hl hr hflat
   have he := modelPhaseBufferedBand_endpoints hσ hδ hF₁ hT hN hη hl hr hflat
-  have hAL : A ≤ L := hi.1
-  have hUB : U ≤ B := hi.2
-  have hLU : L ≤ U := he.1.trans he.2.1
+  have hAL := hi.1
+  have hUB := hi.2
   let f : ℤ → ℂ := fun q => modelPhaseFourierMode (modelPhaseBufferedCutoff l r η) F T N q
   let main := ∑ q ∈ Finset.Ioo P Q, modelPhaseStationaryMainTerm F T N q
-  have hsplit := sum_int_interval_three_parts f hAL hLU hUB
   have heq : (∑ q ∈ Finset.Icc A B, f q)-main =
       ((∑ q ∈ Finset.Icc L U, f q)-main)+
         ((∑ q ∈ Finset.Ico A L, f q)+(∑ q ∈ Finset.Ioc U B, f q)) := by
-    rw [hsplit]
+    rw [(sum_int_interval_three_parts f hAL (he.1.trans he.2.1) hUB)]
     abel
   have hext : ‖(∑ q ∈ Finset.Ico A L, f q)+(∑ q ∈ Finset.Ioc U B, f q)‖ ≤
       (4/Real.pi)*(2+Real.log ((L-A).toNat : ℝ)+Real.log ((B-U).toNat : ℝ)) := by
@@ -145,9 +148,7 @@ theorem modelPhaseBufferedSharpCore_error {σ : ℝ} (hσ : 0 < σ) :
       Int.cast_sub,Int.cast_add,Int.cast_natCast] using
       (norm_bufferedModes_support_blocks_le_log hσ hδ hF₁ hT hN hη hl hr
         (by linarith : l+2*η ≤ r) (L-A).toNat (B-U).toNat)
-  have hc := hcore l r η hl hr hη hflat F δ T N hδ hF hT hN
-  change ‖(∑ q ∈ Finset.Icc A B, f q)-main‖ ≤ _
   rw [heq]
-  exact (norm_add_le _ _).trans (add_le_add hc hext)
+  exact (norm_add_le _ _).trans (add_le_add (hcore l r η hl hr hη hflat F δ T N hδ hF hT hN) hext)
 
 end TaoTrudgianYang2025

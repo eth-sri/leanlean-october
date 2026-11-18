@@ -13,9 +13,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentOriginalReflectionErrorMass
-open HeckeFamily HeckeDyadic HeckePrimeAnnular HeckePrimeRay
-open CenteredMomentCounting CenteredMomentAbsoluteEnergy CenteredMomentComparisonReflection
-open QuadraticInitialBound ConcreteTraceCRT
+open HeckeFamily HeckeDyadic HeckePrimeAnnular HeckePrimeRay CenteredMomentCounting CenteredMomentAbsoluteEnergy CenteredMomentComparisonReflection QuadraticInitialBound ConcreteTraceCRT
 local notation "O" => HeckeFamily.O
 
 lemma annularWeight_zero_norm (W : ℝ→ℂ) (D freq : ℝ) (hD : 0<D)
@@ -24,7 +22,7 @@ lemma annularWeight_zero_norm (W : ℝ→ℂ) (D freq : ℝ) (hD : 0<D)
   have hn : 0<(I.absNorm:ℝ):=by
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hI)
   rw [annularWeight,norm_mul,Complex.norm_cpow_eq_rpow_re_of_pos (div_pos hn hD)]
-  simp only [Complex.neg_re,shift_re,neg_zero,Real.rpow_zero,mul_one]
+  simp
 
 lemma actual_coefficient_norm (χ : Character) (W : ℝ→ℂ) (D freq B : ℝ)
     (hD : 0<D) (hB : 0≤B) (hW : ∀x,‖W x‖≤B) (I : Ideal O) :
@@ -64,9 +62,8 @@ lemma normalized_linear_bound (D c : ℝ) (hD : 0<D) (v : ℂ)
     (hv : ‖v‖≤c*D) : ‖(D:ℂ)^(-(1/2:ℂ))*v‖≤c*Real.sqrt D := by
   rw [inverse_half_power D hD.le,norm_mul,norm_inv,Complex.norm_real,
     Real.norm_of_nonneg (Real.sqrt_nonneg D)]
-  have hs:Real.sqrt D≠0:=(Real.sqrt_pos.mpr hD).ne'
   have hd:D/Real.sqrt D=Real.sqrt D:=by
-    apply (div_eq_iff hs).mpr
+    apply (div_eq_iff ((Real.sqrt_pos.mpr hD).ne')).mpr
     simpa only [pow_two] using (Real.sq_sqrt hD.le).symm
   calc
     _ ≤ (Real.sqrt D)⁻¹*(c*D):=mul_le_mul_of_nonneg_left hv (inv_nonneg.mpr (Real.sqrt_nonneg D))

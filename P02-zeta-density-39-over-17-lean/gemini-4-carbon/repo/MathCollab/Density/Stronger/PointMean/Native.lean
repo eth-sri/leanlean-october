@@ -12,8 +12,7 @@ public import MathCollab.Density.Stronger.PointMean.Statement
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.ZetaGrowth
+open Complex Filter MeasureTheory Set Topology MathCollab.Density.ZetaGrowth
 open scoped Interval
 set_option autoImplicit false
 noncomputable section
@@ -79,9 +78,9 @@ theorem exists_zetaMomentCriticalNorm_sq_le_quadratic :
 theorem integral_exp_neg_half_abs_heathBrown :
     (∫ x : ℝ, Real.exp (-|x| / 2)) = 4 := by
   have hchange := Measure.integral_comp_mul_left
-    (fun y : ℝ => Real.exp (-|y|)) (1 / 2 : ℝ)
+    (fun y : ℝ => Real.exp (-|y|)) (1 / 2)
   have hrewrite : (fun x : ℝ => Real.exp (-|x| / 2)) =
-      fun x : ℝ => Real.exp (-|(1 / 2 : ℝ) * x|) := by
+      fun x : ℝ => Real.exp (-|(1 / 2) * x|) := by
     funext x
     congr 1
     rw [abs_mul]

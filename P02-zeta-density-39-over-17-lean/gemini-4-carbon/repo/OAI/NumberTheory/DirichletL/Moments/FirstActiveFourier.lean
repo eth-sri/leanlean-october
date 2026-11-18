@@ -9,9 +9,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstActiveFourier
-open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson
-open CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentFourier
-open CenteredMomentFirstMixed CenteredMomentFirstReduced
+open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentFourier CenteredMomentFirstMixed CenteredMomentFirstReduced
 local notation "O" => ActualEisensteinCubic.O
 
 theorem shifted_active_fourier {ι : Type*} [Fintype ι]
@@ -28,8 +26,7 @@ theorem shifted_active_fourier {ι : Type*} [Fintype ι]
   dsimp only
   let := finite_quotient_span (finitePrimeModulus_ne_zero P)
   let : Fintype (Residue (finitePrimeModulus P)) := Fintype.ofFinite _
-  let e := Ideal.quotEquivOfEq (span_finitePrimeModulus P)
-  let : Fintype (O ⧸ ∏ i,P i) := Fintype.ofEquiv (Residue (finitePrimeModulus P)) e.toEquiv
+  let : Fintype (O ⧸ ∏ i,P i) := Fintype.ofEquiv (Residue (finitePrimeModulus P)) (Ideal.quotEquivOfEq (span_finitePrimeModulus P)).toEquiv
   let (i : ι) : Fintype (O ⧸ P i) := Fintype.ofFinite _
   rw [tsum_fintype]
   simp_rw [CenteredMomentFirstReduced.principalSexticRow_mul P hcop hg j

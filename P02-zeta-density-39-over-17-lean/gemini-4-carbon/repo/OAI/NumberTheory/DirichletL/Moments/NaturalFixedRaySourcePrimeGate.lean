@@ -2,21 +2,17 @@ module
 public import OAI.NumberTheory.DirichletL.Moments.NaturalFixedRaySourceFreeExceptional
 public import OAI.NumberTheory.DirichletL.Moments.PrimeHeight
 
-set_option linter.privateModule false
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology
 open Filter
+open scoped Classical BigOperators Topology
 
 namespace SevenEighths.CenteredMomentNaturalFixedRaySource
-open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily HeckePrimeRay
-open CenteredMomentDetectorDictionary CenteredMomentNaturalRowSource
-open CenteredExceptionalProfile CenteredMomentSecondHeightFamily ConcretePrimeRowBridge
-open CenteredMomentFixedRowMask CenteredMomentFixedRayInducingTransport
+open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily HeckePrimeRay CenteredMomentDetectorDictionary CenteredMomentNaturalRowSource CenteredExceptionalProfile CenteredMomentSecondHeightFamily ConcretePrimeRowBridge CenteredMomentFixedRowMask CenteredMomentFixedRayInducingTransport
 local notation "O" => HeckeFamily.O
 
 variable {Δ : ℝ} {D : Parameters.HighData Δ}

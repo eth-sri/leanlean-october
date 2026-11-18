@@ -31,8 +31,7 @@ def zetaLogGaussianEnvelope (A G x : ℝ) : ℝ :=
   Real.exp (-(G * (Real.log x - Real.log A)) ^ 2 / 8)
 
 theorem zetaLogGaussianEnvelope_bounds (A G x : ℝ) :
-    0 ≤ zetaLogGaussianEnvelope A G x ∧ zetaLogGaussianEnvelope A G x ≤ 1 := by
-  exact ⟨(Real.exp_pos _).le, Real.exp_le_one_iff.mpr (by nlinarith [sq_nonneg (G * (Real.log x - Real.log A))])⟩
+    0 ≤ zetaLogGaussianEnvelope A G x ∧ zetaLogGaussianEnvelope A G x ≤ 1 := ⟨(Real.exp_pos _).le, Real.exp_le_one_iff.mpr (by nlinarith [sq_nonneg (G * (Real.log x - Real.log A))])⟩
 
 theorem contDiffAt_zetaLogGaussianEnvelope (A G : ℝ) {x : ℝ} (hx : 0 < x) :
     ContDiffAt ℝ 1 (zetaLogGaussianEnvelope A G) x := by
@@ -43,8 +42,7 @@ theorem contDiffAt_zetaLogGaussianEnvelope (A G : ℝ) {x : ℝ} (hx : 0 < x) :
 theorem hasDerivAt_zetaLogGaussianEnvelope (A G : ℝ) {x : ℝ} (hx : 0 < x) :
     HasDerivAt (zetaLogGaussianEnvelope A G)
       (-(G ^ 2 / 4) * ((Real.log x - Real.log A) / x) * zetaLogGaussianEnvelope A G x) x := by
-  have h := ((((Real.hasDerivAt_log hx.ne').sub_const (Real.log A)).const_mul G).pow 2).neg.div_const 8
-  convert h.exp using 1
+  convert (((((Real.hasDerivAt_log hx.ne').sub_const (Real.log A)).const_mul G).pow 2).neg.div_const 8).exp using 1
   · rfl
   · dsimp [zetaLogGaussianEnvelope]
     norm_num
@@ -53,12 +51,12 @@ theorem hasDerivAt_zetaLogGaussianEnvelope (A G : ℝ) {x : ℝ} (hx : 0 < x) :
 theorem intervalC1Bound_zetaLogGaussianEnvelope {a A b : ℝ}
     (ha : 0 < a) (haA : a ≤ A) (hAb : A ≤ b) (G : ℝ) :
     IntervalC1Bound (fun x : ℝ => (zetaLogGaussianEnvelope A G x : ℂ)) a b 2 := by
-  have hA : 0 < A := ha.trans_le haA
+  have hA := ha.trans_le haA
   have hleft := intervalC1Bound_ofReal_of_deriv_nonneg haA (by norm_num : (0 : ℝ) ≤ 1)
     (fun x hx => contDiffAt_zetaLogGaussianEnvelope A G (ha.trans_le hx.1))
     (fun x _ => zetaLogGaussianEnvelope_bounds A G x) (fun x hx => by
       rw [(hasDerivAt_zetaLogGaussianEnvelope A G (ha.trans_le hx.1)).deriv]
-      have hv : Real.log x - Real.log A ≤ 0 := sub_nonpos.mpr
+      have hv := sub_nonpos.mpr
         (Real.log_le_log (ha.trans_le hx.1) hx.2)
       exact mul_nonneg (mul_nonneg_of_nonpos_of_nonpos (neg_nonpos.mpr (by positivity))
         (div_nonpos_of_nonpos_of_nonneg hv (ha.trans_le hx.1).le))
@@ -67,9 +65,8 @@ theorem intervalC1Bound_zetaLogGaussianEnvelope {a A b : ℝ}
     (fun x hx => contDiffAt_zetaLogGaussianEnvelope A G (hA.trans_le hx.1))
     (fun x _ => zetaLogGaussianEnvelope_bounds A G x) (fun x hx => by
       rw [(hasDerivAt_zetaLogGaussianEnvelope A G (hA.trans_le hx.1)).deriv]
-      have hv : 0 ≤ Real.log x - Real.log A := sub_nonneg.mpr (Real.log_le_log hA hx.1)
       exact mul_nonpos_of_nonpos_of_nonneg
-        (mul_nonpos_of_nonpos_of_nonneg (neg_nonpos.mpr (by positivity)) (div_nonneg hv (hA.trans_le hx.1).le))
+        (mul_nonpos_of_nonpos_of_nonneg (neg_nonpos.mpr (by positivity)) (div_nonneg (sub_nonneg.mpr (Real.log_le_log hA hx.1)) (hA.trans_le hx.1).le))
         (zetaLogGaussianEnvelope_bounds A G x).1)
   simpa only [show (1 : ℝ) + 1 = 2 by norm_num] using hleft.join hright haA hAb
 

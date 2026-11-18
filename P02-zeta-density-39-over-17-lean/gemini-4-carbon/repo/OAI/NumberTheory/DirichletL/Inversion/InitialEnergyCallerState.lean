@@ -8,12 +8,10 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
+open scoped BigOperators Classical
 namespace SevenEighths.InverseInitialEnergyCallerState
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
-open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
-open InverseInitialEnergyCallerWindows InverseInitialQuotientGeometry
+open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource InverseInitialEnergyCallerWindows InverseInitialQuotientGeometry
 local notation "Eis"=>ActualEisensteinCubic.O
 local notation "λ₀"=>ConcretePrimeRowBridge.goodLambda
 variable {ι:Type*}[DecidableEq ι](p:ι→Eis)
@@ -24,8 +22,7 @@ theorem windowSource_subset_retained
     windowSource p S ψ Z D B v θ H ⊆ retained p S (fun _=>1) (ψ 0) (ψ 1) Z B θ := by
   intro x hx
   refine Finset.mem_filter.mpr ⟨(Finset.mem_filter.mp hx).1,?_⟩
-  have hn := (Finset.mem_filter.mp hx).2
-  have hh := (mul_ne_zero_iff.mp (mul_ne_zero_iff.mp hn).1).1
+  have hh := (mul_ne_zero_iff.mp (mul_ne_zero_iff.mp ((Finset.mem_filter.mp hx).2)).1).1
   change ψ 0 (((sourceIdeal p x.common).absNorm:ℝ)/Z^B)*
     ψ 1 (((sourceIdeal p x.divisor).absNorm:ℝ)/Z^θ)≠0 at hh
   simpa only [sourceWeight,one_mul] using hh

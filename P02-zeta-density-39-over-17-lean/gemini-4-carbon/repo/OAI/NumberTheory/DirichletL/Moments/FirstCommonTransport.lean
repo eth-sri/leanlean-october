@@ -10,9 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstCommonTransport
-open ActualEisensteinCubic ConcretePrimeRowBridge CanonicalQuadraticSieve
-open CenteredMomentCanonicalFirst CenteredMomentCompleteCommon CenteredMomentActive
-open CenteredMomentFirstSectorEnergy CompletedGauss
+open ActualEisensteinCubic ConcretePrimeRowBridge CanonicalQuadraticSieve CenteredMomentCanonicalFirst CenteredMomentCompleteCommon CenteredMomentActive CenteredMomentFirstSectorEnergy CompletedGauss
 local notation "O"=>ActualEisensteinCubic.O
 
 theorem extracted_support (I J:Ideal O):
@@ -102,14 +100,12 @@ theorem mappedSubset_inactive (I J:Ideal O)(E:Finset (CommonIndex I J)):
   simp only [CenteredMomentFirstDiscardedEnergy.inactiveSubsets,Finset.mem_powerset]
   constructor
   · intro h P hP
-    have hp:=h (Finset.mem_map.mpr ⟨P,hP,rfl⟩)
     simpa only [Equiv.toEmbedding_apply,principalSupport,Finset.mem_filter,Finset.mem_univ,true_and,extracted_left,extracted_right]
-      using hp
+      using (h (Finset.mem_map.mpr ⟨P,hP,rfl⟩))
   · intro h P hP
     obtain ⟨R,hR,rfl⟩:=Finset.mem_map.mp hP
-    have hr:=h hR
     simpa only [Equiv.toEmbedding_apply,principalSupport,Finset.mem_filter,Finset.mem_univ,true_and,extracted_left,extracted_right]
-      using hr
+      using (h hR)
 
 theorem nominal_extracted (I J:Ideal O)(E:Finset (CommonIndex I J))(K X:ℝ):
     CenteredMomentFirstScale.firstNominalScale (commonPart I J) (commonPart J I)

@@ -8,11 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseMomentGlobalPriorityTail
-open InverseMoment InverseFirstPriorityParents InverseMomentWholePriorityParents
-open InverseMomentGlobalPrincipalMass InverseInitialArithmetic
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion
-open InversePrioritySecondSource InverseSecondPrincipalCaller InversePrincipalEnergy
-open InverseWholePriorityRetainedSource FirstCauchyArithmetic
+open InverseMoment InverseFirstPriorityParents InverseMomentWholePriorityParents InverseMomentGlobalPrincipalMass InverseInitialArithmetic ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion InversePrioritySecondSource InverseSecondPrincipalCaller InversePrincipalEnergy InverseWholePriorityRetainedSource FirstCauchyArithmetic
 open ConcreteTraceCRT (eisEmbedding)
 local notation "O" => ActualEisensteinCubic.O
 
@@ -59,31 +55,27 @@ theorem global_physical_tail_rapid (Jmax : ℕ) (Lcap tau saving : ℝ)
   intro ι σ _ _ p hp _ hg hinj hcop hc Jo hJo extra pool source negative Ψ m w slots lists a
     hslots ha hΨ hw om lo hi hlo hs X M Y Z height kappa eta R hkappa hX hhi hZ hY hscale hy hyi hXcap
     hsource hextra hb₁ hb₂ hactive hcommon hquot hR
-  have hz : 0<Z := zero_lt_one.trans_le hZ
+  have hz := zero_lt_one.trans_le hZ
   have hh := hbound p hp hg hinj hcop hc Jo hJo extra pool source negative Ψ m w slots lists a
     hslots ha hΨ hw om lo hi hlo hs X M Y Z height R hX hhi hZ hY hscale hy hyi hXcap
     hsource hextra hb₁ hb₂ hactive hcommon hquot hR
-  have he : Z^kappa*Real.exp ((9/2:ℝ)*(eta*Real.log Z))=Z^(kappa+(9/2:ℝ)*eta) := by
-    rw [Real.rpow_add hz,Real.rpow_def_of_pos hz ((9/2:ℝ)*eta)]
+  have he : Z^kappa*Real.exp ((9/2)*(eta*Real.log Z))=Z^(kappa+(9/2)*eta) := by
+    rw [Real.rpow_add hz,Real.rpow_def_of_pos hz ((9/2)*eta)]
     congr 2
     ring
-  have hP : Z^kappa*Real.exp ((9/2:ℝ)*(eta*Real.log Z))≤Z^Lcap := by
+  have hP : Z^kappa*Real.exp ((9/2)*(eta*Real.log Z))≤Z^Lcap := by
     rw [he]
     exact Real.rpow_le_rpow_of_exponent_le hZ hkappa
   apply (mul_le_mul_of_nonneg_left hh (by positivity)).trans
-  calc
-    _ ≤ Z^Lcap*(C*(4:ℝ)^slots.card*(s.sup (schwartzSeminormFamily ℝ ℝ ℂ) rowMajorant)*
-      (SchwartzMap.seminorm ℝ 0 0 om)^2*Z^(-(saving+Lcap))) :=
-      mul_le_mul_of_nonneg_right hP (by positivity)
-    _ = _ := by
+  exact (mul_le_mul_of_nonneg_right hP (by positivity)).trans_eq (by
       have he₂ : Z^Lcap*Z^(-(saving+Lcap))=Z^(-saving) := by
         rw [←Real.rpow_add hz]
         congr 1
         ring
       calc
-        _ = C*(4:ℝ)^slots.card*(s.sup (schwartzSeminormFamily ℝ ℝ ℂ) rowMajorant)*
+        _ = C*4^slots.card*(s.sup (schwartzSeminormFamily ℝ ℝ ℂ) rowMajorant)*
           (SchwartzMap.seminorm ℝ 0 0 om)^2*(Z^Lcap*Z^(-(saving+Lcap))) := by ring
-        _ = _ := by rw [he₂]
+        _ = _ := by rw [he₂])
 
 end SevenEighths.InverseMomentGlobalPriorityTail
 end

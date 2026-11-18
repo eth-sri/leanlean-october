@@ -11,18 +11,10 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators SchwartzMap Topology
 open Filter
+open scoped Classical BigOperators SchwartzMap Topology
 namespace SevenEighths.DetectorDictionaryInverseRawReference
-open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseMoment
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge
-open CanonicalRowCompletion CanonicalCoefficientClass CanonicalQuadraticSieve
-open InverseInitialRawDictionary InverseInitialConjugateEnergy InverseInitialExcludedPeriod
-open InverseInitialRayAttachment InverseInitialProfileBounds
-open DetectorDictionaryInverseRawInitialGates DetectorDictionaryInverseRawInitialEnergy
-open DetectorDictionaryInverseRawInput DetectorDictionaryInverseRawInputBound
-open DetectorDictionaryInverseRawConjugateGates DetectorDictionaryInverseRawRealRadial
-open DetectorDictionaryInverseRawGeometry IdealMobiusDivisorSum
+open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseMoment ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge CanonicalRowCompletion CanonicalCoefficientClass CanonicalQuadraticSieve InverseInitialRawDictionary InverseInitialConjugateEnergy InverseInitialExcludedPeriod InverseInitialRayAttachment InverseInitialProfileBounds DetectorDictionaryInverseRawInitialGates DetectorDictionaryInverseRawInitialEnergy DetectorDictionaryInverseRawInput DetectorDictionaryInverseRawInputBound DetectorDictionaryInverseRawConjugateGates DetectorDictionaryInverseRawRealRadial DetectorDictionaryInverseRawGeometry IdealMobiusDivisorSum
 local notation "O"=>HeckeFamily.O
 
 theorem raw_reference_large (W:𝓢(ℝ,ℂ))(a b c κ:ℝ)(ha:0<a)(hb:0<b)
@@ -54,9 +46,8 @@ theorem raw_reference_large (W:𝓢(ℝ,ℂ))(a b c κ:ℝ)(ha:0<a)(hb:0<b)
   let Ctotal:=((T.card:ℝ)+1)^2*C
   refine ⟨Ctotal,max Hq Hg,by dsimp [Ctotal];positivity,lt_max_of_lt_left hHq,?_⟩
   intro t H D hH hD hcapacity rows hrows
-  have hHq':Hq≤H:=(le_max_left _ _).trans hH
   obtain ⟨hHp,hgeom⟩:=hg H ((le_max_right _ _).trans hH)
-  have hHpos:0<H:=zero_lt_one.trans hHp
+  have hHpos :=zero_lt_one.trans hHp
   have hWt:∀x,childLogTest W t x≠0→x≤b:=by
     intro x hx
     exact (hs ((mul_ne_zero_iff.mp hx).1)).2
@@ -74,7 +65,7 @@ theorem raw_reference_large (W:𝓢(ℝ,ℂ))(a b c κ:ℝ)(ha:0<a)(hb:0<b)
       rw [hex]
       exact completeCutoff_columns H b Btree 2 D _ hb.le (zero_lt_one.trans_le hD).le hDH
         (excluded_divisor_norm data j hj).1
-    have hbound:=hinput H hHq' Dpool hpool
+    have hbound:=hinput H ((le_max_left _ _).trans hH) Dpool hpool
       (elementCharacter (conjugateIdealCharacter (idealCoeff (deletedBase data)).toMonoidHom))
       hn hperiod r (-t) (by dsimp [r];linarith)
       (by dsimp [gap] at *;linarith [(capacityGap_pos c hc).le])
@@ -127,9 +118,8 @@ theorem raw_reference_large (W:𝓢(ℝ,ℂ))(a b c κ:ℝ)(ha:0<a)(hb:0<b)
       nlinarith [Nat.cast_nonneg (α:=ℝ) T.card]
     _≤(Ctotal*(1+‖t‖)^(2*J))*H*(H*max 1 D)^κ:=by
       have he:15*η+π+eps+κ/4≤κ:=by linarith
-      have hh:=raw_output_budget H D κ (15*η+π+eps+κ/4) hHp.le hκ.le he
       rw [show (1+15*η+π+eps+κ/4:ℝ)=1+(15*η+π+eps+κ/4) by ring]
-      nlinarith [mul_le_mul_of_nonneg_left hh
+      nlinarith [mul_le_mul_of_nonneg_left (raw_output_budget H D κ (15*η+π+eps+κ/4) hHp.le hκ.le he)
         (show 0≤Ctotal*(1+‖t‖)^(2*J) by dsimp [Ctotal];positivity)]
 
 theorem raw_reference_moment (W:𝓢(ℝ,ℂ))(a b c κ:ℝ)(ha:0<a)(hb:0<b)

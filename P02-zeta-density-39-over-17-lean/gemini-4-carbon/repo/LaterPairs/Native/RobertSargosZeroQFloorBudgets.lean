@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.RobertSargosZeroQPolynomialBudget
 
 @[expose] public section
@@ -27,11 +36,11 @@ theorem robertSargos_zero_q_floor_budgets (M H : ℕ) {lam : ℝ}
   obtain ⟨hT,hscale⟩ := thirteenth_root_physical_scale hlam hsmall
   have hT1 : 1 ≤ T := by dsimp [T]; linarith
   have h8 : T^8 = lam^(-(8:ℝ)/13) := by
-    simpa only [Nat.cast_ofNat] using thirteenth_root_nat_pow hlam 8
+    simpa using thirteenth_root_nat_pow hlam 8
   have h2 : T^2 = lam^(-(2:ℝ)/13) := by
-    simpa only [Nat.cast_ofNat] using thirteenth_root_nat_pow hlam 2
+    simpa using thirteenth_root_nat_pow hlam 2
   have h3 : T^3 = lam^(-(3:ℝ)/13) := by
-    simpa only [Nat.cast_ofNat] using thirteenth_root_nat_pow hlam 3
+    simpa using thirteenth_root_nat_pow hlam 3
   have hQ1 : 1 ≤ lam^(-(3:ℝ)/13) := by
     rw [← h3]
     exact one_le_pow₀ hT1

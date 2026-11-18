@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaModelPoisson
 
 @[expose] public section
@@ -34,11 +44,11 @@ theorem exponentialSumAt_eq_int_sum (F : ℝ → ℝ) (T N : ℝ) (a b : ℕ) :
     exact_mod_cast h
   · intro n hn
     have h := Finset.mem_Icc.mp hn
-    have hn₀ : 0 ≤ n := (Int.natCast_nonneg a).trans h.1
+    have hn₀ := (Int.natCast_nonneg a).trans h.1
     refine ⟨n.toNat,?_,Int.toNat_of_nonneg hn₀⟩
     apply Finset.mem_Icc.mpr
     constructor <;> omega
   · intro n _
-    simp only [Int.cast_natCast]
+    simp
 
 end TaoTrudgianYang2025

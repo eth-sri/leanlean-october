@@ -61,10 +61,9 @@ theorem first_whole_cube_rapid_physical_tail (ε:ℝ) (hε:0<ε)
   intro ι σ _ _ p hp _ hinj hcop hg hc pool b C D extra₁ extra₂ f Ψ₁ Ψ₂ m₁ m₂ slots lists a
     test₁ test₂ W E G₁ G₂ Z M r ell V B j delta hb hCB hD hf hE hG₁ hG₂ hZ hM hMmax
     hell hV hr hwhole hC he₁ he₂ hΨ₁ hΨ₂ hslots ha ht₁ ht₂ hs₁ hs₂ hb₁ hb₂ hF hdelta hBlo hj
-  have hz:0<Z:=zero_lt_one.trans_le hZ
   have hlocal:=htail p hp hinj hcop hg hc pool b hb C D hCB f hf Ψ₁ Ψ₂ hΨ₁ hΨ₂
     m₁ m₂ extra₁ extra₂ E slots lists a hE he₁ he₂ hslots ha test₁ test₂ W G₁ G₂ Z M r ell V
-    (delta D) B j eta tau hG₁ hG₂ hz ht₁ ht₂ hs₁ hs₂ hb₁ hb₂ hF hdelta hBlo hj
+    (delta D) B j eta tau hG₁ hG₂ (zero_lt_one.trans_le hZ) ht₁ ht₂ hs₁ hs₂ hb₁ hb₂ hF hdelta hBlo hj
   dsimp only at hlocal
   apply hlocal.trans
   exact horder p hp b C D hCB hD Z M r ell V

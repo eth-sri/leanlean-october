@@ -22,13 +22,11 @@ theorem original_source_cost_budget {χ : Type*} [Fintype χ]
   obtain ⟨C,hC,hb⟩ := original_source_cost (χ:=χ) rmax ε hε
   refine ⟨C,hC,?_⟩
   intro σ _ H hcard hH J Q Q₀ hJ hQ Z Lpool Lslot loss hZ hpool hslot hloss
-  have hz : 0<Z := lt_trans zero_lt_one hZ
+  have hz := lt_trans zero_lt_one hZ
   apply (hb H hcard hH J Q Q₀ hJ hQ).trans
   calc
     _ ≤ C*(Z^Lpool)^ε*(Z^Lslot)^ε := by
-      have hp := Real.rpow_le_rpow (Nat.cast_nonneg (Ideal.absNorm (J*Q))) hpool hε.le
-      have hs := Real.rpow_le_rpow (Finset.prod_nonneg (fun i _ => zero_le_one.trans (hH i))) hslot hε.le
-      exact mul_le_mul (mul_le_mul_of_nonneg_left hp hC.le) hs
+      exact mul_le_mul (mul_le_mul_of_nonneg_left (Real.rpow_le_rpow (Nat.cast_nonneg (Ideal.absNorm (J*Q))) hpool hε.le) hC.le) (Real.rpow_le_rpow (Finset.prod_nonneg (fun i _ => zero_le_one.trans (hH i))) hslot hε.le)
         (Real.rpow_nonneg (Finset.prod_nonneg (fun i _ => zero_le_one.trans (hH i))) _) (by positivity)
     _ = C*Z^(ε*(Lpool+Lslot)) := by
       rw [←Real.rpow_mul hz.le,←Real.rpow_mul hz.le,mul_assoc,←Real.rpow_add hz]

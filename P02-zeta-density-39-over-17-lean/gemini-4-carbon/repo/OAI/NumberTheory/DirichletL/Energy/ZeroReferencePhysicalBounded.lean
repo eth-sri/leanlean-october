@@ -9,19 +9,11 @@ public import OAI.NumberTheory.DirichletL.Energy.PhysicalEntry
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
 open Filter
+open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyZeroReferencePhysicalBounded
-open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands
-open CenteredMomentEnergyZeroReferenceLiveBounded CenteredMomentEnergyOriginalSource
-open CenteredMomentEnergyFixedRadialReduction CenteredMomentEnergyPhysicalEntry
-open CenteredMomentCommonRadialData CenteredMomentSourceRow
-open CenteredMomentFirstSourceReduction CenteredMomentSourceInputTailUniform
-open CenteredMomentFiniteProfileExceptional CenteredMomentSecondHeightFamily
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass
+open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands CenteredMomentEnergyZeroReferenceLiveBounded CenteredMomentEnergyOriginalSource CenteredMomentEnergyFixedRadialReduction CenteredMomentEnergyPhysicalEntry CenteredMomentCommonRadialData CenteredMomentSourceRow CenteredMomentFirstSourceReduction CenteredMomentSourceInputTailUniform CenteredMomentFiniteProfileExceptional CenteredMomentSecondHeightFamily CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass
 local notation "O"=>HeckeFamily.O
 local instance : DecidableEq (Fin 0⊕Fin 2):=Classical.decEq _
 
@@ -75,7 +67,7 @@ theorem actual_positive_source_entry (a b bΦ rho ε Mcap Bmask B εdiag ξ savi
       (comparisonFirst Z s.width) (comparisonSecond Z s.width X₁ X₂) at hphysical
     rw [balanced_volume] at hphysical
     dsimp only [inp] at hphysical
-    linarith only [hphysical,hreference]
+    linarith
 
 end SevenEighths.CenteredMomentEnergyZeroReferencePhysicalBounded
 

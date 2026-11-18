@@ -9,10 +9,8 @@ namespace OAI
 
 noncomputable section
 
+open MeasureTheory FourierBridge JointLogSeparation ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
-open MeasureTheory FourierBridge JointLogSeparation
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss
-open SevenEighths.InverseMoment
 namespace SevenEighths.InverseInitialClippedColumns
 local notation "Eis" => ActualEisensteinCubic.O
 
@@ -66,9 +64,8 @@ theorem freshColumns_initial_clipping_shift (pool : Finset ι) (w : ℝ → ℂ)
     (hn : (freshColumns p pool w (Z^N)).Nonempty)
     (hthreshold : Real.log b ≤ 3*η*Real.log Z) :
     0 ≤ max 0 N-N ∧ max 0 N-N ≤ 3*η := by
-  have hc := freshColumns_clipping_range p hp pool w a b Z N hZ hb hw hn
-  have hz : 0 < Z := zero_lt_one.trans hZ
-  have hl := Real.log_le_log (Real.rpow_pos_of_pos hz _) hc.2
+  have hz := zero_lt_one.trans hZ
+  have hl := Real.log_le_log (Real.rpow_pos_of_pos hz _) (freshColumns_clipping_range p hp pool w a b Z N hZ hb hw hn).2
   rw [Real.log_rpow hz] at hl
   refine ⟨sub_nonneg.mpr (le_max_right _ _), ?_⟩
   exact (mul_le_mul_iff_left₀ (Real.log_pos hZ)).mp (hl.trans hthreshold)
@@ -155,8 +152,7 @@ theorem columnEnergy_normalization
       Z^F * normalizedColumnEnergy p hp hcop hg pool Ψ m slots lists a
         labels rows D W X Z F := by
   have hr : Z^F * (Z^(-F/2))^2 = 1 := by
-    rw [← Real.rpow_mul_natCast hZ.le, ← Real.rpow_add hZ]
-    rw [show F+(-F/2)*(2:ℕ) = 0 by ring, Real.rpow_zero]
+    rw [← Real.rpow_mul_natCast hZ.le, ← Real.rpow_add hZ, show F+(-F/2)*(2:ℕ) = 0 by ring, Real.rpow_zero]
   unfold columnEnergy normalizedColumnEnergy
   rw [Finset.mul_sum]
   apply Finset.sum_congr rfl
@@ -200,11 +196,10 @@ theorem rightHeight_eq (z : Frequency × (Fin 6 → ℝ)) :
 theorem child_height_moment_bound (K : ℕ) (z : Frequency × (Fin 6 → ℝ)) :
     (1+‖leftHeight z‖)^K * (1+‖rightHeight z‖)^K ≤
       tripleHeight (2*K) z.1 * coordinateHeight (2*K) z.2 := by
-  have hh := InverseAmbientProfileTower.inherited_pair_weight_bound 4 5 0 K z
   simpa only [InverseAmbientProfileTower.ambientWeight,
     InverseAmbientProfileTower.inheritedLeft,InverseAmbientProfileTower.inheritedRight,
     leftHeight,rightHeight,norm_neg,pow_zero,Finset.prod_const_one,
-    mul_one,one_mul,zero_add,tripleHeight,coordinateHeight] using hh
+    mul_one,one_mul,zero_add,tripleHeight,coordinateHeight] using (InverseAmbientProfileTower.inherited_pair_weight_bound 4 5 0 K z)
 
 def outerCutoff (ψ : Fin 4 → ℝ → ℂ) (x : Fin 6 → ℝ) : ℂ :=
   ψ 0 (x 0)*ψ 1 (x 1)*ψ 2 (x 2)*ψ 3 (x 3)

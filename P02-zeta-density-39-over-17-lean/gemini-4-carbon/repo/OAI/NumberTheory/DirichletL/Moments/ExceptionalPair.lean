@@ -10,8 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentExceptionalPair
-open HeckeFamily CenteredExceptionalProfile CenteredMomentChildRows CenteredMomentFixedRay
-open CanonicalRowCompletion CanonicalQuadraticSieve RayFourExpansion
+open HeckeFamily CenteredExceptionalProfile CenteredMomentChildRows CenteredMomentFixedRay CanonicalRowCompletion CanonicalQuadraticSieve RayFourExpansion
 local notation "O" => HeckeFamily.O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
@@ -70,7 +69,7 @@ theorem childCharacter_ratio (η : Character) (χ ξ : RayCharacter) (n : O) :
     elementCoeff (childCharacter η ξ) n =
       elementCoeff (childCharacter η χ) n * elementCoeff (rayRatio χ ξ) n := by
   simp only [childCharacter,rayRatio,elementCoeff_product,elementCoeff_inverse]
-  by_cases hn : IsUnit (Ideal.Quotient.mk (Ideal.span {(12 : O)}) n)
+  by_cases hn : IsUnit (Ideal.Quotient.mk (Ideal.span {12}) n)
   · have hχ : elementCoeff (primaryRayCharacter χ) n ≠ 0 :=
       MulChar.apply_ne_zero_iff.mpr hn
     field_simp
@@ -84,7 +83,6 @@ def reflectionRatio (χ ξ : RayCharacter) : Character :=
 
 theorem reflectionRatio_modulus (χ ξ : RayCharacter) (Q : Ideal O)
     (hQ : Q ≤ Ideal.span {(72 : O)}) : Q ≤ (reflectionRatio χ ξ).modulus := by
-  change Q ≤ ((Ideal.span {(12 : O)}) ⊓ (Ideal.span {(12 : O)})) ⊓ Ideal.span {(36 : O)}
   refine le_inf (le_inf ?_ ?_) ?_
   · exact hQ.trans (Ideal.span_singleton_le_span_singleton.mpr ⟨6,by norm_num⟩)
   · exact hQ.trans (Ideal.span_singleton_le_span_singleton.mpr ⟨6,by norm_num⟩)

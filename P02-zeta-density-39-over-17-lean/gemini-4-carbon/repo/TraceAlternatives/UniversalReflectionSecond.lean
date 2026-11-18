@@ -57,7 +57,6 @@ theorem reflection_complete_pair_energy_universal {η : ℝ} (hη : 0<η) :
   have hQ : 0<Q := by dsimp only [Q]; omega
   have hQM : (Q:ℝ)≤2*(M:ℝ) := by exact_mod_cast Nat.sub_le (2*M) 1
   have hQ2 : (Q:ℝ)^2≤64*T := by
-    have hQnon : (0:ℝ)≤Q := Nat.cast_nonneg _
     have hs := Real.sq_sqrt hTp.le
     nlinarith [Real.sqrt_nonneg T]
   have hScale : universalShortProfile T Q W.card (discreteAdditiveEnergy W) ≤

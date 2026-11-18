@@ -6,9 +6,8 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstCommonColumns
 namespace OAI
 
 namespace SevenEighths.InverseMoment
+open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion SecondPassArithmetic FourierBridge
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion
-open SecondPassArithmetic FourierBridge
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
@@ -37,7 +36,7 @@ theorem firstCommonColumn_eq_rayIdealRow
   simp only [firstCommonColumn,supportConjugateSum,Finset.mul_sum]
   apply Finset.sum_congr rfl
   intro U hU
-  have hdU : Disjoint D U := Finset.disjoint_of_subset_right
+  have hdU := Finset.disjoint_of_subset_right
     (Finset.mem_powerset.mp hU) disjoint_sdiff_self_right
   have hy : columnLog p (primeProductNorm p D*X) (D∪U) =
       Real.log (primeProductNorm p U/X) := by

@@ -59,10 +59,7 @@ theorem integrable_zetaAtkinson_kernel_of_support_bound {T G L : ℝ}
     rw [← support_zetaAtkinsonDivisorTest]
     exact hz
   rw [Pi.mul_apply, norm_mul, Complex.norm_real, Real.norm_eq_abs]
-  calc
-    _ ≤ ‖zetaAtkinsonDivisorTest T G L x‖ * B :=
-      mul_le_mul_of_nonneg_left (hbound x hs) (norm_nonneg _)
-    _ = _ := mul_comm _ _
+  exact (mul_le_mul_of_nonneg_left (hbound x hs) (norm_nonneg _)).trans_eq (mul_comm _ _)
 
 theorem integrable_zetaAtkinsonY0Integrand {T G L : ℝ}
     (hT : 16 ≤ T) (hG : 0 < G) (hL : 0 < L) (hwidth : 8 * L ≤ G)
@@ -105,16 +102,10 @@ theorem norm_integral_zetaNeumannRemainder_le {T G L : ℝ}
         ‖zetaSmoothDivisorTest T G L x‖ := by
     by_cases hz : zetaSmoothDivisorTest T G L x = 0
     · simp [zetaNeumannRemainderIntegrand, zetaAtkinsonDivisorTest, hz]
-    have hs := support_zetaSmoothDivisorTest_physical hT0 hG hL hwidth hz
     rw [zetaNeumannRemainderIntegrand, norm_mul, norm_zetaAtkinsonDivisorTest,
       Complex.norm_real, Real.norm_eq_abs]
-    calc
-      _ ≤ ‖zetaSmoothDivisorTest T G L x‖ *
-          (neumannTwoTermErrorConstant * T ^ (-(5 / 4 : ℝ)) * (n : ℝ) ^ (-(5 / 4 : ℝ))) :=
-        mul_le_mul_of_nonneg_left (abs_neumann_source_remainder_le hT hs.1 hn) (norm_nonneg _)
-      _ = _ := mul_comm _ _
-  have h := norm_integral_le_of_norm_le hi (Eventually.of_forall hb)
-  simpa only [integral_const_mul] using h
+    exact (mul_le_mul_of_nonneg_left (abs_neumann_source_remainder_le hT (support_zetaSmoothDivisorTest_physical hT0 hG hL hwidth hz).1 hn) (norm_nonneg _)).trans_eq (mul_comm _ _)
+  simpa only [integral_const_mul] using (norm_integral_le_of_norm_le hi (Eventually.of_forall hb))
 
 theorem exists_norm_integral_zetaNeumannRemainder_le :
     ∃ C : ℝ, 0 < C ∧ ∀ T G L : ℝ, 16 ≤ T → 0 < G → G ^ 2 ≤ 2 * T →
@@ -140,6 +131,6 @@ theorem exists_norm_integral_zetaNeumannRemainder_le :
         (show 0 ≤ neumannTwoTermErrorConstant * C * G * (n : ℝ) ^ (-(5 / 4 : ℝ)) from by
           exact mul_nonneg (mul_nonneg (mul_nonneg neumannTwoTermErrorConstant_pos.le hC.le) hG.le)
             (by positivity))
-      simpa only [mul_one] using h
+      simpa using h
 
 end MathCollab.Density.Stronger.Atkinson

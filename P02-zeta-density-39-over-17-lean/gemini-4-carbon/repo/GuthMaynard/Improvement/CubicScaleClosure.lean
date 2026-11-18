@@ -33,10 +33,7 @@ theorem cubic_smoothing_width_bounds {T η L K R q : ℝ}
     rw [hid] at hLK
     exact hLK.trans (mul_le_mul_of_nonneg_left (by nlinarith : T^η ≤ q*T^η) hTp.le)
   · unfold cubicSmoothingWidth
-    calc
-      _ ≤ q*T^η/T^((4:ℝ)/5) :=
-        div_le_div_of_nonneg_left (by positivity) (Real.rpow_pos_of_pos hTp _) hbase
-      _ = _ := by rw [Real.rpow_sub hTp]; ring
+    exact (div_le_div_of_nonneg_left (by positivity) (Real.rpow_pos_of_pos hTp _) hbase).trans_eq (by rw [Real.rpow_sub hTp]; ring)
 
 /-- One threshold works for every admissible L,K,R. The bounded-height
 range is deliberately not removed from any global theorem. -/

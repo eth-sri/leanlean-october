@@ -151,8 +151,7 @@ theorem retained_summable (R q : ℝ) :
 
 theorem discarded_summable (R q : ℝ) :
     Summable (fun n : ℤ => if Retained R n then 0 else dyadicWeight n q) := by
-  have h := (dyadicWeight_summable q).sub (retained_summable R q)
-  convert h using 1
+  convert ((dyadicWeight_summable q).sub (retained_summable R q)) using 1
   ext n
   split_ifs <;> simp
 
@@ -210,7 +209,7 @@ theorem retained_scale_le (R : ℝ) (n : ℤ) (hn : Retained R n) : dyadicScale 
 
 theorem retainedWeight_zero_above (R q : ℝ) (hq : 4*R ≤ q) : retainedWeight R q=0 := by
   unfold retainedWeight
-  trans ∑' _n : ℤ, (0:ℝ)
+  trans ∑' _n : ℤ, 0
   · apply tsum_congr
     intro n
     split_ifs with hn
@@ -226,7 +225,7 @@ theorem retainedWeight_enclosure (R q : ℝ) (hq : retainedWeight R q ≠ 0) : 0
 theorem discardedWeight_zero_below (R q : ℝ) (hq : q ≤ R) : discardedWeight R q=0 := by
   by_cases hp : 0 < q
   · unfold discardedWeight
-    trans ∑' _n : ℤ, (0:ℝ)
+    trans ∑' _n : ℤ, 0
     · apply tsum_congr
       intro n
       split_ifs with hn
@@ -245,22 +244,19 @@ theorem finite_retained_integral_dyads (R : ℝ) :
   apply (Set.finite_Icc (1:ℤ) (k:ℤ)).subset
   intro n hn
   obtain ⟨hr,q,hq,hne⟩ := hn
-  have hu := retained_scale_le R n hr
-  have hs := (dyadicWeight_support n hne).2
   constructor
-  · have : (2:ℝ)^(0:ℤ) < (2:ℝ)^n := by simpa [dyadicScale] using hq.trans_lt hs
+  · have : (2:ℝ)^(0:ℤ) < (2:ℝ)^n := by simpa [dyadicScale] using hq.trans_lt ((dyadicWeight_support n hne).2)
     have := (zpow_lt_zpow_iff_right₀ (by norm_num : (1:ℝ) < 2)).mp this
     omega
   · have h : (2:ℝ)^n < (2:ℝ)^(k:ℤ) := by
-      simpa only [zpow_natCast,dyadicScale] using hu.trans_lt hk
+      simpa only [zpow_natCast,dyadicScale] using (retained_scale_le R n hr).trans_lt hk
     have := (zpow_lt_zpow_iff_right₀ (by norm_num : (1:ℝ) < 2)).mp h
     omega
 
 theorem annulus_pos (x : ℝ) (hlo : 1/4 < x) (hhi : x < 1) : 0 < annulus x := by
   by_cases hx : x ≤ 1/2
   · rw [annulus,cutoff_one x hx]
-    have h := Real.smoothTransition.lt_one_of_lt_one (by linarith : 2-2*(2*x) < 1)
-    exact sub_pos.mpr h
+    exact sub_pos.mpr (Real.smoothTransition.lt_one_of_lt_one (by linarith : 2-2*(2*x) < 1))
   · rw [annulus,cutoff_zero (2*x) (by linarith),sub_zero]
     exact Real.smoothTransition.pos_of_pos (by linarith)
 
@@ -316,7 +312,7 @@ theorem frequencyLoss_nonneg (Z Csec ξ : ℝ) (hZ : 1 < Z) (hC : 1 ≤ Csec) (h
 
 theorem source_enclosure_power (Z Csec L ξ Nv : ℝ) (hZ : 1 < Z) (hC : 0 < Csec) (hNv : 0 < Nv) :
     4*(Csec*Z^L)*Z^(ξ/2)/Nv=Z^(L-Real.logb Z Nv+frequencyLoss Z Csec ξ) := by
-  have hz : 0 < Z := zero_lt_one.trans hZ
+  have hz := zero_lt_one.trans hZ
   rw [frequencyLoss,show L-Real.logb Z Nv+(ξ/2+Real.logb Z (4*Csec))=
     (L+ξ/2)+Real.logb Z (4*Csec)-Real.logb Z Nv by ring,
     Real.rpow_sub hz,Real.rpow_add hz,Real.rpow_add hz,
@@ -349,16 +345,13 @@ theorem discarded_kernel_argument (Tsec Z Csec H ξ q : ℝ)
     (hthreshold : 2*H/Real.log Z+Real.log (4*Csec)/Real.log Z < ξ/4)
     (hne : discardedWeight (frequencyRadius Tsec Z ξ) q ≠ 0) :
     Z^(ξ/4) ≤ kernelReference Tsec H*q := by
-  have hlog := Real.log_nonneg (show 1 ≤ 4*Csec by linarith)
-  have hlogdiv := div_nonneg hlog (Real.log_pos hZ).le
-  have he : 2*H < ξ/4*Real.log Z :=
-    (div_lt_iff₀ (Real.log_pos hZ)).mp (by linarith : 2*H/Real.log Z < ξ/4)
+  have hlogdiv := div_nonneg (Real.log_nonneg (show 1 ≤ 4*Csec by linarith)) (Real.log_pos hZ).le
+  have he := (div_lt_iff₀ (Real.log_pos hZ)).mp (by linarith : 2*H/Real.log Z < ξ/4)
   have hs : Z^(ξ/4) ≤ Real.exp (-2*H)*Z^(ξ/2) := by
     rw [Real.rpow_def_of_pos (zero_lt_one.trans hZ),Real.rpow_def_of_pos (zero_lt_one.trans hZ),← Real.exp_add]
     apply Real.exp_le_exp.mpr
     linarith
-  have hq := (discardedWeight_support _ q hne).le
-  have hm := mul_le_mul_of_nonneg_left hq (kernelReference_pos Tsec H hT).le
+  have hm := mul_le_mul_of_nonneg_left ((discardedWeight_support _ q hne).le) (kernelReference_pos Tsec H hT).le
   have hid : kernelReference Tsec H*frequencyRadius Tsec Z ξ=Real.exp (-2*H)*Z^(ξ/2) := by
     unfold kernelReference frequencyRadius
     field_simp
@@ -379,7 +372,7 @@ theorem actual_discarded_lattice_tail (A : ℕ) :
   obtain ⟨s,C,hC,ht⟩ := CenteredMomentTail.uniform_sector_lattice_tail A
   refine ⟨s,C,hC,?_⟩
   intro W Tsec Z Csec H ξ K B hT hZ hCsec hthreshold hK hB c hc
-  let D : Set O := {h | discardedWeight (frequencyRadius Tsec Z ξ) (normValue h) ≠ 0}
+  let D := {h | discardedWeight (frequencyRadius Tsec Z ξ) (normValue h) ≠ 0}
   have hb := ht W D (kernelReference Tsec H) (Z^(ξ/4)) B
     (kernelReference_pos Tsec H hT) (Real.rpow_nonneg (zero_lt_one.trans hZ).le _) hB
     (fun h hh => by
@@ -394,7 +387,6 @@ theorem actual_discarded_lattice_tail (A : ℕ) :
     (discardedWeight (frequencyRadius Tsec Z ξ) (normValue h):ℂ)*c h*paperRadialFourier W (K*normValue h))
     (s := D) (by
       intro h hh
-      change discardedWeight (frequencyRadius Tsec Z ξ) (normValue h) ≠ 0
       intro hz
       exact hh (by simp [hz]))
   rwa [he] at hb
@@ -430,13 +422,11 @@ theorem finite_retained_above (R a : ℝ) (ha : 0 < a) :
   apply (Set.finite_Icc k (l:ℤ)).subset
   intro n hn
   obtain ⟨hr,q,hq,hne⟩ := hn
-  have hu := retained_scale_le R n hr
-  have hs := (dyadicWeight_support n hne).2
   constructor
-  · have h : (2:ℝ)^k < (2:ℝ)^n := hk.trans_lt (hq.trans_lt hs)
+  · have h : (2:ℝ)^k < (2:ℝ)^n := hk.trans_lt (hq.trans_lt ((dyadicWeight_support n hne).2))
     exact ((zpow_lt_zpow_iff_right₀ (by norm_num : (1:ℝ) < 2)).mp h).le
   · have h : (2:ℝ)^n < (2:ℝ)^(l:ℤ) := by
-      simpa only [zpow_natCast,dyadicScale] using hu.trans_lt hl
+      simpa only [zpow_natCast,dyadicScale] using (retained_scale_le R n hr).trans_lt hl
     exact ((zpow_lt_zpow_iff_right₀ (by norm_num : (1:ℝ) < 2)).mp h).le
 
 end SevenEighths.CenteredMomentSectorLocalization

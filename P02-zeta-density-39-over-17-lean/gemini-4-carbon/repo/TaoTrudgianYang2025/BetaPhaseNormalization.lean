@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaLegendreCorrection
 
 @[expose] public section
@@ -35,11 +45,9 @@ theorem rescaledPhaseCorrection_iteratedDeriv {H : ℝ → ℝ}
     (hH : ContDiff ℝ ∞ H) (s A u : ℝ) (n : ℕ) :
     iteratedDeriv n (rescaledPhaseCorrection H s A) u =
       A^(s-1) * A^n * iteratedDeriv n H (A*u) := by
-  have hN : (n : WithTop ℕ∞) ≤ ∞ :=
-    ENat.natCast_le_of_coe_top_le_withTop le_rfl n
   unfold rescaledPhaseCorrection
   rw [iteratedDeriv_const_mul_field,
-    iteratedDeriv_comp_const_mul (hH.of_le hN) A]
+    iteratedDeriv_comp_const_mul (hH.of_le (ENat.natCast_le_of_coe_top_le_withTop le_rfl n)) A]
   simp only [mul_assoc]
 
 theorem phaseRescalingBudget_pos (s A : ℝ) (Q : ℕ) :

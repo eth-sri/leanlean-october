@@ -9,8 +9,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentEnergyZeroUnbalancedDeletedGeometry
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyReferenceDivisors CenteredMomentEnergyZeroReferenceGeometry
+open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyReferenceDivisors CenteredMomentEnergyZeroReferenceGeometry
 local notation "O" => HeckeFamily.O
 
 theorem actual_deleted_gates {Z Bmask bΦ : ℝ} (s : NaturalState Z Bmask bΦ)
@@ -30,14 +29,11 @@ theorem actual_deleted_gates {Z Bmask bΦ : ℝ} (s : NaturalState Z Bmask bΦ)
     ((along ≤ L ∧ length Z (Z ^ short) + length Z (Z ^ along) ≤ 5 * s.width / 6) ∨
       (0 < along ∧ max 0 (s.width - along + xi) + length Z (Z ^ short) ≤ 5 * s.width / 6)) := by
   dsimp only
-  have hZ0 : 0 < Z := zero_lt_one.trans hZ
   obtain ⟨hn₁, _⟩ := divisor_norm s D₁ hD₁
   obtain ⟨hn₂, hc₂⟩ := divisor_norm s D₂ hD₂
   have hl₁ := Real.logb_nonneg hZ hn₁
   have hlonglog := Real.logb_nonneg hZ hlong
-  have hu₂ : Real.logb Z ((∏ P ∈ D₂, P).absNorm : ℝ) ≤ Bmask :=
-    (Real.logb_le_iff_le_rpow hZ (zero_lt_one.trans_le hn₂)).mpr hc₂
-  have hM := s.width_nonneg
+  have hu₂ := (Real.logb_le_iff_le_rpow hZ (zero_lt_one.trans_le hn₂)).mpr hc₂
   have hL0 : 0 ≤ L := by linarith
   refine ⟨divided_scale_power Z X₁ _ hZ hX₁ (zero_lt_one.trans_le hn₁),
     divided_scale_power Z X₂ _ hZ hX₂ (zero_lt_one.trans_le hn₂),
@@ -46,14 +42,14 @@ theorem actual_deleted_gates {Z Bmask bΦ : ℝ} (s : NaturalState Z Bmask bΦ)
   have hlen (v : ℝ) : length Z (Z ^ v) = max 0 v := by
     rcases le_total 0 v with hv | hv
     · rw [length, max_eq_right (Real.one_le_rpow hZ.le hv),
-        Real.logb_rpow hZ0 hZ.ne', max_eq_right hv]
+        Real.logb_rpow (zero_lt_one.trans hZ) hZ.ne', max_eq_right hv]
     · rw [length, max_eq_left (Real.rpow_le_one_of_one_le_of_nonpos hZ.le hv),
         Real.logb_one, max_eq_left hv]
   simp only [hlen]
   rcases low_or_reflected s.width
     (Real.logb Z X₁ - Real.logb Z ((∏ P ∈ D₁, P).absNorm : ℝ))
     (Real.logb Z X₂ - Real.logb Z ((∏ P ∈ D₂, P).absNorm : ℝ))
-    xi hM (by linarith) hxi hxiM with hd | hr
+    xi (s.width_nonneg) (by linarith) hxi hxiM with hd | hr
   · refine Or.inl ⟨?_, hd⟩
     have hh₁ := le_max_right (0 : ℝ)
       (Real.logb Z X₂ - Real.logb Z ((∏ P ∈ D₂, P).absNorm : ℝ))

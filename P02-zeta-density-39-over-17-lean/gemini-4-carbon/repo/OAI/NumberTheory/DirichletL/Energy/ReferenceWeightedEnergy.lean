@@ -9,8 +9,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyReferenceWeightedEnergy
-open HeckeFamily ConcreteTraceCRT CenteredMomentCommonMaskEnergy
-open CenteredMomentOriginalRadialComparison
+open HeckeFamily ConcreteTraceCRT CenteredMomentCommonMaskEnergy CenteredMomentOriginalRadialComparison
 local notation "O"=>HeckeFamily.O
 
 lemma finite_weighted_energy {ι κ:Type*}[Fintype ι][Fintype κ]
@@ -43,7 +42,7 @@ theorem radial_weighted_energy {κ:Type*}[Fintype κ]
   apply Real.tsum_le_of_sum_le (fun z=>by split_ifs;exact mul_nonneg (sq_nonneg _) (hΦ z);exact le_rfl)
   intro rows
   let S:=rows.filter keep
-  let w(z:S):ℂ:=(Real.sqrt ((Φ (‖eisEmbedding z‖^2/K)).re):ℂ)
+  let w(z:S) :=(Real.sqrt ((Φ (‖eisEmbedding z‖^2/K)).re):ℂ)
   have hh:=finite_weighted_energy (fun z:S=>a z) (fun z:S=>fun j=>f z j*w z) ρ q hρ hq
     (fun z=>ha z (Finset.mem_filter.mp z.property).2) E hE ?_
   · have hsum(z:S):(∑j,a z j*(f z j*w z))=(∑j,a z j*f z j)*w z:=by
@@ -53,7 +52,6 @@ theorem radial_weighted_energy {κ:Type*}[Fintype κ]
     rw [CenteredMomentOriginalRadialComparison.finite_weighted rows keep (fun z=>∑j,a z j*f z j) Φ K hΦ] at hh
     exact hh
   · intro j
-    dsimp only [w]
     rw [CenteredMomentOriginalRadialComparison.finite_weighted rows keep (fun z=>f z j) Φ K hΦ]
     exact ((hs j).sum_le_tsum rows (fun z _=>by
       split_ifs;exact mul_nonneg (sq_nonneg _) (hΦ z);exact le_rfl)).trans (hf j)

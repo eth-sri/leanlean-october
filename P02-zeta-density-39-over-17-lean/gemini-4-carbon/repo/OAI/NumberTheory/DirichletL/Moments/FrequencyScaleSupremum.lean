@@ -34,8 +34,7 @@ theorem frequencyScaleSum_deriv (χ : Character) (inv : Bool) (W : ℝ→ℂ) (f
       HasDerivAt (fun t => (coefficient χ inv J*logPhase (freq/(2*Real.pi)) (Real.log (J.absNorm : ℝ)))*W ((J.absNorm : ℝ)*Real.exp (-t)))
         ((coefficient χ inv J*logPhase (freq/(2*Real.pi)) (Real.log (J.absNorm : ℝ)))*(deriv W ((J.absNorm : ℝ)*Real.exp (-l))*
           (-((J.absNorm : ℝ)*Real.exp (-l)) : ℝ))) l := by
-    have hy := ((hasDerivAt_id l).neg.exp).const_mul (J.absNorm : ℝ)
-    convert ((hW _).hasDerivAt.scomp l hy).const_mul ((coefficient χ inv J*logPhase (freq/(2*Real.pi)) (Real.log (J.absNorm : ℝ)))) using 1
+    convert ((hW _).hasDerivAt.scomp l (((hasDerivAt_id l).neg.exp).const_mul (J.absNorm : ℝ))).const_mul ((coefficient χ inv J*logPhase (freq/(2*Real.pi)) (Real.log (J.absNorm : ℝ)))) using 1
     · rfl
     · change (coefficient χ inv J*logPhase (freq/(2*Real.pi)) (Real.log (J.absNorm : ℝ)))*(deriv W ((J.absNorm : ℝ)*Real.exp (-l))*
           (-((J.absNorm : ℝ)*Real.exp (-l)) : ℝ))=
@@ -63,8 +62,7 @@ lemma ratio_frequency_phase (x l freq : ℝ) (hx : 0<x) :
   have hh := norm_phase x (Real.exp l) hx (Real.exp_pos l) 0 (freq/(2*Real.pi))
   rw [ht] at hh
   simp only [neg_zero,Complex.cpow_zero,one_mul,zero_re,zero_im,sub_zero] at hh
-  rw [←hh,Real.log_div hx.ne' (Real.exp_pos l).ne',Real.log_exp]
-  rw [show Real.log x-l=(-l)+Real.log x by ring,logPhase_add]
+  rw [←hh,Real.log_div hx.ne' (Real.exp_pos l).ne',Real.log_exp, show Real.log x-l=(-l)+Real.log x by ring,logPhase_add]
 
 theorem frequencyScaleSum_eq_polynomial (χ : Character) (inv : Bool) (W : ℝ→ℂ)
     (freq : ℝ) (S : Finset (Ideal O)) (l : ℝ)

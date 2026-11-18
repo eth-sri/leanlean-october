@@ -30,20 +30,17 @@ theorem pair_f_continuous {N : ℕ} [NeZero N] (w : Fin N × Fin N → ℂ) :
   intro t _
   simp only [pair, finitePair, Finset.sum_apply, Pi.smul_apply, smul_eq_mul]
 
-theorem theta_continuous {N : ℕ} [NeZero N] (w : Fin N × Fin N → ℂ) :
-    ContinuousOn (theta w) (Ioi 0) :=
-  (pair_f_continuous w).congr (fun _t ht => theta_eq_pair w ht)
 
 theorem theta_rapid {N : ℕ} [NeZero N] (w : Fin N × Fin N → ℂ) (r : ℝ) :
     (fun t => theta w t - w (0,0)) =O[atTop] (fun t : ℝ => t ^ r) := by
   apply ((pair w).hf_top r).congr' _ Filter.EventuallyEq.rfl
-  filter_upwards [eventually_gt_atTop (0 : ℝ)] with t ht
+  filter_upwards [eventually_gt_atTop 0] with t ht
   rw [theta_eq_pair w ht, pair_f₀]
 
 theorem scaledTheta_continuous {N : ℕ} [NeZero N] (w : Fin N × Fin N → ℂ)
     (A : ℝ) (hA : 0 < A) :
     ContinuousOn (fun t => theta w (A * t)) (Ioi 0) :=
-  (theta_continuous w).comp (by fun_prop) (fun t ht => mul_pos hA ht)
+  (((pair_f_continuous w).congr (fun _t ht => theta_eq_pair w ht))).comp (by fun_prop) (fun t ht => mul_pos hA ht)
 
 theorem scaledTheta_rapid {N : ℕ} [NeZero N] (w : Fin N × Fin N → ℂ)
     (A : ℝ) (hA : 0 < A) (r : ℝ) :

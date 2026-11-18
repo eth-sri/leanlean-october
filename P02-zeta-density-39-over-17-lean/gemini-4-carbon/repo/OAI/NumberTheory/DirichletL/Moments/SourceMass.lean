@@ -50,10 +50,7 @@ def tupleBox {r : ℕ} (H : Fin r → ℝ) : Finset (Fin r → Ideal O) :=
 lemma tupleBox_card {r : ℕ} (H : Fin r → ℝ) (hH : ∀ i, 0 ≤ H i) :
     ((tupleBox H).card:ℝ) ≤ 128^r * ∏ i, H i := by
   simp only [tupleBox,Fintype.card_piFinset,Nat.cast_prod]
-  calc
-    (∏ i, ((idealBall (H i)).card:ℝ)) ≤ ∏ i, 128*H i :=
-      Finset.prod_le_prod₀ (fun _ _ => Nat.cast_nonneg _) (fun i _ => idealBall_card _ (hH i))
-    _ = _ := by rw [Finset.prod_mul_distrib]; simp
+  exact (Finset.prod_le_prod₀ (fun _ _ => Nat.cast_nonneg _) (fun i _ => idealBall_card _ (hH i))).trans_eq (by rw [Finset.prod_mul_distrib]; simp)
 
 def profileProduct {r : ℕ} (W : Fin r → ℝ → ℂ) (q : Fin r → ℝ)
     (v : Fin r → Ideal O) : ℂ := ∏ i, W i ((Ideal.absNorm (v i):ℝ)/q i)
@@ -65,8 +62,7 @@ lemma profileProduct_mem_box {r : ℕ} (W : Fin r → ℝ → ℂ) (b q : Fin r 
     v ∈ tupleBox (fun i => b i*q i) := by
   apply (mem_tupleBox _ _).mpr
   intro i
-  have hw : W i ((Ideal.absNorm (v i):ℝ)/q i) ≠ 0 :=
-    (Finset.prod_ne_zero_iff.mp hv) i (Finset.mem_univ i)
+  have hw := (Finset.prod_ne_zero_iff.mp hv) i (Finset.mem_univ i)
   refine ⟨?_,(div_le_iff₀ (hq i)).mp (hs i _ hw)⟩
   intro hz
   apply hw
@@ -93,8 +89,7 @@ theorem profileProduct_mass {r : ℕ} (W : Fin r → ℝ → ℂ) (b q B : Fin r
   have hsub : F ⊆ tupleBox (fun i => b i*q i) := by
     intro v hv
     exact profileProduct_mem_box W b q hq hzero hs v (Finset.mem_filter.mp hv).2
-  have hcard : (F.card:ℝ) ≤ 128^r * ∏ i, b i*q i :=
-    (Nat.cast_le.mpr (Finset.card_le_card hsub)).trans
+  have hcard := (Nat.cast_le.mpr (Finset.card_le_card hsub)).trans
       (tupleBox_card _ (fun i => mul_nonneg (hb i) (hq i).le))
   rw [hsum]
   calc
@@ -194,15 +189,13 @@ theorem originalCoefficient_mem_sourcePool (N : ℕ) (c : O)
     (hv : originalCoefficient N c χ R t ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂ s v ≠ 0) :
     v ∈ sourcePool ν b P b₁ b₂ X₁ X₂ Y₁ Y₂ B₁ B₂ := by
   rw [originalCoefficient_factor] at hv
-  have hslots := (mul_ne_zero_iff.mp (mul_ne_zero_iff.mp (mul_ne_zero_iff.mp hv).1).1).1
-  have hd := (mul_ne_zero_iff.mp (mul_ne_zero_iff.mp hv).1).2
   apply Finset.mem_filter.mpr
-  refine ⟨?_,fun j => (Finset.prod_ne_zero_iff.mp hslots) j (Finset.mem_univ j)⟩
+  refine ⟨?_,fun j => (Finset.prod_ne_zero_iff.mp ((mul_ne_zero_iff.mp (mul_ne_zero_iff.mp (mul_ne_zero_iff.mp hv).1).1).1)) j (Finset.mem_univ j)⟩
   apply Finset.mem_union.mpr
   by_cases hx : profileProduct (sourceProfiles Wslot W₁ W₂) (sourceScales P X₁ X₂ B₁ B₂) v = 0
   · apply Or.inr
     have hy : profileProduct (sourceProfiles Wslot W₁ W₂) (sourceScales P Y₁ Y₂ B₁ B₂) v ≠ 0 := by
-      intro hy; exact hd (by rw [hx,hy,sub_self])
+      intro hy; exact ((mul_ne_zero_iff.mp (mul_ne_zero_iff.mp hv).1).2) (by rw [hx,hy,sub_self])
     exact profileProduct_mem_box _ _ _ (sourceScales_pos _ _ _ _ _ hP hY₁ hY₂ hB₁ hB₂) hzero hs v hy
   · exact Or.inl (profileProduct_mem_box _ _ _ (sourceScales_pos _ _ _ _ _ hP hX₁ hX₂ hB₁ hB₂) hzero hs v hx)
 
@@ -244,19 +237,14 @@ theorem originalCoefficient_profile_norm_le (N : ℕ) (c : O) (hc : c≠0)
   have hn : ‖∏ j,ν j (v (j.castAdd 2))‖≤1 := by
     rw [norm_prod]
     exact Finset.prod_le_one₀ (fun _ _ => norm_nonneg _) (fun j _ => hν j _)
-  have hw := idealWeight_norm_le_one c hc χ R t (tupleProduct v) hv
   rw [originalCoefficient_factor,norm_mul,norm_mul,norm_mul]
   have hm : ‖(if s∣tupleProduct v then 1 else 0 : ℂ)‖≤1 := by split_ifs <;> norm_num
   have hnw : ‖∏ j,ν j (v (j.castAdd 2))‖*‖idealWeight c χ R t (tupleProduct v)‖≤1 := by
-    simpa only [one_mul] using mul_le_mul hn hw (norm_nonneg _) zero_le_one
-  calc
-    _ ≤ (1*‖profileProduct (sourceProfiles Wslot W₁ W₂) (sourceScales P X₁ X₂ B₁ B₂) v-
-        profileProduct (sourceProfiles Wslot W₁ W₂) (sourceScales P Y₁ Y₂ B₁ B₂) v‖)*1 :=
-      mul_le_mul (mul_le_mul_of_nonneg_right hnw (norm_nonneg _)) hm (norm_nonneg _) (by positivity)
-    _ ≤ _ := by
-      simpa only [one_mul,mul_one] using norm_sub_le
+    simpa using mul_le_mul hn (idealWeight_norm_le_one c hc χ R t (tupleProduct v) hv) (norm_nonneg _) zero_le_one
+  exact (mul_le_mul (mul_le_mul_of_nonneg_right hnw (norm_nonneg _)) hm (norm_nonneg _) (by positivity)).trans (by
+      simpa using norm_sub_le
         (profileProduct (sourceProfiles Wslot W₁ W₂) (sourceScales P X₁ X₂ B₁ B₂) v)
-        (profileProduct (sourceProfiles Wslot W₁ W₂) (sourceScales P Y₁ Y₂ B₁ B₂) v)
+        (profileProduct (sourceProfiles Wslot W₁ W₂) (sourceScales P Y₁ Y₂ B₁ B₂) v))
 
 def sourceMassConstant {N : ℕ} (b D : Fin N → ℝ) (b₁ b₂ D₁ D₂ : ℝ) : ℝ :=
   2*128^(N+2)*(∏ j,D j)*D₁*D₂*(∏ j,b j)*b₁*b₂
@@ -297,13 +285,9 @@ theorem originalCoefficient_mass (N : ℕ) (c : O) (hc : c≠0)
     (sourceBounds_nonneg D D₁ D₂ hD hD₁ hD₂) hzero hs hW S
   rw [source_coordinate_product b P b₁ b₂ X₁ X₂ T B₁ B₂ hX,sourceBounds_product] at hx
   rw [source_coordinate_product b P b₁ b₂ Y₁ Y₂ T B₁ B₂ hY,sourceBounds_product] at hy
-  calc
-    _ ≤ ∑ v ∈ S, (‖profileProduct (sourceProfiles Wslot W₁ W₂) (sourceScales P X₁ X₂ B₁ B₂) v‖+
-        ‖profileProduct (sourceProfiles Wslot W₁ W₂) (sourceScales P Y₁ Y₂ B₁ B₂) v‖) :=
-      Finset.sum_le_sum (fun v _ => hpoint v)
-    _ ≤ _ := by
+  exact (Finset.sum_le_sum (fun v _ => hpoint v)).trans (by
       rw [Finset.sum_add_distrib]
-      exact (add_le_add hx hy).trans_eq (by unfold sourceRadius sourceMassConstant; ring)
+      exact (add_le_add hx hy).trans_eq (by unfold sourceRadius sourceMassConstant; ring))
 
 theorem originalCoefficient_product_bound (N : ℕ) (c : O)
     (χ : MulChar (O ⧸ Ideal.span {c}) ℂ) (R : Ideal O) (t : ℝ)
@@ -333,10 +317,7 @@ def finiteColumnCoefficient {ι : Type*} [Fintype ι] (S : Finset (Tuple ι))
 lemma finiteColumnCoefficient_mass {ι : Type*} [Fintype ι] (S : Finset (Tuple ι))
     (β : Tuple ι → ℂ) :
     (∑ I ∈ finiteColumns S, ‖finiteColumnCoefficient S β I‖) ≤ ∑ v ∈ S, ‖β v‖ := by
-  calc
-    _ ≤ ∑ I ∈ finiteColumns S, ∑ v ∈ S.filter (fun v => finiteTupleProduct v=I), ‖β v‖ :=
-      Finset.sum_le_sum (fun I _ => norm_sum_le _ _)
-    _ = _ := Finset.sum_fiberwise_of_maps_to (fun v hv => Finset.mem_image.mpr ⟨v,hv,rfl⟩) _
+  exact (Finset.sum_le_sum (fun I _ => norm_sum_le _ _)).trans_eq (Finset.sum_fiberwise_of_maps_to (fun v hv => Finset.mem_image.mpr ⟨v,hv,rfl⟩) _)
 
 lemma finite_original_mass_reindex {ι : Type*} [Fintype ι] {n : ℕ} (e : ι≃Fin n)
     (c : O) (χ : MulChar (O ⧸ Ideal.span {c}) ℂ) (R : Ideal O) (t : ℝ)

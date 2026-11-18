@@ -12,8 +12,7 @@ public import MathCollab.Density.Stronger.Atkinson.BesselTransformBridge
 
 @[expose] public section
 
-open Complex Set MeasureTheory Filter Topology
-open MathCollab.Density.Contour MathCollab.Density.Stronger.PointMean
+open Complex Set MeasureTheory Filter Topology MathCollab.Density.Contour MathCollab.Density.Stronger.PointMean
 open scoped Interval
 set_option autoImplicit false
 noncomputable section
@@ -40,14 +39,13 @@ private theorem tendsto_rectangleIntegral'_vertical_sub
       (nhds (c * ∫ u : ℝ, f ((a : ℂ) + (u : ℂ) * I))) :=
     (intervalIntegral_tendsto_integral hIntA
       tendsto_neg_atTop_atBot tendsto_id).const_mul c
-  have hEdges := (hBottom.sub hTop).add (hRight.sub hLeft)
   have hExpanded : Tendsto (fun R : ℝ =>
       HIntegral' f a b (-R) - HIntegral' f a b R +
         ((c * ∫ u in (-R)..R, f ((b : ℂ) + (u : ℂ) * I)) -
           c * ∫ u in (-R)..R, f ((a : ℂ) + (u : ℂ) * I))) atTop
       (nhds (c * (∫ u : ℝ, f ((b : ℂ) + (u : ℂ) * I)) -
         c * (∫ u : ℝ, f ((a : ℂ) + (u : ℂ) * I)))) := by
-    simpa only [zero_sub, neg_zero, zero_add] using hEdges
+    simpa only [zero_sub, neg_zero, zero_add] using ((hBottom.sub hTop).add (hRight.sub hLeft))
   have hRectangle : Tendsto (fun R : ℝ =>
       RectangleIntegral' f
         ((a : ℂ) - (R : ℂ) * I) ((b : ℂ) + (R : ℂ) * I)) atTop
@@ -89,8 +87,7 @@ private theorem verticalIntegral'_sub_eq_of_eventual_rectangle
   have hLimit := tendsto_rectangleIntegral'_vertical_sub
     hBottom hTop hIntA hIntB
   have hConst : Tendsto (fun _R : ℝ => A) atTop (nhds A) := tendsto_const_nhds
-  have hLimitA := hConst.congr' (hFinite.mono fun _ h => h.symm)
-  exact tendsto_nhds_unique hLimit hLimitA
+  exact tendsto_nhds_unique hLimit (hConst.congr' (hFinite.mono fun _ h => h.symm))
 
 theorem DFIVoronoiTestFunction.minusIntegrand_finite_rectangle (q : ℕ) [NeZero q]
     {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) {n : ℕ} (hn : 0<n)
@@ -101,7 +98,7 @@ theorem DFIVoronoiTestFunction.minusIntegrand_finite_rectangle (q : ℕ) [NeZero
     intro z hz
     exact (differentiableAt_dfiVoronoiMinusIntegrand q hg hn hz).differentiableWithinAt
   have hr := hh.vanishesOnRectangle (z := (-(1/2) : ℂ)-(H:ℂ)*I)
-    (w := (13/16 : ℂ)+(H:ℂ)*I) (by
+    (w := (13/16)+(H:ℂ)*I) (by
       intro z hz
       have hzre := hz.1
       change z.re ∈ Set.uIcc _ _ at hzre
@@ -117,9 +114,9 @@ theorem DFIVoronoiTestFunction.minusTransform_eq_thirteenSixteenths
       PointMean.VerticalIntegral' (dfiVoronoiMinusIntegrand q g n) (13/16) := by
   obtain ⟨htop,hbottom⟩ := hg.minusIntegrand_horizontal_limits q hn
   have ha := hg.integrable_minusIntegrand_vertical q hn
-    (σ := -(1/2 : ℝ)) (by norm_num) (by norm_num)
+    (σ := -(1/2)) (by norm_num) (by norm_num)
   have hb := hg.integrable_minusIntegrand_vertical q hn
-    (σ := (13/16 : ℝ)) (by norm_num) (by norm_num)
+    (σ := (13/16)) (by norm_num) (by norm_num)
   have h := verticalIntegral'_sub_eq_of_eventual_rectangle hbottom htop ha hb
     (A := 0) (Eventually.of_forall fun H => by
       simpa using hg.minusIntegrand_finite_rectangle q hn H)

@@ -45,14 +45,12 @@ theorem exists_interval_frequency {α β : Type*} (S : Finset α) (T : Finset β
         (𝓕 g) u*phasePolynomial S a x u*phasePolynomial T b y u‖ ≤
         (∫ u : ℝ, ‖(𝓕 g) u‖)*
           ‖phasePolynomial S a x t*phasePolynomial T b y t‖ := by
-  have hf : Continuous (fun u => phasePolynomial S a x u * phasePolynomial T b y u) :=
-    (phasePolynomial_continuous S a x).mul (phasePolynomial_continuous T b y)
   have hi : Integrable (fun u => (𝓕 g) u *
       (phasePolynomial S a x u * phasePolynomial T b y u)) := by
     simpa only [mul_assoc] using separated_pair_integrable S T a b x y g
   obtain ⟨t, ht, hb⟩ := exists_interval_norm_product
     (fun u => phasePolynomial S a x u * phasePolynomial T b y u)
-    (fun u => (𝓕 g) u) hf (𝓕 g).integrable hi R hR
+    (fun u => (𝓕 g) u) ((phasePolynomial_continuous S a x).mul (phasePolynomial_continuous T b y)) (𝓕 g).integrable hi R hR
   exact ⟨t, ht, by simpa only [mul_assoc] using hb⟩
 
 private theorem integral_sub_interval_norm_le (f w : ℝ → ℂ) (E R : ℝ)
@@ -60,18 +58,15 @@ private theorem integral_sub_interval_norm_le (f w : ℝ → ℂ) (E R : ℝ)
     (hbound : ∀ u, ‖f u‖ ≤ E * ‖w u‖) :
     ‖(∫ u : ℝ, f u) - (∫ u : ℝ in Set.Icc (-R) R, f u)‖ ≤
       E * (∫ u : ℝ in {u | R < ‖u‖}, ‖w u‖) := by
-  have hsplit := integral_add_compl (s := Set.Icc (-R) R) measurableSet_Icc hf
   have heq : (∫ u : ℝ, f u) - (∫ u : ℝ in Set.Icc (-R) R, f u) =
       ∫ u : ℝ in {u | R < ‖u‖}, f u := by
-    rw [← hsplit, frequency_interval_compl]
+    rw [← (integral_add_compl (s := Set.Icc (-R) R) measurableSet_Icc hf), frequency_interval_compl]
     abel
   rw [heq]
-  have hm : MeasurableSet {u : ℝ | R < ‖u‖} :=
-    measurableSet_lt measurable_const continuous_norm.measurable
   calc
     _ ≤ ∫ u : ℝ in {u | R < ‖u‖}, ‖f u‖ := norm_integral_le_integral_norm _
     _ ≤ ∫ u : ℝ in {u | R < ‖u‖}, E * ‖w u‖ :=
-      setIntegral_mono_on hf.norm.integrableOn (hw.norm.const_mul E).integrableOn hm
+      setIntegral_mono_on hf.norm.integrableOn (hw.norm.const_mul E).integrableOn (measurableSet_lt measurable_const continuous_norm.measurable)
         (fun u _ => hbound u)
     _ = _ := integral_const_mul _ _
 
@@ -138,8 +133,7 @@ theorem exists_bounded_frequency {α β : Type*} (S : Finset α) (T : Finset β)
   obtain ⟨t,ht,hb⟩ := exists_interval_frequency S T a b x y g R hR.le
   refine ⟨t,ht,?_⟩
   rw [finite_pair_separation]
-  have htail := separated_pair_tail S T a b x y g R hR N
-  exact (norm_le_norm_sub_add _ _).trans (add_le_add htail hb)
+  exact (norm_le_norm_sub_add _ _).trans (add_le_add (separated_pair_tail S T a b x y g R hR N) hb)
 
 end
 end SevenEighths.HeckeDetectorFourier

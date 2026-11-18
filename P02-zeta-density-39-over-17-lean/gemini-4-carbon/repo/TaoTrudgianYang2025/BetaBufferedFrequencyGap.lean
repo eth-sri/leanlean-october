@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaBufferedNonstationary
 public import TaoTrudgianYang2025.BetaInverseStability
 
@@ -26,7 +36,7 @@ theorem approximateModelPhase_firstDeriv_bounds
     {u : ℝ} (hu : u ∈ Ioo (1 : ℝ) 2) :
     (2 : ℝ)^(-σ)-δ ≤ deriv F u ∧ deriv F u ≤ 1+δ := by
   have he := (abs_le.mp (approximateModelPhase_firstDeriv_error hF hu))
-  have hlow : (2 : ℝ)^(-σ) ≤ u^(-σ) :=
+  have hlow : 2^(-σ) ≤ u^(-σ) :=
     Real.rpow_le_rpow_of_nonpos (zero_lt_one.trans hu.1) hu.2.le (by linarith)
   have hhigh : u^(-σ) ≤ 1 :=
     Real.rpow_le_one_of_one_le_of_nonpos hu.1.le (by linarith)
@@ -61,7 +71,7 @@ theorem norm_modelPhaseBufferedFourierMode_of_frequency_gap
     (hgap : q ≤ (T/N)*((2 : ℝ)^(-σ)-δ)-d ∨ (T/N)*(1+δ)+d ≤ q) :
     ‖modelPhaseFourierMode (modelPhaseBufferedCutoff l r η) F T N q‖ ≤
       4/(d*Real.pi) := by
-  have hg : q*N ≤ T*((2 : ℝ)^(-σ)-δ)-N*d ∨ T*(1+δ)+N*d ≤ q*N := by
+  have hg : q*N ≤ T*(2^(-σ)-δ)-N*d ∨ T*(1+δ)+N*d ≤ q*N := by
     have he (c : ℝ) : (T/N)*c*N = T*c := by field_simp
     rcases hgap with hp | hn
     · left

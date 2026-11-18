@@ -26,7 +26,7 @@ lemma gaussianJointMoment_power_bound (V : SchwartzMap ℝ ℂ) (hV : HasCompact
   obtain ⟨L,hL,hbox⟩ := hV.isBounded.exists_pos_norm_le
   have hb : ∀s,V s≠0→|s|≤L := by
     intro s hs
-    simpa only [Real.norm_eq_abs] using hbox s (subset_tsupport V hs)
+    simpa using hbox s (subset_tsupport V hs)
   exact gaussianLogWindow_fourier_moment V hV L hL.le hb A J
 
 lemma gaussianJointMoment_polynomial_decay (V : SchwartzMap ℝ ℂ)

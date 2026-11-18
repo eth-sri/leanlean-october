@@ -72,8 +72,8 @@ lemma primeIndex_conjugate_cubic_row (I : Ideal O) (hI : Admissible I) (z : O) :
     simp only [finiteSexticRow, ← Finset.prod_pow]
     apply Finset.prod_congr rfl
     intro P hP
-    rw [MulChar.pow_apply' _ (by decide : (4 : ℕ) ≠ 0),
-      MulChar.pow_apply' _ (by decide : (2 : ℕ) ≠ 0), ← pow_mul]
+    rw [MulChar.pow_apply' _ (by decide : 4 ≠ 0),
+      MulChar.pow_apply' _ (by decide : 2 ≠ 0), ← pow_mul]
   rw [he, primeIndex_cubic_row I hI, cubicRow_square_eq_star]
 
 lemma pairPrime_row (I J : Ideal O) (hI : Admissible I) (hJ : Admissible J) (z : O) :

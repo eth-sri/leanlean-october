@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbeGramCommon
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open CenteredMomentCorrelation CenteredMomentCanonical CenteredMomentSupportedCorrelation
+open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss CenteredMomentCorrelation CenteredMomentCanonical CenteredMomentSupportedCorrelation
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [Fintype ι]
 
@@ -23,10 +21,7 @@ lemma globalExtension_norm (P : ι→Ideal O) [∀i,(P i).IsMaximal]
     (hg : ∀i,goodLambda∉P i) (c : ι→ℕ) (hc : ∀i,1≤c i) (n₁ n₂ k : O) :
     ‖globalExtension P hg c n₁ n₂ k‖≤(Ideal.absNorm (∏i,P i^c i):ℝ) := by
   rw [globalExtension,norm_prod]
-  calc
-    _ ≤ ∏i,(Ideal.absNorm (P i):ℝ)^c i :=
-      Finset.prod_le_prod₀ (fun _ _=>norm_nonneg _) (fun i _=>localExtension_norm (P i) (hg i) (c i) (hc i) n₁ n₂ k)
-    _ = _ := by simp only [map_prod,map_pow,Nat.cast_prod,Nat.cast_pow]
+  exact (Finset.prod_le_prod₀ (fun _ _=>norm_nonneg _) (fun i _=>localExtension_norm (P i) (hg i) (c i) (hc i) n₁ n₂ k)).trans_eq (by simp only [map_prod,map_pow,Nat.cast_prod,Nat.cast_pow])
 
 theorem globalExtension_periodic (P : ι→Ideal O) [∀i,(P i).IsMaximal]
     (hg : ∀i,goodLambda∉P i) (c : ι→ℕ) (n₁ n₂ m₁ m₂ k l : O)
@@ -59,8 +54,7 @@ theorem canonical_common_extension (P : ι→Ideal O) [∀i,(P i).IsMaximal]
         (fun y : O⧸P i^c i=>Ideal.Quotient.mk _ n₁*y)
         (primePowerRow (P i) (hg i) (hc i)) (primePowerRow (P i) (hg i) (hc i))
         (Ideal.Quotient.mk _ k) := by
-    simpa only [IdealGaussCRT.quotientProdEquivPi_mk
-      (fun i => P i ^ c i) hpc] using he
+    simpa using he
   rw [hprod]
   apply Finset.prod_congr rfl
   intro i hi
@@ -68,7 +62,7 @@ theorem canonical_common_extension (P : ι→Ideal O) [∀i,(P i).IsMaximal]
   by_contra h
   push Not at h
   obtain ⟨a,b,hab⟩ := hn
-  have hmem : (1:O)∈P i := by
+  have hmem : 1∈P i := by
     rw [←hab]
     exact (P i).add_mem ((P i).mul_mem_left a h.1) ((P i).mul_mem_left b h.2)
   exact (Ideal.IsMaximal.ne_top (I:=P i) inferInstance) ((Ideal.eq_top_iff_one (P i)).mpr hmem)

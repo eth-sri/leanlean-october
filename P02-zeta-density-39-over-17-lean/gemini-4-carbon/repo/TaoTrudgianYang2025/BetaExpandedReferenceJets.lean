@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaExpandedModelJets
 
 @[expose] public section
@@ -51,9 +61,7 @@ theorem reciprocalModel_hasDerivAt_inverse_curvature
 theorem referenceModelPrimitive_secondDeriv_reciprocal_ne_zero
     {σ v : ℝ} (hσ : 0 < σ) (hv : 0 < v) :
     deriv (deriv (referenceModelPrimitive σ)) (v^(-σ⁻¹)) ≠ 0 := by
-  have hi := reciprocalModel_hasDerivAt_inverse_curvature hσ hv
-  have hp := Real.hasDerivAt_rpow_const (p := -σ⁻¹) (Or.inl hv.ne')
-  have he := hi.unique hp
+  have he := (reciprocalModel_hasDerivAt_inverse_curvature hσ hv).unique (Real.hasDerivAt_rpow_const (p := -σ⁻¹) (Or.inl hv.ne'))
   intro hz
   rw [hz,inv_zero] at he
   have hn : (-σ⁻¹)*v^(-σ⁻¹-1) ≠ 0 :=
@@ -87,8 +95,7 @@ theorem expandedReferenceInverseJet_hasDerivAt
             (deriv (deriv (referenceModelPrimitive σ)) (v^(-σ⁻¹)))⁻¹) v :=
         HasDerivAt.comp v (h₂ := iteratedDeriv 2 (referenceModelPrimitive σ))
           hc.hasDerivAt hi
-      have hh := hcomp.inv hne
-      convert hh using 1
+      convert (hcomp.inv hne) using 1
       · funext w
         simp only [expandedReferenceInverseJet,Pi.inv_apply,
           iteratedDeriv_succ,iteratedDeriv_zero]

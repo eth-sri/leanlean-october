@@ -25,7 +25,7 @@ lemma initialHighMajorant_nonneg (σ υ ξ : ℝ) (p : FullHighIndex) :
 lemma initialHighMajorant_summable (σ υ ξ : ℝ) (hσ : 3/2<σ) (hυ : 2<υ) (hξ : 1<ξ) :
     Summable (initialHighMajorant σ υ ξ) := by
   exact (frequencyWeight_summable_norm (ξ:ℂ) hξ).mul_of_nonneg
-    (highAbsoluteMajorant_summable (σ:ℂ) (υ:ℂ) (ξ:ℂ) hσ hυ (by simpa using (show (1/6:ℝ)<ξ by linarith)))
+    (highAbsoluteMajorant_summable (σ:ℂ) (υ:ℂ) (ξ:ℂ) hσ hυ (by simpa using (show (1/6)<ξ by linarith)))
     (fun _=>norm_nonneg _) (highAbsoluteMajorant_nonneg _ _ _)
 
 lemma frequencyWeight_norm_eq_of_re (z z' : ℂ) (h : z.re=z'.re) (H : NonzeroFrequency) :
@@ -65,20 +65,9 @@ lemma fullHighCoefficient_norm_le (S : Finset (Ideal O)) (D : Ideal O) (η : Hec
 lemma fullHighCoefficient_continuous (S : Finset (Ideal O)) (D : Ideal O) (η : HeckeFamily.Character)
     (mask : NonzeroFrequency→ℂ) (p : FullHighIndex) :
     Continuous (fun q : (ℂ × ℂ) × ℂ => fullHighCoefficient S D η mask q.1.1 q.1.2 q.2 p) := by
-  have hH : (elementNorm p.1.val:ℂ)≠0 := Complex.ofReal_ne_zero.mpr (elementNorm_pos _ p.1.property).ne'
   unfold fullHighCoefficient frequencyWeight markedIdealHighSummand bareIdealHighSummand
-  have hc : Continuous (fun q : (ℂ × ℂ) × ℂ => (elementNorm p.1.val:ℂ)^(-q.2)) :=
-    continuous_snd.neg.const_cpow (Or.inl hH)
-  have h1 : Continuous (fun q : (ℂ × ℂ) × ℂ => fullIdealWeight (q.1.1+1/2) p.2.1.1) :=
-    (fullIdealWeight_continuous _).comp (by fun_prop)
-  have h2 : Continuous (fun q : (ℂ × ℂ) × ℂ => fullIdealWeight (1+3*q.1.1) p.2.1.2) :=
-    (fullIdealWeight_continuous _).comp (by fun_prop)
-  have h3 : Continuous (fun q : (ℂ × ℂ) × ℂ => fullIdealWeight q.1.2 p.2.2.1) :=
-    (fullIdealWeight_continuous _).comp (by fun_prop)
-  have h4 : Continuous (fun q : (ℂ × ℂ) × ℂ => fullIdealWeight (6*q.2) p.2.2.2) :=
-    (fullIdealWeight_continuous _).comp (by fun_prop)
-  exact (continuous_const.mul hc).mul
-    (continuous_const.mul ((((continuous_const.mul h1).mul h2).mul h3).mul h4))
+  exact (continuous_const.mul (continuous_snd.neg.const_cpow (Or.inl (Complex.ofReal_ne_zero.mpr (elementNorm_pos _ p.1.property).ne')))).mul
+    (continuous_const.mul ((((continuous_const.mul ((fullIdealWeight_continuous _).comp (by fun_prop))).mul ((fullIdealWeight_continuous _).comp (by fun_prop))).mul ((fullIdealWeight_continuous _).comp (by fun_prop))).mul ((fullIdealWeight_continuous _).comp (by fun_prop))))
 
 end SevenEighths.ProbePhysical
 end

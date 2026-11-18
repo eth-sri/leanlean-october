@@ -11,15 +11,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstPhysicalSource
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion
-open CenteredMomentSourceRow CenteredMomentRowNorm
-open CenteredMomentFirstSectors CenteredMomentFirstSectorEnergy CenteredMomentFirstSectorTransform
-open CenteredMomentCanonicalFirst CenteredMomentFirstCanonicalFamily CenteredMomentCompleteCommon
-open CenteredMomentSupportedCorrelation CenteredMomentCommonSupport CenteredMomentActive
-open CenteredMomentFirstReduced CenteredMomentFirstFrequency CenteredMomentFirstWholeKernel
-open CenteredMomentFirstColumns CenteredMomentFirstAssembly CenteredMomentGaussEnergy
-open CenteredMomentSmooth CenteredMomentScale CenteredMomentPrimitive IdealMobiusDivisorSum
+open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CenteredMomentSourceRow CenteredMomentRowNorm CenteredMomentFirstSectors CenteredMomentFirstSectorEnergy CenteredMomentFirstSectorTransform CenteredMomentCanonicalFirst CenteredMomentFirstCanonicalFamily CenteredMomentCompleteCommon CenteredMomentSupportedCorrelation CenteredMomentCommonSupport CenteredMomentActive CenteredMomentFirstReduced CenteredMomentFirstFrequency CenteredMomentFirstWholeKernel CenteredMomentFirstColumns CenteredMomentFirstAssembly CenteredMomentGaussEnergy CenteredMomentSmooth CenteredMomentScale CenteredMomentPrimitive IdealMobiusDivisorSum
 local notation "O"=>ActualEisensteinCubic.O
 
 def columns (C D:Ideal O)(hD:D≠0)(S:Finset (Ideal O)):Finset (Ideal O):=
@@ -115,11 +107,6 @@ theorem block_eq_whole (η:Character)(m A:O)(t:ℝ)(S:Finset (Ideal O))(c:Ideal 
             (Real.log ((k/‖eisEmbedding r‖^2)/K₀)) (Real.log (‖eisEmbedding h‖^2/H₀))
             (Real.log (‖eisEmbedding (element C C hC.1 S a)‖^2/A₀))
             (Real.log (‖eisEmbedding (element C D hD.1 S b)‖^2/B₀)):=by
-  dsimp only
-  have he:primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E≠0:=
-    supported_element_ne_zero _ (subsetGenerator_supported C D hC E)
-  have hk:0<K/‖eisEmbedding (primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E)‖^2:=
-    div_pos hK (sq_pos_of_pos (norm_pos_iff.mpr (eisEmbedding_ne_zero he)))
   unfold block scalar
   simp only [Finset.mul_sum]
   apply Finset.sum_congr rfl
@@ -141,9 +128,8 @@ theorem block_eq_whole (η:Character)(m A:O)(t:ℝ)(S:Finset (Ideal O))(c:Ideal 
       (element_supported C C hC.1 S a) (element_supported C D hD.1 S b)
       ((hcop.mpr hab).mul_right (element_coprime_active C D C hC.1 hD.1 hC.1 hCD S a))
       (element_coprime_active C D D hC.1 hD.1 hD.1 hCD S b)
-      _ hk h (hrows h hh) W V K₀ H₀ A₀ B₀ hK₀ hH₀ hA₀ hB₀
+      _ (div_pos hK (sq_pos_of_pos (norm_pos_iff.mpr (eisEmbedding_ne_zero (supported_element_ne_zero _ (subsetGenerator_supported C D hC E)))))) h (hrows h hh) W V K₀ H₀ A₀ B₀ hK₀ hH₀ hA₀ hB₀
     dsimp only at hh
-    change inactiveWeight C D E * (_*_*_*_)=_
     calc
       _=inactiveWeight C D E*(coefficient η m A t c C a*star (coefficient η m A t c D b))*
         (dilatedFrequency (activePrime C D) (activeCoprime C D) (activeGood C D hC)

@@ -15,8 +15,7 @@ public import Mathlib.Analysis.Complex.ExponentialBounds
 
 @[expose] public section
 
-open Complex Set MeasureTheory Filter
-open MathCollab.Density.Contour
+open Complex Set MeasureTheory Filter MathCollab.Density.Contour
 open scoped Topology Interval
 set_option autoImplicit false
 noncomputable section
@@ -38,9 +37,8 @@ theorem heathBrownZetaSquareMellinIntegrand_eq_gammaPoleCleared
     {s w : ℂ} (hw : w ≠ 0) :
     heathBrownZetaSquareMellinIntegrand s w =
       heathBrownGammaPoleNumerator s w / w := by
-  have hRec := Complex.Gamma_add_one w hw
   unfold heathBrownZetaSquareMellinIntegrand heathBrownGammaPoleNumerator
-  rw [hRec]
+  rw [(Complex.Gamma_add_one w hw)]
   field_simp [hw]
 
 /-- Finite shift across Gamma's pole.  The condition `d < Re(1-s)` keeps the

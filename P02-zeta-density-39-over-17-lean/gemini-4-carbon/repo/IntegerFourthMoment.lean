@@ -41,13 +41,13 @@ theorem int_reciprocal_square_budget (A : Finset ℤ)
         rw [Int.natCast_natAbs, abs_of_nonpos hn0, neg_neg]⟩)
   have hp : (∑ n ∈ P, (n : ℝ)⁻¹ ^ 2) = ∑ n ∈ B, ((n : ℝ)^2)⁻¹ := by
     rw [show P = B.image (fun n : ℕ => (n : ℤ)) from rfl, sum_image]
-    · simp only [Int.cast_natCast, inv_pow]
+    · simp
     · intro a _ b _ hab
       change (a : ℤ) = (b : ℤ) at hab
       exact_mod_cast hab
   have hq : (∑ n ∈ Q, (n : ℝ)⁻¹ ^ 2) = ∑ n ∈ B, ((n : ℝ)^2)⁻¹ := by
     rw [show Q = B.image (fun n : ℕ => -(n : ℤ)) from rfl, sum_image]
-    · simp only [Int.cast_neg, Int.cast_natCast, inv_neg, neg_sq, inv_pow]
+    · simp
     · intro a _ b _ hab
       exact_mod_cast neg_injective hab
   calc
@@ -80,8 +80,7 @@ theorem cyclicPhase_mean_zero {N : ℕ} [NeZero N] {n : ℤ}
     (∑ x : ZMod N, cyclicPhase n x) = 0 := by
   have hcast : (n : ZMod N) ≠ 0 := by
     intro he
-    have hd := (ZMod.intCast_zmod_eq_zero_iff_dvd n N).mp he
-    have hd' : N ∣ n.natAbs := by exact_mod_cast Int.natAbs_dvd_natAbs.mpr hd
+    have hd' : N ∣ n.natAbs := by exact_mod_cast Int.natAbs_dvd_natAbs.mpr ((ZMod.intCast_zmod_eq_zero_iff_dvd n N).mp he)
     exact (Nat.not_dvd_of_pos_of_lt (Int.natAbs_pos.mpr hn) hN) hd'
   simpa only [cyclicPhase, AddChar.mulShift_apply, mul_comm] using
     AddChar.sum_eq_zero_of_ne_one (ZMod.isPrimitive_stdAddChar N hcast)

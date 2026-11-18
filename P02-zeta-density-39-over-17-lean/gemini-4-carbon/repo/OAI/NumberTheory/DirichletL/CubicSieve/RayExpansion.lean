@@ -7,76 +7,11 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-
-open scoped BigOperators Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 namespace FirstPassCubeLabels
 
 section
-open ActualEisensteinCubic
 open MixedCrossSeparation (quadraticCrossPhase)
 open FirstCauchyArithmetic (supportMobius supportRay supportIdealFamily supportIdealFamily_pos
   supportIdealFamily_good recoveredSupport firstPassColumnMinus firstPassColumnPlus)
@@ -139,11 +74,8 @@ theorem threeGaussRowFactor_eq_ray_columns {ι : Type*} [DecidableEq ι]
 
 end
 
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory
 
 section
-open ActualEisensteinCubic
 open FourierBridge (logPhase logPhase_norm logPhase_continuous_left)
 open EisensteinSchwartzPoisson (paperRadialFourier)
 
@@ -157,7 +89,6 @@ def logTwistPlus {ι : Type*} (C : Finset ι → ℂ) (V : ℝ → ℂ)
 
 end
 
-open ActualEisensteinCubic
 open ConcreteTraceCRT (eisEmbedding eisEmbedding_ne_zero)
 open EisensteinSchwartzPoisson (paperRadialFourier)
 
@@ -178,7 +109,6 @@ def columnLog {ι : Type*} (p : ι → O) (X : ℝ) (S : Finset ι) : ℝ :=
 
 end FirstPassCubeLabels
 
-open scoped BigOperators Classical
 namespace QuadraticDivisorSplit
 abbrev O := ActualEisensteinCubic.O
 
@@ -210,8 +140,7 @@ theorem split_product_injective (B C : Ideal O) (hBC : IsCoprime B C) :
     Function.Injective (fun x : {x : Ideal O × Ideal O // x.1 ∣ B ∧ x.2 ∣ C} =>
       x.val.1 * x.val.2) := by
   intro x y hxy
-  have hD : x.val.1 * x.val.2 ∣ B * C := mul_dvd_mul x.property.1 x.property.2
-  obtain ⟨z, hz, huniq⟩ := exists_unique_split B C (x.val.1 * x.val.2) hBC hD
+  obtain ⟨z, hz, huniq⟩ := exists_unique_split B C (x.val.1 * x.val.2) hBC (mul_dvd_mul x.property.1 x.property.2)
   apply Subtype.ext
   exact (huniq x.val ⟨x.property.1, x.property.2, rfl⟩).trans
     (huniq y.val ⟨y.property.1, y.property.2, hxy.symm⟩).symm

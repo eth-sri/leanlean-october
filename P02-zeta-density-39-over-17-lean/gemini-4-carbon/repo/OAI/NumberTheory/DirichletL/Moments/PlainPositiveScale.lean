@@ -8,30 +8,26 @@ namespace OAI
 noncomputable section
 open scoped Classical SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentPlainPositiveScale
-open HeckeFamily HeckeDyadic CenteredMomentPlainGlobalActual CenteredMomentPlainGlobalEnergy
-open CenteredMomentHeckeTwist CenteredMomentDetectorDictionary
+open HeckeFamily HeckeDyadic CenteredMomentPlainGlobalActual CenteredMomentPlainGlobalEnergy CenteredMomentHeckeTwist CenteredMomentDetectorDictionary
 
  theorem small_polynomial (χ:Character)(W:SchwartzMap ℝ ℂ)(a b:ℝ)(ha:0<a)
     (hWs:Function.support (W:ℝ→ℂ)⊆Set.Icc a b)(D freq:ℝ)(hD:0<D)(hD1:D≤1):
     ‖polynomial χ false W D 0 freq‖≤
       (128*max 0 b)*(SchwartzMap.seminorm ℝ 0 0 W):=by
   let B:=SchwartzMap.seminorm ℝ 0 0 W
-  have hB:0≤B:=apply_nonneg _ _
   have hWs':Function.support (W:ℝ→ℂ)⊆Set.Icc a (max 0 b):=by
     intro x hx
     exact ⟨(hWs hx).1,(hWs hx).2.trans (le_max_right _ _)⟩
-  have hs:=twistedIdealSum_absolute χ W a (max 0 b) B ha (le_max_left _ _) hB hWs' (W.smooth ⊤)
+  have hs:=twistedIdealSum_absolute χ W a (max 0 b) B ha (le_max_left _ _) (apply_nonneg _ _) hWs' (W.smooth ⊤)
     (fun x=>SchwartzMap.norm_le_seminorm ℝ W x) freq D hD
   rw [←plain_height_norm χ W a b ha hWs (W.smooth ⊤) freq D hD,norm_mul,norm_inv,
     Complex.norm_real,Real.norm_eq_abs,abs_of_nonneg (Real.sqrt_nonneg _)]
   apply (mul_le_mul_of_nonneg_left hs (inv_nonneg.mpr (Real.sqrt_nonneg _))).trans
-  have hsq:(Real.sqrt D)^2=D:=Real.sq_sqrt hD.le
-  have hroot:0<Real.sqrt D:=Real.sqrt_pos.mpr hD
   have hle:Real.sqrt D≤1:=by exact (Real.sqrt_le_one).mpr hD1
   have he:(Real.sqrt D)⁻¹*((128*max 0 b*B)*D)=(128*max 0 b*B)*Real.sqrt D:=by
     calc
-      _=(128*max 0 b*B)*((Real.sqrt D)⁻¹*(Real.sqrt D*Real.sqrt D)):=by rw [←pow_two,hsq];ring
-      _=_:=by rw [inv_mul_cancel_left₀ hroot.ne']
+      _=(128*max 0 b*B)*((Real.sqrt D)⁻¹*(Real.sqrt D*Real.sqrt D)):=by rw [←pow_two,(Real.sq_sqrt hD.le)];ring
+      _=_:=by rw [inv_mul_cancel_left₀ (Real.sqrt_pos.mpr hD).ne']
   rw [he]
   exact mul_le_of_le_one_right (by positivity) hle
 

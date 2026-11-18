@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.ShiftDifferenceWeights
 
 @[expose] public section
@@ -53,7 +62,7 @@ theorem signed_shift_weight_real {N : ℕ} {q : ℤ}
     rw [← Int.natCast_natAbs] at ha
     exact_mod_cast ha
   have habs : (q.natAbs:ℝ) = |(q:ℝ)| := by
-    simpa only [Int.cast_natCast,Int.cast_abs] using
+    simpa using
       congrArg (fun z : ℤ => (z:ℝ)) (Int.natCast_natAbs q)
   rw [Nat.cast_sub hqn,habs]
 

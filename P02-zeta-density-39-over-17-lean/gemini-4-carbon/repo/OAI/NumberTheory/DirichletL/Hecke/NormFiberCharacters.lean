@@ -7,33 +7,8 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius
 
 namespace ShortDraftHeckeBridge
 
@@ -54,7 +29,6 @@ theorem baseChangeChar_ne_one_of_one {q : ℕ} [NeZero q]
 end ShortDraftHeckeBridge
 namespace ActualEisensteinCubic
 
-open MulChar AddChar
 
 end ActualEisensteinCubic
 
@@ -65,7 +39,7 @@ theorem ideals_isRelPrime_of_norms_coprime (I J : Ideal O)
     IsRelPrime I J := by
   have hcast : IsCoprime ((Ideal.absNorm I : ℕ) : O)
       ((Ideal.absNorm J : ℕ) : O) := by
-    simpa only [map_natCast] using
+    simpa using
       (Nat.Coprime.isCoprime h).map (Int.castRingHom O)
   obtain ⟨a, b, hab⟩ := hcast
   apply IsCoprime.isRelPrime
@@ -80,8 +54,7 @@ theorem baseChangeWeight_mul_of_coprime_norms {q : ℕ}
     (h : (Ideal.absNorm I).Coprime (Ideal.absNorm J)) :
     baseChangeWeight χ (I * J) =
       baseChangeWeight χ I * baseChangeWeight χ J := by
-  have hrel := ideals_isRelPrime_of_norms_coprime I J h
-  simp only [baseChangeWeight, map_mul, hrel.moebius_mul, Int.cast_mul, Nat.cast_mul]
+  simp only [baseChangeWeight, map_mul, (ideals_isRelPrime_of_norms_coprime I J h).moebius_mul, Int.cast_mul, Nat.cast_mul]
   ring
 
 theorem baseChangeChar_apply_of_coprime {q : ℕ}
@@ -121,18 +94,12 @@ private instance : IsGalois ℚ K := IsCyclotomicExtension.isGalois {3} ℚ K
 
 private theorem orderOf_mod3_eq_one {p : ℕ} (h : p % 3 = 1) :
     orderOf (p : ZMod 3) = 1 := by
-  have hc : (p : ZMod 3) = 1 :=
-    (ZMod.natCast_eq_natCast_iff' p 1 3).2 (by simpa using h)
-  simp [hc]
+  simp [((ZMod.natCast_eq_natCast_iff' p 1 3).2 (by simpa using h))]
 
 private theorem orderOf_mod3_eq_two {p : ℕ} (h : p % 3 = 2) :
     orderOf (p : ZMod 3) = 2 := by
-  have hc : (p : ZMod 3) = 2 :=
-    (ZMod.natCast_eq_natCast_iff' p 2 3).2 (by simpa using h)
-  rw [hc]
-  have hdvd : orderOf (2 : ZMod 3) ∣ 2 :=
-    orderOf_dvd_of_pow_eq_one (by decide : (2 : ZMod 3) ^ 2 = 1)
-  rcases (Nat.dvd_prime (by decide : Nat.Prime 2)).1 hdvd with h1 | h2
+  rw [((ZMod.natCast_eq_natCast_iff' p 2 3).2 (by simpa using h))]
+  rcases (Nat.dvd_prime (by decide : Nat.Prime 2)).1 (orderOf_dvd_of_pow_eq_one (by decide : (2 : ZMod 3) ^ 2 = 1)) with h1 | h2
   · have h21 : (2 : ZMod 3) = 1 := orderOf_eq_one_iff.mp h1
     exact False.elim ((by decide : (2 : ZMod 3) ≠ 1) h21)
   · exact h2
@@ -147,8 +114,7 @@ private theorem gal_card_two : Nat.card Gal(K/ℚ) = 2 := by
 
 private theorem not_dvd_three {p : ℕ} (hp : p.Prime) (hneq : p ≠ 3) : ¬ p ∣ 3 := by
   intro hd
-  have h := (Nat.dvd_prime (by decide : Nat.Prime 3)).1 hd
-  rcases h with h1 | h3
+  rcases ((Nat.dvd_prime (by decide : Nat.Prime 3)).1 hd) with h1 | h3
   · exact hp.ne_one h1
   · exact hneq h3
 
@@ -195,10 +161,9 @@ theorem absNorm_split {p : ℕ} (hp : p.Prime) (hmod : p % 3 = 1)
     intro heq
     subst p
     norm_num at hmod
-  have hnd := not_dvd_three hp hneq
   have hf : P.inertiaDeg ℤ = 1 := by
     rw [← Ideal.inertiaDegIn_eq_inertiaDeg (Ideal.span {(p : ℤ)}) P Gal(K/ℚ),
-      IsCyclotomicExtension.Rat.inertiaDegIn_eq_of_not_dvd p K hnd,
+      IsCyclotomicExtension.Rat.inertiaDegIn_eq_of_not_dvd p K (not_dvd_three hp hneq),
       orderOf_mod3_eq_one hmod]
   rw [← Ideal.pow_inertiaDeg p P, hf, pow_one]
 
@@ -210,10 +175,9 @@ theorem absNorm_inert {p : ℕ} (hp : p.Prime) (hmod : p % 3 = 2)
     intro heq
     subst p
     norm_num at hmod
-  have hnd := not_dvd_three hp hneq
   have hf : P.inertiaDeg ℤ = 2 := by
     rw [← Ideal.inertiaDegIn_eq_inertiaDeg (Ideal.span {(p : ℤ)}) P Gal(K/ℚ),
-      IsCyclotomicExtension.Rat.inertiaDegIn_eq_of_not_dvd p K hnd,
+      IsCyclotomicExtension.Rat.inertiaDegIn_eq_of_not_dvd p K (not_dvd_three hp hneq),
       orderOf_mod3_eq_two hmod]
   rw [← Ideal.pow_inertiaDeg p P, hf]
 
@@ -231,13 +195,11 @@ theorem absNorm_ramified
 theorem norm_prime_implies_over {p : ℕ} (hp : p.Prime) (I : Ideal O)
     (hI : Ideal.absNorm I = p) :
     I ∈ (Ideal.span {(p : ℤ)}).primesOver O := by
-  have hprime : I.IsPrime :=
-    Ideal.isPrime_of_irreducible_absNorm (by
+  have hprime := Ideal.isPrime_of_irreducible_absNorm (by
       rw [hI]
       exact (Nat.irreducible_iff_nat_prime p).2 hp)
   have hover : I.LiesOver (Ideal.span {(p : ℤ)}) := by
-    rw [Ideal.liesOver_iff]
-    rw [Ideal.under_def, algebraMap_int_eq]
+    rw [Ideal.liesOver_iff, Ideal.under_def, algebraMap_int_eq]
     simpa [hI] using Ideal.span_singleton_absNorm (I := I) (hI ▸ hp)
   exact ⟨hprime, hover⟩
 
@@ -288,15 +250,14 @@ theorem norm_p_sq_fiber_inert {p : ℕ} (hp : p.Prime) (hmod : p % 3 = 2) :
       Ideal.exists_isMaximal_dvd_of_dvd_absNorm' hp I hdiv
     have : P.IsPrime := hPmax.isPrime
     have : P.LiesOver (Ideal.span {(p : ℤ)}) := ⟨hPunder.symm⟩
-    have hPN : Ideal.absNorm P = p ^ 2 := absNorm_inert hp hmod P
     obtain ⟨J, hIJ⟩ := hPdiv
     have hJN : Ideal.absNorm J = 1 := by
       have heq := congrArg Ideal.absNorm hIJ
       simp only [map_mul] at heq
-      rw [hI, hPN] at heq
-      have hp2 : 0 < p ^ 2 := pow_pos hp.pos 2
+      rw [hI, (absNorm_inert hp hmod P)] at heq
+      have hp2 := pow_pos hp.pos 2
       nlinarith
-    have hJtop : J = ⊤ := Ideal.absNorm_eq_one_iff.mp hJN
+    have hJtop := Ideal.absNorm_eq_one_iff.mp hJN
     subst J
     simp only [Ideal.mul_top] at hIJ
     subst I
@@ -319,12 +280,11 @@ theorem norm_p_sq_split_factors {p : ℕ} (hp : p.Prime) (hmod : p % 3 = 1)
     Ideal.exists_isMaximal_dvd_of_dvd_absNorm' hp I hdiv
   have : P.IsPrime := hPmax.isPrime
   have : P.LiesOver (Ideal.span {(p : ℤ)}) := ⟨hPunder.symm⟩
-  have hPN : Ideal.absNorm P = p := absNorm_split hp hmod P
   obtain ⟨Q, hIQ⟩ := hPdiv
   have hQN : Ideal.absNorm Q = p := by
     have heq := congrArg Ideal.absNorm hIQ
     simp only [map_mul] at heq
-    rw [hI, hPN] at heq
+    rw [hI, (absNorm_split hp hmod P)] at heq
     have hppos := hp.pos
     nlinarith
   exact ⟨P, Q, ⟨inferInstance, inferInstance⟩,
@@ -374,9 +334,8 @@ theorem norm_nine_fiber_ramified :
 theorem local_inert_p {q : ℕ} (χ : DirichletCharacter ℂ q)
     {p : ℕ} (hp : p.Prime) (hmod : p % 3 = 2) :
     normFiberCoeff (baseChangeWeight χ) p = 0 := by
-  have hf := norm_p_fiber_inert hp hmod
   unfold normFiberCoeff
-  simp [hf]
+  simp [(norm_p_fiber_inert hp hmod)]
 
 theorem local_split_p {q : ℕ} (χ : DirichletCharacter ℂ q)
     {p : ℕ} (hp : p.Prime) (hmod : p % 3 = 1) :
@@ -384,17 +343,15 @@ theorem local_split_p {q : ℕ} (χ : DirichletCharacter ℂ q)
   classical
   let hf := Ideal.finite_setOfPred_absNorm_eq (S := O) p
   have hcard : hf.toFinset.card = 2 := by
-    rw [← Set.ncard_eq_toFinset_card {I : Ideal O | Ideal.absNorm I = p} hf]
-    rw [norm_p_fiber_split hp hmod]
+    rw [← Set.ncard_eq_toFinset_card {I : Ideal O | Ideal.absNorm I = p} hf, norm_p_fiber_split hp hmod]
     exact split_count_of_mod_one hp hmod
   have hsum : normFiberCoeff (baseChangeWeight χ) p =
       ∑ I ∈ hf.toFinset, -χ p := by
     unfold normFiberCoeff
     apply Finset.sum_congr rfl
     intro I hI
-    have hnorm : Ideal.absNorm I = p := hf.mem_toFinset.mp hI
-    have hprime : Prime I :=
-      UniqueFactorizationMonoid.irreducible_iff_prime.mp
+    have hnorm := hf.mem_toFinset.mp hI
+    have hprime := UniqueFactorizationMonoid.irreducible_iff_prime.mp
         (Ideal.irreducible_of_irreducible_absNorm (by
           rw [hnorm]
           exact (Nat.irreducible_iff_nat_prime p).2 hp))
@@ -456,23 +413,20 @@ theorem local_inert_p_sq {q : ℕ} (χ : DirichletCharacter ℂ q)
 theorem local_ramified_nine {q : ℕ} (χ : DirichletCharacter ℂ q) :
     normFiberCoeff (baseChangeWeight χ) 9 = 0 := by
   classical
-  let hf := Ideal.finite_setOfPred_absNorm_eq (S := O) 9
   unfold normFiberCoeff
   apply Finset.sum_eq_zero
   intro I hI
-  have hnorm : Ideal.absNorm I = 9 := hf.mem_toFinset.mp hI
   have hfactor : I ∈ {I : Ideal O | ∃ P : Ideal O,
       P ∈ (Ideal.span {(3 : ℤ)}).primesOver O ∧ I = P ^ 2} := by
     rw [← norm_nine_fiber_ramified]
-    exact hnorm
+    exact ((Ideal.finite_setOfPred_absNorm_eq (S := O) 9).mem_toFinset.mp hI)
   obtain ⟨P, hP, rfl⟩ := hfactor
   have : P.IsPrime := hP.1
   have : P.LiesOver (Ideal.span {(3 : ℤ)}) := hP.2
-  have hPN : Ideal.absNorm P = 3 := absNorm_ramified P
+  have hPN := absNorm_ramified P
   have hnotunit : ¬ IsUnit P := by
     intro hunit
-    have htop : P = ⊤ := Ideal.isUnit_iff.mp hunit
-    rw [htop, Ideal.absNorm_top] at hPN
+    rw [(Ideal.isUnit_iff.mp hunit), Ideal.absNorm_top] at hPN
     norm_num at hPN
   have hnot : ¬ Squarefree (P ^ 2) := by
     intro hsq
@@ -486,8 +440,7 @@ private theorem baseChangeWeight_prime_sq_zero {q : ℕ} (χ : DirichletCharacte
     baseChangeWeight χ (P ^ 2) = 0 := by
   have hnot : ¬ Squarefree (P ^ 2) := by
     intro hsq
-    have hunit : IsUnit P := hsq P (by rw [pow_two])
-    exact hP.irreducible.not_isUnit hunit
+    exact hP.irreducible.not_isUnit (hsq P (by rw [pow_two]))
   rw [baseChangeWeight, UniqueFactorizationMonoid.moebius_of_not_squarefree hnot]
   simp
 
@@ -495,7 +448,7 @@ theorem local_split_p_sq {q : ℕ} (χ : DirichletCharacter ℂ q)
     {p : ℕ} (hp : p.Prime) (hmod : p % 3 = 1) :
     normFiberCoeff (baseChangeWeight χ) (p ^ 2) = χ (p ^ 2) := by
   classical
-  let s : Set (Ideal O) := (Ideal.span {(p : ℤ)}).primesOver O
+  let s := (Ideal.span {(p : ℤ)}).primesOver O
   obtain ⟨P, Q, hPQ, hset⟩ := Set.ncard_eq_two.mp (split_count_of_mod_one hp hmod)
   have hPover : P ∈ s := by
     change P ∈ (Ideal.span {(p : ℤ)}).primesOver O
@@ -509,8 +462,8 @@ theorem local_split_p_sq {q : ℕ} (χ : DirichletCharacter ℂ q)
   let : P.LiesOver (Ideal.span {(p : ℤ)}) := hPover.2
   let : Q.IsPrime := hQover.1
   let : Q.LiesOver (Ideal.span {(p : ℤ)}) := hQover.2
-  have hPN : Ideal.absNorm P = p := absNorm_split hp hmod P
-  have hQN : Ideal.absNorm Q = p := absNorm_split hp hmod Q
+  have hPN := absNorm_split hp hmod P
+  have hQN := absNorm_split hp hmod Q
   have hPne : P ≠ ⊥ := by
     intro h
     rw [h, Ideal.absNorm_bot] at hPN
@@ -519,13 +472,12 @@ theorem local_split_p_sq {q : ℕ} (χ : DirichletCharacter ℂ q)
     intro h
     rw [h, Ideal.absNorm_bot] at hQN
     exact hp.ne_zero hQN.symm
-  have hPprime : Prime P := Ideal.prime_of_isPrime hPne inferInstance
-  have hQprime : Prime Q := Ideal.prime_of_isPrime hQne inferInstance
+  have hPprime := Ideal.prime_of_isPrime hPne inferInstance
+  have hQprime := Ideal.prime_of_isPrime hQne inferInstance
   have : P.IsMaximal := (inferInstance : P.IsPrime).isMaximal hPne
   have : Q.IsMaximal := (inferInstance : Q.IsPrime).isMaximal hQne
-  have hrel : IsRelPrime P Q := (Ideal.isCoprime_of_isMaximal hPQ).isRelPrime
   have hmu : UniqueFactorizationMonoid.moebius (P * Q) = 1 := by
-    rw [hrel.moebius_mul, hPprime.irreducible.moebius_eq,
+    rw [((Ideal.isCoprime_of_isMaximal hPQ).isRelPrime).moebius_mul, hPprime.irreducible.moebius_eq,
       hQprime.irreducible.moebius_eq]
     norm_num
   let hf := Ideal.finite_setOfPred_absNorm_eq (S := O) (p ^ 2)
@@ -539,7 +491,7 @@ theorem local_split_p_sq {q : ℕ} (χ : DirichletCharacter ℂ q)
     _ = baseChangeWeight χ (P * Q) := by
       apply Finset.sum_eq_single (P * Q)
       · intro I hImem hneq
-        have hnorm : Ideal.absNorm I = p ^ 2 := hf.mem_toFinset.mp hImem
+        have hnorm := hf.mem_toFinset.mp hImem
         obtain ⟨A, B, hA, hB, rfl⟩ := norm_p_sq_split_factors hp hmod I hnorm
         rw [hset] at hA hB
         simp only [Set.mem_insert_iff, Set.mem_singleton_iff] at hA hB

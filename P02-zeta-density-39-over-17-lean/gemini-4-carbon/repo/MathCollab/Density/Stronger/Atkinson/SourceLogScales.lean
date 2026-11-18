@@ -11,9 +11,7 @@ public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+open Complex Filter MeasureTheory Set Topology MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth MathCollab.Density.Contour
 open scoped Interval ComplexConjugate ContDiff
 set_option autoImplicit false
 noncomputable section
@@ -26,14 +24,13 @@ theorem exists_logGaussian_power_tail_bound (C p A : ℝ) {b : ℝ} (hb : 0 < b)
   let T₀ := max 1 (max C (Real.exp ((A + p + 1) / b)))
   refine ⟨T₀, le_max_left _ _, ?_⟩
   intro T hT₀
-  have hT1 : 1 ≤ T := (le_max_left _ _).trans hT₀
+  have hT1 := (le_max_left _ _).trans hT₀
   have hT : 0 < T := by linarith
-  have hTC : C ≤ T := (le_max_left _ _).trans ((le_max_right _ _).trans hT₀)
-  have hTexp : Real.exp ((A + p + 1) / b) ≤ T :=
-    (le_max_right _ _).trans ((le_max_right _ _).trans hT₀)
+  have hTC := (le_max_left _ _).trans ((le_max_right _ _).trans hT₀)
+  have hTexp := (le_max_right _ _).trans ((le_max_right _ _).trans hT₀)
   have hlog0 := Real.log_nonneg hT1
   have hlog : (A + p + 1) / b ≤ Real.log T := by
-    simpa only [Real.log_exp] using Real.log_le_log (Real.exp_pos _) hTexp
+    simpa using Real.log_le_log (Real.exp_pos _) hTexp
   have hbLog : A + p + 1 ≤ b * Real.log T := by
     have h := (div_le_iff₀ hb).mp hlog
     linarith
@@ -71,8 +68,7 @@ theorem exists_zetaQuadraticDivisor_log_tail_bound (A : ℝ) :
 theorem eventually_const_log_pow_le_rpow (C : ℝ) (hC : 0 ≤ C) (k : ℕ)
     {η : ℝ} (hη : 0 < η) :
     ∀ᶠ T : ℝ in atTop, C * (Real.log T) ^ k ≤ T ^ η := by
-  have hsmall := (isLittleO_log_rpow_rpow_atTop (k : ℝ) hη).const_mul_left C
-  filter_upwards [hsmall.bound (by norm_num : (0 : ℝ) < 1), eventually_ge_atTop (1 : ℝ)] with T h hT
+  filter_upwards [((isLittleO_log_rpow_rpow_atTop (k : ℝ) hη).const_mul_left C).bound (by norm_num : (0 : ℝ) < 1), eventually_ge_atTop (1 : ℝ)] with T h hT
   simpa only [Real.rpow_natCast, Real.norm_eq_abs, one_mul,
     abs_of_nonneg (mul_nonneg hC (pow_nonneg (Real.log_nonneg hT) k)),
     abs_of_nonneg (Real.rpow_nonneg (by linarith : 0 ≤ T) η)] using h
@@ -83,7 +79,7 @@ theorem gaussian_width_sq_le_height {T G δ : ℝ} (hT : 1 ≤ T) (hG : 0 ≤ G)
   calc
     _ ≤ (T ^ (1 / 2 - δ)) ^ 2 := pow_le_pow_left₀ hG hwidth 2
     _ = T ^ ((1 / 2 - δ) * 2) := by rw [← Real.rpow_natCast, ← Real.rpow_mul hT0.le]; norm_num
-    _ ≤ T ^ (1 : ℝ) := Real.rpow_le_rpow_of_exponent_le hT (by linarith)
+    _ ≤ T ^ 1 := Real.rpow_le_rpow_of_exponent_le hT (by linarith)
     _ = T := Real.rpow_one T
 
 /-- The physical window and quadratic scale are derived, not additional

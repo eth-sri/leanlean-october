@@ -36,9 +36,8 @@ theorem large_prime_divisor_count (S : Finset (Ideal O)) (hP : ∀ P ∈ S, Prim
       _ = (Ideal.absNorm (∏ P ∈ S, P) : ℝ) := by simp only [map_prod,Nat.cast_prod]
       _ ≤ (Ideal.absNorm I : ℝ) := norm_le_of_dvd hI (primeDivisors_product_dvd S hP I hd)
       _ ≤ _ := hupper
-  have he := (Real.rpow_le_rpow_left_iff hZ).mp hpow
   apply (le_div_iff₀ hℓ).mpr
-  simpa only [mul_comm] using he
+  simpa only [mul_comm] using ((Real.rpow_le_rpow_left_iff hZ).mp hpow)
 
 theorem indexed_large_prime_divisor_count {α : Type*} (S : Finset α) (P : α → Ideal O)
     (hinj : Set.InjOn P S) (hp : ∀ i ∈ S, Prime (P i))
@@ -86,8 +85,7 @@ theorem positive_pushforward_bound {α β : Type*} [DecidableEq β]
     (hg : ∀ y ∈ S.image f, 0 ≤ g y)
     (hf : ∀ y ∈ S.image f, ((S.filter (fun x => f x = y)).card : ℝ) ≤ C) :
     (∑ x ∈ S, g (f x)) ≤ C * ∑ y ∈ S.image f, g y := by
-  rw [← Finset.sum_fiberwise_of_maps_to (fun x hx => Finset.mem_image_of_mem f hx)]
-  rw [Finset.mul_sum]
+  rw [← Finset.sum_fiberwise_of_maps_to (fun x hx => Finset.mem_image_of_mem f hx), Finset.mul_sum]
   apply Finset.sum_le_sum
   intro y hy
   calc

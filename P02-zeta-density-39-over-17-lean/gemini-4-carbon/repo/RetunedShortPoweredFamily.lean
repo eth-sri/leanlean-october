@@ -9,8 +9,7 @@ open scoped BigOperators Topology ComplexConjugate
 set_option autoImplicit false
 noncomputable section
 namespace Montgomery.RationalMoment.RightDetector
-open MathCollab.Density.Stronger
-open MathCollab.Density
+open MathCollab.Density.Stronger MathCollab.Density
 
 /-- This bound is fixed by sigma and delta, before T and any zero. -/
 def smoothPowerBound (a δ : ℝ) : ℕ := ⌈2*a/δ⌉₊
@@ -51,7 +50,7 @@ theorem mem_smoothPoweredIndices {a δ T : ℝ} {q : (ℤ × ℕ × ℕ) × ℕ 
 
 theorem smoothTaylorIndices_card_eventually {σ a : ℝ} (hw : QuadraticWindow σ a) :
     ∀ᶠ T : ℝ in atTop, ((smoothTaylorIndices a T).card : ℝ) ≤ 144*(Real.log T)^2 := by
-  filter_upwards [eventually_ge_atTop (1 : ℝ), Real.tendsto_log_atTop.eventually_ge_atTop 1,
+  filter_upwards [eventually_ge_atTop 1, Real.tendsto_log_atTop.eventually_ge_atTop 1,
     log_sq_eventually_le_height] with T hT hlog hsq
   have hYlo : 1 ≤ detectorY a T := Real.one_le_rpow hT (smoothingExponent_pos hw).le
   have hYhi : detectorY a T ≤ T := by

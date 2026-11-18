@@ -10,12 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondSectorEnergy
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open CenteredMomentSourceRow CenteredMomentHeckeColumnWindow CenteredMomentSecondSourceEnergy
-open CenteredMomentSecondSectorColumns CenteredMomentSecondHeightFamily
-open CenteredMomentSecondScaled CenteredMomentChildAssembly CenteredMomentRowNorm
-open CenteredMomentRestrictedSource CenteredMomentRestrictedDomain CenteredMomentRestrictedEnergy
-open CenteredMomentLiveDomain CenteredMomentFirstSectors RayFourExpansion
+open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss CenteredMomentSourceRow CenteredMomentHeckeColumnWindow CenteredMomentSecondSourceEnergy CenteredMomentSecondSectorColumns CenteredMomentSecondHeightFamily CenteredMomentSecondScaled CenteredMomentChildAssembly CenteredMomentRowNorm CenteredMomentRestrictedSource CenteredMomentRestrictedDomain CenteredMomentRestrictedEnergy CenteredMomentLiveDomain CenteredMomentFirstSectors RayFourExpansion
 local notation "O" => ActualEisensteinCubic.O
 
 theorem sector_rowPolynomial (S : Finset (Ideal O)) (c : Ideal O → ℂ)
@@ -28,8 +23,7 @@ theorem sector_rowPolynomial (S : Finset (Ideal O)) (c : Ideal O → ℂ)
     (fun I => if IsCoprime C I then c I else 0) z]
   unfold rowPolynomial
   simp only [sectorElement_span]
-  rw [Finset.sum_coe_sort (sectorPool C hC.1 S) (fun I => c I*idealRowHom z I)]
-  rw [sectorPool,Finset.sum_filter,supported_residualPool C hC S]
+  rw [Finset.sum_coe_sort (sectorPool C hC.1 S) (fun I => c I*idealRowHom z I), sectorPool,Finset.sum_filter,supported_residualPool C hC S]
   apply Finset.sum_congr rfl
   intro I hI
   split_ifs <;> simp

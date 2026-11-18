@@ -12,9 +12,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentHeckeVolume
-open HeckeFamily CompletedGauss ConcreteTraceCRT EisensteinSchwartzPoisson
-open CenteredMomentPrimary CanonicalQuadraticSieve QuadraticInitialBound
-open IdealMobiusDivisorSum UniqueFactorizationMonoid CenteredMomentMask
+open HeckeFamily CompletedGauss ConcreteTraceCRT EisensteinSchwartzPoisson CenteredMomentPrimary CanonicalQuadraticSieve QuadraticInitialBound IdealMobiusDivisorSum UniqueFactorizationMonoid CenteredMomentMask
 open PrimaryIdealUnitReindex (GoodIdeal)
 open CubicEisenstein (PrimaryLower primaryLowerIdealEquiv)
 local notation "O" => ActualEisensteinCubic.O
@@ -66,7 +64,7 @@ theorem periodicValue_norm (c : O) (ψ : Character) (r : O ⧸ Ideal.span {c}) :
   unfold periodicValue
   split_ifs
   · exact norm_finite_character_le_one ψ.residue _
-  · simp only [norm_zero,zero_le_one]
+  · simp
 
 theorem lattice_eq_ideal_sum (c : O) (h3 : (3:O) ∣ c) (ψ : Character)
     (hmod : (Ideal.span {c} : Ideal O) ≤ ψ.modulus) (W : ℝ → ℂ) (X : ℝ) :
@@ -109,10 +107,9 @@ theorem fixed_period_volume (c : O) (hc : c ≠ 0) (h3 : (3:O) ∣ c)
   let := finite_quotient_span hc
   let : Fintype (O ⧸ Ideal.span {c}) := Fintype.ofFinite _
   rw [← lattice_eq_ideal_sum c h3 ψ hmod W X]
-  have h := CenteredMomentLattice.periodic_lattice_volume_error W X hX c hc (periodicValue c ψ)
-  exact h.trans (mul_le_mul_of_nonneg_right (by
+  exact (CenteredMomentLattice.periodic_lattice_volume_error W X hX c hc (periodicValue c ψ)).trans (mul_le_mul_of_nonneg_right (by
     calc
-      _ ≤ ∑ _r : O ⧸ Ideal.span {c}, (1:ℝ) := Finset.sum_le_sum (fun r hr => periodicValue_norm c ψ r)
+      _ ≤ ∑ _r : O ⧸ Ideal.span {c}, 1 := Finset.sum_le_sum (fun r hr => periodicValue_norm c ψ r)
       _ = _ := by simp) (pvControl_nonneg W))
 
 theorem masked_hecke_volume
@@ -184,7 +181,6 @@ def fixedPeriod (Q : Ideal O) : O := 3*ConcretePrimeRowBridge.idealGenerator Q
 theorem fixedPeriod_ne_zero (Q : Ideal O) (hQ : Q ≠ 0) : fixedPeriod Q ≠ 0 :=
   mul_ne_zero (by norm_num) (ConcretePrimeRowBridge.idealGenerator_ne_zero Q hQ)
 
-theorem fixedPeriod_three (Q : Ideal O) : (3:O) ∣ fixedPeriod Q := dvd_mul_right _ _
 
 theorem span_fixedPeriod_le (Q : Ideal O) : (Ideal.span {fixedPeriod Q} : Ideal O) ≤ Q := by
   conv_rhs => rw [← ConcretePrimeRowBridge.span_idealGenerator Q]
@@ -207,8 +203,7 @@ theorem inducedBy_of_elementCoeff_eq (χ χ' ψ : Character)
   by_cases hc : IsCoprime I χ'.modulus
   · have hn := CenteredMomentExceptionalPair.idealCoeff_ne_zero_iff χ' I |>.mpr ⟨hI,hc⟩
     rw [hideal I] at hn
-    have hc' := (CenteredMomentExceptionalPair.idealCoeff_ne_zero_iff χ I).mp hn |>.2
-    rw [ite_eq_left hc,hideal I,hind I,ite_eq_left hc']
+    rw [ite_eq_left hc,hideal I,hind I,ite_eq_left ((CenteredMomentExceptionalPair.idealCoeff_ne_zero_iff χ I).mp hn |>.2)]
   · have hz : idealCoeff χ' I=0 := by
       by_contra hn
       exact hc ((CenteredMomentExceptionalPair.idealCoeff_ne_zero_iff χ' I).mp hn).2
@@ -250,14 +245,11 @@ theorem primaryCoefficient_actual_row (η χ : Character) (m A₀ z : O)
   by_cases hg : primaryGenerator I=0
   · rw [ite_eq_left hg]
     let n := ConcretePrimeRowBridge.idealGenerator I
-    have hn : n ≠ 0 := ConcretePrimeRowBridge.idealGenerator_ne_zero I hI
-    have hs : Ideal.span {n}=I := ConcretePrimeRowBridge.span_idealGenerator I
+    have hs := ConcretePrimeRowBridge.span_idealGenerator I
     have hbad : ¬Supported (Ideal.span {n}) := by
       intro h
-      have hp : primaryGenerator (Ideal.span {n}) ≠ 0 :=
-        PrimaryIdealUnitReindex.primaryGenerator_span_ne_zero_iff n |>.mpr ((CanonicalQuadraticSieve.supported_span_iff n).mp h).1
-      exact hp (hs ▸ hg)
-    rw [← hs,idealCoeff_span χ hn,hrow,
+      exact (PrimaryIdealUnitReindex.primaryGenerator_span_ne_zero_iff n |>.mpr ((CanonicalQuadraticSieve.supported_span_iff n).mp h).1) (hs ▸ hg)
+    rw [← hs,idealCoeff_span χ (ConcretePrimeRowBridge.idealGenerator_ne_zero I hI),hrow,
       CanonicalRowCompletion.rowTwist_zero_of_not_supported _ _ _ _ _ hmLam hm2 hbad]
   · rw [ite_eq_right hg]
 
@@ -280,12 +272,12 @@ theorem actual_induced_volume (η χ ψ : Character) (Q : Ideal O) (hQ : Q ≠ 0
   let := finite_quotient_span (fixedPeriod_ne_zero Q hQ)
   let : Fintype (O ⧸ Ideal.span {fixedPeriod Q}) := Fintype.ofFinite _
   have h := masked_hecke_volume (fixedPeriod Q) (fixedPeriod_ne_zero Q hQ)
-    (fixedPeriod_three Q) ψ ((span_fixedPeriod_le Q).trans hQψ)
+    ((dvd_mul_right _ _)) ψ ((span_fixedPeriod_le Q).trans hQψ)
     χ.modulus χ.modulus_ne_bot W b X hX hs
   have he (I : Ideal O) :
-      (if IsCoprime I χ.modulus then (1:ℂ) else 0)*primaryCoefficient ψ I=idealCoeff χ I := by
+      (if IsCoprime I χ.modulus then 1 else 0)*primaryCoefficient ψ I=idealCoeff χ I := by
     rw [← induced_primaryCoefficient χ ψ hind I,primaryCoefficient_actual_row η χ m A₀ z hmLam hm2 hrow I]
-  simp_rw [show ∀ I : Ideal O, (if IsCoprime I χ.modulus then (1:ℂ) else 0)*
+  simp_rw [show ∀ I : Ideal O, (if IsCoprime I χ.modulus then 1 else 0)*
       (primaryCoefficient ψ I*W ((Ideal.absNorm I:ℝ)/X)) =
         idealCoeff χ I*W ((Ideal.absNorm I:ℝ)/X) by intro I; rw [← mul_assoc,he]] at h
   convert h using 1

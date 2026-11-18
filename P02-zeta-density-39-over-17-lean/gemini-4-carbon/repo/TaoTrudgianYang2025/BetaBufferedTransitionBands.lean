@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaBufferedInteriorSum
 public import TaoTrudgianYang2025.BetaBufferedSupportGap
 public import TaoTrudgianYang2025.BetaBufferedCurvature
@@ -44,12 +54,12 @@ theorem modelPhaseBufferedBand_endpoints
       modelPhaseBufferedPlateauLower F r η T N ≤ modelPhaseBufferedSupportUpper F l η T N ∧
       modelPhaseBufferedSupportLower F r η T N ≤ modelPhaseBufferedPlateauUpper F l η T N ∧
       modelPhaseBufferedPlateauUpper F l η T N ≤ modelPhaseBufferedSupportUpper F l η T N := by
-  have ha₀ : l+η ∈ Ioo (1 : ℝ) 2 := by constructor <;> linarith
-  have ha : l+2*η ∈ Ioo (1 : ℝ) 2 := by constructor <;> linarith
-  have hb : r-2*η ∈ Ioo (1 : ℝ) 2 := by constructor <;> linarith
-  have hb₀ : r-η ∈ Ioo (1 : ℝ) 2 := by constructor <;> linarith
+  have ha₀ : l+η ∈ Ioo 1 2 := by constructor <;> linarith
+  have ha : l+2*η ∈ Ioo 1 2 := by constructor <;> linarith
+  have hb : r-2*η ∈ Ioo 1 2 := by constructor <;> linarith
+  have hb₀ : r-η ∈ Ioo 1 2 := by constructor <;> linarith
   have hm := (approximateModelPhase_deriv_strictAntiOn hσ hδ hF).antitoneOn
-  have hscale : 0 ≤ T/N := (div_pos hT hN).le
+  have hscale := (div_pos hT hN).le
   have h₁ := mul_le_mul_of_nonneg_left (hm hb hb₀ (by linarith)) hscale
   have h₂ := mul_le_mul_of_nonneg_left (hm ha₀ hb (by linarith)) hscale
   have h₃ := mul_le_mul_of_nonneg_left (hm ha hb₀ (by linarith)) hscale
@@ -70,10 +80,10 @@ theorem modelPhaseBufferedBand_card_bounds
     ((Finset.Icc (modelPhaseBufferedPlateauUpper F l η T N)
       (modelPhaseBufferedSupportUpper F l η T N)).card : ℝ) ≤ (T/N)*(σ+1)*η+3 := by
   have he := modelPhaseBufferedBand_endpoints hσ hδ hF hT hN hη hl hr hflat
-  have ha₀ : l+η ∈ Ioo (1 : ℝ) 2 := by constructor <;> linarith
-  have ha : l+2*η ∈ Ioo (1 : ℝ) 2 := by constructor <;> linarith
-  have hb : r-2*η ∈ Ioo (1 : ℝ) 2 := by constructor <;> linarith
-  have hb₀ : r-η ∈ Ioo (1 : ℝ) 2 := by constructor <;> linarith
+  have ha₀ : l+η ∈ Ioo 1 2 := by constructor <;> linarith
+  have ha : l+2*η ∈ Ioo 1 2 := by constructor <;> linarith
+  have hb : r-2*η ∈ Ioo 1 2 := by constructor <;> linarith
+  have hb₀ : r-η ∈ Ioo 1 2 := by constructor <;> linarith
   have hL := (le_abs_self (deriv F (r-2*η)-deriv F (r-η))).trans
     (approximateModelPhase_slope_gap_upper_abs hσ hδ hF hb hb₀)
   have hR := (le_abs_self (deriv F (l+η)-deriv F (l+2*η))).trans
@@ -129,14 +139,12 @@ theorem modelPhaseBufferedTransition_card_le
     intro q hq
     simp only [S,Finset.mem_sdiff,Finset.mem_Icc,Finset.mem_Ioo,Finset.mem_union] at *
     omega
-  have hc := (Finset.card_le_card hs).trans (Finset.card_union_le _ _)
   have hc' : (S.card : ℝ) ≤
       ((Finset.Icc (modelPhaseBufferedSupportLower F r η T N)
         (modelPhaseBufferedPlateauLower F r η T N)).card : ℝ)+
       ((Finset.Icc (modelPhaseBufferedPlateauUpper F l η T N)
-        (modelPhaseBufferedSupportUpper F l η T N)).card : ℝ) := by exact_mod_cast hc
+        (modelPhaseBufferedSupportUpper F l η T N)).card : ℝ) := by exact_mod_cast ((Finset.card_le_card hs).trans (Finset.card_union_le _ _))
   have hb := modelPhaseBufferedBand_card_bounds hσ hδ hF hT hN hη hl hr hflat
-  change (S.card : ℝ) ≤ _
   linarith [hb.1,hb.2]
 
 end TaoTrudgianYang2025

@@ -9,13 +9,11 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerUniform
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap FourierTransform ContDiff
 open MeasureTheory FourierBridge
+open scoped Classical BigOperators SchwartzMap FourierTransform ContDiff
 
 namespace SevenEighths.DetectorDictionaryInverseClippedUniform
-open DetectorDictionaryInverseUniform HeckeInverseAmplification
-open InverseMoment InverseInitialClippedColumns InverseInitialOverlapFourier
-open ActualEisensteinCubic CompletedGauss
+open DetectorDictionaryInverseUniform HeckeInverseAmplification InverseMoment InverseInitialClippedColumns InverseInitialOverlapFourier ActualEisensteinCubic CompletedGauss
 local notation "O" => ActualEisensteinCubic.O
 
 theorem source_support (scaled reverse : Bool) (n : ℕ) (U tstar r σ t : ℝ) :
@@ -31,8 +29,6 @@ theorem source_support (scaled reverse : Bool) (n : ℕ) (U tstar r σ t : ℝ) 
     rw [he]
     exact (twistProfile_support _ _ _).trans
       ((baseProfile_support _ _ _ _ _).trans HeckeDetectorDyadicProfiles.positiveAnnular_support)
-  have ht : tsupport (W : ℝ→ℂ) ⊆ Set.Icc (1/4 : ℝ) (9/4) :=
-    closure_minimal hw isClosed_Icc
   cases scaled
   · exact hw
   · intro x hx
@@ -42,7 +38,7 @@ theorem source_support (scaled reverse : Bool) (n : ℕ) (U tstar r σ t : ℝ) 
       exact hn (hw h)
     have hd : deriv (W : ℝ→ℂ) x = 0 := by
       by_contra h
-      exact hn (ht (support_deriv_subset h))
+      exact hn ((closure_minimal hw isClosed_Icc) (support_deriv_subset h))
     apply hx
     change scaleCLM W x = 0
     rw [scaleCLM_apply]
@@ -53,7 +49,7 @@ theorem exists_reference_window :
       tsupport (w : ℝ→ℂ) ⊆ Set.Icc (1/18 : ℝ) (13/4) ∧
       ∀x∈Set.Icc (1/9 : ℝ) (9/4), w x = 1 := by
   obtain ⟨w,hc,hone,hs⟩ := InverseSecondChildWindows.positive_cutoff
-    (1/9 : ℝ) (9/4) (by norm_num) (by norm_num)
+    (1/9) (9/4) (by norm_num) (by norm_num)
   refine ⟨w,hc,?_,hone⟩
   convert hs using 1
   norm_num
@@ -75,7 +71,7 @@ theorem referenceWindow_agrees (scaled reverse : Bool) (n : ℕ) (U tstar r σ t
   by_cases hz : inverseSourceSchwartz scaled reverse n U tstar r σ t (c*y) = 0
   · simp [hz]
   have hs := source_support scaled reverse n U tstar r σ t hz
-  have hh : y∈Set.Icc (1/9 : ℝ) (9/4) := by
+  have hh : y∈Set.Icc (1/9) (9/4) := by
     constructor <;> nlinarith [hs.1,hs.2]
   rw [referenceWindow_one y hh,one_mul]
 

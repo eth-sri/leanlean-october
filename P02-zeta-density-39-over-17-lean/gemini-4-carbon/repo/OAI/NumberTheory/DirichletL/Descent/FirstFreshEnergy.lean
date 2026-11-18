@@ -6,9 +6,8 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstCommonChild
 namespace OAI
 
 namespace SevenEighths.InverseMoment
+open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion SecondPassArithmetic
 open scoped BigOperators Classical
-open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion
-open SecondPassArithmetic
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 
@@ -47,7 +46,7 @@ theorem first_fresh_energy_small_power (ε : ℝ) (hε : 0 < ε) :
   simp only [norm_mul]
   have hr0 : ‖supportRay p χ D‖ ≤ 1 := FiniteRayExpansion.norm_char_le_one χ _
   have hr : ‖if negative then star (supportRay p χ D) else supportRay p χ D‖ ≤ 1 := by
-    cases negative <;> simpa only [Bool.false_eq_true,ite_false,ite_true,norm_star]
+    cases negative <;> simpa
       using hr0
   have hb := beforeDilationLabel_norm_le_one (fun i => Ideal.span {p i}) hg p B v ε₁ ε₂
     negative c d (ConcretePrimeRowBridge.idealGenerator x.1) D

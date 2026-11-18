@@ -8,9 +8,8 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondBalancedSource
 namespace OAI
 
 namespace SevenEighths.InverseMoment
+open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic JointLogSeparation MeasureTheory SchwartzMap
 open scoped BigOperators Classical ContDiff
-open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open JointLogSeparation MeasureTheory SchwartzMap
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 local instance inverseSecondDeletedPhysicalEnergyUnits : Fintype Eisˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
@@ -103,8 +102,7 @@ theorem actual_second_deleted_physical_energy
   conv_lhs at hn => rw [norm_mul,Complex.norm_real,Real.norm_eq_abs,abs_of_pos (Real.exp_pos _)]
   conv_rhs at hn => rw [norm_mul]
   have hn' := congrArg (fun a : ℝ => Real.exp (6*L)*a) hn
-  rw [←mul_assoc,hexp,one_mul] at hn'
-  rw [←mul_assoc] at hn'
+  rw [←mul_assoc,hexp,one_mul, ←mul_assoc] at hn'
   rw [hn']
   exact mul_le_mul_of_nonneg_left hb (by positivity)
 

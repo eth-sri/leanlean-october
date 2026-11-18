@@ -10,20 +10,15 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyFirstPhysicalNormalization
-open HeckeFamily CenteredMomentCommonRadialData
-open CenteredMomentFirstReferenceEnergy CenteredMomentSecondWindowBudget
-open CenteredMomentFirstPhysicalSource
+open HeckeFamily CenteredMomentCommonRadialData CenteredMomentFirstReferenceEnergy CenteredMomentSecondWindowBudget CenteredMomentFirstPhysicalSource
 
 lemma window_pair_le (J₁ J₂ : ℕ) (t L R H : ℝ) (hH : 0 ≤ H)
     (hL : L ≤ H) (hR : R ≤ H) :
     windowBudget J₁ t L * windowBudget J₂ t R ≤
       H * heightEnvelope t ^ (J₁ + J₂) * profileMoment J₁ * profileMoment J₂ := by
   have hs : Real.sqrt L * Real.sqrt R ≤ H := by
-    calc
-      _ ≤ Real.sqrt H * Real.sqrt H :=
-        mul_le_mul (Real.sqrt_le_sqrt hL) (Real.sqrt_le_sqrt hR)
-          (Real.sqrt_nonneg _) (Real.sqrt_nonneg _)
-      _ = H := Real.mul_self_sqrt hH
+    exact (mul_le_mul (Real.sqrt_le_sqrt hL) (Real.sqrt_le_sqrt hR)
+          (Real.sqrt_nonneg _) (Real.sqrt_nonneg _)).trans_eq (Real.mul_self_sqrt hH)
   have hp := mul_le_mul_of_nonneg_right hs
     (show 0 ≤ heightEnvelope t ^ (J₁ + J₂) * profileMoment J₁ * profileMoment J₂ by
       exact mul_nonneg (mul_nonneg (pow_nonneg (heightEnvelope_pos t).le _)
@@ -64,7 +59,7 @@ theorem physical_power_identity (Z K q Mdecl ell : ℝ) (hZ : 1 < Z)
     (hK : 0 < K) (hq : 0 < q) :
     K * q * Z ^ (Mdecl - (Real.logb Z K + Real.logb Z q) + ell) =
       Z ^ (Mdecl + ell) := by
-  have hz : 0 < Z := zero_lt_one.trans hZ
+  have hz := zero_lt_one.trans hZ
   have hKq : K * q = Z ^ (Real.logb Z K + Real.logb Z q) := by
     rw [Real.rpow_add hz, Real.rpow_logb hz hZ.ne' hK, Real.rpow_logb hz hZ.ne' hq]
   rw [hKq, ← Real.rpow_add hz]
@@ -86,8 +81,7 @@ lemma heightEnvelope_le (t : ℝ) :
 
 lemma heightEnvelope_pow_le (J : ℕ) (t : ℝ) :
     heightEnvelope t ^ J ≤ (1 + 2 * Real.pi) ^ (2 * J) * (1 + ‖t‖) ^ J := by
-  have hh := pow_le_pow_left₀ (heightEnvelope_pos t).le (heightEnvelope_le t) J
-  simpa only [mul_pow, ← pow_mul] using hh
+  simpa only [mul_pow, ← pow_mul] using (pow_le_pow_left₀ (heightEnvelope_pos t).le (heightEnvelope_le t) J)
 
 def normalizationConstant (lowerProduct : ℝ) : ℝ :=
   16 * (Real.exp (Real.log 4) / lowerProduct) * fixedPresentationCost
@@ -150,8 +144,7 @@ def polynomialConstant (lowerProduct : ℝ) (J₁ J₂ : ℕ) : ℝ :=
   normalizationConstant lowerProduct * (1 + 2 * Real.pi) ^ (2 * (J₁ + J₂))
 
 lemma polynomialConstant_pos (lowerProduct : ℝ) (J₁ J₂ : ℕ)
-    (hlower : 0 < lowerProduct) : 0 < polynomialConstant lowerProduct J₁ J₂ := by
-  exact mul_pos (normalizationConstant_pos lowerProduct hlower) (pow_pos (by positivity) _)
+    (hlower : 0 < lowerProduct) : 0 < polynomialConstant lowerProduct J₁ J₂ := mul_pos (normalizationConstant_pos lowerProduct hlower) (pow_pos (by positivity) _)
 
 omit [DecidableEq ι] in
 theorem sourceFactor_pairedBudget_polynomial (lowerProduct : ℝ) (hlower : 0 < lowerProduct)
@@ -174,18 +167,11 @@ theorem sourceFactor_pairedBudget_polynomial (lowerProduct : ℝ) (hlower : 0 < 
   have hconst := (normalizationConstant_pos lowerProduct hlower).le
   have hz := zero_lt_one.trans hZ
   apply hh.trans
-  calc
-    _ ≤ normalizationConstant lowerProduct * F * Z ^ (Mdecl + ell) *
-        ((1 + 2 * Real.pi) ^ (2 * (J₁ + J₂)) * (1 + ‖s.t‖) ^ (J₁ + J₂)) *
-        profileMoment J₁ * profileMoment J₂ :=
-      mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right
+  exact (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right
         (mul_le_mul_of_nonneg_left (heightEnvelope_pow_le (J₁ + J₂) s.t)
-          (by positivity)) hm₁) hm₂
-    _ = _ := by unfold polynomialConstant; ring
+          (by positivity)) hm₁) hm₂).trans_eq (by unfold polynomialConstant; ring)
 
-open Filter CenteredMomentOriginalCommonHarmonic CenteredMomentFirstSourceReduction
-open CenteredMomentFirstReferenceSource CenteredMomentFirstPhysicalDyadicAssembly
-open CenteredMomentSourceMass CenteredMomentFirstNonexceptionalWeightSum
+open Filter CenteredMomentOriginalCommonHarmonic CenteredMomentFirstSourceReduction CenteredMomentFirstReferenceSource CenteredMomentFirstPhysicalDyadicAssembly CenteredMomentSourceMass CenteredMomentFirstNonexceptionalWeightSum
 local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
 theorem actual_physical_mass_of_columnBounds (W : 𝓢(ℝ, ℂ)) (J₁ J₂ : ℕ)
@@ -215,14 +201,13 @@ theorem actual_physical_mass_of_columnBounds (W : 𝓢(ℝ, ℂ)) (J₁ J₂ : �
   obtain ⟨Cb, hCb, hbound⟩ := actual_physical_mass W J₁ J₂ hi b₁ b₂ B ξ ε hB hξ hε
   refine ⟨Cb * polynomialConstant lowerProduct J₁ J₂,
     mul_pos hCb (polynomialConstant_pos lowerProduct J₁ J₂ hlower), ?_⟩
-  filter_upwards [hbound, eventually_gt_atTop (1 : ℝ)] with Z hbound hZ
+  filter_upwards [hbound, eventually_gt_atTop 1] with Z hbound hZ
   intro s R seed hseed hseed₀ hhi hb₁ hb₂ a₁ a₂ K ha₁ ha₂ hK hsupport hs₁ hs₂ hV hKi
     F Mdecl ell lossL lossR EL ER hF hEL hER hL hR heL heR hcols
   have hphysical := hbound s R seed hseed hseed₀ hhi hb₁ hb₂ a₁ a₂ K ha₁ ha₂ hK
     hs₁ hs₂ hV hKi EL ER hEL hER hcols
   have hnormal := sourceFactor_pairedBudget_polynomial lowerProduct hlower s a₁ a₂ K Z
     F Mdecl ell J₁ J₂ lossL lossR EL ER ha₁ ha₂ hK hZ hF hsupport hL hR heL heR
-  have hz : 0 < Z := zero_lt_one.trans hZ
   have hp : 0 ≤ Cb * Z ^ ε / (seed.absNorm : ℝ) := by positivity
   calc
     _ ≤ Cb * Z ^ ε / (seed.absNorm : ℝ) * sourceFactor s a₁ a₂ K *
@@ -235,7 +220,7 @@ theorem actual_physical_mass_of_columnBounds (W : 𝓢(ℝ, ℂ)) (J₁ J₂ : �
       mul_le_mul_of_nonneg_left hnormal hp
     _ = _ := by
       rw [show Z ^ (Mdecl + ell + ε) = Z ^ (Mdecl + ell) * Z ^ ε from
-        Real.rpow_add hz (Mdecl + ell) ε]
+        Real.rpow_add (zero_lt_one.trans hZ) (Mdecl + ell) ε]
       ring
 
 end SevenEighths.CenteredMomentEnergyFirstPhysicalNormalization

@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical SchwartzMap
 namespace SevenEighths.ProbeGramCommon
-open ProbePhysical CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion
-open ConcreteTraceCRT CenteredMomentMobiusRegroup UniqueFactorizationMonoid
-open CenteredMomentSupportedCorrelation EisensteinSchwartzPoisson
+open ProbePhysical CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion ConcreteTraceCRT CenteredMomentMobiusRegroup UniqueFactorizationMonoid CenteredMomentSupportedCorrelation EisensteinSchwartzPoisson
 local notation "O" => ActualEisensteinCubic.O
 local notation "Id" => Ideal O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
@@ -64,9 +62,7 @@ theorem original_common_window_source (S : Finset Id) (hS : ∀p∈S,p.IsMaximal
           shellProfile W v U (frequencyScale C k Y Q) (‖eisEmbedding n‖^2/(N/Ideal.absNorm D))
             (‖eisEmbedding m‖^2/(N/Ideal.absNorm D)) := by
   dsimp only
-  have hpc : λ₀^2∣primaryGenerator C.val-1 :=
-    (primaryGenerator_spec _ (supported_primaryGenerator_ne_zero _ C.property)).2
-  rw [←original_window_mobius_lattice S hS hbad σ (primaryGenerator C.val) k hpc
+  rw [←original_window_mobius_lattice S hS hbad σ (primaryGenerator C.val) k ((primaryGenerator_spec _ (supported_primaryGenerator_ne_zero _ C.property)).2)
     u a b r hr P hg c W hW (commonResidualScale C Y) (commonResidualScale_pos C Y hY)
     U v (frequencyScale C k Y Q)]
   apply Finset.sum_congr rfl
@@ -75,9 +71,6 @@ theorem original_common_window_source (S : Finset Id) (hS : ∀p∈S,p.IsMaximal
   intro J hJ
   split_ifs with hIJ
   · have hni : Supported (Ideal.span {primaryGenerator I.val}) := (supported_span_primaryGenerator_iff _).mpr I.property
-    have hnj : Supported (Ideal.span {primaryGenerator J.val}) := (supported_span_primaryGenerator_iff _).mpr J.property
-    have hpi : λ₀^2∣primaryGenerator I.val-1 := (primaryGenerator_spec _ (supported_primaryGenerator_ne_zero _ I.property)).2
-    have hpj : λ₀^2∣primaryGenerator J.val-1 := (primaryGenerator_spec _ (supported_primaryGenerator_ne_zero _ J.property)).2
     have hij : IsCoprime (primaryGenerator I.val) (primaryGenerator J.val) := by
       apply (Ideal.isCoprime_span_singleton_iff _ _).mp
       simpa only [(primaryGenerator_spec _ (supported_primaryGenerator_ne_zero _ I.property)).1,
@@ -86,8 +79,7 @@ theorem original_common_window_source (S : Finset Id) (hS : ∀p∈S,p.IsMaximal
       rw [(primaryGenerator_spec _ (supported_primaryGenerator_ne_zero _ C.property)).1,he]
     rw [jointExtension_source S hS σ (primaryGenerator C.val) k
       ((supported_span_primaryGenerator_iff _).mpr C.property) u a b r hr hpr hk P hg c hc hcop hf
-      _ _ hni hnj hpi hpj hij]
-    rw [lowGramCoefficient_eq_primary S hS hbad σ,lowGramCoefficient_eq_primary S hS hbad σ,
+      _ _ hni ((supported_span_primaryGenerator_iff _).mpr J.property) ((primaryGenerator_spec _ (supported_primaryGenerator_ne_zero _ I.property)).2) ((primaryGenerator_spec _ (supported_primaryGenerator_ne_zero _ J.property)).2) hij, lowGramCoefficient_eq_primary S hS hbad σ,lowGramCoefficient_eq_primary S hS hbad σ,
       common_kernel_scale C I J k Y Q hY hQ,common_column_ratio,common_column_ratio]
     simp only [supported_dilation_generator,shellProfile,star_mul]
     ring

@@ -92,10 +92,9 @@ theorem gammaTerm_integrable (a : ℂ) {N Y : ℝ} (hN : 0 < N) (hY : 0 < Y) (ρ
       apply continuous_iff_continuousAt.mpr
       intro t
       exact (gamma_differentiableAt_right (by simp : 0 < (line t).re)).continuousAt.comp hl.continuousAt
-    have hy := (differentiable_id.const_cpow (Or.inl (ofReal_ne_zero.mpr hY.ne'))).continuous.comp hl
     have hn := (((differentiable_const ρ).add differentiable_id).neg.const_cpow
       (Or.inl (ofReal_ne_zero.mpr hN.ne'))).continuous.comp hl
-    exact ((hy.mul hg).mul continuous_const).mul hn
+    exact ((((differentiable_id.const_cpow (Or.inl (ofReal_ne_zero.mpr hY.ne'))).continuous.comp hl).mul hg).mul continuous_const).mul hn
   · exact ae_of_all _ (fun t => (gammaTerm_norm a hN hY ρ t).le)
 
 theorem gamma_expansion {ι : Type*} [Countable ι] (a : ι → ℂ) (N : ι → ℝ)
@@ -149,8 +148,7 @@ theorem cutoffTerm_outside (χ : Character) (V : ℝ → ℂ) {D : ℝ} (hD : 0 
   · have hn : 2*D < (J.absNorm : ℝ) := by
       by_contra h
       exact hJ ((mem_cutoffSet hD.le).mpr ⟨hzero, le_of_not_gt h⟩)
-    have hv := hV ((J.absNorm : ℝ)/D) ((le_div_iff₀ hD).mpr hn.le)
-    simp [cutoffTerm, hv]
+    simp [cutoffTerm, (hV ((J.absNorm : ℝ)/D) ((le_div_iff₀ hD).mpr hn.le))]
 
 theorem cutoffTerm_hasSum (χ : Character) (V : ℝ → ℂ) {D : ℝ} (hD : 0 < D)
     (hV : ∀ x : ℝ, 2 ≤ x → V x = 0) (s : ℂ) :
@@ -166,9 +164,7 @@ def pairNorm (p : Ideal O × Ideal O) : ℝ := (p.1*p.2).absNorm
 theorem pairCoefficient_zero_norm (χ : Character) (V : ℝ → ℂ) (D : ℝ)
     (p : Ideal O × Ideal O) (hp : pairNorm p = 0) : pairCoefficient χ V D p = 0 := by
   have hn : (p.1*p.2).absNorm = 0 := by unfold pairNorm at hp; exact_mod_cast hp
-  have hzero := Ideal.absNorm_eq_zero_iff.mp hn
-  rw [pairCoefficient, hzero]
-  rw [show (⊥ : Ideal O) = 0 from rfl, HeckeFamily.idealCoeff_zero, mul_zero]
+  rw [pairCoefficient, (Ideal.absNorm_eq_zero_iff.mp hn), show (⊥ : Ideal O) = 0 from rfl, HeckeFamily.idealCoeff_zero, mul_zero]
 
 theorem pairTerm_eq (χ : Character) (V : ℝ → ℂ) (D : ℝ) (s : ℂ)
     (p : Ideal O × Ideal O) :
@@ -177,8 +173,7 @@ theorem pairTerm_eq (χ : Character) (V : ℝ → ℂ) (D : ℝ) (s : ℂ)
   rw [cutoffTerm_weighted]
   by_cases hp : p.1*p.2 = 0
   · have he : pairNorm p = 0 := by simp [pairNorm, hp]
-    rw [pairCoefficient_zero_norm χ V D p he, zero_mul]
-    rw [mul_assoc, ← map_mul, hp, map_zero, mul_zero]
+    rw [pairCoefficient_zero_norm χ V D p he, zero_mul, mul_assoc, ← map_mul, hp, map_zero, mul_zero]
   · rw [mul_assoc, ← map_mul]
     simp only [pairCoefficient, pairNorm, Complex.ofReal_natCast,
       IdealEuler.weighted, IdealEuler.normWeight, MonoidWithZeroHom.coe_mk, ZeroHom.coe_mk,
@@ -199,16 +194,14 @@ theorem pairSeries_eq (χ : Character) (V : ℝ → ℂ) {D : ℝ} (hD : 0 < D)
       cutoff χ V D s * LFunction χ s := by
   simp_rw [pairTerm_eq]
   rw [← tsum_mul_tsum_of_summable_norm (cutoffTerm_hasSum χ V hD hV s).summable.norm
-    (IdealEuler.weighted_summable_norm _ (idealCoeff_norm_le_one χ) s hs)]
-  rw [(cutoffTerm_hasSum χ V hD hV s).tsum_eq, LFunction_eq_series χ hs]
+    (IdealEuler.weighted_summable_norm _ (idealCoeff_norm_le_one χ) s hs), (cutoffTerm_hasSum χ V hD hV s).tsum_eq, LFunction_eq_series χ hs]
   rfl
 
 theorem pairMajorant_summable (χ : Character) (V : ℝ → ℂ) {D : ℝ} (hD : 0 < D)
     (hV : ∀ x : ℝ, 2 ≤ x → V x = 0) {ρ : ℂ} (hρ : -1 < ρ.re) :
     Summable (fun p : Ideal O × Ideal O =>
       ‖pairCoefficient χ V D p‖*(pairNorm p)^(-(ρ.re+2))) := by
-  have h := pairTerm_summable_norm χ V hD hV (ρ+2) (by norm_num; linarith)
-  apply h.congr
+  apply (pairTerm_summable_norm χ V hD hV (ρ+2) (by norm_num; linarith)).congr
   intro p
   by_cases hp : pairNorm p = 0
   · simp [pairCoefficient_zero_norm χ V D p hp]

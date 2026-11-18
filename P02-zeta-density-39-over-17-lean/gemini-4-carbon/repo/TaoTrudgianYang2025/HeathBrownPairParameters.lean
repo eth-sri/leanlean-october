@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaUniformityFull
 public import TaoTrudgianYang2025.HeathBrownExponentAlgebra
 
@@ -94,21 +104,21 @@ theorem heathBrownPairLeft_mono {r s : ℝ} (hr : 3 ≤ r) (hrs : r ≤ s) :
     heathBrownPairLeft r ≤ heathBrownPairLeft s := by
   have h := heathBrownPairRight_mono (r:=r-1) (s:=s-1) (by linarith) (by linarith)
   have hrw : heathBrownPairLeft r = heathBrownPairRight (r-1) := by
-    simpa only [sub_add_cancel] using heathBrownPairLeft_succ (r:=r-1)
+    simpa using heathBrownPairLeft_succ (r:=r-1)
   have hsw : heathBrownPairLeft s = heathBrownPairRight (s-1) := by
-    simpa only [sub_add_cancel] using heathBrownPairLeft_succ (r:=s-1)
+    simpa using heathBrownPairLeft_succ (r:=s-1)
   rwa [hrw,hsw]
 
 theorem heathBrownPairLeft_half {r : ℝ} (hr : 3 ≤ r) :
     r/2 ≤ heathBrownPairLeft r := by
   unfold heathBrownPairLeft
-  apply (le_div_iff₀ (show 0 < r by linarith)).mpr
+  apply (le_div_iff₀ (by linarith)).mpr
   nlinarith [sq_nonneg (r-2)]
 
 theorem heathBrownPairRight_lower {r : ℝ} (hr : 3 ≤ r) :
     r-1 ≤ heathBrownPairRight r := by
   unfold heathBrownPairRight
-  apply (le_div_iff₀ (show 0 < r+1 by linarith)).mpr
+  apply (le_div_iff₀ (by linarith)).mpr
   nlinarith
 
 end TaoTrudgianYang2025

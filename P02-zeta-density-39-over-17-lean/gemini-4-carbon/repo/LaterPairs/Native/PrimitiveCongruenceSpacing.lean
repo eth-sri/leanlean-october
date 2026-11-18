@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 
 @[expose] public section
 set_option autoImplicit false
@@ -21,11 +30,9 @@ theorem primitive_linear_congruence_determinant_dvd
   let D := u₁*v₂-u₂*v₁
   have ha : c ∣ a*D := by
     convert dvd_sub (dvd_mul_of_dvd_left h₁ v₂) (dvd_mul_of_dvd_left h₂ v₁) using 1
-    dsimp [D]
     ring
   have hb : c ∣ b*D := by
     convert dvd_sub (dvd_mul_of_dvd_left h₂ u₁) (dvd_mul_of_dvd_left h₁ u₂) using 1
-    dsimp [D]
     ring
   have hg : c ∣ (Int.gcd a b : ℤ)*D := by
     rw [Int.gcd_eq_gcd_ab]
@@ -76,31 +83,26 @@ theorem primitive_linear_congruence_ratio_spacing
     (h₁ : c ∣ a*u₁+b*v₁) (h₂ : c ∣ a*u₂+b*v₂)
     (hne : (u₁,v₁) ≠ (u₂,v₂)) :
     (c:ℝ)/(4*V^2) ≤ |(u₁:ℝ)/v₁-(u₂:ℝ)/v₂| := by
-  have hv₁p : 0 < (v₁:ℝ) := hV.trans_le hv₁
-  have hv₂p : 0 < (v₂:ℝ) := hV.trans_le hv₂
+  have hv₁p := hV.trans_le hv₁
+  have hv₂p := hV.trans_le hv₂
   have hv₁z : 0 < v₁ := by exact_mod_cast hv₁p
   have hv₂z : 0 < v₂ := by exact_mod_cast hv₂p
-  have hdvd := primitive_linear_congruence_determinant_dvd hprim h₁ h₂
-  have hneD := primitive_fraction_determinant_ne_zero hv₁z hv₂z hp₁ hp₂ hne
   have hD : c ≤ |u₁*v₂-u₂*v₁| := by
-    obtain ⟨t,ht⟩ := hdvd
-    have htn : t ≠ 0 := by intro hz; simp [hz] at ht; exact hneD ht
+    obtain ⟨t,ht⟩ := (primitive_linear_congruence_determinant_dvd hprim h₁ h₂)
+    have htn : t ≠ 0 := by intro hz; simp [hz] at ht; exact (primitive_fraction_determinant_ne_zero hv₁z hv₂z hp₁ hp₂ hne) ht
     have ht1 : 1 ≤ |t| := by have htpos := abs_pos.mpr htn; omega
     rw [ht,abs_mul,abs_of_pos hc]
     nlinarith
   have hDr : (c:ℝ) ≤ |((u₁*v₂-u₂*v₁:ℤ):ℝ)| := by exact_mod_cast hD
-  have hprod : 0 < (v₁:ℝ)*v₂ := mul_pos hv₁p hv₂p
+  have hprod := mul_pos hv₁p hv₂p
   have hprodu : (v₁:ℝ)*v₂ ≤ 4*V^2 := by
     have hm := mul_le_mul hv₁u hv₂u hv₂p.le (by positivity : 0 ≤ 2*V)
-    nlinarith only [hm]
+    nlinarith
   have he : (u₁:ℝ)/v₁-(u₂:ℝ)/v₂ =
       ((u₁*v₂-u₂*v₁:ℤ):ℝ)/((v₁:ℝ)*v₂) := by
     push_cast
     field_simp
   rw [he,abs_div,abs_of_pos hprod]
-  calc
-    _ ≤ (c:ℝ)/((v₁:ℝ)*v₂) :=
-      div_le_div_of_nonneg_left (by exact_mod_cast hc.le) hprod hprodu
-    _ ≤ _ := div_le_div_of_nonneg_right hDr hprod.le
+  exact (div_le_div_of_nonneg_left (by exact_mod_cast hc.le) hprod hprodu).trans (div_le_div_of_nonneg_right hDr hprod.le)
 
 end TaoTrudgianYang2025

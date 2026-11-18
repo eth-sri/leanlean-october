@@ -11,9 +11,7 @@ public import Mathlib.Analysis.ODE.Gronwall
 
 @[expose] public section
 
-open Complex Set MeasureTheory
-open MathCollab.Density.Stronger
-open MathCollab.Density.Stronger.Fourth.Digamma
+open Complex Set MeasureTheory MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth.Digamma
 set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Fourth
@@ -62,11 +60,8 @@ theorem amplitude_derivative_norm_le {t : ℝ} (ht : 4 ≤ t)
         (zetaGammaLeadingLog t + Complex.log (Real.pi : ℂ)))‖ ≤
       zetaGammaShiftError t w * ‖zetaGammaShiftAmplitude t w v‖ := by
   rw [norm_mul, norm_mul]
-  calc
-    _ ≤ (‖zetaGammaShiftAmplitude t w v‖ * ‖w‖) * ((17 + 2 * ‖w‖) / t) :=
-      mul_le_mul_of_nonneg_left (norm_zetaGammaHalfShift_digamma_sub_le ht hwre hw hv)
-        (mul_nonneg (norm_nonneg _) (norm_nonneg _))
-    _ = _ := by unfold zetaGammaShiftError; ring
+  exact (mul_le_mul_of_nonneg_left (norm_zetaGammaHalfShift_digamma_sub_le ht hwre hw hv)
+        (mul_nonneg (norm_nonneg _) (norm_nonneg _))).trans_eq (by unfold zetaGammaShiftError; ring)
 
 theorem norm_zetaGammaShiftAmplitude_le {t : ℝ} (ht : 4 ≤ t)
     {w : ℂ} (hwre : 0 ≤ w.re) (hw : ‖w‖ ≤ t / 2)
@@ -75,12 +70,11 @@ theorem norm_zetaGammaShiftAmplitude_le {t : ℝ} (ht : 4 ≤ t)
   let f := zetaGammaShiftAmplitude t w
   let f' := fun u : ℝ => f u * w * (Complex.digamma (zetaGammaHalfShift t w u) -
     (zetaGammaLeadingLog t + Complex.log (Real.pi : ℂ)))
-  have hderiv (u : ℝ) (hu : u ∈ Icc (0 : ℝ) 1) : HasDerivAt f (f' u) u :=
-    hasDerivAt_zetaGammaShiftAmplitude t hwre hu.1
-  have hc : ContinuousOn f (Icc (0 : ℝ) 1) :=
+  have hderiv (u : ℝ) (hu : u ∈ Icc 0 1) := hasDerivAt_zetaGammaShiftAmplitude t hwre hu.1
+  have hc : ContinuousOn f (Icc 0 1) :=
     fun u hu => (hderiv u hu).continuousAt.continuousWithinAt
   have hi : ‖f 0‖ ≤ 1 := by simp [f, zetaGammaShiftAmplitude_zero]
-  have hbound : ∀ u ∈ Ico (0 : ℝ) 1, ‖f' u‖ ≤ zetaGammaShiftError t w * ‖f u‖ + 0 := by
+  have hbound : ∀ u ∈ Ico 0 1, ‖f' u‖ ≤ zetaGammaShiftError t w * ‖f u‖ + 0 := by
     intro u hu
     exact (amplitude_derivative_norm_le ht hwre hw ⟨hu.1, hu.2.le⟩).trans_eq (add_zero _).symm
   have h := norm_le_gronwallBound_of_norm_deriv_right_le hc
@@ -145,7 +139,7 @@ theorem norm_gammaReal_shift_sq_le_exp {t : ℝ} (ht : 4 ≤ t)
       neg_mul, mul_assoc, ← Complex.exp_add, neg_add_cancel,
       Complex.exp_zero, mul_one]
   rw [he, norm_mul, Complex.norm_exp]
-  exact mul_le_mul_of_nonneg_right (by simpa only [mul_one] using h) (by positivity)
+  exact mul_le_mul_of_nonneg_right (by simpa using h) (by positivity)
 
 
 end MathCollab.Density.Stronger.Fourth

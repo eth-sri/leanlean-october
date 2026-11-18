@@ -16,12 +16,9 @@ theorem prime_coprime_of_norm_gt (η : Character) (P : PrimeIdeal)
     (hN : (η.modulus.absNorm:ℝ)<(P.val.absNorm:ℝ)) : IsCoprime P.val η.modulus := by
   apply Ideal.coprime_of_no_prime_ge
   intro J hPJ hηJ hJ
-  have hmax := (Ideal.isPrime_of_prime P.property).isMaximal P.property.ne_zero
-  have heq := hmax.eq_of_le hJ.ne_top hPJ
-  rw [←heq] at hηJ
-  have hd : P.val∣η.modulus := Ideal.dvd_iff_le.mpr hηJ
+  rw [←(((Ideal.isPrime_of_prime P.property).isMaximal P.property.ne_zero).eq_of_le hJ.ne_top hPJ)] at hηJ
   have hn := Nat.le_of_dvd (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr η.modulus_ne_bot))
-    (map_dvd Ideal.absNorm hd)
+    (map_dvd Ideal.absNorm (Ideal.dvd_iff_le.mpr hηJ))
   exact (not_le_of_gt hN) (by exact_mod_cast hn)
 
 theorem pool_supported (C : Set Id) (S : Finset Id) (hS : SourceExclusions S)

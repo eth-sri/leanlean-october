@@ -39,7 +39,6 @@ theorem heathBrown_shift_factor_le
           (((H : ℝ) ^ (k - 2))⁻¹) / lambda) *
         (4 + 4 * A * (k - 1 : ℕ) * N *
           (((H : ℝ) ^ (k - 1))⁻¹)) := by
-  dsimp only
   have hleft := heathBrown_shift_plus_c_le
     (N := N) (k := k) (H := H) hk hlambda (by omega)
   have hright := heathBrown_b_plus_aD_le
@@ -74,24 +73,24 @@ theorem heathBrown_shift_factor_le_chosen
       12 * ((k - 1).factorial : ℝ) *
           (((H : ℝ) ^ (k - 2))⁻¹) / lambda ≤
         12 * ((k - 1).factorial : ℝ) / lambda *
-          ((2 : ℝ) ^ (k - 2) *
+          (2 ^ (k - 2) *
             (A * lambda) ^ (((k - 2 : ℕ) : ℝ) / k)) := by
     dsimp only [H]
     calc
       12 * ((k - 1).factorial : ℝ) *
           (((heathBrownHChoice k A lambda : ℝ) ^ (k - 2))⁻¹) / lambda ≤
         12 * ((k - 1).factorial : ℝ) *
-          ((2 : ℝ) ^ (k - 2) *
+          (2 ^ (k - 2) *
             (A * lambda) ^ (((k - 2 : ℕ) : ℝ) / k)) / lambda := by
           gcongr
       _ = 12 * ((k - 1).factorial : ℝ) / lambda *
-          ((2 : ℝ) ^ (k - 2) *
+          (2 ^ (k - 2) *
             (A * lambda) ^ (((k - 2 : ℕ) : ℝ) / k)) := by ring
   have hright :
       4 + 4 * A * (k - 1 : ℕ) * N *
           (((H : ℝ) ^ (k - 1))⁻¹) ≤
         4 + 4 * A * (k - 1 : ℕ) * N *
-          ((2 : ℝ) ^ (k - 1) *
+          (2 ^ (k - 1) *
             (A * lambda) ^ (((k - 1 : ℕ) : ℝ) / k)) := by
     dsimp only [H]
     gcongr
@@ -132,10 +131,10 @@ theorem heathBrownPairCount_card_cast_le_chosen_factor
   let H := heathBrownHChoice k A lambda
   let K := heathBrownBlockParameter A lambda N
   let D := heathBrownShiftBound N k H lambda
-  let c : ℝ := 8 * ((k - 2).factorial : ℝ) *
+  let c := 8 * ((k - 2).factorial : ℝ) *
     (((H : ℝ) ^ (k - 2))⁻¹) / lambda
-  let b : ℝ := 8 * (((H : ℝ) ^ (k - 2))⁻¹) + 3
-  let a : ℝ := A * lambda * N / ((k - 2).factorial : ℝ)
+  let b := 8 * (((H : ℝ) ^ (k - 2))⁻¹) + 3
+  let a := A * lambda * N / ((k - 2).factorial : ℝ)
   have hcount := heathBrownPairCount_card_cast_le_at_chosen_scale
     (N := N) (k := k) (f := f) (A := A) (lambda := lambda)
     hk hN hA hlambda hsmall hlargeH hcoordLow hcoordLowD hcoordLast
@@ -154,8 +153,7 @@ theorem heathBrownPairCount_card_cast_le_chosen_factor
           (1 + Real.log N)) ≤
         N + 2 * heathBrownChosenShiftFactor N k A lambda *
           (1 + Real.log N) := by
-    have hmul := mul_le_mul_of_nonneg_right hfactor hlog
-    have hmul' := mul_le_mul_of_nonneg_left hmul
+    have hmul' := mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_right hfactor hlog)
       (by norm_num : (0 : ℝ) ≤ 2)
     simpa only [D, c, b, a, H, mul_assoc] using
       (add_le_add_right hmul' (N : ℝ))

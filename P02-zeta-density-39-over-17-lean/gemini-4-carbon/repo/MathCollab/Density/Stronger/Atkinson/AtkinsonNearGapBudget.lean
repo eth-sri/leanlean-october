@@ -11,10 +11,8 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonGapArithmetic
 
 @[expose] public section
 
-open Complex Finset Set Filter
+open Complex Finset Set Filter RiemannZeta.GuthMaynard MathCollab.Density.Stronger.Fourth
 open scoped ComplexConjugate
-open RiemannZeta.GuthMaynard
-open MathCollab.Density.Stronger.Fourth
 set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
@@ -89,10 +87,7 @@ theorem atkinson_gap_double_sum_le_near_add_far {H G : ℝ} {M : ℕ} {W : Finse
     (hrange : ∀ u ∈ W, H ≤ u ∧ u ≤ 2*H) :
     (∑ t ∈ W, ∑ u ∈ W, atkinsonPrefixGapMajorant M M t u) ≤
       (W.card:ℝ)*atkinsonNearRowBound H G M+∑ t ∈ W, atkinsonFarGapRow H M W t := by
-  calc
-    _ ≤ ∑ t ∈ W, (atkinsonNearRowBound H G M+atkinsonFarGapRow H M W t) :=
-      Finset.sum_le_sum (fun t ht => atkinson_gap_row_le_near_add_far hH hG hM hSep ht hrange)
-    _ = _ := by rw [Finset.sum_add_distrib]; simp
+  exact (Finset.sum_le_sum (fun t ht => atkinson_gap_row_le_near_add_far hH hG hM hSep ht hrange)).trans_eq (by rw [Finset.sum_add_distrib]; simp)
 
 def atkinsonSeparatedGapBudget (η H G : ℝ) (N : ℕ) (W : Finset ℝ) : ℝ :=
   (Nat.clog 2 N:ℝ)*∑ j ∈ Finset.range (Nat.clog 2 N),

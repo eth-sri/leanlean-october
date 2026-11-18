@@ -10,7 +10,7 @@ noncomputable section
 open MeasureTheory
 open scoped SchwartzMap
 namespace GuthMaynard.Improvement
-open RiemannZeta.GuthMaynard
+open RiemannZeta.GuthMaynard GuthMaynard.NativeMoment
 
 set_option maxHeartbeats 600000 in
 /-- The strengthened unequal-scale estimate for the source's canonical
@@ -50,7 +50,7 @@ theorem mixed_height_affine (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 ≤ D β
         ((B+1)*T^ε)*((K:ℝ)^6*(∫ x, f x)^2+(K:ℝ)^4*(Real.sqrt (∫ x, f x^2))^2) := by
       rw [Real.sq_sqrt hL2]
       exact hq.trans (by gcongr; linarith)
-    have hP' := hP T hT f R K M₁ M₂ M₃ hf hs.iterationSupported hp hK hKR hRT h₁ h₂ h₃ h₁R h₂K h₃R
+    have hP' := hP T hT f R K M₁ M₂ M₃ hf (GMAffineSupportedOn.iterationSupported hs (by norm_num) (by norm_num)) hp hK hKR hRT h₁ h₂ h₃ h₁R h₂K h₃R
     have hclosed := unequal_reduction_of_estimates
       (show 0 ≤ A*T^(ε/2) by positivity)
       (show 1 ≤ (B+1)*T^ε by nlinarith only [hB,hpow])

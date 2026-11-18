@@ -8,15 +8,11 @@ public import OAI.NumberTheory.DirichletL.Energy.LowBandEmpty
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
 open Filter
+open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyPositiveLowBandSource
-open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyReferenceLowBands
-open CenteredMomentEnergyNaturalLowSourceBound CenteredMomentFiniteProfileExceptional
-open CenteredMomentFirstSourceReduction CenteredMomentAmplificationChildInput
-open CenteredMomentNaturalFixedRaySource CenteredMomentSecondHeightFamily
+open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyReferenceLowBands CenteredMomentEnergyNaturalLowSourceBound CenteredMomentFiniteProfileExceptional CenteredMomentFirstSourceReduction CenteredMomentAmplificationChildInput CenteredMomentNaturalFixedRaySource CenteredMomentSecondHeightFamily
 local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
 local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
@@ -66,7 +62,7 @@ theorem actual_low_stages_from_physical
   have hfixed (T:Finset α):=natural_low_source_bound (ι:=T) W hW aslot bslot lo hi
     a b bΦ Mcap εdiag ξ saving haslot hWs hbslot ha hb hbΦ hMcap hεdiag hξ
   choose Ψ hΨs hΨn Cj hCj hbound using hfixed
-  let Cfixed:ℝ:=1+∑T:Finset α,Cj T
+  let Cfixed :=1+∑T:Finset α,Cj T
   have hCfixed:0<Cfixed:=by
     have hh:=Finset.sum_nonneg (fun T (_:T∈(Finset.univ:Finset (Finset α)))=>(hCj T).le)
     dsimp [Cfixed];linarith
@@ -75,8 +71,7 @@ theorem actual_low_stages_from_physical
       (Finset.mem_univ T)
     dsimp [Cfixed];linarith
   refine ⟨Ψ,hΨs,hΨn,Cfixed,hCfixed,?_⟩
-  have hall:∀ᶠZ:ℝ in atTop,∀T:Finset α,_:=Filter.eventually_all.mpr hbound
-  filter_upwards [hall,eventually_gt_atTop (1:ℝ)] with Z hZ hZ1
+  filter_upwards [(Filter.eventually_all.mpr hbound),eventually_gt_atTop (1:ℝ)] with Z hZ hZ1
   refine ⟨hZ1,?_⟩
   intro Bmask L Lslot rho κ e η₀ Q S J Cphysical hκ hCphysical he hsave hold hmass
   have hpositive:PositiveLowAt (α:=α) M H hH W bslot a b bΦ Bmask L Lslot lo hi Mcap e κ Z η₀ Q
@@ -93,7 +88,7 @@ theorem actual_low_stages_from_physical
       S J Cphysical height e hCphysical hheight he hsave hp
     have hc:=hCC T
     have hd:=diagonalControl_nonneg state.radial.profile
-    have hz:0≤Z:=zero_le_one.trans hZ1.le
+    have hz :=zero_le_one.trans hZ1.le
     apply hh.trans
     gcongr
   exact ⟨hpositive,CenteredMomentEnergyLowBandEmpty.positive_low_zero (α:=α) M H hH

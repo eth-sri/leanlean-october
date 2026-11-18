@@ -68,16 +68,10 @@ theorem rayPrimePolynomial_norm_le (η : Character) (W : ℝ→ℂ) (b D σ freq
   rw [rayPrimePolynomial_eq_average M H hH η W b D σ freq,norm_mul,norm_inv]
   have hcard : (0 : ℝ)<RayQuotient.classNumber M H := by
     exact_mod_cast RayQuotient.classNumber_pos M H
-  have heq : Fintype.card (RayQuotient.Characters M H)=RayQuotient.classNumber M H :=
-    RayOrthogonality.card_characters H
   have hn : ‖(RayQuotient.classNumber M H : ℂ)‖=(RayQuotient.classNumber M H : ℝ) := by simp
   rw [hn]
-  calc
-    _ ≤ (RayQuotient.classNumber M H : ℝ)⁻¹ *
-        ∑ θ : RayQuotient.Characters M H, C :=
-      mul_le_mul_of_nonneg_left ((norm_sum_le _ _).trans (Finset.sum_le_sum (fun θ _ => hbound θ)))
-        (by positivity)
-    _ = C := by simp only [Finset.sum_const,Finset.card_univ,nsmul_eq_mul,heq]; rw [←mul_assoc,inv_mul_cancel₀ hcard.ne',one_mul]
+  exact (mul_le_mul_of_nonneg_left ((norm_sum_le _ _).trans (Finset.sum_le_sum (fun θ _ => hbound θ)))
+        (by positivity)).trans_eq (by simp only [Finset.sum_const,Finset.card_univ,nsmul_eq_mul,(RayOrthogonality.card_characters H)]; rw [←mul_assoc,inv_mul_cancel₀ hcard.ne',one_mul])
 
 theorem ray_prime_bin_bound (W : ℝ→ℂ) (A B : ℝ) (hA : 0<A)
     (hWs : Function.support W⊆Icc A B) (hW : ContDiff ℝ ∞ W)

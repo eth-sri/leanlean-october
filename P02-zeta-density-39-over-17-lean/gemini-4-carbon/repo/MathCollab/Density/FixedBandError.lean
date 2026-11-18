@@ -24,8 +24,7 @@ theorem mem_reflectionBand (L H : ℝ) (m : ℤ) :
   · intro hm
     apply Finset.mem_filter.mpr
     refine ⟨Finset.mem_Icc.mpr ⟨by have := hm.1; omega, ?_⟩, hm⟩
-    have hh := hm.2.2.trans (Int.le_ceil (4 * H / (Real.pi * L)))
-    exact_mod_cast hh
+    exact_mod_cast (hm.2.2.trans (Int.le_ceil (4 * H / (Real.pi * L))))
 
 theorem tsum_retainedMode_eq_finite (w : ℝ → ℂ) (L H v : ℝ) :
     (∑' m : ℤ, retainedMode w L H v m) =
@@ -47,7 +46,7 @@ theorem summable_retainedMode (w : ReflectionCutoff) {L : ℝ} (hL : 0 < L) (H v
   unfold retainedMode
   split_ifs
   · exact le_rfl
-  · simpa only [norm_zero] using
+  · simpa using
       norm_nonneg (modeIntegral (fun x => (w x : ℂ)) v ((m : ℝ) * L))
 
 theorem summable_discardedMode (w : ReflectionCutoff) {L : ℝ} (hL : 0 < L) (H v : ℝ) :
@@ -58,7 +57,7 @@ theorem summable_discardedMode (w : ReflectionCutoff) {L : ℝ} (hL : 0 < L) (H 
   unfold discardedMode
   split_ifs
   · exact le_rfl
-  · simpa only [norm_zero] using
+  · simpa using
       norm_nonneg (modeIntegral (fun x => (w x : ℂ)) v ((m : ℝ) * L))
 
 theorem nonzeroMode_eq_retained_add_discarded (w : ℝ → ℂ) (L H v : ℝ) (m : ℤ) :

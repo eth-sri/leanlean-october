@@ -8,78 +8,10 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 
 namespace CompletedGauss
-open Filter MeasureTheory
-open scoped Classical BigOperators Topology
 
 section
 open CubicEisenstein
@@ -112,10 +44,6 @@ theorem completedBesselProfile_mellin (Ψ : ActualEisensteinCubic.O→*ℂ)
 lemma inverseBesselMellinFactor_mul (q : ℝ) (hq : 0<q) (s : ℂ)
     (hs : -(1/3)<s.re) :
     inverseBesselMellinFactor q s*besselMellinFactor q s=1 := by
-  have hq0 : (((4*Real.pi*q:ℝ):ℂ)^(2*s+1))≠0 :=
-    Complex.cpow_ne_zero_iff.mpr (Or.inl (Complex.ofReal_ne_zero.mpr (by positivity)))
-  have h1 : Complex.Gamma (s+1/3)≠0 := Complex.Gamma_ne_zero_of_re_pos (by simp;linarith)
-  have h2 : Complex.Gamma (s+2/3)≠0 := Complex.Gamma_ne_zero_of_re_pos (by simp;linarith)
   have hp : (2:ℂ)^(1-2*s)*(2:ℂ)^(2*s-1)=1 := by
     rw [←Complex.cpow_add _ _ (by norm_num : (2:ℂ)≠0)]
     simp
@@ -125,7 +53,7 @@ lemma inverseBesselMellinFactor_mul (q : ℝ) (hq : 0<q) (s : ℂ)
         ((2:ℂ)^(1-2*s)*(2:ℂ)^(2*s-1))*
         ((Complex.Gamma (s+1/3)*Complex.Gamma (s+2/3))⁻¹*
           (Complex.Gamma (s+1/3)*Complex.Gamma (s+2/3))) := by ring
-    _=1 := by rw [div_self hq0,hp,inv_mul_cancel₀ (mul_ne_zero h1 h2)];ring
+    _=1 := by rw [div_self (Complex.cpow_ne_zero_iff.mpr (Or.inl (Complex.ofReal_ne_zero.mpr (by positivity)))),hp,inv_mul_cancel₀ (mul_ne_zero (Complex.Gamma_ne_zero_of_re_pos (by simp;linarith)) (Complex.Gamma_ne_zero_of_re_pos (by simp;linarith)))];ring
 
 theorem completedDirichletSeries_eq_mellin (Ψ : ActualEisensteinCubic.O→*ℂ)
     (hΨ : ∀a,‖Ψ a‖≤1) (q : ℝ) (hq : 0<q) (s : ℂ) (hs : 3/2<s.re) :
@@ -177,19 +105,12 @@ theorem inverseBesselMellinFactor_strip_bound (q : ℝ) (hq : 0<q) (a b : ℝ) :
     exact VerticalContourShift.rpow_between_endpoints _ _ _ _ (by norm_num)
       (by linarith [hs.2]) (by linarith [hs.1])
   simp only [inverseBesselMellinFactor,norm_mul]
-  calc
-    _≤(Ca*Cb)*(Cg*Real.exp (2*Real.pi*|s.im|)) :=
-      mul_le_mul (mul_le_mul hp1 hp2 (norm_nonneg _) hCa) (hg s hs)
-        (norm_nonneg _) (mul_nonneg hCa hCb)
-    _=_ := by ring
+  exact (mul_le_mul (mul_le_mul hp1 hp2 (norm_nonneg _) hCa) (hg s hs)
+        (norm_nonneg _) (mul_nonneg hCa hCb)).trans_eq (by ring)
 
 def continuedBesselDirichlet (F : ℝ→ℂ) (q : ℝ) (s : ℂ) : ℂ :=
   inverseBesselMellinFactor q s*mellin F (2*s)
 
-theorem continuedBesselDirichlet_differentiable (F : ℝ→ℂ) (q : ℝ) (hq : 0<q)
-    (hF : Differentiable ℂ (mellin F)) :
-    Differentiable ℂ (continuedBesselDirichlet F q) :=
-  (inverseBesselMellinFactor_differentiable q hq).mul (hF.comp (by fun_prop))
 
 theorem continuedBesselDirichlet_strip_bound (F : ℝ→ℂ) (q : ℝ) (hq : 0<q)
     (a b : ℝ) (ha : MellinConvergent F ((2*a:ℝ):ℂ))
@@ -200,13 +121,10 @@ theorem continuedBesselDirichlet_strip_bound (F : ℝ→ℂ) (q : ℝ) (hq : 0<q
   obtain ⟨Cm,hCm,hm⟩ := VerticalContourShift.mellin_uniform_strip_bound F (2*a) (2*b) ha hb
   refine ⟨Ci*Cm,mul_nonneg hCi hCm,?_⟩
   intro s hs
-  have hms : ‖mellin F (2*s)‖≤Cm := hm (2*s)
+  have hms := hm (2*s)
     (by simp;linarith [hs.1]) (by simp;linarith [hs.2])
   rw [continuedBesselDirichlet,norm_mul]
-  calc
-    _≤(Ci*Real.exp (2*Real.pi*|s.im|))*Cm :=
-      mul_le_mul (hi s hs) hms (norm_nonneg _) (mul_nonneg hCi (Real.exp_pos _).le)
-    _=_ := by ring
+  exact (mul_le_mul (hi s hs) hms (norm_nonneg _) (mul_nonneg hCi (Real.exp_pos _).le)).trans_eq (by ring)
 
 theorem continuedBesselDirichlet_eq_initial (Ψ : ActualEisensteinCubic.O→*ℂ)
     (hΨ : ∀a,‖Ψ a‖≤1) (q : ℝ) (hq : 0<q) (s : ℂ) (hs : 3/2<s.re) :
@@ -217,8 +135,7 @@ theorem continuedBesselDirichlet_eq_initial (Ψ : ActualEisensteinCubic.O→*ℂ
 end CompletedGauss
 
 namespace CubicEisenstein
-open Filter MeasureTheory Asymptotics
-open scoped BigOperators Classical Topology MatrixGroups
+open scoped MatrixGroups
 
 section
 local notation "Eis" => ActualEisensteinCubic.O
@@ -305,8 +222,8 @@ lemma reflectedCuspProfile_reverse (A:ℂ) (hA:A≠0) (Q:ℝ) (hQ:0<Q)
   have harg:(Q*(Q*v)⁻¹)⁻¹=v := by field_simp
   rw [reflectedCuspProfile_eq_inv_square,harg] at he
   rw [reflectedCuspProfile_eq_inv_square,he,Complex.ofReal_inv,Complex.ofReal_mul]
-  have hcQ:(Q:ℂ)≠0:=Complex.ofReal_ne_zero.mpr hQ.ne'
-  have hcv:(v:ℂ)≠0:=Complex.ofReal_ne_zero.mpr hv.ne'
+  have hcQ :=Complex.ofReal_ne_zero.mpr hQ.ne'
+  have hcv :=Complex.ofReal_ne_zero.mpr hv.ne'
   field_simp
 
 theorem cusp_mellin_entire_both (f g:ℝ→ℂ) (A:ℂ) (hA:A≠0)
@@ -325,12 +242,10 @@ theorem cusp_mellin_entire_both (f g:ℝ→ℂ) (A:ℂ) (hA:A≠0)
 
 end CubicEisenstein
 
-open scoped BigOperators Classical
 
 namespace CompletedGauss
 
 section
-open UniqueFactorizationMonoid
 local notation "Eis" => ActualEisensteinCubic.O
 
 theorem squarefree_cube_decomposition_unique {I J I' J':Ideal Eis}
@@ -398,8 +313,6 @@ theorem primary_squarefree_cube_injective :
 
 end
 
-open Filter MeasureTheory
-open scoped Classical BigOperators Topology ContDiff
 
 def besselSmoothingIntegrand (F : ℝ→ℂ) (q : ℝ) (V : ℝ→ℂ) (X : ℝ) (s : ℂ) : ℂ :=
   mellin V (s-1/2)*(X:ℂ)^(s-1/2)*continuedBesselDirichlet F q s
@@ -410,10 +323,9 @@ lemma besselSmoothingIntegrand_differentiable (F : ℝ→ℂ) (q : ℝ) (hq : 0<
     (X : ℝ) (hX : 0<X) : Differentiable ℂ (besselSmoothingIntegrand F q V X) := by
   have hm := (CubicReflectionKernel.compact_source_mellin_differentiable V a b ha hVs hV).comp
     (show Differentiable ℂ (fun s : ℂ=>s-1/2) from by fun_prop)
-  have hp : Differentiable ℂ (fun s : ℂ=>(X:ℂ)^(s-1/2)) :=
-    (show Differentiable ℂ (fun s : ℂ=>s-1/2) from by fun_prop).const_cpow
+  have hp := (show Differentiable ℂ (fun s : ℂ=>s-1/2) from by fun_prop).const_cpow
       (Or.inl (Complex.ofReal_ne_zero.mpr hX.ne'))
-  exact (hm.mul hp).mul (continuedBesselDirichlet_differentiable F q hq hF)
+  exact (hm.mul hp).mul (((inverseBesselMellinFactor_differentiable q hq).mul (hF.comp (by fun_prop))))
 
 lemma besselSmoothingIntegrand_strip_bound (F : ℝ→ℂ) (q : ℝ) (hq : 0<q)
     (lo hi : ℝ) (hF : ∀s : ℂ,MellinConvergent F s)
@@ -426,11 +338,11 @@ lemma besselSmoothingIntegrand_strip_bound (F : ℝ→ℂ) (q : ℝ) (hq : 0<q)
   have hVc (s : ℂ) := CubicReflectionKernel.compact_source_mellin_convergent V a b ha hVs hV s
   obtain ⟨Cv,hCv,hv⟩ := VerticalContourShift.mellin_uniform_strip_bound V (lo-1/2) (hi-1/2)
     (hVc _) (hVc _)
-  let Cx : ℝ := X^(lo-1/2)+X^(hi-1/2)
+  let Cx := X^(lo-1/2)+X^(hi-1/2)
   have hCx : 0≤Cx := by dsimp [Cx];positivity
   refine ⟨Cv*Cx*Cd,mul_nonneg (mul_nonneg hCv hCx) hCd,?_⟩
   intro s hs
-  have hvb : ‖mellin V (s-1/2)‖≤Cv := hv (s-1/2)
+  have hvb := hv (s-1/2)
     (by simp;linarith [hs.1]) (by simp;linarith [hs.2])
   have hxb : ‖(X:ℂ)^(s-1/2)‖≤Cx := by
     rw [Complex.norm_cpow_eq_rpow_re_of_pos hX]
@@ -439,11 +351,8 @@ lemma besselSmoothingIntegrand_strip_bound (F : ℝ→ℂ) (q : ℝ) (hq : 0<q)
     exact VerticalContourShift.rpow_between_endpoints X (lo-1/2) (hi-1/2) (s.re-1/2) hX
       (by linarith [hs.1]) (by linarith [hs.2])
   rw [besselSmoothingIntegrand,norm_mul,norm_mul]
-  calc
-    _≤(Cv*Cx)*(Cd*Real.exp (2*Real.pi*|s.im|)) :=
-      mul_le_mul (mul_le_mul hvb hxb (norm_nonneg _) hCv) (hd s hs)
-        (norm_nonneg _) (mul_nonneg hCv hCx)
-    _=_ := by ring
+  exact (mul_le_mul (mul_le_mul hvb hxb (norm_nonneg _) hCv) (hd s hs)
+        (norm_nonneg _) (mul_nonneg hCv hCx)).trans_eq (by ring)
 
 theorem besselSmoothingIntegrand_contour_eq (F : ℝ→ℂ) (q : ℝ) (hq : 0<q)
     (hF : ∀s : ℂ,MellinConvergent F s) (hFe : Differentiable ℂ (mellin F))
@@ -462,9 +371,7 @@ theorem besselSmoothingIntegrand_contour_eq (F : ℝ→ℂ) (q : ℝ) (hq : 0<q)
   · exact hl
   · exact hh
   · intro σ hσ t
-    simpa only [Complex.add_re,Complex.ofReal_re,Complex.mul_re,Complex.ofReal_im,
-      Complex.I_re,Complex.I_im,zero_mul,mul_zero,sub_zero,add_zero,
-      Complex.add_im,Complex.mul_im,mul_one,zero_add] using
+    simpa using
       hb ((σ:ℂ)+t*Complex.I) (by simpa using hσ)
 
 theorem completedT_mellin_shift (Ψ : ActualEisensteinCubic.O→*ℂ) (hΨ : ∀a,‖Ψ a‖≤1)
@@ -482,8 +389,7 @@ theorem completedT_mellin_shift (Ψ : ActualEisensteinCubic.O→*ℂ) (hΨ : ∀
       besselSmoothingIntegrand (completedBesselProfile Ψ q) q (Vstar W) X ((2:ℂ)+t*Complex.I)=
       mellin (Vstar W) ((3/2:ℂ)+t*Complex.I)*(X:ℂ)^((3/2:ℂ)+t*Complex.I)*
         completedDirichletSeries Ψ ((2:ℂ)+t*Complex.I) := by
-    rw [besselSmoothingIntegrand,continuedBesselDirichlet_eq_initial Ψ hΨ q hq _ (by norm_num)]
-    rw [show (2:ℂ)+t*Complex.I-1/2=3/2+t*Complex.I by ring]
+    rw [besselSmoothingIntegrand,continuedBesselDirichlet_eq_initial Ψ hΨ q hq _ (by norm_num), show (2:ℂ)+t*Complex.I-1/2=3/2+t*Complex.I by ring]
   have hr : Integrable (fun t : ℝ=>
       besselSmoothingIntegrand (completedBesselProfile Ψ q) q (Vstar W) X ((2:ℂ)+t*Complex.I)) := by
     simp only [hid]
@@ -497,8 +403,6 @@ theorem completedT_mellin_shift (Ψ : ActualEisensteinCubic.O→*ℂ) (hΨ : ∀
 
 end CompletedGauss
 
-open Filter MeasureTheory
-open scoped Classical BigOperators Topology
 
 namespace CompletedGauss
 open CubicEisenstein
@@ -564,13 +468,12 @@ theorem continuedBesselDirichlet_reflection {α : Type*} [Countable α]
     congr 2
     simp
     ring
-  have hm := radialBesselProfile_mellin r hr a d hd (1-s) hs' ha'
   have hc := cusp_mellin_reflection_of_identity F (radialBesselProfile r a d) A s Q hQ hreflect
   have hm' : mellin (radialBesselProfile r a d) (2-2*s)=
       besselMellinFactor d (1-s)*(∑'i,a i*(r i:ℂ)^(s-1/2)) := by
     calc
       _=mellin (radialBesselProfile r a d) (2*(1-s)) := by congr 1;ring
-      _=_ := by simpa only [besselMellinFactor,show (1/2:ℂ)-(1-s)=s-1/2 by ring] using hm
+      _=_ := by simpa only [besselMellinFactor,show (1/2:ℂ)-(1-s)=s-1/2 by ring] using (radialBesselProfile_mellin r hr a d hd (1-s) hs' ha')
   rw [hm'] at hc
   rw [continuedBesselDirichlet,hc]
   calc

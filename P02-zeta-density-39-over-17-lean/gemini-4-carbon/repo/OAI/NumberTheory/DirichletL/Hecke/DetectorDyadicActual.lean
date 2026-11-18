@@ -15,8 +15,7 @@ open HeckeFamily HeckeDyadic HeckeDetectorDyadicProfiles HeckeDetectorProfiles
 lemma inverse_profile_smooth (Dstar D : ℝ) :
     ContDiff ℝ ∞ (HeckeDetectorDyadicBridge.inverseProfile cutoff positiveAnnular Dstar D) := by
   unfold HeckeDetectorDyadicBridge.inverseProfile
-  have hv : ContDiff ℝ ∞ (fun x : ℝ => cutoff (D*x/Dstar)) := (cutoff.smooth ⊤).comp (by fun_prop)
-  exact hv.mul positiveAnnular_smooth
+  exact ((cutoff.smooth ⊤).comp (by fun_prop)).mul positiveAnnular_smooth
 
 lemma inverse_profile_support (Dstar D : ℝ) :
     Function.support (HeckeDetectorDyadicBridge.inverseProfile cutoff positiveAnnular Dstar D)⊆Icc (1/4) (9/4) := by

@@ -12,8 +12,7 @@ public import Mathlib.Analysis.SpecialFunctions.ImproperIntegrals
 
 @[expose] public section
 
-open Complex Set MeasureTheory Filter Topology Asymptotics
-open MathCollab.Density.Contour
+open Complex Set MeasureTheory Filter Topology Asymptotics MathCollab.Density.Contour
 set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
@@ -42,8 +41,7 @@ theorem DFIVoronoiTestFunction.continuous_ordinaryDivisorMellin_vertical
   intro u
   have hz : (σ : ℂ)+(u : ℂ)*I ≠ 1 := by
     intro h
-    have hr := congrArg Complex.re h
-    simpa using hσ (by simpa using hr)
+    simpa using hσ (by simpa using (congrArg Complex.re h))
   have hv : ContinuousAt (fun v : ℝ => (σ : ℂ)+(v : ℂ)*I) u := by fun_prop
   simpa only [Function.comp_def, Pi.mul_apply, Pi.pow_apply, ordinaryDivisorMellinIntegrand] using
     ContinuousAt.comp (f := fun v : ℝ => (σ : ℂ)+(v : ℂ)*I)
@@ -101,8 +99,7 @@ theorem DFIVoronoiTestFunction.ordinaryDivisor_horizontal_limits
       tendsto_atTop_mono' atTop (Eventually.of_forall fun H => le_abs_self H) tendsto_id
     have hd : Tendsto (fun H : ℝ => (1+|H|)^2) atTop atTop :=
       (tendsto_pow_atTop (by norm_num : (2 : ℕ) ≠ 0)).comp (tendsto_const_nhds.add_atTop ha)
-    have h := (tendsto_const_nhds (x := C)).div_atTop hd
-    simpa using h.mul_const 2
+    simpa using ((tendsto_const_nhds (x := C)).div_atTop hd).mul_const 2
   have htop : Tendsto (fun H : ℝ => HIntegral (ordinaryDivisorMellinIntegrand g) (-1/2) (3/2) H)
       atTop (𝓝 0) := by
     rw [tendsto_zero_iff_norm_tendsto_zero]
@@ -114,7 +111,7 @@ theorem DFIVoronoiTestFunction.ordinaryDivisor_horizontal_limits
     rw [tendsto_zero_iff_norm_tendsto_zero]
     apply squeeze_zero' (Eventually.of_forall fun _ => norm_nonneg _) _ hEnv
     filter_upwards [eventually_ge_atTop (1 : ℝ)] with H hH
-    simpa only [abs_neg] using hbound (-H) (by rw [abs_neg, abs_of_nonneg (by linarith)]; exact hH)
+    simpa using hbound (-H) (by rw [abs_neg, abs_of_nonneg (by linarith)]; exact hH)
   constructor
   · simpa [HIntegral'] using htop.const_smul (1/(2*Real.pi*I) : ℂ)
   · simpa [HIntegral'] using hbottom.const_smul (1/(2*Real.pi*I) : ℂ)

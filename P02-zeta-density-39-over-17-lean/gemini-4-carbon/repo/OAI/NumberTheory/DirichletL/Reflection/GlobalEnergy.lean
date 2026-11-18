@@ -62,7 +62,6 @@ theorem literal_global_sector_energy [Fintype (Eis⧸Ideal.span {N^2})]
             (fullRaySector_subset N rows r₀) (fullRaySector_subset N Pset p₀) S hrows jF D s hc E hE W θ X r aw K P hK hP
     rw [←he]
     exact hbound
-  have hh := full_ray_sector_energy N rows Pset f B hs
   have he : (∑ K : rows,‖literalWholeRow F K.val (hrows K.val K.property) S jF Pset
       (D K) s hc W θ X r aw‖^2)=∑ K∈rows,‖∑ P∈Pset,f K P‖^2 := by
     calc
@@ -72,7 +71,7 @@ theorem literal_global_sector_energy [Fintype (Eis⧸Ideal.span {N^2})]
         exact congrArg (fun z : ℂ => ‖z‖^2) (literalWholeRow_eq_pairs F rows Pset S hrows jF D s hc W θ X r aw K)
       _ = _ := Finset.sum_coe_sort rows (fun K => ‖∑ P∈Pset,f K P‖^2)
   rw [he]
-  exact hh
+  exact (full_ray_sector_energy N rows Pset f B hs)
 end
 end SevenEighths.InverseReflectedPhase
 

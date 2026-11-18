@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.SargosDualTentGram
 public import LaterPairs.Native.SargosPrefixFourthMajorant
 
@@ -39,10 +48,8 @@ theorem sargosTentPlanarIntegrand_le_norm_sq {ι : Type*}
     sargosTentPlanarIntegrand S u v a b p ≤
       ‖sargosPlanarSum S (fun _ => 1) u v p.1 p.2‖^2 := by
   have ht : sargosRealTent a p.1*sargosRealTent b p.2 ≤ 1 := by
-    calc
-      _ ≤ 1*1 := mul_le_mul (sargosRealTent_le_one ha p.1)
-        (sargosRealTent_le_one hb p.2) (sargosRealTent_nonneg b p.2) (by norm_num)
-      _ = _ := one_mul 1
+    exact (mul_le_mul (sargosRealTent_le_one ha p.1)
+        (sargosRealTent_le_one hb p.2) (sargosRealTent_nonneg b p.2) (by norm_num)).trans_eq (one_mul 1)
   simpa only [sargosTentPlanarIntegrand,one_mul] using
     mul_le_mul_of_nonneg_right ht (sq_nonneg ‖sargosPlanarSum S (fun _ => 1) u v p.1 p.2‖)
 

@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.IntegerClosedIntervalPrefix
 public import LaterPairs.Native.RobertSargosShiftBoundary
 
@@ -23,8 +32,7 @@ def robertSargosZeroRSource (f : ℝ → ℝ) (M : ℕ) (h q : ℤ) : ℂ :=
 
 theorem robertSargos_zero_r_positive_interval (M : ℕ) (h q : ℤ) (hq : 0 ≤ q) :
     robertSargosMOverlap M h q 0 = Finset.Icc (h+1) ((M:ℤ)-h-q) := by
-  rw [robertSargos_m_overlap_zero_source]
-  rw [max_eq_left (by omega),min_eq_right (by omega)]
+  rw [robertSargos_m_overlap_zero_source, max_eq_left (by omega),min_eq_right (by omega)]
 
 theorem robertSargos_zero_r_source_neg (f : ℝ → ℝ) (M : ℕ) (h q : ℤ) :
     robertSargosZeroRSource f M h (-q) = star (robertSargosZeroRSource f M h q) := by

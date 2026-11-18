@@ -60,11 +60,9 @@ theorem fullModulusCorrelation_fourier (u v : A)
 
 theorem common_divisor_frequency {u v d x y j : A}
     (hdu : d ∣ u) (hdv : d ∣ v) (hcong : u * v ∣ v * x - u * y - j) : d ∣ j := by
-  have hleft : d ∣ v * x - u * y := dvd_sub (hdv.trans (dvd_mul_right v x))
+  have hleft := dvd_sub (hdv.trans (dvd_mul_right v x))
     (hdu.trans (dvd_mul_right u y))
-  have hprod : d ∣ u * v := hdu.trans (dvd_mul_right u v)
-  have hdiff := dvd_sub hleft (hprod.trans hcong)
-  convert hdiff using 1 ; ring
+  convert (dvd_sub hleft ((hdu.trans (dvd_mul_right u v)).trans hcong)) using 1 ; ring
 
 theorem fullModulusCorrelation_eq_zero_of_common_not_dvd (u v d j : A)
     [Fintype (A ⧸ Ideal.span {u})] [Fintype (A ⧸ Ideal.span {v})]

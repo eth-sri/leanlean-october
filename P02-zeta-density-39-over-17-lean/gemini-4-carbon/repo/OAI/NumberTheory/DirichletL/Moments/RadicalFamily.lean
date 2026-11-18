@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentRadicalFamily
-open HeckeFamily HeckeRowClosure CanonicalRowCompletion CanonicalQuadraticSieve
-open CenteredMomentFirstFamily CenteredMomentSupportedCorrelation
+open HeckeFamily HeckeRowClosure CanonicalRowCompletion CanonicalQuadraticSieve CenteredMomentFirstFamily CenteredMomentSupportedCorrelation
 local notation "O" => ActualEisensteinCubic.O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
@@ -43,10 +42,9 @@ theorem single_row_on_base (η : Character) (m p n : O)
     (hn : rowTwist (elementHom η) m 1 1 n≠0) :
     rowTwist (elementHom (η.power 0)) m 1 p n=idealRowHom p (Ideal.span {n}) := by
   have hs := (rowTwist_nonzero_coprime η m 1 1 n hmLam hm2 hn).1
-  have hη : elementCoeff η n≠0 := left_ne_zero_of_mul hn
-  have hunit := MulChar.apply_ne_zero_iff.mp hη
+  have hη := left_ne_zero_of_mul hn
   have hp : elementCoeff (η.power 0) n=1 := by
-    rw [elementCoeff_power_of_unit η 0 n hunit,pow_zero]
+    rw [elementCoeff_power_of_unit η 0 n (MulChar.apply_ne_zero_iff.mp hη),pow_zero]
   have hm : IsCoprime m n := by
     by_contra h
     apply hn

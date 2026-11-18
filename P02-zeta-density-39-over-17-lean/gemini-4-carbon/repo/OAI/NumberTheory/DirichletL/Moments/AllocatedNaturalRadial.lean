@@ -10,14 +10,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentAllocatedNaturalRadial
-open HeckeFamily HeckeDyadic ConcreteTraceCRT MeasureTheory
-open CenteredMomentAllocatedNaturalSource CenteredMomentCommonMaskRadialEnergy
-open CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy
-open CenteredMomentNaturalRowSource CenteredMomentRetainedProfile CenteredMomentLattice
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentDivisorRetained
-open CenteredMomentOriginalRadialComparison CenteredMomentRadialPolynomialEnergy
-open CenteredMomentCommonRadialData CenteredMomentCommonHeightEnvelope CenteredMomentEligibleEnergy
-open CenteredMomentCommonAllocationSum CenteredMomentRadialEligibleEnergy
+open HeckeFamily HeckeDyadic ConcreteTraceCRT MeasureTheory CenteredMomentAllocatedNaturalSource CenteredMomentCommonMaskRadialEnergy CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy CenteredMomentNaturalRowSource CenteredMomentRetainedProfile CenteredMomentLattice CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentDivisorRetained CenteredMomentOriginalRadialComparison CenteredMomentRadialPolynomialEnergy CenteredMomentCommonRadialData CenteredMomentCommonHeightEnvelope CenteredMomentEligibleEnergy CenteredMomentCommonAllocationSum CenteredMomentRadialEligibleEnergy
 local notation "O" => HeckeFamily.O
 
 lemma profile_support (V : Plain) (U : ℝ) (hU : 0<U) (t : ℝ) :
@@ -179,7 +172,7 @@ theorem actual_common_radial_energy (b M : α→ℝ) (hM : ∀i,0≤M i) (ε : �
   refine ⟨C₀,hC₀,?_⟩
   intro s hhi hMs τ v C R hR B L a V₁ V₂ hV₁ hV₂ r hkeep E₁ E₂ hE₁ hE₂ hleft hright
   let d:=commonData (withHeight s τ v) C R B
-  have hRC : R*C≠0:=mul_ne_zero hR (common_nonzero s C B)
+  have hRC :=mul_ne_zero hR (common_nonzero s C B)
   have hb:=hbound (CenteredMomentCommonProfile.liveIndices B.val) (liveIndices L a)
   have hc:= (commonSlots s C B).controls
   have hβ : ∀i,∀I∈d.slots i,‖d.coefficient i I‖≤M i := by

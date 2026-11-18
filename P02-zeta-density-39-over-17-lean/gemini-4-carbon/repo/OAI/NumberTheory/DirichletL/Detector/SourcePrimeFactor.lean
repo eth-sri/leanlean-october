@@ -7,8 +7,7 @@ namespace OAI
 
 noncomputable section
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve
-open ConcretePrimeRowBridge CubicEisenstein ProbePhase ProbeEuler ProbePrimePower ProbeRow
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve ConcretePrimeRowBridge CubicEisenstein ProbePhase ProbeEuler ProbePrimePower ProbeRow
 local notation "O" => ActualEisensteinCubic.O
 
 theorem bareSourceCoefficient_prime_formula (η : HeckeFamily.Character) (p : O) (hp : Prime p)
@@ -54,8 +53,7 @@ theorem bareSourceCoefficient_prime_formula (η : HeckeFamily.Character) (p : O)
         simp only [pow_add,pow_mul,mul_pow]
         ring
     _ = _ := by
-      rw [corrected_prime_cubic_signal p hp.ne_zero hg hchar hprimary hs]
-      rw [neg_eq_neg_one_mul ((localGamma p hp.ne_zero hg 1)⁻¹),mul_pow]
+      rw [corrected_prime_cubic_signal p hp.ne_zero hg hchar hprimary hs, neg_eq_neg_one_mul ((localGamma p hp.ne_zero hg 1)⁻¹),mul_pow]
 
 theorem bareSourceCoefficient_weighted_prime (η : HeckeFamily.Character) (p : O) (hp : Prime p)
     [(Ideal.span {p}:Ideal O).IsMaximal] (hg : goodLambda∉Ideal.span {p})
@@ -77,7 +75,7 @@ theorem bareSourceCoefficient_weighted_prime (η : HeckeFamily.Character) (p : O
       star (FiniteGaussPhase.angularFactor p)^3*(targetMonoid η p)^3 := rfl
   rw [ha] at hpdiag ⊢
   calc
-    _ = ((-1:ℂ)^e*((localGamma p hp.ne_zero hg 1)⁻¹)^e*(targetMonoid η p)^e) *
+    _ = ((-1)^e*((localGamma p hp.ne_zero hg 1)⁻¹)^e*(targetMonoid η p)^e) *
       ((star (FiniteGaussPhase.angularFactor p)^3*(targetMonoid η p)^3*
         star (localGamma p hp.ne_zero hg 3))^l *
         (actualSextic (Ideal.span {p}) hg (-1))^((e+3*l)*k+e*l+l.choose 2)) *

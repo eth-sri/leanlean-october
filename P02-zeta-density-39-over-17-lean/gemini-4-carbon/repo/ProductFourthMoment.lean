@@ -12,11 +12,8 @@ theorem sum_vectors_succ {α M : Type*} [Fintype α] [AddCommMonoid M]
     {n : ℕ} (f : (Fin (n+1) → α) → M) :
     (∑ v, f v) = ∑ a, ∑ v, f (Fin.cons a v) := by
   classical
-  calc
-    _ = ∑ p : α × (Fin n → α), f (Fin.cons p.1 p.2) :=
-      (Fintype.sum_equiv (Fin.consEquiv (fun _ : Fin (n+1) => α))
-        _ _ (fun _ => rfl)).symm
-    _ = _ := Fintype.sum_prod_type _
+  exact ((Fintype.sum_equiv (Fin.consEquiv (fun _ : Fin (n+1) => α))
+        _ _ (fun _ => rfl)).symm).trans (Fintype.sum_prod_type _)
 
 /-- The fourth-moment contraction iterates over any number of coordinates,
 with no dimension-dependent constant. -/

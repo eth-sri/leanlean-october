@@ -13,26 +13,12 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstAmplifiedPaidAdmission
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge ActualEisensteinCubic
-open CenteredMomentSourceLiveColumn
-open CenteredMomentFirstAmplifiedCapacityRadius CenteredMomentSecondCapacitySourceShift
-open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum
-open CenteredMomentCommonProfile CenteredMomentCommonRawScale
-open CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps
-open CenteredMomentFirstAmplificationChoice CenteredMomentSectorLocalization
-open CenteredMomentFirstPhysicalSource CenteredMomentSecondHeightFamily
-open CenteredMomentFirstCanonicalFamily CenteredMomentFirstScale CenteredMomentCanonicalFirst
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonical
-open CenteredMomentSecondCanonicalScalar CenteredMomentSecondRadicalBudget
-open CenteredMomentAmplifiedRetainedRadius
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge ActualEisensteinCubic CenteredMomentSourceLiveColumn CenteredMomentFirstAmplifiedCapacityRadius CenteredMomentSecondCapacitySourceShift CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentCommonProfile CenteredMomentCommonRawScale CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps CenteredMomentFirstAmplificationChoice CenteredMomentSectorLocalization CenteredMomentFirstPhysicalSource CenteredMomentSecondHeightFamily CenteredMomentFirstCanonicalFamily CenteredMomentFirstScale CenteredMomentCanonicalFirst CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonical CenteredMomentSecondCanonicalScalar CenteredMomentSecondRadicalBudget CenteredMomentAmplifiedRetainedRadius
 local notation "O"=>HeckeFamily.O
 variable {ι:Type*}[Fintype ι]
 local instance {κ:Type*}:DecidableEq κ:=Classical.decEq _
 
-open CenteredMomentFirstAmplifiedCapacityCommon CenteredMomentFirstAmplifiedCapacitySource
-open CenteredMomentFirstAmplifiedActiveAffine CenteredMomentFirstAmplifiedActiveCapacitySource
-open CenteredMomentFirstSecondActiveErrorGates CenteredMomentFirstAnnularInput
-open CenteredMomentCommonHeightEnvelope CenteredMomentAllocatedChildCapacity
+open CenteredMomentFirstAmplifiedCapacityCommon CenteredMomentFirstAmplifiedCapacitySource CenteredMomentFirstAmplifiedActiveAffine CenteredMomentFirstAmplifiedActiveCapacitySource CenteredMomentFirstSecondActiveErrorGates CenteredMomentFirstAnnularInput CenteredMomentCommonHeightEnvelope CenteredMomentAllocatedChildCapacity
 
 def sourceReserve {α:Type*}[Fintype α] (s:Input ι)(childInput:Input α)
     (C D:Ideal O)(Z delta reserve cost a:ℝ):ℝ :=
@@ -50,8 +36,7 @@ lemma common_affine (s:Input ι)(C:Ideal O)(B:actualAllocations s.pools C)
     (Z κ A M:ℝ)(hZ:1<Z)(hκ:1/6≤κ)(hP:∀i,1≤s.P i)
     (hp:A+(6*κ-1)*(∑i,Real.logb Z (s.P i))≤M):
     A+(6*κ-1)*(∑i:liveIndices B.val,Real.logb Z (s.P i.val))≤M := by
-  have hs:=common_slot_logs_le s C B Z hZ hP
-  have hm:=mul_le_mul_of_nonneg_left hs (by linarith:0≤6*κ-1)
+  have hm:=mul_le_mul_of_nonneg_left (common_slot_logs_le s C B Z hZ hP) (by linarith:0≤6*κ-1)
   linarith
 
 theorem actual_main_admission (s:Input ι)(τ υ:Character)(C D R0:Ideal O)
@@ -87,10 +72,8 @@ theorem actual_main_admission (s:Input ι)(τ υ:Character)(C D R0:Ideal O)
       Real.logb Z (volume s)-Mdecl+6*(sigma/3)+delta1+Real.logb Z (ratioPenalty n) := by
   dsimp only
   have hq:=norm_pos τ.modulus τ.modulus_ne_bot
-  have hqref:0<cost*(τ.modulus.absNorm:ℝ):=mul_pos hcost hq
-  have hf:=inherited_affine_parent s C R0 B Z κ Mdecl hZ hκ hP hcap
+  have hqref :=mul_pos hcost hq
   have hPchild:∀i,1≤(child s C R0 B τ t).P i:=fun i=>hP i.val
-  have hparent:=common_affine (child s C R0 B τ t) Cpick B₂ Z κ (Real.logb Z (volume s)) Mdecl hZ hκ hPchild hf
   have hr:=actual_main_reference_shift s.η τ C D hC hD hCD E K (volume s) Z
     (rawReduction B.val s.P) sigma delta reserve hK (volume_pos s) hZ
     (rawReduction_pos B.val (alloc_ne s C B) s.P s.P_pos) hmod
@@ -125,7 +108,7 @@ theorem actual_main_admission (s:Input ι)(τ υ:Character)(C D R0:Ideal O)
       Real.logb Z fixedPresentationCost-Real.logb Z cost+
       Real.logb Z (4/((fixedFactor:ℝ)*a^2))+
       (Fintype.card (liveIndices B.val):ℝ)*Real.logb Z (max 1 (child s C R0 B τ t).upper)) 0
-  refine ⟨add_nonneg (sub_nonneg.mpr hM) (sourceReserve_nonneg _ _ _ _ _ _ _ _ _),hparent,?_⟩
+  refine ⟨add_nonneg (sub_nonneg.mpr hM) (sourceReserve_nonneg _ _ _ _ _ _ _ _ _),(common_affine (child s C R0 B τ t) Cpick B₂ Z κ (Real.logb Z (volume s)) Mdecl hZ hκ hPchild (inherited_affine_parent s C R0 B Z κ Mdecl hZ hκ hP hcap)),?_⟩
   unfold sourceReserve
   linarith
 
@@ -167,9 +150,7 @@ theorem actual_active_error_admission (s:Input ι)(τ υ:Character)(C D R0:Ideal
   dsimp only
   have hq:=norm_pos τ.modulus τ.modulus_ne_bot
   have hqref:0<cost*(τ.modulus.absNorm:ℝ)*Z^(errorMoving p Z k):=by positivity
-  have hf:=active_error_parent_affine s C R0 B τ t (Ideal.span {p}) k Bp υ v Z κ Mdecl hZ hκ hP hcap
   have hPchild:∀i,1≤(errorInput s C R0 B τ t (Ideal.span {p}) k Bp υ v).P i:=fun i=>hP i.val.val
-  have hparent:=common_affine (errorInput s C R0 B τ t (Ideal.span {p}) k Bp υ v) Cpick B₂ Z κ (Real.logb Z (volume s)) Mdecl hZ hκ hPchild hf
   have hr:=actual_error_reference_shift s.η τ C D hC hD hCD E K (volume s) Z
     (rawReduction B.val s.P) sigma delta reserve cost hK (volume_pos s) hZ
     (rawReduction_pos B.val (alloc_ne s C B) s.P s.P_pos) hcost hmod p k hk hs hl
@@ -196,8 +177,7 @@ theorem actual_active_error_admission (s:Input ι)(τ υ:Character)(C D R0:Ideal
     · subst Cpick
       exact common_raw_reference_shift_right (errorInput s C R0 B τ t (Ideal.span {p}) k Bp υ v) υ v S β C₂ D₂ Rpick hC₂ hD₂ hCD₂
         B₂ hB₂ U R rows W _ a Z (cost*(τ.modulus.absNorm:ℝ)*Z^(errorMoving p Z k)) n hqref hrad ha hZ hlower hne
-  have hQ:(Ideal.span {p})≠(0:Ideal O):=Ideal.span_singleton_eq_bot.not.mpr hp
-  have hv:=active_error_volume s C R0 B τ t (Ideal.span {p}) hQ k hslot Bp υ v
+  have hv:=active_error_volume s C R0 B τ t (Ideal.span {p}) (Ideal.span_singleton_eq_bot.not.mpr hp) k hslot Bp υ v
   have hn:(Ideal.absNorm (Ideal.span {p}):ℝ)=normValue p:=by simp only [normValue]
   rw [hn] at hv
   rw [hv] at hg
@@ -209,7 +189,7 @@ theorem actual_active_error_admission (s:Input ι)(τ υ:Character)(C D R0:Ideal
       Real.logb Z fixedPresentationCost-Real.logb Z cost+
       Real.logb Z (4/((fixedFactor:ℝ)*a^2))+
       (Fintype.card (liveIndices Bp.val):ℝ)*Real.logb Z (max 1 (errorInput s C R0 B τ t (Ideal.span {p}) k Bp υ v).upper)) 0
-  refine ⟨add_nonneg (sub_nonneg.mpr hM) (sourceReserve_nonneg _ _ _ _ _ _ _ _ _),hparent,?_⟩
+  refine ⟨add_nonneg (sub_nonneg.mpr hM) (sourceReserve_nonneg _ _ _ _ _ _ _ _ _),(common_affine (errorInput s C R0 B τ t (Ideal.span {p}) k Bp υ v) Cpick B₂ Z κ (Real.logb Z (volume s)) Mdecl hZ hκ hPchild (active_error_parent_affine s C R0 B τ t (Ideal.span {p}) k Bp υ v Z κ Mdecl hZ hκ hP hcap)),?_⟩
   unfold sourceReserve
   linarith
 

@@ -7,13 +7,10 @@ namespace OAI
 
 noncomputable section
 
+open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve ConcretePrimeRowBridge FirstCauchyArithmetic SecondPassArithmetic
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve ConcretePrimeRowBridge
-open FirstCauchyArithmetic SecondPassArithmetic
 namespace SevenEighths.InverseInitialCommonForcing
-open InverseInitialOverlap InverseInitialPoissonBridge InverseInitialKernelBridge
-open InverseInitialRayAttachment InverseInitialArithmetic InverseInitialCommonPool
-open InverseInitialEnergyCallerWindow InverseInitialEnergyCallerSelector
+open InverseInitialOverlap InverseInitialPoissonBridge InverseInitialKernelBridge InverseInitialRayAttachment InverseInitialArithmetic InverseInitialCommonPool InverseInitialEnergyCallerWindow InverseInitialEnergyCallerSelector
 local notation "Eis"=>ActualEisensteinCubic.O
 
 theorem common_selector_window
@@ -31,9 +28,8 @@ theorem common_selector_window
   by_cases hw : residualOverlapWindow P j W Z z G (((∏i∈A,i.val).absNorm:ℝ)/Z^(r+z-2*G))=0
   · simp only [hw,ite_self,zero_mul]
   have hA := InitialMeanSquare.poolProduct_admissible F hF A
-  have hcop := mask_nonzero_coprime F j (admissible_of_dvd hP hj) A hm
   by_cases hd : residual P j∣(∏i∈A,i.val)
-  · have hmem := (mem_columns hP.2.1 hj).mpr ⟨hA.2.1,hcop,hd,
+  · have hmem := (mem_columns hP.2.1 hj).mpr ⟨hA.2.1,(mask_nonzero_coprime F j (admissible_of_dvd hP hj) A hm),hd,
       reconstructed_mem_originalSource W Z r z G b hZ hW hP hj hA hd hw⟩
     simp only [hd,hmem,ite_true]
   · have hn : (∏i∈A,i.val)∉columns (originalSource Z r b) P j :=

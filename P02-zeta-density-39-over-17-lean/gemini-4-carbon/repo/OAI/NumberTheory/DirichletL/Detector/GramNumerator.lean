@@ -40,7 +40,7 @@ lemma numerator_good_norm_le (u : Oˣ) (a b : ℕ) (r k : O)
   · exact Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr (Ideal.span_singleton_eq_bot.not.mpr hk0))
   · apply map_dvd Ideal.absNorm
     rw [Ideal.span_singleton_dvd_span_singleton_iff_dvd]
-    exact ⟨u.val*λ₀^a*(2:O)^b,by rw [hk];ring⟩
+    exact ⟨u.val*λ₀^a*2^b,by rw [hk];ring⟩
 
 end SevenEighths.ProbeGramCommon
 end

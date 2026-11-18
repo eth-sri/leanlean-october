@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.RobertSargosATimesA
 public import LaterPairs.Native.SargosSourceDifferencing
 
@@ -60,10 +69,7 @@ theorem robertSargos_source_plane_correlation (a : ℤ → ℤ → ℂ) (M H : �
   simp_rw [robertSargos_padded_source_plane a M H ha]
   rw [Finset.sum_product]
   simp only [show ∀ x y : ℤ, x+y+1 = x+1+y by intros; omega]
-  have hi (m : ℤ) :
-      (∑ h ∈ Finset.Ico (0:ℤ) H, ⟪a (m+1+q) (h+1),a (m+1) (h+1+r)⟫_ℝ) =
-        ∑ h ∈ Finset.Icc (1:ℤ) H, ⟪a (m+1+q) h,a (m+1) (h+r)⟫_ℝ :=
-    robertSargos_sum_one_based (fun h => ⟪a (m+1+q) h,a (m+1) (h+r)⟫_ℝ) H
+  have hi (m : ℤ) := robertSargos_sum_one_based (fun h => ⟪a (m+1+q) h,a (m+1) (h+r)⟫_ℝ) H
   simp only [hi]
   exact robertSargos_sum_one_based
     (fun m => ∑ h ∈ Finset.Icc (1:ℤ) H, ⟪a (m+q) h,a m (h+r)⟫_ℝ) M

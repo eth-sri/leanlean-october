@@ -2,7 +2,6 @@ module
 public import OAI.NumberTheory.DirichletL.Descent.ActualChildStatePuncture
 public import OAI.NumberTheory.DirichletL.Inversion.InitialClippedColumns
 
-set_option linter.privateModule false
 
 @[expose] public section
 
@@ -11,9 +10,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss
-open CanonicalRowCompletion ConcretePrimeRowBridge CanonicalQuadraticSieve
-open InverseInitialClippedColumns
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge CanonicalQuadraticSieve InverseInitialClippedColumns
 local notation "Eis" => ActualEisensteinCubic.O
 
 section General

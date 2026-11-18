@@ -79,7 +79,7 @@ lemma cube_radical_dvd {Jo Jn : ℕ} {x : SecondTuple Jo Jn}
     (x.core 4 * x.secondCube).radical ∣ γ.q0 * x.core 0 := by
   apply Ideal.dvd_iff_le.mpr
   have hle := Ideal.radical_mono (Ideal.dvd_iff_le.mp (cube_product_dvd_square hx))
-  rw [Ideal.radical_pow (γ.q0 * x.core 0) (by decide : (2 : ℕ) ≠ 0)] at hle
+  rw [Ideal.radical_pow (γ.q0 * x.core 0) (by decide : 2 ≠ 0)] at hle
   exact Ideal.le_radical.trans hle
 
 lemma cube_factor_dvd_target {Jo Jn : ℕ} {x : SecondTuple Jo Jn}
@@ -91,8 +91,7 @@ lemma cube_factor_dvd_target {Jo Jn : ℕ} {x : SecondTuple Jo Jn}
 lemma core_dvd_outer_label {Jo Jn : ℕ} {x : SecondTuple Jo Jn}
     {γ : OuterTriple} {f : Ideal O} {k : O} (hx : Valid x γ f k) (i : Fin 3) :
     x.core ⟨i.val+5, by omega⟩ ∣ γ.q0 * f := by
-  have hrad : (x.core 4 * x.secondCube).radical ∣ γ.q0 * f :=
-    (cube_radical_dvd hx).trans (mul_dvd_mul_left _ (core_dvd_label hx 0))
+  have hrad := (cube_radical_dvd hx).trans (mul_dvd_mul_left _ (core_dvd_label hx 0))
   fin_cases i
   · exact hx.a1.trans hrad
   · exact hx.a2.trans hrad
@@ -126,7 +125,7 @@ theorem valid_key_injective {Jo Jn : ℕ} (γ : OuterTriple) (f : Ideal O) (k : 
     (hx : Valid x γ f k) (hy : Valid y γ f k)
     (hc : x.core = y.core) (ho : x.oldAssigned = y.oldAssigned)
     (hn : x.newAssigned = y.newAssigned) : x = y := by
-  have hcore (i : Fin 8) : x.core i = y.core i := congrFun hc i
+  have hcore (i : Fin 8) := congrFun hc i
   have hv : x.commonResidual = y.commonResidual := by
     apply mul_left_cancel₀ (mul_ne_zero
       (mul_ne_zero (core_ne_zero hx hf hq 0) (core_ne_zero hx hf hq 1))
@@ -208,12 +207,10 @@ theorem valid_tuple_card_le_separated {Jo Jn : ℕ} (T : Finset (SecondTuple Jo 
   let dq := (idealDivisors γ.q0).card
   let dt := (idealDivisors γ.quotient).card
   let dr := (idealDivisors γ.residual).card
-  have hqf : (idealDivisors (γ.q0*f)).card ≤ dq*df := divisor_card_mul_le _ _ hq hf
-  have hsq : (idealDivisors ((γ.q0*f)^2)).card ≤ (dq*df)^2 :=
-    (divisor_card_sq_le _ (mul_ne_zero hq hf)).trans (Nat.pow_le_pow_left hqf 2)
-  have hold : (idealDivisors (γ.q0*f*γ.quotient)).card ≤ dq*df*dt :=
-    (divisor_card_mul_le _ _ (mul_ne_zero hq hf) ht).trans (Nat.mul_le_mul_right _ hqf)
-  have hnew : (idealDivisors (f*γ.residual)).card ≤ df*dr := divisor_card_mul_le _ _ hf hr
+  have hqf := divisor_card_mul_le _ _ hq hf
+  have hsq := (divisor_card_sq_le _ (mul_ne_zero hq hf)).trans (Nat.pow_le_pow_left hqf 2)
+  have hold := (divisor_card_mul_le _ _ (mul_ne_zero hq hf) ht).trans (Nat.mul_le_mul_right _ hqf)
+  have hnew := divisor_card_mul_le _ _ hf hr
   apply (valid_tuple_card_le T γ f k hf hq ht hr hT).trans
   calc
     _ ≤ df^4 * (dq*df)^2 * (dq*df)^3 * (dq*df*dt)^Jo * (df*dr)^Jn := by

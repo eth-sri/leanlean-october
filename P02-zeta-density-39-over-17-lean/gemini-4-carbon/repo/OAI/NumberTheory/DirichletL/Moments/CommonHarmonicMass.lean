@@ -10,10 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentCommonHarmonicMass
-open IdealMobiusDivisorSum UniqueFactorizationMonoid
-open CenteredMomentRankinRadical CenteredMomentRankinLabels
-open CenteredMomentDivisorAllocation CenteredMomentWholeDivisorShell
-open CenteredMomentDyadicCount CenteredMomentSectorLocalization
+open IdealMobiusDivisorSum UniqueFactorizationMonoid CenteredMomentRankinRadical CenteredMomentRankinLabels CenteredMomentDivisorAllocation CenteredMomentWholeDivisorShell CenteredMomentDyadicCount CenteredMomentSectorLocalization
 local notation "O" => ActualEisensteinCubic.O
 abbrev Label := (Ideal O × Ideal O) × Finset (Ideal O)
 
@@ -49,13 +46,12 @@ lemma min_le_sqrt_mul (x y : ℝ) (hx : 0≤x) (hy : 0≤y) :
 lemma shell_scalar (e Y x y : ℝ) (he : 0<e) (hx : 0<x) (hy : 0<y)
     (hY : min x y ≤ Y) :
     (2*min x y)^(1+e)/Real.sqrt (x*y) ≤ 2^(1+e)*Y^e := by
-  have hm : 0<min x y := lt_min hx hy
-  have hsqrt : 0<Real.sqrt (x*y) := Real.sqrt_pos.2 (mul_pos hx hy)
+  have hm := lt_min hx hy
   rw [Real.mul_rpow (by norm_num : (0:ℝ)≤2) hm.le,
     Real.rpow_add hm,Real.rpow_one]
   have hp := Real.rpow_le_rpow hm.le hY he.le
   have hs := min_le_sqrt_mul x y hx.le hy.le
-  apply (div_le_iff₀ hsqrt).mpr
+  apply (div_le_iff₀ (Real.sqrt_pos.2 (mul_pos hx hy))).mpr
   calc
     _ ≤ 2^(1+e)*(Real.sqrt (x*y)*Y^e) := by gcongr
     _ = _ := by ring
@@ -71,10 +67,10 @@ theorem shell_bound (e : ℝ) (he : 0<e) :
   obtain ⟨C,hC,hcount⟩ := partitioned_common_pair_count e e he he
   refine ⟨C*2^(1+e),by positivity,?_⟩
   intro s hs hs0 S hS Y T₁ T₂ hT₁ hT₂ hTY hN hshell
-  have hY : 0<Y := (lt_min hT₁ hT₂).trans_le hTY
+  have hY := (lt_min hT₁ hT₂).trans_le hTY
   have hsn : 0<(s.absNorm:ℝ) := by
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hs0)
-  have hsq : 0<Real.sqrt (T₁*T₂) := Real.sqrt_pos.2 (mul_pos hT₁ hT₂)
+  have hsq := Real.sqrt_pos.2 (mul_pos hT₁ hT₂)
   have hc := hcount s hs hs0 S (fun v hv=>⟨(hS v hv).1,(hS v hv).2.1⟩)
     (fun v hv=>(hS v hv).2.2.1) (fun v hv=>⟨(hS v hv).2.2.2.1,(hS v hv).2.2.2.2.1⟩)
     (fun v hv=>(hS v hv).2.2.2.2.2) Y Y (2*min T₁ T₂) hY hY (by positivity) hN (by
@@ -122,8 +118,7 @@ lemma shell_norm_bounds (S : Finset Label) (n : ℤ×ℤ) (v : Label)
   exact ⟨h₁.1,h₁.2,h₂⟩
 
 theorem sum_shells (S : Finset Label) (f : Label→ℝ) :
-    (∑v∈S,f v)=∑n∈keys S,∑v∈shell S n,f v := by
-  exact (Finset.sum_fiberwise_of_maps_to (fun v hv=>Finset.mem_image.mpr ⟨v,hv,rfl⟩) _).symm
+    (∑v∈S,f v)=∑n∈keys S,∑v∈shell S n,f v := (Finset.sum_fiberwise_of_maps_to (fun v hv=>Finset.mem_image.mpr ⟨v,hv,rfl⟩) _).symm
 
 lemma keys_card_log (B Z : ℝ) (hB : 0≤B) (hZ : 1≤Z) (S : Finset Label)
     (h0 : ∀v∈S,v.1.1≠0 ∧ v.1.2≠0)
@@ -158,49 +153,38 @@ theorem polynomial_cap_log_bound (B e : ℝ) (hB : 0≤B) (he : 0<e) :
       (∀v∈S,(v.1.1.absNorm:ℝ)≤Z^B ∧ (v.1.2.absNorm:ℝ)≤Z^B) →
       (∑v∈S,weight v)≤C*Z^(3*B*e)*(1+Real.log Z)^2/(s.absNorm:ℝ) := by
   obtain ⟨C,hC,hbound⟩ := shell_bound e he
-  let K : ℝ := 3+B/Real.log 2
-  have hK : 0<K := by dsimp [K]; positivity
+  let K := 3+B/Real.log 2
   refine ⟨C*K^2,by positivity,?_⟩
   intro Z hZ s hs hs0 S hS hN
-  have hz : 0<Z := zero_lt_one.trans_le hZ
-  have hsn : 0<(s.absNorm:ℝ) := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hs0)
   have hb (n : ℤ×ℤ) (hn : n∈keys S) :
       (∑v∈shell S n,weight v)≤C*(Z^B)^(3*e)/(s.absNorm:ℝ) := by
     obtain ⟨v,hv,hkey⟩ := Finset.mem_image.mp hn
-    have hc := norm_scale_bounds v.1.1 (hS v hv).1 (Z^B) (hN v hv).1
     have hm : min (dyadicScale n.1) (dyadicScale n.2)≤Z^B := by
-      have heq : normKey v.1.1=n.1 := congrArg Prod.fst hkey
-      exact (min_le_left _ _).trans (heq ▸ hc.2)
+      exact (min_le_left _ _).trans ((congrArg Prod.fst hkey) ▸ (norm_scale_bounds v.1.1 (hS v hv).1 (Z^B) (hN v hv).1).2)
     exact hbound s hs hs0 (shell S n) (fun w hw=>hS w (Finset.mem_filter.mp hw).1)
       (Z^B) (dyadicScale n.1) (dyadicScale n.2) (dyadicScale_pos _) (dyadicScale_pos _) hm
       (fun w hw=>hN w (Finset.mem_filter.mp hw).1)
       (fun w hw=>shell_norm_bounds S n w hw (hS w (Finset.mem_filter.mp hw).1).1
         (hS w (Finset.mem_filter.mp hw).1).2.1)
-  have hk := keys_card_log B Z hB hZ S (fun v hv=>⟨(hS v hv).1,(hS v hv).2.1⟩) hN
   rw [sum_shells]
   calc
     _ ≤ ∑_n∈keys S,C*(Z^B)^(3*e)/(s.absNorm:ℝ) := Finset.sum_le_sum hb
     _ = ((keys S).card:ℝ)*(C*(Z^B)^(3*e)/(s.absNorm:ℝ)) := by simp
     _ ≤ (K^2*(1+Real.log Z)^2)*(C*(Z^B)^(3*e)/(s.absNorm:ℝ)) :=
-      mul_le_mul_of_nonneg_right hk (by positivity)
+      mul_le_mul_of_nonneg_right (keys_card_log B Z hB hZ S (fun v hv=>⟨(hS v hv).1,(hS v hv).2.1⟩) hN) (by positivity)
     _ = (C*K^2)*Z^(3*B*e)*(1+Real.log Z)^2/(s.absNorm:ℝ) := by
-      rw [←Real.rpow_mul hz.le,show B*(3*e)=3*B*e by ring]
+      rw [←Real.rpow_mul (zero_lt_one.trans_le hZ).le,show B*(3*e)=3*B*e by ring]
       ring
 
 lemma log_square_subpower (d : ℝ) (hd : 0<d) :
     ∃C : ℝ,0<C ∧ ∀Z : ℝ,1≤Z → (1+Real.log Z)^2≤C*Z^d := by
-  let a : ℝ := d/2
+  let a := d/2
   have ha : 0<a := by dsimp [a]; positivity
   refine ⟨(1+1/a)^2,by positivity,?_⟩
   intro Z hZ
-  have hz : 0<Z := zero_lt_one.trans_le hZ
-  have hp : 1≤Z^a := Real.one_le_rpow hZ ha.le
-  have hl := Real.log_le_rpow_div hz.le ha
+  have hz := zero_lt_one.trans_le hZ
   have hh : 1+Real.log Z≤(1+1/a)*Z^a := by
-    calc
-      _ ≤ Z^a+Z^a/a := add_le_add hp hl
-      _ = _ := by ring
+    exact (add_le_add (Real.one_le_rpow hZ ha.le) (Real.log_le_rpow_div hz.le ha)).trans_eq (by ring)
   calc
     _ ≤ ((1+1/a)*Z^a)^2 := by
       apply pow_le_pow_left₀ (by linarith [Real.log_nonneg hZ]) hh

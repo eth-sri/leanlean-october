@@ -31,7 +31,7 @@ theorem norm_bandPhaseSum_sq_le_blocks {L H : ℝ} (hL : 0 < L) (hH : 0 < H) (v 
       norm_sum_le (dyadicExponents L H)
         (fun j => dirichletPhase (((2^j : ℕ) : ℝ)*L) (-v) * blockPolynomial L H (2^j) r v)
   have hcs := Finset.sum_mul_sq_le_sq_mul_sq (dyadicExponents L H)
-    (fun _ => (1 : ℝ)) (fun j => ‖blockPolynomial L H (2^j) r v‖)
+    (fun _ => 1) (fun j => ‖blockPolynomial L H (2^j) r v‖)
   simp only [one_mul, one_pow, Finset.sum_const, nsmul_eq_mul, mul_one] at hcs
   have hcard : ((dyadicExponents L H).card : ℝ) ≤ 10 := by exact_mod_cast dyadicExponents_card_le hL hH
   rw [sum_reflectionBlocks]

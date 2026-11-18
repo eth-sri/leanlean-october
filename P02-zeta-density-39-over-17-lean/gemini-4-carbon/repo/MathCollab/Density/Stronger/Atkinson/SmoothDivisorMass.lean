@@ -10,9 +10,7 @@ public import MathCollab.Density.Stronger.Atkinson.SmoothDivisorSupport
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+open Complex Filter MeasureTheory Set Topology MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth MathCollab.Density.Contour
 open scoped Interval ComplexConjugate ContDiff
 set_option autoImplicit false
 noncomputable section
@@ -34,9 +32,9 @@ theorem exists_norm_zetaShortDivisorTestFunction_le :
     rfl
   have hw := (hweight ((Real.log x : ℂ) - zetaGammaLeadingLog T) harg).trans
     (mul_le_of_le_one_right hC.le (min_le_left _ _))
-  have hp : ‖(x : ℂ) ^ ((-1 / 2 : ℂ) + (T : ℂ) * I)‖ ≤ 1 := by
+  have hp : ‖(x : ℂ) ^ ((-1 / 2) + (T : ℂ) * I)‖ ≤ 1 := by
     rw [Complex.norm_cpow_eq_rpow_re_of_pos hx0]
-    have hre : (((-1 / 2 : ℂ) + (T : ℂ) * I)).re = -(1 / 2 : ℝ) := by norm_num
+    have hre : (((-1 / 2) + (T : ℂ) * I)).re = -(1 / 2) := by norm_num
     rw [hre]
     exact Real.rpow_le_one_of_one_le_of_nonpos hx (by norm_num)
   unfold zetaShortDivisorTestFunction
@@ -56,8 +54,7 @@ theorem exists_norm_zetaSmoothDivisorTest_le :
   by_cases hx : zetaSmoothDivisorTest T G L x = 0
   · rw [hx, norm_zero]
     positivity
-  have hs := support_zetaSmoothDivisorTest_physical (by linarith : 0 < T) hG hL hwidth hx
-  have hx1 : 1 ≤ x := by linarith [hs.1]
+  have hx1 : 1 ≤ x := by linarith [(support_zetaSmoothDivisorTest_physical (by linarith : 0 < T) hG hL hwidth hx).1]
   unfold zetaSmoothDivisorTest
   rw [norm_mul, Complex.norm_real, Real.norm_eq_abs, zetaDivisorBandCutoff,
     abs_of_nonneg (zetaBandCutoff_nonneg _ _ _ _ _)]
@@ -92,7 +89,7 @@ theorem exists_integral_norm_zetaSmoothDivisorTest_le :
   have hi := norm_setIntegral_le_of_norm_le_const
     (s := Icc (T / 16) T)
     (f := fun x => ‖zetaSmoothDivisorTest T G L x‖) (isCompact_Icc.measure_lt_top (μ := volume))
-    (fun x _ => by simpa only [norm_norm] using hbound T G L hT hG hGT hL hwidth x)
+    (fun x _ => by simpa using hbound T G L hT hG hGT hL hwidth x)
   rw [Real.norm_eq_abs, abs_of_nonneg (integral_nonneg (fun _ => norm_nonneg _)),
     Real.volume_real_Icc_of_le (by linarith : T / 16 ≤ T)] at hi
   apply hi.trans

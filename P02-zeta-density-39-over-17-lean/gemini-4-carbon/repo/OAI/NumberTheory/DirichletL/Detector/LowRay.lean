@@ -8,8 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
-open ProbeCompleted ProbeRow CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion
-open RayFourExpansion CanonicalCoefficientClass
+open ProbeCompleted ProbeRow CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion RayFourExpansion CanonicalCoefficientClass
 local notation "O" => ActualEisensteinCubic.O
 local notation "Id" => Ideal O
 
@@ -36,10 +35,9 @@ lemma rowCoefficient_congr_ray (η : HeckeFamily.Character) (Xi : O→*ℂ)
   apply MonoidHom.ext
   intro n
   rw [rowCoefficient_apply,rowCoefficient_apply]
-  have hd : (4:O)∣s.val-r.val := Ideal.mem_span_singleton.mp (Ideal.Quotient.eq.mp h)
   have he : sexticReciprocityPhase s.val n=sexticReciprocityPhase r.val n := by
     unfold sexticReciprocityPhase
-    rw [QuadraticGaussRay.residue_eq_of_four_dvd_sub s.val r.val hd]
+    rw [QuadraticGaussRay.residue_eq_of_four_dvd_sub s.val r.val (Ideal.mem_span_singleton.mp (Ideal.Quotient.eq.mp h))]
   rw [he]
 
 def physicalRayRowMonoid (η : HeckeFamily.Character) (C : CalibrationData)

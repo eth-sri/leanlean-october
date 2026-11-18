@@ -10,9 +10,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentCommonMaskEnergy
-open HeckeFamily CenteredMomentCommonMaskExpansion CenteredMomentNaturalRowSource
-open CenteredMomentHeckeTwist CenteredMomentHeckeVolume CenteredMomentHeckeCancellation CenteredMomentLattice
-open CenteredMomentRetainedEnergy CenteredMomentRetainedProfile
+open HeckeFamily CenteredMomentCommonMaskExpansion CenteredMomentNaturalRowSource CenteredMomentHeckeTwist CenteredMomentHeckeVolume CenteredMomentHeckeCancellation CenteredMomentLattice CenteredMomentRetainedEnergy CenteredMomentRetainedProfile
 local notation "O" => HeckeFamily.O
 
 theorem finite_shared_energy {ι κ : Type*} [Fintype ι] [Fintype κ]
@@ -131,7 +129,7 @@ lemma sqrt_inverse_cpow (X : ℝ) (hX : 0<X) :
     (Real.sqrt X:ℂ)⁻¹=(X:ℂ)^(-(1/2:ℂ)) := by
   rw [Complex.cpow_neg,Real.sqrt_eq_rpow]
   congr 1
-  simpa using (Complex.ofReal_cpow hX.le (1/2:ℝ))
+  simpa using (Complex.ofReal_cpow hX.le (1/2))
 
 lemma plain_zero_height (χ : Character) (W : ℝ→ℂ) (X : ℝ) (hX : 0<X) :
     HeckeDyadic.polynomial χ false W X 0 0=(Real.sqrt X:ℂ)⁻¹*idealSum χ W X := by
@@ -216,7 +214,6 @@ theorem original_positive_deletion {α : Type*} [Fintype α] [DecidableEq α]
            HeckeDyadic.polynomial χ false (normPowerProfile W₂ a₂ b₂ ha₂ hs₂ hW₂ t)
             (X₂/(Ideal.absNorm (∏I∈D₂,I):ℝ)) 0 0 *
            ∏i∈Finset.univ\J,naturalSlot χ (pool i) (heightCoefficient (β i) t) (P i)) := by
-  dsimp only
   rw [original_positive_normalized (naturalRow η z hz) R hR W₁ W₂ a₁ b₁ a₂ b₂
     ha₁ ha₂ hs₁ hs₂ hW₁ hW₂ pool β P hP t X₁ X₂ hX₁ hX₂]
   congr 1

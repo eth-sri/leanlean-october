@@ -55,8 +55,7 @@ theorem original_surviving_terminal_saving
   intro hret hsurv
   let G := (poolPrimeFamily J (B*F*R) Q₀).restrict A
   let j := fun b : A => completedLocalExponent J F b.val.val
-  have hG := (poolPrimeFamily J (B*F*R) Q₀).restrict_pairwise (poolPrimeFamily_pairwise J (B*F*R) Q₀) A
-  obtain ⟨hv,hell,hel,hwidth⟩ := hgates G hG j column e Z X QK QP δ i hZ hX hQK hQP hret hsurv
+  obtain ⟨hv,hell,hel,hwidth⟩ := hgates G ((poolPrimeFamily J (B*F*R) Q₀).restrict_pairwise (poolPrimeFamily_pairwise J (B*F*R) Q₀) A) j column e Z X QK QP δ i hZ hX hQK hQP hret hsurv
   rw [←heH,←heza,←heN] at hwidth
   exact original_optional_terminal_saving J I F B R Q₀ hJ hI hF hB hR hpower hmask A e
     Z F₀ N V M z₀ margin cstar O₀ H za Nstar hhat

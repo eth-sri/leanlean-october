@@ -44,10 +44,9 @@ lemma annularPower_nonneg (a b r : ℝ) (ha : 0<a) : 0≤annularPower a b r :=
 
 lemma annular_rpow (a b P q r : ℝ) (ha : 0<a) (hb : 0<b) (hP : 0<P)
     (hqa : a*P≤q) (hqb : q≤b*P) : q^r≤annularPower a b r*P^r := by
-  have hq : 0<q := (mul_pos ha hP).trans_le hqa
   by_cases hr : 0≤r
   · calc
-      q^r≤(b*P)^r := Real.rpow_le_rpow hq.le hqb hr
+      q^r≤(b*P)^r := Real.rpow_le_rpow ((mul_pos ha hP).trans_le hqa).le hqb hr
       _=b^r*P^r := Real.mul_rpow hb.le hP.le
       _≤annularPower a b r*P^r := mul_le_mul_of_nonneg_right (le_max_right _ _) (Real.rpow_nonneg hP.le _)
   · calc

@@ -10,7 +10,7 @@ noncomputable section
 open MeasureTheory Set
 open scoped SchwartzMap
 namespace GuthMaynard.Improvement
-open RiemannZeta.GuthMaynard
+open RiemannZeta.GuthMaynard GuthMaynard.NativeMoment
 
 def stripAffineIndex (m : ℤ × (ℤ × ℤ)) : ℤ × (ℤ × ℤ) := (-m.1,m.2.1,-m.2.2)
 def stripInverseIndex (m : ℤ × (ℤ × ℤ)) : ℤ × (ℤ × ℤ) := (-m.2.2,m.2.1,-m.1)
@@ -61,12 +61,11 @@ theorem finite_affine_memLp (F : 𝓢(ℝ, ℝ)) (S : Finset (ℤ × (ℤ × ℤ
     MemLp (fun v => ∑ p ∈ S, gmAffineTerm F p.1 p.2.1 p.2.2 v) 2 := by
   apply memLp_finsetSum
   intro p hp
-  have hf2 := (memLp_two_iff_integrable_sq F.continuous.aestronglyMeasurable).mp (F.memLp 2)
   have hm : Measurable (gmAffineTerm F p.1 p.2.1 p.2.2) := by
     unfold gmAffineTerm
     fun_prop
   exact (memLp_two_iff_integrable_sq hm.aestronglyMeasurable).mpr
-    (integrable_gmAffineTerm_sq hf2 (hS p hp).1 (hS p hp).2)
+    (integrable_gmAffineTerm_sq ((memLp_two_iff_integrable_sq F.continuous.aestronglyMeasurable).mp (F.memLp 2)) (hS p hp).1 (hS p hp).2)
 
 /-- Both actual affine energies, including inverse ratio, derived from the
 mixed theorem with exact index injections and ordinary compact input. -/

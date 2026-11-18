@@ -27,13 +27,13 @@ lemma annular_reassembly_summable {α : Type*} (a : α→ℂ) (N : α→ℝ)
 lemma annular_reassembly {α : Type*} (a : α→ℂ) (N : α→ℝ)
     (ha : Summable a) (hN : ∀p,a p≠0→1≤N p) :
     (∑'j : ℕ,∑'p : α,gaussianAnnulus (N p/(2:ℝ)^j)*a p)=∑'p,a p := by
-  rw [Summable.tsum_comm (f:=fun p : α=>fun j : ℕ=>gaussianAnnulus (N p/(2:ℝ)^j)*a p)
+  rw [Summable.tsum_comm (f:=fun p : α=>fun j : ℕ=>gaussianAnnulus (N p/2^j)*a p)
     (annular_reassembly_summable a N ha hN)]
   apply tsum_congr
   intro p
   by_cases hp : a p=0
   · simp [hp]
-  · simpa only [one_mul] using ((gaussianAnnulus_partition (N p) (hN p hp)).mul_right (a p)).tsum_eq
+  · simpa using ((gaussianAnnulus_partition (N p) (hN p hp)).mul_right (a p)).tsum_eq
 
 lemma gaussian_dyadic_correctedSummand (S : Finset Id) (D : Id) (Ψ : O→*ℂ)
     (Z : ℝ) (hZ : 0<Z) (j : ℕ) (I J : Id) :
@@ -66,9 +66,7 @@ lemma gaussian_correctedSummand_norm_ge_one (S : Finset Id) (D : Id) (Ψ : O→*
     1≤(Ideal.absNorm I:ℝ)*(Ideal.absNorm J:ℝ)^3 := by
   have hI : I≠0 := by intro he; subst I; simp [correctedSummand,markedSummand,summand] at h
   have hJ : J≠0 := by intro he; subst J; simp [correctedSummand,markedSummand,summand] at h
-  have hi : 1≤Ideal.absNorm I := Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hI)
-  have hj : 1≤Ideal.absNorm J := Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hJ)
-  exact_mod_cast one_le_mul_of_one_le_of_one_le hi (one_le_pow₀ hj)
+  exact_mod_cast one_le_mul_of_one_le_of_one_le (Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hI)) (one_le_pow₀ (Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hJ)))
 
 theorem correctedGaussian_eq_tsum_dyadic (S : Finset Id) (D : Id) (Ψ : O→*ℂ)
     (hΨ : ∀n,‖Ψ n‖≤1) (Z : ℝ) (hZ : 0<Z) :

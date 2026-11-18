@@ -23,9 +23,7 @@ lemma norm_sq_le_retained (f g : ℂ) (E : ℝ) (_hE : 0≤E) (hf : ‖f-g‖≤
 lemma row_energy_le_retained {α : Type*} (rows : Finset α) (f g : α→ℂ) (E : ℝ)
     (hE : 0≤E) (hf : ∀ k∈rows,‖f k-g k‖≤E) :
     (∑ k∈rows,‖f k‖^2)≤2*(∑ k∈rows,‖g k‖^2)+2*rows.card*E^2 := by
-  calc
-    _ ≤ ∑ k∈rows, (2*‖g k‖^2+2*E^2) := Finset.sum_le_sum (fun k hk => norm_sq_le_retained (f k) (g k) E hE (hf k hk))
-    _ = _ := by simp only [Finset.sum_add_distrib,←Finset.mul_sum,Finset.sum_const,nsmul_eq_mul];ring
+  exact (Finset.sum_le_sum (fun k hk => norm_sq_le_retained (f k) (g k) E hE (hf k hk))).trans_eq (by simp only [Finset.sum_add_distrib,←Finset.mul_sum,Finset.sum_const,nsmul_eq_mul];ring)
 end
 end SevenEighths.InverseReflectedPhase
 

@@ -11,10 +11,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentSourceSecondZeroEnergy
-open ActualEisensteinCubic HeckeFamily CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentAddedZeroUniform CenteredMomentSourceMass CenteredMomentSourceProfileMass
-open CenteredMomentSourceZeroEnergy CenteredMomentSupportedZeroEnergy
-open CenteredMomentSourceRow CenteredMomentHeckeColumnWindow CenteredMomentSecondDiagonal
+open ActualEisensteinCubic HeckeFamily CanonicalQuadraticSieve CompletedGauss CenteredMomentAddedZeroUniform CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentSourceZeroEnergy CenteredMomentSupportedZeroEnergy CenteredMomentSourceRow CenteredMomentHeckeColumnWindow CenteredMomentSecondDiagonal
 local notation "O" => ActualEisensteinCubic.O
 
 def sourceSecondZero (S : Finset (Ideal O)) (β : Ideal O→ℂ) (η : Character) (t : ℝ) : ℂ :=
@@ -77,7 +74,7 @@ theorem sourceSecondZero_divisor_bound (S : Finset (Ideal O)) (β : Ideal O→�
     rw [norm_mul]
     exact (mul_le_mul_of_nonneg_left (heightCoeff_norm_le_one η t I
       (Finset.mem_filter.mp I.property).2.1) (norm_nonneg _)).trans
-      (by simpa only [mul_one] using hc I I.property (Finset.mem_filter.mp hI).2)
+      (by simpa using hc I I.property (Finset.mem_filter.mp hI).2)
   · intro I hI
     rw [sourceGenerator_span]
     exact hdiv I I.property (Finset.mem_filter.mp hI).2
@@ -178,9 +175,8 @@ theorem normalized_tuple_second_zero_bound (N : ℕ) (ε : ℝ) (hε : 0<ε) :
   by_cases hsmall : L*T<1
   · rw [hz hsmall,mul_zero,norm_zero]
     positivity
-  have hb := hbound hi S β η t B (L*T) hB (le_of_not_gt hsmall) hβ s hs hdiv hN
   rw [norm_mul,norm_div,Complex.norm_real,Real.norm_eq_abs,abs_of_pos hT]
-  apply (mul_le_mul_of_nonneg_left hb (div_nonneg (norm_nonneg _) hT.le)).trans_eq
+  apply (mul_le_mul_of_nonneg_left (hbound hi S β η t B (L*T) hB (le_of_not_gt hsmall) hβ s hs hdiv hN) (div_nonneg (norm_nonneg _) hT.le)).trans_eq
   rw [Real.mul_rpow hL.le hT.le,Real.rpow_add hT,Real.rpow_one]
   field_simp
 

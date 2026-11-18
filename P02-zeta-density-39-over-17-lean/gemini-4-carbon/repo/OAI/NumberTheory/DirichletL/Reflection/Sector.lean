@@ -14,8 +14,7 @@ local notation "Eis" => ActualEisensteinCubic.O
 theorem separate_product_congruence {A : Type*} [CommRing A]
     (M f r r₀ P P₀ : A) (hr : M^2 ∣ r-r₀) (hP : M^2 ∣ P-P₀) :
     M^2 ∣ f*r*P-f*r₀*P₀ := by
-  have h := dvd_add (dvd_mul_of_dvd_left hr P) (dvd_mul_of_dvd_right hP r₀)
-  convert dvd_mul_of_dvd_right h f using 1 ; ring
+  convert dvd_mul_of_dvd_right (dvd_add (dvd_mul_of_dvd_left hr P) (dvd_mul_of_dvd_right hP r₀)) f using 1 ; ring
 
 def separateSector (M r P : Eis) :
     (Eis ⧸ Ideal.span {M^2}) × (Eis ⧸ Ideal.span {M^2}) :=

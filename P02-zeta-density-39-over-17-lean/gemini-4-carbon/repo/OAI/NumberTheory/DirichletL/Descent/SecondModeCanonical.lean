@@ -7,9 +7,8 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondInheritedEnergy
 namespace OAI
 
 namespace SevenEighths.InverseMoment
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss InverseSecondFibers JointLogSeparation
 open scoped BigOperators Classical
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss
-open InverseSecondFibers JointLogSeparation
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 local instance : Fintype Eisˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units

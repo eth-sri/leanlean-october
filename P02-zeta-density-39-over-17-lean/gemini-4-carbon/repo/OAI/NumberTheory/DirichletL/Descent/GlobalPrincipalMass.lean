@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.InverseMomentGlobalPrincipalMass
-open InverseMoment InverseFirstPriorityParents InverseInitialArithmetic
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open InverseMoment InverseFirstPriorityParents InverseInitialArithmetic ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open IdealMobiusDivisorSum (idealDivisors mem_idealDivisors)
 open ConcreteTraceCRT (eisEmbedding)
 local notation "O" => ActualEisensteinCubic.O
@@ -34,8 +33,6 @@ lemma firstDivisor_dvd_target {ι : Type*} [DecidableEq ι] (p : ι→O)
   have hd := sourceIdeal_dvd p _ _ hx.first_divisor
   rw [sourceIdeal_union p _ _ hx.common_disjoint] at hd
   apply hd.trans
-  change sourceIdeal p x.firstCommon*sourceIdeal p x.cube.support∣
-    sourceIdeal p x.cube.support*sourceIdeal p x.firstCommon*sourceIdeal p x.quotientSupport
   rw [mul_comm (sourceIdeal p x.firstCommon)]
   exact dvd_mul_right _ _
 
@@ -81,12 +78,10 @@ theorem core_fiber_small_power (Jmax : ℕ) (eps : ℝ) (heps : 0<eps) :
   refine ⟨D^(Jmax+1),by positivity,?_⟩
   intro ι _ p hp _ hinj Jo hJo S q hS hq
   have h0 := divisorTarget_ne_zero p hp q
-  have hcard : S.card≤(idealDivisors (divisorTarget p q)).card^(Jmax+1) :=
-    (core_fiber_card p hp hinj S q hS hq).trans
+  have hcard := (core_fiber_card p hp hinj S q hS hq).trans
       (Nat.pow_le_pow_right (InverseInitialFibers.divisor_card_pos _ h0) (Nat.add_le_add_right hJo 1))
-  have hb := pow_le_pow_left₀ (Nat.cast_nonneg _) (hdiv _ h0) (Jmax+1)
   apply (show (S.card:ℝ)≤((idealDivisors (divisorTarget p q)).card:ℝ)^(Jmax+1) by exact_mod_cast hcard).trans
-  apply hb.trans_eq
+  apply (pow_le_pow_left₀ (Nat.cast_nonneg _) (hdiv _ h0) (Jmax+1)).trans_eq
   rw [mul_pow]
   congr 1
   rw [←Real.rpow_natCast,←Real.rpow_mul (Nat.cast_nonneg _)]
@@ -103,7 +98,6 @@ lemma divisorTarget_norm_bound {ι : Type*} [DecidableEq ι] (p : ι→O) (hp : 
     (Ideal.absNorm (divisorTarget p q):ℝ)≤B^2*V*T := by
   unfold divisorTarget
   simp only [map_mul,Nat.cast_mul,sourceIdeal,←eisEmbedding_norm_sq_eq_absNorm_span]
-  change primeProductNorm p q.1.support*primeProductNorm p q.2.1*primeProductNorm p q.2.2≤_
   exact mul_le_mul (mul_le_mul (cubeCoordinates_radical_bound p hp q.1 B hB hb₁ hb₂)
     hC (primeProductNorm_pos p hp _).le (sq_nonneg _)) ht (primeProductNorm_pos p hp _).le
     (mul_nonneg (sq_nonneg _) hV)

@@ -69,7 +69,7 @@ theorem calibrated_numerator_first_uniform_growth
         HeckeOrigin.continued (rowCharacter S hS.prime u) s‖≤
         C*((Ideal.span {u.val}:Ideal O).absNorm:ℝ)^3*(3+|s.im|)^2 := by
   obtain ⟨C,hC,hmain⟩ := nonprincipal_first_uniform_growth
-  let A : ℝ := (conductorConstant:ℝ)*((∏P∈S,P).absNorm:ℝ)
+  let A := (conductorConstant:ℝ)*((∏P∈S,P).absNorm:ℝ)
   have hA : 0≤A := by dsimp [A];positivity
   refine ⟨C*(1+A^3),by positivity,?_⟩
   intro u hu s hs
@@ -77,20 +77,18 @@ theorem calibrated_numerator_first_uniform_growth
   · simp only [hc,star_zero,zero_mul,norm_zero]
     positivity
   · have hnp := calibrated_row_nonprincipal S hS.prime hmax hS.bad u hu hc
-    have hg := hmain (rowCharacter S hS.prime u) hnp s hs
     have hcal : ‖star ((calibrationForSet S hmax).residueMonoid u.val)‖≤1 := by
       rw [norm_star]
       exact (calibrationForSet S hmax).residueMonoid_norm_le_one _
     have hQ : ((rowCharacter S hS.prime u).modulus.absNorm:ℝ)≤
         A*((Ideal.span {u.val}:Ideal O).absNorm:ℝ) := by
-      have h := rowCharacter_conductor S hS.prime u
       dsimp [A]
-      exact_mod_cast (by simpa only [mul_right_comm] using h)
+      exact_mod_cast (by simpa only [mul_right_comm] using (rowCharacter_conductor S hS.prime u))
     rw [norm_mul]
     calc
       _ ≤ ‖HeckeOrigin.continued (rowCharacter S hS.prime u) s‖ :=
         mul_le_of_le_one_left (norm_nonneg _) hcal
-      _ ≤ C*((rowCharacter S hS.prime u).modulus.absNorm:ℝ)^3*(3+|s.im|)^2 := hg
+      _ ≤ C*((rowCharacter S hS.prime u).modulus.absNorm:ℝ)^3*(3+|s.im|)^2 := (hmain (rowCharacter S hS.prime u) hnp s hs)
       _ ≤ C*(A*((Ideal.span {u.val}:Ideal O).absNorm:ℝ))^3*(3+|s.im|)^2 := by gcongr
       _ ≤ _ := by
         rw [mul_pow]

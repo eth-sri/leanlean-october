@@ -8,8 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbeGramCommon
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion
-open ConcretePrimeRowBridge UniqueFactorizationMonoid
+open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion ConcretePrimeRowBridge UniqueFactorizationMonoid
 local notation "O" => ActualEisensteinCubic.O
 local notation "Id" => Ideal O
 variable {ι : Type*} [Fintype ι]
@@ -35,12 +34,11 @@ theorem exists_nonexceptional_residue (S : Finset Id) (hS : ∀P∈S,P.IsMaximal
   obtain ⟨J,hJ,hcop,hJ0⟩ := exists_nonexceptional_separation (jointFixedModulus S hS)
     (∏i,P i) (Ideal.span {r}) p hr.1 hp0 hfixed hcommon
   let e := (normalizedFactors (Ideal.span {r})).count p
-  let M : Id := (jointFixedModulus S hS*(∏i,P i)*J)*p^e
+  let M := (jointFixedModulus S hS*(∏i,P i)*J)*p^e
   have hMperiod : M=jointPeriod S hS P r := by
     rw [jointPeriod,hJ]
-    dsimp [M,e]
     ring
-  have hM0 : M≠0 := hMperiod ▸ jointPeriod_nonzero S hS C hC P c hc hfac r
+  have hM0 := hMperiod ▸ jointPeriod_nonzero S hS C hC P c hc hfac r
     (CenteredMomentSupportedCorrelation.supported_element_ne_zero r hr)
   refine ⟨M,hM0,?_,?_⟩
   · rw [hMperiod]

@@ -1,5 +1,15 @@
 module
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
+public import Mathlib
 public import TaoTrudgianYang2025.BetaBufferedFrequencyGap
 public import Mathlib.NumberTheory.Harmonic.Bounds
 
@@ -80,7 +90,7 @@ theorem norm_bufferedModes_exterior_blocks_le_log
         ((⌈(T/N)*(1+δ)⌉ : ℤ)+((n+1 : ℕ) : ℝ)))‖ ≤
       (4/Real.pi)*(2+Real.log (Lminus : ℝ)+Real.log (Lplus : ℝ)) := by
   have hm := sum_norm_bufferedModes_left_le_harmonic hσ hδ hF hT hN hη hl hr
-    ⌊(T/N)*((2 : ℝ)^(-σ)-δ)⌋ (Int.floor_le _) Lminus
+    ⌊(T/N)*(2^(-σ)-δ)⌋ (Int.floor_le _) Lminus
   have hp := sum_norm_bufferedModes_right_le_harmonic hσ hδ hF hT hN hη hl hr
     ⌈(T/N)*(1+δ)⌉ (Int.le_ceil _) Lplus
   calc

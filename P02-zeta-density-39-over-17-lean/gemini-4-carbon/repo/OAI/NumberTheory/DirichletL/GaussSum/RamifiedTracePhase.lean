@@ -7,20 +7,12 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical
 
 namespace TraceLambdaPhase
 
-open EisensteinEmbedding ConcreteTraceCRT Complex
+open EisensteinEmbedding ConcreteTraceCRT
 open scoped ComplexConjugate
 
 theorem eisLam_sq : eisLam ^ 2 = (-3 : ℂ) := by
@@ -29,14 +21,14 @@ theorem eisLam_sq : eisLam ^ 2 = (-3 : ℂ) := by
 
 theorem exp_minus_four_pi_div_three :
     Complex.exp (-(4 : ℂ) * Real.pi * Complex.I / 3) = omega3 := by
-  have hshift : Complex.exp (-(4 : ℂ) * Real.pi * Complex.I / 3) =
-      Complex.exp ((2 : ℂ) * Real.pi * Complex.I / 3) := by
+  have hshift : Complex.exp (-4 * Real.pi * Complex.I / 3) =
+      Complex.exp (2 * Real.pi * Complex.I / 3) := by
     apply Complex.exp_eq_exp_iff_exists_int.mpr
     refine ⟨-1, ?_⟩
     push_cast
     ring
   rw [hshift]
-  have harg : ((2 : ℂ) * Real.pi * Complex.I / 3) =
+  have harg : (2 * Real.pi * Complex.I / 3) =
       (((2 * Real.pi / 3 : ℝ) : ℂ) * Complex.I) := by
     push_cast
     ring
@@ -57,7 +49,6 @@ open EisensteinEmbedding ConcreteTraceCRT ConcreteBreveE TraceLambdaPhase
 end ActualEisensteinCubic
 
 namespace PoissonFirstLocal
-open scoped Classical
 
 end PoissonFirstLocal
 
@@ -104,8 +95,7 @@ theorem finiteSquarefreeRow_difference
         weight n * finiteSquarefreeRow P hgood (support n) (a ^ 6)) =
       ∑ n ∈ columns.filter (fun n => ∃ i ∈ support n, a ∈ P i), weight n := by
   classical
-  rw [← Finset.sum_sub_distrib]
-  rw [Finset.sum_filter]
+  rw [← Finset.sum_sub_distrib, Finset.sum_filter]
   apply Finset.sum_congr rfl
   intro n hn
   rw [finiteSquarefreeRow_sixth_power]
@@ -138,7 +128,7 @@ end ShortDraftCusp
 
 namespace ActualEisensteinCubic
 
-open EisensteinEmbedding ConcreteTraceCRT Complex
+open EisensteinEmbedding ConcreteTraceCRT
 
 theorem breveE_quarter_trace (a b : ℤ) :
     ShortDraftTrace.breveE
@@ -174,7 +164,7 @@ noncomputable def breveGaussianFourTerms (a b : ℤ) : ℂ :=
 theorem breveGaussianFourTerms_formula (a b : ℤ) :
     breveGaussianFourTerms a b =
       (1 + Complex.I ^ (-b) + Complex.I ^ a + Complex.I ^ (b-a)) / 2 := by
-  let c : ℂ := (a : ℂ) + (b : ℂ) * omega3
+  let c := (a : ℂ) + (b : ℂ) * omega3
   have hfirst : ShortDraftTrace.breveE (((-c) / eisLam) / 4) =
       Complex.I ^ (-b) := by
     have hc : -c = ((-a : ℤ) : ℂ) + ((-b : ℤ) : ℂ) * omega3 := by

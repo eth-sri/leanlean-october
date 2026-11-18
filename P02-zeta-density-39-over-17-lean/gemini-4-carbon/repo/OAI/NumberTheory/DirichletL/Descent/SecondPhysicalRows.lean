@@ -58,8 +58,7 @@ theorem actual_second_row_radius_one
       x.second.frequency ∈ nonzeroChildFrequencyBall (actualSecondMultiplier p x) R) : 1 ≤ R := by
   obtain ⟨x,hx⟩ := hsource
   by_contra hR
-  have he := nonzeroChildFrequencyBall_empty _ (actualSecondMultiplier_ne_zero p x) R (lt_of_not_ge hR)
-  simpa [he] using hrows x hx
+  simpa [(nonzeroChildFrequencyBall_empty _ (actualSecondMultiplier_ne_zero p x) R (lt_of_not_ge hR))] using hrows x hx
 
 end
 end SevenEighths.InverseMoment

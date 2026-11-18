@@ -11,11 +11,7 @@ noncomputable section
 
 open scoped Classical BigOperators
 namespace SevenEighths.InverseInitialCanonicalState
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT InverseMoment
-open InverseInitialArithmetic InverseInitialQuotientGeometry InverseInitialProfile
-open InverseInitialEnergyCallerState InverseInitialEnergyCallerWindows
-open InverseInitialEnergyCallerWindowGeometry InverseInitialEnergyCallerGeometry
-open InverseInitialEnergyCallerRanges CanonicalQuadraticSieve
+open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT InverseMoment InverseInitialArithmetic InverseInitialQuotientGeometry InverseInitialProfile InverseInitialEnergyCallerState InverseInitialEnergyCallerWindows InverseInitialEnergyCallerWindowGeometry InverseInitialEnergyCallerGeometry InverseInitialEnergyCallerRanges CanonicalQuadraticSieve
 local notation "O"=>ActualEisensteinCubic.O
 local notation "λ₀"=>ConcretePrimeRowBridge.goodLambda
 
@@ -72,10 +68,8 @@ theorem enlarged_initial_margins (m r z G B θ v H η τ Q c₁ c₂:ℝ)
     CanonicalMargins
       (max 0 (r+z-2*G-B-v)+(θ+v+2*η)) (θ+H+2*η) Q (z-G)
       (3*min c₁ c₂/4) := by
-  have hd:0≤max 0 (r+z-2*G-B-v)-(r+z-2*G-B-v):=
-    sub_nonneg.mpr (le_max_right _ _)
   have hh:=initial_margins (delta:=max 0 (r+z-2*G-B-v)-(r+z-2*G-B-v))
-    h₁ h₂ hG hP hQ hc hd hηsmall hτ
+    h₁ h₂ hG hP hQ hc (sub_nonneg.mpr (le_max_right _ _)) hηsmall hτ
   have hr:=physical_row_width_le m r z G B θ H η τ hcut
   unfold CanonicalMargins at hh ⊢
   unfold initialF at hh
@@ -85,10 +79,8 @@ theorem assigned_label_weight_le {σ:Type*}[DecidableEq σ]
     (slots J₁ J₂:Finset σ)(K:ℕ)(hK:slots.card≤K)
     (h₁:J₁⊆slots)(h₂:J₂⊆slots)(f:Ideal O)(hf:f≠0):
     ((IdealMobiusDivisorSum.idealDivisors f).card:ℝ)^(J₁.card+J₂.card+1)≤secondLabelWeight K f := by
-  have hmem:(1:Ideal O)∈IdealMobiusDivisorSum.idealDivisors f:=
-    (IdealMobiusDivisorSum.mem_idealDivisors hf).mpr (one_dvd _)
   have hn:(1:ℝ)≤(IdealMobiusDivisorSum.idealDivisors f).card:=by
-    exact_mod_cast Finset.one_le_card.mpr ⟨1,hmem⟩
+    exact_mod_cast Finset.one_le_card.mpr ⟨1,((IdealMobiusDivisorSum.mem_idealDivisors hf).mpr (one_dvd _))⟩
   have hcard1:=Finset.card_le_card h₁
   have hcard2:=Finset.card_le_card h₂
   exact pow_le_pow_right₀ hn (by omega)

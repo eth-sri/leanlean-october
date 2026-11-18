@@ -64,14 +64,11 @@ theorem rational_divisor_weight_subpower {η : ℝ} (hη : 0 < η) :
   obtain ⟨D, hD, hd⟩ := MathCollab.Density.divisor_card_subpower (show 0 < η/12 by positivity)
   refine ⟨D^12, one_le_pow₀ hD, ?_⟩
   intro H hH r hr hnum hden
-  have ha : (r.num.natAbs.divisors.card : ℝ) ≤ D*H^(η/12) :=
-    (hd _ (Int.natAbs_pos.mpr (Rat.num_ne_zero.mpr hr.ne'))).trans (mul_le_mul_of_nonneg_left
+  have ha := (hd _ (Int.natAbs_pos.mpr (Rat.num_ne_zero.mpr hr.ne'))).trans (mul_le_mul_of_nonneg_left
       (Real.rpow_le_rpow (by positivity) hnum (by positivity)) (by linarith))
-  have hb : (r.den.divisors.card : ℝ) ≤ D*H^(η/12) :=
-    (hd _ r.pos).trans (mul_le_mul_of_nonneg_left
+  have hb := (hd _ r.pos).trans (mul_le_mul_of_nonneg_left
       (Real.rpow_le_rpow (by positivity) hden (by positivity)) (by linarith))
-  have hm := mul_le_mul ha hb (Nat.cast_nonneg _) (by positivity)
-  apply (pow_le_pow_left₀ (by positivity) hm 6).trans_eq
+  apply (pow_le_pow_left₀ (by positivity) (mul_le_mul ha hb (Nat.cast_nonneg _) (by positivity)) 6).trans_eq
   calc
     _ = D^12*(H^(η/12))^12 := by ring
     _ = _ := by

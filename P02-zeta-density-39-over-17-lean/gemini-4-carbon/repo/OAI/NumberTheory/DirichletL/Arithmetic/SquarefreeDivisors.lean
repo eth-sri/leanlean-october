@@ -7,74 +7,11 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+open MulChar AddChar Filter Asymptotics MeasureTheory Real Finset Complex ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT Ideal NumberField RingOfIntegers UniqueFactorizationMonoid Set
+open scoped BigOperators Topology FourierTransform SchwartzMap Classical LSeries.notation ArithmeticFunction.Moebius ContDiff
 
 namespace SquarefreeDivisorBound
-open scoped BigOperators Classical
-open Filter IdealMobiusDivisorSum
+open IdealMobiusDivisorSum
 
 abbrev O := ActualEisensteinCubic.O
 
@@ -86,46 +23,35 @@ theorem squarefree_divisor_card_le (I : Ideal O) (hI : I ≠ ⊥) :
 theorem prime_support_subsets_bound (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ I : Ideal O, I ≠ ⊥ →
       (2 : ℝ) ^ (primeSupport I).card ≤ C * (Ideal.absNorm I : ℝ) ^ ε := by
-  have ht : Tendsto (fun n : ℕ => (n : ℝ) ^ ε) atTop atTop :=
-    (tendsto_rpow_atTop hε).comp tendsto_natCast_atTop_atTop
-  obtain ⟨N, hN⟩ := eventually_atTop.mp (ht.eventually (eventually_ge_atTop (2 : ℝ)))
-  let small : Finset (Ideal O) :=
-    (Ideal.finite_setOfPred_absNorm_le (S := O) N).toFinset
-  refine ⟨(2 : ℝ) ^ small.card, by positivity, ?_⟩
+  obtain ⟨N, hN⟩ := eventually_atTop.mp (((tendsto_rpow_atTop hε).comp tendsto_natCast_atTop_atTop).eventually (eventually_ge_atTop 2))
+  let small := (Ideal.finite_setOfPred_absNorm_le (S := O) N).toFinset
+  refine ⟨2 ^ small.card, by positivity, ?_⟩
   intro I hI
   let S := primeSupport I
   let A := S ∩ small
   let B := S \ small
-  have hBS : B ⊆ primeSupport I := Finset.sdiff_subset
-  have hlarge (P : Ideal O) (hP : P ∈ B) : (2 : ℝ) ≤ (Ideal.absNorm P : ℝ) ^ ε := by
+  have hlarge (P : Ideal O) (hP : P ∈ B) : 2 ≤ (Ideal.absNorm P : ℝ) ^ ε := by
     apply hN
-    have hn : P ∉ small := (Finset.mem_sdiff.mp hP).2
     have hgt : N < Ideal.absNorm P := by
       apply Nat.lt_of_not_ge
       intro hp
-      exact hn (by simpa [small] using hp)
+      exact ((Finset.mem_sdiff.mp hP).2) (by simpa [small] using hp)
     exact hgt.le
-  have hpowB : (2 : ℝ) ^ B.card ≤ (Ideal.absNorm (∏ P ∈ B, P) : ℝ) ^ ε := by
+  have hpowB : 2 ^ B.card ≤ (Ideal.absNorm (∏ P ∈ B, P) : ℝ) ^ ε := by
     calc
-      _ = ∏ P ∈ B, (2 : ℝ) := by simp
+      _ = ∏ P ∈ B, 2 := by simp
       _ ≤ ∏ P ∈ B, (Ideal.absNorm P : ℝ) ^ ε :=
         Finset.prod_le_prod₀ (fun _ _ => by positivity) hlarge
       _ = (∏ P ∈ B, (Ideal.absNorm P : ℝ)) ^ ε :=
         (Real.finsetProd_rpow B (fun P => (Ideal.absNorm P : ℝ))
           (fun _ _ => by positivity) ε)
       _ = _ := by simp only [map_prod, Nat.cast_prod]
-  have hNI : 0 < Ideal.absNorm I := Nat.pos_iff_ne_zero.mpr
+  have hNI := Nat.pos_iff_ne_zero.mpr
     (fun h => hI (Ideal.absNorm_eq_zero_iff.mp h))
-  have hnorm : Ideal.absNorm (∏ P ∈ B, P) ≤ Ideal.absNorm I :=
-    Nat.le_of_dvd hNI (map_dvd Ideal.absNorm (support_product_dvd hI hBS))
-  have hpowBI : (2 : ℝ) ^ B.card ≤ (Ideal.absNorm I : ℝ) ^ ε :=
-    hpowB.trans (Real.rpow_le_rpow (by positivity) (by exact_mod_cast hnorm) hε.le)
-  have hAc : A.card ≤ small.card := Finset.card_le_card Finset.inter_subset_right
   have hcard : S.card = A.card + B.card := by
     simp [A, B]
-  change (2 : ℝ) ^ S.card ≤ _
   rw [hcard, pow_add]
-  exact mul_le_mul (pow_le_pow_right₀ (by norm_num) hAc) hpowBI
+  exact mul_le_mul (pow_le_pow_right₀ (by norm_num) (Finset.card_le_card Finset.inter_subset_right)) (hpowB.trans (Real.rpow_le_rpow (by positivity) (by exact_mod_cast (Nat.le_of_dvd hNI (map_dvd Ideal.absNorm (support_product_dvd hI (Finset.sdiff_subset))))) hε.le))
     (by positivity) (by positivity)
 
 theorem squarefree_divisor_small_power (ε : ℝ) (hε : 0 < ε) :
@@ -134,7 +60,7 @@ theorem squarefree_divisor_small_power (ε : ℝ) (hε : 0 < ε) :
   obtain ⟨C, hC, h⟩ := prime_support_subsets_bound ε hε
   refine ⟨C, hC, fun I hI => ?_⟩
   have hc : (((idealDivisors I).filter Squarefree).card : ℝ) ≤
-      (2 : ℝ) ^ (primeSupport I).card := by
+      2 ^ (primeSupport I).card := by
     exact_mod_cast squarefree_divisor_card_le I hI
   exact hc.trans (h I hI)
 
@@ -204,8 +130,7 @@ theorem first_element_energy_small_power (ε : ℝ) (hε : 0 < ε) :
   obtain ⟨C, hC, hc⟩ := first_element_fiber_small_power ε hε
   refine ⟨C, hC, ?_⟩
   intro s t e w P B Y hB hY hs hmap ht hnorm hw
-  have hpush := bounded_energy_pushforward s t (firstElementRowMap e) w P B hmap hw
-  apply hpush.trans
+  apply (bounded_energy_pushforward s t (firstElementRowMap e) w P B hmap hw).trans
   rw [Finset.mul_sum]
   apply Finset.sum_le_sum
   intro y hy
@@ -219,8 +144,6 @@ theorem first_element_energy_small_power (ε : ℝ) (hε : 0 < ε) :
 end SquarefreeDivisorBound
 
 namespace VerticalContourShift
-open MeasureTheory Filter Set
-open scoped Topology
 
 theorem horizontal_integral_tendsto_zero
     (f : ℂ → ℂ) (a b C : ℝ) (hab : a ≤ b)
@@ -228,10 +151,8 @@ theorem horizontal_integral_tendsto_zero
       ‖f ((σ : ℂ) + t * Complex.I)‖ ≤ C / (1 + t ^ 2)) :
     Tendsto (fun t : ℝ => ∫ σ : ℝ in a..b, f ((σ : ℂ) + t * Complex.I))
       atTop (𝓝 0) := by
-  have ht : Tendsto (fun t : ℝ => 1 + t ^ 2) atTop atTop :=
-    tendsto_atTop_add_const_left atTop 1 (tendsto_pow_atTop (by decide : (2 : ℕ) ≠ 0))
   have hz : Tendsto (fun t : ℝ => C / (1 + t ^ 2) * |b - a|) atTop (𝓝 0) := by
-    simpa using (tendsto_const_nhds.div_atTop ht).mul_const |b - a|
+    simpa using (tendsto_const_nhds.div_atTop (tendsto_atTop_add_const_left atTop 1 (tendsto_pow_atTop (by decide : 2 ≠ 0)))).mul_const |b - a|
   apply tendsto_zero_iff_norm_tendsto_zero.mpr
   apply squeeze_zero (fun _ => norm_nonneg _) _ hz
   intro t
@@ -296,10 +217,8 @@ theorem integral_eq_of_strip_decay
 
 end VerticalContourShift
 
-open scoped BigOperators Classical
 namespace FirstPassCubeLabels
 abbrev O := ActualEisensteinCubic.O
-open ActualEisensteinCubic
 
 def bit (b : Bool) : ℕ := if b then 1 else 0
 
@@ -363,7 +282,7 @@ theorem row_zero_of_mask_zero (a : O) (h : rowCoprimeMask P S a = 0) :
     finiteSquarefreeRow P hg S a = 0 := by
   have hq := row_sixth P hg S a
   rw [h] at hq
-  exact (pow_eq_zero_iff (by decide : (6 : ℕ) ≠ 0)).mp hq
+  exact (pow_eq_zero_iff (by decide : 6 ≠ 0)).mp hq
 
 theorem row_power_mul_mask_power (a : O) (k m : ℕ) (hk : 0 < k) :
     finiteSquarefreeRow P hg S a ^ k * rowCoprimeMask P S a ^ m =
@@ -386,12 +305,10 @@ theorem localFactor_eq (side parityBit ε₁ ε₂ : Bool) (a : O) :
       else rowCoprimeMask P S a := by
   by_cases h : ∃ i ∈ S, a ∈ P i
   · have hm : rowCoprimeMask P S a = 0 := by simp [rowCoprimeMask, h]
-    have hz := row_zero_of_mask_zero P hg S a hm
-    simp [localFactor, hm, hz]
+    simp [localFactor, hm, (row_zero_of_mask_zero P hg S a hm)]
   · have hm : rowCoprimeMask P S a = 1 := by simp [rowCoprimeMask, h]
-    have h6 : finiteSquarefreeRow P hg S a ^ 6 = 1 := (row_sixth P hg S a).trans hm
     simp only [localFactor, hm, one_mul, ← pow_add]
-    rw [pow_eq_pow_mod _ h6, exponent_table]
+    rw [pow_eq_pow_mod _ ((row_sixth P hg S a).trans hm), exponent_table]
     split <;> simp
 
 end Rows
@@ -404,15 +321,11 @@ def b0Exponent (m : ℕ) (ε₁ ε₂ : Bool) : ℕ := m / 2 - bit (evenDouble m
 
 theorem multiplicity_decomposition (m : ℕ) (ε₁ ε₂ : Bool) (hm : 0 < m) :
     2 * b0Exponent m ε₁ ε₂ + 2 * bit (evenDouble m ε₁ ε₂) + bit (parity m) = m := by
-  have hmod := Nat.mod_lt m (by decide : 0 < 2)
-  have hdiv := Nat.mod_add_div m 2
   cases ε₁ <;> cases ε₂ <;> by_cases h : m % 2 = 1 <;>
     simp [b0Exponent, evenDouble, parity, bit, h] <;> omega
 
 theorem b0Exponent_pos_of_not_retained (m : ℕ) (ε₁ ε₂ : Bool) (hm : 0 < m)
     (hret : retained (parity m) ε₁ ε₂ = false) : 0 < b0Exponent m ε₁ ε₂ := by
-  have hmod := Nat.mod_lt m (by decide : 0 < 2)
-  have hdiv := Nat.mod_add_div m 2
   cases ε₁ <;> cases ε₂ <;> by_cases h : m % 2 = 1 <;>
     simp_all [b0Exponent, evenDouble, parity, retained, bit] <;> omega
 
@@ -562,11 +475,8 @@ end Reassembly
 
 end FirstPassCubeLabels
 
-open scoped BigOperators Classical SchwartzMap
 namespace QuadraticInitialBound
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
-open FiniteGaussPhase MixedCrossSeparation ActualEisensteinCoordinates QuadraticGaussRay
-open RayFourExpansion
+open EisensteinSchwartzPoisson FiniteGaussPhase MixedCrossSeparation ActualEisensteinCoordinates QuadraticGaussRay RayFourExpansion
 
 def quadraticSymbol {ι : Type*} (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
     (hg : ∀ i, lambda ∉ Ideal.span {p i}) (A B : Finset ι) : ℂ :=
@@ -583,8 +493,7 @@ theorem quadraticSymbol_mul_reverse {ι : Type*}
     (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
     (hg : ∀ i, lambda ∉ Ideal.span {p i}) (A B : Finset ι) :
     quadraticSymbol p hg A B * quadraticSymbol p hg B A = quadraticCrossPhase p hg A B := by
-  rw [quadraticSymbol_eq_cross_product, quadraticSymbol_eq_cross_product]
-  rw [Finset.prod_comm (s := B) (t := A)]
+  rw [quadraticSymbol_eq_cross_product, quadraticSymbol_eq_cross_product, Finset.prod_comm (s := B) (t := A)]
   simp only [quadraticCrossPhase, Finset.prod_mul_distrib]
 
 theorem quadraticSymbol_eq_zero_of_not_disjoint {ι : Type*} [DecidableEq ι]
@@ -630,9 +539,8 @@ theorem quadraticSymbol_reciprocity {ι : Type*} [Fintype ι] [DecidableEq ι]
   by_cases hd : Disjoint A B
   · have hprod := quadraticSymbol_mul_reverse p hg A B
     rw [quadraticCrossPhase_eq_rayPair p hp hcop hg hc A B hd] at hprod
-    have hsq := quadraticSymbol_sq_eq_one p hcop hg B A hd.symm
     calc
-      _ = quadraticSymbol p hg A B * (quadraticSymbol p hg B A) ^ 2 := by rw [hsq, mul_one]
+      _ = quadraticSymbol p hg A B * (quadraticSymbol p hg B A) ^ 2 := by rw [(quadraticSymbol_sq_eq_one p hcop hg B A hd.symm), mul_one]
       _ = _ := by rw [pow_two, ← mul_assoc, hprod]
   · rw [quadraticSymbol_eq_zero_of_not_disjoint p hg A B hd,
       quadraticSymbol_eq_zero_of_not_disjoint p hg B A (fun h => hd h.symm), mul_zero]

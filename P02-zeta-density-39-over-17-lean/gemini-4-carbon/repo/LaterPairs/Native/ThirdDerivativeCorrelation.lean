@@ -1,7 +1,16 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
-public import TaoTrudgianYang2025.BProcessBaseline
+public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
+public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonFirstDerivative
+public import MathCollab.Density.Stronger.Atkinson.FresnelEvaluation
+public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
+public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
+public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import LaterPairs.Native.ContinuousSecondDerivative
 public import LaterPairs.Native.ThirdDerivativeShift
 
@@ -31,7 +40,7 @@ theorem continuous_third_derivative_correlation
   · let L := N-r-1
     have hlen : N-r = L+1 := by dsimp [L]; omega
     have hlenR : (L:ℝ)+1+(r:ℝ) = N := by
-      exact_mod_cast (show L+1+r = N by dsimp [L]; omega)
+      exact_mod_cast (by dsimp [L]; omega)
     have hin (x : ℝ) (hx : x ∈ Icc A (A+L+1)) :
         x ∈ Icc A (A+N) ∧ x+r ∈ Icc A (A+N) := by
       constructor <;> constructor <;> linarith [Nat.cast_nonneg (α := ℝ) r,hx.1,hx.2]
@@ -51,7 +60,7 @@ theorem continuous_third_derivative_correlation
       (fun x hx => (hcurv x hx).1) (fun x hx => (hcurv x hx).2)
     rw [hlen]
     exact hb.trans (by
-      have hLN : (L:ℝ) ≤ N := by exact_mod_cast (show L ≤ N by dsimp [L]; omega)
+      have hLN : (L:ℝ) ≤ N := by exact_mod_cast (by dsimp [L]; omega)
       have hm := mul_le_mul_of_nonneg_right
         (mul_le_mul_of_nonneg_left hLN hC) (Real.sqrt_nonneg ((r:ℝ)*μ))
       linarith)

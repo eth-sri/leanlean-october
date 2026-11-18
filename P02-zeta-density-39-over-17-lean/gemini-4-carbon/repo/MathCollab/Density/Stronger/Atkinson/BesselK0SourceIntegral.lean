@@ -10,8 +10,7 @@ public import Mathlib.MeasureTheory.Integral.Prod
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set
-open MathCollab.Density.Stronger.Fourth
+open Complex Filter MeasureTheory Set MathCollab.Density.Stronger.Fourth
 open scoped ContDiff
 set_option autoImplicit false
 noncomputable section
@@ -28,13 +27,8 @@ theorem norm_zetaBesselK0SourceIntegrand_le {T G L : ℝ}
         ‖zetaSmoothDivisorTest T G L x‖ := by
   by_cases hx : zetaSmoothDivisorTest T G L x = 0
   · simp only [zetaBesselK0SourceIntegrand, hx, zero_mul, norm_zero, mul_zero, le_refl]
-  have hs := support_zetaSmoothDivisorTest_physical (by linarith : 0 < T) hG hL hwidth hx
   unfold zetaBesselK0SourceIntegrand
   rw [norm_mul, Complex.norm_real, Real.norm_eq_abs]
-  calc
-    _ ≤ ‖zetaSmoothDivisorTest T G L x‖ *
-        (zetaBesselK0PowerConstant k / (T ^ k * (n : ℝ) ^ k)) :=
-      mul_le_mul_of_nonneg_left (abs_dfiBesselK0_source_le hT hs.1 hn k) (norm_nonneg _)
-    _ = _ := mul_comm _ _
+  exact (mul_le_mul_of_nonneg_left (abs_dfiBesselK0_source_le hT (support_zetaSmoothDivisorTest_physical (by linarith : 0 < T) hG hL hwidth hx).1 hn k) (norm_nonneg _)).trans_eq (mul_comm _ _)
 
 end MathCollab.Density.Stronger.Atkinson

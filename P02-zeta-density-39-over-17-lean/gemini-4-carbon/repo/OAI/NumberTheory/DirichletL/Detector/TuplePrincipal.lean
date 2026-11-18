@@ -26,7 +26,7 @@ theorem indexedCompensatedHigh_principal_continued {K : ℕ} (η : HeckeFamily.C
         (idealMarkedClosed η (P i) x w z)
         (star (HeckeFamily.idealCoeff η (P i).val)*(Ideal.absNorm (P i).val:ℂ)^x)
         ((Ideal.absNorm (P i).val:ℂ)^(-w))/idealClosedCorrection η (P i) x w z := by
-  have hs (i : Fin K) : Supported (P i).val := outside_prime_supported S hS.bad (P i) (hPS i)
+  have hs (i : Fin K) := outside_prime_supported S hS.bad (P i) (hPS i)
   rw [indexedCompensatedHigh_principal η S P hP hs]
   have ht : ∀Q∈Finset.univ.image P,Q.val∉S := by
     intro Q hQ

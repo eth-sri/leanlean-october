@@ -51,7 +51,7 @@ theorem integral_symmetric_fresnelDampedKernel (ε c H : ℝ) :
     (∫ x in (-H)..H, fresnelDampedKernel ε c x) =
       2 * ∫ x in (0 : ℝ)..H, fresnelDampedKernel ε c x := by
   have he : (∫ x in (-H)..0, fresnelDampedKernel ε c x) =
-      ∫ x in (0 : ℝ)..H, fresnelDampedKernel ε c x := by
+      ∫ x in 0..H, fresnelDampedKernel ε c x := by
     have h := intervalIntegral.integral_comp_neg (fresnelDampedKernel ε c) (a := -H) (b := 0)
     simp only [fresnelDampedKernel_neg, neg_zero, neg_neg] at h
     exact h

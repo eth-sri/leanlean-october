@@ -79,7 +79,7 @@ theorem amplitude_mem_labels (P cap mesh : ℝ) (Q : ℂ) (hm : 0<mesh) :
     amplitude P cap mesh Q∈labels cap mesh := by
   by_cases hQ : Q=0
   · simp [amplitude,hQ,labels]
-  let n : ℤ := ⌊Real.log ‖Q‖/(mesh*Real.log P)⌋
+  let n := ⌊Real.log ‖Q‖/(mesh*Real.log P)⌋
   have he : amplitude P cap mesh Q=min cap (max 0 (mesh*(n : ℝ))) := by
     simp only [amplitude,ite_eq_right hQ]
     rfl
@@ -91,17 +91,15 @@ theorem amplitude_mem_labels (P cap mesh : ℝ) (Q : ℂ) (hm : 0<mesh) :
   by_cases hn : mesh*(n : ℝ)≤0
   · rw [max_eq_left hn]
     simp [labels]
-  have hn' : 0<mesh*(n : ℝ) := lt_of_not_ge hn
-  rw [max_eq_right hn'.le]
+  rw [max_eq_right (lt_of_not_ge hn).le]
   apply Finset.mem_insert_of_mem
   apply Finset.mem_insert_of_mem
   apply Finset.mem_image.mpr
   refine ⟨n,Finset.mem_Icc.mpr ⟨?_,?_⟩,rfl⟩
-  · have hh : (0 : ℝ)≤(n : ℝ) := by nlinarith
+  · have hh : 0≤(n : ℝ) := by nlinarith
     exact_mod_cast hh
   · have hh : (n : ℝ)≤cap/mesh := by
       apply (le_div_iff₀ hm).mpr
-      have hlt : max 0 (mesh*(n : ℝ))<cap := lt_of_not_ge hc
       have : mesh*(n : ℝ)≤max 0 (mesh*(n : ℝ)) := le_max_right _ _
       nlinarith
     exact_mod_cast hh.trans (Int.le_ceil _)
@@ -109,12 +107,9 @@ theorem amplitude_mem_labels (P cap mesh : ℝ) (Q : ℂ) (hm : 0<mesh) :
 theorem squared_spike (U w cap mesh : ℝ) (Q : ℂ) (hU : 1<U) (hw : 0<w)
     (hm : 0<mesh) (hg : 0<amplitude (U^w) cap mesh Q) :
     U^(2*w*amplitude (U^w) cap mesh Q)≤‖Q‖^2 := by
-  have hP : 1<U^w := Real.one_lt_rpow hU hw
-  have hb := amplitude_lower (U^w) cap mesh Q hP hm hg
-  have hs := (sq_le_sq₀ (Real.rpow_nonneg (Real.rpow_nonneg (by linarith) _) _) (norm_nonneg _)).mpr hb
-  convert hs using 1
-  rw [←Real.rpow_natCast,←Real.rpow_mul (Real.rpow_nonneg (by linarith : (0 : ℝ)≤U) _),
-    ←Real.rpow_mul (by linarith : (0 : ℝ)≤U)]
+  convert ((sq_le_sq₀ (Real.rpow_nonneg (Real.rpow_nonneg (by linarith) _) _) (norm_nonneg _)).mpr (amplitude_lower (U^w) cap mesh Q (Real.one_lt_rpow hU hw) hm hg)) using 1
+  rw [←Real.rpow_natCast,←Real.rpow_mul (Real.rpow_nonneg (by linarith : 0≤U) _),
+    ←Real.rpow_mul (by linarith : 0≤U)]
   congr 1
   ring
 

@@ -9,15 +9,13 @@ namespace OAI
 noncomputable section
 open scoped Classical SchwartzMap
 namespace SevenEighths.ProbeGramCommon
-open ProbePhysical CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcreteTraceCRT RayFourExpansion
-open CenteredMomentSupportedCorrelation EisensteinSchwartzPoisson CenteredMomentGaussEnergy
+open ProbePhysical CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcreteTraceCRT RayFourExpansion CenteredMomentSupportedCorrelation EisensteinSchwartzPoisson CenteredMomentGaussEnergy
 local notation "O" => ActualEisensteinCubic.O
 local notation "Id" => Ideal O
 
 lemma gcdCommon_product_coprime (C I J : SupportedIdeal) (h : IsCoprime I.val J.val) :
     gcdCommon (supportedIdealProduct C I) (supportedIdealProduct C J)=C := by
-  have hh:=congrArg (fun t : CoprimeTriple=>t.val.1) (gcdTriple_multiply ⟨(C,I,J),h⟩)
-  exact hh
+  exact (congrArg (fun t : CoprimeTriple=>t.val.1) (gcdTriple_multiply ⟨(C,I,J),h⟩))
 
 def originalPairWeight (S : Finset Id) (hS : ∀p∈S,p.IsMaximal) (σ : RayRing)
     (W : ℝ→ℂ) (Y v : ℝ) (I J : SupportedIdeal) : ℂ :=
