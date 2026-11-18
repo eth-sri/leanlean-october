@@ -74,20 +74,16 @@ theorem coeFn_reverseTimeValueCLM
       fun τ => valueCLM hΩ (u τ) :=
   ContinuousLinearMap.coeFn_compLpL (valueCLM hΩ) u
 
-/-- Almost-everywhere formula for the Bochner lift of the spatial pivot map. -/
-theorem coeFn_reverseTimePivotCLM
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
-    (h : ReverseTimeL2H hΩ T) :
-    reverseTimePivotCLM hΩ T h =ᵐ[reverseTimeVolume T]
-      fun τ => scalarLpToH10HilbertGraphDual hΩ (h τ) :=
-  ContinuousLinearMap.coeFn_compLpL (scalarLpToH10HilbertGraphDual hΩ) h
 
 /-- Almost-everywhere formula for the composed timewise Gelfand map. -/
 theorem coeFn_reverseTimeGelfandCLM
     {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
     (u : ReverseTimeL2V hΩ T) :
     reverseTimeGelfandCLM hΩ T u =ᵐ[reverseTimeVolume T]
-      fun τ => scalarLpToH10HilbertGraphDual hΩ (valueCLM hΩ (u τ)) := by
+      fun τ => scalarLpToH10HilbertGraphDual hΩ (valueCLM hΩ (u τ))  := by
+  have coeFn_reverseTimePivotCLM {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ) (h : ReverseTimeL2H hΩ T) : reverseTimePivotCLM hΩ T h =ᵐ[reverseTimeVolume T]
+      fun τ => scalarLpToH10HilbertGraphDual hΩ (h τ) :=
+    ContinuousLinearMap.coeFn_compLpL (scalarLpToH10HilbertGraphDual hΩ) h
   filter_upwards [coeFn_reverseTimePivotCLM hΩ T
       (reverseTimeValueCLM hΩ T u), coeFn_reverseTimeValueCLM hΩ T u]
     with τ hPivot hValue

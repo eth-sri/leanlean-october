@@ -1,27 +1,32 @@
 module
 
+public import PDEFoundation.Geometry.ConvexDomain
 public import Mathlib.MeasureTheory.Constructions.Pi
 public import Mathlib.MeasureTheory.Integral.Bochner.Set
 public import Mathlib.MeasureTheory.Measure.Lebesgue.Basic
 public import PDEFoundation.Ambient.Basic
-public import PDEFoundation.Geometry.AxisBox
 
-/-!
-# Native one-coordinate transport
-
-This module identifies the project's native `Vec 1` carrier with scalar
-Lebesgue measure.  The identification is the measurable equivalence supplied
-by Mathlib for functions from a unique index type, so it preserves volume
-exactly rather than merely up to an unspecified normalization.
--/
-
-@[expose] public section
+@[expose] public noncomputable section
 
 namespace PDE
-
 open MeasureTheory Set
 
-noncomputable section
+/-- The open axis box `∏ i, (a i, b i)` in the native `Vec d` ambient
+space. -/
+def axisBox {d : ℕ} (a b : Vec d) : Set (Vec d) :=
+  Set.pi Set.univ fun i => Set.Ioo (a i) (b i)
+
+theorem isOpen_axisBox {d : ℕ} (a b : Vec d) :
+    IsOpen (axisBox a b) := by
+  exact isOpen_set_pi Set.finite_univ fun _ _ => isOpen_Ioo
+
+theorem isBoundedDomain_axisBox {d : ℕ} (a b : Vec d) :
+    IsBoundedDomain (axisBox a b) := by
+  exact Bornology.IsBounded.isBoundedDomain <|
+    Bornology.IsBounded.pi fun _ => Metric.isBounded_Ioo _ _
+
+
+
 
 /-- The sole-coordinate measurable equivalence from native `Vec 1` to
 scalars. -/
@@ -38,42 +43,25 @@ def scalarToVecOne (t : ℝ) : Vec 1 := fun _ => t
 def oneDimensionalAxisBox (a b : ℝ) : Set (Vec 1) :=
   axisBox (fun _ => a) (fun _ => b)
 
-@[simp] theorem vecOneEquivReal_apply (x : Vec 1) :
-    vecOneEquivReal x = vecOneCoordinate x := by
-  rw [vecOneEquivReal, MeasurableEquiv.funUnique_apply]
-  change x default = x 0
-  congr 1
 
-@[simp] theorem vecOneEquivReal_symm_apply (t : ℝ) :
-    vecOneEquivReal.symm t = scalarToVecOne t := by
-  funext i
-  rw [vecOneEquivReal, MeasurableEquiv.funUnique_symm_apply]
-  rfl
 
 @[simp] theorem vecOneCoordinate_scalarToVecOne (t : ℝ) :
     vecOneCoordinate (scalarToVecOne t) = t :=
   rfl
 
-@[simp] theorem scalarToVecOne_vecOneCoordinate (x : Vec 1) :
-    scalarToVecOne (vecOneCoordinate x) = x := by
-  funext i
-  have hi : i = 0 := Subsingleton.elim _ _
-  subst i
-  rfl
 
 /-- The native coordinate equivalence preserves the project's volume measure
 exactly. -/
 theorem volumePreserving_vecOneEquivReal :
     MeasurePreserving vecOneEquivReal
       (volume : Measure (Vec 1)) (volume : Measure ℝ) := by
-  simpa only [vecOneEquivReal] using!
+  simpa using!
     (volume_preserving_funUnique (Fin 1) ℝ)
 
 /-- Membership in a native one-coordinate interval is precisely membership
 of the scalar coordinate in the corresponding open interval. -/
 @[simp] theorem mem_oneDimensionalAxisBox_iff {a b : ℝ} {x : Vec 1} :
     x ∈ oneDimensionalAxisBox a b ↔ vecOneCoordinate x ∈ Ioo a b := by
-  change x ∈ axisBox (fun _ => a) (fun _ => b) ↔ _
   constructor
   · intro hx
     exact hx 0 (Set.mem_univ 0)
@@ -82,6 +70,6 @@ of the scalar coordinate in the corresponding open interval. -/
     subst i
     exact hx
 
-end
 
 end PDE
+

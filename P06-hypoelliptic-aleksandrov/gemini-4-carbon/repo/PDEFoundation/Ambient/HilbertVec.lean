@@ -55,8 +55,7 @@ native carrier. -/
 theorem HilbertVec.norm_eq_vecEuclideanNorm {d : ℕ} (x : HilbertVec d) :
     ‖x‖ = vecEuclideanNorm x.toVec := by
   rw [PiLp.norm_eq_of_L2]
-  simp only [Real.norm_eq_abs, sq_abs, vecEuclideanNorm,
-    vecNormSq_eq_sum_sq, HilbertVec.toVec_apply]
+  simp [vecEuclideanNorm, vecNormSq_eq_sum_sq, HilbertVec.toVec_apply]
 
 /-- The explicit Euclidean norm of a native vector is the norm of its internal
 Hilbert realization. -/

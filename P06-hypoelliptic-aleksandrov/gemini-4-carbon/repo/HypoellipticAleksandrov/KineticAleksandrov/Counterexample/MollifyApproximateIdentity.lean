@@ -37,31 +37,29 @@ theorem bounded_convergence_eLpNorm {X : Type*} [MeasurableSpace X]
     (C : ℝ) (hbound : ∀ n, ∀ᵐ x ∂ν, ‖F n x‖ ≤ C)
     (hlim : ∀ᵐ x ∂ν, Tendsto (fun n => F n x) atTop (𝓝 0)) :
     Tendsto (fun n => eLpNorm (F n) p ν) atTop (𝓝 0) := by
-  have hpow : 0 < p.toReal := ENNReal.toReal_pos hp0 hp
+  have hpow := ENNReal.toReal_pos hp0 hp
   have hi : Tendsto (fun n => ∫⁻ x, ‖F n x‖ₑ ^ p.toReal ∂ν) atTop (𝓝 0) := by
     have hh := tendsto_lintegral_of_dominated_convergence'
-      (μ := ν) (F := fun n x => ‖F n x‖ₑ ^ p.toReal) (f := fun _ => 0)
+      (μ := ν) (f := fun _ => 0)
       (fun _ => ENNReal.ofReal C ^ p.toReal)
       (fun n => (hF n).enorm.pow_const p.toReal) ?_ ?_ ?_
-    · simpa only [lintegral_zero] using! hh
+    · simpa using! hh
     · intro n
       filter_upwards [hbound n] with x hx
       apply ENNReal.rpow_le_rpow _ hpow.le
       simpa only [ofReal_norm] using! ENNReal.ofReal_le_ofReal hx
-    · simp only [lintegral_const]
+    · simp
       exact ENNReal.mul_ne_top (ENNReal.rpow_ne_top_of_nonneg hpow.le
         ENNReal.ofReal_ne_top) (measure_ne_top ν Set.univ)
     · filter_upwards [hlim] with x hx
       have hn : Tendsto (fun n => ‖F n x‖ₑ) atTop (𝓝 0) := by
-        simpa only [Function.comp_apply, enorm_zero] using!
-          (continuous_enorm.tendsto (0 : ℝ)).comp hx
-      simpa only [Function.comp_apply, ENNReal.zero_rpow_of_pos hpow] using!
-        (ENNReal.continuous_rpow_const (y := p.toReal).tendsto (0 : ℝ≥0∞)).comp hn
-  have hr := (ENNReal.continuous_rpow_const (y := 1 / p.toReal).tendsto
-    (0 : ℝ≥0∞)).comp hi
+        simpa using!
+          (continuous_enorm.tendsto 0).comp hx
+      simpa [ENNReal.zero_rpow_of_pos hpow] using!
+        (ENNReal.continuous_rpow_const (y := p.toReal).tendsto 0).comp hn
   have hresult : Tendsto (fun n =>
       (∫⁻ x, ‖F n x‖ₑ ^ p.toReal ∂ν) ^ (1 / p.toReal)) atTop (𝓝 0) := by
-    simpa only [Function.comp_apply, ENNReal.zero_rpow_of_pos (one_div_pos.mpr hpow)] using! hr
+    simpa only [Function.comp_apply, ENNReal.zero_rpow_of_pos (one_div_pos.mpr hpow)] using! ((ENNReal.continuous_rpow_const (y := 1 / p.toReal).tendsto 0).comp hi)
   apply hresult.congr
   intro n
   exact (eLpNorm_eq_lintegral_rpow_enorm_toReal hp0 hp (hF n)).symm
@@ -106,10 +104,7 @@ def spatialMollify (φ : ContDiffBump (0 : G)) (g : G → ℝ) : G → ℝ :=
 theorem spatialMollify_norm_le (φ : ContDiffBump (0 : G)) (g : G → ℝ)
     (hg : AEStronglyMeasurable g volume) (C : ℝ) (hC : 0 ≤ C)
     (hbound : ∀ x, ‖g x‖ ≤ C) (x : G) : ‖spatialMollify φ g x‖ ≤ C := by
-  have h := dist_convolution_le (μ := volume) (x₀ := x) (z₀ := (0 : ℝ)) hC
-    φ.support_normed_eq.subset φ.nonneg_normed φ.integral_normed hg
-    (fun y _ => by simpa only [dist_zero_right] using! hbound y)
-  simpa only [spatialMollify, dist_zero_right] using! h
+  simpa using! (dist_convolution_le (μ := volume) (x₀ := x) (z₀ := 0) hC φ.support_normed_eq.subset φ.nonneg_normed φ.integral_normed hg (fun y _ => by simpa using! hbound y))
 
 /-- Spatial convolution is smooth; this does not assert joint time smoothness. -/
 theorem spatialMollify_contDiff (φ : ContDiffBump (0 : G)) (g : G → ℝ)

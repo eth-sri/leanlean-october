@@ -3,7 +3,9 @@ module
 public import Mathlib.Probability.Kernel.Composition.MapComap
 public import Mathlib.Probability.Kernel.Composition.Comp
 public import Mathlib.MeasureTheory.Measure.Restrict
-public import HypoellipticAleksandrov.Ambient.Basic
+public import PDEFoundation.Geometry.EuclideanBall.Topology
+public import PDEFoundation.Geometry.EuclideanBall.Basic
+public import PDEFoundation.Ambient.EuclideanNorm
 
 /-!
 # Moving-fiber kernels
@@ -57,12 +59,6 @@ abbrev EvolutionQuery {n : ℕ} (Ω : Set (PDE.Vec n))
   {q : RawEvolutionQuery n //
     q.1 ≤ q.2.1 ∧ q.2.2 ∈ evolutionStateSet Ω γ q.1}
 
-/-- Measurability of the translated moving spatial domain. -/
-theorem measurableSet_movingDomain {n : ℕ} {Ω : Set (PDE.Vec n)}
-    {γ : ℝ → PDE.Vec n} (hΩ : MeasurableSet Ω) (σ : ℝ) :
-    MeasurableSet (movingDomain Ω γ σ) := by
-  rw [movingDomain, ← PDE.preimage_subRight_eq_translateSet]
-  exact hΩ.preimage (measurable_id.sub measurable_const)
 
 /-- Openness of the translated moving spatial domain. -/
 theorem isOpen_movingDomain {n : ℕ} {Ω : Set (PDE.Vec n)}
@@ -74,7 +70,11 @@ theorem isOpen_movingDomain {n : ℕ} {Ω : Set (PDE.Vec n)}
 /-- Measurability of the ambient moving state fiber. -/
 theorem measurableSet_evolutionStateSet {n : ℕ} {Ω : Set (PDE.Vec n)}
     {γ : ℝ → PDE.Vec n} (hΩ : MeasurableSet Ω) (σ : ℝ) :
-    MeasurableSet (evolutionStateSet Ω γ σ) := by
+    MeasurableSet (evolutionStateSet Ω γ σ)  := by
+  have measurableSet_movingDomain {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n} (hΩ : MeasurableSet Ω) (σ : ℝ) :
+      MeasurableSet (movingDomain Ω γ σ) := by
+    rw [movingDomain, ← PDE.preimage_subRight_eq_translateSet]
+    exact hΩ.preimage (measurable_id.sub measurable_const)
   exact (measurableSet_movingDomain hΩ σ).prod MeasurableSet.univ
 
 /-- The canonical valid query associated with a fixed-time source state. -/
@@ -132,8 +132,7 @@ theorem fiberKernel_apply {n : ℕ}
     (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ) :
     K.fiberKernel hΩ σ τ hστ p =
       Measure.comap ((↑) : EvolutionState Ω γ τ → EvolutionAmbientState n)
-        (K.master (evolutionQueryOfState Ω γ σ τ hστ p)) := by
-  rfl
+        (K.master (evolutionQueryOfState Ω γ σ τ hστ p)) := rfl
 
 /-- Mapping a derived fiber measure back to the ambient state recovers master. -/
 theorem map_fiberKernel_eq_master {n : ℕ}
@@ -155,18 +154,10 @@ theorem map_fiberKernel_eq_master {n : ℕ}
             (K.master (evolutionQueryOfState Ω γ σ τ hστ p))) =
         (K.master (evolutionQueryOfState Ω γ σ τ hστ p)).restrict
           (evolutionStateSet Ω γ τ) := by
-    simpa only [Subtype.range_coe] using
+    simpa using
       (MeasurableEmbedding.subtype_coe
         (measurableSet_evolutionStateSet hΩ τ)).map_comap
         (K.master (evolutionQueryOfState Ω γ σ τ hστ p))
-  change Measure.map
-      ((↑) : {x : EvolutionAmbientState n //
-        x ∈ evolutionStateSet Ω γ τ} → EvolutionAmbientState n)
-      (Measure.comap
-        ((↑) : {x : EvolutionAmbientState n //
-          x ∈ evolutionStateSet Ω γ τ} → EvolutionAmbientState n)
-        (K.master (evolutionQueryOfState Ω γ σ τ hστ p))) =
-    K.master (evolutionQueryOfState Ω γ σ τ hστ p)
   exact hmap.trans
     (K.terminal_support (evolutionQueryOfState Ω γ σ τ hστ p))
 

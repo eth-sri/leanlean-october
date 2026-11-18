@@ -59,15 +59,10 @@ theorem terminalOperators_apply_smooth
     hlam hlamLam hm hmLb Ω γ B b hΩ hγ hB_smooth hB_symm hB_ell
     hb_smooth hb_lipschitz hb_coercive hEx q
   dsimp only [q, evolutionQueryOfState] at hc
-  have hi := congrArg (fun ν : Measure (EvolutionState Ω γ τ) =>
-    ∫ x, terminalStateDatum F x ∂ν) hc
-  apply hi.trans
-  have hmap := terminalMeasure_eq_map_rieszMeasure n hn lam Lam m L_b
-    hlam hlamLam hm hmLb Ω γ B b hΩ hγ hB_smooth hB_symm hB_ell
-    hb_smooth hb_lipschitz hb_coercive hEx q
+  apply (congrArg (fun ν : Measure (EvolutionState Ω γ τ) => ∫ x, terminalStateDatum F x ∂ν) hc).trans
   have hint := (terminalMeasure_spec n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
     hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx q).2.2 F hF
-  rw [hmap, (MeasurableEmbedding.subtype_coe
+  rw [(terminalMeasure_eq_map_rieszMeasure n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx q), (MeasurableEmbedding.subtype_coe
     (measurableSet_evolutionStateSet_of_isOpen
       (isOpen_of_isAdmissibleEvolutionDomain hΩ))).integral_map] at hint
   exact hint

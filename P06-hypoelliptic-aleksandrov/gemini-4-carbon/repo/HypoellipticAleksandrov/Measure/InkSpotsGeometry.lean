@@ -102,9 +102,9 @@ def inkSpotsD3 {d : ℕ} (Gamma : Set (TimeVelocity d)) (xi eta zeta : ℝ) :
       q.baseTime < t ∧ t < q.baseTime + q.radius ^ 2 ∧
         v ∈ velocityCube q.center q.radius :=
   by
-    simpa only [inkSpotsSourceBox, one_mul] using
-      (mem_parabolicBox_iff (vartheta := (1 : ℝ)) (r := q.radius)
-        (t₀ := q.baseTime) (t := t) (v₀ := q.center) (v := v))
+    simpa [inkSpotsSourceBox] using
+      (mem_parabolicBox_iff
+        (t₀ := q.baseTime) (v₀ := q.center))
 
 @[simp] theorem mem_inkSpotsQ1_iff {d : ℕ} {q : InkSpotsBox d}
     {t : ℝ} {v : PDE.Vec d} :
@@ -147,13 +147,16 @@ def inkSpotsD3 {d : ℕ} (Gamma : Set (TimeVelocity d)) (xi eta zeta : ℝ) :
       q.baseTime + q.radius ^ 2 + 4 * q.radius ^ 2 / eta :=
   rfl
 
-/-- The source box is contained in its clipped first enlargement whenever it
-is a genuine positive-radius subbox of the reference box. -/
-theorem inkSpotsSourceBox_subset_Q1 {d : ℕ} {q : InkSpotsBox d}
-    (hr : 0 < q.radius) (hq : inkSpotsSourceBox q ⊆ inkSpotsUnitBox d) :
-    inkSpotsSourceBox q ⊆ inkSpotsQ1 q := by
+
+/-- Every strict dense source box is contained in its first source
+enlargement. -/
+theorem inkSpotsSourceBox_subset_Q1_of_strictDense {d : ℕ}
+    {Gamma : Set (TimeVelocity d)} {xi : ℝ} {q : InkSpotsBox d}
+    (hq : inkSpotsStrictDense Gamma xi q) :
+    inkSpotsSourceBox q ⊆ inkSpotsQ1 q  := by
+  let hr := hq.1
   intro z hz
-  refine ⟨?_, hq hz⟩
+  refine ⟨?_, hq.2.1 hz⟩
   rcases z with ⟨t, v⟩
   rw [mem_inkSpotsSourceBox_iff] at hz
   rw [mem_parabolicBox_iff]
@@ -163,18 +166,9 @@ theorem inkSpotsSourceBox_subset_Q1 {d : ℕ} {q : InkSpotsBox d}
   · norm_num
     nlinarith [sq_pos_of_pos hr]
   · intro i
-    have hi := hz.2.2 i
     calc
-      |v i - q.center i| < q.radius := hi
+      |v i - q.center i| < q.radius := (hz.2.2 i)
       _ < 3 * q.radius := by linarith
-
-/-- Every strict dense source box is contained in its first source
-enlargement. -/
-theorem inkSpotsSourceBox_subset_Q1_of_strictDense {d : ℕ}
-    {Gamma : Set (TimeVelocity d)} {xi : ℝ} {q : InkSpotsBox d}
-    (hq : inkSpotsStrictDense Gamma xi q) :
-    inkSpotsSourceBox q ⊆ inkSpotsQ1 q :=
-  inkSpotsSourceBox_subset_Q1 hq.1 hq.2.1
 
 /-- The first source enlargement is open. -/
 theorem isOpen_inkSpotsQ1 {d : ℕ} (q : InkSpotsBox d) :
@@ -201,22 +195,20 @@ theorem measurableSet_inkSpotsD1 {d : ℕ} (Gamma : Set (TimeVelocity d)) (xi : 
     MeasurableSet (inkSpotsD1 Gamma xi) :=
   (isOpen_inkSpotsD1 Gamma xi).measurableSet
 
-/-- The source \(D^2\) is open. -/
-theorem isOpen_inkSpotsD2 {d : ℕ} (Gamma : Set (TimeVelocity d))
-    (xi eta : ℝ) :
-    IsOpen (inkSpotsD2 Gamma xi eta) := by
-  unfold inkSpotsD2
-  apply isOpen_iUnion
-  intro q
-  apply isOpen_iUnion
-  intro hq
-  exact isOpen_inkSpotsQ2 eta q
 
 /-- The source \(D^2\) is measurable. -/
 theorem measurableSet_inkSpotsD2 {d : ℕ} (Gamma : Set (TimeVelocity d))
     (xi eta : ℝ) :
-    MeasurableSet (inkSpotsD2 Gamma xi eta) :=
-  (isOpen_inkSpotsD2 Gamma xi eta).measurableSet
+    MeasurableSet (inkSpotsD2 Gamma xi eta)  := by
+  have isOpen_inkSpotsD2 :
+      IsOpen (inkSpotsD2 Gamma xi eta) := by
+    unfold inkSpotsD2
+    apply isOpen_iUnion
+    intro q
+    apply isOpen_iUnion
+    intro hq
+    exact isOpen_inkSpotsQ2 eta q
+  exact (isOpen_inkSpotsD2).measurableSet
 
 end
 

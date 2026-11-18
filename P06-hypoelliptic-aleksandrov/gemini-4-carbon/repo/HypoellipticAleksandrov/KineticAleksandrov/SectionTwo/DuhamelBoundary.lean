@@ -28,9 +28,8 @@ theorem continuousWithinAt_duhamelPotential (hΩa : IsAdmissibleEvolutionDomain 
   obtain ⟨a, btime, -, hab⟩ := exists_time_window_of_hasCompactSupport g hgc
   obtain ⟨C, hC⟩ := hg.bounded_above_of_compact_support hgc
   have hgb : ∀ p, g p ≤ C := fun p => (le_abs_self _).trans (by simpa using hC p)
-  have hC0 : 0 ≤ C := (hgn ⟨0, 0, 0⟩).trans (hgb _)
-  have hgm : Measurable g := hg.measurable
-  have hmeas := measurable_duhamelIntegrand K hΩ hγ g hgm
+  have hC0 := (hgn ⟨0, 0, 0⟩).trans (hgb _)
+  have hmeas := measurable_duhamelIntegrand K hΩ hγ g hg.measurable
   let F : KineticPoint d → ℝ → ℝ := fun p r =>
     (Ioc p.time T).indicator (duhamelIntegrand K g p) r
   have hW : duhamelPotential K T g = fun p => ∫ r, F p r :=
@@ -66,7 +65,7 @@ theorem continuousWithinAt_duhamelPotential (hΩa : IsAdmissibleEvolutionDomain 
     rcases lt_trichotomy r p₀.time with h | h | h
     · have hopen : {p : KineticPoint d | r < p.time} ∈ 𝓝 p₀ :=
         (isOpen_lt continuous_const continuous_time).mem_nhds h
-      have hev : (fun p => F p r) =ᶠ[𝓝[evolutionPastClosedCylinder Ω γ T] p₀] fun _ => (0 : ℝ) := by
+      have hev : (fun p => F p r) =ᶠ[𝓝[evolutionPastClosedCylinder Ω γ T] p₀] fun _ => 0 := by
         filter_upwards [mem_nhdsWithin_of_mem_nhds hopen] with p hp
         exact indicator_of_notMem (fun hh => absurd hh.1 (not_lt.2 hp.le)) _
       have h0 : F p₀ r = 0 := indicator_of_notMem (fun hh => absurd hh.1 (not_lt.2 h.le)) _
@@ -79,14 +78,11 @@ theorem continuousWithinAt_duhamelPotential (hΩa : IsAdmissibleEvolutionDomain 
         have hnh : evolutionPastClosedCylinder Ω γ r ∈ 𝓝[evolutionPastClosedCylinder Ω γ T] p₀ :=
           mem_nhdsWithin.2 ⟨{p | p.time < r}, isOpen_lt continuous_time continuous_const, h,
             fun p hp => ⟨hp.1.le, hp.2.2⟩⟩
-        have hc2 := (hc1 p₀ hp₀r).mono_of_mem_nhdsWithin hnh
         have hev : (fun p => F p r) =ᶠ[𝓝[evolutionPastClosedCylinder Ω γ T] p₀]
             fun p => duhamelIntegrand K g p r := by
-          have hopen : {p : KineticPoint d | p.time < r} ∈ 𝓝 p₀ :=
-            (isOpen_lt continuous_time continuous_const).mem_nhds h
-          filter_upwards [mem_nhdsWithin_of_mem_nhds hopen] with p hp
+          filter_upwards [mem_nhdsWithin_of_mem_nhds ((isOpen_lt continuous_time continuous_const).mem_nhds h)] with p hp
           exact indicator_of_mem (show r ∈ Ioc p.time T from ⟨hp, hrT⟩) _
-        exact hc2.congr_of_eventuallyEq hev
+        exact ((hc1 p₀ hp₀r).mono_of_mem_nhdsWithin hnh).congr_of_eventuallyEq hev
           (indicator_of_mem (show r ∈ Ioc p₀.time T from ⟨h, hrT⟩) _)
       · have hz : ∀ p, F p r = 0 := fun p =>
           indicator_of_notMem (fun hh => hrT hh.2) _

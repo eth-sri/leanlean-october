@@ -40,18 +40,18 @@ theorem classical_sub_terminalDatum_le_core_of_slab {n : ℕ} {Ω : Set (PDE.Vec
       p.position ∈ frontier (movingDomain Ω γ p.time) → F (p.position, p.velocity) = 0) :
     ∀ p ∈ movingClosedSlab Ω γ a τ, |u p - F (p.position, p.velocity)| ≤ (τ - p.time) * M := by
   obtain ⟨C₁, -, hC₁⟩ := hu.1
-  have hFcont : Continuous (fun q : KineticPoint n => F (q.position, q.velocity)) :=
+  have hFcont :=
     hF.continuous.comp (continuous_position.prodMk continuous_velocity)
   have hslab : ∀ a, movingClosedSlab Ω γ a τ ⊆ evolutionPastClosedCylinder Ω γ τ :=
     fun a p hp => ⟨hp.2.1, hp.2.2⟩
   have hact : ∀ a, movingActiveSlab Ω γ a τ ⊆ evolutionPastOpenCylinder Ω γ τ :=
     fun a p hp => ⟨hp.2.1, hp.2.2⟩
   intro p₀ hp₀
-  have hM0 : 0 ≤ M := le_trans (abs_nonneg _) (hM p₀ hp₀)
+  have hM0 := le_trans (abs_nonneg _) (hM p₀ hp₀)
   have side : ∀ s : ℝ, (s = 1 ∨ s = -1) →
       s * (u p₀ - F (p₀.position, p₀.velocity)) + M * (p₀.time - τ) ≤ 0 := by
     intro s hs
-    have hres := growth_comparison (a := a) (T := τ)
+    have hres := growth_comparison
       (u := fun q => s * (u q - F (q.position, q.velocity)) + M * (q.time - τ))
       hΩ hγ hlam hB hb hε0 hε1 ?_ ?_ ?_ ?_ ?_ ?_ p₀ hp₀
     · exact hres
@@ -77,25 +77,22 @@ theorem classical_sub_terminalDatum_le_core_of_slab {n : ℕ} {Ω : Set (PDE.Vec
           (fun q => s * (u q - F (q.position, q.velocity)) + M * (q.time - τ)) p =
           viscousTransportedOperator B b ε (fun q => s * (u q - F (q.position, q.velocity))) p +
           viscousTransportedOperator B b ε (fun q => M * (q.time - τ)) p :=
-        viscousTransportedOperator_add (u := fun q => s * (u q - F (q.position, q.velocity)))
+        viscousTransportedOperator_add
           (v := fun q => M * (q.time - τ)) ((hr.sub hF').const_mul s) (hT.const_mul M)
       have e2 : viscousTransportedOperator B b ε
           (fun q => s * (u q - F (q.position, q.velocity))) p =
           s * viscousTransportedOperator B b ε (fun q => u q - F (q.position, q.velocity)) p :=
         viscousTransportedOperator_const_mul s (hr.sub hF')
-      have e3 := viscousTransportedOperator_sub (B := B) (b := b) (ε := ε) hr hF'
       have e4 : viscousTransportedOperator B b ε (fun q => M * (q.time - τ)) p = M := by
         rw [viscousTransportedOperator_const_mul M hT, viscousTransportedOperator_time_sub]
         ring
-      have hop := hu.2.2.2.1 p (hact _ hp)
       have hMp := abs_le.mp (hM p ⟨hp.1, hp.2.1.le, subset_closure hp.2.2⟩)
-      rw [e1, e2, e3, e4, hop]
+      rw [e1, e2, (viscousTransportedOperator_sub (B := B) (b := b) (ε := ε) hr hF'), e4, (hu.2.2.2.1 p (hact _ hp))]
       rcases hs with rfl | rfl <;> nlinarith [hMp.1, hMp.2]
     · intro p hp hpT
       have hterm : p ∈ evolutionTerminalClosure Ω γ τ := ⟨hpT, hpT ▸ hp.2.2⟩
-      have e1 := hu.2.2.2.2.1 p hterm
       show s * (u p - F (p.position, p.velocity)) + M * (p.time - τ) ≤ 0
-      rw [e1, hpT]
+      rw [(hu.2.2.2.2.1 p hterm), hpT]
       simp
     · intro p hp hfr
       have hlat : p ∈ evolutionLateralFrontier Ω γ τ := ⟨hp.2.1, hfr⟩
@@ -103,10 +100,8 @@ theorem classical_sub_terminalDatum_le_core_of_slab {n : ℕ} {Ω : Set (PDE.Vec
       rw [hu.2.2.2.2.2 p hlat, hlatF p hp hfr]
       have : M * (p.time - τ) ≤ 0 := mul_nonpos_of_nonneg_of_nonpos hM0 (by linarith [hp.2.1])
       simpa using this
-  have h1 := side 1 (Or.inl rfl)
-  have h2 := side (-1) (Or.inr rfl)
   rw [abs_le]
-  constructor <;> nlinarith [h1, h2]
+  constructor <;> nlinarith [(side 1 (Or.inl rfl)), (side (-1) (Or.inr rfl))]
 
 /-- (companion paper, A.1).  For a smooth compactly supported terminal datum, the operator
 `L_ε F` is bounded uniformly in `p`, in the time, and in `ε ∈ [0, 1]`.  This uses only the

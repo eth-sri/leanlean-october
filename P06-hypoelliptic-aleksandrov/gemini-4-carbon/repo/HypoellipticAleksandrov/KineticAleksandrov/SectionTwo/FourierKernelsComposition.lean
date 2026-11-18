@@ -37,7 +37,7 @@ theorem fourierPhase_factor {d : ℕ} (ξ z : PDE.Vec d)
     rw [← Finset.sum_add_distrib]
     apply Finset.sum_congr rfl
     intro i _
-    simp only [Pi.sub_apply]
+    simp
     ring
   unfold fourierPhase
   rw [hd, Complex.ofReal_add, mul_add, Complex.exp_add]
@@ -53,7 +53,7 @@ theorem master_integral_composition {d : ℕ} {Ω : Set (PDE.Vec d)}
         ∂K.fiberKernel hΩ σ r hσr p := by
   rw [master_integral_eq_fiber K hΩ σ τ (hσr.trans hrτ) p f hf,
     hcomp σ r τ hσr hrτ]
-  have hi : Integrable (fun w : EvolutionState Ω γ τ => f w.1)
+  have hi : Integrable (fun w => f w.1)
       ((K.fiberKernel hΩ r τ hrτ ∘ₖ K.fiberKernel hΩ σ r hσr) p) := by
     obtain ⟨C, hC⟩ := hbound
     exact Integrable.mono' (integrable_const C)
@@ -69,7 +69,7 @@ theorem fourierKernel_apply_norm_le_one {d : ℕ}
     (K : MovingFiberKernel (wholeSpace d) (fun _ => 0))
     (σ τ : ℝ) (hστ : σ ≤ τ) (ξ v : PDE.Vec d) (E : Set (PDE.Vec d)) :
     ‖fourierKernel K σ τ hστ ξ v E‖ ≤ 1 := by
-  have he : (fourierKernel K σ τ hστ ξ v).variation E ≤ 1 :=
+  have he :=
     (measure_mono (subset_univ E)).trans
       (fourierKernel_totalVariation_le_one K σ τ hστ ξ v)
   have hn := VectorMeasure.norm_measure_le_variation
@@ -91,9 +91,9 @@ theorem fourierKernel_composition {d : ℕ}
   let p : EvolutionState (wholeSpace d) (fun _ => 0) σ :=
     ⟨(v, 0), (wholeSpaceQuery σ r hσr v 0).property.2⟩
   let f := fun v' => fourierKernel K r τ hrτ ξ v' E
-  let g := (E ×ˢ univ).indicator (fourierPhase ξ (0 : PDE.Vec d))
-  have hf : Measurable f := measurable_fourierKernel_apply K r τ hrτ ξ E hE
-  have hg : Measurable g := (continuous_fourierPhase ξ 0).measurable.indicator
+  let g := (E ×ˢ univ).indicator (fourierPhase ξ 0)
+  have hf := measurable_fourierKernel_apply K r τ hrτ ξ E hE
+  have hg := (continuous_fourierPhase ξ 0).measurable.indicator
     (hE.prod MeasurableSet.univ)
   have hgb : ∃ C : ℝ, ∀ w, ‖g w‖ ≤ C := by
     refine ⟨1, fun w => ?_⟩
@@ -129,7 +129,7 @@ theorem fourierKernel_composition {d : ℕ}
   · simp only [g, indicator_of_mem (show w' ∈ E ×ˢ univ from ⟨hw', mem_univ _⟩)]
     rw [fourierPhase_factor ξ 0 w.1 w', mul_comm]
     rfl
-  · simp only [g, indicator_of_notMem
-      (show w' ∉ E ×ˢ univ from fun hw => hw' hw.1), zero_mul]
+  · simp [g, indicator_of_notMem
+      (show w' ∉ E ×ˢ univ from fun hw => hw' hw.1)]
 
 end HypoellipticAleksandrov.KineticAleksandrov.SectionTwo

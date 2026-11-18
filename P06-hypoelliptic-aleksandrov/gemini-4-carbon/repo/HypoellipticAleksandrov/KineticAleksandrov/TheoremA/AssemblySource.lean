@@ -22,7 +22,7 @@ theorem measurable_source_indicator {d : ℕ} {Q : Set (KineticPoint d)}
       exact Set.indicator_of_mem P.property f
     rw [heq]
     exact hf
-  · have heq : Qᶜ.domRestrict (Q.indicator f) = fun _ => (0 : ℝ) := by
+  · have heq : Qᶜ.domRestrict (Q.indicator f) = fun _ => 0 := by
       funext P
       exact Set.indicator_of_notMem P.property f
     rw [heq]

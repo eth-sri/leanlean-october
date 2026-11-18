@@ -46,7 +46,7 @@ instance master_isFiniteMeasure {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → P
 theorem fourierPhase_integrable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
     (K : MovingFiberKernel Ω γ) (q : EvolutionQuery Ω γ) (ξ z : PDE.Vec d) :
     Integrable (fourierPhase ξ z) (K.master q) := by
-  exact Integrable.mono' (integrable_const (1 : ℝ))
+  exact Integrable.mono' (integrable_const 1)
     (continuous_fourierPhase ξ z).measurable.aestronglyMeasurable
     (Filter.Eventually.of_forall (fun w => (norm_fourierPhase ξ z w).le))
 
@@ -60,7 +60,7 @@ theorem densityMap_isFourierProjection {d : ℕ} {Ω : Set (PDE.Vec d)}
     withDensityᵥ_apply (fourierPhase_integrable K q ξ _) (measurable_fst hE)]
   have hset : (Prod.fst : EvolutionAmbientState d → PDE.Vec d) ⁻¹' E = E ×ˢ univ := by
     ext w
-    simp only [mem_preimage, mem_prod, mem_univ, and_true]
+    simp
   rw [hset]
 
 /-- Well-definedness must be proved before materializing the Fourier measure. -/

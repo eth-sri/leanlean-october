@@ -41,8 +41,7 @@ theorem fderiv_translated_reflection (k : G → ℝ) (hk : ContDiff ℝ 1 k)
     ((hasFDerivAt_const q y).sub (hasFDerivAt_id y))
   change HasFDerivAt (fun z => k (q - z)) _ y at h
   rw [h.fderiv]
-  simp only [ContinuousLinearMap.comp_apply, zero_sub, neg_apply,
-    ContinuousLinearMap.id_apply, map_neg]
+  simp
 
 omit [MeasureSpace G] [BorelSpace G] [FiniteDimensional ℝ G]
   [Measure.IsAddHaarMeasure (volume : Measure G)] in
@@ -51,13 +50,12 @@ theorem smooth_test_second_swap (test : G → ℝ) (ht : ContDiff ℝ 2 test)
     (q w z : G) :
     fderiv ℝ (fun x => fderiv ℝ test x z) q w =
       fderiv ℝ (fun x => fderiv ℝ test x w) q z := by
-  have hd : DifferentiableAt ℝ (fderiv ℝ test) q :=
+  have hd :=
     ((ht.fderiv_right (m := 1) (by norm_num)).differentiable (by norm_num)) q
   rw [fderiv_clm_apply hd (differentiableAt_const _),
     fderiv_clm_apply hd (differentiableAt_const _)]
-  simpa only [fderiv_const_apply, ContinuousLinearMap.comp_zero, zero_add,
-    ContinuousLinearMap.flip_apply] using!
-      ((ht.contDiffAt (x := q)).isSymmSndFDerivAt (by simp)).eq w z
+  simpa using!
+      ((ht.contDiffAt).isSymmSndFDerivAt (by simp)).eq w z
 
 /-- A locally integrable weak derivative commutes with smoothing by a compact smooth
 kernel, pointwise at every base point. -/
@@ -107,16 +105,13 @@ theorem mollify_weak_second_jet (phi : ContDiffBump (0 : G))
         ∫ y, h y * test y) (q : G) :
     fderiv ℝ (fun x => fderiv ℝ (spatialMollify phi u) x w) q z =
       spatialMollify phi h q := by
-  have he : (fun x => fderiv ℝ (spatialMollify phi u) x w) = spatialMollify phi g :=
-    funext (mollify_weak_directional_jet phi u g hu w hfirst)
-  rw [he]
+  rw [(funext (mollify_weak_directional_jet phi u g hu w hfirst))]
   apply mollify_weak_directional_jet phi g h hg z
   intro test ht hs
   have hd : ContDiff ℝ (⊤ : ℕ∞) (fun x => fderiv ℝ test x z) := by
     exact (ht.contDiff_fderiv_apply (by simp)).comp (contDiff_id.prodMk contDiff_const)
   have ha := hfirst (fun x => fderiv ℝ test x z) hd (hs.fderiv_apply (𝕜 := ℝ) z)
-  have hb := hsecond test ht hs
-  rw [hb] at ha
-  simpa only [neg_neg] using (congrArg Neg.neg ha).symm
+  rw [(hsecond test ht hs)] at ha
+  simpa using (congrArg Neg.neg ha).symm
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

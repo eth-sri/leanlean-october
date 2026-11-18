@@ -22,7 +22,7 @@ theorem eLpNorm_localized_source_indicator
   apply eLpNorm_congr_ae
   filter_upwards [source_indicator_ae_eq hQ f] with P hP
   by_cases hu : 0 < u P
-  · simp only [Set.mem_ofPred_eq, hu, Set.indicator_of_mem, hP]
-  · simp only [Set.mem_ofPred_eq, hu, not_false_eq_true, Set.indicator_of_notMem]
+  · simp [hu, Set.indicator_of_mem, hP]
+  · simp [hu, Set.indicator_of_notMem]
 
 end HypoellipticAleksandrov.KineticAleksandrov.TheoremA

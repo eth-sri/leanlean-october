@@ -15,10 +15,9 @@ linear `piUnique` equivalence, while measure transport remains in
 @[expose] public section
 
 namespace PDE
-
 open MeasureTheory Set
 
-noncomputable section
+
 
 /-- The continuous linear scalar-to-native-one-coordinate equivalence. -/
 def scalarToVecOneContinuousLinearEquiv : ℝ ≃L[ℝ] Vec 1 :=
@@ -47,6 +46,5 @@ def scalarPullbackOne (φ : Vec 1 → ℝ) : ℝ → ℝ :=
     scalarPullbackOne φ t = φ (scalarToVecOne t) :=
   rfl
 
-end
 
 end PDE

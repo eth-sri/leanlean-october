@@ -33,24 +33,11 @@ private theorem pivot_normSq_sub_eq_dualSub_apply_add
     ‖valueCLM hΩ r‖ ^ 2 - ‖valueCLM hΩ s‖ ^ 2 =
       (scalarLpToH10HilbertGraphDual hΩ (valueCLM hΩ r) -
         scalarLpToH10HilbertGraphDual hΩ (valueCLM hΩ s)) (r + s) := by
-  let vr : PDE.ScalarLp Ω (2 : ℝ≥0∞) := valueCLM hΩ r
-  let vs : PDE.ScalarLp Ω (2 : ℝ≥0∞) := valueCLM hΩ s
-  have hvalue : valueCLM hΩ (r + s) = vr + vs :=
-    (valueCLM hΩ).map_add r s
-  change ‖vr‖ ^ 2 - ‖vs‖ ^ 2 = _
   rw [ContinuousLinearMap.sub_apply,
     scalarLpToH10HilbertGraphDual_apply,
-    scalarLpToH10HilbertGraphDual_apply, hvalue]
-  exact normSq_sub_eq_inner_add_sub_inner vr vs
+    scalarLpToH10HilbertGraphDual_apply, ((valueCLM hΩ).map_add r s)]
+  exact normSq_sub_eq_inner_add_sub_inner (valueCLM hΩ r) (valueCLM hΩ s)
 
-private theorem tendsto_clm_apply
-    {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
-    {L : Filter ℝ} {f : ℝ → V →L[ℝ] ℝ} {g : ℝ → V}
-    {a : V →L[ℝ] ℝ} {b : V}
-    (hf : Filter.Tendsto f L (𝓝 a)) (hg : Filter.Tendsto g L (𝓝 b)) :
-    Filter.Tendsto (fun t => f t (g t)) L (𝓝 (a b)) := by
-  simpa only [Function.comp_def] using
-    (isBoundedBilinearMap_apply.continuous.tendsto (a, b)).comp (hf.prodMk_nhds hg)
 
 private theorem hasDerivAt_of_pivoted_curve
     {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
@@ -58,30 +45,30 @@ private theorem hasDerivAt_of_pivoted_curve
     {y : ℝ → V →L[ℝ] ℝ} (hx : Continuous x) {t : ℝ}
     (hpivot : ∀ r s : ℝ, E r - E s = (U r - U s) (x r + x s))
     (hderiv : HasDerivAt U (y t) t) :
-    HasDerivAt E (2 * y t (x t)) t := by
+    HasDerivAt E (2 * y t (x t)) t  := by
+  have tendsto_clm_apply [NormedAddCommGroup V] [NormedSpace ℝ V] {L : Filter ℝ} {f : ℝ → V →L[ℝ] ℝ} {g : ℝ → V} {a : V →L[ℝ] ℝ} {b : V} (hf : Filter.Tendsto f L (𝓝 a)) (hg : Filter.Tendsto g L (𝓝 b)) :
+      Filter.Tendsto (fun t => f t (g t)) L (𝓝 (a b)) := by
+    simpa only [Function.comp_def] using
+      (isBoundedBilinearMap_apply.continuous.tendsto (a, b)).comp (hf.prodMk_nhds hg)
   have hSlopeU : Filter.Tendsto (slope U t) (𝓝[≠] t) (𝓝 (y t)) := by
     exact hderiv.tendsto_slope
   have hxWithin : Filter.Tendsto x (𝓝[≠] t) (𝓝 (x t)) :=
     (hx.continuousAt.tendsto).mono_left nhdsWithin_le_nhds
   have hsum : Filter.Tendsto (fun s => x s + x t) (𝓝[≠] t) (𝓝 (x t + x t)) :=
     hxWithin.add tendsto_const_nhds
-  have hEval : Filter.Tendsto
-      (fun s => slope U t s (x s + x t)) (𝓝[≠] t) (𝓝 (y t (x t + x t))) :=
-    tendsto_clm_apply hSlopeU hsum
   have hSlopeEq : slope E t =ᶠ[𝓝[≠] t]
       fun s => slope U t s (x s + x t) := by
     filter_upwards [self_mem_nhdsWithin] with s hs
-    have hst : s ≠ t := hs
     rw [slope_def_field, slope_def_module, hpivot s t,
       ContinuousLinearMap.sub_apply, ContinuousLinearMap.smul_apply]
     rw [smul_eq_mul, ContinuousLinearMap.sub_apply]
-    field_simp [sub_ne_zero.mpr hst]
+    field_simp [sub_ne_zero.mpr hs]
   have hSlopeE : Filter.Tendsto (slope E t) (𝓝[≠] t) (𝓝 (2 * y t (x t))) := by
     have htwice : y t (x t + x t) = 2 * y t (x t) := by
       rw [ContinuousLinearMap.map_add]
       ring
     rw [← htwice]
-    exact hEval.congr' hSlopeEq.symm
+    exact (tendsto_clm_apply hSlopeU hsum).congr' hSlopeEq.symm
   exact hasDerivAt_iff_tendsto_slope.mpr hSlopeE
 
 private theorem reverseTimeForwardSteklov_energy_identity_raw
@@ -99,18 +86,16 @@ private theorem reverseTimeForwardSteklov_energy_identity_raw
   let x : ℝ → H10HilbertGraph hΩ := fun t => reverseTimeForwardSteklov T h u t
   let y : ℝ → H10HilbertGraphDual hΩ := fun t => reverseTimeForwardSteklov T h g t
   let E : ℝ → ℝ := fun t => ‖valueCLM hΩ (x t)‖ ^ 2
-  have hx : Continuous x := continuous_reverseTimeForwardSteklov T h hh u
-  have hy : Continuous y := continuous_reverseTimeForwardSteklov T h hh g
-  have hE : Continuous E := ((valueCLM hΩ).continuous.comp hx).norm.pow 2
-  have hpair : Continuous (fun t => y t (x t)) := hy.clm_apply hx
+  have hx := continuous_reverseTimeForwardSteklov T h hh u
+  have hpair := (continuous_reverseTimeForwardSteklov T h hh g).clm_apply hx
   have hderivE : ∀ t ∈ Ioo a b, HasDerivAt E (2 * y t (x t)) t := by
     intro t ht
     apply hasDerivAt_of_pivoted_curve hx
       (fun r s => pivot_normSq_sub_eq_dualSub_apply_add hΩ (x r) (x s))
     exact hasDerivAt_reverseTimeForwardSteklov_gelfand hΩ T hT u g hderiv hh
       (by linarith [ha0, ht.1]) (by linarith [hbT, ht.2])
-  have hFTC : (∫ t in a..b, 2 * y t (x t)) = E b - E a :=
-    intervalIntegral.integral_eq_sub_of_hasDerivAt_of_le hab hE.continuousOn hderivE
+  have hFTC :=
+    intervalIntegral.integral_eq_sub_of_hasDerivAt_of_le hab (((valueCLM hΩ).continuous.comp hx).norm.pow 2).continuousOn hderivE
       ((continuous_const.mul hpair).intervalIntegrable a b)
   calc
     ‖valueCLM hΩ (reverseTimeForwardSteklov T h u b)‖ ^ 2 -

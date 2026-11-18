@@ -108,7 +108,7 @@ theorem measurable_duhamelIntegrand {d : ℕ} {Ω : Set (PDE.Vec d)}
         (hγ.measurable.comp (continuous_time.measurable.comp measurable_fst)))
     convert ht.inter hp using 1
     ext q
-    simp only [D, mem_ofPred_eq, mem_inter_iff]
+    simp
     change (_ ∧ _ ∈ PDE.translateSet (γ q.1.time) Ω) ↔ _
     rw [PDE.mem_translateSet_iff_sub_mem]
   let Q : D → EvolutionQuery Ω γ := fun q =>
@@ -116,8 +116,6 @@ theorem measurable_duhamelIntegrand {d : ℕ} {Ω : Set (PDE.Vec d)}
       q.2.1, q.2.2, mem_univ _⟩
   have hQ : Measurable Q := by
     apply Measurable.subtype_mk
-    change Measurable (fun q : D =>
-      (q.1.1.time, (q.1.2, (q.1.1.position, q.1.1.velocity))))
     exact (continuous_time.measurable.comp measurable_subtype_coe.fst).prodMk
       (measurable_subtype_coe.snd.prodMk
         ((continuous_position.measurable.comp measurable_subtype_coe.fst).prodMk
@@ -133,8 +131,7 @@ theorem measurable_duhamelPotential {d : ℕ} {Ω : Set (PDE.Vec d)}
   have hD : MeasurableSet D :=
     (measurableSet_lt (continuous_time.measurable.comp measurable_fst) measurable_snd).inter
       (measurableSet_le measurable_snd measurable_const)
-  have hi := ((measurable_duhamelIntegrand K hΩ hγ g hg).indicator hD).stronglyMeasurable
-  convert (hi.integral_prod_right' (ν := (volume : Measure ℝ))).measurable using 1
+  convert ((((measurable_duhamelIntegrand K hΩ hγ g hg).indicator hD).stronglyMeasurable).integral_prod_right' (ν := (volume : Measure ℝ))).measurable using 1
   funext p
   rw [duhamelPotential, ← integral_indicator measurableSet_Ioc]
   rfl
@@ -151,7 +148,7 @@ theorem duhamelPotential_nonneg_le {d : ℕ} {Ω : Set (PDE.Vec d)}
     integral_nonneg (fun r => duhamelIntegrand_nonneg K g hgn p r)
   refine ⟨hnon, ?_⟩
   have hn := norm_integral_le_of_norm_le_const
-    (μ := volume.restrict (Ioc p.time τplus)) (f := duhamelIntegrand K g p)
+    (μ := volume.restrict (Ioc p.time τplus))
     (C := C) (Filter.Eventually.of_forall fun r => by
       rw [Real.norm_eq_abs, abs_of_nonneg (duhamelIntegrand_nonneg K g hgn p r)]
       exact duhamelIntegrand_le K g hgn C hC hgb p r)
@@ -176,6 +173,6 @@ theorem duhamelPotential_eq_zero_of_not_mem {d : ℕ} {Ω : Set (PDE.Vec d)}
   have hz : duhamelIntegrand K g p = 0 := by
     funext r
     exact dite_eq_right (fun h => hp h.2)
-  simp only [duhamelPotential, hz, Pi.zero_apply, integral_zero]
+  simp [duhamelPotential, hz, integral_zero]
 
 end HypoellipticAleksandrov.KineticAleksandrov.SectionTwo

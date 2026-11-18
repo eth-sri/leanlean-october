@@ -52,7 +52,6 @@ theorem coreAllTimeGreenKernel_mass_le
     apply (stripGreen_quadratic_mass hH hLE hlam hLam A (visitActiveInterval c) ⊤
       (coreAllTimePole c ⟨p, hp⟩)).trans
     apply ENNReal.ofReal_le_ofReal
-    change visitQuadratic c (p.velocity 0) / (2 * lam) ≤ 9 * c.r ^ 2 / (32 * lam)
     calc
       _ ≤ (9 * c.r ^ 2 / 16) / (2 * lam) :=
         div_le_div_of_nonneg_right (visitQuadratic_le c _) (by positivity)

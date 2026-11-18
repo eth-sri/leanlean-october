@@ -1,4 +1,0 @@
-module
-public import HypoellipticAleksandrov.KineticAleksandrov.Decay.PhaseLocalization
-import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ComparisonEvolution
-import Mathlib.Tactic.FunProp

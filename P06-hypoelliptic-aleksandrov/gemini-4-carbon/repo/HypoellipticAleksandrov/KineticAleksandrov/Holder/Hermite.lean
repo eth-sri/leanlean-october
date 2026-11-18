@@ -66,49 +66,8 @@ theorem hermiteVelocity_end {d : ℕ} {T : ℝ} (hT : T ≠ 0)
     (x0 v0 x1 v1 : PDE.Vec d) : hermiteVelocity T x0 v0 x1 v1 T = v1 := by
   norm_num [hermiteVelocity, hT]
 
-/-- The Hermite velocity polynomial is smooth. -/
-theorem contDiff_hermiteVelocity {d : ℕ} (T : ℝ) (x0 v0 x1 v1 : PDE.Vec d) :
-    ContDiff ℝ (⊤ : ℕ∞) (hermiteVelocity T x0 v0 x1 v1) := by
-  unfold hermiteVelocity
-  fun_prop
 
-/-- The Hermite velocity is the derivative of position. -/
-theorem hasDerivAt_hermitePosition {d : ℕ} {T : ℝ} (hT : T ≠ 0)
-    (x0 v0 x1 v1 : PDE.Vec d) (s : ℝ) :
-    HasDerivAt (hermitePosition T x0 v0 x1 v1)
-      (hermiteVelocity T x0 v0 x1 v1 s) s := by
-  have hz := (hasDerivAt_id s).div_const T
-  have hpoly := ((hasDerivAt_const s x0).add ((hasDerivAt_id s).smul_const v0)).add
-    ((((hz.pow 2).const_mul 3).sub ((hz.pow 3).const_mul 2)).smul_const
-      (x1 - x0 - T • v0))
-  have hp := hpoly.add ((((hz.pow 3).sub (hz.pow 2)).const_mul T).smul_const (v1 - v0))
-  convert hp using 1
-  · funext t
-    exact hermitePosition_eq hT x0 v0 x1 v1 t
-  · ext i
-    simp only [hermiteVelocity, Pi.add_apply, Pi.smul_apply, smul_eq_mul, Pi.zero_apply, id_eq,
-      Nat.cast_ofNat, Nat.reduceSub, pow_one]
-    field_simp [hT]
-    ring
 
-/-- The displayed acceleration is the derivative of Hermite velocity. -/
-theorem hasDerivAt_hermiteVelocity {d : ℕ} {T : ℝ} (hT : T ≠ 0)
-    (x0 v0 x1 v1 : PDE.Vec d) (s : ℝ) :
-    HasDerivAt (hermiteVelocity T x0 v0 x1 v1)
-      (hermiteAcceleration T x0 v0 x1 v1 s) s := by
-  have hz := (hasDerivAt_id s).div_const T
-  have hp := ((hasDerivAt_const s v0).add
-    ((((hz.const_mul 6).sub ((hz.pow 2).const_mul 6)).div_const T).smul_const
-      (x1 - x0 - T • v0))).add
-    ((((hz.pow 2).const_mul 3).sub (hz.const_mul 2)).smul_const (v1 - v0))
-  convert hp using 1
-  · funext t
-    rfl
-  · ext i
-    simp only [hermiteAcceleration, Pi.add_apply, Pi.smul_apply, smul_eq_mul,
-      Pi.zero_apply, id_eq, Nat.cast_ofNat, Nat.reduceSub, pow_one]
-    field_simp [hT]
-    ring
 
 /-- Source acceleration bound, with Euclidean norms and no dimension-dependent loss. -/
 theorem hermiteAcceleration_bound {d : ℕ} {T : ℝ} (hT : 0 < T)
@@ -161,15 +120,51 @@ theorem hermite_isSkeleton {d : ℕ} {T : ℝ} (hT : 0 < T)
     IsSkeleton (hermitePosition T x0 v0 x1 v1)
       (hermiteVelocity T x0 v0 x1 v1)
       (6 * PDE.vecEuclideanNorm (x1 - x0 - T • v0) / T ^ 2 +
-        4 * PDE.vecEuclideanNorm (v1 - v0) / T) 0 T := by
-  have hv := (contDiff_hermiteVelocity T x0 v0 x1 v1).continuous
+        4 * PDE.vecEuclideanNorm (v1 - v0) / T) 0 T    := by
+  have hasDerivAt_hermiteVelocity {T : ℝ} (hT : T ≠ 0) (s : ℝ) :
+      HasDerivAt (hermiteVelocity T x0 v0 x1 v1)
+      (hermiteAcceleration T x0 v0 x1 v1 s) s := by
+    have hz := (hasDerivAt_id s).div_const T
+    have hp := ((hasDerivAt_const s v0).add
+      ((((hz.const_mul 6).sub ((hz.pow 2).const_mul 6)).div_const T).smul_const
+        (x1 - x0 - T • v0))).add
+      ((((hz.pow 2).const_mul 3).sub (hz.const_mul 2)).smul_const (v1 - v0))
+    convert hp using 1
+    · funext t
+      rfl
+    · ext i
+      simp only [hermiteAcceleration, Pi.add_apply, Pi.smul_apply, smul_eq_mul,
+        Pi.zero_apply, id_eq, Nat.cast_ofNat, Nat.reduceSub, pow_one]
+      field_simp [hT]
+      ring
+  have hasDerivAt_hermitePosition {T : ℝ} (hT : T ≠ 0) (s : ℝ) :
+      HasDerivAt (hermitePosition T x0 v0 x1 v1)
+      (hermiteVelocity T x0 v0 x1 v1 s) s := by
+    have hz := (hasDerivAt_id s).div_const T
+    have hpoly := ((hasDerivAt_const s x0).add ((hasDerivAt_id s).smul_const v0)).add
+      ((((hz.pow 2).const_mul 3).sub ((hz.pow 3).const_mul 2)).smul_const
+        (x1 - x0 - T • v0))
+    have hp := hpoly.add ((((hz.pow 3).sub (hz.pow 2)).const_mul T).smul_const (v1 - v0))
+    convert hp using 1
+    · funext t
+      exact hermitePosition_eq hT x0 v0 x1 v1 t
+    · ext i
+      simp only [hermiteVelocity, Pi.add_apply, Pi.smul_apply, smul_eq_mul, Pi.zero_apply, id_eq,
+        Nat.cast_ofNat, Nat.reduceSub, pow_one]
+      field_simp [hT]
+      ring
+  have contDiff_hermiteVelocity :
+      ContDiff ℝ (⊤ : ℕ∞) (hermiteVelocity T x0 v0 x1 v1) := by
+    unfold hermiteVelocity
+    fun_prop
+  have hv := (contDiff_hermiteVelocity).continuous
   refine ⟨hv.continuousOn, fun s _ =>
-    (hasDerivAt_hermitePosition hT.ne' x0 v0 x1 v1 s).hasDerivWithinAt, ?_⟩
+    (hasDerivAt_hermitePosition hT.ne' s).hasDerivWithinAt, ?_⟩
   apply euclidean_lipschitz_of_derivative
     (show Continuous (hermiteAcceleration T x0 v0 x1 v1) by
       unfold hermiteAcceleration
       fun_prop)
-    (hasDerivAt_hermiteVelocity hT.ne' x0 v0 x1 v1)
+    (hasDerivAt_hermiteVelocity hT.ne')
   exact fun s hs => hermiteAcceleration_bound hT x0 v0 x1 v1 hs
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder

@@ -28,7 +28,7 @@ theorem exists_smooth_compact_probe_close
     [MeasurableSpace E] [BorelSpace E]
     (f : C_c(E, ℝ)) (ε : ℝ) (hε : 0 < ε) :
     ∃ g : C_c(E, ℝ), ContDiff ℝ (⊤ : ℕ∞) g ∧ ∀ x, |g x - f x| ≤ ε := by
-  let fu : C_c((univ : Set E), ℝ) := f.comp (Homeomorph.Set.univ E).toCocompactMap
+  let fu := f.comp (Homeomorph.Set.univ E).toCocompactMap
   obtain ⟨φ, hφ, hc, _, hclose⟩ := exists_smooth_compactSupport_close isOpen_univ fu ε hε
   let g : C_c(E, ℝ) := ⟨⟨φ, hφ.continuous⟩, hc⟩
   exact ⟨g, hφ, fun x => hclose ⟨x, mem_univ _⟩⟩

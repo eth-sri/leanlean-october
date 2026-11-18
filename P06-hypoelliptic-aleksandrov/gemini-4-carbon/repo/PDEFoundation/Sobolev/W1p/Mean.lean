@@ -1,6 +1,8 @@
 module
 
-public import PDEFoundation.Sobolev.Mean
+public import PDEFoundation.Measure.NormalizedLp
+public import PDEFoundation.Measure.Jensen
+public import PDEFoundation.Measure.AffineVolume
 public import PDEFoundation.Sobolev.W1p.Algebra
 
 /-!
@@ -24,14 +26,6 @@ namespace W1pFunction
 
 variable {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞}
 
-/-- On finite restricted volume, a `W^{1,p}` value is integrable when
-`1 ≤ p`. -/
-theorem integrableOn [Fact (1 ≤ p)]
-    [IsFiniteMeasure (volumeOn U)]
-    (u : W1pFunction U p) :
-    IntegrableOn u.toFun U volume := by
-  simpa only [IntegrableOn, volumeOn] using
-    u.memLp.integrable Fact.out
 
 /-- The constant representative with zero weak gradient. -/
 noncomputable def const [IsFiniteMeasure (volumeOn U)]
@@ -82,40 +76,11 @@ theorem addConst_grad [Fact (1 ≤ p)]
     [IsFiniteMeasure (volumeOn U)]
     (u : W1pFunction U p) (c : ℝ) (x : Vec d) :
     (u.addConst c).grad x = u.grad x := by
-  simp only [addConst, add_grad, const_grad, add_zero]
+  simp [addConst, add_grad, const_grad]
 
-/-- Subtract the arithmetic integral average from the value representative. -/
-noncomputable def subAverage [Fact (1 ≤ p)]
-    [IsFiniteMeasure (volumeOn U)]
-    (u : W1pFunction U p) : W1pFunction U p :=
-  u.addConst (-integralAverage U u.toFun)
 
-@[simp]
-theorem subAverage_apply [Fact (1 ≤ p)]
-    [IsFiniteMeasure (volumeOn U)]
-    (u : W1pFunction U p) (x : Vec d) :
-    u.subAverage x = u x - integralAverage U u.toFun := by
-  simp only [subAverage, addConst_apply, sub_eq_add_neg]
 
-@[simp]
-theorem subAverage_grad [Fact (1 ≤ p)]
-    [IsFiniteMeasure (volumeOn U)]
-    (u : W1pFunction U p) (x : Vec d) :
-    u.subAverage.grad x = u.grad x := by
-  simp only [subAverage, addConst_grad]
 
-/-- Subtracting the average produces a zero-mean representative. -/
-theorem meanZeroOn_subAverage [Fact (1 ≤ p)]
-    [IsFiniteMeasure (volumeOn U)]
-    (u : W1pFunction U p)
-    (hUPos : 0 < volume U) (hUTop : volume U < ∞) :
-    MeanZeroOn U u.subAverage.toFun := by
-  have hmean :=
-    meanZeroOn_sub_integralAverage
-      u.integrableOn hUPos hUTop
-  apply hmean.congr_ae
-  exact Filter.Eventually.of_forall fun x => by
-    rw [subAverage_apply]
 
 end W1pFunction
 

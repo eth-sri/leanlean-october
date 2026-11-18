@@ -78,7 +78,7 @@ theorem exists_cutoff_limit_classical
   have hΩo := isOpen_of_isAdmissibleEvolutionDomain hΩ
   let S := evolutionPastClosedCylinder Ω γ τ
   let U := evolutionPastOpenCylinder Ω γ τ
-  have hU : IsOpen U := isOpen_evolutionPastOpenCylinder hΩo hγ.1 τ
+  have hU := isOpen_evolutionPastOpenCylinder hΩo hγ.1 τ
   have hUS : U ⊆ S := fun p hp => ⟨hp.1.le, subset_closure hp.2⟩
   obtain ⟨Ct, hCt0, hCt⟩ := classical_sub_le_growthBarrier hΩo hγ.1 hlam hB_ell hb_lipschitz
   -- tail bound
@@ -97,7 +97,7 @@ theorem exists_cutoff_limit_classical
     constructor <;> linarith
   have hlimex : ∀ p ∈ S, ∃ v, Tendsto (fun N => u N p) atTop (𝓝 v) := fun p hp =>
     cauchySeq_tendsto_of_complete (cauchySeq_of_quadratic_tail
-      (K := C * growthBarrier Ct τ p) (fun N M hNM => by
+ (fun N M hNM => by
         have := hTail N M hNM p hp
         rwa [div_mul_eq_mul_div] at this))
   let V : KineticPoint n → ℝ := fun p => limUnder atTop (fun N => u N p)
@@ -180,11 +180,10 @@ theorem exists_cutoff_limit_classical
         exact (hV p (hUS hp)).mul_const _
   obtain ⟨V', hV', hrep⟩ := exists_smooth_kinetic_representative hH hlam hB_smooth hB_ell
     hb_smooth hm hb_coercive U hU V hweak
-  have hcontP : ContinuousOn (V ∘ evolutionHomeomorph n) (evolutionHomeomorph n ⁻¹' U) :=
+  have hcontP :=
     (hcont.mono hUS).comp (evolutionHomeomorph n).continuous.continuousOn (fun x hx => hx)
-  have hEq : EqOn V V' U := eqOn_of_ae_eq_of_continuousOn_kinetic hU hcontP hV'.continuousOn hrep
-  have hVsmooth : ContDiffOn ℝ (⊤ : ℕ∞) (V ∘ evolutionHomeomorph n)
-      (evolutionHomeomorph n ⁻¹' U) := hV'.congr fun x hx => hEq hx
+  have hEq := eqOn_of_ae_eq_of_continuousOn_kinetic hU hcontP hV'.continuousOn hrep
+  have hVsmooth := hV'.congr fun x hx => hEq hx
   refine ⟨V, hV, ⟨C, hC0, fun p hp => hVbd p hp⟩, hcont, ?_, ?_, ?_, ?_⟩
   · rw [evolutionPastInteriorRaw_eq_image]
     exact contDiffOn_comp_evolutionHomeomorph_iff.mp hVsmooth

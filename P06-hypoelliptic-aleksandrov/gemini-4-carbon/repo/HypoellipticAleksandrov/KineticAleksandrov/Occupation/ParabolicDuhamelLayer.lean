@@ -46,9 +46,9 @@ theorem continuous_layerKernel : Continuous layerKernel :=
   contDiff_layerStep.continuous_deriv (by simp)
 
 theorem layerKernel_eq_zero_of_le {s : ℝ} (h : s ≤ 1) : layerKernel s = 0 := by
-  have hz : ∀ x ∈ Iio (1 : ℝ), layerKernel x = 0 := by
+  have hz : ∀ x ∈ Iio 1, layerKernel x = 0 := by
     intro x hx
-    have hev : layerStep =ᶠ[𝓝 x] fun _ => (0 : ℝ) := by
+    have hev : layerStep =ᶠ[𝓝 x] fun _ => 0 := by
       filter_upwards [Iio_mem_nhds hx] with y hy using layerStep_of_le (le_of_lt hy)
     exact (hev.deriv_eq).trans (deriv_const _ _)
   have hcl : IsClosed {x | layerKernel x = 0} := isClosed_eq continuous_layerKernel continuous_const
@@ -57,9 +57,9 @@ theorem layerKernel_eq_zero_of_le {s : ℝ} (h : s ≤ 1) : layerKernel s = 0 :=
   exact this h
 
 theorem layerKernel_eq_zero_of_ge {s : ℝ} (h : 2 ≤ s) : layerKernel s = 0 := by
-  have hz : ∀ x ∈ Ioi (2 : ℝ), layerKernel x = 0 := by
+  have hz : ∀ x ∈ Ioi 2, layerKernel x = 0 := by
     intro x hx
-    have hev : layerStep =ᶠ[𝓝 x] fun _ => (1 : ℝ) := by
+    have hev : layerStep =ᶠ[𝓝 x] fun _ => 1 := by
       filter_upwards [Ioi_mem_nhds hx] with y hy using layerStep_of_ge (le_of_lt hy)
     exact (hev.deriv_eq).trans (deriv_const _ _)
   have hcl : IsClosed {x | layerKernel x = 0} := isClosed_eq continuous_layerKernel continuous_const
@@ -68,7 +68,7 @@ theorem layerKernel_eq_zero_of_ge {s : ℝ} (h : 2 ≤ s) : layerKernel s = 0 :=
   exact this h
 
 theorem hasCompactSupport_layerKernel : HasCompactSupport layerKernel := by
-  apply HasCompactSupport.intro (isCompact_Icc (a := (1 : ℝ)) (b := 2))
+  apply HasCompactSupport.intro (isCompact_Icc (a := 1))
   intro x hx
   by_cases h : x ≤ 1
   · exact layerKernel_eq_zero_of_le h
@@ -83,10 +83,10 @@ theorem integrable_layerKernel : Integrable layerKernel :=
 theorem integral_layerKernel : ∫ s, layerKernel s = 1 := by
   have h0 : Tendsto layerStep atBot (𝓝 0) := by
     apply tendsto_const_nhds.congr'
-    filter_upwards [Iic_mem_atBot (1 : ℝ)] with y hy using (layerStep_of_le hy).symm
+    filter_upwards [Iic_mem_atBot 1] with y hy using (layerStep_of_le hy).symm
   have h1 : Tendsto layerStep atTop (𝓝 1) := by
     apply tendsto_const_nhds.congr'
-    filter_upwards [Ici_mem_atTop (2 : ℝ)] with y hy using (layerStep_of_ge hy).symm
+    filter_upwards [Ici_mem_atTop 2] with y hy using (layerStep_of_ge hy).symm
   have := integral_of_hasDerivAt_of_tendsto hasDerivAt_layerStep integrable_layerKernel h0 h1
   simpa using this
 
@@ -102,7 +102,6 @@ theorem integral_layer_substitution (r h : ℝ) (hh : 0 < h) (F : ℝ → ℝ) :
     ∫ t, h⁻¹ * layerKernel ((r - t) / h) * F t =
       ∫ s, layerKernel s * F (r - h * s) := by
   set g : ℝ → ℝ := fun t => h⁻¹ * layerKernel ((r - t) / h) * F t with hg
-  have h1 : ∫ t, g t = ∫ x, g (r - x) := (integral_sub_left_eq_self g volume r).symm
   have h2 : ∫ x, g (r - x) = h • ∫ s, g (r - h * s) := by
     have := Measure.integral_comp_mul_left (fun x => g (r - x)) h
     simp only [abs_inv, abs_of_pos hh] at this
@@ -112,7 +111,7 @@ theorem integral_layer_substitution (r h : ℝ) (hh : 0 < h) (F : ℝ → ℝ) :
     simp only [hg, sub_sub_cancel]
     rw [mul_div_cancel_left₀ _ hh.ne']
     ring
-  rw [h1, h2]
+  rw [((integral_sub_left_eq_self g volume r).symm), h2]
   simp_rw [h3]
   rw [integral_const_mul, smul_eq_mul, ← mul_assoc, mul_inv_cancel₀ hh.ne', one_mul]
 

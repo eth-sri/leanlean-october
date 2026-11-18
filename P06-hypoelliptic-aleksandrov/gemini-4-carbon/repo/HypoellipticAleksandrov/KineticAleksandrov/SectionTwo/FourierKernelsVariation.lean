@@ -29,12 +29,11 @@ theorem fourierKernel_totalVariation_composition {d : ℕ}
     rw [← ofReal_norm]
     exact (ENNReal.ofReal_le_ofReal
       (LinearMap.mkContinuous₂_norm_le (LinearMap.mul ℝ ℂ) zero_le_one
-        (fun x y => by simpa only [LinearMap.mul_apply', one_mul] using norm_mul_le x y))).trans_eq
+        (fun x y => by simpa using norm_mul_le x y))).trans_eq
       ENNReal.ofReal_one
   by_contra hn
-  have hlt : totalVariationNorm ν * C < ν'.variation univ := lt_of_not_ge hn
   obtain ⟨P, _, hPd, hPm, hPgt⟩ :=
-    VectorMeasure.exists_lt_sum_of_lt_variation ν' MeasurableSet.univ hlt
+    VectorMeasure.exists_lt_sum_of_lt_variation ν' MeasurableSet.univ (lt_of_not_ge hn)
   have hsum : ∑ E ∈ P, ‖ν' E‖ₑ ≤ totalVariationNorm ν * C := by
     calc
       _ ≤ ∑ E ∈ P, ∫⁻ v', ‖fourierKernel K r τ hrτ ξ v' E‖ₑ ∂ν.variation := by

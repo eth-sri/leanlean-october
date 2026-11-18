@@ -30,12 +30,12 @@ theorem ae_valueCLM_smoothCompactlySupportedH1HilbertGraph
       =ᵐ[PDE.volumeOn Ω] ψ := by
   change (fun y =>
     ((PDE.smoothCompactlySupportedW1pGraph
-      (p := (2 : ℝ≥0∞)) hΩ ψ).1).1 y) =ᵐ[PDE.volumeOn Ω] ψ
+      (p := 2) hΩ ψ).1).1 y) =ᵐ[PDE.volumeOn Ω] ψ
   simpa only [PDE.smoothCompactlySupportedW1pGraph,
     PDE.W1pFunction.ofContDiff] using
     PDE.W1pFunction.coeFn_toW1pGraph_fst
       (PDE.W1pFunction.ofContDiff hΩ
-        (ψ.contDiff.of_le (by simp)) ψ.hasCompactSupport (2 : ℝ≥0∞))
+        (ψ.contDiff.of_le (by simp)) ψ.hasCompactSupport 2)
 
 /-- Each gradient-coordinate cofunction of a bundled smooth compactly
 supported test function agrees almost everywhere with its literal derivative
@@ -48,12 +48,12 @@ theorem ae_gradientCoordCLM_smoothCompactlySupportedH1HilbertGraph
       =ᵐ[PDE.volumeOn Ω] fun y => ψ.partialDeriv j y := by
   change (fun y =>
     ((PDE.smoothCompactlySupportedW1pGraph
-      (p := (2 : ℝ≥0∞)) hΩ ψ).1).2 y j) =ᵐ[PDE.volumeOn Ω]
+      (p := 2) hΩ ψ).1).2 y j) =ᵐ[PDE.volumeOn Ω]
       fun y => ψ.partialDeriv j y
   simpa only [PDE.smoothCompactlySupportedW1pGraph,
     PDE.W1pFunction.ofContDiff, PDE.WeakTestFunction.partialDeriv] using
     PDE.W1pFunction.coeFn_toW1pGraph_snd_apply
       (PDE.W1pFunction.ofContDiff hΩ
-        (ψ.contDiff.of_le (by simp)) ψ.hasCompactSupport (2 : ℝ≥0∞)) j
+        (ψ.contDiff.of_le (by simp)) ψ.hasCompactSupport 2) j
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

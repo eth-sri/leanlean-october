@@ -51,10 +51,7 @@ theorem visitActiveGreen_partial_capacity
     isOpen_Ioo.measurableSet.preimage ((continuous_apply 0).comp continuous_velocity).measurable
   have heq : ∀ n, gm n univ = gm n U := by
     intro n
-    have hr := Measure.restrict_eq_self_of_ae_mem
-      (visitActiveGreenMixture_ae_active hH hLE hlam hLam A c J s T
-        (visitEntrancePiece hH hLE hlam hLam A c J s T P n))
-    have hh := congrArg (fun m : Measure Point => m univ) hr
+    have hh := congrArg (fun m => m univ) (Measure.restrict_eq_self_of_ae_mem (visitActiveGreenMixture_ae_active hH hLE hlam hLam A c J s T (visitEntrancePiece hH hLE hlam hLam A c J s T P n)))
     change (gm n).restrict U univ = gm n univ at hh
     rw [Measure.restrict_apply MeasurableSet.univ, univ_inter] at hh
     exact hh.symm

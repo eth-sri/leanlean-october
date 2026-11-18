@@ -27,24 +27,6 @@ theorem visitUnion_identity_bounded_smooth
   obtain ⟨M, hM⟩ := hb
   exact ⟨M, fun p hp => hM p (H.component_subset _ hp)⟩
 
-/-- The source quadratic is uniformly bounded together with its operator on the active union. -/
-theorem visitQuadratic_active_bounded {lam Lam : ℝ} (hlam : 0 < lam)
-    (_hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) :
-    ∃ M : ℝ, ∀ p : Point, p.velocity 0 ∈ (visitActiveUnion c J).carrier →
-      |visitQuadratic c (p.velocity 0)| ≤ M ∧
-      |forwardScalarOperator A.a (fun q => visitQuadratic c (q.velocity 0)) p| ≤ M := by
-  refine ⟨max (9 * c.r ^ 2 / 16) (2 * Lam), ?_⟩
-  intro p hp
-  have hv : p.velocity 0 ∈ closure c.active :=
-    subset_closure ((visitActiveUnion_carrier c J).le hp).1
-  constructor
-  · rw [abs_of_nonneg (visitQuadratic_nonneg c hv)]
-    exact (visitQuadratic_le c _).trans (le_max_left _ _)
-  · rw [visitQuadratic_operator]
-    have ha := A.bounds (p.position 0) (p.velocity 0)
-    rw [abs_of_nonpos (by nlinarith [ha.1])]
-    exact (by nlinarith [ha.2] : -(-2 * A.a (p.position 0) (p.velocity 0)) ≤ 2 * Lam).trans
-      (le_max_right _ _)
 
 /-- The genuine active-component quadratic identity, before any visit summation. -/
 theorem visitQuadratic_active_identity
@@ -56,15 +38,29 @@ theorem visitQuadratic_active_identity
       (∫ p, visitQuadratic c (p.velocity 0)
         ∂finiteUnionExit hH hLE hlam hLam A (visitActiveUnion c J) T e) -
       ∫ p, -2 * A.a (p.position 0) (p.velocity 0)
-        ∂finiteUnionGreen hH hLE hlam hLam A (visitActiveUnion c J) T e := by
+        ∂finiteUnionGreen hH hLE hlam hLam A (visitActiveUnion c J) T e  := by
+  have visitQuadratic_active_bounded :
+      ∃ M : ℝ, ∀ p : Point, p.velocity 0 ∈ (visitActiveUnion c J).carrier →
+      |visitQuadratic c (p.velocity 0)| ≤ M ∧
+      |forwardScalarOperator A.a (fun q => visitQuadratic c (q.velocity 0)) p| ≤ M := by
+    refine ⟨max (9 * c.r ^ 2 / 16) (2 * Lam), ?_⟩
+    intro p hp
+    constructor
+    · rw [abs_of_nonneg (visitQuadratic_nonneg c (subset_closure ((visitActiveUnion_carrier c J).le hp).1))]
+      exact (visitQuadratic_le c _).trans (le_max_left _ _)
+    · rw [visitQuadratic_operator]
+      have ha := A.bounds (p.position 0) (p.velocity 0)
+      rw [abs_of_nonpos (by nlinarith [ha.1])]
+      exact (by nlinarith [ha.2] : -(-2 * A.a (p.position 0) (p.velocity 0)) ≤ 2 * Lam).trans
+        (le_max_right _ _)
   have hs : ContDiff ℝ (⊤ : ℕ∞)
-      ((fun q : Point => visitQuadratic c (q.velocity 0)) ∘
+      ((fun q => visitQuadratic c (q.velocity 0)) ∘
         (KineticPoint.equivProd 1).symm) :=
     (visitQuadratic_smooth c).comp
-      ((contDiff_apply ℝ ℝ (0 : Fin 1)).comp contDiff_snd.snd)
+      ((contDiff_apply ℝ ℝ 0).comp contDiff_snd.snd)
   simpa only [visitQuadratic_operator] using
     visitUnion_identity_bounded_smooth hH hLE hlam hLam A (visitActiveUnion c J) T e
       (fun q => visitQuadratic c (q.velocity 0)) hs
-      (visitQuadratic_active_bounded hlam hLam A c J)
+      (visitQuadratic_active_bounded)
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

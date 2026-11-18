@@ -44,10 +44,8 @@ theorem bellmanDvv_smul (c : ℝ) (phi : (ℝ × ℝ) → ℝ) (q : ℝ × ℝ) 
     bellmanDvv (c • phi) q = c * bellmanDvv phi q := by
   have he : bellmanDv (c • phi) = c • bellmanDv phi := by
     funext z
-    simp only [bellmanDv, fderiv_const_smul_field, Pi.smul_apply,
-      smul_apply, smul_eq_mul]
-  simp only [bellmanDvv, he, fderiv_const_smul_field, Pi.smul_apply,
-    smul_apply, smul_eq_mul]
+    simp [bellmanDv, fderiv_const_smul_field, smul_apply]
+  simp [bellmanDvv, he, fderiv_const_smul_field, smul_apply]
 
 /-- The continuous operator image is a linear map from the actual homogeneous space. -/
 def bellmanImageLinearMap (alpha lam Lam : ℝ) :

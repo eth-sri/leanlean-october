@@ -72,7 +72,7 @@ theorem IsClassicalTerminalSolution.add (hΩ : IsOpen Ω) (hγ : Continuous γ)
     rw [viscousTransportedOperator_add h1 h2, hop₁ p hp, hop₂ p hp]
     simp
   · intro p hp
-    simp only [BoundedBorel.add_apply]
+    simp
     rw [ht₁ p hp, ht₂ p hp]
   · intro p hp
     show u p + v p = 0

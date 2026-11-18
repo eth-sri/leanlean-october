@@ -76,26 +76,10 @@ def terminalCoordinateHomeomorph (c : PDE.Vec n) :
   continuous_invFun :=
     (contDiff_spatialPack (contDiff_fst.sub contDiff_const) contDiff_snd (m := 0)).continuous
 
-/-- The transformed terminal datum `x ↦ F (c + Y, z)` of a smooth datum is smooth. -/
-theorem contDiff_terminalDatum (c : PDE.Vec n) {F : PDE.Vec n × PDE.Vec n → ℝ}
-    (hF : ContDiff ℝ (⊤ : ℕ∞) F) :
-    ContDiff ℝ (⊤ : ℕ∞) (fun x : PDE.Vec (n + n) => F (c + spatialY x, spatialZ x)) :=
-  hF.comp ((contDiff_const.add contDiff_spatialY).prodMk contDiff_spatialZ)
 
-/-- The transformed terminal datum of a compactly supported datum has compact support: the
-affine terminal-coordinate map is a homeomorphism, hence proper. -/
-theorem hasCompactSupport_terminalDatum (c : PDE.Vec n) {F : PDE.Vec n × PDE.Vec n → ℝ}
-    (hF : HasCompactSupport F) :
-    HasCompactSupport (fun x : PDE.Vec (n + n) => F (c + spatialY x, spatialZ x)) :=
-  hF.comp_homeomorph (terminalCoordinateHomeomorph c)
 
 end TerminalDatum
 
-section Exhaustion
-
-variable {n : ℕ}
-
-end Exhaustion
 
 section AnchorPremises
 
@@ -129,12 +113,16 @@ theorem straightened_base_premises
       (fun q : TimeVelocity (n + n) => straightenedDrift b g q.1 q.2) ∧
     ContDiff ℝ (⊤ : ℕ∞)
       (fun x : PDE.Vec (n + n) => F (g τ + spatialY x, spatialZ x)) ∧
-    HasCompactSupport (fun x : PDE.Vec (n + n) => F (g τ + spatialY x, spatialZ x)) := by
+    HasCompactSupport (fun x : PDE.Vec (n + n) => F (g τ + spatialY x, spatialZ x))   := by
+  have hasCompactSupport_terminalDatum (c : PDE.Vec n) : HasCompactSupport (fun x : PDE.Vec (n + n) => F (c + spatialY x, spatialZ x)) :=
+    hFc.comp_homeomorph (terminalCoordinateHomeomorph c)
+  have contDiff_terminalDatum (c : PDE.Vec n) : ContDiff ℝ (⊤ : ℕ∞) (fun x : PDE.Vec (n + n) => F (c + spatialY x, spatialZ x)) :=
+    hF.comp ((contDiff_const.add contDiff_spatialY).prodMk contDiff_spatialZ)
   obtain ⟨hsm, hsy, hlo, hup, hdr⟩ :=
     straightenedCoefficient_bounds_smooth hB_smooth hB_symm hB_ell hb_smooth g hg ε
   obtain ⟨h0, h1⟩ := straightened_ellipticity_constants hlam hlamLam hε
   exact ⟨(straightenedEllipsoid_characterization n r R hr hR).1, h0, h1, hsy, hsm, hlo, hup,
-    hdr, contDiff_terminalDatum (g τ) hF, hasCompactSupport_terminalDatum (g τ) hFc⟩
+    hdr, contDiff_terminalDatum (g τ), hasCompactSupport_terminalDatum (g τ)⟩
 
 end AnchorPremises
 

@@ -1,6 +1,8 @@
 module
 
-public import HypoellipticAleksandrov.Ambient.Basic
+public import PDEFoundation.Geometry.EuclideanBall.Topology
+public import PDEFoundation.Geometry.EuclideanBall.Basic
+public import PDEFoundation.Ambient.EuclideanNorm
 public import Mathlib.LinearAlgebra.Matrix.Symmetric
 public import Mathlib.LinearAlgebra.Matrix.Trace
 
@@ -22,11 +24,6 @@ namespace HypoellipticAleksandrov
 def matrixContraction {d : ℕ} (A H : PDE.Mat d) : ℝ :=
   ∑ i, ∑ j, A i j * H i j
 
-/-- The contraction with a zero left factor vanishes. -/
-@[simp]
-theorem matrixContraction_zero_left {d : ℕ} (H : PDE.Mat d) :
-    matrixContraction 0 H = 0 := by
-  simp [matrixContraction]
 
 /-- The contraction with a zero right factor vanishes. -/
 @[simp]

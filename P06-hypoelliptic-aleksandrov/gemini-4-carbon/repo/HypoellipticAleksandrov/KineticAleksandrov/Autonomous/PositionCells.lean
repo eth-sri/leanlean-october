@@ -14,14 +14,6 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory
 
-/-- Each position-resolved visit cell is measurable. -/
-theorem measurableSet_enlargedPositionVisitCell (c : Clock) (s x : ℝ)
-    (j : ℕ) (k : ℤ) :
-    MeasurableSet (enlargedStartCell c s x j k ∩
-      {p | p.velocity 0 ∈ closure c.entrance}) :=
-  (measurableSet_enlargedStartCell c s x j k).inter
-    (isClosed_closure.measurableSet.preimage
-      ((continuous_apply 0).comp continuous_velocity).measurable)
 
 /-- Position cells partition the entrance-supported portion of one time bin. -/
 theorem iUnion_enlargedPositionVisitCell (c : Clock) (s x : ℝ) (j : ℕ) :
@@ -37,16 +29,6 @@ theorem iUnion_enlargedPositionVisitCell (c : Clock) (s x : ℝ) (j : ℕ) :
     obtain ⟨k, hk⟩ := enlargedPositionCell_covers c.r x (p.position 0) c.positive
     exact mem_iUnion.mpr ⟨k, ⟨⟨hp.1, hk⟩, hp.2⟩⟩
 
-/-- Distinct position-resolved visit cells in one time bin are disjoint. -/
-theorem pairwiseDisjoint_enlargedPositionVisitCell (c : Clock) (s x : ℝ) (j : ℕ) :
-    Pairwise (fun k l : ℤ => Disjoint
-      (enlargedStartCell c s x j k ∩ {p | p.velocity 0 ∈ closure c.entrance})
-      (enlargedStartCell c s x j l ∩ {p | p.velocity 0 ∈ closure c.entrance})) := by
-  intro k l hkl
-  apply disjoint_left.mpr
-  intro p hk hl
-  exact disjoint_left.mp (enlargedPositionCell_disjoint c.r x c.positive hkl)
-    hk.1.2 hl.1.2
 
 /-- The extended masses sum to the entrance-supported time-bin mass. -/
 theorem tsum_enlargedPositionVisitCell_measure (nu : Measure Point) (c : Clock)
@@ -54,9 +36,23 @@ theorem tsum_enlargedPositionVisitCell_measure (nu : Measure Point) (c : Clock)
     (∑' k : ℤ, nu (enlargedStartCell c s x j k ∩
       {p | p.velocity 0 ∈ closure c.entrance})) =
       nu {p | p.time ∈ enlargedTimeBin c.r s j ∧
-        p.velocity 0 ∈ closure c.entrance} := by
-  rw [← measure_iUnion (pairwiseDisjoint_enlargedPositionVisitCell c s x j)
-    (measurableSet_enlargedPositionVisitCell c s x j)]
+        p.velocity 0 ∈ closure c.entrance}   := by
+  have pairwiseDisjoint_enlargedPositionVisitCell :
+      Pairwise (fun k l => Disjoint
+      (enlargedStartCell c s x j k ∩ {p | p.velocity 0 ∈ closure c.entrance})
+      (enlargedStartCell c s x j l ∩ {p | p.velocity 0 ∈ closure c.entrance})) := by
+    intro k l hkl
+    apply disjoint_left.mpr
+    intro p hk hl
+    exact disjoint_left.mp (enlargedPositionCell_disjoint c.r x c.positive hkl)
+      hk.1.2 hl.1.2
+  have measurableSet_enlargedPositionVisitCell (k : ℤ) : MeasurableSet (enlargedStartCell c s x j k ∩
+      {p | p.velocity 0 ∈ closure c.entrance}) :=
+    (measurableSet_enlargedStartCell c s x j k).inter
+        (isClosed_closure.measurableSet.preimage
+          ((continuous_apply 0).comp continuous_velocity).measurable)
+  rw [← measure_iUnion (pairwiseDisjoint_enlargedPositionVisitCell)
+    (measurableSet_enlargedPositionVisitCell)]
   rw [iUnion_enlargedPositionVisitCell]
 
 /-- The real position masses sum exactly to the real time count for finite measures. -/

@@ -11,20 +11,18 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 open SectionTwo TheoremA Evolution
 
-/-- A compact physical probe is bounded Borel data on the existing physical point carrier. -/
-def nestedProbeDatum {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
-    (f : exitProbeSubmodule) : BoundedBorel Point :=
-  ⟨exitProbePhysical f, (exitProbePhysical_continuous_compact f).1.measurable, by
-    obtain ⟨M, hM⟩ := exitProbePhysical_bounded_source A f
-    exact ⟨max M 0, le_max_right _ _, fun p => (hM p).1.trans (le_max_left _ _)⟩⟩
 
 /-- Every valid pole has the same actual Green integral as its compact-source Duhamel value. -/
 theorem nestedSourcePotential_eq_green {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
     (H : Interval) (E : StripEvolution H) (T : ℝ) (f : exitProbeSubmodule)
     (e : StripPole H (T : WithTop ℝ)) :
     nestedSourcePotential H E T f e.1 =
-      ∫ p, exitProbePhysical f p ∂stripGreenOfKernel H E.2 T e :=
-  stripSourcePotential_eq_green H E.2 T (nestedProbeDatum A f) e
+      ∫ p, exitProbePhysical f p ∂stripGreenOfKernel H E.2 T e  := by
+  let nestedProbeDatum : BoundedBorel Point :=
+    ⟨exitProbePhysical f, (exitProbePhysical_continuous_compact f).1.measurable, by
+        obtain ⟨M, hM⟩ := exitProbePhysical_bounded_source A f
+        exact ⟨max M 0, le_max_right _ _, fun p => (hM p).1.trans (le_max_left _ _)⟩⟩
+  exact stripSourcePotential_eq_green H E.2 T (nestedProbeDatum) e
 
 /-- The actual compact-source potential is globally Borel before any regularity argument. -/
 theorem nestedSourcePotential_measurable (H : Interval) (E : StripEvolution H) (T : ℝ)

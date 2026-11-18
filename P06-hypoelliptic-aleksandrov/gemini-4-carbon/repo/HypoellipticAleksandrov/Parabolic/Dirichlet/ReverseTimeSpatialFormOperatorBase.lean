@@ -28,60 +28,23 @@ private theorem continuousOn_reverseTimeCoefficientEntry_slice
     (hτ : τ ∈ Set.Icc 0 (r₁ - r₀)) :
     ContinuousOn (fun y : PDE.Vec d => a (r₁ - τ) y i j) Ω := by
   rcases ha with ⟨V, hVopen, hKV, hV⟩
-  have hrow : ContDiffOn ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => a z.1 z.2 i) V := by
+  have hrow : ContDiffOn ℝ (⊤ : ℕ∞) (fun z => a z.1 z.2 i) V := by
     exact (contDiffOn_apply ℝ (Fin d → ℝ) i Set.univ).comp hV (by
       intro z hz
       exact Set.mem_univ _)
-  have hentry : ContDiffOn ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => a z.1 z.2 i j) V := by
+  have hentry : ContDiffOn ℝ (⊤ : ℕ∞) (fun z => a z.1 z.2 i j) V := by
     exact (contDiffOn_apply ℝ ℝ j Set.univ).comp hrow (by
       intro z hz
       exact Set.mem_univ _)
   have htime : r₀ ≤ r₁ - τ ∧ r₁ - τ ≤ r₁ := by
     constructor <;> linarith [hτ.1, hτ.2]
-  have hmap : MapsTo (fun y : PDE.Vec d => (r₁ - τ, y)) Ω
+  have hmap : MapsTo (fun y => (r₁ - τ, y)) Ω
       (scalarParabolicClosedCylinder r₀ r₁ Ω) := by
     intro y hy
     exact ⟨htime, subset_closure hy⟩
   simpa [Function.comp_def] using! (hentry.continuousOn.mono hKV).comp
     (Continuous.prodMk_right _).continuousOn hmap
 
-private theorem continuousOn_reverseTimeDivergenceDriftEntry_slice
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ τ : ℝ) (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
-    (j : Fin d)
-    (ha : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hb : IsSmoothOnNeighborhood (fun z : TimeVelocity d => b z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hτ : τ ∈ Set.Icc 0 (r₁ - r₀)) :
-    ContinuousOn (fun y : PDE.Vec d => reverseTimeDivergenceDrift r₁ a b τ y j) Ω := by
-  have htime : r₀ ≤ r₁ - τ ∧ r₁ - τ ≤ r₁ := by
-    constructor <;> linarith [hτ.1, hτ.2]
-  have hmap : MapsTo (fun y : PDE.Vec d => (r₁ - τ, y)) Ω
-      (scalarParabolicClosedCylinder r₀ r₁ Ω) := by
-    intro y hy
-    exact ⟨htime, subset_closure hy⟩
-  have hdiv : ContinuousOn (fun y : PDE.Vec d =>
-      scalarSpatialCoefficientDivergence (reverseTimeCoefficient r₁ a) (τ, y) j) Ω := by
-    have hcont := continuousOn_scalarSpatialCoefficientDivergence_of_smoothOnNeighborhood
-      r₀ r₁ a ha
-    have hvec : ContinuousOn (fun y : PDE.Vec d =>
-        scalarSpatialCoefficientDivergence a (r₁ - τ, y)) Ω := by
-      simpa [Function.comp_def] using hcont.comp (Continuous.prodMk_right _).continuousOn hmap
-    have heval : ContinuousOn (fun x : PDE.Vec d => x j) Set.univ :=
-      (continuous_apply j).continuousOn
-    simpa only [Function.comp_def, scalarSpatialCoefficientDivergence_reverseTimeCoefficient,
-      reverseTimeMap_apply] using heval.comp hvec (by intro y hy; simp)
-  rcases hb with ⟨V, hVopen, hKV, hV⟩
-  have hentry : ContDiffOn ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => b z.1 z.2 j) V := by
-    exact (contDiffOn_apply ℝ ℝ j Set.univ).comp hV (by
-      intro z hz
-      exact Set.mem_univ _)
-  have hbcont : ContinuousOn (fun y : PDE.Vec d => b (r₁ - τ) y j) Ω := by
-    simpa [Function.comp_def] using! (hentry.continuousOn.mono hKV).comp
-      (Continuous.prodMk_right _).continuousOn hmap
-  simpa only [reverseTimeDivergenceDrift, reverseTimeVectorCoefficient_apply,
-    Pi.sub_apply, Pi.sub_def] using hdiv.sub hbcont
 
 /-- Smooth coefficients have nonnegative, time-uniform bounds for the slice multipliers. -/
 theorem exists_sliceMultiplierBounds_of_smoothOnNeighborhood
@@ -112,11 +75,40 @@ theorem exists_sliceMultiplierBounds_of_smoothOnNeighborhood
           (fun y => reverseTimeScalarCoefficient r₁ c τ.1 y) (PDE.volumeOn Ω)) ∧
       (∀ τ : Set.Icc 0 (r₁ - r₀),
         ∀ᵐ y ∂PDE.volumeOn Ω,
-          ‖reverseTimeScalarCoefficient r₁ c τ.1 y‖ ≤ Cc) := by
-  have haCont (i j : Fin d) : ContinuousOn (fun z : TimeVelocity d => a z.1 z.2 i j)
+          ‖reverseTimeScalarCoefficient r₁ c τ.1 y‖ ≤ Cc)  := by
+  have continuousOn_reverseTimeDivergenceDriftEntry_slice {d : ℕ} {Ω : Set (PDE.Vec d)} (r₀ r₁ τ : ℝ) (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d) (j : Fin d) (ha : IsSmoothOnNeighborhood (fun z => a z.1 z.2)
+      (scalarParabolicClosedCylinder r₀ r₁ Ω)) (hb : IsSmoothOnNeighborhood (fun z => b z.1 z.2)
+      (scalarParabolicClosedCylinder r₀ r₁ Ω)) (hτ : τ ∈ Set.Icc 0 (r₁ - r₀)) :
+      ContinuousOn (fun y => reverseTimeDivergenceDrift r₁ a b τ y j) Ω := by
+    have htime : r₀ ≤ r₁ - τ ∧ r₁ - τ ≤ r₁ := by
+      constructor <;> linarith [hτ.1, hτ.2]
+    have hmap : MapsTo (fun y => (r₁ - τ, y)) Ω
+        (scalarParabolicClosedCylinder r₀ r₁ Ω) := by
+      intro y hy
+      exact ⟨htime, subset_closure hy⟩
+    have hdiv : ContinuousOn (fun y =>
+        scalarSpatialCoefficientDivergence (reverseTimeCoefficient r₁ a) (τ, y) j) Ω := by
+      have hvec : ContinuousOn (fun y =>
+          scalarSpatialCoefficientDivergence a (r₁ - τ, y)) Ω := by
+        simpa [Function.comp_def] using (continuousOn_scalarSpatialCoefficientDivergence_of_smoothOnNeighborhood r₀ r₁ a ha).comp (Continuous.prodMk_right _).continuousOn hmap
+      have heval : ContinuousOn (fun x : PDE.Vec d => x j) Set.univ :=
+        (continuous_apply j).continuousOn
+      simpa only [Function.comp_def, scalarSpatialCoefficientDivergence_reverseTimeCoefficient,
+        reverseTimeMap_apply] using heval.comp hvec (by intro y hy; simp)
+    rcases hb with ⟨V, hVopen, hKV, hV⟩
+    have hentry : ContDiffOn ℝ (⊤ : ℕ∞) (fun z => b z.1 z.2 j) V := by
+      exact (contDiffOn_apply ℝ ℝ j Set.univ).comp hV (by
+        intro z hz
+        exact Set.mem_univ _)
+    have hbcont : ContinuousOn (fun y => b (r₁ - τ) y j) Ω := by
+      simpa [Function.comp_def] using! (hentry.continuousOn.mono hKV).comp
+        (Continuous.prodMk_right _).continuousOn hmap
+    simpa only [reverseTimeDivergenceDrift, reverseTimeVectorCoefficient_apply,
+      Pi.sub_apply, Pi.sub_def] using hdiv.sub hbcont
+  have haCont (i j : Fin d) : ContinuousOn (fun z => a z.1 z.2 i j)
       (scalarParabolicClosedCylinder r₀ r₁ Ω) := by
     rcases haSmooth with ⟨V, hVopen, hKV, hV⟩
-    have hrow : ContDiffOn ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => a z.1 z.2 i) V := by
+    have hrow : ContDiffOn ℝ (⊤ : ℕ∞) (fun z => a z.1 z.2 i) V := by
       exact (contDiffOn_apply ℝ (Fin d → ℝ) i Set.univ).comp hV
         (by intro z hz; exact Set.mem_univ _)
     exact ((contDiffOn_apply ℝ ℝ j Set.univ).comp hrow
@@ -133,16 +125,14 @@ theorem exists_sliceMultiplierBounds_of_smoothOnNeighborhood
       constructor <;> linarith [τ.2.1, τ.2.2]
     exact (hca i j (r₁ - τ.1, y) ⟨htime, subset_closure hy⟩).trans (le_max_left _ _)
   have hCdCont (j : Fin d) : ContinuousOn
-      (fun z : TimeVelocity d => scalarSpatialCoefficientDivergence a z j - b z.1 z.2 j)
+      (fun z => scalarSpatialCoefficientDivergence a z j - b z.1 z.2 j)
       (scalarParabolicClosedCylinder r₀ r₁ Ω) := by
-    have hdiv := continuousOn_scalarSpatialCoefficientDivergence_of_smoothOnNeighborhood
-      r₀ r₁ a haSmooth
     have heval : ContinuousOn (fun x : PDE.Vec d => x j) Set.univ :=
       (continuous_apply j).continuousOn
     rcases hbSmooth with ⟨V, hVopen, hKV, hV⟩
-    have hbj : ContDiffOn ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => b z.1 z.2 j) V := by
+    have hbj : ContDiffOn ℝ (⊤ : ℕ∞) (fun z => b z.1 z.2 j) V := by
       exact (contDiffOn_apply ℝ ℝ j Set.univ).comp hV (by intro z hz; exact Set.mem_univ _)
-    exact heval.comp hdiv (by intro z hz; exact Set.mem_univ _) |>.sub (hbj.continuousOn.mono hKV)
+    exact heval.comp (continuousOn_scalarSpatialCoefficientDivergence_of_smoothOnNeighborhood r₀ r₁ a haSmooth) (by intro z hz; exact Set.mem_univ _) |>.sub (hbj.continuousOn.mono hKV)
   choose cd hcd using fun j =>
     (isCompact_scalarParabolicClosedCylinder r₀ r₁ hΩbounded).exists_bound_of_continuousOn
       (hCdCont j)
@@ -173,7 +163,7 @@ theorem exists_sliceMultiplierBounds_of_smoothOnNeighborhood
       hcSmooth τ.2).aestronglyMeasurable hΩ.measurableSet
   · intro τ
     filter_upwards [ae_restrict_mem hΩ.measurableSet] with y hy
-    simpa only [Real.norm_eq_abs] using hCcBound τ.1 τ.2 y hy
+    simpa using hCcBound τ.1 τ.2 y hy
 
 /-- Multiplier inner-product expression for the reverse-time spatial form. -/
 noncomputable def reverseTimeSpatialFormMultiplierExpression

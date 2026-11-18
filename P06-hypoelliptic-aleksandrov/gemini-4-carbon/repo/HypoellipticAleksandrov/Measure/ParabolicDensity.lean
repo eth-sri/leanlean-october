@@ -1,37 +1,565 @@
 module
 
+public import HypoellipticAleksandrov.Measure.ParabolicDyadicMeasure
+public import Mathlib.Data.Set.Card
+public import Mathlib.Probability.Process.PartitionFiltration
+public import Mathlib.Tactic.FinCases
+public import Mathlib.Tactic.NormNum
+public import Mathlib.MeasureTheory.Function.ConditionalExpectation.Basic
+public import Mathlib.MeasureTheory.MeasurableSpace.CountablyGenerated
+public import Mathlib.MeasureTheory.Constructions.BorelSpace.Real
+public import Mathlib.Tactic.Linarith
 public import Mathlib.Probability.Martingale.Convergence
-public import HypoellipticAleksandrov.Measure.ParabolicDyadicAverage
-public import HypoellipticAleksandrov.Measure.ParabolicDyadicGeneration
 
-/-!
-# Differentiation along parabolic dyadic cells
-
-This module proves almost-everywhere convergence of the explicit complete-generation
-parabolic dyadic averages.  Applying that convergence to a measurable-set indicator gives
-eventual strict density in every sufficiently fine addressed cell containing the point.
-
-The argument uses conditional-expectation convergence for the finite reference-cell measure.
-It does not use metric differentiation or perform the later maximal dense-cell selection.
--/
-
-@[expose] public section
-
-open Filter MeasureTheory Set
-open scoped Topology
+@[expose] public noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic
+open MeasureTheory Set Filter
+open scoped ENNReal Topology
 
 noncomputable section
 
-private theorem integrable_indicator_one
-    (d : ℕ) (Gamma : Set (ParabolicDyadicReferenceSpace d))
-    (hGamma : MeasurableSet Gamma) :
-    Integrable (Gamma.indicator (fun _ => (1 : ℝ)))
-      (parabolicDyadicReferenceMeasure d) := by
-  let : IsFiniteMeasure (parabolicDyadicReferenceMeasure d) :=
-    ⟨lt_top_iff_ne_top.mpr (parabolicDyadicReferenceMeasure_univ_ne_top d)⟩
-  exact IntegrableOn.integrable_indicator integrableOn_const hGamma
+/-- The subtype carrier of the parabolic dyadic reference cell. -/
+abbrev ParabolicDyadicReferenceSpace (d : ℕ) : Type :=
+  {z : TimeVelocity d // z ∈ parabolicDyadicReferenceCell d}
+
+/-- The finite restricted product volume on the reference-cell subtype. -/
+def parabolicDyadicReferenceMeasure (d : ℕ) :
+    Measure (ParabolicDyadicReferenceSpace d) :=
+  Measure.comap Subtype.val volume
+
+/-- The generation block containing a scheduled binary generator. -/
+def parabolicDyadicGeneratorBlock (d k : ℕ) : ℕ :=
+  k / (d + 2)
+
+/-- The location of a scheduled binary generator in its generation block. -/
+def parabolicDyadicGeneratorSlot (d k : ℕ) : Fin (d + 2) :=
+  ⟨k % (d + 2), Nat.mod_lt _ (by omega)⟩
+
+/-- The `bit`-th binary digit of a base-four time child. -/
+def parabolicDyadicTimeChildBit (child : Fin 4) (bit : Fin 2) : Prop :=
+  (child.val / 2 ^ bit.val) % 2 = 1
+
+/-- The binary coordinate of a simultaneous parabolic child selected by a
+slot in a `d + 2` generator block. -/
+def parabolicDyadicChildBit {d : ℕ} (child : ParabolicDyadicChild d)
+    (slot : Fin (d + 2)) : Prop :=
+  Fin.addCases
+    (fun coordinate => (child.2 coordinate).val = 1)
+    (fun bit => parabolicDyadicTimeChildBit child.1 bit)
+    slot
+
+/-- The ambient union of all next-generation cells whose final child has the
+scheduled binary value one. -/
+noncomputable def parabolicDyadicGeneratorAmbient (d k : ℕ) : Set (TimeVelocity d) := by
+  classical
+  exact ⋃ index : ParabolicDyadicIndex d (parabolicDyadicGeneratorBlock d k + 1),
+    if parabolicDyadicChildBit
+        (index (Fin.last (parabolicDyadicGeneratorBlock d k)))
+        (parabolicDyadicGeneratorSlot d k)
+    then parabolicDyadicHalfOpenCell index else ∅
+
+/-- The scheduled binary generator, restricted to the reference subtype. -/
+def parabolicDyadicGenerator (d k : ℕ) : Set (ParabolicDyadicReferenceSpace d) :=
+  Subtype.val ⁻¹' parabolicDyadicGeneratorAmbient d k
+
+/-- An addressed half-open cell, restricted to the reference subtype. -/
+def parabolicDyadicRestrictedCell {d n : ℕ}
+    (index : ParabolicDyadicIndex d n) : Set (ParabolicDyadicReferenceSpace d) :=
+  Subtype.val ⁻¹' parabolicDyadicHalfOpenCell index
+
+/-- The reference-subtype measure of its whole carrier is the ambient measure
+of the reference cell. -/
+theorem parabolicDyadicReferenceMeasure_univ (d : ℕ) :
+    parabolicDyadicReferenceMeasure d Set.univ =
+      volume (parabolicDyadicReferenceCell d) := by
+  simpa only [parabolicDyadicReferenceMeasure, Set.image_univ,
+    Subtype.range_coe_subtype, Set.setOf_mem_eq] using
+    (comap_subtype_coe_apply (measurableSet_parabolicDyadicReferenceCell d) volume
+      (Set.univ : Set (ParabolicDyadicReferenceSpace d)))
+
+
+
+/-- Every restricted addressed cell is measurable. -/
+theorem measurableSet_parabolicDyadicRestrictedCell {d n : ℕ}
+    (index : ParabolicDyadicIndex d n) :
+    MeasurableSet (parabolicDyadicRestrictedCell index) :=
+  measurable_subtype_coe (measurableSet_parabolicDyadicHalfOpenCell index)
+
+/-- Every scheduled generator is measurable. -/
+theorem measurableSet_parabolicDyadicGenerator (d k : ℕ) :
+    MeasurableSet (parabolicDyadicGenerator d k) := by
+  classical
+  apply measurable_subtype_coe
+  unfold parabolicDyadicGeneratorAmbient
+  apply MeasurableSet.iUnion
+  intro index
+  split_ifs
+  · exact measurableSet_parabolicDyadicHalfOpenCell index
+  · exact MeasurableSet.empty
+
+/-- The finite filtration generated by the scheduled parabolic dyadic bits. -/
+def parabolicDyadicFiltration (d : ℕ) :=
+  ProbabilityTheory.partitionFiltration (measurableSet_parabolicDyadicGenerator d)
+
+/-- A point in a selected addressed cell belongs to the corresponding
+scheduled generator. -/
+theorem mem_parabolicDyadicGenerator_of_mem_cell {d k : ℕ}
+    (index : ParabolicDyadicIndex d (parabolicDyadicGeneratorBlock d k + 1))
+    (hbit : parabolicDyadicChildBit
+      (index (Fin.last (parabolicDyadicGeneratorBlock d k)))
+      (parabolicDyadicGeneratorSlot d k))
+    (z : ParabolicDyadicReferenceSpace d)
+    (hz : (z : TimeVelocity d) ∈ parabolicDyadicHalfOpenCell index) :
+    z ∈ parabolicDyadicGenerator d k := by
+  classical
+  refine Set.mem_preimage.mpr ?_
+  unfold parabolicDyadicGeneratorAmbient
+  refine Set.mem_iUnion.mpr ⟨index, ?_⟩
+  simp [hbit]
+  exact hz
+
+/-- In a fixed generation cell, membership in a scheduled generator is
+equivalent to the corresponding final-child bit. -/
+theorem mem_parabolicDyadicGenerator_iff_childBit_of_mem_cell {d k q : ℕ}
+    (hblock : parabolicDyadicGeneratorBlock d k = q)
+    (index : ParabolicDyadicIndex d (q + 1))
+    (z : ParabolicDyadicReferenceSpace d)
+    (hz : (z : TimeVelocity d) ∈ parabolicDyadicHalfOpenCell index) :
+    z ∈ parabolicDyadicGenerator d k ↔
+      parabolicDyadicChildBit
+        (index (Fin.last q))
+        (parabolicDyadicGeneratorSlot d k) := by
+  classical
+  subst q
+  constructor
+  · intro hgenerator
+    change (z : TimeVelocity d) ∈ parabolicDyadicGeneratorAmbient d k at hgenerator
+    unfold parabolicDyadicGeneratorAmbient at hgenerator
+    obtain ⟨other, hother⟩ := Set.mem_iUnion.mp hgenerator
+    by_cases hotherBit : parabolicDyadicChildBit
+        (other (Fin.last (parabolicDyadicGeneratorBlock d k)))
+        (parabolicDyadicGeneratorSlot d k)
+    · by_contra hbit
+      have hotherCell : (z : TimeVelocity d) ∈ parabolicDyadicHalfOpenCell other := by
+        simpa [hotherBit] using hother
+      have hne : other ≠ index := by
+        intro heq
+        subst other
+        exact hbit hotherBit
+      exact (Set.disjoint_left.mp
+        (parabolicDyadicHalfOpenCell_disjoint_of_ne hne) hotherCell hz).elim
+    · simp [hotherBit] at hother
+  · exact fun hbit => mem_parabolicDyadicGenerator_of_mem_cell index hbit z hz
+
+/-- Binary time-child bits separate the four time children. -/
+theorem parabolicDyadicTimeChildBit_injective {child child' : Fin 4}
+    (h : ∀ bit : Fin 2,
+      parabolicDyadicTimeChildBit child bit ↔ parabolicDyadicTimeChildBit child' bit) :
+    child = child' := by
+  apply Fin.ext
+  have hzero : child.val % 2 = 1 ↔ child'.val % 2 = 1 := by
+    simpa [parabolicDyadicTimeChildBit] using h 0
+  have hone : (child.val / 2) % 2 = 1 ↔ (child'.val / 2) % 2 = 1 := by
+    simpa [parabolicDyadicTimeChildBit] using h 1
+  omega
+
+/-- The full `d + 2` bit vector separates simultaneous parabolic children. -/
+theorem parabolicDyadicChildBit_injective {d : ℕ} {child child' : ParabolicDyadicChild d}
+    (h : ∀ slot : Fin (d + 2),
+      parabolicDyadicChildBit child slot ↔ parabolicDyadicChildBit child' slot) :
+    child = child' := by
+  apply Prod.ext
+  · apply parabolicDyadicTimeChildBit_injective
+    intro bit
+    simpa only [parabolicDyadicChildBit, Fin.addCases_right] using (h (Fin.natAdd d bit))
+  · funext coordinate
+    have hbit' : (child.2 coordinate).val = 1 ↔ (child'.2 coordinate).val = 1 := by
+      simpa only [parabolicDyadicChildBit, Fin.addCases_left] using (h (Fin.castAdd 2 coordinate))
+    apply Fin.ext
+    by_cases ha : (child.2 coordinate).val = 1
+    · calc
+        (child.2 coordinate).val = 1 := ha
+        _ = (child'.2 coordinate).val := (hbit'.mp ha).symm
+    · have ha0 : (child.2 coordinate).val = 0 := by omega
+      have hb0 : (child'.2 coordinate).val = 0 := by
+        by_contra hb0
+        have hb1 : (child'.2 coordinate).val = 1 := by omega
+        exact ha (hbit'.mpr hb1)
+      omega
+
+/-- Membership in a membership-partition atom is exactly equality of all
+previous generator outcomes. -/
+theorem mem_memPartitionSet_iff {α : Type*} (f : ℕ → Set α) (n : ℕ)
+    (a x : α) :
+    x ∈ memPartitionSet f n a ↔
+      ∀ k < n, (x ∈ f k ↔ a ∈ f k) := by
+  induction n generalizing x with
+  | zero => simp
+  | succ n ih =>
+    classical
+    rw [memPartitionSet_succ]
+    by_cases ha : a ∈ f n
+    · simp only [ha, ↓reduceIte, Set.mem_inter_iff]
+      constructor
+      · rintro ⟨hxn, hxf⟩ k hk
+        rcases Nat.lt_succ_iff_lt_or_eq.mp hk with hlt | rfl
+        · exact (ih x).mp hxn k hlt
+        · exact iff_of_true hxf ha
+      · intro h
+        refine ⟨(ih x).mpr fun k hk => h k (Nat.lt_succ_of_lt hk), ?_⟩
+        exact (h n (Nat.lt_succ_self n)).mpr ha
+    · simp only [ha, ↓reduceIte, Set.mem_diff]
+      constructor
+      · rintro ⟨hxn, hxf⟩ k hk
+        rcases Nat.lt_succ_iff_lt_or_eq.mp hk with hlt | rfl
+        · exact (ih x).mp hxn k hlt
+        · exact iff_of_false hxf ha
+      · intro h
+        refine ⟨(ih x).mpr fun k hk => h k (Nat.lt_succ_of_lt hk), ?_⟩
+        intro hxf
+        exact ha ((h n (Nat.lt_succ_self n)).mp hxf)
+
+/-- A membership partition generated by `n` binary questions has at most
+`2^n` members, including any empty branches retained by `memPartition`. -/
+theorem ncard_memPartition_le {α : Type*} (f : ℕ → Set α) (n : ℕ) :
+    (memPartition f n).ncard ≤ 2 ^ n := by
+  induction n with
+  | zero => simp
+  | succ n ih =>
+    rw [memPartition_succ]
+    let left : Set (Set α) := (fun u => u ∩ f n) '' memPartition f n
+    let right : Set (Set α) := (fun u => u \ f n) '' memPartition f n
+    have hpartition :
+        {s | ∃ u ∈ memPartition f n, s = u ∩ f n ∨ s = u \ f n} = left ∪ right := by
+      ext s
+      simp
+      constructor
+      · rintro ⟨u, hu, hs | hs⟩
+        · exact Or.inl ⟨u, hu, hs.symm⟩
+        · exact Or.inr ⟨u, hu, hs.symm⟩
+      · rintro (⟨u, hu, hs⟩ | ⟨u, hu, hs⟩)
+        · exact ⟨u, hu, Or.inl hs.symm⟩
+        · exact ⟨u, hu, Or.inr hs.symm⟩
+    rw [hpartition]
+    calc
+      (left ∪ right).ncard ≤ left.ncard + right.ncard := Set.ncard_union_le _ _
+      _ ≤ (memPartition f n).ncard + (memPartition f n).ncard := by
+        exact Nat.add_le_add
+          (Set.ncard_image_le (finite_memPartition f n))
+          (Set.ncard_image_le (finite_memPartition f n))
+      _ ≤ 2 ^ n + 2 ^ n := Nat.add_le_add ih ih
+      _ = 2 ^ (n + 1) := by
+        rw [pow_succ, Nat.mul_comm]
+        exact (two_mul (2 ^ n)).symm
+
+
+
+/-- On a generation-`n + 1` cell, the generator in the `slot` of block `n`
+reads exactly the corresponding final-child bit. -/
+theorem mem_parabolicDyadicGenerator_at_iff_childBit_of_mem_cell {d n : ℕ}
+    (index : ParabolicDyadicIndex d (n + 1)) (slot : Fin (d + 2))
+    (z : ParabolicDyadicReferenceSpace d)
+    (hz : (z : TimeVelocity d) ∈ parabolicDyadicHalfOpenCell index) :
+    z ∈ parabolicDyadicGenerator d ((d + 2) * n + slot.val) ↔
+      parabolicDyadicChildBit (index (Fin.last n)) slot   := by
+  have parabolicDyadicGeneratorSlot_at :
+      parabolicDyadicGeneratorSlot d ((d + 2) * n + slot.val) = slot := by
+    apply Fin.ext
+    unfold parabolicDyadicGeneratorSlot
+    simp [Nat.add_mod, slot.isLt]
+  have parabolicDyadicGeneratorBlock_at :
+      parabolicDyadicGeneratorBlock d ((d + 2) * n + slot.val) = n := by
+    unfold parabolicDyadicGeneratorBlock
+    rw [Nat.add_div_of_dvd_right (dvd_mul_right (d + 2) n)]
+    simp [Nat.div_eq_of_lt slot.isLt]
+  have hmembership := mem_parabolicDyadicGenerator_iff_childBit_of_mem_cell
+    (parabolicDyadicGeneratorBlock_at) index z hz
+  rwa [parabolicDyadicGeneratorSlot_at] at hmembership
+
+/-- At generation zero the unique restricted addressed cell is the whole
+reference subtype. -/
+theorem parabolicDyadicRestrictedCell_zero_eq_univ (d : ℕ)
+    (index : ParabolicDyadicIndex d 0) :
+    parabolicDyadicRestrictedCell index = Set.univ := by
+  ext z
+  change (z : TimeVelocity d) ∈ parabolicDyadicHalfOpenCell index ↔ z ∈ Set.univ
+  rw [parabolicDyadicHalfOpenCell_zero_eq_reference d index]
+  simp
+
+/-- Every addressed half-open parabolic dyadic cell has its upper endpoint as
+a point.  This also covers `d = 0`, since the velocity verification is then
+vacuous. -/
+theorem parabolicDyadicHalfOpenCell_nonempty {d n : ℕ}
+    (index : ParabolicDyadicIndex d n) :
+    (parabolicDyadicHalfOpenCell index).Nonempty := by
+  refine ⟨((parabolicDyadicTimeCode n index + 1 : ℝ) / 4 ^ n,
+    fun coordinate =>
+      -1 + 2 * (parabolicDyadicVelocityCode n index coordinate + 1 : ℝ) /
+        2 ^ n), ?_⟩
+  rw [mem_parabolicDyadicHalfOpenCell_iff]
+  constructor
+  · rw [mem_parabolicDyadicTimeCell_iff]
+    constructor
+    · have hdenom : 0 < (4 : ℝ) ^ n := pow_pos (by norm_num) n
+      have hcode : (parabolicDyadicTimeCode n index : ℝ) <
+          (parabolicDyadicTimeCode n index + 1 : ℝ) := by
+        exact_mod_cast Nat.lt_succ_self (parabolicDyadicTimeCode n index)
+      exact (div_lt_div_iff₀ hdenom hdenom).mpr
+        (mul_lt_mul_of_pos_right hcode hdenom)
+    · rfl
+  · rw [mem_parabolicDyadicVelocityCell_iff]
+    intro coordinate
+    constructor
+    · apply (add_lt_add_iff_left (-1)).mpr
+      have hdenom : 0 < (2 : ℝ) ^ n := pow_pos (by norm_num) n
+      have hcode : (parabolicDyadicVelocityCode n index coordinate : ℝ) <
+          (parabolicDyadicVelocityCode n index coordinate + 1 : ℝ) := by
+        exact_mod_cast Nat.lt_succ_self (parabolicDyadicVelocityCode n index coordinate)
+      calc
+        2 * (parabolicDyadicVelocityCode n index coordinate : ℝ) / 2 ^ n =
+            2 * ((parabolicDyadicVelocityCode n index coordinate : ℝ) / 2 ^ n) := by
+              ring
+        _ < 2 * ((parabolicDyadicVelocityCode n index coordinate + 1 : ℝ) /
+            2 ^ n) := by
+              exact mul_lt_mul_of_pos_left
+                ((div_lt_div_iff₀ hdenom hdenom).mpr
+                  (mul_lt_mul_of_pos_right hcode hdenom))
+                (by norm_num)
+        _ = 2 * (parabolicDyadicVelocityCode n index coordinate + 1 : ℝ) /
+            2 ^ n := by ring
+    · rfl
+
+private theorem parabolicDyadic_checkpoint_prefix_lt (d n k : ℕ)
+    (hk : k < (d + 2) * n) :
+    k < (d + 2) * (n + 1) := by
+  calc
+    k < (d + 2) * n := hk
+    _ < (d + 2) * (n + 1) :=
+      (Nat.mul_lt_mul_left (by omega : 0 < d + 2)).mpr (Nat.lt_succ_self n)
+
+private theorem parabolicDyadic_checkpoint_slot_lt (d n k : ℕ)
+    (hprevious : ¬ k < (d + 2) * n)
+    (hk : k < (d + 2) * (n + 1)) :
+    k - (d + 2) * n < d + 2 := by
+  apply (Nat.sub_lt_iff_lt_add (Nat.le_of_not_gt hprevious)).mpr
+  simpa only [Nat.mul_succ, Nat.add_comm] using hk
+
+private theorem parabolicDyadic_checkpoint_eq_block_add_sub (d n k : ℕ)
+    (hprevious : ¬ k < (d + 2) * n) :
+    k = (d + 2) * n + (k - (d + 2) * n) := by
+  exact (Nat.add_sub_of_le (Nat.le_of_not_gt hprevious)).symm
+
+/-- Checkpoint atoms after `n` complete binary blocks are exactly the
+generation-`n` addressed half-open cells containing their base point. -/
+theorem memPartitionSet_parabolicDyadicFiltration_checkpoint_eq_cell
+    {d n : ℕ} (index : ParabolicDyadicIndex d n)
+    (z : ParabolicDyadicReferenceSpace d)
+    (hz : (z : TimeVelocity d) ∈ parabolicDyadicHalfOpenCell index) :
+    memPartitionSet (parabolicDyadicGenerator d) ((d + 2) * n) z =
+      parabolicDyadicRestrictedCell index := by
+  induction n generalizing z with
+  | zero =>
+    rw [show (d + 2) * 0 = 0 by omega, memPartitionSet_zero,
+      parabolicDyadicRestrictedCell_zero_eq_univ]
+  | succ n ih =>
+    let parent := parabolicDyadicParent index
+    let child := index (Fin.last n)
+    have hchildIndex : parabolicDyadicChildIndex parent child = index := by
+      exact parabolicDyadicChildIndex_parent_last index
+    have hzparent : (z : TimeVelocity d) ∈ parabolicDyadicHalfOpenCell parent := by
+      apply parabolicDyadicHalfOpenCell_child_subset parent child
+      simpa only [hchildIndex] using hz
+    have hparentAtom := ih parent z hzparent
+    apply Set.Subset.antisymm
+    · intro y hy
+      have hsignature := (mem_memPartitionSet_iff (parabolicDyadicGenerator d)
+        ((d + 2) * (n + 1)) z y).mp hy
+      have hyparentAtom :=
+        (mem_memPartitionSet_iff (parabolicDyadicGenerator d) ((d + 2) * n) z y).mpr
+          (fun k hk => hsignature k (parabolicDyadic_checkpoint_prefix_lt d n k hk))
+      have hyparent : (y : TimeVelocity d) ∈ parabolicDyadicHalfOpenCell parent := by
+        rwa [hparentAtom] at hyparentAtom
+      have hycover : (y : TimeVelocity d) ∈
+          ⋃ candidate : ParabolicDyadicIndex d (n + 1),
+            parabolicDyadicHalfOpenCell candidate := by
+        rw [iUnion_parabolicDyadicHalfOpenCell_eq_reference]
+        exact y.property
+      obtain ⟨candidate, hycandidate⟩ := Set.mem_iUnion.mp hycover
+      have hcandidateParent : parabolicDyadicParent candidate = parent := by
+        by_contra hne
+        have hychild : (y : TimeVelocity d) ∈ parabolicDyadicHalfOpenCell
+            (parabolicDyadicChildIndex (parabolicDyadicParent candidate)
+              (candidate (Fin.last n))) := by
+          rw [parabolicDyadicChildIndex_parent_last]
+          exact hycandidate
+        exact (Set.disjoint_left.mp (parabolicDyadicHalfOpenCell_disjoint_of_ne hne) (parabolicDyadicHalfOpenCell_child_subset (parabolicDyadicParent candidate) (candidate (Fin.last n)) hychild) hyparent).elim
+      have hbits : ∀ slot : Fin (d + 2),
+          parabolicDyadicChildBit (candidate (Fin.last n)) slot ↔
+            parabolicDyadicChildBit child slot := by
+        intro slot
+        have hslot := hsignature ((d + 2) * n + slot.val) (by
+          calc
+            (d + 2) * n + slot.val < (d + 2) * n + (d + 2) :=
+              Nat.add_lt_add_left slot.isLt _
+            _ = (d + 2) * (n + 1) := by rw [Nat.mul_succ])
+        rw [mem_parabolicDyadicGenerator_at_iff_childBit_of_mem_cell candidate slot y
+          hycandidate,
+          mem_parabolicDyadicGenerator_at_iff_childBit_of_mem_cell index slot z hz] at hslot
+        simpa only [child] using hslot
+      have hcandidate : candidate = index := by
+        rw [← parabolicDyadicChildIndex_parent_last candidate,
+          ← parabolicDyadicChildIndex_parent_last index, hcandidateParent, (parabolicDyadicChildBit_injective hbits)]
+      change (y : TimeVelocity d) ∈ parabolicDyadicHalfOpenCell index
+      simpa only [hcandidate] using hycandidate
+    · intro y hy
+      change (y : TimeVelocity d) ∈ parabolicDyadicHalfOpenCell index at hy
+      apply (mem_memPartitionSet_iff (parabolicDyadicGenerator d)
+        ((d + 2) * (n + 1)) z y).mpr
+      intro k hk
+      by_cases hprevious : k < (d + 2) * n
+      · have hyparent : (y : TimeVelocity d) ∈ parabolicDyadicHalfOpenCell parent := by
+          apply parabolicDyadicHalfOpenCell_child_subset parent child
+          simpa only [hchildIndex] using hy
+        have hyparentAtom : y ∈ memPartitionSet (parabolicDyadicGenerator d) ((d + 2) * n) z := by
+          rw [hparentAtom]
+          exact hyparent
+        exact (mem_memPartitionSet_iff (parabolicDyadicGenerator d) ((d + 2) * n) z y).mp
+          hyparentAtom k hprevious
+      · let slot : Fin (d + 2) := ⟨k - (d + 2) * n,
+          parabolicDyadic_checkpoint_slot_lt d n k hprevious hk⟩
+        have hslot : k = (d + 2) * n + slot.val := by
+          exact parabolicDyadic_checkpoint_eq_block_add_sub d n k hprevious
+        rw [hslot]
+        rw [mem_parabolicDyadicGenerator_at_iff_childBit_of_mem_cell index slot y hy,
+          mem_parabolicDyadicGenerator_at_iff_childBit_of_mem_cell index slot z hz]
+
+
+/-- At every complete-generation checkpoint, the full membership-partition
+family is precisely the family of restricted addressed half-open cells. -/
+theorem memPartition_parabolicDyadicFiltration_checkpoint_eq_range (d n : ℕ) :
+    memPartition (parabolicDyadicGenerator d) ((d + 2) * n) =
+      Set.range (parabolicDyadicRestrictedCell :
+        ParabolicDyadicIndex d n → Set (ParabolicDyadicReferenceSpace d))  := by
+  have parabolicDyadicRestrictedCell_injective :
+      Function.Injective
+      (parabolicDyadicRestrictedCell :
+        ParabolicDyadicIndex d n → Set (ParabolicDyadicReferenceSpace d)) := by
+    intro index index' heq
+    by_contra hne
+    obtain ⟨z, hz⟩ := parabolicDyadicHalfOpenCell_nonempty index
+    let z' : ParabolicDyadicReferenceSpace d :=
+      ⟨z, parabolicDyadicHalfOpenCell_subset_reference index hz⟩
+    have hzIndex : z' ∈ parabolicDyadicRestrictedCell index := by
+      exact hz
+    have hzIndex' : z' ∈ parabolicDyadicRestrictedCell index' := by
+      rw [← heq]
+      exact hzIndex
+    change z ∈ parabolicDyadicHalfOpenCell index' at hzIndex'
+    exact (Set.disjoint_left.mp
+      (parabolicDyadicHalfOpenCell_disjoint_of_ne hne) hz hzIndex').elim
+  symm
+  apply Set.eq_of_subset_of_ncard_le
+  · rintro cell ⟨index, rfl⟩
+    obtain ⟨z, hz⟩ := parabolicDyadicHalfOpenCell_nonempty index
+    let z' : ParabolicDyadicReferenceSpace d :=
+      ⟨z, parabolicDyadicHalfOpenCell_subset_reference index hz⟩
+    have hz' : z' ∈ parabolicDyadicRestrictedCell index := by
+      exact hz
+    rw [← memPartitionSet_parabolicDyadicFiltration_checkpoint_eq_cell index z' hz']
+    exact memPartitionSet_mem (parabolicDyadicGenerator d) ((d + 2) * n) z'
+  · calc
+      (memPartition (parabolicDyadicGenerator d) ((d + 2) * n)).ncard ≤
+          2 ^ ((d + 2) * n) :=
+        ncard_memPartition_le (parabolicDyadicGenerator d) ((d + 2) * n)
+      _ = (Set.range (parabolicDyadicRestrictedCell :
+          ParabolicDyadicIndex d n → Set (ParabolicDyadicReferenceSpace d))).ncard := by
+        rw [Set.ncard_range_of_injective parabolicDyadicRestrictedCell_injective,
+          Nat.card_eq_fintype_card, card_parabolicDyadicIndex_eq_two_pow]
+  · exact finite_memPartition (parabolicDyadicGenerator d) ((d + 2) * n)
+
+end
+
+
+
+/-- The ordinary normalized integral of `f` over one addressed dyadic cell. -/
+def parabolicDyadicCellAverage (d n : ℕ)
+    (f : ParabolicDyadicReferenceSpace d → ℝ)
+    (index : ParabolicDyadicIndex d n) : ℝ :=
+  ((parabolicDyadicReferenceMeasure d).real
+      (parabolicDyadicRestrictedCell index))⁻¹ *
+    ∫ x in parabolicDyadicRestrictedCell index,
+      f x ∂parabolicDyadicReferenceMeasure d
+
+/-- The finite indicator sum of the addressed-cell averages at generation
+`n`. -/
+def parabolicDyadicCheckpointAverage (d n : ℕ)
+    (f : ParabolicDyadicReferenceSpace d → ℝ) :
+    ParabolicDyadicReferenceSpace d → ℝ :=
+  fun z => ∑ index : ParabolicDyadicIndex d n,
+    (parabolicDyadicRestrictedCell index).indicator
+      (fun _ => parabolicDyadicCellAverage d n f index) z
+
+/-- Restricting the reference-subtype measure to an addressed cell recovers
+the ambient volume of that half-open cell. -/
+theorem parabolicDyadicReferenceMeasure_restrictedCell {d n : ℕ}
+    (index : ParabolicDyadicIndex d n) :
+    parabolicDyadicReferenceMeasure d (parabolicDyadicRestrictedCell index) =
+      volume (parabolicDyadicHalfOpenCell index) := by
+  rw [parabolicDyadicReferenceMeasure, comap_subtype_coe_apply
+    (measurableSet_parabolicDyadicReferenceCell d)]
+  change volume (Subtype.val '' (Subtype.val ⁻¹' parabolicDyadicHalfOpenCell index)) = _
+  rw [Subtype.image_preimage_coe, inter_comm,
+    inter_eq_left.mpr (parabolicDyadicHalfOpenCell_subset_reference index)]
+
+/-- The real reference-subtype measure of a generation-`n` addressed cell is
+the exact parabolic dyadic volume. -/
+theorem parabolicDyadicReferenceMeasure_restrictedCell_toReal {d n : ℕ}
+    (index : ParabolicDyadicIndex d n) :
+    (parabolicDyadicReferenceMeasure d
+      (parabolicDyadicRestrictedCell index)).toReal =
+      (2 : ℝ) ^ d / (2 : ℝ) ^ ((d + 2) * n) := by
+  rw [parabolicDyadicReferenceMeasure_restrictedCell]
+  exact volume_parabolicDyadicHalfOpenCell_toReal index
+
+/-- Every finite addressed dyadic cell has strictly positive reference
+subtype measure, also in dimension zero. -/
+theorem parabolicDyadicReferenceMeasure_restrictedCell_real_pos {d n : ℕ}
+    (index : ParabolicDyadicIndex d n) :
+    0 < (parabolicDyadicReferenceMeasure d).real
+      (parabolicDyadicRestrictedCell index) := by
+  rw [Measure.real, parabolicDyadicReferenceMeasure_restrictedCell_toReal]
+  exact div_pos (pow_pos (by norm_num) _) (pow_pos (by norm_num) _)
+
+/-- On an addressed generation-`n` cell, the checkpoint average is the
+corresponding single-cell average. -/
+theorem parabolicDyadicCheckpointAverage_eq_cellAverage {d n : ℕ}
+    (f : ParabolicDyadicReferenceSpace d → ℝ)
+    (index : ParabolicDyadicIndex d n) (z : ParabolicDyadicReferenceSpace d)
+    (hz : z ∈ parabolicDyadicRestrictedCell index) :
+    parabolicDyadicCheckpointAverage d n f z =
+      parabolicDyadicCellAverage d n f index := by
+  classical
+  unfold parabolicDyadicCheckpointAverage
+  rw [Finset.sum_eq_single index]
+  · simp only [Set.indicator_of_mem hz]
+  · intro other _ hne
+    have hnot : z ∉ parabolicDyadicRestrictedCell other := by
+      intro hother
+      exact (Set.disjoint_left.mp
+        (parabolicDyadicHalfOpenCell_disjoint_of_ne hne) hother hz).elim
+    simp only [Set.indicator_of_notMem hnot]
+  · simp
+
+
+
+
+
+
+
+
+
+
 
 private theorem parabolicDyadicCellAverage_indicator_one
     {d n : ℕ} (Gamma : Set (ParabolicDyadicReferenceSpace d))
@@ -45,88 +573,7 @@ private theorem parabolicDyadicCellAverage_indicator_one
   unfold parabolicDyadicCellAverage
   rw [setIntegral_indicator hGamma, setIntegral_const, smul_eq_mul, mul_one]
 
-/-- At almost every point, the explicit complete-generation parabolic dyadic averages of an
-integrable function converge to that function. -/
-theorem parabolicDyadicCheckpointAverage_tendsto_ae
-    (d : ℕ) (f : ParabolicDyadicReferenceSpace d → ℝ)
-    (hf : Integrable f (parabolicDyadicReferenceMeasure d)) :
-    ∀ᵐ z ∂parabolicDyadicReferenceMeasure d,
-      Tendsto (fun n => parabolicDyadicCheckpointAverage d n f z)
-        atTop (nhds (f z)) := by
-  classical
-  let : IsFiniteMeasure (parabolicDyadicReferenceMeasure d) :=
-    ⟨lt_top_iff_ne_top.mpr (parabolicDyadicReferenceMeasure_univ_ne_top d)⟩
-  let f' : ParabolicDyadicReferenceSpace d → ℝ := hf.1.mk f
-  have hff' : f =ᵐ[parabolicDyadicReferenceMeasure d] f' := by
-    simpa only [f'] using hf.1.ae_eq_mk
-  have hf' : Integrable f' (parabolicDyadicReferenceMeasure d) :=
-    hf.congr hff'
-  have hf'meas : StronglyMeasurable[⨆ k, parabolicDyadicFiltration d k] f' := by
-    rw [iSup_parabolicDyadicFiltration_eq_referenceMeasurableSpace]
-    simpa only [f'] using hf.1.stronglyMeasurable_mk
-  have hcond : ∀ᵐ z ∂parabolicDyadicReferenceMeasure d,
-      Tendsto
-        (fun k => ((parabolicDyadicReferenceMeasure d)[f' |
-          parabolicDyadicFiltration d k]) z)
-        atTop (nhds (f' z)) :=
-    hf'.tendsto_ae_condExp hf'meas
-  have havg : ∀ᵐ z ∂parabolicDyadicReferenceMeasure d, ∀ n,
-      parabolicDyadicCheckpointAverage d n f z =
-        ((parabolicDyadicReferenceMeasure d)[f' |
-          parabolicDyadicFiltration d ((d + 2) * n)]) z := by
-    rw [ae_all_iff]
-    intro n
-    exact (parabolicDyadicCheckpointAverage_ae_eq_condExp d n f hf).trans
-      (condExp_congr_ae hff')
-  have hcheckpoint : Tendsto (fun n : ℕ => (d + 2) * n) atTop atTop := by
-    apply tendsto_atTop_mono (fun n => ?_) tendsto_id
-    exact Nat.le_mul_of_pos_left n (by omega)
-  filter_upwards [hcond, havg, hff'] with z hzcond hzavg hzff'
-  have htendsto : Tendsto
-      (fun n => ((parabolicDyadicReferenceMeasure d)[f' |
-        parabolicDyadicFiltration d ((d + 2) * n)]) z)
-      atTop (nhds (f' z)) :=
-    hzcond.comp hcheckpoint
-  have havgTendsto : Tendsto
-      (fun n => parabolicDyadicCheckpointAverage d n f z)
-      atTop (nhds (f' z)) :=
-    Tendsto.congr' (Eventually.of_forall fun n => (hzavg n).symm) htendsto
-  simpa only [hzff'] using havgTendsto
 
-/-- At almost every point of a measurable set, every sufficiently fine addressed cell
-containing the point has density strictly above the fixed threshold. -/
-theorem ae_eventually_parabolicDyadicRestrictedCell_density_gt
-    (d : ℕ) (Gamma : Set (ParabolicDyadicReferenceSpace d))
-    (hGamma : MeasurableSet Gamma) (xi : ℝ)
-    (hxi : xi ∈ Set.Ioo (0 : ℝ) 1) :
-    ∀ᵐ z ∂parabolicDyadicReferenceMeasure d,
-      z ∈ Gamma →
-        ∀ᶠ n in atTop, ∀ index : ParabolicDyadicIndex d n,
-          z ∈ parabolicDyadicRestrictedCell index →
-            xi * (parabolicDyadicReferenceMeasure d).real
-                (parabolicDyadicRestrictedCell index) <
-              (parabolicDyadicReferenceMeasure d).real
-                (parabolicDyadicRestrictedCell index ∩ Gamma) := by
-  have hconverges := parabolicDyadicCheckpointAverage_tendsto_ae d
-    (Gamma.indicator (fun _ => (1 : ℝ)))
-    (integrable_indicator_one d Gamma hGamma)
-  filter_upwards [hconverges] with z hzconverges
-  intro hzGamma
-  have hzconvergesOne : Tendsto
-      (fun n => parabolicDyadicCheckpointAverage d n
-        (Gamma.indicator (fun _ => (1 : ℝ))) z)
-      atTop (nhds 1) := by
-    simpa only [Set.indicator_of_mem hzGamma] using hzconverges
-  have hdensity : ∀ᶠ n in atTop,
-      xi < parabolicDyadicCheckpointAverage d n
-        (Gamma.indicator (fun _ => (1 : ℝ))) z :=
-    hzconvergesOne.eventually_const_lt hxi.2
-  filter_upwards [hdensity] with n hn
-  intro index hzindex
-  rw [parabolicDyadicCheckpointAverage_eq_cellAverage _ index z hzindex,
-    parabolicDyadicCellAverage_indicator_one Gamma hGamma index] at hn
-  exact (lt_inv_mul_iff₀'
-    (parabolicDyadicReferenceMeasure_restrictedCell_real_pos index)).mp hn
 
 /-- Almost every point of a measurable set lies in an addressed generation cell on which
 that set has density strictly above the fixed threshold. -/
@@ -141,10 +588,341 @@ theorem ae_exists_parabolicDyadicRestrictedCell_density_gt
             xi * (parabolicDyadicReferenceMeasure d).real
                 (parabolicDyadicRestrictedCell index) <
               (parabolicDyadicReferenceMeasure d).real
+                (parabolicDyadicRestrictedCell index ∩ Gamma)    := by
+  have iSup_parabolicDyadicFiltration_eq_referenceMeasurableSpace (d : ℕ) :
+      (⨆ k : ℕ, parabolicDyadicFiltration d k) =
+      (inferInstance : MeasurableSpace (ParabolicDyadicReferenceSpace d)) := by
+    let parabolicDyadicVelocityLowerUnion (d : ℕ) (coordinate : Fin d) (q : ℝ) :
+        Set (ParabolicDyadicReferenceSpace d) := by
+      classical
+      exact ⋃ n : ℕ, ⋃ index : ParabolicDyadicIndex d n,
+        if ∀ z ∈ parabolicDyadicRestrictedCell index, z.val.2 coordinate < q then
+          parabolicDyadicRestrictedCell index
+        else ∅
+    let parabolicDyadicTimeLowerUnion (d : ℕ) (q : ℝ) :
+        Set (ParabolicDyadicReferenceSpace d) := by
+      classical
+      exact ⋃ n : ℕ, ⋃ index : ParabolicDyadicIndex d n,
+        if ∀ z ∈ parabolicDyadicRestrictedCell index, z.val.1 < q then
+          parabolicDyadicRestrictedCell index
+        else ∅
+    have measurableSet_parabolicDyadicRestrictedCell_iSup (n : ℕ) (index : ParabolicDyadicIndex d n) :
+        MeasurableSet[⨆ k : ℕ, parabolicDyadicFiltration d k]
+        (parabolicDyadicRestrictedCell index) := by
+      obtain ⟨z, hz⟩ := parabolicDyadicHalfOpenCell_nonempty index
+      let z' : ParabolicDyadicReferenceSpace d :=
+        ⟨z, parabolicDyadicHalfOpenCell_subset_reference index hz⟩
+      have hz' : z' ∈ parabolicDyadicRestrictedCell index := by
+        exact hz
+      have hatom :=
+        ProbabilityTheory.measurableSet_partitionFiltration_memPartitionSet
+          (measurableSet_parabolicDyadicGenerator d) ((d + 2) * n) z'
+      rw [memPartitionSet_parabolicDyadicFiltration_checkpoint_eq_cell index z' hz'] at hatom
+      exact (le_iSup (fun k => parabolicDyadicFiltration d k)
+        ((d + 2) * n)) _ hatom
+    have measurableSet_velocity_preimage_Iio_iSup (coordinate : Fin d) (q : ℝ) :
+        MeasurableSet[⨆ k : ℕ, parabolicDyadicFiltration d k]
+        {z : ParabolicDyadicReferenceSpace d | z.val.2 coordinate < q} := by
+      have parabolicDyadicVelocityLowerUnion_eq_preimage_Iio (d : ℕ) (coordinate : Fin d) (q : ℝ) :
+          parabolicDyadicVelocityLowerUnion d coordinate q =
+          {z : ParabolicDyadicReferenceSpace d | z.val.2 coordinate < q} := by
+        classical
+        ext z
+        constructor
+        · intro hz
+          obtain ⟨n, hz⟩ := Set.mem_iUnion.mp hz
+          obtain ⟨index, hz⟩ := Set.mem_iUnion.mp hz
+          by_cases hcell : ∀ y ∈ parabolicDyadicRestrictedCell index, y.val.2 coordinate < q
+          · rw [if_pos hcell] at hz
+            exact hcell z hz
+          · rw [if_neg hcell] at hz
+            exact False.elim (Set.notMem_empty z hz)
+        · intro hz
+          have hwidth_eventually :=
+            tendsto_parabolicDyadicVelocityWidth_atTop.eventually_lt_const (sub_pos.mpr hz)
+          obtain ⟨n, hn⟩ := eventually_atTop.mp hwidth_eventually
+          have hzcover : (z : TimeVelocity d) ∈
+              ⋃ index : ParabolicDyadicIndex d n, parabolicDyadicHalfOpenCell index := by
+            rw [iUnion_parabolicDyadicHalfOpenCell_eq_reference]
+            exact z.property
+          obtain ⟨index, hzindex⟩ := Set.mem_iUnion.mp hzcover
+          have hzindex' : z ∈ parabolicDyadicRestrictedCell index := by
+            exact hzindex
+          have hcell : ∀ y ∈ parabolicDyadicRestrictedCell index,
+              y.val.2 coordinate < q := by
+            intro y hy
+            change (y : TimeVelocity d) ∈ parabolicDyadicHalfOpenCell index at hy
+            rw [mem_parabolicDyadicHalfOpenCell_iff,
+              mem_parabolicDyadicVelocityCell_iff] at hzindex hy
+            linarith [hzindex.2 coordinate |>.1, hy.2 coordinate |>.2, (parabolicDyadicVelocityCell_width index coordinate), (hn n le_rfl)]
+          refine Set.mem_iUnion.mpr ⟨n, ?_⟩
+          refine Set.mem_iUnion.mpr ⟨index, ?_⟩
+          rw [if_pos hcell]
+          exact hzindex'
+      have measurableSet_parabolicDyadicVelocityLowerUnion :
+          MeasurableSet[⨆ k : ℕ, parabolicDyadicFiltration d k]
+          (parabolicDyadicVelocityLowerUnion d coordinate q) := by
+        classical
+        unfold parabolicDyadicVelocityLowerUnion
+        apply MeasurableSet.iUnion
+        intro n
+        apply MeasurableSet.iUnion
+        intro index
+        let M :=
+          ⨆ k : ℕ, parabolicDyadicFiltration d k
+        exact @MeasurableSet.ite' _ M _ _ _
+          (fun _ => measurableSet_parabolicDyadicRestrictedCell_iSup n index)
+          (fun _ => @MeasurableSet.empty _ M)
+      rw [← parabolicDyadicVelocityLowerUnion_eq_preimage_Iio]
+      exact measurableSet_parabolicDyadicVelocityLowerUnion
+    have measurableSet_time_preimage_Iio_iSup (q : ℝ) :
+        MeasurableSet[⨆ k : ℕ, parabolicDyadicFiltration d k]
+        {z : ParabolicDyadicReferenceSpace d | z.val.1 < q} := by
+      have parabolicDyadicTimeLowerUnion_eq_preimage_Iio (d : ℕ) (q : ℝ) :
+          parabolicDyadicTimeLowerUnion d q =
+          {z : ParabolicDyadicReferenceSpace d | z.val.1 < q} := by
+        classical
+        ext z
+        constructor
+        · intro hz
+          obtain ⟨n, hz⟩ := Set.mem_iUnion.mp hz
+          obtain ⟨index, hz⟩ := Set.mem_iUnion.mp hz
+          by_cases hcell : ∀ y ∈ parabolicDyadicRestrictedCell index, y.val.1 < q
+          · rw [if_pos hcell] at hz
+            exact hcell z hz
+          · rw [if_neg hcell] at hz
+            exact False.elim (Set.notMem_empty z hz)
+        · intro hz
+          obtain ⟨n, hn⟩ := eventually_atTop.mp (tendsto_parabolicDyadicTimeWidth_atTop.eventually_lt_const (sub_pos.mpr hz))
+          have hzcover : (z : TimeVelocity d) ∈
+              ⋃ index : ParabolicDyadicIndex d n, parabolicDyadicHalfOpenCell index := by
+            rw [iUnion_parabolicDyadicHalfOpenCell_eq_reference]
+            exact z.property
+          obtain ⟨index, hzindex⟩ := Set.mem_iUnion.mp hzcover
+          have hzindex' : z ∈ parabolicDyadicRestrictedCell index := by
+            exact hzindex
+          have hcell : ∀ y ∈ parabolicDyadicRestrictedCell index, y.val.1 < q := by
+            intro y hy
+            change (y : TimeVelocity d) ∈ parabolicDyadicHalfOpenCell index at hy
+            rw [mem_parabolicDyadicHalfOpenCell_iff] at hzindex hy
+            linarith [hzindex.1.1, hy.1.2, (parabolicDyadicTimeCell_width index), (hn n le_rfl)]
+          refine Set.mem_iUnion.mpr ⟨n, ?_⟩
+          refine Set.mem_iUnion.mpr ⟨index, ?_⟩
+          rw [if_pos hcell]
+          exact hzindex'
+      have measurableSet_parabolicDyadicTimeLowerUnion :
+          MeasurableSet[⨆ k : ℕ, parabolicDyadicFiltration d k]
+          (parabolicDyadicTimeLowerUnion d q) := by
+        classical
+        unfold parabolicDyadicTimeLowerUnion
+        apply MeasurableSet.iUnion
+        intro n
+        apply MeasurableSet.iUnion
+        intro index
+        let M :=
+          ⨆ k : ℕ, parabolicDyadicFiltration d k
+        exact @MeasurableSet.ite' _ M _ _ _
+          (fun _ => measurableSet_parabolicDyadicRestrictedCell_iSup n index)
+          (fun _ => @MeasurableSet.empty _ M)
+      rw [← parabolicDyadicTimeLowerUnion_eq_preimage_Iio]
+      exact measurableSet_parabolicDyadicTimeLowerUnion
+    apply le_antisymm
+    · apply iSup_le
+      intro k
+      exact (parabolicDyadicFiltration d).le k
+    · let M : MeasurableSpace (ParabolicDyadicReferenceSpace d) :=
+        ⨆ k : ℕ, parabolicDyadicFiltration d k
+      have htime :=
+        measurable_of_Iio fun q => by
+          exact measurableSet_time_preimage_Iio_iSup q
+      have hvelocity :=
+        measurable_pi_iff.mpr fun coordinate =>
+          measurable_of_Iio fun q => by
+            exact measurableSet_velocity_preimage_Iio_iSup coordinate q
+      change MeasurableSpace.comap Subtype.val
+        (inferInstance : MeasurableSpace (TimeVelocity d)) ≤ M
+      exact (htime.prodMk hvelocity).comap_le
+  have parabolicDyadicReferenceMeasure_univ_ne_top :
+      parabolicDyadicReferenceMeasure d Set.univ ≠ ∞ := by
+    intro htop
+    have parabolicDyadicReferenceMeasure_univ_toReal :
+        (parabolicDyadicReferenceMeasure d Set.univ).toReal = 2 ^ d := by
+      let index : ParabolicDyadicIndex d 0 := fun j => Fin.elim0 j
+      rw [parabolicDyadicReferenceMeasure_univ]
+      rw [← parabolicDyadicHalfOpenCell_zero_eq_reference d index]
+      simpa using volume_parabolicDyadicHalfOpenCell_toReal index
+    have hvolume := parabolicDyadicReferenceMeasure_univ_toReal
+    rw [htop] at hvolume
+    have hpositive : 0 < (2 : ℝ) ^ d := pow_pos (by norm_num) _
+    simp only [ENNReal.toReal_top] at hvolume
+    exact hpositive.ne' hvolume.symm
+  have ae_eventually_parabolicDyadicRestrictedCell_density_gt :
+      ∀ᵐ z ∂parabolicDyadicReferenceMeasure d,
+      z ∈ Gamma →
+        ∀ᶠ n in atTop, ∀ index : ParabolicDyadicIndex d n,
+          z ∈ parabolicDyadicRestrictedCell index →
+            xi * (parabolicDyadicReferenceMeasure d).real
+                (parabolicDyadicRestrictedCell index) <
+              (parabolicDyadicReferenceMeasure d).real
                 (parabolicDyadicRestrictedCell index ∩ Gamma) := by
-  have heventually := ae_eventually_parabolicDyadicRestrictedCell_density_gt
-    d Gamma hGamma xi hxi
-  filter_upwards [heventually] with z hzEventually
+    have parabolicDyadicCheckpointAverage_tendsto_ae (f : ParabolicDyadicReferenceSpace d → ℝ) (hf : Integrable f (parabolicDyadicReferenceMeasure d)) :
+        ∀ᵐ z ∂parabolicDyadicReferenceMeasure d,
+        Tendsto (fun n => parabolicDyadicCheckpointAverage d n f z)
+          atTop (nhds (f z)) := by
+      have parabolicDyadicCheckpointAverage_ae_eq_condExp (n : ℕ) :
+          parabolicDyadicCheckpointAverage d n f =ᵐ[parabolicDyadicReferenceMeasure d]
+          (parabolicDyadicReferenceMeasure d)[f |
+            parabolicDyadicFiltration d ((d + 2) * n)] := by
+        have setIntegral_parabolicDyadicCheckpointAverage_restrictedCell (index : ParabolicDyadicIndex d n) :
+            ∫ x in parabolicDyadicRestrictedCell index,
+            parabolicDyadicCheckpointAverage d n f x ∂parabolicDyadicReferenceMeasure d =
+            ∫ x in parabolicDyadicRestrictedCell index,
+              f x ∂parabolicDyadicReferenceMeasure d := by
+          calc
+            ∫ x in parabolicDyadicRestrictedCell index,
+                parabolicDyadicCheckpointAverage d n f x ∂parabolicDyadicReferenceMeasure d =
+                ∫ x in parabolicDyadicRestrictedCell index,
+                  parabolicDyadicCellAverage d n f index ∂parabolicDyadicReferenceMeasure d :=
+              setIntegral_congr_fun (measurableSet_parabolicDyadicRestrictedCell index)
+                fun z hz => parabolicDyadicCheckpointAverage_eq_cellAverage f index z hz
+            _ = ∫ x in parabolicDyadicRestrictedCell index,
+                  f x ∂parabolicDyadicReferenceMeasure d := by
+              rw [setIntegral_const, smul_eq_mul]
+              unfold parabolicDyadicCellAverage
+              rw [← mul_assoc, mul_inv_cancel₀ (parabolicDyadicReferenceMeasure_restrictedCell_real_pos index).ne']
+              exact one_mul _
+        have integrable_parabolicDyadicCheckpointAverage :
+            Integrable (parabolicDyadicCheckpointAverage d n f)
+            (parabolicDyadicReferenceMeasure d) := by
+          classical
+          letI : IsFiniteMeasure (parabolicDyadicReferenceMeasure d) :=
+            ⟨lt_top_iff_ne_top.mpr (parabolicDyadicReferenceMeasure_univ_ne_top)⟩
+          unfold parabolicDyadicCheckpointAverage
+          apply integrable_finset_sum Finset.univ
+          intro index _
+          exact IntegrableOn.integrable_indicator integrableOn_const
+            (measurableSet_parabolicDyadicRestrictedCell index)
+        have stronglyMeasurable_parabolicDyadicCheckpointAverage :
+            StronglyMeasurable[parabolicDyadicFiltration d ((d + 2) * n)]
+            (parabolicDyadicCheckpointAverage d n f) := by
+          unfold parabolicDyadicCheckpointAverage
+          simp only [← Finset.sum_apply]
+          change StronglyMeasurable[parabolicDyadicFiltration d ((d + 2) * n)]
+            (∑ index : ParabolicDyadicIndex d n,
+              (parabolicDyadicRestrictedCell index).indicator
+                (fun _ => parabolicDyadicCellAverage d n f index))
+          apply Finset.stronglyMeasurable_sum
+          intro index _
+          apply stronglyMeasurable_const.indicator
+          apply ProbabilityTheory.measurableSet_partitionFiltration_of_mem
+            (measurableSet_parabolicDyadicGenerator d)
+          rw [memPartition_parabolicDyadicFiltration_checkpoint_eq_range]
+          exact ⟨index, rfl⟩
+        classical
+        letI : IsFiniteMeasure (parabolicDyadicReferenceMeasure d) :=
+          ⟨lt_top_iff_ne_top.mpr (parabolicDyadicReferenceMeasure_univ_ne_top)⟩
+        apply ae_eq_condExp_of_forall_setIntegral_eq
+          ((parabolicDyadicFiltration d).le ((d + 2) * n)) hf
+        · intro s _ _
+          exact (integrable_parabolicDyadicCheckpointAverage).integrableOn
+        · intro s hs _
+          change MeasurableSet[MeasureTheory.Filtration.seq
+            (parabolicDyadicFiltration d) ((d + 2) * n)] s at hs
+          change MeasurableSet[MeasurableSpace.generateFrom
+            (memPartition (parabolicDyadicGenerator d) ((d + 2) * n))] s at hs
+          obtain ⟨S, hS, hs_eq⟩ :=
+            (MeasurableSpace.measurableSet_generateFrom_memPartition_iff
+              (parabolicDyadicGenerator d) ((d + 2) * n) s).mp hs
+          have hS_range : (↑S : Set (Set (ParabolicDyadicReferenceSpace d))) ⊆
+              Set.range (parabolicDyadicRestrictedCell :
+                ParabolicDyadicIndex d n → Set (ParabolicDyadicReferenceSpace d)) := by
+            rw [← memPartition_parabolicDyadicFiltration_checkpoint_eq_range]
+            exact hS
+          have hmeas : ∀ cell ∈ S, MeasurableSet cell := by
+            intro cell hcell
+            obtain ⟨index, hindex⟩ := hS_range hcell
+            rw [← hindex]
+            exact measurableSet_parabolicDyadicRestrictedCell index
+          have hdisjoint : (↑S : Set (Set (ParabolicDyadicReferenceSpace d))).Pairwise
+              (Function.onFun Disjoint id) := by
+            intro cell hcell other hother hne
+            exact disjoint_memPartition (parabolicDyadicGenerator d) ((d + 2) * n)
+              (hS hcell) (hS hother) hne
+          have haverage : ∀ cell ∈ S,
+              ∫ x in cell, parabolicDyadicCheckpointAverage d n f x
+                ∂parabolicDyadicReferenceMeasure d =
+              ∫ x in cell, f x ∂parabolicDyadicReferenceMeasure d := by
+            intro cell hcell
+            obtain ⟨index, hindex⟩ := hS_range hcell
+            rw [← hindex]
+            exact setIntegral_parabolicDyadicCheckpointAverage_restrictedCell index
+          have hS_union : ⋃₀ (↑S : Set (Set (ParabolicDyadicReferenceSpace d))) =
+              ⋃ cell ∈ S, cell := by
+            ext z
+            simp
+          calc
+            ∫ x in s, parabolicDyadicCheckpointAverage d n f x
+                ∂parabolicDyadicReferenceMeasure d =
+                ∫ x in ⋃ cell ∈ S, cell, parabolicDyadicCheckpointAverage d n f x
+                  ∂parabolicDyadicReferenceMeasure d := by
+              rw [hs_eq, hS_union]
+            _ = ∑ cell ∈ S, ∫ x in cell, parabolicDyadicCheckpointAverage d n f x
+                  ∂parabolicDyadicReferenceMeasure d :=
+              integral_biUnion_finset S hmeas hdisjoint fun cell hcell =>
+                (integrable_parabolicDyadicCheckpointAverage).integrableOn
+            _ = ∑ cell ∈ S, ∫ x in cell, f x ∂parabolicDyadicReferenceMeasure d := by
+              apply Finset.sum_congr rfl
+              intro cell hcell
+              exact haverage cell hcell
+            _ = ∫ x in ⋃ cell ∈ S, cell, f x ∂parabolicDyadicReferenceMeasure d :=
+              (integral_biUnion_finset S hmeas hdisjoint fun cell hcell => hf.integrableOn).symm
+            _ = ∫ x in s, f x ∂parabolicDyadicReferenceMeasure d := by
+              rw [hs_eq, hS_union]
+        · exact (stronglyMeasurable_parabolicDyadicCheckpointAverage).aestronglyMeasurable
+      classical
+      let : IsFiniteMeasure (parabolicDyadicReferenceMeasure d) :=
+        ⟨lt_top_iff_ne_top.mpr (parabolicDyadicReferenceMeasure_univ_ne_top)⟩
+      let f' := hf.1.mk f
+      have hff' : f =ᵐ[parabolicDyadicReferenceMeasure d] f' := by
+        simpa only [f'] using hf.1.ae_eq_mk
+      have hf' :=
+        hf.congr hff'
+      have hf'meas : StronglyMeasurable[⨆ k, parabolicDyadicFiltration d k] f' := by
+        rw [iSup_parabolicDyadicFiltration_eq_referenceMeasurableSpace]
+        simpa only [f'] using hf.1.stronglyMeasurable_mk
+      have havg : ∀ᵐ z ∂parabolicDyadicReferenceMeasure d, ∀ n,
+          parabolicDyadicCheckpointAverage d n f z =
+            ((parabolicDyadicReferenceMeasure d)[f' |
+              parabolicDyadicFiltration d ((d + 2) * n)]) z := by
+        rw [ae_all_iff]
+        intro n
+        exact (parabolicDyadicCheckpointAverage_ae_eq_condExp n).trans
+          (condExp_congr_ae hff')
+      have hcheckpoint : Tendsto (fun n => (d + 2) * n) atTop atTop := by
+        apply tendsto_atTop_mono (fun n => ?_) tendsto_id
+        exact Nat.le_mul_of_pos_left n (by omega)
+      filter_upwards [(hf'.tendsto_ae_condExp hf'meas), havg, hff'] with z hzcond hzavg hzff'
+      simpa only [hzff'] using (Tendsto.congr' (Eventually.of_forall fun n => (hzavg n).symm) (hzcond.comp hcheckpoint))
+    have integrable_indicator_one :
+        Integrable (Gamma.indicator (fun _ => (1 : ℝ)))
+        (parabolicDyadicReferenceMeasure d) := by
+      let : IsFiniteMeasure (parabolicDyadicReferenceMeasure d) :=
+        ⟨lt_top_iff_ne_top.mpr (parabolicDyadicReferenceMeasure_univ_ne_top)⟩
+      exact IntegrableOn.integrable_indicator integrableOn_const hGamma
+    filter_upwards [(parabolicDyadicCheckpointAverage_tendsto_ae (Gamma.indicator (fun _ => 1)) (integrable_indicator_one))] with z hzconverges
+    intro hzGamma
+    have hzconvergesOne : Tendsto
+        (fun n => parabolicDyadicCheckpointAverage d n
+          (Gamma.indicator (fun _ => 1)) z)
+        atTop (nhds 1) := by
+      simpa only [Set.indicator_of_mem hzGamma] using hzconverges
+    filter_upwards [(hzconvergesOne.eventually_const_lt hxi.2)] with n hn
+    intro index hzindex
+    rw [parabolicDyadicCheckpointAverage_eq_cellAverage _ index z hzindex,
+      parabolicDyadicCellAverage_indicator_one Gamma hGamma index] at hn
+    exact (lt_inv_mul_iff₀'
+      (parabolicDyadicReferenceMeasure_restrictedCell_real_pos index)).mp hn
+  filter_upwards [ae_eventually_parabolicDyadicRestrictedCell_density_gt] with z hzEventually
   intro hzGamma
   obtain ⟨n, hn⟩ := (hzEventually hzGamma).exists
   have hzcover : (z : TimeVelocity d) ∈
@@ -158,6 +936,6 @@ theorem ae_exists_parabolicDyadicRestrictedCell_density_gt
     exact hzindex
   exact ⟨n, index, hzindex', hn index hzindex'⟩
 
-end
 
 end HypoellipticAleksandrov.Parabolic
+

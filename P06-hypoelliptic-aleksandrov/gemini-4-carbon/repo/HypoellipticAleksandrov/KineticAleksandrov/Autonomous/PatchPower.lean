@@ -57,7 +57,6 @@ theorem return_patch_power (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam)
   have hsmall : returnExpandedRadius e N ≤ 1 / 64 := by linarith
   have hinit : ∀ p ∈ backwardCylinder z e, k ≤ u p :=
     fun p hp => hpatch p (backwardCylinder_radius_mono z he heell hp)
-  have hexpand := hd A u hu z e k N he (by linarith [hz.1.1]) hsmall hk hinit
   let zN := returnExpandedCenter z e N
   let dt := (8 / 3 : ℝ) * ((returnExpandedRadius e N) ^ 2 - e ^ 2)
   have hdt0 : 0 ≤ dt := by
@@ -100,16 +99,13 @@ theorem return_patch_power (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam)
   have hvel : PDE.vecEuclideanNorm (zStar.velocity - zN.velocity) ≤ 4 :=
     (norm_sub_le _ _).trans (by linarith [hstar.2.2])
   have hlast := hf A u hu zN zStar (c ^ N * k) hNlo hgaplo hgaphi hdisp hvel
-    (mul_nonneg (pow_nonneg hc.le N) hk) (fun p hp => hexpand p
+    (mul_nonneg (pow_nonneg hc.le N) hk) (fun p hp => (hd A u hu z e k N he (by linarith [hz.1.1]) hsmall hk hinit) p
       (backwardCylinder_radius_mono zN (by norm_num) hRlo hp))
-  have hpower : e ^ m ≤ c ^ N := return_loss_power hc.le he.le hmloss (by linarith)
   have hsmallpower : (1 / 128 : ℝ) ^ m * ell ^ m ≤ e ^ m := by
     rw [← mul_pow]
     exact pow_le_pow_left₀ (by positivity) hebase m
-  have hcoeff := hsmallpower.trans hpower
-  have hfinal := mul_le_mul_of_nonneg_right
-    (mul_le_mul_of_nonneg_left hcoeff hcf.le) hk
+  have hcoeff := hsmallpower.trans (return_loss_power hc.le he.le hmloss (by linarith))
   rw [Real.rpow_natCast]
-  simpa only [mul_assoc] using hfinal.trans (by simpa only [mul_assoc] using hlast)
+  simpa only [mul_assoc] using (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hcoeff hcf.le) hk).trans (by simpa only [mul_assoc] using hlast)
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

@@ -56,7 +56,7 @@ theorem vecEuclideanNorm_weighted_integral_le {n : ℕ} {f : ℝ → PDE.Vec n}
   set v : PDE.Vec n := ∫ t, ρ t • f t with hv
   have hcoord : ∀ i, v i = ∫ t, ρ t * f t i := by
     intro i
-    have := (ContinuousLinearMap.proj (R := ℝ) (φ := fun _ : Fin n => ℝ) i).integral_comp_comm
+    have := (ContinuousLinearMap.proj (R := ℝ) (φ := fun _ => ℝ) i).integral_comp_comm
       (integrable_weight_smul hρc hρs hf)
     simpa using this.symm
   have hint : ∀ i, Integrable (fun t => ρ t * f t i) := fun i =>
@@ -96,7 +96,6 @@ theorem vecEuclideanNorm_weighted_integral_le {n : ℕ} {f : ℝ → PDE.Vec n}
     linarith
   by_contra hcon
   push Not at hcon
-  have hpos : 0 < PDE.vecEuclideanNorm v := hc.trans_lt hcon
   have : PDE.vecEuclideanNorm v ^ 2 ≤ PDE.vecEuclideanNorm v * c := by
     rwa [PDE.vecEuclideanNorm_sq]
   nlinarith
@@ -123,11 +122,6 @@ theorem curveMollify_sub_self {n : ℕ} {γ : ℝ → PDE.Vec n} (hγ : Continuo
 
 end Weighted
 
-/-- The mollification is the convolution with the weight, for the scalar action. -/
-theorem curveMollify_eq_convolution {n : ℕ} (ρ : ℝ → ℝ) (γ : ℝ → PDE.Vec n) :
-    curveMollify ρ γ = ρ ⋆[ContinuousLinearMap.lsmul ℝ ℝ, volume] γ := by
-  funext s
-  simp [curveMollify, convolution_def]
 
 /-- **Analytic core of the curve approximation.**  A globally `L`-Lipschitz curve is uniformly
 `ε`-approximated by a smooth curve which is globally `L`-Lipschitz for the Euclidean norm. -/
@@ -136,7 +130,11 @@ theorem exists_smooth_lipschitz_approx {n : ℕ} {γ : ℝ → PDE.Vec n} (hγ :
     (hLip : ∀ s t, PDE.vecEuclideanNorm (γ s - γ t) ≤ L * |s - t|) {ε : ℝ} (hε : 0 < ε) :
     ∃ g : ℝ → PDE.Vec n, ContDiff ℝ (⊤ : ℕ∞) g ∧
       (∀ s t, PDE.vecEuclideanNorm (g s - g t) ≤ L * |s - t|) ∧
-      ∀ s, PDE.vecEuclideanNorm (g s - γ s) ≤ ε := by
+      ∀ s, PDE.vecEuclideanNorm (g s - γ s) ≤ ε  := by
+  have curveMollify_eq_convolution (ρ : ℝ → ℝ) (γ : ℝ → PDE.Vec n) :
+      curveMollify ρ γ = ρ ⋆[ContinuousLinearMap.lsmul ℝ ℝ, volume] γ := by
+    funext s
+    simp [curveMollify, convolution_def]
   set δ : ℝ := ε / (L + 1) with hδ
   have hδ0 : 0 < δ := by positivity
   let φ : ContDiffBump (0 : ℝ) := ⟨δ / 2, δ, half_pos hδ0, half_lt_self hδ0⟩

@@ -1,17 +1,60 @@
 module
 
-public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.MollifyCoordinates
+public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Geometry
+public import Mathlib.Analysis.Normed.Module.FiniteDimension
+public import Mathlib.MeasureTheory.Constructions.Pi
+import Mathlib.Analysis.Calculus.FDeriv.Comp
 public import PDEFoundation.Sobolev.WeakDerivative
 public import PDEFoundation.Geometry.ConvexDomain
 public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.MollifyWeakJets
 import Mathlib.MeasureTheory.Integral.Bochner.Set
 
-/-! # Transfer of native weak identities into the existing Sobolev chart -/
+@[expose] public noncomputable section
 
-@[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open MeasureTheory
+
+/-- The standard coordinate permutation separates position and velocity coordinates. -/
+def spatialCoordinateCLE (d : ℕ) : PDE.Vec (d + d) ≃L[ℝ] XV d :=
+  ((LinearEquiv.piCongrLeft ℝ (fun _ : Fin (d + d) => ℝ) finSumFinEquiv).symm.trans
+    (LinearEquiv.sumPiEquivProdPi ℝ (Fin d) (Fin d) (fun _ => ℝ))).toContinuousLinearEquiv
+
+/-- The measurable coordinate permutation with the same underlying map. -/
+def spatialCoordinateMeasurableEquiv (d : ℕ) : PDE.Vec (d + d) ≃ᵐ XV d :=
+  (MeasurableEquiv.piCongrLeft (fun _ : Fin (d + d) => ℝ) finSumFinEquiv).symm.trans
+    (MeasurableEquiv.sumPiEquivProdPi (fun _ : Fin d ⊕ Fin d => ℝ))
+
+/-- The topological and measurable spatial charts agree exactly. -/
+theorem spatialCoordinateMeasurableEquiv_apply (d : ℕ) (x : PDE.Vec (d + d)) :
+    spatialCoordinateMeasurableEquiv d x = spatialCoordinateCLE d x := rfl
+
+/-- This coordinate chart preserves the native product Lebesgue measure. -/
+theorem measurePreserving_spatialCoordinate (d : ℕ) :
+    MeasurePreserving (spatialCoordinateMeasurableEquiv d) volume volume :=
+  ((volume_measurePreserving_piCongrLeft (fun _ => ℝ)
+    finSumFinEquiv).symm).trans
+    (volume_measurePreserving_sumPiEquivProdPi (fun _ => ℝ))
+
+/-- Position basis directions are unchanged by unpacking. -/
+theorem spatialCoordinate_basis_position {d : ℕ} (i : Fin d) :
+    spatialCoordinateCLE d (PDE.basisVec (Fin.castAdd d i)) = (PDE.basisVec i, 0) := by
+  ext j
+  all_goals have hj := j.isLt
+  all_goals simp [spatialCoordinateCLE, PDE.basisVec, LinearEquiv.piCongrLeft,
+    LinearEquiv.piCongrLeft', LinearEquiv.sumPiEquivProdPi, Equiv.sumPiEquivProdPi,
+    Equiv.piCongrLeft', finSumFinEquiv, Pi.single_apply, Fin.ext_iff]
+  all_goals first | rfl | omega
+
+/-- Velocity basis directions are unchanged by unpacking. -/
+theorem spatialCoordinate_basis_velocity {d : ℕ} (i : Fin d) :
+    spatialCoordinateCLE d (PDE.basisVec (Fin.natAdd d i)) = (0, PDE.basisVec i) := by
+  ext j
+  all_goals have hj := j.isLt
+  all_goals simp [spatialCoordinateCLE, PDE.basisVec, LinearEquiv.piCongrLeft,
+    LinearEquiv.piCongrLeft', LinearEquiv.sumPiEquivProdPi, Equiv.sumPiEquivProdPi,
+    Equiv.piCongrLeft', finSumFinEquiv, Pi.single_apply, Fin.ext_iff]
+  all_goals first | rfl | omega | (split_ifs <;> simp_all)
+
 
 /-- A global weak directional derivative transfers through the native spatial chart.
 The chart preserves measure, so no determinant or normalization factor occurs. -/
@@ -26,30 +69,21 @@ theorem weak_directional_spatialCoordinate {d : ℕ} (u g : XV d → ℝ)
       -(∫ x, g (spatialCoordinateCLE d x) * test x) := by
   let e := spatialCoordinateCLE d
   let psi := test ∘ e.symm
-  have hp : ContDiff ℝ (⊤ : ℕ∞) psi := ht.comp e.symm.contDiff
-  have hc : HasCompactSupport psi := hs.comp_homeomorph e.symm.toHomeomorph
   have hd : ∀ x, fderiv ℝ psi (e x) w = fderiv ℝ test x z := by
     intro x
-    have he := (ht.differentiable (by simp) (e.symm (e x))).hasFDerivAt.comp (e x)
-      e.symm.hasFDerivAt
     have he' : HasFDerivAt psi ((fderiv ℝ test x).comp e.symm.toContinuousLinearMap)
         (e x) := by
-      simpa only [psi, e.symm_apply_apply] using! he
+      simpa using! ((ht.differentiable (by simp) (e.symm (e x))).hasFDerivAt.comp (e x) e.symm.hasFDerivAt)
     rw [he'.fderiv]
     change fderiv ℝ test x (e.symm w) = fderiv ℝ test x z
     rw [← hz]
     simp only [e, ContinuousLinearEquiv.symm_apply_apply]
-  have hL := (measurePreserving_spatialCoordinate d).integral_comp'
-    (fun q => u q * fderiv ℝ psi q w)
-  have hR := (measurePreserving_spatialCoordinate d).integral_comp'
-    (fun q => g q * psi q)
   have hLn : (∫ x, u (e x) * fderiv ℝ test x z) =
       ∫ q, u q * fderiv ℝ psi q w := by
-    simpa only [spatialCoordinateMeasurableEquiv_apply, ← hd] using! hL
+    simpa only [spatialCoordinateMeasurableEquiv_apply, ← hd] using! (measurePreserving_spatialCoordinate d).integral_comp' (fun q => u q * fderiv ℝ psi q w)
   have hRn : (∫ x, g (e x) * test x) = ∫ q, g q * psi q := by
-    simpa only [spatialCoordinateMeasurableEquiv_apply, psi, Function.comp_apply,
-      e, ContinuousLinearEquiv.symm_apply_apply] using! hR
-  exact hLn.trans ((hweak psi hp hc).trans (congrArg Neg.neg hRn.symm))
+    simpa [spatialCoordinateMeasurableEquiv_apply, psi, e, ContinuousLinearEquiv.symm_apply_apply] using! (measurePreserving_spatialCoordinate d).integral_comp' (fun q => g q * psi q)
+  exact hLn.trans ((hweak psi (ht.comp e.symm.contDiff) (hs.comp_homeomorph e.symm.toHomeomorph)).trans (congrArg Neg.neg hRn.symm))
 
 /-- A global weak coordinate identity restricts to any domain for tests supported inside it. -/
 theorem weakPartial_on_of_global {d : ℕ} (D : Set (PDE.Vec d)) (i : Fin d)
@@ -64,7 +98,7 @@ theorem weakPartial_on_of_global {d : ℕ} (D : Set (PDE.Vec d)) (i : Fin d)
     apply setIntegral_eq_integral_of_forall_compl_eq_zero
     intro x hx
     rw [fderiv_of_notMem_tsupport ℝ (fun h => hx (hs h))]
-    simp only [zero_apply, mul_zero]
+    simp
   have hR : (∫ x in D, g x * test x) = ∫ x, g x * test x := by
     apply setIntegral_eq_integral_of_forall_compl_eq_zero
     intro x hx
@@ -90,7 +124,7 @@ theorem weak_first_jet_of_second {d : ℕ} (u g h : XV d → ℝ) (w z : XV d)
   have ha := hfirst (fun q => fderiv ℝ test q z) hdt
     (hs.fderiv_apply (𝕜 := ℝ) z)
   rw [hsecond test ht hs] at ha
-  simpa only [neg_neg] using (congrArg Neg.neg ha).symm
+  simpa using (congrArg Neg.neg ha).symm
 
 /-- Weak coordinate identities on all bounded convex neighborhoods give the global
 compact-test identity, by enclosing each actual test support in a metric ball. -/
@@ -100,7 +134,7 @@ theorem weakPartial_global_of_locals {d : ℕ} (i : Fin d) (u g : PDE.Vec d → 
     (test : PDE.Vec d → ℝ) (ht : ContDiff ℝ (⊤ : ℕ∞) test)
     (hs : HasCompactSupport test) :
     (∫ x, u x * fderiv ℝ test x (PDE.basisVec i)) = -(∫ x, g x * test x) := by
-  obtain ⟨R, _, hR⟩ := hs.isCompact.isBounded.subset_ball_lt 0 (0 : PDE.Vec d)
+  obtain ⟨R, _, hR⟩ := hs.isCompact.isBounded.subset_ball_lt 0 0
   let D := Metric.ball (0 : PDE.Vec d) R
   have hD : PDE.IsOpenBoundedConvexDomain D :=
     ⟨Metric.isOpen_ball, PDE.Bornology.IsBounded.isBoundedDomain
@@ -111,7 +145,7 @@ theorem weakPartial_global_of_locals {d : ℕ} (i : Fin d) (u g : PDE.Vec d → 
     apply setIntegral_eq_integral_of_forall_compl_eq_zero
     intro x hx
     rw [fderiv_of_notMem_tsupport ℝ (fun h => hx (hR h))]
-    simp only [zero_apply, mul_zero]
+    simp
   have hR' : (∫ x in D, g x * test x) = ∫ x, g x * test x := by
     apply setIntegral_eq_integral_of_forall_compl_eq_zero
     intro x hx
@@ -119,3 +153,4 @@ theorem weakPartial_global_of_locals {d : ℕ} (i : Fin d) (u g : PDE.Vec d → 
   rwa [hL, hR'] at he
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample
+

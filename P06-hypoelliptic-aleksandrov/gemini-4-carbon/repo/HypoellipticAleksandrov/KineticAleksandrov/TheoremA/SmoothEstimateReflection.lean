@@ -35,8 +35,7 @@ theorem measurePreserving_reflection_forward (P₀ : KineticPoint d) (R : ℝ) (
   have h := (measurePreserving_kineticReflection d).restrict_preimage_emb
     (kineticReflectionHomeomorph d).toMeasurableEquiv.measurableEmbedding
     (backwardCylinder P₀ R)
-  rw [preimage_backwardCylinder_reflection P₀ R hR] at h
-  exact h
+  rwa [preimage_backwardCylinder_reflection P₀ R hR] at h
 
 /-- Reflection maps the closures used in the boundary-value estimate exactly. -/
 theorem preimage_closure_backwardCylinder_reflection
@@ -56,7 +55,7 @@ theorem boundarySup_reflection (P₀ : KineticPoint d) (R : ℝ) (hR : 0 < R)
   congr 1
   congr 1
   funext P
-  simp only [Function.comp_apply]
+  simp
   rw [kineticReflection_involutive P]
 
 end HypoellipticAleksandrov.KineticAleksandrov.TheoremA

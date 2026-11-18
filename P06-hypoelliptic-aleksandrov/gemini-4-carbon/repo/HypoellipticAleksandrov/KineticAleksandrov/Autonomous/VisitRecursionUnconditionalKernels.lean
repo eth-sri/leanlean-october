@@ -80,14 +80,6 @@ instance visitUnionExitKernel_isFiniteKernel
   · simp only [measure_univ, le_refl]
   · exact zero_le
 
-/-- The actual union Green measure has the same finite-time mass bound as its component. -/
-theorem visitUnionGreen_mass_le
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : FiniteIntervalUnion) (T : ℝ)
-    (p : FiniteUnionPole H (T : WithTop ℝ)) :
-    finiteUnionGreen hH hLE hlam hLam A H T p univ ≤ ENNReal.ofReal (T - p.1.time) :=
-  stripGreen_finite_time_mass hH hLE hlam hLam A _ T (finiteUnionComponentPole H T p)
 
 /-- Every physical Green-kernel mass is bounded by the common strip time length. -/
 theorem visitUnionGreenKernel_mass_le
@@ -95,13 +87,15 @@ theorem visitUnionGreenKernel_mass_le
     {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (H : FiniteIntervalUnion) (s T : ℝ) (p : Point) :
     visitUnionGreenKernel hH hLE hlam hLam A H s T p univ ≤
-      ENNReal.ofReal (T - s) := by
+      ENNReal.ofReal (T - s)  := by
+  have visitUnionGreen_mass_le (p : FiniteUnionPole H (T : WithTop ℝ)) : finiteUnionGreen hH hLE hlam hLam A H T p univ ≤ ENNReal.ofReal (T - p.1.time) :=
+    stripGreen_finite_time_mass hH hLE hlam hLam A _ T (finiteUnionComponentPole H T p)
   change (if hp : p ∈ visitPoleSet H s T then
     finiteUnionGreen hH hLE hlam hLam A H T
       (visitPoleInclusion H s T ⟨p, hp⟩) else 0) univ ≤ ENNReal.ofReal (T - s)
   split
   · rename_i hp
-    apply (visitUnionGreen_mass_le hH hLE hlam hLam A H T
+    apply (visitUnionGreen_mass_le
       (visitPoleInclusion H s T ⟨p, hp⟩)).trans
     apply ENNReal.ofReal_le_ofReal
     exact sub_le_sub_left hp.1.le T

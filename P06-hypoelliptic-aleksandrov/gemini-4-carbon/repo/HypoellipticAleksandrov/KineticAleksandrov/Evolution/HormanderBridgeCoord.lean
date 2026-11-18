@@ -94,10 +94,7 @@ theorem evolutionProdMeasurableEquiv_apply (x : EvolutionVec n) :
 /-- Lebesgue measure on `ℝ^{1+2d}` is product Lebesgue measure on `ℝ × (ℝ^d × ℝ^d)`. -/
 theorem measurePreserving_evolutionProdMeasurableEquiv :
     MeasurePreserving (evolutionProdMeasurableEquiv n) volume volume := by
-  have h1 := volume_preserving_piFinSuccAbove (fun _ : Fin (n + n + 1) => ℝ) 0
-  have h2 := (volume_measurePreserving_piCongrLeft (fun _ : Fin (n + n) => ℝ) finSumFinEquiv).symm
-  have h3 := volume_measurePreserving_sumPiEquivProdPi (fun _ : Fin n ⊕ Fin n => ℝ)
-  exact h1.trans ((MeasurePreserving.id volume).prod (h2.trans h3))
+  exact (volume_preserving_piFinSuccAbove (fun _ : Fin (n + n + 1) => ℝ) 0).trans ((MeasurePreserving.id volume).prod (((volume_measurePreserving_piCongrLeft (fun _ : Fin (n + n) => ℝ) finSumFinEquiv).symm).trans (volume_measurePreserving_sumPiEquivProdPi (fun _ : Fin n ⊕ Fin n => ℝ))))
 
 variable (n) in
 /-- The measurable equivalence `ℝ^{1+2d} ≃ᵐ KineticPoint n` of `evolutionHomeomorph`. -/
@@ -114,9 +111,6 @@ def evolutionMeasurableEquiv : EvolutionVec n ≃ᵐ KineticPoint n :=
 to the `KineticPoint` volume of `Geometry/KineticPointMeasure.lean`. -/
 theorem measurePreserving_evolutionHomeomorph :
     MeasurePreserving (evolutionHomeomorph n) volume volume := by
-  have h1 := measurePreserving_evolutionProdMeasurableEquiv (n := n)
-  have h2 := (KineticPoint.measurePreserving_equivProd n).symm
-    (KineticPoint.homeomorphProd n).toMeasurableEquiv
-  exact h1.trans h2
+  exact (measurePreserving_evolutionProdMeasurableEquiv (n := n)).trans ((KineticPoint.measurePreserving_equivProd n).symm (KineticPoint.homeomorphProd n).toMeasurableEquiv)
 
 end HypoellipticAleksandrov.KineticAleksandrov.Evolution

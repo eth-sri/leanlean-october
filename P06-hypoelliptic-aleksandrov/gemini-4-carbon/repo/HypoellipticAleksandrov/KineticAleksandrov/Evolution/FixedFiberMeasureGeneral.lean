@@ -37,9 +37,9 @@ variable {X : Type*} [TopologicalSpace X] [T2Space X] [LocallyCompactSpace X]
 theorem exists_compactSupport_cutoff :
     ∃ φ : ℕ → C_c(X, ℝ), (∀ j x, 0 ≤ φ j x ∧ φ j x ≤ 1) ∧
       ∀ x, Tendsto (fun j => φ j x) atTop (𝓝 1) := by
-  let K : CompactExhaustion X := CompactExhaustion.choice X
+  let K := CompactExhaustion.choice X
   have hex : ∀ j, ∃ f : C(X, ℝ), EqOn f 1 (K j) ∧ IsCompact (tsupport f) ∧
-      tsupport f ⊆ interior (K (j + 1)) ∧ ∀ x, f x ∈ Icc (0 : ℝ) 1 := fun j =>
+      tsupport f ⊆ interior (K (j + 1)) ∧ ∀ x, f x ∈ Icc 0 1 := fun j =>
     exists_continuousMap_one_of_isCompact_subset_isOpen (K.isCompact j) isOpen_interior
       (K.subset_interior_succ j)
   choose f hf1 hfc hfs hf01 using hex
@@ -95,7 +95,7 @@ theorem measurable_measure_closed [PseudoMetrizableSpace X] (ν : α → Measure
     intro a
     rw [ofReal_integral_eq_lintegral_ofReal]
     · simp
-    · exact (integrable_const (1 : ℝ)).mono' hcont.aestronglyMeasurable
+    · exact (integrable_const 1).mono' hcont.aestronglyMeasurable
         (Filter.Eventually.of_forall fun x => by
           rw [Real.norm_eq_abs, NNReal.abs_eq]
           exact_mod_cast HasOuterApproxClosed.apprSeq_apply_le_one hC n x)

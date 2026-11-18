@@ -53,17 +53,15 @@ theorem exists_smooth_compactSupport_close {U : Set E} (hU : IsOpen U) (f : C_c(
   obtain ⟨hgc, hgs⟩ := extendByZero_continuous_hasCompactSupport hU f
   have hgx : ∀ x : U, g x = f x := fun x => Subtype.val_injective.extend_apply _ _ x
   set K : Set E := Subtype.val '' tsupport (f : U → ℝ) with hKdef
-  have hKc : IsCompact K := f.hasCompactSupport.isCompact.image continuous_subtype_val
+  have hKc := f.hasCompactSupport.isCompact.image continuous_subtype_val
   have hKU : K ⊆ U := by
     rintro _ ⟨x, -, rfl⟩
     exact x.2
-  have hgK : tsupport g ⊆ K :=
-    f.hasCompactSupport.tsupport_extend_zero_subset continuous_subtype_val
   obtain ⟨δ0, hδ0, hthick⟩ := hKc.exists_cthickening_subset_open hU hKU
   obtain ⟨δ1, hδ1, hδ1g⟩ := Metric.uniformContinuous_iff.mp
     (hgs.uniformContinuous_of_continuous hgc) ε hε
   set r : ℝ := min δ0 δ1 with hr
-  have hrpos : 0 < r := lt_min hδ0 hδ1
+  have hrpos := lt_min hδ0 hδ1
   set φb : ContDiffBump (0 : E) := ⟨r / 2, r, half_pos hrpos, half_lt_self hrpos⟩ with hφb
   set μ : Measure E := Measure.addHaar with hμ
   have hgloc : LocallyIntegrable g μ := hgc.locallyIntegrable
@@ -71,14 +69,12 @@ theorem exists_smooth_compactSupport_close {U : Set E} (hU : IsOpen U) (f : C_c(
     φb.hasCompactSupport_normed.contDiff_convolution_left _ φb.contDiff_normed hgloc
   have hconv_supp : HasCompactSupport ((φb.normed μ) ⋆[ContinuousLinearMap.lsmul ℝ ℝ, μ] g) :=
     φb.hasCompactSupport_normed.convolution _ hgs
-  have hSc : IsCompact (closedBall (0 : E) r + K) :=
-    (isCompact_closedBall (0 : E) r).add hKc
   have hts : tsupport ((φb.normed μ) ⋆[ContinuousLinearMap.lsmul ℝ ℝ, μ] g) ⊆
-      closedBall (0 : E) r + K := by
-    refine closure_minimal ?_ hSc.isClosed
+      closedBall 0 r + K := by
+    refine closure_minimal ?_ ((isCompact_closedBall 0 r).add hKc).isClosed
     refine (support_convolution_subset _).trans (add_subset_add ?_ ?_)
     · exact subset_tsupport _ |>.trans (φb.tsupport_normed_eq (μ := μ)).subset
-    · exact subset_tsupport _ |>.trans hgK
+    · exact subset_tsupport _ |>.trans (f.hasCompactSupport.tsupport_extend_zero_subset continuous_subtype_val)
   refine ⟨_, hconv_smooth, hconv_supp, ?_, ?_⟩
   · refine hts.trans ?_
     rintro _ ⟨a, ha, k, hk, rfl⟩
@@ -91,8 +87,7 @@ theorem exists_smooth_compactSupport_close {U : Set E} (hU : IsOpen U) (f : C_c(
     have := φb.dist_normed_convolution_le (μ := μ) (x₀ := (x : E)) (ε := ε)
       hgc.aestronglyMeasurable (fun y hy => (hδ1g (lt_of_lt_of_le (mem_ball.mp hy)
         (min_le_right _ _))).le)
-    rw [Real.dist_eq] at this
-    exact this
+    rwa [Real.dist_eq] at this
 
 end General
 
@@ -110,7 +105,7 @@ theorem exists_smooth_terminal_test_close_of_isOpen {n : ℕ} {Ω : Set (PDE.Vec
   have hU : IsOpen (evolutionStateSet Ω γ τ) :=
     (isOpen_movingDomain hΩ τ).prod isOpen_univ
   obtain ⟨φ, hφs, hφc, hφU, hφε⟩ := exists_smooth_compactSupport_close hU f ε hε
-  have hcont : Continuous φ := hφs.continuous
+  have hcont := hφs.continuous
   obtain ⟨C, hC⟩ := hφc.exists_bound_of_continuous hcont
   refine ⟨⟨φ, hcont.measurable, ⟨max C 0, le_max_right _ _,
     fun x => (hC x).trans (le_max_left _ _)⟩⟩, ⟨hφs, hφc, hφU⟩, hφε⟩

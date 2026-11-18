@@ -86,12 +86,10 @@ theorem fourierKernel_eq_startingPosition {d : ℕ}
       (evolutionStateShift (wholeSpace d) (fun _ => 0) σ z p) =
       wholeSpaceQuery σ τ hστ v z := by
     apply Subtype.ext
-    simp only [evolutionQueryOfState, evolutionStateShift, evolutionAmbientStateShift,
-      wholeSpaceQuery, p, zero_add]
+    simp [evolutionQueryOfState, evolutionStateShift, evolutionAmbientStateShift, wholeSpaceQuery, p]
   have hp : evolutionQueryOfState (wholeSpace d) (fun _ => 0) σ τ hστ p =
       wholeSpaceQuery σ τ hστ v 0 := rfl
-  have ht := fourierProjection_translation MeasurableSet.univ K hcov σ τ hστ p z ξ
   exact (congrArg (fun q => fourierProjection K q ξ) hq).symm.trans
-    (ht.trans (congrArg (fun q => fourierProjection K q ξ) hp))
+    ((fourierProjection_translation MeasurableSet.univ K hcov σ τ hστ p z ξ).trans (congrArg (fun q => fourierProjection K q ξ) hp))
 
 end HypoellipticAleksandrov.KineticAleksandrov.SectionTwo

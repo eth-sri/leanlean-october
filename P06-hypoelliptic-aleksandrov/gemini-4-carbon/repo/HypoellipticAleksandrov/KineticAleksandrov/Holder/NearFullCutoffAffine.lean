@@ -71,26 +71,6 @@ theorem scaledUnitCutoff_eq_level {d : ℕ}
   unfold scaledUnitCutoff
   rw [kineticAffineInverse_apply P₀ hR.ne' Q, hf Q (subset_closure hQ), mul_one]
 
-/-- A unit cutoff supported inside the cylinder vanishes outside its affine image. -/
-theorem scaledUnitCutoff_eq_zero_of_not_mem {d : ℕ}
-    {f : ℝ × (PDE.Vec d × PDE.Vec d) → ℝ}
-    (hf : tsupport f ⊆ KineticPoint.equivProd d ''
-      backwardCylinder (⟨0, 0, 0⟩ : KineticPoint d) 1)
-    (P₀ : KineticPoint d) {R : ℝ} (hR : 0 < R) (ell : ℝ)
-    {P : KineticPoint d} (hP : P ∉ backwardCylinder P₀ R) :
-    scaledUnitCutoff f P₀ R ell P = 0 := by
-  have hz : f (KineticPoint.equivProd d (kineticAffineInverse P₀ R P)) = 0 := by
-    by_contra hn
-    have hm := hf (subset_closure (show KineticPoint.equivProd d
-      (kineticAffineInverse P₀ R P) ∈ Function.support f from hn))
-    obtain ⟨Q, hQ, hEq⟩ := hm
-    have hQP : Q = kineticAffineInverse P₀ R P :=
-      (KineticPoint.equivProd d).injective hEq
-    rw [hQP] at hQ
-    have ha := (kineticAffine_mem_cylinder P₀ _ hR).mpr hQ
-    rw [kineticAffine_apply_inverse P₀ hR.ne' P] at ha
-    exact hP ha
-  simp only [scaledUnitCutoff, hz, mul_zero]
 
 /-- The source kinetic boundary is disjoint from the open backward cylinder. -/
 theorem kineticBoundary_not_mem_backwardCylinder {d : ℕ} {P₀ P : KineticPoint d}
@@ -109,8 +89,22 @@ theorem scaledUnitCutoff_boundary_eq_zero {d : ℕ}
       backwardCylinder (⟨0, 0, 0⟩ : KineticPoint d) 1)
     (P₀ : KineticPoint d) {R : ℝ} (hR : 0 < R) (ell : ℝ)
     {P : KineticPoint d} (hP : P ∈ kineticBoundary P₀ R) :
-    scaledUnitCutoff f P₀ R ell P = 0 :=
-  scaledUnitCutoff_eq_zero_of_not_mem hf P₀ hR ell
+    scaledUnitCutoff f P₀ R ell P = 0  := by
+  have scaledUnitCutoff_eq_zero_of_not_mem (P₀ : KineticPoint d) {R : ℝ} (hR : 0 < R) (ell : ℝ) {P : KineticPoint d} (hP : P ∉ backwardCylinder P₀ R) :
+      scaledUnitCutoff f P₀ R ell P = 0 := by
+    have hz : f (KineticPoint.equivProd d (kineticAffineInverse P₀ R P)) = 0 := by
+      by_contra hn
+      have hm := hf (subset_closure (show KineticPoint.equivProd d
+        (kineticAffineInverse P₀ R P) ∈ Function.support f from hn))
+      obtain ⟨Q, hQ, hEq⟩ := hm
+      have hQP : Q = kineticAffineInverse P₀ R P :=
+        (KineticPoint.equivProd d).injective hEq
+      rw [hQP] at hQ
+      have ha := (kineticAffine_mem_cylinder P₀ _ hR).mpr hQ
+      rw [kineticAffine_apply_inverse P₀ hR.ne' P] at ha
+      exact hP ha
+    simp only [scaledUnitCutoff, hz, mul_zero]
+  exact scaledUnitCutoff_eq_zero_of_not_mem P₀ hR ell
     (kineticBoundary_not_mem_backwardCylinder hP)
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder

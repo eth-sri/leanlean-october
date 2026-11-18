@@ -54,9 +54,8 @@ theorem ofRadius_coefficient (B : CoefficientField d) :
     (ofRadius σ₀ v₀ z₀ b r).coefficient (zIndependentCoefficient B) =
       zIndependentCoefficient (scaledCoefficient B σ₀ v₀ r) := by
   funext τ Y Z
-  have hr : r.1 ^ 2 / r.1 ^ 2 = 1 := div_self (pow_pos r.2 2).ne'
   change (r.1 ^ 2 / r.1 ^ 2) • B (σ₀ + r.1 ^ 2 * τ) (v₀ + r.1 • Y) = _
-  rw [hr, one_smul]
+  rw [(div_self (pow_pos r.2 2).ne'), one_smul]
   rfl
 
 /-- The rescaled drift of `ofRadius` is the source `b_r`. -/
@@ -127,7 +126,7 @@ theorem realizes_ofRadius_fourier_tv (σ₀ : ℝ) (v₀ z₀ : PDE.Vec d) (r : 
           ((r.1 ^ 2 * (q'.1.2.1 - q'.1.1) * PDE.vecDot ξ v₀ : ℝ) : ℂ)) *
         ν' ((fun Y : PDE.Vec d => v₀ + r.1 • Y) ⁻¹' E)) ∧
       totalVariationNorm ν = totalVariationNorm ν' := by
-  have hreal'' : RealizesTerminalEvolution Set.univ (fun _ => (0 : PDE.Vec d))
+  have hreal'' : RealizesTerminalEvolution Set.univ (fun _ => 0)
       (measurableSet_of_isAdmissibleEvolutionDomain (wholeSpace_admissible d))
       ((KineticAffineScaling.ofRadius σ₀ v₀ z₀ (identityDrift d) r).coefficient
         (zIndependentCoefficient B))

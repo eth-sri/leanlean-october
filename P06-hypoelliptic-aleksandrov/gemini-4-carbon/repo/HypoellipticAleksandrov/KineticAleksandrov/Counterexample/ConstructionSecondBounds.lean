@@ -34,30 +34,28 @@ theorem construction_gradient_difference_compact_bound {d : ℕ} {alpha : ℝ}
   exact ⟨M + N, add_nonneg hM hN, fun x hx =>
     (abs_sub _ _).trans (add_le_add (hbM x hx) (hbN x hx))⟩
 
-/-- The packed Hessian representatives of the flattening are locally integrable. -/
-theorem construction_packedHessian_locallyIntegrable {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r : ℝ) (hr : 0 < r) (i k : Fin d) :
-    LocallyIntegrable (fun x => flatProfileHessian h r (spatialCoordinateCLE d x) i k)
-      volume := by
-  obtain ⟨_, _, hm⟩ := measurable_flatProfile_jets h r
-  apply construction_locallyIntegrable_of_compact_bound _
-    ((hm i k).comp (spatialCoordinateCLE d).continuous.measurable)
-  intro K hK
-  obtain ⟨M, hM, hb⟩ := flatProfile_jets_compact_bound_of_profile h r hr
-    ((spatialCoordinateCLE d) '' K) (hK.image (spatialCoordinateCLE d).continuous)
-  exact ⟨M, hM, fun x hx => (hb _ ⟨x, hx, rfl⟩).2.2 i k⟩
 
 /-- The explicit second weak cutoff representative is locally integrable. -/
 theorem construction_cutoffHessian_locallyIntegrable {d : ℕ} {alpha : ℝ}
     (h : CounterProfileStatement d alpha) (r : ℝ) (hr : 0 < r)
     (mu R t : ℝ) (i k : Fin d) :
     LocallyIntegrable (fun x => spatialPackedCutoffVelocityHessian h r mu R t x i k)
+      volume  := by
+  have construction_packedHessian_locallyIntegrable :
+      LocallyIntegrable (fun x => flatProfileHessian h r (spatialCoordinateCLE d x) i k)
       volume := by
+    obtain ⟨_, _, hm⟩ := measurable_flatProfile_jets h r
+    apply construction_locallyIntegrable_of_compact_bound _
+      ((hm i k).comp (spatialCoordinateCLE d).continuous.measurable)
+    intro K hK
+    obtain ⟨M, hM, hb⟩ := flatProfile_jets_compact_bound_of_profile h r hr
+      ((spatialCoordinateCLE d) '' K) (hK.image (spatialCoordinateCLE d).continuous)
+    exact ⟨M, hM, fun x hx => (hb _ ⟨x, hx, rfl⟩).2.2 i k⟩
   let B := spatialPackedBarrier d mu R t
   let s := fun x => selectedFlatProfile h r (spatialCoordinateCLE d x) - B x
   let g := fun j x => flatProfileVelocityJet h r (spatialCoordinateCLE d x) j -
     PDE.classicalGradient B x (Fin.natAdd d j)
-  have hs : Continuous s :=
+  have hs :=
     ((continuous_selectedFlatProfile h r).comp (spatialCoordinateCLE d).continuous).sub
       (contDiff_spatialPackedBarrier d mu R t).continuous
   have hBG (j : Fin d) : ContDiff ℝ (⊤ : ℕ∞)
@@ -65,29 +63,23 @@ theorem construction_cutoffHessian_locallyIntegrable {d : ℕ} {alpha : ℝ}
     ((contDiff_spatialPackedBarrier d mu R t).contDiff_fderiv_apply (by simp)).comp
       (contDiff_id.prodMk contDiff_const)
   have hg (j : Fin d) : Measurable (g j) := by
-    have he := (construction_packedGradient_measurable h r (Fin.natAdd d j)).sub
-      (hBG j).continuous.measurable
-    simpa only [g, spatialPackedGradient, Fin.addCases_right, B] using! he
+    simpa only [g, spatialPackedGradient, Fin.addCases_right, B] using! ((construction_packedGradient_measurable h r (Fin.natAdd d j)).sub (hBG j).continuous.measurable)
   have hgb (j : Fin d) (K : Set (PDE.Vec (d + d))) (hK : IsCompact K) :
       ∃ M : ℝ, 0 ≤ M ∧ ∀ x ∈ K, |g j x| ≤ M := by
     simpa only [g, spatialPackedGradient, Fin.addCases_right, B] using!
       construction_gradient_difference_compact_bound h r hr mu R t (Fin.natAdd d j) K hK
-  have hprod := construction_locallyIntegrable_product (g i) (g k) (hg i) (hg k)
-    (hgb i) (hgb k)
   have hH : Continuous (fun x => PDE.classicalGradient
       (fun y => PDE.classicalGradient B y (Fin.natAdd d k)) x (Fin.natAdd d i)) :=
     ((hBG k).continuous_fderiv (by simp)).clm_apply continuous_const
-  have ht1 : Continuous (fun x => deriv timeCutoffTheta (s x)) :=
-    (contDiff_timeCutoffTheta.continuous_deriv (by simp)).comp hs
   have ht2 : Continuous (fun x => deriv (deriv timeCutoffTheta) (s x)) := by
     have hc : Continuous (deriv (deriv timeCutoffTheta)) := by
       simpa only [funext deriv2_timeCutoffTheta] using!
         continuous_const.mul ((contDiff_flatteningSlope.continuous_deriv (by simp)).comp
           ((continuous_const.mul continuous_id).add continuous_const))
     exact hc.comp hs
-  have hfirst := ((construction_packedHessian_locallyIntegrable h r hr i k).sub
-    hH.locallyIntegrable).continuous_mul ht1
-  have hsecond := hprod.continuous_mul ht2
+  have hfirst := ((construction_packedHessian_locallyIntegrable).sub
+    hH.locallyIntegrable).continuous_mul ((contDiff_timeCutoffTheta.continuous_deriv (by simp)).comp hs)
+  have hsecond := (construction_locallyIntegrable_product (g i) (g k) (hg i) (hg k) (hgb i) (hgb k)).continuous_mul ht2
   simpa only [spatialPackedCutoffVelocityHessian, B, s, g, mul_assoc] using!
     hfirst.add hsecond
 

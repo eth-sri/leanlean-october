@@ -90,7 +90,7 @@ theorem elapsedVolume_univ (S : ℝ) (hS : 0 < S) :
   rw [himage]
   have he : {τ : ℝ | 0 < τ ∧ ENNReal.ofReal τ < ENNReal.ofReal S} = Ioo 0 S := by
     ext τ
-    simp only [mem_ofPred_eq, mem_Ioo, ENNReal.ofReal_lt_ofReal_iff hS]
+    simp [ENNReal.ofReal_lt_ofReal_iff hS]
   rw [he, Real.volume_Ioo, sub_zero]
 
 end HypoellipticAleksandrov.KineticAleksandrov.SectionTwo

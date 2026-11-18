@@ -71,15 +71,6 @@ noncomputable def smoothApproximation
     (hΩ : IsOpen Ω) (m : ℕ) : ℕ → PDE.WeakTestFunction Ω :=
   Classical.choose (exists_tendsto_smooth hΩ (TopologicalSpace.denseSeq (H10HilbertGraph hΩ) m))
 
-private theorem tendsto_smoothApproximation
-    (hΩ : IsOpen Ω) (m : ℕ) :
-    Tendsto
-      (fun k => smoothCompactlySupportedH1HilbertGraphLinearMap hΩ
-        (smoothApproximation hΩ m k))
-      atTop (𝓝 ((TopologicalSpace.denseSeq (H10HilbertGraph hΩ) m :
-        H10HilbertGraph hΩ) : PDE.H1HilbertGraph Ω)) :=
-  Classical.choose_spec
-    (exists_tendsto_smooth hΩ (TopologicalSpace.denseSeq (H10HilbertGraph hΩ) m))
 
 /-- A countable sequence of genuine zero-trace smooth tests. -/
 noncomputable def galerkinTestSequence
@@ -93,16 +84,20 @@ noncomputable def galerkinVector
     galerkinTestSequence hΩ
 
 theorem denseRange_galerkinVector
-    (hΩ : IsOpen Ω) : DenseRange (galerkinVector hΩ) := by
-  let q : ℕ → H10HilbertGraph hΩ := TopologicalSpace.denseSeq (H10HilbertGraph hΩ)
-  have hqDense : DenseRange q := TopologicalSpace.denseRange_denseSeq (H10HilbertGraph hΩ)
+    (hΩ : IsOpen Ω) : DenseRange (galerkinVector hΩ)  := by
+  have tendsto_smoothApproximation (hΩ : IsOpen Ω) (m : ℕ) : Tendsto
+      (fun k => smoothCompactlySupportedH1HilbertGraphLinearMap hΩ
+        (smoothApproximation hΩ m k))
+      atTop (𝓝 ((TopologicalSpace.denseSeq (H10HilbertGraph hΩ) m :
+        H10HilbertGraph hΩ) : PDE.H1HilbertGraph Ω)) :=
+    Classical.choose_spec
+        (exists_tendsto_smooth hΩ (TopologicalSpace.denseSeq (H10HilbertGraph hΩ) m))
+  let q := TopologicalSpace.denseSeq (H10HilbertGraph hΩ)
   have hqClosure : Set.range q ⊆ closure (Set.range (galerkinVector hΩ)) := by
     rintro _ ⟨m, rfl⟩
-    have hT : Tendsto (fun k : ℕ => galerkinVector hΩ (Nat.pair m k)) atTop (𝓝 (q m)) := by
+    have hT : Tendsto (fun k => galerkinVector hΩ (Nat.pair m k)) atTop (𝓝 (q m)) := by
       apply tendsto_subtype_rng.mpr
-      simpa only [q, galerkinVector, Function.comp_apply, galerkinTestSequence,
-        Nat.unpair_pair,
-        coe_smoothCompactlySupportedH1HilbertGraphToH10LinearMap_apply] using
+      simpa [q, galerkinVector, galerkinTestSequence, Nat.unpair_pair, coe_smoothCompactlySupportedH1HilbertGraphToH10LinearMap_apply] using
         (tendsto_smoothApproximation hΩ m)
     apply mem_closure_of_tendsto hT
     filter_upwards with k
@@ -111,10 +106,10 @@ theorem denseRange_galerkinVector
   apply Set.eq_univ_of_forall
   intro u
   have hu : u ∈ closure (Set.range q) := by
-    rw [hqDense.closure_range]
+    rw [(TopologicalSpace.denseRange_denseSeq (H10HilbertGraph hΩ)).closure_range]
     exact Set.mem_univ u
   have hclosure : closure (Set.range q) ⊆ closure (Set.range (galerkinVector hΩ)) := by
-    simpa only [closure_closure] using closure_mono hqClosure
+    simpa using closure_mono hqClosure
   exact hclosure hu
 
 /-- The span of the first `N` actual-test images; in particular `E 0 = ⊥`. -/
@@ -123,9 +118,6 @@ noncomputable def galerkinSpace
     Submodule ℝ (H10HilbertGraph hΩ) :=
   Submodule.span ℝ (Set.range fun i : Fin N => galerkinVector hΩ i)
 
-@[simp] theorem galerkinSpace_zero (hΩ : IsOpen Ω) :
-    galerkinSpace hΩ 0 = ⊥ := by
-  simp [galerkinSpace]
 
 theorem galerkinSpace_mono
     (hΩ : IsOpen Ω) {N M : ℕ} (hNM : N ≤ M) :

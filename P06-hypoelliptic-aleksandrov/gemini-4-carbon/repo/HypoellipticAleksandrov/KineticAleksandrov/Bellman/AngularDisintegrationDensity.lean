@@ -24,7 +24,7 @@ theorem bellman_map_withDensity (T : A ≃ₜ B) (μ : Measure A)
     withDensity_apply _ hS]
   rw [setLIntegral_map hS (show Measurable (fun q => f (T.symm q)) from
     hf.comp T.symm.measurable) T.measurable]
-  simp only [T.symm_apply_apply]
+  simp
 
 /-- A continuous real weight preserves finiteness on compact sets. -/
 theorem bellman_withDensity_finiteOnCompacts [T2Space A] (μ : Measure A)
@@ -83,7 +83,7 @@ theorem map_bellmanPositiveTimeVolume_radialScale (r : ℝ) (hr : 0 < r) :
     MeasurableEmbedding.subtype_coe measurableSet_Ioi
   apply he.map_injective
   rw [Measure.map_map he.measurable (bellmanRadialScale r hr).measurable]
-  change Measure.map ((fun t : ℝ => r * t) ∘
+  change Measure.map ((fun t => r * t) ∘
     (Subtype.val : BellmanPositiveTime → ℝ)) bellmanPositiveTimeVolume = _
   rw [← Measure.map_map (by fun_prop) he.measurable,
     map_bellmanPositiveTimeVolume_coe, map_positiveVolume_mul r hr,

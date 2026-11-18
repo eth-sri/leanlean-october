@@ -38,11 +38,8 @@ private theorem tendsto_eLpNorm_two_zero_of_ae_dominated
     intro n
     filter_upwards [hbound n] with x hx
     have henorm : ‖F n x‖ₑ ≤ ‖bound x‖ₑ := by
-      simpa only [ofReal_norm_eq_enorm] using ENNReal.ofReal_le_ofReal hx
+      simpa using ENNReal.ofReal_le_ofReal hx
     exact ENNReal.rpow_le_rpow henorm (by norm_num)
-  have hBFinite : ∫⁻ x, B x ∂μ ≠ ∞ :=
-    (lintegral_rpow_enorm_lt_top_of_eLpNorm_lt_top
-      (p := (2 : ℝ≥0∞)) (by norm_num) (by norm_num) hboundMem).ne
   have hGZero : ∀ᵐ x ∂μ, Tendsto (fun n => G n x) atTop (𝓝 0) := by
     filter_upwards [hzero] with x hx
     have henorm : Tendsto (fun n => ‖F n x‖ₑ) atTop (𝓝 0) := by
@@ -50,18 +47,18 @@ private theorem tendsto_eLpNorm_two_zero_of_ae_dominated
     simpa only [G, Function.comp_def, enorm_zero,
       ENNReal.zero_rpow_of_pos (by norm_num : (0 : ℝ) < 2)] using
       ((ENNReal.continuous_rpow_const :
-        Continuous (fun a : ℝ≥0∞ => a ^ (2 : ℝ))).tendsto 0).comp henorm
+        Continuous (fun a => a ^ (2 : ℝ))).tendsto 0).comp henorm
   have hint : Tendsto (fun n => ∫⁻ x, G n x ∂μ) atTop (𝓝 0) := by
-    simpa only [lintegral_zero] using
+    simpa using
       tendsto_lintegral_of_dominated_convergence'
-        B hGMeas hGBound hBFinite hGZero
+        B hGMeas hGBound ((lintegral_rpow_enorm_lt_top_of_eLpNorm_lt_top (p := 2) (by norm_num) (by norm_num) hboundMem).ne) hGZero
   simp_rw [eLpNorm_eq_lintegral_rpow_enorm_toReal
     (by norm_num : (2 : ℝ≥0∞) ≠ 0)
-    (by norm_num : (2 : ℝ≥0∞) ≠ ∞) (hF _)]
+    (by norm_num : 2 ≠ ∞) (hF _)]
   simpa only [G, Function.comp_def, ENNReal.toReal_ofNat, one_div,
-    ENNReal.zero_rpow_of_pos (by norm_num : (0 : ℝ) < (2 : ℝ)⁻¹)] using
+    ENNReal.zero_rpow_of_pos (by norm_num : 0 < (2 : ℝ)⁻¹)] using
     ((ENNReal.continuous_rpow_const :
-      Continuous (fun a : ℝ≥0∞ => a ^ ((2 : ℝ)⁻¹))).tendsto 0).comp hint
+      Continuous (fun a => a ^ ((2 : ℝ)⁻¹))).tendsto 0).comp hint
 
 private theorem tendsto_indicator_sub_indicator_of_tendsto
     {α E : Type*} [NormedAddCommGroup E] {f : ℕ → α → ℝ} {f₀ : α → ℝ}
@@ -75,11 +72,11 @@ private theorem tendsto_indicator_sub_indicator_of_tendsto
   · have hevent : ∀ᶠ n in atTop, f n x < 0 :=
       (tendsto_order.1 hf).2 _ hneg
     apply (tendsto_congr' (hevent.mono fun n hn => ?_)).2 tendsto_const_nhds
-    simp only [indicator_apply, Set.mem_setOf_eq, hn.not_gt, hneg.not_gt, sub_self]
+    simp [indicator_apply, hn.not_gt, hneg.not_gt]
   · have hgzero : g₀ x = 0 := hzero hz
     have heq : (fun n =>
         {y | 0 < f n y}.indicator g₀ x - {y | 0 < f₀ y}.indicator g₀ x) =
-        (fun _ => (0 : E)) := by
+        (fun _ => 0) := by
       funext n
       simp only [indicator_apply, hgzero]
       split <;> split <;> simp
@@ -88,7 +85,7 @@ private theorem tendsto_indicator_sub_indicator_of_tendsto
   · have hevent : ∀ᶠ n in atTop, 0 < f n x :=
       (tendsto_order.1 hf).1 _ hpos
     apply (tendsto_congr' (hevent.mono fun n hn => ?_)).2 tendsto_const_nhds
-    simp only [indicator_apply, Set.mem_setOf_eq, hn, hpos, sub_self]
+    simp [indicator_apply, hn, hpos]
 
 private theorem indicator_gradient_error_ae
     {α E : Type*} [MeasurableSpace α] [AddCommGroup E]
@@ -101,7 +98,7 @@ private theorem indicator_gradient_error_ae
         ({y | 0 < f y}.indicator g₀ x - {y | 0 < f₀ y}.indicator g₀ x) := by
   filter_upwards [hp, hp₀, hout] with x hpx hp₀x houtx
   rw [houtx, hpx, hp₀x]
-  simp only [Pi.sub_apply, indicator_apply]
+  simp [indicator_apply]
   split <;> split <;> simp
 
 /-- Taking the positive part contracts the full spatial `H¹₀` graph norm,
@@ -128,12 +125,6 @@ theorem continuous_h10PositivePart (hΩ : IsOpen Ω) :
       atTop (𝓝 (valueCLM hΩ (h10PositivePart hΩ u))) := by
     simpa only [valueCLM_h10PositivePart, Function.comp_def] using
       Lp.continuous_posPart.comp (valueCLM hΩ).continuous |>.tendsto u |>.comp hun
-  have huValue : Tendsto (fun n => valueCLM hΩ (un n))
-      atTop (𝓝 (valueCLM hΩ u)) :=
-    ((valueCLM hΩ).continuous.tendsto u).comp hun
-  have huGrad : Tendsto (fun n => gradientCLM hΩ (un n))
-      atTop (𝓝 (gradientCLM hΩ u)) :=
-    ((gradientCLM hΩ).continuous.tendsto u).comp hun
   let μ := PDE.volumeOn Ω
   let f : ℕ → PDE.Vec d → ℝ := fun n => valueCLM hΩ (un n)
   let f₀ : PDE.Vec d → ℝ := valueCLM hΩ u
@@ -147,7 +138,7 @@ theorem continuous_h10PositivePart (hΩ : IsOpen Ω) :
   let R : ℕ → PDE.Vec d → WithLp 2 (PDE.Vec d) := fun n x =>
     {y | 0 < f n y}.indicator g₀ x - A₀ x
   have hfMeasure : TendstoInMeasure μ f atTop f₀ := by
-    exact tendstoInMeasure_of_tendsto_Lp huValue
+    exact tendstoInMeasure_of_tendsto_Lp (((valueCLM hΩ).continuous.tendsto u).comp hun)
   have hR : Tendsto (fun n => eLpNorm (R n) 2 μ) atTop (𝓝 0) := by
     apply tendsto_of_subseq_tendsto
     intro ns hns
@@ -181,7 +172,7 @@ theorem continuous_h10PositivePart (hΩ : IsOpen Ω) :
         atTop (𝓝 0) := by
       refine tendsto_of_tendsto_of_tendsto_of_le_of_le tendsto_const_nhds
         ((Lp.tendsto_Lp_iff_tendsto_eLpNorm'
-          (fun n => gradientCLM hΩ (un n)) (gradientCLM hΩ u)).1 huGrad)
+          (fun n => gradientCLM hΩ (un n)) (gradientCLM hΩ u)).1 (((gradientCLM hΩ).continuous.tendsto u).comp hun))
         (fun n => zero_le') (fun n => eLpNorm_indicator_le _
           (measurableSet_lt measurable_const
             (Lp.stronglyMeasurable (valueCLM hΩ (un n))).measurable))
@@ -208,7 +199,7 @@ theorem continuous_h10PositivePart (hΩ : IsOpen Ω) :
         eLpNorm ({y | 0 < f n y}.indicator (g n - g₀) + R n) 2 μ)
         atTop (𝓝 0) := by
       refine tendsto_of_tendsto_of_tendsto_of_le_of_le tendsto_const_nhds
-        (by simpa only [zero_add] using hfirst.add hR)
+        (by simpa using hfirst.add hR)
         (fun n => zero_le')
         (fun n => eLpNorm_add_le (by norm_num))
     refine hsum.congr' ?_
@@ -216,9 +207,7 @@ theorem continuous_h10PositivePart (hΩ : IsOpen Ω) :
     apply eLpNorm_congr_ae
     simpa only [μ, f, f₀, g, g₀, R, A₀, Pi.add_def, Pi.sub_def] using
       (indicator_gradient_error_ae
-      (q := fun x =>
-        gradientCLM hΩ (h10PositivePart hΩ (un n)) x -
-          gradientCLM hΩ (h10PositivePart hΩ u) x)
+
       (gradientCLM_h10PositivePart hΩ (un n))
       (gradientCLM_h10PositivePart hΩ u)
       (Filter.Eventually.of_forall fun _ => rfl)).symm
@@ -233,7 +222,6 @@ theorem continuous_h10PositivePart (hΩ : IsOpen Ω) :
   have hv := hNv n (le_trans (le_max_left _ _) hn)
   have hg := hNg n (le_trans (le_max_right _ _) hn)
   rw [dist_eq_norm, Function.comp_apply]
-  change ‖h10PositivePart hΩ (un n) - h10PositivePart hΩ u‖ < ε
   apply (sq_lt_sq₀ (norm_nonneg _) hε.le).1
   rw [norm_sq_h10HilbertGraph hΩ]
   simp only [map_sub]
@@ -243,7 +231,7 @@ theorem continuous_h10PositivePart (hΩ : IsOpen Ω) :
   have hg2 := (sq_lt_sq₀ (norm_nonneg _) (div_pos hε
     (Real.sqrt_pos.2 (by norm_num))).le).2 hg
   have hdivsq : (ε / Real.sqrt 2) ^ 2 = ε ^ 2 / 2 := by
-    rw [div_pow, Real.sq_sqrt (show (0 : ℝ) ≤ 2 by norm_num)]
+    rw [div_pow, Real.sq_sqrt (show 0 ≤ 2 by norm_num)]
   rw [hdivsq] at hv2 hg2
   linarith
 

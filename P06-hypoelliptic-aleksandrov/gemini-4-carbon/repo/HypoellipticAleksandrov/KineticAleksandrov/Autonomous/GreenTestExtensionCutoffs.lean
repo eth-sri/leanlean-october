@@ -43,7 +43,7 @@ theorem reconstructionPositionBump_eq_scaled (R : ℝ) (hR : 0 < R) :
     scaledScalarCutoff, sub_zero, smul_eq_mul]
   congr 1
   · field_simp
-  · simp only [inv_one, one_mul, div_eq_mul_inv]
+  · simp
     ring
 
 /-- The cutoff derivative has a uniform inverse-radius bound. -/
@@ -74,7 +74,7 @@ theorem reconstructionPositionBump_deriv_tendsto (x : ℝ) :
   obtain ⟨D, _, hD⟩ := reconstructionUnitBump_properties.2.2.2
   apply squeeze_zero_norm (fun n => ?_)
     (show Tendsto (fun n : ℕ => D / ((n : ℝ) + 1)) atTop (𝓝 0) from by
-      simpa only [div_eq_mul_inv, one_mul, mul_zero] using
+      simpa [div_eq_mul_inv] using
         tendsto_one_div_add_atTop_nhds_zero_nat.const_mul D)
   rw [Real.norm_eq_abs]
   exact reconstructionPositionBump_deriv_bound _ (by positivity) D hD x
@@ -86,7 +86,7 @@ theorem reconstruction_product_cutoff_compact
       bx (transportedCoord 1 x 0) * f x) := by
   let R := max bt.rOut (max bv.rOut bx.rOut)
   have hR : 0 ≤ R := bt.rOut_pos.le.trans (le_max_left _ _)
-  apply IsCompact.of_isClosed_subset (isCompact_closedBall (0 : EvolutionVec 1) R)
+  apply IsCompact.of_isClosed_subset (isCompact_closedBall 0 R)
     (isClosed_tsupport _)
   apply closure_minimal _ isClosed_closedBall
   intro x hx
@@ -98,15 +98,15 @@ theorem reconstruction_product_cutoff_compact
   have ht : |timeCoord 1 x| < bt.rOut := by
     have hh : timeCoord 1 x ∈ Function.support bt := hn.1
     rw [bt.support_eq] at hh
-    simpa only [mem_ball, Real.dist_eq, sub_zero] using hh
+    simpa using hh
   have hv : |diffusedCoord 1 x 0| < bv.rOut := by
     have hh : diffusedCoord 1 x 0 ∈ Function.support bv := hn.2.1
     rw [bv.support_eq] at hh
-    simpa only [mem_ball, Real.dist_eq, sub_zero] using hh
+    simpa using hh
   have hz : |transportedCoord 1 x 0| < bx.rOut := by
     have hh : transportedCoord 1 x 0 ∈ Function.support bx := hn.2.2
     rw [bx.support_eq] at hh
-    simpa only [mem_ball, Real.dist_eq, sub_zero] using hh
+    simpa using hh
   rw [mem_closedBall_zero_iff, pi_norm_le_iff_of_nonneg hR]
   intro i
   fin_cases i

@@ -1,7 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.BoundedSourceLimitsInfinite
-public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ExitConeOneSign
+public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ExitCone
 
 /-! # The exact infinite-horizon Green supremum and inherited quadratic bound -/
 
@@ -38,7 +38,6 @@ theorem stripGreen_infinite_eq_iSup
     let t (n : ℕ) : ℝ := e.1.time + (n : ℝ) + 1
     let U (n : ℕ) : Set Point := {p | p.time < t n}
     have ht (n : ℕ) : e.1.time < t n := by
-      dsimp only [t]
       linarith [Nat.cast_nonneg (α := ℝ) n]
     have hm : Monotone (fun n => B ∩ U n) := by
       intro n m hnm p hp
@@ -62,8 +61,7 @@ theorem stripGreen_infinite_eq_iSup
     conv_lhs => rw [← hun, hm.measure_iUnion]
     apply iSup_le
     intro n
-    have hr := stripGreen_finite_restrict_infinite hH hLE hlam hLam A H e (t n) (ht n)
-    have heq := congrArg (fun μ : Measure Point => μ B) hr
+    have heq := congrArg (fun μ : Measure Point => μ B) (stripGreen_finite_restrict_infinite hH hLE hlam hLam A H e (t n) (ht n))
     rw [Measure.restrict_apply hB] at heq
     rw [← heq]
     have hle : stripGreen hH hLE hlam hLam A H (t n)

@@ -21,10 +21,8 @@ theorem reconstruction_slice_regular_of_contDiffOn {u : Point → ℝ} {D : Set 
       (evolutionHomeomorph 1 ⁻¹' D)) (p : Point) (hp : p ∈ D) :
     IsSliceRegularAt u p := by
   have hx : (evolutionHomeomorph 1).symm p ∈ evolutionHomeomorph 1 ⁻¹' D := by
-    simpa only [mem_preimage, Homeomorph.apply_symm_apply] using hp
-  have hj := hu.contDiffAt
-    ((hD.preimage (evolutionHomeomorph 1).continuous).mem_nhds hx)
-  have h := (hj.of_le (by simp : (2 : WithTop ℕ∞) ≤ (⊤ : ℕ∞))).comp
+    simpa using hp
+  have h := ((hu.contDiffAt ((hD.preimage (evolutionHomeomorph 1).continuous).mem_nhds hx)).of_le (by simp : (2 : WithTop ℕ∞) ≤ (⊤ : ℕ∞))).comp
     (p.time, p.position, p.velocity) (evolutionProdCLE 1).symm.contDiff.contDiffAt
   apply IsSliceRegularAt.of_contDiffAt
   have heq : (fun q => (u ∘ evolutionHomeomorph 1) ((evolutionProdCLE 1).symm q)) =
@@ -60,17 +58,16 @@ theorem reconstruction_duhamel_le_barrier
       (identityDrift 1) (identityDrift_smooth 1) (identityDrift_bounds 1)
       E.1 E.2 hE T g hgn hgs hgc hgU
   have hΩ := isOpen_of_isAdmissibleEvolutionDomain (intervalDomain_admissible H)
-  have hD := isOpen_duhamelCylinder (γ := fun _ => 0) hΩ continuous_const T
   have hs : movingClosedSlab (intervalDomain H) (fun _ => 0) p₀.time T ⊆
       evolutionPastClosedCylinder (intervalDomain H) (fun _ => 0) T :=
     fun _ hp => ⟨hp.2.1, hp.2.2⟩
   have ha : movingActiveSlab (intervalDomain H) (fun _ => 0) p₀.time T ⊆
       evolutionPastOpenCylinder (intervalDomain H) (fun _ => 0) T :=
     fun _ hp => ⟨hp.2.1, hp.2.2⟩
-  have hreg := fun p hp => reconstruction_slice_regular_of_contDiffOn hD hsm p (ha hp)
+  have hreg := fun p hp => reconstruction_slice_regular_of_contDiffOn (isOpen_duhamelCylinder (γ := fun _ => 0) hΩ continuous_const T) hsm p (ha hp)
   have hmax := growth_comparison hΩ continuous_const hlam (evolutionCoefficient_bounds A)
     (identityDrift_bounds 1).1 (le_refl 0) zero_le_one
-    (a := p₀.time) (T := T) (u := fun p => duhamelPotential E.2 T g p - q p)
+    (a := p₀.time) (u := fun p => duhamelPotential E.2 T g p - q p)
     ⟨C, fun p hp => by
       have h1 := (le_abs_self (duhamelPotential E.2 T g p)).trans (hCb p)
       have h2 := hqn p (hs hp)

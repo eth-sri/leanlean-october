@@ -30,8 +30,7 @@ noncomputable def flatSourceWithJet {d : ℕ} (A : XV d → PDE.Mat d)
 theorem quadratic_upper_of_loewner {d : ℕ} (Lam : ℝ) (A : PDE.Mat d)
     (hA : A ≤ Lam • (1 : PDE.Mat d)) (w : PDE.Vec d) :
     PDE.vecDot (A.mulVec w) w ≤ Lam * PDE.vecNormSq w := by
-  have hgap : (Lam • (1 : PDE.Mat d) - A).PosSemidef := Matrix.le_iff.mp hA
-  have hquad := hgap.dotProduct_mulVec_nonneg w
+  have hquad := (Matrix.le_iff.mp hA).dotProduct_mulVec_nonneg w
   simp only [star_trivial, Matrix.sub_mulVec, Matrix.smul_mulVec,
     Matrix.one_mulVec, dotProduct_sub, dotProduct_smul, smul_eq_mul] at hquad
   have hu : PDE.vecDot w (A.mulVec w) ≤ Lam * PDE.vecNormSq w := by
@@ -42,8 +41,7 @@ theorem quadratic_upper_of_loewner {d : ℕ} (Lam : ℝ) (A : PDE.Mat d)
 theorem quadratic_nonneg_of_loewner {d : ℕ} (lam : ℝ) (hlam : 0 ≤ lam)
     (A : PDE.Mat d) (hA : lam • (1 : PDE.Mat d) ≤ A) (w : PDE.Vec d) :
     0 ≤ PDE.vecDot (A.mulVec w) w := by
-  have h := vecDot_mulVec_lower_of_loewner hA w
-  have hn := (mul_nonneg hlam (PDE.vecNormSq_nonneg w)).trans h
+  have hn := (mul_nonneg hlam (PDE.vecNormSq_nonneg w)).trans (vecDot_mulVec_lower_of_loewner hA w)
   simpa only [PDE.vecDot, mul_comm] using hn
 
 /-- The fixed source vanishes outside the closed profile shell. -/
@@ -83,8 +81,7 @@ theorem flatSource_ae_eq_jet_of_profile {d : ℕ} {alpha : ℝ}
     flatSource (profileMatrix hprofile) (profileFunction hprofile) flatteningPsi alpha r =ᵐ[volume]
       flatSourceWithJet (profileMatrix hprofile) (profileFunction hprofile)
         (profileVelocityJet hprofile) alpha r := by
-  have he := (selectedProfile_spec hprofile).2.2.2.2.2.2.2.2.2.2.2.2.2.1
-  filter_upwards [he] with q hq
+  filter_upwards [((selectedProfile_spec hprofile).2.2.2.2.2.2.2.2.2.2.2.2.2.1)] with q hq
   unfold flatSource flatSourceWithJet
   rw [hq.2.1]
 

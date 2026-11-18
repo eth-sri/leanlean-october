@@ -1,7 +1,9 @@
 module
 
 public import HypoellipticAleksandrov.Geometry.KineticPoint
-public import HypoellipticAleksandrov.Ambient.Basic
+public import PDEFoundation.Geometry.EuclideanBall.Topology
+public import PDEFoundation.Geometry.EuclideanBall.Basic
+public import PDEFoundation.Ambient.EuclideanNorm
 public import Mathlib.Analysis.SpecialFunctions.Pow.Real
 public import Mathlib.Topology.Basic
 
@@ -30,9 +32,6 @@ def relativeVelocity {d : ℕ} (P₀ P : KineticPoint d) : PDE.Vec d :=
 def relativePosition {d : ℕ} (P₀ P : KineticPoint d) : PDE.Vec d :=
   P.position - P₀.position - (P.time - P₀.time) • P₀.velocity
 
-@[simp] theorem relativeVelocity_self {d : ℕ} (P₀ : KineticPoint d) :
-    relativeVelocity P₀ P₀ = 0 := by
-  simp [relativeVelocity]
 
 @[simp] theorem relativePosition_self {d : ℕ} (P₀ : KineticPoint d) :
     relativePosition P₀ P₀ = 0 := by
@@ -74,7 +73,7 @@ def kineticBoundary {d : ℕ} (P₀ : KineticPoint d) (R : ℝ) :
           (relativePosition P₀ P ∈
               PDE.euclideanSphere (0 : PDE.Vec d) (R ^ 3) ∧
             PDE.vecDot (relativeVelocity P₀ P) (relativePosition P₀ P) ≤ 0)) := by
-  simp only [kineticBoundary, mem_inter_iff, mem_union, mem_setOf_eq, or_assoc]
+  simp [kineticBoundary, or_assoc]
 
 /-- Kinetic dilation of ratio `R` followed by Galilean translation by `P₀`. -/
 def kineticAffine {d : ℕ} (P₀ : KineticPoint d) (R : ℝ) :
@@ -102,11 +101,6 @@ def kineticAffine {d : ℕ} (P₀ : KineticPoint d) (R : ℝ) :
     (kineticAffine P₀ R P).velocity = P₀.velocity + R • P.velocity := by
   rfl
 
-@[simp] theorem relativeVelocity_kineticAffine
-    {d : ℕ} (P₀ : KineticPoint d) (R : ℝ) (P : KineticPoint d) :
-    relativeVelocity P₀ (kineticAffine P₀ R P) = R • P.velocity := by
-  ext i
-  simp [relativeVelocity, kineticAffine]
 
 @[simp] theorem relativePosition_kineticAffine
     {d : ℕ} (P₀ : KineticPoint d) (R : ℝ) (P : KineticPoint d) :

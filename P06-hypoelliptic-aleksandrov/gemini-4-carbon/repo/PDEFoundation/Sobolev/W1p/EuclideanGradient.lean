@@ -86,7 +86,7 @@ theorem gradMemLpOn_iff_memLp_toHilbertVecField
     Vec.toHilbertVec_apply] using
     (memLp_piLp_iff
       (f := toHilbertVecField Du)
-      (p := p) (μ := volumeOn U)).symm
+ (μ := volumeOn U)).symm
 
 namespace MemLpOn
 
@@ -132,7 +132,7 @@ theorem coeFn_toHilbertVectorLp_apply
     (fun x => hDu.toHilbertVectorLp x i) =ᵐ[volumeOn U]
       fun x => Du x i := by
   filter_upwards [hDu.coeFn_toHilbertVectorLp] with x hx
-  exact congrArg (fun y : HilbertVec d => y i) hx
+  exact congrArg (fun y => y i) hx
 
 end GradMemLpOn
 

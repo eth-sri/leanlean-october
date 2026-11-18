@@ -1,12 +1,10 @@
 module
 
-public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.NestedStripGreenTests
+public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.NestedStripIntervalRestart
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.NestedStripMeasureExt
 
-/-! # The exact Green measure decomposition for nested physical velocity intervals -/
+@[expose] public noncomputable section
 
-@[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 
@@ -19,7 +17,28 @@ theorem nestedIntervalGreen_identity
     (e : StripPole H1 (T : WithTop ℝ)) (he : sMinus < e.1.time) :
     stripGreen hH hLE hlam hLam A H2 T (nestedPoleInclusion H1 H2 hsub T e) =
       stripGreen hH hLE hlam hLam A H1 T e +
-        nestedIntervalRestartGreen hH hLE hlam hLam A H1 H2 sMinus T e := by
+        nestedIntervalRestartGreen hH hLE hlam hLam A H1 H2 sMinus T e  := by
+  have nestedIntervalGreen_probe_identity (f : exitProbeSubmodule) (hfn : ∀ p, 0 ≤ exitProbePhysical f p) (hs : tsupport (exitProbePhysical f) ⊆ {p | p.time < T ∧ p.velocity 0 ∈ H2.carrier}) :
+      (∫ p, exitProbePhysical f p ∂stripGreen hH hLE hlam hLam A H2 T
+      (nestedPoleInclusion H1 H2 hsub T e)) =
+      (∫ p, exitProbePhysical f p ∂stripGreen hH hLE hlam hLam A H1 T e) +
+      ∫ p, exitProbePhysical f p
+        ∂nestedIntervalRestartGreen hH hLE hlam hLam A H1 H2 sMinus T e := by
+    let E := stripEvolution hH hLE hlam hLam A H2
+    let u := nestedSourcePotential H2 E T f
+    let τ := nestedIntervalRestartPoles hH hLE hlam hLam A H1 H2 sMinus T e
+    have hid := nestedSourcePotential_restart_identity hH hLE hlam hLam A H1 H2 hsub
+      sMinus T e he f hfn hs
+    have hmap : (∫ p, u p ∂(stripExit hH hLE hlam hLam A H1 T e).restrict
+        (nestedIntervalInternalExit H1 H2 sMinus T)) = ∫ ep, u ep.1 ∂τ := by
+      rw [← nestedIntervalRestartPoles_map hH hLE hlam hLam A H1 H2 sMinus T e]
+      exact integral_map measurable_subtype_coe.aemeasurable
+        (nestedSourcePotential_measurable H2 E T f).aestronglyMeasurable
+    have hrep : (fun ep => u ep.1) =
+        fun ep => ∫ p, exitProbePhysical f p ∂stripGreen hH hLE hlam hLam A H2 T ep := by
+      funext ep
+      exact nestedSourcePotential_eq_green A H2 E T f ep
+    rwa [hmap, hrep, ← (nested_integral_bind τ (stripGreen hH hLE hlam hLam A H2 T) (Measure.measurable_measure.mpr (fun B hB => stripGreen_measurable_apply hH hLE hlam hLam A H2 T B hB)) (exitProbePhysical f) (nestedProbe_integrable A f (nestedIntervalRestartGreen hH hLE hlam hLam A H1 H2 sMinus T e)))] at hid
   let D := stripPast H2 T
   have hs (ep : StripPole H2 (T : WithTop ℝ)) :
       ∀ᵐ p ∂stripGreen hH hLE hlam hLam A H2 T ep, p ∈ D :=
@@ -32,8 +51,7 @@ theorem nestedIntervalGreen_identity
       p ∈ D := by
     rw [ae_iff]
     unfold nestedIntervalRestartGreen
-    refine (Measure.bind_apply (m := nestedIntervalRestartPoles hH hLE hlam hLam A
-      H1 H2 sMinus T e) (isOpen_stripPast H2 T).measurableSet.compl
+    refine (Measure.bind_apply (isOpen_stripPast H2 T).measurableSet.compl
       (Measure.measurable_measure.mpr (fun B hB =>
         stripGreen_measurable_apply hH hLE hlam hLam A H2 T B hB)).aemeasurable).trans ?_
     apply lintegral_eq_zero_of_ae_eq_zero
@@ -45,7 +63,7 @@ theorem nestedIntervalGreen_identity
   · intro f hfs hfn
     rw [integral_add_measure (nestedProbe_integrable A f _)
       (nestedProbe_integrable A f _)]
-    exact nestedIntervalGreen_probe_identity hH hLE hlam hLam A H1 H2 hsub
-      sMinus T e he f hfn hfs
+    exact nestedIntervalGreen_probe_identity f hfn hfs
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous
+

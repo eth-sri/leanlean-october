@@ -2,7 +2,8 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.DuhamelEquation
 public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.DuhamelGreen
-public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.DuhamelBarrier
+public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.FiniteSlabBarriers
+public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.DuhamelSlice
 
 /-! # The kinetic Duhamel lemma for a supplied terminal evolution -/
 
@@ -70,7 +71,7 @@ theorem kinetic_duhamel (hH : HormanderHypoellipticityStatement) (_hd : 1 ≤ d)
     obtain ⟨C, hC⟩ := hg.bddAbove_range_of_hasCompactSupport hgc
     exact ⟨C, hC⟩
   have hgb : ∀ p, g p ≤ ⨆ q, g q := fun p => le_ciSup hbdd p
-  have hC0 : 0 ≤ ⨆ q, g q := (hgn ⟨0, 0, 0⟩).trans (hgb _)
+  have hC0 := (hgn ⟨0, 0, 0⟩).trans (hgb _)
   refine ⟨duhamelPotential_boundedBorel K hΩm hγ.1 T g hg hgc hgn,
     duhamel_isKineticWeakTransportedSolution hΩ hΩm hγ.1 B b S K hreal hB hBs hb
       g hgn hg hgc hgs T hgU,

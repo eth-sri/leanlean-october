@@ -22,7 +22,7 @@ theorem nested_physical_measure_eq {μ ν : Measure Point} [IsFiniteMeasure μ] 
   let U := e ⁻¹' D
   let a := μ.map e.symm
   let b := ν.map e.symm
-  have hU : IsOpen U := hD.preimage e.continuous
+  have hU := hD.preimage e.continuous
   have hsupport (ρ : Measure Point) (hρ : ∀ᵐ p ∂ρ, p ∈ D) :
       (ρ.map e.symm).restrict U = ρ.map e.symm := by
     apply Measure.restrict_eq_self_of_ae_mem
@@ -39,13 +39,12 @@ theorem nested_physical_measure_eq {μ ν : Measure Point} [IsFiniteMeasure μ] 
       intro p hp
       have h := hs hp
       change e (e.symm p) ∈ D at h
-      simpa only [e.apply_symm_apply] using h
-    have hi := hprobe F hFs (fun p => hn _)
+      simpa using h
     have hmap (ρ : Measure Point) : (∫ x, f x ∂ρ.map e.symm) =
         ∫ p, exitProbePhysical F p ∂ρ :=
       integral_map e.symm.continuous.measurable.aemeasurable
         hf.continuous.measurable.aestronglyMeasurable
-    exact (hmap μ).trans (hi.trans (hmap ν).symm)
+    exact (hmap μ).trans ((hprobe F hFs (fun p => hn _)).trans (hmap ν).symm)
   have heq : a = b := by
     apply le_antisymm
     · apply measure_le_of_smooth_integral_le hU (hsupport μ hμ)

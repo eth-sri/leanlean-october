@@ -1,14 +1,9 @@
 module
 
-public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeVariationalEnergyExistence
-public import HypoellipticAleksandrov.Parabolic.Dirichlet.SmoothInteriorBootstrap
+public import HypoellipticAleksandrov.Parabolic.Dirichlet.ParabolicHormanderRegularity
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeVariationalEnvelope
 
-/-! # Signed source corrections from the proved energy solver
-
-The internal variational existence and interior bootstrap supply classical interior
-corrections for arbitrary smooth signed forcing, without a compact source restriction.
--/
+/-! # Signed source corrections from the proved energy solver -/
 
 @[expose] public section
 noncomputable section
@@ -17,7 +12,7 @@ open Filter MeasureTheory Set Dirichlet
 open scoped ENNReal Topology MatrixOrder Matrix.Norms.Elementwise
 
 /-- The proved energy solver supplies an interior classical representative for signed sources. -/
-theorem exists_signed_source_classicalInterior {d : ℕ} (hd : 0 < d)
+theorem exists_signed_source_classicalInterior {d : ℕ} (_hd : 0 < d)
     {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (hΩb : Bornology.IsBounded Ω)
     (a T : ℝ) (haT : a < T) (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : CoefficientField d) (hA : IsSmoothCoefficient A)
@@ -36,28 +31,10 @@ theorem exists_signed_source_classicalInterior {d : ℕ} (hd : 0 < d)
         ∀ z ∈ scalarParabolicOpenCylinder a T Ω,
           scalarTimeDerivative w z +
             matrixContraction (coefficientAt A z) (scalarSpatialHessian w z) = F z := by
-  have hAs : IsSmoothOnNeighborhood (fun z : TimeVelocity d => A z.1 z.2)
-      (scalarParabolicClosedCylinder a T Ω) :=
-    ⟨univ, isOpen_univ, subset_univ _, hA.contDiffOn⟩
-  have hbs : IsSmoothOnNeighborhood (fun _ : TimeVelocity d => (0 : PDE.Vec d))
-      (scalarParabolicClosedCylinder a T Ω) :=
-    ⟨univ, isOpen_univ, subset_univ _, contDiffOn_const⟩
-  have hcs : IsSmoothOnNeighborhood (fun _ : TimeVelocity d => (0 : ℝ))
-      (scalarParabolicClosedCylinder a T Ω) :=
-    ⟨univ, isOpen_univ, subset_univ _, contDiffOn_const⟩
-  have hFs : IsSmoothOnNeighborhood F (scalarParabolicClosedCylinder a T Ω) :=
-    ⟨univ, isOpen_univ, subset_univ _, hF.contDiffOn⟩
-  obtain ⟨u, g, hdu, hu⟩ := exists_reverseTime_variational_energy_solution a T lam Lam
-    haT hlam hLam hΩ hΩb A (fun _ _ => 0) (fun _ _ => 0) (fun t y => F (t, y))
-    hAs hbs hcs hFs (fun z _ => hlo z.1 z.2) (fun z _ => hhi z.1 z.2)
-    (fun _ _ => le_rfl) 0
-  obtain ⟨w, hwl, hwslice, hwr, hwe, _⟩ := exists_smoothInteriorBootstrap hd a T haT hΩ hΩb
-    lam Lam hlam hLam A (fun _ _ => 0) (fun _ _ => 0) (fun t y => F (t, y))
-    hAs hbs hcs hFs (fun z _ => hlo z.1 z.2) (fun z _ => hhi z.1 z.2)
-    (fun _ _ => le_rfl) 0 u g hdu hu
-  refine ⟨u, g, hdu, hu, w, hwl, hwslice, hwr, ?_⟩
-  intro z hz
-  simpa only [matrixContraction, coefficientAt, Pi.zero_apply, zero_mul,
-    Finset.sum_const_zero, add_zero, Prod.mk.eta] using hwe z hz
+  obtain ⟨u, g, hdu, hu, w, hwl, hwslice, hwr, hwe⟩ :=
+    exists_classicalInterior_of_variational_hormander hΩ hΩb a T haT lam Lam hlam hLam
+      A (fun _ _ => 0) hA contDiff_const hlo hhi F hF
+  refine ⟨u, g, hdu, hu, w, hwl, hwslice, hwr, fun z hz => ?_⟩
+  simpa [PDE.vecDot] using hwe z hz
 
 end HypoellipticAleksandrov.Parabolic.LocalHolder

@@ -24,7 +24,7 @@ theorem localized_positive_source_norm_le {α : Type*} [TopologicalSpace α]
   have heq : (Q ∩ {x | 0 < u x}).indicator (fun x => max (f x) 0)
       =ᵐ[μ.restrict Q] {x | 0 < u x}.indicator (fun x => max (f x) 0) := by
     filter_upwards [ae_restrict_mem hQ.measurableSet] with x hx
-    simp only [indicator, mem_inter_iff, hx, true_and]
+    simp [indicator, hx]
   rw [← eLpNorm_congr_ae heq]
   exact ENNReal.toReal_mono hLp.eLpNorm_ne_top
     (eLpNorm_indicator_le _ hs)

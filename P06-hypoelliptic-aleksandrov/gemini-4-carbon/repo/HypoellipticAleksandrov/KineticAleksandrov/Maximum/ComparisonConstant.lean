@@ -21,7 +21,7 @@ theorem comparison_const_formulas {d : ℕ} (c : ℝ) (P : KineticPoint d) :
     simp [kineticPositionGradient, PDE.classicalGradient]
   · ext i
     simp [kineticVelocityGradient, PDE.classicalGradient]
-  · have hg : (fun v : PDE.Vec d => PDE.classicalGradient (fun _ : PDE.Vec d => c) v) =
+  · have hg : (fun v => PDE.classicalGradient (fun _ : PDE.Vec d => c) v) =
         fun _ => 0 := by
       funext v
       ext i

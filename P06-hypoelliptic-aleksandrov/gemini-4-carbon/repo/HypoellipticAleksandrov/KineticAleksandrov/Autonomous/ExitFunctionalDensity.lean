@@ -42,7 +42,7 @@ theorem exitProbeCc_dense (H : Interval) (T : ℝ) (g : C_c(stripClosedExit H T,
     ∃ f : exitProbeSubmodule, ∀ p, |exitProbeCcLinear H T f p - g p| ≤ ε := by
   let j : stripClosedExit H T → EvolutionVec 1 :=
     fun p => reconstructionPhysicalHomeomorph.symm p.1
-  have hj : IsClosedEmbedding j := reconstructionPhysicalHomeomorph.symm.isClosedEmbedding.comp
+  have hj := reconstructionPhysicalHomeomorph.symm.isClosedEmbedding.comp
     (isClosed_stripClosedExit H T).isClosedEmbedding_subtypeVal
   obtain ⟨G, -, hG⟩ := BoundedContinuousFunction.exists_extension_norm_eq_of_isClosedEmbedding
     g.toBoundedContinuousFunction hj
@@ -62,7 +62,6 @@ theorem exitProbeCc_dense (H : Interval) (T : ℝ) (g : C_c(stripClosedExit H T,
   obtain ⟨f, hf, hclose⟩ := exists_smooth_compact_probe_close F ε hε
   refine ⟨⟨f, hf, f.hasCompactSupport⟩, fun p => ?_⟩
   have hh := hclose (j p)
-  rw [hFg p] at hh
-  exact hh
+  rwa [hFg p] at hh
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

@@ -31,10 +31,10 @@ theorem contDiffOn_regularizedOperator {n : ℕ} {U : Set (EvolutionVec n)} (hU 
     {b : PDE.Vec n → PDE.Vec n} (hb : IsSmoothDrift b) (ε : ℝ)
     {u : EvolutionVec n → ℝ} (hu : ContDiffOn ℝ (⊤ : ℕ∞) u U) :
     ContDiffOn ℝ (⊤ : ℕ∞) (regularizedOperator B b ε u) U := by
-  have hA : ∀ i j, ContDiff ℝ (⊤ : ℕ∞) (fun x : EvolutionVec n =>
+  have hA : ∀ i j, ContDiff ℝ (⊤ : ℕ∞) (fun x =>
       B (timeCoord n x) (diffusedCoord n x) (transportedCoord n x) i j) :=
     fun i j => (hB i j).comp (evolutionProdCLE n).contDiff
-  have hβ : ∀ i, ContDiff ℝ (⊤ : ℕ∞) (fun x : EvolutionVec n => b (diffusedCoord n x) i) :=
+  have hβ : ∀ i, ContDiff ℝ (⊤ : ℕ∞) (fun x => b (diffusedCoord n x) i) :=
     fun i => (contDiff_pi.mp hb i).comp (diffusedCoord n).contDiff
   unfold regularizedOperator transportedOperator
   refine (((smooth_direction hU hu basisT).add ?_).add ?_).add ?_
@@ -71,20 +71,8 @@ theorem integral_regularizedAdjoint_contDiffOn {n : ℕ} {U : Set (EvolutionVec 
     intro v w x hx
     exact (((hd v).contDiffAt (hU.mem_nhds hx)).differentiableAt (by simp)
       ).hasFDerivAt.hasLineDerivAt w
-  have key := integral_regularizedAdjoint_of_jets B b ε hB hb u (D basisT u)
-    (fun i => D (basisV i) u) (fun i => D (basisZ i) u)
-    (fun i j => D (basisV j) (D (basisV i) u))
-    (fun i => D (basisZ i) (D (basisZ i) u))
-    hu.continuousOn (hd basisT).continuousOn
-    (fun i => (hd (basisV i)).continuousOn) (fun i => (hd (basisZ i)).continuousOn)
-    (fun i j => (hdd (basisV i) (basisV j)).continuousOn)
-    (fun i => (hdd (basisZ i) (basisZ i)).continuousOn)
-    (hline basisT) (fun i => hline (basisV i)) (fun i => hline (basisZ i))
-    (fun i j => hline2 (basisV i) (basisV j))
-    (fun i => hline2 (basisZ i) (basisZ i)) ψ hψ hc hs
-  refine key.trans (setIntegral_congr_fun hU.measurableSet fun x _ => ?_)
+  refine (integral_regularizedAdjoint_of_jets B b ε hB hb u (D basisT u) (fun i => D (basisV i) u) (fun i => D (basisZ i) u) (fun i j => D (basisV j) (D (basisV i) u)) (fun i => D (basisZ i) (D (basisZ i) u)) hu.continuousOn (hd basisT).continuousOn (fun i => (hd (basisV i)).continuousOn) (fun i => (hd (basisZ i)).continuousOn) (fun i j => (hdd (basisV i) (basisV j)).continuousOn) (fun i => (hdd (basisZ i) (basisZ i)).continuousOn) (hline basisT) (fun i => hline (basisV i)) (fun i => hline (basisZ i)) (fun i j => hline2 (basisV i) (basisV j)) (fun i => hline2 (basisZ i) (basisZ i)) ψ hψ hc hs).trans (setIntegral_congr_fun hU.measurableSet fun x _ => ?_)
   congr 1
-  dsimp only [D, regularizedOperator, transportedOperator]
   congr 1
   congr 1
   rw [Finset.sum_comm]
@@ -112,13 +100,11 @@ theorem regularizedOperator_eq_zero_of_smooth_weak {n : ℕ} {U : Set (Evolution
       have h2 := hw.2 ψ hψ hc hs
       have hEq : (∫ x in U, regularizedOperator B b ε u x * ψ x) = 0 := by
         rw [← h1, h2]
-        simp only [zero_mul, integral_zero]
+        simp
       rw [setIntegral_eq_integral_of_forall_compl_eq_zero (fun x hx => by
         rw [image_eq_zero_of_notMem_tsupport (fun h => hx (hs h)), mul_zero])] at hEq
-      simpa only [smul_eq_mul, mul_comm] using hEq)
-  have hae1 : regularizedOperator B b ε u =ᵐ[volume.restrict U] fun _ => (0 : ℝ) :=
-    (ae_restrict_iff' hU.measurableSet).2 hae0
-  have heq := Measure.eqOn_open_of_ae_eq hae1 hU hop continuousOn_const
+      simpa [mul_comm] using hEq)
+  have heq := Measure.eqOn_open_of_ae_eq ((ae_restrict_iff' hU.measurableSet).2 hae0) hU hop continuousOn_const
   exact fun x hx => heq hx
 
 end HypoellipticAleksandrov.KineticAleksandrov.Evolution

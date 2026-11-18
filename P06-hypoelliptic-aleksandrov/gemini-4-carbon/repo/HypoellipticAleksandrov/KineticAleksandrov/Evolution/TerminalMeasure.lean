@@ -1,30 +1,187 @@
 module
 
+public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.TerminalFunctionalProbe
+public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.TerminalPointValueLinear
+public import Mathlib.MeasureTheory.Integral.RieszMarkovKakutani.Real
+public import Mathlib.MeasureTheory.Integral.CompactlySupported
+public import Mathlib.Topology.UrysohnsLemma
+public import HypoellipticAleksandrov.KineticAleksandrov.MovingKernel
 import Mathlib.Tactic.Linarith
-public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.TerminalFunctional
-public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.TerminalMeasureRiesz
 
-/-!
-# The unique Riesz measure of the terminal evolution
-
-Companion paper, Proposition 2.1 (kernels): the positive terminal functional is
-represented, by `RealRMK.integral_rieszMeasure`, by a Borel measure on the open terminal fiber of
-mass at most one; mapped into the ambient state it is the unique measure with
-`μ univ ≤ 1`, supported on the fiber, whose integrals against smooth compactly supported probes
-are the point values `terminalValue`.
-
-* `exists_unique_terminalMeasure`: existence and uniqueness of the terminal measure.
-* `terminalMeasure`: the unique measure, chosen from the `∃!` statement; `terminalMeasure_spec`.
-* `terminalMeasure_eq_dirac`: at equal times the measure is the Dirac mass at the source.
-* `comap_terminalMeasure_eq_rieszMeasure`: its fiber part is the Riesz measure of the terminal
-  functional.
--/
-
-@[expose] public section
-
-noncomputable section
+@[expose] public noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
+section
+
+open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Set
+open scoped CompactlySupported
+
+section EvolutionData
+
+variable (n : ℕ) (hn : 1 ≤ n) (lam Lam m L_b : ℝ)
+variable (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
+variable (hm : 0 < m) (hmLb : m ≤ L_b)
+variable (Ω : Set (PDE.Vec n)) (γ : ℝ → PDE.Vec n)
+variable (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec n)
+variable (hΩ : IsAdmissibleEvolutionDomain Ω)
+variable (hγ : IsContinuousPiecewiseC1 γ)
+variable (hB_smooth : IsSmoothFullKineticCoefficient B)
+variable (hB_symm : IsSymmetricFullKineticCoefficient B)
+variable (hB_ell : HasEverywhereLoewnerBounds lam Lam B)
+variable (hb_smooth : IsSmoothDrift b)
+variable (hb_lipschitz : HasEuclideanLipschitzDrift L_b b)
+variable (hb_coercive : HasUnitDirectionDriftCoercivity m b)
+variable (hEx : ClassicalTerminalExistence Ω γ B b)
+include hn hlam hlamLam hm hmLb hΩ hγ hB_smooth hB_symm hB_ell
+include hb_smooth hb_lipschitz hb_coercive hEx
+
+local notation "S" => terminalValue n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
+  hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
+local notation "S_add" => terminalValue_add n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
+  hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
+local notation "S_smul" => terminalValue_smul n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
+  hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
+local notation "S_nonneg" => terminalValue_nonneg n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
+  hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
+local notation "S_abs_le" => abs_terminalValue_le n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
+  hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
+
+/-- The terminal point value depends only on the datum, not on the smoothness proof or the
+presentation of the datum. -/
+theorem terminalValue_congr
+    (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ)
+    {F G : BoundedBorel (EvolutionAmbientState n)} (h : F = G)
+    (hF : IsSmoothCompactTerminalDatum Ω γ τ F) (hG : IsSmoothCompactTerminalDatum Ω γ τ G) :
+    S σ τ hστ p F hF = S σ τ hστ p G hG := by
+  subst h
+  rfl
+
+/-- The terminal point value as a linear functional on smooth compactly supported probes. -/
+def terminalProbeValue (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ) :
+    terminalProbeSubmodule Ω γ τ →ₗ[ℝ] ℝ where
+  toFun F := S σ τ hστ p (terminalProbeDatum F) F.2
+  map_add' F G := by
+    refine (terminalValue_congr n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
+      hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ p
+      (BoundedBorel.ext fun _ => rfl) (terminalProbeDatum_isSmoothCompact (F + G))
+      ((terminalProbeDatum_isSmoothCompact F).add
+        (terminalProbeDatum_isSmoothCompact G))).trans ?_
+    exact S_add σ τ hστ p _ _ (terminalProbeDatum_isSmoothCompact F)
+      (terminalProbeDatum_isSmoothCompact G)
+  map_smul' c F := by
+    refine (terminalValue_congr n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
+      hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ p
+      (F := terminalProbeDatum (c • F)) (G := c • terminalProbeDatum F)
+      (BoundedBorel.ext fun _ => rfl) (terminalProbeDatum_isSmoothCompact (c • F))
+      ((terminalProbeDatum_isSmoothCompact F).smul c)).trans ?_
+    exact S_smul σ τ hστ p c _ (terminalProbeDatum_isSmoothCompact F)
+
+/-- For each source state, the terminal point value extends uniquely to a positive
+linear functional on `C_c` of the open terminal fiber, bounded by the sup norm. -/
+theorem exists_unique_terminalFunctional
+    (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ) :
+    ∃! ℓ : C_c(EvolutionState Ω γ τ, ℝ) →ₚ[ℝ] ℝ,
+      (∀ (f : C_c(EvolutionState Ω γ τ, ℝ)) (c : ℝ), 0 ≤ c → (∀ x, |f x| ≤ c) →
+        |ℓ f| ≤ c) ∧
+      ∀ (F : BoundedBorel (EvolutionAmbientState n))
+        (hF : IsSmoothCompactTerminalDatum Ω γ τ F)
+        (f : C_c(EvolutionState Ω γ τ, ℝ)),
+        (∀ q, f q = F q.1) → ℓ f = S σ τ hστ p F hF := by
+  have hΩo := isOpen_of_isAdmissibleEvolutionDomain hΩ
+  obtain ⟨ℓ, hbd, hℓ⟩ := exists_positive_extension_of_dense
+    (terminalProbeCcLinear (Ω := Ω) (γ := γ) (τ := τ))
+    (terminalProbeValue n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
+      hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ p)
+    (fun F c hc h => S_abs_le σ τ hστ p _ (terminalProbeDatum_isSmoothCompact F) c hc
+      (terminalProbe_abs_le hc h))
+    (fun F h => S_nonneg σ τ hστ p _ (terminalProbeDatum_isSmoothCompact F)
+      (terminalProbe_nonneg h))
+    exists_terminalProbe_sq
+    (fun f ε hε => exists_terminalProbe_close hΩo f ε hε)
+  have hprobe : ∀ (F : BoundedBorel (EvolutionAmbientState n))
+      (hF : IsSmoothCompactTerminalDatum Ω γ τ F) (f : C_c(EvolutionState Ω γ τ, ℝ)),
+      (∀ q, f q = F q.1) → ℓ f = S σ τ hστ p F hF := by
+    intro F hF f hf
+    have hfeq : f = terminalProbeCcLinear (terminalProbeOfDatum F hF) :=
+      CompactlySupportedContinuousMap.ext fun x => hf x
+    rw [hfeq, hℓ]
+    exact terminalValue_congr n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
+      hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ p
+      (terminalProbeDatum_ofDatum F hF) (terminalProbeDatum_isSmoothCompact _) hF
+  refine ⟨ℓ, ⟨hbd, hprobe⟩, ?_⟩
+  rintro ℓ' ⟨hbd', hprobe'⟩
+  have hlin : ℓ'.toLinearMap = ℓ.toLinearMap := by
+    refine eq_of_bounded_of_dense (terminalProbeCcLinear (Ω := Ω) (γ := γ) (τ := τ))
+      ℓ'.toLinearMap ℓ.toLinearMap hbd' hbd (fun F => ?_)
+      (fun f ε hε => exists_terminalProbe_close hΩo f ε hε)
+    have h1 := hprobe' (terminalProbeDatum F) F.2 (terminalProbeCcLinear F) (fun q => rfl)
+    have h2 := hprobe (terminalProbeDatum F) F.2 (terminalProbeCcLinear F) (fun q => rfl)
+    exact h1.trans h2.symm
+  exact PositiveLinearMap.ext fun f => LinearMap.congr_fun hlin f
+
+/-- The unique positive terminal functional at the source state `p`, chosen from the
+`∃!` statement `exists_unique_terminalFunctional`. -/
+def terminalFunctional (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ) :
+    C_c(EvolutionState Ω γ τ, ℝ) →ₚ[ℝ] ℝ :=
+  (exists_unique_terminalFunctional n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
+    hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ p).choose
+
+/-- The chosen functional is sup-norm bounded and reproduces the point value on
+every smooth compactly supported probe. -/
+theorem terminalFunctional_spec
+    (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ) :
+    (∀ (f : C_c(EvolutionState Ω γ τ, ℝ)) (c : ℝ), 0 ≤ c → (∀ x, |f x| ≤ c) →
+      |terminalFunctional n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
+        hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ p f| ≤ c) ∧
+      ∀ (F : BoundedBorel (EvolutionAmbientState n))
+        (hF : IsSmoothCompactTerminalDatum Ω γ τ F)
+        (f : C_c(EvolutionState Ω γ τ, ℝ)),
+        (∀ q, f q = F q.1) →
+          terminalFunctional n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
+            hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ p f =
+            S σ τ hστ p F hF :=
+  (exists_unique_terminalFunctional n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
+    hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ p).choose_spec.1
+
+end EvolutionData
+
+end
+section
+
+open HypoellipticAleksandrov MeasureTheory Set
+open scoped CompactlySupported ENNReal
+
+section Fiber
+
+variable {n : ℕ} {U : Set (EvolutionAmbientState n)} [LocallyCompactSpace U]
+
+/-- The Riesz measure of a sup-norm bounded positive functional has mass at most one. -/
+theorem rieszMeasure_univ_le_one (ℓ : C_c(U, ℝ) →ₚ[ℝ] ℝ)
+    (hbd : ∀ (f : C_c(U, ℝ)) (c : ℝ), 0 ≤ c → (∀ x, |f x| ≤ c) → |ℓ f| ≤ c) :
+    RealRMK.rieszMeasure ℓ univ ≤ 1 := by
+  have hreg := RealRMK.regular_rieszMeasure ℓ
+  rw [(MeasureTheory.Measure.Regular.innerRegular).measure_eq_iSup isOpen_univ]
+  refine iSup_le fun K => iSup_le fun _ => iSup_le fun hKc => ?_
+  obtain ⟨f, hf1, hfc, -, hf01⟩ :=
+    exists_continuousMap_one_of_isCompact_subset_isOpen hKc isOpen_univ (subset_univ K)
+  let g : C_c(U, ℝ) := ⟨f, hfc⟩
+  have hg : ∀ x, 0 ≤ g x := fun x => (hf01 x).1
+  refine (RealRMK.rieszMeasure_le_of_eq_one ℓ hg hKc fun x hx => hf1 hx).trans ?_
+  have hb := hbd g 1 zero_le_one fun x => by
+    rw [abs_of_nonneg (hg x)]; exact (hf01 x).2
+  calc ENNReal.ofReal (ℓ g) ≤ ENNReal.ofReal 1 := ENNReal.ofReal_le_ofReal (le_of_abs_le hb)
+    _ = 1 := ENNReal.ofReal_one
+
+/-- A subprobability measure with the integrals of the Riesz functional is the Riesz measure. -/
+theorem eq_rieszMeasure_of_integral_eq (ℓ : C_c(U, ℝ) →ₚ[ℝ] ℝ)
+    (μ' : Measure U) [IsFiniteMeasure μ'] (hint : ∀ f : C_c(U, ℝ), ∫ x, f x ∂μ' = ℓ f) :
+    μ' = RealRMK.rieszMeasure ℓ :=
+  Measure.ext_of_integral_eq_on_compactlySupported fun f => by
+    rw [hint f, RealRMK.integral_rieszMeasure]
+
+end Fiber
+
+end
 
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic MeasureTheory Set
 open scoped CompactlySupported ENNReal
@@ -140,11 +297,7 @@ theorem map_terminalFiberRieszMeasure_spec (q : EvolutionQuery Ω γ) :
       (isOpen_of_isAdmissibleEvolutionDomain hΩ)) ν
   · intro F hF
     rw [integral_map measurable_subtype_coe.aemeasurable F.measurable.aestronglyMeasurable]
-    have h1 := integral_terminalFiberRieszMeasure n hn lam Lam m L_b hlam hlamLam hm hmLb
-      Ω γ B b hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
-      q.1.1 q.1.2.1 q.property.1 ⟨q.1.2.2, q.property.2⟩
-      (terminalProbeCc (terminalProbeOfDatum F hF))
-    refine h1.trans ((ℓ_spec q.1.1 q.1.2.1 q.property.1 ⟨q.1.2.2, q.property.2⟩).2 F hF _
+    refine (integral_terminalFiberRieszMeasure n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx q.1.1 q.1.2.1 q.property.1 ⟨q.1.2.2, q.property.2⟩ (terminalProbeCc (terminalProbeOfDatum F hF))).trans ((ℓ_spec q.1.1 q.1.2.1 q.property.1 ⟨q.1.2.2, q.property.2⟩).2 F hF _
       fun x => rfl)
 
 /-- Uniqueness half of Every subprobability measure supported on the open fiber with the
@@ -160,10 +313,9 @@ theorem eq_map_terminalFiberRieszMeasure (q : EvolutionQuery Ω γ)
       q.1.1 q.1.2.1 q.property.1 ⟨q.1.2.2, q.property.2⟩).map Subtype.val := by
   have hΩo := isOpen_of_isAdmissibleEvolutionDomain hΩ
   have := locallyCompactSpace_evolutionState (γ := γ) (τ := q.1.2.1) hΩo
-  have hU := measurableSet_evolutionStateSet_of_isOpen (γ := γ) (τ := q.1.2.1) hΩo
   set ν' : Measure (EvolutionState Ω γ q.1.2.1) := Measure.comap Subtype.val μ' with hν'
   have hmap : ν'.map Subtype.val = μ' := by
-    rw [hν', map_comap_subtype_coe hU, hres]
+    rw [hν', map_comap_subtype_coe (measurableSet_evolutionStateSet_of_isOpen (γ := γ) (τ := q.1.2.1) hΩo), hres]
   have hmassν : ν' univ = μ' univ := by
     conv_rhs => rw [← hmap]
     rw [Measure.map_apply measurable_subtype_coe MeasurableSet.univ]
@@ -192,20 +344,13 @@ theorem eq_map_terminalFiberRieszMeasure (q : EvolutionQuery Ω γ)
       rw [← hmap, integral_map measurable_subtype_coe.aemeasurable
         (terminalProbeDatum F).measurable.aestronglyMeasurable]
       simp [Λ]
-    have h2 := (ℓ_spec q.1.1 q.1.2.1 q.property.1 ⟨q.1.2.2, q.property.2⟩).2
-      (terminalProbeDatum F) (terminalProbeDatum_isSmoothCompact F)
-      (terminalProbeCcLinear F) fun x => rfl
-    exact h1.trans ((hint _ (terminalProbeDatum_isSmoothCompact F)).trans h2.symm)
-  have hlin := eq_of_bounded_of_dense (terminalProbeCcLinear (Ω := Ω) (γ := γ) (τ := q.1.2.1))
-    Λ.toLinearMap (ℓ_ q.1.1 q.1.2.1 q.property.1 ⟨q.1.2.2, q.property.2⟩).toLinearMap hΛbd
-    (ℓ_spec q.1.1 q.1.2.1 q.property.1 ⟨q.1.2.2, q.property.2⟩).1 hagree
-    (fun f ε hε => exists_terminalProbe_close hΩo f ε hε)
+    exact h1.trans ((hint _ (terminalProbeDatum_isSmoothCompact F)).trans ((ℓ_spec q.1.1 q.1.2.1 q.property.1 ⟨q.1.2.2, q.property.2⟩).2 (terminalProbeDatum F) (terminalProbeDatum_isSmoothCompact F) (terminalProbeCcLinear F) fun x => rfl).symm)
   have hν : ν' = terminalFiberRieszMeasure n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
       hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
       q.1.1 q.1.2.1 q.property.1 ⟨q.1.2.2, q.property.2⟩ :=
     eq_rieszMeasure_of_integral_eq (ℓ_ q.1.1 q.1.2.1 q.property.1 ⟨q.1.2.2, q.property.2⟩) ν'
       fun f => by
-        have := LinearMap.congr_fun hlin f
+        have := LinearMap.congr_fun (eq_of_bounded_of_dense (terminalProbeCcLinear (Ω := Ω) (γ := γ) (τ := q.1.2.1)) Λ.toLinearMap (ℓ_ q.1.1 q.1.2.1 q.property.1 ⟨q.1.2.2, q.property.2⟩).toLinearMap hΛbd (ℓ_spec q.1.1 q.1.2.1 q.property.1 ⟨q.1.2.2, q.property.2⟩).1 hagree (fun f ε hε => exists_terminalProbe_close hΩo f ε hε)) f
         simpa [Λ] using this
   rw [← hmap, hν]
 
@@ -291,9 +436,8 @@ theorem terminalMeasure_eq_dirac (σ : ℝ) (p : EvolutionState Ω γ σ) :
     show (Measure.dirac p.1).restrict (evolutionStateSet Ω γ σ) A = Measure.dirac p.1 A
     rw [Measure.restrict_apply hA, Measure.dirac_apply' _ (hA.inter hU),
       Measure.dirac_apply' _ hA]
-    have hp : p.1 ∈ evolutionStateSet Ω γ σ := p.2
     by_cases h : p.1 ∈ A
-    · simp [Set.indicator, h, hp]
+    · simp [Set.indicator, h, p.2]
     · simp [Set.indicator, h]
   · intro F hF
     rw [integral_dirac]
@@ -303,3 +447,4 @@ theorem terminalMeasure_eq_dirac (σ : ℝ) (p : EvolutionState Ω γ σ) :
 end EvolutionData
 
 end HypoellipticAleksandrov.KineticAleksandrov
+

@@ -43,9 +43,6 @@ theorem euclideanSqDist_self {d : ℕ} (x : Vec d) :
     euclideanSqDist x x = 0 := by
   simp [euclideanSqDist, vecNormSq, vecDot]
 
-theorem euclideanSqDist_nonneg {d : ℕ} (x y : Vec d) :
-    0 ≤ euclideanSqDist x y :=
-  vecNormSq_nonneg _
 
 theorem euclideanSqDist_add_right {d : ℕ} (x y z : Vec d) :
     euclideanSqDist (x + z) (y + z) = euclideanSqDist x y := by
@@ -54,41 +51,36 @@ theorem euclideanSqDist_add_right {d : ℕ} (x y z : Vec d) :
     simp
   simp [euclideanSqDist, hsub]
 
-theorem euclideanSqDist_smul_smul {d : ℕ}
-    (r : ℝ) (x y : Vec d) :
-    euclideanSqDist (r • x) (r • y) =
-      r ^ 2 * euclideanSqDist x y := by
-  have hsub : r • x - r • y = r • (x - y) := by
-    ext i
-    simp [sub_eq_add_neg, mul_add]
-  rw [euclideanSqDist, hsub, vecNormSq_smul]
-  rfl
 
 theorem euclideanSqDist_affine_center {d : ℕ}
     (x₀ y : Vec d) (r : ℝ) :
     euclideanSqDist (r • y + x₀) x₀ =
-      r ^ 2 * euclideanSqDist y 0 := by
+      r ^ 2 * euclideanSqDist y 0  := by
+  have euclideanSqDist_smul_smul {d : ℕ} (x : Vec d) (y : Vec d) :
+      euclideanSqDist (r • x) (r • y) =
+      r ^ 2 * euclideanSqDist x y := by
+    have hsub : r • x - r • y = r • (x - y) := by
+      ext i
+      simp [sub_eq_add_neg, mul_add]
+    rw [euclideanSqDist, hsub, vecNormSq_smul]
+    rfl
   calc
     euclideanSqDist (r • y + x₀) x₀ =
         euclideanSqDist (r • y) 0 := by
       simpa using euclideanSqDist_add_right (r • y) 0 x₀
     _ = r ^ 2 * euclideanSqDist y 0 := by
-      simpa using euclideanSqDist_smul_smul r y 0
+      simpa using euclideanSqDist_smul_smul y 0
 
 theorem mem_euclideanBall_iff_vecEuclideanNorm_lt {d : ℕ}
     {x₀ x : Vec d} {R : ℝ} (hR : 0 < R) :
     x ∈ euclideanBall x₀ R ↔
       vecEuclideanNorm (x - x₀) < R := by
-  change vecNormSq (x - x₀) < R ^ 2 ↔
-    Real.sqrt (vecNormSq (x - x₀)) < R
   exact (Real.sqrt_lt' hR).symm
 
 theorem mem_euclideanClosedBall_iff_vecEuclideanNorm_le {d : ℕ}
     {x₀ x : Vec d} {R : ℝ} (hR : 0 ≤ R) :
     x ∈ euclideanClosedBall x₀ R ↔
       vecEuclideanNorm (x - x₀) ≤ R := by
-  change vecNormSq (x - x₀) ≤ R ^ 2 ↔
-    Real.sqrt (vecNormSq (x - x₀)) ≤ R
   exact (Real.sqrt_le_left hR).symm
 
 theorem affine_mem_euclideanBall_iff_of_pos {d : ℕ}
@@ -98,7 +90,7 @@ theorem affine_mem_euclideanBall_iff_of_pos {d : ℕ}
   change euclideanSqDist (r • y + x₀) x₀ < r ^ 2 ↔
     euclideanSqDist y 0 < 1 ^ 2
   rw [euclideanSqDist_affine_center]
-  have hr2 : 0 < r ^ 2 := sq_pos_of_pos hr
+  have hr2 := sq_pos_of_pos hr
   norm_num
   constructor <;> intro h <;> nlinarith
 
@@ -109,7 +101,7 @@ theorem affine_mem_euclideanClosedBall_iff_of_pos {d : ℕ}
   change euclideanSqDist (r • y + x₀) x₀ ≤ r ^ 2 ↔
     euclideanSqDist y 0 ≤ 1 ^ 2
   rw [euclideanSqDist_affine_center]
-  have hr2 : 0 < r ^ 2 := sq_pos_of_pos hr
+  have hr2 := sq_pos_of_pos hr
   norm_num
   constructor <;> intro h <;> nlinarith
 
@@ -137,13 +129,10 @@ theorem euclideanBall_eq_translateSet_smul_unit_of_pos {d : ℕ}
       simp [hr.ne']
   · intro hz
     rcases Set.mem_smul_set.1 hz with ⟨y, hy, hyEq⟩
-    have hpoint :
-        r • y + x₀ ∈ euclideanBall x₀ r :=
-      (affine_mem_euclideanBall_iff_of_pos x₀ y hr).2 hy
     have hpointEq : r • y + x₀ = z := by
       ext i
       simp [hyEq, sub_eq_add_neg, add_assoc]
-    simpa [hpointEq] using hpoint
+    simpa [hpointEq] using ((affine_mem_euclideanBall_iff_of_pos x₀ y hr).2 hy)
 
 theorem center_mem_euclideanBall {d : ℕ}
     (x₀ : Vec d) {R : ℝ} (hR : 0 < R) :
@@ -161,7 +150,6 @@ theorem euclideanBall_subset_euclideanClosedBall {d : ℕ}
     (x₀ : Vec d) (R : ℝ) :
     euclideanBall x₀ R ⊆ euclideanClosedBall x₀ R := by
   intro x hx
-  change euclideanSqDist x x₀ ≤ R ^ 2
   change euclideanSqDist x x₀ < R ^ 2 at hx
   exact le_of_lt hx
 
@@ -181,33 +169,30 @@ theorem euclideanClosedBall_subset_euclideanBall {d : ℕ}
   change euclideanSqDist x x₀ ≤ r ^ 2 at hx
   nlinarith
 
-theorem euclideanSqDist_weighted_add_le {d : ℕ}
-    {a b : ℝ} (ha : 0 ≤ a) (hb : 0 ≤ b) (hab : a + b = 1)
-    (x y x₀ : Vec d) :
-    euclideanSqDist (a • x + b • y) x₀ ≤
-      a * euclideanSqDist x x₀ +
-        b * euclideanSqDist y x₀ := by
-  have hsub :
-      (a • x + b • y) - x₀ =
-        a • (x - x₀) + b • (y - x₀) := by
-    ext i
-    simp only [Pi.sub_apply, Pi.add_apply, Pi.smul_apply, smul_eq_mul]
-    calc
-      a * x i + b * y i - x₀ i =
-          a * x i + b * y i - (a + b) * x₀ i := by
-        rw [hab]
-        ring
-      _ = a * (x i - x₀ i) + b * (y i - x₀ i) := by
-        ring
-  rw [euclideanSqDist, hsub, euclideanSqDist]
-  exact vecNormSq_weighted_add_le ha hb hab (x - x₀) (y - x₀)
 
 theorem convex_euclideanBall {d : ℕ}
     (x₀ : Vec d) (R : ℝ) :
-    Convex ℝ (euclideanBall x₀ R) := by
+    Convex ℝ (euclideanBall x₀ R)  := by
+  have euclideanSqDist_weighted_add_le {a : ℝ} {b : ℝ} (ha : 0 ≤ a) (hb : 0 ≤ b) (hab : a + b = 1) (x y x₀ : Vec d) :
+      euclideanSqDist (a • x + b • y) x₀ ≤
+      a * euclideanSqDist x x₀ +
+        b * euclideanSqDist y x₀ := by
+    have hsub :
+        (a • x + b • y) - x₀ =
+          a • (x - x₀) + b • (y - x₀) := by
+      ext i
+      simp
+      calc
+        a * x i + b * y i - x₀ i =
+            a * x i + b * y i - (a + b) * x₀ i := by
+          rw [hab]
+          ring
+        _ = a * (x i - x₀ i) + b * (y i - x₀ i) := by
+          ring
+    rw [euclideanSqDist, hsub, euclideanSqDist]
+    exact vecNormSq_weighted_add_le ha hb hab (x - x₀) (y - x₀)
   rw [convex_iff_add_mem]
   intro x hx y hy a b ha hb hab
-  change euclideanSqDist (a • x + b • y) x₀ < R ^ 2
   have hconv :=
     euclideanSqDist_weighted_add_le ha hb hab x y x₀
   by_cases ha_zero : a = 0
@@ -222,17 +207,8 @@ theorem convex_euclideanBall {d : ℕ}
         ring
       _ < R ^ 2 := hy
   · have ha_pos : 0 < a := lt_of_le_of_ne ha (Ne.symm ha_zero)
-    have hx_strict :
-        a * euclideanSqDist x x₀ < a * R ^ 2 :=
-      mul_lt_mul_of_pos_left hx ha_pos
-    have hy_le :
-        b * euclideanSqDist y x₀ ≤ b * R ^ 2 :=
-      mul_le_mul_of_nonneg_left (le_of_lt hy) hb
-    have hweighted :
-        a * euclideanSqDist x x₀ +
-            b * euclideanSqDist y x₀ <
-          a * R ^ 2 + b * R ^ 2 :=
-      add_lt_add_of_lt_of_le hx_strict hy_le
+    have hweighted :=
+      add_lt_add_of_lt_of_le (mul_lt_mul_of_pos_left hx ha_pos) (mul_le_mul_of_nonneg_left (le_of_lt hy) hb)
     have hright : a * R ^ 2 + b * R ^ 2 = R ^ 2 := by
       nlinarith
     exact hconv.trans_lt (hweighted.trans_eq hright)

@@ -25,10 +25,7 @@ theorem stripGreenOfRealization_quadratic_mass
       ENNReal.ofReal ((e.1.velocity 0 - H.lo) * (H.hi - e.1.velocity 0) / (2 * lam)) := by
   let D := evolutionPastOpenCylinder (intervalDomain H) (fun _ => 0) T
   let U := (KineticPoint.equivProd 1).symm ⁻¹' D
-  have hD : IsOpen D := isOpen_duhamelCylinder
-    (γ := fun _ => 0) (isOpen_of_isAdmissibleEvolutionDomain (intervalDomain_admissible H))
-    continuous_const T
-  have hU : IsOpen U := hD.preimage (KineticPoint.homeomorphProd 1).symm.continuous
+  have hU := (isOpen_duhamelCylinder (γ := fun _ => 0) (isOpen_of_isAdmissibleEvolutionDomain (intervalDomain_admissible H)) continuous_const T).preimage (KineticPoint.homeomorphProd 1).symm.continuous
   obtain ⟨χ, hχ, hb, -, hcover⟩ := exists_increasing_smooth_interior_cutoffs hU
   let g (n : ℕ) : Point → ℝ := χ n ∘ KineticPoint.equivProd 1
   have hgc (n : ℕ) : HasCompactSupport (g n) :=
@@ -38,11 +35,9 @@ theorem stripGreenOfRealization_quadratic_mass
     (hχ n).1.continuous.comp (KineticPoint.homeomorphProd 1).continuous
   have hgD (n : ℕ) : tsupport (g n) ⊆ D := by
     intro p hp
-    have hx := (tsupport_comp_subset_preimage (χ n)
-      (KineticPoint.homeomorphProd 1).continuous) hp
-    have hu := (hχ n).2.2 hx
+    have hu := (hχ n).2.2 ((tsupport_comp_subset_preimage (χ n) (KineticPoint.homeomorphProd 1).continuous) hp)
     change (KineticPoint.equivProd 1).symm (KineticPoint.equivProd 1 p) ∈ D at hu
-    simpa only [Equiv.symm_apply_apply] using hu
+    simpa using hu
   let F (n : ℕ) : BoundedBorel Point :=
     ⟨g n ∘ sectionTwoPoint,
       (hgcont n).measurable.comp (continuous_sectionTwoPoint 1).measurable,
@@ -56,10 +51,9 @@ theorem stripGreenOfRealization_quadratic_mass
     have hnp : sectionTwoPoint p ∈ D := by
       refine ⟨hp.1, ?_⟩
       apply PDE.mem_translateSet_iff_sub_mem.mpr
-      simpa only [sub_zero, intervalDomain, PDE.mem_oneDimensionalAxisBox_iff,
-        PDE.vecOneCoordinate, sectionTwoPoint, Interval.carrier] using hp.2
+      simpa [intervalDomain, PDE.mem_oneDimensionalAxisBox_iff, PDE.vecOneCoordinate, sectionTwoPoint, Interval.carrier] using hp.2
     have hnU : KineticPoint.equivProd 1 (sectionTwoPoint p) ∈ U := by
-      simpa only [U, mem_preimage, Equiv.symm_apply_apply] using hnp
+      simpa [U, Equiv.symm_apply_apply] using hnp
     obtain ⟨N, hN⟩ := hcover _ hnU
     apply tendsto_const_nhds.congr'
     filter_upwards [eventually_ge_atTop N] with n hn
@@ -71,23 +65,18 @@ theorem stripGreenOfRealization_quadratic_mass
       exact (hb n _).2) hlim
   let q := (e.1.velocity 0 - H.lo) * (H.hi - e.1.velocity 0) / (2 * lam)
   have hbound (n : ℕ) : stripPotentialOfKernel H E.2 T (F n) e ≤ q := by
-    have heT : e.1.time < T := WithTop.coe_lt_coe.mp e.2.1
+    have heT := WithTop.coe_lt_coe.mp e.2.1
     let p := sectionTwoPoint e.1
     have hp : p ∈ D := ⟨heT, (stripPoleState H T e).2.1⟩
-    have hcmp := strip_duhamel_le_quadratic hH hlam hLam A H E hE T (g n)
-      (fun p => (hb n _).1) (fun p => (hb n _).2) (hgs n) (hgc n) (hgD n) p hp
-    have hpot := duhamelPotential_eq_greenMeasure E.2 (intervalDomain_measurable H)
-      continuous_const T (g n) (fun p => (hb n _).1) (hgcont n) (hgc n)
-      e.1.time heT (stripPoleState H T e)
     have hIeq : stripPotentialOfKernel H E.2 T (F n) e = duhamelPotential E.2 T (g n) p := by
       rw [stripPotentialOfKernel, stripGreenOfKernel,
         integral_map (measurable_elapsedPhysicalPoint _ _).aemeasurable
           (F n).measurable.aestronglyMeasurable]
-      exact hpot.symm
+      exact (duhamelPotential_eq_greenMeasure E.2 (intervalDomain_measurable H) continuous_const T (g n) (fun p => (hb n _).1) (hgcont n) (hgc n) e.1.time heT (stripPoleState H T e)).symm
     rw [hIeq]
-    simpa only [stripQuadraticBarrier_eq, q, p, sectionTwoPoint] using hcmp
+    simpa only [stripQuadraticBarrier_eq, q, p, sectionTwoPoint] using (strip_duhamel_le_quadratic hH hlam hLam A H E hE T (g n) (fun p => (hb n _).1) (fun p => (hb n _).2) (hgs n) (hgc n) (hgD n) p hp)
   have hreal : (stripGreenOfKernel H E.2 T e).real univ ≤ q := by
-    have hc : stripPotentialOfKernel H E.2 T (1 : BoundedBorel Point) e =
+    have hc : stripPotentialOfKernel H E.2 T 1 e =
         (stripGreenOfKernel H E.2 T e).real univ := by
       simp [stripPotentialOfKernel, integral_const, smul_eq_mul]
     rw [hc] at hI

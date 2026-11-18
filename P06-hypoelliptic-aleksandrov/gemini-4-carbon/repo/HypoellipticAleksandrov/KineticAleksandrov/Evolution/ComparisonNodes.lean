@@ -45,9 +45,9 @@ theorem bounded_comparison {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω)
     (hart : ∀ p ∈ movingClosedSlab Ω γ a T ∩ {p | radialSq p ≤ R ^ 2},
       radialSq p = R ^ 2 → u p ≤ 0) :
     ∀ p ∈ movingClosedSlab Ω γ a T ∩ {p | radialSq p ≤ R ^ 2}, u p ≤ 0 := by
-  refine le_zero_of_viscous_nonneg_compact (B := B) (b := b) (ε := ε)
-    (K := movingClosedSlab Ω γ a T ∩ {p | radialSq p ≤ R ^ 2})
-    (D := movingActiveSlab Ω γ a T ∩ {p | radialSq p < R ^ 2}) (T := T) hε
+  refine le_zero_of_viscous_nonneg_compact (ε := ε)
+
+    (D := movingActiveSlab Ω γ a T ∩ {p | radialSq p < R ^ 2}) hε
     (isCompact_movingClosedSlab_inter hγ a T R) (fun p hp => hp.1.2.1) hcont
     (fun p hp => eventually_future_mem_truncated hΩ hγ hp) hreg
     (fun p _ => posSemidef_of_hasEverywhereLoewnerBounds hlam.le hB _ _ _) hsub ?_
@@ -69,7 +69,7 @@ theorem exists_growthConstant {n : ℕ} {Lam Lb : ℝ} {B : FullKineticCoefficie
   refine ⟨growthConstant n Lam (PDE.vecEuclideanNorm (b 0)) Lb, ?_, ?_⟩
   · unfold growthConstant
     have : 0 ≤ PDE.vecEuclideanNorm (b 0) := PDE.vecEuclideanNorm_nonneg _
-    have : (0 : ℝ) ≤ n := Nat.cast_nonneg n
+    have : 0 ≤ n := Nat.cast_nonneg n
     positivity
   · intro ε _ hε1 T p
     exact viscousTransportedOperator_growthBarrier_le hε1 hLam hb T p
@@ -91,8 +91,8 @@ theorem growth_comparison {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω)
     (hlat : ∀ p ∈ movingClosedSlab Ω γ a T,
       p.position ∈ frontier (movingDomain Ω γ p.time) → u p ≤ 0) :
     ∀ p ∈ movingClosedSlab Ω γ a T, u p ≤ 0 := by
-  refine le_zero_of_viscous_nonneg_growth (B := B) (b := b) (ε := ε) (Lam := Lam) (Lb := Lb)
-    (K := movingClosedSlab Ω γ a T) (D := movingActiveSlab Ω γ a T) hε0 hε1
+  refine le_zero_of_viscous_nonneg_growth (ε := ε)
+    (K := movingClosedSlab Ω γ a T) hε0 hε1
     (fun σ y z => (hB σ y z).2)
     hb (isClosed_movingClosedSlab hγ a T) (fun p hp => ⟨hp.1, hp.2.1⟩)
     (fun p hp => eventually_future_mem_movingClosedSlab hΩ hγ hp) hcont hbdd hreg
@@ -122,7 +122,7 @@ theorem classical_comparison {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω)
   obtain ⟨C₁, -, hC₁⟩ := h₁.1
   obtain ⟨C₂, -, hC₂⟩ := h₂.1
   have hp₀slab : p₀ ∈ movingClosedSlab Ω γ p₀.time τ := ⟨le_rfl, hp₀.1, hp₀.2⟩
-  have hres := growth_comparison (a := p₀.time) (T := τ) (u := fun q => u₁ q - u₂ q) hΩ hγ hlam
+  have hres := growth_comparison (u := fun q => u₁ q - u₂ q) hΩ hγ hlam
     hB hb hε0 hε1 ?_ ?_ ?_ ?_ ?_ ?_ p₀ hp₀slab
   · linarith
   · refine ⟨C₁ + C₂, fun p hp => ?_⟩

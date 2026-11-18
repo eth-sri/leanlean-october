@@ -46,10 +46,9 @@ noncomputable def flatProfileHessian {d : ℕ} {alpha : ℝ}
 theorem continuous_selectedFlatProfile {d : ℕ} {alpha : ℝ}
     (h : CounterProfileStatement d alpha) (r : ℝ) :
     Continuous (selectedFlatProfile h r) := by
-  have hH := (selectedProfile_spec h).2.2.2.2.2.2.1
   unfold selectedFlatProfile flatProfile
   exact continuous_const.sub (continuous_const.mul
-    (contDiff_flatteningPsi.continuous.comp (hH.div_const _)))
+    (contDiff_flatteningPsi.continuous.comp (((selectedProfile_spec h).2.2.2.2.2.2.1).div_const _)))
 
 /-- The ordinary first chain rule at a differentiability point of the unflattened profile. -/
 theorem fderiv_flatProfile {d : ℕ} (H : XV d → ℝ) (alpha r : ℝ)
@@ -57,13 +56,12 @@ theorem fderiv_flatProfile {d : ℕ} (H : XV d → ℝ) (alpha r : ℝ)
     fderiv ℝ (flatProfile H flatteningPsi flatteningOffset alpha r) q =
       (-deriv flatteningPsi (H q / Real.rpow r alpha)) • fderiv ℝ H q := by
   let a := Real.rpow r alpha
-  have ha : a ≠ 0 := (Real.rpow_pos_of_pos hr alpha).ne'
+  have ha := (Real.rpow_pos_of_pos hr alpha).ne'
   have hin : HasFDerivAt (fun z => H z / a) (a⁻¹ • fderiv ℝ H q) q := by
     simpa only [div_eq_mul_inv, mul_comm] using hH.hasFDerivAt.const_mul a⁻¹
   have hp : DifferentiableAt ℝ flatteningPsi (H q / a) :=
     (contDiff_flatteningPsi.differentiable (by simp)).differentiableAt
-  have hout := hp.hasDerivAt.comp_hasFDerivAt q hin
-  have hu := (hout.const_mul a).const_sub (1 - flatteningOffset * a)
+  have hu := ((hp.hasDerivAt.comp_hasFDerivAt q hin).const_mul a).const_sub (1 - flatteningOffset * a)
   have he := hu.fderiv
   change fderiv ℝ (flatProfile H flatteningPsi flatteningOffset alpha r) q = _ at he
   rw [he]
@@ -96,9 +94,7 @@ theorem flatProfile_representatives_source {d : ℕ} {alpha : ℝ}
       PDE.vecDot q.2 (flatProfilePositionJet h r q) -
         matrixContraction (profileMatrix h q) (flatProfileHessian h r q) =
       flatSource (profileMatrix h) (profileFunction h) flatteningPsi alpha r q := by
-  have hEq := (selectedProfile_spec h).2.2.2.2.2.2.2.2.2.2.2.2.2.2.1
-  have hJets := (selectedProfile_spec h).2.2.2.2.2.2.2.2.2.2.2.2.2.1
-  filter_upwards [hEq, hJets] with q hq hj
+  filter_upwards [((selectedProfile_spec h).2.2.2.2.2.2.2.2.2.2.2.2.2.2.1), ((selectedProfile_spec h).2.2.2.2.2.2.2.2.2.2.2.2.2.1)] with q hq hj
   unfold flatProfilePositionJet flatProfileHessian
   rw [contraction_flattening_identity]
   unfold flatSource
@@ -119,30 +115,27 @@ theorem measurable_flatProfile_jets {d : ℕ} {alpha : ℝ}
     (h : CounterProfileStatement d alpha) (r : ℝ) :
     Measurable (flatProfilePositionJet h r) ∧ Measurable (flatProfileVelocityJet h r) ∧
       (∀ i k, Measurable (fun q => flatProfileHessian h r q i k)) := by
-  have hH := (selectedProfile_spec h).2.2.2.2.2.2.1
-  have hmx := (selectedProfile_spec h).2.2.2.2.2.2.2.2.2.2.1
   have hmv := (selectedProfile_spec h).2.2.2.2.2.2.2.2.2.2.2.1
-  have hmh := (selectedProfile_spec h).2.2.2.2.2.2.2.2.2.2.2.2.1
   have hpsi : Continuous (deriv flatteningPsi) := by
     rw [funext deriv_flatteningPsi]
     exact contDiff_flatteningSlope.continuous
   have hpsi2 : Continuous (deriv (deriv flatteningPsi)) := by
     rw [funext deriv_flatteningPsi]
     exact contDiff_flatteningSlope.continuous_deriv (by simp)
-  have harg := hH.measurable.div_const (Real.rpow r alpha)
+  have harg := ((selectedProfile_spec h).2.2.2.2.2.2.1).measurable.div_const (Real.rpow r alpha)
   have hs := (hpsi.measurable.comp harg).neg
-  have ht : Measurable (fun q : XV d => Real.rpow r (-alpha) *
+  have ht : Measurable (fun q => Real.rpow r (-alpha) *
       deriv (deriv flatteningPsi) (profileFunction h q / Real.rpow r alpha)) :=
     measurable_const.mul (hpsi2.measurable.comp harg)
   refine ⟨?_, ?_, ?_⟩
   · apply Measurable.of_eval
     intro i
-    exact hs.mul ((measurable_pi_apply i).comp hmx)
+    exact hs.mul ((measurable_pi_apply i).comp ((selectedProfile_spec h).2.2.2.2.2.2.2.2.2.2.1))
   · apply Measurable.of_eval
     intro i
     exact hs.mul ((measurable_pi_apply i).comp hmv)
   · intro i k
-    exact (hs.mul (hmh i k)).sub
+    exact (hs.mul (((selectedProfile_spec h).2.2.2.2.2.2.2.2.2.2.2.2.1) i k)).sub
       ((ht.mul ((measurable_pi_apply i).comp hmv)).mul ((measurable_pi_apply k).comp hmv))
 
 /-- The complete weak flattened-profile conclusion required by the mollification lane. -/

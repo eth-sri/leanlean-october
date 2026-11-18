@@ -28,8 +28,6 @@ theorem enlargedVisitGreen_comp_eq_clipped
         finiteUnionGreen hH hLE hlam hLam A H T
           (visitPoleInclusion H (s - 1) T ⟨p, h⟩) else 0)
   have he : p ∈ enlargedVisitPoleSet H T ↔ p ∈ visitPoleSet H (s - 1) T := by
-    change (p.time < T ∧ p.velocity 0 ∈ H.carrier) ↔
-      (s - 1 < p.time ∧ p.time < T ∧ p.velocity 0 ∈ H.carrier)
     constructor
     · intro h
       exact ⟨by linarith, h⟩
@@ -77,7 +75,7 @@ theorem enlargedActiveExitMixture_ae_velocity
     apply closure_mono _ hq
     rw [visitActiveUnion_carrier]
     exact inter_subset_left
-  · simp only [ae_zero, Filter.eventually_bot]
+  · simp
 
 /-- The quadratic is integrable against each finite enlarged active exit mixture. -/
 theorem enlargedQuadratic_integrable_exit
@@ -117,17 +115,17 @@ theorem enlargedQuadratic_entrance_green_identity
   let G := enlargedVisitGreenKernel hH hLE hlam hLam A (visitActiveUnion c J) T
   let f := fun p : Point => visitQuadratic c (p.velocity 0)
   let g := fun p : Point => 2 * A.a (p.position 0) (p.velocity 0)
-  have hE : Integrable f (E ∘ₘ mu) :=
+  have hE :=
     enlargedQuadratic_integrable_exit hH hLE hlam hLam A c J T mu
   have : IsFiniteMeasure (G ∘ₘ mu) :=
     enlargedActivePiece_isFiniteMeasure hH hLE hlam hLam A c J s T P hs hT n
   have hG : Integrable g (G ∘ₘ mu) := visitCoefficient_integrable hlam A _
   have hiE : Integrable (fun p => ∫ q, f q ∂E p) mu := by
     rw [Measure.comp_eq_comp_const_apply] at hE
-    simpa only [Kernel.const_apply] using hE.integral_comp
+    simpa using hE.integral_comp
   have hiG : Integrable (fun p => ∫ q, g q ∂G p) mu := by
     rw [Measure.comp_eq_comp_const_apply] at hG
-    simpa only [Kernel.const_apply] using hG.integral_comp
+    simpa using hG.integral_comp
   have hp : f =ᵐ[mu] fun p => (∫ q, f q ∂E p) + ∫ q, g q ∂G p := by
     filter_upwards [enlargedVisitEntrance_ae_activePole hH hLE hlam hLam A c J s T P hs hT hJ n]
       with p hp
@@ -143,15 +141,13 @@ theorem enlargedQuadratic_entrance_green_identity
           (enlargedVisitPole _ T ⟨p, ht⟩) else 0) = _
       rw [dite_eq_left hp]
     have hh := visitQuadratic_active_identity hH hLE hlam hLam A c J T ep
-    have hn : (fun q : Point => -2 * A.a (q.position 0) (q.velocity 0)) = -g := by
+    have hn : (fun q => -2 * A.a (q.position 0) (q.velocity 0)) = -g := by
       funext q
       dsimp [g]
       ring
     rw [← he, ← hg, hn] at hh
     change f p = (∫ q, f q ∂E p) - ∫ q, -g q ∂G p at hh
-    rw [integral_neg, sub_neg_eq_add] at hh
-    exact hh
-  change (∫ p, f p ∂mu) = (∫ p, f p ∂E ∘ₘ mu) + ∫ p, g p ∂G ∘ₘ mu
+    rwa [integral_neg, sub_neg_eq_add] at hh
   rw [integral_congr_ae hp, integral_add hiE hiG]
   rw [nested_integral_bind mu E E.measurable f hE,
     nested_integral_bind mu G G.measurable g hG]

@@ -21,7 +21,7 @@ theorem abpPositiveCutoff_spec {ε : ℝ} (hε : 0 < ε) :
       (∀ s, 0 ≤ abpPositiveCutoff ε s ∧ abpPositiveCutoff ε s ≤ 1) ∧
       (∀ s, s ≤ ε / 2 → abpPositiveCutoff ε s = 0) ∧
       (∀ s, ε ≤ s → abpPositiveCutoff ε s = 1) := by
-  have hc : ContDiff ℝ (⊤ : ℕ∞) (fun s : ℝ => (2 * s - ε) / ε) := by fun_prop
+  have hc : ContDiff ℝ (⊤ : ℕ∞) (fun s => (2 * s - ε) / ε) := by fun_prop
   refine ⟨Real.smoothTransition.contDiff.comp hc,?_,?_,?_⟩
   · intro s
     exact ⟨Real.smoothTransition.nonneg _,Real.smoothTransition.le_one _⟩
@@ -75,7 +75,6 @@ theorem abp_defect_cutoff {d : ℕ} {Q : Set (KineticPoint d)} (hQ : MeasurableS
       (∀ P, 0 ≤ forwardKineticOperator A u P + g P) ∧
       (∀ᵐ P ∂(volume.restrict Q), 0 ≤ abpPositiveCutoff ε (u P) * g P ∧
         abpPositiveCutoff ε (u P) * g P ≤ {z | 0 < u z}.indicator g₀ P) := by
-  dsimp only
   have hcut := abpPositiveCutoff_spec hε
   refine ⟨(continuousOn_forwardKineticOperator hu A hA).neg.sup continuousOn_const,
     fun P => le_max_right _ _,fun P => ?_,?_⟩

@@ -24,19 +24,17 @@ theorem abs_apply_le_of_loewner
     (i j : Fin d) :
     |A i j| ≤ Lam := by
   classical
-  have hA : A.PosSemidef := (posDef_of_loewner_lower hlam hlower).posSemidef
-  have hgap : (Lam • (1 : PDE.Mat d) - A).PosSemidef := Matrix.le_iff.mp hupper
+  have hA := (posDef_of_loewner_lower hlam hlower).posSemidef
+  have hgap := Matrix.le_iff.mp hupper
   have hsymm : A i j = A j i := by
-    simpa only [star_trivial] using (hA.isHermitian.apply i j).symm
+    simpa using (hA.isHermitian.apply i j).symm
   have hii_nonneg : 0 ≤ A i i := hA.diag_nonneg
   have hii_upper : A i i ≤ Lam := by
     have := hgap.diag_nonneg (i := i)
-    simpa only [Matrix.sub_apply, Matrix.smul_apply, Matrix.one_apply, if_pos,
-      smul_eq_mul, mul_one, sub_nonneg] using this
+    simpa using this
   have hjj_upper : A j j ≤ Lam := by
     have := hgap.diag_nonneg (i := j)
-    simpa only [Matrix.sub_apply, Matrix.smul_apply, Matrix.one_apply, if_pos,
-      smul_eq_mul, mul_one, sub_nonneg] using this
+    simpa using this
   by_cases hij : i = j
   · subst j
     rw [abs_of_nonneg hii_nonneg]

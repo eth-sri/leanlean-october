@@ -1,7 +1,8 @@
 module
 
+public import PDEFoundation.Geometry.ConvexDomain
+public import Mathlib.Analysis.Calculus.ContDiff.Operations
 public import PDEFoundation.Measure.AffineVolume
-public import PDEFoundation.Sobolev.W1p.ConvexApprox.Geometry
 public import Mathlib.Algebra.GroupWithZero.Action.Pointwise.Set
 public import Mathlib.Analysis.Calculus.BumpFunction.FiniteDimension
 public import Mathlib.Analysis.Calculus.BumpFunction.Normed
@@ -9,20 +10,197 @@ public import Mathlib.Analysis.Convolution
 public import Mathlib.Analysis.SpecificLimits.Basic
 public import Mathlib.MeasureTheory.Integral.Bochner.Set
 
-/-!
-# Convex-domain smoothing kernels
-
-This file defines the normalized smooth kernel and the affine
-convex-approximation operator. It also records the exact positive-dilation
-Jacobian formulas and the convolution representation used by later smoothness,
-weak-derivative, and convergence modules.
--/
-
-@[expose] public section
-
-open scoped Pointwise Convolution
+@[expose] public noncomputable section
 
 namespace PDE
+
+/-- The point on the segment from `y` to `x` with parameter `t`. -/
+noncomputable def segmentBlend {d : ℕ} (x : Vec d) (t : ℝ) (y : Vec d) : Vec d :=
+  AffineMap.lineMap y x t
+
+@[simp]
+theorem segmentBlend_eq_lineMap {d : ℕ} (x y : Vec d) (t : ℝ) :
+    segmentBlend x t y = AffineMap.lineMap y x t :=
+  rfl
+
+
+
+
+
+/-- The segment parametrization as an affine combination of its endpoints. -/
+theorem segmentBlend_eq_smul_add {d : ℕ} (x y : Vec d) (t : ℝ) :
+    segmentBlend x t y = (1 - t) • y + t • x := by
+  simpa [segmentBlend] using
+    (AffineMap.lineMap_apply_module y x t)
+
+theorem segmentBlend_sub_right {d : ℕ} (x y : Vec d) (t : ℝ) :
+    segmentBlend x t y - y = t • (x - y) := by
+  ext i
+  simp [segmentBlend, AffineMap.lineMap_apply_module']
+
+theorem norm_segmentBlend_sub_right {d : ℕ} (x y : Vec d) (t : ℝ) :
+    ‖segmentBlend x t y - y‖ = |t| * ‖x - y‖ := by
+  rw [segmentBlend_sub_right, norm_smul, Real.norm_eq_abs]
+
+
+theorem segmentBlend_mem_of_isOpenBoundedConvexDomain {d : ℕ}
+    {U : Set (Vec d)} (hU : IsOpenBoundedConvexDomain U)
+    {x y : Vec d} (hx : x ∈ U) (hy : y ∈ U) {t : ℝ}
+    (ht0 : 0 ≤ t) (ht1 : t ≤ 1) :
+    segmentBlend x t y ∈ U  := by
+  simpa [segmentBlend] using hU.convex.lineMap_mem hy hx ⟨ht0, ht1⟩
+
+
+/-- A nonempty bounded open convex domain contains a positive-radius closed
+ball for the inherited native-vector metric. Since that metric is the
+finite-product supremum metric, this is an internal base cube, not a round
+Euclidean ball. -/
+theorem
+    exists_metricClosedBall_subset_of_isOpenBoundedConvexDomain
+    {d : ℕ} {U : Set (Vec d)}
+    (hU : IsOpenBoundedConvexDomain U) (hUNonempty : U.Nonempty) :
+    ∃ x0 : Vec d, ∃ r : ℝ,
+      0 < r ∧ Metric.closedBall x0 r ⊆ U := by
+  rcases hUNonempty with ⟨x0, hx0⟩
+  rcases Metric.isOpen_iff.1 hU.isOpen x0 hx0 with
+    ⟨δ, hδ, hball⟩
+  refine ⟨x0, δ / 2, by positivity, ?_⟩
+  exact
+    (Metric.closedBall_subset_ball
+      (by linarith : δ / 2 < δ)).trans hball
+
+/-- The affine sample point used by the convex-domain smoothing operator. -/
+def convexApproxSample {d : ℕ}
+    (x0 z : Vec d) (r ε : ℝ) (x : Vec d) : Vec d :=
+  (1 - ε) • x + ε • (x0 - r • z)
+
+@[simp]
+theorem convexApproxSample_apply {d : ℕ}
+    (x0 z : Vec d) (r ε : ℝ) (x : Vec d) :
+    convexApproxSample x0 z r ε x =
+      (1 - ε) • x + ε • (x0 - r • z) :=
+  rfl
+
+theorem convexApproxSample_eq_segmentBlend {d : ℕ}
+    (x0 z : Vec d) (r ε : ℝ) (x : Vec d) :
+    convexApproxSample x0 z r ε x =
+      segmentBlend (x0 - r • z) ε x := by
+  rw [convexApproxSample, segmentBlend_eq_smul_add]
+
+
+theorem sub_smul_mem_of_closedBall_subset {d : ℕ}
+    {U : Set (Vec d)} {x0 z : Vec d} {r : ℝ}
+    (hball : Metric.closedBall x0 r ⊆ U)
+    (hr : 0 ≤ r) (hz : ‖z‖ ≤ 1) :
+    x0 - r • z ∈ U  := by
+  have sub_smul_mem_closedBall :
+      x0 - r • z ∈ Metric.closedBall x0 r := by
+    rw [Metric.mem_closedBall, dist_eq_norm]
+    have hsub : (x0 - r • z) - x0 = -(r • z) := by
+      abel_nf
+    rw [hsub, norm_neg, norm_smul]
+    calc
+      |r| * ‖z‖ ≤ |r| * 1 :=
+        mul_le_mul_of_nonneg_left hz (abs_nonneg r)
+      _ = r := by
+        rw [abs_of_nonneg hr]
+        ring
+  exact hball (sub_smul_mem_closedBall)
+
+/-- The base-ball sample point remains in the convex domain. -/
+theorem convexApproxSample_mem_of_isOpenBoundedConvexDomain
+    {d : ℕ} {U : Set (Vec d)}
+    (hU : IsOpenBoundedConvexDomain U)
+    {x x0 z : Vec d} {r ε : ℝ} (hx : x ∈ U)
+    (hball : Metric.closedBall x0 r ⊆ U)
+    (hr : 0 ≤ r) (hz : ‖z‖ ≤ 1)
+    (hε0 : 0 ≤ ε) (hε1 : ε ≤ 1) :
+    convexApproxSample x0 z r ε x ∈ U := by
+  rw [convexApproxSample_eq_segmentBlend]
+  exact
+    segmentBlend_mem_of_isOpenBoundedConvexDomain
+      hU (sub_smul_mem_of_closedBall_subset hball hr hz) hx hε0 hε1
+
+/-- The base-ball sampling map sends the whole convex domain to itself. -/
+theorem convexApproxSample_mapsTo_of_isOpenBoundedConvexDomain
+    {d : ℕ} {U : Set (Vec d)}
+    (hU : IsOpenBoundedConvexDomain U)
+    {x0 z : Vec d} {r ε : ℝ}
+    (hball : Metric.closedBall x0 r ⊆ U)
+    (hr : 0 ≤ r) (hz : ‖z‖ ≤ 1)
+    (hε0 : 0 ≤ ε) (hε1 : ε ≤ 1) :
+    Set.MapsTo (convexApproxSample x0 z r ε) U U := by
+  intro x hx
+  exact
+    convexApproxSample_mem_of_isOpenBoundedConvexDomain
+      hU hx hball hr hz hε0 hε1
+
+theorem norm_convexApproxSample_sub {d : ℕ}
+    (x0 z : Vec d) (r ε : ℝ) (x : Vec d) :
+    ‖convexApproxSample x0 z r ε x - x‖ =
+      |ε| * ‖(x0 - r • z) - x‖ := by
+  rw [convexApproxSample_eq_segmentBlend,
+    norm_segmentBlend_sub_right]
+
+theorem norm_convexApproxSample_sub_le {d : ℕ}
+    (x0 z : Vec d) (r ε : ℝ) (x : Vec d)
+    (hε0 : 0 ≤ ε) :
+    ‖convexApproxSample x0 z r ε x - x‖ ≤
+      ε * ‖(x0 - r • z) - x‖ := by
+  rw [norm_convexApproxSample_sub, abs_of_nonneg hε0]
+
+private theorem IsBoundedDomain.norm_sub_le_two_mul_choose'
+    {d : ℕ} {U : Set (Vec d)} (hU : IsBoundedDomain U)
+    {x y : Vec d} (hx : x ∈ U) (hy : y ∈ U) :
+    ‖x - y‖ ≤ 2 * Classical.choose hU := by
+  have hRPos :=
+    (Classical.choose_spec hU).1
+  have hR :=
+    (Classical.choose_spec hU).2
+  have hxNorm : ‖x‖ ≤ Classical.choose hU := by
+    refine (pi_norm_le_iff_of_nonneg hRPos.le).2 ?_
+    intro i
+    simpa using hR x hx i
+  have hyNorm : ‖y‖ ≤ Classical.choose hU := by
+    refine (pi_norm_le_iff_of_nonneg hRPos.le).2 ?_
+    intro i
+    simpa using hR y hy i
+  calc
+    ‖x - y‖ ≤ ‖x‖ + ‖y‖ :=
+      norm_sub_le x y
+    _ ≤ Classical.choose hU + Classical.choose hU :=
+      add_le_add hxNorm hyNorm
+    _ = 2 * Classical.choose hU := by
+      ring
+
+theorem norm_convexApproxSample_sub_le_two_mul_choose
+    {d : ℕ} {U : Set (Vec d)} (hU : IsBoundedDomain U)
+    {x x0 z : Vec d} {r ε : ℝ} (hx : x ∈ U)
+    (hball : Metric.closedBall x0 r ⊆ U)
+    (hr : 0 ≤ r) (hz : ‖z‖ ≤ 1) (hε0 : 0 ≤ ε) :
+    ‖convexApproxSample x0 z r ε x - x‖ ≤
+      ε * (2 * Classical.choose hU) := by
+  calc
+    ‖convexApproxSample x0 z r ε x - x‖ ≤
+        ε * ‖(x0 - r • z) - x‖ :=
+      norm_convexApproxSample_sub_le x0 z r ε x hε0
+    _ ≤ ε * (2 * Classical.choose hU) :=
+      mul_le_mul_of_nonneg_left
+        (hU.norm_sub_le_two_mul_choose' (sub_smul_mem_of_closedBall_subset hball hr hz) hx) hε0
+
+theorem
+    norm_convexApproxSample_sub_le_two_mul_choose_of_isOpenBoundedConvexDomain
+    {d : ℕ} {U : Set (Vec d)}
+    (hU : IsOpenBoundedConvexDomain U)
+    {x x0 z : Vec d} {r ε : ℝ} (hx : x ∈ U)
+    (hball : Metric.closedBall x0 r ⊆ U)
+    (hr : 0 ≤ r) (hz : ‖z‖ ≤ 1) (hε0 : 0 ≤ ε) :
+    ‖convexApproxSample x0 z r ε x - x‖ ≤
+      ε * (2 * Classical.choose hU.isBoundedDomain) :=
+  norm_convexApproxSample_sub_le_two_mul_choose
+    hU.isBoundedDomain hx hball hr hz hε0
+
+open scoped Pointwise Convolution
 
 /-- Cache smooth-bump existence on native vectors for this module and its
 transitive importers. -/
@@ -78,7 +256,7 @@ theorem isConvexApproxKernel_normed {d : ℕ}
               MeasureTheory.setIntegral_eq_integral_of_forall_compl_eq_zero
                 (fun z hz =>
                   image_eq_zero_of_notMem_tsupport
-                    (f := φ.normed MeasureTheory.volume) hz)
+ hz)
           _ = 1 :=
             φ.integral_normed (μ := MeasureTheory.volume) }
 
@@ -99,7 +277,7 @@ theorem isConvexApproxKernel_unitConvexApproxKernel {d : ℕ} :
       (unitConvexApproxKernel (d := d)) := by
   simpa only [unitConvexApproxKernel, unitContDiffBump] using
     (ContDiffBump.isConvexApproxKernel_normed
-      (φ := unitContDiffBump (d := d))
+      (φ := unitContDiffBump)
       (by norm_num [unitContDiffBump]))
 
 /-- The standard positive scale sequence for convex approximation. -/
@@ -114,7 +292,7 @@ theorem unitConvexApproxScale_pos (n : ℕ) :
 theorem tendsto_unitConvexApproxScale_zero :
     Filter.Tendsto unitConvexApproxScale
       Filter.atTop (nhds 0) := by
-  simpa only [unitConvexApproxScale] using!
+  simpa using!
     tendsto_one_div_add_atTop_nhds_zero_nat
 
 /-- The integrand defining convex approximation at a point. -/
@@ -175,7 +353,7 @@ theorem contDiff_scaledConvexApproxKernel {d : ℕ}
   have hscale :
       ContDiff ℝ (⊤ : ℕ∞) (fun y : Vec d => a⁻¹ • y) := by
     fun_prop
-  simpa only [scaledConvexApproxKernel] using!
+  simpa using!
     contDiff_const.mul (hρ.smooth.comp hscale)
 
 theorem measurable_scaledConvexApproxKernel {d : ℕ}
@@ -188,13 +366,13 @@ theorem hasCompactSupport_scaledConvexApproxKernel {d : ℕ}
     {a : ℝ} (ha : 0 < a) :
     HasCompactSupport (scaledConvexApproxKernel ρ a) := by
   have hcomp :
-      HasCompactSupport (fun y : Vec d => ρ (a⁻¹ • y)) := by
-    simpa only [Function.comp_def] using
+      HasCompactSupport (fun y => ρ (a⁻¹ • y)) := by
+    simpa using
       hρ.comp_smul (inv_ne_zero ha.ne')
-  simpa only [scaledConvexApproxKernel] using!
+  simpa using!
     (hcomp.mul_left :
       HasCompactSupport
-        (fun y : Vec d => (a ^ d)⁻¹ * ρ (a⁻¹ • y)))
+        (fun y => (a ^ d)⁻¹ * ρ (a⁻¹ • y)))
 
 theorem integrable_scaledConvexApproxKernel {d : ℕ}
     {ρ : Vec d → ℝ} (hρ : IsConvexApproxKernel ρ)
@@ -218,7 +396,7 @@ theorem integral_scaledConvexApproxKernel {d : ℕ}
     {ρ : Vec d → ℝ} (hρ : IsConvexApproxKernel ρ)
     {a : ℝ} (ha : 0 < a) :
     ∫ y, scaledConvexApproxKernel ρ a y = 1 := by
-  have haNe : a ≠ 0 :=
+  have haNe :=
     ha.ne'
   have hzero :
       ∀ y, y ∉ a • tsupport ρ →
@@ -230,8 +408,7 @@ theorem integral_scaledConvexApproxKernel {d : ℕ}
       exact Set.mem_smul_set.mpr
         ⟨a⁻¹ • y, hmem, by
           rw [smul_smul, mul_inv_cancel₀ haNe, one_smul]⟩
-    simp only [scaledConvexApproxKernel,
-      image_eq_zero_of_notMem_tsupport hy', mul_zero]
+    simp [scaledConvexApproxKernel, image_eq_zero_of_notMem_tsupport hy']
   rw [←
     MeasureTheory.setIntegral_eq_integral_of_forall_compl_eq_zero
       hzero]
@@ -250,7 +427,7 @@ theorem integral_scaledConvexApproxKernel {d : ℕ}
         inv_mul_cancel₀ haNe, mul_inv_cancel₀ haNe] using
         (MeasureTheory.Measure.setIntegral_comp_smul_of_pos
           (μ := MeasureTheory.volume)
-          (f := fun y : Vec d => ρ (a⁻¹ • y))
+          (f := fun y => ρ (a⁻¹ • y))
           (s := tsupport ρ) ha).symm
     _ = 1 :=
       hρ.setIntegral_one
@@ -265,10 +442,10 @@ theorem translateSet_smul_subset_of_convexApproxSample_mapsTo
   intro y hy
   rcases hy with ⟨w, hw, hyw⟩
   rcases Set.mem_smul_set.mp hw with ⟨x, hx, rfl⟩
-  have hx' : convexApproxSample x0 z r ε x ∈ U :=
+  have hx' :=
     hmap hx
   rw [hyw]
-  simpa only [convexApproxSample] using hx'
+  simpa using hx'
 
 theorem setIntegral_comp_smul_add_of_pos
     {d : ℕ} {E : Type*}
@@ -287,13 +464,13 @@ theorem setIntegral_comp_smul_add_of_pos
       simpa [Vec] using
         (MeasureTheory.Measure.setIntegral_comp_smul_of_pos
           (μ := MeasureTheory.volume)
-          (f := fun z : Vec d => f (z + b))
+          (f := fun z => f (z + b))
           (s := U) ha)
     _ = (a ^ d)⁻¹ •
           ∫ y in translateSet b (a • U), f y
             ∂MeasureTheory.volume := by
       rw [setIntegral_comp_addRight_translateSet
-        (d := d) (E := E) b (a • U) f]
+ b (a • U) f]
 
 theorem convolution_scaledConvexApproxKernel_indicator_eq_setIntegral
     {d : ℕ} {ρ u : Vec d → ℝ} {U : Set (Vec d)}
@@ -308,12 +485,11 @@ theorem convolution_scaledConvexApproxKernel_indicator_eq_setIntegral
           ∂MeasureTheory.volume := by
   let a : ℝ :=
     ε * r
-  let A : Vec d :=
+  let A :=
     (1 - ε) • x + ε • x0
   have ha : 0 < a := by
-    dsimp only [a]
     positivity
-  have haNe : a ≠ 0 :=
+  have haNe :=
     ha.ne'
   change
     ∫ t, scaledConvexApproxKernel ρ a t *
@@ -333,16 +509,15 @@ theorem convolution_scaledConvexApproxKernel_indicator_eq_setIntegral
       exact Set.mem_smul_set.mpr
         ⟨a⁻¹ • y, hmem, by
           rw [smul_smul, mul_inv_cancel₀ haNe, one_smul]⟩
-    simp only [image_eq_zero_of_notMem_tsupport hy',
-      zero_mul, mul_zero]
+    simp [image_eq_zero_of_notMem_tsupport hy']
   rw [←
     MeasureTheory.setIntegral_eq_integral_of_forall_compl_eq_zero
       hzero]
   have hmul :
-      (fun y : Vec d =>
+      (fun y =>
         ((a ^ d)⁻¹ * ρ (a⁻¹ • y)) *
           Set.indicator U u (A - y)) =
-        fun y : Vec d =>
+        fun y =>
           (a ^ d)⁻¹ *
             (ρ (a⁻¹ • y) * Set.indicator U u (A - y)) := by
     funext y
@@ -364,9 +539,9 @@ theorem convolution_scaledConvexApproxKernel_indicator_eq_setIntegral
         inv_mul_cancel₀ haNe, mul_inv_cancel₀ haNe,
         zero_smul, add_zero] using
         (setIntegral_comp_smul_add_of_pos
-          (d := d) (E := ℝ) (a := a) ha (b := 0)
+ ha (b := 0)
           (U := tsupport ρ)
-          (f := fun y : Vec d =>
+          (f := fun y =>
             ρ (a⁻¹ • y) * Set.indicator U u (A - y))).symm
 
 theorem
@@ -386,23 +561,17 @@ theorem
     convolution_scaledConvexApproxKernel_indicator_eq_setIntegral
       hr hε0,
     convexApproxSmoothing]
-  have htsupportMeas : MeasurableSet (tsupport ρ) :=
-    (isClosed_tsupport (f := ρ)).measurableSet
   apply MeasureTheory.integral_congr_ae
   change
     ∀ᵐ z ∂MeasureTheory.volume.restrict (tsupport ρ),
       convexApproxIntegrand ρ u x0 r ε x z =
         ρ z * Set.indicator U u
           (((1 - ε) • x + ε • x0) - (ε * r) • z)
-  rw [MeasureTheory.ae_restrict_iff' htsupportMeas]
+  rw [MeasureTheory.ae_restrict_iff' ((isClosed_tsupport (f := ρ)).measurableSet)]
   filter_upwards with z hz
   have hzNorm : ‖z‖ ≤ 1 := by
-    simpa only [Metric.mem_closedBall, dist_zero_right] using
+    simpa using
       hρ.support_subset_closedBall hz
-  have hsampleMem :
-      convexApproxSample x0 z r ε x ∈ U :=
-    convexApproxSample_mem_of_isOpenBoundedConvexDomain
-      hU hx hball hr.le hzNorm hε0.le (le_of_lt hε1)
   have hsampleEq :
       ((1 - ε) • x + ε • x0) - (ε * r) • z =
         convexApproxSample x0 z r ε x := by
@@ -411,7 +580,7 @@ theorem
   have hind :
       Set.indicator U u (convexApproxSample x0 z r ε x) =
         u (convexApproxSample x0 z r ε x) := by
-    rw [Set.indicator_of_mem hsampleMem]
+    rw [Set.indicator_of_mem (convexApproxSample_mem_of_isOpenBoundedConvexDomain hU hx hball hr.le hzNorm hε0.le (le_of_lt hε1))]
   calc
     convexApproxIntegrand ρ u x0 r ε x z =
         ρ z * u (convexApproxSample x0 z r ε x) :=
@@ -427,3 +596,4 @@ theorem
       rw [hsampleEq]
 
 end PDE
+

@@ -44,81 +44,78 @@ theorem mul_contDiff {d : ℕ} {U : Set (Vec d)} {i : Fin d}
         φ x * gi x + u x * (fderiv ℝ φ x) (basisVec i)) := by
   intro ψ hψSmooth hψCompact hψSubset
   let μU : MeasureTheory.Measure (Vec d) := volumeOn U
-  let ei : Vec d := basisVec i
+  let ei := basisVec i
   let dφ : Vec d → ℝ := fun x => (fderiv ℝ φ x) ei
   let dψ : Vec d → ℝ := fun x => (fderiv ℝ ψ x) ei
   let ψφ : Vec d → ℝ := fun x => φ x * ψ x
-  change
-    (∫ x, (φ x * u x) * dψ x ∂μU) =
-      -∫ x, (φ x * gi x + u x * dφ x) * ψ x ∂μU
   have hφCont : Continuous φ := hφ.continuous
   have hψCont : Continuous ψ := hψSmooth.continuous
   have hdφCont : Continuous dφ := by
-    simpa only [dφ, ei] using
+    simpa using
       (hφ.continuous_fderiv (by simp)).clm_apply continuous_const
   have hdψCont : Continuous dψ := by
-    simpa only [dψ, ei] using
+    simpa using
       (hψSmooth.continuous_fderiv (by simp)).clm_apply continuous_const
   have hdψCompact : HasCompactSupport dψ := by
-    simpa only [dψ, ei] using
+    simpa using
       hψCompact.fderiv_apply (𝕜 := ℝ) ei
   have hψφSmooth : ContDiff ℝ (⊤ : ℕ∞) ψφ :=
     hφ.mul hψSmooth
   have hψφCompact : HasCompactSupport ψφ := by
-    simpa only [ψφ] using! hψCompact.mul_left (f := φ)
+    simpa using! hψCompact.mul_left
   have hdψφCont :
       Continuous (fun x => (fderiv ℝ ψφ x) ei) := by
-    simpa only [ei] using
+    simpa using
       (hψφSmooth.continuous_fderiv (by simp)).clm_apply continuous_const
   have hdψφCompact :
       HasCompactSupport (fun x => (fderiv ℝ ψφ x) ei) := by
-    simpa only [ei] using
+    simpa using
       hψφCompact.fderiv_apply (𝕜 := ℝ) ei
   have hψφSubset : tsupport ψφ ⊆ U :=
-    (tsupport_mul_subset_right (f := φ) (g := ψ)).trans hψSubset
+    (tsupport_mul_subset_right).trans hψSubset
   have huWeak :
       (∫ x, u x * (fderiv ℝ ψφ x) ei ∂μU) =
         -∫ x, gi x * ψφ x ∂μU := by
-    simpa only [μU] using
+    simpa using
       h ψφ hψφSmooth hψφCompact hψφSubset
   have hφdψCont : Continuous (fun x => φ x * dψ x) :=
     hφCont.mul hdψCont
   have hφdψCompact :
       HasCompactSupport (fun x => φ x * dψ x) := by
-    simpa only using! hdψCompact.mul_left (f := φ)
+    simpa only using! hdψCompact.mul_left
   have huφdψIntegrable :
       MeasureTheory.Integrable
         (fun x => u x * (φ x * dψ x)) μU := by
-    simpa only [smul_eq_mul, mul_assoc] using
+    simpa using
       huLoc.integrable_smul_right_of_hasCompactSupport
         hφdψCont hφdψCompact
   have hψdφCont : Continuous (fun x => ψ x * dφ x) :=
     hψCont.mul hdφCont
   have hψdφCompact :
       HasCompactSupport (fun x => ψ x * dφ x) := by
-    simpa only using! hψCompact.mul_right (f' := dφ)
+    simpa only using! hψCompact.mul_right
   have huψdφIntegrable :
       MeasureTheory.Integrable
         (fun x => u x * (ψ x * dφ x)) μU := by
-    simpa only [smul_eq_mul, mul_assoc] using
+    simpa using
       huLoc.integrable_smul_right_of_hasCompactSupport
         hψdφCont hψdφCompact
   have huDψφIntegrable :
       MeasureTheory.Integrable
         (fun x => u x * (fderiv ℝ ψφ x) ei) μU := by
-    simpa only [smul_eq_mul] using
+    simpa using
       huLoc.integrable_smul_right_of_hasCompactSupport
         hdψφCont hdψφCompact
   have hgiφψIntegrable :
       MeasureTheory.Integrable
         (fun x => gi x * (φ x * ψ x)) μU := by
-    simpa only [smul_eq_mul, mul_assoc] using!
+    simpa using!
       hgiLoc.integrable_smul_right_of_hasCompactSupport
         (hφCont.mul hψCont) hψφCompact
   have hudφψIntegrable :
       MeasureTheory.Integrable
         (fun x => (u x * dφ x) * ψ x) μU := by
-    simpa only [smul_eq_mul, mul_assoc, mul_left_comm, mul_comm] using
+    simpa [mul_assoc, mul_left_comm, mul_comm] using
       huLoc.integrable_smul_right_of_hasCompactSupport
         hψdφCont hψdφCompact
   have hproductDeriv :
@@ -130,8 +127,7 @@ theorem mul_contDiff {d : ℕ} {U : Set (Vec d)} {i : Fin d}
     have hψDiff : DifferentiableAt ℝ ψ x :=
       hψSmooth.contDiffAt.differentiableAt (by simp)
     rw [show ψφ = φ * ψ by rfl, fderiv_mul hφDiff hψDiff]
-    simp only [dφ, dψ, ei, add_apply,
-      smul_apply, smul_eq_mul]
+    simp [dφ, dψ, ei, add_apply, smul_apply]
   have hleft :
       (∫ x, (φ x * u x) * dψ x ∂μU) =
         ∫ x, u x * (φ x * dψ x) ∂μU := by

@@ -53,18 +53,17 @@ theorem fourierProjection_zero {d : ℕ} {Ω : Set (PDE.Vec d)}
     (q : EvolutionQuery Ω γ) (ν : ComplexMeasure (PDE.Vec d))
     (hν : IsFourierProjection K q 0 ν) (E : Set (PDE.Vec d))
     (hE : MeasurableSet E) : ν E = ((K.firstMarginal q E).toReal : ℂ) := by
-  have hz : fourierPhase (0 : PDE.Vec d) q.1.2.2.2 = fun _ => (1 : ℂ) := by
+  have hz : fourierPhase 0 q.1.2.2.2 = fun _ => 1 := by
     funext w
-    simp only [fourierPhase, PDE.vecDot, Pi.zero_apply, zero_mul, Finset.sum_const_zero,
-      Complex.ofReal_zero, mul_zero, Complex.exp_zero]
+    simp [fourierPhase, PDE.vecDot, Complex.ofReal_zero, Complex.exp_zero]
   rw [hν E hE, hz]
   change _ = (((Measure.map Prod.fst (K.master q)) E).toReal : ℂ)
   rw [Measure.map_apply measurable_fst hE]
   have hset : (Prod.fst : EvolutionAmbientState d → PDE.Vec d) ⁻¹' E = E ×ˢ univ := by
     ext w
-    simp only [mem_preimage, mem_prod, mem_univ, and_true]
+    simp
   rw [hset]
-  simp only [setIntegral_const, measureReal_def, Complex.real_smul, mul_one]
+  simp [setIntegral_const, measureReal_def, Complex.real_smul]
 
 /-- A full zero-mode equality usable for vector-measure rewriting. -/
 theorem fourierProjection_zero_measure {d : ℕ} {Ω : Set (PDE.Vec d)}
@@ -76,7 +75,7 @@ theorem fourierProjection_zero_measure {d : ℕ} {Ω : Set (PDE.Vec d)}
     infer_instance
   apply VectorMeasure.ext
   intro E hE
-  rw [fourierProjection_zero K q ν hν E hE, withDensityᵥ_apply (integrable_const (1 : ℂ)) hE]
-  simp only [setIntegral_const, measureReal_def, Complex.real_smul, mul_one]
+  rw [fourierProjection_zero K q ν hν E hE, withDensityᵥ_apply (integrable_const 1) hE]
+  simp [setIntegral_const, measureReal_def, Complex.real_smul]
 
 end HypoellipticAleksandrov.KineticAleksandrov.SectionTwo

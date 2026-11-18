@@ -17,7 +17,7 @@ theorem return_loss_exponent {c : ℝ} (hc : 0 < c) :
   obtain ⟨n, hn⟩ := exists_pow_lt_of_lt_one hc (by norm_num : (1 / 2 : ℝ) < 1)
   refine ⟨n + 1, by omega, ?_⟩
   rw [pow_succ]
-  nlinarith [pow_nonneg (by norm_num : (0 : ℝ) ≤ 1 / 2) n]
+  nlinarith [pow_nonneg (by norm_num : 0 ≤ 1 / 2) n]
 
 /-- Stop doubling at a radius between the fixed cutoff and twice that cutoff. -/
 theorem return_doubling_cutoff (r ell : ℝ) (_hr : 0 < r) (hell : 0 < ell)
@@ -42,8 +42,6 @@ theorem return_loss_power {c ell : ℝ} {m N : ℕ}
     positivity
   have hpow : (returnExpandedRadius ell N) ^ m ≤ 1 :=
     pow_le_one₀ hR hrad
-  have hcoeff : ((1 / 2 : ℝ) ^ m) ^ N ≤ c ^ N :=
-    pow_le_pow_left₀ (pow_nonneg (by norm_num) m) hbase N
   have he : ((1 / 2 : ℝ) ^ m) ^ N * (returnExpandedRadius ell N) ^ m = ell ^ m := by
     dsimp [returnExpandedRadius]
     rw [mul_pow, ← pow_mul, ← pow_mul, Nat.mul_comm m N]
@@ -51,6 +49,6 @@ theorem return_loss_power {c ell : ℝ} {m N : ℕ}
     norm_num
   rw [← he]
   exact (mul_le_mul_of_nonneg_left hpow (pow_nonneg (pow_nonneg (by norm_num) m) N)).trans
-    (by simpa only [mul_one] using hcoeff)
+    (by simpa using (pow_le_pow_left₀ (pow_nonneg (by norm_num) m) hbase N))
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

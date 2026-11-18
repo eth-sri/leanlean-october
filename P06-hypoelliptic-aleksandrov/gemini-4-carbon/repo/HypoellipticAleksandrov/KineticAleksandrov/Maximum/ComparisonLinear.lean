@@ -66,7 +66,7 @@ theorem comparison_regular_const_mul {d : ℕ} {u : KineticPoint d → ℝ}
     fun P hP => (hu.timeSlice_differentiableAt hP).const_mul c,
     fun P hP => contDiffAt_const.mul (hu.positionSlice_contDiffAt hP),
     fun P hP => contDiffAt_const.mul (hu.velocitySlice_contDiffAt hP),?_,?_,?_,?_⟩
-  · apply ((continuousOn_const (c := c)).mul hu.continuousOn_kineticTimeDerivative).congr
+  · apply ((continuousOn_const).mul hu.continuousOn_kineticTimeDerivative).congr
     intro P hP
     exact (deriv_const_mul c (hu.timeSlice_differentiableAt hP))
   · apply ((continuousOn_const (c := c)).smul hu.continuousOn_kineticPositionGradient).congr
@@ -79,7 +79,7 @@ theorem comparison_regular_const_mul {d : ℕ} {u : KineticPoint d → ℝ}
       ((hu.velocitySlice_contDiffAt hP).differentiableAt (by norm_num)))
   · apply ((continuousOn_const (c := c)).smul hu.continuousOn_kineticVelocityHessian).congr
     intro P hP
-    simp only [kineticVelocityHessian_eq_sliceHessian]
+    simp
     exact (sliceHessian_const_mul c (hu.velocitySlice_contDiffAt hP))
 
 /-- The general forward operator is additive on its source classical class. -/
@@ -95,8 +95,7 @@ theorem comparison_forwardOperator_add {d : ℕ} {u v : KineticPoint d → ℝ}
         ((hu.positionSlice_contDiffAt hP).differentiableAt (by norm_num))
         ((hv.positionSlice_contDiffAt hP).differentiableAt (by norm_num)),
     comparison_hessian_add (hu.velocitySlice_contDiffAt hP) (hv.velocitySlice_contDiffAt hP)]
-  simp only [HypoellipticAleksandrov.matrixContraction_add_right, PDE.vecDot, Pi.add_apply, mul_add,
-    Finset.sum_add_distrib, forwardKineticOperator_apply]
+  simp [HypoellipticAleksandrov.matrixContraction_add_right, PDE.vecDot, mul_add, Finset.sum_add_distrib, forwardKineticOperator_apply]
   ring
 
 /-- The general forward operator is homogeneous on its source classical class. -/
@@ -114,8 +113,7 @@ theorem comparison_forwardOperator_const_mul {d : ℕ} {u : KineticPoint d → �
     simp only [kineticVelocityHessian_eq_sliceHessian]
     exact sliceHessian_const_mul c (hu.velocitySlice_contDiffAt hP)
   rw [hh]
-  simp only [HypoellipticAleksandrov.matrixContraction_smul_right, PDE.vecDot, Pi.smul_apply,
-    smul_eq_mul, forwardKineticOperator_apply]
+  simp [HypoellipticAleksandrov.matrixContraction_smul_right, PDE.vecDot, forwardKineticOperator_apply]
   rw [show (∑ i, P.velocity i * (c * kineticPositionGradient u P i)) =
     c * ∑ i, P.velocity i * kineticPositionGradient u P i by
       rw [Finset.mul_sum]

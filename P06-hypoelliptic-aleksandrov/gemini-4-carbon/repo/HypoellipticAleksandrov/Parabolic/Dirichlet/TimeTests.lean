@@ -67,7 +67,6 @@ theorem tsupport_subset
 theorem contDiff_deriv
     {T : ℝ} (eta : ReverseTimeScalarTest T) :
     ContDiff ℝ (⊤ : ℕ∞) eta.deriv := by
-  change ContDiff ℝ (⊤ : ℕ∞) (_root_.deriv (eta : ℝ → ℝ))
   exact (contDiff_infty_iff_deriv.mp eta.contDiff).2
 
 /-- The ordinary derivative of a test has compact support. -/
@@ -93,8 +92,6 @@ theorem exists_norm_deriv_le
 theorem memLp
     {T : ℝ} (eta : ReverseTimeScalarTest T) (p : ℝ≥0∞) :
     MeasureTheory.MemLp (eta : ℝ → ℝ) p (reverseTimeVolume T) := by
-  change MeasureTheory.MemLp (eta : ℝ → ℝ) p
-    (volume.restrict (reverseTimeOpenInterval T))
   exact (eta.contDiff.continuous.memLp_of_hasCompactSupport
     eta.hasCompactSupport).restrict (reverseTimeOpenInterval T)
 
@@ -102,8 +99,6 @@ theorem memLp
 theorem memLp_deriv
     {T : ℝ} (eta : ReverseTimeScalarTest T) (p : ℝ≥0∞) :
     MeasureTheory.MemLp eta.deriv p (reverseTimeVolume T) := by
-  change MeasureTheory.MemLp eta.deriv p
-    (volume.restrict (reverseTimeOpenInterval T))
   exact (eta.contDiff_deriv.continuous.memLp_of_hasCompactSupport
     eta.hasCompactSupport_deriv).restrict (reverseTimeOpenInterval T)
 
@@ -111,7 +106,7 @@ theorem memLp_deriv
 theorem integrable
     {T : ℝ} (eta : ReverseTimeScalarTest T) :
     MeasureTheory.Integrable (eta : ℝ → ℝ) (reverseTimeVolume T) :=
-  MeasureTheory.memLp_one_iff_integrable.mp (eta.memLp (1 : ℝ≥0∞))
+  MeasureTheory.memLp_one_iff_integrable.mp (eta.memLp 1)
 
 end ReverseTimeScalarTest
 

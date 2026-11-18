@@ -15,8 +15,8 @@ theorem evolutionCoefficient_smooth {lam Lam : ℝ} (A : SmoothAutonomous lam La
     IsSmoothFullKineticCoefficient (evolutionCoefficient A.a) := by
   intro i j
   exact A.smooth.comp
-    (((contDiff_apply ℝ ℝ (0 : Fin 1)).comp (contDiff_snd.snd)).prodMk
-      ((contDiff_apply ℝ ℝ (0 : Fin 1)).comp (contDiff_snd.fst)))
+    (((contDiff_apply ℝ ℝ 0).comp (contDiff_snd.snd)).prodMk
+      ((contDiff_apply ℝ ℝ 0).comp (contDiff_snd.fst)))
 
 /-- A one-dimensional scalar coefficient is symmetric. -/
 theorem autonomousCoefficient_symmetric (a : ℝ → ℝ → ℝ) :
@@ -48,11 +48,11 @@ private theorem scalar_diagonal (a : ℝ) :
 private theorem scalar_smul_identity (a : ℝ) :
     a • (1 : PDE.Mat 1) = fun _ _ => a := by
   ext i j
-  have hi : i = 0 := Fin.eq_zero i
-  have hj : j = 0 := Fin.eq_zero j
+  have hi := Fin.eq_zero i
+  have hj := Fin.eq_zero j
   subst i
   subst j
-  simp only [Matrix.smul_apply, Matrix.one_apply_eq, smul_eq_mul, mul_one]
+  simp
 
 /-- Pointwise scalar ellipticity is exactly full-matrix Loewner ellipticity in dimension one. -/
 theorem autonomousCoefficient_bounds {lam Lam : ℝ} (A : SmoothAutonomous lam Lam) :
@@ -60,7 +60,7 @@ theorem autonomousCoefficient_bounds {lam Lam : ℝ} (A : SmoothAutonomous lam L
   intro t x v
   simp only [scalar_smul_identity]
   have heq : autonomousCoefficient A.a t x v =
-      Matrix.diagonal (fun _ : Fin 1 => A.a (x 0) (v 0)) :=
+      Matrix.diagonal (fun _ => A.a (x 0) (v 0)) :=
     (scalar_diagonal _).symm
   rw [← scalar_diagonal lam, ← scalar_diagonal Lam, heq]
   exact ⟨scalar_matrix_le (A.bounds (x 0) (v 0)).1,
@@ -72,7 +72,7 @@ theorem evolutionCoefficient_bounds {lam Lam : ℝ} (A : SmoothAutonomous lam La
   intro t y z
   simp only [scalar_smul_identity]
   have heq : evolutionCoefficient A.a t y z =
-      Matrix.diagonal (fun _ : Fin 1 => A.a (z 0) (y 0)) :=
+      Matrix.diagonal (fun _ => A.a (z 0) (y 0)) :=
     (scalar_diagonal _).symm
   rw [← scalar_diagonal lam, ← scalar_diagonal Lam, heq]
   exact ⟨scalar_matrix_le (A.bounds (z 0) (y 0)).1,

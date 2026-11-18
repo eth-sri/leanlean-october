@@ -36,12 +36,6 @@ theorem HasBellmanDensityDegree.map_dilation {β : ℝ} {μ : Measure BellmanPun
     ring
   rw [hp]
 
-/-- Kinetic dilation preserves the positive-position part of the punctured carrier. -/
-theorem bellmanDilation_preimage_positive (r : ℝ) (hr : 0 < r) :
-    bellmanDilation r hr ⁻¹' {q : BellmanPuncturedPlane | 0 < q.val.1} =
-      {q : BellmanPuncturedPlane | 0 < q.val.1} := by
-  ext q
-  exact mul_pos_iff_of_pos_left (pow_pos hr 3)
 
 /-- Density degree also gives the exact pushforward factor on the positive-position
 restriction. -/
@@ -49,12 +43,17 @@ theorem HasBellmanDensityDegree.map_positive_restrict {β : ℝ}
     {μ : Measure BellmanPuncturedPlane} (hμ : HasBellmanDensityDegree β μ)
     (r : ℝ) (hr : 0 < r) :
     Measure.map (bellmanDilation r hr) (μ.restrict {q | 0 < q.val.1}) =
-      ENNReal.ofReal (r ^ (β - 4)) • μ.restrict {q | 0 < q.val.1} := by
+      ENNReal.ofReal (r ^ (β - 4)) • μ.restrict {q | 0 < q.val.1}  := by
+  have bellmanDilation_preimage_positive :
+      bellmanDilation r hr ⁻¹' {q : BellmanPuncturedPlane | 0 < q.val.1} =
+      {q : BellmanPuncturedPlane | 0 < q.val.1} := by
+    ext q
+    exact mul_pos_iff_of_pos_left (pow_pos hr 3)
   have hm : MeasurableSet {q : BellmanPuncturedPlane | 0 < q.val.1} :=
     (isOpen_lt continuous_const (continuous_fst.comp continuous_subtype_val)).measurableSet
-  rw [← bellmanDilation_preimage_positive r hr,
+  rw [← bellmanDilation_preimage_positive,
     ← Measure.restrict_map (measurable_bellmanDilation r hr) hm,
-    hμ.map_dilation r hr, Measure.restrict_smul, bellmanDilation_preimage_positive r hr]
+    hμ.map_dilation r hr, Measure.restrict_smul, bellmanDilation_preimage_positive]
 
 /-- The source coordinate pullback has the same degree, acting only on its radial coordinate. -/
 theorem HasBellmanDensityDegree.map_angularPullback {β : ℝ}

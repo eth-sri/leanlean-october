@@ -71,11 +71,11 @@ def transportedCoord : EvolutionVec n →L[ℝ] PDE.Vec n :=
     transportedCoord n x l = x (Fin.succ (Fin.natAdd n l)) := rfl
 
 @[simp] theorem packPoint_zero_apply (s : ℝ) (v z : PDE.Vec n) : packPoint s v z 0 = s := by
-  simp only [packPoint, Fin.cons_zero]
+  simp [packPoint]
 
 @[simp] theorem packPoint_diffused_apply (s : ℝ) (v z : PDE.Vec n) (i : Fin n) :
     packPoint s v z (Fin.succ (Fin.castAdd n i)) = v i := by
-  simp only [packPoint, Fin.cons_succ, Fin.append_left]
+  simp [packPoint, Fin.append_left]
 
 @[simp] theorem packPoint_transported_apply (s : ℝ) (v z : PDE.Vec n) (l : Fin n) :
     packPoint s v z (Fin.succ (Fin.natAdd n l)) = z l := by
@@ -119,8 +119,6 @@ theorem packPoint_smul (c s : ℝ) (v z : PDE.Vec n) :
     packPoint (c * s) (c • v) (c • z) = c • packPoint s v z :=
   ext_coords (by simp) (by simp) (by simp)
 
-@[simp] theorem packPoint_zero : packPoint (0 : ℝ) (0 : PDE.Vec n) (0 : PDE.Vec n) = 0 :=
-  ext_coords (by simp) (by simp) (by simp)
 
 /-- A point splits as time part, diffused part and transported part. -/
 theorem packPoint_eq_add (s : ℝ) (v z : PDE.Vec n) :

@@ -35,8 +35,6 @@ theorem regularizedAdjoint_eq_zero_of_notMem_tsupport {n : ℕ}
     intro h
     exact hx (tsupport_evolution_fderiv_apply ψ (basisZ l)
       (tsupport_evolution_fderiv_apply _ (basisZ l) h))
-  simp only [regularizedAdjoint,
-    Occupation.transportedAdjoint_eq_zero_of_notMem_tsupport ψ hx, hzero,
-    Finset.sum_const_zero, mul_zero, add_zero]
+  simp [regularizedAdjoint, Occupation.transportedAdjoint_eq_zero_of_notMem_tsupport ψ hx, hzero]
 
 end HypoellipticAleksandrov.KineticAleksandrov.Evolution

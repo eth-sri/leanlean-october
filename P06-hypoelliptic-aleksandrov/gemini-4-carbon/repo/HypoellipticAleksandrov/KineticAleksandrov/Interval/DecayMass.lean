@@ -31,7 +31,7 @@ theorem interval_zero_tv_eq_mass {a c : ℝ}
     ⟨by rw [hm]; exact (K.mass_le_one q).trans_lt ENNReal.one_lt_top⟩
   rw [intervalFourierKernel_zero]
   change (((K.firstMarginal q).withDensityᵥ (fun _ => (1 : ℂ))).variation univ).toReal = _
-  rw [Measure.variation_withDensityᵥ (integrable_const (1 : ℂ))]
+  rw [Measure.variation_withDensityᵥ (integrable_const 1)]
   simp only [enorm_one]
   change (((K.firstMarginal q).withDensity 1) univ).toReal = _
   rw [withDensity_one, hm]
@@ -65,9 +65,7 @@ theorem interval_mass_decay
   rw [← interval_zero_tv_eq_mass hJ K B hp σ τ hστ v]
   apply interval_exponential_of_blocks K hJ hr.2.2.2 hc hT hq hq1.le 0
   intro s w
-  have h := interval_killing_block hH hLE hac B b hs hJ S K hr s 0 w
-    (le_add_of_nonneg_right (sq_nonneg (c - a)))
-  simpa only [hlen] using h
+  simpa only [hlen] using (interval_killing_block hH hLE hac B b hs hJ S K hr s 0 w (le_add_of_nonneg_right (sq_nonneg (c - a))))
 
 /-- Every Fourier mode inherits the scalar killing rate, including zero frequency. -/
 theorem interval_fourier_killing_decay
@@ -89,8 +87,7 @@ theorem interval_fourier_killing_decay
     lam Lam m Lb length hlam hlength
   refine ⟨C, k, hC, hk, ?_⟩
   intro a c hac B b hs hJ S K hr hlen σ τ hστ ξ v
-  have hp := (interval_evolution_clauses hH hLE hac B b hs hJ S K hr).2.1
-  exact (interval_fourier_tv_le_mass hJ K B hp σ τ hστ v.1 0 ξ
+  exact (interval_fourier_tv_le_mass hJ K B ((interval_evolution_clauses hH hLE hac B b hs hJ S K hr).2.1) σ τ hστ v.1 0 ξ
     (by simpa only [movingDomain_stationary] using v.2) _
     (intervalFourierKernel_spec K σ τ hστ ξ v)).trans
     (hmass a c hac B b hs hJ S K hr hlen σ τ hστ v)

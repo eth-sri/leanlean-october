@@ -21,7 +21,7 @@ def positionPositiveNorm {X : Type*} [MeasurableSpace X]
 /-- Positive real powers commute with arbitrary indexed suprema in ENNReal. -/
 theorem position_rpow_iSup {ι : Sort*} (a : ι → ℝ≥0∞) (q : ℝ) (hq : 0 < q) :
     (⨆ i, a i) ^ q = ⨆ i, a i ^ q :=
-  Monotone.map_iSup_of_continuousAt (ENNReal.continuous_rpow_const (y := q)).continuousAt
+  Monotone.map_iSup_of_continuousAt (ENNReal.continuous_rpow_const).continuousAt
     (fun _ _ h => ENNReal.rpow_le_rpow h hq.le)
     (ENNReal.zero_rpow_of_pos hq)
 
@@ -60,7 +60,7 @@ theorem positionPositiveNorm_tsum {X ι : Type*} [MeasurableSpace X] [Countable 
   have hq0 : 0 < q := by linarith
   have hm (S : Finset ι) : Measurable (fun x => (∑ i ∈ S, f i x) ^ q) :=
     (Finset.measurable_sum S (fun i _ => hf i)).pow_const q
-  have hd : Directed (· ≤ ·) (fun S : Finset ι => fun x => (∑ i ∈ S, f i x) ^ q) := by
+  have hd : Directed (· ≤ ·) (fun S => fun x => (∑ i ∈ S, f i x) ^ q) := by
     intro S T
     refine ⟨S ∪ T, ?_, ?_⟩
     · intro x

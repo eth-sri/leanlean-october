@@ -38,8 +38,8 @@ private theorem exists_smooth_cutoff_tsupport_subset
     exists_compact_closed_between hK hU hKU
   obtain ⟨b, hbOne, hbZero, _hbRange⟩ :=
     exists_contMDiffMap_one_nhds_of_subset_interior
-      (I := modelWithCornersSelf ℝ (PDE.Vec d)) (n := (⊤ : ℕ∞)) hK.isClosed
-      (by simpa only [interior_interior] using hKinterior)
+      (I := modelWithCornersSelf ℝ (PDE.Vec d)) (n := ⊤) hK.isClosed
+      (by simpa using hKinterior)
   have hbL : tsupport b ⊆ L := by
     apply closure_minimal _ hLclosed
     intro x hx
@@ -73,8 +73,7 @@ theorem exists_h10Function_of_ae_zero_outside_compact
     ∃ w : PDE.H10Function Ω, w.toH1Function = q := by
   obtain ⟨b, hbSmooth, hbOne, hbCompact, hbΩ⟩ :=
     exists_smooth_cutoff_tsupport_subset hK hΩ hKΩ
-  let L : Set (PDE.Vec d) := tsupport b
-  have hLCompact : IsCompact L := hbCompact.isCompact
+  let L := tsupport b
   have hballs : ∀ x : L, ∃ R : ℝ, 0 < R ∧
       PDE.euclideanClosedBall x.1 R ⊆ Ω := by
     intro x
@@ -94,16 +93,16 @@ theorem exists_h10Function_of_ae_zero_outside_compact
       (ι := L) (modelWithCornersSelf ℝ (PDE.Vec d))
       (isClosed_tsupport b) V hVOpen hVCover
   let active : Set L := {x | (Function.support (ρ x) ∩ L).Nonempty}
-  have hactiveFinite : active.Finite :=
-    ρ.locallyFinite.finite_nonempty_inter_compact hLCompact
-  let J : Finset L := hactiveFinite.toFinset
+  have hactiveFinite :=
+    ρ.locallyFinite.finite_nonempty_inter_compact hbCompact.isCompact
+  let J := hactiveFinite.toFinset
   let φ : L → PDE.Vec d → ℝ := fun x y => b y * ρ x y
   have hφSmooth (x : L) : ContDiff ℝ (⊤ : ℕ∞) (φ x) :=
     hbSmooth.mul (ρ x).contMDiff.contDiff
   have hφCompact (x : L) : HasCompactSupport (φ x) := by
-    exact hbCompact.mul_right (f' := ρ x)
+    exact hbCompact.mul_right
   have hφV (x : L) : tsupport (φ x) ⊆ V x :=
-    (tsupport_mul_subset_right (f := b) (g := ρ x)).trans (hρV x)
+    (tsupport_mul_subset_right).trans (hρV x)
   have hVU (x : L) : V x ⊆ Ω :=
     (PDE.euclideanBall_subset_euclideanClosedBall _ _).trans (hRsub x)
   have hsumφ : (∑ x ∈ J, φ x) = b := by
@@ -113,7 +112,6 @@ theorem exists_h10Function_of_ae_zero_outside_compact
         intro x hx
         rw [SmoothPartitionOfUnity.mem_finsupport] at hx
         exact hactiveFinite.mem_toFinset.mpr ⟨y, hx, hy⟩
-      dsimp only [φ]
       rw [Finset.sum_apply, ← Finset.mul_sum]
       rw [ρ.sum_finsupport' (x₀ := y) hy hfin, mul_one]
     · have hby : b y = 0 := image_eq_zero_of_notMem_tsupport hy
@@ -122,12 +120,8 @@ theorem exists_h10Function_of_ae_zero_outside_compact
       w.toH1Function.toFun = (fun y => φ x y * q.toFun y) ∧
       w.toH1Function.grad = (fun y =>
         φ x y • q.grad y + q.toFun y • PDE.classicalGradient (φ x) y) := by
-    let qx : PDE.H1Function (V x) := q.restrict (hVOpen x) (hVU x)
-    let wx0 : PDE.H10Function (V x) :=
-      qx.mulContDiffHasCompactSupportToH10
-        (PDE.isOpenBoundedConvexDomain_euclideanBall x.1 (hRpos x))
-        (hφSmooth x) (hφCompact x) (hφV x)
-    let wx := wx0.zeroExtend hΩ (hVOpen x) (hVU x)
+    let qx := q.restrict (hVOpen x) (hVU x)
+    let wx := (qx.mulContDiffHasCompactSupportToH10 (PDE.isOpenBoundedConvexDomain_euclideanBall x.1 (hRpos x)) (hφSmooth x) (hφCompact x) (hφV x)).zeroExtend hΩ (hVOpen x) (hVU x)
     refine ⟨wx, ?_, ?_⟩
     · dsimp only [wx]
       rw [PDE.H10Function.zeroExtend_toFun,
@@ -146,11 +140,10 @@ theorem exists_h10Function_of_ae_zero_outside_compact
       · simp [Set.indicator_of_mem hy, qx]
       · have hyts : y ∉ tsupport (φ x) := fun h => hy (hφV x h)
         have hφy : φ x y = 0 := image_eq_zero_of_notMem_tsupport hyts
-        have heq : φ x =ᶠ[𝓝 y] 0 := notMem_tsupport_iff_eventuallyEq.mp hyts
         have hdφ : PDE.classicalGradient (φ x) y = 0 := by
           funext i
-          simp only [PDE.classicalGradient]
-          rw [heq.fderiv_eq]
+          simp
+          rw [(notMem_tsupport_iff_eventuallyEq.mp hyts).fderiv_eq]
           simp
         simp [Set.indicator_of_notMem hy, hφy, hdφ]
   choose wx hwxFun hwxGrad using hlocal
@@ -184,8 +177,7 @@ theorem exists_h10Function_of_ae_zero_outside_compact
     by_cases hyK : y ∈ K
     · have hbeq : b =ᶠ[𝓝 y] (fun _ => 1) :=
         mem_nhdsSet_iff_forall.1 hbOne y hyK
-      have hby : b y = 1 := hbeq.self_of_nhds
-      rw [← Finset.sum_mul, ← Finset.sum_apply, congrFun hsumφ y, hby, one_mul]
+      rw [← Finset.sum_mul, ← Finset.sum_apply, congrFun hsumφ y, hbeq.self_of_nhds, one_mul]
     · simp [hy hyK]
   have hgrad : ∀ i : Fin d,
       (fun y => w.toH1Function.grad y i) =ᵐ[PDE.volumeOn Ω]
@@ -195,10 +187,9 @@ theorem exists_h10Function_of_ae_zero_outside_compact
     filter_upwards [hqzero, hqgradzero] with y hy hgy
     by_cases hyK : y ∈ K
     · have hbeq : b =ᶠ[𝓝 y] 1 := mem_nhdsSet_iff_forall.1 hbOne y hyK
-      have hby : b y = 1 := hbeq.self_of_nhds
       have hdb : PDE.classicalGradient b y = 0 := by
         funext j
-        simp only [PDE.classicalGradient]
+        simp
         rw [hbeq.fderiv_eq]
         simp
       have hsumDeriv : ∑ x ∈ J, PDE.classicalGradient (φ x) y =
@@ -209,13 +200,12 @@ theorem exists_h10Function_of_ae_zero_outside_compact
         funext j
         have hdj := congrArg (fun A => A (PDE.basisVec j)) hd
         rw [ContinuousLinearMap.sum_apply] at hdj
-        simpa only [PDE.classicalGradient, Finset.sum_apply] using hdj
+        simpa using hdj
       rw [Finset.sum_add_distrib, ← Finset.sum_smul, ← Finset.smul_sum,
-        ← Finset.sum_apply, congrFun hsumφ y, hby, hsumDeriv, hdb]
+        ← Finset.sum_apply, congrFun hsumφ y, hbeq.self_of_nhds, hsumDeriv, hdb]
       simp
     · have hqy := hy hyK
-      have hgqy := hgy hyK
-      simp [hqy, hgqy]
+      simp [hqy, (hgy hyK)]
   refine ⟨PDE.H10Function.copyToH1Function_of_ae_eq w q hfun hgrad, ?_⟩
   exact PDE.H10Function.copyToH1Function_of_ae_eq_toH1Function w q hfun hgrad
 

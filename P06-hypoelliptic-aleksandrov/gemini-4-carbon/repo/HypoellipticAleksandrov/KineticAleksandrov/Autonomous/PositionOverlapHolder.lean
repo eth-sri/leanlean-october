@@ -18,7 +18,7 @@ theorem position_integral_rpow_le {X : Type*} [MeasurableSpace X]
   have hc : q.HolderConjugate (q / (q - 1)) := Real.holderConjugate_iff.mpr
     ⟨hq, by field_simp; ring⟩
   have h := ENNReal.lintegral_mul_le_Lp_mul_Lq nu hc hf.aemeasurable
-    (measurable_const (a := (1 : ℝ≥0∞))).aemeasurable
+    (measurable_const (a := 1)).aemeasurable
   have he : q / (q / (q - 1)) = q - 1 := by
     field_simp
   simp only [Pi.mul_apply, mul_one, ENNReal.one_rpow, lintegral_const,
@@ -32,7 +32,7 @@ theorem position_integral_rpow_le {X : Type*} [MeasurableSpace X]
 theorem position_rpow_sub_one_mul (x : ℝ≥0∞) (q : ℝ) (hq : 1 ≤ q) :
     x ^ (q - 1) * x = x ^ q := by
   calc
-    _ = x ^ (q - 1) * x ^ (1 : ℝ) := by rw [ENNReal.rpow_one]
+    _ = x ^ (q - 1) * x ^ 1 := by rw [ENNReal.rpow_one]
     _ = x ^ ((q - 1) + 1) :=
       (ENNReal.rpow_add_of_nonneg (q - 1) 1 (by linarith) (by norm_num)).symm
     _ = x ^ q := by rw [sub_add_cancel]

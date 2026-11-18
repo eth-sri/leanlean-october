@@ -52,9 +52,9 @@ theorem measurable_scalarGv (gamma : ScalarGamma) (Lam : ℝ) :
 theorem measurable_scalarHess (gamma : ScalarGamma) (Lam : ℝ) (i k : Fin 1) :
     Measurable (fun q => scalarHess gamma Lam q i k) := by
   classical
-  have hm : Measurable (fun q : XV 1 => if q.1 0 = 0 then (0 : ℝ) else
+  have hm : Measurable (fun q => if q.1 0 = 0 then 0 else
       fderiv ℝ (fun z => dv (scalarProfile gamma Lam) z k) q (0, Pi.single i 1)) :=
-    (measurable_const (a := (0 : ℝ))).ite measurableSet_scalar_axis
+    (measurable_const (a := 0)).ite measurableSet_scalar_axis
       (measurable_fderiv_apply_const ℝ (fun z => dv (scalarProfile gamma Lam) z k)
         (0, Pi.single i 1))
   convert hm using 1
@@ -75,7 +75,7 @@ theorem scalarJets_eq_ae (gamma : ScalarGamma) (Lam : ℝ) :
     have hi : i = 0 := Subsingleton.elim _ _
     subst i
     exact hz
-  simp only [scalarGx, scalarGv, scalarHess, hx, ↓reduceIte, and_self]
+  simp [scalarGx, scalarGv, scalarHess, hx, and_self]
 
 /-- The selected representatives satisfy the source equation almost everywhere. -/
 theorem scalarJets_equation_ae (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam) :
@@ -92,12 +92,11 @@ theorem scalarGx_homogeneous (gamma : ScalarGamma) (Lam r : ℝ) (hLam : 0 < Lam
     (hr : 0 < r) (q : XV 1) :
     scalarGx gamma Lam (dilate r q) = Real.rpow r (3 * gamma.1 - 3) • scalarGx gamma Lam q := by
   have hxDil : (dilate r q).1 0 = 0 ↔ q.1 0 = 0 := by
-    simp only [dilate, Pi.smul_apply, smul_eq_mul, mul_eq_zero,
-      pow_ne_zero 3 hr.ne', false_or]
+    simp [dilate, mul_eq_zero, pow_ne_zero 3 hr.ne']
   unfold scalarGx
   by_cases hx : q.1 0 = 0
-  · simp only [hxDil, hx, ↓reduceIte, smul_zero]
-  · simp only [hxDil, hx, ↓reduceIte]
+  · simp [hxDil, hx]
+  · simp [hxDil, hx]
     funext i
     exact homogeneous_dx_identity (scalarProfile gamma Lam) (3 * gamma.1) r hr
       (scalarProfile_homogeneous gamma Lam r hr) q
@@ -110,12 +109,11 @@ theorem scalarGv_homogeneous (gamma : ScalarGamma) (Lam r : ℝ) (hLam : 0 < Lam
     (hr : 0 < r) (q : XV 1) :
     scalarGv gamma Lam (dilate r q) = Real.rpow r (3 * gamma.1 - 1) • scalarGv gamma Lam q := by
   have hxDil : (dilate r q).1 0 = 0 ↔ q.1 0 = 0 := by
-    simp only [dilate, Pi.smul_apply, smul_eq_mul, mul_eq_zero,
-      pow_ne_zero 3 hr.ne', false_or]
+    simp [dilate, mul_eq_zero, pow_ne_zero 3 hr.ne']
   unfold scalarGv
   by_cases hx : q.1 0 = 0
-  · simp only [hxDil, hx, ↓reduceIte, smul_zero]
-  · simp only [hxDil, hx, ↓reduceIte]
+  · simp [hxDil, hx]
+  · simp [hxDil, hx]
     funext i
     exact homogeneous_dv_identity (scalarProfile gamma Lam) (3 * gamma.1) r hr
       (scalarProfile_homogeneous gamma Lam r hr) q

@@ -41,10 +41,6 @@ def scalarParabolicLateralFace {n : ℕ} (r₀ r₁ : ℝ) (Ω : Set (PDE.Vec n)
     Set (TimeVelocity n) :=
   Set.Icc r₀ r₁ ×ˢ frontier Ω
 
-/-- The terminal-lateral boundary of a scalar parabolic cylinder. -/
-def scalarParabolicTerminalLateralBoundary {n : ℕ} (r₀ r₁ : ℝ) (Ω : Set (PDE.Vec n)) :
-    Set (TimeVelocity n) :=
-  scalarParabolicTerminalFace r₁ Ω ∪ scalarParabolicLateralFace r₀ r₁ Ω
 
 /-- Membership in an open scalar parabolic cylinder. -/
 @[simp] theorem mem_scalarParabolicOpenCylinder_iff {n : ℕ} {r₀ r₁ r : ℝ}
@@ -85,12 +81,6 @@ def scalarParabolicTerminalLateralBoundary {n : ℕ} (r₀ r₁ : ℝ) (Ω : Set
   · rintro ⟨hr₀, hr₁, hy⟩
     exact ⟨⟨hr₀, hr₁⟩, hy⟩
 
-/-- Membership in the terminal-lateral boundary of a scalar parabolic cylinder. -/
-@[simp] theorem mem_scalarParabolicTerminalLateralBoundary_iff {n : ℕ}
-    {r₀ r₁ r : ℝ} {Ω : Set (PDE.Vec n)} {y : PDE.Vec n} :
-    (r, y) ∈ scalarParabolicTerminalLateralBoundary r₀ r₁ Ω ↔
-      (r = r₁ ∧ y ∈ closure Ω) ∨ (r₀ ≤ r ∧ r ≤ r₁ ∧ y ∈ frontier Ω) := by
-  simp [scalarParabolicTerminalLateralBoundary]
 
 /-- The time derivative of `u`, with the velocity coordinate fixed. -/
 def scalarTimeDerivative {n : ℕ} (u : TimeVelocity n → ℝ) (z : TimeVelocity n) : ℝ :=

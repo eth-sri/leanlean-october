@@ -33,7 +33,7 @@ theorem viscousTransportedOperator_sub {n : ℕ} {B : FullKineticCoefficient n}
     (hu : IsSliceRegularAt u p) (hv : IsSliceRegularAt v p) :
     viscousTransportedOperator B b ε (fun q => u q - v q) p =
       viscousTransportedOperator B b ε u p - viscousTransportedOperator B b ε v p := by
-  have h : (fun q : KineticPoint n => u q - v q) = fun q => u q + (-1) * v q := by
+  have h : (fun q => u q - v q) = fun q => u q + (-1) * v q := by
     funext q
     ring
   rw [h, viscousTransportedOperator_add hu (hv.const_mul (-1)),
@@ -44,7 +44,7 @@ theorem viscousTransportedOperator_sub {n : ℕ} {B : FullKineticCoefficient n}
 theorem posSemidef_of_hasEverywhereLoewnerBounds {n : ℕ} {lam Lam : ℝ} (hlam : 0 ≤ lam)
     {B : FullKineticCoefficient n} (hB : HasEverywhereLoewnerBounds lam Lam B)
     (σ : ℝ) (y z : PDE.Vec n) : (B σ y z).PosSemidef := by
-  have h0 : (0 : PDE.Mat n) ≤ lam • (1 : PDE.Mat n) := by
+  have h0 : 0 ≤ lam • (1 : PDE.Mat n) := by
     rw [Matrix.nonneg_iff_posSemidef]
     exact Matrix.PosSemidef.one.smul hlam
   exact Matrix.nonneg_iff_posSemidef.mp (h0.trans (hB σ y z).1)
@@ -76,7 +76,7 @@ theorem isClassicalViscousTerminalSolution_zero_iff {n : ℕ}
     IsClassicalViscousTerminalSolution Ω γ B b 0 τ F u ↔
       IsClassicalTerminalSolution Ω γ B b τ F u := by
   unfold IsClassicalViscousTerminalSolution IsClassicalTerminalSolution
-  simp only [viscousTransportedOperator_zero]
+  simp
 
 /-- The raw interior of the past moving cylinder is open. -/
 theorem isOpen_evolutionPastInteriorRaw {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω)
@@ -86,12 +86,10 @@ theorem isOpen_evolutionPastInteriorRaw {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : 
     isOpen_lt continuous_fst continuous_const
   have hc : Continuous (fun q : ℝ × (PDE.Vec n × PDE.Vec n) => q.2.1 - γ q.1) :=
     (continuous_fst.comp continuous_snd).sub (hγ.comp continuous_fst)
-  have h2 := hΩ.preimage hc
-  have := h1.inter h2
+  have := h1.inter (hΩ.preimage hc)
   convert this using 1
   ext q
-  simp only [evolutionPastInteriorRaw, mem_inter_iff, Set.mem_ofPred_eq, mem_preimage,
-    mem_movingDomain_iff]
+  simp [evolutionPastInteriorRaw, mem_movingDomain_iff]
 
 /-- A viscous classical solution is slice regular at every point of the open cylinder. -/
 theorem IsClassicalViscousTerminalSolution.isSliceRegularAt {n : ℕ} {Ω : Set (PDE.Vec n)}
@@ -103,7 +101,6 @@ theorem IsClassicalViscousTerminalSolution.isSliceRegularAt {n : ℕ} {Ω : Set 
     IsSliceRegularAt u p := by
   apply IsSliceRegularAt.of_contDiffAt
   have hmem : (p.time, p.position, p.velocity) ∈ evolutionPastInteriorRaw Ω γ τ := hp
-  have hnhds := (isOpen_evolutionPastInteriorRaw hΩ hγ τ).mem_nhds hmem
-  exact (hu.2.2.1.contDiffAt hnhds).of_le (WithTop.coe_le_coe.mpr (le_top : (2 : ℕ∞) ≤ ⊤))
+  exact (hu.2.2.1.contDiffAt ((isOpen_evolutionPastInteriorRaw hΩ hγ τ).mem_nhds hmem)).of_le (WithTop.coe_le_coe.mpr (le_top : (2 : ℕ∞) ≤ ⊤))
 
 end HypoellipticAleksandrov.KineticAleksandrov

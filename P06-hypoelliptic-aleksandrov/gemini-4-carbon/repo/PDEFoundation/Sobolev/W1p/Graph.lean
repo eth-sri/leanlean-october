@@ -51,11 +51,11 @@ theorem memLp_partialDeriv {d : ℕ} {U : Set (Vec d)}
     MemLp (φ.partialDeriv i) r (volumeOn U) := by
   have hcontinuous :
       Continuous (φ.partialDeriv i) := by
-    simpa only [WeakTestFunction.partialDeriv] using!
+    simpa using!
       (φ.contDiff.continuous_fderiv (by simp)).clm_apply continuous_const
   have hcompact :
       HasCompactSupport (φ.partialDeriv i) := by
-    simpa only [WeakTestFunction.partialDeriv] using!
+    simpa using!
       φ.hasCompactSupport.fderiv_apply (𝕜 := ℝ) (basisVec i)
   exact (hcontinuous.memLp_of_hasCompactSupport hcompact).restrict U
 
@@ -100,8 +100,8 @@ theorem coeFn_hilbertVectorLpCoord {d : ℕ} (U : Set (Vec d))
     (F : HilbertVectorLp U p) :
     ⇑(hilbertVectorLpCoord U p i F) =ᵐ[volumeOn U]
       fun x => F x i := by
-  simpa only [hilbertVectorLpCoord] using!
-    (PiLp.proj (𝕜 := ℝ) 2 (fun _ : Fin d => ℝ) i).coeFn_compLpL F
+  simpa using!
+    (PiLp.proj (𝕜 := ℝ) 2 (fun _ => ℝ) i).coeFn_compLpL F
 
 /-- The scalar Hölder pairing between `L^p(U)` and `L^{p'}(U)`. -/
 def scalarLpDualPairing {d : ℕ} (U : Set (Vec d)) (p : ℝ≥0∞)
@@ -140,9 +140,7 @@ theorem weakGradientConstraint_apply_eq_integral
     weakGradientConstraint U p i φ v =
       (∫ x, v.1 x * φ.partialDeriv i x ∂(volumeOn U)) +
         ∫ x, v.2 x i * φ x ∂(volumeOn U) := by
-  simp only [weakGradientConstraint, add_apply,
-    ContinuousLinearMap.comp_apply, ContinuousLinearMap.flip_apply,
-    ContinuousLinearMap.coe_fst', ContinuousLinearMap.coe_snd']
+  simp [weakGradientConstraint, add_apply, ContinuousLinearMap.flip_apply, ContinuousLinearMap.coe_fst', ContinuousLinearMap.coe_snd']
   rw [scalarLpDualPairing_apply_eq_integral,
     scalarLpDualPairing_apply_eq_integral]
   congr 1

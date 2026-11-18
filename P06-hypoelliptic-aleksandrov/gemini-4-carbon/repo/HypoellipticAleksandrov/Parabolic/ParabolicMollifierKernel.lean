@@ -40,18 +40,10 @@ noncomputable def parabolicMollifierBump (d n : ℕ) :
 noncomputable def parabolicMollifier (d n : ℕ) : TimeVelocity d → ℝ :=
   (parabolicMollifierBump d n).normed (volume : Measure (TimeVelocity d))
 
-/-- Every native-norm mollifier scale is at most one. -/
-theorem parabolicMollifierScale_le_one (n : ℕ) :
-    parabolicMollifierScale n ≤ 1 := by
-  unfold parabolicMollifierScale
-  rw [div_le_one₀]
-  · norm_num
-  · positivity
 
 /-- The native-norm mollifier scales converge to zero. -/
 theorem tendsto_parabolicMollifierScale_zero :
     Tendsto parabolicMollifierScale atTop (nhds 0) := by
-  change Tendsto (fun n : ℕ ↦ 1 / ((n : ℝ) + 1)) atTop (nhds 0)
   exact
     (tendsto_one_div_add_atTop_nhds_zero_nat :
       Tendsto (fun n : ℕ ↦ 1 / ((n : ℝ) + 1)) atTop (nhds 0))

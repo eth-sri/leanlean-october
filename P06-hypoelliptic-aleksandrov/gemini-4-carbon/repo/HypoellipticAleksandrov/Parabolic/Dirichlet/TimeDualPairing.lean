@@ -31,12 +31,7 @@ theorem integrable_reverseTimeDualPairing
   let pairing : H10HilbertGraphDual hΩ →L[ℝ]
       H10HilbertGraph hΩ →L[ℝ] ℝ :=
     ContinuousLinearMap.flip (ContinuousLinearMap.apply ℝ ℝ)
-  have hpair : MeasureTheory.MemLp
-      (fun tau => pairing (g tau) (u tau)) (1 : ℝ≥0∞)
-      (reverseTimeVolume T) :=
-    pairing.memLp_of_bilin 1 (MeasureTheory.Lp.memLp g)
-      (MeasureTheory.Lp.memLp u)
   simpa only [pairing, ContinuousLinearMap.flip_apply,
-    ContinuousLinearMap.apply_apply] using memLp_one_iff_integrable.mp hpair
+    ContinuousLinearMap.apply_apply] using memLp_one_iff_integrable.mp (pairing.memLp_of_bilin 1 (MeasureTheory.Lp.memLp g) (MeasureTheory.Lp.memLp u))
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

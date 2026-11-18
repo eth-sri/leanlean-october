@@ -56,8 +56,6 @@ theorem autonomous_cylinder_green_potentials
   have hpacked : ContDiff ℝ (⊤ : ℕ∞) (g ∘ reconstructionPhysicalHomeomorph) := by
     convert hgs.comp ((evolutionProdCLE 1).contDiff.comp nestedSwapPacked_contDiff) using 1
     funext x
-    change g (reconstructionPhysicalHomeomorph x) =
-      g ((KineticPoint.equivProd 1).symm (evolutionProdCLE 1 (nestedSwapPacked x)))
     apply congrArg g
     exact (nestedSwapPacked_physical x).symm
   let f : exitProbeSubmodule :=
@@ -101,19 +99,16 @@ theorem autonomous_cylinder_green_potentials
       (identityDrift 1) (identityDrift_smooth 1) (identityDrift_bounds 1)
       E.1 E.2 hE T (exitProbePhysical f ∘ sectionTwoPoint) (fun P => by rw [hf]; exact hg0 _)
       (nested_native_probe_raw_smooth f) hgc' (nested_native_probe_source_support H T f hs)
-  have hV := nested_physical_contDiffOn hsm
   have hmap : MapsTo (evolutionHomeomorph 1) (evolutionHomeomorph 1 ⁻¹' Q)
       (sectionTwoPoint ⁻¹' evolutionPastOpenCylinder (intervalDomain H) (fun _ => 0) T) := by
     intro x hx
     exact (nested_mem_native_past H T _).mpr
       ⟨WithTop.coe_lt_coe.mp (capacityCylinderPole Z₀ _ R hR hx).2.1,
         (capacityCylinderPole Z₀ _ R hR hx).2.2⟩
-  have hVF : ContDiffOn ℝ (⊤ : ℕ∞) (V ∘ evolutionHomeomorph 1)
-      (evolutionHomeomorph 1 ⁻¹' Q) := hV.mono (fun _ hx => hmap hx)
-  have hF := hVF.congr (fun x hx => heq _ hx)
+  have hVF := (nested_physical_contDiffOn hsm).mono (fun _ hx => hmap hx)
   obtain ⟨-, -, hop⟩ := nestedSourcePotential_regular_source hH hlam hLam A H E hE T f
     (fun P => by rw [hf]; exact hg0 _) hs
-  refine ⟨isKineticC112On_of_contDiffOn (isOpen_forwardCylinder Z₀ R hR) hF,
+  refine ⟨isKineticC112On_of_contDiffOn (isOpen_forwardCylinder Z₀ R hR) (hVF.congr (fun x hx => heq _ hx)),
     fun P _ => integral_nonneg hg0, ?_⟩
   intro P hP
   have hn : F =ᶠ[𝓝 P] V := by

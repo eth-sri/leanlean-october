@@ -25,23 +25,8 @@ theorem scalar_similarity_power_cancel (gamma : ScalarGamma) (x v : ℝ) (hx : 0
     abs_of_pos (Real.rpow_pos_of_pos hx (1 / 3 : ℝ))]
   rw [Real.div_rpow (abs_nonneg _) (Real.rpow_nonneg hx.le _),
     ← Real.rpow_mul hx.le, show (1 / 3 : ℝ) * (3 * gamma.1) = gamma.1 by ring]
-  have hp := (Real.rpow_pos_of_pos hx gamma.1).ne'
   field_simp
 
-/-- The ansatz equals its normalized tail times the velocity leading power. -/
-theorem scalarAnsatz_normalized (gamma : ScalarGamma) (Lam x v : ℝ)
-    (hx : 0 < x) (hv : v ≠ 0) :
-    scalarAnsatz gamma Lam x v = Real.rpow |v| (3 * gamma.1) *
-      (F gamma Lam (scalarSimilarity x v) /
-        Real.rpow |scalarSimilarity x v| (3 * gamma.1)) := by
-  have hs : scalarSimilarity x v ≠ 0 :=
-    div_ne_zero (neg_ne_zero.mpr hv) (Real.rpow_pos_of_pos hx (1 / 3 : ℝ)).ne'
-  have hp := (Real.rpow_pos_of_pos (abs_pos.mpr hs) (3 * gamma.1)).ne'
-  rw [← scalar_similarity_power_cancel gamma x v hx]
-  unfold scalarAnsatz scalarSimilarity
-  unfold scalarSimilarity at hp
-  simp only [Real.rpow_eq_pow, neg_div] at hp ⊢
-  field_simp
 
 /-- Joint approach from positive positions gives the prescribed nonzero-velocity trace. -/
 theorem scalarAnsatz_tendsto_axis {ι : Type*} (l : Filter ι)
@@ -51,7 +36,17 @@ theorem scalarAnsatz_tendsto_axis {ι : Type*} (l : Filter ι)
     (hX : Tendsto X l (𝓝 0)) (hXp : ∀ᶠ i in l, 0 < X i)
     (hV : Tendsto V l (𝓝 v)) :
     Tendsto (fun i => scalarAnsatz gamma Lam (X i) (V i)) l
-      (𝓝 (scalarTrace gamma Lam v)) := by
+      (𝓝 (scalarTrace gamma Lam v))  := by
+  have scalarAnsatz_normalized (x : ℝ) (v : ℝ) (hx : 0 < x) (hv : v ≠ 0) :
+      scalarAnsatz gamma Lam x v = Real.rpow |v| (3 * gamma.1) *
+      (F gamma Lam (scalarSimilarity x v) /
+        Real.rpow |scalarSimilarity x v| (3 * gamma.1)) := by
+    have hp := (Real.rpow_pos_of_pos (abs_pos.mpr (div_ne_zero (neg_ne_zero.mpr hv) (Real.rpow_pos_of_pos hx (1 / 3 : ℝ)).ne')) (3 * gamma.1)).ne'
+    rw [← scalar_similarity_power_cancel gamma x v hx]
+    unfold scalarAnsatz scalarSimilarity
+    unfold scalarSimilarity at hp
+    simp only [Real.rpow_eq_pow, neg_div] at hp ⊢
+    field_simp
   have hK : Tendsto (fun i => Real.rpow (X i) (1 / 3)) l (𝓝[>] 0) := by
     apply tendsto_nhdsWithin_of_tendsto_nhds_of_eventually_within
     · have h := (Real.continuous_rpow_const (by norm_num : 0 ≤ (1 / 3 : ℝ))).tendsto 0
@@ -88,7 +83,7 @@ theorem scalarAnsatz_tendsto_axis {ι : Type*} (l : Filter ι)
   change Tendsto _ l (𝓝 (scalarTrace gamma Lam v)) at h
   apply h.congr'
   filter_upwards [hXp, hV.eventually_ne hv] with i hi hvi
-  rw [scalarAnsatz_normalized gamma Lam (X i) (V i) hi hvi]
+  rw [scalarAnsatz_normalized (X i) (V i) hi hvi]
   ring
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

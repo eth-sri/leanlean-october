@@ -34,13 +34,12 @@ theorem exists_smooth_cutoff_tsupport_subset
   obtain ⟨b, hbOne, hbZero, _hbRange⟩ :=
     exists_contMDiffMap_one_nhds_of_subset_interior
       (I := 𝓘(ℝ, TimeVelocity d)) hK.isClosed
-      (by simpa only [interior_interior] using hKinterior)
+      (by simpa using hKinterior)
   refine ⟨b, b.contMDiff.contDiff, hbOne, ?_⟩
   have hsupport : support (b : TimeVelocity d → ℝ) ⊆ L := by
     intro z hz
     by_contra hzL
     exact (mem_support.mp hz) (hbZero z hzL)
-  change closure (support (b : TimeVelocity d → ℝ)) ⊆ U
   exact (closure_minimal hsupport hLclosed).trans hLU
 
 /-- Multiplication by a globally smooth cutoff whose topological support lies
@@ -55,13 +54,12 @@ theorem contDiff_cutoff_mul_of_tsupport_subset
   by_cases hz : z ∈ U
   · exact hb.contDiffAt.mul (hq.contDiffAt (hU.mem_nhds hz))
   · have hzSupport : z ∉ tsupport b := fun hzSupport => hz (hbU hzSupport)
-    have hzero : b =ᶠ[𝓝 z] 0 := notMem_tsupport_iff_eventuallyEq.mp hzSupport
-    have hconst : ContDiffAt ℝ 2 (fun _ : TimeVelocity d => (0 : ℝ)) z :=
+    have hconst : ContDiffAt ℝ 2 (fun _ => (0 : ℝ)) z :=
       contDiffAt_const
     apply hconst.congr_of_eventuallyEq
-    filter_upwards [hzero] with y hy
-    simp only [Pi.zero_apply] at hy
-    simp only [hy, zero_mul]
+    filter_upwards [(notMem_tsupport_iff_eventuallyEq.mp hzSupport)] with y hy
+    simp at hy
+    simp [hy]
 
 /-- Multiplication by a globally smooth cutoff whose topological support lies
 inside `U` turns a continuous scalar function on `U` into a literal globally
@@ -75,13 +73,12 @@ theorem continuous_cutoff_mul_of_tsupport_subset
   by_cases hz : z ∈ U
   · exact hb.continuous.continuousAt.mul (hF.continuousAt (hU.mem_nhds hz))
   · have hzSupport : z ∉ tsupport b := fun hzSupport => hz (hbU hzSupport)
-    have hzero : b =ᶠ[𝓝 z] 0 := notMem_tsupport_iff_eventuallyEq.mp hzSupport
-    have hconst : ContinuousAt (fun _ : TimeVelocity d => (0 : ℝ)) z :=
+    have hconst : ContinuousAt (fun _ => (0 : ℝ)) z :=
       continuousAt_const
     apply hconst.congr_of_eventuallyEq
-    filter_upwards [hzero] with y hy
-    simp only [Pi.zero_apply] at hy
-    simp only [hy, zero_mul]
+    filter_upwards [(notMem_tsupport_iff_eventuallyEq.mp hzSupport)] with y hy
+    simp at hy
+    simp [hy]
 
 /-- The literal curried coefficient field obtained by gluing `B` to the
 constant field `lam I` with the cutoff `b`. -/
@@ -110,22 +107,20 @@ theorem continuous_coefficientAt_cutoffExtendCoefficient
   refine continuous_iff_continuousAt.2 fun z => ?_
   by_cases hz : z ∈ U
   · have heq : coefficientAt (cutoffExtendCoefficient b B lam) =
-        b • coefficientAt B + ((fun _ => 1) - b) • (fun _ => lam • (1 : PDE.Mat d)) := by
+        b • coefficientAt B + ((fun _ => 1) - b) • (fun _ => lam • 1) := by
       funext y
       exact coefficientAt_cutoffExtendCoefficient b B lam y
     rw [heq]
     exact (hb.continuous.continuousAt.smul (hB.continuousAt (hU.mem_nhds hz))).add
         ((continuousAt_const.sub hb.continuous.continuousAt).smul continuousAt_const)
   · have hzSupport : z ∉ tsupport b := fun hzSupport => hz (hbU hzSupport)
-    have hzero : b =ᶠ[𝓝 z] 0 := notMem_tsupport_iff_eventuallyEq.mp hzSupport
     have hconst : ContinuousAt
-        (fun _ : TimeVelocity d => lam • (1 : PDE.Mat d)) z :=
+        (fun _ => lam • (1 : PDE.Mat d)) z :=
       continuousAt_const
     apply hconst.congr_of_eventuallyEq
-    filter_upwards [hzero] with y hy
-    simp only [Pi.zero_apply] at hy
-    simp only [coefficientAt_cutoffExtendCoefficient, hy, zero_smul, sub_zero,
-      one_smul, zero_add]
+    filter_upwards [(notMem_tsupport_iff_eventuallyEq.mp hzSupport)] with y hy
+    simp at hy
+    simp [coefficientAt_cutoffExtendCoefficient, hy]
 
 /-- On the neighbourhood where the cutoff is one, the literal coefficient
 extension agrees with the original curried coefficient field. -/
@@ -146,26 +141,7 @@ theorem cutoff_mul_eventuallyEq
   filter_upwards [hbOne] with z hz
   simp [hz]
 
-/-- Eventual equality of scalar functions at a point gives equality of their
-time derivatives there. No separate differentiability hypothesis is needed:
-`fderiv` itself is local. -/
-theorem timeDerivative_congr_of_eventuallyEq
-    {d : ℕ} {q q' : TimeVelocity d → ℝ} {z : TimeVelocity d}
-    (hqq' : q =ᶠ[𝓝 z] q') :
-    timeDerivative q z = timeDerivative q' z := by
-  unfold timeDerivative
-  rw [hqq'.fderiv_eq]
 
-/-- Eventual equality of scalar functions at a point gives equality of their
-velocity Hessians there. No separate differentiability hypothesis is needed:
-the iterated `fderiv` is local. -/
-theorem velocityHessian_congr_of_eventuallyEq
-    {d : ℕ} {q q' : TimeVelocity d → ℝ} {z : TimeVelocity d}
-    (hqq' : q =ᶠ[𝓝 z] q') :
-    velocityHessian q z = velocityHessian q' z := by
-  ext i j
-  unfold velocityHessian
-  rw [hqq'.fderiv.fderiv_eq]
 
 /-- Eventual equality of coefficient evaluations and scalar functions at a
 point gives equality of their pointwise parabolic operators. -/
@@ -173,9 +149,18 @@ theorem parabolicOperator_congr_of_eventuallyEq_of_coefficientAt_eventuallyEq
     {d : ℕ} {B B' : CoefficientField d} {q q' : TimeVelocity d → ℝ}
     {z : TimeVelocity d} (hB : coefficientAt B =ᶠ[𝓝 z] coefficientAt B')
     (hqq' : q =ᶠ[𝓝 z] q') :
-    parabolicOperator B q z = parabolicOperator B' q' z := by
+    parabolicOperator B q z = parabolicOperator B' q' z   := by
+  have velocityHessian_congr_of_eventuallyEq :
+      velocityHessian q z = velocityHessian q' z := by
+    ext i j
+    unfold velocityHessian
+    rw [hqq'.fderiv.fderiv_eq]
+  have timeDerivative_congr_of_eventuallyEq :
+      timeDerivative q z = timeDerivative q' z := by
+    unfold timeDerivative
+    rw [hqq'.fderiv_eq]
   unfold parabolicOperator
-  rw [timeDerivative_congr_of_eventuallyEq hqq', hB.self_of_nhds,
-    velocityHessian_congr_of_eventuallyEq hqq']
+  rw [timeDerivative_congr_of_eventuallyEq, hB.self_of_nhds,
+    velocityHessian_congr_of_eventuallyEq]
 
 end HypoellipticAleksandrov.Parabolic

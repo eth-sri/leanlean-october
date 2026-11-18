@@ -1,22 +1,96 @@
 module
 
+public import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Tactic
 public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Kummer.Series
-public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Kummer.IntegralKernel
 import Mathlib.Tactic.Linarith
-
-/-!
-# Positive integral definitions of Kummer U
-
-`UI` has positive shape and argument. `UN` is the source transformation for the
-negative shape interval. The real auxiliary formulae are only characterized at positive
-arguments; their values outside that domain are never used as special-function values.
--/
 
 @[expose] public noncomputable section
 
-open Set MeasureTheory
-
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Kummer
+open Set MeasureTheory Real
+
+/-- Literal real Laplace kernel, before bundling the positive first parameter. -/
+noncomputable def laplaceKernelReal (a b z t : ℝ) : ℝ :=
+  Real.exp (-(z * t)) * t ^ (a - 1) * (1 + t) ^ (b - a - 1)
+
+/-- The kernel is strictly positive on the integration domain. -/
+theorem laplaceKernelReal_pos (a b z t : ℝ) (ht : 0 < t) :
+    0 < laplaceKernelReal a b z t := by
+  exact mul_pos (mul_pos (Real.exp_pos _) (Real.rpow_pos_of_pos ht _))
+    (Real.rpow_pos_of_pos (by linarith only [ht]) _)
+
+/-- Continuity in the integration variable away from its endpoint. -/
+theorem continuousOn_laplaceKernelReal (a b z : ℝ) :
+    ContinuousOn (laplaceKernelReal a b z) (Ioi 0) := by
+  apply ContinuousOn.mul
+  · apply ContinuousOn.mul
+    · exact (continuous_const.mul continuous_id).neg.rexp.continuousOn
+    · exact continuousOn_id.rpow_const (fun t ht => Or.inl (ne_of_gt ht))
+  · exact (continuousOn_const.add continuousOn_id).rpow_const
+      (fun t ht => Or.inl (by
+        exact ne_of_gt (add_pos zero_lt_one ht)))
+
+/-- A polynomial bound for the translated power on the positive half-line. -/
+theorem one_add_rpow_le_polynomial (q : ℝ) (n : ℕ) (hqn : q ≤ (n : ℝ))
+    (t : ℝ) (ht : 0 ≤ t) :
+    (1 + t) ^ q ≤ (2 : ℝ) ^ n * (1 + t ^ n) := by
+  have hbase : 1 ≤ 1 + t := by linarith only [ht]
+  have hpow : (1 + t) ^ q ≤ (1 + t) ^ n := by
+    simpa using Real.rpow_le_rpow_of_exponent_le hbase hqn
+  apply hpow.trans
+  by_cases ht1 : t ≤ 1
+  · have hsmall : (1 + t) ^ n ≤ 2 ^ n :=
+      pow_le_pow_left₀ (by linarith only [ht]) (by linarith only [ht1]) n
+    exact hsmall.trans (le_mul_of_one_le_right (by positivity) (by
+      have := pow_nonneg ht n
+      linarith only [this]))
+  · have ht1' : 1 ≤ t := (lt_of_not_ge ht1).le
+    have hlarge : (1 + t) ^ n ≤ (2 * t) ^ n :=
+      pow_le_pow_left₀ (by linarith only [ht]) (by linarith only [ht1']) n
+    rw [mul_pow] at hlarge
+    exact hlarge.trans (mul_le_mul_of_nonneg_left (by linarith) (by positivity))
+
+/-- The scaled Gamma kernel is integrable for every positive shape and rate. -/
+theorem integrableOn_gammaKernel (a z : ℝ) (ha : 0 < a) (hz : 0 < z) :
+    IntegrableOn (fun t : ℝ => Real.exp (-(z * t)) * t ^ (a - 1))
+      (Ioi 0) volume := by
+  have hscaled : IntegrableOn
+      (fun t => Real.exp (-(z * t)) * (z * t) ^ (a - 1))
+      (Ioi 0) volume := by
+    apply (integrableOn_Ioi_comp_mul_left_iff
+      (fun t => Real.exp (-t) * t ^ (a - 1)) 0 hz).mpr
+    simpa using Real.GammaIntegral_convergent ha
+  apply IntegrableOn.congr_fun (hscaled.const_mul (z ^ (a - 1))⁻¹) _ measurableSet_Ioi
+  intro t ht
+  change (z ^ (a - 1))⁻¹ *
+    (Real.exp (-(z * t)) * (z * t) ^ (a - 1)) =
+      Real.exp (-(z * t)) * t ^ (a - 1)
+  rw [Real.mul_rpow hz.le ht.le]
+  field_simp
+
+/-- Absolute convergence of the full Kummer Laplace kernel. -/
+theorem integrableOn_laplaceKernelReal (a b z : ℝ) (ha : 0 < a) (hz : 0 < z) :
+    IntegrableOn (laplaceKernelReal a b z) (Ioi 0) volume := by
+  obtain ⟨n, hn⟩ := exists_nat_gt (b - a - 1)
+  have hdom := ((integrableOn_gammaKernel a z ha hz).add
+    (integrableOn_gammaKernel (a + n) z (add_pos_of_pos_of_nonneg ha (Nat.cast_nonneg n)) hz)).const_mul (2 ^ n)
+  apply hdom.mono'
+  · exact (continuousOn_laplaceKernelReal a b z).aestronglyMeasurable measurableSet_Ioi
+  · filter_upwards [ae_restrict_mem measurableSet_Ioi] with t ht
+    rw [Real.norm_eq_abs, abs_of_pos (laplaceKernelReal_pos a b z t ht)]
+    have hmul := mul_le_mul_of_nonneg_left (one_add_rpow_le_polynomial (b - a - 1) n hn.le t ht.le)
+      (mul_pos (Real.exp_pos (-(z * t))) (Real.rpow_pos_of_pos ht (a - 1))).le
+    have heq : t ^ (a + (n : ℝ) - 1) = t ^ (a - 1) * t ^ n := by
+      rw [show a + (n : ℝ) - 1 = (a - 1) + (n : ℝ) by ring,
+        Real.rpow_add ht, Real.rpow_natCast]
+    change laplaceKernelReal a b z t ≤
+      2 ^ n * (Real.exp (-(z * t)) * t ^ (a - 1) +
+        Real.exp (-(z * t)) * t ^ (a + (n : ℝ) - 1))
+    rw [heq]
+    exact hmul.trans_eq (by ring)
+
+
 
 /-- The Laplace kernel with positive first parameter. -/
 def laplaceKernel (a : Pos) (b z t : ℝ) : ℝ := laplaceKernelReal a.1 b z t
@@ -48,13 +122,26 @@ theorem integrable_laplaceKernel (a : Pos) (b z : ℝ) (hz : 0 < z) :
     IntegrableOn (laplaceKernel a b z) (Ioi 0) volume :=
   integrableOn_laplaceKernelReal a.1 b z a.2 hz
 
-/-- Strict positivity of the unbundled integral on its positive argument domain. -/
-theorem UIr_pos (a : Pos) (b z : ℝ) (hz : 0 < z) : 0 < UIr a b z :=
-  mul_pos (inv_pos.mpr (Real.Gamma_pos_of_pos a.2))
-    (integral_laplaceKernelReal_pos a.1 b z a.2 hz)
 
 /-- Strict positivity of the transformed negative-shape U on the positive real axis. -/
-theorem UNr_pos (a : NegThird) (z : ℝ) (hz : 0 < z) : 0 < UNr a z :=
-  mul_pos (Real.rpow_pos_of_pos hz _) (UIr_pos _ _ z hz)
+theorem UNr_pos (a : NegThird) (z : ℝ) (hz : 0 < z) : 0 < UNr a z  := by
+  have UIr_pos (a : Pos) (b : ℝ) :
+      0 < UIr a b z := by
+    have integral_laplaceKernelReal_pos (a : ℝ) (ha : 0 < a) :
+        0 < ∫ t in Ioi 0, laplaceKernelReal a b z t := open Real in by
+      have hs : Function.support (laplaceKernelReal a b z) ∩ Ioi 0 = Ioi 0 := by
+        rw [inter_eq_right]
+        intro t ht
+        exact (laplaceKernelReal_pos a b z t ht).ne'
+      rw [setIntegral_pos_iff_support_of_nonneg_ae]
+      · rw [hs, volume_Ioi]
+        exact ENNReal.zero_lt_top
+      · filter_upwards [ae_restrict_mem measurableSet_Ioi] with t ht
+        exact (laplaceKernelReal_pos a b z t ht).le
+      · exact integrableOn_laplaceKernelReal a b z ha hz
+    exact mul_pos (inv_pos.mpr (Real.Gamma_pos_of_pos a.2))
+      (integral_laplaceKernelReal_pos a.1 a.2)
+  exact mul_pos (Real.rpow_pos_of_pos hz _) (UIr_pos _ _)
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Kummer
+

@@ -1,15 +1,21 @@
 module
 
-public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.VisitRecursionUnconditionalMixtures
+public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.VisitRecursionUnconditionalKernels
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.NestedStripRestartPoles
 import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.NestedStripKernelIntegral
 
-/-! # Exact physical visit mixtures on the finite-union pole carrier used by nested strips -/
+@[expose] public noncomputable section
 
-@[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
+open Set MeasureTheory ProbabilityTheory HypoellipticAleksandrov
+open scoped Classical
+
+/-- Pulling a supported physical measure to its pole subtype and mapping it back loses no mass. -/
+theorem visitPoleMeasure_map_comap (D : Set Point) (hD : MeasurableSet D)
+    (mu : Measure Point) (hmu : ∀ᵐ p ∂mu, p ∈ D) :
+    (mu.comap (Subtype.val : D → Point)).map Subtype.val = mu := by
+  rw [map_comap_subtype_coe hD, Measure.restrict_eq_self_of_ae_mem hmu]
+
 
 /-- Pull back an actual physical source to the existing finite-union pole subtype. -/
 def visitUnionPoleMeasure (H : FiniteIntervalUnion) (T : ℝ) (mu : Measure Point) :
@@ -47,11 +53,9 @@ theorem visitExtendKernel_comp_unionPole (H : FiniteIntervalUnion) (s T : ℝ)
   let nu := visitUnionPoleMeasure H T mu
   let k := visitExtendKernel (visitPoleSet H s T) (measurableSet_visitPoleSet H s T)
     (fun p => f (visitPoleInclusion H s T p)) (hf.comp (measurable_visitPoleInclusion H s T))
-  have hm : nu.map Subtype.val = mu := visitUnionPoleMeasure_map H s T mu hmu
-  have hb := nested_bind_map nu Subtype.val measurable_subtype_coe k k.measurable
   change mu.bind k = nu.bind f
-  rw [← hm]
-  apply hb.trans
+  rw [← (visitUnionPoleMeasure_map H s T mu hmu)]
+  apply (nested_bind_map nu Subtype.val measurable_subtype_coe k k.measurable).trans
   apply Measure.bind_congr_right
   filter_upwards [visitUnionPoleMeasure_ae_time_gt H s T mu hmu] with e he
   have hp : e.1 ∈ visitPoleSet H s T :=
@@ -83,26 +87,24 @@ theorem visitUnionExitKernel_comp_poles
   visitExtendKernel_comp_unionPole H s T _ (finiteUnionExit_measurable hH hLE hlam hLam A H T)
     mu hmu
 
-/-- Including source poles into the larger union retains exactly their physical measure. -/
-theorem visitUnionPoleMeasure_nested_map (H1 H2 : FiniteIntervalUnion)
-    (hsub : H1.carrier ⊆ H2.carrier) (s T : ℝ) (mu : Measure Point)
-    (hmu : ∀ᵐ p ∂mu, p ∈ visitPoleSet H1 s T) :
-    ((visitUnionPoleMeasure H1 T mu).map
-      (finiteUnionNestedPoleInclusion H1 H2 hsub T)).map Subtype.val = mu := by
-  rw [Measure.map_map measurable_subtype_coe
-    (measurable_finiteUnionNestedPoleInclusion H1 H2 hsub T)]
-  exact visitUnionPoleMeasure_map H1 s T mu hmu
 
 /-- Mapping smaller source poles into the larger domain is exactly the larger pole pullback. -/
 theorem visitUnionPoleMeasure_nested_eq (H1 H2 : FiniteIntervalUnion)
     (hsub : H1.carrier ⊆ H2.carrier) (s T : ℝ) (mu : Measure Point)
     (hmu : ∀ᵐ p ∂mu, p ∈ visitPoleSet H1 s T) :
     (visitUnionPoleMeasure H1 T mu).map (finiteUnionNestedPoleInclusion H1 H2 hsub T) =
-      visitUnionPoleMeasure H2 T mu := by
+      visitUnionPoleMeasure H2 T mu  := by
+  have visitUnionPoleMeasure_nested_map :
+      ((visitUnionPoleMeasure H1 T mu).map
+      (finiteUnionNestedPoleInclusion H1 H2 hsub T)).map Subtype.val = mu := by
+    rw [Measure.map_map measurable_subtype_coe
+      (measurable_finiteUnionNestedPoleInclusion H1 H2 hsub T)]
+    exact visitUnionPoleMeasure_map H1 s T mu hmu
   apply (MeasurableEmbedding.subtype_coe (measurableSet_finiteUnionPole H2 T)).map_injective
   have hlarge : ∀ᵐ p ∂mu, p ∈ visitPoleSet H2 s T :=
     hmu.mono (fun p hp => ⟨hp.1, hp.2.1, hsub hp.2.2⟩)
-  exact (visitUnionPoleMeasure_nested_map H1 H2 hsub s T mu hmu).trans
+  exact (visitUnionPoleMeasure_nested_map).trans
     (visitUnionPoleMeasure_map H2 s T mu hlarge).symm
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous
+

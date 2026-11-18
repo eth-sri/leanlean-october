@@ -57,10 +57,9 @@ theorem integral_transportedAdjoint_contDiffOn {U : Set (EvolutionVec d)} (hU : 
     (hline basisT) (fun i => hline (basisV i)) (fun i => hline (basisZ i))
     (fun i j => hline2 (basisV i) (basisV j))
     (fun i => hline2 (basisZ i) (basisZ i)) ψ hψ hc hs
-  simp only [regularizedAdjoint, zero_mul, add_zero] at key
+  simp [regularizedAdjoint] at key
   refine key.trans (setIntegral_congr_fun hU.measurableSet fun x _ => ?_)
   congr 1
-  dsimp only [D, transportedOperator]
   congr 1
   rw [Finset.sum_comm]
   congr 1

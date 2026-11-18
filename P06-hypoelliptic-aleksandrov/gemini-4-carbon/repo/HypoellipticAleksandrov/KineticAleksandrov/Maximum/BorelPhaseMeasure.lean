@@ -22,8 +22,7 @@ theorem borel_timeVelocity_ae_lift {d : ℕ} {p : (ℝ × PDE.Vec d) → Prop}
   have hswap : MeasurePreserving
       (fun z : ℝ × (PDE.Vec d × PDE.Vec d) => (z.1,z.2.2,z.2.1)) volume volume :=
     (MeasurePreserving.id volume).prod Measure.measurePreserving_swap
-  have hback := MeasurePreserving.symm MeasurableEquiv.prodAssoc hassoc
-  have hp' := (hproj.comp (hback.comp hswap).quasiMeasurePreserving).ae hp
+  have hp' := (hproj.comp ((MeasurePreserving.symm MeasurableEquiv.prodAssoc hassoc).comp hswap).quasiMeasurePreserving).ae hp
   exact (KineticPoint.measurePreserving_equivProd d).quasiMeasurePreserving.ae hp'
 
 end HypoellipticAleksandrov.KineticAleksandrov

@@ -40,8 +40,8 @@ theorem vecNormSq_le_of_mem_closure_movingDomain {n : ℕ} {c : PDE.Vec n} {r₀
     (hy : y ∈ closure (movingDomain (PDE.euclideanBall c r₀) γ σ)) :
     PDE.vecNormSq (y - (γ σ + c)) ≤ r₀ ^ 2 := by
   have hcl : IsClosed {y : PDE.Vec n | PDE.vecNormSq (y - (γ σ + c)) ≤ r₀ ^ 2} := by
-    have hc : Continuous (fun y : PDE.Vec n => PDE.vecNormSq (y - (γ σ + c))) := by
-      have : (fun y : PDE.Vec n => PDE.vecNormSq (y - (γ σ + c))) =
+    have hc : Continuous (fun y => PDE.vecNormSq (y - (γ σ + c))) := by
+      have : (fun y => PDE.vecNormSq (y - (γ σ + c))) =
           fun y => ∑ i, (y i - (γ σ + c) i) ^ 2 := by
         funext y
         rw [PDE.vecNormSq_eq_sum_sq]
@@ -63,10 +63,9 @@ theorem vecNormSq_eq_of_mem_frontier_movingDomain {n : ℕ} {c : PDE.Vec n} {r�
   have hopen : IsOpen (movingDomain (PDE.euclideanBall c r₀) γ σ) :=
     isOpen_movingDomain (PDE.isOpen_euclideanBall c r₀) σ
   rw [hopen.frontier_eq] at hy
-  have h1 := vecNormSq_le_of_mem_closure_movingDomain hy.1
   have h2 : ¬ PDE.vecNormSq (y - (γ σ + c)) < r₀ ^ 2 := fun h =>
     hy.2 (mem_movingDomain_euclideanBall_iff.mpr h)
-  exact le_antisymm h1 (not_lt.mp h2)
+  exact le_antisymm (vecNormSq_le_of_mem_closure_movingDomain hy.1) (not_lt.mp h2)
 
 /-- A Euclidean-Lipschitz curve has derivative of Euclidean norm at most the Lipschitz
 constant. -/
@@ -111,7 +110,7 @@ theorem exists_partition_differentiableAt {n : ℕ} {γ : ℝ → PDE.Vec n}
       ∀ i : Fin (N + 1), ∀ σ ∈ Ioo (t i.castSucc) (t i.succ), DifferentiableAt ℝ γ σ := by
   obtain ⟨N, t, ht, h0, hl, hpiece⟩ := hγ.2 a b hab
   refine ⟨N, t, ht, h0, hl, fun i σ hσ => ?_⟩
-  have h1 : DifferentiableOn ℝ γ (Icc (t i.castSucc) (t i.succ)) :=
+  have h1 :=
     (hpiece i).differentiableOn (by norm_num)
   exact h1.differentiableAt (Icc_mem_nhds hσ.1 hσ.2)
 

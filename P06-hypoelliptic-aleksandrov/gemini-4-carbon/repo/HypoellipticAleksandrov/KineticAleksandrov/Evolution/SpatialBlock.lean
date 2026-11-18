@@ -156,9 +156,9 @@ theorem contDiff_spatialPack {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ
     ContDiff ℝ m (fun x => spatialPack (f x) (g x)) := by
   refine contDiff_pi.2 fun k => ?_
   refine Fin.addCases (fun i => ?_) (fun i => ?_) k
-  · simp only [spatialPack_castAdd]
+  · simp
     exact contDiff_pi.1 hf i
-  · simp only [spatialPack_natAdd]
+  · simp
     exact contDiff_pi.1 hg i
 
 end Coordinates
@@ -236,7 +236,7 @@ theorem vecDot_viscousBlockMatrix_mulVec (A : PDE.Mat n) (ε : ℝ) (x : PDE.Vec
     PDE.vecDot x (viscousBlockMatrix A ε *ᵥ x) =
       PDE.vecDot (spatialY x) (A *ᵥ spatialY x) + ε * PDE.vecNormSq (spatialZ x) := by
   rw [viscousBlockMatrix_mulVec, vecDot_eq_spatial]
-  simp only [spatialY_spatialPack, spatialZ_spatialPack]
+  simp
   simp [PDE.vecDot, PDE.vecNormSq, Finset.mul_sum, mul_left_comm]
 
 theorem viscousBlockMatrix_sub (A A' : PDE.Mat n) (ε ε' : ℝ) :
@@ -252,7 +252,7 @@ theorem viscousBlockMatrix_smul_one (c : ℝ) :
     have hne : ¬ Fin.castAdd n i = Fin.natAdd n j := by
       intro h
       have := congrArg Fin.val h
-      simp only [Fin.val_castAdd, Fin.val_natAdd] at this
+      simp at this
       omega
     simp only [hne, ↓reduceIte, mul_zero]
   · simp only [viscousBlockMatrix_natAdd_castAdd, Matrix.smul_apply, Matrix.one_apply,
@@ -320,8 +320,7 @@ theorem viscousBlockMatrix_posDef {A : PDE.Mat n} (hA : A.PosDef) {ε : ℝ}
       exact mul_pos hε hzpos
     · have hA' := hA.2 hy
       simp only [star_trivial] at hA'
-      have hz := PDE.vecNormSq_nonneg (spatialZ x)
-      exact add_pos_of_pos_of_nonneg hA' (mul_nonneg hε.le hz)
+      exact add_pos_of_pos_of_nonneg hA' (mul_nonneg hε.le (PDE.vecNormSq_nonneg (spatialZ x)))
 
 /-- `c • 1 ≤ d • 1` for `c ≤ d`, in the Loewner order. -/
 theorem smul_one_le_smul_one {m : ℕ} {c d : ℝ} (h : c ≤ d) :

@@ -32,10 +32,6 @@ theorem visitCoefficient_integrable {lam Lam : ℝ} (hlam : 0 < lam)
 theorem visitCoefficient_integral_le {lam Lam : ℝ} (hlam : 0 < lam)
     (A : SmoothAutonomous lam Lam) (mu : Measure Point) [IsFiniteMeasure mu] :
     (∫ p, 2 * A.a (p.position 0) (p.velocity 0) ∂mu) ≤ 2 * Lam * (mu univ).toReal := by
-  have hi := integral_mono_ae (visitCoefficient_integrable hlam A mu)
-    (integrable_const (2 * Lam))
-    (Filter.Eventually.of_forall (fun p =>
-      mul_le_mul_of_nonneg_left (A.bounds (p.position 0) (p.velocity 0)).2 (by norm_num)))
-  simpa only [integral_const, smul_eq_mul, Measure.real, mul_comm] using hi
+  simpa [integral_const, Measure.real, mul_comm] using (integral_mono_ae (visitCoefficient_integrable hlam A mu) (integrable_const (2 * Lam)) (Filter.Eventually.of_forall (fun p => mul_le_mul_of_nonneg_left (A.bounds (p.position 0) (p.velocity 0)).2 (by norm_num))))
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

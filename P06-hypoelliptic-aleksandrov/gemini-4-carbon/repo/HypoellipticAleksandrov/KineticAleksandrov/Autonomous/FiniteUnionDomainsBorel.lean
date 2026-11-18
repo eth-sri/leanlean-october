@@ -51,10 +51,7 @@ theorem finiteUnion_component_family_measurable
       exact False.elim (hn (Finset.mem_univ _))
   have hm : Measurable (fun e => ∑ i : Fin H.count, g i e) :=
     Finset.measurable_sum _ (fun i _ => hg i)
-  have hfun : (fun e : FiniteUnionPole H T =>
-      f (finiteUnionPoleIndex H T e) (finiteUnionComponentPole H T e) B) =
-        fun e => ∑ i : Fin H.count, g i e := funext heq
-  rw [hfun]
+  rw [(funext heq)]
   exact hm
 
 /-- The actual Green family of a finite union has Borel pole dependence. -/

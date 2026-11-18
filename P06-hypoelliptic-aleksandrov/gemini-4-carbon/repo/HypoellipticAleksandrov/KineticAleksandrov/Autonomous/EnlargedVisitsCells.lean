@@ -46,13 +46,6 @@ def enlargedTimeVisitMass (nu : Measure Point) (c : Clock) (s : ℝ) (j : ℕ) :
 def enlargedOutputCell (c : Clock) (s x : ℝ) (j : ℕ) (k : ℤ) : Set Point :=
   enlargedStartCell c s x j k ∩ {p | p.velocity 0 ∈ c.active}
 
-/-- Every source time bin is measurable. -/
-theorem measurableSet_enlargedTimeBin (r s : ℝ) (j : ℕ) :
-    MeasurableSet (enlargedTimeBin r s j) := by
-  unfold enlargedTimeBin
-  split
-  · exact measurableSet_Icc
-  · exact measurableSet_Ioc
 
 /-- Every source position cell is measurable. -/
 theorem measurableSet_enlargedPositionCell (r x : ℝ) (k : ℤ) :
@@ -60,8 +53,14 @@ theorem measurableSet_enlargedPositionCell (r x : ℝ) (k : ℤ) :
 
 /-- Starting cells are measurable in the physical spacetime carrier. -/
 theorem measurableSet_enlargedStartCell (c : Clock) (s x : ℝ) (j : ℕ) (k : ℤ) :
-    MeasurableSet (enlargedStartCell c s x j k) :=
-  ((measurableSet_enlargedTimeBin c.r s j).preimage continuous_time.measurable).inter
+    MeasurableSet (enlargedStartCell c s x j k)  := by
+  have measurableSet_enlargedTimeBin (r : ℝ) :
+      MeasurableSet (enlargedTimeBin r s j) := by
+    unfold enlargedTimeBin
+    split
+    · exact measurableSet_Icc
+    · exact measurableSet_Ioc
+  exact ((measurableSet_enlargedTimeBin c.r).preimage continuous_time.measurable).inter
     ((measurableSet_enlargedPositionCell c.r x k).preimage
       ((continuous_apply 0).comp continuous_position).measurable)
 

@@ -19,7 +19,6 @@ theorem frequency_radius_identities {d : ℕ} {ξ : PDE.Vec d} (hξ : ξ ≠ 0) 
     let r := PDE.vecEuclideanNorm ξ ^ (-(1 / 3 : ℝ))
     0 < r ∧ r ^ 2 = PDE.vecEuclideanNorm ξ ^ (-(2 / 3 : ℝ)) ∧
       PDE.vecNormSq (r ^ 3 • ξ) = 1 := by
-  dsimp only
   let N := PDE.vecEuclideanNorm ξ
   have hN : 0 < N := frequency_norm_pos hξ
   have hr : 0 < N ^ (-(1 / 3 : ℝ)) := Real.rpow_pos_of_pos hN _
@@ -32,7 +31,6 @@ theorem frequency_radius_identities {d : ℕ} {ξ : PDE.Vec d} (hξ : ξ ≠ 0) 
   refine ⟨hr, h2, ?_⟩
   rw [← PDE.vecEuclideanNorm_sq, PDE.vecEuclideanNorm_smul, h3,
     abs_of_pos (inv_pos.mpr hN)]
-  change (N⁻¹ * N) ^ 2 = 1
   rw [inv_mul_cancel₀ hN.ne']
   norm_num
 

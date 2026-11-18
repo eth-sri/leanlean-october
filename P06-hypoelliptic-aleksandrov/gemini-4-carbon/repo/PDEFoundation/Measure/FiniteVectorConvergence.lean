@@ -24,8 +24,8 @@ private theorem eLpNorm_abs_eq
     {α : Type*} [MeasurableSpace α] {μ : Measure α}
     (f : α → ℝ) (p : ℝ≥0∞) (hf : AEStronglyMeasurable f μ) :
     eLpNorm (fun x => |f x|) p μ = eLpNorm f p μ := by
-  simpa only [Real.norm_eq_abs] using!
-    eLpNorm_norm f (p := p) (μ := μ) hf
+  simpa using!
+    eLpNorm_norm f (μ := μ) hf
 
 private theorem aestronglyMeasurable_vecEuclideanNorm_of_coord'
     {α : Type*} [MeasurableSpace α] {μ : Measure α}
@@ -89,7 +89,7 @@ theorem tendsto_eLpNorm_vecEuclideanNorm_sub_zero_of_coordinate
           ∑ i : Fin d,
             eLpNorm (fun x => |F n x i - G x i|) p μ)
         Filter.atTop (nhds 0) := by
-    simpa only [Finset.sum_const_zero] using
+    simpa using
       tendsto_finsetSum Finset.univ
         (fun i _hi => hCoordinateAbs i)
   have hBound :
@@ -118,9 +118,7 @@ theorem tendsto_eLpNorm_vecEuclideanNorm_sub_zero_of_coordinate
             0 ≤ ∑ i : Fin d, |F n x i - G x i| :=
           Finset.sum_nonneg fun i _hi =>
             abs_nonneg (F n x i - G x i)
-        simpa only [Real.norm_eq_abs,
-          abs_of_nonneg (vecEuclideanNorm_nonneg _),
-          abs_of_nonneg hsumNonneg, Pi.sub_apply] using
+        simpa [abs_of_nonneg (vecEuclideanNorm_nonneg _), abs_of_nonneg hsumNonneg] using
             vecEuclideanNorm_le_sum_abs (F n x - G x)
       _ ≤
           ∑ i : Fin d,
@@ -130,10 +128,9 @@ theorem tendsto_eLpNorm_vecEuclideanNorm_sub_zero_of_coordinate
         rw [← Finset.sum_fn]
         exact
           eLpNorm_sum_le
-            (s := Finset.univ)
-            (f := fun i x =>
-              |F n x i - G x i|)
-            (μ := μ) (p := p)
+
+
+            (μ := μ)
             hp
   exact
     tendsto_of_tendsto_of_tendsto_of_le_of_le

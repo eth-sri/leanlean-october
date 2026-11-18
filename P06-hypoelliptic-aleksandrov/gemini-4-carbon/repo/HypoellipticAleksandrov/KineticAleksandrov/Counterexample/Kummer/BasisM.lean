@@ -18,25 +18,23 @@ open scoped ContDiff
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Kummer
 
-/-- Positive first parameters give strictly positive series coefficients. -/
-theorem coeff_pos (a b : Pos) (n : ℕ) : 0 < coeff a.1 b n := by
-  exact div_pos (poch_pos a n)
-    (mul_pos (poch_pos b n) (by exact_mod_cast Nat.factorial_pos n))
 
-/-- For positive first parameters, M is at least its constant term on the positive ray. -/
-theorem one_le_M (a b : Pos) (z : ℝ) (hz : 0 ≤ z) : 1 ≤ M a.1 b z := by
-  have h := (hasSum_M a.1 b z).summable.sum_le_tsum ({0} : Finset ℕ)
-    (fun n _ => mul_nonneg (coeff_pos a b n).le (pow_nonneg hz n))
-  simpa only [Finset.sum_singleton, coeff_zero, pow_zero, mul_one, M] using h
 
 /-- The second solution, with an actual real positive-axis power. -/
 def secondM (a : ℝ) (z : ℝ) : ℝ :=
   z ^ (1 / 3 : ℝ) * M (a + 1 / 3) b43 z
 
 /-- The second positive-axis solution never vanishes for the source parameter range. -/
-theorem secondM_pos (a : NegThird) (z : ℝ) (hz : 0 < z) : 0 < secondM a.1 z := by
+theorem secondM_pos (a : NegThird) (z : ℝ) (hz : 0 < z) : 0 < secondM a.1 z  := by
+  have one_le_M (a : Pos) (b : Pos) (hz : 0 ≤ z) :
+      1 ≤ M a.1 b z := by
+    have coeff_pos (n : ℕ) :
+        0 < coeff a.1 b n := by
+      exact div_pos (poch_pos a n)
+        (mul_pos (poch_pos b n) (by exact_mod_cast Nat.factorial_pos n))
+    simpa [coeff_zero, M] using (hasSum_M a.1 b z).summable.sum_le_tsum ({0} : Finset ℕ) (fun n _ => mul_nonneg (coeff_pos n).le (pow_nonneg hz n))
   let c : Pos := ⟨a.1 + 1 / 3, by linarith only [a.2.1]⟩
-  exact mul_pos (Real.rpow_pos_of_pos hz _) (lt_of_lt_of_le zero_lt_one (one_le_M c b43 z hz.le))
+  exact mul_pos (Real.rpow_pos_of_pos hz _) (lt_of_lt_of_le zero_lt_one (one_le_M c b43 hz.le))
 
 /-- Smoothness of the second solution away from the singular point. -/
 theorem contDiffOn_secondM (a : ℝ) :
@@ -50,7 +48,7 @@ theorem secondM_ode (a z : ℝ) (hz : 0 < z) :
     z * deriv (deriv (secondM a)) z +
       (2 / 3 - z) * deriv (secondM a) z - a * secondM a z = 0 := by
   have hm := analyticOnNhd_M (a + 1 / 3) b43
-  have hf : ∀ w ∈ Ioi (0 : ℝ), HasDerivAt (M (a + 1 / 3) b43)
+  have hf : ∀ w ∈ Ioi 0, HasDerivAt (M (a + 1 / 3) b43)
       (deriv (M (a + 1 / 3) b43) w) w := by
     intro w _
     exact (hm w (mem_univ _)).differentiableAt.hasDerivAt
@@ -62,9 +60,6 @@ theorem secondM_ode (a z : ℝ) (hz : 0 < z) :
     hd.hasDerivAt (by norm_num [b43] at ho ⊢; exact ho)
   rw [show (1 : ℝ) - 1 / 3 = 2 / 3 by norm_num,
     show a + 1 / 3 - 1 / 3 = a by ring] at h
-  change z * deriv (deriv (fun w => w ^ (1 / 3 : ℝ) * M (a + 1 / 3) b43 w)) z +
-    (2 / 3 - z) * deriv (fun w => w ^ (1 / 3 : ℝ) * M (a + 1 / 3) b43 w) z -
-    a * (z ^ (1 / 3 : ℝ) * M (a + 1 / 3) b43 z) = 0
   exact h
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Kummer

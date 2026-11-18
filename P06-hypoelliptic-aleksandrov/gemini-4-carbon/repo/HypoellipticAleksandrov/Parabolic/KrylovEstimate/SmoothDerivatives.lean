@@ -14,16 +14,11 @@ private theorem coordinate_single_smooth {N : ℕ} (w : TimeVelocity N → ℝ)
     (hw : ContDiff ℝ 2 w) (c : TimeVelocityCoord N) (z : TimeVelocity N) :
     TimeVelocityMultiIndex.coordinateIteratedFDeriv (Pi.single c 1) w z =
       fderiv ℝ w z (timeVelocityBasis c) := by
-  have hs := TimeVelocityMultiIndex.coordinateIteratedFDeriv_add_single_at
-    (0 : TimeVelocityMultiIndex N) c w z (by
-      simpa [TimeVelocityMultiIndex.order, VelocityMultiIndex.order,
-        TimeVelocityMultiIndex.timeOrder, TimeVelocityMultiIndex.velocity, zero_add] using
-        (hw.of_le (by norm_num : (1 : WithTop ℕ∞) ≤ 2)).contDiffAt)
   have hzero : TimeVelocityMultiIndex.coordinateIteratedFDeriv
-      (0 : TimeVelocityMultiIndex N) w = w := by
+      0 w = w := by
     funext y
     exact TimeVelocityMultiIndex.coordinateIteratedFDeriv_zero w y
-  simpa only [zero_add, hzero] using hs
+  simpa [hzero] using (TimeVelocityMultiIndex.coordinateIteratedFDeriv_add_single_at 0 c w z (by simpa [TimeVelocityMultiIndex.order, VelocityMultiIndex.order, TimeVelocityMultiIndex.timeOrder, TimeVelocityMultiIndex.velocity, zero_add] using (hw.of_le (by norm_num : (1 : WithTop ℕ∞) ≤ 2)).contDiffAt))
 
 /-- The scalar time derivative equals the joint directional derivative. -/
 theorem scalarTimeDerivative_eq_timeDerivative
@@ -49,20 +44,14 @@ theorem scalarSpatialHessian_eq_velocityHessian
   rw [scalarSpatialHessian_apply_eq_coordinateIteratedFDeriv_of_contDiff_two hw z i j]
   have ho : TimeVelocityMultiIndex.order
       (Pi.single (velocityCoord j) 1 : TimeVelocityMultiIndex N) + 1 = 2 := by
-    simp only [TimeVelocityMultiIndex.order_single]
-  have hs := TimeVelocityMultiIndex.coordinateIteratedFDeriv_add_single_at
-    (Pi.single (velocityCoord j) 1) (velocityCoord i) w z (by
-      simpa only [TimeVelocityMultiIndex.order_single, Nat.cast_one,
-        show (1 : WithTop ℕ∞) + 1 = 2 from rfl] using! hw.contDiffAt)
+    simp
   have hf : TimeVelocityMultiIndex.coordinateIteratedFDeriv
       (Pi.single (velocityCoord j) 1) w =
       (fun y => fderiv ℝ w y (timeVelocityBasis (velocityCoord j))) := by
     funext y
     exact coordinate_single_smooth w hw _ y
-  rw [hs, hf]
-  have hd := ((hw.fderiv_right (m := 1) (by norm_num)).differentiable
-    (by norm_num)) z
-  rw [fderiv_clm_apply hd (differentiableAt_const (c :=
+  rw [(TimeVelocityMultiIndex.coordinateIteratedFDeriv_add_single_at (Pi.single (velocityCoord j) 1) (velocityCoord i) w z (by simpa using! hw.contDiffAt)), hf]
+  rw [fderiv_clm_apply (((hw.fderiv_right (m := 1) (by norm_num)).differentiable (by norm_num)) z) (differentiableAt_const (c :=
     timeVelocityBasis (velocityCoord j)))]
   simp [timeVelocityBasis_velocity, velocityHessian, PDE.basisVec]
 

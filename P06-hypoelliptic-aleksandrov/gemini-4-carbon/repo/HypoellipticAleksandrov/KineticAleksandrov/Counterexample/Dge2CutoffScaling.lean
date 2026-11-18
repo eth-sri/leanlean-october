@@ -38,7 +38,7 @@ theorem cutoffProfile_dilate_rescaled {d : ℕ} (alpha C₀ sigma R : ℝ) (hR :
   have hrad : radialProfile alpha (R • z) = Real.rpow R alpha * radialProfile alpha z := by
     unfold radialProfile
     rw [PDE.vecNormSq_smul]
-    simp only [Real.rpow_eq_pow]
+    simp
     rw [Real.mul_rpow (sq_nonneg R) (PDE.vecNormSq_nonneg z),
       ← Real.rpow_natCast_mul hR.le]
     norm_num only [Nat.cast_ofNat]
@@ -47,7 +47,7 @@ theorem cutoffProfile_dilate_rescaled {d : ℕ} (alpha C₀ sigma R : ℝ) (hR :
   have hseed : Real.rpow (seedBase sigma (R • z) e) (alpha / 2) =
       Real.rpow R alpha * Real.rpow (seedBase (R⁻¹ * sigma) z (R⁻¹ • e)) (alpha / 2) := by
     rw [seedBase_dilate sigma R hR.ne']
-    simp only [Real.rpow_eq_pow]
+    simp
     have hn : 0 ≤ seedBase (R⁻¹ * sigma) z (R⁻¹ • e) := by
       exact add_nonneg (sq_nonneg _) (PDE.vecNormSq_nonneg _)
     rw [Real.mul_rpow (sq_nonneg R) hn, ← Real.rpow_natCast_mul hR.le]
@@ -62,16 +62,13 @@ theorem cutoffProfile_dilate_rescaled {d : ℕ} (alpha C₀ sigma R : ℝ) (hR :
 theorem fderiv_scaledFunction {d : ℕ} (F : PDE.Vec d → ℝ)
     (hF : Differentiable ℝ F) (a R : ℝ) (z w : PDE.Vec d) :
     fderiv ℝ (fun y => a * F (R • y)) z w = a * R * fderiv ℝ F (R • z) w := by
-  have hh := ((hF (R • z)).hasFDerivAt.comp z
-    ((hasFDerivAt_id z).const_smul R)).const_mul a
   have hh' : HasFDerivAt (fun y => a * F (R • y))
       (a • (fderiv ℝ F (R • z)).comp (R • ContinuousLinearMap.id ℝ (PDE.Vec d))) z := by
-    convert hh using 1
+    convert (((hF (R • z)).hasFDerivAt.comp z ((hasFDerivAt_id z).const_smul R)).const_mul a) using 1
     funext y
     rfl
   rw [hh'.fderiv]
-  simp only [smul_apply, smul_eq_mul, ContinuousLinearMap.comp_apply,
-    ContinuousLinearMap.id_apply, map_smul]
+  simp
   ring
 
 /-- Exact Hessian scaling for a smooth scalar function on native vectors. -/
@@ -79,11 +76,10 @@ theorem hessian_scaledFunction {d : ℕ} (F : PDE.Vec d → ℝ)
     (hF : ContDiff ℝ (⊤ : ℕ∞) F) (a R : ℝ) (z w u : PDE.Vec d) :
     fderiv ℝ (fun y => fderiv ℝ (fun b => a * F (R • b)) y w) z u =
       a * R ^ 2 * fderiv ℝ (fun y => fderiv ℝ F y w) (R • z) u := by
-  have hFd : Differentiable ℝ F := hF.differentiable (by simp)
   have heq : (fun y => fderiv ℝ (fun b => a * F (R • b)) y w) =
       (fun y => (a * R) * fderiv ℝ F (R • y) w) := by
     funext y
-    exact fderiv_scaledFunction F hFd a R y w
+    exact fderiv_scaledFunction F (hF.differentiable (by simp)) a R y w
   have hd : Differentiable ℝ (fun y => fderiv ℝ F y w) :=
     ((hF.fderiv_right (m := (⊤ : ℕ∞)) (by simp)).clm_apply
       contDiff_const).differentiable (by simp)
@@ -108,7 +104,7 @@ theorem rescaledCutoff_hessian {d : ℕ} (alpha C₀ sigma R : ℝ)
       (fun b => (Real.rpow R alpha)⁻¹ * cutoffProfile alpha C₀ sigma R (R • b) e) := by
     funext b
     rw [cutoffProfile_dilate_rescaled alpha C₀ sigma R hR b e]
-    simp only [Real.rpow_eq_pow]
+    simp
     rw [← mul_assoc, inv_mul_cancel₀ (Real.rpow_pos_of_pos hR alpha).ne', one_mul]
   rw [heq]
   exact hessian_scaledFunction _ hF _ R z w u

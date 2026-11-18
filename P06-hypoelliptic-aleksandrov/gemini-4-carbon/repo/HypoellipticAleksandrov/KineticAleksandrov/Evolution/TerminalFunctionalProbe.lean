@@ -127,7 +127,7 @@ theorem exists_terminalProbe_sq (F : terminalProbeSubmodule Ω γ τ) :
     ∃ G : terminalProbeSubmodule Ω γ τ,
       terminalProbeCcLinear G = terminalProbeCcLinear F * terminalProbeCcLinear F := by
   refine ⟨⟨F.1 * F.1, F.2.1.mul F.2.1, F.2.2.1.mul_left,
-    (tsupport_mul_subset_left (f := F.1) (g := F.1)).trans F.2.2.2⟩, ?_⟩
+    (tsupport_mul_subset_left).trans F.2.2.2⟩, ?_⟩
   ext x
   rfl
 

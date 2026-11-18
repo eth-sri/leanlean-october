@@ -1,19 +1,32 @@
 module
 
-public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.StripMass
+public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.StripGreenCharacterization
 import Mathlib.MeasureTheory.Integral.DominatedConvergence
 
-/-! # Bounded-source integration and dominated limits for finite strip Green measures
+@[expose] public noncomputable section
 
-These lemmas concern the actual unique Green measure. They do not assert smoothness for
-Borel sources. Source approximation and its weak equation are separate steps.
--/
-
-@[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open Set MeasureTheory HypoellipticAleksandrov Filter
-open scoped Topology ENNReal
+open Set MeasureTheory HypoellipticAleksandrov HypoellipticAleksandrov.KineticAleksandrov.SectionTwo Filter
+open scoped ENNReal Topology
+
+/-- Finite time bounds the actual killed Green measure, without a normalization factor. -/
+theorem stripGreenOfKernel_finite_time_mass (H : Interval)
+    (K : MovingFiberKernel (intervalDomain H) (fun _ => 0))
+    (T : ℝ) (e : StripPole H (T : WithTop ℝ)) :
+    stripGreenOfKernel H K T e univ ≤ ENNReal.ofReal (T - e.1.time) := by
+  rw [stripGreenOfKernel, Measure.map_apply (measurable_elapsedPhysicalPoint _ _)
+    MeasurableSet.univ, preimage_univ]
+  simpa using! (greenMeasure_mass_le K e.1.time (T - e.1.time) (sub_pos.mpr (WithTop.coe_lt_coe.mp e.2.1)) (Measure.dirac (stripPoleState H T e)) _ (greenMeasure_spec K e.1.time _ (stripHorizon_pos H T e) _))
+
+/-- The finite-time mass bound for the unique autonomous killed family. -/
+theorem stripGreen_finite_time_mass
+    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
+    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    (A : SmoothAutonomous lam Lam) (H : Interval) (T : ℝ)
+    (e : StripPole H (T : WithTop ℝ)) :
+    stripGreen hH hLE hlam hLam A H T e univ ≤ ENNReal.ofReal (T - e.1.time) :=
+  stripGreenOfKernel_finite_time_mass H _ T e
+
 
 /-- Every finite-horizon physical Green measure is finite by its proved time bound. -/
 instance stripGreenOfKernel_isFiniteMeasure (H : Interval)
@@ -29,7 +42,7 @@ theorem stripGreen_integrable_boundedBorel (H : Interval)
     Integrable g (stripGreenOfKernel H K T e) := by
   obtain ⟨C, -, hg⟩ := g.exists_bound
   apply (integrable_const C).mono' g.measurable.aestronglyMeasurable
-  exact Eventually.of_forall fun p => by simpa only [Real.norm_eq_abs] using hg p
+  exact Eventually.of_forall fun p => by simpa using hg p
 
 /-- The bounded-source potential is the integral against the actual physical Green measure. -/
 def stripPotentialOfKernel (H : Interval)
@@ -43,16 +56,12 @@ theorem stripPotentialOfKernel_abs_le (H : Interval)
     (g : BoundedBorel Point) (e : StripPole H (T : WithTop ℝ))
     (C : ℝ) (hC : 0 ≤ C) (hg : ∀ p, |g p| ≤ C) :
     |stripPotentialOfKernel H K T g e| ≤ C * (T - e.1.time) := by
-  have hb := norm_integral_le_of_norm_le_const (f := (g : Point → ℝ))
-    (μ := stripGreenOfKernel H K T e) (C := C)
-    (Eventually.of_forall fun p => by simpa only [Real.norm_eq_abs] using hg p)
   have hm : (stripGreenOfKernel H K T e).real univ ≤ T - e.1.time := by
-    have hT : 0 ≤ T - e.1.time := (sub_pos.mpr (WithTop.coe_lt_coe.mp e.2.1)).le
-    simpa only [Measure.real, ENNReal.toReal_ofReal hT] using
+    simpa only [Measure.real, ENNReal.toReal_ofReal ((sub_pos.mpr (WithTop.coe_lt_coe.mp e.2.1)).le)] using
       ENNReal.toReal_mono ENNReal.ofReal_ne_top (stripGreenOfKernel_finite_time_mass H K T e)
   have hb' : |stripPotentialOfKernel H K T g e| ≤
       C * (stripGreenOfKernel H K T e).real univ := by
-    simpa only [stripPotentialOfKernel, Real.norm_eq_abs] using hb
+    simpa [stripPotentialOfKernel] using (norm_integral_le_of_norm_le_const (f := (g : Point → ℝ)) (μ := stripGreenOfKernel H K T e) (Eventually.of_forall fun p => by simpa using hg p))
   exact hb'.trans (mul_le_mul_of_nonneg_left hm hC)
 
 /-- Uniformly bounded pointwise-convergent Borel sources pass to their Green potentials. -/
@@ -67,6 +76,7 @@ theorem stripPotentialOfKernel_tendsto (H : Interval)
   exact tendsto_integral_of_dominated_convergence (fun _ => C)
     (fun n => (g n).measurable.aestronglyMeasurable) (integrable_const C)
     (fun n => Eventually.of_forall fun p => by
-      simpa only [Real.norm_eq_abs] using hg n p) hlim
+      simpa using hg n p) hlim
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous
+

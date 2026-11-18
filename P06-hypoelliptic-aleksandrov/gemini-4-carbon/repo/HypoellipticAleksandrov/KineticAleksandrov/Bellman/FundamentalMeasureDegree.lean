@@ -33,8 +33,7 @@ theorem bellmanFundamentalMeasure_densityDegree :
     HasBellmanDensityDegree 2 bellmanFundamentalMeasure := by
   intro r hr E hE
   let D := bellmanDilationHomeomorph r hr
-  have hm : MeasurableSet (D '' E) := D.measurableEmbedding.measurableSet_image.mpr hE
-  have hi : D ⁻¹' (D '' E) = E := D.injective.preimage_image E
+  have hm := D.measurableEmbedding.measurableSet_image.mpr hE
   have hscale : ENNReal.ofReal (r⁻¹ ^ 4) * bellmanFundamentalMeasure (D '' E) =
       ENNReal.ofReal (r⁻¹ ^ 2) * bellmanFundamentalMeasure E := by
     calc
@@ -46,7 +45,7 @@ theorem bellmanFundamentalMeasure_densityDegree :
           bellmanFundamentalMeasure, withDensity_apply _ hm]
         rfl
       _ = ∫⁻ q in E, bellmanFundamentalDensity (D q) ∂bellmanPuncturedVolume := by
-        rw [setLIntegral_map hm measurable_bellmanFundamentalDensity D.measurable, hi]
+        rw [setLIntegral_map hm measurable_bellmanFundamentalDensity D.measurable, (D.injective.preimage_image E)]
       _ = _ := by
         change (∫⁻ q in E, bellmanFundamentalDensity (bellmanDilation r hr q)
           ∂bellmanPuncturedVolume) = _
@@ -59,7 +58,7 @@ theorem bellmanFundamentalMeasure_densityDegree :
   have hp : ENNReal.ofReal (r ^ 4) * ENNReal.ofReal (r⁻¹ ^ 2) =
       ENNReal.ofReal (r ^ (4 - (2 : ℝ))) := by
     rw [← ENNReal.ofReal_mul (pow_nonneg hr.le 4)]
-    norm_num only [show (4 : ℝ) - 2 = 2 from by norm_num, Real.rpow_two]
+    norm_num only [show 4 - 2 = 2 from by norm_num, Real.rpow_two]
     congr 1
     field_simp
   calc

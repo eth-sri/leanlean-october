@@ -46,8 +46,7 @@ theorem ContinuousLinearMap.apply_eq_vecDot_basisValues
       apply Finset.sum_congr rfl
       intro i _hi
       ring
-    _ = vecDot (fun i => L (basisVec i)) v := by
-      rfl
+    _ = vecDot (fun i => L (basisVec i)) v := rfl
 
 /-- Directional derivatives are Euclidean dot products with the coordinate
 gradient. -/

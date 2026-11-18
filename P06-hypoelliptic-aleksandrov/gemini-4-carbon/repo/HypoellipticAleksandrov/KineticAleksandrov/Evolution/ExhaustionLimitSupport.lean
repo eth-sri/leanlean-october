@@ -29,7 +29,7 @@ theorem exists_innerBall_terminal_support_margin {n : ℕ} {Γ : ℝ → PDE.Vec
       PDE.continuous_vecEuclideanNorm.comp (continuous_fst.sub continuous_const)
     obtain ⟨q0, hq0, hmax⟩ := hFc.exists_isMaxOn hne hc.continuousOn
     let gap := r0 - PDE.vecEuclideanNorm (q0.1 - Γ τ)
-    have hgap : 0 < gap := sub_pos.mpr ((mem_movingBall_iff_norm_lt hr0).mp (hs q0 hq0))
+    have hgap := sub_pos.mpr ((mem_movingBall_iff_norm_lt hr0).mp (hs q0 hq0))
     let d := min (r0 / 8) (gap / 8)
     have hd : 0 < d := lt_min (by positivity) (by positivity)
     have hdr : d < r0 / 4 := (min_le_left _ _).trans_lt (by linarith)

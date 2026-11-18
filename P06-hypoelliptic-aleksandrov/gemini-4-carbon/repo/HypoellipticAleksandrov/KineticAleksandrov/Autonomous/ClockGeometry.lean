@@ -28,8 +28,8 @@ def Clock.inverse (c : Clock) (e p : Point) : Point :=
 
 /-- Applying the inverse after the clock recovers the physical point. -/
 theorem Clock.inverse_map (c : Clock) (e p : Point) : c.inverse e (c.map e p) = p := by
-  have hr : c.r ≠ 0 := ne_of_gt c.positive
-  have hv : c.vbar ≠ 0 := c.nonzero
+  have hr := ne_of_gt c.positive
+  have hv := c.nonzero
   ext i
   · simp only [Clock.inverse, Clock.map]
     field_simp [hr, hv]
@@ -47,8 +47,8 @@ theorem Clock.inverse_map (c : Clock) (e p : Point) : c.inverse e (c.map e p) = 
 
 /-- Applying the clock after its inverse recovers the normalized point. -/
 theorem Clock.map_inverse (c : Clock) (e p : Point) : c.map e (c.inverse e p) = p := by
-  have hr : c.r ≠ 0 := ne_of_gt c.positive
-  have hv : c.vbar ≠ 0 := c.nonzero
+  have hr := ne_of_gt c.positive
+  have hv := c.nonzero
   ext i
   · simp only [Clock.inverse, Clock.map]
     field_simp [hr, hv]
@@ -74,14 +74,13 @@ def Clock.equiv (c : Clock) (e : Point) : Point ≃ Point where
 /-- Active velocity membership is exactly normalized active velocity membership. -/
 theorem Clock.mem_active_iff (c : Clock) (v : ℝ) :
     v ∈ c.active ↔ (v - c.vbar) / c.r ∈ normalizedActive := by
-  simp only [Clock.active, normalizedActive, Set.mem_Ioo]
+  simp [Clock.active, normalizedActive]
   rw [lt_div_iff₀ c.positive, div_lt_iff₀ c.positive]
   constructor <;> intro h <;> constructor <;> linarith only [h.1, h.2]
 
 /-- Velocity in the active interval differs from the centre by less than half its size. -/
 theorem Clock.active_distance (c : Clock) {v : ℝ} (hv : v ∈ c.active) :
     |v - c.vbar| < |c.vbar| / 2 := by
-  have hp : 0 < |c.vbar| := abs_pos.mpr c.nonzero
   have hh : |v - c.vbar| < 3 * c.r / 4 := by
     rw [abs_lt]
     exact ⟨by linarith only [hv.1], by linarith only [hv.2]⟩
@@ -90,12 +89,11 @@ theorem Clock.active_distance (c : Clock) {v : ℝ} (hv : v ∈ c.active) :
 /-- The two source absolute-velocity bounds on the active interval. -/
 theorem Clock.active_abs_bounds (c : Clock) {v : ℝ} (hv : v ∈ c.active) :
     |c.vbar| / 2 ≤ |v| ∧ |v| ≤ 3 * |c.vbar| / 2 := by
-  have hd := c.active_distance hv
   have h1 := abs_sub_abs_le_abs_sub c.vbar v
   have ht := abs_add_le (v - c.vbar) c.vbar
   rw [sub_add_cancel] at ht
   rw [abs_sub_comm] at h1
-  constructor <;> linarith only [hd, h1, ht]
+  constructor <;> linarith only [(c.active_distance hv), h1, ht]
 
 /-- The affine clock is continuous for the existing physical topology. -/
 theorem Clock.continuous_map (c : Clock) (e : Point) : Continuous (c.map e) := by

@@ -37,7 +37,7 @@ theorem oneDimensionalAxisBox_eq_euclideanBall {lo hi : ℝ} (hlohi : lo < hi) :
   ext x
   rw [PDE.mem_oneDimensionalAxisBox_iff,
     PDE.mem_euclideanBall_iff_vecEuclideanNorm_lt (by linarith), vecEuclideanNorm_vec_one]
-  simp only [PDE.vecOneCoordinate, Pi.sub_apply, intervalCentre, mem_Ioo]
+  simp [PDE.vecOneCoordinate, intervalCentre]
   rw [abs_lt]
   constructor <;> intro h <;> constructor <;> linarith [h.1, h.2]
 

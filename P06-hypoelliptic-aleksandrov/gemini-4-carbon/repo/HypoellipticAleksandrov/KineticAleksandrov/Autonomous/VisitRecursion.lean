@@ -31,7 +31,7 @@ theorem measurableSet_visitBoundary (s T : ℝ) (I J : Interval) :
       ((continuous_apply 0).comp continuous_velocity).measurable
   convert ht.inter hv using 1
   ext p
-  simp only [visitBoundary, mem_inter_iff, mem_ofPred_eq, mem_Ioo, and_assoc]
+  simp [visitBoundary, and_assoc]
 
 /-- Initial entrance, including the initial point exactly when it is already in the interval. -/
 def visitInitial (P : Point) (I : Interval) (Sin : Set Point)

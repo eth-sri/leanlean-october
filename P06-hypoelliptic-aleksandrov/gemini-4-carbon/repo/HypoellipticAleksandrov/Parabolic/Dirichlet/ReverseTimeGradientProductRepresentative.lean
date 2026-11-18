@@ -40,7 +40,7 @@ theorem coeFn_reverseTimeGradientCoordCLM
       fun τ => PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j
         (gradientCLM hΩ (u τ)) :=
   ContinuousLinearMap.coeFn_compLpL
-    ((PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j).comp (gradientCLM hΩ)) u
+    ((PDE.hilbertVectorLpCoord Ω 2 j).comp (gradientCLM hΩ)) u
 
 /-- The scalar coordinates of a reverse-time `H¹₀` gradient have joint
 product representatives with a common almost-everywhere time-slice event. -/
@@ -67,7 +67,7 @@ theorem exists_reverseTimeL2V_gradient_coord_product_representatives
     filter_upwards [hG_slice j, coeFn_reverseTimeGradientCoordCLM hΩ T j u]
       with τ hG hcoord
     rw [hcoord] at hG
-    exact hG.trans (PDE.coeFn_hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j
+    exact hG.trans (PDE.coeFn_hilbertVectorLpCoord Ω 2 j
       (gradientCLM hΩ (u τ)))
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

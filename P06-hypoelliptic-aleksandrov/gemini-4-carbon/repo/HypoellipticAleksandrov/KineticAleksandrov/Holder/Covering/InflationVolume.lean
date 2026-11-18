@@ -42,7 +42,7 @@ theorem volume_cylinder_product {d : ℕ} (P : KineticPoint d) {r : ℝ} (hr : 0
     (KineticPoint.measurable_equivProd_symm d)
   have hpre : (KineticPoint.equivProd d) ⁻¹' s = backwardCylinder P r := by
     ext X
-    simp only [s, mem_preimage, Equiv.symm_apply_apply]
+    simp [s, Equiv.symm_apply_apply]
   have hv := (KineticPoint.measurePreserving_equivProd d).measure_preimage hs.nullMeasurableSet
   rw [hpre] at hv
   rw [hv, Measure.volume_eq_prod, Measure.prod_apply hs]
@@ -55,9 +55,9 @@ theorem volume_cylinder_product {d : ℕ} (P : KineticPoint d) {r : ℝ} (hr : 0
       Equiv.coe_fn_symm_mk, relativePosition]
     rw [position_ball_slice P t z.1 hr]
     by_cases ht : t ∈ Ioo (P.time-r^2) P.time
-    · simp only [ht, ite_true, mem_prod]
+    · simp
       rcases ht with ⟨ht1, ht2⟩
-      simp only [ht1, ht2, true_and, and_comm]
+      simp [ht1, ht2, and_comm]
     · simp only [ht, ite_false, mem_empty_iff_false]
       exact ⟨fun h => ht ⟨h.1, h.2.1⟩, False.elim⟩
   have hcenter (x : PDE.Vec d) {R : ℝ} (hR : 0 < R) :
@@ -65,20 +65,19 @@ theorem volume_cylinder_product {d : ℕ} (P : KineticPoint d) {r : ℝ} (hr : 0
     rw [PDE.volume_euclideanBall_eq_unit_mul_of_pos x hR,
       PDE.volume_euclideanBall_eq_unit_mul_of_pos 0 hR]
   simp_rw [hslice]
-  have heq : (fun t : ℝ => volume (if t ∈ Ioo (P.time-r^2) P.time then
+  have heq : (fun t => volume (if t ∈ Ioo (P.time-r^2) P.time then
         PDE.euclideanBall (P.position+(t-P.time) • P.velocity) (r ^ 3) ×ˢ
           PDE.euclideanBall P.velocity r else ∅)) =
-      (Ioo (P.time-r^2) P.time).indicator (fun _ : ℝ =>
+      (Ioo (P.time-r^2) P.time).indicator (fun _ =>
         volume (PDE.euclideanBall (0 : PDE.Vec d) (r ^ 3)) *
           volume (PDE.euclideanBall (0 : PDE.Vec d) r)) := by
     funext t
     by_cases ht : t ∈ Ioo (P.time-r^2) P.time
-    · simp only [ht, ite_true, indicator_of_mem ht, Measure.volume_eq_prod,
-        Measure.prod_prod, hcenter _ (pow_pos hr 3), hcenter _ hr]
-    · simp only [ht, ite_false, measure_empty, indicator_of_notMem ht]
+    · simp [ht, indicator_of_mem ht, Measure.volume_eq_prod, Measure.prod_prod, hcenter _ (pow_pos hr 3), hcenter _ hr]
+    · simp [ht, measure_empty, indicator_of_notMem ht]
   rw [heq, lintegral_indicator measurableSet_Ioo, lintegral_const,
     Measure.restrict_apply_univ, Real.volume_Ioo]
-  simp only [sub_sub_cancel]
+  simp
   exact mul_comm _ _
 
 /-- Exact homogeneous scaling of cylinder volume, independent of the center. -/
@@ -88,7 +87,7 @@ theorem volume_cylinder_eq_unit {d : ℕ} (P : KineticPoint d) {r : ℝ} (hr : 0
   rw [volume_cylinder_product P hr, volume_cylinder_product ⟨0,0,0⟩ zero_lt_one]
   rw [PDE.volume_euclideanBall_eq_unit_mul_of_pos 0 (pow_pos hr 3),
     PDE.volume_euclideanBall_eq_unit_mul_of_pos 0 hr]
-  simp only [one_pow, ENNReal.ofReal_one, one_mul]
+  simp
   have hp : r ^ 2 * (r ^ 3) ^ d * r ^ d = r ^ (4*d+2) := by
     rw [← pow_mul, ← pow_add, ← pow_add]
     congr 1

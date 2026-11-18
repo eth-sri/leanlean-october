@@ -87,13 +87,11 @@ private theorem tendsto_setIntegral_mul_of_eLpNorm_sub_tendsto
     intro n
     have hd_meas : AEStronglyMeasurable (fun x => F n x - f x) μ :=
       ((hF n).sub hf).aestronglyMeasurable
-    have hg_meas : AEStronglyMeasurable g μ := hg.aestronglyMeasurable
     simpa using
       (eLpNorm_le_eLpNorm_mul_eLpNorm_of_nnnorm
-        (μ := μ) (p := (2 : ENNReal)) (q := (2 : ENNReal)) (r := (1 : ENNReal))
-        (fun a b : ℝ => a * b) 1 continuous_mul hd_meas hg_meas
+        (μ := μ) (p := 2) (q := 2) (r := 1)
+        (fun a b => a * b) 1 continuous_mul hd_meas hg.aestronglyMeasurable
         (Eventually.of_forall fun x => by simp))
-  have hgtop : eLpNorm g 2 μ ≠ ⊤ := hg.eLpNorm_lt_top.ne
   have hL1 :
       Tendsto
         (fun n => eLpNorm (fun x => (F n x - f x) * g x) 1 μ)
@@ -102,7 +100,7 @@ private theorem tendsto_setIntegral_mul_of_eLpNorm_sub_tendsto
         Tendsto
           (fun n => eLpNorm (fun x => F n x - f x) 2 μ * eLpNorm g 2 μ)
           atTop (nhds 0) := by
-      have h := ENNReal.Tendsto.mul_const hlim (Or.inr hgtop)
+      have h := ENNReal.Tendsto.mul_const hlim (Or.inr hg.eLpNorm_lt_top.ne)
       simpa using h
     exact tendsto_of_tendsto_of_tendsto_of_le_of_le
       tendsto_const_nhds hscaled (fun _ => zero_le) hL1_bound

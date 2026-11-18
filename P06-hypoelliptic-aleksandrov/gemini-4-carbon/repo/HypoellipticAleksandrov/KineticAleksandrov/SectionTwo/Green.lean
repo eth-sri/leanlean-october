@@ -32,8 +32,6 @@ theorem measurable_elapsedQuery {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → P
     (σ₀ : ℝ) (S : ℝ≥0∞) :
     Measurable (fun q : EvolutionState Ω γ σ₀ × ElapsedTime S => elapsedQuery σ₀ q.1 q.2) := by
   apply Measurable.subtype_mk
-  change Measurable (fun q : EvolutionState Ω γ σ₀ × ElapsedTime S =>
-    (σ₀, (σ₀ + q.2.1, q.1.1)))
   fun_prop
 
 /-- The literal master-kernel pullback at elapsed queries. -/
@@ -106,18 +104,17 @@ theorem greenMeasure_timeMarginal_le {d : ℕ} {Ω : Set (PDE.Vec d)}
   rw [← lintegral_indicator_one hpre]
   rw [hΓ ((Prod.fst ⁻¹' A).indicator 1) (measurable_one.indicator hpre)]
   calc
-    _ ≤ ∫⁻ p, ∫⁻ τ, A.indicator (fun _ => (1 : ℝ≥0∞)) τ ∂elapsedVolume S ∂μ := by
+    _ ≤ ∫⁻ p, ∫⁻ τ, A.indicator (fun _ => 1) τ ∂elapsedVolume S ∂μ := by
       apply lintegral_mono
       intro p
       apply lintegral_mono
       intro τ
       by_cases ht : τ ∈ A
-      · simp only [Set.indicator_of_mem ht]
-        simpa only [Set.indicator, mem_preimage, ht, ↓reduceIte, Pi.one_apply,
-          lintegral_one] using K.mass_le_one (elapsedQuery σ₀ p τ)
-      · simp only [Set.indicator, mem_preimage, ht, ↓reduceIte, lintegral_zero, le_refl]
+      · simp
+        simpa [Set.indicator, ht, Pi.one_apply, lintegral_one] using K.mass_le_one (elapsedQuery σ₀ p τ)
+      · simp [Set.indicator, ht, lintegral_zero, le_refl]
     _ = μ univ * elapsedVolume S A := by
-      have he : (∫⁻ τ, A.indicator (fun _ => (1 : ℝ≥0∞)) τ ∂elapsedVolume S) =
+      have he : (∫⁻ τ, A.indicator (fun _ => 1) τ ∂elapsedVolume S) =
           elapsedVolume S A := lintegral_indicator_one hA
       rw [he, lintegral_const]
       exact mul_comm _ _
@@ -170,8 +167,8 @@ theorem greenMeasure_horizonRestriction {d : ℕ} {Ω : Set (PDE.Vec d)}
       apply lintegral_congr
       intro τ
       by_cases ht : ENNReal.ofReal τ.1 < T
-      · simp only [Set.indicator, mem_ofPred_eq, ht, ↓reduceIte]
-      · simp only [Set.indicator, mem_ofPred_eq, ht, ↓reduceIte, lintegral_zero]
+      · simp [Set.indicator, ht]
+      · simp [Set.indicator, ht, lintegral_zero]
 
 
 /-- Finite-horizon mass bound uses the initial mass and the unnormalized time length. -/

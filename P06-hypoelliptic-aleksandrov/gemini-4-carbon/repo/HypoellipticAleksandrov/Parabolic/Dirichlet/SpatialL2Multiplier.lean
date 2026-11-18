@@ -29,7 +29,7 @@ theorem scalarL2Multiplier_memLp
     (hqBound : ∀ᵐ y ∂PDE.volumeOn Ω, ‖q y‖ ≤ C)
     (f : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
     MemLp (fun y => q y * f y) (2 : ℝ≥0∞) (PDE.volumeOn Ω) := by
-  apply (Lp.memLp f).of_le_mul (c := C) (hq.mul (Lp.aestronglyMeasurable f))
+  apply (Lp.memLp f).of_le_mul (hq.mul (Lp.aestronglyMeasurable f))
   filter_upwards [hqBound] with y hy
   change ‖q y * f y‖ ≤ C * ‖f y‖
   rw [norm_mul]

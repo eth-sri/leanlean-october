@@ -62,50 +62,35 @@ theorem flatteningPsi_deriv_bounds (s : ℝ) :
 /-- The primitive is zero to the left of the flattening threshold. -/
 theorem flatteningPsi_eq_zero (s : ℝ) (hs : s ≤ 1) : flatteningPsi s = 0 := by
   unfold flatteningPsi
-  rw [intervalIntegral.integral_symm (a := s) (b := (1 : ℝ))]
-  have he : (∫ t in s..(1 : ℝ), flatteningSlope t) = ∫ t in s..(1 : ℝ), (0 : ℝ) := by
+  rw [intervalIntegral.integral_symm (b := 1)]
+  have he : (∫ t in s..1, flatteningSlope t) = ∫ t in s..1, 0 := by
     apply intervalIntegral.integral_congr
     rw [uIcc_of_le hs]
     intro t ht
     exact Real.smoothTransition.zero_of_nonpos (sub_nonpos.mpr ht.2)
   rw [he]
-  simp only [intervalIntegral.integral_zero, neg_zero]
+  simp
 
 /-- The primitive is affine past the transition region. -/
 theorem flatteningPsi_eq_affine (s : ℝ) (hs : 2 ≤ s) :
     flatteningPsi s = s - flatteningOffset := by
   have hi := contDiff_flatteningSlope.continuous
-  have hadd := intervalIntegral.integral_add_adjacent_intervals
-    (hi.intervalIntegrable (μ := volume) 1 2) (hi.intervalIntegrable (μ := volume) 2 s)
-  have he : (∫ t in (2 : ℝ)..s, flatteningSlope t) = ∫ t in (2 : ℝ)..s, (1 : ℝ) := by
+  have he : (∫ t in (2 : ℝ)..s, flatteningSlope t) = ∫ t in (2 : ℝ)..s, 1 := by
     apply intervalIntegral.integral_congr
     rw [uIcc_of_le hs]
     intro t ht
     exact Real.smoothTransition.one_of_one_le (by linarith only [ht.1])
   unfold flatteningOffset
   simp only [flatteningPsi]
-  rw [← hadd, he, intervalIntegral.integral_const]
-  simp only [smul_eq_mul, mul_one]
+  rw [← (intervalIntegral.integral_add_adjacent_intervals (hi.intervalIntegrable (μ := volume) 1 2) (hi.intervalIntegrable (μ := volume) 2 s)), he, intervalIntegral.integral_const]
+  simp
   ring
 
 /-- The transition primitive has strictly intermediate height at the upper threshold. -/
 theorem flatteningPsi_two_bounds : 0 < flatteningPsi 2 ∧ flatteningPsi 2 < 1 := by
   have hc := contDiff_flatteningSlope.continuous
-  have hpos := intervalIntegral.integral_lt_integral_of_continuousOn_of_le_of_exists_lt
-    (by norm_num : (1 : ℝ) < 2) continuous_const.continuousOn hc.continuousOn
-    (fun t _ => Real.smoothTransition.nonneg (t - 1))
-    (show ∃ t ∈ Icc (1 : ℝ) 2, (0 : ℝ) < flatteningSlope t from
-      ⟨3 / 2, by norm_num,
-        Real.smoothTransition.pos_of_pos (by norm_num : 0 < (3 / 2 : ℝ) - 1)⟩)
-  have hlt := intervalIntegral.integral_lt_integral_of_continuousOn_of_le_of_exists_lt
-    (by norm_num : (1 : ℝ) < 2) hc.continuousOn continuous_const.continuousOn
-    (fun t _ => Real.smoothTransition.le_one (t - 1))
-    (show ∃ t ∈ Icc (1 : ℝ) 2, flatteningSlope t < (1 : ℝ) from
-      ⟨3 / 2, by norm_num,
-        Real.smoothTransition.lt_one_of_lt_one (by norm_num : (3 / 2 : ℝ) - 1 < 1)⟩)
-  simpa only [intervalIntegral.integral_zero, intervalIntegral.integral_const,
-    smul_eq_mul, sub_self, sub_zero, mul_one, flatteningPsi, show (2 - 1 : ℝ) = 1 by ring]
-    using And.intro hpos hlt
+  simpa [intervalIntegral.integral_zero, intervalIntegral.integral_const, flatteningPsi, show (2 - 1 : ℝ) = 1 by ring]
+    using And.intro (intervalIntegral.integral_lt_integral_of_continuousOn_of_le_of_exists_lt (by norm_num : (1 : ℝ) < 2) continuous_const.continuousOn hc.continuousOn (fun t _ => Real.smoothTransition.nonneg (t - 1)) (show ∃ t ∈ Icc 1 2, 0 < flatteningSlope t from ⟨3 / 2, by norm_num, Real.smoothTransition.pos_of_pos (by norm_num : 0 < (3 / 2 : ℝ) - 1)⟩)) (intervalIntegral.integral_lt_integral_of_continuousOn_of_le_of_exists_lt (by norm_num : (1 : ℝ) < 2) hc.continuousOn continuous_const.continuousOn (fun t _ => Real.smoothTransition.le_one (t - 1)) (show ∃ t ∈ Icc 1 2, flatteningSlope t < 1 from ⟨3 / 2, by norm_num, Real.smoothTransition.lt_one_of_lt_one (by norm_num : (3 / 2 : ℝ) - 1 < 1)⟩))
 
 /-- The affine offset lies strictly between the source's two thresholds. -/
 theorem flatteningOffset_bounds : 1 < flatteningOffset ∧ flatteningOffset < 2 := by
@@ -123,7 +108,7 @@ theorem flatteningPsi_deriv2_eq_zero_of_lt (s : ℝ) (hs : s < 1) :
     deriv (deriv flatteningPsi) s = 0 := by
   rw [funext deriv_flatteningPsi]
   apply HasDerivAt.deriv
-  apply (hasDerivAt_const s (0 : ℝ)).congr_of_eventuallyEq
+  apply (hasDerivAt_const s 0).congr_of_eventuallyEq
   filter_upwards [Iio_mem_nhds hs] with t ht
   exact Real.smoothTransition.zero_of_nonpos (sub_nonpos.mpr ht.le)
 
@@ -132,14 +117,14 @@ theorem flatteningPsi_deriv2_eq_zero_of_gt (s : ℝ) (hs : 2 < s) :
     deriv (deriv flatteningPsi) s = 0 := by
   rw [funext deriv_flatteningPsi]
   apply HasDerivAt.deriv
-  apply (hasDerivAt_const s (1 : ℝ)).congr_of_eventuallyEq
+  apply (hasDerivAt_const s 1).congr_of_eventuallyEq
   filter_upwards [Ioi_mem_nhds hs] with t ht
   exact Real.smoothTransition.one_of_one_le (by linarith only [ht.out])
 
 /-- The second derivative has compact support in the fixed closed transition interval. -/
 theorem hasCompactSupport_flatteningPsi_deriv2 :
     HasCompactSupport (deriv (deriv flatteningPsi)) := by
-  apply HasCompactSupport.of_support_subset_isCompact (isCompact_Icc (a := (1 : ℝ)) (b := 2))
+  apply HasCompactSupport.of_support_subset_isCompact (isCompact_Icc (a := 1))
   intro s hs
   by_contra h
   have hor : s < 1 ∨ 2 < s := by simpa only [mem_Icc, not_and_or, not_le] using h
@@ -186,10 +171,9 @@ theorem flatProfile_eq_one_sub {d : ℕ} (H : XV d → ℝ) (alpha r : ℝ)
     (hr : 0 < r) (q : XV d) (hq : 2 * Real.rpow r alpha ≤ H q) :
     flatProfile H flatteningPsi flatteningOffset alpha r q = 1 - H q := by
   unfold flatProfile
-  simp only [Real.rpow_eq_pow] at hq ⊢
+  simp at hq ⊢
   rw [flatteningPsi_eq_affine _ ((le_div_iff₀ (Real.rpow_pos_of_pos hr alpha)).2 hq)]
-  have hn := (Real.rpow_pos_of_pos hr alpha).ne'
-  field_simp [hn]
+  field_simp [((Real.rpow_pos_of_pos hr alpha).ne')]
   ring
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

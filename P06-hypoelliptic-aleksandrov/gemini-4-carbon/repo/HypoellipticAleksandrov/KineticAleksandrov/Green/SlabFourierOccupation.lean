@@ -34,11 +34,6 @@ lemma occupationKernel_of_nonneg {d : ℕ}
     rintro a b h₁ h₂ rfl; rfl
   rw [hc _ _ _ _ (by rw [max_eq_left ht])]
 
-lemma measurable_occupationQuery {d : ℕ} (σ : ℝ) :
-    Measurable (fun x : ℝ × PDE.Vec d =>
-      wholeSpaceQuery σ (σ + max x.1 0) (le_add_of_nonneg_right (le_max_right x.1 0)) x.2 0) := by
-  apply Measurable.subtype_mk
-  fun_prop
 
 instance firstMarginal_isFiniteKernel {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
     (K : MovingFiberKernel Ω γ) : ProbabilityTheory.IsFiniteKernel K.firstMarginal := by
@@ -61,7 +56,12 @@ lemma occupationKernel_univ_le {d : ℕ}
 lemma measurable_occupationKernel_section {d : ℕ}
     (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 : PDE.Vec d))) (σ : ℝ)
     {A : Set (ℝ × PDE.Vec d)} (hA : MeasurableSet A) :
-    Measurable (fun x : ℝ × PDE.Vec d => occupationKernel K σ x.1 x.2 {w | (x.1, w) ∈ A}) := by
+    Measurable (fun x : ℝ × PDE.Vec d => occupationKernel K σ x.1 x.2 {w | (x.1, w) ∈ A})  := by
+  have measurable_occupationQuery (σ : ℝ) :
+      Measurable (fun x : ℝ × PDE.Vec d =>
+      wholeSpaceQuery σ (σ + max x.1 0) (le_add_of_nonneg_right (le_max_right x.1 0)) x.2 0) := by
+    apply Measurable.subtype_mk
+    fun_prop
   let κ : ProbabilityTheory.Kernel (ℝ × PDE.Vec d) (PDE.Vec d) :=
     K.firstMarginal.comap _ (measurable_occupationQuery σ)
   have hS : MeasurableSet {z : (ℝ × PDE.Vec d) × PDE.Vec d | (z.1.1, z.2) ∈ A} :=
@@ -84,7 +84,7 @@ lemma integral_indicatorBB_occupation {d : ℕ}
       (occupationKernel K σ t v {w | (t, w) ∈ A}).toReal := by
   have hs : MeasurableSet {w : PDE.Vec d | (t, w) ∈ A} := measurable_prodMk_left hA
   have hf : (fun w => indicatorBB hA (t, w)) =
-      {w : PDE.Vec d | (t, w) ∈ A}.indicator (fun _ => (1 : ℝ)) := by
+      {w : PDE.Vec d | (t, w) ∈ A}.indicator (fun _ => 1) := by
     funext w; simp [indicatorBB_apply, Set.indicator]
   rw [hf, integral_indicator_const _ hs]
   simp [measureReal_def]
@@ -93,67 +93,20 @@ lemma integral_indicatorBB_occupation {d : ℕ}
 lemma elapsed_finite_set (S : ℝ) (hS : 0 < S) :
     {τ : ℝ | 0 < τ ∧ ENNReal.ofReal τ < ENNReal.ofReal S} = Ioo 0 S := by
   ext τ
-  simp only [mem_ofPred_eq, mem_Ioo, ENNReal.ofReal_lt_ofReal_iff hS]
+  simp [ENNReal.ofReal_lt_ofReal_iff hS]
 
 lemma integral_elapsed_finite (S : ℝ) (hS : 0 < S) (F : ℝ → ℝ) :
     ∫ τ : ElapsedTime (ENNReal.ofReal S), F τ.1 ∂elapsedVolume (ENNReal.ofReal S) =
       ∫ t in Ioo 0 S, F t := by
-  have h := integral_subtype_comap (μ := (volume : Measure ℝ))
-    (measurableSet_elapsedTime (ENNReal.ofReal S)) F
-  refine Eq.trans h ?_
+  refine Eq.trans (integral_subtype_comap (μ := (volume : Measure ℝ)) (measurableSet_elapsedTime (ENNReal.ofReal S)) F) ?_
   rw [elapsed_finite_set S hS]
 
 lemma lintegral_elapsed_finite (S : ℝ) (hS : 0 < S) (F : ℝ → ℝ≥0∞) :
     ∫⁻ τ : ElapsedTime (ENNReal.ofReal S), F τ.1 ∂elapsedVolume (ENNReal.ofReal S) =
       ∫⁻ t in Ioo 0 S, F t := by
-  have h := lintegral_subtype_comap (μ := (volume : Measure ℝ))
-    (measurableSet_elapsedTime (ENNReal.ofReal S)) F
-  refine Eq.trans h ?_
+  refine Eq.trans (lintegral_subtype_comap (μ := (volume : Measure ℝ)) (measurableSet_elapsedTime (ENNReal.ofReal S)) F) ?_
   rw [elapsed_finite_set S hS]
 
-/-- The right-hand side of (4.2) for an indicator, as a real number. -/
-lemma occupation_rhs_indicator {d : ℕ}
-    (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 : PDE.Vec d))) (σ S : ℝ) (hS : 0 < S)
-    (ρ : Measure (PDE.Vec d)) [IsFiniteMeasure ρ] {A : Set (ℝ × PDE.Vec d)}
-    (hA : MeasurableSet A) :
-    (∫ v, ∫ τ : ElapsedTime (ENNReal.ofReal S), ∫ w, indicatorBB hA (τ.1, w)
-        ∂K.firstMarginal (wholeSpaceQuery σ (σ + τ.1)
-          (le_add_of_nonneg_right τ.2.1.le) v 0)
-        ∂elapsedVolume (ENNReal.ofReal S) ∂ρ) =
-      (∫⁻ v, (∫⁻ t in Ioo 0 S, occupationKernel K σ t v {w | (t, w) ∈ A}) ∂ρ).toReal := by
-  have hmeas := measurable_occupationKernel_section K σ hA
-  have h1 : ∀ v, (∫ τ : ElapsedTime (ENNReal.ofReal S), ∫ w, indicatorBB hA (τ.1, w)
-        ∂K.firstMarginal (wholeSpaceQuery σ (σ + τ.1)
-          (le_add_of_nonneg_right τ.2.1.le) v 0) ∂elapsedVolume (ENNReal.ofReal S)) =
-      (∫⁻ t in Ioo 0 S, occupationKernel K σ t v {w | (t, w) ∈ A}).toReal := by
-    intro v
-    have h2 : ∀ τ : ElapsedTime (ENNReal.ofReal S),
-        (∫ w, indicatorBB hA (τ.1, w) ∂K.firstMarginal (wholeSpaceQuery σ (σ + τ.1)
-          (le_add_of_nonneg_right τ.2.1.le) v 0)) =
-        (fun t : ℝ => (occupationKernel K σ t v {w | (t, w) ∈ A}).toReal) τ.1 := by
-      intro τ
-      rw [← occupationKernel_of_nonneg K σ τ.1 τ.2.1.le v]
-      exact integral_indicatorBB_occupation K σ τ.1 v hA
-    refine (integral_congr_ae (Filter.Eventually.of_forall h2)).trans ?_
-    refine (integral_elapsed_finite S hS
-      (fun t : ℝ => (occupationKernel K σ t v {w | (t, w) ∈ A}).toReal)).trans ?_
-    refine integral_toReal ?_ ?_
-    · exact ((hmeas.comp (measurable_id.prodMk measurable_const))).aemeasurable
-    · refine Filter.Eventually.of_forall (fun t => ?_)
-      exact (measure_lt_top _ _)
-  simp_rw [h1]
-  refine integral_toReal ?_ ?_
-  · refine Measurable.aemeasurable ?_
-    exact (hmeas.comp measurable_swap).lintegral_prod_right'
-  · refine Filter.Eventually.of_forall (fun v => ?_)
-    calc ∫⁻ t in Ioo 0 S, occupationKernel K σ t v {w | (t, w) ∈ A}
-        ≤ ∫⁻ t in Ioo 0 S, 1 := by
-          refine lintegral_mono (fun t => ?_)
-          exact (measure_mono (subset_univ _)).trans (occupationKernel_univ_le K σ t v)
-      _ < ⊤ := by
-          rw [lintegral_const, Measure.restrict_apply MeasurableSet.univ, univ_inter,
-            Real.volume_Ioo]
-          simp
 
 
 /-- **Occupation identity for sets.**  (4.2) tested on `1_A`, as lower integrals. -/
@@ -165,11 +118,50 @@ theorem occupation_set_identity {d : ℕ}
     {A : Set (ℝ × PDE.Vec d)} (hA : MeasurableSet A)
     (hAS : A ⊆ Ioo (0 : ℝ) S ×ˢ (univ : Set (PDE.Vec d))) :
     ∫⁻ q in A, ENNReal.ofReal (g q) =
-      ∫⁻ v, (∫⁻ t in Ioo 0 S, occupationKernel K σ t v {w | (t, w) ∈ A}) ∂ρ := by
+      ∫⁻ v, (∫⁻ t in Ioo 0 S, occupationKernel K σ t v {w | (t, w) ∈ A}) ∂ρ  := by
+  have occupation_rhs_indicator (σ S : ℝ) (hS : 0 < S) (ρ : Measure (PDE.Vec d)) [IsFiniteMeasure ρ] {A : Set (ℝ × PDE.Vec d)} (hA : MeasurableSet A) :
+      (∫ v, ∫ τ : ElapsedTime (ENNReal.ofReal S), ∫ w, indicatorBB hA (τ.1, w)
+        ∂K.firstMarginal (wholeSpaceQuery σ (σ + τ.1)
+          (le_add_of_nonneg_right τ.2.1.le) v 0)
+        ∂elapsedVolume (ENNReal.ofReal S) ∂ρ) =
+      (∫⁻ v, (∫⁻ t in Ioo 0 S, occupationKernel K σ t v {w | (t, w) ∈ A}) ∂ρ).toReal := by
+    have hmeas := measurable_occupationKernel_section K σ hA
+    have h1 : ∀ v, (∫ τ : ElapsedTime (ENNReal.ofReal S), ∫ w, indicatorBB hA (τ.1, w)
+          ∂K.firstMarginal (wholeSpaceQuery σ (σ + τ.1)
+            (le_add_of_nonneg_right τ.2.1.le) v 0) ∂elapsedVolume (ENNReal.ofReal S)) =
+        (∫⁻ t in Ioo 0 S, occupationKernel K σ t v {w | (t, w) ∈ A}).toReal := by
+      intro v
+      have h2 : ∀ τ : ElapsedTime (ENNReal.ofReal S),
+          (∫ w, indicatorBB hA (τ.1, w) ∂K.firstMarginal (wholeSpaceQuery σ (σ + τ.1)
+            (le_add_of_nonneg_right τ.2.1.le) v 0)) =
+          (fun t => (occupationKernel K σ t v {w | (t, w) ∈ A}).toReal) τ.1 := by
+        intro τ
+        rw [← occupationKernel_of_nonneg K σ τ.1 τ.2.1.le v]
+        exact integral_indicatorBB_occupation K σ τ.1 v hA
+      refine (integral_congr_ae (Filter.Eventually.of_forall h2)).trans ?_
+      refine (integral_elapsed_finite S hS
+        (fun t => (occupationKernel K σ t v {w | (t, w) ∈ A}).toReal)).trans ?_
+      refine integral_toReal ?_ ?_
+      · exact ((hmeas.comp (measurable_id.prodMk measurable_const))).aemeasurable
+      · refine Filter.Eventually.of_forall (fun t => ?_)
+        exact (measure_lt_top _ _)
+    simp_rw [h1]
+    refine integral_toReal ?_ ?_
+    · refine Measurable.aemeasurable ?_
+      exact (hmeas.comp measurable_swap).lintegral_prod_right'
+    · refine Filter.Eventually.of_forall (fun v => ?_)
+      calc ∫⁻ t in Ioo 0 S, occupationKernel K σ t v {w | (t, w) ∈ A}
+          ≤ ∫⁻ t in Ioo 0 S, 1 := by
+            refine lintegral_mono (fun t => ?_)
+            exact (measure_mono (subset_univ _)).trans (occupationKernel_univ_le K σ t v)
+        _ < ⊤ := by
+            rw [lintegral_const, Measure.restrict_apply MeasurableSet.univ, univ_inter,
+              Real.volume_Ioo]
+            simp
   obtain ⟨hgm, hgn, hchar⟩ := hg
   have h := hchar (indicatorBB hA)
-  rw [occupation_rhs_indicator K σ S hS ρ hA] at h
-  set R : Set (ℝ × PDE.Vec d) := Ioo (0 : ℝ) S ×ˢ (univ : Set (PDE.Vec d)) with hR
+  rw [occupation_rhs_indicator σ S hS ρ hA] at h
+  set R : Set (ℝ × PDE.Vec d) := Ioo 0 S ×ˢ (univ : Set (PDE.Vec d)) with hR
   have hrestr : (volume.restrict R).restrict A = volume.restrict A := by
     rw [Measure.restrict_restrict hA, inter_eq_left.2 hAS]
   have hL : (∫ q, indicatorBB hA q * g q ∂volume.restrict R) =
@@ -209,7 +201,7 @@ lemma measurable_occupationKernel_sectionGen {d : ℕ} {γ : Type*} [MeasurableS
     {f : γ → ℝ} (hf : Measurable f) {u : γ → PDE.Vec d} (hu : Measurable u)
     {E : Set (γ × PDE.Vec d)} (hE : MeasurableSet E) :
     Measurable (fun x : γ => occupationKernel K σ (f x) (u x) {w | (x, w) ∈ E}) := by
-  have hq : Measurable (fun x : γ =>
+  have hq : Measurable (fun x =>
       wholeSpaceQuery σ (σ + max (f x) 0)
         (le_add_of_nonneg_right (le_max_right (f x) 0)) (u x) 0) := by
     apply Measurable.subtype_mk
@@ -226,33 +218,15 @@ lemma lintegral_slabTime (T : ℝ) (hT : 0 ≤ T) (F : ℝ → ℝ≥0∞) :
 
 lemma lintegral_Ioo_sub (a b s : ℝ) (H : ℝ → ℝ≥0∞) :
     ∫⁻ t in Ioo a b, H (t - s) = ∫⁻ t in Ioo (a - s) (b - s), H t := by
-  have he : MeasurableEmbedding (fun t : ℝ => t - s) := (Homeomorph.subRight s).measurableEmbedding
+  have he : MeasurableEmbedding (fun t => t - s) := (Homeomorph.subRight s).measurableEmbedding
   rw [← map_sub_restrict_Ioo a b s, he.lintegral_map]
 
-lemma slabBase_ae_slab (d : ℕ) (T s : ℝ) (hT : 0 ≤ T) :
-    ∀ᵐ y ∂slabBase d T, y.1.1 ∈ Ioo T (2 * T) := by
-  have hB : MeasurableSet (Ioo (T - s) (2 * T - s) ×ˢ (univ : Set (PDE.Vec d))) :=
-    measurableSet_Ioo.prod MeasurableSet.univ
-  have h0 : slabBase d T ((slabShift d s) ⁻¹' (Ioo (T - s) (2 * T - s) ×ˢ univ)ᶜ) = 0 := by
-    rw [← Measure.map_apply (measurable_slabShift d s) hB.compl, map_slabBase_slabShift d T s hT,
-      Measure.restrict_apply hB.compl]
-    simp
-  rw [ae_iff]
-  refine measure_mono_null (fun y hy => ?_) h0
-  simp only [mem_ofPred_eq, mem_preimage, mem_compl_iff, mem_prod, mem_Ioo, mem_univ, and_true,
-    slabShift] at hy ⊢
-  intro h
-  exact hy ⟨by linarith [h.1], by linarith [h.2]⟩
 
 
 /-- The real-line set carried by `E ⊆ SlabBase`: shift and cut to the slab. -/
 def slabImage (d : ℕ) (T s : ℝ) (E : Set (SlabBase d)) : Set (ℝ × PDE.Vec d) :=
   slabShift d s '' E ∩ (Ioo (T - s) (2 * T - s) ×ˢ (univ : Set (PDE.Vec d)))
 
-lemma measurableSet_slabImage {d : ℕ} (T s : ℝ) {E : Set (SlabBase d)} (hE : MeasurableSet E) :
-    MeasurableSet (slabImage d T s E) :=
-  ((measurableEmbedding_slabShift d s).measurableSet_image.2 hE).inter
-    (measurableSet_Ioo.prod MeasurableSet.univ)
 
 lemma preimage_slabImage {d : ℕ} (T s : ℝ) (E : Set (SlabBase d)) :
     slabShift d s ⁻¹' slabImage d T s E = E ∩ {y | y.1.1 ∈ Ioo T (2 * T)} := by
@@ -273,7 +247,7 @@ lemma section_shift_image {d : ℕ} (s : ℝ) (E : Set (SlabBase d)) (τ : Elaps
   constructor
   · intro ⟨y, hy, hyψ⟩
     have h1 : y.1.1 - s = τ.1 - s := congrArg Prod.fst hyψ
-    have h2 : y.2 = w := congrArg Prod.snd hyψ
+    have h2 := congrArg Prod.snd hyψ
     have h3 : y.1 = τ := Subtype.ext (by linarith)
     have h4 : y = (τ, w) := Prod.ext h3 h2
     rwa [h4] at hy
@@ -301,36 +275,52 @@ theorem slab_occupation_identity {d : ℕ}
     {E : Set (SlabBase d)} (hE : MeasurableSet E) :
     ∫⁻ y in E, ENNReal.ofReal (g (slabShift d s y)) ∂slabBase d T =
       ∫⁻ v, (∫⁻ τ in slabTimeSet T, occupationKernel K σ₁ (τ.1 - s) v {w | (τ, w) ∈ E}
-        ∂elapsedVolume ⊤) ∂ρ := by
-  have hA := measurableSet_slabImage T s hE
+        ∂elapsedVolume ⊤) ∂ρ   := by
+  have measurableSet_slabImage (T : ℝ) (s : ℝ) : MeasurableSet (slabImage d T s E) :=
+    ((measurableEmbedding_slabShift d s).measurableSet_image.2 hE).inter
+        (measurableSet_Ioo.prod MeasurableSet.univ)
+  have slabBase_ae_slab (T : ℝ) (s : ℝ) (hT : 0 ≤ T) :
+      ∀ᵐ y ∂slabBase d T, y.1.1 ∈ Ioo T (2 * T) := by
+    have hB : MeasurableSet (Ioo (T - s) (2 * T - s) ×ˢ (univ : Set (PDE.Vec d))) :=
+      measurableSet_Ioo.prod MeasurableSet.univ
+    have h0 : slabBase d T ((slabShift d s) ⁻¹' (Ioo (T - s) (2 * T - s) ×ˢ univ)ᶜ) = 0 := by
+      rw [← Measure.map_apply (measurable_slabShift d s) hB.compl, map_slabBase_slabShift d T s hT,
+        Measure.restrict_apply hB.compl]
+      simp
+    rw [ae_iff]
+    refine measure_mono_null (fun y hy => ?_) h0
+    simp only [mem_ofPred_eq, mem_preimage, mem_compl_iff, mem_prod, mem_Ioo, mem_univ, and_true,
+      slabShift] at hy ⊢
+    intro h
+    exact hy ⟨by linarith [h.1], by linarith [h.2]⟩
+  have hA := measurableSet_slabImage T s
   have hAB : slabImage d T s E ⊆ Ioo (T - s) (2 * T - s) ×ˢ (univ : Set (PDE.Vec d)) :=
     inter_subset_right
-  have hAS : slabImage d T s E ⊆ Ioo (0 : ℝ) S ×ˢ (univ : Set (PDE.Vec d)) := by
+  have hAS : slabImage d T s E ⊆ Ioo 0 S ×ˢ (univ : Set (PDE.Vec d)) := by
     intro q hq
     have := hAB hq
-    simp only [mem_prod, mem_Ioo, mem_univ, and_true] at this ⊢
+    simp at this ⊢
     constructor <;> linarith [this.1, this.2]
   have hid := occupation_set_identity K σ₁ S hS ρ g hg hint hA hAS
   -- left side
   have hL : ∫⁻ q in slabImage d T s E, ENNReal.ofReal (g q) =
       ∫⁻ y in E, ENNReal.ofReal (g (slabShift d s y)) ∂slabBase d T := by
-    have hmap := map_slabBase_slabShift d T s hT.le
     have h1 : ∫⁻ q in slabImage d T s E, ENNReal.ofReal (g q) =
         ∫⁻ q in slabImage d T s E, ENNReal.ofReal (g q) ∂(slabBase d T).map (slabShift d s) := by
-      rw [hmap, Measure.restrict_restrict hA, inter_eq_left.2 hAB]
-    have hm : Measurable (fun q : ℝ × PDE.Vec d => ENNReal.ofReal (g q)) :=
+      rw [(map_slabBase_slabShift d T s hT.le), Measure.restrict_restrict hA, inter_eq_left.2 hAB]
+    have hm : Measurable (fun q => ENNReal.ofReal (g q)) :=
       ENNReal.measurable_ofReal.comp hg.1
     rw [h1, setLIntegral_map hA hm (measurable_slabShift d s), preimage_slabImage]
     have hae : (E ∩ {y : SlabBase d | y.1.1 ∈ Ioo T (2 * T)}) =ᵐ[slabBase d T] E := by
       refine Filter.eventuallyEqSet_iff.2 ?_
-      filter_upwards [slabBase_ae_slab d T s hT.le] with y hy
+      filter_upwards [slabBase_ae_slab T s hT.le] with y hy
       exact ⟨fun h => h.1, fun h => ⟨h, hy⟩⟩
     rw [Measure.restrict_congr_set hae]
   rw [hL] at hid
   rw [hid]
   refine lintegral_congr (fun v => ?_)
   have hBt : MeasurableSet (Ioo (T - s) (2 * T - s)) := measurableSet_Ioo
-  have hBsub : Ioo (T - s) (2 * T - s) ⊆ Ioo (0 : ℝ) S := fun t ht =>
+  have hBsub : Ioo (T - s) (2 * T - s) ⊆ Ioo 0 S := fun t ht =>
     ⟨by linarith [ht.1], by linarith [ht.2]⟩
   set H : ℝ → ℝ≥0∞ := fun t =>
     occupationKernel K σ₁ t v {w | (t, w) ∈ slabShift d s '' E} with hH

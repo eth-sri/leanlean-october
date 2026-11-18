@@ -10,7 +10,7 @@ import Mathlib.Analysis.Matrix.Order
 import Mathlib.Topology.Algebra.Support
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Positivity
-public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.BarrierStatement
+public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.BarrierTwo
 
 /-!
 # Finiteness of `M_F`
@@ -51,7 +51,7 @@ theorem sliceHessian_comp_embed {n : ℕ} {F : PDE.Vec n × PDE.Vec n → ℝ} (
   have hfd : ∀ x', fderiv ℝ (fun x' => F (ι x')) x' = (fderiv ℝ F (ι x')).comp J := by
     intro x'
     exact ((hFd (ι x')).hasFDerivAt.comp x' (hι x')).fderiv
-  have hgd : DifferentiableAt ℝ (fderiv ℝ (fun x' => F (ι x'))) x :=
+  have hgd :=
     (hg.fderiv_right (m := 1) (by norm_num)).differentiableAt (by norm_num)
   have h1 := fderiv_clm_apply_const_eval hgd (PDE.basisVec j) (PDE.basisVec i)
   rw [← h1]
@@ -61,16 +61,15 @@ theorem sliceHessian_comp_embed {n : ℕ} {F : PDE.Vec n × PDE.Vec n → ℝ} (
     rw [hfd y]
     rfl
   rw [hfun]
-  have hF1 : DifferentiableAt ℝ (fderiv ℝ F) (ι x) :=
+  have hF1 :=
     ((hF.fderiv_right (m := 1) (by norm_num)).differentiable (by norm_num) (ι x))
   have hh : HasFDerivAt (fun w => fderiv ℝ F w (J (PDE.basisVec j)))
       (fderiv ℝ (fun w => fderiv ℝ F w (J (PDE.basisVec j))) (ι x)) (ι x) :=
     (hF1.clm_apply (differentiableAt_const _)).hasFDerivAt
-  have hcomp := hh.comp x (hι x)
-  have := hcomp.fderiv
+  have := (hh.comp x (hι x)).fderiv
   rw [show (fun y => fderiv ℝ F (ι y) (J (PDE.basisVec j))) =
       (fun w => fderiv ℝ F w (J (PDE.basisVec j))) ∘ ι from rfl, this]
-  simp only [ContinuousLinearMap.comp_apply]
+  simp
   rw [fderiv_clm_apply_const_eval hF1]
 
 /-- Entries of a matrix with `0 ≤ A ≤ Λ I` are bounded by `Λ`. -/
@@ -87,10 +86,8 @@ theorem abs_apply_le_of_loewner {n : ℕ} {A : PDE.Mat n} {Lam : ℝ} (h0 : A.Po
     constructor <;> linarith
   have hpm : ∀ s : ℝ, 0 ≤ A i i + s ^ 2 * A j j + 2 * s * A i j := by
     intro s
-    have h := h0.dotProduct_mulVec_nonneg (Pi.single i (1 : ℝ) + Pi.single j s)
-    simp only [star_trivial, Matrix.mulVec_add, Matrix.mulVec_single, dotProduct_add,
-      add_dotProduct, single_dotProduct, Pi.smul_apply, Matrix.col_apply,
-      MulOpposite.smul_eq_mul_unop, MulOpposite.unop_op] at h
+    have h := h0.dotProduct_mulVec_nonneg (Pi.single i 1 + Pi.single j s)
+    simp [star_trivial, Matrix.mulVec_add, Matrix.mulVec_single, dotProduct_add, add_dotProduct, single_dotProduct, Matrix.col_apply, MulOpposite.smul_eq_mul_unop, MulOpposite.unop_op] at h
     rw [hsymm j i] at h
     nlinarith [h]
   have hii := hdiag i
@@ -140,17 +137,16 @@ theorem abs_sliceHessian_position_le {n : ℕ} {F : PDE.Vec n × PDE.Vec n → �
     |sliceHessian (fun y' => F (y', z)) y i j| ≤ K2 := by
   have hιc : ContDiff ℝ 2 (fun y' : PDE.Vec n => (y', z)) := contDiff_id.prodMk contDiff_const
   rw [sliceHessian_comp_embed hF hιc (fun x => hasFDerivAt_embedLeft z x) y i j]
-  simp only [ContinuousLinearMap.prod_apply, ContinuousLinearMap.id_apply,
-    zero_apply]
+  simp
   have h := (fderiv ℝ (fderiv ℝ F) (y, z)).le_opNorm₂
-    ((PDE.basisVec i : PDE.Vec n), (0 : PDE.Vec n))
-    ((PDE.basisVec j : PDE.Vec n), (0 : PDE.Vec n))
+    ((PDE.basisVec i : PDE.Vec n), 0)
+    ((PDE.basisVec j : PDE.Vec n), 0)
   rw [Real.norm_eq_abs] at h
   have h1 := norm_inl_basisVec_le i
   have h2 := norm_inl_basisVec_le j
   have h3 := hK2 (y, z)
   have h4 : 0 ≤ ‖fderiv ℝ (fderiv ℝ F) (y, z)‖ := ContinuousLinearMap.opNorm_nonneg _
-  have h5 : 0 ≤ K2 := h4.trans h3
+  have h5 := h4.trans h3
   calc _ ≤ _ := h
     _ ≤ K2 * 1 * 1 := by
       gcongr
@@ -163,17 +159,16 @@ theorem abs_sliceHessian_velocity_le {n : ℕ} {F : PDE.Vec n × PDE.Vec n → �
     |sliceHessian (fun z' => F (y, z')) z i j| ≤ K2 := by
   have hιc : ContDiff ℝ 2 (fun z' : PDE.Vec n => (y, z')) := contDiff_const.prodMk contDiff_id
   rw [sliceHessian_comp_embed hF hιc (fun x => hasFDerivAt_embedRight y x) z i j]
-  simp only [ContinuousLinearMap.prod_apply, ContinuousLinearMap.id_apply,
-    zero_apply]
+  simp
   have h := (fderiv ℝ (fderiv ℝ F) (y, z)).le_opNorm₂
-    ((0 : PDE.Vec n), (PDE.basisVec i : PDE.Vec n))
-    ((0 : PDE.Vec n), (PDE.basisVec j : PDE.Vec n))
+    (0, (PDE.basisVec i : PDE.Vec n))
+    (0, (PDE.basisVec j : PDE.Vec n))
   rw [Real.norm_eq_abs] at h
   have h1 := norm_inr_basisVec_le i
   have h2 := norm_inr_basisVec_le j
   have h3 := hK2 (y, z)
   have h4 : 0 ≤ ‖fderiv ℝ (fderiv ℝ F) (y, z)‖ := ContinuousLinearMap.opNorm_nonneg _
-  have h5 : 0 ≤ K2 := h4.trans h3
+  have h5 := h4.trans h3
   calc _ ≤ _ := h
     _ ≤ K2 * 1 * 1 := by
       gcongr
@@ -190,7 +185,7 @@ theorem classicalGradient_velocity_eq {n : ℕ} {F : PDE.Vec n × PDE.Vec n → 
   have e : fderiv ℝ (fun z' => F (y, z')) z = (fderiv ℝ F (y, z)).comp
       ((0 : PDE.Vec n →L[ℝ] PDE.Vec n).prod (ContinuousLinearMap.id ℝ (PDE.Vec n))) := h1
   rw [e, ContinuousLinearMap.comp_apply]
-  simp only [ContinuousLinearMap.prod_apply, ContinuousLinearMap.id_apply, zero_apply]
+  simp
 
 /-- The `z`-gradient is bounded by the first derivative bound. -/
 theorem abs_classicalGradient_velocity_le {n : ℕ} {F : PDE.Vec n × PDE.Vec n → ℝ}
@@ -203,14 +198,13 @@ theorem abs_classicalGradient_velocity_le {n : ℕ} {F : PDE.Vec n × PDE.Vec n 
   have e : fderiv ℝ (fun z' => F (y, z')) z = (fderiv ℝ F (y, z)).comp
       ((0 : PDE.Vec n →L[ℝ] PDE.Vec n).prod (ContinuousLinearMap.id ℝ (PDE.Vec n))) := h1
   rw [e, ContinuousLinearMap.comp_apply]
-  simp only [ContinuousLinearMap.prod_apply, ContinuousLinearMap.id_apply,
-    zero_apply]
-  have h := (fderiv ℝ F (y, z)).le_opNorm ((0 : PDE.Vec n), (PDE.basisVec j : PDE.Vec n))
+  simp
+  have h := (fderiv ℝ F (y, z)).le_opNorm (0, (PDE.basisVec j : PDE.Vec n))
   rw [Real.norm_eq_abs] at h
   have h2 := norm_inr_basisVec_le j
   have h3 := hK1 (y, z)
   have h4 : 0 ≤ ‖fderiv ℝ F (y, z)‖ := ContinuousLinearMap.opNorm_nonneg _
-  have h5 : 0 ≤ K1 := h4.trans h3
+  have h5 := h4.trans h3
   calc _ ≤ _ := h
     _ ≤ K1 * 1 := by gcongr
     _ = K1 := by ring
@@ -224,16 +218,16 @@ theorem exists_terminalGenerator_bound {n : ℕ} {F : BoundedBorel (EvolutionAmb
     (hb : HasEuclideanLipschitzDrift Lb b) :
     ∃ M : ℝ, ∀ ε : ℝ, 0 ≤ ε → ε ≤ 1 → ∀ p : KineticPoint n,
       |viscousTransportedOperator B b ε (fun q => F (q.position, q.velocity)) p| ≤ M := by
-  have hF2 : ContDiff ℝ 2 (F : EvolutionAmbientState n → ℝ) :=
+  have hF2 :=
     hF.of_le (WithTop.coe_le_coe.mpr (le_top : (2 : ℕ∞) ≤ ⊤))
-  have hF1 : ContDiff ℝ 1 (F : EvolutionAmbientState n → ℝ) :=
+  have hF1 :=
     hF.of_le (WithTop.coe_le_coe.mpr (le_top : (1 : ℕ∞) ≤ ⊤))
   obtain ⟨K1, hK1⟩ : ∃ K1, ∀ x, ‖fderiv ℝ (F : EvolutionAmbientState n → ℝ) x‖ ≤ K1 :=
     (hF.continuous_fderiv (by simp)).bounded_above_of_compact_support (hcs.fderiv ℝ)
   obtain ⟨K2, hK2⟩ : ∃ K2, ∀ x, ‖fderiv ℝ (fderiv ℝ (F : EvolutionAmbientState n → ℝ)) x‖ ≤ K2 :=
-    ((hF.fderiv_right (m := 1) (by simp)).continuous_fderiv
+    ((hF.fderiv_right (by simp)).continuous_fderiv
       one_ne_zero).bounded_above_of_compact_support ((hcs.fderiv ℝ).fderiv ℝ)
-  have hK1nn : 0 ≤ K1 := (ContinuousLinearMap.opNorm_nonneg _).trans (hK1 0)
+  have hK1nn := (ContinuousLinearMap.opNorm_nonneg _).trans (hK1 0)
   have hK2nn : 0 ≤ K2 := (ContinuousLinearMap.opNorm_nonneg _).trans (hK2 0)
   obtain ⟨R, hR⟩ := hcs.isCompact.isBounded.exists_norm_le
   set R' := max R 0 with hR'
@@ -249,7 +243,7 @@ theorem exists_terminalGenerator_bound {n : ℕ} {F : BoundedBorel (EvolutionAmb
     simp [hFe]
   have hApsd : (B p.time p.position p.velocity).PosSemidef :=
     posSemidef_of_hasEverywhereLoewnerBounds hlam.le hB _ _ _
-  have hAup : (Lam • (1 : PDE.Mat n) - B p.time p.position p.velocity).PosSemidef :=
+  have hAup : (Lam • 1 - B p.time p.position p.velocity).PosSemidef :=
     Matrix.le_iff.mp (hB _ _ _).2
   have hAent : ∀ i j, |B p.time p.position p.velocity i j| ≤ |Lam| := fun i j =>
     (abs_apply_le_of_loewner hApsd hAup i j).trans (le_abs_self _)
@@ -273,7 +267,7 @@ theorem exists_terminalGenerator_bound {n : ℕ} {F : BoundedBorel (EvolutionAmb
           rw [abs_mul]
           exact mul_le_mul (hAent i j) (hH i j) (abs_nonneg _) (abs_nonneg _)
       _ = (n : ℝ) ^ 2 * |Lam| * K2 := by
-          simp only [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
+          simp
           ring
   have hlap : |∑ i, kineticVelocityHessian Fe p i i| ≤ n * K2 := by
     calc |∑ i, kineticVelocityHessian Fe p i i| ≤ ∑ i, |kineticVelocityHessian Fe p i i| :=
@@ -315,16 +309,16 @@ theorem exists_terminalGenerator_bound {n : ℕ} {F : BoundedBorel (EvolutionAmb
         rw [classicalGradient_velocity_eq hF1, hz]
         simp
       unfold PDE.vecDot
-      simp only [hg0, mul_zero, Finset.sum_const_zero, abs_zero]
+      simp [hg0]
       positivity
   rw [viscousTransportedOperator_apply, transportedForwardOperator_apply, htime]
-  simp only [fullKineticCoefficientAt_apply, zero_add]
+  simp
   have h1 := abs_le.mp hc2
   have h2 := abs_le.mp hdrift
   have h3 := abs_le.mp hlap
   have h4 : |ε * ∑ i, kineticVelocityHessian Fe p i i| ≤ n * K2 := by
     rw [abs_mul, abs_of_nonneg hε0]
-    have : (0 : ℝ) ≤ n * K2 := by positivity
+    have : 0 ≤ n * K2 := by positivity
     calc ε * |∑ i, kineticVelocityHessian Fe p i i| ≤ 1 * (n * K2) :=
           mul_le_mul hε1 hlap (abs_nonneg _) zero_le_one
       _ = n * K2 := one_mul _

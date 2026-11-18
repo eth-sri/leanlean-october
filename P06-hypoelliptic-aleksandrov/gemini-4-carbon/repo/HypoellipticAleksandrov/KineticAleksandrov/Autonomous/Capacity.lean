@@ -1,12 +1,11 @@
 module
 
-public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.CapacityIntegral
+public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.CapacityCalculus
+public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.GreenTestExtensionCanonical
 import Mathlib.Tactic
 
-/-! # Velocity capacity of the actual finite-strip Green measure -/
+@[expose] public noncomputable section
 
-@[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 
@@ -17,7 +16,65 @@ theorem strip_capacity
     (A : SmoothAutonomous lam Lam) (H : Interval) (T : ℝ)
     (e : StripPole H (T : WithTop ℝ)) (E : Interval) :
     stripGreen hH hLE hlam hLam A H T e {p | p.velocity 0 ∈ E.carrier} ≤
-      ENNReal.ofReal ((H.hi - H.lo) / lam * (E.hi - E.lo)) := by
+      ENNReal.ofReal ((H.hi - H.lo) / lam * (E.hi - E.lo))  := by
+  have capacity_diffusion_integral_le (Phi : ℝ → ℝ) (chi : ℝ → ℝ) (hPhi : ContDiff ℝ (⊤ : ℕ∞) Phi) (_hchi : ContDiff ℝ (⊤ : ℕ∞) chi) (hn : ∀ v, 0 ≤ chi v ∧ chi v ≤ 1) (hsecond : ∀ v, deriv (deriv Phi) v = 2 * chi v) {D : ℝ} (hD : 0 ≤ D) (hd : ∀ v, |deriv Phi v| ≤ D) :
+      (∫ p, 2 * A.a (p.position 0) (p.velocity 0) * chi (p.velocity 0)
+      ∂stripGreen hH hLE hlam hLam A H T e) ≤ D * (H.hi - H.lo) := by
+    let phi : Point → ℝ := fun p => Phi (p.velocity 0)
+    let Ω := stripExit hH hLE hlam hLam A H T e
+    have hp : e.1.velocity 0 ∈ Icc H.lo H.hi := ⟨e.2.2.1.le, e.2.2.2.le⟩
+    have hdiff (v : ℝ) (hv : v ∈ Icc H.lo H.hi) :
+        |Phi v - Phi (e.1.velocity 0)| ≤ D * (H.hi - H.lo) :=
+      capacity_test_difference hPhi hD hd H hp hv
+    have hbound (v : ℝ) (hv : v ∈ Icc H.lo H.hi) :
+        |Phi v| ≤ |Phi (e.1.velocity 0)| + D * (H.hi - H.lo) := by
+      have h := abs_add_le (Phi v - Phi (e.1.velocity 0)) (Phi (e.1.velocity 0))
+      rw [sub_add_cancel] at h
+      linarith [hdiff v hv]
+    have hop (p : Point) : forwardScalarOperator A.a phi p =
+        2 * A.a (p.position 0) (p.velocity 0) * chi (p.velocity 0) := by
+      rw [capacity_velocity_operator, hsecond]
+      ring
+    have hsrc (p : Point) :
+        |forwardScalarOperator A.a phi p| ≤ 2 * Lam := by
+      rw [hop, abs_of_nonneg]
+      · nlinarith [(A.bounds (p.position 0) (p.velocity 0)).2,
+          (A.bounds (p.position 0) (p.velocity 0)).1, (hn (p.velocity 0)).1,
+          (hn (p.velocity 0)).2]
+      · exact mul_nonneg (mul_nonneg (by norm_num)
+          (hlam.trans_le (A.bounds (p.position 0) (p.velocity 0)).1).le)
+          (hn (p.velocity 0)).1
+    have hid := strip_identity_bounded_smooth hH hLE hlam hLam A H T e phi
+      (capacity_velocity_smooth hPhi) (by
+        refine ⟨|Phi (e.1.velocity 0)| + D * (H.hi - H.lo) + 2 * Lam, ?_⟩
+        intro p hv
+        have hv' : p.velocity 0 ∈ Icc H.lo H.hi := ⟨hv.1.le, hv.2.le⟩
+        exact ⟨by dsimp only [phi]; linarith [hbound _ hv'],
+          by linarith [hsrc p, abs_nonneg (Phi (e.1.velocity 0)),
+            mul_nonneg hD (sub_pos.mpr H.ordered).le]⟩)
+    have hΩ : ∀ᵐ p ∂Ω, p.velocity 0 ∈ Icc H.lo H.hi := by
+      filter_upwards [stripExitOfRealization_ae_closed_future hH hlam hLam A H _
+        (stripEvolution_spec hH hLE hlam hLam A H) T e] with p hp'
+      exact hp'.2.2
+    have hpc : Continuous phi :=
+      hPhi.continuous.comp ((continuous_apply 0).comp continuous_velocity)
+    have hi : Integrable phi Ω := by
+      apply Integrable.mono' (integrable_const
+        (|Phi (e.1.velocity 0)| + D * (H.hi - H.lo)))
+        hpc.measurable.aestronglyMeasurable
+      filter_upwards [hΩ] with p hp'
+      simpa using hbound _ hp'
+    have hupper : (∫ p, phi p ∂Ω) ≤ Phi (e.1.velocity 0) + D * (H.hi - H.lo) := by
+      calc
+        _ ≤ ∫ _p, Phi (e.1.velocity 0) + D * (H.hi - H.lo) ∂Ω :=
+          integral_mono_ae hi (integrable_const _) (by
+            filter_upwards [hΩ] with p hp'
+            linarith [le_abs_self (Phi (p.velocity 0) - Phi (e.1.velocity 0)), hdiff _ hp'])
+        _ = _ := by simp
+    rw [(funext hop)] at hid
+    change Phi (e.1.velocity 0) = _ at hid
+    change (∫ p, phi p ∂Ω) ≤ _ at hupper
+    linarith
   obtain ⟨chi, Phi, hchi, _hc, hn, h1, _hm, hPhi, hsecond, hd⟩ :=
     exists_capacity_test E
   let Γ := stripGreen hH hLE hlam hLam A H T e
@@ -36,13 +93,12 @@ theorem strip_capacity
       (hlam.trans_le (A.bounds _ _).1).le) (hn _).1
   have hgb (p : Point) : |g p| ≤ 2 * Lam := by
     rw [abs_of_nonneg (hgn p)]
-    dsimp only [g]
     nlinarith [(A.bounds (p.position 0) (p.velocity 0)).1,
       (A.bounds (p.position 0) (p.velocity 0)).2, (hn (p.velocity 0)).1,
       (hn (p.velocity 0)).2]
   have hi : Integrable g Γ := by
     apply Integrable.mono' (integrable_const (2 * Lam)) hgc.measurable.aestronglyMeasurable
-    exact Filter.Eventually.of_forall fun p => by simpa only [Real.norm_eq_abs] using hgb p
+    exact Filter.Eventually.of_forall fun p => by simpa using hgb p
   have hind : Integrable (U.indicator (fun _p => (2 * lam))) Γ :=
     (integrable_const _).indicator hU
   have hlow : 2 * lam * (Γ U).toReal ≤ ∫ p, g p ∂Γ := by
@@ -59,7 +115,7 @@ theorem strip_capacity
         · rw [indicator_of_notMem hp]
           exact hgn p)
   have hD : 0 ≤ 2 * (E.hi - E.lo) := by linarith [E.ordered]
-  have hupper := capacity_diffusion_integral_le hH hLE hlam hLam A H T e Phi chi
+  have hupper := capacity_diffusion_integral_le Phi chi
     hPhi hchi hn hsecond hD hd
   have hr : (Γ U).toReal ≤ (H.hi - H.lo) / lam * (E.hi - E.lo) := by
     have heq : ((H.hi - H.lo) / lam * (E.hi - E.lo)) * lam =
@@ -70,9 +126,7 @@ theorem strip_capacity
       change (∫ p, g p ∂Γ) ≤ _ at hupper
       nlinarith
     nlinarith
-  have hnon : 0 ≤ (H.hi - H.lo) / lam * (E.hi - E.lo) :=
-    mul_nonneg (div_nonneg (sub_pos.mpr H.ordered).le hlam.le)
-      (sub_pos.mpr E.ordered).le
-  exact (ENNReal.le_ofReal_iff_toReal_le (measure_ne_top Γ U) hnon).mpr hr
+  exact (ENNReal.le_ofReal_iff_toReal_le (measure_ne_top Γ U) (mul_nonneg (div_nonneg (sub_pos.mpr H.ordered).le hlam.le) (sub_pos.mpr E.ordered).le)).mpr hr
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous
+

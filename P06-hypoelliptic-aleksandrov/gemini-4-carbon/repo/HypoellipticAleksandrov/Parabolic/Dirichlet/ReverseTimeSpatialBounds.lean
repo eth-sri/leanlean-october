@@ -31,7 +31,6 @@ theorem isCompact_scalarParabolicClosedCylinder
     {d : ℕ} {Ω : Set (PDE.Vec d)}
     (r₀ r₁ : ℝ) (hΩbounded : Bornology.IsBounded Ω) :
     IsCompact (scalarParabolicClosedCylinder r₀ r₁ Ω) := by
-  change IsCompact (Set.Icc r₀ r₁ ×ˢ closure Ω)
   exact isCompact_Icc.prod hΩbounded.isCompact_closure
 
 /-- The derivative of a fixed-time spatial coefficient slice is the joint
@@ -43,8 +42,8 @@ theorem fderiv_scalarSpatialSlice_apply
       (fun z : TimeVelocity d => a z.1 z.2 i j) (r, y)) :
     (fderiv ℝ (fun x : PDE.Vec d => a r x i j) y) v =
       (fderiv ℝ (fun z : TimeVelocity d => a z.1 z.2 i j) (r, y)) (0, v) := by
-  have hslice : HasFDerivAt (fun x : PDE.Vec d => a r x i j)
-      ((fderiv ℝ (fun z : TimeVelocity d => a z.1 z.2 i j) (r, y)).comp
+  have hslice : HasFDerivAt (fun x => a r x i j)
+      ((fderiv ℝ (fun z => a z.1 z.2 i j) (r, y)).comp
         (ContinuousLinearMap.inr ℝ ℝ (PDE.Vec d))) y := by
     simpa only [Function.comp_def] using ha.hasFDerivAt.comp y
       (hasFDerivAt_prodMk_right (𝕜 := ℝ) r y)
@@ -64,21 +63,18 @@ theorem continuousOn_scalarSpatialCoefficientDivergence_of_smoothOnNeighborhood
   rcases ha with ⟨V, hVopen, hKV, hV⟩
   apply continuousOn_pi.2
   intro j
-  change ContinuousOn (fun z : TimeVelocity d => ∑ i : Fin d,
-    (fderiv ℝ (fun y : PDE.Vec d => a z.1 y i j) z.2) (PDE.basisVec i))
-    (scalarParabolicClosedCylinder r₀ r₁ Ω)
   apply continuousOn_finset_sum
   intro i _hi
-  have hrow : ContDiffOn ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => a z.1 z.2 i) V := by
+  have hrow : ContDiffOn ℝ (⊤ : ℕ∞) (fun z => a z.1 z.2 i) V := by
     exact (contDiffOn_apply ℝ (Fin d → ℝ) i Set.univ).comp hV (by
       intro z hz
       exact Set.mem_univ _)
-  have hentry : ContDiffOn ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => a z.1 z.2 i j) V := by
+  have hentry : ContDiffOn ℝ (⊤ : ℕ∞) (fun z => a z.1 z.2 i j) V := by
     exact (contDiffOn_apply ℝ ℝ j Set.univ).comp hrow (by
       intro z hz
       exact Set.mem_univ _)
-  have hderiv : ContinuousOn (fun z : TimeVelocity d =>
-      (fderiv ℝ (fun w : TimeVelocity d => a w.1 w.2 i j) z) (0, PDE.basisVec i)) V :=
+  have hderiv : ContinuousOn (fun z =>
+      (fderiv ℝ (fun w => a w.1 w.2 i j) z) (0, PDE.basisVec i)) V :=
     (hentry.continuousOn_fderiv_of_isOpen hVopen (by simp)).clm_apply
       continuousOn_const
   refine (hderiv.mono hKV).congr ?_
@@ -101,7 +97,7 @@ theorem continuousOn_reverseTimeScalarCoefficient_slice_of_smoothOnNeighborhood
   rcases hc with ⟨V, hVopen, hKV, hV⟩
   have htime : r₀ ≤ r₁ - τ ∧ r₁ - τ ≤ r₁ := by
     constructor <;> linarith [hτ.1, hτ.2]
-  have hmap : MapsTo (fun y : PDE.Vec d => (r₁ - τ, y)) Ω
+  have hmap : MapsTo (fun y => (r₁ - τ, y)) Ω
       (scalarParabolicClosedCylinder r₀ r₁ Ω) := by
     intro y hy
     exact ⟨htime, subset_closure hy⟩
@@ -148,10 +144,8 @@ theorem aestronglyMeasurable_reverseTimeSourceSlice_of_smoothOnNeighborhood
     (hτ : τ ∈ Set.Icc 0 (r₁ - r₀)) :
     MeasureTheory.AEStronglyMeasurable
       (fun y : PDE.Vec d => F (r₁ - τ) y) (PDE.volumeOn Ω) := by
-  have hcont := continuousOn_reverseTimeScalarCoefficient_slice_of_smoothOnNeighborhood
-    r₀ r₁ τ F hF hτ
-  simpa only [reverseTimeScalarCoefficient_apply, Function.comp_def] using
-    hcont.aestronglyMeasurable hΩ.measurableSet
+  simpa using
+    (continuousOn_reverseTimeScalarCoefficient_slice_of_smoothOnNeighborhood r₀ r₁ τ F hF hτ).aestronglyMeasurable hΩ.measurableSet
 
 /-- A smooth source near a bounded closed cylinder belongs to `L²` on every
 reverse-time slice. -/
@@ -172,13 +166,9 @@ theorem reverseTimeSourceSlice_memLp_of_smoothOnNeighborhood
   obtain ⟨C, hC0, hC⟩ :=
     exists_reverseTimeScalarCoefficient_bound_of_smoothOnNeighborhood
       r₀ r₁ hΩbounded F hF
-  have hmeas : AEStronglyMeasurable (fun y : PDE.Vec d => F (r₁ - τ) y)
-      (PDE.volumeOn Ω) :=
-    aestronglyMeasurable_reverseTimeSourceSlice_of_smoothOnNeighborhood
-      r₀ r₁ τ hΩ F hF hτ
-  refine MemLp.of_bound hmeas C ?_
+  refine MemLp.of_bound (aestronglyMeasurable_reverseTimeSourceSlice_of_smoothOnNeighborhood r₀ r₁ τ hΩ F hF hτ) C ?_
   filter_upwards [ae_restrict_mem hΩ.measurableSet] with y hy
-  simpa only [Real.norm_eq_abs, reverseTimeScalarCoefficient_apply] using hC τ hτ y hy
+  simpa using hC τ hτ y hy
 
 /-- Smooth source data near a bounded closed cylinder have one uniform `L²`
 bound for all reverse-time slices. -/

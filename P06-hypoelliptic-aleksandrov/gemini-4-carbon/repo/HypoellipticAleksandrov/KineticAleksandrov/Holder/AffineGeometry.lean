@@ -83,16 +83,14 @@ theorem kineticAffine_mem_cylinder {d : ℕ} (P₀ P : KineticPoint d) {R : ℝ}
     (hR : 0 < R) :
     kineticAffine P₀ R P ∈ backwardCylinder P₀ R ↔
       P ∈ backwardCylinder (⟨0, 0, 0⟩ : KineticPoint d) 1 := by
-  have hv := PDE.affine_mem_euclideanBall_iff_of_pos P₀.velocity P.velocity hR
-  have hx := PDE.affine_mem_euclideanBall_iff_of_pos (0 : PDE.Vec d)
+  have hx := PDE.affine_mem_euclideanBall_iff_of_pos 0
     P.position (pow_pos hR 3)
-  simp only [mem_backwardCylinder_iff, kineticAffine_time, kineticAffine_velocity,
-    relativePosition_kineticAffine, one_pow]
-  simp only [relativePosition, sub_zero, smul_zero]
-  rw [add_comm P₀.velocity, hv]
-  simp only [add_zero] at hx
+  simp
+  simp [relativePosition]
+  rw [add_comm P₀.velocity, (PDE.affine_mem_euclideanBall_iff_of_pos P₀.velocity P.velocity hR)]
+  simp at hx
   rw [hx]
-  have hR2 : 0 < R ^ 2 := sq_pos_of_pos hR
+  have hR2 := sq_pos_of_pos hR
   constructor
   · rintro ⟨ha, hb, hv', hx'⟩
     refine ⟨?_, ?_, hv', hx'⟩ <;> nlinarith

@@ -20,7 +20,6 @@ open scoped ENNReal
 
 namespace HypoellipticAleksandrov.Parabolic
 
-noncomputable section
 
 /-- The open coordinate cube of radius `r` about `v₀`. -/
 def velocityCube {d : ℕ} (v₀ : PDE.Vec d) (r : ℝ) : Set (PDE.Vec d) :=
@@ -40,14 +39,7 @@ def parabolicClosedBox {d : ℕ} (vartheta r t₀ : ℝ) (v₀ : PDE.Vec d) :
     Set (TimeVelocity d) :=
   Icc t₀ (t₀ + vartheta * r ^ 2) ×ˢ velocityClosedCube v₀ r
 
-/-- The backward unit-height coordinate box ending at `terminalTime`. -/
-def backwardParabolicBox {d : ℕ} (r terminalTime : ℝ) (v₀ : PDE.Vec d) :
-    Set (TimeVelocity d) :=
-  Ioo (terminalTime - r ^ 2) terminalTime ×ˢ velocityCube v₀ r
 
-/-- The normalized round work domain for the public Harnack theorem. -/
-def harnackWorkDomain {d : ℕ} : Set (TimeVelocity d) :=
-  Ioo (1 / 2 : ℝ) (9 / 2 : ℝ) ×ˢ PDE.euclideanBall (0 : PDE.Vec d) 2
 
 /-- The time-four round target slice in normalized Harnack coordinates. -/
 def harnackTargetSlice {d : ℕ} : Set (TimeVelocity d) :=
@@ -86,24 +78,7 @@ def parabolicAffine {d : ℕ} (t₀ : ℝ) (v₀ : PDE.Vec d) (r : ℝ) :
   · rintro ⟨ht₀, ht, hv⟩
     exact ⟨⟨ht₀, ht⟩, hv⟩
 
-@[simp] theorem mem_backwardParabolicBox_iff {d : ℕ} {r terminalTime t : ℝ}
-    {v₀ v : PDE.Vec d} :
-    (t, v) ∈ backwardParabolicBox r terminalTime v₀ ↔
-      terminalTime - r ^ 2 < t ∧ t < terminalTime ∧ v ∈ velocityCube v₀ r := by
-  constructor
-  · rintro ⟨⟨ht₀, ht⟩, hv⟩
-    exact ⟨ht₀, ht, hv⟩
-  · rintro ⟨ht₀, ht, hv⟩
-    exact ⟨⟨ht₀, ht⟩, hv⟩
 
-@[simp] theorem mem_harnackWorkDomain_iff {d : ℕ} {t : ℝ} {v : PDE.Vec d} :
-    (t, v) ∈ harnackWorkDomain ↔
-      1 / 2 < t ∧ t < 9 / 2 ∧ v ∈ PDE.euclideanBall (0 : PDE.Vec d) 2 := by
-  constructor
-  · rintro ⟨⟨ht₀, ht⟩, hv⟩
-    exact ⟨ht₀, ht, hv⟩
-  · rintro ⟨ht₀, ht, hv⟩
-    exact ⟨⟨ht₀, ht⟩, hv⟩
 
 @[simp] theorem mem_harnackTargetSlice_iff {d : ℕ} {t : ℝ} {v : PDE.Vec d} :
     (t, v) ∈ harnackTargetSlice ↔
@@ -154,37 +129,16 @@ theorem closure_parabolicBox_of_pos {d : Nat} {vartheta r t0 : Real}
 theorem isOpen_velocityCube {d : ℕ} (v₀ : PDE.Vec d) (r : ℝ) :
     IsOpen (velocityCube v₀ r) := by
   rw [velocityCube_eq_pi]
-  have hpi : Set.univ.pi (fun i : Fin d => Ioo (v₀ i - r) (v₀ i + r)) =
+  have hpi : Set.univ.pi (fun i => Ioo (v₀ i - r) (v₀ i + r)) =
       ⋂ i ∈ (Finset.univ : Finset (Fin d)),
-        (fun v : PDE.Vec d => v i) ⁻¹' Ioo (v₀ i - r) (v₀ i + r) := by
+        (fun v => v i) ⁻¹' Ioo (v₀ i - r) (v₀ i + r) := by
     ext v
     simp
   rw [hpi]
   exact isOpen_biInter_finset fun i _ =>
     isOpen_Ioo.preimage (continuous_apply i)
 
-/-- Closed coordinate cubes are closed in the native finite-product topology. -/
-theorem isClosed_velocityClosedCube {d : ℕ} (v₀ : PDE.Vec d) (r : ℝ) :
-    IsClosed (velocityClosedCube v₀ r) := by
-  rw [velocityClosedCube_eq_pi]
-  have hpi : Set.univ.pi (fun i : Fin d => Icc (v₀ i - r) (v₀ i + r)) =
-      ⋂ i : Fin d, (fun v : PDE.Vec d => v i) ⁻¹' Icc (v₀ i - r) (v₀ i + r) := by
-    ext v
-    rw [Set.mem_pi]
-    simp only [Set.mem_iInter, Set.mem_preimage]
-    constructor
-    · intro hv i
-      exact hv i (Set.mem_univ i)
-    · intro hv i _
-      exact hv i
-  rw [hpi]
-  exact isClosed_iInter fun i =>
-    isClosed_Icc.preimage (continuous_apply i)
 
-/-- Open coordinate cubes are measurable. -/
-theorem measurableSet_velocityCube {d : ℕ} (v₀ : PDE.Vec d) (r : ℝ) :
-    MeasurableSet (velocityCube v₀ r) :=
-  (isOpen_velocityCube v₀ r).measurableSet
 
 /-- Closed coordinate cubes are compact. -/
 theorem isCompact_velocityClosedCube {d : ℕ} (v₀ : PDE.Vec d) (r : ℝ) :
@@ -199,13 +153,11 @@ theorem isOpen_parabolicBox {d : ℕ} (vartheta r t₀ : ℝ) (v₀ : PDE.Vec d)
 
 /-- Forward coordinate boxes are measurable. -/
 theorem measurableSet_parabolicBox {d : ℕ} (vartheta r t₀ : ℝ) (v₀ : PDE.Vec d) :
-    MeasurableSet (parabolicBox vartheta r t₀ v₀) :=
-  measurableSet_Ioo.prod (measurableSet_velocityCube v₀ r)
+    MeasurableSet (parabolicBox vartheta r t₀ v₀)  := by
+  have measurableSet_velocityCube (v₀ : PDE.Vec d) (r : ℝ) : MeasurableSet (velocityCube v₀ r) :=
+    (isOpen_velocityCube v₀ r).measurableSet
+  exact measurableSet_Ioo.prod (measurableSet_velocityCube v₀ r)
 
-/-- Closed coordinate boxes are closed. -/
-theorem isClosed_parabolicClosedBox {d : ℕ} (vartheta r t₀ : ℝ) (v₀ : PDE.Vec d) :
-    IsClosed (parabolicClosedBox vartheta r t₀ v₀) :=
-  isClosed_Icc.prod (isClosed_velocityClosedCube v₀ r)
 
 /-- Closed coordinate boxes are compact. -/
 theorem isCompact_parabolicClosedBox {d : ℕ} (vartheta r t₀ : ℝ) (v₀ : PDE.Vec d) :
@@ -262,16 +214,16 @@ theorem mem_parabolicAffine_preimage_parabolicBox_iff {d : ℕ}
     {vartheta r t₀ t : ℝ} {v₀ v : PDE.Vec d} (hr : 0 < r) :
     parabolicAffine t₀ v₀ r (t, v) ∈ parabolicBox vartheta r t₀ v₀ ↔
       (t, v) ∈ parabolicBox vartheta 1 0 0 := by
-  have hrsq : 0 < r ^ 2 := sq_pos_of_pos hr
+  have hrsq := sq_pos_of_pos hr
   have hspace : v₀ + r • v ∈ velocityCube v₀ r ↔
-      v ∈ velocityCube (0 : PDE.Vec d) 1 := by
+      v ∈ velocityCube 0 1 := by
     constructor
     · intro hv i
       have hi := hv i
       simp only [Pi.add_apply, Pi.smul_apply, smul_eq_mul, Pi.zero_apply] at hi ⊢
       rw [add_sub_cancel_left, abs_mul, abs_of_pos hr] at hi
       have hi' : |v i| < 1 :=
-        lt_of_mul_lt_mul_left (by simpa only [mul_one] using hi) hr.le
+        lt_of_mul_lt_mul_left (by simpa using hi) hr.le
       simpa using hi'
     · intro hv i
       have hi := hv i
@@ -281,10 +233,6 @@ theorem mem_parabolicAffine_preimage_parabolicBox_iff {d : ℕ}
       simpa using mul_lt_mul_of_pos_left hi' hr
   rw [mem_parabolicBox_iff, mem_parabolicBox_iff]
   simp only [parabolicAffine]
-  change t₀ < t₀ + r ^ 2 * t ∧
-      t₀ + r ^ 2 * t < t₀ + vartheta * r ^ 2 ∧
-      v₀ + r • v ∈ velocityCube v₀ r ↔
-    0 < t ∧ t < 0 + vartheta * 1 ^ 2 ∧ v ∈ velocityCube (0 : PDE.Vec d) 1
   norm_num only [zero_add, one_pow]
   rw [hspace]
   constructor <;> rintro ⟨hleft, hright, hv⟩ <;>
@@ -302,7 +250,7 @@ theorem mapsTo_parabolicAffine_parabolicBox {d : ℕ} {vartheta r t₀ : ℝ}
 theorem parabolicAffine_injective {d : ℕ} {t₀ r : ℝ} {v₀ : PDE.Vec d}
     (hr : 0 < r) : Function.Injective (parabolicAffine t₀ v₀ r) := by
   intro z w hzw
-  have hrsq : 0 < r ^ 2 := sq_pos_of_pos hr
+  have hrsq := sq_pos_of_pos hr
   have htime : z.1 = w.1 := by
     have := congrArg Prod.fst hzw
     dsimp [parabolicAffine] at this
@@ -314,6 +262,5 @@ theorem parabolicAffine_injective {d : ℕ} {t₀ r : ℝ} {v₀ : PDE.Vec d}
     nlinarith
   exact Prod.ext htime hvelocity
 
-end
 
 end HypoellipticAleksandrov.Parabolic

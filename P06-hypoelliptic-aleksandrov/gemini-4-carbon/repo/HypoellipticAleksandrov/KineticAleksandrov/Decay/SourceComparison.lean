@@ -1,4 +1,0 @@
-module
-public import HypoellipticAleksandrov.KineticAleksandrov.Decay.SourceNotation
-public import HypoellipticAleksandrov.KineticAleksandrov.Decay.MaxPrinciple
-public import HypoellipticAleksandrov.Parabolic.KineticClassical

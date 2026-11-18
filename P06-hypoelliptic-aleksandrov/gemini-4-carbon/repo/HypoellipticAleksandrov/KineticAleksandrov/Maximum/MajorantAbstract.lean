@@ -50,7 +50,7 @@ theorem exists_smooth_majorant_eLpNorm_le (μ : Measure E) [μ.IsAddHaarMeasure]
   have hS2c : IsCompact (cthickening (2 * ε₀) K) := hK.cthickening
   have hS1S2 : cthickening ε₀ K ⊆ cthickening (2 * ε₀) K :=
     cthickening_mono (by linarith) K
-  have hS1U : cthickening ε₀ K ⊆ U := hS1S2.trans hS2U
+  have hS1U := hS1S2.trans hS2U
   set H : E → ℝ := fun z => χ z * h z with hHdef
   have hH0 : ∀ z, z ∉ cthickening ε₀ K → H z = 0 := fun z hz => by simp [hHdef, hχ0 z hz]
   have hHnn : ∀ z, 0 ≤ H z := by
@@ -68,7 +68,6 @@ theorem exists_smooth_majorant_eLpNorm_le (μ : Measure E) [μ.IsAddHaarMeasure]
         filter_upwards [hnhds] with w hw
         exact hH0 w hw
       exact continuousAt_const.congr hev.symm
-  have hHc : HasCompactSupport H := HasCompactSupport.intro hS1c hH0
   set m : ℝ≥0∞ := μ (cthickening (2 * ε₀) K) ^ (1 / p.toReal) with hm
   have hmt : m ≠ ∞ :=
     ENNReal.rpow_ne_top_of_nonneg (by positivity) hS2c.measure_lt_top.ne
@@ -76,7 +75,7 @@ theorem exists_smooth_majorant_eLpNorm_le (μ : Measure E) [μ.IsAddHaarMeasure]
   have hMpos : 0 < 2 * (m.toReal + 1) := by positivity
   have hη : 0 < η := div_pos hε hMpos
   obtain ⟨ψ, hψ, hψ0, hψH, hψS⟩ :=
-    exists_smooth_uniform_approx μ hHcont hHc hHnn hH0 hε₀ hη
+    exists_smooth_uniform_approx μ hHcont (HasCompactSupport.intro hS1c hH0) hHnn hH0 hε₀ hη
   have hS1S2' : cthickening ε₀ (cthickening ε₀ K) ⊆ cthickening (2 * ε₀) K := by
     refine (cthickening_cthickening_subset hε₀.le hε₀.le K).trans ?_
     rw [two_mul]
@@ -88,27 +87,25 @@ theorem exists_smooth_majorant_eLpNorm_le (μ : Measure E) [μ.IsAddHaarMeasure]
     fun z hz => hH0 z fun h' => hz (hS1S2 h')
   have hgS2 : ∀ z, z ∉ cthickening (2 * ε₀) K → ψ z + η * χ z = 0 :=
     fun z hz => by rw [hψS2 z hz, hχS2 z hz]; ring
-  have hgc : HasCompactSupport (fun z => ψ z + η * χ z) := HasCompactSupport.intro hS2c hgS2
   have hts : tsupport (fun z => ψ z + η * χ z) ⊆ U := by
     refine (closure_minimal ?_ isClosed_cthickening).trans hS2U
     intro z hz
     by_contra hz'
     exact hz (hgS2 z hz')
-  refine ⟨fun z => ψ z + η * χ z, ContDiff.add hψ (contDiff_const.mul hχ), hgc, hts,
+  refine ⟨fun z => ψ z + η * χ z, ContDiff.add hψ (contDiff_const.mul hχ), (HasCompactSupport.intro hS2c hgS2), hts,
     fun z => add_nonneg (hψ0 z) (mul_nonneg hη.le (hχ01 z).1), ?_, ?_⟩
   · intro z hz
     have h1 : H z = h z := by simp [hHdef, hχK z hz]
     have h2 := (abs_le.1 (hψH z)).1
-    have h3 : χ z = 1 := hχK z hz
     show h z ≤ ψ z + η * χ z
-    rw [h3, ← h1]
+    rw [(hχK z hz), ← h1]
     linarith
   · set G : E → ℝ := fun z => (ψ z - H z) + η * χ z with hG
     have hGcont : Continuous G :=
       ((hψ.continuous.sub hHcont).add (continuous_const.mul hχ.continuous))
     have hsplit : (fun z => ψ z + η * χ z) = H + G := by
       funext z
-      simp only [hG, Pi.add_apply]
+      simp
       ring
     have hGbd : ∀ z, ‖G z‖ ≤ (cthickening (2 * ε₀) K).indicator (fun _ => 2 * η) z := by
       intro z
@@ -135,7 +132,7 @@ theorem exists_smooth_majorant_eLpNorm_le (μ : Measure E) [μ.IsAddHaarMeasure]
         _ = ENNReal.ofReal (2 * η) * m := by
             rw [Measure.restrict_eq_self _ hS2U, Real.enorm_eq_ofReal (by positivity)]
         _ = ENNReal.ofReal (2 * η * m.toReal) := by
-            rw [ENNReal.ofReal_mul (by positivity : (0 : ℝ) ≤ 2 * η), ENNReal.ofReal_toReal hmt]
+            rw [ENNReal.ofReal_mul (by positivity : 0 ≤ 2 * η), ENNReal.ofReal_toReal hmt]
         _ ≤ ENNReal.ofReal ε := by
             refine ENNReal.ofReal_le_ofReal ?_
             have : 2 * η * (m.toReal + 1) = ε := by

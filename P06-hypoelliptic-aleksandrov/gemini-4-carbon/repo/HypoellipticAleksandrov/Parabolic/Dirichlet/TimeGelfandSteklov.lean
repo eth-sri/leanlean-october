@@ -31,9 +31,9 @@ private theorem forwardSteklov_map_eq_setIntegral
     L (reverseTimeForwardSteklov T h u t) =
       h⁻¹ • (∫ s in Ioc t (t + h), W s ∂reverseTimeVolume T : F) := by
   letI : IsFiniteMeasure (reverseTimeVolume T) := by
-    change IsFiniteMeasure (volume.restrict (Ioo (0 : ℝ) T))
+    change IsFiniteMeasure (volume.restrict (Ioo 0 T))
     infer_instance
-  have huInt : Integrable (u : ℝ → E) (reverseTimeVolume T) :=
+  have huInt :=
     (MeasureTheory.Lp.memLp u).integrable (by norm_num)
   rw [reverseTimeForwardSteklov, map_smul]
   congr 1
@@ -54,9 +54,9 @@ private theorem backwardSteklov_map_eq_setIntegral
     L (reverseTimeBackwardSteklov T h u t) =
       h⁻¹ • (∫ s in Ioc (t - h) t, W s ∂reverseTimeVolume T : F) := by
   letI : IsFiniteMeasure (reverseTimeVolume T) := by
-    change IsFiniteMeasure (volume.restrict (Ioo (0 : ℝ) T))
+    change IsFiniteMeasure (volume.restrict (Ioo 0 T))
     infer_instance
-  have huInt : Integrable (u : ℝ → E) (reverseTimeVolume T) :=
+  have huInt :=
     (MeasureTheory.Lp.memLp u).integrable (by norm_num)
   rw [reverseTimeBackwardSteklov, map_smul]
   congr 1
@@ -75,11 +75,9 @@ private theorem hasDerivAt_forward_affineAverage
     HasDerivAt
       (fun s => h⁻¹ • ∫ r in Ioc s (s + h), W r ∂reverseTimeVolume T)
       (h⁻¹ • (W (t + h) - W t)) t := by
-  have hAtIoo : ∀ x ∈ Ioo (0 : ℝ) T, ContinuousAt W x := by
+  have hAtIoo : ∀ x ∈ Ioo 0 T, ContinuousAt W x := by
     intro x hx
     exact hW.continuousAt (Icc_mem_nhds hx.1 hx.2)
-  have hAtT : ContinuousAt W t := hAtIoo t ⟨ht0, by linarith⟩
-  have hAtTh : ContinuousAt W (t + h) := hAtIoo (t + h) ⟨by linarith, htT⟩
   have hmeasT : StronglyMeasurableAtFilter W (𝓝 t) volume :=
     ContinuousAt.stronglyMeasurableAtFilter isOpen_Ioo hAtIoo t ⟨ht0, by linarith⟩
   have hmeasTh : StronglyMeasurableAtFilter W (𝓝 (t + h)) volume :=
@@ -99,9 +97,9 @@ private theorem hasDerivAt_forward_affineAverage
       · exact hr.1
       · linarith [hr.2, htT]))
   have hDerivA : HasDerivAt A (W t) t := by
-    exact intervalIntegral.integral_hasDerivAt_right hIntT hmeasT hAtT
+    exact intervalIntegral.integral_hasDerivAt_right hIntT hmeasT (hAtIoo t ⟨ht0, by linarith⟩)
   have hDerivATh : HasDerivAt A (W (t + h)) (t + h) := by
-    exact intervalIntegral.integral_hasDerivAt_right hIntTh hmeasTh hAtTh
+    exact intervalIntegral.integral_hasDerivAt_right hIntTh hmeasTh (hAtIoo (t + h) ⟨by linarith, htT⟩)
   have hDerivShift : HasDerivAt (fun s => A (s + h)) (W (t + h)) t := by
     convert (hDerivATh.hasFDerivAt.comp t
       ((hasDerivAt_id t).add_const h).hasFDerivAt).hasDerivAt using 1 <;>
@@ -113,7 +111,7 @@ private theorem hasDerivAt_forward_affineAverage
       (h⁻¹ • (W (t + h) - W t)) t := hDerivDiff.const_smul h⁻¹
   apply hDerivNormal.congr_of_eventuallyEq
   filter_upwards [Ioo_mem_nhds ht0 (by linarith : t < T - h)] with s hs
-  have hWin : Ioc s (s + h) ⊆ Ioo (0 : ℝ) T := by
+  have hWin : Ioc s (s + h) ⊆ Ioo 0 T := by
     intro r hr
     constructor
     · exact lt_of_lt_of_le hs.1 hr.1.le
@@ -128,12 +126,9 @@ private theorem hasDerivAt_forward_affineAverage
     constructor
     · exact le_of_lt (lt_of_lt_of_le hs.1 hr.1)
     · exact le_of_lt (lt_of_le_of_lt hr.2 (by linarith [hs.2])))
-  have hAdj := intervalIntegral.integral_add_adjacent_intervals
-    (ContinuousOn.intervalIntegrable_of_Icc (μ := volume) hs.1.le hCont0s)
-    (ContinuousOn.intervalIntegrable_of_Icc (μ := volume) (by linarith [hh]) hContSh)
   have hSub : (∫ r in s..s + h, W r ∂volume) = A (s + h) - A s :=
-    (eq_sub_iff_add_eq).mpr (by simpa only [A, add_comm] using hAdj)
-  change h⁻¹ • (∫ r, W r ∂(volume.restrict (Ioo (0 : ℝ) T)).restrict
+    (eq_sub_iff_add_eq).mpr (by simpa only [A, add_comm] using (intervalIntegral.integral_add_adjacent_intervals (ContinuousOn.intervalIntegrable_of_Icc (μ := volume) hs.1.le hCont0s) (ContinuousOn.intervalIntegrable_of_Icc (μ := volume) (by linarith [hh]) hContSh)))
+  change h⁻¹ • (∫ r, W r ∂(volume.restrict (Ioo 0 T)).restrict
     (Ioc s (s + h))) = _
   rw [Measure.restrict_restrict_of_subset hWin,
     ← intervalIntegral.integral_of_le (by linarith), hSub]
@@ -146,11 +141,9 @@ private theorem hasDerivAt_backward_affineAverage
     HasDerivAt
       (fun s => h⁻¹ • ∫ r in Ioc (s - h) s, W r ∂reverseTimeVolume T)
       (h⁻¹ • (W t - W (t - h))) t := by
-  have hAtIoo : ∀ x ∈ Ioo (0 : ℝ) T, ContinuousAt W x := by
+  have hAtIoo : ∀ x ∈ Ioo 0 T, ContinuousAt W x := by
     intro x hx
     exact hW.continuousAt (Icc_mem_nhds hx.1 hx.2)
-  have hAtT : ContinuousAt W t := hAtIoo t ⟨by linarith, htT⟩
-  have hAtTmh : ContinuousAt W (t - h) := hAtIoo (t - h) ⟨ht0, by linarith⟩
   have hmeasT : StronglyMeasurableAtFilter W (𝓝 t) volume :=
     ContinuousAt.stronglyMeasurableAtFilter isOpen_Ioo hAtIoo t ⟨by linarith, htT⟩
   have hmeasTmh : StronglyMeasurableAtFilter W (𝓝 (t - h)) volume :=
@@ -170,9 +163,9 @@ private theorem hasDerivAt_backward_affineAverage
       · exact hr.1
       · linarith [hr.2, htT]))
   have hDerivA : HasDerivAt A (W t) t := by
-    exact intervalIntegral.integral_hasDerivAt_right hIntT hmeasT hAtT
+    exact intervalIntegral.integral_hasDerivAt_right hIntT hmeasT (hAtIoo t ⟨by linarith, htT⟩)
   have hDerivATmh : HasDerivAt A (W (t - h)) (t - h) := by
-    exact intervalIntegral.integral_hasDerivAt_right hIntTmh hmeasTmh hAtTmh
+    exact intervalIntegral.integral_hasDerivAt_right hIntTmh hmeasTmh (hAtIoo (t - h) ⟨ht0, by linarith⟩)
   have hDerivShift : HasDerivAt (fun s => A (s - h)) (W (t - h)) t := by
     convert (hDerivATmh.hasFDerivAt.comp t
       ((hasDerivAt_id t).sub_const h).hasFDerivAt).hasDerivAt using 1 <;>
@@ -184,7 +177,7 @@ private theorem hasDerivAt_backward_affineAverage
       (h⁻¹ • (W t - W (t - h))) t := hDerivDiff.const_smul h⁻¹
   apply hDerivNormal.congr_of_eventuallyEq
   filter_upwards [Ioo_mem_nhds (by linarith : h < t) htT] with s hs
-  have hWin : Ioc (s - h) s ⊆ Ioo (0 : ℝ) T := by
+  have hWin : Ioc (s - h) s ⊆ Ioo 0 T := by
     intro r hr
     constructor
     · linarith [hs.1, hr.1]
@@ -199,14 +192,9 @@ private theorem hasDerivAt_backward_affineAverage
     constructor
     · linarith [hs.1, hr.1]
     · exact le_of_lt (lt_of_le_of_lt hr.2 hs.2))
-  have hAdj := intervalIntegral.integral_add_adjacent_intervals
-    (ContinuousOn.intervalIntegrable_of_Icc (μ := volume) (a := 0) (b := s - h)
-      (sub_nonneg.mpr hs.1.le) hCont0Smh)
-    (ContinuousOn.intervalIntegrable_of_Icc (μ := volume) (a := s - h) (b := s)
-      (by linarith [hh]) hContSmhS)
   have hSub : (∫ r in s - h..s, W r ∂volume) = A s - A (s - h) :=
-    (eq_sub_iff_add_eq).mpr (by simpa only [A, add_comm] using hAdj)
-  change h⁻¹ • (∫ r, W r ∂(volume.restrict (Ioo (0 : ℝ) T)).restrict
+    (eq_sub_iff_add_eq).mpr (by simpa only [A, add_comm] using (intervalIntegral.integral_add_adjacent_intervals (ContinuousOn.intervalIntegrable_of_Icc (μ := volume) (sub_nonneg.mpr hs.1.le) hCont0Smh) (ContinuousOn.intervalIntegrable_of_Icc (μ := volume) (by linarith [hh]) hContSmhS)))
+  change h⁻¹ • (∫ r, W r ∂(volume.restrict (Ioo 0 T)).restrict
     (Ioc (s - h) s)) = _
   rw [Measure.restrict_restrict_of_subset hWin,
     ← intervalIntegral.integral_of_le (by linarith), hSub]
@@ -257,121 +245,11 @@ private theorem reverseTimeGelfandAffineCurve_ae
       hΩ T hT u g hderiv)] with t ht
   exact ht
 
-private theorem forward_gelfand_window_eq_affineAverage_raw
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
-    (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
-    (hderiv : HasGelfandWeakTimeDerivative hΩ T hT u g)
-    (h t : ℝ) (_hh : 0 < h) (_ht0 : 0 ≤ t) (_htT : t + h ≤ T) :
-    scalarLpToH10HilbertGraphDual hΩ
-        (valueCLM hΩ (reverseTimeForwardSteklov T h u t)) =
-      h⁻¹ • (∫ s in Ioc t (t + h),
-        reverseTimeGelfandAffineCurve hΩ T hT u g s
-        ∂reverseTimeVolume T : H10HilbertGraphDual hΩ) := by
-  simpa only [ContinuousLinearMap.comp_apply] using
-    forwardSteklov_map_eq_setIntegral
-      (E := H10HilbertGraph hΩ) (F := H10HilbertGraphDual hΩ)
-      (L := (scalarLpToH10HilbertGraphDual hΩ).comp (valueCLM hΩ))
-      (T := T) (u := u) (W := reverseTimeGelfandAffineCurve hΩ T hT u g)
-      (hAE := reverseTimeGelfandAffineCurve_ae hΩ T hT u g hderiv)
-      (h := h) (t := t)
 
-private theorem backward_gelfand_window_eq_affineAverage_raw
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
-    (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
-    (hderiv : HasGelfandWeakTimeDerivative hΩ T hT u g)
-    (h t : ℝ) (_hh : 0 < h) (_ht0 : 0 ≤ t - h) (_htT : t ≤ T) :
-    scalarLpToH10HilbertGraphDual hΩ
-        (valueCLM hΩ (reverseTimeBackwardSteklov T h u t)) =
-      h⁻¹ • (∫ s in Ioc (t - h) t,
-        reverseTimeGelfandAffineCurve hΩ T hT u g s
-        ∂reverseTimeVolume T : H10HilbertGraphDual hΩ) := by
-  simpa only [ContinuousLinearMap.comp_apply] using
-    backwardSteklov_map_eq_setIntegral
-      (E := H10HilbertGraph hΩ) (F := H10HilbertGraphDual hΩ)
-      (L := (scalarLpToH10HilbertGraphDual hΩ).comp (valueCLM hΩ))
-      (T := T) (u := u) (W := reverseTimeGelfandAffineCurve hΩ T hT u g)
-      (hAE := reverseTimeGelfandAffineCurve_ae hΩ T hT u g hderiv)
-      (h := h) (t := t)
 
-private theorem forward_gelfand_window_eventuallyEq_affineAverage
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
-    (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
-    (hderiv : HasGelfandWeakTimeDerivative hΩ T hT u g)
-    {h t : ℝ} (hh : 0 < h) (ht0 : 0 < t) (htT : t + h < T) :
-    (fun s => scalarLpToH10HilbertGraphDual hΩ
-      (valueCLM hΩ (reverseTimeForwardSteklov T h u s))) =ᶠ[𝓝 t]
-    fun s => h⁻¹ • (∫ r in Ioc s (s + h),
-      reverseTimeGelfandAffineCurve hΩ T hT u g r
-      ∂reverseTimeVolume T : H10HilbertGraphDual hΩ) := by
-  filter_upwards [Ioo_mem_nhds ht0 (by linarith : t < T - h)] with s hs
-  exact forward_gelfand_window_eq_affineAverage_raw hΩ T hT u g hderiv h s hh
-    (le_of_lt hs.1) (by linarith [hs.2])
 
-private theorem backward_gelfand_window_eventuallyEq_affineAverage
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
-    (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
-    (hderiv : HasGelfandWeakTimeDerivative hΩ T hT u g)
-    {h t : ℝ} (hh : 0 < h) (ht0 : 0 < t - h) (htT : t < T) :
-    (fun s => scalarLpToH10HilbertGraphDual hΩ
-      (valueCLM hΩ (reverseTimeBackwardSteklov T h u s))) =ᶠ[𝓝 t]
-    fun s => h⁻¹ • (∫ r in Ioc (s - h) s,
-      reverseTimeGelfandAffineCurve hΩ T hT u g r
-      ∂reverseTimeVolume T : H10HilbertGraphDual hΩ) := by
-  filter_upwards [Ioo_mem_nhds (by linarith : h < t) htT] with s hs
-  exact backward_gelfand_window_eq_affineAverage_raw hΩ T hT u g hderiv h s hh
-    (by linarith [hs.1]) (le_of_lt hs.2)
 
-private theorem forward_affineIncrement_normalized_eq_steklov
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
-    (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
-    {h t : ℝ} (hh : 0 < h) (ht0 : 0 < t) (htT : t + h < T) :
-    h⁻¹ • (reverseTimeGelfandAffineCurve hΩ T hT u g (t + h) -
-      reverseTimeGelfandAffineCurve hΩ T hT u g t) =
-      reverseTimeForwardSteklov T h g t := by
-  change h⁻¹ • (reverseTimeGelfandAffineCurve hΩ T hT u g (t + h) -
-      reverseTimeGelfandAffineCurve hΩ T hT u g t) =
-    h⁻¹ • (∫ r in Ioc t (t + h), g r ∂reverseTimeVolume T :
-      H10HilbertGraphDual hΩ)
-  exact congrArg (fun z : H10HilbertGraphDual hΩ => h⁻¹ • z)
-    (reverseTimeGelfandAffineCurve_sub hΩ T hT u g
-      (show t ∈ Icc 0 T by
-        constructor
-        · linarith
-        · linarith)
-      (show t + h ∈ Icc 0 T by
-        constructor
-        · linarith
-        · linarith)
-      (by linarith))
 
-private theorem backward_affineIncrement_normalized_eq_steklov
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
-    (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
-    {h t : ℝ} (hh : 0 < h) (ht0 : 0 < t - h) (htT : t < T) :
-    h⁻¹ • (reverseTimeGelfandAffineCurve hΩ T hT u g t -
-      reverseTimeGelfandAffineCurve hΩ T hT u g (t - h)) =
-      reverseTimeBackwardSteklov T h g t := by
-  change h⁻¹ • (reverseTimeGelfandAffineCurve hΩ T hT u g t -
-      reverseTimeGelfandAffineCurve hΩ T hT u g (t - h)) =
-    h⁻¹ • (∫ r in Ioc (t - h) t, g r ∂reverseTimeVolume T :
-      H10HilbertGraphDual hΩ)
-  exact congrArg (fun z : H10HilbertGraphDual hΩ => h⁻¹ • z)
-    (reverseTimeGelfandAffineCurve_sub hΩ T hT u g
-      (show t - h ∈ Icc 0 T by
-        constructor
-        · linarith
-        · linarith)
-      (show t ∈ Icc 0 T by
-        constructor
-        · linarith
-        · linarith)
-      (by linarith))
 
 /-- Strict-interior derivative of the pivoted forward Steklov curve. -/
 theorem hasDerivAt_reverseTimeForwardSteklov_gelfand
@@ -383,10 +261,50 @@ theorem hasDerivAt_reverseTimeForwardSteklov_gelfand
     HasDerivAt
       (fun s => scalarLpToH10HilbertGraphDual hΩ
         (valueCLM hΩ (reverseTimeForwardSteklov T h u s)))
-      (reverseTimeForwardSteklov T h g t) t := by
-  have hW := continuousOn_reverseTimeGelfandAffineCurve hΩ T hT u g
+      (reverseTimeForwardSteklov T h g t) t   := by
+  have forward_affineIncrement_normalized_eq_steklov {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T) (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T) {h : ℝ} {t : ℝ} (hh : 0 < h) (ht0 : 0 < t) (htT : t + h < T) :
+      h⁻¹ • (reverseTimeGelfandAffineCurve hΩ T hT u g (t + h) -
+      reverseTimeGelfandAffineCurve hΩ T hT u g t) =
+      reverseTimeForwardSteklov T h g t := by
+    change h⁻¹ • (reverseTimeGelfandAffineCurve hΩ T hT u g (t + h) -
+        reverseTimeGelfandAffineCurve hΩ T hT u g t) =
+      h⁻¹ • (∫ r in Ioc t (t + h), g r ∂reverseTimeVolume T :
+        H10HilbertGraphDual hΩ)
+    exact congrArg (fun z => h⁻¹ • z)
+      (reverseTimeGelfandAffineCurve_sub hΩ T hT u g
+        (show t ∈ Icc 0 T by
+          constructor
+          · linarith
+          · linarith)
+        (show t + h ∈ Icc 0 T by
+          constructor
+          · linarith
+          · linarith)
+        (by linarith))
+  have forward_gelfand_window_eventuallyEq_affineAverage {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T) (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T) (hderiv : HasGelfandWeakTimeDerivative hΩ T hT u g) {h : ℝ} {t : ℝ} (hh : 0 < h) (ht0 : 0 < t) (htT : t + h < T) :
+      (fun s => scalarLpToH10HilbertGraphDual hΩ
+      (valueCLM hΩ (reverseTimeForwardSteklov T h u s))) =ᶠ[𝓝 t]
+    fun s => h⁻¹ • (∫ r in Ioc s (s + h),
+      reverseTimeGelfandAffineCurve hΩ T hT u g r
+      ∂reverseTimeVolume T : H10HilbertGraphDual hΩ) := by
+    have forward_gelfand_window_eq_affineAverage_raw {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T) (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T) (hderiv : HasGelfandWeakTimeDerivative hΩ T hT u g) (h : ℝ) (t : ℝ) (_hh : 0 < h) (_ht0 : 0 ≤ t) (_htT : t + h ≤ T) :
+        scalarLpToH10HilbertGraphDual hΩ
+          (valueCLM hΩ (reverseTimeForwardSteklov T h u t)) =
+        h⁻¹ • (∫ s in Ioc t (t + h),
+          reverseTimeGelfandAffineCurve hΩ T hT u g s
+          ∂reverseTimeVolume T : H10HilbertGraphDual hΩ) := by
+      simpa using
+        forwardSteklov_map_eq_setIntegral
+
+
+          (T := T)
+          (hAE := reverseTimeGelfandAffineCurve_ae hΩ T hT u g hderiv)
+          (h := h) (t := t)
+    filter_upwards [Ioo_mem_nhds ht0 (by linarith : t < T - h)] with s hs
+    exact forward_gelfand_window_eq_affineAverage_raw hΩ T hT u g hderiv h s hh
+      (le_of_lt hs.1) (by linarith [hs.2])
   have hAverage := hasDerivAt_forward_affineAverage T h hh
-    (reverseTimeGelfandAffineCurve hΩ T hT u g) hW ht0 htT
+    (reverseTimeGelfandAffineCurve hΩ T hT u g) (continuousOn_reverseTimeGelfandAffineCurve hΩ T hT u g) ht0 htT
   have hTransport : HasDerivAt
       (fun s => scalarLpToH10HilbertGraphDual hΩ
         (valueCLM hΩ (reverseTimeForwardSteklov T h u s)))
@@ -396,7 +314,7 @@ theorem hasDerivAt_reverseTimeForwardSteklov_gelfand
       (forward_gelfand_window_eventuallyEq_affineAverage
         hΩ T hT u g hderiv hh ht0 htT)
   simpa only [forward_affineIncrement_normalized_eq_steklov
-    (hΩ := hΩ) (T := T) (hT := hT) (u := u) (g := g)
+    (hΩ := hΩ)
     (hh := hh) (ht0 := ht0) (htT := htT)] using hTransport
 
 /-- Strict-interior derivative of the pivoted backward Steklov curve. -/
@@ -409,10 +327,50 @@ theorem hasDerivAt_reverseTimeBackwardSteklov_gelfand
     HasDerivAt
       (fun s => scalarLpToH10HilbertGraphDual hΩ
         (valueCLM hΩ (reverseTimeBackwardSteklov T h u s)))
-      (reverseTimeBackwardSteklov T h g t) t := by
-  have hW := continuousOn_reverseTimeGelfandAffineCurve hΩ T hT u g
+      (reverseTimeBackwardSteklov T h g t) t   := by
+  have backward_affineIncrement_normalized_eq_steklov {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T) (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T) {h : ℝ} {t : ℝ} (hh : 0 < h) (ht0 : 0 < t - h) (htT : t < T) :
+      h⁻¹ • (reverseTimeGelfandAffineCurve hΩ T hT u g t -
+      reverseTimeGelfandAffineCurve hΩ T hT u g (t - h)) =
+      reverseTimeBackwardSteklov T h g t := by
+    change h⁻¹ • (reverseTimeGelfandAffineCurve hΩ T hT u g t -
+        reverseTimeGelfandAffineCurve hΩ T hT u g (t - h)) =
+      h⁻¹ • (∫ r in Ioc (t - h) t, g r ∂reverseTimeVolume T :
+        H10HilbertGraphDual hΩ)
+    exact congrArg (fun z => h⁻¹ • z)
+      (reverseTimeGelfandAffineCurve_sub hΩ T hT u g
+        (show t - h ∈ Icc 0 T by
+          constructor
+          · linarith
+          · linarith)
+        (show t ∈ Icc 0 T by
+          constructor
+          · linarith
+          · linarith)
+        (by linarith))
+  have backward_gelfand_window_eventuallyEq_affineAverage {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T) (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T) (hderiv : HasGelfandWeakTimeDerivative hΩ T hT u g) {h : ℝ} {t : ℝ} (hh : 0 < h) (ht0 : 0 < t - h) (htT : t < T) :
+      (fun s => scalarLpToH10HilbertGraphDual hΩ
+      (valueCLM hΩ (reverseTimeBackwardSteklov T h u s))) =ᶠ[𝓝 t]
+    fun s => h⁻¹ • (∫ r in Ioc (s - h) s,
+      reverseTimeGelfandAffineCurve hΩ T hT u g r
+      ∂reverseTimeVolume T : H10HilbertGraphDual hΩ) := by
+    have backward_gelfand_window_eq_affineAverage_raw {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T) (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T) (hderiv : HasGelfandWeakTimeDerivative hΩ T hT u g) (h : ℝ) (t : ℝ) (_hh : 0 < h) (_ht0 : 0 ≤ t - h) (_htT : t ≤ T) :
+        scalarLpToH10HilbertGraphDual hΩ
+          (valueCLM hΩ (reverseTimeBackwardSteklov T h u t)) =
+        h⁻¹ • (∫ s in Ioc (t - h) t,
+          reverseTimeGelfandAffineCurve hΩ T hT u g s
+          ∂reverseTimeVolume T : H10HilbertGraphDual hΩ) := by
+      simpa using
+        backwardSteklov_map_eq_setIntegral
+          (E := H10HilbertGraph hΩ) (F := H10HilbertGraphDual hΩ)
+          (L := (scalarLpToH10HilbertGraphDual hΩ).comp (valueCLM hΩ))
+          (T := T) (u := u) (W := reverseTimeGelfandAffineCurve hΩ T hT u g)
+          (hAE := reverseTimeGelfandAffineCurve_ae hΩ T hT u g hderiv)
+          (h := h) (t := t)
+    filter_upwards [Ioo_mem_nhds (by linarith : h < t) htT] with s hs
+    exact backward_gelfand_window_eq_affineAverage_raw hΩ T hT u g hderiv h s hh
+      (by linarith [hs.1]) (le_of_lt hs.2)
   have hAverage := hasDerivAt_backward_affineAverage T h hh
-    (reverseTimeGelfandAffineCurve hΩ T hT u g) hW ht0 htT
+    (reverseTimeGelfandAffineCurve hΩ T hT u g) (continuousOn_reverseTimeGelfandAffineCurve hΩ T hT u g) ht0 htT
   have hTransport : HasDerivAt
       (fun s => scalarLpToH10HilbertGraphDual hΩ
         (valueCLM hΩ (reverseTimeBackwardSteklov T h u s)))

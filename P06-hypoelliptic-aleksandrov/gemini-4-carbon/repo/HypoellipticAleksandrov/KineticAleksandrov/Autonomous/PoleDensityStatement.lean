@@ -34,7 +34,7 @@ theorem clock_signed_concentration
     exact neg_pos.mpr hx.1
   · have hd : 0 < c.vbar * c.r ^ 2 := mul_pos hv (sq_pos_of_pos c.positive)
     have hx := (div_pos_iff.mp hs).resolve_right (fun hn => (not_lt_of_ge hd.le) hn.2)
-    simpa only [Real.sign_of_pos hv, one_mul] using hx.1
+    simpa [Real.sign_of_pos hv] using hx.1
 
 /-- The clock proposition follows from the interval density estimate, with the Dirichlet
 solvability hypothesis kept explicit rather than hidden in the proposition. -/
@@ -56,8 +56,7 @@ theorem pushforwardStatement_holds :
     have hbound := (eLpNorm_mono_measure G
       (Measure.restrict_le_self (μ := (volume : Measure Point))
         (s := densityClockStrip c e))).trans hGN
-    have hfinite := hbound.trans_lt (ENNReal.ofReal_lt_top)
-    refine ⟨G, hGm, hGn, ?_, hfinite, ?_⟩
+    refine ⟨G, hGm, hGn, ?_, (hbound.trans_lt (ENNReal.ofReal_lt_top)), ?_⟩
     · calc
         _ = (stripGreen hH hLE hlam hLam A c.activeInterval ⊤
             (densityClockPole c e he)).restrict (densityClockStrip c e) :=

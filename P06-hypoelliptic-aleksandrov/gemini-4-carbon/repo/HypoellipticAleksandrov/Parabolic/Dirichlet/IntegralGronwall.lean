@@ -32,7 +32,7 @@ theorem eq_zero_on_Icc_of_nonneg_le_mul_integral
     (hEle : ∀ t ∈ Set.Icc 0 T,
       E t ≤ K * (∫ r in Set.Ioc 0 t, E r)) :
     ∀ t ∈ Set.Icc 0 T, E t = 0 := by
-  let F : ℝ → ℝ := Set.IccExtend hT.le ((Set.Icc 0 T).restrict E)
+  let F := Set.IccExtend hT.le ((Set.Icc 0 T).restrict E)
   have hFcont : Continuous F := by
     exact hEcont.restrict.Icc_extend'
   have hF_eq_E {t : ℝ} (ht : t ∈ Set.Icc 0 T) : F t = E t := by
@@ -47,9 +47,7 @@ theorem eq_zero_on_Icc_of_nonneg_le_mul_integral
       ⟨hr.1, hr.2.trans ht.2⟩)
   let P : ℝ → ℝ := fun t => ∫ r in 0..t, F r
   have hPderiv (t : ℝ) : HasDerivAt P (F t) t := by
-    simpa only [P] using (hFcont.integral_hasStrictDerivAt 0 t).hasDerivAt
-  have hPcont : Continuous P :=
-    continuous_iff_continuousAt.mpr fun t => (hPderiv t).continuousAt
+    simpa using (hFcont.integral_hasStrictDerivAt 0 t).hasDerivAt
   have hPzero : P 0 = 0 := by
     simp only [P, intervalIntegral.integral_same]
   have hP_eq {t : ℝ} (ht : t ∈ Set.Icc 0 T) :
@@ -75,8 +73,8 @@ theorem eq_zero_on_Icc_of_nonneg_le_mul_integral
       _ ≤ K * (∫ r in Set.Ioc 0 t, E r) := hEle t htcc
       _ = K * P t := by rw [← hP_eq htcc]
       _ = K * ‖P t‖ := by rw [Real.norm_of_nonneg (hPnonneg htcc)]
-  have hPvanish : ∀ t ∈ Set.Icc 0 T, P t = 0 :=
-    eq_zero_of_abs_deriv_le_mul_abs_self_of_eq_zero_right hPcont.continuousOn
+  have hPvanish :=
+    eq_zero_of_abs_deriv_le_mul_abs_self_of_eq_zero_right (continuous_iff_continuousAt.mpr fun t => (hPderiv t).continuousAt).continuousOn
       (fun t ht => (hPderiv t).hasDerivWithinAt) hPzero hPbound
   intro t ht
   by_cases htzero : t = 0

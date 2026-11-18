@@ -1,25 +1,39 @@
 module
 
-public import PDEFoundation.Sobolev.OneDimensional.Primitive
+public import Mathlib.MeasureTheory.Integral.IntervalIntegral.FundThmCalculus
+public import Mathlib.MeasureTheory.Function.L2Space
 public import Mathlib.MeasureTheory.Integral.IntervalIntegral.ContDiff
 public import Mathlib.MeasureTheory.Integral.Prod
 
-/-!
-# Scalar weak identity for one-dimensional interval primitives
-
-This file proves the bounded scalar distributional identity underlying the
-one-dimensional Sobolev bridge.  It is deliberately scalar: transport to the
-native `Vec 1` weak-derivative interface belongs in a separate foundational
-measure-equivalence file.
--/
-
-@[expose] public section
+@[expose] public noncomputable section
 
 namespace PDE
-
 open MeasureTheory Set
+open scoped ENNReal Topology Interval
 
-noncomputable section
+
+
+/-- The interval primitive of a scalar function, based at `a`. -/
+def intervalPrimitive (a : ℝ) (g : ℝ → ℝ) (t : ℝ) : ℝ :=
+  ∫ x in a..t, g x
+
+
+/-- A locally integrable interval primitive is continuous.  This is a
+continuity theorem only; the later weak-derivative bridge must still establish
+the a.e. derivative identity separately. -/
+theorem continuousOn_intervalPrimitive
+    {a b : ℝ} {g : ℝ → ℝ} (hab : a ≤ b)
+    (hg : IntegrableOn g (Icc a b) volume) :
+    ContinuousOn (intervalPrimitive a g) (Icc a b) := by
+  have hg' : IntegrableOn g (uIcc a b) volume := by
+    simpa [uIcc_of_le hab] using hg
+  rw [← uIcc_of_le hab]
+  exact intervalIntegral.continuousOn_primitive_interval
+    (μ := volume) hg'
+
+
+
+
 
 /-- On an oriented interval with ordered endpoints, the interval primitive is
 the corresponding closed-interval set integral. -/
@@ -36,31 +50,28 @@ theorem setIntegral_setIntegral_Icc_swap
     (hψ : ContinuousOn ψ (Icc r R)) :
     ∫ x in Icc r R, (∫ y in Icc r x, g y * ψ x) =
       ∫ y in Icc r R, (∫ x in Icc y R, g y * ψ x) := by
-  let I : Set ℝ := Icc r R
+  let I := Icc r R
   let μ : Measure ℝ := volume.restrict I
   let T : Set (ℝ × ℝ) := {z | z.1 ≤ z.2}
   have hT : MeasurableSet T :=
     (isClosed_le continuous_fst continuous_snd).measurableSet
   have hgμ : Integrable g μ := by
-    simpa only [μ, I] using! hg
+    simpa using! hg
   have hψμ : Integrable ψ μ := by
-    simpa only [μ, I] using! hψ.integrableOn_Icc
-  have hprod : Integrable (fun z : ℝ × ℝ => g z.1 * ψ z.2) (μ.prod μ) :=
-    hgμ.mul_prod hψμ
-  have htriangle : Integrable (T.indicator (fun z : ℝ × ℝ => g z.1 * ψ z.2))
-      (μ.prod μ) :=
-    hprod.indicator hT
+    simpa using! hψ.integrableOn_Icc
+  have htriangle :=
+    (hgμ.mul_prod hψμ).indicator hT
   have hleft :
-      (∫ x, ∫ y, T.indicator (fun z : ℝ × ℝ => g z.1 * ψ z.2) (y, x) ∂μ ∂μ) =
+      (∫ x, ∫ y, T.indicator (fun z => g z.1 * ψ z.2) (y, x) ∂μ ∂μ) =
         ∫ x in Icc r R, (∫ y in Icc r x, g y * ψ x) := by
-    rw [show (∫ x, ∫ y, T.indicator (fun z : ℝ × ℝ => g z.1 * ψ z.2) (y, x) ∂μ ∂μ) =
-        ∫ x in I, ∫ y, T.indicator (fun z : ℝ × ℝ => g z.1 * ψ z.2) (y, x) ∂μ ∂volume by
+    rw [show (∫ x, ∫ y, T.indicator (fun z => g z.1 * ψ z.2) (y, x) ∂μ ∂μ) =
+        ∫ x in I, ∫ y, T.indicator (fun z => g z.1 * ψ z.2) (y, x) ∂μ ∂volume by
           rfl]
     apply setIntegral_congr_fun measurableSet_Icc
     intro x hx
-    change (∫ y, T.indicator (fun z : ℝ × ℝ => g z.1 * ψ z.2) (y, x) ∂μ) = _
+    change (∫ y, T.indicator (fun z => g z.1 * ψ z.2) (y, x) ∂μ) = _
     have hsection :
-        (fun y => T.indicator (fun z : ℝ × ℝ => g z.1 * ψ z.2) (y, x)) =
+        (fun y => T.indicator (fun z => g z.1 * ψ z.2) (y, x)) =
           (Iic x).indicator (fun y => g y * ψ x) := by
       funext y
       by_cases hyx : y ≤ x
@@ -69,11 +80,10 @@ theorem setIntegral_setIntegral_Icc_swap
       · rw [Set.indicator_of_notMem (show (y, x) ∉ T by exact hyx),
           Set.indicator_of_notMem (show y ∉ Iic x by exact hyx)]
     rw [hsection, integral_indicator measurableSet_Iic]
-    change (∫ y, g y * ψ x ∂(volume.restrict I).restrict (Iic x)) = _
     rw [Measure.restrict_restrict measurableSet_Iic]
     have hIx : Iic x ∩ I = Icc r x := by
       ext y
-      simp only [I, mem_inter_iff, mem_Icc, mem_Iic]
+      simp
       constructor
       · intro hy
         exact ⟨hy.2.1, hy.1⟩
@@ -81,16 +91,16 @@ theorem setIntegral_setIntegral_Icc_swap
         exact ⟨hy.2, ⟨hy.1, hy.2.trans hx.2⟩⟩
     rw [hIx]
   have hright :
-      (∫ y, ∫ x, T.indicator (fun z : ℝ × ℝ => g z.1 * ψ z.2) (y, x) ∂μ ∂μ) =
+      (∫ y, ∫ x, T.indicator (fun z => g z.1 * ψ z.2) (y, x) ∂μ ∂μ) =
         ∫ y in Icc r R, (∫ x in Icc y R, g y * ψ x) := by
-    rw [show (∫ y, ∫ x, T.indicator (fun z : ℝ × ℝ => g z.1 * ψ z.2) (y, x) ∂μ ∂μ) =
-        ∫ y in I, ∫ x, T.indicator (fun z : ℝ × ℝ => g z.1 * ψ z.2) (y, x) ∂μ ∂volume by
+    rw [show (∫ y, ∫ x, T.indicator (fun z => g z.1 * ψ z.2) (y, x) ∂μ ∂μ) =
+        ∫ y in I, ∫ x, T.indicator (fun z => g z.1 * ψ z.2) (y, x) ∂μ ∂volume by
           rfl]
     apply setIntegral_congr_fun measurableSet_Icc
     intro y hy
-    change (∫ x, T.indicator (fun z : ℝ × ℝ => g z.1 * ψ z.2) (y, x) ∂μ) = _
+    change (∫ x, T.indicator (fun z => g z.1 * ψ z.2) (y, x) ∂μ) = _
     have hsection :
-        (fun x => T.indicator (fun z : ℝ × ℝ => g z.1 * ψ z.2) (y, x)) =
+        (fun x => T.indicator (fun z => g z.1 * ψ z.2) (y, x)) =
           (Ici y).indicator (fun x => g y * ψ x) := by
       funext x
       by_cases hyx : y ≤ x
@@ -99,7 +109,6 @@ theorem setIntegral_setIntegral_Icc_swap
       · rw [Set.indicator_of_notMem (show (y, x) ∉ T by exact hyx),
           Set.indicator_of_notMem (show x ∉ Ici y by exact hyx)]
     rw [hsection, integral_indicator measurableSet_Ici]
-    change (∫ x, g y * ψ x ∂(volume.restrict I).restrict (Ici y)) = _
     rw [Measure.restrict_restrict measurableSet_Ici]
     have hIy : Ici y ∩ I = Icc y R := by
       ext x
@@ -112,9 +121,9 @@ theorem setIntegral_setIntegral_Icc_swap
     rw [hIy]
   calc
     ∫ x in Icc r R, (∫ y in Icc r x, g y * ψ x) =
-        ∫ x, ∫ y, T.indicator (fun z : ℝ × ℝ => g z.1 * ψ z.2) (y, x) ∂μ ∂μ :=
+        ∫ x, ∫ y, T.indicator (fun z => g z.1 * ψ z.2) (y, x) ∂μ ∂μ :=
       hleft.symm
-    _ = ∫ y, ∫ x, T.indicator (fun z : ℝ × ℝ => g z.1 * ψ z.2) (y, x) ∂μ ∂μ :=
+    _ = ∫ y, ∫ x, T.indicator (fun z => g z.1 * ψ z.2) (y, x) ∂μ ∂μ :=
       integral_integral_swap htriangle.swap
     _ = ∫ y in Icc r R, (∫ x in Icc y R, g y * ψ x) := hright
 
@@ -173,6 +182,6 @@ theorem intervalPrimitive_scalar_weak_identity_Ioo
   simpa only [restrict_Ioo_eq_restrict_Icc] using
     (intervalPrimitive_scalar_weak_identity_Icc hg hφ hsupp)
 
-end
 
 end PDE
+

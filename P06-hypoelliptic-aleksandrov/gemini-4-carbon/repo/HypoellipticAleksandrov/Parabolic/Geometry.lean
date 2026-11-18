@@ -1,6 +1,8 @@
 module
 
-public import HypoellipticAleksandrov.Ambient.Basic
+public import PDEFoundation.Geometry.EuclideanBall.Topology
+public import PDEFoundation.Geometry.EuclideanBall.Basic
+public import PDEFoundation.Ambient.EuclideanNorm
 public import Mathlib.MeasureTheory.Constructions.BorelSpace.Order
 
 /-!
@@ -22,9 +24,6 @@ abbrev TimeVelocity (d : ℕ) := ℝ × PDE.Vec d
 def parabolicInterior {d : ℕ} (T : ℝ) (y₀ : PDE.Vec d) : Set (TimeVelocity d) :=
   Set.Ioo 0 T ×ˢ PDE.euclideanBall y₀ 1
 
-/-- The forward-reachable cylinder `(0, T] × B₁(y₀)`. -/
-def parabolicReachable {d : ℕ} (T : ℝ) (y₀ : PDE.Vec d) : Set (TimeVelocity d) :=
-  Set.Ioc 0 T ×ˢ PDE.euclideanBall y₀ 1
 
 /-- The compact closure `[0, T] × \overline{B₁(y₀)}` of a parabolic cylinder. -/
 def closedParabolicCylinder {d : ℕ} (T : ℝ) (y₀ : PDE.Vec d) :
@@ -55,15 +54,6 @@ def forwardParabolicBoundary {d : ℕ} (T : ℝ) (y₀ : PDE.Vec d) :
   · rintro ⟨hzero, hT, hv⟩
     exact ⟨⟨hzero, hT⟩, hv⟩
 
-/-- Membership in the forward-reachable parabolic cylinder. -/
-@[simp] theorem mem_parabolicReachable_iff {d : ℕ} {T t : ℝ} {y₀ v : PDE.Vec d} :
-    (t, v) ∈ parabolicReachable T y₀ ↔
-      0 < t ∧ t ≤ T ∧ v ∈ PDE.euclideanBall y₀ 1 := by
-  constructor
-  · rintro ⟨⟨hzero, hT⟩, hv⟩
-    exact ⟨hzero, hT, hv⟩
-  · rintro ⟨hzero, hT, hv⟩
-    exact ⟨⟨hzero, hT⟩, hv⟩
 
 /-- Membership in the closed parabolic cylinder. -/
 @[simp] theorem mem_closedParabolicCylinder_iff {d : ℕ} {T t : ℝ} {y₀ v : PDE.Vec d} :

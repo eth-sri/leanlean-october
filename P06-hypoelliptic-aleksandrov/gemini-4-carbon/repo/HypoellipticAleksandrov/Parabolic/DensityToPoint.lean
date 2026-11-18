@@ -20,7 +20,6 @@ open scoped ENNReal
 
 namespace HypoellipticAleksandrov.Parabolic
 
-noncomputable section
 
 /-- A relative superlevel-set bound on the unit parabolic box forces a lower
 bound on its closed terminal half-cube. -/
@@ -70,12 +69,11 @@ theorem mapsTo_parabolicAffine_parabolicClosedBox {d : ℕ} {vartheta r t₀ : �
   · dsimp [parabolicAffine]
     nlinarith [sq_pos_of_pos hr]
   · intro i
-    have hi := hzv i
     dsimp [parabolicAffine]
     have hi' : |z.2 i| ≤ 1 := by
-      simpa only [Pi.zero_apply, sub_zero] using hi
+      simpa using (hzv i)
     rw [add_sub_cancel_left, abs_mul, abs_of_pos hr]
-    simpa only [mul_one] using mul_le_mul_of_nonneg_left hi' hr.le
+    simpa using mul_le_mul_of_nonneg_left hi' hr.le
 
 /-- Multiplying a scalar function by a constant scales the parabolic operator by that constant. -/
 theorem parabolicOperator_const_smul {d : ℕ} (B : CoefficientField d)
@@ -100,37 +98,25 @@ theorem parabolicOperator_const_smul {d : ℕ} (B : CoefficientField d)
     HypoellipticAleksandrov.matrixContraction_smul_right]
   ring
 
-/-- A positive constant multiple of a local zero-source supersolution is again one. -/
-theorem IsParabolicSupersolutionOn.const_smul {d : ℕ} {B : CoefficientField d}
-    {u : TimeVelocity d → ℝ} {V : Set (TimeVelocity d)} {c : ℝ} (hc : 0 ≤ c)
-    (h : IsParabolicSupersolutionOn B (fun _ ↦ 0) u V) :
-    IsParabolicSupersolutionOn B (fun _ ↦ 0) (c • u) V := by
-  intro z hz
-  rw [parabolicOperator_const_smul]
-  exact mul_nonneg hc (h z hz)
 
-/-- The linear part of positive-radius parabolic scaling is injective. -/
-theorem parabolicLinear_injective {d : ℕ} {r : ℝ} (hr : 0 < r) :
-    Function.Injective (parabolicLinear (d := d) r) := by
-  intro z w hzw
-  have htime := congrArg Prod.fst hzw
-  have hvelocity := congrArg Prod.snd hzw
-  rw [parabolicLinear_apply, parabolicLinear_apply] at htime hvelocity
-  apply Prod.ext
-  · nlinarith [sq_pos_of_pos hr]
-  · ext i
-    have hi := congrFun hvelocity i
-    simp only [Pi.smul_apply, smul_eq_mul] at hi
-    nlinarith
 
 /-- The determinant of the positive-radius parabolic linear part is nonzero. -/
 theorem parabolicLinear_det_ne_zero {d : ℕ} {r : ℝ} (hr : 0 < r) :
-    LinearMap.det (parabolicLinear (d := d) r : TimeVelocity d →ₗ[ℝ] TimeVelocity d) ≠ 0 := by
+    LinearMap.det (parabolicLinear (d := d) r : TimeVelocity d →ₗ[ℝ] TimeVelocity d) ≠ 0  := by
   intro hdet
-  have hker : LinearMap.ker (parabolicLinear (d := d) r : TimeVelocity d →ₗ[ℝ]
-      TimeVelocity d) ≠ ⊥ :=
-    (LinearMap.det_eq_zero_iff_ker_ne_bot).mp hdet
-  exact hker (LinearMap.ker_eq_bot_of_injective (parabolicLinear_injective hr))
+  have parabolicLinear_injective :
+      Function.Injective (parabolicLinear (d := d) r) := by
+    intro z w hzw
+    have htime := congrArg Prod.fst hzw
+    have hvelocity := congrArg Prod.snd hzw
+    rw [parabolicLinear_apply, parabolicLinear_apply] at htime hvelocity
+    apply Prod.ext
+    · nlinarith [sq_pos_of_pos hr]
+    · ext i
+      have hi := congrFun hvelocity i
+      simp only [Pi.smul_apply, smul_eq_mul] at hi
+      nlinarith
+  exact ((LinearMap.det_eq_zero_iff_ker_ne_bot).mp hdet) (LinearMap.ker_eq_bot_of_injective (parabolicLinear_injective))
 
 /-- Positive-radius parabolic affine scaling is surjective. -/
 theorem parabolicAffine_surjective {d : ℕ} {t₀ r : ℝ} {v₀ : PDE.Vec d}
@@ -151,7 +137,7 @@ theorem volume_parabolicAffine_image {d : ℕ} (t₀ : ℝ) (v₀ : PDE.Vec d) (
     (volume : Measure (TimeVelocity d)) (parabolicAffine t₀ v₀ r '' s) =
       ENNReal.ofReal |LinearMap.det (parabolicLinear (d := d) r :
         TimeVelocity d →ₗ[ℝ] TimeVelocity d)| * volume s := by
-  let q : TimeVelocity d := (t₀, v₀)
+  let q := (t₀, v₀)
   have ha : parabolicAffine t₀ v₀ r = fun z ↦ q + parabolicLinear r z := by
     funext z
     ext <;> simp [q, parabolicAffine, parabolicLinear]
@@ -211,6 +197,5 @@ theorem parabolicAffine_image_normalizedSuperlevel {d : ℕ} {r t₀ eps : ℝ}
     _ = parabolicBox 1 r t₀ v₀ ∩ {z | eps ≤ u z} :=
       Set.image_preimage_eq _ (parabolicAffine_surjective hr)
 
-end
 
 end HypoellipticAleksandrov.Parabolic

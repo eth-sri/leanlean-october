@@ -19,12 +19,11 @@ theorem memLp_on_of_continuousOn_compact_closure
     (hf : ContinuousOn f U) (hV : IsOpen V)
     (hcompact : IsCompact (closure V)) (hVU : closure V ⊆ U)
     (p : ℝ≥0∞) : MemLp f p (timeVelocityVolumeOn V) := by
-  have hcont := hf.mono hVU
-  obtain ⟨C, hC⟩ := hcompact.exists_bound_of_continuousOn hcont
+  obtain ⟨C, hC⟩ := hcompact.exists_bound_of_continuousOn (hf.mono hVU)
   have hfin : volume V < ⊤ :=
     lt_of_le_of_lt (measure_mono subset_closure) hcompact.measure_lt_top
   letI : IsFiniteMeasure (timeVelocityVolumeOn V) := ⟨by
-    simpa only [timeVelocityVolumeOn, Measure.restrict_apply_univ] using hfin⟩
+    simpa using hfin⟩
   apply MemLp.of_bound ((hf.mono (subset_closure.trans hVU)).aestronglyMeasurable
     hV.measurableSet) C
   filter_upwards [ae_restrict_mem hV.measurableSet] with z hz

@@ -1,23 +1,54 @@
 module
 
+public import PDEFoundation.Ambient.EuclideanNorm
 public import PDEFoundation.Geometry.Affine
-public import PDEFoundation.Geometry.Domain
-public import PDEFoundation.Geometry.EuclideanBall
+public import Mathlib.Basic.Real.Pointwise
+public import Mathlib.MeasureTheory.Constructions.BorelSpace.Basic
+public import PDEFoundation.Geometry.EuclideanBall.Topology
+public import PDEFoundation.Geometry.EuclideanBall.Basic
 public import Mathlib.Analysis.Normed.Module.Convex
 public import Mathlib.Topology.MetricSpace.Bounded
 
-/-!
-# Bounded open convex domains
-
-The shared domain class for mean-zero Poincaré and Sobolev--Poincaré
-estimates. It contains explicit round balls and axis-aligned cubes.
--/
-
-@[expose] public section
-
-open scoped Pointwise
+@[expose] public noncomputable section
 
 namespace PDE
+open scoped Pointwise
+
+/-- Coordinatewise boundedness, compatible with the existing LIH API. -/
+def IsBoundedDomain {d : ℕ} (U : Set (Vec d)) : Prop :=
+  ∃ R : ℝ, 0 < R ∧ ∀ x ∈ U, ∀ i, |x i| ≤ R
+
+/-- The minimal measurable bounded domain class used by Sobolev integration. -/
+def IsSobolevRegularDomain {d : ℕ} (U : Set (Vec d)) : Prop :=
+  MeasurableSet U ∧ IsBoundedDomain U
+
+/-- Every pair of points in `U` is at Euclidean distance at most `D`. -/
+def HasEuclideanDiameterLE {d : ℕ}
+    (U : Set (Vec d)) (D : ℝ) : Prop :=
+  ∀ ⦃x⦄, x ∈ U → ∀ ⦃y⦄, y ∈ U →
+    vecEuclideanNorm (x - y) ≤ D
+
+namespace IsSobolevRegularDomain
+
+theorem measurableSet {d : ℕ} {U : Set (Vec d)}
+    (hU : IsSobolevRegularDomain U) :
+    MeasurableSet U :=
+  hU.1
+
+theorem isBoundedDomain {d : ℕ} {U : Set (Vec d)}
+    (hU : IsSobolevRegularDomain U) :
+    IsBoundedDomain U :=
+  hU.2
+
+end IsSobolevRegularDomain
+
+namespace HasEuclideanDiameterLE
+
+
+
+
+end HasEuclideanDiameterLE
+
 
 theorem Bornology.IsBounded.isBoundedDomain {d : ℕ}
     {U : Set (Vec d)} (hU : Bornology.IsBounded U) :
@@ -49,15 +80,13 @@ theorem Bornology.IsBounded.isBoundedDomain {d : ℕ}
       have hi₀ : i₀ ∈ (Finset.univ : Finset (Fin d)) := by
         simp
       have hle : R i₀ ≤ Rmax := by
-        exact Finset.le_sup' (s := Finset.univ) (f := R) hi₀
+        exact Finset.le_sup' (f := R) hi₀
       exact lt_of_lt_of_le (hRpos i₀) hle
     refine ⟨Rmax, hRmaxPos, ?_⟩
     intro x hx i
-    have hxi : ‖x i‖ ≤ R i :=
-      hR i (x i) ⟨x, hx, rfl⟩
     have hRi : R i ≤ Rmax := by
-      exact Finset.le_sup' (s := Finset.univ) (f := R) (Finset.mem_univ i)
-    simpa [Real.norm_eq_abs] using! hxi.trans hRi
+      exact Finset.le_sup' (f := R) (Finset.mem_univ i)
+    simpa [Real.norm_eq_abs] using! (hR i (x i) ⟨x, hx, rfl⟩).trans hRi
 
 theorem IsBoundedDomain.isBounded {d : ℕ}
     {U : Set (Vec d)} (hU : IsBoundedDomain U) :
@@ -110,18 +139,15 @@ theorem translateSet {d : ℕ} {U : Set (Vec d)}
     IsOpenBoundedConvexDomain (PDE.translateSet z U) := by
   refine ⟨?_, ?_, ?_⟩
   · have hopen :
-        IsOpen ((fun x : Vec d => x - z) ⁻¹' U) :=
+        IsOpen ((fun x => x - z) ⁻¹' U) :=
       hU.isOpen.preimage (continuous_id.sub continuous_const)
     simpa [preimage_subRight_eq_translateSet] using hopen
   · rcases hU.isBoundedDomain with ⟨R, hRpos, hR⟩
     refine ⟨R + ‖z‖ + 1, ?_, ?_⟩
     · linarith [norm_nonneg z]
     · intro x hx i
-      have hxpre :
-          x - z ∈ U :=
-        (mem_translateSet_iff_sub_mem).1 hx
-      have hcoord : |(x - z) i| ≤ R :=
-        hR (x - z) hxpre i
+      have hcoord :=
+        hR (x - z) ((mem_translateSet_iff_sub_mem).1 hx) i
       have hzcoord : |z i| ≤ ‖z‖ := by
         simpa [Real.norm_eq_abs] using norm_le_pi_norm z i
       have hxi : x i = (x - z) i + z i := by
@@ -134,7 +160,7 @@ theorem translateSet {d : ℕ} {U : Set (Vec d)}
         _ ≤ R + ‖z‖ + 1 := by
           linarith
   · have hconv :
-        Convex ℝ ((fun x : Vec d => x + -z) ⁻¹' U) := by
+        Convex ℝ ((fun x => x + -z) ⁻¹' U) := by
       simpa using hU.convex.translate_preimage_left (-z)
     simpa [preimage_addNeg_eq_translateSet] using hconv
 
@@ -147,7 +173,7 @@ theorem smul_of_pos {d : ℕ} {U : Set (Vec d)}
   refine ⟨r * R, mul_pos hr hRpos, ?_⟩
   intro x hx i
   rcases Set.mem_smul_set.mp hx with ⟨y, hy, rfl⟩
-  simpa only [Pi.smul_apply, smul_eq_mul, abs_mul, abs_of_pos hr] using
+  simpa [abs_mul, abs_of_pos hr] using
     mul_le_mul_of_nonneg_left (hR y hy i) hr.le
 
 end IsOpenBoundedConvexDomain
@@ -161,3 +187,4 @@ theorem isOpenBoundedConvexDomain_euclideanBall {d : ℕ}
       (euclideanBall_subset_supBall hR)
 
 end PDE
+

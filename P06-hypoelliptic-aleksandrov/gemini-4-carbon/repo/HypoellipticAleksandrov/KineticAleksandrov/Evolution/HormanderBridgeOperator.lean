@@ -94,8 +94,8 @@ theorem fderiv_comp_affine {F E : Type*} [NormedAddCommGroup F] [NormedSpace ℝ
 theorem contDiffAt_comp_affine {F E : Type*} [NormedAddCommGroup F] [NormedSpace ℝ F]
     [NormedAddCommGroup E] [NormedSpace ℝ E] (ι : F →L[ℝ] E) (a : E) (p : F) {V : E → ℝ}
     (hV : ContDiffAt ℝ 2 V a) : ContDiffAt ℝ 2 (fun y => V (a + ι (y - p))) p := by
-  have haff : ContDiff ℝ 2 (fun y : F => a + ι (y - p)) := by fun_prop
-  have hV' : ContDiffAt ℝ 2 V ((fun y : F => a + ι (y - p)) p) := by simpa using hV
+  have haff : ContDiff ℝ 2 (fun y => a + ι (y - p)) := by fun_prop
+  have hV' : ContDiffAt ℝ 2 V ((fun y => a + ι (y - p)) p) := by simpa using hV
   exact hV'.comp p haff.contDiffAt
 
 /-- Second derivative along an affine slice. -/
@@ -105,8 +105,8 @@ theorem fderiv_fderiv_comp_affine {F E : Type*} [NormedAddCommGroup F] [NormedSp
     fderiv ℝ (fun y => fderiv ℝ (fun x' => V (a + ι (x' - p))) y w) p v =
       fderiv ℝ (fun z => fderiv ℝ V z (ι w)) a (ι v) := by
   have hev : ∀ᶠ z in nhds a, ContDiffAt ℝ 2 V z := hV.eventually (by simp)
-  have haff : Filter.Tendsto (fun y : F => a + ι (y - p)) (nhds p) (nhds a) := by
-    have hc : ContinuousAt (fun y : F => a + ι (y - p)) p := by fun_prop
+  have haff : Filter.Tendsto (fun y => a + ι (y - p)) (nhds p) (nhds a) := by
+    have hc : ContinuousAt (fun y => a + ι (y - p)) p := by fun_prop
     have := hc.tendsto
     rwa [show a + ι (p - p) = a by simp] at this
   have hev' : ∀ᶠ y in nhds p, ContDiffAt ℝ 2 V (a + ι (y - p)) := haff.eventually hev
@@ -204,31 +204,12 @@ theorem fderiv_classicalGradient_apply {f : PDE.Vec n → ℝ} {p : PDE.Vec n}
   have hd : ∀ j', DifferentiableAt ℝ (fun y => fderiv ℝ f y (PDE.basisVec j')) p := fun j' =>
     ((hf.fderiv_right (m := 1) (by norm_num)).clm_apply contDiffAt_const).differentiableAt
       (by norm_num)
-  have := fderiv_pi (𝕜 := ℝ) (φ := fun j' y => fderiv ℝ f y (PDE.basisVec j')) (x := p) hd
+  have := fderiv_pi (𝕜 := ℝ) (φ := fun j' y => fderiv ℝ f y (PDE.basisVec j')) hd
   have h2 : (fun y => PDE.classicalGradient f y) = fun y j' => fderiv ℝ f y (PDE.basisVec j') :=
     rfl
   rw [h2, this]
   rfl
 
-/-- The position Hessian of the kinetic pullback is the `∂_{v_i} ∂_{v_j}` Hessian. -/
-theorem diffusedHessian_comp (hU : ContDiffAt ℝ 2 (u ∘ evolutionHomeomorph n) x) (i j : Fin n) :
-    diffusedHessian u (evolutionHomeomorph n x) i j =
-      fderiv ℝ (fun y => fderiv ℝ (u ∘ evolutionHomeomorph n) y (basisV j)) x (basisV i) := by
-  have hS : (fun y => u ⟨timeCoord n x, y, transportedCoord n x⟩) =
-      fun y => (u ∘ evolutionHomeomorph n) (x + embedDiffused n (y - diffusedCoord n x)) :=
-    funext fun y => slice_position x y
-  have hSc : ContDiffAt ℝ 2 (fun y => u ⟨timeCoord n x, y, transportedCoord n x⟩)
-      (diffusedCoord n x) := by
-    rw [hS]
-    exact contDiffAt_comp_affine (embedDiffused n) x (diffusedCoord n x) hU
-  rw [diffusedHessian_apply]
-  simp only [time_evolutionHomeomorph, position_evolutionHomeomorph,
-    velocity_evolutionHomeomorph, kineticPositionGradient]
-  rw [fderiv_classicalGradient_apply hSc]
-  rw [hS]
-  have := fderiv_fderiv_comp_affine (embedDiffused n) x (diffusedCoord n x) hU
-    (PDE.basisVec i) (PDE.basisVec j)
-  exact this
 
 /-- The velocity Hessian of the kinetic pullback is the `∂_{z_i} ∂_{z_j}` Hessian. -/
 theorem kineticVelocityHessian_comp (hU : ContDiffAt ℝ 2 (u ∘ evolutionHomeomorph n) x)
@@ -262,15 +243,33 @@ point `⟨σ, v, z⟩` of `x`. -/
 theorem transportedOperator_comp {u : KineticPoint n → ℝ} {x : EvolutionVec n}
     (hU : ContDiffAt ℝ 2 (u ∘ evolutionHomeomorph n) x) :
     transportedOperator B b (u ∘ evolutionHomeomorph n) x =
-      transportedForwardOperator B b u (evolutionHomeomorph n x) := by
-  have hd : DifferentiableAt ℝ (u ∘ evolutionHomeomorph n) x :=
+      transportedForwardOperator B b u (evolutionHomeomorph n x)  := by
+  have diffusedHessian_comp (i : Fin n) (j : Fin n) :
+      diffusedHessian u (evolutionHomeomorph n x) i j =
+      fderiv ℝ (fun y => fderiv ℝ (u ∘ evolutionHomeomorph n) y (basisV j)) x (basisV i) := by
+    have hS : (fun y => u ⟨timeCoord n x, y, transportedCoord n x⟩) =
+        fun y => (u ∘ evolutionHomeomorph n) (x + embedDiffused n (y - diffusedCoord n x)) :=
+      funext fun y => slice_position x y
+    have hSc : ContDiffAt ℝ 2 (fun y => u ⟨timeCoord n x, y, transportedCoord n x⟩)
+        (diffusedCoord n x) := by
+      rw [hS]
+      exact contDiffAt_comp_affine (embedDiffused n) x (diffusedCoord n x) hU
+    rw [diffusedHessian_apply]
+    simp only [time_evolutionHomeomorph, position_evolutionHomeomorph,
+      velocity_evolutionHomeomorph, kineticPositionGradient]
+    rw [fderiv_classicalGradient_apply hSc]
+    rw [hS]
+    have := fderiv_fderiv_comp_affine (embedDiffused n) x (diffusedCoord n x) hU
+      (PDE.basisVec i) (PDE.basisVec j)
+    exact this
+  have hd :=
     hU.differentiableAt (by norm_num)
   rw [transportedForwardOperator_apply, kineticTimeDerivative_comp hd, transportedOperator]
   congr 1
   congr 1
   · unfold matrixContraction
     refine Finset.sum_congr rfl fun i _ => Finset.sum_congr rfl fun j _ => ?_
-    rw [diffusedHessian_comp hU i j]
+    rw [diffusedHessian_comp i j]
     rfl
   · unfold PDE.vecDot
     refine Finset.sum_congr rfl fun l _ => ?_

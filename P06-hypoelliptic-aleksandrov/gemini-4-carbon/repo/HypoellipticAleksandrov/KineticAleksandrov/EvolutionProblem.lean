@@ -54,7 +54,7 @@ theorem isOpen_of_isAdmissibleEvolutionDomain {n : ℕ}
       simpa using hΩ
     rw [hΩ']
     simpa [PDE.oneDimensionalAxisBox] using
-      (PDE.isOpen_axisBox (fun _ : Fin 1 => a) (fun _ : Fin 1 => b))
+      (PDE.isOpen_axisBox (fun _ : Fin 1 => a) (fun _ => b))
 
 /-- An admissible base domain is Borel measurable. -/
 theorem measurableSet_of_isAdmissibleEvolutionDomain {n : ℕ}

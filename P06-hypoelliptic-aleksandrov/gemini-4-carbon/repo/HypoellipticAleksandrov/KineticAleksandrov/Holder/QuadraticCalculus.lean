@@ -30,15 +30,6 @@ theorem qform_eq_scalar {d : ℕ} (lam : ℝ) {h : ℝ} (hh : 0 < h)
     Matrix.cons_val_fin_one]
   ring
 
-/-- Scalar representation of the velocity component of inverse covariance. -/
-theorem pform_eq_scalar {d : ℕ} (lam : ℝ) {h : ℝ} (hh : 0 < h)
-    (s : ℝ) (y V : PDE.Vec d) :
-    pform lam h s y V =
-      (-covarianceXV lam h s / covarianceDet lam h s) • y +
-        (covarianceXX lam h s / covarianceDet lam h s) • V := by
-  unfold pform
-  rw [gramian_inv_blocks lam hh]
-  simp
 
 /-- Bilinearity of the explicit native Euclidean dot product under scalar multiplication. -/
 theorem vecDot_smul_smul {d : ℕ} (a b : ℝ) (y V : PDE.Vec d) :
@@ -50,17 +41,6 @@ theorem vecDot_smul_smul {d : ℕ} (a b : ℝ) (y V : PDE.Vec d) :
   intro i _
   ring
 
-/-- Squared Euclidean norm of the inverse velocity component. -/
-theorem vecNormSq_pform {d : ℕ} (lam : ℝ) {h : ℝ} (hh : 0 < h)
-    (s : ℝ) (y V : PDE.Vec d) :
-    PDE.vecNormSq (pform lam h s y V) =
-      (covarianceXV lam h s ^ 2 * PDE.vecDot y y -
-        2 * covarianceXV lam h s * covarianceXX lam h s * PDE.vecDot y V +
-        covarianceXX lam h s ^ 2 * PDE.vecDot V V) / covarianceDet lam h s ^ 2 := by
-  rw [pform_eq_scalar lam hh, PDE.vecNormSq_add_expand,
-    PDE.vecNormSq_smul, PDE.vecNormSq_smul, vecDot_smul_smul]
-  unfold PDE.vecNormSq
-  ring
 
 /-- Derivative of a native dot product along a position line. -/
 theorem hasDerivAt_vecDot_line {d : ℕ} (y V W : PDE.Vec d) (r : ℝ) :
@@ -72,24 +52,6 @@ theorem hasDerivAt_vecDot_line {d : ℕ} (y V W : PDE.Vec d) (r : ℝ) :
     simp [PDE.vecDot, Pi.add_apply, Pi.smul_apply, smul_eq_mul]
   · simp [PDE.vecDot]
 
-/-- Derivative of the squared native norm along a position line. -/
-theorem hasDerivAt_vecDot_line_self {d : ℕ} (y V : PDE.Vec d) (r : ℝ) :
-    HasDerivAt (fun t => PDE.vecDot (y + t • V) (y + t • V))
-      (2 * PDE.vecDot V (y + r • V)) r := by
-  have hp := HasDerivAt.sum (u := Finset.univ) (fun i (_ : i ∈ Finset.univ) =>
-    ((((hasDerivAt_id r).mul_const (V i)).const_add (y i)).pow 2))
-  convert hp using 1
-  · funext t
-    simp only [PDE.vecDot, Pi.add_apply, Pi.smul_apply, smul_eq_mul, Finset.sum_apply,
-      Pi.pow_apply, id_eq]
-    apply Finset.sum_congr rfl
-    intro i _
-    ring
-  · simp only [PDE.vecDot, Finset.mul_sum, Pi.add_apply, Pi.smul_apply, smul_eq_mul,
-      id_eq, Nat.cast_ofNat, Nat.reduceSub, pow_one]
-    apply Finset.sum_congr rfl
-    intro i _
-    ring
 
 /-- Time derivative of the physical covariance quadratic form. -/
 theorem hasDerivAt_qform_time {d : ℕ} {lam h s : ℝ}
@@ -119,8 +81,25 @@ theorem hasDerivAt_qform_transport {d : ℕ} (lam : ℝ) {h : ℝ} (hh : 0 < h)
     (s : ℝ) (y V : PDE.Vec d) :
     HasDerivAt (fun (r : ℝ) => qform lam h s (y + r • V) V)
       ((2 * covarianceVV lam h s * PDE.vecDot V y -
-        2 * covarianceXV lam h s * PDE.vecDot V V) / covarianceDet lam h s) 0 := by
-  have hp := (((hasDerivAt_vecDot_line_self y V 0).const_mul
+        2 * covarianceXV lam h s * PDE.vecDot V V) / covarianceDet lam h s) 0  := by
+  have hasDerivAt_vecDot_line_self (r : ℝ) :
+      HasDerivAt (fun t => PDE.vecDot (y + t • V) (y + t • V))
+      (2 * PDE.vecDot V (y + r • V)) r := by
+    have hp := HasDerivAt.sum (u := Finset.univ) (fun i (_ : i ∈ Finset.univ) =>
+      ((((hasDerivAt_id r).mul_const (V i)).const_add (y i)).pow 2))
+    convert hp using 1
+    · funext t
+      simp only [PDE.vecDot, Pi.add_apply, Pi.smul_apply, smul_eq_mul, Finset.sum_apply,
+        Pi.pow_apply, id_eq]
+      apply Finset.sum_congr rfl
+      intro i _
+      ring
+    · simp only [PDE.vecDot, Finset.mul_sum, Pi.add_apply, Pi.smul_apply, smul_eq_mul,
+        id_eq, Nat.cast_ofNat, Nat.reduceSub, pow_one]
+      apply Finset.sum_congr rfl
+      intro i _
+      ring
+  have hp := (((hasDerivAt_vecDot_line_self 0).const_mul
     (covarianceVV lam h s)).sub ((hasDerivAt_vecDot_line y V V 0).const_mul
     (2 * covarianceXV lam h s))).add (hasDerivAt_const 0
       (covarianceXX lam h s * PDE.vecDot V V))
@@ -138,9 +117,25 @@ theorem quadratic_transport_identity {d : ℕ}
     (hsigma : -(h / 128) < sigma) (y V : PDE.Vec d) :
     deriv (fun s => qform lam h s y V) sigma +
       deriv (fun (r : ℝ) => qform lam h sigma (y + r • V) V) 0 =
-        -lam * PDE.vecNormSq (pform lam h sigma y V) := by
+        -lam * PDE.vecNormSq (pform lam h sigma y V)  := by
+  have vecNormSq_pform {d : ℕ} (s : ℝ) (y : PDE.Vec d) (V : PDE.Vec d) :
+      PDE.vecNormSq (pform lam h s y V) =
+      (covarianceXV lam h s ^ 2 * PDE.vecDot y y -
+        2 * covarianceXV lam h s * covarianceXX lam h s * PDE.vecDot y V +
+        covarianceXX lam h s ^ 2 * PDE.vecDot V V) / covarianceDet lam h s ^ 2 := by
+    have pform_eq_scalar {d : ℕ} (s : ℝ) (y : PDE.Vec d) (V : PDE.Vec d) :
+        pform lam h s y V =
+        (-covarianceXV lam h s / covarianceDet lam h s) • y +
+          (covarianceXX lam h s / covarianceDet lam h s) • V := by
+      unfold pform
+      rw [gramian_inv_blocks lam hh]
+      simp
+    rw [pform_eq_scalar, PDE.vecNormSq_add_expand,
+      PDE.vecNormSq_smul, PDE.vecNormSq_smul, vecDot_smul_smul]
+    unfold PDE.vecNormSq
+    ring
   rw [(hasDerivAt_qform_time hlam hh hsigma.le y V).deriv,
-    (hasDerivAt_qform_transport lam hh sigma y V).deriv, vecNormSq_pform lam hh]
+    (hasDerivAt_qform_transport lam hh sigma y V).deriv, vecNormSq_pform]
   rw [PDE.vecDot_comm V y]
   have hd := (covarianceDet_pos hlam hh hsigma.le).ne'
   field_simp

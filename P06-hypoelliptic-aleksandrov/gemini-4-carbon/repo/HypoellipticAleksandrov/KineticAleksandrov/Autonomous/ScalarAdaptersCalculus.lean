@@ -14,9 +14,7 @@ open HypoellipticAleksandrov.Parabolic
 including Mathlib's total derivative convention at nonsmooth points. -/
 theorem scalar_deriv_eq_native (f : PDE.Vec 1 → ℝ) (v : PDE.Vec 1) :
     deriv (fun t => f (fun _ => t)) (v 0) = (fderiv ℝ f v) (PDE.basisVec 0) := by
-  have h := PDE.scalarToVecOneContinuousLinearEquiv.comp_right_fderiv
-    (f := f) (x := v 0)
-  have he := congrArg (fun L : ℝ →L[ℝ] ℝ => L 1) h
+  have he := congrArg (fun L => L 1) (PDE.scalarToVecOneContinuousLinearEquiv.comp_right_fderiv (f := f) (x := v 0))
   have h1 : (PDE.scalarToVecOneContinuousLinearEquiv : ℝ →L[ℝ] PDE.Vec 1) 1 =
       PDE.basisVec 0 := PDE.scalarToVecOneContinuousLinearEquiv_one
   have hv : PDE.scalarToVecOneContinuousLinearEquiv (v 0) = v := by
@@ -24,8 +22,7 @@ theorem scalar_deriv_eq_native (f : PDE.Vec 1 → ℝ) (v : PDE.Vec 1) :
     have hi := Fin.eq_zero i
     subst i
     rfl
-  rw [ContinuousLinearMap.comp_apply, h1, hv] at he
-  exact he
+  rwa [ContinuousLinearMap.comp_apply, h1, hv] at he
 
 /-- Native position differentiation is the scalar position derivative. -/
 theorem kineticPositionGradient_scalar (u : Point → ℝ) (p : Point) :
@@ -45,7 +42,7 @@ theorem kineticVelocityHessian_scalar (u : Point → ℝ) (p : Point) :
       deriv (deriv (fun v => u ⟨p.time, p.position, fun _ => v⟩)) (p.velocity 0) := by
   let g : PDE.Vec 1 → PDE.Vec 1 :=
     fun v => kineticVelocityGradient u ⟨p.time, p.position, v⟩
-  have hg : (fun t : ℝ => g (fun _ => t) 0) =
+  have hg : (fun t => g (fun _ => t) 0) =
       deriv (fun w => u ⟨p.time, p.position, fun _ => w⟩) := by
     funext t
     exact kineticVelocityGradient_scalar u ⟨p.time, p.position, fun _ => t⟩

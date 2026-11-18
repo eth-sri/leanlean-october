@@ -25,7 +25,6 @@ theorem isOpenEmbedding_bellmanPositivePositionInclusion :
   have hpunct : IsOpenEmbedding (Subtype.val : BellmanPuncturedPlane → ℝ × ℝ) :=
     isOpen_compl_singleton.isOpenEmbedding_subtypeVal
   apply IsOpenEmbedding.of_comp bellmanPositivePositionInclusion hpunct
-  change IsOpenEmbedding (Subtype.val : BellmanPositivePositionPlane → ℝ × ℝ)
   exact (isOpen_lt continuous_const continuous_fst).isOpenEmbedding_subtypeVal
 
 /-- The literal coordinate point is the positive-position inclusion after the homeomorphism. -/

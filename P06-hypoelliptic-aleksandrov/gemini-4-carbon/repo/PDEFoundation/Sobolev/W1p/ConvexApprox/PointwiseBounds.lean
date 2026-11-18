@@ -1,33 +1,251 @@
 module
 
-public import PDEFoundation.Sobolev.W1p.ConvexApprox.Continuity
+public import PDEFoundation.Sobolev.W1p.ConvexApprox.WeakDerivSmoothing.Integral
 
-/-!
-# Pointwise bounds for convex-domain smoothing
-
-This file proves constant and zero-scale identities for convex approximation,
-the weighted-difference representation of its error, and pointwise bounds in
-terms of oscillation and a modulus of continuity. It then upgrades the bounds
-to uniform-on-domain convergence along arbitrary admissible scale sequences
-and the canonical unit sequence.
-
-## Main results
-
-* `PDE.abs_convexApproxSmoothing_sub_le_of_modulus` controls the error by a
-  supplied modulus on the bounded convex domain.
-* `PDE.eventually_forall_abs_convexApproxSmoothing_sub_le_of_continuous`
-  gives uniform-on-domain convergence along any admissible scale sequence.
-* `PDE.eventually_forall_abs_unitConvexApproxSequence_sub_le_of_continuous`
-  specializes the uniform bound to the canonical unit sequence.
-* `PDE.tendsto_unitConvexApproxSequence_of_continuous` gives pointwise
-  convergence at every point of the domain.
--/
-
-@[expose] public section
-
-open scoped Pointwise Convolution
+@[expose] public noncomputable section
 
 namespace PDE
+open scoped Pointwise Convolution
+
+/-- The classical coordinate derivative of the smooth representative agrees
+almost everywhere with the correspondingly smoothed weak derivative, including
+the exact affine factor `1 - ε`. -/
+theorem ae_eq_fderiv_convexApproxSmoothRepresentative_apply_basisVec
+    {d : ℕ} {U : Set (Vec d)}
+    (hU : IsOpenBoundedConvexDomain U)
+    {i : Fin d} {u gi ρ : Vec d → ℝ} {p : ENNReal}
+    (hρ : IsConvexApproxKernel ρ) (hp : 1 ≤ p)
+    (huMem : MemLpOn U p u) (hgiMem : MemLpOn U p gi)
+    (huWeak : HasWeakPartialDerivOn U i u gi)
+    {x0 : Vec d} {r ε : ℝ}
+    (hball : Metric.closedBall x0 r ⊆ U)
+    (hr : 0 < r) (hε : 0 < ε) (hεOne : ε < 1) :
+    (fun x =>
+        (fderiv ℝ
+          (convexApproxSmoothRepresentative U ρ u x0 r ε) x)
+          (basisVec i)) =ᵐ[MeasureTheory.volume.restrict U]
+      fun x =>
+        (1 - ε) *
+          convexApproxSmoothRepresentative U ρ gi x0 r ε x := by
+  have huLoc :=
+    MeasureTheory.locallyIntegrableOn_of_locallyIntegrable_restrict
+      (huMem.locallyIntegrable hp)
+  have hgiLoc :=
+    MeasureTheory.locallyIntegrableOn_of_locallyIntegrable_restrict
+      (hgiMem.locallyIntegrable hp)
+  have huSmooth :
+      ContDiff ℝ (⊤ : ℕ∞)
+        (convexApproxSmoothRepresentative U ρ u x0 r ε) :=
+    contDiff_convexApproxSmoothRepresentative
+      hU.measurableSet hρ hp huMem hr hε
+  have hgiSmooth :
+      ContDiff ℝ (⊤ : ℕ∞)
+        (convexApproxSmoothRepresentative U ρ gi x0 r ε) :=
+    contDiff_convexApproxSmoothRepresentative
+      hU.measurableSet hρ hp hgiMem hr hε
+  have hClassicalWeak :=
+    HasWeakPartialDerivOn.of_contDiff
+      (U := U) (i := i)
+
+      (huSmooth.of_le (by simp))
+  have hSmoothedWeak :=
+    HasWeakPartialDerivOn.convexApproxSmoothRepresentative
+      (i := i) hU huLoc hgiLoc huWeak hρ
+      hball hr hε hεOne
+  have hClassicalContinuous :
+      Continuous
+        (fun x =>
+          (fderiv ℝ
+            (convexApproxSmoothRepresentative U ρ u x0 r ε) x)
+            (basisVec i)) := by
+    simpa only using
+      (huSmooth.continuous_fderiv (by simp)).clm_apply
+        continuous_const
+  have hSmoothedContinuous :
+      Continuous
+        (fun x =>
+          (1 - ε) *
+            convexApproxSmoothRepresentative U ρ gi x0 r ε x) := by
+    simpa only using!
+      continuous_const.mul hgiSmooth.continuous
+  have hClassicalLoc :
+      MeasureTheory.LocallyIntegrableOn
+        (fun x =>
+          (fderiv ℝ
+            (convexApproxSmoothRepresentative U ρ u x0 r ε) x)
+            (basisVec i))
+        U MeasureTheory.volume :=
+    hClassicalContinuous.continuousOn.locallyIntegrableOn
+      hU.measurableSet
+  have hSmoothedLoc :
+      MeasureTheory.LocallyIntegrableOn
+        (fun x =>
+          (1 - ε) *
+            convexApproxSmoothRepresentative U ρ gi x0 r ε x)
+        U MeasureTheory.volume :=
+    hSmoothedContinuous.continuousOn.locallyIntegrableOn
+      hU.measurableSet
+  exact
+    HasWeakPartialDerivOn.ae_eq
+      hU.isOpen hClassicalLoc hSmoothedLoc
+      hClassicalWeak hSmoothedWeak
+
+theorem continuous_convexApproxSample_right
+    {d : ℕ} (x0 : Vec d) (r ε : ℝ) (x : Vec d) :
+    Continuous
+      (fun z : Vec d =>
+        convexApproxSample x0 z r ε x) := by
+  unfold convexApproxSample
+  fun_prop
+
+
+theorem continuous_convexApproxIntegrand_right
+    {d : ℕ} {ρ u : Vec d → ℝ}
+    (hρ : Continuous ρ) (hu : Continuous u)
+    (x0 : Vec d) (r ε : ℝ) (x : Vec d) :
+    Continuous
+      (fun z =>
+        convexApproxIntegrand ρ u x0 r ε x z) := by
+  simpa using!
+    hρ.mul
+      (hu.comp
+        (continuous_convexApproxSample_right x0 r ε x))
+
+theorem continuous_convexApproxIntegrand_prod
+    {d : ℕ} {ρ u : Vec d → ℝ}
+    (hρ : Continuous ρ) (hu : Continuous u)
+    (x0 : Vec d) (r ε : ℝ) :
+    Continuous
+      (fun xz : Vec d × Vec d =>
+        convexApproxIntegrand
+          ρ u x0 r ε xz.1 xz.2)  := by
+  have continuous_convexApproxSample_prod (r ε : ℝ) :
+      Continuous
+      (fun xz : Vec d × Vec d =>
+        convexApproxSample x0 xz.2 r ε xz.1) := by
+    unfold convexApproxSample
+    fun_prop
+  have hρProd :
+      Continuous
+        (fun xz : Vec d × Vec d => ρ xz.2) :=
+    hρ.comp continuous_snd
+  have huProd :=
+    hu.comp
+      (continuous_convexApproxSample_prod r ε)
+  simpa using!
+    hρProd.mul huProd
+
+theorem hasCompactSupport_convexApproxIntegrand
+    {d : ℕ} {ρ u : Vec d → ℝ}
+    (hρ : HasCompactSupport ρ)
+    (x0 : Vec d) (r ε : ℝ) (x : Vec d) :
+    HasCompactSupport
+      (fun z =>
+        convexApproxIntegrand ρ u x0 r ε x z) := by
+  simpa using!
+    (hρ.mul_right :
+      HasCompactSupport
+        (fun z =>
+          ρ z *
+            u (convexApproxSample x0 z r ε x)))
+
+theorem integrable_convexApproxIntegrand
+    {d : ℕ} {ρ u : Vec d → ℝ}
+    (hρ : Continuous ρ)
+    (hρCompact : HasCompactSupport ρ)
+    (hu : Continuous u)
+    (x0 : Vec d) (r ε : ℝ) (x : Vec d) :
+    MeasureTheory.Integrable
+      (fun z =>
+        convexApproxIntegrand ρ u x0 r ε x z) :=
+  (continuous_convexApproxIntegrand_right
+      hρ hu x0 r ε x).integrable_of_hasCompactSupport
+    (hasCompactSupport_convexApproxIntegrand
+      hρCompact x0 r ε x)
+
+theorem continuous_convexApproxWeightedOscillation
+    {d : ℕ} {ρ u : Vec d → ℝ}
+    (hρ : Continuous ρ) (hu : Continuous u)
+    (x0 : Vec d) (r ε : ℝ) (x : Vec d) :
+    Continuous
+      (fun z =>
+        ρ z *
+          |u (convexApproxSample x0 z r ε x) - u x|) :=
+  hρ.mul
+    (((hu.comp
+      (continuous_convexApproxSample_right
+        x0 r ε x)).sub continuous_const).abs)
+
+theorem hasCompactSupport_convexApproxWeightedOscillation
+    {d : ℕ} {ρ u : Vec d → ℝ}
+    (hρCompact : HasCompactSupport ρ)
+    (x0 : Vec d) (r ε : ℝ) (x : Vec d) :
+    HasCompactSupport
+      (fun z =>
+        ρ z *
+          |u (convexApproxSample x0 z r ε x) - u x|) := by
+  simpa only using!
+    (hρCompact.mul_right :
+      HasCompactSupport
+        (fun z =>
+          ρ z *
+            |u (convexApproxSample x0 z r ε x) - u x|))
+
+theorem integrable_convexApproxWeightedOscillation
+    {d : ℕ} {ρ u : Vec d → ℝ}
+    (hρ : Continuous ρ)
+    (hρCompact : HasCompactSupport ρ)
+    (hu : Continuous u)
+    (x0 : Vec d) (r ε : ℝ) (x : Vec d) :
+    MeasureTheory.Integrable
+      (fun z =>
+        ρ z *
+          |u (convexApproxSample x0 z r ε x) - u x|) :=
+  (continuous_convexApproxWeightedOscillation
+      hρ hu x0 r ε x).integrable_of_hasCompactSupport
+    (hasCompactSupport_convexApproxWeightedOscillation
+      hρCompact x0 r ε x)
+
+theorem integrable_convexApproxKernelMulConst
+    {d : ℕ} {ρ : Vec d → ℝ}
+    (hρ : Continuous ρ)
+    (hρCompact : HasCompactSupport ρ)
+    (c : ℝ) :
+    MeasureTheory.Integrable
+      (fun z => ρ z * c) := by
+  have hContinuous :
+      Continuous (fun z => ρ z * c) :=
+    hρ.mul continuous_const
+  have hCompact :
+      HasCompactSupport (fun z => ρ z * c) := by
+    simpa only using!
+      (hρCompact.mul_right :
+        HasCompactSupport (fun z => ρ z * c))
+  exact
+    hContinuous.integrable_of_hasCompactSupport hCompact
+
+theorem continuous_convexApproxSmoothing
+    {d : ℕ} {ρ u : Vec d → ℝ}
+    (hρ : Continuous ρ)
+    (hρCompact : HasCompactSupport ρ)
+    (hu : Continuous u)
+    (x0 : Vec d) (r ε : ℝ) :
+    Continuous
+      (convexApproxSmoothing ρ u x0 r ε) := by
+  have hIntegrand :
+      Continuous
+        (Function.uncurry
+          (fun x z =>
+            convexApproxIntegrand ρ u x0 r ε x z)) := by
+    simpa using!
+      continuous_convexApproxIntegrand_prod
+        hρ hu x0 r ε
+  simpa using!
+    (continuous_parametric_integral_of_continuous
+      (μ := MeasureTheory.volume)
+
+      hIntegrand hρCompact.isCompact)
+
 
 /-- Membership in the closed unit ball centered at zero gives the expected
 norm bound. -/
@@ -35,7 +253,7 @@ theorem norm_le_one_of_mem_closedBall_zero_one
     {d : ℕ} {z : Vec d}
     (hz : z ∈ Metric.closedBall (0 : Vec d) 1) :
     ‖z‖ ≤ 1 := by
-  simpa only [Metric.mem_closedBall, dist_zero_right] using hz
+  simpa using hz
 
 /-- Kernel support points produce samples that remain in the convex domain. -/
 theorem convexApproxSample_mem_of_tsupport_subset_closedBall
@@ -98,7 +316,7 @@ theorem convexApproxSmoothing_sub_eq_setIntegral_weightedDiff
             (u (convexApproxSample x0 z r ε x) - u x) := by
       apply MeasureTheory.integral_congr_ae
       filter_upwards with z
-      simp only [convexApproxIntegrand]
+      simp
       ring
 
 /-- The absolute smoothing error is bounded by the weighted average of the
@@ -126,9 +344,7 @@ theorem
         (MeasureTheory.abs_integral_le_integral_abs
           (μ :=
             MeasureTheory.volume.restrict (tsupport ρ))
-          (f := fun z =>
-            ρ z *
-              (u (convexApproxSample x0 z r ε x) - u x)))
+)
     _ = ∫ z in tsupport ρ,
           ρ z *
             |u (convexApproxSample x0 z r ε x) - u x| := by
@@ -204,16 +420,11 @@ theorem abs_convexApproxSmoothing_sub_le_of_modulus
     abs_convexApproxSmoothing_sub_le_of_pointwiseOscillation
       hρ hu x0 r ε x
   intro z hz
-  have hy :
-      convexApproxSample x0 z r ε x ∈ U :=
+  have hy :=
     convexApproxSample_mem_of_tsupport_subset_closedBall
       hU hx hball hρ.support_subset_closedBall hz
       hr hε0 hε1
-  have hdist :
-      ‖convexApproxSample x0 z r ε x - x‖ ≤
-        ε *
-          (2 *
-            Classical.choose hU.isBoundedDomain) :=
+  have hdist :=
     norm_convexApproxSample_sub_le_two_mul_choose_of_isOpenBoundedConvexDomain
       hU hx hball hr
       (norm_le_one_of_mem_closedBall_zero_one
@@ -276,18 +487,8 @@ theorem
         hyx
       _ ≤ η :=
         hεη
-  simpa only [Real.dist_eq, Real.norm_eq_abs] using hdist
+  simpa [Real.dist_eq] using hdist
 
-/-- The explicit diameter surrogate used in the modulus bound is
-nonnegative. -/
-theorem two_mul_choose_isBoundedDomain_nonneg
-    {d : ℕ} {U : Set (Vec d)}
-    (hU : IsBoundedDomain U) :
-    0 ≤ 2 * Classical.choose hU := by
-  have hchooseNonneg :
-      0 ≤ Classical.choose hU :=
-    (Classical.choose_spec hU).1.le
-  positivity
 
 /-- Along any nonnegative scale sequence tending to zero and eventually at
 most one, convex approximation converges uniformly on the domain. -/
@@ -312,7 +513,13 @@ theorem
       ∀ ⦃x : Vec d⦄, x ∈ U →
         |convexApproxSmoothing
             ρ u x0 r (ε n) x - u x| ≤
-          δ := by
+          δ  := by
+  have two_mul_choose_isBoundedDomain_nonneg {U : Set (Vec d)} (hU : IsBoundedDomain U) :
+      0 ≤ 2 * Classical.choose hU := by
+    have hchooseNonneg :
+        0 ≤ Classical.choose hU :=
+      (Classical.choose_spec hU).1.le
+    positivity
   obtain ⟨η, hηpos, hη⟩ :=
     exists_pos_forall_abs_convexApproxSmoothing_sub_le_of_continuous
       hU hρ hu hball hr hδ
@@ -324,9 +531,9 @@ theorem
         hU.isBoundedDomain
   have hscaled :
       Filter.Tendsto
-        (fun n : ℕ => ε n * C)
+        (fun n => ε n * C)
         Filter.atTop (nhds 0) := by
-    simpa only [zero_mul] using hε.mul_const C
+    simpa using hε.mul_const C
   filter_upwards
       [Metric.tendsto_nhds.mp hscaled η hηpos,
         hεNonneg, hεLeOne] with
@@ -334,9 +541,10 @@ theorem
   have hlt : ε n * C < η := by
     have hn' :
         |ε n| * |C| < η := by
-      simpa only [Real.dist_eq, sub_zero, abs_mul] using hn
+      simpa using hn
     simpa only [abs_of_nonneg hε0,
       abs_of_nonneg hCnonneg] using hn'
   exact hη hx hε0 hε1 hlt.le
 
 end PDE
+

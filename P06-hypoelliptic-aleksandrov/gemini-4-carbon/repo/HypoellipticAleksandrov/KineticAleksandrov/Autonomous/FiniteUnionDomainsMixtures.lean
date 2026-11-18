@@ -37,7 +37,7 @@ theorem finiteUnionExitMixture_mass
   unfold finiteUnionExitMixture
   rw [Measure.bind_apply MeasurableSet.univ
     (finiteUnionExit_measurable hH hLE hlam hLam A H T).aemeasurable]
-  simp only [measure_univ, lintegral_const, one_mul]
+  simp
 
 /-- A finite source gives a finite actual union exit mixture. -/
 instance finiteUnionExitMixture_isFiniteMeasure

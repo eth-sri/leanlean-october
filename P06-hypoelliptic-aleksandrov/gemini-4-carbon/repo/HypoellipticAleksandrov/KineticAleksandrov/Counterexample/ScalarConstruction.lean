@@ -1,5 +1,0 @@
-module
-public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.ScalarComparison
-public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.ScalarHessianScaling
-public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.ScalarCancellation
-import Mathlib.Tactic

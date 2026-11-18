@@ -1,8 +1,66 @@
 module
 
+public import HypoellipticAleksandrov.Parabolic.Dirichlet.SpatialL2Multiplier
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSpatialFormOperatorBase
-public import HypoellipticAleksandrov.Parabolic.Dirichlet.SpatialL2MultiplierDifference
 public import Mathlib.Topology.UniformSpace.HeineCantor
+
+@[expose] public noncomputable section
+
+namespace HypoellipticAleksandrov.Parabolic.Dirichlet
+open Filter MeasureTheory
+open scoped ENNReal RealInnerProductSpace
+
+/-- An almost-everywhere uniform bound on two scalar coefficients' difference
+bounds the difference of their induced spatial `L²` multipliers at each input. -/
+theorem norm_scalarL2Multiplier_sub_apply_le_of_ae_norm_sub_le
+    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    (q p : PDE.Vec d → ℝ)
+    (hq : AEStronglyMeasurable q (PDE.volumeOn Ω))
+    (hp : AEStronglyMeasurable p (PDE.volumeOn Ω))
+    (Cq : ℝ) (hCq : 0 ≤ Cq)
+    (hqBound : ∀ᵐ y ∂PDE.volumeOn Ω, ‖q y‖ ≤ Cq)
+    (Cp : ℝ) (hCp : 0 ≤ Cp)
+    (hpBound : ∀ᵐ y ∂PDE.volumeOn Ω, ‖p y‖ ≤ Cp)
+    (D : ℝ) (hD : 0 ≤ D)
+    (hsub : ∀ᵐ y ∂PDE.volumeOn Ω, ‖q y - p y‖ ≤ D)
+    (f : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
+    ‖(scalarL2Multiplier q hq Cq hCq hqBound -
+        scalarL2Multiplier p hp Cp hCp hpBound) f‖ ≤ D * ‖f‖ := by
+  apply Lp.norm_le_mul_norm_of_ae_le_mul
+  filter_upwards [
+    Lp.coeFn_sub (scalarL2Multiplier q hq Cq hCq hqBound f)
+      (scalarL2Multiplier p hp Cp hCp hpBound f),
+    scalarL2Multiplier_apply_ae q hq Cq hCq hqBound f,
+    scalarL2Multiplier_apply_ae p hp Cp hCp hpBound f,
+    hsub] with y hsubApply hqApply hpApply hsubCoeff
+  rw [ContinuousLinearMap.sub_apply, hsubApply, Pi.sub_apply, hqApply, hpApply, ← sub_mul,
+    norm_mul]
+  exact mul_le_mul hsubCoeff le_rfl (norm_nonneg _) hD
+
+/-- An almost-everywhere uniform bound on two scalar coefficients' difference
+bounds the operator norm of their induced spatial `L²` multipliers. -/
+theorem norm_scalarL2Multiplier_sub_le_of_ae_norm_sub_le
+    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    (q p : PDE.Vec d → ℝ)
+    (hq : AEStronglyMeasurable q (PDE.volumeOn Ω))
+    (hp : AEStronglyMeasurable p (PDE.volumeOn Ω))
+    (Cq : ℝ) (hCq : 0 ≤ Cq)
+    (hqBound : ∀ᵐ y ∂PDE.volumeOn Ω, ‖q y‖ ≤ Cq)
+    (Cp : ℝ) (hCp : 0 ≤ Cp)
+    (hpBound : ∀ᵐ y ∂PDE.volumeOn Ω, ‖p y‖ ≤ Cp)
+    (D : ℝ) (hD : 0 ≤ D)
+    (hsub : ∀ᵐ y ∂PDE.volumeOn Ω, ‖q y - p y‖ ≤ D) :
+    ‖scalarL2Multiplier q hq Cq hCq hqBound -
+        scalarL2Multiplier p hp Cp hCp hpBound‖ ≤ D := by
+  apply ContinuousLinearMap.opNorm_le_bound _ hD
+  intro f
+  exact norm_scalarL2Multiplier_sub_apply_le_of_ae_norm_sub_le
+    q p hq hp Cq hCq hqBound Cp hCp hpBound D hD hsub f
+
+end HypoellipticAleksandrov.Parabolic.Dirichlet
+
+section
+
 
 /-!
 # Continuity of the reverse-time spatial form operator
@@ -12,12 +70,10 @@ in ReverseTimeSpatialFormOperatorBase, using private fresh multiplier evidence
 for the finite continuous term curve.
 -/
 
-@[expose] public section
 
 open Filter MeasureTheory Set
 open scoped BigOperators ENNReal RealInnerProductSpace Matrix.Norms.Elementwise MatrixOrder
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
@@ -29,7 +85,7 @@ private theorem continuousOn_reverseTimeCoefficientEntry_joint
     ContinuousOn (fun z : TimeVelocity d => a z.1 z.2 i j)
       (scalarParabolicClosedCylinder r₀ r₁ Ω) := by
   rcases ha with ⟨V, hVopen, hKV, hV⟩
-  have hrow : ContDiffOn ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => a z.1 z.2 i) V := by
+  have hrow : ContDiffOn ℝ (⊤ : ℕ∞) (fun z => a z.1 z.2 i) V := by
     exact (contDiffOn_apply ℝ (Fin d → ℝ) i Set.univ).comp hV (by
       intro z hz
       exact Set.mem_univ _)
@@ -37,37 +93,7 @@ private theorem continuousOn_reverseTimeCoefficientEntry_joint
     intro z hz
     simp)).continuousOn.mono hKV
 
-private theorem continuousOn_reverseTimeDivergenceDriftEntry_joint
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ : ℝ) (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
-    (j : Fin d)
-    (ha : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hb : IsSmoothOnNeighborhood (fun z : TimeVelocity d => b z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω)) :
-    ContinuousOn (fun z : TimeVelocity d =>
-      scalarSpatialCoefficientDivergence a z j - b z.1 z.2 j)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω) := by
-  have hdiv := continuousOn_scalarSpatialCoefficientDivergence_of_smoothOnNeighborhood
-    r₀ r₁ a ha
-  have heval : ContinuousOn (fun x : PDE.Vec d => x j) Set.univ :=
-    (continuous_apply j).continuousOn
-  rcases hb with ⟨V, hVopen, hKV, hV⟩
-  have hbj : ContDiffOn ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => b z.1 z.2 j) V := by
-    exact (contDiffOn_apply ℝ ℝ j Set.univ).comp hV (by
-      intro z hz
-      exact Set.mem_univ _)
-  exact heval.comp hdiv (by intro z hz; simp) |>.sub (hbj.continuousOn.mono hKV)
 
-private theorem continuousOn_reverseTimeScalarCoefficient_joint
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ : ℝ) (c : ℝ → PDE.Vec d → ℝ)
-    (hc : IsSmoothOnNeighborhood (fun z : TimeVelocity d => c z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω)) :
-    ContinuousOn (fun z : TimeVelocity d => c z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω) := by
-  rcases hc with ⟨V, hVopen, hKV, hV⟩
-  exact hV.continuousOn.mono hKV
 
 private theorem exists_delta_ae_norm_reverseTime_sub_le
     {d : ℕ} {Ω : Set (PDE.Vec d)}
@@ -117,7 +143,7 @@ private theorem continuousAt_reverseTimeCoefficientEntry_multiplier
   rw [Metric.continuousAt_iff]
   intro ε hε
   obtain ⟨δ, hδ, hsub⟩ := exists_delta_ae_norm_reverseTime_sub_le r₀ r₁ hΩ hΩbounded
-    (fun z : TimeVelocity d => a z.1 z.2 i j)
+    (fun z => a z.1 z.2 i j)
     (continuousOn_reverseTimeCoefficientEntry_joint r₀ r₁ a i j ha) τ (half_pos hε)
   refine ⟨δ, hδ, ?_⟩
   intro σ hστ
@@ -134,84 +160,7 @@ private theorem continuousAt_reverseTimeCoefficientEntry_multiplier
         (by simpa using hsub σ hστ)
     _ < ε := half_lt_self hε
 
-private theorem continuousAt_reverseTimeDivergenceDriftEntry_multiplier
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ : ℝ) (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
-    (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
-    (ha : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hb : IsSmoothOnNeighborhood (fun z : TimeVelocity d => b z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (Cd : Fin d → ℝ) (hCd : ∀ j, 0 ≤ Cd j)
-    (hDriftMeas : ∀ τ : Set.Icc 0 (r₁ - r₀), ∀ j,
-      AEStronglyMeasurable
-        (fun y => reverseTimeDivergenceDrift r₁ a b τ.1 y j) (PDE.volumeOn Ω))
-    (hDriftBound : ∀ τ : Set.Icc 0 (r₁ - r₀), ∀ j,
-      ∀ᵐ y ∂PDE.volumeOn Ω, ‖reverseTimeDivergenceDrift r₁ a b τ.1 y j‖ ≤ Cd j)
-    (j : Fin d) (τ : Set.Icc 0 (r₁ - r₀)) :
-    ContinuousAt (fun σ : Set.Icc 0 (r₁ - r₀) =>
-      scalarL2Multiplier (fun y => reverseTimeDivergenceDrift r₁ a b σ.1 y j)
-        (hDriftMeas σ j) (Cd j) (hCd j) (hDriftBound σ j)) τ := by
-  rw [Metric.continuousAt_iff]
-  intro ε hε
-  obtain ⟨δ, hδ, hsub⟩ := exists_delta_ae_norm_reverseTime_sub_le r₀ r₁ hΩ hΩbounded
-    (fun z : TimeVelocity d => scalarSpatialCoefficientDivergence a z j - b z.1 z.2 j)
-    (continuousOn_reverseTimeDivergenceDriftEntry_joint r₀ r₁ a b j ha hb) τ (half_pos hε)
-  refine ⟨δ, hδ, ?_⟩
-  intro σ hστ
-  rw [dist_eq_norm]
-  calc
-    ‖scalarL2Multiplier (fun y => reverseTimeDivergenceDrift r₁ a b σ.1 y j)
-        (hDriftMeas σ j) (Cd j) (hCd j) (hDriftBound σ j) -
-        scalarL2Multiplier (fun y => reverseTimeDivergenceDrift r₁ a b τ.1 y j)
-          (hDriftMeas τ j) (Cd j) (hCd j) (hDriftBound τ j)‖ ≤ ε / 2 :=
-      norm_scalarL2Multiplier_sub_le_of_ae_norm_sub_le
-        (fun y => reverseTimeDivergenceDrift r₁ a b σ.1 y j)
-        (fun y => reverseTimeDivergenceDrift r₁ a b τ.1 y j)
-        (hDriftMeas σ j) (hDriftMeas τ j) (Cd j) (hCd j) (hDriftBound σ j)
-        (Cd j) (hCd j) (hDriftBound τ j) (ε / 2) (le_of_lt (half_pos hε))
-        (by simpa only [reverseTimeDivergenceDrift,
-          scalarSpatialCoefficientDivergence_reverseTimeCoefficient,
-          reverseTimeMap_apply, reverseTimeVectorCoefficient_apply, Pi.sub_apply] using
-          hsub σ hστ)
-    _ < ε := half_lt_self hε
 
-private theorem continuousAt_reverseTimeScalarCoefficient_multiplier
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ : ℝ) (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
-    (c : ℝ → PDE.Vec d → ℝ)
-    (hc : IsSmoothOnNeighborhood (fun z : TimeVelocity d => c z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (Cc : ℝ) (hCc : 0 ≤ Cc)
-    (hScalarMeas : ∀ τ : Set.Icc 0 (r₁ - r₀),
-      AEStronglyMeasurable
-        (fun y => reverseTimeScalarCoefficient r₁ c τ.1 y) (PDE.volumeOn Ω))
-    (hScalarBound : ∀ τ : Set.Icc 0 (r₁ - r₀),
-      ∀ᵐ y ∂PDE.volumeOn Ω, ‖reverseTimeScalarCoefficient r₁ c τ.1 y‖ ≤ Cc)
-    (τ : Set.Icc 0 (r₁ - r₀)) :
-    ContinuousAt (fun σ : Set.Icc 0 (r₁ - r₀) =>
-      scalarL2Multiplier (fun y => reverseTimeScalarCoefficient r₁ c σ.1 y)
-        (hScalarMeas σ) Cc hCc (hScalarBound σ)) τ := by
-  rw [Metric.continuousAt_iff]
-  intro ε hε
-  obtain ⟨δ, hδ, hsub⟩ := exists_delta_ae_norm_reverseTime_sub_le r₀ r₁ hΩ hΩbounded
-    (fun z : TimeVelocity d => c z.1 z.2)
-    (continuousOn_reverseTimeScalarCoefficient_joint r₀ r₁ c hc) τ (half_pos hε)
-  refine ⟨δ, hδ, ?_⟩
-  intro σ hστ
-  rw [dist_eq_norm]
-  calc
-    ‖scalarL2Multiplier (fun y => reverseTimeScalarCoefficient r₁ c σ.1 y)
-        (hScalarMeas σ) Cc hCc (hScalarBound σ) -
-        scalarL2Multiplier (fun y => reverseTimeScalarCoefficient r₁ c τ.1 y)
-          (hScalarMeas τ) Cc hCc (hScalarBound τ)‖ ≤ ε / 2 :=
-      norm_scalarL2Multiplier_sub_le_of_ae_norm_sub_le
-        (fun y => reverseTimeScalarCoefficient r₁ c σ.1 y)
-        (fun y => reverseTimeScalarCoefficient r₁ c τ.1 y)
-        (hScalarMeas σ) (hScalarMeas τ) Cc hCc (hScalarBound σ)
-        Cc hCc (hScalarBound τ) (ε / 2) (le_of_lt (half_pos hε))
-        (by simpa only [reverseTimeScalarCoefficient_apply] using hsub σ hστ)
-    _ < ε := half_lt_self hε
 
 private theorem norm_hilbertVectorLpCoord_le_local
     {d : ℕ} {Ω : Set (PDE.Vec d)} (i : Fin d)
@@ -219,15 +168,15 @@ private theorem norm_hilbertVectorLpCoord_le_local
     ‖PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i G‖ ≤ ‖G‖ := by
   rw [PDE.hilbertVectorLpCoord]
   calc
-    ‖(PiLp.proj (𝕜 := ℝ) 2 (fun _ : Fin d => ℝ) i).compLpL
-        (2 : ℝ≥0∞) (PDE.volumeOn Ω) G‖ ≤
-        ‖PiLp.proj (𝕜 := ℝ) 2 (fun _ : Fin d => ℝ) i‖ * ‖G‖ := by
+    ‖(PiLp.proj (𝕜 := ℝ) 2 (fun _ => ℝ) i).compLpL
+        2 (PDE.volumeOn Ω) G‖ ≤
+        ‖PiLp.proj (𝕜 := ℝ) 2 (fun _ => ℝ) i‖ * ‖G‖ := by
           exact ContinuousLinearMap.norm_compLp_le _ _
     _ ≤ 1 * ‖G‖ := by
       gcongr
       apply ContinuousLinearMap.opNorm_le_bound _ zero_le_one
       intro x
-      simpa only [ContinuousLinearMap.coe_coe, Function.comp_apply, PiLp.proj_apply, one_mul] using
+      simpa using
         PiLp.norm_apply_le x i
     _ = ‖G‖ := one_mul _
 
@@ -344,27 +293,27 @@ private theorem reverseTimeSpatialFormPrincipalTerm_sub_apply
         inner ℝ
           (scalarL2Multiplier (fun y => a (r₁ - τ.1) y i j)
             (hAMeas τ i j) (Ca i j) (hCa i j) (hABound τ i j)
-            (PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j (gradientCLM hΩ u)))
-          (PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i (gradientCLM hΩ v)) := by
+            (PDE.hilbertVectorLpCoord Ω 2 j (gradientCLM hΩ u)))
+          (PDE.hilbertVectorLpCoord Ω 2 i (gradientCLM hΩ v)) := by
     exact reverseTimeSpatialFormPrincipalTerm_apply (d := d) (Ω := Ω)
       hΩ r₀ r₁ a Ca hCa hAMeas hABound i j τ u v
   calc
     _ = (inner ℝ
             (scalarL2Multiplier (fun y => a (r₁ - σ.1) y i j)
               (hAMeas σ i j) (Ca i j) (hCa i j) (hABound σ i j)
-              (PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j (gradientCLM hΩ u)))
-            (PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i (gradientCLM hΩ v))) -
+              (PDE.hilbertVectorLpCoord Ω 2 j (gradientCLM hΩ u)))
+            (PDE.hilbertVectorLpCoord Ω 2 i (gradientCLM hΩ v))) -
           inner ℝ
             (scalarL2Multiplier (fun y => a (r₁ - τ.1) y i j)
               (hAMeas τ i j) (Ca i j) (hCa i j) (hABound τ i j)
-              (PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j (gradientCLM hΩ u)))
-            (PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i (gradientCLM hΩ v)) :=
-      congrArg (fun z : ℝ =>
+              (PDE.hilbertVectorLpCoord Ω 2 j (gradientCLM hΩ u)))
+            (PDE.hilbertVectorLpCoord Ω 2 i (gradientCLM hΩ v)) :=
+      congrArg (fun z =>
         inner ℝ
           (scalarL2Multiplier (fun y => a (r₁ - σ.1) y i j)
             (hAMeas σ i j) (Ca i j) (hCa i j) (hABound σ i j)
-            (PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j (gradientCLM hΩ u)))
-          (PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i (gradientCLM hΩ v)) - z) hτapply
+            (PDE.hilbertVectorLpCoord Ω 2 j (gradientCLM hΩ u)))
+          (PDE.hilbertVectorLpCoord Ω 2 i (gradientCLM hΩ v)) - z) hτapply
     _ = _ := by
       exact (inner_sub_left _ _ _).symm.trans
         (congrArg (fun z => inner ℝ z _)
@@ -391,12 +340,12 @@ private theorem norm_reverseTimeSpatialFormPrincipalTerm_sub_le
   rw [reverseTimeSpatialFormPrincipalTerm_sub_apply (d := d) (Ω := Ω)
     hΩ r₀ r₁ a Ca hCa hAMeas hABound i j σ τ u v]
   have hju :
-      ‖PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j (gradientCLM hΩ u)‖ ≤
+      ‖PDE.hilbertVectorLpCoord Ω 2 j (gradientCLM hΩ u)‖ ≤
         ‖gradientCLM hΩ‖ * ‖u‖ :=
     (norm_hilbertVectorLpCoord_le_local j _).trans
       (ContinuousLinearMap.le_opNorm _ _)
   have hiv :
-      ‖PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i (gradientCLM hΩ v)‖ ≤
+      ‖PDE.hilbertVectorLpCoord Ω 2 i (gradientCLM hΩ v)‖ ≤
         ‖gradientCLM hΩ‖ * ‖v‖ :=
     (norm_hilbertVectorLpCoord_le_local i _).trans
       (ContinuousLinearMap.le_opNorm _ _)
@@ -406,21 +355,21 @@ private theorem norm_reverseTimeSpatialFormPrincipalTerm_sub_le
             (hAMeas σ i j) (Ca i j) (hCa i j) (hABound σ i j) -
           scalarL2Multiplier (fun y => a (r₁ - τ.1) y i j)
             (hAMeas τ i j) (Ca i j) (hCa i j) (hABound τ i j))
-          (PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j (gradientCLM hΩ u)))
-        (PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i (gradientCLM hΩ v))‖ ≤
+          (PDE.hilbertVectorLpCoord Ω 2 j (gradientCLM hΩ u)))
+        (PDE.hilbertVectorLpCoord Ω 2 i (gradientCLM hΩ v))‖ ≤
         ‖(scalarL2Multiplier (fun y => a (r₁ - σ.1) y i j)
             (hAMeas σ i j) (Ca i j) (hCa i j) (hABound σ i j) -
           scalarL2Multiplier (fun y => a (r₁ - τ.1) y i j)
             (hAMeas τ i j) (Ca i j) (hCa i j) (hABound τ i j))
-          (PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j (gradientCLM hΩ u))‖ *
-          ‖PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i (gradientCLM hΩ v)‖ :=
+          (PDE.hilbertVectorLpCoord Ω 2 j (gradientCLM hΩ u))‖ *
+          ‖PDE.hilbertVectorLpCoord Ω 2 i (gradientCLM hΩ v)‖ :=
       norm_inner_le_norm _ _
     _ ≤ (‖scalarL2Multiplier (fun y => a (r₁ - σ.1) y i j)
             (hAMeas σ i j) (Ca i j) (hCa i j) (hABound σ i j) -
           scalarL2Multiplier (fun y => a (r₁ - τ.1) y i j)
             (hAMeas τ i j) (Ca i j) (hCa i j) (hABound τ i j)‖ *
-          ‖PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j (gradientCLM hΩ u)‖) *
-          ‖PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i (gradientCLM hΩ v)‖ := by
+          ‖PDE.hilbertVectorLpCoord Ω 2 j (gradientCLM hΩ u)‖) *
+          ‖PDE.hilbertVectorLpCoord Ω 2 i (gradientCLM hΩ v)‖ := by
       gcongr
       exact ContinuousLinearMap.le_opNorm _ _
     _ ≤ (‖scalarL2Multiplier (fun y => a (r₁ - σ.1) y i j)
@@ -557,7 +506,7 @@ private theorem reverseTimeSpatialFormDriftTerm_sub_apply
         inner ℝ
           (scalarL2Multiplier (fun y => reverseTimeDivergenceDrift r₁ a b τ.1 y j)
             (hDriftMeas τ j) (Cd j) (hCd j) (hDriftBound τ j)
-            (PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j (gradientCLM hΩ u)))
+            (PDE.hilbertVectorLpCoord Ω 2 j (gradientCLM hΩ u)))
           (valueCLM hΩ v) := by
     exact reverseTimeSpatialFormDriftTerm_apply (d := d) (Ω := Ω)
       hΩ r₀ r₁ a b Cd hCd hDriftMeas hDriftBound j τ u v
@@ -565,93 +514,24 @@ private theorem reverseTimeSpatialFormDriftTerm_sub_apply
     _ = (inner ℝ
             (scalarL2Multiplier (fun y => reverseTimeDivergenceDrift r₁ a b σ.1 y j)
               (hDriftMeas σ j) (Cd j) (hCd j) (hDriftBound σ j)
-              (PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j (gradientCLM hΩ u)))
+              (PDE.hilbertVectorLpCoord Ω 2 j (gradientCLM hΩ u)))
             (valueCLM hΩ v)) -
           inner ℝ
             (scalarL2Multiplier (fun y => reverseTimeDivergenceDrift r₁ a b τ.1 y j)
               (hDriftMeas τ j) (Cd j) (hCd j) (hDriftBound τ j)
-              (PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j (gradientCLM hΩ u)))
+              (PDE.hilbertVectorLpCoord Ω 2 j (gradientCLM hΩ u)))
             (valueCLM hΩ v) :=
-      congrArg (fun z : ℝ =>
+      congrArg (fun z =>
         inner ℝ
           (scalarL2Multiplier (fun y => reverseTimeDivergenceDrift r₁ a b σ.1 y j)
             (hDriftMeas σ j) (Cd j) (hCd j) (hDriftBound σ j)
-            (PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j (gradientCLM hΩ u)))
+            (PDE.hilbertVectorLpCoord Ω 2 j (gradientCLM hΩ u)))
           (valueCLM hΩ v) - z) hτapply
     _ = _ := by
       exact (inner_sub_left _ _ _).symm.trans
         (congrArg (fun z => inner ℝ z _)
           (ContinuousLinearMap.sub_apply _ _ _).symm)
 
-private theorem norm_reverseTimeSpatialFormDriftTerm_sub_le
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (r₀ r₁ : ℝ) (a : CoefficientField d)
-    (b : ℝ → PDE.Vec d → PDE.Vec d)
-    (Cd : Fin d → ℝ) (hCd : ∀ j, 0 ≤ Cd j)
-    (hDriftMeas : ∀ τ : Set.Icc 0 (r₁ - r₀), ∀ j,
-      AEStronglyMeasurable
-        (fun y => reverseTimeDivergenceDrift r₁ a b τ.1 y j) (PDE.volumeOn Ω))
-    (hDriftBound : ∀ τ : Set.Icc 0 (r₁ - r₀), ∀ j,
-      ∀ᵐ y ∂PDE.volumeOn Ω, ‖reverseTimeDivergenceDrift r₁ a b τ.1 y j‖ ≤ Cd j)
-    (j : Fin d) (σ τ : Set.Icc 0 (r₁ - r₀)) :
-    ‖reverseTimeSpatialFormDriftTerm hΩ r₀ r₁ a b Cd hCd hDriftMeas hDriftBound j σ -
-      reverseTimeSpatialFormDriftTerm hΩ r₀ r₁ a b Cd hCd hDriftMeas hDriftBound j τ‖ ≤
-      (‖gradientCLM hΩ‖ * ‖valueCLM hΩ‖) *
-        ‖scalarL2Multiplier (fun y => reverseTimeDivergenceDrift r₁ a b σ.1 y j)
-            (hDriftMeas σ j) (Cd j) (hCd j) (hDriftBound σ j) -
-          scalarL2Multiplier (fun y => reverseTimeDivergenceDrift r₁ a b τ.1 y j)
-            (hDriftMeas τ j) (Cd j) (hCd j) (hDriftBound τ j)‖ := by
-  refine ContinuousLinearMap.opNorm_le_bound₂ _ (by positivity) ?_
-  intro u v
-  rw [reverseTimeSpatialFormDriftTerm_sub_apply (d := d) (Ω := Ω)
-    hΩ r₀ r₁ a b Cd hCd hDriftMeas hDriftBound j σ τ u v]
-  have hju :
-      ‖PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j (gradientCLM hΩ u)‖ ≤
-        ‖gradientCLM hΩ‖ * ‖u‖ :=
-    (norm_hilbertVectorLpCoord_le_local j _).trans
-      (ContinuousLinearMap.le_opNorm _ _)
-  have hv : ‖valueCLM hΩ v‖ ≤ ‖valueCLM hΩ‖ * ‖v‖ :=
-    ContinuousLinearMap.le_opNorm _ _
-  calc
-    ‖inner ℝ
-        ((scalarL2Multiplier (fun y => reverseTimeDivergenceDrift r₁ a b σ.1 y j)
-            (hDriftMeas σ j) (Cd j) (hCd j) (hDriftBound σ j) -
-          scalarL2Multiplier (fun y => reverseTimeDivergenceDrift r₁ a b τ.1 y j)
-            (hDriftMeas τ j) (Cd j) (hCd j) (hDriftBound τ j))
-          (PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j (gradientCLM hΩ u)))
-        (valueCLM hΩ v)‖ ≤
-        ‖(scalarL2Multiplier (fun y => reverseTimeDivergenceDrift r₁ a b σ.1 y j)
-            (hDriftMeas σ j) (Cd j) (hCd j) (hDriftBound σ j) -
-          scalarL2Multiplier (fun y => reverseTimeDivergenceDrift r₁ a b τ.1 y j)
-            (hDriftMeas τ j) (Cd j) (hCd j) (hDriftBound τ j))
-          (PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j (gradientCLM hΩ u))‖ *
-          ‖valueCLM hΩ v‖ :=
-      norm_inner_le_norm _ _
-    _ ≤ (‖scalarL2Multiplier (fun y => reverseTimeDivergenceDrift r₁ a b σ.1 y j)
-            (hDriftMeas σ j) (Cd j) (hCd j) (hDriftBound σ j) -
-          scalarL2Multiplier (fun y => reverseTimeDivergenceDrift r₁ a b τ.1 y j)
-            (hDriftMeas τ j) (Cd j) (hCd j) (hDriftBound τ j)‖ *
-          ‖PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j (gradientCLM hΩ u)‖) *
-          ‖valueCLM hΩ v‖ := by
-      exact mul_le_mul_of_nonneg_right
-        (ContinuousLinearMap.le_opNorm _ _) (norm_nonneg _)
-    _ ≤ (‖scalarL2Multiplier (fun y => reverseTimeDivergenceDrift r₁ a b σ.1 y j)
-            (hDriftMeas σ j) (Cd j) (hCd j) (hDriftBound σ j) -
-          scalarL2Multiplier (fun y => reverseTimeDivergenceDrift r₁ a b τ.1 y j)
-            (hDriftMeas τ j) (Cd j) (hCd j) (hDriftBound τ j)‖ *
-          (‖gradientCLM hΩ‖ * ‖u‖)) *
-          (‖valueCLM hΩ‖ * ‖v‖) := by
-      exact mul_le_mul
-        (mul_le_mul_of_nonneg_left hju (norm_nonneg _))
-        hv
-        (norm_nonneg _)
-        (mul_nonneg (norm_nonneg _) (mul_nonneg (norm_nonneg _) (norm_nonneg _)))
-    _ = (‖gradientCLM hΩ‖ * ‖valueCLM hΩ‖) *
-        ‖scalarL2Multiplier (fun y => reverseTimeDivergenceDrift r₁ a b σ.1 y j)
-            (hDriftMeas σ j) (Cd j) (hCd j) (hDriftBound σ j) -
-          scalarL2Multiplier (fun y => reverseTimeDivergenceDrift r₁ a b τ.1 y j)
-            (hDriftMeas τ j) (Cd j) (hCd j) (hDriftBound τ j)‖ * ‖u‖ * ‖v‖ := by
-      ring
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet
 
@@ -773,7 +653,7 @@ private theorem reverseTimeSpatialFormScalarTerm_sub_apply
             (scalarL2Multiplier (fun y => reverseTimeScalarCoefficient r₁ c τ.1 y)
               (hScalarMeas τ) Cc hCc (hScalarBound τ) (valueCLM hΩ u))
             (valueCLM hΩ v) :=
-      congrArg (fun z : ℝ =>
+      congrArg (fun z =>
         inner ℝ
           (scalarL2Multiplier (fun y => reverseTimeScalarCoefficient r₁ c σ.1 y)
             (hScalarMeas σ) Cc hCc (hScalarBound σ) (valueCLM hΩ u))
@@ -783,68 +663,6 @@ private theorem reverseTimeSpatialFormScalarTerm_sub_apply
         (congrArg (fun z => inner ℝ z _)
           (ContinuousLinearMap.sub_apply _ _ _).symm)
 
-private theorem norm_reverseTimeSpatialFormScalarTerm_sub_le
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (r₀ r₁ : ℝ) (c : ℝ → PDE.Vec d → ℝ)
-    (Cc : ℝ) (hCc : 0 ≤ Cc)
-    (hScalarMeas : ∀ τ : Set.Icc 0 (r₁ - r₀),
-      AEStronglyMeasurable
-        (fun y => reverseTimeScalarCoefficient r₁ c τ.1 y) (PDE.volumeOn Ω))
-    (hScalarBound : ∀ τ : Set.Icc 0 (r₁ - r₀),
-      ∀ᵐ y ∂PDE.volumeOn Ω, ‖reverseTimeScalarCoefficient r₁ c τ.1 y‖ ≤ Cc)
-    (σ τ : Set.Icc 0 (r₁ - r₀)) :
-    ‖reverseTimeSpatialFormScalarTerm hΩ r₀ r₁ c Cc hCc hScalarMeas hScalarBound σ -
-      reverseTimeSpatialFormScalarTerm hΩ r₀ r₁ c Cc hCc hScalarMeas hScalarBound τ‖ ≤
-      ‖valueCLM hΩ‖ ^ 2 *
-        ‖scalarL2Multiplier (fun y => reverseTimeScalarCoefficient r₁ c σ.1 y)
-            (hScalarMeas σ) Cc hCc (hScalarBound σ) -
-          scalarL2Multiplier (fun y => reverseTimeScalarCoefficient r₁ c τ.1 y)
-            (hScalarMeas τ) Cc hCc (hScalarBound τ)‖ := by
-  refine ContinuousLinearMap.opNorm_le_bound₂ _ (by positivity) ?_
-  intro u v
-  rw [reverseTimeSpatialFormScalarTerm_sub_apply (d := d) (Ω := Ω)
-    hΩ r₀ r₁ c Cc hCc hScalarMeas hScalarBound σ τ u v]
-  have hu : ‖valueCLM hΩ u‖ ≤ ‖valueCLM hΩ‖ * ‖u‖ :=
-    ContinuousLinearMap.le_opNorm _ _
-  have hv : ‖valueCLM hΩ v‖ ≤ ‖valueCLM hΩ‖ * ‖v‖ :=
-    ContinuousLinearMap.le_opNorm _ _
-  calc
-    ‖inner ℝ
-        ((scalarL2Multiplier (fun y => reverseTimeScalarCoefficient r₁ c σ.1 y)
-            (hScalarMeas σ) Cc hCc (hScalarBound σ) -
-          scalarL2Multiplier (fun y => reverseTimeScalarCoefficient r₁ c τ.1 y)
-            (hScalarMeas τ) Cc hCc (hScalarBound τ))
-          (valueCLM hΩ u))
-        (valueCLM hΩ v)‖ ≤
-        ‖(scalarL2Multiplier (fun y => reverseTimeScalarCoefficient r₁ c σ.1 y)
-            (hScalarMeas σ) Cc hCc (hScalarBound σ) -
-          scalarL2Multiplier (fun y => reverseTimeScalarCoefficient r₁ c τ.1 y)
-            (hScalarMeas τ) Cc hCc (hScalarBound τ))
-          (valueCLM hΩ u)‖ * ‖valueCLM hΩ v‖ :=
-      norm_inner_le_norm _ _
-    _ ≤ (‖scalarL2Multiplier (fun y => reverseTimeScalarCoefficient r₁ c σ.1 y)
-            (hScalarMeas σ) Cc hCc (hScalarBound σ) -
-          scalarL2Multiplier (fun y => reverseTimeScalarCoefficient r₁ c τ.1 y)
-            (hScalarMeas τ) Cc hCc (hScalarBound τ)‖ * ‖valueCLM hΩ u‖) *
-          ‖valueCLM hΩ v‖ := by
-      exact mul_le_mul_of_nonneg_right
-        (ContinuousLinearMap.le_opNorm _ _) (norm_nonneg _)
-    _ ≤ (‖scalarL2Multiplier (fun y => reverseTimeScalarCoefficient r₁ c σ.1 y)
-            (hScalarMeas σ) Cc hCc (hScalarBound σ) -
-          scalarL2Multiplier (fun y => reverseTimeScalarCoefficient r₁ c τ.1 y)
-            (hScalarMeas τ) Cc hCc (hScalarBound τ)‖ *
-          (‖valueCLM hΩ‖ * ‖u‖)) * (‖valueCLM hΩ‖ * ‖v‖) := by
-      exact mul_le_mul
-        (mul_le_mul_of_nonneg_left hu (norm_nonneg _))
-        hv
-        (norm_nonneg _)
-        (mul_nonneg (norm_nonneg _) (mul_nonneg (norm_nonneg _) (norm_nonneg _)))
-    _ = (‖valueCLM hΩ‖ ^ 2 *
-        ‖scalarL2Multiplier (fun y => reverseTimeScalarCoefficient r₁ c σ.1 y)
-            (hScalarMeas σ) Cc hCc (hScalarBound σ) -
-          scalarL2Multiplier (fun y => reverseTimeScalarCoefficient r₁ c τ.1 y)
-            (hScalarMeas τ) Cc hCc (hScalarBound τ)‖) * ‖u‖ * ‖v‖ := by
-      ring
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet
 
@@ -917,9 +735,115 @@ private theorem continuousAt_reverseTimeSpatialFormDriftTerm
       (scalarParabolicClosedCylinder r₀ r₁ Ω))
     (j : Fin d) (τ : Set.Icc 0 (r₁ - r₀)) :
     ContinuousAt
-      (reverseTimeSpatialFormDriftTerm hΩ r₀ r₁ a b Cd hCd hDriftMeas hDriftBound j) τ := by
+      (reverseTimeSpatialFormDriftTerm hΩ r₀ r₁ a b Cd hCd hDriftMeas hDriftBound j) τ   := by
+  have norm_reverseTimeSpatialFormDriftTerm_sub_le {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (r₀ r₁ : ℝ) (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d) (Cd : Fin d → ℝ) (hCd : ∀ j, 0 ≤ Cd j) (hDriftMeas : ∀ τ : Set.Icc 0 (r₁ - r₀), ∀ j,
+      AEStronglyMeasurable
+        (fun y => reverseTimeDivergenceDrift r₁ a b τ.1 y j) (PDE.volumeOn Ω)) (hDriftBound : ∀ τ : Set.Icc 0 (r₁ - r₀), ∀ j,
+      ∀ᵐ y ∂PDE.volumeOn Ω, ‖reverseTimeDivergenceDrift r₁ a b τ.1 y j‖ ≤ Cd j) (j : Fin d) (σ τ : Set.Icc 0 (r₁ - r₀)) :
+      ‖reverseTimeSpatialFormDriftTerm hΩ r₀ r₁ a b Cd hCd hDriftMeas hDriftBound j σ -
+      reverseTimeSpatialFormDriftTerm hΩ r₀ r₁ a b Cd hCd hDriftMeas hDriftBound j τ‖ ≤
+      (‖gradientCLM hΩ‖ * ‖valueCLM hΩ‖) *
+        ‖scalarL2Multiplier (fun y => reverseTimeDivergenceDrift r₁ a b σ.1 y j)
+            (hDriftMeas σ j) (Cd j) (hCd j) (hDriftBound σ j) -
+          scalarL2Multiplier (fun y => reverseTimeDivergenceDrift r₁ a b τ.1 y j)
+            (hDriftMeas τ j) (Cd j) (hCd j) (hDriftBound τ j)‖ := by
+    refine ContinuousLinearMap.opNorm_le_bound₂ _ (by positivity) ?_
+    intro u v
+    rw [reverseTimeSpatialFormDriftTerm_sub_apply (d := d) (Ω := Ω)
+      hΩ r₀ r₁ a b Cd hCd hDriftMeas hDriftBound j σ τ u v]
+    have hju :
+        ‖PDE.hilbertVectorLpCoord Ω 2 j (gradientCLM hΩ u)‖ ≤
+          ‖gradientCLM hΩ‖ * ‖u‖ :=
+      (norm_hilbertVectorLpCoord_le_local j _).trans
+        (ContinuousLinearMap.le_opNorm _ _)
+    have hv : ‖valueCLM hΩ v‖ ≤ ‖valueCLM hΩ‖ * ‖v‖ :=
+      ContinuousLinearMap.le_opNorm _ _
+    calc
+      ‖inner ℝ
+          ((scalarL2Multiplier (fun y => reverseTimeDivergenceDrift r₁ a b σ.1 y j)
+              (hDriftMeas σ j) (Cd j) (hCd j) (hDriftBound σ j) -
+            scalarL2Multiplier (fun y => reverseTimeDivergenceDrift r₁ a b τ.1 y j)
+              (hDriftMeas τ j) (Cd j) (hCd j) (hDriftBound τ j))
+            (PDE.hilbertVectorLpCoord Ω 2 j (gradientCLM hΩ u)))
+          (valueCLM hΩ v)‖ ≤
+          ‖(scalarL2Multiplier (fun y => reverseTimeDivergenceDrift r₁ a b σ.1 y j)
+              (hDriftMeas σ j) (Cd j) (hCd j) (hDriftBound σ j) -
+            scalarL2Multiplier (fun y => reverseTimeDivergenceDrift r₁ a b τ.1 y j)
+              (hDriftMeas τ j) (Cd j) (hCd j) (hDriftBound τ j))
+            (PDE.hilbertVectorLpCoord Ω 2 j (gradientCLM hΩ u))‖ *
+            ‖valueCLM hΩ v‖ :=
+        norm_inner_le_norm _ _
+      _ ≤ (‖scalarL2Multiplier (fun y => reverseTimeDivergenceDrift r₁ a b σ.1 y j)
+              (hDriftMeas σ j) (Cd j) (hCd j) (hDriftBound σ j) -
+            scalarL2Multiplier (fun y => reverseTimeDivergenceDrift r₁ a b τ.1 y j)
+              (hDriftMeas τ j) (Cd j) (hCd j) (hDriftBound τ j)‖ *
+            ‖PDE.hilbertVectorLpCoord Ω 2 j (gradientCLM hΩ u)‖) *
+            ‖valueCLM hΩ v‖ := by
+        exact mul_le_mul_of_nonneg_right
+          (ContinuousLinearMap.le_opNorm _ _) (norm_nonneg _)
+      _ ≤ (‖scalarL2Multiplier (fun y => reverseTimeDivergenceDrift r₁ a b σ.1 y j)
+              (hDriftMeas σ j) (Cd j) (hCd j) (hDriftBound σ j) -
+            scalarL2Multiplier (fun y => reverseTimeDivergenceDrift r₁ a b τ.1 y j)
+              (hDriftMeas τ j) (Cd j) (hCd j) (hDriftBound τ j)‖ *
+            (‖gradientCLM hΩ‖ * ‖u‖)) *
+            (‖valueCLM hΩ‖ * ‖v‖) := by
+        exact mul_le_mul
+          (mul_le_mul_of_nonneg_left hju (norm_nonneg _))
+          hv
+          (norm_nonneg _)
+          (mul_nonneg (norm_nonneg _) (mul_nonneg (norm_nonneg _) (norm_nonneg _)))
+      _ = (‖gradientCLM hΩ‖ * ‖valueCLM hΩ‖) *
+          ‖scalarL2Multiplier (fun y => reverseTimeDivergenceDrift r₁ a b σ.1 y j)
+              (hDriftMeas σ j) (Cd j) (hCd j) (hDriftBound σ j) -
+            scalarL2Multiplier (fun y => reverseTimeDivergenceDrift r₁ a b τ.1 y j)
+              (hDriftMeas τ j) (Cd j) (hCd j) (hDriftBound τ j)‖ * ‖u‖ * ‖v‖ := by
+        ring
+  have continuousAt_reverseTimeDivergenceDriftEntry_multiplier {d : ℕ} {Ω : Set (PDE.Vec d)} (r₀ r₁ : ℝ) (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω) (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d) (ha : IsSmoothOnNeighborhood (fun z => a z.1 z.2)
+      (scalarParabolicClosedCylinder r₀ r₁ Ω)) (hb : IsSmoothOnNeighborhood (fun z => b z.1 z.2)
+      (scalarParabolicClosedCylinder r₀ r₁ Ω)) (Cd : Fin d → ℝ) (hCd : ∀ j, 0 ≤ Cd j) (hDriftMeas : ∀ τ : Set.Icc 0 (r₁ - r₀), ∀ j,
+      AEStronglyMeasurable
+        (fun y => reverseTimeDivergenceDrift r₁ a b τ.1 y j) (PDE.volumeOn Ω)) (hDriftBound : ∀ τ : Set.Icc 0 (r₁ - r₀), ∀ j,
+      ∀ᵐ y ∂PDE.volumeOn Ω, ‖reverseTimeDivergenceDrift r₁ a b τ.1 y j‖ ≤ Cd j) (j : Fin d) (τ : Set.Icc 0 (r₁ - r₀)) :
+      ContinuousAt (fun σ : Set.Icc 0 (r₁ - r₀) =>
+      scalarL2Multiplier (fun y => reverseTimeDivergenceDrift r₁ a b σ.1 y j)
+        (hDriftMeas σ j) (Cd j) (hCd j) (hDriftBound σ j)) τ := by
+    have continuousOn_reverseTimeDivergenceDriftEntry_joint {d : ℕ} {Ω : Set (PDE.Vec d)} (r₀ r₁ : ℝ) (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d) (j : Fin d) (ha : IsSmoothOnNeighborhood (fun z => a z.1 z.2)
+        (scalarParabolicClosedCylinder r₀ r₁ Ω)) (hb : IsSmoothOnNeighborhood (fun z => b z.1 z.2)
+        (scalarParabolicClosedCylinder r₀ r₁ Ω)) :
+        ContinuousOn (fun z =>
+        scalarSpatialCoefficientDivergence a z j - b z.1 z.2 j)
+        (scalarParabolicClosedCylinder r₀ r₁ Ω) := by
+      have heval : ContinuousOn (fun x : PDE.Vec d => x j) Set.univ :=
+        (continuous_apply j).continuousOn
+      rcases hb with ⟨V, hVopen, hKV, hV⟩
+      have hbj : ContDiffOn ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => b z.1 z.2 j) V := by
+        exact (contDiffOn_apply ℝ ℝ j Set.univ).comp hV (by
+          intro z hz
+          exact Set.mem_univ _)
+      exact heval.comp (continuousOn_scalarSpatialCoefficientDivergence_of_smoothOnNeighborhood r₀ r₁ a ha) (by intro z hz; simp) |>.sub (hbj.continuousOn.mono hKV)
+    rw [Metric.continuousAt_iff]
+    intro ε hε
+    obtain ⟨δ, hδ, hsub⟩ := exists_delta_ae_norm_reverseTime_sub_le r₀ r₁ hΩ hΩbounded
+      (fun z : TimeVelocity d => scalarSpatialCoefficientDivergence a z j - b z.1 z.2 j)
+      (continuousOn_reverseTimeDivergenceDriftEntry_joint r₀ r₁ a b j ha hb) τ (half_pos hε)
+    refine ⟨δ, hδ, ?_⟩
+    intro σ hστ
+    rw [dist_eq_norm]
+    calc
+      ‖scalarL2Multiplier (fun y => reverseTimeDivergenceDrift r₁ a b σ.1 y j)
+          (hDriftMeas σ j) (Cd j) (hCd j) (hDriftBound σ j) -
+          scalarL2Multiplier (fun y => reverseTimeDivergenceDrift r₁ a b τ.1 y j)
+            (hDriftMeas τ j) (Cd j) (hCd j) (hDriftBound τ j)‖ ≤ ε / 2 :=
+        norm_scalarL2Multiplier_sub_le_of_ae_norm_sub_le
+          (fun y => reverseTimeDivergenceDrift r₁ a b σ.1 y j)
+          (fun y => reverseTimeDivergenceDrift r₁ a b τ.1 y j)
+          (hDriftMeas σ j) (hDriftMeas τ j) (Cd j) (hCd j) (hDriftBound σ j)
+          (Cd j) (hCd j) (hDriftBound τ j) (ε / 2) (le_of_lt (half_pos hε))
+          (by simpa [reverseTimeDivergenceDrift, scalarSpatialCoefficientDivergence_reverseTimeCoefficient, reverseTimeMap_apply, reverseTimeVectorCoefficient_apply] using
+            hsub σ hστ)
+      _ < ε := half_lt_self hε
   let f : Set.Icc 0 (r₁ - r₀) →
-      PDE.ScalarLp Ω (2 : ℝ≥0∞) →L[ℝ] PDE.ScalarLp Ω (2 : ℝ≥0∞) := fun σ =>
+      PDE.ScalarLp Ω 2 →L[ℝ] PDE.ScalarLp Ω 2 := fun σ =>
     scalarL2Multiplier (fun y => reverseTimeDivergenceDrift r₁ a b σ.1 y j)
       (hDriftMeas σ j) (Cd j) (hCd j) (hDriftBound σ j)
   refine continuousAt_of_norm_sub_le_mul (f := f)
@@ -927,9 +851,9 @@ private theorem continuousAt_reverseTimeSpatialFormDriftTerm
     (‖gradientCLM hΩ‖ * ‖valueCLM hΩ‖)
     (mul_nonneg (norm_nonneg _) (norm_nonneg _)) ?_ ?_
   · intro σ
-    simpa only [f] using norm_reverseTimeSpatialFormDriftTerm_sub_le hΩ r₀ r₁ a b Cd hCd
+    simpa using norm_reverseTimeSpatialFormDriftTerm_sub_le hΩ r₀ r₁ a b Cd hCd
       hDriftMeas hDriftBound j σ τ
-  · simpa only [f] using
+  · simpa using
       (continuousAt_reverseTimeDivergenceDriftEntry_multiplier r₀ r₁ hΩ hΩbounded a b haSmooth
         hbSmooth Cd hCd hDriftMeas hDriftBound j τ)
 
@@ -939,7 +863,97 @@ private theorem continuousAt_reverseTimeSpatialFormScalarTerm
       (scalarParabolicClosedCylinder r₀ r₁ Ω))
     (τ : Set.Icc 0 (r₁ - r₀)) :
     ContinuousAt
-      (reverseTimeSpatialFormScalarTerm hΩ r₀ r₁ c Cc hCc hScalarMeas hScalarBound) τ := by
+      (reverseTimeSpatialFormScalarTerm hΩ r₀ r₁ c Cc hCc hScalarMeas hScalarBound) τ   := by
+  have norm_reverseTimeSpatialFormScalarTerm_sub_le {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (r₀ r₁ : ℝ) (c : ℝ → PDE.Vec d → ℝ) (Cc : ℝ) (hCc : 0 ≤ Cc) (hScalarMeas : ∀ τ : Set.Icc 0 (r₁ - r₀),
+      AEStronglyMeasurable
+        (fun y => reverseTimeScalarCoefficient r₁ c τ.1 y) (PDE.volumeOn Ω)) (hScalarBound : ∀ τ : Set.Icc 0 (r₁ - r₀),
+      ∀ᵐ y ∂PDE.volumeOn Ω, ‖reverseTimeScalarCoefficient r₁ c τ.1 y‖ ≤ Cc) (σ τ : Set.Icc 0 (r₁ - r₀)) :
+      ‖reverseTimeSpatialFormScalarTerm hΩ r₀ r₁ c Cc hCc hScalarMeas hScalarBound σ -
+      reverseTimeSpatialFormScalarTerm hΩ r₀ r₁ c Cc hCc hScalarMeas hScalarBound τ‖ ≤
+      ‖valueCLM hΩ‖ ^ 2 *
+        ‖scalarL2Multiplier (fun y => reverseTimeScalarCoefficient r₁ c σ.1 y)
+            (hScalarMeas σ) Cc hCc (hScalarBound σ) -
+          scalarL2Multiplier (fun y => reverseTimeScalarCoefficient r₁ c τ.1 y)
+            (hScalarMeas τ) Cc hCc (hScalarBound τ)‖ := by
+    refine ContinuousLinearMap.opNorm_le_bound₂ _ (by positivity) ?_
+    intro u v
+    rw [reverseTimeSpatialFormScalarTerm_sub_apply (d := d) (Ω := Ω)
+      hΩ r₀ r₁ c Cc hCc hScalarMeas hScalarBound σ τ u v]
+    have hu : ‖valueCLM hΩ u‖ ≤ ‖valueCLM hΩ‖ * ‖u‖ :=
+      ContinuousLinearMap.le_opNorm _ _
+    have hv : ‖valueCLM hΩ v‖ ≤ ‖valueCLM hΩ‖ * ‖v‖ :=
+      ContinuousLinearMap.le_opNorm _ _
+    calc
+      ‖inner ℝ
+          ((scalarL2Multiplier (fun y => reverseTimeScalarCoefficient r₁ c σ.1 y)
+              (hScalarMeas σ) Cc hCc (hScalarBound σ) -
+            scalarL2Multiplier (fun y => reverseTimeScalarCoefficient r₁ c τ.1 y)
+              (hScalarMeas τ) Cc hCc (hScalarBound τ))
+            (valueCLM hΩ u))
+          (valueCLM hΩ v)‖ ≤
+          ‖(scalarL2Multiplier (fun y => reverseTimeScalarCoefficient r₁ c σ.1 y)
+              (hScalarMeas σ) Cc hCc (hScalarBound σ) -
+            scalarL2Multiplier (fun y => reverseTimeScalarCoefficient r₁ c τ.1 y)
+              (hScalarMeas τ) Cc hCc (hScalarBound τ))
+            (valueCLM hΩ u)‖ * ‖valueCLM hΩ v‖ :=
+        norm_inner_le_norm _ _
+      _ ≤ (‖scalarL2Multiplier (fun y => reverseTimeScalarCoefficient r₁ c σ.1 y)
+              (hScalarMeas σ) Cc hCc (hScalarBound σ) -
+            scalarL2Multiplier (fun y => reverseTimeScalarCoefficient r₁ c τ.1 y)
+              (hScalarMeas τ) Cc hCc (hScalarBound τ)‖ * ‖valueCLM hΩ u‖) *
+            ‖valueCLM hΩ v‖ := by
+        exact mul_le_mul_of_nonneg_right
+          (ContinuousLinearMap.le_opNorm _ _) (norm_nonneg _)
+      _ ≤ (‖scalarL2Multiplier (fun y => reverseTimeScalarCoefficient r₁ c σ.1 y)
+              (hScalarMeas σ) Cc hCc (hScalarBound σ) -
+            scalarL2Multiplier (fun y => reverseTimeScalarCoefficient r₁ c τ.1 y)
+              (hScalarMeas τ) Cc hCc (hScalarBound τ)‖ *
+            (‖valueCLM hΩ‖ * ‖u‖)) * (‖valueCLM hΩ‖ * ‖v‖) := by
+        exact mul_le_mul
+          (mul_le_mul_of_nonneg_left hu (norm_nonneg _))
+          hv
+          (norm_nonneg _)
+          (mul_nonneg (norm_nonneg _) (mul_nonneg (norm_nonneg _) (norm_nonneg _)))
+      _ = (‖valueCLM hΩ‖ ^ 2 *
+          ‖scalarL2Multiplier (fun y => reverseTimeScalarCoefficient r₁ c σ.1 y)
+              (hScalarMeas σ) Cc hCc (hScalarBound σ) -
+            scalarL2Multiplier (fun y => reverseTimeScalarCoefficient r₁ c τ.1 y)
+              (hScalarMeas τ) Cc hCc (hScalarBound τ)‖) * ‖u‖ * ‖v‖ := by
+        ring
+  have continuousAt_reverseTimeScalarCoefficient_multiplier {d : ℕ} {Ω : Set (PDE.Vec d)} (r₀ r₁ : ℝ) (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω) (c : ℝ → PDE.Vec d → ℝ) (hc : IsSmoothOnNeighborhood (fun z : TimeVelocity d => c z.1 z.2)
+      (scalarParabolicClosedCylinder r₀ r₁ Ω)) (Cc : ℝ) (hCc : 0 ≤ Cc) (hScalarMeas : ∀ τ : Set.Icc 0 (r₁ - r₀),
+      AEStronglyMeasurable
+        (fun y => reverseTimeScalarCoefficient r₁ c τ.1 y) (PDE.volumeOn Ω)) (hScalarBound : ∀ τ : Set.Icc 0 (r₁ - r₀),
+      ∀ᵐ y ∂PDE.volumeOn Ω, ‖reverseTimeScalarCoefficient r₁ c τ.1 y‖ ≤ Cc) (τ : Set.Icc 0 (r₁ - r₀)) :
+      ContinuousAt (fun σ : Set.Icc 0 (r₁ - r₀) =>
+      scalarL2Multiplier (fun y => reverseTimeScalarCoefficient r₁ c σ.1 y)
+        (hScalarMeas σ) Cc hCc (hScalarBound σ)) τ := by
+    have continuousOn_reverseTimeScalarCoefficient_joint {d : ℕ} {Ω : Set (PDE.Vec d)} (r₀ r₁ : ℝ) (c : ℝ → PDE.Vec d → ℝ) (hc : IsSmoothOnNeighborhood (fun z : TimeVelocity d => c z.1 z.2)
+        (scalarParabolicClosedCylinder r₀ r₁ Ω)) :
+        ContinuousOn (fun z : TimeVelocity d => c z.1 z.2)
+        (scalarParabolicClosedCylinder r₀ r₁ Ω) := by
+      rcases hc with ⟨V, hVopen, hKV, hV⟩
+      exact hV.continuousOn.mono hKV
+    rw [Metric.continuousAt_iff]
+    intro ε hε
+    obtain ⟨δ, hδ, hsub⟩ := exists_delta_ae_norm_reverseTime_sub_le r₀ r₁ hΩ hΩbounded
+      (fun z : TimeVelocity d => c z.1 z.2)
+      (continuousOn_reverseTimeScalarCoefficient_joint r₀ r₁ c hc) τ (half_pos hε)
+    refine ⟨δ, hδ, ?_⟩
+    intro σ hστ
+    rw [dist_eq_norm]
+    calc
+      ‖scalarL2Multiplier (fun y => reverseTimeScalarCoefficient r₁ c σ.1 y)
+          (hScalarMeas σ) Cc hCc (hScalarBound σ) -
+          scalarL2Multiplier (fun y => reverseTimeScalarCoefficient r₁ c τ.1 y)
+            (hScalarMeas τ) Cc hCc (hScalarBound τ)‖ ≤ ε / 2 :=
+        norm_scalarL2Multiplier_sub_le_of_ae_norm_sub_le
+          (fun y => reverseTimeScalarCoefficient r₁ c σ.1 y)
+          (fun y => reverseTimeScalarCoefficient r₁ c τ.1 y)
+          (hScalarMeas σ) (hScalarMeas τ) Cc hCc (hScalarBound σ)
+          Cc hCc (hScalarBound τ) (ε / 2) (le_of_lt (half_pos hε))
+          (by simpa only [reverseTimeScalarCoefficient_apply] using hsub σ hστ)
+      _ < ε := half_lt_self hε
   exact continuousAt_of_norm_sub_le_mul
     (f := fun σ => scalarL2Multiplier (fun y => reverseTimeScalarCoefficient r₁ c σ.1 y)
       (hScalarMeas σ) Cc hCc (hScalarBound σ))
@@ -1164,3 +1178,5 @@ theorem continuous_reverseTimeSpatialFormOperator
     hDriftMeas hDriftBound Cc hCc hScalarMeas hScalarBound hΩbounded haSmooth hbSmooth hcSmooth
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet
+end
+

@@ -11,31 +11,23 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory ProbabilityTheory HypoellipticAleksandrov
 
-/-- Inserting time in scalar physical coordinates is measurable. -/
-theorem measurable_enlargedTerminalPoint (b : ℝ) :
-    Measurable (enlargedTerminalPoint b) := by
-  exact (KineticPoint.measurable_equivProd_symm 1).comp
-    (measurable_const.prodMk
-      ((Measurable.of_eval fun _ => measurable_fst).prodMk
-        (Measurable.of_eval fun _ => measurable_snd)))
 
-/-- The physical spacetime map for elapsed occupation is measurable. -/
-theorem measurable_enlargedOccupationPoint (P : Point) :
-    Measurable (fun tz : ℝ × Z => enlargedTerminalPoint (P.time + tz.1) tz.2) := by
-  exact (KineticPoint.measurable_equivProd_symm 1).comp
-    ((measurable_const.add measurable_fst).prodMk
-      ((Measurable.of_eval fun _ => measurable_fst.comp measurable_snd).prodMk
-        (Measurable.of_eval fun _ => measurable_snd.comp measurable_snd)))
 
 /-- Full-space terminal measures have mass at most one. -/
 theorem enlargedFullSpaceTerminal_mass_le_one
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
     {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (P : Point) (b : ℝ) :
-    enlargedFullSpaceTerminal hH hLE hlam hLam A P b univ ≤ 1 := by
+    enlargedFullSpaceTerminal hH hLE hlam hLam A P b univ ≤ 1  := by
+  have measurable_enlargedTerminalPoint :
+      Measurable (enlargedTerminalPoint b) := by
+    exact (KineticPoint.measurable_equivProd_symm 1).comp
+      (measurable_const.prodMk
+        ((Measurable.of_eval fun _ => measurable_fst).prodMk
+          (Measurable.of_eval fun _ => measurable_snd)))
   change ((kernelXV (fullSpaceEvolution hH hLE hlam hLam A) (Real.toNNReal (b - P.time))
     (P.position 0, P.velocity 0)).map (enlargedTerminalPoint b)) univ ≤ 1
-  rw [Measure.map_apply (measurable_enlargedTerminalPoint b)
+  rw [Measure.map_apply (measurable_enlargedTerminalPoint)
     MeasurableSet.univ, preimage_univ]
   exact kernelXV_mass_le_one _ _ _
 
@@ -46,7 +38,13 @@ theorem enlargedFullSpaceOccupation_band_eq
     (A : SmoothAutonomous lam Lam) (P : Point) (T r : ℝ) :
     enlargedFullSpaceOccupation hH hLE hlam hLam A P T {p | |p.velocity 0| ≤ 3 * r} =
       ∫⁻ t in Ioc 0 T, kernelXV (fullSpaceEvolution hH hLE hlam hLam A)
-        (Real.toNNReal t) (P.position 0, P.velocity 0) {w | |w.2| ≤ 3 * r} := by
+        (Real.toNNReal t) (P.position 0, P.velocity 0) {w | |w.2| ≤ 3 * r}  := by
+  have measurable_enlargedOccupationPoint :
+      Measurable (fun tz : ℝ × Z => enlargedTerminalPoint (P.time + tz.1) tz.2) := by
+    exact (KineticPoint.measurable_equivProd_symm 1).comp
+      ((measurable_const.add measurable_fst).prodMk
+        ((Measurable.of_eval fun _ => measurable_fst.comp measurable_snd).prodMk
+          (Measurable.of_eval fun _ => measurable_snd.comp measurable_snd)))
   have hB : MeasurableSet {p : Point | |p.velocity 0| ≤ 3 * r} :=
     measurableSet_le (continuous_abs.measurable.comp
       ((continuous_apply 0).comp continuous_velocity).measurable) measurable_const
@@ -54,8 +52,8 @@ theorem enlargedFullSpaceOccupation_band_eq
     physicalElapsedKernel (fullSpaceEvolution hH hLE hlam hLam A)
       (P.position 0, P.velocity 0)).map
         (fun tz => enlargedTerminalPoint (P.time + tz.1) tz.2)) _ = _
-  rw [Measure.map_apply (measurable_enlargedOccupationPoint P) hB,
-    Measure.compProd_apply (hB.preimage (measurable_enlargedOccupationPoint P))]
+  rw [Measure.map_apply (measurable_enlargedOccupationPoint) hB,
+    Measure.compProd_apply (hB.preimage (measurable_enlargedOccupationPoint))]
   rfl
 
 /-- The source velocity occupation bound is independent of the outer waiting interval. -/

@@ -1,16 +1,58 @@
 module
 
-public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.SingularGreenCutoffsConvolutionModulus
+public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.SingularGreenCutoffsRegularizedBarrier
+import Mathlib.MeasureTheory.Group.Integral
 public import Mathlib.Analysis.Calculus.BumpFunction.Convolution
 import Mathlib.Analysis.SpecificLimits.Basic
 
-/-! # Actual shrinking normalized position mollifiers -/
+@[expose] public noncomputable section
 
-@[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
-open MeasureTheory Filter Set
+open Set MeasureTheory Filter
 open scoped Topology Convolution
+
+/-- The position convolution can integrate the mollifier at a fixed displacement. -/
+theorem positionConvolution_displacement (eta : ℝ → ℝ) (Phi : (ℝ × ℝ) → ℝ)
+    (q : ℝ × ℝ) :
+    positionConvolution eta Phi q = ∫ Y, eta Y * Phi (q.1 - Y, q.2) := by
+  simpa only [positionConvolution, sub_sub_cancel] using (integral_sub_left_eq_self (fun Y => eta (q.1 - Y) * Phi (Y, q.2)) volume q.1).symm
+
+
+/-- A nonnegative normalized position convolution preserves the same coordinate modulus. -/
+theorem positionConvolution_modulus (eta : ℝ → ℝ)
+    (heta : IsNonnegativeUnitSmoothMollifier eta) (Phi : (ℝ × ℝ) → ℝ)
+    (hPhi : Continuous Phi) (alpha D : ℝ) (hD : 0 ≤ D)
+    (hm : ∀ z w : ℝ × ℝ, |Phi z - Phi w| ≤
+      D * (|z.1 - w.1| ^ (alpha / 3) + |z.2 - w.2| ^ alpha)) :
+    ∀ z w : ℝ × ℝ, |positionConvolution eta Phi z - positionConvolution eta Phi w| ≤
+      D * (|z.1 - w.1| ^ (alpha / 3) + |z.2 - w.2| ^ alpha)  := by
+  intro z w
+  have positionConvolution_displacement_integrable (q : ℝ × ℝ) :
+      Integrable (fun Y => eta Y * Phi (q.1 - Y, q.2)) volume := by
+    have hc : Continuous (fun Y => eta Y * Phi (q.1 - Y, q.2)) :=
+      heta.1.continuous.mul
+        (hPhi.comp ((continuous_const.sub continuous_id).prodMk continuous_const))
+    exact hc.integrable_of_hasCompactSupport heta.2.1.mul_right
+  let B := D * (|z.1 - w.1| ^ (alpha / 3) + |z.2 - w.2| ^ alpha)
+  have hB : 0 ≤ B := by dsimp only [B]; positivity
+  have hzi := positionConvolution_displacement_integrable z
+  have hwi := positionConvolution_displacement_integrable w
+  have hηi : Integrable eta volume :=
+    heta.1.continuous.integrable_of_hasCompactSupport heta.2.1
+  have hbd (Y : ℝ) : |eta Y * Phi (z.1 - Y, z.2) - eta Y * Phi (w.1 - Y, w.2)| ≤
+      eta Y * B := by
+    rw [← mul_sub, abs_mul, abs_of_nonneg (heta.2.2.1 Y)]
+    apply mul_le_mul_of_nonneg_left _ (heta.2.2.1 Y)
+    have he : z.1 - Y - (w.1 - Y) = z.1 - w.1 := by ring
+    simpa using hm (z.1 - Y, z.2) (w.1 - Y, w.2)
+  rw [positionConvolution_displacement, positionConvolution_displacement,
+    ← integral_sub hzi hwi]
+  calc
+    _ ≤ ∫ Y, |eta Y * Phi (z.1 - Y, z.2) - eta Y * Phi (w.1 - Y, w.2)| :=
+      abs_integral_le_integral_abs
+    _ ≤ ∫ Y, eta Y * B := integral_mono (hzi.sub hwi).abs (hηi.mul_const B) hbd
+    _ = B := by rw [integral_mul_const, heta.2.2.2, one_mul]
+
 
 /-- The positive position smoothing radius tends to zero. -/
 def barrierMollifierRadius (n : ℕ) : ℝ := 1 / ((n : ℝ) + 1)
@@ -44,11 +86,9 @@ theorem barrier_position_mollifier_tendsto {alpha : ℝ} {phi : (ℝ × ℝ) →
     (h : IsBellmanHomogeneous alpha phi) (ha : 0 < alpha) (q : ℝ × ℝ) :
     Tendsto (fun n => positionConvolution (barrierMollifier n)
       (bellmanOriginExtension phi) q) atTop (𝓝 (bellmanOriginExtension phi q)) := by
-  have hc : Continuous (fun X : ℝ => bellmanOriginExtension phi (X, q.2)) :=
+  have hc : Continuous (fun X => bellmanOriginExtension phi (X, q.2)) :=
     (h.origin_extension_continuous ha).comp (continuous_id.prodMk continuous_const)
-  have hh := ContDiffBump.convolution_tendsto_right_of_continuous (μ := volume)
-    (φ := barrierMollifierBump) barrierMollifierRadius_tendsto hc q.1
-  simpa only [positionConvolution_displacement, barrierMollifier, convolution_def,
-    ContinuousLinearMap.lsmul_apply, smul_eq_mul] using hh
+  simpa [positionConvolution_displacement, barrierMollifier, convolution_def, ContinuousLinearMap.lsmul_apply] using (ContDiffBump.convolution_tendsto_right_of_continuous (μ := volume) (φ := barrierMollifierBump) barrierMollifierRadius_tendsto hc q.1)
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous
+

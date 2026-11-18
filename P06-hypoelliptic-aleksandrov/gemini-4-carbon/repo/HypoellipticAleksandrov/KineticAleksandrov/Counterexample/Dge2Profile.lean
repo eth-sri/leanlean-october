@@ -44,9 +44,9 @@ theorem profile_ge_two (d : ℕ) (hd : 2 ≤ d)
     hmeas, helliptic, hsolve⟩ := exists_geometricProfile_elliptic_solver d hd alpha ha ha1
   have hR : 0 < R := lt_trans (by norm_num) hR2
   let H : XV d → ℝ := geometricProfile alpha C₀ sigma R
-  obtain ⟨c, C₁, hc, _, hcompare⟩ := geometricProfile_comparison (d := d)
+  obtain ⟨c, C₁, hc, _, hcompare⟩ := geometricProfile_comparison
     alpha C₀ sigma R ha hC₀.le hsigma hR
-  obtain ⟨C₂, hC₂, hgrad⟩ := geometricProfile_velocity_gradient_bound (d := d)
+  obtain ⟨C₂, hC₂, hgrad⟩ := geometricProfile_velocity_gradient_bound
     alpha C₀ sigma R hsigma hR
   let C := max C₁ C₂
   have hC : 0 < C := lt_of_lt_of_le hC₂ (le_max_right _ _)
@@ -55,12 +55,10 @@ theorem profile_ge_two (d : ℕ) (hd : 2 ≤ d)
     geometricProfile_smooth_off_origin alpha C₀ sigma R hsigma hR, ?_, ?_, ?_, ?_⟩
   · exact fun r hr q => geometricProfile_homogeneous alpha C₀ sigma R r hr q
   · intro q
-    change c * Real.rpow (rho q) alpha ≤ H q ∧ H q ≤ C * Real.rpow (rho q) alpha
     refine ⟨(hcompare q).1, (hcompare q).2.trans ?_⟩
     exact mul_le_mul_of_nonneg_right (le_max_left _ _) (Real.rpow_nonneg (rho_nonneg q) _)
   · exact hsolve
   · intro q hq
-    change PDE.vecEuclideanNorm (dv H q) ≤ C * Real.rpow (rho q) (alpha - 1)
     exact (hgrad q hq).trans (mul_le_mul_of_nonneg_right (le_max_right _ _)
       (Real.rpow_nonneg (rho_nonneg q) _))
 

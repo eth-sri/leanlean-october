@@ -26,7 +26,6 @@ def conservationDatum (N : ℕ) : BoundedBorel (EvolutionAmbientState 1) :=
 /-- Conservation cutoffs take values in the unit interval. -/
 theorem conservationDatum_bounds (N : ℕ) (x : EvolutionAmbientState 1) :
     0 ≤ conservationDatum N x ∧ conservationDatum N x ≤ 1 := by
-  change 0 ≤ zCutoffN 1 N x.1 * zCutoffN 1 N x.2 ∧ _
   exact ⟨mul_nonneg (zCutoffN_mem_Icc 1 N x.1).1 (zCutoffN_mem_Icc 1 N x.2).1,
     (mul_le_mul (zCutoffN_mem_Icc 1 N x.1).2 (zCutoffN_mem_Icc 1 N x.2).2
       (zCutoffN_mem_Icc 1 N x.2).1 zero_le_one).trans (by norm_num)⟩

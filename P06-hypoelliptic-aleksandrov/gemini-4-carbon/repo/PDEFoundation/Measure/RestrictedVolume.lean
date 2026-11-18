@@ -35,20 +35,12 @@ theorem IsBoundedDomain.isFiniteMeasure_volumeOn {d : ℕ}
 
 namespace IsOpenBoundedConvexDomain
 
-theorem volume_pos {d : ℕ} {U : Set (Vec d)}
-    (hU : IsOpenBoundedConvexDomain U) (hne : U.Nonempty) :
-    0 < MeasureTheory.volume U :=
-  hU.isOpen.measure_pos MeasureTheory.volume hne
 
 theorem volume_lt_top {d : ℕ} {U : Set (Vec d)}
     (hU : IsOpenBoundedConvexDomain U) :
     MeasureTheory.volume U < ⊤ :=
   hU.isBoundedDomain.volume_lt_top
 
-theorem volume_ne_top {d : ℕ} {U : Set (Vec d)}
-    (hU : IsOpenBoundedConvexDomain U) :
-    MeasureTheory.volume U ≠ ⊤ :=
-  hU.volume_lt_top.ne
 
 theorem isFiniteMeasure_volumeOn {d : ℕ} {U : Set (Vec d)}
     (hU : IsOpenBoundedConvexDomain U) :

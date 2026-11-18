@@ -38,9 +38,7 @@ theorem terminalDatum_eq_zero_of_collar {n : ℕ} {c : PDE.Vec n} {r₀ dstar : 
     {p : KineticPoint n} (hpt : p.time = τ) (hS : (r₀ - dstar) ^ 2 ≤ centreSq c γ p) :
     F (p.position, p.velocity) = 0 := by
   by_contra hne
-  have hmem : (p.position, p.velocity) ∈ tsupport (F : EvolutionAmbientState n → ℝ) :=
-    subset_tsupport _ (Function.mem_support.mpr hne)
-  have h1 := hsupp _ hmem
+  have h1 := hsupp _ (subset_tsupport _ (Function.mem_support.mpr hne))
   have h2 : r₀ - dstar ≤ PDE.vecEuclideanNorm (p.position - (γ τ + c)) := by
     unfold PDE.vecEuclideanNorm
     have h3 : (r₀ - dstar) ^ 2 ≤ PDE.vecNormSq (p.position - (γ τ + c)) := by
@@ -68,14 +66,14 @@ theorem le_of_barrierW_le {κ : ℝ} (hκ : 0 < κ) {s t : ℝ} (h : barrierW κ
 theorem isSliceRegularAt_terminalDatum {n : ℕ} {F : BoundedBorel (EvolutionAmbientState n)}
     (hF : ContDiff ℝ (⊤ : ℕ∞) F) (p : KineticPoint n) :
     IsSliceRegularAt (fun q : KineticPoint n => F (q.position, q.velocity)) p := by
-  have h2 : ContDiff ℝ 2 (F : EvolutionAmbientState n → ℝ) :=
+  have h2 :=
     hF.of_le (WithTop.coe_le_coe.mpr (le_top : (2 : ℕ∞) ≤ ⊤))
   refine ⟨?_, ?_, ?_⟩
   · exact differentiableAt_const (F (p.position, p.velocity))
-  · have : ContDiff ℝ 2 (fun y : PDE.Vec n => F (y, p.velocity)) :=
+  · have : ContDiff ℝ 2 (fun y => F (y, p.velocity)) :=
       h2.comp (contDiff_id.prodMk contDiff_const)
     exact this.contDiffAt
-  · have : ContDiff ℝ 2 (fun z : PDE.Vec n => F (p.position, z)) :=
+  · have : ContDiff ℝ 2 (fun z => F (p.position, z)) :=
       h2.comp (contDiff_const.prodMk contDiff_id)
     exact this.contDiffAt
 

@@ -78,7 +78,7 @@ theorem eq_of_bounded_of_dense {P : Type*} (T : P → C_c(X, ℝ))
     refine le_of_forall_pos_le_add fun ε hε => ?_
     have := key (ε / 2) (half_pos hε)
     linarith
-  have h0 : ℓ₁ f - ℓ₂ f = 0 := abs_nonpos_iff.mp this
+  have h0 := abs_nonpos_iff.mp this
   linarith
 
 /-- Positive extension from a dense probe family closed under squaring. -/
@@ -115,9 +115,9 @@ theorem exists_positive_extension_of_dense {P : Type*} [AddCommGroup P] [Module 
     (hgp f).trans (ccSupSeminorm_le hc h)
   have hgpos : ∀ f : C_c(X, ℝ), (∀ x, 0 ≤ f x) → 0 ≤ g f := by
     intro f hf
-    let k : C_c(X, ℝ) := f.compLeft ⟨Real.sqrt, Real.continuous_sqrt⟩
+    let k := f.compLeft ⟨Real.sqrt, Real.continuous_sqrt⟩
     have hk : ∀ x, k x = Real.sqrt (f x) := fun x =>
-      compLeft_apply (g := ⟨Real.sqrt, Real.continuous_sqrt⟩) (by simp) f x
+      compLeft_apply (by simp) f x
     have hkk : ∀ x, k x * k x = f x := fun x => by
       rw [hk]; exact Real.mul_self_sqrt (hf x)
     set M : ℝ := ccSupSeminorm k with hM
@@ -136,8 +136,8 @@ theorem exists_positive_extension_of_dense {P : Type*} [AddCommGroup P] [Module 
     have hGx : ∀ x, T G x = T F x * T F x := fun x => by rw [hG]; rfl
     have hbound : ∀ x, |f x - T G x| ≤ δ * (2 * M + 1) := by
       intro x
-      have h1 : |T F x - k x| ≤ δ := hF x
-      have h2 : |k x| ≤ M := abs_apply_le_ccSupSeminorm k x
+      have h1 := hF x
+      have h2 := abs_apply_le_ccSupSeminorm k x
       have h3 : |T F x + k x| ≤ 2 * M + 1 := by
         have : T F x + k x = (T F x - k x) + 2 * k x := by ring
         rw [this]
@@ -150,11 +150,11 @@ theorem exists_positive_extension_of_dense {P : Type*} [AddCommGroup P] [Module 
       exact mul_le_mul h1 h3 (abs_nonneg _) hδ0.le
     have hgGp : 0 ≤ g (T G) := by
       rw [hgT]; exact hpos G (fun x => by rw [hGx]; exact mul_self_nonneg _)
-    have hrest' : |g (f - T G)| ≤ ε :=
+    have hrest' :=
       (hgbd (f - T G) (δ * (2 * M + 1)) (by positivity) (fun x => by
         rw [CompactlySupportedContinuousMap.sub_apply]; exact hbound x)).trans hδε
     have hsplit : g f = g (T G) + g (f - T G) := by rw [← map_add]; congr 1; abel
-    have hneg : -ε ≤ g (f - T G) := (neg_le_neg hrest').trans (neg_abs_le _)
+    have hneg := (neg_le_neg hrest').trans (neg_abs_le _)
     linarith
   have hnn : ∀ f : C_c(X, ℝ), 0 ≤ f → 0 ≤ g f := fun f hf =>
     hgpos f (fun x => by simpa using (CompactlySupportedContinuousMap.le_def.1 hf) x)

@@ -40,38 +40,32 @@ def IsStripEvolution {lam Lam : ℝ} (A : SmoothAutonomous lam Lam) (H : Interva
   RealizesTerminalEvolution (intervalDomain H) (fun _ => 0) (intervalDomain_measurable H)
     (evolutionCoefficient A.a) (identityDrift 1) E.1 E.2
 
-/-- The autonomous killed evolution is supplied by the full-coefficient existence theorem. -/
-theorem autonomous_evolution_instance
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : Interval) :
-    ∃ E : StripEvolution H, IsStripEvolution A H E := by
-  obtain ⟨S, K, hc, -, -, -, -, hi, -, -, -, -, he, hcomp, -, -, -⟩ :=
-    exists_terminalEvolution_of_classical hLE hH 1 (by omega) lam Lam 1 1
-      hlam hLam one_pos le_rfl (intervalDomain H) (fun _ => 0)
-      (evolutionCoefficient A.a) (identityDrift 1) (intervalDomain_admissible H)
-      (zeroCurve_piecewiseC1 1) (evolutionCoefficient_smooth A)
-      (evolutionCoefficient_symmetric A.a) (evolutionCoefficient_bounds A)
-      (identityDrift_smooth 1) (identityDrift_bounds 1).1 (identityDrift_bounds 1).2
-  exact ⟨(S, K), hc, hi, he, hcomp⟩
 
-/-- Uniqueness holds for every realizing pair, rather than for a selected construction. -/
-theorem stripEvolution_unique {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
-    (H : Interval) (E E' : StripEvolution H)
-    (hE : IsStripEvolution A H E) (hE' : IsStripEvolution A H E') : E = E' := by
-  obtain ⟨hS, hK⟩ := terminalEvolution_unique (intervalDomain H) (fun _ => 0)
-    (intervalDomain_admissible H) (evolutionCoefficient A.a) (identityDrift 1)
-    E.1 E'.1 E.2 E'.2 hE hE'
-  exact Prod.ext hS hK
 
 /-- Existence and uniqueness precede the definition of a canonical killed family. -/
 theorem existsUnique_stripEvolution
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
     {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (H : Interval) :
-    ∃! E : StripEvolution H, IsStripEvolution A H E := by
-  obtain ⟨E, hE⟩ := autonomous_evolution_instance hH hLE hlam hLam A H
-  exact ⟨E, hE, fun E' hE' => stripEvolution_unique A H E' E hE' hE⟩
+    ∃! E : StripEvolution H, IsStripEvolution A H E   := by
+  have stripEvolution_unique (E : StripEvolution H) (E' : StripEvolution H) (hE : IsStripEvolution A H E) (hE' : IsStripEvolution A H E') :
+      E = E' := by
+    obtain ⟨hS, hK⟩ := terminalEvolution_unique (intervalDomain H) (fun _ => 0)
+      (intervalDomain_admissible H) (evolutionCoefficient A.a) (identityDrift 1)
+      E.1 E'.1 E.2 E'.2 hE hE'
+    exact Prod.ext hS hK
+  have autonomous_evolution_instance :
+      ∃ E : StripEvolution H, IsStripEvolution A H E := by
+    obtain ⟨S, K, hc, -, -, -, -, hi, -, -, -, -, he, hcomp, -, -, -⟩ :=
+      exists_terminalEvolution_of_classical hLE hH 1 (by omega) lam Lam 1 1
+        hlam hLam one_pos le_rfl (intervalDomain H) (fun _ => 0)
+        (evolutionCoefficient A.a) (identityDrift 1) (intervalDomain_admissible H)
+        (zeroCurve_piecewiseC1 1) (evolutionCoefficient_smooth A)
+        (evolutionCoefficient_symmetric A.a) (evolutionCoefficient_bounds A)
+        (identityDrift_smooth 1) (identityDrift_bounds 1).1 (identityDrift_bounds 1).2
+    exact ⟨(S, K), hc, hi, he, hcomp⟩
+  obtain ⟨E, hE⟩ := autonomous_evolution_instance
+  exact ⟨E, hE, fun E' hE' => stripEvolution_unique E' E hE' hE⟩
 
 /-- The canonical pair is chosen solely from its proved unique characterization. -/
 def stripEvolution

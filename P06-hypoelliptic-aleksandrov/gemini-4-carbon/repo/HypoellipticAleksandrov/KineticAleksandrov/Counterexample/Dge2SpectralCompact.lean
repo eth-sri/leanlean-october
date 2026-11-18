@@ -32,7 +32,7 @@ theorem exists_spectral_weight_on_compact {X : Type*} [TopologicalSpace X]
       · exact add_pos_of_pos_of_nonneg (lt_of_le_of_ne (hm0 x hx) (Ne.symm hmx))
           (le_max_left _ _)
     obtain ⟨x₀, hx₀, hmin⟩ := hK.exists_isMinOn hne hg
-    have hd : 0 < g x₀ := hgpos x₀ hx₀
+    have hd := hgpos x₀ hx₀
     obtain ⟨B₀, hB₀⟩ := hK.bddAbove_image hb.abs
     let B := max 0 B₀
     have hB : 0 ≤ B := le_max_left _ _
@@ -41,9 +41,8 @@ theorem exists_spectral_weight_on_compact {X : Type*} [TopologicalSpace X]
       exact (hB₀ ⟨x, hx, rfl⟩).trans (le_max_right _ _)
     let cminus := 1 + B / g x₀
     have hc : 1 ≤ cminus := by
-      dsimp [cminus]
       exact le_add_of_nonneg_right (div_nonneg hB hd.le)
-    have hc0 : 0 < cminus := lt_of_lt_of_le zero_lt_one hc
+    have hc0 := lt_of_lt_of_le zero_lt_one hc
     have heq : cminus * g x₀ = g x₀ + B := by
       dsimp [cminus]
       field_simp
@@ -57,7 +56,7 @@ theorem exists_spectral_weight_on_compact {X : Type*} [TopologicalSpace X]
       have hh : g x₀ + B ≤ cminus * m x := by
         rw [← heq]
         exact mul_le_mul_of_nonneg_left hmx hc0.le
-      have hlow : -B ≤ b x := (abs_le.mp (hbound x hx)).1
+      have hlow := (abs_le.mp (hbound x hx)).1
       linarith
   · refine ⟨1, le_rfl, ?_⟩
     intro x hx

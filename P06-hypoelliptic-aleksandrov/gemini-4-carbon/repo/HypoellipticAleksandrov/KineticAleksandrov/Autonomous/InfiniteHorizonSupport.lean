@@ -1,3 +1,0 @@
-module
-public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.InfiniteHorizonRestriction
-public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ExitConeOneSign

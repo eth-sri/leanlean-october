@@ -1,6 +1,0 @@
-module
-public import HypoellipticAleksandrov.Parabolic.SpatialSliceFDerivMeasurability
-public import HypoellipticAleksandrov.Parabolic.LocalCompactSupportIntegrationByParts
-public import HypoellipticAleksandrov.Parabolic.WeakDerivatives
-public import Mathlib.MeasureTheory.Integral.Prod
-public import Mathlib.MeasureTheory.Function.LpSpace.Indicator

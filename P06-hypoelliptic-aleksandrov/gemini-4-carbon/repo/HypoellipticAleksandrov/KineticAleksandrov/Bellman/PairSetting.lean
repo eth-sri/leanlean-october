@@ -28,15 +28,14 @@ def bellmanDegrees (lam Lam : ℝ) : Set ℝ :=
 theorem mem_bellmanAdmissibleDegrees_iff (ratio β : ℝ) :
     β ∈ bellmanAdmissibleDegrees ratio ↔
       ∃ μ η : Measure BellmanPuncturedPlane, IsBellmanAdjointPair 1 ratio β μ η := by
-  simp only [bellmanAdmissibleDegrees, Set.mem_ofPred_eq, IsBellmanAdjointPair,
-    IsBellmanRadon, ENNReal.ofReal_one, one_smul, and_assoc]
+  simp [bellmanAdmissibleDegrees, IsBellmanAdjointPair, IsBellmanRadon, and_assoc]
 
 /-- Nontriviality of a compared pair forces its first measure to be nonzero. -/
 theorem IsBellmanAdjointPair.left_ne_zero {lam Lam β : ℝ}
     {μ η : Measure BellmanPuncturedPlane} (h : IsBellmanAdjointPair lam Lam β μ η) :
     μ ≠ 0 := by
   intro hμ
-  have hη : η = 0 := le_antisymm (by simpa only [hμ, smul_zero] using h.2.2.2.2.1)
+  have hη : η = 0 := le_antisymm (by simpa [hμ] using h.2.2.2.2.1)
     (bot_le : (⊥ : Measure BellmanPuncturedPlane) ≤ η)
   rcases h.2.2.1 with h | h
   · exact h hμ

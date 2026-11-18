@@ -42,16 +42,9 @@ theorem setIntegral_mul_evolution_directional_test
     rw [Function.mem_support] at hz ⊢
     intro hzero
     exact hz (by simp [hzero])
-  have hglobal := integral_bilinear_hasLineDerivAt_right_eq_neg_left_of_integrable
-    (B := ContinuousLinearMap.mul ℝ ℝ)
-    (integrable_evolution_mul_test hdf hφ.continuous hc hsub)
-    (integrable_evolution_mul_test hf hDcont hDcompact (hDsub.trans hsub))
-    (integrable_evolution_mul_test hf hφ.continuous hc hsub)
-    (fun z hz => hd z (hsub hz))
-    (fun z _ => (hφ.differentiable (by simp) z).hasFDerivAt.hasLineDerivAt v)
   rw [setIntegral_eq_integral_of_forall_compl_eq_zero (fun z hz => ?_),
     setIntegral_eq_integral_of_forall_compl_eq_zero (fun z hz => ?_)]
-  · exact hglobal
+  · exact (integral_bilinear_hasLineDerivAt_right_eq_neg_left_of_integrable (B := ContinuousLinearMap.mul ℝ ℝ) (integrable_evolution_mul_test hdf hφ.continuous hc hsub) (integrable_evolution_mul_test hf hDcont hDcompact (hDsub.trans hsub)) (integrable_evolution_mul_test hf hφ.continuous hc hsub) (fun z hz => hd z (hsub hz)) (fun z _ => (hφ.differentiable (by simp) z).hasFDerivAt.hasLineDerivAt v))
   · rw [image_eq_zero_of_notMem_tsupport (fun h => hz (hsub h)), mul_zero]
   · rw [image_eq_zero_of_notMem_tsupport (fun h => hz ((hDsub.trans hsub) h)), mul_zero]
 
@@ -77,7 +70,7 @@ theorem setIntegral_mul_evolution_second_test
     (∫ x in U, f x * fderiv ℝ (fun y => fderiv ℝ φ y w) x v) =
       ∫ x in U, ddf x * φ x := by
   have hD : ContDiff ℝ (⊤ : ℕ∞) (fun y => fderiv ℝ φ y w) :=
-    (hφ.fderiv_right (by simp)).clm_apply (contDiff_const (c := w))
+    (hφ.fderiv_right (by simp)).clm_apply (contDiff_const)
   rw [setIntegral_mul_evolution_directional_test hf hdf v hd hD
     (hc.fderiv_apply (𝕜 := ℝ) w) ((tsupport_evolution_fderiv_apply φ w).trans hsub),
     setIntegral_mul_evolution_directional_test hdf hddf w hdd hφ hc hsub, neg_neg]

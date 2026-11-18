@@ -19,7 +19,7 @@ theorem scalar_identity_le {d : ℕ} (a b : ℝ) (hab : a ≤ b) :
     a • (1 : PDE.Mat d) ≤ b • (1 : PDE.Mat d) := by
   apply Matrix.le_iff.mpr
   simpa only [sub_smul] using
-    (Matrix.PosSemidef.one (n := Fin d) (R := ℝ)).smul (sub_nonneg.mpr hab)
+    (Matrix.PosSemidef.one (R := ℝ)).smul (sub_nonneg.mpr hab)
 
 /-- The literal scalar coefficient is entrywise measurable. -/
 theorem measurable_scalarProfileCoefficient (Lam : ℝ) (i k : Fin 1) :
@@ -49,26 +49,26 @@ theorem counterProfile_one (alpha : ℝ) (ha : 0 < alpha) (ha1 : alpha < 1)
     apply homogeneous_component_locallyIntegrable 1 (by omega) (fun q => gx q i)
       ((measurable_pi_apply i).comp hmx) (alpha - 3) (by linarith) (by linarith)
     · intro r hr q
-      simpa only [Pi.smul_apply, smul_eq_mul] using congrArg (fun w => w i) (hjhom r hr q).1
+      simpa using congrArg (fun w => w i) (hjhom r hr q).1
     · intro K hK hz
       obtain ⟨M, hM⟩ := hb K hK hz
-      exact ⟨M, fun q hq => (by simpa only [Real.norm_eq_abs] using
+      exact ⟨M, fun q hq => (by simpa using
         (norm_le_pi_norm (gx q) i).trans (hM q hq).1)⟩
   have hv (i : Fin 1) : LocallyIntegrable (fun q => gv q i) volume := by
     apply homogeneous_component_locallyIntegrable 1 (by omega) (fun q => gv q i)
       ((measurable_pi_apply i).comp hmv) (alpha - 1) (by linarith) (by linarith)
     · intro r hr q
-      simpa only [Pi.smul_apply, smul_eq_mul] using
+      simpa using
         congrArg (fun w => w i) (hjhom r hr q).2.1
     · intro K hK hz
       obtain ⟨M, hM⟩ := hb K hK hz
-      exact ⟨M, fun q hq => (by simpa only [Real.norm_eq_abs] using
+      exact ⟨M, fun q hq => (by simpa using
         (norm_le_pi_norm (gv q) i).trans (hM q hq).2.1)⟩
   have hh (i k : Fin 1) : LocallyIntegrable (fun q => hess q i k) volume := by
     apply homogeneous_component_locallyIntegrable 1 (by omega) (fun q => hess q i k)
       (hmh i k) (alpha - 2) (by linarith) (by linarith)
     · intro r hr q
-      simpa only [Matrix.smul_apply, smul_eq_mul] using
+      simpa using
         congrArg (fun w => w i k) (hjhom r hr q).2.2
     · intro K hK hz
       obtain ⟨M, hM⟩ := hb K hK hz
@@ -85,7 +85,7 @@ theorem counterProfile_one (alpha : ℝ) (ha : 0 < alpha) (ha1 : alpha < 1)
     apply hq.1
     ext i
     have hi : i = 0 := Subsingleton.elim _ _
-    simpa only [hi, Pi.zero_apply] using hz
+    simpa [hi] using hz
   exact hsmooth.contDiffAt
     ((isOpen_ne.preimage ((continuous_apply 0).comp continuous_fst)).mem_nhds hq0)
 

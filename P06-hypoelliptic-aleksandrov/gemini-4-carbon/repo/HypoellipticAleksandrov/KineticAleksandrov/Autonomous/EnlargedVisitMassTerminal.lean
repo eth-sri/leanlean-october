@@ -68,7 +68,7 @@ theorem enlargedActiveExit_ae_quadratic_zero_or_terminal
       rcases hq.2 with hv | hv
       · exact hv ▸ (visitQuadratic_endpoints c).1
       · exact hv ▸ (visitQuadratic_endpoints c).2
-  · simp only [ae_zero, Filter.eventually_bot]
+  · simp
 
 /-- At the horizon, the actual terminal mixture is precisely the restricted exit mixture. -/
 theorem enlargedActiveTerminal_bind_eq_restrict
@@ -118,9 +118,9 @@ theorem enlargedQuadratic_exit_integral_eq_terminal
   filter_upwards [enlargedActiveExit_ae_quadratic_zero_or_terminal
     hH hLE hlam hLam A c J T hJ mu] with q hq
   rcases hq with hq | hq
-  · simp only [Set.indicator, mem_ofPred_eq, hq, ite_true]
+  · simp [Set.indicator, hq]
   · by_cases htq : q.time = T
-    · simp only [Set.indicator, mem_ofPred_eq, htq, ite_true]
-    · simp only [Set.indicator, mem_ofPred_eq, htq, ite_false, hq]
+    · simp [Set.indicator, htq]
+    · simp [Set.indicator, htq, hq]
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

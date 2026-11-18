@@ -40,18 +40,14 @@ theorem enlarged_exit_probe_right_limit
       ∂stripExit hH hLE hlam hLam A H (t n) (stripPoleFinite H e (t n) (ht n)))
       atTop (𝓝 (∫ p, exitProbePhysical f p
         ∂stripExit hH hLE hlam hLam A H b (stripPoleFinite H e b hb))) := by
-  dsimp only
   let t := fun n : ℕ => b + 1 / ((n : ℝ) + 1)
   have ht (n : ℕ) : e.1.time < t n := hb.trans (by
-      dsimp [t]
       exact lt_add_of_pos_right b (by positivity))
   have htlim : Tendsto t atTop (𝓝 b) := by
     simpa only [add_zero] using tendsto_one_div_add_atTop_nhds_zero_nat.const_add b
   let G := stripGreen hH hLE hlam hLam A H ⊤ e
   let g := forwardScalarOperator A.a (exitProbePhysical f)
-  have hg : Integrable g G :=
-    stripGreen_integrable hH hLE hlam hLam A H ⊤ e (exitProbeOperatorDatum A f)
-  let D := fun n : ℕ => {p : Point | p.time < t n}
+  let D := fun n => {p : Point | p.time < t n}
   have hanti : Antitone D := by
     intro n m hnm p hp
     have hn : (n : ℝ) ≤ m := Nat.cast_le.mpr hnm
@@ -69,17 +65,15 @@ theorem enlarged_exit_probe_right_limit
     · intro hp
       apply mem_iInter.mpr
       intro n
-      change p.time < b + 1 / ((n : ℝ) + 1)
       exact hp.trans_lt (lt_add_of_pos_right b (by positivity))
   have hi := tendsto_setIntegral_of_antitone
     (fun n => (isOpen_lt continuous_time continuous_const).measurableSet) hanti
-      (⟨0, hg.integrableOn⟩ : ∃ n, IntegrableOn g (D n) G)
+      (⟨0, (stripGreen_integrable hH hLE hlam hLam A H ⊤ e (exitProbeOperatorDatum A f)).integrableOn⟩ : ∃ n, IntegrableOn g (D n) G)
   rw [hD] at hi
   have hae : {p : Point | p.time ≤ b} =ᵐ[G] {p | p.time < b} := by
-    have hz := enlarged_stripGreen_time_slice_zero hH hLE hlam hLam A H e b
     have hn : ∀ᵐ p ∂G, p.time ≠ b := by
       rw [ae_iff]
-      simpa only [not_not] using hz
+      simpa using (enlarged_stripGreen_time_slice_zero hH hLE hlam hLam A H e b)
     filter_upwards [hn] with p hp
     exact propext (lt_iff_le_and_ne.trans (and_iff_left hp)).symm
   rw [Measure.restrict_congr_set hae] at hi
@@ -92,8 +86,7 @@ theorem enlarged_exit_probe_right_limit
       (stripEvolution_spec hH hLE hlam hLam A H) B (stripPoleFinite H e B hB) f
     change _ = exitProbePhysical f e.1 + ∫ p, g p
       ∂stripGreen hH hLE hlam hLam A H B (stripPoleFinite H e B hB) at h
-    rw [stripGreen_finite_restrict_infinite] at h
-    exact h
+    rwa [stripGreen_finite_restrict_infinite] at h
   have hf := hi.const_add (exitProbePhysical f e.1)
   rw [← hp b hb] at hf
   exact hf.congr (fun n => (hp (t n) (ht n)).symm)

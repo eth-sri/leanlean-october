@@ -124,8 +124,7 @@ theorem evolution_clauses_of_realization
   have hr₀ : RealizesTerminalEvolution Ω γ
       (measurableSet_of_isAdmissibleEvolutionDomain hΩ) B b S₀ K₀ :=
     ⟨hc, hi, he, hcomp⟩
-  have hunique := terminalEvolution_unique Ω γ hΩ B b S S₀ K K₀ hreal hr₀
-  rw [hunique.2]
+  rw [(terminalEvolution_unique Ω γ hΩ B b S S₀ K K₀ hreal hr₀).2]
   exact ⟨hcov, hdom, hpar⟩
 
 /-- The full evolution premise supplies the marginal bundle for every whole-space realization. -/

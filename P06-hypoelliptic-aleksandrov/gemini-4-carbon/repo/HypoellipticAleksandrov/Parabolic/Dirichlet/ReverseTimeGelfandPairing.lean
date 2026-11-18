@@ -26,7 +26,7 @@ private theorem scalarLpToH10HilbertGraphDual_apply_smul
       inner ℝ (valueCLM hΩ v0) (valueCLM hΩ u0) * q0 := by
   rw [scalarLpToH10HilbertGraphDual_apply, (valueCLM hΩ).map_smul,
     inner_smul_left]
-  simp only [starRingEnd_apply, star_trivial]
+  simp
   ring
 
 /-- Pairing the Gelfand image with a bounded separated multiplier is the
@@ -46,7 +46,6 @@ theorem reverseTimeGelfand_pairing_multiplier_eq_integral
         ∂reverseTimeVolume T := by
   let G := reverseTimeGelfandCLM hΩ T u
   let z := reverseTimeSeparatedVTestOfMemLp hΩ q hq v
-  change reverseTimeDualPairingRightCLM hΩ T z G = _
   calc
     reverseTimeDualPairingRightCLM hΩ T z G =
         reverseTimeDualPairingCLM hΩ T G z :=
@@ -57,7 +56,6 @@ theorem reverseTimeGelfand_pairing_multiplier_eq_integral
       apply integral_congr_ae
       filter_upwards [coeFn_reverseTimeGelfandCLM hΩ T u,
         ae_reverseTimeSeparatedVTestOfMemLp hΩ q hq v] with tau hG hz
-      dsimp only [G, z]
       rw [hG, hz]
       exact scalarLpToH10HilbertGraphDual_apply_smul hΩ (u tau) v (q tau)
 

@@ -9,19 +9,18 @@ import Mathlib.Tactic
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
 
-/-- The core lies in the closed entrance interval. -/
-theorem visitCore_subset_closedEntrance (c : Clock) : c.core ⊆ closure c.entrance := by
-  have ho : c.vbar - c.r / 2 < c.vbar + c.r / 2 := by linarith [c.positive]
-  rw [Clock.entrance, closure_Ioo ho.ne]
-  intro v hv
-  change c.vbar - c.r / 2 ≤ v ∧ v ≤ c.vbar + c.r / 2
-  constructor <;> linarith [hv.1, hv.2, c.positive]
 
 /-- The actual waiting union is disjoint from the core. -/
 theorem visitWaiting_disjoint_core (c : Clock) (J : Interval) :
-    Disjoint (visitWaitingUnion c J).carrier c.core := by
+    Disjoint (visitWaitingUnion c J).carrier c.core  := by
+  have visitCore_subset_closedEntrance :
+      c.core ⊆ closure c.entrance := by
+    have ho : c.vbar - c.r / 2 < c.vbar + c.r / 2 := by linarith [c.positive]
+    rw [Clock.entrance, closure_Ioo ho.ne]
+    intro v hv
+    constructor <;> linarith [hv.1, hv.2, c.positive]
   rw [visitWaitingUnion_carrier]
-  exact Set.disjoint_left.mpr fun v hv hc => hv.2 (visitCore_subset_closedEntrance c hc)
+  exact Set.disjoint_left.mpr fun v hv hc => hv.2 (visitCore_subset_closedEntrance hc)
 
 /-- Actual componentwise Green measures are supported in the union's velocity carrier. -/
 theorem visitUnionGreen_ae_velocity
@@ -47,9 +46,7 @@ theorem visitWaitingGreenKernel_core_zero
       (visitPoleInclusion _ s T ⟨p, hp⟩) else 0) {q | q.velocity 0 ∈ c.core} = 0
   split
   · rename_i hp
-    have hae := visitUnionGreen_ae_velocity hH hLE hlam hLam A (visitWaitingUnion c J) T
-      (visitPoleInclusion _ s T ⟨p, hp⟩)
-    have hz := ae_iff.mp hae
+    have hz := ae_iff.mp (visitUnionGreen_ae_velocity hH hLE hlam hLam A (visitWaitingUnion c J) T (visitPoleInclusion _ s T ⟨p, hp⟩))
     apply le_antisymm _ zero_le
     apply (measure_mono (show {q : Point | q.velocity 0 ∈ c.core} ⊆
         {q | q.velocity 0 ∉ (visitWaitingUnion c J).carrier} from

@@ -103,7 +103,7 @@ theorem smoothCompactlySupportedH1Graph_mem_h10Graph
     (hU : IsOpen U) (φ : WeakTestFunction U) :
     smoothCompactlySupportedH1Graph hU φ ∈
       (h10GraphClosedSubmodule hU).toSubmodule :=
-  smoothCompactlySupportedW1pGraph_mem_w10pGraph (p := (2 : ℝ≥0∞)) hU φ
+  smoothCompactlySupportedW1pGraph_mem_w10pGraph (p := 2) hU φ
 
 namespace H1Function
 
@@ -153,15 +153,6 @@ namespace H10Function
 
 variable {u : H10Function U}
 
-@[ext]
-theorem ext {u v : H10Function U}
-    (htoH1Function : u.toH1Function = v.toH1Function)
-    (happrox : u.approx = v.approx) : u = v := by
-  cases u
-  cases v
-  cases htoH1Function
-  cases happrox
-  rfl
 
 /-- Recover the exact supported smooth approximation certificate bundled by an
 `H10Function`. -/
@@ -174,11 +165,6 @@ def supportedSmoothApproximation (u : H10Function U) :
   tendsto_value := u.tendsto_approx
   tendsto_grad := u.tendsto_approx_grad
 
-@[simp]
-theorem supportedSmoothApproximation_toH10Function (u : H10Function U) :
-    u.toH1Function.toH10Function u.supportedSmoothApproximation = u := by
-  cases u
-  rfl
 
 /-- The `n`th approximation bundled by an `H10Function`, exposed as an actual
 smooth compactly supported test function. -/
@@ -267,12 +253,6 @@ end H10Function
 
 namespace H1Function
 
-@[simp]
-theorem toH10Function_supportedSmoothApproximation
-    (u : H1Function U) (happrox : u.SupportedSmoothApproximation) :
-    (u.toH10Function happrox).supportedSmoothApproximation = happrox := by
-  cases happrox
-  rfl
 
 end H1Function
 
@@ -284,7 +264,7 @@ theorem exists_tendsto_smooth (hU : IsOpen U) (u : H10Graph hU) :
     ∃ φ : ℕ → WeakTestFunction U,
       Tendsto (fun n => smoothCompactlySupportedH1Graph hU (φ n))
         atTop (𝓝 (u : H1Graph U)) :=
-  W10pGraph.exists_tendsto_smooth (p := (2 : ℝ≥0∞)) hU u
+  W10pGraph.exists_tendsto_smooth (p := 2) hU u
 
 end H10Graph
 

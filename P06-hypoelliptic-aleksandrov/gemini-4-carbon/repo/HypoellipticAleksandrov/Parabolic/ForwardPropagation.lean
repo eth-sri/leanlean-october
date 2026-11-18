@@ -1,15 +1,18 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.ForwardPropagationGeometry
-public import HypoellipticAleksandrov.Parabolic.MovingLensComparison
+public import Mathlib.Tactic.Ring
+public import Mathlib.Tactic.Positivity
+public import Mathlib.Tactic.Linarith
+public import Mathlib.Tactic.FieldSimp
+public import HypoellipticAleksandrov.Parabolic.MovingLensSign
+public import HypoellipticAleksandrov.Parabolic.MinimumPrinciple
+public import HypoellipticAleksandrov.Parabolic.LocalClassical
+public import Mathlib.Topology.Order.Compact
 public import HypoellipticAleksandrov.Parabolic.Scaling
 public import Mathlib.Analysis.SpecificLimits.Basic
-public import Mathlib.Tactic.FieldSimp
 public import Mathlib.Tactic.GCongr
-public import Mathlib.Tactic.Linarith
 public import Mathlib.Tactic.NormNum
-public import Mathlib.Tactic.Positivity
-public import Mathlib.Tactic.Ring
 
 /-!
 # Normalized forward propagation

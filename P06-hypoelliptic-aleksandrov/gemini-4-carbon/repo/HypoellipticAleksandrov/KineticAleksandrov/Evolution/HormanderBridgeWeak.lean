@@ -55,23 +55,6 @@ section Iff
 
 variable {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n} {lam Lam : ℝ}
 
-/-- For the fields of `Lop`, the Hörmander weak equation with `c = 0` is the distributional
-equation `Lop u = g` together with smoothness of `g` on `Ω`. -/
-theorem hasWeakHormanderEquation_transportedFields_iff (hlam : 0 < lam)
-    (hB : IsSmoothFullKineticCoefficient B) (hell : HasEverywhereLoewnerBounds lam Lam B)
-    (hb : IsSmoothDrift b) (Ω : Set (EvolutionVec n)) (u g : EvolutionVec n → ℝ) :
-    HasWeakHormanderEquation Ω (transportedFields B b) (fun _ => 0) g u ↔
-      IsWeakTransportedSolution B b Ω u g ∧ ContDiffOn ℝ (⊤ : ℕ∞) g Ω := by
-  have key : ∀ ψ : EvolutionVec n → ℝ, ContDiff ℝ (⊤ : ℕ∞) ψ →
-      hormanderAdjointTest (transportedFields B b) (fun _ => 0) ψ = transportedAdjoint B b ψ :=
-    fun ψ hψ => funext (hormanderAdjointTest_transportedFields hlam hB hell hb hψ)
-  constructor
-  · rintro ⟨hu, hg, h⟩
-    refine ⟨⟨hu, fun ψ hψ hc hs => ?_⟩, hg⟩
-    simpa only [key ψ hψ] using h ψ hψ hc hs
-  · rintro ⟨⟨hu, h⟩, hg⟩
-    refine ⟨hu, hg, fun ψ hψ hc hs => ?_⟩
-    simpa only [key ψ hψ] using h ψ hψ hc hs
 
 /-- **Weak-form bridge for `Lop`.**  A distributional solution of `Lop u = g` (with `g` smooth on
 `Ω`) satisfies the Hörmander weak equation for `transportedFields B b`, `c = 0`. -/
@@ -79,8 +62,21 @@ theorem hasWeakHormanderEquation_transportedFields (hlam : 0 < lam)
     (hB : IsSmoothFullKineticCoefficient B) (hell : HasEverywhereLoewnerBounds lam Lam B)
     (hb : IsSmoothDrift b) {Ω : Set (EvolutionVec n)} {u g : EvolutionVec n → ℝ}
     (hu : IsWeakTransportedSolution B b Ω u g) (hg : ContDiffOn ℝ (⊤ : ℕ∞) g Ω) :
-    HasWeakHormanderEquation Ω (transportedFields B b) (fun _ => 0) g u :=
-  (hasWeakHormanderEquation_transportedFields_iff hlam hB hell hb Ω u g).2 ⟨hu, hg⟩
+    HasWeakHormanderEquation Ω (transportedFields B b) (fun _ => 0) g u  := by
+  have hasWeakHormanderEquation_transportedFields_iff (Ω : Set (EvolutionVec n)) (u : EvolutionVec n → ℝ) (g : EvolutionVec n → ℝ) :
+      HasWeakHormanderEquation Ω (transportedFields B b) (fun _ => 0) g u ↔
+      IsWeakTransportedSolution B b Ω u g ∧ ContDiffOn ℝ (⊤ : ℕ∞) g Ω := by
+    have key : ∀ ψ : EvolutionVec n → ℝ, ContDiff ℝ (⊤ : ℕ∞) ψ →
+        hormanderAdjointTest (transportedFields B b) (fun _ => 0) ψ = transportedAdjoint B b ψ :=
+      fun ψ hψ => funext (hormanderAdjointTest_transportedFields hlam hB hell hb hψ)
+    constructor
+    · rintro ⟨hu, hg, h⟩
+      refine ⟨⟨hu, fun ψ hψ hc hs => ?_⟩, hg⟩
+      simpa only [key ψ hψ] using h ψ hψ hc hs
+    · rintro ⟨⟨hu, h⟩, hg⟩
+      refine ⟨hu, hg, fun ψ hψ hc hs => ?_⟩
+      simpa only [key ψ hψ] using h ψ hψ hc hs
+  exact (hasWeakHormanderEquation_transportedFields_iff Ω u g).2 ⟨hu, hg⟩
 
 /-- For the fields of `L_ε` (`ε ≥ 0`), the Hörmander weak equation with `c = 0` is the
 distributional equation `L_ε u = g` together with smoothness of `g` on `Ω`. -/

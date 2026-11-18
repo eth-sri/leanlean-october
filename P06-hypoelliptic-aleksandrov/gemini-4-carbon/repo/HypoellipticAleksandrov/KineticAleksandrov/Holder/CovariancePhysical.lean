@@ -50,9 +50,7 @@ theorem posDef_gramian {lam h s : ℝ} (hlam : 0 < lam) (hh : 0 < h)
   have hdet : (covarianceDilation h).det ≠ 0 := by
     rw [Matrix.det_fin_two]
     simp [covarianceDilation, ne_of_gt (Real.rpow_pos_of_pos hh _)]
-  have hpos := (posDef_ghat hlam hstrip).conjTranspose_mul_mul_same
-    (Matrix.mulVec_injective_of_det_ne_zero hdet)
-  simpa only [hD, gramian] using hpos
+  simpa only [hD, gramian] using (posDef_ghat hlam hstrip).conjTranspose_mul_mul_same (Matrix.mulVec_injective_of_det_ne_zero hdet)
 
 /-- The physical scalar determinant is strictly positive on the cutoff domain. -/
 theorem covarianceDet_pos {lam h s : ℝ} (hlam : 0 < lam) (hh : 0 < h)
@@ -77,12 +75,9 @@ theorem gramian_inv_blocks (lam : ℝ) {h : ℝ} (hh : 0 < h) (s : ℝ) :
 /-- Position covariance evolves by twice the mixed covariance. -/
 theorem hasDerivAt_covarianceXX (lam h s : ℝ) :
     HasDerivAt (covarianceXX lam h) (2 * covarianceXV lam h s) s := by
-  have hp := ((hasDerivAt_const s (lam * h ^ 3 / 64)).add
-    (((hasDerivAt_id s).pow 2).const_mul (lam * h / 64))).add
-    (((hasDerivAt_id s).pow 3).const_mul (lam / 3))
-  convert hp using 1
+  convert ((hasDerivAt_const s (lam * h ^ 3 / 64)).add (((hasDerivAt_id s).pow 2).const_mul (lam * h / 64))).add (((hasDerivAt_id s).pow 3).const_mul (lam / 3)) using 1
   · funext t
-    simp only [covarianceXX, Pi.add_apply, Pi.pow_apply, id_eq]
+    simp [covarianceXX, Pi.pow_apply]
     ring
   · dsimp [covarianceXV]
     ring
@@ -90,11 +85,9 @@ theorem hasDerivAt_covarianceXX (lam h s : ℝ) :
 /-- Mixed covariance evolves by the velocity covariance. -/
 theorem hasDerivAt_covarianceXV (lam h s : ℝ) :
     HasDerivAt (covarianceXV lam h) (covarianceVV lam h s) s := by
-  have hp := ((hasDerivAt_id s).const_mul (lam * h / 64)).add
-    (((hasDerivAt_id s).pow 2).const_mul (lam / 2))
-  convert hp using 1
+  convert ((hasDerivAt_id s).const_mul (lam * h / 64)).add (((hasDerivAt_id s).pow 2).const_mul (lam / 2)) using 1
   · funext t
-    simp only [covarianceXV, Pi.add_apply, Pi.pow_apply, id_eq]
+    simp [covarianceXV, Pi.pow_apply]
     ring
   · dsimp [covarianceVV]
     ring
@@ -105,14 +98,12 @@ theorem hasDerivAt_covarianceVV (lam h s : ℝ) :
   convert ((hasDerivAt_id s).const_mul lam).const_add (lam * h / 64) using 1
   · funext t
     dsimp [covarianceVV]
-  · simp only [mul_one]
+  · simp
 
 /-- Determinant evolution; the transport contributions cancel. -/
 theorem hasDerivAt_covarianceDet (lam h s : ℝ) :
     HasDerivAt (covarianceDet lam h) (lam * covarianceXX lam h s) s := by
-  have hp := ((hasDerivAt_covarianceXX lam h s).mul
-    (hasDerivAt_covarianceVV lam h s)).sub ((hasDerivAt_covarianceXV lam h s).pow 2)
-  convert hp using 1
+  convert ((hasDerivAt_covarianceXX lam h s).mul (hasDerivAt_covarianceVV lam h s)).sub ((hasDerivAt_covarianceXV lam h s).pow 2) using 1
   · funext t
     rfl
   · norm_num

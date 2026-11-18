@@ -80,7 +80,7 @@ def scaledDrift {d : ℕ} (b : PDE.Vec d → PDE.Vec d) (v₀ : PDE.Vec d)
 theorem identityDrift_bounds (d : ℕ) : HasTransportBounds 1 1 (identityDrift d) := by
   constructor
   · intro y y'
-    simp only [identityDrift, id_eq, one_mul, le_refl]
+    simp [identityDrift, le_refl]
   · intro y ξ hξ
     change 1 ≤ PDE.vecDot ξ ((fderiv ℝ id y) ξ)
     rw [fderiv_id, ContinuousLinearMap.id_apply]
@@ -103,8 +103,7 @@ theorem sectionTwoCoefficient_fullBounds {d : ℕ} (lam Lam : ℝ)
 theorem scaledDrift_identity {d : ℕ} (v₀ : PDE.Vec d)
     (r : {r : ℝ // 0 < r}) : scaledDrift (identityDrift d) v₀ r = identityDrift d := by
   funext Y
-  simp only [scaledDrift, identityDrift, id_eq, add_sub_cancel_left,
-    smul_smul, inv_mul_cancel₀ (ne_of_gt r.2), one_smul]
+  simp [scaledDrift, identityDrift, add_sub_cancel_left, smul_smul, inv_mul_cancel₀ (ne_of_gt r.2)]
 
 /-- Whole space discharges the source admissibility premise. -/
 theorem wholeSpace_admissible (d : ℕ) : IsAdmissibleEvolutionDomain (wholeSpace d) :=
@@ -301,7 +300,7 @@ theorem boundedBorel_integrable {α : Type*} [MeasurableSpace α]
     (f : BoundedBorel α) (μ : Measure α) [IsFiniteMeasure μ] : Integrable f μ := by
   obtain ⟨C, hC, hbound⟩ := f.exists_bound
   exact Integrable.mono' (integrable_const C) f.measurable.aestronglyMeasurable
-    (Filter.Eventually.of_forall (fun x => by simpa only [Real.norm_eq_abs] using hbound x))
+    (Filter.Eventually.of_forall (fun x => by simpa using hbound x))
 
 /-- Realization implies positivity on every bounded Borel datum. -/
 theorem realizes_positive {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
@@ -310,7 +309,6 @@ theorem realizes_positive {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec
     (h : RealizesTerminalEvolution Ω γ hΩ B b S K)
     (σ τ : ℝ) (hστ : σ ≤ τ) (f : BoundedBorel (EvolutionState Ω γ τ))
     (hf : 0 ≤ f) : 0 ≤ S σ τ hστ f := by
-  change ∀ p, 0 ≤ S σ τ hστ f p
   intro p
   rw [h.2.1 σ τ hστ p f]
   exact integral_nonneg (fun q => hf q)
@@ -322,11 +320,10 @@ theorem realizes_contraction {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.
     (h : RealizesTerminalEvolution Ω γ hΩ B b S K) (σ τ : ℝ) (hστ : σ ≤ τ) :
     S σ τ hστ (1 : BoundedBorel (EvolutionState Ω γ τ)) ≤
       (1 : BoundedBorel (EvolutionState Ω γ σ)) := by
-  change ∀ p, S σ τ hστ 1 p ≤ 1
   intro p
   rw [h.2.1 σ τ hστ p 1]
-  simp only [BoundedBorel.one_apply, integral_const, smul_eq_mul, mul_one, measureReal_def]
-  simpa only [ENNReal.toReal_one] using
+  simp [BoundedBorel.one_apply, integral_const, measureReal_def]
+  simpa using
     ENNReal.toReal_mono ENNReal.one_ne_top (K.fiberKernel_mass_le_one hΩ σ τ hστ p)
 
 /-- Realization implies the same shared operator family's composition law. -/

@@ -1,6 +1,7 @@
 module
 
-public import PDEFoundation.Geometry.EuclideanBall
+public import PDEFoundation.Geometry.EuclideanBall.Topology
+public import PDEFoundation.Geometry.EuclideanBall.Basic
 public import PDEFoundation.Measure.AffineVolume
 public import Mathlib.MeasureTheory.Measure.OpenPos
 

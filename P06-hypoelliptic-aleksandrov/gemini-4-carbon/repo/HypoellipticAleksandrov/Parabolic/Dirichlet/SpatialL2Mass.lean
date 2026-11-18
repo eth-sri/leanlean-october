@@ -43,17 +43,16 @@ theorem spatialMassCLM_apply
   letI : IsFiniteMeasure (PDE.volumeOn Ω) :=
     isFiniteMeasure_restrict.mpr hΩbounded.measure_lt_top.ne
   unfold spatialMassCLM
-  dsimp only
   change (ContinuousLinearMap.mul ℝ ℝ).lpPairing (PDE.volumeOn Ω)
-      (2 : ℝ≥0∞) (2 : ℝ≥0∞) f
-        (MeasureTheory.Lp.const (2 : ℝ≥0∞) (PDE.volumeOn Ω) 1) = _
+      2 2 f
+        (MeasureTheory.Lp.const 2 (PDE.volumeOn Ω) 1) = _
   rw [ContinuousLinearMap.lpPairing_eq_integral]
   apply integral_congr_ae
-  filter_upwards [MeasureTheory.Lp.coeFn_const (p := (2 : ℝ≥0∞))
+  filter_upwards [MeasureTheory.Lp.coeFn_const (p := 2)
     (μ := PDE.volumeOn Ω) (1 : ℝ)] with y hy
   calc
-    (f y) * (MeasureTheory.Lp.const (2 : ℝ≥0∞)
-        (PDE.volumeOn Ω) (1 : ℝ) y) = (f y) * 1 := congrArg (fun z : ℝ => (f y) * z) hy
+    (f y) * (MeasureTheory.Lp.const 2
+        (PDE.volumeOn Ω) 1 y) = (f y) * 1 := congrArg (fun z => (f y) * z) hy
     _ = f y := mul_one _
 
 /-- The spatial mass of the affine-threshold shifted positive part is
@@ -66,11 +65,11 @@ theorem integrable_reverseTimeShiftedPositivePart_spatialMass
       valueCLM hΩ (h10ShiftedPositivePart hΩ (u τ)
         (reverseTimeAffineThreshold M N τ)) y ∂PDE.volumeOn Ω)
       (reverseTimeVolume T) := by
-  let Q : H10HilbertGraph hΩ →L[ℝ] ℝ :=
+  let Q :=
     (spatialMassCLM hΩbounded).comp (valueCLM hΩ)
-  let w : ReverseTimeL2V hΩ T := reverseTimeShiftedPositivePart hΩ T M N u
-  let Qw : MeasureTheory.Lp ℝ 2 (reverseTimeVolume T) :=
-    Q.compLpL (2 : ℝ≥0∞) (reverseTimeVolume T) w
+  let w := reverseTimeShiftedPositivePart hΩ T M N u
+  let Qw :=
+    Q.compLpL 2 (reverseTimeVolume T) w
   letI : IsFiniteMeasure (reverseTimeVolume T) := by
     unfold reverseTimeVolume reverseTimeOpenInterval
     infer_instance
@@ -80,7 +79,6 @@ theorem integrable_reverseTimeShiftedPositivePart_spatialMass
           (reverseTimeAffineThreshold M N τ))) := by
     filter_upwards [ContinuousLinearMap.coeFn_compLpL Q w,
       coeFn_reverseTimeShiftedPositivePart hΩ T M N u] with τ hQ hshift
-    dsimp only [Qw]
     rw [hQ]
     dsimp only [Q, w, ContinuousLinearMap.comp_apply]
     rw [hshift]

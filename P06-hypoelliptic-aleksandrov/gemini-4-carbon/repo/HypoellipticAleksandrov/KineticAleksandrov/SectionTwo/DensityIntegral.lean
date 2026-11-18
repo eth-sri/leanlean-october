@@ -15,7 +15,7 @@ open scoped ENNReal
 theorem variation_density_one {α : Type*} [MeasurableSpace α] (μ : Measure α)
     [IsFiniteMeasure μ] (g : α → ℂ) (hg : Measurable g) (hn : ∀ x, ‖g x‖ = 1) :
     (μ.withDensityᵥ g).variation = μ := by
-  have hi : Integrable g μ := Integrable.mono' (integrable_const (1 : ℝ))
+  have hi : Integrable g μ := Integrable.mono' (integrable_const 1)
     hg.aestronglyMeasurable (Filter.Eventually.of_forall (fun x => (hn x).le))
   rw [Measure.variation_withDensityᵥ hi]
   have he : (fun x => ‖g x‖ₑ) = 1 := by
@@ -33,7 +33,7 @@ theorem integral_density_one {α : Type*} [MeasurableSpace α] (μ : Measure α)
   let ν := μ.withDensityᵥ g
   have hv : ν.variation = μ := variation_density_one μ g hg hn
   have : IsFiniteMeasure ν.variation := by rw [hv]; infer_instance
-  have hgi : Integrable g μ := Integrable.mono' (integrable_const (1 : ℝ))
+  have hgi : Integrable g μ := Integrable.mono' (integrable_const 1)
     hg.aestronglyMeasurable (Filter.Eventually.of_forall (fun x => (hn x).le))
   have hm : ∀ f : α → ℂ, Integrable f μ → Integrable (fun x => f x * g x) μ :=
     fun f hf => hf.mul_bdd hg.aestronglyMeasurable
@@ -52,12 +52,10 @@ theorem integral_density_one {α : Type*} [MeasurableSpace α] (μ : Measure α)
         simp only [hx, Pi.smul_apply, smul_mul_assoc, RingHom.id_apply] }
   have hJ : ∀ u, ‖J u‖ ≤ 1 * ‖u‖ := by
     intro u
-    change ‖∫ x, u x * g x ∂μ‖ ≤ 1 * ‖u‖
     calc
       _ ≤ ∫ x, ‖u x * g x‖ ∂μ := norm_integral_le_integral_norm _
       _ = 1 * ‖u‖ := by
-        simp only [norm_mul, hn, mul_one, one_mul, L1.norm_eq_integral_norm]
-  have hc := (J.mkContinuous 1 hJ).continuous
+        simp [norm_mul, hn, L1.norm_eq_integral_norm]
   apply hf.induction (P := fun f =>
     (∫ᵛ x, f x ∂[ContinuousLinearMap.mul ℝ ℂ; ν]) = ∫ x, f x * g x ∂μ)
   · intro c E hE hfinite
@@ -67,7 +65,7 @@ theorem integral_density_one {α : Type*} [MeasurableSpace α] (μ : Measure α)
     have he : (fun x => E.indicator (fun _ => c) x * g x) =
         E.indicator (fun x => c * g x) := by
       funext x
-      by_cases hx : x ∈ E <;> simp only [Set.indicator, hx, ↓reduceIte, zero_mul]
+      by_cases hx : x ∈ E <;> simp [Set.indicator, hx]
     rw [he, integral_indicator hE]
   · intro f₁ f₂ hd h₁ h₂ he₁ he₂
     have hi₁ : ν.Integrable f₁ := by simpa only [VectorMeasure.Integrable, hv] using h₁
@@ -75,11 +73,10 @@ theorem integral_density_one {α : Type*} [MeasurableSpace α] (μ : Measure α)
     rw [VectorMeasure.integral_add hi₁ hi₂, he₁, he₂, ← integral_add (hm f₁ h₁) (hm f₂ h₂)]
     apply integral_congr_ae
     exact Filter.Eventually.of_forall (fun x => (add_mul (f₁ x) (f₂ x) (g x)).symm)
-  · apply isClosed_eq _ hc
+  · apply isClosed_eq _ ((J.mkContinuous 1 hJ).continuous)
     have hcv := VectorMeasure.continuous_integral (μ := ν)
       (B := ContinuousLinearMap.mul ℝ ℂ)
-    rw [hv] at hcv
-    exact hcv
+    rwa [hv] at hcv
   · intro f₁ f₂ he hi hp
     have heν : f₁ =ᵐ[ν.variation] f₂ := by simpa only [hv] using he
     rw [← VectorMeasure.integral_congr_ae heν, hp]

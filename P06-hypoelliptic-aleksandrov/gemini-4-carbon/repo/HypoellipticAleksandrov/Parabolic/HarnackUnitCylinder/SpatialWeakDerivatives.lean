@@ -40,7 +40,7 @@ theorem IsScalarC12On.hasWeakVelocitySecondPartialDerivOn
     (0, PDE.basisVec j) ?_ hφ hc hsub
   intro z hz
   have hc2 := hu.spatialSlice_contDiffAt hz
-  have hd : DifferentiableAt ℝ (fderiv ℝ (fun y => u (z.1, y))) z.2 :=
+  have hd :=
     (hc2.fderiv_right (m := 1) (by norm_num)).differentiableAt (by norm_num)
   have hg := (hd.clm_apply (differentiableAt_const (PDE.basisVec i))).hasFDerivAt
     |>.hasLineDerivAt (PDE.basisVec j)

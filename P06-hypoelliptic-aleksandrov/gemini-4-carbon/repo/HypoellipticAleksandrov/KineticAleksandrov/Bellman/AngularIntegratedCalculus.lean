@@ -64,11 +64,10 @@ theorem bellmanAngularDensity_integrated (β : ℝ) (f h J : ℝ → ℝ)
       bellmanAngularFirstMoment f y + ((β - 3) / 3) * bellmanAngularSecondMoment f y := by
   intro y
   have hJa := bellman_locallyAC_oriented hJ 0 y
-  have hha := bellman_locallyAC_oriented hh 0 y
-  have hid : AbsolutelyContinuousOnInterval (fun z : ℝ => z) 0 y :=
-    (contDiff_id : ContDiff ℝ 1 (fun z : ℝ => z)).contDiffOn.absolutelyContinuousOnInterval
+  have hid : AbsolutelyContinuousOnInterval (fun z => z) 0 y :=
+    (contDiff_id : ContDiff ℝ 1 (fun z => z)).contDiffOn.absolutelyContinuousOnInterval
   have hip := hJa.integral_mul_deriv_eq_deriv_mul hid
-  simp only [deriv_id'', mul_one, mul_zero, sub_zero] at hip
+  simp at hip
   have hm : (∫ z in 0..y, deriv J z * z) =
       -((β - 2) / 3) * bellmanAngularSecondMoment f y := by
     calc
@@ -81,8 +80,7 @@ theorem bellmanAngularDensity_integrated (β : ℝ) (f h J : ℝ → ℝ)
       _ = _ := by rw [intervalIntegral.integral_const_mul]; rfl
   rw [hm, bellmanAngularFlux_integrated β f J hJ hdJ y] at hip
   have hjInt : IntervalIntegrable J volume 0 y := hJa.continuousOn.intervalIntegrable
-  have hmInt := bellmanAngularMoment_intervalIntegrable hf 0 y 2
-  have hhe := hha.integral_deriv_eq_sub
+  have hhe := (bellman_locallyAC_oriented hh 0 y).integral_deriv_eq_sub
   have hhInt : (∫ z in 0..y, deriv h z) =
       (∫ z in 0..y, J z) - bellmanAngularSecondMoment f y / 3 := by
     calc
@@ -92,7 +90,7 @@ theorem bellmanAngularDensity_integrated (β : ℝ) (f h J : ℝ → ℝ)
         intro _
         exact hz
       _ = _ := by
-        rw [intervalIntegral.integral_sub hjInt (hmInt.div_const 3),
+        rw [intervalIntegral.integral_sub hjInt ((bellmanAngularMoment_intervalIntegrable hf 0 y 2).div_const 3),
           intervalIntegral.integral_div]
         rfl
   rw [hhInt, hip] at hhe

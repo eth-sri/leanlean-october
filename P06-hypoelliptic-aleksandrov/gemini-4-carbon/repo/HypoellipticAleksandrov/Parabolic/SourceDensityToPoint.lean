@@ -18,7 +18,6 @@ open scoped ENNReal
 
 namespace HypoellipticAleksandrov.Parabolic
 
-noncomputable section
 
 /-- A relative unit-box superlevel-set bound forces a lower terminal bound,
 up to the supplied nonnegative source norm. -/
@@ -135,66 +134,47 @@ theorem SourceDensityToPoint.scaled {d : ℕ} {lam Lam beta g C : ℝ}
           parabolicLpNormOn d F (parabolicBox 1 R t₀ v₀) := by
   let a := parabolicAffine t₀ v₀ R
   let V := a ⁻¹' U
-  let uHat : TimeVelocity d → ℝ := eps⁻¹ • pullbackScalar u t₀ v₀ R
+  let uHat := eps⁻¹ • pullbackScalar u t₀ v₀ R
   let FHat : TimeVelocity d → ℝ := fun z ↦ eps⁻¹ * (R ^ 2 * F (a z))
   have hmapU : MapsTo a V U := fun _ hz => hz
   have hmapBox : MapsTo a (parabolicBox 1 1 0 0) (parabolicBox 1 R t₀ v₀) :=
     mapsTo_parabolicAffine_parabolicBox hR
-  have hVopen : IsOpen V :=
+  have hVopen :=
     hU.preimage (contDiff_parabolicAffine t₀ v₀ R).continuous
   have hVclosed : parabolicClosedBox 1 1 0 0 ⊆ V := by
     intro z hz
     exact hclosed (mapsTo_parabolicAffine_parabolicClosedBox hR hz)
-  have hBpull : IsContinuousCoefficientOn (pullbackCoefficient B t₀ v₀ R) V :=
-    IsContinuousCoefficientOn.pullback hB hmapU
-  have hupull : ContDiffOn ℝ 2 (pullbackScalar u t₀ v₀ R) V :=
-    ContDiffOn.pullbackScalar hu hmapU
   have hFpull : ContinuousOn (pullbackScalar F t₀ v₀ R) V := by
     simpa only [pullbackScalar, Function.comp_def] using
       hF.comp (contDiff_parabolicAffine t₀ v₀ R).continuous.continuousOn hmapU
-  have hnonnegpull : IsNonnegativeOn (pullbackScalar u t₀ v₀ R)
-      (parabolicBox 1 1 0 0) :=
-    hnonneg.pullbackScalar hmapBox
-  have hFnonnegpull : IsNonnegativeOn (pullbackScalar F t₀ v₀ R)
-      (parabolicBox 1 1 0 0) :=
-    hFnonneg.pullbackScalar hmapBox
-  have hlowerpull : HasLowerEllipticityOn lam (pullbackCoefficient B t₀ v₀ R)
-      (parabolicBox 1 1 0 0) :=
-    hlower.pullback hmapBox
-  have hupperpull : HasUpperEllipticityOn Lam (pullbackCoefficient B t₀ v₀ R)
-      (parabolicBox 1 1 0 0) :=
-    hupper.pullback hmapBox
   have hboxU : parabolicBox 1 R t₀ v₀ ⊆ U := by
     rintro ⟨t, v⟩ ⟨⟨ht0, htR⟩, hv⟩
     exact hclosed ⟨⟨ht0.le, htR.le⟩, fun i ↦ (hv i).le⟩
   have hsuperpull : IsParabolicSupersolutionOn (pullbackCoefficient B t₀ v₀ R)
       (fun z ↦ R ^ 2 * (-F (a z))) (pullbackScalar u t₀ v₀ R)
       (parabolicBox 1 1 0 0) := by
-    simpa only [a] using IsParabolicSupersolutionOn.pullback
-      (U := parabolicBox 1 R t₀ v₀) (V := parabolicBox 1 1 0 0)
+    simpa using IsParabolicSupersolutionOn.pullback
+      (U := parabolicBox 1 R t₀ v₀)
       (isOpen_parabolicBox 1 R t₀ v₀) (hu.mono hboxU) hsuper hmapBox
-  have hinvnonneg : 0 ≤ eps⁻¹ := inv_nonneg.mpr heps.le
+  have hinvnonneg := inv_nonneg.mpr heps.le
   have hnormalnonneg : IsNonnegativeOn uHat (parabolicBox 1 1 0 0) := by
     intro z hz
-    exact mul_nonneg hinvnonneg (hnonnegpull z hz)
+    exact mul_nonneg hinvnonneg ((hnonneg.pullbackScalar hmapBox) z hz)
   have hFHat : ContinuousOn FHat V := by
-    dsimp only [FHat, a]
     exact continuousOn_const.mul (continuousOn_const.mul hFpull)
   have hFHatnonneg : IsNonnegativeOn FHat (parabolicBox 1 1 0 0) := by
     intro z hz
-    dsimp only [FHat, a]
-    exact mul_nonneg hinvnonneg (mul_nonneg (sq_nonneg R) (hFnonnegpull z hz))
+    exact mul_nonneg hinvnonneg (mul_nonneg (sq_nonneg R) ((hFnonneg.pullbackScalar hmapBox) z hz))
   have hnormalsuper : IsParabolicSupersolutionOn (pullbackCoefficient B t₀ v₀ R)
       (fun z ↦ -FHat z) uHat (parabolicBox 1 1 0 0) := by
-    dsimp only [uHat, FHat, a]
-    simpa only [Pi.smul_apply, smul_eq_mul, mul_neg] using
+    simpa using
       hsuperpull.const_smul_source hinvnonneg
-  let c : ℝ≥0∞ := ENNReal.ofReal |LinearMap.det (parabolicLinear (d := d) R :
+  let c := ENNReal.ofReal |LinearMap.det (parabolicLinear (d := d) R :
     TimeVelocity d →ₗ[ℝ] TimeVelocity d)|
   have hcne : c ≠ 0 := by
     rw [ENNReal.ofReal_ne_zero_iff]
     exact abs_pos.mpr (parabolicLinear_det_ne_zero hR)
-  have hcpos : 0 < c.toReal := ENNReal.toReal_pos hcne ENNReal.ofReal_ne_top
+  have hcpos := ENNReal.toReal_pos hcne ENNReal.ofReal_ne_top
   have hbox : (volume : Measure (TimeVelocity d)) (parabolicBox 1 R t₀ v₀) =
       c * (volume : Measure (TimeVelocity d)) (parabolicBox 1 1 0 0) := by
     rw [← parabolicAffine_image_parabolicBox hR]
@@ -230,7 +210,6 @@ theorem SourceDensityToPoint.scaled {d : ℕ} {lam Lam beta g C : ℝ}
       parabolicLpNormOn d FHat (parabolicBox 1 1 0 0) =
           eps⁻¹ * parabolicLpNormOn d (fun z ↦ R ^ 2 * F (a z))
             (parabolicBox 1 1 0 0) := by
-        dsimp only [FHat]
         unfold parabolicLpNormOn parabolicELpNormOn
         change (eLpNorm (eps⁻¹ • fun z ↦ R ^ 2 * F (a z)) (parabolicExponent d)
           (volume.restrict (parabolicBox 1 1 0 0))).toReal = _
@@ -242,31 +221,29 @@ theorem SourceDensityToPoint.scaled {d : ℕ} {lam Lam beta g C : ℝ}
         rw [parabolicLpNormOn_pullback t₀ v₀ hR F,
           parabolicAffine_image_parabolicBox hR]
   intro v hv
-  let w : PDE.Vec d := R⁻¹ • (v - v₀)
-  have hw : w ∈ velocityClosedCube (0 : PDE.Vec d) (1 / 2) := by
+  let w := R⁻¹ • (v - v₀)
+  have hw : w ∈ velocityClosedCube 0 (1 / 2) := by
     intro i
-    have hvi := hv i
     dsimp [w]
     simp only [sub_zero]
     rw [abs_mul, abs_inv, abs_of_pos hR]
-    exact (inv_mul_le_iff₀ hR).mpr (by simpa only [mul_comm, div_eq_mul_inv, one_mul] using hvi)
+    exact (inv_mul_le_iff₀ hR).mpr (by simpa [mul_comm, div_eq_mul_inv] using (hv i))
   have hpoint := h.apply V (pullbackCoefficient B t₀ v₀ R) FHat uHat hVopen hVclosed
-    hBpull (hupull.const_smul eps⁻¹) hFHat hnormalnonneg hFHatnonneg hlowerpull hupperpull
+    (IsContinuousCoefficientOn.pullback hB hmapU) ((ContDiffOn.pullbackScalar hu hmapU).const_smul eps⁻¹) hFHat hnormalnonneg hFHatnonneg (hlower.pullback hmapBox) (hupper.pullback hmapBox)
     hnormalsuper hnormaldensity w hw
   rw [hnorm] at hpoint
   have haeval : a (1, w) = (t₀ + R ^ 2, v) := by
     dsimp [a, w, parabolicAffine]
     ext
     · ring
-    · simp only [Pi.add_apply, Pi.smul_apply, Pi.sub_apply, smul_eq_mul]
+    · simp
       rw [← mul_assoc, mul_inv_cancel₀ hR.ne', one_mul]
       ring
   have hdivision : g ≤ u (t₀ + R ^ 2, v) / eps +
       C * (R ^ ((d : ℝ) / ((d : ℝ) + 1)) *
         parabolicLpNormOn d F (parabolicBox 1 R t₀ v₀) / eps) := by
     rw [← haeval]
-    simpa only [a, uHat, FHat, Pi.smul_apply, pullbackScalar_apply, smul_eq_mul,
-      mul_assoc, inv_mul_eq_div] using hpoint
+    simpa [a, uHat, FHat, pullbackScalar_apply, mul_assoc, inv_mul_eq_div] using hpoint
   calc
     eps * g ≤ eps * (u (t₀ + R ^ 2, v) / eps +
         C * (R ^ ((d : ℝ) / ((d : ℝ) + 1)) *
@@ -276,6 +253,5 @@ theorem SourceDensityToPoint.scaled {d : ℕ} {lam Lam beta g C : ℝ}
           parabolicLpNormOn d F (parabolicBox 1 R t₀ v₀) := by
       field_simp [heps.ne']
 
-end
 
 end HypoellipticAleksandrov.Parabolic

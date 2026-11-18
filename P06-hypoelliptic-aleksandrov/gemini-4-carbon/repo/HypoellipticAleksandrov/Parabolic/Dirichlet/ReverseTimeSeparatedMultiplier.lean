@@ -52,16 +52,16 @@ theorem ae_reverseTimeSeparatedVTestOfMemLp
   rw [reverseTimeSeparatedVTestOfMemLp]
   change (ContinuousLinearMap.lsmul ℝ ℝ : ℝ →L[ℝ]
     H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ).holder
-    (2 : ℝ≥0∞) (hq.toLp q)
-    ((MeasureTheory.Lp.constL (2 : ℝ≥0∞) (reverseTimeVolume T) ℝ) v) =ᵐ[_] _
+    2 (hq.toLp q)
+    ((MeasureTheory.Lp.constL 2 (reverseTimeVolume T) ℝ) v) =ᵐ[_] _
   filter_upwards [ContinuousLinearMap.coeFn_holder
       (ContinuousLinearMap.lsmul ℝ ℝ : ℝ →L[ℝ]
         H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ)
-      (r := (2 : ℝ≥0∞))
+      (r := 2)
       (hq.toLp q)
-    ((MeasureTheory.Lp.constL (2 : ℝ≥0∞) (reverseTimeVolume T) ℝ) v),
+    ((MeasureTheory.Lp.constL 2 (reverseTimeVolume T) ℝ) v),
     hq.coeFn_toLp,
-    MeasureTheory.Lp.coeFn_const (p := (2 : ℝ≥0∞))
+    MeasureTheory.Lp.coeFn_const (p := 2)
       (μ := reverseTimeVolume T) v] with tau hmul hq' hconst
   rw [MeasureTheory.Lp.constL_apply] at hmul ⊢
   rw [hmul, hq', hconst]
@@ -79,13 +79,6 @@ theorem tendsto_reverseTimeSeparatedVTestOfMemLp
       Filter.atTop (𝓝 (reverseTimeSeparatedVTestOfMemLp hΩ q hq v)) := by
   letI : IsFiniteMeasure (reverseTimeVolume T) :=
     reverseTimeVolume_isFiniteMeasure_ofMemLp T
-  let L : H10HilbertGraph hΩ →L[ℝ] ReverseTimeL2V hΩ T :=
-    ((((ContinuousLinearMap.lsmul ℝ ℝ : ℝ →L[ℝ]
-      H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ)).holderL
-      (reverseTimeVolume T) (∞ : ℝ≥0∞) (2 : ℝ≥0∞) (2 : ℝ≥0∞)
-      (hq.toLp q)).comp
-      (MeasureTheory.Lp.constL (2 : ℝ≥0∞) (reverseTimeVolume T) ℝ))
-  change Filter.Tendsto (fun n => L (vN n)) Filter.atTop (𝓝 (L v))
-  exact L.continuous.tendsto v |>.comp hv
+  exact ((((ContinuousLinearMap.lsmul ℝ ℝ : ℝ →L[ℝ] H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ)).holderL (reverseTimeVolume T) (∞ : ℝ≥0∞) 2 2 (hq.toLp q)).comp (MeasureTheory.Lp.constL 2 (reverseTimeVolume T) ℝ)).continuous.tendsto v |>.comp hv
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

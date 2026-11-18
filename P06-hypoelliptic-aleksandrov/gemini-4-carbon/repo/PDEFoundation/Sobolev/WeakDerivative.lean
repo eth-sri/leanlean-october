@@ -88,22 +88,16 @@ theorem ae_eq {d : ℕ} {U : Set (Vec d)} (hU : IsOpen U)
       (f := fun x => gi x - hi x) (hgiLoc.sub hhiLoc) ?_
     intro φ hφSmooth hφCompact hφSub
     have hφCont : Continuous φ := hφSmooth.continuous
-    have hgiK :
-        MeasureTheory.IntegrableOn gi (tsupport φ) MeasureTheory.volume :=
-      hgiLoc.integrableOn_compact_subset hφSub hφCompact.isCompact
-    have hhiK :
-        MeasureTheory.IntegrableOn hi (tsupport φ) MeasureTheory.volume :=
-      hhiLoc.integrableOn_compact_subset hφSub hφCompact.isCompact
     have hgiφK :
         MeasureTheory.IntegrableOn (fun x => gi x * φ x) (tsupport φ)
           MeasureTheory.volume := by
       simpa [smul_eq_mul] using
-        hgiK.smul_continuousOn hφCont.continuousOn hφCompact.isCompact
+        (hgiLoc.integrableOn_compact_subset hφSub hφCompact.isCompact).smul_continuousOn hφCont.continuousOn hφCompact.isCompact
     have hhiφK :
         MeasureTheory.IntegrableOn (fun x => hi x * φ x) (tsupport φ)
           MeasureTheory.volume := by
       simpa [smul_eq_mul] using
-        hhiK.smul_continuousOn hφCont.continuousOn hφCompact.isCompact
+        (hhiLoc.integrableOn_compact_subset hφSub hφCompact.isCompact).smul_continuousOn hφCont.continuousOn hφCompact.isCompact
     have hgiφZero :
         ∀ x ∈ U \ tsupport φ, gi x * φ x = 0 := by
       intro x hx
@@ -166,7 +160,6 @@ theorem HasWeakPartialDerivOn.restrict {d : ℕ}
     HasWeakPartialDerivOn V i u gi := by
   intro φ hφSmooth hφCompact hφSupport
   have hφSupportU : tsupport φ ⊆ U := hφSupport.trans hVU
-  have hWeak := h φ hφSmooth hφCompact hφSupportU
   have hValueZero :
       ∀ x, x ∉ V → u x * (fderiv ℝ φ x) (basisVec i) = 0 := by
     intro x hx
@@ -194,7 +187,7 @@ theorem HasWeakPartialDerivOn.restrict {d : ℕ}
         hValueZeroU,
     ← MeasureTheory.setIntegral_eq_integral_of_forall_compl_eq_zero
         hGradZeroU,
-    hWeak]
+    (h φ hφSmooth hφCompact hφSupportU)]
 
 theorem HasWeakGradientOn.restrict {d : ℕ}
     {U V : Set (Vec d)} (hVOpen : IsOpen V) (hVU : V ⊆ U)
@@ -210,11 +203,11 @@ theorem HasWeakPartialDerivOn.of_contDiff {d : ℕ}
     HasWeakPartialDerivOn U i f
       (fun x => (fderiv ℝ f x) (basisVec i)) := by
   intro φ hφSmooth hφSupport hφSubset
-  let ei : Vec d := basisVec i
-  have hfDiff : Differentiable ℝ f := hf.differentiable (by simp)
+  let ei := basisVec i
+  have hfDiff := hf.differentiable (by simp)
   have hφDiff : Differentiable ℝ φ :=
     hφSmooth.differentiable (by simp)
-  have hfCont : Continuous f := hfDiff.continuous
+  have hfCont := hfDiff.continuous
   have hφCont : Continuous φ := hφDiff.continuous
   have hfderivφCont :
       Continuous (fun x => (fderiv ℝ φ x) ei) := by

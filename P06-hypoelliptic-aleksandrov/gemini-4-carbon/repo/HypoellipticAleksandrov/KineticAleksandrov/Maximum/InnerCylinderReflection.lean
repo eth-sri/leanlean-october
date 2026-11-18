@@ -53,7 +53,6 @@ theorem innerExitBoundary_eq_exitBoundary {d : ℕ}
   refine ⟨hr,?_⟩
   ext P
   rw [mem_innerExitBoundary_iff, mem_exitBoundary_iff]
-  dsimp only
   rw [heq,
     (innerCentre_relative Z₀ P δ).1, (innerCentre_relative Z₀ P δ).2]
   have ht : (innerCentre Z₀ δ).time + (innerRatio R hR δ hδ0 hδlt * R)^2 =

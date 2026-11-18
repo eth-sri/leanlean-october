@@ -32,24 +32,23 @@ theorem coe_reverseTimeAffineThreshold_of_nonneg
   simp only [reverseTimeAffineThreshold, NNReal.coe_add, NNReal.coe_mul,
     Real.coe_toNNReal _ hτ]
 
-private theorem continuous_reverseTimeAffineThreshold (M N : ℝ≥0) :
-    Continuous (reverseTimeAffineThreshold M N) := by
-  exact continuous_const.add (continuous_real_toNNReal.mul continuous_const)
 
-private theorem aestronglyMeasurable_reverseTimeAffineThreshold
-    (T : ℝ) (M N : ℝ≥0) :
-    AEStronglyMeasurable (reverseTimeAffineThreshold M N)
-      (reverseTimeVolume T) :=
-  (continuous_reverseTimeAffineThreshold M N).aestronglyMeasurable
 
 private theorem aestronglyMeasurable_reverseTimeInputThresholdPair
     {d : ℕ} {Ω : Set (PDE.Vec d)}
     (hΩ : IsOpen Ω) (T : ℝ) (M N : ℝ≥0)
     (u : ReverseTimeL2V hΩ T) : AEStronglyMeasurable
       (fun τ : ℝ => (u τ, reverseTimeAffineThreshold M N τ))
-      (reverseTimeVolume T) :=
-  (Lp.memLp u).aestronglyMeasurable.prodMk
-    (aestronglyMeasurable_reverseTimeAffineThreshold T M N)
+      (reverseTimeVolume T)  := by
+  have aestronglyMeasurable_reverseTimeAffineThreshold :
+      AEStronglyMeasurable (reverseTimeAffineThreshold M N)
+      (reverseTimeVolume T) := by
+    have continuous_reverseTimeAffineThreshold :
+        Continuous (reverseTimeAffineThreshold M N) := by
+      exact continuous_const.add (continuous_real_toNNReal.mul continuous_const)
+    exact (continuous_reverseTimeAffineThreshold).aestronglyMeasurable
+  exact (Lp.memLp u).aestronglyMeasurable.prodMk
+    (aestronglyMeasurable_reverseTimeAffineThreshold)
 
 private theorem aestronglyMeasurable_h10ShiftedPositivePart_comp
     {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)

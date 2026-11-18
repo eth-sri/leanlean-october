@@ -38,20 +38,6 @@ def IsFullSpaceEvolution {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
   RealizesTerminalEvolution autonomousWholeDomain (fun _ => 0) autonomousWholeDomain_measurable
     (evolutionCoefficient A.a) (identityDrift 1) E.1 E.2
 
-/-- The autonomous full-space evolution is supplied by the full-coefficient existence theorem. -/
-theorem autonomous_fullspace_instance
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) :
-    ∃ E : FullSpaceEvolution, IsFullSpaceEvolution A E := by
-  obtain ⟨S, K, hc, -, -, -, -, hi, -, -, -, -, he, hcomp, -, -, -⟩ :=
-    exists_terminalEvolution_of_classical hLE hH 1 (by omega) lam Lam 1 1
-      hlam hLam one_pos le_rfl autonomousWholeDomain (fun _ => 0)
-      (evolutionCoefficient A.a) (identityDrift 1) autonomousWholeDomain_admissible
-      (zeroCurve_piecewiseC1 1) (evolutionCoefficient_smooth A)
-      (evolutionCoefficient_symmetric A.a) (evolutionCoefficient_bounds A)
-      (identityDrift_smooth 1) (identityDrift_bounds 1).1 (identityDrift_bounds 1).2
-  exact ⟨(S, K), hc, hi, he, hcomp⟩
 
 /-- Uniqueness holds for every realizing pair, rather than for a selected construction. -/
 theorem fullSpaceEvolution_unique {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
@@ -67,8 +53,18 @@ theorem existsUnique_fullSpaceEvolution
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
     {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) :
-    ∃! E : FullSpaceEvolution, IsFullSpaceEvolution A E := by
-  obtain ⟨E, hE⟩ := autonomous_fullspace_instance hH hLE hlam hLam A
+    ∃! E : FullSpaceEvolution, IsFullSpaceEvolution A E  := by
+  have autonomous_fullspace_instance :
+      ∃ E : FullSpaceEvolution, IsFullSpaceEvolution A E := by
+    obtain ⟨S, K, hc, -, -, -, -, hi, -, -, -, -, he, hcomp, -, -, -⟩ :=
+      exists_terminalEvolution_of_classical hLE hH 1 (by omega) lam Lam 1 1
+        hlam hLam one_pos le_rfl autonomousWholeDomain (fun _ => 0)
+        (evolutionCoefficient A.a) (identityDrift 1) autonomousWholeDomain_admissible
+        (zeroCurve_piecewiseC1 1) (evolutionCoefficient_smooth A)
+        (evolutionCoefficient_symmetric A.a) (evolutionCoefficient_bounds A)
+        (identityDrift_smooth 1) (identityDrift_bounds 1).1 (identityDrift_bounds 1).2
+    exact ⟨(S, K), hc, hi, he, hcomp⟩
+  obtain ⟨E, hE⟩ := autonomous_fullspace_instance
   exact ⟨E, hE, fun E' hE' => fullSpaceEvolution_unique A E' E hE' hE⟩
 
 /-- The canonical pair is chosen solely from its proved unique characterization. -/

@@ -22,10 +22,6 @@ theorem norm_sq_h10HilbertGraph
     (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ) :
     ‖u‖ ^ 2 =
       ‖valueCLM hΩ u‖ ^ 2 + ‖gradientCLM hΩ u‖ ^ 2 := by
-  change
-    ‖(u : PDE.H1HilbertGraph Ω).1‖ ^ 2 =
-      ‖(u : PDE.H1HilbertGraph Ω).1.fst‖ ^ 2 +
-        ‖(u : PDE.H1HilbertGraph Ω).1.snd‖ ^ 2
   exact WithLp.prod_norm_sq_eq_of_L2 _
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

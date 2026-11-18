@@ -63,7 +63,6 @@ theorem nestedSourcePotential_continuous_zero_exit
   refine ⟨hc.comp (continuous_sectionTwoPoint 1).continuousOn ?_,
     fun p hp => ht (sectionTwoPoint p) hp, fun p hp => hv (sectionTwoPoint p) ?_⟩
   · intro p hp
-    change p.time ≤ T ∧ p.velocity ∈ closure (movingDomain (intervalDomain H) (fun _ => 0) p.time)
     refine ⟨hp.1, ?_⟩
     rw [mem_closure_movingDomain_iff, sub_zero]
     exact (nested_intervalDomain_closure_iff H p.velocity).mpr hp.2

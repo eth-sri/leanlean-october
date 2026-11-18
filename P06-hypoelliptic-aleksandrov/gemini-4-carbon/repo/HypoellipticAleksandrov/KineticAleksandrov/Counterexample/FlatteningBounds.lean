@@ -18,23 +18,20 @@ theorem flatProfile_jets_compact_bound_of_profile {d : ℕ} {alpha : ℝ}
     ∃ M : ℝ, 0 ≤ M ∧ ∀ q ∈ K,
       ‖flatProfilePositionJet h r q‖ ≤ M ∧ ‖flatProfileVelocityJet h r q‖ ≤ M ∧
         ∀ i k, |flatProfileHessian h r q i k| ≤ M := by
-  have hH := (selectedProfile_spec h).2.2.2.2.2.2.1
-  have hzero := (selectedProfile_spec h).2.2.2.2.2.2.2.1
-  have hbounds := (selectedProfile_spec h).2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.1
   let L := K ∩ {q | Real.rpow r alpha ≤ profileFunction h q}
-  have hL : IsCompact L := hK.inter_right (isClosed_le continuous_const hH)
-  have hz : (0 : XV d) ∉ L := by
+  have hL : IsCompact L := hK.inter_right (isClosed_le continuous_const ((selectedProfile_spec h).2.2.2.2.2.2.1))
+  have hz : 0 ∉ L := by
     intro hmem
     have hp := hmem.2
     change Real.rpow r alpha ≤ profileFunction h 0 at hp
-    rw [hzero] at hp
+    rw [((selectedProfile_spec h).2.2.2.2.2.2.2.1)] at hp
     exact (Real.rpow_pos_of_pos hr alpha).not_ge hp
-  obtain ⟨M₀, hM₀⟩ := hbounds L hL hz
+  obtain ⟨M₀, hM₀⟩ := ((selectedProfile_spec h).2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.1) L hL hz
   let M := max M₀ 0
   have hM : 0 ≤ M := le_max_right _ _
   obtain ⟨P, hP, hPbound⟩ := flatteningPsi_deriv2_bound
   let D := Real.rpow r (-alpha) * P
-  have hD : 0 ≤ D := mul_nonneg (Real.rpow_pos_of_pos hr (-alpha)).le hP.le
+  have hD := mul_nonneg (Real.rpow_pos_of_pos hr (-alpha)).le hP.le
   refine ⟨M + D * M ^ 2, by positivity, ?_⟩
   intro q hq
   have hMB : M ≤ M + D * M ^ 2 := le_add_of_nonneg_right (by positivity)
@@ -56,9 +53,9 @@ theorem flatProfile_jets_compact_bound_of_profile {d : ℕ} {alpha : ℝ}
     refine ⟨(hjet _ hmx).trans hMB, (hjet _ hmv).trans hMB, ?_⟩
     intro i k
     have hvi : |profileVelocityJet h q i| ≤ M := by
-      simpa only [Real.norm_eq_abs] using (norm_le_pi_norm _ i).trans hmv
+      simpa using (norm_le_pi_norm _ i).trans hmv
     have hvk : |profileVelocityJet h q k| ≤ M := by
-      simpa only [Real.norm_eq_abs] using (norm_le_pi_norm _ k).trans hmv
+      simpa using (norm_le_pi_norm _ k).trans hmv
     have ht : |deriv (deriv flatteningPsi) s| ≤ P := by
       rw [abs_of_nonneg (flatteningPsi_deriv2_nonneg s)]
       exact hPbound s
@@ -69,7 +66,7 @@ theorem flatProfile_jets_compact_bound_of_profile {d : ℕ} {alpha : ℝ}
             profileVelocityJet h q i * profileVelocityJet h q k| := abs_sub _ _
       _ ≤ M + D * M ^ 2 := by
         rw [abs_mul, abs_neg, abs_mul, abs_mul, abs_mul]
-        simp only [Real.rpow_eq_pow]
+        simp
         rw [abs_of_pos (Real.rpow_pos_of_pos hr (-alpha))]
         have hfirst : |deriv flatteningPsi s| * |profileHessian h q i k| ≤ M := by
           calc
@@ -79,7 +76,6 @@ theorem flatProfile_jets_compact_bound_of_profile {d : ℕ} {alpha : ℝ}
             |profileVelocityJet h q i| * |profileVelocityJet h q k| ≤ D * M ^ 2 := by
           dsimp [D]
           rw [pow_two]
-          have hpow : 0 ≤ r ^ (-alpha) := (Real.rpow_pos_of_pos hr (-alpha)).le
           calc
             _ ≤ r ^ (-alpha) * P * M * M := by gcongr
             _ = _ := by ring
@@ -89,7 +85,6 @@ theorem flatProfile_jets_compact_bound_of_profile {d : ℕ} {alpha : ℝ}
     have hfirst : deriv flatteningPsi (profileFunction h q / Real.rpow r alpha) = 0 := by
       rw [deriv_flatteningPsi]
       exact Real.smoothTransition.zero_of_nonpos (by linarith)
-    have hsecond := flatteningPsi_deriv2_eq_zero_of_lt _ hs
     have hx : flatProfilePositionJet h r q = 0 := by
       ext i
       unfold flatProfilePositionJet
@@ -102,7 +97,7 @@ theorem flatProfile_jets_compact_bound_of_profile {d : ℕ} {alpha : ℝ}
       simp
     have hh (i k : Fin d) : flatProfileHessian h r q i k = 0 := by
       unfold flatProfileHessian
-      rw [hfirst, hsecond]
+      rw [hfirst, (flatteningPsi_deriv2_eq_zero_of_lt _ hs)]
       ring
     simp only [hx, hv, hh, norm_zero, abs_zero]
     exact ⟨hM.trans hMB, hM.trans hMB, fun _ _ => hM.trans hMB⟩
@@ -114,12 +109,11 @@ theorem locallyIntegrable_of_compact_bound {d : ℕ} (f : XV d → ℝ) (hf : Me
   apply locallyIntegrable_iff.mpr
   intro K hK
   obtain ⟨M, hM, hbM⟩ := hb K hK
-  have hi : IntegrableOn (fun _ : XV d => M) K volume := integrableOn_const hK.measure_ne_top
-  change Integrable (fun _ : XV d => M) (volume.restrict K) at hi
-  change Integrable f (volume.restrict K)
+  have hi : IntegrableOn (fun _ => M) K volume := integrableOn_const hK.measure_ne_top
+  change Integrable (fun _ => M) (volume.restrict K) at hi
   apply hi.mono hf.aestronglyMeasurable.restrict
   filter_upwards [ae_restrict_mem hK.measurableSet] with q hq
-  simpa only [Real.norm_eq_abs, abs_of_nonneg hM] using hbM q hq
+  simpa [abs_of_nonneg hM] using hbM q hq
 
 /-- All selected flattened derivative components are locally integrable. -/
 theorem flatProfile_jets_locallyIntegrable_of_profile {d : ℕ} {alpha : ℝ}
@@ -136,7 +130,7 @@ theorem flatProfile_jets_locallyIntegrable_of_profile {d : ℕ} {alpha : ℝ}
     obtain ⟨M, hM, hb⟩ := flatProfile_jets_compact_bound_of_profile h r hr K hK
     refine ⟨M, hM, ?_⟩
     intro q hq
-    simpa only [Real.norm_eq_abs] using
+    simpa using
       (norm_le_pi_norm (flatProfilePositionJet h r q) i).trans (hb q hq).1
   · intro i
     apply locallyIntegrable_of_compact_bound (fun q => flatProfileVelocityJet h r q i)
@@ -145,7 +139,7 @@ theorem flatProfile_jets_locallyIntegrable_of_profile {d : ℕ} {alpha : ℝ}
     obtain ⟨M, hM, hb⟩ := flatProfile_jets_compact_bound_of_profile h r hr K hK
     refine ⟨M, hM, ?_⟩
     intro q hq
-    simpa only [Real.norm_eq_abs] using
+    simpa using
       (norm_le_pi_norm (flatProfileVelocityJet h r q) i).trans (hb q hq).2.1
   · intro i k
     apply locallyIntegrable_of_compact_bound (fun q => flatProfileHessian h r q i k) (hmh i k)

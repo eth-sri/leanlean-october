@@ -88,7 +88,7 @@ theorem reverseTimeSourceFunctional_apply
     reverseTimeSourceFunctional hΩ f v =
       -inner ℝ (valueCLM hΩ v) f := by
   rw [reverseTimeSourceFunctional]
-  simp only [ContinuousLinearMap.neg_apply, scalarLpToH10HilbertGraphDual_apply]
+  simp
 
 /-- The reverse-time source functional is bounded by the spatial pivot norm. -/
 theorem norm_reverseTimeSourceFunctional_le
@@ -132,7 +132,7 @@ private theorem principal_integral_eq_multiplierInner
   apply integral_congr_ae
   filter_upwards [scalarL2Multiplier_apply_ae q hq C hC hqBound f] with y hy
   rw [hy]
-  simp only [RCLike.inner_apply, conj_trivial]
+  simp
   ring
 
 private theorem drift_integral_eq_multiplierInner
@@ -146,16 +146,6 @@ private theorem drift_integral_eq_multiplierInner
       inner ℝ (scalarL2Multiplier q hq C hC hqBound f) g := by
   exact principal_integral_eq_multiplierInner q hq C hC hqBound f g
 
-private theorem scalar_integral_eq_multiplierInner
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (q : PDE.Vec d → ℝ)
-    (hq : AEStronglyMeasurable q (PDE.volumeOn Ω))
-    (C : ℝ) (hC : 0 ≤ C)
-    (hqBound : ∀ᵐ y ∂PDE.volumeOn Ω, ‖q y‖ ≤ C)
-    (f g : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
-    (∫ y in Ω, q y * f y * g y) =
-      inner ℝ (scalarL2Multiplier q hq C hC hqBound f) g := by
-  exact principal_integral_eq_multiplierInner q hq C hC hqBound f g
 
 /-- With explicit slice multiplier evidence, the raw scalar has an `L²` representation. -/
 theorem reverseTimeSpatialForm_eq_multiplierInner_of_sliceEvidence
@@ -212,36 +202,36 @@ theorem reverseTimeSpatialForm_eq_multiplierInner_of_sliceEvidence
   have hPrincipal (i j : Fin d) :
       (∫ y in Ω,
         a (r₁ - τ) y i j *
-          (PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j
+          (PDE.hilbertVectorLpCoord Ω 2 j
             (gradientCLM hΩ u)) y *
-          (PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i
+          (PDE.hilbertVectorLpCoord Ω 2 i
             (gradientCLM hΩ v)) y) =
         inner ℝ
           (scalarL2Multiplier
-            (fun y : PDE.Vec d => a (r₁ - τ) y i j)
+            (fun y => a (r₁ - τ) y i j)
             (hAMeas i j) (Ca i j) (hCa i j) (hABound i j)
-            (PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j
+            (PDE.hilbertVectorLpCoord Ω 2 j
               (gradientCLM hΩ u)))
-          (PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i
+          (PDE.hilbertVectorLpCoord Ω 2 i
             (gradientCLM hΩ v)) :=
     principal_integral_eq_multiplierInner
-      (fun y : PDE.Vec d => a (r₁ - τ) y i j)
+      (fun y => a (r₁ - τ) y i j)
       (hAMeas i j) (Ca i j) (hCa i j) (hABound i j) _ _
   have hDrift (j : Fin d) :
       (∫ y in Ω,
         reverseTimeDivergenceDrift r₁ a b τ y j *
-          (PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j
+          (PDE.hilbertVectorLpCoord Ω 2 j
             (gradientCLM hΩ u)) y *
           (valueCLM hΩ v) y) =
         inner ℝ
           (scalarL2Multiplier
-            (fun y : PDE.Vec d => reverseTimeDivergenceDrift r₁ a b τ y j)
+            (fun y => reverseTimeDivergenceDrift r₁ a b τ y j)
             (hDriftMeas j) (Cd j) (hCd j) (hDriftBound j)
-            (PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j
+            (PDE.hilbertVectorLpCoord Ω 2 j
               (gradientCLM hΩ u)))
           (valueCLM hΩ v) :=
     drift_integral_eq_multiplierInner
-      (fun y : PDE.Vec d => reverseTimeDivergenceDrift r₁ a b τ y j)
+      (fun y => reverseTimeDivergenceDrift r₁ a b τ y j)
       (hDriftMeas j) (Cd j) (hCd j) (hDriftBound j) _ _
   have hScalar :
       (∫ y in Ω,
@@ -249,11 +239,11 @@ theorem reverseTimeSpatialForm_eq_multiplierInner_of_sliceEvidence
           (valueCLM hΩ u) y * (valueCLM hΩ v) y) =
         inner ℝ
           (scalarL2Multiplier
-            (fun y : PDE.Vec d => reverseTimeScalarCoefficient r₁ c τ y)
+            (fun y => reverseTimeScalarCoefficient r₁ c τ y)
             hScalarMeas Cc hCc hScalarBound (valueCLM hΩ u))
           (valueCLM hΩ v) :=
-    scalar_integral_eq_multiplierInner
-      (fun y : PDE.Vec d => reverseTimeScalarCoefficient r₁ c τ y)
+    drift_integral_eq_multiplierInner
+      (fun y => reverseTimeScalarCoefficient r₁ c τ y)
       hScalarMeas Cc hCc hScalarBound _ _
   simp_rw [hPrincipal, hDrift, hScalar]
 

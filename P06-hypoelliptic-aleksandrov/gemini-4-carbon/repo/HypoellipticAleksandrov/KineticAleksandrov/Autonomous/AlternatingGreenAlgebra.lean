@@ -16,7 +16,7 @@ theorem alternating_measure_telescope (total initial : Measure Point)
     (hstep : ∀ n, remainder n = charge n + remainder (n + 1)) (N : ℕ) :
     total = initial + ∑ n ∈ Finset.range N, charge n + remainder N := by
   induction N with
-  | zero => simpa only [Finset.range_zero, Finset.sum_empty, add_zero] using hzero
+  | zero => simpa using hzero
   | succ N ih =>
     calc
       total = initial + ∑ n ∈ Finset.range N, charge n + remainder N := ih

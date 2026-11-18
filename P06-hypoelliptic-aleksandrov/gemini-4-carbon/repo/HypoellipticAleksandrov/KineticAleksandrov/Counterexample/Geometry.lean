@@ -59,9 +59,6 @@ theorem rho_nonneg {d : ℕ} (q : XV d) : 0 ≤ rho q :=
 @[simp] theorem dilate_one {d : ℕ} (q : XV d) : dilate 1 q = q := by
   simp [dilate]
 
-/-- Every dilation preserves the origin. -/
-@[simp] theorem dilate_zero {d : ℕ} (r : ℝ) : dilate r (0 : XV d) = 0 := by
-  simp [dilate]
 
 /-- Kinetic dilations compose multiplicatively. -/
 theorem dilate_mul {d : ℕ} (r s : ℝ) (q : XV d) :
@@ -81,10 +78,10 @@ theorem rho_dilate {d : ℕ} (r : ℝ) (hr : 0 < r) (q : XV d) :
   unfold rho
   simp only [Real.rpow_eq_pow]
   rw [gauge_polynomial_dilate]
-  rw [Real.mul_rpow (show 0 ≤ r ^ (6 : ℕ) from pow_nonneg hr.le _) (z := (1 / 6 : ℝ))
-    (show 0 ≤ PDE.vecNormSq q.1 + PDE.vecNormSq q.2 ^ (3 : ℕ) from
+  rw [Real.mul_rpow (show 0 ≤ r ^ 6 from pow_nonneg hr.le _)
+    (show 0 ≤ PDE.vecNormSq q.1 + PDE.vecNormSq q.2 ^ 3 from
       add_nonneg (PDE.vecNormSq_nonneg _) (pow_nonneg (PDE.vecNormSq_nonneg _) _))]
-  have hpower : (r ^ (6 : ℕ)) ^ (1 / 6 : ℝ) = r := by
+  have hpower : (r ^ 6) ^ (1 / 6 : ℝ) = r := by
     rw [← Real.rpow_natCast_mul hr.le]
     norm_num
   rw [hpower]
@@ -100,15 +97,14 @@ theorem continuous_rho (d : ℕ) : Continuous (rho (d := d)) := by
 /-- The gauge vanishes only at the origin. -/
 theorem rho_eq_zero_iff {d : ℕ} (q : XV d) : rho q = 0 ↔ q = 0 := by
   have hx := PDE.vecNormSq_nonneg q.1
-  have hv := PDE.vecNormSq_nonneg q.2
-  have hv3 : 0 ≤ PDE.vecNormSq q.2 ^ (3 : ℕ) := pow_nonneg hv _
+  have hv3 : 0 ≤ PDE.vecNormSq q.2 ^ 3 := pow_nonneg (PDE.vecNormSq_nonneg q.2) _
   rw [rho, Real.rpow_eq_pow, Real.rpow_eq_zero (add_nonneg hx hv3) (by norm_num)]
   constructor
   · intro h
-    have hx0 : PDE.vecNormSq q.1 = 0 := le_antisymm (by linarith only [h, hv3]) hx
+    have hx0 := le_antisymm (by linarith only [h, hv3]) hx
     have hv0 : PDE.vecNormSq q.2 = 0 := by
-      have hv30 : PDE.vecNormSq q.2 ^ (3 : ℕ) = 0 := by linarith only [h, hx0]
-      exact (pow_eq_zero_iff (by decide : (3 : ℕ) ≠ 0)).mp hv30
+      have hv30 : PDE.vecNormSq q.2 ^ 3 = 0 := by linarith only [h, hx0]
+      exact (pow_eq_zero_iff (by decide : 3 ≠ 0)).mp hv30
     exact Prod.ext (PDE.vecNormSq_eq_zero hx0) (PDE.vecNormSq_eq_zero hv0)
   · rintro rfl
     simp [PDE.vecNormSq, PDE.vecDot]

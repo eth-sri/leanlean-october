@@ -16,10 +16,6 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 open scoped BigOperators Matrix.Norms.Elementwise
 
-/-- The reverse-time map is smooth. -/
-theorem contDiff_reverseTimeMap {d : ℕ} (r₁ : ℝ) :
-    ContDiff ℝ ⊤ (reverseTimeMap r₁ : TimeVelocity d → TimeVelocity d) := by
-  exact (contDiff_const.sub contDiff_fst).prodMk contDiff_snd
 
 /-- A function smooth on a neighborhood of a set is differentiable at each
 point of the set. -/
@@ -38,7 +34,10 @@ theorem IsSmoothOnNeighborhood.reverseTime
     {f : TimeVelocity d → ℝ}
     (hSK : reverseTimeMap r₁ '' S ⊆ K)
     (hf : IsSmoothOnNeighborhood f K) :
-    IsSmoothOnNeighborhood (f ∘ reverseTimeMap r₁) S := by
+    IsSmoothOnNeighborhood (f ∘ reverseTimeMap r₁) S  := by
+  have contDiff_reverseTimeMap (r₁ : ℝ) :
+      ContDiff ℝ ⊤ (reverseTimeMap r₁ : TimeVelocity d → TimeVelocity d) := by
+    exact (contDiff_const.sub contDiff_fst).prodMk contDiff_snd
   rcases hf with ⟨V, hVopen, hKV, hV⟩
   refine ⟨reverseTimeMap r₁ ⁻¹' V,
     (contDiff_reverseTimeMap r₁).continuous.isOpen_preimage V hVopen, ?_, ?_⟩
@@ -56,7 +55,7 @@ theorem IsSmoothOnNeighborhood.coefficientEntry
     IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2 i j) K := by
   rcases ha with ⟨V, hVopen, hKV, hV⟩
   refine ⟨V, hVopen, hKV, ?_⟩
-  have hrow : ContDiffOn ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => a z.1 z.2 i) V := by
+  have hrow : ContDiffOn ℝ (⊤ : ℕ∞) (fun z => a z.1 z.2 i) V := by
     exact (contDiffOn_apply ℝ (Fin d → ℝ) i Set.univ).comp hV fun _ _ => Set.mem_univ _
   exact (contDiffOn_apply ℝ ℝ j Set.univ).comp hrow fun _ _ => Set.mem_univ _
 
@@ -69,8 +68,8 @@ theorem fderiv_spatialSlice_apply
       (fun z : TimeVelocity d => a z.1 z.2 i j) (r, y)) :
     (fderiv ℝ (fun x : PDE.Vec d => a r x i j) y) v =
       (fderiv ℝ (fun z : TimeVelocity d => a z.1 z.2 i j) (r, y)) (0, v) := by
-  have hslice : HasFDerivAt (fun x : PDE.Vec d => a r x i j)
-      ((fderiv ℝ (fun z : TimeVelocity d => a z.1 z.2 i j) (r, y)).comp
+  have hslice : HasFDerivAt (fun x => a r x i j)
+      ((fderiv ℝ (fun z => a z.1 z.2 i j) (r, y)).comp
         (ContinuousLinearMap.inr ℝ ℝ (PDE.Vec d))) y := by
     simpa only [Function.comp_def] using ha.hasFDerivAt.comp y
       (hasFDerivAt_prodMk_right (𝕜 := ℝ) r y)
@@ -90,15 +89,15 @@ theorem IsSmoothOnNeighborhood.divergenceDriftEntry
   rcases hb with ⟨Vb, hVbopen, hKVb, hVb⟩
   refine ⟨Va ∩ Vb, hVaopen.inter hVbopen, fun z hz => ⟨hKVa hz, hKVb hz⟩, ?_⟩
   have hentry (i : Fin d) : ContDiffOn ℝ (⊤ : ℕ∞)
-      (fun z : TimeVelocity d => a z.1 z.2 i j) Va := by
+      (fun z => a z.1 z.2 i j) Va := by
     exact (contDiffOn_apply ℝ ℝ j Set.univ).comp
       ((contDiffOn_apply ℝ (Fin d → ℝ) i Set.univ).comp hVa fun _ _ => Set.mem_univ _)
       fun _ _ => Set.mem_univ _
-  have hdiv : ContDiffOn ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d =>
+  have hdiv : ContDiffOn ℝ (⊤ : ℕ∞) (fun z =>
       scalarSpatialCoefficientDivergence a z j) Va := by
-    have hsum : ContDiffOn ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d =>
+    have hsum : ContDiffOn ℝ (⊤ : ℕ∞) (fun z =>
         ∑ i : Fin d,
-          (fderiv ℝ (fun w : TimeVelocity d => a w.1 w.2 i j) z)
+          (fderiv ℝ (fun w => a w.1 w.2 i j) z)
             (0, PDE.basisVec i)) Va := by
       apply ContDiffOn.sum
       intro i _
@@ -112,7 +111,7 @@ theorem IsSmoothOnNeighborhood.divergenceDriftEntry
     intro i _
     exact fderiv_spatialSlice_apply a r y (PDE.basisVec i) i j
       (((hentry i).contDiffAt (hVaopen.mem_nhds hz)).differentiableAt (by simp))
-  have hbentry : ContDiffOn ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => b z.1 z.2 j) Vb := by
+  have hbentry : ContDiffOn ℝ (⊤ : ℕ∞) (fun z => b z.1 z.2 j) Vb := by
     exact (contDiffOn_apply ℝ ℝ j Set.univ).comp hVb fun _ _ => Set.mem_univ _
   exact (hdiv.mono Set.inter_subset_left).sub (hbentry.mono Set.inter_subset_right)
 

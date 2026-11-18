@@ -74,8 +74,7 @@ theorem visitActiveUnion_carrier (c : Clock) (J : Interval) :
     (visitActiveUnion c J).carrier = c.active ∩ J.carrier := by
   rw [visitActiveUnion, visitIntervalUnion_carrier]
   ext v
-  simp only [Clock.active, Interval.carrier, mem_Ioo, max_lt_iff, lt_min_iff,
-    mem_inter_iff]
+  simp [Clock.active, Interval.carrier, max_lt_iff, lt_min_iff]
   tauto
 
 /-- The two possible waiting components are disjoint, even before clipping to the outer strip. -/
@@ -86,11 +85,9 @@ theorem visitWaiting_components_disjoint (c : Clock) (J : Interval)
       (⟨max J.lo (c.vbar + c.r / 2), J.hi, hr⟩ : Interval).carrier := by
   apply Set.disjoint_left.mpr
   intro v hv hw
-  have hlow := le_max_right J.lo (c.vbar + c.r / 2)
-  have hhigh := min_le_right J.hi (c.vbar - c.r / 2)
   change J.lo < v ∧ v < min J.hi (c.vbar - c.r / 2) at hv
   change max J.lo (c.vbar + c.r / 2) < v ∧ v < J.hi at hw
-  linarith only [hv.2, hw.1, hlow, hhigh, c.positive]
+  linarith only [hv.2, hw.1, (le_max_right J.lo (c.vbar + c.r / 2)), (min_le_right J.hi (c.vbar - c.r / 2)), c.positive]
 
 /-- The waiting domain has zero, one, or two actual nonempty interval components. -/
 def visitWaitingUnion (c : Clock) (J : Interval) : FiniteIntervalUnion :=

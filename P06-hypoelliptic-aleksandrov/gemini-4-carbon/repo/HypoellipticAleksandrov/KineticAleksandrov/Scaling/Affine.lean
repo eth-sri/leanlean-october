@@ -258,7 +258,7 @@ theorem MapsDomain.stateSet_mem_iff (h : Φ.MapsDomain Ω γ Ω' γ') (τ : ℝ)
     (x : EvolutionAmbientState d) :
     x ∈ evolutionStateSet Ω' γ' τ ↔
       Φ.ambientEquiv τ x ∈ evolutionStateSet Ω γ (Φ.time τ) := by
-  simp only [evolutionStateSet, mem_prod, mem_univ, and_true, h.mem_iff, ambientEquiv_apply]
+  simp [evolutionStateSet, h.mem_iff, ambientEquiv_apply]
 
 theorem MapsDomain.closure_eq (h : Φ.MapsDomain Ω γ Ω' γ') (τ : ℝ) :
     closure (movingDomain Ω' γ' τ) = Φ.position ⁻¹' closure (movingDomain Ω γ (Φ.time τ)) := by

@@ -85,7 +85,7 @@ theorem return_patch_double (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam
     have hsub : kineticAffine z' (2 * ell) '' referenceRegion 1 0 (referenceBound 0) ⊆
         {p : Point | z.time - 12 * ell ^ 2 ≤ p.time} := by
       rintro _ ⟨q, hq, rfl⟩
-      have ht : -5 < q.time := by simpa only [Nat.cast_zero, zero_add] using hq.1
+      have ht : -5 < q.time := by simpa using hq.1
       change z.time - 12 * ell ^ 2 ≤ z.time + 8 * ell ^ 2 + (2 * ell) ^ 2 * q.time
       nlinarith [sq_nonneg ell]
     intro q hq

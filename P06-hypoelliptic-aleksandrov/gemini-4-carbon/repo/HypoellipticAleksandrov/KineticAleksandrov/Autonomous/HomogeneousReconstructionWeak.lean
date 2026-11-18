@@ -17,17 +17,6 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 open Evolution Occupation SectionTwo
 
-private theorem integrableOn_weak_mul_test {U : Set (EvolutionVec 1)}
-    {u ψ : EvolutionVec 1 → ℝ} (hu : LocallyIntegrableOn u U volume)
-    (hψ : Continuous ψ) (hc : HasCompactSupport ψ) (hs : tsupport ψ ⊆ U) :
-    IntegrableOn (fun x => u x * ψ x) U volume := by
-  have hi := hu.integrableOn_compact_subset hs hc.isCompact
-  have hm := hi.mul_continuousOn hψ.continuousOn hc.isCompact
-  have hglobal : Integrable (fun x => u x * ψ x) volume := by
-    apply (integrableOn_iff_integrable_of_support_subset ?_).mp hm
-    intro x hx
-    exact tsupport_mul_subset_right (subset_closure hx)
-  exact hglobal.integrableOn
 
 /-- Weak transported equations restrict to any smaller domain. -/
 theorem weak_solution_restrict {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
@@ -58,7 +47,15 @@ theorem weak_same_source_sub {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
     (hu : IsWeakTransportedSolution (evolutionCoefficient A.a) (identityDrift 1) U u g)
     (hv : IsWeakTransportedSolution (evolutionCoefficient A.a) (identityDrift 1) U v g) :
     IsWeakTransportedSolution (evolutionCoefficient A.a) (identityDrift 1) U
-      (fun x => u x - v x) (fun _ => 0) := by
+      (fun x => u x - v x) (fun _ => 0)  := by
+  have integrableOn_weak_mul_test {U : Set (EvolutionVec 1)} {u ψ : EvolutionVec 1 → ℝ} (hu : LocallyIntegrableOn u U volume) (hψ : Continuous ψ) (hc : HasCompactSupport ψ) (hs : tsupport ψ ⊆ U) :
+      IntegrableOn (fun x => u x * ψ x) U volume := by
+    have hm := (hu.integrableOn_compact_subset hs hc.isCompact).mul_continuousOn hψ.continuousOn hc.isCompact
+    have hglobal : Integrable (fun x => u x * ψ x) volume := by
+      apply (integrableOn_iff_integrable_of_support_subset ?_).mp hm
+      intro x hx
+      exact tsupport_mul_subset_right (subset_closure hx)
+    exact hglobal.integrableOn
   refine ⟨hu.1.sub hv.1, ?_⟩
   intro ψ hψ hc hs
   have hLc := (contDiff_transportedAdjoint (evolutionCoefficient_smooth A)
@@ -71,11 +68,9 @@ theorem weak_same_source_sub {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
     intro x hx
     by_contra hn
     exact hx (transportedAdjoint_eq_zero_of_notMem_tsupport ψ hn)
-  have hiu := integrableOn_weak_mul_test hu.1 hLc hLk hLs
-  have hiv := integrableOn_weak_mul_test hv.1 hLc hLk hLs
   simp_rw [sub_mul]
-  rw [integral_sub hiu hiv, hu.2 ψ hψ hc hs, hv.2 ψ hψ hc hs, sub_self]
-  simp only [zero_mul, integral_zero]
+  rw [integral_sub (integrableOn_weak_mul_test hu.1 hLc hLk hLs) (integrableOn_weak_mul_test hv.1 hLc hLk hLs), hu.2 ψ hψ hc hs, hv.2 ψ hψ hc hs, sub_self]
+  simp
 
 /-- The homogeneous weak difference has a smooth almost-everywhere representative. -/
 theorem homogeneous_weak_smooth_representative
@@ -100,8 +95,7 @@ theorem homogeneous_weak_contDiffOn
       u (fun _ => 0)) (hc : ContinuousOn u U) :
     ContDiffOn ℝ (⊤ : ℕ∞) u U := by
   obtain ⟨f, hf, hae⟩ := homogeneous_weak_smooth_representative hH hlam A hU hu
-  have heq := Measure.eqOn_open_of_ae_eq hae hU hc hf.continuousOn
-  exact hf.congr (fun x hx => heq hx)
+  exact hf.congr (fun x hx => (Measure.eqOn_open_of_ae_eq hae hU hc hf.continuousOn) hx)
 
 /-- The smooth representative of a homogeneous weak solution solves the equation pointwise. -/
 theorem homogeneous_weak_smooth_solution

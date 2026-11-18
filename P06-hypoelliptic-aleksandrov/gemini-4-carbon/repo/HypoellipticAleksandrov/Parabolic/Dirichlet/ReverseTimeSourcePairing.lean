@@ -40,7 +40,6 @@ theorem reverseTimeNegativeSource_pairing_eq_integral_raw
         ∂reverseTimeVolume (r₁ - r₀) := by
   let S := reverseTimeNegativeSource r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth
   let z := reverseTimeSeparatedVTest hΩ eta v
-  change reverseTimeDualPairingRightCLM hΩ (r₁ - r₀) z S = _
   have hSeval : ∀ᵐ tau ∂reverseTimeVolume (r₁ - r₀),
       S tau = reverseTimeNegativeSourceRaw r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth tau := by
     exact

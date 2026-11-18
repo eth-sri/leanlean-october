@@ -14,17 +14,15 @@ def finiteUnionInternalExit (H1 H2 : FiniteIntervalUnion) (sMinus T : ℝ) : Set
   {p | sMinus < p.time ∧ p.time < T ∧
     p.velocity 0 ∈ frontier H1.carrier ∩ H2.carrier}
 
-/-- The internal restart boundary is part of the smaller strip's prescribed exit. -/
-theorem finiteUnionInternalExit_subset_exit (H1 H2 : FiniteIntervalUnion) (sMinus T : ℝ) :
-    finiteUnionInternalExit H1 H2 sMinus T ⊆ finiteUnionExitSet H1 sMinus T :=
-  fun _ hp => Or.inr ⟨hp.1, hp.2.1, hp.2.2.1⟩
 
 /-- The smaller exit is exactly the outer exit part plus the internal restart part. -/
 theorem finiteUnionExitSet_nested_split (H1 H2 : FiniteIntervalUnion)
     (hsub : H1.carrier ⊆ H2.carrier) (sMinus T : ℝ) :
     finiteUnionExitSet H1 sMinus T =
       (finiteUnionExitSet H1 sMinus T ∩ finiteUnionExitSet H2 sMinus T) ∪
-        finiteUnionInternalExit H1 H2 sMinus T := by
+        finiteUnionInternalExit H1 H2 sMinus T  := by
+  have finiteUnionInternalExit_subset_exit : finiteUnionInternalExit H1 H2 sMinus T ⊆ finiteUnionExitSet H1 sMinus T :=
+    fun _ hp => Or.inr ⟨hp.1, hp.2.1, hp.2.2.1⟩
   ext p
   constructor
   · intro hp
@@ -37,7 +35,7 @@ theorem finiteUnionExitSet_nested_split (H1 H2 : FiniteIntervalUnion)
         exact ⟨closure_mono hsub (frontier_subset_closure hp.2.2), hv⟩
   · rintro (hp | hp)
     · exact hp.1
-    · exact finiteUnionInternalExit_subset_exit H1 H2 sMinus T hp
+    · exact finiteUnionInternalExit_subset_exit hp
 
 /-- Outer prescribed exits and internal restart exits are disjoint. -/
 theorem finiteUnionExitSet_disjoint_internal (H1 H2 : FiniteIntervalUnion) (sMinus T : ℝ) :
@@ -58,7 +56,7 @@ theorem measurableSet_finiteUnionInternalExit (H1 H2 : FiniteIntervalUnion) (sMi
     ((isClosed_frontier.measurableSet.inter H2.isOpen_carrier.measurableSet).preimage
       (((continuous_apply 0).comp continuous_velocity).measurable)) using 1
   ext p
-  simp only [mem_ofPred_eq, mem_inter_iff, mem_preimage, Function.comp_apply]
+  simp
   tauto
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

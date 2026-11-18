@@ -42,13 +42,10 @@ theorem classical_viscous_terminalSolution_isWeak {n : ℕ} {Ω : Set (PDE.Vec n
     IsKineticWeakRegularizedSolution B b ε (evolutionPastOpenCylinder Ω γ τ) u
       (fun _ => 0) := by
   let U := evolutionPastOpenCylinder Ω γ τ
-  have hU := isOpen_evolutionPastOpenCylinder hΩ hγ τ
-  have hP := (evolutionHomeomorph n).continuous.isOpen_preimage U hU
+  have hP := (evolutionHomeomorph n).continuous.isOpen_preimage U (isOpen_evolutionPastOpenCylinder hΩ hγ τ)
   have hs : ContDiffOn ℝ (⊤ : ℕ∞) (u ∘ evolutionHomeomorph n)
       (evolutionHomeomorph n ⁻¹' U) := by
     apply contDiffOn_comp_evolutionHomeomorph_iff.mpr
-    change ContDiffOn ℝ (⊤ : ℕ∞) _
-      (KineticPoint.equivProd n '' evolutionPastOpenCylinder Ω γ τ)
     rw [← evolutionPastInteriorRaw_eq_image]
     exact hu.2.2.1
   apply (isWeakRegularizedSolution_comp_iff B b ε U u (fun _ => 0)).mp
@@ -63,6 +60,6 @@ theorem classical_viscous_terminalSolution_isWeak {n : ℕ} {Ω : Set (PDE.Vec n
     change viscousTransportedOperator B b ε u (evolutionHomeomorph n x) * ψ x = 0
     rw [hu.2.2.2.1 _ hx, zero_mul]
   rw [heq]
-  simp only [Function.comp_apply, zero_mul, integral_zero]
+  simp
 
 end HypoellipticAleksandrov.KineticAleksandrov

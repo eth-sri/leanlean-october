@@ -50,21 +50,12 @@ theorem movingDomain_euclideanBall_subset_of_close {n : ℕ} {c : PDE.Vec n} {r 
   have hε : 0 ≤ ε := (PDE.vecEuclideanNorm_nonneg _).trans (hγ σ)
   rw [mem_movingDomain_euclideanBall_iff_norm_lt hr] at hy
   rw [mem_movingDomain_euclideanBall_iff_norm_lt (by linarith)]
-  have h := vecEuclideanNorm_sub_add_le (c := c) (hγ σ) y
   have h' : PDE.vecEuclideanNorm (y - (γ σ + c)) ≤ PDE.vecEuclideanNorm (y - (γ' σ + c)) + ε := by
     have h1 : y - (γ σ + c) = (y - (γ' σ + c)) + (γ' σ - γ σ) := by abel
     rw [h1]
     exact (PDE.vecEuclideanNorm_add_le _ _).trans (by linarith [hγ σ])
   linarith
 
-/-- The approximating moving ball `γ_k + B_{r₀ - α_k}(c)` lies inside `Ω_σ = γ + B_{r₀}(c)`
-when `‖γ_k - γ‖ ≤ α_k / 2`. -/
-theorem movingDomain_approx_subset {n : ℕ} {c : PDE.Vec n} {r₀ α : ℝ} (hα : α < r₀)
-    {γ γ' : ℝ → PDE.Vec n} (hγ : ∀ σ, PDE.vecEuclideanNorm (γ' σ - γ σ) ≤ α / 2)
-    (hα0 : 0 ≤ α) (σ : ℝ) :
-    movingDomain (PDE.euclideanBall c (r₀ - α)) γ' σ ⊆
-      movingDomain (PDE.euclideanBall c r₀) γ σ :=
-  movingDomain_euclideanBall_subset_of_close (by linarith) (by linarith) hγ σ
 
 /-- Consecutive approximating balls are nested: if `‖γ_k - γ‖ ≤ α_k / 2`,
 `‖γ_{k+1} - γ‖ ≤ α_{k+1} / 2` and `α_{k+1} ≤ α_k / 4`, then
@@ -88,25 +79,6 @@ theorem movingDomain_approx_mono {n : ℕ} {c : PDE.Vec n} {r₀ α α' : ℝ} (
     linarith
   exact movingDomain_euclideanBall_subset_of_close (by linarith) (by linarith) hd σ
 
-/-- Every point of `Ω_σ = γ + B_{r₀}(c)` lies in all the approximating balls
-`γ_k + B_{r₀ - α_k}(c)` from some index on, when `α_k → 0` and
-`‖γ_k - γ‖ ≤ α_k / 2`. -/
-theorem eventually_mem_movingDomain_approx {n : ℕ} {c : PDE.Vec n} {r₀ : ℝ}
-    (hr₀ : 0 < r₀) {α : ℕ → ℝ} (hαlim : Tendsto α atTop (𝓝 0))
-    {γ : ℝ → PDE.Vec n} {γs : ℕ → ℝ → PDE.Vec n}
-    (hγ : ∀ k σ, PDE.vecEuclideanNorm (γs k σ - γ σ) ≤ α k / 2) {σ : ℝ} {y : PDE.Vec n}
-    (hy : y ∈ movingDomain (PDE.euclideanBall c r₀) γ σ) :
-    ∀ᶠ k in atTop, y ∈ movingDomain (PDE.euclideanBall c (r₀ - α k)) (γs k) σ := by
-  rw [mem_movingDomain_euclideanBall_iff_norm_lt hr₀] at hy
-  have hδ : 0 < (r₀ - PDE.vecEuclideanNorm (y - (γ σ + c))) / 2 := by linarith
-  have hsmall := (hαlim.eventually (gt_mem_nhds hδ))
-  filter_upwards [hsmall] with k hk
-  have hrk : 0 < r₀ - α k := by
-    have := PDE.vecEuclideanNorm_nonneg (y - (γ σ + c))
-    linarith
-  rw [mem_movingDomain_euclideanBall_iff_norm_lt hrk]
-  have h := vecEuclideanNorm_sub_add_le (c := c) (hγ k σ) y
-  linarith
 
 /-- The approximating moving balls exhaust `Ω_σ`. -/
 theorem iUnion_movingDomain_approx {n : ℕ} {c : PDE.Vec n} {r₀ : ℝ}
@@ -114,7 +86,21 @@ theorem iUnion_movingDomain_approx {n : ℕ} {c : PDE.Vec n} {r₀ : ℝ}
     (hαlim : Tendsto α atTop (𝓝 0)) {γ : ℝ → PDE.Vec n} {γs : ℕ → ℝ → PDE.Vec n}
     (hγ : ∀ k σ, PDE.vecEuclideanNorm (γs k σ - γ σ) ≤ α k / 2) (σ : ℝ) :
     (⋃ k, movingDomain (PDE.euclideanBall c (r₀ - α k)) (γs k) σ) =
-      movingDomain (PDE.euclideanBall c r₀) γ σ := by
+      movingDomain (PDE.euclideanBall c r₀) γ σ   := by
+  have eventually_mem_movingDomain_approx {c : PDE.Vec n} {r₀ : ℝ} (hr₀ : 0 < r₀) {α : ℕ → ℝ} (hαlim : Tendsto α atTop (𝓝 0)) {γ : ℝ → PDE.Vec n} {γs : ℕ → ℝ → PDE.Vec n} (hγ : ∀ k σ, PDE.vecEuclideanNorm (γs k σ - γ σ) ≤ α k / 2) {σ : ℝ} {y : PDE.Vec n} (hy : y ∈ movingDomain (PDE.euclideanBall c r₀) γ σ) :
+      ∀ᶠ k in atTop, y ∈ movingDomain (PDE.euclideanBall c (r₀ - α k)) (γs k) σ := by
+    rw [mem_movingDomain_euclideanBall_iff_norm_lt hr₀] at hy
+    have hδ : 0 < (r₀ - PDE.vecEuclideanNorm (y - (γ σ + c))) / 2 := by linarith
+    filter_upwards [(hαlim.eventually (gt_mem_nhds hδ))] with k hk
+    have hrk : 0 < r₀ - α k := by
+      have := PDE.vecEuclideanNorm_nonneg (y - (γ σ + c))
+      linarith
+    rw [mem_movingDomain_euclideanBall_iff_norm_lt hrk]
+    have h := vecEuclideanNorm_sub_add_le (c := c) (hγ k σ) y
+    linarith
+  have movingDomain_approx_subset {r₀ α : ℝ} (hα : α < r₀) {γ γ' : ℝ → PDE.Vec n} (hγ : ∀ σ, PDE.vecEuclideanNorm (γ' σ - γ σ) ≤ α / 2) (hα0 : 0 ≤ α) (σ : ℝ) : movingDomain (PDE.euclideanBall c (r₀ - α)) γ' σ ⊆
+      movingDomain (PDE.euclideanBall c r₀) γ σ :=
+    movingDomain_euclideanBall_subset_of_close (by linarith) (by linarith) hγ σ
   refine Subset.antisymm (iUnion_subset fun k => ?_) fun y hy => ?_
   · exact movingDomain_approx_subset (hαr k) (hγ k) (hαpos k).le σ
   · have hr₀ : 0 < r₀ := lt_trans (hαpos 0) (hαr 0)

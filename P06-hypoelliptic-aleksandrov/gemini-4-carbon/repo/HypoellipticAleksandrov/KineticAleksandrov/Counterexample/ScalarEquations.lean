@@ -47,14 +47,12 @@ theorem scalar_ode_linear_combination (f g : ℝ → ℝ) (gamma a c d s : ℝ)
     simpa only [Pi.add_def] using
       ((hf.differentiable (by norm_num) t).hasDerivAt.const_mul c).add
         ((hg.differentiable (by norm_num) t).hasDerivAt.const_mul d)
-  have he : deriv (fun t => c * f t + d * g t) =
-      fun t => c * deriv f t + d * deriv g t := funext (fun t => (hfirst t).deriv)
   have hsecond : HasDerivAt (fun t => c * deriv f t + d * deriv g t)
       (c * deriv (deriv f) s + d * deriv (deriv g) s) s := by
     simpa only [Pi.add_def] using
       ((hf.differentiable_deriv_two s).hasDerivAt.const_mul c).add
         ((hg.differentiable_deriv_two s).hasDerivAt.const_mul d)
-  rw [he, hsecond.deriv]
+  rw [(funext (fun t => (hfirst t).deriv)), hsecond.deriv]
   linear_combination c * hfo + d * hgo
 
 /-- The negative piece is smooth, including at zero. -/
@@ -78,14 +76,6 @@ theorem Fminus_ode (gamma : ScalarGamma) (Lam s : ℝ) :
   have hc : ContDiff ℝ 2 (scalarCubic 1) := (contDiff_scalarCubic 1).of_le (by norm_num)
   have hf : ContDiff ℝ 2 f := (hm _ _).comp hc
   have hg : ContDiff ℝ 2 g := contDiff_id.mul ((hm _ _).comp hc)
-  have hfo := scalarCubic_ode (Kummer.M (-gamma.1) Kummer.b23) gamma.1 1 s
-    one_ne_zero (hm _ _).contDiffAt
-    (by simpa only [Kummer.b23, neg_mul, sub_neg_eq_add] using
-      Kummer.M_ode (-gamma.1) Kummer.b23 (scalarCubic 1 s))
-  have hgo := scalarCubic_second_ode (Kummer.M (1 / 3 - gamma.1) Kummer.b43)
-    gamma.1 1 s one_ne_zero (hm _ _)
-    (by simpa only [Kummer.b43] using
-      Kummer.M_ode (1 / 3 - gamma.1) Kummer.b43 (scalarCubic 1 s))
   have he : Fminus gamma Lam = fun t => gammaA gamma.1 * f t +
       (gammaB gamma.1 / Real.rpow (9 * Lam) (1 / 3)) * g t := by
     funext t
@@ -93,7 +83,7 @@ theorem Fminus_ode (gamma : ScalarGamma) (Lam s : ℝ) :
     norm_num
     ring
   rw [he]
-  simpa only [one_mul] using scalar_ode_linear_combination f g gamma.1 1
-    (gammaA gamma.1) (gammaB gamma.1 / Real.rpow (9 * Lam) (1 / 3)) s hf hg hfo hgo
+  simpa using scalar_ode_linear_combination f g gamma.1 1
+    (gammaA gamma.1) (gammaB gamma.1 / Real.rpow (9 * Lam) (1 / 3)) s hf hg (scalarCubic_ode (Kummer.M (-gamma.1) Kummer.b23) gamma.1 1 s one_ne_zero (hm _ _).contDiffAt (by simpa only [Kummer.b23, neg_mul, sub_neg_eq_add] using Kummer.M_ode (-gamma.1) Kummer.b23 (scalarCubic 1 s))) (scalarCubic_second_ode (Kummer.M (1 / 3 - gamma.1) Kummer.b43) gamma.1 1 s one_ne_zero (hm _ _) (by simpa only [Kummer.b43] using Kummer.M_ode (1 / 3 - gamma.1) Kummer.b43 (scalarCubic 1 s)))
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

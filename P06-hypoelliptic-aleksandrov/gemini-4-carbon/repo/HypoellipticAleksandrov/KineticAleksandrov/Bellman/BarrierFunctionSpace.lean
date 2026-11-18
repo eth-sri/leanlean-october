@@ -71,10 +71,8 @@ theorem IsBellmanHomogeneous.image_continuous {alpha lam Lam : ℝ}
     continuous_subtype_val.comp continuous_fst
   have hm : MapsTo (fun w : BellmanSphere × BellmanCoefficient lam Lam => w.1.val)
       univ bellmanPuncturedSet := fun w _ => w.1.ne_zero
-  have hx := h.dx_continuousOn.comp hz.continuousOn hm
-  have hv := h.dvv_continuousOn.comp hz.continuousOn hm
-  exact ((continuous_snd.comp hz).mul (continuousOn_univ.mp hx)).add
-    ((continuous_subtype_val.comp continuous_snd).mul (continuousOn_univ.mp hv))
+  exact ((continuous_snd.comp hz).mul (continuousOn_univ.mp (h.dx_continuousOn.comp hz.continuousOn hm))).add
+    ((continuous_subtype_val.comp continuous_snd).mul (continuousOn_univ.mp (h.dvv_continuousOn.comp hz.continuousOn hm)))
 
 /-- The continuous image of one C² homogeneous function. -/
 def bellmanImage {alpha : ℝ} (lam Lam : ℝ) (phi : (ℝ × ℝ) → ℝ)

@@ -34,14 +34,14 @@ theorem visitQuadratic_deriv (c : Clock) :
     ((hasDerivAt_const v (c.vbar + 3 * c.r / 4)).sub (hasDerivAt_id v))
   change HasDerivAt (visitQuadratic c) _ v at hd
   rw [hd.deriv]
-  simp only [Pi.sub_apply, id_eq, one_mul]
+  simp
   ring
 
 /-- The second derivative is the constant minus two. -/
 theorem visitQuadratic_second (c : Clock) (v : ℝ) :
     deriv (deriv (visitQuadratic c)) v = -2 := by
   rw [visitQuadratic_deriv]
-  simpa only [id_eq, mul_one] using
+  simpa using
     (((hasDerivAt_id v).sub_const c.vbar).const_mul (-2)).deriv
 
 /-- The forward operator of the velocity quadratic equals minus twice the coefficient. -/
@@ -79,6 +79,6 @@ theorem visitQuadratic_entrance_lower (c : Clock) {v : ℝ}
 theorem visitQuadratic_endpoints (c : Clock) :
     visitQuadratic c (c.vbar - 3 * c.r / 4) = 0 ∧
       visitQuadratic c (c.vbar + 3 * c.r / 4) = 0 := by
-  simp only [visitQuadratic, sub_self, zero_mul, mul_zero, and_self]
+  simp [visitQuadratic, and_self]
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

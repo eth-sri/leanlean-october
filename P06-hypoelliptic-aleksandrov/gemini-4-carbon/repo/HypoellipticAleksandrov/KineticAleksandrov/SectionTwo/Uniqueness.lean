@@ -42,11 +42,10 @@ theorem realizes_fiber_integral_eq {B : FullKineticCoefficient d} {b : PDE.Vec d
   obtain ⟨u', hu', hup', -⟩ := h'.1 τ F hF
   have hmem : (⟨σ, p.1.1, p.1.2⟩ : KineticPoint d) ∈ evolutionPastClosedCylinder Ω γ τ :=
     ⟨hστ, subset_closure p.2.1⟩
-  have hEq := huniq u' hu' hmem
   calc ∫ q, F q.1 ∂K.fiberKernel hΩ σ τ hστ p
       = S σ τ hστ (terminalStateDatum F) p := (h.2.1 σ τ hστ p (terminalStateDatum F)).symm
     _ = u ⟨σ, p.1.1, p.1.2⟩ := (hup σ hστ p).symm
-    _ = u' ⟨σ, p.1.1, p.1.2⟩ := hEq.symm
+    _ = u' ⟨σ, p.1.1, p.1.2⟩ := (huniq u' hu' hmem).symm
     _ = S' σ τ hστ (terminalStateDatum F) p := hup' σ hστ p
     _ = ∫ q, F q.1 ∂K'.fiberKernel hΩ σ τ hστ p := h'.2.1 σ τ hστ p (terminalStateDatum F)
 
@@ -84,12 +83,10 @@ theorem realizes_master_eq {B : FullKineticCoefficient d} {b : PDE.Vec d → PDE
   intro φ hφ hφc hφU hφr
   have hF : IsSmoothCompactTerminalDatum Ω γ q.1.2.1 (smoothTestDatum φ hφ hφr) :=
     ⟨hφ, hφc, hφU⟩
-  have key := realizes_fiber_integral_eq hΩo.measurableSet h h' q.1.1 q.1.2.1 q.2.1
-    ⟨q.1.2.2, q.2.2⟩ _ hF
   rw [← hq]
   rw [integral_master_eq_fiber K hΩo.measurableSet _ _ _ _ φ hφ.continuous.measurable,
     integral_master_eq_fiber K' hΩo.measurableSet _ _ _ _ φ hφ.continuous.measurable]
-  exact key
+  exact realizes_fiber_integral_eq hΩo.measurableSet h h' q.1.1 q.1.2.1 q.2.1 ⟨q.1.2.2, q.2.2⟩ _ hF
 
 /-- Terminal evolution for open base domain: the kernel is unique. -/
 theorem realizes_kernel_unique {B : FullKineticCoefficient d} {b : PDE.Vec d → PDE.Vec d}
@@ -97,10 +94,9 @@ theorem realizes_kernel_unique {B : FullKineticCoefficient d} {b : PDE.Vec d →
     (hΩo : IsOpen Ω)
     (h : RealizesTerminalEvolution Ω γ hΩo.measurableSet B b S K)
     (h' : RealizesTerminalEvolution Ω γ hΩo.measurableSet B b S' K') : K = K' := by
-  have hm := realizes_master_eq hΩo h h'
   obtain ⟨m, hs, hl⟩ := K
   obtain ⟨m', hs', hl'⟩ := K'
-  cases hm
+  cases (realizes_master_eq hΩo h h')
   rfl
 
 /-- Source uniqueness extends from compact smooth data to kernels and all Borel data. -/

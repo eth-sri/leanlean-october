@@ -29,11 +29,8 @@ private theorem integrable_mul_of_tsupport_subset
     Integrable (fun tau => f tau * g tau) volume := by
   have hfOn : IntegrableOn f U volume := by
     simpa only [IntegrableOn] using hf
-  have hfSupport : IntegrableOn f (tsupport g) volume :=
-    hfOn.mono_set hgSupport
-  have hproductSupport :
-      IntegrableOn (fun tau => f tau * g tau) (tsupport g) volume :=
-    hfSupport.mul_continuousOn hg.continuousOn hgCompact.isCompact
+  have hproductSupport :=
+    (hfOn.mono_set hgSupport).mul_continuousOn hg.continuousOn hgCompact.isCompact
   have hproductSupportSubset :
       Function.support (fun tau => f tau * g tau) ⊆ tsupport g := by
     intro tau htau
@@ -49,14 +46,12 @@ theorem ae_eq_zero_of_integral_reverseTimeScalarTest
     (hzero : ∀ eta : ReverseTimeScalarTest T,
       (∫ tau, f tau * eta tau ∂reverseTimeVolume T) = 0) :
     f =ᵐ[reverseTimeVolume T] 0 := by
-  let U : Set ℝ := reverseTimeOpenInterval T
+  let U := reverseTimeOpenInterval T
   have hUOpen : IsOpen U := by
     simpa only [U, reverseTimeOpenInterval] using
-      (isOpen_Ioo : IsOpen (Set.Ioo (0 : ℝ) T))
+      (isOpen_Ioo : IsOpen (Set.Ioo 0 T))
   have hfRestrict : Integrable f (volume.restrict U) := by
     simpa only [U, reverseTimeVolume] using hf
-  have hfLocal : LocallyIntegrableOn f U volume :=
-    locallyIntegrableOn_of_locallyIntegrable_restrict hfRestrict.locallyIntegrable
   have hPairing : ∀ (g : ℝ → ℝ), ContDiff ℝ (⊤ : ℕ∞) g →
       HasCompactSupport g → tsupport g ⊆ U →
       (∫ tau, g tau • f tau ∂volume) = 0 := by
@@ -66,7 +61,6 @@ theorem ae_eq_zero_of_integral_reverseTimeScalarTest
         contDiff' := hgSmooth
         hasCompactSupport' := hgCompact
         tsupport_subset' := by
-          change tsupport g ⊆ reverseTimeOpenInterval T
           exact hgSupport }
     have hzeroOutPublic : ∀ tau, tau ∉ U → f tau * g tau = 0 := by
       intro tau htau
@@ -98,24 +92,12 @@ theorem ae_eq_zero_of_integral_reverseTimeScalarTest
           (∫ tau, g tau * f tau ∂volume) = ∫ tau in U, g tau * f tau ∂volume := by
             rw [setIntegral_eq_integral_of_forall_compl_eq_zero hzeroOut]
           _ = 0 := hsetPairing
-    simpa only [smul_eq_mul] using hproductAndPairing.2
-  have hAmbient : ∀ᵐ tau ∂volume, tau ∈ U → f tau = 0 :=
-    hUOpen.ae_eq_zero_of_integral_contDiff_smul_eq_zero hfLocal hPairing
+    simpa using hproductAndPairing.2
+  have hAmbient :=
+    hUOpen.ae_eq_zero_of_integral_contDiff_smul_eq_zero (locallyIntegrableOn_of_locallyIntegrable_restrict hfRestrict.locallyIntegrable) hPairing
   rw [Filter.EventuallyEq, reverseTimeVolume,
     ae_restrict_iff' hUOpen.measurableSet]
   exact hAmbient
 
-/-- The `L²` specialization of reverse-time scalar distribution separation. -/
-theorem ae_eq_zero_of_memLp_two_integral_reverseTimeScalarTest
-    (T : ℝ) {f : ℝ → ℝ}
-    (hf : MeasureTheory.MemLp f (2 : ℝ≥0∞) (reverseTimeVolume T))
-    (hzero : ∀ eta : ReverseTimeScalarTest T,
-      (∫ tau, f tau * eta tau ∂reverseTimeVolume T) = 0) :
-    f =ᵐ[reverseTimeVolume T] 0 := by
-  letI : IsFiniteMeasure (reverseTimeVolume T) := by
-    change IsFiniteMeasure (volume.restrict (Ioo 0 T))
-    infer_instance
-  exact ae_eq_zero_of_integral_reverseTimeScalarTest T
-    (hf.integrable (by norm_num : 1 ≤ (2 : ℝ≥0∞))) hzero
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

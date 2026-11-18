@@ -1,13 +1,12 @@
 module
 
-public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ReturnGeometry
-public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ReturnTimeMeasure
+public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.DomainDominationMeasure
+public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.TerminalIntegralOperator
 import Mathlib.Tactic
+public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ReturnGeometry
 
-/-! # Finite terminal measures for the canonical physical return-time action -/
+@[expose] public noncomputable section
 
-@[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov Parabolic Set MeasureTheory
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
@@ -62,7 +61,22 @@ theorem return_time_borel_of_smooth_tests
       ContDiff ℝ (⊤ : ℕ∞) F →
       S hH hLE hlam hLam A t F z ≤ C * S hH hLE hlam hLam A s F z)
     (F : BoundedBorel Z) (hF : ∀ w, 0 ≤ F w) :
-    S hH hLE hlam hLam A t F z ≤ C * S hH hLE hlam hLam A s F z := by
+    S hH hLE hlam hLam A t F z ≤ C * S hH hLE hlam hLam A s F z  := by
+  have return_measure_comparison (μ ν : Measure (ℝ × ℝ)) [IsFiniteMeasure μ] [IsFiniteMeasure ν] (C : ℝ) (hC : 0 ≤ C) (htest : ∀ f : ℝ × ℝ → ℝ, ContDiff ℝ (⊤ : ℕ∞) f →
+      HasCompactSupport f → (∀ z, 0 ≤ f z) →
+      (∫ z, f z ∂μ) ≤ C * ∫ z, f z ∂ν) (F : BoundedBorel (ℝ × ℝ)) (hF : ∀ z, 0 ≤ F z) :
+      (∫ z, F z ∂μ) ≤ C * ∫ z, F z ∂ν := open Filter in by
+    let c := ENNReal.ofReal C
+    have hc : c ≠ ⊤ := ENNReal.ofReal_ne_top
+    let : IsFiniteMeasure (c • ν) := ⟨by
+      rw [Measure.smul_apply, smul_eq_mul]
+      exact ENNReal.mul_lt_top hc.lt_top (measure_lt_top ν univ)⟩
+    have horder : μ ≤ c • ν := by
+      apply measure_le_of_smooth_integral_le isOpen_univ (by simp)
+      intro f hs hf _ hfn
+      simpa [integral_smul_measure, c, ENNReal.toReal_ofReal hC] using
+        htest f hs hf hfn
+    simpa [integral_smul_measure, c, ENNReal.toReal_ofReal hC] using (integral_mono_measure horder (Eventually.of_forall hF) (integrable_boundedBorel F (c • ν)))
   rw [S_eq_integral hH hLE hlam hLam A t ht,
     S_eq_integral hH hLE hlam hLam A s hs]
   apply return_measure_comparison _ _ C hC ?_ F hF
@@ -70,8 +84,9 @@ theorem return_time_borel_of_smooth_tests
   obtain ⟨B, hB⟩ := hf.continuous.bounded_above_of_compact_support hfc
   let G : BoundedBorel Z := ⟨f, hf.continuous.measurable, max B 0,
     le_max_right _ _, fun w =>
-      (show |f w| ≤ B by simpa only [Real.norm_eq_abs] using hB w).trans (le_max_left _ _)⟩
+      (show |f w| ≤ B by simpa using hB w).trans (le_max_left _ _)⟩
   simpa only [S_eq_integral hH hLE hlam hLam A t ht,
     S_eq_integral hH hLE hlam hLam A s hs] using htest G hfn hf
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous
+

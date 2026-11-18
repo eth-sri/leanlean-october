@@ -17,11 +17,11 @@ theorem scalarSpatialHessian_eq_secondFDeriv
     scalarSpatialHessian u z i j =
       fderiv ℝ (fderiv ℝ (fun y => u (z.1, y))) z.2 (PDE.basisVec i)
         (PDE.basisVec j) := by
-  have hd : DifferentiableAt ℝ (fderiv ℝ (fun y => u (z.1, y))) z.2 :=
+  have hd :=
     (hu.fderiv_right (m := 1) (by norm_num)).differentiableAt (by norm_num)
   unfold scalarSpatialHessian PDE.classicalGradient
   rw [fderiv_pi (fun k => hd.clm_apply (differentiableAt_const (PDE.basisVec k)))]
-  simp only [ContinuousLinearMap.pi_apply]
+  simp
   rw [fderiv_clm_apply hd (differentiableAt_const (PDE.basisVec j))]
   simp
 

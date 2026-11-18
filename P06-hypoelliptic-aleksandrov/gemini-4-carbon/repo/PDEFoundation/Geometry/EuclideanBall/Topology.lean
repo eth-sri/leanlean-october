@@ -22,7 +22,7 @@ namespace PDE
 theorem contDiff_vecNormSq {d : ℕ} :
     ContDiff ℝ (⊤ : ℕ∞) (fun x : Vec d => vecNormSq x) := by
   unfold vecNormSq vecDot
-  exact ContDiff.sum (s := Finset.univ) fun i _hi =>
+  exact ContDiff.sum fun i _hi =>
     (contDiff_apply ℝ ℝ i).mul (contDiff_apply ℝ ℝ i)
 
 theorem continuous_vecNormSq {d : ℕ} :
@@ -33,20 +33,18 @@ theorem continuous_vecEuclideanNorm {d : ℕ} :
     Continuous (fun x : Vec d => vecEuclideanNorm x) := by
   exact Real.continuous_sqrt.comp continuous_vecNormSq
 
-theorem contDiff_euclideanSqDist_left {d : ℕ} (x₀ : Vec d) :
-    ContDiff ℝ (⊤ : ℕ∞)
-      (fun x : Vec d => euclideanSqDist x x₀) := by
-  unfold euclideanSqDist
-  exact contDiff_vecNormSq.comp (contDiff_id.sub contDiff_const)
 
 theorem continuous_euclideanSqDist_left {d : ℕ} (x₀ : Vec d) :
-    Continuous (fun x : Vec d => euclideanSqDist x x₀) :=
-  (contDiff_euclideanSqDist_left x₀).continuous
+    Continuous (fun x : Vec d => euclideanSqDist x x₀)  := by
+  have contDiff_euclideanSqDist_left (x₀ : Vec d) :
+      ContDiff ℝ (⊤ : ℕ∞)
+      (fun x => euclideanSqDist x x₀) := by
+    unfold euclideanSqDist
+    exact contDiff_vecNormSq.comp (contDiff_id.sub contDiff_const)
+  exact (contDiff_euclideanSqDist_left x₀).continuous
 
 theorem isOpen_euclideanBall {d : ℕ} (x₀ : Vec d) (R : ℝ) :
     IsOpen (euclideanBall x₀ R) := by
-  change IsOpen
-    ((fun x : Vec d => euclideanSqDist x x₀) ⁻¹' Iio (R ^ 2))
   exact isOpen_Iio.preimage (continuous_euclideanSqDist_left x₀)
 
 theorem measurableSet_euclideanBall {d : ℕ}
@@ -57,15 +55,11 @@ theorem measurableSet_euclideanBall {d : ℕ}
 theorem isClosed_euclideanClosedBall {d : ℕ}
     (x₀ : Vec d) (R : ℝ) :
     IsClosed (euclideanClosedBall x₀ R) := by
-  change IsClosed
-    ((fun x : Vec d => euclideanSqDist x x₀) ⁻¹' Iic (R ^ 2))
   exact isClosed_Iic.preimage (continuous_euclideanSqDist_left x₀)
 
 theorem isClosed_euclideanSphere {d : ℕ}
     (x₀ : Vec d) (R : ℝ) :
     IsClosed (euclideanSphere x₀ R) := by
-  change IsClosed
-    ((fun x : Vec d => euclideanSqDist x x₀) ⁻¹' {R ^ 2})
   exact isClosed_singleton.preimage
     (continuous_euclideanSqDist_left x₀)
 
@@ -83,10 +77,8 @@ theorem euclideanClosedBall_subset_supClosedBall {d : ℕ}
   intro x hx
   rw [Metric.mem_closedBall, dist_pi_le_iff hR]
   intro i
-  have hsqi : (x i - x₀ i) ^ 2 ≤ R ^ 2 :=
-    (sq_coord_sub_le_euclideanSqDist x x₀ i).trans hx
-  have habs : |x i - x₀ i| ≤ R :=
-    abs_le_of_sq_le_sq hsqi hR
+  have habs :=
+    abs_le_of_sq_le_sq ((sq_coord_sub_le_euclideanSqDist x x₀ i).trans hx) hR
   simpa [Real.dist_eq, abs_sub_comm] using habs
 
 /-- A round open ball is contained in the inherited supremum-metric open
@@ -97,10 +89,8 @@ theorem euclideanBall_subset_supBall {d : ℕ}
   intro x hx
   rw [Metric.mem_ball, dist_pi_lt_iff hR]
   intro i
-  have hsqi : (x i - x₀ i) ^ 2 < R ^ 2 :=
-    (sq_coord_sub_le_euclideanSqDist x x₀ i).trans_lt hx
-  have habs : |x i - x₀ i| < R :=
-    abs_lt_of_sq_lt_sq hsqi hR.le
+  have habs :=
+    abs_lt_of_sq_lt_sq ((sq_coord_sub_le_euclideanSqDist x x₀ i).trans_lt hx) hR.le
   simpa [Real.dist_eq, abs_sub_comm] using habs
 
 theorem isCompact_euclideanClosedBall {d : ℕ}

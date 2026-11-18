@@ -31,6 +31,6 @@ theorem enlargedVisitExitKernel_ae_time_gt
     rcases hq with hq | hq
     · exact hq.1 ▸ hp.1
     · exact hq.1
-  · simp only [ae_zero, Filter.eventually_bot]
+  · simp
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

@@ -47,20 +47,17 @@ theorem abs_le_original_collar_straightened_dirichlet
         (barrierW (collarKappa L lam) (r0 - PDE.vecEuclideanNorm (p.position - Γ p.time)) /
           barrierW (collarKappa L lam) d) := by
   intro p hp
-  have hs := terminal_support_margin_of_innerBall_close hβd hsupp
-    (hclose τ ⟨hατ.le, le_rfl⟩)
   have he := abs_le_min_collar_straightened_dirichlet hlam hB hBs hbs haα hατ
     (by linarith : 0 < r0 - β) hR hd (by linarith : d < r0 - β)
-    hg hL hgL hε hC F hFC hs u hu p hp
+    hg hL hgL hε hC F hFC (terminal_support_margin_of_innerBall_close hβd hsupp (hclose τ ⟨hατ.le, le_rfl⟩)) u hu p hp
   have hc : PDE.vecEuclideanNorm (Γ p.time - g p.time) ≤ β / 2 := by
     rw [PDE.vecEuclideanNorm_sub_comm]
     exact hclose p.time hp.1
-  have hh := vecEuclideanNorm_sub_add_le (c := (0 : PDE.Vec n)) hc p.position
-  simp only [add_zero] at hh
+  have hh := vecEuclideanNorm_sub_add_le (c := 0) hc p.position
+  simp at hh
   have hdist : (r0 - β) - PDE.vecEuclideanNorm (p.position - g p.time) ≤
       r0 - PDE.vecEuclideanNorm (p.position - Γ p.time) := by linarith
   have hκ : 0 < collarKappa L lam := div_pos (by linarith) hlam
-  have hW := barrierW_pos hκ hd
   have hw : barrierW (collarKappa L lam)
       ((r0 - β) - PDE.vecEuclideanNorm (p.position - g p.time)) ≤
       barrierW (collarKappa L lam) (r0 - PDE.vecEuclideanNorm (p.position - Γ p.time)) := by
@@ -68,6 +65,6 @@ theorem abs_le_original_collar_straightened_dirichlet
     · exact (barrierW_strictMono hκ h).le
     · rw [h]
   exact he.trans (mul_le_mul_of_nonneg_left
-    ((min_le_right _ _).trans (div_le_div_of_nonneg_right hw hW.le)) hC)
+    ((min_le_right _ _).trans (div_le_div_of_nonneg_right hw (barrierW_pos hκ hd).le)) hC)
 
 end HypoellipticAleksandrov.KineticAleksandrov

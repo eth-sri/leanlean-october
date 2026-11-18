@@ -25,26 +25,6 @@ theorem visitUnionExit_ae_velocity
   change q.velocity 0 ∈ closure I.carrier
   simpa only [Interval.carrier, closure_Ioo I.ordered.ne] using hq.2.2
 
-/-- Every active exit kernel is concentrated on the closed active interval. -/
-theorem visitActiveExitKernel_ae_velocity
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ) (p : Point) :
-    ∀ᵐ q ∂visitUnionExitKernel hH hLE hlam hLam A (visitActiveUnion c J) s T p,
-      q.velocity 0 ∈ closure c.active := by
-  classical
-  change ∀ᵐ q ∂(if hp : p ∈ visitPoleSet (visitActiveUnion c J) s T then
-    finiteUnionExit hH hLE hlam hLam A (visitActiveUnion c J) T
-      (visitPoleInclusion _ s T ⟨p, hp⟩) else 0), q.velocity 0 ∈ closure c.active
-  split
-  · rename_i hp
-    apply (visitUnionExit_ae_velocity hH hLE hlam hLam A (visitActiveUnion c J) T
-      (visitPoleInclusion _ s T ⟨p, hp⟩)).mono
-    intro q hq
-    apply closure_mono _ hq
-    rw [visitActiveUnion_carrier]
-    exact inter_subset_left
-  · simp
 
 /-- Integrating the active exit family preserves its closed physical velocity support. -/
 theorem visitActiveExitMixture_ae_velocity
@@ -53,12 +33,28 @@ theorem visitActiveExitMixture_ae_velocity
     (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ)
     (mu : Measure Point) :
     ∀ᵐ q ∂(visitUnionExitKernel hH hLE hlam hLam A (visitActiveUnion c J) s T ∘ₘ mu),
+      q.velocity 0 ∈ closure c.active  := by
+  have visitActiveExitKernel_ae_velocity (p : Point) :
+      ∀ᵐ q ∂visitUnionExitKernel hH hLE hlam hLam A (visitActiveUnion c J) s T p,
       q.velocity 0 ∈ closure c.active := by
+    classical
+    change ∀ᵐ q ∂(if hp : p ∈ visitPoleSet (visitActiveUnion c J) s T then
+      finiteUnionExit hH hLE hlam hLam A (visitActiveUnion c J) T
+        (visitPoleInclusion _ s T ⟨p, hp⟩) else 0), q.velocity 0 ∈ closure c.active
+    split
+    · rename_i hp
+      apply (visitUnionExit_ae_velocity hH hLE hlam hLam A (visitActiveUnion c J) T
+        (visitPoleInclusion _ s T ⟨p, hp⟩)).mono
+      intro q hq
+      apply closure_mono _ hq
+      rw [visitActiveUnion_carrier]
+      exact inter_subset_left
+    · simp
   apply Measure.ae_comp_of_ae_ae
     (isClosed_closure.measurableSet.preimage
       ((continuous_apply 0).comp continuous_velocity).measurable)
   exact Filter.Eventually.of_forall
-    (visitActiveExitKernel_ae_velocity hH hLE hlam hLam A c J s T)
+    (visitActiveExitKernel_ae_velocity)
 
 /-- The source quadratic is integrable against each finite actual active exit mixture. -/
 theorem visitQuadratic_integrable_activeExitMixture

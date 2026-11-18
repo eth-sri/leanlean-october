@@ -53,7 +53,7 @@ theorem innerRatio_spec (R : ℝ) (hR : 0 < R) (δ : ℝ)
     (hδ0 : 0 < δ) (hδlt : δ < R ^ 2 / 2) :
     0 < innerRatio R hR δ hδ0 hδlt ∧ innerRatio R hR δ hδ0 hδlt < 1 ∧
       (innerRatio R hR δ hδ0 hδlt) ^ 2 * R ^ 2 = R ^ 2 - 2 * δ := by
-  have hr2 : 0 < R ^ 2 := sq_pos_of_pos hR
+  have hr2 := sq_pos_of_pos hR
   have hdiv : 0 < 2 * δ / R ^ 2 := div_pos (by linarith) hr2
   have hdivlt : 2 * δ / R ^ 2 < 1 := (div_lt_one hr2).2 (by linarith)
   have hb : 0 < 1 - 2 * δ / R ^ 2 := by linarith
@@ -152,9 +152,8 @@ theorem closure_forwardCylinder_bounds {d : ℕ}
   · intro P hP
     rcases hP with ⟨h1,h2,hv,hx⟩
     refine ⟨⟨h1.le,h2.le⟩, PDE.euclideanBall_subset_euclideanClosedBall _ _ hx, ?_⟩
-    have hb := PDE.euclideanBall_subset_euclideanClosedBall _ _ hv
     simpa [relativeHomeomorph, relativeVelocity, PDE.euclideanClosedBall,
-      PDE.euclideanSqDist] using hb
+      PDE.euclideanSqDist] using (PDE.euclideanBall_subset_euclideanClosedBall _ _ hv)
   · exact (isCompact_relativeClosedBox Z₀ _ _ _ _ hR.le (pow_nonneg hR.le 3)).isClosed
 
 /-- Original forward closures are compact in the coordinate topology. -/
@@ -184,7 +183,7 @@ theorem innerCylinder_exhaustion {d : ℕ}
         continuous_id)).inter
       ((isOpen_lt continuous_const ((hc.mul continuous_const).pow 2)).inter
         (isOpen_lt continuous_const (((hc.pow 3).mul continuous_const).pow 2))))
-  have h0 : (0 : ℝ) ∈ E := by
+  have h0 : 0 ∈ E := by
     rcases hP with ⟨h1,h2,hv,hx⟩
     have hv' : PDE.euclideanSqDist (relativeVelocity Z₀ P) 0 < R^2 := by
       simpa [PDE.euclideanBall, PDE.euclideanSqDist, relativeVelocity] using hv

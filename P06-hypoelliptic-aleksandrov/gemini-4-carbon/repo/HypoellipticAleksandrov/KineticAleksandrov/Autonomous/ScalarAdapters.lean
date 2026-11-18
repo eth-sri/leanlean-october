@@ -29,7 +29,7 @@ theorem autonomousScalarOperator_reflection (a : ℝ → ℝ → ℝ)
       -autonomousScalarOperator a u (kineticReflection p) := by
   rw [forwardScalarOperator, autonomousScalarOperator, kineticTimeDerivative_reflection,
     kineticPositionGradient_reflection, kineticVelocityHessian_reflection]
-  simp only [reflectedAutonomous, kineticReflection, Pi.neg_apply]
+  simp [reflectedAutonomous, kineticReflection]
   ring
 
 /-- Reflection preserves the scalar pointwise coefficient bounds. -/

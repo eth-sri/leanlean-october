@@ -77,14 +77,13 @@ theorem terminal_polynomial_comparison {lam Lam : ℝ} (hlam : 0 < lam)
   have hs : ∀ p ∈ movingClosedSlab autonomousWholeDomain (fun _ => 0) p0.time tau,
       p ∈ evolutionPastClosedCylinder autonomousWholeDomain (fun _ => 0) tau :=
     fun _ hp => ⟨hp.2.1, hp.2.2⟩
-  have hus := (isClassicalViscousTerminalSolution_zero_iff _ _ _ _ _ _ _).2 hu
   have hreg (p : Point) (hp : p ∈ movingActiveSlab autonomousWholeDomain
       (fun _ => 0) p0.time tau) : IsSliceRegularAt u p :=
-    hus.isSliceRegularAt hΩ continuous_const ⟨hp.2.1, hp.2.2⟩
+    ((isClassicalViscousTerminalSolution_zero_iff _ _ _ _ _ _ _).2 hu).isSliceRegularAt hΩ continuous_const ⟨hp.2.1, hp.2.2⟩
   obtain ⟨C, -, hC⟩ := hu.1
   have h := growth_comparison hΩ continuous_const hlam (evolutionCoefficient_bounds A)
     (identityDrift_bounds 1).1 (le_refl 0) zero_le_one
-    (a := p0.time) (T := tau) (u := fun p => u p - W p)
+    (a := p0.time) (u := fun p => u p - W p)
     ⟨C, fun p hp => by
       have hb := hC p (hs p hp)
       have hh := hn p hp.2.1

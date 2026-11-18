@@ -1,7 +1,8 @@
 module
 
 public import PDEFoundation.Sobolev.W1p.Composition
-public import PDEFoundation.Measure.EuclideanFieldMeasurability
+public import Mathlib.MeasureTheory.Function.StronglyMeasurable.AEStronglyMeasurable
+public import PDEFoundation.Ambient.EuclideanNorm
 public import Mathlib.Analysis.SpecialFunctions.SmoothTransition
 public import Mathlib.MeasureTheory.Integral.IntervalIntegral.FundThmCalculus
 
@@ -181,7 +182,7 @@ theorem smoothPositivePartApprox_eq_zero_of_le
     smoothPositivePartApprox c δ t = 0 := by
   rw [smoothPositivePartApprox,
     ← intervalIntegral.integral_zero
-      (a := c) (b := t) (μ := volume)]
+ (μ := volume)]
   apply intervalIntegral.integral_congr
   intro s hs
   rw [Set.uIcc_of_ge ht] at hs
@@ -215,7 +216,7 @@ theorem abs_smoothPositivePartApprox_sub_le
       rw [smoothPositivePartApprox]
       calc
         (∫ s in c..t, smoothPositivePartStep c δ s) ≤
-            ∫ _ in c..t, (1 : ℝ) :=
+            ∫ _ in c..t, 1 :=
           intervalIntegral.integral_mono_on htc.le
             (smoothPositivePartStep_intervalIntegrable c δ c t)
             intervalIntegrable_const
@@ -243,7 +244,7 @@ theorem abs_smoothPositivePartApprox_sub_le
           rw [show
             (∫ s in (c + 2 * δ)..t,
               smoothPositivePartStep c δ s) =
-              ∫ _ in (c + 2 * δ)..t, (1 : ℝ) from
+              ∫ _ in (c + 2 * δ)..t, 1 from
             intervalIntegral.integral_congr
               (fun s hs => by
                 rw [Set.uIcc_of_le htwo] at hs
@@ -301,7 +302,7 @@ theorem positivePartSubConst_data
   have hDuCoord :
       ∀ x i,
         Du x i =
-          (if c < u.toFun x then (1 : ℝ) else 0) *
+          (if c < u.toFun x then 1 else 0) *
             u.grad x i := by
     intro x i
     by_cases hx : c < u.toFun x
@@ -340,7 +341,7 @@ theorem positivePartSubConst_data
     rw [tendsto_iff_norm_sub_tendsto_zero]
     have htwo :
         Tendsto (fun n => 2 * δ n) atTop (𝓝 0) := by
-      simpa only [mul_zero] using hδTendsto.const_mul (2 : ℝ)
+      simpa using hδTendsto.const_mul 2
     refine squeeze_zero (fun n => norm_nonneg _) (fun n => ?_) htwo
     rw [Real.norm_eq_abs]
     exact
@@ -352,11 +353,7 @@ theorem positivePartSubConst_data
           (fun n => gradSeq n x i)
           atTop (𝓝 (Du x i)) := by
     intro i x
-    have htendsto :=
-      (tendsto_smoothPositivePartStep
-        (c := c) hδPos hδTendsto (u.toFun x)).mul_const
-        (u.grad x i)
-    simpa only [gradSeq, hDuCoord x i] using htendsto
+    simpa only [gradSeq, hDuCoord x i] using (tendsto_smoothPositivePartStep (c := c) hδPos hδTendsto (u.toFun x)).mul_const (u.grad x i)
   have hfAesm :
       AEStronglyMeasurable f (volumeOn U) :=
     (((continuous_id.sub continuous_const).max continuous_const)
@@ -366,7 +363,7 @@ theorem positivePartSubConst_data
       MemLp.of_le
         (u.memLp.sub (memLp_const c)) hfAesm ?_
     filter_upwards with x
-    simp only [f, Real.norm_eq_abs, Pi.sub_apply]
+    simp [f]
     rcases le_or_gt (u.toFun x - c) 0 with hnonpos | hpos
     · simp only [max_eq_right hnonpos, abs_zero]
       exact abs_nonneg (u.toFun x - c)
@@ -386,9 +383,9 @@ theorem positivePartSubConst_data
     filter_upwards with x
     rw [hDuCoord x i]
     split_ifs
-    · simpa only [one_mul] using
+    · simpa using
         (le_rfl : ‖u.grad x i‖ ≤ ‖u.grad x i‖)
-    · simpa only [zero_mul, norm_zero] using
+    · simpa using
         norm_nonneg (u.grad x i)
   have hvalueSeqMem :
       ∀ n, MemLpOn U p (valueSeq n) := by
@@ -398,27 +395,19 @@ theorem positivePartSubConst_data
         (u.memLp.sub (memLp_const c))
         (hvalueSeqAesm n) ?_
     filter_upwards with x
-    simp only [valueSeq, Pi.sub_apply,
-      Real.norm_eq_abs]
+    simp
     exact
       abs_smoothPositivePartApprox_le c (δ n) (u.toFun x)
   have hgradSeqMem :
       ∀ n, GradMemLpOn U p (gradSeq n) := by
     intro n i
-    change
-      MemLp (fun x => gradSeq n x i)
-        p (volumeOn U)
     refine
       MemLp.of_le
-        (f := fun x => gradSeq n x i)
-        (g := fun x => u.grad x i)
+
+
         (u.grad_memLp i)
         (hgradSeqAesm i n) ?_
     filter_upwards with x
-    change
-      ‖smoothPositivePartStep c (δ n) (u.toFun x) *
-          u.grad x i‖ ≤
-        ‖u.grad x i‖
     rw [norm_mul, Real.norm_eq_abs]
     calc
       |smoothPositivePartStep c (δ n) (u.toFun x)| *
@@ -440,16 +429,12 @@ theorem positivePartSubConst_data
         (smoothPositivePartApprox_contDiff_one c (δ n))
         zero_le_one
         (abs_deriv_smoothPositivePartApprox_le c (δ n))
-  have hvalueConv :
-      Tendsto
-        (fun n =>
-          eLpNorm (valueSeq n - f) p (volumeOn U))
-        atTop (𝓝 0) :=
+  have hvalueConv :=
     tendsto_eLpNorm_sub_zero_of_tendsto_ae_of_dominated
       hp hpTop hvalueSeqAesm hfMem
       (u.memLp.sub (memLp_const c))
       (fun n => Filter.Eventually.of_forall fun x => by
-        simp only [valueSeq, Pi.sub_apply, Real.norm_eq_abs]
+        simp
         exact
           abs_smoothPositivePartApprox_le c (δ n) (u.toFun x))
       (Filter.Eventually.of_forall hvalueTendsto)
@@ -467,10 +452,6 @@ theorem positivePartSubConst_data
           ‖gradSeq n x i‖ ≤ ‖u.grad x i‖ := by
       intro n
       filter_upwards with x
-      change
-        ‖smoothPositivePartStep c (δ n) (u.toFun x) *
-            u.grad x i‖ ≤
-          ‖u.grad x i‖
       rw [norm_mul, Real.norm_eq_abs]
       calc
         |smoothPositivePartStep c (δ n) (u.toFun x)| *
@@ -486,12 +467,7 @@ theorem positivePartSubConst_data
         hp hpTop (hgradSeqAesm i) (hDuMem i)
         (u.grad_memLp i) hbound
         (Filter.Eventually.of_forall (hgradTendsto i))
-  have hweak :
-      HasWeakGradientOn U f Du :=
-    HasWeakGradientOn.of_tendsto_eLpNorm
-      hfMem hDuMem hvalueSeqMem hgradSeqMem hweakSeq
-      hvalueConv hgradConv
-  exact ⟨hfMem, hDuMem, hweak⟩
+  exact ⟨hfMem, hDuMem, (HasWeakGradientOn.of_tendsto_eLpNorm hfMem hDuMem hvalueSeqMem hgradSeqMem hweakSeq hvalueConv hgradConv)⟩
 
 /-- Positive-part truncation of a representative `W^{1,p}` function at a
 constant level.  Both the value and gradient representatives are literal. -/

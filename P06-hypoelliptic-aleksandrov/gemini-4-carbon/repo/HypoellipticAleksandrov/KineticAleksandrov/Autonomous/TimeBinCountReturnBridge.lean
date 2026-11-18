@@ -28,7 +28,7 @@ theorem return_time_ambient_of_scalar
   obtain ⟨C, hC, h⟩ := hReturn
   refine ⟨C, hC, ?_⟩
   intro A F hF t s z ht hs hs1 hv
-  let G : BoundedBorel Z := F.pullback physicalState (by unfold physicalState; fun_prop)
+  let G := F.pullback physicalState (by unfold physicalState; fun_prop)
   have he : scalarTerminalDatum G = F := by
     apply BoundedBorel.ext
     intro w
@@ -36,7 +36,6 @@ theorem return_time_ambient_of_scalar
     have hw : (fun _ => w.1 0, fun _ => w.2 0) = w := by
       apply Prod.ext <;> funext i <;> fin_cases i <;> rfl
     rw [hw]
-  have hh := h A G (fun w => hF (physicalState w)) t s z.1 z.2 ht hs hs1 hv
-  simpa only [S, he, point] using hh
+  simpa only [S, he, point] using (h A G (fun w => hF (physicalState w)) t s z.1 z.2 ht hs hs1 hv)
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

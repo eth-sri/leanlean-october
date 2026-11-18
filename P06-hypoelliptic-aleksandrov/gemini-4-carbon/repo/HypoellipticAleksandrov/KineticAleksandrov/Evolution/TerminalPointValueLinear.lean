@@ -115,10 +115,8 @@ theorem terminalValue_nonneg
     0 ≤ S σ τ hστ p F hF := by
   obtain ⟨u, hu, hu'⟩ := terminalValue_spec n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
     hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ p F hF
-  have h0 := IsClassicalTerminalSolution.smul (isOpen_of_isAdmissibleEvolutionDomain hΩ)
-    hγ.1 0 hu
   have hle := IsClassicalTerminalSolution.le_of_le (isOpen_of_isAdmissibleEvolutionDomain hΩ)
-    hγ.1 hlam hB_ell hb_lipschitz h0 hu (fun y z _ => by
+    hγ.1 hlam hB_ell hb_lipschitz (IsClassicalTerminalSolution.smul (isOpen_of_isAdmissibleEvolutionDomain hΩ) hγ.1 0 hu) hu (fun y z _ => by
       simpa using hpos (y, z)) _ (mk_mem_evolutionPastClosedCylinder hστ p)
   rw [← hu']
   simpa using hle

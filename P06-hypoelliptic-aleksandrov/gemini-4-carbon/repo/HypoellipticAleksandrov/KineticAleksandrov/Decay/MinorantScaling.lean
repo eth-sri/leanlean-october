@@ -63,10 +63,9 @@ theorem scalarTimeDerivative_comp_scalarAffine {d : ℕ} {V : TimeVelocity d →
     scalarTimeDerivative (fun p => V (scalarAffine α a c e p)) z =
       a * scalarTimeDerivative V (scalarAffine α a c e z) := by
   unfold scalarTimeDerivative scalarAffine
-  have h1 : HasDerivAt (fun r : ℝ => α + a * r) a z.1 := by
+  have h1 : HasDerivAt (fun r => α + a * r) a z.1 := by
     simpa using ((hasDerivAt_id z.1).const_mul a).const_add α
-  have h2 := hV.hasDerivAt.comp z.1 h1
-  have h3 := h2.deriv
+  have h3 := (hV.hasDerivAt.comp z.1 h1).deriv
   simp only [Function.comp_def] at h3
   simp only [h3]
   ring
@@ -77,7 +76,7 @@ theorem scalarSpatialHessian_comp_scalarAffine {d : ℕ} {V : TimeVelocity d →
     (hV : ContDiffAt ℝ 2 (fun y : PDE.Vec d => V (α + a * z.1, y)) (c + e • z.2)) :
     scalarSpatialHessian (fun p => V (scalarAffine α a c e p)) z =
       e ^ 2 • scalarSpatialHessian V (scalarAffine α a c e z) := by
-  exact sliceHessian_affine (g := fun y : PDE.Vec d => V (α + a * z.1, y)) hV
+  exact sliceHessian_affine (g := fun y => V (α + a * z.1, y)) hV
 
 /-! ### Geometry of the stationary scalar cylinders -/
 
@@ -140,7 +139,7 @@ theorem parabolicAffine_preimage_ball {d : ℕ} (v0 : PDE.Vec d) {ρ : ℝ} (hρ
   ext y
   change PDE.euclideanSqDist (v0 + ρ • y) v0 < (4 * ρ) ^ 2 ↔ PDE.euclideanSqDist y 0 < 4 ^ 2
   rw [add_comm, PDE.euclideanSqDist_affine_center]
-  have hr2 : 0 < ρ ^ 2 := sq_pos_of_pos hρ
+  have hr2 := sq_pos_of_pos hρ
   constructor <;> intro h <;> nlinarith
 
 /-- Closures commute with the scaling preimage. -/
@@ -179,7 +178,7 @@ theorem P_compl_eq_zero_stationary {d : ℕ} {Ω : Set (PDE.Vec d)}
   have : ((↑) : EvolutionPosition Ω stationary q.1.2.1 → PDE.Vec d) ⁻¹' Ωᶜ = ∅ := by
     ext y
     have hy := y.2
-    simp only [movingDomain_stationary] at hy
+    simp at hy
     simp [hy]
   rw [this, measure_empty]
 
@@ -216,7 +215,7 @@ theorem exists_scalar_probe {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : MeasurableSe
   obtain ⟨V, hV, hVQ, huniq⟩ := hsolve τ (smoothTestBorel φ hφ.continuous hc)
     ⟨hφ, hc, by
       have h : tsupport φ ⊆ movingDomain Ω stationary τ := by
-        simpa only [movingDomain_stationary] using hsupp
+        simpa using hsupp
       exact h⟩
   refine ⟨V, hV, huniq, fun σ hστ y hy => ?_⟩
   rw [hVQ σ hστ ⟨y, hy⟩, hrepr σ τ hστ ⟨y, hy⟩ _]
@@ -232,7 +231,7 @@ abbrev minorantAffine {d : ℕ} (T ρ : ℝ) (v0 : PDE.Vec d) : TimeVelocity d �
 
 private theorem matrixContraction_smul_right {d : ℕ} (A H : PDE.Mat d) (c : ℝ) :
     matrixContraction A (c • H) = c * matrixContraction A H := by
-  simp only [matrixContraction, Matrix.smul_apply, smul_eq_mul, Finset.mul_sum]
+  simp [matrixContraction, Matrix.smul_apply, Finset.mul_sum]
   refine Finset.sum_congr rfl fun i _ => Finset.sum_congr rfl fun j _ => ?_
   ring
 
@@ -289,8 +288,7 @@ theorem isClassicalScalarTerminalSolution_comp_minorantAffine {d : ℕ}
     · change T + ρ ^ 2 * p.1 ≤ T + ρ ^ 2 * τ'
       nlinarith [hp.1]
     · have := hp.2
-      rw [hcl] at this
-      exact this
+      rwa [hcl] at this
   have hmapOpen : MapsTo (minorantAffine T ρ v0)
       (ParabolicProbe.scalarPastOpenCylinder Ω' stationary τ')
       (ParabolicProbe.scalarPastOpenCylinder Ω stationary (T + ρ ^ 2 * τ')) := by
@@ -300,8 +298,7 @@ theorem isClassicalScalarTerminalSolution_comp_minorantAffine {d : ℕ}
     · change T + ρ ^ 2 * p.1 < T + ρ ^ 2 * τ'
       nlinarith [hp.1]
     · have := hp.2
-      rw [hΩ'] at this
-      exact this
+      rwa [hΩ'] at this
   have hmapTerm : MapsTo (minorantAffine T ρ v0)
       (ParabolicProbe.scalarTerminalClosure Ω' stationary τ')
       (ParabolicProbe.scalarTerminalClosure Ω stationary (T + ρ ^ 2 * τ')) := by
@@ -311,8 +308,7 @@ theorem isClassicalScalarTerminalSolution_comp_minorantAffine {d : ℕ}
     · change T + ρ ^ 2 * p.1 = T + ρ ^ 2 * τ'
       rw [hp.1]
     · have := hp.2
-      rw [hcl] at this
-      exact this
+      rwa [hcl] at this
   have hmapLat : MapsTo (minorantAffine T ρ v0)
       (ParabolicProbe.scalarLateralFrontier Ω' stationary τ')
       (ParabolicProbe.scalarLateralFrontier Ω stationary (T + ρ ^ 2 * τ')) := by
@@ -322,16 +318,14 @@ theorem isClassicalScalarTerminalSolution_comp_minorantAffine {d : ℕ}
     · change T + ρ ^ 2 * p.1 ≤ T + ρ ^ 2 * τ'
       nlinarith [hp.1]
     · have := hp.2
-      rw [hfr] at this
-      exact this
+      rwa [hfr] at this
   obtain ⟨⟨C, hC0, hC⟩, hcont, hsmooth, heq, hterm, hlat⟩ := hV
   refine ⟨⟨C, hC0, fun p hp => hC _ (hmapClosed hp)⟩, ?_, ?_, ?_, ?_, ?_⟩
   · exact hcont.comp hAff.continuous.continuousOn hmapClosed
   · exact hsmooth.comp hAff.contDiffOn hmapOpen
   · intro p hp
-    have hopen := isOpen_scalarPastOpenCylinder_stationary hΩ (T + ρ ^ 2 * τ')
     have hp' := hmapOpen hp
-    have hc12 := isScalarC12On_of_isOpen_contDiffOn_two hopen
+    have hc12 := isScalarC12On_of_isOpen_contDiffOn_two (isOpen_scalarPastOpenCylinder_stationary hΩ (T + ρ ^ 2 * τ'))
       (hsmooth.of_le (by norm_num))
     rw [scalarParabolicOperator_comp_minorantAffine B T ρ v0
       (hc12.timeSlice_differentiableAt hp') (hc12.spatialSlice_contDiffAt hp'), heq _ hp', mul_zero]

@@ -1,4 +1,0 @@
-module
-public import HypoellipticAleksandrov.Parabolic.Dirichlet.CompactInteriorH1ToH10
-public import HypoellipticAleksandrov.Parabolic.Dirichlet.GeneralOpenH1PositivePartContinuity
-public import PDEFoundation.Sobolev.H1.ZeroBoundaryLimit

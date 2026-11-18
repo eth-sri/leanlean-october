@@ -64,7 +64,7 @@ theorem measurable_terminalFiberMeasure
       Measure.comap ((↑) : EvolutionState Ω γ τ → EvolutionAmbientState n)
         (μ (evolutionQueryOfState Ω γ σ τ hστ p))) := by
   have hΩo := isOpen_of_isAdmissibleEvolutionDomain hΩ
-  have hfun : (fun p : EvolutionState Ω γ σ =>
+  have hfun : (fun p =>
       Measure.comap ((↑) : EvolutionState Ω γ τ → EvolutionAmbientState n)
         (μ (evolutionQueryOfState Ω γ σ τ hστ p))) = fun p => ν_ σ τ hστ p := by
     funext p
@@ -83,7 +83,7 @@ theorem measurable_terminalFiberMeasure
   refine measurable_integral_of_dense (terminalProbeCcLinear (Ω := Ω) (γ := γ) (τ := τ))
     (fun p => ν_ σ τ hστ p) hmass
     (fun f ε hε => exists_terminalProbe_close hΩo f ε hε) (fun F => ?_)
-  have hint : (fun p : EvolutionState Ω γ σ => ∫ x, terminalProbeCcLinear F x ∂(ν_ σ τ hστ p)) =
+  have hint : (fun p => ∫ x, terminalProbeCcLinear F x ∂(ν_ σ τ hστ p)) =
       fun p => S σ τ hστ p (terminalProbeDatum F) (terminalProbeDatum_isSmoothCompact F) := by
     funext p
     rw [integral_terminalFiberRieszMeasure n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
@@ -120,9 +120,7 @@ theorem terminalFiberKernel_apply (σ τ : ℝ) (hστ : σ ≤ τ) (p : Evoluti
 /-- The fiber kernel has mass at most one. -/
 theorem terminalFiberKernel_univ_le_one (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ) :
     κ σ τ hστ p univ ≤ 1 := by
-  have hU := measurableSet_evolutionStateSet_of_isOpen (γ := γ) (τ := τ)
-    (isOpen_of_isAdmissibleEvolutionDomain hΩ)
-  rw [terminalFiberKernel_apply, (MeasurableEmbedding.subtype_coe hU).comap_apply,
+  rw [terminalFiberKernel_apply, (MeasurableEmbedding.subtype_coe (measurableSet_evolutionStateSet_of_isOpen (γ := γ) (τ := τ) (isOpen_of_isAdmissibleEvolutionDomain hΩ))).comap_apply,
     image_univ, Subtype.range_coe]
   exact (measure_mono (subset_univ _)).trans
     (terminalMeasure_spec n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b

@@ -71,7 +71,7 @@ private theorem scalarLp_norm_sq_eq_integral_sq
   rw [← real_inner_self_eq_norm_sq, L2.inner_def]
   congr 1
   funext a
-  simp only [RCLike.inner_apply, conj_trivial, pow_two]
+  simp
 
 private theorem scalarLp_integrable_sq
     {d : ℕ} {Ω : Set (PDE.Vec d)} (f : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
@@ -82,7 +82,7 @@ private theorem correctedDual_apply
     {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
     (A Q : V →L[ℝ] ℝ) (c : ℝ) (v : V) :
     (A - c • Q) v = A v - c * Q v := by
-  simp only [ContinuousLinearMap.sub_apply, ContinuousLinearMap.smul_apply, smul_eq_mul]
+  simp
 
 private theorem spatialMassComp_shiftedPositivePart_apply
     {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
@@ -180,8 +180,6 @@ private theorem shiftedPositivePart_support_lower
         (h10ShiftedPositivePart hΩ z l) ≤
       shiftedPositivePartHalfEnergy hΩ x k -
         shiftedPositivePartHalfEnergy hΩ z l := by
-  have hmass := spatialMassCLM_apply hΩbounded
-    (shiftedPositivePartValue l (valueCLM hΩ z))
   calc
     _ = scalarLpToH10HilbertGraphDual hΩ
           (valueCLM hΩ x - valueCLM hΩ z) (h10ShiftedPositivePart hΩ z l) -
@@ -193,29 +191,29 @@ private theorem shiftedPositivePart_support_lower
           (valueCLM hΩ x - valueCLM hΩ z) (h10ShiftedPositivePart hΩ z l) -
         ((k : ℝ) - (l : ℝ)) * spatialMassCLM hΩbounded
           (shiftedPositivePartValue l (valueCLM hΩ z)) :=
-      congrArg (fun q : ℝ =>
+      congrArg (fun q =>
         scalarLpToH10HilbertGraphDual hΩ
             (valueCLM hΩ x - valueCLM hΩ z) (h10ShiftedPositivePart hΩ z l) -
           ((k : ℝ) - (l : ℝ)) * q)
         (spatialMassComp_shiftedPositivePart_apply hΩ hΩbounded z l)
-    _ = @inner ℝ (PDE.ScalarLp Ω (2 : ℝ≥0∞)) _
+    _ = @inner ℝ (PDE.ScalarLp Ω 2) _
           (shiftedPositivePartValue l (valueCLM hΩ z))
           (valueCLM hΩ x - valueCLM hΩ z) -
         ((k : ℝ) - (l : ℝ)) * spatialMassCLM hΩbounded
           (shiftedPositivePartValue l (valueCLM hΩ z)) :=
-      congrArg (fun q : ℝ => q - ((k : ℝ) - (l : ℝ)) * spatialMassCLM hΩbounded
+      congrArg (fun q => q - ((k : ℝ) - (l : ℝ)) * spatialMassCLM hΩbounded
         (shiftedPositivePartValue l (valueCLM hΩ z)))
         (scalarLpDual_shiftedPositivePart_apply hΩ z x z l)
-    _ = @inner ℝ (PDE.ScalarLp Ω (2 : ℝ≥0∞)) _
+    _ = @inner ℝ (PDE.ScalarLp Ω 2) _
           (shiftedPositivePartValue l (valueCLM hΩ z))
           (valueCLM hΩ x - valueCLM hΩ z) -
         ((k : ℝ) - (l : ℝ)) *
           ∫ a, shiftedPositivePartValue l (valueCLM hΩ z) a ∂PDE.volumeOn Ω :=
-      congrArg (fun m : ℝ =>
-        @inner ℝ (PDE.ScalarLp Ω (2 : ℝ≥0∞)) _
+      congrArg (fun m =>
+        @inner ℝ (PDE.ScalarLp Ω 2) _
             (shiftedPositivePartValue l (valueCLM hΩ z))
             (valueCLM hΩ x - valueCLM hΩ z) -
-          ((k : ℝ) - (l : ℝ)) * m) hmass
+          ((k : ℝ) - (l : ℝ)) * m) (spatialMassCLM_apply hΩbounded (shiftedPositivePartValue l (valueCLM hΩ z)))
     _ ≤ _ := shiftedPositivePart_integral_support_lower hΩbounded
       (valueCLM hΩ x) (valueCLM hΩ z) k l
 
@@ -228,31 +226,29 @@ private theorem shiftedPositivePart_support_upper
     (scalarLpToH10HilbertGraphDual hΩ (valueCLM hΩ x - valueCLM hΩ z) -
       ((k : ℝ) - (l : ℝ)) • (spatialMassCLM hΩbounded).comp (valueCLM hΩ))
         (h10ShiftedPositivePart hΩ x k) := by
-  have hmass := spatialMassCLM_apply hΩbounded
-    (shiftedPositivePartValue k (valueCLM hΩ x))
   calc
-    _ ≤ @inner ℝ (PDE.ScalarLp Ω (2 : ℝ≥0∞)) _
+    _ ≤ @inner ℝ (PDE.ScalarLp Ω 2) _
           (shiftedPositivePartValue k (valueCLM hΩ x))
           (valueCLM hΩ x - valueCLM hΩ z) -
         ((k : ℝ) - (l : ℝ)) *
           ∫ a, shiftedPositivePartValue k (valueCLM hΩ x) a ∂PDE.volumeOn Ω :=
       shiftedPositivePart_integral_support_upper hΩbounded
         (valueCLM hΩ x) (valueCLM hΩ z) k l
-    _ = @inner ℝ (PDE.ScalarLp Ω (2 : ℝ≥0∞)) _
+    _ = @inner ℝ (PDE.ScalarLp Ω 2) _
           (shiftedPositivePartValue k (valueCLM hΩ x))
           (valueCLM hΩ x - valueCLM hΩ z) -
         ((k : ℝ) - (l : ℝ)) * spatialMassCLM hΩbounded
           (shiftedPositivePartValue k (valueCLM hΩ x)) :=
-      congrArg (fun m : ℝ =>
-        @inner ℝ (PDE.ScalarLp Ω (2 : ℝ≥0∞)) _
+      congrArg (fun m =>
+        @inner ℝ (PDE.ScalarLp Ω 2) _
             (shiftedPositivePartValue k (valueCLM hΩ x))
             (valueCLM hΩ x - valueCLM hΩ z) -
-          ((k : ℝ) - (l : ℝ)) * m) hmass.symm
+          ((k : ℝ) - (l : ℝ)) * m) (spatialMassCLM_apply hΩbounded (shiftedPositivePartValue k (valueCLM hΩ x))).symm
     _ = scalarLpToH10HilbertGraphDual hΩ
           (valueCLM hΩ x - valueCLM hΩ z) (h10ShiftedPositivePart hΩ x k) -
         ((k : ℝ) - (l : ℝ)) * spatialMassCLM hΩbounded
           (shiftedPositivePartValue k (valueCLM hΩ x)) :=
-      congrArg (fun q : ℝ => q - ((k : ℝ) - (l : ℝ)) * spatialMassCLM hΩbounded
+      congrArg (fun q => q - ((k : ℝ) - (l : ℝ)) * spatialMassCLM hΩbounded
         (shiftedPositivePartValue k (valueCLM hΩ x)))
         (scalarLpDual_shiftedPositivePart_apply hΩ x x z k).symm
     _ = scalarLpToH10HilbertGraphDual hΩ
@@ -260,7 +256,7 @@ private theorem shiftedPositivePart_support_upper
         ((k : ℝ) - (l : ℝ)) *
           ((spatialMassCLM hΩbounded).comp (valueCLM hΩ))
             (h10ShiftedPositivePart hΩ x k) :=
-      congrArg (fun q : ℝ =>
+      congrArg (fun q =>
         scalarLpToH10HilbertGraphDual hΩ
             (valueCLM hΩ x - valueCLM hΩ z) (h10ShiftedPositivePart hΩ x k) -
           ((k : ℝ) - (l : ℝ)) * q)
@@ -307,7 +303,7 @@ private theorem shiftedPositivePart_curve_support_lower
           ((k : ℝ) - (l : ℝ)) •
             (spatialMassCLM hΩbounded).comp (valueCLM hΩ) :=
         correctedDualPair_sub _ _ _ _ _
-      _ = _ := congrArg (fun A : H10HilbertGraphDual hΩ =>
+      _ = _ := congrArg (fun A =>
         A - ((k : ℝ) - (l : ℝ)) •
           (spatialMassCLM hΩbounded).comp (valueCLM hΩ))
         (scalarLpDual_value_sub hΩ x z)
@@ -339,21 +335,13 @@ private theorem shiftedPositivePart_curve_support_upper
           ((k : ℝ) - (l : ℝ)) •
             (spatialMassCLM hΩbounded).comp (valueCLM hΩ) :=
         correctedDualPair_sub _ _ _ _ _
-      _ = _ := congrArg (fun A : H10HilbertGraphDual hΩ =>
+      _ = _ := congrArg (fun A =>
         A - ((k : ℝ) - (l : ℝ)) •
           (spatialMassCLM hΩbounded).comp (valueCLM hΩ))
         (scalarLpDual_value_sub hΩ x z)
   rw [hmap]
   exact shiftedPositivePart_support_upper hΩ hΩbounded x z k l
 
-private theorem tendsto_clm_apply
-    {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
-    {L : Filter ℝ} {f : ℝ → V →L[ℝ] ℝ} {g : ℝ → V}
-    {a : V →L[ℝ] ℝ} {b : V}
-    (hf : Tendsto f L (𝓝 a)) (hg : Tendsto g L (𝓝 b)) :
-    Tendsto (fun t => f t (g t)) L (𝓝 (a b)) := by
-  simpa only [Function.comp_def] using
-    (isBoundedBilinearMap_apply.continuous.tendsto (a, b)).comp (hf.prodMk_nhds hg)
 
 private theorem slope_energy_error_le
     {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
@@ -386,23 +374,25 @@ private theorem hasDerivAt_of_support_inequalities
     (hpivot : HasDerivAt U y t)
     (hlower : ∀ r s, (U r - U s) (p s) ≤ E r - E s)
     (hupper : ∀ r s, E r - E s ≤ (U r - U s) (p r)) :
-    HasDerivAt E (y (p t)) t := by
-  have hSlopeU : Tendsto (slope U t) (𝓝[≠] t) (𝓝 y) := hpivot.tendsto_slope
+    HasDerivAt E (y (p t)) t  := by
+  have tendsto_clm_apply [NormedAddCommGroup V] [NormedSpace ℝ V] {L : Filter ℝ} {f : ℝ → V →L[ℝ] ℝ} {g : ℝ → V} {a : V →L[ℝ] ℝ} {b : V} (hf : Tendsto f L (𝓝 a)) (hg : Tendsto g L (𝓝 b)) :
+      Tendsto (fun t => f t (g t)) L (𝓝 (a b)) := by
+    simpa only [Function.comp_def] using
+      (isBoundedBilinearMap_apply.continuous.tendsto (a, b)).comp (hf.prodMk_nhds hg)
+  have hSlopeU := hpivot.tendsto_slope
   have hpDiff : Tendsto (fun s => p s - p t) (𝓝[≠] t) (𝓝 0) := by
-    simpa only [sub_self] using
+    simpa using
       ((hp.continuousAt.tendsto.mono_left nhdsWithin_le_nhds).sub
-        (tendsto_const_nhds : Tendsto (fun _ : ℝ => p t) (𝓝[≠] t) (𝓝 (p t))))
+        (tendsto_const_nhds : Tendsto (fun _ => p t) (𝓝[≠] t) (𝓝 (p t))))
   have hSmall : Tendsto (fun s => slope U t s (p s - p t))
       (𝓝[≠] t) (𝓝 0) := by
-    simpa only [map_zero] using tendsto_clm_apply hSlopeU hpDiff
+    simpa using tendsto_clm_apply hSlopeU hpDiff
   have hCompare : ∀ᶠ s in 𝓝[≠] t,
       |slope E t s - slope U t s (p t)| ≤
         |slope U t s (p s - p t)| := by
     filter_upwards [self_mem_nhdsWithin] with s hst
-    have hLower := hlower s t
-    have hUpper := hupper s t
-    apply slope_energy_error_le E U p hst (sub_nonneg.mpr hLower)
-    have := sub_le_sub_right hUpper ((U s - U t) (p t))
+    apply slope_energy_error_le E U p hst (sub_nonneg.mpr (hlower s t))
+    have := sub_le_sub_right (hupper s t) ((U s - U t) (p t))
     simpa only [ContinuousLinearMap.map_sub] using this
   have hErr : Tendsto (fun s => slope E t s - slope U t s (p t))
       (𝓝[≠] t) (𝓝 0) := by
@@ -410,13 +400,13 @@ private theorem hasDerivAt_of_support_inequalities
     intro ε hε
     filter_upwards [hCompare, hSmall ε hε] with s hcomp hsmall
     rw [Real.dist_eq]
-    simpa only [sub_zero] using lt_of_le_of_lt hcomp
-      (by simpa only [Real.dist_eq, sub_zero] using hsmall)
+    simpa using lt_of_le_of_lt hcomp
+      (by simpa using hsmall)
   have hEval : Tendsto (fun s => slope U t s (p t))
       (𝓝[≠] t) (𝓝 (y (p t))) :=
     tendsto_clm_apply hSlopeU tendsto_const_nhds
   apply hasDerivAt_iff_tendsto_slope.mpr
-  simpa only [sub_add_cancel, zero_add] using hErr.add hEval
+  simpa using hErr.add hEval
 
 private theorem hasDerivAt_correctedPivot
     {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
@@ -425,13 +415,11 @@ private theorem hasDerivAt_correctedPivot
     HasDerivAt
       (fun s => U s - (reverseTimeAffineThreshold M N s : ℝ) • Q)
       (y - (N : ℝ) • Q) t := by
-  have hk : HasDerivAt (fun s : ℝ => (M : ℝ) + s * (N : ℝ)) (N : ℝ) t := by
+  have hk : HasDerivAt (fun s => (M : ℝ) + s * (N : ℝ)) (N : ℝ) t := by
     convert (hasDerivAt_const t (M : ℝ)).add
       ((hasDerivAt_id t).mul_const (N : ℝ)) using 1
     all_goals first | (funext s; simp [Pi.add_def, mul_comm]) | ring
-  have hkQ : HasDerivAt (fun s : ℝ => ((M : ℝ) + s * (N : ℝ)) • Q)
-      ((N : ℝ) • Q) t := hk.smul_const Q
-  have hraw := hx.sub hkQ
+  have hraw := hx.sub (hk.smul_const Q)
   apply hraw.congr_of_eventuallyEq
   filter_upwards [Ioi_mem_nhds ht0] with s hs
   rw [coe_reverseTimeAffineThreshold_of_nonneg M N hs.le]
@@ -460,7 +448,7 @@ theorem hasDerivAt_shiftedPositivePartHalfEnergy
     shiftedPositivePartHalfEnergy hΩ (x s) (reverseTimeAffineThreshold M N s)
   have hk : Continuous (reverseTimeAffineThreshold M N) := by
     exact continuous_const.add (continuous_real_toNNReal.mul continuous_const)
-  have hp : Continuous p := (continuous_h10ShiftedPositivePart hΩ).comp
+  have hp := (continuous_h10ShiftedPositivePart hΩ).comp
     (hx.prodMk hk)
   exact hasDerivAt_of_support_inequalities U p E hp
     (y - (N : ℝ) • (spatialMassCLM hΩbounded).comp (valueCLM hΩ)) t

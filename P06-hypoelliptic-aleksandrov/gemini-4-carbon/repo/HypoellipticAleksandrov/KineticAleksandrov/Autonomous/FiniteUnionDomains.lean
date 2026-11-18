@@ -1,7 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ExitMeasureSupport
-public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ExitConeOneSign
+public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ExitCone
 import Mathlib.Topology.Connected.Basic
 
 /-! # Finite disjoint velocity interval unions and their unique component poles -/

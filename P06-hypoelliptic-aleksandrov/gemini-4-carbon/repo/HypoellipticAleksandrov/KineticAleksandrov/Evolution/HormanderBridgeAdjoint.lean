@@ -1,31 +1,92 @@
 module
 
-public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.HormanderBridgeDiv
+public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.BracketSquares
 
-/-!
-# The formal adjoint of `Lop`, in the paper's form and in Hörmander's form
-
-The companion paper, (A.2), writes the formal adjoint of
-`Lop = ∂_σ + ∑ B_ij ∂_{v_i v_j} + b(v) · ∇_z` as
-`Lop^* ψ = -∂_σ ψ + ∑_{i,j} ∂_{v_i v_j}(B_ij ψ) - b(v) · ∇_z ψ`.
-`transportedAdjoint` is this expression in the packed coordinates `(σ, v, z)` of `BracketCoord`
-(`regularizedAdjoint` adds `ε Δ_z ψ`).
-
-The main results `hormanderAdjointTest_transportedFields` and
-`hormanderAdjointTest_regularizedFields` identify `hormanderAdjointTest` (the carrier,
-`-div(ψ X_0) + ∑ div(div(ψ X_i) X_i) + c ψ`, with `c = 0`) for the field families
-`transportedFields B b` and `regularizedFields B b ε` with these expressions, for every smooth
-test function `ψ` and at every point.
--/
-
-@[expose] public section
-
-noncomputable section
-set_option autoImplicit false
-
-open scoped MatrixOrder
+@[expose] public noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Evolution
+set_option autoImplicit false
+open scoped MatrixOrder
+
+variable {n : ℕ}
+
+theorem basisT_eq_basisVec : (basisT : EvolutionVec n) = PDE.basisVec 0 := by
+  funext i
+  refine Fin.cases ?_ (fun j => ?_) i
+  · simp [basisT, PDE.basisVec]
+  · rw [basisT, PDE.basisVec_apply, ite_eq_right_of_eq_false _ _ (eq_false (Fin.succ_ne_zero _))]
+    refine Fin.addCases (fun a => ?_) (fun c => ?_) j <;>
+      simp only [packPoint_diffused_apply, packPoint_transported_apply] <;> rfl
+
+theorem basisV_eq_basisVec (j : Fin n) :
+    (basisV j : EvolutionVec n) = PDE.basisVec (Fin.succ (Fin.castAdd n j)) := by
+  funext i
+  rw [PDE.basisVec_apply]
+  refine Fin.cases ?_ (fun k => ?_) i
+  · rw [ite_eq_right_of_eq_false _ _ (eq_false (Fin.succ_ne_zero _).symm)]
+    simp [basisV]
+  · refine Fin.addCases (fun a => ?_) (fun c => ?_) k
+    · simp only [basisV, packPoint_diffused_apply, Pi.single_apply, Fin.succ_inj,
+        Fin.castAdd_inj]
+    · rw [ite_eq_right_of_eq_false _ _ (eq_false ?_)]
+      · simp only [basisV, packPoint_transported_apply]; rfl
+      · simp only [Fin.ext_iff, Fin.val_succ, Fin.val_natAdd, Fin.val_castAdd]
+        omega
+
+theorem basisZ_eq_basisVec (l : Fin n) :
+    (basisZ l : EvolutionVec n) = PDE.basisVec (Fin.succ (Fin.natAdd n l)) := by
+  funext i
+  rw [PDE.basisVec_apply]
+  refine Fin.cases ?_ (fun k => ?_) i
+  · rw [ite_eq_right_of_eq_false _ _ (eq_false (Fin.succ_ne_zero _).symm)]
+    simp [basisZ]
+  · refine Fin.addCases (fun a => ?_) (fun c => ?_) k
+    · rw [ite_eq_right_of_eq_false _ _ (eq_false ?_)]
+      · simp only [basisZ, packPoint_diffused_apply]; rfl
+      · simp only [Fin.ext_iff, Fin.val_succ, Fin.val_natAdd, Fin.val_castAdd]
+        omega
+    · simp only [basisZ, packPoint_transported_apply, Pi.single_apply, Fin.succ_inj,
+        Fin.natAdd_inj]
+
+/-- The divergence of a differentiable field, split over the three coordinate blocks. -/
+theorem euclideanDivergence_eq {V : EvolutionVec n → EvolutionVec n} {x : EvolutionVec n}
+    (hV : DifferentiableAt ℝ V x) :
+    euclideanDivergence V x =
+      fderiv ℝ (fun y => V y 0) x basisT +
+        ∑ j, fderiv ℝ (fun y => V y (Fin.succ (Fin.castAdd n j))) x (basisV j) +
+        ∑ l, fderiv ℝ (fun y => V y (Fin.succ (Fin.natAdd n l))) x (basisZ l) := by
+  have hcomp : ∀ i, DifferentiableAt ℝ (fun y => V y i) x := differentiableAt_pi.1 hV
+  have key : ∀ (i : Fin (EvolutionDim n)) (w : EvolutionVec n),
+      fderiv ℝ V x w i = fderiv ℝ (fun y => V y i) x w := by
+    intro i w
+    have := fderiv_pi (𝕜 := ℝ) (φ := fun i y => V y i) (x := x) hcomp
+    have h2 : fderiv ℝ V x = fderiv ℝ (fun y i => V y i) x := rfl
+    rw [h2, this]
+    rfl
+  unfold euclideanDivergence
+  rw [Fin.sum_univ_succ, Fin.sum_univ_add]
+  simp only [key, basisT_eq_basisVec, basisV_eq_basisVec, basisZ_eq_basisVec]
+  ring
+
+/-- The divergence of a field in the packed form `packPoint s g h`. -/
+theorem euclideanDivergence_packPoint {s : EvolutionVec n → ℝ} {g h : EvolutionVec n → PDE.Vec n}
+    {x : EvolutionVec n} (hs : DifferentiableAt ℝ s x)
+    (hg : ∀ j, DifferentiableAt ℝ (fun y => g y j) x)
+    (hh : ∀ l, DifferentiableAt ℝ (fun y => h y l) x) :
+    euclideanDivergence (fun y => packPoint (s y) (g y) (h y)) x =
+      fderiv ℝ s x basisT + ∑ j, fderiv ℝ (fun y => g y j) x (basisV j) +
+        ∑ l, fderiv ℝ (fun y => h y l) x (basisZ l) := by
+  have hV : DifferentiableAt ℝ (fun y => packPoint (s y) (g y) (h y)) x := by
+    refine differentiableAt_pi.2 fun i => ?_
+    refine Fin.cases ?_ (fun j => ?_) i
+    · simpa only [packPoint_zero_apply] using hs
+    · refine Fin.addCases (fun a => ?_) (fun c => ?_) j
+      · simpa only [packPoint_diffused_apply] using hg a
+      · simpa only [packPoint_transported_apply] using hh c
+  rw [euclideanDivergence_eq hV]
+  simp only [packPoint_zero_apply, packPoint_diffused_apply, packPoint_transported_apply]
+
+set_option autoImplicit false
 
 variable {n : ℕ}
 
@@ -164,53 +225,6 @@ theorem euclideanDivergence_euclideanDivergence_diffusion
   rw [euclideanDivergence_smul_diffusionField hβ hwd i]
   simp only [hw']
 
-/-- Coefficient identity: `∑_j ∂_j(B_kj φ) = φ c_k + ∑_i div(φ X_i) β_ik`. -/
-theorem sum_fderiv_coeff_mul (hlam : 0 < lam) (hell : HasEverywhereLoewnerBounds lam Lam B)
-    (hβ : ∀ i j, ContDiff ℝ (⊤ : ℕ∞) (fun x => sqrtCoeffAt B x i j))
-    {φ : EvolutionVec n → ℝ} (hφ : ContDiff ℝ (⊤ : ℕ∞) φ) (k : Fin n) (y : EvolutionVec n) :
-    ∑ j, fderiv ℝ (fun w => B (timeCoord n w) (diffusedCoord n w) (transportedCoord n w) k j *
-        φ w) y (basisV j) =
-      φ y * driftCorrection B k y +
-        ∑ i, (∑ j, fderiv ℝ (fun z => φ z * sqrtCoeffAt B z i j) y (basisV j)) *
-          sqrtCoeffAt B y i k := by
-  have hB' : ∀ j, (fun w => B (timeCoord n w) (diffusedCoord n w) (transportedCoord n w) k j *
-      φ w) = fun w => ∑ i, sqrtCoeffAt B w i k * (φ w * sqrtCoeffAt B w i j) := by
-    intro j
-    funext w
-    rw [← sum_sqrtCoeffAt_mul hlam hell w k j, Finset.sum_mul]
-    exact Finset.sum_congr rfl fun i _ => by ring
-  simp only [hB']
-  have hd : ∀ i j, DifferentiableAt ℝ (fun w => sqrtCoeffAt B w i k * (φ w *
-      sqrtCoeffAt B w i j)) y := fun i j =>
-    (differentiableAt_of_contDiff (hβ i k) y).mul
-      ((differentiableAt_of_contDiff hφ y).mul (differentiableAt_of_contDiff (hβ i j) y))
-  have hs : ∀ j, fderiv ℝ (fun w => ∑ i, sqrtCoeffAt B w i k * (φ w * sqrtCoeffAt B w i j)) y
-      (basisV j) = ∑ i, (sqrtCoeffAt B y i k * fderiv ℝ (fun z => φ z * sqrtCoeffAt B z i j) y
-        (basisV j) + fderiv ℝ (fun w => sqrtCoeffAt B w i k) y (basisV j) *
-          (φ y * sqrtCoeffAt B y i j)) := by
-    intro j
-    rw [fderiv_fun_sum fun i _ => hd i j, sum_apply]
-    refine Finset.sum_congr rfl fun i _ => ?_
-    rw [fderiv_fun_mul (c := fun w => sqrtCoeffAt B w i k)
-      (d := fun w => φ w * sqrtCoeffAt B w i j) (differentiableAt_of_contDiff (hβ i k) y)
-      ((differentiableAt_of_contDiff hφ y).mul (differentiableAt_of_contDiff (hβ i j) y))]
-    simp only [add_apply, smul_apply, smul_eq_mul]
-    ring
-  have h1 : ∑ j, ∑ i, fderiv ℝ (fun w => sqrtCoeffAt B w i k) y (basisV j) *
-      (φ y * sqrtCoeffAt B y i j) = φ y * driftCorrection B k y := by
-    rw [Finset.sum_comm, driftCorrection, Finset.mul_sum]
-    refine Finset.sum_congr rfl fun i _ => ?_
-    rw [Finset.mul_sum]
-    exact Finset.sum_congr rfl fun j _ => by simp only [basisV]; ring
-  have h2 : ∑ j, ∑ i, sqrtCoeffAt B y i k * fderiv ℝ (fun z => φ z * sqrtCoeffAt B z i j) y
-      (basisV j) = ∑ i, (∑ j, fderiv ℝ (fun z => φ z * sqrtCoeffAt B z i j) y (basisV j)) *
-        sqrtCoeffAt B y i k := by
-    rw [Finset.sum_comm]
-    refine Finset.sum_congr rfl fun i _ => ?_
-    rw [Finset.sum_mul]
-    exact Finset.sum_congr rfl fun j _ => by ring
-  simp only [hs, Finset.sum_add_distrib]
-  rw [h1, h2, add_comm]
 
 /-- **Weak-form bridge for `Lop`.**  For a smooth test function `φ`, the carrier
 `hormanderAdjointTest` of the field family `transportedFields B b` (with `c = 0`) is the paper's
@@ -219,7 +233,51 @@ theorem hormanderAdjointTest_transportedFields (hlam : 0 < lam)
     (hB : IsSmoothFullKineticCoefficient B) (hell : HasEverywhereLoewnerBounds lam Lam B)
     (hb : IsSmoothDrift b) {φ : EvolutionVec n → ℝ} (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
     (x : EvolutionVec n) :
-    hormanderAdjointTest (transportedFields B b) (fun _ => 0) φ x = transportedAdjoint B b φ x := by
+    hormanderAdjointTest (transportedFields B b) (fun _ => 0) φ x = transportedAdjoint B b φ x  := by
+  have sum_fderiv_coeff_mul (hβ : ∀ i j, ContDiff ℝ (⊤ : ℕ∞) (fun x => sqrtCoeffAt B x i j)) {φ : EvolutionVec n → ℝ} (hφ : ContDiff ℝ (⊤ : ℕ∞) φ) (k : Fin n) (y : EvolutionVec n) :
+      ∑ j, fderiv ℝ (fun w => B (timeCoord n w) (diffusedCoord n w) (transportedCoord n w) k j *
+        φ w) y (basisV j) =
+      φ y * driftCorrection B k y +
+        ∑ i, (∑ j, fderiv ℝ (fun z => φ z * sqrtCoeffAt B z i j) y (basisV j)) *
+          sqrtCoeffAt B y i k := by
+    have hB' : ∀ j, (fun w => B (timeCoord n w) (diffusedCoord n w) (transportedCoord n w) k j *
+        φ w) = fun w => ∑ i, sqrtCoeffAt B w i k * (φ w * sqrtCoeffAt B w i j) := by
+      intro j
+      funext w
+      rw [← sum_sqrtCoeffAt_mul hlam hell w k j, Finset.sum_mul]
+      exact Finset.sum_congr rfl fun i _ => by ring
+    simp only [hB']
+    have hd : ∀ i j, DifferentiableAt ℝ (fun w => sqrtCoeffAt B w i k * (φ w *
+        sqrtCoeffAt B w i j)) y := fun i j =>
+      (differentiableAt_of_contDiff (hβ i k) y).mul
+        ((differentiableAt_of_contDiff hφ y).mul (differentiableAt_of_contDiff (hβ i j) y))
+    have hs : ∀ j, fderiv ℝ (fun w => ∑ i, sqrtCoeffAt B w i k * (φ w * sqrtCoeffAt B w i j)) y
+        (basisV j) = ∑ i, (sqrtCoeffAt B y i k * fderiv ℝ (fun z => φ z * sqrtCoeffAt B z i j) y
+          (basisV j) + fderiv ℝ (fun w => sqrtCoeffAt B w i k) y (basisV j) *
+            (φ y * sqrtCoeffAt B y i j)) := by
+      intro j
+      rw [fderiv_fun_sum fun i _ => hd i j, sum_apply]
+      refine Finset.sum_congr rfl fun i _ => ?_
+      rw [fderiv_fun_mul (c := fun w => sqrtCoeffAt B w i k)
+        (d := fun w => φ w * sqrtCoeffAt B w i j) (differentiableAt_of_contDiff (hβ i k) y)
+        ((differentiableAt_of_contDiff hφ y).mul (differentiableAt_of_contDiff (hβ i j) y))]
+      simp only [add_apply, smul_apply, smul_eq_mul]
+      ring
+    have h1 : ∑ j, ∑ i, fderiv ℝ (fun w => sqrtCoeffAt B w i k) y (basisV j) *
+        (φ y * sqrtCoeffAt B y i j) = φ y * driftCorrection B k y := by
+      rw [Finset.sum_comm, driftCorrection, Finset.mul_sum]
+      refine Finset.sum_congr rfl fun i _ => ?_
+      rw [Finset.mul_sum]
+      exact Finset.sum_congr rfl fun j _ => by simp only [basisV]; ring
+    have h2 : ∑ j, ∑ i, sqrtCoeffAt B y i k * fderiv ℝ (fun z => φ z * sqrtCoeffAt B z i j) y
+        (basisV j) = ∑ i, (∑ j, fderiv ℝ (fun z => φ z * sqrtCoeffAt B z i j) y (basisV j)) *
+          sqrtCoeffAt B y i k := by
+      rw [Finset.sum_comm]
+      refine Finset.sum_congr rfl fun i _ => ?_
+      rw [Finset.sum_mul]
+      exact Finset.sum_congr rfl fun j _ => by ring
+    simp only [hs, Finset.sum_add_distrib]
+    rw [h1, h2, add_comm]
   have hβ := contDiff_sqrtCoeffAt_entry hlam hB hell
   have hc := contDiff_driftCorrection hβ
   have hF : ∀ k i, ContDiff ℝ (⊤ : ℕ∞) (fun y => (∑ j, fderiv ℝ (fun z => φ z *
@@ -238,7 +296,7 @@ theorem hormanderAdjointTest_transportedFields (hlam : 0 < lam)
           (basisV j)) * sqrtCoeffAt B y i k) x (basisV k) := by
     intro k
     rw [← sum_apply, ← fderiv_fun_sum fun j _ => differentiableAt_of_contDiff (hg k j) x]
-    simp only [sum_fderiv_coeff_mul hlam hell hβ hφ k]
+    simp only [sum_fderiv_coeff_mul hβ hφ k]
     rw [fderiv_fun_add (differentiableAt_of_contDiff (hφc k) x)
       (differentiableAt_of_contDiff (ContDiff.sum fun i _ => hF k i) x),
       fderiv_fun_sum fun i _ => differentiableAt_of_contDiff (hF k i) x]
@@ -324,3 +382,4 @@ theorem hormanderAdjointTest_regularizedFields {ε : ℝ} (hε : 0 ≤ ε) (hlam
 end Identity
 
 end HypoellipticAleksandrov.KineticAleksandrov.Evolution
+

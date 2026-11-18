@@ -30,7 +30,7 @@ theorem classicalGradient_add {n : ℕ} {g h : PDE.Vec n → ℝ} {x : PDE.Vec n
     PDE.classicalGradient (fun y => g y + h y) x =
       PDE.classicalGradient g x + PDE.classicalGradient h x := by
   ext i
-  simp only [PDE.classicalGradient_apply, Pi.add_apply]
+  simp
   rw [fderiv_fun_add hg hh]
   rfl
 
@@ -39,7 +39,7 @@ theorem classicalGradient_const_mul {n : ℕ} {g : PDE.Vec n → ℝ} {x : PDE.V
     (hg : DifferentiableAt ℝ g x) :
     PDE.classicalGradient (fun y => c * g y) x = c • PDE.classicalGradient g x := by
   ext i
-  simp only [PDE.classicalGradient_apply, Pi.smul_apply, smul_eq_mul]
+  simp
   rw [fderiv_const_mul hg]
   rfl
 
@@ -47,13 +47,12 @@ theorem classicalGradient_const_mul {n : ℕ} {g : PDE.Vec n → ℝ} {x : PDE.V
 theorem sliceHessian_add {n : ℕ} {g h : PDE.Vec n → ℝ} {x : PDE.Vec n}
     (hg : ContDiffAt ℝ 2 g x) (hh : ContDiffAt ℝ 2 h x) :
     sliceHessian (fun y => g y + h y) x = sliceHessian g x + sliceHessian h x := by
-  have hgh : ContDiffAt ℝ 2 (fun y => g y + h y) x := hg.add hh
-  have hdg : DifferentiableAt ℝ (fderiv ℝ g) x :=
+  have hdg :=
     (hg.fderiv_right (m := 1) (by norm_num)).differentiableAt (by norm_num)
-  have hdh : DifferentiableAt ℝ (fderiv ℝ h) x :=
+  have hdh :=
     (hh.fderiv_right (m := 1) (by norm_num)).differentiableAt (by norm_num)
   ext i j
-  rw [sliceHessian_apply_eq_sndFDeriv hgh, Matrix.add_apply,
+  rw [sliceHessian_apply_eq_sndFDeriv (hg.add hh), Matrix.add_apply,
     sliceHessian_apply_eq_sndFDeriv hg, sliceHessian_apply_eq_sndFDeriv hh]
   have hev : fderiv ℝ (fun y => g y + h y) =ᶠ[𝓝 x]
       fun y => fderiv ℝ g y + fderiv ℝ h y := by
@@ -67,7 +66,7 @@ theorem sliceHessian_const_mul {n : ℕ} {g : PDE.Vec n → ℝ} {x : PDE.Vec n}
     (hg : ContDiffAt ℝ 2 g x) :
     sliceHessian (fun y => c * g y) x = c • sliceHessian g x := by
   have hcg : ContDiffAt ℝ 2 (fun y => c * g y) x := contDiffAt_const.mul hg
-  have hdg : DifferentiableAt ℝ (fderiv ℝ g) x :=
+  have hdg :=
     (hg.fderiv_right (m := 1) (by norm_num)).differentiableAt (by norm_num)
   ext i j
   rw [sliceHessian_apply_eq_sndFDeriv hcg, Matrix.smul_apply,
@@ -131,8 +130,7 @@ theorem viscousTransportedOperator_add {n : ℕ} {B : FullKineticCoefficient n}
   rw [viscousTransportedOperator_apply, viscousTransportedOperator_apply,
     viscousTransportedOperator_apply, transportedForwardOperator_apply,
     transportedForwardOperator_apply, transportedForwardOperator_apply, ht, hpos, hvel, hhess]
-  simp only [matrixContraction_add_right, PDE.vecDot, Pi.add_apply, mul_add,
-    Finset.sum_add_distrib, Matrix.add_apply]
+  simp [matrixContraction_add_right, PDE.vecDot, mul_add, Finset.sum_add_distrib, Matrix.add_apply]
   ring
 
 /-- Homogeneity of `L_ε` at a slice-regular point. -/
@@ -154,8 +152,7 @@ theorem viscousTransportedOperator_const_mul {n : ℕ} {B : FullKineticCoefficie
     exact sliceHessian_const_mul c hu.velocity
   rw [viscousTransportedOperator_apply, viscousTransportedOperator_apply,
     transportedForwardOperator_apply, transportedForwardOperator_apply, ht, hpos, hvel, hhess]
-  simp only [matrixContraction_smul_right, PDE.vecDot, Pi.smul_apply, smul_eq_mul,
-    Matrix.smul_apply]
+  simp [matrixContraction_smul_right, PDE.vecDot, Matrix.smul_apply]
   have hs : ∑ i, b p.position i * (c * kineticVelocityGradient u p i) =
       c * ∑ i, b p.position i * kineticVelocityGradient u p i := by
     rw [Finset.mul_sum]

@@ -40,12 +40,9 @@ theorem fullspace_mass_one {lam Lam : ℝ} (hlam : 0 < lam)
       (fun x _ => conservationDatum_deficit N x) p hp
     let state : EvolutionState autonomousWholeDomain (fun _ => 0) σ :=
       ⟨q.1.2.2, q.2.2⟩
-    have hr := hrep σ q.2.1 state
     have hi := hE.2.1 σ τ q.2.1 state (terminalStateDatum (conservationDatum N))
-    have he := integral_master_eq_fiber E.2 autonomousWholeDomain_measurable
-      σ τ q.2.1 state (conservationDatum N) (conservationDatum N).measurable
     have huq : u p = ∫ x, conservationDatum N x ∂E.2.master q :=
-      hr.trans (hi.trans he.symm)
+      (hrep σ q.2.1 state).trans (hi.trans (integral_master_eq_fiber E.2 autonomousWholeDomain_measurable σ τ q.2.1 state (conservationDatum N) (conservationDatum N).measurable).symm)
     have hmass : (∫ x, conservationDatum N x ∂E.2.master q) ≤
         (E.2.master q univ).toReal := by
       have hint : Integrable (conservationDatum N) (E.2.master q) := by
@@ -54,15 +51,12 @@ theorem fullspace_mass_one {lam Lam : ℝ} (hlam : 0 < lam)
         filter_upwards with x
         rw [Real.norm_of_nonneg (conservationDatum_bounds N x).1]
         exact (conservationDatum_bounds N x).2
-      have hi := integral_mono hint (integrable_const (1 : ℝ))
-        (fun x => (conservationDatum_bounds N x).2)
-      simpa only [integral_const, smul_eq_mul, mul_one, Measure.real] using hi
+      simpa [integral_const, Measure.real] using (integral_mono hint (integrable_const 1) (fun x => (conservationDatum_bounds N x).2))
     rw [huq] at hc
     linarith only [hc, hmass]
-  have ht := (tendsto_one_div_add_atTop_nhds_zero_nat.pow 2).mul_const (growthBarrier C τ p)
   have hzero : Tendsto (fun N : ℕ => ((N : ℝ) + 1)⁻¹ ^ 2 * growthBarrier C τ p)
       atTop (𝓝 0) := by
-    simpa only [one_div, zero_pow (by norm_num : (2 : ℕ) ≠ 0), zero_mul] using ht
+    simpa using (tendsto_one_div_add_atTop_nhds_zero_nat.pow 2).mul_const (growthBarrier C τ p)
   have hle : 1 ≤ (E.2.master q univ).toReal := by
     have hz := ge_of_tendsto hzero (Filter.Eventually.of_forall hbd)
     linarith

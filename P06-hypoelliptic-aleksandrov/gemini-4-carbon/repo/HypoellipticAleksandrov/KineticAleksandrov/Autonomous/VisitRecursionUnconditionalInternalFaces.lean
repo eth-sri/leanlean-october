@@ -34,7 +34,7 @@ theorem visitWaiting_internalExit (c : Clock) (J : Interval) (s T : ℝ) :
   rw [visitWaitingUnion_carrier, Interval.toFiniteUnion_carrier]
   have he : J.carrier \ closure c.entrance = (closure c.entrance)ᶜ ∩ J.carrier := by
     ext v
-    simp only [mem_sdiff, mem_inter_iff, mem_compl_iff]
+    simp
     exact and_comm
   rw [he, frontier_inter_open_inter (show IsOpen J.carrier from isOpen_Ioo), frontier_compl,
     visitClosedEntrance_frontier]

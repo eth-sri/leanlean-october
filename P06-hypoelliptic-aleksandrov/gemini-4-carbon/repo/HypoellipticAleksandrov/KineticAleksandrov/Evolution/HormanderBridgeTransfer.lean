@@ -95,7 +95,7 @@ theorem contDiffOn_comp_evolutionHomeomorph_iff {f : KineticPoint n → ℝ}
       ContDiffOn ℝ (⊤ : ℕ∞) (fun q : ℝ × (PDE.Vec n × PDE.Vec n) => f ⟨q.1, q.2.1, q.2.2⟩)
         (KineticPoint.equivProd n '' Ω) := by
   have h1 : (f ∘ evolutionHomeomorph n) =
-      (fun q : ℝ × (PDE.Vec n × PDE.Vec n) => f ⟨q.1, q.2.1, q.2.2⟩) ∘ evolutionProdCLE n :=
+      (fun q => f ⟨q.1, q.2.1, q.2.2⟩) ∘ evolutionProdCLE n :=
     rfl
   have h2 : evolutionHomeomorph n ⁻¹' Ω =
       evolutionProdCLE n ⁻¹' (KineticPoint.equivProd n '' Ω) := by
@@ -133,7 +133,7 @@ theorem isDistributionalSolution_comp_iff
     (fun z => u z * Ladj ψ ((evolutionHomeomorph n).symm z)) Ω
   have h2 := setIntegral_comp_evolutionHomeomorph
     (fun z => g z * ψ ((evolutionHomeomorph n).symm z)) Ω
-  simp only [Homeomorph.symm_apply_apply] at h1 h2
+  simp at h1 h2
   rw [Function.comp_def, Function.comp_def, h1, h2]
 
 /-- The kinetic-side weak equation for `Lop`: `u` is locally integrable on `Ω ⊆ KineticPoint n` and

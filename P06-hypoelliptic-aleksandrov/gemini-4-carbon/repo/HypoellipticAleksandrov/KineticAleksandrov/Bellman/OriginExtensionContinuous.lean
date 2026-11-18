@@ -43,13 +43,9 @@ theorem IsBellmanHomogeneous.origin_extension_continuous {alpha : ℝ}
     rw [ContinuousAt, bellmanOriginExtension_zero]
     apply tendsto_zero_iff_norm_tendsto_zero.mpr
     have hb : Tendsto (fun q => C * bellmanGauge q ^ alpha) (𝓝 (0, 0)) (𝓝 0) := by
-      have hc : Continuous (fun q : ℝ × ℝ => C * bellmanGauge q ^ alpha) :=
+      have hc : Continuous (fun q => C * bellmanGauge q ^ alpha) :=
         continuous_const.mul ((Real.continuous_rpow_const ha.le).comp bellmanGauge_continuous)
-      have hh := hc.continuousAt.tendsto (x := (0, 0))
-      simpa only [bellmanGauge, bellmanGaugePower, zero_pow (by decide : (2 : ℕ) ≠ 0),
-        zero_pow (by decide : (6 : ℕ) ≠ 0), zero_add,
-        Real.zero_rpow (by norm_num : (1 / 6 : ℝ) ≠ 0), Real.zero_rpow ha.ne',
-        mul_zero] using hh
+      simpa [bellmanGauge, bellmanGaugePower, zero_pow (by decide : 2 ≠ 0), zero_pow (by decide : 6 ≠ 0), Real.zero_rpow (by norm_num : (1 / 6 : ℝ) ≠ 0), Real.zero_rpow ha.ne'] using (hc.continuousAt.tendsto (x := (0, 0)))
     apply squeeze_zero (fun _ => norm_nonneg _) (fun q => ?_) hb
     rw [Real.norm_eq_abs]
     exact hbound q

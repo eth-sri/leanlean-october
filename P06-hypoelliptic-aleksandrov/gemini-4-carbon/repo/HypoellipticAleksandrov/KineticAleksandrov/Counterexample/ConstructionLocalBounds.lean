@@ -19,13 +19,12 @@ theorem construction_locallyIntegrable_of_compact_bound {n : ℕ}
   apply locallyIntegrable_iff.mpr
   intro K hK
   obtain ⟨M, hM, hbM⟩ := hb K hK
-  have hi : IntegrableOn (fun _ : PDE.Vec n => M) K volume :=
+  have hi : IntegrableOn (fun _ => M) K volume :=
     integrableOn_const hK.measure_ne_top
-  change Integrable (fun _ : PDE.Vec n => M) (volume.restrict K) at hi
-  change Integrable f (volume.restrict K)
+  change Integrable (fun _ => M) (volume.restrict K) at hi
   apply hi.mono hf.aestronglyMeasurable.restrict
   filter_upwards [ae_restrict_mem hK.measurableSet] with x hx
-  simpa only [Real.norm_eq_abs, abs_of_nonneg hM] using hbM x hx
+  simpa [abs_of_nonneg hM] using hbM x hx
 
 /-- Products of two compactly bounded measurable representatives remain locally integrable. -/
 theorem construction_locallyIntegrable_product {n : ℕ} (f g : PDE.Vec n → ℝ)
@@ -57,7 +56,7 @@ theorem construction_packedGradient_compact_bound {d : ℕ} {alpha : ℝ}
   intro x hx
   have hb' := hb _ ⟨x, hx, rfl⟩
   refine Fin.addCases (fun j => ?_) (fun j => ?_) i
-  · simpa only [spatialPackedGradient, Fin.addCases_left, Real.norm_eq_abs] using
+  · simpa [spatialPackedGradient, Fin.addCases_left] using
       (norm_le_pi_norm _ j).trans hb'.1
   · simpa only [spatialPackedGradient, Fin.addCases_right, Real.norm_eq_abs] using
       (norm_le_pi_norm _ j).trans hb'.2.1
@@ -76,14 +75,6 @@ theorem construction_packedGradient_measurable {d : ℕ} {alpha : ℝ}
       ((measurable_pi_apply j).comp hv).comp
       (spatialCoordinateCLE d).continuous.measurable
 
-/-- The packed first flattened representatives are locally integrable. -/
-theorem construction_packedGradient_locallyIntegrable {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r : ℝ) (hr : 0 < r)
-    (i : Fin (d + d)) :
-    LocallyIntegrable (fun x => spatialPackedGradient (flatProfilePositionJet h r)
-      (flatProfileVelocityJet h r) x i) volume :=
-  construction_locallyIntegrable_of_compact_bound _ (construction_packedGradient_measurable h r i)
-    (construction_packedGradient_compact_bound h r hr i)
 
 /-- The literal raw cutoff is continuous, hence locally integrable. -/
 theorem construction_cutoffValue_continuous {d : ℕ} {alpha : ℝ}
@@ -97,18 +88,16 @@ theorem construction_cutoffValue_continuous {d : ℕ} {alpha : ℝ}
 theorem construction_cutoffGradient_locallyIntegrable {d : ℕ} {alpha : ℝ}
     (h : CounterProfileStatement d alpha) (r : ℝ) (hr : 0 < r)
     (mu R t : ℝ) (i : Fin (d + d)) :
-    LocallyIntegrable (fun x => spatialPackedCutoffGradient h r mu R t x i) volume := by
+    LocallyIntegrable (fun x => spatialPackedCutoffGradient h r mu R t x i) volume  := by
   have hB : Continuous (fun x => PDE.classicalGradient
       (spatialPackedBarrier d mu R t) x i) :=
     ((contDiff_spatialPackedBarrier d mu R t).continuous_fderiv (by simp)).clm_apply
       continuous_const
-  have ht : Continuous (fun x => deriv timeCutoffTheta
-      (selectedFlatProfile h r (spatialCoordinateCLE d x) -
-        spatialPackedBarrier d mu R t x)) :=
+  have ht :=
     (contDiff_timeCutoffTheta.continuous_deriv (by simp)).comp
       (((continuous_selectedFlatProfile h r).comp (spatialCoordinateCLE d).continuous).sub
         (contDiff_spatialPackedBarrier d mu R t).continuous)
-  exact ((construction_packedGradient_locallyIntegrable h r hr i).sub
+  exact (((construction_locallyIntegrable_of_compact_bound _ (construction_packedGradient_measurable h r i) (construction_packedGradient_compact_bound h r hr i))).sub
     hB.locallyIntegrable).continuous_mul ht
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

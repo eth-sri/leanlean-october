@@ -37,8 +37,7 @@ theorem firstMarginal_startingPosition {d : ℕ}
   have hq : evolutionQueryOfState (wholeSpace d) (fun _ => 0) σ τ hστ
       (evolutionStateShift (wholeSpace d) (fun _ => 0) σ z p) = wholeSpaceQuery σ τ hστ v z := by
     apply Subtype.ext
-    simp only [evolutionQueryOfState, evolutionStateShift, evolutionAmbientStateShift,
-      wholeSpaceQuery, p, zero_add]
+    simp [evolutionQueryOfState, evolutionStateShift, evolutionAmbientStateShift, wholeSpaceQuery, p]
   have hp : evolutionQueryOfState (wholeSpace d) (fun _ => 0) σ τ hστ p =
       wholeSpaceQuery σ τ hστ v 0 := rfl
   have hmt := master_translation (Ω := wholeSpace d) (γ := fun _ => 0) MeasurableSet.univ K hcov
@@ -66,10 +65,10 @@ theorem integrable_green_slab {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE
     [IsFiniteMeasure μ] (Γ : Measure (GreenCarrier d)) (hΓ : IsGreenMeasure K σ₀ ⊤ μ Γ)
     {T : ℝ} (hT : 0 < T) (f : GreenCarrier d → ℂ) (hf : Measurable f)
     (hfb : ∀ p, ‖f p‖ ≤ 1) (hsupp : ∀ p, p ∉ slabSet T → f p = 0) : Integrable f Γ := by
-  have hfin : Γ (slabSet (d := d) T) < ⊤ :=
+  have hfin :=
     (green_slab_le K σ₀ μ Γ hΓ hT).trans_lt
       (ENNReal.mul_lt_top (measure_lt_top _ _) ENNReal.ofReal_lt_top)
-  have hi : Integrable ((slabSet (d := d) T).indicator (fun _ => (1 : ℝ))) Γ :=
+  have hi : Integrable ((slabSet T).indicator (fun _ => (1 : ℝ))) Γ :=
     (integrable_indicator_iff (measurableSet_slabSet T)).2 (integrableOn_const hfin.ne)
   refine Integrable.mono' hi hf.aestronglyMeasurable (Filter.Eventually.of_forall (fun p => ?_))
   by_cases hp : p ∈ slabSet T
@@ -103,20 +102,18 @@ theorem green_integral {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
   set G : EvolutionState Ω γ σ₀ × ElapsedTime ⊤ → ℂ :=
     fun a => ∫ w, f (a.2, w) ∂elapsedKernel K σ₀ ⊤ a with hG
   have hGm : StronglyMeasurable G := by
-    have h1 : StronglyMeasurable (fun q : (EvolutionState Ω γ σ₀ × ElapsedTime ⊤) ×
-        EvolutionAmbientState d => f (q.1.2, q.2)) := (hf.comp hι).stronglyMeasurable
-    exact h1.integral_kernel_prod_right' (κ := elapsedKernel K σ₀ ⊤)
-  have hGb : ∀ a, ‖G a‖ ≤ (slabTimeSet T).indicator (fun _ => (1 : ℝ)) a.2 := by
+    exact ((hf.comp hι).stronglyMeasurable).integral_kernel_prod_right' (κ := elapsedKernel K σ₀ ⊤)
+  have hGb : ∀ a, ‖G a‖ ≤ (slabTimeSet T).indicator (fun _ => 1) a.2 := by
     intro a
     by_cases ha : a.2 ∈ slabTimeSet T
     · rw [Set.indicator_of_mem ha]
       calc ‖G a‖ ≤ ∫ w, ‖f (a.2, w)‖ ∂elapsedKernel K σ₀ ⊤ a := norm_integral_le_integral_norm _
-        _ ≤ ∫ w, (1 : ℝ) ∂elapsedKernel K σ₀ ⊤ a :=
+        _ ≤ ∫ w, 1 ∂elapsedKernel K σ₀ ⊤ a :=
             integral_mono_of_nonneg (Filter.Eventually.of_forall (fun w => norm_nonneg _))
               (integrable_const _) (Filter.Eventually.of_forall (fun w => hfb _))
         _ ≤ 1 := by
             have : elapsedKernel K σ₀ ⊤ a univ ≤ 1 := K.mass_le_one _
-            simp only [integral_const, smul_eq_mul, mul_one, measureReal_def]
+            simp
             exact ENNReal.toReal_le_of_le_ofReal zero_le_one (by simpa using this)
     · rw [Set.indicator_of_notMem ha]
       have : ∀ w, f (a.2, w) = 0 := fun w => hsupp _ (fun h => ha h)
@@ -125,10 +122,10 @@ theorem green_integral {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
     have hfinT : (μ.prod (elapsedVolume ⊤)) (univ ×ˢ slabTimeSet T) < ⊤ := by
       rw [Measure.prod_prod, elapsedVolume_slabTimeSet hT]
       exact ENNReal.mul_lt_top (measure_lt_top _ _) ENNReal.ofReal_lt_top
-    have hi : Integrable (fun a : EvolutionState Ω γ σ₀ × ElapsedTime ⊤ =>
+    have hi : Integrable (fun a =>
         (slabTimeSet T).indicator (fun _ => (1 : ℝ)) a.2) (μ.prod (elapsedVolume ⊤)) := by
       have : (fun a : EvolutionState Ω γ σ₀ × ElapsedTime ⊤ =>
-          (slabTimeSet T).indicator (fun _ => (1 : ℝ)) a.2) =
+          (slabTimeSet T).indicator (fun _ => 1) a.2) =
           (univ ×ˢ slabTimeSet T : Set _).indicator (fun _ => (1 : ℝ)) := by
         funext a; by_cases ha : a.2 ∈ slabTimeSet T <;> simp [Set.indicator, ha]
       rw [this]

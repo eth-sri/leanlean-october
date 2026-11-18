@@ -21,17 +21,17 @@ theorem bellmanGauge_pos (q : ℝ × ℝ) (hq : q ≠ (0, 0)) : 0 < bellmanGauge
 theorem bellmanGauge_nonneg (q : ℝ × ℝ) : 0 ≤ bellmanGauge q :=
   Real.rpow_nonneg (bellmanGaugePower_nonneg q) _
 
-private theorem abs_le_of_even_pow_bound (x C : ℝ) (hC : 0 ≤ C) (n : ℕ)
-    (hn : n ≠ 0) (he : Even n) (hx : x ^ n ≤ C) : |x| ≤ C + 1 := by
-  rcases le_or_gt |x| 1 with h | h
-  · exact h.trans (by linarith only [hC])
-  · have hp := le_self_pow₀ h.le hn
-    rw [he.pow_abs] at hp
-    exact hp.trans (hx.trans (by linarith))
 
 /-- Polynomial sublevel sets are compact in the literal ambient product plane. -/
 theorem bellmanGaugePower_sublevel_isCompact (C : ℝ) (hC : 0 ≤ C) :
-    IsCompact {q : ℝ × ℝ | bellmanGaugePower q ≤ C} := by
+    IsCompact {q : ℝ × ℝ | bellmanGaugePower q ≤ C}  := by
+  have abs_le_of_even_pow_bound (x : ℝ) (n : ℕ) (hn : n ≠ 0) (he : Even n) (hx : x ^ n ≤ C) :
+      |x| ≤ C + 1 := by
+    rcases le_or_gt |x| 1 with h | h
+    · exact h.trans (by linarith only [hC])
+    · have hp := le_self_pow₀ h.le hn
+      rw [he.pow_abs] at hp
+      exact hp.trans (hx.trans (by linarith))
   have hc : IsClosed {q : ℝ × ℝ | bellmanGaugePower q ≤ C} :=
     isClosed_le bellmanGaugePower_continuous continuous_const
   apply ((isCompact_Icc : IsCompact (Icc (-C - 1) (C + 1))).prod
@@ -44,8 +44,8 @@ theorem bellmanGaugePower_sublevel_isCompact (C : ℝ) (hC : 0 ≤ C) :
   have hv : q.2 ^ 6 ≤ C := by
     change q.1 ^ 2 + q.2 ^ 6 ≤ C at hq
     linarith only [hq, sq_nonneg q.1]
-  have hx' := abs_le_of_even_pow_bound q.1 C hC 2 (by decide) (by decide) hx
-  have hv' := abs_le_of_even_pow_bound q.2 C hC 6 (by decide) (by decide) hv
+  have hx' := abs_le_of_even_pow_bound q.1 2 (by decide) (by decide) hx
+  have hv' := abs_le_of_even_pow_bound q.2 6 (by decide) (by decide) hv
   rcases abs_le.mp hx' with ⟨hxl, hxu⟩
   rcases abs_le.mp hv' with ⟨hvl, hvu⟩
   exact ⟨⟨by linarith only [hxl], hxu⟩, ⟨by linarith only [hvl], hvu⟩⟩

@@ -53,7 +53,7 @@ theorem KineticPoint.measurePreserving_equivProd (d : ℕ) :
     (Measure.map (KineticPoint.equivProd d).symm volume) = volume
   rw [Measure.map_map (KineticPoint.measurable_equivProd d)
     (KineticPoint.measurable_equivProd_symm d)]
-  simpa only [Equiv.apply_symm_apply, Function.comp_def] using!
+  simpa using!
     (Measure.map_id (μ := (volume : Measure (ℝ × (PDE.Vec d × PDE.Vec d)))))
 
 end HypoellipticAleksandrov

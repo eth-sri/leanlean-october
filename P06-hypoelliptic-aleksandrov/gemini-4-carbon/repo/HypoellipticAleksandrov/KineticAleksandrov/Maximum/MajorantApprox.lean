@@ -40,10 +40,8 @@ theorem exists_smooth_cutoff {U K : Set E} (hU : IsOpen U) (hK : IsCompact K) (h
   obtain ⟨δ, hδ, hδU⟩ := hK.exists_cthickening_subset_open hU hKU
   refine ⟨δ / 2, half_pos hδ, by rwa [mul_div_cancel₀ _ two_ne_zero], ?_⟩
   have hs : IsClosed (thickening (δ / 2) K)ᶜ := isOpen_thickening.isClosed_compl
-  have hd : Disjoint (thickening (δ / 2) K)ᶜ K :=
-    disjoint_compl_left_iff.2 (self_subset_thickening (half_pos hδ) K)
   obtain ⟨χ, hχ, hrange, hzero, hone⟩ :=
-    exists_contDiff_zero_iff_one_iff_of_isClosed (n := (⊤ : ℕ∞)) hs hK.isClosed hd
+    exists_contDiff_zero_iff_one_iff_of_isClosed (n := ⊤) hs hK.isClosed (disjoint_compl_left_iff.2 (self_subset_thickening (half_pos hδ) K))
   refine ⟨χ, hχ, fun z => hrange (mem_range_self z), fun z hz => (hone z).1 hz, fun z hz => ?_⟩
   refine (hzero z).1 ?_
   exact fun hz' => hz (thickening_subset_cthickening _ _ hz')
@@ -61,7 +59,7 @@ theorem exists_smooth_uniform_approx (μ : Measure E) [μ.IsAddHaarMeasure]
   obtain ⟨δ', hδ', hu⟩ := Metric.uniformContinuous_iff.1
     (hHc.uniformContinuous_of_continuous hH) η hη
   set rad : ℝ := min r δ' with hrad
-  have hrad_pos : 0 < rad := lt_min hr hδ'
+  have hrad_pos := lt_min hr hδ'
   let φ : ContDiffBump (0 : E) := ⟨rad / 2, rad, half_pos hrad_pos, half_lt_self hrad_pos⟩
   refine ⟨φ.normed μ ⋆[ContinuousLinearMap.lsmul ℝ ℝ, μ] H, ?_, ?_, ?_, ?_⟩
   · exact φ.hasCompactSupport_normed.contDiff_convolution_left _ φ.contDiff_normed
@@ -69,7 +67,7 @@ theorem exists_smooth_uniform_approx (μ : Measure E) [μ.IsAddHaarMeasure]
   · intro z
     rw [convolution_def]
     refine integral_nonneg fun t => ?_
-    simp only [ContinuousLinearMap.lsmul_apply, smul_eq_mul]
+    simp
     exact mul_nonneg (φ.nonneg_normed t) (hnn _)
   · intro z
     have := φ.dist_normed_convolution_le (μ := μ) (x₀ := z) (ε := η)
@@ -78,9 +76,7 @@ theorem exists_smooth_uniform_approx (μ : Measure E) [μ.IsAddHaarMeasure]
     simpa only [Real.dist_eq] using this
   · intro z hz
     by_contra hne
-    have hmem := support_convolution_subset (ContinuousLinearMap.lsmul ℝ ℝ) (μ := μ)
-      (f := φ.normed μ) (g := H) hne
-    obtain ⟨a, ha, b, hb, rfl⟩ := Set.mem_add.1 hmem
+    obtain ⟨a, ha, b, hb, rfl⟩ := Set.mem_add.1 (support_convolution_subset (ContinuousLinearMap.lsmul ℝ ℝ) (μ := μ) (f := φ.normed μ) hne)
     rw [φ.support_normed_eq] at ha
     have hbS : b ∈ S := by
       by_contra hbS

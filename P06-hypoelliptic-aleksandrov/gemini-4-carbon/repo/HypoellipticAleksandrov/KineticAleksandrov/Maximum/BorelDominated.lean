@@ -33,11 +33,10 @@ theorem borel_bounded_error_norm_tendsto {E : Type*} [MeasurableSpace E]
     filter_upwards [hc] with z hz
     simpa only [Function.comp_def,Real.zero_rpow hp.ne'] using
       (Real.continuous_rpow_const hp.le).continuousAt.tendsto.comp hz
-  have hi := tendsto_integral_of_dominated_convergence (fun _ : E => B ^ p)
+  have hi := tendsto_integral_of_dominated_convergence (fun _ => B ^ p)
     hpower (integrable_const _) hbound hconv
-  simp only [integral_zero] at hi
-  have hr := (Real.continuous_rpow_const (by positivity : 0 ≤ 1 / p)).tendsto 0
-  have ht := hr.comp hi
+  simp at hi
+  have ht := ((Real.continuous_rpow_const (by positivity : 0 ≤ 1 / p)).tendsto 0).comp hi
   simp only [Function.comp_def,Real.zero_rpow (by positivity : 1 / p ≠ 0)] at ht
   convert ht using 1
   funext j

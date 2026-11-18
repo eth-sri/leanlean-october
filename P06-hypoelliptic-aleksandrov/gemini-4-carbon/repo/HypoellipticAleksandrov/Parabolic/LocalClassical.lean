@@ -53,12 +53,6 @@ def IsParabolicSolutionOn {d : ℕ} (A : CoefficientField d)
 
 namespace IsContinuousCoefficientOn
 
-/-- A local coefficient-continuity predicate gives continuity at each of its points. -/
-theorem continuousWithinAt {d : ℕ} {A : CoefficientField d}
-    {U : Set (TimeVelocity d)} (h : IsContinuousCoefficientOn A U)
-    {z : TimeVelocity d} (hz : z ∈ U) :
-    ContinuousWithinAt (coefficientAt A) U z :=
-  h z hz
 
 /-- Coefficient continuity restricts to a smaller set. -/
 theorem mono {d : ℕ} {A : CoefficientField d} {U V : Set (TimeVelocity d)}
@@ -66,11 +60,6 @@ theorem mono {d : ℕ} {A : CoefficientField d} {U V : Set (TimeVelocity d)}
     IsContinuousCoefficientOn A V :=
   ContinuousOn.mono h hVU
 
-/-- Global coefficient continuity gives local coefficient continuity on every set. -/
-theorem of_global {d : ℕ} {A : CoefficientField d}
-    (h : IsContinuousCoefficient A) (U : Set (TimeVelocity d)) :
-    IsContinuousCoefficientOn A U :=
-  h.continuousOn
 
 end IsContinuousCoefficientOn
 
@@ -89,11 +78,6 @@ theorem mono {d : ℕ} {lam : ℝ} {A : CoefficientField d}
     (hVU : V ⊆ U) : HasLowerEllipticityOn lam A V :=
   fun z hz => h z (hVU hz)
 
-/-- A global lower ellipticity bound gives the corresponding local bound. -/
-theorem of_global {d : ℕ} {lam : ℝ} {A : CoefficientField d}
-    (h : HasLowerEllipticity lam A) (U : Set (TimeVelocity d)) :
-    HasLowerEllipticityOn lam A U :=
-  fun z _ => h z.1 z.2
 
 end HasLowerEllipticityOn
 
@@ -105,11 +89,6 @@ theorem mono {d : ℕ} {Lam : ℝ} {A : CoefficientField d}
     (hVU : V ⊆ U) : HasUpperEllipticityOn Lam A V :=
   fun z hz => h z (hVU hz)
 
-/-- A global upper ellipticity bound gives the corresponding local bound. -/
-theorem of_global {d : ℕ} {Lam : ℝ} {A : CoefficientField d}
-    (h : HasUpperEllipticity Lam A) (U : Set (TimeVelocity d)) :
-    HasUpperEllipticityOn Lam A U :=
-  fun z _ => h z.1 z.2
 
 end HasUpperEllipticityOn
 
@@ -137,10 +116,6 @@ namespace IsParabolicSolutionOn
 
 end IsParabolicSolutionOn
 
-/-- A globally `C²` scalar function is `C²` on every prescribed set. -/
-theorem contDiffOn_of_global {d : ℕ} {q : TimeVelocity d → ℝ}
-    (h : ContDiff ℝ 2 q) (U : Set (TimeVelocity d)) : ContDiffOn ℝ 2 q U :=
-  h.contDiffOn
 
 /-- On an open set, local `C²` regularity gives pointwise `C²` regularity. -/
 theorem contDiffAt_of_contDiffOn_of_isOpen {d : ℕ} {q : TimeVelocity d → ℝ}
@@ -157,7 +132,7 @@ theorem parabolicOperator_neg {d : ℕ} (A : CoefficientField d)
     exact fderiv_fun_neg
   have htime : timeDerivative (fun y => -u y) z = -timeDerivative u z := by
     unfold timeDerivative
-    simp only [fderiv_fun_neg, ContinuousLinearMap.neg_apply]
+    simp
   have hhessian :
       velocityHessian (fun y => -u y) z = -velocityHessian u z := by
     ext i j
@@ -186,11 +161,6 @@ theorem parabolicOperator_add_const {d : ℕ} (A : CoefficientField d)
 
 namespace IsParabolicSolutionOn
 
-/-- Negating a homogeneous local solution preserves its homogeneous equation. -/
-theorem neg {d : ℕ} {A : CoefficientField d} {u : TimeVelocity d → ℝ}
-    {U : Set (TimeVelocity d)} (h : IsParabolicSolutionOn A u U) :
-    IsParabolicSolutionOn A (fun z => -u z) U :=
-  fun z hz => by rw [parabolicOperator_neg, h z hz, neg_zero]
 
 end IsParabolicSolutionOn
 
@@ -209,11 +179,6 @@ def IsLocalClassicalSolutionOn (d : ℕ) (B : CoefficientField d)
 
 namespace IsLocalClassicalSolutionOn
 
-/-- A local classical solution is `C²` on its domain. -/
-theorem contDiffOn {d : ℕ} {B : CoefficientField d}
-    {q : TimeVelocity d → ℝ} {U : Set (TimeVelocity d)} {lam Lam : ℝ}
-    (h : IsLocalClassicalSolutionOn d B q U lam Lam) : ContDiffOn ℝ 2 q U :=
-  h.2.1
 
 end IsLocalClassicalSolutionOn
 

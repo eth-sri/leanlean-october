@@ -42,16 +42,13 @@ theorem continuousWithinAt_source_zeroExtension_terminal {d : ℕ}
       simpa only [abs_of_pos (sub_pos.mpr hz.1.2)] using hb z hz
     · rw [show W z = 0 from piecewise_eq_of_notMem U w (fun _ => 0) hz, norm_zero]
       exact mul_nonneg hM (abs_nonneg _)
-  have hz : Tendsto (fun z : TimeVelocity d => M * |T - z.1|) (𝓝 p) (𝓝 0) := by
+  have hz : Tendsto (fun z => M * |T - z.1|) (𝓝 p) (𝓝 0) := by
     have hc : Continuous (fun z : TimeVelocity d => M * |T - z.1|) :=
       continuous_const.mul (continuous_const.sub continuous_fst).abs
-    simpa only [hp, sub_self, abs_zero, mul_zero] using
+    simpa [hp] using
       (hc.continuousAt (x := p)).tendsto
-  have hW : Tendsto W (𝓝 p) (𝓝 0) :=
-    tendsto_zero_iff_norm_tendsto_zero.2
-      (squeeze_zero (fun _ => norm_nonneg _) hbound hz)
   change Tendsto W (𝓝[scalarParabolicClosedCylinder a T Ω] p) (𝓝 (W p))
   rw [hpW]
-  exact hW.mono_left nhdsWithin_le_nhds
+  exact (tendsto_zero_iff_norm_tendsto_zero.2 (squeeze_zero (fun _ => norm_nonneg _) hbound hz)).mono_left nhdsWithin_le_nhds
 
 end HypoellipticAleksandrov.Parabolic.LocalHolder

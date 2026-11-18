@@ -40,80 +40,10 @@ private noncomputable def weakDerivativeRight
     (g : ReverseTimeL2VStar hΩ T) : ℝ → ℝ :=
   fun tau => (g tau) v * eta tau
 
-private theorem weakDerivativeLeft_add_ae
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
-    (v : H10HilbertGraph hΩ) (eta : ReverseTimeScalarTest T)
-    (u₁ u₂ : ReverseTimeL2V hΩ T) :
-    weakDerivativeLeft hΩ T v eta (u₁ + u₂) =ᵐ[reverseTimeVolume T]
-      weakDerivativeLeft hΩ T v eta u₁ + weakDerivativeLeft hΩ T v eta u₂ := by
-  have hmap : reverseTimeValueCLM hΩ T (u₁ + u₂) =
-      reverseTimeValueCLM hΩ T u₁ + reverseTimeValueCLM hΩ T u₂ :=
-    (reverseTimeValueCLM hΩ T).map_add u₁ u₂
-  filter_upwards [Lp.coeFn_add (reverseTimeValueCLM hΩ T u₁)
-    (reverseTimeValueCLM hΩ T u₂)] with tau ht
-  dsimp only [weakDerivativeLeft]
-  rw [hmap, ht]
-  change inner ℝ (valueCLM hΩ v)
-    (reverseTimeValueCLM hΩ T u₁ tau + reverseTimeValueCLM hΩ T u₂ tau) * eta.deriv tau =
-    inner ℝ (valueCLM hΩ v) (reverseTimeValueCLM hΩ T u₁ tau) * eta.deriv tau +
-      inner ℝ (valueCLM hΩ v) (reverseTimeValueCLM hΩ T u₂ tau) * eta.deriv tau
-  simp only [inner_add_right, add_mul]
 
-private theorem weakDerivativeRight_add_ae
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
-    (v : H10HilbertGraph hΩ) (eta : ReverseTimeScalarTest T)
-    (g₁ g₂ : ReverseTimeL2VStar hΩ T) :
-    weakDerivativeRight hΩ T v eta (g₁ + g₂) =ᵐ[reverseTimeVolume T]
-      weakDerivativeRight hΩ T v eta g₁ + weakDerivativeRight hΩ T v eta g₂ := by
-  filter_upwards [Lp.coeFn_add g₁ g₂] with tau ht
-  dsimp only [weakDerivativeRight]
-  rw [ht]
-  change ((g₁ tau + g₂ tau) v) * eta tau = (g₁ tau) v * eta tau + (g₂ tau) v * eta tau
-  simp only [ContinuousLinearMap.add_apply, add_mul]
 
-private theorem weakDerivativeLeft_smul_ae
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
-    (v : H10HilbertGraph hΩ) (eta : ReverseTimeScalarTest T)
-    (u : ReverseTimeL2V hΩ T) (a : ℝ) :
-    weakDerivativeLeft hΩ T v eta (a • u) =ᵐ[reverseTimeVolume T]
-      a • weakDerivativeLeft hΩ T v eta u := by
-  have hmap : reverseTimeValueCLM hΩ T (a • u) = a • reverseTimeValueCLM hΩ T u :=
-    (reverseTimeValueCLM hΩ T).map_smul a u
-  filter_upwards [Lp.coeFn_smul a (reverseTimeValueCLM hΩ T u)] with tau ht
-  have ht' : ((a • reverseTimeValueCLM hΩ T u : ReverseTimeL2H hΩ T) tau) =
-      a • reverseTimeValueCLM hΩ T u tau := by
-    simpa only [Pi.smul_apply] using ht
-  dsimp only [weakDerivativeLeft]
-  rw [hmap, ht']
-  simp only [weakDerivativeLeft, Pi.smul_apply, inner_smul_right, smul_eq_mul, mul_assoc]
 
-private theorem weakDerivativeRight_smul_ae
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
-    (v : H10HilbertGraph hΩ) (eta : ReverseTimeScalarTest T)
-    (g : ReverseTimeL2VStar hΩ T) (a : ℝ) :
-    weakDerivativeRight hΩ T v eta (a • g : ReverseTimeL2VStar hΩ T) =ᵐ[reverseTimeVolume T]
-      a • weakDerivativeRight hΩ T v eta g := by
-  filter_upwards [Lp.coeFn_smul (𝕜 := ℝ) a g] with tau ht
-  dsimp only [weakDerivativeRight]
-  simpa only [weakDerivativeRight, Pi.smul_apply, smul_apply, smul_eq_mul, mul_assoc] using
-    congrArg (fun q : H10HilbertGraphDual hΩ => q v * eta tau) ht
 
-private theorem integral_neg_add
-    {α : Type _} [MeasurableSpace α] (μ : Measure α)
-    {f₁ f₂ f g₁ g₂ g : α → ℝ}
-    (hf₁ : Integrable f₁ μ) (hf₂ : Integrable f₂ μ)
-    (hg₁ : Integrable g₁ μ) (hg₂ : Integrable g₂ μ)
-    (hleft : f =ᵐ[μ] f₁ + f₂) (hright : g =ᵐ[μ] g₁ + g₂)
-    (hidentity₁ : (∫ x, f₁ x ∂μ) = -(∫ x, g₁ x ∂μ))
-    (hidentity₂ : (∫ x, f₂ x ∂μ) = -(∫ x, g₂ x ∂μ)) :
-    (∫ x, f x ∂μ) = -(∫ x, g x ∂μ) := by
-  calc
-    (∫ x, f x ∂μ) = ∫ x, f₁ x + f₂ x ∂μ := integral_congr_ae hleft
-    _ = (∫ x, f₁ x ∂μ) + ∫ x, f₂ x ∂μ := integral_add hf₁ hf₂
-    _ = -(∫ x, g₁ x ∂μ) + -(∫ x, g₂ x ∂μ) := by rw [hidentity₁, hidentity₂]
-    _ = -((∫ x, g₁ x ∂μ) + ∫ x, g₂ x ∂μ) := by ring
-    _ = -(∫ x, g₁ x + g₂ x ∂μ) := by rw [integral_add hg₁ hg₂]
-    _ = -(∫ x, g x ∂μ) := congrArg Neg.neg (integral_congr_ae hright).symm
 
 private theorem integral_neg_smul
     {α : Type _} [MeasurableSpace α] (μ : Measure α)
@@ -162,7 +92,7 @@ theorem integrable_reverseTimeWeakDerivative_left
       (reverseTimeVolume T) := by
   have hpair : MemLp
       (fun tau => inner ℝ (valueCLM hΩ v) (reverseTimeValueCLM hΩ T u tau))
-      (2 : ℝ≥0∞) (reverseTimeVolume T) :=
+      2 (reverseTimeVolume T) :=
     (MeasureTheory.Lp.memLp (reverseTimeValueCLM hΩ T u)).continuousLinearMap_comp
       (innerSL ℝ (valueCLM hΩ v))
   simpa only [Pi.mul_def] using hpair.integrable_mul (eta.memLp_deriv 2)
@@ -177,7 +107,7 @@ theorem integrable_reverseTimeWeakDerivative_right
     Integrable
       (fun tau => (g tau) v * eta tau)
       (reverseTimeVolume T) := by
-  have hpair : MemLp (fun tau => (g tau) v) (2 : ℝ≥0∞) (reverseTimeVolume T) :=
+  have hpair : MemLp (fun tau => (g tau) v) 2 (reverseTimeVolume T) :=
     (MeasureTheory.Lp.memLp g).continuousLinearMap_comp (ContinuousLinearMap.apply ℝ ℝ v)
   simpa only [Pi.mul_def] using hpair.integrable_mul (eta.memLp 2)
 
@@ -188,22 +118,46 @@ theorem HasGelfandWeakTimeDerivative.add
     {u₁ u₂ : ReverseTimeL2V hΩ T} {g₁ g₂ : ReverseTimeL2VStar hΩ T}
     (h₁ : HasGelfandWeakTimeDerivative hΩ T hT u₁ g₁)
     (h₂ : HasGelfandWeakTimeDerivative hΩ T hT u₂ g₂) :
-    HasGelfandWeakTimeDerivative hΩ T hT (u₁ + u₂) (g₁ + g₂) := by
+    HasGelfandWeakTimeDerivative hΩ T hT (u₁ + u₂) (g₁ + g₂)    := by
   intro v eta
+  have integral_neg_add {α : Type _} [MeasurableSpace α] (μ : Measure α) {f₁ f₂ f g₁ g₂ g : α → ℝ} (hf₁ : Integrable f₁ μ) (hf₂ : Integrable f₂ μ) (hg₁ : Integrable g₁ μ) (hg₂ : Integrable g₂ μ) (hleft : f =ᵐ[μ] f₁ + f₂) (hright : g =ᵐ[μ] g₁ + g₂) (hidentity₁ : (∫ x, f₁ x ∂μ) = -(∫ x, g₁ x ∂μ)) (hidentity₂ : (∫ x, f₂ x ∂μ) = -(∫ x, g₂ x ∂μ)) :
+      (∫ x, f x ∂μ) = -(∫ x, g x ∂μ) := by
+    calc
+      (∫ x, f x ∂μ) = ∫ x, f₁ x + f₂ x ∂μ := integral_congr_ae hleft
+      _ = (∫ x, f₁ x ∂μ) + ∫ x, f₂ x ∂μ := integral_add hf₁ hf₂
+      _ = -(∫ x, g₁ x ∂μ) + -(∫ x, g₂ x ∂μ) := by rw [hidentity₁, hidentity₂]
+      _ = -((∫ x, g₁ x ∂μ) + ∫ x, g₂ x ∂μ) := by ring
+      _ = -(∫ x, g₁ x + g₂ x ∂μ) := by rw [integral_add hg₁ hg₂]
+      _ = -(∫ x, g x ∂μ) := congrArg Neg.neg (integral_congr_ae hright).symm
+  have weakDerivativeRight_add_ae {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ) (v : H10HilbertGraph hΩ) (eta : ReverseTimeScalarTest T) (g₁ g₂ : ReverseTimeL2VStar hΩ T) :
+      weakDerivativeRight hΩ T v eta (g₁ + g₂) =ᵐ[reverseTimeVolume T]
+      weakDerivativeRight hΩ T v eta g₁ + weakDerivativeRight hΩ T v eta g₂ := by
+    filter_upwards [Lp.coeFn_add g₁ g₂] with tau ht
+    dsimp only [weakDerivativeRight]
+    rw [ht]
+    change ((g₁ tau + g₂ tau) v) * eta tau = (g₁ tau) v * eta tau + (g₂ tau) v * eta tau
+    simp [add_mul]
+  have weakDerivativeLeft_add_ae {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ) (v : H10HilbertGraph hΩ) (eta : ReverseTimeScalarTest T) (u₁ u₂ : ReverseTimeL2V hΩ T) :
+      weakDerivativeLeft hΩ T v eta (u₁ + u₂) =ᵐ[reverseTimeVolume T]
+      weakDerivativeLeft hΩ T v eta u₁ + weakDerivativeLeft hΩ T v eta u₂ := by
+    have hmap : reverseTimeValueCLM hΩ T (u₁ + u₂) =
+        reverseTimeValueCLM hΩ T u₁ + reverseTimeValueCLM hΩ T u₂ :=
+      (reverseTimeValueCLM hΩ T).map_add u₁ u₂
+    filter_upwards [Lp.coeFn_add (reverseTimeValueCLM hΩ T u₁)
+      (reverseTimeValueCLM hΩ T u₂)] with tau ht
+    dsimp only [weakDerivativeLeft]
+    rw [hmap, ht]
+    change inner ℝ (valueCLM hΩ v)
+      (reverseTimeValueCLM hΩ T u₁ tau + reverseTimeValueCLM hΩ T u₂ tau) * eta.deriv tau =
+      inner ℝ (valueCLM hΩ v) (reverseTimeValueCLM hΩ T u₁ tau) * eta.deriv tau +
+        inner ℝ (valueCLM hΩ v) (reverseTimeValueCLM hΩ T u₂ tau) * eta.deriv tau
+    simp only [inner_add_right, add_mul]
   obtain ⟨hleft₁, hright₁, hidentity₁⟩ := h₁ v eta
   obtain ⟨hleft₂, hright₂, hidentity₂⟩ := h₂ v eta
   change Integrable (weakDerivativeLeft hΩ T v eta u₁) (reverseTimeVolume T) at hleft₁
   change Integrable (weakDerivativeRight hΩ T v eta g₁) (reverseTimeVolume T) at hright₁
-  change (∫ tau, weakDerivativeLeft hΩ T v eta u₁ tau ∂reverseTimeVolume T) =
-    -(∫ tau, weakDerivativeRight hΩ T v eta g₁ tau ∂reverseTimeVolume T) at hidentity₁
   change Integrable (weakDerivativeLeft hΩ T v eta u₂) (reverseTimeVolume T) at hleft₂
   change Integrable (weakDerivativeRight hΩ T v eta g₂) (reverseTimeVolume T) at hright₂
-  change (∫ tau, weakDerivativeLeft hΩ T v eta u₂ tau ∂reverseTimeVolume T) =
-    -(∫ tau, weakDerivativeRight hΩ T v eta g₂ tau ∂reverseTimeVolume T) at hidentity₂
-  change Integrable (weakDerivativeLeft hΩ T v eta (u₁ + u₂)) (reverseTimeVolume T) ∧
-    Integrable (weakDerivativeRight hΩ T v eta (g₁ + g₂)) (reverseTimeVolume T) ∧
-    (∫ tau, weakDerivativeLeft hΩ T v eta (u₁ + u₂) tau ∂reverseTimeVolume T) =
-      -(∫ tau, weakDerivativeRight hΩ T v eta (g₁ + g₂) tau ∂reverseTimeVolume T)
   refine ⟨integrable_reverseTimeWeakDerivative_left hΩ T (u₁ + u₂) v eta,
     integrable_reverseTimeWeakDerivative_right hΩ T (g₁ + g₂) v eta, ?_⟩
   exact integral_neg_add (reverseTimeVolume T) hleft₁ hleft₂ hright₁ hright₂
@@ -217,8 +171,26 @@ theorem HasGelfandWeakTimeDerivative.smul
     {hΩ : IsOpen Ω} {T : ℝ} {hT : 0 < T}
     {u : ReverseTimeL2V hΩ T} {g : ReverseTimeL2VStar hΩ T}
     (h : HasGelfandWeakTimeDerivative hΩ T hT u g) (a : ℝ) :
-    HasGelfandWeakTimeDerivative hΩ T hT (a • u) (a • g : ReverseTimeL2VStar hΩ T) := by
+    HasGelfandWeakTimeDerivative hΩ T hT (a • u) (a • g : ReverseTimeL2VStar hΩ T)   := by
   intro v eta
+  have weakDerivativeRight_smul_ae {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ) (v : H10HilbertGraph hΩ) (eta : ReverseTimeScalarTest T) (g : ReverseTimeL2VStar hΩ T) (a : ℝ) :
+      weakDerivativeRight hΩ T v eta (a • g : ReverseTimeL2VStar hΩ T) =ᵐ[reverseTimeVolume T]
+      a • weakDerivativeRight hΩ T v eta g := by
+    filter_upwards [Lp.coeFn_smul (𝕜 := ℝ) a g] with tau ht
+    simpa [weakDerivativeRight, smul_apply, mul_assoc] using
+      congrArg (fun q => q v * eta tau) ht
+  have weakDerivativeLeft_smul_ae {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ) (v : H10HilbertGraph hΩ) (eta : ReverseTimeScalarTest T) (u : ReverseTimeL2V hΩ T) (a : ℝ) :
+      weakDerivativeLeft hΩ T v eta (a • u) =ᵐ[reverseTimeVolume T]
+      a • weakDerivativeLeft hΩ T v eta u := by
+    have hmap : reverseTimeValueCLM hΩ T (a • u) = a • reverseTimeValueCLM hΩ T u :=
+      (reverseTimeValueCLM hΩ T).map_smul a u
+    filter_upwards [Lp.coeFn_smul a (reverseTimeValueCLM hΩ T u)] with tau ht
+    have ht' : ((a • reverseTimeValueCLM hΩ T u : ReverseTimeL2H hΩ T) tau) =
+        a • reverseTimeValueCLM hΩ T u tau := by
+      simpa using ht
+    dsimp only [weakDerivativeLeft]
+    rw [hmap, ht']
+    simp [weakDerivativeLeft, inner_smul_right, mul_assoc]
   obtain ⟨hleft, hright, hidentity⟩ := h v eta
   refine ⟨integrable_reverseTimeWeakDerivative_left hΩ T (a • u) v eta,
     integrable_reverseTimeWeakDerivative_right hΩ T (a • g : ReverseTimeL2VStar hΩ T) v eta, ?_⟩
@@ -226,16 +198,5 @@ theorem HasGelfandWeakTimeDerivative.smul
     (weakDerivativeLeft_smul_ae hΩ T v eta u a)
     (weakDerivativeRight_smul_ae hΩ T v eta g a) hidentity
 
-/-- The weak derivative relation respects equality of its two bundled curves. -/
-theorem HasGelfandWeakTimeDerivative.congr
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    {hΩ : IsOpen Ω} {T : ℝ} {hT : 0 < T}
-    {u u' : ReverseTimeL2V hΩ T} {g g' : ReverseTimeL2VStar hΩ T}
-    (h : HasGelfandWeakTimeDerivative hΩ T hT u g)
-    (hu : u = u') (hg : g = g') :
-    HasGelfandWeakTimeDerivative hΩ T hT u' g' := by
-  subst u'
-  subst g'
-  exact h
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

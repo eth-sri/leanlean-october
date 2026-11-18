@@ -28,19 +28,6 @@ namespace HypoellipticAleksandrov.Parabolic
 def IsOpenSubinterval (J I : Set ℝ) : Prop :=
   I.Nonempty ∧ IsOpen I ∧ I.OrdConnected ∧ I ⊆ J
 
-private theorem connectedComponentIn_eq_ordConnectedComponent_of_mem
-    (U : Set ℝ) {x : ℝ} (hx : x ∈ U) :
-    connectedComponentIn U x = ordConnectedComponent U x := by
-  apply Subset.antisymm
-  · letI : OrdConnected (connectedComponentIn U x) :=
-      isPreconnected_connectedComponentIn.ordConnected
-    exact Set.subset_ordConnectedComponent (mem_connectedComponentIn hx)
-      (connectedComponentIn_subset U x)
-  · have hpre : IsPreconnected (ordConnectedComponent U x) :=
-      Set.OrdConnected.isPreconnected
-        (show OrdConnected (ordConnectedComponent U x) from inferInstance)
-    exact IsPreconnected.subset_connectedComponentIn hpre
-      (self_mem_ordConnectedComponent.mpr hx) ordConnectedComponent_subset
 
 end HypoellipticAleksandrov.Parabolic
 
@@ -59,19 +46,28 @@ theorem volume_sUnion_monotone_interval_enlargement_of_le
       volume (g I) ≤ ENNReal.ofReal kappa * volume I)
     (hmono : ∀ I₁ I₂, IsOpenSubinterval J I₁ → IsOpenSubinterval J I₂ →
       I₁ ⊆ I₂ → g I₁ ⊆ g I₂) :
-    volume (⋃₀ (g '' B)) ≤ ENNReal.ofReal kappa * volume (⋃₀ B) := by
-  have _hkappa : 0 < kappa := lt_trans zero_lt_one hkappa
-  have _hJopen : IsOpen J := hJopen
-  have _hJord : J.OrdConnected := hJord
-  have _hg : ∀ I, IsOpenSubinterval J I → IsOpenSubinterval J (g I) := hg
-  let U : Set ℝ := ⋃₀ B
+    volume (⋃₀ (g '' B)) ≤ ENNReal.ofReal kappa * volume (⋃₀ B)  := by
+  have connectedComponentIn_eq_ordConnectedComponent_of_mem (U : Set ℝ) {x : ℝ} (hx : x ∈ U) :
+      connectedComponentIn U x = ordConnectedComponent U x := by
+    apply Subset.antisymm
+    · letI : OrdConnected (connectedComponentIn U x) :=
+        isPreconnected_connectedComponentIn.ordConnected
+      exact Set.subset_ordConnectedComponent (mem_connectedComponentIn hx)
+        (connectedComponentIn_subset U x)
+    · have hpre : IsPreconnected (ordConnectedComponent U x) :=
+        Set.OrdConnected.isPreconnected
+          (show OrdConnected (ordConnectedComponent U x) from inferInstance)
+      exact IsPreconnected.subset_connectedComponentIn hpre
+        (self_mem_ordConnectedComponent.mpr hx) ordConnectedComponent_subset
+  have _hkappa := lt_trans zero_lt_one hkappa
+  let U := ⋃₀ B
   have hUopen : IsOpen U := by
     exact isOpen_sUnion fun I hI => (hB I hI).2.1
   have hUJ : U ⊆ J := by
     exact sUnion_subset fun I hI => (hB I hI).2.2.2
-  let R : Set ℝ := ordConnectedSection U
+  let R := ordConnectedSection U
   have hRsub : R ⊆ U := by
-    simpa only [R] using (ordConnectedSection_subset (s := U))
+    simpa using (ordConnectedSection_subset)
   let C : ℝ → Set ℝ := fun x => connectedComponentIn U x
   have hCeligible : ∀ r ∈ R, IsOpenSubinterval J (C r) := by
     intro r hr
@@ -90,18 +86,13 @@ theorem volume_sUnion_monotone_interval_enlargement_of_le
     refine disjoint_left.2 fun z hzr hzs => ?_
     have hCeq : C r = C s :=
       (connectedComponentIn_eq hzr).trans (connectedComponentIn_eq hzs).symm
-    have hsCs : s ∈ C s := mem_connectedComponentIn (hRsub hs)
     have hsCr : s ∈ C r := by
       rw [hCeq]
-      exact hsCs
+      exact mem_connectedComponentIn (hRsub hs)
     exact hrs (eq_of_mem_ordConnectedSection_of_uIcc_subset hr hs
       ((isPreconnected_connectedComponentIn.ordConnected.uIcc_subset
         (mem_connectedComponentIn (hRsub hr)) hsCr).trans
         (connectedComponentIn_subset U r)))
-  have hRcountable : R.Countable :=
-    hRdisjoint.countable_of_isOpen
-      (fun r hr => hUopen.connectedComponentIn)
-      (fun r hr => connectedComponentIn_nonempty_iff.mpr (hRsub hr))
   have hUeq : U = ⋃ r : R, C r := by
     apply Subset.antisymm
     · intro x hx
@@ -119,9 +110,9 @@ theorem volume_sUnion_monotone_interval_enlargement_of_le
   have htarget_subset : (⋃₀ (g '' B)) ⊆ ⋃ r : R, g (C r) := by
     refine sUnion_subset fun T hT => ?_
     rcases hT with ⟨I, hIB, rfl⟩
-    have hI : IsOpenSubinterval J I := hB I hIB
+    have hI := hB I hIB
     obtain ⟨x, hxI⟩ := hI.1
-    have hxU : x ∈ U := subset_sUnion_of_mem hIB hxI
+    have hxU := subset_sUnion_of_mem hIB hxI
     let r : ℝ := ordConnectedProj U ⟨x, hxU⟩
     have hrR : r ∈ R := by
       exact ⟨⟨x, hxU⟩, rfl⟩
@@ -132,14 +123,11 @@ theorem volume_sUnion_monotone_interval_enlargement_of_le
       rw [connectedComponentIn_eq_ordConnectedComponent_of_mem U (hRsub hrR)]
       exact hxOrd
     have hCrCx : C r = C x := connectedComponentIn_eq hxCr
-    have hIinCx : I ⊆ C x :=
-      hI.2.2.1.isPreconnected.subset_connectedComponentIn hxI
-        (subset_sUnion_of_mem hIB)
     have hIinCr : I ⊆ C r := by
-      simpa only [hCrCx] using hIinCx
+      simpa only [hCrCx] using (hI.2.2.1.isPreconnected.subset_connectedComponentIn hxI (subset_sUnion_of_mem hIB))
     exact (hmono I (C r) hI (hCeligible r hrR) hIinCr).trans
       (subset_iUnion (fun r : R => g (C r)) ⟨r, hrR⟩)
-  letI : Countable R := hRcountable.to_subtype
+  letI : Countable R := (hRdisjoint.countable_of_isOpen (fun r hr => hUopen.connectedComponentIn) (fun r hr => connectedComponentIn_nonempty_iff.mpr (hRsub hr))).to_subtype
   have hCpairwise : Pairwise (Disjoint on fun r : R => C r) := by
     intro r s hrs
     exact hRdisjoint r.property s.property (Subtype.coe_ne_coe.mpr hrs)

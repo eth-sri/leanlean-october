@@ -31,11 +31,10 @@ theorem homogeneous_fderiv_identity {d : ℕ} (H : XV d → ℝ) (alpha r : ℝ)
     (q w : XV d) (hq : DifferentiableAt ℝ H q)
     (hrq : DifferentiableAt ℝ H (dilate r q)) :
     fderiv ℝ H (dilate r q) (dilate r w) = Real.rpow r alpha * fderiv ℝ H q w := by
-  have he := congrArg (fun f : XV d → ℝ => fderiv ℝ f q w) (funext hhom)
+  have he := congrArg (fun f => fderiv ℝ f q w) (funext hhom)
   rw [fderiv_fun_comp q hrq (hasFDerivAt_dilate r q).differentiableAt,
     fderiv_const_mul hq] at he
-  simpa only [(hasFDerivAt_dilate r q).fderiv, ContinuousLinearMap.comp_apply,
-    dilationLinearMap_apply, smul_apply, smul_eq_mul] using he
+  simpa [(hasFDerivAt_dilate r q).fderiv, dilationLinearMap_apply, smul_apply] using he
 
 /-- A position derivative of a homogeneous profile has degree alpha minus three. -/
 theorem homogeneous_dx_identity {d : ℕ} (H : XV d → ℝ) (alpha r : ℝ)
@@ -48,7 +47,7 @@ theorem homogeneous_dx_identity {d : ℕ} (H : XV d → ℝ) (alpha r : ℝ)
     simp [dilate, Prod.smul_mk]
   rw [hw, map_smul] at he
   change r ^ 3 * dx H (dilate r q) i = Real.rpow r alpha * dx H q i at he
-  simp only [Real.rpow_eq_pow] at he ⊢
+  simp at he ⊢
   rw [Real.rpow_sub hr]
   rw [Real.rpow_ofNat]
   rw [div_mul_eq_mul_div]
@@ -66,7 +65,7 @@ theorem homogeneous_dv_identity {d : ℕ} (H : XV d → ℝ) (alpha r : ℝ)
     simp [dilate, Prod.smul_mk]
   rw [hw, map_smul] at he
   change r * dv H (dilate r q) i = Real.rpow r alpha * dv H q i at he
-  simp only [Real.rpow_eq_pow] at he ⊢
+  simp at he ⊢
   rw [Real.rpow_sub hr]
   rw [Real.rpow_one, div_mul_eq_mul_div]
   apply (eq_div_iff hr.ne').mpr

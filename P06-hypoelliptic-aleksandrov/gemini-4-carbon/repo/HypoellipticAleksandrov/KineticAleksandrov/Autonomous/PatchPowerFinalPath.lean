@@ -42,7 +42,6 @@ theorem return_fixed_patch_path (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤
   have hThi : T ≤ 4 := by dsimp [T, tminus, a]; linarith
   have hres : P.position - x0 - T • z.velocity =
       P.position - z.position - (P.time - z.time) • z.velocity := by
-    dsimp [x0, T, tminus]
     module
   have hacc : 6 * PDE.vecEuclideanNorm (P.position - x0 - T • z.velocity) / T ^ 2 +
       4 * PDE.vecEuclideanNorm (P.velocity - z.velocity) / T ≤ 1000 := by
@@ -70,7 +69,7 @@ theorem return_fixed_patch_path (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤
     constructor
     · dsimp only [x]
       rw [extendPosition_left xh vh hT.le hs]
-      simp only [xh, vh, hermitePosition_zero, hermiteVelocity_zero, sub_zero]
+      simp [xh, vh, hermitePosition_zero, hermiteVelocity_zero]
     · dsimp only [v, extendVelocity]
       rw [projIcc_of_le_left hT.le hs]
       exact hermiteVelocity_zero _ _ _ _ _
@@ -95,8 +94,7 @@ theorem return_fixed_patch_path (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤
   change q.time - tminus ∈ Icc (-a) T ∧
     PDE.vecEuclideanNorm (q.position - x (q.time - tminus)) ≤ r ^ 3 / 2 ∧
     PDE.vecEuclideanNorm (q.velocity - v (q.time - tminus)) ≤ r / 2 at hq
-  have hs0 : q.time - tminus ≤ 0 := sub_nonpos.mpr hqt
-  obtain ⟨hxq, hvq⟩ := hleft (q.time - tminus) hs0
+  obtain ⟨hxq, hvq⟩ := hleft (q.time - tminus) (sub_nonpos.mpr hqt)
   apply hpatch q
   refine ⟨?_, ?_, ?_, ?_⟩
   · have ht := hq.1.1
@@ -108,7 +106,7 @@ theorem return_fixed_patch_path (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤
     rw [hvq] at hq
     exact hq.2.2.trans_lt (by linarith)
   · apply (PDE.mem_euclideanBall_iff_vecEuclideanNorm_lt (pow_pos hr 3)).mpr
-    simp only [sub_zero]
+    simp
     have he : relativePosition z q = q.position - x (q.time - tminus) := by
       rw [hxq]
       dsimp [relativePosition, x0, tminus]

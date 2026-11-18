@@ -29,8 +29,7 @@ theorem enlargedPositionVisitMass_eq_truncated_slab
   apply measure_congr
   filter_upwards [hs] with p hp
   apply propext
-  simp only [mem_inter_iff, enlargedStartCell, enlargedTimeBin, hj, ite_false,
-    mem_ofPred_eq, mem_Ioc]
+  simp [enlargedStartCell, enlargedTimeBin, hj]
   have he : s + min (((j : ℝ) + 1) * c.r ^ 2) T =
       min (s + ((j : ℝ) + 1) * c.r ^ 2) (s + T) := (min_add_add_left s _ _).symm
   rw [he, le_min_iff]

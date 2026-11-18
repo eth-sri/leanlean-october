@@ -29,20 +29,15 @@ theorem contDiffOn_one_coefficientEntry_spatialSlice_of_smoothOnNeighborhood
     (hr : r ∈ Set.Icc r₀ r₁) (i j : Fin d) :
     ContDiffOn ℝ 1 (fun y => a r y i j) Ω := by
   obtain ⟨U, _, hQU, haU⟩ := ha
-  have hai : ContDiffOn ℝ (⊤ : ℕ∞)
-      (fun z : TimeVelocity d => a z.1 z.2 i) U :=
+  have hai :=
     (contDiffOn_apply ℝ (Fin d → ℝ) i Set.univ).comp haU
       (fun _ _ => Set.mem_univ _)
-  have haij : ContDiffOn ℝ (⊤ : ℕ∞)
-      (fun z : TimeVelocity d => a z.1 z.2 i j) U :=
+  have haij :=
     (contDiffOn_apply ℝ ℝ j Set.univ).comp hai
       (fun _ _ => Set.mem_univ _)
   have hembedding : ContDiff ℝ (⊤ : ℕ∞) (fun y : PDE.Vec d => (r, y)) :=
     contDiff_const.prodMk contDiff_id
-  have hslice : ContDiffOn ℝ (⊤ : ℕ∞) (fun y => a r y i j) Ω :=
-    haij.comp hembedding.contDiffOn fun y hy =>
-      hQU ⟨hr, subset_closure hy⟩
-  exact hslice.of_le (by simp)
+  exact (haij.comp hembedding.contDiffOn fun y hy => hQU ⟨hr, subset_closure hy⟩).of_le (by simp)
 
 /-- A vector-field entry is continuous on each spatial slice at a time in the
 closed interval when the vector field is smooth near the closed cylinder. -/
@@ -55,8 +50,7 @@ theorem continuousOn_vectorEntry_spatialSlice_of_smoothOnNeighborhood
     (hr : r ∈ Set.Icc r₀ r₁) (j : Fin d) :
     ContinuousOn (fun y => b r y j) Ω := by
   obtain ⟨U, _, hQU, hbU⟩ := hb
-  have hbj : ContDiffOn ℝ (⊤ : ℕ∞)
-      (fun z : TimeVelocity d => b z.1 z.2 j) U :=
+  have hbj :=
     (contDiffOn_apply ℝ ℝ j Set.univ).comp hbU
       (fun _ _ => Set.mem_univ _)
   have hembedding : ContDiff ℝ (⊤ : ℕ∞) (fun y : PDE.Vec d => (r, y)) :=

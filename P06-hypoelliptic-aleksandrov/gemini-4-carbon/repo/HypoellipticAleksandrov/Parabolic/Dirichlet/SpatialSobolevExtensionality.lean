@@ -59,28 +59,27 @@ private theorem weakGradientGraph_snd_eq_of_fst_eq
   filter_upwards [Filter.eventually_all.2 hcoord] with x hx
   exact PiLp.ext hx
 
-private theorem h1HilbertGraph_valueCLM_injective
-    (hΩ : IsOpen Ω) :
-    Function.Injective (PDE.H1HilbertGraph.valueCLM (U := Ω)) := by
-  intro z w hzw
-  apply PDE.H1HilbertGraph.equivH1Graph.injective
-  apply Subtype.ext
-  apply Prod.ext
-  · change PDE.H1HilbertGraph.value z = PDE.H1HilbertGraph.value w
-    simpa only [PDE.H1HilbertGraph.valueCLM_apply] using hzw
-  · apply weakGradientGraph_snd_eq_of_fst_eq hΩ
-    · exact (PDE.H1HilbertGraph.toH1Graph z).property
-    · exact (PDE.H1HilbertGraph.toH1Graph w).property
-    · change PDE.H1HilbertGraph.value z = PDE.H1HilbertGraph.value w
-      simpa only [PDE.H1HilbertGraph.valueCLM_apply] using hzw
 
 /-- Equality of scalar `L²` values determines a spatial `H¹₀` graph point. -/
 theorem valueCLM_injective
     {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) :
-    Function.Injective (valueCLM hΩ) := by
+    Function.Injective (valueCLM hΩ)  := by
   intro u v huv
+  have h1HilbertGraph_valueCLM_injective (hΩ : IsOpen Ω) :
+      Function.Injective (PDE.H1HilbertGraph.valueCLM (U := Ω)) := by
+    intro z w hzw
+    apply PDE.H1HilbertGraph.equivH1Graph.injective
+    apply Subtype.ext
+    apply Prod.ext
+    · change PDE.H1HilbertGraph.value z = PDE.H1HilbertGraph.value w
+      simpa using hzw
+    · apply weakGradientGraph_snd_eq_of_fst_eq hΩ
+      · exact (PDE.H1HilbertGraph.toH1Graph z).property
+      · exact (PDE.H1HilbertGraph.toH1Graph w).property
+      · change PDE.H1HilbertGraph.value z = PDE.H1HilbertGraph.value w
+        simpa using hzw
   apply Subtype.ext
   apply h1HilbertGraph_valueCLM_injective hΩ
-  simpa only [valueCLM_apply, PDE.H1HilbertGraph.valueCLM_apply] using huv
+  simpa using huv
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

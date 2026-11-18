@@ -42,16 +42,6 @@ theorem blockRho_pos {Lb : ℝ} (hLb : 0 < Lb) : 0 < blockRho Lb := by
 
 theorem blockRho_le_one (Lb : ℝ) : blockRho Lb ≤ 1 := min_le_left _ _
 
-theorem blockRho_pow_three_le {Lb : ℝ} (hLb : 0 < Lb) :
-    blockRho Lb ^ 3 ≤ 1 / (128 * Lb) := by
-  have h128 : 0 < 128 * Lb := by positivity
-  have h0 : 0 ≤ blockRho Lb := (blockRho_pos hLb).le
-  have hle : blockRho Lb ≤ (128 * Lb) ^ (-(1 / 3 : ℝ)) := min_le_right _ _
-  calc blockRho Lb ^ 3 ≤ ((128 * Lb) ^ (-(1 / 3 : ℝ))) ^ 3 := pow_le_pow_left₀ h0 hle 3
-    _ = (128 * Lb) ^ (-(1 / 3 : ℝ) * (3 : ℕ)) := by
-        rw [← Real.rpow_natCast, ← Real.rpow_mul h128.le]
-    _ = 1 / (128 * Lb) := by
-        rw [show -(1 / 3 : ℝ) * ((3 : ℕ) : ℝ) = -1 by norm_num, Real.rpow_neg_one, one_div]
 
 theorem blockEta_pos {m Lb : ℝ} (hm : 0 < m) (hLb : 0 < Lb) : 0 < blockEta m Lb := by
   unfold blockEta
@@ -83,10 +73,18 @@ theorem Lb_mul_blockEta_mul_blockL0_le {m Lb : ℝ} (hm : 0 < m) (hLb : 0 < Lb) 
     _ = 1 / 8 := by field_simp
 
 theorem sixteen_Lb_mul_blockRho_pow_three_le {Lb : ℝ} (hLb : 0 < Lb) :
-    16 * Lb * blockRho Lb ^ 3 ≤ 1 / 8 := by
-  have h := blockRho_pow_three_le hLb
+    16 * Lb * blockRho Lb ^ 3 ≤ 1 / 8  := by
+  have blockRho_pow_three_le :
+      blockRho Lb ^ 3 ≤ 1 / (128 * Lb) := by
+    have h128 : 0 < 128 * Lb := by positivity
+    have hle : blockRho Lb ≤ (128 * Lb) ^ (-(1 / 3 : ℝ)) := min_le_right _ _
+    calc blockRho Lb ^ 3 ≤ ((128 * Lb) ^ (-(1 / 3 : ℝ))) ^ 3 := pow_le_pow_left₀ ((blockRho_pos hLb).le) hle 3
+      _ = (128 * Lb) ^ (-(1 / 3 : ℝ) * (3 : ℕ)) := by
+          rw [← Real.rpow_natCast, ← Real.rpow_mul h128.le]
+      _ = 1 / (128 * Lb) := by
+          rw [show -(1 / 3 : ℝ) * ((3 : ℕ) : ℝ) = -1 by norm_num, Real.rpow_neg_one, one_div]
   calc 16 * Lb * blockRho Lb ^ 3 ≤ 16 * Lb * (1 / (128 * Lb)) :=
-        mul_le_mul_of_nonneg_left h (by positivity)
+        mul_le_mul_of_nonneg_left blockRho_pow_three_le (by positivity)
     _ = 1 / 8 := by field_simp; norm_num
 
 /-- Proposition 3.9, (3.15), (3.16): positivity and the
@@ -100,7 +98,7 @@ theorem block_parameters (Cstar h q0 m Lb : ℝ)
     Lb * blockEta m Lb * blockL0 m ≤ 1 / 8 ∧ 16 * Lb * blockRho Lb ^ 3 ≤ 1 / 8 ∧
     Lb * blockEta m Lb * blockL0 m + 16 * Lb * blockRho Lb ^ 3 ≤ 1 / 4 ∧
     0 < (3 / 4) * blockMass Cstar m Lb * h * q0 := by
-  have hLb : 0 < Lb := hm.trans_le hmLb
+  have hLb := hm.trans_le hmLb
   have hρ := blockRho_pos hLb
   have hmass : 0 < blockMass Cstar m Lb := Real.exp_pos _
   have h1 := Lb_mul_blockEta_mul_blockL0_le hm hLb

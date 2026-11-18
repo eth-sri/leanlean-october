@@ -58,7 +58,7 @@ theorem one_add_radialSq_le_growthBarrier {n : ℕ} {C T : ℝ} (hC : 0 ≤ C) {
 theorem deriv_affine_weight (c a : ℝ) :
     deriv (fun s : ℝ => c * (a + s)) = fun _ => c := by
   funext s
-  have h : HasDerivAt (fun s : ℝ => c * (a + s)) c s := by
+  have h : HasDerivAt (fun s => c * (a + s)) c s := by
     have := ((hasDerivAt_id s).const_add a).const_mul c
     simpa using this
   exact h.deriv
@@ -66,7 +66,7 @@ theorem deriv_affine_weight (c a : ℝ) :
 /-- The squared distance to a fixed point is smooth. -/
 theorem contDiff_vecNormSq_sub {n : ℕ} (m : PDE.Vec n) :
     ContDiff ℝ 2 (fun y : PDE.Vec n => PDE.vecNormSq (y - m)) := by
-  have : (fun y : PDE.Vec n => PDE.vecNormSq (y - m)) = fun y => ∑ i, (y i - m i) ^ 2 := by
+  have : (fun y => PDE.vecNormSq (y - m)) = fun y => ∑ i, (y i - m i) ^ 2 := by
     funext y
     rw [PDE.vecNormSq_eq_sum_sq]
     rfl
@@ -77,16 +77,16 @@ theorem contDiff_vecNormSq_sub {n : ℕ} (m : PDE.Vec n) :
 theorem isSliceRegularAt_growthBarrier {n : ℕ} (C T : ℝ) (p : KineticPoint n) :
     IsSliceRegularAt (growthBarrier C T) p := by
   have hpos : ContDiff ℝ 2 (fun y : PDE.Vec n => PDE.vecNormSq y) := by
-    simpa using contDiff_vecNormSq_sub (0 : PDE.Vec n)
+    simpa using contDiff_vecNormSq_sub 0
   refine ⟨?_, ?_, ?_⟩
-  · have : DifferentiableAt ℝ (fun t : ℝ => Real.exp (C * (T - t)) * (1 + radialSq p)) p.time := by
+  · have : DifferentiableAt ℝ (fun t => Real.exp (C * (T - t)) * (1 + radialSq p)) p.time := by
       fun_prop
     exact this
-  · have h : ContDiff ℝ 2 (fun y : PDE.Vec n =>
+  · have h : ContDiff ℝ 2 (fun y =>
         Real.exp (C * (T - p.time)) * (1 + (PDE.vecNormSq y + PDE.vecNormSq p.velocity))) :=
       contDiff_const.mul (contDiff_const.add (hpos.add contDiff_const))
     exact h.contDiffAt
-  · have h : ContDiff ℝ 2 (fun z : PDE.Vec n =>
+  · have h : ContDiff ℝ 2 (fun z =>
         Real.exp (C * (T - p.time)) * (1 + (PDE.vecNormSq p.position + PDE.vecNormSq z))) :=
       contDiff_const.mul (contDiff_const.add (contDiff_const.add hpos))
     exact h.contDiffAt
@@ -95,8 +95,8 @@ theorem isSliceRegularAt_growthBarrier {n : ℕ} (C T : ℝ) (p : KineticPoint n
 theorem kineticTimeDerivative_growthBarrier {n : ℕ} (C T : ℝ) (p : KineticPoint n) :
     kineticTimeDerivative (growthBarrier C T) p =
       Real.exp (C * (T - p.time)) * (-C * (1 + radialSq p)) := by
-  show deriv (fun r : ℝ => Real.exp (C * (T - r)) * (1 + radialSq p)) p.time = _
-  have h1 : HasDerivAt (fun r : ℝ => C * (T - r)) (C * (-1)) p.time :=
+  show deriv (fun r => Real.exp (C * (T - r)) * (1 + radialSq p)) p.time = _
+  have h1 : HasDerivAt (fun r => C * (T - r)) (C * (-1)) p.time :=
     ((hasDerivAt_id p.time).const_sub T).const_mul C
   have h2 := (h1.exp).mul_const (1 + radialSq p)
   rw [h2.deriv]
@@ -108,7 +108,7 @@ theorem growthBarrier_positionSlice {n : ℕ} (C T : ℝ) (p : KineticPoint n) :
       fun y => (fun s : ℝ => Real.exp (C * (T - p.time)) *
         ((1 + PDE.vecNormSq p.velocity) + s)) (PDE.vecNormSq (y - 0)) := by
   funext y
-  simp only [growthBarrier, radialSq, sub_zero]
+  simp [growthBarrier, radialSq]
   ring
 
 /-- The `z`-slice of the growth barrier, as a function of `|z|²`. -/
@@ -117,7 +117,7 @@ theorem growthBarrier_velocitySlice {n : ℕ} (C T : ℝ) (p : KineticPoint n) :
       fun z => (fun s : ℝ => Real.exp (C * (T - p.time)) *
         ((1 + PDE.vecNormSq p.position) + s)) (PDE.vecNormSq (z - 0)) := by
   funext z
-  simp only [growthBarrier, radialSq, sub_zero]
+  simp [growthBarrier, radialSq]
   ring
 
 /-- Affine functions are smooth. -/
@@ -142,7 +142,7 @@ theorem viscousTransportedOperator_growthBarrier {n : ℕ} (B : FullKineticCoeff
     simp
   have hgrad : kineticVelocityGradient (growthBarrier C T) p =
       fun i => 2 * E * (p.velocity i - (0 : PDE.Vec n) i) := by
-    show PDE.classicalGradient (fun z : PDE.Vec n => growthBarrier C T ⟨p.time, p.position, z⟩)
+    show PDE.classicalGradient (fun z => growthBarrier C T ⟨p.time, p.position, z⟩)
       p.velocity = _
     rw [growthBarrier_velocitySlice,
       classicalGradient_comp_vecNormSq_sub
@@ -156,7 +156,7 @@ theorem viscousTransportedOperator_growthBarrier {n : ℕ} (B : FullKineticCoeff
       deriv_affine_weight, deriv_const']
     simp
   rw [viscousTransportedOperator_apply, transportedForwardOperator_apply]
-  simp only [fullKineticCoefficientAt_apply]
+  simp
   rw [kineticTimeDerivative_growthBarrier, hdiff, hgrad, hlap]
   have hdot : PDE.vecDot (b p.position) (fun i => 2 * E * (p.velocity i - (0 : PDE.Vec n) i)) =
       2 * E * PDE.vecDot (b p.position) p.velocity := by
@@ -184,10 +184,9 @@ theorem vecEuclideanNorm_le_of_lipschitz {n : ℕ} {b : PDE.Vec n → PDE.Vec n}
 /-- The trace of a matrix bounded above by `Λ I` is at most `n Λ`. -/
 theorem trace_le_of_le_smul_one {n : ℕ} {A : PDE.Mat n} {Lam : ℝ}
     (h : A ≤ Lam • (1 : PDE.Mat n)) : A.trace ≤ n * Lam := by
-  have h1 : (Lam • (1 : PDE.Mat n) - A).PosSemidef := Matrix.le_iff.mp h
-  have h2 := h1.trace_nonneg
+  have h2 := (Matrix.le_iff.mp h).trace_nonneg
   rw [Matrix.trace_sub, Matrix.trace_smul, Matrix.trace_one] at h2
-  simp only [Fintype.card_fin, smul_eq_mul] at h2
+  simp at h2
   linarith
 
 /-- The Lyapunov inequality `L_ε Φ ≤ -Φ` for the growth barrier with the explicit
@@ -208,8 +207,6 @@ theorem viscousTransportedOperator_growthBarrier_le {n : ℕ} {B : FullKineticCo
   set b0 := PDE.vecEuclideanNorm (b 0) with hb0
   have hb0nn : 0 ≤ b0 := PDE.vecEuclideanNorm_nonneg _
   have htr := trace_le_of_le_smul_one (hBLam p.time p.position p.velocity)
-  have hs := PDE.vecEuclideanNorm_sq p.position
-  have hr := PDE.vecEuclideanNorm_sq p.velocity
   set s := PDE.vecEuclideanNorm p.position
   set r := PDE.vecEuclideanNorm p.velocity
   have hsn : 0 ≤ s := PDE.vecEuclideanNorm_nonneg _
@@ -226,18 +223,17 @@ theorem viscousTransportedOperator_growthBarrier_le {n : ℕ} {B : FullKineticCo
     linarith
   have hradial : radialSq p = s ^ 2 + r ^ 2 := by
     unfold radialSq
-    rw [← hs, ← hr]
+    rw [← (PDE.vecEuclideanNorm_sq p.position), ← (PDE.vecEuclideanNorm_sq p.velocity)]
   have hcross : 2 * ((b0 + |Lb| * s) * r) ≤ (b0 + |Lb|) * (1 + radialSq p) := by
     rw [hradial]
     have h1 : 0 ≤ b0 * (r - 1) ^ 2 := mul_nonneg hb0nn (sq_nonneg _)
     have h2 : 0 ≤ |Lb| * (s - r) ^ 2 := mul_nonneg hLn (sq_nonneg _)
     nlinarith [h1, h2]
   have hn : (0 : ℝ) ≤ n := Nat.cast_nonneg n
-  have hLamabs : Lam ≤ |Lam| := le_abs_self Lam
   have hpart : 2 * (B p.time p.position p.velocity).trace + 2 * ε * n ≤
       2 * n * (|Lam| + 1) * (1 + radialSq p) := by
     have h1 : 2 * (B p.time p.position p.velocity).trace ≤ 2 * (n * |Lam|) := by
-      have : n * Lam ≤ n * |Lam| := mul_le_mul_of_nonneg_left hLamabs hn
+      have : n * Lam ≤ n * |Lam| := mul_le_mul_of_nonneg_left (le_abs_self Lam) hn
       linarith
     have h2 : 2 * ε * n ≤ 2 * n := by nlinarith
     have h3 : 2 * n * (|Lam| + 1) ≤ 2 * n * (|Lam| + 1) * (1 + radialSq p) := by

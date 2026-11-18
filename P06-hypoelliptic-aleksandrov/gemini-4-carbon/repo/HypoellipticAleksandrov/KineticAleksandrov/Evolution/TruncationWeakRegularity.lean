@@ -27,11 +27,11 @@ theorem scalarC12_hasFDerivAt {d : ℕ} {U : Set (TimeVelocity d)}
   let T (t : ℝ) (x : PDE.Vec d) : ℝ →L[ℝ] ℝ :=
     (ContinuousLinearMap.id ℝ ℝ).smulRight (scalarTimeDerivative u (t, x))
   let S (t : ℝ) (x : PDE.Vec d) := fderiv ℝ (fun y => u (t, y)) x
-  have hT : ContinuousOn (fun q : TimeVelocity d => T q.1 q.2) U := by
+  have hT : ContinuousOn (fun q => T q.1 q.2) U := by
     apply continuousOn_clm_apply.mpr
     intro w
     exact (continuousOn_const.mul hu.continuousOn_scalarTimeDerivative)
-  have hS : ContinuousOn (fun q : TimeVelocity d => S q.1 q.2) U := by
+  have hS : ContinuousOn (fun q => S q.1 q.2) U := by
     apply continuousOn_clm_apply.mpr
     intro w
     have he : (fun q : TimeVelocity d => S q.1 q.2 w) =
@@ -52,7 +52,7 @@ theorem scalarC12_hasFDerivAt {d : ℕ} {U : Set (TimeVelocity d)}
     filter_upwards [hU.mem_nhds hz] with q hq
     exact ((hu.spatialSlice_contDiffAt hq).differentiableAt (by norm_num)).hasFDerivAt
   exact (hasStrictFDerivAt_uncurry_coprod
-    (f := fun t x => u (t, x)) (f₁ := T) (f₂ := S) (u := z) hdT hdS
+    (f := fun t x => u (t, x)) (f₁ := T) (f₂ := S) hdT hdS
     (hT.continuousAt (hU.mem_nhds hz)) (hS.continuousAt (hU.mem_nhds hz))).hasFDerivAt
 
 /-- An anisotropic scalar C1,2 function on an open set is jointly differentiable. -/

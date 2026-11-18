@@ -31,20 +31,6 @@ def finiteUnionExitSet (H : FiniteIntervalUnion) (sMinus T : ℝ) : Set Point :=
   {p | p.time = T ∧ p.velocity 0 ∈ closure H.carrier} ∪
     {p | sMinus < p.time ∧ p.time < T ∧ p.velocity 0 ∈ frontier H.carrier}
 
-/-- Each interval exit lies on the union's prescribed exit. -/
-theorem reconstructionExit_subset_finiteUnionExitSet (H : FiniteIntervalUnion)
-    (i : Fin H.count) (sMinus T : ℝ) :
-    reconstructionExit (H.component i) sMinus T ⊆ finiteUnionExitSet H sMinus T := by
-  intro p hp
-  rcases hp with hp | hp
-  · refine Or.inl ⟨hp.1, closure_mono (H.component_subset i) ?_⟩
-    change p.velocity 0 ∈ closure (Ioo (H.component i).lo (H.component i).hi)
-    rw [closure_Ioo (H.component i).ordered.ne]
-    exact hp.2
-  · refine Or.inr ⟨hp.1, hp.2.1, H.frontier_component_subset i ?_⟩
-    change p.velocity 0 ∈ frontier (Ioo (H.component i).lo (H.component i).hi)
-    rw [frontier_Ioo (H.component i).ordered]
-    simpa only [mem_insert_iff, mem_singleton_iff] using hp.2.2
 
 /-- The genuine union exit is Borel. -/
 theorem measurableSet_finiteUnionExitSet (H : FiniteIntervalUnion) (sMinus T : ℝ) :
@@ -59,7 +45,7 @@ theorem measurableSet_finiteUnionExitSet (H : FiniteIntervalUnion) (sMinus T : �
       (isClosed_frontier.measurableSet.preimage
         (((continuous_apply 0).comp continuous_velocity).measurable)) using 1
     ext p
-    simp only [mem_ofPred_eq, mem_inter_iff]
+    simp
     tauto
 
 /-- The componentwise exit is supported on the actual union exit, with no lower-time defect. -/
@@ -68,13 +54,22 @@ theorem finiteUnionExit_compl_exit
     {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (H : FiniteIntervalUnion) (sMinus T : ℝ)
     (e : FiniteUnionPole H (T : WithTop ℝ)) (he : sMinus ≤ e.1.time) :
-    finiteUnionExit hH hLE hlam hLam A H T e (finiteUnionExitSet H sMinus T)ᶜ = 0 := by
-  have hp := (strip_exit_probability hH hLE hlam hLam A
-    (H.component (finiteUnionPoleIndex H T e)) sMinus T
-    (finiteUnionComponentPole H T e) he).2.1
+    finiteUnionExit hH hLE hlam hLam A H T e (finiteUnionExitSet H sMinus T)ᶜ = 0  := by
+  have reconstructionExit_subset_finiteUnionExitSet (i : Fin H.count) :
+      reconstructionExit (H.component i) sMinus T ⊆ finiteUnionExitSet H sMinus T := by
+    intro p hp
+    rcases hp with hp | hp
+    · refine Or.inl ⟨hp.1, closure_mono (H.component_subset i) ?_⟩
+      change p.velocity 0 ∈ closure (Ioo (H.component i).lo (H.component i).hi)
+      rw [closure_Ioo (H.component i).ordered.ne]
+      exact hp.2
+    · refine Or.inr ⟨hp.1, hp.2.1, H.frontier_component_subset i ?_⟩
+      change p.velocity 0 ∈ frontier (Ioo (H.component i).lo (H.component i).hi)
+      rw [frontier_Ioo (H.component i).ordered]
+      simpa using hp.2.2
   apply le_antisymm _ (zero_le)
   apply (measure_mono (compl_subset_compl.mpr
-    (reconstructionExit_subset_finiteUnionExitSet H _ sMinus T))).trans
-  exact le_of_eq hp
+    (reconstructionExit_subset_finiteUnionExitSet _))).trans
+  exact le_of_eq ((strip_exit_probability hH hLE hlam hLam A (H.component (finiteUnionPoleIndex H T e)) sMinus T (finiteUnionComponentPole H T e) he).2.1)
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

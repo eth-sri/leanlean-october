@@ -49,7 +49,7 @@ theorem isOpen_krylovCylinder {N : ℕ} (t₀ h : ℝ) (v₀ : PDE.Vec N) :
     (z : TimeVelocity N) :
     z ∈ krylovCylinder t₀ h v₀ ↔
       t₀ - h < z.1 ∧ z.1 < t₀ ∧ z.2 ∈ PDE.euclideanBall v₀ 1 := by
-  simp only [krylovCylinder, Set.mem_prod, Set.mem_Ioo, and_assoc]
+  simp [krylovCylinder, and_assoc]
 
 /-- Up-to-boundary regularity includes precisely the interior classical predicate. -/
 theorem IsScalarC12UpTo.isScalarC12On {N : ℕ} {u : TimeVelocity N → ℝ}

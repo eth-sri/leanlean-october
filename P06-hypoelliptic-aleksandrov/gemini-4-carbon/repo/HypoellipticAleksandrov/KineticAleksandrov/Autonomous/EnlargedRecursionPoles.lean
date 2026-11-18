@@ -28,11 +28,9 @@ theorem enlargedExtendKernel_comp_unionPole (H : FiniteIntervalUnion) (T : ℝ)
   let nu := visitUnionPoleMeasure H T mu
   let k := visitExtendKernel (enlargedVisitPoleSet H T) (measurableSet_enlargedVisitPoleSet H T)
     (fun p => f (enlargedVisitPole H T p)) (hf.comp (measurable_enlargedVisitPole H T))
-  have hm : nu.map Subtype.val = mu := enlargedUnionPoleMeasure_map H T mu hmu
-  have hb := nested_bind_map nu Subtype.val measurable_subtype_coe k k.measurable
   change mu.bind k = nu.bind f
-  rw [← hm]
-  apply hb.trans
+  rw [← (enlargedUnionPoleMeasure_map H T mu hmu)]
+  apply (nested_bind_map nu Subtype.val measurable_subtype_coe k k.measurable).trans
   apply Measure.bind_congr_right
   apply Filter.Eventually.of_forall
   intro e
@@ -65,26 +63,23 @@ theorem enlargedExitKernel_comp_poles
   enlargedExtendKernel_comp_unionPole H T _ (finiteUnionExit_measurable hH hLE hlam hLam A H T)
     mu hmu
 
-/-- Including source poles into the larger union retains exactly their physical measure. -/
-theorem enlargedUnionPoleMeasure_nested_map (H1 H2 : FiniteIntervalUnion)
-    (hsub : H1.carrier ⊆ H2.carrier) (T : ℝ) (mu : Measure Point)
-    (hmu : ∀ᵐ p ∂mu, p ∈ enlargedVisitPoleSet H1 T) :
-    ((visitUnionPoleMeasure H1 T mu).map
-      (finiteUnionNestedPoleInclusion H1 H2 hsub T)).map Subtype.val = mu := by
-  rw [Measure.map_map measurable_subtype_coe
-    (measurable_finiteUnionNestedPoleInclusion H1 H2 hsub T)]
-  exact enlargedUnionPoleMeasure_map H1 T mu hmu
 
 /-- Mapping smaller source poles into the larger domain is exactly the larger pole pullback. -/
 theorem enlargedUnionPoleMeasure_nested_eq (H1 H2 : FiniteIntervalUnion)
     (hsub : H1.carrier ⊆ H2.carrier) (T : ℝ) (mu : Measure Point)
     (hmu : ∀ᵐ p ∂mu, p ∈ enlargedVisitPoleSet H1 T) :
     (visitUnionPoleMeasure H1 T mu).map (finiteUnionNestedPoleInclusion H1 H2 hsub T) =
-      visitUnionPoleMeasure H2 T mu := by
+      visitUnionPoleMeasure H2 T mu  := by
+  have enlargedUnionPoleMeasure_nested_map :
+      ((visitUnionPoleMeasure H1 T mu).map
+      (finiteUnionNestedPoleInclusion H1 H2 hsub T)).map Subtype.val = mu := by
+    rw [Measure.map_map measurable_subtype_coe
+      (measurable_finiteUnionNestedPoleInclusion H1 H2 hsub T)]
+    exact enlargedUnionPoleMeasure_map H1 T mu hmu
   apply (MeasurableEmbedding.subtype_coe (measurableSet_finiteUnionPole H2 T)).map_injective
   have hlarge : ∀ᵐ p ∂mu, p ∈ enlargedVisitPoleSet H2 T :=
     hmu.mono (fun p hp => ⟨hp.1, hsub hp.2⟩)
-  exact (enlargedUnionPoleMeasure_nested_map H1 H2 hsub T mu hmu).trans
+  exact (enlargedUnionPoleMeasure_nested_map).trans
     (enlargedUnionPoleMeasure_map H2 T mu hlarge).symm
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

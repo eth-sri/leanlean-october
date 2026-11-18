@@ -55,7 +55,7 @@ theorem mem_exitBoundary_iff {d : ℕ} (Z₀ P : KineticPoint d)
           P.velocity ∈ PDE.euclideanSphere Z₀.velocity R ∨
           (relativePosition Z₀ P ∈ PDE.euclideanSphere (0 : PDE.Vec d) (R ^ 3) ∧
             0 ≤ PDE.vecDot (relativeVelocity Z₀ P) (relativePosition Z₀ P))) := by
-  simp only [exitBoundary, mem_inter_iff, mem_union, mem_ofPred_eq, or_assoc]
+  simp [exitBoundary, or_assoc]
 
 /-- Source reflection of time and position, leaving velocity fixed. -/
 def kineticReflection {d : ℕ} (P : KineticPoint d) : KineticPoint d :=
@@ -144,7 +144,7 @@ theorem mem_innerExitBoundary_iff {d : ℕ}
             (ρ ^ 3 * R ^ 3) ∧
             0 ≤ PDE.vecDot (relativeVelocity Z₀ P) (relativePosition Z₀ P))) := by
   dsimp only [innerExitBoundary]
-  simp only [mem_inter_iff, mem_union, mem_ofPred_eq, or_assoc]
+  simp [or_assoc]
 
 /-- Literal conjugate reflection of the source affine inner retraction. -/
 def reflectedInnerRetraction {d : ℕ} (P₀ : KineticPoint d) (R : ℝ) (hR : 0 < R)

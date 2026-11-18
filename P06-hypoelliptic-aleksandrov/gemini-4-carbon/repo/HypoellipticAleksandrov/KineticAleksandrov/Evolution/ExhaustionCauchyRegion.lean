@@ -29,14 +29,12 @@ theorem mem_straightenedEllipsoid_of_common_innerCylinder
     (hp : p ∈ movingClosedSlab (PDE.euclideanBall 0 ρ) Γ α τ ∩
       {q | radialSq q ≤ S ^ 2}) :
     (straightenedPoint g p).2 ∈ openEllipsoid (straightenedEllipsoidMatrix n r R) := by
-  have hc := hclose p.time ⟨hp.1.1, hp.1.2.1⟩
-  have hsq := vecNormSq_le_of_mem_closure_movingDomain hp.1.2.2
   have hnorm : PDE.vecEuclideanNorm (p.position - Γ p.time) ≤ ρ := by
     apply Real.sqrt_le_iff.mpr
-    exact ⟨hρ.le, by simpa only [add_zero] using hsq⟩
-  have hng := vecEuclideanNorm_sub_add_le (c := (0 : PDE.Vec n)) hc p.position
-  simp only [add_zero] at hng
-  have hng' : PDE.vecEuclideanNorm (p.position - g p.time) ≤ ρ + η :=
+    exact ⟨hρ.le, by simpa using (vecNormSq_le_of_mem_closure_movingDomain hp.1.2.2)⟩
+  have hng := vecEuclideanNorm_sub_add_le (c := 0) (hclose p.time ⟨hp.1.1, hp.1.2.1⟩) p.position
+  simp at hng
+  have hng' :=
     hng.trans (add_le_add hnorm (le_refl η))
   have hY : PDE.vecNormSq (p.position - g p.time) ≤ (ρ + η) ^ 2 := by
     have he := pow_le_pow_left₀ (PDE.vecEuclideanNorm_nonneg _) hng' 2
@@ -60,12 +58,12 @@ theorem distance_to_approximating_boundary_le_of_common_frontier
   have hs := vecNormSq_eq_of_mem_frontier_movingDomain hp
   have hn : PDE.vecEuclideanNorm (p.position - Γ p.time) = ρ := by
     unfold PDE.vecEuclideanNorm
-    simp only [add_zero] at hs
+    simp at hs
     rw [hs, Real.sqrt_sq hρ.le]
   have hc' : PDE.vecEuclideanNorm (Γ p.time - g p.time) ≤ η := by
     rwa [PDE.vecEuclideanNorm_sub_comm]
-  have hb := vecEuclideanNorm_sub_add_le (c := (0 : PDE.Vec n)) hc' p.position
-  simp only [add_zero, hn] at hb
+  have hb := vecEuclideanNorm_sub_add_le (c := 0) hc' p.position
+  simp at hb
   linarith
 
 end HypoellipticAleksandrov.KineticAleksandrov

@@ -34,17 +34,6 @@ theorem bellmanGaussianExponent_eq (t : BellmanPositiveTime) (q : ℝ × ℝ) :
   field_simp [ne_of_gt t.property]
   ring
 
-/-- The exponent is nonpositive. -/
-theorem bellmanGaussianExponent_nonpos (t : BellmanPositiveTime) (q : ℝ × ℝ) :
-    bellmanGaussianExponent t q ≤ 0 := by
-  rw [bellmanGaussianExponent_eq]
-  have h₁ : 0 ≤ 3 / t.val ^ 3 :=
-    div_nonneg (by norm_num) (pow_nonneg t.property.le 3)
-  have h₂ : 0 ≤ q.2 ^ 2 / (4 * t.val) :=
-    div_nonneg (sq_nonneg _) (mul_nonneg (by norm_num) t.property.le)
-  rw [neg_div, neg_mul]
-  exact sub_nonpos.mpr ((neg_nonpos.mpr
-    (mul_nonneg h₁ (sq_nonneg _))).trans h₂)
 
 /-- The kernel is strictly positive. -/
 theorem bellmanGaussianKernel_pos (t : BellmanPositiveTime) (q : ℝ × ℝ) :
@@ -56,13 +45,23 @@ theorem bellmanGaussianKernel_pos (t : BellmanPositiveTime) (q : ℝ × ℝ) :
 
 /-- The kernel is bounded by its Gaussian prefactor. -/
 theorem bellmanGaussianKernel_le (t : BellmanPositiveTime) (q : ℝ × ℝ) :
-    bellmanGaussianKernel t q ≤ Real.sqrt 3 / (2 * Real.pi * t.val ^ 2) := by
+    bellmanGaussianKernel t q ≤ Real.sqrt 3 / (2 * Real.pi * t.val ^ 2)  := by
+  have bellmanGaussianExponent_nonpos :
+      bellmanGaussianExponent t q ≤ 0 := by
+    rw [bellmanGaussianExponent_eq]
+    have h₁ : 0 ≤ 3 / t.val ^ 3 :=
+      div_nonneg (by norm_num) (pow_nonneg t.property.le 3)
+    have h₂ : 0 ≤ q.2 ^ 2 / (4 * t.val) :=
+      div_nonneg (sq_nonneg _) (mul_nonneg (by norm_num) t.property.le)
+    rw [neg_div, neg_mul]
+    exact sub_nonpos.mpr ((neg_nonpos.mpr
+      (mul_nonneg h₁ (sq_nonneg _))).trans h₂)
   unfold bellmanGaussianKernel
   have hc : 0 ≤ Real.sqrt 3 / (2 * Real.pi * t.val ^ 2) := by positivity
   calc
     _ ≤ Real.sqrt 3 / (2 * Real.pi * t.val ^ 2) * 1 :=
       mul_le_mul_of_nonneg_left (Real.exp_le_one_iff.mpr
-        (bellmanGaussianExponent_nonpos t q)) hc
+        (bellmanGaussianExponent_nonpos)) hc
     _ = _ := mul_one _
 
 /-- Parabolic rescaling of positive time. -/

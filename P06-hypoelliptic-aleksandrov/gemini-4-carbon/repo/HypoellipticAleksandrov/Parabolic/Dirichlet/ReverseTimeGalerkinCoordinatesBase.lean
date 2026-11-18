@@ -1,23 +1,127 @@
 module
 
-public import HypoellipticAleksandrov.Parabolic.Dirichlet.GalerkinMass
+public import HypoellipticAleksandrov.Parabolic.Dirichlet.GalerkinDense
+public import Mathlib.Analysis.InnerProductSpace.GramMatrix
+public import Mathlib.Analysis.InnerProductSpace.Projection.FiniteDimensional
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSpatialFormOperator
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSourceBochner
 public import Mathlib.LinearAlgebra.Matrix.NonsingularInverse
 public import Mathlib.Topology.Algebra.Module.FiniteDimension
 
-/-!
-# Reverse-time finite Galerkin coordinates
-
-This module forms the exact finite-coordinate reverse-time Galerkin equation.
-It does not assert existence, uniqueness, differentiability, or an energy estimate.
--/
-
-@[expose] public section
-
-noncomputable section
+@[expose] public noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
+section
+
+open scoped ENNReal RealInnerProductSpace
+
+variable {d : ℕ} {Ω : Set (PDE.Vec d)}
+
+/-- The `L²` image of the finite actual-test Galerkin space. -/
+noncomputable def galerkinValueSpace
+    (hΩ : IsOpen Ω) (N : ℕ) :
+    Submodule ℝ (PDE.ScalarLp Ω (2 : ℝ≥0∞)) :=
+  (galerkinSpace hΩ N).map (valueCLM hΩ).toLinearMap
+
+/-- The finite Galerkin value space is finite dimensional. -/
+noncomputable instance galerkinValueSpace_finiteDimensional
+    (hΩ : IsOpen Ω) (N : ℕ) :
+    FiniteDimensional ℝ (galerkinValueSpace hΩ N) := by
+  unfold galerkinValueSpace
+  infer_instance
+
+/-- The finite Galerkin value space is complete. -/
+noncomputable instance galerkinValueSpace_completeSpace
+    (hΩ : IsOpen Ω) (N : ℕ) :
+    CompleteSpace (galerkinValueSpace hΩ N) :=
+  FiniteDimensional.complete ℝ (galerkinValueSpace hΩ N)
+
+/-- The `L²` mass Gram matrix of the finite actual-test Galerkin basis. -/
+noncomputable def galerkinMassGram
+    (hΩ : IsOpen Ω) (N : ℕ) :
+    Matrix
+      (Fin (Module.finrank ℝ (galerkinSpace hΩ N)))
+      (Fin (Module.finrank ℝ (galerkinSpace hΩ N))) ℝ :=
+  Matrix.gram ℝ (fun i =>
+    valueCLM hΩ (galerkinSpaceBasis hΩ N i : H10HilbertGraph hΩ))
+
+/-- The finite `L²` mass Gram matrix is positive definite. -/
+theorem galerkinMassGram_posDef
+    (hΩ : IsOpen Ω) (N : ℕ) :
+    (galerkinMassGram hΩ N).PosDef := by
+  let E := galerkinSpace hΩ N
+  let L :=
+    (valueCLM hΩ).toLinearMap.comp E.subtype
+  have hL : Function.Injective L := by
+    intro u v huv
+    apply Subtype.ext
+    exact valueCLM_injective hΩ huv
+  have hli :=
+    (galerkinSpaceBasis hΩ N).linearIndependent.map' L
+      (LinearMap.ker_eq_bot_of_injective hL)
+  simpa only [galerkinMassGram, L, E, Function.comp_def, LinearMap.comp_apply, LinearMap.coe_comp,
+    ContinuousLinearMap.coe_coe, Submodule.coe_subtype] using
+    Matrix.posDef_gram_of_linearIndependent hli
+
+/-- The finite `L²` mass Gram matrix is invertible, including at `N = 0`. -/
+theorem isUnit_galerkinMassGram
+    (hΩ : IsOpen Ω) (N : ℕ) :
+    IsUnit (galerkinMassGram hΩ N) :=
+  (galerkinMassGram_posDef hΩ N).isUnit
+
+/-- A chosen preimage of the finite Galerkin value-space projection. -/
+noncomputable def galerkinInitialProjectionPreimage
+    (hΩ : IsOpen Ω) (N : ℕ)
+    (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
+    H10HilbertGraph hΩ :=
+  Classical.choose <| Submodule.mem_map.mp
+    (Submodule.starProjection_apply_mem (galerkinValueSpace hΩ N) initial)
+
+/-- The chosen projection preimage lies in the finite Galerkin space. -/
+theorem galerkinInitialProjectionPreimage_mem
+    (hΩ : IsOpen Ω) (N : ℕ)
+    (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
+    galerkinInitialProjectionPreimage hΩ N initial ∈ galerkinSpace hΩ N := by
+  exact (Classical.choose_spec <| Submodule.mem_map.mp
+    (Submodule.starProjection_apply_mem (galerkinValueSpace hΩ N) initial)).1
+
+private theorem value_galerkinInitialProjectionPreimage
+    (hΩ : IsOpen Ω) (N : ℕ)
+    (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
+    valueCLM hΩ (galerkinInitialProjectionPreimage hΩ N initial) =
+      (galerkinValueSpace hΩ N).starProjection initial := by
+  exact (Classical.choose_spec <| Submodule.mem_map.mp
+    (Submodule.starProjection_apply_mem (galerkinValueSpace hΩ N) initial)).2
+
+/-- The lift to the finite Galerkin space of the `L²` orthogonal projection
+of an initial datum. -/
+noncomputable def galerkinInitialProjection
+    (hΩ : IsOpen Ω) (N : ℕ)
+    (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
+    galerkinSpace hΩ N :=
+  ⟨galerkinInitialProjectionPreimage hΩ N initial,
+    galerkinInitialProjectionPreimage_mem hΩ N initial⟩
+
+/-- Applying the spatial value map to the lifted initial datum recovers its
+`L²` orthogonal projection onto the finite Galerkin value space. -/
+theorem value_galerkinInitialProjection
+    (hΩ : IsOpen Ω) (N : ℕ)
+    (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
+    valueCLM hΩ (galerkinInitialProjection hΩ N initial :
+      H10HilbertGraph hΩ) =
+    (galerkinValueSpace hΩ N).starProjection initial :=
+  value_galerkinInitialProjectionPreimage hΩ N initial
+
+/-- The finite Galerkin `L²` initial projection is contractive. -/
+theorem norm_value_galerkinInitialProjection_le
+    (hΩ : IsOpen Ω) (N : ℕ)
+    (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
+    ‖valueCLM hΩ (galerkinInitialProjection hΩ N initial :
+      H10HilbertGraph hΩ)‖ ≤ ‖initial‖ := by
+  rw [value_galerkinInitialProjection]
+  exact (galerkinValueSpace hΩ N).norm_starProjection_apply_le initial
+
+end
 
 open scoped BigOperators ENNReal Matrix Matrix.Norms.Elementwise RealInnerProductSpace
 
@@ -35,7 +139,7 @@ theorem galerkinReconstruct_apply
     (x : Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ) :
     galerkinReconstruct hΩ N x = ∑ i, x i • galerkinSpaceBasis hΩ N i := by
   change (galerkinSpaceBasis hΩ N).equivFun.symm x = _
-  simpa only [LinearEquiv.apply_symm_apply] using
+  simpa using
     ((galerkinSpaceBasis hΩ N).sum_equivFun
       ((galerkinSpaceBasis hΩ N).equivFun.symm x)).symm
 
@@ -173,10 +277,6 @@ noncomputable def reverseTimeGalerkinForcing
   (galerkinMassGram hΩ N)⁻¹ *ᵥ
     reverseTimeGalerkinSource r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth N τ
 
-private noncomputable def matrixToContinuousMulVec
-    (I : Type) [Fintype I] [DecidableEq I] :
-    Matrix I I ℝ →ₗ[ℝ] ((I → ℝ) →L[ℝ] (I → ℝ)) :=
-  (LinearMap.toContinuousLinearMap.toLinearMap).comp (Matrix.mulVecBilin ℝ ℝ)
 
 /-- The mass-inverted stiffness coefficient is continuous on the closed interval. -/
 theorem continuous_reverseTimeGalerkinLinearPart
@@ -193,17 +293,11 @@ theorem continuous_reverseTimeGalerkinLinearPart
       (scalarParabolicClosedCylinder r₀ r₁ Ω))
     (N : ℕ) :
     Continuous (reverseTimeGalerkinLinearPart r₀ r₁ h₀₁ hΩ hΩbounded a b c
-      haSmooth hbSmooth hcSmooth N) := by
-  let I := Fin (Module.finrank ℝ (galerkinSpace hΩ N))
-  let M : Matrix I I ℝ := galerkinMassGram hΩ N
-  let K := reverseTimeGalerkinStiffness r₀ r₁ h₀₁ hΩ hΩbounded a b c
-    haSmooth hbSmooth hcSmooth N
-  have hK : Continuous K := continuous_reverseTimeGalerkinStiffness r₀ r₁ h₀₁ hΩ hΩbounded
-    a b c haSmooth hbSmooth hcSmooth N
-  change Continuous fun τ => - LinearMap.toContinuousLinearMap (Matrix.mulVecLin (M⁻¹ * K τ))
-  have hmul : Continuous fun τ => M⁻¹ * K τ := continuous_const.matrix_mul hK
-  change Continuous fun τ => -(matrixToContinuousMulVec I (M⁻¹ * K τ))
-  exact (matrixToContinuousMulVec I).continuous_of_finiteDimensional.neg.comp hmul
+      haSmooth hbSmooth hcSmooth N)  := by
+  let matrixToContinuousMulVec (I : Type) [Fintype I] [DecidableEq I] : Matrix I I ℝ →ₗ[ℝ] ((I → ℝ) →L[ℝ] (I → ℝ)) :=
+    (LinearMap.toContinuousLinearMap.toLinearMap).comp (Matrix.mulVecBilin ℝ ℝ)
+  have hmul : Continuous fun τ => (galerkinMassGram hΩ N)⁻¹ * (reverseTimeGalerkinStiffness r₀ r₁ h₀₁ hΩ hΩbounded a b c haSmooth hbSmooth hcSmooth N) τ := continuous_const.matrix_mul (continuous_reverseTimeGalerkinStiffness r₀ r₁ h₀₁ hΩ hΩbounded a b c haSmooth hbSmooth hcSmooth N)
+  exact (matrixToContinuousMulVec (Fin (Module.finrank ℝ (galerkinSpace hΩ N)))).continuous_of_finiteDimensional.neg.comp hmul
 
 /-- The mass-inverted source coefficient is continuous on the closed interval. -/
 theorem continuous_reverseTimeGalerkinForcing
@@ -215,7 +309,8 @@ theorem continuous_reverseTimeGalerkinForcing
       (scalarParabolicClosedCylinder r₀ r₁ Ω))
     (N : ℕ) :
     Continuous (reverseTimeGalerkinForcing r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth N) := by
-  simpa only [reverseTimeGalerkinForcing] using! continuous_const.matrix_mulVec
+  simpa using! continuous_const.matrix_mulVec
     (continuous_reverseTimeGalerkinSource r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth N)
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet
+

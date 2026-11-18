@@ -31,8 +31,7 @@ theorem exists_native_perpendicular (d : ℕ) (hd : 2 ≤ d) (z : PDE.Vec d) :
     refine ⟨w, ?_, ?_⟩
     · intro h
       have hh := congrFun h j
-      have hji : j ≠ i := Ne.symm hij
-      simp [w, hji] at hh
+      simp [w, (Ne.symm hij)] at hh
       exact hz hh
     · simp [w, PDE.vecDot, Pi.sub_apply, mul_sub, Finset.sum_sub_distrib,
         Pi.single_apply]
@@ -47,7 +46,7 @@ theorem seed_positive_direction (d : ℕ) (hd : 2 ≤ d) (alpha C₀ sigma : ℝ
   obtain ⟨w, hw, hperp⟩ := exists_native_perpendicular d hd (y - e)
   refine ⟨w, ?_⟩
   rw [seed_hessian_tangent alpha C₀ sigma hsigma y e w w hperp]
-  have hn : 0 < PDE.vecNormSq w :=
+  have hn :=
     (PDE.vecNormSq_nonneg w).lt_of_ne' (PDE.vecNormSq_eq_zero_iff.not.mpr hw)
   exact mul_pos (seedTangentialEigenvalue_pos alpha sigma ha hsigma y e) hn
 
@@ -61,9 +60,7 @@ theorem seed_negative_direction {d : ℕ} (alpha C₀ sigma : ℝ)
   rw [seed_hessian_radial alpha C₀ sigma hsigma]
   have hn : 0 < PDE.vecNormSq (y - e) := by
     by_contra h
-    have hzero : PDE.vecNormSq (y - e) = 0 :=
-      le_antisymm (le_of_not_gt h) (PDE.vecNormSq_nonneg _)
-    rw [hzero, mul_zero] at hthreshold
+    rw [(le_antisymm (le_of_not_gt h) (PDE.vecNormSq_nonneg _)), mul_zero] at hthreshold
     exact (sq_nonneg sigma).not_gt hthreshold
   exact mul_neg_of_neg_of_pos
     ((seedRadialEigenvalue_neg_iff alpha sigma ha hsigma y e).mpr hthreshold) hn

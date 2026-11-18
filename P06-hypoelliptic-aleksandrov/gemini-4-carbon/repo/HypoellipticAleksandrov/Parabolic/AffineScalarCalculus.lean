@@ -33,7 +33,7 @@ namespace HypoellipticAleksandrov.Parabolic
   unfold scalarSpatialGradient PDE.classicalGradient
   ext i
   rw [fderiv_add_const]
-  change (fderiv ℝ (K • fun y : PDE.Vec d => ell (z.1, y)) z.2) (PDE.basisVec i) = _
+  change (fderiv ℝ (K • fun y => ell (z.1, y)) z.2) (PDE.basisVec i) = _
   rw [fderiv_const_smul_field]
   rfl
 
@@ -44,15 +44,15 @@ namespace HypoellipticAleksandrov.Parabolic
       K • scalarSpatialHessian ell z := by
   unfold scalarSpatialHessian
   have hgradient :
-      (fun y : PDE.Vec d =>
-          PDE.classicalGradient (fun w : PDE.Vec d => K * ell (z.1, w) + epsilon) y) =
-        K • fun y : PDE.Vec d =>
-          PDE.classicalGradient (fun w : PDE.Vec d => ell (z.1, w)) y := by
+      (fun y =>
+          PDE.classicalGradient (fun w => K * ell (z.1, w) + epsilon) y) =
+        K • fun y =>
+          PDE.classicalGradient (fun w => ell (z.1, w)) y := by
     funext y
     unfold PDE.classicalGradient
     ext i
     rw [fderiv_add_const]
-    change (fderiv ℝ (K • fun w : PDE.Vec d => ell (z.1, w)) y) (PDE.basisVec i) = _
+    change (fderiv ℝ (K • fun w => ell (z.1, w)) y) (PDE.basisVec i) = _
     rw [fderiv_const_smul_field]
     rfl
   rw [hgradient, fderiv_const_smul_field]
@@ -98,7 +98,7 @@ theorem IsScalarC12On.const_mul_add_const
     rw [Finset.mul_sum]
     apply Finset.sum_congr rfl
     intro i _hi
-    simp only [Pi.smul_apply, smul_eq_mul]
+    simp
     ring
   simp only [scalarParabolicZeroOrderOperator_apply,
     scalarTimeDerivative_const_mul_add_const,

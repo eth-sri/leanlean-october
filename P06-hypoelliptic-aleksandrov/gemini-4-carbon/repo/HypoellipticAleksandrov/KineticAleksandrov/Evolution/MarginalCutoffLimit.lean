@@ -42,7 +42,7 @@ theorem exists_zCutoff (n : ℕ) :
     ∃ χ : PDE.Vec n → ℝ, ContDiff ℝ (⊤ : ℕ∞) χ ∧ HasCompactSupport χ ∧
       (∀ z, 0 ≤ χ z ∧ χ z ≤ 1) ∧ ∀ z, ‖z‖ ≤ 1 → χ z = 1 := by
   obtain ⟨f, hs, hc, -, h01, h1⟩ := exists_smooth_bump_of_isCompact_subset_isOpen
-    (K := Metric.closedBall (0 : PDE.Vec n) 1) (V := Metric.ball (0 : PDE.Vec n) 2)
+    (K := Metric.closedBall 0 1) (V := Metric.ball (0 : PDE.Vec n) 2)
     (isCompact_closedBall 0 1) Metric.isOpen_ball
     (Metric.closedBall_subset_ball (by norm_num))
   exact ⟨f, hs, hc, h01, fun z hz => h1 z (by simpa using hz)⟩
@@ -50,14 +50,8 @@ theorem exists_zCutoff (n : ℕ) :
 /-- The chosen bump. -/
 def zCutoff (n : ℕ) : PDE.Vec n → ℝ := (exists_zCutoff n).choose
 
-theorem contDiff_zCutoff (n : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (zCutoff n) :=
-  (exists_zCutoff n).choose_spec.1
 
-theorem hasCompactSupport_zCutoff (n : ℕ) : HasCompactSupport (zCutoff n) :=
-  (exists_zCutoff n).choose_spec.2.1
 
-theorem zCutoff_mem_Icc (n : ℕ) (z : PDE.Vec n) : 0 ≤ zCutoff n z ∧ zCutoff n z ≤ 1 :=
-  (exists_zCutoff n).choose_spec.2.2.1 z
 
 theorem zCutoff_eq_one (n : ℕ) {z : PDE.Vec n} (hz : ‖z‖ ≤ 1) : zCutoff n z = 1 :=
   (exists_zCutoff n).choose_spec.2.2.2 z hz
@@ -65,15 +59,17 @@ theorem zCutoff_eq_one (n : ℕ) {z : PDE.Vec n} (hz : ‖z‖ ≤ 1) : zCutoff 
 /-- The cutoff at scale `N + 1`. -/
 def zCutoffN (n N : ℕ) (z : PDE.Vec n) : ℝ := zCutoff n (((N : ℝ) + 1)⁻¹ • z)
 
-theorem contDiff_zCutoffN (n N : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (zCutoffN n N) :=
-  (contDiff_zCutoff n).comp (contDiff_const_smul _)
+theorem contDiff_zCutoffN (n N : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (zCutoffN n N)  := by
+  exact (((exists_zCutoff n).choose_spec.1)).comp (contDiff_const_smul _)
 
-theorem hasCompactSupport_zCutoffN (n N : ℕ) : HasCompactSupport (zCutoffN n N) := by
+theorem hasCompactSupport_zCutoffN (n N : ℕ) : HasCompactSupport (zCutoffN n N)  := by
   have hne : ((N : ℝ) + 1)⁻¹ ≠ 0 := by positivity
-  exact (hasCompactSupport_zCutoff n).comp_homeomorph (Homeomorph.smulOfNeZero _ hne)
+  exact (((exists_zCutoff n).choose_spec.2.1)).comp_homeomorph (Homeomorph.smulOfNeZero _ hne)
 
-theorem zCutoffN_mem_Icc (n N : ℕ) (z : PDE.Vec n) : 0 ≤ zCutoffN n N z ∧ zCutoffN n N z ≤ 1 :=
-  zCutoff_mem_Icc n _
+theorem zCutoffN_mem_Icc (n N : ℕ) (z : PDE.Vec n) : 0 ≤ zCutoffN n N z ∧ zCutoffN n N z ≤ 1  := by
+  have zCutoff_mem_Icc (z : PDE.Vec n) : 0 ≤ zCutoff n z ∧ zCutoff n z ≤ 1 :=
+    (exists_zCutoff n).choose_spec.2.2.1 z
+  exact zCutoff_mem_Icc _
 
 theorem zCutoffN_eq_one {n N : ℕ} {z : PDE.Vec n} (hz : ‖z‖ ≤ (N : ℝ) + 1) :
     zCutoffN n N z = 1 := by
@@ -159,7 +155,7 @@ theorem abs_cutoffDatum_sub_le {F : BoundedBorel (PDE.Vec n)} {C : ℝ} (hC : �
     (hC0 : 0 ≤ C) {N M : ℕ} (hNM : N ≤ M) (x : EvolutionAmbientState n) :
     |cutoffDatum F M x - cutoffDatum F N x| ≤
       C / ((N : ℝ) + 1) ^ 2 * (1 + PDE.vecNormSq x.1 + PDE.vecNormSq x.2) := by
-  have hN : (0 : ℝ) < (N : ℝ) + 1 := by positivity
+  have hN : 0 < (N : ℝ) + 1 := by positivity
   have hRHS : 0 ≤ C / ((N : ℝ) + 1) ^ 2 * (1 + PDE.vecNormSq x.1 + PDE.vecNormSq x.2) := by
     have := PDE.vecNormSq_nonneg x.1
     have := PDE.vecNormSq_nonneg x.2
@@ -228,7 +224,7 @@ theorem classical_sub_le_growthBarrier {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω)
   obtain ⟨C₁, -, hC₁⟩ := h₁'.1
   obtain ⟨C₂, -, hC₂⟩ := h₂'.1
   have hp₀slab : p₀ ∈ movingClosedSlab Ω γ p₀.time τ := ⟨le_rfl, hp₀.1, hp₀.2⟩
-  have hres := growth_comparison (a := p₀.time) (T := τ)
+  have hres := growth_comparison
     (u := fun q => u₁ q - u₂ q - c * growthBarrier C τ q) hΩ hγ hlam hB hb le_rfl zero_le_one
     ?_ ?_ ?_ ?_ ?_ ?_ p₀ hp₀slab
   · linarith
@@ -264,7 +260,7 @@ theorem classical_sub_le_growthBarrier {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω)
     have hΦτ : growthBarrier C τ p = 1 + PDE.vecNormSq p.position + PDE.vecNormSq p.velocity := by
       unfold growthBarrier radialSq
       rw [hpT]
-      simp only [sub_self, mul_zero, Real.exp_zero, one_mul]
+      simp
       ring
     show u₁ p - u₂ p - c * growthBarrier C τ p ≤ 0
     rw [hΦτ]

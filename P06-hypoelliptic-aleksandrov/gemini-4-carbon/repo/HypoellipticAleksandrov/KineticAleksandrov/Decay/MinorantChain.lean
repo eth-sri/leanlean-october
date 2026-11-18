@@ -2,7 +2,7 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Decay.MinorantScaling
 public import HypoellipticAleksandrov.Parabolic.LocalClassical
-import HypoellipticAleksandrov.Statements.ParabolicHarnack
+import HypoellipticAleksandrov.Parabolic.HarnackUnitCylinder.Assembly
 import HypoellipticAleksandrov.Parabolic.ContDiffOnTwoToScalarC12
 
 /-!
@@ -39,22 +39,19 @@ theorem scalarSpatialGradient_comp_scalarAffine {d : ℕ} {V : TimeVelocity d �
   have hA : HasFDerivAt (fun y : PDE.Vec d => c + e • y)
       (e • ContinuousLinearMap.id ℝ (PDE.Vec d)) z.2 :=
     ((hasFDerivAt_id (𝕜 := ℝ) z.2).const_smul e).const_add c
-  have hcomp := hV.hasFDerivAt.comp z.2 hA
   funext i
   change fderiv ℝ ((fun y : PDE.Vec d => V (α + a * z.1, y)) ∘ fun y => c + e • y) z.2
       (PDE.basisVec i) = e * fderiv ℝ (fun y : PDE.Vec d => V (α + a * z.1, y))
         (c + e • z.2) (PDE.basisVec i)
-  rw [hcomp.fderiv]
-  simp only [ContinuousLinearMap.comp_apply, smul_apply,
-    ContinuousLinearMap.id_apply, map_smul, smul_eq_mul]
+  rw [(hV.hasFDerivAt.comp z.2 hA).fderiv]
+  simp
 
 /-- The anisotropic `C^{1,2}` class is stable under affine changes of variables. -/
 theorem isScalarC12On_comp_scalarAffine {d : ℕ} {u : TimeVelocity d → ℝ}
     {S S' : Set (TimeVelocity d)} {α a : ℝ} {c : PDE.Vec d} {e : ℝ}
     (hu : IsScalarC12On u S') (hmaps : MapsTo (scalarAffine α a c e) S S') :
     IsScalarC12On (fun p => u (scalarAffine α a c e p)) S := by
-  have hAff := contDiff_scalarAffine α a c e
-  have hcont : Continuous (scalarAffine α a c e) := hAff.continuous
+  have hcont := (contDiff_scalarAffine α a c e).continuous
   have hdiff : ∀ z ∈ S, DifferentiableAt ℝ (fun r : ℝ => u (r, c + e • z.2)) (α + a * z.1) :=
     fun z hz => hu.timeSlice_differentiableAt (hmaps hz)
   have hspace : ∀ z ∈ S, ContDiffAt ℝ 2 (fun y : PDE.Vec d => u (α + a * z.1, y))
@@ -103,49 +100,48 @@ theorem normalized_six_step_harnack (d : ℕ) (hd : 1 ≤ d)
           scalarTimeDerivative u p =
             matrixContraction (coefficientAt B p) (scalarSpatialHessian u p)) →
         ∀ v ∈ PDE.euclideanBall 0 1, hfrak ^ 6 * u (1, 0) ≤ u (4, v) := by
-  obtain ⟨hf, hfpos, hfH⟩ := parabolic_harnack_unit_cylinder d hd lam hlam Lam hlamLam
+  obtain ⟨hf, hfpos, hfH⟩ := parabolic_harnack_unit_cylinder_aux d hd lam hlam Lam hlamLam
   refine ⟨hf, hfpos, ?_⟩
   intro B u hcont hsymm hlow hup hC12 hnn heq v hv
   have hv' : PDE.vecEuclideanNorm v < 1 := by
-    have := (PDE.mem_euclideanBall_iff_vecEuclideanNorm_lt (x₀ := (0 : PDE.Vec d))
+    have := (PDE.mem_euclideanBall_iff_vecEuclideanNorm_lt (x₀ := 0)
       (by norm_num : (0 : ℝ) < 1)).1 hv
-    simpa only [sub_zero] using this
+    simpa using this
   -- one translated application of the Harnack inequality
   have step : ∀ (t0 : ℝ) (c p p' : PDE.Vec d), 0 < t0 → c ∈ PDE.euclideanBall 0 1 →
       p - c ∈ PDE.euclideanBall 0 (1 / 2) → p' - c ∈ PDE.euclideanBall 0 (1 / 2) →
       ∀ t t' : ℝ, t = t0 + 3 / 8 → t' = t0 + 7 / 8 → hf * u (t, p) ≤ u (t', p') := by
     intro t0 c p p' ht0 hc hp hp' t t' ht ht'
     have hc' : PDE.vecEuclideanNorm c < 1 := by
-      have := (PDE.mem_euclideanBall_iff_vecEuclideanNorm_lt (x₀ := (0 : PDE.Vec d))
+      have := (PDE.mem_euclideanBall_iff_vecEuclideanNorm_lt (x₀ := 0)
         (by norm_num : (0 : ℝ) < 1)).1 hc
-      simpa only [sub_zero] using this
+      simpa using this
     have hmaps : MapsTo (scalarAffine t0 1 c 1)
-        (Ioo (0 : ℝ) 1 ×ˢ PDE.euclideanBall (0 : PDE.Vec d) 1)
-        (Ioi (0 : ℝ) ×ˢ PDE.euclideanBall (0 : PDE.Vec d) 4) := by
+        (Ioo 0 1 ×ˢ PDE.euclideanBall 0 1)
+        (Ioi 0 ×ˢ PDE.euclideanBall 0 4) := by
       rintro ⟨s, w⟩ ⟨⟨hs0, hs1⟩, hw⟩
       refine ⟨?_, ?_⟩
       · change 0 < t0 + 1 * s
         linarith
       · have hw' : PDE.vecEuclideanNorm w < 1 := by
-          have := (PDE.mem_euclideanBall_iff_vecEuclideanNorm_lt (x₀ := (0 : PDE.Vec d))
+          have := (PDE.mem_euclideanBall_iff_vecEuclideanNorm_lt (x₀ := 0)
             (by norm_num : (0 : ℝ) < 1)).1 hw
-          simpa only [sub_zero] using this
+          simpa using this
         rw [PDE.mem_euclideanBall_iff_vecEuclideanNorm_lt (by norm_num : (0 : ℝ) < 4), sub_zero]
-        change PDE.vecEuclideanNorm (c + (1 : ℝ) • w) < 4
+        change PDE.vecEuclideanNorm (c + 1 • w) < 4
         rw [one_smul]
         linarith [PDE.vecEuclideanNorm_add_le c w]
-    have hu12 := isScalarC12On_comp_scalarAffine hC12 hmaps
     have hP0 : ((3 / 8 : ℝ), p - c) ∈ Ioo (1 / 4 : ℝ) (1 / 2 : ℝ) ×ˢ
-        PDE.euclideanBall (0 : PDE.Vec d) (1 / 2 : ℝ) :=
+        PDE.euclideanBall 0 (1 / 2 : ℝ) :=
       ⟨⟨by norm_num, by norm_num⟩, hp⟩
     have hP1 : ((7 / 8 : ℝ), p' - c) ∈ Ioo (3 / 4 : ℝ) 1 ×ˢ
-        PDE.euclideanBall (0 : PDE.Vec d) (1 / 2 : ℝ) :=
+        PDE.euclideanBall 0 (1 / 2 : ℝ) :=
       ⟨⟨by norm_num, by norm_num⟩, hp'⟩
-    have key := hfH (fun s w => B (t0 + 1 * s) (c + (1 : ℝ) • w))
+    have key := hfH (fun s w => B (t0 + 1 * s) (c + 1 • w))
       (fun z => u (scalarAffine t0 1 c 1 z))
       (hcont.comp (contDiff_scalarAffine t0 1 c 1).continuous.continuousOn hmaps)
       (fun z hz => hsymm _ (hmaps hz))
-      (fun z hz => hlow _ (hmaps hz)) (fun z hz => hup _ (hmaps hz)) hu12
+      (fun z hz => hlow _ (hmaps hz)) (fun z hz => hup _ (hmaps hz)) (isScalarC12On_comp_scalarAffine hC12 hmaps)
       (fun z hz => hnn _ (hmaps hz))
       (by
         intro z hz
@@ -159,9 +155,9 @@ theorem normalized_six_step_harnack (d : ℕ) (hd : 1 ≤ d)
         exact heq _ (hmaps hz))
       _ hP0 _ hP1
     have e0 : scalarAffine t0 1 c 1 ((3 / 8 : ℝ), p - c) = (t, p) := by
-      simp only [scalarAffine, one_mul, one_smul, ht, add_sub_cancel]
+      simp [scalarAffine, ht, add_sub_cancel]
     have e1 : scalarAffine t0 1 c 1 ((7 / 8 : ℝ), p' - c) = (t', p') := by
-      simp only [scalarAffine, one_mul, one_smul, ht', add_sub_cancel]
+      simp [scalarAffine, ht', add_sub_cancel]
     simpa only [e0, e1] using key
   -- the chain
   have chain : ∀ j : ℕ, j ≤ 6 →
@@ -174,7 +170,6 @@ theorem normalized_six_step_harnack (d : ℕ) (hd : 1 ≤ d)
       have ih' := ih (by omega)
       have hjR : (j : ℝ) ≤ 5 := by exact_mod_cast (by omega : j ≤ 5)
       have hj0 : (0 : ℝ) ≤ j := Nat.cast_nonneg j
-      have hnv0 := PDE.vecEuclideanNorm_nonneg v
       have hc : (((2 * j + 1) / 12 : ℝ)) • v ∈ PDE.euclideanBall (0 : PDE.Vec d) 1 := by
         rw [PDE.mem_euclideanBall_iff_vecEuclideanNorm_lt (by norm_num : (0 : ℝ) < 1), sub_zero,
           PDE.vecEuclideanNorm_smul, abs_of_nonneg (by positivity)]
@@ -195,13 +190,10 @@ theorem normalized_six_step_harnack (d : ℕ) (hd : 1 ≤ d)
         rw [this, PDE.mem_euclideanBall_iff_vecEuclideanNorm_lt (by norm_num : (0 : ℝ) < 1 / 2),
           sub_zero, PDE.vecEuclideanNorm_smul, abs_of_pos (by norm_num : (0 : ℝ) < 1 / 12)]
         nlinarith
-      have hstep := step (5 / 8 + (j : ℝ) / 2) (((2 * j + 1) / 12 : ℝ) • v)
-        (((j : ℝ) / 6) • v) ((((j + 1 : ℕ) : ℝ) / 6) • v) (by positivity) hc hp hp'
-        (1 + (j : ℝ) / 2) (1 + ((j + 1 : ℕ) : ℝ) / 2) (by ring) (by push_cast; ring)
       calc hf ^ (j + 1) * u (1, 0) = hf * (hf ^ j * u (1, 0)) := by ring
         _ ≤ hf * u (1 + (j : ℝ) / 2, ((j : ℝ) / 6) • v) :=
           mul_le_mul_of_nonneg_left ih' hfpos.le
-        _ ≤ u (1 + ((j + 1 : ℕ) : ℝ) / 2, (((j + 1 : ℕ) : ℝ) / 6) • v) := hstep
+        _ ≤ u (1 + ((j + 1 : ℕ) : ℝ) / 2, (((j + 1 : ℕ) : ℝ) / 6) • v) := (step (5 / 8 + (j : ℝ) / 2) (((2 * j + 1) / 12 : ℝ) • v) (((j : ℝ) / 6) • v) ((((j + 1 : ℕ) : ℝ) / 6) • v) (by positivity) hc hp hp' (1 + (j : ℝ) / 2) (1 + ((j + 1 : ℕ) : ℝ) / 2) (by ring) (by push_cast; ring))
   have h6 := chain 6 le_rfl
   norm_num at h6
   convert h6 using 2
@@ -246,17 +238,14 @@ theorem timeReversed_equation {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
   intro p hp
   have hc12 := isScalarC12On_of_isOpen_contDiffOn_two
     (isOpen_scalarPastOpenCylinder_stationary hΩ T) (hV.2.2.1.of_le (by norm_num))
-  have h1 := hc12.timeSlice_differentiableAt (timeReversal_mapsTo T hp)
-  have h2 := hc12.spatialSlice_contDiffAt (timeReversal_mapsTo T hp)
   have hop := hV.2.2.2.1 _ (timeReversal_mapsTo T hp)
   have hgrad : PDE.vecDot ((0 : ℝ → PDE.Vec d → PDE.Vec d)
       (timeReversal T p).1 (timeReversal T p).2)
       (scalarSpatialGradient V (timeReversal T p)) = 0 := by
     simp [PDE.vecDot]
   rw [scalarParabolicOperator_apply, hgrad, add_zero] at hop
-  rw [scalarTimeDerivative_comp_scalarAffine h1, scalarSpatialHessian_comp_scalarAffine h2,
+  rw [scalarTimeDerivative_comp_scalarAffine (hc12.timeSlice_differentiableAt (timeReversal_mapsTo T hp)), scalarSpatialHessian_comp_scalarAffine (hc12.spatialSlice_contDiffAt (timeReversal_mapsTo T hp)),
     one_pow, one_smul]
-  change -1 * scalarTimeDerivative V (timeReversal T p) = _
   have hop' : scalarTimeDerivative V (timeReversal T p) =
       -matrixContraction (coefficientAt B (timeReversal T p))
         (scalarSpatialHessian V (timeReversal T p)) := by

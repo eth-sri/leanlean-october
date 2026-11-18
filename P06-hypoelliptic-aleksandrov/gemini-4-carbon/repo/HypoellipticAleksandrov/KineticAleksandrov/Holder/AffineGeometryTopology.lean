@@ -40,40 +40,38 @@ theorem backwardCylinder_nonempty {d : ℕ} (P₀ : KineticPoint d)
     rw [heq]
     exact PDE.center_mem_euclideanBall 0 (pow_pos hR 3)
 
-/-- The bottom centre belongs to the source kinetic boundary. -/
-theorem bottom_mem_kineticBoundary {d : ℕ} (P₀ : KineticPoint d)
-    {R : ℝ} (hR : 0 < R) :
-    (⟨P₀.time-R^2, P₀.position-R^2 • P₀.velocity, P₀.velocity⟩ : KineticPoint d) ∈
-      kineticBoundary P₀ R := by
-  let f : ℝ → KineticPoint d := fun t =>
-    ⟨t, P₀.position + (t-P₀.time) • P₀.velocity, P₀.velocity⟩
-  have hf : Continuous f := KineticPoint.continuous_mk continuous_id
-    (continuous_const.add ((continuous_id.sub continuous_const).smul continuous_const))
-    continuous_const
-  have hsub : f '' Ioo (P₀.time-R^2) P₀.time ⊆ backwardCylinder P₀ R := by
-    rintro _ ⟨t, ht, rfl⟩
-    refine ⟨ht.1, ht.2, PDE.center_mem_euclideanBall _ hR, ?_⟩
-    have heq : relativePosition P₀ (f t) = 0 := by
-      ext i
-      simp [relativePosition, f]
-    rw [heq]
-    exact PDE.center_mem_euclideanBall 0 (pow_pos hR 3)
-  have ht : P₀.time-R^2 ∈ closure (Ioo (P₀.time-R^2) P₀.time) := by
-    rw [closure_Ioo (sub_lt_self _ (sq_pos_of_pos hR)).ne]
-    exact ⟨le_rfl, sub_le_self _ (sq_nonneg R)⟩
-  have hm := closure_mono hsub (hf.continuousOn.image_closure
-    (mem_image_of_mem f ht))
-  have heq : f (P₀.time-R^2) =
-      ⟨P₀.time-R^2, P₀.position-R^2 • P₀.velocity, P₀.velocity⟩ := by
-    ext i
-    all_goals simp [f]
-    all_goals ring
-  rw [heq] at hm
-  exact ⟨hm, Or.inl (Or.inl rfl)⟩
 
 /-- Comparison boundaries are nonempty for every positive radius. -/
 theorem kineticBoundary_nonempty {d : ℕ} (P₀ : KineticPoint d)
-    {R : ℝ} (hR : 0 < R) : (kineticBoundary P₀ R).Nonempty :=
-  ⟨_, bottom_mem_kineticBoundary P₀ hR⟩
+    {R : ℝ} (hR : 0 < R) : (kineticBoundary P₀ R).Nonempty  := by
+  have bottom_mem_kineticBoundary (P₀ : KineticPoint d) {R : ℝ} (hR : 0 < R) :
+      (⟨P₀.time-R^2, P₀.position-R^2 • P₀.velocity, P₀.velocity⟩ : KineticPoint d) ∈
+      kineticBoundary P₀ R := by
+    let f : ℝ → KineticPoint d := fun t =>
+      ⟨t, P₀.position + (t-P₀.time) • P₀.velocity, P₀.velocity⟩
+    have hf : Continuous f := KineticPoint.continuous_mk continuous_id
+      (continuous_const.add ((continuous_id.sub continuous_const).smul continuous_const))
+      continuous_const
+    have hsub : f '' Ioo (P₀.time-R^2) P₀.time ⊆ backwardCylinder P₀ R := by
+      rintro _ ⟨t, ht, rfl⟩
+      refine ⟨ht.1, ht.2, PDE.center_mem_euclideanBall _ hR, ?_⟩
+      have heq : relativePosition P₀ (f t) = 0 := by
+        ext i
+        simp [relativePosition, f]
+      rw [heq]
+      exact PDE.center_mem_euclideanBall 0 (pow_pos hR 3)
+    have ht : P₀.time-R^2 ∈ closure (Ioo (P₀.time-R^2) P₀.time) := by
+      rw [closure_Ioo (sub_lt_self _ (sq_pos_of_pos hR)).ne]
+      exact ⟨le_rfl, sub_le_self _ (sq_nonneg R)⟩
+    have hm := closure_mono hsub (hf.continuousOn.image_closure
+      (mem_image_of_mem f ht))
+    have heq : f (P₀.time-R^2) =
+        ⟨P₀.time-R^2, P₀.position-R^2 • P₀.velocity, P₀.velocity⟩ := by
+      ext i
+      all_goals simp [f]
+      all_goals ring
+    rw [heq] at hm
+    exact ⟨hm, Or.inl (Or.inl rfl)⟩
+  exact ⟨_, bottom_mem_kineticBoundary P₀ hR⟩
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder

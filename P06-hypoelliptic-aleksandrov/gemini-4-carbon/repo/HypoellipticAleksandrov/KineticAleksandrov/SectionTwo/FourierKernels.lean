@@ -1,16 +1,39 @@
 module
 
-public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.FourierIntegral
+public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.FourierBounds
+public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.DensityIntegral
 public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.Green
 import Mathlib.Probability.Kernel.MeasurableIntegral
 
-/-! # Borel Fourier kernels and their marginal bounds -/
+@[expose] public noncomputable section
 
-@[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open MeasureTheory Set
 open scoped ENNReal ProbabilityTheory
+
+/-- Complex bounded Borel integration uses the explicit complex multiplication pairing. -/
+theorem fourierProjection_integral_complex {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {γ : ℝ → PDE.Vec d} (K : MovingFiberKernel Ω γ) (q : EvolutionQuery Ω γ)
+    (ξ : PDE.Vec d) (ν : ComplexMeasure (PDE.Vec d)) (hν : IsFourierProjection K q ξ ν)
+    (f : PDE.Vec d → ℂ) (hf : Measurable f) (hbounded : ∃ C : ℝ, ∀ v, ‖f v‖ ≤ C) :
+    (∫ᵛ v, f v ∂[ContinuousLinearMap.mul ℝ ℂ; ν]) =
+      ∫ w, f w.1 * fourierPhase ξ q.1.2.2.2 w ∂K.master q := by
+  rw [fourierProjection_eq_densityMap K q ξ ν hν]
+  let g := fourierPhase ξ q.1.2.2.2
+  have hv : ((K.master q).withDensityᵥ g).variation = K.master q :=
+    variation_density_one _ g (continuous_fourierPhase ξ _).measurable
+      (norm_fourierPhase ξ _)
+  have hi : Integrable (fun w => f w.1) (K.master q) := by
+    obtain ⟨C, hC⟩ := hbounded
+    exact Integrable.mono' (integrable_const C)
+      (hf.comp measurable_fst).aestronglyMeasurable
+      (Filter.Eventually.of_forall (fun w => hC w.1))
+  have hiv : ((K.master q).withDensityᵥ g).Integrable (f ∘ Prod.fst) := by
+    simpa only [VectorMeasure.Integrable, hv, Function.comp_def] using hi
+  rw [VectorMeasure.integral_map measurable_fst hf.aestronglyMeasurable hiv]
+  exact integral_density_one _ g (continuous_fourierPhase ξ _).measurable
+    (norm_fourierPhase ξ _) _ hi
+
 
 /-- The Fourier measure of a Borel set depends measurably on the complete query. -/
 theorem measurable_fourierProjection_apply {d : ℕ} {Ω : Set (PDE.Vec d)}
@@ -21,9 +44,7 @@ theorem measurable_fourierProjection_apply {d : ℕ} {Ω : Set (PDE.Vec d)}
       fourierPhase ξ p.1.1.2.2.2 p.2) := by
     unfold fourierPhase PDE.vecDot
     fun_prop
-  have hi := (hm.indicator (measurable_snd (hE.prod MeasurableSet.univ))).stronglyMeasurable
-  have h := hi.integral_kernel_prod_right' (κ := K.master)
-  convert h.measurable using 1
+  convert ((hm.indicator (measurable_snd (hE.prod MeasurableSet.univ))).stronglyMeasurable).integral_kernel_prod_right' (κ := K.master).measurable using 1
   funext q
   rw [fourierProjection_spec K q ξ E hE, ← integral_indicator (hE.prod MeasurableSet.univ)]
   rfl
@@ -67,3 +88,4 @@ theorem fourierKernel_totalVariation_le_one {d : ℕ}
   fourierProjection_totalVariation_le_one K _ ξ _ (fourierKernel_spec K σ τ hστ ξ v)
 
 end HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
+

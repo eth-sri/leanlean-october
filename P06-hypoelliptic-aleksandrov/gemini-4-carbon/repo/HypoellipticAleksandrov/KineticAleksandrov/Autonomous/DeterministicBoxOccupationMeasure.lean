@@ -38,15 +38,14 @@ theorem physicalOccupationMeasure_mass_le (E : FullSpaceEvolution) (z : Z) (T : 
     physicalOccupationMeasure E z T univ ≤ ENNReal.ofReal T := by
   rw [physicalOccupationMeasure_apply _ _ _ _ MeasurableSet.univ]
   apply (lintegral_mono (fun t => kernelXV_mass_le_one E (Real.toNNReal t) z)).trans_eq
-  simp only [lintegral_const, one_mul, Measure.restrict_apply_univ, Real.volume_Ioc, sub_zero]
+  simp
 
 /-- The conservative full-space kernel gives occupation mass exactly equal to elapsed time. -/
 theorem physicalOccupationMeasure_mass_eq {lam Lam : ℝ} (hlam : 0 < lam)
     (A : SmoothAutonomous lam Lam) (E : FullSpaceEvolution) (hE : IsFullSpaceEvolution A E)
     (z : Z) (T : ℝ) : physicalOccupationMeasure E z T univ = ENNReal.ofReal T := by
   rw [physicalOccupationMeasure_apply _ _ _ _ MeasurableSet.univ]
-  simp only [kernelXV_mass_one hlam A E hE, lintegral_const, one_mul,
-    Measure.restrict_apply_univ, Real.volume_Ioc, sub_zero]
+  simp [kernelXV_mass_one hlam A E hE, lintegral_const, Measure.restrict_apply_univ, Real.volume_Ioc]
 
 /-- Every finite observation window gives a genuinely finite occupation measure. -/
 instance physicalOccupationMeasure_isFinite (E : FullSpaceEvolution) (z : Z) (T : ℝ) :

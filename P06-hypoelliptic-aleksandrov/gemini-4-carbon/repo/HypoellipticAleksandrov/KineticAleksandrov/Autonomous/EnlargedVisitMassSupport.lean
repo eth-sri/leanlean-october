@@ -20,7 +20,6 @@ theorem enlarged_closedEntrance_subset_active (c : Clock) :
     closure c.entrance ⊆ c.active := by
   intro v hv
   rw [Clock.entrance, closure_Ioo (by linarith [c.positive])] at hv
-  change c.vbar - 3 * c.r / 4 < v ∧ v < c.vbar + 3 * c.r / 4
   constructor <;> linarith [hv.1, hv.2, c.positive]
 
 /-- Every canonical entrance lies between the initial time and the horizon. -/

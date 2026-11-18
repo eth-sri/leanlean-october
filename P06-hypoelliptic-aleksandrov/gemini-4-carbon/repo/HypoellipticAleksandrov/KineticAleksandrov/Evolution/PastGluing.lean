@@ -75,8 +75,7 @@ theorem pastGluedFunction_isClassical {C : ℝ} (hC : 0 ≤ C)
     have haτ : a < τ := ha.trans hq.1
     have hmem : q ∈ evolutionFiniteInteriorRaw Ω γ a τ := ⟨ha, hq⟩
     have hn := (isOpen_evolutionFiniteInteriorRaw hΩ hγ a τ).mem_nhds hmem
-    have hc := (hu a haτ).2.2.1.contDiffAt hn
-    apply ContDiffAt.contDiffWithinAt (hc.congr_of_eventuallyEq ?_)
+    apply ContDiffAt.contDiffWithinAt (((hu a haτ).2.2.1.contDiffAt hn).congr_of_eventuallyEq ?_)
     filter_upwards [hn] with r hr
     exact pastGluedFunction_eq hΩ hγ hlam hB hb hε0 hε1 u hu haτ
       ⟨hr.2.1.le, subset_closure hr.2.2⟩ hr.1
@@ -85,11 +84,7 @@ theorem pastGluedFunction_isClassical {C : ℝ} (hC : 0 ≤ C)
     have ha : a < p.time := sub_lt_self _ zero_lt_one
     have haτ : a < τ := ha.trans hp.1
     have he : pastGluedFunction τ u =ᶠ[𝓝 p] u a := by
-      have ht : ∀ᶠ q : KineticPoint n in 𝓝 p, a < q.time ∧ q.time < τ :=
-        ((isOpen_lt continuous_const continuous_time).inter
-          (isOpen_lt continuous_time continuous_const)).mem_nhds ⟨ha, hp.1⟩
-      have hd := (isOpen_setOf_mem_movingDomain hΩ hγ).mem_nhds hp.2
-      filter_upwards [ht, hd] with q hqt hqd
+      filter_upwards [(((isOpen_lt continuous_const continuous_time).inter (isOpen_lt continuous_time continuous_const)).mem_nhds ⟨ha, hp.1⟩), ((isOpen_setOf_mem_movingDomain hΩ hγ).mem_nhds hp.2)] with q hqt hqd
       exact pastGluedFunction_eq hΩ hγ hlam hB hb hε0 hε1 u hu haτ
         ⟨hqt.2.le, subset_closure hqd⟩ hqt.1
     rw [viscousTransportedOperator_congr_germ B b ε he]

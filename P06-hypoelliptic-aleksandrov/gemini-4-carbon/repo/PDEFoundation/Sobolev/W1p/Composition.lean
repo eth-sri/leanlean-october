@@ -1,7 +1,8 @@
 module
 
 public import Mathlib.Analysis.Calculus.MeanValue
-public import PDEFoundation.Measure.EuclideanFieldMeasurability
+public import Mathlib.MeasureTheory.Function.StronglyMeasurable.AEStronglyMeasurable
+public import PDEFoundation.Ambient.EuclideanNorm
 public import PDEFoundation.Measure.LpDominatedConvergence
 public import PDEFoundation.Sobolev.W1p.Closure
 public import PDEFoundation.Sobolev.W1p.ConvexApprox.Density
@@ -81,11 +82,10 @@ theorem eLpNorm_comp_sub_le_of_lipschitz
         ‖G (f x) - G (g x)‖ ≤
           ‖M • (f x - g x)‖ := by
     intro x
-    have hdist := hLip.dist_le_mul (f x) (g x)
     rw [norm_smul]
-    simp only [Real.norm_eq_abs, abs_of_nonneg hM]
+    simp [abs_of_nonneg hM]
     simpa only [Real.dist_eq,
-      Real.coe_toNNReal M hM] using hdist
+      Real.coe_toNNReal M hM] using (hLip.dist_le_mul (f x) (g x))
   calc
     eLpNorm (fun x => G (f x) - G (g x)) p μ ≤
         eLpNorm (fun x => M • (f x - g x)) p μ :=
@@ -121,22 +121,21 @@ theorem hasWeakGradient_comp_contDiff_of_deriv_bounded
   rcases U.eq_empty_or_nonempty with hUEmpty | hUNonempty
   · subst U
     intro i φ _hφSmooth _hφCompact _hφSupport
-    simp only [Measure.restrict_empty,
-      integral_zero_measure, neg_zero]
+    simp
   obtain ⟨x0, r, hr, hball⟩ :=
     exists_metricClosedBall_subset_of_isOpenBoundedConvexDomain
       hU hUNonempty
-  have hGDiff : Differentiable ℝ G :=
+  have hGDiff :=
     hG.differentiable (by norm_num)
-  have hGLip : LipschitzWith M.toNNReal G :=
+  have hGLip :=
     lipschitzWith_of_abs_deriv_le hM hGDiff hderiv
-  have hderivContinuous : Continuous (deriv G) :=
+  have hderivContinuous :=
     hG.continuous_deriv (by norm_num)
   have hGZeroLip :
       LipschitzWith M.toNNReal
         (fun t => G t - G 0) := by
     intro a b
-    simpa only [edist_sub_right] using hGLip a b
+    simpa using hGLip a b
   have hcompMem :
       ∀ v : Vec d → ℝ,
         MemLp v p (volumeOn U) →
@@ -145,10 +144,10 @@ theorem hasWeakGradient_comp_contDiff_of_deriv_bounded
     have hshift :
         MemLp (fun x => G (v x) - G 0)
           p (volumeOn U) := by
-      simpa only [Function.comp_apply] using!
+      simpa using!
         hGZeroLip.comp_memLp (by simp) hv
     have hconstant :
-        MemLp (fun _ : Vec d => G 0)
+        MemLp (fun _ => G 0)
           p (volumeOn U) :=
       memLp_const (G 0)
     refine (hshift.add hconstant).ae_eq ?_
@@ -168,7 +167,7 @@ theorem hasWeakGradient_comp_contDiff_of_deriv_bounded
           hv.aestronglyMeasurable).mul
           (hDv i).aestronglyMeasurable
     · filter_upwards with x
-      simp only [norm_mul, Real.norm_eq_abs]
+      simp
       exact
         mul_le_mul_of_nonneg_right
           (hderiv (v x)) (abs_nonneg (Dv x i))
@@ -199,10 +198,6 @@ theorem hasWeakGradient_comp_contDiff_of_deriv_bounded
       ∀ n,
         HasWeakGradientOn U (valueSeq n) (gradSeq n) := by
     intro n
-    have hcompSmooth :
-        ContDiff ℝ 1
-          (fun x => G ((ψ n).toFun x)) :=
-      hG.comp ((hψSmooth n).of_le (by norm_num))
     have hgradient :
         classicalGradient
             (fun x => G ((ψ n).toFun x)) =
@@ -214,20 +209,9 @@ theorem hasWeakGradient_comp_contDiff_of_deriv_bounded
           hGDiff.differentiableAt
           ((hψSmooth n).differentiable
             (by norm_num)).differentiableAt
-    change
-      HasWeakGradientOn U
-        (fun x => G ((ψ n).toFun x)) (gradSeq n)
     rw [← hgradient]
-    simpa only [classicalGradient_apply] using!
-      HasWeakGradientOn.of_contDiff hcompSmooth
-  have htargetValueMem :
-      MemLpOn U p (fun x => G (u.toFun x)) :=
-    hcompMem u.toFun u.memLp
-  have htargetGradMem :
-      GradMemLpOn U p
-        (fun x i =>
-          deriv G (u.toFun x) * u.grad x i) :=
-    hcompGradMem u.toFun u.grad u.memLp u.gradMemLp
+    simpa using!
+      HasWeakGradientOn.of_contDiff (hG.comp ((hψSmooth n).of_le (by norm_num)))
   have hψValue :
       Tendsto
         (fun n =>
@@ -254,7 +238,7 @@ theorem hasWeakGradient_comp_contDiff_of_deriv_bounded
                 (fun x => (ψ n).toFun x - u.toFun x)
                 p (volumeOn U))
           atTop (𝓝 0) := by
-      simpa only [mul_zero] using
+      simpa using
         ENNReal.Tendsto.const_mul hψValue
           (Or.inr ENNReal.ofReal_ne_top)
     exact
@@ -268,11 +252,9 @@ theorem hasWeakGradient_comp_contDiff_of_deriv_bounded
                 (ψ n).memLp.aestronglyMeasurable).sub
               (hGLip.continuous.comp_aestronglyMeasurable
                 u.memLp.aestronglyMeasurable)))
-  have hpZero : p ≠ 0 :=
-    ne_of_gt (zero_lt_one.trans_le hp)
   obtain ⟨σ, hσStrictMono, hσAe⟩ :=
     (tendstoInMeasure_of_tendsto_eLpNorm
-      hpZero hψValue).exists_seq_tendsto_ae
+      (ne_of_gt (zero_lt_one.trans_le hp)) hψValue).exists_seq_tendsto_ae
   have hψGradCoordinate :
       ∀ i,
         Tendsto
@@ -332,8 +314,7 @@ theorem hasWeakGradient_comp_contDiff_of_deriv_bounded
                 ((ψ (σ n)).grad x i -
                   u.grad x i)‖ := by
         intro x
-        simp only [first, norm_mul, Real.norm_eq_abs,
-          norm_smul, abs_of_nonneg hM]
+        simp [first, norm_mul, norm_smul, abs_of_nonneg hM]
         exact
           mul_le_mul_of_nonneg_right
             (hderiv ((ψ (σ n)).toFun x))
@@ -369,9 +350,6 @@ theorem hasWeakGradient_comp_contDiff_of_deriv_bounded
           (fun n =>
             eLpNorm (first n) p (volumeOn U))
           atTop (𝓝 0) := by
-      have hcoordinate :=
-        (hψGradCoordinate i).comp
-          hσStrictMono.tendsto_atTop
       have hupper :
           Tendsto
             (fun n =>
@@ -381,8 +359,8 @@ theorem hasWeakGradient_comp_contDiff_of_deriv_bounded
                     (ψ (σ n)).grad x i - u.grad x i)
                   p (volumeOn U))
             atTop (𝓝 0) := by
-        simpa only [mul_zero, Function.comp_apply] using
-          ENNReal.Tendsto.const_mul hcoordinate
+        simpa using
+          ENNReal.Tendsto.const_mul ((hψGradCoordinate i).comp hσStrictMono.tendsto_atTop)
             (Or.inr ENNReal.ofReal_ne_top)
       exact
         tendsto_of_tendsto_of_tendsto_of_le_of_le
@@ -424,8 +402,7 @@ theorem hasWeakGradient_comp_contDiff_of_deriv_bounded
               (hderiv ((ψ (σ n)).toFun x))
               (hderiv (u.toFun x))
           _ = 2 * M := by ring
-      simp only [second, secondBound, norm_mul,
-        Real.norm_eq_abs]
+      simp [second, secondBound, norm_mul]
       simpa only [abs_of_nonneg hM,
         abs_of_pos (by norm_num : (0 : ℝ) < 2)] using
         mul_le_mul_of_nonneg_right hdiff
@@ -443,41 +420,22 @@ theorem hasWeakGradient_comp_contDiff_of_deriv_bounded
             atTop
             (𝓝 (deriv G (u.toFun x))) :=
         (hderivContinuous.tendsto (u.toFun x)).comp hx
-      have hdifference :=
-        hderivTendsto.sub
-          (tendsto_const_nhds :
-            Tendsto
-              (fun _ : ℕ => deriv G (u.toFun x))
-              atTop
-              (𝓝 (deriv G (u.toFun x))))
       have hproduct :=
-        hdifference.mul_const (u.grad x i)
-      simpa only [second, sub_self, zero_mul] using hproduct
-    have hsecond :
-        Tendsto
-          (fun n =>
-            eLpNorm
-              (second n - (0 : Vec d → ℝ))
-              p (volumeOn U))
-          atTop (𝓝 0) :=
-      tendsto_eLpNorm_sub_zero_of_tendsto_ae_of_dominated
-        hp hpTop hsecondMeas
-        (MeasureTheory.MemLp.zero :
-          MemLp (0 : Vec d → ℝ) p (volumeOn U))
-        hsecondBoundMem hsecondBound hsecondAe
+        (hderivTendsto.sub (tendsto_const_nhds : Tendsto (fun _ => deriv G (u.toFun x)) atTop (𝓝 (deriv G (u.toFun x))))).mul_const (u.grad x i)
+      simpa [second] using hproduct
     have hsecondZero :
         Tendsto
           (fun n =>
             eLpNorm (second n) p (volumeOn U))
           atTop (𝓝 0) := by
-      simpa only [Pi.sub_apply, sub_zero] using hsecond
+      simpa using (tendsto_eLpNorm_sub_zero_of_tendsto_ae_of_dominated hp hpTop hsecondMeas (MeasureTheory.MemLp.zero : MemLp 0 p (volumeOn U)) hsecondBoundMem hsecondBound hsecondAe)
     have hsum :
         Tendsto
           (fun n =>
             eLpNorm (first n) p (volumeOn U) +
               eLpNorm (second n) p (volumeOn U))
           atTop (𝓝 0) := by
-      simpa only [zero_add] using hfirst.add hsecondZero
+      simpa using hfirst.add hsecondZero
     have hdecomp :
         ∀ n,
           (fun x =>
@@ -486,8 +444,7 @@ theorem hasWeakGradient_comp_contDiff_of_deriv_bounded
             first n + second n := by
       intro n
       funext x
-      simp only [gradSeq, first, second,
-        Pi.add_apply]
+      simp [gradSeq, first, second]
       ring
     exact
       tendsto_of_tendsto_of_tendsto_of_le_of_le
@@ -499,7 +456,7 @@ theorem hasWeakGradient_comp_contDiff_of_deriv_bounded
             eLpNorm_add_le hp)
   exact
     HasWeakGradientOn.of_tendsto_eLpNorm
-      htargetValueMem htargetGradMem
+      (hcompMem u.toFun u.memLp) (hcompGradMem u.toFun u.grad u.memLp u.gradMemLp)
       (fun n => hvalueSeqMem (σ n))
       (fun n => hgradSeqMem (σ n))
       (fun n => hweakSeq (σ n))

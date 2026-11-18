@@ -39,9 +39,7 @@ theorem kineticPoint_compact_volume_lt_top {d : ℕ} (K : Set (KineticPoint d))
   change Measure.map (KineticPoint.equivProd d).symm
     (volume : Measure (ℝ × (PDE.Vec d × PDE.Vec d))) K < ⊤
   rw [Measure.map_apply (KineticPoint.measurable_equivProd_symm d) hK.isClosed.measurableSet]
-  have hc : IsCompact ((KineticPoint.equivProd d).symm ⁻¹' K) :=
-    (KineticPoint.homeomorphProd d).symm.isCompact_preimage.mpr hK
-  exact hc.measure_lt_top
+  exact ((KineticPoint.homeomorphProd d).symm.isCompact_preimage.mpr hK).measure_lt_top
 
 /-- The cylinder restriction is a finite measure; no closure or Euclidean normalization changes. -/
 theorem backwardCylinder_volume_lt_top {d : ℕ} (P₀ : KineticPoint d) (R : ℝ)

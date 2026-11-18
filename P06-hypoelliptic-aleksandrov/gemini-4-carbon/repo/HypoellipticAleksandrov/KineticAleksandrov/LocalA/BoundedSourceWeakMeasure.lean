@@ -38,8 +38,7 @@ theorem measurableSet_boundedSourcePairSet (hΩ : MeasurableSet Ω) (hγ : Conti
       (hγ.measurable.comp (continuous_time.measurable.comp measurable_fst)))
   convert ht.inter hp using 1
   ext q
-  simp only [boundedSourcePairSet, mem_ofPred_eq, mem_inter_iff, movingDomain,
-    PDE.mem_translateSet_iff_sub_mem]
+  simp [boundedSourcePairSet, movingDomain, PDE.mem_translateSet_iff_sub_mem]
 
 /-- Turn a valid starting-point/source-time pair into the existing query carrier. -/
 def boundedSourcePairQuery (q : BoundedSourcePair Ω γ) : EvolutionQuery Ω γ :=
@@ -112,24 +111,21 @@ theorem integral_boundedSourceActionMeasure (K : MovingFiberKernel Ω γ)
       (measurable_fst.prodMk (measurable_snd.fst.prodMk measurable_snd.snd)))
   have hF : Integrable (f ∘ boundedSourceOutput) (η.compProd κ) :=
     integrable_bounded_real _ _ (hf.comp measurable_boundedSourceOutput) M (fun q => hb _)
-  have hm := measurable_duhamelIntegrand K hΩ hγ g hg
-  have hi : Integrable (fun q : KineticPoint d × ℝ => duhamelIntegrand K g q.1 q.2) ρ :=
-    integrable_bounded_real _ _ hm M
+  have hi : Integrable (fun q => duhamelIntegrand K g q.1 q.2) ρ :=
+    integrable_bounded_real _ _ (measurable_duhamelIntegrand K hΩ hγ g hg) M
       (fun q => abs_duhamelIntegrand_le K g M hM hb q.1 q.2)
   have hD := measurableSet_boundedSourcePairSet hΩ hγ
-  have hcoe : (fun q : BoundedSourcePair Ω γ =>
+  have hcoe : (fun q =>
       ∫ w, f (boundedSourceOutput (q,w)) ∂κ q) =
       fun q => duhamelIntegrand K g q.1.1 q.1.2 := by
     funext q
-    dsimp only [κ, boundedSourcePairKernel, ProbabilityTheory.Kernel.comap_apply,
-      f, boundedSourceOutput, boundedSourcePairQuery]
     unfold duhamelIntegrand
     have hq : q.1.1.time ≤ q.1.2 ∧
         q.1.1.position ∈ movingDomain Ω γ q.1.1.time := q.2
     rw [dite_eq_left hq]
     rfl
   have hind : (boundedSourcePairSet Ω γ).indicator
-      (fun q : KineticPoint d × ℝ => duhamelIntegrand K g q.1 q.2) =
+      (fun q => duhamelIntegrand K g q.1 q.2) =
       fun q => duhamelIntegrand K g q.1 q.2 := by
     funext q
     by_cases hq : q ∈ boundedSourcePairSet Ω γ
@@ -142,11 +138,9 @@ theorem integral_boundedSourceActionMeasure (K : MovingFiberKernel Ω γ)
   rw [integral_map measurable_boundedSourceOutput.aemeasurable hf.aestronglyMeasurable]
   change (∫ q, (f ∘ boundedSourceOutput) q ∂η.compProd κ) = _
   rw [Measure.integral_compProd hF]
-  simp only [Function.comp_apply]
+  simp
   rw [hcoe]
-  have hsub := integral_subtype_comap (μ := ρ) hD
-    (fun q : KineticPoint d × ℝ => duhamelIntegrand K g q.1 q.2)
-  rw [hsub, ← integral_indicator hD, hind]
+  rw [(integral_subtype_comap (μ := ρ) hD (fun q => duhamelIntegrand K g q.1 q.2)), ← integral_indicator hD, hind]
   exact integral_prod _ hi
 
 end HypoellipticAleksandrov.KineticAleksandrov.SectionTwo

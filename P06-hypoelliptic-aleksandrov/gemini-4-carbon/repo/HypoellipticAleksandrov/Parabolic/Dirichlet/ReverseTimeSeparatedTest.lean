@@ -49,16 +49,16 @@ theorem ae_reverseTimeSeparatedVTest
   rw [reverseTimeSeparatedVTest]
   change (ContinuousLinearMap.lsmul ℝ ℝ : ℝ →L[ℝ]
     H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ).holder
-    (2 : ℝ≥0∞) ((eta.memLp ∞).toLp eta)
-    ((MeasureTheory.Lp.constL (2 : ℝ≥0∞) (reverseTimeVolume T) ℝ) v) =ᵐ[_] _
+    2 ((eta.memLp ∞).toLp eta)
+    ((MeasureTheory.Lp.constL 2 (reverseTimeVolume T) ℝ) v) =ᵐ[_] _
   filter_upwards [ContinuousLinearMap.coeFn_holder
       (ContinuousLinearMap.lsmul ℝ ℝ : ℝ →L[ℝ]
         H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ)
-      (r := (2 : ℝ≥0∞))
+      (r := 2)
       ((eta.memLp ∞).toLp eta)
-    ((MeasureTheory.Lp.constL (2 : ℝ≥0∞) (reverseTimeVolume T) ℝ) v),
+    ((MeasureTheory.Lp.constL 2 (reverseTimeVolume T) ℝ) v),
     (eta.memLp ∞).coeFn_toLp,
-    MeasureTheory.Lp.coeFn_const (p := (2 : ℝ≥0∞))
+    MeasureTheory.Lp.coeFn_const (p := 2)
       (μ := reverseTimeVolume T) v] with tau hmul heta hconst
   rw [MeasureTheory.Lp.constL_apply] at hmul ⊢
   rw [hmul, heta, hconst]
@@ -73,14 +73,7 @@ theorem tendsto_reverseTimeSeparatedVTest
     Tendsto (fun n => reverseTimeSeparatedVTest hΩ eta (vN n)) atTop
       (𝓝 (reverseTimeSeparatedVTest hΩ eta v)) := by
   letI : IsFiniteMeasure (reverseTimeVolume T) := reverseTimeVolume_isFiniteMeasure T
-  let L : H10HilbertGraph hΩ →L[ℝ] ReverseTimeL2V hΩ T :=
-    ((((ContinuousLinearMap.lsmul ℝ ℝ : ℝ →L[ℝ]
-      H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ)).holderL
-      (reverseTimeVolume T) (∞ : ℝ≥0∞) (2 : ℝ≥0∞) (2 : ℝ≥0∞)
-      ((eta.memLp ∞).toLp eta)).comp
-      (MeasureTheory.Lp.constL (2 : ℝ≥0∞) (reverseTimeVolume T) ℝ))
-  change Tendsto (fun n => L (vN n)) atTop (𝓝 (L v))
-  exact L.continuous.tendsto v |>.comp hv
+  exact ((((ContinuousLinearMap.lsmul ℝ ℝ : ℝ →L[ℝ] H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ)).holderL (reverseTimeVolume T) (∞ : ℝ≥0∞) 2 2 ((eta.memLp ∞).toLp eta)).comp (MeasureTheory.Lp.constL 2 (reverseTimeVolume T) ℝ)).continuous.tendsto v |>.comp hv
 
 /-- The continuous `L²(V*)`--`L²(V)` pairing over the reverse-time volume. -/
 noncomputable def reverseTimeDualPairingCLM
@@ -100,8 +93,7 @@ theorem reverseTimeDualPairingCLM_apply
     reverseTimeDualPairingCLM hΩ T g z =
       ∫ tau, g tau (z tau) ∂reverseTimeVolume T := by
   unfold reverseTimeDualPairingCLM
-  dsimp only
   rw [ContinuousLinearMap.lpPairing_eq_integral]
-  simp only [ContinuousLinearMap.flip_apply, ContinuousLinearMap.apply_apply]
+  simp
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

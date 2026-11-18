@@ -59,7 +59,7 @@ theorem eventually_innerCylinder_mem_straightenedEllipsoid
   filter_upwards [hβlim.eventually (gt_mem_nhds (by linarith : 0 < δ / 4)),
     hRlim.eventually (eventually_ge_atTop R0)] with k hk hRk
   have hr : 0 < r0 - β k := by linarith
-  have hR : 0 < R k := hR0.trans_le hRk
+  have hR := hR0.trans_le hRk
   refine ⟨hr, hR, fun p hp => ?_⟩
   exact mem_straightenedEllipsoid_of_common_innerCylinder
     (sub_pos.mpr hδr) hr hR

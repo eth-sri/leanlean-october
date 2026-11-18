@@ -30,10 +30,8 @@ theorem bellmanDx_comp_dilation (r : ℝ) (phi : (ℝ × ℝ) → ℝ) (q : ℝ 
   have hf := hphi.hasFDerivAt.comp q (bellmanDilationLinear r).hasFDerivAt
   change HasFDerivAt (fun z => phi (bellmanPlaneDilation r z)) _ q at hf
   rw [bellmanDx, hf.fderiv]
-  simp only [ContinuousLinearMap.comp_apply, bellmanDilationLinear,
-    ContinuousLinearMap.prod_apply, smul_apply, ContinuousLinearMap.coe_fst',
-    ContinuousLinearMap.coe_snd', smul_eq_mul, mul_one, mul_zero]
-  have he : (r ^ 3, (0 : ℝ)) = r ^ 3 • ((1 : ℝ), (0 : ℝ)) := by simp
+  simp [bellmanDilationLinear, ContinuousLinearMap.prod_apply, smul_apply, ContinuousLinearMap.coe_fst', ContinuousLinearMap.coe_snd']
+  have he : (r ^ 3, 0) = r ^ 3 • (1, (0 : ℝ)) := by simp
   rw [he, map_smul]
   rfl
 
@@ -45,10 +43,8 @@ theorem bellmanDv_comp_dilation (r : ℝ) (phi : (ℝ × ℝ) → ℝ) (q : ℝ 
   have hf := hphi.hasFDerivAt.comp q (bellmanDilationLinear r).hasFDerivAt
   change HasFDerivAt (fun z => phi (bellmanPlaneDilation r z)) _ q at hf
   rw [bellmanDv, hf.fderiv]
-  simp only [ContinuousLinearMap.comp_apply, bellmanDilationLinear,
-    ContinuousLinearMap.prod_apply, smul_apply, ContinuousLinearMap.coe_fst',
-    ContinuousLinearMap.coe_snd', smul_eq_mul, mul_one, mul_zero]
-  have he : ((0 : ℝ), r) = r • ((0 : ℝ), (1 : ℝ)) := by simp
+  simp [bellmanDilationLinear, ContinuousLinearMap.prod_apply, smul_apply, ContinuousLinearMap.coe_fst', ContinuousLinearMap.coe_snd']
+  have he : (0, r) = r • ((0 : ℝ), 1) := by simp
   rw [he, map_smul]
   rfl
 
@@ -66,9 +62,9 @@ theorem bellmanDvv_comp_dilation (r : ℝ) (hr : 0 < r)
     ((hp _ (hmap z hz)).contDiffAt
       (bellmanPuncturedSet_isOpen.mem_nhds (hmap z hz))).differentiableAt (by norm_num)
   have hv : ContDiffOn ℝ 1 (bellmanDv phi) bellmanPuncturedSet :=
-    (hp.fderiv_of_isOpen bellmanPuncturedSet_isOpen (m := 1) (by norm_num)).clm_apply
+    (hp.fderiv_of_isOpen bellmanPuncturedSet_isOpen (by norm_num)).clm_apply
       contDiffOn_const
-  have hvd : DifferentiableAt ℝ (bellmanDv phi) (bellmanPlaneDilation r q) :=
+  have hvd :=
     ((hv _ (hmap q hq)).contDiffAt
       (bellmanPuncturedSet_isOpen.mem_nhds (hmap q hq))).differentiableAt (by norm_num)
   have he : bellmanDv (fun z => phi (bellmanPlaneDilation r z)) =ᶠ[𝓝 q]
@@ -78,10 +74,8 @@ theorem bellmanDvv_comp_dilation (r : ℝ) (hr : 0 < r)
   have hf := (hvd.hasFDerivAt.comp q (bellmanDilationLinear r).hasFDerivAt).const_mul r
   change HasFDerivAt (fun z => r * bellmanDv phi (bellmanPlaneDilation r z)) _ q at hf
   rw [bellmanDvv, he.fderiv_eq, hf.fderiv]
-  simp only [ContinuousLinearMap.comp_apply, bellmanDilationLinear,
-    ContinuousLinearMap.prod_apply, smul_apply, ContinuousLinearMap.coe_fst',
-    ContinuousLinearMap.coe_snd', smul_eq_mul, mul_one, mul_zero]
-  have he0 : ((0 : ℝ), r) = r • ((0 : ℝ), (1 : ℝ)) := by simp
+  simp [bellmanDilationLinear, ContinuousLinearMap.prod_apply, smul_apply, ContinuousLinearMap.coe_fst', ContinuousLinearMap.coe_snd']
+  have he0 : (0, r) = r • ((0 : ℝ), 1) := by simp
   rw [he0, map_smul]
   change r * (r * bellmanDvv phi (bellmanPlaneDilation r q)) = _
   ring

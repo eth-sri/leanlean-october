@@ -29,8 +29,7 @@ theorem returnExpandedCenter_succ (z : Point) (ell : ℝ) (n : ℕ) :
     returnExpandedCenter z ell (n + 1) =
       returnDoubleCenter (returnExpandedCenter z ell n) (returnExpandedRadius ell n) := by
   rw [returnExpandedCenter, returnExpandedRadius_succ]
-  ext i <;> simp only [returnExpandedCenter, returnDoubleCenter,
-    Pi.add_apply, Pi.smul_apply, smul_eq_mul] <;> ring
+  ext i <;> simp [returnExpandedCenter, returnDoubleCenter] <;> ring
 
 /-- The expanded radius never decreases. -/
 theorem returnExpandedRadius_mono {ell : ℝ} (hell : 0 ≤ ell) {m n : ℕ} (hmn : m ≤ n) :
@@ -68,14 +67,11 @@ theorem return_patch_doublings (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ 
     induction n with
     | zero =>
       intro _ p hp
-      simpa only [returnExpandedCenter, returnExpandedRadius, pow_zero, one_mul,
-        sub_self, mul_zero, add_zero, zero_smul] using hpatch p (by simpa only
-          [returnExpandedCenter, returnExpandedRadius, pow_zero, one_mul, sub_self,
-            mul_zero, add_zero, zero_smul] using hp)
+      simpa using hpatch p (by simpa [returnExpandedCenter, returnExpandedRadius] using hp)
     | succ n ih =>
       intro hn p hp
       have hnN : n ≤ N := by omega
-      have hsmall : returnExpandedRadius ell n ≤ 1 / 64 :=
+      have hsmall :=
         (returnExpandedRadius_mono hell.le hnN).trans hrad
       have ht := returnExpandedCenter_time_ge z hell.le n
       have htime : 12 * (returnExpandedRadius ell n) ^ 2 <
@@ -83,10 +79,7 @@ theorem return_patch_doublings (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ 
         have hnn := (hrpos n).le
         nlinarith
       rw [returnExpandedCenter_succ, returnExpandedRadius_succ] at hp
-      have h := hd A u hu (returnExpandedCenter z ell n) (returnExpandedRadius ell n)
-        (c ^ n * k) (hrpos n) htime (mul_nonneg (pow_nonneg hc.le n) hk)
-        (ih hnN) p hp
-      simpa only [pow_succ', mul_assoc] using h
+      simpa only [pow_succ', mul_assoc] using (hd A u hu (returnExpandedCenter z ell n) (returnExpandedRadius ell n) (c ^ n * k) (hrpos n) htime (mul_nonneg (pow_nonneg hc.le n) hk) (ih hnN) p hp)
   exact hi N le_rfl
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

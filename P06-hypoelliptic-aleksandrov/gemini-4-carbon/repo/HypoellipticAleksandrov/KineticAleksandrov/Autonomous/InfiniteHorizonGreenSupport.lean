@@ -21,18 +21,15 @@ theorem stripGreen_infinite_ae_of_finite
     ∀ᵐ p ∂stripGreen hH hLE hlam hLam A H ⊤ e, P p := by
   let t (n : ℕ) := e.1.time + (n : ℝ) + 1
   have ht (n : ℕ) : e.1.time < t n := by
-    dsimp only [t]
     linarith [Nat.cast_nonneg (α := ℝ) n]
   have hn (n : ℕ) : ∀ᵐ p ∂stripGreen hH hLE hlam hLam A H ⊤ e,
       p.time < t n → P p := by
     apply (ae_restrict_iff'
       (isOpen_lt continuous_time continuous_const).measurableSet).mp
-    have hr := stripGreen_finite_restrict_infinite hH hLE hlam hLam A H e (t n) (ht n)
-    exact hr ▸ hP (t n) (ht n)
+    exact (stripGreen_finite_restrict_infinite hH hLE hlam hLam A H e (t n) (ht n)) ▸ hP (t n) (ht n)
   filter_upwards [ae_all_iff.mpr hn] with p hp
   obtain ⟨n, hn⟩ := exists_nat_gt (p.time - e.1.time)
   apply hp n
-  dsimp only [t]
   linarith
 
 /-- Actual infinite Green measure is strictly future supported inside the velocity interval. -/
