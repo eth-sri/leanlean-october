@@ -1,8 +1,9 @@
 module
 
 public import GS.Extensions.OriginalCompact
-public import GS.Extensions.MatrixCalculus
 public import Mathlib.Analysis.SpecialFunctions.Exponential
+public import Mathlib.Analysis.Calculus.Deriv.Comp
+public import Mathlib.Analysis.Calculus.Deriv.Prod
 
 @[expose] public section
 
@@ -99,8 +100,6 @@ theorem isSkew_smul (t : ℝ) {A : Mat n} (hA : IsSkew A) : IsSkew (t • A) := 
 /-- A named, concrete exponential line. -/
 def expLine (C : Mat n) (t : ℝ) : Mat n := matrixExp (t • C)
 
-@[simp] theorem expLine_zero (C : Mat n) : expLine C 0 = 1 := by
-  simp only [expLine, zero_smul, matrixExp_zero]
 
 theorem expLine_supported {block : Fin n → ℕ} {C : Mat n}
     (hC : Supported block C) (t : ℝ) : Supported block (expLine C t) :=

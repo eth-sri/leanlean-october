@@ -3,6 +3,7 @@ module
 public import GS.Unitary.Frobenius
 public import Mathlib.Analysis.InnerProductSpace.Projection.FiniteDimensional
 public import Mathlib.Analysis.InnerProductSpace.PiL2
+public import Mathlib.Analysis.InnerProductSpace.Orthonormal
 public import Mathlib.Analysis.Normed.Module.FiniteDimension
 public import Mathlib.Analysis.Matrix.Normed
 public import Mathlib.Analysis.Calculus.ContDiff.Operations
@@ -12,117 +13,115 @@ public import Mathlib.Analysis.Calculus.ContDiff.Operations
 set_option backward.isDefEq.respectTransparency false
 set_option backward.defeqAttrib.useBackward true
 
-/-!
-# Real Frobenius projection on complex matrix subspaces
-
-The matrix space retains its finite-product norm. A separate Euclidean space
-carries the real inner product obtained from the complex Hermitian product.
-The projector below is constructed using mathlib's orthogonal projection.
--/
 noncomputable section
 attribute [local instance] Matrix.normedAddCommGroup Matrix.normedSpace
 open GS Matrix InnerProductSpace
 open scoped BigOperators
 namespace GS.UnitaryGeometry
-variable {n : ℕ}
+variable {𝕂 : Type} [RCLike 𝕂] {n : ℕ}
 
-abbrev CFrobCoordinates (n : ℕ) := EuclideanSpace ℂ (Fin n × Fin n)
+abbrev KFrobCoordinates (𝕂 : Type) [RCLike 𝕂] (n : ℕ) :=
+  EuclideanSpace ℝ (Fin n × Fin n × Fin (Module.finrank ℝ 𝕂))
+abbrev CFrobCoordinates (n : ℕ) := KFrobCoordinates ℂ n
 
-instance cFrobCoordinatesRealInner (n : ℕ) : InnerProductSpace ℝ (CFrobCoordinates n) :=
-  InnerProductSpace.rclikeToReal ℂ _
+noncomputable def kRealBasis (𝕂 : Type) [RCLike 𝕂] :
+    OrthonormalBasis (Fin (Module.finrank ℝ 𝕂)) ℝ 𝕂 :=
+  stdOrthonormalBasis ℝ 𝕂
 
-def encodeCFrob : CMat n →ₗ[ℝ] CFrobCoordinates n where
-  toFun A := (WithLp.equiv 2 _).symm (fun k => A k.1 k.2)
-  map_add' _ _ := rfl
-  map_smul' _ _ := rfl
+private theorem kRealBasis_inner (x y : 𝕂) :
+    ∑ r, (kRealBasis 𝕂).repr x r * (kRealBasis 𝕂).repr y r = RCLike.re (star x * y) := by
+  have h := (kRealBasis 𝕂).repr.inner_map_map x y
+  rw [EuclideanSpace.inner_eq_star_dotProduct] at h
+  simp only [dotProduct, Pi.star_apply, star_trivial] at h
+  have hr : @inner ℝ 𝕂 _ x y = RCLike.re (star x * y) := by
+    change RCLike.re (@inner 𝕂 𝕂 _ x y) = _
+    simp only [RCLike.inner_apply, RCLike.star_def, mul_comm]
+  rw [← hr, ← h]
+  exact Finset.sum_congr rfl fun r _ => mul_comm _ _
 
-def decodeCFrob : CFrobCoordinates n →ₗ[ℝ] CMat n where
-  toFun x i j := x (i, j)
-  map_add' _ _ := rfl
-  map_smul' _ _ := rfl
+def encodeCFrob : Matrix (Fin n) (Fin n) 𝕂 →ₗ[ℝ] KFrobCoordinates 𝕂 n where
+  toFun A := (WithLp.equiv 2 _).symm fun k => (kRealBasis 𝕂).repr (A k.1 k.2.1) k.2.2
+  map_add' A B := by ext k; simp [map_add]
+  map_smul' a A := by ext k; simp [map_smul]
 
-@[simp] theorem decode_encode_cFrob (A : CMat n) : decodeCFrob (encodeCFrob A) = A := rfl
-@[simp] theorem encode_decode_cFrob (x : CFrobCoordinates n) : encodeCFrob (decodeCFrob x) = x := rfl
+def decodeCFrob : KFrobCoordinates 𝕂 n →ₗ[ℝ] Matrix (Fin n) (Fin n) 𝕂 where
+  toFun x i j := (kRealBasis 𝕂).repr.symm ((WithLp.equiv 2 _).symm fun r => x (i, j, r))
+  map_add' x y := by
+    ext i j
+    exact (kRealBasis 𝕂).repr.symm.map_add
+      ((WithLp.equiv 2 _).symm fun r => x (i, j, r))
+      ((WithLp.equiv 2 _).symm fun r => y (i, j, r))
+  map_smul' a x := by
+    ext i j
+    exact (kRealBasis 𝕂).repr.symm.map_smul a ((WithLp.equiv 2 _).symm fun r => x (i, j, r))
 
-theorem encodeCFrob_inner (A B : CMat n) :
+@[simp] theorem decode_encode_cFrob (A : Matrix (Fin n) (Fin n) 𝕂) :
+    decodeCFrob (encodeCFrob A) = A := by
+  ext i j
+  change (kRealBasis 𝕂).repr.symm ((kRealBasis 𝕂).repr (A i j)) = A i j
+  exact (kRealBasis 𝕂).repr.symm_apply_apply (A i j)
+
+@[simp] theorem encode_decode_cFrob (x : KFrobCoordinates 𝕂 n) :
+    encodeCFrob (decodeCFrob x) = x := by
+  ext ⟨i, j, r⟩
+  have h := (kRealBasis 𝕂).repr.apply_symm_apply ((WithLp.equiv 2 _).symm fun s => x (i, j, s))
+  exact congrFun (congrArg (WithLp.equiv 2 _) h) r
+
+theorem encodeCFrob_inner (A B : Matrix (Fin n) (Fin n) 𝕂) :
     ⟪encodeCFrob A, encodeCFrob B⟫_ℝ = cFrobInner A B := by
-  change (⟪encodeCFrob A, encodeCFrob B⟫_ℂ).re = _
   rw [EuclideanSpace.inner_eq_star_dotProduct]
-  simp only [dotProduct, encodeCFrob, LinearMap.coe_mk, AddHom.coe_mk,
-    Complex.re_sum, Complex.mul_re, Pi.star_apply, Complex.star_def,
-    Complex.conj_re, Complex.conj_im, mul_neg, sub_neg_eq_add]
-  simp only [cFrobInner, Fintype.sum_prod_type]
-  apply Finset.sum_congr rfl
-  intro i hi
-  apply Finset.sum_congr rfl
-  intro j hj
-  change (B i j).re * (A i j).re + (B i j).im * (A i j).im = _
-  ring
+  simp only [dotProduct, Pi.star_apply, star_trivial, encodeCFrob, LinearMap.coe_mk, AddHom.coe_mk,
+    Fintype.sum_prod_type, cFrobInner]
+  refine Finset.sum_congr rfl fun i _ => Finset.sum_congr rfl fun j _ => ?_
+  rw [← kRealBasis_inner]
+  exact Finset.sum_congr rfl fun r _ => mul_comm _ _
 
-def encodedCSubspace (S : Submodule ℝ (CMat n)) : Submodule ℝ (CFrobCoordinates n) :=
+def encodedCSubspace (S : Submodule ℝ (Matrix (Fin n) (Fin n) 𝕂)) :
+    Submodule ℝ (KFrobCoordinates 𝕂 n) :=
   S.map encodeCFrob
 
-/-- An actual continuous linear map, constructed from mathlib's projection.
-The name orthogonalProjection follows the mathlib 4.19.0 API. -/
-def cFrobProjection (S : Submodule ℝ (CMat n)) : CMat n →L[ℝ] CMat n :=
-  ((decodeCFrob : CFrobCoordinates n →ₗ[ℝ] CMat n).toContinuousLinearMap.comp
-    ((encodedCSubspace S).subtypeL.comp ((encodedCSubspace S).orthogonalProjection))).comp
-    (encodeCFrob : CMat n →ₗ[ℝ] CFrobCoordinates n).toContinuousLinearMap
+def cFrobProjection (S : Submodule ℝ (Matrix (Fin n) (Fin n) 𝕂)) :
+    Matrix (Fin n) (Fin n) 𝕂 →L[ℝ] Matrix (Fin n) (Fin n) 𝕂 :=
+  ((decodeCFrob : KFrobCoordinates 𝕂 n →ₗ[ℝ] _).toContinuousLinearMap.comp
+    ((encodedCSubspace S).subtypeL.comp (encodedCSubspace S).orthogonalProjection)).comp
+    (encodeCFrob : Matrix (Fin n) (Fin n) 𝕂 →ₗ[ℝ] _).toContinuousLinearMap
 
-theorem cFrobProjection_mem (S : Submodule ℝ (CMat n)) (Z : CMat n) :
-    cFrobProjection S Z ∈ S := by
-  have hp := ((encodedCSubspace S).orthogonalProjection (encodeCFrob Z)).property
-  obtain ⟨A, hA, he⟩ := hp
-  change decodeCFrob ((encodedCSubspace S).orthogonalProjection (encodeCFrob Z) :
-    CFrobCoordinates n) ∈ S
-  rw [← he, decode_encode_cFrob]
-  exact hA
+theorem cFrobProjection_mem (S : Submodule ℝ (Matrix (Fin n) (Fin n) 𝕂))
+    (Z : Matrix (Fin n) (Fin n) 𝕂) : cFrobProjection S Z ∈ S := by
+  obtain ⟨A, hA, he⟩ := ((encodedCSubspace S).orthogonalProjection (encodeCFrob Z)).property
+  change decodeCFrob ((encodedCSubspace S).orthogonalProjection (encodeCFrob Z) : KFrobCoordinates 𝕂 n) ∈ S
+  rw [← he, decode_encode_cFrob]; exact hA
 
-/-- This is the one API-sensitive projection lemma; all later arguments only
-use its matrix conclusion. -/
-theorem cFrobProjection_normal (S : Submodule ℝ (CMat n)) (Z Y : CMat n)
-    (hY : Y ∈ S) : cFrobInner (Z-cFrobProjection S Z) Y = 0 := by
-  have hy : encodeCFrob Y ∈ encodedCSubspace S := ⟨Y,hY,rfl⟩
-  have h := Submodule.orthogonalProjectionFn_inner_eq_zero
+theorem cFrobProjection_normal (S : Submodule ℝ (Matrix (Fin n) (Fin n) 𝕂))
+    (Z Y : Matrix (Fin n) (Fin n) 𝕂) (hY : Y ∈ S) :
+    cFrobInner (Z - cFrobProjection S Z) Y = 0 := by
+  have hy : encodeCFrob Y ∈ encodedCSubspace S := ⟨Y, hY, rfl⟩
+  have h := Submodule.starProjection_inner_eq_zero
     (K := encodedCSubspace S) (encodeCFrob Z) (encodeCFrob Y) hy
-  rw [Submodule.starProjection_apply] at h
   rw [← encodeCFrob_inner, map_sub]
   change ⟪encodeCFrob Z - encodeCFrob (decodeCFrob
-    ((encodedCSubspace S).orthogonalProjection (encodeCFrob Z) : CFrobCoordinates n)),
+    ((encodedCSubspace S).orthogonalProjection (encodeCFrob Z) : KFrobCoordinates 𝕂 n)),
     encodeCFrob Y⟫_ℝ = 0
-  rw [encode_decode_cFrob]
-  exact h
+  rw [encode_decode_cFrob]; exact h
 
-theorem cFrobProjection_unique_normal (S : Submodule ℝ (CMat n)) (Z Y : CMat n)
-    (hY : Y ∈ S) (hn : ∀ W ∈ S, cFrobInner (Z-Y) W = 0) :
-    cFrobProjection S Z = Y := by
+theorem cFrobProjection_unique_normal (S : Submodule ℝ (Matrix (Fin n) (Fin n) 𝕂))
+    (Z Y : Matrix (Fin n) (Fin n) 𝕂) (hY : Y ∈ S)
+    (hn : ∀ W ∈ S, cFrobInner (Z - Y) W = 0) : cFrobProjection S Z = Y := by
   have hd := S.sub_mem (cFrobProjection_mem S Z) hY
   have h₁ := cFrobProjection_normal S Z _ hd
-  have h₂ := hn (cFrobProjection S Z-Y) hd
-  apply sub_eq_zero.mp
-  apply (cFrobSq_eq_zero_iff _).mp
-  have he : cFrobProjection S Z-Y = (Z-Y)-(Z-cFrobProjection S Z) := by abel
-  change cFrobInner (cFrobProjection S Z-Y) (cFrobProjection S Z-Y) = 0
+  have h₂ := hn (cFrobProjection S Z - Y) hd
+  apply sub_eq_zero.mp; apply (cFrobSq_eq_zero_iff _).mp
+  have he : cFrobProjection S Z - Y = (Z - Y) - (Z - cFrobProjection S Z) := by abel
+  change cFrobInner (cFrobProjection S Z - Y) (cFrobProjection S Z - Y) = 0
   conv_lhs => lhs; rw [he]
   rw [cFrobInner_sub_left, h₂, h₁, sub_self]
 
-@[simp] theorem cFrobProjection_of_mem (S : Submodule ℝ (CMat n)) (Y : CMat n)
-    (hY : Y ∈ S) : cFrobProjection S Y = Y := by
-  apply cFrobProjection_unique_normal S Y Y hY
-  intro W hW
-  simp
+@[simp] theorem cFrobProjection_of_mem (S : Submodule ℝ (Matrix (Fin n) (Fin n) 𝕂))
+    (Y : Matrix (Fin n) (Fin n) 𝕂) (hY : Y ∈ S) : cFrobProjection S Y = Y :=
+  cFrobProjection_unique_normal S Y Y hY fun _ _ => by simp
 
-@[simp] theorem cFrobProjection_idempotent (S : Submodule ℝ (CMat n)) (Z : CMat n) :
-    cFrobProjection S (cFrobProjection S Z) = cFrobProjection S Z :=
-  cFrobProjection_of_mem S _ (cFrobProjection_mem S Z)
-
-theorem cFrobProjection_fixed_iff (S : Submodule ℝ (CMat n)) (Z : CMat n) :
-    cFrobProjection S Z = Z ↔ Z ∈ S := by
-  constructor
-  · intro h; rw [← h]; exact cFrobProjection_mem S Z
-  · exact cFrobProjection_of_mem S Z
-
-theorem cFrobProjection_self_adjoint (S : Submodule ℝ (CMat n)) (A B : CMat n) :
+theorem cFrobProjection_self_adjoint (S : Submodule ℝ (Matrix (Fin n) (Fin n) 𝕂))
+    (A B : Matrix (Fin n) (Fin n) 𝕂) :
     cFrobInner (cFrobProjection S A) B = cFrobInner A (cFrobProjection S B) := by
   have ha := cFrobProjection_normal S A _ (cFrobProjection_mem S B)
   have hb := cFrobProjection_normal S B _ (cFrobProjection_mem S A)

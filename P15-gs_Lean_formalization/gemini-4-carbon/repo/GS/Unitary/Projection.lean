@@ -8,80 +8,52 @@ public import GS.Unitary.GeometryAlgebra
 set_option backward.isDefEq.respectTransparency false
 set_option backward.defeqAttrib.useBackward true
 
-/-! Actual least-squares projection in the real Frobenius geometry onto
-symmetric masks of skew-Hermitian matrices, including the imaginary diagonal. -/
 noncomputable section
 open Matrix
 namespace GS.UnitaryGeometry
-variable {n : ℕ}
+variable {𝕂 : Type*} [RCLike 𝕂] {n : ℕ}
 
-theorem skewHermitianPart_eq_real_smul (A : CMat n) :
-    skewHermitianPart A = (1/2 : ℝ) • (A-Aᴴ) := by
-  ext i j
-  simp [skewHermitianPart, Complex.real_smul]
+theorem skewHermitianPart_eq_real_smul (A : Matrix (Fin n) (Fin n) 𝕂) :
+    skewHermitianPart A = (1 / 2 : ℝ) • (A - Aᴴ) := rfl
 
-theorem isSkewHermitian_skewHermitianPart (A : CMat n) :
+theorem isSkewHermitian_skewHermitianPart (A : Matrix (Fin n) (Fin n) 𝕂) :
     IsSkewHermitian (skewHermitianPart A) := by
-  rw [skewHermitianPart_eq_real_smul]
-  unfold IsSkewHermitian
+  unfold skewHermitianPart IsSkewHermitian
   rw [Matrix.conjTranspose_smul, star_trivial, Matrix.conjTranspose_sub,
     Matrix.conjTranspose_conjTranspose, ← smul_neg]
-  congr 1
-  abel
+  congr 1; abel
 
-theorem skewHermitianPart_fixed {A : CMat n} (h : IsSkewHermitian A) :
+theorem skewHermitianPart_fixed {A : Matrix (Fin n) (Fin n) 𝕂} (h : IsSkewHermitian A) :
     skewHermitianPart A = A := by
   change Aᴴ = -A at h
-  ext i j
-  simp only [skewHermitianPart, h, Matrix.smul_apply, Matrix.sub_apply, Matrix.neg_apply,
-    smul_eq_mul]
-  ring
+  simp only [skewHermitianPart, h, sub_neg_eq_add, ← two_smul ℝ A, smul_smul]
+  norm_num
 
-theorem skewHermitianPart_add (A B : CMat n) :
-    skewHermitianPart (A+B) = skewHermitianPart A + skewHermitianPart B := by
-  simp only [skewHermitianPart_eq_real_smul, Matrix.conjTranspose_add]
-  have he : A+B-(Aᴴ+Bᴴ) = (A-Aᴴ)+(B-Bᴴ) := by abel
+theorem skewHermitianPart_add (A B : Matrix (Fin n) (Fin n) 𝕂) :
+    skewHermitianPart (A + B) = skewHermitianPart A + skewHermitianPart B := by
+  simp only [skewHermitianPart, Matrix.conjTranspose_add]
+  have he : A + B - (Aᴴ + Bᴴ) = (A - Aᴴ) + (B - Bᴴ) := by abel
   rw [he, smul_add]
-theorem skewHermitianPart_real_smul (a : ℝ) (A : CMat n) :
+
+theorem skewHermitianPart_real_smul (a : ℝ) (A : Matrix (Fin n) (Fin n) 𝕂) :
     skewHermitianPart (a • A) = a • skewHermitianPart A := by
-  simp only [skewHermitianPart_eq_real_smul, Matrix.conjTranspose_smul, star_trivial,
-    ← smul_sub, smul_smul]
-  rw [mul_comm]
+  simp only [skewHermitianPart, Matrix.conjTranspose_smul, star_trivial, ← smul_sub, smul_smul, mul_comm]
 
 theorem cMask_isSkewHermitian {p : Fin n → Fin n → Prop} [DecidableRel p]
-    (hp : CMaskSymmetric p) {A : CMat n} (hA : IsSkewHermitian A) :
+    (hp : CMaskSymmetric p) {A : Matrix (Fin n) (Fin n) 𝕂} (hA : IsSkewHermitian A) :
     IsSkewHermitian (cMask p A) := by
-  change Aᴴ = -A at hA
-  change (cMask p A)ᴴ = -cMask p A
+  change Aᴴ = -A at hA; change (cMask p A)ᴴ = -cMask p A
   rw [cMask_conjTranspose hp, hA]
   ext i j; by_cases h : p i j <;> simp [cMask, h]
 
 def maskedSkewHermitian (p : Fin n → Fin n → Prop) [DecidableRel p]
-    (A : CMat n) : CMat n := cMask p (skewHermitianPart A)
+    (A : Matrix (Fin n) (Fin n) 𝕂) : Matrix (Fin n) (Fin n) 𝕂 :=
+  cMask p (skewHermitianPart A)
 
 def maskedSkewHermitianMap (p : Fin n → Fin n → Prop) [DecidableRel p] :
-    CMat n →ₗ[ℝ] CMat n where
+    Matrix (Fin n) (Fin n) 𝕂 →ₗ[ℝ] Matrix (Fin n) (Fin n) 𝕂 where
   toFun := maskedSkewHermitian p
-  map_add' A B := by
-    simp only [maskedSkewHermitian, skewHermitianPart_add, cMask_add]
-  map_smul' a A := by
-    simp only [maskedSkewHermitian, skewHermitianPart_real_smul, cMask_real_smul,
-      RingHom.id_apply]
-
-theorem maskedSkewHermitian_hasSupport (p : Fin n → Fin n → Prop) [DecidableRel p]
-    (A : CMat n) : CHasSupport p (maskedSkewHermitian p A) := cMask_hasSupport _ _
-theorem maskedSkewHermitian_isSkewHermitian {p : Fin n → Fin n → Prop} [DecidableRel p]
-    (hp : CMaskSymmetric p) (A : CMat n) : IsSkewHermitian (maskedSkewHermitian p A) :=
-  cMask_isSkewHermitian hp (isSkewHermitian_skewHermitianPart A)
-
-theorem maskedSkewHermitian_fixed {p : Fin n → Fin n → Prop} [DecidableRel p]
-    {A : CMat n} (hs : CHasSupport p A) (hk : IsSkewHermitian A) :
-    maskedSkewHermitian p A = A := by
-  rw [maskedSkewHermitian, skewHermitianPart_fixed hk, cMask_fixed hs]
-@[simp] theorem maskedSkewHermitian_idempotent {p : Fin n → Fin n → Prop} [DecidableRel p]
-    (hp : CMaskSymmetric p) (A : CMat n) :
-    maskedSkewHermitian p (maskedSkewHermitian p A) = maskedSkewHermitian p A :=
-  maskedSkewHermitian_fixed (maskedSkewHermitian_hasSupport _ _)
-    (maskedSkewHermitian_isSkewHermitian hp _)
+  map_add' A B := by simp only [maskedSkewHermitian, skewHermitianPart_add, cMask_add]
+  map_smul' a A := by simp only [maskedSkewHermitian, skewHermitianPart_real_smul, cMask_real_smul, RingHom.id_apply]
 
 end GS.UnitaryGeometry

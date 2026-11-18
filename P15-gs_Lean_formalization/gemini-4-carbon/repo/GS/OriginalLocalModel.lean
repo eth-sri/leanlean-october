@@ -2,7 +2,6 @@ module
 
 public import GS.Fibres
 public import GS.CompactFibres
-public import GS.Shuffle
 public import GS.Projection
 public import Mathlib.Analysis.Normed.Algebra.MatrixExponential
 public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic

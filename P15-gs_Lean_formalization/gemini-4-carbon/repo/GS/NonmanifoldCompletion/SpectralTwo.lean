@@ -1,6 +1,7 @@
 module
 
 public import GS.Continuation.ExponentialBasics
+public import GS.UnitaryNonmanifold.ScalarBridge
 public import Mathlib.Analysis.SpecialFunctions.Sqrt
 
 @[expose] public section
@@ -8,20 +9,9 @@ public import Mathlib.Analysis.SpecialFunctions.Sqrt
 set_option backward.isDefEq.respectTransparency false
 set_option backward.defeqAttrib.useBackward true
 
-/-!
-# A real orthogonal diagonalizer for the original two-by-two middle block
-
-The result is an existence theorem, not a continuous choice of eigenvectors.
-The exceptional point u=(-1,0) is handled explicitly.  No angle, logarithm,
-local-coverage hypothesis, or topological nonmanifold assertion is assumed.
-
--/
 noncomputable section
 open Matrix GS GS.Extensions GS.Continuation
 namespace GS.NonmanifoldCompletion
-
-/-- Diagonal two-by-two matrix, with the order of eigenvalues fixed. -/
-def diagTwo (a b : ℝ) : Mat 2 := !![a, 0; 0, b]
 
 /-- Algebraic half-angle representatives. Only existence is asserted. -/
 theorem exists_half_coordinates (u : CircleVector) (hu : OnCircle u) :

@@ -1,6 +1,6 @@
 module
 
-public import GS.NonmanifoldCompletion.BlockExtraction
+public import GS.NonmanifoldCompletion.SpectralTwo
 
 @[expose] public section
 

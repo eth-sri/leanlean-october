@@ -1,7 +1,6 @@
 module
 
 public import GS.Extensions.FiniteTopology
-public import GS.Extensions.ProjectionSmooth
 
 @[expose] public section
 

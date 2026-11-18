@@ -1,7 +1,6 @@
 module
 
 public import GS.Extensions.OriginalCompact
-public import GS.Extensions.TransportedProjection
 
 @[expose] public section
 
@@ -204,10 +203,10 @@ lemma. The angles and signs are the ones in the original manuscript. -/
     subst r'
     have hm : ∀ i j,
         middleBlock (originalPsi Q₀ (c+z) i j) (originalPsi Q₀ (c-z) i j) u =
-        middleBlock (originalPsi Q₀ (c'+w) i j) (originalPsi Q₀ (c'-w) i j) v := by
-      intro i j
-      exact lift_injective (rotation (ell i)) (rotation (r j))
-        (rotation_orthogonal _) (rotation_orthogonal _) (hblocks i j)
+        middleBlock (originalPsi Q₀ (c'+w) i j) (originalPsi Q₀ (c'-w) i j) v := fun i j => by
+      have h := congrArg (fun Z => (rotation (ell i))ᵀ * Z * (rotation (r j))ᵀ) (hblocks i j)
+      simpa only [Matrix.mul_assoc, (rotation_orthogonal (r j)).2, Matrix.mul_one,
+        ← Matrix.mul_assoc (rotation (ell i))ᵀ, (rotation_orthogonal (ell i)).1, Matrix.one_mul] using h
     have hf := middleFamily_fibres (originalPsi Q₀ (c+z)) (originalPsi Q₀ (c-z))
       (originalPsi Q₀ (c'+w)) (originalPsi Q₀ (c'-w)) u v hu hv hm
     apply (originalG_fibres ell r ell r c z c' w u v hu hv).mpr

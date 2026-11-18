@@ -45,9 +45,5 @@ theorem ofRealMatrix_blockDiagonal {n b : ℕ} {A : Mat n}
   intro i j hij
   simp [h i j hij]
 
-@[simp] theorem ofRealMatrix_perm {n : ℕ} (σ : Equiv.Perm (Fin n)) :
-    ofRealMatrix (permMatrix σ) = cPermMatrix σ := by
-  ext i j
-  simp [ofRealMatrix, cPermMatrix, permMatrix]
 
 end GS.UnitaryGeometry

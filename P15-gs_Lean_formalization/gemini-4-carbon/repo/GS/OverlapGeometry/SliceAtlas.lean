@@ -73,11 +73,7 @@ def chart : OpenPartialHomeomorph S E where
     exact s.parametrization_smooth.continuous.subtype_mk
       (fun x => (s.parametrization x).property) |>.continuousOn
 
-@[simp] theorem chart_apply (y : S) :
-    s.chart y = s.coordinates y.val := rfl
 
-@[simp] theorem chart_symm_apply (x : E) :
-    s.chart.symm x = s.parametrization x := rfl
 
 /-- The transition is the composition of the ambient coordinate map of the
 second slice with the smooth parametrization of the first slice. -/

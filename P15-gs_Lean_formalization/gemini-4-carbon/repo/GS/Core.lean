@@ -106,10 +106,6 @@ theorem add (hA : Supported block A) (hB : Supported block B) :
   change A i j + B i j = 0
   rw [hA i j hij, hB i j hij, add_zero]
 
-theorem neg (hA : Supported block A) : Supported block (-A) := by
-  intro i j hij
-  change -A i j = 0
-  rw [hA i j hij, neg_zero]
 
 theorem smul (a : ℝ) (hA : Supported block A) : Supported block (a • A) := by
   intro i j hij

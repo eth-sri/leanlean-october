@@ -32,7 +32,7 @@ private theorem involution_cancel_left (D : Mat 2) (hD : D*D=1) (X : Mat 2) :
 theorem conjugate_reflection_coordinates (C : Mat 2) (hC : Orthogonal C) :
     ∃ u : CircleVector, OnCircle u ∧
       ∀ a b : ℝ, middleBlock a b u = Cᵀ * diagTwo a b * C := by
-  let F := diagTwo 1 (-1)
+  let F : Mat 2 := diagTwo 1 (-1)
   have hF : Orthogonal F := by
     constructor <;> ext i j <;> fin_cases i <;> fin_cases j <;>
       norm_num [F,diagTwo,Matrix.mul_apply,Matrix.transpose_apply,Fin.sum_univ_two,Matrix.one_apply]

@@ -1,6 +1,6 @@
 module
 
-public import GS.NonmanifoldCompletion.BlockRealization
+public import GS.NonmanifoldCompletion.SpectralTwo
 public import GS.Continuation.PointedCompactImage
 
 @[expose] public section

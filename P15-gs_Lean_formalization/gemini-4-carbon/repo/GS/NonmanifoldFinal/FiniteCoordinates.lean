@@ -1,7 +1,7 @@
 module
 
 public import GS.Nonmanifold.OriginalCompactModel
-public import GS.NonmanifoldObstruction.ProductSphere
+public import GS.NonmanifoldObstruction.HomogeneousRetraction
 
 @[expose] public section
 
@@ -152,9 +152,6 @@ def flattenConeProduct [Fintype ι] [Fintype κ] [DecidableEq κ] :
     · fun_prop
     · exact (continuous_snd.comp continuous_subtype_val).subtype_mk _
 
-@[simp] theorem flattenConeProduct_zero [Fintype ι] [Fintype κ] [DecidableEq κ] :
-    (flattenConeProduct : ConeSpace ι κ ≃ₜ _) productZero =
-      ⟨(0,0),by simp⟩ := rfl
 
 /-- The rank-cone width of the GS model satisfies the OLD goal's lower bound. -/
 theorem model_width_ge_three (q : ℕ) (hq : 3 ≤ q) :

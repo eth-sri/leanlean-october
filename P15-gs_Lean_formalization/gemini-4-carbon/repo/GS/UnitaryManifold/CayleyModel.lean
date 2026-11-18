@@ -10,54 +10,55 @@ public import Mathlib.Analysis.Matrix.Normed
 set_option backward.isDefEq.respectTransparency false
 set_option backward.defeqAttrib.useBackward true
 
-/-! The real supported skew-Hermitian coordinate model and its ambient projection. -/
 noncomputable section
 attribute [local instance] Matrix.normedAddCommGroup Matrix.normedSpace
 open Matrix GS.UnitaryGeometry
 namespace GS.UnitaryManifold
-variable {n : ℕ}
+variable {𝕂 : Type} [RCLike 𝕂] {n : ℕ}
 
-abbrev modelSpace (block : Fin n → ℕ) := supportedSkewSpace block
-abbrev Model (block : Fin n → ℕ) := ↥(modelSpace block)
+abbrev kModelSpace (𝕂 : Type) [RCLike 𝕂] {n : ℕ} (block : Fin n → ℕ) :=
+  kSupportedSkewSpace 𝕂 block
+abbrev KModel (𝕂 : Type) [RCLike 𝕂] {n : ℕ} (block : Fin n → ℕ) := ↥(kModelSpace 𝕂 block)
 
-theorem admissible_model {block : Fin n → ℕ} (x : Model block) :
+abbrev modelSpace {n : ℕ} (block : Fin n → ℕ) := kModelSpace ℂ block
+abbrev Model {n : ℕ} (block : Fin n → ℕ) := KModel ℂ block
+
+theorem admissible_model {block : Fin n → ℕ} (x : KModel 𝕂 block) :
     admissible x.val := admissible_of_isSkew x.val x.property.2
 
-def modelInclusion (block : Fin n → ℕ) : Model block →L[ℝ] CMat n :=
-  (modelSpace block).subtypeL
+def kModelInclusion (𝕂 : Type) [RCLike 𝕂] (block : Fin n → ℕ) :
+    KModel 𝕂 block →L[ℝ] Matrix (Fin n) (Fin n) 𝕂 :=
+  (kModelSpace 𝕂 block).subtypeL
 
-@[simp] theorem modelInclusion_apply (block : Fin n → ℕ) (x : Model block) :
-    modelInclusion block x = x.val := rfl
+abbrev modelInclusion (block : Fin n → ℕ) := kModelInclusion ℂ (n := n) block
 
-theorem masked_skew_model (block : Fin n → ℕ) (A : CMat n) :
-    cBlockProjection block (GS.skewHermitianPart A) ∈ modelSpace block := by
-  refine ⟨?_, cMask_isSkewHermitian (fun i j => eq_comm) (isSkewHermitian_skewHermitianPart A)⟩
-  intro i j hij
-  simp [cBlockProjection, cMask, hij]
+theorem masked_skew_model (block : Fin n → ℕ) (A : Matrix (Fin n) (Fin n) 𝕂) :
+    cBlockProjection block (GS.skewHermitianPart A) ∈ kModelSpace 𝕂 block :=
+  ⟨fun i j hij => by simp [cBlockProjection, cMask, hij],
+   cMask_isSkewHermitian (fun _ _ => eq_comm) (isSkewHermitian_skewHermitianPart A)⟩
 
-def modelProjectionLinear (block : Fin n → ℕ) : CMat n →ₗ[ℝ] Model block where
+def kModelProjectionLinear (𝕂 : Type) [RCLike 𝕂] (block : Fin n → ℕ) :
+    Matrix (Fin n) (Fin n) 𝕂 →ₗ[ℝ] KModel 𝕂 block where
   toFun A := ⟨cBlockProjection block (GS.skewHermitianPart A), masked_skew_model block A⟩
-  map_add' A B := by
-    apply Subtype.ext
-    exact (maskedSkewHermitianMap (fun i j => block i = block j)).map_add A B
-  map_smul' c A := by
-    apply Subtype.ext
-    exact (maskedSkewHermitianMap (fun i j => block i = block j)).map_smul c A
+  map_add' A B := Subtype.ext ((maskedSkewHermitianMap (fun i j => block i = block j)).map_add A B)
+  map_smul' c A := Subtype.ext ((maskedSkewHermitianMap (fun i j => block i = block j)).map_smul c A)
 
-def modelProjection (block : Fin n → ℕ) : CMat n →L[ℝ] Model block :=
-  (modelProjectionLinear block).toContinuousLinearMap
+def kModelProjection (𝕂 : Type) [RCLike 𝕂] (block : Fin n → ℕ) :
+    Matrix (Fin n) (Fin n) 𝕂 →L[ℝ] KModel 𝕂 block :=
+  (kModelProjectionLinear 𝕂 block).toContinuousLinearMap
 
-@[simp] theorem modelProjection_val (block : Fin n → ℕ) (A : CMat n) :
-    (modelProjection block A).val = cBlockProjection block (GS.skewHermitianPart A) := rfl
+abbrev modelProjection (block : Fin n → ℕ) := kModelProjection ℂ (n := n) block
 
-theorem modelProjection_val_of_mem (block : Fin n → ℕ) (A : CMat n)
-    (hA : A ∈ modelSpace block) : (modelProjection block A).val = A := by
+@[simp] theorem modelProjection_val (block : Fin n → ℕ) (A : Matrix (Fin n) (Fin n) 𝕂) :
+    (kModelProjection 𝕂 block A).val = cBlockProjection block (GS.skewHermitianPart A) := rfl
+
+theorem modelProjection_val_of_mem (block : Fin n → ℕ) (A : Matrix (Fin n) (Fin n) 𝕂)
+    (hA : A ∈ kModelSpace 𝕂 block) : (kModelProjection 𝕂 block A).val = A := by
   rw [modelProjection_val, skewHermitianPart_fixed hA.2]
   exact blockProjection_eq_self block A hA.1
 
-@[simp] theorem modelProjection_inclusion (block : Fin n → ℕ) (x : Model block) :
-    modelProjection block x.val = x := by
-  apply Subtype.ext
-  exact modelProjection_val_of_mem block x.val x.property
+@[simp] theorem modelProjection_inclusion (block : Fin n → ℕ) (x : KModel 𝕂 block) :
+    kModelProjection 𝕂 block x.val = x :=
+  Subtype.ext (modelProjection_val_of_mem block x.val x.property)
 
 end GS.UnitaryManifold
