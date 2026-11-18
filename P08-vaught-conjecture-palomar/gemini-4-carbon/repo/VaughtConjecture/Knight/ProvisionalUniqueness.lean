@@ -32,7 +32,6 @@ Construction-private (not root-exported). -/
 
 @[expose] public section
 
-set_option autoImplicit false
 
 namespace VaughtConjecture.Knight
 

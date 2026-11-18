@@ -28,7 +28,6 @@ the preservation theorem, not a hidden finite-extension supply assumption.
 
 @[expose] public section
 
-set_option autoImplicit false
 
 namespace VaughtConjecture.Knight.OrbitPrefixSupport
 

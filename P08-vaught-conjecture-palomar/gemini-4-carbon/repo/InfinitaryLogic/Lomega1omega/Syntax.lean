@@ -108,16 +108,8 @@ protected def and (φ ψ : L.BoundedFormulaω α n) : L.BoundedFormulaω α n :=
 
 instance : Min (L.BoundedFormulaω α n) := ⟨BoundedFormulaω.and⟩
 
-/-- Disjunction of two formulas. -/
-@[match_pattern]
-protected def or (φ ψ : L.BoundedFormulaω α n) : L.BoundedFormulaω α n :=
-  φ.not.imp ψ
 
-instance : Max (L.BoundedFormulaω α n) := ⟨BoundedFormulaω.or⟩
 
-/-- Biconditional between formulas. -/
-protected def iff (φ ψ : L.BoundedFormulaω α n) : L.BoundedFormulaω α n :=
-  (φ.imp ψ) ⊓ (ψ.imp φ)
 
 /-- Indexed conjunction over any `Encodable` type. This extends `iInf` from ℕ-indexed
 to general countable indices by encoding. -/
@@ -154,24 +146,12 @@ def esupWith {ι : Type*} (e : Encodable ι) (φs : ι → L.BoundedFormulaω α
     L.BoundedFormulaω α n :=
   @esup L α n ι e φs
 
-@[simp] theorem einfWith_eq {ι : Type*} (e : Encodable ι) (φs : ι → L.BoundedFormulaω α n) :
-    einfWith e φs = @einf L α n ι e φs := rfl
-
-@[simp] theorem esupWith_eq {ι : Type*} (e : Encodable ι) (φs : ι → L.BoundedFormulaω α n) :
-    esupWith e φs = @esup L α n ι e φs := rfl
-
 end BoundedFormulaω
 
--- Notation
 scoped[Lomega1omega] infixr:62 " ⟹ω " => FirstOrder.Language.BoundedFormulaω.imp
-
 scoped[Lomega1omega] prefix:110 "∀'ω " => FirstOrder.Language.BoundedFormulaω.all
-
 scoped[Lomega1omega] prefix:arg "∼ω" => FirstOrder.Language.BoundedFormulaω.not
-
 scoped[Lomega1omega] prefix:110 "∃'ω " => FirstOrder.Language.BoundedFormulaω.ex
-
-scoped[Lomega1omega] infixl:61 " ⇔ω " => FirstOrder.Language.BoundedFormulaω.iff
 
 /-! ## Facade transparency gates
 

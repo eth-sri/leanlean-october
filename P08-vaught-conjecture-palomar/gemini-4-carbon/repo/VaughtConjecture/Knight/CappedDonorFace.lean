@@ -28,11 +28,6 @@ namespace VaughtConjecture.Knight
 
 open CellScheme.restrictFace
 
-/-- Labels transport along an equality of stage types. -/
-theorem StageType.label_castCell {α : Ordinal.{0}} {n : ℕ} {X Y : S α n} (h : X = Y)
-    (c : Cell X.scheme.scheme) :
-    Y.label (SemScheme.castCell (congrArg StageType.scheme h) c) = X.label c := by
-  subst h; rfl
 
 namespace CappedDonor
 

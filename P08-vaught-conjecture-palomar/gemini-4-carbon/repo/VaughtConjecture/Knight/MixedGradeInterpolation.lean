@@ -5,7 +5,7 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.ControllerPrefixFamily
+public import VaughtConjecture.Knight.SlackCutPasting
 
 /-! # Mixed-grade interpolation: orbit blocks, not just source order
 

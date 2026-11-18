@@ -6,12 +6,8 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.RowCorrectness
-public import VaughtConjecture.Knight.VisibilityAlgebra
-public import VaughtConjecture.Knight.SemScheme
-public import VaughtConjecture.Knight.Repair
+public import VaughtConjecture.Knight.Reduction
 public import VaughtConjecture.Knight.NormalForm
-public import Mathlib.Data.Finset.Max
-public import Mathlib.Order.Interval.Finset.Nat
 
 /-! # The counted recoding of a finite row at a target grade
 
@@ -646,10 +642,5 @@ end Recoding
 
 /-! ## Integration bridges: nothing here is a construction hypothesis -/
 
-/-- A coded label is never `⊤`. -/
-theorem ExtOrd.IsCodedLabel.ne_top {k : ℕ} {x : ExtOrd} (h : IsCodedLabel k x) : x ≠ ⊤ := by
-  rcases h with rfl | ⟨i, j, -, rfl⟩
-  · exact bot_ne_top
-  · exact ofOrd_ne_top _
 
 end VaughtConjecture.Knight

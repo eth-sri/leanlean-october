@@ -21,7 +21,6 @@ the family's finite coded alphabet contains only bottom and proper ordinals.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.PairedSlotProfiles
 open Transform Value ExtOrd PairedSlotEncoding SharpWitnessComposition
 noncomputable section

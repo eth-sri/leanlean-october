@@ -5,9 +5,8 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.RootedPotentialIso
 public import VaughtConjecture.Knight.SelectedCommonCharts
-public import VaughtConjecture.Knight.CommonChartChain
+public import VaughtConjecture.Knight.PairedTrace
 
 /-! # Root-preserving classification: chain adapters and compatibility signatures
 

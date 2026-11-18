@@ -18,7 +18,6 @@ The historical capping names are retained in their original namespace.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.FiniteCutCapping
 open Value ExtOrd
 

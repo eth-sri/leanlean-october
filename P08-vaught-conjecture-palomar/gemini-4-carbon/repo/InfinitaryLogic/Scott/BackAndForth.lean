@@ -6,7 +6,6 @@ Authors: Cameron Freer
 module
 
 public import InfinitaryLogic.Scott.AtomicDiagram
-public import Architect
 public import Mathlib.SetTheory.Ordinal.Arithmetic
 
 /-!
@@ -129,11 +128,6 @@ only atoms whose arguments are variables (see its docstring), so the comparison 
 agreement fails: with one unary function symbol `f`, the empty tuples of `(ℕ, id)` and
 `(ℕ, succ)` are `BFEquiv` at every level, yet `∀ x, f x = x`, of rank `1`, separates them.
 -/
-@[blueprint "def:BFEquiv"
-  (title := /-- Back-and-forth equivalence -/)
-  (statement := /-- Back-and-forth equivalence $\BFEquiv_\alpha(a,b)$ for tuples
-    $a \in M^n$, $b \in N^n$ at ordinal $\alpha$, defined by transfinite recursion:
-    atomic agreement at $0$, forth-and-back extension at successor, conjunction at limit. -/)]
 noncomputable def BFEquiv (α : Ordinal) (n : ℕ) (a : Fin n → M) (b : Fin n → N) : Prop :=
   Ordinal.limitRecOn α
     -- Zero case: same atomic type

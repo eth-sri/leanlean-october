@@ -6,7 +6,7 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.SemSchemeBoundaryInput
-public import VaughtConjecture.Knight.OrderedFaceBoundarySemantics
+public import VaughtConjecture.Knight.AmalgamatedBoundarySemantics
 
 /-! # The ordered inherited boundary from literal legal input faces
 
@@ -20,7 +20,6 @@ This constructs no mixed owners and does not claim bountifulness of the union.
 
 @[expose] public section
 
-set_option autoImplicit false
 
 namespace VaughtConjecture.Knight.WholeDonorBoundary
 

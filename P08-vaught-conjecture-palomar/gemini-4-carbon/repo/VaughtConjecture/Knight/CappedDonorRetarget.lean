@@ -134,45 +134,15 @@ namespace CappedDonor
 
 namespace Ref
 
-variable {I : Type*} [Fintype I] {nP N J : ℕ} {P : SemScheme (nP + 1)} {C : SemScheme J}
-  {R : Ref I nP N J P C}
-
-/-! ## The donor's source separation at a donor-top owner -/
-
-/-! ## Uniform retargeting -/
-
-section Retarget
-
-variable {K : ℕ} (L : R.LowRef K) {j : ℕ} {u : P.scheme.below (effP nP j) → ExtOrd}
-  {b η : ExtOrd}
-
-/-- The hypotheses of the retargeting lemma: a lawful section whose donor non-top values lie
-strictly below a positive `K`-visible `b` and whose donor-top values are at least `b`, and a
-`K`-visible target `η ≥ b`. -/
-structure RetargetData (u : P.scheme.below (effP nP j) → ExtOrd) (b η : ExtOrd) : Prop where
-  respects : RespectsSemanticsBelow P.rows (effP nP j) u
-  b_vis : SelfVis K b
-  b_pos : ⊥ < b
-  nonTop_lt : ∀ d, R.p d.1 ≠ ⊤ → u d < b
-  top_ge : ∀ d, R.p d.1 = ⊤ → b ≤ u d
-  η_vis : SelfVis K η
-  b_le_η : b ≤ η
-
-variable (hj : K ≤ j) (hu : RetargetData (R := R) (K := K) u b η)
-
-include L hj hu
-
 /-- The shifter at a donor-top owner: the old witness where it is bottom or below the rounded
 non-top sources, constantly `η` above. -/
 noncomputable def retargetShifter (τ : ExtOrd → ExtOrd) (a η : ExtOrd) (x : ExtOrd) : ExtOrd :=
   if τ x = ⊥ then ⊥ else if x ≤ a then τ x else η
 
-omit L hj hu in
 theorem retargetShifter_of_bot {τ : ExtOrd → ExtOrd} {a η x : ExtOrd} (h : τ x = ⊥) :
     retargetShifter τ a η x = ⊥ := by
   unfold retargetShifter; rw [ite_eq_left h]
 
-omit L hj hu in
 theorem retargetShifter_of_le {τ : ExtOrd → ExtOrd} {a η x : ExtOrd} (hx : x ≤ a) :
     retargetShifter τ a η x = τ x := by
   unfold retargetShifter
@@ -180,12 +150,10 @@ theorem retargetShifter_of_le {τ : ExtOrd → ExtOrd} {a η x : ExtOrd} (hx : x
   · rw [ite_eq_left h, h]
   · rw [ite_eq_right h, ite_eq_left hx]
 
-omit L hj hu in
 theorem retargetShifter_of_lt {τ : ExtOrd → ExtOrd} {a η x : ExtOrd} (h : τ x ≠ ⊥) (hx : a < x) :
     retargetShifter τ a η x = η := by
   unfold retargetShifter; rw [ite_eq_right h, ite_eq_right (not_le.mpr hx)]
 
-omit L hj hu in
 /-- The retargeting shifter is a normalized witness through `k` whenever the old witness is, the
 split point is `k`-visible with the old witness at most `b ≤ η` there, and `η` is `k`-visible and
 positive. -/
@@ -240,10 +208,6 @@ theorem retargetShifter_witness {k : ℕ} {τ : ExtOrd → ExtOrd} (hτ : Witnes
         rw [hτ.clause5 x kk (by rw [gTop_of_gt (not_le.mp hkk), hx]) i hi, hx,
           extVisibilityReplace_bot]
       rw [hle, retargetShifter_of_bot h1, extVisibilityReplace_bot]
-
-/-! ## Exact old-face restoration -/
-
-end Retarget
 
 end Ref
 

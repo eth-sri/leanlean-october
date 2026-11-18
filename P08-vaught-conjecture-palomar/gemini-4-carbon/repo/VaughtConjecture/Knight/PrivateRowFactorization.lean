@@ -18,7 +18,6 @@ catalogue or assume that arbitrary physical sections are source states.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.PrivateRowFactorization
 open Transform Value ExtOrd SharpWitnessComposition OwnerLocalEndpoint
 noncomputable section

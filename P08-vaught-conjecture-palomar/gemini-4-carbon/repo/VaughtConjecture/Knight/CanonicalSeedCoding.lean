@@ -15,7 +15,6 @@ their boundary fields and supported grid/orbit values are coded.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalSeedCoding
 open Transform Value ExtOrd SourcePrefixRows SourcePrefixLayer CanonicalCodingSupport
 open PairedSlotComparison

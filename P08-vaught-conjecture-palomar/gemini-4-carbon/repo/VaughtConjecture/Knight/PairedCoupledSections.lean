@@ -18,7 +18,6 @@ remain literal. This is a two-layer construction, not arbitrary-ambient lifting.
 
 @[expose] public section
 
-set_option autoImplicit false
 
 namespace VaughtConjecture.Knight.PairedCoupledSections
 

@@ -27,7 +27,6 @@ whole affine ray or point step, not just its represented boundary readings.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.PairedSlotComparison
 open Transform Value ExtOrd PairedSlotEncoding PairedSlotDecoder
 noncomputable section

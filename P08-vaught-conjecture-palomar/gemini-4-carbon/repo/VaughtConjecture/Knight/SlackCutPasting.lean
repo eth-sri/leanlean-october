@@ -5,7 +5,7 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.CoupledRepairPaste
+public import VaughtConjecture.Knight.CoupledGradeOne
 
 /-! # Pasting with one grade of slack
 

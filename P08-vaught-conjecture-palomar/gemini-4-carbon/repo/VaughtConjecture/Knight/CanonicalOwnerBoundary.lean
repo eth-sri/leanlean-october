@@ -7,22 +7,49 @@ module
 
 public import VaughtConjecture.Knight.OwnerLocalAlignment
 public import VaughtConjecture.Knight.CanonicalPairedInverse
-public import VaughtConjecture.Knight.CoatomBoundaryExtension
-
-/-! # Canonical owner alignment and ordinary old-boundary completion
-
-The complete field inventory supplies shortness, properness and the tail budget.
-V-C's endpoint is a grid endpoint in that inventory, proved from the actual
-owner observations. Two old lifting clauses construct the lawful old-boundary
-completion. No prospective new controller or new-domain lifting is assumed.
--/
+public import VaughtConjecture.Knight.CanonicalFieldLayer
 
 @[expose] public section
 
-set_option autoImplicit false
+namespace VaughtConjecture.Knight.RetunedCutDecoding
+
+open Transform Value ExtOrd SharpWitnessComposition
+
+/-- No lawful intermediate ambient is supplied. It is constructed as sigma(s)
+using original-cap agreement, before consuming the existing aligned decoder. -/
+theorem decode_lift
+    {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
+    {sem : Semantics D} {BJ : Finset ι × ℕ} {X : Type*} [Fintype X]
+    (s : D.below BJ → ExtOrd) (p : X → ExtOrd) (incl : X → D.below BJ)
+    {r q : D.below BJ → ExtOrd} {K b : ℕ} {a γ δ : ExtOrd} {σ : ExtOrd → ExtOrd}
+    (hs : RespectsSemanticsBelow sem BJ s)
+    (hr : RespectsSemanticsBelow sem BJ r) (hq : RespectsSemanticsBelow sem BJ q)
+    (hK : ∀ d : D.below BJ, D.grade d.1 ≤ K)
+    (hσ : Witness (gTop K) σ) (hδ : SelfVis K δ) (hγb : γ ≠ ⊥) (hγδ : γ ≤ δ)
+    (hroom : a < ofOrd (Ordinal.omega0 * b)) (hactive : δ ≤ σ a)
+    (hsource : ∀ d, min (r d) a = min (s d) a)
+    (hambient : ∀ d, min (σ (s d)) γ = min (q d) γ)
+    (hface : ∀ d, min (p d) δ = min (σ (s (incl d))) δ)
+    (hlit : ∀ d, r (incl d) = AlignedCutEncoding.encode (s ∘ incl) p K b a δ d) :
+    ∃ q' : D.below BJ → ExtOrd, RespectsSemanticsBelow sem BJ q' ∧
+      (∀ d, q' (incl d) = p d) ∧ ∀ d, min (q' d) γ = min (q d) γ := by
+  have hδb : δ ≠ ⊥ := fun he => hγb (le_bot_iff.mp (he ▸ hγδ))
+  have hmid : RespectsSemanticsBelow sem BJ (fun d => σ (s d)) :=
+    map_respects_of_positive_cap_agreement hs hq hK (boundedMap_of_witness hσ) hγb hambient
+  obtain ⟨q', hq', hread, hcap⟩ := AlignedCutEncoding.decode_lift s p incl hr hmid hK
+    hσ hδ hδb hroom hactive hsource (fun _ => rfl) hface hlit
+  refine ⟨q', hq', hread, ?_⟩
+  intro d
+  have he := congrArg (fun z => min z γ) (hcap d)
+  simp only [min_assoc, min_eq_right hγδ] at he
+  exact he.trans (hambient d)
+
+end VaughtConjecture.Knight.RetunedCutDecoding
+
 namespace VaughtConjecture.Knight.CanonicalOwnerBoundary
 open Transform Value ExtOrd SharpWitnessComposition OwnerLocalEndpoint
-open CanonicalPairedProfiles CoatomBoundaryExtension
+open CanonicalPairedProfiles CoatomBoundaryExtension SourcePrefixRows
+open CanonicalPairedInverse PairedSlotEncoding
 noncomputable section
 
 theorem endpoint_grid {X : Type*} [Fintype X] {j : ℕ} {a : X → ExtOrd}
@@ -126,6 +153,200 @@ theorem exists_completion
   · intro e
     rw [hrread]
     exact hfread e
+
+theorem supported_self {X : Type*} (K : ℕ) (grid : Set ExtOrd) (p : X → ExtOrd) (a : X) :
+    OrbitPrefixSupport.Supported K grid p (p a) := by
+  rcases ExtOrd.cases (p a) with hb | ht | ⟨v, hv⟩
+  · exact Or.inl hb
+  · exact Or.inr (Or.inr ⟨a, K, le_rfl, by rw [ht, extVisibilityReplace_top]⟩)
+  · by_cases hi : finitePart v < K
+    · exact Or.inr (Or.inr ⟨a, finitePart v, hi.le, by
+        rw [hv, extVisibilityReplace_of_finitePart_lt hi, limitPart_add_finitePart]⟩)
+    · exact Or.inr (Or.inr ⟨a, K, le_rfl, by
+        rw [hv, extVisibilityReplace_of_le_finitePart (not_lt.mp hi)]⟩)
+
+theorem exists_prefix_section
+    {ι : Type*} [DecidableEq ι] {A : Finset ι} {D E : CellScheme A}
+    {sem : Semantics D} {rowsE : Semantics E}
+    {k : ℕ} {X : Type*} [Fintype X] {occ : Cell D → X} (hinj : Function.Injective occ)
+    (hg : ∀ d : Cell D, D.grade d ≤ k)
+    (oldCell : Cell D → Cell E)
+    (src : CanonicalFieldLayer.Profile sem k X occ → Cell E → ExtOrd)
+    (hsrc_respects : ∀ b, RespectsSemanticsBelow rowsE (A, k) (fun d => src b d.1))
+    (hsrc_old : ∀ b d, src b (oldCell d) = b.val (occ d))
+    (hsrc_supp : ∀ b d, OrbitPrefixSupport.Supported k
+      (PairedSlotComparison.sourceGrid k (Fintype.card X) : Set ExtOrd) b.val (src b d))
+    (hsrc_agree : ∀ b a {h}, h ∈ PairedSlotComparison.sourceGrid k (Fintype.card X) →
+      Agree b.val a.val h → Agree (src b) (src a) h)
+    (a : CanonicalFieldLayer.Profile sem k X occ)
+    {p : Cell D → ExtOrd} (hp : RespectsSemantics sem p) (ht : ∀ d, p d ≠ ⊤)
+    {B : ℕ} (hB : B ≤ 2 * Fintype.card X + 1)
+    (hag : ∀ d, min (a.val (occ d)) (CanonicalPairedInverse.grid k B) =
+      min (p d) (CanonicalPairedInverse.grid k B)) :
+    ∃ r : Cell E → ExtOrd,
+      RespectsSemanticsBelow rowsE (A, k) (fun d => r d.1) ∧
+      (∀ d, r (oldCell d) = p d) ∧
+      ∀ d, min (r d) (CanonicalPairedInverse.grid k B) =
+        min (src a d) (CanonicalPairedInverse.grid k B) := by
+  classical
+  let v := Function.extend occ p a.val
+  have hv (d : Cell D) : v (occ d) = p d := hinj.extend_apply p a.val d
+  have hvp : RespectsSemantics sem (v ∘ occ) := by simpa only [Function.comp_def, hv] using hp
+  have hvt (x : X) : v x ≠ ⊤ := by
+    by_cases hx : ∃ d, occ d = x
+    · obtain ⟨d, rfl⟩ := hx; rw [hv]; exact ht d
+    · rw [show v x = a.val x from Function.extend_apply' p a.val x hx]; exact a.property.2.2 x
+  have hva (x : X) : min (a.val x) (CanonicalPairedInverse.grid k B) =
+      min (v x) (CanonicalPairedInverse.grid k B) := by
+    by_cases hx : ∃ d, occ d = x
+    · obtain ⟨d, rfl⟩ := hx; rw [hv]; exact hag d
+    · rw [show v x = a.val x from Function.extend_apply' p a.val x hx]
+  let b := CanonicalFieldLayer.encode sem k X occ hg hvp hvt
+  have hb : ∀ x, min (b.val x) (CanonicalPairedInverse.grid k B) =
+      min (a.val x) (CanonicalPairedInverse.grid k B) :=
+    CanonicalPairedProfiles.normalize_cap X k a.property.2 hva
+  have hgrid : CanonicalPairedInverse.grid k B ∈
+      PairedSlotComparison.sourceGrid k (Fintype.card X) :=
+    PairedSlotComparison.sourceGrid_endpoint hB
+  have hsource := hsrc_agree b a hgrid hb
+  obtain ⟨κ, hw, hread, hfix, hreach, _⟩ :=
+    CanonicalPairedInverse.exists_supported_inverse a.property.2 hvt hva
+  have hfixGrid : ∀ z ∈ PairedSlotComparison.sourceGrid k (Fintype.card X),
+      z < CanonicalPairedInverse.grid k B → κ z = z := by
+    intro z hz hzB
+    rcases Finset.mem_insert.mp hz with rfl | hz
+    · exact hw.bot
+    · obtain ⟨n, _, rfl⟩ := Finset.mem_image.mp hz
+      apply hfix n
+      by_contra hn
+      have hBn : B ≤ n := Nat.le_of_not_gt hn
+      exact (not_le_of_gt hzB) (ofOrd_le_ofOrd.mpr (add_le_add (by gcongr) le_rfl))
+  have hfixBoundary (x : X) (hx : a.val x < CanonicalPairedInverse.grid k B) :
+      κ (a.val x) = a.val x :=
+    (congrArg κ (eq_of_cap_eq_lt (hb x).symm hx)).trans
+      ((hread x).trans (eq_of_cap_eq_lt (hva x) hx).symm)
+  have hguard : CanonicalPairedInverse.grid k B ≤ gTop k k := by
+    rw [gTop_of_le le_rfl]; exact le_top
+  have hcaps := OrbitPrefixSupport.decode_agree hw (CanonicalPairedInverse.grid_visible k B)
+    hguard hreach hfixGrid hfixBoundary (hsrc_supp a) hsource
+  have hwhole := SharpWitnessComposition.map_respects_of_positive_cap_agreement
+    (hsrc_respects b) (hsrc_respects a) (fun d => d.2.2)
+    (SharpWitnessComposition.boundedMap_of_witness hw) (ofOrd_ne_bot _) (fun d => hcaps d.1)
+  exact ⟨fun d => κ (src b d), hwhole,
+    fun d => by dsimp only; rw [hsrc_old]; exact (hread (occ d)).trans (hv d), hcaps⟩
+
+theorem exists_owner_capped_lift
+    {ι : Type*} [DecidableEq ι] {A : Finset ι} {D E : CellScheme A}
+    {sem : Semantics D} {rowsE : Semantics E}
+    {k : ℕ} {X : Type*} [Fintype X] {occ : Cell D → X} (hinj : Function.Injective occ)
+    (hg : ∀ d : Cell D, D.grade d ≤ k)
+    (oldTarget : Cell D → E.below (A, k))
+    (hold_grade : ∀ d, E.grade (oldTarget d).1 = D.grade d)
+    (src : CanonicalFieldLayer.Profile sem k X occ → Cell E → ExtOrd)
+    (hsrc_respects : ∀ b, RespectsSemanticsBelow rowsE (A, k) (fun d => src b d.1))
+    (hsrc_old : ∀ b d, src b (oldTarget d).1 = b.val (occ d))
+    (hsrc_supp : ∀ b d, OrbitPrefixSupport.Supported k
+      (PairedSlotComparison.sourceGrid k (Fintype.card X) : Set ExtOrd) b.val (src b d))
+    (hsrc_agree : ∀ b a {h}, h ∈ PairedSlotComparison.sourceGrid k (Fintype.card X) →
+      Agree b.val a.val h → Agree (src b) (src a) h)
+    (hamb : ∀ {q : E.below (A, k) → ExtOrd}, RespectsSemanticsBelow rowsE (A, k) q →
+      ∀ d, E.grade d.1 = k → ∀ {γ}, SelfVis k γ → γ ≠ ⊥ → γ ≤ q d →
+        ∃ (a : CanonicalFieldLayer.Profile sem k X occ) (τ : ExtOrd → ExtOrd),
+          Witness (gTop k) τ ∧ (∀ z, τ z ≤ γ) ∧
+          ∀ x, τ (src a x.1) = min (q x) γ)
+    (c : Cell D) (hc : D.grade c = k)
+    {p : D.below (D.cell c) → ExtOrd} (hp : RespectsSemanticsBelow sem (D.cell c) p)
+    {q : E.below (A, k) → ExtOrd} (hq : RespectsSemanticsBelow rowsE (A, k) q)
+    {γ : ExtOrd} (hγ : SelfVis k γ) (hγb : γ ≠ ⊥)
+    (hag : ∀ e : D.below (D.cell c), min (p e) γ = min (q (oldTarget e.1)) γ)
+    (hpc : γ < p ⟨c, GradedLe.refl _⟩)
+    {U V O : Finset ι × ℕ}
+    (hcover : ∀ d : Cell D, GradedLe (D.cell d) U ∨ GradedLe (D.cell d) V)
+    (hcU : GradedLe (D.cell c) U) (hOU : GradedLe O U) (hOV : GradedLe O V)
+    (hinter : ∀ d : Cell D, GradedLe (D.cell d) U → GradedLe (D.cell d) V →
+      GradedLe (D.cell d) O)
+    (hleft : CappedLift sem hcU) (hright : CappedLift sem hOV)
+    (hU : U.2 ≤ k) (hV : V.2 ≤ k) :
+    ∃ r : E.below (A, k) → ExtOrd,
+      RespectsSemanticsBelow rowsE (A, k) r ∧
+      (∀ e : D.below (D.cell c), r (oldTarget e.1) = min (p e) (p ⟨c, GradedLe.refl _⟩)) ∧
+      ∀ d, min (r d) γ = min (q d) γ := by
+  classical
+  let _ := Fintype.ofFinite (D.below (D.cell c))
+  subst k
+  let M := p ⟨c, GradedLe.refl _⟩
+  let pp : D.below (D.cell c) → ExtOrd := fun e => min (p e) M
+  have hactive : γ ≤ q (oldTarget c) :=
+    (AmbientGradeCharts.cap_reaches_iff (hag ⟨c, GradedLe.refl _⟩)).mp hpc.le
+  obtain ⟨a, τ, hτ, hbound, hambient⟩ := hamb hq (oldTarget c) (hold_grade c) hγ hγb hactive
+  have hface (e : D.below (D.cell c)) : τ (a.val (occ e.1)) = min (p e) γ := by
+    have he := hambient (oldTarget e.1)
+    rw [hsrc_old] at he
+    exact he.trans (hag e).symm
+  obtain ⟨h, ρ, δ, u, _, _, ⟨B, hB, hBeq⟩, hρ, hγδ, hδM, hδvis,
+      hρh, hu, hucap, huface, _, hread, hretune⟩ :=
+    exists_completion c a.property.2 occ a.property.1 hp
+      hcover hcU hOU hOV hinter hleft hright hU hV hτ hγ
+      (bot_lt_iff_ne_bot.mpr hγb) hbound hface hpc
+  let tail := 2 * Fintype.card X + 1
+  have hroom : h < ofOrd (Ordinal.omega0 * tail) := by
+    rw [hBeq]
+    exact ofOrd_lt_ofOrd.mpr (code_add_lt_mul
+      (Nat.cast_lt.mpr (by dsimp [tail]; omega)) _)
+  let S := RelativePrefixEncoding.inventory pp δ
+  let T := S.card + tail
+  let C := CanonicalPairedInverse.grid (D.grade c) (T + 1)
+  have hC : SelfVis (D.grade c) C := CanonicalPairedInverse.grid_visible _ _
+  have hhC : h ≤ C := hroom.le.trans (ofOrd_le_ofOrd.mpr (le_trans
+    (by gcongr; dsimp [T]; omega) le_self_add))
+  have hfC (e : D.below (D.cell c)) : u e.1 ≤ C := by
+    rw [huface]
+    change AlignedCutEncoding.encode (fun e => a.val (occ e.1)) pp
+      (D.grade c) tail h δ e ≤ C
+    by_cases he : pp e ≤ δ
+    · rw [AlignedCutEncoding.encode_of_le _ _ _ _ _ _ e he]
+      exact (min_le_right _ _).trans hhC
+    · rw [AlignedCutEncoding.encode_of_gt _ _ hroom e (not_le.mp he)]
+      rcases mem_codedAlphabet_iff.mp (PaddedSourceDecoder.encode_mem S (D.grade c) tail
+          (pp e)) with hb | ⟨b, n, hb, _, he⟩
+      · rw [hb]; exact bot_le
+      · rw [he]
+        exact ofOrd_le_ofOrd.mpr ((code_add_lt_mul
+          (Nat.cast_lt.mpr (by dsimp [T]; omega)) n).le.trans le_self_add)
+  let v : Cell D → ExtOrd := fun d => min (u d) C
+  have hv : RespectsSemantics sem v :=
+    ((hu.toBelow (A, D.grade c)).cap hC).toRespects
+      (fun d => ⟨D.isPlan.subset_of_mem (D.scope_mem_plan d), hg d⟩)
+  have hvt (d : Cell D) : v d ≠ ⊤ := by
+    intro hd
+    change min (u d) C = ⊤ at hd
+    exact ofOrd_ne_top _ (top_le_iff.mp (hd ▸ min_le_right (u d) C))
+  have hvcap (d : Cell D) : min (v d) h = min (a.val (occ d)) h := by
+    dsimp only [v]; rw [min_assoc, min_eq_right hhC]; exact hucap d
+  obtain ⟨w, hw, hwold, hwcap⟩ := exists_prefix_section hinj hg (fun d => (oldTarget d).1)
+    src hsrc_respects hsrc_old hsrc_supp hsrc_agree a hv hvt (hB.trans (Nat.le_succ _))
+    (fun d => by rw [← hBeq]; exact (hvcap d).symm)
+  have hwcap' (d) : min (w d) h = min (src a d) h := by rw [hBeq]; exact hwcap d
+  apply RetunedCutDecoding.decode_lift (fun d => src a d.1) pp (fun e => oldTarget e.1)
+    (hsrc_respects a) hw hq (fun d => d.2.2) hρ hδvis hγb hγδ hroom hρh.ge
+    (fun d => hwcap' d.1)
+  · intro d
+    have hshort := PairedCoupledSections.supported_short
+      (fun _ hh => CanonicalFieldLayer.grid_short (D.grade c) X hh)
+      (CanonicalFieldLayer.profile_short sem (D.grade c) X occ a) (hsrc_supp a d.1)
+    exact (hretune _ hshort).trans ((min_eq_left (hbound _)).trans (hambient d))
+  · intro e
+    change min (pp e) δ = min (ρ (src a (oldTarget e.1).1)) δ
+    rw [hsrc_old]
+    dsimp only [pp]
+    rw [min_assoc, min_eq_right hδM]
+    exact hread e
+  · intro e
+    have hs : ((fun d => src a d.1) ∘ fun e : D.below (D.cell c) => oldTarget e.1) =
+        fun e => a.val (occ e.1) := funext (fun e => hsrc_old a e.1)
+    rw [hs]
+    change w (oldTarget e.1).1 = _
+    rw [hwold, show v e.1 = u e.1 from min_eq_left (hfC e), huface]
 
 end
 end VaughtConjecture.Knight.CanonicalOwnerBoundary

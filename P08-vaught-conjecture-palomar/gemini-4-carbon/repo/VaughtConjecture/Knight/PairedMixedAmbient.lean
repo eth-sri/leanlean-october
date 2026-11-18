@@ -1,3 +1,0 @@
-module
-public import VaughtConjecture.Knight.PairedMixedGradeLayers
-public import VaughtConjecture.Knight.SourcePrefixAmbient

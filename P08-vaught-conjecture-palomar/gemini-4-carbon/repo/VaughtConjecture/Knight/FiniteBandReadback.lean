@@ -5,22 +5,47 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.VisibilityBandArithmetic
 public import VaughtConjecture.Knight.ProvisionalUniqueness
-public import VaughtConjecture.Knight.Reduction
-
-/-! # Finite band readback for higher stage types
-
-The band case of Lemma 5.5.2 uses only ordinal arithmetic, lawful finite labels,
-and provisional values of the literal reduct. The public declarations retain
-their original names and proofs and are re-exported by `ExpansionUniqueness`.
-
-This supplier excludes the expansion-uniqueness, reduct-model, block-geometry,
-and provisional-ratchet cones. Visibility arithmetic is supplied independently;
-`Model` remains upstream of the provisional definitions in `Terminal`.
--/
 
 @[expose] public section
+
+namespace VaughtConjecture.Knight
+
+open Value ExtOrd
+
+namespace Value
+
+theorem limitPart_limitPart (μ : Ordinal.{0}) : limitPart (limitPart μ) = limitPart μ := by
+  have h := limitPart_limitPart_add_nat μ 0
+  simpa using h
+
+/-- A value between `limitPart μ` and `limitPart μ + K'` has the limit part of `μ`. -/
+theorem limitPart_eq_of_le_of_lt {μ z : Ordinal.{0}} {K' : ℕ} (h1 : limitPart μ ≤ z)
+    (h2 : z < limitPart μ + K') : limitPart z = limitPart μ := by
+  apply le_antisymm
+  · have := limitPart_mono h2.le
+    rwa [limitPart_limitPart_add_nat] at this
+  · have := limitPart_mono h1
+    rwa [limitPart_limitPart] at this
+
+theorem le_visibilityReplace_self (μ : Ordinal.{0}) (K : ℕ) : μ ≤ visibilityReplace μ K K := by
+  unfold visibilityReplace ordinalReplace
+  split
+  · next h =>
+    calc μ = limitPart μ + finitePart μ := (decomposition μ).symm
+      _ ≤ limitPart μ + K := add_le_add (le_refl _) ((Nat.cast_le (α := Ordinal.{0})).mpr h.le)
+  · exact le_rfl
+
+theorem le_extVisibilityReplace_self (v : ExtOrd) (K : ℕ) : v ≤ extVisibilityReplace v K K := by
+  rcases ExtOrd.cases v with rfl | rfl | ⟨μ, rfl⟩
+  · simp
+  · simp
+  · rw [extVisibilityReplace_ofOrd, ofOrd_le_ofOrd]
+    exact le_visibilityReplace_self μ K
+
+end Value
+
+end VaughtConjecture.Knight
 
 namespace VaughtConjecture.Knight
 

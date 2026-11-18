@@ -19,7 +19,6 @@ This constructs the proper boundary, not full-scope rows or an amalgam type.
 
 @[expose] public section
 
-set_option autoImplicit false
 
 namespace VaughtConjecture.Knight.CoatomBoundaryPresentation
 

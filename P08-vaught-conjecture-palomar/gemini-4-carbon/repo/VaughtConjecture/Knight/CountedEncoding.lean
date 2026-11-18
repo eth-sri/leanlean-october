@@ -44,7 +44,6 @@ variable (l : ℕ) (S : Finset Ordinal.{0})
 noncomputable def encOrdK (v : Ordinal.{0}) : Ordinal.{0} :=
   Ordinal.omega0 * (blockOf l S v : ℕ) + (min (finitePart v) l : ℕ)
 
-theorem encOrdK_eq_code (v : Ordinal.{0}) : encOrdK l S v = code l S v := rfl
 
 /-- The counted encoding on labels: `⊥`, `⊤` fixed, ordinals coded. -/
 noncomputable def encT : ExtOrd → ExtOrd

@@ -19,7 +19,6 @@ zero-rank shadow, has a separately installed same-source ceiling leaf.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.RelativeLadderLayer
 open Transform Value ExtOrd LadderScalarRendering
 noncomputable section
@@ -361,8 +360,6 @@ theorem consistent (hs : sem.IsConsistent)
     convert hr using 1
     exact funext (row_added D sem hA field fields hp v)
 
-def selected (a : Q) (C : ExtOrd) : Cell (carrier D hA (X := X) (Q := Q)) → ExtOrd :=
-  image D hA field fields a (LadderScalarRendering.level (values (fields a)) C)
 
 theorem coded (hs : sem.IsCoded) : (rows D sem hA field fields hp).IsCoded := by
   intro c d

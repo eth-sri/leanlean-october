@@ -6,9 +6,17 @@ Authors: Cameron Freer
 module
 
 public import InfinitaryLogic.ModelTheory.MorleyCounting
-public import InfinitaryLogic.Conditional.GandyHarrington
-public import InfinitaryLogic.Conditional.MorleyPerfect
-public import VaughtConjecture.Spectrum.RankCount
+public import Mathlib.Topology.GDelta.Basic
+public import Mathlib.Topology.Baire.Lemmas
+public import Mathlib.Topology.Baire.CompleteMetrizable
+public import Mathlib.Topology.Baire.BaireMeasurable
+public import Mathlib.Topology.Bases
+public import Mathlib.Data.List.GetD
+public import Mathlib.Topology.MetricSpace.PiNat
+public import Mathlib.Topology.Baire.LocallyCompactRegular
+public import InfinitaryLogic.Descriptive.AnalyticClosure
+public import Mathlib.Analysis.SpecificLimits.Basic
+public import Mathlib.SetTheory.Cardinal.Arithmetic
 
 /-! # The countable spectrum of an `L_{ω₁,ω}` sentence
 

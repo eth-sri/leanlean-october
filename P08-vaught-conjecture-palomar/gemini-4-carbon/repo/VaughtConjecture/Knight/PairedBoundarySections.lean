@@ -22,7 +22,6 @@ indices, arbitrary-ambient lifting, or coatom amalgamation.
 
 @[expose] public section
 
-set_option autoImplicit false
 
 namespace VaughtConjecture.Knight.PairedBoundarySections
 
@@ -34,14 +33,7 @@ noncomputable section
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
 variable (sem : Semantics D) (j : ℕ)
 
-/-- All lawful short coded profiles, not a chosen list of displays. Including
-non-normalized coded profiles avoids needing idempotence for family membership. -/
-def Profile := {p : Cell D → ExtOrd // RespectsSemantics sem p ∧
-  (∀ d, p d ∈ ExtOrd.codedAlphabet (2 * Fintype.card (Cell D)) j) ∧ ∀ d, Short j (p d)}
 
-instance : Fintype (Profile sem j) :=
-  ((codedLabellings_finite (Cell D) (2 * Fintype.card (Cell D)) j).subset
-    (fun _ h => h.2.1)).fintype
 
 def ceiling : ExtOrd :=
   ofOrd (Ordinal.omega0 * (2 * Fintype.card (Cell D) + 1 : ℕ) + j)

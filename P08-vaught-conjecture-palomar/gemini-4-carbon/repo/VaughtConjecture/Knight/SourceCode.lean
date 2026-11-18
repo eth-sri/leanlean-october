@@ -35,11 +35,6 @@ theorem supported_bot (S : Finset Ordinal.{0}) : Supported S ⊥ := by
   intro v h
   exact False.elim ((ofOrd_ne_bot v) h.symm)
 
-theorem Supported.min {S : Finset Ordinal.{0}} {x y : ExtOrd}
-    (hx : Supported S x) (hy : Supported S y) : Supported S (min x y) := by
-  rcases le_total x y with h | h
-  · rwa [min_eq_left h]
-  · rwa [min_eq_right h]
 
 theorem Supported.keyed {S : Finset Ordinal.{0}} {x : ExtOrd}
     (h : Supported S x) (K : ℕ) : Keyed K S x := by

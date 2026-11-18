@@ -47,8 +47,8 @@ namespace VaughtConjecture.Knight.CappedDonor.Ref
 open Transform Value ExtOrd AmalgamationPlan
 noncomputable section
 
-variable {I : Type*} [Fintype I] {nP N J K : ℕ} {P : SemScheme (nP + 1)} {C : SemScheme J}
-  {R : Ref I nP N J P C} (L : R.LowRef K)
+variable {I : Type*} [Fintype I] {nP N J : ℕ} {P : SemScheme (nP + 1)} {C : SemScheme J}
+  {R : Ref I nP N J P C}
 
 /-! ## Synchronization identifies the persistent and source vectors -/
 

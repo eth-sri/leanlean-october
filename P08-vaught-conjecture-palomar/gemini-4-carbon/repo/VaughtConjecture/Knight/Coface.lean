@@ -132,13 +132,7 @@ noncomputable def ofRespects (hα : Order.IsSuccLimit α) (D : SemScheme n)
   label_bound _ := truncExt_bound α _
   respects := hq'.truncate hα
 
-@[simp] theorem ofRespects_scheme (hα : Order.IsSuccLimit α) (D : SemScheme n)
-    (q' : Cell D.scheme → ExtOrd) (hq' : RespectsSemantics D.rows q') :
-    (ofRespects hα D q' hq').scheme = D := rfl
 
-@[simp] theorem ofRespects_label (hα : Order.IsSuccLimit α) (D : SemScheme n)
-    (q' : Cell D.scheme → ExtOrd) (hq' : RespectsSemantics D.rows q') (d : Cell D.scheme) :
-    (ofRespects hα D q' hq').label d = truncExt α (q' d) := rfl
 
 /-- **Truncation does not disturb the face.**  If `q'` respects the rows of an extension domain
 `D` of `dom p` and extends `p.label` along the cell map of the initial face (`hD.cellOf`),

@@ -1,3 +1,0 @@
-module
-public import VaughtConjecture.Knight.PairedGradeCutSections
-public import VaughtConjecture.Knight.PairedCoupledSections

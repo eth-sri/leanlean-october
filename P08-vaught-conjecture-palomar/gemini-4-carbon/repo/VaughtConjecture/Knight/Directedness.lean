@@ -250,7 +250,6 @@ theorem topGrade_mono {x y : LabelledExt R} (h : x ≤ y) :
 /-- The principal **tail** above a labelled cover: all labelled covers extending it. -/
 def tail (x : LabelledExt R) : Set (LabelledExt R) := {y | x ≤ y}
 
-@[simp] theorem mem_tail {x y : LabelledExt R} : y ∈ x.tail ↔ x ≤ y := Iff.rfl
 
 end LabelledExt
 

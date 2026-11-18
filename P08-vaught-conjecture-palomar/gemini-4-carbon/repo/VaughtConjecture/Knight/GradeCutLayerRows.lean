@@ -16,7 +16,6 @@ across their exact lower domains; their source values are not renormalized.
 
 @[expose] public section
 
-set_option autoImplicit false
 
 namespace VaughtConjecture.Knight.GradeCutLayerRows
 

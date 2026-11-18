@@ -22,7 +22,6 @@ supplied separately by `CappedLiftOfExtension`.
 
 @[expose] public section
 
-set_option autoImplicit false
 
 namespace VaughtConjecture.Knight.CoatomBoundaryExtension
 

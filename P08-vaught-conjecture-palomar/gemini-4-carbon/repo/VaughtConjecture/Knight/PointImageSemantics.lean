@@ -16,7 +16,6 @@ coding without changing labels or composing transformations.
 
 @[expose] public section
 
-set_option autoImplicit false
 
 namespace VaughtConjecture.Knight.PointImageSemantics
 

@@ -17,7 +17,6 @@ full-grade layer; it does not fill missing indices of the support plan.
 
 @[expose] public section
 
-set_option autoImplicit false
 
 namespace VaughtConjecture.Knight.ProperBoundarySourceLayer
 

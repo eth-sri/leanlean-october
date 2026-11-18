@@ -18,7 +18,6 @@ proper owners of the new grade, nor force positive upper continuation.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.HighLayerBountiful
 open Transform Value ExtOrd CoatomBoundaryExtension AmalgamationPlan SourceLayerCarrier
 noncomputable section

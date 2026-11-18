@@ -59,7 +59,6 @@ over one shared codebook; it builds no section, controller family, or extension 
 faces encoded with unrelated codebooks are not covered. -/
 @[expose] public section
 
-set_option autoImplicit false
 
 namespace VaughtConjecture.Knight
 

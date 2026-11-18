@@ -7,8 +7,7 @@ module
 
 public import VaughtConjecture.Knight.ProvisionalRatchet
 public import VaughtConjecture.Knight.FiniteBandReadback
-public import VaughtConjecture.Knight.ReductModel
-public import VaughtConjecture.Knight.BlockGeometry
+public import VaughtConjecture.Knight.Rank
 
 /-!
 # Direct successor-expansion uniqueness (Lemma 5.5.2: "target labels are source stable

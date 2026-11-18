@@ -5,19 +5,34 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.FiniteCofaceSupply
+public import VaughtConjecture.Knight.FiniteTupleGeometry
 public import VaughtConjecture.Knight.CoatomAmalgamation
 public import VaughtConjecture.Knight.VisibleFaceOneStep
 
-/-! # Finite coface lifting from coatom amalgamation
-
-The finite consequences of `MaximalCoatomAmalgamationSupply`: zero-padded
-face lifting, exact-pair amalgamation, and uniformity/high-grade cofaces.
-Their statements and namespaces are unchanged. The Henkin model-existence
-and spectrum applications remain in `CoatomHenkinBridge`.
--/
-
 @[expose] public section
+
+namespace VaughtConjecture.Knight
+open TypeTower Value ExtOrd
+universe w
+namespace FixedHeight
+open KnightRealization
+variable {M : Type w} {β : LimitStage}
+
+/-- **The pinned master-coface supply** (the completion gate's missing input): a coface of
+the current master whose face over `g⌢last` is a PRESCRIBED coface of the base's face.
+This is the exact old-pin/visibility collision: the new domain must keep the initial face
+`dom P` literally (the old pin), make the face `g⌢last` VISIBLE in its plan, and restrict
+there to `dom q` with the labels of `q` — a span gluing of two prescribed faces over their
+common face `dom p`, where the compiled engine (`exists_respects_extends_capped`) pins ONE
+face only.  The clean theorem to return to Knight-VC. -/
+def PinnedCofaceSupply (β : LimitStage) : Prop :=
+  ∀ {N n : ℕ} (P : S β.1 N) (g : Fin n ↪ Fin N) (p : S β.1 n),
+    typeMap g P = some p → ∀ q : S β.1 (n + 1), IsCoface p q →
+      ∃ Q : S β.1 (N + 1), IsCoface P Q ∧ typeMap (extendFace g) Q = some q
+
+
+end FixedHeight
+end VaughtConjecture.Knight
 
 namespace VaughtConjecture.Knight
 open StageType TypeTower Cardinal

@@ -18,7 +18,6 @@ composition is used. Scope geometry and extension supply are separate.
 
 @[expose] public section
 
-set_option autoImplicit false
 
 namespace VaughtConjecture.Knight.FiniteProfileControllers
 

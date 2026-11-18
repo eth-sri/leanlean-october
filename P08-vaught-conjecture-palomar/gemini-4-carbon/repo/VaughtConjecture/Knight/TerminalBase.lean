@@ -6,7 +6,6 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.SpectrumAssembly
-public import VaughtConjecture.Knight.BlockGeometry
 public import VaughtConjecture.Knight.NoTop
 
 /-! # Terminal models: the low-level definitions

@@ -5,10 +5,36 @@ Authors: Cameron Freer
 -/
 module
 
-public import InfinitaryLogic.Descriptive.SmallVocabularyLift
-public import InfinitaryLogic.Descriptive.LopezEscobar
-public import InfinitaryLogic.Descriptive.SentenceSplits
-public import InfinitaryLogic.Descriptive.SentenceObservables
+public import InfinitaryLogic.Descriptive.StructureIsoSetoid
+public import Mathlib.Logic.Small.Basic
+public import InfinitaryLogic.Lomega1omega.QuantifierRank
+public import Mathlib.Data.Set.Countable
+public import Mathlib.Data.Set.Finite.Lattice
+public import Mathlib.Data.Finset.Sort
+public import Mathlib.Order.Interval.Finset.Fin
+public import Mathlib.ModelTheory.Encoding
+public import InfinitaryLogic.Lomega1omega.Theory
+public import InfinitaryLogic.Scott.Formula
+public import Mathlib.Order.Zorn
+public import Mathlib.Data.Fintype.Quotient
+public import Mathlib.Order.Filter.AtTopBot.Basic
+public import Mathlib.Order.Filter.Finite
+public import Mathlib.Order.Hom.Basic
+public import Mathlib.Data.Nat.Nth
+public import Mathlib.Data.Set.Finite.Basic
+public import Mathlib.Order.WellFounded
+public import Mathlib.Data.Set.Lattice.Bounded
+public import Mathlib.Data.Set.Lattice.Disjoint
+public import Mathlib.Data.Set.Lattice.Image
+public import Mathlib.Data.Set.Lattice.Indexed
+public import Mathlib.Data.Set.Lattice.Order
+public import Mathlib.SetTheory.Cardinal.Pigeonhole
+public import Mathlib.Order.InitialSeg
+public import Mathlib.ModelTheory.LanguageMap
+public import Mathlib.SetTheory.Cardinal.Arithmetic
+public import Mathlib.ModelTheory.Substructures
+public import Mathlib.GroupTheory.Perm.Basic
+public import Mathlib.Topology.Algebra.Group.Basic
 
 /-!
 # Descriptive transport through the small-vocabulary presentation

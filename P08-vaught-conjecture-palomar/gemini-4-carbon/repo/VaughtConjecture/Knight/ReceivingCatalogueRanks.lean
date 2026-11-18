@@ -5,7 +5,10 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.ReceivingCatalogueAdmission
+public import VaughtConjecture.Knight.CappedDonorAdmission
+public import VaughtConjecture.Knight.PrivateRowFactorization
+public import VaughtConjecture.Knight.CanonicalPairedInverse
+public import VaughtConjecture.Knight.LadderScalarRendering
 
 /-! # Rank preservation for downward catalogue normalization
 
@@ -22,7 +25,6 @@ installed grade-two controller. No carrier or row is changed here.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.ReceivingCatalogueRanks
 open Transform Value ExtOrd CappedDonor CappedDonor.Ref
 open LadderScalarRendering
@@ -80,10 +82,6 @@ theorem fieldRank_normalize {X : Type*} [Fintype X] (j : ℕ) (p : X → ExtOrd)
     exact PairedSlotDecoder.decode_normalize (by simp) (selfVis_bot j) hp e
   have h := fieldRank_of_leftInverse p hf.mono hg.mono hf.bot hg.bot hinv d
   simpa only [f, PairedSlotIncoming.encoder_profile] using h
-
-variable {I : Type*} [Fintype I] {nP N J K : ℕ}
-  {P : SemScheme (nP + 1)} {C : SemScheme J} {R : Ref I nP N J P C}
-  (L : R.LowRef K)
 
 end
 end VaughtConjecture.Knight.ReceivingCatalogueRanks

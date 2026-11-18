@@ -8,6 +8,7 @@ module
 public import VaughtConjecture.Knight.CappedDonorCatalogue
 public import VaughtConjecture.Knight.CanonicalPairedInverse
 public import VaughtConjecture.Knight.PairedSlotComparison
+public import VaughtConjecture.Knight.ReceivingCatalogueRanks
 
 /-! # The scalar repair package of the ordinary final catalogue
 
@@ -135,6 +136,178 @@ theorem bottom_supply {v₁ : C.scheme.below (effC J N) → ExtOrd}
           ∀ f, δ (PairedSlotEncoding.normalize N b₀ f) = a f := by
   obtain ⟨a, h1, h2, h3, b₀, h4, h5, h6, δ, hδ, hread, -⟩ := bottom_supply' (R := R) hv₁
   exact ⟨a, h1, h2, h3, b₀, h4, h5, h6, δ, hδ, hread⟩
+
+section GenericTerminal
+open CanonicalPairedInverse LadderScalarRendering ReceivingCatalogueRanks
+
+def profileFreshFloor {X : Type*} [Fintype X] (p : X → ExtOrd) (h : Ordinal.{0}) : Ordinal.{0} :=
+  Ordinal.omega0 * ((insert h (PairedSlotEncoding.values p)).sup id + 1)
+
+theorem profileFreshFloor_limit {X : Type*} [Fintype X] (p : X → ExtOrd) (h : Ordinal.{0}) :
+    limitPart (profileFreshFloor p h) = profileFreshFloor p h := limitPart_omega0_mul _
+
+theorem lt_profileFreshFloor {X : Type*} [Fintype X] (p : X → ExtOrd) (h : Ordinal.{0})
+    {a : Ordinal.{0}} (ha : a ∈ insert h (PairedSlotEncoding.values p)) :
+    a < profileFreshFloor p h := by
+  unfold profileFreshFloor
+  set m := (insert h (PairedSlotEncoding.values p)).sup id
+  exact (Order.lt_add_one_iff.mpr (Finset.le_sup (f := id) ha)).trans_le
+    (Ordinal.le_mul_right (m + 1) Ordinal.omega0_pos)
+
+theorem profile_lt_freshFloor {X : Type*} [Fintype X] (p : X → ExtOrd) (h : Ordinal.{0}) (d : X) :
+    p d < ofOrd (profileFreshFloor p h) ∨ p d = ⊤ := by
+  rcases ExtOrd.cases (p d) with hb | ht | ⟨a, ha⟩
+  · exact Or.inl (hb ▸ bot_lt_iff_ne_bot.mpr (ofOrd_ne_bot _))
+  · exact Or.inr ht
+  · exact Or.inl (by
+      rw [ha, ofOrd_lt_ofOrd]
+      exact lt_profileFreshFloor p h
+        (Finset.mem_insert_of_mem (PairedSlotEncoding.mem_values.mpr ⟨d, ha⟩)))
+
+theorem exists_supported_decoder_of_map {X St : Type*} [Fintype X]
+    (prof : St → X → ExtOrd) (mapS : (ExtOrd → ExtOrd) → St → St)
+    (normS : ℕ → St → St) (Adm : St → Prop)
+    (hprof_map : ∀ (f : ExtOrd → ExtOrd) (T : St) (d : X), prof (mapS f T) d = f (prof T d))
+    (hprof_norm : ∀ (j : ℕ) (T : St) (d : X),
+      prof (normS j T) d = PairedSlotEncoding.normalize j (prof T) d)
+    {j : ℕ} (hj : 1 ≤ j) {S : St} (hS : Adm S)
+    (hadm_map : ∀ {f : ExtOrd → ExtOrd}, Witness (gTop j) f →
+      (∀ x, f x = ⊥ → x = ⊥) → Adm (mapS f S))
+    (hadm_norm : ∀ {T : St}, Adm T → Adm (normS j T)) :
+    ∃ Q : St, Adm Q ∧ prof Q ∈ CanonicalPairedProfiles.inventory X j ∧
+      (∀ d, fieldRank (prof Q) d = fieldRank (prof S) d) ∧
+      ∃ δ : ExtOrd → ExtOrd, Witness (gTop j) δ ∧
+        (∀ d, δ (prof Q d) = prof S d) ∧
+        (∀ d, δ (prof Q d) = ⊥ → prof Q d = ⊥) ∧
+        ∀ x, OrbitPrefixSupport.Supported j ({⊤} : Set ExtOrd) (prof S) (δ x) := by
+  let l := profileFreshFloor (prof S) 0
+  have hlim : limitPart l = l := profileFreshFloor_limit (prof S) 0
+  let β : ExtOrd := ofOrd (l + j)
+  have hβvis : SelfVis j β := by
+    rw [selfVis_ofOrd_iff]
+    have he := finitePart_limitPart_add_nat l j
+    rw [hlim] at he; exact he.ge
+  have hβbot : β ≠ ⊥ := ofOrd_ne_bot _
+  have hlβ : ofOrd l ≤ β := ofOrd_le_ofOrd.mpr le_self_add
+  let S₀ := mapS (fun x => min x β) S
+  have hS₀ : Adm S₀ := hadm_map (capWitness hβvis hβbot) (capWitness_reflects_bottom hβbot)
+  have hproper (d : X) : prof S₀ d ≠ ⊤ := by
+    rw [hprof_map]; exact fun ht => ofOrd_ne_top _ (min_eq_top.mp ht).2
+  have hcap (d : X) : min (prof S d) (ofOrd 0) = min (prof S₀ d) (ofOrd 0) := by
+    rw [hprof_map, min_assoc, min_eq_right
+      ((ofOrd_le_ofOrd.mpr (lt_profileFreshFloor (prof S) 0
+        (Finset.mem_insert_self _ _)).le).trans hlβ)]
+  let Q := normS j S₀
+  have hQeq : prof Q = PairedSlotEncoding.normalize j (prof S₀) := funext (hprof_norm j S₀)
+  have hcanon : prof Q ∈ CanonicalPairedProfiles.inventory X j :=
+    hQeq ▸ CanonicalPairedProfiles.normalize_mem_inventory X j hproper
+  have hc := collapseBlock_witness j hlim
+  have hi (d : X) : collapseBlock l (min (prof S d) β) = prof S d :=
+    collapseBlock_min hlβ (profile_lt_freshFloor (prof S) 0 d)
+  have hr₀ (d : X) : fieldRank (prof S₀) d = fieldRank (prof S) d := by
+    have he : prof S₀ = fun d => min (prof S d) β := funext (hprof_map _ S)
+    rw [he]
+    exact fieldRank_of_leftInverse (prof S) (fun _ _ h => min_le_min_right _ h)
+      hc.mono (min_bot_left _) hc.bot hi d
+  have hrQ (d : X) : fieldRank (prof Q) d = fieldRank (prof S) d :=
+    (congrArg (fun p => fieldRank p d) hQeq).trans
+      ((fieldRank_normalize j (prof S₀) hproper d).trans (hr₀ d))
+  have hG : ∀ z ∈ ({β} : Finset ExtOrd), SelfVis j z := fun z hz => by
+    rw [Finset.mem_singleton.mp hz]; exact hβvis
+  let δ := collapseBlock l ∘ PairedSlotDecoder.decode j (PairedSlotEncoding.values (prof S₀)) {β} β
+  have hδ : Witness (gTop j) δ :=
+    Witness.comp_of_bottom_reflecting (PairedSlotDecoder.decode_witness hG hβvis) hc le_rfl
+      (collapseBlock_reflects_bottom l)
+  have hread (d : X) : δ (prof Q d) = prof S d := by
+    dsimp only [δ, Function.comp_apply]
+    rw [hprof_norm, PairedSlotDecoder.decode_normalize hG hβvis hproper d, hprof_map]
+    exact hi d
+  refine ⟨Q, hadm_norm hS₀, hcanon, hrQ, δ, hδ, hread, fun d hd => ?_, fun x => ?_⟩
+  · have hSd : prof S d = ⊥ := (hread d).symm.trans hd
+    have he := hcap d
+    rw [hSd, min_bot_left] at he
+    have hS₀d : prof S₀ d = ⊥ := (min_eq_bot.mp he.symm).resolve_right (ofOrd_ne_bot 0)
+    rw [hprof_norm]
+    exact (PairedSlotEncoding.normalize_bot_iff j (prof S₀) d).mpr hS₀d
+  · dsimp only [δ, Function.comp_apply]
+    rcases PairedSlotDecoder.decode_supported (j := j) (K := j) (p := prof S₀)
+        le_rfl (Finset.mem_singleton_self β) x with hz | hβ | ⟨d, i, hi', he⟩
+    · rw [hz]; exact Or.inl hc.bot
+    · rw [Finset.mem_singleton.mp (Finset.mem_coe.mp hβ), collapseBlock_of_le hlβ]
+      exact Or.inr (Or.inl (Set.mem_singleton _))
+    · rw [he, hprof_map]
+      rcases profile_lt_freshFloor (prof S) 0 d with hlt | ht
+      · rw [min_eq_left (hlt.le.trans hlβ), collapseBlock_of_lt (evr_lt_of_lt_limit hlim hlt j i)]
+        exact Or.inr (Or.inr ⟨d, i, hi', rfl⟩)
+      · rw [ht, min_top_left, evr_eq_self_of_selfVis hβvis i, collapseBlock_of_le hlβ]
+        exact Or.inr (Or.inl (Set.mem_singleton _))
+
+theorem exists_protected_repair_of_map {X St : Type*} [Fintype X]
+    (prof : St → X → ExtOrd) (mapS : (ExtOrd → ExtOrd) → St → St)
+    (normS : ℕ → St → St) (Adm : St → Prop)
+    (hprof_map : ∀ (f : ExtOrd → ExtOrd) (T : St) (d : X), prof (mapS f T) d = f (prof T d))
+    (hprof_norm : ∀ (j : ℕ) (T : St) (d : X),
+      prof (normS j T) d = PairedSlotEncoding.normalize j (prof T) d)
+    {j B : ℕ} (hj : 1 ≤ j) {a : X → ExtOrd}
+    (ha : a ∈ CanonicalPairedProfiles.inventory X j)
+    {S : St} (hS : Adm S)
+    (hadm_map : ∀ {f : ExtOrd → ExtOrd}, Witness (gTop j) f →
+      (∀ x, f x = ⊥ → x = ⊥) → Adm (mapS f S))
+    (hadm_norm : ∀ {T : St}, Adm T → Adm (normS j T))
+    (hag : ∀ d, min (a d) (grid j B) = min (prof S d) (grid j B)) :
+    ∃ (Q : St) (δ : ExtOrd → ExtOrd), Adm Q ∧
+      prof Q ∈ CanonicalPairedProfiles.inventory X j ∧
+      (∀ d, min (prof Q d) (grid j B) = min (a d) (grid j B)) ∧
+      Witness (gTop j) δ ∧
+      (∀ d, δ (prof Q d) = prof S d) ∧
+      (∀ b < B, δ (grid j b) = grid j b) ∧
+      grid j B ≤ δ (grid j B) ∧
+      ∀ d, a d < grid j B → δ (a d) = a d := by
+  let h : Ordinal.{0} := Ordinal.omega0 * B + j
+  let l := profileFreshFloor (prof S) h
+  let β : ExtOrd := ofOrd (l + j)
+  have hlim : limitPart l = l := profileFreshFloor_limit (prof S) h
+  have hh : grid j B < ofOrd l :=
+    ofOrd_lt_ofOrd.mpr (lt_profileFreshFloor (prof S) h (Finset.mem_insert_self _ _))
+  have hβ : SelfVis j β := by
+    rw [selfVis_ofOrd_iff]
+    have he := finitePart_limitPart_add_nat l j
+    rw [hlim] at he; exact he.ge
+  have hlβ : ofOrd l ≤ β := ofOrd_le_ofOrd.mpr le_self_add
+  let V := mapS (fun x => min x β) S
+  have hV : Adm V := hadm_map (capWitness hβ (ofOrd_ne_bot _))
+    (capWitness_reflects_bottom (ofOrd_ne_bot _))
+  have hproper (d : X) : prof V d ≠ ⊤ := by
+    rw [hprof_map]; exact fun ht => ofOrd_ne_top _ (min_eq_top.mp ht).2
+  have hagV (d : X) : min (a d) (grid j B) = min (prof V d) (grid j B) := by
+    rw [hprof_map, min_assoc, min_eq_right (hh.le.trans hlβ)]; exact hag d
+  obtain ⟨κ, hw, hread, hfix, hreach, _⟩ := exists_supported_inverse ha hproper hagV
+  let Q := normS j V
+  have hQeq : prof Q = PairedSlotEncoding.normalize j (prof V) := funext (hprof_norm j V)
+  have hprefix (d : X) : min (prof Q d) (grid j B) = min (a d) (grid j B) := by
+    rw [hprof_norm]; exact CanonicalPairedProfiles.normalize_cap X j ha hagV d
+  let δ := collapseBlock l ∘ κ
+  have hδ : Witness (gTop j) δ :=
+    Witness.comp_of_bottom_reflecting hw (collapseBlock_witness j hlim) le_rfl
+      (collapseBlock_reflects_bottom l)
+  have hδread (d : X) : δ (prof Q d) = prof S d := by
+    dsimp only [δ, Function.comp_apply]
+    rw [hprof_norm, hread, hprof_map]
+    exact collapseBlock_min hlβ (profile_lt_freshFloor (prof S) h d)
+  refine ⟨Q, δ, hadm_norm hV,
+    hQeq ▸ CanonicalPairedProfiles.normalize_mem_inventory X j hproper,
+    hprefix, hδ, hδread, fun b hb => ?_, ?_, fun d hd => ?_⟩
+  · dsimp only [δ, Function.comp_apply]
+    rw [hfix b hb]
+    exact collapseBlock_of_lt (lt_of_le_of_lt
+      (ofOrd_le_ofOrd.mpr (add_le_add (by gcongr) le_rfl)) hh)
+  · calc
+      grid j B = collapseBlock l (grid j B) := (collapseBlock_of_lt hh).symm
+      _ ≤ collapseBlock l (κ (grid j B)) := (collapseBlock_witness j hlim).mono hreach
+  · exact (congrArg δ (PairedSlotEncoding.eq_of_cap_eq_lt (hprefix d).symm hd)).trans
+      ((hδread d).trans (PairedSlotEncoding.eq_of_cap_eq_lt (hag d) hd).symm)
+
+end GenericTerminal
 
 end
 end VaughtConjecture.Knight.CappedDonor.Ref

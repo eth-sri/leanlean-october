@@ -5,47 +5,90 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.SourceOnlyCompositionRepair
-public import VaughtConjecture.Knight.RelativeTailFloor
-public import VaughtConjecture.Knight.CappedCore
-
-/-! # The finite top-support criterion
-
-The reviewer's notes20 §2 / plan34 §2 (2026-09-19): after the proper labels of a lawful
-section `P` are fixed, the remaining ambiguity about which `⊤`-labelled cells stay top has a
-finite description.
-
-For `H` a set of top cells of `P` and a proper `β` above every proper label of `P` and visible
-at the maximum grade, the **uniform lowering** `lower P H β` keeps every non-top label, keeps
-`⊤` on `H`, and replaces `⊤` by `β` off `H`.  It is lawful exactly when
-
-* **top availability** (`TopAvailable`): a surviving top has a surviving top owner at every
-  larger same-grade index, and
-* **source separation** (`SourceSeparated`): beneath every surviving top owner `c` of grade
-  `k`, the rounded source `R_k(E_c(d))` of every lowered top `d` lies strictly below the source
-  `E_c(a)` of every surviving top `a` (the diagonal `a = c` included).
-
-**Necessity** (`admissible_of_respects`) holds for an arbitrary lawful `Q` fixing the non-top
-labels of `P`, with `H` the actual top set of `Q`: at a surviving top owner the normalized
-witness sends surviving top sources to `⊤`, lowered sources to their non-top labels, and
-rounded lowered sources to rounded non-top labels, so monotonicity forbids
-`E_c(a) ≤ R_k(E_c(d))`.  **Sufficiency** (`respects_lower`) is proved per owner: a proper or
-bottom owner sees a literally unchanged locality target; a lowered owner sees the old target
-capped at `β`; a surviving owner gets a **retuned witness** — the old normalized witness capped
-at `β` below the visible cut `t_c = max R_k(E_c(d))` over the lowered tops beneath `c`, and
-unchanged above it.  The retuned map is a bounded map at grade `k` with the bottom fibre of the
-old witness (`β` is positive), so the source-block interpolation criterion
-(`interpolate_iff_source_blocks`) supplies a faithful witness; long rows and several owners at
-one index need nothing extra, and an empty cut collapses the retuned map to the old witness.
-It is *not* a scalar post-composition of the old witness, since two sources with the same image
-`⊤` can be split by the cut.
-
-The criterion uses neither bountifulness, amalgamation, nor any completion constructor.  The
-receiving corollaries (conditional on finite-cut receiving) are in `TopSupportReceiving`.
-
-Construction-private (not root-exported). -/
+public import VaughtConjecture.Knight.RelativeLiftData
+public import VaughtConjecture.Knight.FullScopeZeroExtension
 
 @[expose] public section
+
+namespace VaughtConjecture.Knight
+
+open AmalgamationPlan Transform Value ExtOrd SharpWitnessComposition
+
+/-! ## The floor -/
+
+/-! ## Transport on unchanged long rows -/
+
+variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A} {sem : Semantics D}
+
+/-- **Bottom-reflecting transport**: a bounded replacement-commuting, bottom-reflecting scalar
+image of a lawful section is lawful on the unchanged rows. -/
+theorem map_respects_of_bottom_reflecting {BJ : Finset ι × ℕ} {r : D.below BJ → ExtOrd}
+    (hr : RespectsSemanticsBelow sem BJ r) {K : ℕ} (hK : ∀ d : D.below BJ, D.grade d.1 ≤ K)
+    {ν : ExtOrd → ExtOrd} (hν : BoundedMap K ν) (hrefl : ∀ x, ν x = ⊥ → x = ⊥) :
+    RespectsSemanticsBelow sem BJ (fun d => ν (r d)) := by
+  refine (map_respects_iff_rowBlockBottom hr hK hν).mpr ?_
+  intro c d e hb hz
+  have h0 := rowBlockBottom_of_respects hr c d e hb
+  change min (ν (r (CellScheme.below.incl c d))) (ν (r c)) = ⊥ at hz
+  change min (ν (r (CellScheme.below.incl c e))) (ν (r c)) = ⊥
+  rw [← hν.mono.map_min] at hz ⊢
+  rw [h0 (hrefl _ hz), hν.bot]
+
+end VaughtConjecture.Knight
+
+namespace VaughtConjecture.Knight
+
+open AmalgamationPlan Transform Value ExtOrd SharpWitnessComposition
+
+/-! ## Replacement cannot cross a visible cutoff -/
+
+/-- For `δ` `k`-visible, a value and its replacement at grade `k` lie on the same side of `δ`. -/
+theorem le_iff_evr_le {δ x : ExtOrd} {k i : ℕ} (hδ : SelfVis k δ) (hi : i ≤ k) :
+    x ≤ δ ↔ extVisibilityReplace x k i ≤ δ := by
+  rcases ExtOrd.cases x with rfl | rfl | ⟨a, rfl⟩
+  · rw [extVisibilityReplace_bot]
+  · rw [extVisibilityReplace_top]
+  · by_cases hfp : k ≤ finitePart a
+    · rw [extVisibilityReplace_of_le_finitePart hfp]
+    · have hfp' := not_le.mp hfp
+      rw [extVisibilityReplace_of_finitePart_lt hfp']
+      rcases ExtOrd.cases δ with rfl | rfl | ⟨g, rfl⟩
+      · simp only [le_bot_iff]
+        exact ⟨fun h => absurd h (ofOrd_ne_bot _), fun h => absurd h (ofOrd_ne_bot _)⟩
+      · simp only [le_top]
+      · rw [selfVis_ofOrd_iff] at hδ
+        rw [ofOrd_le_ofOrd, ofOrd_le_ofOrd]
+        constructor
+        · intro h
+          have hl : limitPart a ≤ limitPart g := limitPart_mono h
+          rcases hl.lt_or_eq with hlt | heq
+          · exact (limitPart_add_nat_le_of_lt hlt i).trans (limitPart_le g)
+          · rw [heq]
+            calc limitPart g + (i : Ordinal.{0}) ≤ limitPart g + (finitePart g : Ordinal.{0}) :=
+                  add_le_add_right (Nat.cast_le.mpr (hi.trans hδ)) _
+              _ = g := limitPart_add_finitePart g
+        · intro h
+          have hl : limitPart a ≤ limitPart g := by
+            have := limitPart_mono h
+            rwa [limitPart_limitPart_add_nat] at this
+          rcases hl.lt_or_eq with hlt | heq
+          · have h1 := limitPart_add_nat_le_of_lt hlt (finitePart a)
+            rw [limitPart_add_finitePart] at h1
+            exact h1.trans (limitPart_le g)
+          · calc a = limitPart a + (finitePart a : Ordinal.{0}) := (limitPart_add_finitePart a).symm
+              _ ≤ limitPart g + (finitePart g : Ordinal.{0}) := by
+                  rw [heq]; exact add_le_add_right (Nat.cast_le.mpr (hfp'.le.trans hδ)) _
+              _ = g := limitPart_add_finitePart g
+
+/-! ## The floor -/
+
+/-! ## The exact cap identity -/
+
+/-! ## Transport on unchanged rows -/
+
+variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A} {sem : Semantics D}
+
+end VaughtConjecture.Knight
 
 namespace VaughtConjecture.Knight.TopSupport
 

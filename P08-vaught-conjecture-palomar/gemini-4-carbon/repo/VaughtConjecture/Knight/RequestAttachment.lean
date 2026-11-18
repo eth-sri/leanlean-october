@@ -5,73 +5,236 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.ReducedProjectionRequest
-public import VaughtConjecture.AmalgamationPlan.PlanAttachment
-public import VaughtConjecture.Knight.ExtendOneWith
-
-/-! # The common plan of the actual context and one requested one-point extension
-
-`IsPlan.attach_one_over_face` (`AmalgamationPlan/PlanAttachment.lean`) attaches a prescribed
-one-point plan over a visible face of a plan, retaining both plans literally.  This module
-instantiates it on the actual model-produced reference context `C` and a requested reduced
-one-point type `P` over the root:
-
-* the **context plan** is embedded on the old coordinates (`Fin.castSuccEmb`);
-* the **request plan** is embedded on the root coordinates plus the fresh point
-  (`onePointProj C.proj`), its domain being the root face plus `last`
-  (`univ_image_onePointProj`);
-* their **agreement on the shared root face** is derived from the request's root compatibility
-  (`typeMap castSucc P = some (reduce p)`) and the context's exact consistency
-  (`typeMap C.proj C.p₀ = some p`): both restrict to the root's own plan, pushed
-  (`plan_of_typeMap_eq_some`, `restrictPlan_image`);
-* the result (`exists_common_plan`) is a support plan on all `C.m + 1` points in which the old
-  face and the request face are visible and carry the context's and the request's plans
-  **exactly** (`restrictPlan` equalities); in the form the explicit one-point extension of cell
-  schemes consumes, `common_plan_hface`.
-
-The pivot lemma (`exists_pivot_outside_root`) remains a necessary-condition check on any such
-plan; it is not a hypothesis here — the attachment theorem supplies the geometry from the two
-plans and their agreement.  For a whole finite candidate envelope rather than one fresh point,
-`IsPlan.amalgamate` (#344) attaches two support plans agreeing on a common visible overlap on
-their literal union; the one-point form is what one requested projection needs.
-
-**The cell inventory** (`requestInventory`, over the common plan, by the explicit one-point
-extension `CellScheme.extendOneWith`): the old cells, the request's **fresh cells** (those
-containing the fresh point, pushed along `onePointProj e`), and one cell per **remaining graded
-index** — in the plan, containing the fresh point, not inside the request face.  It is complete
-(`requestInventory_complete`, from the context's and the request's completeness), its old face
-is literally the context's domain (`requestInventory_old_face`), its request face is visible
-and carries the request's plan (`requestInventory_request_face`), each fresh request cell sits
-at its pushed graded index (`cell_freshCell`, injectively), and every cell is an old cell, a
-fresh request cell, or a remaining-index cell (`requestInventory_cases`); the fresh request
-cells are visible on the request face, the remaining-index cells are not, and an old cell is
-visible on the request face exactly when it is visible on the root face of the context
-(`scope_castAdd_subset_iff`).  Over the actual context and request:
-`ReferenceContext.exists_requestInventory`, and the **shared root with rows**
-(`ReferenceContext.shared_root`): the context's domain restricted to the root face and the
-request's domain restricted to its initial face are both the root's domain, rows included, so
-the rows the two faces prescribe agree on the shared root.
-
-## Where this stops: the first genuinely new mixed-semantic obligation
-
-The rows of the old cells and of the request's fresh cells are prescribed by the two faces (the
-old face literally; the request face through the fresh-cell embedding and the shared root), and
-they agree where both apply.  Not prescribed by anything are the rows of the **remaining-index
-cells**: the full-scope controllers `(univ, k)` and every new mixed proper scope containing the
-fresh point outside the request face.  Their rows must be consistent with the context's rows
-and with the request's rows at once (mixed locality across the two faces), correct for the
-reference data (equality on the exact requests, inequality on the lower-bound requests), and
-bountiful for **every** permitted labelling of the two faces.  Two qualifications are part of
-the obligation, not resolved by the inventory: one cell per remaining index is index
-completeness, not semantic adequacy — owned witnesses or availability may require several cells
-at one index — and the mixed proper scopes need the same work as the full-scope controllers.
-`ReducedDeterminingProbe` (#343) is a template for a small determining set of probes; its proof
-uses the fixed repaired scheme and does not transfer to this inventory.  No supply record is
-added; nothing replaces the context by the fixed coupled example.
-
-Construction-private (not root-exported). -/
+public import VaughtConjecture.Knight.ReferenceContext
 
 @[expose] public section
+
+namespace VaughtConjecture.AmalgamationPlan.Plan
+
+variable {α : Type*} [DecidableEq α]
+
+private theorem restrict_restrict {P : Finset (Finset α)} {A B : Finset α}
+    (hBA : B ⊆ A) : restrictPlan (restrictPlan P A) B = restrictPlan P B := by
+  ext S
+  simp only [restrictPlan, Finset.mem_inter, Finset.mem_powerset]
+  exact ⟨fun h => ⟨h.1.1, h.2⟩, fun h => ⟨⟨h.1, h.2.trans hBA⟩, h.2⟩⟩
+
+private theorem restrict_self {A : Finset α} {P : Finset (Finset α)}
+    (hP : IsPlan A P) : restrictPlan P A = P := by
+  ext S
+  simp only [restrictPlan, Finset.mem_inter, Finset.mem_powerset]
+  exact ⟨And.left, fun h => ⟨h, hP.subset_of_mem h⟩⟩
+
+private theorem coatom_over_face {A B : Finset α} {P : Finset (Finset α)}
+    (hP : IsPlan A P) (hB : B ∈ P) (hne : B ≠ A) :
+    ∃ a ∈ A, A.erase a ∈ P ∧ B ⊆ A.erase a := by
+  cases hP with
+  | empty =>
+    exact (hne (Finset.mem_singleton.mp hB)).elim
+  | singleton a =>
+    simp only [Finset.mem_insert, Finset.mem_singleton] at hB
+    rcases hB with rfl | hB
+    · exact ⟨a, by simp, by simp, Finset.empty_subset _⟩
+    · exact (hne hB).elim
+  | @step A a b Q R P ha hb hab hQ hR hmem hre hPeq =>
+    subst P
+    simp only [Finset.mem_union, Finset.mem_singleton] at hB
+    rcases hB with (hB | hB) | hB
+    · exact ⟨a, ha, by simp [hQ.domain_mem], hQ.subset_of_mem hB⟩
+    · exact ⟨b, hb, by simp [hR.domain_mem], hR.subset_of_mem hB⟩
+    · exact (hne hB).elim
+
+private theorem restrict_glue_left {A B : Finset α} {P Q : Finset (Finset α)}
+    (hP : IsPlan A P) (hQ : IsPlan B Q)
+    (hres : restrictPlan P (A ∩ B) = restrictPlan Q (A ∩ B))
+    {x : α} (hxB : x ∈ B) (hxA : x ∉ A) :
+    restrictPlan (P ∪ Q ∪ {A ∪ B}) A = P := by
+  ext S
+  simp only [restrictPlan, Finset.mem_inter, Finset.mem_union,
+    Finset.mem_singleton, Finset.mem_powerset]
+  constructor
+  · rintro ⟨(hS | hS) | rfl, hSA⟩
+    · exact hS
+    · have hSAB : S ⊆ A ∩ B := by
+        intro y hy
+        exact Finset.mem_inter.mpr ⟨hSA hy, hQ.subset_of_mem hS hy⟩
+      have hm : S ∈ restrictPlan Q (A ∩ B) :=
+        Finset.mem_inter.mpr ⟨hS, Finset.mem_powerset.mpr hSAB⟩
+      rw [← hres] at hm
+      exact (Finset.mem_inter.mp hm).1
+    · exact (hxA (hSA (Finset.mem_union_right _ hxB))).elim
+  · intro hS
+    exact ⟨Or.inl (Or.inl hS), hP.subset_of_mem hS⟩
+
+private theorem attach_coatom {A : Finset α} {P Q : Finset (Finset α)}
+    {a x : α} (hP : IsPlan A P) (ha : a ∈ A) (hx : x ∉ A)
+    (hface : A.erase a ∈ P) (hQ : IsPlan (A.erase a ∪ {x}) Q)
+    (hfaceQ : A.erase a ∈ Q)
+    (hres : restrictPlan Q (A.erase a) = restrictPlan P (A.erase a)) :
+    ∃ R, IsPlan (A ∪ {x}) R ∧ A ∈ R ∧ restrictPlan R A = P ∧
+      A.erase a ∪ {x} ∈ R ∧ restrictPlan R (A.erase a ∪ {x}) = Q := by
+  have hax : a ≠ x := fun h => hx (h ▸ ha)
+  have hex : (A ∪ {x}).erase x = A := by
+    rw [Finset.union_singleton, Finset.erase_insert hx]
+  have hea : (A ∪ {x}).erase a = A.erase a ∪ {x} := by
+    rw [Finset.union_singleton, Finset.erase_insert_of_ne hax.symm,
+      Finset.union_singleton]
+  have hi : A ∩ (A.erase a ∪ {x}) = A.erase a := by
+    ext y
+    simp only [Finset.mem_inter, Finset.mem_union, Finset.mem_erase, Finset.mem_singleton]
+    aesop
+  have hu : A ∪ (A.erase a ∪ {x}) = A ∪ {x} := by
+    ext y
+    simp only [Finset.mem_union, Finset.mem_erase, Finset.mem_singleton]
+    tauto
+  have hare : a ∉ A.erase a ∪ {x} := by simp [hax]
+  have hover : restrictPlan P (A ∩ (A.erase a ∪ {x})) =
+      restrictPlan Q (A ∩ (A.erase a ∪ {x})) := by rw [hi, hres]
+  refine ⟨P ∪ Q ∪ {A ∪ {x}}, ?_, by simp [hP.domain_mem], ?_,
+    Finset.mem_union_left _ (Finset.mem_union_right _ hQ.domain_mem), ?_⟩
+  · apply IsPlan.step (a := x) (b := a)
+      (Finset.mem_union_right _ (Finset.mem_singleton_self _))
+      (Finset.mem_union_left _ ha) hax.symm
+    · simpa only [hex] using hP
+    · simpa only [hea] using hQ
+    · simpa only [hex] using And.intro hface hfaceQ
+    · change restrictPlan P (((A ∪ {x}).erase x).erase a) =
+        restrictPlan Q (((A ∪ {x}).erase x).erase a)
+      rw [hex, hres]
+    · rfl
+  · simpa only [hu] using restrict_glue_left hP hQ hover
+      (Finset.mem_union_right _ (Finset.mem_singleton_self x)) hx
+  · have hover' : restrictPlan Q ((A.erase a ∪ {x}) ∩ A) =
+        restrictPlan P ((A.erase a ∪ {x}) ∩ A) := by
+      rw [Finset.inter_comm]
+      exact hover.symm
+    simpa only [Finset.union_comm, hu] using
+      restrict_glue_left hQ hP hover' ha hare
+
+/-- Attach a prescribed one-point plan over any visible old face. Both the
+old whole and the candidate face retain their plans literally. -/
+theorem IsPlan.attach_one_over_face {A B : Finset α} {P Q : Finset (Finset α)}
+    {x : α} (hP : IsPlan A P) (hB : B ∈ P) (hx : x ∉ A)
+    (hQ : IsPlan (B ∪ {x}) Q) (hBQ : B ∈ Q)
+    (hres : restrictPlan Q B = restrictPlan P B) :
+    ∃ R, IsPlan (A ∪ {x}) R ∧ A ∈ R ∧ restrictPlan R A = P ∧
+      B ∪ {x} ∈ R ∧ restrictPlan R (B ∪ {x}) = Q := by
+  induction A using Finset.strongInductionOn generalizing B P Q with
+  | _ A ih =>
+    by_cases hBA : B = A
+    · subst B
+      exact ⟨Q, hQ, hBQ, hres.trans (restrict_self hP), hQ.domain_mem, restrict_self hQ⟩
+    · obtain ⟨a, ha, hface, hBsub⟩ := coatom_over_face hP hB hBA
+      have hBe : B ∈ restrictPlan P (A.erase a) :=
+        Finset.mem_inter.mpr ⟨hB, Finset.mem_powerset.mpr hBsub⟩
+      have hres' : restrictPlan Q B = restrictPlan (restrictPlan P (A.erase a)) B := by
+        rw [restrict_restrict hBsub, hres]
+      obtain ⟨E, hE, hAE, hEA, hBE, hEB⟩ := ih (A.erase a)
+        (Finset.erase_ssubset ha) (restrict_isPlan hP hface) hBe
+        (fun h => hx (Finset.mem_of_mem_erase h)) hQ hBQ hres'
+      obtain ⟨R, hR, hAR, hRA, hER, hRE⟩ :=
+        attach_coatom hP ha hx hface hE hAE hEA
+      have hBEx : B ∪ {x} ⊆ A.erase a ∪ {x} :=
+        Finset.union_subset_union hBsub (Finset.Subset.refl _)
+      have hBR : B ∪ {x} ∈ R := by
+        have hm : B ∪ {x} ∈ restrictPlan R (A.erase a ∪ {x}) := by
+          rw [hRE]
+          exact hBE
+        exact (Finset.mem_inter.mp hm).1
+      refine ⟨R, hR, hAR, hRA, hBR, ?_⟩
+      calc restrictPlan R (B ∪ {x})
+          = restrictPlan (restrictPlan R (A.erase a ∪ {x})) (B ∪ {x}) :=
+            (restrict_restrict hBEx).symm
+        _ = Q := by rw [hRE, hEB]
+
+-- Non-vacuous regression at both ends of a three-point old domain. These
+-- are separate extension plans, not simultaneous visibility claims.
+
+-- Both inputs contribute two private points, not just one. The overlap
+-- is the singleton {2}; each side retains its arbitrary prescribed plan.
+
+end VaughtConjecture.AmalgamationPlan.Plan
+
+namespace VaughtConjecture.Knight
+
+open TypeTower StageType KnightRealization AmalgamationPlan Value ExtOrd
+open CellScheme.restrictFace (toCell)
+
+universe w
+
+/-! ## Exact below `β`, at least `β` above -/
+
+section LabelSplit
+
+variable {β : Ordinal.{0}}
+
+end LabelSplit
+
+/-! ## The required domain and visible face -/
+
+section RequiredFace
+
+variable {γ : Ordinal.{0}} {k m : ℕ}
+
+/-- **The requested projection forces the domain**: a projection along `f` to `P` exists only if
+the face `univ.image f` is visible in the domain and the domain (with its rows) restricts to
+`P`'s domain there. -/
+theorem face_of_typeMap_eq_some (f : Fin k ↪ Fin m) {q : S γ m} {P : S γ k}
+    (h : typeMap f q = some P) :
+    ∃ hv : Finset.univ.image f ∈ q.scheme.scheme.plan, q.scheme.restrictFace f hv = P.scheme := by
+  have hv : Finset.univ.image f ∈ q.scheme.scheme.plan :=
+    (typeMap_isSome_iff f q).mp (by rw [h]; rfl)
+  refine ⟨hv, ?_⟩
+  rw [typeMap_eq_some f q hv] at h
+  exact congrArg StageType.scheme (Option.some_injective _ h)
+
+/-- **Projected correctness, cellwise**: once the face is visible and the domains match,
+`typeMap f q = some P` says exactly that every cell of the face reads `P`'s label at the
+corresponding cell. -/
+theorem typeMap_eq_some_iff_labels (f : Fin k ↪ Fin m) (q : S γ m) (P : S γ k)
+    (hv : Finset.univ.image f ∈ q.scheme.scheme.plan)
+    (hs : q.scheme.restrictFace f hv = P.scheme) :
+    typeMap f q = some P ↔
+      ∀ i : Cell (q.scheme.restrictFace f hv).scheme,
+        q.label (toCell q.scheme.scheme f hv i) = P.label (SemScheme.castCell hs i) := by
+  rw [typeMap_eq_some f q hv, Option.some_inj]
+  constructor
+  · rintro rfl i
+    rfl
+  · intro h
+    obtain ⟨Ps, Pl, Pb, Pr⟩ := P
+    dsimp only at hs h
+    subst hs
+    exact StageType.ext rfl (heq_of_eq (funext fun i => h i))
+
+end RequiredFace
+
+/-! ## The root part of every projection is the realized reduced root -/
+
+section RootPart
+
+variable {M : Type w} {α β : LimitStage} {R : KnightRealization α M} {n : ℕ} {t : Fin n ↪ M}
+  {reqs : List BlockRequest} (C : ReferenceContext R t reqs) (hβ : β ≤ α)
+
+end RootPart
+
+/-! ## Geometry: the request face forces a pivot of the context's plan outside the root -/
+
+section Geometry
+
+variable {m : ℕ}
+
+theorem image_castSuccEmb_univ :
+    (Finset.univ : Finset (Fin m)).image Fin.castSuccEmb =
+      (Finset.univ : Finset (Fin (m + 1))).erase (Fin.last m) := by
+  ext x
+  simp only [Finset.mem_image, Finset.mem_univ, true_and, Finset.mem_erase, and_true,
+    Fin.castSuccEmb_apply]
+  exact Fin.exists_castSucc_eq
+
+end Geometry
+
+end VaughtConjecture.Knight
 
 namespace VaughtConjecture.Knight
 
@@ -141,104 +304,7 @@ section Attach
 variable {M : Type w} {α β : LimitStage} {R : KnightRealization α M} {n : ℕ} {t : Fin n ↪ M}
   {reqs : List BlockRequest} (C : ReferenceContext R t reqs) (hβ : β ≤ α)
 
-/-- The retained old face, in the form the explicit one-point extension of cell schemes
-consumes: a face of the context's points is visible in the common plan exactly when it is
-visible in the context's plan. -/
-theorem common_plan_hface {m : ℕ} {Rp : Finset (Finset (Fin (m + 1)))}
-    {P₀ : Finset (Finset (Fin m))}
-    (hRA : Plan.restrictPlan Rp (Finset.univ.image Fin.castSuccEmb) =
-      P₀.image (Finset.image Fin.castSuccEmb)) :
-    ∀ B : Finset (Fin m), B.image Fin.castSuccEmb ∈ Rp ↔ B ∈ P₀ := by
-  intro B
-  have hsub : B.image Fin.castSuccEmb ⊆ Finset.univ.image Fin.castSuccEmb :=
-    Finset.image_subset_image (Finset.subset_univ B)
-  constructor
-  · intro h
-    have : B.image Fin.castSuccEmb ∈ Plan.restrictPlan Rp (Finset.univ.image Fin.castSuccEmb) :=
-      Finset.mem_inter.mpr ⟨h, Finset.mem_powerset.mpr hsub⟩
-    rw [hRA, Finset.mem_image] at this
-    obtain ⟨B', hB', e⟩ := this
-    rwa [(Finset.image_injective Fin.castSuccEmb.injective) e] at hB'
-  · intro h
-    have : B.image Fin.castSuccEmb ∈ Plan.restrictPlan Rp (Finset.univ.image Fin.castSuccEmb) := by
-      rw [hRA]; exact Finset.mem_image_of_mem _ h
-    exact (Finset.mem_inter.mp this).1
 
 end Attach
-
-/-! ## The cell inventory: old cells, the request's fresh cells, one cell per remaining index
-
-`requestInventory` is the explicit one-point extension (`CellScheme.extendOneWith`) of the
-context scheme `X` along the common plan, with two kinds of new cells: the request's **fresh
-cells** (those containing the fresh point, pushed along `onePointProj e`) and one cell per
-remaining graded index of the plan that contains the fresh point but is **not** inside the
-request face (`OutsideIndex`).  Index completeness is by construction; the old face is literal;
-the request face carries the request's plan and each fresh request cell sits at its pushed
-graded index.  What this does **not** decide is semantic adequacy at the outside indices:
-whether one cell per index suffices, and which rows those cells carry. -/
-
-section Inventory
-
-open CellScheme
-open CellScheme.restrictFace (pushGraded)
-
-variable {m n : ℕ} (X : CellScheme (ι := Fin m) Finset.univ)
-  (Y : CellScheme (ι := Fin (n + 1)) Finset.univ) (e : Fin n ↪ Fin m)
-  (Rp : Finset (Finset (Fin (m + 1)))) (hR : Plan.IsPlan Finset.univ Rp)
-  (hRA : Plan.restrictPlan Rp (Finset.univ.image Fin.castSuccEmb) =
-    X.plan.image (Finset.image Fin.castSuccEmb))
-  (hRB : Plan.restrictPlan Rp (Finset.univ.image (onePointProj e)) =
-    Y.plan.image (Finset.image (onePointProj e)))
-
-/-- The request's fresh cells: those whose scope contains the fresh point. -/
-abbrev FreshReq : Type := {c : Cell Y // Fin.last n ∈ Y.scope c}
-
-/-- The remaining graded indices: in the common plan, containing the fresh point, not inside the
-request face. -/
-abbrev OutsideIndex : Type :=
-  {BJ : Finset (Fin (m + 1)) × ℕ // BJ ∈ (Plan.gradedPlan Rp).filter
-    (fun BJ => Fin.last m ∈ BJ.1 ∧ ¬ BJ.1 ⊆ Finset.univ.image (onePointProj e))}
-
-/-- The new cells' graded indices. -/
-def newIndex : FreshReq Y ⊕ OutsideIndex e Rp → Finset (Fin (m + 1)) × ℕ
-  | Sum.inl c => pushGraded (onePointProj e) (Y.cell c.1)
-  | Sum.inr BJ => BJ.1
-
-include hRB in
-theorem newIndex_mem (x : FreshReq Y ⊕ OutsideIndex e Rp) :
-    newIndex Y e Rp x ∈ Plan.gradedPlan Rp := by
-  classical
-  rcases x with c | BJ
-  · have hmem : (Y.scope c.1).image (onePointProj e) ∈ Rp := by
-      have : (Y.scope c.1).image (onePointProj e) ∈
-          Plan.restrictPlan Rp (Finset.univ.image (onePointProj e)) := by
-        rw [hRB]; exact Finset.mem_image_of_mem _ (Y.scope_mem_plan c.1)
-      exact (Finset.mem_inter.mp this).1
-    have h := Plan.mem_gradedPlan.mp (Y.cell_mem c.1)
-    refine Plan.mem_gradedPlan.mpr ⟨hmem, h.2.1, ?_⟩
-    change (Y.cell c.1).2 ≤ ((Y.cell c.1).1.image (onePointProj e)).card
-    rw [Finset.card_image_of_injective _ (onePointProj e).injective]
-    exact h.2.2
-  · exact (Finset.mem_filter.mp BJ.2).1
-
-/-- **The cell inventory** over the common plan. -/
-noncomputable def requestInventory : CellScheme (ι := Fin (m + 1)) Finset.univ :=
-  extendOneWith X Rp hR (common_plan_hface hRA) (newIndex Y e Rp) (newIndex_mem Y e Rp hRB)
-
-variable {X Y e Rp hR hRA hRB}
-
-end Inventory
-
-/-! ## Over the actual context -/
-
-section Actual
-
-open CellScheme
-open CellScheme.restrictFace (pushGraded)
-
-variable {M : Type w} {α β : LimitStage} {R : KnightRealization α M} {n : ℕ} {t : Fin n ↪ M}
-  {reqs : List BlockRequest} (C : ReferenceContext R t reqs) (hβ : β ≤ α)
-
-end Actual
 
 end VaughtConjecture.Knight

@@ -15,7 +15,6 @@ catalogue, while the rendered vector reads the incoming numerical values.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.RelativeLadderLayer
 open Transform Value ExtOrd LadderScalarRendering
 noncomputable section

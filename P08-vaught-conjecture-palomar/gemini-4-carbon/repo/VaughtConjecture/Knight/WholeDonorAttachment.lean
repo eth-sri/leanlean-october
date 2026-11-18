@@ -17,7 +17,6 @@ catalogue, model, or receiving predicate are needed for this input adapter.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.WholeDonorAttachment
 open AmalgamationPlan Transform Value ExtOrd
 noncomputable section

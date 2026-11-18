@@ -19,7 +19,6 @@ controller family and its selected sections are constructed, not supplied.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalFieldLayer
 open Transform Value ExtOrd SourcePrefixRows SharpWitnessComposition
 open PairedSlotEncoding PairedSlotComparison

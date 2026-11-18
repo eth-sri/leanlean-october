@@ -5,8 +5,7 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.ControllerPrefixFamily
-public import VaughtConjecture.Knight.WitnessAlgebra
+public import VaughtConjecture.Knight.SlackCutPasting
 
 /-! # A free diagonal beyond a finite source inventory
 

@@ -6,7 +6,7 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.CoatomBoundaryExtension
-public import VaughtConjecture.Knight.SameScopeBountiful
+public import VaughtConjecture.Knight.FullScopeBountiful
 
 /-! # Composition of literal original-cap lifting clauses
 
@@ -15,7 +15,6 @@ No whole ambient extension or output bountifulness is assumed.
 -/
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CoatomBoundaryExtension
 open Transform Value ExtOrd
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}

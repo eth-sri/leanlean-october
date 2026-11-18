@@ -16,7 +16,6 @@ and literal rows are used; no global predecessor grade bound is imposed.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.SeparatedLayerFace
 open Transform Value ExtOrd CoatomBoundaryExtension SourceLayerCarrier
 noncomputable section

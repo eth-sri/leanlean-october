@@ -17,7 +17,6 @@ of the whole decoded section, bottom reflection, or a particular catalogue.
 
 @[expose] public section
 
-set_option autoImplicit false
 
 namespace VaughtConjecture.Knight.SharpWitnessComposition
 

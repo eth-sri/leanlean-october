@@ -14,7 +14,6 @@ This is a grade extension, not an extension across a proper scope.
 
 @[expose] public section
 
-set_option autoImplicit false
 
 namespace VaughtConjecture.Knight
 

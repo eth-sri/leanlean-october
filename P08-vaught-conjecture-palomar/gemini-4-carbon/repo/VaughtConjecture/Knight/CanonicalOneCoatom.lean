@@ -5,7 +5,6 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.CanonicalGradeOneLift
 public import VaughtConjecture.Knight.CanonicalCoatomBountiful
 public import VaughtConjecture.Knight.CanonicalSeedCoding
 
@@ -16,7 +15,6 @@ lifts supply the boundary; no lift or completion of the output is assumed.
 -/
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalOneCoatom
 open Transform Value ExtOrd CoatomBoundaryExtension AmalgamationPlan
 noncomputable section

@@ -17,7 +17,6 @@ destroy the invisible observations. This is separate from right-filled decoding.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalPairedInverse
 open Transform Value ExtOrd PairedSlotEncoding
 noncomputable section

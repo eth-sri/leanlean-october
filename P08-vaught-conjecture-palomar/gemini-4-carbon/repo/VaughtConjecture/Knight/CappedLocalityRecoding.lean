@@ -7,7 +7,6 @@ module
 
 public import VaughtConjecture.Knight.FiniteFloorCompletion
 public import VaughtConjecture.Knight.WitnessAlgebra
-public import VaughtConjecture.Knight.RecodingTriangle
 
 /-! # The coded ambient locality of a controller-capped row: the chain
 
@@ -73,12 +72,6 @@ theorem mem_primRange_of_eq {target : D → ExtOrd} {d : D} {v : Ordinal.{0}}
   rw [h]
   exact Finset.mem_singleton_self v
 
-theorem keyed_target (l : ℕ) (target : D → ExtOrd) (d : D) :
-    Keyed l (primRange target) (target d) := by
-  rcases ExtOrd.cases (target d) with h | h | ⟨v, h⟩
-  · rw [h]; exact keyed_bot _ _
-  · rw [h]; exact keyed_top _ _
-  · rw [h]; exact keyed_of_mem _ _ (mem_primRange_of_eq h)
 
 /-- The bounded replacement closure of the sources at the controller grade. -/
 noncomputable def inventory (K : ℕ) (E : D → ExtOrd) : Finset ExtOrd :=
@@ -230,11 +223,7 @@ theorem omul_le_omul {t t' : ℕ} (h : t ≤ t') :
     Ordinal.omega0 * (t : Ordinal) ≤ Ordinal.omega0 * (t' : Ordinal) := by
   gcongr
 
-/-- The two cells. -/
-inductive M2 | a | c
-  deriving DecidableEq
 
-instance : Fintype M2 := ⟨{.a, .c}, by intro x; cases x <;> simp⟩
 
 end Instance
 

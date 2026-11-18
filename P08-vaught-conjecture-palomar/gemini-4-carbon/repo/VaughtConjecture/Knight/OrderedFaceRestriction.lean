@@ -21,7 +21,6 @@ the incomplete boundary, or of a future mixed completion, is assumed.
 
 @[expose] public section
 
-set_option autoImplicit false
 
 namespace VaughtConjecture.Knight.OrderedFaceRestriction
 

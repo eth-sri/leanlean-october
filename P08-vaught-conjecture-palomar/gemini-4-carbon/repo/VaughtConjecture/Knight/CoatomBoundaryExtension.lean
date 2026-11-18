@@ -6,7 +6,6 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.NormalForm
-public import VaughtConjecture.Knight.Repair
 public import VaughtConjecture.Knight.Domain
 public import VaughtConjecture.Knight.CappedLifting
 
@@ -24,7 +23,6 @@ producer, not yet a supported whole-section operator or an amalgam.
 
 @[expose] public section
 
-set_option autoImplicit false
 
 namespace VaughtConjecture.Knight.CoatomBoundaryExtension
 

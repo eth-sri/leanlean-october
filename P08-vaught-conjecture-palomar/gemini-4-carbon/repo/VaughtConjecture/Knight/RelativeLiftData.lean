@@ -5,54 +5,193 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.SourceBlockLocalityTransport
-public import VaughtConjecture.Knight.SlackCutPasting
-public import VaughtConjecture.Knight.CountedEncoding
+public import VaughtConjecture.Knight.RequestAttachment
+public import Mathlib.Algebra.Order.BigOperators.Group.Finset
+public import VaughtConjecture.Knight.ReferenceOrbitRow
 public import VaughtConjecture.Knight.RestrictedComposition
-public import VaughtConjecture.Knight.OrbitBlock
-public import VaughtConjecture.Knight.Coface
-
-/-! # Data for the relative lifting theorem of pattern-guarded probes
-
-The reviewer's notes3 (`guarded_probe_construction.md` §§1–4, 2026-09-18) separate three
-things: a *reference template* (one lawful labelling of the unchanged candidate scheme), the
-*allowed* inherited pairs (lawful on the old and candidate faces, agreeing on the root, and
-correct whenever the old labelling has the distinguished bottom pattern), and the *relative
-lifting lemma* (every allowed pair has every relative old-face lift, using the original
-candidate's bountifulness).  This file fixes the data and proves the ingredients:
-
-* scalar facts about replacement under an `N`-visible cap (`evr_min_of_selfVis`,
-  `lt_of_evr_lt`, `le_evr_zero_of_le`, `evr_zero_le`);
-* a whole labelling from a lawful section below the top index (`RespectsSemantics.of_below_top`);
-* the **same-bottom-pattern transport** (`map_respects_of_same_bottom_pattern`, from the
-  reviewer's uncompiled helper `PatternTransport.lean` in the notes3 package): a bounded
-  replacement-commuting image of a lawful section with the bottom flags of a lawful section is
-  lawful — this is what makes long semantic source rows harmless;
-* the request data `Requests` (old cap `C` of grade `N`, the marker offset `R < N`,
-  requested-bottom `Z`, exact `F` with references and offsets, high `T` with the marker `a`;
-  references and marker live **below the cap**), the target relations `Correct`, the
-  distinguished class `InClass` (a bottom pattern on the **lower domain below the cap**), the
-  relative data `RelativeData` (old and candidate schemes, a full-scope grade-`N` cap inside a
-  possibly larger private context, the cleaned donor `e` on the cap's lower domain with bottom
-  set exactly the class and literal elsewhere, the root transport `κ` into that domain, the
-  candidate's bountifulness, the coverage of the candidate cells, and the template `V` with its
-  frame inequalities), `Allowed`;
-* the root lift from candidate bountifulness (`RelativeData.lift_root`) and the capped decoder
-  of a lawful old labelling at the cap (`RelativeData.decoder`);
-* **the selector** `g(u) = u(C)` in the class, `⊥` outside (`selector`; the reviewer's notes7
-  §3): positive exactly in the class (`selector_ne_bot_iff`), equal to the cap when positive
-  (`selector_eq_cap`), retained under cap agreement (`selector_cap_agree`), and the
-  positive-triggered form of `Allowed` (`allowed_iff_selector`).
-
-**General cap (notes7, 2026-09-19).**  The old scheme may have cells above grade `N`; they are
-part of the protected private context but outside the pattern test, the donor, and the
-decoder, all of which live on `DA.below (DA.cell C)`.  The marker reads at offset `R < N`
-(plan 21); the block-floor version is `R = 0` (`dOf_zero`).
-
-The cleaned donor's construction and the template's construction are in
-`Knight/ReceivingTemplate.lean`.  Construction-private (not root-exported). -/
+public import VaughtConjecture.Knight.SourceBlockLocalityTransport
 
 @[expose] public section
+
+namespace VaughtConjecture.Knight
+
+open AmalgamationPlan CellScheme
+open CellScheme.restrictFace (toCell pushGraded gradedLe_pushGraded_iff)
+
+/-! ## Cell transport along an equality of schemes -/
+
+section Cast
+
+variable {ι : Type*} [DecidableEq ι] {A : Finset ι}
+
+end Cast
+
+/-! ## The identification -/
+
+section Identification
+
+variable {m n : ℕ} {X : CellScheme (ι := Fin m) Finset.univ}
+  {Y : CellScheme (ι := Fin (n + 1)) Finset.univ} {e : Fin n ↪ Fin m}
+  {Rp : Finset (Finset (Fin (m + 1)))} {hR : Plan.IsPlan Finset.univ Rp}
+  {hRA : Plan.restrictPlan Rp (Finset.univ.image Fin.castSuccEmb) =
+    X.plan.image (Finset.image Fin.castSuccEmb)}
+  {hRB : Plan.restrictPlan Rp (Finset.univ.image (onePointProj e)) =
+    Y.plan.image (Finset.image (onePointProj e))}
+  (hvX : Finset.univ.image e ∈ X.plan) (hvY : Finset.univ.image Fin.castSuccEmb ∈ Y.plan)
+  (hroot : X.restrictFace e hvX = Y.restrictFace Fin.castSuccEmb hvY)
+
+/-! ## Lower-domain transport -/
+
+/-! ## Root request cells, explicitly -/
+
+end Identification
+
+/-! ## The rows prescribed by both faces -/
+
+section Rows
+
+variable {m n : ℕ} {X : CellScheme (ι := Fin m) Finset.univ}
+  {Y : CellScheme (ι := Fin (n + 1)) Finset.univ} {e : Fin n ↪ Fin m}
+  {Rp : Finset (Finset (Fin (m + 1)))} {hR : Plan.IsPlan Finset.univ Rp}
+  {hRA : Plan.restrictPlan Rp (Finset.univ.image Fin.castSuccEmb) =
+    X.plan.image (Finset.image Fin.castSuccEmb)}
+  {hRB : Plan.restrictPlan Rp (Finset.univ.image (onePointProj e)) =
+    Y.plan.image (Finset.image (onePointProj e))}
+  (hvX : Finset.univ.image e ∈ X.plan) (hvY : Finset.univ.image Fin.castSuccEmb ∈ Y.plan)
+  (hroot : X.restrictFace e hvX = Y.restrictFace Fin.castSuccEmb hvY)
+  (rowsX : Semantics X) (rowsY : Semantics Y)
+
+variable {ctrl}
+
+end Rows
+
+/-! ## The first mixed scope: a degenerate consistent row is available; adequacy is separate
+
+At a remaining-index cell `M` (the first mixed scope: its lower set carries old cells with the
+context's rows, fresh request cells with the request's rows, and lower remaining-index cells),
+two candidate rows are compiled with their witnesses.
+
+* **The mute row** (`⊥` everywhere below `M`) is a **degenerate consistent row**, available
+  unconditionally: every row transforms onto constant `⊥` (`TransformsTo.to_bot`, shifter
+  constantly `⊥`), availability is trivial (`respects_bot_row`).  It is semantically inadequate:
+  every labelling respecting the rows reads `⊥` at `M` (`label_eq_bot_of_bot_row`, the mute
+  obstruction of `Knight/Domain.lean` at one cell), and availability then pins lower same-grade
+  cells whenever `M` is the only cell at its index.  Useful nonmute rows still require their
+  own consistency proofs.
+* **The diagonal row** (each lower cell read at its own diagonal, a dominating orderly top at
+  `M`) is consistent **under** diagonal respect of the lower rows — a sufficient condition, not
+  an equivalence: each lower row transforms onto the capped diagonals of its own lower set, and
+  the diagonals are available (`respects_diagonal_row`, with the identity witness at `M`).
+  Diagonal respect is a condition on the input rows that coding and consistency do not imply:
+  a row reading `⊥` at a lower cell whose own diagonal is not `⊥` cannot transform onto the
+  capped diagonals when the capping diagonal is also not `⊥` (a shifter fixes `⊥`, and the cap
+  would have to be `⊥` for the target to be); both relevant diagonals must be nonbottom for
+  this bottom-source obstruction — a nonbottom lower diagonal alone is not enough.
+
+Three obligations stay separate, as the legal-glue counterexample of the coupled construction
+already showed they are: **bountifulness** of the rows (respecting extensions of every
+permitted labelling of the two faces), **realization of the prescribed pair**, and the
+**forced reduced projection** (reduced projected correctness), to which reference-row
+correctness remains a sufficient route.  None of the three is settled by either candidate row;
+additional cells at an outside index (several rows at one index) are the room availability
+leaves.  The slack-cut pasting theorem (#346) takes two labellings already respecting the rows
+on the common lower set and pastes them at a cap self-visible one grade above the scheme, with
+availability reduced to an overlap condition on their high controllers; it can simplify the
+subsequent paste at slack caps, but it does not produce the first section and it does not
+discharge boundary caps. -/
+
+section MixedScope
+
+open Transform Value
+
+/-- Every labelling transforms onto the constant bottom: the shifter constantly `⊥`. -/
+theorem TransformsTo.to_bot {E : Type*} {grade : E → ℕ} (p : E → ExtOrd) :
+    TransformsTo grade p (fun _ => ⊥) :=
+  ⟨fun _ => ⊤, fun _ => ⊥, fun _ _ _ => le_rfl, fun _ => rfl, rfl, monotone_const,
+    fun _ _ _ _ _ => (extVisibilityReplace_bot _ _).symm,
+    fun _ => (min_eq_left bot_le).symm⟩
+
+variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A} (sem : Semantics D)
+
+end MixedScope
+
+end VaughtConjecture.Knight
+
+namespace VaughtConjecture.Knight
+
+open AmalgamationPlan CellScheme Transform Value ExtOrd
+open CellScheme.restrictFace (pushGraded)
+
+/-! ## The recoding at a grade, generically -/
+
+section Recode
+
+variable (l : ℕ) (S : Finset Ordinal.{0})
+
+end Recode
+
+/-! ## The inventory over the actual context -/
+
+section Inventory
+
+variable {m n : ℕ} {X : CellScheme (ι := Fin m) Finset.univ}
+  {Y : CellScheme (ι := Fin (n + 1)) Finset.univ} {e : Fin n ↪ Fin m}
+  {Rp : Finset (Finset (Fin (m + 1)))} {hR : Plan.IsPlan Finset.univ Rp}
+  {hRA : Plan.restrictPlan Rp (Finset.univ.image Fin.castSuccEmb) =
+    X.plan.image (Finset.image Fin.castSuccEmb)}
+  {hRB : Plan.restrictPlan Rp (Finset.univ.image (onePointProj e)) =
+    Y.plan.image (Finset.image (onePointProj e))}
+  (hvX : Finset.univ.image e ∈ X.plan) (hvY : Finset.univ.image Fin.castSuccEmb ∈ Y.plan)
+  (hroot : X.restrictFace e hvX = Y.restrictFace Fin.castSuccEmb hvY)
+  (rowsX : Semantics X) (rowsY : Semantics Y) (labX : Cell X → ExtOrd) (labY : Cell Y → ExtOrd)
+
+/-! ### The rows -/
+
+variable (hX : ∀ d, SelfVis (X.grade d) (labX d)) (hY : ∀ c, SelfVis (Y.grade c) (labY c))
+
+/-! ### Every cell is old, an identified request cell, or a remaining-index cell -/
+
+variable (hfresh : ∀ c : Cell Y, Fin.last n ∈ Y.scope c)
+
+/-! ### Consistency on a face, transported -/
+
+/-! ### Consistency at the old and the request cells -/
+
+variable (hXres : RespectsSemantics rowsX labX) (hYres : RespectsSemantics rowsY labY)
+  (hXcons : rowsX.IsConsistent) (hYcons : rowsY.IsConsistent)
+
+/-! ### Consistency at the remaining-index cells -/
+
+variable (hn : ∀ i : Cell X, ¬ X.scope i ⊆ Finset.univ.image e)
+
+/-! ### The assembled properties -/
+
+/-! ### The first bountifulness obligation: what the recoded rows force -/
+
+/-- The constantly-`⊥` labelling respects every semantics on every lower set. -/
+theorem respectsBelow_bot {ι₀ : Type*} [DecidableEq ι₀] {A₀ : Finset ι₀} {D₀ : CellScheme A₀}
+    (sem : Semantics D₀) (BJ : Finset ι₀ × ℕ) :
+    RespectsSemanticsBelow sem BJ (fun _ => (⊥ : ExtOrd)) :=
+  RespectsSemanticsBelow.bot sem BJ
+
+end Inventory
+
+end VaughtConjecture.Knight
+
+namespace VaughtConjecture.Knight
+
+open Transform Value ExtOrd
+
+/-! ## Replacement orbits of a grade-one self-visible value -/
+
+theorem evr_eq_bot_iff {a : ExtOrd} (k i : ℕ) : extVisibilityReplace a k i = ⊥ ↔ a = ⊥ := by
+  constructor
+  · intro h; by_contra ha; exact extVisibilityReplace_ne_bot ha k i h
+  · rintro rfl; exact extVisibilityReplace_bot _ _
+
+/-! ## The orbit-block map -/
+
+end VaughtConjecture.Knight
 
 namespace VaughtConjecture.Knight
 

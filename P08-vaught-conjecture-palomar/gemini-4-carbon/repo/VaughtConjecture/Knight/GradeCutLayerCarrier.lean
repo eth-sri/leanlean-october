@@ -17,7 +17,6 @@ carrier's, while every proper old owner's lower domain is exactly the old one.
 
 @[expose] public section
 
-set_option autoImplicit false
 
 namespace VaughtConjecture.Knight.GradeCutLayerCarrier
 

@@ -17,7 +17,6 @@ lifts transport along its actual lower-domain equivalences.
 
 @[expose] public section
 
-set_option autoImplicit false
 
 namespace VaughtConjecture.Knight
 

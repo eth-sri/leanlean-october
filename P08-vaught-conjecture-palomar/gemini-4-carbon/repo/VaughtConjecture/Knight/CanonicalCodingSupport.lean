@@ -15,7 +15,6 @@ actual coded field inventory and grid, and retain coding under replacement.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalCodingSupport
 open Transform Value ExtOrd PairedSlotComparison SourcePrefixRows
 noncomputable section

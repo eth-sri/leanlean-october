@@ -388,13 +388,7 @@ theorem finitePart_omega0_mul (u : Ordinal.{0}) :
   conv_lhs => rw [← limitPart_omega0_mul u]
   exact finitePart_limitPart _
 
-@[simp] theorem limitPart_omega0 : limitPart Ordinal.omega0 = Ordinal.omega0 := by
-  have := limitPart_omega0_mul 1
-  rwa [mul_one] at this
 
-@[simp] theorem finitePart_omega0 : finitePart Ordinal.omega0 = 0 := by
-  have := finitePart_omega0_mul 1
-  rwa [mul_one] at this
 
 /-- Adding a natural number is inflationary. -/
 theorem self_le_add_nat (x : Ordinal.{0}) (i : ℕ) : x ≤ x + i := by

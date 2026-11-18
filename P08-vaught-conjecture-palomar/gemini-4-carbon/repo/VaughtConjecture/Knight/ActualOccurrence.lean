@@ -21,7 +21,6 @@ separate. Historical names for the coordinate geometry are preserved.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight
 open TypeTower KnightRealization StageType
 

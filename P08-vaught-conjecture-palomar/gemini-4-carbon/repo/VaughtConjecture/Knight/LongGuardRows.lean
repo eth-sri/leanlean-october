@@ -23,7 +23,6 @@ It does not by itself install a support plan or prove lifting.
 
 @[expose] public section
 
-set_option autoImplicit false
 
 namespace VaughtConjecture.Knight.LongGuardRows
 

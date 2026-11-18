@@ -5,7 +5,8 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.GradeTailRestoration
+public import VaughtConjecture.Knight.SourceBlockLocalityTransport
+public import VaughtConjecture.Knight.WitnessSplice
 public import VaughtConjecture.Knight.CoatomBoundaryExtension
 
 /-! # Literal single-face restoration from a predecessor lifting clause
@@ -17,7 +18,6 @@ proper. The unchanged upper tail is bounded by the restoration cap.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.SingleFaceTailRestoration
 open Transform Value ExtOrd GradeTailRestoration CoatomBoundaryExtension
 noncomputable section

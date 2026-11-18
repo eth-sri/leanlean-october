@@ -16,7 +16,6 @@ The point plan is retained; completeness at grades above the cut is not asserted
 
 @[expose] public section
 
-set_option autoImplicit false
 
 namespace VaughtConjecture.Knight.GradeCutBoundary
 

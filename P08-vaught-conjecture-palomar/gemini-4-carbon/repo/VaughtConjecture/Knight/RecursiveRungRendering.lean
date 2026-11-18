@@ -5,99 +5,86 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.RungTableRendering
+public import VaughtConjecture.Knight.ReceivingCatalogueRanks
 public import VaughtConjecture.Knight.CanonicalFieldLayer
-
-/-! # Recursive raw rows and rendered prefixes over the long rung base
-
-Stage `n` retains the entire rung base and the leaf catalogues of grades
-2 through `n + 1`. The catalogue and every occurrence are fixed before an
-input is rendered. Raw rows use the previous renderer at the new native grid;
-rendered vectors apply one outer paired-slot decoder to the normalized row.
-
-The prefix theorem is proved by grade induction, not carried as a field of
-an invariant. Support follows from the outer decoder. The exact base formula
-includes every unused rung and follows from whole-table decoding.
-
-These are numerical master vectors, including complete original fields. No
-admission, geometric installation, consistency, or bountifulness is asserted.
-In particular, retaining the occurrence type does not assert equality of
-independently selected renderings at different construction grades.
--/
 
 @[expose] public section
 
-set_option autoImplicit false
-namespace VaughtConjecture.Knight.RecursiveRungRendering
-open Transform Value ExtOrd SourcePrefixRows
-open PairedSlotEncoding PairedSlotComparison
+namespace VaughtConjecture.Knight.RungTableRendering
+open Transform Value ExtOrd LadderScalarRendering
 noncomputable section
+variable {X : Type*} [Fintype X]
 
-universe u v
-variable {X : Type u} {B : Type v} [Fintype X] {Q : ℕ → Type v}
+/-- A monotone finite round trip transports every occupied and unused level. -/
+theorem level_decode (p : X → ExtOrd) {f g : ExtOrd → ExtOrd}
+    (hf : Monotone f) (hg : Monotone g) (hfbot : f ⊥ = ⊥) (hgbot : g ⊥ = ⊥)
+    (hinv : ∀ d, g (f (p d)) = p d) (C : ExtOrd) (i : ℕ) :
+    g (LadderScalarRendering.level (values (fun d => f (p d))) C i) =
+      LadderScalarRendering.level (values p) (g C) i := by
+  classical
+  have hpos (d : X) : f (p d) ≠ ⊥ ↔ p d ≠ ⊥ := by
+    constructor
+    · intro h he; exact h (he ▸ hfbot)
+    · intro h he
+      exact h ((hinv d).symm.trans ((congrArg g he).trans hgbot))
+  have himage : values (fun d => f (p d)) = (values p).image f := by
+    ext y
+    constructor
+    · intro hy
+      obtain ⟨hy, d, rfl⟩ := mem_values.mp hy
+      exact Finset.mem_image.mpr ⟨p d, mem_values.mpr ⟨(hpos d).mp hy, d, rfl⟩, rfl⟩
+    · intro hy
+      obtain ⟨x, hx, rfl⟩ := Finset.mem_image.mp hy
+      obtain ⟨hx, d, rfl⟩ := mem_values.mp hx
+      exact mem_values.mpr ⟨(hpos d).mpr hx, d, rfl⟩
+  have hcard : (values (fun d => f (p d))).card = (values p).card := by
+    rw [himage]
+    apply Finset.card_image_of_injOn
+    intro x hx y hy he
+    obtain ⟨_, d, rfl⟩ := mem_values.mp hx
+    obtain ⟨_, e, rfl⟩ := mem_values.mp hy
+    simpa only [hinv] using congrArg g he
+  have hr := ReceivingCatalogueRanks.fieldRank_of_leftInverse p hf hg hfbot hgbot hinv
+  unfold LadderScalarRendering.level
+  rw [hcard]
+  split_ifs with hi
+  · rfl
+  · apply le_antisymm
+    · by_cases hn : ((values (fun d => f (p d))).filter
+          (fun x => rank (values (fun d => f (p d))) x ≤ i)).Nonempty
+      · obtain ⟨x, hx, he⟩ := Finset.sup_mem_of_nonempty (f := id) hn
+        rw [← he]
+        obtain ⟨hxv, hxi⟩ := Finset.mem_filter.mp hx
+        obtain ⟨hx, d, rfl⟩ := mem_values.mp hxv
+        simp only [id_eq, hinv]
+        apply Finset.le_sup (f := id)
+        refine Finset.mem_filter.mpr ⟨mem_values.mpr ⟨(hpos d).mp hx, d, rfl⟩, ?_⟩
+        change fieldRank p d ≤ i
+        change fieldRank (fun e => f (p e)) d ≤ i at hxi
+        rwa [hr d] at hxi
+      · rw [Finset.not_nonempty_iff_eq_empty.mp hn, Finset.sup_empty, hgbot]
+        exact bot_le
+    · apply Finset.sup_le
+      intro x hx
+      obtain ⟨hxv, hxi⟩ := Finset.mem_filter.mp hx
+      obtain ⟨hx, d, rfl⟩ := mem_values.mp hxv
+      rw [← hinv d]
+      apply hg
+      apply Finset.le_sup (f := id)
+      refine Finset.mem_filter.mpr ⟨mem_values.mpr ⟨(hpos d).mpr hx, d, rfl⟩, ?_⟩
+      change fieldRank (fun e => f (p e)) d ≤ i
+      rw [hr d]
+      exact hxi
 
-abbrev height (X : Type*) [Fintype X] : ℕ := Fintype.card X + 1
-abbrev Base (X B : Type*) [Fintype X] := RungOnlyLadder.Point (height X) B
+end
+end VaughtConjecture.Knight.RungTableRendering
 
-/-- Every earlier leaf and every base rung stays a separate coordinate. -/
-def Aux (X : Type u) (B : Type v) [Fintype X] (Q : ℕ → Type v) : ℕ → Type v
-  | 0 => Base X B
-  | n + 1 => Aux X B Q n ⊕ Q (n + 2)
-
-instance [Fintype B] [∀ j, Fintype (Q j)] (n : ℕ) : Fintype (Aux X B Q n) := by
-  induction n with
-  | zero => exact inferInstanceAs (Fintype (Base X B))
-  | succ n ih =>
-    letI := ih
-    exact inferInstanceAs (Fintype (Aux X B Q n ⊕ Q (n + 2)))
+namespace VaughtConjecture.Knight.RecursiveRungRendering
+open Transform Value ExtOrd SourcePrefixRows PairedSlotComparison
+noncomputable section
 
 abbrev grid (X : Type*) [Fintype X] (j : ℕ) := sourceGrid j (Fintype.card X)
 abbrev ceiling (X : Type*) [Fintype X] (j : ℕ) := CanonicalFieldLayer.ceiling j X
-
-def baseAt : (n : ℕ) → Base X B → Aux X B Q n
-  | 0, v => v
-  | n + 1, v => .inl (baseAt n v)
-
-variable (ranks : B → X → ℕ) (fields : (j : ℕ) → Q j → X → ExtOrd)
-
-/-- Native lower calls use the upper profile's own numerical values. -/
-def renderAux : (n : ℕ) → (X → ExtOrd) → Finset ExtOrd → ExtOrd → Aux X B Q n → ExtOrd
-  | 0, p, _, C, v => RungTableRendering.render ranks p C v
-  | n + 1, p, G, C, v =>
-    PairedSlotDecoder.decode (n + 2) (values p) G C
-      (Sum.elim
-        (renderAux n (normalize (n + 2) p) (grid X (n + 2)) (ceiling X (n + 2)))
-        (fun q => cut (grid X (n + 2)) (normalize (n + 2) p) (fields (n + 2) q)) v)
-
-private theorem normalized_bound (j : ℕ) {p : X → ExtOrd} (hp : ∀ d, p d ≠ ⊤) (d : X) :
-    normalize j p d ≤ ceiling X j := by
-  apply (PairedSlotProfiles.normalize_le_ceiling hp d).trans
-  apply ofOrd_le_ofOrd.mpr
-  exact add_le_add (by gcongr; omega) le_rfl
-
-private theorem normalized_proper (j : ℕ) {p : X → ExtOrd} (hp : ∀ d, p d ≠ ⊤) :
-    ∀ d, normalize j p d ≠ ⊤ :=
-  (CanonicalPairedProfiles.normalize_mem_inventory X j hp).2
-
-/-- BASE-FORM: the entire base restriction is the original ceiling-filled
-table. No cross-grade identity on the higher leaves is used or asserted. -/
-theorem render_base (n : ℕ) {p : X → ExtOrd} {G : Finset ExtOrd} {C : ExtOrd}
-    (hp : ∀ d, p d ≠ ⊤) (hG : ∀ z ∈ G, SelfVis (n + 1) z)
-    (hC : SelfVis (n + 1) C) (hpC : ∀ d, p d ≤ C) (v : Base X B) :
-    renderAux ranks fields n p G C (baseAt n v) = RungTableRendering.render ranks p C v := by
-  induction n generalizing p G C with
-  | zero => rfl
-  | succ n ih =>
-    change PairedSlotDecoder.decode (n + 2) (values p) G C
-      (renderAux ranks fields n (normalize (n + 2) p)
-        (grid X (n + 2)) (ceiling X (n + 2)) (baseAt n v)) = _
-    rw [ih (p := normalize (n + 2) p) (G := grid X (n + 2))
-      (C := ceiling X (n + 2)) (normalized_proper _ hp)
-      (fun _ hz => selfVis_mono (sourceGrid_visible hz) (by omega))
-      (selfVis_mono (sourceGrid_visible (sourceGrid_endpoint le_rfl)) (by omega))
-      (normalized_bound _ hp)]
-    exact RungTableRendering.decode_normalized ranks (n + 2) p hp hG hC
-      (decode_reserved_ceiling hC hpC) v
 
 end
 end VaughtConjecture.Knight.RecursiveRungRendering

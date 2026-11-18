@@ -21,7 +21,6 @@ installation, bountifulness, or maximal coatom supply.
 
 @[expose] public section
 
-set_option autoImplicit false
 
 namespace VaughtConjecture.Knight.SourcePrefixRows
 
@@ -137,14 +136,7 @@ theorem cross_agreement {G : Finset ExtOrd} (hbot : ⊥ ∈ G) (a b c : X → Ex
 remain distinct occurrences. -/
 abbrev Occ (X Y Q : Type*) := (X ⊕ Y) ⊕ Q
 
-def grade (gx : X → ℕ) (gy : Y → ℕ) (k : ℕ) : Occ X Y Q → ℕ :=
-  Sum.elim (Sum.elim gx gy) (fun _ => k)
 
-noncomputable def row (G : Finset ExtOrd) (a : Q → X → ExtOrd)
-    (lower : Q → Y → ExtOrd) (q : Q) : Occ X Y Q → ExtOrd
-  | .inl (.inl x) => a q x
-  | .inl (.inr y) => lower q y
-  | .inr p => cut G (a q) (a p)
 
 /-! ## Boundary-orbit support and hidden prefixes
 

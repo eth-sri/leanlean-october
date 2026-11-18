@@ -17,7 +17,6 @@ application.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GradeTailRestoration
 open Transform Value ExtOrd
 noncomputable section

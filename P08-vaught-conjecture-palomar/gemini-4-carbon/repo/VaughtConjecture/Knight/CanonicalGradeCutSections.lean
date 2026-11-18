@@ -18,7 +18,6 @@ or lower completion is supplied as an input.
 
 @[expose] public section
 
-set_option autoImplicit false
 
 namespace VaughtConjecture.Knight.CanonicalGradeCutSections
 

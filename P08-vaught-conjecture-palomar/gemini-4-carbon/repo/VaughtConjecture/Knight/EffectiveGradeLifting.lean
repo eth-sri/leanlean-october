@@ -6,7 +6,6 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.CoatomBoundaryExtension
-public import VaughtConjecture.Knight.SameScopeBountiful
 public import VaughtConjecture.Knight.PartialSections
 
 /-! # Exhaustive lifting reduction at the actual grade ceiling
@@ -18,7 +17,6 @@ Same-scope grade changes then reduce the ledger to same-grade pairs.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.EffectiveGradeLifting
 open Transform Value ExtOrd CoatomBoundaryExtension AmalgamationPlan
 

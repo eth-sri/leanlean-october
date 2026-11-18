@@ -73,41 +73,15 @@ variable {Λ : Type v} [Preorder Λ] {T : TypeTower.{u} Λ} {α β γ : Λ} {M :
 
 /-! ### The predicates -/
 
-/-- `R` **prolongs to stage `β`**: some stage-`β` realization (on some carrier in the universe of
-`M`) reduces, up to isomorphism, to `R`.  The public, isomorphism-invariant form of Knight's
-Def. 5.1.1 (Knight-VC `PaperExactModelExpandsTo`, without the model axioms, which enter through
-`ProlongsToIn`). -/
-def ProlongsTo (R : T.Realization α M) (hβ : α ≤ β) : Prop :=
-  ∃ (N : Type w) (R' : T.Realization β N), Nonempty ((R'.reduct hβ).Iso R)
 
 /-! ### Entry points: any carrier, any universe -/
 
-/-- A stage-`β` realization on a carrier `N` of *any* universe whose reduct is isomorphic to `R`
-witnesses `ProlongsTo`: push it forward along the isomorphism onto `M`. -/
-theorem ProlongsTo.of_reduct_iso {N : Type w'} (R : T.Realization α M) (hβ : α ≤ β)
-    (R' : T.Realization β N) (i : (R'.reduct hβ).Iso R) : R.ProlongsTo hβ :=
-  ⟨M, R'.map i.1, ⟨by rw [reduct_map, IsIso.map_eq i.2]; exact Iso.refl R⟩⟩
 
 /-! ### Isomorphism invariance (the acceptance property of #29) -/
 
-theorem ProlongsTo.of_isIso {N : Type w'} {R : T.Realization α M} {R₂ : T.Realization α N}
-    {e : M ≃ N} (hi : R.IsIso R₂ e) {hβ : α ≤ β} (h : R.ProlongsTo hβ) : R₂.ProlongsTo hβ := by
-  obtain ⟨K, R', ⟨i⟩⟩ := h
-  exact ProlongsTo.of_reduct_iso R₂ hβ R' (i.trans ⟨e, hi⟩)
 
-/-- **Isomorphism invariance** of prolongation (Knight-VC `paperExactModelExpandsTo_iff_of_iso`,
-generalised to any tower, any carriers, any universes). -/
-theorem IsIso.prolongsTo_iff {N : Type w'} {R : T.Realization α M} {R₂ : T.Realization α N}
-    {e : M ≃ N} (hi : R.IsIso R₂ e) (hβ : α ≤ β) : R.ProlongsTo hβ ↔ R₂.ProlongsTo hβ :=
-  ⟨ProlongsTo.of_isIso hi, ProlongsTo.of_isIso (IsIso.symm hi)⟩
 
-theorem Iso.prolongsTo_iff {N : Type w'} {R : T.Realization α M} {R₂ : T.Realization α N}
-    (i : R.Iso R₂) (hβ : α ≤ β) : R.ProlongsTo hβ ↔ R₂.ProlongsTo hβ :=
-  IsIso.prolongsTo_iff i.2 hβ
 
-theorem prolongsTo_iff_of_iso {N : Type w'} {R : T.Realization α M} {R₂ : T.Realization α N}
-    (h : Nonempty (R.Iso R₂)) (hβ : α ≤ β) : R.ProlongsTo hβ ↔ R₂.ProlongsTo hβ :=
-  h.elim fun i => i.prolongsTo_iff hβ
 
 /-! ### Reflexivity and downward monotonicity in the target stage -/
 
@@ -116,15 +90,7 @@ theorem prolongsTo_iff_of_iso {N : Type w'} {R : T.Realization α M} {R₂ : T.R
 `ProlongsTo` descends to the isomorphism classes of stage-`α` realizations on `M`
 (`Realization.isoSetoid`), so that a stopping rank (#70) can be defined on classes. -/
 
-/-- Prolongability of an **isomorphism class** of realizations (well defined by
-`Iso.prolongsTo_iff`). -/
-def ProlongsToClass (hβ : α ≤ β) (q : Quotient (isoSetoid T α M)) : Prop :=
-  Quotient.lift (fun R : T.Realization α M => R.ProlongsTo hβ)
-    (fun _ _ h => propext (prolongsTo_iff_of_iso h hβ)) q
 
-@[simp]
-theorem prolongsToClass_mk (hβ : α ≤ β) (R : T.Realization α M) :
-    ProlongsToClass hβ (Quotient.mk (isoSetoid T α M) R) ↔ R.ProlongsTo hβ := Iff.rfl
 
 /-! ### Prolongation within a target class
 
@@ -204,15 +170,7 @@ theorem ProlongsToIn.mono
   obtain ⟨N, R', hR', ⟨i⟩⟩ := h
   exact ⟨N, R'.reduct hβγ, hC hβγ R' hR', ⟨by rw [reduct_reduct]; exact i⟩⟩
 
-variable (C) in
-/-- Prolongability within `C` of an isomorphism class of realizations. -/
-def ProlongsToClassIn (hβ : α ≤ β) (q : Quotient (isoSetoid T α M)) : Prop :=
-  Quotient.lift (fun R : T.Realization α M => R.ProlongsToIn C hβ)
-    (fun _ _ h => propext (prolongsToIn_iff_of_iso h hβ)) q
 
-@[simp]
-theorem prolongsToClassIn_mk (hβ : α ≤ β) (R : T.Realization α M) :
-    ProlongsToClassIn C hβ (Quotient.mk (isoSetoid T α M) R) ↔ R.ProlongsToIn C hβ := Iff.rfl
 
 end TargetClass
 

@@ -1,3 +1,0 @@
-module
-public import VaughtConjecture.Knight.GradeTailCap
-public import VaughtConjecture.Knight.ReferenceOrbitCompletion

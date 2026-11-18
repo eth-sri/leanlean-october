@@ -30,7 +30,6 @@ noncomputable def pad : ExtOrd → ExtOrd
   | some (some α) => ofOrd (Ordinal.omega0 + α)
 
 @[simp] theorem pad_bot : pad ⊥ = ⊥ := rfl
-@[simp] theorem pad_top : pad ⊤ = ⊤ := rfl
 @[simp] theorem pad_ofOrd (α : Ordinal.{0}) : pad (ofOrd α) = ofOrd (Ordinal.omega0 + α) := rfl
 
 theorem pad_mono : Monotone pad := by
@@ -92,7 +91,6 @@ noncomputable def unpad : ExtOrd → ExtOrd
   | some (some α) => if Ordinal.omega0 ≤ α then ofOrd (α - Ordinal.omega0) else ⊥
 
 @[simp] theorem unpad_bot : unpad ⊥ = ⊥ := rfl
-@[simp] theorem unpad_top : unpad ⊤ = ⊤ := rfl
 
 open Classical in
 theorem unpad_ofOrd (α : Ordinal.{0}) :
