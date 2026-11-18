@@ -36,18 +36,14 @@ theorem repinned_circle_normalization_covariance
     gaussianCovariance P (fun ω => Xc ω (1 - x) r - Xc ω 1 0)
       (fun ω => Xc ω 1 0) =
       (∫ z, symmetryReflectionPotential z ∂circleMeasure x r) - symmetryReflectionKappa := by
-  let : IsProbabilityMeasure P := hX.1
+  let := hX.1
   let := circleMeasure_isProbability (1 - x) r
   let L := fun ω => Xc ω 1 0
-  have hAL : Integrable (fun ω => Xc ω (1 - x) r * L ω) P :=
-    (hXc.2.1 (1 - x) r).integrable_mul (hXc.2.1 1 0)
-  have hLL : Integrable (fun ω => L ω * L ω) P :=
-    (hXc.2.1 1 0).integrable_mul (hXc.2.1 1 0)
   have hsub : gaussianCovariance P (fun ω => Xc ω (1 - x) r - L ω) L =
       gaussianCovariance P (fun ω => Xc ω (1 - x) r) L - gaussianVariance P L := by
     unfold gaussianCovariance gaussianVariance
     simp_rw [sub_mul]
-    exact integral_sub hAL hLL
+    exact integral_sub ((hXc.2.1 (1 - x) r).integrable_mul (hXc.2.1 1 0)) ((hXc.2.1 1 0).integrable_mul (hXc.2.1 1 0))
   rw [hsub, reflection_normalization_variance P X hX Xc hXc,
     isCircleAverage_covariance P X hX Xc hXc]
   have he (z : ℂ) : (∫ w, gffKernel z w ∂circleMeasure 1 0) =
@@ -63,7 +59,6 @@ theorem repinned_circle_normalization_covariance
         (continuous_const.sub continuous_id)).continuousOn.circleIntegrable'
   rw [integral_add hd (integrable_const _), integral_const, probReal_univ, one_smul,
     symmetryReflection_circle_integral _ symmetryReflectionPotential_continuous.measurable]
-  rw [show (1 : ℂ) - (1 - x) = x from symmetryReflection_involutive x]
   ring
 
 end DOZZ.Proofs

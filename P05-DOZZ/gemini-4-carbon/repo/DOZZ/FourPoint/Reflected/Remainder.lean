@@ -33,24 +33,15 @@ theorem IsComplexLittleOAtZero.add {κ : ℝ} {f g : ℂ → ℂ}
   apply squeeze_zero (fun z => div_nonneg (norm_nonneg _) (Real.rpow_nonneg
     (norm_nonneg _) _))
   · intro z
-    calc
-      ‖f z + g z‖ / ‖z‖ ^ κ ≤ (‖f z‖ + ‖g z‖) / ‖z‖ ^ κ :=
-        div_le_div_of_nonneg_right (norm_add_le _ _) (Real.rpow_nonneg (norm_nonneg _) _)
-      _ = ‖f z‖ / ‖z‖ ^ κ + ‖g z‖ / ‖z‖ ^ κ := add_div _ _ _
+    exact (div_le_div_of_nonneg_right (norm_add_le _ _) (Real.rpow_nonneg (norm_nonneg _) _)).trans_eq (add_div _ _ _)
   · simpa only [add_zero] using hf.add hg
 
-/-- Multiplication by a fixed scalar preserves the little-o convention. -/
-theorem IsComplexLittleOAtZero.const_mul {κ : ℝ} {f : ℂ → ℂ}
-    (hf : DOZZ.IsComplexLittleOAtZero κ f) (c : ℂ) :
-    DOZZ.IsComplexLittleOAtZero κ (fun z => c * f z) := by
-  unfold DOZZ.IsComplexLittleOAtZero at hf ⊢
-  simpa only [norm_mul, mul_div_assoc, mul_zero] using hf.const_mul ‖c‖
 
 /-- A strictly higher power of the radius is negligible at the reflected scale. -/
 theorem reflected_radius_power_ratio_tendsto (κ η : ℝ) (hη : κ < η) :
     Tendsto (fun z : ℂ => ‖z‖ ^ η / ‖z‖ ^ κ)
       (nhdsWithin (0 : ℂ) {z : ℂ | z ≠ 0}) (nhds 0) := by
-  have he : 0 < η - κ := sub_pos.mpr hη
+  have he := sub_pos.mpr hη
   have hpow := ((Real.continuous_rpow_const he.le).comp continuous_norm).tendsto
     (0 : ℂ)
   have ht : Tendsto (fun z : ℂ => ‖z‖ ^ (η - κ))
@@ -66,14 +57,10 @@ theorem isComplexLittleOAtZero_of_norm_le_power {κ η C : ℝ} {f : ℂ → ℂ
     (hb : ∀ᶠ z in nhdsWithin (0 : ℂ) {z : ℂ | z ≠ 0}, ‖f z‖ ≤ C * ‖z‖ ^ η) :
     DOZZ.IsComplexLittleOAtZero κ f := by
   unfold DOZZ.IsComplexLittleOAtZero
-  have ht := (reflected_radius_power_ratio_tendsto κ η hη).const_mul C
   apply squeeze_zero' (Filter.Eventually.of_forall (fun z =>
     div_nonneg (norm_nonneg (f z)) (Real.rpow_nonneg (norm_nonneg z) κ)))
   · filter_upwards [hb] with z hz
-    calc
-      ‖f z‖ / ‖z‖ ^ κ ≤ (C * ‖z‖ ^ η) / ‖z‖ ^ κ :=
-        div_le_div_of_nonneg_right hz (Real.rpow_nonneg (norm_nonneg z) κ)
-      _ = C * (‖z‖ ^ η / ‖z‖ ^ κ) := mul_div_assoc _ _ _
-  · simpa only [mul_zero] using ht
+    exact (div_le_div_of_nonneg_right hz (Real.rpow_nonneg (norm_nonneg z) κ)).trans_eq (mul_div_assoc _ _ _)
+  · simpa only [mul_zero] using (reflected_radius_power_ratio_tendsto κ η hη).const_mul C
 
 end DOZZ.Proofs

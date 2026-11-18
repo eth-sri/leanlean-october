@@ -16,7 +16,7 @@ theorem reflected_global_radial_test_integral (ρ γ : ℝ) (hρ : 0 < ρ)
     (hfU : tsupport (f : ℂ → ℝ) ⊆ originLateralChart ρ) (μ : Measure ℂ) :
     (∫ x, f x*originRadialReinsertionWeight ρ γ a x ∂μ.restrict (originLateralChart ρ)) =
       ∫ x, f x*reflected_global_reinsertionWeight γ a x ∂μ := by
-  have hz (x : ℂ) (hx : x ∉ originLateralChart ρ) : f x = 0 :=
+  have hz (x : ℂ) (hx : x ∉ originLateralChart ρ) :=
     image_eq_zero_of_notMem_tsupport (fun hs => hx (hfU hs))
   have he : (∫ x, f x*originRadialReinsertionWeight ρ γ a x
       ∂μ.restrict (originLateralChart ρ)) =
@@ -77,7 +77,7 @@ theorem reflected_global_compact_chaos_comparison
     ((tsupport_originRadialWeightedTest_subset ρ γ hρ a f₀ hfc₀).trans hf₀A)
     ((tsupport_originRadialWeightedTest_subset ρ γ hρ a f₁ hfc₁).trans hf₁A) q hq
   simp only [originRadialWeightedTest_apply, BoundedContinuousFunction.add_apply, ← add_mul] at hb
-  have hfU : tsupport ((f₀+f₁ : BoundedContinuousFunction ℂ ℝ) : ℂ → ℝ) ⊆ originLateralChart ρ :=
+  have hfU :=
     (tsupport_add (f := (f₀ : ℂ → ℝ)) (g := (f₁ : ℂ → ℝ))).trans
       ((union_subset hf₀K hf₁K).trans hKU)
   have hsum (μ : Measure ℂ) :

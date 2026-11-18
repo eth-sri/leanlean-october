@@ -31,7 +31,7 @@ theorem lastone_williamsModel_smallPower_limit
           (B ν z.2).1), Z z.2) ^ (ν / γ)
             ∂(brownianMaximumReferenceLaw ν).prod P).toReal)
       (𝓝[>] 0) (𝓝 2) := by
-  let : IsProbabilityMeasure P := hZ.2.2.1
+  let := hZ.2.2.1
   let I : ℝ → ℝ≥0∞ := fun ν => ∫⁻ ω, twoSidedReflectionMass γ (B ν) Z ω ^ (ν / γ) ∂P
   let J : ℝ → ℝ≥0∞ := fun ν => ∫⁻ ω, initialUnitBlockMass γ (B ν ω).1 (Z ω) ^ (ν / γ) ∂P
   let W : ℝ → ℝ≥0∞ := fun ν => ∫⁻ z : ℝ × Ω,
@@ -39,13 +39,13 @@ theorem lastone_williamsModel_smallPower_limit
       (((z.1, negativeConditionedLastExitSegment z.1 (B ν z.2).2),
         (B ν z.2).1), Z z.2) ^ (ν / γ)
           ∂(brownianMaximumReferenceLaw ν).prod P
-  have hI : Tendsto (fun ν => (I ν).toReal) (𝓝[>] 0) (𝓝 1) :=
+  have hI :=
     DOZZ.lastone_brownian_smallPower_limit P γ hγ hγ2 Z B
       hB hZ hInd
   have he : Tendsto (fun ν : ℝ => ν / γ) (𝓝[>] 0) (𝓝 0) := by
     simpa using (tendsto_id.div_const γ :
       Tendsto (fun ν : ℝ => ν / γ) (𝓝 0) (𝓝 (0 / γ))).mono_left nhdsWithin_le_nhds
-  have hJ : Tendsto (fun ν => (J ν).toReal) (𝓝[>] 0) (𝓝 1) :=
+  have hJ :=
     lastone_initialUnitBlock_smallPower_limit P γ 1 hγ one_pos Z B
       (fun ν hν _ => hB ν hν) hZ (fun ν hν _ => hInd ν hν)
       (fun ν => ν / γ) he (fun ν hν => div_pos hν hγ)
@@ -74,10 +74,7 @@ theorem lastone_williamsModel_smallPower_limit
     have hb := lastone_williamsModel_moment_bounds P γ ν hγ hν.1 (B ν) Z
       (aemeasurable_of_twoSidedConditioned (hB ν hν.1)) hZ.2.2.2.1 hZ.2.2.2.2.1
     change 2 * J ν ≤ W ν ∧ W ν ≤ 2 * I ν at hb
-    have hWfin := ne_top_of_le_ne_top h2Ifin hb.2
-    have hlow := ENNReal.toReal_mono hWfin hb.1
-    have hupp := ENNReal.toReal_mono h2Ifin hb.2
-    simpa only [ENNReal.toReal_mul, ENNReal.toReal_ofNat] using And.intro hlow hupp
+    simpa only [ENNReal.toReal_mul, ENNReal.toReal_ofNat] using And.intro (ENNReal.toReal_mono (ne_top_of_le_ne_top h2Ifin hb.2) hb.1) (ENNReal.toReal_mono h2Ifin hb.2)
   apply tendsto_of_tendsto_of_tendsto_of_le_of_le'
     (g := fun ν => 2 * (J ν).toReal) (h := fun ν => 2 * (I ν).toReal)
   · simpa using hJ.const_mul 2

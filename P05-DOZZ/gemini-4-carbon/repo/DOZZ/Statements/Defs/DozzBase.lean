@@ -10,7 +10,6 @@ public import DOZZ.Statements.Defs.IsUpsilon
 
 @[expose] public section
 
-open Complex MeasureTheory Set Filter Topology
 
 namespace DOZZ
 

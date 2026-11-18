@@ -57,9 +57,8 @@ theorem dozz_unitVolume_of_residual_factor (γ μ : ℝ) (hγ : 0 < γ) (hγ2 : 
       fun_prop
     · change Continuous (fun a : ℝ × ℝ × ℝ => (a.2.2 : ℂ))
       fun_prop
-  have hpoint : A (α₁, α₂, α₃) ∈ V := _hVα ![α₁, α₂, α₃] hα
   have hc : ContinuousAt (fun a => f (A a)) (α₁, α₂, α₃) :=
-    (hfd.continuousOn.continuousAt (hVo.mem_nhds hpoint)).comp
+    (hfd.continuousOn.continuousAt (hVo.mem_nhds (_hVα ![α₁, α₂, α₃] hα))).comp
       (f := A) hA.continuousAt
   have hl : Tendsto (fun a => f (A a))
       (𝓝[{a : ℝ × ℝ × ℝ | ExtendedSeiberg3 γ a.1 a.2.1 a.2.2 ∧

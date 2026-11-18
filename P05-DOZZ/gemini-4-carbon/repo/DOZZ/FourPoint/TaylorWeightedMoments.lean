@@ -24,12 +24,12 @@ theorem weighted_ball_moment_small_radius_bound
     ∃ C : ℝ, 0 < C ∧ ∀ r : ℝ, 0 < r → r ≤ 1 / 2 →
       weightedGmcBallMoment P M γ α 0 r p ≤
         ENNReal.ofReal (C * r ^ (γ * (Q γ - α) * p - γ ^ 2 * p ^ 2 / 2)) := by
-  let m : ℝ≥0∞ := weightedGmcBallMoment P M γ α 0 (1 / 2) p
-  have hm : m < ⊤ := (equatorGFF_GMC_weighted_local_moment_range P X hX γ hγ hγ2 M hM
+  let m := weightedGmcBallMoment P M γ α 0 (1 / 2) p
+  have hm := (equatorGFF_GMC_weighted_local_moment_range P X hX γ hγ hγ2 M hM
     α hα p hp 0 (1 / 2) (by norm_num)).mpr hrange
-  let E : ℝ := γ * (Q γ - α) * p - γ ^ 2 * p ^ 2 / 2
-  let C : ℝ := (2 : ℝ) ^ E * (m.toReal + 1)
-  have hC : 0 < C := by dsimp only [C]; positivity
+  let E := γ * (Q γ - α) * p - γ ^ 2 * p ^ 2 / 2
+  let C := (2 : ℝ) ^ E * (m.toReal + 1)
+  have hC : 0 < C := by positivity
   have he : (2 - γ * α) * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2 = E := by
     dsimp only [E]
     unfold Q
@@ -43,17 +43,12 @@ theorem weighted_ball_moment_small_radius_bound
   rw [show (2 * r) * (1 / 2) = r by ring, he] at hscale
   rw [hscale]
   have hmle : m ≤ ENNReal.ofReal (m.toReal + 1) := by
-    calc
-      m = ENNReal.ofReal m.toReal := (ENNReal.ofReal_toReal hm.ne).symm
-      _ ≤ ENNReal.ofReal (m.toReal + 1) := ENNReal.ofReal_le_ofReal (by linarith)
+    exact ((ENNReal.ofReal_toReal hm.ne).symm).trans_le (ENNReal.ofReal_le_ofReal (by linarith))
   have hpow : 0 ≤ (2 * r) ^ E := (Real.rpow_pos_of_pos (by positivity) _).le
-  calc
-    ENNReal.ofReal ((2 * r) ^ E) * m ≤
-        ENNReal.ofReal ((2 * r) ^ E) * ENNReal.ofReal (m.toReal + 1) := mul_le_mul' le_rfl hmle
-    _ = ENNReal.ofReal (C * r ^ E) := by
-      rw [← ENNReal.ofReal_mul hpow, Real.mul_rpow (by norm_num : (0 : ℝ) ≤ 2) hr.le]
-      congr 1
-      dsimp only [C]
-      ring
+  refine (mul_le_mul' le_rfl hmle).trans_eq (?_)
+  rw [← ENNReal.ofReal_mul hpow, Real.mul_rpow (by norm_num : (0 : ℝ) ≤ 2) hr.le]
+  congr 1
+  dsimp only [C]
+  ring
 
 end DOZZ.Proofs

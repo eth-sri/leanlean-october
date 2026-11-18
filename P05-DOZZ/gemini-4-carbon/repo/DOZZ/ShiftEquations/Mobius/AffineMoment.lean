@@ -37,7 +37,6 @@ theorem repinWeight_affine (a b : ℂ) (ha : a ≠ 0) (y : ℂ) :
     repinWeight a b (a * y + b) = Real.exp (4 * affineDefect a b y) := by
   have hy := normPlus_pos' y
   have hψ := normPlus_pos' (a * y + b)
-  have hapos : 0 < ‖a‖ := norm_pos_iff.mpr ha
   unfold repinWeight affineDefect
   rw [affineInv_affine a b ha y,
     show 4 * (Real.log (normPlus (a * y + b)) - Real.log (normPlus y) - Real.log ‖a‖ / 2) =
@@ -58,17 +57,15 @@ theorem coulombWeight_affine {N : ℕ} (γ : ℝ) (α : Fin N → ℝ) (z : Fin 
         coulombWeight γ α z 0 y := by
   have hy := normPlus_pos' y
   have hψ := normPlus_pos' (a * y + b)
-  have hapos : 0 < ‖a‖ := norm_pos_iff.mpr ha
   set t : ℝ := normPlus (a * y + b) / (‖a‖ * normPlus y) with htdef
   have ht : 0 < t := by positivity
   have hfac : ∀ k, normPlus (a * y + b) / ‖a * y + b - (a * z k + b)‖ =
       t * (normPlus y / ‖y - z k‖) := fun k => by
-    have hk : 0 < ‖y - z k‖ := norm_pos_iff.mpr (sub_ne_zero.mpr (hyz k))
     rw [show a * y + b - (a * z k + b) = a * (y - z k) by ring, norm_mul, htdef]
     field_simp
   have hlogt : Real.log t = affineDefect a b y - Real.log ‖a‖ / 2 := by
     unfold affineDefect
-    rw [htdef, Real.log_div hψ.ne' (by positivity), Real.log_mul hapos.ne' hy.ne']
+    rw [htdef, Real.log_div hψ.ne' (by positivity), Real.log_mul (norm_pos_iff.mpr ha).ne' hy.ne']
     ring
   unfold coulombWeight
   simp only [ENNReal.rpow_eq_pow, mul_zero, ENNReal.rpow_zero, mul_one]

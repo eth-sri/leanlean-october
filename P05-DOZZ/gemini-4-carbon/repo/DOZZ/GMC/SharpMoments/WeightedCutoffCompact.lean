@@ -31,18 +31,14 @@ theorem weightedCutoffSlack_pos_iff (q : ℝ × ℝ × ℝ) :
   simp only [weightedCutoffSlack, lt_min_iff, sub_pos]
   tauto
 
-theorem continuousAt_weightedCutoffSlack {p : ℝ × ℝ × ℝ} (hp : p.1 ≠ 0) :
-    ContinuousAt weightedCutoffSlack p := by
-  unfold weightedCutoffSlack Q
-  fun_prop (disch := simp [hp])
 
 /-- Around each admissible triple there is a closed product box of admissible triples. -/
 theorem exists_admissible_box {p : ℝ × ℝ × ℝ} (hp : 0 < weightedCutoffSlack p) :
     ∃ ε : ℝ, 0 < ε ∧ ∀ q : ℝ × ℝ × ℝ, dist q p < 2 * ε → 0 < weightedCutoffSlack q := by
-  have hp1 : p.1 ≠ 0 := ((weightedCutoffSlack_pos_iff p).mp hp).1.ne'
-  have hev : ∀ᶠ q in 𝓝 p, 0 < weightedCutoffSlack q :=
-    (continuousAt_weightedCutoffSlack hp1).eventually (lt_mem_nhds hp)
-  obtain ⟨ε', hε', hball⟩ := Metric.eventually_nhds_iff.mp hev
+  have continuousAt_weightedCutoffSlack (hp : p.1 ≠ 0) : ContinuousAt weightedCutoffSlack p := by
+    unfold weightedCutoffSlack Q
+    fun_prop (disch := simp [hp])
+  obtain ⟨ε', hε', hball⟩ := Metric.eventually_nhds_iff.mp ((continuousAt_weightedCutoffSlack (((weightedCutoffSlack_pos_iff p).mp hp).1.ne')).eventually (lt_mem_nhds hp))
   exact ⟨ε' / 2, half_pos hε', fun q hq => hball (by linarith)⟩
 
 /-- The γ-uniform weighted cutoff bound over a compact set of admissible triples
@@ -85,7 +81,7 @@ theorem weightedCutoff_bound_uniform_compact
         exact ⟨h.2.2.1, h.2.2.2.1, h.2.2.2.2⟩)
       K hK r₀ hr₀
     refine ⟨ε, hε, C, hC, fun q hq z hz δ R hδ hδR hRr => ?_⟩
-    have hq' : dist q p ≤ ε := hq
+    have hq' := hq
     rw [Prod.dist_eq] at hq'
     exact hCb q.1 (mem_closedBall.mpr ((le_max_left _ _).trans hq')) q.2
       (mem_closedBall.mpr ((le_max_right _ _).trans hq')) z hz δ R hδ hδR hRr
@@ -93,13 +89,12 @@ theorem weightedCutoff_bound_uniform_compact
   -- a finite subcover of the compact set
   obtain ⟨t, ht⟩ := hSc.elim_finite_subcover (fun p : Sc => ball p.1 (ε p))
     (fun _ => isOpen_ball) (fun q hq => Set.mem_iUnion.mpr ⟨⟨q, hq⟩, mem_ball_self (hε _)⟩)
-  have hsum0 : 0 ≤ ∑ p ∈ t, C p := Finset.sum_nonneg fun p _ => (hC p).le
+  have : 0 ≤ ∑ p ∈ t, C p := Finset.sum_nonneg fun p _ => (hC p).le
   refine ⟨1 + ∑ p ∈ t, C p, by linarith, fun q hq z hz δ R hδ hδR hRr => ?_⟩
   obtain ⟨p, hpt, hqp⟩ := Set.mem_iUnion₂.mp (ht hq)
   refine (hCb p q (mem_ball.mp hqp).le z hz δ R hδ hδR hRr).trans
     (ENNReal.ofReal_le_ofReal (mul_le_mul_of_nonneg_right ?_ (Real.rpow_nonneg
       (hδ.le.trans hδR) _)))
-  calc C p ≤ ∑ p ∈ t, C p := Finset.single_le_sum (fun p _ => (hC p).le) hpt
-    _ ≤ 1 + ∑ p ∈ t, C p := le_add_of_nonneg_left zero_le_one
+  exact (Finset.single_le_sum (fun p _ => (hC p).le) hpt).trans (le_add_of_nonneg_left zero_le_one)
 
 end DOZZ.Proofs

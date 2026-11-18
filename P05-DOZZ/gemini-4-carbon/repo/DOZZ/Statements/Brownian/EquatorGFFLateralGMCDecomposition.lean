@@ -35,6 +35,6 @@ theorem equatorGFF_lateral_GMC_decomposition
         AEMeasurable (fun ω => lateralProjectedGMC γ (A ω) (M ω)) P ∧
         IndepFun (fun ω => A ω) (fun ω => lateralProjectedGMC γ (A ω) (M ω)) P ∧
         IsLateralGMCOf P γ (fun ω =>
-          lateralProjectedGMC γ (A ω) (M ω)) := by exact DOZZ.Proofs.equatorGFF_lateral_GMC_decomposition P X M γ hγ hγ2 hX hM
+          lateralProjectedGMC γ (A ω) (M ω)) := DOZZ.Proofs.equatorGFF_lateral_GMC_decomposition P X M γ hγ hγ2 hX hM
 
 end DOZZ

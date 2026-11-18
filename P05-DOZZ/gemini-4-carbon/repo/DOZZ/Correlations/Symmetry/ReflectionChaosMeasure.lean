@@ -11,14 +11,17 @@ open MeasureTheory
 open scoped Distributions ENNReal
 namespace DOZZ.Proofs
 
+variable {Ω : Type*}
+
+
 /-- The coupled chaos measure obtained by reflection and correlated equator re-pinning. -/
-noncomputable def symmetryRepinnedChaos {Ω : Type*} (γ : ℝ) (M : Ω → Measure ℂ)
+noncomputable def symmetryRepinnedChaos (γ : ℝ) (M : Ω → Measure ℂ)
     (L : Ω → ℝ) (ω : Ω) : Measure ℂ :=
   ENNReal.ofReal (Real.exp (-γ * L ω)) •
     ((M ω).map (fun x : ℂ => 1 - x)).withDensity
       (fun x => ENNReal.ofReal (symmetryReflectionLimitWeight γ x))
 
-theorem symmetryRepinnedChaos_finite {Ω : Type*} (γ : ℝ) (M : Ω → Measure ℂ)
+theorem symmetryRepinnedChaos_finite (γ : ℝ) (M : Ω → Measure ℂ)
     (L : Ω → ℝ) (hM : ∀ ω, IsFiniteMeasure (M ω)) (ω : Ω) :
     IsFiniteMeasure (symmetryRepinnedChaos γ M L ω) := by
   let := hM ω
@@ -43,7 +46,7 @@ theorem symmetry_reflection_weighted_integral (μ : Measure ℂ)
   exact integral_map (measurable_const.sub measurable_id).aemeasurable
     (f.continuous.mul w.continuous).aestronglyMeasurable
 
-theorem symmetryRepinnedChaos_integral {Ω : Type*} (γ : ℝ) (M : Ω → Measure ℂ)
+theorem symmetryRepinnedChaos_integral (γ : ℝ) (M : Ω → Measure ℂ)
     (L : Ω → ℝ) (ω : Ω) (f : BoundedContinuousFunction ℂ ℝ) :
     (∫ x, f x ∂symmetryRepinnedChaos γ M L ω) = Real.exp (-γ * L ω) *
       ∫ x, f (1 - x) * symmetryReflectionLimitWeight γ (1 - x) ∂M ω := by
@@ -53,7 +56,7 @@ theorem symmetryRepinnedChaos_integral {Ω : Type*} (γ : ℝ) (M : Ω → Measu
       (fun x => by rw [symmetryReflectionLimitWeight_apply]; exact (Real.exp_pos _).le)]
 
 theorem regularizedGMC_symmetryRepinned_integral
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
+ [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
     (hX : IsEquatorGFF P X) (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
     (γ r : ℝ) (ω : Ω) (f : BoundedContinuousFunction ℂ ℝ) :
     (∫ x, f x ∂regularizedGMC P (fun ω x r => Xc ω (1 - x) r - Xc ω 1 0) γ r ω) =

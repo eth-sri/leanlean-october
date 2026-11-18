@@ -33,7 +33,7 @@ theorem exists_square_grid_subdivision {Γ : ℝ × ℝ → ℂ}
   obtain ⟨δ, hδ, hclose⟩ := hu ε hε
   obtain ⟨n, hn⟩ := exists_nat_one_div_lt hδ
   let N := n + 1
-  have hNnat : 0 < N := Nat.succ_pos n
+  have hNnat := Nat.succ_pos n
   have hN : (0 : ℝ) < (N : ℝ) := by exact_mod_cast hNnat
   have hgap : 1 / (N : ℝ) < δ := by simpa [N] using hn
   have hcoord (i : ℕ) (hi : i ≤ N) : (i : ℝ) / (N : ℝ) ∈ Icc (0 : ℝ) 1 := by
@@ -43,14 +43,10 @@ theorem exists_square_grid_subdivision {Γ : ℝ × ℝ → ℂ}
       exact_mod_cast hi
   refine ⟨N, hNnat, ?_⟩
   intro i hi j hj s hs t ht
-  have hiNext : i + 1 ≤ N := Nat.succ_le_iff.mpr hi
-  have hjNext : j + 1 ≤ N := Nat.succ_le_iff.mpr hj
   have hleft := hcoord i (Nat.le_of_lt hi)
-  have hright := hcoord (i + 1) hiNext
   have hbottom := hcoord j (Nat.le_of_lt hj)
-  have htop := hcoord (j + 1) hjNext
-  have hs01 : s ∈ Icc (0 : ℝ) 1 := ⟨le_trans hleft.1 hs.1, le_trans hs.2 hright.2⟩
-  have ht01 : t ∈ Icc (0 : ℝ) 1 := ⟨le_trans hbottom.1 ht.1, le_trans ht.2 htop.2⟩
+  have hs01 : s ∈ Icc (0 : ℝ) 1 := ⟨le_trans hleft.1 hs.1, le_trans hs.2 (hcoord (i + 1) (Nat.succ_le_iff.mpr hi)).2⟩
+  have ht01 : t ∈ Icc (0 : ℝ) 1 := ⟨le_trans hbottom.1 ht.1, le_trans ht.2 (hcoord (j + 1) (Nat.succ_le_iff.mpr hj)).2⟩
   have hsDist : dist s ((i : ℝ) / (N : ℝ)) ≤ 1 / (N : ℝ) := by
     have hlen : (((i + 1 : ℕ) : ℝ) / (N : ℝ)) - (i : ℝ) / (N : ℝ) =
         1 / (N : ℝ) := by rw [Nat.cast_add, Nat.cast_one]; ring

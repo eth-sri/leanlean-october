@@ -27,7 +27,7 @@ theorem gaussianKernelDifference_nonneg
     (t y β : ℝ) (ht : 0 < t) (hy : 0 ≤ y) (hβ : 0 ≤ β) :
     0 ≤ exp (-((y - β) ^ 2 / (2 * t))) -
       exp (-((y + β) ^ 2 / (2 * t))) := by
-  have hz : 0 ≤ 2 * y * β / t := by positivity
+  have : 0 ≤ 2 * y * β / t := by positivity
   have hfactor :
       exp (-((y + β) ^ 2 / (2 * t))) =
         exp (-((y - β) ^ 2 / (2 * t))) * exp (-(2 * y * β / t)) := by

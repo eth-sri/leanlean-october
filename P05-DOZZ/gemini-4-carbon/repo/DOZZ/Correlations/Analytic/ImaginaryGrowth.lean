@@ -28,7 +28,7 @@ theorem normalized_imaginary_growth
         C * (r + 1) * ∑ i, (β i).im ^ 2 := by
   classical
   obtain ⟨C, hC, hv⟩ := mixed_vertex_variance_growth P X Xc hX hc z
-  let B : ℝ := 1 + ∑ i, (Real.log (normPlus (z i)) + 1)
+  let B := 1 + ∑ i, (Real.log (normPlus (z i)) + 1)
   have hB : 0 < B := by
     dsimp only [B]
     have := Finset.sum_nonneg (s := Finset.univ)
@@ -37,9 +37,9 @@ theorem normalized_imaginary_growth
     linarith
   have hpin (i : Fin N) (r : ℝ) (hr : 0 ≤ r) :
       |equatorCircleMean (z i) r| ≤ B := by
-    have he := equator_circle_mean_abs_le (z i) r
-    have he1 : Real.exp (-r) ≤ 1 := Real.exp_le_one_iff.mpr (neg_nonpos.mpr hr)
-    have hi := Finset.single_le_sum
+    have := equator_circle_mean_abs_le (z i) r
+    have := Real.exp_le_one_iff.mpr (neg_nonpos.mpr hr)
+    have := Finset.single_le_sum
       (f := fun j : Fin N => Real.log (normPlus (z j)) + 1)
       (fun j _ => by linarith [CirclePotential.log_normPlus_nonneg (z j)]) (Finset.mem_univ i)
     have ha := abs_add_le (equatorCircleMean (z i) r - Real.log (normPlus (z i)))
@@ -51,9 +51,9 @@ theorem normalized_imaginary_growth
   intro r hr β
   rw [normalized_imaginary_factor P Xc hc.2.1 γ z r β,
     complexMomentPower_im_scaled γ hγ β]
-  have hb := imaginary_pin_le (fun i => (β i).im)
+  have := imaginary_pin_le (fun i => (β i).im)
     (fun i => equatorCircleMean (z i) r) B hB.le (fun i => hpin i r hr)
-  have hvar := hv r hr (fun i => (β i).im)
+  have := hv r hr (fun i => (β i).im)
   have hs : 0 ≤ ∑ i, (β i).im ^ 2 := Finset.sum_nonneg (fun i _ => sq_nonneg _)
   have hn : (0 : ℝ) ≤ (N + 1 : ℕ) := Nat.cast_nonneg _
   calc

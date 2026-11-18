@@ -40,9 +40,9 @@ theorem reflected_admissible_copied_test_limit
   have hc₁ := (reflected_admissible_field_test_limit P U dens ε₀ Y hY γ N hN
     K hK hKU f₁ hf₁ hf₁K R₀ hR₀).2
   let Φ := fun r ω x => Y ω (Real.exp (-max r R₀)) x
-  have h0 (x : ℂ) (hx : x ∉ A) : f₀ x = 0 :=
+  have h0 (x : ℂ) (hx : x ∉ A) :=
     image_eq_zero_of_notMem_tsupport (fun h => hx (hf₀A h))
-  have h1 (x : ℂ) (hx : x ∈ A) : f₁ x = 0 :=
+  have h1 (x : ℂ) (hx : x ∈ A) :=
     image_eq_zero_of_notMem_tsupport (fun h => hf₁A h hx)
   have he (r : ℝ) (ω : Ω × Ω) :
       fieldChaosMass (P.prod P) (reflected_decoupled_field (Φ r) A) ν
@@ -78,8 +78,7 @@ theorem reflected_admissible_copied_test_limit
   simp only [neg_one_mul, sub_neg_eq_add] at ht
   apply TendstoInMeasure.congr _ (Filter.EventuallyEq.refl _ _) ht
   intro r
-  have hfinite (f : BoundedContinuousFunction ℂ ℝ) :
-      ∀ᵐ ω ∂P, fieldChaosMass P (Φ r) ν (fun x => (f x).toNNReal) γ ω ≠ ⊤ :=
+  have hfinite (f : BoundedContinuousFunction ℂ ℝ) :=
     centeredGaussianField_fieldChaosMass_ne_top_ae P (Φ r) (hΦ r) ⟨ν, inferInstance⟩
       (fun x => (f x).toNNReal) f.continuous.measurable.real_toNNReal
       ⟨‖f‖.toNNReal, fun x => Real.toNNReal_mono (by

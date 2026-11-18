@@ -33,8 +33,6 @@ theorem residue_coulombMass_affine_moment {Ω : Type*} [MeasurableSpace Ω] (P :
   set VL : ℝ := ∫ ω, L ω ^ 2 ∂P with hVLdef
   set κ := repinKappa a b with hκ
   have hapos : 0 < ‖a‖ := norm_pos_iff.mpr ha
-  have hLmeas : Measurable L :=
-    (hXc.1 (-Real.log ‖a‖)).comp (measurable_id.prodMk measurable_const)
   have hVL : VL = 2 * κ := by
     have h := isCircleAverage_covariance P X hX Xc hXc b b (-Real.log ‖a‖) (-Real.log ‖a‖)
     rw [repin_selfEnergy a b ha] at h
@@ -43,10 +41,10 @@ theorem residue_coulombMass_affine_moment {Ω : Type*} [MeasurableSpace Ω] (P :
     rfl
   set J : Measure ℂ → ℝ≥0∞ := fun μ => ∫⁻ x, coulombWeight γ α z αinf (affineInv a b x) *
     ENNReal.ofReal (Real.exp (γ ^ 2 * repinPotential a b x) * repinWeight a b x) ∂μ with hJ
-  have hcw : Measurable fun x => coulombWeight γ α z αinf (affineInv a b x) :=
+  have hcw :=
     (measurable_coulombWeight γ α z αinf).comp (continuous_affineInv a b).measurable
   have hc := continuous_repinPotential a b ha
-  have hw := continuous_repinWeight a b ha
+  have := continuous_repinWeight a b ha
   have hJmeas : Measurable J :=
     Measure.measurable_lintegral (hcw.mul (ENNReal.measurable_ofReal.comp (by fun_prop)))
   -- Step 1: the repinned model has the law of the original one
@@ -72,7 +70,7 @@ theorem residue_coulombMass_affine_moment {Ω : Type*} [MeasurableSpace Ω] (P :
     ring
   -- Step 3: the Cameron–Martin tilt by `γ s L`
   set L2 : Ω → ℝ := fun ω => γ * s * L ω with hL2def
-  have hL2 : IsGaussianL2Limit P X L2 :=
+  have hL2 :=
     IsGaussianL2Limit.const_mul (isCircleAverage_isGaussianL2Limit P X hX Xc hXc b
       (-Real.log ‖a‖)) (γ * s)
   have hVar2 : gaussianVariance P L2 = (γ * s) ^ 2 * VL := by
@@ -111,11 +109,9 @@ theorem residue_coulombMass_affine_moment {Ω : Type*} [MeasurableSpace Ω] (P :
     have h1 := hr x
     rw [Real.dist_eq] at h1 ⊢
     rw [hc2x, ← mul_sub, abs_mul]
-    calc |γ * s| * |repinPotential a b x - repinPotentialAvg a b r x|
-        ≤ |γ * s| * (ε / (|γ * s| + 1)) := mul_le_mul_of_nonneg_left h1.le (abs_nonneg _)
-      _ < ε := by
-          rw [mul_div_assoc', div_lt_iff₀ hpos]
-          nlinarith [abs_nonneg (γ * s)]
+    refine (mul_le_mul_of_nonneg_left h1.le (abs_nonneg _)).trans_lt (?_)
+    rw [mul_div_assoc', div_lt_iff₀ hpos]
+    nlinarith [abs_nonneg (γ * s)]
   have hH : Measurable fun q : (TestFn → ℝ) × Measure ℂ => ENNReal.rpow (J q.2) (-s) := by
     simp only [ENNReal.rpow_eq_pow]
     exact (hJmeas.comp measurable_snd).pow_const _
@@ -139,8 +135,7 @@ theorem residue_coulombMass_affine_moment {Ω : Type*} [MeasurableSpace Ω] (P :
     rw [lintegral_withDensity_eq_lintegral_mul _ hD hI,
       coulombMass_eq_lintegral_coulombWeight, ← lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]
     apply lintegral_congr_ae
-    have hnull : M ω (⋃ k, {a * z k + b}) = 0 := measure_iUnion_null hω
-    filter_upwards [measure_eq_zero_iff_ae_notMem.1 hnull] with x hx
+    filter_upwards [measure_eq_zero_iff_ae_notMem.1 (measure_iUnion_null hω)] with x hx
     have hxk : ∀ k, x ≠ a * z k + b := fun k h => hx (Set.mem_iUnion.2 ⟨k, h⟩)
     rw [hKdef, ← residue_coulombWeight_repin_identity γ hγ α z αinf a b ha hxk]
     simp only [Pi.mul_apply, hc2x]
@@ -161,10 +156,9 @@ theorem residue_coulombMass_affine_moment {Ω : Type*} [MeasurableSpace Ω] (P :
         (ENNReal.ofReal (Real.exp ((γ * s) ^ 2 * VL / 2)) *
           (ENNReal.rpow (ENNReal.ofReal K) (-s) *
             ∫⁻ ω, ENNReal.rpow (coulombMass γ (M ω) α (fun k => a * z k + b) αinf) (-s) ∂P)) := by
-    calc ∫⁻ ω, ENNReal.rpow (coulombMass γ (M ω) α z αinf) (-s) ∂P
-        = ∫⁻ ω, ENNReal.rpow (∫⁻ x, coulombWeight γ α z αinf x ∂repinChaos M L a b γ VL ω) (-s)
-            ∂P := hlaw
-      _ = ∫⁻ ω, ENNReal.ofReal (Real.exp (s * (γ ^ 2 / 2 * VL))) *
+    refine (hlaw).trans (?_)
+    calc ∫⁻ ω, ENNReal.rpow (∫⁻ x, coulombWeight γ α z αinf x ∂repinChaos M L a b γ VL ω) (-s)
+            ∂P = ∫⁻ ω, ENNReal.ofReal (Real.exp (s * (γ ^ 2 / 2 * VL))) *
             (ENNReal.ofReal (Real.exp (γ * s * L ω)) * ENNReal.rpow (J (M ω)) (-s)) ∂P := by
           simp_rw [h2]
       _ = ENNReal.ofReal (Real.exp (s * (γ ^ 2 / 2 * VL))) *

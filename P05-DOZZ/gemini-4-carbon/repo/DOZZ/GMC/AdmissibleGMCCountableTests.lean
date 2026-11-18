@@ -109,8 +109,7 @@ theorem exists_countable_dense_admissible_tests
   let source : (n m : ℕ) → ↥(S n) :=
     fun n m => Classical.choose (Set.mem_range.mp (seq n m).property)
   have hsource (n m : ℕ) :
-      source n m |>.1.restrict (K n) = (seq n m).1 := by
-    exact Classical.choose_spec (Set.mem_range.mp (seq n m).property)
+      source n m |>.1.restrict (K n) = (seq n m).1 := by grind
   let test : ℕ × ℕ → BoundedContinuousFunction ℂ ℝ := fun nm =>
     ((⟨(source nm.1 nm.2).1, (source nm.1 nm.2).property.1⟩ :
       C_c(ℂ, ℝ)).toBoundedContinuousFunction)
@@ -156,11 +155,7 @@ theorem exists_countable_dense_admissible_tests
         simpa [test, CompactlySupportedContinuousMap.toBoundedContinuousFunction]
           using hsourceval
       rw [htesteq]
-      calc
-        ‖(seq n m).1 ⟨x, hx⟩ - g x‖ =
-            dist ((seq n m).1 ⟨x, hx⟩) (g x) := (dist_eq_norm _ _).symm
-        _ = dist (g x) ((seq n m).1 ⟨x, hx⟩) := dist_comm _ _
-        _ < δ := hdistx
+      exact (((dist_eq_norm _ _).symm).trans (dist_comm _ _)).trans_lt (hdistx)
     · have hgzero : g x = 0 := image_eq_zero_of_notMem_tsupport
         (fun hx' => hx (hgs hx'))
       have hsourcezero : (test (n, m) : ℂ → ℝ) x = 0 :=
@@ -168,9 +163,7 @@ theorem exists_countable_dense_admissible_tests
           (fun hx' => hx ((source n m).property.2 hx'))
       simpa [hgzero, hsourcezero] using hδ
   refine ⟨K, hKcompact, hKU, hKmono, hKcover, hKcofinal, test, ?_, ?_⟩
-  · intro n m
-    exact htestSupport n m
-  · intro n g hg hgs δ hδ
-    exact hdense n g hg hgs δ hδ
+  · assumption
+  · assumption
 
 end DOZZ.Proofs

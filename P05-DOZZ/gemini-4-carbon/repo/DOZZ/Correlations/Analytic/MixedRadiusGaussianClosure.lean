@@ -13,36 +13,32 @@ open MeasureTheory Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs
 
-/-- Addition preserves the Gaussian closure of the same distribution field. -/
-theorem gaussianL2Limit_add {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (L K : Ω → ℝ)
-    (hL : IsGaussianL2Limit P X L) (hK : IsGaussianL2Limit P X K) :
-    IsGaussianL2Limit P X (fun ω => L ω + K ω) := by
-  obtain ⟨hmL, f, hf⟩ := hL
-  obtain ⟨hmK, g, hg⟩ := hK
-  refine ⟨by simpa only [Pi.add_def] using hmL.add hmK, (fun n => f n + g n), ?_⟩
-  have he n : (fun ω => L ω + K ω - X ω (f n + g n)) =
-      (fun ω => L ω - X ω (f n)) + (fun ω => K ω - X ω (g n)) := by
-    funext ω
-    rw [map_add]
-    simp only [Pi.add_apply]
-    ring
-  have hb n := eLpNorm_add_le (μ := P) (p := (2 : ℝ≥0∞))
-    (f := fun ω => L ω - X ω (f n)) (g := fun ω => K ω - X ω (g n)) (by norm_num)
-  have ht := hf.add hg
-  simp only [zero_add] at ht
-  apply tendsto_of_tendsto_of_tendsto_of_le_of_le tendsto_const_nhds ht
-    (fun _ => zero_le)
-  intro n
-  change eLpNorm (fun ω => L ω + K ω - X ω (f n + g n)) 2 P ≤ _
-  rw [he]
-  exact hb n
 
 /-- Any finite sum of Gaussian closure variables remains in that closure. -/
 theorem isGaussianL2Limit_finset_sum {Ω I : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (L : I → Ω → ℝ) (S : Finset I)
     (hL : ∀ i ∈ S, IsGaussianL2Limit P X (L i)) :
     IsGaussianL2Limit P X (fun ω => ∑ i ∈ S, L i ω) := by
+  have gaussianL2Limit_add (L K : Ω → ℝ) (hL : IsGaussianL2Limit P X L) (hK : IsGaussianL2Limit P X K) : IsGaussianL2Limit P X (fun ω => L ω + K ω) := by
+    obtain ⟨hmL, f, hf⟩ := hL
+    obtain ⟨hmK, g, hg⟩ := hK
+    refine ⟨by simpa only [Pi.add_def] using hmL.add hmK, (fun n => f n + g n), ?_⟩
+    have he n : (fun ω => L ω + K ω - X ω (f n + g n)) =
+        (fun ω => L ω - X ω (f n)) + (fun ω => K ω - X ω (g n)) := by
+      funext ω
+      rw [map_add]
+      simp only [Pi.add_apply]
+      ring
+    have hb n := eLpNorm_add_le (μ := P) (p := (2 : ℝ≥0∞))
+      (f := fun ω => L ω - X ω (f n)) (g := fun ω => K ω - X ω (g n)) (by norm_num)
+    have ht := hf.add hg
+    simp only [zero_add] at ht
+    apply tendsto_of_tendsto_of_tendsto_of_le_of_le tendsto_const_nhds ht
+      (fun _ => zero_le)
+    intro n
+    change eLpNorm (fun ω => L ω + K ω - X ω (f n + g n)) 2 P ≤ _
+    rw [he]
+    exact hb n
   classical
   induction S using Finset.induction_on with
   | empty =>
@@ -54,10 +50,8 @@ theorem isGaussianL2Limit_finset_sum {Ω I : Type*} [MeasurableSpace Ω]
     simp only [he, eLpNorm_zero]
     exact tendsto_const_nhds
   | @insert i S hi ih =>
-    have hiL := hL i (Finset.mem_insert_self _ _)
-    have hSL := ih (fun j hj => hL j (Finset.mem_insert_of_mem hj))
     simpa only [Finset.sum_insert hi] using
-      gaussianL2Limit_add P X (L i) (fun ω => ∑ j ∈ S, L j ω) hiL hSL
+      gaussianL2Limit_add (L i) (fun ω => ∑ j ∈ S, L j ω) (hL i (Finset.mem_insert_self _ _)) (ih (fun j hj => hL j (Finset.mem_insert_of_mem hj)))
 
 /-- Mixed inward/outward circle vertices supply the literal Gaussian closure premise of GMC tilt. -/
 theorem circle_vertices_gaussianL2Limit

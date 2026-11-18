@@ -41,11 +41,11 @@ theorem separatedTail_cutoff_mixed_bound_of_markov_data
         (2*ENNReal.ofReal (C (2*(γ*T*p))))) ^ (1/p) *
       ((ENNReal.ofReal (Real.exp (γ^2*(4+2*R)/2*(T^2+T)))*B) *
         (ENNReal.ofReal (Real.exp (γ^2*(4+2*R)/2*(T^2+T)))*B)) ^ (1/q) := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _ := hX.1
   let _ : IsFiniteMeasure gmcReferenceMeasure := ⟨gmcReferenceMeasure_univ_ne_top.lt_top⟩
   let r := Real.log (1/δ)
   let L := equatorRestorationScalar Xc R (show 0 < R by linarith)
-  let d : ℝ≥0∞ := ENNReal.ofReal (Real.exp (γ^2*(4+2*R)/2))
+  let d := ENNReal.ofReal (Real.exp (γ^2*(4+2*R)/2))
   let E (i : Fin 2) (l : ℝ) := separatedTail_harmonicEnvelope (c i) (data.H i) L l
   let D (i : Fin 2) := fieldChaosMass P (fun ω x => data.Dc i ω (separatedTail_diskPoint (c i) x) r)
     (gmcReferenceMeasure.restrict (ball (c i) 1)) (separatedTail_softWeight γ (α i) δ (c i)) γ
@@ -53,8 +53,7 @@ theorem separatedTail_cutoff_mixed_bound_of_markov_data
   have hscale : Real.exp (-r) = δ := by
     dsimp [r]
     rw [one_div, Real.log_inv, neg_neg, Real.exp_log hδ]
-  have hfield (i : Fin 2) : IsCenteredGaussianField P
-      (fun ω x => data.Dc i ω (separatedTail_diskPoint (c i) x) r) :=
+  have hfield (i : Fin 2) :=
     separatedTail_dirichletCircle_isCenteredGaussianField P (data.D i) (data.Dc i) (c i)
       (data.measurable_D i) (data.measurable_Dc i) (data.gaussian_Dc i)
       (data.mean_Dc i) r (by rw [hscale]; exact hδ4)

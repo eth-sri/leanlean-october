@@ -29,17 +29,14 @@ theorem twoRooted_near_bound
   obtain ⟨C₀, hC₀, hsp⟩ := twoRooted_annular_spatial_bound P X hX γ hγ hγ2 M hM α₁ α₂ α₃ p hp
   obtain ⟨C₁, hC₁, hball⟩ := planar_radial_ball_bound (γ ^ 2 / 2 - 2)
     (by nlinarith only [sq_pos_of_pos hγ])
-  let k : ℝ := (2 : ℝ) ^ (|γ * α₁| + |γ * α₂|)
-  let C : ℝ := C₀ * k * C₁
+  let k := (2 : ℝ) ^ (|γ * α₁| + |γ * α₂|)
+  let C := C₀ * k * C₁
   refine ⟨C, by dsimp only [C, k]; positivity, ?_⟩
   intro z hz hz4 d hd hdsmall
-  have hzpos : 0 < ‖z‖ := norm_pos_iff.mpr hz
-  have hnear (x : ℂ) (hx : x ∈ Metric.ball z d) : ‖x - z‖ ≤ ‖z‖ / 2 :=
+  have hnear (x : ℂ) (hx : x ∈ Metric.ball z d) :=
     (show ‖x - z‖ < d by simpa only [Metric.mem_ball, dist_eq_norm] using hx).le.trans hdsmall
   have hunit (x : ℂ) (hx : x ∈ Metric.ball z d) : ‖x‖ ≤ 1 / 2 := by
-    have hh := norm_sub_norm_le x z
-    have hn := hnear x hx
-    linarith only [hh, hn, hz4]
+    linarith only [norm_sub_norm_le x z, hnear x hx, hz4]
   have hkernel : (∫⁻ x in Metric.ball z d, ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x / ‖x - z‖ ^ 2)) ≤
       ENNReal.ofReal (k * ‖z‖ ^ (-γ * α₁)) * ENNReal.ofReal (C₁ * d ^ (γ ^ 2 / 2)) := by
     have he : γ ^ 2 / 2 - 2 + 2 = γ ^ 2 / 2 := by ring

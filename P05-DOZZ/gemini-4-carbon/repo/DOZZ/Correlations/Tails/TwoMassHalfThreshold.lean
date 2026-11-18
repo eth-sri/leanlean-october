@@ -33,11 +33,7 @@ theorem two_mass_tail_half_threshold
     by_cases hx : x/2 < A ω
     · exact Or.inr (Or.inl ⟨hx,by dsimp at *; linarith⟩)
     · exact Or.inr (Or.inr ⟨by dsimp at *; linarith,by dsimp at *; linarith⟩)
-  have hm := measureReal_mono hi (μ := P)
-  have h1 := measureReal_union_le (μ := P) (E₁ ∪ E₂) (J₁ ∪ J₂)
-  have h2 := measureReal_union_le (μ := P) E₁ E₂
-  have h3 := measureReal_union_le (μ := P) J₁ J₂
-  linarith only [hm,h1,h2,h3]
+  linarith only [measureReal_mono hi (μ := P),measureReal_union_le (μ := P) (E₁ ∪ E₂) (J₁ ∪ J₂),measureReal_union_le (μ := P) E₁ E₂,measureReal_union_le (μ := P) J₁ J₂]
 
 
 end DOZZ.Proofs

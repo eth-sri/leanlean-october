@@ -28,34 +28,21 @@ theorem finite_rpow_neg_lintegral_eq_weighted_laplace
       ENNReal.ofReal (1 / Real.Gamma q) *
         ∫⁻ t in Ioi (0 : ℝ), ENNReal.ofReal (t ^ (q - 1)) *
           (∫⁻ ω, ENNReal.ofReal (Real.exp (-(m ω * t))) ∂P) ∂volume := by
-  let ν : Measure ℝ := volume.restrict (Ioi (0 : ℝ))
-  let c : ℝ≥0∞ := ENNReal.ofReal (1 / Real.Gamma q)
+  let ν := volume.restrict (Ioi (0 : ℝ))
+  let c := ENNReal.ofReal (1 / Real.Gamma q)
   let f : Ω → ℝ → ℝ≥0∞ := fun ω t =>
     ENNReal.ofReal (t ^ (q - 1) * Real.exp (-(m ω * t)))
   have hc : c ≠ ∞ := ENNReal.ofReal_ne_top
-  have hf : AEMeasurable (Function.uncurry f) (P.prod ν) := by
-    have hmprod : AEMeasurable (fun z : Ω × ℝ => m z.1) (P.prod ν) := hmA.comp_fst
-    have htprod : AEMeasurable (fun z : Ω × ℝ => z.2) (P.prod ν) :=
-      measurable_snd.aemeasurable
-    have harg : AEMeasurable (fun z : Ω × ℝ => -(m z.1 * z.2)) (P.prod ν) :=
-      (hmprod.mul htprod).neg
-    have hexp : AEMeasurable (fun z : Ω × ℝ => Real.exp (-(m z.1 * z.2)))
-        (P.prod ν) := Real.measurable_exp.comp_aemeasurable harg
-    have hpow : Measurable (fun z : Ω × ℝ => z.2 ^ (q - 1)) := by fun_prop
-    have hreal : AEMeasurable (fun z : Ω × ℝ =>
-        z.2 ^ (q - 1) * Real.exp (-(m z.1 * z.2))) (P.prod ν) :=
-      hpow.aemeasurable.mul hexp
-    exact hreal.ennreal_ofReal
+  have hf : AEMeasurable (Function.uncurry f) (P.prod ν) := by fun_prop
   have hfactor : ∀ᵐ t ∂ν,
       (∫⁻ ω, f ω t ∂P) = ENNReal.ofReal (t ^ (q - 1)) *
         (∫⁻ ω, ENNReal.ofReal (Real.exp (-(m ω * t))) ∂P) := by
     filter_upwards [ae_restrict_mem measurableSet_Ioi] with t ht
-    have ht0 : 0 < t := ht
     have hct : ENNReal.ofReal (t ^ (q - 1)) ≠ ∞ := ENNReal.ofReal_ne_top
     rw [show (fun ω => f ω t) = fun ω => ENNReal.ofReal (t ^ (q - 1)) *
         ENNReal.ofReal (Real.exp (-(m ω * t))) by
           funext ω
-          rw [← ENNReal.ofReal_mul (Real.rpow_nonneg ht0.le _)] ]
+          rw [← ENNReal.ofReal_mul (Real.rpow_nonneg (ht).le _)] ]
     exact lintegral_const_mul' _ _ hct
   have hpoint (ω : Ω) :
       ENNReal.rpow (ENNReal.ofReal (m ω)) (-q) =

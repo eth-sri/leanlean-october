@@ -26,8 +26,6 @@ public import Mathlib.Analysis.Analytic.Basic
 
 @[expose] public section
 
-open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
-open scoped ENNReal NNReal Topology
 
 namespace DOZZ
 

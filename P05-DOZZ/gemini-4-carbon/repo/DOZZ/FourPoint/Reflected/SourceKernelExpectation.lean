@@ -54,7 +54,7 @@ theorem reflected_source_copied_kernel_inverse_squeeze
     (Real.rpow_pos_of_pos (inv_pos.mpr (sub_pos.mpr hT)) _)
   have hcHi : 0 < cHi := mul_pos (Real.rpow_pos_of_pos (by linarith only [hR] : 0 < 1+R) _)
     (Real.rpow_pos_of_pos (inv_pos.mpr (sub_pos.mpr hT)) _)
-  have hA : AEMeasurable A P :=
+  have hA :=
     (reflected_outerMass_measure_measurable γ α₁ α₂ α₃ ξ z).comp_aemeasurable
       (equatorGFF_GMC_aemeasurable P X hX γ hγ hγ₂ M hM)
   have hU : MeasurableSet U := (measurableSet_lt measurable_const measurable_norm).inter
@@ -63,7 +63,7 @@ theorem reflected_source_copied_kernel_inverse_squeeze
     intro x hx
     simpa only [mem_compl_iff,mem_singleton_iff] using norm_pos_iff.mp hx.1
   have hAr := originRadialPath_aemeasurable P X Xc hc hcont
-  have hI : AEMeasurable I (P.prod P) := reflected_copied_region_mass_aemeasurable
+  have hI := reflected_copied_region_mass_aemeasurable
     P (originRadialPath Xc) N hAr hN hfin γ U hU hU0 _
       (reflected_gammaHalfKernel_measurable γ α₁ α₂ α₃ z).ennreal_ofReal
   have hKr : Measurable (fun x : ℂ => ENNReal.ofReal (‖x‖^(-(γ*α₁)))) := by fun_prop

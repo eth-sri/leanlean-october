@@ -27,22 +27,16 @@ private theorem weightedTotal_eq_integral
   have hWbound : ∀ z, W z ≤ ENNReal.ofReal ‖w‖ := by
     intro z
     apply ENNReal.ofReal_le_ofReal
-    calc
-      w z = |w z| := (abs_of_nonneg (hw z)).symm
-      _ = ‖w z‖ := (Real.norm_eq_abs _).symm
-      _ ≤ ‖w‖ := w.norm_coe_le_norm z
+    exact (((abs_of_nonneg (hw z)).symm).trans ((Real.norm_eq_abs _).symm)).trans_le (w.norm_coe_le_norm z)
   have hWint : ∫⁻ z, W z ∂μ ≠ ∞ := by
     apply ne_of_lt
-    calc
-      ∫⁻ z, W z ∂μ ≤ ∫⁻ z, ENNReal.ofReal ‖w‖ ∂μ := lintegral_mono hWbound
-      _ < ∞ := by
-        rw [lintegral_const]
-        exact ENNReal.mul_lt_top ENNReal.ofReal_lt_top
-          (lt_top_iff_ne_top.mpr (@measure_ne_top ℂ _ μ hμ Set.univ))
-  have hWfinite : IsFiniteMeasure (μ.withDensity W) := isFiniteMeasure_withDensity hWint
+    refine (lintegral_mono hWbound).trans_lt (?_)
+    rw [lintegral_const]
+    exact ENNReal.mul_lt_top ENNReal.ofReal_lt_top
+      (lt_top_iff_ne_top.mpr (@measure_ne_top ℂ _ μ hμ Set.univ))
   have hconst : ∫ z, (1 : BoundedContinuousFunction ℂ ℝ) z ∂μ.withDensity W =
       ((μ.withDensity W) Set.univ).toReal := by
-    let _ : IsFiniteMeasure (μ.withDensity W) := hWfinite
+    let _ := isFiniteMeasure_withDensity hWint
     rw [← Measure.real_def]
     simp [integral_const]
   have hInt := integral_withDensity_eq_integral_toReal_smul hW hWlt (1 : BoundedContinuousFunction ℂ ℝ)
@@ -52,10 +46,7 @@ private theorem weightedTotal_eq_integral
     apply integral_congr_ae
     filter_upwards [] with z
     simp [W, ENNReal.toReal_ofReal (hw z), smul_eq_mul]
-  calc
-    ((μ.withDensity W) Set.univ).toReal =
-        ∫ z, (1 : BoundedContinuousFunction ℂ ℝ) z ∂μ.withDensity W := hconst.symm
-    _ = ∫ z, w z ∂μ := hInt'
+  exact (hconst.symm).trans (hInt')
 where
   hWlt : ∀ᵐ z ∂μ, ENNReal.ofReal (w z) < ∞ := ae_of_all _ (fun z => ENNReal.ofReal_lt_top)
 
@@ -92,8 +83,7 @@ theorem regularizedGMC_withDensity_univ_mass_tendstoInMeasure
     exact weightedTotal_eq_integral (regularizedGMC P Xc γ r ω) hω w hw
   have hright :
       (fun ω => ((M ω).withDensity (fun z => ENNReal.ofReal (w z)) Set.univ).toReal) =ᵐ[P]
-        fun ω => ∫ z, w z ∂M ω := by
-    exact ae_of_all P (fun ω => weightedTotal_eq_integral (M ω) (hM.1 ω) w hw)
+        fun ω => ∫ z, w z ∂M ω := ae_of_all P (fun ω => weightedTotal_eq_integral (M ω) (hM.1 ω) w hw)
   exact TendstoInMeasure.congr (fun r => (hleft r).symm) hright.symm hTest
 
 end DOZZ.Proofs

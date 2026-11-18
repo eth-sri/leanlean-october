@@ -39,21 +39,16 @@ theorem disk_chain_lift_has_path_solution_charts
   intro t ht
   obtain ⟨i, hi, hleft, hright, hright'⟩ := exists_equal_subdivision_interval N hN ht
   let τ : ℕ → ℝ := fun j => (j : ℝ) / (N : ℝ)
-  let lo : ℝ := τ i
-  let up : ℝ := τ (i + 1)
-  let gap : ℝ := 1 / (N : ℝ)
+  let lo := τ i
+  let up := τ (i + 1)
+  let gap := 1 / (N : ℝ)
   have hNreal : 0 < (N : ℝ) := by exact_mod_cast hN
-  have hgap : 0 < gap := by dsimp [gap]; positivity
-  have hleft' : lo ≤ t := by simpa [lo, τ] using hleft
-  have hright'' : t ≤ up := by simpa [up, τ] using hright
-  have hrightStrict : t < up ∨ t = 1 := by
-    simpa [up, τ] using hright'
-  have hstep (j : ℕ) : τ (j + 1) = τ j + gap := by
-    dsimp [τ, gap]
-    rw [Nat.cast_add]
-    ring
-  have hiCenter : (D i).center = γ lo := by simpa [lo, τ] using hcenters i (Nat.le_of_lt hi)
-  have hpointCover : γ t ∈ Metric.ball (D i).center (r / 2) :=
+  have hgap : 0 < gap := by positivity
+  have hleft' : lo ≤ t := by assumption
+  have hright'' : t ≤ up := by assumption
+  have hrightStrict : t < up ∨ t = 1 := by assumption
+  have hstep (j : ℕ) : τ (j + 1) = τ j + gap := by grind
+  have hpointCover :=
     hcover i hi t ⟨hleft', hright''⟩
   obtain ⟨δγ, hδγ, hγclose⟩ :=
     (Metric.continuousWithinAt_iff.mp (hγ.continuousWithinAt ht)) (r / 2) (by linarith)
@@ -86,49 +81,39 @@ theorem disk_chain_lift_has_path_solution_charts
       · subst t
         refine ⟨min δγ gap, lt_min hδγ hgap, ?_⟩
         intro s hs hst
-        have hstγ : dist s lo < δγ := lt_of_lt_of_le hst (min_le_left _ _)
-        have hγs : dist (γ s) (γ lo) < r / 2 := hγclose hs hstγ
-        have hstGap : dist s lo < gap := lt_of_lt_of_le hst (min_le_right _ _)
+        have hstGap := lt_of_lt_of_le hst (min_le_right _ _)
         have hnear : lo - gap < s ∧ s < lo + gap := by
           rw [Real.dist_eq] at hstGap
           have habs := abs_lt.mp hstGap
           constructor <;> linarith
-        have hup_eq : up = lo + gap := by
-          dsimp [up, lo]
-          rw [hstep]
+        have hup_eq : up = lo + gap := by grind
         by_cases hsle : s ≤ lo
         · by_cases hizero : i = 0
           · have hlozero : lo = 0 := by simp [lo, τ, hizero]
-            have hslo : lo ≤ s := by simpa [hlozero] using hs.1
+            have hslo : lo ≤ s := by grind
             have hseg : s ∈ Icc lo up := by
               rw [hup_eq]
               exact ⟨hslo, le_of_lt hnear.2⟩
             exact hformula i hi s (by simpa [lo, up, τ] using hseg)
           · let j := i - 1
-            have hjSucc : j + 1 = i := by dsimp [j]; omega
+            have hjSucc : j + 1 = i := by grind
             have hjlt : j < N := by omega
-            have hjstep : τ (j + 1) = τ j + gap := hstep j
             have hjlo : τ j = lo - gap := by
               dsimp [lo]
               rw [← hjSucc]
-              linarith [hjstep]
+              linarith [hstep j]
             have hprevSeg : s ∈ Icc (τ j) lo := by
               rw [hjlo]
               exact ⟨le_of_lt hnear.1, hsle⟩
             have hprevSeg' : s ∈ Icc (τ j) (τ (j + 1)) := by
               rw [hjSucc]
               exact hprevSeg
-            have hprev := hformula j hjlt s (by simpa [τ] using hprevSeg')
-            have hnextCenter : (D (j + 1)).center = γ lo := by
-              rw [hjSucc]
-              simpa [lo] using hcenters i (Nat.le_of_lt hi)
+            have hnextCenter : (D (j + 1)).center = γ lo := by grind
             have hγball : γ s ∈ Metric.ball (D (j + 1)).center (r / 2) := by
               rw [Metric.mem_ball, hnextCenter]
-              exact hγs
-            have hover := hoverlap j hjlt (γ s) hγball
-            calc
-              F s = (D j).solution (γ s) := hprev
-              _ = (D i).solution (γ s) := by simpa [hjSucc] using hover
+              exact hγclose hs (lt_of_lt_of_le hst (min_le_left _ _))
+            refine (hformula j hjlt s (by simpa [τ] using hprevSeg')).trans (?_)
+            simpa [hjSucc] using hoverlap j hjlt (γ s) hγball
         · have hslo : lo ≤ s := le_of_not_ge hsle
           have hseg : s ∈ Icc lo up := by
             rw [hup_eq]
@@ -141,18 +126,16 @@ theorem disk_chain_lift_has_path_solution_charts
             dsimp [up, τ]
             apply (div_le_one hNreal).2
             exact_mod_cast hsuccN
-          have hupEq : up = 1 := le_antisymm hupLe (by simpa [hEnd] using hright'')
           refine ⟨min δγ (t - lo), lt_min hδγ (by linarith), ?_⟩
           intro s hs hst
-          have hstγ : dist s t < δγ := lt_of_lt_of_le hst (min_le_left _ _)
-          have hγs : dist (γ s) (γ t) < r / 2 := hγclose hs hstγ
-          have hstTime : dist s t < t - lo := lt_of_lt_of_le hst (min_le_right _ _)
+          have := hγclose hs (lt_of_lt_of_le hst (min_le_left _ _))
+          have hstTime := lt_of_lt_of_le hst (min_le_right _ _)
           have hnear : lo < s := by
             rw [Real.dist_eq] at hstTime
-            have habs := abs_lt.mp hstTime
+            have := abs_lt.mp hstTime
             linarith
           have hseg : s ∈ Icc lo up := by
-            rw [hupEq]
+            rw [le_antisymm hupLe (by simpa [hEnd] using hright'')]
             exact ⟨hnear.le, by simpa [hEnd] using hs.2⟩
           exact hformula i hi s (by simpa [lo, up, τ] using hseg)
         · have hup : t < up := hrightStrict.resolve_right hEnd
@@ -160,12 +143,11 @@ theorem disk_chain_lift_has_path_solution_charts
           have hδtime : 0 < δtime := lt_min (by linarith) (by linarith)
           refine ⟨min δγ δtime, lt_min hδγ hδtime, ?_⟩
           intro s hs hst
-          have hstγ : dist s t < δγ := lt_of_lt_of_le hst (min_le_left _ _)
-          have hγs : dist (γ s) (γ t) < r / 2 := hγclose hs hstγ
-          have hstTime : dist s t < δtime := lt_of_lt_of_le hst (min_le_right _ _)
+          have := lt_of_lt_of_le hst (min_le_left _ _)
+          have hstTime := lt_of_lt_of_le hst (min_le_right _ _)
           have hnear : lo < s ∧ s < up := by
             rw [Real.dist_eq] at hstTime
-            have habs := abs_lt.mp hstTime
+            have := abs_lt.mp hstTime
             constructor
             · have hmin : δtime ≤ t - lo := min_le_left _ _
               linarith

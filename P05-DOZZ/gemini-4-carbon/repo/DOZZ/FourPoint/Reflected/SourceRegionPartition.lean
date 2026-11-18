@@ -29,7 +29,7 @@ theorem reflected_three_region_kernel_partition (μ : Measure ℂ) (s r : ℝ)
   have he : K =ᵐ[μ] (fun x => U.indicator K x+V.indicator K x+W.indicator K x) := by
     filter_upwards [measure_eq_zero_iff_ae_notMem.mp h0,measure_eq_zero_iff_ae_notMem.mp h1,
       measure_eq_zero_iff_ae_notMem.mp hr] with x hx0 hx1 hxr
-    have hn : 0 < ‖x‖ := norm_pos_iff.mpr (by simpa only [mem_singleton_iff] using hx0)
+    have hn := norm_pos_iff.mpr (by simpa only [mem_singleton_iff] using hx0)
     have hxne : ‖x‖ ≠ r := by simpa only [Metric.mem_sphere,dist_zero_right] using hxr
     have hx1' : x ≠ 1 := by simpa only [mem_singleton_iff] using hx1
     have hx0' : x ≠ 0 := norm_pos_iff.mp hn

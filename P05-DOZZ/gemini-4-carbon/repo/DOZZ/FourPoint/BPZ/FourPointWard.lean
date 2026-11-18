@@ -24,50 +24,33 @@ open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
 
+variable {Ω : Type*} [MeasurableSpace Ω]
+
+
 /-- The open region where the degenerate four-point weight is smooth and positive. -/
 def bpzRegular (z : ℂ) : Set ℂ := {x | x ≠ 0 ∧ x ≠ 1 ∧ x ≠ z}
 
-theorem isOpen_bpzRegular (z : ℂ) : IsOpen (bpzRegular z) := by
-  have h : bpzRegular z = {x | x ≠ 0} ∩ ({x | x ≠ 1} ∩ {x | x ≠ z}) := by
-    ext x; simp [bpzRegular]
-  rw [h]
-  exact isOpen_ne.inter (isOpen_ne.inter isOpen_ne)
 
-theorem bpz_contDiffAt_norm_sub_rpow {c x : ℂ} (hx : x ≠ c) (p : ℝ) :
-    ContDiffAt ℝ 1 (fun y => ‖y - c‖ ^ p) x := by
-  have h1 : ContDiffAt ℝ 1 (fun y : ℂ => ‖y - c‖) x :=
-    (contDiffAt_norm ℝ (sub_ne_zero.mpr hx)).comp x (contDiffAt_id.sub contDiffAt_const)
-  exact h1.rpow_const_of_ne (norm_ne_zero_iff.mpr (sub_ne_zero.mpr hx))
 
 variable {γ χ α₁ α₂ α₃ : ℝ}
 
 theorem bpzTildeWeight_contDiffAt {z x : ℂ} (hx : x ∈ bpzRegular z) :
     ContDiffAt ℝ 1 (bpzTildeWeight γ χ α₁ α₂ z) x := by
+  have bpz_contDiffAt_norm_sub_rpow {c : ℂ} (hx : x ≠ c) (p : ℝ) : ContDiffAt ℝ 1 (fun y => ‖y - c‖ ^ p) x := by
+    have h1 : ContDiffAt ℝ 1 (fun y : ℂ => ‖y - c‖) x :=
+      (contDiffAt_norm ℝ (sub_ne_zero.mpr hx)).comp x (contDiffAt_id.sub contDiffAt_const)
+    exact h1.rpow_const_of_ne (norm_ne_zero_iff.mpr (sub_ne_zero.mpr hx))
   obtain ⟨h0, h1, hz⟩ := hx
   unfold bpzTildeWeight
-  have e0 : ContDiffAt ℝ 1 (fun y : ℂ => ‖y‖ ^ (-(γ * α₁))) x := by
+  have : ContDiffAt ℝ 1 (fun y : ℂ => ‖y‖ ^ (-(γ * α₁))) x := by
     simpa using bpz_contDiffAt_norm_sub_rpow (c := 0) h0 (-(γ * α₁))
-  exact ((bpz_contDiffAt_norm_sub_rpow hz _).mul e0).mul (bpz_contDiffAt_norm_sub_rpow h1 _)
+  fun_prop
 
-theorem bpzTildeWeight_pos {z x : ℂ} (hx : x ∈ bpzRegular z) :
-    0 < bpzTildeWeight γ χ α₁ α₂ z x := by
-  obtain ⟨h0, h1, hz⟩ := hx
-  unfold bpzTildeWeight
-  have a := Real.rpow_pos_of_pos (norm_pos_iff.mpr (sub_ne_zero.mpr hz)) (γ * χ)
-  have b := Real.rpow_pos_of_pos (norm_pos_iff.mpr h0) (-(γ * α₁))
-  have c := Real.rpow_pos_of_pos (norm_pos_iff.mpr (sub_ne_zero.mpr h1)) (-(γ * α₂))
-  positivity
 
 theorem bpzTildeWeight_nonneg (z x : ℂ) : 0 ≤ bpzTildeWeight γ χ α₁ α₂ z x := by
   unfold bpzTildeWeight
-  have a := Real.rpow_nonneg (norm_nonneg (x - z)) (γ * χ)
-  have b := Real.rpow_nonneg (norm_nonneg x) (-(γ * α₁))
-  have c := Real.rpow_nonneg (norm_nonneg (x - 1)) (-(γ * α₂))
   positivity
 
-theorem measurable_bpzTildeWeight (z : ℂ) : Measurable (bpzTildeWeight γ χ α₁ α₂ z) := by
-  unfold bpzTildeWeight
-  fun_prop
 
 theorem bpzSoftWeight_zero_eq (z x : ℂ) :
     bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x =
@@ -94,51 +77,13 @@ noncomputable def bpzRhoCut (K : Set ℂ) (δ : ℝ) (y : ℂ) : ℝ :=
 
 theorem continuous_bpzRhoCut (K : Set ℂ) (δ : ℝ) : Continuous (bpzRhoCut K δ) := by
   unfold bpzRhoCut
-  exact continuous_const.max (continuous_const.min
-    ((continuous_const.sub (Metric.continuous_infDist_pt K)).div_const _))
+  fun_prop
 
-theorem bpzRhoCut_nonneg (K : Set ℂ) (δ : ℝ) (y : ℂ) : 0 ≤ bpzRhoCut K δ y := le_max_left _ _
 
-theorem bpzRhoCut_le_one (K : Set ℂ) (δ : ℝ) (y : ℂ) : bpzRhoCut K δ y ≤ 1 :=
-  max_le zero_le_one (min_le_left _ _)
 
-theorem bpzRhoCut_eq_one {K : Set ℂ} {δ : ℝ} (hδ : 0 < δ) {y : ℂ}
-    (hy : Metric.infDist y K ≤ 2 * δ) : bpzRhoCut K δ y = 1 := by
-  unfold bpzRhoCut
-  have : 1 ≤ (3 * δ - Metric.infDist y K) / δ := by
-    rw [le_div_iff₀ hδ]; linarith
-  rw [min_eq_left this, max_eq_right zero_le_one]
 
-theorem bpzRhoCut_mem_of_ne_zero {K : Set ℂ} (hK : K.Nonempty) {δ : ℝ} (hδ : 0 < δ) {y : ℂ}
-    (hy : bpzRhoCut K δ y ≠ 0) : y ∈ Metric.cthickening (3 * δ) K := by
-  have hlt : Metric.infDist y K < 3 * δ := by
-    by_contra h
-    push Not at h
-    apply hy
-    unfold bpzRhoCut
-    have : (3 * δ - Metric.infDist y K) / δ ≤ 0 :=
-      div_nonpos_of_nonpos_of_nonneg (by linarith) hδ.le
-    rw [max_eq_left (le_trans (min_le_right _ _) this)]
-  obtain ⟨x, hxK, hxy⟩ := (Metric.infDist_lt_iff hK).mp hlt
-  exact Metric.mem_cthickening_of_dist_le y x _ K hxK hxy.le
 
-theorem bpzRhoCut_sep {K : Set ℂ} {δ : ℝ} (hδ : 0 < δ) {x y : ℂ} (hx : x ∈ K)
-    (hy : bpzRhoCut K δ y < 1) : 2 * δ ≤ ‖x - y‖ := by
-  have h : 2 * δ < Metric.infDist y K := by
-    by_contra h
-    push Not at h
-    rw [bpzRhoCut_eq_one hδ h] at hy
-    exact lt_irrefl _ hy
-  have := Metric.infDist_le_dist_of_mem (x := y) hx
-  rw [dist_eq_norm, norm_sub_rev] at this
-  linarith
 
-theorem bpzFarBall_norm_ge {R : ℝ} (hR : 0 ≤ R) {y : ℂ} (hy : y ∈ bpzFarBall R) : R + 3 ≤ ‖y‖ := by
-  unfold bpzFarBall at hy
-  rw [Metric.mem_ball, dist_eq_norm] at hy
-  have h1 := norm_sub_norm_le (((R + 4 : ℝ)) : ℂ) y
-  rw [norm_sub_rev, Complex.norm_real, Real.norm_eq_abs, abs_of_pos (by linarith)] at h1
-  linarith
 
 /-- The limit data for the degenerate four-point weight and a test function supported in the
 regular region. -/
@@ -148,6 +93,51 @@ theorem bpz_fourPoint_limitData (hγ : 0 < γ) {q : ℝ} (hq1 : 1 ≤ q)
     ∃ (δ : ℝ) (ρ : ℂ → ℝ) (R : ℝ), 0 ≤ R ∧ ‖z‖ ≤ R ∧
       BPZLimitData γ q δ ρ (bpzTildeWeight γ χ α₁ α₂ z) (bpzSoftWeight γ χ α₁ α₂ α₃ 0 z) φ
         (bpzFarBall R) := by
+  have bpzFarBall_norm_ge {R : ℝ} (hR : 0 ≤ R) {y : ℂ} (hy : y ∈ bpzFarBall R) : R + 3 ≤ ‖y‖ := by
+    unfold bpzFarBall at hy
+    rw [Metric.mem_ball, dist_eq_norm] at hy
+    have h1 := norm_sub_norm_le (((R + 4 : ℝ)) : ℂ) y
+    rw [norm_sub_rev, Complex.norm_real, Real.norm_eq_abs, abs_of_pos (by linarith)] at h1
+    linarith
+  have bpzRhoCut_sep {K : Set ℂ} {δ : ℝ} (hδ : 0 < δ) {x y : ℂ} (hx : x ∈ K) (hy : bpzRhoCut K δ y < 1) : 2 * δ ≤ ‖x - y‖ := by
+    have bpzRhoCut_eq_one {K : Set ℂ} {y : ℂ} (hy : Metric.infDist y K ≤ 2 * δ) : bpzRhoCut K δ y = 1 := by
+      unfold bpzRhoCut
+      have : 1 ≤ (3 * δ - Metric.infDist y K) / δ := by
+        rw [le_div_iff₀ hδ]; linarith
+      rw [min_eq_left this, max_eq_right zero_le_one]
+    have : 2 * δ < Metric.infDist y K := by
+      by_contra h
+      push Not at h
+      rw [bpzRhoCut_eq_one h] at hy
+      exact lt_irrefl _ hy
+    have := Metric.infDist_le_dist_of_mem (x := y) hx
+    rw [dist_eq_norm, norm_sub_rev] at this
+    linarith
+  have bpzRhoCut_mem_of_ne_zero {K : Set ℂ} (hK : K.Nonempty) {δ : ℝ} (hδ : 0 < δ) {y : ℂ} (hy : bpzRhoCut K δ y ≠ 0) : y ∈ Metric.cthickening (3 * δ) K := by
+    have hlt : Metric.infDist y K < 3 * δ := by
+      by_contra h
+      push Not at h
+      apply hy
+      unfold bpzRhoCut
+      have : (3 * δ - Metric.infDist y K) / δ ≤ 0 :=
+        div_nonpos_of_nonpos_of_nonneg (by linarith) hδ.le
+      rw [max_eq_left (le_trans (min_le_right _ _) this)]
+    obtain ⟨x, hxK, hxy⟩ := (Metric.infDist_lt_iff hK).mp hlt
+    exact Metric.mem_cthickening_of_dist_le y x _ K hxK hxy.le
+  have bpzRhoCut_le_one (K : Set ℂ) (δ : ℝ) (y : ℂ) : bpzRhoCut K δ y ≤ 1 := 
+    max_le zero_le_one (min_le_left _ _)
+  have bpzRhoCut_nonneg (K : Set ℂ) (δ : ℝ) (y : ℂ) : 0 ≤ bpzRhoCut K δ y := le_max_left _ _
+  have measurable_bpzTildeWeight : Measurable (bpzTildeWeight γ χ α₁ α₂ z) := by
+    unfold bpzTildeWeight
+    fun_prop
+  have bpzTildeWeight_pos {z x : ℂ} (hx : x ∈ bpzRegular z) : 0 < bpzTildeWeight γ χ α₁ α₂ z x := by
+    obtain ⟨h0, h1, hz⟩ := hx
+    unfold bpzTildeWeight
+    have := Real.rpow_pos_of_pos (norm_pos_iff.mpr (sub_ne_zero.mpr hz)) (γ * χ)
+    have := Real.rpow_pos_of_pos (norm_pos_iff.mpr (sub_ne_zero.mpr h1)) (-(γ * α₂))
+    positivity
+  have isOpen_bpzRegular : IsOpen (bpzRegular z) := by
+    exact isOpen_ne.inter (isOpen_ne.inter isOpen_ne)
   set U := bpzRegular z with hU
   set kt := bpzTildeWeight γ χ α₁ α₂ z with hkt
   set p₀ : ℂ := ((‖z‖ + 2 : ℝ) : ℂ) with hp₀
@@ -160,12 +150,12 @@ theorem bpz_fourPoint_limitData (hγ : 0 < γ) {q : ℝ} (hq1 : 1 ≤ q)
     · have := congrArg norm h; rw [hp₀n] at this; linarith
   set K : Set ℂ := tsupport φ ∪ {p₀} with hK
   have hKc : IsCompact K := hφc.isCompact.union isCompact_singleton
-  have hKU : K ⊆ U := Set.union_subset hφU (Set.singleton_subset_iff.mpr hp₀U)
+  have hKU := Set.union_subset hφU (Set.singleton_subset_iff.mpr hp₀U)
   have hKne : K.Nonempty := ⟨p₀, Or.inr rfl⟩
-  obtain ⟨δ₀, hδ₀, hsub⟩ := hKc.exists_cthickening_subset_open (isOpen_bpzRegular z) hKU
+  obtain ⟨δ₀, hδ₀, hsub⟩ := hKc.exists_cthickening_subset_open (isOpen_bpzRegular) hKU
   set δ : ℝ := δ₀ / 3 with hδdef
   have hδ : 0 < δ := by positivity
-  have h3δ : 3 * δ = δ₀ := by rw [hδdef]; ring
+  have h3δ : 3 * δ = δ₀ := by ring
   set ρ : ℂ → ℝ := bpzRhoCut K δ with hρ
   set L : Set ℂ := Metric.cthickening (3 * δ) K with hL
   have hLc : IsCompact L := hKc.cthickening
@@ -174,10 +164,8 @@ theorem bpz_fourPoint_limitData (hγ : 0 < γ) {q : ℝ} (hq1 : 1 ≤ q)
   obtain ⟨RL, hRL⟩ := hLc.isBounded.exists_norm_le
   set R : ℝ := max (max RL ‖z‖) 0 + 1 with hR
   have hR0 : 0 ≤ R := by positivity
-  have hRL' : RL < R := by
-    have := le_max_left RL ‖z‖; have := le_max_left (max RL ‖z‖) 0; linarith
-  have hzR : ‖z‖ ≤ R := by
-    have := le_max_right RL ‖z‖; have := le_max_left (max RL ‖z‖) 0; linarith
+  have hRL' : RL < R := by grind
+  have hzR : ‖z‖ ≤ R := by grind
   have hktc : ContinuousOn kt U := fun x hx =>
     (bpzTildeWeight_contDiffAt hx).continuousAt.continuousWithinAt
   obtain ⟨B, hB⟩ := hLc.exists_bound_of_continuousOn (hktc.mono hLU)
@@ -196,7 +184,7 @@ theorem bpz_fourPoint_limitData (hγ : 0 < γ) {q : ℝ} (hq1 : 1 ≤ q)
       by_contra h
       have := hRL y (hρL y h)
       linarith⟩
-    kt_meas := measurable_bpzTildeWeight z
+    kt_meas := measurable_bpzTildeWeight
     kt_nonneg := bpzTildeWeight_nonneg z
     kt_bdd := ⟨B, fun y hy => by
       have := hB y (hρL y hy)
@@ -234,18 +222,20 @@ theorem bpz_fourPoint_limitData (hγ : 0 < γ) {q : ℝ} (hq1 : 1 ≤ q)
     D_meas := bpzFarBall_measurableSet R
     D_rho := fun y hy => by
       by_contra h
-      have h1 := hRL y (hρL y h)
-      have h2 := bpzFarBall_norm_ge hR0 hy
+      have := hRL y (hρL y h)
+      have := bpzFarBall_norm_ge hR0 hy
       linarith
     D_low := ⟨c, hc, fun y hy => hck z hzR 0 le_rfl zero_le_one y hy⟩
     D_bdd := by
       obtain ⟨Rd, hRd⟩ := (bpzFarBall_bounded R).exists_norm_le
       exact ⟨Rd, hRd⟩ }
 
+section
+variable (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+include hX hγ hγ2 hM
+
 /-- The degenerate four-point weight is almost surely integrable against the chaos. -/
-theorem bpz_fourPoint_integrable_ae {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
-    (hM : IsGMCOf P X γ M) (hχ : 0 < χ) (hα₁ : α₁ < Q γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ)
+theorem bpz_fourPoint_integrable_ae (hχ : 0 < χ) (hα₁ : α₁ < Q γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ)
     {z : ℂ} (hz0 : z ≠ 0) (hz1 : z ≠ 1) :
     ∀ᵐ ω ∂P, Integrable (bpzSoftWeight γ χ α₁ α₂ α₃ 0 z) (M ω) := by
   filter_upwards [bpzMass_lt_top_ae P X hX hγ hγ2 M hM hχ hα₁ hα₂ hα₃ 0 z hz0 hz1] with ω hω
@@ -254,9 +244,7 @@ theorem bpz_fourPoint_integrable_ae {Ω : Type*} [MeasurableSpace Ω] (P : Measu
   exact hω
 
 /-- The probabilistic data of the cutoff Ward identity for the degenerate four-point weight. -/
-theorem bpz_fourPoint_wardProb {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (hX : IsEquatorGFF P X) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
-    (hM : IsGMCOf P X γ M) (hMm : Measurable M) (Xc : Ω → ℂ → ℝ → ℝ)
+theorem bpz_fourPoint_wardProb (hMm : Measurable M) (Xc : Ω → ℂ → ℝ → ℝ)
     (hXc : IsCircleAverage P X Xc) (hχ : 0 < χ) (hα₁ : α₁ < Q γ) (hα₂ : α₂ < Q γ)
     (hα₃ : α₃ < Q γ) {z : ℂ} (hz0 : z ≠ 0) (hz1 : z ≠ 1) {ρ : ℂ → ℝ} (hρm : Measurable ρ)
     (hρ0 : ∀ y, 0 ≤ ρ y) (hρ1 : ∀ y, ρ y ≤ 1) (R : ℝ) :
@@ -278,9 +266,7 @@ theorem bpz_fourPoint_wardProb {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω
   D_neg := fun p hp => bpz_farBall_negMoment_lt_top P X hX hγ hγ2 M hM R p hp
 
 /-- **The Ward identity for the degenerate four-point weight.** -/
-theorem bpz_fourPoint_ward {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (hX : IsEquatorGFF P X) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
-    (hM : IsGMCOf P X γ M) (hMm : Measurable M) (hχ : 0 < χ) (hα₁ : α₁ < Q γ)
+theorem bpz_fourPoint_ward (hMm : Measurable M) (hχ : 0 < χ) (hα₁ : α₁ < Q γ)
     (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) (hs : 0 ≤ fourPointSExp γ (-χ) α₁ α₂ α₃)
     {z : ℂ} (hz0 : z ≠ 0) (hz1 : z ≠ 1) {φ : ℂ → ℝ} (hφ : ContDiff ℝ 1 φ)
     (hφc : HasCompactSupport φ) (hφU : tsupport φ ⊆ bpzRegular z) (v : ℂ) :
@@ -304,4 +290,6 @@ theorem bpz_fourPoint_ward {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X
   rw [hq] at h
   exact h
 
+
+end
 end DOZZ.Proofs

@@ -20,11 +20,13 @@ open scoped Distributions ENNReal NNReal
 
 namespace DOZZ.Proofs
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (x : ℂ) (r : ℝ)
+include hX hXc x r
+
 /-- Every circle-average variable is the Gaussian `L²` limit of test evaluations. -/
 theorem isCircleAverage_isGaussianL2Limit
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hXc : IsCircleAverage P X Xc) (x : ℂ) (r : ℝ) :
+ :
     IsGaussianL2Limit P X (fun ω => Xc ω x r) := by
   let _ := hX
   obtain ⟨f, _, _, hf⟩ := exists_testFn_circleEnergyGap_tendsto_zero x r
@@ -36,9 +38,7 @@ theorem isCircleAverage_isGaussianL2Limit
 
 /-- Cross covariance between a test evaluation and a circle average. -/
 theorem isCircleAverage_cross_covariance
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hXc : IsCircleAverage P X Xc) (x : ℂ) (r : ℝ) (f : TestFn) :
+ (f : TestFn) :
     gaussianCovariance P (fun ω => X ω f) (fun ω => Xc ω x r) = circleCross x r f := by
   obtain ⟨_, hMean⟩ := circleAverage_isGaussianProcess P X Xc hX hXc
   have hCovariance :
@@ -54,4 +54,6 @@ theorem isCircleAverage_cross_covariance
       rw [covariance_comm]
     _ = circleCross x r f := circleAverage_test_covariance P X Xc hX hXc x r f
 
+
+end
 end DOZZ.Proofs

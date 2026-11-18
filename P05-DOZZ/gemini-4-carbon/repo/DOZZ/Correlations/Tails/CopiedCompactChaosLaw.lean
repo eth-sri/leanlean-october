@@ -38,7 +38,7 @@ theorem copied_compact_chaos_law
   refine ⟨G, hGc, hG, ?_⟩
   obtain ⟨ρ, hρ, hgρ⟩ := compact_test_unit_margin g hgc hgs
   let ρ' := max ρ 0
-  have hρ' : ρ' < 1 := max_lt hρ (by norm_num)
+  have : ρ' < 1 := max_lt hρ (by norm_num)
   have hρ'0 : 0 ≤ ρ' := le_max_right _ _
   have hgρ' (x : ℂ) (hx : g x ≠ 0) : ‖x‖ ≤ ρ' := (hgρ x hx).trans (le_max_left _ _)
   have heps : Tendsto (fun n : ℕ => Real.exp (-(n : ℝ))) atTop (𝓝 0) :=
@@ -49,7 +49,7 @@ theorem copied_compact_chaos_law
   have ht : Tendsto t atTop atTop := by
     simpa only [t, Nat.add_comm] using tendsto_add_atTop_nat L
   have hmargin (n : ℕ) : ρ' + Real.exp (-(t n : ℝ)) ≤ 1 := by
-    have h := hL (L+n) (Nat.le_add_right L n)
+    have := hL (L+n) (Nat.le_add_right L n)
     linarith
   let Uc := fun ω x r => Xc ω (z+x) r-Xc ω z 0
   let S := fun q : Ω × Ω => Real.exp (γ*Xc q.2 z 0-γ^2*Real.log ‖z‖)
@@ -65,7 +65,6 @@ theorem copied_compact_chaos_law
     (((hc.1 0).comp (measurable_snd.prodMk measurable_const)).const_mul γ).sub_const _ |>.exp
   have hA (n : ℕ) : Measurable (A n) :=
     (DOZZ.Assembly.regularizedGMC_integral_measurable P X hX Xc hc γ (t n) G G.continuous.measurable).const_mul _
-  have hY := translated_field_isEquatorGFF P X Xc hX hc z
   have hYc := translated_field_circleAverage P X Xc hX hc z
   have hB (n : ℕ) : Measurable (B n) := by
     have hV : Measurable (fun x : ℂ => ∫ ω, Uc ω x (t n) ^ 2 ∂P) :=
@@ -96,7 +95,7 @@ theorem copied_compact_chaos_law
           Real.exp (γ*Uc q.1 x (t n)-γ^2/2*(∫ ω, Uc ω x (t n)^2 ∂P)) *
             normPlus x ^ (-4 : ℝ) ∂volume := by
       dsimp [B]
-      rw [regularized_integral_volume P _ Uc hY hYc]
+      rw [regularized_integral_volume P _ Uc (translated_field_isEquatorGFF P X Xc hX hc z) hYc]
     change Measurable (fun q => B n q)
     simp_rw [heq]
     exact hS.mul hker.stronglyMeasurable.integral_prod_right.measurable

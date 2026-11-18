@@ -29,20 +29,20 @@ theorem tendstoInMeasure_uniform_approximation
     TendstoInMeasure P f atTop g := by
   rw [tendstoInMeasure_iff_norm]
   intro ε hε
-  let t : ℝ := ε / 3
-  have ht : 0 < t := by dsimp [t]; positivity
+  let t := ε / 3
+  have ht : 0 < t := by positivity
   obtain ⟨e, he, hleft, hright⟩ := happrox t ht
   rw [ENNReal.tendsto_atTop_zero]
   intro δ hδ
   have hd : 0 < δ / 3 := ENNReal.div_pos_iff.mpr ⟨hδ.ne', by norm_num⟩
   obtain ⟨K, hK⟩ := (ENNReal.tendsto_atTop_zero.mp he) (δ / 3) hd
-  have hk : e K ≤ δ / 3 := hK K le_rfl
+  have hk := hK K le_rfl
   obtain ⟨N, hN⟩ := (ENNReal.tendsto_atTop_zero.mp
     ((tendstoInMeasure_iff_norm.mp (hconv K)) t ht)) (δ / 3) hd
   refine ⟨N, fun n hn => ?_⟩
-  let L : Set Ω := {ω | t ≤ ‖f n ω - a K n ω‖}
-  let C : Set Ω := {ω | t ≤ ‖a K n ω - b K ω‖}
-  let R : Set Ω := {ω | t ≤ ‖b K ω - g ω‖}
+  let L := {ω | t ≤ ‖f n ω - a K n ω‖}
+  let C := {ω | t ≤ ‖a K n ω - b K ω‖}
+  let R := {ω | t ≤ ‖b K ω - g ω‖}
   have hsubset : {ω | ε ≤ ‖f n ω - g ω‖} ⊆ L ∪ C ∪ R := by
     intro ω hω
     by_contra hnot

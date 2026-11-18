@@ -34,10 +34,10 @@ theorem copied_compact_singular_law
     (P.prod P).map (fun q => ENNReal.ofReal (Real.exp (γ*Xc q.2 z 0-γ^2*Real.log ‖z‖)) *
       ∫⁻ x, ENNReal.ofReal (g x) * (ENNReal.ofReal ‖x‖)^(-β) * ENNReal.ofReal
         (Real.exp (γ*localPinCoefficient z x*(Xc q.2 z 0-Xc q.1 z 0))) ∂N q.1) := by
-  let : IsProbabilityMeasure P := hX.1
-  let : MetricSpace ℝ≥0∞ := TopologicalSpace.metrizableSpaceMetric ℝ≥0∞
+  let := hX.1
+  let := TopologicalSpace.metrizableSpaceMetric ℝ≥0∞
   let gn := singularCompactTest g hgc β
-  have hgn0 (n : ℕ) (x : ℂ) : 0 ≤ gn n x :=
+  have hgn0 (n : ℕ) (x : ℂ) :=
     singular_compact_test_nonneg g hgc hg0 β n x
   have hgnc (n : ℕ) : HasCompactSupport (gn n : ℂ → ℝ) :=
     hgc.mul_right
@@ -74,10 +74,8 @@ theorem copied_compact_singular_law
   have hY' := isEquatorGFF_measurePreserving P (P.prod P) Prod.fst hfst _ hY
   have hN' := isGMCOf_measurePreserving P (P.prod P) Prod.fst hfst _ hY γ _ hN
   have hBm (n : ℕ) : AEMeasurable (B n) (P.prod P) := by
-    have hk : Measurable (fun p : ℝ × ℂ => ENNReal.ofReal (gn n p.2) * v p) :=
-      (ENNReal.measurable_ofReal.comp ((gn n).continuous.measurable.comp measurable_snd)).mul hv
     exact hS.aemeasurable.mul (gmc_parameter_lintegral_aemeasurable
-      (P.prod P) _ hY' γ hγ hγ2 (N ∘ Prod.fst) hN' θ hθ.aemeasurable _ hk)
+      (P.prod P) _ hY' γ hγ hγ2 (N ∘ Prod.fst) hN' θ hθ.aemeasurable _ ((ENNReal.measurable_ofReal.comp ((gn n).continuous.measurable.comp measurable_snd)).mul hv))
   have hAc : TendstoInMeasure P A atTop Alim := by
     apply tendstoInMeasure_of_tendsto_ae (fun n => (hAm n).aestronglyMeasurable)
     exact ae_of_all _ fun ω => ENNReal.Tendsto.const_mul

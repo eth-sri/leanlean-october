@@ -23,9 +23,7 @@ namespace DOZZ
 theorem eLpNorm_sq_eq_eLpNorm_two_sq {Ω : Type*} [MeasurableSpace Ω]
     {μ : Measure Ω} (f : Ω → ℝ) (hf : AEStronglyMeasurable f μ) :
     eLpNorm (fun ω => (f ω) ^ 2) 1 μ = (eLpNorm f 2 μ) ^ 2 := by
-  have hfun : (fun ω => (f ω) ^ 2) =ᵐ[μ] (fun ω => ‖f ω‖ ^ (2 : ℝ)) := by
-    filter_upwards with ω
-    simp [Real.norm_eq_abs, sq_abs]
+  have hfun : (fun ω => (f ω) ^ 2) =ᵐ[μ] (fun ω => ‖f ω‖ ^ (2 : ℝ)) := by simp
   rw [eLpNorm_congr_ae hfun]
   simpa using eLpNorm_norm_rpow (p := (1 : ℝ≥0∞)) f hf (by norm_num : 0 < (2 : ℝ))
 
@@ -39,8 +37,7 @@ theorem ae_summable_sq_of_tsum_eLpNorm_sq_ne_top {Ω ι : Type*}
     (μ := μ) (p := (1 : ℝ≥0∞)) (by norm_num)
     (f := fun i ω => (f i ω) ^ 2) hfinite
   filter_upwards [hsum] with ω hω
-  have hω' : Summable (fun i => |(f i ω) ^ 2|) := by
-    simpa only [Real.norm_eq_abs] using hω
+  have hω' : Summable (fun i => |(f i ω) ^ 2|) := by assumption
   exact hω'.congr fun i => abs_of_nonneg (sq_nonneg (f i ω))
 
 end DOZZ

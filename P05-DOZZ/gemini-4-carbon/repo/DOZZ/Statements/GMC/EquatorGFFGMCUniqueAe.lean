@@ -24,6 +24,6 @@ theorem equatorGFF_GMC_unique_ae
     (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
     (γ : ℝ) (M N : Ω → Measure ℂ)
     (hM : IsGMCOf P X γ M) (hN : IsGMCOf P X γ N) :
-    ∀ᵐ ω ∂P, M ω = N ω := by exact DOZZ.Proofs.equatorGFF_GMC_unique_ae P X hX γ M N hM hN
+    ∀ᵐ ω ∂P, M ω = N ω := DOZZ.Proofs.equatorGFF_GMC_unique_ae P X hX γ M N hM hN
 
 end DOZZ

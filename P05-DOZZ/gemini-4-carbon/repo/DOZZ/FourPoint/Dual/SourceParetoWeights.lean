@@ -35,7 +35,7 @@ theorem dual_source_pareto_weights_integrable
   have ha : 0 < a := div_pos (mul_pos (by norm_num) hν) hγ
   have hr : ‖z‖^(1-ξ) ≤ 1 := by
     simpa only [Real.one_rpow] using Real.rpow_le_rpow (norm_nonneg z) hz (sub_nonneg.mpr hξ1.le)
-  have hpos : ∀ᵐ ω ∂P, 0 < A ω :=
+  have hpos :=
     (dual_source_outerMass_positive_finite_ae P X hX γ hγ hγ₂ M hM
       α₁ α₂ α₃ ξ hα₁ hα₂ hα₃ z hz0 hz1 hz hr).mono
         fun ω hω => ENNReal.toReal_pos hω.1.ne' hω.2.ne

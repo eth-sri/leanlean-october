@@ -19,7 +19,7 @@ theorem reflected_pareto_increment_aestronglyMeasurable
     (hA : AEMeasurable A P) (hb : AEMeasurable b P) (hS : AEMeasurable S R) :
     AEStronglyMeasurable (fun v : Ω × Λ => ∫ w,
       ((A v.1+b v.1*S v.2*w)^(-p)-(A v.1)^(-p)) ∂paretoMeasure 1 a) (P.prod R) := by
-  let _ : IsProbabilityMeasure (paretoMeasure 1 a) := isProbabilityMeasure_paretoMeasure zero_lt_one ha
+  let _ := isProbabilityMeasure_paretoMeasure zero_lt_one ha
   have hAp : AEMeasurable (fun v : Ω × Λ => A v.1) (P.prod R) :=
     hA.comp_quasiMeasurePreserving measurePreserving_fst.quasiMeasurePreserving
   have hbp : AEMeasurable (fun v : Ω × Λ => b v.1) (P.prod R) :=
@@ -39,9 +39,7 @@ theorem reflected_pareto_increment_aestronglyMeasurable
   change AEMeasurable (fun v : (Ω × Λ) × ℝ => S v.1.2)
     ((P.prod R).prod (paretoMeasure 1 a)) at hSS
   have hpow : Measurable (fun x : ℝ => x^(-p)) := by fun_prop
-  have hK : AEMeasurable (fun v : (Ω × Λ) × ℝ =>
-      (A v.1.1+b v.1.1*S v.1.2*v.2)^(-p)-(A v.1.1)^(-p))
-        ((P.prod R).prod (paretoMeasure 1 a)) :=
+  have hK :=
     (hpow.comp_aemeasurable (hAA.add ((hbb.mul hSS).mul measurable_snd.aemeasurable))).sub
       (hpow.comp_aemeasurable hAA)
   exact hK.aestronglyMeasurable.integral_prod_right'

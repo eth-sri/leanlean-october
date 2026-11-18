@@ -24,6 +24,9 @@ open Filter Topology Set
 
 namespace DOZZ.Proofs
 
+variable {γ : ℝ}
+
+
 /-- The real form of the `formulaforbarR` coefficient. -/
 noncomputable def rbarCoefficientReal (γ α : ℝ) : ℝ :=
   2 * Real.pi / γ * lR (γ / 2 * α - γ ^ 2 / 4 - 1) /
@@ -47,15 +50,6 @@ theorem rbarCoefficient_ofReal (γ α : ℝ) :
 theorem continuousAt_realGamma {r : ℝ} (h : ∀ m : ℕ, r ≠ -m) : ContinuousAt Real.Gamma r :=
   (Real.differentiableAt_Gamma h).continuousAt
 
-/-- `l` is continuous on `(0, 1)`. -/
-theorem continuousAt_lR {r : ℝ} (h0 : 0 < r) (h1 : r < 1) : ContinuousAt lR r := by
-  unfold lR
-  have hr : ∀ m : ℕ, r ≠ -m := real_ne_neg_nat_of_frac (k := 0) (by simpa using h0)
-    (by simpa using h1)
-  have h1r : ∀ m : ℕ, 1 - r ≠ -m := real_ne_neg_nat_of_frac (k := 0) (by push_cast; linarith)
-    (by push_cast; linarith)
-  exact (continuousAt_realGamma hr).div ((continuousAt_realGamma h1r).comp
-    (continuous_const.sub continuous_id).continuousAt) (Real.Gamma_ne_zero h1r)
 
 /-- A complex number with real part in `(-1, 0)` is not a non-positive integer. -/
 theorem ne_neg_nat_of_re_mem_neg {w : ℂ} (h1 : -1 < w.re) (h2 : w.re < 0) :
@@ -63,8 +57,8 @@ theorem ne_neg_nat_of_re_mem_neg {w : ℂ} (h1 : -1 < w.re) (h2 : w.re < 0) :
   intro m hm
   rw [hm] at h1 h2
   simp only [Complex.neg_re, Complex.natCast_re] at h1 h2
-  have h3 : m < 1 := by exact_mod_cast (show (m : ℝ) < 1 by linarith)
-  have h4 : 0 < m := by exact_mod_cast (show (0 : ℝ) < m by linarith)
+  have : m < 1 := by exact_mod_cast (show (m : ℝ) < 1 by linarith)
+  have : 0 < m := by exact_mod_cast (show (0 : ℝ) < m by linarith)
   omega
 
 /-- `Γ ∘ φ` converges where `φ` does, off the poles. -/
@@ -82,7 +76,7 @@ theorem sub_mul_lR_eq {γ ε : ℝ} (hγ : 0 < γ) (hε : γ / 2 < ε) :
   field_simp
 
 /-- **`(ε - γ/2) l(B) → 4/γ`** as `ε ↓ γ/2`. -/
-theorem tendsto_sub_mul_lR {γ : ℝ} (hγ : 0 < γ) :
+theorem tendsto_sub_mul_lR (hγ : 0 < γ) :
     Tendsto (fun ε => (ε - γ / 2) * lR (γ / 4 * (ε - γ / 2))) (𝓝[>] (γ / 2)) (𝓝 (4 / γ)) := by
   have h1 : ∀ m : ℕ, (1 : ℝ) ≠ -m := fun m h => by
     have : (0 : ℝ) ≤ m := Nat.cast_nonneg m
@@ -90,20 +84,12 @@ theorem tendsto_sub_mul_lR {γ : ℝ} (hγ : 0 < γ) :
   have hB : Tendsto (fun ε : ℝ => γ / 4 * (ε - γ / 2)) (𝓝 (γ / 2)) (𝓝 0) := by
     have h := (by fun_prop : Continuous fun ε : ℝ => γ / 4 * (ε - γ / 2)).tendsto (γ / 2)
     rwa [sub_self, mul_zero] at h
-  have hG1 := tendsto_realGamma_comp (by simpa using hB.add_const 1) h1
-  have hG2 := tendsto_realGamma_comp (by simpa using (tendsto_const_nhds (x := (1 : ℝ))).sub hB) h1
-  have h := (hG1.div hG2 (by rw [Real.Gamma_one]; exact one_ne_zero)).const_mul (4 / γ)
+  have h := ((tendsto_realGamma_comp (by simpa using hB.add_const 1) h1).div (tendsto_realGamma_comp (by simpa using (tendsto_const_nhds (x := (1 : ℝ))).sub hB) h1) (by rw [Real.Gamma_one]; exact one_ne_zero)).const_mul (4 / γ)
   rw [Real.Gamma_one, div_one, mul_one] at h
   refine (h.mono_left nhdsWithin_le_nhds).congr' ?_
   filter_upwards [self_mem_nhdsWithin] with ε hε
   exact (sub_mul_lR_eq hγ hε).symm
 
-/-- The Gauss parameter `A` at `ε = γ/2`. -/
-theorem crossA_real_at_half {γ : ℝ} (hγ : 0 < γ) (a : ℝ) :
-    γ ^ 2 / 4 * ((2 * a + γ / 2 - γ / 2 - 2 * Q γ) / γ) = γ / 2 * a - γ ^ 2 / 4 - 1 := by
-  rw [Q]
-  field_simp
-  ring
 
 /-- **The residue of the diagonal crossing multiplier at `ε = γ/2`**: twice the reflection exponent
 times the `formulaforbarR` coefficient. -/
@@ -111,22 +97,30 @@ theorem tendsto_sub_mul_crossingMultiplierReal {γ a : ℝ} (hγ : 0 < γ) (hγ2
     (ha1 : γ / 2 < a) (ha2 : a < Q γ) :
     Tendsto (fun ε => (ε - γ / 2) * crossingMultiplierReal γ ε a) (𝓝[>] (γ / 2))
       (𝓝 (2 * reflectionExponent γ a * rbarCoefficientReal γ a)) := by
+  have crossA_real_at_half : γ ^ 2 / 4 * ((2 * a + γ / 2 - γ / 2 - 2 * Q γ) / γ) = γ / 2 * a - γ ^ 2 / 4 - 1 := by
+    rw [Q]
+    field_simp
+    ring
+  have continuousAt_lR {r : ℝ} (h0 : 0 < r) (h1 : r < 1) : ContinuousAt lR r := by
+    unfold lR
+    have hr := real_ne_neg_nat_of_frac (k := 0) (by simpa using h0)
+      (by simpa using h1)
+    have h1r : ∀ m : ℕ, 1 - r ≠ -m := real_ne_neg_nat_of_frac (k := 0) (by push_cast; linarith)
+      (by push_cast; linarith)
+    exact (continuousAt_realGamma hr).div ((continuousAt_realGamma h1r).comp
+      (continuous_const.sub continuous_id).continuousAt) (Real.Gamma_ne_zero h1r)
   have hQ : Q γ = 2 / γ + γ / 2 := rfl
   have hA₀q : γ / 2 * a - γ ^ 2 / 4 - 1 = -(γ / 2) * (Q γ - a) := by
     rw [hQ]
     field_simp
     ring
-  have hqpos : 0 < γ / 2 * (Q γ - a) := mul_pos (by positivity) (by linarith)
-  have hqlt : γ / 2 * (Q γ - a) < 1 := by
-    calc γ / 2 * (Q γ - a) < γ / 2 * (2 / γ) :=
-          mul_lt_mul_of_pos_left (by rw [hQ] at ha2 ⊢; linarith) (by positivity)
-      _ = 1 := by field_simp
-  have hA₀lo : -1 < γ / 2 * a - γ ^ 2 / 4 - 1 := by rw [hA₀q]; linarith
+  have : 0 < γ / 2 * (Q γ - a) := mul_pos (by positivity) (by linarith)
+  have : γ / 2 * (Q γ - a) < 1 := by nlinarith
   have hA₀hi : γ / 2 * a - γ ^ 2 / 4 - 1 < 0 := by rw [hA₀q]; linarith
   -- the Gauss parameter `A` and the factor `Γ(A+1)/Γ(1-A)`
   have hA : Tendsto (fun ε : ℝ => γ ^ 2 / 4 * ((2 * a + ε - γ / 2 - 2 * Q γ) / γ)) (𝓝 (γ / 2))
       (𝓝 (γ / 2 * a - γ ^ 2 / 4 - 1)) := by
-    rw [← crossA_real_at_half hγ a]
+    rw [← crossA_real_at_half]
     exact (by fun_prop : Continuous fun ε : ℝ =>
       γ ^ 2 / 4 * ((2 * a + ε - γ / 2 - 2 * Q γ) / γ)).tendsto (γ / 2)
   have hpA1 : ∀ m : ℕ, γ / 2 * a - γ ^ 2 / 4 - 1 + 1 ≠ -m :=
@@ -176,7 +170,7 @@ theorem tendsto_sub_mul_crossingMultiplierReal {γ a : ℝ} (hγ : 0 < γ) (hγ2
   ring
 
 /-- **The `formulaforbarR` coefficient is holomorphic on the reflection strip.** -/
-theorem differentiableOn_rbarCoefficient {γ : ℝ} (hγ : 0 < γ) :
+theorem differentiableOn_rbarCoefficient (hγ : 0 < γ) :
     DifferentiableOn ℂ (rbarCoefficient γ) (reflectionStrip γ) := by
   intro z hz
   apply DifferentiableAt.differentiableWithinAt
@@ -186,23 +180,23 @@ theorem differentiableOn_rbarCoefficient {γ : ℝ} (hγ : 0 < γ) :
   have hwre : ((γ : ℂ) / 2 * z - (γ : ℂ) ^ 2 / 4 - 1).re = γ / 2 * z.re - γ ^ 2 / 4 - 1 := by
     simp [Complex.mul_re, pow_two]
   have hw1 : -1 < γ / 2 * z.re - γ ^ 2 / 4 - 1 := by
-    have : γ / 2 * (γ / 2) < γ / 2 * z.re := mul_lt_mul_of_pos_left hz.1 (by positivity)
+    have := mul_lt_mul_of_pos_left hz.1 (by positivity)
     nlinarith
   have hw2 : γ / 2 * z.re - γ ^ 2 / 4 - 1 < 0 := by
-    have : γ / 2 * z.re < γ / 2 * Q γ := mul_lt_mul_of_pos_left hz.2 (by positivity)
-    have hγQ : γ / 2 * Q γ = 1 + γ ^ 2 / 4 := by
+    have := mul_lt_mul_of_pos_left hz.2 (by positivity)
+    have : γ / 2 * Q γ = 1 + γ ^ 2 / 4 := by
       rw [hQ]
       field_simp
       ring
     linarith
-  have hnum : DifferentiableAt ℂ
+  have : DifferentiableAt ℂ
       (fun u : ℂ => lFun ((γ : ℂ) / 2 * u - (γ : ℂ) ^ 2 / 4 - 1)) z := by
     unfold lFun
     simp_rw [div_eq_mul_inv]
     exact ((Complex.differentiableAt_Gamma _ (ne_neg_nat_of_re_mem_neg (by rw [hwre]; exact hw1)
       (by rw [hwre]; exact hw2))).comp z hw).mul
       ((Complex.differentiable_one_div_Gamma _).comp z ((differentiableAt_const _).sub hw))
-  have hden : DifferentiableAt ℂ (fun u : ℂ => (lFun (crossC γ u))⁻¹) z := by
+  have : DifferentiableAt ℂ (fun u : ℂ => (lFun (crossC γ u))⁻¹) z := by
     simp_rw [lFun_inv]
     have h1 : DifferentiableAt ℂ (fun w : ℂ => 1 - crossC γ w) z := by
       unfold crossC
@@ -223,7 +217,7 @@ theorem differentiableOn_rbarCoefficient {γ : ℝ} (hγ : 0 < γ) :
     rw [show (1 : ℂ) + (γ : ℂ) / 2 * (u - (Q γ : ℂ)) = 1 - (γ / 2 : ℂ) * (Q γ - u) by ring]
     ring
   rw [hfun]
-  exact (((differentiableAt_const _).mul hnum).mul hden).mul (differentiableAt_const _)
+  fun_prop
 
 end DOZZ.Proofs
 

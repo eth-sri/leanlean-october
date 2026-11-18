@@ -31,6 +31,6 @@ theorem equatorGFF_rooted_GMC_identity
       H q.1 q.2.1 q.2.2)) :
     (∫⁻ ω, ∫⁻ u, H u (fun f => X ω f) (M ω) ∂M ω ∂P) =
       ∫⁻ u, ∫⁻ ω, H u (fun f => X ω f + γ * gffRootCovariance u f)
-        (gmcRootedMeasure γ u (M ω)) ∂P ∂gmcReferenceMeasure := by exact DOZZ.Proofs.equatorGFF_rooted_GMC_identity P X hX γ hγ hγ2 M hM H hH
+        (gmcRootedMeasure γ u (M ω)) ∂P ∂gmcReferenceMeasure := DOZZ.Proofs.equatorGFF_rooted_GMC_identity P X hX γ hγ hγ2 M hM H hH
 
 end DOZZ

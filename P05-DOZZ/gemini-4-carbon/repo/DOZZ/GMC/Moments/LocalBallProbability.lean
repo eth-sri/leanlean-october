@@ -31,7 +31,7 @@ theorem localBallProbability_isProbability {R : ℝ} (hR : 0 < R) :
       Complex.volume_closedBall]
   have hne : (volume : Measure S) Set.univ ≠ 0 := by
     rw [htotal]
-    have hR' : ENNReal.ofReal R ≠ 0 := ENNReal.ofReal_ne_zero_iff.mpr hR
+    have hR' := ENNReal.ofReal_ne_zero_iff.mpr hR
     have hπ : (NNReal.pi : ℝ≥0∞) ≠ 0 := by
       rw [ENNReal.coe_ne_zero]
       exact ne_of_gt NNReal.pi_pos

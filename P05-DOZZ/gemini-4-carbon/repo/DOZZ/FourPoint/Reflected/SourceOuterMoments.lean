@@ -40,9 +40,7 @@ theorem reflected_source_outerMass_positive_finite_ae
       (equatorGFF_GMC_aemeasurable P X hX γ hγ hγ₂ M hM)
   obtain ⟨C, _, hb⟩ := reflected_outerMass_inverse_moment_uniform P X hX γ hγ hγ₂ M hM
     α₁ α₂ α₃ 1 (by norm_num)
-  have hInv : (∫⁻ ω, gammaHalfOuterMass γ α₁ α₂ α₃ (M ω) z ξ ^ (-(1 : ℝ)) ∂P) < ⊤ :=
-    (hb z ξ hz hr).trans_lt ENNReal.ofReal_lt_top
-  filter_upwards [hfull, ae_lt_top' (hmeas.pow_const (-(1 : ℝ))) hInv.ne] with ω hf hi
+  filter_upwards [hfull, ae_lt_top' (hmeas.pow_const (-(1 : ℝ))) ((hb z ξ hz hr).trans_lt ENNReal.ofReal_lt_top).ne] with ω hf hi
   constructor
   · apply pos_iff_ne_zero.mpr
     intro he

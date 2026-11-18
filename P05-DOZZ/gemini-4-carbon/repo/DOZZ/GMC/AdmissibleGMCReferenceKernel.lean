@@ -33,9 +33,9 @@ theorem admissible_logRegularization_reference_pair_kernel_lintegrable
       ENNReal.ofReal (‖p.1 - p.2‖ ^ (-κ)) ∂
         ((logRegularizationReference U dens).restrict K).prod
           ((logRegularizationReference U dens).restrict K) ≠ ∞ := by
-  let ν : Measure ℂ := (logRegularizationReference U dens).restrict K
-  let volK : Measure ℂ := volume.restrict K
-  let c : ℝ≥0∞ := ENNReal.ofReal
+  let ν := (logRegularizationReference U dens).restrict K
+  let volK := volume.restrict K
+  let c := ENNReal.ofReal
       (max ((hK.bddAbove_image (hY.densityContinuous.mono hKU)).choose) 0)
   have hν : ν = volK.withDensity (fun x => ENNReal.ofReal (dens x)) := by
     dsimp [ν, volK, logRegularizationReference]
@@ -44,10 +44,8 @@ theorem admissible_logRegularization_reference_pair_kernel_lintegrable
   have hdenBound : ∀ x ∈ K, ENNReal.ofReal (dens x) ≤ c := by
     intro x hx
     dsimp [c]
-    have hbdd := (hK.bddAbove_image (hY.densityContinuous.mono hKU)).choose_spec
     have hle : dens x ≤ max
-        ((hK.bddAbove_image (hY.densityContinuous.mono hKU)).choose) 0 := by
-      exact le_trans (hbdd (Set.mem_image_of_mem dens hx)) (le_max_left _ _)
+        ((hK.bddAbove_image (hY.densityContinuous.mono hKU)).choose) 0 := le_trans (((hK.bddAbove_image (hY.densityContinuous.mono hKU)).choose_spec) (Set.mem_image_of_mem dens hx)) (le_max_left _ _)
     exact ENNReal.ofReal_le_ofReal hle
   have hνle : ν ≤ c • volK := by
     rw [hν, ← withDensity_const]
@@ -67,24 +65,13 @@ theorem admissible_logRegularization_reference_pair_kernel_lintegrable
         simp [smul_smul]
   obtain ⟨B, hB, hpair⟩ :=
     complex_norm_pair_neg_rpow_lintegral_isCompact K hK κ hκ hκ2
-  have hbase :
-      ∫⁻ p : ℂ × ℂ,
-        ENNReal.ofReal (‖p.1 - p.2‖ ^ (-κ)) ∂(volK.prod volK) ≠ ∞ := by
-    have hrewrite : volK.prod volK =
-        (volume.prod volume).restrict (K ×ˢ K) := by
-      exact Measure.prod_restrict K K
-    rw [hrewrite]
-    change (∫⁻ p in K ×ˢ K,
-      ENNReal.ofReal (‖p.1 - p.2‖ ^ (-κ)) ∂(volume.prod volume)) ≠ ∞
-    exact ne_top_of_le_ne_top hB hpair
   have hlin :
       ∫⁻ p : ℂ × ℂ,
         ENNReal.ofReal (‖p.1 - p.2‖ ^ (-κ)) ∂(ν.prod ν) ≤
       ∫⁻ p : ℂ × ℂ,
         ENNReal.ofReal (‖p.1 - p.2‖ ^ (-κ)) ∂((c * c) • (volK.prod volK)) :=
     lintegral_mono' hprod (fun _ => le_rfl)
-  have hcctop : c * c ≠ ∞ := by
-    exact ENNReal.mul_ne_top ENNReal.ofReal_ne_top ENNReal.ofReal_ne_top
+  have hcctop : c * c ≠ ∞ := ENNReal.mul_ne_top ENNReal.ofReal_ne_top ENNReal.ofReal_ne_top
   have hlin' :
       ∫⁻ p : ℂ × ℂ,
         ENNReal.ofReal (‖p.1 - p.2‖ ^ (-κ)) ∂((c * c) • (volK.prod volK)) =

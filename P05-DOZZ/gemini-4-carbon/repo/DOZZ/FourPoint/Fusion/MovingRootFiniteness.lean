@@ -16,10 +16,16 @@ open MeasureTheory Filter Topology
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
 
+variable {Ω : Type*} [MeasurableSpace Ω]
+
+
+section
+variable (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+include hX hγ hγ2 hM
+
 /-- Subcritical Coulomb insertions have almost surely finite mass. -/
-theorem fusion_coulombMass_finite_ae {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+theorem fusion_coulombMass_finite_ae
+
     {N : ℕ} (α : Fin N → ℝ) (z : Fin N → ℂ) (hz : Function.Injective z)
     (αinf : ℝ) (hα : ∀ j, α j < Q γ) (hαinf : αinf < Q γ) :
     ∀ᵐ ω ∂P, coulombMass γ (M ω) α z αinf < ⊤ := by
@@ -36,41 +42,34 @@ theorem fusion_coulombMass_finite_ae {Ω : Type*} [MeasurableSpace Ω]
   obtain ⟨t, ht⟩ := (e1.and (e2.and e3)).exists
   have hfin := coulombMass_moment_lt_top_of_pos P X hX γ hγ hγ2 M hM z hz α αinf t ht.1.1
     ht.1.2 (fun j => (ht.2.2 j).2) ht.2.1.2
-  have hm := gmc_coulombMass_aemeasurable P X hX γ hγ hγ2 M hM α z αinf
-  filter_upwards [ae_lt_top' (hm.pow_const t) hfin.ne] with ω hω
+  filter_upwards [ae_lt_top' ((gmc_coulombMass_aemeasurable P X hX γ hγ hγ2 M hM α z αinf).pow_const t) hfin.ne] with ω hω
   by_contra h
   rw [not_lt_top_iff.mp h, ENNReal.top_rpow_of_pos ht.1.1] at hω
   exact lt_irrefl _ hω
 
-/-- The limiting rooted mass in either fusion regime is almost surely finite. -/
-theorem fusion_rootedMass_finite_ae {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (α₁ α₂ α₃ : ℝ) (hα₁ : α₁ < 2 / γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) :
-    ∀ᵐ ω ∂P, gammaHalfRootedMass γ α₁ α₂ α₃ M ω < ⊤ := by
-  have hz : Function.Injective (![0, 1] : Fin 2 → ℂ) := by
-    intro i j hij
-    fin_cases i <;> fin_cases j <;> simp_all
-  have ha : ∀ j : Fin 2, (![α₁ + γ / 2, α₂] : Fin 2 → ℝ) j < Q γ := by
-    intro j
-    fin_cases j
-    · change α₁ + γ / 2 < Q γ
-      unfold Q
-      linarith
-    · exact hα₂
-  filter_upwards [fusion_gammaHalfRootedMass_eq_ae P X hX γ hγ hγ2 M hM α₁ α₂ α₃,
-    fusion_coulombMass_finite_ae P X hX γ hγ hγ2 M hM ![α₁ + γ / 2, α₂] ![0, 1]
-      hz α₃ ha hα₃] with ω he hf
-  rw [he]
-  exact hf
 
 /-- The real limiting rooted kernel is integrable almost surely, as required by exterior DCT. -/
-theorem fusion_limitingRootedKernel_finite_ae {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+theorem fusion_limitingRootedKernel_finite_ae
+
     (α₁ α₂ α₃ : ℝ) (hα₁ : α₁ < 2 / γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) :
     ∀ᵐ ω ∂P, (∫⁻ x, ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ 0 x *
       Real.exp (γ ^ 2 * gffKernel 0 x)) ∂M ω) < ⊤ := by
+  have fusion_rootedMass_finite_ae : ∀ᵐ ω ∂P, gammaHalfRootedMass γ α₁ α₂ α₃ M ω < ⊤ := by
+    have hz : Function.Injective (![0, 1] : Fin 2 → ℂ) := by
+      intro i j hij
+      fin_cases i <;> fin_cases j <;> simp_all
+    have ha : ∀ j : Fin 2, (![α₁ + γ / 2, α₂] : Fin 2 → ℝ) j < Q γ := by
+      intro j
+      fin_cases j
+      · change α₁ + γ / 2 < Q γ
+        unfold Q
+        linarith
+      · exact hα₂
+    filter_upwards [fusion_gammaHalfRootedMass_eq_ae P X hX γ hγ hγ2 M hM α₁ α₂ α₃,
+      fusion_coulombMass_finite_ae P X hX γ hγ hγ2 M hM ![α₁ + γ / 2, α₂] ![0, 1]
+        hz α₃ ha hα₃] with ω he hf
+    rw [he]
+    exact hf
   have hd : Measurable (fun x : ℂ => ENNReal.ofReal (Real.exp (γ ^ 2 * gffKernel 0 x))) :=
     ENNReal.measurable_ofReal.comp
       ((measurable_const.mul (measurable_pointRootPotential.comp
@@ -78,7 +77,7 @@ theorem fusion_limitingRootedKernel_finite_ae {Ω : Type*} [MeasurableSpace Ω]
   have hk : Measurable (fun x : ℂ => ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ 0 x)) :=
     ENNReal.measurable_ofReal.comp ((fusion_measurable_gammaHalfKernel γ α₁ α₂ α₃).comp
       (f := fun x : ℂ => ((0 : ℂ), x)) (measurable_const.prodMk measurable_id))
-  filter_upwards [fusion_rootedMass_finite_ae P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hα₁ hα₂ hα₃,
+  filter_upwards [fusion_rootedMass_finite_ae,
     gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM 0,
     gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM 1] with ω hf h0 h1
   have hr0 : gmcRootedMeasure γ 0 (M ω) {0} = 0 := withDensity_absolutelyContinuous _ _ h0
@@ -96,4 +95,6 @@ theorem fusion_limitingRootedKernel_finite_ae {Ω : Type*} [MeasurableSpace Ω]
   rw [he]
   exact hf
 
+
+end
 end DOZZ.Proofs

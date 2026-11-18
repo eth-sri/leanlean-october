@@ -64,8 +64,6 @@ theorem dual_inner_coefficient_eq {Ω : Type*} [MeasurableSpace Ω]
         (∫⁻ ω, rho γ (M ω) (2 * Q γ - α₁ - 2 / γ) α₂ α₃ ^ (-(p + a)) ∂P).toReal)
   have hpow : μ ^ p * μ ^ a * μ ^ (-(p + a)) = 1 := by
     rw [← Real.rpow_add hμ, ← Real.rpow_add hμ, add_neg_cancel, Real.rpow_zero]
-  have hΓ : Real.Gamma p ≠ 0 := (Real.Gamma_pos_of_pos hp).ne'
-  have hγne : γ ≠ 0 := hγ.ne'
   field_simp
   linear_combination -(a * Real.Gamma (-a) * Real.Gamma (p + a) *
     reflectionBarR P γ α₁ B Z *

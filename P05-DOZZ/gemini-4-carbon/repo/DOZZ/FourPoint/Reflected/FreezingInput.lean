@@ -33,8 +33,7 @@ theorem reflected_freezing_margins (γ α₁ α₂ α₃ : ℝ) (hγ : 0 < γ)
   have hp : 0 < (α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) / γ :=
     div_pos (by linarith only [hs]) hγ
   have he : γ * ((α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) / γ + 1) =
-      (α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) + γ := by
-    rw [mul_add, mul_div_cancel₀ _ hγ.ne', mul_one]
+      (α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) + γ := by grind
   refine ⟨?_, by linarith only [hp], ?_⟩
   · linarith only [hreflect]
   · rw [he]

@@ -33,18 +33,14 @@ theorem dual_buffer_relative_squeeze_tendsto {A : Type*} (l : Filter A)
   · intro a ha
     obtain ⟨h, hh, hc⟩ := ((eventually_gt_atTop (0 : ℝ)).and
       (hLower.eventually (lt_mem_nhds ha))).exists
-    have ht := (hg h hh).sub ((hd h hh).add ((he h hh).mul (hg h hh).neg))
-    filter_upwards [ht.eventually (lt_mem_nhds hc), hb h hh] with x hx hbound
-    have hlow := (abs_le.mp hbound).1
-    have hf : g h x-(d h x+e h x*(-g h x)) ≤ f x := by linarith only [hlow]
+    filter_upwards [((hg h hh).sub ((hd h hh).add ((he h hh).mul (hg h hh).neg))).eventually (lt_mem_nhds hc), hb h hh] with x hx hbound
+    have hf : g h x-(d h x+e h x*(-g h x)) ≤ f x := by linarith only [(abs_le.mp hbound).1]
     exact hx.trans_le hf
   · intro b hb'
     obtain ⟨h, hh, hc⟩ := ((eventually_gt_atTop (0 : ℝ)).and
       (hUpper.eventually (gt_mem_nhds hb'))).exists
-    have ht := (hg h hh).add ((hd h hh).add ((he h hh).mul (hg h hh).neg))
-    filter_upwards [ht.eventually (gt_mem_nhds hc), hb h hh] with x hx hbound
-    have hhigh := (abs_le.mp hbound).2
-    have hf : f x ≤ g h x+(d h x+e h x*(-g h x)) := by linarith only [hhigh]
+    filter_upwards [((hg h hh).add ((hd h hh).add ((he h hh).mul (hg h hh).neg))).eventually (gt_mem_nhds hc), hb h hh] with x hx hbound
+    have hf : f x ≤ g h x+(d h x+e h x*(-g h x)) := by linarith only [(abs_le.mp hbound).2]
     exact hf.trans_lt hx
 
 end DOZZ.Proofs

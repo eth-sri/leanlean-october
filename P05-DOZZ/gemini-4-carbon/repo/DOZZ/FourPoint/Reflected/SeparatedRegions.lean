@@ -31,20 +31,19 @@ theorem reflected_separated_region_geometry (s r : ℝ) (_hs : 0 < s) (hr : 0 < 
   have hsr : s ≤ r/2 := by
     have h := (div_le_iff₀ hr).mp hsep
     linarith only [h]
-  have hs1 : s < 1 := by linarith only [hsr, hr1]
+  have hs1 : s < 1 := by nlinarith
   refine ⟨?_, ?_, ?_, inter_subset_right, ?_, ?_, ?_, ?_, ?_⟩
   · exact (isOpen_lt continuous_const continuous_norm).inter
       (isOpen_lt continuous_norm continuous_const)
   · exact (isOpen_lt continuous_const continuous_norm).inter
       (isClosed_singleton.union isClosed_singleton).isOpen_compl
   · intro x hx
-    have hx0 : x ≠ 0 := norm_pos_iff.mp hx.1
     have hx1 : x ≠ 1 := by
       intro hh
       have h := hx.2
       simp only [hh, norm_one] at h
       exact (not_lt_of_ge hs1.le) h
-    simp [hx0, hx1]
+    simp [norm_pos_iff.mp hx.1, hx1]
   · intro x hx
     simpa only [Metric.mem_ball, dist_zero_right] using hx.2.trans_le (by linarith only [hsr, hr])
   · intro x hx hh
@@ -55,15 +54,14 @@ theorem reflected_separated_region_geometry (s r : ℝ) (_hs : 0 < s) (hr : 0 < 
     exact hx.2.le
   · exact fun x hx => hx.1.le
   · intro x hx
-    have hd : ‖x-(3 : ℂ)‖ ≤ 1/8 := by simpa only [Metric.mem_closedBall, dist_eq_norm] using hx
+    have : ‖x-(3 : ℂ)‖ ≤ 1/8 := by simpa only [Metric.mem_closedBall, dist_eq_norm] using hx
     have hn := norm_sub_norm_le (3 : ℂ) x
     rw [norm_sub_rev] at hn
     have h3 : ‖(3 : ℂ)‖ = 3 := by norm_num
     rw [h3] at hn
-    have hxnorm : 1 < ‖x‖ := by linarith only [hn, hd]
+    have hxnorm : 1 < ‖x‖ := by nlinarith
     refine ⟨hr1.trans_lt hxnorm, ?_⟩
-    have hx0 : x ≠ 0 := norm_pos_iff.mp (zero_lt_one.trans hxnorm)
     have hx1 : x ≠ 1 := by intro hh; simp [hh] at hxnorm
-    simp [hx0, hx1]
+    simp [norm_pos_iff.mp (zero_lt_one.trans hxnorm), hx1]
 
 end DOZZ.Proofs

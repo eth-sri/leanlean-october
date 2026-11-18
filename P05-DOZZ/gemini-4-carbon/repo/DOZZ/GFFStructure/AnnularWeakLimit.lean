@@ -77,29 +77,6 @@ theorem integral_annular_mul_eq_radial_average (n : ℕ) (h : ℂ → ℝ) (hh :
       rw [integral_const_mul, DOZZ.integral_circleAngle_eq_twoPi_mul_circleAverage]
     _ = _ := by unfold DOZZ.annularRadiusLaw; ring
 
-/-- A globally bounded continuous function has circle averages continuous in radius. -/
-theorem continuous_circleAverage_radius (h : ℂ → ℝ) (hh : Continuous h)
-    {M : ℝ} (hb : ∀ z, ‖h z‖ ≤ M) : Continuous (fun t : ℝ => Real.circleAverage h 0 t) := by
-  let μ : Measure ℝ := volume.restrict (Ioc 0 (2 * Real.pi))
-  have hμ : IsFiniteMeasure μ := by
-    dsimp [μ]
-    exact isFiniteMeasure_restrict.mpr (by simp only [Real.volume_Ioc]; finiteness)
-  let _ := hμ
-  have hc : Continuous (fun t : ℝ => ∫ θ, h (circleMap 0 t θ) ∂μ) := by
-    apply continuous_of_dominated
-      (fun t => (hh.measurable.comp (measurable_circleMap 0 t)).aestronglyMeasurable)
-      (fun t => Filter.Eventually.of_forall (fun θ => hb (circleMap 0 t θ)))
-      (integrable_const M)
-    filter_upwards with θ
-    apply hh.comp
-    simp only [circleMap]
-    fun_prop
-  have heq (t : ℝ) : Real.circleAverage h 0 t =
-      (2 * Real.pi)⁻¹ * (∫ θ, h (circleMap 0 t θ) ∂μ) := by
-    rw [Real.circleAverage_def, intervalIntegral.integral_of_le Real.two_pi_pos.le]
-    rfl
-  simp_rw [heq]
-  exact hc.const_mul _
 
 /-- The radial annular probability laws concentrate at radius one. -/
 theorem tendsto_integral_annularRadiusLaw_mul (a : ℝ → ℝ) (ha : Continuous a) :
@@ -165,63 +142,76 @@ theorem tendsto_integral_annularRadiusLaw_mul (a : ℝ → ℝ) (ha : Continuous
   rw [Real.dist_eq]
   exact herror.trans_lt (half_lt_self hε)
 
-/-- Continuous bounded functions converge under the unit-annulus approximations to arclength. -/
-theorem tendsto_integral_annular_mul (h : ℂ → ℝ) (hh : Continuous h)
-    {M : ℝ} (hb : ∀ z, ‖h z‖ ≤ M) :
-    Tendsto (fun n => ∫ z, DOZZ.annularProbabilityDensity n z * h z)
-      atTop (𝓝 (Real.circleAverage h 0 1)) := by
-  simp_rw [integral_annular_mul_eq_radial_average _ h hh]
-  exact tendsto_integral_annularRadiusLaw_mul _ (continuous_circleAverage_radius h hh hb)
 
-/-- The angular change of variables transports a unit-circle average to the circle of center `x` and
-radius `e^{-r}`. -/
-theorem circleAverage_affine_unit (x : ℂ) (r : ℝ) (h : ℂ → ℝ) :
-    Real.circleAverage (fun z => h (Real.exp (-r) • z + x)) 0 1 =
-      Real.circleAverage h x (Real.exp (-r)) := by
-  unfold Real.circleAverage
-  congr 1
-  apply intervalIntegral.integral_congr
-  intro θ _
-  simp only [circleMap, zero_add, Complex.ofReal_one, one_mul, Complex.real_smul]
-  congr 1
-  ring
 
-/-- Translated and scaled annuli converge to their circle for bounded continuous functions. -/
-theorem tendsto_integral_circleAnnular_mul_bounded (x : ℂ) (r : ℝ)
-    (h : ℂ → ℝ) (hh : Continuous h) {M : ℝ} (hb : ∀ z, ‖h z‖ ≤ M) :
-    Tendsto (fun n => ∫ z, circleAnnularDensity x r n z * h z)
-      atTop (𝓝 (∫ z, h z ∂circleMeasure x r)) := by
-  simp_rw [integral_circleAnnularDensity_mul]
-  rw [integral_circleMeasure_eq_circleAverage x r h hh.measurable,
-    ← circleAverage_affine_unit x r h]
-  apply tendsto_integral_annular_mul
-    (fun z => h (Real.exp (-r) • z + x)) (by fun_prop)
-    (fun z => hb _)
 
-/-- A fixed ball contains the geometric circle as well as all its annular approximants. -/
-theorem ae_mem_closedBall_circleMeasure (x : ℂ) (r : ℝ) :
-    ∀ᵐ z ∂circleMeasure x r, z ∈ closedBall (0 : ℂ) (‖x‖ + 2 * Real.exp (-r)) := by
-  filter_upwards [ae_norm_sub_center_circleMeasure x r] with z hz
-  rw [mem_closedBall, dist_zero_right]
-  calc
-    ‖z‖ = ‖(z - x) + x‖ := by rw [sub_add_cancel]
-    _ ≤ ‖z - x‖ + ‖x‖ := norm_add_le _ _
-    _ ≤ ‖x‖ + 2 * Real.exp (-r) := by rw [hz]; linarith [Real.exp_pos (-r)]
+
+section
+variable (x : ℂ) (r : ℝ)
+include x r
 
 /-- A common compact cutoff removes the global boundedness premise. Every continuous
 potential therefore converges under the transported annular densities. -/
-theorem tendsto_integral_circleAnnular_mul (x : ℂ) (r : ℝ)
+theorem tendsto_integral_circleAnnular_mul
     (h : ℂ → ℝ) (hh : Continuous h) :
     Tendsto (fun n => ∫ z, circleAnnularDensity x r n z * h z)
       atTop (𝓝 (∫ z, h z ∂circleMeasure x r)) := by
+  have tendsto_integral_circleAnnular_mul_bounded (h : ℂ → ℝ) (hh : Continuous h) {M : ℝ} (hb : ∀ z, ‖h z‖ ≤ M) : Tendsto (fun n => ∫ z, circleAnnularDensity x r n z * h z)
+        atTop (𝓝 (∫ z, h z ∂circleMeasure x r)) := by
+    have tendsto_integral_annular_mul (h : ℂ → ℝ) (hh : Continuous h) (hb : ∀ z, ‖h z‖ ≤ M) : Tendsto (fun n => ∫ z, DOZZ.annularProbabilityDensity n z * h z)
+          atTop (𝓝 (Real.circleAverage h 0 1)) := by
+      have continuous_circleAverage_radius : Continuous (fun t : ℝ => Real.circleAverage h 0 t) := by
+        let μ := volume.restrict (Ioc 0 (2 * Real.pi))
+        have hμ : IsFiniteMeasure μ := by
+          dsimp [μ]
+          exact isFiniteMeasure_restrict.mpr (by simp only [Real.volume_Ioc]; finiteness)
+        let _ := hμ
+        have hc : Continuous (fun t : ℝ => ∫ θ, h (circleMap 0 t θ) ∂μ) := by
+          apply continuous_of_dominated
+            (fun t => (hh.measurable.comp (measurable_circleMap 0 t)).aestronglyMeasurable)
+            (fun t => Filter.Eventually.of_forall (fun θ => hb (circleMap 0 t θ)))
+            (integrable_const M)
+          filter_upwards with θ
+          apply hh.comp
+          simp only [circleMap]
+          fun_prop
+        have heq (t : ℝ) : Real.circleAverage h 0 t =
+            (2 * Real.pi)⁻¹ * (∫ θ, h (circleMap 0 t θ) ∂μ) := by
+          rw [Real.circleAverage_def, intervalIntegral.integral_of_le Real.two_pi_pos.le]
+          rfl
+        simp_rw [heq]
+        exact hc.const_mul _
+      simp_rw [integral_annular_mul_eq_radial_average _ h hh]
+      exact tendsto_integral_annularRadiusLaw_mul _ (continuous_circleAverage_radius)
+    have circleAverage_affine_unit : Real.circleAverage (fun z => h (Real.exp (-r) • z + x)) 0 1 =
+          Real.circleAverage h x (Real.exp (-r)) := by
+      unfold Real.circleAverage
+      congr 1
+      apply intervalIntegral.integral_congr
+      intro θ _
+      simp only [circleMap, zero_add, Complex.ofReal_one, one_mul, Complex.real_smul]
+      congr 1
+      ring
+    simp_rw [integral_circleAnnularDensity_mul]
+    rw [integral_circleMeasure_eq_circleAverage x r h hh.measurable,
+      ← circleAverage_affine_unit]
+    apply tendsto_integral_annular_mul
+      (fun z => h (Real.exp (-r) • z + x)) (by fun_prop)
+      (fun z => hb _)
+  have ae_mem_closedBall_circleMeasure : ∀ᵐ z ∂circleMeasure x r, z ∈ closedBall (0 : ℂ) (‖x‖ + 2 * Real.exp (-r)) := by
+    filter_upwards [ae_norm_sub_center_circleMeasure x r] with z hz
+    rw [mem_closedBall, dist_zero_right]
+    calc
+      ‖z‖ = ‖(z - x) + x‖ := by rw [sub_add_cancel]
+      _ ≤ ‖z - x‖ + ‖x‖ := norm_add_le _ _
+      _ ≤ ‖x‖ + 2 * Real.exp (-r) := by rw [hz]; linarith [Real.exp_pos (-r)]
   let R := ‖x‖ + 2 * Real.exp (-r)
-  have hR : 0 < R := by dsimp [R]; positivity
+  have hR : 0 < R := by positivity
   let b : ContDiffBump (0 : ℂ) := ⟨R, R + 1, hR, lt_add_one R⟩
   let g : ℂ → ℝ := fun z => b z * h z
-  have hg : Continuous g := b.continuous.mul hh
+  have hg := b.continuous.mul hh
   have hgc : HasCompactSupport g := b.hasCompactSupport.mul_right
   obtain ⟨M, hM⟩ := hgc.exists_bound_of_continuous hg
-  have hlim := tendsto_integral_circleAnnular_mul_bounded x r g hg hM
   have heq n : (fun z => circleAnnularDensity x r n z * g z) =
       fun z => circleAnnularDensity x r n z * h z := by
     funext z
@@ -230,14 +220,14 @@ theorem tendsto_integral_circleAnnular_mul (x : ℂ) (r : ℝ)
     · have hball := support_circleAnnularDensity_subset x r n hz
       simp only [g, b.one_of_mem_closedBall hball, one_mul]
   have hae : g =ᵐ[circleMeasure x r] h := by
-    filter_upwards [ae_mem_closedBall_circleMeasure x r] with z hz
+    filter_upwards [ae_mem_closedBall_circleMeasure] with z hz
     simp only [g, b.one_of_mem_closedBall hz, one_mul]
-  simpa only [heq, integral_congr_ae hae] using hlim
+  simpa only [heq, integral_congr_ae hae] using tendsto_integral_circleAnnular_mul_bounded g hg hM
 
 /-- A common-support uniform approximation preserves weak convergence to the circle,
 regardless of the heights of the continuous annular probability densities. -/
 theorem tendsto_integral_testFn_mul_of_circleAnnular_approx
-    (x : ℂ) (r : ℝ) (f : ℕ → TestFn) (ε : ℕ → ℝ)
+ (f : ℕ → TestFn) (ε : ℕ → ℝ)
     (hε : ∀ n, 0 ≤ ε n) (hεlim : Tendsto ε atTop (𝓝 0))
     {R : ℝ} (hR : 0 < R)
     (hs : ∀ n, Function.support (f n) ⊆ closedBall (0 : ℂ) R)
@@ -246,7 +236,7 @@ theorem tendsto_integral_testFn_mul_of_circleAnnular_approx
     (k : ℂ → ℝ) (hk : Continuous k) :
     Tendsto (fun n => ∫ z, f n z * k z) atTop (𝓝 (∫ z, k z ∂circleMeasure x r)) := by
   let b : ContDiffBump (0 : ℂ) := ⟨R, R + 1, hR, lt_add_one R⟩
-  let D : ℝ := ∫ z, |b z * k z|
+  let D := ∫ z, |b z * k z|
   have hbi : Integrable (fun z => b z * k z) :=
     (b.continuous.mul hk).integrable_of_hasCompactSupport b.hasCompactSupport.mul_right
   have hfi n : Integrable (fun z => f n z * k z) :=
@@ -292,11 +282,10 @@ theorem tendsto_integral_testFn_mul_of_circleAnnular_approx
       exact (abs_le.mp (hbound n)).1
     · intro n
       exact (abs_le.mp (hbound n)).2
-  have hsum := hzero.add (tendsto_integral_circleAnnular_mul x r k hk)
-  simpa only [sub_add_cancel, zero_add] using hsum
+  simpa only [sub_add_cancel, zero_add] using hzero.add (tendsto_integral_circleAnnular_mul x r k hk)
 
 /-- Actual smooth energy approximants also converge against every continuous potential. -/
-theorem exists_testFn_circleEnergyGap_and_integral_tendsto (x : ℂ) (r : ℝ) :
+theorem exists_testFn_circleEnergyGap_and_integral_tendsto :
     ∃ f : ℕ → TestFn,
       Tendsto (fun n => circleEnergyGap x r (f n)) atTop (𝓝 0) ∧
       ∀ k : ℂ → ℝ, Continuous k → Tendsto (fun n => ∫ z, f n z * k z) atTop
@@ -319,7 +308,7 @@ theorem exists_testFn_circleEnergyGap_and_integral_tendsto (x : ℂ) (r : ℝ) :
     (fun n z => (he n z).le) k hk
 
 /-- The same smooth tests simultaneously approximate every mixed circle pairing. -/
-theorem exists_testFn_circleEnergyGap_and_cross_tendsto (x : ℂ) (r : ℝ) :
+theorem exists_testFn_circleEnergyGap_and_cross_tendsto :
     ∃ f : ℕ → TestFn,
       Tendsto (fun n => circleEnergyGap x r (f n)) atTop (𝓝 0) ∧
       ∀ y s, Tendsto (fun n => circleCross y s (f n)) atTop
@@ -327,6 +316,8 @@ theorem exists_testFn_circleEnergyGap_and_cross_tendsto (x : ℂ) (r : ℝ) :
   obtain ⟨f, hg, hw⟩ := exists_testFn_circleEnergyGap_and_integral_tendsto x r
   exact ⟨f, hg, fun y s => hw _ (continuous_circleKernelPotential y s)⟩
 
+
+end
 
 /-- The planar logarithmic singularity is locally integrable, from the stronger local
 square-integrability estimate `DOZZ.integrable_log_norm_sq_on_ball`. -/
@@ -337,9 +328,8 @@ theorem locallyIntegrable_logNorm :
   obtain ⟨R, _, hbound⟩ := hK.isBounded.exists_pos_norm_lt
   have hsub : K ⊆ ball (0 : ℂ) R := fun z hz => by
     simpa only [mem_ball, dist_zero_right] using hbound z hz
-  have hfinite : IsFiniteMeasure (volume.restrict (ball (0 : ℂ) R)) :=
+  have : IsFiniteMeasure (volume.restrict (ball (0 : ℂ) R)) :=
     isFiniteMeasure_restrict.mpr measure_ball_lt_top.ne
-  let _ := hfinite
   have hm : MemLp (fun z : ℂ => Real.log ‖z‖) 2
       (volume.restrict (ball (0 : ℂ) R)) :=
     DOZZ.memLp_two_of_integrable_norm_sq
@@ -378,16 +368,15 @@ theorem continuous_testKernelPotential (f : TestFn) :
     simp only [Pi.add_apply] at hfirst hsecond
     rw [hsecond, hfirst, integral_const_mul]
   simp_rw [heq]
-  have hrawc' : Continuous (fun z : ℂ => ∫ w, f w * (-Real.log ‖z - w‖)) := hrawc
+  have hrawc' := hrawc
   exact (hrawc'.add (continuous_log_normPlus.mul_const (∫ w, f w))).add continuous_const
 
 /-- Every section of the pinned kernel weighted by a smooth compact test is integrable. -/
 theorem integrable_testKernel_section (f : TestFn) (z : ℂ) :
     Integrable (fun w => gffKernel z w * f w) := by
   let L : ℝ →L[ℝ] ℝ →L[ℝ] ℝ := ContinuousLinearMap.lsmul ℝ ℝ
-  have hloc := locallyIntegrable_logNorm.neg
   have hraw : Integrable (fun w => f w * (-Real.log ‖z - w‖)) :=
-    f.hasCompactSupport.convolutionExists_left (L := L) f.continuous hloc z
+    f.hasCompactSupport.convolutionExists_left (L := L) f.continuous (locallyIntegrable_logNorm.neg) z
   have hfi : Integrable f (volume : Measure ℂ) := f.continuous.integrable_of_hasCompactSupport f.hasCompactSupport
   have hpin : Integrable (fun w => f w * Real.log (normPlus w)) :=
     (f.continuous.mul continuous_log_normPlus).integrable_of_hasCompactSupport f.hasCompactSupport.mul_right

@@ -10,9 +10,8 @@ public import GaussianFields.LogCorrelated.ABK.Convolution
 public import GaussianFields.LogCorrelated.ABK.ConvolutionBounds
 public import GaussianFields.LogCorrelated.ABK.Kernel
 public import GaussianFields.LogCorrelated.ABK.CanonicalField
-public import GaussianFields.LogCorrelated.ABK.Annular
-public import GaussianFields.LogCorrelated.ABK.Triadic
-
+public import GaussianFields.LogCorrelated.ABK.CanonicalField
+public import GaussianFields.LogCorrelated.ABK.CanonicalField
 /-!
 # ABK Physical-Space Log-Correlated Gaussian Field
 

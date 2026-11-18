@@ -20,8 +20,6 @@ negative moment. The Gaussian scale exponent retains the actual moment order thr
 
 @[expose] public section
 
-open MeasureTheory ProbabilityTheory Set
-open scoped ENNReal NNReal Distributions
 
 namespace DOZZ.Proofs
 

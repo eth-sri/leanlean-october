@@ -10,8 +10,6 @@ public import DOZZ.Statements.GFFStructure.CircleLogPotential
 
 @[expose] public section
 
-open MeasureTheory ProbabilityTheory Filter Topology Set Metric
-open scoped ENNReal NNReal
 
 universe u
 

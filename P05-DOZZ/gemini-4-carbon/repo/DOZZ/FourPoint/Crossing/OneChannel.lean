@@ -52,11 +52,10 @@ theorem gammaHalf_one_channel_of_full_unreflected {Ω : Type*} [MeasurableSpace 
   have hB : gaussParameterB γ (γ / 2) ε a c = gaussParameterB γ (γ / 2) a ε c := by
     unfold gaussParameterB
     ring
-  have hC := crossing_gammaHalf_channel_parameter γ a ε c hγ.ne'
   have hCC : (gaussParameterC γ (γ / 2) ε : ℂ) =
       1 + (gaussParameterA γ (γ / 2) a ε c : ℂ) +
         (gaussParameterB γ (γ / 2) a ε c : ℂ) - (gaussParameterC γ (γ / 2) a : ℂ) := by
-    exact_mod_cast hC
+    exact_mod_cast (crossing_gammaHalf_channel_parameter γ a ε c hγ.ne')
   intro z hz
   rw [gammaHalf_fourPoint_reflection P X M γ μ a ε c hγ hγ2 hX hM z,
     hformula (1 - z) (one_sub_gaussCutPlane_subset_gaussCutPlane hz), hA, hB]

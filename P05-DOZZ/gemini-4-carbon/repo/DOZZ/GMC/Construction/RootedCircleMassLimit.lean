@@ -25,8 +25,7 @@ theorem gmc_atomless_at_root_of_isGMCOf
     ∀ᵐ ω ∂P, M ω {u} = 0 := by
   have hmeas := gmc_set_mass_aemeasurable_of_isGMCOf
     P X hX γ hγ hγ2 M hM {u} (measurableSet_singleton u)
-  have href : gmcReferenceMeasure {u} = 0 := by
-    exact (withDensity_absolutelyContinuous volume
+  have href : gmcReferenceMeasure {u} = 0 := (withDensity_absolutelyContinuous volume
       (fun x : ℂ => ENNReal.ofReal (normPlus x ^ (-4 : ℝ)))) (measure_singleton u)
   exact (lintegral_eq_zero_iff' hmeas).mp
     ((equatorGFF_GMC_intensity P X hX γ hγ hγ2 M hM {u}
@@ -43,13 +42,12 @@ theorem circleRootedMeasure_mass_tendsto
         (Real.exp (γ ^ 2 * ∫ v, gffKernel x v ∂circleMeasure u (n : ℝ))))) A)
       atTop (𝓝 (gmcRootedMeasure γ u μ A)) := by
   let w : ℂ → ℝ≥0∞ := fun x => ENNReal.ofReal (Real.exp (γ ^ 2 * gffKernel u x))
-  let C : ℝ≥0∞ := ENNReal.ofReal (Real.exp (γ ^ 2 * Real.log 2))
+  let C := ENNReal.ofReal (Real.exp (γ ^ 2 * Real.log 2))
   let F : ℕ → ℂ → ℝ≥0∞ := fun n x => A.indicator (fun x => ENNReal.ofReal
     (Real.exp (γ ^ 2 * ∫ v, gffKernel x v ∂circleMeasure u (n : ℝ)))) x
   have hw : Measurable w := ENNReal.measurable_ofReal.comp
     (Real.measurable_exp.comp (measurable_const.mul (CirclePotential.measurable_gffKernel u)))
-  have hF (n : ℕ) : Measurable (F n) := by
-    exact (ENNReal.measurable_ofReal.comp (Real.measurable_exp.comp
+  have hF (n : ℕ) : Measurable (F n) := (ENNReal.measurable_ofReal.comp (Real.measurable_exp.comp
       (measurable_const.mul (continuous_circleKernelPotential u (n : ℝ)).measurable))).indicator hA
   have hne : ∀ᵐ x ∂μ, x ≠ u := by
     apply ae_iff.mpr
@@ -91,8 +89,7 @@ theorem circleRootedMeasure_mass_tendsto
     · simpa only [F, Set.indicator_of_mem hx, w] using h
     · simp only [F, Set.indicator_of_notMem hx]
       exact tendsto_const_nhds
-  have ht := tendsto_lintegral_of_dominated_convergence (fun x => C * w x) hF hbound hfin hlim
   simpa only [F, gmcRootedMeasure, withDensity_apply _ hA,
-    ← lintegral_indicator hA, w] using ht
+    ← lintegral_indicator hA, w] using tendsto_lintegral_of_dominated_convergence (fun x => C * w x) hF hbound hfin hlim
 
 end DOZZ.Proofs

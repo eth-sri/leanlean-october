@@ -39,8 +39,7 @@ theorem gammaHalf_full_unreflected_formula {Ω : Type*} [MeasurableSpace Ω]
             ‖gaussFMinus H a b c z‖ ^ 2 +
           (-μ * (planarGaussConstant (γ ^ 2 / 2) (γ * α₁)).re) *
             structureConstant P M γ μ (α₁ + γ / 2) α₂ α₃ *
-              ‖gaussFPlus H a b c z‖ ^ 2 := by
-  exact bpz_gammaHalf_full_unreflected_formula_of_diag hH P X M γ μ α₁ α₂ α₃ hγ hγ₂ hμ hαlo
+              ‖gaussFPlus H a b c z‖ ^ 2 := bpz_gammaHalf_full_unreflected_formula_of_diag hH P X M γ μ α₁ α₂ α₃ hγ hγ₂ hμ hαlo
     hαhi hα₂ hα₃ hs hX hM fun M' γ' t h0 h2 hM' hlo hhi h₂ h₃ hs' =>
       degenerateFourPoint_diagonal_classification hH P X M' γ' μ (γ' / 2) t α₂ α₃ h0 h2 hμ
         (Or.inl rfl)

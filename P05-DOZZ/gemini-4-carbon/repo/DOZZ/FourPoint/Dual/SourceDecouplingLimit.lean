@@ -16,13 +16,9 @@ namespace DOZZ.Proofs
 theorem dual_restart_radius_ratio (z : ℂ) (hz : z ≠ 0) (h ξ : ℝ) :
     (Real.exp (-h)*‖z‖)/‖z‖^(1-ξ) = Real.exp (-h)*‖z‖^ξ := by
   have hn := norm_pos_iff.mpr hz
-  have hr := Real.rpow_pos_of_pos hn (1-ξ)
-  have he : ‖z‖ = ‖z‖^(1-ξ)*‖z‖^ξ := by
+  have : ‖z‖ = ‖z‖^(1-ξ)*‖z‖^ξ := by
     rw [← Real.rpow_add hn, sub_add_cancel, Real.rpow_one]
-  have hratio : ‖z‖/‖z‖^(1-ξ) = ‖z‖^ξ := by
-    calc
-      _ = (‖z‖^(1-ξ)*‖z‖^ξ)/‖z‖^(1-ξ) := congrArg (fun y => y/‖z‖^(1-ξ)) he
-      _ = _ := mul_div_cancel_left₀ _ hr.ne'
+  have hratio : ‖z‖/‖z‖^(1-ξ) = ‖z‖^ξ := by grind
   rw [mul_div_assoc, hratio]
 
 /-- The supplied chaos admits independent lateral copies whose actual signed separated-mass

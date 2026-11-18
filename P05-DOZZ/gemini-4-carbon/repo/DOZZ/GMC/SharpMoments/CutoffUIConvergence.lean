@@ -26,83 +26,6 @@ open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
 
-/-- Admissible compact parameter sets carry a uniform small admissible order: a positive order
-admissible at every root charge, at its positive part, and at the positive part of the charge at
-infinity, together with a uniform root separation. -/
-theorem cutoffUI_uniform_order
-    {N : ℕ} (S : Set (ℝ × ((Fin N → ℂ) × (Fin N → ℝ) × ℝ))) (hS : IsCompact S)
-    (hadm : ∀ c ∈ S, 0 < c.1 ∧ c.1 < 2 ∧ Function.Injective c.2.1 ∧
-      (∀ k, c.2.2.1 k < Q c.1) ∧ c.2.2.2 < Q c.1) :
-    ∃ tst : ℝ, 0 < tst ∧
-      (∀ c ∈ S, ∀ k, 0 < weightedCutoffSlack (c.1, c.2.2.1 k, tst)) ∧
-      (∀ c ∈ S, ∀ k, 0 < weightedCutoffSlack (c.1, max (c.2.2.1 k) 0, tst)) ∧
-      (∀ c ∈ S, 0 < weightedCutoffSlack (c.1, max c.2.2.2 0, tst)) ∧
-      ∃ ρs : ℝ, 0 < ρs ∧ ρs ≤ 1 ∧ ∀ c ∈ S, ∀ j k, j ≠ k → 2 * ρs ≤ ‖c.2.1 j - c.2.1 k‖ := by
-  classical
-  have hne : ∀ c ∈ S, c.1 ≠ 0 := fun c hc => (hadm c hc).1.ne'
-  have hconton : ∀ f : ℝ × ((Fin N → ℂ) × (Fin N → ℝ) × ℝ) → ℝ,
-      (∀ c ∈ S, ContinuousAt f c) → ContinuousOn f S := fun f hf c hc =>
-    (hf c hc).continuousWithinAt
-  have hQpos : ∀ c ∈ S, 0 < Q c.1 := fun c hc => by
-    have := (hadm c hc).1
-    rw [Q]
-    positivity
-  have e1 : ∀ᶠ m in 𝓝[>] (0 : ℝ), ∀ c ∈ S, m ≤ 4 / c.1 ^ 2 :=
-    eventually_le_of_isCompact_of_pos hS (hconton _ fun c hc => by
-      have h := hne c hc
-      fun_prop (disch := first | exact h | exact pow_ne_zero _ h)) fun c hc => by
-        have := (hadm c hc).1
-        positivity
-  have e2 : ∀ k, ∀ᶠ m in 𝓝[>] (0 : ℝ), ∀ c ∈ S, m ≤ 2 / c.1 * (Q c.1 - max (c.2.2.1 k) 0) :=
-    fun k => eventually_le_of_isCompact_of_pos hS (hconton _ fun c hc => by
-      have h := hne c hc
-      simp only [Q]
-      fun_prop (disch := first | exact h | exact pow_ne_zero _ h)) fun c hc =>
-        mul_pos (div_pos two_pos (hadm c hc).1)
-          (sub_pos.mpr (max_lt ((hadm c hc).2.2.2.1 k) (hQpos c hc)))
-  have e3 : ∀ᶠ m in 𝓝[>] (0 : ℝ), ∀ c ∈ S, m ≤ 2 / c.1 * (Q c.1 - max c.2.2.2 0) :=
-    eventually_le_of_isCompact_of_pos hS (hconton _ fun c hc => by
-      have h := hne c hc
-      simp only [Q]
-      fun_prop (disch := first | exact h | exact pow_ne_zero _ h)) fun c hc =>
-        mul_pos (div_pos two_pos (hadm c hc).1)
-          (sub_pos.mpr (max_lt (hadm c hc).2.2.2.2 (hQpos c hc)))
-  have e4 : ∀ j k : Fin N, ∀ᶠ ε in 𝓝[>] (0 : ℝ),
-      j ≠ k → ∀ c ∈ S, 2 * ε ≤ ‖c.2.1 j - c.2.1 k‖ := by
-    intro j k
-    by_cases hjk : j = k
-    · exact Eventually.of_forall fun _ h => absurd hjk h
-    · filter_upwards [eventually_le_of_isCompact_of_pos hS
-        (f := fun c : ℝ × ((Fin N → ℂ) × (Fin N → ℝ) × ℝ) => ‖c.2.1 j - c.2.1 k‖ / 2)
-        (by fun_prop)
-        fun c hc => half_pos (norm_pos_iff.mpr (sub_ne_zero.mpr
-          ((hadm c hc).2.2.1.ne hjk)))] with ε hε _ c hc
-      linarith [hε c hc]
-  obtain ⟨m, h1, h2, h3, h4, hm0, hm1⟩ := (e1.and ((eventually_all.mpr e2).and (e3.and
-    ((eventually_all.mpr fun j => eventually_all.mpr (e4 j)).and (Ioo_mem_nhdsGT
-      (show (0 : ℝ) < 1 by norm_num)))))).exists
-  have hm : 0 < m := hm0
-  refine ⟨m / 2, half_pos hm, ?_, ?_, ?_, m, hm, hm1.le, fun c hc j k hjk => h4 j k hjk c hc⟩
-  · intro c hc k
-    obtain ⟨hγ0, hγ2, -, hαQ, -⟩ := hadm c hc
-    refine (weightedCutoffSlack_pos_iff _).mpr ⟨hγ0, hγ2, hαQ k, half_pos hm, lt_min ?_ ?_⟩
-    · linarith [h1 c hc]
-    · have hle : 2 / c.1 * (Q c.1 - max (c.2.2.1 k) 0) ≤ 2 / c.1 * (Q c.1 - c.2.2.1 k) :=
-        mul_le_mul_of_nonneg_left (by linarith [le_max_left (c.2.2.1 k) 0])
-          (div_pos two_pos hγ0).le
-      linarith [h2 k c hc]
-  · intro c hc k
-    obtain ⟨hγ0, hγ2, -, hαQ, -⟩ := hadm c hc
-    refine (weightedCutoffSlack_pos_iff _).mpr ⟨hγ0, hγ2, max_lt (hαQ k) (hQpos c hc),
-      half_pos hm, lt_min ?_ ?_⟩
-    · linarith [h1 c hc]
-    · linarith [h2 k c hc]
-  · intro c hc
-    obtain ⟨hγ0, hγ2, -, -, hαinf⟩ := hadm c hc
-    refine (weightedCutoffSlack_pos_iff _).mpr ⟨hγ0, hγ2, max_lt hαinf (hQpos c hc),
-      half_pos hm, lt_min ?_ ?_⟩
-    · linarith [h1 c hc]
-    · linarith [h3 c hc]
 
 /-- Regularized Coulomb masses converge in probability to the Coulomb masses of the limiting
 chaos, uniformly over compact admissible parameter sets: the convergence half of the
@@ -121,11 +44,81 @@ theorem regularizedCoulombMass_tendstoInProbability_uniform
         (regularizedCoulombMass P Xc c.1 partition c.2.2.1 c.2.1 c.2.2.2 r ω).toReal
         (coulombMass c.1 (Mfam c.1 ω) c.2.2.1 c.2.1 c.2.2.2).toReal})
       atTop (𝓝 0) := by
+  have cutoffUI_uniform_order : ∃ tst : ℝ, 0 < tst ∧
+        (∀ c ∈ S, ∀ k, 0 < weightedCutoffSlack (c.1, c.2.2.1 k, tst)) ∧
+        (∀ c ∈ S, ∀ k, 0 < weightedCutoffSlack (c.1, max (c.2.2.1 k) 0, tst)) ∧
+        (∀ c ∈ S, 0 < weightedCutoffSlack (c.1, max c.2.2.2 0, tst)) ∧
+        ∃ ρs : ℝ, 0 < ρs ∧ ρs ≤ 1 ∧ ∀ c ∈ S, ∀ j k, j ≠ k → 2 * ρs ≤ ‖c.2.1 j - c.2.1 k‖ := by
+    classical
+    have hne : ∀ c ∈ S, c.1 ≠ 0 := fun c hc => (hadm c hc).1.ne'
+    have hconton : ∀ f : ℝ × ((Fin N → ℂ) × (Fin N → ℝ) × ℝ) → ℝ,
+        (∀ c ∈ S, ContinuousAt f c) → ContinuousOn f S := fun f hf c hc =>
+      (hf c hc).continuousWithinAt
+    have hQpos : ∀ c ∈ S, 0 < Q c.1 := fun c hc => by
+      have := (hadm c hc).1
+      rw [Q]
+      positivity
+    have e1 : ∀ᶠ m in 𝓝[>] (0 : ℝ), ∀ c ∈ S, m ≤ 4 / c.1 ^ 2 :=
+      eventually_le_of_isCompact_of_pos hS (hconton _ fun c hc => by
+        have h := hne c hc
+        fun_prop (disch := first | exact h | exact pow_ne_zero _ h)) fun c hc => by
+          have := (hadm c hc).1
+          positivity
+    have e2 : ∀ k, ∀ᶠ m in 𝓝[>] (0 : ℝ), ∀ c ∈ S, m ≤ 2 / c.1 * (Q c.1 - max (c.2.2.1 k) 0) :=
+      fun k => eventually_le_of_isCompact_of_pos hS (hconton _ fun c hc => by
+        have h := hne c hc
+        simp only [Q]
+        fun_prop (disch := first | exact h | exact pow_ne_zero _ h)) fun c hc =>
+          mul_pos (div_pos two_pos (hadm c hc).1)
+            (sub_pos.mpr (max_lt ((hadm c hc).2.2.2.1 k) (hQpos c hc)))
+    have e3 :=
+      eventually_le_of_isCompact_of_pos hS (hconton _ fun c hc => by
+        have h := hne c hc
+        simp only [Q]
+        fun_prop (disch := first | exact h | exact pow_ne_zero _ h)) fun c hc =>
+          mul_pos (div_pos two_pos (hadm c hc).1)
+            (sub_pos.mpr (max_lt (hadm c hc).2.2.2.2 (hQpos c hc)))
+    have e4 : ∀ j k : Fin N, ∀ᶠ ε in 𝓝[>] (0 : ℝ),
+        j ≠ k → ∀ c ∈ S, 2 * ε ≤ ‖c.2.1 j - c.2.1 k‖ := by
+      intro j k
+      by_cases hjk : j = k
+      · exact Eventually.of_forall fun _ h => absurd hjk h
+      · filter_upwards [eventually_le_of_isCompact_of_pos hS
+          (f := fun c : ℝ × ((Fin N → ℂ) × (Fin N → ℝ) × ℝ) => ‖c.2.1 j - c.2.1 k‖ / 2)
+          (by fun_prop)
+          fun c hc => half_pos (norm_pos_iff.mpr (sub_ne_zero.mpr
+            ((hadm c hc).2.2.1.ne hjk)))] with ε hε _ c hc
+        linarith [hε c hc]
+    obtain ⟨m, h1, h2, h3, h4, hm0, hm1⟩ := (e1.and ((eventually_all.mpr e2).and (e3.and
+      ((eventually_all.mpr fun j => eventually_all.mpr (e4 j)).and (Ioo_mem_nhdsGT
+        (show (0 : ℝ) < 1 by norm_num)))))).exists
+    have hm := hm0
+    refine ⟨m / 2, half_pos hm, ?_, ?_, ?_, m, hm, hm1.le, fun c hc j k hjk => h4 j k hjk c hc⟩
+    · intro c hc k
+      obtain ⟨hγ0, hγ2, -, hαQ, -⟩ := hadm c hc
+      refine (weightedCutoffSlack_pos_iff _).mpr ⟨hγ0, hγ2, hαQ k, half_pos hm, lt_min ?_ ?_⟩
+      · linarith [h1 c hc]
+      · have hle : 2 / c.1 * (Q c.1 - max (c.2.2.1 k) 0) ≤ 2 / c.1 * (Q c.1 - c.2.2.1 k) :=
+          mul_le_mul_of_nonneg_left (by linarith [le_max_left (c.2.2.1 k) 0])
+            (div_pos two_pos hγ0).le
+        linarith [h2 k c hc]
+    · intro c hc k
+      obtain ⟨hγ0, hγ2, -, hαQ, -⟩ := hadm c hc
+      refine (weightedCutoffSlack_pos_iff _).mpr ⟨hγ0, hγ2, max_lt (hαQ k) (hQpos c hc),
+        half_pos hm, lt_min ?_ ?_⟩
+      · linarith [h1 c hc]
+      · linarith [h2 k c hc]
+    · intro c hc
+      obtain ⟨hγ0, hγ2, -, -, hαinf⟩ := hadm c hc
+      refine (weightedCutoffSlack_pos_iff _).mpr ⟨hγ0, hγ2, max_lt hαinf (hQpos c hc),
+        half_pos hm, lt_min ?_ ?_⟩
+      · linarith [h1 c hc]
+      · linarith [h3 c hc]
   classical
   let _ : IsProbabilityMeasure P := hX.1
   intro ε hε
   -- uniform parameters
-  obtain ⟨tst, htst, hroot, hrootp, hinf, ρs, hρs, hρs1, hsep⟩ := cutoffUI_uniform_order S hS hadm
+  obtain ⟨tst, htst, hroot, hrootp, hinf, ρs, hρs, hρs1, hsep⟩ := cutoffUI_uniform_order
   obtain ⟨ρ1, hρ1, A1, hA1, κ1, hκ1, hbad1⟩ := cutoffUI_bad_cutoff_moment_le P X hX Xc hXc
     partition N S hS htst hroot hinf hρs hρs1 hsep
   obtain ⟨ρ2, hρ2, A2, hA2, κ2, hκ2, hbad2⟩ := cutoffUI_bad_limit_moment_le P X hX Xc hXc Mfam
@@ -156,7 +149,6 @@ theorem regularizedCoulombMass_tendstoInProbability_uniform
     have := Finset.sum_nonneg (fun j (_ : j ∈ Finset.univ) => abs_nonneg (c.1 * c.2.2.1 j))
     linarith [hEsum c hc]
   set Γ : Set ℝ := (fun c : ℝ × ((Fin N → ℂ) × (Fin N → ℝ) × ℝ) => c.1) '' S with hΓdef
-  have hΓ : IsCompact Γ := hS.image continuous_fst
   have hΓ2 : Γ ⊆ Set.Ioo 0 2 := by
     rintro _ ⟨c, hc, rfl⟩
     exact ⟨(hadm c hc).1, (hadm c hc).2.1⟩
@@ -171,7 +163,6 @@ theorem regularizedCoulombMass_tendstoInProbability_uniform
   have ha0 : a ≠ 0 := (ENNReal.ofReal_pos.mpr (by positivity)).ne'
   have hat : a ≠ ⊤ := ENNReal.ofReal_ne_top
   have hat0 : a ^ tst ≠ 0 := (ENNReal.rpow_pos (pos_iff_ne_zero.mpr ha0) hat).ne'
-  have hatt : a ^ tst ≠ ⊤ := ENNReal.rpow_ne_top_of_nonneg htst.le hat
   refine ENNReal.tendsto_atTop_zero.mpr fun θ hθ => ?_
   -- choose the radius of the bad region
   have hT : ∀ (A : ℝ≥0∞) (κ : ℝ), A ≠ ⊤ → 0 < κ →
@@ -189,14 +180,12 @@ theorem regularizedCoulombMass_tendstoInProbability_uniform
   obtain ⟨ρ, ⟨hρb1, hρb2⟩, hρint⟩ := (((hT A1 κ1 hA1.ne hκ1).eventually (Iio_mem_nhds hδ1pos)).and
     ((hT A2 κ2 hA2.ne hκ2).eventually (Iio_mem_nhds hδ1pos))).and
     (Ioo_mem_nhdsGT (lt_min (lt_min hρ1 hρ2) one_pos)) |>.exists
-  have hρ : 0 < ρ := hρint.1
-  have hρle1 : ρ ≤ ρ1 := (hρint.2.le.trans (min_le_left _ _)).trans (min_le_left _ _)
-  have hρle2 : ρ ≤ ρ2 := (hρint.2.le.trans (min_le_left _ _)).trans (min_le_right _ _)
-  have hρ1' : ρ ≤ 1 := hρint.2.le.trans (min_le_right _ _)
+  have hρ := hρint.1
+  have hρ1' := hρint.2.le.trans (min_le_right _ _)
   -- the good part
   obtain ⟨L, hL0, hL⟩ := coulombCutoffWeight_sub_coulombWeight_le partition N hZs hE hρ hρ1'
   set L2 : ℝ := ((1 + 1 / ρ + Zs) / ρ) ^ ((N + 1) * E) with hL2
-  have hUL1 := equatorGFF_GMC_uniform_L1 P X hX Xc hXc Mfam hMfam Γ hΓ hΓ2
+  have hUL1 := equatorGFF_GMC_uniform_L1 P X hX Xc hXc Mfam hMfam Γ (hS.image continuous_fst) hΓ2
     (closedBall 0 (1 / ρ)) (isCompact_closedBall _ _) L2
   set Sρ : ℝ → ℝ≥0∞ := fun r => ⨆ γ ∈ Γ, ⨆ (f : ℂ → ℝ) (_ : Measurable f)
       (_ : ∀ x, |f x| ≤ L2) (_ : ∀ x ∉ closedBall (0 : ℂ) (1 / ρ), f x = 0),
@@ -233,9 +222,9 @@ theorem regularizedCoulombMass_tendstoInProbability_uniform
   set goodl : Ω → ℝ≥0∞ := fun ω => ∫⁻ x in Badᶜ, F x ∂M ω with hgoodl
   -- moments of the bad parts
   have hB1 : ∫⁻ ω, badr ω ^ tst ∂P ≤ A1 * ENNReal.ofReal (ρ ^ κ1) :=
-    hbad1 c hc ρ hρ hρle1 r hrlog
+    hbad1 c hc ρ hρ ((hρint.2.le.trans (min_le_left _ _)).trans (min_le_left _ _)) r hrlog
   have hB2 : ∫⁻ ω, badl ω ^ tst ∂P ≤ A2 * ENNReal.ofReal (ρ ^ κ2) :=
-    hbad2 c hc ρ hρ hρle2
+    hbad2 c hc ρ hρ ((hρint.2.le.trans (min_le_left _ _)).trans (min_le_right _ _))
   -- measurability
   have hsetm : ∀ (s : Set ℂ) (hs : MeasurableSet s) (f : ℂ → ℝ≥0∞) (hf : Measurable f) (r' : ℝ),
       Measurable fun ω => ∫⁻ x in s, f x ∂regularizedGMC P Xc c.1 r' ω := by
@@ -277,11 +266,11 @@ theorem regularizedCoulombMass_tendstoInProbability_uniform
       have : (1 : ℝ) ≤ 1 / ρ := by rw [le_div_iff₀ hρ]; linarith
       linarith [Finset.sum_nonneg (fun j (_ : j ∈ Finset.univ) => norm_nonneg (c.2.1 j))]
     · exact div_le_div_of_nonneg_right (by linarith [hZc c hc]) hρ.le
-    · exact add_nonneg (Finset.sum_nonneg fun j _ => abs_nonneg _) (abs_nonneg _)
+    · positivity
     · linarith [hEsum c hc, (by
         have := Finset.sum_nonneg (fun j (_ : j ∈ Finset.univ) => abs_nonneg (c.1 * c.2.2.1 j))
-        calc ∑ j, |c.1 * c.2.2.1 j| ≤ ∑ _j : Fin N, E := Finset.sum_le_sum fun j _ => hEα c hc j
-          _ = N * E := by simp : ∑ j, |c.1 * c.2.2.1 j| ≤ N * E), hEinf c hc]
+        refine (Finset.sum_le_sum fun j _ => hEα c hc j).trans_eq (?_)
+        simp : ∑ j, |c.1 * c.2.2.1 j| ≤ N * E), hEinf c hc]
   have hfinr : ∀ᵐ ω ∂P, IsFiniteMeasure (regularizedGMC P Xc c.1 r ω) :=
     regularizedGMC_finite_ae P X hX Xc hXc c.1 r
   have hgr : ∀ᵐ ω ∂P, goodr ω ≠ ⊤ := by
@@ -328,9 +317,7 @@ theorem regularizedCoulombMass_tendstoInProbability_uniform
     intro x
     by_cases hx : x ∈ Badᶜ
     · rw [hh, Set.indicator_of_mem hx, abs_of_nonneg ENNReal.toReal_nonneg]
-      calc (F x).toReal ≤ (ENNReal.ofReal L2).toReal :=
-            ENNReal.toReal_mono ENNReal.ofReal_ne_top (hFbulk x hx)
-        _ = L2 := ENNReal.toReal_ofReal (by positivity)
+      exact (ENNReal.toReal_mono ENNReal.ofReal_ne_top (hFbulk x hx)).trans_eq (ENNReal.toReal_ofReal (by positivity))
     · rw [hh, Set.indicator_of_notMem hx, abs_zero]
       positivity
   have hhK : ∀ x ∉ closedBall (0 : ℂ) (1 / ρ), h x = 0 := by
@@ -365,11 +352,9 @@ theorem regularizedCoulombMass_tendstoInProbability_uniform
       refine le_iSup_of_le hhm ?_
       refine le_iSup_of_le hhb ?_
       exact le_iSup_of_le hhK le_rfl
-    calc ∫⁻ ω, ENNReal.ofReal |(goodr ω).toReal - (goodl ω).toReal| ∂P
-        ≤ ∫⁻ ω, (ENNReal.ofReal (L * Real.exp (-r)) * regularizedGMC P Xc c.1 r ω Badᶜ +
-            ENNReal.ofReal |∫ x, h x ∂regularizedGMC P Xc c.1 r ω - ∫ x, h x ∂M ω|) ∂P :=
-          lintegral_mono_ae hpt
-      _ = ENNReal.ofReal (L * Real.exp (-r)) * ∫⁻ ω, regularizedGMC P Xc c.1 r ω Badᶜ ∂P +
+    refine (lintegral_mono_ae hpt).trans (?_)
+    calc ∫⁻ ω, (ENNReal.ofReal (L * Real.exp (-r)) * regularizedGMC P Xc c.1 r ω Badᶜ +
+            ENNReal.ofReal |∫ x, h x ∂regularizedGMC P Xc c.1 r ω - ∫ x, h x ∂M ω|) ∂P = ENNReal.ofReal (L * Real.exp (-r)) * ∫⁻ ω, regularizedGMC P Xc c.1 r ω Badᶜ ∂P +
             ∫⁻ ω, ENNReal.ofReal |∫ x, h x ∂regularizedGMC P Xc c.1 r ω - ∫ x, h x ∂M ω| ∂P := by
           have hMm : AEMeasurable (fun ω => regularizedGMC P Xc c.1 r ω Badᶜ) P :=
             ((Measure.measurable_coe hBadm.compl).comp
@@ -388,7 +373,6 @@ theorem regularizedCoulombMass_tendstoInProbability_uniform
   have hp3 : (∫⁻ ω, ENNReal.ofReal |(goodr ω).toReal - (goodl ω).toReal| ∂P) / a ≤ θ / 3 := by
     refine ENNReal.div_le_of_le_mul ?_
     exact hgoodL1.trans (le_of_lt (by simpa [hδ3, mul_comm] using hr0 r hrr0))
-  calc _ ≤ θ / 3 + θ / 3 + θ / 3 := add_le_add (add_le_add hp1 hp2) hp3
-    _ = θ := ENNReal.add_thirds θ
+  exact (add_le_add (add_le_add hp1 hp2) hp3).trans_eq (ENNReal.add_thirds θ)
 
 end DOZZ.Proofs

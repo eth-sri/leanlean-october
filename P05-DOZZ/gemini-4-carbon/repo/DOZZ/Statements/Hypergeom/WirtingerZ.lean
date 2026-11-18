@@ -10,8 +10,6 @@ public import DOZZ.Statements.Hypergeom.GaussHolomorphicOperator
 
 @[expose] public section
 
-open MeasureTheory Filter Set
-open scoped Topology
 
 namespace DOZZ
 

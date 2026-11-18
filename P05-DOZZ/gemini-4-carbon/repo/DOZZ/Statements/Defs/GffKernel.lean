@@ -10,8 +10,6 @@ public import DOZZ.Statements.Defs.NormPlus
 
 @[expose] public section
 
-open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
-open scoped Distributions ENNReal NNReal
 
 namespace DOZZ
 

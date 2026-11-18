@@ -41,13 +41,13 @@ theorem reflected_source_pareto_increment_error
       |(∫ v, E v ∂P.prod P)-(a*Real.Gamma (-a)*Real.Gamma (p+a)/Real.Gamma p)*
         L*(∫⁻ ω, twoSidedReflectionMass γ B Z ω ^a ∂P).toReal| ≤
       (a*p/(1-a))*F*(∫⁻ ω, twoSidedReflectionMass γ B Z ω ∂P).toReal := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _ := hX.1
   let ν := Q γ-α₁
   let a := 2*ν/γ
   let A := fun ω => (gammaHalfOuterMass γ α₁ α₂ α₃ (M ω) z ξ).toReal
   let b := reflected_radial_scale γ ν h Xc z
   let S := fun ω => (twoSidedReflectionMass γ B Z ω).toReal
-  have hν : 0 < ν := sub_pos.mpr hα₁
+  have hν := sub_pos.mpr hα₁
   have ha : 0 < a := div_pos (mul_pos (by norm_num) hν) hγ
   have ha1 : a < 1 := by
     dsimp only [a]
@@ -58,20 +58,18 @@ theorem reflected_source_pareto_increment_error
     nlinarith only [hγ,hγ₂]
   have hS1 := reflected_reflection_real_moment P γ α₁ 1 B Z hα₁ hData h4
   have hSa := reflected_reflection_real_moment P γ α₁ a B Z hα₁ hData (ha1.trans h4)
-  have hSp : ∀ᵐ ω ∂P, 0 < S ω :=
+  have hSp :=
     (reflected_reflection_mass_positive_finite_ae P γ α₁ B Z hγ hγ₂ hα₁ hData).mono
       fun ω hω => ENNReal.toReal_pos hω.1.ne' hω.2.ne
-  have hSm : AEMeasurable S P :=
+  have hSm :=
     (twoSidedReflectionMass_aemeasurable_of_lateral P γ B Z
       (conditionedPair_aemeasurable P B ν hData.1) hData.2.1).ennreal_toReal
-  have hAm : AEMeasurable A P :=
+  have hAm :=
     ((reflected_outerMass_measure_measurable γ α₁ α₂ α₃ ξ z).comp_aemeasurable
       (equatorGFF_GMC_aemeasurable P X hX γ hγ hγ₂ M hM)).ennreal_toReal
-  have hcoord : AEMeasurable (fun ω => Xc ω 0 (-Real.log ‖z‖+h)) P :=
-    (hc.2.1 0 (-Real.log ‖z‖+h)).aemeasurable
   have hbm : AEMeasurable b P := by
     dsimp only [b,reflected_radial_scale]
-    exact ((hcoord.const_mul γ).sub aemeasurable_const).sub aemeasurable_const |>.exp
+    exact ((((hc.2.1 0 (-Real.log ‖z‖+h)).aemeasurable).const_mul γ).sub aemeasurable_const).sub aemeasurable_const |>.exp
   have hbp (ω : Ω) : 0 < b ω := by
     dsimp only [b,reflected_radial_scale]
     exact Real.exp_pos _

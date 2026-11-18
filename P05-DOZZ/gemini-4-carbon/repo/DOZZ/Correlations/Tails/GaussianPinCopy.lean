@@ -27,7 +27,7 @@ theorem gaussian_pin_copy_law
       (P.prod P).map (fun q j => j.elim (Z none q.2) (fun i =>
         Z (some i) q.1 + (covariance (Z (some i)) (Z none) P / v) *
           (Z none q.2 - Z none q.1))) := by
-  let : IsProbabilityMeasure P := hZ.isProbabilityMeasure
+  let := hZ.isProbabilityMeasure
   let a : I → ℝ := fun i => covariance (Z (some i)) (Z none) P / v
   let R : Ω → I → ℝ := fun ω i => Z (some i) ω - a i * Z none ω
   have hN : Measurable (Z none) := (measurable_pi_apply none).comp hZm
@@ -35,8 +35,6 @@ theorem gaussian_pin_copy_law
     apply measurable_pi_iff.mpr
     intro i
     exact ((measurable_pi_apply (some i)).comp hZm).sub (hN.const_mul (a i))
-  have hi : IndepFun (Z none) R P := gaussian_regression_indep P Z hZ v hv hvar
-  have hNR := hi.map_prod_eq_prod_map_map hN.aemeasurable hR.aemeasurable
   have hRc : Measurable (fun q : Ω × Ω => R q.1) := hR.comp measurable_fst
   have hNc : Measurable (fun q : Ω × Ω => Z none q.2) := hN.comp measurable_snd
   have hcopy := (indepFun_prod (μ := P) (ν := P) hR hN).symm.map_prod_eq_prod_map_map
@@ -47,7 +45,7 @@ theorem gaussian_pin_copy_law
   have hRmap : (P.prod P).map (fun q : Ω × Ω => R q.1) = P.map R := by
     rw [← Function.comp_def, ← Measure.map_map hR measurable_fst,
       measurePreserving_fst.map_eq]
-  rw [hNmap, hRmap, ← hNR] at hcopy
+  rw [hNmap, hRmap, ← ((gaussian_regression_indep P Z hZ v hv hvar).map_prod_eq_prod_map_map hN.aemeasurable hR.aemeasurable)] at hcopy
   let restore : ℝ × (I → ℝ) → Option I → ℝ := fun q j =>
     j.elim q.1 (fun i => q.2 i + a i * q.1)
   have hr : Measurable restore := by
@@ -69,11 +67,7 @@ theorem gaussian_pin_copy_law
   have htarget : (restore ∘ fun q : Ω × Ω => (Z none q.2, R q.1)) =
       fun q j => j.elim (Z none q.2) (fun i =>
         Z (some i) q.1 + (covariance (Z (some i)) (Z none) P / v) *
-          (Z none q.2 - Z none q.1)) := by
-    funext q j
-    cases j <;> simp only [restore, Function.comp_def, Option.elim_none,
-      Option.elim_some, R, a]
-    all_goals ring
+          (Z none q.2 - Z none q.1)) := by grind
   rw [hsource, htarget] at he
   exact he.symm
 

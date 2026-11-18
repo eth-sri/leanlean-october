@@ -29,7 +29,7 @@ theorem inversionCircle_source_jointly_gaussian
       X ω (inversionTest (f i n) (hf i n)) - Z i ω) 2 P) atTop (𝓝 0)) :
     IsCenteredJointlyGaussian P (fun ω i =>
       if (q i).1 then Xc ω (q i).2.1 (q i).2.2 else Z i ω) := by
-  let : IsProbabilityMeasure P := hX.1
+  let := hX.1
   have hex i := exists_testFn_circleEnergyGap_tendsto_zero (q i).2.1 (q i).2.2
   choose g _hgs _hga hgap using hex
   let F : Fin m → ℕ → TestFn := fun i n =>
@@ -75,8 +75,8 @@ theorem inversionCircle_fdd_law
     (hlim : ∀ i, Tendsto (fun n => eLpNorm (fun ω =>
       X ω (inversionTest (f i n) (hf i n)) - Z i ω) 2 P) atTop (𝓝 0)) :
     P.map (fun ω i => Z i ω) = P'.map (fun ω i => Xc' ω (q i).1 (q i).2) := by
-  let : IsProbabilityMeasure P := hX.1
-  let : IsProbabilityMeasure P' := hX'.1
+  let := hX.1
+  let := hX'.1
   apply gmc_limit_test_vector_law
     (fun n ω i => X ω (inversionTest (f i n) (hf i n)))
     (fun n ω i => X' ω (f i n)) (fun ω i => Z i ω)

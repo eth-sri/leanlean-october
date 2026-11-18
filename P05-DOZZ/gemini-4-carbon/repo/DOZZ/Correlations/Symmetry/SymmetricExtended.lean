@@ -20,9 +20,8 @@ theorem unitVolumeStructureConstant_symmetric_extended
       unitVolumeStructureConstant P M γ α₁ α₂ α₃ = unitVolumeStructureConstant P M γ α₁ α₃ α₂ ∧
       unitVolumeStructureConstant P M γ α₁ α₂ α₃ = unitVolumeStructureConstant P M γ α₃ α₂ α₁ := by
   rcases hα with ⟨_, _, _, _⟩
-  have h12 := unitVolumeStructureConstant_swap12 P X M γ α₁ α₂ α₃ hγ hγ2 hX hM
   have h13 := unitVolumeStructureConstant_swap13 P X M γ α₁ α₂ α₃ hγ hγ2 hX hM
-  refine ⟨h12, ?_, h13⟩
+  refine ⟨(unitVolumeStructureConstant_swap12 P X M γ α₁ α₂ α₃ hγ hγ2 hX hM), ?_, h13⟩
   exact h13.trans ((unitVolumeStructureConstant_swap12 P X M γ α₃ α₂ α₁ hγ hγ2 hX hM).trans
     (unitVolumeStructureConstant_swap13 P X M γ α₂ α₃ α₁ hγ hγ2 hX hM))
 

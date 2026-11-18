@@ -23,12 +23,15 @@ open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
 
-noncomputable def gaussianRectangleIndicator {Ω ι : Type*} [MeasurableSpace Ω] [Fintype ι]
+variable {Ω ι : Type*}
+
+
+noncomputable def gaussianRectangleIndicator [MeasurableSpace Ω] [Fintype ι]
     (Z : Ω → ι → ℝ) (b c : ι → ℝ) : Ω → ℝ :=
   fun ω => if ∀ i, Z ω i + c i ≤ b i then 1 else 0
 
 private theorem gaussianRectangleIndicator_aestronglyMeasurable
-    {Ω ι : Type*} [MeasurableSpace Ω] [Fintype ι]
+ [MeasurableSpace Ω] [Fintype ι]
     (P : Measure Ω) (Z : Ω → ι → ℝ) (hZ : IsCenteredJointlyGaussian P Z)
     (b c : ι → ℝ) : AEStronglyMeasurable (gaussianRectangleIndicator Z b c) P := by
   let S : Set (ι → ℝ) := {z | ∀ i, z i + c i ≤ b i}
@@ -47,21 +50,16 @@ private theorem gaussianRectangleIndicator_aestronglyMeasurable
     exact hZ.2.1 i
   have hF : Measurable (fun z : ι → ℝ => if z ∈ S then (1 : ℝ) else 0) :=
     Measurable.ite hS measurable_const measurable_const
-  have hEq : gaussianRectangleIndicator Z b c =
-      (fun z : ι → ℝ => if z ∈ S then (1 : ℝ) else 0) ∘ Z := by
-    funext ω
-    rfl
-  rw [hEq]
   exact hF.comp_aemeasurable hZae |>.aestronglyMeasurable
 
 private noncomputable def gaussianRectangleShiftBandIndicator
-    {Ω ι : Type*} [MeasurableSpace Ω] [Fintype ι]
+ [MeasurableSpace Ω] [Fintype ι]
     (Z : Ω → ι → ℝ) (b c d : ι → ℝ) (i : ι) : Ω → ℝ :=
   Set.indicator {ω | Z ω i ∈ Set.Icc (min (b i - c i) (b i - d i))
       (max (b i - c i) (b i - d i))} (fun _ => (1 : ℝ))
 
 private theorem gaussianRectangleShiftBandIndicator_nonneg
-    {Ω ι : Type*} [MeasurableSpace Ω] [Fintype ι]
+ [MeasurableSpace Ω] [Fintype ι]
     (Z : Ω → ι → ℝ) (b c d : ι → ℝ) (i : ι) (ω : Ω) :
     0 ≤ gaussianRectangleShiftBandIndicator Z b c d i ω := by
   change 0 ≤ Set.indicator {ω' | Z ω' i ∈ Set.Icc
@@ -78,7 +76,7 @@ private theorem gaussianRectangleShiftBandIndicator_nonneg
     rw [Set.indicator_of_notMem hi']
 
 private theorem gaussianRectangleShiftBandIndicator_aestronglyMeasurable
-    {Ω ι : Type*} [MeasurableSpace Ω] [Fintype ι]
+ [MeasurableSpace Ω] [Fintype ι]
     (P : Measure Ω) (Z : Ω → ι → ℝ) (hZ : IsCenteredJointlyGaussian P Z)
     (b c d : ι → ℝ) (i : ι) :
     AEStronglyMeasurable (gaussianRectangleShiftBandIndicator Z b c d i) P := by
@@ -102,7 +100,7 @@ private theorem gaussianRectangleShiftBandIndicator_aestronglyMeasurable
   exact hF.comp_aemeasurable hZae |>.aestronglyMeasurable
 
 private theorem gaussianRectangleShiftBandIndicator_pointwise
-    {Ω ι : Type*} [MeasurableSpace Ω] [Fintype ι]
+ [MeasurableSpace Ω] [Fintype ι]
     (Z : Ω → ι → ℝ) (b c d : ι → ℝ) (ω : Ω) :
     |gaussianRectangleIndicator Z b c ω - gaussianRectangleIndicator Z b d ω| ≤
       ∑ i, gaussianRectangleShiftBandIndicator Z b c d i ω := by
@@ -178,43 +176,32 @@ theorem gaussianReal_interval_le_length_of_variance_ge_one
     have harg : (1 : ℝ) ≤ 2 * Real.pi * (v : ℝ) := by
       nlinarith [Real.pi_gt_three]
     have hden : (1 : ℝ) ≤ Real.sqrt (2 * Real.pi * (v : ℝ)) := by
-      have h := Real.sqrt_le_sqrt harg
-      simpa using h
+      simpa using Real.sqrt_le_sqrt harg
     have hdenpos : 0 < Real.sqrt (2 * Real.pi * (v : ℝ)) := by positivity
     have hinv : (Real.sqrt (2 * Real.pi * (v : ℝ)))⁻¹ ≤ 1 := by
       rw [inv_le_one₀ hdenpos]
       exact hden
     have hargExp : -(x - μ) ^ 2 / (2 * (v : ℝ)) ≤ 0 := by
-      have hnum : -(x - μ) ^ 2 ≤ 0 := neg_nonpos.mpr (sq_nonneg (x - μ))
       have hdenExp : 0 < 2 * (v : ℝ) := by positivity
-      exact div_nonpos_of_nonpos_of_nonneg hnum hdenExp.le
-    have hexp : Real.exp (-(x - μ) ^ 2 / (2 * (v : ℝ))) ≤ 1 := by
-      exact (Real.exp_le_one_iff.mpr hargExp)
-    calc
-      (Real.sqrt (2 * Real.pi * (v : ℝ)))⁻¹ *
-          Real.exp (-(x - μ) ^ 2 / (2 * (v : ℝ))) ≤
-        (Real.sqrt (2 * Real.pi * (v : ℝ)))⁻¹ * 1 :=
-          mul_le_mul_of_nonneg_left hexp (by positivity)
-      _ ≤ 1 := by simpa using hinv
+      exact div_nonpos_of_nonpos_of_nonneg (neg_nonpos.mpr (sq_nonneg (x - μ))) hdenExp.le
+    have hexp : Real.exp (-(x - μ) ^ 2 / (2 * (v : ℝ))) ≤ 1 := (Real.exp_le_one_iff.mpr hargExp)
+    refine (mul_le_mul_of_nonneg_left hexp (by positivity)).trans (?_)
+    simpa using hinv
   have hpdfInt : IntegrableOn (gaussianPDFReal μ v) (Set.Icc a b) :=
     (integrable_gaussianPDFReal μ v).integrableOn
   have hconstInt : IntegrableOn (fun _ : ℝ => (1 : ℝ)) (Set.Icc a b) :=
     integrableOn_const (by simp)
   have hInt : (∫ x in Set.Icc a b, gaussianPDFReal μ v x) ≤ b - a := by
-    calc
-      (∫ x in Set.Icc a b, gaussianPDFReal μ v x) ≤
-          ∫ x in Set.Icc a b, (1 : ℝ) :=
-        setIntegral_mono_on hpdfInt hconstInt isClosed_Icc.measurableSet fun x _ => hpdf x
-      _ = b - a := by
-        rw [setIntegral_const, Real.volume_real_Icc_of_le hab]
-        simp
+    refine (setIntegral_mono_on hpdfInt hconstInt isClosed_Icc.measurableSet fun x _ => hpdf x).trans_eq (?_)
+    rw [setIntegral_const, Real.volume_real_Icc_of_le hab]
+    simp
   rw [gaussianReal_apply_eq_integral μ hvne (Set.Icc a b)]
   exact ENNReal.ofReal_le_ofReal hInt
 
 /-- A coordinate of a centered jointly Gaussian vector with variance at least one has a
 covariance-independent interval probability bound. -/
 theorem gaussian_coordinate_interval_probability_le_length_of_variance_ge_one
-    {Ω ι : Type*} [MeasurableSpace Ω] [Fintype ι]
+ [MeasurableSpace Ω] [Fintype ι]
     (P : Measure Ω) (Z : Ω → ι → ℝ) (hZ : IsCenteredJointlyGaussian P Z)
     (i : ι) (hv : 1 ≤ gaussianVariance P (fun ω => Z ω i))
     (a b : ℝ) (hab : a ≤ b) :
@@ -224,12 +211,11 @@ theorem gaussian_coordinate_interval_probability_le_length_of_variance_ge_one
   have hprob : P {ω | Z ω i ∈ Set.Icc a b} =
       gaussianReal 0 v (Set.Icc a b) := by
     let Zi : Ω → ℝ := fun ω => Z ω i
-    have hZi : AEMeasurable Zi P := hZ.2.1 i
     calc
       P {ω | Z ω i ∈ Set.Icc a b} = P (Zi ⁻¹' Set.Icc a b) := by rfl
       _ = P.map Zi (Set.Icc a b) := by
         symm
-        exact Measure.map_apply_of_aemeasurable hZi isClosed_Icc.measurableSet
+        exact Measure.map_apply_of_aemeasurable (hZ.2.1 i) isClosed_Icc.measurableSet
       _ = gaussianReal 0 v (Set.Icc a b) := by rw [hmap]
   rw [hprob]
   exact gaussianReal_interval_le_length_of_variance_ge_one 0 v hv' a b hab
@@ -237,7 +223,7 @@ theorem gaussian_coordinate_interval_probability_le_length_of_variance_ge_one
 /-- The finite Gaussian rectangle probability is Lipschitz in its deterministic shift, with a
 modulus independent of all correlations, as soon as every marginal variance is at least one. -/
 theorem finite_gaussian_rectangle_probability_shift_lipschitz
-    {Ω ι : Type*} [MeasurableSpace Ω] [Fintype ι]
+ [MeasurableSpace Ω] [Fintype ι]
     (P : Measure Ω) (Z : Ω → ι → ℝ) (hZ : IsCenteredJointlyGaussian P Z)
     (b : ι → ℝ) (hv : ∀ i, 1 ≤ gaussianVariance P (fun ω => Z ω i))
     (c d : ι → ℝ) :

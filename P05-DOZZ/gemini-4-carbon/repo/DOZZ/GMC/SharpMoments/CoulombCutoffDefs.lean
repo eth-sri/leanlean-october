@@ -18,32 +18,39 @@ inverted-chart weight, evaluated at the inverted point, times the inverted parti
 
 @[expose] public section
 
+noncomputable section
 open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
 
+variable {N : ℕ}
+
+
 /-- The finite-chart softened Coulomb weight at cutoff `r`. -/
-noncomputable def coulombCutoffFiniteWeight {N : ℕ} (γ : ℝ) (α : Fin N → ℝ) (z : Fin N → ℂ)
+def coulombCutoffFiniteWeight (γ : ℝ) (α : Fin N → ℝ) (z : Fin N → ℂ)
     (αinf r : ℝ) (x : ℂ) : ℝ≥0∞ :=
   (∏ k, ENNReal.rpow (ENNReal.ofReal (normPlus x / (‖x - z k‖ + Real.exp (-r)))) (γ * α k)) *
     ENNReal.rpow (ENNReal.ofReal (normPlus x)) (γ * αinf)
 
 /-- The inverted-chart softened Coulomb weight at cutoff `r`. -/
-noncomputable def coulombCutoffInfinityWeight {N : ℕ} (γ : ℝ) (α : Fin N → ℝ) (z : Fin N → ℂ)
+def coulombCutoffInfinityWeight (γ : ℝ) (α : Fin N → ℝ) (z : Fin N → ℂ)
     (αinf r : ℝ) (u : ℂ) : ℝ≥0∞ :=
   (∏ k, ENNReal.rpow (ENNReal.ofReal (normPlus u / (‖1 - z k * u‖ + Real.exp (-r))))
       (γ * α k)) *
     ENNReal.rpow (ENNReal.ofReal (normPlus u / (‖u‖ + Real.exp (-r)))) (γ * αinf)
 
 /-- The single-chart regularized Coulomb weight. -/
-noncomputable def coulombCutoffWeight (partition : GMCChartPartition) {N : ℕ} (γ : ℝ)
+def coulombCutoffWeight (partition : GMCChartPartition) {N : ℕ} (γ : ℝ)
     (α : Fin N → ℝ) (z : Fin N → ℂ) (αinf r : ℝ) (x : ℂ) : ℝ≥0∞ :=
   (partition.finiteWeight x : ℝ≥0∞) * coulombCutoffFiniteWeight γ α z αinf r x +
     (partition.infinityWeight x⁻¹ : ℝ≥0∞) * coulombCutoffInfinityWeight γ α z αinf r x⁻¹
 
-theorem measurable_coulombCutoffFiniteWeight {N : ℕ} (γ : ℝ) (α : Fin N → ℝ) (z : Fin N → ℂ)
-    (αinf r : ℝ) : Measurable (coulombCutoffFiniteWeight γ α z αinf r) := by
+section
+variable (γ : ℝ) (α : Fin N → ℝ) (z : Fin N → ℂ) (αinf r : ℝ)
+include γ α z αinf r
+
+theorem measurable_coulombCutoffFiniteWeight : Measurable (coulombCutoffFiniteWeight γ α z αinf r) := by
   unfold coulombCutoffFiniteWeight
   simp only [ENNReal.rpow_eq_pow]
   refine Measurable.mul (Finset.measurable_prod _ fun k _ => ?_) ?_
@@ -51,8 +58,7 @@ theorem measurable_coulombCutoffFiniteWeight {N : ℕ} (γ : ℝ) (α : Fin N �
       ((measurable_id.sub_const (z k)).norm.add_const _))).pow_const _
   · exact (ENNReal.measurable_ofReal.comp measurable_normPlus).pow_const _
 
-theorem measurable_coulombCutoffInfinityWeight {N : ℕ} (γ : ℝ) (α : Fin N → ℝ) (z : Fin N → ℂ)
-    (αinf r : ℝ) : Measurable (coulombCutoffInfinityWeight γ α z αinf r) := by
+theorem measurable_coulombCutoffInfinityWeight : Measurable (coulombCutoffInfinityWeight γ α z αinf r) := by
   unfold coulombCutoffInfinityWeight
   simp only [ENNReal.rpow_eq_pow]
   refine Measurable.mul (Finset.measurable_prod _ fun k _ => ?_) ?_
@@ -61,6 +67,8 @@ theorem measurable_coulombCutoffInfinityWeight {N : ℕ} (γ : ℝ) (α : Fin N 
   · exact (ENNReal.measurable_ofReal.comp (measurable_normPlus.div
       (measurable_norm.add_const _))).pow_const _
 
+
+end
 theorem measurable_coulombCutoffWeight (partition : GMCChartPartition) {N : ℕ} (γ : ℝ)
     (α : Fin N → ℝ) (z : Fin N → ℂ) (αinf r : ℝ) :
     Measurable (coulombCutoffWeight partition γ α z αinf r) := by
@@ -83,9 +91,7 @@ theorem regularizedCoulombMass_eq_lintegral
       ∫⁻ x, coulombCutoffWeight partition γ α z αinf r x ∂regularizedGMC P Xc γ r ω := by
   let _ := hX.1
   have hV : Measurable (fun x : ℂ => ∫ ω', Xc ω' x r ^ 2 ∂P) := by
-    have hf : Measurable (fun q : ℂ × Ω => Xc q.2 q.1 r ^ 2) :=
-      ((hXc.1 r).comp measurable_swap).pow_const 2
-    exact hf.stronglyMeasurable.integral_prod_right.measurable
+    exact (((hXc.1 r).comp measurable_swap).pow_const 2).stronglyMeasurable.integral_prod_right.measurable
   have hX1 : Measurable (fun x : ℂ => Xc ω x r) :=
     (hXc.1 r).comp (measurable_const.prodMk measurable_id)
   have hwick : Measurable (fun x : ℂ => ENNReal.ofReal

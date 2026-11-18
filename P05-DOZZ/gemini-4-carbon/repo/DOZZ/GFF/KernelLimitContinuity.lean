@@ -31,8 +31,8 @@ theorem integral_sq_localTest_le_seminorm (K : TopologicalSpace.Compacts ℂ)
     (∫ z in ball (0 : ℂ) R, ‖f z‖ ^ 2) ≤
       (volume (ball (0 : ℂ) R)).toReal * ‖(f : ℂ →ᵇ ℝ)‖ ^ 2 := by
   let B : Set ℂ := ball 0 R
-  let μ : Measure ℂ := (volume : Measure ℂ).restrict B
-  let C : ℝ := ‖(f : ℂ →ᵇ ℝ)‖
+  let μ := (volume : Measure ℂ).restrict B
+  let C := ‖(f : ℂ →ᵇ ℝ)‖
   have hfinite : volume B < ⊤ := by
     dsimp [B]
     exact measure_ball_lt_top
@@ -50,12 +50,7 @@ theorem integral_sq_localTest_le_seminorm (K : TopologicalSpace.Compacts ℂ)
     · simp [hC]
     · exact (integrable_const_iff_isFiniteMeasure hC).2
         (MeasureTheory.isFiniteMeasure_restrict.mpr hfinite.ne)
-  have hmono :
-      (∫ z in B, ‖f z‖ ^ 2) ≤ ∫ z in B, C ^ 2 :=
-    integral_mono_ae hfint hconst (ae_of_all _ hpoint)
-  calc
-    (∫ z in ball (0 : ℂ) R, ‖f z‖ ^ 2) = ∫ z in B, ‖f z‖ ^ 2 := by rfl
-    _ ≤ ∫ z in B, C ^ 2 := hmono
+  calc (∫ z in ball (0 : ℂ) R, ‖f z‖ ^ 2) ≤ ∫ z in B, C ^ 2 := integral_mono_ae hfint hconst (ae_of_all _ hpoint)
     _ = (volume B).toReal * C ^ 2 := by
       rw [integral_const]
       simp [B, Measure.real_def, Measure.restrict_apply MeasurableSet.univ]
@@ -141,9 +136,6 @@ noncomputable def equatorKernelLimitMapCLM :
       simpa using htarget
     exact (ContDiffMapSupportedIn.mkCLMtoNormedSpace ℝ A hAadd hAsmul hbound).continuous
 
-@[simp]
-theorem equatorKernelLimitMapCLM_apply (f : TestFn) :
-    equatorKernelLimitMapCLM f = equatorKernelLimitMap f := rfl
 
 end DOZZ
 

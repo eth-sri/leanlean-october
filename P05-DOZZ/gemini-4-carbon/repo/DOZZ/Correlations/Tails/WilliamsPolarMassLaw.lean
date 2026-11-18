@@ -59,10 +59,8 @@ theorem williams_polar_mass_law
           (P.map Z)).map (williamsMassFunctional γ) := by
   let Y := fun ω => (Z ω).map
     (fun s => s - (driftedBrownianMaximumTime ν (D ω) : ℝ))
-  have hY := (maximum_shift_lateral_law P D hD hB γ Z hZ hInd ν hν).1
-  have hW := (williamsReversedMark_aemeasurable (P.map D) hB ν hν).comp_aemeasurable hD
   have hpair : AEMeasurable (fun ω => (williamsReversedMark ν (D ω),Y ω)) P :=
-    hW.prodMk hY
+    ((williamsReversedMark_aemeasurable (P.map D) hB ν hν).comp_aemeasurable hD).prodMk ((maximum_shift_lateral_law P D hD hB γ Z hZ hInd ν hν).1)
   have heq : (fun ω => ∫⁻ t, (if 0 < t then ENNReal.ofReal
       (Real.exp (γ * (D ω (Real.toNNReal t) - ν * t))) else 0) ∂Z ω) =ᵐ[P]
       (fun ω => williamsMassFunctional γ (williamsReversedMark ν (D ω),Y ω)) := by

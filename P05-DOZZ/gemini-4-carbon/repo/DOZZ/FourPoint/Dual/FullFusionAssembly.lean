@@ -98,7 +98,7 @@ let κ := (4 / γ) * (Q γ - α₁)
       ring
     rw [he]
     exact reflected_prefactor_cancel γ μ p _ _ hγ hμ hp
-  have hT (z : ℂ) : fourPointT P M γ μ (-2/γ) α₁ α₂ α₃ z = N*E z :=
+  have hT (z : ℂ) :=
     fourPointT_eq_dualKernelMoment P X hX γ hγ hγ₂ M hM μ α₁ α₂ α₃ z
   have hzero : N*E₀ = C₀ := by
     have h2 : 0 < 2/γ := by positivity

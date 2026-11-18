@@ -26,9 +26,8 @@ theorem meas_ge_le_lintegral_rpow_div {Ω : Type*} [MeasurableSpace Ω] {P : Mea
     (ht : 0 < t) :
     P {ω | a ≤ f ω} ≤ (∫⁻ ω, f ω ^ t ∂P) / a ^ t := by
   have hat0 : a ^ t ≠ 0 := (ENNReal.rpow_pos (pos_iff_ne_zero.mpr ha) ha').ne'
-  have hat : a ^ t ≠ ⊤ := ENNReal.rpow_ne_top_of_nonneg ht.le ha'
   refine le_trans (measure_mono fun ω hω => ?_) (meas_ge_le_lintegral_div (hf.pow_const t) hat0
-    hat)
+    (ENNReal.rpow_ne_top_of_nonneg ht.le ha'))
   exact ENNReal.rpow_le_rpow hω ht.le
 
 /-- Real parts of two quantities split into bad and good parts. -/
@@ -49,10 +48,7 @@ theorem toReal_abs_sub_le_of_split {a b c a' b' c' : ℝ≥0∞} (ha : a = b + c
 /-- If a real number is at least `e`, one of three nonnegative summands bounding it is at least
 `e / 3`. -/
 theorem le_of_three_le_sum {e x y z w : ℝ} (hxw : e ≤ w) (hw : w ≤ x + y + z) :
-    e / 3 ≤ x ∨ e / 3 ≤ y ∨ e / 3 ≤ z := by
-  by_contra h
-  push Not at h
-  linarith [h.1, h.2.1, h.2.2]
+    e / 3 ≤ x ∨ e / 3 ≤ y ∨ e / 3 ≤ z := by grind
 
 /-- The probability that two split quantities differ by at least `ε` is controlled by the
 moments of the bad parts and the `L¹` distance of the good parts. -/
@@ -79,10 +75,9 @@ theorem prob_edist_le_of_split {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω
     have hA' : ε ≤ ENNReal.ofReal |(Zr ω).toReal - (Z ω).toReal| := by
       rw [edist_dist, Real.dist_eq] at hA
       exact hA
-    have he' : e ≤ |(Zr ω).toReal - (Z ω).toReal| :=
+    have he' :=
       (ENNReal.ofReal_le_ofReal_iff (abs_nonneg _)).mp (hεe.trans hA')
-    have hsplit := toReal_abs_sub_le_of_split h1 h2 h3 h5 h4 h6
-    rcases le_of_three_le_sum he' hsplit with hx | hx | hx
+    rcases le_of_three_le_sum he' (toReal_abs_sub_le_of_split h1 h2 h3 h5 h4 h6) with hx | hx | hx
     · left; left
       show a ≤ badr ω
       rw [ha, ← ENNReal.ofReal_toReal h3]
@@ -93,8 +88,8 @@ theorem prob_edist_le_of_split {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω
       exact ENNReal.ofReal_le_ofReal hx
     · right
       exact ENNReal.ofReal_le_ofReal hx
-  calc P {ω | ε ≤ edist (Zr ω).toReal (Z ω).toReal} ≤ P (B1 ∪ B2 ∪ B3) := measure_mono_ae hle
-    _ ≤ P B1 + P B2 + P B3 := (measure_union_le _ _).trans
+  refine (measure_mono_ae hle).trans (?_)
+  calc P (B1 ∪ B2 ∪ B3) ≤ P B1 + P B2 + P B3 := (measure_union_le _ _).trans
         (add_le_add_left (measure_union_le _ _) _)
     _ ≤ _ := by
         gcongr

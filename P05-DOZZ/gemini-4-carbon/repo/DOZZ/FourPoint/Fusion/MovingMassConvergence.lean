@@ -37,7 +37,7 @@ theorem fusionMovingMass_tendstoInMeasure_seq {Ω : Type*} [MeasurableSpace Ω]
   apply tendstoInMeasure_of_ne_top
   intro ε hε hεtop
   let e := ε.toReal
-  have he : 0 < e := ENNReal.toReal_pos hε.ne' hεtop
+  have he := ENNReal.toReal_pos hε.ne' hεtop
   have hεe : ENNReal.ofReal e ≤ ε := by rw [ENNReal.ofReal_toReal hεtop]
   let a := ENNReal.ofReal (e / 3)
   have ha0 : a ≠ 0 := (ENNReal.ofReal_pos.mpr (by positivity)).ne'
@@ -48,8 +48,7 @@ theorem fusionMovingMass_tendstoInMeasure_seq {Ω : Type*} [MeasurableSpace Ω]
     have hr : Tendsto (fun δ : ℝ => δ ^ ξ) (nhdsWithin 0 (Set.Ioi 0)) (nhds 0) := by
       have h : Tendsto (fun δ : ℝ => δ ^ ξ) (nhdsWithin 0 (Set.Ioi 0)) (nhds ((0 : ℝ) ^ ξ)) :=
         (Real.continuousAt_rpow_const 0 ξ (Or.inr hξ.le)).tendsto.mono_left nhdsWithin_le_nhds
-      have hzpow : (0 : ℝ) ^ ξ = 0 := Real.zero_rpow (show ξ ≠ 0 from hξ.ne')
-      rw [hzpow] at h
+      rw [Real.zero_rpow (show ξ ≠ 0 from hξ.ne')] at h
       exact h
     have h := ENNReal.continuous_ofReal.continuousAt.tendsto.comp hr
     have h' := ENNReal.Tendsto.const_mul h (Or.inr (ENNReal.add_ne_top.mpr ⟨hCy.ne, hC0.ne⟩))
@@ -60,8 +59,7 @@ theorem fusionMovingMass_tendstoInMeasure_seq {Ω : Type*} [MeasurableSpace Ω]
   by_cases hηtop : η = ⊤
   · exact ⟨0, fun _ _ => by rw [hηtop]; exact le_top⟩
   let u := η.toReal
-  have hu : 0 < u := ENNReal.toReal_pos hη.ne' hηtop
-  have hηu : ENNReal.ofReal u = η := ENNReal.ofReal_toReal hηtop
+  have hu := ENNReal.toReal_pos hη.ne' hηtop
   have hδchoice := (hsmall.eventually_lt_const (ENNReal.ofReal_pos.mpr (half_pos hu))).and
     (Ioo_mem_nhdsGT (show (0 : ℝ) < 1 / 16 by norm_num))
   obtain ⟨δ, hδsmall, hδpos, hδ16⟩ := hδchoice.exists
@@ -70,7 +68,7 @@ theorem fusionMovingMass_tendstoInMeasure_seq {Ω : Type*} [MeasurableSpace Ω]
   have hB0 : ∫⁻ ω, B 0 ω ^ p ∂P ≤ C0 * ENNReal.ofReal (δ ^ ξ) := by
     simpa only [B, fusionMovingBadMass, fusionMovingKernel, mul_zero] using
       hm0 δ hδpos hδ16.le 0 (by simp; exact hδpos.le)
-  have hB0fin : ∀ᵐ ω ∂P, B 0 ω ≠ ⊤ :=
+  have hB0fin :=
     fusion_mass_finite_of_moment (fusionMovingBadMass_aemeasurable P X hX γ hγ hγ2 M hM
       α₁ α₂ α₃ y 0 δ) hp (lt_of_le_of_lt hB0 (ENNReal.mul_lt_top hC0 ENNReal.ofReal_lt_top))
   have hG0fin : ∀ᵐ ω ∂P, G 0 ω ≠ ⊤ := by
@@ -98,26 +96,24 @@ theorem fusionMovingMass_tendstoInMeasure_seq {Ω : Type*} [MeasurableSpace Ω]
   obtain ⟨N, hN⟩ := eventually_atTop.mp (hge.and hnear)
   refine ⟨N, fun n hn => ?_⟩
   obtain ⟨hgoodprob, hznδ, hynδ, hyn1⟩ := hN n hn
-  have hBn : ∫⁻ ω, B (z n) ω ^ p ∂P ≤ Cy * ENNReal.ofReal (δ ^ ξ) :=
+  have hBn :=
     hmy δ hδpos hδ16.le (z n) (by linarith)
-  have hBnfin : ∀ᵐ ω ∂P, B (z n) ω ≠ ⊤ :=
+  have hBnfin :=
     fusion_mass_finite_of_moment (fusionMovingBadMass_aemeasurable P X hX γ hγ hγ2 M hM
       α₁ α₂ α₃ y (z n) δ) hp (lt_of_le_of_lt hBn (ENNReal.mul_lt_top hCy ENNReal.ofReal_lt_top))
   have hGnfin : ∀ᵐ ω ∂P, G (z n) ω ≠ ⊤ := by
     filter_upwards [hG0fin] with ω hω
     exact (lt_of_le_of_lt (fusionMovingGoodMass_le γ α₁ α₂ α₃ y (z n) δ hδpos hznδ.le
       hynδ.le hyn1.le (M ω)) (ENNReal.mul_lt_top ENNReal.ofReal_lt_top hω.lt_top)).ne
-  have hBnm := fusionMovingBadMass_aemeasurable P X hX γ hγ hγ2 M hM α₁ α₂ α₃ y (z n) δ
-  have hB0m := fusionMovingBadMass_aemeasurable P X hX γ hγ hγ2 M hM α₁ α₂ α₃ y 0 δ
   have hsplit := fusion_probability_split_bound P
     (fun ω => fusionMovingMass γ α₁ α₂ α₃ y (z n) (M ω))
     (fun ω => fusionMovingMass γ α₁ α₂ α₃ y 0 (M ω)) (B (z n)) (B 0) (G (z n)) (G 0)
     (Eventually.of_forall fun ω => fusionMovingMass_split _ _ _ _ _ _ _ _)
     (Eventually.of_forall fun ω => fusionMovingMass_split _ _ _ _ _ _ _ _)
     hBnfin hB0fin hGnfin hG0fin he hεe
-  have hpn := (meas_ge_le_lintegral_rpow_div hBnm ha0 hat hp).trans
+  have hpn := (meas_ge_le_lintegral_rpow_div (fusionMovingBadMass_aemeasurable P X hX γ hγ hγ2 M hM α₁ α₂ α₃ y (z n) δ) ha0 hat hp).trans
     (ENNReal.div_le_div_right hBn _)
-  have hp0 := (meas_ge_le_lintegral_rpow_div hB0m ha0 hat hp).trans
+  have hp0 := (meas_ge_le_lintegral_rpow_div (fusionMovingBadMass_aemeasurable P X hX γ hγ hγ2 M hM α₁ α₂ α₃ y 0 δ) ha0 hat hp).trans
     (ENNReal.div_le_div_right hB0 _)
   calc
     _ ≤ P {ω | a ≤ B (z n) ω} + P {ω | a ≤ B 0 ω} +
@@ -128,6 +124,6 @@ theorem fusionMovingMass_tendstoInMeasure_seq {Ω : Type*} [MeasurableSpace Ω]
       simp only [div_eq_mul_inv]
       ring
     _ ≤ ENNReal.ofReal (u / 2) + ENNReal.ofReal (u / 2) := add_le_add hδsmall.le le_rfl
-    _ = η := by rw [← ENNReal.ofReal_add (half_pos hu).le (half_pos hu).le, add_halves, hηu]
+    _ = η := by rw [← ENNReal.ofReal_add (half_pos hu).le (half_pos hu).le, add_halves, ENNReal.ofReal_toReal hηtop]
 
 end DOZZ.Proofs

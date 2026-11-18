@@ -17,16 +17,20 @@ off `U` and increase to the indicator of `U`. -/
 
 @[expose] public section
 
+noncomputable section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped Distributions ENNReal NNReal
 
 namespace DOZZ.Proofs
 
+variable {Ω : Type*} [MeasurableSpace Ω]
+
+
 /-! ### Inner approximants of an open set -/
 
 /-- A continuous cutoff increasing to the indicator of an open set `U`. It vanishes off `U` and
 saturates at `1` once the distance to `Uᶜ` exceeds `1 / n`. -/
-noncomputable def openSetApproxFun (U : Set ℂ) (n : ℕ) (x : ℂ) : ℝ :=
+def openSetApproxFun (U : Set ℂ) (n : ℕ) (x : ℂ) : ℝ :=
   min 1 ((n : ℝ) * Metric.infDist x Uᶜ)
 
 theorem openSetApproxFun_continuous (U : Set ℂ) (n : ℕ) :
@@ -44,7 +48,7 @@ theorem openSetApproxFun_eq_zero_of_notMem {U : Set ℂ} {x : ℂ} (hx : x ∉ U
   simp [openSetApproxFun, h]
 
 /-- The open-set approximants as bounded continuous functions. -/
-noncomputable def openSetApprox (U : Set ℂ) (n : ℕ) : BoundedContinuousFunction ℂ ℝ :=
+def openSetApprox (U : Set ℂ) (n : ℕ) : BoundedContinuousFunction ℂ ℝ :=
   BoundedContinuousFunction.ofNormedAddCommGroup (openSetApproxFun U n)
     (openSetApproxFun_continuous U n) 1 (fun x => by
       have h := openSetApproxFun_bounds U n x
@@ -69,10 +73,8 @@ theorem openSetApproxFun_tendsto {U : Set ℂ} (hU : IsOpen U) (hne : Uᶜ.Nonem
   by_cases hx : x ∈ U
   · have hpos : 0 < Metric.infDist x Uᶜ :=
       (hU.isClosed_compl.notMem_iff_infDist_pos hne).1 (by simpa using hx)
-    have hev : ∀ᶠ n : ℕ in atTop, 1 ≤ (n : ℝ) * Metric.infDist x Uᶜ :=
-      (tendsto_natCast_atTop_atTop.atTop_mul_const hpos).eventually_ge_atTop 1
     have hT : Tendsto (fun n : ℕ => openSetApproxFun U n x) atTop (𝓝 1) :=
-      tendsto_const_nhds.congr' (hev.mono fun n hn => by simp [openSetApproxFun, hn])
+      tendsto_const_nhds.congr' (((tendsto_natCast_atTop_atTop.atTop_mul_const hpos).eventually_ge_atTop 1).mono fun n hn => by simp [openSetApproxFun, hn])
     simpa [hx] using hT
   · have hT : Tendsto (fun n : ℕ => openSetApproxFun U n x) atTop (𝓝 0) := by
       simp [openSetApproxFun_eq_zero_of_notMem hx]
@@ -105,18 +107,24 @@ theorem openSetApprox_integral_tendsto {U : Set ℂ} (hU : IsOpen U) (hne : Uᶜ
 
 /-! ### Affine pullbacks -/
 
+section
+variable {c : ℝ} (hc : c ≠ 0) (a : ℂ)
+include hc a
+
 /-- The affine image of a set under `y ↦ a + c • y` is the preimage under the inverse map. -/
-theorem openSetScale_image_eq_preimage {c : ℝ} (hc : c ≠ 0) (a : ℂ) (U : Set ℂ) :
+theorem openSetScale_image_eq_preimage (U : Set ℂ) :
     (fun y : ℂ => a + c • y) '' U = (fun y : ℂ => c⁻¹ • (y - a)) ⁻¹' U :=
   congrFun (Set.image_eq_preimage_of_inverse
     (fun x => by simp [hc]) (fun y => by simp [hc])) U
 
 /-- The affine image of an open set is open. -/
-theorem openSetScale_image_isOpen {c : ℝ} (hc : c ≠ 0) (a : ℂ) {U : Set ℂ} (hU : IsOpen U) :
+theorem openSetScale_image_isOpen {U : Set ℂ} (hU : IsOpen U) :
     IsOpen ((fun y : ℂ => a + c • y) '' U) := by
   rw [openSetScale_image_eq_preimage hc a U]
   exact hU.preimage (by fun_prop)
 
+
+end
 /-- The affine image of a subset of `closedBall 0 R` lies in `closedBall a (c * R)`. -/
 theorem openSetScale_image_subset_closedBall {c R : ℝ} (hc : 0 < c) (a : ℂ) {U : Set ℂ}
     (hUR : U ⊆ Metric.closedBall 0 R) :
@@ -134,7 +142,7 @@ theorem openSetScale_compl_nonempty {R : ℝ} {U : Set ℂ} (hUR : U ⊆ Metric.
   exact ⟨x, fun hxU => absurd (by simpa using hUR hxU) (not_le_of_gt hx)⟩
 
 /-- Pulling back the centered cutoff of `U` by the inverse affine map `y ↦ c⁻¹ • (y - a)`. -/
-noncomputable def openSetAffineApprox (U : Set ℂ) (a : ℂ) (c : ℝ) (n : ℕ) :
+def openSetAffineApprox (U : Set ℂ) (a : ℂ) (c : ℝ) (n : ℕ) :
     BoundedContinuousFunction ℂ ℝ :=
   (openSetApprox U n).compContinuous ⟨fun y => c⁻¹ • (y - a), by fun_prop⟩
 
@@ -163,12 +171,11 @@ theorem openSetAffineApprox_integral_tendsto {U : Set ℂ} (hU : IsOpen U) (hne 
   refine openSetScale_integral_tendsto_of_pointwise
     (openSetScale_image_isOpen hc a hU).measurableSet
     (fun n y => openSetApproxFun_bounds U n (c⁻¹ • (y - a))) (fun y => ?_) μ
-  have h := openSetApproxFun_tendsto hU hne (c⁻¹ • (y - a))
   have hind : ((fun y : ℂ => c⁻¹ • (y - a)) ⁻¹' U).indicator (fun _ => (1 : ℝ)) y =
       U.indicator (fun _ => (1 : ℝ)) (c⁻¹ • (y - a)) :=
     Set.indicator_comp_right (s := U) (g := fun _ => (1 : ℝ)) (fun y : ℂ => c⁻¹ • (y - a))
   rw [openSetScale_image_eq_preimage hc a U, hind]
-  exact h
+  exact openSetApproxFun_tendsto hU hne (c⁻¹ • (y - a))
 
 /-! ### Passing the cutoff laws to the limit -/
 
@@ -176,84 +183,32 @@ theorem openSetAffineApprox_integral_tendsto {U : Set ℂ} (hU : IsOpen U) (hne 
 limits in measure of the measurable cutoff test integrals. This is the form of
 `gmc_test_integral_aemeasurable_of_support` that is private to `ExactScaleBallMass`. -/
 theorem openSetScale_test_integral_aemeasurable
-    {Ω : Type*} [MeasurableSpace Ω]
+
     (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (K : Set ℂ) (hK : MeasurableSet K) (hKunit : ∀ x ∈ K, ‖x‖ ≤ 1)
     (f : BoundedContinuousFunction ℂ ℝ) (hfzero : ∀ x, x ∉ K → f x = 0) :
     AEMeasurable (fun ω => ∫ x, f x ∂M ω) P := by
   obtain ⟨Xc, hXc, hMlim⟩ := hM.2
-  have hcut (n : ℕ) : AEMeasurable (fun ω => ∫ x, f x ∂regularizedGMC P Xc γ n ω) P :=
+  have hcut (n : ℕ) :=
     regularizedGMC_test_integral_aemeasurable P X hX Xc hXc γ n K hK hKunit f
       f.continuous.measurable hfzero
   exact ((hMlim f).comp
     (tendsto_natCast_atTop_atTop : Tendsto (fun n : ℕ => (n : ℝ)) atTop atTop)).aemeasurable hcut
 
-/-- Cutoffs supported in a closed ball inside the unit disk have a.e. measurable test integrals,
-and these converge in measure to the real mass of the limit set. -/
-theorem openSetScale_cutoff_tendstoInMeasure
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    {z : ℂ} {r : ℝ} (hzr : ‖z‖ + r ≤ 1) (A : Set ℂ)
-    (f : ℕ → BoundedContinuousFunction ℂ ℝ)
-    (hsupp : ∀ n, tsupport (f n : ℂ → ℝ) ⊆ Metric.closedBall z r)
-    (hlim : ∀ (μ : Measure ℂ) [IsFiniteMeasure μ],
-      Tendsto (fun n => ∫ x, f n x ∂μ) atTop (𝓝 (μ.real A))) :
-    (∀ n, AEMeasurable (fun ω => ∫ x, f n x ∂M ω) P) ∧
-      TendstoInMeasure P (fun n ω => ∫ x, f n x ∂M ω) atTop (fun ω => (M ω A).toReal) := by
-  have : IsProbabilityMeasure P := hX.1
-  have hunit : ∀ x ∈ Metric.closedBall z r, ‖x‖ ≤ 1 := by
-    intro x hx
-    have hx' : ‖x - z‖ ≤ r := by simpa [dist_eq_norm] using hx
-    calc ‖x‖ = ‖(x - z) + z‖ := by rw [sub_add_cancel]
-      _ ≤ ‖x - z‖ + ‖z‖ := norm_add_le _ _
-      _ ≤ 1 := by linarith
-  have hmeas (n : ℕ) : AEMeasurable (fun ω => ∫ x, f n x ∂M ω) P :=
-    openSetScale_test_integral_aemeasurable P X hX γ M hM (Metric.closedBall z r)
-      Metric.isClosed_closedBall.measurableSet hunit (f n)
-      (boundedContinuousFunction_eq_zero_off_tsupport_subset (f n) _ (hsupp n))
-  refine ⟨hmeas, tendstoInMeasure_of_tendsto_ae (fun n => (hmeas n).aestronglyMeasurable)
-    (ae_of_all P fun ω => ?_)⟩
-  have := hM.1 ω
-  simpa [Measure.real_def] using hlim (M ω)
 
-/-- If the cutoff vectors have equal laws for every `n` and the cutoff integrals converge in measure
-to the masses, then the limiting mass vectors have equal laws. The target side lives on `Ω` and the
-source side on the product with an independent factor `G`, scaled by a measurable function `s`. -/
-theorem openSetScale_limit_law
-    {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} [IsProbabilityMeasure P]
-    {G : Measure ℝ} [IsProbabilityMeasure G] {s : ℝ → ℝ} (hs : Measurable s)
-    (If Ig : ℕ → Ω → ℝ) (mA mB : Ω → ℝ)
-    (hIf : ∀ n, AEMeasurable (If n) P) (hIg : ∀ n, AEMeasurable (Ig n) P)
-    (hmA : AEMeasurable mA P) (hmB : AEMeasurable mB P)
-    (hfconv : TendstoInMeasure P If atTop mA) (hgconv : TendstoInMeasure P Ig atTop mB)
-    (hlaw : ∀ n, Measure.map (fun ω (_ : Fin 1) => If n ω) P =
-      Measure.map (fun q : Ω × ℝ => fun _ : Fin 1 => s q.2 * Ig n q.1) (P.prod G)) :
-    Measure.map (fun ω (_ : Fin 1) => mA ω) P =
-      Measure.map (fun q : Ω × ℝ => fun _ : Fin 1 => s q.2 * mB q.1) (P.prod G) := by
-  have hsnd : AEMeasurable (fun q : Ω × ℝ => s q.2) (P.prod G) :=
-    (hs.comp measurable_snd).aemeasurable
-  exact gmc_limit_test_vector_law (fun n ω (_ : Fin 1) => If n ω)
-    (fun n (q : Ω × ℝ) (_ : Fin 1) => s q.2 * Ig n q.1) (fun ω (_ : Fin 1) => mA ω)
-    (fun (q : Ω × ℝ) (_ : Fin 1) => s q.2 * mB q.1)
-    (fun n => aemeasurable_pi_iff.2 fun _ => hIf n)
-    (fun n => aemeasurable_pi_iff.2 fun _ => hsnd.mul (hIg n).comp_fst)
-    (aemeasurable_pi_iff.2 fun _ => hmA) (aemeasurable_pi_iff.2 fun _ => hsnd.mul hmB.comp_fst)
-    hlaw (fun _ => hfconv)
-    (fun _ => tendstoInMeasure_mul_snd_of_tendstoInMeasure Ig mB s hs hgconv)
+
+section
+variable (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) {a : ℂ} {c R : ℝ} (hc : 0 < c) (hc1 : c ≤ 1) (hR : 0 < R) (hRsmall : R < 1) (hTsmall : ‖a‖ + c * R < 1)
+include hX hγ hγ2 hM hc hc1 hR hRsmall hTsmall
 
 /-- The exact affine mass law for any pair of measurable sets with cutoff approximants: the
 cutoffs `f n` on the target and `g n` on the source are nonnegative, supported in the target and
 source closed balls, related by `f n (a + c • x) = g n x`, and their integrals converge to the
 masses of the two sets. -/
 theorem openSetScale_mass_law_of_approx
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ)
-    (hγ : 0 < γ) (hγ2 : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    {a : ℂ} {c R : ℝ} (hc : 0 < c) (hc1 : c ≤ 1)
-    (hR : 0 < R) (hRsmall : R < 1) (hTsmall : ‖a‖ + c * R < 1)
+
+
     {A B : Set ℂ} (hA : MeasurableSet A) (hB : MeasurableSet B)
     (f g : ℕ → BoundedContinuousFunction ℂ ℝ) (hfNonneg : ∀ n x, 0 ≤ f n x)
     (hfSupport : ∀ n, tsupport (f n : ℂ → ℝ) ⊆ Metric.closedBall a (c * R))
@@ -268,13 +223,42 @@ theorem openSetScale_mass_law_of_approx
       c ^ 2 * Real.exp (γ * p.2 - γ ^ 2 / 2 * (-Real.log c)) * (M p.1 B).toReal)
       (P.prod (gaussianReal 0 ⟨-Real.log c,
         neg_nonneg.mpr (Real.log_nonpos hc.le hc1)⟩)) := by
-  have : IsProbabilityMeasure P := hX.1
+  have openSetScale_limit_law {P : Measure Ω} [IsProbabilityMeasure P] {G : Measure ℝ} [IsProbabilityMeasure G] {s : ℝ → ℝ} (hs : Measurable s) (If Ig : ℕ → Ω → ℝ) (mA mB : Ω → ℝ) (hIf : ∀ n, AEMeasurable (If n) P) (hIg : ∀ n, AEMeasurable (Ig n) P) (hmA : AEMeasurable mA P) (hmB : AEMeasurable mB P) (hfconv : TendstoInMeasure P If atTop mA) (hgconv : TendstoInMeasure P Ig atTop mB) (hlaw : ∀ n, Measure.map (fun ω (_ : Fin 1) => If n ω) P = Measure.map (fun q : Ω × ℝ => fun _ : Fin 1 => s q.2 * Ig n q.1) (P.prod G)) : Measure.map (fun ω (_ : Fin 1) => mA ω) P =
+        Measure.map (fun q : Ω × ℝ => fun _ : Fin 1 => s q.2 * mB q.1) (P.prod G) := by
+    have hsnd : AEMeasurable (fun q : Ω × ℝ => s q.2) (P.prod G) :=
+      (hs.comp measurable_snd).aemeasurable
+    exact gmc_limit_test_vector_law (fun n ω (_ : Fin 1) => If n ω)
+      (fun n (q : Ω × ℝ) (_ : Fin 1) => s q.2 * Ig n q.1) (fun ω (_ : Fin 1) => mA ω)
+      (fun (q : Ω × ℝ) (_ : Fin 1) => s q.2 * mB q.1)
+      (fun n => aemeasurable_pi_iff.2 fun _ => hIf n)
+      (fun n => aemeasurable_pi_iff.2 fun _ => hsnd.mul (hIg n).comp_fst)
+      (aemeasurable_pi_iff.2 fun _ => hmA) (aemeasurable_pi_iff.2 fun _ => hsnd.mul hmB.comp_fst)
+      hlaw (fun _ => hfconv)
+      (fun _ => tendstoInMeasure_mul_snd_of_tendstoInMeasure Ig mB s hs hgconv)
+  have openSetScale_cutoff_tendstoInMeasure {z : ℂ} {r : ℝ} (hzr : ‖z‖ + r ≤ 1) (A : Set ℂ) (f : ℕ → BoundedContinuousFunction ℂ ℝ) (hsupp : ∀ n, tsupport (f n : ℂ → ℝ) ⊆ Metric.closedBall z r) (hlim : ∀ (μ : Measure ℂ) [IsFiniteMeasure μ], Tendsto (fun n => ∫ x, f n x ∂μ) atTop (𝓝 (μ.real A))) : (∀ n, AEMeasurable (fun ω => ∫ x, f n x ∂M ω) P) ∧
+        TendstoInMeasure P (fun n ω => ∫ x, f n x ∂M ω) atTop (fun ω => (M ω A).toReal) := by
+    have := hX.1
+    have hunit : ∀ x ∈ Metric.closedBall z r, ‖x‖ ≤ 1 := by
+      intro x hx
+      have hx' : ‖x - z‖ ≤ r := by simpa [dist_eq_norm] using hx
+      calc ‖x‖ = ‖(x - z) + z‖ := by rw [sub_add_cancel]
+        _ ≤ ‖x - z‖ + ‖z‖ := norm_add_le _ _
+        _ ≤ 1 := by linarith
+    have hmeas (n : ℕ) :=
+      openSetScale_test_integral_aemeasurable P X hX γ M hM (Metric.closedBall z r)
+        Metric.isClosed_closedBall.measurableSet hunit (f n)
+        (boundedContinuousFunction_eq_zero_off_tsupport_subset (f n) _ (hsupp n))
+    refine ⟨hmeas, tendstoInMeasure_of_tendsto_ae (fun n => (hmeas n).aestronglyMeasurable)
+      (ae_of_all P fun ω => ?_)⟩
+    have := hM.1 ω
+    simpa [Measure.real_def] using hlim (M ω)
+  have := hX.1
   have : IsProbabilityMeasure (gaussianReal 0 ⟨-Real.log c,
       neg_nonneg.mpr (Real.log_nonpos hc.le hc1)⟩) :=
     instIsProbabilityMeasureGaussianReal 0 _
-  obtain ⟨hfmeas, hfconv⟩ := openSetScale_cutoff_tendstoInMeasure P X hX γ M hM
+  obtain ⟨hfmeas, hfconv⟩ := openSetScale_cutoff_tendstoInMeasure
     (z := a) (r := c * R) hTsmall.le A f hfSupport hfLim
-  obtain ⟨hgmeas, hgconv⟩ := openSetScale_cutoff_tendstoInMeasure P X hX γ M hM
+  obtain ⟨hgmeas, hgconv⟩ := openSetScale_cutoff_tendstoInMeasure
     (z := 0) (r := R) (by simpa using hRsmall.le) B g hgSupport hgLim
   refine openSetScale_limit_law
     (s := fun w => c ^ 2 * Real.exp (γ * w - γ ^ 2 / 2 * (-Real.log c))) (by fun_prop)
@@ -297,12 +281,8 @@ theorem openSetScale_mass_law_of_approx
 under `y ↦ a + c • y`, for every `IsGMCOf` version: the target mass vector has the law of the source
 mass scaled by `c ^ 2 * exp (γ w - γ ^ 2 / 2 * (-log c))` for an independent Gaussian `w`. -/
 theorem gmc_affine_openSet_mass_law
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ)
-    (hγ : 0 < γ) (hγ2 : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    {a : ℂ} {c R : ℝ} (hc : 0 < c) (hc1 : c ≤ 1)
-    (hR : 0 < R) (hRsmall : R < 1) (hTsmall : ‖a‖ + c * R < 1)
+
+
     (U : Set ℂ) (hU : IsOpen U) (hUR : U ⊆ Metric.closedBall 0 R) :
     Measure.map (fun ω : Ω => fun _ : Fin 1 =>
       (M ω ((fun y => a + c • y) '' U)).toReal) P =
@@ -322,6 +302,8 @@ theorem gmc_affine_openSet_mass_law
     (fun μ _ => openSetAffineApprox_integral_tendsto hU hne hc.ne' μ)
     (fun μ _ => openSetApprox_integral_tendsto hU hne μ)
 
+
+end
 /-! ### Moment scaling -/
 
 /-- An extended power of a real factor times a finite mass splits as a product of extended
@@ -347,7 +329,7 @@ private theorem openSetScale_lintegral_map_fin_one {α : Type*} [MeasurableSpace
 mass of `B` scaled by an independent factor `s w`, then the `p`th moments are related by the `p`th
 moment of the factor. -/
 theorem openSetScale_moment_transfer
-    {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} [IsProbabilityMeasure P]
+ {P : Measure Ω} [IsProbabilityMeasure P]
     {G : Measure ℝ} [IsProbabilityMeasure G] {s : ℝ → ℝ} (hs : Measurable s)
     {M : Ω → Measure ℂ} (hfin : ∀ ω, IsFiniteMeasure (M ω)) {A B : Set ℂ}
     (hmassA : AEMeasurable (fun ω => M ω A) P) (hmassB : AEMeasurable (fun ω => M ω B) P)
@@ -356,12 +338,8 @@ theorem openSetScale_moment_transfer
     (p : ℝ) :
     gmcMassMoment P M A p =
       gmcMassMoment P M B p * ∫⁻ w, ENNReal.rpow (ENNReal.ofReal (s w)) p ∂G := by
-  have hAreal : AEMeasurable (fun ω => (M ω A).toReal) P :=
-    ENNReal.measurable_toReal.comp_aemeasurable hmassA
-  have hBreal : AEMeasurable (fun ω => (M ω B).toReal) P :=
-    ENNReal.measurable_toReal.comp_aemeasurable hmassB
   have hprodMeas : AEMeasurable (fun q : Ω × ℝ => s q.2 * (M q.1 B).toReal) (P.prod G) :=
-    (hs.comp measurable_snd).aemeasurable.mul hBreal.comp_fst
+    (hs.comp measurable_snd).aemeasurable.mul (ENNReal.measurable_toReal.comp_aemeasurable hmassB).comp_fst
   have hfactorMom : AEMeasurable (fun w => ENNReal.rpow (ENNReal.ofReal (s w)) p) G :=
     ENNReal.continuous_rpow_const.measurable.comp_aemeasurable
       (ENNReal.measurable_ofReal.comp_aemeasurable hs.aemeasurable)
@@ -374,7 +352,7 @@ theorem openSetScale_moment_transfer
       rw [ENNReal.ofReal_toReal (measure_ne_top (M ω) _)]
     _ = ∫⁻ v, ENNReal.rpow (ENNReal.ofReal (v 0)) p
           ∂Measure.map (fun ω (_ : Fin 1) => (M ω A).toReal) P :=
-      (openSetScale_lintegral_map_fin_one hAreal p).symm
+      (openSetScale_lintegral_map_fin_one (ENNReal.measurable_toReal.comp_aemeasurable hmassA) p).symm
     _ = ∫⁻ v, ENNReal.rpow (ENNReal.ofReal (v 0)) p
           ∂Measure.map (fun q : Ω × ℝ => fun _ : Fin 1 => s q.2 * (M q.1 B).toReal)
             (P.prod G) := by rw [hLaw]
@@ -391,7 +369,7 @@ theorem openSetScale_moment_transfer
 affine map `y ↦ a + c • y`, for every `IsGMCOf` version and every real order. At zero mass the
 extended-power convention is retained, in particular zero to a negative power is infinite. -/
 theorem gmc_affine_openSet_moment_scale
-    {Ω : Type*} [MeasurableSpace Ω]
+
     (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ)
     (hγ : 0 < γ) (hγ2 : γ < 2)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
@@ -401,7 +379,7 @@ theorem gmc_affine_openSet_moment_scale
     gmcMassMoment P M ((fun y => a + c • y) '' U) p =
       ENNReal.ofReal (c ^ (2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2)) *
         gmcMassMoment P M U p := by
-  have : IsProbabilityMeasure P := hX.1
+  have := hX.1
   have : IsProbabilityMeasure (gaussianReal 0 ⟨-Real.log c,
       neg_nonneg.mpr (Real.log_nonpos hc.le hc1)⟩) :=
     instIsProbabilityMeasureGaussianReal 0 _

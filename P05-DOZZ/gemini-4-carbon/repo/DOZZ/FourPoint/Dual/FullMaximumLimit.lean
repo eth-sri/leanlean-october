@@ -42,16 +42,12 @@ theorem dual_source_full_maximum_increment_tendsto
       (𝓝 ((a*Real.Gamma (-a)*Real.Gamma (p+a)/Real.Gamma p)*
         (∫⁻ ω, rho γ (M ω) (2*Q γ-α₁-2/γ) α₂ α₃ ^(-(p+a)) ∂P).toReal*
         (∫⁻ ω, twoSidedReflectionMass γ B Z ω ^a ∂P).toReal)) := by
-  let _ : IsProbabilityMeasure P := hX.1
-  let ν := Q γ-α₁
+  let _ := hX.1
   let p := (α₁+α₂+α₃-2/γ-2*Q γ)/γ
   have hp : 0 < p := div_pos (by linarith only [hs]) hγ
   obtain ⟨A, _, hA, _, hB, _, _, _, _, _⟩ :=
     DOZZ.equatorGFF_lateral_GMC_decomposition P X M γ hγ hγ₂ hX hM
-  let W := P.map (fun ω => radialPositiveHalf (A ω))
-  have hW : IsBrownianReal (fun t p => p t) W :=
-    radialPositiveHalf_map_isBrownian P A hA hB
-  have hSm : AEMeasurable (fun ω => (twoSidedReflectionMass γ B Z ω).toReal) P :=
+  have hSm :=
     (twoSidedReflectionMass_aemeasurable_of_lateral P γ B Z
       (aemeasurable_of_twoSidedConditioned hData.1) hData.2.1).ennreal_toReal
   have ht := dual_source_pareto_increment_tendsto P X hX γ hγ hγ₂ M hM Xc hc
@@ -67,7 +63,7 @@ theorem dual_source_full_maximum_increment_tendsto
   have he := dual_source_fixed_maximum_increment_eq_pareto P X hX γ hγ hγ₂ M hM Xc hc
     α₁ α₂ α₃ ξ h p hα₁ hα₂ hα₃ hh hp hξ hξ1
     (fun ω => (twoSidedReflectionMass γ B Z ω).toReal) hSm (ae_of_all _ (fun _ => ENNReal.toReal_nonneg))
-    W hW z hz0 hz1 hz.le hInt
+    (P.map (fun ω => radialPositiveHalf (A ω))) (radialPositiveHalf_map_isBrownian P A hA hB) z hz0 hz1 hz.le hInt
   rw [he]
 
 end DOZZ.Proofs

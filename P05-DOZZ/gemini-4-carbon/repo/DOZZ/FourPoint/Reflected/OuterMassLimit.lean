@@ -55,27 +55,6 @@ theorem reflected_outerMass_eq_kernel_integral (γ α₁ α₂ α₃ ξ : ℝ) (
     exact (measure_mono inter_subset_left).trans_eq h1
   exact (gammaHalfMass_eq_coulombMass γ α₁ α₂ α₃ z (μ.restrict D) hzr h0r h1r).symm
 
-/-- The literal retained mass tends to its rho, including when the first bare charge is above Q. -/
-theorem reflected_outerMass_tendsto (γ α₁ α₂ α₃ ξ : ℝ) (μ : Measure ℂ)
-    (hξ : 0 < ξ) (hξ₁ : ξ < 1) (h0 : μ {0} = 0) (h1 : μ {1} = 0)
-    (hfin : rho γ μ (α₁ - γ / 2) α₂ α₃ ≠ ⊤) :
-    Tendsto (fun z : ℂ => gammaHalfOuterMass γ α₁ α₂ α₃ μ z ξ)
-      (nhdsWithin (0 : ℂ) {z : ℂ | z ≠ 0})
-      (nhds (rho γ μ (α₁ - γ / 2) α₂ α₃)) := by
-  have heq := reflected_zero_kernel_integral_eq_rho γ α₁ α₂ α₃ μ h0 h1
-  have ht := reflected_outer_kernel_integral_tendsto γ α₁ α₂ α₃ ξ μ hξ hξ₁ h0
-    (by rw [heq]; exact hfin)
-  rw [heq] at ht
-  have hn : Tendsto (fun z : ℂ => ‖z‖)
-      (nhdsWithin (0 : ℂ) {z : ℂ | z ≠ 0}) (nhds 0) := by
-    simpa only [norm_zero] using (continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
-  apply ht.congr'
-  filter_upwards [hn.eventually (gt_mem_nhds zero_lt_one), self_mem_nhdsWithin] with z hz hz0
-  have hr : ‖z‖ < ‖z‖ ^ (1 - ξ) := by
-    have hh := Real.rpow_lt_rpow_of_exponent_gt (norm_pos_iff.mpr hz0) hz
-      (by linarith only [hξ] : 1 - ξ < 1)
-    simpa only [Real.rpow_one] using hh
-  exact (reflected_outerMass_eq_kernel_integral γ α₁ α₂ α₃ ξ z μ h0 h1 hr).symm
 
 /-- Almost-sure convergence of the actual retained GMC mass in the reflected chart. -/
 theorem reflected_outerMass_ae_tendsto {Ω : Type*} [MeasurableSpace Ω]
@@ -86,10 +65,27 @@ theorem reflected_outerMass_ae_tendsto {Ω : Type*} [MeasurableSpace Ω]
     ∀ᵐ ω ∂P, Tendsto (fun z : ℂ => gammaHalfOuterMass γ α₁ α₂ α₃ (M ω) z ξ)
       (nhdsWithin (0 : ℂ) {z : ℂ | z ≠ 0})
       (nhds (rho γ (M ω) (α₁ - γ / 2) α₂ α₃)) := by
+  have reflected_outerMass_tendsto (μ : Measure ℂ) (hξ : 0 < ξ) (hξ₁ : ξ < 1) (h0 : μ {0} = 0) (h1 : μ {1} = 0) (hfin : rho γ μ (α₁ - γ / 2) α₂ α₃ ≠ ⊤) : Tendsto (fun z : ℂ => gammaHalfOuterMass γ α₁ α₂ α₃ μ z ξ)
+        (nhdsWithin (0 : ℂ) {z : ℂ | z ≠ 0})
+        (nhds (rho γ μ (α₁ - γ / 2) α₂ α₃)) := by
+    have heq := reflected_zero_kernel_integral_eq_rho γ α₁ α₂ α₃ μ h0 h1
+    have ht := reflected_outer_kernel_integral_tendsto γ α₁ α₂ α₃ ξ μ hξ hξ₁ h0
+      (by rw [heq]; exact hfin)
+    rw [heq] at ht
+    have hn : Tendsto (fun z : ℂ => ‖z‖)
+        (nhdsWithin (0 : ℂ) {z : ℂ | z ≠ 0}) (nhds 0) := by
+      simpa only [norm_zero] using (continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
+    apply ht.congr'
+    filter_upwards [hn.eventually (gt_mem_nhds zero_lt_one), self_mem_nhdsWithin] with z hz hz0
+    have hr : ‖z‖ < ‖z‖ ^ (1 - ξ) := by
+      have hh := Real.rpow_lt_rpow_of_exponent_gt (norm_pos_iff.mpr hz0) hz
+        (by linarith only [hξ] : 1 - ξ < 1)
+      simpa only [Real.rpow_one] using hh
+    exact (reflected_outerMass_eq_kernel_integral γ α₁ α₂ α₃ ξ z μ h0 h1 hr).symm
   filter_upwards [gmc_atomless_at_root_of_isGMCOf P X hX γ hγ hγ₂ M hM 0,
     gmc_atomless_at_root_of_isGMCOf P X hX γ hγ hγ₂ M hM 1,
     reflected_rho_ae_finite P X hX γ hγ hγ₂ M hM (α₁ - γ / 2) α₂ α₃
       hα₁ hα₂ hα₃] with ω h0 h1 hf
-  exact reflected_outerMass_tendsto γ α₁ α₂ α₃ ξ (M ω) hξ hξ₁ h0 h1 hf.ne
+  exact reflected_outerMass_tendsto (M ω) hξ hξ₁ h0 h1 hf.ne
 
 end DOZZ.Proofs

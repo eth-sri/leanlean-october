@@ -56,13 +56,11 @@ theorem annular_threshold_estimate
   calc
     (∫⁻ ω, F ω ∂P) ≤ ∫⁻ ω, u * D ω + B ω * I ω ∂P := lintegral_mono_ae hbound
     _ = u * (∫⁻ ω, D ω ∂P) + ∫⁻ ω, B ω * I ω ∂P := by
-      have hbi : AEMeasurable (fun ω => B ω * I ω) P := by
-        simpa only [Pi.mul_def] using hB.mul hI.aemeasurable
+      have hbi : AEMeasurable (fun ω => B ω * I ω) P := by fun_prop
       rw [lintegral_add_right' (fun ω => u * D ω) hbi,
         lintegral_const_mul' _ _ hu']
     _ ≤ u * (∫⁻ ω, D ω ∂P) +
-        (∫⁻ ω, B ω ^ q ∂P) ^ (1 / q) * (P S) ^ (1 / (q / (q - 1))) := by
-      exact add_le_add_right (by
+        (∫⁻ ω, B ω ^ q ∂P) ^ (1 / q) * (P S) ^ (1 / (q / (q - 1))) := add_le_add_right (by
         simpa only [hIp] using lintegral_mul_le_holder hB hI.aemeasurable hq) _
     _ ≤ _ := add_le_add_right
       (mul_le_mul_right (ENNReal.rpow_le_rpow hmark

@@ -27,12 +27,10 @@ theorem gaussianReal_standard_stein
     ∫ x, x * g x ∂gaussianReal 0 1 = ∫ x, g' x ∂gaussianReal 0 1 := by
   have hpdf : ∀ x, HasDerivAt (gaussianPDFReal 0 1) (-x * gaussianPDFReal 0 1 x) x := by
     intro x
-    have hqbase := (((hasDerivAt_id x).pow 2).const_mul (- (1 / 2 : ℝ)))
     have hq0 : HasDerivAt (fun y : ℝ => (- (1 / 2 : ℝ)) * y ^ 2)
         ((- (1 / 2 : ℝ)) * (2 * x)) x := by
-      convert hqbase using 1
-      · ext y
-        simp only [Pi.pow_apply, id_eq]
+      convert ((((hasDerivAt_id x).pow 2).const_mul (- (1 / 2 : ℝ)))) using 1
+      · rfl
       · simp only [id_eq, Nat.reduceSub, pow_one]
         ring
     have hq : HasDerivAt (fun y : ℝ => -y ^ 2 / 2) (-x) x := by
@@ -40,9 +38,8 @@ theorem gaussianReal_standard_stein
       · ext y
         ring
       · ring
-    have he := (Real.hasDerivAt_exp (-x ^ 2 / 2)).comp x hq
     rw [gaussianPDFReal_def]
-    convert he.const_mul (Real.sqrt (2 * Real.pi * (1 : ℝ≥0)))⁻¹ using 1 <;>
+    convert ((Real.hasDerivAt_exp (-x ^ 2 / 2)).comp x hq).const_mul (Real.sqrt (2 * Real.pi * (1 : ℝ≥0)))⁻¹ using 1 <;>
       simp [mul_assoc, mul_left_comm, mul_comm]
   have hibp := integral_mul_deriv_eq_deriv_mul_of_integrable
     (u := g) (v := gaussianPDFReal 0 1)

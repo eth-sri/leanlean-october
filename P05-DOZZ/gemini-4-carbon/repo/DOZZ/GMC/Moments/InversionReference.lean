@@ -28,7 +28,6 @@ noncomputable def euclideanInv : ℂ → ℂ := EuclideanGeometry.inversion 0 1
 theorem euclideanInv_eq_star_inv (z : ℂ) : euclideanInv z = star (z⁻¹) := by
   by_cases hz : z = 0
   · simp [euclideanInv, hz, EuclideanGeometry.inversion]
-  have hn : ‖z‖ ≠ 0 := (norm_pos_iff.mpr hz).ne'
   rw [euclideanInv, EuclideanGeometry.inversion, dist_eq_norm]
   simp only [sub_zero, vadd_eq_add, add_zero]
   rw [Complex.inv_def, Complex.normSq_eq_norm_sq]
@@ -84,20 +83,19 @@ theorem euclideanInv_abs_det (x : ℂ) (hx : x ≠ 0) :
 noncomputable def refWeight (x : ℂ) : ℝ≥0∞ :=
   ENNReal.ofReal (normPlus x ^ (-4 : ℝ))
 
-theorem normPlus_euclideanInv (x : ℂ) : normPlus (euclideanInv x) = normPlus x⁻¹ := by
-  have hnorm : ‖euclideanInv x‖ = ‖x‖⁻¹ := by
-    have h := EuclideanGeometry.dist_inversion_center (0 : ℂ) x (1 : ℝ)
-    simpa [euclideanInv, dist_eq_norm, norm_inv] using h
-  have hcomplex : ‖euclideanInv x‖ = ‖x⁻¹‖ := by
-    simpa [norm_inv, one_div] using hnorm
-  unfold normPlus
-  rw [hcomplex]
 
 theorem refWeight_jac (x : ℂ) (hx : x ≠ 0) :
     ENNReal.ofReal |(fderiv ℝ euclideanInv x).det| * refWeight (euclideanInv x) =
       refWeight x := by
+  have normPlus_euclideanInv : normPlus (euclideanInv x) = normPlus x⁻¹ := by
+    have hnorm : ‖euclideanInv x‖ = ‖x‖⁻¹ := by
+      simpa [euclideanInv, dist_eq_norm, norm_inv] using EuclideanGeometry.dist_inversion_center (0 : ℂ) x (1 : ℝ)
+    have hcomplex : ‖euclideanInv x‖ = ‖x⁻¹‖ := by
+      simpa [norm_inv, one_div] using hnorm
+    unfold normPlus
+    rw [hcomplex]
   rw [euclideanInv_abs_det x hx, refWeight, refWeight]
-  rw [normPlus_euclideanInv x]
+  rw [normPlus_euclideanInv]
   rw [← ENNReal.ofReal_mul (by positivity : 0 ≤ ‖x‖ ^ (-4 : ℝ))]
   rw [mul_comm, normPlus_inv_mul_jacobian hx]
 
@@ -105,34 +103,6 @@ theorem refWeight_measurable : Measurable refWeight := by
   change Measurable (fun x : ℂ => ENNReal.ofReal (normPlus x ^ (-4 : ℝ)))
   fun_prop [normPlus]
 
-theorem euclideanInv_preimage_image_away (A : Set ℂ) :
-    euclideanInv '' (A ∩ {x | x ≠ 0}) =
-      euclideanInv ⁻¹' A ∩ {x | x ≠ 0} := by
-  ext y
-  constructor
-  · rintro ⟨x, hx, rfl⟩
-    constructor
-    · change euclideanInv (euclideanInv x) ∈ A
-      simpa [euclideanInv_involutive x] using hx.1
-    · intro hy0
-      have hx0 : x = 0 := by
-        have h := congrArg euclideanInv hy0
-        rw [euclideanInv_involutive x, show euclideanInv 0 = 0 by
-          simp [euclideanInv]] at h
-        exact h
-      exact hx.2 hx0
-  · intro hy
-    change euclideanInv y ∈ A ∧ y ≠ 0 at hy
-    refine ⟨euclideanInv y, ?_, euclideanInv_involutive y⟩
-    constructor
-    · exact hy.1
-    · intro hx0
-      have h := congrArg euclideanInv hx0
-      have hzeroI : euclideanInv 0 = 0 := by simp [euclideanInv]
-      have hy0 : y = 0 := by
-        rw [euclideanInv_involutive y, hzeroI] at h
-        exact h
-      exact hy.2 hy0
 
 theorem euclideanInv_derivWithin_punctured (S : Set ℂ) (x : ℂ) (hx : x ≠ 0) :
     HasFDerivWithinAt euclideanInv (fderiv ℝ euclideanInv x) S x := by
@@ -143,38 +113,61 @@ theorem euclideanInv_derivWithin_punctured (S : Set ℂ) (x : ℂ) (hx : x ≠ 0
   exact (EuclideanGeometry.hasFDerivAt_inversion (c := (0 : ℂ)) (R := (1 : ℝ))
     (x := x) hx).hasFDerivWithinAt
 
-theorem refWeight_integral_euclideanInv_preimage_punctured (A : Set ℂ)
-    (hA : MeasurableSet A) :
-    (∫⁻ x in euclideanInv ⁻¹' A ∩ {x | x ≠ 0}, refWeight x ∂volume) =
-      (∫⁻ x in A ∩ {x | x ≠ 0}, refWeight x ∂volume) := by
-  let S : Set ℂ := A ∩ {x | x ≠ 0}
-  have hS : MeasurableSet S := hA.inter (measurableSet_singleton 0).compl
-  have hInj : Set.InjOn euclideanInv S := euclideanInv_involutive.injective.injOn
-  have hderiv : ∀ x ∈ S,
-      HasFDerivWithinAt euclideanInv (fderiv ℝ euclideanInv x) S x := by
-    intro x hx
-    exact euclideanInv_derivWithin_punctured S x hx.2
-  have hImage := euclideanInv_preimage_image_away A
-  have hchange := MeasureTheory.lintegral_image_eq_lintegral_abs_det_fderiv_mul
-    (μ := volume) hS hderiv hInj refWeight
-  rw [hImage] at hchange
-  have hchange' :
-      (∫⁻ x in euclideanInv ⁻¹' A ∩ {x | x ≠ 0}, refWeight x ∂volume) =
-        ∫⁻ x in S, refWeight x ∂volume := by
-    calc
-      _ = ∫⁻ x in S,
-          ENNReal.ofReal |(fderiv ℝ euclideanInv x).det| * refWeight (euclideanInv x)
-            ∂volume := hchange
-      _ = ∫⁻ x in S, refWeight x ∂volume := by
-        apply MeasureTheory.setLIntegral_congr_fun hS
-        intro x hx
-        exact refWeight_jac x hx.2
-  simpa [S] using hchange'
 
 theorem gmcReferenceMeasure_euclideanInv_preimage (A : Set ℂ)
     (hA : MeasurableSet A) :
     gmcReferenceMeasure (euclideanInv ⁻¹' A) = gmcReferenceMeasure A := by
-  have hPunctured := refWeight_integral_euclideanInv_preimage_punctured A hA
+  have refWeight_integral_euclideanInv_preimage_punctured : (∫⁻ x in euclideanInv ⁻¹' A ∩ {x | x ≠ 0}, refWeight x ∂volume) =
+        (∫⁻ x in A ∩ {x | x ≠ 0}, refWeight x ∂volume) := by
+    have euclideanInv_preimage_image_away : euclideanInv '' (A ∩ {x | x ≠ 0}) =
+          euclideanInv ⁻¹' A ∩ {x | x ≠ 0} := by
+      ext y
+      constructor
+      · rintro ⟨x, hx, rfl⟩
+        constructor
+        · change euclideanInv (euclideanInv x) ∈ A
+          simpa [euclideanInv_involutive x] using hx.1
+        · intro hy0
+          have hx0 : x = 0 := by
+            have h := congrArg euclideanInv hy0
+            rw [euclideanInv_involutive x, show euclideanInv 0 = 0 by
+              simp [euclideanInv]] at h
+            exact h
+          exact hx.2 hx0
+      · intro hy
+        change euclideanInv y ∈ A ∧ y ≠ 0 at hy
+        refine ⟨euclideanInv y, ?_, euclideanInv_involutive y⟩
+        constructor
+        · exact hy.1
+        · intro hx0
+          have h := congrArg euclideanInv hx0
+          have hzeroI : euclideanInv 0 = 0 := by simp [euclideanInv]
+          have hy0 : y = 0 := by
+            rw [euclideanInv_involutive y, hzeroI] at h
+            exact h
+          exact hy.2 hy0
+    let S := A ∩ {x | x ≠ 0}
+    have hS : MeasurableSet S := hA.inter (measurableSet_singleton 0).compl
+    have hInj : Set.InjOn euclideanInv S := euclideanInv_involutive.injective.injOn
+    have hderiv : ∀ x ∈ S,
+        HasFDerivWithinAt euclideanInv (fderiv ℝ euclideanInv x) S x := by
+      intro x hx
+      exact euclideanInv_derivWithin_punctured S x hx.2
+    have hchange := MeasureTheory.lintegral_image_eq_lintegral_abs_det_fderiv_mul
+      (μ := volume) hS hderiv hInj refWeight
+    rw [euclideanInv_preimage_image_away] at hchange
+    have hchange' :
+        (∫⁻ x in euclideanInv ⁻¹' A ∩ {x | x ≠ 0}, refWeight x ∂volume) =
+          ∫⁻ x in S, refWeight x ∂volume := by
+      calc
+        _ = ∫⁻ x in S,
+            ENNReal.ofReal |(fderiv ℝ euclideanInv x).det| * refWeight (euclideanInv x)
+              ∂volume := hchange
+        _ = ∫⁻ x in S, refWeight x ∂volume := by
+          apply MeasureTheory.setLIntegral_congr_fun hS
+          intro x hx
+          exact refWeight_jac x hx.2
+    simpa [S] using hchange'
   have hzero : ∀ᵐ x ∂volume, x ≠ (0 : ℂ) := by
     rw [ae_iff]
     simp
@@ -185,8 +178,6 @@ theorem gmcReferenceMeasure_euclideanInv_preimage (A : Set ℂ)
       euclideanInv ⁻¹' A ∩ {x | x ≠ 0} := by
     filter_upwards [hzero] with x hx
     simp [hx]
-  have hAres := Measure.restrict_congr_set hAae
-  have hpreres := Measure.restrict_congr_set hpreae
   calc
     gmcReferenceMeasure (euclideanInv ⁻¹' A) =
         ∫⁻ x in euclideanInv ⁻¹' A, refWeight x ∂volume := by
@@ -194,10 +185,10 @@ theorem gmcReferenceMeasure_euclideanInv_preimage (A : Set ℂ)
             (hA.preimage euclideanInv_measurable)]
           rfl
     _ = ∫⁻ x in euclideanInv ⁻¹' A ∩ {x | x ≠ 0}, refWeight x ∂volume := by
-          rw [hpreres]
-    _ = ∫⁻ x in A ∩ {x | x ≠ 0}, refWeight x ∂volume := hPunctured
+          rw [Measure.restrict_congr_set hpreae]
+    _ = ∫⁻ x in A ∩ {x | x ≠ 0}, refWeight x ∂volume := refWeight_integral_euclideanInv_preimage_punctured
     _ = ∫⁻ x in A, refWeight x ∂volume := by
-          rw [hAres]
+          rw [Measure.restrict_congr_set hAae]
     _ = gmcReferenceMeasure A := by
           rw [gmcReferenceMeasure, withDensity_apply _ hA]
           rfl
@@ -219,16 +210,13 @@ theorem gmcReferenceMeasure_map_conj :
   change (volume.withDensity refWeight) (star ⁻¹' A) =
     (volume.withDensity refWeight) A
   rw [withDensity_apply _ (hA.preimage hstar.measurable), withDensity_apply _ hA]
-  have hrestrict : MeasurePreserving star
-      (volume.restrict (star ⁻¹' A)) (volume.restrict A) :=
-    hstar.restrict_preimage hA
   calc
     ∫⁻ x in star ⁻¹' A, refWeight x ∂volume =
         ∫⁻ x, refWeight (star x) ∂volume.restrict (star ⁻¹' A) := by
           apply setLIntegral_congr_fun (hA.preimage hstar.measurable)
           intro x hx
           simp [refWeight, normPlus]
-    _ = ∫⁻ x in A, refWeight x ∂volume := hrestrict.lintegral_comp refWeight_measurable
+    _ = ∫⁻ x in A, refWeight x ∂volume := (hstar.restrict_preimage hA).lintegral_comp refWeight_measurable
 
 theorem gmcReferenceMeasure_map_complexInv :
     gmcReferenceMeasure.map (fun x : ℂ => x⁻¹) = gmcReferenceMeasure := by
@@ -236,18 +224,14 @@ theorem gmcReferenceMeasure_map_complexInv :
     funext x
     simp [Function.comp_apply, euclideanInv_eq_star_inv]
   have hcomp : star ∘ euclideanInv =
-      (⇑Complex.conjLIE : ℂ → ℂ) ∘ euclideanInv := by
-    funext x
-    rfl
+      (⇑Complex.conjLIE : ℂ → ℂ) ∘ euclideanInv := by rfl
   rw [hfun]
   rw [hcomp]
   rw [← AEMeasurable.map_map_of_aemeasurable
     (Complex.conjLIE.measurePreserving.measurable.aemeasurable)
     (euclideanInv_measurable.aemeasurable)]
   rw [gmcReferenceMeasure_map_euclideanInv]
-  have hstarEq : (⇑Complex.conjLIE : ℂ → ℂ) = star := by
-    funext z
-    rfl
+  have hstarEq : (⇑Complex.conjLIE : ℂ → ℂ) = star := by rfl
   rw [hstarEq, gmcReferenceMeasure_map_conj]
 
 end DOZZ.Proofs

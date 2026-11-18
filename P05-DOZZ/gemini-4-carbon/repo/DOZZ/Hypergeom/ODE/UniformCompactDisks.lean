@@ -13,7 +13,6 @@ uniform coefficient norm bound. -/
 
 @[expose] public section
 
-open Set
 
 namespace DOZZ.Proofs
 
@@ -29,7 +28,7 @@ theorem exists_uniform_holomorphic_disks_on_compact
       ∀ x ∈ K,
         DifferentiableOn ℂ H (Metric.ball (f x) r) ∧
           ∀ z ∈ Metric.ball (f x) r, ‖H z‖ ≤ M := by
-  let S : Set ℂ := f '' K
+  let S := f '' K
   have hS : IsCompact S := by
     dsimp [S]
     exact hK.image_of_continuousOn hf
@@ -40,9 +39,8 @@ theorem exists_uniform_holomorphic_disks_on_compact
     Metric.exists_isOpen_isBounded_image_of_isCompact_of_continuousOn
       hS hU hSU hH.continuousOn
   let W := V ∩ U
-  have hWopen : IsOpen W := hVopen.inter hU
   have hSW : S ⊆ W := fun z hz => ⟨hSV hz, hSU hz⟩
-  obtain ⟨δ, hδ, hδW⟩ := hS.exists_cthickening_subset_open hWopen hSW
+  obtain ⟨δ, hδ, hδW⟩ := hS.exists_cthickening_subset_open (hVopen.inter hU) hSW
   let r := δ / 2
   obtain ⟨B, hB⟩ := hVbounded.subset_closedBall (H 0)
   let M := max 0 (B + ‖H 0‖)
@@ -53,15 +51,13 @@ theorem exists_uniform_holomorphic_disks_on_compact
     intro z hz
     apply hδW
     apply Metric.mem_cthickening_of_dist_le z (f x) δ S hfxS
-    have hdist : dist z (f x) < r := Metric.mem_ball.mp hz
-    have hrδ : r ≤ δ := by dsimp [r]; linarith
-    exact hdist.le.trans hrδ
+    have hrδ : r ≤ δ := by grind
+    exact (Metric.mem_ball.mp hz).le.trans hrδ
   have hballU : Metric.ball (f x) r ⊆ U := fun _ hz => (hballW hz).2
   have hballV : Metric.ball (f x) r ⊆ V := fun _ hz => (hballW hz).1
   refine ⟨hH.mono hballU, ?_⟩
   intro z hz
-  have hdist := hB ⟨z, hballV hz, rfl⟩
-  have hnorm : ‖H z - H 0‖ ≤ B := by simpa [dist_eq_norm] using hdist
+  have : ‖H z - H 0‖ ≤ B := by simpa [dist_eq_norm] using hB ⟨z, hballV hz, rfl⟩
   calc
     ‖H z‖ = ‖(H z - H 0) + H 0‖ := by congr 1; abel
     _ ≤ ‖H z - H 0‖ + ‖H 0‖ := norm_add_le _ _

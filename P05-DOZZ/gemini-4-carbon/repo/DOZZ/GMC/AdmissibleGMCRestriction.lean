@@ -36,11 +36,8 @@ theorem logRegularizationReference_restrict_of_subset
     (hV : MeasurableSet V) (hVU : V ⊆ U) :
     logRegularizationReference V dens = (logRegularizationReference U dens).restrict V := by
   rw [logRegularizationReference, logRegularizationReference]
-  calc
-    (volume.restrict V).withDensity (fun x => ENNReal.ofReal (dens x)) =
-        ((volume.restrict U).withDensity (fun x => ENNReal.ofReal (dens x))).restrict V := by
-          rw [MeasureTheory.restrict_withDensity hV,
-            Measure.restrict_restrict_of_subset hVU]
+  rw [MeasureTheory.restrict_withDensity hV,
+    Measure.restrict_restrict_of_subset hVU]
 
 /-- A compactly supported continuous test whose topological support lies in `V` vanishes outside
 `V`. -/
@@ -50,8 +47,7 @@ theorem boundedContinuousFunction_eq_zero_off_tsupport_subset
     ∀ x, x ∉ V → f x = 0 := by
   intro x hx
   by_contra hne
-  have hxSupport : x ∈ Function.support (f : ℂ → ℝ) := by
-    simpa [Function.mem_support] using hne
+  have hxSupport : x ∈ Function.support (f : ℂ → ℝ) := by assumption
   exact hx (hfV (subset_tsupport (f : ℂ → ℝ) hxSupport))
 
 /-- Restricting the limiting random measure to a measurable subchart preserves the admissible GMC
@@ -91,8 +87,7 @@ theorem admissibleGMCVersion_restrict_of_subset
         (fun x => f x * Real.exp (γ * Y ω (Real.exp (-r)) x - γ ^ 2 / 2 *
           ∫ ω', Y ω' (Real.exp (-r)) x ^ 2 ∂P))
         (fun x hx => by rw [hfzero x hx, zero_mul])
-    have hTarget (ω : Ω) :
-        (∫ x, f x ∂(M ω).restrict V) = ∫ x, f x ∂M ω :=
+    have hTarget (ω : Ω) :=
       integral_restrict_eq_integral_of_zero_on_compl (M ω) V hV
         (fun x => f x) (hfzero)
     have hleft : ∀ r, (fun ω => regularizedLogChaosTestMass P U dens Y γ r ω f) =ᵐ[P]
@@ -102,7 +97,6 @@ theorem admissibleGMCVersion_restrict_of_subset
     have hright : (fun ω => ∫ x, f x ∂M ω) =ᵐ[P]
         fun ω => ∫ x, f x ∂(M ω).restrict V :=
       Eventually.of_forall fun ω => (hTarget ω).symm
-    have hlim := hMLimit f hfCompact (hfSupport.trans hVU)
-    exact TendstoInMeasure.congr hleft hright hlim
+    exact TendstoInMeasure.congr hleft hright (hMLimit f hfCompact (hfSupport.trans hVU))
 
 end DOZZ.Proofs

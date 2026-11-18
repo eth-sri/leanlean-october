@@ -105,20 +105,14 @@ theorem continuousOn_unitVolumeStructureConstant {Ω : Type*} [MeasurableSpace �
     unfold sExp
     exact hnum.div hfst hγne
   have hpre : Continuous fun q : ℝ × (Fin 3 → ℝ) => q.1 * (q.2 1 + q.2 2) := by fun_prop
-  have hexp : ContinuousOn (fun q : ℝ × (Fin 3 → ℝ) =>
-      q.1 * (q.2 1 + q.2 2) * (-sExp q.1 (q.2 0) (q.2 1) (q.2 2))) K :=
-    hpre.continuousOn.mul hsc.neg
-  have hfac : ContinuousOn (fun q : ℝ × (Fin 3 → ℝ) =>
-      (2 : ℝ) ^ (q.1 * (q.2 1 + q.2 2) * (-sExp q.1 (q.2 0) (q.2 1) (q.2 2))) /
-        nPointCoulombPrefactor q.2 ![0, 2, -2]) K :=
-    (continuousOn_const.rpow hexp fun _ _ => Or.inl two_ne_zero).div
+  have hfac :=
+    (continuousOn_const.rpow (hpre.continuousOn.mul hsc.neg) fun _ _ => Or.inl two_ne_zero).div
       (continuous_nPointCoulombPrefactor_pole_frame.comp continuous_snd).continuousOn
       fun q _ => (nPointCoulombPrefactor_pole_frame_pos q.2).ne'
   refine (hfac.mul hcont).congr fun q hq => ?_
-  have h := unitVolumeStructureConstant_eq_nPoint P X hX q.1 (hKdom q hq).1 (hKdom q hq).2.1
+  have := unitVolumeStructureConstant_eq_nPoint P X hX q.1 (hKdom q hq).1 (hKdom q hq).2.1
     (M q.1) (hM q.1 (hKdom q hq).1 (hKdom q hq).2.1) (q.2 0) (q.2 1) (q.2 2)
-  rw [vec_three_eta] at h
-  exact h
+  assumption
 
 end DOZZ.Proofs
 

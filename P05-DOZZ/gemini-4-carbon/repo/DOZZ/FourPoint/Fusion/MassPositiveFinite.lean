@@ -20,7 +20,7 @@ theorem fusion_gammaHalfMass_pos_finite_ae {Ω : Type*} [MeasurableSpace Ω]
     (z : ℂ) (hz : z ≠ 0) (hz4 : ‖z‖ ≤ 1 / 4) :
     ∀ᵐ ω ∂P, coulombMass γ (M ω) ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃ ≠ 0 ∧
       coulombMass γ (M ω) ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃ ≠ ⊤ := by
-  have hz1 : z ≠ 1 := by
+  have : z ≠ 1 := by
     intro he
     rw [he, norm_one] at hz4
     norm_num at hz4

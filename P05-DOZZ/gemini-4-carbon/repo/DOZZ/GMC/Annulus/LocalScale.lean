@@ -23,12 +23,18 @@ open scoped ENNReal NNReal Distributions
 
 namespace DOZZ.Proofs
 
+variable {Ω : Type*} [MeasurableSpace Ω]
+
+
+section
+variable (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+include hX hγ hγ2 hM
+
 /-- Exact scaling expressed using the radius itself, with the Gaussian exponent
 `gmcScaleExponent`. -/
 theorem gmc_local_ball_moment_scale
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ)
-    (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+
+
     (z : ℂ) {r R : ℝ} (hr : 0 < r) (hR : 0 < R) (hrR : r ≤ R)
     (hR1 : R < 1) (hzr : ‖z‖ + r < 1) (p : ℝ) :
     gmcMassMoment P M (Metric.ball z r) p =
@@ -41,31 +47,11 @@ theorem gmc_local_ball_moment_scale
   rw [he, ← gmcScaleExponent_eq_polynomial γ p hγ.ne'] at h
   exact h
 
-/-- The ratio law keeps the true radius exponent and puts reference radius dependence in a
-strictly positive finite scalar. -/
-theorem gmc_local_ball_moment_radius_factor
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ)
-    (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (z : ℂ) {r R : ℝ} (hr : 0 < r) (hR : 0 < R) (hrR : r ≤ R)
-    (hR1 : R < 1) (hzr : ‖z‖ + r < 1) (p : ℝ) :
-    gmcMassMoment P M (Metric.ball z r) p =
-      ENNReal.ofReal (R ^ (-gmcScaleExponent γ p)) *
-        ENNReal.ofReal (r ^ gmcScaleExponent γ p) *
-        gmcMassMoment P M (Metric.ball 0 R) p := by
-  rw [gmc_local_ball_moment_scale P X hX γ hγ hγ2 M hM z hr hR hrR hR1 hzr p]
-  have hf : (r / R) ^ gmcScaleExponent γ p =
-      R ^ (-gmcScaleExponent γ p) * r ^ gmcScaleExponent γ p := by
-    rw [div_eq_mul_inv, Real.mul_rpow hr.le (inv_pos.mpr hR).le,
-      Real.inv_rpow hR.le, ← Real.rpow_neg hR.le]
-    exact mul_comm _ _
-  rw [hf, ENNReal.ofReal_mul (Real.rpow_nonneg hR.le _)]
 
 /-- Local scaling preserves infinite moments as well as finite ones. -/
 theorem gmc_local_ball_moment_finite_iff
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ)
-    (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+
+
     (z : ℂ) {r R : ℝ} (hr : 0 < r) (hR : 0 < R) (hrR : r ≤ R)
     (hR1 : R < 1) (hzr : ‖z‖ + r < 1) (p : ℝ) :
     gmcMassMoment P M (Metric.ball z r) p < ⊤ ↔
@@ -78,9 +64,8 @@ theorem gmc_local_ball_moment_finite_iff
 /-- The exact local ball moment is independent of its center while its translated disk stays
 inside the unit logarithmic chart. This is equality of actual GMC moments at every real order. -/
 theorem gmc_local_ball_moment_center_eq
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ)
-    (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+
+
     (z w : ℂ) {r R : ℝ} (hr : 0 < r) (hR : 0 < R) (hrR : r ≤ R)
     (hR1 : R < 1) (hzr : ‖z‖ + r < 1) (hwr : ‖w‖ + r < 1) (p : ℝ) :
     gmcMassMoment P M (Metric.ball z r) p = gmcMassMoment P M (Metric.ball w r) p := by
@@ -91,9 +76,8 @@ theorem gmc_local_ball_moment_center_eq
 two-sided scaling estimate at that order. Finiteness of the reference moment is one side of the
 equivalence, not an assumption, at every order including the inverse ones. -/
 theorem gmc_local_twoSided_ball_scaling_iff
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ)
-    (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+
+
     (R p : ℝ) (hR : 0 < R) (hR1 : R < 1) :
     (0 < gmcMassMoment P M (Metric.ball 0 R) p ∧
         gmcMassMoment P M (Metric.ball 0 R) p < ⊤) ↔
@@ -102,24 +86,31 @@ theorem gmc_local_twoSided_ball_scaling_iff
             gmcMassMoment P M (Metric.ball z r) p ∧
           gmcMassMoment P M (Metric.ball z r) p ≤
             ENNReal.ofReal (C * r ^ gmcScaleExponent γ p) := by
+  have gmc_local_ball_moment_radius_factor (z : ℂ) {r R : ℝ} (hr : 0 < r) (hR : 0 < R) (hrR : r ≤ R) (hR1 : R < 1) (hzr : ‖z‖ + r < 1) (p : ℝ) : gmcMassMoment P M (Metric.ball z r) p =
+        ENNReal.ofReal (R ^ (-gmcScaleExponent γ p)) *
+          ENNReal.ofReal (r ^ gmcScaleExponent γ p) *
+          gmcMassMoment P M (Metric.ball 0 R) p := by
+    rw [gmc_local_ball_moment_scale P X hX γ hγ hγ2 M hM z hr hR hrR hR1 hzr p]
+    have hf : (r / R) ^ gmcScaleExponent γ p =
+        R ^ (-gmcScaleExponent γ p) * r ^ gmcScaleExponent γ p := by
+      rw [div_eq_mul_inv, Real.mul_rpow hr.le (inv_pos.mpr hR).le,
+        Real.inv_rpow hR.le, ← Real.rpow_neg hR.le]
+      exact mul_comm _ _
+    rw [hf, ENNReal.ofReal_mul (Real.rpow_nonneg hR.le _)]
   let B := gmcMassMoment P M (Metric.ball 0 R) p
   let ξ := gmcScaleExponent γ p
   constructor
   · rintro ⟨hBp, hBf⟩
-    have hBreal : 0 < B.toReal := ENNReal.toReal_pos hBp.ne' hBf.ne
     let D : ℝ := R ^ (-ξ) * B.toReal
-    have hD : 0 < D := mul_pos (Real.rpow_pos_of_pos hR _) hBreal
+    have hD : 0 < D := mul_pos (Real.rpow_pos_of_pos hR _) (ENNReal.toReal_pos hBp.ne' hBf.ne)
     let C : ℝ := max D D⁻¹
     have hC : 0 < C := hD.trans_le (le_max_left _ _)
     have hDC : D ≤ C := le_max_left _ _
-    have hCD : C⁻¹ ≤ D := by
-      have hi := (inv_le_inv₀ hC (inv_pos.mpr hD)).mpr
-        (show D⁻¹ ≤ C from le_max_right _ _)
-      simpa only [inv_inv] using hi
+    have hCD : C⁻¹ ≤ D := by grind
     refine ⟨C, hC, ?_⟩
     intro z r hr hrR hzr
     have he : gmcMassMoment P M (Metric.ball z r) p = ENNReal.ofReal (D * r ^ ξ) := by
-      rw [gmc_local_ball_moment_radius_factor P X hX γ hγ hγ2 M hM z hr hR hrR hR1 hzr p]
+      rw [gmc_local_ball_moment_radius_factor z hr hR hrR hR1 hzr p]
       have hB : B = ENNReal.ofReal B.toReal := (ENNReal.ofReal_toReal hBf.ne).symm
       change ENNReal.ofReal (R ^ (-ξ)) * ENNReal.ofReal (r ^ ξ) * B = _
       rw [hB, ← ENNReal.ofReal_mul (Real.rpow_nonneg hR.le _),
@@ -139,4 +130,6 @@ theorem gmc_local_twoSided_ball_scaling_iff
       ENNReal.ofReal_pos.mpr (mul_pos (inv_pos.mpr hC) (Real.rpow_pos_of_pos hR ξ))
     exact ⟨hpref.trans_le hb.1, hb.2.trans_lt ENNReal.ofReal_lt_top⟩
 
+
+end
 end DOZZ.Proofs

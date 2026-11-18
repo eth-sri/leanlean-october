@@ -50,23 +50,12 @@ theorem extendedSeiberg3_of_lt {γ α₁ α₂ α₃ : ℝ} (hγ : 0 < γ) (h₁
   · have h := div_lt_div_of_pos_right hk₃ hγ
     rwa [show 2 * (Q γ - α₃) / γ = 2 / γ * (Q γ - α₃) by ring] at h
 
-/-- The shifted triple `(a - γ/2, ε, a)` is in the extended domain for `γ/4 + ε/2 < a < Q`. -/
-theorem extendedSeiberg3_shift {γ ε a : ℝ} (hγ : 0 < γ) (hε₁ : γ / 2 < ε) (hε₂ : ε < 2 / γ)
-    (ha₁ : γ / 4 + ε / 2 < a) (ha₂ : a < Q γ) : ExtendedSeiberg3 γ (a - γ / 2) ε a := by
-  have hQ : Q γ = 2 / γ + γ / 2 := rfl
-  have hQ2 : 2 * Q γ = 4 / γ + γ := by
-    rw [hQ]
-    ring
-  refine extendedSeiberg3_of_lt hγ (by linarith) (by rw [hQ]; linarith) ha₂ ?_ ?_ ?_ ?_ <;>
-    linarith
 
 /-- The raised triple `(a, ε + γ/2, a)` is in the extended domain for `γ/4 + ε/2 < a < Q`. -/
 theorem extendedSeiberg3_raise {γ ε a : ℝ} (hγ : 0 < γ) (hε₁ : γ / 2 < ε) (hε₂ : ε < 2 / γ)
     (ha₁ : γ / 4 + ε / 2 < a) (ha₂ : a < Q γ) : ExtendedSeiberg3 γ a (ε + γ / 2) a := by
   have hQ : Q γ = 2 / γ + γ / 2 := rfl
-  have hQ2 : 2 * Q γ = 4 / γ + γ := by
-    rw [hQ]
-    ring
+  have : 2 * Q γ = 4 / γ + γ := by grind
   refine extendedSeiberg3_of_lt hγ ha₂ (by rw [hQ]; linarith) ha₂ ?_ ?_ ?_ ?_ <;> linarith
 
 /-- The charge triple `(z - γ/2, ε, z)`. -/
@@ -75,21 +64,7 @@ noncomputable def shiftTriple (γ ε : ℝ) (z : ℂ) : Fin 3 → ℂ := ![z - (
 /-- The charge triple `(z, ε + γ/2, z)`. -/
 noncomputable def raiseTriple (γ ε : ℝ) (z : ℂ) : Fin 3 → ℂ := ![z, (ε : ℂ) + (γ : ℂ) / 2, z]
 
-theorem differentiable_shiftTriple (γ ε : ℝ) : Differentiable ℂ (shiftTriple γ ε) := by
-  rw [differentiable_pi]
-  intro i
-  fin_cases i
-  · exact differentiable_id.sub_const _
-  · exact differentiable_const _
-  · exact differentiable_id
 
-theorem differentiable_raiseTriple (γ ε : ℝ) : Differentiable ℂ (raiseTriple γ ε) := by
-  rw [differentiable_pi]
-  intro i
-  fin_cases i
-  · exact differentiable_id
-  · exact differentiable_const _
-  · exact differentiable_id
 
 theorem shiftTriple_ofReal (γ ε t : ℝ) :
     shiftTriple γ ε (t : ℂ) = complexifyNCharges ![t - γ / 2, ε, t] := by
@@ -119,18 +94,36 @@ theorem unitVolume_crossing_diag_continued {Ω : Type*} [MeasurableSpace Ω]
     {a : ℝ} (ha₁ : γ / 4 + ε / 2 < a) (ha₂ : a < Q γ) :
     unitVolumeStructureConstant P M γ (a - γ / 2) ε a =
       crossingMultiplierReal γ ε a * unitVolumeStructureConstant P M γ a (ε + γ / 2) a := by
+  have differentiable_raiseTriple : Differentiable ℂ (raiseTriple γ ε) := by
+    rw [differentiable_pi]
+    intro i
+    fin_cases i
+    · exact differentiable_id
+    · exact differentiable_const _
+    · exact differentiable_id
+  have differentiable_shiftTriple : Differentiable ℂ (shiftTriple γ ε) := by
+    rw [differentiable_pi]
+    intro i
+    fin_cases i
+    · exact differentiable_id.sub_const _
+    · exact differentiable_const _
+    · exact differentiable_id
+  have extendedSeiberg3_shift {a : ℝ} (ha₁ : γ / 4 + ε / 2 < a) (ha₂ : a < Q γ) : ExtendedSeiberg3 γ (a - γ / 2) ε a := by
+    have hQ : Q γ = 2 / γ + γ / 2 := rfl
+    have : 2 * Q γ = 4 / γ + γ := by grind
+    refine extendedSeiberg3_of_lt hγ (by linarith) (by rw [hQ]; linarith) ha₂ ?_ ?_ ?_ ?_ <;>
+      linarith
   have hQ : Q γ = 2 / γ + γ / 2 := rfl
-  have h2γ : 0 < 2 / γ := by positivity
   set J : Set ℝ := Ioo (γ / 4 + ε / 2) (Q γ) with hJ
   -- the domain of both holomorphic sides
   set D : Set ℂ := reflectionStrip γ ∩ shiftTriple γ ε ⁻¹' V₃ ∩ raiseTriple γ ε ⁻¹' V₃ with hD
-  have hDo : IsOpen D := ((isOpen_reflectionStrip γ).inter
-    (hV₃.preimage (differentiable_shiftTriple γ ε).continuous)).inter
-      (hV₃.preimage (differentiable_raiseTriple γ ε).continuous)
+  have hDo := ((isOpen_reflectionStrip γ).inter
+    (hV₃.preimage (differentiable_shiftTriple).continuous)).inter
+      (hV₃.preimage (differentiable_raiseTriple).continuous)
   have hS : ∀ t ∈ J, f₃ (shiftTriple γ ε (t : ℂ)) =
       (unitVolumeStructureConstant P M γ (t - γ / 2) ε t : ℂ) := fun t ht => by
     rw [shiftTriple_ofReal]
-    exact hf₃eq ![t - γ / 2, ε, t] (extendedSeiberg3_shift hγ hε₁ hε₂ ht.1 ht.2)
+    exact hf₃eq ![t - γ / 2, ε, t] (extendedSeiberg3_shift ht.1 ht.2)
   have hR : ∀ t ∈ J, f₃ (raiseTriple γ ε (t : ℂ)) =
       (unitVolumeStructureConstant P M γ t (ε + γ / 2) t : ℂ) := fun t ht => by
     rw [raiseTriple_ofReal]
@@ -143,7 +136,7 @@ theorem unitVolume_crossing_diag_continued {Ω : Type*} [MeasurableSpace Ω]
       exact ht.2
     · change shiftTriple γ ε (t : ℂ) ∈ V₃
       rw [shiftTriple_ofReal]
-      exact hV₃mem ![t - γ / 2, ε, t] (extendedSeiberg3_shift hγ hε₁ hε₂ ht.1 ht.2)
+      exact hV₃mem ![t - γ / 2, ε, t] (extendedSeiberg3_shift ht.1 ht.2)
     · change raiseTriple γ ε (t : ℂ) ∈ V₃
       rw [raiseTriple_ofReal]
       exact hV₃mem ![t, ε + γ / 2, t] (extendedSeiberg3_raise hγ hε₁ hε₂ ht.1 ht.2)
@@ -151,10 +144,10 @@ theorem unitVolume_crossing_diag_continued {Ω : Type*} [MeasurableSpace Ω]
   set g₁ : ℂ → ℂ := fun z => f₃ (shiftTriple γ ε z) with hg₁
   set g₂ : ℂ → ℂ := fun z => crossingMultiplierDiag γ ε z * f₃ (raiseTriple γ ε z) with hg₂
   have hg₁d : DifferentiableOn ℂ g₁ D :=
-    hf₃.comp (differentiable_shiftTriple γ ε).differentiableOn fun _ hz => hz.1.2
+    hf₃.comp (differentiable_shiftTriple).differentiableOn fun _ hz => hz.1.2
   have hg₂d : DifferentiableOn ℂ g₂ D :=
     ((differentiableOn_crossingMultiplierDiag hγ hε₁).mono fun _ hz => hz.1.1).mul
-      (hf₃.comp (differentiable_raiseTriple γ ε).differentiableOn fun _ hz => hz.2)
+      (hf₃.comp (differentiable_raiseTriple).differentiableOn fun _ hz => hz.2)
   -- they agree on the crossing region
   have hcross : ∀ t : ℝ, Q γ - (ε - γ / 2) / 2 < t → t < Q γ → g₁ (t : ℂ) = g₂ (t : ℂ) := by
     intro t ht1 ht2

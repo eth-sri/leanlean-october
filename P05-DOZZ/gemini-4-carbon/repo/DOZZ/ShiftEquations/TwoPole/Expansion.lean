@@ -86,26 +86,18 @@ theorem structureConstant_two_pole_expansion_of_tail
                     (twoPoleFirstResidue P γ B Z η : ℂ) / (z - 2 * η) +
                     (twoPoleSecondResidue P γ B Z η : ℂ) / (z + 2 * η) + r z := by
   have hη := window_eta_pos hWindow
-  have hηγ := window_eta_le_two_div hγ hγ2 hWindow
-  have hη4 := window_eta_lt_quarter hWindow
-  have hδ := window_delta_pos hWindow
-  have hηlt : η < 2 / γ - γ / 2 := lt_of_lt_of_le hWindow.2.1 (min_le_left _ _)
+  have := window_eta_lt_quarter hWindow
+  have := window_delta_pos hWindow
+  have := lt_of_lt_of_le hWindow.2.1 (min_le_left _ _)
   have hceil := hWindow.2.2.2.2.2
   have hQ : Q γ - η - γ / 2 = 2 / γ - η := by
     rw [Q]
     ring
-  have hα₂ : γ / 2 < 2 / γ + η ∧ 2 / γ + η < Q γ := by
-    refine ⟨by linarith, ?_⟩
-    rw [Q]
-    linarith
-  have hα₃ : γ / 2 < Q γ - η - γ / 2 ∧ Q γ - η - γ / 2 < Q γ := by
-    rw [hQ]
-    refine ⟨by linarith, ?_⟩
-    rw [Q]
-    linarith
+  have hα₂ : γ / 2 < 2 / γ + η ∧ 2 / γ + η < Q γ := by grind
+  have hα₃ : γ / 2 < Q γ - η - γ / 2 ∧ Q γ - η - γ / 2 < Q γ := by grind
   -- the tail estimate at the two poles
   obtain ⟨rad, sup, der, low, hF2, hF3⟩ :=
-    exists_uniformPositiveC1Family_poleFactors hγ hη.le hηγ
+    exists_uniformPositiveC1Family_poleFactors hγ hη.le (window_eta_le_two_div hγ hγ2 hWindow)
   obtain ⟨B, Z, hSLP, hRD, htailθ⟩ := hTail {2} {-2} isCompact_singleton isCompact_singleton
     (by intro z hz; rw [hz]; norm_num) (by intro z hz; rw [hz]; norm_num)
     (by intro z2 hz2 z3 hz3; rw [hz2, hz3]; norm_num)
@@ -154,15 +146,13 @@ theorem structureConstant_two_pole_expansion_of_tail
   obtain ⟨V₁, hV₁o, hV₁int, F₁, hF₁d, hF₁real, -⟩ :=
     poleSubtractedObservable_holomorphic P X M γ η δ hγ hγ2 hX Xc hXc hM hWindow
   -- notation
-  have hβ₁v : reflectionExponent γ (2 / γ + η) = 1 - 2 * η / γ := reflectionExponent_pole hγ η
-  have hβ₂v : reflectionExponent γ (2 / γ - η) = 1 + 2 * η / γ := reflectionExponent_pole_neg hγ η
   have hc₁v := tailCoefficient_two hγ η R₂
   have hc₂v := tailCoefficient_negTwo hγ η R₃
   generalize hc₁def : oneInsertionTailCoefficient γ (2 / γ + η) 2 (poleFactorTwo γ η 2) R₂ = c₁
     at hmellin hc₁v
   generalize hc₂def : oneInsertionTailCoefficient γ (2 / γ - η) (-2) (poleFactorNegTwo γ η (-2))
     R₃ = c₂ at hmellin hc₂v
-  rw [hβ₁v, hβ₂v] at hmellin
+  rw [reflectionExponent_pole hγ η, reflectionExponent_pole_neg hγ η] at hmellin
   set β₃ : ℝ := twoInsertionTailCeiling γ (2 / γ + η) (2 / γ - η) - θ with hβ₃def
   obtain ⟨G, hG⟩ : ∃ G : ℂ → ℂ,
       G = fun z : ℂ => (2 / (γ : ℂ)) * (2 : ℂ) ^ (4 * (1 - z / (γ : ℂ))) := ⟨_, rfl⟩
@@ -185,19 +175,16 @@ theorem structureConstant_two_pole_expansion_of_tail
   have hRld : DifferentiableOn ℂ Rl V := by
     rw [hRl]
     exact hrL.comp hwd.differentiableOn fun z hz => hz.2
-  have hF₁V : DifferentiableOn ℂ F₁ V := hF₁d.mono inter_subset_left
-  have hdslope : ∀ a : ℂ, DifferentiableOn ℂ (dslope h a) V := fun a =>
+  have : DifferentiableOn ℂ F₁ V := hF₁d.mono inter_subset_left
+  have : ∀ a : ℂ, DifferentiableOn ℂ (dslope h a) V := fun a =>
     ((Complex.differentiableOn_dslope Filter.univ_mem).2 hhd.differentiableOn).mono
       (subset_univ V)
   have hTform : ∀ z : ℂ, z ≠ 2 * η → z ≠ -(2 * η) →
       T z = ((γ * c₁ : ℝ) : ℂ) * (1 - z / (γ : ℂ)) / (z - 2 * η) +
         ((γ * c₂ : ℝ) : ℂ) * (1 - z / (γ : ℂ)) / (z + 2 * η) := by
     intro z hz1 hz2
-    have h1 : z - 2 * η ≠ 0 := sub_ne_zero.mpr hz1
-    have h2 : z + 2 * η ≠ 0 := by
-      intro h
-      exact hz2 (eq_neg_of_add_eq_zero_left h)
-    have hγ0 : (γ : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hγ.ne'
+    have := sub_ne_zero.mpr hz1
+    have hγ0 := Complex.ofReal_ne_zero.mpr hγ.ne'
     simp only [hT, twoTailRational]
     push_cast
     have e1 : ((1 : ℂ) - 2 * η / γ - (1 - z / γ)) = (z - 2 * η) / γ := by
@@ -246,18 +233,13 @@ theorem structureConstant_two_pole_expansion_of_tail
     linarith
   · -- meromorphy
     intro z hz
-    have hGm := (hGd.analyticAt z).meromorphicAt
-    have hF₁m := (hF₁d.analyticAt (hV₁o.mem_nhds hz.1)).meromorphicAt
-    have hRlm := (hRld.analyticAt (hVopen.mem_nhds hz)).meromorphicAt
     have hTm : MeromorphicAt T z := by
       rw [hT]
       simp only [twoTailRational]
       apply MeromorphicAt.add <;> apply MeromorphicAt.div <;>
         exact (Differentiable.analyticAt (by fun_prop) z).meromorphicAt
-    exact hGm.mul (hF₁m.add (hTm.add hRlm))
-  · -- the remainder is holomorphic
-    exact ((hGd.differentiableOn.mul (hF₁V.add hRld)).add
-      ((differentiableOn_const _).mul (hdslope _))).add ((differentiableOn_const _).mul (hdslope _))
+    exact ((hGd.analyticAt z).meromorphicAt).mul (((hF₁d.analyticAt (hV₁o.mem_nhds hz.1)).meromorphicAt).add (hTm.add ((hRld.analyticAt (hVopen.mem_nhds hz)).meromorphicAt)))
+  · fun_prop
   · -- the real identity
     rintro x ⟨hx₁, hx₂⟩
     have hxI : -2 * η - δ < x := by linarith
@@ -279,8 +261,6 @@ theorem structureConstant_two_pole_expansion_of_tail
     have hLreal : ∫ ω, ((localMassReal M γ η ω : ℝ) : ℂ) ^ (((1 - x / γ : ℝ)) : ℂ) ∂P =
         ((∫ ω, localMassReal M γ η ω ^ (1 - x / γ) ∂P : ℝ) : ℂ) := by
       rw [hfun, integral_complex_ofReal]
-    have hobs := observable_add_localMoment P X hX γ hγ hγ2 M hM hWindow hx₁ hx₂ hLint
-    have hF₁x := hF₁real x ⟨hxI, hx₂⟩
     have hTR : T x + Rl x = ((∫ ω, localMassReal M γ η ω ^ (1 - x / γ) ∂P : ℝ) : ℂ) := by
       simp only [hT, hRl]
       rw [hws, ← hLreal, hLeq]
@@ -293,7 +273,7 @@ theorem structureConstant_two_pole_expansion_of_tail
       (extendedSeiberg3_pole hγ hγ2 hWindow hx₁ hx₂),
       unitVolumeStructureConstant_eq_frame P X hX γ hγ hγ2 M hM η x]
     show G x * (F₁ x + (T x + Rl x)) = _
-    rw [hGx, hF₁x, hTR, ← Complex.ofReal_add, ← Complex.ofReal_mul, hobs]
+    rw [hGx, hF₁real x ⟨hxI, hx₂⟩, hTR, ← Complex.ofReal_add, ← Complex.ofReal_mul, observable_add_localMoment P X hX γ hγ hγ2 M hM hWindow hx₁ hx₂ hLint]
     congr 1
     rw [ENNReal.toReal_mul, ENNReal.toReal_ofReal (by positivity)]
     ring
@@ -303,10 +283,9 @@ theorem structureConstant_two_pole_expansion_of_tail
       _ ∈ codiscrete ℂ)] with z hz _
     have hz1 : z ≠ 2 * η := fun h => hz (by simp [h])
     have hz2 : z ≠ -(2 * η) := fun h => hz (by simp [h])
-    have h1 : z - 2 * η ≠ 0 := sub_ne_zero.mpr hz1
-    have h2 : z + 2 * η ≠ 0 := fun h => hz2 (eq_neg_of_add_eq_zero_left h)
-    have hγ0 : (γ : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hγ.ne'
-    have hhz : h z = G z * (1 - z / (γ : ℂ)) := by rw [hh]
+    have : z + 2 * η ≠ 0 := fun h => hz2 (eq_neg_of_add_eq_zero_left h)
+    have := Complex.ofReal_ne_zero.mpr hγ.ne'
+    have hhz : h z = G z * (1 - z / (γ : ℂ)) := by grind
     rw [← hres₁, ← hres₂]
     show G z * (F₁ z + (T z + Rl z)) = _
     rw [hTform z hz1 hz2, dslope_of_ne _ hz1, dslope_of_ne _ hz2, slope_def_field,

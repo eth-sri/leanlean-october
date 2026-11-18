@@ -14,23 +14,24 @@ open MeasureTheory Set
 open scoped ENNReal
 namespace DOZZ.Proofs
 
+section
+variable {U E : Type*} [MeasurableSpace U] [MeasurableSpace E] (μ : U → Measure E) (hμ : Measurable μ) (hfinite : ∀ u, IsFiniteMeasure (μ u))
+include hμ hfinite
+
 /-- Real signed integration is measurable for a finite family even without a common mass bound. -/
 theorem fusion_measurable_real_integral_finite_family
-    {U E : Type*} [MeasurableSpace U] [MeasurableSpace E]
-    (μ : U → Measure E) (hμ : Measurable μ) (hfinite : ∀ u, IsFiniteMeasure (μ u))
+
     (f : U × E → ℝ) (hf : Measurable f) :
     Measurable (fun u => ∫ x, f (u, x) ∂μ u) := by
   let J := fun u => ∫⁻ x, ENNReal.ofReal |f (u, x)| ∂μ u
-  let L := fun u => ∫⁻ x, ENNReal.ofReal (f (u, x)) ∂μ u
-  let R := fun u => ∫⁻ x, ENNReal.ofReal (-f (u, x)) ∂μ u
-  have hJ : Measurable J := measurable_lintegral_finite_family μ hμ hfinite _
+  have hJ := measurable_lintegral_finite_family μ hμ hfinite _
     (by simpa only [Real.norm_eq_abs] using ENNReal.measurable_ofReal.comp hf.norm)
-  have hL : Measurable L := measurable_lintegral_finite_family μ hμ hfinite _
+  have hL := measurable_lintegral_finite_family μ hμ hfinite _
     (ENNReal.measurable_ofReal.comp hf)
-  have hR : Measurable R := measurable_lintegral_finite_family μ hμ hfinite _
+  have hR := measurable_lintegral_finite_family μ hμ hfinite _
     (ENNReal.measurable_ofReal.comp hf.neg)
   have heq : (fun u => ∫ x, f (u, x) ∂μ u) =
-      fun u => if J u < ⊤ then (L u).toReal - (R u).toReal else 0 := by
+      fun u => if J u < ⊤ then ((fun u => ∫⁻ x, ENNReal.ofReal (f (u, x)) ∂μ u) u).toReal - ((fun u => ∫⁻ x, ENNReal.ofReal (-f (u, x)) ∂μ u) u).toReal else 0 := by
     funext u
     have hfm : AEStronglyMeasurable (fun x => f (u, x)) (μ u) :=
       (hf.comp measurable_prodMk_left).aestronglyMeasurable
@@ -48,15 +49,12 @@ theorem fusion_measurable_real_integral_finite_family
 
 /-- Complex integration is measurable by its real and imaginary parts on the integrable locus. -/
 theorem fusion_measurable_integral_finite_family
-    {U E : Type*} [MeasurableSpace U] [MeasurableSpace E]
-    (μ : U → Measure E) (hμ : Measurable μ) (hfinite : ∀ u, IsFiniteMeasure (μ u))
+
     (f : U × E → ℂ) (hf : Measurable f) :
     Measurable (fun u => ∫ x, f (u, x) ∂μ u) := by
   let J := fun u => ∫⁻ x, ENNReal.ofReal ‖f (u, x)‖ ∂μ u
-  have hJ : Measurable J := measurable_lintegral_finite_family μ hμ hfinite _
+  have hJ := measurable_lintegral_finite_family μ hμ hfinite _
     (ENNReal.measurable_ofReal.comp hf.norm)
-  have hRe := fusion_measurable_real_integral_finite_family μ hμ hfinite _ (Complex.measurable_re.comp hf)
-  have hIm := fusion_measurable_real_integral_finite_family μ hμ hfinite _ (Complex.measurable_im.comp hf)
   have heq : (fun u => ∫ x, f (u, x) ∂μ u) = fun u => if J u < ⊤ then
       ((∫ x, (f (u, x)).re ∂μ u : ℝ) : ℂ) + ((∫ x, (f (u, x)).im ∂μ u : ℝ) : ℂ) * Complex.I else 0 := by
     funext u
@@ -71,7 +69,9 @@ theorem fusion_measurable_integral_finite_family
       exact hJfin ((hasFiniteIntegral_iff_norm _).mp hi.hasFiniteIntegral)
   rw [heq]
   exact Measurable.ite (measurableSet_lt hJ measurable_const)
-    ((Complex.measurable_ofReal.comp hRe).add ((Complex.measurable_ofReal.comp hIm).mul_const Complex.I))
+    ((Complex.measurable_ofReal.comp (fusion_measurable_real_integral_finite_family μ hμ hfinite _ (Complex.measurable_re.comp hf))).add ((Complex.measurable_ofReal.comp (fusion_measurable_real_integral_finite_family μ hμ hfinite _ (Complex.measurable_im.comp hf))).mul_const Complex.I))
     measurable_const
 
+
+end
 end DOZZ.Proofs

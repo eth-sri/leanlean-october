@@ -26,193 +26,19 @@ open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
 
-/-- Outside the unit disk the regular part of the circle potential gains `log c` under a
-dilation by `c ≥ 1`. -/
-theorem circleLogPotential_pin_scale_of_outside {c : ℝ} (hc : 1 ≤ c) {x : ℂ} {r : ℝ}
-    (hout : 1 + Real.exp (-r) ≤ ‖x‖) :
-    circleLogPotential ‖(c : ℂ) * x‖₊ ⟨Real.exp (-(r - Real.log c)), Real.exp_pos _⟩
-        ⟨1, by norm_num⟩ =
-      Real.log c + circleLogPotential ‖x‖₊ ⟨Real.exp (-r), Real.exp_pos _⟩ ⟨1, by norm_num⟩ := by
-  have hc0 : 0 < c := by linarith
-  have hlogc : Continuous fun z : ℂ => Real.log (normPlus z) := continuous_log_normPlus
-  rw [← integral_log_normPlus_circleMeasure_eq_closed, ← integral_log_normPlus_circleMeasure_eq_closed,
-    circleMeasure_scale hc0 x r,
-    integral_map (by fun_prop : Measurable fun z : ℂ => (c : ℂ) * z).aemeasurable
-      hlogc.measurable.aestronglyMeasurable]
-  have hae : (fun z => Real.log (normPlus ((c : ℂ) * z))) =ᵐ[circleMeasure x r]
-      fun z => Real.log c + Real.log (normPlus z) := by
-    filter_upwards [ae_mem_sphere_circleMeasure x r] with z hz
-    rw [mem_sphere_iff_norm] at hz
-    have hz1 : 1 ≤ ‖z‖ := by
-      have := norm_sub_norm_le x z
-      rw [norm_sub_rev] at this
-      linarith
-    have hnz : normPlus z = ‖z‖ := max_eq_right hz1
-    have hncz : normPlus ((c : ℂ) * z) = c * ‖z‖ := by
-      rw [normPlus, norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hc0]
-      exact max_eq_right (by nlinarith)
-    rw [hncz, hnz, Real.log_mul hc0.ne' (by linarith)]
-  have hint : Integrable (fun z => Real.log (normPlus z)) (circleMeasure x r) :=
-    integrable_circleMeasure_of_circleIntegrable x r hlogc.measurable
-      hlogc.continuousOn.circleIntegrable'
-  have := circleMeasure_isProbability x r
-  rw [integral_congr_ae hae, integral_add (integrable_const _) hint, integral_const,
-    probReal_univ, one_smul]
+variable {Ω : Type*} [MeasurableSpace Ω]
 
-/-- Outside the unit disk a common dilation by `c ≥ 1`, with the cutoffs shifted by `log c`,
-adds `log c` to the covariance of two circle averages. -/
-theorem circleField_covariance_exterior_scale
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) {c : ℝ} (hc : 1 ≤ c) (x y : ℂ)
-    (r s : ℝ) (hx : 1 + Real.exp (-r) ≤ ‖x‖) (hy : 1 + Real.exp (-s) ≤ ‖y‖) :
-    ∫ ω, Xc ω ((c : ℂ) * x) (r - Real.log c) * Xc ω ((c : ℂ) * y) (s - Real.log c) ∂P =
-      ∫ ω, Xc ω x r * Xc ω y s ∂P + Real.log c := by
-  have hc0 : 0 < c := by linarith
-  have h1 := isCircleAverage_covariance P X hX Xc hXc ((c : ℂ) * x) ((c : ℂ) * y)
-    (r - Real.log c) (s - Real.log c)
-  have h2 := isCircleAverage_covariance P X hX Xc hXc x y r s
-  have h3 := circleAverage_covariance_integral P X Xc hX hXc ((c : ℂ) * x) ((c : ℂ) * y)
-    (r - Real.log c) (s - Real.log c)
-  have h4 := circleAverage_covariance_integral P X Xc hX hXc x y r s
-  have h5 := circleAverage_covariance P X Xc hX hXc ((c : ℂ) * x) ((c : ℂ) * y)
-    (r - Real.log c) (s - Real.log c)
-  have h6 := circleAverage_covariance P X Xc hX hXc x y r s
-  change gaussianCovariance P _ _ = gaussianCovariance P _ _ + Real.log c
-  rw [h1, h2, ← h3, ← h4, h5, h6, circleLogPotential_scale hc0 x y r s,
-    circleLogPotential_pin_scale_of_outside hc hx, circleLogPotential_pin_scale_of_outside hc hy]
-  ring
 
-/-- Circle averages at dilated points form a centered Gaussian field. -/
-theorem circleAverage_scale_isCenteredGaussianField
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (r : ℝ) (c : ℂ) :
-    IsCenteredGaussianField P (fun ω y => Xc ω (c * y) r) :=
-  ⟨(hXc.1 r).comp (measurable_fst.prodMk (measurable_snd.const_mul c)),
-    fun _ y => circleAverage_finite_family_jointly_gaussian P X hX Xc hXc
-      (fun i => (c * y i, r))⟩
 
-/-- Integrals over a planar dilation: `∫ f = c² ∫ f (c ·)`. -/
-theorem lintegral_eq_sq_mul_lintegral_comp_dilation {c : ℝ} (hc : 0 < c) (f : ℂ → ℝ≥0∞)
-    (hf : Measurable f) :
-    ∫⁻ y, f y = ENNReal.ofReal (c ^ 2) * ∫⁻ x, f ((c : ℂ) * x) := by
-  have hmap := Measure.map_addHaar_smul (volume : Measure ℂ) hc.ne'
-  rw [Complex.finrank_real_complex] at hmap
-  have hcomp : (fun x : ℂ => f ((c : ℂ) * x)) = fun x => f (c • x) := by
-    funext x
-    rw [Complex.real_smul]
-  have hlin : ∫⁻ x, f ((c : ℂ) * x) = ENNReal.ofReal (|(c ^ 2)⁻¹|) * ∫⁻ y, f y := by
-    rw [hcomp, ← lintegral_map hf (measurable_const_smul c), hmap, lintegral_smul_measure,
-      smul_eq_mul]
-  rw [hlin, ← mul_assoc, ← ENNReal.ofReal_mul (by positivity), abs_of_pos (by positivity),
-    mul_inv_cancel₀ (by positivity), ENNReal.ofReal_one, one_mul]
 
-/-- An exterior dilated cutoff mass is a scaled continuum Wick mass of the dilated circle
-field. -/
-theorem cutoff_dilated_mass_eq_fieldChaosMass
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (γ r : ℝ) {c : ℝ} (hc : 1 ≤ c)
-    (A : Set ℂ) (hA : MeasurableSet A) (hA1 : ∀ x ∈ A, 1 ≤ ‖x‖) (w : ℂ → ℝ≥0)
-    (hw : Measurable w) (ω : Ω) :
-    (∫⁻ y in {y : ℂ | (c : ℂ)⁻¹ * y ∈ A}, (w ((c : ℂ)⁻¹ * y) : ℝ≥0∞)
-        ∂regularizedGMC P Xc γ r ω) =
-      ENNReal.ofReal (c ^ (-2 : ℝ)) *
-        fieldChaosMass P (fun ω x => Xc ω ((c : ℂ) * x) r) (gmcReferenceMeasure.restrict A) w γ
-          ω := by
-  let _ := hX.1
-  have hc0 : 0 < c := by linarith
-  have hcC : (c : ℂ) ≠ 0 := by exact_mod_cast hc0.ne'
-  set E : ℂ → ℝ≥0∞ := fun x => ENNReal.ofReal
-    (Real.exp (γ * Xc ω x r - γ ^ 2 / 2 * ∫ ω', Xc ω' x r ^ 2 ∂P) * normPlus x ^ (-4 : ℝ))
-    with hE
-  have hV : Measurable (fun x : ℂ => ∫ ω', Xc ω' x r ^ 2 ∂P) := by
-    have hf : Measurable (fun q : ℂ × Ω => Xc q.2 q.1 r ^ 2) :=
-      ((hXc.1 r).comp measurable_swap).pow_const 2
-    exact hf.stronglyMeasurable.integral_prod_right.measurable
-  have hX1 : Measurable (fun x : ℂ => Xc ω x r) :=
-    (hXc.1 r).comp (measurable_const.prodMk measurable_id)
-  have hEm : Measurable E := by
-    rw [hE]
-    exact ENNReal.measurable_ofReal.comp ((Real.measurable_exp.comp
-      ((hX1.const_mul γ).sub (hV.const_mul _))).mul (measurable_normPlus.pow_const _))
-  set S : Set ℂ := {y : ℂ | (c : ℂ)⁻¹ * y ∈ A} with hS
-  have hSm : MeasurableSet S := (measurable_const_mul _) hA
-  have hwS : Measurable (fun y : ℂ => (w ((c : ℂ)⁻¹ * y) : ℝ≥0∞)) :=
-    (hw.comp (measurable_const_mul _)).coe_nnreal_ennreal
-  have hlhs : (∫⁻ y in S, (w ((c : ℂ)⁻¹ * y) : ℝ≥0∞) ∂regularizedGMC P Xc γ r ω) =
-      ∫⁻ y, S.indicator (fun y => (w ((c : ℂ)⁻¹ * y) : ℝ≥0∞) * E y) y := by
-    rw [regularizedGMC, restrict_withDensity hSm, lintegral_withDensity_eq_lintegral_mul _ hEm hwS,
-      ← lintegral_indicator hSm]
-    have hfun : (E * fun y => (w ((c : ℂ)⁻¹ * y) : ℝ≥0∞)) =
-        fun y => (w ((c : ℂ)⁻¹ * y) : ℝ≥0∞) * E y := by
-      funext y
-      exact mul_comm (E y) (w ((c : ℂ)⁻¹ * y) : ℝ≥0∞)
-    rw [hfun]
-  have hdens : Measurable fun x : ℂ => ENNReal.ofReal (normPlus x ^ (-4 : ℝ)) :=
-    ENNReal.measurable_ofReal.comp (measurable_normPlus.pow_const _)
-  set W : ℂ → ℝ≥0∞ := fun x => (w x : ℝ≥0∞) * ENNReal.ofReal (Real.exp (γ * Xc ω ((c : ℂ) * x) r -
-    γ ^ 2 / 2 * ∫ ω', Xc ω' ((c : ℂ) * x) r ^ 2 ∂P)) with hW
-  have hVc : Measurable (fun x : ℂ => ∫ ω', Xc ω' ((c : ℂ) * x) r ^ 2 ∂P) :=
-    hV.comp (measurable_const_mul _)
-  have hWm : Measurable W := by
-    rw [hW]
-    exact hw.coe_nnreal_ennreal.mul (ENNReal.measurable_ofReal.comp (Real.measurable_exp.comp
-      (((hX1.comp (measurable_const_mul _)).const_mul γ).sub (hVc.const_mul _))))
-  have hrhs : fieldChaosMass P (fun ω x => Xc ω ((c : ℂ) * x) r) (gmcReferenceMeasure.restrict A)
-      w γ ω = ∫⁻ x, A.indicator (fun x => ENNReal.ofReal (normPlus x ^ (-4 : ℝ)) * W x) x := by
-    rw [fieldChaosMass, gmcReferenceMeasure, restrict_withDensity hA,
-      lintegral_withDensity_eq_lintegral_mul _ hdens hWm, lintegral_indicator hA]
-    rfl
-  have hpt : ∀ x, S.indicator (fun y => (w ((c : ℂ)⁻¹ * y) : ℝ≥0∞) * E y) ((c : ℂ) * x) =
-      ENNReal.ofReal (c ^ (-4 : ℝ)) *
-        A.indicator (fun x => ENNReal.ofReal (normPlus x ^ (-4 : ℝ)) * W x) x := by
-    intro x
-    have hcx : (c : ℂ)⁻¹ * ((c : ℂ) * x) = x := by field_simp
-    by_cases hx : x ∈ A
-    · have hxS : (c : ℂ) * x ∈ S := by
-        show (c : ℂ)⁻¹ * ((c : ℂ) * x) ∈ A
-        rw [hcx]
-        exact hx
-      have hx1 : 1 ≤ ‖x‖ := hA1 x hx
-      have hn : normPlus ((c : ℂ) * x) = c * normPlus x := by
-        rw [normPlus, normPlus, norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hc0,
-          max_eq_right hx1, max_eq_right (by nlinarith)]
-      have hnx : 0 ≤ normPlus x := le_trans zero_le_one (le_max_left _ _)
-      rw [Set.indicator_of_mem hxS, Set.indicator_of_mem hx, hcx, hE]
-      simp only []
-      rw [hn, Real.mul_rpow hc0.le hnx, hW]
-      have he : 0 ≤ Real.exp (γ * Xc ω ((c : ℂ) * x) r -
-          γ ^ 2 / 2 * ∫ ω', Xc ω' ((c : ℂ) * x) r ^ 2 ∂P) := (Real.exp_pos _).le
-      rw [show Real.exp (γ * Xc ω ((c : ℂ) * x) r -
-          γ ^ 2 / 2 * ∫ ω', Xc ω' ((c : ℂ) * x) r ^ 2 ∂P) *
-            (c ^ (-4 : ℝ) * normPlus x ^ (-4 : ℝ)) =
-          c ^ (-4 : ℝ) * (normPlus x ^ (-4 : ℝ) * Real.exp (γ * Xc ω ((c : ℂ) * x) r -
-            γ ^ 2 / 2 * ∫ ω', Xc ω' ((c : ℂ) * x) r ^ 2 ∂P)) by ring,
-        ENNReal.ofReal_mul (Real.rpow_nonneg hc0.le _),
-        ENNReal.ofReal_mul (Real.rpow_nonneg hnx _)]
-      ring
-    · have hxS : (c : ℂ) * x ∉ S := by
-        show (c : ℂ)⁻¹ * ((c : ℂ) * x) ∉ A
-        rw [hcx]
-        exact hx
-      rw [Set.indicator_of_notMem hxS, Set.indicator_of_notMem hx, mul_zero]
-  have hprod : Measurable (fun y => (w ((c : ℂ)⁻¹ * y) : ℝ≥0∞) * E y) := hwS.mul hEm
-  have hprodA : Measurable (fun x => ENNReal.ofReal (normPlus x ^ (-4 : ℝ)) * W x) :=
-    hdens.mul hWm
-  rw [hlhs, lintegral_eq_sq_mul_lintegral_comp_dilation hc0 _ (hprod.indicator hSm),
-    lintegral_congr hpt, lintegral_const_mul _ (hprodA.indicator hA), hrhs, ← mul_assoc,
-    ← ENNReal.ofReal_mul (by positivity)]
-  congr 2
-  rw [show c ^ 2 = c ^ (2 : ℝ) by norm_cast, ← Real.rpow_add hc0]
-  norm_num
+
+
 
 /-- Exact scaling of exterior cutoff moments: dilating a set outside the disk of radius two by
 `c ≥ 1` multiplies every moment by `c ^ (-2p) e^{γ² log c (p² - p) / 2}` and shifts the cutoff
 by `log c`. -/
 theorem cutoff_exterior_scale_moment_eq
-    {Ω : Type*} [MeasurableSpace Ω]
+
     (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (γ : ℝ) {r : ℝ} (hr : 0 ≤ r)
     {c : ℝ} (hc : 1 ≤ c) (A : Set ℂ) (hA : MeasurableSet A) (hA2 : ∀ x ∈ A, 2 ≤ ‖x‖)
@@ -221,18 +47,158 @@ theorem cutoff_exterior_scale_moment_eq
         ∂regularizedGMC P Xc γ r ω) ^ p ∂P =
       ENNReal.ofReal (c ^ (-2 * p) * Real.exp (γ ^ 2 * Real.log c / 2 * (p ^ 2 - p))) *
         ∫⁻ ω, (∫⁻ x in A, (w x : ℝ≥0∞) ∂regularizedGMC P Xc γ (r + Real.log c) ω) ^ p ∂P := by
-  let _ : IsProbabilityMeasure P := hX.1
+  have cutoff_dilated_mass_eq_fieldChaosMass (hA1 : ∀ x ∈ A, 1 ≤ ‖x‖) (w : ℂ → ℝ≥0) (hw : Measurable w) (ω : Ω) : (∫⁻ y in {y : ℂ | (c : ℂ)⁻¹ * y ∈ A}, (w ((c : ℂ)⁻¹ * y) : ℝ≥0∞)
+          ∂regularizedGMC P Xc γ r ω) =
+        ENNReal.ofReal (c ^ (-2 : ℝ)) *
+          fieldChaosMass P (fun ω x => Xc ω ((c : ℂ) * x) r) (gmcReferenceMeasure.restrict A) w γ
+            ω := by
+    have lintegral_eq_sq_mul_lintegral_comp_dilation {c : ℝ} (hc : 0 < c) (f : ℂ → ℝ≥0∞) (hf : Measurable f) : ∫⁻ y, f y = ENNReal.ofReal (c ^ 2) * ∫⁻ x, f ((c : ℂ) * x) := by
+      have hmap := Measure.map_addHaar_smul (volume : Measure ℂ) hc.ne'
+      rw [Complex.finrank_real_complex] at hmap
+      have hcomp : (fun x : ℂ => f ((c : ℂ) * x)) = fun x => f (c • x) := by rfl
+      have hlin : ∫⁻ x, f ((c : ℂ) * x) = ENNReal.ofReal (|(c ^ 2)⁻¹|) * ∫⁻ y, f y := by
+        rw [hcomp, ← lintegral_map hf (measurable_const_smul c), hmap, lintegral_smul_measure,
+          smul_eq_mul]
+      rw [hlin, ← mul_assoc, ← ENNReal.ofReal_mul (by positivity), abs_of_pos (by positivity),
+        mul_inv_cancel₀ (by positivity), ENNReal.ofReal_one, one_mul]
+    let _ := hX.1
+    have hc0 : 0 < c := by linarith
+    have : (c : ℂ) ≠ 0 := by exact_mod_cast hc0.ne'
+    set E : ℂ → ℝ≥0∞ := fun x => ENNReal.ofReal
+      (Real.exp (γ * Xc ω x r - γ ^ 2 / 2 * ∫ ω', Xc ω' x r ^ 2 ∂P) * normPlus x ^ (-4 : ℝ))
+      with hE
+    have hV : Measurable (fun x : ℂ => ∫ ω', Xc ω' x r ^ 2 ∂P) := by
+      have hf : Measurable (fun q : ℂ × Ω => Xc q.2 q.1 r ^ 2) :=
+        ((hXc.1 r).comp measurable_swap).pow_const 2
+      exact hf.stronglyMeasurable.integral_prod_right.measurable
+    have hX1 : Measurable (fun x : ℂ => Xc ω x r) :=
+      (hXc.1 r).comp (measurable_const.prodMk measurable_id)
+    have hEm : Measurable E := by
+      rw [hE]
+      exact ENNReal.measurable_ofReal.comp ((Real.measurable_exp.comp
+        ((hX1.const_mul γ).sub (hV.const_mul _))).mul (measurable_normPlus.pow_const _))
+    set S : Set ℂ := {y : ℂ | (c : ℂ)⁻¹ * y ∈ A} with hS
+    have hSm : MeasurableSet S := (measurable_const_mul _) hA
+    have hwS : Measurable (fun y : ℂ => (w ((c : ℂ)⁻¹ * y) : ℝ≥0∞)) :=
+      (hw.comp (measurable_const_mul _)).coe_nnreal_ennreal
+    have hlhs : (∫⁻ y in S, (w ((c : ℂ)⁻¹ * y) : ℝ≥0∞) ∂regularizedGMC P Xc γ r ω) =
+        ∫⁻ y, S.indicator (fun y => (w ((c : ℂ)⁻¹ * y) : ℝ≥0∞) * E y) y := by
+      rw [regularizedGMC, restrict_withDensity hSm, lintegral_withDensity_eq_lintegral_mul _ hEm hwS,
+        ← lintegral_indicator hSm]
+      have hfun : (E * fun y => (w ((c : ℂ)⁻¹ * y) : ℝ≥0∞)) =
+          fun y => (w ((c : ℂ)⁻¹ * y) : ℝ≥0∞) * E y := by
+        funext y
+        exact mul_comm (E y) (w ((c : ℂ)⁻¹ * y) : ℝ≥0∞)
+      rw [hfun]
+    have hdens : Measurable fun x : ℂ => ENNReal.ofReal (normPlus x ^ (-4 : ℝ)) :=
+      ENNReal.measurable_ofReal.comp (measurable_normPlus.pow_const _)
+    set W : ℂ → ℝ≥0∞ := fun x => (w x : ℝ≥0∞) * ENNReal.ofReal (Real.exp (γ * Xc ω ((c : ℂ) * x) r -
+      γ ^ 2 / 2 * ∫ ω', Xc ω' ((c : ℂ) * x) r ^ 2 ∂P)) with hW
+    have : Measurable (fun x : ℂ => ∫ ω', Xc ω' ((c : ℂ) * x) r ^ 2 ∂P) :=
+      hV.comp (measurable_const_mul _)
+    have hWm : Measurable W := by fun_prop
+    have hrhs : fieldChaosMass P (fun ω x => Xc ω ((c : ℂ) * x) r) (gmcReferenceMeasure.restrict A)
+        w γ ω = ∫⁻ x, A.indicator (fun x => ENNReal.ofReal (normPlus x ^ (-4 : ℝ)) * W x) x := by
+      rw [fieldChaosMass, gmcReferenceMeasure, restrict_withDensity hA,
+        lintegral_withDensity_eq_lintegral_mul _ hdens hWm, lintegral_indicator hA]
+      rfl
+    have hpt : ∀ x, S.indicator (fun y => (w ((c : ℂ)⁻¹ * y) : ℝ≥0∞) * E y) ((c : ℂ) * x) =
+        ENNReal.ofReal (c ^ (-4 : ℝ)) *
+          A.indicator (fun x => ENNReal.ofReal (normPlus x ^ (-4 : ℝ)) * W x) x := by
+      intro x
+      have hcx : (c : ℂ)⁻¹ * ((c : ℂ) * x) = x := by field_simp
+      by_cases hx : x ∈ A
+      · have hxS : (c : ℂ) * x ∈ S := by
+          show (c : ℂ)⁻¹ * ((c : ℂ) * x) ∈ A
+          rw [hcx]
+          exact hx
+        have hx1 : 1 ≤ ‖x‖ := hA1 x hx
+        have hn : normPlus ((c : ℂ) * x) = c * normPlus x := by
+          rw [normPlus, normPlus, norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hc0,
+            max_eq_right hx1, max_eq_right (by nlinarith)]
+        have hnx : 0 ≤ normPlus x := le_trans zero_le_one (le_max_left _ _)
+        rw [Set.indicator_of_mem hxS, Set.indicator_of_mem hx, hcx, hE]
+        simp only []
+        rw [hn, Real.mul_rpow hc0.le hnx, hW]
+        rw [show Real.exp (γ * Xc ω ((c : ℂ) * x) r -
+            γ ^ 2 / 2 * ∫ ω', Xc ω' ((c : ℂ) * x) r ^ 2 ∂P) *
+              (c ^ (-4 : ℝ) * normPlus x ^ (-4 : ℝ)) =
+            c ^ (-4 : ℝ) * (normPlus x ^ (-4 : ℝ) * Real.exp (γ * Xc ω ((c : ℂ) * x) r -
+              γ ^ 2 / 2 * ∫ ω', Xc ω' ((c : ℂ) * x) r ^ 2 ∂P)) by ring,
+          ENNReal.ofReal_mul (Real.rpow_nonneg hc0.le _),
+          ENNReal.ofReal_mul (Real.rpow_nonneg hnx _)]
+        ring
+      · have hxS : (c : ℂ) * x ∉ S := by
+          show (c : ℂ)⁻¹ * ((c : ℂ) * x) ∉ A
+          rw [hcx]
+          exact hx
+        rw [Set.indicator_of_notMem hxS, Set.indicator_of_notMem hx, mul_zero]
+    have hprod : Measurable (fun y => (w ((c : ℂ)⁻¹ * y) : ℝ≥0∞) * E y) := hwS.mul hEm
+    have hprodA : Measurable (fun x => ENNReal.ofReal (normPlus x ^ (-4 : ℝ)) * W x) :=
+      hdens.mul hWm
+    rw [hlhs, lintegral_eq_sq_mul_lintegral_comp_dilation hc0 _ (hprod.indicator hSm),
+      lintegral_congr hpt, lintegral_const_mul _ (hprodA.indicator hA), hrhs, ← mul_assoc,
+      ← ENNReal.ofReal_mul (by positivity)]
+    congr 2
+    rw [show c ^ 2 = c ^ (2 : ℝ) by norm_cast, ← Real.rpow_add hc0]
+    norm_num
+  have circleField_covariance_exterior_scale (x y : ℂ) (r s : ℝ) (hx : 1 + Real.exp (-r) ≤ ‖x‖) (hy : 1 + Real.exp (-s) ≤ ‖y‖) : ∫ ω, Xc ω ((c : ℂ) * x) (r - Real.log c) * Xc ω ((c : ℂ) * y) (s - Real.log c) ∂P =
+        ∫ ω, Xc ω x r * Xc ω y s ∂P + Real.log c := by
+    have circleLogPotential_pin_scale_of_outside {x : ℂ} {r : ℝ} (hout : 1 + Real.exp (-r) ≤ ‖x‖) : circleLogPotential ‖(c : ℂ) * x‖₊ ⟨Real.exp (-(r - Real.log c)), Real.exp_pos _⟩
+            ⟨1, by norm_num⟩ =
+          Real.log c + circleLogPotential ‖x‖₊ ⟨Real.exp (-r), Real.exp_pos _⟩ ⟨1, by norm_num⟩ := by
+      have hc0 : 0 < c := by linarith
+      have hlogc := continuous_log_normPlus
+      rw [← integral_log_normPlus_circleMeasure_eq_closed, ← integral_log_normPlus_circleMeasure_eq_closed,
+        circleMeasure_scale hc0 x r,
+        integral_map (by fun_prop : Measurable fun z : ℂ => (c : ℂ) * z).aemeasurable
+          hlogc.measurable.aestronglyMeasurable]
+      have hae : (fun z => Real.log (normPlus ((c : ℂ) * z))) =ᵐ[circleMeasure x r]
+          fun z => Real.log c + Real.log (normPlus z) := by
+        filter_upwards [ae_mem_sphere_circleMeasure x r] with z hz
+        rw [mem_sphere_iff_norm] at hz
+        have hz1 : 1 ≤ ‖z‖ := by
+          have := norm_sub_norm_le x z
+          rw [norm_sub_rev] at this
+          linarith
+        have hnz : normPlus z = ‖z‖ := max_eq_right hz1
+        have hncz : normPlus ((c : ℂ) * z) = c * ‖z‖ := by
+          rw [normPlus, norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hc0]
+          exact max_eq_right (by nlinarith)
+        rw [hncz, hnz, Real.log_mul hc0.ne' (by linarith)]
+      have hint : Integrable (fun z => Real.log (normPlus z)) (circleMeasure x r) :=
+        integrable_circleMeasure_of_circleIntegrable x r hlogc.measurable
+          hlogc.continuousOn.circleIntegrable'
+      have := circleMeasure_isProbability x r
+      rw [integral_congr_ae hae, integral_add (integrable_const _) hint, integral_const,
+        probReal_univ, one_smul]
+    have hc0 : 0 < c := by linarith
+    have h1 := isCircleAverage_covariance P X hX Xc hXc ((c : ℂ) * x) ((c : ℂ) * y)
+      (r - Real.log c) (s - Real.log c)
+    have h3 := circleAverage_covariance_integral P X Xc hX hXc ((c : ℂ) * x) ((c : ℂ) * y)
+      (r - Real.log c) (s - Real.log c)
+    have h5 := circleAverage_covariance P X Xc hX hXc ((c : ℂ) * x) ((c : ℂ) * y)
+      (r - Real.log c) (s - Real.log c)
+    change gaussianCovariance P _ _ = gaussianCovariance P _ _ + Real.log c
+    rw [h1, isCircleAverage_covariance P X hX Xc hXc x y r s, ← h3, ← (circleAverage_covariance_integral P X Xc hX hXc x y r s), h5, circleAverage_covariance P X Xc hX hXc x y r s, circleLogPotential_scale hc0 x y r s,
+      circleLogPotential_pin_scale_of_outside hx, circleLogPotential_pin_scale_of_outside hy]
+    ring
+  have circleAverage_scale_isCenteredGaussianField (c : ℂ) : IsCenteredGaussianField P (fun ω y => Xc ω (c * y) r) := 
+    ⟨(hXc.1 r).comp (measurable_fst.prodMk (measurable_snd.const_mul c)),
+      fun _ y => circleAverage_finite_family_jointly_gaussian P X hX Xc hXc
+        (fun i => (c * y i, r))⟩
+  let _ := hX.1
   have hc0 : 0 < c := by linarith
-  have hlogc : 0 ≤ Real.log c := Real.log_nonneg hc
+  have hlogc := Real.log_nonneg hc
   have : IsFiniteMeasure gmcReferenceMeasure := ⟨gmcReferenceMeasure_univ_ne_top.lt_top⟩
   set ν : Measure ℂ := gmcReferenceMeasure.restrict A with hν
   set G : Measure ℝ := gaussianReal 0 1 with hG
   set Φ : Ω → ℂ → ℝ := fun ω x => Xc ω ((c : ℂ) * x) r with hΦ
   set Ψ : Ω → ℂ → ℝ := fun ω x => Xc ω x (r + Real.log c) with hΨ
   set Ψ' : Ω × ℝ → ℂ → ℝ := fun ω x => Ψ ω.1 x + Real.sqrt (Real.log c) * ω.2 with hΨ'
-  have hΦg : IsCenteredGaussianField P Φ :=
-    circleAverage_scale_isCenteredGaussianField P X hX Xc hXc r c
-  have hΨg : IsCenteredGaussianField P Ψ :=
+  have hΦg :=
+    circleAverage_scale_isCenteredGaussianField c
+  have hΨg :=
     circleAverage_isCenteredGaussianField P X hX Xc hXc (r + Real.log c)
   have hΨ'g : IsCenteredGaussianField (P.prod G) Ψ' :=
     independent_common_scalar_add_isCenteredGaussianField P Ψ hΨg _
@@ -240,8 +206,8 @@ theorem cutoff_exterior_scale_moment_eq
   have hcovpt : ∀ x ∈ A, ∀ y ∈ A,
       ∫ ω, Φ ω x * Φ ω y ∂P = ∫ ω, Ψ' ω x * Ψ' ω y ∂(P.prod G) := by
     intro x hx y hy
-    have hexp : Real.exp (-(r + Real.log c)) ≤ 1 := Real.exp_le_one_iff.mpr (by linarith)
-    have h := circleField_covariance_exterior_scale P X hX Xc hXc hc x y (r + Real.log c)
+    have : Real.exp (-(r + Real.log c)) ≤ 1 := Real.exp_le_one_iff.mpr (by linarith)
+    have h := circleField_covariance_exterior_scale x y (r + Real.log c)
       (r + Real.log c) (by linarith [hA2 x hx]) (by linarith [hA2 y hy])
     rw [show r + Real.log c - Real.log c = r by ring] at h
     have h2 := gaussianCovariance_field_independent_common_scalar_add P Ψ hΨg
@@ -288,7 +254,7 @@ theorem cutoff_exterior_scale_moment_eq
   -- the cutoff masses as chaos masses
   have hlhs : ∀ ω, (∫⁻ y in {y : ℂ | (c : ℂ)⁻¹ * y ∈ A}, (w ((c : ℂ)⁻¹ * y) : ℝ≥0∞)
       ∂regularizedGMC P Xc γ r ω) = ENNReal.ofReal (c ^ (-2 : ℝ)) * fieldChaosMass P Φ ν w γ ω :=
-    fun ω => cutoff_dilated_mass_eq_fieldChaosMass P X hX Xc hXc γ r hc A hA
+    fun ω => cutoff_dilated_mass_eq_fieldChaosMass
       (fun x hx => le_trans one_le_two (hA2 x hx)) w hw ω
   have hrhs : ∀ ω, (∫⁻ x in A, (w x : ℝ≥0∞) ∂regularizedGMC P Xc γ (r + Real.log c) ω) =
       fieldChaosMass P Ψ ν w γ ω :=

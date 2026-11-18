@@ -36,20 +36,19 @@ theorem crossing_gammaHalf_parameter_guards (γ a ε c : ℝ)
     (∀ n : ℤ, C ≠ (n : ℝ)) ∧
       (∀ n : ℤ, C - A - B ≠ (n : ℝ)) ∧ gaussK₂ A B C ≠ 0 := by
   have hεQ : ε < Q γ := by unfold Q; linarith only [hε, hγ]
-  have hsum : 2 * Q γ + γ / 2 < a + ε + c := by linarith only [hs]
+  have hsum : 2 * Q γ + γ / 2 < a + ε + c := by nlinarith
   obtain ⟨hA, hAB, hBC, hC, hδ, hδ1, _, hK₂⟩ :=
     DOZZ.gauss_physical_parameter_range γ (γ / 2) a ε c hγ hγ2 (Or.inl rfl)
       hsum ha hεQ hc
   dsimp only
   refine ⟨?_, ?_, hK₂.ne'⟩
   · intro n hn
-    have hpos : 0 < gaussParameterC γ (γ / 2) a := lt_trans (lt_trans hA hAB) hBC
-    have hn0 : (0 : ℤ) < n := by exact_mod_cast (hn ▸ hpos)
-    have hn1 : n < (1 : ℤ) := by exact_mod_cast (hn ▸ hC)
+    have : (0 : ℤ) < n := by exact_mod_cast (hn ▸ (lt_trans (lt_trans hA hAB) hBC))
+    have : n < (1 : ℤ) := by exact_mod_cast (hn ▸ hC)
     omega
   · intro n hn
-    have hn0 : (0 : ℤ) < n := by exact_mod_cast (hn ▸ hδ)
-    have hn1 : n < (1 : ℤ) := by exact_mod_cast (hn ▸ hδ1)
+    have : (0 : ℤ) < n := by exact_mod_cast (hn ▸ hδ)
+    have : n < (1 : ℤ) := by exact_mod_cast (hn ▸ hδ1)
     omega
 
 end DOZZ.Proofs

@@ -8,7 +8,6 @@ public import Mathlib.MeasureTheory.Integral.Prod
 import Mathlib.Tactic
 /-! First-order domination of the discarded bounded-maximum part of Williams' model. -/
 @[expose] public section
-open MeasureTheory Set Filter
 namespace DOZZ.Proofs
 
 /-- The signed inverse-power increment has its exact first-order majorant. -/

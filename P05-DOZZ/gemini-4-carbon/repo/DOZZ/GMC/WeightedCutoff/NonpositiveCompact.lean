@@ -31,33 +31,31 @@ theorem cutoffWeightedGmcBallMoment_nonpos_compact_gamma_chart
     simp [hEmpty] at this
   obtain ⟨A, hA, hroot⟩ := regularizedGMC_openBall_root_bound_compact_gamma_chart
     P X hX Xc hXc Γ hΓ hΓpos q hq hcrit
-  let B : ℝ≥0∞ := max 1 A
-  have hB : B < ⊤ := max_lt_iff.mpr ⟨ENNReal.one_lt_top, hA⟩
+  let B := max 1 A
   have hBone : 1 ≤ B := le_max_left _ _
   let beta : ℝ × (ℝ × ℝ) → ℝ := fun u =>
     2 * u.2.2 + u.1 ^ 2 * u.2.2 / 2 - u.1 ^ 2 * u.2.2 ^ 2 / 2
   let coeff : ℝ × (ℝ × ℝ) → ℝ := fun u =>
     (2 : ℝ) ^ (-u.1 * u.2.1 * u.2.2) * (1 / 8 : ℝ) ^ (-beta u)
-  have htwo : (2 : ℝ) ≠ 0 := by norm_num
-  have heighth : (1 / 8 : ℝ) ≠ 0 := by norm_num
-  have hcoeff : Continuous coeff := by dsimp [coeff, beta]; fun_prop
+  have : (2 : ℝ) ≠ 0 := by norm_num
+  have : (1 / 8 : ℝ) ≠ 0 := by norm_num
+  have hcoeff : Continuous coeff := by fun_prop
   obtain ⟨umax, humax, hmax⟩ := (hΓ.prod hT).exists_isMaxOn hNonempty hcoeff.continuousOn
-  let C : ℝ≥0∞ := ENNReal.ofReal (coeff umax) * B ^ q
+  let C := ENNReal.ofReal (coeff umax) * B ^ q
   have hC : C < ⊤ := ENNReal.mul_lt_top ENNReal.ofReal_lt_top
-    (lt_top_iff_ne_top.mpr (ENNReal.rpow_ne_top_of_nonneg (by linarith) hB.ne))
+    (lt_top_iff_ne_top.mpr (ENNReal.rpow_ne_top_of_nonneg (by linarith) (max_lt_iff.mpr ⟨ENNReal.one_lt_top, hA⟩).ne))
   refine ⟨C, hC, ?_⟩
   intro γ hγ t ht hα z R hR hRhalf hchart δ hδ hδR
-  have hp : 1 ≤ t.2 := horders t ht
-  have hp0 : 0 < t.2 := lt_of_lt_of_le zero_lt_one hp
+  have hp := horders t ht
+  have hp0 := lt_of_lt_of_le zero_lt_one hp
   have hγpos := hΓpos γ hγ
   have hmoment : (∫⁻ ω, (regularizedGMC P Xc γ (Real.log (1 / δ)) ω (Metric.ball z R)) ^ t.2 ∂P) ≤
       B ^ q * ENNReal.ofReal ((R / (1 / 8 : ℝ)) ^ beta (γ, t)) := by
-    have hr := (hroot γ hγ t.2 hp (hordersBound t ht) z R δ hR hRhalf hδ hδR hchart).1
     have hm : (∫⁻ ω, (regularizedGMC P Xc γ (Real.log (1 / δ)) ω (Metric.ball z R)) ^ t.2 ∂P) ≤
         (A * ENNReal.ofReal ((R / (1 / 8 : ℝ)) ^ (beta (γ, t) / t.2))) ^ t.2 := by
       apply (ENNReal.rpow_inv_le_iff hp0).mp
-      simpa only [one_div, beta] using hr
-    have hAp : A ^ t.2 ≤ B ^ q := (ENNReal.rpow_le_rpow (le_max_right 1 A) hp0.le).trans
+      simpa only [one_div, beta] using (hroot γ hγ t.2 hp (hordersBound t ht) z R δ hR hRhalf hδ hδR hchart).1
+    have hAp := (ENNReal.rpow_le_rpow (le_max_right 1 A) hp0.le).trans
       (ENNReal.rpow_le_rpow_of_exponent_le hBone (hordersBound t ht))
     have hratio : 0 < R / (1 / 8 : ℝ) := by positivity
     have hpower : (((R / (1 / 8 : ℝ)) ^ (beta (γ, t) / t.2)) ^ t.2) =

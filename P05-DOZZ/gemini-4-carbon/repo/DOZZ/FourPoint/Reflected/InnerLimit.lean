@@ -40,17 +40,15 @@ theorem gammaHalf_reflected_inner_limit {Ω : Type*} [MeasurableSpace Ω]
                   structureConstant P M γ μ (2 * Q γ - α₁ - γ / 2) α₂ α₃ : ℝ) : ℂ) *
                 ((‖z‖ ^ κ : ℝ) : ℂ)) + r z)) ∧
             IsComplexLittleOAtZero κ r := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _ := hX.1
   obtain ⟨Xc,B,hc,hm,hcont,hSource,hL,hB⟩ := reflected_regular_source_reflection_family
     P X hX γ hγ hγ₂ M hM
   let Z := fun ω => lateralProjectedGMC γ (originRadialPath Xc ω) (M ω)
-  have hData : IsReflectionData P γ α₁ (B α₁) Z := hB α₁ hα₁
+  have hData := hB α₁ hα₁
   obtain ⟨N,hN,hi,hfin,heq,hNa,hwhole⟩ := reflected_copied_radial_plane_observable
     P X Xc hX hc hm hcont γ hγ hγ₂ M hM
-  let B₀ := P.map (fun ω => radialPositiveHalf (originRadialPath Xc ω))
-  have hA := originRadialPath_aemeasurable P X Xc hc hcont
-  have hB₀ : IsBrownianReal (fun t p => p t) B₀ := radialPositiveHalf_map_isBrownian
-    P (originRadialPath Xc) hA (originRadialPath_isBrownian P X Xc hX hc hcont).1
+  have hB₀ := radialPositiveHalf_map_isBrownian
+    P (originRadialPath Xc) (originRadialPath_aemeasurable P X Xc hc hcont) (originRadialPath_isBrownian P X Xc hX hc hcont).1
   let p := (α₁+α₂+α₃-γ/2-2*Q γ)/γ
   let κ := γ*(Q γ-α₁)
   let a := 2*(Q γ-α₁)/γ
@@ -58,7 +56,7 @@ theorem gammaHalf_reflected_inner_limit {Ω : Type*} [MeasurableSpace Ω]
     structureConstant P M γ μ (2*Q γ-α₁-γ/2) α₂ α₃
   have ht := reflected_source_inner_increment_tendsto P X Xc hX hc hm hcont γ hγ hγ₂ M hM
     N hN hi heq hfin hwhole hNa α₁ α₂ α₃ ξ hα₁ hα₂ hα₃ hreflect hs hξ hξ₂
-    (hnear.trans_le (min_le_right 1 ξ)) hfreeze (B α₁) hL hData B₀ hB₀
+    (hnear.trans_le (min_le_right 1 ξ)) hfreeze (B α₁) hL hData (P.map (fun ω => radialPositiveHalf (originRadialPath Xc ω))) hB₀
   have hcoef : (a*Real.Gamma (-a)*Real.Gamma (p+a)/Real.Gamma p)*
       (∫⁻ ω, rho γ (M ω) (2*Q γ-α₁-γ/2) α₂ α₃^(-(p+a)) ∂P).toReal*
         reflectionBarR P γ α₁ (B α₁) Z = C := by
@@ -75,15 +73,13 @@ theorem gammaHalf_reflected_inner_limit {Ω : Type*} [MeasurableSpace Ω]
   let rReal := fun z : ℂ => gammaHalfMoment P M γ α₁ α₂ α₃ p z-
     gammaHalfOuterMoment P M γ α₁ α₂ α₃ p z ξ-C*‖z‖^κ
   have hrem : Tendsto (fun z : ℂ => rReal z/‖z‖^κ) (𝓝[≠] 0) (𝓝 0) := by
-    have hs := hLimit.sub (tendsto_const_nhds (x := C))
     have hs0 : Tendsto (fun z : ℂ =>
         (gammaHalfMoment P M γ α₁ α₂ α₃ p z-gammaHalfOuterMoment P M γ α₁ α₂ α₃ p z ξ)/‖z‖^κ-C)
-        (𝓝[≠] 0) (𝓝 0) := by simpa only [sub_self] using hs
+        (𝓝[≠] 0) (𝓝 0) := by simpa only [sub_self] using hLimit.sub (tendsto_const_nhds (x := C))
     apply hs0.congr'
     filter_upwards [self_mem_nhdsWithin] with z hz
-    have hn : ‖z‖^κ ≠ 0 := (Real.rpow_pos_of_pos (norm_pos_iff.mpr hz) κ).ne'
     dsimp only [rReal]
-    simp only [sub_div,mul_div_cancel_right₀ C hn]
+    simp only [sub_div,mul_div_cancel_right₀ C ((Real.rpow_pos_of_pos (norm_pos_iff.mpr hz) κ).ne')]
   refine ⟨B,Z,hSource,hData,fun z => (rReal z : ℂ),?_,?_⟩
   · intro z
     dsimp only [rReal,C]

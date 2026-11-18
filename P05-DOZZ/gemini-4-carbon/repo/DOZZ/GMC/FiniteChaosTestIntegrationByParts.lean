@@ -11,8 +11,6 @@ public import DOZZ.GMC.FiniteGaussianIntegrationByPartsGrowth
 
 @[expose] public section
 
-open MeasureTheory ProbabilityTheory
-open scoped Distributions Topology
 
 namespace DOZZ.Proofs
 

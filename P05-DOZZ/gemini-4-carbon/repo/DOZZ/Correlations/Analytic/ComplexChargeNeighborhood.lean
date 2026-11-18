@@ -13,16 +13,18 @@ public import DOZZ.Complex.Identity
 open Filter Topology Set
 namespace DOZZ.Proofs
 
+variable {N : ℕ}
+
+
 /-- The complex zero-mode power is a continuous affine function of all charges. -/
-theorem complexMomentPower_continuous {N : ℕ} (γ : ℝ) :
+theorem complexMomentPower_continuous (γ : ℝ) :
     Continuous (complexMomentPower (N := N) γ) := by
   unfold complexMomentPower
-  exact (continuous_const.add (continuous_const.mul
-    (continuous_finsetSum _ (fun i _ => continuous_apply i)))).neg
+  fun_prop
 
 /-- Strict real scalar margins give a complex polydisc on which all uniform-envelope bounds
 hold simultaneously. -/
-theorem complex_charge_budget_neighborhood {N : ℕ} (γ : ℝ) (α : Fin N → ℝ)
+theorem complex_charge_budget_neighborhood (γ : ℝ) (α : Fin N → ℝ)
     (A a lo hi b : ℝ) (hA : ∀ i, |α i| < A) (ha : ∀ i, α i < a)
     (hlo : lo < (2 * Q γ - ∑ i, α i) / γ - 1)
     (hhi : (2 * Q γ - ∑ i, α i) / γ < hi)
@@ -39,22 +41,14 @@ theorem complex_charge_budget_neighborhood {N : ℕ} (γ : ℝ) (α : Fin N → 
   have hre (i : Fin N) : Continuous (fun β : Fin N → ℂ => (β i).re) :=
     Complex.continuous_re.comp (continuous_apply i)
   have hp := complexMomentPower_continuous (N := N) γ
-  have hpr : Continuous (fun β : Fin N → ℂ => (complexMomentPower γ β).re) :=
-    Complex.continuous_re.comp hp
   have hU : IsOpen U := by
     rw [isOpen_iff_mem_nhds]
     intro β hβ
-    have h1 : ∀ᶠ v in 𝓝 β, ∀ i, |(v i).re| < A :=
-      eventually_all.mpr (fun i => (hre i).abs.continuousAt.eventually_lt_const (hβ.1 i))
-    have h2 : ∀ᶠ v in 𝓝 β, ∀ i, (v i).re < a :=
-      eventually_all.mpr (fun i => (hre i).continuousAt.eventually_lt_const (hβ.2.1 i))
-    have h3 : ∀ᶠ v in 𝓝 β, lo < (complexMomentPower γ v).re - 1 :=
+    have h3 :=
       continuousAt_const.eventually_lt
         (show ContinuousAt (fun v => (complexMomentPower γ v).re - 1) β from
           by fun_prop) hβ.2.2.1
-    have h4 := hpr.continuousAt.eventually_lt_const hβ.2.2.2.1
-    have h5 := hp.norm.continuousAt.eventually_lt_const hβ.2.2.2.2
-    exact h1.and (h2.and (h3.and (h4.and h5)))
+    exact (eventually_all.mpr (fun i => (hre i).abs.continuousAt.eventually_lt_const (hβ.1 i))).and ((eventually_all.mpr (fun i => (hre i).continuousAt.eventually_lt_const (hβ.2.1 i))).and (h3.and (((Complex.continuous_re.comp hp).continuousAt.eventually_lt_const hβ.2.2.2.1).and (hp.norm.continuousAt.eventually_lt_const hβ.2.2.2.2))))
   have hc : (fun i => (α i : ℂ)) ∈ U := by
     change (∀ i, |(α i : ℂ).re| < A) ∧ (∀ i, (α i : ℂ).re < a) ∧ _
     simp only [Complex.ofReal_re, complexMomentPower_ofReal, Complex.norm_real,
@@ -68,7 +62,7 @@ theorem complex_charge_budget_neighborhood {N : ℕ} (γ : ℝ) (α : Fin N → 
 
 /-- A real-centered polydisc contains a smaller positive polydisc with arbitrarily small
 squared imaginary-charge size. -/
-theorem polydisc_thin_imaginary {N : ℕ} (α R : Fin N → ℝ)
+theorem polydisc_thin_imaginary (α R : Fin N → ℝ)
     (hR : ∀ i, 0 < R i) (d : ℝ) (hd : 0 < d) :
     ∃ S : Fin N → ℝ, (∀ i, 0 < S i) ∧
       complexPolydisc (fun i => (α i : ℂ)) S ⊆ complexPolydisc (fun i => (α i : ℂ)) R ∧

@@ -42,17 +42,13 @@ theorem spatialIntegral_vector_law_of_fdd_finite
     · exact ae_of_all _ fun ω => by simp only [z', hm, NNReal.coe_zero, zero_mul]; exact integrable_zero _ _ _
     · filter_upwards [hintX j] with ω hω
       rw [hmeasure] at hω
-      have ht : Integrable (fun x => z j x (X ω x)) (ν.normalize : Measure S) :=
-        (integrable_smul_measure (ENNReal.coe_ne_zero.mpr hm) (by finiteness)).mp hω
-      exact ht.const_mul _
+      exact ((integrable_smul_measure (ENNReal.coe_ne_zero.mpr hm) (by finiteness)).mp hω).const_mul _
   have hiY j : ∀ᵐ ω ∂P', Integrable (fun x => z' j x (Y ω x)) (ν.normalize : Measure S) := by
     by_cases hm : ν.mass = 0
     · exact ae_of_all _ fun ω => by simp only [z', hm, NNReal.coe_zero, zero_mul]; exact integrable_zero _ _ _
     · filter_upwards [hintY j] with ω hω
       rw [hmeasure] at hω
-      have ht : Integrable (fun x => z j x (Y ω x)) (ν.normalize : Measure S) :=
-        (integrable_smul_measure (ENNReal.coe_ne_zero.mpr hm) (by finiteness)).mp hω
-      exact ht.const_mul _
+      exact ((integrable_smul_measure (ENNReal.coe_ne_zero.mpr hm) (by finiteness)).mp hω).const_mul _
   have hfdd : ∀ n (xs : Fin n → S),
       P.map (fun ω => (V ω, fun i => X ω (xs i))) =
       P'.map (fun ω => (V' ω, fun i => Y ω (xs i))) := by
@@ -84,8 +80,7 @@ theorem spatialIntegral_vector_law_of_fdd_finite
     apply measurable_pi_iff.mpr
     intro j
     exact ((hz j).comp (measurable_snd.prodMk hY)).stronglyMeasurable.integral_prod_right'.measurable
-  have hsnd := congrArg (fun μ => μ.map Prod.snd) he
   simpa only [Measure.map_map measurable_snd hmX, Measure.map_map measurable_snd hmY,
-    Function.comp_def] using hsnd
+    Function.comp_def] using congrArg (fun μ => μ.map Prod.snd) he
 
 end DOZZ.Proofs

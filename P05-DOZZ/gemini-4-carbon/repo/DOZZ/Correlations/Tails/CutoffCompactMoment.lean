@@ -39,10 +39,9 @@ theorem regularized_compact_mass_moment_uniform
   refine ⟨ENNReal.ofReal (C * (R+1) ^ (γ*Q γ*q - γ^2*q^2/2)),
     ENNReal.ofReal_lt_top, fun n => ?_⟩
   have hd : Real.exp (-(n : ℝ)) ≤ R+1 := by
-    have he : Real.exp (-(n : ℝ)) ≤ 1 := Real.exp_le_one_iff.mpr (by have hn : 0 ≤ (n : ℝ) := Nat.cast_nonneg n; linarith)
+    have : Real.exp (-(n : ℝ)) ≤ 1 := Real.exp_le_one_iff.mpr (by have hn : 0 ≤ (n : ℝ) := Nat.cast_nonneg n; linarith)
     linarith
-  have ht : Real.log (1 / Real.exp (-(n : ℝ))) = (n : ℝ) := by
-    rw [one_div, ← Real.exp_neg, neg_neg, Real.log_exp]
+  have ht : Real.log (1 / Real.exp (-(n : ℝ))) = (n : ℝ) := by simp
   have hb := hbound (0,q) (Set.mem_singleton _) 0 (Set.mem_singleton _)
     (Real.exp (-(n : ℝ))) (R+1) (Real.exp_pos _) hd le_rfl
   have hmass (ω : Ω) : cutoffWeightedGmcBallMass P Xc γ 0 0 (R+1)

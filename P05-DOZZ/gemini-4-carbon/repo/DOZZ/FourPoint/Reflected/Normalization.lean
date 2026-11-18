@@ -22,13 +22,6 @@ open MeasureTheory
 
 namespace DOZZ.Proofs
 
-/-- The half-charge four-point zero-mode exponent. -/
-theorem fourPointSExp_gammaHalf (γ α₁ α₂ α₃ : ℝ) :
-    fourPointSExp γ (-γ / 2) α₁ α₂ α₃ =
-      (α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) / γ := by
-  unfold fourPointSExp
-  congr 1
-  ring
 
 /-- The reduced four-point function is the literal half-charge moment times its prefactor. -/
 theorem fourPointT_eq_gammaHalfMoment {Ω : Type*} [MeasurableSpace Ω]
@@ -38,6 +31,11 @@ theorem fourPointT_eq_gammaHalfMoment {Ω : Type*} [MeasurableSpace Ω]
         Real.Gamma ((α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) / γ)) *
       gammaHalfMoment P M γ α₁ α₂ α₃
         ((α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) / γ) z := by
+  have fourPointSExp_gammaHalf (γ α₁ α₂ α₃ : ℝ) : fourPointSExp γ (-γ / 2) α₁ α₂ α₃ =
+        (α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) / γ := by
+    unfold fourPointSExp
+    congr 1
+    ring
   unfold fourPointT gammaHalfMoment
   rw [fourPointSExp_gammaHalf]
   simp only [neg_div]
@@ -49,11 +47,10 @@ theorem reflected_prefactor_cancel (γ μ p R C : ℝ) (hγ : 0 < γ)
       (1 / 2 * μ ^ p * γ * (Real.Gamma p)⁻¹ * R * C) = R * C := by
   have hpow : μ ^ (-p) * μ ^ p = 1 := by
     rw [← Real.rpow_add hμ, neg_add_cancel, Real.rpow_zero]
-  have hΓ : Real.Gamma p ≠ 0 := (Real.Gamma_pos_of_pos hp).ne'
   calc
     _ = (μ ^ (-p) * μ ^ p) * (γ / γ) *
         (Real.Gamma p * (Real.Gamma p)⁻¹) * R * C := by ring
-    _ = R * C := by rw [hpow, div_self hγ.ne', mul_inv_cancel₀ hΓ]; ring
+    _ = R * C := by rw [hpow, div_self hγ.ne', mul_inv_cancel₀ ((Real.Gamma_pos_of_pos hp).ne')]; ring
 
 /-- The independent-maximum coefficient is exactly the inner-limit coefficient. -/
 theorem reflected_inner_coefficient_eq {Ω : Type*} [MeasurableSpace Ω]
@@ -90,8 +87,6 @@ theorem reflected_inner_coefficient_eq {Ω : Type*} [MeasurableSpace Ω]
         (∫⁻ ω, rho γ (M ω) (2 * Q γ - α₁ - γ / 2) α₂ α₃ ^ (-(p + a)) ∂P).toReal)
   have hpow : μ ^ p * μ ^ a * μ ^ (-(p + a)) = 1 := by
     rw [← Real.rpow_add hμ, ← Real.rpow_add hμ, add_neg_cancel, Real.rpow_zero]
-  have hΓ : Real.Gamma p ≠ 0 := (Real.Gamma_pos_of_pos hp).ne'
-  have hγne : γ ≠ 0 := hγ.ne'
   field_simp
   linear_combination -(a * Real.Gamma (-a) * Real.Gamma (p + a) *
     reflectionBarR P γ α₁ B Z *

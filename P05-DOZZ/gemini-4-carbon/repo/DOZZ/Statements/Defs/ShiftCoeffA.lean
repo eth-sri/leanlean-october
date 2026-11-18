@@ -10,7 +10,6 @@ public import DOZZ.Statements.Defs.ExtendedSeiberg3
 
 @[expose] public section
 
-open Complex MeasureTheory Set Filter Topology
 
 namespace DOZZ
 

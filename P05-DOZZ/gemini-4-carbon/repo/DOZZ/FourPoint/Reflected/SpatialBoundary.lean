@@ -34,33 +34,21 @@ theorem reflected_exterior_integral_open (μ : Measure ℂ) (r : ℝ)
     (∫⁻ x in {x : ℂ | r ≤ ‖x‖}, f x ∂μ) =
       ∫⁻ x in {x : ℂ | r < ‖x‖}, f x ∂μ := by
   have he : ({x : ℂ | r ≤ ‖x‖} : Set ℂ) =ᵐ[μ] {x : ℂ | r < ‖x‖} := by
-    have hn : ∀ᵐ x ∂μ, x ∉ Metric.sphere (0 : ℂ) r := by
-      exact measure_eq_zero_iff_ae_notMem.mp hcircle
+    have hn : ∀ᵐ x ∂μ, x ∉ Metric.sphere (0 : ℂ) r := measure_eq_zero_iff_ae_notMem.mp hcircle
     filter_upwards [hn] with x hx
     have hne : ‖x‖ ≠ r := by simpa only [Metric.mem_sphere, dist_zero_right] using hx
     exact propext ⟨fun h => lt_of_le_of_ne h hne.symm, fun h => h.le⟩
   rw [Measure.restrict_congr_set he]
 
-/-- The literal retained Coulomb mass equals its open-exterior kernel integral. -/
-theorem reflected_outerMass_eq_open_kernel (γ α₁ α₂ α₃ ξ : ℝ) (z : ℂ)
-    (μ : Measure ℂ) (h0 : μ {0} = 0) (h1 : μ {1} = 0)
-    (hz : ‖z‖ < ‖z‖ ^ (1 - ξ))
-    (hs : μ (Metric.sphere (0 : ℂ) (‖z‖ ^ (1 - ξ))) = 0) :
-    gammaHalfOuterMass γ α₁ α₂ α₃ μ z ξ =
-      ∫⁻ x in {x : ℂ | ‖z‖ ^ (1 - ξ) < ‖x‖},
-        ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x) ∂μ := by
-  rw [reflected_outerMass_eq_kernel_integral γ α₁ α₂ α₃ ξ z μ h0 h1 hz]
-  exact reflected_exterior_integral_open μ _ hs _
 
 /-- Removing the fixed root at one gives the open region used by lateral comparison. -/
 theorem reflected_open_exterior_remove_roots (μ : Measure ℂ) (r : ℝ) (hr : 0 < r)
     (h1 : μ {1} = 0) (f : ℂ → ℝ≥0∞) :
     (∫⁻ x in {x : ℂ | r < ‖x‖}, f x ∂μ) =
       ∫⁻ x in {x : ℂ | r < ‖x‖} ∩ ({0, 1} : Set ℂ)ᶜ, f x ∂μ := by
-  have hn : ∀ᵐ x ∂μ, x ∉ ({1} : Set ℂ) := measure_eq_zero_iff_ae_notMem.mp h1
   have he : ({x : ℂ | r < ‖x‖} : Set ℂ) =ᵐ[μ]
       {x : ℂ | r < ‖x‖} ∩ ({0, 1} : Set ℂ)ᶜ := by
-    filter_upwards [hn] with x hx
+    filter_upwards [measure_eq_zero_iff_ae_notMem.mp h1] with x hx
     have hx1 : x ≠ 1 := by simpa only [mem_singleton_iff] using hx
     apply propext
     constructor
@@ -72,17 +60,6 @@ theorem reflected_open_exterior_remove_roots (μ : Measure ℂ) (r : ℝ) (hr : 
     · exact fun h => h.1
   rw [Measure.restrict_congr_set he]
 
-/-- The retained mass `gammaHalfOuterMass` is exactly the full open region required by
-comparison. -/
-theorem reflected_outerMass_eq_comparison_region (γ α₁ α₂ α₃ ξ : ℝ) (z : ℂ)
-    (μ : Measure ℂ) (h0 : μ {0} = 0) (h1 : μ {1} = 0)
-    (hz : ‖z‖ < ‖z‖ ^ (1 - ξ))
-    (hs : μ (Metric.sphere (0 : ℂ) (‖z‖ ^ (1 - ξ))) = 0) :
-    gammaHalfOuterMass γ α₁ α₂ α₃ μ z ξ =
-      ∫⁻ x in {x : ℂ | ‖z‖ ^ (1 - ξ) < ‖x‖} ∩ ({0, 1} : Set ℂ)ᶜ,
-        ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x) ∂μ := by
-  rw [reflected_outerMass_eq_open_kernel γ α₁ α₂ α₃ ξ z μ h0 h1 hz hs]
-  exact reflected_open_exterior_remove_roots μ _ ((norm_nonneg z).trans_lt hz) h1 _
 
 /-- The supplied ordinary GMC has precisely the open retained mass almost surely. -/
 theorem reflected_source_outerMass_eq_comparison_region
@@ -93,11 +70,21 @@ theorem reflected_source_outerMass_eq_comparison_region
     ∀ᵐ ω ∂P, gammaHalfOuterMass γ α₁ α₂ α₃ (M ω) z ξ =
       ∫⁻ x in {x : ℂ | ‖z‖ ^ (1 - ξ) < ‖x‖} ∩ ({0, 1} : Set ℂ)ᶜ,
         ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x) ∂M ω := by
+  have reflected_outerMass_eq_comparison_region (μ : Measure ℂ) (h0 : μ {0} = 0) (h1 : μ {1} = 0) (hz : ‖z‖ < ‖z‖ ^ (1 - ξ)) (hs : μ (Metric.sphere (0 : ℂ) (‖z‖ ^ (1 - ξ))) = 0) : gammaHalfOuterMass γ α₁ α₂ α₃ μ z ξ =
+        ∫⁻ x in {x : ℂ | ‖z‖ ^ (1 - ξ) < ‖x‖} ∩ ({0, 1} : Set ℂ)ᶜ,
+          ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x) ∂μ := by
+    have reflected_outerMass_eq_open_kernel : gammaHalfOuterMass γ α₁ α₂ α₃ μ z ξ =
+          ∫⁻ x in {x : ℂ | ‖z‖ ^ (1 - ξ) < ‖x‖},
+            ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x) ∂μ := by
+      rw [reflected_outerMass_eq_kernel_integral γ α₁ α₂ α₃ ξ z μ h0 h1 hz]
+      exact reflected_exterior_integral_open μ _ hs _
+    rw [reflected_outerMass_eq_open_kernel]
+    exact reflected_open_exterior_remove_roots μ _ ((norm_nonneg z).trans_lt hz) h1 _
   filter_upwards [reflected_gmc_sphere_null P X hX γ hγ hγ₂ M hM 0 0,
     reflected_gmc_sphere_null P X hX γ hγ hγ₂ M hM 1 0,
     reflected_gmc_sphere_null P X hX γ hγ hγ₂ M hM 0 (‖z‖ ^ (1 - ξ))]
       with ω h0 h1 hs
   simp only [Metric.sphere_zero] at h0 h1
-  exact reflected_outerMass_eq_comparison_region γ α₁ α₂ α₃ ξ z (M ω) h0 h1 hz hs
+  exact reflected_outerMass_eq_comparison_region (M ω) h0 h1 hz hs
 
 end DOZZ.Proofs

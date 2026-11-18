@@ -34,17 +34,15 @@ theorem symmetryReflection_circle_potential (x : ℂ) (r : ℝ) :
     (∫ z, symmetryReflectionPotential z ∂circleMeasure x r) =
       (∫ z, Real.log (normPlus z) ∂circleMeasure (1 - x) r) -
         (∫ z, Real.log (normPlus z) ∂circleMeasure x r) := by
-  have hmeas := continuous_log_normPlus.measurable
   have hcont : Continuous (fun z : ℂ => Real.log (normPlus (1 - z))) :=
     continuous_log_normPlus.comp (continuous_const.sub continuous_id)
   have hleft : Integrable (fun z : ℂ => Real.log (normPlus (1 - z)))
-      (circleMeasure x r) := by
-    exact integrable_circleMeasure_of_circleIntegrable x r hcont.measurable
+      (circleMeasure x r) := integrable_circleMeasure_of_circleIntegrable x r hcont.measurable
       hcont.continuousOn.circleIntegrable'
   change (∫ z, Real.log (normPlus (1 - z)) - Real.log (normPlus z)
     ∂circleMeasure x r) = _
   rw [integral_sub hleft (integrable_log_normPlus_circleMeasure x r),
-    symmetryReflection_circle_integral _ hmeas]
+    symmetryReflection_circle_integral _ (continuous_log_normPlus.measurable)]
 
 /-- The mixed reflected circle potential has exactly the two pinning corrections. -/
 theorem symmetryReflection_circle_kernel (x z : ℂ) (r : ℝ) :

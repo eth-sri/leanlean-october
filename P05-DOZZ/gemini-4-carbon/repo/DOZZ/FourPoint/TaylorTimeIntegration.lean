@@ -41,7 +41,6 @@ theorem time_integral_bound (F : ℂ → ℂ) (C e r : ℝ)
   have hdom : ∀ᵐ t ∂volume.restrict (Icc (0 : ℝ) 1),
       ‖(1 - t : ℝ) * F ((t : ℂ) * z)‖ ≤ (C * ‖z‖ ^ e) * t ^ e := by
     filter_upwards [ae_restrict_mem measurableSet_Icc, ae_restrict_of_ae hae] with t ht ht0
-    have htpos : 0 < t := lt_of_le_of_ne ht.1 (Ne.symm ht0)
     have htz : ‖(t : ℂ) * z‖ = t * ‖z‖ := by
       rw [norm_mul, Complex.norm_real, Real.norm_of_nonneg ht.1]
     have htr : ‖(t : ℂ) * z‖ ≤ r := by
@@ -50,11 +49,9 @@ theorem time_integral_bound (F : ℂ → ℂ) (C e r : ℝ)
     have hfn := hF ((t : ℂ) * z) (mul_ne_zero (Complex.ofReal_ne_zero.mpr ht0) hz) htr
     rw [htz, Real.mul_rpow ht.1 (norm_nonneg _)] at hfn
     rw [norm_mul, Complex.norm_real, Real.norm_of_nonneg (sub_nonneg.mpr ht.2)]
-    calc
-      (1 - t) * ‖F ((t : ℂ) * z)‖ ≤ ‖F ((t : ℂ) * z)‖ :=
-        mul_le_of_le_one_left (norm_nonneg _) (by linarith only [ht.1])
-      _ ≤ C * (t ^ e * ‖z‖ ^ e) := hfn
-      _ = (C * ‖z‖ ^ e) * t ^ e := by ring
+    refine (mul_le_of_le_one_left (norm_nonneg _) (by linarith only [ht.1])).trans (?_)
+    refine (hfn).trans_eq (?_)
+    ring
   have h := norm_integral_le_of_norm_le hbound hdom
   rw [integral_const_mul, hval] at h
   simpa only [mul_one_div] using h
@@ -72,12 +69,10 @@ theorem power_bound_littleO (f : ℂ → ℂ) (κ η C r : ℝ)
   apply tendsto_of_tendsto_of_tendsto_of_le_of_le' tendsto_const_nhds hlim
   · exact Eventually.of_forall (fun z => div_nonneg (norm_nonneg _) (Real.rpow_nonneg (norm_nonneg _) _))
   · have hradius : ∀ᶠ z : ℂ in nhds (0 : ℂ), ‖z‖ < r := by
-      have hball : ∀ᶠ z : ℂ in nhds (0 : ℂ), z ∈ Metric.ball 0 r :=
-        Metric.ball_mem_nhds (0 : ℂ) hr
-      filter_upwards [hball] with z hz
+      filter_upwards [Metric.ball_mem_nhds (0 : ℂ) hr] with z hz
       simpa only [Metric.mem_ball, dist_zero_right] using hz
     filter_upwards [hradius.filter_mono nhdsWithin_le_nhds, self_mem_nhdsWithin] with z hzr hz
-    have hnz : 0 < ‖z‖ := norm_pos_iff.mpr hz
+    have hnz := norm_pos_iff.mpr hz
     have h := div_le_div_of_nonneg_right (hf z hz hzr.le) (Real.rpow_pos_of_pos hnz κ).le
     rw [Real.rpow_add hnz] at h
     have heq : C * (‖z‖ ^ κ * ‖z‖ ^ η) / ‖z‖ ^ κ = C * ‖z‖ ^ η := by

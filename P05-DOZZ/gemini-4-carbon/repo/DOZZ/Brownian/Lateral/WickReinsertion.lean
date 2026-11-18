@@ -16,6 +16,7 @@ random radial path into the local chaos convergence, on the original probability
 
 @[expose] public section
 
+noncomputable section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal Distributions
 
@@ -23,7 +24,7 @@ namespace DOZZ.Proofs
 
 /-- The continuous, globally clamped radial reinsertion weight. On the local chart its
 logarithmic radius is the actual logarithmic radius. -/
-noncomputable def originRadialReinsertionWeight
+def originRadialReinsertionWeight
     (ρ γ : ℝ) (A : TwoSidedPath) (x : ℂ) : ℝ :=
   Real.exp (γ * A (clampedLogRadius ρ x) -
     γ * Q γ * |clampedLogRadius ρ x|)
@@ -44,7 +45,7 @@ theorem hasCompactSupport_originRadialWeightedTest
   hfc.mul_right
 
 /-- A compact test multiplied by a radial path is a bounded continuous test. -/
-noncomputable def originRadialWeightedTest
+def originRadialWeightedTest
     (ρ γ : ℝ) (hρ : 0 < ρ) (A : TwoSidedPath) (f : BoundedContinuousFunction ℂ ℝ)
     (hfc : HasCompactSupport (f : ℂ → ℝ)) : BoundedContinuousFunction ℂ ℝ := by
   let F : ℂ → ℝ := fun x => f x * originRadialReinsertionWeight ρ γ A x
@@ -55,35 +56,39 @@ noncomputable def originRadialWeightedTest
     (hasCompactSupport_originRadialWeightedTest ρ γ A f hfc)
   exact BoundedContinuousFunction.ofNormedAddCommGroup F hc hb.choose hb.choose_spec
 
+section
+variable (ρ γ : ℝ) (hρ : 0 < ρ) (A : TwoSidedPath) (f : BoundedContinuousFunction ℂ ℝ) (hfc : HasCompactSupport (f : ℂ → ℝ))
+include γ hρ A hfc
+
 /-- The underlying weighted test is the literal product, independently of its chosen bound. -/
 theorem originRadialWeightedTest_apply
-    (ρ γ : ℝ) (hρ : 0 < ρ) (A : TwoSidedPath) (f : BoundedContinuousFunction ℂ ℝ)
-    (hfc : HasCompactSupport (f : ℂ → ℝ)) (x : ℂ) :
+ (x : ℂ) :
     originRadialWeightedTest ρ γ hρ A f hfc x =
       f x * originRadialReinsertionWeight ρ γ A x := rfl
 
 /-- Weighted tests have no new support points. -/
 theorem tsupport_originRadialWeightedTest_subset
-    (ρ γ : ℝ) (hρ : 0 < ρ) (A : TwoSidedPath) (f : BoundedContinuousFunction ℂ ℝ)
-    (hfc : HasCompactSupport (f : ℂ → ℝ)) :
+ :
     tsupport (originRadialWeightedTest ρ γ hρ A f hfc : ℂ → ℝ) ⊆ tsupport (f : ℂ → ℝ) :=
   tsupport_mul_subset_left
 
+
+end
 /-- Joint integration of real tests against a measurable finite measure parameter. -/
 theorem measurable_integral_finiteMeasure_parameter
     {V β : Type*} [MeasurableSpace V] [MeasurableSpace β]
     (F : V → β → ℝ) (hF : Measurable (Function.uncurry F))
     (hI : ∀ v (μ : FiniteMeasure β), Integrable (F v) (μ : Measure β)) :
     Measurable (fun p : V × FiniteMeasure β => ∫ x, F p.1 x ∂(p.2 : Measure β)) := by
-  have hp := measurable_lintegral_finiteMeasure_parameter (ENNReal.measurable_ofReal.comp hF)
-  have hn := measurable_lintegral_finiteMeasure_parameter (ENNReal.measurable_ofReal.comp hF.neg)
+  have := measurable_lintegral_finiteMeasure_parameter (ENNReal.measurable_ofReal.comp hF)
+  have := measurable_lintegral_finiteMeasure_parameter (ENNReal.measurable_ofReal.comp hF.neg)
   have heq : (fun p : V × FiniteMeasure β => ∫ x, F p.1 x ∂(p.2 : Measure β)) =
       fun p => (∫⁻ x, ENNReal.ofReal (F p.1 x) ∂(p.2 : Measure β)).toReal -
         (∫⁻ x, ENNReal.ofReal (-F p.1 x) ∂(p.2 : Measure β)).toReal := by
     funext p
     exact integral_eq_lintegral_pos_part_sub_lintegral_neg_part (hI p.1 p.2)
   rw [heq]
-  exact hp.ennreal_toReal.sub hn.ennreal_toReal
+  fun_prop
 
 /-- A jointly measurable bounded test with fixed compact support integrates jointly
 measurably against a random measure finite on that support. -/
@@ -159,7 +164,7 @@ theorem regularizedLogChaosTestMass_randomTest_map_comp
 
 /-- The finite radial factor used when reinserting the circle cutoff into the lateral
 cutoff. Its deterministic reference correction is the literal `-2 |log |x||`. -/
-noncomputable def originRadialCutoffReinsertionWeight
+def originRadialCutoffReinsertionWeight
     {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} {X : Ω → Distr}
     {Xc : Ω → ℂ → ℝ → ℝ} (hc : IsCircleAverage P X Xc)
     (ρ γ r : ℝ) (A : TwoSidedPath) (x : ℂ) : ℝ :=
@@ -186,9 +191,13 @@ theorem originRadialCutoffReinsertionWeight_density_identity
 theorem originRadialReinsertionWeight_pos (ρ γ : ℝ) (A : TwoSidedPath) (x : ℂ) :
     0 < originRadialReinsertionWeight ρ γ A x := Real.exp_pos _
 
+section
+variable (ρ γ : ℝ) (hρ : 0 < ρ) (A : TwoSidedPath) (x : ℂ) (hx : x ∈ originLateralChart ρ)
+include γ hρ A hx
+
 /-- The clamped reinsertion weight equals the literal polar weight on its local chart. -/
 theorem originRadialReinsertionWeight_chart_eq
-    (ρ γ : ℝ) (hρ : 0 < ρ) (A : TwoSidedPath) (x : ℂ) (hx : x ∈ originLateralChart ρ) :
+ :
     originRadialReinsertionWeight ρ γ A x =
       Real.exp (γ * A (-Real.log ‖x‖) - γ * Q γ * |Real.log ‖x‖|) := by
   have hxρ : ρ ≤ ‖x‖ := by
@@ -200,17 +209,18 @@ theorem originRadialReinsertionWeight_chart_eq
 cancels the reinsertion density on every local chart, including in extended-real
 measure products. -/
 theorem originRadialReinsertionWeight_removal_mul
-    (ρ γ : ℝ) (hρ : 0 < ρ) (A : TwoSidedPath) (x : ℂ) (hx : x ∈ originLateralChart ρ) :
+ :
     ENNReal.ofReal (originRadialReinsertionWeight ρ γ A x) *
       ENNReal.ofReal (if ‖x‖ = 0 then 0 else
         Real.exp (-γ * A (-Real.log ‖x‖) + γ * Q γ * |Real.log ‖x‖|)) = 1 := by
   have hx0 : ‖x‖ ≠ 0 := by
-    have h : 2 * ρ < ‖x‖ := hx
-    exact ne_of_gt (lt_trans (by linarith only [hρ] : 0 < 2 * ρ) h)
+    exact ne_of_gt (lt_trans (by linarith only [hρ] : 0 < 2 * ρ) (hx))
   rw [ite_eq_right hx0, originRadialReinsertionWeight_chart_eq ρ γ hρ A x hx,
     ← ENNReal.ofReal_mul (Real.exp_pos _).le, ← Real.exp_add]
   have he : γ * A (-Real.log ‖x‖) - γ * Q γ * |Real.log ‖x‖| +
       (-γ * A (-Real.log ‖x‖) + γ * Q γ * |Real.log ‖x‖|) = 0 := by ring
   rw [he, Real.exp_zero, ENNReal.ofReal_one]
 
+
+end
 end DOZZ.Proofs

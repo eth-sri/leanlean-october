@@ -33,9 +33,7 @@ theorem gmc_joint_single_circle_tilt
       γ ^ 2 * ∫ ω, Xc ω u r ^ 2 ∂P := by
     rw [gaussianVariance, gaussianCovariance]
     calc
-      _ = ∫ ω, γ ^ 2 * Xc ω u r ^ 2 ∂P := by
-        apply integral_congr_ae
-        exact ae_of_all _ fun ω => by ring
+      _ = ∫ ω, γ ^ 2 * Xc ω u r ^ 2 ∂P := by ring
       _ = _ := integral_const_mul _ _
   have ht := equatorGFF_GMC_vertex_tilt P X hX γ hγ hγ2 M hM Xc hXc
     (fun _ : Fin 1 => γ) (fun _ => u) r H hH

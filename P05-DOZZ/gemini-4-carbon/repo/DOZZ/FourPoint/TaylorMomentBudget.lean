@@ -9,7 +9,6 @@ public import DOZZ.FourPoint.TwoRootedExponents
 /-! Strict positive-moment and spatial margins in the intermediate Taylor region. -/
 
 @[expose] public section
-open Set
 namespace DOZZ.Proofs
 
 /-- The optimized intermediate-region order lies strictly below both GMC thresholds.
@@ -23,19 +22,16 @@ theorem twoRooted_optimized_order (γ α q : ℝ)
       q * r < min (4 / γ ^ 2) (2 / γ * (Q γ - α)) ∧
         γ * (Q γ - α + γ / 2) * r - γ ^ 2 * q * r ^ 2 / 2 =
           (γ / 2 + Q γ - α) ^ 2 / (2 * q) := by
-  have hqpos : 0 < q := zero_lt_one.trans hq
-  have hγsqpos : 0 < γ ^ 2 := sq_pos_of_pos hγ
   have hQmult : γ * Q γ = 2 + γ ^ 2 / 2 := by unfold Q; field_simp
   have hαmult : γ * α > γ ^ 2 / 2 := by
     have hh := mul_lt_mul_of_pos_left hα hγ
     nlinarith only [hh]
-  have hαupper : γ * α < 2 := by simpa only [mul_comm] using (lt_div_iff₀ hγ).mp hα2
   have ha : 0 < γ / 2 + Q γ - α := by unfold Q; linarith only [hα2, hγ]
-  have hrpos : 0 < (γ / 2 + Q γ - α) / (γ * q) := div_pos ha (mul_pos hγ hqpos)
+  have hrpos := div_pos ha (mul_pos hγ (zero_lt_one.trans hq))
   have horder : q * ((γ / 2 + Q γ - α) / (γ * q)) = (γ / 2 + Q γ - α) / γ := by
     field_simp
   have hbulk : (γ / 2 + Q γ - α) / γ < 4 / γ ^ 2 := by
-    apply (div_lt_div_iff₀ hγ hγsqpos).mpr
+    apply (div_lt_div_iff₀ hγ (sq_pos_of_pos hγ)).mpr
     nlinarith only [hQmult, hαmult, hγ, hγ2]
   have hinsertion : (γ / 2 + Q γ - α) / γ < 2 / γ * (Q γ - α) := by
     rw [div_mul_eq_mul_div]
@@ -49,8 +45,7 @@ theorem twoRooted_optimized_order (γ α q : ℝ)
       nlinarith only [hQmult, hαmult, hγsq]
     simpa only [mul_comm] using hh
   refine ⟨hrpos, ?_, ?_, ?_⟩
-  · have hh : (γ / 2 + Q γ - α) / (γ * q) < q * ((γ / 2 + Q γ - α) / (γ * q)) := by
-      exact lt_mul_of_one_lt_left hrpos hq
+  · have hh : (γ / 2 + Q γ - α) / (γ * q) < q * ((γ / 2 + Q γ - α) / (γ * q)) := lt_mul_of_one_lt_left hrpos hq
     rw [horder] at hh
     exact hh.trans hsmall
   · rw [horder]
@@ -69,16 +64,15 @@ theorem taylor_region_margins (κ W d n : ℝ)
     dsimp only [q]
     apply (lt_div_iff₀ (by positivity : 0 < 4 * κ)).mpr
     linarith only [hW]
-  have hqpos : 0 < q := zero_lt_one.trans hq
-  let E : ℝ := W / (2 * q)
+  let E := W / (2 * q)
   have hE : κ < E := by
-    apply (lt_div_iff₀ (mul_pos (by norm_num) hqpos)).mpr
+    apply (lt_div_iff₀ (mul_pos (by norm_num) (zero_lt_one.trans hq))).mpr
     have heq : κ * (2 * q) = (W + 2 * κ) / 2 := by dsimp only [q]; field_simp; ring
     rw [heq]
     linarith only [hW]
-  have hEpos : 0 < E := hκ.trans hE
-  let g : ℝ := E - κ
-  have hg : 0 < g := sub_pos.mpr hE
+  have hEpos := hκ.trans hE
+  let g := E - κ
+  have hg := sub_pos.mpr hE
   let δ : ℝ := min (1 / 2) (g / (4 * E))
   have hδ : 0 < δ := lt_min (by norm_num) (div_pos hg (by positivity))
   have hδ1 : δ < 1 := (min_le_left _ _).trans_lt (by norm_num)

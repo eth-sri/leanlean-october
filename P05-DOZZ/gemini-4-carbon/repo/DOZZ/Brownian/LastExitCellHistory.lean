@@ -38,7 +38,7 @@ theorem measurableSet_conditionedPositiveHistoryHitsOnInterval
   let : CompactSpace K :=
     isCompact_iff_compactSpace.mp
       (isCompact_Icc (a := (a : ℝ)) (b := (b : ℝ)))
-  let : MeasurableSpace BrownianPath := conditionedPositiveNaturalFiltration b
+  let := conditionedPositiveNaturalFiltration b
   have hτ : Continuous τ :=
     Continuous.subtype_mk continuous_subtype_val (fun u => le_trans a.property u.2.1)
   let segment : BrownianPath → C(K, ℝ) := fun p =>
@@ -107,8 +107,7 @@ theorem conditionedPositiveHistory_intervalHit_avoidance_shift_setIntegral
       (∫ p in conditionedPositiveHistoryHitsOnInterval a b c,
         lastExitAvoidanceFactor ν (c : ℝ) (conditionedPositiveStateAt b p) *
           (brownianUpperConditionedReferenceFutureKernel B ν hν
-            (conditionedPositiveStateAt b p - c)).real C ∂P) := by
-  exact conditionedPositiveHistory_avoidance_shift_setIntegral
+            (conditionedPositiveStateAt b p - c)).real C ∂P) := conditionedPositiveHistory_avoidance_shift_setIntegral
     hP B hB b hb hν c hc C hC (conditionedPositiveHistoryHitsOnInterval a b c)
     (measurableSet_conditionedPositiveHistoryHitsOnInterval a b c)
 

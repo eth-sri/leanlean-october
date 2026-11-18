@@ -28,6 +28,9 @@ open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
 
+variable {z : ℂ}
+
+
 variable {γ χ α₁ α₂ α₃ : ℝ}
 
 /-! ### Elementary facts -/
@@ -35,10 +38,10 @@ variable {γ χ α₁ α₂ α₃ : ℝ}
 
 /-- The test function `ℓ ∘ g` is measurable. -/
 theorem bpzWardG_measurable (z : ℂ) (ℓ : ℂ →L[ℝ] ℝ) : Measurable (fun x => ℓ (bpzG z x)) := by
-  have h : Measurable (bpzG z) := by
+  have : Measurable (bpzG z) := by
     unfold bpzG
     fun_prop
-  exact ℓ.continuous.measurable.comp h
+  fun_prop
 
 /-- The truncation `ℓ (g χₙ)` is `C¹`. -/
 theorem bpzWardG_contDiff (z : ℂ) (n : ℕ) (ℓ : ℂ →L[ℝ] ℝ) :
@@ -142,7 +145,7 @@ theorem bpzWardG_abs_fderiv_le {z x : ℂ} (hx : x ∈ bpzRegular z) (ℓ : ℂ 
 
 /-- A uniform gradient bound for a family `F i` dominated by `g`, with gradients bounded by the
 singular weight. -/
-theorem bpzWardG_exists_fderiv_bound {z : ℂ} (hz0 : z ≠ 0) (hz1 : z ≠ 1) (ℓ : ℂ →L[ℝ] ℝ) (v : ℂ)
+theorem bpzWardG_exists_fderiv_bound (hz0 : z ≠ 0) (hz1 : z ≠ 1) (ℓ : ℂ →L[ℝ] ℝ) (v : ℂ)
     {ι : Type*} (F : ι → ℂ → ℂ) {A₁ : ℝ} (hA₁ : 0 ≤ A₁)
     (hdiff : ∀ i, ∀ x ∈ bpzRegular z, DifferentiableAt ℝ (F i) x)
     (hdom : ∀ i x, ‖F i x‖ ≤ ‖bpzG z x‖)
@@ -162,7 +165,7 @@ theorem bpzWardG_exists_fderiv_bound {z : ℂ} (hz0 : z ≠ 0) (hz1 : z ≠ 1) (
   ring
 
 /-- The truncations `ℓ (g χₙ)` satisfy the gradient bound uniformly in `n`. -/
-theorem bpzWardG_fderiv_bound_trunc {z : ℂ} (hz0 : z ≠ 0) (hz1 : z ≠ 1) (ℓ : ℂ →L[ℝ] ℝ) (v : ℂ) :
+theorem bpzWardG_fderiv_bound_trunc (hz0 : z ≠ 0) (hz1 : z ≠ 1) (ℓ : ℂ →L[ℝ] ℝ) (v : ℂ) :
     ∃ A : ℝ, 0 ≤ A ∧ ∀ n : ℕ, ∀ x ∈ bpzRegular z,
       |fderiv ℝ (fun x => ℓ (bpzG z x * (bpzCutoffSeq z n x : ℂ)) *
           bpzTildeWeight γ χ α₁ α₂ z x) x v| ≤
@@ -177,7 +180,7 @@ theorem bpzWardG_fderiv_bound_trunc {z : ℂ} (hz0 : z ≠ 0) (hz1 : z ≠ 1) (�
     (fun n x hx => hA₁ n x hx.2.2)
 
 /-- Gradient bound for the Ward test function `ℓ ∘ g` against `k̃`. -/
-theorem bpz_g_fderiv_bound {z : ℂ} (hz0 : z ≠ 0) (hz1 : z ≠ 1) (ℓ : ℂ →L[ℝ] ℝ) (v : ℂ) :
+theorem bpz_g_fderiv_bound (hz0 : z ≠ 0) (hz1 : z ≠ 1) (ℓ : ℂ →L[ℝ] ℝ) (v : ℂ) :
     ∃ A : ℝ, 0 ≤ A ∧ ∀ x ∈ bpzRegular z,
       |fderiv ℝ (fun x => ℓ (bpzG z x) * bpzTildeWeight γ χ α₁ α₂ z x) x v| ≤
         A * (1 + ‖x - z‖ ^ (-2 : ℝ)) * bpzTildeWeight γ χ α₁ α₂ z x := by
@@ -216,7 +219,7 @@ theorem bpzWardG_abs_sub_mul_kern_le (ℓ : ℂ →L[ℝ] ℝ) (v : ℂ) {a b x 
       _ = ‖ℓ‖ * ‖v‖ * B := by field_simp
 
 /-- The truncations `ℓ (g χₙ)` satisfy the kernel bound uniformly in `n`. -/
-theorem bpzWardG_kern_bound_trunc {z : ℂ} (hz0 : z ≠ 0) (hz1 : z ≠ 1) (ℓ : ℂ →L[ℝ] ℝ) (v : ℂ) :
+theorem bpzWardG_kern_bound_trunc (hz0 : z ≠ 0) (hz1 : z ≠ 1) (ℓ : ℂ →L[ℝ] ℝ) (v : ℂ) :
     ∃ A : ℝ, 0 ≤ A ∧ ∀ n : ℕ, ∀ x ∈ bpzRegular z, ∀ y ∈ bpzRegular z,
       |(ℓ (bpzG z x * (bpzCutoffSeq z n x : ℂ)) - ℓ (bpzG z y * (bpzCutoffSeq z n y : ℂ))) *
           bpzKern v (x - y)| ≤
@@ -232,7 +235,7 @@ theorem bpzWardG_kern_bound_trunc {z : ℂ} (hz0 : z ≠ 0) (hz1 : z ≠ 1) (ℓ
   ring
 
 /-- Kernel bound for the Ward test function `ℓ ∘ g`. -/
-theorem bpz_g_kern_bound {z : ℂ} (hz0 : z ≠ 0) (hz1 : z ≠ 1) (ℓ : ℂ →L[ℝ] ℝ) (v : ℂ) :
+theorem bpz_g_kern_bound (hz0 : z ≠ 0) (hz1 : z ≠ 1) (ℓ : ℂ →L[ℝ] ℝ) (v : ℂ) :
     ∃ A : ℝ, 0 ≤ A ∧ ∀ x ∈ bpzRegular z, ∀ y ∈ bpzRegular z,
       |(ℓ (bpzG z x) - ℓ (bpzG z y)) * bpzKern v (x - y)| ≤
         A * (1 + ‖x - z‖ ^ (-2 : ℝ) + ‖y - z‖ ^ (-2 : ℝ)) := by
@@ -270,8 +273,7 @@ theorem bpz_fourPoint_ward_g {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
   · intro n x hx
     refine (hA₁ n x hx).trans ?_
     have h1 : 0 ≤ 1 + ‖x - z‖ ^ (-2 : ℝ) := by positivity
-    have h2 := bpzTildeWeight_nonneg (γ := γ) (χ := χ) (α₁ := α₁) (α₂ := α₂) z x
-    exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right (by linarith) h1) h2
+    exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right (by linarith) h1) (bpzTildeWeight_nonneg (γ := γ) (χ := χ) (α₁ := α₁) (α₂ := α₂) z x)
   · intro n x hx y hy
     refine (hA₂ n x hx y hy).trans ?_
     have h1 : 0 ≤ 1 + ‖x - z‖ ^ (-2 : ℝ) + ‖y - z‖ ^ (-2 : ℝ) := by positivity

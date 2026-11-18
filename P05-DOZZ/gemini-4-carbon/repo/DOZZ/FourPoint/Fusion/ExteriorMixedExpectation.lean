@@ -41,9 +41,9 @@ theorem fusion_exteriorR2_expectation_bound {Ω : Type*} [MeasurableSpace Ω]
     · change ‖z‖ ≤ 1; linarith
     · simp
     · simp
-  have hib : (∫⁻ ω, I ω ^ (-p) ∂P) ≤ ENNReal.ofReal C := hbound _ hzunit
-  have hit : (∫⁻ ω, I ω ^ (-p) ∂P) ≠ ⊤ := ne_top_of_le_ne_top ENNReal.ofReal_ne_top hib
-  have hmaj : Integrable (fun ω => 16 * (I ω ^ (-p)).toReal) P :=
+  have hib := hbound _ hzunit
+  have hit := ne_top_of_le_ne_top ENNReal.ofReal_ne_top hib
+  have hmaj :=
     (integrable_toReal_of_lintegral_ne_top (hIm.pow_const _) hit).const_mul 16
   let B := (Metric.ball (0 : ℂ) (1 / 2))ᶜ
   let f := fun x : ℂ => (gammaHalfKernel γ α₁ α₂ α₃ z x : ℂ) / (‖x - z‖ ^ 2 : ℝ)

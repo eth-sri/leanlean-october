@@ -30,80 +30,6 @@ open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
 
-/-- **Cauchy bounds on a rectangle** around a point of the interval. -/
-theorem exists_rectangle_cauchy_bound {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hXc : IsCircleAverage P X Xc) {η δ : ℝ} (hW : TwoPoleWindow γ η δ)
-    (x₀ : Ioo (-2 * η - δ) (1 / γ)) :
-    ∃ ρ h K κ : ℝ, 0 < ρ ∧ 0 < h ∧ 0 ≤ K ∧ 0 < κ ∧ -2 * η - δ < (x₀ : ℝ) - ρ ∧
-      (x₀ : ℝ) + ρ < 1 / γ ∧ ∀ z : ℂ, |z.re - x₀| < ρ → |z.im| < h → ∀ n : ℕ,
-        ‖poleSubtractedCutoff P Xc M γ η (n + 1) z -
-            poleSubtractedCutoff P Xc M γ η n z‖ ≤ K * Real.exp (-κ * n) := by
-  obtain ⟨x, hx1, hx2⟩ := x₀
-  set ρ : ℝ := min (x - (-2 * η - δ)) (1 / γ - x) / 2 with hρ
-  have hρ0 : 0 < ρ := by
-    rw [hρ]
-    have : 0 < min (x - (-2 * η - δ)) (1 / γ - x) := lt_min (by linarith) (by linarith)
-    linarith
-  have hlo : -2 * η - δ < x - ρ := by
-    have : ρ ≤ (x - (-2 * η - δ)) / 2 := by
-      rw [hρ]
-      exact div_le_div_of_nonneg_right (min_le_left _ _) (by norm_num)
-    linarith
-  have hhi : x + ρ < 1 / γ := by
-    have : ρ ≤ (1 / γ - x) / 2 := by
-      rw [hρ]
-      exact div_le_div_of_nonneg_right (min_le_right _ _) (by norm_num)
-    linarith
-  obtain ⟨C, κ, hC, hκ, hb⟩ :=
-    exists_cutoff_cauchy_bound P X hX γ hγ hγ2 M hM Xc hXc hW hlo hhi
-  set h : ℝ := min 1 (κ / 2) with hh
-  set W : ℝ := 1 + (|x| + ρ + 1) / γ with hWdef
-  refine ⟨ρ, h, W * C * Real.exp (κ / 4), 3 * κ / 4, hρ0, lt_min one_pos (by linarith),
-    by positivity, by linarith, hlo, hhi, fun z hzre hzim n => ?_⟩
-  have hz : z.re ∈ Icc (x - ρ) (x + ρ) := by
-    rw [abs_lt] at hzre
-    constructor <;> linarith
-  refine (hb z hz n).trans ?_
-  have him1 : |z.im| ≤ 1 := hzim.le.trans (min_le_left _ _)
-  have him2 : |z.im| ≤ κ / 2 := hzim.le.trans (min_le_right _ _)
-  have himsq : z.im ^ 2 ≤ κ / 2 := by
-    rw [← sq_abs]
-    calc |z.im| ^ 2 = |z.im| * |z.im| := sq _
-      _ ≤ 1 * (κ / 2) := mul_le_mul him1 him2 (abs_nonneg _) zero_le_one
-      _ = κ / 2 := one_mul _
-  have hexp : Real.exp (((n + 1 : ℕ) : ℝ) * z.im ^ 2 / 2) ≤
-      Real.exp (κ / 4) * Real.exp (κ / 4 * n) := by
-    rw [← Real.exp_add]
-    apply Real.exp_le_exp.2
-    have hn : (0 : ℝ) ≤ (n + 1 : ℕ) := Nat.cast_nonneg _
-    have := mul_le_mul_of_nonneg_left himsq hn
-    push_cast at this ⊢
-    nlinarith
-  have hnorm : ‖1 - z / γ‖ ≤ W := by
-    have hzn : ‖z‖ ≤ |x| + ρ + 1 := by
-      have hre : |z.re| ≤ |x| + ρ := by
-        have := abs_sub_abs_le_abs_sub z.re x
-        rw [abs_lt] at hzre
-        rw [abs_le]
-        constructor <;> cases abs_cases x <;> cases abs_cases z.re <;> linarith
-      linarith [Complex.norm_le_abs_re_add_abs_im z]
-    calc ‖1 - z / γ‖ ≤ ‖(1 : ℂ)‖ + ‖z / γ‖ := norm_sub_le _ _
-      _ = 1 + ‖z‖ / γ := by
-          rw [norm_one, norm_div, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hγ]
-      _ ≤ W := by
-          rw [hWdef]
-          gcongr
-  calc Real.exp (((n + 1 : ℕ) : ℝ) * z.im ^ 2 / 2) * ‖1 - z / γ‖ * (C * Real.exp (-κ * n))
-      ≤ (Real.exp (κ / 4) * Real.exp (κ / 4 * n)) * W * (C * Real.exp (-κ * n)) := by
-        apply mul_le_mul_of_nonneg_right _ (by positivity)
-        exact mul_le_mul hexp hnorm (norm_nonneg _) (by positivity)
-    _ = W * C * Real.exp (κ / 4) * Real.exp (-(3 * κ / 4) * n) := by
-        rw [show Real.exp (-(3 * κ / 4) * n) = Real.exp (κ / 4 * n) * Real.exp (-κ * n) by
-          rw [← Real.exp_add]
-          ring_nf]
-        ring
 
 /-- After subtracting the two local masses, the real observable of [KRV, Lemma 10.3] extends
 holomorphically to a neighborhood of the entire interval of that lemma. The last conjunct records
@@ -130,9 +56,71 @@ theorem poleSubtractedObservable_holomorphic
                 ‖poleSubtractedCutoff P Xc M γ η (n + 1) z -
                     poleSubtractedCutoff P Xc M γ η n z‖ ≤
                   C * Real.exp (-κ * n) := by
+  have exists_rectangle_cauchy_bound {η δ : ℝ} (hW : TwoPoleWindow γ η δ) (x₀ : Ioo (-2 * η - δ) (1 / γ)) : ∃ ρ h K κ : ℝ, 0 < ρ ∧ 0 < h ∧ 0 ≤ K ∧ 0 < κ ∧ -2 * η - δ < (x₀ : ℝ) - ρ ∧
+        (x₀ : ℝ) + ρ < 1 / γ ∧ ∀ z : ℂ, |z.re - x₀| < ρ → |z.im| < h → ∀ n : ℕ,
+          ‖poleSubtractedCutoff P Xc M γ η (n + 1) z -
+              poleSubtractedCutoff P Xc M γ η n z‖ ≤ K * Real.exp (-κ * n) := by
+    obtain ⟨x, hx1, hx2⟩ := x₀
+    set ρ : ℝ := min (x - (-2 * η - δ)) (1 / γ - x) / 2 with hρ
+    have hρ0 : 0 < ρ := by positivity
+    have hlo : -2 * η - δ < x - ρ := by
+      have : ρ ≤ (x - (-2 * η - δ)) / 2 := by
+        rw [hρ]
+        exact div_le_div_of_nonneg_right (min_le_left _ _) (by norm_num)
+      linarith
+    have hhi : x + ρ < 1 / γ := by
+      have : ρ ≤ (1 / γ - x) / 2 := by
+        rw [hρ]
+        exact div_le_div_of_nonneg_right (min_le_right _ _) (by norm_num)
+      linarith
+    obtain ⟨C, κ, hC, hκ, hb⟩ :=
+      exists_cutoff_cauchy_bound P X hX γ hγ hγ2 M hM Xc hXc hW hlo hhi
+    set h : ℝ := min 1 (κ / 2) with hh
+    set W : ℝ := 1 + (|x| + ρ + 1) / γ with hWdef
+    refine ⟨ρ, h, W * C * Real.exp (κ / 4), 3 * κ / 4, hρ0, lt_min one_pos (by linarith),
+      by positivity, by linarith, hlo, hhi, fun z hzre hzim n => ?_⟩
+    have hz : z.re ∈ Icc (x - ρ) (x + ρ) := by
+      rw [abs_lt] at hzre
+      constructor <;> linarith
+    refine (hb z hz n).trans ?_
+    have him1 := hzim.le.trans (min_le_left _ _)
+    have himsq : z.im ^ 2 ≤ κ / 2 := by
+      rw [← sq_abs]
+      exact ((sq _).trans_le (mul_le_mul him1 (hzim.le.trans (min_le_right _ _)) (abs_nonneg _) zero_le_one)).trans_eq (one_mul _)
+    have hexp : Real.exp (((n + 1 : ℕ) : ℝ) * z.im ^ 2 / 2) ≤
+        Real.exp (κ / 4) * Real.exp (κ / 4 * n) := by
+      rw [← Real.exp_add]
+      apply Real.exp_le_exp.2
+      have hn : (0 : ℝ) ≤ (n + 1 : ℕ) := Nat.cast_nonneg _
+      have := mul_le_mul_of_nonneg_left himsq hn
+      push_cast at this ⊢
+      nlinarith
+    have hnorm : ‖1 - z / γ‖ ≤ W := by
+      have : ‖z‖ ≤ |x| + ρ + 1 := by
+        have : |z.re| ≤ |x| + ρ := by
+          have := abs_sub_abs_le_abs_sub z.re x
+          rw [abs_lt] at hzre
+          rw [abs_le]
+          constructor <;> cases abs_cases x <;> cases abs_cases z.re <;> linarith
+        linarith [Complex.norm_le_abs_re_add_abs_im z]
+      calc ‖1 - z / γ‖ ≤ ‖(1 : ℂ)‖ + ‖z / γ‖ := norm_sub_le _ _
+        _ = 1 + ‖z‖ / γ := by
+            rw [norm_one, norm_div, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hγ]
+        _ ≤ W := by
+            rw [hWdef]
+            gcongr
+    calc Real.exp (((n + 1 : ℕ) : ℝ) * z.im ^ 2 / 2) * ‖1 - z / γ‖ * (C * Real.exp (-κ * n))
+        ≤ (Real.exp (κ / 4) * Real.exp (κ / 4 * n)) * W * (C * Real.exp (-κ * n)) := by
+          apply mul_le_mul_of_nonneg_right _ (by positivity)
+          exact mul_le_mul hexp hnorm (norm_nonneg _) (by positivity)
+      _ = W * C * Real.exp (κ / 4) * Real.exp (-(3 * κ / 4) * n) := by
+          rw [show Real.exp (-(3 * κ / 4) * n) = Real.exp (κ / 4 * n) * Real.exp (-κ * n) by
+            rw [← Real.exp_add]
+            ring_nf]
+          ring
   set F : ℕ → ℂ → ℂ := poleSubtractedCutoff P Xc M γ η with hFdef
   have hrect := fun x₀ : Ioo (-2 * η - δ) (1 / γ) =>
-    exists_rectangle_cauchy_bound P X hX γ hγ hγ2 M hM Xc hXc hWindow x₀
+    exists_rectangle_cauchy_bound hWindow x₀
   choose ρ hgt Kb κ hρ hhgt hKb hκ hlo _ hbound using hrect
   set R : Ioo (-2 * η - δ) (1 / γ) → Set ℂ :=
     fun x₀ => {z : ℂ | |z.re - x₀| < ρ x₀ ∧ |z.im| < hgt x₀} with hRdef
@@ -141,7 +129,7 @@ theorem poleSubtractedObservable_holomorphic
       continuous_const).inter (isOpen_lt (continuous_abs.comp Complex.continuous_im)
         continuous_const)
   set V : Set ℂ := ⋃ x₀, R x₀ with hVdef
-  have hVopen : IsOpen V := isOpen_iUnion hRopen
+  have hVopen := isOpen_iUnion hRopen
   have hVH : V ⊆ cutoffHalfPlane η δ := by
     intro z hz
     obtain ⟨x₀, hz⟩ := mem_iUnion.1 hz
@@ -198,24 +186,22 @@ theorem poleSubtractedObservable_holomorphic
       (hlim x (mem_iUnion.2 ⟨⟨x, hx⟩, hmemR x hx⟩))
   · intro Kc hKc hKV
     obtain ⟨t, ht⟩ := hKc.elim_finite_subcover R hRopen hKV
-    have hsum : 0 ≤ ∑ i ∈ t, 1 / κ i :=
+    have : 0 ≤ ∑ i ∈ t, 1 / κ i :=
       Finset.sum_nonneg fun i _ => (one_div_pos.2 (hκ i)).le
     refine ⟨∑ i ∈ t, Kb i, 1 / (1 + ∑ i ∈ t, 1 / κ i),
       Finset.sum_nonneg fun i _ => hKb i, one_div_pos.2 (by linarith), fun n z hz => ?_⟩
     obtain ⟨i, hi, hzi⟩ := mem_iUnion₂.1 (ht hz)
-    have hκmin : 1 / (1 + ∑ j ∈ t, 1 / κ j) ≤ κ i := by
-      have h1 : 1 / κ i ≤ ∑ j ∈ t, 1 / κ j :=
+    have : 1 / (1 + ∑ j ∈ t, 1 / κ j) ≤ κ i := by
+      have :=
         Finset.single_le_sum (fun j _ => (one_div_pos.2 (hκ j)).le) hi
       rw [div_le_iff₀ (by linarith)]
-      have h2 : κ i * (1 / κ i) = 1 := mul_one_div_cancel (hκ i).ne'
+      have := mul_one_div_cancel (hκ i).ne'
       nlinarith [hκ i]
-    calc ‖F (n + 1) z - F n z‖ ≤ Kb i * Real.exp (-κ i * n) := hbound i z hzi.1 hzi.2 n
-      _ ≤ (∑ j ∈ t, Kb j) * Real.exp (-(1 / (1 + ∑ j ∈ t, 1 / κ j)) * n) := by
-        apply mul_le_mul (Finset.single_le_sum (fun j _ => hKb j) hi) _ (Real.exp_pos _).le
-          (Finset.sum_nonneg fun j _ => hKb j)
-        apply Real.exp_le_exp.2
-        have hn : (0 : ℝ) ≤ n := Nat.cast_nonneg n
-        nlinarith
+    refine (hbound i z hzi.1 hzi.2 n).trans (?_)
+    apply mul_le_mul (Finset.single_le_sum (fun j _ => hKb j) hi) _ (Real.exp_pos _).le
+      (Finset.sum_nonneg fun j _ => hKb j)
+    apply Real.exp_le_exp.2
+    nlinarith
 
 end DOZZ.Proofs
 

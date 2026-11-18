@@ -42,13 +42,13 @@ theorem reflected_source_pareto_cut_increment_error
       |(∫ v, E v ∂P.prod P)-(a*Real.Gamma (-a)*Real.Gamma (p+a)/Real.Gamma p)*
         L*(∫⁻ ω, twoSidedReflectionCutMass γ H B Z ω ^a ∂P).toReal| ≤
       (a*p/(1-a))*F*(∫⁻ ω, twoSidedReflectionCutMass γ H B Z ω ∂P).toReal := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _ := hX.1
   let ν := Q γ-α₁
   let a := 2*ν/γ
   let A := fun ω => (gammaHalfOuterMass γ α₁ α₂ α₃ (M ω) z ξ).toReal
   let b := reflected_radial_scale γ ν h Xc z
   let S := fun ω => (twoSidedReflectionCutMass γ H B Z ω).toReal
-  have hν : 0 < ν := sub_pos.mpr hα₁
+  have hν := sub_pos.mpr hα₁
   have ha : 0 < a := div_pos (mul_pos (by norm_num) hν) hγ
   have ha1 : a < 1 := by
     dsimp only [a]
@@ -60,18 +60,16 @@ theorem reflected_source_pareto_cut_increment_error
   have hS1 := reflected_reflection_cut_real_moment P γ α₁ H 1 B Z hα₁ hData zero_le_one h4
   have hSa := reflected_reflection_cut_real_moment P γ α₁ H a B Z hα₁ hData ha.le (ha1.trans h4)
   have hSp : ∀ᵐ ω ∂P, 0 ≤ S ω := ae_of_all P fun _ => ENNReal.toReal_nonneg
-  have hSm : AEMeasurable S P :=
+  have hSm :=
     (twoSidedReflectionCutMass_aemeasurable P γ H B Z
       (conditionedPair_aemeasurable P B ν hData.1)
       hData.2.1.2.2.2.1 hData.2.1.2.2.2.2.1).ennreal_toReal
-  have hAm : AEMeasurable A P :=
+  have hAm :=
     ((reflected_outerMass_measure_measurable γ α₁ α₂ α₃ ξ z).comp_aemeasurable
       (equatorGFF_GMC_aemeasurable P X hX γ hγ hγ₂ M hM)).ennreal_toReal
-  have hcoord : AEMeasurable (fun ω => Xc ω 0 (-Real.log ‖z‖+h)) P :=
-    (hc.2.1 0 (-Real.log ‖z‖+h)).aemeasurable
   have hbm : AEMeasurable b P := by
     dsimp only [b,reflected_radial_scale]
-    exact ((hcoord.const_mul γ).sub aemeasurable_const).sub aemeasurable_const |>.exp
+    exact ((((hc.2.1 0 (-Real.log ‖z‖+h)).aemeasurable).const_mul γ).sub aemeasurable_const).sub aemeasurable_const |>.exp
   have hbp (ω : Ω) : 0 < b ω := by
     dsimp only [b,reflected_radial_scale]
     exact Real.exp_pos _

@@ -21,6 +21,9 @@ open MeasureTheory ProbabilityTheory Set Filter Topology
 open scoped NNReal ENNReal
 namespace DOZZ.Proofs
 
+variable {μ η : Measure StoppedBrownianPath}
+
+
 /-- Positive-coordinate observations of a stopped path, with the real lifetime mark. -/
 def stoppedPreterminalObservation (n : ℕ) (ss : Fin (n+1) → ℝ≥0)
     (z : StoppedBrownianPath) : (Fin (n+1) → ℝ) × ℝ :=
@@ -44,7 +47,7 @@ def stoppedPathCylinder (U : Set ℝ) (I : Finset ℝ≥0) (S : ℝ≥0 → Set 
 
 /-- Positive lifetimes and the preterminal marked laws determine the whole lifetime marginal. -/
 theorem SameStoppedPreterminalLaws.lifetime_event_eq
-    {μ η : Measure StoppedBrownianPath} [IsFiniteMeasure μ] [IsFiniteMeasure η]
+ [IsFiniteMeasure μ] [IsFiniteMeasure η]
     (h : SameStoppedPreterminalLaws μ η)
     (hμpos : ∀ᵐ z ∂μ, 0 < z.1) (hηpos : ∀ᵐ z ∂η, 0 < z.1)
     (U : Set ℝ) (hU : MeasurableSet U) :
@@ -94,15 +97,14 @@ theorem SameStoppedPreterminalLaws.lifetime_event_eq
 /-- A positive-time cylinder retained before its largest observation is determined by the
 corresponding marked observation law. -/
 theorem SameStoppedPreterminalLaws.preterminal_cylinder_eq
-    {μ η : Measure StoppedBrownianPath} (h : SameStoppedPreterminalLaws μ η)
+ (h : SameStoppedPreterminalLaws μ η)
     (U : Set ℝ) (hU : MeasurableSet U) (I : Finset ℝ≥0) (hI : I.Nonempty)
     (hpos : ∀ t ∈ I, 0 < t) (S : ℝ≥0 → Set ℝ) (hS : ∀ t, MeasurableSet (S t)) :
     μ (stoppedPathCylinder U I S ∩ {z | I.max' hI < z.1}) =
       η (stoppedPathCylinder U I S ∩ {z | I.max' hI < z.1}) := by
   classical
-  obtain ⟨n, hn⟩ : ∃ n, I.card = n+1 := by
-    exact ⟨I.card-1, by have := Finset.card_pos.mpr hI; omega⟩
-  let e : Fin (n+1) ≃o I := I.orderIsoOfFin hn
+  obtain ⟨n, hn⟩ : ∃ n, I.card = n+1 := ⟨I.card-1, by have := Finset.card_pos.mpr hI; omega⟩
+  let e := I.orderIsoOfFin hn
   let ss : Fin (n+1) → ℝ≥0 := fun i => (e i).val
   have hlast : ss (Fin.last n) = I.max' hI := by
     apply le_antisymm
@@ -155,7 +157,7 @@ theorem measurableSet_stoppedPathCylinder (U : Set ℝ) (hU : MeasurableSet U)
 /-- The preterminal laws, positive lifetimes, and the fixed terminal value determine all
 finite cylinders at positive observation times, including observations after the lifetime. -/
 theorem SameStoppedPreterminalLaws.positive_cylinder_eq
-    {μ η : Measure StoppedBrownianPath} [IsFiniteMeasure μ] [IsFiniteMeasure η]
+ [IsFiniteMeasure μ] [IsFiniteMeasure η]
     (h : SameStoppedPreterminalLaws μ η)
     (hμpos : ∀ᵐ z ∂μ, 0 < z.1) (hηpos : ∀ᵐ z ∂η, 0 < z.1)
     (c : ℝ) (hμend : ∀ᵐ z ∂μ, ∀ t, z.1 ≤ t → -(z.2 t) = c)
@@ -169,8 +171,8 @@ theorem SameStoppedPreterminalLaws.positive_cylinder_eq
     by_cases hI : I.Nonempty
     · let t := I.max' hI
       let J := I.erase t
-      have htI : t ∈ I := Finset.max'_mem I hI
-      have hJ : J ⊂ I := Finset.erase_ssubset htI
+      have htI := Finset.max'_mem I hI
+      have hJ := Finset.erase_ssubset htI
       have hJpos : ∀ r ∈ J, 0 < r := fun r hr => hpos r (Finset.mem_of_mem_erase hr)
       let E := stoppedPathCylinder U I S
       let F := {z : StoppedBrownianPath | z.1 ≤ t}
@@ -181,11 +183,7 @@ theorem SameStoppedPreterminalLaws.positive_cylinder_eq
         simp only [mem_union, mem_inter_iff, F, mem_ofPred_eq]
         exact ⟨fun hz => (lt_or_ge t z.1).elim (fun ht => Or.inl ⟨hz, ht⟩)
           (fun ht => Or.inr ⟨hz, ht⟩), fun hz => hz.elim And.left And.left⟩
-      have hdisj : Disjoint (E ∩ {z : StoppedBrownianPath | t < z.1}) (E ∩ F) := by
-        apply Set.disjoint_left.mpr
-        intro z hz hz'
-        exact (not_lt_of_ge hz'.2) hz.2
-      have hpre := h.preterminal_cylinder_eq U hU I hI hpos S hS
+      have hdisj : Disjoint (E ∩ {z : StoppedBrownianPath | t < z.1}) (E ∩ F) := by grind
       have hpost : μ (E ∩ F) = η (E ∩ F) := by
         by_cases hc : c ∈ S t
         · have hevent (M : Measure StoppedBrownianPath)
@@ -218,7 +216,7 @@ theorem SameStoppedPreterminalLaws.positive_cylinder_eq
           rw [hzero μ hμend, hzero η hηend]
       change μ E = η E
       rw [hsplit, measure_union hdisj (hE.inter hF), measure_union hdisj (hE.inter hF),
-        hpre, hpost]
+        (h.preterminal_cylinder_eq U hU I hI hpos S hS), hpost]
     · have hIempty : I = ∅ := Finset.not_nonempty_iff_eq_empty.mp hI
       subst I
       simpa [stoppedPathCylinder] using h.lifetime_event_eq hμpos hηpos U hU

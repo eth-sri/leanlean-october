@@ -22,8 +22,6 @@ theorem fusionInterpolatedTimeIntegral_tendsto {Ω : Type*} [MeasurableSpace Ω]
         ((∫⁻ ω, fusionMovingMass γ α₁ α₂ α₃ 1 0 (M ω) ^ s ∂P).toReal : ℂ))) := by
   obtain ⟨B, hB, hb⟩ := fusionInterpolatedFactor_uniform_bound P X hX γ hγ hγ2 M hM α₁ α₂ α₃ s hs.le
   let D := (∫ y : ℂ, ‖K y‖) * B
-  have hD : 0 ≤ D := mul_nonneg (integral_nonneg fun _ => norm_nonneg _) hB
-  have hm := fusionInterpolatedFactor_measurable P X hX γ hγ hγ2 M hM α₁ α₂ α₃ s
   have hmeas : ∀ᶠ z : ℂ in nhds 0, AEStronglyMeasurable
       (fun t : ℝ => ∫ y : ℂ, K y * (fusionInterpolatedFactor P M γ α₁ α₂ α₃ s t y z : ℂ))
       (volume.restrict (Icc 0 1)) := by
@@ -33,11 +31,8 @@ theorem fusionInterpolatedTimeIntegral_tendsto {Ω : Type*} [MeasurableSpace Ω]
       measurable_fst.prodMk (measurable_snd.prodMk measurable_const)
     have hfactor : Measurable (fun q : ℝ × ℂ =>
         (fusionInterpolatedFactor P M γ α₁ α₂ α₃ s q.1 q.2 z : ℂ)) := by
-      simpa only [Function.comp_def] using Complex.measurable_ofReal.comp (hm.comp hp)
-    have hf : Measurable (fun q : ℝ × ℂ => K q.2 *
-        (fusionInterpolatedFactor P M γ α₁ α₂ α₃ s q.1 q.2 z : ℂ)) :=
-      (hKm.comp measurable_snd).mul hfactor
-    exact hf.stronglyMeasurable.integral_prod_right'.aestronglyMeasurable
+      simpa only [Function.comp_def] using Complex.measurable_ofReal.comp ((fusionInterpolatedFactor_measurable P X hX γ hγ hγ2 M hM α₁ α₂ α₃ s).comp hp)
+    exact ((hKm.comp measurable_snd).mul hfactor).stronglyMeasurable.integral_prod_right'.aestronglyMeasurable
   have hdom : ∀ᶠ z : ℂ in nhds 0, ∀ᵐ t : ℝ ∂volume.restrict (Icc 0 1),
       ‖∫ y : ℂ, K y * (fusionInterpolatedFactor P M γ α₁ α₂ α₃ s t y z : ℂ)‖ ≤ D := by
     have hz : ∀ᶠ z : ℂ in nhds 0, ‖z‖ ≤ 1 :=

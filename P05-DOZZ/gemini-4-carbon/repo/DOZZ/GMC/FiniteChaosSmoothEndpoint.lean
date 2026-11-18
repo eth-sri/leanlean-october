@@ -33,23 +33,21 @@ theorem kahane_finite_smooth_convex
     (∫ ω, F (DOZZ.finiteChaosMass PX X a γ ω) ∂PX) ≤
       ∫ ω, F (DOZZ.finiteChaosMass PY Y a γ ω) ∂PY := by
   classical
-  let : IsProbabilityMeasure PX := hX.1
-  let : IsProbabilityMeasure PY := hY.1
+  let := hX.1
+  let := hY.1
   let μ := PX.prod PY
   let vX : ι → ℝ := fun i => DOZZ.gaussianVariance PX (fun ω => X ω i)
   let vY : ι → ℝ := fun i => DOZZ.gaussianVariance PY (fun ω => Y ω i)
-  let M : ℝ → ΩX × ΩY → ℝ := kahaneInterpolatedMass X Y vX vY a γ
+  let M := kahaneInterpolatedMass X Y vX vY a γ
   let T : ℝ → ΩX × ΩY → ℝ := fun t ω => F (M t ω)
-  let D : ℝ → ΩX × ΩY → ℝ := kahaneInterpolatedTestDerivative X Y vX vY a γ F'
+  let D := kahaneInterpolatedTestDerivative X Y vX vY a γ F'
   let φ : ℝ → ℝ := fun t => ∫ ω, T t ω ∂μ
-  have hFcont : Continuous F := continuous_iff_continuousAt.mpr fun x => (hF x).continuousAt
-  have hF'cont : Continuous F' := continuous_iff_continuousAt.mpr fun x => (hF' x).continuousAt
-  have hB₁nonneg : 0 ≤ B₁ := (norm_nonneg (F' 0)).trans (hB₁ 0)
-  have hvX (i : ι) : 0 ≤ vX i := by
-    exact integral_nonneg fun ω => mul_self_nonneg (X ω i)
-  have hvY (i : ι) : 0 ≤ vY i := by
-    exact integral_nonneg fun ω => mul_self_nonneg (Y ω i)
-  have hV : AEMeasurable (fun ω : ΩX × ΩY => (X ω.1, Y ω.2)) μ :=
+  have hFcont := continuous_iff_continuousAt.mpr fun x => (hF x).continuousAt
+  have hF'cont := continuous_iff_continuousAt.mpr fun x => (hF' x).continuousAt
+  have hB₁nonneg := (norm_nonneg (F' 0)).trans (hB₁ 0)
+  have hvX (i : ι) : 0 ≤ vX i := integral_nonneg fun ω => mul_self_nonneg (X ω i)
+  have hvY (i : ι) : 0 ≤ vY i := integral_nonneg fun ω => mul_self_nonneg (Y ω i)
+  have hV :=
     (aemeasurable_pi_iff.mpr hX.2.1).comp_fst.prodMk
       (aemeasurable_pi_iff.mpr hY.2.1).comp_snd
   have hM (s : ℝ) : AEMeasurable (M s) μ := by
@@ -58,7 +56,7 @@ theorem kahane_finite_smooth_convex
           γ ^ 2 / 2 * (s * vX i + (1 - s) * vY i))) := by fun_prop
     change AEMeasurable (fun ω => M s ω) μ
     simpa only [Function.comp_def, M, kahaneInterpolatedMass] using h.comp_aemeasurable hV
-  have hT (s : ℝ) : AEStronglyMeasurable (T s) μ :=
+  have hT (s : ℝ) :=
     (hFcont.measurable.comp_aemeasurable (hM s)).aestronglyMeasurable
   have hD (s : ℝ) : AEStronglyMeasurable (D s) μ := by
     have h : Measurable (fun z : (ι → ℝ) × (ι → ℝ) =>
@@ -90,7 +88,7 @@ theorem kahane_finite_smooth_convex
         apply add_le_add le_rfl
         simpa only [mul_assoc] using mul_le_mul_of_nonneg_left
           (kahaneInterpolatedMass_norm_le_absExp X Y vX vY a hvX hvY ha γ s hs ω) hB₁nonneg
-  have hInt (s : ℝ) (hs : s ∈ Icc (0 : ℝ) 1) : Integrable (T s) μ :=
+  have hInt (s : ℝ) (hs : s ∈ Icc (0 : ℝ) 1) :=
     hb.mono' (hT s) (ae_of_all _ (hbound s hs))
   have hcont : ContinuousOn φ (Icc (0 : ℝ) 1) := by
     apply continuousOn_of_dominated (fun s _ => hT s) (fun s hs => ae_of_all _ (hbound s hs)) hb
@@ -101,12 +99,11 @@ theorem kahane_finite_smooth_convex
     exact (hFcont.comp hMass).continuousOn
   have hderiv (t : ℝ) (ht : t ∈ Ioo (0 : ℝ) 1) :
       HasDerivAt φ (∫ ω, D t ω ∂μ) t ∧ (∫ ω, D t ω ∂μ) ≤ 0 := by
-    let ε : ℝ := min t (1 - t) / 4
-    have htpos : 0 < t := ht.1
-    have htpos' : 0 < 1 - t := by linarith [ht.2]
-    have hε : 0 < ε := by dsimp [ε]; positivity
-    have hεt : 4 * ε ≤ t := by dsimp [ε]; linarith [min_le_left t (1 - t)]
-    have hεt' : 4 * ε ≤ 1 - t := by dsimp [ε]; linarith [min_le_right t (1 - t)]
+    let ε := min t (1 - t) / 4
+    have := ht.1
+    have hε : 0 < ε := by grind
+    have : 4 * ε ≤ t := by grind
+    have : 4 * ε ≤ 1 - t := by grind
     let db : ΩX × ΩY → ℝ := fun ω => B₁ * (∑ i, a i) *
       Real.exp (|γ| * ∑ i, (|X ω.1 i| + |Y ω.2 i|)) *
         (|γ| / (2 * Real.sqrt ε) * (∑ i, (|X ω.1 i| + |Y ω.2 i|)) +

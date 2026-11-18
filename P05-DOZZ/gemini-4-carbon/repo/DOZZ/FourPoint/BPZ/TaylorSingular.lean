@@ -28,23 +28,7 @@ namespace DOZZ.Proofs
 
 /-! ### The Taylor formula -/
 
-/-- The weighted second derivative `u ↦ (t - u) * g'' u` is interval integrable on `[0, t]` when
-`g''` is integrable on `(0, t]`: the weight `t - u` is continuous, hence bounded on `[0, t]`. -/
-theorem bpzTS_intervalIntegrable_mul {g'' : ℝ → ℝ} {t : ℝ} (ht : 0 < t)
-    (hint : IntegrableOn g'' (Ioc 0 t)) :
-    IntervalIntegrable (fun u => (t - u) * g'' u) volume 0 t := by
-  rw [intervalIntegrable_iff_integrableOn_Ioc_of_le ht.le]
-  exact hint.continuousOn_mul_of_subset (g := fun u : ℝ => t - u) (K := Icc 0 t)
-    (by fun_prop) isCompact_Icc measurableSet_Ioc Ioc_subset_Icc_self
 
-/-- The Taylor primitive `u ↦ g u + (t - u) * g' u` has derivative `(t - u) * g'' u`. -/
-theorem bpzTS_hasDerivAt_primitive {g g' g'' : ℝ → ℝ} {t u : ℝ}
-    (hg : HasDerivAt g (g' u) u) (hg' : HasDerivAt g' (g'' u) u) :
-    HasDerivAt (fun v => g v + (t - v) * g' v) ((t - u) * g'' u) u := by
-  have h1 : HasDerivAt (fun v : ℝ => t - v) (-1) u := by
-    simpa using (hasDerivAt_id u).const_sub t
-  convert hg.add (h1.mul hg') using 1
-  ring
 
 /-- Second-order Taylor formula on `[0, t]` for a function that is `C²` only on `(0, t]`, with
 one-sided limits of the function and its derivative at `0` and an integrable second derivative. -/
@@ -54,6 +38,15 @@ theorem bpz_taylor_singular {g g' g'' : ℝ → ℝ} {t g₀ d₀ : ℝ} (ht : 0
     (hg0 : Tendsto g (𝓝[>] 0) (𝓝 g₀)) (hg'0 : Tendsto g' (𝓝[>] 0) (𝓝 d₀))
     (hint : IntegrableOn g'' (Ioc 0 t)) :
     g t = g₀ + d₀ * t + ∫ u in (0 : ℝ)..t, (t - u) * g'' u := by
+  have bpzTS_hasDerivAt_primitive {u : ℝ} (hg : HasDerivAt g (g' u) u) (hg' : HasDerivAt g' (g'' u) u) : HasDerivAt (fun v => g v + (t - v) * g' v) ((t - u) * g'' u) u := by
+    have h1 : HasDerivAt (fun v : ℝ => t - v) (-1) u := by
+      simpa using (hasDerivAt_id u).const_sub t
+    convert hg.add (h1.mul hg') using 1
+    ring
+  have bpzTS_intervalIntegrable_mul : IntervalIntegrable (fun u => (t - u) * g'' u) volume 0 t := by
+    rw [intervalIntegrable_iff_integrableOn_Ioc_of_le ht.le]
+    exact hint.continuousOn_mul_of_subset (g := fun u : ℝ => t - u) (K := Icc 0 t)
+      (by fun_prop) isCompact_Icc measurableSet_Ioc Ioc_subset_Icc_self
   have htmem : t ∈ Ioc (0 : ℝ) t := ⟨ht, le_rfl⟩
   -- the primitive `u ↦ g u + (t - u) * g' u` tends to `g₀ + t * d₀` at `0⁺`
   have hlim0 : Tendsto (fun u => g u + (t - u) * g' u) (𝓝[>] 0) (𝓝 (g₀ + (t - 0) * d₀)) := by
@@ -62,14 +55,14 @@ theorem bpz_taylor_singular {g g' g'' : ℝ → ℝ} {t g₀ d₀ : ℝ} (ht : 0
     exact hg0.add (hw.mul hg'0)
   -- and to `g t` at `t⁻`, by continuity of `g` and `g'` at `t`
   have hlimt : Tendsto (fun u => g u + (t - u) * g' u) (𝓝[<] t) (𝓝 (g t)) := by
-    have hgc := (hg t htmem).continuousAt
-    have hg'c := (hg' t htmem).continuousAt
+    have := (hg t htmem).continuousAt
+    have := (hg' t htmem).continuousAt
     have hcont : ContinuousAt (fun u => g u + (t - u) * g' u) t := by fun_prop
     simpa using hcont.tendsto.mono_left nhdsWithin_le_nhds
   have hftc := intervalIntegral.integral_eq_sub_of_hasDerivAt_of_tendsto ht
     (fun u hu => bpzTS_hasDerivAt_primitive (hg u (Ioo_subset_Ioc_self hu))
       (hg' u (Ioo_subset_Ioc_self hu)))
-    (bpzTS_intervalIntegrable_mul ht hint) hlim0 hlimt
+    (bpzTS_intervalIntegrable_mul) hlim0 hlimt
   rw [hftc]
   ring
 

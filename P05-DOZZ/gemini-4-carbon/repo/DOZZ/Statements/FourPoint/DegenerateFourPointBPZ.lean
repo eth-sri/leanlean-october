@@ -31,6 +31,6 @@ theorem degenerateFourPoint_BPZ {Ω : Type*} [MeasurableSpace Ω]
       (gaussParameterA γ χ α₁ α₂ α₃)
       (gaussParameterB γ χ α₁ α₂ α₃)
       (gaussParameterC γ χ α₁)
-      (fun z => fourPointT P M γ μ (-χ) α₁ α₂ α₃ z) := by exact DOZZ.Proofs.degenerateFourPoint_BPZ P X M γ μ χ α₁ α₂ α₃ hγ hγ₂ hμ hχ hα₁ hα₂ hα₃ hs hX hM
+      (fun z => fourPointT P M γ μ (-χ) α₁ α₂ α₃ z) := DOZZ.Proofs.degenerateFourPoint_BPZ P X M γ μ χ α₁ α₂ α₃ hγ hγ₂ hμ hχ hα₁ hα₂ hα₃ hs hX hM
 
 end DOZZ

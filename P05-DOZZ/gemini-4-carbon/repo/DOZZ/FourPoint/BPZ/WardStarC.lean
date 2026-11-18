@@ -114,77 +114,6 @@ theorem bpzWard_Psi_bounds (hd : BPZWardData γ q r δ ρ kt k₂ φ D)
       _ = q * L * ∫ ω, G ω ∂P := integral_const_mul _ _
       _ ≤ (1 + q * L) * ∫ ω, G ω ∂P := mul_le_mul_of_nonneg_right (by linarith) hG0
 
-/-- Integration by parts against the rooted moment. -/
-theorem bpzWard_ibp (hd : BPZWardData γ q r δ ρ kt k₂ φ D)
-    (hp : BPZWardProb P X γ M Xc ρ k₂ D) (v : ℂ) :
-    ∫ x, fderiv ℝ (fun x => φ x * kt x) x v *
-        ∫ ω, bpzRootedMixedReal γ r ρ (bpzWardCutWeight γ q r kt) k₂ x
-          (regularizedGMC P Xc γ r ω) (M ω) ^ (-q) ∂P =
-      q * ∫ x, φ x * kt x *
-        ∫ ω, bpzRootedMixedReal γ r ρ (bpzWardCutWeight γ q r kt) k₂ x
-            (regularizedGMC P Xc γ r ω) (M ω) ^ (-q - 1) *
-          bpzRootedMixedDerivApply γ r ρ (bpzWardCutWeight γ q r kt) k₂ x v
-            (regularizedGMC P Xc γ r ω) (M ω) ∂P := by
-  have : IsProbabilityMeasure P := hp.hX.1
-  set k₁ := bpzWardCutWeight γ q r kt with hk₁def
-  have hk₁m : Measurable k₁ := measurable_bpzWardCutWeight hd
-  set f : ℂ → ℝ := fun x => φ x * kt x with hf
-  set Ψ : ℂ → ℝ := fun x => ∫ ω, bpzRootedMixedReal γ r ρ k₁ k₂ x
-    (regularizedGMC P Xc γ r ω) (M ω) ^ (-q) ∂P with hΨ
-  set E : ℂ → ℝ := fun x => ∫ ω, bpzRootedMixedReal γ r ρ k₁ k₂ x
-    (regularizedGMC P Xc γ r ω) (M ω) ^ (-q - 1) *
-      bpzRootedMixedDerivApply γ r ρ k₁ k₂ x v (regularizedGMC P Xc γ r ω) (M ω) ∂P with hE
-  set Ψ' : ℂ → ℝ := fun x => ∫ ω, -q * bpzRootedMixedReal γ r ρ k₁ k₂ x
-    (regularizedGMC P Xc γ r ω) (M ω) ^ (-q - 1) *
-      bpzRootedMixedDerivApply γ r ρ k₁ k₂ x v (regularizedGMC P Xc γ r ω) (M ω) ∂P with hΨ'
-  have hΨ'E : ∀ x, Ψ' x = -q * E x := by
-    intro x
-    simp only [hΨ', hE]
-    rw [← integral_const_mul]
-    congr 1
-    funext ω
-    ring
-  have hJm := measurable_bpzWard_J (γ := γ) (r := r) P X hp.hX M hp.hMm hp.hM.1 Xc hp.hXc
-    hd.ρ_meas hk₁m hd.k₂_meas
-  have hSm := measurable_bpzWard_S (γ := γ) (r := r) P X hp.hX M hp.hMm hp.hM.1 Xc hp.hXc
-    hd.ρ_meas hk₁m hd.k₂_meas v
-  have hΨm : AEStronglyMeasurable Ψ volume :=
-    ((hJm.pow_const (-q)).stronglyMeasurable.integral_prod_left' (μ := P)).aestronglyMeasurable
-  have hΨ'm : AEStronglyMeasurable Ψ' volume :=
-    (((measurable_const.mul (hJm.pow_const (-q - 1))).mul hSm).stronglyMeasurable.integral_prod_left'
-      (μ := P)).aestronglyMeasurable
-  obtain ⟨K, hK⟩ := bpzWard_Psi_bounds hd hp v
-  have hfc : Continuous f := hd.f_C1.continuous
-  have hfcs : HasCompactSupport f := hd.φ_compact.mul_right
-  have hf'c : Continuous fun x => fderiv ℝ f x v :=
-    (hd.f_C1.continuous_fderiv one_ne_zero).clm_apply continuous_const
-  have hf'cs : HasCompactSupport fun x => fderiv ℝ f x v :=
-    (hfcs.fderiv (𝕜 := ℝ)).comp_left (g := fun L : ℂ →L[ℝ] ℝ => L v) (by simp)
-  have htsf : tsupport f ⊆ tsupport φ := tsupport_mul_subset_left
-  have htsf' : tsupport (fun x => fderiv ℝ f x v) ⊆ tsupport φ :=
-    ((tsupport_comp_subset (g := fun L : ℂ →L[ℝ] ℝ => L v) (by simp) (fderiv ℝ f)).trans
-      (tsupport_fderiv_subset ℝ)).trans htsf
-  have hf'g : Integrable (fun x => ContinuousLinearMap.mul ℝ ℝ (fderiv ℝ f x v) (Ψ x)) := by
-    simp only [ContinuousLinearMap.mul_apply']
-    exact bpz_integrable_mul_of_bdd_on_tsupport hf'c hf'cs hΨm fun x hx => (hK x (htsf' hx)).1
-  have hfg' : Integrable (fun x => ContinuousLinearMap.mul ℝ ℝ (f x) (Ψ' x)) := by
-    simp only [ContinuousLinearMap.mul_apply']
-    exact bpz_integrable_mul_of_bdd_on_tsupport hfc hfcs hΨ'm fun x hx => (hK x (htsf hx)).2
-  have hfg : Integrable (fun x => ContinuousLinearMap.mul ℝ ℝ (f x) (Ψ x)) := by
-    simp only [ContinuousLinearMap.mul_apply']
-    exact bpz_integrable_mul_of_bdd_on_tsupport hfc hfcs hΨm fun x hx => (hK x (htsf hx)).1
-  have hfd : ∀ x ∈ tsupport Ψ, HasLineDerivAt ℝ f (fderiv ℝ f x v) x v := fun x _ =>
-    ((hd.f_C1.differentiable one_ne_zero) x).hasFDerivAt.hasLineDerivAt v
-  have hgd : ∀ x ∈ tsupport f, HasLineDerivAt ℝ Ψ (Ψ' x) x v := fun x hx =>
-    bpzWard_hasLineDerivAt_Psi hd hp (htsf hx) v
-  have key := integral_bilinear_hasLineDerivAt_right_eq_neg_left_of_integrable hf'g hfg' hfg
-    hfd hgd
-  simp only [ContinuousLinearMap.mul_apply'] at key
-  have hfE : ∀ x, f x * Ψ' x = -q * (f x * E x) := fun x => by rw [hΨ'E]; ring
-  simp_rw [hfE] at key
-  rw [integral_const_mul] at key
-  change ∫ x, fderiv ℝ f x v * Ψ x = q * ∫ x, f x * E x
-  linarith
 
 /-- **The cutoff Ward identity.** For the mixed mass `Î` (the cutoff chaos with the pinned
 weight `k₁` on `{ρ > 0}` and the limit chaos with the weight `k₂` elsewhere),
@@ -197,7 +126,73 @@ theorem bpzWard_cutoff_identity (hd : BPZWardData γ q r δ ρ kt k₂ φ D)
         (-q - 1) * ∫ x, φ x * bpzWardCutWeight γ q r kt x * bpzMixedDerivReal γ r ρ
           (bpzWardCutWeight γ q r kt) k₂ x v (regularizedGMC P Xc γ r ω) (M ω)
           ∂regularizedGMC P Xc γ r ω ∂P := by
+  have bpzWard_ibp : ∫ x, fderiv ℝ (fun x => φ x * kt x) x v *
+          ∫ ω, bpzRootedMixedReal γ r ρ (bpzWardCutWeight γ q r kt) k₂ x
+            (regularizedGMC P Xc γ r ω) (M ω) ^ (-q) ∂P =
+        q * ∫ x, φ x * kt x *
+          ∫ ω, bpzRootedMixedReal γ r ρ (bpzWardCutWeight γ q r kt) k₂ x
+              (regularizedGMC P Xc γ r ω) (M ω) ^ (-q - 1) *
+            bpzRootedMixedDerivApply γ r ρ (bpzWardCutWeight γ q r kt) k₂ x v
+              (regularizedGMC P Xc γ r ω) (M ω) ∂P := by
+    have := hp.hX.1
+    set k₁ := bpzWardCutWeight γ q r kt with hk₁def
+    have hk₁m := measurable_bpzWardCutWeight hd
+    set f : ℂ → ℝ := fun x => φ x * kt x with hf
+    set Ψ : ℂ → ℝ := fun x => ∫ ω, bpzRootedMixedReal γ r ρ k₁ k₂ x
+      (regularizedGMC P Xc γ r ω) (M ω) ^ (-q) ∂P with hΨ
+    set E : ℂ → ℝ := fun x => ∫ ω, bpzRootedMixedReal γ r ρ k₁ k₂ x
+      (regularizedGMC P Xc γ r ω) (M ω) ^ (-q - 1) *
+        bpzRootedMixedDerivApply γ r ρ k₁ k₂ x v (regularizedGMC P Xc γ r ω) (M ω) ∂P with hE
+    set Ψ' : ℂ → ℝ := fun x => ∫ ω, -q * bpzRootedMixedReal γ r ρ k₁ k₂ x
+      (regularizedGMC P Xc γ r ω) (M ω) ^ (-q - 1) *
+        bpzRootedMixedDerivApply γ r ρ k₁ k₂ x v (regularizedGMC P Xc γ r ω) (M ω) ∂P with hΨ'
+    have hΨ'E : ∀ x, Ψ' x = -q * E x := by
+      intro x
+      simp only [hΨ', hE]
+      rw [← integral_const_mul]
+      congr 1
+      funext ω
+      ring
+    have hJm := measurable_bpzWard_J (γ := γ) (r := r) P X hp.hX M hp.hMm hp.hM.1 Xc hp.hXc
+      hd.ρ_meas hk₁m hd.k₂_meas
+    have hSm := measurable_bpzWard_S (γ := γ) (r := r) P X hp.hX M hp.hMm hp.hM.1 Xc hp.hXc
+      hd.ρ_meas hk₁m hd.k₂_meas v
+    have hΨm : AEStronglyMeasurable Ψ volume :=
+      ((hJm.pow_const (-q)).stronglyMeasurable.integral_prod_left' (μ := P)).aestronglyMeasurable
+    have hΨ'm : AEStronglyMeasurable Ψ' volume :=
+      (((measurable_const.mul (hJm.pow_const (-q - 1))).mul hSm).stronglyMeasurable.integral_prod_left'
+        (μ := P)).aestronglyMeasurable
+    obtain ⟨K, hK⟩ := bpzWard_Psi_bounds hd hp v
+    have hfc : Continuous f := hd.f_C1.continuous
+    have hfcs : HasCompactSupport f := hd.φ_compact.mul_right
+    have hf'c : Continuous fun x => fderiv ℝ f x v :=
+      (hd.f_C1.continuous_fderiv one_ne_zero).clm_apply continuous_const
+    have htsf : tsupport f ⊆ tsupport φ := tsupport_mul_subset_left
+    have htsf' :=
+      ((tsupport_comp_subset (g := fun L : ℂ →L[ℝ] ℝ => L v) (by simp) (fderiv ℝ f)).trans
+        (tsupport_fderiv_subset ℝ)).trans htsf
+    have hf'g : Integrable (fun x => ContinuousLinearMap.mul ℝ ℝ (fderiv ℝ f x v) (Ψ x)) := by
+      simp only [ContinuousLinearMap.mul_apply']
+      exact bpz_integrable_mul_of_bdd_on_tsupport hf'c ((hfcs.fderiv (𝕜 := ℝ)).comp_left (g := fun L : ℂ →L[ℝ] ℝ => L v) (by simp)) hΨm fun x hx => (hK x (htsf' hx)).1
+    have hfg' : Integrable (fun x => ContinuousLinearMap.mul ℝ ℝ (f x) (Ψ' x)) := by
+      simp only [ContinuousLinearMap.mul_apply']
+      exact bpz_integrable_mul_of_bdd_on_tsupport hfc hfcs hΨ'm fun x hx => (hK x (htsf hx)).2
+    have hfg : Integrable (fun x => ContinuousLinearMap.mul ℝ ℝ (f x) (Ψ x)) := by
+      simp only [ContinuousLinearMap.mul_apply']
+      exact bpz_integrable_mul_of_bdd_on_tsupport hfc hfcs hΨm fun x hx => (hK x (htsf hx)).1
+    have hfd : ∀ x ∈ tsupport Ψ, HasLineDerivAt ℝ f (fderiv ℝ f x v) x v := fun x _ =>
+      ((hd.f_C1.differentiable one_ne_zero) x).hasFDerivAt.hasLineDerivAt v
+    have hgd : ∀ x ∈ tsupport f, HasLineDerivAt ℝ Ψ (Ψ' x) x v := fun x hx =>
+      bpzWard_hasLineDerivAt_Psi hd hp (htsf hx) v
+    have key := integral_bilinear_hasLineDerivAt_right_eq_neg_left_of_integrable hf'g hfg' hfg
+      hfd hgd
+    simp only [ContinuousLinearMap.mul_apply'] at key
+    have hfE : ∀ x, f x * Ψ' x = -q * (f x * E x) := fun x => by rw [hΨ'E]; ring
+    simp_rw [hfE] at key
+    rw [integral_const_mul] at key
+    change ∫ x, fderiv ℝ f x v * Ψ x = q * ∫ x, f x * E x
+    linarith
   rw [bpzWard_left_deroot hd hp v, bpzWard_right_deroot hd hp v]
-  exact bpzWard_ibp hd hp v
+  exact bpzWard_ibp
 
 end DOZZ.Proofs

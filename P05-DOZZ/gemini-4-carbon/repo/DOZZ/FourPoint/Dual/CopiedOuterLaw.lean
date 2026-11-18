@@ -30,7 +30,7 @@ theorem dual_copied_radial_weighted_mass_joint_law
         f x*ENNReal.ofReal (reflected_global_reinsertionWeight γ (A ω.1) x) ∂N ω.2)) := by
   let F := fun p : TwoSidedPath × Ω => ∫⁻ x in ({0} : Set ℂ)ᶜ,
     f x*ENNReal.ofReal (reflected_global_reinsertionWeight γ p.1 x) ∂N p.2
-  have hFm : Measurable F := reflected_chart_parameter_mass_measurable
+  have hFm := reflected_chart_parameter_mass_measurable
     ({0} : Set ℂ)ᶜ isClosed_singleton.isOpen_compl N hN hfin _
       ((hf.comp measurable_snd).mul (reflected_global_reinsertionWeight_measurable γ).ennreal_ofReal)
   have hAc : AEMeasurable (fun ω : Ω × Ω => A ω.1) (P.prod P) := hA.comp_fst

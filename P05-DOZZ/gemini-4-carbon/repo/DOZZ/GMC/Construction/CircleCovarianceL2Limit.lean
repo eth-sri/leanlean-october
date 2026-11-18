@@ -19,24 +19,6 @@ open scoped Distributions Topology
 
 namespace DOZZ.Proofs
 
-private theorem gaussianL2Limit_mean_zero
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (L : Ω → ℝ) (hL : IsGaussianL2Limit P X L) :
-    (∫ ω, L ω ∂P) = 0 := by
-  let _ : IsProbabilityMeasure P := hX.1
-  obtain ⟨hLmem, f, hLapprox⟩ := hL
-  have hcomm : ∀ n,
-      eLpNorm (fun ω => X ω (f n) - L ω) 2 P =
-        eLpNorm (fun ω => L ω - X ω (f n)) 2 P := by
-    intro n
-    exact eLpNorm_sub_comm _ _ _ _
-  have happrox : Tendsto
-      (fun n => eLpNorm (fun ω => X ω (f n) - L ω) 2 P) atTop (𝓝 0) := by
-    simpa only [hcomm] using hLapprox
-  exact integral_eq_zero_of_eLpNorm_sub
-    (fun n => equatorGFF_test_memLp X hX (f n)) hLmem
-    (fun n => equatorGFF_test_integral X hX (f n)) happrox
 
 /-- For each fixed circle radius, covariance against any Gaussian `L²` limit is a continuous
 function of the center. -/
@@ -46,10 +28,24 @@ theorem continuous_gaussianCovariance_circle_of_IsGaussianL2Limit
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
     (L : Ω → ℝ) (hL : IsGaussianL2Limit P X L) (r : ℝ) :
     Continuous (fun x => gaussianCovariance P (fun ω => Xc ω x r) L) := by
-  let _ : IsProbabilityMeasure P := hX.1
-  let W : Lp ℝ 2 P := hL.1.toLp L
-  have hmeanL : (∫ ω, L ω ∂P) = 0 := gaussianL2Limit_mean_zero P X hX L hL
-  have hmeanCircle (x : ℂ) : (∫ ω, Xc ω x r ∂P) = 0 :=
+  have gaussianL2Limit_mean_zero : (∫ ω, L ω ∂P) = 0 := by
+    let _ := hX.1
+    obtain ⟨hLmem, f, hLapprox⟩ := hL
+    have hcomm : ∀ n,
+        eLpNorm (fun ω => X ω (f n) - L ω) 2 P =
+          eLpNorm (fun ω => L ω - X ω (f n)) 2 P := by
+      intro n
+      exact eLpNorm_sub_comm _ _ _ _
+    have happrox : Tendsto
+        (fun n => eLpNorm (fun ω => X ω (f n) - L ω) 2 P) atTop (𝓝 0) := by
+      simpa only [hcomm] using hLapprox
+    exact integral_eq_zero_of_eLpNorm_sub
+      (fun n => equatorGFF_test_memLp X hX (f n)) hLmem
+      (fun n => equatorGFF_test_integral X hX (f n)) happrox
+  let _ := hX.1
+  let W := hL.1.toLp L
+  have hmeanL := gaussianL2Limit_mean_zero
+  have hmeanCircle (x : ℂ) :=
     (circleAverage_isGaussianProcess P X Xc hX hXc).2 x r
   have hpair (x : ℂ) :
       gaussianCovariance P (fun ω => Xc ω x r) L =

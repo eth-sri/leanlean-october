@@ -35,14 +35,12 @@ theorem gmc_correlated_exponential_test_limit
   have hcrit : 1 < 4 / γ^2 := (lt_div_iff₀ (by positivity)).mpr (by nlinarith)
   obtain ⟨q, hq1, hqc⟩ := exists_between hcrit
   let p := Real.conjExponent q
-  have hpq : p.HolderConjugate q := (Real.HolderConjugate.conjExponent hq1).symm
-  have hp : 0 < p := hpq.pos
+  have hpq := (Real.HolderConjugate.conjExponent hq1).symm
+  have hp := hpq.pos
   let Lcoef : ℝ → ℝ := fun t => ‖f‖ * ‖c‖ * Real.exp (‖c‖ * (|t|+1))
   let E : Ω → ℝ≥0∞ := fun ω => ENNReal.ofReal (Lcoef (θ ω))
-  have hE : Measurable E :=
-    (((continuous_abs.measurable.comp hθ).add_const 1).const_mul ‖c‖).exp.const_mul (‖f‖ * ‖c‖) |>.ennreal_ofReal
   have hEp : (∫⁻ ω, E ω ^ p ∂P) < ⊤ := by
-    let B : ℝ := ‖f‖ * ‖c‖ * Real.exp ‖c‖
+    let B := ‖f‖ * ‖c‖ * Real.exp ‖c‖
     have hB : 0 ≤ B := by dsimp [B]; positivity
     have heq (ω : Ω) : E ω ^ p = ENNReal.ofReal B ^ p *
         ENNReal.ofReal (Real.exp ((p*‖c‖)*|θ ω|)) := by
@@ -70,18 +68,14 @@ theorem gmc_correlated_exponential_test_limit
     (exponential_parameter_test_support f c t).trans
       (hRs.trans (Metric.closedBall_subset_closedBall (le_max_left _ _)))
   obtain ⟨C, hC, hcut, hlim⟩ := regularized_mass_envelope_uniform
-    P X hX Xc hc γ R' hγ hγ2 hR' M hM E hE.aemeasurable p q hpq hqc hEp
+    P X hX Xc hc γ R' hγ hγ2 hR' M hM E ((((continuous_abs.measurable.comp hθ).add_const 1).const_mul ‖c‖).exp.const_mul (‖f‖ * ‖c‖) |>.ennreal_ofReal).aemeasurable p q hpq hqc hEp
   obtain ⟨M', hM'm, hM'f, hM'e⟩ := equatorGFF_GMC_measurable_version P X hX γ hγ hγ2 M hM
   have hversions (n : ℕ) := exists_everywhere_finite_measure_version P
     (regularizedGMC P Xc γ n) (regularizedGMC_measurable P X hX Xc hc γ n)
       (regularizedGMC_finite_ae P X hX Xc hc γ n)
   choose N hNm hNf hNe using hversions
-  have hNmK (n : ℕ) (ω : Ω) : N n ω K < ⊤ := by
-    let : IsFiniteMeasure (N n ω) := hNf n ω
-    exact measure_lt_top _ _
-  have hM'mK (ω : Ω) : M' ω K < ⊤ := by
-    let : IsFiniteMeasure (M' ω) := hM'f ω
-    exact measure_lt_top _ _
+  have hNmK (n : ℕ) (ω : Ω) : N n ω K < ⊤ := by norm_num
+  have hM'mK (ω : Ω) : M' ω K < ⊤ := by norm_num
   have hconv (t : ℝ) : TendstoInMeasure P
       (fun n ω => ∫ x, exponentialParameterTest f c t x ∂N n ω)
       atTop (fun ω => ∫ x, exponentialParameterTest f c t x ∂M' ω) := by

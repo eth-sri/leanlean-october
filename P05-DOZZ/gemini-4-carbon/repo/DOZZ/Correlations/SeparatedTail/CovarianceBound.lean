@@ -23,7 +23,7 @@ theorem separatedTail_green_numerator_bounds (c x y : ℂ)
     (hx : ‖x-c‖ ≤ 1) (hy : ‖y-c‖ ≤ 1) :
     (9/16 : ℝ) ≤ ‖((5/4 : ℝ) : ℂ)^2-(x-c)*star (y-c)‖ ∧
       ‖((5/4 : ℝ) : ℂ)^2-(x-c)*star (y-c)‖ ≤ 41/16 := by
-  have hprod : ‖(x-c)*star (y-c)‖ ≤ 1 := by
+  have : ‖(x-c)*star (y-c)‖ ≤ 1 := by
     rw [norm_mul, norm_star]
     nlinarith [norm_nonneg (x-c), norm_nonneg (y-c)]
   have hs : ‖((5/4 : ℝ) : ℂ)^2‖ = (25/16 : ℝ) := by
@@ -55,13 +55,13 @@ theorem separatedTail_circle_regular_bounds (c x : ℂ) (R r : ℝ)
     0 ≤ (∫ z, Real.log (normPlus z) ∂circleMeasure x r) ∧
       (∫ z, Real.log (normPlus z) ∂circleMeasure x r) ≤ R := by
   let _ := circleMeasure_isProbability x r
-  have hi : Integrable (fun z => Real.log (normPlus z)) (circleMeasure x r) :=
+  have hi :=
     integrable_circleMeasure_of_circleIntegrable x r continuous_log_normPlus.measurable
       continuous_log_normPlus.continuousOn.circleIntegrable'
   refine ⟨integral_nonneg (fun z => Real.log_nonneg (le_max_left _ _)), ?_⟩
   have hb : ∀ᵐ z ∂circleMeasure x r, Real.log (normPlus z) ≤ R := by
     filter_upwards [interior_circle_norm_le_pin c x R (5/4) r hpin hx] with z hz
-    have hnorm : normPlus z ≤ R := max_le hR.le hz
+    have : normPlus z ≤ R := max_le hR.le hz
     have hp : 0 < normPlus z := zero_lt_one.trans_le (le_max_left _ _)
     exact (Real.log_le_sub_one_of_pos hp).trans (by linarith)
   simpa only [integral_const, probReal_univ, one_smul] using

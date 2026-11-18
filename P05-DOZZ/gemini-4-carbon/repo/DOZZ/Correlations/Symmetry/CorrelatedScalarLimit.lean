@@ -41,12 +41,11 @@ theorem tendstoInMeasure_mul_same_space
     simpa only [hTinter, measure_empty, Function.comp_def] using h
   obtain ⟨N, hN⟩ := (ENNReal.tendsto_atTop_zero.mp htail) (δ / 2)
     (ENNReal.div_pos_iff.mpr ⟨hδ.ne', by simp⟩)
-  let K : ℝ := (N : ℝ) + 1
-  have hK : 0 < K := by dsimp [K]; positivity
+  let K := (N : ℝ) + 1
+  have hK : 0 < K := by positivity
   have hKtail : P {ω | K < |W ω|} ≤ δ / 2 := by
     simpa [T, K, Nat.cast_add, Nat.cast_one] using hN (N + 1) (by omega)
-  have hbase := (tendstoInMeasure_iff_norm.mp hfg) (ε / K) (div_pos hε hK)
-  filter_upwards [(ENNReal.tendsto_nhds_zero.mp hbase) (δ / 2)
+  filter_upwards [(ENNReal.tendsto_nhds_zero.mp ((tendstoInMeasure_iff_norm.mp hfg) (ε / K) (div_pos hε hK))) (δ / 2)
     (ENNReal.div_pos_iff.mpr ⟨hδ.ne', by simp⟩)] with i hi
   have hsubset : {ω | ε ≤ ‖W ω * f i ω - W ω * g ω‖} ⊆
       {ω | K < |W ω|} ∪ {ω | ε / K ≤ ‖f i ω - g ω‖} := by
@@ -76,7 +75,7 @@ theorem tendstoInMeasure_sub_same_space
     TendstoInMeasure P (fun i ω => f i ω - g i ω) l (fun ω => F ω - G ω) := by
   rw [tendstoInMeasure_iff_norm] at hf hg ⊢
   intro ε hε
-  have hhalf : 0 < ε / 2 := half_pos hε
+  have hhalf := half_pos hε
   have ht : Tendsto (fun i => P {ω | ε / 2 ≤ ‖f i ω - F ω‖} +
       P {ω | ε / 2 ≤ ‖g i ω - G ω‖}) l (𝓝 0) := by
     simpa only [zero_add] using (hf (ε / 2) hhalf).add (hg (ε / 2) hhalf)
@@ -93,9 +92,8 @@ theorem tendstoInMeasure_sub_same_space
       have h2 : ‖g i ω - G ω‖ < ε / 2 := lt_of_not_ge hn.2
       have heq : (f i ω - g i ω) - (F ω - G ω) =
           (f i ω - F ω) - (g i ω - G ω) := by ring
-      have hb := norm_sub_le (f i ω - F ω) (g i ω - G ω)
       change ε ≤ ‖(f i ω - g i ω) - (F ω - G ω)‖ at hω
       rw [heq] at hω
-      exact (not_le_of_gt (lt_of_le_of_lt hb (by linarith only [h1, h2]))) hω
+      exact (not_le_of_gt (lt_of_le_of_lt (norm_sub_le (f i ω - F ω) (g i ω - G ω)) (by linarith only [h1, h2]))) hω
     _ ≤ _ := measure_union_le _ _
 end DOZZ.Proofs

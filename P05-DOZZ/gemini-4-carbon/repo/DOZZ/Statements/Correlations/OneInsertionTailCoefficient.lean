@@ -10,8 +10,6 @@ public import DOZZ.Statements.Correlations.OneInsertionErrorCeiling
 
 @[expose] public section
 
-open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
-open scoped ENNReal NNReal Topology
 
 namespace DOZZ
 

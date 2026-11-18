@@ -10,7 +10,6 @@ public import DOZZ.Hypergeom.ODE.SeriesRecurrence
 
 @[expose] public section
 
-open Nat Polynomial
 
 namespace DOZZ.Proofs
 
@@ -23,7 +22,7 @@ theorem gaussParameterSeriesTerm_sum (a b c z : ℂ) :
     ordinaryHypergeometric a b c z =
       ∑' n : ℕ, gaussParameterSeriesTerm (a, b, c) z n := by
   rw [ordinaryHypergeometric_eq_tsum]
-  simp [gaussParameterSeriesTerm, smul_eq_mul, mul_assoc]
+  rfl
 
 /-- The parameter series term is holomorphic wherever its denominator Pochhammer factor is
 nonzero. -/
@@ -31,26 +30,14 @@ theorem gaussParameterSeriesTerm_differentiableOn
     {U : Set (ℂ × ℂ × ℂ)} (hU : ∀ p ∈ U, ∀ k : ℕ, p.2.2 ≠ -(k : ℂ))
     (z : ℂ) (n : ℕ) :
     DifferentiableOn ℂ (fun p => gaussParameterSeriesTerm p z n) U := by
-  have hA : DifferentiableOn ℂ
-      (fun p : ℂ × ℂ × ℂ => (ascPochhammer ℂ n).eval p.1) U := by
-    fun_prop
-  have hB : DifferentiableOn ℂ
-      (fun p : ℂ × ℂ × ℂ => (ascPochhammer ℂ n).eval p.2.1) U := by
-    fun_prop
-  have hC : DifferentiableOn ℂ
+  have : DifferentiableOn ℂ
       (fun p : ℂ × ℂ × ℂ => (ascPochhammer ℂ n).eval p.2.2) U := by
     fun_prop
-  have hCne : ∀ p ∈ U, (ascPochhammer ℂ n).eval p.2.2 ≠ 0 := by
+  have : ∀ p ∈ U, (ascPochhammer ℂ n).eval p.2.2 ≠ 0 := by
     intro p hp
     exact ordinaryHypergeometric_pochhammer_denominator_ne_zero n (hU p hp)
-  have hCinv := hC.inv hCne
   have hcoeff : DifferentiableOn ℂ
-      (fun p : ℂ × ℂ × ℂ => ordinaryHypergeometricCoefficient p.1 p.2.1 p.2.2 n) U := by
-    change DifferentiableOn ℂ
-      (fun p : ℂ × ℂ × ℂ => (n !⁻¹ : ℂ) *
-        (ascPochhammer ℂ n).eval p.1 * (ascPochhammer ℂ n).eval p.2.1 *
-          ((ascPochhammer ℂ n).eval p.2.2)⁻¹) U
-    exact (((differentiableOn_const _).mul hA).mul hB).mul hCinv
+      (fun p : ℂ × ℂ × ℂ => ordinaryHypergeometricCoefficient p.1 p.2.1 p.2.2 n) U := by fun_prop
   change DifferentiableOn ℂ
     (fun p : ℂ × ℂ × ℂ =>
       ordinaryHypergeometricCoefficient p.1 p.2.1 p.2.2 n * z ^ n) U

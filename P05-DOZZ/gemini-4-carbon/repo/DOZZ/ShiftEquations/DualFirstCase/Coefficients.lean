@@ -10,16 +10,17 @@ import DOZZ.ShiftEquations.Rbar.Multiplier
 import Mathlib.Tactic
 /-! # The dual crossing product and the centered shift coefficient -/
 @[expose] public section
+noncomputable section
 open Complex Filter Topology Set
 namespace DOZZ.Proofs
 /-- Analytic parameters for the dual crossing with its first charge variable. -/
-noncomputable def dualFirstCase_A (γ : ℝ) (a₂ a₃ z : ℂ) : ℂ :=
+def dualFirstCase_A (γ : ℝ) (a₂ a₃ z : ℂ) : ℂ :=
   (2 / γ : ℂ) / 2 * (z + a₂ + a₃ - 2 / γ - 2 * Q γ)
-noncomputable def dualFirstCase_B (γ : ℝ) (a₂ a₃ z : ℂ) : ℂ :=
+def dualFirstCase_B (γ : ℝ) (a₂ a₃ z : ℂ) : ℂ :=
   (2 / γ : ℂ) / 2 * (z + a₂ - a₃ - 2 / γ)
-noncomputable def dualFirstCase_C (γ : ℝ) (z : ℂ) : ℂ := (2 / γ : ℂ) * z - (2 / γ : ℂ) ^ 2
+def dualFirstCase_C (γ : ℝ) (z : ℂ) : ℂ := (2 / γ : ℂ) * z - (2 / γ : ℂ) ^ 2
 /-- Product of the two distinct dual crossing multipliers. -/
-noncomputable def dualFirstCase_crossingProduct (γ : ℝ) (a₂ a₃ z : ℂ) : ℂ :=
+def dualFirstCase_crossingProduct (γ : ℝ) (a₂ a₃ z : ℂ) : ℂ :=
   let A := dualFirstCase_A γ a₂ a₃ z
   let B := dualFirstCase_B γ a₂ a₃ z
   let c := dualFirstCase_C γ z
@@ -30,35 +31,32 @@ noncomputable def dualFirstCase_crossingProduct (γ : ℝ) (a₂ a₃ z : ℂ) :
 theorem dualFirstCase_lFun_one_sub (z : ℂ) : lFun (1 - z) = (lFun z)⁻¹ := by
   unfold lFun
   rw [sub_sub_cancel, inv_div]
-/-- Complexification of the literal real Gauss parameters. -/
-theorem dualFirstCase_parameters (γ x a₂ a₃ : ℝ) (hγ : γ ≠ 0) :
-    dualFirstCase_A γ a₂ a₃ x = (gaussParameterA γ (2 / γ) x a₂ a₃ : ℂ) ∧
-    dualFirstCase_B γ a₂ a₃ x = (gaussParameterB γ (2 / γ) x a₂ a₃ : ℂ) ∧
-    dualFirstCase_C γ x = (gaussParameterC γ (2 / γ) x : ℂ) ∧
-    dualFirstCase_C γ a₂ - 1 =
-      (gaussParameterA γ (2 / γ) x a₂ a₃ + gaussParameterB γ (2 / γ) x a₂ a₃ - gaussParameterC γ (2 / γ) x : ℂ) := by
-  have hg : (γ : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hγ
-  unfold dualFirstCase_A dualFirstCase_B dualFirstCase_C gaussParameterA gaussParameterB gaussParameterC Q
-  push_cast
-  constructor
-  · field_simp; ring
-  constructor
-  · field_simp; ring
-  constructor <;> field_simp <;> ring
 /-- The product is exactly the product of the two coefficients `dualCrossingMultiplier` and
 `dualCrossingL` of the dual crossing seeds on the real slice. -/
 theorem dualFirstCase_crossingProduct_ofReal (γ x a₂ a₃ : ℝ) (hγ : γ ≠ 0) :
     dualFirstCase_crossingProduct γ a₂ a₃ x =
       ((dualCrossingMultiplier γ a₃ x a₂ * dualCrossingL γ a₂ x a₃ : ℝ) : ℂ) := by
-  obtain ⟨hA, hB, hc, _hd⟩ := dualFirstCase_parameters γ x a₂ a₃ hγ
-  have hdC := (dualFirstCase_parameters γ a₂ x a₃ hγ).2.2.1
+  have dualFirstCase_parameters (x a₂ a₃ : ℝ) (hγ : γ ≠ 0) : dualFirstCase_A γ a₂ a₃ x = (gaussParameterA γ (2 / γ) x a₂ a₃ : ℂ) ∧
+      dualFirstCase_B γ a₂ a₃ x = (gaussParameterB γ (2 / γ) x a₂ a₃ : ℂ) ∧
+      dualFirstCase_C γ x = (gaussParameterC γ (2 / γ) x : ℂ) ∧
+      dualFirstCase_C γ a₂ - 1 =
+        (gaussParameterA γ (2 / γ) x a₂ a₃ + gaussParameterB γ (2 / γ) x a₂ a₃ - gaussParameterC γ (2 / γ) x : ℂ) := by
+    have := Complex.ofReal_ne_zero.mpr hγ
+    unfold dualFirstCase_A dualFirstCase_B dualFirstCase_C gaussParameterA gaussParameterB gaussParameterC Q
+    push_cast
+    constructor
+    · field_simp; ring
+    constructor
+    · field_simp; ring
+    constructor <;> field_simp <;> ring
+  obtain ⟨hA, hB, hc, _hd⟩ := dualFirstCase_parameters x a₂ a₃ hγ
   have hab : gaussParameterA γ (2 / γ) x a₂ a₃ + gaussParameterB γ (2 / γ) x a₂ a₃ =
       gaussParameterC γ (2 / γ) x + gaussParameterC γ (2 / γ) a₂ - 1 := by
     unfold gaussParameterA gaussParameterB gaussParameterC Q
     field_simp; ring
   unfold dualFirstCase_crossingProduct dualCrossingMultiplier dualCrossingL
   dsimp only
-  rw [hA, hB, hc, hdC]
+  rw [hA, hB, hc, (dualFirstCase_parameters a₂ x a₃ hγ).2.2.1]
   rw [show (gaussParameterC γ (2 / γ) a₂ : ℂ) - 1 =
     ((gaussParameterC γ (2 / γ) a₂ - 1 : ℝ) : ℂ) by push_cast; rfl]
   have habc : (gaussParameterA γ (2 / γ) x a₂ a₃ : ℂ) + gaussParameterB γ (2 / γ) x a₂ a₃ =

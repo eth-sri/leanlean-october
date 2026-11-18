@@ -29,7 +29,7 @@ theorem prefactored_reflection_moment_uniform
         (∫⁻ q : Ω × Ω, (ENNReal.ofReal (f*‖z‖^(-4 : ℝ)*
           Real.exp (γ*Xc q.2 z 0-γ^2*Real.log ‖z‖))*twoSidedReflectionMass γ B Z q.1)^r
           ∂P.prod P) ≤ C := by
-  let : IsProbabilityMeasure P := hX.1
+  let := hX.1
   obtain ⟨L,hL,hPin⟩ := actual_prefactor_moment_uniform P X Xc hX hc K hK hz γ b R hb hR
   obtain ⟨D,hD,hRef⟩ := twoSidedReflectionMass_rpow_lintegral_le_compact P γ ν₁ ν₂ R
     hγ hν₁ hR hRbulk Z hZ

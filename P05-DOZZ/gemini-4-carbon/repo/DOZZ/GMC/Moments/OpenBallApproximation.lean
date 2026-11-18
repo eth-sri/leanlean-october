@@ -12,29 +12,36 @@ public import Mathlib.MeasureTheory.Measure.Lebesgue.Complex
 
 @[expose] public section
 
+noncomputable section
 open MeasureTheory Filter Topology Set
 open scoped BoundedContinuousFunction
 
 namespace DOZZ.Proofs
 
 /-- A continuous radial cutoff increasing to the indicator of an open ball. -/
-noncomputable def openBallApproxFun (z : ℂ) (R : ℝ) (n : ℕ) (x : ℂ) : ℝ :=
+def openBallApproxFun (z : ℂ) (R : ℝ) (n : ℕ) (x : ℂ) : ℝ :=
   max 0 (min 1 ((n : ℝ) * (R - ‖x - z‖)))
 
-theorem openBallApproxFun_continuous (z : ℂ) (R : ℝ) (n : ℕ) :
+section
+variable (z : ℂ) (R : ℝ) (n : ℕ)
+include z R n
+
+theorem openBallApproxFun_continuous :
     Continuous (openBallApproxFun z R n) := by
   unfold openBallApproxFun
   fun_prop
 
-theorem openBallApproxFun_bounds (z : ℂ) (R : ℝ) (n : ℕ) (x : ℂ) :
+theorem openBallApproxFun_bounds (x : ℂ) :
     0 ≤ openBallApproxFun z R n x ∧ openBallApproxFun z R n x ≤ 1 := by
   unfold openBallApproxFun
   constructor
-  · exact le_max_left _ _
+  · positivity
   · exact max_le_iff.mpr ⟨by norm_num, min_le_left _ _⟩
 
+
+end
 /-- The ball approximants as bounded continuous functions. -/
-noncomputable def openBallApprox (z : ℂ) (R : ℝ) (n : ℕ) :
+def openBallApprox (z : ℂ) (R : ℝ) (n : ℕ) :
     BoundedContinuousFunction ℂ ℝ :=
   BoundedContinuousFunction.mkOfBound
     ⟨openBallApproxFun z R n, openBallApproxFun_continuous z R n⟩ 1 (by
@@ -46,7 +53,11 @@ noncomputable def openBallApprox (z : ℂ) (R : ℝ) (n : ℕ) :
       rw [abs_le]
       exact ⟨by linarith, by linarith⟩)
 
-theorem openBallApproxFun_tendsto (z : ℂ) (R : ℝ) (x : ℂ) :
+section
+variable (z : ℂ) (R : ℝ)
+include z R
+
+theorem openBallApproxFun_tendsto (x : ℂ) :
     Tendsto (fun n : ℕ => openBallApproxFun z R n x) atTop
       (𝓝 ((Metric.ball z R).indicator (fun _ => (1 : ℝ)) x)) := by
   by_cases hx : dist x z < R
@@ -57,19 +68,18 @@ theorem openBallApproxFun_tendsto (z : ℂ) (R : ℝ) (x : ℂ) :
     have hEventually : (fun _ : ℕ => (1 : ℝ)) =ᶠ[atTop]
         fun n => openBallApproxFun z R n x := by
       filter_upwards [eventually_ge_atTop N] with n hn
-      have hn' : 1 / (R - ‖x - z‖) < (n : ℝ) := by
-        exact lt_of_lt_of_le hN (by exact_mod_cast hn)
+      have hn' : 1 / (R - ‖x - z‖) < (n : ℝ) := lt_of_lt_of_le hN (by exact_mod_cast hn)
       have hprod : 1 ≤ (n : ℝ) * (R - ‖x - z‖) := by
         have := (div_lt_iff₀ hgap).mp hn'
         nlinarith
       simp [openBallApproxFun, min_eq_left hprod]
-    have hT : Tendsto (fun n : ℕ => openBallApproxFun z R n x) atTop (𝓝 1) :=
+    have hT :=
       Tendsto.congr' hEventually tendsto_const_nhds
     convert hT using 1
     simpa [dist_eq_norm] using hx
   · have hx' : R ≤ dist x z := le_of_not_gt hx
     have hzero (n : ℕ) : openBallApproxFun z R n x = 0 := by
-      have harg : (n : ℝ) * (R - ‖x - z‖) ≤ 0 :=
+      have harg :=
         mul_nonpos_of_nonneg_of_nonpos (Nat.cast_nonneg n)
           (sub_nonpos.mpr (by simpa [dist_eq_norm] using hx'))
       have hmin : min 1 ((n : ℝ) * (R - ‖x - z‖)) ≤ 0 :=
@@ -82,14 +92,14 @@ theorem openBallApproxFun_tendsto (z : ℂ) (R : ℝ) (x : ℂ) :
     simp [Metric.mem_ball, hx]
 
 /-- The topological support of each cutoff stays inside the closed ball. -/
-theorem openBallApprox_tsupport_subset (z : ℂ) (R : ℝ) (n : ℕ) :
+theorem openBallApprox_tsupport_subset (n : ℕ) :
     tsupport (openBallApprox z R n : ℂ → ℝ) ⊆ Metric.closedBall z R := by
   have hsupp : Function.support (openBallApprox z R n : ℂ → ℝ) ⊆
       Metric.closedBall z R := by
     intro x hx
     by_contra hball
     have hx' : R < dist x z := lt_of_not_ge hball
-    have harg : (n : ℝ) * (R - ‖x - z‖) ≤ 0 :=
+    have harg :=
       mul_nonpos_of_nonneg_of_nonpos (Nat.cast_nonneg n)
         (sub_nonpos.mpr (by simpa [dist_eq_norm] using hx'.le))
     have hmin : min 1 ((n : ℝ) * (R - ‖x - z‖)) ≤ 0 :=
@@ -103,7 +113,7 @@ theorem openBallApprox_tsupport_subset (z : ℂ) (R : ℝ) (n : ℕ) :
   exact closure_minimal hsupp Metric.isClosed_closedBall
 
 /-- Integrals of the cutoffs converge to the mass of an open ball for every finite measure. -/
-theorem openBallApprox_integral_tendsto (z : ℂ) (R : ℝ) (μ : Measure ℂ)
+theorem openBallApprox_integral_tendsto (μ : Measure ℂ)
     [IsFiniteMeasure μ] :
     Tendsto (fun n : ℕ => ∫ x, openBallApprox z R n x ∂μ) atTop
       (𝓝 (μ.real (Metric.ball z R))) := by
@@ -115,8 +125,7 @@ theorem openBallApprox_integral_tendsto (z : ℂ) (R : ℝ) (μ : Measure ℂ)
     simpa [openBallApprox, Real.norm_eq_abs, abs_of_nonneg hx.1] using hx.2
   have hlim : ∀ᵐ x ∂μ,
       Tendsto (fun n : ℕ => openBallApprox z R n x) atTop
-        (𝓝 ((Metric.ball z R).indicator (fun _ => (1 : ℝ)) x)) := by
-    exact ae_of_all _ (fun x => by
+        (𝓝 ((Metric.ball z R).indicator (fun _ => (1 : ℝ)) x)) := ae_of_all _ (fun x => by
       simpa [openBallApprox] using openBallApproxFun_tendsto z R x)
   have hs : MeasurableSet (Metric.ball z R) := Metric.isOpen_ball.measurableSet
   have hdomconv := tendsto_integral_of_dominated_convergence
@@ -126,8 +135,10 @@ theorem openBallApprox_integral_tendsto (z : ℂ) (R : ℝ) (μ : Measure ℂ)
   rw [← integral_indicator_one hs]
   exact hdomconv
 
+
+end
 /-- Pulling back the centered cutoff by an affine map gives a cutoff on the target disk. -/
-noncomputable def openBallAffineApprox (a : ℂ) (c R : ℝ) (n : ℕ) :
+def openBallAffineApprox (a : ℂ) (c R : ℝ) (n : ℕ) :
     BoundedContinuousFunction ℂ ℝ :=
   (openBallApprox 0 R n).compContinuous
     ⟨fun y => (c : ℂ)⁻¹ • (y - a), by fun_prop⟩
@@ -141,13 +152,12 @@ theorem openBallAffineApprox_tsupport_subset {a : ℂ} {c R : ℝ} (hc : 0 < c)
     intro y hy
     by_contra hball
     have hy' : c * R < dist y a := lt_of_not_ge hball
-    have hnorm : R < ‖y - a‖ / c := by
+    have : R < ‖y - a‖ / c := by
       rw [lt_div_iff₀ hc]
       simpa [dist_eq_norm, mul_comm] using hy'
-    have hlarge : R < |c|⁻¹ * ‖y - a‖ := by
-      simpa [abs_of_pos hc, div_eq_mul_inv, mul_comm] using hnorm
-    have hlarge' : R < c⁻¹ * ‖y - a‖ := by simpa [abs_of_pos hc] using hlarge
-    have harg' : (n : ℝ) * (R - c⁻¹ * ‖y - a‖) ≤ 0 :=
+    have hlarge : R < |c|⁻¹ * ‖y - a‖ := by grind
+    have hlarge' : R < c⁻¹ * ‖y - a‖ := by grind
+    have harg' :=
       mul_nonpos_of_nonneg_of_nonpos (Nat.cast_nonneg n)
         (sub_nonpos.mpr hlarge'.le)
     have hmin' : min 1 ((n : ℝ) * (R - c⁻¹ * ‖y - a‖)) ≤ 0 :=
@@ -169,10 +179,6 @@ theorem openBallAffineApprox_comp_affine (a : ℂ) (c R : ℝ) (hc : c ≠ 0)
     openBallAffineApprox a c R n (a + c • x) = openBallApprox 0 R n x := by
   have hcancel : (c : ℂ)⁻¹ • (a + c • x - a) = x := by
     rw [show a + c • x - a = c • x by abel]
-    have hsmul : c • x = (c : ℂ) * x := by
-      change (algebraMap ℝ ℂ c) * x = (c : ℂ) * x
-      simp
-    rw [hsmul]
     simp [show (c : ℂ) ≠ 0 by exact_mod_cast hc]
   change (openBallApprox 0 R n : ℂ → ℝ) ((c : ℂ)⁻¹ • (a + c • x - a)) = _
   rw [hcancel]
@@ -197,9 +203,7 @@ theorem openBallAffineApprox_integral_tendsto {a : ℂ} {c R : ℝ} (hc : 0 < c)
     exact hb.2
   have hlim : ∀ᵐ y ∂μ,
       Tendsto (fun n : ℕ => openBallAffineApprox a c R n y) atTop
-        (𝓝 ((Metric.ball a (c * R)).indicator (fun _ => (1 : ℝ)) y)) := by
-    exact ae_of_all _ fun y => by
-      have hbase := openBallApproxFun_tendsto 0 R ((c : ℂ)⁻¹ • (y - a))
+        (𝓝 ((Metric.ball a (c * R)).indicator (fun _ => (1 : ℝ)) y)) := ae_of_all _ fun y => by
       have hiff : dist y a < c * R ↔ |c|⁻¹ * ‖y - a‖ < R := by
         rw [dist_eq_norm]
         constructor
@@ -220,7 +224,7 @@ theorem openBallAffineApprox_integral_tendsto {a : ℂ} {c R : ℝ} (hc : 0 < c)
         funext n
         rfl
       rw [hseq]
-      convert hbase using 1
+      convert (openBallApproxFun_tendsto 0 R ((c : ℂ)⁻¹ • (y - a))) using 1
       simp [Set.indicator, hiff]
   have hs : MeasurableSet (Metric.ball a (c * R)) := Metric.isOpen_ball.measurableSet
   have hdomconv := tendsto_integral_of_dominated_convergence

@@ -13,17 +13,18 @@ of the two measures, and the factorization of their tilts at a root. -/
 
 @[expose] public section
 
+noncomputable section
 open MeasureTheory Filter Topology
 open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
 
 /-- The real mixed mass `∫ ρ k₁ dm₁ + ∫ (1 - ρ) k₂ dm₂`. -/
-noncomputable def bpzMixedReal (ρ k₁ k₂ : ℂ → ℝ) (m₁ m₂ : Measure ℂ) : ℝ :=
+def bpzMixedReal (ρ k₁ k₂ : ℂ → ℝ) (m₁ m₂ : Measure ℂ) : ℝ :=
   ∫ y, ρ y * k₁ y ∂m₁ + ∫ y, (1 - ρ y) * k₂ y ∂m₂
 
 /-- The untilted root-derivative functional in a real direction `v`. -/
-noncomputable def bpzMixedDerivReal (γ r : ℝ) (ρ k₁ k₂ : ℂ → ℝ) (x v : ℂ)
+def bpzMixedDerivReal (γ r : ℝ) (ρ k₁ k₂ : ℂ → ℝ) (x v : ℂ)
     (m₁ m₂ : Measure ℂ) : ℝ :=
   ∫ y, ρ y * k₁ y * (γ ^ 2 * bpzLamDeriv r (x - y) v) ∂m₁ +
     ∫ y, (1 - ρ y) * k₂ y * (γ ^ 2 * bpzTruncLogDeriv r (x - y) v) ∂m₂
@@ -32,7 +33,7 @@ noncomputable def bpzMixedDerivReal (γ r : ℝ) (ρ k₁ k₂ : ℂ → ℝ) (x
 theorem measurable_integral_measure {g : ℂ → ℝ} (hg : Measurable g) :
     Measurable (fun m : Measure ℂ => ∫ y, g y ∂m) := by
   set A : Set (Measure ℂ) := {m | ∫⁻ y, ENNReal.ofReal |g y| ∂m < ⊤} with hA
-  have hAm : MeasurableSet A :=
+  have : MeasurableSet A :=
     measurableSet_lt (Measure.measurable_lintegral (ENNReal.measurable_ofReal.comp
       (continuous_abs.measurable.comp hg))) measurable_const
   have heq : (fun m : Measure ℂ => ∫ y, g y ∂m) = A.indicator (fun m =>
@@ -55,9 +56,7 @@ theorem measurable_integral_measure {g : ℂ → ℝ} (hg : Measurable g) :
       show ∫⁻ y, ENNReal.ofReal |g y| ∂m < ⊤
       simpa only [Real.norm_eq_abs] using this
   rw [heq]
-  refine Measurable.indicator ?_ hAm
-  exact ((Measure.measurable_lintegral (ENNReal.measurable_ofReal.comp hg)).ennreal_toReal).sub
-    ((Measure.measurable_lintegral (ENNReal.measurable_ofReal.comp hg.neg)).ennreal_toReal)
+  fun_prop
 
 theorem measurable_bpzMixedReal {ρ k₁ k₂ : ℂ → ℝ} (hρm : Measurable ρ) (hk₁ : Measurable k₁)
     (hk₂ : Measurable k₂) :
@@ -107,7 +106,7 @@ theorem bpzMixedReal_tilt (γ r : ℝ) (ρ k₁ k₂ : ℂ → ℝ) (x : ℂ) (m
     ring
 
 /-- The scalar root derivative of the rooted mixed mass in a direction `v`. -/
-noncomputable def bpzRootedMixedDerivApply (γ r : ℝ) (ρ k₁ k₂ : ℂ → ℝ) (x v : ℂ)
+def bpzRootedMixedDerivApply (γ r : ℝ) (ρ k₁ k₂ : ℂ → ℝ) (x v : ℂ)
     (m₁ m₂ : Measure ℂ) : ℝ :=
   ∫ y, ρ y * k₁ y * (bpzCutRootKernel γ r x y * γ ^ 2) * bpzLamDeriv r (x - y) v ∂m₁ +
     ∫ y, (1 - ρ y) * k₂ y * (bpzLimRootKernel γ r x y * γ ^ 2) *
@@ -150,12 +149,11 @@ theorem bpzRootedMixedDeriv_apply {γ r δ : ℝ} {ρ k₁ k₂ : ℂ → ℝ} {
     (hδ : 0 < δ) (hδr : Real.exp (-r) ≤ δ) (hsep : ∀ y, ρ y < 1 → 2 * δ ≤ ‖x₀ - y‖) (v : ℂ) :
     bpzRootedMixedDeriv γ r ρ k₁ k₂ x₀ m₁ m₂ v =
       bpzRootedMixedDerivApply γ r ρ k₁ k₂ x₀ v m₁ m₂ := by
-  have hc := integrable_bpz_cut_part (γ := γ) hρm hk₁ hρ0 hk₁0 hI₁ x₀
   have hl := integrable_bpz_lim_part (γ := γ) hρm hk₂ hρ1 hk₂0 hI₂ hδ hδr hsep
     (Metric.mem_ball_self hδ)
   have hcI : Integrable (fun y => (ρ y * k₁ y * (bpzCutRootKernel γ r x₀ y * γ ^ 2)) •
       bpzLamDeriv r (x₀ - y)) m₁ := by
-    refine ((hc.mul_const (γ ^ 2 * Real.exp r))).mono' ?_ (Eventually.of_forall fun y => ?_)
+    refine (((integrable_bpz_cut_part (γ := γ) hρm hk₁ hρ0 hk₁0 hI₁ x₀).mul_const (γ ^ 2 * Real.exp r))).mono' ?_ (Eventually.of_forall fun y => ?_)
     · exact (((hρm.mul hk₁).mul ((continuous_bpzCutRootKernel_snd γ r x₀).measurable.mul_const
         _)).smul ((measurable_bpzLamDeriv r).comp
           (measurable_const.sub measurable_id))).aestronglyMeasurable
@@ -163,10 +161,8 @@ theorem bpzRootedMixedDeriv_apply {γ r δ : ℝ} {ρ k₁ k₂ : ℂ → ℝ} {
         mul_nonneg (mul_nonneg (hρ0 y) (hk₁0 y))
           (mul_nonneg (bpzCutRootKernel_pos γ r x₀ y).le (sq_nonneg γ))
       rw [norm_smul, Real.norm_eq_abs, abs_of_nonneg hw]
-      calc ρ y * k₁ y * (bpzCutRootKernel γ r x₀ y * γ ^ 2) * ‖bpzLamDeriv r (x₀ - y)‖
-          ≤ ρ y * k₁ y * (bpzCutRootKernel γ r x₀ y * γ ^ 2) * Real.exp r :=
-            mul_le_mul_of_nonneg_left (norm_bpzLamDeriv_le_exp r _) hw
-        _ = _ := by ring
+      refine (mul_le_mul_of_nonneg_left (norm_bpzLamDeriv_le_exp r _) hw).trans_eq (?_)
+      ring
   have hlI : Integrable (fun y => ((1 - ρ y) * k₂ y * (bpzLimRootKernel γ r x₀ y * γ ^ 2)) •
       bpzTruncLogDeriv r (x₀ - y)) m₂ := by
     refine ((hl.mul_const (γ ^ 2 * Real.exp r))).mono' ?_ (Eventually.of_forall fun y => ?_)
@@ -178,15 +174,12 @@ theorem bpzRootedMixedDeriv_apply {γ r δ : ℝ} {ρ k₁ k₂ : ℂ → ℝ} {
         mul_nonneg (mul_nonneg (by linarith [hρ1 y]) (hk₂0 y))
           (mul_nonneg (bpzLimRootKernel_pos γ r x₀ y).le (sq_nonneg γ))
       rw [norm_smul, Real.norm_eq_abs, abs_of_nonneg hw]
-      calc (1 - ρ y) * k₂ y * (bpzLimRootKernel γ r x₀ y * γ ^ 2) *
-            ‖bpzTruncLogDeriv r (x₀ - y)‖
-          ≤ (1 - ρ y) * k₂ y * (bpzLimRootKernel γ r x₀ y * γ ^ 2) * Real.exp r :=
-            mul_le_mul_of_nonneg_left (norm_bpzTruncLogDeriv_le r _).1 hw
-        _ = _ := by ring
+      refine (mul_le_mul_of_nonneg_left (norm_bpzTruncLogDeriv_le r _).1 hw).trans_eq (?_)
+      ring
   unfold bpzRootedMixedDeriv bpzRootedMixedDerivApply
   rw [add_apply, ContinuousLinearMap.integral_apply hcI,
     ContinuousLinearMap.integral_apply hlI]
-  simp only [smul_apply, smul_eq_mul]
+  rfl
 
 /-- Parametric integrals against a measurable family of finite measures are jointly
 measurable. -/
@@ -207,7 +200,7 @@ theorem measurable_integral_finite_family {α β : Type*} [MeasurableSpace α] [
     exact ((hcm.comp measurable_fst).inv).mul
       ((Measure.measurable_coe hs).comp (hm.comp measurable_fst))
   let κ : ProbabilityTheory.Kernel (α × β) ℂ := ⟨fun p => (c p.1)⁻¹ • m p.1, hnm⟩
-  have hκfin : ProbabilityTheory.IsFiniteKernel κ := by
+  have : ProbabilityTheory.IsFiniteKernel κ := by
     refine ⟨⟨1, ENNReal.one_lt_top, fun p => ?_⟩⟩
     change ((c p.1)⁻¹ • m p.1) Set.univ ≤ 1
     rw [Measure.smul_apply, smul_eq_mul]
@@ -215,7 +208,7 @@ theorem measurable_integral_finite_family {α β : Type*} [MeasurableSpace α] [
           gcongr
           simp [hc]
       _ = 1 := ENNReal.inv_mul_cancel (hc0 _) (hctop _)
-  have hint : StronglyMeasurable fun p : α × β => ∫ y, g p.2 y ∂κ p :=
+  have hint :=
     StronglyMeasurable.integral_kernel_prod_right (κ := κ) (f := fun p y => g p.2 y)
       ((hg.comp (measurable_fst.snd.prodMk measurable_snd)).stronglyMeasurable)
   have heq : (fun p : α × β => ∫ y, g p.2 y ∂m p.1) =

@@ -13,8 +13,11 @@ open MeasureTheory ProbabilityTheory Set Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs
 
+variable {Ω : Type*} [MeasurableSpace Ω]
+
+
 /-- Inverse moment of the sum of the literal inner and exterior source masses. -/
-noncomputable def reflected_source_separatedMoment {Ω : Type*} [MeasurableSpace Ω]
+noncomputable def reflected_source_separatedMoment
     (P : Measure Ω) (M : Ω → Measure ℂ) (γ α₁ α₂ α₃ : ℝ) (z : ℂ) (s r q : ℝ) : ℝ≥0∞ :=
   ∫⁻ ω, ((∫⁻ x in reflected_innerRegion s,
     ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x) ∂M ω)+
@@ -22,7 +25,7 @@ noncomputable def reflected_source_separatedMoment {Ω : Type*} [MeasurableSpace
     ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x) ∂M ω))^(-q) ∂P
 
 /-- The same moment with two independent lateral copies and one common radial path. -/
-noncomputable def reflected_copied_separatedMoment {Ω : Type*} [MeasurableSpace Ω]
+noncomputable def reflected_copied_separatedMoment
     (P : Measure Ω) (Xc : Ω → ℂ → ℝ → ℝ) (N : Ω → Measure ℂ)
     (γ α₁ α₂ α₃ : ℝ) (z : ℂ) (s r q : ℝ) : ℝ≥0∞ :=
   let J := fun (U : Set ℂ) (p : TwoSidedPath × Ω) => ∫⁻ x in U,
@@ -36,7 +39,7 @@ noncomputable def reflected_copied_separatedMoment {Ω : Type*} [MeasurableSpace
 /-- A specified actual source carrier gives a uniform finite error bound. No copied moment
 bound is assumed: the copied moment's finiteness follows from the source comparison. -/
 theorem reflected_source_separated_moment_error
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
+ (P : Measure Ω) (X : Ω → Distr)
     (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
     (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
@@ -90,7 +93,7 @@ theorem reflected_source_separated_moment_error
         rw [hω]
         exact ennreal_rpow_antitone_of_nonpos (le_add_left le_rfl) (neg_nonpos.mpr hq.le)
       _ ≤ _ := hCbound z ξ hz hr1
-  have hoFin : original ≠ ⊤ := ne_top_of_le_ne_top ENNReal.ofReal_ne_top ho
+  have hoFin := ne_top_of_le_ne_top ENNReal.ofReal_ne_top ho
   have hm1 : 1 ≤ m := Real.one_le_exp (by
     exact mul_nonneg (div_nonneg (mul_nonneg (sq_nonneg γ)
       (mul_nonneg (by norm_num) (div_pos hs hr).le)) (by norm_num))

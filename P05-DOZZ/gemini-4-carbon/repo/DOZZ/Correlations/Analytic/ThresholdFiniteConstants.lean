@@ -26,10 +26,7 @@ theorem threshold_finite_constants (D B C : ℝ≥0∞)
   let h := 1 / (q / (q - 1))
   have hτ : 0 < τ := div_pos hrate (mul_pos (by norm_num) hm)
   have hh : 0 < h := one_div_pos.mpr (div_pos (by linarith) (by linarith))
-  have hres : rate - τ * m = rate / 2 := by
-    dsimp only [τ]
-    field_simp
-    ring
+  have hres : rate - τ * m = rate / 2 := by grind
   let κ := min τ ((rate - τ * m) * h)
   have hκ : 0 < κ := lt_min hτ (by rw [hres]; positivity)
   let K := D.toReal + B.toReal * C.toReal ^ h

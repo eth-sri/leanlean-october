@@ -6,8 +6,6 @@ module
 public import DOZZ.Correlations.Symmetry.RepinnedField
 public import DOZZ.Correlations.Symmetry.ReflectionCircleCovariance
 @[expose] public section
-open MeasureTheory
-open scoped Distributions
 namespace DOZZ.Proofs
 
 end DOZZ.Proofs

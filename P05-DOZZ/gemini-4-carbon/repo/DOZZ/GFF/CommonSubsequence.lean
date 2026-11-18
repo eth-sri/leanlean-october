@@ -15,10 +15,14 @@ bookkeeping needed to put all local Fourier-mode limits on one full-measure even
 
 @[expose] public section
 
+noncomputable section
 open MeasureTheory Filter
 open scoped Topology
 
 namespace DOZZ
+
+variable {Ω : Type*} [MeasurableSpace Ω]
+
 
 private structure GFFSubsequenceStage {Ω : Type*} [MeasurableSpace Ω]
     (μ : Measure Ω) (F : ℕ → ℕ → Ω → ℝ) (g : ℕ → Ω → ℝ) (m : ℕ) where
@@ -31,7 +35,7 @@ private structure GFFSubsequenceStage {Ω : Type*} [MeasurableSpace Ω]
   next_converges : ∀ᵐ ω ∂μ,
     Tendsto (fun n => F (seq (next n)) m ω) atTop (𝓝 (g m ω))
 
-private noncomputable def gffSubsequenceStageZero {Ω : Type*} [MeasurableSpace Ω]
+private def gffSubsequenceStageZero
     (μ : Measure Ω) (F : ℕ → ℕ → Ω → ℝ) (g : ℕ → Ω → ℝ)
     (hF : ∀ i, TendstoInMeasure μ (fun n ω => F n i ω) atTop (g i)) :
       GFFSubsequenceStage μ F g 0 := by
@@ -42,7 +46,7 @@ private noncomputable def gffSubsequenceStageZero {Ω : Type*} [MeasurableSpace 
   have hψae := (Classical.choose_spec hseq).2
   exact ⟨id, strictMono_id, fun i hi => by omega, ψ, hψ, hψae⟩
 
-private noncomputable def gffSubsequenceStageSucc {Ω : Type*} [MeasurableSpace Ω]
+private def gffSubsequenceStageSucc
     (μ : Measure Ω) (F : ℕ → ℕ → Ω → ℝ) (g : ℕ → Ω → ℝ)
     (hF : ∀ i, TendstoInMeasure μ (fun n ω => F n i ω) atTop (g i))
     (m : ℕ) (d : GFFSubsequenceStage μ F g m) :
@@ -64,7 +68,7 @@ private noncomputable def gffSubsequenceStageSucc {Ω : Type*} [MeasurableSpace 
     filter_upwards [d.converges i him] with ω hω
     exact hω.comp d.next_strict.tendsto_atTop
 
-private noncomputable def gffSubsequenceStages {Ω : Type*} [MeasurableSpace Ω]
+private def gffSubsequenceStages
     (μ : Measure Ω) (F : ℕ → ℕ → Ω → ℝ) (g : ℕ → Ω → ℝ)
     (hF : ∀ i, TendstoInMeasure μ (fun n ω => F n i ω) atTop (g i)) :
       ∀ m, GFFSubsequenceStage μ F g m := by
@@ -74,59 +78,49 @@ private noncomputable def gffSubsequenceStages {Ω : Type*} [MeasurableSpace Ω]
   · intro m d
     exact gffSubsequenceStageSucc μ F g hF m d
 
-private theorem gffSubsequenceStages_succ {Ω : Type*} [MeasurableSpace Ω]
-    (μ : Measure Ω) (F : ℕ → ℕ → Ω → ℝ) (g : ℕ → Ω → ℝ)
-    (hF : ∀ i, TendstoInMeasure μ (fun n ω => F n i ω) atTop (g i)) (m : ℕ) :
-      (gffSubsequenceStages μ F g hF (m + 1)).seq =
-        (gffSubsequenceStages μ F g hF m).seq ∘
-          (gffSubsequenceStages μ F g hF m).next := by
-  rfl
 
-private theorem gffSubsequenceStages_range_mono {Ω : Type*} [MeasurableSpace Ω]
-    (μ : Measure Ω) (F : ℕ → ℕ → Ω → ℝ) (g : ℕ → Ω → ℝ)
-    (hF : ∀ i, TendstoInMeasure μ (fun n ω => F n i ω) atTop (g i)) (m : ℕ) :
-      Set.range (gffSubsequenceStages μ F g hF (m + 1)).seq ⊆
-        Set.range (gffSubsequenceStages μ F g hF m).seq := by
-  intro x hx
-  rcases hx with ⟨n, rfl⟩
-  rw [gffSubsequenceStages_succ]
-  exact ⟨(gffSubsequenceStages μ F g hF m).next n, rfl⟩
 
-private theorem gffSubsequenceStages_range_le {Ω : Type*} [MeasurableSpace Ω]
-    (μ : Measure Ω) (F : ℕ → ℕ → Ω → ℝ) (g : ℕ → Ω → ℝ)
-    (hF : ∀ i, TendstoInMeasure μ (fun n ω => F n i ω) atTop (g i)) :
-    ∀ i m, i ≤ m →
-      Set.range (gffSubsequenceStages μ F g hF m).seq ⊆
-        Set.range (gffSubsequenceStages μ F g hF i).seq := by
-  intro i m him
-  induction m with
-  | zero =>
-      have : i = 0 := by omega
-      subst i
-      exact Set.Subset.rfl
-  | succ m ih =>
-      by_cases h : i ≤ m
-      · exact (gffSubsequenceStages_range_mono μ F g hF m).trans (ih h)
-      · have : i = m + 1 := by omega
-        subst i
-        exact Set.Subset.rfl
 
-private theorem strictMono_nat_le_self {ψ : ℕ → ℕ} (hψ : StrictMono ψ) (n : ℕ) :
-    n ≤ ψ n := by
-  induction n with
-  | zero => exact Nat.zero_le _
-  | succ n ih =>
-      have hs : ψ n < ψ (n + 1) := hψ (by omega)
-      exact Nat.succ_le_of_lt (lt_of_le_of_lt ih hs)
 
 /-- From countably many scalar convergences in measure, extract one increasing subsequence along
 which every coordinate converges almost everywhere. The diagonal sequence uses nested subsequences,
 so the limit event is a countable intersection rather than a family of unrelated testwise events. -/
-theorem exists_common_subseq_tendsto_ae {Ω : Type*} [MeasurableSpace Ω]
+theorem exists_common_subseq_tendsto_ae
     (μ : Measure Ω) (F : ℕ → ℕ → Ω → ℝ) (g : ℕ → Ω → ℝ)
     (hF : ∀ i, TendstoInMeasure μ (fun n ω => F n i ω) atTop (g i)) :
     ∃ ns : ℕ → ℕ, StrictMono ns ∧ ∀ᵐ ω ∂μ, ∀ i,
       Tendsto (fun n => F (ns n) i ω) atTop (𝓝 (g i ω)) := by
+  have gffSubsequenceStages_succ (μ : Measure Ω) (F : ℕ → ℕ → Ω → ℝ) (g : ℕ → Ω → ℝ) (hF : ∀ i, TendstoInMeasure μ (fun n ω => F n i ω) atTop (g i)) (m : ℕ) : (gffSubsequenceStages μ F g hF (m + 1)).seq =
+          (gffSubsequenceStages μ F g hF m).seq ∘
+            (gffSubsequenceStages μ F g hF m).next := by
+    rfl
+  have gffSubsequenceStages_range_le : ∀ i m, i ≤ m →
+        Set.range (gffSubsequenceStages μ F g hF m).seq ⊆
+          Set.range (gffSubsequenceStages μ F g hF i).seq := by
+    have gffSubsequenceStages_range_mono (m : ℕ) : Set.range (gffSubsequenceStages μ F g hF (m + 1)).seq ⊆
+            Set.range (gffSubsequenceStages μ F g hF m).seq := by
+      intro x hx
+      rcases hx with ⟨n, rfl⟩
+      rw [gffSubsequenceStages_succ]
+      norm_num
+    intro i m him
+    induction m with
+    | zero =>
+        have : i = 0 := by omega
+        subst i
+        exact Set.Subset.rfl
+    | succ m ih =>
+        by_cases h : i ≤ m
+        · exact (gffSubsequenceStages_range_mono m).trans (ih h)
+        · have : i = m + 1 := by omega
+          subst i
+          exact Set.Subset.rfl
+  have strictMono_nat_le_self {ψ : ℕ → ℕ} (hψ : StrictMono ψ) (n : ℕ) : n ≤ ψ n := by
+    induction n with
+    | zero => exact Nat.zero_le _
+    | succ n ih =>
+        have hs : ψ n < ψ (n + 1) := hψ (by omega)
+        exact Nat.succ_le_of_lt (lt_of_le_of_lt ih hs)
   classical
   let stages := gffSubsequenceStages μ F g hF
   let diag : ℕ → ℕ := fun n => (stages n).seq n
@@ -142,13 +136,8 @@ theorem exists_common_subseq_tendsto_ae {Ω : Type*} [MeasurableSpace Ω]
   have hconv (i : ℕ) : ∀ᵐ ω ∂μ,
       Tendsto (fun n => F (diag n) i ω) atTop (𝓝 (g i ω)) := by
     let φ := (stages (i + 1)).seq
-    have hφ : StrictMono φ := (stages (i + 1)).strict
-    have hφconv : ∀ᵐ ω ∂μ,
-        Tendsto (fun k => F (φ k) i ω) atTop (𝓝 (g i ω)) :=
-      (stages (i + 1)).converges i (by omega)
     have hmem (n : ℕ) (hn : i < n) : diag n ∈ Set.range φ := by
-      have hsubset := gffSubsequenceStages_range_le μ F g hF (i + 1) n (by omega)
-      exact hsubset ⟨n, rfl⟩
+      exact gffSubsequenceStages_range_le (i + 1) n (by omega) ⟨n, rfl⟩
     let idx : ℕ → ℕ := fun n =>
       if hn : i < n then Classical.choose (hmem n hn) else 0
     have hidx_eq : ∀ᶠ n in atTop, φ (idx n) = diag n := by
@@ -157,23 +146,20 @@ theorem exists_common_subseq_tendsto_ae {Ω : Type*} [MeasurableSpace Ω]
     have hidx_tendsto : Tendsto idx atTop atTop := by
       rw [Filter.tendsto_atTop]
       intro b
-      have hlarge : ∀ᶠ n in atTop, φ b ≤ diag n :=
+      have hlarge :=
         hdiag.tendsto_atTop.eventually_ge_atTop (φ b)
       filter_upwards [hlarge, hidx_eq] with n hlarge heq
       by_contra hidx
       have hlt : idx n < b := by omega
-      have hphi : φ (idx n) < φ b := hφ hlt
+      have : φ (idx n) < φ b := (stages (i + 1)).strict hlt
       omega
-    filter_upwards [hφconv] with ω hω
-    have hcomp := hω.comp hidx_tendsto
+    filter_upwards [(stages (i + 1)).converges i (by omega)] with ω hω
     have hEq : (fun n => F (φ (idx n)) i ω) =ᶠ[atTop]
         (fun n => F (diag n) i ω) := by
       filter_upwards [hidx_eq] with n hn
       rw [hn]
-    exact hcomp.congr' hEq
-  have hae : ∀ᵐ ω ∂μ, ∀ i, Tendsto (fun n => F (diag n) i ω) atTop
-      (𝓝 (g i ω)) := ae_all_iff.mpr hconv
-  exact ⟨diag, hdiag, hae⟩
+    exact (hω.comp hidx_tendsto).congr' hEq
+  exact ⟨diag, hdiag, ae_all_iff.mpr hconv⟩
 
 end DOZZ
 

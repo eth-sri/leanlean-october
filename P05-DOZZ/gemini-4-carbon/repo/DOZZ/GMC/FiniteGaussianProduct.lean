@@ -32,8 +32,8 @@ theorem independent_product_concat_isCenteredJointlyGaussian
   let Z : ΩX × ΩY → Sum ι ι → ℝ := fun ω i => match i with
     | Sum.inl j => X ω.1 j
     | Sum.inr j => Y ω.2 j
-  have : IsProbabilityMeasure PX := hX.1
-  have : IsProbabilityMeasure PY := hY.1
+  have := hX.1
+  have := hY.1
   let hfst : MeasurePreserving Prod.fst (PX.prod PY) PX := measurePreserving_fst
   let hsnd : MeasurePreserving Prod.snd (PX.prod PY) PY := measurePreserving_snd
   refine ⟨?_, ?_, ?_⟩
@@ -65,18 +65,15 @@ theorem independent_product_concat_isCenteredJointlyGaussian
     obtain ⟨hYmem, ⟨vY, hYmap⟩⟩ := hY.2.2 cY
     have hXlaw : HasLaw fX (gaussianReal 0 vX) PX := ⟨hXmem.aemeasurable, hXmap⟩
     have hYlaw : HasLaw fY (gaussianReal 0 vY) PY := ⟨hYmem.aemeasurable, hYmap⟩
-    have hXprod : HasLaw (fun ω : ΩX × ΩY => fX ω.1) (gaussianReal 0 vX) (PX.prod PY) :=
+    have hXprod :=
       hXlaw.comp hfst.hasLaw
-    have hYprod : HasLaw (fun ω : ΩX × ΩY => fY ω.2) (gaussianReal 0 vY) (PX.prod PY) :=
+    have hYprod :=
       hYlaw.comp hsnd.hasLaw
-    have hIndep : (fun ω : ΩX × ΩY => fX ω.1) ⟂ᵢ[PX.prod PY]
-        (fun ω => fY ω.2) :=
-      indepFun_prod₀ hXmem.aemeasurable hYmem.aemeasurable
     have hSumLaw : HasLaw (fun ω : ΩX × ΩY => fX ω.1 + fY ω.2)
         (gaussianReal 0 (vX + vY)) (PX.prod PY) := by
       refine ⟨?_, ?_⟩
       · exact (hXprod.aemeasurable.add hYprod.aemeasurable)
-      · convert gaussianReal_add_gaussianReal_of_indepFun hIndep hXprod hYprod using 1; simp
+      · convert gaussianReal_add_gaussianReal_of_indepFun (indepFun_prod₀ hXmem.aemeasurable hYmem.aemeasurable) hXprod hYprod using 1; simp
     have hsum : (fun ω : ΩX × ΩY => ∑ i, a i * Z ω i) =
         fun ω => fX ω.1 + fY ω.2 := by
       funext ω

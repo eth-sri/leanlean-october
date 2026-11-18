@@ -32,9 +32,7 @@ theorem reflected_source_outerMass_pastCode_ae
     (measurableSet_insert.mpr (measurableSet_singleton (1 : ℂ)) : MeasurableSet ({0,1} : Set ℂ)).compl
   have hU0 : U ⊆ ({0} : Set ℂ)ᶜ := by
     intro x hx
-    have hn := hr.trans hx.1
-    simpa only [mem_compl_iff,mem_singleton_iff] using norm_pos_iff.mp hn
-  have hF : Measurable F := (reflected_gammaHalfKernel_measurable γ α₁ α₂ α₃ z).ennreal_ofReal
+    simpa only [mem_compl_iff,mem_singleton_iff] using norm_pos_iff.mp (hr.trans hx.1)
   filter_upwards [heq,reflected_source_outerMass_eq_comparison_region P X hX γ hγ hγ₂ M hM
     α₁ α₂ α₃ ξ z hz] with ω hω ho
   rw [reflected_pastOuterMassCode_eq γ α₁ α₂ α₃ (‖z‖^(1-ξ)) z (A ω) T (N ω) hr hT (hfin ω)]
@@ -46,7 +44,7 @@ theorem reflected_source_outerMass_pastCode_ae
   rw [show (fun x : ℂ => F x*ENNReal.ofReal (reflected_global_reinsertionWeight γ (A ω) x)) =
     (fun x => ENNReal.ofReal (reflected_global_reinsertionWeight γ (A ω) x)*F x) from
       funext fun _ => mul_comm _ _]
-  have hw := setLIntegral_withDensity_eq_setLIntegral_mul (N ω) hW hF hU
+  have hw := setLIntegral_withDensity_eq_setLIntegral_mul (N ω) hW ((reflected_gammaHalfKernel_measurable γ α₁ α₂ α₃ z).ennreal_ofReal) hU
   simp only [Pi.mul_apply] at hw
   rw [← hw]
   rw [hω,reflected_global_reinsertion_measure,Measure.restrict_restrict hU,inter_eq_left.mpr hU0]

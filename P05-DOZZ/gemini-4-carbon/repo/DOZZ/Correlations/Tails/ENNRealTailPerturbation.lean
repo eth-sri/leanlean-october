@@ -32,13 +32,10 @@ theorem ennreal_tail_domination
     by_cases he : ENNReal.ofReal h < E ω
     · exact Or.inr he
     · have hsum : B ω+E ω ≤ ENNReal.ofReal x := by
-        calc B ω+E ω ≤ ENNReal.ofReal (x-h)+ENNReal.ofReal h :=
-              add_le_add (le_of_not_gt hb) (le_of_not_gt he)
-          _ = ENNReal.ofReal x := by
-              rw [← ENNReal.ofReal_add (sub_nonneg.mpr hhx) hh,sub_add_cancel]
+        refine (add_le_add (le_of_not_gt hb) (le_of_not_gt he)).trans_eq (?_)
+        rw [← ENNReal.ofReal_add (sub_nonneg.mpr hhx) hh,sub_add_cancel]
       exact (hx.not_ge (hω.trans hsum)).elim
-  have hm := (measure_mono_ae hsub).trans (measure_union_le _ _)
-  have ht := ENNReal.toReal_mono (by finiteness) hm
+  have ht := ENNReal.toReal_mono (by finiteness) ((measure_mono_ae hsub).trans (measure_union_le _ _))
   rw [ENNReal.toReal_add (by finiteness) (by finiteness)] at ht
   exact ht
 

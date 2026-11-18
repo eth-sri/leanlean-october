@@ -84,7 +84,7 @@ theorem unitVolume_residual_factor_eq_one_of_shifts
   obtain ⟨hη0, hηγ, hη3⟩ := hη
   -- the small cube
   set η₀ : ℝ := min η (γ / 4) with hη₀
-  have hη₀le : η₀ ≤ η := min_le_left _ _
+  have : η₀ ≤ η := min_le_left _ _
   have hη₀4 : η₀ ≤ γ / 4 := min_le_right _ _
   have hη₀0 : 0 < η₀ := lt_min hη0 (by positivity)
   have hη₀γ : Q γ - 2 * η₀ > γ := by linarith
@@ -110,7 +110,7 @@ theorem unitVolume_residual_factor_eq_one_of_shifts
   obtain ⟨B, hB⟩ := exists_reflectionData_family P X γ M _ hSLP hLat
   refine ⟨B, fun ω => lateralProjectedGMC γ (A ω) (M ω), hSLP, fun α _ hα => hB α hα, 1, rfl,
     fun α₁ α₂ α₃ h1 h2 h3 h4 h5 h6 => ?_⟩
-  have hs : 0 < sExp γ α₁ α₂ α₃ := by
+  have : 0 < sExp γ α₁ α₂ α₃ := by
     unfold sExp
     exact div_pos (by linarith) hγ
   rw [one_mul]

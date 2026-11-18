@@ -34,20 +34,12 @@ theorem realGaussSolution_canonical_hermitian_representation
     apply hc n
     exact_mod_cast hn
   have hzero := gauss_local_basis_zero hH (a : ℂ) (b : ℂ) (c : ℂ) hcC
-  have hFanalytic : AnalyticOnNhd ℂ (gaussFMinus H (a : ℂ) (b : ℂ) (c : ℂ))
-      gaussCutPlane := hzero.1.analyticOnNhd gaussCutPlane_isOpen
-  have hGanalytic : AnalyticOnNhd ℂ (gaussFPlus H (a : ℂ) (b : ℂ) (c : ℂ))
-      gaussCutPlane := hzero.2.1.analyticOnNhd gaussCutPlane_isOpen
   have hFode : ∀ z ∈ gaussCutPlane,
       gaussHolomorphicOperator (a : ℂ) (b : ℂ) (c : ℂ)
-        (gaussFMinus H (a : ℂ) (b : ℂ) (c : ℂ)) z = 0 := by
-    intro z hz
-    exact (hzero.2.2.1 z hz).1
+        (gaussFMinus H (a : ℂ) (b : ℂ) (c : ℂ)) z = 0 := by grind
   have hGode : ∀ z ∈ gaussCutPlane,
       gaussHolomorphicOperator (a : ℂ) (b : ℂ) (c : ℂ)
-        (gaussFPlus H (a : ℂ) (b : ℂ) (c : ℂ)) z = 0 := by
-    intro z hz
-    exact (hzero.2.2.1 z hz).2.1
+        (gaussFPlus H (a : ℂ) (b : ℂ) (c : ℂ)) z = 0 := by grind
   have hW : ∀ z ∈ gaussCutPlane,
       gaussCramerWronskian
         (gaussFMinus H (a : ℂ) (b : ℂ) (c : ℂ))
@@ -67,14 +59,13 @@ theorem realGaussSolution_canonical_hermitian_representation
       intro he
       apply hc 1
       exact_mod_cast (sub_eq_zero.mp he).symm
-    have hWr := (hzero.2.2.1 z hz).2.2
     change gaussFMinus H (a : ℂ) (b : ℂ) (c : ℂ) z *
         deriv (gaussFPlus H (a : ℂ) (b : ℂ) (c : ℂ)) z -
       deriv (gaussFMinus H (a : ℂ) (b : ℂ) (c : ℂ)) z *
         gaussFPlus H (a : ℂ) (b : ℂ) (c : ℂ) z ≠ 0
-    rw [hWr]
+    rw [(hzero.2.2.1 z hz).2.2]
     exact mul_ne_zero (mul_ne_zero hcoeff hzpow) hwpow
-  exact realGaussCramer_hermitian_representation a b c T hT hFanalytic hGanalytic
+  exact realGaussCramer_hermitian_representation a b c T hT (hzero.1.analyticOnNhd gaussCutPlane_isOpen) (hzero.2.1.analyticOnNhd gaussCutPlane_isOpen)
     hFode hGode hW
 
 end DOZZ.Proofs

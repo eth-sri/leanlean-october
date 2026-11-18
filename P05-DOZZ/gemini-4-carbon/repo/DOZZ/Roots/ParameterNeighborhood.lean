@@ -50,9 +50,6 @@ theorem roots_unitVolume_gamma_continuousAt {Ω : Type*} [MeasurableSpace Ω]
   have hKdom : ∀ q ∈ K, 0 < q.1 ∧ q.1 < 2 ∧ ExtendedSeiberg3 q.1 (q.2 0) (q.2 1) (q.2 2) := by
     rintro q ⟨g, hg, rfl⟩
     exact hJdom g hg
-  have hc := continuousOn_unitVolumeStructureConstant P X M hX hM K hK hKdom
-  have hcomp : ContinuousOn (fun g => unitVolumeStructureConstant P (M g) g a b c) J :=
-    hc.comp hAc.continuousOn (fun g hg => mem_image_of_mem A hg)
-  exact hcomp.continuousAt (Icc_mem_nhds (by linarith only [hR])
+  exact ((continuousOn_unitVolumeStructureConstant P X M hX hM K hK hKdom).comp hAc.continuousOn (fun g hg => mem_image_of_mem A hg)).continuousAt (Icc_mem_nhds (by linarith only [hR])
     (by linarith only [hR]))
 end DOZZ.Proofs

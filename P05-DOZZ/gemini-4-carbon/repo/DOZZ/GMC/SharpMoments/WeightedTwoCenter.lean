@@ -69,7 +69,6 @@ theorem weightedGmcBallMoment_le_transfer
     Eventually.of_forall fun ω =>
       ((ENNReal.continuous_rpow_const (y := p)).tendsto _).comp
         (insertionTrunc_mass_tendsto γ α (M ω) z₁ ρ)
-  have hconv := lintegral_tendsto_of_tendsto_of_monotone hmeas hmono hlim
-  exact le_of_tendsto' hconv hN
+  exact le_of_tendsto' (lintegral_tendsto_of_tendsto_of_monotone hmeas hmono hlim) hN
 
 end DOZZ.Proofs

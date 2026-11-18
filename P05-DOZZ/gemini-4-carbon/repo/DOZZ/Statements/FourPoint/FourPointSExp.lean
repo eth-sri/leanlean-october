@@ -28,8 +28,6 @@ public import DOZZ.Statements.Hypergeom.PlanarGaussConstant
 
 @[expose] public section
 
-open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
-open scoped ENNReal NNReal Topology
 
 namespace DOZZ
 

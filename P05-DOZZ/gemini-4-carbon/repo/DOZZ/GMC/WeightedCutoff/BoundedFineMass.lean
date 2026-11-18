@@ -37,7 +37,7 @@ theorem regularizedGMC_bounded_ball_moment_compact_gamma_fine
   let H : ℝ≥0∞ := ENNReal.ofReal M * A ^ q
   have hH : H < ⊤ := ENNReal.mul_lt_top ENNReal.ofReal_lt_top
     (lt_top_iff_ne_top.mpr (ENNReal.rpow_ne_top_of_nonneg (by linarith) hA.ne))
-  let D : ℝ≥0∞ := (S.card : ℝ≥0∞) ^ q * (S.card : ℝ≥0∞) * H
+  let D := (S.card : ℝ≥0∞) ^ q * (S.card : ℝ≥0∞) * H
   have hD : D < ⊤ := ENNReal.mul_lt_top
     (ENNReal.mul_lt_top (lt_top_iff_ne_top.mpr (ENNReal.rpow_ne_top_of_nonneg
       (by linarith) (ENNReal.natCast_ne_top _))) (by simp)) hH

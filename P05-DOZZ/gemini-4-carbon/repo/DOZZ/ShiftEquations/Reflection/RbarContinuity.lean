@@ -35,24 +35,29 @@ namespace DOZZ.Proofs
 /-- The physical reflection domain. -/
 def reflectionDomain : Set (ℝ × ℝ) := {q | 0 < q.1 ∧ q.1 < 2 ∧ q.1 / 2 < q.2 ∧ q.2 < Q q.1}
 
+section
+variable {x : ℂ} (h1 : ∀ m : ℕ, x ≠ -m) (h2 : ∀ m : ℕ, 1 - x ≠ -m)
+include h1 h2
+
 /-- `l` is continuous and nonzero at points `x` with `x` and `1 - x` off the Gamma poles. -/
-theorem continuousAt_lFun {x : ℂ} (h1 : ∀ m : ℕ, x ≠ -m) (h2 : ∀ m : ℕ, 1 - x ≠ -m) :
+theorem continuousAt_lFun :
     ContinuousAt lFun x := by
-  have hc : ContinuousAt (fun y : ℂ => Complex.Gamma (1 - y)) x :=
+  have hc :=
     (Complex.differentiableAt_Gamma (1 - x) h2).continuousAt.comp
       (continuous_const.sub continuous_id).continuousAt
   exact (Complex.differentiableAt_Gamma x h1).continuousAt.div hc (Complex.Gamma_ne_zero h2)
 
-theorem lFun_ne_zero {x : ℂ} (h1 : ∀ m : ℕ, x ≠ -m) (h2 : ∀ m : ℕ, 1 - x ≠ -m) :
+theorem lFun_ne_zero :
     lFun x ≠ 0 :=
   div_ne_zero (Complex.Gamma_ne_zero h1) (Complex.Gamma_ne_zero h2)
 
+
+end
 /-- A real point strictly between two consecutive integers is off every pole. -/
 theorem ofReal_ne_neg_nat_of_mem {r : ℝ} (h : (-1 < r ∧ r < 0) ∨ (0 < r ∧ r < 1) ∨
     (1 < r ∧ r < 2)) : ∀ m : ℕ, (r : ℂ) ≠ -m := by
   intro m hm
   have hr : r = -m := by exact_mod_cast hm
-  have hm0 : (0 : ℝ) ≤ m := Nat.cast_nonneg m
   rcases h with ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩
   · rw [hr] at h1 h2
     rcases Nat.lt_or_ge m 1 with hm1 | hm1
@@ -65,25 +70,6 @@ theorem ofReal_ne_neg_nat_of_mem {r : ℝ} (h : (-1 < r ∧ r < 0) ∨ (0 < r �
   · rw [hr] at h1
     linarith
 
-/-- The `l`-arguments of the coefficient at real points of the domain. -/
-theorem lFun_arguments_mem {γ α : ℝ} (hq : (γ, α) ∈ reflectionDomain) :
-    (-1 < γ / 2 * α - γ ^ 2 / 4 - 1 ∧ γ / 2 * α - γ ^ 2 / 4 - 1 < 0) ∧
-      (0 < 1 + γ / 2 * (α - Q γ) ∧ 1 + γ / 2 * (α - Q γ) < 1) ∧
-      (-1 < -(γ ^ 2) / 4 ∧ -(γ ^ 2) / 4 < 0) ∧ (0 < γ ^ 2 / 4 ∧ γ ^ 2 / 4 < 1) := by
-  obtain ⟨hγ, hγ2, hα1, hα2⟩ := hq
-  have hQ : γ / 2 * Q γ = 1 + γ ^ 2 / 4 := by
-    rw [Q]
-    field_simp
-    ring
-  have hγsq : γ ^ 2 < 4 := by
-    have := pow_lt_pow_left₀ hγ2 hγ.le two_ne_zero
-    linarith only [this]
-  have h1 : γ / 2 * (γ / 2) < γ / 2 * α := mul_lt_mul_of_pos_left hα1 (by positivity)
-  have h2 : γ / 2 * α < γ / 2 * Q γ := mul_lt_mul_of_pos_left hα2 (by positivity)
-  have hγsq0 : 0 < γ ^ 2 := pow_pos hγ 2
-  refine ⟨⟨by linarith only [h1], by linarith only [h2, hQ]⟩,
-    ⟨by linarith only [h1, hQ], by linarith only [h2]⟩,
-    ⟨by linarith only [hγsq], by linarith only [hγsq0]⟩, ⟨by positivity, by linarith only [hγsq]⟩⟩
 
 /-- Composition of `l` with a continuous map through an admissible real value. -/
 theorem continuousAt_lFun_comp {f : ℝ × ℝ → ℂ} {q : ℝ × ℝ} (hf : ContinuousAt f q) {r : ℝ}
@@ -103,10 +89,24 @@ theorem continuousAt_lFun_comp {f : ℝ × ℝ → ℂ} {q : ℝ × ℝ} (hf : C
 /-- **The `formulaforbarR` coefficient is continuous on the physical domain.** -/
 theorem continuousOn_rbarCoefficient :
     ContinuousOn (fun q : ℝ × ℝ => rbarCoefficient q.1 (q.2 : ℂ)) reflectionDomain := by
+  have lFun_arguments_mem {γ α : ℝ} (hq : (γ, α) ∈ reflectionDomain) : (-1 < γ / 2 * α - γ ^ 2 / 4 - 1 ∧ γ / 2 * α - γ ^ 2 / 4 - 1 < 0) ∧
+        (0 < 1 + γ / 2 * (α - Q γ) ∧ 1 + γ / 2 * (α - Q γ) < 1) ∧
+        (-1 < -(γ ^ 2) / 4 ∧ -(γ ^ 2) / 4 < 0) ∧ (0 < γ ^ 2 / 4 ∧ γ ^ 2 / 4 < 1) := by
+    obtain ⟨hγ, hγ2, hα1, hα2⟩ := hq
+    have hQ : γ / 2 * Q γ = 1 + γ ^ 2 / 4 := by
+      rw [Q]
+      field_simp
+      ring
+    have hγsq : γ ^ 2 < 4 := by nlinarith
+    have h1 := mul_lt_mul_of_pos_left hα1 (by positivity)
+    have h2 := mul_lt_mul_of_pos_left hα2 (by positivity)
+    refine ⟨⟨by linarith only [h1], by linarith only [h2, hQ]⟩,
+      ⟨by linarith only [h1, hQ], by linarith only [h2]⟩,
+      ⟨by linarith only [hγsq], by linarith only [pow_pos hγ 2]⟩, ⟨by positivity, by linarith only [hγsq]⟩⟩
   intro q hq
   apply ContinuousAt.continuousWithinAt
   obtain ⟨ha, hb, hc, hd⟩ := lFun_arguments_mem hq
-  have hγ0 : q.1 ≠ 0 := hq.1.ne'
+  have hγ0 := hq.1.ne'
   have hc1 : Continuous fun p : ℝ × ℝ => (p.1 : ℂ) := Complex.continuous_ofReal.comp continuous_fst
   have hc2 : Continuous fun p : ℝ × ℝ => (p.2 : ℂ) := Complex.continuous_ofReal.comp continuous_snd
   have cA := continuousAt_lFun_comp (f := fun p : ℝ × ℝ =>
@@ -137,61 +137,7 @@ theorem continuousOn_rbarCoefficient :
   unfold rbarCoefficient
   exact (cpre.mul cA.1).div ((cB.1.mul cC.1).mul cD.1) (mul_ne_zero (mul_ne_zero cB.2 cC.2) cD.2)
 
-/-- The charges `(α, γ, α)` of the `R̄` representation lie in the extended domain. -/
-theorem extendedSeiberg3_reflection {γ α : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hα1 : γ / 2 < α)
-    (hα2 : α < Q γ) : ExtendedSeiberg3 γ α γ α := by
-  have hQ : Q γ = 2 / γ + γ / 2 := rfl
-  have hγQ : γ < Q γ := by
-    rw [hQ]
-    have : γ / 2 < 2 / γ := by
-      rw [div_lt_div_iff₀ (by norm_num) hγ]
-      exact mul_self_lt_mul_self hγ.le hγ2
-    linarith
-  have hs : -sExp γ α γ α = (2 * Q γ - 2 * α - γ) / γ := by
-    unfold sExp
-    ring
-  refine ⟨hα2, hγQ, hα2, ?_⟩
-  rw [hs]
-  refine lt_min ?_ (lt_min ?_ (lt_min ?_ ?_))
-  · rw [div_lt_div_iff₀ hγ (by positivity), hQ]
-    field_simp
-    linarith only [mul_pos hγ (by linarith only [hα1, hγ] : (0 : ℝ) < α)]
-  · rw [div_lt_iff₀ hγ, show 2 / γ * (Q γ - α) * γ = 2 * (Q γ - α) by field_simp]
-    linarith
-  · rw [div_lt_iff₀ hγ, show 2 / γ * (Q γ - γ) * γ = 2 * (Q γ - γ) by field_simp]
-    linarith
-  · rw [div_lt_iff₀ hγ, show 2 / γ * (Q γ - α) * γ = 2 * (Q γ - α) by field_simp]
-    linarith
 
-/-- **The `R̄` representation gives `R̄ = Re(coefficient) · C̄(α, γ, α)`** for any reflection
-data. -/
-theorem reflectionBarR_eq_coefficient_mul {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (M : ℝ → Ω → Measure ℂ)
-    (hM : ∀ γ, 0 < γ → γ < 2 → IsGMCOf P X γ (M γ))
-    (hBarRRepresentation : ∀ (γ : ℝ) (Mγ : Ω → Measure ℂ) (_ : 0 < γ) (_ : γ < 2) (_ : IsGMCOf P X γ Mγ)
-      (I : Set ℝ) (_ : IsCompact I) (_ : ∀ α ∈ I, γ / 2 < α ∧ α < Q γ),
-      ∃ B : ℝ → Ω → BrownianPath × BrownianPath, ∃ Z : Ω → Measure ℝ,
-        IsSourceLateralProjection P X γ Mγ Z ∧ (∀ α ∈ I, IsReflectionData P γ α (B α) Z) ∧
-          ∃ V : Set ℂ, IsOpen V ∧ (∀ α ∈ I, (α : ℂ) ∈ V) ∧
-            ∃ f : ℂ → ℂ, DifferentiableOn ℂ f V ∧
-              (∀ α ∈ I, f (α : ℂ) = (unitVolumeStructureConstant P Mγ γ α γ α : ℂ)) ∧
-              DifferentiableOn ℂ (fun z => rbarCoefficient γ z * f z) V ∧
-              ∀ α ∈ I, rbarCoefficient γ (α : ℂ) * f (α : ℂ) =
-                (reflectionBarR P γ α (B α) Z : ℂ))
-    {γ α : ℝ} (hq : (γ, α) ∈ reflectionDomain) (B : Ω → BrownianPath × BrownianPath)
-    (Z : Ω → Measure ℝ) (hData : IsReflectionData P γ α B Z) :
-    reflectionBarR P γ α B Z =
-      (rbarCoefficient γ (α : ℂ) * (unitVolumeStructureConstant P (M γ) γ α γ α : ℂ)).re := by
-  obtain ⟨hγ, hγ2, hα1, hα2⟩ := hq
-  obtain ⟨B', Z', -, hRD', V, -, -, f, -, hf, -, hcoef⟩ := hBarRRepresentation γ (M γ) hγ hγ2 (hM γ hγ hγ2)
-    {α} isCompact_singleton (by
-      intro a ha
-      rw [ha]
-      exact ⟨hα1, hα2⟩)
-  have hc := hcoef α rfl
-  rw [hf α rfl] at hc
-  rw [hc, Complex.ofReal_re]
-  exact reflectionBarR_eq_of_isReflectionData P P γ α B Z (B' α) Z' hData (hRD' α rfl)
 
 /-- **Joint continuity of `R̄`, and of `R` off its Gamma poles** (third conjunct of
 `DOZZ.reflection_endpoint_and_gamma_continuity`), from the `R̄` representation. -/
@@ -217,15 +163,45 @@ theorem continuousOn_reflection_of_representation {Ω : Type*} [MeasurableSpace 
     ContinuousOn (fun q => reflectionBarR P q.1 q.2 (B q.1 q.2) (Z q.1)) K ∧
       ((∀ q ∈ K, ReflectionPoleFree q.1 q.2) →
         ContinuousOn (fun q => reflectionR P q.1 μ q.2 (B q.1 q.2) (Z q.1)) K) := by
+  have reflectionBarR_eq_coefficient_mul {γ α : ℝ} (hq : (γ, α) ∈ reflectionDomain) (B : Ω → BrownianPath × BrownianPath) (Z : Ω → Measure ℝ) (hData : IsReflectionData P γ α B Z) : reflectionBarR P γ α B Z =
+        (rbarCoefficient γ (α : ℂ) * (unitVolumeStructureConstant P (M γ) γ α γ α : ℂ)).re := by
+    obtain ⟨hγ, hγ2, hα1, hα2⟩ := hq
+    obtain ⟨B', Z', -, hRD', V, -, -, f, -, hf, -, hcoef⟩ := hBarRRepresentation γ (M γ) hγ hγ2 (hM γ hγ hγ2)
+      {α} isCompact_singleton (by
+        intro a ha
+        rw [ha]
+        exact ⟨hα1, hα2⟩)
+    have hc := hcoef α rfl
+    rw [hf α rfl] at hc
+    rw [hc, Complex.ofReal_re]
+    exact reflectionBarR_eq_of_isReflectionData P P γ α B Z (B' α) Z' hData (hRD' α rfl)
+  have extendedSeiberg3_reflection {γ α : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hα1 : γ / 2 < α) (hα2 : α < Q γ) : ExtendedSeiberg3 γ α γ α := by
+    have hQ : Q γ = 2 / γ + γ / 2 := rfl
+    have hγQ : γ < Q γ := by
+      rw [hQ]
+      have : γ / 2 < 2 / γ := by
+        rw [div_lt_div_iff₀ (by norm_num) hγ]
+        exact mul_self_lt_mul_self hγ.le hγ2
+      linarith
+    have hs : -sExp γ α γ α = (2 * Q γ - 2 * α - γ) / γ := by
+      unfold sExp
+      ring
+    refine ⟨hα2, hγQ, hα2, ?_⟩
+    rw [hs]
+    refine lt_min ?_ (lt_min ?_ (lt_min ?_ ?_))
+    · rw [div_lt_div_iff₀ hγ (by positivity), hQ]
+      field_simp
+      linarith only [mul_pos hγ (by linarith only [hα1, hγ] : (0 : ℝ) < α)]
+    · rw [div_lt_iff₀ hγ, show 2 / γ * (Q γ - α) * γ = 2 * (Q γ - α) by field_simp]
+      linarith
+    · rw [div_lt_iff₀ hγ, show 2 / γ * (Q γ - γ) * γ = 2 * (Q γ - γ) by field_simp]
+      linarith
+    · rw [div_lt_iff₀ hγ, show 2 / γ * (Q γ - α) * γ = 2 * (Q γ - α) by field_simp]
+      linarith
   have hKD : K ⊆ reflectionDomain := fun q hq => hKdom q hq
   -- continuity of `C̄(α, γ, α)`
   set ι : ℝ × ℝ → ℝ × (Fin 3 → ℝ) := fun q => (q.1, ![q.2, q.1, q.2]) with hι
-  have hιc : Continuous ι := by
-    refine continuous_fst.prodMk (continuous_pi fun i => ?_)
-    fin_cases i
-    · exact continuous_snd
-    · exact continuous_fst
-    · exact continuous_snd
+  have hιc : Continuous ι := by fun_prop
   have hCbar : ContinuousOn (fun q : ℝ × ℝ => unitVolumeStructureConstant P (M q.1) q.1 q.2 q.1
       q.2) K := by
     have h := continuousOn_unitVolumeStructureConstant P X M hX hM (ι '' K) (hK.image hιc)
@@ -237,13 +213,12 @@ theorem continuousOn_reflection_of_representation {Ω : Type*} [MeasurableSpace 
         exact extendedSeiberg3_reflection hγ hγ2 hα1 hα2)
     exact h.comp hιc.continuousOn (mapsTo_image ι K)
   have hR : ContinuousOn (fun q => reflectionBarR P q.1 q.2 (B q.1 q.2) (Z q.1)) K := by
-    have hcont : ContinuousOn (fun q : ℝ × ℝ => (rbarCoefficient q.1 (q.2 : ℂ) *
-        (unitVolumeStructureConstant P (M q.1) q.1 q.2 q.1 q.2 : ℂ)).re) K :=
+    have hcont :=
       Complex.continuous_re.comp_continuousOn ((continuousOn_rbarCoefficient.mono hKD).mul
         (Complex.continuous_ofReal.comp_continuousOn hCbar))
     refine hcont.congr fun q hq => ?_
     obtain ⟨hγ, hγ2, hα1, hα2⟩ := hKdom q hq
-    exact reflectionBarR_eq_coefficient_mul P X M hM hBarRRepresentation (hKdom q hq) _ _
+    exact reflectionBarR_eq_coefficient_mul (hKdom q hq) _ _
       (hData q.1 hγ hγ2 q.2 hα1 hα2)
   refine ⟨hR, fun hpole => ?_⟩
   have hp : ContinuousOn (fun q : ℝ × ℝ => reflectionExponent q.1 q.2) K := by
@@ -257,7 +232,7 @@ theorem continuousOn_reflection_of_representation {Ω : Type*} [MeasurableSpace 
   have hnp : ∀ q ∈ K, ∀ m : ℕ, -reflectionExponent q.1 q.2 ≠ -m := by
     intro q hq m hm
     obtain ⟨hγ, hγ2, hα1, hα2⟩ := hKdom q hq
-    have hp0 : 0 < reflectionExponent q.1 q.2 := by
+    have : 0 < reflectionExponent q.1 q.2 := by
       unfold reflectionExponent
       exact div_pos (by linarith) hγ
     have hm' : reflectionExponent q.1 q.2 = m := by linarith
@@ -265,12 +240,12 @@ theorem continuousOn_reflection_of_representation {Ω : Type*} [MeasurableSpace 
     · simp only [Nat.cast_zero] at hm'
       linarith
     · exact hpole q hq n (by rw [hm'])
-  have hΓ : ContinuousOn (fun q : ℝ × ℝ => Real.Gamma (-reflectionExponent q.1 q.2)) K :=
+  have :=
     hΓc.comp hp.neg fun q hq => hnp q hq
-  have hμp : ContinuousOn (fun q : ℝ × ℝ => μ ^ reflectionExponent q.1 q.2) K :=
+  have :=
     continuousOn_const.rpow hp fun _ _ => Or.inl hμ.ne'
   unfold reflectionR
-  exact ((hμp.mul hΓ).mul hp).mul hR
+  fun_prop
 
 end DOZZ.Proofs
 

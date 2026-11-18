@@ -24,11 +24,11 @@ theorem williams_reference_input_law
     ((brownianMaximumReferenceLaw ν).prod ((Qν.prod Qν).prod L)).map
       (williamsInputMassCode γ) := by
   let μ := brownianMaximumReferenceLaw ν
-  let : IsProbabilityMeasure μ := isProbabilityMeasure_brownianMaximumReferenceLaw hν
+  let := isProbabilityMeasure_brownianMaximumReferenceLaw hν
   let Raw := ((ℝ × BrownianPath) × BrownianPath) × Measure ℝ
-  let R : Measure Raw := ((μ.prod Qν).prod Qν).prod L
+  let R := ((μ.prod Qν).prod Qν).prod L
   let mark := fun v : ℝ × BrownianPath => (v.1,negativeConditionedLastExitSegment v.1 v.2)
-  have hmark : Measurable mark := measurable_fst.prodMk measurable_lastExitSegment_joint
+  have hmark := measurable_fst.prodMk measurable_lastExitSegment_joint
   let H : Raw → ((ℝ × StoppedBrownianPath) × BrownianPath) × Measure ℝ :=
     Prod.map (Prod.map mark id) id
   have hH : Measurable H := (hmark.prodMap measurable_id).prodMap measurable_id
@@ -41,16 +41,12 @@ theorem williams_reference_input_law
   let T : Raw → ℝ × ((BrownianPath × BrownianPath) × Measure ℝ) :=
     fun w => (w.1.1.1,((w.1.2,w.1.1.2),w.2))
   have hT : MeasurePreserving T R (μ.prod ((Qν.prod Qν).prod L)) := by
-    have h1 := (measurePreserving_prodAssoc μ Qν Qν).prod (MeasurePreserving.id L)
-    have h2 := measurePreserving_prodAssoc μ (Qν.prod Qν) L
     have h3 := (MeasurePreserving.id μ).prod
       ((Measure.measurePreserving_swap (μ := Qν) (ν := Qν)).prod (MeasurePreserving.id L))
-    exact h3.comp (h2.comp h1)
-  have hRfin : ∀ᵐ w ∂R, ∀ a b : ℝ, w.2 (Icc a b) < ⊤ :=
-    (measurePreserving_snd (μ := (μ.prod Qν).prod Qν) (ν := L)).quasiMeasurePreserving.ae hfin
+    exact h3.comp ((measurePreserving_prodAssoc μ (Qν.prod Qν) L).comp ((measurePreserving_prodAssoc μ Qν Qν).prod (MeasurePreserving.id L)))
   have he : (williamsMassFunctional γ ∘ H) =ᵐ[R]
       (williamsInputMassCode γ ∘ T) := by
-    filter_upwards [hRfin] with w hw
+    filter_upwards [(measurePreserving_snd (μ := (μ.prod Qν).prod Qν) (ν := L)).quasiMeasurePreserving.ae hfin] with w hw
     change williamsMassFunctional γ
       (((w.1.1.1,negativeConditionedLastExitSegment w.1.1.1 w.1.1.2),w.1.2),w.2) = _
     rw [williamsMassFunctional_lastExit γ _ _ _ _ hw]

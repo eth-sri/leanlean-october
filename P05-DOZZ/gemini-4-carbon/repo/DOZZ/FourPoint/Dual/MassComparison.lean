@@ -9,7 +9,6 @@ public import DOZZ.FourPoint.Dual.NegativePowerDifference
 import Mathlib.Tactic
 /-! # The actual retained dual mass and its zero-mass comparison -/
 public section
-open MeasureTheory Set
 namespace DOZZ.Proofs
 
 /-- The dual density is nonnegative, including its prescribed root values. -/

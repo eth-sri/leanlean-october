@@ -39,11 +39,10 @@ theorem dual_kernel_separated_split (γ α₁ α₂ α₃ s r : ℝ) (_hs : 0 < 
       measure_eq_zero_iff_ae_notMem.mp h1, measure_eq_zero_iff_ae_notMem.mp hc] with x hx0 hx1 hxc
     have hx0' : x ≠ 0 := by simpa only [mem_singleton_iff] using hx0
     have hx1' : x ≠ 1 := by simpa only [mem_singleton_iff] using hx1
-    have hxp : 0 < ‖x‖ := norm_pos_iff.mpr hx0'
     have hxr : ‖x‖ ≠ r := by simpa only [Metric.mem_sphere, dist_zero_right] using hxc
     by_cases hxs : ‖x‖ < s
     · have hxxr : ‖x‖ < r := hxs.trans_le hsr
-      have hix : x ∈ reflected_innerRegion s := ⟨hxp,hxs⟩
+      have hix : x ∈ reflected_innerRegion s := ⟨(norm_pos_iff.mpr hx0'),hxs⟩
       have hox : x ∉ reflected_outerRegion r := fun hh => (not_lt_of_ge hxxr.le) hh.1
       have hdx : x ∉ D := fun hh => (not_le_of_gt hxs) hh.1
       simp only [indicator_of_mem hix, indicator_of_notMem hox, indicator_of_notMem hdx, add_zero]

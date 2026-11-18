@@ -20,13 +20,19 @@ open Complex Filter Set Topology
 
 namespace DOZZ.Proofs
 
-private lemma closedEmbedding_affine_nat {c d : ℂ} (hc : c ≠ 0) :
+variable {c d : ℂ}
+
+
+section
+variable (hc : c ≠ 0)
+include hc
+
+private lemma closedEmbedding_affine_nat :
     IsClosedEmbedding (fun n : ℕ => c * (n : ℂ) + d) := by
   apply Metric.isClosedEmbedding_of_pairwise_le_dist (norm_pos_iff.mpr hc)
   intro m n hmn
-  have hnat : (1 : ℝ) ≤ dist m n := Nat.pairwise_one_le_dist hmn
-  have hnat' : (1 : ℝ) ≤ |(m : ℝ) - n| := by
-    simpa only [Nat.dist_eq] using hnat
+  have hnat := Nat.pairwise_one_le_dist hmn
+  have hnat' : (1 : ℝ) ≤ |(m : ℝ) - n| := by assumption
   have hnorm : ‖(m : ℂ) - n‖ = |(m : ℝ) - n| := by
     have hcast : (m : ℂ) - (n : ℂ) = (((m : ℝ) - n : ℝ) : ℂ) := by
       push_cast
@@ -41,7 +47,7 @@ private lemma closedEmbedding_affine_nat {c d : ℂ} (hc : c ≠ 0) :
 
 /- An affine function with nonzero slope avoids all nonpositive integer poles
 outside a codiscrete set. -/
-theorem eventually_affine_ne_neg_nat {c d : ℂ} (hc : c ≠ 0) :
+theorem eventually_affine_ne_neg_nat :
     ∀ᶠ α : ℂ in codiscrete ℂ, ∀ n : ℕ, c * α + d ≠ -(n : ℂ) := by
   let f : ℕ → ℂ := fun n => -(c⁻¹) * (n : ℂ) - d / c
   have hf : IsClosedEmbedding f := by
@@ -55,20 +61,11 @@ theorem eventually_affine_ne_neg_nat {c d : ℂ} (hc : c ≠ 0) :
   intro heq
   apply hα
   refine ⟨n, ?_⟩
-  have hsolve : α = f n := by
-    calc
-      α = (-(n : ℂ) - d) / c := by
-        apply (eq_div_iff hc).2
-        calc
-          α * c = c * α := mul_comm _ _
-          _ = -(n : ℂ) - d := by linear_combination heq
-      _ = f n := by
-        dsimp [f]
-        field_simp [hc]
+  have hsolve : α = f n := by grind
   exact hsolve.symm
 
 /-- `lFun` is finite and nonzero on an affine argument off a codiscrete set. -/
-theorem eventually_affine_lFun_ne_zero {c d : ℂ} (hc : c ≠ 0) :
+theorem eventually_affine_lFun_ne_zero :
     ∀ᶠ α : ℂ in codiscrete ℂ, lFun (c * α + d) ≠ 0 := by
   have hnum := eventually_affine_ne_neg_nat (c := c) (d := d) hc
   have hden := eventually_affine_ne_neg_nat (c := -c) (d := 1 - d)
@@ -82,6 +79,8 @@ theorem eventually_affine_lFun_ne_zero {c d : ℂ} (hc : c ≠ 0) :
   unfold lFun
   exact div_ne_zero (Complex.Gamma_ne_zero hnum) (Complex.Gamma_ne_zero hden')
 
+
+end
 /- Every affine pullback of a nontrivial entire Upsilon is nonzero off a
 codiscrete set. -/
 theorem eventually_upsilon_affine_ne_zero {γ : ℝ} {U : ℂ → ℂ}
@@ -93,18 +92,12 @@ theorem eventually_upsilon_affine_ne_zero {γ : ℝ} {U : ℂ → ℂ}
     change AnalyticAt ℂ (fun x : ℂ => U (c * x + d)) α
     exact AnalyticAt.comp (f := fun x : ℂ => c * x + d) (g := U) (x := α)
       (hU.1.analyticAt (c * α + d)) (by fun_prop)
-  let α₀ : ℂ := ((Q γ : ℂ) / 2 - d) / c
-  have harg : c * α₀ + d = (Q γ : ℂ) / 2 := by
-    dsimp [α₀]
-    field_simp [hc]
-    ring
-  have hcenter := IsUpsilon.center hγ hU
+  let α₀ := ((Q γ : ℂ) / 2 - d) / c
+  have harg : c * α₀ + d = (Q γ : ℂ) / 2 := by grind
   have hf₀ : f α₀ ≠ 0 := by
-    rw [show f α₀ = U (c * α₀ + d) by rfl, harg, hcenter]
+    rw [show f α₀ = U (c * α₀ + d) by rfl, harg, IsUpsilon.center hγ hU]
     norm_num
-  have hcodiscrete := hf.preimage_zero_mem_codiscrete hf₀
-  filter_upwards [hcodiscrete] with α hα
-  exact hα
+  exact hf.preimage_zero_mem_codiscrete hf₀
 
 /-- The special value `l(γ²/4)` is the corresponding real Gamma ratio. -/
 theorem lFun_gammaSq_real (γ : ℝ) :
@@ -125,12 +118,10 @@ theorem lFun_gammaSq_real (γ : ℝ) :
 /-- The DOZZ base `dozzBase γ μ` is positive on the physical parameter range. -/
 theorem dozzBase_pos {γ μ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ) :
     0 < dozzBase γ μ := by
-  have hq : 0 < γ ^ 2 / 4 := by positivity
-  have hq1 : 0 < 1 - γ ^ 2 / 4 := by nlinarith
+  have : 0 < 1 - γ ^ 2 / 4 := by nlinarith
   rw [dozzBase, lFun_gammaSq_real]
   simp only [Complex.ofReal_re]
-  exact mul_pos (mul_pos Real.pi_pos hμ)
-    (div_pos (Real.Gamma_pos_of_pos hq) (Real.Gamma_pos_of_pos hq1))
+  positivity
 
 /-- The reflected `lFun` factors multiply to the reciprocal square. -/
 theorem lFun_mul_neg {q : ℂ} (hq : q ≠ 0)

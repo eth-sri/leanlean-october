@@ -19,23 +19,6 @@ open scoped Distributions ENNReal NNReal BoundedContinuousFunction
 
 namespace DOZZ.Proofs
 
-private theorem gmc_test_integral_aemeasurable_of_support
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (K : Set ℂ) (hK : MeasurableSet K)
-    (hKunit : ∀ x ∈ K, ‖x‖ ≤ 1)
-    (f : BoundedContinuousFunction ℂ ℝ)
-    (hfzero : ∀ x, x ∉ K → f x = 0) :
-    AEMeasurable (fun ω => ∫ x, f x ∂M ω) P := by
-  obtain ⟨Xc, hXc, hMlim⟩ := hM.2
-  have hcut (n : ℕ) : AEMeasurable
-      (fun ω => ∫ x, f x ∂regularizedGMC P Xc γ n ω) P :=
-    regularizedGMC_test_integral_aemeasurable P X hX Xc hXc γ n K hK hKunit f
-      f.continuous.measurable hfzero
-  have hconv := (hMlim f).comp
-    (tendsto_natCast_atTop_atTop : Tendsto (fun n : ℕ => (n : ℝ)) atTop atTop)
-  exact hconv.aemeasurable hcut
 
 /-- For a disk compactly contained in the logarithmic chart, the affine scaling law holds for its
 mass, including the independent scalar Gaussian. The result applies to every `IsGMCOf` version. -/
@@ -53,9 +36,17 @@ theorem gmc_affine_openBall_mass_law
         (M p.1 (Metric.ball 0 R)).toReal)
       (P.prod (gaussianReal 0 ⟨-Real.log c,
         neg_nonneg.mpr (Real.log_nonpos hc.le hc1)⟩)) := by
+  have gmc_test_integral_aemeasurable_of_support (K : Set ℂ) (hK : MeasurableSet K) (hKunit : ∀ x ∈ K, ‖x‖ ≤ 1) (f : BoundedContinuousFunction ℂ ℝ) (hfzero : ∀ x, x ∉ K → f x = 0) : AEMeasurable (fun ω => ∫ x, f x ∂M ω) P := by
+    obtain ⟨Xc, hXc, hMlim⟩ := hM.2
+    have hcut (n : ℕ) :=
+      regularizedGMC_test_integral_aemeasurable P X hX Xc hXc γ n K hK hKunit f
+        f.continuous.measurable hfzero
+    have hconv := (hMlim f).comp
+      (tendsto_natCast_atTop_atTop : Tendsto (fun n : ℕ => (n : ℝ)) atTop atTop)
+    exact hconv.aemeasurable hcut
   classical
   let : IsProbabilityMeasure P := hX.1
-  let σ : ℝ := -Real.log c
+  let σ := -Real.log c
   let G : Measure ℝ := gaussianReal 0 ⟨σ,
     neg_nonneg.mpr (Real.log_nonpos hc.le hc1)⟩
   have hG : IsProbabilityMeasure G := by
@@ -96,9 +87,7 @@ theorem gmc_affine_openBall_mass_law
     change 0 ≤ openBallApprox 0 R n ((c : ℂ)⁻¹ • (x - a))
     exact (openBallApproxFun_bounds 0 R n ((c : ℂ)⁻¹ • (x - a))).1
   let scaleFactor : ℝ → ℝ := fun w => c ^ 2 * Real.exp (γ * w - γ ^ 2 / 2 * σ)
-  have hscaleFactor : Measurable scaleFactor := by
-    dsimp [scaleFactor]
-    fun_prop
+  have hscaleFactor : Measurable scaleFactor := by fun_prop
   let targetCutoff : ℕ → Ω → Fin 1 → ℝ := fun n ω _ => ∫ x, f n x ∂M ω
   let sourceCutoff : ℕ → Ω × ℝ → Fin 1 → ℝ := fun n p _ =>
     scaleFactor p.2 * ∫ x, g n x ∂M p.1
@@ -107,17 +96,14 @@ theorem gmc_affine_openBall_mass_law
   let sourceLimit : Ω × ℝ → Fin 1 → ℝ := fun p _ =>
     scaleFactor p.2 * (M p.1 (Metric.ball 0 R)).toReal
   have htargetIntMeas (n : ℕ) : AEMeasurable (fun ω => ∫ x, f n x ∂M ω) P := by
-    exact gmc_test_integral_aemeasurable_of_support P X hX γ M hM
+    exact gmc_test_integral_aemeasurable_of_support
       (Metric.closedBall a (c * R)) Metric.isClosed_closedBall.measurableSet
       htargetUnit (f n) (hfzero n)
   have hsourceIntMeas (n : ℕ) : AEMeasurable (fun ω => ∫ x, g n x ∂M ω) P := by
-    exact gmc_test_integral_aemeasurable_of_support P X hX γ M hM
+    exact gmc_test_integral_aemeasurable_of_support
       (Metric.closedBall 0 R) Metric.isClosed_closedBall.measurableSet
       hsourceUnit (g n) (hgzero n)
-  have htargetCutoffMeas (n : ℕ) : AEMeasurable (targetCutoff n) P := by
-    apply aemeasurable_pi_iff.2
-    intro j
-    exact htargetIntMeas n
+  have htargetCutoffMeas (n : ℕ) : AEMeasurable (targetCutoff n) P := by fun_prop
   have hsourceCutoffMeas (n : ℕ) : AEMeasurable (sourceCutoff n) (P.prod G) := by
     apply aemeasurable_pi_iff.2
     intro j
@@ -184,16 +170,12 @@ theorem gmc_affine_openBall_mass_law
     exact tendstoInMeasure_of_tendsto_ae
       (fun n => (hsourceIntMeas n).aestronglyMeasurable)
       (ae_of_all P hpoint)
-  have htargetConv : TendstoInMeasure P targetCutoff atTop targetLimit :=
-    tendstoInMeasure_pi_finite P targetCutoff targetLimit htargetCoordConv
   have hsourceProductCoordConv (j : Fin 1) :
       TendstoInMeasure (P.prod G) (fun n p => sourceCutoff n p j) atTop
       (fun p => sourceLimit p j) := by
     exact tendstoInMeasure_mul_snd_of_tendstoInMeasure
       (fun n ω => ∫ x, g n x ∂M ω)
       (fun ω => (M ω (Metric.ball 0 R)).toReal) scaleFactor hscaleFactor hsourceConv
-  have hsourceProductConv : TendstoInMeasure (P.prod G) sourceCutoff atTop sourceLimit :=
-    tendstoInMeasure_pi_finite (P.prod G) sourceCutoff sourceLimit hsourceProductCoordConv
   have hcutoffLaw (n : ℕ) : Measure.map (targetCutoff n) P =
       Measure.map (sourceCutoff n) (P.prod G) := by
     let fvec : Fin 1 → BoundedContinuousFunction ℂ ℝ := fun _ => f n

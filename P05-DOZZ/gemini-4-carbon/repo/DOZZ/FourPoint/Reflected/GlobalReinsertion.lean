@@ -18,17 +18,14 @@ theorem reflected_global_reinsertionWeight_measurable (γ : ℝ) :
     Measurable (fun p : TwoSidedPath × ℂ => reflected_global_reinsertionWeight γ p.1 p.2) := by
   have hl : Measurable (fun p : TwoSidedPath × ℂ => Real.log ‖p.2‖) :=
     Real.measurable_log.comp (measurable_norm.comp measurable_snd)
-  have he : Measurable (fun p : TwoSidedPath × ℂ => p.1 (-Real.log ‖p.2‖)) :=
-    continuous_eval.measurable.comp (measurable_fst.prodMk hl.neg)
   exact Measurable.ite (measurableSet_eq_fun (measurable_norm.comp measurable_snd) measurable_const)
-    measurable_const (Real.measurable_exp.comp ((measurable_const.mul he).sub
+    measurable_const (Real.measurable_exp.comp ((measurable_const.mul (continuous_eval.measurable.comp (measurable_fst.prodMk hl.neg))).sub
       (measurable_const.mul (continuous_abs.measurable.comp hl))))
 
 theorem reflected_global_reinsertionWeight_chart (ρ γ : ℝ) (hρ : 0 < ρ)
     (A : TwoSidedPath) (x : ℂ) (hx : x ∈ originLateralChart ρ) :
     reflected_global_reinsertionWeight γ A x = originRadialReinsertionWeight ρ γ A x := by
-  have hx0 : ‖x‖ ≠ 0 := ne_of_gt (lt_trans (by linarith : 0 < 2*ρ) hx)
-  rw [reflected_global_reinsertionWeight, ite_eq_right hx0,
+  rw [reflected_global_reinsertionWeight, ite_eq_right (ne_of_gt (lt_trans (by linarith : 0 < 2*ρ) hx)),
     originRadialReinsertionWeight_chart_eq ρ γ hρ A x hx]
 
 /-- Reinsertion cancels the exact removal density, as a samplewise measure identity. -/

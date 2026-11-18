@@ -27,17 +27,16 @@ theorem cutoffWeightedGmcBallMoment_positive_compact_gamma_chart
       ∀ δ : ℝ, 0 < δ → δ ≤ R →
       (∫⁻ ω, cutoffWeightedGmcBallMass P Xc γ t.1 z R δ ω ^ t.2 ∂P) ≤
         C * ENNReal.ofReal (R ^ weightedCutoffMomentScaleExponent γ t.1 t.2) := by
-  have hq0 : 0 < q := lt_trans zero_lt_one hq
+  have hq0 := lt_trans zero_lt_one hq
   obtain ⟨Aroot, hAroot, hballRoot⟩ := regularizedGMC_openBall_root_bound_compact_gamma_chart
     P X hX Xc hXc Γ hΓ (fun γ hγ => (hΓ2 hγ).1) q hq hcrit
-  let U : Set (ℝ × (ℝ × ℝ)) := Γ ×ˢ T
-  have hU : IsCompact U := hΓ.prod hT
+  let U := Γ ×ˢ T
   have hQcont : ContinuousOn (fun γ : ℝ => Q γ) Γ := by
     dsimp [Q]
     apply ContinuousOn.add
     · exact continuousOn_const.div continuousOn_id (fun γ hγ => (hΓ2 hγ).1.ne')
-    · exact continuousOn_id.div_const 2
-  have hQcomp : ContinuousOn (fun u : ℝ × (ℝ × ℝ) => Q u.1) U :=
+    · fun_prop
+  have : ContinuousOn (fun u : ℝ × (ℝ × ℝ) => Q u.1) U :=
     hQcont.comp continuousOn_fst (fun u hu => hu.1)
   let eta : ℝ × (ℝ × ℝ) → ℝ := fun u => weightedCutoffMomentScaleExponent u.1 u.2.1 u.2.2
   have hetaCont : ContinuousOn eta U := by
@@ -48,10 +47,10 @@ theorem cutoffWeightedGmcBallMoment_positive_compact_gamma_chart
     have hadm := hTadm u.1 hu.1 u.2 hu.2
     exact weightedGmcMomentExponent_pos_of_sharp_range (hΓ2 hu.1).1
       (lt_of_lt_of_le zero_lt_one hadm.1) hadm.2
-  obtain ⟨ε₀, hε₀, hε₀lower⟩ := hU.exists_forall_le' hetaCont hetaPos
-  let ε : ℝ := ε₀ / q
-  have hε : 0 < ε := by dsimp [ε]; exact div_pos hε₀ hq0
-  let halfRatio : ℝ≥0∞ := ENNReal.ofReal ((1 / 2 : ℝ) ^ ε)
+  obtain ⟨ε₀, hε₀, hε₀lower⟩ := (hΓ.prod hT).exists_forall_le' hetaCont hetaPos
+  let ε := ε₀ / q
+  have hε : 0 < ε := by positivity
+  let halfRatio := ENNReal.ofReal ((1 / 2 : ℝ) ^ ε)
   have hhalfReal : (1 / 2 : ℝ) ^ ε < 1 :=
     Real.rpow_lt_one (by norm_num) (by norm_num) hε
   have hhalfRatio : halfRatio < 1 :=
@@ -59,49 +58,44 @@ theorem cutoffWeightedGmcBallMoment_positive_compact_gamma_chart
   have hden : 1 - halfRatio ≠ 0 := by
     intro h
     exact (not_le_of_gt hhalfRatio) (tsub_eq_zero_iff_le.mp h)
-  have hgeomTop : (1 - halfRatio)⁻¹ < ⊤ :=
-    lt_top_iff_ne_top.mpr (ENNReal.inv_ne_top.mpr hden)
-  let D : ℝ≥0∞ := ENNReal.ofReal ((8 : ℝ) ^ (4 : ℝ)) +
+  let D := ENNReal.ofReal ((8 : ℝ) ^ (4 : ℝ)) +
     ENNReal.ofReal ((16 : ℝ) ^ (4 : ℝ)) * halfRatio * (1 - halfRatio)⁻¹
   have hD : D < ⊤ := by
     dsimp [D]
     exact ENNReal.add_lt_top.mpr ⟨ENNReal.ofReal_lt_top,
       ENNReal.mul_lt_top (ENNReal.mul_lt_top ENNReal.ofReal_lt_top ENNReal.ofReal_lt_top)
-        hgeomTop⟩
-  let B : ℝ≥0∞ := max 1 (Aroot * D)
+        (lt_top_iff_ne_top.mpr (ENNReal.inv_ne_top.mpr hden))⟩
+  let B := max 1 (Aroot * D)
   have hB : B < ⊤ := by
     dsimp [B]
     exact max_lt_iff.mpr ⟨ENNReal.one_lt_top, ENNReal.mul_lt_top hAroot hD⟩
   have hBone : 1 ≤ B := by dsimp [B]; exact le_max_left _ _
-  let C : ℝ≥0∞ := B ^ q
+  let C := B ^ q
   have hC : C < ⊤ := by
     dsimp [C]
     exact lt_top_iff_ne_top.mpr (ENNReal.rpow_ne_top_of_nonneg hq0.le hB.ne)
   refine ⟨C, hC, ?_⟩
   intro γ hγmem t ht hα z R hR hRhi hchart δ hδ hδR
-  have hγ : 0 < γ := (hΓ2 hγmem).1
+  have hγ := (hΓ2 hγmem).1
   have hadm := hTadm γ hγmem t ht
-  have hp0 : 0 < t.2 := lt_of_lt_of_le zero_lt_one hadm.1
-  have hpq' : t.2 ≤ q := hordersBound t ht
+  have hp0 := lt_of_lt_of_le zero_lt_one hadm.1
+  have hpq' := hordersBound t ht
   have hetaLower : ε₀ ≤ weightedCutoffMomentScaleExponent γ t.1 t.2 := by
     simpa [eta, weightedCutoffMomentScaleExponent] using hε₀lower (γ, t) ⟨hγmem, ht⟩
   have hmargin : ε ≤ weightedCutoffMomentScaleExponent γ t.1 t.2 / t.2 := by
     have hfirst : ε₀ / q ≤ ε₀ / t.2 := by
       apply (div_le_div_iff₀ hq0 hp0).2
       exact mul_le_mul_of_nonneg_left hpq' hε₀.le
-    have hsecond := div_le_div_of_nonneg_right hetaLower hp0.le
     dsimp [ε]
-    exact hfirst.trans hsecond
-  have hpbulk : t.2 < 4 / γ ^ 2 := lt_of_lt_of_le hadm.2 (min_le_left _ _)
+    exact hfirst.trans (div_le_div_of_nonneg_right hetaLower hp0.le)
   have hβeq :
       (2 * t.2 + γ ^ 2 * t.2 / 2 - γ ^ 2 * t.2 ^ 2 / 2) / t.2 =
         2 + γ ^ 2 / 2 - γ ^ 2 * t.2 / 2 := by
     field_simp [ne_of_gt hp0]
-  have hγsqP : γ ^ 2 * t.2 < 4 := by
-    have h := (lt_div_iff₀ (sq_pos_of_pos hγ)).mp hpbulk
-    nlinarith [h]
+  have : γ ^ 2 * t.2 < 4 := by
+    nlinarith [(lt_div_iff₀ (sq_pos_of_pos hγ)).mp (lt_of_lt_of_le hadm.2 (min_le_left _ _))]
   have hγsq : γ ^ 2 < 4 := by
-    have hle : γ ^ 2 ≤ γ ^ 2 * t.2 := by
+    have : γ ^ 2 ≤ γ ^ 2 * t.2 := by
       calc
         γ ^ 2 = γ ^ 2 * 1 := by ring
         _ ≤ γ ^ 2 * t.2 :=

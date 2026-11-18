@@ -32,13 +32,13 @@ noncomputable def conditionedPastStateKernel (ν dt : ℝ) (k : ℕ) :
 theorem measurable_conditionedPastStateKernel_density (ν dt : ℝ) (k : ℕ) :
     Measurable (fun z : (Fin (k+1) → ℝ) × ℝ => ENNReal.ofReal (max 0
       (conditionedPositiveTransitionDensity ν dt (z.1 (Fin.last k)) z.2))) := by
-  have hp : Measurable (fun z : (Fin (k+1) → ℝ) × ℝ =>
+  have : Measurable (fun z : (Fin (k+1) → ℝ) × ℝ =>
       conditionedPositiveTransitionDensity ν dt (z.1 (Fin.last k)) z.2) := by
     have hpair : Measurable (fun z : (Fin (k+1) → ℝ) × ℝ =>
         (z.1 (Fin.last k), z.2)) :=
       ((measurable_pi_apply _).comp measurable_fst).prodMk measurable_snd
     exact (measurable_conditionedPositiveTransitionDensity_pair ν dt).comp hpair
-  exact ((measurable_const (a := (0 : ℝ))).max hp).ennreal_ofReal
+  fun_prop
 
 instance (ν dt : ℝ) (k : ℕ) : IsSFiniteKernel (conditionedPastStateKernel ν dt k) := by
   apply Kernel.IsSFiniteKernel.withDensity
@@ -55,7 +55,7 @@ theorem negativeConditionedLaw_finitePast_state_compProd
         (conditionedPositiveFDDVectorDensity ν (fun i => (ss i : ℝ)))) ⊗ₘ
         conditionedPastStateKernel ν ((u : ℝ)-(ss (Fin.last k) : ℝ)) k := by
   let future : Fin 1 → ℝ≥0 := fun _ => u
-  let κ : Kernel (Fin (k+1) → ℝ) (Fin 1 → ℝ) :=
+  let κ :=
     (Kernel.const (Fin (k+1) → ℝ) (volume : Measure (Fin 1 → ℝ))).withDensity
       (conditionedPositiveFutureVectorDensity ν (fun i => (ss i : ℝ)) (fun _ => (u : ℝ)))
   have hκmeas := measurable_conditionedPositiveFutureVectorDensity ν
@@ -64,12 +64,11 @@ theorem negativeConditionedLaw_finitePast_state_compProd
     apply Kernel.IsSFiniteKernel.withDensity
     intro x y
     exact ENNReal.ofReal_ne_top
-  have horder : StrictMono (Fin.append ss future) :=
+  have horder :=
     strictMono_finAppend_of_cross ss future hmono (Subsingleton.strictMono future)
       (fun i _ => (hmono.monotone (Fin.le_last i)).trans_lt hu)
-  have hu0 : 0 < (u : ℝ) := (hs (Fin.last k)).trans (NNReal.coe_lt_coe.mpr hu)
   have hj := negativeConditionedLaw_finitePastFuture_compProd hP ss future hs
-    (fun _ => hu0) horder
+    (fun _ => ((hs (Fin.last k)).trans (NNReal.coe_lt_coe.mpr hu))) horder
   let e : (Fin 1 → ℝ) ≃ᵐ ℝ := MeasurableEquiv.piUnique fun _ => ℝ
   have hmapKernel : κ.map e =
       conditionedPastStateKernel ν ((u : ℝ)-(ss (Fin.last k) : ℝ)) k := by

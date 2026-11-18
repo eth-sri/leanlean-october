@@ -9,7 +9,6 @@ public import DOZZ.FourPoint.TaylorScales
 /-! Transporting the three actual regional radius powers to one Taylor power. -/
 
 @[expose] public section
-open MeasureTheory Set
 namespace DOZZ.Proofs
 
 /-- The annular, optimized intermediate and near-root physical powers share a strict gain. -/
@@ -27,7 +26,7 @@ theorem taylor_regional_powers (γ α δ ε η W q r : ℝ)
     unfold Q
     field_simp [hγ.ne']
     ring
-  have hmono (a b : ℝ) (hab : a ≤ b) : r ^ b ≤ r ^ a :=
+  have hmono (a b : ℝ) (hab : a ≤ b) :=
     Real.rpow_le_rpow_of_exponent_ge hr hr1 hab
   refine ⟨?_, ?_, ?_⟩
   · rw [← Real.rpow_mul hr.le]

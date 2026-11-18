@@ -52,8 +52,7 @@ theorem gmcReferenceMeasure_univ_ne_top :
         exact ENNReal.ofReal_le_one.mpr hp)
       _ = volume B := by simp
   have htailBound : (∫⁻ x in Bᶜ, f x ∂volume) ≤
-      ∫⁻ x in Bᶜ, ENNReal.ofReal (‖x‖ ^ (-4 : ℝ)) ∂volume := by
-    exact setLIntegral_mono (s := Bᶜ) (f := f)
+      ∫⁻ x in Bᶜ, ENNReal.ofReal (‖x‖ ^ (-4 : ℝ)) ∂volume := setLIntegral_mono (s := Bᶜ) (f := f)
       (g := fun x : ℂ => ENNReal.ofReal (‖x‖ ^ (-4 : ℝ))) (by fun_prop)
       (fun x hx => by
         have hxnorm : 1 ≤ ‖x‖ := by
@@ -65,7 +64,7 @@ theorem gmcReferenceMeasure_univ_ne_top :
         have hmax : normPlus x = ‖x‖ := by
           simp [normPlus, max_eq_right hxnorm]
         simp [f, hmax])
-  have htailFinite' : (∫⁻ x in Bᶜ, f x ∂volume) ≠ ∞ :=
+  have htailFinite' :=
     ne_of_lt (lt_of_le_of_lt htailBound (lt_top_iff_ne_top.mpr htailFinite))
   have htotal : (∫⁻ x, f x ∂volume) ≠ ∞ := by
     rw [← lintegral_add_compl f hB]

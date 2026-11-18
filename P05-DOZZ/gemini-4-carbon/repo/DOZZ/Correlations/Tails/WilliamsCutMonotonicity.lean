@@ -23,7 +23,7 @@ theorem last_exit_le_of_post_nonpos (p : BrownianPath) (c d : ℝ) (hcd : c ≤ 
   rcases lt_or_eq_of_le hcd with hlt | heq
   · have hhit (u : ℝ≥0) (hu : p u = -c) : u ≤ negativeLastExitTime p d := by
       by_contra hnot
-      have hu' : negativeLastExitTime p d < u := lt_of_not_ge hnot
+      have hu' := lt_of_not_ge hnot
       have h := hp (u-negativeLastExitTime p d)
       change p (negativeLastExitTime p d+(u-negativeLastExitTime p d))+d ≤ 0 at h
       rw [add_tsub_cancel_of_le hu'.le, hu] at h
@@ -49,8 +49,7 @@ theorem conditioned_last_exit_mono_ae (ν c d : ℝ) (hν : 0 < ν)
   have hp : ∀ᵐ p ∂P.map (negativeConditionedPostLastExitPath d), ∀ t : ℝ≥0, p t ≤ 0 := by
     rw [hlaw.2]
     exact ae_negativeConditionedPath_nonpos_all_times hP
-  have hs := (ae_map_iff hlaw.1 hclosed.measurableSet).mp hp
-  filter_upwards [hs] with p hp
+  filter_upwards [(ae_map_iff hlaw.1 hclosed.measurableSet).mp hp] with p hp
   exact last_exit_le_of_post_nonpos p c d hcd hp
 
 /-- Last-exit ordering implies ordering of the retained reflection masses. -/
@@ -59,7 +58,7 @@ theorem reflection_cut_mass_le_of_last_exit_le
     (Z : Ω → Measure ℝ) (ω : Ω)
     (hcd : negativeLastExitTime (B ω).2 c ≤ negativeLastExitTime (B ω).2 d) :
     twoSidedReflectionCutMass γ c B Z ω ≤ twoSidedReflectionCutMass γ d B Z ω := by
-  have ht : (negativeLastExitTime (B ω).2 c : ℝ) ≤
+  have : (negativeLastExitTime (B ω).2 c : ℝ) ≤
       (negativeLastExitTime (B ω).2 d : ℝ) := hcd
   unfold twoSidedReflectionCutMass
   apply lintegral_mono

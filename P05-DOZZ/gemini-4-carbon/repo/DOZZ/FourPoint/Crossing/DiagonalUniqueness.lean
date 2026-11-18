@@ -12,7 +12,6 @@ import Mathlib.Tactic
 /-! # Uniqueness of the real one-channel diagonal coefficients -/
 
 public section
-open Set
 namespace DOZZ.Proofs
 
 /-- A diagonal norm-square form has unique coefficients on an open set where
@@ -37,9 +36,7 @@ theorem crossing_diagonal_norm_coefficients_unique
         ring
   have he : ∀ w ∈ U,
       hermitianQuadraticTensor f g (A : ℂ) 0 0 (D : ℂ) w =
-        hermitianQuadraticTensor f g (A' : ℂ) 0 0 (D' : ℂ) w := by
-    intro w hw
-    rw [hd, hd, hEq w hw]
+        hermitianQuadraticTensor f g (A' : ℂ) 0 0 (D' : ℂ) w := by grind
   have hcoeff := hermitianTensor_coefficients_eq_of_eqOn hU hf hg A 0 0 D A' 0 0 D'
     hz hW he
   exact ⟨Complex.ofReal_injective hcoeff.1, Complex.ofReal_injective hcoeff.2.2.2⟩

@@ -34,22 +34,20 @@ theorem cutoffWeightedGmcBallMoment_translate_compact
     have : (γ, t) ∈ Γ ×ˢ T := ⟨hγ, ht⟩
     simp [hUe] at this
   obtain ⟨zmax, hzmax, hzbound⟩ := hK.exists_isMaxOn hKn continuous_norm.continuousOn
-  let B : ℝ := ‖zmax‖ + 1
-  have hB : 0 ≤ B := by dsimp [B]; positivity
+  let B := ‖zmax‖ + 1
+  have hB : 0 ≤ B := by positivity
   have hB1 : 0 < 1 + B := by linarith
   let f : ℝ × (ℝ × ℝ) → ℝ := fun u =>
     Real.exp (u.1 ^ 2 * (2 * (Real.log 3 + 2 * Real.log (1 + B))) / 2 *
       |u.2.2 ^ 2 - u.2.2|) * ((1 + B) ^ 4 : ℝ) ^ |u.2.2|
-  have hbase : (1 + B) ^ 4 ≠ 0 := ne_of_gt (pow_pos hB1 4)
-  have hf : Continuous f := by
-    dsimp [f]
-    fun_prop
+  have := ne_of_gt (pow_pos hB1 4)
+  have hf : Continuous f := by fun_prop
   obtain ⟨umax, humax, hmax⟩ := (hΓ.prod hT).exists_isMaxOn hUn hf.continuousOn
-  have hfpos : 0 < f umax := by dsimp [f]; positivity
+  have hfpos : 0 < f umax := by positivity
   refine ⟨f umax, hfpos, ?_⟩
   intro γ hγ t ht z hz ρ δ hρ hρhalf hδ hδρ
   have hzB : ‖z‖ + ρ ≤ B := by
-    have hn : ‖z‖ ≤ ‖zmax‖ := hzbound hz
+    have : ‖z‖ ≤ ‖zmax‖ := hzbound hz
     dsimp [B]
     linarith
   have hzeroB : ‖(0 : ℂ)‖ + ρ ≤ B := by

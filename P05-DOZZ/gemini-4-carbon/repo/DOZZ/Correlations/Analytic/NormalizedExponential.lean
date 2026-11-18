@@ -52,24 +52,22 @@ theorem normalized_cutoff_exponential_polydisc
   obtain ⟨E, hE, hgrowth⟩ := normalized_imaginary_growth P X Xc hX hc γ hγ.ne' z
   let d := κ / (2 * E)
   have hd : 0 < d := div_pos hκ (mul_pos (by norm_num) hE)
-  have hEd : E * d = κ / 2 := by dsimp only [d]; field_simp
+  have hEd : E * d = κ / 2 := by grind
   have hbulkβ : ∀ β ∈ complexPolydisc (fun i => (center i : ℂ)) radius,
       (complexMomentPower γ β).re < 4 / γ ^ 2 := by
     intro β hβ
-    have hb := (hbox β hβ).2.2.2.1
-    have hhiq : hi ≤ hi * q := by nlinarith
+    have := (hbox β hβ).2.2.2.1
+    have : hi ≤ hi * q := by nlinarith
     linarith
   refine ⟨K * Real.exp κ, κ / 2, d, by positivity, half_pos hκ, hd, ?_⟩
   filter_upwards [hdec, retained_cutoff_geometry_eventually z δ R hδ] with n hn hgeo
   intro β hβ him
   have hpars := hbox β hβ
-  have hmass := hn β hpars.1 hpars.2.1 hpars.2.2.1 hpars.2.2.2.1 hpars.2.2.2.2
   have hr : (0 : ℝ) ≤ (n : ℝ) := Nat.cast_nonneg _
-  have hrs : (n : ℝ) ≤ ((n + 1 : ℕ) : ℝ) := by exact_mod_cast Nat.le_succ n
-  have hball := exterior_ball_subset_retainedRegion z R hR hzR (n : ℝ) hr hgeo.2.2.2
-  have hne : (retainedRegion z (n : ℝ)).Nonempty :=
-    (Metric.nonempty_ball.mpr (by norm_num : (0 : ℝ) < 1 / 8)).mono hball
-  have hne' : (retainedRegion z ((n + 1 : ℕ) : ℝ)).Nonempty :=
+  have hrs : (n : ℝ) ≤ ((n + 1 : ℕ) : ℝ) := by simp
+  have hne :=
+    (Metric.nonempty_ball.mpr (by norm_num : (0 : ℝ) < 1 / 8)).mono (exterior_ball_subset_retainedRegion z R hR hzR (n : ℝ) hr hgeo.2.2.2)
+  have hne' :=
     hne.mono (retainedRegion_mono z hrs)
   have hobs := normalized_cutoff_increment_norm_le
     P X hX γ hγ hγ2 M hM Xc hc z (n : ℝ) ((n + 1 : ℕ) : ℝ) hr hrs
@@ -84,17 +82,15 @@ theorem normalized_cutoff_exponential_polydisc
         (γ * ∑ i, (β i.castSucc).re * equatorCircleMean (z i) ((n + 1 : ℕ) : ℝ)) *
           (complexMomentPower γ β).re ≤ E * ((n : ℝ) + 2) * ∑ i, (β i).im ^ 2 := by
     simpa only [Nat.cast_add, Nat.cast_one, add_assoc, one_add_one_eq_two] using hdet
-  have hthin : E * (∑ i, (β i).im ^ 2) ≤ κ / 2 := by
-    exact (mul_le_mul_of_nonneg_left him hE.le).trans_eq hEd
-  have he := imaginary_decay_absorption K E (∑ i, (β i).im ^ 2) κ (n : ℝ) hK hthin hr
+  have hthin : E * (∑ i, (β i).im ^ 2) ≤ κ / 2 := (mul_le_mul_of_nonneg_left him hE.le).trans_eq hEd
   apply (ENNReal.ofReal_le_ofReal_iff (by positivity)).mp
   calc
     _ ≤ ENNReal.ofReal (Real.exp (E * ((n : ℝ) + 2) * ∑ i, (β i).im ^ 2)) *
         ENNReal.ofReal (K * Real.exp (-κ * n)) :=
       hobs.trans (mul_le_mul'
-        (ENNReal.ofReal_le_ofReal (Real.exp_le_exp.mpr hdet')) hmass)
+        (ENNReal.ofReal_le_ofReal (Real.exp_le_exp.mpr hdet')) (hn β hpars.1 hpars.2.1 hpars.2.2.1 hpars.2.2.2.1 hpars.2.2.2.2))
     _ ≤ _ := by
       rw [← ENNReal.ofReal_mul (Real.exp_nonneg _)]
-      exact ENNReal.ofReal_le_ofReal he
+      exact ENNReal.ofReal_le_ofReal (imaginary_decay_absorption K E (∑ i, (β i).im ^ 2) κ (n : ℝ) hK hthin hr)
 
 end DOZZ.Proofs

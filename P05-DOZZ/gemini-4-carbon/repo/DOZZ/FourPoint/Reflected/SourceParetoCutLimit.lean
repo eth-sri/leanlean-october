@@ -52,15 +52,10 @@ theorem reflected_source_pareto_cut_increment_tendsto
     (((gammaHalfOuterMass γ α₁ α₂ α₃ (M v.1) z ξ).toReal+
       reflected_radial_scale γ ν h Xc z v.1*(twoSidedReflectionCutMass γ H B Z v.2).toReal*w)^(-p)-
       (gammaHalfOuterMass γ α₁ α₂ α₃ (M v.1) z ξ).toReal ^(-p)) ∂paretoMeasure 1 a) ∂P.prod P
-  have hν : 0 < ν := sub_pos.mpr hα₁
-  have ha : 0 < a := div_pos (mul_pos (by norm_num) hν) hγ
-  have ha1 : a < 1 := by
-    dsimp only [a]
-    rw [div_lt_one hγ]
-    linarith only [hreflect]
+  have ha : 0 < a := div_pos (mul_pos (by norm_num) (sub_pos.mpr hα₁)) hγ
   have hp : 0 < p := div_pos (by linarith only [hs]) hγ
-  have hshift : α₁+2*ν-γ/2 < Q γ := by dsimp only [ν]; linarith only [hreflect]
-  have hcharge : α₁+2*ν-γ/2 = 2*Q γ-α₁-γ/2 := by dsimp only [ν]; ring
+  have hshift : α₁+2*ν-γ/2 < Q γ := by nlinarith
+  have hcharge : α₁+2*ν-γ/2 = 2*Q γ-α₁-γ/2 := by ring
   let Λ := (∫⁻ ω, rho γ (M ω) (2*Q γ-α₁-γ/2) α₂ α₃ ^(-(p+a)) ∂P).toReal
   have hL : Tendsto (fun z : ℂ => L z/‖z‖^κ) (𝓝[≠] (0 : ℂ)) (𝓝 Λ) := by
     simpa only [L,κ,a,hcharge,Λ] using reflected_leading_radial_moment_toReal_tendsto
@@ -89,12 +84,10 @@ theorem reflected_source_pareto_cut_increment_tendsto
     apply squeeze_zero' (Filter.Eventually.of_forall fun z => norm_nonneg _) ?_ hmajor
     filter_upwards [hbound] with z hz
     rw [Real.norm_eq_abs, abs_div, abs_of_nonneg (Real.rpow_nonneg (norm_nonneg z) _)]
-    have hh := div_le_div_of_nonneg_right hz (Real.rpow_nonneg (norm_nonneg z) κ)
-    convert hh using 1; ring
-  have ht := herr.add ((hL.const_mul c).mul_const S)
+    convert (div_le_div_of_nonneg_right hz (Real.rpow_nonneg (norm_nonneg z) κ)) using 1; ring
   change Tendsto (fun z : ℂ => D z / ‖z‖^κ) (𝓝[≠] (0 : ℂ)) (𝓝 (c*Λ*S))
   have he : (fun z : ℂ => (D z-c*L z*S)/‖z‖^κ+c*(L z/‖z‖^κ)*S) =
-      (fun z : ℂ => D z/‖z‖^κ) := by funext z; ring
-  simpa only [Pi.add_apply, zero_add, he] using ht
+      (fun z : ℂ => D z/‖z‖^κ) := by ring
+  simpa only [Pi.add_apply, zero_add, he] using herr.add ((hL.const_mul c).mul_const S)
 
 end DOZZ.Proofs

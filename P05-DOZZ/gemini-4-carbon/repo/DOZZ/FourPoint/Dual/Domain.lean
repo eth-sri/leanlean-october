@@ -22,12 +22,7 @@ namespace DOZZ.Proofs
 theorem dual_seed_charge_lower (γ α ε α' : ℝ)
     (hα : α < Q γ) (hε : ε < Q γ) (hα' : α' < Q γ)
     (hs : 2 * Q γ + 2 / γ < α + ε + α') :
-    2 / γ < α ∧ 2 / γ < ε ∧ 2 / γ < α' := by
-  constructor
-  · linarith only [hs, hε, hα']
-  constructor
-  · linarith only [hs, hα, hα']
-  · linarith only [hs, hα, hε]
+    2 / γ < α ∧ 2 / γ < ε ∧ 2 / γ < α' := by grind
 
 
 end DOZZ.Proofs

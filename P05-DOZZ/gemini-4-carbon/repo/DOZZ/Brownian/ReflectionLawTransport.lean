@@ -57,17 +57,11 @@ theorem reflectionBarR_eq_of_joint_input_law
       (∫⁻ ω, ENNReal.rpow (twoSidedReflectionMass γ B' Z' ω)
         (reflectionExponent γ α) ∂P') := by
     calc
-      _ = ∫⁻ ω, f (pair ω) ∂P := by
-        apply lintegral_congr
-        intro ω
-        rfl
+      _ = ∫⁻ ω, f (pair ω) ∂P := by rfl
       _ = ∫⁻ z, f z ∂P.map pair := (lintegral_map' hMassMoment hPair).symm
       _ = ∫⁻ z, f z ∂P'.map pair' := by rw [hLaw]
       _ = ∫⁻ ω, f (pair' ω) ∂P' := lintegral_map' hMassMoment' hPair'
-      _ = _ := by
-        apply lintegral_congr
-        intro ω
-        rfl
+      _ = _ := by rfl
   unfold reflectionBarR
   exact congrArg ENNReal.toReal hmoment
 

@@ -79,8 +79,7 @@ theorem dual_source_copied_kernel_inverse_bound
         ∂(Z v.2).map (fun s => s-(T : ℝ))
   let QP := (P.prod P).prod P
   have hA := originRadialPath_aemeasurable P X Xc hc hcont
-  have hmRegion (U : Set ℂ) (hU : IsOpen U) (hU0 : U ⊆ ({0} : Set ℂ)ᶜ) :
-      Measurable (fun v : TwoSidedPath × Ω => J U v.1 v.2) :=
+  have hmRegion (U : Set ℂ) (hU : IsOpen U) (hU0 : U ⊆ ({0} : Set ℂ)ᶜ) :=
     reflected_chart_parameter_mass_measurable U hU N hNm
       (fun ω K hK hKU => hfin ω K hK (hKU.trans hU0))
       (fun v : TwoSidedPath × ℂ => ENNReal.ofReal (dualFusionKernel γ α₁ α₂ α₃ z v.2)*
@@ -91,7 +90,7 @@ theorem dual_source_copied_kernel_inverse_bound
     apply hmRegion _ ((isOpen_lt continuous_const continuous_norm).inter
       (isOpen_lt continuous_norm continuous_const))
     intro x hx hx0
-    have he : x = 0 := mem_singleton_iff.mp hx0
+    have he := mem_singleton_iff.mp hx0
     have hxpos : 0 < ‖x‖ := hx.1
     simp only [he, norm_zero, lt_self_iff_false] at hxpos
   have ho : Measurable (fun v : TwoSidedPath × Ω => J (reflected_outerRegion (‖z‖^(1-ξ))) v.1 v.2) := by

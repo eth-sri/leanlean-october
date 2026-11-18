@@ -44,8 +44,7 @@ theorem williams_split_value (ν : ℝ) (p : BrownianPath) (t : ℝ≥0) :
   · have hts : t < σ := lt_of_not_ge hst
     have hs : ¬ 0 ≤ (t : ℝ) - (σ : ℝ) := not_le.mpr
       (sub_neg.mpr (by exact_mod_cast hts))
-    have hnn : 0 ≤ -((t : ℝ) - (σ : ℝ)) := by
-      exact neg_nonneg.mpr (le_of_lt (sub_neg.mpr (by exact_mod_cast hts)))
+    have hnn : 0 ≤ -((t : ℝ) - (σ : ℝ)) := neg_nonneg.mpr (le_of_lt (sub_neg.mpr (by exact_mod_cast hts)))
     have he : (NNReal.mk (-((t : ℝ) - (σ : ℝ))) hnn) = σ - t := by
       apply NNReal.eq
       rw [NNReal.coe_sub hts.le]

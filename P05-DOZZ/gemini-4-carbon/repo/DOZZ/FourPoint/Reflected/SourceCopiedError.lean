@@ -45,8 +45,7 @@ theorem reflected_source_full_copied_littleO
     α₁ α₂ α₃ p ξ (γ*(Q γ-α₁)) hp hξ hξ1 hnear
   have hb := reflected_source_buffer_inverse_littleO P X M γ α₁ α₂ α₃ ξ h
     hγ hγ₂ hα₁ hα₂ hα₃ hreflect hs hξ hξ1 hnear hfreeze hh hX hM
-  have he := DOZZ.Proofs.IsComplexLittleOAtZero.add hb (herror h hh).2
-  convert he using 1
+  convert (DOZZ.Proofs.IsComplexLittleOAtZero.add hb (herror h hh).2) using 1
   funext z
   simp only [Complex.ofReal_sub]
   ring

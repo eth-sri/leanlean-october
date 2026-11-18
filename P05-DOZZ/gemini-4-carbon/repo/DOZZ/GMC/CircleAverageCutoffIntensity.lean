@@ -30,16 +30,16 @@ theorem regularizedGMC_lintegral_eq_reference
     (γ r : ℝ) (A : Set ℂ) (hA : MeasurableSet A) :
     ∫⁻ ω, regularizedGMC P Xc γ r ω A ∂P = gmcReferenceMeasure A := by
   classical
-  let : IsProbabilityMeasure P := hX.1
+  let := hX.1
   let V : ℂ → ℝ := fun x => ∫ ω, Xc ω x r ^ 2 ∂P
   let density : Ω × ℂ → ℝ≥0∞ := fun p => ENNReal.ofReal
     (Real.exp (γ * Xc p.1 p.2 r - γ ^ 2 / 2 * V p.2) *
       normPlus p.2 ^ (-4 : ℝ))
   let G : Ω × ℂ → ℝ≥0∞ := fun p => if p.2 ∈ A then density p else 0
-  have hVmeas : Measurable V := by
+  have : Measurable V := by
     let q : ℂ → Ω → ℝ := fun x ω => Xc ω x r ^ 2
     have hq : Measurable (Function.uncurry q) := by
-      have hbase : Measurable (fun p : ℂ × Ω => Xc p.2 p.1 r) :=
+      have hbase :=
         (hXc.1 r).comp measurable_swap
       change Measurable (fun p : ℂ × Ω => Xc p.2 p.1 r ^ 2)
       have hEq : (fun p : ℂ × Ω => Xc p.2 p.1 r ^ 2) =
@@ -50,18 +50,12 @@ theorem regularizedGMC_lintegral_eq_reference
       exact hbase.mul hbase
     change Measurable (fun x => ∫ ω, q x ω ∂P)
     exact hq.stronglyMeasurable.integral_prod_right.measurable
-  have hfield : Measurable (fun p : Ω × ℂ => Xc p.1 p.2 r) := hXc.1 r
-  have hnormPlus : Measurable (fun x : ℂ => normPlus x) := by
+  have := hXc.1 r
+  have : Measurable (fun x : ℂ => normPlus x) := by
     unfold normPlus
     exact measurable_const.max measurable_norm
-  have hnormProduct : Measurable (fun p : Ω × ℂ => normPlus p.2) :=
-    hnormPlus.comp measurable_snd
-  have hVproduct : Measurable (fun p : Ω × ℂ => V p.2) := hVmeas.comp measurable_snd
-  have hdensity : Measurable density := by
-    dsimp [density]
-    fun_prop
-  have hG : Measurable G := by
-    exact Measurable.ite (hA.preimage measurable_snd) hdensity measurable_const
+  have hdensity : Measurable density := by fun_prop
+  have hG : Measurable G := Measurable.ite (hA.preimage measurable_snd) hdensity measurable_const
   have hV (x : ℂ) : gaussianVariance P (fun ω => Xc ω x r) = V x := by
     simp [V, gaussianVariance, gaussianCovariance, pow_two]
   have hwick (x : ℂ) :
@@ -71,8 +65,7 @@ theorem regularizedGMC_lintegral_eq_reference
     let Z : Ω → Fin 1 → ℝ := fun ω i => Xc ω (p i).1 (p i).2
     have hZ : IsCenteredJointlyGaussian P Z := by
       simpa [Z, p] using circleAverage_finite_family_jointly_gaussian P X hX Xc hXc p
-    have hbase := wick_exponential_lintegral_expectation P Z hZ 0 γ
-    simpa [Z, p, hV x] using hbase
+    simpa [Z, p, hV x] using wick_exponential_lintegral_expectation P Z hZ 0 γ
   have hsection (ω : Ω) :
       ∫⁻ x in A, density (ω, x) ∂volume = ∫⁻ x, G (ω, x) ∂volume := by
     rw [← lintegral_indicator hA]
@@ -94,8 +87,7 @@ theorem regularizedGMC_lintegral_eq_reference
               exact ENNReal.ofReal_mul (Real.exp_nonneg _)
       _ = (∫⁻ ω, ENNReal.ofReal (Real.exp
             (γ * Xc ω x r - γ ^ 2 / 2 * V x)) ∂P) *
-            ENNReal.ofReal (normPlus x ^ (-4 : ℝ)) := by
-              exact lintegral_mul_const'' _ (by fun_prop)
+            ENNReal.ofReal (normPlus x ^ (-4 : ℝ)) := lintegral_mul_const'' _ (by fun_prop)
       _ = ENNReal.ofReal (normPlus x ^ (-4 : ℝ)) := by rw [hwick x, one_mul]
   calc
     ∫⁻ ω, regularizedGMC P Xc γ r ω A ∂P =

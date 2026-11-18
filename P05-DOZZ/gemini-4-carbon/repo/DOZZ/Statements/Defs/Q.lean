@@ -23,7 +23,6 @@ public import Mathlib.Topology.DiscreteSubset
 
 @[expose] public section
 
-open Complex MeasureTheory Set Filter Topology
 
 namespace DOZZ
 

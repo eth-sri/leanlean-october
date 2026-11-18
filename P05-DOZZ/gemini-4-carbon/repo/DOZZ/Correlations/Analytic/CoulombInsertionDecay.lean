@@ -62,30 +62,26 @@ theorem coulomb_insertion_moment_decay
     (ENNReal.rpow_lt_top_of_nonneg hm.le ENNReal.ofReal_ne_top) hC, ?_⟩
   intro α αinf hα hi hk ρ hρ hρδ
   have he : ∑ j, |γ * α j| + |γ * αinf| ≤ (N + 1 : ℝ) * (γ * A) := by
-    have hs : ∑ j, |γ * α j| ≤ N * (γ * A) := by
+    have : ∑ j, |γ * α j| ≤ N * (γ * A) := by
       calc
         _ ≤ ∑ j : Fin N, γ * A := Finset.sum_le_sum (fun j _ => by
           rw [abs_mul, abs_of_pos hγ]
           exact mul_le_mul_of_nonneg_left (hα j) hγ.le)
         _ = _ := by simp
-    have hinf : |γ * αinf| ≤ γ * A := by
+    have : |γ * αinf| ≤ γ * A := by
       rw [abs_mul, abs_of_pos hγ]
       exact mul_le_mul_of_nonneg_left hi hγ.le
     linarith
-  have hb : ENNReal.ofReal (L ^ (∑ j, |γ * α j| + |γ * αinf|)) ≤ B :=
-    ENNReal.ofReal_le_ofReal (Real.rpow_le_rpow_of_exponent_le hL he)
-  have hatom := gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM (z k)
-  have hw := gmc_weighted_mass_aemeasurable P X hX γ hγ hγ2 M hM (α k) (z k) ρ
   calc
     _ ≤ ∫⁻ ω, (B * weightedGmcBallMass γ (M ω) (α k) (z k) ρ) ^ m ∂P := by
       apply lintegral_mono_ae
-      filter_upwards [hatom] with ω hω
+      filter_upwards [gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM (z k)] with ω hω
       apply ENNReal.rpow_le_rpow _ hm.le
       exact (coulomb_shrinking_root_piece_le (M ω) γ α z αinf k hδ hδ1 hρδ hsep hω).trans
-        (mul_le_mul_left hb _)
+        (mul_le_mul_left (ENNReal.ofReal_le_ofReal (Real.rpow_le_rpow_of_exponent_le hL he)) _)
     _ = B ^ m * weightedGmcBallMoment P M γ (α k) (z k) ρ m := by
       simp_rw [ENNReal.mul_rpow_of_nonneg _ _ hm.le]
-      exact lintegral_const_mul'' _ (hw.pow_const m)
+      exact lintegral_const_mul'' _ ((gmc_weighted_mass_aemeasurable P X hX γ hγ hγ2 M hM (α k) (z k) ρ).pow_const m)
     _ ≤ B ^ m * (ENNReal.ofReal (ρ ^ (γ * gap * m)) * C) :=
       mul_le_mul_right (hdec (α k) hk ρ hρ (le_min hρδ (hρδ.trans hδ1))) _
     _ = _ := by ring

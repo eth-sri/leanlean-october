@@ -58,7 +58,6 @@ theorem dual_source_restarted_polar_increment_tendsto
   let _ : IsProbabilityMeasure P := hX.1
   let ν := Q γ-α₁
   let p := (α₁+α₂+α₃-2/γ-2*Q γ)/γ
-  let A := originRadialPath Xc
   have hA := originRadialPath_aemeasurable P X Xc hc hcont
   have hZ := hData.2.1
   let R := (brownianMaximumReferenceLaw ν).prod P
@@ -70,12 +69,11 @@ theorem dual_source_restarted_polar_increment_tendsto
     (continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
   filter_upwards [self_mem_nhdsWithin, hn.eventually (gt_mem_nhds (by norm_num : ‖(0 : ℂ)‖ < 1))]
     with z hz0 hz
-  have hn0 : 0 < ‖z‖ := norm_pos_iff.mpr hz0
+  have hn0 := norm_pos_iff.mpr hz0
   have htime : 0 ≤ -Real.log ‖z‖+h := by
-    have hl := Real.log_nonpos hn0.le hz.le
-    linarith only [hl, hh]
+    linarith only [Real.log_nonpos hn0.le hz.le, hh]
   let T := Real.toNNReal (-Real.log ‖z‖+h)
-  have hT : (T : ℝ) = -Real.log ‖z‖+h := Real.coe_toNNReal _ htime
+  have hT := Real.coe_toNNReal _ htime
   have hstrict : ‖z‖ < ‖z‖^(1-ξ) := by
     simpa only [Real.rpow_one] using Real.rpow_lt_rpow_of_exponent_gt hn0 hz
       (by linarith only [hξ] : 1-ξ < 1)
@@ -84,7 +82,7 @@ theorem dual_source_restarted_polar_increment_tendsto
     rw [hT]
     have he : -(-Real.log ‖z‖+h) ≤ Real.log ‖z‖ := by linarith only [hh]
     simpa only [Real.exp_log hn0] using Real.exp_le_exp.mpr he
-  let D := fun ω => brownianShiftPath T (radialPositiveHalf (A ω))
+  let D := fun ω => brownianShiftPath T (radialPositiveHalf ((originRadialPath Xc) ω))
   have hDm : AEMeasurable D P :=
     (continuous_brownianShiftPath.measurable.comp
       (measurable_const.prodMk continuous_radialPositiveHalf.measurable)).comp_aemeasurable hA
@@ -93,9 +91,8 @@ theorem dual_source_restarted_polar_increment_tendsto
       (measurable_const.prodMk continuous_radialPositiveHalf.measurable)).aemeasurable measurable_id.aemeasurable
   let Y := fun ω => (dual_radial_scale γ ν h Xc z ω,
     (dualOuterMass γ α₁ α₂ α₃ (M ω) z ξ).toReal)
-  have hcoord := (hc.2.1 0 (-Real.log ‖z‖+h)).aemeasurable
   have hβ : AEMeasurable (dual_radial_scale γ ν h Xc z) P :=
-    ((hcoord.const_mul γ).sub aemeasurable_const).sub aemeasurable_const |>.exp
+    ((((hc.2.1 0 (-Real.log ‖z‖+h)).aemeasurable).const_mul γ).sub aemeasurable_const).sub aemeasurable_const |>.exp
   have hYm : AEMeasurable Y P := hβ.prodMk
     (((dual_outerMass_measure_measurable γ α₁ α₂ α₃ ξ z).comp_aemeasurable
       (equatorGFF_GMC_aemeasurable P X hX γ hγ hγ₂ M hM)).ennreal_toReal)
@@ -112,7 +109,7 @@ theorem dual_source_restarted_polar_increment_tendsto
   have hLaw := dual_source_restart_outer_williams_law P X Xc hX hc hm hcont γ hγ hγ₂ M hM
     h α₁ α₂ α₃ ξ hα₁ z hz0 hstrict T hT hr Z hZ hiZ B Z hData
   let G : (ℝ × ℝ) × ℝ≥0∞ → ℝ := fun v => (v.1.2+v.1.1*v.2.toReal)^(-p)-v.1.2^(-p)
-  have hG : Measurable G := by unfold G; fun_prop
+  have hG : Measurable G := by fun_prop
   have he := dual_copied_joint_law_integral P R Y hYm V hVm J hJm hLaw G hG
   simp only [G, Y, J, ENNReal.toReal_mul, ENNReal.toReal_ofReal (Real.exp_pos _).le] at he
   exact congrArg (fun t : ℝ => t/‖z‖^((4/γ)*ν)) he.symm

@@ -12,22 +12,23 @@ import Mathlib.Analysis.Complex.RealDeriv
 
 @[expose] public section
 
+noncomputable section
 namespace DOZZ.Proofs
 
-noncomputable def gaussCramerWronskian (f g : ℂ → ℂ) (z : ℂ) : ℂ :=
+def gaussCramerWronskian (f g : ℂ → ℂ) (z : ℂ) : ℂ :=
   f z * deriv g z - deriv f z * g z
 
-noncomputable def gaussCramerNumerator₁ (T : ℂ → ℝ) (g : ℂ → ℂ) (z : ℂ) : ℂ :=
+def gaussCramerNumerator₁ (T : ℂ → ℝ) (g : ℂ → ℂ) (z : ℂ) : ℂ :=
   (T z : ℂ) * deriv g z -
     wirtingerZ (fun w => (T w : ℂ)) z * g z
 
-noncomputable def gaussCramerNumerator₂ (T : ℂ → ℝ) (f : ℂ → ℂ) (z : ℂ) : ℂ :=
+def gaussCramerNumerator₂ (T : ℂ → ℝ) (f : ℂ → ℂ) (z : ℂ) : ℂ :=
   f z * wirtingerZ (fun w => (T w : ℂ)) z - deriv f z * (T z : ℂ)
 
-noncomputable def gaussCramerCoefficient₁ (T : ℂ → ℝ) (f g : ℂ → ℂ) (z : ℂ) : ℂ :=
+def gaussCramerCoefficient₁ (T : ℂ → ℝ) (f g : ℂ → ℂ) (z : ℂ) : ℂ :=
   gaussCramerNumerator₁ T g z * (gaussCramerWronskian f g z)⁻¹
 
-noncomputable def gaussCramerCoefficient₂ (T : ℂ → ℝ) (f g : ℂ → ℂ) (z : ℂ) : ℂ :=
+def gaussCramerCoefficient₂ (T : ℂ → ℝ) (f g : ℂ → ℂ) (z : ℂ) : ℂ :=
   gaussCramerNumerator₂ T f z * (gaussCramerWronskian f g z)⁻¹
 
 /-- On the regular slit plane, the two Cramer coefficients of a real PDE solution have zero
@@ -49,45 +50,29 @@ theorem realGaussCramerCoefficients_wirtingerZ_eq_zero
       DifferentiableAt ℝ (gaussCramerCoefficient₂ T f g) z ∧
         wirtingerZ (gaussCramerCoefficient₂ T f g) z = 0 := by
   intro z hz
-  have hzReg : z ∈ gaussRegularPlane := gaussCutPlane_subset_regularPlane hz
-  let den : ℂ := z * (1 - z)
+  have hzReg := gaussCutPlane_subset_regularPlane hz
+  let den := z * (1 - z)
   have hden : den ≠ 0 := by
     dsimp [den]
     exact mul_ne_zero hzReg.1 (sub_ne_zero.mpr (Ne.symm hzReg.2))
-  have hTAtReal : ContDiffAt ℝ 2 T z :=
-    (hT.1 z hzReg).contDiffAt (gaussRegularPlane_isOpen.mem_nhds hzReg)
   have hTAt : ContDiffAt ℝ 2 (fun w => (T w : ℂ)) z := by
     change ContDiffAt ℝ 2 (fun w => Complex.ofRealCLM (T w)) z
-    exact Complex.ofRealCLM.contDiff.contDiffAt.comp z hTAtReal
+    exact Complex.ofRealCLM.contDiff.contDiffAt.comp z ((hT.1 z hzReg).contDiffAt (gaussRegularPlane_isOpen.mem_nhds hzReg))
   let t₀ : ℂ → ℂ := fun w => (T w : ℂ)
   let t₁ : ℂ → ℂ := fun w => wirtingerZ t₀ w
   let t₂ : ℂ → ℂ := fun w => wirtingerZ t₁ w
-  have ht₀ : DifferentiableAt ℝ t₀ z := hTAt.differentiableAt (by norm_num)
-  have ht₁ : DifferentiableAt ℝ t₁ z :=
+  have ht₀ := hTAt.differentiableAt (by norm_num)
+  have ht₁ :=
     differentiableAt_wirtingerZ_of_contDiffAt_two hTAt
   have ht₀z : wirtingerZ t₀ z = t₁ z := rfl
-  have hPDE := hT.2 z hzReg
-  let pz : ℂ := (z * ((a : ℂ) + b + 1) - c) / den
-  let qz : ℂ := (a * b) / den
-  have hPDE' :
-      t₂ z + ((c : ℂ) - z * ((a : ℂ) + b + 1)) / den * t₁ z -
-        (a * b) / den * t₀ z = 0 := by
-    change wirtingerZ (wirtingerZ (fun w => (T w : ℂ))) z +
-        ((c : ℂ) - z * ((a : ℂ) + b + 1)) / (z * (1 - z)) *
-          wirtingerZ (fun w => (T w : ℂ)) z -
-        (a : ℂ) * b / (z * (1 - z)) * (T z : ℂ) = 0
-    exact hPDE
-  have ht₂ : t₂ z = pz * t₁ z + qz * t₀ z := by
-    have hpz : pz = -(((c : ℂ) - z * ((a : ℂ) + b + 1)) / den) := by
-      dsimp [pz]
-      ring
-    rw [hpz]
-    dsimp [qz]
-    linear_combination hPDE'
-  have hfAt : DifferentiableAt ℂ f z := (hf z hz).differentiableAt
-  have hgAt : DifferentiableAt ℂ g z := (hg z hz).differentiableAt
-  have hf₁At : DifferentiableAt ℂ (deriv f) z := (hf.deriv z hz).differentiableAt
-  have hg₁At : DifferentiableAt ℂ (deriv g) z := (hg.deriv z hz).differentiableAt
+  have := hT.2 z hzReg
+  let pz := (z * ((a : ℂ) + b + 1) - c) / den
+  let qz := (a * b) / den
+  have ht₂ : t₂ z = pz * t₁ z + qz * t₀ z := by grind
+  have hfAt := (hf z hz).differentiableAt
+  have hgAt := (hg z hz).differentiableAt
+  have hf₁At := (hf.deriv z hz).differentiableAt
+  have hg₁At := (hg.deriv z hz).differentiableAt
   have hODEf' : deriv (deriv f) z = pz * deriv f z + qz * f z := by
     have h := hODEf z hz
     dsimp [gaussHolomorphicOperator] at h
@@ -100,10 +85,7 @@ theorem realGaussCramerCoefficients_wirtingerZ_eq_zero
       simp only [pz, qz]
       field_simp [hden]
     apply mul_left_cancel₀ hden
-    calc
-      den * deriv (deriv f) z =
-          (z * ((a : ℂ) + b + 1) - c) * deriv f z + (a * b) * f z := hmul
-      _ = den * (pz * deriv f z + qz * f z) := hscaled.symm
+    exact (hmul).trans (hscaled.symm)
   have hODEg' : deriv (deriv g) z = pz * deriv g z + qz * g z := by
     have h := hODEg z hz
     dsimp [gaussHolomorphicOperator] at h
@@ -116,10 +98,7 @@ theorem realGaussCramerCoefficients_wirtingerZ_eq_zero
       simp only [pz, qz]
       field_simp [hden]
     apply mul_left_cancel₀ hden
-    calc
-      den * deriv (deriv g) z =
-          (z * ((a : ℂ) + b + 1) - c) * deriv g z + (a * b) * g z := hmul
-      _ = den * (pz * deriv g z + qz * g z) := hscaled.symm
+    exact (hmul).trans (hscaled.symm)
   let A : ℂ → ℂ := gaussCramerNumerator₁ T g
   let B : ℂ → ℂ := gaussCramerNumerator₂ T f
   let W : ℂ → ℂ := gaussCramerWronskian f g
@@ -190,13 +169,12 @@ theorem realGaussCramerCoefficients_wirtingerZ_eq_zero
         dsimp [B, gaussCramerNumerator₂, t₀, t₁]
         rw [ht₂, hODEf']
         ring
-  have hWabel := gauss_pair_wronskian_abel (a : ℂ) b c f g hf hg hODEf hODEg z hz
   have hWderiv : deriv W z = pz * W z := by
     have habel : den * deriv W z +
         ((c : ℂ) - ((a : ℂ) + b + 1) * z) * W z = 0 := by
       change z * (1 - z) * deriv W z +
         ((c : ℂ) - ((a : ℂ) + b + 1) * z) * W z = 0
-      exact hWabel
+      exact gauss_pair_wronskian_abel (a : ℂ) b c f g hf hg hODEf hODEg z hz
     have hmul : den * deriv W z =
         (z * ((a : ℂ) + b + 1) - c) * W z := by
       dsimp [den] at habel ⊢
@@ -206,10 +184,7 @@ theorem realGaussCramerCoefficients_wirtingerZ_eq_zero
       simp only [pz]
       field_simp [hden]
     apply mul_left_cancel₀ hden
-    calc
-      den * deriv W z =
-          (z * ((a : ℂ) + b + 1) - c) * W z := hmul
-      _ = den * (pz * W z) := hscaled.symm
+    exact (hmul).trans (hscaled.symm)
   have hWne := hW z hz
   have hInvAt : DifferentiableAt ℂ (fun w => (W w)⁻¹) z := hWAt.inv hWne
   have hαAt : DifferentiableAt ℝ (gaussCramerCoefficient₁ T f g) z := by

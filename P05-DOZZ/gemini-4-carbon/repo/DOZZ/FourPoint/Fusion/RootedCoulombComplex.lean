@@ -35,7 +35,7 @@ theorem fusion_rooted_coulomb_complex_integral {Ω : Type*} [MeasurableSpace Ω]
         ((∫⁻ ω, coulombMass γ (gmcRootedMeasure γ u (M ω)) α z αinf ^ s ∂P).toReal : ℂ)
         ∂gmcReferenceMeasure := by
   let G := fun μ : Measure ℂ => coulombMass γ μ α z αinf ^ s
-  have hG : Measurable G := (fusion_measurable_coulombMass γ α z αinf).pow_const s
+  have hG := (fusion_measurable_coulombMass γ α z αinf).pow_const s
   obtain ⟨C, hC, hbound⟩ := fusion_rootedMass_inverse_moment_uniform P X hX γ hγ hγ2 M hM
     α αinf s hs.le
   have hb : (∫⁻ u, ENNReal.ofReal ‖f u‖ *

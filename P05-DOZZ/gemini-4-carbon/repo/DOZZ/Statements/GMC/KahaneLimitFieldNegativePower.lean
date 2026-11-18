@@ -37,6 +37,6 @@ theorem kahane_limit_field_negative_power
     (hYconv : TendstoInMeasure PY
       (fun r ω => (fieldChaosMass PY (Ψ r) ν h γ ω).toReal) atTop ZY) :
     ∫⁻ ω, ENNReal.rpow (ENNReal.ofReal (ZX ω)) (-q) ∂PX ≤
-      ∫⁻ ω, ENNReal.rpow (ENNReal.ofReal (ZY ω)) (-q) ∂PY := by exact DOZZ.Proofs.kahane_limit_field_negative_power PX PY Φ Ψ hΦ hΨ ν h hh hhb γ q hq hcov hdiag ZX ZY hXconv hYconv
+      ∫⁻ ω, ENNReal.rpow (ENNReal.ofReal (ZY ω)) (-q) ∂PY := DOZZ.Proofs.kahane_limit_field_negative_power PX PY Φ Ψ hΦ hΨ ν h hh hhb γ q hq hcov hdiag ZX ZY hXconv hYconv
 
 end DOZZ

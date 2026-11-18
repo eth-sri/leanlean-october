@@ -80,15 +80,12 @@ theorem dual_full_separated_inverse_littleO
       gmc_atomless_at_root_of_isGMCOf P X hX γ hγ hγ₂ M hM 0,
       gmc_atomless_at_root_of_isGMCOf P X hX γ hγ hγ₂ M hM 1,
       reflected_gmc_sphere_null P X hX γ hγ hγ₂ M hM 0 (r z)] with ω hb hf h0 h1 hc
-    have he := dual_kernel_separated_split γ α₁ α₂ α₃ (s z) (r z) hs hsr' z (M ω) h0 h1 hc
-    have hB := dual_outerMass_eq_comparison_region γ α₁ α₂ α₃ ξ hγ.ne' z (M ω) h0 h1 hzsep hc
-    refine ⟨hb.1,hf,he,?_⟩
+    refine ⟨hb.1,hf,dual_kernel_separated_split γ α₁ α₂ α₃ (s z) (r z) hs hsr' z (M ω) h0 h1 hc,?_⟩
     dsimp only [B,S]
-    rw [hB]
+    rw [dual_outerMass_eq_comparison_region γ α₁ α₂ α₃ ξ hγ.ne' z (M ω) h0 h1 hzsep hc]
     exact le_add_left le_rfl
   have hmM := gmc_measure_aemeasurable_of_isGMCOf P X hX γ hγ hγ₂ M hM
   have hk := (dual_kernel_measurable γ α₁ α₂ α₃ z).ennreal_ofReal
-  have hFm : AEMeasurable (F z) P := (Measure.measurable_lintegral hk).comp_aemeasurable hmM
   have hSm : AEMeasurable (S z) P := by
     have hi : MeasurableSet (reflected_innerRegion (s z)) :=
       (isOpen_lt continuous_const continuous_norm).measurableSet.inter
@@ -96,9 +93,7 @@ theorem dual_full_separated_inverse_littleO
     have ho : MeasurableSet (reflected_outerRegion (r z)) :=
       (isOpen_lt continuous_const continuous_norm).measurableSet.inter
         (isClosed_singleton.union isClosed_singleton).measurableSet.compl
-    have hmi := (Measure.measurable_lintegral (hk.indicator hi)).comp_aemeasurable hmM
-    have hmo := (Measure.measurable_lintegral (hk.indicator ho)).comp_aemeasurable hmM
-    convert hmi.add hmo using 1
+    convert ((Measure.measurable_lintegral (hk.indicator hi)).comp_aemeasurable hmM).add ((Measure.measurable_lintegral (hk.indicator ho)).comp_aemeasurable hmM) using 1
     funext ω
     simp only [S, Pi.add_apply, Function.comp_apply, lintegral_indicator hi, lintegral_indicator ho]
   have hSt : (∫⁻ ω, S z ω^(-p) ∂P) ≠ ⊤ := by
@@ -106,7 +101,7 @@ theorem dual_full_separated_inverse_littleO
     apply le_trans (lintegral_mono_ae (hsource.mono fun ω hh =>
       ennreal_rpow_antitone_of_nonpos hh.2.2.2 (neg_nonpos.mpr hp.le)))
     exact hbi z ξ hz.le (by linarith only [hcut])
-  have hFt : (∫⁻ ω, F z ω^(-p) ∂P) ≠ ⊤ := ne_top_of_le_ne_top hSt
+  have hFt := ne_top_of_le_ne_top hSt
     (lintegral_mono_ae (hsource.mono fun ω hh => ennreal_rpow_antitone_of_nonpos
       (le_self_add.trans_eq hh.2.2.1.symm) (neg_nonpos.mpr hp.le)))
   have hIB : (∫⁻ ω, I z ω*B z ω^(-(p+1)) ∂P) ≠ ⊤ := by
@@ -131,12 +126,11 @@ theorem dual_full_separated_inverse_littleO
     exact ENNReal.mul_ne_top ENNReal.ofReal_ne_top hIB
   have hSF : ∀ᵐ ω ∂P, S z ω^(-p) ≤ F z ω^(-p)+R z ω := by
     filter_upwards [hsource] with ω hh
-    have hS0 : S z ω ≠ 0 := (hh.1.trans_le hh.2.2.2).ne'
-    have hSt0 : S z ω ≠ ⊤ := ne_top_of_le_ne_top hh.2.1.ne
+    have hSt0 := ne_top_of_le_ne_top hh.2.1.ne
       (le_self_add.trans_eq hh.2.2.1.symm)
-    have hIt : I z ω ≠ ⊤ := ne_top_of_le_ne_top hh.2.1.ne
+    have hIt := ne_top_of_le_ne_top hh.2.1.ne
       (le_add_self.trans_eq hh.2.2.1.symm)
-    have hb := reflected_ennreal_inverse_add_bound p hp (S z ω) (I z ω) hS0 hSt0 hIt
+    have hb := reflected_ennreal_inverse_add_bound p hp (S z ω) (I z ω) ((hh.1.trans_le hh.2.2.2).ne') hSt0 hIt
     rw [← hh.2.2.1] at hb
     exact hb.trans (add_le_add le_rfl (by
       dsimp only [R]
@@ -147,12 +141,11 @@ theorem dual_full_separated_inverse_littleO
     hsource.mono fun ω hh => (ennreal_rpow_antitone_of_nonpos
       (le_self_add.trans_eq hh.2.2.1.symm) (neg_nonpos.mpr hp.le)).trans le_self_add
   have hb := reflected_lintegral_toReal_difference_bound P (fun ω => F z ω^(-p))
-    (fun ω => S z ω^(-p)) (R z) (hFm.pow_const _) (hSm.pow_const _) hFt hSt hRt hFS hSF
+    (fun ω => S z ω^(-p)) (R z) (((Measure.measurable_lintegral hk).comp_aemeasurable hmM).pow_const _) (hSm.pow_const _) hFt hSt hRt hFS hSF
   dsimp only [R] at hb
   rw [lintegral_const_mul' _ _ ENNReal.ofReal_ne_top, ENNReal.toReal_mul,
     ENNReal.toReal_ofReal hp.le] at hb
   rw [Real.norm_eq_abs, abs_div, abs_of_nonneg (Real.rpow_nonneg (norm_nonneg z) κ)]
-  have hdiv := div_le_div_of_nonneg_right hb (Real.rpow_nonneg (norm_nonneg z) κ)
-  simpa only [dualSeparatedInverseMoment, F, S, I, B, s, r, mul_div_assoc] using hdiv
+  simpa only [dualSeparatedInverseMoment, F, S, I, B, s, r, mul_div_assoc] using div_le_div_of_nonneg_right hb (Real.rpow_nonneg (norm_nonneg z) κ)
 
 end DOZZ.Proofs

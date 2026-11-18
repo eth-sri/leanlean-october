@@ -38,8 +38,7 @@ theorem measurable_bpzLamDeriv (r : ℝ) : Measurable (bpzLamDeriv r) := by
     (measurable_bpzTruncLogDeriv r).comp (measurable_fst.add (measurable_const.mul
       (Complex.measurable_exp.comp (Complex.measurable_ofReal.comp measurable_snd |>.mul
         measurable_const))))
-  have hint : StronglyMeasurable (fun w : ℂ => ∫ θ in Set.Ioc 0 (2 * Real.pi),
-      bpzTruncLogDeriv r (w + Real.exp (-r) * Complex.exp (θ * Complex.I))) :=
+  have hint :=
     StronglyMeasurable.integral_prod_right' (ν := (volume.restrict (Set.Ioc 0 (2 * Real.pi))))
       hjoint.stronglyMeasurable
   have heq : bpzLamDeriv r = fun w => (2 * Real.pi)⁻¹ • ∫ θ in Set.Ioc 0 (2 * Real.pi),
@@ -49,14 +48,18 @@ theorem measurable_bpzLamDeriv (r : ℝ) : Measurable (bpzLamDeriv r) := by
   rw [heq]
   exact hint.measurable.const_smul ((2 * Real.pi)⁻¹ : ℝ)
 
-theorem continuous_bpzCutRootKernel_snd (γ r : ℝ) (x : ℂ) :
+section
+variable (γ r : ℝ) (x : ℂ)
+include γ r x
+
+theorem continuous_bpzCutRootKernel_snd :
     Continuous (bpzCutRootKernel γ r x) := by
   unfold bpzCutRootKernel
   exact Real.continuous_exp.comp (continuous_const.mul
     (((continuous_bpzLam r).comp (continuous_const.sub continuous_id)).add
       (continuous_bpzPin r)))
 
-theorem continuous_bpzLimRootKernel_snd (γ r : ℝ) (x : ℂ) :
+theorem continuous_bpzLimRootKernel_snd :
     Continuous (bpzLimRootKernel γ r x) := by
   unfold bpzLimRootKernel
   refine Real.continuous_exp.comp (continuous_const.mul
@@ -64,65 +67,16 @@ theorem continuous_bpzLimRootKernel_snd (γ r : ℝ) (x : ℂ) :
   exact Real.continuousOn_log.comp_continuous bpz_continuous_normPlus
     fun y => (bpz_normPlus_pos y).ne'
 
-theorem bpzCutRootKernel_le (γ r : ℝ) (x y : ℂ) :
+theorem bpzCutRootKernel_le (y : ℂ) :
     bpzCutRootKernel γ r x y ≤ Real.exp (γ ^ 2 * r) * Real.exp (γ ^ 2 * bpzPin r y) := by
   unfold bpzCutRootKernel
   rw [← Real.exp_add]
   apply Real.exp_le_exp.mpr
   have := bpzLam_le r (x - y)
-  have hγ := sq_nonneg γ
   nlinarith
 
-/-- The cutoff part of the rooted mixed mass is differentiable at a non-atom. -/
-theorem hasFDerivAt_bpz_cut_part {γ r : ℝ} {ρ k₁ : ℂ → ℝ} {m₁ : Measure ℂ} {x₀ : ℂ}
-    (hρm : Measurable ρ) (hk₁ : Measurable k₁) (hρ0 : ∀ y, 0 ≤ ρ y) (hk₁0 : ∀ y, 0 ≤ k₁ y)
-    (hI₁ : Integrable (fun y => ρ y * k₁ y * Real.exp (γ ^ 2 * bpzPin r y)) m₁)
-    (hatom : m₁ {x₀} = 0) :
-    HasFDerivAt (fun x => ∫ y, ρ y * k₁ y * bpzCutRootKernel γ r x y ∂m₁)
-      (∫ y, (ρ y * k₁ y * (bpzCutRootKernel γ r x₀ y * γ ^ 2)) • bpzLamDeriv r (x₀ - y) ∂m₁)
-      x₀ := by
-  set C : ℝ := γ ^ 2 * Real.exp (γ ^ 2 * r) * Real.exp r with hC
-  have hC0 : 0 ≤ C := by positivity
-  have hw : ∀ y, 0 ≤ ρ y * k₁ y := fun y => mul_nonneg (hρ0 y) (hk₁0 y)
-  have hmeasF : ∀ x, Measurable fun y => ρ y * k₁ y * bpzCutRootKernel γ r x y :=
-    fun x => (hρm.mul hk₁).mul (continuous_bpzCutRootKernel_snd γ r x).measurable
-  have hmeasF' : Measurable fun y =>
-      (ρ y * k₁ y * (bpzCutRootKernel γ r x₀ y * γ ^ 2)) • bpzLamDeriv r (x₀ - y) :=
-    ((hρm.mul hk₁).mul ((continuous_bpzCutRootKernel_snd γ r x₀).measurable.mul_const _)).smul
-      ((measurable_bpzLamDeriv r).comp (measurable_const.sub measurable_id))
-  have hint₀ : Integrable (fun y => ρ y * k₁ y * bpzCutRootKernel γ r x₀ y) m₁ := by
-    refine (hI₁.mul_const (Real.exp (γ ^ 2 * r))).mono' (hmeasF x₀).aestronglyMeasurable
-      (Eventually.of_forall fun y => ?_)
-    rw [Real.norm_eq_abs, abs_of_nonneg (mul_nonneg (hw y) (bpzCutRootKernel_pos γ r x₀ y).le)]
-    calc ρ y * k₁ y * bpzCutRootKernel γ r x₀ y
-        ≤ ρ y * k₁ y * (Real.exp (γ ^ 2 * r) * Real.exp (γ ^ 2 * bpzPin r y)) :=
-          mul_le_mul_of_nonneg_left (bpzCutRootKernel_le γ r x₀ y) (hw y)
-      _ = _ := by ring
-  have hnot : ∀ᵐ y ∂m₁, y ≠ x₀ := by
-    apply ae_iff.mpr; simpa using hatom
-  have hmain := hasFDerivAt_integral_of_dominated_loc_of_lip (μ := m₁) (s := Set.univ)
-    (x₀ := x₀) (F := fun x y => ρ y * k₁ y * bpzCutRootKernel γ r x y)
-    (F' := fun y => (ρ y * k₁ y * (bpzCutRootKernel γ r x₀ y * γ ^ 2)) •
-      bpzLamDeriv r (x₀ - y))
-    (bound := fun y => ρ y * k₁ y * Real.exp (γ ^ 2 * bpzPin r y) * C) Filter.univ_mem
-    (Eventually.of_forall fun x => (hmeasF x).aestronglyMeasurable) hint₀
-    hmeasF'.aestronglyMeasurable
-    (Eventually.of_forall fun y => by
-      refine LipschitzOnWith.of_dist_le_mul fun x _ x' _ => ?_
-      rw [Real.dist_eq, dist_eq_norm, Real.coe_nnabs,
-        abs_of_nonneg (mul_nonneg (mul_nonneg (hw y) (Real.exp_pos _).le) hC0)]
-      rw [← mul_sub, abs_mul, abs_of_nonneg (hw y)]
-      calc ρ y * k₁ y * |bpzCutRootKernel γ r x y - bpzCutRootKernel γ r x' y|
-          ≤ ρ y * k₁ y * (γ ^ 2 * Real.exp (γ ^ 2 * r) * Real.exp (γ ^ 2 * bpzPin r y) *
-            Real.exp r * ‖x - x'‖) :=
-            mul_le_mul_of_nonneg_left (abs_bpzCutRootKernel_sub_le γ r x x' y) (hw y)
-        _ = ρ y * k₁ y * Real.exp (γ ^ 2 * bpzPin r y) * C * ‖x - x'‖ := by rw [hC]; ring)
-    (hI₁.mul_const C)
-    (by
-      filter_upwards [hnot] with y hy
-      have h := (hasFDerivAt_bpzCutRootKernel γ r hy.symm).const_mul (ρ y * k₁ y)
-      simpa [smul_smul, mul_assoc] using h)
-  exact hmain.2
+
+end
 
 /-- The limit part of the rooted mixed mass is differentiable at a root separated from the
 limit region. -/
@@ -135,8 +89,6 @@ theorem hasFDerivAt_bpz_lim_part {γ r δ : ℝ} {ρ k₂ : ℂ → ℝ} {m₂ :
         bpzTruncLogDeriv r (x₀ - y) ∂m₂) x₀ := by
   set R : ℝ := ‖x₀‖ + δ with hR
   set B : ℝ := (1 + (1 + R) / δ) ^ (γ ^ 2) with hB
-  have hR0 : 0 ≤ R := by positivity
-  have hB0 : 0 ≤ B := Real.rpow_nonneg (by positivity) _
   have hw : ∀ y, 0 ≤ (1 - ρ y) * k₂ y := fun y => mul_nonneg (by linarith [hρ1 y]) (hk₂0 y)
   have hball : ∀ x ∈ Metric.ball x₀ δ, ∀ y, ρ y < 1 → ‖x‖ ≤ R ∧ δ ≤ ‖x - y‖ := by
     intro x hx y hy
@@ -192,8 +144,7 @@ theorem hasFDerivAt_bpz_lim_part {γ r δ : ℝ} {ρ k₂ : ℂ → ℝ} {m₂ :
       · have hne : ‖x₀ - y‖ ≠ Real.exp (-r) := by
           have := hsep y hy
           linarith
-        have h := (hasFDerivAt_bpzLimRootKernel γ r hne).const_mul ((1 - ρ y) * k₂ y)
-        simpa [smul_smul, mul_assoc] using h
+        simpa [smul_smul, mul_assoc] using (hasFDerivAt_bpzLimRootKernel γ r hne).const_mul ((1 - ρ y) * k₂ y)
       · simp only [hy, sub_self, zero_mul, zero_smul]
         exact hasFDerivAt_const 0 x₀)
   exact hmain.2
@@ -208,7 +159,46 @@ theorem hasFDerivAt_bpzRootedMixedReal {γ r δ : ℝ} {ρ k₁ k₂ : ℂ → �
     (hδ : 0 < δ) (hδr : Real.exp (-r) ≤ δ) (hsep : ∀ y, ρ y < 1 → 2 * δ ≤ ‖x₀ - y‖) :
     HasFDerivAt (fun x => bpzRootedMixedReal γ r ρ k₁ k₂ x m₁ m₂)
       (bpzRootedMixedDeriv γ r ρ k₁ k₂ x₀ m₁ m₂) x₀ :=
-  (hasFDerivAt_bpz_cut_part hρm hk₁ hρ0 hk₁0 hI₁ hatom).add
-    (hasFDerivAt_bpz_lim_part hρm hk₂ hρ1 hk₂0 hI₂ hδ hδr hsep)
+  have hasFDerivAt_bpz_cut_part : HasFDerivAt (fun x => ∫ y, ρ y * k₁ y * bpzCutRootKernel γ r x y ∂m₁)
+        (∫ y, (ρ y * k₁ y * (bpzCutRootKernel γ r x₀ y * γ ^ 2)) • bpzLamDeriv r (x₀ - y) ∂m₁)
+        x₀ := by
+    set C : ℝ := γ ^ 2 * Real.exp (γ ^ 2 * r) * Real.exp r with hC
+    have hC0 : 0 ≤ C := by positivity
+    have hw : ∀ y, 0 ≤ ρ y * k₁ y := fun y => mul_nonneg (hρ0 y) (hk₁0 y)
+    have hmeasF : ∀ x, Measurable fun y => ρ y * k₁ y * bpzCutRootKernel γ r x y :=
+      fun x => (hρm.mul hk₁).mul (continuous_bpzCutRootKernel_snd γ r x).measurable
+    have hmeasF' : Measurable fun y =>
+        (ρ y * k₁ y * (bpzCutRootKernel γ r x₀ y * γ ^ 2)) • bpzLamDeriv r (x₀ - y) :=
+      ((hρm.mul hk₁).mul ((continuous_bpzCutRootKernel_snd γ r x₀).measurable.mul_const _)).smul
+        ((measurable_bpzLamDeriv r).comp (measurable_const.sub measurable_id))
+    have hint₀ : Integrable (fun y => ρ y * k₁ y * bpzCutRootKernel γ r x₀ y) m₁ := by
+      refine (hI₁.mul_const (Real.exp (γ ^ 2 * r))).mono' (hmeasF x₀).aestronglyMeasurable
+        (Eventually.of_forall fun y => ?_)
+      rw [Real.norm_eq_abs, abs_of_nonneg (mul_nonneg (hw y) (bpzCutRootKernel_pos γ r x₀ y).le)]
+      refine (mul_le_mul_of_nonneg_left (bpzCutRootKernel_le γ r x₀ y) (hw y)).trans_eq (?_)
+      ring
+    have hnot : ∀ᵐ y ∂m₁, y ≠ x₀ := by
+      apply ae_iff.mpr; simpa using hatom
+    have hmain := hasFDerivAt_integral_of_dominated_loc_of_lip (μ := m₁) (s := Set.univ)
+      (x₀ := x₀) (F := fun x y => ρ y * k₁ y * bpzCutRootKernel γ r x y)
+      (F' := fun y => (ρ y * k₁ y * (bpzCutRootKernel γ r x₀ y * γ ^ 2)) •
+        bpzLamDeriv r (x₀ - y))
+      (bound := fun y => ρ y * k₁ y * Real.exp (γ ^ 2 * bpzPin r y) * C) Filter.univ_mem
+      (Eventually.of_forall fun x => (hmeasF x).aestronglyMeasurable) hint₀
+      hmeasF'.aestronglyMeasurable
+      (Eventually.of_forall fun y => by
+        refine LipschitzOnWith.of_dist_le_mul fun x _ x' _ => ?_
+        rw [Real.dist_eq, dist_eq_norm, Real.coe_nnabs,
+          abs_of_nonneg (mul_nonneg (mul_nonneg (hw y) (Real.exp_pos _).le) hC0)]
+        rw [← mul_sub, abs_mul, abs_of_nonneg (hw y)]
+        refine (mul_le_mul_of_nonneg_left (abs_bpzCutRootKernel_sub_le γ r x x' y) (hw y)).trans_eq (?_)
+        rw [hC]; ring)
+      (hI₁.mul_const C)
+      (by
+        filter_upwards [hnot] with y hy
+        simpa [smul_smul, mul_assoc] using (hasFDerivAt_bpzCutRootKernel γ r hy.symm).const_mul (ρ y * k₁ y))
+    exact hmain.2
+  (hasFDerivAt_bpz_cut_part).add
+      (hasFDerivAt_bpz_lim_part hρm hk₂ hρ1 hk₂0 hI₂ hδ hδr hsep)
 
 end DOZZ.Proofs

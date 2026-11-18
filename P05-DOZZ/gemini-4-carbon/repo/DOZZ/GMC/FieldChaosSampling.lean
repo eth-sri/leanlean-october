@@ -16,14 +16,17 @@ open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
 
-noncomputable def fieldWickDensity {Ω S : Type*} [MeasurableSpace Ω]
+variable {Ω S : Type*} [MeasurableSpace Ω]
+
+
+noncomputable def fieldWickDensity
     (P : Measure Ω) (Φ : Ω → S → ℝ) (h : S → ℝ≥0) (γ : ℝ) (ω : Ω) (x : S) : ℝ :=
   (h x : ℝ) * Real.exp (γ * Φ ω x - γ ^ 2 / 2 *
     DOZZ.gaussianVariance P (fun ω => Φ ω x))
 
 /-- The spatial Wick density is jointly measurable. -/
 theorem fieldWickDensity_measurable
-    {Ω S : Type*} [MeasurableSpace Ω] [MeasurableSpace S]
+ [MeasurableSpace S]
     (P : Measure Ω) (Φ : Ω → S → ℝ) (hΦ : DOZZ.IsCenteredGaussianField P Φ)
     (h : S → ℝ≥0) (hh : Measurable h) (γ : ℝ) :
     Measurable (fun p : Ω × S => fieldWickDensity P Φ h γ p.1 p.2) := by
@@ -34,7 +37,7 @@ theorem fieldWickDensity_measurable
 
 /-- Wick normalization gives joint integrability and the exact spatial mean. -/
 theorem fieldWickDensity_integrable_mean
-    {Ω S : Type*} [MeasurableSpace Ω] [MeasurableSpace S] [Nonempty S]
+ [MeasurableSpace S] [Nonempty S]
     (P : Measure Ω) (Φ : Ω → S → ℝ) (hΦ : DOZZ.IsCenteredGaussianField P Φ)
     (ν : FiniteMeasure S) (h : S → ℝ≥0) (hh : Measurable h)
     (hhb : ∃ c : ℝ≥0, ∀ x, h x ≤ c) (γ : ℝ) :
@@ -42,7 +45,7 @@ theorem fieldWickDensity_integrable_mean
       (P.prod (ν.normalize : Measure S)) ∧
     (∫ p : Ω × S, fieldWickDensity P Φ h γ p.1 p.2
       ∂(P.prod (ν.normalize : Measure S))) = ∫ x, (h x : ℝ) ∂(ν.normalize : Measure S) := by
-  have : IsProbabilityMeasure P := (hΦ.2 0 (fun i : Fin 0 => Fin.elim0 i)).1
+  have := (hΦ.2 0 (fun i : Fin 0 => Fin.elim0 i)).1
   have hpoint (x : S) : Integrable (fun ω => fieldWickDensity P Φ h γ ω x) P ∧
       (∫ ω, fieldWickDensity P Φ h γ ω x ∂P) = (h x : ℝ) := by
     have hw := wick_exponential_integrable_expectation P

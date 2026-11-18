@@ -11,7 +11,6 @@ public import Mathlib.Analysis.SpecialFunctions.Log.Deriv
 
 @[expose] public section
 
-open scoped BigOperators
 
 namespace DOZZ.Proofs
 

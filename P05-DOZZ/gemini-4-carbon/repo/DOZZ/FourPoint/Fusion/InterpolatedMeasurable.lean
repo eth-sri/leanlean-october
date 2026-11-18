@@ -37,7 +37,7 @@ theorem fusionInterpolatedMass_expectation_measurable {Ω : Type*} [MeasurableSp
     (α₁ α₂ α₃ s : ℝ) :
     Measurable (fun q : ℝ × (ℂ × ℂ) => ∫⁻ ω,
       fusionInterpolatedMass γ α₁ α₂ α₃ q.1 q.2.1 q.2.2 (M ω) ^ s ∂P) := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _ := hX.1
   obtain ⟨N, hN, hf, he⟩ := equatorGFF_GMC_measurable_version P X hX γ hγ hγ2 M hM
   have hy : Measurable (fun q : (ℝ × (ℂ × ℂ)) × Ω => q.1.2.1) :=
     measurable_fst.comp (measurable_snd.comp measurable_fst)

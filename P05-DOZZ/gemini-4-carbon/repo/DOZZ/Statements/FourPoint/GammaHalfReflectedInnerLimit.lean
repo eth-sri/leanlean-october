@@ -44,6 +44,6 @@ theorem gammaHalf_reflected_inner_limit {Ω : Type*} [MeasurableSpace Ω]
                   reflectionR P γ μ α₁ (B α₁) Z *
                   structureConstant P M γ μ (2 * Q γ - α₁ - γ / 2) α₂ α₃ : ℝ) : ℂ) *
                 ((‖z‖ ^ κ : ℝ) : ℂ)) + r z)) ∧
-            IsComplexLittleOAtZero κ r := by exact DOZZ.Proofs.gammaHalf_reflected_inner_limit P M X γ μ α₁ α₂ α₃ ξ hγ hγ₂ hμ hα₁ hα₂ hα₃ hs hξ hξ₂ hreflect hnear hfreeze hX hM
+            IsComplexLittleOAtZero κ r := DOZZ.Proofs.gammaHalf_reflected_inner_limit P M X γ μ α₁ α₂ α₃ ξ hγ hγ₂ hμ hα₁ hα₂ hα₃ hs hξ hξ₂ hreflect hnear hfreeze hX hM
 
 end DOZZ

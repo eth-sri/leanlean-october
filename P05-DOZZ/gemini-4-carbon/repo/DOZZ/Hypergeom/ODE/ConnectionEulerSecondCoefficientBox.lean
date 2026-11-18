@@ -15,47 +15,7 @@ namespace DOZZ.Proofs
 
 open Set
 
-private theorem secondCoefficient_realInterval_accumulates (lo x hi : ℝ)
-    (hlo : lo < x) (hhi : x < hi) :
-    (x : ℂ) ∈ closure
-      ((fun y : ℝ => (y : ℂ)) '' (Ioo lo hi \ {x})) := by
-  rw [Metric.mem_closure_iff]
-  intro ε hε
-  let d : ℝ := min (ε / 2) ((hi - x) / 2)
-  have hd : 0 < d := by dsimp [d]; positivity
-  have hdε : d < ε := by
-    dsimp [d]
-    have hleft : ε / 2 < ε := by linarith
-    exact (min_le_left _ _).trans_lt hleft
-  have hdhi : d < hi - x := by
-    dsimp [d]
-    have hright : (hi - x) / 2 < hi - x := by linarith
-    exact (min_le_right _ _).trans_lt hright
-  have hy : x + d ∈ Ioo lo hi \ {x} := by
-    constructor
-    · constructor <;> linarith
-    · simp [ne_of_gt hd]
-  refine ⟨(x + d : ℝ), ?_, ?_⟩
-  · exact ⟨x + d, hy, rfl⟩
-  · have hdiff : (x : ℂ) - ((x + d : ℝ) : ℂ) = -(d : ℂ) := by push_cast; ring
-    rw [dist_eq_norm, hdiff, norm_neg, Complex.norm_real, Real.norm_eq_abs,
-      abs_of_pos hd]
-    exact hdε
 
-private theorem secondCoefficient_ofReal_interval_subset_ball {lo q hi r : ℝ}
-    (hleft : q - r ≤ lo) (hright : hi ≤ q + r)
-    {x : ℝ} (hx : x ∈ Ioo lo hi) :
-    (x : ℂ) ∈ Metric.ball (q : ℂ) r := by
-  rcases hx with ⟨hxlo, hxhi⟩
-  have hbound : |x - q| < r := by
-    apply abs_lt.mpr
-    constructor <;> linarith
-  rw [Metric.mem_ball, dist_eq_norm]
-  have hnorm : ‖(x : ℂ) - (q : ℂ)‖ = |x - q| := by
-    rw [show (x : ℂ) - (q : ℂ) = ((x - q : ℝ) : ℂ) by push_cast; ring,
-      Complex.norm_real, Real.norm_eq_abs]
-  rw [hnorm]
-  exact hbound
 
 /-- A sufficiently small real-centered parameter ball avoids every integer. -/
 theorem secondCoefficient_ofReal_ball_subset_integerRange_compl
@@ -65,10 +25,9 @@ theorem secondCoefficient_ofReal_ball_subset_integerRange_compl
   intro z hz hzInt
   rcases hzInt with ⟨n, hn⟩
   subst z
-  have hdist : ‖(n : ℂ) - (q : ℂ)‖ < r := by
-    have hball := Metric.mem_ball.mp hz
-    simpa [dist_eq_norm] using hball
-  have hdistLower : min q (1 - q) ≤ ‖(n : ℂ) - (q : ℂ)‖ := by
+  have : ‖(n : ℂ) - (q : ℂ)‖ < r := by
+    simpa [dist_eq_norm] using Metric.mem_ball.mp hz
+  have : min q (1 - q) ≤ ‖(n : ℂ) - (q : ℂ)‖ := by
     have hnormEq : ‖(n : ℂ) - (q : ℂ)‖ = |(n : ℝ) - q| := by
       calc
         ‖(n : ℂ) - (q : ℂ)‖ = ‖(((n : ℝ) - q : ℝ) : ℂ)‖ := by
@@ -124,14 +83,47 @@ theorem connectionMinusSecondCramer_eq_gamma_on_open_box
           connectionMinusSecondCramerCoefficient H
               (gaussConnectionCoordinates c δ a) =
             gaussConnectionMinusGammaCoefficient₂ (gaussConnectionCoordinates c δ a) := by
-  let SC : Set ℂ := Metric.ball (3 / 4 : ℂ) (1 / 8 : ℝ)
-  let TC : Set ℂ := Metric.ball (-(1 / 4 : ℂ)) (1 / 16 : ℝ)
-  let VC : Set ℂ := Metric.ball (1 / 2 : ℂ) (1 / 16 : ℝ)
-  let SR : Set ℝ := Ioo (11 / 16 : ℝ) (13 / 16 : ℝ)
-  let TR : Set ℝ := Ioo (-(5 / 16 : ℝ)) (-(3 / 16 : ℝ))
-  let VR : Set ℝ := Ioo (7 / 16 : ℝ) (9 / 16 : ℝ)
-  let f : ℂ × ℂ × ℂ → ℂ := connectionMinusSecondCramerCoefficient H
-  let g : ℂ × ℂ × ℂ → ℂ := gaussConnectionMinusGammaCoefficient₂
+  have secondCoefficient_ofReal_interval_subset_ball {lo q hi r : ℝ} (hleft : q - r ≤ lo) (hright : hi ≤ q + r) {x : ℝ} (hx : x ∈ Ioo lo hi) : (x : ℂ) ∈ Metric.ball (q : ℂ) r := by
+    rcases hx with ⟨hxlo, hxhi⟩
+    have hbound : |x - q| < r := by grind
+    rw [Metric.mem_ball, dist_eq_norm]
+    have hnorm : ‖(x : ℂ) - (q : ℂ)‖ = |x - q| := by
+      rw [show (x : ℂ) - (q : ℂ) = ((x - q : ℝ) : ℂ) by push_cast; ring,
+        Complex.norm_real, Real.norm_eq_abs]
+    rw [hnorm]
+    exact hbound
+  have secondCoefficient_realInterval_accumulates (lo x hi : ℝ) (hlo : lo < x) (hhi : x < hi) : (x : ℂ) ∈ closure
+        ((fun y : ℝ => (y : ℂ)) '' (Ioo lo hi \ {x})) := by
+    rw [Metric.mem_closure_iff]
+    intro ε hε
+    let d := min (ε / 2) ((hi - x) / 2)
+    have hd : 0 < d := by dsimp [d]; positivity
+    have hdε : d < ε := by
+      dsimp [d]
+      have hleft : ε / 2 < ε := by linarith
+      exact (min_le_left _ _).trans_lt hleft
+    have : d < hi - x := by
+      dsimp [d]
+      have hright : (hi - x) / 2 < hi - x := by linarith
+      exact (min_le_right _ _).trans_lt hright
+    have hy : x + d ∈ Ioo lo hi \ {x} := by
+      constructor
+      · constructor <;> linarith
+      · simp [ne_of_gt hd]
+    refine ⟨(x + d : ℝ), ?_, ?_⟩
+    · exact ⟨x + d, hy, rfl⟩
+    · have hdiff : (x : ℂ) - ((x + d : ℝ) : ℂ) = -(d : ℂ) := by push_cast; ring
+      rw [dist_eq_norm, hdiff, norm_neg, Complex.norm_real, Real.norm_eq_abs,
+        abs_of_pos hd]
+      exact hdε
+  let SC := Metric.ball (3 / 4 : ℂ) (1 / 8 : ℝ)
+  let TC := Metric.ball (-(1 / 4 : ℂ)) (1 / 16 : ℝ)
+  let VC := Metric.ball (1 / 2 : ℂ) (1 / 16 : ℝ)
+  let SR := Ioo (11 / 16 : ℝ) (13 / 16 : ℝ)
+  let TR := Ioo (-(5 / 16 : ℝ)) (-(3 / 16 : ℝ))
+  let VR := Ioo (7 / 16 : ℝ) (9 / 16 : ℝ)
+  let f := connectionMinusSecondCramerCoefficient H
+  let g := gaussConnectionMinusGammaCoefficient₂
   have hSCInt : SC ⊆ gaussConnectionIntegerRangeᶜ := by
     simpa [SC, Complex.ofReal_div] using
       (secondCoefficient_ofReal_ball_subset_integerRange_compl (3 / 4) (1 / 8)
@@ -154,8 +146,6 @@ theorem connectionMinusSecondCramer_eq_gamma_on_open_box
       f (gaussConnectionCoordinates (c : ℂ) (δ : ℂ) (a : ℂ)) =
         g (gaussConnectionCoordinates (c : ℂ) (δ : ℂ) (a : ℂ)) := by
     intro c hc δ hδ a ha
-    have hcpos : 0 < c := by rcases hc with ⟨h₁, h₂⟩; norm_num at h₁ h₂ ⊢; linarith
-    have hcLt : c < 1 := by rcases hc with ⟨h₁, h₂⟩; norm_num at h₁ h₂ ⊢; linarith
     have hδneg : δ < 0 := by rcases hδ with ⟨h₁, h₂⟩; norm_num at h₁ h₂ ⊢; linarith
     have hap : 0 < a := by rcases ha with ⟨h₁, h₂⟩; norm_num at h₁ h₂ ⊢; linarith
     have hca : 0 < c - a := by
@@ -177,7 +167,6 @@ theorem connectionMinusSecondCramer_eq_gamma_on_open_box
       rcases ha with ⟨haLo, haHi⟩
       norm_num at hcLo hcHi hδLo hδHi haLo haHi
       linarith
-    have hcInt := hSCInt (hSCReal hc)
     have hδInt : ((c - a - (c - δ - a) : ℝ) : ℂ) ∈
         gaussConnectionIntegerRangeᶜ := by
       rw [show c - a - (c - δ - a) = δ by ring]
@@ -186,7 +175,7 @@ theorem connectionMinusSecondCramer_eq_gamma_on_open_box
       rw [show c - a - (c - δ - a) = δ by ring]
       exact hδneg
     have hreal := connectionMinusSecondCramer_eq_gamma_of_real hH a (c - δ - a) c
-      hap hb hca hcb hdelta hcInt hδInt
+      hap hb hca hcb hdelta (hSCInt (hSCReal hc)) hδInt
     simpa [f, g, gaussConnectionCoordinates] using hreal
   have hf : ∀ p ∈ gaussConnectionParameterDomain, DifferentiableAt ℂ f p := by
     intro p hp

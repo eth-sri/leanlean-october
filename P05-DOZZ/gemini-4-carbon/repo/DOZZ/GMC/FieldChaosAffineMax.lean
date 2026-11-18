@@ -36,8 +36,8 @@ theorem kahane_field_normalized_affine_max
       ∫ ω, affineMax a b (∫ x, fieldWickDensity PY Ψ h γ ω x
         ∂(ν.normalize : Measure S)) ∂PY := by
   classical
-  have : IsProbabilityMeasure PX := (hΦ.2 0 (fun i : Fin 0 => Fin.elim0 i)).1
-  have : IsProbabilityMeasure PY := (hΨ.2 0 (fun i : Fin 0 => Fin.elim0 i)).1
+  have := (hΦ.2 0 (fun i : Fin 0 => Fin.elim0 i)).1
+  have := (hΨ.2 0 (fun i : Fin 0 => Fin.elim0 i)).1
   let ρ : Measure S := ν.normalize
   let Q := Measure.infinitePi (fun _ : ℕ => ρ)
   let fX := fieldWickDensity PX Φ h γ
@@ -50,15 +50,14 @@ theorem kahane_field_normalized_affine_max
     fun n p => (n : ℝ)⁻¹ * ∑ i : Fin n, fY p.1 (p.2 i.val)
   have hfX := (fieldWickDensity_integrable_mean PX Φ hΦ ν h hh hhb γ).1
   have hfY := (fieldWickDensity_integrable_mean PY Ψ hΨ ν h hh hhb γ).1
-  have hmX : Integrable mX PX := hfX.integral_prod_left
-  have hmY : Integrable mY PY := hfY.integral_prod_left
-  have havgX (n : ℕ) : Integrable (avgX n) (PX.prod Q) :=
+  have hmX := hfX.integral_prod_left
+  have hmY := hfY.integral_prod_left
+  have havgX (n : ℕ) :=
     spatial_empirical_average_integrable PX ρ fX hfX n
-  have havgY (n : ℕ) : Integrable (avgY n) (PY.prod Q) :=
+  have havgY (n : ℕ) :=
     spatial_empirical_average_integrable PY ρ fY hfY n
   have hIX (n : ℕ) := affineMax_comp_integrable (PX.prod Q) (avgX n) (havgX n) a b
   have hIY (n : ℕ) := affineMax_comp_integrable (PY.prod Q) (avgY n) (havgY n) a b
-  have hsample := centeredGaussianField_covariance_order_samples PX PY Φ Ψ hΦ hΨ ν hν hcov hdiag
   have hformulaX (n : ℕ) (ω : ΩX) (u : ℕ → S) :
       DOZZ.finiteChaosMass PX (fun ω (i : Fin n) => Φ ω (u i.val))
         (fun i => (n : ℝ)⁻¹ * (h (u i.val) : ℝ)) γ ω = avgX n (ω, u) := by
@@ -79,7 +78,7 @@ theorem kahane_field_normalized_affine_max
       ∫ p, affineMax a b (avgY n p) ∂(PY.prod Q) := by
     rw [integral_prod_symm _ (hIX n), integral_prod_symm _ (hIY n)]
     apply integral_mono_ae (hIX n).integral_prod_right (hIY n).integral_prod_right
-    filter_upwards [hsample n] with u hu
+    filter_upwards [centeredGaussianField_covariance_order_samples PX PY Φ Ψ hΦ hΨ ν hν hcov hdiag n] with u hu
     have hc := kahane_finite_affine_max PX PY
       (fun ω (i : Fin n) => Φ ω (u i.val)) (fun ω (i : Fin n) => Ψ ω (u i.val))
       (hΦ.2 n (fun i => u i.val)) (hΨ.2 n (fun i => u i.val))

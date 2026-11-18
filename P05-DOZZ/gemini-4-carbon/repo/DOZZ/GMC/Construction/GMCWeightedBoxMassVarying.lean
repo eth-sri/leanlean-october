@@ -16,8 +16,11 @@ open scoped Distributions ENNReal NNReal BoundedContinuousFunction
 
 namespace DOZZ.Proofs
 
+variable {Ω : Type*}
+
+
 private theorem regularizedGMC_withDensity_box_mass_eq_indicator_integral
-    {Ω : Type*} [MeasurableSpace Ω]
+ [MeasurableSpace Ω]
     (P : Measure Ω)
     (Xc : Ω → ℂ → ℝ → ℝ)
     (γ r : ℝ) (i : ℚ × ℚ) (w : BoundedContinuousFunction ℂ ℝ)
@@ -30,27 +33,15 @@ private theorem regularizedGMC_withDensity_box_mass_eq_indicator_integral
   let W : ℂ → ℝ≥0∞ := fun z => ENNReal.ofReal (w z)
   have hW : Measurable W := ENNReal.measurable_ofReal.comp w.continuous.measurable
   have hWlt : ∀ᵐ z ∂μ, W z < ∞ := ae_of_all _ (fun z => ENNReal.ofReal_lt_top)
-  have hWbound : ∀ z, W z ≤ ENNReal.ofReal ‖w‖ := by
+  have : ∀ z, W z ≤ ENNReal.ofReal ‖w‖ := by
     intro z
     apply ENNReal.ofReal_le_ofReal
-    calc
-      w z ≤ |w z| := le_abs_self _
-      _ = ‖w z‖ := (Real.norm_eq_abs _).symm
-      _ ≤ ‖w‖ := w.norm_coe_le_norm z
-  have hWint : ∫⁻ z, W z ∂μ ≠ ∞ := by
-    apply ne_of_lt
-    calc
-      ∫⁻ z, W z ∂μ ≤ ∫⁻ z, ENNReal.ofReal ‖w‖ ∂μ := lintegral_mono hWbound
-      _ < ∞ := by
-          rw [lintegral_const]
-          exact ENNReal.mul_lt_top ENNReal.ofReal_lt_top
-            (lt_top_iff_ne_top.mpr (@measure_ne_top ℂ _ μ hfin Set.univ))
-  have hs : MeasurableSet (gmcLowerBox i) := gmcLowerBox_measurableSet i
+    exact ((le_abs_self _).trans_eq ((Real.norm_eq_abs _).symm)).trans (w.norm_coe_le_norm z)
   have hIb : ∫ z, (gmcLowerBox i).indicator (fun _ => (1 : ℝ)) z
       ∂μ.withDensity W = ((μ.withDensity W) (gmcLowerBox i)).toReal := by
     change ∫ z, (gmcLowerBox i).indicator 1 z ∂μ.withDensity W =
       (μ.withDensity W).real (gmcLowerBox i)
-    exact integral_indicator_one hs
+    exact integral_indicator_one (gmcLowerBox_measurableSet i)
   have hInt := integral_withDensity_eq_integral_toReal_smul hW hWlt
     ((gmcLowerBox i).indicator (fun _ : ℂ => (1 : ℝ)))
   have hEq : ∫ z, (gmcLowerBox i).indicator (fun _ => (1 : ℝ)) z
@@ -61,30 +52,14 @@ private theorem regularizedGMC_withDensity_box_mass_eq_indicator_integral
     by_cases hz : z ∈ gmcLowerBox i
     · simp [W, Set.indicator, hz, ENNReal.toReal_ofReal (hw z), smul_eq_mul]
     · simp [Set.indicator, hz]
-  calc
-    ((μ.withDensity W) (gmcLowerBox i)).toReal =
-        ∫ z, (gmcLowerBox i).indicator (fun _ => (1 : ℝ)) z ∂μ.withDensity W := hIb.symm
-    _ = ∫ z, (gmcLowerBox i).indicator w z ∂μ := hEq
+  exact (hIb.symm).trans (hEq)
 
-private theorem regularizedGMC_varyingWeight_gap_measurable
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (γ r : ℝ)
-    (u v : BoundedContinuousFunction ℂ ℝ) :
-    Measurable (fun ω => ∫⁻ z,
-      ENNReal.ofReal |u z - v z| ∂regularizedGMC P Xc γ r ω) := by
-  have hXμ : Measurable (fun ω => regularizedGMC P Xc γ r ω) :=
-    regularizedGMC_measurable P X hX Xc hXc γ r
-  have hdiff : Measurable (fun z : ℂ => ENNReal.ofReal |u z - v z|) := by
-    exact ENNReal.measurable_ofReal.comp
-      (continuous_abs.measurable.comp (u.continuous.measurable.sub v.continuous.measurable))
-  exact (Measure.measurable_lintegral hdiff).comp hXμ
 
 /-- The cutoff box masses from uniformly convergent nonnegative weights become close in
 probability. The estimate is the exact cutoff-intensity bound for the integral of the absolute
 weight difference. -/
 theorem regularizedGMC_varyingWithDensity_box_mass_diff_tendstoInMeasure
-    {Ω : Type*} [mΩ : MeasurableSpace Ω]
+ [mΩ : MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (γ : ℝ)
     (u : ℝ → BoundedContinuousFunction ℂ ℝ) (hu : ∀ r z, 0 ≤ u r z)
@@ -102,21 +77,16 @@ theorem regularizedGMC_varyingWithDensity_box_mass_diff_tendstoInMeasure
   let diff : ℝ → ℂ → ℝ := fun r z => |u r z - v z|
   let gap : ℝ → Ω → ℝ≥0∞ := fun r ω => ∫⁻ z,
     ENNReal.ofReal (diff r z) ∂μ r ω
-  let refMass : ℝ≥0∞ := gmcReferenceMeasure Set.univ
-  have hμMeas (r : ℝ) : Measurable (μ r) := by
-    exact regularizedGMC_measurable P X hX Xc hXc γ r
-  have hgapMeas (r : ℝ) : Measurable (gap r) := by
-    exact regularizedGMC_varyingWeight_gap_measurable P X hX Xc hXc γ r (u r) v
+  let refMass := gmcReferenceMeasure Set.univ
+  have hμMeas (r : ℝ) := regularizedGMC_measurable P X hX Xc hXc γ r
+  have hgapMeas (r : ℝ) : Measurable (gap r) := by fun_prop
   have hdiffBound (r : ℝ) (z : ℂ) : diff r z ≤ ‖u r - v‖ := by
     dsimp [diff]
-    calc
-      |u r z - v z| = ‖(u r - v) z‖ := (Real.norm_eq_abs _).symm
-      _ ≤ ‖u r - v‖ := (u r - v).norm_coe_le_norm z
+    exact ((Real.norm_eq_abs _).symm).trans_le ((u r - v).norm_coe_le_norm z)
   have hnorm : Tendsto (fun r : ℝ => ‖u r - v‖) atTop (𝓝 0) := by
     rw [Metric.tendsto_nhds]
     intro ε hε
-    have huni := (Metric.tendstoUniformly_iff.mp hconv) (ε / 2) (by linarith)
-    filter_upwards [huni] with r hr
+    filter_upwards [(Metric.tendstoUniformly_iff.mp hconv) (ε / 2) (by linarith)] with r hr
     have hle : ‖u r - v‖ ≤ ε / 2 := by
       apply (BoundedContinuousFunction.norm_le (by linarith)).2
       intro z
@@ -247,30 +217,21 @@ theorem regularizedGMC_varyingWithDensity_box_mass_diff_tendstoInMeasure
               (lt_top_iff_ne_top.mpr (@measure_ne_top ℂ _ (μ r ω) hμfin Set.univ))
       have hdist2 : dist (∫ z, fU z ∂μ r ω) (∫ z, fV z ∂μ r ω) ≤
           (gap r ω).toReal := by
-        calc
-          dist (∫ z, fU z ∂μ r ω) (∫ z, fV z ∂μ r ω) ≤
-              (∫⁻ z, edist (fU z) (fV z) ∂μ r ω).toReal := hdist
-          _ ≤ (gap r ω).toReal := ENNReal.toReal_mono hgapTop hgap
+        exact (hdist).trans (ENNReal.toReal_mono hgapTop hgap)
       have hdist' : |(∫ z, fU z ∂μ r ω) - ∫ z, fV z ∂μ r ω| ≤
           (gap r ω).toReal := by
         simpa [Real.dist_eq] using hdist2
-      have hεgap : ε ≤ (gap r ω).toReal := hω.trans hdist'
-      exact (ENNReal.ofReal_le_iff_le_toReal hgapTop).2 hεgap
+      exact (ENNReal.ofReal_le_iff_le_toReal hgapTop).2 (hω.trans hdist')
     have hmarkov : P {ω | ENNReal.ofReal ε ≤ gap r ω} ≤
         (∫⁻ ω, gap r ω ∂P) / den := by
       apply meas_ge_le_lintegral_div (hgapMeas r).aemeasurable
       · exact hden0
       · exact hdenTop
-    calc
-      P {ω | ε ≤ |(((μ r ω).withDensity
-          (fun z => ENNReal.ofReal (u r z))) B).toReal -
-          (((μ r ω).withDensity (fun z => ENNReal.ofReal (v z))) B).toReal|} ≤
-          P {ω | ENNReal.ofReal ε ≤ gap r ω} := measure_mono_ae hsub
-      _ ≤ (∫⁻ ω, gap r ω ∂P) / den := hmarkov
-      _ = (∫⁻ z, ENNReal.ofReal (diff r z) ∂gmcReferenceMeasure) / den := by
+    refine (measure_mono_ae hsub).trans (?_)
+    refine (hmarkov).trans (?_)
+    calc (∫⁻ ω, gap r ω ∂P) / den = (∫⁻ z, ENNReal.ofReal (diff r z) ∂gmcReferenceMeasure) / den := by
           rw [hgapExpectation]
-      _ ≤ (ENNReal.ofReal ‖u r - v‖ * refMass) / den := by
-          exact ENNReal.div_le_div_right (hgapBound r) den
+      _ ≤ (ENNReal.ofReal ‖u r - v‖ * refMass) / den := ENNReal.div_le_div_right (hgapBound r) den
   have hprob : Tendsto (fun r : ℝ => P {ω | ε ≤ |(
       (((μ r ω).withDensity (fun z => ENNReal.ofReal (u r z))) B).toReal -
       (((μ r ω).withDensity (fun z => ENNReal.ofReal (v z))) B).toReal)|})

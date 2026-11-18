@@ -38,7 +38,7 @@ theorem regularizedGMC_openBall_moment_compact_gamma_large_chart
     simp only [Set.mem_iUnion] at hc
     obtain ⟨w, hwS, _⟩ := hc
     exact ⟨w, hwS⟩
-  have hr₀pos : 0 < r₀ := by norm_num [r₀]
+  have hr₀pos : 0 < r₀ := by positivity
   have hr₀small : r₀ ≤ 1 / 8 := by norm_num [r₀]
   have hsmallChart : ∀ w : U, ‖(w : ℂ)‖ + 2 * r₀ ≤ 1 := by
     intro w
@@ -81,7 +81,6 @@ theorem regularizedGMC_openBall_moment_compact_gamma_large_chart
   have ht0 : 0 ≤ t := by
     dsimp [t]
     apply Real.log_nonneg
-    have hδhalf : δ ≤ 1 / 2 := hδR.trans hRhi
     exact (one_le_div₀ hδ).2 (by linarith)
   by_cases hδcoarse : 1 / 32 < δ
   · have hδupper : 1 / δ ≤ 32 := by
@@ -92,38 +91,34 @@ theorem regularizedGMC_openBall_moment_compact_gamma_large_chart
       exact Real.log_le_log (one_div_pos.mpr hδ) hδupper
     have hballChart : ∀ x ∈ Metric.ball z R, ‖x‖ ≤ 1 := by
       intro x hx
-      have hdist : ‖x - z‖ < R := by
+      have : ‖x - z‖ < R := by
         simpa only [Metric.mem_ball, dist_eq_norm] using hx
       have hnorm : ‖x‖ ≤ ‖z‖ + ‖x - z‖ := by
         calc
           ‖x‖ = ‖(x - z) + z‖ := by congr 1; abel
           _ ≤ ‖x - z‖ + ‖z‖ := norm_add_le _ _
           _ = ‖z‖ + ‖x - z‖ := by ring
-      have hzR : ‖z‖ + R ≤ 1 := by linarith [hchart]
       exact le_trans hnorm (by linarith)
     have hcoarse := regularizedGMC_coarse_chart_moment_upper P X hX Xc hXc γ 1 T p
       (by norm_num) (by linarith) (Metric.ball z R) Metric.isOpen_ball.measurableSet
       hballChart t ht0 htT
     have hmeasure : gmcReferenceMeasure (Metric.ball z R) ≤ gmcReferenceMeasure Set.univ :=
       measure_mono (Set.subset_univ _)
-    have hpow := ENNReal.rpow_le_rpow hmeasure (by linarith : 0 ≤ p)
     have hγsq : γ ^ 2 ≤ g ^ 2 := by
-      have hpos := hΓpos γ hγ
       have hle : γ ≤ g := hmax hγ
-      exact pow_le_pow_left₀ hpos.le hle 2
-    have hrem := gmcCircleChartRemainder_nonneg (R := 1) (by norm_num)
+      exact pow_le_pow_left₀ (hΓpos γ hγ).le hle 2
     have hTpos : 0 ≤ T := Real.log_nonneg (by norm_num)
     have hexp : γ ^ 2 * (p ^ 2 - p) / 2 * (T + gmcCircleChartRemainder 1) ≤
         g ^ 2 * (p ^ 2 - p) / 2 * (T + gmcCircleChartRemainder 1) := by
       have hcoef : 0 ≤ (p ^ 2 - p) / 2 * (T + gmcCircleChartRemainder 1) :=
         mul_nonneg
           (by linarith only [mul_nonneg (by linarith only [hp] : (0 : ℝ) ≤ p) (sub_nonneg.2 hp.le)])
-          (add_nonneg hTpos hrem)
+          (add_nonneg hTpos (gmcCircleChartRemainder_nonneg (R := 1) (by norm_num)))
       linarith only [mul_le_mul_of_nonneg_right hγsq hcoef]
     have hcoarse' : (∫⁻ ω, (regularizedGMC P Xc γ (Real.log (1 / δ)) ω (Metric.ball z R)) ^ p ∂P) ≤ Ccoarse := by
       apply hcoarse.trans
       apply mul_le_mul'
-      · exact hpow
+      · exact ENNReal.rpow_le_rpow hmeasure (by linarith : 0 ≤ p)
       · exact ENNReal.ofReal_le_ofReal (Real.exp_le_exp.mpr hexp)
     dsimp [C]
     exact hcoarse'.trans (le_add_of_nonneg_left (by positivity))
@@ -132,19 +127,17 @@ theorem regularizedGMC_openBall_moment_compact_gamma_large_chart
       linarith
     have htargetDisk : Metric.ball z R ⊆ K := by
       intro x hx
-      have hdist : ‖x - z‖ < R := by
+      have : ‖x - z‖ < R := by
         simpa only [Metric.mem_ball, dist_eq_norm] using hx
       have hnorm : ‖x‖ ≤ ‖z‖ + ‖x - z‖ := by
         calc
           ‖x‖ = ‖(x - z) + z‖ := by congr 1; abel
           _ ≤ ‖x - z‖ + ‖z‖ := norm_add_le _ _
           _ = ‖z‖ + ‖x - z‖ := by ring
-      have hRnorm : ‖z‖ + R ≤ 7 / 8 := by
-        have : 1 / 8 ≤ R := hRlo
-        linarith [hchart]
+      have : ‖z‖ + R ≤ 7 / 8 := by nlinarith
       have hxnorm : ‖x‖ ≤ 7 / 8 := le_trans hnorm (by linarith)
       simpa [K, Metric.mem_closedBall, dist_zero_right] using hxnorm
-    let μ : Ω → Measure ℂ := regularizedGMC P Xc γ t
+    let μ := regularizedGMC P Xc γ t
     let f : U → Ω → ℝ≥0∞ := fun w ω => μ ω (Metric.ball (w : ℂ) r₀)
     have hmass : ∀ ω, μ ω (Metric.ball z R) ≤ ∑ w ∈ S, f w ω := by
       intro ω
@@ -161,8 +154,7 @@ theorem regularizedGMC_openBall_moment_compact_gamma_large_chart
       have hroot := (hsmall γ hγ p hp.le le_rfl (w : ℂ) r₀ δ hr₀pos hr₀small
         hδ hδsmall (hsmallChart w)).1
       have hxi : 0 < 2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2 := by
-        have hγpos := hΓpos γ hγ
-        have hcrit' := (lt_div_iff₀ (sq_pos_of_pos hγpos)).mp (hpcrit γ hγ)
+        have hcrit' := (lt_div_iff₀ (sq_pos_of_pos (hΓpos γ hγ))).mp (hpcrit γ hγ)
         have hfac : 0 < 2 + γ ^ 2 / 2 - γ ^ 2 * p / 2 := by linarith only [hcrit', sq_nonneg γ]
         linarith only [mul_pos (lt_trans zero_lt_one hp) hfac]
       have hscale : ENNReal.ofReal ((r₀ / (1 / 8 : ℝ)) ^

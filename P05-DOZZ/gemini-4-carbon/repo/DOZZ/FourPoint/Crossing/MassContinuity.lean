@@ -20,22 +20,6 @@ open MeasureTheory Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs
 
-/-- The negative half-charge factor is bounded independently of its moving location. -/
-theorem crossing_negative_factor_le (γ : ℝ) (z x : ℂ)
-    (hz : ‖z‖ ≤ 1) (hxz : x ≠ z) :
-    ENNReal.rpow (ENNReal.ofReal (normPlus x / ‖x - z‖)) (γ * (-γ / 2)) ≤
-      ENNReal.ofReal ((1 / 2 : ℝ) ^ (γ * (-γ / 2))) := by
-  have hn : 0 < normPlus x := lt_of_lt_of_le zero_lt_one (le_max_left _ _)
-  have hd : 0 < ‖x - z‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hxz)
-  have hb : 1 / 2 ≤ normPlus x / ‖x - z‖ := by
-    rw [le_div_iff₀ hd]
-    have hh := norm_sub_le x z
-    have h1 : 1 ≤ normPlus x := le_max_left _ _
-    have h2 : ‖x‖ ≤ normPlus x := le_max_right _ _
-    linarith only [hh, h1, h2, hz]
-  rw [coulombWeight_rpow_ofReal (div_pos hn hd)]
-  apply ENNReal.ofReal_le_ofReal
-  exact Real.rpow_le_rpow_of_nonpos (by norm_num) hb (by nlinarith only [sq_nonneg γ])
 
 /-- Removing the bounded negative-charge factor yields a fixed three-point majorant. -/
 theorem crossing_coulombWeight_le (γ a b c : ℝ) (z x : ℂ)
@@ -43,10 +27,22 @@ theorem crossing_coulombWeight_le (γ a b c : ℝ) (z x : ℂ)
     coulombWeight γ ![-γ / 2, a, b] ![z, 0, 1] c x ≤
       ENNReal.ofReal ((1 / 2 : ℝ) ^ (γ * (-γ / 2))) *
         coulombWeight γ ![a, b] ![0, 1] c x := by
+  have crossing_negative_factor_le : ENNReal.rpow (ENNReal.ofReal (normPlus x / ‖x - z‖)) (γ * (-γ / 2)) ≤
+        ENNReal.ofReal ((1 / 2 : ℝ) ^ (γ * (-γ / 2))) := by
+    have hn : 0 < normPlus x := lt_of_lt_of_le zero_lt_one (le_max_left _ _)
+    have hd := norm_pos_iff.mpr (sub_ne_zero.mpr hxz)
+    have hb : 1 / 2 ≤ normPlus x / ‖x - z‖ := by
+      rw [le_div_iff₀ hd]
+      have h1 : 1 ≤ normPlus x := le_max_left _ _
+      have h2 : ‖x‖ ≤ normPlus x := le_max_right _ _
+      linarith only [norm_sub_le x z, h1, h2, hz]
+    rw [coulombWeight_rpow_ofReal (div_pos hn hd)]
+    apply ENNReal.ofReal_le_ofReal
+    exact Real.rpow_le_rpow_of_nonpos (by norm_num) hb (by nlinarith only [sq_nonneg γ])
   simp only [coulombWeight, Fin.prod_univ_succ, Matrix.cons_val_zero,
     Matrix.cons_val_succ, Fin.prod_univ_zero, mul_one]
   rw [mul_assoc, mul_assoc]
-  exact mul_le_mul' (crossing_negative_factor_le γ z x hz hxz) le_rfl
+  exact mul_le_mul' (crossing_negative_factor_le) le_rfl
 
 /-- Integrating the negative-factor bound gives a finite fixed mass majorant. -/
 theorem crossing_coulombMass_le (ν : Measure ℂ) (γ a b c : ℝ) (z : ℂ)
@@ -90,20 +86,18 @@ theorem crossing_coulombMass_tendsto_seq (ν : Measure ℂ) (γ a b c : ℝ)
       apply ContinuousAt.div continuousAt_const
       · fun_prop
       · simpa only [sub_zero] using norm_ne_zero_iff.mpr hx
-    have ht := hf.tendsto.comp hz
     simp only [coulombWeight, Fin.prod_univ_succ, Matrix.cons_val_zero,
       Matrix.cons_val_succ, Fin.prod_univ_zero, mul_one]
     have hp : 0 < normPlus x := lt_of_lt_of_le zero_lt_one (le_max_left _ _)
     have hx0p : 0 < ‖x - 0‖ := by simpa only [sub_zero] using norm_pos_iff.mpr hx
-    have hx1p : 0 < ‖x - 1‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hx1)
     have hr : ENNReal.rpow (ENNReal.ofReal (normPlus x / ‖x - 0‖)) (γ * a) *
         ENNReal.rpow (ENNReal.ofReal (normPlus x / ‖x - 1‖)) (γ * b) *
         ENNReal.rpow (ENNReal.ofReal (normPlus x)) (γ * c) ≠ ⊤ := by
       rw [coulombWeight_rpow_ofReal (div_pos hp hx0p),
-        coulombWeight_rpow_ofReal (div_pos hp hx1p), coulombWeight_rpow_ofReal hp]
+        coulombWeight_rpow_ofReal (div_pos hp (norm_pos_iff.mpr (sub_ne_zero.mpr hx1))), coulombWeight_rpow_ofReal hp]
       exact ENNReal.mul_ne_top (ENNReal.mul_ne_top ENNReal.ofReal_ne_top
         ENNReal.ofReal_ne_top) ENNReal.ofReal_ne_top
     simp only [mul_assoc] at hr ⊢
-    exact ENNReal.Tendsto.mul_const ht (Or.inr hr)
+    exact ENNReal.Tendsto.mul_const (hf.tendsto.comp hz) (Or.inr hr)
 
 end DOZZ.Proofs

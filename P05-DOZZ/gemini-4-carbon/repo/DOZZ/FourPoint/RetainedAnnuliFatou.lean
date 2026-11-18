@@ -31,7 +31,6 @@ theorem two_mass_fatou
   obtain ⟨s, hs, hsub₀⟩ := hf₀.exists_seq_tendsto_ae
   obtain ⟨t, ht, hsub₁⟩ := (hf₁.comp hs.tendsto_atTop).exists_seq_tendsto_ae
   let ns : ℕ → ℕ := fun n => s (t n)
-  have hns : Tendsto ns atTop atTop := hs.tendsto_atTop.comp ht.tendsto_atTop
   let F : ℕ → Ω → ℝ≥0∞ := fun n ω =>
     (ENNReal.ofReal (f₀ (ns n) ω)) ^ p * (ENNReal.ofReal (f₁ (ns n) ω)) ^ q
   have hlim : ∀ᵐ ω ∂P, liminf (fun n => F n ω) atTop =
@@ -55,7 +54,7 @@ theorem two_mass_fatou
       lintegral_liminf_le' (fun n => hmeas (ns n))
     _ ≤ liminf (fun n => R (ns n)) atTop :=
       Filter.liminf_le_liminf (Eventually.of_forall fun n => hbound (ns n))
-    _ = C := (hR.comp hns).liminf_eq
+    _ = C := (hR.comp (hs.tendsto_atTop.comp ht.tendsto_atTop)).liminf_eq
 
 /-- Indicator weights retain exactly the original restricted field mass. -/
 theorem fieldChaosMass_indicator

@@ -33,9 +33,8 @@ theorem weighted_mass_charge_gap (μ : Measure ℂ) (γ a δ : ℝ)
         (ENNReal.ofReal ‖x - z‖ ^ (-γ * (a + δ))) ∂μ := by
       apply setLIntegral_mono_ae' Metric.isOpen_ball.measurableSet
       filter_upwards [hne] with x hx hball
-      have hd : 0 < ‖x - z‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hx)
-      have hr : ‖x - z‖ ≤ ρ := by
-        exact (show ‖x - z‖ < ρ by simpa only [Metric.mem_ball, dist_eq_norm] using hball).le
+      have hd := norm_pos_iff.mpr (sub_ne_zero.mpr hx)
+      have hr : ‖x - z‖ ≤ ρ := (show ‖x - z‖ < ρ by simpa only [Metric.mem_ball, dist_eq_norm] using hball).le
       rw [ENNReal.rpow_eq_pow, ENNReal.ofReal_rpow_of_pos hd,
         ENNReal.ofReal_rpow_of_pos hd, ← ENNReal.ofReal_mul (Real.rpow_nonneg hρ.le _)]
       apply ENNReal.ofReal_le_ofReal
@@ -67,16 +66,14 @@ theorem weighted_small_ball_moment_decay
     ∃ C : ℝ≥0∞, C < ⊤ ∧ ∀ α ≤ a, ∀ ρ : ℝ, 0 < ρ → ρ ≤ min R 1 →
       weightedGmcBallMoment P M γ α z ρ m ≤ ENNReal.ofReal (ρ ^ (γ * δ * m)) * C := by
   let C := weightedGmcBallMoment P M γ (a + δ) z R m
-  have hC : C < ⊤ := (equatorGFF_GMC_weighted_local_moment_range
+  have hC := (equatorGFF_GMC_weighted_local_moment_range
     P X hX γ hγ hγ2 M hM (a + δ) ha m hm z R hR).mpr hms
   refine ⟨C, hC, fun α hα ρ hρ hρR => ?_⟩
-  have hatom := gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM z
-  have hmeas := gmc_weighted_mass_aemeasurable P X hX γ hγ hγ2 M hM (a + δ) z R
   unfold weightedGmcBallMoment
   calc
     _ ≤ ∫⁻ ω, (ENNReal.ofReal (ρ ^ (γ * δ)) * weightedGmcBallMass γ (M ω) (a + δ) z R) ^ m ∂P := by
       apply lintegral_mono_ae
-      filter_upwards [hatom] with ω hω
+      filter_upwards [gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM z] with ω hω
       apply ENNReal.rpow_le_rpow _ hm.le
       exact (weightedGmcBallMass_mono_charge (M ω) hγ.le z
         (hρR.trans (min_le_right _ _)) hα).trans
@@ -84,7 +81,7 @@ theorem weighted_small_ball_moment_decay
           (hρR.trans (min_le_left _ _)))
     _ = ENNReal.ofReal (ρ ^ (γ * δ * m)) * C := by
       simp_rw [ENNReal.mul_rpow_of_nonneg _ _ hm.le]
-      rw [lintegral_const_mul'' _ (hmeas.pow_const m), ENNReal.ofReal_rpow_of_pos
+      rw [lintegral_const_mul'' _ ((gmc_weighted_mass_aemeasurable P X hX γ hγ hγ2 M hM (a + δ) z R).pow_const m), ENNReal.ofReal_rpow_of_pos
         (Real.rpow_pos_of_pos hρ _), ← Real.rpow_mul hρ.le]
       rfl
 

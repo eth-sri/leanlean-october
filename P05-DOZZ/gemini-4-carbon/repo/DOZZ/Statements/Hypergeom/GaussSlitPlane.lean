@@ -13,8 +13,6 @@ public import Mathlib.Analysis.Calculus.ContDiff.Defs
 
 @[expose] public section
 
-open MeasureTheory Filter Set
-open scoped Topology
 
 namespace DOZZ
 

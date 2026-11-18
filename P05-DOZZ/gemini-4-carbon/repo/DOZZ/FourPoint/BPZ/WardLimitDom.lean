@@ -34,15 +34,18 @@ theorem bpz_rpow_neg_mul_le {I A q : ℝ} (hI : 0 < I) (hAI : A ≤ I) :
 theorem bpz_rpow_neg_sub_one_mul_le {I A B q : ℝ} (hI : 0 < I) (hAI : A ≤ I) (hB0 : 0 ≤ B)
     (hBI : B ≤ I) : I ^ (-q - 1) * (A * B) ≤ I ^ (1 - q) := by
   have h0 : 0 ≤ I ^ (-q - 1) := Real.rpow_nonneg hI.le _
-  calc I ^ (-q - 1) * (A * B) ≤ I ^ (-q - 1) * (I * I) :=
-        mul_le_mul_of_nonneg_left (mul_le_mul hAI hBI hB0 hI.le) h0
-    _ = I ^ (-q - 1 + 1 + 1) := by
+  refine (mul_le_mul_of_nonneg_left (mul_le_mul hAI hBI hB0 hI.le) h0).trans_eq (?_)
+  calc I ^ (-q - 1) * (I * I) = I ^ (-q - 1 + 1 + 1) := by
         rw [Real.rpow_add_one hI.ne', Real.rpow_add_one hI.ne']; ring
     _ = I ^ (1 - q) := by ring_nf
 
 namespace BPZLimitData
 
-theorem cutWeight_nonneg (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (r : ℝ) (y : ℂ) :
+section
+variable (hd : BPZLimitData γ q δ ρ kt k₂ φ D)
+include hd
+
+theorem cutWeight_nonneg (r : ℝ) (y : ℂ) :
     0 ≤ bpzWardCutWeight γ q r kt y := by
   unfold bpzWardCutWeight
   have := hd.kt_nonneg y
@@ -50,7 +53,7 @@ theorem cutWeight_nonneg (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (r : ℝ) (
   positivity
 
 /-- The far mass dominates a multiple of the far-set chaos mass. -/
-theorem far_mass_lower (hd : BPZLimitData γ q δ ρ kt k₂ φ D)
+theorem far_mass_lower
     (hp : BPZWardProb P X γ M Xc ρ k₂ D) :
     ∃ c : ℝ, 0 < c ∧ ∀ᵐ ω ∂P, c * (M ω D).toReal ≤ ∫ y, (1 - ρ y) * k₂ y ∂M ω := by
   obtain ⟨c, hc, hck⟩ := hd.D_low
@@ -60,6 +63,8 @@ theorem far_mass_lower (hd : BPZLimitData γ q δ ρ kt k₂ φ D)
     (fun y => mul_nonneg (by linarith [hd.ρ_le_one y]) (hd.k₂_nonneg y))
     (fun y hy => by rw [hd.D_rho y hy, sub_zero, one_mul]; exact hck y hy)
 
+
+end
 /-- The left integral is bounded by the cutoff part of the mixed mass. -/
 theorem abs_leftInt_le (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (v : ℂ) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ (n : ℕ) (m : Measure ℂ) [IsFiniteMeasure m],

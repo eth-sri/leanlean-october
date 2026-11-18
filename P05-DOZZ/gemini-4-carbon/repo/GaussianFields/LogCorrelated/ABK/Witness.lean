@@ -17,7 +17,7 @@ Port of the corresponding GaussianFields source module.
 
 public section
 
-open MeasureTheory
+noncomputable section
 
 namespace GaussianFields
 
@@ -26,7 +26,7 @@ namespace GaussianFields
 /-- The piecewise-linear radial profile: `1` on `[0, 1/2]`, linearly decreasing
 on `[1/2, 1]`, `0` on `[1, ∞)`. -/
 @[expose]
-noncomputable def abkStandardProfile (r : ℝ) : ℝ :=
+def abkStandardProfile (r : ℝ) : ℝ :=
   min (max (2 * (1 - r)) 0) 1
 
 theorem abkStandardProfile_of_le_half {r : ℝ} (hr : r ≤ 1 / 2) :
@@ -83,7 +83,7 @@ theorem abs_euclideanNorm_sub_euclideanNorm_le {d : Nat} (x y : Vec d) :
 
 /-- The standard piecewise-linear radial ABK cutoff witness. -/
 @[expose]
-noncomputable def abkStandardCutoffFun (d : Nat) : Vec d → ℝ :=
+def abkStandardCutoffFun (d : Nat) : Vec d → ℝ :=
   fun x => abkStandardProfile (euclideanNorm x)
 
 theorem continuous_abkStandardCutoffFun (d : Nat) :
@@ -94,8 +94,7 @@ theorem abkStandardCutoffFun_support_subset (d : Nat) :
     Function.support (abkStandardCutoffFun d) ⊆ {x | euclideanNorm x ≤ 1} := by
   intro x hx
   by_contra h
-  have h1 : 1 ≤ euclideanNorm x := le_of_lt (by simpa using h)
-  exact hx (abkStandardProfile_of_one_le h1)
+  exact hx (abkStandardProfile_of_one_le (le_of_lt (by simpa using h)))
 
 theorem hasCompactSupport_abkStandardCutoffFun (d : Nat) :
     HasCompactSupport (abkStandardCutoffFun d) :=
@@ -105,7 +104,7 @@ theorem hasCompactSupport_abkStandardCutoffFun (d : Nat) :
 
 /-- The standard witness for `ABKCutoff d`: the structure is inhabited. -/
 @[expose]
-noncomputable def abkStandardCutoff (d : Nat) : ABKCutoff d where
+def abkStandardCutoff (d : Nat) : ABKCutoff d where
   toFun := abkStandardCutoffFun d
   continuous := continuous_abkStandardCutoffFun d
   hasCompactSupport := hasCompactSupport_abkStandardCutoffFun d
@@ -130,76 +129,14 @@ noncomputable def abkStandardCutoff (d : Nat) : ABKCutoff d where
         ≤ 2 * |euclideanNorm x - euclideanNorm y| := h1
       _ ≤ 2 * euclideanNorm (x - y) := by linarith
 
-instance (d : Nat) : Nonempty (ABKCutoff d) := ⟨abkStandardCutoff d⟩
 
 /-! ## The standard mean-zero test function -/
 
-/-- The translation vector used by the mean-zero witness. -/
-@[expose]
-def abkWitnessShift (d : Nat) : Vec d := fun _ => 3
 
-/-- The translate-difference witness function `ζ(x) - ζ(x - v)`. -/
-@[expose]
-noncomputable def abkStandardMeanZeroFun (d : Nat) : Vec d → ℝ :=
-  fun x => abkStandardCutoffFun d x - abkStandardCutoffFun d (x - abkWitnessShift d)
 
-theorem continuous_abkStandardMeanZeroFun (d : Nat) :
-    Continuous (abkStandardMeanZeroFun d) :=
-  (continuous_abkStandardCutoffFun d).sub
-    ((continuous_abkStandardCutoffFun d).comp
-      (continuous_id.sub continuous_const))
 
-theorem hasCompactSupport_abkStandardMeanZeroFun (d : Nat) :
-    HasCompactSupport (abkStandardMeanZeroFun d) := by
-  have htrans : HasCompactSupport
-      (fun x : Vec d => abkStandardCutoffFun d (x - abkWitnessShift d)) := by
-    have hcomp := (hasCompactSupport_abkStandardCutoffFun d).comp_homeomorph
-      (Homeomorph.subRight (abkWitnessShift d))
-    change HasCompactSupport
-      (fun x => abkStandardCutoffFun d (Homeomorph.subRight (abkWitnessShift d) x)) at hcomp
-    simpa only [Homeomorph.subRight_apply] using hcomp
-  exact (hasCompactSupport_abkStandardCutoffFun d).sub htrans
 
-/-- The standard witness for `MeanZeroTestFunction d`: the structure is
-inhabited. -/
-@[expose]
-noncomputable def abkStandardMeanZeroTestFunction (d : Nat) :
-    MeanZeroTestFunction d where
-  toFun := abkStandardMeanZeroFun d
-  continuous := continuous_abkStandardMeanZeroFun d
-  hasCompactSupport := hasCompactSupport_abkStandardMeanZeroFun d
-  integrable :=
-    (continuous_abkStandardMeanZeroFun d).integrable_of_hasCompactSupport
-      (hasCompactSupport_abkStandardMeanZeroFun d)
-  memLp_two :=
-    (continuous_abkStandardMeanZeroFun d).memLp_of_hasCompactSupport
-      (hasCompactSupport_abkStandardMeanZeroFun d)
-  integral_eq_zero := by
-    have hint : Integrable (abkStandardCutoffFun d) (volume : Measure (Vec d)) :=
-      (continuous_abkStandardCutoffFun d).integrable_of_hasCompactSupport
-        (hasCompactSupport_abkStandardCutoffFun d)
-    have hshift :
-        (∫ x, abkStandardCutoffFun d (x - abkWitnessShift d)
-          ∂(volume : Measure (Vec d))) =
-        ∫ x, abkStandardCutoffFun d x ∂(volume : Measure (Vec d)) :=
-      integral_sub_right_eq_self (abkStandardCutoffFun d) (abkWitnessShift d)
-    have hshift_int : Integrable
-        (fun x : Vec d => abkStandardCutoffFun d (x - abkWitnessShift d))
-        (volume : Measure (Vec d)) := by
-      have htrans : HasCompactSupport
-          (fun x : Vec d => abkStandardCutoffFun d (x - abkWitnessShift d)) := by
-        have hcomp := (hasCompactSupport_abkStandardCutoffFun d).comp_homeomorph
-          (Homeomorph.subRight (abkWitnessShift d))
-        change HasCompactSupport
-          (fun x => abkStandardCutoffFun d (Homeomorph.subRight (abkWitnessShift d) x)) at hcomp
-        simpa only [Homeomorph.subRight_apply] using hcomp
-      exact ((continuous_abkStandardCutoffFun d).comp
-        (continuous_id.sub continuous_const)).integrable_of_hasCompactSupport htrans
-    simp only [abkStandardMeanZeroFun]
-    rw [integral_sub hint hshift_int, hshift, sub_self]
 
-instance (d : Nat) : Nonempty (MeanZeroTestFunction d) :=
-  ⟨abkStandardMeanZeroTestFunction d⟩
 
 end GaussianFields
 

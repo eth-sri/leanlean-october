@@ -9,7 +9,6 @@ public import DOZZ.Correlations.Tails.PolynomialShiftParameters
 /-! Uniform tail errors from the two localization comparisons and their moment bounds. -/
 
 @[expose] public section
-open Set
 
 namespace DOZZ.Proofs
 

@@ -33,7 +33,7 @@ theorem exists_equatorGFF_inversion_circle_family
       (∀ p, (∫ ω, Y p ω ∂P) = 0) ∧
       (∀ p q, covariance (Y p) (Y q) P =
         ∫ z, ∫ w, gffKernel z w ∂circleMeasure p.1 p.2 ∂circleMeasure q.1 q.2) := by
-  let : IsProbabilityMeasure P := hX.1
+  let := hX.1
   have hex (p : ℂ × ℝ) :=
     exists_equatorGFF_inversion_circle_test_L2_limit_all X hX p.1 p.2
   choose f hf W hgap hW using hex
@@ -48,7 +48,7 @@ theorem exists_equatorGFF_inversion_circle_family
         (fun p => inversionTest (f p n) (hf p n))
     · exact hYmem
     · exact hYlim
-  have hmean p : (∫ ω, Y p ω ∂P) = 0 :=
+  have hmean p :=
     integral_eq_zero_of_eLpNorm_sub
       (fun n => equatorGFF_test_memLp X hX (inversionTest (f p n) (hf p n)))
       (hYmem p) (fun n => equatorGFF_test_integral X hX _) (hYlim p)
@@ -99,7 +99,7 @@ theorem exists_equatorGFF_inversion_circle_joint_version
       (∀ p q : ℂ × ℝ, covariance (fun ω => Z ω p.1 p.2)
         (fun ω => Z ω q.1 q.2) P =
         ∫ z, ∫ w, gffKernel z w ∂circleMeasure p.1 p.2 ∂circleMeasure q.1 q.2) := by
-  let : IsProbabilityMeasure P := hX.1
+  let := hX.1
   obtain ⟨f, hf, Y, hgap, hY, hproc, hmean, hcov⟩ :=
     exists_equatorGFF_inversion_circle_family X hX
   have hmod r := exists_continuous_circleL2_modification_at_radius
@@ -111,13 +111,10 @@ theorem exists_equatorGFF_inversion_circle_joint_version
     (fun x => ⟨Y (x, r), (hY (x, r)).1, (hVeq r x).symm⟩)
   choose G hGj hGae using hjoint
   let Z : Ω → ℂ → ℝ → ℝ := fun ω x r => G r ω x
-  have hmap : Measurable[mΩ] (fun ω => fun g : TestFn => X ω g) :=
-    measurable_pi_iff.mpr (fun g => (hX.2 g).1)
-  have hm0 : equatorGFFRawDistributionSigma X ≤ mΩ := hmap.comap_le
   have hprod : (equatorGFFRawDistributionSigma X).prod (borel ℂ) ≤
       mΩ.prod (borel ℂ) := by
     rw [MeasurableSpace.prod, MeasurableSpace.prod]
-    exact sup_le_sup (MeasurableSpace.comap_mono hm0) le_rfl
+    exact sup_le_sup (MeasurableSpace.comap_mono ((measurable_pi_iff.mpr (fun g => (hX.2 g).1)).comap_le)) le_rfl
   have hZae (p : ℂ × ℝ) : (fun ω => Z ω p.1 p.2) =ᵐ[P] Y p := by
     filter_upwards [hGae p.2, hVeq p.2 p.1] with ω hG hV
     exact (hG p.1).trans hV

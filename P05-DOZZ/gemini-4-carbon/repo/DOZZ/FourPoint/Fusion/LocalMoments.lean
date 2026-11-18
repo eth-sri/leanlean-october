@@ -15,19 +15,20 @@ open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (α : ℝ)
+include hX hγ hγ2 hM α
+
 /-- The weighted moment comparison holds between any two centers in a bounded chart. -/
 theorem fusion_weightedMoment_location_transfer
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (α : ℝ) (z z₀ : ℂ) (ρ R : ℝ) (hρ : 0 < ρ) (hρ8 : ρ ≤ 1 / 8)
+ (z z₀ : ℂ) (ρ R : ℝ) (hρ : 0 < ρ) (hρ8 : ρ ≤ 1 / 8)
     (hR : 0 ≤ R) (hzR : ‖z‖ + ρ ≤ R) (hz₀R : ‖z₀‖ + ρ ≤ R)
     (p : ℝ) (hp : 0 < p) (hp4 : p < 4 / γ ^ 2) :
     weightedGmcBallMoment P M γ α z ρ p ≤
       (ENNReal.ofReal (Real.exp (γ ^ 2 * (2 * (Real.log 3 + 2 * Real.log (1 + R))) / 2 *
           |p ^ 2 - p|)) * ENNReal.ofReal ((1 + R) ^ 4) ^ |p|) *
         weightedGmcBallMoment P M γ α z₀ ρ p := by
-  let T : ℝ≥0∞ := ENNReal.ofReal (Real.exp (γ ^ 2 * (2 * (Real.log 3 +
+  let T := ENNReal.ofReal (Real.exp (γ ^ 2 * (2 * (Real.log 3 +
       2 * Real.log (1 + R))) / 2 * |p ^ 2 - p|)) *
       ENNReal.ofReal ((1 + R) ^ 4) ^ |p|
   have hB : MeasurableSet (Metric.ball z ρ) := Metric.isOpen_ball.measurableSet
@@ -66,15 +67,11 @@ theorem fusion_weightedMoment_location_transfer
     Eventually.of_forall fun ω =>
       ((ENNReal.continuous_rpow_const (y := p)).tendsto _).comp
         (insertionTrunc_mass_tendsto γ α (M ω) z ρ)
-  have hconv := lintegral_tendsto_of_tendsto_of_monotone hmeas hmono hlim
-  exact le_of_tendsto' hconv hN
+  exact le_of_tendsto' (lintegral_tendsto_of_tendsto_of_monotone hmeas hmono hlim) hN
 
 /-- Subcritical weighted moments vanish with a positive power, uniformly in the unit chart. -/
 theorem fusion_weightedMoment_small_uniform
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (α p : ℝ) (hp : 0 < p)
+ (p : ℝ) (hp : 0 < p)
     (hpRange : p < min (4 / γ ^ 2) (2 / γ * (Q γ - α))) :
     let ξ := γ * (Q γ - α) * p - γ ^ 2 * p ^ 2 / 2
     0 < ξ ∧ ∃ C : ℝ≥0∞, C < ⊤ ∧ ∀ z : ℂ, ‖z‖ ≤ 1 → ∀ r : ℝ,
@@ -82,31 +79,27 @@ theorem fusion_weightedMoment_small_uniform
       weightedGmcBallMoment P M γ α z r p ≤ C * ENNReal.ofReal (r ^ ξ) := by
   let ξ := γ * (Q γ - α) * p - γ ^ 2 * p ^ 2 / 2
   change 0 < ξ ∧ _
-  have hp4 := (lt_min_iff.mp hpRange).1
   have hpin := (lt_min_iff.mp hpRange).2
-  have hsq : 0 < γ ^ 2 := sq_pos_of_pos hγ
   have hξ : 0 < ξ := by
     rw [div_mul_eq_mul_div] at hpin
     have h := (lt_div_iff₀ hγ).mp hpin
     have h' : γ ^ 2 * p < 2 * γ * (Q γ - α) := by
-      have hh := mul_lt_mul_of_pos_left h hγ
-      nlinarith only [hh]
-    have hh := mul_lt_mul_of_pos_left h' hp
+      nlinarith only [mul_lt_mul_of_pos_left h hγ]
     dsimp [ξ]
-    nlinarith only [hh]
-  let D : ℝ≥0∞ := ENNReal.ofReal (Real.exp
+    nlinarith only [mul_lt_mul_of_pos_left h' hp]
+  let D := ENNReal.ofReal (Real.exp
       (γ ^ 2 * (2 * (Real.log 3 + 2 * Real.log (1 + 2))) / 2 * |p ^ 2 - p|)) *
     ENNReal.ofReal (((1 : ℝ) + 2) ^ 4) ^ |p|
   have hD : D < ⊤ := ENNReal.mul_lt_top ENNReal.ofReal_lt_top
     (ENNReal.rpow_ne_top_of_nonneg (abs_nonneg p) ENNReal.ofReal_ne_top).lt_top
   let B := weightedGmcBallMoment P M γ α 0 (1 / 8) p
-  have hB : B < ⊤ := weightedGmcBallMoment_lt_top_of_sharp_range P X hX γ hγ hγ2 M hM
+  have hB := weightedGmcBallMoment_lt_top_of_sharp_range P X hX γ hγ hγ2 M hM
     α 0 (1 / 8) (by norm_num) p hp hpRange
   refine ⟨hξ, D * ENNReal.ofReal ((8 : ℝ) ^ ξ) * B,
     ENNReal.mul_lt_top (ENNReal.mul_lt_top hD ENNReal.ofReal_lt_top) hB, ?_⟩
   intro z hz r hr hr8
   have hloc := fusion_weightedMoment_location_transfer P X hX γ hγ hγ2 M hM α z 0 r 2
-    hr hr8 (by norm_num) (by linarith) (by simp; linarith) p hp hp4
+    hr hr8 (by norm_num) (by linarith) (by simp; linarith) p hp ((lt_min_iff.mp hpRange).1)
   have hscale := gmc_weighted_ball_moment_scale P X hX γ M hM α
     (c := 8 * r) (R := 1 / 8) (by positivity) (by linarith) (by norm_num) (by norm_num) p
   have he : (2 - γ * α) * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2 = ξ := by
@@ -121,4 +114,6 @@ theorem fusion_weightedMoment_small_uniform
     _ ≤ D * weightedGmcBallMoment P M γ α 0 r p := hloc
     _ = _ := by rw [hscale]; dsimp [B]; ring
 
+
+end
 end DOZZ.Proofs

@@ -32,8 +32,7 @@ theorem dual_copied_inverse_moment_triple
   let J := fun U (a : TwoSidedPath) ω => ∫⁻ x in U,
     ENNReal.ofReal (dualFusionKernel γ α₁ α₂ α₃ z x)*
       ENNReal.ofReal (reflected_global_reinsertionWeight γ a x) ∂N ω
-  have hm (U : Set ℂ) (hU : IsOpen U) (hU0 : U ⊆ ({0} : Set ℂ)ᶜ) :
-      Measurable (fun v : TwoSidedPath × Ω => J U v.1 v.2) :=
+  have hm (U : Set ℂ) (hU : IsOpen U) (hU0 : U ⊆ ({0} : Set ℂ)ᶜ) :=
     reflected_chart_parameter_mass_measurable U hU N hN
       (fun ω K hK hKU => hfin ω K hK (hKU.trans hU0))
       (fun v : TwoSidedPath × ℂ => ENNReal.ofReal (dualFusionKernel γ α₁ α₂ α₃ z v.2)*
@@ -44,18 +43,16 @@ theorem dual_copied_inverse_moment_triple
     apply hm _ ((isOpen_lt continuous_const continuous_norm).inter
       (isOpen_lt continuous_norm continuous_const))
     intro x hx hx0
-    have he : x = 0 := mem_singleton_iff.mp hx0
     have hxpos : 0 < ‖x‖ := hx.1
-    simp only [he, norm_zero, lt_self_iff_false] at hxpos
+    simp only [mem_singleton_iff.mp hx0, norm_zero, lt_self_iff_false] at hxpos
   have ho : Measurable (fun v : TwoSidedPath × Ω => J (reflected_outerRegion r) v.1 v.2) := by
     apply hm _ ((isOpen_lt continuous_const continuous_norm).inter
       (Set.toFinite ({0,1} : Set ℂ)).isClosed.isOpen_compl)
     intro x hx hx0
-    have he : x = 0 := mem_singleton_iff.mp hx0
-    exact hx.2 (by simp [he])
+    exact hx.2 (by simp [mem_singleton_iff.mp hx0])
   let F : TwoSidedPath × (Ω × Ω) → ℝ≥0∞ := fun v =>
     (J (reflected_innerRegion s) v.1 v.2.1+J (reflected_outerRegion r) v.1 v.2.2)^(-p)
-  have hF : Measurable F :=
+  have hF :=
     ((hi.comp (measurable_fst.prodMk (measurable_fst.comp measurable_snd))).add
       (ho.comp (measurable_fst.prodMk (measurable_snd.comp measurable_snd)))).pow_const (-p)
   exact dual_radial_copy_lintegral_regroup P (originRadialPath Xc) hA F hF

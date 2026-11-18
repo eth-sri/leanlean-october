@@ -20,16 +20,14 @@ namespace DOZZ.Proofs
 /-- A logarithm near one is controlled uniformly by the relative distance. -/
 theorem reflected_log_near_one_bound (x q : ℝ) (hq : 0 ≤ q) (hq₂ : q ≤ 1 / 2)
     (hlo : 1 - q ≤ x) (hhi : x ≤ 1 + q) : |Real.log x| ≤ 2 * q := by
-  have hx : 0 < x := by linarith only [hlo, hq₂]
-  have hu := Real.log_le_sub_one_of_pos hx
-  have hl := Real.one_sub_inv_le_log_of_pos hx
+  have hx : 0 < x := by nlinarith
   have hinv : x⁻¹ ≤ 1 + 2 * q := by
     rw [inv_eq_one_div, div_le_iff₀ hx]
     have hm : (1 + 2 * q) * (1 - q) ≤ (1 + 2 * q) * x :=
       mul_le_mul_of_nonneg_left hlo (by linarith only [hq])
     nlinarith only [hm, hq, hq₂]
   rw [abs_le]
-  constructor <;> linarith only [hu, hl, hinv, hhi, hq]
+  constructor <;> linarith only [Real.log_le_sub_one_of_pos hx, Real.one_sub_inv_le_log_of_pos hx, hinv, hhi, hq]
 
 /-- Two concentric regions separated by a factor of two have small lateral cross covariance. -/
 theorem reflected_lateral_cross_bound (w v : ℂ) (hw : w ≠ 0) (hv : v ≠ 0)

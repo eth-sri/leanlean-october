@@ -24,15 +24,9 @@ open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
 
-/-- The circle field translated by `z` is a jointly measurable centered Gaussian field. -/
-theorem circleAverage_translate_isCenteredGaussianField
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (r : ℝ) (z : ℂ) :
-    IsCenteredGaussianField P (fun ω y => Xc ω (y + z) r) :=
-  ⟨(hXc.1 r).comp (measurable_fst.prodMk (measurable_snd.add_const z)),
-    fun _ y => circleAverage_finite_family_jointly_gaussian P X hX Xc hXc
-      (fun i => (y i + z, r))⟩
+variable {Ω : Type*} [MeasurableSpace Ω]
+
+
 
 /-- The translated weight: the bounded weight times the reference density at the translated
 point. -/
@@ -42,76 +36,13 @@ noncomputable def translatedWeight (w : ℂ → ℝ≥0) (z : ℂ) (y : ℂ) : �
 theorem measurable_normPlus : Measurable normPlus :=
   measurable_const.max measurable_norm
 
-theorem measurable_translatedWeight (w : ℂ → ℝ≥0) (hw : Measurable w) (z : ℂ) :
-    Measurable (translatedWeight w z) := by
-  unfold translatedWeight
-  have h : Measurable (fun y : ℂ => normPlus (y + z) ^ (-4 : ℝ)) :=
-    (measurable_normPlus.comp (measurable_id.add_const z)).pow_const _
-  exact hw.mul h.real_toNNReal
 
 theorem one_le_normPlus (x : ℂ) : 1 ≤ normPlus x := le_max_left _ _
 
 theorem normPlus_rpow_neg_four_le_one (x : ℂ) : normPlus x ^ (-4 : ℝ) ≤ 1 :=
   Real.rpow_le_one_of_one_le_of_nonpos (one_le_normPlus x) (by norm_num)
 
-theorem translatedWeight_le (w : ℂ → ℝ≥0) (c : ℝ≥0) (hc : ∀ y, w y ≤ c) (z y : ℂ) :
-    translatedWeight w z y ≤ c := by
-  unfold translatedWeight
-  calc w y * (normPlus (y + z) ^ (-4 : ℝ)).toNNReal ≤ c * 1 := by
-        gcongr
-        · exact hc y
-        · exact Real.toNNReal_le_one.mpr (normPlus_rpow_neg_four_le_one _)
-    _ = c := mul_one c
 
-/-- A translated weighted cutoff mass is the continuum Wick mass of the translated circle field. -/
-theorem translated_cutoff_mass_eq_fieldChaosMass
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (γ r : ℝ)
-    (z : ℂ) (ρ : ℝ) (w : ℂ → ℝ≥0) (hw : Measurable w) (ω : Ω) :
-    (∫⁻ x in Metric.ball z ρ, (w (x - z) : ℝ≥0∞) ∂regularizedGMC P Xc γ r ω) =
-      fieldChaosMass P (fun ω y => Xc ω (y + z) r) (volume.restrict (Metric.ball 0 ρ))
-        (translatedWeight w z) γ ω := by
-  let _ := hX.1
-  set E : ℂ → ℝ≥0∞ := fun x => ENNReal.ofReal
-    (Real.exp (γ * Xc ω x r - γ ^ 2 / 2 * ∫ ω', Xc ω' x r ^ 2 ∂P) * normPlus x ^ (-4 : ℝ))
-    with hE
-  have hEm : Measurable E := by
-    have hV : Measurable (fun x : ℂ => ∫ ω', Xc ω' x r ^ 2 ∂P) := by
-      have hf : Measurable (fun q : ℂ × Ω => Xc q.2 q.1 r ^ 2) :=
-        ((hXc.1 r).comp measurable_swap).pow_const 2
-      exact hf.stronglyMeasurable.integral_prod_right.measurable
-    have hX1 : Measurable (fun x : ℂ => Xc ω x r) :=
-      (hXc.1 r).comp (measurable_const.prodMk measurable_id)
-    rw [hE]
-    exact ENNReal.measurable_ofReal.comp ((Real.measurable_exp.comp
-      ((hX1.const_mul γ).sub (hV.const_mul _))).mul (measurable_normPlus.pow_const _))
-  have hball : MeasurableSet (Metric.ball z ρ) := Metric.isOpen_ball.measurableSet
-  have hball0 : MeasurableSet (Metric.ball (0 : ℂ) ρ) := Metric.isOpen_ball.measurableSet
-  have hwz : Measurable (fun x : ℂ => (w (x - z) : ℝ≥0∞)) :=
-    (hw.comp (measurable_id.sub_const z)).coe_nnreal_ennreal
-  -- unfold the cutoff measure as a density against Lebesgue measure
-  have hlhs : (∫⁻ x in Metric.ball z ρ, (w (x - z) : ℝ≥0∞) ∂regularizedGMC P Xc γ r ω) =
-      ∫⁻ x, (Metric.ball z ρ).indicator (fun x => (w (x - z) : ℝ≥0∞) * E x) x := by
-    rw [regularizedGMC, restrict_withDensity hball, lintegral_withDensity_eq_lintegral_mul _ hEm hwz,
-      ← lintegral_indicator hball]
-    have hfun : (E * fun x => (w (x - z) : ℝ≥0∞)) = fun x => (w (x - z) : ℝ≥0∞) * E x := by
-      funext x
-      exact mul_comm (E x) (w (x - z) : ℝ≥0∞)
-    rw [hfun]
-  rw [hlhs, ← lintegral_add_right_eq_self _ z, fieldChaosMass, ← lintegral_indicator hball0]
-  apply lintegral_congr
-  intro y
-  have hmem : y + z ∈ Metric.ball z ρ ↔ y ∈ Metric.ball (0 : ℂ) ρ := by
-    simp only [Metric.mem_ball, dist_eq_norm, add_sub_cancel_right, sub_zero]
-  by_cases hy : y ∈ Metric.ball (0 : ℂ) ρ
-  · rw [Set.indicator_of_mem (hmem.mpr hy), Set.indicator_of_mem hy]
-    simp only [hE, add_sub_cancel_right, translatedWeight, ENNReal.coe_mul]
-    rw [ENNReal.ofReal_mul (Real.exp_pos _).le,
-      show ((normPlus (y + z) ^ (-4 : ℝ)).toNNReal : ℝ≥0∞) =
-        ENNReal.ofReal (normPlus (y + z) ^ (-4 : ℝ)) from rfl]
-    ring
-  · rw [Set.indicator_of_notMem (fun h => hy (hmem.mp h)), Set.indicator_of_notMem hy]
 
 /-- Multiplying by a positive finite constant commutes with every real power. -/
 theorem ennreal_mul_rpow_of_ne_zero_ne_top (a y : ℝ≥0∞) (ha0 : a ≠ 0) (hat : a ≠ ⊤) (z : ℝ) :
@@ -127,27 +58,11 @@ theorem ennreal_rpow_antitone_of_nonpos {u v : ℝ≥0∞} (huv : u ≤ v) {z : 
   rw [h, h']
   exact ENNReal.inv_le_inv.mpr (ENNReal.rpow_le_rpow huv (by linarith))
 
-/-- Two-sided comparison up to a factor `a ≥ 1` transfers to every real power, with factor
-`a ^ |p|`. -/
-theorem ennreal_rpow_le_of_two_sided (a x y : ℝ≥0∞) (ha : 1 ≤ a) (hat : a ≠ ⊤)
-    (h1 : x ≤ a * y) (h2 : y ≤ a * x) (p : ℝ) : x ^ p ≤ a ^ |p| * y ^ p := by
-  have ha0 : a ≠ 0 := (lt_of_lt_of_le zero_lt_one ha).ne'
-  rcases le_or_gt 0 p with hp | hp
-  · rw [abs_of_nonneg hp, ← ennreal_mul_rpow_of_ne_zero_ne_top a y ha0 hat p]
-    exact ENNReal.rpow_le_rpow h1 hp
-  · rw [abs_of_neg hp]
-    have hax : a ^ p * x ^ p ≤ y ^ p := by
-      rw [← ennreal_mul_rpow_of_ne_zero_ne_top a x ha0 hat p]
-      exact ennreal_rpow_antitone_of_nonpos h2 hp.le
-    have hone : a ^ (-p) * a ^ p = 1 := by
-      rw [← ENNReal.rpow_add _ _ ha0 hat, neg_add_cancel, ENNReal.rpow_zero]
-    calc x ^ p = a ^ (-p) * (a ^ p * x ^ p) := by rw [← mul_assoc, hone, one_mul]
-      _ ≤ a ^ (-p) * y ^ p := by gcongr
 
 /-- The circle covariance at two pairs of points with the same difference differs by at most
 twice the chart remainder. -/
 theorem translated_covariance_abs_sub_le
-    {Ω : Type*} [MeasurableSpace Ω]
+
     (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (R r : ℝ) (hR : 0 ≤ R) (hr : 0 ≤ r)
     (z z₀ y y' : ℂ) (hy : ‖y + z‖ ≤ R) (hy' : ‖y' + z‖ ≤ R) (hy₀ : ‖y + z₀‖ ≤ R)
@@ -176,21 +91,20 @@ theorem fieldChaosMass_le_const_mul_of_weight {Ω S : Type*} [MeasurableSpace Ω
   rw [← mul_assoc]
   exact mul_le_mul_of_nonneg_right hx zero_le
 
-theorem normPlus_le_one_add (x : ℂ) {R : ℝ} (hR : 0 ≤ R) (hx : ‖x‖ ≤ R) : normPlus x ≤ 1 + R :=
-  max_le (by linarith) (by linarith)
 
 /-- On a bounded chart the translated weights at two centers are comparable. -/
 theorem translatedWeight_le_mul (w : ℂ → ℝ≥0) (z z₀ y : ℂ) {R : ℝ} (hR : 0 ≤ R)
     (hy : ‖y + z₀‖ ≤ R) :
     (translatedWeight w z y : ℝ≥0∞) ≤ ENNReal.ofReal ((1 + R) ^ 4) * translatedWeight w z₀ y := by
+  have normPlus_le_one_add (x : ℂ) (hR : 0 ≤ R) (hx : ‖x‖ ≤ R) : normPlus x ≤ 1 + R := 
+    max_le (by linarith) (by linarith)
   unfold translatedWeight
   have hn : 1 ≤ normPlus (y + z₀) := one_le_normPlus _
-  have hnR : normPlus (y + z₀) ≤ 1 + R := normPlus_le_one_add _ hR hy
-  have hpos : 0 < normPlus (y + z₀) := lt_of_lt_of_le zero_lt_one hn
+  have hpos := lt_of_lt_of_le zero_lt_one hn
   have hlow : 1 ≤ (1 + R) ^ 4 * normPlus (y + z₀) ^ (-4 : ℝ) := by
     rw [Real.rpow_neg hpos.le, show (4 : ℝ) = ((4 : ℕ) : ℝ) by norm_num, Real.rpow_natCast,
       ← div_eq_mul_inv, le_div_iff₀ (by positivity), one_mul]
-    exact pow_le_pow_left₀ hpos.le hnR 4
+    exact pow_le_pow_left₀ hpos.le (normPlus_le_one_add _ hR hy) 4
   have hz : normPlus (y + z) ^ (-4 : ℝ) ≤ 1 := normPlus_rpow_neg_four_le_one _
   rw [ENNReal.coe_mul, ENNReal.coe_mul, ← mul_assoc, mul_comm (ENNReal.ofReal _) (w y : ℝ≥0∞),
     mul_assoc]
@@ -204,7 +118,7 @@ theorem translatedWeight_le_mul (w : ℂ → ℝ≥0) (z z₀ y : ℂ) {R : ℝ}
 
 /-- Location transfer of every real moment of a weighted cutoff mass at a fixed cutoff. -/
 theorem cutoff_translate_moment_le
-    {Ω : Type*} [MeasurableSpace Ω]
+
     (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (γ r : ℝ) (hr : 0 ≤ r)
     (z z₀ : ℂ) (ρ R : ℝ) (hR : 0 ≤ R) (hzR : ‖z‖ + ρ ≤ R) (hz₀R : ‖z₀‖ + ρ ≤ R)
@@ -214,33 +128,102 @@ theorem cutoff_translate_moment_le
           |p ^ 2 - p|)) * ENNReal.ofReal ((1 + R) ^ 4) ^ |p| *
         ∫⁻ ω, (∫⁻ x in Metric.ball z₀ ρ, (w (x - z₀) : ℝ≥0∞)
           ∂regularizedGMC P Xc γ r ω) ^ p ∂P := by
+  have ennreal_rpow_le_of_two_sided (a x y : ℝ≥0∞) (ha : 1 ≤ a) (hat : a ≠ ⊤) (h1 : x ≤ a * y) (h2 : y ≤ a * x) (p : ℝ) : x ^ p ≤ a ^ |p| * y ^ p := by
+    have ha0 := (lt_of_lt_of_le zero_lt_one ha).ne'
+    rcases le_or_gt 0 p with hp | hp
+    · rw [abs_of_nonneg hp, ← ennreal_mul_rpow_of_ne_zero_ne_top a y ha0 hat p]
+      exact ENNReal.rpow_le_rpow h1 hp
+    · rw [abs_of_neg hp]
+      have : a ^ p * x ^ p ≤ y ^ p := by
+        rw [← ennreal_mul_rpow_of_ne_zero_ne_top a x ha0 hat p]
+        exact ennreal_rpow_antitone_of_nonpos h2 hp.le
+      have hone : a ^ (-p) * a ^ p = 1 := by
+        rw [← ENNReal.rpow_add _ _ ha0 hat, neg_add_cancel, ENNReal.rpow_zero]
+      calc x ^ p = a ^ (-p) * (a ^ p * x ^ p) := by rw [← mul_assoc, hone, one_mul]
+        _ ≤ a ^ (-p) * y ^ p := by gcongr
+  have translated_cutoff_mass_eq_fieldChaosMass (z : ℂ) (ρ : ℝ) (w : ℂ → ℝ≥0) (hw : Measurable w) (ω : Ω) : (∫⁻ x in Metric.ball z ρ, (w (x - z) : ℝ≥0∞) ∂regularizedGMC P Xc γ r ω) =
+        fieldChaosMass P (fun ω y => Xc ω (y + z) r) (volume.restrict (Metric.ball 0 ρ))
+          (translatedWeight w z) γ ω := by
+    let _ := hX.1
+    set E : ℂ → ℝ≥0∞ := fun x => ENNReal.ofReal
+      (Real.exp (γ * Xc ω x r - γ ^ 2 / 2 * ∫ ω', Xc ω' x r ^ 2 ∂P) * normPlus x ^ (-4 : ℝ))
+      with hE
+    have hEm : Measurable E := by
+      have hV : Measurable (fun x : ℂ => ∫ ω', Xc ω' x r ^ 2 ∂P) := by
+        exact (((hXc.1 r).comp measurable_swap).pow_const 2).stronglyMeasurable.integral_prod_right.measurable
+      have hX1 : Measurable (fun x : ℂ => Xc ω x r) :=
+        (hXc.1 r).comp (measurable_const.prodMk measurable_id)
+      rw [hE]
+      exact ENNReal.measurable_ofReal.comp ((Real.measurable_exp.comp
+        ((hX1.const_mul γ).sub (hV.const_mul _))).mul (measurable_normPlus.pow_const _))
+    have hball : MeasurableSet (Metric.ball z ρ) := Metric.isOpen_ball.measurableSet
+    have hball0 : MeasurableSet (Metric.ball (0 : ℂ) ρ) := Metric.isOpen_ball.measurableSet
+    have hwz : Measurable (fun x : ℂ => (w (x - z) : ℝ≥0∞)) :=
+      (hw.comp (measurable_id.sub_const z)).coe_nnreal_ennreal
+    -- unfold the cutoff measure as a density against Lebesgue measure
+    have hlhs : (∫⁻ x in Metric.ball z ρ, (w (x - z) : ℝ≥0∞) ∂regularizedGMC P Xc γ r ω) =
+        ∫⁻ x, (Metric.ball z ρ).indicator (fun x => (w (x - z) : ℝ≥0∞) * E x) x := by
+      rw [regularizedGMC, restrict_withDensity hball, lintegral_withDensity_eq_lintegral_mul _ hEm hwz,
+        ← lintegral_indicator hball]
+      have hfun : (E * fun x => (w (x - z) : ℝ≥0∞)) = fun x => (w (x - z) : ℝ≥0∞) * E x := by
+        funext x
+        exact mul_comm (E x) (w (x - z) : ℝ≥0∞)
+      rw [hfun]
+    rw [hlhs, ← lintegral_add_right_eq_self _ z, fieldChaosMass, ← lintegral_indicator hball0]
+    apply lintegral_congr
+    intro y
+    have hmem : y + z ∈ Metric.ball z ρ ↔ y ∈ Metric.ball (0 : ℂ) ρ := by
+      simp only [Metric.mem_ball, dist_eq_norm, add_sub_cancel_right, sub_zero]
+    by_cases hy : y ∈ Metric.ball (0 : ℂ) ρ
+    · rw [Set.indicator_of_mem (hmem.mpr hy), Set.indicator_of_mem hy]
+      simp only [hE, add_sub_cancel_right, translatedWeight, ENNReal.coe_mul]
+      rw [ENNReal.ofReal_mul (Real.exp_pos _).le,
+        show ((normPlus (y + z) ^ (-4 : ℝ)).toNNReal : ℝ≥0∞) =
+          ENNReal.ofReal (normPlus (y + z) ^ (-4 : ℝ)) from rfl]
+      ring
+    · rw [Set.indicator_of_notMem (fun h => hy (hmem.mp h)), Set.indicator_of_notMem hy]
+  have translatedWeight_le (hc : ∀ y, w y ≤ c) (z y : ℂ) : translatedWeight w z y ≤ c := by
+    unfold translatedWeight
+    calc w y * (normPlus (y + z) ^ (-4 : ℝ)).toNNReal ≤ c * 1 := by
+          gcongr
+          · exact hc y
+          · exact Real.toNNReal_le_one.mpr (normPlus_rpow_neg_four_le_one _)
+      _ = c := mul_one c
+  have measurable_translatedWeight : Measurable (translatedWeight w z) := by
+    unfold translatedWeight
+    have : Measurable (fun y : ℂ => normPlus (y + z) ^ (-4 : ℝ)) :=
+      (measurable_normPlus.comp (measurable_id.add_const z)).pow_const _
+    fun_prop
+  have circleAverage_translate_isCenteredGaussianField (z : ℂ) : IsCenteredGaussianField P (fun ω y => Xc ω (y + z) r) := 
+    ⟨(hXc.1 r).comp (measurable_fst.prodMk (measurable_snd.add_const z)),
+      fun _ y => circleAverage_finite_family_jointly_gaussian P X hX Xc hXc
+        (fun i => (y i + z, r))⟩
   let _ := hX.1
   set C : ℝ := 2 * (Real.log 3 + 2 * Real.log (1 + R)) with hCdef
   have hC : 0 ≤ C := by
-    have h3 : 0 ≤ Real.log 3 := Real.log_nonneg (by norm_num)
-    have hR1 : 0 ≤ Real.log (1 + R) := Real.log_nonneg (by linarith)
+    have : 0 ≤ Real.log (1 + R) := Real.log_nonneg (by linarith)
     rw [hCdef]
     positivity
   set ν : Measure ℂ := volume.restrict (Metric.ball 0 ρ) with hνdef
-  have hνfin : IsFiniteMeasure ν := by
+  have : IsFiniteMeasure ν := by
     rw [hνdef]
     exact isFiniteMeasure_restrict.mpr measure_ball_lt_top.ne
   set Φ : Ω → ℂ → ℝ := fun ω y => Xc ω (y + z) r with hΦdef
   set Ψ : Ω → ℂ → ℝ := fun ω y => Xc ω (y + z₀) r with hΨdef
-  have hΦ : IsCenteredGaussianField P Φ :=
-    circleAverage_translate_isCenteredGaussianField P X hX Xc hXc r z
-  have hΨ : IsCenteredGaussianField P Ψ :=
-    circleAverage_translate_isCenteredGaussianField P X hX Xc hXc r z₀
+  have hΦ :=
+    circleAverage_translate_isCenteredGaussianField z
+  have hΨ :=
+    circleAverage_translate_isCenteredGaussianField z₀
   have hmz : ∀ ω, (∫⁻ x in Metric.ball z ρ, (w (x - z) : ℝ≥0∞) ∂regularizedGMC P Xc γ r ω) =
       fieldChaosMass P Φ ν (translatedWeight w z) γ ω :=
-    fun ω => translated_cutoff_mass_eq_fieldChaosMass P X hX Xc hXc γ r z ρ w hw ω
+    fun ω => translated_cutoff_mass_eq_fieldChaosMass z ρ w hw ω
   have hmz₀ : ∀ ω, (∫⁻ x in Metric.ball z₀ ρ, (w (x - z₀) : ℝ≥0∞) ∂regularizedGMC P Xc γ r ω) =
       fieldChaosMass P Ψ ν (translatedWeight w z₀) γ ω :=
-    fun ω => translated_cutoff_mass_eq_fieldChaosMass P X hX Xc hXc γ r z₀ ρ w hw ω
+    fun ω => translated_cutoff_mass_eq_fieldChaosMass z₀ ρ w hw ω
   simp only [hmz, hmz₀]
-  have hh : Measurable (translatedWeight w z) := measurable_translatedWeight w hw z
+  have hh := measurable_translatedWeight
   have hhb : ∃ c' : ℝ≥0, ∀ y, translatedWeight w z y ≤ c' :=
-    ⟨c, fun y => translatedWeight_le w c hwc z y⟩
+    ⟨c, fun y => translatedWeight_le hwc z y⟩
   -- points of the reference ball stay in the chart after either translation
   have hin : ∀ y : ℂ, ‖y‖ < ρ → ‖y + z‖ ≤ R ∧ ‖y + z₀‖ ≤ R := by
     intro y hy
@@ -301,7 +284,7 @@ theorem cutoff_translate_moment_le
   have hone : 1 ≤ ENNReal.ofReal ((1 + R) ^ 4) := by
     rw [← ENNReal.ofReal_one]
     exact ENNReal.ofReal_le_ofReal (one_le_pow₀ (by linarith))
-  have hstep2 : (∫⁻ ω, fieldChaosMass P Ψ ν (translatedWeight w z) γ ω ^ p ∂P) ≤
+  have : (∫⁻ ω, fieldChaosMass P Ψ ν (translatedWeight w z) γ ω ^ p ∂P) ≤
       ENNReal.ofReal ((1 + R) ^ 4) ^ |p| *
         ∫⁻ ω, fieldChaosMass P Ψ ν (translatedWeight w z₀) γ ω ^ p ∂P := by
     rw [← lintegral_const_mul' _ _ (ENNReal.rpow_ne_top_of_nonneg (abs_nonneg p)

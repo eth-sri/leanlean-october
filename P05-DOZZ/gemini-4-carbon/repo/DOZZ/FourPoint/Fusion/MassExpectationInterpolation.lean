@@ -22,7 +22,7 @@ theorem fusion_mass_expectation_interpolation {Ω : Type*} [MeasurableSpace Ω]
       -p * ∫ t in Icc (0 : ℝ) 1, ∫ ω,
         (fusionUnrootedSegment γ α₁ α₂ α₃ t z (M ω) ^ (-p - 1)).toReal *
           (∫ x, fusionDifferenceKernel γ α₁ α₂ α₃ z x ∂M ω) ∂P := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _ := hX.1
   let a := fun ω => coulombMass γ (M ω) ![-γ / 2, α₁, α₂] ![0, 0, 1] α₃
   let b := fun ω => coulombMass γ (M ω) ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃
   have ha := gmc_coulombMass_aemeasurable P X hX γ hγ hγ2 M hM ![-γ / 2, α₁, α₂] ![0, 0, 1] α₃
@@ -36,8 +36,8 @@ theorem fusion_mass_expectation_interpolation {Ω : Type*} [MeasurableSpace Ω]
     · change ‖z‖ ≤ 1; linarith
     · simp
     · simp
-  have hat : (∫⁻ ω, a ω ^ (-p) ∂P) ≠ ⊤ := ne_top_of_le_ne_top ENNReal.ofReal_ne_top (hbound _ hav)
-  have hbt : (∫⁻ ω, b ω ^ (-p) ∂P) ≠ ⊤ := ne_top_of_le_ne_top ENNReal.ofReal_ne_top (hbound _ hbv)
+  have hat := ne_top_of_le_ne_top ENNReal.ofReal_ne_top (hbound _ hav)
+  have hbt := ne_top_of_le_ne_top ENNReal.ofReal_ne_top (hbound _ hbv)
   have hai : Integrable (fun ω => (a ω).toReal ^ (-p)) P := by
     simpa only [ENNReal.toReal_rpow] using integrable_toReal_of_lintegral_ne_top (ha.pow_const _) hat
   have hbi : Integrable (fun ω => (b ω).toReal ^ (-p)) P := by
@@ -61,7 +61,6 @@ theorem fusion_mass_expectation_interpolation {Ω : Type*} [MeasurableSpace Ω]
     gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM z,
     gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM 0,
     gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM 1] with ω haω hbω hωz hω0 hω1
-  have hd := (fusion_difference_mass_integral γ α₁ α₂ α₃ z (M ω) hωz hω0 hω1 hbω.2 haω.2).2
   have he : (fusionUnrootedSegment γ α₁ α₂ α₃ t z (M ω)).toReal =
       t * (b ω).toReal + (1 - t) * (a ω).toReal := by
     rw [fusionUnrootedSegment, ENNReal.toReal_add
@@ -70,7 +69,6 @@ theorem fusion_mass_expectation_interpolation {Ω : Type*} [MeasurableSpace Ω]
     simp only [ENNReal.toReal_mul, ENNReal.toReal_ofReal ht.1,
       ENNReal.toReal_ofReal (sub_nonneg.mpr ht.2)]
     rfl
-  rw [← ENNReal.toReal_rpow, he, hd]
-  change -p * ((b ω).toReal - (a ω).toReal) * _ = -p * (_ * ((b ω).toReal - (a ω).toReal))
+  rw [← ENNReal.toReal_rpow, he, (fusion_difference_mass_integral γ α₁ α₂ α₃ z (M ω) hωz hω0 hω1 hbω.2 haω.2).2]
   ring
 end DOZZ.Proofs

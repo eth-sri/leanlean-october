@@ -46,8 +46,7 @@ theorem integral_circleMeasure_zero_eq_circleAverage (f : ℂ → ℝ) (hf : Mea
   simp only [neg_zero, Real.exp_zero]
   rw [integral_map (measurable_circleMap 0 1).aemeasurable hf.aestronglyMeasurable]
   rw [← intervalIntegral.integral_of_le Real.two_pi_pos.le]
-  have hcoeff : ENNReal.toReal (ENNReal.ofReal ((2 * Real.pi)⁻¹)) = (2 * Real.pi)⁻¹ := by
-    exact ENNReal.toReal_ofReal (by positivity)
+  have hcoeff : ENNReal.toReal (ENNReal.ofReal ((2 * Real.pi)⁻¹)) = (2 * Real.pi)⁻¹ := ENNReal.toReal_ofReal (by positivity)
   rw [hcoeff, Real.circleAverage_def]
 
 /-- A circle-integrable measurable function is integrable against `circleMeasure 0 0`. -/
@@ -62,34 +61,7 @@ theorem integrable_circleMeasure_of_circleIntegrable {f : ℂ → ℝ}
     exact (intervalIntegrable_iff_integrableOn_Ioc_of_le Real.two_pi_pos.le).mp hcircle
   exact hmap.smul_measure (by simp)
 
-/-- The logarithmic kernel has an integrable section against the unit-circle measure, for every
-fixed pole, including poles on the circle. -/
-theorem integrable_log_norm_sub_circleMeasure (x : ℂ) :
-    Integrable (fun y : ℂ => Real.log ‖x - y‖) (circleMeasure 0 0) := by
-  have hcircle : CircleIntegrable (fun y : ℂ => Real.log ‖x - y‖) 0 1 := by
-    simpa [norm_sub_rev] using
-      (circleIntegrable_log_norm_sub_const (a := x) (c := 0) (r := 1))
-  have hmeas : Measurable (fun y : ℂ => Real.log ‖x - y‖) := by fun_prop
-  exact integrable_circleMeasure_of_circleIntegrable hmeas hcircle
 
-/-- The unit-circle logarithmic potential is `log |x|_+`. -/
-theorem integral_log_norm_sub_circleMeasure (x : ℂ) :
-    Integrable (fun y : ℂ => Real.log ‖x - y‖) (circleMeasure 0 0) ∧
-      ∫ y, Real.log ‖x - y‖ ∂circleMeasure 0 0 = Real.log (normPlus x) := by
-  have hmeas : Measurable (fun y : ℂ => Real.log ‖x - y‖) := by fun_prop
-  refine ⟨integrable_log_norm_sub_circleMeasure x, ?_⟩
-  calc
-    ∫ y, Real.log ‖x - y‖ ∂circleMeasure 0 0 =
-        Real.circleAverage (fun y => Real.log ‖x - y‖) 0 1 :=
-      integral_circleMeasure_zero_eq_circleAverage _ hmeas
-    _ = Real.circleAverage (fun y => Real.log ‖y - x‖) 0 1 := by
-      apply congrArg (fun f : ℂ → ℝ => Real.circleAverage f 0 1)
-      funext y
-      rw [norm_sub_rev]
-    _ = Real.posLog ‖x‖ := circleAverage_log_norm_sub_const_eq_posLog
-    _ = Real.log (normPlus x) := by
-      rw [normPlus]
-      exact (Real.posLog_eq_log_max_one (norm_nonneg x))
 
 /-- The logarithm of `normPlus` is circle-integrable on the unit circle. -/
 theorem circleIntegrable_log_normPlus :
@@ -100,7 +72,7 @@ theorem circleIntegrable_log_normPlus :
     have hz_norm : ‖z‖ = 1 := by
       simpa only [abs_one, mem_sphere_iff_norm, sub_zero] using hz
     simp [normPlus, hz_norm]
-  · exact circleIntegrable_const 0 0 1
+  · fun_prop
 
 /-- The pinning potential is integrable on the unit circle. -/
 theorem integrable_log_normPlus_circleMeasure :
@@ -114,11 +86,31 @@ theorem integrable_log_normPlus_circleMeasure :
 /-- The unit-circle average of the pinned covariance kernel vanishes at every pole. -/
 theorem integral_gffKernel_circleMeasure (x : ℂ) :
     ∫ z : ℂ, gffKernel x z ∂circleMeasure 0 0 = 0 := by
-  have hlog := integrable_log_norm_sub_circleMeasure x
+  have integrable_log_norm_sub_circleMeasure : Integrable (fun y : ℂ => Real.log ‖x - y‖) (circleMeasure 0 0) := by
+    have hcircle : CircleIntegrable (fun y : ℂ => Real.log ‖x - y‖) 0 1 := by
+      simpa [norm_sub_rev] using
+        (circleIntegrable_log_norm_sub_const (a := x) (c := 0) (r := 1))
+    have hmeas : Measurable (fun y : ℂ => Real.log ‖x - y‖) := by fun_prop
+    exact integrable_circleMeasure_of_circleIntegrable hmeas hcircle
+  have integral_log_norm_sub_circleMeasure : Integrable (fun y : ℂ => Real.log ‖x - y‖) (circleMeasure 0 0) ∧
+        ∫ y, Real.log ‖x - y‖ ∂circleMeasure 0 0 = Real.log (normPlus x) := by
+    have hmeas : Measurable (fun y : ℂ => Real.log ‖x - y‖) := by fun_prop
+    refine ⟨integrable_log_norm_sub_circleMeasure, ?_⟩
+    calc
+      ∫ y, Real.log ‖x - y‖ ∂circleMeasure 0 0 =
+          Real.circleAverage (fun y => Real.log ‖x - y‖) 0 1 :=
+        integral_circleMeasure_zero_eq_circleAverage _ hmeas
+      _ = Real.circleAverage (fun y => Real.log ‖y - x‖) 0 1 := by
+        apply congrArg (fun f : ℂ → ℝ => Real.circleAverage f 0 1)
+        funext y
+        rw [norm_sub_rev]
+      _ = Real.posLog ‖x‖ := circleAverage_log_norm_sub_const_eq_posLog
+      _ = Real.log (normPlus x) := by
+        rw [normPlus]
+        exact (Real.posLog_eq_log_max_one (norm_nonneg x))
   have hconst : Integrable (fun _ : ℂ => Real.log (normPlus x)) (circleMeasure 0 0) :=
     integrable_const _
   have hplus := integrable_log_normPlus_circleMeasure
-  have hprob := circleMeasure_zero_isProbability
   have hconstInt :
       ∫ z : ℂ, Real.log (normPlus x) ∂circleMeasure 0 0 = Real.log (normPlus x) := by
     rw [integral_const]
@@ -154,7 +146,7 @@ theorem integral_gffKernel_circleMeasure (x : ℂ) :
     calc
       _ = (∫ z : ℂ, -Real.log ‖x - z‖ ∂circleMeasure 0 0) +
             ∫ z : ℂ, Real.log (normPlus x) + Real.log (normPlus z)
-              ∂circleMeasure 0 0 := integral_add hlog.neg (hconst.add hplus)
+              ∂circleMeasure 0 0 := integral_add (integrable_log_norm_sub_circleMeasure).neg (hconst.add hplus)
       _ = _ := by rw [integral_add hconst hplus]
   calc
     ∫ z : ℂ, gffKernel x z ∂circleMeasure 0 0 =
@@ -165,7 +157,7 @@ theorem integral_gffKernel_circleMeasure (x : ℂ) :
       exact congrFun hgroup z
     _ = _ := hsplit
     _ = 0 := by
-      rw [integral_neg, (integral_log_norm_sub_circleMeasure x).2,
+      rw [integral_neg, (integral_log_norm_sub_circleMeasure).2,
         hconstInt, hplusInt]
       ring
 

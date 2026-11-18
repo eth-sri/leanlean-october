@@ -10,8 +10,6 @@ public import DOZZ.GMC.Construction.GMCGeneralTilt
 
 @[expose] public section
 
-open MeasureTheory ProbabilityTheory
-open scoped ENNReal
 
 namespace DOZZ.Proofs
 

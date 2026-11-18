@@ -45,19 +45,14 @@ theorem residue_unit_limit_from_chart_limit
     have hr : Tendsto (fun ε : ℝ => -p + ε / γ) (𝓝[>] 0) (𝓝 (-p)) := by
       simpa only [zero_div, add_zero] using
         (tendsto_const_nhds.add (he.div_const γ) : Tendsto (fun ε : ℝ => -p + ε / γ) (𝓝[>] 0) (𝓝 (-p + 0 / γ)))
-    have hh := (((hl.const_mul γ).mul hr).div_const 2).neg
-    convert hh using 1
+    convert ((((hl.const_mul γ).mul hr).div_const 2).neg) using 1
     congr 1
     ring
-  have hfactor := ((Real.continuous_const_rpow (by norm_num : (4 : ℝ) ≠ 0)).continuousAt.tendsto.comp hexplim).const_mul (2 / γ)
-  have hprod := hfactor.mul hmass
-  convert hprod using 1
+  convert ((((Real.continuous_const_rpow (by norm_num : (4 : ℝ) ≠ 0)).continuousAt.tendsto.comp hexplim).const_mul (2 / γ)).mul hmass) using 1
   · ext ε
     rw [unitVolumeStructureConstant_swap13 P X M γ (α3 - α2 + ε) α2 α3 hγ hγ2 hX hM,
       residue_unitVolume_finite_chart P X M γ α3 α2 (α3 - α2 + ε) hγ hγ2 hX hM, hexp ε]
     rw [hs]
-    have hq : -(-p + ε / γ) = p - ε / γ := by ring
-    rw [hq]
     dsimp only [Function.comp_def, p]
     ring
   · have hpowers : (4 : ℝ) ^ (γ * α2 * p) * 4 ^ (-(γ * α2 * p)) = 1 := by

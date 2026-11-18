@@ -43,7 +43,7 @@ theorem dual_source_copied_polar_increment_eq
     ∫ ω : (Ω × Ω) × Ω,
       ((O' ω.1).toReal+dualPathRadialScale γ (Q γ-α₁) h z (A ω.1.1)*
         (V (A ω.1.1) ω.2).toReal)^(-p)-(O' ω.1).toReal^(-p) ∂(P.prod P).prod P := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _ := hX.1
   let A := originRadialPath Xc
   let O := fun ω => dualOuterMass γ α₁ α₂ α₃ (M ω) z ξ
   let U := reflected_outerRegion (‖z‖^(1-ξ))
@@ -51,15 +51,14 @@ theorem dual_source_copied_polar_increment_eq
     ENNReal.ofReal (dualFusionKernel γ α₁ α₂ α₃ z x)*
       ENNReal.ofReal (reflected_global_reinsertionWeight γ (A ω.1) x) ∂N ω.2
   have hA := originRadialPath_aemeasurable P X Xc hc hcont
-  have hO : AEMeasurable O P := (dual_outerMass_measure_measurable γ α₁ α₂ α₃ ξ z).comp_aemeasurable
+  have hO := (dual_outerMass_measure_measurable γ α₁ α₂ α₃ ξ z).comp_aemeasurable
     (equatorGFF_GMC_aemeasurable P X hX γ hγ hγ₂ M hM)
   have hU : IsOpen U := (isOpen_lt continuous_const continuous_norm).inter (Set.toFinite ({0,1} : Set ℂ)).isClosed.isOpen_compl
   have hUF : ∀ ω K, IsCompact K → K ⊆ U → N ω K < ⊤ := by
     intro ω K hK hKU
     apply hfin ω K hK
     intro x hx hx0
-    have hxzero : x = 0 := mem_singleton_iff.mp hx0
-    exact (hKU hx).2 (by simp [hxzero])
+    exact (hKU hx).2 (by simp [mem_singleton_iff.mp hx0])
   have hF := reflected_chart_parameter_mass_measurable U hU N hNm hUF
     (fun v : TwoSidedPath × ℂ => ENNReal.ofReal (dualFusionKernel γ α₁ α₂ α₃ z v.2)*
       ENNReal.ofReal (reflected_global_reinsertionWeight γ v.1 v.2))
@@ -80,10 +79,9 @@ theorem dual_source_copied_polar_increment_eq
     exact hω _ _
   have he := dual_path_outer_polar_integral_transport P (P.prod P) P A (fun ω => A ω.1)
     O O' ZT hA hA.comp_fst hO hO' hZT hZTfin hlaw γ (Q γ-α₁) h p z T
-  have hb := dual_source_radial_scale_eq_path_ae P Xc hcont γ (Q γ-α₁) h z
   apply Eq.trans ?_ he
   apply integral_congr_ae
-  filter_upwards [measurePreserving_fst.quasiMeasurePreserving.ae hb] with ω hω
+  filter_upwards [measurePreserving_fst.quasiMeasurePreserving.ae (dual_source_radial_scale_eq_path_ae P Xc hcont γ (Q γ-α₁) h z)] with ω hω
   rw [hω]
 
 end DOZZ.Proofs

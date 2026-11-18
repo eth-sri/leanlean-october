@@ -22,13 +22,11 @@ noncomputable def normalizedDiskPrimitive (c : ℂ) (r : ℝ) (f : ℂ → E) (y
 
 theorem normalizedDiskPrimitive_apply_center (c : ℂ) (r : ℝ) (f : ℂ → E) (y : E)
     (hf : DifferentiableOn ℂ f (Metric.ball c r)) :
-    normalizedDiskPrimitive c r f y hf c = y := by
-  exact (Classical.choose_spec (hf.isExactOn_ball.with_val_at c y)).1
+    normalizedDiskPrimitive c r f y hf c = y := (Classical.choose_spec (hf.isExactOn_ball.with_val_at c y)).1
 
 theorem hasDerivAt_normalizedDiskPrimitive {c z : ℂ} {r : ℝ} {f : ℂ → E} {y : E}
     (hf : DifferentiableOn ℂ f (Metric.ball c r)) (hz : z ∈ Metric.ball c r) :
-    HasDerivAt (normalizedDiskPrimitive c r f y hf) (f z) z := by
-  exact (Classical.choose_spec (hf.isExactOn_ball.with_val_at c y)).2 z hz
+    HasDerivAt (normalizedDiskPrimitive c r f y hf) (f z) z := (Classical.choose_spec (hf.isExactOn_ball.with_val_at c y)).2 z hz
 
 theorem differentiableOn_normalizedDiskPrimitive (c : ℂ) (r : ℝ) (f : ℂ → E) (y : E)
     (hf : DifferentiableOn ℂ f (Metric.ball c r)) :

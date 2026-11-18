@@ -27,7 +27,7 @@ theorem fusion_gammaHalf_spatial_expectation_measurable {Ω : Type*} [Measurable
     Measurable (fun z : ℂ => ∫ ω,
       ((coulombMass γ (M ω) ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃ ^ s).toReal : ℂ) *
         (∫ x, H (z, x) ∂M ω) ∂P) := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _ := hX.1
   obtain ⟨N, hN, hfN, he⟩ := equatorGFF_GMC_measurable_version P X hX γ hγ hγ2 M hM
   let I := fun q : ℂ × Ω => ∫⁻ x, ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ q.1 x) ∂N q.2
   have hIm : Measurable I := by

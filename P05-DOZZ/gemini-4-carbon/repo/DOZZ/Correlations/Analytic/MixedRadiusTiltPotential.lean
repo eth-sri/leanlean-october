@@ -45,11 +45,9 @@ theorem mixed_circle_covariance_uniform
     simpa using circleAverage_sum_covariance_uniform P X hX Xc hXc
       (fun _ : Fin 1 => α i) (fun _ : Fin 1 => z i) (r i)
   choose c hc hconv using hsingle
-  let C : BoundedContinuousFunction ℂ ℝ := ∑ i, c i
+  let C := ∑ i, c i
   have hC (x : ℂ) : C x = ∑ i, c i x := by simp [C]
-  have hcov (s : ℝ) (x : ℂ) : gaussianCovariance P (fun ω => Xc ω x s)
-      (fun ω => ∑ i, α i * Xc ω (z i) (r i)) =
-      ∑ i, gaussianCovariance P (fun ω => Xc ω x s) (fun ω => α i * Xc ω (z i) (r i)) :=
+  have hcov (s : ℝ) (x : ℂ) :=
     gaussianCovariance_finset_sum_right P _ _ Finset.univ (hXc.2.1 x s)
       (fun i _ => (hXc.2.1 (z i) (r i)).const_mul (α i))
   refine ⟨C, fun x => ?_, ?_⟩
@@ -57,11 +55,7 @@ theorem mixed_circle_covariance_uniform
   · rw [Metric.tendstoUniformly_iff]
     intro ε hε
     have hd : 0 < ε / (N + 1 : ℝ) := div_pos hε (by positivity)
-    have he : ∀ᶠ s : ℝ in atTop, ∀ i : Fin N, ∀ x : ℂ,
-        dist (c i x) (gaussianCovariance P (fun ω => Xc ω x s)
-          (fun ω => α i * Xc ω (z i) (r i))) < ε / (N + 1 : ℝ) :=
-      eventually_all.mpr fun i => (Metric.tendstoUniformly_iff.mp (hconv i)) _ hd
-    filter_upwards [he] with s hs x
+    filter_upwards [eventually_all.mpr fun i => (Metric.tendstoUniformly_iff.mp (hconv i)) _ hd] with s hs x
     rw [hC, hcov, Real.dist_eq, ← Finset.sum_sub_distrib]
     have hb : (∑ i : Fin N, |c i x - gaussianCovariance P (fun ω => Xc ω x s)
         (fun ω => α i * Xc ω (z i) (r i))|) ≤ N * (ε / (N + 1 : ℝ)) := by

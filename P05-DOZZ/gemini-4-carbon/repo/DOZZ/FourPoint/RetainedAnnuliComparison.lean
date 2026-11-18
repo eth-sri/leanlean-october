@@ -53,7 +53,6 @@ theorem retained_fields_multi_negative_compare
   let c := Real.sqrt C
   let Ψc : ΩY × ℝ → S → ℝ := fun w x => Ψ w.1 x + c * w.2
   have hc : c ^ 2 = C := Real.sq_sqrt hC
-  have hΨc := independent_common_scalar_add_isCenteredGaussianField PY Ψ hΨ c
   have hcovc (x y : S) :
       (∫ w, Ψc w x * Ψc w y ∂PY.prod (gaussianReal 0 1)) =
         (∫ ω, Ψ ω x * Ψ ω y ∂PY) + C := by
@@ -72,11 +71,11 @@ theorem retained_fields_multi_negative_compare
     rw [hcovc]
     exact hx
   have hk := kahane_field_multi_negative_power PX (PY.prod (gaussianReal 0 1)) Φ Ψc
-    hΦ hΨc ν h hh hhb γ q hq hcov' hdiag'
+    hΦ (independent_common_scalar_add_isCenteredGaussianField PY Ψ hΨ c) ν h hh hhb γ q hq hcov' hdiag'
   change (∫⁻ ω, ∏ k, (fieldChaosMass PX Φ ν (h k) γ ω) ^ (-q k) ∂PX) ≤
     ∫⁻ w, ∏ k, (fieldChaosMass (PY.prod (gaussianReal 0 1)) Ψc ν (h k) γ w) ^ (-q k)
       ∂PY.prod (gaussianReal 0 1) at hk
-  have : IsProbabilityMeasure PY := (hΨ.2 0 (fun i : Fin 0 => Fin.elim0 i)).1
+  have := (hΨ.2 0 (fun i : Fin 0 => Fin.elim0 i)).1
   let F : κ → ΩY → ℝ≥0∞ := fun k ω => fieldChaosMass PY Ψ ν (h k) γ ω
   have hF : ∀ k, AEMeasurable (F k) PY := fun k =>
     (centeredGaussianField_fieldChaosMass_measurable PY Ψ hΨ ν (h k) (hh k) γ).aemeasurable

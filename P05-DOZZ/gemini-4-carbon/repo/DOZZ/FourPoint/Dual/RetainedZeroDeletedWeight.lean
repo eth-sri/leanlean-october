@@ -28,7 +28,7 @@ theorem dual_retainedZero_deleted_weight_bound {Ω : Type*} [MeasurableSpace Ω]
   obtain ⟨C₂, hC₂, hs⟩ := dual_deleted_disk_spatial_bound γ α₁ α₂ α₃ hβ
   refine ⟨C₁ * C₂, mul_pos hC₁ hC₂, ?_⟩
   intro r hr hr₁
-  let f : ℂ → ℝ≥0∞ := (Metric.ball (0 : ℂ) r).indicator
+  let f := (Metric.ball (0 : ℂ) r).indicator
     (fun x => ENNReal.ofReal (dualFusionKernel γ α₁ α₂ α₃ 0 x))
   have hf : Measurable f := (ENNReal.measurable_ofReal.comp
     (dual_kernel_measurable γ α₁ α₂ α₃ 0)).indicator measurableSet_ball

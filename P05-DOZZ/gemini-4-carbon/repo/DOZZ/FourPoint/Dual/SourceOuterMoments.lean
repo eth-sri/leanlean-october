@@ -31,8 +31,7 @@ theorem dual_source_outerMass_positive_finite_ae
       rw [neg_div]
       unfold Q
       have hinv : 0 < 2/γ := div_pos (by norm_num) hγ
-      have hhalf : 0 < γ/2 := half_pos hγ
-      linarith only [hhalf,hinv]
+      linarith only [half_pos hγ,hinv]
     · exact hα₁
     · exact hα₂
   have hfull := reflected_coulombMass_ae_finite P X hX γ hγ hγ₂ M hM
@@ -42,9 +41,7 @@ theorem dual_source_outerMass_positive_finite_ae
       (equatorGFF_GMC_aemeasurable P X hX γ hγ hγ₂ M hM)
   obtain ⟨C, _, hb⟩ := dual_outerMass_inverse_moment_uniform P X hX γ hγ hγ₂ M hM
     α₁ α₂ α₃ 1 (by norm_num)
-  have hInv : (∫⁻ ω, dualOuterMass γ α₁ α₂ α₃ (M ω) z ξ ^ (-(1 : ℝ)) ∂P) < ⊤ :=
-    (hb z ξ hz hr).trans_lt ENNReal.ofReal_lt_top
-  filter_upwards [hfull, ae_lt_top' (hmeas.pow_const (-(1 : ℝ))) hInv.ne] with ω hf hi
+  filter_upwards [hfull, ae_lt_top' (hmeas.pow_const (-(1 : ℝ))) ((hb z ξ hz hr).trans_lt ENNReal.ofReal_lt_top).ne] with ω hf hi
   constructor
   · apply pos_iff_ne_zero.mpr
     intro he

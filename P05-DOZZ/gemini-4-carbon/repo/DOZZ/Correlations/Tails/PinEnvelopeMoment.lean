@@ -12,8 +12,6 @@ The two pins may be correlated; the bound only uses their centered Gaussian marg
 
 @[expose] public section
 
-open MeasureTheory ProbabilityTheory
-open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
 

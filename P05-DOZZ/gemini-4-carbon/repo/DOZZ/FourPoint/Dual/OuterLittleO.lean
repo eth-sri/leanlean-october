@@ -44,22 +44,14 @@ theorem dual_outer_inverse_moment_littleO {Ω : Type*} [MeasurableSpace Ω]
       (hpow (1 - ξ) (sub_pos.mpr hξ₁)).eventually (gt_mem_nhds (by norm_num : (0 : ℝ) < 1 / 2)),
       (hpow ξ hξ).eventually (gt_mem_nhds (by norm_num : (0 : ℝ) < 1 / 2)),
       self_mem_nhdsWithin] with z hz hcut hsmall hz0
-    have hpz : 0 < ‖z‖ := norm_pos_iff.mpr hz0
+    have hpz := norm_pos_iff.mpr hz0
     have hr : 0 < ‖z‖ ^ (1 - ξ) := Real.rpow_pos_of_pos hpz _
-    have he : ‖z‖ = ‖z‖ ^ (1 - ξ) * ‖z‖ ^ ξ := by
+    have : ‖z‖ = ‖z‖ ^ (1 - ξ) * ‖z‖ ^ ξ := by
       rw [← Real.rpow_add hpz, sub_add_cancel, Real.rpow_one]
-    have hsep : ‖z‖ ≤ ‖z‖ ^ (1 - ξ) / 2 := by
-      calc
-        _ = _ := he
-        _ ≤ ‖z‖ ^ (1 - ξ) * (1 / 2) := mul_le_mul_of_nonneg_left hsmall.le hr.le
-        _ = _ := by ring
+    have hsep : ‖z‖ ≤ ‖z‖ ^ (1 - ξ) / 2 := by nlinarith
     have h₁ := hmove z ξ hr (by linarith only [hcut]) hz.le hsep
     have h₂ := hdel (‖z‖ ^ (1 - ξ)) hr hcut.le
-    have hratio : ‖z‖ / ‖z‖ ^ (1 - ξ) = ‖z‖ ^ ξ := by
-      calc
-        _ = (‖z‖ ^ (1 - ξ) * ‖z‖ ^ ξ) / ‖z‖ ^ (1 - ξ) :=
-          congrArg (fun y => y / ‖z‖ ^ (1 - ξ)) he
-        _ = _ := mul_div_cancel_left₀ _ hr.ne'
+    have hratio : ‖z‖ / ‖z‖ ^ (1 - ξ) = ‖z‖ ^ ξ := by grind
     rw [hratio] at h₁
     rw [← Real.rpow_mul hpz.le] at h₂
     exact (abs_sub_le _ _ _).trans (add_le_add h₁ h₂)

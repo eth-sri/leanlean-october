@@ -68,10 +68,7 @@ theorem equatorGFF_GMC_vertex_tilt_of_general_tilt
           (γ * ∑ k, α k * ∫ v, gffKernel x v ∂circleMeasure (z k) r))) := by
     funext x
     rw [hpotential x]
-  have hmeasure (ω : Ω) :
-      (M ω).withDensity (fun x => ENNReal.ofReal (Real.exp (γ * c x))) =
-        (M ω).withDensity (fun x => ENNReal.ofReal (Real.exp
-          (γ * ∑ k, α k * ∫ v, gffKernel x v ∂circleMeasure (z k) r))) :=
+  have hmeasure (ω : Ω) :=
     congrArg (fun d : ℂ → ℝ≥0∞ => (M ω).withDensity d) hdensity
   calc
     _ = ∫⁻ ω, ENNReal.ofReal (Real.exp (L ω - gaussianVariance P L / 2)) *

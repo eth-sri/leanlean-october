@@ -15,6 +15,9 @@ open scoped Topology
 
 namespace DOZZ.Proofs
 
+variable {ΩX ΩY ι : Type*} [MeasurableSpace ΩX] [MeasurableSpace ΩY] [Fintype ι]
+
+
 /-- An interpolated coordinate is controlled by its two absolute endpoint coordinates. -/
 theorem kahaneInterpolatedField_abs_le
     (x y t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) :
@@ -45,7 +48,7 @@ theorem kahaneInterpolatedWick_le_absExp
   classical
   have hv : 0 ≤ t * vX i + (1 - t) * vY i :=
     add_nonneg (mul_nonneg ht.1 (hvX i)) (mul_nonneg (by linarith [ht.2]) (hvY i))
-  have hcoord : |x i| + |y i| ≤ ∑ j, (|x j| + |y j|) :=
+  have hcoord :=
     Finset.single_le_sum (f := fun j => |x j| + |y j|)
       (fun j _ => add_nonneg (abs_nonneg _) (abs_nonneg _))
       (Finset.mem_univ i)
@@ -146,7 +149,6 @@ theorem kahaneInterpolatedTestDerivative_norm_le_absExp
         (|γ| / (2 * Real.sqrt ε) * (∑ i, (|X ω.1 i| + |Y ω.2 i|)) +
           γ ^ 2 / 2 * ∑ i, |vX i - vY i|) := by
   classical
-  let E := Real.exp (|γ| * ∑ i, (|X ω.1 i| + |Y ω.2 i|))
   let D := |γ| / (2 * Real.sqrt ε) * (∑ i, (|X ω.1 i| + |Y ω.2 i|)) +
     γ ^ 2 / 2 * ∑ i, |vX i - vY i|
   have htI : t ∈ Icc (0 : ℝ) 1 := ⟨hε.le.trans ht, by linarith⟩
@@ -155,7 +157,7 @@ theorem kahaneInterpolatedTestDerivative_norm_le_absExp
   calc
     _ ≤ B * ∑ i, ‖a i * Real.exp _ * _‖ :=
       mul_le_mul (hF' _) (norm_sum_le _ _) (norm_nonneg _) hB
-    _ ≤ B * ∑ i, a i * E * D := by
+    _ ≤ B * ∑ i, a i * (Real.exp (|γ| * ∑ i, (|X ω.1 i| + |Y ω.2 i|))) * D := by
       apply mul_le_mul_of_nonneg_left _ hB
       apply Finset.sum_le_sum
       intro i hi
@@ -168,12 +170,14 @@ theorem kahaneInterpolatedTestDerivative_norm_le_absExp
         (abs_nonneg _) (mul_nonneg (ha i) (Real.exp_nonneg _))
     _ = _ := by rw [← Finset.sum_mul, ← Finset.sum_mul]; ring
 
+section
+variable (PX : Measure ΩX) (PY : Measure ΩY) (X : ΩX → ι → ℝ) (Y : ΩY → ι → ℝ) (hX : DOZZ.IsCenteredJointlyGaussian PX X) (hY : DOZZ.IsCenteredJointlyGaussian PY Y)
+include hX hY
+
 /-- The common endpoint envelope is integrable for arbitrary, possibly singular Gaussian laws. -/
 theorem kahaneEndpointAbsExp_integrable
-    {ΩX ΩY ι : Type*} [MeasurableSpace ΩX] [MeasurableSpace ΩY] [Fintype ι]
-    (PX : Measure ΩX) (PY : Measure ΩY)
-    (X : ΩX → ι → ℝ) (Y : ΩY → ι → ℝ)
-    (hX : DOZZ.IsCenteredJointlyGaussian PX X) (hY : DOZZ.IsCenteredJointlyGaussian PY Y)
+
+
     (γ : ℝ) :
     Integrable (fun ω : ΩX × ΩY =>
       Real.exp (|γ| * ∑ i, (|X ω.1 i| + |Y ω.2 i|))) (PX.prod PY) := by
@@ -181,56 +185,46 @@ theorem kahaneEndpointAbsExp_integrable
   let Z : ΩX × ΩY → Sum ι ι → ℝ := fun ω k => match k with
     | Sum.inl i => X ω.1 i
     | Sum.inr i => Y ω.2 i
-  have hZ := independent_product_concat_isCenteredJointlyGaussian PX PY X Y hX hY
-  have h := centeredJointlyGaussian_abs_linear_exp_integrable (PX.prod PY) Z hZ
+  have h := centeredJointlyGaussian_abs_linear_exp_integrable (PX.prod PY) Z (independent_product_concat_isCenteredJointlyGaussian PX PY X Y hX hY)
     (fun _ => |γ|)
   simpa [Z, Fintype.sum_sum_type, Finset.sum_add_distrib, Finset.mul_sum, mul_add] using h
 
-/-- An absolute coordinate factor times the endpoint envelope remains integrable. -/
-theorem kahaneEndpointCoordinateAbsExp_integrable
-    {ΩX ΩY ι : Type*} [MeasurableSpace ΩX] [MeasurableSpace ΩY] [Fintype ι]
-    (PX : Measure ΩX) (PY : Measure ΩY)
-    (X : ΩX → ι → ℝ) (Y : ΩY → ι → ℝ)
-    (hX : DOZZ.IsCenteredJointlyGaussian PX X) (hY : DOZZ.IsCenteredJointlyGaussian PY Y)
-    (γ : ℝ) (i : ι) :
-    Integrable (fun ω : ΩX × ΩY =>
-      (|X ω.1 i| + |Y ω.2 i|) *
-        Real.exp (|γ| * ∑ j, (|X ω.1 j| + |Y ω.2 j|))) (PX.prod PY) := by
-  classical
-  let Z : ΩX × ΩY → Sum ι ι → ℝ := fun ω k => match k with
-    | Sum.inl i => X ω.1 i
-    | Sum.inr i => Y ω.2 i
-  have hZ := independent_product_concat_isCenteredJointlyGaussian PX PY X Y hX hY
-  have h (k : Sum ι ι) :=
-    (centeredJointlyGaussian_coordinate_mul_abs_linear_exp_integrable
-      (PX.prod PY) Z hZ (fun _ => |γ|) k).abs
-  convert (h (.inl i)).add (h (.inr i)) using 1
-  funext ω
-  simp [Z, abs_mul, abs_of_pos (Real.exp_pos _), Fintype.sum_sum_type,
-    Finset.sum_add_distrib, Finset.mul_sum, add_mul, mul_add, Pi.add_apply]
 
 
 /-- The locally uniform test-derivative envelope is integrable. -/
 theorem kahaneInterpolatedDerivativeEnvelope_integrable
-    {ΩX ΩY ι : Type*} [MeasurableSpace ΩX] [MeasurableSpace ΩY] [Fintype ι]
-    (PX : Measure ΩX) (PY : Measure ΩY)
-    (X : ΩX → ι → ℝ) (Y : ΩY → ι → ℝ)
-    (hX : DOZZ.IsCenteredJointlyGaussian PX X) (hY : DOZZ.IsCenteredJointlyGaussian PY Y)
+
+
     (vX vY a : ι → ℝ) (γ ε B : ℝ) :
     Integrable (fun ω : ΩX × ΩY =>
       B * (∑ i, a i) * Real.exp (|γ| * ∑ i, (|X ω.1 i| + |Y ω.2 i|)) *
         (|γ| / (2 * Real.sqrt ε) * (∑ i, (|X ω.1 i| + |Y ω.2 i|)) +
           γ ^ 2 / 2 * ∑ i, |vX i - vY i|)) (PX.prod PY) := by
+  have kahaneEndpointCoordinateAbsExp_integrable (i : ι) : Integrable (fun ω : ΩX × ΩY =>
+        (|X ω.1 i| + |Y ω.2 i|) *
+          Real.exp (|γ| * ∑ j, (|X ω.1 j| + |Y ω.2 j|))) (PX.prod PY) := by
+    classical
+    let Z : ΩX × ΩY → Sum ι ι → ℝ := fun ω k => match k with
+      | Sum.inl i => X ω.1 i
+      | Sum.inr i => Y ω.2 i
+    have h (k : Sum ι ι) :=
+      (centeredJointlyGaussian_coordinate_mul_abs_linear_exp_integrable
+        (PX.prod PY) Z (independent_product_concat_isCenteredJointlyGaussian PX PY X Y hX hY) (fun _ => |γ|) k).abs
+    convert (h (.inl i)).add (h (.inr i)) using 1
+    funext ω
+    simp [Z, abs_mul, abs_of_pos (Real.exp_pos _), Fintype.sum_sum_type,
+      Finset.sum_add_distrib, Finset.mul_sum, add_mul, mul_add, Pi.add_apply]
   classical
-  have hE := kahaneEndpointAbsExp_integrable PX PY X Y hX hY γ
   have hS := integrable_finsetSum (Finset.univ : Finset ι)
-    (fun i _ => kahaneEndpointCoordinateAbsExp_integrable PX PY X Y hX hY γ i)
+    (fun i _ => kahaneEndpointCoordinateAbsExp_integrable i)
   have h := ((hS.const_mul (|γ| / (2 * Real.sqrt ε))).add
-    (hE.const_mul (γ ^ 2 / 2 * ∑ i, |vX i - vY i|))).const_mul (B * ∑ i, a i)
+    ((kahaneEndpointAbsExp_integrable PX PY X Y hX hY γ).const_mul (γ ^ 2 / 2 * ∑ i, |vX i - vY i|))).const_mul (B * ∑ i, a i)
   apply h.congr
   filter_upwards [] with ω
   simp only [Pi.add_apply]
   rw [← Finset.sum_mul]
   ring
 
+
+end
 end DOZZ.Proofs

@@ -39,7 +39,6 @@ theorem reflected_inner_kernel_squeeze (γ α₁ α₂ α₃ R η : ℝ) (z x : 
     rw [← one_div]
     apply (le_div_iff₀ hηp).mpr
     nlinarith [sq_nonneg η]
-  have hbase : 0 < ‖x - 1‖ := hηp.trans_le hd1
   have hlo := coulombWeight_le_rpow hL (by simpa only [inv_inv] using hd1) hd2
     (-(γ * α₂))
   have hup := coulombWeight_rpow_le hL (by simpa only [inv_inv] using hd1) hd2
@@ -60,7 +59,7 @@ theorem reflected_inner_kernel_squeeze (γ α₁ α₂ α₃ R η : ℝ) (z x : 
       ‖x-z‖ ^ (γ^2/2) * ‖x‖ ^ (-(γ*α₁)) * ‖x-1‖ ^ (-(γ*α₂)) := by
     unfold gammaHalfKernel normPlus
     rw [max_eq_left (hsmall.trans hη₁.le), Real.one_rpow, mul_one,
-      Real.rpow_neg hx.le, Real.rpow_neg hbase.le]
+      Real.rpow_neg hx.le, Real.rpow_neg (hηp.trans_le hd1).le]
     ring
   rw [heq]
   constructor
@@ -84,8 +83,7 @@ theorem reflected_inner_root_factor_limit (R e : ℝ) :
     simpa only [norm_zero] using (continuous_norm.tendsto (0 : ℂ))
   have hb : Tendsto (fun z : ℂ => 1 - R * ‖z‖) (𝓝 0) (𝓝 1) := by
     simpa only [mul_zero, sub_zero] using tendsto_const_nhds.sub (hn.const_mul R)
-  have hi := hb.inv₀ (by norm_num : (1 : ℝ) ≠ 0)
-  simpa only [inv_one, Real.one_rpow] using hi.rpow_const (p := e) (Or.inl (by norm_num))
+  simpa only [inv_one, Real.one_rpow] using (hb.inv₀ (by norm_num : (1 : ℝ) ≠ 0)).rpow_const (p := e) (Or.inl (by norm_num))
 
 /-- Both scalar bounds approach one in the final large-buffer limit. -/
 theorem reflected_inner_scalar_squeeze_limit (γ : ℝ) :

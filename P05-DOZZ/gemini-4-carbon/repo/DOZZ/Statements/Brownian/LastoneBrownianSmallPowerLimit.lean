@@ -29,6 +29,6 @@ theorem lastone_brownian_smallPower_limit
     (hInd : ∀ ν : ℝ, 0 < ν → IndepFun (B ν) Z P) :
     Tendsto (fun ν : ℝ =>
       (∫⁻ ω, ENNReal.rpow (twoSidedReflectionMass γ (B ν) Z ω) (ν / γ) ∂P).toReal)
-      (𝓝[>] 0) (𝓝 1) := by exact DOZZ.Proofs.lastone_brownian_smallPower_limit P γ hγ hγ2 Z B hB hZ hInd
+      (𝓝[>] 0) (𝓝 1) := DOZZ.Proofs.lastone_brownian_smallPower_limit P γ hγ hγ2 Z B hB hZ hInd
 
 end DOZZ

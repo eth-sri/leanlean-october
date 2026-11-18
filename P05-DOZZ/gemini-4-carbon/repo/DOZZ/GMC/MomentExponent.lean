@@ -16,9 +16,7 @@ namespace DOZZ.Proofs
 insertion-slack factor. -/
 theorem weightedGmcMomentExponent_factorization (γ α p : ℝ) :
     γ * (Q γ - α) * p - γ ^ 2 * p ^ 2 / 2 =
-      (γ * p / 2) * (2 * (Q γ - α) - γ * p) := by
-  unfold Q
-  field_simp
+      (γ * p / 2) * (2 * (Q γ - α) - γ * p) := by ring
 
 /-- For a positive moment order, the weighted annular exponent is positive exactly below the
 insertion threshold `2 (Q - α) / γ`. -/

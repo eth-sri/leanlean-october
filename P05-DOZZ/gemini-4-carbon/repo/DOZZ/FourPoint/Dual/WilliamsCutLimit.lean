@@ -46,23 +46,18 @@ theorem dual_source_williams_cut_increment_tendsto
       (𝓝 ((a*Real.Gamma (-a)*Real.Gamma (p+a)/Real.Gamma p)*
         (∫⁻ ω, rho γ (M ω) (2*Q γ-α₁-2/γ) α₂ α₃ ^(-(p+a)) ∂P).toReal*
         (∫⁻ ω, twoSidedReflectionMass γ B Z ω ^a ∂P).toReal)) := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _ := hX.1
   let ν := Q γ-α₁
   let a := 2*ν/γ
   let p := (α₁+α₂+α₃-2/γ-2*Q γ)/γ
   let κ := (4/γ)*ν
-  let R := (brownianMaximumReferenceLaw ν).prod P
   let A := fun (z : ℂ) ω => (dualOuterMass γ α₁ α₂ α₃ (M ω) z ξ).toReal
   let b := dual_radial_scale γ ν h Xc
   let E := fun (J : ℝ × Ω → ℝ) (z : ℂ) => ∫ v : Ω × (ℝ × Ω),
-    ((A z v.1+b z v.1*(Real.exp (γ*v.2.1)*J v.2))^(-p)-(A z v.1)^(-p)) ∂P.prod R
-  let D := E (fun q => (twoSidedReflectionCutMass γ q.1 B Z q.2).toReal)
-  let Dfull := E (fun q => (twoSidedReflectionMass γ B Z q.2).toReal)
-  let Dc := fun c => E (fun q => (twoSidedReflectionCutMass γ c B Z q.2).toReal)
+    ((A z v.1+b z v.1*(Real.exp (γ*v.2.1)*J v.2))^(-p)-(A z v.1)^(-p)) ∂P.prod ((brownianMaximumReferenceLaw ν).prod P)
   let C := (a*Real.Gamma (-a)*Real.Gamma (p+a)/Real.Gamma p)*
     (∫⁻ ω, rho γ (M ω) (2*Q γ-α₁-2/γ) α₂ α₃ ^(-(p+a)) ∂P).toReal
   let L := C*(∫⁻ ω, twoSidedReflectionMass γ B Z ω^a ∂P).toReal
-  let Cc := fun c => C*(∫⁻ ω, twoSidedReflectionCutMass γ c B Z ω^a ∂P).toReal
   let F := fun z : ℂ => ∫ ω, b z ω*(A z ω)^(-p-1) ∂P
   let J₁ := ∫ ω, (twoSidedReflectionMass γ B Z ω).toReal ∂P
   let Err := fun c z => p*Real.exp (γ*c)*F z*J₁
@@ -75,14 +70,12 @@ theorem dual_source_williams_cut_increment_tendsto
   have h4 : 1 < 4/γ^2 := by
     rw [lt_div_iff₀ (sq_pos_of_pos hγ)]
     nlinarith only [hγ, hγ₂]
-  have hfull : Tendsto (fun z => Dfull z/‖z‖^κ) (𝓝[≠] (0 : ℂ)) (𝓝 L) :=
+  have hfull :=
     dual_source_full_maximum_increment_tendsto P X hX γ hγ hγ₂ M hM Xc hc
       α₁ α₂ α₃ ξ h hα₁ hreflect hα₂ hα₃ hh hs hshifted hslack hξ hξ1 B Z hData
-  have hcut (c : ℝ) : Tendsto (fun z => Dc c z/‖z‖^κ) (𝓝[≠] (0 : ℂ)) (𝓝 (Cc c)) :=
+  have hcut (c : ℝ) :=
     dual_source_cut_maximum_increment_tendsto P X hX γ hγ hγ₂ M hM Xc hc
       α₁ α₂ α₃ ξ h c hα₁ hreflect hα₂ hα₃ hh hs hshifted hslack hξ hξ1 B Z hData
-  have hCoeff : Tendsto Cc atTop (𝓝 L) :=
-    (dual_reflection_cut_moment_tendsto P γ α₁ a hγ hγ₂ B Z hα₁ hData ha (ha1.trans h4)).const_mul C
   have hn : Tendsto (fun z : ℂ => ‖z‖) (𝓝[≠] (0 : ℂ)) (𝓝 ‖(0 : ℂ)‖) :=
     (continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
   have hF : Tendsto (fun z => F z/‖z‖^κ) (𝓝[≠] (0 : ℂ)) (𝓝 0) := by
@@ -106,10 +99,10 @@ theorem dual_source_williams_cut_increment_tendsto
     intro z
     dsimp only [Err]
     ring
-  change Tendsto (fun z => D z/‖z‖^κ) (𝓝[≠] (0 : ℂ)) (𝓝 L)
-  apply dual_cut_squeeze_tendsto _ _ (fun z => Dfull z/‖z‖^κ)
-    (fun c z => Dc c z/‖z‖^κ) (fun c z => Err c z/‖z‖^κ) Cc L hfull
-    (fun c => by simpa only [add_zero] using (hcut c).add (hErr c)) hCoeff
+  change Tendsto (fun z => (E (fun q => (twoSidedReflectionCutMass γ q.1 B Z q.2).toReal)) z/‖z‖^κ) (𝓝[≠] (0 : ℂ)) (𝓝 L)
+  apply dual_cut_squeeze_tendsto _ _ (fun z => (E (fun q => (twoSidedReflectionMass γ B Z q.2).toReal)) z/‖z‖^κ)
+    (fun c z => (fun c => E (fun q => (twoSidedReflectionCutMass γ c B Z q.2).toReal)) c z/‖z‖^κ) (fun c z => Err c z/‖z‖^κ) (fun c => C*(∫⁻ ω, twoSidedReflectionCutMass γ c B Z ω^a ∂P).toReal) L hfull
+    (fun c => by simpa only [add_zero] using (hcut c).add (hErr c)) ((dual_reflection_cut_moment_tendsto P γ α₁ a hγ hγ₂ B Z hα₁ hData ha (ha1.trans h4)).const_mul C)
   intro c
   filter_upwards [self_mem_nhdsWithin, hn.eventually (gt_mem_nhds (by norm_num : ‖(0 : ℂ)‖ < 1))]
     with z hz0 hz
@@ -118,7 +111,6 @@ theorem dual_source_williams_cut_increment_tendsto
     α₁ α₂ α₃ ξ h p c hα₁ hα₂ hα₃ hh hp hξ hξ1 B Z hData z hz0 hz1 hz.le
   have hden : 0 ≤ ‖z‖^κ := Real.rpow_nonneg (norm_nonneg z) _
   refine ⟨div_le_div_of_nonneg_right hb.1 hden, ?_⟩
-  have hu := div_le_div_of_nonneg_right hb.2 hden
-  simpa only [add_div] using hu
+  simpa only [add_div] using div_le_div_of_nonneg_right hb.2 hden
 
 end DOZZ.Proofs

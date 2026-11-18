@@ -11,32 +11,23 @@ open scoped Topology Distributions ENNReal NNReal
 open DOZZ.Assembly
 namespace DOZZ.Proofs
 
-/-- Inversion reverses the radial covariance coordinate. -/
-theorem originRadialCovariance_inversion (s : ℝ) (x : ℂ) :
-    originRadialCovariance (-s) x⁻¹ = originRadialCovariance s x := by
-  simp only [originRadialCovariance, norm_inv, Real.log_inv, neg_neg]
-  simp only [min_def, max_def]
-  split_ifs <;> linarith
+variable {Ω Ω' : Type*} [MeasurableSpace Ω] [MeasurableSpace Ω']
+
+
 
 /-- The concentric potential of the reversed circle, evaluated at the inverse point,
 is the original circle potential away from zero. -/
 theorem innerPot_origin_inversion (s : ℝ) (x : ℂ) (hx : x ≠ 0) :
     CirclePotential.innerPot 0 (-s) x⁻¹ = CirclePotential.innerPot 0 s x := by
+  have originRadialCovariance_inversion (s : ℝ) (x : ℂ) : originRadialCovariance (-s) x⁻¹ = originRadialCovariance s x := by
+    simp only [originRadialCovariance, norm_inv, Real.log_inv, neg_neg]
+    simp only [min_def, max_def]
+    split_ifs <;> linarith
   rw [← CirclePotential.integral_gffKernel_circleMeasure,
     ← CirclePotential.integral_gffKernel_circleMeasure,
     origin_circleKernelPotential_eq _ _ (inv_ne_zero hx),
     origin_circleKernelPotential_eq _ _ hx, originRadialCovariance_inversion]
 
-/-- Inverted tests have exactly the reversed concentric source pairing. -/
-theorem circleCross_origin_inversionTest (s : ℝ) (f : TestFn)
-    (hf : tsupport (f : ℂ → ℝ) ⊆ inversionChart) :
-    circleCross 0 (-s) (inversionTest f hf) = circleCross 0 s f := by
-  rw [circleCross_inversionTest]
-  change _ = ∫ x, f x * ∫ w, gffKernel x w ∂circleMeasure 0 s
-  simp_rw [CirclePotential.integral_gffKernel_circleMeasure]
-  apply integral_congr_ae
-  filter_upwards [(volume : Measure ℂ).ae_ne 0] with x hx
-  rw [innerPot_origin_inversion s x hx]
 
 /-- The actual coupled inverted concentric circle is the source circle with its
 logarithmic radius reversed. This supplies the joint radial input, not just its marginal law. -/
@@ -50,6 +41,13 @@ theorem inversionCircle_origin_ae_eq
     (hlim : Tendsto (fun n => eLpNorm (fun ω =>
       X ω (inversionTest (f n) (hf n)) - Z ω) 2 P) atTop (𝓝 0)) :
     Z =ᵐ[P] (fun ω => Xc ω 0 (-s)) := by
+  have circleCross_origin_inversionTest (s : ℝ) (f : TestFn) (hf : tsupport (f : ℂ → ℝ) ⊆ inversionChart) : circleCross 0 (-s) (inversionTest f hf) = circleCross 0 s f := by
+    rw [circleCross_inversionTest]
+    change _ = ∫ x, f x * ∫ w, gffKernel x w ∂circleMeasure 0 s
+    simp_rw [CirclePotential.integral_gffKernel_circleMeasure]
+    apply integral_congr_ae
+    filter_upwards [(volume : Measure ℂ).ae_ne 0] with x hx
+    rw [innerPot_origin_inversion s x hx]
   let : IsProbabilityMeasure P := hX.1
   let U := fun ω => Xc ω 0 (-s)
   let V := fun ω => Xc ω 0 s
@@ -160,7 +158,7 @@ theorem spatialIntegral_joint_vector_law_of_fdd_finite
 
 /-- The cutoff chaos law retains its coupling to auxiliary finite coordinates. -/
 theorem admissibleLogChaos_cutoff_joint_vector_law_of_fdd
-    {Ω Ω' : Type*} [MeasurableSpace Ω] [MeasurableSpace Ω']
+
     (P : Measure Ω) (P' : Measure Ω') [IsProbabilityMeasure P] [IsProbabilityMeasure P']
     (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ ε₁ : ℝ)
     (Y : Ω → ℝ → ℂ → ℝ) (Z : Ω' → ℝ → ℂ → ℝ)
@@ -237,7 +235,7 @@ theorem tendstoInMeasure_pair_with_fixed
 /-- Passing finite chaos test laws to the limit preserves their coupling to fixed
 auxiliary coordinates on each probability space. -/
 theorem gmc_limit_joint_test_vector_law
-    {Ω Ω' : Type*} [MeasurableSpace Ω] [MeasurableSpace Ω']
+
     {P : Measure Ω} {P' : Measure Ω'} [IsFiniteMeasure P] [IsFiniteMeasure P']
     {k m : ℕ} (V : Ω → Fin k → ℝ) (V' : Ω' → Fin k → ℝ)
     (hV : AEMeasurable V P) (hV' : AEMeasurable V' P')
@@ -266,7 +264,7 @@ theorem gmc_limit_joint_test_vector_law
 
 /-- Compatible cutoff laws pass to limiting chaos jointly with their auxiliary coordinates. -/
 theorem admissibleLogChaos_limit_joint_vector_law_of_fdd
-    {Ω Ω' : Type*} [MeasurableSpace Ω] [MeasurableSpace Ω']
+
     (P : Measure Ω) (P' : Measure Ω') [IsProbabilityMeasure P] [IsProbabilityMeasure P']
     (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ ε₁ : ℝ)
     (Y : Ω → ℝ → ℂ → ℝ) (Z : Ω' → ℝ → ℂ → ℝ)
@@ -378,31 +376,7 @@ theorem originReversedRadialPath_aemeasurable
   intro s
   exact (ContinuousMap.measurable_eval (-s)).comp_aemeasurable hA
 
-/-- The radial removal weight reverses exactly under complex inversion,
-including at its stipulated zero value at the origin. -/
-theorem lateralRadialWeight_inversion (γ : ℝ) (A : TwoSidedPath) (x : ℂ) :
-    lateralRadialWeight γ (originReversedRadialPath A) x⁻¹ = lateralRadialWeight γ A x := by
-  simp only [lateralRadialWeight, norm_inv, inv_eq_zero, Real.log_inv,
-    originReversedRadialPath, ContinuousMap.comp_apply, ContinuousMap.coe_mk,
-    neg_neg, abs_neg]
 
-/-- Inversion of the measure and reversal of its coupled radial path commute with
-radial removal. This identity retains their coupling sample by sample. -/
-theorem originRadialRemovedGMC_inversion_commutes
-    (γ : ℝ) (A : TwoSidedPath) (M : Measure ℂ) :
-    (M.map (fun x : ℂ => x⁻¹)).withDensity (lateralRadialWeight γ (originReversedRadialPath A)) =
-      (M.withDensity (lateralRadialWeight γ A)).map (fun x : ℂ => x⁻¹) := by
-  have harg : Measurable (fun x : ℂ => ((γ, originReversedRadialPath A), x)) :=
-    measurable_const.prodMk measurable_id
-  have hw : Measurable (lateralRadialWeight γ (originReversedRadialPath A)) :=
-    measurable_lateralRadialWeight.comp harg
-  apply Measure.ext
-  intro S hS
-  rw [withDensity_apply _ hS, Measure.map_apply measurable_inv hS,
-    withDensity_apply _ (hS.preimage measurable_inv), setLIntegral_map hS hw measurable_inv]
-  apply setLIntegral_congr_fun (hS.preimage measurable_inv)
-  intro x _
-  exact lateralRadialWeight_inversion γ A x
 
 /-- The actual polar projection `DOZZ.lateralProjectedGMC` turns simultaneous
 source inversion and radial reversal into reflection of the whole cylinder
@@ -411,6 +385,23 @@ theorem lateralProjectedGMC_reversed_inversion
     (γ : ℝ) (A : TwoSidedPath) (M : Measure ℂ) :
     lateralProjectedGMC γ (originReversedRadialPath A) (M.map (fun x : ℂ => x⁻¹)) =
       (lateralProjectedGMC γ A M).map (fun s : ℝ => -s) := by
+  have originRadialRemovedGMC_inversion_commutes (γ : ℝ) (A : TwoSidedPath) (M : Measure ℂ) : (M.map (fun x : ℂ => x⁻¹)).withDensity (lateralRadialWeight γ (originReversedRadialPath A)) =
+        (M.withDensity (lateralRadialWeight γ A)).map (fun x : ℂ => x⁻¹) := by
+    have lateralRadialWeight_inversion (x : ℂ) : lateralRadialWeight γ (originReversedRadialPath A) x⁻¹ = lateralRadialWeight γ A x := by
+      simp only [lateralRadialWeight, norm_inv, inv_eq_zero, Real.log_inv,
+        originReversedRadialPath, ContinuousMap.comp_apply, ContinuousMap.coe_mk,
+        neg_neg, abs_neg]
+    have harg : Measurable (fun x : ℂ => ((γ, originReversedRadialPath A), x)) :=
+      measurable_const.prodMk measurable_id
+    have hw : Measurable (lateralRadialWeight γ (originReversedRadialPath A)) :=
+      measurable_lateralRadialWeight.comp harg
+    apply Measure.ext
+    intro S hS
+    rw [withDensity_apply _ hS, Measure.map_apply measurable_inv hS,
+      withDensity_apply _ (hS.preimage measurable_inv), setLIntegral_map hS hw measurable_inv]
+    apply setLIntegral_congr_fun (hS.preimage measurable_inv)
+    intro x _
+    exact lateralRadialWeight_inversion x
   change ((M.map (fun x : ℂ => x⁻¹)).withDensity
     (lateralRadialWeight γ (originReversedRadialPath A))).map (fun x => -Real.log ‖x‖) = _
   rw [originRadialRemovedGMC_inversion_commutes, logRadiusProjection_inversion]

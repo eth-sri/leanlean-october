@@ -10,7 +10,6 @@ public import DOZZ.Correlations.Tails.ParameterIntegralLimit
 /-! Compact exponential tests for the correlated copied-pin parameter. -/
 
 @[expose] public section
-open MeasureTheory Set
 
 namespace DOZZ.Proofs
 

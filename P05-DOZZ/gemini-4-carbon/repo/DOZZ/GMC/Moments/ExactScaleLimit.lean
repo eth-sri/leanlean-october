@@ -38,29 +38,25 @@ theorem gmc_affine_test_vector_law
           neg_nonneg.mpr (Real.log_nonpos (le_of_lt hc) hc1)⟩)) := by
   classical
   obtain ⟨Xc, hXc, hMlim⟩ := hM.2
-  let σ : ℝ := -Real.log c
-  let G : Measure ℝ := gaussianReal 0 ⟨σ,
+  let σ := -Real.log c
+  let G := gaussianReal 0 ⟨σ,
     neg_nonneg.mpr (Real.log_nonpos (le_of_lt hc) hc1)⟩
   have hG : IsProbabilityMeasure G := by
     simpa [G, σ] using (ProbabilityTheory.instIsProbabilityMeasureGaussianReal 0
       ⟨-Real.log c, neg_nonneg.mpr (Real.log_nonpos (le_of_lt hc) hc1)⟩)
-  let : IsProbabilityMeasure P := hX.1
-  let : IsProbabilityMeasure G := hG
+  let := hX.1
+  let := hG
   let : IsProbabilityMeasure (P.prod G) := inferInstance
   let gap : ℝ := min (1 - R) (1 - (‖a‖ + c * R))
-  have hgap : 0 < gap := by
-    dsimp [gap]
-    exact lt_min (by linarith) (by linarith)
+  have hgap : 0 < gap := by positivity
   have hsmallEvent : ∀ᶠ n : ℕ in atTop, Real.exp (-(n : ℝ)) < gap := by
-    have hlim : Tendsto (fun n : ℕ => Real.exp (-(n : ℝ))) atTop (𝓝 0) :=
-      Real.tendsto_exp_neg_atTop_nhds_zero.comp tendsto_natCast_atTop_atTop
-    exact hlim.eventually (isOpen_Iio.mem_nhds hgap)
+    exact (Real.tendsto_exp_neg_atTop_nhds_zero.comp tendsto_natCast_atTop_atTop).eventually (isOpen_Iio.mem_nhds hgap)
   obtain ⟨N, hN⟩ := eventually_atTop.1 hsmallEvent
-  have hNgap : Real.exp (-(N : ℝ)) ≤ gap := le_of_lt (hN N le_rfl)
+  have hNgap := le_of_lt (hN N le_rfl)
   have hsourceUnit : ∀ x ∈ Metric.closedBall (0 : ℂ) R, ‖x‖ ≤ 1 := by
     intro x hx
     have hxR : ‖x‖ ≤ R := by
-      have hxmem : x ∈ Metric.closedBall (0 : ℂ) R := hx
+      have hxmem := hx
       change dist x 0 ≤ R at hxmem
       simpa only [dist_zero_right] using hxmem
     exact hxR.trans hRsmall.le
@@ -77,24 +73,23 @@ theorem gmc_affine_test_vector_law
   have hsourceCut (n : ℕ) (x : {z : ℂ // z ∈ Metric.closedBall (0 : ℂ) R}) :
       ‖x.1‖ + Real.exp (-((N + n : ℕ) : ℝ)) ≤ 1 := by
     have hxR : ‖x.1‖ ≤ R := by
-      have hxmem : x.1 ∈ Metric.closedBall (0 : ℂ) R := x.2
+      have hxmem := x.2
       change dist x.1 0 ≤ R at hxmem
       simpa only [dist_zero_right] using hxmem
     have hn : (N : ℝ) ≤ ((N + n : ℕ) : ℝ) := by exact_mod_cast Nat.le_add_right N n
-    have hexp : Real.exp (-((N + n : ℕ) : ℝ)) ≤ Real.exp (-(N : ℝ)) :=
+    have hexp :=
       Real.exp_le_exp.mpr (neg_le_neg hn)
-    have hgapS : gap ≤ 1 - R := by dsimp [gap]; exact min_le_left _ _
+    have : gap ≤ 1 - R := by dsimp [gap]; exact min_le_left _ _
     linarith [hexp.trans hNgap]
   have htargetCut (n : ℕ) (x : {z : ℂ // z ∈ Metric.closedBall (0 : ℂ) R}) :
       ‖a + c • x.1‖ + Real.exp (-(((N + n : ℕ) : ℝ) - Real.log c)) ≤ 1 := by
     have hxR : ‖x.1‖ ≤ R := by
-      have hxmem : x.1 ∈ Metric.closedBall (0 : ℂ) R := x.2
+      have hxmem := x.2
       change dist x.1 0 ≤ R at hxmem
       simpa only [dist_zero_right] using hxmem
-    have hnorm : ‖a + c • x.1‖ ≤ ‖a‖ + c * R := by
-      calc
-        ‖a + c • x.1‖ ≤ ‖a‖ + ‖c • x.1‖ := norm_add_le _ _
-        _ = ‖a‖ + c * ‖x.1‖ := by rw [norm_smul, Real.norm_eq_abs, abs_of_pos hc]
+    have : ‖a + c • x.1‖ ≤ ‖a‖ + c * R := by
+      refine (norm_add_le _ _).trans (?_)
+      calc ‖a‖ + ‖c • x.1‖ = ‖a‖ + c * ‖x.1‖ := by rw [norm_smul, Real.norm_eq_abs, abs_of_pos hc]
         _ ≤ ‖a‖ + c * R := by nlinarith [mul_le_mul_of_nonneg_left hxR (le_of_lt hc)]
     have hexpScale (s : ℝ) : Real.exp (-(s - Real.log c)) ≤ Real.exp (-s) := by
       calc
@@ -103,29 +98,24 @@ theorem gmc_affine_test_vector_law
             Real.exp_log hc]
         _ = c * Real.exp (-s) := by ring
         _ ≤ Real.exp (-s) := by
-          calc
-            c * Real.exp (-s) ≤ 1 * Real.exp (-s) :=
-              mul_le_mul_of_nonneg_right hc1 (Real.exp_nonneg _)
-            _ = Real.exp (-s) := one_mul _
+          exact (mul_le_mul_of_nonneg_right hc1 (Real.exp_nonneg _)).trans_eq (one_mul _)
     have hn : (N : ℝ) ≤ ((N + n : ℕ) : ℝ) := by exact_mod_cast Nat.le_add_right N n
-    have hexp : Real.exp (-(((N + n : ℕ) : ℝ) - Real.log c)) ≤
-        Real.exp (-(N : ℝ)) := (hexpScale _).trans <|
+    have hexp := (hexpScale _).trans <|
           Real.exp_le_exp.mpr (neg_le_neg hn)
-    have hgapT : gap ≤ 1 - (‖a‖ + c * R) := by
+    have : gap ≤ 1 - (‖a‖ + c * R) := by
       dsimp [gap]
       exact min_le_right _ _
     linarith [hexp.trans hNgap]
   let affine : ContinuousMap ℂ ℂ := ⟨fun x => a + c • x, by fun_prop⟩
   let g : Fin m → BoundedContinuousFunction ℂ ℝ := fun j => (f j).compContinuous affine
-  have htargetZero (j : Fin m) : ∀ x, x ∉ Metric.closedBall a (c * R) → f j x = 0 :=
+  have htargetZero (j : Fin m) :=
     boundedContinuousFunction_eq_zero_off_tsupport_subset (f j)
       (Metric.closedBall a (c * R)) (hf_support j)
   have himage : (fun x : ℂ => a + c • x) '' Metric.closedBall (0 : ℂ) R =
       Metric.closedBall a (c * R) := complex_affine_image_closedBall hc
   have hinj : Function.Injective (fun x : ℂ => a + c • x) := by
     intro x y hxy
-    have hsmul : c • x = c • y := add_left_cancel hxy
-    exact (smul_right_injective ℂ hc.ne') hsmul
+    exact (smul_right_injective ℂ hc.ne') (add_left_cancel hxy)
   have hbaseZero (j : Fin m) : ∀ x, x ∉ Metric.closedBall (0 : ℂ) R → g j x = 0 := by
     intro x hx
     change f j (a + c • x) = 0
@@ -135,15 +125,9 @@ theorem gmc_affine_test_vector_law
       rw [himage]
       exact hy
     obtain ⟨y, hyball, hyEq⟩ := hy'
-    have hxy : x = y := hinj (by simpa using hyEq.symm)
-    exact hx (hxy ▸ hyball)
-  have hg_nonneg : ∀ j x, 0 ≤ g j x := by
-    intro j x
-    simpa [g, BoundedContinuousFunction.compContinuous_apply, affine] using hf_nonneg j _
+    exact hx ((hinj (by simpa using hyEq.symm)) ▸ hyball)
   let scaleFactor : ℝ → ℝ := fun w => c ^ 2 * Real.exp (γ * w - γ ^ 2 / 2 * σ)
-  have hscaleFactor : Measurable scaleFactor := by
-    dsimp [scaleFactor]
-    fun_prop
+  have hscaleFactor : Measurable scaleFactor := by fun_prop
   let scaleSeq : ℕ → ℝ := fun n => ((N + n : ℕ) : ℝ)
   have hscaleSeq : Tendsto scaleSeq atTop atTop := by
     dsimp [scaleSeq]
@@ -188,26 +172,8 @@ theorem gmc_affine_test_vector_law
     apply regularizedGMC_test_integral_aemeasurable P X hX Xc hXc γ (scaleSeq n)
       (Metric.closedBall (0 : ℂ) R) Metric.isClosed_closedBall.measurableSet hsourceUnit
       (g j) (g j).continuous.measurable (hbaseZero j)
-  have hcutTargetVec (n : ℕ) : AEMeasurable (targetCutoff n) P := by
-    apply aemeasurable_pi_iff.2
-    intro j
-    exact hcutTarget n j
-  have hcutProduct (n : ℕ) : AEMeasurable (cutoffProduct n) (P.prod G) := by
-    apply aemeasurable_pi_iff.2
-    intro j
-    have hfst : Measure.map (fun p : Ω × ℝ => p.1) (P.prod G) = P := by
-      exact measurePreserving_fst.map_eq
-    have hbase : AEMeasurable (fun p : Ω × ℝ => baseCutoff n p.1 j) (P.prod G) := by
-      have hbase' : AEMeasurable (fun ω => baseCutoff n ω j)
-          (Measure.map (fun p : Ω × ℝ => p.1) (P.prod G)) := by
-        rw [hfst]
-        exact hcutBase n j
-      change AEMeasurable
-        ((fun ω => baseCutoff n ω j) ∘ (fun p : Ω × ℝ => p.1)) (P.prod G)
-      exact hbase'.comp_aemeasurable measurable_fst.aemeasurable
-    have hfactor : AEMeasurable (fun p : Ω × ℝ => scaleFactor p.2) (P.prod G) :=
-      hscaleFactor.comp_aemeasurable measurable_snd.aemeasurable
-    exact (hfactor.mul hbase)
+  have hcutTargetVec (n : ℕ) : AEMeasurable (targetCutoff n) P := by fun_prop
+  have hcutProduct (n : ℕ) : AEMeasurable (cutoffProduct n) (P.prod G) := by fun_prop
   have hlimitTarget : AEMeasurable limitTarget P := by
     apply aemeasurable_pi_iff.2
     intro j
@@ -215,15 +181,12 @@ theorem gmc_affine_test_vector_law
   have hlimitProduct : AEMeasurable limitProduct (P.prod G) := by
     apply aemeasurable_pi_iff.2
     intro j
-    have hbaseP : AEMeasurable (fun ω => limitBase ω j) P :=
-      (hconvBase j).aemeasurable (fun n => hcutBase n j)
-    have hfst : Measure.map (fun p : Ω × ℝ => p.1) (P.prod G) = P := by
-      exact measurePreserving_fst.map_eq
+    have hfst : Measure.map (fun p : Ω × ℝ => p.1) (P.prod G) = P := measurePreserving_fst.map_eq
     have hbase : AEMeasurable (fun p : Ω × ℝ => limitBase p.1 j) (P.prod G) := by
       have hbase' : AEMeasurable (fun ω => limitBase ω j)
           (Measure.map (fun p : Ω × ℝ => p.1) (P.prod G)) := by
         rw [hfst]
-        exact hbaseP
+        exact (hconvBase j).aemeasurable (fun n => hcutBase n j)
       change AEMeasurable
         ((fun ω => limitBase ω j) ∘ (fun p : Ω × ℝ => p.1)) (P.prod G)
       exact hbase'.comp_aemeasurable measurable_fst.aemeasurable
@@ -243,8 +206,6 @@ theorem gmc_affine_test_vector_law
     tendstoInMeasure_mul_snd_of_tendstoInMeasure
       (fun n ω => baseCutoff n ω j) (fun ω => limitBase ω j) scaleFactor
       hscaleFactor (hconvBase j)
-  have hconvProductVec : TendstoInMeasure (P.prod G) cutoffProduct atTop limitProduct :=
-    tendstoInMeasure_pi_finite (P.prod G) cutoffProduct limitProduct hconvProduct
   exact gmc_limit_test_vector_law targetCutoff cutoffProduct limitTarget limitProduct
     (fun n => hcutTargetVec n) hcutProduct hlimitTarget hlimitProduct hcutLaw
     hconvTarget hconvProduct

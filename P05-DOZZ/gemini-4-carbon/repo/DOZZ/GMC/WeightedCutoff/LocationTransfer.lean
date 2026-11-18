@@ -35,9 +35,7 @@ theorem cutoffWeightedGmcBallMoment_translate_le
   obtain ⟨s, hs, hmax⟩ := isCompact_Icc.exists_isMaxOn
     (Set.nonempty_Icc.mpr hρ.le) hf
   let w : ℂ → ℝ≥0 := fun y => f (min ‖y‖ ρ)
-  have hw : Measurable w := by
-    dsimp [w, f]
-    fun_prop
+  have hw : Measurable w := by fun_prop
   have hwb : ∀ y, w y ≤ f s := by
     intro y
     exact hmax ⟨le_min (norm_nonneg _) hρ.le, min_le_right _ _⟩

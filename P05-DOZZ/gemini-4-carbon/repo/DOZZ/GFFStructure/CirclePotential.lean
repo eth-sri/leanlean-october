@@ -25,8 +25,15 @@ open scoped ENNReal NNReal Interval
 
 namespace DOZZ.Proofs
 
+variable {d : ℝ≥0}
+
+
+section
+variable (x : ℂ) (r : ℝ)
+include x r
+
 /-- Normalized arclength has total mass one, at every center and logarithmic radius. -/
-theorem circleMeasure_isProbability (x : ℂ) (r : ℝ) :
+theorem circleMeasure_isProbability :
     IsProbabilityMeasure (circleMeasure x r) := by
   refine ⟨?_⟩
   rw [circleMeasure, Measure.smul_apply]
@@ -37,7 +44,7 @@ theorem circleMeasure_isProbability (x : ℂ) (r : ℝ) :
   exact ENNReal.ofReal_one
 
 /-- Bochner integration against `DOZZ.circleMeasure` agrees with the real circle average. -/
-theorem integral_circleMeasure_eq_circleAverage (x : ℂ) (r : ℝ)
+theorem integral_circleMeasure_eq_circleAverage
     (f : ℂ → ℝ) (hf : Measurable f) :
     (∫ z, f z ∂circleMeasure x r) = Real.circleAverage f x (Real.exp (-r)) := by
   rw [circleMeasure, integral_smul_measure,
@@ -46,7 +53,7 @@ theorem integral_circleMeasure_eq_circleAverage (x : ℂ) (r : ℝ)
     ENNReal.toReal_ofReal (by positivity : 0 ≤ (2 * Real.pi)⁻¹), Real.circleAverage_def]
 
 /-- Circle integrability transfers to the normalized measure `DOZZ.circleMeasure`. -/
-theorem integrable_circleMeasure_of_circleIntegrable (x : ℂ) (r : ℝ) {f : ℂ → ℝ}
+theorem integrable_circleMeasure_of_circleIntegrable {f : ℂ → ℝ}
     (hf : Measurable f) (hcircle : CircleIntegrable f x (Real.exp (-r))) :
     Integrable f (circleMeasure x r) := by
   rw [circleMeasure]
@@ -57,14 +64,20 @@ theorem integrable_circleMeasure_of_circleIntegrable (x : ℂ) (r : ℝ) {f : �
     exact (intervalIntegrable_iff_integrableOn_Ioc_of_le Real.two_pi_pos.le).mp hcircle
   exact hmap.smul_measure (by simp only [ENNReal.ofReal_ne_top, ne_eq, not_false_eq_true])
 
+
+end
+section
+variable (x z : ℂ) (r : ℝ)
+include x z r
+
 /-- A logarithmic pole on the support of a circle is still integrable. -/
-theorem integrable_log_norm_sub_circleMeasure (x z : ℂ) (r : ℝ) :
+theorem integrable_log_norm_sub_circleMeasure :
     Integrable (fun w : ℂ => Real.log ‖w - z‖) (circleMeasure x r) :=
   integrable_circleMeasure_of_circleIntegrable x r (by fun_prop)
     (circleIntegrable_log_norm_sub_const (Real.exp (-r)))
 
 /-- The scalar logarithmic potential of one circle, at an arbitrary pole. -/
-theorem integral_log_norm_sub_circleMeasure (x z : ℂ) (r : ℝ) :
+theorem integral_log_norm_sub_circleMeasure :
     (∫ w, Real.log ‖w - z‖ ∂circleMeasure x r) =
       Real.log (max (Real.exp (-r)) ‖x - z‖) := by
   rw [integral_circleMeasure_eq_circleAverage x r _ (by fun_prop),
@@ -77,14 +90,20 @@ theorem integral_log_norm_sub_circleMeasure (x z : ℂ) (r : ℝ) :
   simp only [mul_one, ← mul_assoc, mul_inv_cancel₀ (Real.exp_ne_zero _), one_mul]
 
 /-- Reversing the pole subtraction leaves the logarithmic potential unchanged. -/
-theorem integral_log_norm_rev_sub_circleMeasure (x z : ℂ) (r : ℝ) :
+theorem integral_log_norm_rev_sub_circleMeasure :
     (∫ w, Real.log ‖z - w‖ ∂circleMeasure x r) =
       Real.log (max (Real.exp (-r)) ‖x - z‖) := by
   simp_rw [norm_sub_rev z]
   exact integral_log_norm_sub_circleMeasure x z r
 
+
+end
+section
+variable (x : ℂ) (r : ℝ)
+include x r
+
 /-- The measure `DOZZ.circleMeasure` is supported on its geometric circle. -/
-theorem ae_mem_sphere_circleMeasure (x : ℂ) (r : ℝ) :
+theorem ae_mem_sphere_circleMeasure :
     ∀ᵐ z ∂circleMeasure x r, z ∈ sphere x (Real.exp (-r)) := by
   rw [circleMeasure]
   apply Measure.ae_smul_measure
@@ -95,13 +114,13 @@ theorem ae_mem_sphere_circleMeasure (x : ℂ) (r : ℝ) :
   · exact isClosed_sphere.measurableSet
 
 /-- On a circle, every concentric distance is constant. -/
-theorem ae_norm_sub_center_circleMeasure (x : ℂ) (r : ℝ) :
+theorem ae_norm_sub_center_circleMeasure :
     (fun z => ‖z - x‖) =ᵐ[circleMeasure x r] fun _ => Real.exp (-r) := by
   filter_upwards [ae_mem_sphere_circleMeasure x r] with z hz
   exact mem_sphere_iff_norm.mp hz
 
 /-- The average logarithmic distance between two concentric circles. -/
-theorem integral_integral_log_norm_concentric (x : ℂ) (r s : ℝ) :
+theorem integral_integral_log_norm_concentric (s : ℝ) :
     (∫ z, ∫ w, Real.log ‖z - w‖ ∂circleMeasure x s ∂circleMeasure x r) =
       Real.log (max (Real.exp (-r)) (Real.exp (-s))) := by
   let _ := circleMeasure_isProbability x r
@@ -113,7 +132,7 @@ theorem integral_integral_log_norm_concentric (x : ℂ) (r s : ℝ) :
   rw [integral_congr_ae heq, integral_const, probReal_univ, one_smul, max_comm]
 
 /-- In logarithmic-radius coordinates the concentric log interaction is `-min r s`. -/
-theorem integral_integral_log_norm_concentric_eq_neg_min (x : ℂ) (r s : ℝ) :
+theorem integral_integral_log_norm_concentric_eq_neg_min (s : ℝ) :
     (∫ z, ∫ w, Real.log ‖z - w‖ ∂circleMeasure x s ∂circleMeasure x r) =
       -min r s := by
   rw [integral_integral_log_norm_concentric]
@@ -121,13 +140,19 @@ theorem integral_integral_log_norm_concentric_eq_neg_min (x : ℂ) (r s : ℝ) :
   · rw [max_eq_left (Real.exp_le_exp.mpr (neg_le_neg h)), Real.log_exp, min_eq_left h]
   · rw [max_eq_right (Real.exp_le_exp.mpr (neg_le_neg h)), Real.log_exp, min_eq_right h]
 
+
+end
+section
+variable (a b : {r : ℝ // 0 < r})
+include a b
+
 /-- The source closed circle potential agrees with the concentric deterministic value. -/
-theorem circleLogPotential_zero (a b : {r : ℝ // 0 < r}) :
+theorem circleLogPotential_zero :
     circleLogPotential 0 a b = Real.log (max (a : ℝ) (b : ℝ)) := by
   simp only [circleLogPotential, NNReal.coe_zero, ↓reduceIte]
 
 /-- The source closed circle potential for a circle contained inside the averaging radius. -/
-theorem circleLogPotential_of_add_le {d : ℝ≥0} (a b : {r : ℝ // 0 < r})
+theorem circleLogPotential_of_add_le
     (h : (d : ℝ) + a ≤ b) : circleLogPotential d a b = Real.log b := by
   by_cases hd : (d : ℝ) = 0
   · have hab : (a : ℝ) ≤ b := by simpa only [hd, zero_add] using h
@@ -135,12 +160,14 @@ theorem circleLogPotential_of_add_le {d : ℝ≥0} (a b : {r : ℝ // 0 < r})
   · simp only [circleLogPotential, hd, h, ↓reduceIte]
 
 /-- The potential `DOZZ.circleLogPotential` away from intersecting circles reduces to `log max`. -/
-theorem circleLogPotential_of_le_abs_sub {d : ℝ≥0} (a b : {r : ℝ // 0 < r})
+theorem circleLogPotential_of_le_abs_sub
     (hd : (d : ℝ) ≠ 0) (hb : (b : ℝ) ≤ |(d : ℝ) - a|)
     (hout : ¬ (d : ℝ) + a ≤ b) :
     circleLogPotential d a b = Real.log (max (d : ℝ) a) := by
   simp only [circleLogPotential, hd, hout, hb, ↓reduceIte]
 
+
+end
 /-- The equator pinning potential is continuous on the plane. -/
 theorem continuous_log_normPlus : Continuous (fun z : ℂ => Real.log (normPlus z)) := by
   change Continuous (fun z : ℂ => Real.log (max 1 ‖z‖))
@@ -185,10 +212,9 @@ theorem integrable_gffKernel_circleMeasure (x z : ℂ) (r : ℝ) :
   let _ := circleMeasure_isProbability x r
   have hlog : Integrable (fun w => Real.log ‖z - w‖) (circleMeasure x r) := by
     simpa only [norm_sub_rev z] using integrable_log_norm_sub_circleMeasure x z r
-  have hplus := integrable_log_normPlus_circleMeasure x r
   have hc : Integrable (fun _ : ℂ => Real.log (normPlus z)) (circleMeasure x r) :=
     integrable_const _
-  exact (hlog.neg.add hc).add hplus
+  exact (hlog.neg.add hc).add (integrable_log_normPlus_circleMeasure x r)
 
 /-- A single circle average of the pinned kernel reduces to the scalar log potential. -/
 theorem integral_gffKernel_circleMeasure (x z : ℂ) (r : ℝ) :
@@ -198,12 +224,11 @@ theorem integral_gffKernel_circleMeasure (x z : ℂ) (r : ℝ) :
   let _ := circleMeasure_isProbability x r
   have hlog : Integrable (fun w => Real.log ‖z - w‖) (circleMeasure x r) := by
     simpa only [norm_sub_rev z] using integrable_log_norm_sub_circleMeasure x z r
-  have hplus := integrable_log_normPlus_circleMeasure x r
   have hc : Integrable (fun _ : ℂ => Real.log (normPlus z)) (circleMeasure x r) :=
     integrable_const _
   change (∫ w, -Real.log ‖z - w‖ + Real.log (normPlus z) + Real.log (normPlus w)
     ∂circleMeasure x r) = _
-  have houter := integral_add (hlog.neg.add hc) hplus
+  have houter := integral_add (hlog.neg.add hc) (integrable_log_normPlus_circleMeasure x r)
   have hinner := integral_add hlog.neg hc
   simp only [Pi.add_apply, Pi.neg_apply] at houter hinner
   rw [houter, hinner, integral_neg, integral_log_norm_rev_sub_circleMeasure,
@@ -231,14 +256,18 @@ theorem integral_integral_gffKernel_origin (r s : ℝ) :
   rw [integral_log_normPlus_circleMeasure_origin] at hp
   rw [hmax, hp, integral_log_normPlus_circleMeasure_origin_eq_max, neg_neg]
 
+section
+variable {r s : ℝ} (hr : 0 ≤ r) (hs : 0 ≤ s)
+include hr hs
+
 /-- Nonnegative origin times have the Brownian minimum covariance. -/
-theorem integral_integral_gffKernel_origin_nonneg {r s : ℝ} (hr : 0 ≤ r) (hs : 0 ≤ s) :
+theorem integral_integral_gffKernel_origin_nonneg :
     (∫ z, ∫ w, gffKernel z w ∂circleMeasure 0 s ∂circleMeasure 0 r) = min r s := by
   rw [integral_integral_gffKernel_origin, max_eq_left (neg_nonpos.mpr hr),
     max_eq_left (neg_nonpos.mpr hs), add_zero, add_zero]
 
 /-- The outward origin half-line has the same Brownian minimum covariance. -/
-theorem integral_integral_gffKernel_origin_nonpos {r s : ℝ} (hr : 0 ≤ r) (hs : 0 ≤ s) :
+theorem integral_integral_gffKernel_origin_nonpos :
     (∫ z, ∫ w, gffKernel z w ∂circleMeasure 0 (-s) ∂circleMeasure 0 (-r)) = min r s := by
   rw [integral_integral_gffKernel_origin, neg_neg, neg_neg,
     max_eq_right hr, max_eq_right hs]
@@ -249,32 +278,29 @@ theorem integral_integral_gffKernel_origin_nonpos {r s : ℝ} (hr : 0 ≤ r) (hs
     ring
 
 /-- Inward and outward origin circles have zero cross-covariance. -/
-theorem integral_integral_gffKernel_origin_cross {r s : ℝ} (hr : 0 ≤ r) (hs : 0 ≤ s) :
+theorem integral_integral_gffKernel_origin_cross :
     (∫ z, ∫ w, gffKernel z w ∂circleMeasure 0 (-s) ∂circleMeasure 0 r) = 0 := by
   rw [integral_integral_gffKernel_origin, neg_neg, max_eq_left (neg_nonpos.mpr hr),
     max_eq_right hs, min_eq_right (le_trans (neg_nonpos.mpr hs) hr)]
   ring
 
-/-- On a circle that stays outside the unit disk, the pinning term equals `log norm`. -/
-theorem ae_normPlus_eq_norm_circleMeasure {x : ℂ} {r : ℝ}
-    (hout : 1 + Real.exp (-r) ≤ ‖x‖) :
-    (fun z => normPlus z) =ᵐ[circleMeasure x r] fun z => ‖z‖ := by
-  filter_upwards [ae_norm_sub_center_circleMeasure x r] with z hz
-  have htri : ‖x‖ ≤ ‖z‖ + ‖z - x‖ := by
-    simpa only [norm_sub_rev x z] using norm_le_norm_add_norm_sub z x
-  have hn : 1 ≤ ‖z‖ := by linarith only [hout, htri, hz]
-  exact max_eq_right hn
+
+end
 
 /-- The regular pinning circle average outside the unit disk, including tangency. -/
 theorem integral_log_normPlus_circleMeasure_exterior {x : ℂ} {r : ℝ}
     (hout : 1 + Real.exp (-r) ≤ ‖x‖) :
     (∫ z, Real.log (normPlus z) ∂circleMeasure x r) = Real.log ‖x‖ := by
+  have ae_normPlus_eq_norm_circleMeasure : (fun z => normPlus z) =ᵐ[circleMeasure x r] fun z => ‖z‖ := by
+    filter_upwards [ae_norm_sub_center_circleMeasure x r] with z hz
+    have htri : ‖x‖ ≤ ‖z‖ + ‖z - x‖ := by
+      simpa only [norm_sub_rev x z] using norm_le_norm_add_norm_sub z x
+    have hn : 1 ≤ ‖z‖ := by linarith only [hout, htri, hz]
+    exact max_eq_right hn
   have heq : (fun z => Real.log (normPlus z)) =ᵐ[circleMeasure x r]
-      fun z => Real.log ‖z‖ := (ae_normPlus_eq_norm_circleMeasure hout).fun_comp Real.log
+      fun z => Real.log ‖z‖ := (ae_normPlus_eq_norm_circleMeasure).fun_comp Real.log
   rw [integral_congr_ae heq]
-  have hmax : Real.exp (-r) ≤ ‖x‖ := le_trans (le_add_of_nonneg_left zero_le_one) hout
-  have hpotential := integral_log_norm_sub_circleMeasure x 0 r
-  simpa only [sub_zero, max_eq_right hmax] using hpotential
+  simpa only [sub_zero, max_eq_right (le_trans (le_add_of_nonneg_left zero_le_one) hout)] using integral_log_norm_sub_circleMeasure x 0 r
 
 /-- The concentric source closed potential in logarithmic-radius coordinates. -/
 theorem circleLogPotential_concentric (r s : ℝ) :
@@ -285,19 +311,14 @@ theorem circleLogPotential_concentric (r s : ℝ) :
     (integral_integral_log_norm_concentric_eq_neg_min 0 r s)
 
 /-- Separated circles are in the elementary branch of the source closed potential. -/
-theorem circleLogPotential_of_radii_le_distance {d : ℝ≥0}
+theorem circleLogPotential_of_radii_le_distance
     (a b : {r : ℝ // 0 < r}) (hsep : (a : ℝ) + b ≤ d) :
     circleLogPotential d a b = Real.log d := by
-  have hd : 0 < (d : ℝ) := lt_of_lt_of_le (add_pos a.2 b.2) hsep
-  have ha : (a : ℝ) ≤ d := le_trans (le_add_of_nonneg_right b.2.le) hsep
-  have hsub : 0 ≤ (d : ℝ) - a := sub_nonneg.mpr ha
-  have hb : (b : ℝ) ≤ |(d : ℝ) - a| := by
-    rw [abs_of_nonneg hsub]
-    linarith only [hsep]
+  have hb : (b : ℝ) ≤ |(d : ℝ) - a| := by grind
   have hout : ¬ (d : ℝ) + a ≤ b := by
     intro h
     linarith only [hsep, h, a.2]
-  rw [circleLogPotential_of_le_abs_sub a b hd.ne' hb hout, max_eq_left ha]
+  rw [circleLogPotential_of_le_abs_sub a b (lt_of_lt_of_le (add_pos a.2 b.2) hsep).ne' hb hout, max_eq_left (le_trans (le_add_of_nonneg_right b.2.le) hsep)]
 
 /-- The radii used at nonnegative logarithmic times never exceed one. -/
 theorem exp_neg_le_one {r : ℝ} (hr : 0 ≤ r) : Real.exp (-r) ≤ 1 := by
@@ -340,57 +361,55 @@ theorem exists_testFn_uniform_approx {f : ℂ → ℝ} (hf : Continuous f)
 /-- Translated and scaled continuous annular probability density around a circle. -/
 @[expose] noncomputable def circleAnnularDensity (x : ℂ) (r : ℝ) (n : ℕ) (z : ℂ) : ℝ :=
   (Real.exp (-r))⁻¹ ^ 2 * DOZZ.annularProbabilityDensity n ((Real.exp (-r))⁻¹ • (z - x))
+section
+variable (x : ℂ) (r : ℝ) (n : ℕ)
+include x r n
+
 /-- The scaled annular approximant is continuous. -/
-theorem continuous_circleAnnularDensity (x : ℂ) (r : ℝ) (n : ℕ) :
+theorem continuous_circleAnnularDensity :
     Continuous (circleAnnularDensity x r n) :=
   by
   unfold circleAnnularDensity
-  have h := DOZZ.continuous_annularProbabilityDensity n
+  have := DOZZ.continuous_annularProbabilityDensity n
   fun_prop
 /-- All annular widths have a common compact support bound. -/
-theorem support_circleAnnularDensity_subset (x : ℂ) (r : ℝ) (n : ℕ) :
+theorem support_circleAnnularDensity_subset :
     Function.support (circleAnnularDensity x r n) ⊆ closedBall (0 : ℂ) (‖x‖ + 2 * Real.exp (-r)) := by
   intro z hz
   have hρ : DOZZ.annularProbabilityDensity n ((Real.exp (-r))⁻¹ • (z - x)) ≠ 0 := by
     intro hzero
     exact hz (by simp only [circleAnnularDensity, hzero, mul_zero])
   have hscale : ‖(Real.exp (-r))⁻¹ • (z - x)‖ ≤ 2 := by
-    have hb := DOZZ.annularProbabilityDensity_radius_bound n _ hρ
     have hn : (1 : ℝ) ≤ (n : ℝ) + 2 := by linarith only [Nat.cast_nonneg (α := ℝ) n]
-    have hi : 1 / ((n : ℝ) + 2) ≤ 1 :=
-      (one_div_le_one_div_of_le (by norm_num : (0 : ℝ) < 1) hn).trans_eq (one_div_one)
-    have hnorm := (abs_lt.mp hb).2
-    linarith only [hnorm, hi]
+    linarith only [(abs_lt.mp (DOZZ.annularProbabilityDensity_radius_bound n _ hρ)).2, (one_div_le_one_div_of_le (by norm_num : (0 : ℝ) < 1) hn).trans_eq (one_div_one)]
   rw [norm_smul, Real.norm_eq_abs, abs_of_pos (inv_pos.mpr (Real.exp_pos _))] at hscale
-  have hdist : ‖z - x‖ ≤ 2 * Real.exp (-r) := by
+  have : ‖z - x‖ ≤ 2 * Real.exp (-r) := by
     have hmul := mul_le_mul_of_nonneg_left hscale (Real.exp_pos (-r)).le
     rw [← mul_assoc, mul_inv_cancel₀ (Real.exp_ne_zero _), one_mul] at hmul
     simpa only [mul_comm] using hmul
-  have hn := norm_le_norm_add_norm_sub x z
   rw [mem_closedBall, dist_zero_right]
   have hd' : ‖x - z‖ ≤ 2 * Real.exp (-r) := by rwa [norm_sub_rev]
-  exact hn.trans (add_le_add le_rfl hd')
+  exact (norm_le_norm_add_norm_sub x z).trans (add_le_add le_rfl hd')
 /-- The continuous circle approximant has compact support. -/
-theorem hasCompactSupport_circleAnnularDensity (x : ℂ) (r : ℝ) (n : ℕ) :
+theorem hasCompactSupport_circleAnnularDensity :
     HasCompactSupport (circleAnnularDensity x r n) :=
   HasCompactSupport.of_support_subset_isCompact (isCompact_closedBall _ _)
     (support_circleAnnularDensity_subset x r n)
 /-- The common radius bound also contains the closed support. -/
-theorem tsupport_circleAnnularDensity_subset (x : ℂ) (r : ℝ) (n : ℕ) :
+theorem tsupport_circleAnnularDensity_subset :
     tsupport (circleAnnularDensity x r n) ⊆ closedBall (0 : ℂ) (‖x‖ + 2 * Real.exp (-r)) :=
   closure_minimal (support_circleAnnularDensity_subset x r n) isClosed_closedBall
 /-- The continuous circle approximant is integrable. -/
-theorem integrable_circleAnnularDensity (x : ℂ) (r : ℝ) (n : ℕ) :
+theorem integrable_circleAnnularDensity :
     Integrable (circleAnnularDensity x r n) :=
   (continuous_circleAnnularDensity x r n).integrable_of_hasCompactSupport
     (hasCompactSupport_circleAnnularDensity x r n)
 /-- The translated, scaled circle approximant has total mass one. -/
-theorem integral_circleAnnularDensity (x : ℂ) (r : ℝ) (n : ℕ) :
+theorem integral_circleAnnularDensity :
     (∫ z, circleAnnularDensity x r n z) = 1 := by
   unfold circleAnnularDensity
   rw [integral_const_mul]
-  have ht : (∫ z : ℂ, DOZZ.annularProbabilityDensity n ((Real.exp (-r))⁻¹ • (z - x))) =
-      ∫ z : ℂ, DOZZ.annularProbabilityDensity n ((Real.exp (-r))⁻¹ • z) :=
+  have ht :=
     integral_sub_right_eq_self (μ := (volume : Measure ℂ))
       (fun z : ℂ => DOZZ.annularProbabilityDensity n ((Real.exp (-r))⁻¹ • z)) x
   rw [ht, Measure.integral_comp_inv_smul_of_nonneg (μ := (volume : Measure ℂ))
@@ -399,6 +418,8 @@ theorem integral_circleAnnularDensity (x : ℂ) (r : ℝ) (n : ℕ) :
     mul_one]
   field_simp
 
+
+end
 /-- Smooth test approximants to the translated annuli, with a common compact support and
 arbitrary positive prescribed uniform errors. No log-energy convergence is asserted here. -/
 theorem exists_testFn_circleAnnular_approx (x : ℂ) (r : ℝ) (ε : ℕ → ℝ)

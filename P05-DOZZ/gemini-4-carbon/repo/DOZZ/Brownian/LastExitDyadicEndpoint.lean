@@ -57,8 +57,7 @@ theorem ae_conditionedPositiveStateAt_dyadicLastExit_sub_tendsto_zero
       (fun n => conditionedPositiveStateAt
         (dyadicLastExitCeilingTime n (negativeLastExitTime p c)) p - c)
       atTop (𝓝 0) := by
-  have hgood := ae_negativeConditionedLevelHitSet_nonempty_bddAbove hP hB hν c hc
-  filter_upwards [hgood] with p hp
+  filter_upwards [ae_negativeConditionedLevelHitSet_nonempty_bddAbove hP hB hν c hc] with p hp
   exact conditionedPositiveStateAt_dyadicLastExit_sub_tendsto_zero
     p (c : ℝ) hp.1 hp.2
 

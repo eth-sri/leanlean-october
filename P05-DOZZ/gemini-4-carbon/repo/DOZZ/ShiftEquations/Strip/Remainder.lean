@@ -20,17 +20,14 @@ theorem lastone_ennreal_add_rpow_le (a b : ℝ≥0∞) (p q : ℝ)
     (hp : 0 < p) (hpq : p ≤ q) (hq1 : q ≤ 1) :
     (a + b) ^ p ≤ a ^ p + ENNReal.ofReal (p / q) *
       (1 + 2 * b ^ (2 * q) + a ^ (-2 * q)) := by
-  have hq : 0 < q := hp.trans_le hpq
-  have hAp : a ^ p ≠ ⊤ := ENNReal.rpow_ne_top_of_nonneg hp.le haT
+  have hq := hp.trans_le hpq
+  have hAp := ENNReal.rpow_ne_top_of_nonneg hp.le haT
   have hBp : b ^ (2 * q) ≠ ⊤ := ENNReal.rpow_ne_top_of_nonneg (by positivity) hbT
   have hAi : a ^ (-2 * q) ≠ ⊤ := ENNReal.rpow_ne_top_of_ne_zero ha0 haT
   have h2B : (2 : ℝ≥0∞) * b ^ (2 * q) ≠ ⊤ := ENNReal.mul_ne_top (by norm_num) hBp
-  have hK : 1 + 2 * b ^ (2 * q) + a ^ (-2 * q) ≠ ⊤ :=
-    ENNReal.add_ne_top.mpr ⟨ENNReal.add_ne_top.mpr ⟨ENNReal.one_ne_top, h2B⟩, hAi⟩
   have hE : ENNReal.ofReal (p / q) * (1 + 2 * b ^ (2 * q) + a ^ (-2 * q)) ≠ ⊤ :=
-    ENNReal.mul_ne_top ENNReal.ofReal_ne_top hK
-  have hsum := ENNReal.add_ne_top.mpr ⟨haT, hbT⟩
-  apply (ENNReal.toReal_le_toReal (ENNReal.rpow_ne_top_of_nonneg hp.le hsum)
+    ENNReal.mul_ne_top ENNReal.ofReal_ne_top (ENNReal.add_ne_top.mpr ⟨ENNReal.add_ne_top.mpr ⟨ENNReal.one_ne_top, h2B⟩, hAi⟩)
+  apply (ENNReal.toReal_le_toReal (ENNReal.rpow_ne_top_of_nonneg hp.le (ENNReal.add_ne_top.mpr ⟨haT, hbT⟩))
     (ENNReal.add_ne_top.mpr ⟨hAp, hE⟩)).mp
   rw [← ENNReal.toReal_rpow, ENNReal.toReal_add haT hbT,
     ENNReal.toReal_add hAp hE, ENNReal.toReal_mul,
@@ -39,7 +36,7 @@ theorem lastone_ennreal_add_rpow_le (a b : ℝ≥0∞) (p q : ℝ)
     ENNReal.toReal_add ENNReal.one_ne_top h2B]
   simp only [ENNReal.toReal_one, ENNReal.toReal_mul, ENNReal.toReal_ofNat,
     ← ENNReal.toReal_rpow]
-  have h := lastone_rpow_add_increment_le_moments a.toReal b.toReal p q
+  have := lastone_rpow_add_increment_le_moments a.toReal b.toReal p q
     (ENNReal.toReal_pos ha0 haT) ENNReal.toReal_nonneg hp hpq hq1
   linarith
 
@@ -63,12 +60,11 @@ theorem lastone_addition_smallPower_limit
   have hK : K ≠ ⊤ := ENNReal.add_ne_top.mpr
     ⟨ENNReal.add_ne_top.mpr ⟨ENNReal.one_ne_top,
       ENNReal.mul_ne_top (by norm_num) hCb.ne⟩, hCa.ne⟩
-  have hsmall := he.eventually (eventually_le_nhds hq)
   have hbounds : ∀ᶠ i in l,
       (∫⁻ ω, A i ω ^ e i ∂P).toReal ≤ (∫⁻ ω, (A i ω + B i ω) ^ e i ∂P).toReal ∧
       (∫⁻ ω, (A i ω + B i ω) ^ e i ∂P).toReal ≤
         (∫⁻ ω, A i ω ^ e i ∂P).toReal + e i / q * K.toReal := by
-    filter_upwards [hepos, hsmall, hA, hB, hfinite, hAmoment, haBound, hbBound]
+    filter_upwards [hepos, he.eventually (eventually_le_nhds hq), hA, hB, hfinite, hAmoment, haBound, hbBound]
       with i hpi hpq hAi hBi hfi hmi hai hbi
     have hpowA (p : ℝ) : AEMeasurable (fun ω => A i ω ^ p) P :=
       ENNReal.continuous_rpow_const.measurable.comp_aemeasurable hAi
@@ -93,8 +89,7 @@ theorem lastone_addition_smallPower_limit
           (add_le_add (add_le_add le_rfl (mul_le_mul' le_rfl hbi)) hai))
     have hEt : ENNReal.ofReal (e i / q) * K ≠ ⊤ := ENNReal.mul_ne_top ENNReal.ofReal_ne_top hK
     have hRt := ENNReal.add_ne_top.mpr ⟨hmi.ne, hEt⟩
-    have hSt := ne_top_of_le_ne_top hRt hupp
-    have hlow := ENNReal.toReal_mono hSt (lintegral_mono fun ω =>
+    have hlow := ENNReal.toReal_mono (ne_top_of_le_ne_top hRt hupp) (lintegral_mono fun ω =>
       ENNReal.rpow_le_rpow (le_add_right le_rfl) hpi.le)
     have huppR := ENNReal.toReal_mono hRt hupp
     rw [ENNReal.toReal_add hmi.ne hEt, ENNReal.toReal_mul,

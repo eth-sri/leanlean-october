@@ -29,15 +29,15 @@ theorem weighted_ball_coulomb_mixed_bound
           ENNReal.ofReal (C * ρ ^ ((γ * (Q γ - α₁) * (q * s) -
             γ ^ 2 * (q * s) ^ 2 / 2) / q)) := by
   have hqpos : 0 < q := zero_lt_one.trans hq
-  let q' : ℝ := q.conjExponent
+  let q' := q.conjExponent
   have hHolder : Real.HolderConjugate q q' := Real.HolderConjugate.conjExponent hq
-  have hq' : 0 < q' := hHolder.symm.pos
+  have hq' := hHolder.symm.pos
   obtain ⟨CA, hCA, hA⟩ := weighted_ball_moment_small_radius_bound P X hX γ hγ hγ2 M hM
     α₁ (q * s) hα₁ (mul_pos hqpos hs) hrange
   obtain ⟨CB, hCB, hB⟩ := coulomb_inverse_moment_uniform_roots P X hX γ hγ hγ2 M hM
     ![-γ / 2, α₁, α₂] α₃ (q' * (p + s)) (mul_nonneg hq'.le (by linarith only [hp, hs]))
-  let C : ℝ := CA ^ (1 / q) * CB ^ (1 / q')
-  have hC : 0 < C := by dsimp only [C]; positivity
+  let C := CA ^ (1 / q) * CB ^ (1 / q')
+  have hC : 0 < C := by positivity
   refine ⟨C, hC, ?_⟩
   intro z hz ρ hρ hρ2
   have hy : ∀ i : Fin 3, ‖(![z, 0, 1] : Fin 3 → ℂ) i‖ ≤ 1 := by
@@ -49,18 +49,13 @@ theorem weighted_ball_coulomb_mixed_bound
       norm_num
     · change ‖(1 : ℂ)‖ ≤ 1
       norm_num
-  have hW := gmc_weighted_mass_aemeasurable P X hX γ hγ hγ2 M hM α₁ 0 ρ
-  have hI := gmc_coulombMass_aemeasurable P X hX γ hγ hγ2 M hM ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃
-  have h := ENNReal.lintegral_mul_le_Lp_mul_Lq P hHolder (hW.pow_const s) (hI.pow_const (-p - s))
+  have h := ENNReal.lintegral_mul_le_Lp_mul_Lq P hHolder ((gmc_weighted_mass_aemeasurable P X hX γ hγ hγ2 M hM α₁ 0 ρ).pow_const s) ((gmc_coulombMass_aemeasurable P X hX γ hγ hγ2 M hM ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃).pow_const (-p - s))
   have heB : (-p - s) * q' = -(q' * (p + s)) := by ring
   simp only [← ENNReal.rpow_mul, mul_comm s q, heB] at h
-  have h1 := ENNReal.rpow_le_rpow (hA ρ hρ hρ2) (by positivity : 0 ≤ 1 / q)
-  have h2 := ENNReal.rpow_le_rpow (hB ![z, 0, 1] hy) (by positivity : 0 ≤ 1 / q')
   let E : ℝ := γ * (Q γ - α₁) * (q * s) - γ ^ 2 * (q * s) ^ 2 / 2
   have hscale : 0 < CA * ρ ^ E := mul_pos hCA (Real.rpow_pos_of_pos hρ _)
-  have htotal := h.trans (mul_le_mul' h1 h2)
   calc
-    _ ≤ (ENNReal.ofReal (CA * ρ ^ E)) ^ (1 / q) * (ENNReal.ofReal CB) ^ (1 / q') := htotal
+    _ ≤ (ENNReal.ofReal (CA * ρ ^ E)) ^ (1 / q) * (ENNReal.ofReal CB) ^ (1 / q') := h.trans (mul_le_mul' (ENNReal.rpow_le_rpow (hA ρ hρ hρ2) (by positivity : 0 ≤ 1 / q)) (ENNReal.rpow_le_rpow (hB ![z, 0, 1] hy) (by positivity : 0 ≤ 1 / q')))
     _ = ENNReal.ofReal (C * ρ ^ (E / q)) := by
       rw [ENNReal.ofReal_rpow_of_pos hscale, ENNReal.ofReal_rpow_of_pos hCB,
         ← ENNReal.ofReal_mul (Real.rpow_pos_of_pos hscale _).le,

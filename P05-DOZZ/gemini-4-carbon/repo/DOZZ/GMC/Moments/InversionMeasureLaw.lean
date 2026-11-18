@@ -26,9 +26,9 @@ theorem finite_random_measure_law_of_open_fdd
     ∫⁻ ω, H (M ω) ∂P = ∫⁻ ω, H (N ω) ∂P := by
   classical
   let C := measurableCylinders (fun _ : InversionOpen => ℝ≥0∞)
-  let mOutput : MeasurableSpace InversionFiniteMeasure :=
+  let mOutput :=
     MeasurableSpace.pi.comap inversionMeasureCode
-  let : MeasurableSpace InversionFiniteMeasure := mOutput
+  let := mOutput
   let outM : Ω → InversionFiniteMeasure := fun ω => ⟨M ω, hMf ω⟩
   let outN : Ω → InversionFiniteMeasure := fun ω => ⟨N ω, hNf ω⟩
   let Cout := Set.preimage inversionMeasureCode '' C
@@ -42,7 +42,7 @@ theorem finite_random_measure_law_of_open_fdd
     refine ⟨A' ∩ B', isPiSystem_measurableCylinders A' hA' B' hB' ?_, ?_⟩
     · rcases hAB with ⟨q, hq⟩
       exact ⟨inversionMeasureCode q, ⟨hq.1, hq.2⟩⟩
-    · rw [← Set.preimage_inter]
+    · rfl
   have hcode : Measurable inversionMeasureCode := Measurable.of_comap_le le_rfl
   have hcm : Measurable (inversionMeasureCode ∘ outM) :=
     measurable_pi_iff.mpr fun U => (Measure.measurable_coe U.2.measurableSet).comp hM
@@ -61,11 +61,7 @@ theorem finite_random_measure_law_of_open_fdd
       MeasurableSpace.comap_comp]
     exact hcn.comap_le
   have hOpenGen : (inferInstance : MeasurableSpace ℂ) =
-      MeasurableSpace.generateFrom {s : Set ℂ | IsOpen s} := by
-    calc
-      (inferInstance : MeasurableSpace ℂ) = borel ℂ := BorelSpace.measurable_eq
-      _ = _ := borel_eq_generateFrom_of_subbasis
-        (TopologicalSpace.generateFrom_setOfPred_isOpen (inferInstance : TopologicalSpace ℂ)).symm
+      MeasurableSpace.generateFrom {s : Set ℂ | IsOpen s} := by rfl
   have hforget : Measurable (fun q : InversionFiniteMeasure => q.1) := by
     let : ∀ q : InversionFiniteMeasure, IsFiniteMeasure q.1 := fun q => q.2
     apply Measurable.measure_of_isPiSystem hOpenGen isPiSystem_isOpen
@@ -83,9 +79,8 @@ theorem finite_random_measure_law_of_open_fdd
         (Measure.measurable_coe j.1.2.measurableSet).comp hM
       have hn : Measurable vn := measurable_pi_iff.mpr fun j =>
         (Measure.measurable_coe j.1.2.measurableSet).comp hN
-      have hv := hfdd s (fun j => j.1.1) (fun j => j.1.2)
       have hp : P (vm ⁻¹' As) = P (vn ⁻¹' As) := by
-        have h := congrArg (fun μ => μ As) hv
+        have h := congrArg (fun μ => μ As) (hfdd s (fun j => j.1.1) (fun j => j.1.2))
         rw [Measure.map_apply hm hAs, Measure.map_apply hn hAs] at h
         exact h
       have hs : MeasurableSet (inversionMeasureCode ⁻¹' cylinder s As) := by
@@ -98,8 +93,7 @@ theorem finite_random_measure_law_of_open_fdd
     · simp only [Measure.map_apply hom MeasurableSet.univ,
         Measure.map_apply hon MeasurableSet.univ, preimage_univ]
   have hh := hH.comp hforget
-  calc
-    ∫⁻ ω, H (M ω) ∂P = ∫⁻ q, H q.1 ∂P.map outM := (lintegral_map hh hom).symm
-    _ = ∫⁻ q, H q.1 ∂P.map outN := by rw [hLaw]
+  refine ((lintegral_map hh hom).symm).trans (?_)
+  calc ∫⁻ q, H q.1 ∂P.map outM = ∫⁻ q, H q.1 ∂P.map outN := by rw [hLaw]
     _ = ∫⁻ ω, H (N ω) ∂P := lintegral_map hh hon
 end DOZZ.Proofs

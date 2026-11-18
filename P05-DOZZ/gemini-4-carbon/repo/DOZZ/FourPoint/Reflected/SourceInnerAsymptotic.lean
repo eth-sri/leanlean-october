@@ -76,10 +76,10 @@ theorem reflected_source_inner_increment_tendsto
   let Llo := fun h : ℝ => max 1 ((1+Real.exp (-h))^(γ^2/2))*L
   let Lhi := fun h : ℝ => min 1 ((1-Real.exp (-h))^(γ^2/2))*L
   have hp : 0 < p := div_pos (by linarith only [hs]) hγ
-  have hW (h : ℝ) (hh : 0 < h) : Tendsto (fun z => W h z/‖z‖^κ) (𝓝[≠] 0) (𝓝 L) :=
+  have hW (h : ℝ) (hh : 0 < h) :=
     reflected_source_williams_increment_tendsto P X hX γ hγ hγ₂ M hM Xc hc
       α₁ α₂ α₃ ξ h hα₁ hreflect hα₂ hα₃ hh.le hs hξ hξ1 B Z hData B₀ hB₀
-  have hE (h : ℝ) (hh : 0 < h) : Tendsto (fun z => E h z/‖z‖^κ) (𝓝[≠] 0) (𝓝 0) :=
+  have hE (h : ℝ) (hh : 0 < h) :=
     (isComplexLittleOAtZero_ofReal_iff κ (E h)).mp
       (reflected_source_full_copied_littleO P X Xc hX hc hm hcont γ hγ hγ₂ M hM
         N hN hfin hwhole hNa α₁ α₂ α₃ ξ h hα₁ hα₂ hα₃ hreflect hs hξ hξ1 hnear hfreeze hh.le)
@@ -95,14 +95,11 @@ theorem reflected_source_inner_increment_tendsto
   have hLhi : Tendsto Lhi atTop (𝓝 L) := by
     simpa only [Lhi,one_mul] using hdepth.snd_nhds.mul_const L
   have hbound (h : ℝ) (hh : 0 < h) : ∀ᶠ z : ℂ in 𝓝[≠] 0, g h z ≤ f z ∧ f z ≤ k h z := by
-    have hQν := hData.1.1.2
     have hb := reflected_source_williams_kernel_squeeze P X hX Xc hc hm hcont γ hγ hγ₂ M hM
-      N hN hi heq hfin α₁ α₂ α₃ ξ h hα₁ B hL hData _ hQν p hp hα₂ hα₃ hξ hξ1 hh
+      N hN hi heq hfin α₁ α₂ α₃ ξ h hα₁ B hL hData _ (hData.1.1.2) p hp hα₂ hα₃ hξ hξ1 hh
     filter_upwards [hb] with z hz
-    have hlo := div_le_div_of_nonneg_right hz.1 (Real.rpow_nonneg (norm_nonneg z) κ)
-    have hhi := div_le_div_of_nonneg_right hz.2 (Real.rpow_nonneg (norm_nonneg z) κ)
-    exact ⟨by simpa only [g,Chi,E,f,W,ν,add_div,mul_div_assoc] using hlo,
-      by simpa only [k,Clo,E,f,W,ν,add_div,mul_div_assoc] using hhi⟩
+    exact ⟨by simpa only [g,Chi,E,f,W,ν,add_div,mul_div_assoc] using div_le_div_of_nonneg_right hz.1 (Real.rpow_nonneg (norm_nonneg z) κ),
+      by simpa only [k,Clo,E,f,W,ν,add_div,mul_div_assoc] using div_le_div_of_nonneg_right hz.2 (Real.rpow_nonneg (norm_nonneg z) κ)⟩
   exact reflected_ordered_two_sided_squeeze (𝓝[≠] (0 : ℂ)) f g k L Llo Lhi hg hk hLlo hLhi hbound
 
 end DOZZ.Proofs

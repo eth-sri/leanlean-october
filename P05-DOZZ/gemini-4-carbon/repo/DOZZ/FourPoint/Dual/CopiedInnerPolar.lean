@@ -34,8 +34,6 @@ theorem dual_copied_inner_mass_squeeze
   have hW : Measurable W :=
     ((reflected_global_reinsertionWeight_measurable γ).comp
       (measurable_const.prodMk measurable_id)).ennreal_ofReal
-  have hk : Measurable (fun x => ENNReal.ofReal (dualFusionKernel γ α₁ α₂ α₃ z x)) :=
-    (dual_kernel_measurable γ α₁ α₂ α₃ z).ennreal_ofReal
   have hU : MeasurableSet {x : ℂ | 0 < ‖x‖ ∧ ‖x‖ < Real.exp (-(T : ℝ))} :=
     (measurableSet_lt measurable_const measurable_norm).inter
       (measurableSet_lt measurable_norm measurable_const)
@@ -44,7 +42,7 @@ theorem dual_copied_inner_mass_squeeze
   rw [reflected_reinserted_lateral_projection γ A N h0,
     reflected_inner_polar_restart γ (Q γ - α₁) A _ T] at hb
   dsimp only at hb ⊢
-  rw [setLIntegral_withDensity_eq_setLIntegral_mul N hW hk hU] at hb
+  rw [setLIntegral_withDensity_eq_setLIntegral_mul N hW ((dual_kernel_measurable γ α₁ α₂ α₃ z).ennreal_ofReal) hU] at hb
   have he (c : ℝ) : ENNReal.ofReal (c * ‖z‖ ^ (2 : ℝ)) *
       (ENNReal.ofReal (Real.exp (γ * (A T - (Q γ - α₁) * T))) *
         (∫⁻ u, (if 0 < u then ENNReal.ofReal (Real.exp

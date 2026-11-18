@@ -53,17 +53,15 @@ theorem tendstoInMeasure_mul_snd_of_tendstoInMeasure
     exact h
   obtain ⟨N₁, hN₁⟩ := (ENNReal.tendsto_atTop_zero.mp hTlimit) (δ / 2)
     (ENNReal.div_pos_iff.mpr ⟨hδ.ne', by simp⟩)
-  let K : ℝ := (N₁ : ℝ) + 1
-  have hK : 0 < K := by dsimp [K]; positivity
+  let K := (N₁ : ℝ) + 1
+  have hK : 0 < K := by positivity
   have hKtail : Q {w | K < |W w|} ≤ δ / 2 := by
     have h := hN₁ (N₁ + 1) (by omega)
     simpa [T, K, Nat.cast_add, Nat.cast_one] using h
-  have hbase : Tendsto (fun n => P {ω | ε / K ≤ ‖f n ω - g ω‖}) atTop (𝓝 0) :=
-    (tendstoInMeasure_iff_norm.mp hfg) (ε / K) (div_pos hε hK)
-  obtain ⟨N₂, hN₂⟩ := (ENNReal.tendsto_atTop_zero.mp hbase) (δ / 2)
+  obtain ⟨N₂, hN₂⟩ := (ENNReal.tendsto_atTop_zero.mp ((tendstoInMeasure_iff_norm.mp hfg) (ε / K) (div_pos hε hK))) (δ / 2)
     (ENNReal.div_pos_iff.mpr ⟨hδ.ne', by simp⟩)
   refine ⟨N₂, fun n hn => ?_⟩
-  let B : Set Ω := {ω | ε / K ≤ ‖f n ω - g ω‖}
+  let B := {ω | ε / K ≤ ‖f n ω - g ω‖}
   let bad : Set (Ω × Ω') := {p | ε ≤ ‖W p.2 * f n p.1 - W p.2 * g p.1‖}
   have hsubset : bad ⊆ (Set.univ ×ˢ {w | K < |W w|}) ∪ (B ×ˢ Set.univ) := by
     intro p hp
@@ -74,14 +72,10 @@ theorem tendstoInMeasure_mul_snd_of_tendstoInMeasure
     have hnotB : ¬ ε / K ≤ ‖f n p.1 - g p.1‖ := by
       intro h
       exact hnot (Or.inr ⟨h, Set.mem_univ _⟩)
-    have hW : |W p.2| ≤ K := le_of_not_gt hnotT
-    have hdiff : ‖f n p.1 - g p.1‖ < ε / K := lt_of_not_ge hnotB
     have hmul : |W p.2| * ‖f n p.1 - g p.1‖ < ε := by
-      calc
-        |W p.2| * ‖f n p.1 - g p.1‖ ≤ K * ‖f n p.1 - g p.1‖ :=
-          mul_le_mul_of_nonneg_right hW (norm_nonneg _)
-        _ < K * (ε / K) := mul_lt_mul_of_pos_left hdiff hK
-        _ = ε := by field_simp
+      refine (mul_le_mul_of_nonneg_right (le_of_not_gt hnotT) (norm_nonneg _)).trans_lt (?_)
+      refine (mul_lt_mul_of_pos_left (lt_of_not_ge hnotB) hK).trans_eq (?_)
+      field_simp
     change ε ≤ ‖W p.2 * f n p.1 - W p.2 * g p.1‖ at hp
     have hfactor : W p.2 * f n p.1 - W p.2 * g p.1 =
         W p.2 * (f n p.1 - g p.1) := by ring

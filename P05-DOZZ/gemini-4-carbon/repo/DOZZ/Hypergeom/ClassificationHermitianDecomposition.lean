@@ -35,7 +35,7 @@ theorem realGaussCramer_reconstruct
     dsimp [A, B, W, gaussCramerNumerator₁, gaussCramerNumerator₂,
       gaussCramerWronskian]
     ring
-  have hW' : W ≠ 0 := hW
+  have hW' := hW
   constructor
   · change (T z : ℂ) = (A * W⁻¹) * f z + (B * W⁻¹) * g z
     calc

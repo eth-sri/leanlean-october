@@ -10,7 +10,6 @@ public import DOZZ.Correlations.Residue.TailMargins
 available remainder exponents. -/
 
 @[expose] public section
-open Set
 namespace DOZZ.Proofs
 
 theorem sumtail_one_error_continuousOn (γ : ℝ) (K : Set ℝ) (hγ : 0 < γ)
@@ -24,11 +23,11 @@ theorem sumtail_one_error_continuousOn (γ : ℝ) (K : Set ℝ) (hγ : 0 < γ)
   apply (hm.sub hp).continuousOn.div (continuous_const.add hm).continuousOn
   intro α hα
   obtain ⟨hpa,hpb⟩ := residue_critical_order_bounds γ α hγ (hK α hα).1 (hK α hα).2
-  have hmp : 0 < oneInsertionMomentCeiling γ α := by
+  have : 0 < oneInsertionMomentCeiling γ α := by
     unfold oneInsertionMomentCeiling
     exact lt_min (by positivity) (by positivity)
   change 1+oneInsertionMomentCeiling γ α ≠ 0
-  exact (by linarith only [hmp] : 0 < 1+oneInsertionMomentCeiling γ α).ne'
+  positivity
 
 theorem sumtail_one_error_lt_one (γ α : ℝ) (hγ : 0 < γ)
     (hα : γ/2 < α) (hαQ : α < Q γ) : oneInsertionErrorCeiling γ α < 1 := by

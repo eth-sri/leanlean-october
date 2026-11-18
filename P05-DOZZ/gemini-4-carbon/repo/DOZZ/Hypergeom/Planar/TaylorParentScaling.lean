@@ -11,7 +11,6 @@ public import DOZZ.Hypergeom.Planar.TaylorTail
 
 @[expose] public section
 
-open MeasureTheory
 
 namespace DOZZ.Proofs
 
@@ -33,18 +32,15 @@ theorem planarTaylorRemainder_integral_scale_norm (k β : ℝ) (hk : 0 < k)
     rw [hzero]
     simp [Real.zero_rpow, hα.ne']
   · let r : ℝ := ‖z‖
-    let ξ : ℂ := z / (r : ℂ)
-    have hr : 0 < r := by dsimp [r]; exact norm_pos_iff.mpr hz
-    have hrC : (r : ℂ) ≠ 0 := by exact_mod_cast hr.ne'
+    let ξ := z / (r : ℂ)
+    have hr : 0 < r := by positivity
+    have : (r : ℂ) ≠ 0 := by exact_mod_cast hr.ne'
     have hξ : ‖ξ‖ = 1 := by
       dsimp [ξ]
       rw [norm_div, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hr]
       dsimp [r]
       exact div_self (norm_ne_zero_iff.mpr hz)
-    have hξr : ξ * (r : ℂ) = z := by
-      dsimp [ξ]
-      field_simp [hrC]
-    have hscale := planarTaylorRemainder_integral_scale k β hk hβ ξ hξ r hr z hξr
-    simpa [r] using hscale
+    have hξr : ξ * (r : ℂ) = z := by grind
+    simpa [r] using planarTaylorRemainder_integral_scale k β hk hβ ξ hξ r hr z hξr
 
 end DOZZ.Proofs

@@ -19,9 +19,7 @@ theorem symmetryReflection_circle_translate (f : ℂ → ℝ) (hf : Measurable f
     Real.circleAverage_eq_circleAverage_zero_one (f := f) (c := x) (R := Real.exp (-r)),
     Real.circleAverage_eq_circleAverage_zero_one (f := fun z => f (z + x))
       (c := 0) (R := Real.exp (-r))]
-  congr 1
-  funext z
-  simp only [add_zero]
+  ring
 
 /-- The bounded continuous circle mean of reflection's pinning potential. -/
 noncomputable def symmetryCirclePotentialMean (r : ℝ) : BoundedContinuousFunction ℂ ℝ := by

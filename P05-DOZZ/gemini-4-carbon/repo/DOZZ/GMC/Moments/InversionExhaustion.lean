@@ -36,25 +36,6 @@ theorem gmcInversionCutoff_bounds (n : ℕ) (x : ℂ) :
   exact ⟨mul_nonneg b.nonneg (sub_nonneg.mpr c.le_one),
     (mul_le_of_le_one_right b.nonneg (sub_le_self _ c.nonneg)).trans b.le_one⟩
 
-/-- The support stays inside a closed bounded annulus. -/
-theorem gmcInversionCutoff_support_bounds (n : ℕ) :
-    ∀ x ∈ tsupport (gmcInversionCutoff n : ℂ → ℝ),
-      1 / ((n : ℝ) + 2) ≤ ‖x‖ ∧ ‖x‖ ≤ (n : ℝ) + 2 := by
-  let b : ContDiffBump (0 : ℂ) := ⟨(n : ℝ) + 1, (n : ℝ) + 2, by positivity, by linarith⟩
-  let c : ContDiffBump (0 : ℂ) := ⟨1 / ((n : ℝ) + 2), 2 / ((n : ℝ) + 2), by positivity,
-    by apply div_lt_div_of_pos_right (by norm_num) (by positivity)⟩
-  have hmask : tsupport (fun x : ℂ => 1 - c x) ⊆
-      (ball (0 : ℂ) (1 / ((n : ℝ) + 2)))ᶜ := by
-    apply closure_minimal _ isOpen_ball.isClosed_compl
-    intro x hx hxball
-    exact hx (by dsimp only; rw [c.one_of_mem_closedBall (ball_subset_closedBall hxball)]; simp)
-  intro x hx
-  change x ∈ tsupport (fun x => b x * (1 - c x)) at hx
-  have hlo := hmask (tsupport_mul_subset_right hx)
-  have hhi := tsupport_mul_subset_left hx
-  rw [b.tsupport_eq] at hhi
-  exact ⟨by simpa only [mem_compl_iff, mem_ball, dist_zero_right, not_lt] using hlo,
-    by simpa only [mem_closedBall, dist_zero_right, b] using hhi⟩
 
 /-- At each nonzero point, the annular cutoffs eventually equal one. -/
 theorem gmcInversionCutoff_tendsto (x : ℂ) (hx : x ≠ 0) :
@@ -76,22 +57,15 @@ theorem gmcInversionCutoff_tendsto (x : ℂ) (hx : x ≠ 0) :
     exact hn.trans (by linarith)
   apply Tendsto.congr' _ tendsto_const_nhds
   filter_upwards [hb, ht.eventually (gt_mem_nhds (norm_pos_iff.mpr hx))] with n hn hm
-  have hb1 : b n x = 1 := (b n).one_of_mem_closedBall (by
+  have hb1 := (b n).one_of_mem_closedBall (by
     simpa only [mem_closedBall, dist_zero_right, b] using hn)
-  have hc0 : c n x = 0 := image_eq_zero_of_notMem_tsupport (by
+  have hc0 := image_eq_zero_of_notMem_tsupport (by
     rw [(c n).tsupport_eq]
     simpa only [mem_closedBall, dist_zero_right, not_le, c] using hm)
   change 1 = b n x * (1 - c n x)
   rw [hb1, hc0]
   norm_num
 
-/-- The cutoff has compact support. -/
-theorem gmcInversionCutoff_hasCompactSupport (n : ℕ) :
-    HasCompactSupport (gmcInversionCutoff n : ℂ → ℝ) := by
-  apply HasCompactSupport.of_support_subset_isCompact (isCompact_closedBall (0 : ℂ) ((n : ℝ) + 2))
-  intro x hx
-  simpa only [mem_closedBall, dist_zero_right] using
-    (gmcInversionCutoff_support_bounds n x (subset_tsupport _ hx)).2
 
 /-- Annular truncation converges in integral for every bounded continuous test. -/
 theorem inversion_cutoff_integral_tendsto (μ : Measure ℂ) [IsFiniteMeasure μ]
@@ -101,8 +75,7 @@ theorem inversion_cutoff_integral_tendsto (μ : Measure ℂ) [IsFiniteMeasure μ
     rw [ae_iff]
     simpa only [not_not, ofPred_eq_eq_singleton] using hzero
   apply tendsto_integral_of_dominated_convergence (bound := fun _ : ℂ => ‖f‖)
-  · intro n
-    exact (f.continuous.mul (gmcInversionCutoff n).continuous).aestronglyMeasurable
+  · fun_prop
   · exact integrable_const _
   · intro n
     exact Filter.Eventually.of_forall fun x => by
@@ -116,9 +89,30 @@ theorem gmcInversionCutoff_test_annular (n : ℕ) (f : BoundedContinuousFunction
     HasCompactSupport (f * gmcInversionCutoff n : ℂ → ℝ) ∧
     tsupport (f * gmcInversionCutoff n : ℂ → ℝ) ⊆
       {x : ℂ | 1 / (2 * ((n : ℝ) + 2)) < ‖x‖ ∧ ‖x‖ < (n : ℝ) + 3} := by
-  refine ⟨(gmcInversionCutoff_hasCompactSupport n).mul_left, ?_⟩
+  have gmcInversionCutoff_support_bounds : ∀ x ∈ tsupport (gmcInversionCutoff n : ℂ → ℝ),
+        1 / ((n : ℝ) + 2) ≤ ‖x‖ ∧ ‖x‖ ≤ (n : ℝ) + 2 := by
+    let b : ContDiffBump (0 : ℂ) := ⟨(n : ℝ) + 1, (n : ℝ) + 2, by positivity, by linarith⟩
+    let c : ContDiffBump (0 : ℂ) := ⟨1 / ((n : ℝ) + 2), 2 / ((n : ℝ) + 2), by positivity,
+      by apply div_lt_div_of_pos_right (by norm_num) (by positivity)⟩
+    have hmask : tsupport (fun x : ℂ => 1 - c x) ⊆
+        (ball (0 : ℂ) (1 / ((n : ℝ) + 2)))ᶜ := by
+      apply closure_minimal _ isOpen_ball.isClosed_compl
+      intro x hx hxball
+      exact hx (by dsimp only; rw [c.one_of_mem_closedBall (ball_subset_closedBall hxball)]; simp)
+    intro x hx
+    change x ∈ tsupport (fun x => b x * (1 - c x)) at hx
+    have hhi := tsupport_mul_subset_left hx
+    rw [b.tsupport_eq] at hhi
+    exact ⟨by simpa only [mem_compl_iff, mem_ball, dist_zero_right, not_lt] using hmask (tsupport_mul_subset_right hx),
+      by simpa only [mem_closedBall, dist_zero_right, b] using hhi⟩
+  have gmcInversionCutoff_hasCompactSupport : HasCompactSupport (gmcInversionCutoff n : ℂ → ℝ) := by
+    apply HasCompactSupport.of_support_subset_isCompact (isCompact_closedBall (0 : ℂ) ((n : ℝ) + 2))
+    intro x hx
+    simpa only [mem_closedBall, dist_zero_right] using
+      (gmcInversionCutoff_support_bounds x (subset_tsupport _ hx)).2
+  refine ⟨(gmcInversionCutoff_hasCompactSupport).mul_left, ?_⟩
   intro x hx
-  have h := gmcInversionCutoff_support_bounds n x (tsupport_mul_subset_right hx)
+  have h := gmcInversionCutoff_support_bounds x (tsupport_mul_subset_right hx)
   constructor
   · apply lt_of_lt_of_le _ h.1
     apply one_div_lt_one_div_of_lt

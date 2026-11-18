@@ -46,8 +46,7 @@ theorem fusion_rooted_spatial_integrable {Ω : Type*} [MeasurableSpace Ω]
         apply lintegral_congr
         intro u
         exact lintegral_const_mul' _ _ ENNReal.ofReal_ne_top
-  have hLb : (∫⁻ ω, L ω ∂P) < ⊤ := hid ▸ hb
-  filter_upwards [ae_lt_top' hL hLb.ne, hG0] with ω hω h0
+  filter_upwards [ae_lt_top' hL (hid ▸ hb).ne, hG0] with ω hω h0
   refine ⟨hf.aestronglyMeasurable, ?_⟩
   rw [hasFiniteIntegral_iff_norm]
   by_contra ht

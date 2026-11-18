@@ -46,15 +46,14 @@ theorem exists_continuous_lift_from_disk_chain
           F t = (D i).solution (γ t) := by
   classical
   let τ : ℕ → ℝ := fun i => (i : ℝ) / (N : ℝ)
-  let P : ℕ → ℝ → E := finiteChainPathLift H r γ D N y
+  let P := finiteChainPathLift H r γ D N y
   have hNreal : 0 < (N : ℝ) := by exact_mod_cast hN
   have hτmono (i j : ℕ) (hij : i ≤ j) : τ i ≤ τ j := by
     apply (div_le_div_iff_of_pos_right hNreal).2
     exact_mod_cast hij
   have hτ01 (i : ℕ) (hi : i ≤ N) : τ i ∈ Icc (0 : ℝ) 1 := by
     constructor
-    · dsimp [τ]
-      positivity
+    · positivity
     · dsimp [τ]
       apply (div_le_one hNreal).2
       exact_mod_cast hi
@@ -79,9 +78,7 @@ theorem exists_continuous_lift_from_disk_chain
           simpa [τ] using hcenters (n + 1) (by omega)
         have hsame := hoverlap n hnN (γ (τ (n + 1)))
           (by rw [← hcenterNext]; exact Metric.mem_ball_self (by linarith))
-        calc
-          P (n + 1) (τ (n + 1)) = (D n).solution (γ (τ (n + 1))) := hprev
-          _ = (D (n + 1)).solution (γ (τ (n + 1))) := hsame
+        exact (hprev).trans (hsame)
   have hstage : ∀ m ≤ N,
       ContinuousOn (P m) (Icc (0 : ℝ) (τ m)) ∧
         ∀ i < m, ∀ t ∈ Icc (τ i) (τ (i + 1)),
@@ -97,9 +94,6 @@ theorem exists_continuous_lift_from_disk_chain
     | succ m ih =>
         have hmN : m < N := by omega
         have ⟨hprevCont, hprevFormula⟩ := ih (by omega)
-        have htNext : τ m ≤ τ (m + 1) := hτmono m (m + 1) (by omega)
-        have hτm_nonneg : 0 ≤ τ m := (hτ01 m (by omega)).1
-        have hτnext_le : τ (m + 1) ≤ 1 := (hτ01 (m + 1) (by omega)).2
         have hjoinm := hjoin m (by omega) hprevFormula
         let g : ℝ → E := fun t => (D m).solution (γ t)
         have hDcont : ContinuousOn (D m).solution
@@ -110,7 +104,7 @@ theorem exists_continuous_lift_from_disk_chain
         have hγseg : ContinuousOn γ (Icc (τ m) (τ (m + 1))) :=
           hγ.mono (by
             intro t ht
-            exact ⟨le_trans hτm_nonneg ht.1, le_trans ht.2 hτnext_le⟩)
+            exact ⟨le_trans ((hτ01 m (by omega)).1) ht.1, le_trans ht.2 ((hτ01 (m + 1) (by omega)).2)⟩)
         have hGcont : ContinuousOn g (Icc (τ m) (τ (m + 1))) := by
           apply hDcont.comp hγseg
           intro t ht
@@ -146,9 +140,7 @@ theorem exists_continuous_lift_from_disk_chain
         · exact hcont
         · intro i hi t ht
           by_cases him : i < m
-          · have htOld : t ≤ τ m := by
-              exact le_trans ht.2 (hτmono (i + 1) m (by omega))
-            have hprev := hprevFormula i him t ht
+          · have htOld : t ≤ τ m := le_trans ht.2 (hτmono (i + 1) m (by omega))
             have htmem : t ∈ Iic (τ m) := htOld
             have hpiece : P (m + 1) t = P m t := by
               change (Iic (τ m)).piecewise (P m)
@@ -156,10 +148,9 @@ theorem exists_continuous_lift_from_disk_chain
               exact Set.piecewise_eq_of_mem (s := Iic (τ m)) (f := P m)
                 (g := fun t => (D m).solution (γ t)) htmem
             rw [hpiece]
-            exact hprev
+            exact hprevFormula i him t ht
           · have hiEq : i = m := by omega
             subst i
-            have htLower := ht.1
             by_cases heq : t = τ m
             · subst t
               have hpiece : P (m + 1) (τ m) = P m (τ m) := by
@@ -172,7 +163,7 @@ theorem exists_continuous_lift_from_disk_chain
               exact hjoinm
             · have htNot : t ∉ Iic (τ m) := by
                 simp only [mem_Iic]
-                exact not_le.mpr (lt_of_le_of_ne htLower (Ne.symm heq))
+                exact not_le.mpr (lt_of_le_of_ne (ht.1) (Ne.symm heq))
               have hpiece : P (m + 1) t = g t := by
                 change (Iic (τ m)).piecewise (P m)
                   (fun t => (D m).solution (γ t)) t = (D m).solution (γ t)
@@ -183,13 +174,10 @@ theorem exists_continuous_lift_from_disk_chain
   have hτN : τ N = 1 := by
     dsimp [τ]
     exact div_self (by exact_mod_cast hN.ne')
-  have hτ0 : τ 0 = 0 := by simp [τ]
   have hstart : P N 0 = y := by
-    have hmem : (0 : ℝ) ∈ Icc (τ 0) (τ 1) := by
-      exact ⟨by simp [τ], by dsimp [τ]; positivity⟩
-    have hval := hformula 0 (by omega) 0 hmem
+    have hmem : (0 : ℝ) ∈ Icc (τ 0) (τ 1) := ⟨by simp [τ], by dsimp [τ]; positivity⟩
     calc
-      P N 0 = (D 0).solution (γ 0) := hval
+      P N 0 = (D 0).solution (γ 0) := hformula 0 (by omega) 0 hmem
       _ = (D 0).solution (D 0).center := by rw [hstartCenter]
       _ = (D 0).initial := (D 0).solution_center
       _ = y := hstartValue
@@ -198,7 +186,6 @@ theorem exists_continuous_lift_from_disk_chain
     exact hjoin N le_rfl hformula
   refine ⟨P N, ?_, hstart, hend, ?_⟩
   · simpa [hτN] using hcont
-  · intro i hi t ht
-    exact hformula i hi t ht
+  · assumption
 
 end DOZZ.Proofs

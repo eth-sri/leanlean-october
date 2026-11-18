@@ -20,18 +20,6 @@ theorem complexMomentPower_ofReal {N : ℕ} (γ : ℝ) (β : Fin N → ℝ) :
   push_cast
   ring
 
-/-- On real charges the joint Wick polynomial is minus half the actual joint variance. -/
-theorem jointVertexPolynomial_ofReal
-    {Ω : Type*} [MeasurableSpace Ω] {N : ℕ}
-    (P : Measure Ω) (Xc : Ω → ℂ → ℝ → ℝ)
-    (z : Fin N → ℂ) (r : Fin N → ℝ)
-    (hm : ∀ i, MemLp (fun ω => Xc ω (z i) (r i)) 2 P) (β : Fin N → ℝ) :
-    jointVertexPolynomial P Xc z r (fun i => (β i : ℂ)) =
-      ((-gaussianVariance P (fun ω => ∑ i, β i * Xc ω (z i) (r i)) / 2 : ℝ) : ℂ) := by
-  rw [vertex_variance_expansion P _ hm β]
-  unfold jointVertexPolynomial
-  push_cast
-  rfl
 
 /-- The full complex normalization restricts to the real jointly Wick-normalized tilt density
 with the exact deterministic pin cancellation. -/
@@ -45,8 +33,14 @@ theorem normalizedVertexPolynomial_ofReal
           (mixedVertexTimes N r i)) / 2 -
         ((2 * Q γ - ∑ i, β i) / γ) * γ *
           ∑ i, β i.castSucc * equatorCircleMean (z i) r : ℝ) : ℂ) := by
+  have jointVertexPolynomial_ofReal {N : ℕ} (z : Fin N → ℂ) (r : Fin N → ℝ) (hm : ∀ i, MemLp (fun ω => Xc ω (z i) (r i)) 2 P) (β : Fin N → ℝ) : jointVertexPolynomial P Xc z r (fun i => (β i : ℂ)) =
+        ((-gaussianVariance P (fun ω => ∑ i, β i * Xc ω (z i) (r i)) / 2 : ℝ) : ℂ) := by
+    rw [vertex_variance_expansion P _ hm β]
+    unfold jointVertexPolynomial
+    push_cast
+    rfl
   unfold normalizedVertexPolynomial
-  rw [jointVertexPolynomial_ofReal P Xc _ _ (fun i => hmem _ _) β,
+  rw [jointVertexPolynomial_ofReal _ _ (fun i => hmem _ _) β,
     complexMomentPower_ofReal]
   push_cast
   rfl

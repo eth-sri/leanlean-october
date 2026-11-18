@@ -11,33 +11,30 @@ import Mathlib.Tactic
 open Set
 namespace DOZZ.Proofs
 
-/-- The positive inverse-power loss is concave in a nonnegative added mass. -/
-theorem dual_inverse_increment_concave (p A : ℝ) (hp : 0 < p) (hA : 0 < A) :
-    ConcaveOn ℝ (Ici 0) (fun t : ℝ => A^(-p)-(A+t)^(-p)) := by
-  let g := fun t : ℝ => A^(-p)-(A+t)^(-p)
-  have hd (t : ℝ) (ht : t ∈ Ici 0) : HasDerivAt g (p*(A+t)^(-p-1)) t := by
-    have ht0 : 0 ≤ t := ht
-    have hh := (Real.hasDerivAt_rpow_const (x := A+t) (p := -p)
-      (Or.inl (by linarith only [hA, ht0]))).comp t ((hasDerivAt_id t).const_add A)
-    have hh' := hh.const_sub (A^(-p))
-    convert hh' using 1 <;> simp only [g, Function.comp_def, mul_one, neg_mul, neg_neg]
-  have hm : AntitoneOn (deriv g) (interior (Ici 0)) := by
-    intro x hx y hy hxy
-    have hx0 : 0 ≤ x := interior_subset hx
-    have hy0 : 0 ≤ y := interior_subset hy
-    rw [(hd x hx0).deriv, (hd y hy0).deriv]
-    apply mul_le_mul_of_nonneg_left _ hp.le
-    exact Real.rpow_le_rpow_of_nonpos (by linarith only [hA, hx0])
-      (add_le_add le_rfl hxy) (by linarith only [hp])
-  exact hm.concaveOn_of_deriv (convex_Ici 0)
-    (fun t ht => (hd t ht).continuousAt.continuousWithinAt)
-    (fun t ht => (hd t (interior_subset ht)).differentiableAt.differentiableWithinAt)
 
 /-- Concavity controls every contraction of the added mass without using a first moment. -/
 theorem dual_inverse_increment_scale_lower (p A t θ : ℝ) (hp : 0 < p) (hA : 0 < A)
     (ht : 0 ≤ t) (hθ : 0 ≤ θ) (hθ1 : θ ≤ 1) :
     θ*(A^(-p)-(A+t)^(-p)) ≤ A^(-p)-(A+θ*t)^(-p) := by
-  have hh := (dual_inverse_increment_concave p A hp hA).2
+  have dual_inverse_increment_concave : ConcaveOn ℝ (Ici 0) (fun t : ℝ => A^(-p)-(A+t)^(-p)) := by
+    let g := fun t : ℝ => A^(-p)-(A+t)^(-p)
+    have hd (t : ℝ) (ht : t ∈ Ici 0) : HasDerivAt g (p*(A+t)^(-p-1)) t := by
+      have ht0 : 0 ≤ t := ht
+      have hh := (Real.hasDerivAt_rpow_const (x := A+t) (p := -p)
+        (Or.inl (by linarith only [hA, ht0]))).comp t ((hasDerivAt_id t).const_add A)
+      have hh' := hh.const_sub (A^(-p))
+      convert hh' using 1 <;> simp only [g, Function.comp_def, mul_one, neg_mul, neg_neg]
+    have hm : AntitoneOn (deriv g) (interior (Ici 0)) := by
+      intro x hx y hy hxy
+      have hx0 : 0 ≤ x := interior_subset hx
+      rw [(hd x hx0).deriv, (hd y (interior_subset hy)).deriv]
+      apply mul_le_mul_of_nonneg_left _ hp.le
+      exact Real.rpow_le_rpow_of_nonpos (by linarith only [hA, hx0])
+        (add_le_add le_rfl hxy) (by linarith only [hp])
+    exact hm.concaveOn_of_deriv (convex_Ici 0)
+      (fun t ht => (hd t ht).continuousAt.continuousWithinAt)
+      (fun t ht => (hd t (interior_subset ht)).differentiableAt.differentiableWithinAt)
+  have hh := (dual_inverse_increment_concave).2
     (show (0 : ℝ) ∈ Ici 0 from le_rfl) (show t ∈ Ici 0 from ht)
     (sub_nonneg.mpr hθ1) hθ (by ring : (1-θ)+θ = 1)
   simpa only [smul_eq_mul, mul_zero, zero_add, add_zero, sub_self] using hh

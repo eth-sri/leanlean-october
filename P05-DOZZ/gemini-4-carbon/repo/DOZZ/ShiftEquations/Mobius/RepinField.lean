@@ -34,16 +34,19 @@ open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
 
+variable {Ω : Type*}
+
+
 /-- The repinned field as a continuous test functional. -/
-noncomputable def repinFieldCLM {Ω : Type*} (X : Ω → Distr) (L : Ω → ℝ) (a b : ℂ) (ω : Ω) :
+noncomputable def repinFieldCLM (X : Ω → Distr) (L : Ω → ℝ) (a b : ℂ) (ω : Ω) :
     TestFn →L[ℝ] ℝ :=
   (distributionToTestCLM (X ω)).comp (affinePushTestFn a b) - L ω • testAreaIntegralCLM
 
 /-- The repinned field `X̂ = X ∘ ψ - L`. -/
-noncomputable def repinField {Ω : Type*} (X : Ω → Distr) (L : Ω → ℝ) (a b : ℂ) : Ω → Distr :=
+noncomputable def repinField (X : Ω → Distr) (L : Ω → ℝ) (a b : ℂ) : Ω → Distr :=
   repinFieldCLM X L a b
 
-theorem repinField_apply {Ω : Type*} (X : Ω → Distr) (L : Ω → ℝ) (a b : ℂ) (ω : Ω)
+theorem repinField_apply (X : Ω → Distr) (L : Ω → ℝ) (a b : ℂ) (ω : Ω)
     (f : TestFn) :
     repinField X L a b ω f = X ω (affinePushTestFn a b f) - L ω * ∫ z, f z := by
   change (distributionToTestCLM (X ω)) (affinePushTestFn a b f) - L ω * testAreaIntegralCLM f = _
@@ -86,9 +89,12 @@ variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
 /-- The repinning circle average. -/
 local notation "Lr" => fun ω => Xc ω b (-Real.log ‖a‖)
 
+section
+variable (hX : IsEquatorGFF P X) (hXc : IsCircleAverage P X Xc) (ha : a ≠ 0)
+include hX hXc ha
+
 /-- The covariance of the repinning average with a pushed circle average. -/
-theorem covariance_repin_circle (hX : IsEquatorGFF P X) (hXc : IsCircleAverage P X Xc)
-    (ha : a ≠ 0) (y : ℂ) (r : ℝ) :
+theorem covariance_repin_circle (y : ℂ) (r : ℝ) :
     cov[Lr, fun ω => Xc ω (a * y + b) (r - Real.log ‖a‖); P] =
       repinKappa a b + ∫ u, affineDefect a b u ∂circleMeasure y r := by
   rw [covariance_circleAverage_eq P X Xc hX hXc]
@@ -98,8 +104,7 @@ theorem covariance_repin_circle (hX : IsEquatorGFF P X) (hXc : IsCircleAverage P
   rfl
 
 /-- **The variance of the repinned field.** -/
-theorem variance_repinField (hX : IsEquatorGFF P X) (hXc : IsCircleAverage P X Xc)
-    (ha : a ≠ 0) (f : TestFn) :
+theorem variance_repinField (f : TestFn) :
     Var[fun ω => repinField X (Lr) a b ω f; P] = gffCov f f := by
   have _ := hX.1
   have hXm := equatorGFF_test_memLp X hX (affinePushTestFn a b f)
@@ -123,8 +128,7 @@ theorem variance_repinField (hX : IsEquatorGFF P X) (hXc : IsCircleAverage P X X
   ring
 
 /-- **The repinned field is an equator GFF.** -/
-theorem isEquatorGFF_repinField (hX : IsEquatorGFF P X) (hXc : IsCircleAverage P X Xc)
-    (ha : a ≠ 0) :
+theorem isEquatorGFF_repinField :
     IsEquatorGFF P (repinField X (Lr) a b) := by
   have _ := hX.1
   have hLmeas : Measurable (Lr) :=
@@ -153,14 +157,11 @@ theorem isEquatorGFF_repinField (hX : IsEquatorGFF P X) (hXc : IsCircleAverage P
       variance_id_gaussianReal]
 
 /-- Covariance of the repinned field with a repinned circle average. -/
-theorem covariance_repinField_repinCircle (hX : IsEquatorGFF P X)
-    (hXc : IsCircleAverage P X Xc) (ha : a ≠ 0) (g : TestFn) (y : ℂ) (r : ℝ) :
+theorem covariance_repinField_repinCircle (g : TestFn) (y : ℂ) (r : ℝ) :
     cov[fun ω => repinField X (Lr) a b ω g, fun ω => repinCircle Xc (Lr) a b ω y r; P] =
       circleCross y r g := by
   have _ := hX.1
-  have hXm := equatorGFF_test_memLp X hX (affinePushTestFn a b g)
   have hLm : MemLp (Lr) 2 P := hXc.2.1 b _
-  have hCm := hXc.2.1 (a * y + b) (r - Real.log ‖a‖)
   have hY : (fun ω => repinField X (Lr) a b ω g) =
       fun ω => X ω (affinePushTestFn a b g) - (∫ z, g z) * Xc ω b (-Real.log ‖a‖) := by
     funext ω
@@ -168,7 +169,7 @@ theorem covariance_repinField_repinCircle (hX : IsEquatorGFF P X)
     ring
   rw [hY]
   simp only [repinCircle]
-  rw [covariance_fun_sub_fun_sub hXm (hLm.const_mul _) hCm hLm,
+  rw [covariance_fun_sub_fun_sub (equatorGFF_test_memLp X hX (affinePushTestFn a b g)) (hLm.const_mul _) (hXc.2.1 (a * y + b) (r - Real.log ‖a‖)) hLm,
     covariance_const_mul_left, covariance_const_mul_left,
     covariance_comm (X := fun ω => X ω (affinePushTestFn a b g)),
     circleAverage_test_covariance P X Xc hX hXc _ _ (affinePushTestFn a b g),
@@ -180,8 +181,7 @@ theorem covariance_repinField_repinCircle (hX : IsEquatorGFF P X)
   ring
 
 /-- Variance of a repinned circle average. -/
-theorem variance_repinCircle (hX : IsEquatorGFF P X) (hXc : IsCircleAverage P X Xc)
-    (ha : a ≠ 0) (y : ℂ) (r : ℝ) :
+theorem variance_repinCircle (y : ℂ) (r : ℝ) :
     Var[fun ω => repinCircle Xc (Lr) a b ω y r; P] = circleSelfEnergy y r := by
   have _ := hX.1
   have hLm : MemLp (Lr) 2 P := hXc.2.1 b _
@@ -201,8 +201,7 @@ theorem variance_repinCircle (hX : IsEquatorGFF P X) (hXc : IsCircleAverage P X 
   ring
 
 /-- **The repinned circle averages are a circle-average process for the repinned field.** -/
-theorem isCircleAverage_repinField (hX : IsEquatorGFF P X) (hXc : IsCircleAverage P X Xc)
-    (ha : a ≠ 0) :
+theorem isCircleAverage_repinField :
     IsCircleAverage P (repinField X (Lr) a b) (repinCircle Xc (Lr) a b) := by
   have _ := hX.1
   have hLmeas : Measurable (Lr) :=
@@ -269,6 +268,8 @@ theorem isCircleAverage_repinField (hX : IsEquatorGFF P X) (hXc : IsCircleAverag
   rw [ENNReal.ofReal_zero] at h1
   exact h1
 
+
+end
 end Repin
 
 end DOZZ.Proofs

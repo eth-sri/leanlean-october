@@ -16,7 +16,6 @@ positive Doob process to avoid `c` changes its killed kernel to the same Doob ke
 
 @[expose] public section
 
-open MeasureTheory ProbabilityTheory
 
 namespace DOZZ.Proofs
 

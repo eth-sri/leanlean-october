@@ -15,37 +15,36 @@ open MeasureTheory ProbabilityTheory Filter Topology
 
 namespace DOZZ.Proofs
 
-/-- Sampling one spatial coordinate preserves joint integrability. -/
-theorem spatial_sample_integrable
-    {Ω S : Type*} [MeasurableSpace Ω] [MeasurableSpace S]
-    (P : Measure Ω) [IsProbabilityMeasure P]
-    (ν : Measure S) [IsProbabilityMeasure ν] (f : Ω → S → ℝ)
-    (hf : Integrable (fun p : Ω × S => f p.1 p.2) (P.prod ν)) (i : ℕ) :
-    Integrable (fun p : Ω × (ℕ → S) => f p.1 (p.2 i))
-      (P.prod (Measure.infinitePi (fun _ : ℕ => ν))) := by
-  have heval : MeasurePreserving (fun q : ℕ → S => q i)
-      (Measure.infinitePi (fun _ : ℕ => ν)) ν :=
-    ⟨measurable_pi_apply i, Measure.infinitePi_map_eval (fun _ : ℕ => ν) i⟩
-  exact ((MeasurePreserving.id P).prod heval).integrable_comp_of_integrable hf
+variable {Ω S : Type*} [MeasurableSpace Ω] [MeasurableSpace S]
+
+
+
+section
+variable (P : Measure Ω) [IsProbabilityMeasure P] (ν : Measure S) [IsProbabilityMeasure ν] (f : Ω → S → ℝ)
+include P ν f
 
 /-- Every finite spatial sample average is integrable. -/
 theorem spatial_empirical_average_integrable
-    {Ω S : Type*} [MeasurableSpace Ω] [MeasurableSpace S]
-    (P : Measure Ω) [IsProbabilityMeasure P]
-    (ν : Measure S) [IsProbabilityMeasure ν] (f : Ω → S → ℝ)
+
+
     (hf : Integrable (fun p : Ω × S => f p.1 p.2) (P.prod ν)) (n : ℕ) :
     Integrable (fun p : Ω × (ℕ → S) =>
       (n : ℝ)⁻¹ * ∑ i : Fin n, f p.1 (p.2 i.val))
       (P.prod (Measure.infinitePi (fun _ : ℕ => ν))) :=
+  have spatial_sample_integrable (i : ℕ) : Integrable (fun p : Ω × (ℕ → S) => f p.1 (p.2 i))
+        (P.prod (Measure.infinitePi (fun _ : ℕ => ν))) := by
+    have heval : MeasurePreserving (fun q : ℕ → S => q i)
+        (Measure.infinitePi (fun _ : ℕ => ν)) ν :=
+      ⟨measurable_pi_apply i, Measure.infinitePi_map_eval (fun _ : ℕ => ν) i⟩
+    exact ((MeasurePreserving.id P).prod heval).integrable_comp_of_integrable hf
   (integrable_finsetSum Finset.univ (fun i _ =>
-    spatial_sample_integrable P ν f hf i.val)).const_mul _
+      spatial_sample_integrable i.val)).const_mul _
 
 /-- Joint integrability upgrades the spatial strong law to convergence in mean on the product
 of the field probability space and the independent spatial sampling space. -/
 theorem spatial_empirical_average_L1
-    {Ω S : Type*} [MeasurableSpace Ω] [MeasurableSpace S]
-    (P : Measure Ω) [IsProbabilityMeasure P]
-    (ν : Measure S) [IsProbabilityMeasure ν] (f : Ω → S → ℝ)
+
+
     (hjoint : Measurable (fun p : Ω × S => f p.1 p.2))
     (hf : Integrable (fun p : Ω × S => f p.1 p.2) (P.prod ν))
     (hnonneg : ∀ ω x, 0 ≤ f ω x) :
@@ -61,10 +60,9 @@ theorem spatial_empirical_average_L1
   let g : Ω × (ℕ → S) → ℝ := fun p => ∫ x, f p.1 x ∂ν
   have heval (i : ℕ) : MeasurePreserving (fun q : ℕ → S => q i) Q ν :=
     ⟨measurable_pi_apply i, Measure.infinitePi_map_eval (fun _ : ℕ => ν) i⟩
-  have hmap (i : ℕ) : MeasurePreserving
-      (fun p : Ω × (ℕ → S) => (p.1, p.2 i)) μ (P.prod ν) :=
+  have hmap (i : ℕ) :=
     (MeasurePreserving.id P).prod (heval i)
-  have hterm (i : ℕ) : Integrable (fun p : Ω × (ℕ → S) => f p.1 (p.2 i)) μ :=
+  have hterm (i : ℕ) :=
     (hmap i).integrable_comp_of_integrable hf
   have htermMean (i : ℕ) : (∫ p : Ω × (ℕ → S), f p.1 (p.2 i) ∂μ) =
       ∫ p : Ω × S, f p.1 p.2 ∂(P.prod ν) := by
@@ -102,4 +100,6 @@ theorem spatial_empirical_average_L1
       (Finset.sum_nonneg fun i _ => hnonneg _ _))
     (ae_of_all _ fun p => integral_nonneg fun x => hnonneg _ _) hlim hmean
 
+
+end
 end DOZZ.Proofs

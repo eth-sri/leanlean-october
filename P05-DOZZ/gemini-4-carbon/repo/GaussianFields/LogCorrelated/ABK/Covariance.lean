@@ -21,8 +21,11 @@ open scoped ENNReal InnerProductSpace NNReal ProbabilityTheory Topology
 
 namespace GaussianFields
 
+variable {d : Nat}
+
+
 /-- The canonically normalized ABK product kernel is in `L²`. -/
-theorem memLp_abkLogKernelProd_canonical {d : Nat} (hd : 0 < d)
+theorem memLp_abkLogKernelProd_canonical (hd : 0 < d)
     (ζ : ABKCutoff d) (ψ : MeanZeroTestFunction d) :
     MemLp (abkLogKernelProd (abkNormalization ζ) ζ ψ) 2
       (volume : Measure (ℝ × Vec d)) :=
@@ -30,7 +33,7 @@ theorem memLp_abkLogKernelProd_canonical {d : Nat} (hd : 0 < d)
 
 /-- The canonically normalized ABK log-correlated field evaluation. -/
 @[expose]
-noncomputable def abkLogCorrelatedFieldL2Canonical {d : Nat} (hd : 0 < d)
+noncomputable def abkLogCorrelatedFieldL2Canonical (hd : 0 < d)
     (ζ : ABKCutoff d) (ψ : MeanZeroTestFunction d) :
     Lp ℝ 2 (scaleSpaceWhiteNoiseMeasure d) :=
   abkLogCorrelatedFieldL2 (abkNormalization ζ) ζ ψ
@@ -39,7 +42,7 @@ noncomputable def abkLogCorrelatedFieldL2Canonical {d : Nat} (hd : 0 < d)
 /-- Canonical covariance after the fixed-scale spatial Fubini rearrangement.  The spatial section
 is the double integral against the scaled cutoff self-convolution. -/
 theorem covariance_abkLogCorrelatedFieldL2Canonical_eq_scale_selfConvolution_integral
-    {d : Nat} (hd : 0 < d) (ζ : ABKCutoff d) (ψ φ : MeanZeroTestFunction d) :
+ (hd : 0 < d) (ζ : ABKCutoff d) (ψ φ : MeanZeroTestFunction d) :
     cov[abkLogCorrelatedFieldL2Canonical hd ζ ψ,
         abkLogCorrelatedFieldL2Canonical hd ζ φ;
         scaleSpaceWhiteNoiseMeasure d] =
@@ -54,8 +57,6 @@ theorem covariance_abkLogCorrelatedFieldL2Canonical_eq_scale_selfConvolution_int
               ∂(volume : Measure (Vec d)))
         else
           0 := by
-  let hψ := memLp_abkLogKernelProd_canonical hd ζ ψ
-  let hφ := memLp_abkLogKernelProd_canonical hd ζ φ
   unfold abkLogCorrelatedFieldL2Canonical
   rw [covariance_abkLogCorrelatedFieldL2_eq_prod_integral]
   have hprod_int :
@@ -68,7 +69,7 @@ theorem covariance_abkLogCorrelatedFieldL2Canonical_eq_scale_selfConvolution_int
       (abkLogKernelProd (abkNormalization ζ) ζ ψ *
         abkLogKernelProd (abkNormalization ζ) ζ φ)
       (volume : Measure (ℝ × Vec d))
-    exact hψ.integrable_mul hφ
+    exact (memLp_abkLogKernelProd_canonical hd ζ ψ).integrable_mul (memLp_abkLogKernelProd_canonical hd ζ φ)
   rw [Measure.volume_eq_prod] at hprod_int ⊢
   rw [integral_prod _ hprod_int]
   refine integral_congr_ae ?_
@@ -84,7 +85,7 @@ theorem covariance_abkLogCorrelatedFieldL2Canonical_eq_scale_selfConvolution_int
               abkSpatialConvolution ζ ψ r y *
                 abkSpatialConvolution ζ φ r y
               ∂(volume : Measure (Vec d))) := by
-      let c : ℝ := (abkNormalization ζ) ^ (2 : Nat) * r ^ (-((d : ℝ) + 1))
+      let c := (abkNormalization ζ) ^ (2 : Nat) * r ^ (-((d : ℝ) + 1))
       calc
         (∫ y : Vec d,
             abkLogKernelProd (abkNormalization ζ) ζ ψ (r, y) *

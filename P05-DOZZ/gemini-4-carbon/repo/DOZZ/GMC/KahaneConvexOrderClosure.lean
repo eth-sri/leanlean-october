@@ -20,7 +20,11 @@ namespace DOZZ.Proofs
 noncomputable def initialAffineMax (a b : ℕ → ℝ) (n : ℕ) (x : ℝ) : ℝ :=
   affineMax (fun i : Fin (n + 1) => a i.val) (fun i : Fin (n + 1) => b i.val) x
 
-theorem initialAffineMax_mono (a b : ℕ → ℝ) (x : ℝ) :
+section
+variable (a b : ℕ → ℝ)
+include a b
+
+theorem initialAffineMax_mono (x : ℝ) :
     Monotone (fun n => initialAffineMax a b n x) := by
   classical
   intro n m hnm
@@ -31,13 +35,13 @@ theorem initialAffineMax_mono (a b : ℕ → ℝ) (x : ℝ) :
   exact affineMax_le (fun i : Fin (m + 1) => a i.val)
     (fun i : Fin (m + 1) => b i.val) x j
 
-theorem initialAffineMax_zero_le (a b : ℕ → ℝ) (n : ℕ) (x : ℝ) :
+theorem initialAffineMax_zero_le (n : ℕ) (x : ℝ) :
     a 0 * x + b 0 ≤ initialAffineMax a b n x :=
   affineMax_le (fun i : Fin (n + 1) => a i.val)
     (fun i : Fin (n + 1) => b i.val) x 0
 
 theorem initialAffineMax_tendsto
-    (a b : ℕ → ℝ) (x z : ℝ) (hle : ∀ n, a n * x + b n ≤ z)
+ (x z : ℝ) (hle : ∀ n, a n * x + b n ≤ z)
     (hsup : (⨆ n, a n * x + b n) = z) :
     Tendsto (fun n => initialAffineMax a b n x) atTop (𝓝 z) := by
   classical
@@ -51,12 +55,14 @@ theorem initialAffineMax_tendsto
     rw [← hsup]
     apply ciSup_le
     intro n
-    have hn : a n * x + b n ≤ initialAffineMax a b n x :=
+    have hn :=
       affineMax_le (fun i : Fin (n + 1) => a i.val)
         (fun i : Fin (n + 1) => b i.val) x ⟨n, by omega⟩
     exact hn.trans (le_ciSup hbdd n)
   simpa only [hHeq] using tendsto_atTop_ciSup (initialAffineMax_mono a b x) hbdd
 
+
+end
 /-- On positive integrable masses of equal mean, affine-maximum order implies comparison and
 integrability for every convex test whose expectation on the larger side is integrable. -/
 theorem convex_comparison_of_affine_max_order
@@ -87,15 +93,15 @@ theorem convex_comparison_of_affine_max_order
   let GY : ℕ → ΩY → ℝ := fun n ω => initialAffineMax a b n (MY ω) - LY ω
   let GXlim : ΩX → ℝ := fun ω => F (MX ω) - LX ω
   let GYlim : ΩY → ℝ := fun ω => F (MY ω) - LY ω
-  have hGXint (n : ℕ) : Integrable (GX n) PX :=
+  have hGXint (n : ℕ) :=
     (affineMax_comp_integrable PX MX hMX (fun i : Fin (n + 1) => a i.val)
       (fun i : Fin (n + 1) => b i.val)).sub hLX
-  have hGYint (n : ℕ) : Integrable (GY n) PY :=
+  have hGYint (n : ℕ) :=
     (affineMax_comp_integrable PY MY hMY (fun i : Fin (n + 1) => a i.val)
       (fun i : Fin (n + 1) => b i.val)).sub hLY
-  have hGXnonneg (n : ℕ) (ω : ΩX) : 0 ≤ GX n ω :=
+  have hGXnonneg (n : ℕ) (ω : ΩX) :=
     sub_nonneg.mpr (initialAffineMax_zero_le a b n (MX ω))
-  have hGYnonneg (n : ℕ) (ω : ΩY) : 0 ≤ GY n ω :=
+  have hGYnonneg (n : ℕ) (ω : ΩY) :=
     sub_nonneg.mpr (initialAffineMax_zero_le a b n (MY ω))
   have hGXlimnonneg : 0 ≤ᵐ[PX] GXlim := by
     filter_upwards [hMXpos] with ω hω

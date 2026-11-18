@@ -18,6 +18,7 @@ resulting `BrownianPath`; no extension of the conditioned finite-dimensional law
 
 @[expose] public section
 
+noncomputable section
 open MeasureTheory ProbabilityTheory
 open scoped NNReal ENNReal
 
@@ -27,7 +28,7 @@ namespace DOZZ.Proofs
 abbrev BrownianTriple := Fin 3 → BrownianPath
 
 /-- The product of three copies of a one-dimensional path law. -/
-noncomputable def brownianTripleMeasure (W : Measure BrownianPath) : Measure BrownianTriple :=
+def brownianTripleMeasure (W : Measure BrownianPath) : Measure BrownianTriple :=
   Measure.pi fun _ : Fin 3 => W
 
 instance isProbabilityMeasure_brownianTripleMeasure (W : Measure BrownianPath)
@@ -42,7 +43,7 @@ def rogersPitmanVectorAt (μ : ℝ) (V : BrownianTriple) (t : ℝ≥0) :
     V i t + (if i = 0 then μ * (t : ℝ) else 0))
 
 /-- The continuous Rogers--Pitman radial path `t ↦ |V_t + μ t e₁|`. -/
-noncomputable def rogersPitmanPath (μ : ℝ) (V : BrownianTriple) : BrownianPath :=
+def rogersPitmanPath (μ : ℝ) (V : BrownianTriple) : BrownianPath :=
   ⟨fun t => ‖rogersPitmanVectorAt μ V t‖, by
     apply Continuous.norm
     apply (PiLp.continuous_toLp 2 _).comp
@@ -79,26 +80,20 @@ theorem rogersPitmanPath_zero (μ : ℝ) (V : BrownianTriple)
 
 /-- The probability candidate for the positive conditioned entrance path, obtained by mapping the
 product of three Brownian path laws through the radial construction. -/
-noncomputable def rogersPitmanEntranceMeasure (μ : ℝ) (W : Measure BrownianPath) :
+def rogersPitmanEntranceMeasure (μ : ℝ) (W : Measure BrownianPath) :
     Measure BrownianPath :=
   (brownianTripleMeasure W).map (rogersPitmanPath μ)
 
-instance isProbabilityMeasure_rogersPitmanEntranceMeasure (μ : ℝ)
-    (W : Measure BrownianPath) [IsProbabilityMeasure W] :
-    IsProbabilityMeasure (rogersPitmanEntranceMeasure μ W) := by
-  unfold rogersPitmanEntranceMeasure
-  infer_instance
 
 /-- The negative conditioned path is the negative of the positive radial entrance path. -/
-noncomputable def negativeRogersPitmanPath (μ : ℝ) (V : BrownianTriple) : BrownianPath :=
+def negativeRogersPitmanPath (μ : ℝ) (V : BrownianTriple) : BrownianPath :=
   -(rogersPitmanPath μ V)
 
 theorem measurable_negativeRogersPitmanPath (μ : ℝ) :
-    Measurable (fun V : BrownianTriple => negativeRogersPitmanPath μ V) := by
-  exact (measurable_rogersPitmanPath μ).neg
+    Measurable (fun V : BrownianTriple => negativeRogersPitmanPath μ V) := (measurable_rogersPitmanPath μ).neg
 
 /-- The negative entrance candidate is the pushforward under `-R`. -/
-noncomputable def negativeRogersPitmanEntranceMeasure (μ : ℝ) (W : Measure BrownianPath) :
+def negativeRogersPitmanEntranceMeasure (μ : ℝ) (W : Measure BrownianPath) :
     Measure BrownianPath :=
   (brownianTripleMeasure W).map (negativeRogersPitmanPath μ)
 

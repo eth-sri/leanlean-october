@@ -53,15 +53,18 @@ theorem iInter_ball_inv_succ (x : ℂ) :
   constructor
   · intro hy
     by_contra hne
-    have hpos : 0 < dist y x := dist_pos.mpr hne
-    obtain ⟨k, hk⟩ := exists_nat_one_div_lt hpos
+    obtain ⟨k, hk⟩ := exists_nat_one_div_lt (dist_pos.mpr hne)
     exact absurd (hy k) (not_lt.mpr hk.le)
   · rintro rfl k
     rw [dist_self]
     positivity
 
+section
+variable (μ : Measure ℂ) [IsFiniteMeasure μ]
+include μ
+
 /-- For a finite measure without atoms the near-diagonal mass vanishes in the limit. -/
-theorem tendsto_bpzNearDiag_zero (μ : Measure ℂ) [IsFiniteMeasure μ] (hμ : ∀ x, μ {x} = 0)
+theorem tendsto_bpzNearDiag_zero (hμ : ∀ x, μ {x} = 0)
     (ρ : ℝ) : Tendsto (fun k : ℕ => bpzNearDiag ρ (1 / ((k : ℝ) + 1)) μ) atTop (𝓝 0) := by
   simp_rw [bpzNearDiag_eq]
   have hlim : ∀ x, Tendsto (fun k : ℕ =>
@@ -98,7 +101,7 @@ theorem tendsto_bpzNearDiag_zero (μ : Measure ℂ) [IsFiniteMeasure μ] (hμ : 
     · simp
 
 /-- The near-diagonal mass is bounded by a grid sum. -/
-theorem bpzNearDiag_le_grid (μ : Measure ℂ) [IsFiniteMeasure μ] {ρ t h : ℝ} (hh : 0 < h) :
+theorem bpzNearDiag_le_grid {ρ t h : ℝ} (hh : 0 < h) :
     bpzNearDiag ρ t μ ≤ ∑ i ∈ bpzGridBox ⌈ρ / h⌉₊, μ.real (bpzGridIdx h ⁻¹' {i}) *
       μ.real (Metric.ball (bpzGridCorner h i) (t + 2 * h)) := by
   rw [← integral_bpzGrid_step h _ (fun i => μ.real (Metric.ball (bpzGridCorner h i) (t + 2 * h))),
@@ -128,16 +131,14 @@ theorem bpzNearDiag_le_grid (μ : Measure ℂ) [IsFiniteMeasure μ] {ρ t h : �
       rw [Metric.mem_ball] at hy ⊢
       have := norm_sub_bpzGridCorner_le hh x
       rw [dist_eq_norm] at hy ⊢
-      calc ‖y - bpzGridCorner h (bpzGridIdx h x)‖
-          ≤ ‖y - x‖ + ‖x - bpzGridCorner h (bpzGridIdx h x)‖ := norm_sub_le_norm_sub_add_norm_sub _ _ _
-        _ < t + 2 * h := add_lt_add_of_lt_of_le hy this
+      exact (norm_sub_le_norm_sub_add_norm_sub _ _ _).trans_lt (add_lt_add_of_lt_of_le hy this)
     · rw [ite_eq_right hx]
       split_ifs
       · exact measureReal_nonneg
       · exact le_rfl
 
 /-- A grid sum is bounded by the near-diagonal mass at a larger width and radius. -/
-theorem grid_le_bpzNearDiag (μ : Measure ℂ) [IsFiniteMeasure μ] {ρ t h : ℝ} {N : ℕ}
+theorem grid_le_bpzNearDiag {ρ t h : ℝ} {N : ℕ}
     (hh : 0 < h) (hρ : 2 * ((N + 1) * h) ≤ ρ) :
     ∑ i ∈ bpzGridBox N, μ.real (bpzGridIdx h ⁻¹' {i}) *
       μ.real (Metric.ball (bpzGridCorner h i) (t + 2 * h)) ≤ bpzNearDiag ρ (t + 4 * h) μ := by
@@ -179,12 +180,13 @@ theorem grid_le_bpzNearDiag (μ : Measure ℂ) [IsFiniteMeasure μ] {ρ t h : �
       · exact measureReal_nonneg
       · exact le_rfl
 
+
+end
 theorem bpzGrid_box_radius {R h : ℝ} (hR : 0 ≤ R) (hh : 0 < h) (hh1 : h ≤ 1 / 4) :
     2 * ((⌈R / h⌉₊ + 1) * h) ≤ 2 * R + 1 := by
-  have hc : (⌈R / h⌉₊ : ℝ) < R / h + 1 := Nat.ceil_lt_add_one (div_nonneg hR hh.le)
-  have : ((⌈R / h⌉₊ : ℝ) + 1) * h < (R / h + 2) * h := by
-    apply mul_lt_mul_of_pos_right _ hh; linarith
-  have h2 : (R / h + 2) * h = R + 2 * h := by field_simp
+  have := Nat.ceil_lt_add_one (div_nonneg hR hh.le)
+  have : ((⌈R / h⌉₊ : ℝ) + 1) * h < (R / h + 2) * h := by nlinarith
+  have : (R / h + 2) * h = R + 2 * h := by field_simp
   nlinarith
 
 /-- Pathwise error of the grid approximation of a double integral. -/

@@ -23,15 +23,13 @@ theorem rho_moment_swap12
   let L := fun ω => Xc ω 1 0
   let Y := symmetryRepinnedField X L
   let N := symmetryRepinnedChaos γ M L
-  let Z := fun ω x r => Xc ω (1 - x) r - L ω
   let s := sExp γ a b c
   let t := -γ * s
   let A := γ ^ 2 * s ^ 2 * symmetryReflectionKappa
   let E := ENNReal.ofReal (Real.exp (-A))
-  have hY : IsEquatorGFF P Y := isEquatorGFF_symmetryRepinnedField P X hX Xc hXc
-  have hN : IsGMCOf P Y γ N := isGMCOf_symmetryRepinnedChaos P X hX Xc hXc γ M hM
-  have hZ : IsCircleAverage P Y Z := isCircleAverage_symmetryRepinned P X hX Xc hXc
-  have hL : IsGaussianL2Limit P Y (fun ω => t * L ω) :=
+  have hY := isEquatorGFF_symmetryRepinnedField P X hX Xc hXc
+  have hN := isGMCOf_symmetryRepinnedChaos P X hX Xc hXc γ M hM
+  have hL :=
     IsGaussianL2Limit_const_mul_symmetry P Y L
       (reflection_normalization_in_repinned_closure P X hX Xc hXc) t
   have hV : gaussianVariance P (fun ω => t * L ω) / 2 = A := by
@@ -43,7 +41,7 @@ theorem rho_moment_swap12
     simpa only [ENNReal.rpow_eq_pow, Function.comp_def] using
       (ENNReal.continuous_rpow_const.measurable.comp
         ((symmetryCorrectedRho_measurable γ a b c).comp measurable_snd))
-  have htilt := DOZZ.equatorGFF_GMC_tilt P Y hY γ hγ hγ2 N hN Z hZ
+  have htilt := DOZZ.equatorGFF_GMC_tilt P Y hY γ hγ hγ2 N hN (fun ω x r => Xc ω (1 - x) r - L ω) (isCircleAverage_symmetryRepinned P X hX Xc hXc)
     (fun ω => t * L ω) hL (symmetryTiltPotential t)
     (symmetryTiltPotential_uniform P X hX Xc hXc t) H hHm
   have hleft (ω : Ω) : ENNReal.ofReal

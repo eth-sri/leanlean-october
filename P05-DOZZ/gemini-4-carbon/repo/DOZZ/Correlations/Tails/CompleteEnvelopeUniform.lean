@@ -30,10 +30,9 @@ theorem complete_envelope_moment_uniform_compact
             Real.exp (pinCorrectionEnvelope z γ (N ω) (Nbar ω)+4))) ^ r ∂P) ≤ C := by
   obtain ⟨v,a,hv,ha,hpar⟩ := compact_pin_parameters K hK hz γ
   let L := (d+5*s)*Real.exp (2*γ^2+4)
-  have hL : 0 ≤ L := by dsimp [L]; positivity
+  have hL : 0 ≤ L := by positivity
   let k := |γ|+2*a
-  let G := ENNReal.ofReal (2*(Real.exp (v*(2*(R*k))^2/2)+Real.exp (v*(2*(R*k))^2/2)))
-  let C := 1+(ENNReal.ofReal L)^R*G
+  let C := 1+(ENNReal.ofReal L)^R*(ENNReal.ofReal (2*(Real.exp (v*(2*(R*k))^2/2)+Real.exp (v*(2*(R*k))^2/2))))
   have hC : C < ⊤ := ENNReal.add_lt_top.mpr ⟨ENNReal.one_lt_top,
     ENNReal.mul_lt_top (ENNReal.rpow_lt_top_of_nonneg hR.le ENNReal.ofReal_ne_top)
       ENNReal.ofReal_lt_top⟩

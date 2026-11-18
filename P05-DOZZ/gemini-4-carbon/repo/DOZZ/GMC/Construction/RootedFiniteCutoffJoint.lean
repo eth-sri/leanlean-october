@@ -37,7 +37,7 @@ theorem regularizedGMC_joint_circle_tilt
           (Real.exp (γ * gaussianCovariance P (fun ω' => Xc ω' x r)
             (fun ω' => γ * Xc ω' u r))))) ∂P := by
   classical
-  let _ : IsProbabilityMeasure P := hX.1
+  let _ := hX.1
   let L : Ω → ℝ := fun ω => γ * Xc ω u r
   let V : ℂ → ℝ := fun x => ∫ ω', Xc ω' x r ^ 2 ∂P
   let wick : Ω → ℝ≥0∞ := fun ω => ENNReal.ofReal
@@ -50,16 +50,13 @@ theorem regularizedGMC_joint_circle_tilt
     simpa [L] using
       (circleAverage_sum_isGaussianL2Limit P X hX Xc hXc
         (fun _ : Fin 1 => γ) (fun _ => u) r)
-  have hcovCont : Continuous covCircle := by
-    exact continuous_gaussianCovariance_circle_of_IsGaussianL2Limit
+  have hcovCont : Continuous covCircle := continuous_gaussianCovariance_circle_of_IsGaussianL2Limit
       P X hX Xc hXc L hL r
   have hVariance : gaussianVariance P L = γ ^ 2 * V u := by
     rw [gaussianVariance, gaussianCovariance]
     calc
       (∫ ω, (γ * Xc ω u r) * (γ * Xc ω u r) ∂P) =
-          ∫ ω, γ ^ 2 * Xc ω u r ^ 2 ∂P := by
-            apply integral_congr_ae
-            exact ae_of_all _ fun ω => by ring
+          ∫ ω, γ ^ 2 * Xc ω u r ^ 2 ∂P := by ring
       _ = γ ^ 2 * ∫ ω, Xc ω u r ^ 2 ∂P := integral_const_mul _ _
       _ = γ ^ 2 * V u := rfl
   have hfieldCov (f : TestFn) :
@@ -78,10 +75,9 @@ theorem regularizedGMC_joint_circle_tilt
             rw [isCircleAverage_cross_covariance P X hX Xc hXc]
   obtain ⟨Z, hZcoord, hZae, hZmeas⟩ :=
     exists_measurable_continuousCircleProfile P X hX Xc hXc r
-  let Hroot : (TestFn → ℝ) → Measure ℂ → ℝ≥0∞ := H
-  have hHroot : Measurable (fun q : (TestFn → ℝ) × Measure ℂ => Hroot q.1 q.2) := hH
-  have hTransport := equatorGFF_tilted_test_continuousCircle_cutoff_lintegral
-    P X hX Xc hXc r 1 γ L hL Z hZmeas hZae hcovCont Hroot hHroot
+  let Hroot := H
+  have := equatorGFF_tilted_test_continuousCircle_cutoff_lintegral
+    P X hX Xc hXc r 1 γ L hL Z hZmeas hZae hcovCont Hroot (hH)
   have hProfileAE := continuousCircleCutoffMeasure_ae_eq_regularizedGMC
     P X hX Xc hXc γ r Z hZmeas hZae
   have hProfileShiftAE := continuousCircleCutoffMeasure_shift_ae_eq_regularizedGMC_withDensity
@@ -96,14 +92,12 @@ theorem regularizedGMC_joint_circle_tilt
       (1 * L ω - 1 ^ 2 / 2 * gaussianVariance P L))) = P.withDensity wick := by
     apply withDensity_congr_ae
     exact ae_of_all P hWick
-  have hProfileUnderWick :=
-    (withDensity_absolutelyContinuous P wick).ae_le hProfileAE
   have hleftProfile :
       (∫⁻ ω, H (fun f => X ω f)
         (continuousCircleCutoffMeasure V γ (Z ω)) ∂P.withDensity wick) =
       ∫⁻ ω, H (fun f => X ω f) (regularizedGMC P Xc γ r ω) ∂P.withDensity wick := by
     apply lintegral_congr_ae
-    filter_upwards [hProfileUnderWick] with ω hω
+    filter_upwards [(withDensity_absolutelyContinuous P wick).ae_le hProfileAE] with ω hω
     rw [hω]
   have hrightProfile :
       (∫⁻ ω, Hroot
@@ -132,11 +126,10 @@ theorem regularizedGMC_joint_circle_tilt
       ∫⁻ ω, Hroot
         (fun f => X ω f + 1 * gaussianCovariance P (fun ω' => X ω' f) L)
         (continuousCircleCutoffMeasure V γ
-        (continuousCircleProfileShift Z covCircle hcovCont 1 ω)) ∂P := by
-    simpa [V] using hTransport
+        (continuousCircleProfileShift Z covCircle hcovCont 1 ω)) ∂P := by assumption
   have hwickMeas : Measurable wick := by
     dsimp [wick]
-    have hxcu : Measurable (fun ω : Ω => Xc ω u r) :=
+    have : Measurable (fun ω : Ω => Xc ω u r) :=
       (hXc.1 r).comp (Measurable.prodMk measurable_id measurable_const)
     fun_prop
   have hfieldMeas : Measurable field := by

@@ -26,44 +26,22 @@ theorem real_gauss_solution_coefficient_ratio
         gaussCoefficientRatio a b c * ‖gaussFPlus H a b c z‖ ^ 2) := by
   obtain ⟨v, hv, hv_unique⟩ :=
     real_gauss_solution_classification hH a b c hc hδ T hT
-  have hratio := gaussCoefficientRatio_mul_K₂_add_K₁_eq_zero a b c hK₂
-  have hratio' : gaussK₁ a b c +
-      gaussCoefficientRatio a b c * gaussK₂ a b c = 0 := by
-    simpa [add_comm] using hratio
-  have hv₂ : v.2 = gaussCoefficientRatio a b c * v.1 := by
-    apply mul_left_cancel₀ hK₂
-    have hratioMul := congrArg (fun q : ℝ => q * v.1) hratio'
-    nlinarith [hv.1, hratioMul]
+  have := gaussCoefficientRatio_mul_K₂_add_K₁_eq_zero a b c hK₂
+  have hv₂ : v.2 = gaussCoefficientRatio a b c * v.1 := by grind
   refine ⟨v.1, ?_, ?_⟩
   · intro z hz
-    calc
-      T z = v.1 * ‖gaussFMinus H a b c z‖ ^ 2 +
-          v.2 * ‖gaussFPlus H a b c z‖ ^ 2 := hv.2 z hz
-      _ = v.1 * (‖gaussFMinus H a b c z‖ ^ 2 +
-          gaussCoefficientRatio a b c * ‖gaussFPlus H a b c z‖ ^ 2) := by
-        rw [hv₂]
-        ring
+    refine (hv.2 z hz).trans (?_)
+    rw [hv₂]
+    ring
   · intro coeff hcoeff
     have hconstraint : gaussK₁ a b c * coeff +
-        gaussK₂ a b c * (gaussCoefficientRatio a b c * coeff) = 0 := by
-      calc
-        _ = coeff * (gaussK₁ a b c +
-            gaussCoefficientRatio a b c * gaussK₂ a b c) := by ring
-        _ = 0 := by rw [hratio']; ring
+        gaussK₂ a b c * (gaussCoefficientRatio a b c * coeff) = 0 := by grind
     have hrepresentation : ∀ z ∈ gaussCutPlane,
         T z = coeff * ‖gaussFMinus H a b c z‖ ^ 2 +
           (gaussCoefficientRatio a b c * coeff) *
-            ‖gaussFPlus H a b c z‖ ^ 2 := by
-      intro z hz
-      calc
-        T z = coeff * (‖gaussFMinus H a b c z‖ ^ 2 +
-            gaussCoefficientRatio a b c * ‖gaussFPlus H a b c z‖ ^ 2) := hcoeff z hz
-        _ = coeff * ‖gaussFMinus H a b c z‖ ^ 2 +
-            (gaussCoefficientRatio a b c * coeff) *
-              ‖gaussFPlus H a b c z‖ ^ 2 := by ring
+            ‖gaussFPlus H a b c z‖ ^ 2 := by grind
     have hv_eq := hv_unique (coeff, gaussCoefficientRatio a b c * coeff)
       ⟨hconstraint, hrepresentation⟩
-    have hfst := congrArg Prod.fst hv_eq
-    simpa using hfst
+    simpa using congrArg Prod.fst hv_eq
 
 end DOZZ.Proofs

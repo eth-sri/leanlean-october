@@ -13,19 +13,14 @@ open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
 
+section
+variable {Ω Λ Ξ : Type*} [MeasurableSpace Ω] [MeasurableSpace Λ] [MeasurableSpace Ξ] (P : Measure Ω) (R : Measure Λ) (S : Measure Ξ) [IsProbabilityMeasure P] [IsProbabilityMeasure R] [IsProbabilityMeasure S] (A : Ω → TwoSidedPath) (A' : Λ → TwoSidedPath) (O : Ω → ℝ≥0∞) (O' : Λ → ℝ≥0∞) (Z : Ξ → Measure ℝ) (hA : AEMeasurable A P) (hA' : AEMeasurable A' R) (hO : AEMeasurable O P) (hO' : AEMeasurable O' R) (hZ : AEMeasurable Z S) (hfin : ∀ᵐ ω ∂S, ∀ a b : ℝ, Z ω (Icc a b) < ⊤) (hlaw : P.map (fun ω => (A ω,O ω)) = R.map (fun ω => (A' ω,O' ω))) (γ ν : ℝ)
+include hA hA' hO hO' hZ hfin hlaw γ ν
+
 /-- Transport a restarted polar increment with its full radial path and exterior mass.
 Local finiteness discharges the measurable polar-code identification on both source spaces. -/
 theorem dual_path_outer_polar_integral_transport
-    {Ω Λ Ξ : Type*} [MeasurableSpace Ω] [MeasurableSpace Λ] [MeasurableSpace Ξ]
-    (P : Measure Ω) (R : Measure Λ) (S : Measure Ξ)
-    [IsProbabilityMeasure P] [IsProbabilityMeasure R] [IsProbabilityMeasure S]
-    (A : Ω → TwoSidedPath) (A' : Λ → TwoSidedPath)
-    (O : Ω → ℝ≥0∞) (O' : Λ → ℝ≥0∞) (Z : Ξ → Measure ℝ)
-    (hA : AEMeasurable A P) (hA' : AEMeasurable A' R)
-    (hO : AEMeasurable O P) (hO' : AEMeasurable O' R)
-    (hZ : AEMeasurable Z S) (hfin : ∀ᵐ ω ∂S, ∀ a b : ℝ, Z ω (Icc a b) < ⊤)
-    (hlaw : P.map (fun ω => (A ω,O ω)) = R.map (fun ω => (A' ω,O' ω)))
-    (γ ν h p : ℝ) (z : ℂ) (T : ℝ≥0) :
+ (h p : ℝ) (z : ℂ) (T : ℝ≥0) :
     (∫ ω : Ω × Ξ,
       ((O ω.1).toReal + dualPathRadialScale γ ν h z (A ω.1)*
         (∫⁻ t, (if 0 < t then ENNReal.ofReal (Real.exp (γ*
@@ -81,16 +76,7 @@ theorem dual_path_outer_polar_integral_transport
 /-- Finiteness of the actual polar mass transfers under the full-path/exterior law,
 using the locally finite measurable polar code before taking real values. -/
 theorem dual_path_outer_polar_finite_transport
-    {Ω Λ Ξ : Type*} [MeasurableSpace Ω] [MeasurableSpace Λ] [MeasurableSpace Ξ]
-    (P : Measure Ω) (R : Measure Λ) (S : Measure Ξ)
-    [IsProbabilityMeasure P] [IsProbabilityMeasure R] [IsProbabilityMeasure S]
-    (A : Ω → TwoSidedPath) (A' : Λ → TwoSidedPath)
-    (O : Ω → ℝ≥0∞) (O' : Λ → ℝ≥0∞) (Z : Ξ → Measure ℝ)
-    (hA : AEMeasurable A P) (hA' : AEMeasurable A' R)
-    (hO : AEMeasurable O P) (hO' : AEMeasurable O' R)
-    (hZ : AEMeasurable Z S) (hfin : ∀ᵐ ω ∂S, ∀ a b : ℝ, Z ω (Icc a b) < ⊤)
-    (hlaw : P.map (fun ω => (A ω,O ω)) = R.map (fun ω => (A' ω,O' ω)))
-    (γ ν : ℝ) (T : ℝ≥0) :
+ (T : ℝ≥0) :
     (∀ᵐ ω : Ω × Ξ ∂P.prod S, (∫⁻ t,
       (if 0 < t then ENNReal.ofReal (Real.exp (γ*
         (brownianShiftPath T (radialPositiveHalf (A ω.1)) (Real.toNNReal t)-ν*t))) else 0)
@@ -132,4 +118,6 @@ theorem dual_path_outer_polar_finite_transport
     rw [reflected_inwardPolarMassCode_eq γ ν (D (A ω.1)) (Z ω.2) hloc] at hω
     exact hω
 
+
+end
 end DOZZ.Proofs

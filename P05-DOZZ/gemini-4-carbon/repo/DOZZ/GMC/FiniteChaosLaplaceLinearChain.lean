@@ -50,11 +50,7 @@ theorem finiteChaos_laplace_score_hasDerivAt_linearImage_coordinate
   have hT (j : ι) : HasDerivAt (fun r => T (Function.update x k r) j)
       (A j k) (x k) := by
     have hupd (r : ℝ) (l : ι) :
-        Function.update x k r l = x l + (if l = k then r - x k else 0) := by
-      by_cases hl : l = k
-      · subst l
-        simp
-      · simp [Function.update_of_ne, hl]
+        Function.update x k r l = x l + (if l = k then r - x k else 0) := by grind
     have hform (r : ℝ) : T (Function.update x k r) j = T x j + A j k * (r - x k) := by
       dsimp [T, finiteChaosLinearImageVector]
       calc
@@ -71,8 +67,7 @@ theorem finiteChaos_laplace_score_hasDerivAt_linearImage_coordinate
               · intro l hl hne
                 simp [hne]
               · simp
-        _ = T x j + A j k * (r - x k) := by
-              simp [T, finiteChaosLinearImageVector]
+        _ = T x j + A j k * (r - x k) := by rfl
     have hsub : HasDerivAt (fun r : ℝ => r - x k) 1 (x k) := by
       simpa using (hasDerivAt_id (x k)).sub_const (x k)
     have hmul : HasDerivAt (fun r : ℝ => A j k * (r - x k)) (A j k) (x k) := by
@@ -90,8 +85,7 @@ theorem finiteChaos_laplace_score_hasDerivAt_linearImage_coordinate
     have hexp := (Real.hasDerivAt_exp
       (γ * T (Function.update x k (x k)) j - γ ^ 2 / 2 * v j)).comp (x k) (hExp j)
     convert hexp.const_mul (a j) using 1
-    · ext r
-      simp [finiteChaosVectorWeight]
+    · rfl
     · simp [finiteChaosVectorWeight, Function.update_eq_self]
       ring
   have hMass : HasDerivAt
@@ -126,7 +120,6 @@ theorem finiteChaos_laplace_score_hasDerivAt_linearImage_coordinate
     have h := (hF' (finiteChaosVectorMass a v γ (T (Function.update x k (x k))))).comp
       (x k) hMass
     simpa only [Function.comp_def, Function.update_eq_self] using h
-  have hscore := (hWeight i).mul hFmass
   have hsum :
       (∑ j, A j k * (γ * (if i = j then
           finiteChaosVectorWeight a v γ (T x) i * F' (finiteChaosVectorMass a v γ (T x))
@@ -168,7 +161,7 @@ theorem finiteChaos_laplace_score_hasDerivAt_linearImage_coordinate
         _ = _ := by rw [Finset.mul_sum]
     rw [hmix]
     ring
-  convert hscore using 1
+  convert ((hWeight i).mul hFmass) using 1
   rw [hsum]
   simp [F', F'', Function.update_eq_self]
   ring
@@ -181,21 +174,16 @@ theorem real_hasDerivAt_to_semiring_module
     {f : ℝ → ℝ} {f' x : ℝ} (h : HasDerivAt f f' x) :
     @HasDerivAt ℝ DenselyNormedField.toNontriviallyNormedField ℝ
       Real.instAddCommGroup Semiring.toModule
-      PseudoMetricSpace.toUniformSpace.toTopologicalSpace _ f f' x := by
-  have hAdd : (Real.normedAddCommGroup.toAddCommGroup : AddCommGroup ℝ) =
-      Real.instAddCommGroup := by rfl
-  have hMod : (RCLike.toInnerProductSpaceReal.toModule : Module ℝ ℝ) =
-      Semiring.toModule := by
-    ext a y
-    rfl
-  cases hAdd
-  cases hMod
-  exact h
+      PseudoMetricSpace.toUniformSpace.toTopologicalSpace _ f f' x := by assumption
+
+section
+variable {n : ℕ} (A : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+include A
 
 /-- The bounded Laplace score satisfies covariance integration by parts under every square linear
 image of a standard Gaussian vector. The row-Gram covariance may be singular. -/
 theorem finiteChaos_laplace_score_standardGaussian_ibp
-    {n : ℕ} (A : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+
     (a v : Fin (n + 1) → ℝ) (γ s : ℝ)
     (ha : ∀ j, 0 ≤ a j) (hs : 0 ≤ s) (i : Fin (n + 1)) :
     ∫ x, (∑ k, A i k * x k) *
@@ -226,9 +214,7 @@ theorem finiteChaos_laplace_score_standardGaussian_ibp
       γ * finiteChaosVectorWeight a v γ x i * finiteChaosVectorWeight a v γ x j *
         (s ^ 2 * Real.exp (-s * finiteChaosVectorMass a v γ x))
   have hLin (z : Fin (n + 1) → ℝ) :
-      finiteChaosLinearImageVector A z = fun j => ∑ l, A j l * z l := by
-    funext j
-    rfl
+      finiteChaosLinearImageVector A z = fun j => ∑ l, A j l * z l := by rfl
   have hderiv : ∀ k (y : Fin n → ℝ) r,
       HasDerivAt
         (fun u => G (fun j => ∑ l, A j l *
@@ -238,7 +224,7 @@ theorem finiteChaos_laplace_score_standardGaussian_ibp
             (MeasurableEquiv.piFinSuccAbove (fun _ : Fin (n + 1) => ℝ) k).symm (r, y) l) j) r := by
     intro k y r
     let e := MeasurableEquiv.piFinSuccAbove (fun _ : Fin (n + 1) => ℝ) k
-    let x : Fin (n + 1) → ℝ := e.symm (r, y)
+    let x := e.symm (r, y)
     have hxk : x k = r := by simp [x, e]
     have hpath (u : ℝ) : e.symm (u, y) = Function.update x k u := by
       change Fin.insertNth k u y =
@@ -287,7 +273,7 @@ theorem finiteChaos_laplace_score_standardGaussian_ibp
 /-- Conditional form of the Laplace-score IBP with a deterministic field shift. It is the
 single-block identity used after fixing the other independent interpolation block. -/
 theorem finiteChaos_laplace_score_shifted_standardGaussian_ibp
-    {n : ℕ} (A : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+
     (c a v : Fin (n + 1) → ℝ) (γ s : ℝ)
     (ha : ∀ j, 0 ≤ a j) (hs : 0 ≤ s) (i : Fin (n + 1)) :
     ∫ x, (∑ k, A i k * x k) *
@@ -329,9 +315,7 @@ theorem finiteChaos_laplace_score_shifted_standardGaussian_ibp
           (γ * c j + (γ * ∑ k, A j k * x k - γ ^ 2 / 2 * v j)) := by
             rw [← Real.exp_add]
       _ = a j * Real.exp
-          (γ * (∑ k, A j k * x k + c j) - γ ^ 2 / 2 * v j) := by
-            congr 2
-            ring
+          (γ * (∑ k, A j k * x k + c j) - γ ^ 2 / 2 * v j) := by ring
   have hmass (x : Fin (n + 1) → ℝ) :
       finiteChaosVectorMass a' v γ
           (fun l => ∑ k, A l k * x k) =
@@ -344,4 +328,6 @@ theorem finiteChaos_laplace_score_shifted_standardGaussian_ibp
   simpa [hweight, hmass] using
     finiteChaos_laplace_score_standardGaussian_ibp A a' v γ s ha' hs i
 
+
+end
 end DOZZ.Proofs

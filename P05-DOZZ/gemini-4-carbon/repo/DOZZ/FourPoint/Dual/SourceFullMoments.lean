@@ -30,8 +30,7 @@ theorem dual_full_kernel_finite_ae
       rw [neg_div]
       unfold Q
       have hinv : 0 < 2/γ := div_pos (by norm_num) hγ
-      have hhalf : 0 < γ/2 := half_pos hγ
-      linarith only [hinv,hhalf]
+      linarith only [hinv,half_pos hγ]
     · exact hα₁
     · exact hα₂
   have hfull := reflected_coulombMass_ae_finite P X hX γ hγ hγ₂ M hM

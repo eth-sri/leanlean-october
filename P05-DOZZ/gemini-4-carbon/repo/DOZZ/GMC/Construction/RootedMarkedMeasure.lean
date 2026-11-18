@@ -15,10 +15,13 @@ open scoped ENNReal
 
 namespace DOZZ.Proofs
 
+variable {Ω U V : Type*} [MeasurableSpace Ω] [MeasurableSpace U] [MeasurableSpace V]
+
+
 /-- Attaching a measurable sample mark to a finite random measure gives a measurable measure
 family on the product. No uniform bound on its masses is required. -/
 theorem measurable_markedMeasure_family
-    {Ω U V : Type*} [MeasurableSpace Ω] [MeasurableSpace U] [MeasurableSpace V]
+
     (M : Ω → Measure U) (hM : Measurable M) (hfinite : ∀ ω, IsFiniteMeasure (M ω))
     (q : Ω → V) (hq : Measurable q) :
     Measurable (fun ω => Measure.map (fun u => (u, q ω)) (M ω)) := by
@@ -30,19 +33,20 @@ theorem measurable_markedMeasure_family
       fun ω => ∫⁻ u, S.indicator (fun _ => (1 : ℝ≥0∞)) (u, q ω) ∂M ω := by
     funext ω
     rw [Measure.map_apply (hmap ω) hS]
-    have hi := lintegral_indicator_const_comp (μ := M ω) (f := fun u : U => (u, q ω)) (hmap ω) hS 1
-    simpa only [one_mul] using hi.symm
+    simpa only [one_mul] using (lintegral_indicator_const_comp (μ := M ω) (f := fun u : U => (u, q ω)) (hmap ω) hS 1).symm
   rw [heq]
   apply measurable_lintegral_finite_family M hM hfinite
     (fun p : Ω × U => S.indicator (fun _ => (1 : ℝ≥0∞)) (p.2, q p.1))
-  exact ((measurable_const.indicator hS).comp
-    (measurable_snd.prodMk (hq.comp measurable_fst)))
+  fun_prop
+
+section
+variable (P : Measure Ω) (M : Ω → Measure U) (hM : Measurable M) (hfinite : ∀ ω, IsFiniteMeasure (M ω)) (q : Ω → V) (hq : Measurable q)
+include P hM hfinite hq
 
 /-- The expected marked measure is finite whenever the expected total mass is finite. -/
 theorem isFiniteMeasure_bind_markedMeasure
-    {Ω U V : Type*} [MeasurableSpace Ω] [MeasurableSpace U] [MeasurableSpace V]
-    (P : Measure Ω) (M : Ω → Measure U) (hM : Measurable M)
-    (hfinite : ∀ ω, IsFiniteMeasure (M ω)) (q : Ω → V) (hq : Measurable q)
+
+
     (hmean : (∫⁻ ω, M ω Set.univ ∂P) < ⊤) :
     IsFiniteMeasure (P.bind (fun ω => Measure.map (fun u => (u, q ω)) (M ω))) := by
   constructor
@@ -57,9 +61,8 @@ theorem isFiniteMeasure_bind_markedMeasure
 /-- Rectangle masses of the expected marked measure are the marked-law masses weighted by the
 random mass of the root set. -/
 theorem bind_markedMeasure_apply_prod
-    {Ω U V : Type*} [MeasurableSpace Ω] [MeasurableSpace U] [MeasurableSpace V]
-    (P : Measure Ω) (M : Ω → Measure U) (hM : Measurable M)
-    (hfinite : ∀ ω, IsFiniteMeasure (M ω)) (q : Ω → V) (hq : Measurable q)
+
+
     (A : Set U) (hA : MeasurableSet A) (D : Set V) (hD : MeasurableSet D) :
     P.bind (fun ω => Measure.map (fun u => (u, q ω)) (M ω)) (A ×ˢ D) =
       Measure.map q (P.withDensity (fun ω => M ω A)) D := by
@@ -77,9 +80,9 @@ theorem bind_markedMeasure_apply_prod
     ext u
     simp only [Set.mem_preimage, Set.mem_prod, hω, and_true]
   · rw [Set.indicator_of_notMem (show ω ∉ q ⁻¹' D from hω)]
-    have he : (fun u => (u, q ω)) ⁻¹' (A ×ˢ D) = ∅ := by
-      ext u
-      simp only [Set.mem_preimage, Set.mem_prod, hω, and_false, Set.mem_empty_iff_false]
+    have he : (fun u => (u, q ω)) ⁻¹' (A ×ˢ D) = ∅ := by grind
     rw [he, measure_empty]
 
+
+end
 end DOZZ.Proofs

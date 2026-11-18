@@ -37,7 +37,6 @@ theorem residue_unit_equal_of_twoInsertion_estimate
   have hp := (residue_critical_order_bounds γ α hγ hα hαQ).1
   let θ := (twoInsertionTailCeiling γ α α - p) / 2
   have hθ : 0 < θ := div_pos (sub_pos.mpr (residue_equal_twoInsertionTailCeiling_gt γ α hγ hα hαQ)) (by norm_num)
-  have hexp : -(twoInsertionTailCeiling γ α α - θ) = -p - θ := by dsimp only [θ]; ring
   obtain ⟨C, hC, hCb⟩ := htail θ hθ
   obtain ⟨dR, ρ, hdR, hρ, K, hK, hKb⟩ := residue_equal_complement_moment_uniform
     P X M γ α hγ hγ2 hX hM hα hαQ
@@ -81,10 +80,7 @@ theorem residue_unit_equal_of_twoInsertion_estimate
     have hh : ε / γ < p := (div_lt_iff₀ hγ).mpr (by simpa only [mul_comm] using hεd.trans_le hdβ)
     exact ⟨sub_pos.mpr hh, sub_lt_self _ (div_pos hε hγ)⟩
   have htail' (ε : ℝ) (hε : 0 < ε) (hεd : ε < d₀) (t : ℝ) (ht : 1 ≤ t) :
-      |(P {ω | ENNReal.ofReal t < A ε ω}).toReal - c ε * t ^ (-p)| ≤ C * t ^ (-p - θ) := by
-    have hh := hCb ε hε (hεd.trans_le hdT') t ht
-    rw [hexp, ← add_mul] at hh
-    exact hh
+      |(P {ω | ENNReal.ofReal t < A ε ω}).toReal - c ε * t ^ (-p)| ≤ C * t ^ (-p - θ) := by grind
   have hAfin (ε : ℝ) (hε : 0 < ε) (hεd : ε < d₀) : ∀ᵐ ω ∂P, A ε ω ≠ ⊤ :=
     residue_ae_finite_of_tail P (A ε) (c ε) p θ C hp hθ (htail' ε hε hεd)
   have hiA (ε : ℝ) (hε : 0 < ε) (hεd : ε < d₀) :

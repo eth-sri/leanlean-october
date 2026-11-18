@@ -21,6 +21,7 @@ Port of the corresponding GaussianFields source module.
 
 public section
 
+noncomputable section
 open MeasureTheory ProbabilityTheory
 open scoped Convolution ENNReal InnerProductSpace NNReal ProbabilityTheory Topology
 
@@ -34,7 +35,7 @@ abbrev ScaleSpace (d : Nat) := Vec (d + 1)
 
 /-- The product-coordinate split `R^{1+d} ≃ R × R^d`, with coordinate `0` as scale. -/
 @[expose]
-noncomputable def scaleSpaceMeasurableEquiv (d : Nat) :
+def scaleSpaceMeasurableEquiv (d : Nat) :
     ScaleSpace d ≃ᵐ ℝ × Vec d :=
   MeasurableEquiv.piFinSuccAbove (fun _ : Fin (d + 1) => ℝ) 0
 
@@ -44,28 +45,12 @@ theorem scaleSpaceMeasurePreserving (d : Nat) :
   simpa [ScaleSpace, scaleSpaceMeasurableEquiv] using
     (volume_preserving_piFinSuccAbove (fun _ : Fin (d + 1) => ℝ) 0)
 
-/-- The scale coordinate in `R^{1+d}`. -/
-@[expose]
-def scaleCoord {d : Nat} (z : ScaleSpace d) : ℝ :=
-  z 0
 
-/-- The spatial coordinates in `R^{1+d}`. -/
-@[expose]
-def spaceCoord {d : Nat} (z : ScaleSpace d) : Vec d :=
-  fun i => z (Fin.succ i)
 
-@[simp]
-theorem scaleSpaceMeasurableEquiv_fst {d : Nat} (z : ScaleSpace d) :
-    (scaleSpaceMeasurableEquiv d z).1 = scaleCoord z :=
-  rfl
 
-@[simp]
-theorem scaleSpaceMeasurableEquiv_snd {d : Nat} (z : ScaleSpace d) :
-    (scaleSpaceMeasurableEquiv d z).2 = spaceCoord z :=
-  rfl
 
 /-- The deterministic Hilbert space for ABK scale-space white noise. -/
-noncomputable abbrev ScaleSpaceWhiteNoiseHilbert (d : Nat) :=
+abbrev ScaleSpaceWhiteNoiseHilbert (d : Nat) :=
   ScalarWhiteNoiseHilbert (d + 1)
 
 /-- The concrete sample space for ABK scale-space white noise. -/
@@ -74,7 +59,7 @@ abbrev ScaleSpaceWhiteNoiseSpace (d : Nat) :=
 
 /-- The concrete probability measure for ABK scale-space white noise. -/
 @[expose]
-noncomputable def scaleSpaceWhiteNoiseMeasure (d : Nat) :
+def scaleSpaceWhiteNoiseMeasure (d : Nat) :
     Measure (ScaleSpaceWhiteNoiseSpace d) :=
   scalarWhiteNoiseMeasure (d + 1)
 
@@ -85,21 +70,16 @@ instance instIsProbabilityMeasure_scaleSpaceWhiteNoiseMeasure (d : Nat) :
 
 /-- White noise on `R^{1+d}`, reused from the concrete scalar white-noise construction. -/
 @[expose]
-noncomputable def scaleSpaceWhiteNoiseL2 (d : Nat) :
+def scaleSpaceWhiteNoiseL2 (d : Nat) :
     ScaleSpaceWhiteNoiseHilbert d →ₗᵢ[ℝ] Lp ℝ 2 (scaleSpaceWhiteNoiseMeasure d) :=
   scalarWhiteNoiseL2 (d + 1)
 
-@[simp]
-theorem scaleSpaceWhiteNoiseL2_apply {d : Nat} (f : ScaleSpaceWhiteNoiseHilbert d) :
-    scaleSpaceWhiteNoiseL2 d f = scalarWhiteNoiseL2 (d + 1) f :=
-  rfl
 
 theorem covariance_scaleSpaceWhiteNoiseL2 {d : Nat}
     (f g : ScaleSpaceWhiteNoiseHilbert d) :
     cov[scaleSpaceWhiteNoiseL2 d f, scaleSpaceWhiteNoiseL2 d g;
         scaleSpaceWhiteNoiseMeasure d] =
-      ⟪f, g⟫_ℝ := by
-  exact covariance_scalarWhiteNoiseL2 f g
+      ⟪f, g⟫_ℝ := covariance_scalarWhiteNoiseL2 f g
 
 /-! ## Deterministic ABK test data -/
 

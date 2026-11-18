@@ -26,7 +26,6 @@ theorem reflected_inner_radial_polar (γ α : ℝ) (A : TwoSidedPath)
   have hf : Measurable f := Measurable.ite
     (measurableSet_lt measurable_const measurable_id)
     (((measurable_id.const_mul (γ * α)).exp).ennreal_ofReal) measurable_const
-  have hi := lateralProjectedGMC_reinsert_lintegral γ A M f hf
   have hleft : (∫⁻ s, lateralForwardWeight γ A s * f s ∂lateralProjectedGMC γ A M) =
       ∫⁻ s in Ioi (T : ℝ), ENNReal.ofReal
         (Real.exp (γ * (A s - (Q γ - α) * s))) ∂lateralProjectedGMC γ A M := by
@@ -35,8 +34,7 @@ theorem reflected_inner_radial_polar (γ α : ℝ) (A : TwoSidedPath)
     intro s
     by_cases hs : (T : ℝ) < s
     · rw [indicator_of_mem (show s ∈ Ioi (T : ℝ) from hs)]
-      have hsp : 0 ≤ s := T.coe_nonneg.trans hs.le
-      simp only [f, ite_eq_left hs, lateralForwardWeight, abs_of_nonneg hsp]
+      simp only [f, ite_eq_left hs, lateralForwardWeight, abs_of_nonneg (T.coe_nonneg.trans hs.le)]
       rw [← ENNReal.ofReal_mul (Real.exp_pos _).le, ← Real.exp_add]
       congr 2
       ring
@@ -66,7 +64,7 @@ theorem reflected_inner_radial_polar (γ α : ℝ) (A : TwoSidedPath)
       · rw [indicator_of_notMem (show x ∉ {x : ℂ | 0 < ‖x‖ ∧ ‖x‖ < Real.exp (-(T : ℝ))}
           from fun hh => hs (he.mpr hh.2))]
         simp only [hx, ite_false, f, ite_eq_right hs]
-  exact hright.symm.trans (hi.symm.trans hleft)
+  exact hright.symm.trans ((lateralProjectedGMC_reinsert_lintegral γ A M f hf).symm.trans hleft)
 
 /-- Deterministic radial restart extracts the exact scalar prefactor and translates the actual
 lateral measure. The equality is samplewise and retains extended-real integrals. -/
@@ -94,7 +92,7 @@ theorem reflected_inner_polar_restart (γ ν : ℝ) (A : TwoSidedPath)
   intro s
   by_cases hs : (T : ℝ) < s
   · rw [indicator_of_mem (show s ∈ Ioi (T : ℝ) from hs)]
-    have hu : 0 < s - (T : ℝ) := sub_pos.mpr hs
+    have hu := sub_pos.mpr hs
     have htime : (T : ℝ) + (Real.toNNReal (s - (T : ℝ)) : ℝ) = s := by
       rw [Real.coe_toNNReal _ hu.le]
       ring

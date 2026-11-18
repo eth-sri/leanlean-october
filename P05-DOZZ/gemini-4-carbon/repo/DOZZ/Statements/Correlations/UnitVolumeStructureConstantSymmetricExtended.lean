@@ -27,6 +27,6 @@ theorem unitVolumeStructureConstant_symmetric_extended
     (hα : ExtendedSeiberg3 γ α₁ α₂ α₃) :
     unitVolumeStructureConstant P M γ α₁ α₂ α₃ = unitVolumeStructureConstant P M γ α₂ α₁ α₃ ∧
       unitVolumeStructureConstant P M γ α₁ α₂ α₃ = unitVolumeStructureConstant P M γ α₁ α₃ α₂ ∧
-      unitVolumeStructureConstant P M γ α₁ α₂ α₃ = unitVolumeStructureConstant P M γ α₃ α₂ α₁ := by exact DOZZ.Proofs.unitVolumeStructureConstant_symmetric_extended P X M γ α₁ α₂ α₃ hγ hγ2 hX hM hα
+      unitVolumeStructureConstant P M γ α₁ α₂ α₃ = unitVolumeStructureConstant P M γ α₃ α₂ α₁ := DOZZ.Proofs.unitVolumeStructureConstant_symmetric_extended P X M γ α₁ α₂ α₃ hγ hγ2 hX hM hα
 
 end DOZZ

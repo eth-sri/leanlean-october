@@ -51,7 +51,6 @@ theorem residue_localWeight_uniform_family (γ S α d₀ : ℝ) (hγ : 0 ≤ γ)
   refine ⟨(10 : ℝ) ^ (γ * (S + d₀)), max D 0, L, by norm_num, by positivity,
     le_max_right _ _, hL, ?_⟩
   intro z' hz' F hF
-  have hzz : z' = z := hz'
   subst z'
   obtain ⟨ε, hε, rfl⟩ := hF
   have heq (x : ℂ) (hx : x ∈ Metric.ball z 1) :
@@ -74,23 +73,19 @@ theorem residue_localWeight_uniform_family (γ S α d₀ : ℝ) (hγ : 0 ≤ γ)
   · have hball : Metric.ball z (2 * (1 / 2 : ℝ)) = Metric.ball z 1 := by norm_num
     rw [hball]
     intro x hx
-    have hh : ContDiffAt ℝ 1 (fun y : ℂ => H (ε, y)) x :=
+    have hh :=
       (residue_localDensity_contDiffAt γ S α w (ε, x) (hgeo x hx).1 (hgeo x hx).2).comp x
         (contDiffAt_const.prodMk contDiffAt_id)
     exact (hh.congr_of_eventuallyEq (heq x hx)).contDiffWithinAt
   · intro x hx
-    have hxball : x ∈ Metric.ball z 1 :=
+    have hxball :=
       lt_of_le_of_lt (show dist x z ≤ (1 / 2 : ℝ) from hx) (by norm_num : (1 / 2 : ℝ) < 1)
-    have hh : DifferentiableAt ℝ H (ε, x) := (residue_localDensity_contDiffAt γ S α w (ε, x)
+    have hh := (residue_localDensity_contDiffAt γ S α w (ε, x)
       (hgeo x hxball).1 (hgeo x hxball).2).differentiableAt one_ne_zero
     have hder : HasFDerivAt (fun y : ℂ => H (ε, y))
         ((fderiv ℝ H (ε, x)).comp (ContinuousLinearMap.inr ℝ ℝ ℂ)) x := by
       simpa only [Function.comp_def] using hh.hasFDerivAt.comp x (hasFDerivAt_prodMk_right ε x)
     rw [(heq x hxball).fderiv_eq, hder.fderiv]
-    calc _ ≤ ‖fderiv ℝ H (ε, x)‖ * ‖ContinuousLinearMap.inr ℝ ℝ ℂ‖ :=
-        ContinuousLinearMap.opNorm_comp_le _ _
-      _ ≤ ‖fderiv ℝ H (ε, x)‖ :=
-        mul_le_of_le_one_right (norm_nonneg _) (ContinuousLinearMap.norm_inr_le_one ℝ ℝ ℂ)
-      _ ≤ max D 0 := (hD (ε, x) ⟨hε, hx⟩).trans (le_max_left _ _)
+    exact ((ContinuousLinearMap.opNorm_comp_le _ _).trans (mul_le_of_le_one_right (norm_nonneg _) (ContinuousLinearMap.norm_inr_le_one ℝ ℝ ℂ))).trans ((hD (ε, x) ⟨hε, hx⟩).trans (le_max_left _ _))
 
 end DOZZ.Proofs

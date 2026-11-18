@@ -12,8 +12,6 @@ proved by `DOZZ.Proofs.gauss_hypergeometric_exists`. -/
 
 public section
 
-open MeasureTheory Filter Set
-open scoped Topology
 
 namespace DOZZ
 
@@ -21,6 +19,6 @@ namespace DOZZ
 arbitrary choice-defined Gauss function is exported; the witnesses are used only through their
 characterization. -/
 theorem gauss_hypergeometric_exists :
-    ∃ H : ℂ → ℂ → ℂ → ℂ → ℂ, IsGaussHypergeometricFamily H := by exact DOZZ.Proofs.gauss_hypergeometric_exists
+    ∃ H : ℂ → ℂ → ℂ → ℂ → ℂ, IsGaussHypergeometricFamily H := DOZZ.Proofs.gauss_hypergeometric_exists
 
 end DOZZ

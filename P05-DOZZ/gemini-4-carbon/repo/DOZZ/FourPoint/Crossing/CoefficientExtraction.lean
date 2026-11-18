@@ -57,15 +57,11 @@ theorem crossing_diagonal_coefficient_extraction (a b c d₀ d₁ E : ℝ)
       (Real.Gamma_pos_of_pos hδ).ne')
       (inv_ne_zero (Real.Gamma_pos_of_pos (sub_pos.mpr ha1)).ne'))
       (inv_ne_zero (Real.Gamma_pos_of_pos (sub_pos.mpr hb1)).ne')
-  have hΓneg : Real.Gamma (a + b - c) ≠ 0 := Real.Gamma_ne_zero
+  have : Real.Gamma (a + b - c) ≠ 0 := Real.Gamma_ne_zero
     (real_ne_neg_nat_of_frac (k := -1) (by push_cast; linarith only [hδ1])
       (by push_cast; linarith only [hδ]))
-  have hv : v ≠ 0 := by
-    dsimp [v]
-    exact mul_ne_zero (mul_ne_zero (mul_ne_zero (Real.Gamma_pos_of_pos hc).ne' hΓneg)
-      (inv_ne_zero (Real.Gamma_pos_of_pos ha).ne'))
-      (inv_ne_zero (Real.Gamma_pos_of_pos hb).ne')
-  have hdet : u * x - v * w = (c - 1) / (c - a - b) :=
+  have hv : v ≠ 0 := by positivity
+  have hdet :=
     crossing_connection_det_real a b c hcn hδn
   have hdet0 : u * x - v * w ≠ 0 := by
     rw [hdet]

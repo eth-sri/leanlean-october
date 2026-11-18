@@ -23,6 +23,9 @@ function `g(x) = x (x - 1) / (z - x)`:
 
 namespace DOZZ.Proofs
 
+variable {γ χ α₁ α₂ : ℝ} {z x : ℂ}
+
+
 /-- The rational function of the Ward identity (same as in GCutoff, defined here independently). -/
 noncomputable def bpzGfun (z x : ℂ) : ℂ := x * (x - 1) / (z - x)
 
@@ -30,13 +33,12 @@ noncomputable def bpzGfun (z x : ℂ) : ℂ := x * (x - 1) / (z - x)
 theorem bpz_hasFDerivAt_norm_sub_rpow (c : ℂ) (p : ℝ) {x : ℂ} (hx : x ≠ c) :
     HasFDerivAt (fun y => ‖y - c‖ ^ p)
       ((p * ‖x - c‖ ^ (p - 2)) • innerSL ℝ (x - c)) x := by
-  have hn : 0 < ‖x - c‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hx)
+  have hn := norm_pos_iff.mpr (sub_ne_zero.mpr hx)
   have h1 : HasFDerivAt (fun y : ℂ => y - c) (ContinuousLinearMap.id ℝ ℂ) x :=
     (hasFDerivAt_id x).sub_const c
   have h2 : HasFDerivAt (fun y : ℂ => ‖y - c‖ ^ 2) (2 • innerSL ℝ (x - c)) x := by
     have := ((hasStrictFDerivAt_norm_sq (x - c)).hasFDerivAt).comp x h1
     rwa [ContinuousLinearMap.comp_id] at this
-  have h3 := h2.rpow_const (p := p / 2) (Or.inl (pow_ne_zero 2 hn.ne'))
   have e : (fun y : ℂ => ‖y - c‖ ^ p) = fun y => (‖y - c‖ ^ 2) ^ (p / 2) := by
     funext y
     rw [← Real.rpow_natCast, ← Real.rpow_mul (norm_nonneg _)]
@@ -49,7 +51,7 @@ theorem bpz_hasFDerivAt_norm_sub_rpow (c : ℂ) (p : ℝ) {x : ℂ} (hx : x ≠ 
     push_cast
     ring
   rw [e]
-  refine h3.congr_fderiv ?_
+  refine (h2.rpow_const (p := p / 2) (Or.inl (pow_ne_zero 2 hn.ne'))).congr_fderiv ?_
   rw [e2]
   ext h
   simp only [smul_apply, smul_eq_mul, nsmul_eq_mul]
@@ -70,10 +72,9 @@ theorem bpz_wirtinger_norm_sub_rpow (c : ℂ) (p : ℝ) {x : ℂ} (hx : x ≠ c)
     ((((p * ‖x - c‖ ^ (p - 2)) • innerSL ℝ (x - c)) 1 : ℝ) - Complex.I *
       (((p * ‖x - c‖ ^ (p - 2)) • innerSL ℝ (x - c)) Complex.I : ℝ)) / 2 =
       ((p / 2 * ‖x - c‖ ^ p : ℝ) : ℂ) / (x - c) := by
-  have hu : x - c ≠ 0 := sub_ne_zero.mpr hx
-  have hn : 0 < ‖x - c‖ := norm_pos_iff.mpr hu
+  have hu := sub_ne_zero.mpr hx
   have hpow : ‖x - c‖ ^ p = ‖x - c‖ ^ (p - 2) * ‖x - c‖ ^ 2 := by
-    rw [← Real.rpow_natCast, ← Real.rpow_add hn]
+    rw [← Real.rpow_natCast, ← Real.rpow_add (norm_pos_iff.mpr hu)]
     congr 1
     push_cast
     ring
@@ -104,7 +105,7 @@ theorem bpzWirt_smul (a : ℝ) (L : ℂ →L[ℝ] ℝ) : bpzWirt (a • L) = (a 
 /-- The operator norm of the derivative of `y ↦ ‖y − c‖ ^ p`. -/
 theorem bpz_norm_normSubRpowDeriv (c : ℂ) (p : ℝ) {x : ℂ} (hx : x ≠ c) :
     ‖(p * ‖x - c‖ ^ (p - 2)) • innerSL ℝ (x - c)‖ = |p| * ‖x - c‖ ^ p / ‖x - c‖ := by
-  have hn : 0 < ‖x - c‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hx)
+  have hn := norm_pos_iff.mpr (sub_ne_zero.mpr hx)
   rw [norm_smul, innerSL_apply_norm, Real.norm_eq_abs, abs_mul,
     abs_of_pos (Real.rpow_pos_of_pos hn _), Real.rpow_sub hn, Real.rpow_two]
   field_simp
@@ -121,7 +122,7 @@ theorem bpz_norm_triple {a b c : ℝ} (ha : 0 ≤ a) (hb : 0 ≤ b) (hc : 0 ≤ 
     ‖(a * b) • D₃ + c • (a • D₂ + b • D₁)‖ ≤ a * b * ‖D₃‖ + c * (a * ‖D₂‖ + b * ‖D₁‖) := by
   have e1 : ‖(a * b) • D₃‖ = a * b * ‖D₃‖ := by
     rw [norm_smul, Real.norm_of_nonneg (mul_nonneg ha hb)]
-  have e2 : ‖a • D₂ + b • D₁‖ ≤ a * ‖D₂‖ + b * ‖D₁‖ := by
+  have : ‖a • D₂ + b • D₁‖ ≤ a * ‖D₂‖ + b * ‖D₁‖ := by
     refine (norm_add_le _ _).trans ?_
     rw [norm_smul, norm_smul, Real.norm_of_nonneg ha, Real.norm_of_nonneg hb]
   refine (norm_add_le _ _).trans ?_
@@ -129,7 +130,7 @@ theorem bpz_norm_triple {a b c : ℝ} (ha : 0 ≤ a) (hb : 0 ≤ b) (hc : 0 ≤ 
   gcongr
 
 /-- The derivative of `k̃`, its Wirtinger form and a bound. -/
-theorem bpz_tildeWeight_hasFDerivAt {γ χ α₁ α₂ : ℝ} {z x : ℂ} (hx : x ∈ bpzRegular z) :
+theorem bpz_tildeWeight_hasFDerivAt (hx : x ∈ bpzRegular z) :
     ∃ L : ℂ →L[ℝ] ℝ, HasFDerivAt (bpzTildeWeight γ χ α₁ α₂ z) L x ∧
       ((L 1 : ℂ) - Complex.I * (L Complex.I : ℂ)) / 2 =
         (bpzTildeWeight γ χ α₁ α₂ z x : ℂ) *
@@ -137,31 +138,25 @@ theorem bpz_tildeWeight_hasFDerivAt {γ χ α₁ α₂ : ℝ} {z x : ℂ} (hx : 
       ‖L‖ ≤ bpzTildeWeight γ χ α₁ α₂ z x *
         (|γ * χ| / ‖x - z‖ + |γ * α₁| / ‖x‖ + |γ * α₂| / ‖x - 1‖) := by
   obtain ⟨h0, h1, hz⟩ := hx
-  have hA := bpz_hasFDerivAt_norm_sub_rpow z (γ * χ) hz
   have hB := bpz_hasFDerivAt_norm_sub_rpow 0 (-(γ * α₁)) h0
-  have hC := bpz_hasFDerivAt_norm_sub_rpow 1 (-(γ * α₂)) h1
   simp only [sub_zero] at hB
   have wA := bpz_wirtinger_norm_sub_rpow z (γ * χ) hz
   have wB := bpz_wirtinger_norm_sub_rpow 0 (-(γ * α₁)) h0
   have wC := bpz_wirtinger_norm_sub_rpow 1 (-(γ * α₂)) h1
   simp only [sub_zero] at wB
-  have nA := bpz_norm_normSubRpowDeriv z (γ * χ) hz
   have nB := bpz_norm_normSubRpowDeriv 0 (-(γ * α₁)) h0
   have nC := bpz_norm_normSubRpowDeriv 1 (-(γ * α₂)) h1
   simp only [sub_zero, abs_neg] at nB
   simp only [abs_neg] at nC
-  have hnA : 0 < ‖x - z‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hz)
-  have hnB : 0 < ‖x‖ := norm_pos_iff.mpr h0
-  have hnC : 0 < ‖x - 1‖ := norm_pos_iff.mpr (sub_ne_zero.mpr h1)
-  have pA : 0 < ‖x - z‖ ^ (γ * χ) := Real.rpow_pos_of_pos hnA _
-  have pB : 0 < ‖x‖ ^ (-(γ * α₁)) := Real.rpow_pos_of_pos hnB _
-  have pC : 0 < ‖x - 1‖ ^ (-(γ * α₂)) := Real.rpow_pos_of_pos hnC _
+  have pA : 0 < ‖x - z‖ ^ (γ * χ) := Real.rpow_pos_of_pos (norm_pos_iff.mpr (sub_ne_zero.mpr hz)) _
+  have pB : 0 < ‖x‖ ^ (-(γ * α₁)) := Real.rpow_pos_of_pos (norm_pos_iff.mpr h0) _
+  have pC : 0 < ‖x - 1‖ ^ (-(γ * α₂)) := Real.rpow_pos_of_pos (norm_pos_iff.mpr (sub_ne_zero.mpr h1)) _
   refine ⟨(‖x - z‖ ^ (γ * χ) * ‖x‖ ^ (-(γ * α₁))) •
       ((-(γ * α₂) * ‖x - 1‖ ^ (-(γ * α₂) - 2)) • innerSL ℝ (x - 1)) +
     ‖x - 1‖ ^ (-(γ * α₂)) • (‖x - z‖ ^ (γ * χ) •
       ((-(γ * α₁) * ‖x‖ ^ (-(γ * α₁) - 2)) • innerSL ℝ x) +
       ‖x‖ ^ (-(γ * α₁)) • ((γ * χ * ‖x - z‖ ^ (γ * χ - 2)) • innerSL ℝ (x - z))), ?_, ?_, ?_⟩
-  · exact (hA.mul hB).mul hC
+  · exact ((bpz_hasFDerivAt_norm_sub_rpow z (γ * χ) hz).mul hB).mul (bpz_hasFDerivAt_norm_sub_rpow 1 (-(γ * α₂)) h1)
   · show bpzWirt _ = _
     rw [bpzWirt_triple]
     change bpzWirt _ = _ at wA wB wC
@@ -170,7 +165,7 @@ theorem bpz_tildeWeight_hasFDerivAt {γ χ α₁ α₂ : ℝ} {z x : ℂ} (hx : 
     push_cast
     ring
   · refine (bpz_norm_triple pA.le pB.le pC.le _ _ _).trans ?_
-    rw [nA, nB, nC]
+    rw [bpz_norm_normSubRpowDeriv z (γ * χ) hz, nB, nC]
     unfold bpzTildeWeight
     apply le_of_eq
     ring
@@ -182,9 +177,8 @@ theorem bpz_hasDerivAt_bpzGfun {z x : ℂ} (hx : x ≠ z) :
   have hN : HasDerivAt (fun y : ℂ => y * (y - 1)) (1 * (x - 1) + x * 1) x :=
     (hasDerivAt_id x).mul ((hasDerivAt_id x).sub_const 1)
   have hD : HasDerivAt (fun y : ℂ => z - y) (-1) x := (hasDerivAt_id x).const_sub z
-  have h := hN.div hD hzx
   unfold bpzGfun
-  convert h using 1
+  convert (hN.div hD hzx) using 1
   field_simp
   ring
 
@@ -199,7 +193,7 @@ theorem bpz_wirt_product_alg (d g : ℂ) (t L1 LI : ℝ) :
 
 /-- The four real directional derivatives of `Re g · k̃`, `Im g · k̃` combine into the Wirtinger
 derivative of `g k̃`. -/
-theorem bpz_wirtinger_g_tildeWeight {γ χ α₁ α₂ : ℝ} {z x : ℂ} (hx : x ∈ bpzRegular z) :
+theorem bpz_wirtinger_g_tildeWeight (hx : x ∈ bpzRegular z) :
     (((fderiv ℝ (fun y => (bpzGfun z y).re * bpzTildeWeight γ χ α₁ α₂ z y) x 1 : ℝ) : ℂ) +
         Complex.I * (fderiv ℝ (fun y => (bpzGfun z y).im * bpzTildeWeight γ χ α₁ α₂ z y) x 1 : ℝ) -
         Complex.I * (fderiv ℝ (fun y => (bpzGfun z y).re * bpzTildeWeight γ χ α₁ α₂ z y) x
@@ -211,24 +205,16 @@ theorem bpz_wirtinger_g_tildeWeight {γ χ α₁ α₂ : ℝ} {z x : ℂ} (hx : 
   obtain ⟨L, hL, hW, -⟩ := bpz_tildeWeight_hasFDerivAt (γ := γ) (χ := χ) (α₁ := α₁) (α₂ := α₂) hx
   have hg := bpz_hasDerivAt_bpzGfun hx.2.2
   have hg' := hg.hasFDerivAt.restrictScalars ℝ
-  have hre : HasFDerivAt (fun y => (bpzGfun z y).re)
-      (Complex.reCLM.comp (ContinuousLinearMap.restrictScalars ℝ
-        (ContinuousLinearMap.toSpanSingleton ℂ (-1 + z * (z - 1) / (z - x) ^ 2)))) x :=
-    Complex.reCLM.hasFDerivAt.comp x hg'
-  have him : HasFDerivAt (fun y => (bpzGfun z y).im)
-      (Complex.imCLM.comp (ContinuousLinearMap.restrictScalars ℝ
-        (ContinuousLinearMap.toSpanSingleton ℂ (-1 + z * (z - 1) / (z - x) ^ 2)))) x :=
-    Complex.imCLM.hasFDerivAt.comp x hg'
   have hF : HasFDerivAt (fun y => (bpzGfun z y).re * bpzTildeWeight γ χ α₁ α₂ z y)
       ((bpzGfun z x).re • L + bpzTildeWeight γ χ α₁ α₂ z x •
         Complex.reCLM.comp (ContinuousLinearMap.restrictScalars ℝ
           (ContinuousLinearMap.toSpanSingleton ℂ (-1 + z * (z - 1) / (z - x) ^ 2)))) x :=
-    hre.mul hL
+    (Complex.reCLM.hasFDerivAt.comp x hg').mul hL
   have hG : HasFDerivAt (fun y => (bpzGfun z y).im * bpzTildeWeight γ χ α₁ α₂ z y)
       ((bpzGfun z x).im • L + bpzTildeWeight γ χ α₁ α₂ z x •
         Complex.imCLM.comp (ContinuousLinearMap.restrictScalars ℝ
           (ContinuousLinearMap.toSpanSingleton ℂ (-1 + z * (z - 1) / (z - x) ^ 2)))) x :=
-    him.mul hL
+    (Complex.imCLM.hasFDerivAt.comp x hg').mul hL
   rw [hF.fderiv, hG.fderiv]
   simp only [add_apply, smul_apply, ContinuousLinearMap.comp_apply,
     ContinuousLinearMap.coe_restrictScalars', ContinuousLinearMap.toSpanSingleton_apply,
@@ -247,7 +233,7 @@ theorem bpz_g_coefficients_alg (x z a b c : ℂ) (h0 : x ≠ 0) (h1 : x - 1 ≠ 
   ring
 
 /-- The coefficient identity. -/
-theorem bpz_g_coefficients {γ χ α₁ α₂ : ℝ} {z x : ℂ} (hx : x ∈ bpzRegular z) :
+theorem bpz_g_coefficients (hx : x ∈ bpzRegular z) :
     (-1 + z * (z - 1) / (z - x) ^ 2) + bpzGfun z x *
         ((γ * χ / 2 : ℝ) / (x - z) - (γ * α₁ / 2 : ℝ) / x - (γ * α₂ / 2 : ℝ) / (x - 1)) =
       ((-1 - γ * χ / 2 + γ * (α₁ + α₂) / 2 : ℝ) : ℂ) +
@@ -265,7 +251,7 @@ theorem bpz_g_coefficients {γ χ α₁ α₂ : ℝ} {z x : ℂ} (hx : x ∈ bpz
 /-- The complex combination of the limit kernels. -/
 theorem bpz_kern_wirtinger {w : ℂ} (hw : w ≠ 0) :
     (((bpzKern 1 w : ℝ) : ℂ) - Complex.I * (bpzKern Complex.I w : ℝ)) / 2 = -1 / (2 * w) := by
-  have hn : ((‖w‖ : ℝ) : ℂ) ≠ 0 := by exact_mod_cast norm_ne_zero_iff.mpr hw
+  have : ((‖w‖ : ℝ) : ℂ) ≠ 0 := by exact_mod_cast norm_ne_zero_iff.mpr hw
   have key := bpz_conj_mul_self w
   unfold bpzKern
   simp only [Complex.one_re, Complex.one_im, Complex.I_re, Complex.I_im]
@@ -295,9 +281,6 @@ theorem bpz_g_kern_combination {z x y : ℂ} (hxy : x ≠ y) :
 /-- The difference quotient of `g`. -/
 theorem bpz_g_diff_quot {z x y : ℂ} (hxy : x ≠ y) (hx : x ≠ z) (hy : y ≠ z) :
     (bpzGfun z x - bpzGfun z y) / (x - y) = -1 + z * (z - 1) / ((z - x) * (z - y)) := by
-  have h1 : x - y ≠ 0 := sub_ne_zero.mpr hxy
-  have h2 : z - x ≠ 0 := sub_ne_zero.mpr hx.symm
-  have h3 : z - y ≠ 0 := sub_ne_zero.mpr hy.symm
   unfold bpzGfun
   field_simp
   ring

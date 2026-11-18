@@ -47,27 +47,21 @@ theorem exists_finite_holomorphic_disk_chain
     | zero => simp [D, Dzero, holomorphicDiskSolutionOfBound]
     | succ i ih =>
         have hi' : i < N := by omega
-        have hi_le : i ≤ N := by omega
         simp [D, hi', extendHolomorphicDiskSolution, holomorphicDiskSolutionOfBound]
   refine ⟨D, hcenter 0 (by omega), ?_, ?_, ?_⟩
-  · simp [D, Dzero, holomorphicDiskSolutionOfBound]
+  · rfl
   · exact hcenter
   · intro i hi
     have hi1 : i + 1 ≤ N := by omega
-    have hprev : i ≤ N := by omega
-    have hcenterNext := hcenter (i + 1) hi1
     have hbuild : (D (i + 1)) =
         extendHolomorphicDiskSolution r M H hM (D i) (centers (i + 1))
-          (hH (i + 1) hi1) (hbound (i + 1) hi1) := by
-      simp [D, hi]
-    refine ⟨hcenterNext, ?_, ?_⟩
+          (hH (i + 1) hi1) (hbound (i + 1) hi1) := by grind
+    refine ⟨(hcenter (i + 1) hi1), ?_, ?_⟩
     · rw [hbuild]
       rfl
     · intro z hz
       rw [hbuild]
-      have hnear : dist (centers (i + 1)) (D i).center < r / 2 := by
-        rw [hcenter i hprev]
-        exact hclose i hi
+      have hnear : dist (centers (i + 1)) (D i).center < r / 2 := by grind
       exact extendHolomorphicDiskSolution_agrees r M H hM (D i)
         (centers (i + 1)) hnear (hH (i + 1) hi1) (hbound (i + 1) hi1) z hz
 
@@ -93,7 +87,6 @@ theorem exists_path_holomorphic_disk_chain
         (D i).solution z = (D (i + 1)).solution z := by
   obtain ⟨N, hN, hpartition⟩ :=
     exists_path_subdivision hγ (by linarith : 0 < r / 2)
-  have hclose := fun i hi => (hpartition i hi).1
   have hcover := fun i hi t ht => (hpartition i hi).2 t ht
   let centers : ℕ → ℂ := fun i => γ ((i : ℝ) / (N : ℝ))
   have htime (i : ℕ) (hi : i ≤ N) : (i : ℝ) / (N : ℝ) ∈ Icc (0 : ℝ) 1 := by
@@ -108,25 +101,19 @@ theorem exists_path_holomorphic_disk_chain
   have hboundCenters : ∀ i ≤ N, ∀ z ∈ Metric.ball (centers i) r, ‖H z‖ ≤ M := by
     intro i hi
     simpa [centers] using hbound _ (htime i hi)
-  have hcloseCenters : ∀ i < N, dist (centers (i + 1)) (centers i) < r / 2 := by
-    intro i hi
-    simpa [centers, dist_comm] using (hclose i hi)
+  have hcloseCenters : ∀ i < N, dist (centers (i + 1)) (centers i) < r / 2 := by grind
   obtain ⟨D, hD0c, hD0i, hDcenters, hDstep⟩ :=
     exists_finite_holomorphic_disk_chain N centers r M H hM hHcenters
       hboundCenters hcloseCenters y
   refine ⟨N, hN, D, ?_, hD0i, ?_, ?_, ?_, ?_⟩
   · simpa [centers] using hD0c
+  · assumption
   · intro i hi
-    simpa [centers] using hDcenters i hi
-  · intro i hi
-    have hstep := hDstep i hi
-    simpa [centers] using hstep.2.1
+    simpa [centers] using (hDstep i hi).2.1
   · intro i hi t ht
-    have hcenter := hDcenters i (Nat.le_of_lt hi)
-    rw [hcenter]
+    rw [hDcenters i (Nat.le_of_lt hi)]
     exact Metric.mem_ball.mpr (by simpa [centers] using hcover i hi t ht)
   · intro i hi z hz
-    have hstep := hDstep i hi
-    simpa [centers] using hstep.2.2 z hz
+    simpa [centers] using (hDstep i hi).2.2 z hz
 
 end DOZZ.Proofs

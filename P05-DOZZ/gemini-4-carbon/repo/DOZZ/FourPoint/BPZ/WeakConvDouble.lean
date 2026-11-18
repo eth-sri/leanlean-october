@@ -72,15 +72,6 @@ theorem bpzGrid_cell_subset (h : ℝ) (hh : 0 < h) (i : ℤ × ℤ) :
     _ ≤ 2 * h + ‖bpzGridCorner h i‖ := by linarith
     _ = ‖bpzGridCorner h i‖ + 2 * h := by ring
 
-theorem bpz_ball_subset_closedBall (c : ℂ) (r : ℝ) :
-    Metric.ball c r ⊆ Metric.closedBall 0 (‖c‖ + |r|) := by
-  intro x hx
-  rw [Metric.mem_ball, dist_eq_norm] at hx
-  rw [Metric.mem_closedBall, dist_zero_right]
-  calc ‖x‖ = ‖(x - c) + c‖ := by ring_nf
-    _ ≤ ‖x - c‖ + ‖c‖ := norm_add_le _ _
-    _ ≤ |r| + ‖c‖ := by linarith [le_abs_self r]
-    _ = ‖c‖ + |r| := by ring
 
 /-- A real random variable times a scale tending to zero is small in probability. -/
 theorem bpz_exists_scale_small [IsFiniteMeasure P] {W : Ω → ℝ} (hW : Measurable W) {s : ℝ}
@@ -92,8 +83,7 @@ theorem bpz_exists_scale_small [IsFiniteMeasure P] {W : Ω → ℝ} (hW : Measur
     (tendstoInMeasure_of_tendsto_ae (fun _ => hW.aestronglyMeasurable)
       (Eventually.of_forall fun _ => tendsto_const_nhds))
   rw [tendstoInMeasure_iff_norm] at hconv
-  have h := (ENNReal.tendsto_nhds_zero.1 (hconv s hs)) t ht
-  obtain ⟨k, hk⟩ := h.exists
+  obtain ⟨k, hk⟩ := ((ENNReal.tendsto_nhds_zero.1 (hconv s hs)) t ht).exists
   refine ⟨k, le_trans (measure_mono fun ω hω => ?_) hk⟩
   simp only [Set.mem_ofPred_eq, zero_mul, sub_zero, Real.norm_eq_abs] at hω ⊢
   exact hω
@@ -117,6 +107,14 @@ theorem tendstoInMeasure_double [IsProbabilityMeasure P] (hμ : BPZWeakConv P μ
       |H n x y - H₀ x y| ≤ ε) :
     TendstoInMeasure P (fun n ω => ∫ x, ∫ y, H n x y ∂μ n ω ∂μ n ω) atTop
       (fun ω => ∫ x, ∫ y, H₀ x y ∂μ₀ ω ∂μ₀ ω) := by
+  have bpz_ball_subset_closedBall (c : ℂ) (r : ℝ) : Metric.ball c r ⊆ Metric.closedBall 0 (‖c‖ + |r|) := by
+    intro x hx
+    rw [Metric.mem_ball, dist_eq_norm] at hx
+    rw [Metric.mem_closedBall, dist_zero_right]
+    calc ‖x‖ = ‖(x - c) + c‖ := by ring_nf
+      _ ≤ ‖x - c‖ + ‖c‖ := norm_add_le _ _
+      _ ≤ |r| + ‖c‖ := by linarith [le_abs_self r]
+      _ = ‖c‖ + |r| := by ring
   have hC : 0 ≤ C := (abs_nonneg _).trans (hbd₀ 0 0)
   set ρ₂ : ℝ := 2 * R + 1 with hρ₂
   set ρ₃ : ℝ := 2 * ρ₂ + 1 with hρ₃
@@ -150,7 +148,6 @@ theorem tendstoInMeasure_double [IsProbabilityMeasure P] (hμ : BPZWeakConv P μ
   obtain ⟨k₂, hk₂⟩ := bpz_exists_scale_small (P := P) (hWm.mul hWm) (s := ε / 8) (by positivity)
     (t := ENNReal.ofReal (ε / 4)) (ENNReal.ofReal_pos.2 (by positivity))
   set t : ℝ := 1 / ((k₁ : ℝ) + 1) with ht
-  have ht0 : 0 < t := by positivity
   set η : ℝ := t / 2 with hη
   have hη0 : 0 < η := by positivity
   set ε₁ : ℝ := 1 / ((k₂ : ℝ) + 1) with hε₁
@@ -159,7 +156,7 @@ theorem tendstoInMeasure_double [IsProbabilityMeasure P] (hμ : BPZWeakConv P μ
   set h : ℝ := min (min (η / 4) (1 / 4)) (δ / 2) with hhdef
   have hh0 : 0 < h := by positivity
   have hh1 : h ≤ 1 / 4 := (min_le_left _ _).trans (min_le_right _ _)
-  have hhη : h ≤ η / 4 := (min_le_left _ _).trans (min_le_left _ _)
+  have : h ≤ η / 4 := (min_le_left _ _).trans (min_le_left _ _)
   have hhδ : 2 * h ≤ δ := by have := min_le_right (min (η / 4) (1 / 4)) (δ / 2); linarith
   set S := bpzGridBox ⌈R / h⌉₊ with hS
   set S' := bpzGridBox ⌈ρ₂ / h⌉₊ with hS'
@@ -203,8 +200,6 @@ theorem tendstoInMeasure_double [IsProbabilityMeasure P] (hμ : BPZWeakConv P μ
     exact h
   have hmassm : ∀ (s : Set ℂ), MeasurableSet s → ∀ n, Measurable fun ω => (μ n ω).real s :=
     fun s hs n => ((Measure.measurable_coe hs).comp (hμ.meas n)).ennreal_toReal
-  have hmassm₀ : ∀ (s : Set ℂ), MeasurableSet s → Measurable fun ω => (μ₀ ω).real s :=
-    fun s hs => ((Measure.measurable_coe hs).comp hμ.meas₀).ennreal_toReal
   have hGm : ∀ n, Measurable (G n) := fun n => Finset.measurable_sum _ fun i _ =>
     (hmassm _ (hcellm i) n).mul (hmassm _ measurableSet_ball n)
   -- the error bounds
@@ -275,18 +270,14 @@ theorem tendstoInMeasure_double [IsProbabilityMeasure P] (hμ : BPZWeakConv P μ
       have h1' : ε₁ * (Wv ω * Wv ω) < ε / 8 := lt_of_le_of_lt (le_abs_self _) h1
       have h2' : 2 * C * ND k₁ ω < ε / 4 := by
         have : C * ND k₁ ω ≤ C' * ND k₁ ω := mul_le_mul_of_nonneg_right (by linarith) hND0
-        have h3 : C' * ND k₁ ω < C' * (ε / (8 * C')) := mul_lt_mul_of_pos_left h2 hC'0
-        have h4 : C' * (ε / (8 * C')) = ε / 8 := by field_simp
+        have : C' * ND k₁ ω < C' * (ε / (8 * C')) := mul_lt_mul_of_pos_left h2 hC'0
+        have : C' * (ε / (8 * C')) = ε / 8 := by field_simp
         linarith
       linarith
-    calc P {ω | ε / 2 ≤ 2 * (ε₁ * (Wv ω * Wv ω)) + 2 * C * ND k₁ ω}
-        ≤ P ({ω | ε / 8 ≤ |ε₁ * (Wv ω * Wv ω)|} ∪ {ω | ε / (8 * C') ≤ ND k₁ ω}) :=
-          measure_mono hsub
-      _ ≤ P {ω | ε / 8 ≤ |ε₁ * (Wv ω * Wv ω)|} + P {ω | ε / (8 * C') ≤ ND k₁ ω} :=
-          measure_union_le _ _
-      _ ≤ ENNReal.ofReal (ε / 4) + ENNReal.ofReal (ε / 4) := add_le_add hk₂ hk₁
-      _ = ENNReal.ofReal (ε / 2) := by
-          rw [← ENNReal.ofReal_add (by positivity) (by positivity)]; ring_nf
+    refine (measure_mono hsub).trans (?_)
+    refine (measure_union_le _ _).trans (?_)
+    refine (add_le_add hk₂ hk₁).trans_eq (?_)
+    rw [← ENNReal.ofReal_add (by positivity) (by positivity)]; ring_nf
   refine ⟨A, A₀, hAconv, ?_, ?_⟩
   · -- the sequence side
     obtain ⟨n₀, hn₀⟩ := (hunif η hη0 ε₁ hε₁0).exists_forall_of_atTop
@@ -309,12 +300,10 @@ theorem tendstoInMeasure_double [IsProbabilityMeasure P] (hμ : BPZWeakConv P μ
       · have herr := bpz_double_grid_error (μ n ω) (H n) H₀ (hHm n) hH₀m hR hh0 hh1 hhδ
           hε₁0.le (hbd n) hbd₀ (hsupp n) hsupp₀ (hn₀ n hn) hcδ
         have hnd := bpzNearDiag_le_grid (μ n ω) (ρ := ρ₂) (t := η) hh0
-        calc _ ≤ 2 * ε₁ * ((μ n ω).real B₂ * (μ n ω).real B) +
-              2 * C * bpzNearDiag ρ₂ η (μ n ω) := herr
-          _ ≤ Bn n ω := by
-              simp only [hBn, hG]
-              have := mul_le_mul_of_nonneg_left hnd (mul_nonneg zero_le_two hC)
-              linarith only [this]
+        refine (herr).trans (?_)
+        simp only [hBn, hG]
+        have := mul_le_mul_of_nonneg_left hnd (mul_nonneg zero_le_two hC)
+        linarith only [this]
       · rw [abs_zero]; exact hBn0
     have hfin := bpz_eventually_measure_le_of_le_tendstoInMeasure hBconv hEB hε
       (lt_of_le_of_lt ((measure_mono fun ω hω => (by
@@ -340,12 +329,8 @@ theorem tendstoInMeasure_double [IsProbabilityMeasure P] (hμ : BPZWeakConv P μ
       have hm2 : (μ₀ ω).real B₂ * (μ₀ ω).real B ≤ Wv ω * Wv ω :=
         mul_le_mul (measureReal_mono hsub2) (measureReal_mono hsub) measureReal_nonneg
           measureReal_nonneg
-      calc _ ≤ 2 * ε₁ * ((μ₀ ω).real B₂ * (μ₀ ω).real B) + 2 * C * bpzNearDiag ρ₂ η (μ₀ ω) :=
-            herr
-        _ ≤ 2 * (ε₁ * (Wv ω * Wv ω)) + 2 * C * ND k₁ ω := by
-            have h1 := mul_le_mul_of_nonneg_left hnd (mul_nonneg zero_le_two hC)
-            have h2 := mul_le_mul_of_nonneg_left hm2 (mul_nonneg zero_le_two hε₁0.le)
-            linarith only [h1, h2]
+      refine (herr).trans (?_)
+      linarith only [mul_le_mul_of_nonneg_left hnd (mul_nonneg zero_le_two hC), mul_le_mul_of_nonneg_left hm2 (mul_nonneg zero_le_two hε₁0.le)]
     calc P {ω | ε ≤ |(∫ x, ∫ y, H₀ x y ∂μ₀ ω ∂μ₀ ω) - A₀ ω|}
         ≤ P {ω | ε / 2 ≤ 2 * (ε₁ * (Wv ω * Wv ω)) + 2 * C * ND k₁ ω} :=
           measure_mono fun ω hω => by

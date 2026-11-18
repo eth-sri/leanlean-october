@@ -19,6 +19,7 @@ previous observations.
 
 @[expose] public section
 
+noncomputable section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal Topology Classical
 
@@ -45,8 +46,7 @@ theorem lintegral_radial_profile_heat (t : ℝ≥0) (ht : 0 < t)
           (measurable_radialGaussianVectorDensity t).comp (measurable_id.sub_const z)) hfu]
     rfl
   simp_rw [hinner]
-  have hm : Measurable (fun p : EuclideanSpace ℝ (Fin 3) × EuclideanSpace ℝ (Fin 3) =>
-      (u ‖p.1‖ * radialGaussianVectorDensity t (p.2 - p.1)) * (f ‖p.2‖ * H p.2)) :=
+  have hm :=
     ((hu.comp measurable_fst.norm).mul (measurable_radialGaussianVectorDensity_sub t)).mul
       (hfu.comp measurable_snd)
   calc
@@ -172,12 +172,11 @@ theorem exists_wienerRadial_endpoint_profile : ∀ (n : ℕ)
     rw [hrot]
 
 /-- The spherical average of the longitudinal exponential, with its continuous zero value. -/
-noncomputable def radialAngularFactor (a r : ℝ) : ℝ :=
+def radialAngularFactor (a r : ℝ) : ℝ :=
   if a * r = 0 then 1 else Real.sinh (a * r) / (a * r)
 
 /-- The angular factor is measurable on its entire real state carrier. -/
-theorem measurable_radialAngularFactor (a : ℝ) : Measurable (radialAngularFactor a) := by
-  exact Measurable.ite (measurableSet_eq_fun (measurable_const.mul measurable_id) measurable_const)
+theorem measurable_radialAngularFactor (a : ℝ) : Measurable (radialAngularFactor a) := Measurable.ite (measurableSet_eq_fun (measurable_const.mul measurable_id) measurable_const)
     measurable_const (((measurable_const.mul measurable_id).sinh).div (measurable_const.mul measurable_id))
 
 /-- At zero tilt every direction has likelihood one. -/
@@ -189,20 +188,19 @@ theorem radialAngularFactor_of_ne_zero (a r : ℝ) (ha : a ≠ 0) (hr : r ≠ 0)
     radialAngularFactor a r = Real.sinh (a * r) / (a * r) := by
   simp only [radialAngularFactor, mul_ne_zero ha hr, ite_false]
 
-/-- The angular likelihood is nonnegative at every nonnegative radius. -/
-theorem radialAngularFactor_nonneg (a r : ℝ) (hr : 0 ≤ r) : 0 ≤ radialAngularFactor a r := by
-  by_cases har : a * r = 0
-  · simp only [radialAngularFactor, har, ite_true]; exact zero_le_one
-  · have ha : a ≠ 0 := left_ne_zero_of_mul har
-    have hr' : r ≠ 0 := right_ne_zero_of_mul har
-    rw [radialAngularFactor_of_ne_zero a r ha hr', div_mul_eq_div_div]
-    exact div_nonneg (sinh_div_nonneg_longitudinal a r ha hr) hr
 
 /-- Cylindrical integration averages the longitudinal likelihood of any radial endpoint density. -/
 theorem lintegral_radial_profile_angular (u : ℝ → ℝ≥0∞) (hu : Measurable u) (a : ℝ) :
     (∫⁻ z : EuclideanSpace ℝ (Fin 3), u ‖z‖ *
       ENNReal.ofReal (Real.exp (a * WithLp.ofLp z 0))) =
       ∫⁻ z : EuclideanSpace ℝ (Fin 3), u ‖z‖ * ENNReal.ofReal (radialAngularFactor a ‖z‖) := by
+  have radialAngularFactor_nonneg (r : ℝ) (hr : 0 ≤ r) : 0 ≤ radialAngularFactor a r := by
+    by_cases har : a * r = 0
+    · simp only [radialAngularFactor, har, ite_true]; exact zero_le_one
+    · have ha : a ≠ 0 := left_ne_zero_of_mul har
+      have hr' := right_ne_zero_of_mul har
+      rw [radialAngularFactor_of_ne_zero a r ha hr', div_mul_eq_div_div]
+      exact div_nonneg (sinh_div_nonneg_longitudinal a r ha hr) hr
   by_cases ha : a = 0
   · subst a
     simp only [zero_mul, Real.exp_zero, ENNReal.ofReal_one, radialAngularFactor_zero, mul_one]
@@ -222,40 +220,17 @@ theorem lintegral_radial_profile_angular (u : ℝ → ℝ≥0∞) (hu : Measurab
     congr 1
     apply setLIntegral_congr_fun measurableSet_Ioi
     intro r hr
-    have hrad : 0 ≤ radialAngularFactor a r := radialAngularFactor_nonneg a r hr.le
     dsimp only
-    rw [mul_assoc, ← ENNReal.ofReal_mul hrad]
+    rw [mul_assoc, ← ENNReal.ofReal_mul (radialAngularFactor_nonneg r hr.le)]
     congr 2
     rw [radialAngularFactor_of_ne_zero a r ha hr.ne']
     field_simp
 
-/-- Averaging the terminal direction preserves every earlier radial observation test. -/
-theorem wienerRadial_product_terminal_angular (n : ℕ)
-    (times : Fin (n + 1) → ℝ≥0) (f : Fin (n + 1) → ℝ → ℝ≥0∞)
-    (hpos : ∀ i, 0 < times i) (hmono : StrictMono times) (hf : ∀ i, Measurable (f i))
-    (a : ℝ) :
-    (∫⁻ V, (∏ i, f i ‖wienerVectorEval (times i) V‖) *
-      ENNReal.ofReal (Real.exp (a * V 0 (times (Fin.last n)))) ∂wienerTripleMeasure) =
-    ∫⁻ V, (∏ i, f i ‖wienerVectorEval (times i) V‖) *
-      ENNReal.ofReal (radialAngularFactor a ‖wienerVectorEval (times (Fin.last n)) V‖) ∂wienerTripleMeasure := by
-  obtain ⟨u, hu, hprofile⟩ := exists_wienerRadial_endpoint_profile n times f hpos hmono hf
-  have hL := hprofile (fun z => ENNReal.ofReal (Real.exp (a * WithLp.ofLp z 0))) (by fun_prop)
-  have hR := hprofile (fun z => ENNReal.ofReal (radialAngularFactor a ‖z‖))
-    (((measurable_radialAngularFactor a).comp continuous_norm.measurable).ennreal_ofReal)
-  exact hL.trans ((lintegral_radial_profile_angular u hu a).trans hR.symm)
 
 /-- Drift only the first of the three actual coordinate paths. -/
-noncomputable def wienerTripleDrift (a : ℝ) (V : BrownianTriple) : BrownianTriple :=
+def wienerTripleDrift (a : ℝ) (V : BrownianTriple) : BrownianTriple :=
   fun i => if i = 0 then driftedBrownianPath a (V i) else V i
 
-/-- Coordinate drift is measurable on the full continuous-path product. -/
-theorem measurable_wienerTripleDrift (a : ℝ) : Measurable (wienerTripleDrift a) := by
-  apply measurable_pi_iff.mpr
-  intro i
-  dsimp only [wienerTripleDrift]
-  split_ifs
-  · exact continuous_driftedBrownianPath.measurable.comp (measurable_const.prodMk (measurable_pi_apply i))
-  · exact measurable_pi_apply i
 
 /-- The drifted Wiener vector is precisely the vector inside the Rogers--Pitman norm. -/
 theorem wienerVectorEval_drift (a : ℝ) (V : BrownianTriple) (t : ℝ≥0) :
@@ -265,77 +240,15 @@ theorem wienerVectorEval_drift (a : ℝ) (V : BrownianTriple) (t : ℝ≥0) :
   dsimp only [wienerVectorEval, wienerTripleDrift, rogersPitmanVectorAt]
   split_ifs <;> simp only [driftedBrownianPath, ContinuousMap.coe_mk, add_zero]
 
-/-- Finite-horizon Gaussian tilting acts on the actual independent Wiener triple. -/
-theorem wienerTriple_drift_stopped_lintegral (a : ℝ) (T : ℝ≥0) (hT : T ≠ 0)
-    (F : BrownianTriple → ℝ≥0∞) (hF : Measurable F) :
-    (∫⁻ V, F (wienerTripleStop T (wienerTripleDrift a V)) ∂wienerTripleMeasure) =
-    ∫⁻ V, brownianGaussianLikelihood a T (V 0 T) * F (wienerTripleStop T V) ∂wienerTripleMeasure := by
-  let e := MeasurableEquiv.piFinSuccAbove (fun _ : Fin 3 => BrownianPath) 0
-  let Q := Measure.pi (fun _ : Fin 2 => wienerPathMeasure)
-  have he : MeasurePreserving e wienerTripleMeasure (wienerPathMeasure.prod Q) :=
-    measurePreserving_piFinSuccAbove (α := fun _ : Fin 3 => BrownianPath)
-      (fun _ : Fin 3 => wienerPathMeasure) 0
-  have hmL := hF.comp ((measurable_wienerTripleStop T).comp (measurable_wienerTripleDrift a))
-  have hmR : Measurable (fun V : BrownianTriple =>
-      brownianGaussianLikelihood a T (V 0 T) * F (wienerTripleStop T V)) :=
-    ((measurable_brownianGaussianLikelihood a T).comp
-      ((show Measurable (fun p : BrownianPath => p T) from ContinuousMap.measurable_eval T).comp
-        (measurable_pi_apply (0 : Fin 3)))).mul
-        (hF.comp (measurable_wienerTripleStop T))
-  rw [← he.symm.lintegral_comp_emb e.symm.measurableEmbedding
-      (fun V => F (wienerTripleStop T (wienerTripleDrift a V))),
-    ← he.symm.lintegral_comp_emb e.symm.measurableEmbedding
-      (fun V => brownianGaussianLikelihood a T (V 0 T) * F (wienerTripleStop T V)),
-    lintegral_prod_symm _ (show Measurable (fun p => F (wienerTripleStop T (wienerTripleDrift a (e.symm p)))) from
-      hmL.comp e.symm.measurable).aemeasurable,
-    lintegral_prod_symm _ (show Measurable (fun p => brownianGaussianLikelihood a T (e.symm p 0 T) *
-      F (wienerTripleStop T (e.symm p))) from hmR.comp e.symm.measurable).aemeasurable]
-  apply lintegral_congr
-  intro W
-  let tail := fun i : Fin 2 => stopBrownianPath (W i) T
-  let G := fun p : BrownianPath => F (e.symm (p, tail))
-  have hG : Measurable G := hF.comp (e.symm.measurable.comp (measurable_id.prodMk measurable_const))
-  have hscalar := brownianFiniteTilt_stoppedPath_lintegral wienerPathMeasure
-    wienerPathMeasure_isBrownian.toIsPreBrownianReal a T hT G hG
-  have hstop (p : BrownianPath) : wienerTripleStop T (e.symm (p, W)) =
-      e.symm (stopBrownianPath p T, tail) := by
-    funext i
-    refine Fin.cases ?_ (fun j => ?_) i
-    · simp [e, wienerTripleStop, tail]
-    · simp [e, wienerTripleStop, tail]
-  have hdrift (p : BrownianPath) : wienerTripleDrift a (e.symm (p, W)) =
-      e.symm (driftedBrownianPath a p, W) := by
-    funext i
-    refine Fin.cases ?_ (fun j => ?_) i
-    · simp [e, wienerTripleDrift]
-    · simp [e, wienerTripleDrift]
-  simp_rw [hdrift, hstop]
-  have hhead (p : BrownianPath) : e.symm (p, W) 0 = p := by simp [e]
-  simp_rw [hhead]
-  exact hscalar
 
 /-- The terminal radial likelihood for the drifted norm skeleton. -/
-noncomputable def radialTerminalLikelihood (a t r : ℝ) : ℝ≥0∞ :=
+def radialTerminalLikelihood (a t r : ℝ) : ℝ≥0∞ :=
   ENNReal.ofReal (Real.exp (-a ^ 2 * t / 2)) * ENNReal.ofReal (radialAngularFactor a r)
 
 /-- The terminal radial likelihood is measurable on the whole real state carrier. -/
 theorem measurable_radialTerminalLikelihood (a t : ℝ) : Measurable (radialTerminalLikelihood a t) :=
   measurable_const.mul (measurable_radialAngularFactor a).ennreal_ofReal
 
-/-- All finite Rogers--Pitman observation tests have the actual Cartesian terminal tilt. -/
-theorem rogersPitman_skeleton_terminal_tilt {n : ℕ} (a : ℝ)
-    (times : Fin (n + 1) → ℝ≥0) (hT : times (Fin.last n) ≠ 0)
-    (hle : ∀ i, times i ≤ times (Fin.last n))
-    (F : (Fin (n + 1) → ℝ) → ℝ≥0∞) (hF : Measurable F) :
-    (∫⁻ V, F (fun i => ‖rogersPitmanVectorAt a V (times i)‖) ∂wienerTripleMeasure) =
-    ∫⁻ V, brownianGaussianLikelihood a (times (Fin.last n)) (V 0 (times (Fin.last n))) *
-      F (wienerRadialSamples times V) ∂wienerTripleMeasure := by
-  have h := wienerTriple_drift_stopped_lintegral a (times (Fin.last n)) hT
-    (fun V => F (wienerRadialSamples times V)) (hF.comp (measurable_wienerRadialSamples times))
-  simp_rw [wienerRadialSamples_stop times _ hle] at h
-  change (∫⁻ V, F (fun i => ‖wienerVectorEval (times i) (wienerTripleDrift a V)‖) ∂wienerTripleMeasure) = _ at h
-  simp_rw [wienerVectorEval_drift] at h
-  exact h
 
 /-- The full drifted radial product test has the averaged terminal likelihood. -/
 theorem rogersPitman_radial_product_terminal_likelihood (n : ℕ) (a : ℝ)
@@ -345,9 +258,75 @@ theorem rogersPitman_radial_product_terminal_likelihood (n : ℕ) (a : ℝ)
     ∫⁻ V, (∏ i, f i ‖wienerVectorEval (times i) V‖) *
       radialTerminalLikelihood a (times (Fin.last n)) ‖wienerVectorEval (times (Fin.last n)) V‖
         ∂wienerTripleMeasure := by
+  have rogersPitman_skeleton_terminal_tilt (hT : times (Fin.last n) ≠ 0) (hle : ∀ i, times i ≤ times (Fin.last n)) (F : (Fin (n + 1) → ℝ) → ℝ≥0∞) (hF : Measurable F) : (∫⁻ V, F (fun i => ‖rogersPitmanVectorAt a V (times i)‖) ∂wienerTripleMeasure) =
+      ∫⁻ V, brownianGaussianLikelihood a (times (Fin.last n)) (V 0 (times (Fin.last n))) *
+        F (wienerRadialSamples times V) ∂wienerTripleMeasure := by
+    have wienerTriple_drift_stopped_lintegral (T : ℝ≥0) (hT : T ≠ 0) (F : BrownianTriple → ℝ≥0∞) (hF : Measurable F) : (∫⁻ V, F (wienerTripleStop T (wienerTripleDrift a V)) ∂wienerTripleMeasure) =
+        ∫⁻ V, brownianGaussianLikelihood a T (V 0 T) * F (wienerTripleStop T V) ∂wienerTripleMeasure := by
+      have measurable_wienerTripleDrift : Measurable (wienerTripleDrift a) := by
+        apply measurable_pi_iff.mpr
+        intro i
+        dsimp only [wienerTripleDrift]
+        split_ifs
+        · exact continuous_driftedBrownianPath.measurable.comp (measurable_const.prodMk (measurable_pi_apply i))
+        · exact measurable_pi_apply i
+      let e := MeasurableEquiv.piFinSuccAbove (fun _ : Fin 3 => BrownianPath) 0
+      have he : MeasurePreserving e wienerTripleMeasure (wienerPathMeasure.prod (Measure.pi (fun _ : Fin 2 => wienerPathMeasure))) :=
+        measurePreserving_piFinSuccAbove (α := fun _ : Fin 3 => BrownianPath)
+          (fun _ : Fin 3 => wienerPathMeasure) 0
+      have hmR :=
+        ((measurable_brownianGaussianLikelihood a T).comp
+          ((show Measurable (fun p : BrownianPath => p T) from ContinuousMap.measurable_eval T).comp
+            (measurable_pi_apply (0 : Fin 3)))).mul
+            (hF.comp (measurable_wienerTripleStop T))
+      rw [← he.symm.lintegral_comp_emb e.symm.measurableEmbedding
+          (fun V => F (wienerTripleStop T (wienerTripleDrift a V))),
+        ← he.symm.lintegral_comp_emb e.symm.measurableEmbedding
+          (fun V => brownianGaussianLikelihood a T (V 0 T) * F (wienerTripleStop T V)),
+        lintegral_prod_symm _ (show Measurable (fun p => F (wienerTripleStop T (wienerTripleDrift a (e.symm p)))) from
+          (hF.comp ((measurable_wienerTripleStop T).comp (measurable_wienerTripleDrift))).comp e.symm.measurable).aemeasurable,
+        lintegral_prod_symm _ (show Measurable (fun p => brownianGaussianLikelihood a T (e.symm p 0 T) *
+          F (wienerTripleStop T (e.symm p))) from hmR.comp e.symm.measurable).aemeasurable]
+      apply lintegral_congr
+      intro W
+      let tail := fun i : Fin 2 => stopBrownianPath (W i) T
+      let G := fun p : BrownianPath => F (e.symm (p, tail))
+      have hG : Measurable G := hF.comp (e.symm.measurable.comp (measurable_id.prodMk measurable_const))
+      have hscalar := brownianFiniteTilt_stoppedPath_lintegral wienerPathMeasure
+        wienerPathMeasure_isBrownian.toIsPreBrownianReal a T hT G hG
+      have hstop (p : BrownianPath) : wienerTripleStop T (e.symm (p, W)) =
+          e.symm (stopBrownianPath p T, tail) := by
+        funext i
+        refine Fin.cases ?_ (fun j => ?_) i
+        · rfl
+        · rfl
+      have hdrift (p : BrownianPath) : wienerTripleDrift a (e.symm (p, W)) =
+          e.symm (driftedBrownianPath a p, W) := by
+        funext i
+        refine Fin.cases ?_ (fun j => ?_) i
+        · rfl
+        · rfl
+      simp_rw [hdrift, hstop]
+      have hhead (p : BrownianPath) : e.symm (p, W) 0 = p := by simp [e]
+      simp_rw [hhead]
+      exact hscalar
+    have h := wienerTriple_drift_stopped_lintegral (times (Fin.last n)) hT
+      (fun V => F (wienerRadialSamples times V)) (hF.comp (measurable_wienerRadialSamples times))
+    simp_rw [wienerRadialSamples_stop times _ hle] at h
+    change (∫⁻ V, F (fun i => ‖wienerVectorEval (times i) (wienerTripleDrift a V)‖) ∂wienerTripleMeasure) = _ at h
+    simp_rw [wienerVectorEval_drift] at h
+    exact h
+  have wienerRadial_product_terminal_angular : (∫⁻ V, (∏ i, f i ‖wienerVectorEval (times i) V‖) *
+        ENNReal.ofReal (Real.exp (a * V 0 (times (Fin.last n)))) ∂wienerTripleMeasure) =
+      ∫⁻ V, (∏ i, f i ‖wienerVectorEval (times i) V‖) *
+        ENNReal.ofReal (radialAngularFactor a ‖wienerVectorEval (times (Fin.last n)) V‖) ∂wienerTripleMeasure := by
+    obtain ⟨u, hu, hprofile⟩ := exists_wienerRadial_endpoint_profile n times f hpos hmono hf
+    have hR := hprofile (fun z => ENNReal.ofReal (radialAngularFactor a ‖z‖))
+      (((measurable_radialAngularFactor a).comp continuous_norm.measurable).ennreal_ofReal)
+    exact (hprofile (fun z => ENNReal.ofReal (Real.exp (a * WithLp.ofLp z 0))) (by fun_prop)).trans ((lintegral_radial_profile_angular u hu a).trans hR.symm)
   have hF : Measurable (fun x : Fin (n + 1) → ℝ => ∏ i, f i (x i)) :=
     Finset.measurable_prod Finset.univ fun i _ => (hf i).comp (measurable_pi_apply i)
-  rw [rogersPitman_skeleton_terminal_tilt a times (hpos _).ne'
+  rw [rogersPitman_skeleton_terminal_tilt (hpos _).ne'
     (fun i => hmono.monotone (Fin.le_last i)) _ hF]
   let c := ENNReal.ofReal (Real.exp (-a ^ 2 * (times (Fin.last n) : ℝ) / 2))
   have hm : Measurable (fun V : BrownianTriple =>
@@ -376,7 +355,7 @@ theorem rogersPitman_radial_product_terminal_likelihood (n : ℕ) (a : ℝ)
     _ = c * ∫⁻ V, (∏ i, f i ‖wienerVectorEval (times i) V‖) *
         ENNReal.ofReal (radialAngularFactor a ‖wienerVectorEval (times (Fin.last n)) V‖)
           ∂wienerTripleMeasure := by
-      rw [wienerRadial_product_terminal_angular n times f hpos hmono hf a]
+      rw [wienerRadial_product_terminal_angular]
     _ = _ := by
       rw [← lintegral_const_mul c hm']
       apply lintegral_congr

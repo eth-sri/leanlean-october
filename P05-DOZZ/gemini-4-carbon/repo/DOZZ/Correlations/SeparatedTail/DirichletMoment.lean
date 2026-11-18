@@ -25,9 +25,6 @@ theorem separatedTail_softWeight_measurable (γ α s : ℝ) (c : ℂ) :
     Measurable (separatedTail_softWeight γ α s c) :=
   (limitWeightedFatou_weight_measurable (-γ*α) s).comp (measurable_id.sub_const c)
 
-theorem separatedTail_softWeight_bounded (γ α s : ℝ) (c : ℂ) (he : -γ*α ≤ 0) (hs : 0 < s) :
-    ∃ b : ℝ≥0, ∀ x, separatedTail_softWeight γ α s c x ≤ b :=
-  ⟨(s^(-γ*α)).toNNReal, fun x => limitWeightedFatou_weight_le he hs (x-c)⟩
 
 /-- A Dirichlet circle cutoff moment is bounded by the literal equator cutoff moment.
 The same reference density and softened weight are used on both sides. -/
@@ -46,6 +43,8 @@ theorem separatedTail_dirichlet_cutoff_moment_le
       (gmcReferenceMeasure.restrict (ball c 1)) (separatedTail_softWeight γ α δ c) γ ω ^ t ∂P) ≤
       ENNReal.ofReal (Real.exp (γ^2*(4+2*R)/2*|t^2-t|)) *
         (∫⁻ ω, cutoffWeightedGmcBallMass P Xc γ α c 1 δ ω ^ t ∂P) := by
+  have separatedTail_softWeight_bounded (s : ℝ) (c : ℂ) (he : -γ*α ≤ 0) (hs : 0 < s) : ∃ b : ℝ≥0, ∀ x, separatedTail_softWeight γ α s c x ≤ b := 
+    ⟨(s^(-γ*α)).toNNReal, fun x => limitWeightedFatou_weight_le he hs (x-c)⟩
   let _ : IsFiniteMeasure gmcReferenceMeasure := ⟨gmcReferenceMeasure_univ_ne_top.lt_top⟩
   have hscale : Real.exp (-Real.log (1/δ)) = δ := by
     rw [one_div, Real.log_inv, neg_neg, Real.exp_log hδ]
@@ -78,7 +77,7 @@ theorem separatedTail_dirichlet_cutoff_moment_le
   have hb := separatedTail_fieldChaosMoment_le_of_covariance_discrepancy P P _ _ hfield
     (circleAverage_isCenteredGaussianField P X hX Xc hc _)
     (gmcReferenceMeasure.restrict (ball c 1)) (separatedTail_softWeight γ α δ c)
-    (separatedTail_softWeight_measurable γ α δ c) (separatedTail_softWeight_bounded γ α δ c he hδ)
+    (separatedTail_softWeight_measurable γ α δ c) (separatedTail_softWeight_bounded δ c he hδ)
     γ (4+2*R) t (by linarith) ht hcov hdiag
   have heq (ω : Ω) : fieldChaosMass P (fun ω x => Xc ω x (Real.log (1/δ)))
       (gmcReferenceMeasure.restrict (ball c 1)) (separatedTail_softWeight γ α δ c) γ ω =

@@ -8,8 +8,11 @@ public import DOZZ.Upsilon.ZeroStructure
 /-! # The extended charge domain and the finite DOZZ denominator -/
 @[expose] public section
 namespace DOZZ.Proofs
+
+variable {γ a b c : ℝ}
+
 /-- The extended moment bounds imply the three strict triangle inequalities. -/
-theorem roots_extended_triangle {γ a b c : ℝ} (hγ : 0 < γ)
+theorem roots_extended_triangle (hγ : 0 < γ)
     (h : ExtendedSeiberg3 γ a b c) : a < b + c ∧ b < a + c ∧ c < a + b := by
   have h1 := lt_of_lt_of_le h.2.2.2 ((min_le_right _ _).trans (min_le_left _ _))
   have h2 := lt_of_lt_of_le h.2.2.2 ((min_le_right _ _).trans ((min_le_right _ _).trans (min_le_left _ _)))
@@ -23,12 +26,12 @@ theorem roots_extended_triangle {γ a b c : ℝ} (hγ : 0 < γ)
   have h3' := (div_lt_div_iff_of_pos_right hγ).mp h3
   exact ⟨by linarith only [h1'], by linarith only [h2'], by linarith only [h3']⟩
 /-- All three charges in the extended three-point domain are positive. -/
-theorem roots_extended_positive {γ a b c : ℝ} (hγ : 0 < γ)
+theorem roots_extended_positive (hγ : 0 < γ)
     (h : ExtendedSeiberg3 γ a b c) : 0 < a ∧ 0 < b ∧ 0 < c := by
   obtain ⟨h1, h2, h3⟩ := roots_extended_triangle hγ h
   exact ⟨by linarith only [h2, h3], by linarith only [h1, h3], by linarith only [h1, h2]⟩
 /-- The zero-mode Upsilon factor is nonzero at every pole-free extended triple. -/
-theorem roots_upsilon_zeroMode_ne_zero {γ a b c : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
+theorem roots_upsilon_zeroMode_ne_zero (hγ : 0 < γ) (hγ2 : γ < 2)
     {U : ℂ → ℂ} (hU : IsUpsilon γ U) (h : ExtendedSeiberg3 γ a b c)
     (hs : ∀ n : ℕ, sExp γ a b c ≠ -(n : ℝ)) :
     U (((a + b + c - 2 * Q γ) / 2 : ℝ) : ℂ) ≠ 0 := by
@@ -56,8 +59,7 @@ theorem roots_upsilon_zeroMode_ne_zero {γ a b c : ℝ} (hγ : 0 < γ) (hγ2 : �
       by_contra hne
       have hn1 : (1 : ℝ) ≤ (n : ℝ) := by exact_mod_cast Nat.one_le_iff_ne_zero.mpr hne
       have hm0 : 0 ≤ (m : ℝ) * (γ / 2) := mul_nonneg (Nat.cast_nonneg _) (by positivity)
-      have hmul := mul_le_mul_of_nonneg_right hn1 (show (0 : ℝ) ≤ 2 / γ by positivity)
-      linarith only [hwlo, he, hm0, hmul]
+      linarith only [hwlo, he, hm0, mul_le_mul_of_nonneg_right hn1 (show (0 : ℝ) ≤ 2 / γ by positivity)]
     subst n
     simp only [Nat.cast_zero, zero_mul, add_zero] at he
     apply hs m

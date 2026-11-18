@@ -9,13 +9,15 @@ public import DOZZ.FourPoint.FusionAllocationAlgebra
 /-! Strict exponent margins for the corrected two-rooted Taylor domain. -/
 
 @[expose] public section
-open MeasureTheory Set
-open scoped ENNReal NNReal
 namespace DOZZ.Proofs
+
+section
+variable (γ α : ℝ) (hγ : 0 < γ)
+include α hγ
 
 /-- The time exponent retains alpha_1; it lies strictly between -1 and 0 (erratum K20, see
 docs/ERRATA-AND-DEVIATIONS.md). -/
-theorem twoRooted_time_exponent (γ α : ℝ) (hγ : 0 < γ) (hγsq : 2 < γ ^ 2)
+theorem twoRooted_time_exponent (hγsq : 2 < γ ^ 2)
     (hα : γ / 2 < α) (hα2 : α < 2 / γ) :
     γ * (Q γ - α) - 2 = γ ^ 2 / 2 - γ * α ∧
       1 < γ * (Q γ - α) ∧ γ * (Q γ - α) < 2 := by
@@ -23,14 +25,13 @@ theorem twoRooted_time_exponent (γ α : ℝ) (hγ : 0 < γ) (hγsq : 2 < γ ^ 2
     unfold Q
     field_simp
   have hm1 : γ * α < 2 := by simpa only [mul_comm] using (lt_div_iff₀ hγ).mp hα2
-  have hm2 := mul_lt_mul_of_pos_left hα hγ
   rw [he]
   constructor
   · ring
-  · constructor <;> nlinarith only [hγsq, hm1, hm2]
+  · constructor <;> nlinarith only [hγsq, hm1, mul_lt_mul_of_pos_left hα hγ]
 
 /-- The near-cluster exponent has a strictly positive extra power. -/
-theorem twoRooted_near_gain (γ α : ℝ) (hγ : 0 < γ) (hα2 : α < 2 / γ) :
+theorem twoRooted_near_gain (hα2 : α < 2 / γ) :
     2 - 2 * γ * α + (3 * γ / 2 + α - Q γ) ^ 2 / 2 =
       γ * (Q γ - α) - 2 + (α - 2 / γ) ^ 2 / 2 ∧
       0 < (α - 2 / γ) ^ 2 / 2 := by
@@ -40,6 +41,8 @@ theorem twoRooted_near_gain (γ α : ℝ) (hγ : 0 < γ) (hα2 : α < 2 / γ) :
     ring
   · exact div_pos (sq_pos_of_ne_zero (sub_ne_zero.mpr hα2.ne)) (by norm_num)
 
+
+end
 /-- The middle-region optimized moment leaves the exact positive square margin. -/
 theorem twoRooted_intermediate_gain (γ α : ℝ) (_hγ : 0 < γ) (hα2 : α < 2 / γ) :
     (γ / 2 + Q γ - α) ^ 2 / 2 - γ * (Q γ - α) =

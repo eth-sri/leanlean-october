@@ -10,8 +10,6 @@ public import DOZZ.FourPoint.TaylorPairIntegrability
 /-! Source-level parameter choice and convergent near-diagonal kernels in the strict domain. -/
 
 @[expose] public section
-open MeasureTheory Filter Topology Set Metric
-open scoped ENNReal NNReal
 namespace DOZZ.Proofs
 
 /-- Choose all exponents before the spatial scale, on the literal corrected Taylor domain. -/
@@ -24,9 +22,7 @@ theorem twoRooted_region_parameters (γ α : ℝ)
             -2 - 2 * ε + (1 - δ) * (γ / 2 + Q γ - α) ^ 2 / (2 * q) := by
   obtain ⟨_, hκ, hκ2⟩ := twoRooted_time_exponent γ α hγ hγsq hα hα2
   obtain ⟨heq, hgain⟩ := twoRooted_intermediate_gain γ α hγ hα2
-  have hW : 2 * (γ * (Q γ - α)) < (γ / 2 + Q γ - α) ^ 2 := by
-    rw [← heq] at hgain
-    linarith only [hgain]
+  have hW : 2 * (γ * (Q γ - α)) < (γ / 2 + Q γ - α) ^ 2 := by nlinarith
   obtain ⟨_, hn⟩ := twoRooted_near_gain γ α hγ hα2
   exact taylor_region_margins (γ * (Q γ - α)) ((γ / 2 + Q γ - α) ^ 2)
     (γ * (α - γ / 2)) ((α - 2 / γ) ^ 2 / 2) (zero_lt_one.trans hκ) hκ2 hW

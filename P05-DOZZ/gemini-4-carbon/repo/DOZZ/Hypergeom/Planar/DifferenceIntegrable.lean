@@ -17,35 +17,8 @@ open scoped Topology
 
 namespace DOZZ.Proofs
 
-private theorem measurable_nonneg_rpow {f : ℂ → ℝ} (hf : Measurable f)
-    (hfn : ∀ u, 0 ≤ f u) (p : ℝ) : Measurable (fun u => f u ^ p) := by
-  have hrepr : (fun u => f u ^ p) =
-      fun u => if f u = 0 then 0 ^ p else Real.exp (p * Real.log (f u)) := by
-    funext u
-    by_cases hu : f u = 0
-    · simp [hu]
-    · rw [ite_eq_right hu,
-        Real.rpow_def_of_pos (lt_of_le_of_ne (hfn u) (Ne.symm hu))]
-      congr 1
-      ring
-  rw [hrepr]
-  apply Measurable.ite
-  · exact MeasurableSet.preimage (measurableSet_singleton (0 : ℝ)) hf
-  · exact measurable_const
-  · fun_prop
 
-private theorem measurable_complex_norm_rpow (p : ℝ) :
-    Measurable (fun u : ℂ => ‖u‖ ^ p) :=
-  measurable_nonneg_rpow (by fun_prop) (fun u => norm_nonneg u) p
 
-private theorem measurable_planarDifferenceKernel (k β : ℝ) (z : ℂ) :
-    Measurable (DOZZ.planarDifferenceKernel k β z) := by
-  change Measurable (fun u : ℂ =>
-    (‖u - z‖ ^ k - ‖u‖ ^ k) / ‖u‖ ^ β)
-  apply Measurable.div
-  · exact (measurable_nonneg_rpow (by fun_prop)
-      (fun u => norm_nonneg (u - z)) k).sub (measurable_complex_norm_rpow k)
-  · exact measurable_complex_norm_rpow β
 
 private theorem abs_planarDifferenceKernel_local_le (k β : ℝ)
     (hk : 0 < k) (hβ : k < β) (z u : ℂ)
@@ -162,78 +135,57 @@ private theorem abs_planarDifferenceKernel_tail_le (k β : ℝ)
         _ = _ := by rw [hpow₂]
     _ ≤ (k + T / 2) * ‖z‖ * ‖u‖ ^ (k - 1 - β) := le_rfl
 
-theorem integrableOn_planarDifferenceKernel_ball (k β : ℝ)
-    (hk : 0 < k) (hβ : k < β) (hβ₂ : β < 2) (z : ℂ) (hz : z ≠ 0) :
-    IntegrableOn (DOZZ.planarDifferenceKernel k β z)
-      (ball (0 : ℂ) (2 * ‖z‖)) volume := by
-  let R : ℝ := 2 * ‖z‖
-  let A : ℝ := (3 * ‖z‖) ^ k
-  have hR : 0 < R := by dsimp [R]; positivity
-  have hA : 0 ≤ A := by dsimp [A]; positivity
-  have hp₀ : -2 < -β := by linarith
-  have hp₁ : -2 < k - β := by linarith
-  have h₀ : IntegrableOn (fun u : ℂ => A * ‖u‖ ^ (-β)) (ball 0 R) volume :=
-    ((integrableOn_norm_rpow_ball_iff (-β) R hR).2 hp₀).const_mul A
-  have h₁ : IntegrableOn (fun u : ℂ => ‖u‖ ^ (k - β)) (ball 0 R) volume :=
-    (integrableOn_norm_rpow_ball_iff (k - β) R hR).2 hp₁
-  have hmajor : IntegrableOn (fun u : ℂ => A * ‖u‖ ^ (-β) + ‖u‖ ^ (k - β))
-      (ball 0 R) volume := h₀.add h₁
-  change Integrable (DOZZ.planarDifferenceKernel k β z) (volume.restrict (ball 0 R))
-  apply hmajor.mono' (measurable_planarDifferenceKernel k β z).aestronglyMeasurable
-  filter_upwards [ae_restrict_mem Metric.isOpen_ball.measurableSet] with u hu
-  have hball : ‖u‖ < 2 * ‖z‖ := by
-    dsimp [R] at hu
-    simpa [Metric.mem_ball, dist_zero_right] using hu
-  have hpoint := abs_planarDifferenceKernel_local_le k β hk hβ z u hball
-  rw [Real.norm_eq_abs]
-  change |DOZZ.planarDifferenceKernel k β z u| ≤ _
-  simpa [A, mul_assoc] using hpoint
 
-theorem integrableOn_planarDifferenceKernel_tail (k β : ℝ)
-    (hk : 0 < k) (hβ₂ : β < 2) (hβtail : k + 1 < β)
-    (z : ℂ) (hz : z ≠ 0) :
-    IntegrableOn (DOZZ.planarDifferenceKernel k β z)
-      (ball (0 : ℂ) (2 * ‖z‖))ᶜ volume := by
-  let R : ℝ := 2 * ‖z‖
-  let p : ℝ := k - 1 - β
-  let T : ℝ := k * (1 + (15 / 4) *
-    ((1 - k / 2) * (1 / 4 : ℝ) ^ (k / 2 - 2)))
-  let A : ℝ := (k + T / 2) * ‖z‖
-  have hR : 0 < R := by dsimp [R]; positivity
-  have hk₂ : k < 2 := by linarith
-  have hp : p < -2 := by dsimp [p]; linarith
-  have hT : 0 ≤ T := by
-    dsimp [T]
-    have hfactor : 0 ≤ 1 - k / 2 := by linarith
-    positivity
-  have hA : 0 ≤ A := by dsimp [A]; positivity
-  have hrad : IntegrableOn (fun u : ℂ => ‖u‖ ^ p)
-      (ball (0 : ℂ) R)ᶜ volume :=
-    (integrableOn_norm_rpow_ball_compl_iff p R hR).2 hp
-  have hmajor : IntegrableOn (fun u : ℂ => A * ‖u‖ ^ p)
-      (ball (0 : ℂ) R)ᶜ volume := hrad.const_mul A
-  change Integrable (DOZZ.planarDifferenceKernel k β z)
-      (volume.restrict (ball (0 : ℂ) R)ᶜ)
-  apply hmajor.mono' (measurable_planarDifferenceKernel k β z).aestronglyMeasurable
-  filter_upwards [ae_restrict_mem Metric.isOpen_ball.measurableSet.compl] with u hu
-  have hlarge : 2 * ‖z‖ ≤ ‖u‖ := by
-    by_contra h
-    have : ‖u‖ < 2 * ‖z‖ := lt_of_not_ge h
-    exact hu (by simpa [Metric.mem_ball, dist_zero_right] using this)
-  have hu : u ≠ 0 := by
-    intro hu0
-    subst u
-    have h0ball : (0 : ℂ) ∈ ball (0 : ℂ) R := by
-      simpa [Metric.mem_ball] using hR
-    exact hu h0ball
-  have hpoint := abs_planarDifferenceKernel_tail_le k β hk hk₂ z u hu hlarge
-  rw [Real.norm_eq_abs]
-  change |DOZZ.planarDifferenceKernel k β z u| ≤ A * ‖u‖ ^ p
-  simpa [A, p, T, mul_assoc] using hpoint
 
 theorem integrable_planarDifferenceKernel (k β : ℝ)
     (hk : 0 < k) (hβ : k < β) (hβ₂ : β < 2) (hβtail : k + 1 < β) :
     ∀ z : ℂ, Integrable (DOZZ.planarDifferenceKernel k β z) volume := by
+  have measurable_planarDifferenceKernel (z : ℂ) : Measurable (DOZZ.planarDifferenceKernel k β z) := by
+    have measurable_complex_norm_rpow (p : ℝ) := 
+      have measurable_nonneg_rpow {f : ℂ → ℝ} (hf : Measurable f) (hfn : ∀ u, 0 ≤ f u) (p : ℝ) : Measurable (fun u => f u ^ p) := by fun_prop
+      measurable_nonneg_rpow (by fun_prop) (fun u => norm_nonneg u) p
+    change Measurable (fun u : ℂ =>
+      (‖u - z‖ ^ k - ‖u‖ ^ k) / ‖u‖ ^ β)
+    apply Measurable.div
+    · fun_prop
+    · exact measurable_complex_norm_rpow β
+  have integrableOn_planarDifferenceKernel_tail (z : ℂ) (hz : z ≠ 0) : IntegrableOn (DOZZ.planarDifferenceKernel k β z)
+        (ball (0 : ℂ) (2 * ‖z‖))ᶜ volume := by
+    let R := 2 * ‖z‖
+    let p := k - 1 - β
+    let T := k * (1 + (15 / 4) *
+      ((1 - k / 2) * (1 / 4 : ℝ) ^ (k / 2 - 2)))
+    have hR : 0 < R := by positivity
+    have hk₂ : k < 2 := by linarith
+    have hp : p < -2 := by nlinarith
+    change Integrable (DOZZ.planarDifferenceKernel k β z)
+        (volume.restrict (ball (0 : ℂ) R)ᶜ)
+    apply (((integrableOn_norm_rpow_ball_compl_iff p R hR).2 hp).const_mul ((k + T / 2) * ‖z‖)).mono' (measurable_planarDifferenceKernel z).aestronglyMeasurable
+    filter_upwards [ae_restrict_mem Metric.isOpen_ball.measurableSet.compl] with u hu
+    have hlarge : 2 * ‖z‖ ≤ ‖u‖ := by
+      by_contra h
+      have := lt_of_not_ge h
+      exact hu (by simpa [Metric.mem_ball, dist_zero_right] using this)
+    have hu : u ≠ 0 := by
+      intro hu0
+      subst u
+      have h0ball : (0 : ℂ) ∈ ball (0 : ℂ) R := by
+        simpa [Metric.mem_ball] using hR
+      exact hu h0ball
+    exact abs_planarDifferenceKernel_tail_le k β hk hk₂ z u hu hlarge
+  have integrableOn_planarDifferenceKernel_ball (z : ℂ) (hz : z ≠ 0) : IntegrableOn (DOZZ.planarDifferenceKernel k β z)
+        (ball (0 : ℂ) (2 * ‖z‖)) volume := by
+    let R := 2 * ‖z‖
+    have hR : 0 < R := by positivity
+    have hp₀ : -2 < -β := by linarith
+    have hp₁ : -2 < k - β := by linarith
+    change Integrable (DOZZ.planarDifferenceKernel k β z) (volume.restrict (ball 0 R))
+    apply ((((integrableOn_norm_rpow_ball_iff (-β) R hR).2 hp₀).const_mul ((3 * ‖z‖) ^ k)).add ((integrableOn_norm_rpow_ball_iff (k - β) R hR).2 hp₁)).mono' (measurable_planarDifferenceKernel z).aestronglyMeasurable
+    filter_upwards [ae_restrict_mem Metric.isOpen_ball.measurableSet] with u hu
+    have hball : ‖u‖ < 2 * ‖z‖ := by
+      dsimp [R] at hu
+      simpa [Metric.mem_ball, dist_zero_right] using hu
+    exact abs_planarDifferenceKernel_local_le k β hk hβ z u hball
   intro z
   by_cases hz : z = 0
   · subst z
@@ -242,10 +194,9 @@ theorem integrable_planarDifferenceKernel (k β : ℝ)
       simp [DOZZ.planarDifferenceKernel]
     rw [hzero]
     exact integrable_zero ℂ ℝ volume
-  · have hball := integrableOn_planarDifferenceKernel_ball k β hk hβ hβ₂ z hz
-    have htail := integrableOn_planarDifferenceKernel_tail k β hk hβ₂ hβtail z hz
+  · have hball := integrableOn_planarDifferenceKernel_ball z hz
     rw [← integrableOn_univ, ← Set.union_compl_self (ball (0 : ℂ) (2 * ‖z‖)),
       integrableOn_union]
-    exact ⟨hball, htail⟩
+    exact ⟨hball, integrableOn_planarDifferenceKernel_tail z hz⟩
 
 end DOZZ.Proofs

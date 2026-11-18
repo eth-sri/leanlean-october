@@ -55,17 +55,14 @@ theorem real_center_cutoff_estimates
   refine ⟨S, hS, K, κ, hK, hκ, ?_⟩
   filter_upwards [hdec, retained_cutoff_geometry_eventually z δ R hδ] with n hn hgeo
   have hr : (0 : ℝ) ≤ (n : ℝ) := Nat.cast_nonneg _
-  have hball := exterior_ball_subset_retainedRegion z R hR hzR (n : ℝ) hr hgeo.2.2.2
-  have hne : (retainedRegion z (n : ℝ)).Nonempty :=
-    (Metric.nonempty_ball.mpr (by norm_num : (0 : ℝ) < 1 / 8)).mono hball
   constructor
   · apply (normalized_vertex_moment_holomorphic P X hX γ hγ hγ2 M hM Xc hc
       (retainedRegion z (n : ℝ)) (retainedRegion_isOpen z _)
-      (retainedRegion_isBounded z _) hne z (n : ℝ)).2.mono
+      (retainedRegion_isBounded z _) ((Metric.nonempty_ball.mpr (by norm_num : (0 : ℝ) < 1 / 8)).mono (exterior_ball_subset_retainedRegion z R hR hzR (n : ℝ) hr hgeo.2.2.2)) z (n : ℝ)).2.mono
     intro β hβ
     change (complexMomentPower γ β).re < 4 / γ ^ 2
-    have he := (hbox β (hsub hβ)).2.2.2.1
-    have hhiq : hi ≤ hi * q := by nlinarith
+    have := (hbox β (hsub hβ)).2.2.2.1
+    have : hi ≤ hi * q := by nlinarith
     linarith
   · intro β hβ
     exact hn β (hsub hβ) (hthin β hβ)

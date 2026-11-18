@@ -42,31 +42,29 @@ theorem gmc_open_mass_aemeasurable
   have hlim : ∀ᵐ ω ∂P, Tendsto (fun n => ∫ x, f n x ∂M ω) atTop
       (𝓝 ((M ω U).toReal)) := by
     filter_upwards [] with ω
-    let : IsFiniteMeasure (M ω) := hfinite ω
+    let := hfinite ω
     exact gmcOpenApprox_integral_tendsto (M ω) U hU
-  have hreal : AEMeasurable (fun ω => (M ω U).toReal) P := by
+  have : AEMeasurable (fun ω => (M ω U).toReal) P := by
     simpa [f] using aemeasurable_of_tendsto_metrizable_ae atTop hf hlim
-  have hfiniteU : ∀ ω, M ω U ≠ ∞ := fun ω => measure_ne_top (M ω) U
-  have hEq : (fun ω => M ω U) = fun ω => ENNReal.ofReal (M ω U).toReal := by
-    funext ω
-    exact (ENNReal.ofReal_toReal (hfiniteU ω)).symm
+  have hEq : (fun ω => M ω U) = fun ω => ENNReal.ofReal (M ω U).toReal := by norm_num
   rw [hEq]
-  exact ENNReal.measurable_ofReal.aemeasurable.comp_aemeasurable hreal
+  fun_prop
+
+section
+variable {Ω Ω' : Type*} [MeasurableSpace Ω] [MeasurableSpace Ω'] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (P' : Measure Ω') (X' : Ω' → Distr) (hX' : IsEquatorGFF P' X') (γ : ℝ)
+include hX hX' γ
 
 /-- The open-mass finite-dimensional law extends from `Fin` to arbitrary finite index types. -/
 theorem equatorGFF_GMC_open_mass_test_fintype_law
-    {Ω Ω' : Type*} [MeasurableSpace Ω] [MeasurableSpace Ω']
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (P' : Measure Ω') (X' : Ω' → Distr) (hX' : IsEquatorGFF P' X')
-    (γ : ℝ) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+ (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (M' : Ω' → Measure ℂ) (hM' : IsGMCOf P' X' γ M')
     {ι κ : Type*} [Fintype ι] [Fintype κ]
     (tests : ι → TestFn) (U : κ → Set ℂ) (hU : ∀ j, IsOpen (U j)) :
     Measure.map (fun ω => (fun i => X ω (tests i), fun j => M ω (U j))) P =
       Measure.map (fun ω => (fun i => X' ω (tests i), fun j => M' ω (U j))) P' := by
   classical
-  let eι : Fin (Fintype.card ι) ≃ ι := (Fintype.equivFin ι).symm
-  let eκ : Fin (Fintype.card κ) ≃ κ := (Fintype.equivFin κ).symm
+  let eι := (Fintype.equivFin ι).symm
+  let eκ := (Fintype.equivFin κ).symm
   let baseX : Ω → (Fin (Fintype.card ι) → ℝ) × (Fin (Fintype.card κ) → ℝ) := fun ω =>
     (fun i => X ω (tests (eι i)), fun j => (M ω (U (eκ j))).toReal)
   let baseY : Ω' → (Fin (Fintype.card ι) → ℝ) × (Fin (Fintype.card κ) → ℝ) := fun ω =>
@@ -107,13 +105,13 @@ theorem equatorGFF_GMC_open_mass_test_fintype_law
       _ = Measure.map baseY P' := by
         change _ = Measure.map (toReal ∘ rawY) P'
         exact AEMeasurable.map_map_of_aemeasurable htoReal.aemeasurable hrawY
-  have hmassX : ∀ ω j, ENNReal.ofReal (M ω (U j)).toReal = M ω (U j) := by
+  have : ∀ ω j, ENNReal.ofReal (M ω (U j)).toReal = M ω (U j) := by
     intro ω j
-    let : IsFiniteMeasure (M ω) := hM.1 ω
+    let := hM.1 ω
     exact ENNReal.ofReal_toReal (measure_ne_top (M ω) (U j))
-  have hmassY : ∀ ω j, ENNReal.ofReal (M' ω (U j)).toReal = M' ω (U j) := by
+  have : ∀ ω j, ENNReal.ofReal (M' ω (U j)).toReal = M' ω (U j) := by
     intro ω j
-    let : IsFiniteMeasure (M' ω) := hM'.1 ω
+    let := hM'.1 ω
     exact ENNReal.ofReal_toReal (measure_ne_top (M' ω) (U j))
   have hbaseXmeas : AEMeasurable baseX P := by
     apply (measurable_pi_iff.mpr fun i => (hX.2 (tests (eι i))).1).aemeasurable.prodMk
@@ -130,26 +128,12 @@ theorem equatorGFF_GMC_open_mass_test_fintype_law
   have hpost : Measurable reindex := by fun_prop
   have hmapX : Measure.map (fun ω => (fun i => X ω (tests i), fun j => M ω (U j))) P =
       (Measure.map baseX P).map reindex := by
-    have hEq : (fun ω => (fun i => X ω (tests i), fun j => M ω (U j))) = reindex ∘ baseX := by
-      funext ω
-      apply Prod.ext
-      · funext i
-        simp [reindex, baseX]
-      · funext j
-        simp only [reindex, baseX, Function.comp_apply, Equiv.apply_symm_apply]
-        exact (hmassX ω j).symm
+    have hEq : (fun ω => (fun i => X ω (tests i), fun j => M ω (U j))) = reindex ∘ baseX := by grind
     rw [hEq]
     exact (AEMeasurable.map_map_of_aemeasurable hpost.aemeasurable hbaseXmeas).symm
   have hmapY : Measure.map (fun ω => (fun i => X' ω (tests i), fun j => M' ω (U j))) P' =
       (Measure.map baseY P').map reindex := by
-    have hEq : (fun ω => (fun i => X' ω (tests i), fun j => M' ω (U j))) = reindex ∘ baseY := by
-      funext ω
-      apply Prod.ext
-      · funext i
-        simp [reindex, baseY]
-      · funext j
-        simp only [reindex, baseY, Function.comp_apply, Equiv.apply_symm_apply]
-        exact (hmassY ω j).symm
+    have hEq : (fun ω => (fun i => X' ω (tests i), fun j => M' ω (U j))) = reindex ∘ baseY := by grind
     rw [hEq]
     exact (AEMeasurable.map_map_of_aemeasurable hpost.aemeasurable hbaseYmeas).symm
   rw [hmapX, hbase, hmapY]
@@ -157,10 +141,7 @@ theorem equatorGFF_GMC_open_mass_test_fintype_law
 /-- The joint law of the distribution-valued field and its finite GMC is determined by the
 finite-dimensional laws of test evaluations and open-set masses. -/
 theorem equatorGFF_GMC_law_transport
-    {Ω Ω' : Type*} [MeasurableSpace Ω] [MeasurableSpace Ω']
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (P' : Measure Ω') (X' : Ω' → Distr) (hX' : IsEquatorGFF P' X')
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
+ (hγ : 0 < γ) (hγ2 : γ < 2)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (M' : Ω' → Measure ℂ) (hM' : IsGMCOf P' X' γ M')
     (H : (TestFn → ℝ) → Measure ℂ → ℝ≥0∞)
@@ -175,34 +156,32 @@ theorem equatorGFF_GMC_law_transport
   have hN : IsGMCOf P X γ N := by
     rcases hM with ⟨_, Xc, hXc, hconv⟩
     refine ⟨hNfinite, Xc, hXc, fun f => ?_⟩
-    have hNM' : ∀ᵐ ω ∂P, N ω = M ω := hNM.mono fun _ h => h.symm
+    have hNM' := hNM.mono fun _ h => h.symm
     exact tendstoInMeasure_integral_after_ae_measure_change
       (fun r ω => ∫ x, f x ∂regularizedGMC P Xc γ r ω) M N f hNM' (hconv f)
   have hN' : IsGMCOf P' X' γ N' := by
     rcases hM' with ⟨_, Xc, hXc, hconv⟩
     refine ⟨hN'finite, Xc, hXc, fun f => ?_⟩
-    have hN'M'' : ∀ᵐ ω ∂P', N' ω = M' ω := hN'M'.mono fun _ h => h.symm
+    have hN'M'' := hN'M'.mono fun _ h => h.symm
     exact tendstoInMeasure_integral_after_ae_measure_change
       (fun r ω => ∫ x, f x ∂regularizedGMC P' Xc γ r ω) M' N' f hN'M'' (hconv f)
-  let Cfield : Set (Set (TestFn → ℝ)) :=
+  let Cfield :=
     measurableCylinders (fun _ : TestFn => ℝ)
-  let Cmass : Set (Set (GMCOpen → ℝ≥0∞)) :=
+  let Cmass :=
     measurableCylinders (fun _ : GMCOpen => ℝ≥0∞)
-  let Crect : Set (Set ((TestFn → ℝ) × (GMCOpen → ℝ≥0∞))) :=
+  let Crect :=
     Set.image2 (· ×ˢ ·) Cfield Cmass
   let mTarget : MeasurableSpace ((TestFn → ℝ) × (GMCOpen → ℝ≥0∞)) :=
     MeasurableSpace.pi.prod MeasurableSpace.pi
-  let mOutput : MeasurableSpace GMCTransportOutput :=
+  let mOutput :=
     mTarget.comap gmcOutputCode
-  let : MeasurableSpace GMCTransportOutput := mOutput
+  let := mOutput
   let outX : Ω → GMCTransportOutput := fun ω =>
     (fun f => X ω f, ⟨N ω, hNfinite ω⟩)
   let outY : Ω' → GMCTransportOutput := fun ω =>
     (fun f => X' ω f, ⟨N' ω, hN'finite ω⟩)
-  have hCfield : MeasurableSpace.generateFrom Cfield = MeasurableSpace.pi := by
-    exact generateFrom_measurableCylinders
-  have hCmass : MeasurableSpace.generateFrom Cmass = MeasurableSpace.pi := by
-    exact generateFrom_measurableCylinders
+  have hCfield : MeasurableSpace.generateFrom Cfield = MeasurableSpace.pi := generateFrom_measurableCylinders
+  have hCmass : MeasurableSpace.generateFrom Cmass = MeasurableSpace.pi := generateFrom_measurableCylinders
   have hCfieldSpan : IsCountablySpanning Cfield := by
     refine ⟨fun _ => Set.univ, ?_, ?_⟩
     · intro n
@@ -224,7 +203,7 @@ theorem equatorGFF_GMC_law_transport
   have hCrectPi : IsPiSystem Crect := by
     change IsPiSystem (Set.image2 (· ×ˢ ·) Cfield Cmass)
     exact isPiSystem_measurableCylinders.prod isPiSystem_measurableCylinders
-  let Coutput : Set (Set GMCTransportOutput) :=
+  let Coutput :=
     Set.preimage gmcOutputCode '' Crect
   have hOutputGen : mOutput = MeasurableSpace.generateFrom Coutput := by
     dsimp [mOutput, Coutput]
@@ -237,7 +216,7 @@ theorem equatorGFF_GMC_law_transport
     refine ⟨A' ∩ B', hCrectPi A' hA' B' hB' ?_, ?_⟩
     · rcases hAB with ⟨q, hq⟩
       exact ⟨gmcOutputCode q, by simpa [Set.preimage_inter] using hq⟩
-    · rw [← Set.preimage_inter]
+    · rfl
   have hcode : Measurable gmcOutputCode := Measurable.of_comap_le le_rfl
   have hcodeX : Measurable (gmcOutputCode ∘ outX) := by
     apply Measurable.prodMk
@@ -266,12 +245,7 @@ theorem equatorGFF_GMC_law_transport
   let forget : GMCTransportOutput → (TestFn → ℝ) × Measure ℂ :=
     fun q => (q.1, q.2.1)
   have hOpenGen : (inferInstance : MeasurableSpace ℂ) = MeasurableSpace.generateFrom
-      {s : Set ℂ | IsOpen s} := by
-    calc
-      (inferInstance : MeasurableSpace ℂ) = borel ℂ := BorelSpace.measurable_eq
-      _ = MeasurableSpace.generateFrom {s : Set ℂ | IsOpen s} :=
-        borel_eq_generateFrom_of_subbasis
-          (TopologicalSpace.generateFrom_setOfPred_isOpen (inferInstance : TopologicalSpace ℂ)).symm
+      {s : Set ℂ | IsOpen s} := by rfl
   have hforgetMeasure : Measurable (fun q : GMCTransportOutput => (q.2.1 : Measure ℂ)) := by
     let : ∀ q : GMCTransportOutput, IsFiniteMeasure q.2.1 := fun q => q.2.2
     apply Measurable.measure_of_isPiSystem hOpenGen isPiSystem_isOpen
@@ -292,11 +266,10 @@ theorem equatorGFF_GMC_law_transport
     · change Measurable (fun q : GMCTransportOutput => (gmcOutputCode q).1)
       exact measurable_fst.comp hcode
     · exact hforgetMeasure
-  have hHout : Measurable (fun q : GMCTransportOutput => H q.1 q.2.1) := by
-    exact hH.comp hforget
+  have hHout : Measurable (fun q : GMCTransportOutput => H q.1 q.2.1) := hH.comp hforget
   have hLaw : Measure.map outX P = Measure.map outY P' := by
-    let : IsProbabilityMeasure P := hX.1
-    let : IsProbabilityMeasure P' := hX'.1
+    let := hX.1
+    let := hX'.1
     apply MeasureTheory.ext_of_generate_finite Coutput hOutputGen hOutputPi
     · intro S hS
       rcases hS with ⟨R, hR, rfl⟩
@@ -307,7 +280,7 @@ theorem equatorGFF_GMC_law_transport
         (fun i => X ω i.1, fun j => N ω j.1.1)
       let vY : Ω' → (s → ℝ) × (t → ℝ≥0∞) := fun ω =>
         (fun i => X' ω i.1, fun j => N' ω j.1.1)
-      have hv : Measure.map vX P = Measure.map vY P' :=
+      have hv :=
         equatorGFF_GMC_open_mass_test_fintype_law P X hX P' X' hX' γ N hN N' hN'
           (fun i : s => i.1) (fun j : t => j.1.1) (fun j => j.1.2)
       have hvXmeas : AEMeasurable vX P := by
@@ -324,7 +297,7 @@ theorem equatorGFF_GMC_law_transport
         apply AEMeasurable.of_eval
         intro j
         exact gmc_open_mass_aemeasurable P' X' hX' γ N' hN' j.1.1 j.1.2
-      have hAB : MeasurableSet (As ×ˢ Bs) := hAs.prod hBs
+      have hAB := hAs.prod hBs
       have hprob : P (vX ⁻¹' (As ×ˢ Bs)) = P' (vY ⁻¹' (As ×ˢ Bs)) := by
         have h := congrArg (fun μ : Measure ((s → ℝ) × (t → ℝ≥0∞)) => μ (As ×ˢ Bs)) hv
         rw [Measure.map_apply_of_aemeasurable hvXmeas hAB,
@@ -375,9 +348,7 @@ theorem equatorGFF_GMC_law_transport
         _ = (Measure.map outY P') (gmcOutputCode ⁻¹'
             (cylinder s As ×ˢ cylinder t Bs)) := by
           rw [Measure.map_apply houtY hSmeas, hpreY]
-    · simp [Measure.map_apply houtX MeasurableSet.univ,
-        Measure.map_apply houtY MeasurableSet.univ, hX.1.measure_univ,
-        hX'.1.measure_univ]
+    · norm_num
   calc
     ∫⁻ ω, H (fun f => X ω f) (M ω) ∂P =
         ∫⁻ ω, H (fun f => X ω f) (N ω) ∂P := by
@@ -395,5 +366,7 @@ theorem equatorGFF_GMC_law_transport
       filter_upwards [hN'M'] with ω hω
       rw [hω]
 
+
+end
 
 end DOZZ.Proofs

@@ -23,11 +23,11 @@ private theorem tendstoInMeasure_add_of_sub
     (hgy : TendstoInMeasure P g l y) : TendstoInMeasure P f l y := by
   rw [tendstoInMeasure_iff_norm] at hfg hgy ⊢
   intro ε hε
-  let δ : ℝ := ε / 2
-  have hδ : 0 < δ := by dsimp [δ]; linarith
+  let δ := ε / 2
+  have hδ : 0 < δ := by positivity
   have hfg' : Tendsto (fun i => P {ω | δ ≤ ‖f i ω - g i ω‖}) l (𝓝 0) := by
     simpa [δ, sub_zero] using hfg δ hδ
-  have hgy' : Tendsto (fun i => P {ω | δ ≤ ‖g i ω - y ω‖}) l (𝓝 0) := hgy δ hδ
+  have hgy' := hgy δ hδ
   have hadd : Tendsto (fun i =>
       P {ω | δ ≤ ‖f i ω - g i ω‖} + P {ω | δ ≤ ‖g i ω - y ω‖}) l (𝓝 0) := by
     simpa using hfg'.add hgy'
@@ -42,8 +42,7 @@ private theorem tendstoInMeasure_add_of_sub
             intro ω hω
             by_contra hnot
             have hnot' : ¬ (ω ∈ {ω | δ ≤ ‖f i ω - g i ω‖} ∨
-                ω ∈ {ω | δ ≤ ‖g i ω - y ω‖}) := by
-              simpa only [Set.mem_union] using hnot
+                ω ∈ {ω | δ ≤ ‖g i ω - y ω‖}) := by assumption
             rcases not_or.mp hnot' with ⟨h1, h2⟩
             have h1' : ‖f i ω - g i ω‖ < δ := lt_of_not_ge h1
             have h2' : ‖g i ω - y ω‖ < δ := lt_of_not_ge h2

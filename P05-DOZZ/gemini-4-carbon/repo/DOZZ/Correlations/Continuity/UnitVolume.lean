@@ -10,33 +10,7 @@ open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
 
-/-- The empty infinity insertion satisfies a weaker bound than the bulk bound. -/
-theorem continuity_infinity_bound {γ p : ℝ} (hγ : 0 < γ)
-    (hp : p < 4 / γ ^ 2) : p < 2 / γ * (Q γ - 0) := by
-  have he : 2 / γ * (Q γ - 0) = 4 / γ ^ 2 + 1 := by
-    unfold Q
-    field_simp
-    ring
-  rw [he]
-  linarith
 
-/-- The finite-position prefactor is continuous in all charges at distinct roots. -/
-theorem continuity_finite_prefactor {N : ℕ} (z : Fin N → ℂ)
-    (hz : ∀ i j, i ≠ j → z i ≠ z j) :
-    Continuous (fun α : Fin N → ℝ => nPointCoulombPrefactor α z) := by
-  classical
-  unfold nPointCoulombPrefactor
-  apply continuous_finsetProd
-  intro i _
-  apply continuous_finsetProd
-  intro j _
-  by_cases hij : i < j
-  · simp only [ite_eq_left hij]
-    apply (Real.continuous_const_rpow (norm_ne_zero_iff.mpr
-      (sub_ne_zero.mpr (hz i j (ne_of_lt hij))))).comp
-    fun_prop
-  · simp only [ite_eq_right hij]
-    exact continuous_const
 
 /-- Joint continuity of the normalized unit-volume moments on the literal domain of
 `DOZZ.unitVolumeNPoint_jointly_continuous_parameters`. -/
@@ -49,13 +23,34 @@ theorem unitVolumeNPoint_jointly_continuous_parameters
     (hX : IsEquatorGFF P X)
     (hM : ∀ q ∈ K, IsGMCOf P X q.1 (M q.1)) :
     ContinuousOn (fun q => unitVolumeNPointCorrelation P (M q.1) q.1 q.2 z) K := by
+  have continuity_finite_prefactor : Continuous (fun α : Fin N → ℝ => nPointCoulombPrefactor α z) := by
+    classical
+    unfold nPointCoulombPrefactor
+    apply continuous_finsetProd
+    intro i _
+    apply continuous_finsetProd
+    intro j _
+    by_cases hij : i < j
+    · simp only [ite_eq_left hij]
+      apply (Real.continuous_const_rpow (norm_ne_zero_iff.mpr
+        (sub_ne_zero.mpr (hz i j (ne_of_lt hij))))).comp
+      fun_prop
+    · simp only [ite_eq_right hij]
+      exact continuous_const
+  have continuity_infinity_bound {γ p : ℝ} (hγ : 0 < γ) (hp : p < 4 / γ ^ 2) : p < 2 / γ * (Q γ - 0) := by
+    have he : 2 / γ * (Q γ - 0) = 4 / γ ^ 2 + 1 := by
+      unfold Q
+      field_simp
+      ring
+    rw [he]
+    linarith
   classical
   obtain ⟨n, rfl⟩ := Nat.exists_eq_add_of_le hN
   obtain ⟨Mfam, hMf, hMeq⟩ := extendGMCFamily_on_compact P X hX M K hM
   obtain ⟨Xc, hXc⟩ := exists_equatorGFF_circle_average_witness X hX
   let J : (ℝ × (Fin (3 + n) → ℝ)) → ContinuityCoulombParameter (3 + n) :=
     fun q => (q.1, (z, q.2, 0))
-  have hJ : Continuous J := by unfold J; fun_prop
+  have hJ : Continuous J := by fun_prop
   have hp (q : ℝ × (Fin (3 + n) → ℝ)) : continuityCoulombPower (J q) = -nPointSExp q.1 q.2 := by
     simp only [continuityCoulombPower, J, nPointSExp, add_zero]
     ring
@@ -87,7 +82,7 @@ theorem unitVolumeNPoint_jointly_continuous_parameters
   have hc : ContinuousOn (fun q : ℝ × (Fin (3 + n) → ℝ) => 2 / q.1) K :=
     continuousOn_const.div continuous_fst.continuousOn (fun q hq => (hKdom q hq).1.ne')
   have hf : Continuous (fun q : ℝ × (Fin (3 + n) → ℝ) => nPointCoulombPrefactor q.2 z) :=
-    (continuity_finite_prefactor z hz).comp continuous_snd
+    (continuity_finite_prefactor).comp continuous_snd
   exact (hc.mul hf.continuousOn).mul hm'
 
 end DOZZ.Proofs

@@ -13,40 +13,7 @@ open MeasureTheory ProbabilityTheory Set Filter Topology
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
 
-/-- A continuous path which later descends below the deeper level must visit it after the
-last visit to the shallower level. -/
-theorem reflected_lastExit_le_of_future_below (p : BrownianPath) (H m : ℝ)
-    (hHm : H ≤ m) (hH : p (negativeLastExitTime p H) = -H)
-    (hb : BddAbove {u : ℝ≥0 | p u = -m})
-    (hf : ∃ t : ℝ≥0, negativeLastExitTime p H ≤ t ∧ p t ≤ -m) :
-    negativeLastExitTime p H ≤ negativeLastExitTime p m := by
-  obtain ⟨t, ht, hp⟩ := hf
-  have hlevel : -m ∈ Icc (p t) (p (negativeLastExitTime p H)) :=
-    ⟨hp, by rw [hH]; exact neg_le_neg hHm⟩
-  obtain ⟨u, hu, hpu⟩ := intermediate_value_Icc' ht p.continuous.continuousOn hlevel
-  exact hu.1.trans (le_csSup hb hpu)
 
-/-- For the actual conditioned path law, the last exit is monotone in each fixed positive
-pair of levels. No assertion at an uncountable intersection of null events is needed. -/
-theorem reflected_conditioned_lastExit_mono_ae
-    {ν : ℝ} {Qν B : Measure BrownianPath} [SFinite B]
-    (hQν : IsNegativeConditionedBrownianLaw ν Qν)
-    (hB : IsBrownianReal (fun t p => p t) B) (hν : 0 < ν)
-    (H m : ℝ≥0) (hH : 0 < (H : ℝ)) (hHm : H ≤ m) :
-    ∀ᵐ p ∂Qν, negativeLastExitTime p H ≤ negativeLastExitTime p m := by
-  have hm : 0 < (m : ℝ) := lt_of_lt_of_le hH (by exact_mod_cast hHm)
-  filter_upwards [ae_negativeConditionedLevelHitSet_nonempty_bddAbove hQν hB hν H hH,
-    ae_negativeConditionedLevelHitSet_nonempty_bddAbove hQν hB hν m hm,
-    ae_negativeConditionedPath_above_after_lastExit hQν hB hν m hm] with p hpH hpm hpafter
-  have he := negativeLastExitTime_mem_of_nonempty_bddAbove p H hpH.1 hpH.2
-  apply reflected_lastExit_le_of_future_below p H m (by exact_mod_cast hHm) he hpm.2
-  let t := max (negativeLastExitTime p H) (negativeLastExitTime p m) + 1
-  refine ⟨t, ?_, ?_⟩
-  · exact (le_max_left _ _).trans (le_add_of_nonneg_right zero_le)
-  · have hlt : negativeLastExitTime p m < t :=
-      lt_of_le_of_lt (le_max_right _ _) (lt_add_of_pos_right _ zero_lt_one)
-    have hh := hpafter t hlt
-    linarith only [hh]
 
 /-- Increasing the last-exit cutoff retains a larger half-line mass. -/
 theorem reflected_cutMass_mono_of_lastExit {Ω : Type*} (γ H m : ℝ)
@@ -76,7 +43,25 @@ theorem reflected_conditioned_random_lastExit_squeeze
     (H : ℝ≥0) (hH : 0 < (H : ℝ)) :
     ∀ᵐ z : ℝ≥0 × BrownianPath ∂μ.prod Qν, H ≤ z.1 →
       negativeLastExitTime z.2 H ≤ negativeLastExitTime z.2 z.1 := by
-  let _ : IsProbabilityMeasure Qν := hQν.2.1
+  have reflected_conditioned_lastExit_mono_ae (m : ℝ≥0) (hH : 0 < (H : ℝ)) (hHm : H ≤ m) : ∀ᵐ p ∂Qν, negativeLastExitTime p H ≤ negativeLastExitTime p m := by
+    have reflected_lastExit_le_of_future_below (p : BrownianPath) (H m : ℝ) (hHm : H ≤ m) (hH : p (negativeLastExitTime p H) = -H) (hb : BddAbove {u : ℝ≥0 | p u = -m}) (hf : ∃ t : ℝ≥0, negativeLastExitTime p H ≤ t ∧ p t ≤ -m) : negativeLastExitTime p H ≤ negativeLastExitTime p m := by
+      obtain ⟨t, ht, hp⟩ := hf
+      have hlevel : -m ∈ Icc (p t) (p (negativeLastExitTime p H)) :=
+        ⟨hp, by rw [hH]; exact neg_le_neg hHm⟩
+      obtain ⟨u, hu, hpu⟩ := intermediate_value_Icc' ht p.continuous.continuousOn hlevel
+      exact hu.1.trans (le_csSup hb hpu)
+    have hm := lt_of_lt_of_le hH (by exact_mod_cast hHm)
+    filter_upwards [ae_negativeConditionedLevelHitSet_nonempty_bddAbove hQν hB hν H hH,
+      ae_negativeConditionedLevelHitSet_nonempty_bddAbove hQν hB hν m hm,
+      ae_negativeConditionedPath_above_after_lastExit hQν hB hν m hm] with p hpH hpm hpafter
+    apply reflected_lastExit_le_of_future_below p H m (by exact_mod_cast hHm) (negativeLastExitTime_mem_of_nonempty_bddAbove p H hpH.1 hpH.2) hpm.2
+    let t := max (negativeLastExitTime p H) (negativeLastExitTime p m) + 1
+    refine ⟨t, ?_, ?_⟩
+    · exact (le_max_left _ _).trans (le_add_of_nonneg_right zero_le)
+    · have hlt : negativeLastExitTime p m < t :=
+        lt_of_le_of_lt (le_max_right _ _) (lt_add_of_pos_right _ zero_lt_one)
+      linarith only [hpafter t hlt]
+  let _ := hQν.2.1
   have hleft : Measurable (fun z : ℝ≥0 × BrownianPath => negativeLastExitTime z.2 H) :=
     measurable_negativeLastExitTime_joint.comp (measurable_const.prodMk measurable_snd)
   have hright : Measurable (fun z : ℝ≥0 × BrownianPath => negativeLastExitTime z.2 z.1) :=
@@ -93,7 +78,7 @@ theorem reflected_conditioned_random_lastExit_squeeze
   apply ae_of_all μ
   intro m
   by_cases hm : H ≤ m
-  · exact (reflected_conditioned_lastExit_mono_ae hQν hB hν H m hH hm).mono
+  · exact (reflected_conditioned_lastExit_mono_ae m hH hm).mono
       fun _ h _ => h
   · exact ae_of_all Qν fun _ h => (hm h).elim
 

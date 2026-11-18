@@ -36,21 +36,25 @@ theorem bpzCutChaos_isFiniteMeasure (P : Measure Ω) (Xc : Ω → ℂ → ℝ �
   · exact ⟨h⟩
   · infer_instance
 
-theorem measurable_bpzCutChaos (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (γ r : ℝ) :
+section
+variable (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (γ r : ℝ)
+include hX hXc γ r
+
+theorem measurable_bpzCutChaos :
     Measurable (bpzCutChaos P Xc γ r) := by
   have hm := regularizedGMC_measurable P X hX Xc hXc γ r
   have hs : MeasurableSet {ω | regularizedGMC P Xc γ r ω Set.univ < ⊤} :=
     measurableSet_lt ((Measure.measurable_coe MeasurableSet.univ).comp hm) measurable_const
   exact Measurable.ite hs hm measurable_const
 
-theorem bpzCutChaos_ae_eq (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (γ r : ℝ) :
+theorem bpzCutChaos_ae_eq :
     ∀ᵐ ω ∂P, bpzCutChaos P Xc γ r ω = regularizedGMC P Xc γ r ω := by
   filter_upwards [regularizedGMC_finite_ae P X hX Xc hXc γ r] with ω hω
   unfold bpzCutChaos
   exact ite_eq_left hω.measure_univ_lt_top
 
+
+end
 /-- The integer-cutoff chaos converges weakly in probability to the limit chaos. -/
 theorem bpzWeakConv_gmc (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) {γ : ℝ}
     (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (hMm : Measurable M)

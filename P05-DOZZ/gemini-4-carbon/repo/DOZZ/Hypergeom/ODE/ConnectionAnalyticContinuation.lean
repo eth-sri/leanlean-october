@@ -24,21 +24,9 @@ def gaussConnectionIntegerRange : Set ℂ := Set.range fun n : ℤ => (n : ℂ)
 
 private theorem gaussConnectionIntegerRange_isClosed :
     IsClosed gaussConnectionIntegerRange := by
-  have hIso : Isometry (fun n : ℤ => (n : ℂ)) := Complex.isometry_intCast
-  exact hIso.isClosedEmbedding.isClosed_range
+  exact (Complex.isometry_intCast).isClosedEmbedding.isClosed_range
 
-private theorem gaussNonintegerDomain_isOpen :
-    IsOpen gaussConnectionIntegerRangeᶜ :=
-  gaussConnectionIntegerRange_isClosed.isOpen_compl
 
-private theorem gaussNonintegerDomain_isPreconnected :
-    IsPreconnected gaussConnectionIntegerRangeᶜ := by
-  have hcount : gaussConnectionIntegerRange.Countable :=
-    Set.countable_range fun n : ℤ => (n : ℂ)
-  have hpath : IsPathConnected gaussConnectionIntegerRangeᶜ :=
-    Set.Countable.isPathConnected_compl_of_one_lt_rank
-      (E := ℂ) (by rw [Complex.rank_real_complex]; norm_num) hcount
-  exact hpath.isConnected.isPreconnected
 
 /-- Convert the product coordinates `(c, δ, a)` to the source parameter order `(a,b,c)`. -/
 def gaussConnectionCoordinates (c δ a : ℂ) : ℂ × ℂ × ℂ :=
@@ -60,6 +48,13 @@ theorem eq_of_eq_on_open_gaussConnection_box
       f (gaussConnectionCoordinates c δ a) = g (gaussConnectionCoordinates c δ a))
     {a b c : ℂ} (hp : (a, b, c) ∈ gaussConnectionParameterDomain) :
     f (a, b, c) = g (a, b, c) := by
+  have gaussNonintegerDomain_isPreconnected : IsPreconnected gaussConnectionIntegerRangeᶜ := by
+    have hpath :=
+      Set.Countable.isPathConnected_compl_of_one_lt_rank
+        (E := ℂ) (by rw [Complex.rank_real_complex]; norm_num) (Set.countable_range fun n : ℤ => (n : ℂ))
+    exact hpath.isConnected.isPreconnected
+  have gaussNonintegerDomain_isOpen := 
+    gaussConnectionIntegerRange_isClosed.isOpen_compl
   let F : ℂ → ℂ → ℂ → ℂ := fun c δ a =>
     f (gaussConnectionCoordinates c δ a)
   let G : ℂ → ℂ → ℂ → ℂ := fun c δ a =>

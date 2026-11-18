@@ -48,11 +48,8 @@ theorem dualFirstCase_seed_interval (γ e a₂ a₃ : ℝ) (hγ : 0 < γ) (he : 
     · have : 0 < 2 / γ := div_pos (by norm_num) hγ
       linarith only [this]
   · intro x hx hxQ
-    have hsum := lt_of_le_of_lt (le_trans (le_max_left _ _) (le_max_left _ _)) hx
-    have hlo := lt_of_le_of_lt (le_trans (le_max_right _ _) (le_max_left _ _)) hx
-    have href := lt_of_le_of_lt (le_max_right _ _) hx
-    refine ⟨by linarith only [hsum], ⟨by linarith only [hlo], ?_⟩,
-      ⟨?_, by linarith only [href]⟩⟩
+    refine ⟨by linarith only [lt_of_le_of_lt (le_trans (le_max_left _ _) (le_max_left _ _)) hx], ⟨by linarith only [lt_of_le_of_lt (le_trans (le_max_right _ _) (le_max_left _ _)) hx], ?_⟩,
+      ⟨?_, by linarith only [lt_of_le_of_lt (le_max_right _ _) hx]⟩⟩
     · have : 0 < 2 / γ := by positivity
       linarith only [hxQ, this]
     · unfold Q at *
@@ -65,7 +62,7 @@ theorem dualFirstCase_poleFree {γ a : ℝ} (hγ : 0 < γ)
     unfold reflectionExponent
     apply (div_lt_iff₀ hγ).mpr
     linarith only [hlo]
-  have hn1 : (1 : ℝ) ≤ ((n + 1 : ℕ) : ℝ) := by exact_mod_cast (Nat.succ_le_succ (Nat.zero_le n))
+  have hn1 : (1 : ℝ) ≤ ((n + 1 : ℕ) : ℝ) := by simp
   exact (not_lt_of_ge hn1) (hn ▸ hp)
 /-- The full structure constant inherits the permutation symmetry of the unit-volume structure
 constant (`unitVolumeStructureConstant_swap12`). -/

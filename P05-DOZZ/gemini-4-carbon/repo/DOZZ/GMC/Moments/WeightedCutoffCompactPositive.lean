@@ -47,16 +47,16 @@ theorem cutoffWeightedGmcBallMoment_subunit_compact_gamma_parameters_chart
           C * ENNReal.ofReal
             (R ^ weightedCutoffMomentScaleExponent γ t.1 t.2) := by
   let U : Set (ℝ × (ℝ × ℝ)) := Γ ×ˢ T
-  have hU : IsCompact U := hΓ.prod hT
-  have hγpos (g : ℝ) (hg : g ∈ Γ) : 0 < g := (hΓ2 hg).1
+  have hU := hΓ.prod hT
+  have hγpos (g : ℝ) (hg : g ∈ Γ) := (hΓ2 hg).1
   have hQcont : ContinuousOn (fun g : ℝ => Q g) Γ := by
     dsimp [Q]
     apply ContinuousOn.add
     · exact continuousOn_const.div continuousOn_id (fun g hg => (hγpos g hg).ne')
-    · exact continuousOn_id.div_const 2
+    · fun_prop
   let eta : ℝ × (ℝ × ℝ) → ℝ := fun u =>
     weightedCutoffMomentScaleExponent u.1 u.2.1 u.2.2
-  have hQcomp : ContinuousOn (fun u : ℝ × (ℝ × ℝ) => Q u.1) U :=
+  have : ContinuousOn (fun u : ℝ × (ℝ × ℝ) => Q u.1) U :=
     hQcont.comp continuousOn_fst (fun u hu => hu.1)
   have hetaCont : ContinuousOn eta U := by
     dsimp [eta, weightedCutoffMomentScaleExponent]
@@ -72,17 +72,14 @@ theorem cutoffWeightedGmcBallMoment_subunit_compact_gamma_parameters_chart
   let coreCoef : ℝ × (ℝ × ℝ) → ℝ := fun u => max (2 ^ xi u) (2 ^ eta u)
   let shellCoef : ℝ × (ℝ × ℝ) → ℝ := fun u =>
     (1 / 2 : ℝ) ^ (-u.1 * u.2.1 * u.2.2) * 2 ^ xi u
-  have hxiCont : Continuous xi := by
-    dsimp [xi]
-    fun_prop
-  have hpowXiCont : Continuous (fun u : ℝ × (ℝ × ℝ) => (2 : ℝ) ^ xi u) :=
+  have hxiCont : Continuous xi := by fun_prop
+  have hpowXiCont :=
     (Real.continuous_const_rpow (by norm_num : (2 : ℝ) ≠ 0)).comp hxiCont
-  have hpowEtaCont : ContinuousOn (fun u : ℝ × (ℝ × ℝ) => (2 : ℝ) ^ eta u) U :=
+  have hpowEtaCont :=
     (Real.continuous_const_rpow (by norm_num : (2 : ℝ) ≠ 0)).continuousOn.comp
       hetaCont (by intro u hu; exact Set.mem_univ _)
   have hcoreCont : ContinuousOn coreCoef U := by
-    have hpair : ContinuousOn (fun u : ℝ × (ℝ × ℝ) =>
-        ((2 : ℝ) ^ xi u, (2 : ℝ) ^ eta u)) U :=
+    have hpair :=
       hpowXiCont.continuousOn.prodMk hpowEtaCont
     change ContinuousOn (fun u => max ((2 : ℝ) ^ xi u) ((2 : ℝ) ^ eta u)) U
     exact continuous_max.continuousOn.comp hpair (by
@@ -90,30 +87,23 @@ theorem cutoffWeightedGmcBallMoment_subunit_compact_gamma_parameters_chart
       exact Set.mem_univ _)
   have hhalfExpCont : Continuous (fun u : ℝ × (ℝ × ℝ) =>
       -u.1 * u.2.1 * u.2.2) := by fun_prop
-  have hhalfPowCont : Continuous (fun u : ℝ × (ℝ × ℝ) =>
-      (1 / 2 : ℝ) ^ (-u.1 * u.2.1 * u.2.2)) :=
+  have :=
     (Real.continuous_const_rpow (by norm_num : (1 / 2 : ℝ) ≠ 0)).comp hhalfExpCont
-  have hshellCont : Continuous shellCoef := by
-    unfold shellCoef
-    exact hhalfPowCont.mul hpowXiCont
+  have hshellCont : Continuous shellCoef := by fun_prop
   obtain ⟨A, hA, hAupper⟩ := compact_real_nonneg_upper_bound hU coreCoef hcoreCont
   obtain ⟨B, hB, hBupper⟩ :=
     compact_real_nonneg_upper_bound hU shellCoef hshellCont.continuousOn
-  let q0Real : ℝ := (1 / 2 : ℝ) ^ ε
-  let q0 : ℝ≥0∞ := ENNReal.ofReal q0Real
-  let refBase : ℝ≥0∞ := 1 + gmcReferenceMeasure (Metric.ball 0 (1 / 2))
-  let C : ℝ≥0∞ := ENNReal.ofReal A * refBase +
+  let q0Real := (1 / 2 : ℝ) ^ ε
+  let q0 := ENNReal.ofReal q0Real
+  let refBase := 1 + gmcReferenceMeasure (Metric.ball 0 (1 / 2))
+  let C := ENNReal.ofReal A * refBase +
     ENNReal.ofReal B * refBase * (1 - q0)⁻¹
   have hq0Real : q0Real < 1 := by
     dsimp [q0Real]
     exact Real.rpow_lt_one (by norm_num) (by norm_num) hε
-  have hq0 : q0 < 1 := ENNReal.ofReal_lt_one.mpr (by simpa [q0] using hq0Real)
   have hden0 : 1 - q0 ≠ 0 := by
     intro h
-    have hq0le : 1 ≤ q0 := tsub_eq_zero_iff_le.mp h
-    exact (not_le_of_gt hq0) hq0le
-  have hgeom0 : (1 - q0)⁻¹ < ⊤ :=
-    lt_top_iff_ne_top.mpr (ENNReal.inv_ne_top.mpr hden0)
+    exact (not_le_of_gt (ENNReal.ofReal_lt_one.mpr (by simpa [q0] using hq0Real))) (tsub_eq_zero_iff_le.mp h)
   have hRefTop : refBase < ⊤ := by
     dsimp [refBase]
     have hball : gmcReferenceMeasure (Metric.ball 0 (1 / 2)) ≤
@@ -125,7 +115,7 @@ theorem cutoffWeightedGmcBallMoment_subunit_compact_gamma_parameters_chart
     dsimp [C]
     exact ENNReal.add_lt_top.mpr ⟨
       ENNReal.mul_lt_top ENNReal.ofReal_lt_top hRefTop,
-      ENNReal.mul_lt_top (ENNReal.mul_lt_top ENNReal.ofReal_lt_top hRefTop) hgeom0⟩
+      ENNReal.mul_lt_top (ENNReal.mul_lt_top ENNReal.ofReal_lt_top hRefTop) (lt_top_iff_ne_top.mpr (ENNReal.inv_ne_top.mpr hden0))⟩
   have hq_bound (u : ℝ × (ℝ × ℝ)) (hu : u ∈ U) :
       ENNReal.ofReal ((1 / 2 : ℝ) ^ eta u) ≤ q0 := by
     apply ENNReal.ofReal_le_ofReal
@@ -158,11 +148,9 @@ theorem cutoffWeightedGmcBallMoment_subunit_compact_gamma_parameters_chart
     · exact mul_le_mul_of_nonneg_right hcore (by positivity)
     · calc
         _ ≤ (ENNReal.ofReal B * refBase) *
-            (1 - ENNReal.ofReal ((1 / 2 : ℝ) ^ eta u))⁻¹ := by
-          exact mul_le_mul_of_nonneg_right
+            (1 - ENNReal.ofReal ((1 / 2 : ℝ) ^ eta u))⁻¹ := mul_le_mul_of_nonneg_right
             (mul_le_mul_of_nonneg_right hshell (by positivity)) (by positivity)
-        _ ≤ (ENNReal.ofReal B * refBase) * (1 - q0)⁻¹ := by
-          exact mul_le_mul_of_nonneg_left hgeom (by positivity)
+        _ ≤ (ENNReal.ofReal B * refBase) * (1 - q0)⁻¹ := mul_le_mul_of_nonneg_left hgeom (by positivity)
   have hcoefNeg : ENNReal.ofReal (2 ^ eta u) * refBase ≤ C := by
     have hAeta : 2 ^ eta u ≤ A := le_trans (le_max_right _ _) (hAupper u hu)
     have hcore : ENNReal.ofReal (2 ^ eta u) * refBase ≤ ENNReal.ofReal A * refBase :=
@@ -191,13 +179,11 @@ theorem cutoffWeightedGmcBallMoment_subunit_compact_gamma_parameters_chart
       obtain ⟨_, hformula⟩ := cutoffWeightedGmcBallMoment_positive_subunit_scale_formula
         P X hX Xc hXc g t.1 (hγpos g hg) hαpos z R t.2 hR hR1 hchart
           hadm.1 hadm.2.1 hadm.2.2
-      have hbound := hformula δ hδ hδR
       calc
         _ ≤ cutoffWeightedPositiveSubunitScaleConstant g t.1 t.2 * ENNReal.ofReal
-            (R ^ weightedCutoffMomentScaleExponent g t.1 t.2) := hbound
+            (R ^ weightedCutoffMomentScaleExponent g t.1 t.2) := hformula δ hδ hδR
         _ ≤ C * ENNReal.ofReal
-            (R ^ weightedCutoffMomentScaleExponent g t.1 t.2) := by
-          exact mul_le_mul_of_nonneg_right (hcoefPos hαpos) (by positivity)
+            (R ^ weightedCutoffMomentScaleExponent g t.1 t.2) := mul_le_mul_of_nonneg_right (hcoefPos hαpos) (by positivity)
   exact hmoment
 
 end DOZZ.Proofs

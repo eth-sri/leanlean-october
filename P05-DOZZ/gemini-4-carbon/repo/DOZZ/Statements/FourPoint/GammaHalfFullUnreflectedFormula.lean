@@ -37,6 +37,6 @@ theorem gammaHalf_full_unreflected_formula {Ω : Type*} [MeasurableSpace Ω]
             ‖gaussFMinus H a b c z‖ ^ 2 +
           (-μ * (planarGaussConstant (γ ^ 2 / 2) (γ * α₁)).re) *
             structureConstant P M γ μ (α₁ + γ / 2) α₂ α₃ *
-              ‖gaussFPlus H a b c z‖ ^ 2 := by exact DOZZ.Proofs.gammaHalf_full_unreflected_formula hH P X M γ μ α₁ α₂ α₃ hγ hγ₂ hμ hαlo hαhi hα₂ hα₃ hs hX hM
+              ‖gaussFPlus H a b c z‖ ^ 2 := DOZZ.Proofs.gammaHalf_full_unreflected_formula hH P X M γ μ α₁ α₂ α₃ hγ hγ₂ hμ hαlo hαhi hα₂ hα₃ hs hX hM
 
 end DOZZ

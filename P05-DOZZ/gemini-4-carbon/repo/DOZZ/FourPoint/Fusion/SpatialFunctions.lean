@@ -8,16 +8,19 @@ public import DOZZ.FourPoint.Fusion.SpatialExpectationMeasurable
 @[expose] public section
 open MeasureTheory Set
 namespace DOZZ.Proofs
-noncomputable def fusionPureSpatial {Ω : Type*} [MeasurableSpace Ω]
+
+variable {Ω : Type*} [MeasurableSpace Ω]
+
+noncomputable def fusionPureSpatial
     (P : Measure Ω) (M : Ω → Measure ℂ) (γ α₁ α₂ α₃ p : ℝ) (B : Set ℂ) (z : ℂ) : ℂ :=
   ∫ ω, ((coulombMass γ (M ω) ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃ ^ (-p - 1)).toReal : ℂ) *
     (∫ x in B, (gammaHalfKernel γ α₁ α₂ α₃ z x : ℂ) / (x - z) ^ 2 ∂M ω) ∂P
-noncomputable def fusionMixedSpatial {Ω : Type*} [MeasurableSpace Ω]
+noncomputable def fusionMixedSpatial
     (P : Measure Ω) (M : Ω → Measure ℂ) (γ α₁ α₂ α₃ p : ℝ) (B : Set ℂ) (z : ℂ) : ℂ :=
   ∫ ω, ((coulombMass γ (M ω) ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃ ^ (-p - 1)).toReal : ℂ) *
     (∫ x in B, (gammaHalfKernel γ α₁ α₂ α₃ z x : ℂ) / (‖x - z‖ ^ 2 : ℝ) ∂M ω) ∂P
 /-- Restricting the spatial kernel to a fixed measurable region preserves parameter measurability. -/
-theorem fusionPureSpatial_measurable {Ω : Type*} [MeasurableSpace Ω]
+theorem fusionPureSpatial_measurable
     (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
     (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (α₁ α₂ α₃ p : ℝ) (B : Set ℂ) (hB : MeasurableSet B) :
@@ -35,7 +38,7 @@ theorem fusionPureSpatial_measurable {Ω : Type*} [MeasurableSpace Ω]
   unfold fusionPureSpatial
   simpa only [H, integral_indicator hB] using h
 /-- Restricting the spatial kernel to a fixed measurable region preserves parameter measurability. -/
-theorem fusionMixedSpatial_measurable {Ω : Type*} [MeasurableSpace Ω]
+theorem fusionMixedSpatial_measurable
     (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
     (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (α₁ α₂ α₃ p : ℝ) (B : Set ℂ) (hB : MeasurableSet B) :

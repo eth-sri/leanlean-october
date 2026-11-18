@@ -24,25 +24,10 @@ open scoped ENNReal InnerProductSpace Topology lp
 namespace DOZZ
 
 local instance : MeasureSpace UnitAddCircle := ⟨AddCircle.haarAddCircle⟩
-local instance : Measure.IsAddHaarMeasure (volume : Measure UnitAddCircle) :=
-  inferInstanceAs (Measure.IsAddHaarMeasure AddCircle.haarAddCircle)
-local instance : IsProbabilityMeasure (volume : Measure UnitAddCircle) :=
-  inferInstanceAs (IsProbabilityMeasure AddCircle.haarAddCircle)
-local instance : IsProbabilityMeasure (volume : Measure GFFUnitTorus2) := by
-  infer_instance
 
 private def centeredUnitBox : Set (Fin 2 → ℝ) :=
   {x | ∀ i, x i ∈ Set.Ioc (-1 / 2 : ℝ) ((-1 / 2 : ℝ) + 1)}
 
-private theorem measurableSet_centeredUnitBox : MeasurableSet centeredUnitBox := by
-  have hEq : centeredUnitBox =
-      ⋂ i : Fin 2, {x : Fin 2 → ℝ |
-        x i ∈ Set.Ioc (-1 / 2 : ℝ) ((-1 / 2 : ℝ) + 1)} := by
-    ext x
-    norm_num [centeredUnitBox]
-  rw [hEq]
-  exact MeasurableSet.iInter fun i : Fin 2 =>
-    measurableSet_Ioc.preimage (measurable_pi_apply i)
 
 private theorem integral_eq_setIntegral_of_support_subset_box
     {α : Type*} [MeasurableSpace α] {μ : Measure α} {s : Set α}
@@ -60,22 +45,6 @@ private theorem integral_eq_setIntegral_of_support_subset_box
         simp [hx, hzero]
     _ = ∫ x in s, F x ∂μ := by rw [integral_indicator hs]
 
-private theorem torusBoxPoint_rep (L : ℝ)
-    (x : {x : Fin 2 → ℝ //
-      ∀ i, x i ∈ Set.Ioc (-1 / 2 : ℝ) ((-1 / 2 : ℝ) + 1)}) :
-    torusBoxPoint L (fun i => (x.1 i : UnitAddCircle)) =
-      L • Complex.measurableEquivPi.symm x.1 := by
-  let e := UnitAddTorus.measurableEquivPiIoc
-    (fun _ : Fin 2 => (-1 / 2 : ℝ))
-  have he : e (fun i => (x.1 i : UnitAddCircle)) = x := by
-    calc
-      e (fun i => (x.1 i : UnitAddCircle)) = e (e.symm x) := by rfl
-      _ = x := e.apply_symm_apply x
-  apply Complex.ext
-  · simp [torusBoxPoint, e, he, Complex.measurableEquivPi_symm_apply,
-      Complex.real_smul]
-  · simp [torusBoxPoint, e, he, Complex.measurableEquivPi_symm_apply,
-      Complex.real_smul]
 
 /-- A function supported strictly inside the fundamental box has its plane square integral equal
 to the torus square integral times the box area. -/
@@ -83,7 +52,26 @@ theorem integral_sq_eq_torusBox (L : ℝ) (hL : 0 < L) (g : ℂ → ℝ)
     (hsupp : Function.support g ⊆ ball (0 : ℂ) (L / 2)) :
     (∫ z : ℂ, g z ^ 2) = L ^ 2 *
       ∫ t : GFFUnitTorus2, g (torusBoxPoint L t) ^ 2 := by
-  let H : ℂ → ℝ := fun z => g z ^ 2
+  have torusBoxPoint_rep (x : {x : Fin 2 → ℝ // ∀ i, x i ∈ Set.Ioc (-1 / 2 : ℝ) ((-1 / 2 : ℝ) + 1)}) : torusBoxPoint L (fun i => (x.1 i : UnitAddCircle)) =
+        L • Complex.measurableEquivPi.symm x.1 := by
+    let e := UnitAddTorus.measurableEquivPiIoc
+      (fun _ : Fin 2 => (-1 / 2 : ℝ))
+    have he : e (fun i => (x.1 i : UnitAddCircle)) = x := by
+      exact e.apply_symm_apply x
+    apply Complex.ext
+    · simp [torusBoxPoint, e, he, Complex.measurableEquivPi_symm_apply,
+        Complex.real_smul]
+    · simp [torusBoxPoint, e, he, Complex.measurableEquivPi_symm_apply,
+        Complex.real_smul]
+  have measurableSet_centeredUnitBox : MeasurableSet centeredUnitBox := by
+    have hEq : centeredUnitBox =
+        ⋂ i : Fin 2, {x : Fin 2 → ℝ |
+          x i ∈ Set.Ioc (-1 / 2 : ℝ) ((-1 / 2 : ℝ) + 1)} := by
+      ext x
+      norm_num [centeredUnitBox]
+    rw [hEq]
+    exact MeasurableSet.iInter fun i : Fin 2 =>
+      measurableSet_Ioc.preimage (measurable_pi_apply i)
   let Hpi : (Fin 2 → ℝ) → ℝ := fun x =>
     g (L • Complex.measurableEquivPi.symm x) ^ 2
   have hsuppPi : Function.support Hpi ⊆ centeredUnitBox := by
@@ -92,7 +80,7 @@ theorem integral_sq_eq_torusBox (L : ℝ) (hL : 0 < L) (g : ℂ → ℝ)
     change ¬ ∀ i, x i ∈ Set.Ioc (-1 / 2 : ℝ) ((-1 / 2 : ℝ) + 1) at hxbox
     push Not at hxbox
     obtain ⟨i, hi⟩ := hxbox
-    let z : ℂ := L • Complex.measurableEquivPi.symm x
+    let z := L • Complex.measurableEquivPi.symm x
     have hcoord : L / 2 ≤ ‖z‖ := by
       have hi' : x i ≤ -1 / 2 ∨ 1 / 2 < x i := by
         by_cases hlo : x i ≤ -1 / 2
@@ -139,8 +127,7 @@ theorem integral_sq_eq_torusBox (L : ℝ) (hL : 0 < L) (g : ℂ → ℝ)
       change g (L • Complex.measurableEquivPi.symm x) ^ 2 = 0
       rw [hgzero]
       norm_num
-    have hmem : z ∈ ball (0 : ℂ) (L / 2) := hsupp hg_ne
-    exact hnot hmem
+    exact hnot (hsupp hg_ne)
   have hscaled : (∫ z : ℂ, g (L • z) ^ 2) =
       (L ^ 2)⁻¹ * ∫ z : ℂ, g z ^ 2 := by
     have h := MeasureTheory.Measure.integral_comp_smul
@@ -177,8 +164,7 @@ theorem integral_sq_eq_torusBox (L : ℝ) (hL : 0 < L) (g : ℂ → ℝ)
         have hx' : x ∈ {x : Fin 2 → ℝ |
             ∀ i, x i ∈ Set.Ioc (-1 / 2 : ℝ) ((-1 / 2 : ℝ) + 1)} := by
           simpa [centeredUnitBox] using hx
-        have hpoint := torusBoxPoint_rep L ⟨x, hx'⟩
-        simp [Hpi, hpoint]
+        simp [Hpi, torusBoxPoint_rep ⟨x, hx'⟩]
   calc
     (∫ z : ℂ, g z ^ 2) = L ^ 2 * (L ^ 2)⁻¹ * ∫ z : ℂ, g z ^ 2 := by
       field_simp [ne_of_gt hL]

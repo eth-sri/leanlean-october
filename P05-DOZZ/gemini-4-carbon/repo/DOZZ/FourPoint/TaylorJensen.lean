@@ -44,9 +44,8 @@ theorem jensen_inverse_square_bound (A L J I : ℝ≥0∞) (p : ℝ)
     rw [← ENNReal.rpow_add 1 (-p - 2) hI0 hItop]
     congr 1
     ring
-  calc
-    A ^ 2 * I ^ (-p - 2) ≤ (J * L) * I ^ (-p - 2) := mul_le_mul' hA le_rfl
-    _ ≤ (J * I) * I ^ (-p - 2) := mul_le_mul' (mul_le_mul' le_rfl hL) le_rfl
-    _ = J * I ^ (-p - 1) := by rw [mul_assoc, hcombine]
+  refine (mul_le_mul' hA le_rfl).trans (?_)
+  refine (mul_le_mul' (mul_le_mul' le_rfl hL) le_rfl).trans_eq (?_)
+  rw [mul_assoc, hcombine]
 
 end DOZZ.Proofs

@@ -13,7 +13,6 @@ Gauss system. -/
 
 @[expose] public section
 
-open Set
 
 namespace DOZZ.Proofs
 
@@ -44,10 +43,10 @@ theorem gaussNegativeCutPlane_subset_regularPlane :
       simp
   · constructor
     · intro h
-      have hre : z.re = 0 := by rw [h]; simp
+      have : z.re = 0 := by rw [h]; simp
       linarith
     · intro h
-      have hre : z.re = 1 := by rw [h]; simp
+      have : z.re = 1 := by rw [h]; simp
       linarith
 
 /-- The negative cut plane is star-convex about `-1/2`. -/
@@ -64,13 +63,9 @@ theorem gaussNegativeCutPlane_starConvex :
       rw [ht0, hs1]
       norm_num
     · left
-      have himag : (s • (-1 / 2 : ℂ) + t • z).im = t * z.im := by
-        simp [Complex.add_im]
+      have himag : (s • (-1 / 2 : ℂ) + t • z).im = t * z.im := by simp
       rw [himag]
-      have htpos : 0 < t := by
-        by_contra hnot
-        have htneg : t ≤ 0 := le_of_not_gt hnot
-        exact ht0 (le_antisymm htneg ht)
+      have htpos : 0 < t := by positivity
       exact mul_ne_zero htpos.ne' him
   · right
     have hrealpart : (s • (-1 / 2 : ℂ) + t • z).re = -(s / 2) + t * z.re := by
@@ -83,10 +78,8 @@ theorem gaussNegativeCutPlane_starConvex :
       norm_num
     · have htpos : 0 < t := by
         by_contra hnot
-        have htneg : t ≤ 0 := le_of_not_gt hnot
-        exact ht0 (le_antisymm htneg ht)
-      have hsecond : t * z.re < 0 := mul_neg_of_pos_of_neg htpos hreal
-      have hfirst : -(s / 2) ≤ 0 := neg_nonpos.mpr (div_nonneg hs (by norm_num))
+        exact ht0 (le_antisymm (le_of_not_gt hnot) ht)
+      have := mul_neg_of_pos_of_neg htpos hreal
       linarith
 
 /-- Contractibility of the negative cut plane. -/

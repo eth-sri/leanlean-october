@@ -82,48 +82,6 @@ theorem measurableSet_brownianPositiveRationalTouchZero :
         0 < (r : ℝ) ∧ y r < 1 / ((n : ℝ) + 1)})
   exact hpos.inter hnear
 
-private theorem rational_strict_upper_bound_path
-    (q : BrownianPath) {a : ℝ}
-    (hq : ∀ r : ℚ, ∀ hr : 0 < (r : ℝ), q ⟨(r : ℝ), hr.le⟩ < a)
-    (t : ℝ≥0) : q t ≤ a := by
-  by_contra hnot
-  have hgt : a < q t := lt_of_not_ge hnot
-  let F : ℝ → ℝ := fun s => q ⟨max s 0, le_max_right s 0⟩
-  have hF : Continuous F := by
-    apply q.continuous.comp
-    exact (continuous_max.comp (continuous_id.prodMk continuous_const)).subtype_mk
-      (fun s => le_max_right s 0)
-  have hF_eval (s : ℝ) (hs : 0 ≤ s) : F s = q ⟨s, hs⟩ := by
-    change q ⟨max s 0, le_max_right s 0⟩ = q ⟨s, hs⟩
-    congr 1
-    exact Subtype.ext (max_eq_left hs)
-  have hopen : IsOpen (F ⁻¹' Set.Ioi a) := isOpen_Ioi.preimage hF
-  have htmem : (t : ℝ) ∈ F ⁻¹' Set.Ioi a := by
-    rw [Set.mem_preimage, hF_eval (t : ℝ) t.property]
-    exact hgt
-  by_cases htpos : 0 < (t : ℝ)
-  · let U : Set ℝ := Set.Ioi 0 ∩ F ⁻¹' Set.Ioi a
-    have hU : IsOpen U := isOpen_Ioi.inter hopen
-    obtain ⟨r, hrU⟩ := Rat.denseRange_cast.exists_mem_open hU ⟨t, htpos, htmem⟩
-    have hr : 0 < (r : ℝ) ∧ a < F (r : ℝ) := hrU
-    have hrat := hq r hr.1
-    have hEval := hF_eval (r : ℝ) hr.1.le
-    linarith [hr.2, hrat, hEval]
-  · have ht0 : t = 0 := by
-      apply Subtype.ext
-      exact le_antisymm (le_of_not_gt htpos) t.property
-    subst t
-    obtain ⟨δ, hδ, hball⟩ := Metric.mem_nhds_iff.mp (hopen.mem_nhds htmem)
-    obtain ⟨r, hr0, hrδ⟩ := exists_rat_btwn (show (0 : ℝ) < δ by positivity)
-    have hdist : dist (r : ℝ) 0 < δ := by
-      change ‖(r : ℝ) - 0‖ < δ
-      rw [sub_zero, Real.norm_eq_abs, abs_of_pos hr0]
-      exact hrδ
-    have hrpos : 0 < (r : ℝ) := hr0
-    have hFr : a < F (r : ℝ) := hball (Metric.mem_ball.mpr hdist)
-    have hrat := hq r hrpos
-    have hEval := hF_eval (r : ℝ) hrpos.le
-    linarith [hFr, hrat, hEval]
 
 /-- The Brownian reference future started at any positive state has zero mass on rational
 survival accompanied by a real-time boundary touch. -/
@@ -133,9 +91,37 @@ theorem brownianUpperConditionedReferenceFutureKernel_measure_touchZero
     (ν a : ℝ) (hν : 0 < ν) (ha : 0 < a) :
     brownianUpperConditionedReferenceFutureKernel B ν hν a
       brownianPositiveRationalTouchZero = 0 := by
+  have rational_strict_upper_bound_path (q : BrownianPath) {a : ℝ} (hq : ∀ r : ℚ, ∀ hr : 0 < (r : ℝ), q ⟨(r : ℝ), hr.le⟩ < a) (t : ℝ≥0) : q t ≤ a := by
+    by_contra hnot
+    let F : ℝ → ℝ := fun s => q ⟨max s 0, le_max_right s 0⟩
+    have hF : Continuous F := by fun_prop
+    have hF_eval (s : ℝ) (hs : 0 ≤ s) : F s = q ⟨s, hs⟩ := by grind
+    have hopen : IsOpen (F ⁻¹' Set.Ioi a) := isOpen_Ioi.preimage hF
+    have htmem : (t : ℝ) ∈ F ⁻¹' Set.Ioi a := by
+      rw [Set.mem_preimage, hF_eval (t : ℝ) t.property]
+      exact lt_of_not_ge hnot
+    by_cases htpos : 0 < (t : ℝ)
+    · let U : Set ℝ := Set.Ioi 0 ∩ F ⁻¹' Set.Ioi a
+      have hU : IsOpen U := isOpen_Ioi.inter hopen
+      obtain ⟨r, hrU⟩ := Rat.denseRange_cast.exists_mem_open hU ⟨t, htpos, htmem⟩
+      have hr : 0 < (r : ℝ) ∧ a < F (r : ℝ) := hrU
+      linarith [hr.2, hq r hr.1, hF_eval (r : ℝ) hr.1.le]
+    · have ht0 : t = 0 := by
+        apply Subtype.ext
+        exact le_antisymm (le_of_not_gt htpos) t.property
+      subst t
+      obtain ⟨δ, hδ, hball⟩ := Metric.mem_nhds_iff.mp (hopen.mem_nhds htmem)
+      obtain ⟨r, hr0, hrδ⟩ := exists_rat_btwn (show (0 : ℝ) < δ by positivity)
+      have hdist : dist (r : ℝ) 0 < δ := by
+        change ‖(r : ℝ) - 0‖ < δ
+        rw [sub_zero, Real.norm_eq_abs, abs_of_pos hr0]
+        exact hrδ
+      have hrpos : 0 < (r : ℝ) := hr0
+      have hFr : a < F (r : ℝ) := hball (Metric.mem_ball.mpr hdist)
+      linarith [hFr, hq r hrpos, hF_eval (r : ℝ) hrpos.le]
   classical
-  let D : BrownianPath → BrownianPath := driftedBrownianPath (-ν)
-  let eval : BrownianPath → (ℚ → ℝ) :=
+  let D := driftedBrownianPath (-ν)
+  let eval :=
     brownianUpperConditionedPositiveRationalEvals a
   let A : Set BrownianPath := eval ⁻¹' brownianPositiveRationalTouchZero
   have hD : Measurable D := continuous_driftedBrownianPath.measurable.comp
@@ -188,17 +174,13 @@ theorem brownianUpperConditionedReferenceFutureKernel_measure_touchZero
         exact hweak t)
     have hge : a ≤ driftedBrownianMaximum ν p := by
       by_contra hnot
-      have hMa : sSup (Set.range (fun t : ℝ≥0 => D p t)) < a := by
-        rw [← hsup]
-        exact lt_of_not_ge hnot
       let gap : ℝ := a - sSup (Set.range (fun t : ℝ≥0 => D p t))
       have hgap : 0 < gap := by dsimp [gap]; linarith
       obtain ⟨n, hn⟩ := exists_nat_gt (1 / gap)
       have hn1 : 0 < (n : ℝ) + 1 := by positivity
       have hinv : 1 / ((n : ℝ) + 1) < gap := by
         apply (div_lt_iff₀ hn1).2
-        have hncast : (1 / gap : ℝ) < (n : ℝ) + 1 := by
-          exact lt_trans hn (by norm_num)
+        have hncast : (1 / gap : ℝ) < (n : ℝ) + 1 := lt_trans hn (by norm_num)
         calc
           1 = (1 / gap) * gap := by field_simp [ne_of_gt hgap]
           _ < ((n : ℝ) + 1) * gap := mul_lt_mul_of_pos_right hncast hgap
@@ -207,10 +189,7 @@ theorem brownianUpperConditionedReferenceFutureKernel_measure_touchZero
       have hEval : eval (D p) r = a - D p ⟨(r : ℝ), hr.le⟩ := by
         simp [eval, brownianUpperConditionedPositiveRationalEvals,
           brownianUpperConditionedPositivePath, max_eq_left hr.le]
-      have hDnear : a - 1 / ((n : ℝ) + 1) < D p ⟨(r : ℝ), hr.le⟩ := by
-        rw [hEval] at hnear
-        linarith
-      have hDs : D p ⟨(r : ℝ), hr.le⟩ ≤
+      have : D p ⟨(r : ℝ), hr.le⟩ ≤
           sSup (Set.range (fun t : ℝ≥0 => D p t)) :=
         le_csSup hbound (Set.mem_range_self (⟨(r : ℝ), hr.le⟩ : ℝ≥0))
       dsimp [gap] at hinv

@@ -55,8 +55,8 @@ theorem extendHolomorphicDiskSolution_agrees
     ∀ z ∈ Metric.ball d (r / 2),
       D.solution z = (extendHolomorphicDiskSolution r M H hM D d hH hbound).solution z := by
   let D' := extendHolomorphicDiskSolution r M H hM D d hH hbound
-  have hr : 0 < r := by
-    have hdist : 0 ≤ dist d D.center := dist_nonneg
+  have : 0 < r := by
+    have : 0 ≤ dist d D.center := dist_nonneg
     linarith
   have hsub : Metric.ball d (r / 2) ⊆ Metric.ball D.center r := by
     intro z hz

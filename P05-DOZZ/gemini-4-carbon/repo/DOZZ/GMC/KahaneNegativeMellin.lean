@@ -30,9 +30,7 @@ theorem nonneg_rpow_neg_lintegral_eq_weighted_laplace
           (∫⁻ ω, ENNReal.ofReal (Real.exp (-(m ω * t))) ∂P) ∂volume := by
   classical
   let ε : ℕ → ℝ := fun n => (1 / 2 : ℝ) ^ n
-  have hεpos (n : ℕ) : 0 < ε n := by
-    dsimp [ε]
-    positivity
+  have hεpos (n : ℕ) : 0 < ε n := by positivity
   have hεmono : Antitone ε := by
     intro i j hij
     dsimp [ε]
@@ -44,16 +42,13 @@ theorem nonneg_rpow_neg_lintegral_eq_weighted_laplace
   let mε : ℕ → Ω → ℝ := fun n ω => m ω + ε n
   have hmεpos (n : ℕ) (ω : Ω) : 0 < mε n ω :=
     lt_of_lt_of_le (hεpos n) (by dsimp [mε]; linarith [hm ω])
-  have hmεA (n : ℕ) : AEMeasurable (mε n) P := by
-    exact hmA.add_const (ε n)
+  have hmεA (n : ℕ) : AEMeasurable (mε n) P := by fun_prop
   let ψ : ℝ → ℝ≥0∞ := fun x => ENNReal.rpow (ENNReal.ofReal x) (-q)
   have hψcont : Continuous ψ := by
     exact ENNReal.continuous_rpow_const.comp ENNReal.continuous_ofReal
   let L : ℕ → Ω → ℝ≥0∞ := fun n ω => ψ (mε n ω)
   let Llim : Ω → ℝ≥0∞ := fun ω => ψ (m ω)
-  have hLmeas : ∀ n, AEMeasurable (L n) P := by
-    intro n
-    exact hψcont.measurable.comp_aemeasurable (hmεA n)
+  have hLmeas : ∀ n, AEMeasurable (L n) P := by fun_prop
   have hLmono : ∀ ω, Monotone (fun n => L n ω) := by
     intro ω i j hij
     have hbase : mε j ω ≤ mε i ω := by
@@ -74,41 +69,15 @@ theorem nonneg_rpow_neg_lintegral_eq_weighted_laplace
   have hLInt := lintegral_tendsto_of_tendsto_of_monotone hLmeas
     (ae_of_all P fun ω => hLmono ω) (ae_of_all P hLlim)
 
-  let ν : Measure ℝ := volume.restrict (Ioi (0 : ℝ))
+  let ν := volume.restrict (Ioi (0 : ℝ))
   let c : ℝ≥0∞ := ENNReal.ofReal (1 / Real.Gamma q)
   let w : ℝ → ℝ≥0∞ := fun t => ENNReal.ofReal (t ^ (q - 1))
   let F : ℕ → Ω × ℝ → ℝ≥0∞ := fun n z =>
     ENNReal.ofReal (z.2 ^ (q - 1) * Real.exp (-(mε n z.1 * z.2)))
   let Flim : Ω × ℝ → ℝ≥0∞ := fun z =>
     ENNReal.ofReal (z.2 ^ (q - 1) * Real.exp (-(m z.1 * z.2)))
-  have hFmeas : ∀ n, AEMeasurable (F n) (P.prod ν) := by
-    intro n
-    have hmprod : AEMeasurable (fun z : Ω × ℝ => mε n z.1) (P.prod ν) :=
-      (hmεA n).comp_fst
-    have htprod : AEMeasurable (fun z : Ω × ℝ => z.2) (P.prod ν) :=
-      measurable_snd.aemeasurable
-    have harg : AEMeasurable (fun z : Ω × ℝ => -(mε n z.1 * z.2)) (P.prod ν) :=
-      (hmprod.mul htprod).neg
-    have hexp : AEMeasurable (fun z : Ω × ℝ => Real.exp (-(mε n z.1 * z.2)))
-        (P.prod ν) := Real.measurable_exp.comp_aemeasurable harg
-    have hpow : Measurable (fun z : Ω × ℝ => z.2 ^ (q - 1)) := by fun_prop
-    have hreal : AEMeasurable (fun z : Ω × ℝ =>
-        z.2 ^ (q - 1) * Real.exp (-(mε n z.1 * z.2))) (P.prod ν) :=
-      hpow.aemeasurable.mul hexp
-    exact hreal.ennreal_ofReal
-  have hFlimmeas : AEMeasurable Flim (P.prod ν) := by
-    have hmprod : AEMeasurable (fun z : Ω × ℝ => m z.1) (P.prod ν) := hmA.comp_fst
-    have htprod : AEMeasurable (fun z : Ω × ℝ => z.2) (P.prod ν) :=
-      measurable_snd.aemeasurable
-    have harg : AEMeasurable (fun z : Ω × ℝ => -(m z.1 * z.2)) (P.prod ν) :=
-      (hmprod.mul htprod).neg
-    have hexp : AEMeasurable (fun z : Ω × ℝ => Real.exp (-(m z.1 * z.2)))
-        (P.prod ν) := Real.measurable_exp.comp_aemeasurable harg
-    have hpow : Measurable (fun z : Ω × ℝ => z.2 ^ (q - 1)) := by fun_prop
-    have hreal : AEMeasurable (fun z : Ω × ℝ =>
-        z.2 ^ (q - 1) * Real.exp (-(m z.1 * z.2))) (P.prod ν) :=
-      hpow.aemeasurable.mul hexp
-    exact hreal.ennreal_ofReal
+  have hFmeas : ∀ n, AEMeasurable (F n) (P.prod ν) := by fun_prop
+  have hFlimmeas : AEMeasurable Flim (P.prod ν) := by fun_prop
   have hprod_t : ∀ᵐ z ∂(P.prod ν), 0 < z.2 := by
     let s : Set (Ω × ℝ) := {z | z.2 ∈ Ioi (0 : ℝ)}
     have hs : MeasurableSet s := by
@@ -118,8 +87,7 @@ theorem nonneg_rpow_neg_lintegral_eq_weighted_laplace
       filter_upwards [] with x
       filter_upwards [ae_restrict_mem measurableSet_Ioi] with y hy
       exact hy
-    have hleft := (Measure.ae_prod_mem_iff_ae_ae_mem hs).2 hright
-    simpa [s, Set.mem_Ioi] using hleft
+    simpa [s, Set.mem_Ioi] using (Measure.ae_prod_mem_iff_ae_ae_mem hs).2 hright
   have hFmono : ∀ᵐ z ∂(P.prod ν), Monotone (fun n => F n z) := by
     filter_upwards [hprod_t] with z ht
     intro i j hij
@@ -164,10 +132,7 @@ theorem nonneg_rpow_neg_lintegral_eq_weighted_laplace
       (∫⁻ ω, ENNReal.ofReal (Real.exp (-(m ω * t))) ∂P) ∂volume
   have hprodR (n : ℕ) : ∫⁻ z, F n z ∂(P.prod ν) = R n := by
     have hf : AEMeasurable (Function.uncurry (fun ω t => F n (ω, t))) (P.prod ν) := by
-      have hEq : Function.uncurry (fun ω t => F n (ω, t)) = F n := by
-        funext z
-        cases z
-        rfl
+      have hEq : Function.uncurry (fun ω t => F n (ω, t)) = F n := by grind
       rw [hEq]
       exact hFmeas n
     have hfactor : ∀ᵐ t ∂ν,
@@ -192,11 +157,6 @@ theorem nonneg_rpow_neg_lintegral_eq_weighted_laplace
         simpa [R, ν] using (lintegral_congr_ae hfactor)
   have hprodRlim : ∫⁻ z, Flim z ∂(P.prod ν) = Rlim := by
     have hf : AEMeasurable (Function.uncurry (fun ω t => Flim (ω, t))) (P.prod ν) := by
-      have hEq : Function.uncurry (fun ω t => Flim (ω, t)) = Flim := by
-        funext z
-        cases z
-        rfl
-      rw [hEq]
       exact hFlimmeas
     have hfactor : ∀ᵐ t ∂ν,
         (∫⁻ ω, Flim (ω, t) ∂P) = w t *
@@ -235,7 +195,7 @@ theorem nonneg_rpow_neg_lintegral_eq_weighted_laplace
   have hleftEq : ∫⁻ ω, Llim ω ∂P = c * ∫⁻ z, Flim z ∂(P.prod ν) :=
     tendsto_nhds_unique hLInt hleftScaled
   rw [hprodRlim] at hleftEq
-  simpa [Llim, ψ, c, Rlim, w, ν] using hleftEq
+  assumption
 
 
 end DOZZ.Proofs

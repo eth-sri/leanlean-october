@@ -56,10 +56,8 @@ theorem fusion_difference_local_integrable (γ α₁ α₂ α₃ : ℝ)
   have hf : Measurable (fusionDifferenceKernel γ α₁ α₂ α₃ z) := by
     have hp : Measurable (fun x : ℂ => (z, x)) := measurable_const.prodMk measurable_id
     simpa only [Function.comp_def] using (fusionDifferenceKernel_measurable γ α₁ α₂ α₃).comp hp
-  have hK := (planar_difference_integral (γ ^ 2 / 2) (γ * α₁) hk hβ hβ2 z).1
-  have hdom := hK.norm.const_mul ((2 : ℝ) ^ |γ * α₂|)
   have hv : Integrable (B.indicator (fusionDifferenceKernel γ α₁ α₂ α₃ z)) volume := by
-    apply hdom.mono' (hf.indicator Metric.isOpen_ball.measurableSet).aestronglyMeasurable
+    apply (((planar_difference_integral (γ ^ 2 / 2) (γ * α₁) hk hβ hβ2 z).1).norm.const_mul ((2 : ℝ) ^ |γ * α₂|)).mono' (hf.indicator Metric.isOpen_ball.measurableSet).aestronglyMeasurable
     exact ae_of_all _ fun x => by
       by_cases hx : x ∈ B
       · rw [Set.indicator_of_mem hx, fusion_difference_kernel_local γ α₁ α₂ α₃ z x

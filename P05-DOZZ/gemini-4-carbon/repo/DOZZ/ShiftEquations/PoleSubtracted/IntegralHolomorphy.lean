@@ -27,8 +27,11 @@ open MeasureTheory Filter Topology Set Metric
 
 namespace DOZZ.Proofs
 
+variable {Ω : Type*} [MeasurableSpace Ω]
+
+
 /-- Under the same local domination every section is integrable. -/
-theorem integrable_of_locally_dominated {Ω : Type*} [MeasurableSpace Ω]
+theorem integrable_of_locally_dominated
     (P : Measure Ω) {U : Set ℂ} (f : ℂ → Ω → ℂ)
     (hmeas : ∀ z ∈ U, AEStronglyMeasurable (f z) P)
     (hdom : ∀ z ∈ U, ∃ r > 0, closedBall z r ⊆ U ∧ ∃ g : Ω → ℝ, Integrable g P ∧
@@ -42,7 +45,7 @@ theorem integrable_of_locally_dominated {Ω : Type*} [MeasurableSpace Ω]
 /-- The `z`-derivative at `z₀` of a family which is measurable in `ω` for `z` near `z₀`, and
 almost surely differentiable at `z₀`, is almost everywhere strongly measurable: it is the limit
 of the difference quotients along the sequence `z₀ + r / (2 (n + 1))`. -/
-theorem aestronglyMeasurable_deriv_of_ae_differentiableAt {Ω : Type*} [MeasurableSpace Ω]
+theorem aestronglyMeasurable_deriv_of_ae_differentiableAt
     {P : Measure Ω} {f : ℂ → Ω → ℂ} {z₀ : ℂ} {r : ℝ} (hr : 0 < r)
     (hmeas : ∀ z ∈ ball z₀ r, AEStronglyMeasurable (f z) P)
     (hdiff : ∀ᵐ ω ∂P, DifferentiableAt ℂ (fun z => f z ω) z₀) :
@@ -72,7 +75,7 @@ theorem aestronglyMeasurable_deriv_of_ae_differentiableAt {Ω : Type*} [Measurab
 /-- **Holomorphy of a parametric integral** under local uniform domination: if almost every
 section `z ↦ f z ω` is holomorphic on the open set `U` and `‖f‖` is dominated near each point of
 `U` by an integrable function, then `z ↦ ∫ f z ω ∂P` is holomorphic on `U`. -/
-theorem differentiableOn_integral_of_locally_dominated {Ω : Type*} [MeasurableSpace Ω]
+theorem differentiableOn_integral_of_locally_dominated
     (P : Measure Ω) {U : Set ℂ} (hU : IsOpen U) (f : ℂ → Ω → ℂ)
     (hmeas : ∀ z ∈ U, AEStronglyMeasurable (f z) P)
     (hdiff : ∀ᵐ ω ∂P, DifferentiableOn ℂ (fun z => f z ω) U)
@@ -81,7 +84,7 @@ theorem differentiableOn_integral_of_locally_dominated {Ω : Type*} [MeasurableS
     DifferentiableOn ℂ (fun z => ∫ ω, f z ω ∂P) U := by
   intro z₀ hz₀
   obtain ⟨r, hr, hrU, g, hg, hbound⟩ := hdom z₀ hz₀
-  have hhalf : 0 < r / 2 := half_pos hr
+  have hhalf := half_pos hr
   have hballU : ball z₀ (r / 2) ⊆ U :=
     (ball_subset_ball (by linarith)).trans (ball_subset_closedBall.trans hrU)
   have hderiv_bound : ∀ᵐ ω ∂P, ∀ ζ ∈ ball z₀ (r / 2),
@@ -96,7 +99,7 @@ theorem differentiableOn_integral_of_locally_dominated {Ω : Type*} [MeasurableS
       HasDerivAt (fun z => f z ω) (deriv (fun z => f z ω) ζ) ζ := by
     filter_upwards [hdiff] with ω hω ζ hζ
     exact (hω.differentiableAt (hU.mem_nhds (hballU hζ))).hasDerivAt
-  have hF'_meas : AEStronglyMeasurable (fun ω => deriv (fun z => f z ω) z₀) P :=
+  have hF'_meas :=
     aestronglyMeasurable_deriv_of_ae_differentiableAt hr
       (fun z hz => hmeas z (hrU (ball_subset_closedBall hz)))
       (hdiff.mono fun ω hω => hω.differentiableAt (hU.mem_nhds hz₀))

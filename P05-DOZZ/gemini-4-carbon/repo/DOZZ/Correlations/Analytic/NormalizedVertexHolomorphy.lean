@@ -11,9 +11,13 @@ public import DOZZ.Correlations.Analytic.EquatorCorrectionBounds
 /-! Joint Wick normalization and the exact equator pin correction for mixed frames. -/
 
 @[expose] public section
+noncomputable section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal
 namespace DOZZ.Proofs
+
+variable {Ω : Type*} [MeasurableSpace Ω] {N : ℕ}
+
 
 /-- The final coordinate is the outward vertex at the origin. -/
 def mixedVertexCenters {N : ℕ} (z : Fin N → ℂ) : Fin (N + 1) → ℂ := Fin.snoc z 0
@@ -23,12 +27,12 @@ def mixedVertexTimes (N : ℕ) (r : ℝ) : Fin (N + 1) → ℝ :=
   Fin.snoc (fun _ => r) (-r)
 
 /-- The complex continuation of the negative zero-mode exponent. -/
-noncomputable def complexMomentPower {N : ℕ} (γ : ℝ) (β : Fin N → ℂ) : ℂ :=
+def complexMomentPower {N : ℕ} (γ : ℝ) (β : Fin N → ℂ) : ℂ :=
   - (((-2 * Q γ / γ : ℝ) : ℂ) + (γ : ℂ)⁻¹ * ∑ i, β i)
 
 /-- Joint Wick normalization uses the full covariance matrix of the actual vertex coordinates. -/
-noncomputable def jointVertexPolynomial
-    {Ω : Type*} [MeasurableSpace Ω] {N : ℕ} (P : Measure Ω)
+def jointVertexPolynomial
+ (P : Measure Ω)
     (Xc : Ω → ℂ → ℝ → ℝ) (z : Fin N → ℂ) (r : Fin N → ℝ) (β : Fin N → ℂ) : ℂ :=
   -(∑ i, ∑ j, β i * β j *
     (gaussianCovariance P (fun ω => Xc ω (z i) (r i))
@@ -37,8 +41,8 @@ noncomputable def jointVertexPolynomial
 /-- The pin factor cancels the constant equator contribution to the tilted retained mass.
 Joint rather than coordinatewise Wick normalization removes the deterministic pair factor;
 the finite-position Coulomb prefactor can then be multiplied after taking the limit. -/
-noncomputable def normalizedVertexPolynomial
-    {Ω : Type*} [MeasurableSpace Ω] {N : ℕ} (P : Measure Ω)
+def normalizedVertexPolynomial
+ (P : Measure Ω)
     (Xc : Ω → ℂ → ℝ → ℝ) (γ : ℝ) (z : Fin N → ℂ) (r : ℝ)
     (β : Fin (N + 1) → ℂ) : ℂ :=
   jointVertexPolynomial P Xc (mixedVertexCenters z) (mixedVertexTimes N r) β -
@@ -46,8 +50,8 @@ noncomputable def normalizedVertexPolynomial
       ∑ i, β i.castSucc * (equatorCircleMean (z i) r : ℂ)
 
 /-- The normalized cutoff observable retains a charge-independent unweighted mass. -/
-noncomputable def normalizedVertexMoment
-    {Ω : Type*} [MeasurableSpace Ω] {N : ℕ} (P : Measure Ω)
+def normalizedVertexMoment
+ (P : Measure Ω)
     (Xc : Ω → ℂ → ℝ → ℝ) (M : Ω → Measure ℂ) (O : Set ℂ)
     (γ : ℝ) (z : Fin N → ℂ) (r : ℝ) (β : Fin (N + 1) → ℂ) : ℂ :=
   ∫ ω, Complex.exp (normalizedVertexPolynomial P Xc γ z r β +
@@ -57,7 +61,7 @@ noncomputable def normalizedVertexMoment
 /-- The exact joint Wick and equator-normalized cutoff family is integrable and holomorphic
 throughout the finite-radius bulk moment half-space. -/
 theorem normalized_vertex_moment_holomorphic
-    {Ω : Type*} [MeasurableSpace Ω] {N : ℕ}
+
     (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
     (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
@@ -71,16 +75,13 @@ theorem normalized_vertex_moment_holomorphic
       {β | (complexMomentPower γ β).re < 4 / γ ^ 2} := by
   let := hX.1
   let A : Ω → ℝ := fun ω => (M ω O).toReal
-  have hm := gmc_set_mass_aemeasurable_of_isGMCOf P X hX γ hγ hγ2 M hM O ho.measurableSet
-  have hA : AEMeasurable A P := ENNReal.measurable_toReal.comp_aemeasurable hm
   have hpos : ∀ᵐ ω ∂P, 0 < A ω := by
     filter_upwards [open_mass_pos_finite_ae P X hX γ hγ hγ2 M hM O ho hb hn] with ω hω
     exact ENNReal.toReal_pos hω.1 hω.2
   have hinv (q : ℝ) (hq : 0 < q) : Integrable (fun ω => A ω ^ (-q)) P := by
     apply open_mass_real_power_integrable P X hX γ hγ hγ2 M hM O ho hb hn
     linarith [show (0 : ℝ) < 4 / γ ^ 2 by positivity]
-  have hmoment (p : ℝ) (_ : 0 ≤ p) (hp : p < 4 / γ ^ 2) :
-      Integrable (fun ω => A ω ^ p) P :=
+  have hmoment (p : ℝ) (_ : 0 ≤ p) (hp : p < 4 / γ ^ 2) :=
     open_mass_real_power_integrable P X hX γ hγ hγ2 M hM O ho hb hn p hp
   have hc : DifferentiableOn ℂ (normalizedVertexPolynomial P Xc γ z r) univ := by
     unfold normalizedVertexPolynomial jointVertexPolynomial complexMomentPower
@@ -88,7 +89,7 @@ theorem normalized_vertex_moment_holomorphic
   have hd := differentiableOn_gaussian_charge_moment P univ isOpen_univ
     (fun ω i => Xc ω (mixedVertexCenters z i) (mixedVertexTimes N r i))
     (circle_vertex_hasGaussianLaw P X hX Xc hXc
-      (mixedVertexCenters z) (mixedVertexTimes N r)) A hA hpos
+      (mixedVertexCenters z) (mixedVertexTimes N r)) A (ENNReal.measurable_toReal.comp_aemeasurable (gmc_set_mass_aemeasurable_of_isGMCOf P X hX γ hγ hγ2 M hM O ho.measurableSet)) hpos
     (4 / γ ^ 2) (by positivity) hinv hmoment
     (normalizedVertexPolynomial P Xc γ z r) hc
     ((-2 * Q γ / γ : ℝ) : ℂ) ((γ : ℂ)⁻¹ • chargeSumCLM (N + 1))

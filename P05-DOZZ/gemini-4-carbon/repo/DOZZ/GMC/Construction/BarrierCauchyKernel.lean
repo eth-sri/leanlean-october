@@ -10,16 +10,20 @@ public import DOZZ.GMC.Construction.BarrierCauchyMass
 
 @[expose] public section
 
+noncomputable section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal
 
 namespace DOZZ.Proofs
 
+variable {Ω : Type*} [MeasurableSpace Ω]
+
+
 /-- Wick-pair tilting with a finite family of coarse rectangle constraints left visible. The
 coarse coordinates may be any selected coordinates of the jointly Gaussian family; this is the
 finite-barrier identity used to compare mixed cutoffs. -/
 theorem finite_gaussian_wick_pair_tilt_with_coarse_rectangle
-    {Ω : Type*} [MeasurableSpace Ω] {ι κ : Type*} [Fintype ι] [Fintype κ]
+ {ι κ : Type*} [Fintype ι] [Fintype κ]
     (P : Measure Ω) (V : Ω → ι → ℝ)
     (hV : IsCenteredJointlyGaussian P V) (p q : ι) (γ : ℝ)
     (e : κ → ι) (barrier : κ → ℝ) :
@@ -46,14 +50,12 @@ theorem finite_gaussian_wick_pair_tilt_with_coarse_rectangle
       {z | ∀ i : κ, z (e i) ≤ barrier i} := by
     ext z
     simp only [Set.mem_iInter, Set.mem_ofPred_eq]
-  have hset : MeasurableSet {z : ι → ℝ | ∀ i : κ, z (e i) ≤ barrier i} := by
+  have : MeasurableSet {z : ι → ℝ | ∀ i : κ, z (e i) ≤ barrier i} := by
     rw [← hEq]
     apply MeasurableSet.iInter
     intro i
     exact measurableSet_le (measurable_pi_apply (e i)) measurable_const
-  have hF : Measurable F := by
-    dsimp [F]
-    exact measurable_const.indicator hset
+  have hF : Measurable F := by fun_prop
   simpa [F] using finite_gaussian_wick_pair_tilt P V hV p q γ F hF
 
 
@@ -203,15 +205,15 @@ theorem tendsto_uniformlyOn_product_of_tendsto_uniformlyOn
   exact lt_of_le_of_lt hprod hsmall
 
 /-- One regularized Gaussian Wick weight, in nonnegative form for Tonelli arguments. -/
-noncomputable def admissibleLogWickWeight
-    {Ω : Type*} [MeasurableSpace Ω]
+def admissibleLogWickWeight
+
     (P : Measure Ω) (Y : Ω → ℝ → ℂ → ℝ) (γ ε : ℝ) (x : ℂ) (ω : Ω) : ℝ≥0∞ :=
   ENNReal.ofReal (Real.exp
     (γ * Y ω ε x - γ ^ 2 / 2 * gaussianVariance P (fun ω' => Y ω' ε x)))
 
 /-- Mixed two-root Wick kernel with the growing barrier imposed at each root. -/
-noncomputable def compatibleAdmissibleSelectedMixedGrowingBarrierPairKernel
-    {Ω : Type*} [MeasurableSpace Ω]
+def compatibleAdmissibleSelectedMixedGrowingBarrierPairKernel
+
     (P : Measure Ω)
     (Y Z : Ω → ℝ → ℂ → ℝ) (γ a : ℝ) (k₀ : ℕ)
     (r s : ℝ) (x y : ℂ) (b₁ b₂ : Bool) : ℝ≥0∞ := by
@@ -227,8 +229,8 @@ noncomputable def compatibleAdmissibleSelectedMixedGrowingBarrierPairKernel
 
 /-- The mixed Wick kernel with both growing barriers truncated at the fixed integer level `m`.
 This is the finite-dimensional approximation used on separated spatial slices. -/
-noncomputable def compatibleAdmissibleSelectedFiniteBarrierPairKernel
-    {Ω : Type*} [MeasurableSpace Ω]
+def compatibleAdmissibleSelectedFiniteBarrierPairKernel
+
     (P : Measure Ω) (Y Z : Ω → ℝ → ℂ → ℝ) (γ a : ℝ) (k₀ m : ℕ)
     (ε δ : ℝ) (x y : ℂ) (b₁ b₂ : Bool) : ℝ≥0∞ := by
   classical
@@ -243,7 +245,7 @@ noncomputable def compatibleAdmissibleSelectedFiniteBarrierPairKernel
 /-- Once both cutoffs include every scale through `m`, the full growing-barrier kernel is
 dominated by its finite-barrier truncation. -/
 theorem compatibleAdmissibleSelectedMixedGrowingBarrierPairKernel_le_finiteBarrier
-    {Ω : Type*} [MeasurableSpace Ω]
+
     (P : Measure Ω) (Y Z : Ω → ℝ → ℂ → ℝ) (γ a : ℝ) (k₀ m : ℕ)
     (r s : ℝ) (x y : ℂ) (b₁ b₂ : Bool)
     (hmr : (m : ℝ) ≤ r) (hms : (m : ℝ) ≤ s) :
@@ -259,8 +261,7 @@ theorem compatibleAdmissibleSelectedMixedGrowingBarrierPairKernel_le_finiteBarri
     by_cases hgood : (ω, z) ∈ admissibleGrowingBarrierSet Y a k₀ t
     · have hsmall : (ω, z) ∈ admissibleGrowingBarrierSet Y a k₀ (m : ℝ) := by
         intro k hk₀ hkm
-        have hkt : (k : ℝ) ≤ t := le_trans hkm hmt
-        exact hgood k hk₀ hkt
+        exact hgood k hk₀ (le_trans hkm hmt)
       simp [Set.indicator, hgood, hsmall]
     · simp [Set.indicator, hgood]
   unfold compatibleAdmissibleSelectedMixedGrowingBarrierPairKernel

@@ -40,8 +40,7 @@ retained mass, including the literal ENNReal totalizations. -/
 theorem reflected_ennreal_inverse_add_bound (p : ℝ) (hp : 0 < p) (S I : ℝ≥0∞)
     (hS : S ≠ 0) (hSt : S ≠ ⊤) (hIt : I ≠ ⊤) :
     S ^ (-p) ≤ (S + I) ^ (-p) + ENNReal.ofReal p * I * S ^ (-(p + 1)) := by
-  have hs : 0 < S.toReal := ENNReal.toReal_pos hS hSt
-  have ht : S + I ≠ ⊤ := ENNReal.add_ne_top.mpr ⟨hSt, hIt⟩
+  have ht := ENNReal.add_ne_top.mpr ⟨hSt, hIt⟩
   have hsz : S + I ≠ 0 := ne_zero_of_lt (lt_of_lt_of_le (pos_iff_ne_zero.mpr hS) le_self_add)
   have hrt : (S + I) ^ (-p) + ENNReal.ofReal p * I * S ^ (-(p + 1)) ≠ ⊤ :=
     ENNReal.add_ne_top.mpr ⟨ENNReal.rpow_ne_top_of_ne_zero hsz ht,
@@ -55,12 +54,11 @@ theorem reflected_ennreal_inverse_add_bound (p : ℝ) (hp : 0 < p) (S I : ℝ≥
     ENNReal.toReal_add hSt hIt, ENNReal.toReal_mul, ENNReal.toReal_mul,
     ENNReal.toReal_ofReal hp.le, ← ENNReal.toReal_rpow]
   have hh := dual_negative_power_lipschitz p S.toReal S.toReal (S.toReal + I.toReal)
-    hp hs le_rfl (le_add_of_nonneg_right ENNReal.toReal_nonneg)
+    hp (ENNReal.toReal_pos hS hSt) le_rfl (le_add_of_nonneg_right ENNReal.toReal_nonneg)
   rw [show -p - 1 = -(p + 1) by ring,
     show S.toReal - (S.toReal + I.toReal) = -I.toReal by ring,
     abs_neg, abs_of_nonneg ENNReal.toReal_nonneg] at hh
-  have hl := (le_abs_self (S.toReal ^ (-p) - (S.toReal + I.toReal) ^ (-p))).trans hh
-  nlinarith only [hl]
+  nlinarith only [(le_abs_self (S.toReal ^ (-p) - (S.toReal + I.toReal) ^ (-p))).trans hh]
 
 /-- A relative mass error, with a common quarter-mass lower bound, gives a relative
 inverse-power error. -/

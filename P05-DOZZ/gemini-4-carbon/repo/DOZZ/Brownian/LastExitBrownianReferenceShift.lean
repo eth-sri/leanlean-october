@@ -31,18 +31,7 @@ def brownianPathStrictlyBelow (x : ℝ) : Set BrownianPath :=
 def brownianUpperConditionedPositivePath (x : ℝ) (q : BrownianPath) : BrownianPath :=
   ⟨fun t => x - q t, continuous_const.sub q.continuous⟩
 
-theorem measurable_brownianUpperConditionedPositivePath (x : ℝ) :
-    Measurable (brownianUpperConditionedPositivePath x) := by
-  apply ContinuousMap.measurable_iff_eval.mpr
-  intro t
-  exact measurable_const.sub (ContinuousMap.measurable_eval t)
 
-private theorem conditionedH_pos_of_pos {ν x : ℝ} (hν : 0 < ν) (hx : 0 < x) :
-    0 < conditionedH ν x := by
-  rw [conditionedH, ite_eq_right hν.ne']
-  apply sub_pos.mpr
-  apply Real.exp_lt_one_iff.mpr
-  nlinarith
 
 /-- For the actual Brownian reference law, strict avoidance of `c` by the positive path started
 at `x` has mass `a_c(x)`, and after shifting down by `c` its entire future path law is the same
@@ -59,11 +48,20 @@ theorem brownianBelowConditionedLaw_avoidance_shift_integral
       ENNReal.ofReal (lastExitAvoidanceFactor ν c x) *
         ∫⁻ q, F (brownianUpperConditionedPositivePath (x - c) q) ∂
           brownianBelowConditionedLaw B ν (x - c) := by
+  have conditionedH_pos_of_pos {x : ℝ} (hx : 0 < x) : 0 < conditionedH ν x := by
+    rw [conditionedH, ite_eq_right hν.ne']
+    apply sub_pos.mpr
+    apply Real.exp_lt_one_iff.mpr
+    nlinarith
+  have measurable_brownianUpperConditionedPositivePath (x : ℝ) : Measurable (brownianUpperConditionedPositivePath x) := by
+    apply ContinuousMap.measurable_iff_eval.mpr
+    intro t
+    exact measurable_const.sub (ContinuousMap.measurable_eval t)
   have _ := hB
-  let hx : ℝ := conditionedH ν x
-  let hxc : ℝ := conditionedH ν (x - c)
-  have hxpos : 0 < hx := conditionedH_pos_of_pos hν (lt_trans hc hcx)
-  have hxcpos : 0 < hxc := conditionedH_pos_of_pos hν (sub_pos.mpr hcx)
+  let hx := conditionedH ν x
+  let hxc := conditionedH ν (x - c)
+  have hxpos : 0 < hx := conditionedH_pos_of_pos (lt_trans hc hcx)
+  have hxcpos : 0 < hxc := conditionedH_pos_of_pos (sub_pos.mpr hcx)
   have hset : MeasurableSet (brownianPathStrictlyBelow (x - c)) :=
     measurableSet_brownianPath_below (x - c)
   have hD : Measurable (driftedBrownianPath (-ν)) :=

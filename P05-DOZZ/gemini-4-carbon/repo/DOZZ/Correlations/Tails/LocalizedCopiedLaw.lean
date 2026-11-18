@@ -34,7 +34,7 @@ theorem localized_copied_singular_law
     (P.prod P).map (fun q => ENNReal.ofReal (Real.exp (γ*Xc q.2 z 0-γ^2*Real.log ‖z‖)) *
       ∫⁻ x, ENNReal.ofReal (χ x*copiedMultiplier z γ (Xc q.1 z 0) (Xc q.2 z 0) F x) *
         (ENNReal.ofReal ‖x‖)^(-β) ∂N q.1) := by
-  let : IsProbabilityMeasure P := hX.1
+  let := hX.1
   obtain ⟨g,hgc,hgeq,hg0,hgs⟩ := localized_translated_test
     K Family radius supBound derivBound lowerBound hFamily z hzk F hF γ χ hχc hχ0 hχs
   let C := ENNReal.ofReal (Real.exp (-γ^2*Real.log ‖z‖))
@@ -45,8 +45,7 @@ theorem localized_copied_singular_law
   let B := fun q : Ω × Ω => ENNReal.ofReal (Real.exp (γ*Xc q.2 z 0-γ^2*Real.log ‖z‖)) *
     ∫⁻ x, ENNReal.ofReal (χ x*copiedMultiplier z γ (Xc q.1 z 0) (Xc q.2 z 0) F x) *
       (ENNReal.ofReal ‖x‖)^(-β) ∂N q.1
-  have hFn := (hFamily.2.2.2.2 z hzk F hF).2.1
-  have hFm := (hFamily.2.2.2.2 z hzk F hF).1
+  have := (hFamily.2.2.2.2 z hzk F hF).1
   have hsrc (y : ℂ) : g (y-z)*Real.exp ((γ^2+4)*Real.log (normPlus y)) = χ (y-z)*F y := by
     rw [hgeq, add_sub_cancel, mul_assoc, ← Real.exp_add]
     simp only [neg_mul, neg_add_cancel, Real.exp_zero, mul_one]
@@ -57,7 +56,7 @@ theorem localized_copied_singular_law
     · simp only [hgeq, hx, zero_mul, mul_zero]
     · have hn : normPlus (z+x) = ‖z+x‖ := by
         have hx' := hχs (subset_tsupport (χ : ℂ → ℝ) (by simpa only [Function.mem_support] using hx))
-        have hxnorm : ‖x‖ ≤ 1 := (show ‖x‖ < min radius 1 from by
+        have := (show ‖x‖ < min radius 1 from by
           simpa only [Metric.mem_ball,dist_zero_right] using hx').le.trans (min_le_right _ _)
         have hh := norm_sub_norm_le z (z+x)
         simp only [sub_add_cancel_left,norm_neg] at hh
@@ -79,7 +78,6 @@ theorem localized_copied_singular_law
   have hpin : Measurable (fun ω => Xc ω z 0) :=
     (hc.1 0).comp (measurable_id.prodMk measurable_const)
   let θ : Ω × Ω → ℝ × ℝ := fun q => (Xc q.1 z 0,Xc q.2 z 0)
-  have hθ : Measurable θ := (hpin.comp measurable_fst).prodMk (hpin.comp measurable_snd)
   have hY := translated_field_isEquatorGFF P X Xc hX hc z
   have hfst := measurePreserving_fst (μ := P) (ν := P)
   have hY' := isEquatorGFF_measurePreserving P (P.prod P) Prod.fst hfst _ hY
@@ -92,7 +90,7 @@ theorem localized_copied_singular_law
   have hBm : AEMeasurable B (P.prod P) :=
     ((((hpin.comp measurable_snd).const_mul γ).sub_const _).exp.ennreal_ofReal).aemeasurable.mul
       (gmc_parameter_lintegral_aemeasurable (P.prod P) _ hY' γ hγ hγ2
-        (N ∘ Prod.fst) hN' θ hθ.aemeasurable _ hk)
+        (N ∘ Prod.fst) hN' θ ((hpin.comp measurable_fst).prodMk (hpin.comp measurable_snd)).aemeasurable _ hk)
   have hl := copied_compact_singular_law P X Xc hX hc hm z hz γ hγ hγ2
     M hM N hN g hgc hg0 hgs β hβ
   have hleft (ω : Ω) :

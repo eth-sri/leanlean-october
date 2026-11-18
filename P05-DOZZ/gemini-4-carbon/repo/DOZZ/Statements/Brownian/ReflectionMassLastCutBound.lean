@@ -36,6 +36,6 @@ theorem reflectionMass_lastCut_bound
           (∫⁻ ω, ENNReal.rpow (twoSidedReflectionCutMass γ c (B ν) Z ω) p ∂P).toReal ∧
         (∫⁻ ω, ENNReal.rpow (twoSidedReflectionMass γ (B ν) Z ω) p ∂P).toReal -
           (∫⁻ ω, ENNReal.rpow (twoSidedReflectionCutMass γ c (B ν) Z ω) p ∂P).toReal ≤
-            C * Real.exp (-γ * c) := by exact DOZZ.Proofs.reflectionMass_lastCut_bound P γ hγ hγ2 Kν Kp hKν hKp B hB Z hZ hInd hp
+            C * Real.exp (-γ * c) := DOZZ.Proofs.reflectionMass_lastCut_bound P γ hγ hγ2 Kν Kp hKν hKp B hB Z hZ hInd hp
 
 end DOZZ

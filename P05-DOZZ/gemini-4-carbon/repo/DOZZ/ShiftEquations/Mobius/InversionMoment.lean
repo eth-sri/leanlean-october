@@ -49,9 +49,7 @@ theorem gmc_atomless_of_isGMCOf {Ω : Type*} [MeasurableSpace Ω] (P : Measure �
     unfold gmcReferenceMeasure
     exact withDensity_absolutelyContinuous _ _ (measure_singleton x)
   rw [href] at hint
-  have hmeas : AEMeasurable (fun ω => M ω {x}) P :=
-    gmc_set_mass_aemeasurable_of_isGMCOf P X hX γ hγ hγ2 M hM {x} (measurableSet_singleton x)
-  exact (lintegral_eq_zero_iff' hmeas).1 hint
+  exact (lintegral_eq_zero_iff' (gmc_set_mass_aemeasurable_of_isGMCOf P X hX γ hγ hγ2 M hM {x} (measurableSet_singleton x))).1 hint
 
 end DOZZ.Proofs
 

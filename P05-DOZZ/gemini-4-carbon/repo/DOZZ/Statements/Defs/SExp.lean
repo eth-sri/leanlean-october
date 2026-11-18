@@ -10,7 +10,6 @@ public import DOZZ.Statements.Defs.ReflectionDOZZ
 
 @[expose] public section
 
-open Complex MeasureTheory Set Filter Topology
 
 namespace DOZZ
 

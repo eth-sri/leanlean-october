@@ -11,16 +11,6 @@ open MeasureTheory Set Filter
 open scoped ENNReal
 namespace DOZZ.Proofs
 
-/-- The literal retained Coulomb mass equals its open-exterior kernel integral. -/
-theorem dual_outerMass_eq_open_kernel (γ α₁ α₂ α₃ ξ : ℝ) (hγ : γ ≠ 0) (z : ℂ)
-    (μ : Measure ℂ) (h0 : μ {0} = 0) (h1 : μ {1} = 0)
-    (hz : ‖z‖ < ‖z‖ ^ (1 - ξ))
-    (hs : μ (Metric.sphere (0 : ℂ) (‖z‖ ^ (1 - ξ))) = 0) :
-    dualOuterMass γ α₁ α₂ α₃ μ z ξ =
-      ∫⁻ x in {x : ℂ | ‖z‖ ^ (1 - ξ) < ‖x‖},
-        ENNReal.ofReal (dualFusionKernel γ α₁ α₂ α₃ z x) ∂μ := by
-  rw [dual_outerMass_eq_kernel_integral γ α₁ α₂ α₃ ξ hγ z μ h0 h1 hz]
-  exact reflected_exterior_integral_open μ _ hs _
 
 /-- The retained mass `dualOuterMass` is exactly the full open region required by comparison. -/
 theorem dual_outerMass_eq_comparison_region (γ α₁ α₂ α₃ ξ : ℝ) (hγ : γ ≠ 0) (z : ℂ)
@@ -30,7 +20,12 @@ theorem dual_outerMass_eq_comparison_region (γ α₁ α₂ α₃ ξ : ℝ) (hγ
     dualOuterMass γ α₁ α₂ α₃ μ z ξ =
       ∫⁻ x in {x : ℂ | ‖z‖ ^ (1 - ξ) < ‖x‖} ∩ ({0, 1} : Set ℂ)ᶜ,
         ENNReal.ofReal (dualFusionKernel γ α₁ α₂ α₃ z x) ∂μ := by
-  rw [dual_outerMass_eq_open_kernel γ α₁ α₂ α₃ ξ hγ z μ h0 h1 hz hs]
+  have dual_outerMass_eq_open_kernel : dualOuterMass γ α₁ α₂ α₃ μ z ξ =
+        ∫⁻ x in {x : ℂ | ‖z‖ ^ (1 - ξ) < ‖x‖},
+          ENNReal.ofReal (dualFusionKernel γ α₁ α₂ α₃ z x) ∂μ := by
+    rw [dual_outerMass_eq_kernel_integral γ α₁ α₂ α₃ ξ hγ z μ h0 h1 hz]
+    exact reflected_exterior_integral_open μ _ hs _
+  rw [dual_outerMass_eq_open_kernel]
   exact reflected_open_exterior_remove_roots μ _ ((norm_nonneg z).trans_lt hz) h1 _
 
 /-- The supplied ordinary GMC has precisely the open retained mass almost surely. -/

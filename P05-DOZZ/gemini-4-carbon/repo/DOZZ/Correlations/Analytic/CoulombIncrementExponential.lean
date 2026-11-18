@@ -51,7 +51,7 @@ theorem coulomb_power_increment_exponential
     (ENNReal.ofReal_pos.mpr (Real.rpow_pos_of_pos (by norm_num) _)).ne'
     (ENNReal.ofReal_pos.mpr (Real.rpow_pos_of_pos (by linarith) _)).ne'
   have hc' : c ≠ ⊤ := ENNReal.mul_ne_top ENNReal.ofReal_ne_top ENNReal.ofReal_ne_top
-  have hhiq : hi ≤ hi * q := by nlinarith
+  have : hi ≤ hi * q := by nlinarith
   obtain ⟨H₁, hH₁, henv₁⟩ := coulomb_envelope_uniform_moment
     P X hX γ hγ hγ2 M hM z hz δ R Zs A g hδ hδ8 hR hZs hg hsep hzn hzR
     (((R + 1 : ℝ)) : ℂ) c hc hc' lo hi 1 hlo hhi le_rfl
@@ -81,7 +81,7 @@ theorem coulomb_power_increment_exponential
     ((c * M ω (Metric.ball (((R + 1 : ℝ)) : ℂ) (1 / 8))).toReal ^ lo +
       (coulombMass γ (M ω) α z αinf).toReal ^ hi)
   have hα : ∀ i, |α i| ≤ A := fun i => hβA i.castSucc
-  have hinf : |αinf| ≤ A := hβA (Fin.last N)
+  have hinf := hβA (Fin.last N)
   have haq : ∀ i, α i < Q γ := fun i => (hβa i.castSucc).trans_lt (by linarith)
   have hiq : αinf < Q γ := (hβa (Fin.last N)).trans_lt (by linarith)
   have hroots : ∀ i, hi * q + g ≤ 2 / γ * (Q γ - α i) := fun i =>
@@ -94,17 +94,13 @@ theorem coulomb_power_increment_exponential
       (fun i => by simpa only [mul_one] using (show hi + g ≤ 2 / γ * (Q γ - α i) from (by linarith [hroots i])))
       (by simpa only [mul_one] using (show hi + g ≤ 2 / γ * (Q γ - αinf) from (by linarith [hinfty])))
     simpa only [ENNReal.rpow_one] using he
-  have henvQ : (∫⁻ ω, H ω ^ q ∂P) ≤ Hq :=
-    henvq α αinf hα hinf haq hiq hbulk hroots hinfty
-  have hO : Metric.ball (((R + 1 : ℝ)) : ℂ) (1 / 8) ⊆ O₀ :=
-    exterior_ball_subset_retainedRegion z R hR hzR (n : ℝ) (Nat.cast_nonneg _) hgeo.2.2.2
   have hsub : O₀ ⊆ O₁ := retainedRegion_mono z
     (by exact_mod_cast Nat.le_succ n)
   let u := Real.exp (-((γ * gap * m) / (2 * m)) * n)
   have hest := coulomb_nested_increment_threshold
     P X hX γ hγ hγ2 M hM α z hz αinf A hα hinf haq hiq O₀ O₁
     (retainedRegion_isOpen z _).measurableSet
-    (retainedRegion_isOpen z _).measurableSet hsub R hR hzR hO lo hi p
+    (retainedRegion_isOpen z _).measurableSet hsub R hR hzR (exterior_ball_subset_retainedRegion z R hR hzR (n : ℝ) (Nat.cast_nonneg _) hgeo.2.2.2) lo hi p
     hlo hhi hβlo hβhi u m q (Real.exp_pos _) hm hq
   have hsmall : (∫⁻ ω, (ENNReal.ofReal
       (∫⁻ x in O₁ \ O₀, coulombWeight γ α z αinf x ∂M ω).toReal) ^ m ∂P) ≤
@@ -127,7 +123,7 @@ theorem coulomb_power_increment_exponential
           (mul_le_mul_of_nonneg_left hβnorm (by norm_num : (0 : ℝ) ≤ 2))
         exact (mul_le_mul' (mul_le_mul' le_rfl hc₁) henv1).trans_eq (mul_assoc _ _ _)
       · apply mul_le_mul'
-        · exact ENNReal.rpow_le_rpow (mul_le_mul' le_rfl henvQ) (by positivity)
+        · exact ENNReal.rpow_le_rpow (mul_le_mul' le_rfl (henvq α αinf hα hinf haq hiq hbulk hroots hinfty)) (by positivity)
         · apply ENNReal.rpow_le_rpow _ (by positivity)
           exact ENNReal.div_le_div_right hsmall _
     _ ≤ _ := hdec (n : ℝ) (Nat.cast_nonneg _)

@@ -105,8 +105,8 @@ theorem dual_crossing_seed_one_of_fusion {Ω : Type u} [MeasurableSpace Ω]
           dualCrossingMultiplier γ α' α ε *
             reflectionR P γ μ ε Bε Z *
               structureConstant P M γ μ α (2 * Q γ - ε - 2 / γ) α' := by
-  have hQ : Q γ = 2 / γ + γ / 2 := rfl
-  have hγh : γ / 2 < 2 / γ := by
+  have : Q γ = 2 / γ + γ / 2 := rfl
+  have : γ / 2 < 2 / γ := by
     rw [div_lt_div_iff₀ (by norm_num) hγ]
     nlinarith
   -- the witnesses
@@ -127,7 +127,7 @@ theorem dual_crossing_seed_one_of_fusion {Ω : Type u} [MeasurableSpace Ω]
   have htwo := dual_first_coefficient_of_classification P X M γ μ α ε α' hγ hγ₂ hμ hα hε hα' hs
     hX hM
   -- permutation symmetry of the last factor
-  have h42 : 4 / γ = 2 * (2 / γ) := by ring
+  have : 4 / γ = 2 * (2 / γ) := by ring
   have hES : ExtendedSeiberg3 γ (2 * Q γ - ε - 2 / γ) α α' :=
     extendedSeiberg3_of_lt hγ (by linarith) hα hα' (by linarith) (by linarith) (by linarith)
       (by linarith)

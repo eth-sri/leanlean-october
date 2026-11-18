@@ -11,9 +11,6 @@ public import DOZZ.GMC.AdmissibleCoarseScale
 
 @[expose] public section
 
-open MeasureTheory ProbabilityTheory
-open Filter
-open scoped ENNReal NNReal Topology
 
 namespace DOZZ.Proofs
 

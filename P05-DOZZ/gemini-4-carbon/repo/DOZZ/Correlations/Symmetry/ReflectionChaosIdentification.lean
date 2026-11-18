@@ -14,11 +14,10 @@ theorem symmetry_integral_shift_cancel (μ : Measure ℂ) [IsFiniteMeasure μ]
     (g w : BoundedContinuousFunction ℂ ℝ) (c : ℝ) :
     (∫ x, (g x + c) * w x ∂μ) - (∫ x, c * w x ∂μ) = ∫ x, g x * w x ∂μ := by
   have hi : Integrable (fun x => g x * w x) μ := (g * w).integrable μ
-  have hc : Integrable (fun x => c * w x) μ := (w.integrable μ).const_mul c
   have he : (fun x => (g x + c) * w x) = fun x => g x * w x + c * w x := by
     funext x
     ring
-  rw [he, integral_add hi hc, add_sub_cancel_right]
+  rw [he, integral_add hi ((w.integrable μ).const_mul c), add_sub_cancel_right]
 
 /-- Reflection and correlated re-pinning identify the ordinary limiting chaos on the same
 probability space, rather than just identifying its marginal law. -/
@@ -28,14 +27,14 @@ theorem isGMCOf_symmetryRepinnedChaos
     (γ : ℝ) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) :
     IsGMCOf P (symmetryRepinnedField X (fun ω => Xc ω 1 0)) γ
       (symmetryRepinnedChaos γ M (fun ω => Xc ω 1 0)) := by
-  let : IsProbabilityMeasure P := hX.1
+  let := hX.1
   refine ⟨symmetryRepinnedChaos_finite γ M _ hM.1,
     (fun ω x r => Xc ω (1 - x) r - Xc ω 1 0),
     isCircleAverage_symmetryRepinned P X hX Xc hXc, ?_⟩
   intro f
   let φ : ContinuousMap ℂ ℂ := ⟨fun x => 1 - x, continuous_const.sub continuous_id⟩
   let g := f.compContinuous φ
-  let C : BoundedContinuousFunction ℂ ℝ := BoundedContinuousFunction.const ℂ ‖f‖
+  let C := BoundedContinuousFunction.const ℂ ‖f‖
   let w : ℝ → BoundedContinuousFunction ℂ ℝ := fun r =>
     (symmetryReflectionCutoffWeight γ r).compContinuous φ
   let v := (symmetryReflectionLimitWeight γ).compContinuous φ
@@ -73,12 +72,11 @@ theorem isGMCOf_symmetryRepinnedChaos
       exact mul_nonneg (norm_nonneg _) (hv x))
     (BoundedContinuousFunction.tendsto_iff_tendstoUniformly.mp
       (tendsto_const_nhds.mul hwconv))
-  have hsub := tendstoInMeasure_sub_same_space _ _ _ _ hA hB
   have hsigned : TendstoInMeasure P
       (fun r ω => ∫ x, f (1 - x) * symmetryReflectionCutoffWeight γ r (1 - x)
         ∂regularizedGMC P Xc γ r ω) atTop
       (fun ω => ∫ x, f (1 - x) * symmetryReflectionLimitWeight γ (1 - x) ∂M ω) := by
-    apply TendstoInMeasure.congr _ _ hsub
+    apply TendstoInMeasure.congr _ _ (tendstoInMeasure_sub_same_space _ _ _ _ hA hB)
     · intro r
       filter_upwards [regularizedGMC_finite_ae P X hX Xc hXc γ r] with ω hω
       let := hω
@@ -89,7 +87,6 @@ theorem isGMCOf_symmetryRepinnedChaos
   have hLmeas : Measurable (fun ω => Real.exp (-γ * Xc ω 1 0)) :=
     Real.measurable_exp.comp (((hXc.1 0).comp
       (measurable_id.prodMk measurable_const)).const_mul (-γ))
-  have hscaled := tendstoInMeasure_mul_same_space _ _ _ hLmeas hsigned
   simpa only [regularizedGMC_symmetryRepinned_integral P X hX Xc hXc,
-    symmetryRepinnedChaos_integral] using hscaled
+    symmetryRepinnedChaos_integral] using tendstoInMeasure_mul_same_space _ _ _ hLmeas hsigned
 end DOZZ.Proofs

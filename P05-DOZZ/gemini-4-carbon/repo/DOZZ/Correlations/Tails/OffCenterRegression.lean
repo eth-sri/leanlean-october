@@ -12,15 +12,12 @@ motion is independent of their entire joint block. -/
 
 @[expose] public section
 
-open MeasureTheory ProbabilityTheory Set
-open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
 
 /-- The pin variance is strictly positive throughout the compact-center geometry of the
 one-insertion tail estimate. -/
 theorem offCenter_pin_variance_pos (z : ℂ) (hz : 2 ≤ ‖z‖) :
-    0 < 2 * Real.log ‖z‖ := by
-  exact mul_pos (by norm_num) (Real.log_pos (by linarith))
+    0 < 2 * Real.log ‖z‖ := mul_pos (by norm_num) (Real.log_pos (by linarith))
 
 end DOZZ.Proofs

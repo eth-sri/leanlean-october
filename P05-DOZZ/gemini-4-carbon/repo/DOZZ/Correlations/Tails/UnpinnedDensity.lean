@@ -16,13 +16,6 @@ open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
 
-/-- The translated point in a local circle chart is outside the unit equator. -/
-theorem local_circle_normPlus (z : ℂ) (hz : 2 ≤ ‖z‖)
-    (p : localCircle) : normPlus (z + p.val.1) = ‖z + p.val.1‖ := by
-  unfold normPlus
-  apply max_eq_right
-  have h := localCircle_exterior z hz p
-  linarith [Real.exp_pos (-p.val.2)]
 
 /-- Exact density ratio between the unpinned local chaos and the translated equator chaos. -/
 theorem unpinned_density_ratio {Ω : Type*} (Xc : Ω → ℂ → ℝ → ℝ)
@@ -33,9 +26,14 @@ theorem unpinned_density_ratio {Ω : Type*} (Xc : Ω → ℂ → ℝ → ℝ)
         (Real.exp (γ * Xc ω (z + p.val.1) p.val.2 -
           γ ^ 2 / 2 * (p.val.2 + 2 * Real.log ‖z + p.val.1‖)) *
           normPlus (z + p.val.1) ^ (-4 : ℝ)) := by
+  have local_circle_normPlus : normPlus (z + p.val.1) = ‖z + p.val.1‖ := by
+    unfold normPlus
+    apply max_eq_right
+    have := localCircle_exterior z hz p
+    linarith [Real.exp_pos (-p.val.2)]
   have hn : 0 < normPlus (z + p.val.1) := by unfold normPlus; positivity
   rw [Real.rpow_def_of_pos hn, ← Real.exp_add, ← Real.exp_add, ← Real.exp_add,
-    local_circle_normPlus z hz p]
+    local_circle_normPlus]
   congr 1
   ring
 
@@ -47,7 +45,7 @@ theorem local_circle_second_moments
     (∫ ω, Xc ω (z+p.val.1) p.val.2 ^ 2 ∂P) =
         p.val.2 + 2 * Real.log ‖z+p.val.1‖ ∧
       (∫ ω, (Xc ω (z+p.val.1) p.val.2 - Xc ω z 0) ^ 2 ∂P) = p.val.2 := by
-  let : IsProbabilityMeasure P := hX.1
+  let := hX.1
   obtain ⟨hG, hm⟩ := circleAverage_isGaussianProcess P X Xc hX hc
   have hmU : (∫ ω, Xc ω (z+p.val.1) p.val.2 - Xc ω z 0 ∂P) = 0 := by
     rw [integral_sub ((hc.2.1 _ _).integrable (by norm_num))

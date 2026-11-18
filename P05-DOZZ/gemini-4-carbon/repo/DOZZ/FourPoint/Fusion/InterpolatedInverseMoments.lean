@@ -42,7 +42,7 @@ theorem fusionInterpolatedMass_inverse_expectation_seq {Ω : Type*} [MeasurableS
     (s : ℝ) (hs : s < 0) :
     Tendsto (fun n => ∫⁻ ω, fusionInterpolatedMass γ α₁ α₂ α₃ t y (z n) (M ω) ^ s ∂P)
       atTop (nhds (∫⁻ ω, fusionMovingMass γ α₁ α₂ α₃ y 0 (M ω) ^ s ∂P)) := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _ := hX.1
   obtain ⟨p, hp, hp1, hpR⟩ := fusion_small_moment_order γ α₁ hγ hα₁
   obtain ⟨C, hC, hb⟩ := fusionInterpolatedMass_inverse_uniform P X hX γ hγ hγ2 M hM α₁ α₂ α₃ (2 * s) (by linarith)
   have hn : ∀ᶠ n in atTop, ‖z n‖ ≤ 1 / 16 ∧ ‖y * z n‖ ≤ 1 / 32 := by
@@ -61,7 +61,6 @@ theorem fusionInterpolatedMass_inverse_expectation_seq {Ω : Type*} [MeasurableS
   have ham : ∀ n, AEMeasurable (a n) P := fun n => fusionMovingMass_aemeasurable P X hX γ hγ hγ2 M hM α₁ α₂ α₃ y _
   have hbm : ∀ n, AEMeasurable (b n) P := fun n => fusionRootOnlyMass_aemeasurable P X hX γ hγ hγ2 M hM α₁ α₂ α₃ y _
   have hfm : ∀ n, AEMeasurable (f n) P := fun n => (ham n).const_mul _ |>.add ((hbm n).const_mul _)
-  have hgm : AEMeasurable g P := fusionMovingMass_aemeasurable P X hX γ hγ hγ2 M hM α₁ α₂ α₃ y 0
   have haf : ∀ n, ∀ᵐ ω ∂P, a n ω ≠ ⊤ := fun n => fusionMovingMass_finite_near P X hX γ hγ hγ2 M hM α₁ α₂ α₃ p
     hα hα₁ hα₂ hα₃ hp hp1 hpR y _ hy (hN _ (Nat.le_add_left N n)).1 (hN _ (Nat.le_add_left N n)).2
   have hbf : ∀ n, ∀ᵐ ω ∂P, b n ω ≠ ⊤ := fun n => fusionRootOnlyMass_finite_near P X hX γ hγ hγ2 M hM α₁ α₂ α₃ p
@@ -72,24 +71,21 @@ theorem fusionInterpolatedMass_inverse_expectation_seq {Ω : Type*} [MeasurableS
     simpa only [b, g, fusionRootOnlyMass, fusionRootOnlyKernel, fusionMovingMass, fusionMovingKernel, mul_zero] using
       fusionRootOnlyMass_tendstoInMeasure_seq P X hX γ hγ hγ2 M hM α₁ α₂ α₃ p
         hα hα₁ hα₂ hα₃ hp hp1 hpR y hy (fun n => z (n + N)) (hz.comp (tendsto_add_atTop_nat N))
-  have hc := fusion_convexMass_tendstoInMeasure P a b g ham hbm haf hbf hac hbc t ht
   have hgfin : ∀ᵐ ω ∂P, g ω ≠ ⊤ := by
     simpa only [g, fusionMovingMass, fusionMovingKernel, mul_zero] using
       (fusion_limitingRootedKernel_finite_ae P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hα₁ hα₂ hα₃).mono fun _ h => h.ne
   have hfb : ∀ n, ∫⁻ ω, f n ω ^ (2 * s) ∂P ≤ C := fun n => hb t ht y _ (by linarith [(hN _ (Nat.le_add_left N n)).1])
   have hgb : ∫⁻ ω, g ω ^ (2 * s) ∂P ≤ C := by
-    have h := hb t ht y 0 (by simp)
     have he : fusionInterpolatedMass γ α₁ α₂ α₃ t y 0 = fusionMovingMass γ α₁ α₂ α₃ y 0 := by
       funext μ
       unfold fusionInterpolatedMass fusionRootOnlyMass fusionRootOnlyKernel fusionMovingMass fusionMovingKernel
       simp only [mul_zero]
       rw [← add_mul, ← ENNReal.ofReal_add ht.1 (sub_nonneg.mpr ht.2)]
       simp
-    simpa only [he] using h
+    simpa only [he] using hb t ht y 0 (by simp)
   have hfp : ∀ n, ∀ᵐ ω ∂P, f n ω ^ s ≠ ⊤ := fun n =>
     momentConv_ae_rpow_ne_top_of_neg P (f n) (hfm n) hs (by linarith) hC.ne (hfb n)
-  have hgp := momentConv_ae_rpow_ne_top_of_neg P g hgm hs (by linarith) hC.ne hgb
-  have hr : 1 < (2 * s) / s := by rw [mul_div_cancel_right₀ _ hs.ne]; norm_num
+  have hr : 1 < (2 * s) / s := by grind
   exact (tendsto_add_atTop_iff_nat N).mp
-    (momentConv_tendsto_of_rpow_ne_top P f g hfm hgfin hc hs.ne hr hC.ne hfb hfp hgp)
+    (momentConv_tendsto_of_rpow_ne_top P f g hfm hgfin (fusion_convexMass_tendstoInMeasure P a b g ham hbm haf hbf hac hbc t ht) hs.ne hr hC.ne hfb hfp (momentConv_ae_rpow_ne_top_of_neg P g (fusionMovingMass_aemeasurable P X hX γ hγ hγ2 M hM α₁ α₂ α₃ y 0) hs (by linarith) hC.ne hgb))
 end DOZZ.Proofs

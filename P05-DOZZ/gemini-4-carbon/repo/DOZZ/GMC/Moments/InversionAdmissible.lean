@@ -44,11 +44,7 @@ noncomputable def complexInvOpenPartialHomeomorph : OpenPartialHomeomorph ℂ �
   open_source := by exact isOpen_compl_singleton
   open_target := by exact isOpen_compl_singleton
 
-@[simp] theorem complexInvOpenPartialHomeomorph_source :
-    complexInvOpenPartialHomeomorph.source = inversionChart := rfl
 
-@[simp] theorem complexInvOpenPartialHomeomorph_target :
-    complexInvOpenPartialHomeomorph.target = inversionChart := rfl
 
 /-- Dividing the distance scale by a positive factor changes its clipped logarithm by at most
 the absolute logarithm of that factor. -/
@@ -143,24 +139,6 @@ theorem complexInv_distance_of_ne_zero {x y : ℂ} (hx : x ≠ 0) (hy : y ≠ 0)
   have h : x⁻¹ - y⁻¹ = (y - x) / (x * y) := by field_simp [hx, hy]
   rw [h, norm_div, norm_mul, norm_sub_rev]
 
-private theorem exists_abs_log_norm_bound {K : Set ℂ} (hK : IsCompact K)
-    (hKsub : K ⊆ inversionChart) :
-    ∃ B : ℝ, 0 ≤ B ∧ ∀ x ∈ K, |Real.log ‖x‖| ≤ B := by
-  by_cases hne : K.Nonempty
-  · let f : ℂ → ℝ := fun x => |Real.log ‖x‖|
-    have hf : ContinuousOn f K := by
-      dsimp [f]
-      apply ContinuousOn.abs
-      apply Real.continuousOn_log.comp continuous_norm.continuousOn
-      intro x hx
-      exact norm_ne_zero_iff.mpr (hKsub hx)
-    obtain ⟨x, hx, hmax⟩ := hK.exists_isMaxOn hne hf
-    refine ⟨f x, abs_nonneg _, ?_⟩
-    intro y hy
-    exact hmax hy
-  · refine ⟨0, le_rfl, ?_⟩
-    intro x hx
-    exact (hne ⟨x, hx⟩).elim
 
 /-- Pulling an admissible logarithmic cutoff family through inversion preserves admissibility on
 the punctured chart. The regular part changes by the two logarithms of the chart coordinates. -/
@@ -170,6 +148,22 @@ theorem isAdmissibleLogRegularization_complexInv
     (hY : IsAdmissibleLogRegularization P inversionChart dens ε₀ Y) :
     IsAdmissibleLogRegularization P inversionChart dens ε₀
       (fun ω ε x => Y ω ε x⁻¹) := by
+  have exists_abs_log_norm_bound {K : Set ℂ} (hK : IsCompact K) (hKsub : K ⊆ inversionChart) : ∃ B : ℝ, 0 ≤ B ∧ ∀ x ∈ K, |Real.log ‖x‖| ≤ B := by
+    by_cases hne : K.Nonempty
+    · let f : ℂ → ℝ := fun x => |Real.log ‖x‖|
+      have hf : ContinuousOn f K := by
+        dsimp [f]
+        apply ContinuousOn.abs
+        apply Real.continuousOn_log.comp continuous_norm.continuousOn
+        intro x hx
+        exact norm_ne_zero_iff.mpr (hKsub hx)
+      obtain ⟨x, hx, hmax⟩ := hK.exists_isMaxOn hne hf
+      refine ⟨f x, abs_nonneg _, ?_⟩
+      intro y hy
+      exact hmax hy
+    · refine ⟨0, le_rfl, ?_⟩
+      intro x hx
+      exact (hne ⟨x, hx⟩).elim
   classical
   let U := inversionChart
   let Z : Ω → ℝ → ℂ → ℝ := fun ω ε x => Y ω ε x⁻¹
@@ -180,9 +174,8 @@ theorem isAdmissibleLogRegularization_complexInv
       exact measurable_fst.prodMk (measurable_snd.inv))
   · intro n q hq
     let q' : Fin n → ℝ × ℂ := fun i => ((q i).1, ((q i).2)⁻¹)
-    have hq' : ∀ i, 0 < (q' i).1 ∧ (q' i).1 ≤ ε₀ := by simpa [q'] using hq
-    have h := hY.gaussian n q' hq'
-    simpa [Z, q'] using h
+    have hq' : ∀ i, 0 < (q' i).1 ∧ (q' i).1 ≤ ε₀ := by assumption
+    simpa [Z, q'] using hY.gaussian n q' hq'
   · intro K hK hKU
     obtain ⟨B, hB, hBbound⟩ := exists_abs_log_norm_bound hK hKU
     let K' := (fun x : ℂ => x⁻¹) '' K
@@ -195,11 +188,9 @@ theorem isAdmissibleLogRegularization_complexInv
     obtain ⟨C, hC, hCov⟩ := hY.covarianceBound K' hK' hK'sub
     refine ⟨C + 4 * B, by positivity, ?_⟩
     intro ε δ hε hε₀ hδ hδ₀ x hx y hy
-    have hx0 : x ≠ 0 := hKU hx
-    have hy0 : y ≠ 0 := hKU hy
-    have hnormx : ‖x‖ ≠ 0 := norm_ne_zero_iff.mpr hx0
-    have hnormy : ‖y‖ ≠ 0 := norm_ne_zero_iff.mpr hy0
-    have hc : 0 < ‖x‖ * ‖y‖ := mul_pos (norm_pos_iff.mpr hx0) (norm_pos_iff.mpr hy0)
+    have hx0 := hKU hx
+    have hy0 := hKU hy
+    have hc := mul_pos (norm_pos_iff.mpr hx0) (norm_pos_iff.mpr hy0)
     have hdist := complexInv_distance_of_ne_zero hx0 hy0
     have hsrc := hCov ε δ hε hε₀ hδ hδ₀ (x⁻¹) ⟨x, hx, rfl⟩ (y⁻¹) ⟨y, hy, rfl⟩
     let t := max ε δ
@@ -207,14 +198,10 @@ theorem isAdmissibleLogRegularization_complexInv
     have hlog := inversion_logmax_div_scale_bound (q := ‖x - y‖) (t := t)
       (c := ‖x‖ * ‖y‖) (norm_nonneg _) ht hc
     have hlogc : |Real.log (‖x‖ * ‖y‖)| ≤ 2 * B := by
-      rw [Real.log_mul hnormx hnormy]
-      have hxB := hBbound x hx
-      have hyB := hBbound y hy
-      calc
-        |Real.log ‖x‖ + Real.log ‖y‖| ≤
-            |Real.log ‖x‖| + |Real.log ‖y‖| := abs_add_le _ _
-        _ ≤ B + B := add_le_add hxB hyB
-        _ = 2 * B := by ring
+      rw [Real.log_mul (norm_ne_zero_iff.mpr hx0) (norm_ne_zero_iff.mpr hy0)]
+      refine (abs_add_le _ _).trans (?_)
+      refine (add_le_add (hBbound x hx) (hBbound y hy)).trans_eq (?_)
+      ring
     have hkernel : |Real.log (1 / max ‖x⁻¹ - y⁻¹‖ t) -
         Real.log (1 / max ‖x - y‖ t)| ≤ 4 * B := by
       rw [hdist, one_div, one_div, Real.log_inv, Real.log_inv]
@@ -237,18 +224,10 @@ theorem isAdmissibleLogRegularization_complexInv
     rw [show (fun ω => Z ω ε x) = (fun ω => Y ω ε x⁻¹) by rfl,
       show (fun ω => Z ω δ y) = (fun ω => Y ω δ y⁻¹) by rfl]
     rw [hdecomp]
-    calc
-      |(gaussianCovariance P (fun ω => Y ω ε x⁻¹) (fun ω => Y ω δ y⁻¹) -
-          Real.log (1 / max ‖x⁻¹ - y⁻¹‖ t)) +
-          (Real.log (1 / max ‖x⁻¹ - y⁻¹‖ t) - Real.log (1 / max ‖x - y‖ t))|
-          ≤ |gaussianCovariance P (fun ω => Y ω ε x⁻¹) (fun ω => Y ω δ y⁻¹) -
-              Real.log (1 / max ‖x⁻¹ - y⁻¹‖ t)| +
-            |Real.log (1 / max ‖x⁻¹ - y⁻¹‖ t) - Real.log (1 / max ‖x - y‖ t)| :=
-            abs_add_le _ _
-      _ ≤ C + 4 * B := add_le_add hsrc hkernel
+    exact (abs_add_le _ _).trans (add_le_add hsrc hkernel)
   · intro K hK hKU
     let K' := (fun x : ℂ => x⁻¹) '' K
-    have hK' : IsCompact K' := hK.image_of_continuousOn (continuousOn_inv₀.mono hKU)
+    have hK' := hK.image_of_continuousOn (continuousOn_inv₀.mono hKU)
     have hK'sub : K' ⊆ U := by
       rintro z ⟨x, hx, rfl⟩
       exact inv_ne_zero (hKU hx)
@@ -258,7 +237,7 @@ theorem isAdmissibleLogRegularization_complexInv
     exact hvar k hk x⁻¹ ⟨x, hx, rfl⟩
   · intro K hK hKU
     let K' := (fun x : ℂ => x⁻¹) '' K
-    have hK' : IsCompact K' := hK.image_of_continuousOn (continuousOn_inv₀.mono hKU)
+    have hK' := hK.image_of_continuousOn (continuousOn_inv₀.mono hKU)
     have hK'sub : K' ⊆ U := by
       rintro z ⟨x, hx, rfl⟩
       exact inv_ne_zero (hKU hx)
@@ -291,9 +270,7 @@ theorem isAdmissibleLogRegularization_complexInv
         (U ×ˢ U)
       have hassoc :
           (fun p : ℂ × ℂ => H p.1⁻¹ p.2⁻¹ + Real.log ‖p.1‖ + Real.log ‖p.2‖) =
-            (fun p => H p.1⁻¹ p.2⁻¹ + (Real.log ‖p.1‖ + Real.log ‖p.2‖)) := by
-        funext p
-        ring
+            (fun p => H p.1⁻¹ p.2⁻¹ + (Real.log ‖p.1‖ + Real.log ‖p.2‖)) := by ring
       rw [hassoc]
       exact hcomp.add (hlog₁.add hlog₂)
     · intro K hK hKU s hs η hη
@@ -315,26 +292,22 @@ theorem isAdmissibleLogRegularization_complexInv
         (div_pos hs (by positivity)) η hη
       refine ⟨δ, hδ, ?_⟩
       intro ε ε' hε hεlim hε' hε'lim x hx y hy hsep
-      have hx0 : x ≠ 0 := hKU hx
-      have hy0 : y ≠ 0 := hKU hy
+      have hx0 := hKU hx
+      have hy0 := hKU hy
       have hdist := complexInv_distance_of_ne_zero hx0 hy0
       have hsep' : s / M ^ 2 ≤ ‖x⁻¹ - y⁻¹‖ := by
         rw [hdist]
-        have hxy : s ≤ ‖x - y‖ := hsep
-        have hxM := hMbound x hx
-        have hyM := hMbound y hy
+        have hxy := hsep
         have hden : ‖x‖ * ‖y‖ ≤ M ^ 2 := by
           calc
-            ‖x‖ * ‖y‖ ≤ M * ‖y‖ := mul_le_mul_of_nonneg_right hxM (norm_nonneg y)
-            _ ≤ M * M := mul_le_mul_of_nonneg_left hyM hMpos.le
+            ‖x‖ * ‖y‖ ≤ M * ‖y‖ := mul_le_mul_of_nonneg_right (hMbound x hx) (norm_nonneg y)
+            _ ≤ M * M := mul_le_mul_of_nonneg_left (hMbound y hy) hMpos.le
             _ = M ^ 2 := by ring
         have hprod : 0 < ‖x‖ * ‖y‖ := by positivity
-        have h1 : s / M ^ 2 ≤ s / (‖x‖ * ‖y‖) :=
-          div_le_div_of_nonneg_left hs.le hprod hden
-        have h2 : s / (‖x‖ * ‖y‖) ≤ ‖x - y‖ / (‖x‖ * ‖y‖) :=
+        have h2 :=
           (div_le_div_iff₀ hprod hprod).2
             (mul_le_mul_of_nonneg_right hxy (le_of_lt hprod))
-        exact h1.trans h2
+        exact (div_le_div_of_nonneg_left hs.le hprod hden).trans h2
       have hsrc := hlim ε ε' hε hεlim hε' hε'lim
         (x⁻¹) ⟨x, hx, rfl⟩ (y⁻¹) ⟨y, hy, rfl⟩ hsep'
       have hlogEq : Real.log (1 / ‖x⁻¹ - y⁻¹‖) + H (x⁻¹) (y⁻¹) =
@@ -345,13 +318,10 @@ theorem isAdmissibleLogRegularization_complexInv
           subst y
           have hs0 : s ≤ 0 := by simpa using hsep
           exact (not_le_of_gt hs) hs0
-        have hdiffpos : 0 < ‖x - y‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hxy)
-        have hnormx : ‖x‖ ≠ 0 := norm_ne_zero_iff.mpr hx0
-        have hnormy : ‖y‖ ≠ 0 := norm_ne_zero_iff.mpr hy0
         rw [hdist, one_div, one_div, Real.log_inv, Real.log_inv]
-        rw [Real.log_div (ne_of_gt hdiffpos) (ne_of_gt
+        rw [Real.log_div (ne_of_gt (norm_pos_iff.mpr (sub_ne_zero.mpr hxy))) (ne_of_gt
           (mul_pos (norm_pos_iff.mpr hx0) (norm_pos_iff.mpr hy0))),
-          Real.log_mul hnormx hnormy]
+          Real.log_mul (norm_ne_zero_iff.mpr hx0) (norm_ne_zero_iff.mpr hy0)]
         ring
       rw [← hlogEq]
       exact hsrc

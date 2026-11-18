@@ -67,9 +67,8 @@ theorem structureConstant_DOZZ_quotient_removable_periodic
       rw [hbdef, hb'def]; push_cast; field_simp; ring
     rw [e]
     exact hγirr.div_natCast (by norm_num)
-  have hγk : ∀ n : ℤ, 4 / γ ^ 2 ≠ n := four_div_sq_ne_int_of_irrational hγirr
+  have hγk := four_div_sq_ne_int_of_irrational hγirr
   have hγk' : ∀ k : ℕ, 4 / γ ^ 2 ≠ (k : ℝ) := fun k hk => hγk k (by exact_mod_cast hk)
-  have hQη : 0 < Q γ - η := by linarith [hη.1, hη.2]
   -- the DOZZ formula and its divisor
   have hU₂ : U (α₂ : ℂ) ≠ 0 := IsUpsilon.ne_zero_of_re hU (by simp; linarith [hα₂.1])
     (by simpa using hα₂.2)
@@ -95,8 +94,8 @@ theorem structureConstant_DOZZ_quotient_removable_periodic
   have hA₁ := eventually_shiftCoeffA_ne_zero γ (α₂ : ℂ) (α₃ : ℂ)
     (χ := (γ : ℂ) / 2) (div_ne_zero hγ0 two_ne_zero)
     (lFun_ne_zero_of_forall_ne_int fun n hn => by
-      have hq : 0 < γ ^ 2 / 4 := by positivity
-      have hq1 : γ ^ 2 / 4 < 1 := by nlinarith
+      have : 0 < γ ^ 2 / 4 := by positivity
+      have : γ ^ 2 / 4 < 1 := by nlinarith
       have e : -((γ : ℂ) / 2) ^ 2 = ((-(γ ^ 2 / 4) : ℝ) : ℂ) := by push_cast; ring
       rw [e] at hn
       have hn' : -(γ ^ 2 / 4) = (n : ℝ) := by exact_mod_cast hn

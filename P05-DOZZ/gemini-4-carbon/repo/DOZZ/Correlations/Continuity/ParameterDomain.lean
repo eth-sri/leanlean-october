@@ -7,25 +7,17 @@ public import DOZZ.Statements.Correlations.ExtendedSeibergN
 public import DOZZ.GMC.SharpMoments.ExtendedSeibergCutoffUI
 public import DOZZ.GMC.Assembly.AdmissibleGMC
 @[expose] public section
+noncomputable section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
 
 /-- Clipping complementary real numbers to the unit interval preserves their sum. -/
 theorem continuityClip_complement (a : ℝ) :
-    max 0 (min 1 a) + max 0 (min 1 (1 - a)) = 1 := by
-  rcases le_total a 0 with h | h
-  · rw [max_eq_left (min_le_right _ _ |>.trans h),
-      min_eq_left (by linarith), max_eq_right zero_le_one, zero_add]
-  · rcases le_total a 1 with h1 | h1
-    · rw [min_eq_right h1, max_eq_right h,
-        min_eq_right (by linarith), max_eq_right (by linarith)]
-      ring
-    · rw [min_eq_left h1, max_eq_right zero_le_one,
-        max_eq_left (min_le_right _ _ |>.trans (by linarith)), add_zero]
+    max 0 (min 1 a) + max 0 (min 1 (1 - a)) = 1 := by grind
 
 /-- A compact chart partition, symmetric under complex inversion. -/
-noncomputable def continuityChartWeight (x : ℂ) : ℝ≥0 :=
+def continuityChartWeight (x : ℂ) : ℝ≥0 :=
   Real.toNNReal (max 0 (min 1 ((2 - ‖x‖) / (1 + ‖x‖))))
 
 theorem continuityChartWeight_continuous : Continuous continuityChartWeight := by
@@ -50,7 +42,7 @@ theorem continuityChartWeight_hasCompactSupport : HasCompactSupport continuityCh
   rw [Metric.mem_closedBall, dist_zero_right] at hx
   exact (not_le.mp hx).le
 
-noncomputable def continuityChartWeightBCF : BoundedContinuousFunction ℂ ℝ≥0 :=
+def continuityChartWeightBCF : BoundedContinuousFunction ℂ ℝ≥0 :=
   BoundedContinuousFunction.mkOfBound ⟨continuityChartWeight, continuityChartWeight_continuous⟩ 1
     (fun x y => by
       change dist (continuityChartWeight x) (continuityChartWeight y) ≤ 1
@@ -63,7 +55,6 @@ noncomputable def continuityChartWeightBCF : BoundedContinuousFunction ℂ ℝ�
 
 theorem continuityChartWeight_sum_one {x : ℂ} (hx : x ≠ 0) :
     continuityChartWeight x + continuityChartWeight x⁻¹ = 1 := by
-  have hn : 0 < ‖x‖ := norm_pos_iff.mpr hx
   have he : (2 - ‖x⁻¹‖) / (1 + ‖x⁻¹‖) = 1 - (2 - ‖x‖) / (1 + ‖x‖) := by
     rw [norm_inv]
     field_simp
@@ -76,7 +67,7 @@ theorem continuityChartWeight_sum_one {x : ℂ} (hx : x ≠ 0) :
 
 /-- A concrete partition is needed only for the two-chart cutoff estimate
 `DOZZ.equatorGFF_extendedSeiberg_cutoff_UI`. -/
-noncomputable def continuityChartPartition : GMCChartPartition where
+def continuityChartPartition : GMCChartPartition where
   finiteWeight := continuityChartWeightBCF
   infinityWeight := continuityChartWeightBCF
   finite_hasCompactSupport := continuityChartWeight_hasCompactSupport

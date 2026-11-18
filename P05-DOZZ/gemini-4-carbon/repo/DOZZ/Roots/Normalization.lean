@@ -19,7 +19,7 @@ theorem roots_unitVolume_normalization {Ω : Type*} [MeasurableSpace Ω]
       (structureConstant P M γ μ a b c : ℂ) =
         (unitVolumeStructureConstant P M γ a b c : ℂ) := by
   let s := sExp γ a b c
-  have hGamma : Complex.Gamma (s : ℂ) ≠ 0 := Complex.Gamma_ne_zero (fun n hn =>
+  have hGamma := Complex.Gamma_ne_zero (fun n hn =>
     hs n (Complex.ofReal_inj.mp (by simpa only [Complex.ofReal_neg, Complex.ofReal_natCast] using hn)))
   rw [residue_structureConstant_eq_unitVolume, Complex.ofReal_mul, Complex.ofReal_mul,
     Complex.Gamma_ofReal, ← Complex.ofReal_cpow hμ.le]
@@ -38,7 +38,7 @@ theorem roots_structureConstant_of_unitVolume_value {Ω : Type*} [MeasurableSpac
     (hD : (unitVolumeStructureConstant P M γ a b c : ℂ) =
       ((μ : ℂ) ^ (sExp γ a b c : ℂ) / Complex.Gamma (sExp γ a b c)) * D) :
     (structureConstant P M γ μ a b c : ℂ) = D := by
-  have hGamma : Complex.Gamma (sExp γ a b c : ℂ) ≠ 0 := Complex.Gamma_ne_zero (fun n hn =>
+  have hGamma := Complex.Gamma_ne_zero (fun n hn =>
     hs n (Complex.ofReal_inj.mp (by simpa only [Complex.ofReal_neg, Complex.ofReal_natCast] using hn)))
   have hpow : (μ : ℂ) ^ (sExp γ a b c : ℂ) ≠ 0 :=
     Complex.cpow_ne_zero_iff.mpr (Or.inl (Complex.ofReal_ne_zero.mpr hμ.ne'))

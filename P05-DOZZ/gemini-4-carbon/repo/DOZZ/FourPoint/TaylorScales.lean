@@ -27,12 +27,11 @@ theorem taylor_small_scales (δ ε : ℝ) (hδ : 0 < δ) (hδ1 : δ < 1) (hε : 
       with r h1 h2 h3
     exact ⟨h1, h2, h3⟩
   obtain ⟨R, hR, hsmall⟩ := Metric.eventually_nhds_iff.mp hs
-  let r₀ : ℝ := min (R / 2) (1 / 4)
-  refine ⟨r₀, lt_min (by positivity) (by norm_num), min_le_right _ _, ?_⟩
+  refine ⟨(min (R / 2) (1 / 4)), lt_min (by positivity) (by norm_num), min_le_right _ _, ?_⟩
   intro r hr hrr
   have hrR : dist r 0 < R := by
     rw [Real.dist_eq, sub_zero, abs_of_pos hr]
-    have hh : r ≤ R / 2 := hrr.trans (min_le_left _ _)
+    have hh := hrr.trans (min_le_left _ _)
     linarith only [hh, hR]
   obtain ⟨h1, h2, h3⟩ := hsmall hrR
   have hρ : 0 < r ^ (1 - δ) := Real.rpow_pos_of_pos hr _
@@ -44,8 +43,7 @@ theorem taylor_small_scales (δ ε : ℝ) (hδ : 0 < δ) (hδ1 : δ < 1) (hε : 
     rw [← heq] at hh
     linarith only [hh]
   · rw [heq₂]
-    have hh := mul_le_mul_of_nonneg_left h2.le hr.le
-    linarith only [hh]
+    linarith only [mul_le_mul_of_nonneg_left h2.le hr.le]
 
 /-- Reducing an available strict gain also leaves room for the one-root near-disk gain. -/
 theorem taylor_common_gain (γ κ δ ε η d W q : ℝ)
@@ -53,7 +51,7 @@ theorem taylor_common_gain (γ κ δ ε η d W q : ℝ)
     (hηd : η ≤ δ * d) (hmid : κ - 2 + η ≤ -2 - 2 * ε + (1 - δ) * W / (2 * q)) :
     ∃ η' : ℝ, 0 < η' ∧ η' < 2 - κ ∧ η' ≤ δ * d ∧
       η' ≤ ε * γ ^ 2 / 2 ∧ κ - 2 + η' ≤ -2 - 2 * ε + (1 - δ) * W / (2 * q) := by
-  let η' : ℝ := min η (ε * γ ^ 2 / 4)
+  let η' := min η (ε * γ ^ 2 / 4)
   have hpos : 0 < ε * γ ^ 2 / 4 := by positivity
   have hl : η' ≤ η := min_le_left _ _
   have hr : η' ≤ ε * γ ^ 2 / 4 := min_le_right _ _

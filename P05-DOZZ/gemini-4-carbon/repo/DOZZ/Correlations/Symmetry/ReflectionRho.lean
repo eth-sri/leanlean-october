@@ -27,11 +27,6 @@ theorem symmetryCorrectedRho_measurable (γ a b c : ℝ) :
     Measurable (symmetryCorrectedRho γ a b c) :=
   Measure.measurable_lintegral (symmetryCorrectedRho_density_measurable γ a b c)
 
-theorem symmetry_reflection_total_exponent (γ a b c : ℝ) (hγ : γ ≠ 0) :
-    γ ^ 2 * sExp γ a b c + (γ ^ 2 + 4) = γ * (a + b + c) := by
-  have h1 := symmetry_reflection_charge_exponent γ a b c hγ
-  have h2 := symmetry_reflection_wick_exponent γ hγ
-  linarith only [h1, h2]
 
 /-- Finite positive exponential factors commute with every extended real power. -/
 theorem symmetry_exp_mul_rpow (t p : ℝ) (A : ℝ≥0∞) :
@@ -46,6 +41,8 @@ theorem symmetryCorrectedRho_repinned {Ω : Type*} (γ a b c : ℝ) (hγ : γ �
     (M : Ω → Measure ℂ) (L : Ω → ℝ) (ω : Ω) :
     symmetryCorrectedRho γ a b c (symmetryRepinnedChaos γ M L ω) =
       ENNReal.ofReal (Real.exp (-γ * L ω)) * rho γ (M ω) a b c := by
+  have symmetry_reflection_total_exponent : γ ^ 2 * sExp γ a b c + (γ ^ 2 + 4) = γ * (a + b + c) := by
+    linarith only [symmetry_reflection_charge_exponent γ a b c hγ, symmetry_reflection_wick_exponent γ hγ]
   unfold symmetryCorrectedRho symmetryRepinnedChaos
   rw [lintegral_smul_measure, smul_eq_mul]
   congr 1
@@ -70,7 +67,7 @@ theorem symmetryCorrectedRho_repinned {Ω : Type*} (γ a b c : ℝ) (hγ : γ �
     have he : (γ ^ 2 + 4) * symmetryReflectionPotential (1 - x) +
         γ ^ 2 * sExp γ a b c * symmetryReflectionPotential (1 - x) =
         γ * (a + b + c) * symmetryReflectionPotential (1 - x) := by
-      rw [← add_mul, add_comm (γ ^ 2 + 4), symmetry_reflection_total_exponent γ a b c hγ]
+      rw [← add_mul, add_comm (γ ^ 2 + 4), symmetry_reflection_total_exponent]
     rw [he, ← rho_reflection_density γ a b c (1 - x)]
     rw [show (1 : ℂ) - (1 - x) = x from symmetryReflection_involutive x])
 

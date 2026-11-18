@@ -31,16 +31,16 @@ theorem reflected_outerMass_relative_comparison (γ α₁ α₂ α₃ ξ : ℝ)
       gammaHalfOuterMass γ α₁ α₂ α₃ μ z ξ +
         ENNReal.ofReal (4 * (‖z‖ / ‖z‖ ^ (1 - ξ))) *
           reflectedRetainedZeroMass γ α₁ α₂ α₃ (‖z‖ ^ (1 - ξ)) μ := by
-  let r : ℝ := ‖z‖ ^ (1 - ξ)
+  let r := ‖z‖ ^ (1 - ξ)
   let d : ℝ := 4 * (‖z‖ / r)
   let D : Set ℂ := {x | r ≤ ‖x‖}
   let K : ℂ → ℝ≥0∞ := fun x => ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x)
   let K₀ : ℂ → ℝ≥0∞ := fun x => ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ 0 x)
-  have hd : 0 ≤ d := by dsimp only [d]; positivity
+  have hd : 0 ≤ d := by positivity
   have hD : MeasurableSet D := (isClosed_le continuous_const continuous_norm).measurableSet
   have hK : Measurable K := ENNReal.measurable_ofReal.comp (reflected_gammaHalfKernel_measurable γ α₁ α₂ α₃ z)
   have hK₀ : Measurable K₀ := ENNReal.measurable_ofReal.comp (reflected_gammaHalfKernel_measurable γ α₁ α₂ α₃ 0)
-  have hs : ‖z‖ < r := by linarith only [hr, hz]
+  have hs : ‖z‖ < r := by nlinarith
   rw [reflected_retainedZero_kernel_integral γ α₁ α₂ α₃ r μ h0 h1,
     reflected_outerMass_eq_kernel_integral γ α₁ α₂ α₃ ξ z μ h0 h1 hs]
   have hp (x : ℂ) (hx : x ∈ D) :
@@ -57,17 +57,14 @@ theorem reflected_outerMass_relative_comparison (γ α₁ α₂ α₃ ξ : ℝ)
       apply mul_le_mul_of_nonneg_right _ hbase
       apply mul_le_mul_of_nonneg_left _ (by norm_num)
       exact div_le_div_of_nonneg_left (norm_nonneg _) hr hx
-    have hl := reflected_kernel_relative_lower γ α₁ α₂ α₃ hγ hγ₂ z x hn hsep
-    have hu := le_abs_self (gammaHalfKernel γ α₁ α₂ α₃ z x - gammaHalfKernel γ α₁ α₂ α₃ 0 x)
-    have hv := neg_le_abs (gammaHalfKernel γ α₁ α₂ α₃ z x - gammaHalfKernel γ α₁ α₂ α₃ 0 x)
     dsimp only [K, K₀]
     refine ⟨?_, ?_, ?_⟩
     · rw [← ENNReal.ofReal_mul (by norm_num : (0 : ℝ) ≤ 1 / 4)]
-      exact ENNReal.ofReal_le_ofReal (by linarith only [hl])
+      exact ENNReal.ofReal_le_ofReal (by linarith only [reflected_kernel_relative_lower γ α₁ α₂ α₃ hγ hγ₂ z x hn hsep])
     · rw [← ENNReal.ofReal_mul hd, ← ENNReal.ofReal_add hbase (mul_nonneg hd hbase)]
-      exact ENNReal.ofReal_le_ofReal (by linarith only [hu, herr])
+      exact ENNReal.ofReal_le_ofReal (by linarith only [le_abs_self (gammaHalfKernel γ α₁ α₂ α₃ z x - gammaHalfKernel γ α₁ α₂ α₃ 0 x), herr])
     · rw [← ENNReal.ofReal_mul hd, ← ENNReal.ofReal_add hmove (mul_nonneg hd hbase)]
-      exact ENNReal.ofReal_le_ofReal (by linarith only [hv, herr])
+      exact ENNReal.ofReal_le_ofReal (by linarith only [neg_le_abs (gammaHalfKernel γ α₁ α₂ α₃ z x - gammaHalfKernel γ α₁ α₂ α₃ 0 x), herr])
   refine ⟨?_, ?_, ?_⟩
   · rw [← lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]
     exact setLIntegral_mono' hD fun x hx => (hp x hx).1

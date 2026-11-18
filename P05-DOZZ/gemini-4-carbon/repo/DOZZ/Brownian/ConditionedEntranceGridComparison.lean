@@ -16,7 +16,6 @@ grid comparison propagates the order and the linear drift-gap estimate.
 
 @[expose] public section
 
-open ProbabilityTheory
 
 namespace DOZZ.Proofs
 

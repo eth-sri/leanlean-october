@@ -14,14 +14,14 @@ open scoped ENNReal
 
 namespace DOZZ.Proofs
 
+section
+variable {Ω V : Type*} [MeasurableSpace Ω] [MeasurableSpace V] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (θ : Ω → V) (hθ : AEMeasurable θ P)
+include hX hγ hγ2 hM hθ
+
 /-- Random parameters may depend on the field. Extended-real integrals need no
 integrability assumption, including at an insertion singularity. -/
 theorem gmc_parameter_lintegral_aemeasurable
-    {Ω V : Type*} [MeasurableSpace Ω] [MeasurableSpace V]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (θ : Ω → V) (hθ : AEMeasurable θ P)
+
     (F : V × ℂ → ℝ≥0∞) (hF : Measurable F) :
     AEMeasurable (fun ω => ∫⁻ x, F (θ ω, x) ∂M ω) P := by
   obtain ⟨N, hNm, hNf, hMN⟩ :=
@@ -38,11 +38,7 @@ theorem gmc_parameter_lintegral_aemeasurable
 /-- The real integral of a nonnegative integrable random test is measurable on the
 actual GMC version, even when its parameter is correlated with the field. -/
 theorem gmc_parameter_integral_aemeasurable
-    {Ω V : Type*} [MeasurableSpace Ω] [MeasurableSpace V]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (θ : Ω → V) (hθ : AEMeasurable θ P)
+
     (F : V × ℂ → ℝ) (hF : Measurable F) (hF0 : ∀ v x, 0 ≤ F (v,x))
     (hFi : ∀ ω, Integrable (fun x => F (θ ω,x)) (M ω)) :
     AEMeasurable (fun ω => ∫ x, F (θ ω,x) ∂M ω) P := by
@@ -55,6 +51,8 @@ theorem gmc_parameter_integral_aemeasurable
         (integral_nonneg (fun x => hF0 _ x))]
   simpa only [heq] using hm.ennreal_toReal
 
+
+end
 
 
 end DOZZ.Proofs

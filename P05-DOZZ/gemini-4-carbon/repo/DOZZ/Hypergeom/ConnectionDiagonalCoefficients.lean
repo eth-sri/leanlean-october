@@ -19,7 +19,7 @@ both the corresponding `K₁` factor and the totalized quotient vanish. -/
 theorem gaussCoefficientRatio_mul_K₂_add_K₁_eq_zero
     (a b c : ℝ) (hK₂ : gaussK₂ a b c ≠ 0) :
     gaussCoefficientRatio a b c * gaussK₂ a b c + gaussK₁ a b c = 0 := by
-  let d : ℝ := Real.Gamma (c - a) * Real.Gamma (c - b) *
+  let d := Real.Gamma (c - a) * Real.Gamma (c - b) *
     Real.Gamma a * Real.Gamma b
   have hGamma₂c : Real.Gamma (2 - c) ≠ 0 := by
     intro h

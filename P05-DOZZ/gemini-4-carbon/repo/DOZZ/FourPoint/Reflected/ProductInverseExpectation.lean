@@ -38,10 +38,8 @@ theorem reflected_product_inverse_increment_expectation
       (measurable_fst.aemeasurable : AEMeasurable (Prod.fst : Ω × Λ → Ω) (P.prod R))
     rw [(measurePreserving_fst (μ := P) (ν := R)).map_eq] at he
     exact he.symm
-  have hS : AEMeasurable (fun v : Ω × Λ => ENNReal.ofReal (b v.1)*T v.2) (P.prod R) :=
-    hbm.ennreal_ofReal.mul hTm
   have h := reflected_ennreal_inverse_increment_expectation (P.prod R)
-    (fun v : Ω × Λ => A v.1) (fun v => ENNReal.ofReal (b v.1)*T v.2) hAm hS p hp
+    (fun v : Ω × Λ => A v.1) (fun v => ENNReal.ofReal (b v.1)*T v.2) hAm (hbm.ennreal_ofReal.mul hTm) p hp
     (hbase.symm ▸ hfin)
   have he : (fun v : Ω × Λ => ((A v.1+ENNReal.ofReal (b v.1)*T v.2)^(-p)).toReal-
       (A v.1^(-p)).toReal) =ᵐ[P.prod R]

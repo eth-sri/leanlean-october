@@ -21,11 +21,10 @@ theorem gmcReferenceMeasure_compl_closedBall_tendsto_zero :
     Tendsto (fun n : ℕ => gmcReferenceMeasure (Metric.closedBall (0 : ℂ) n)ᶜ)
       atTop (𝓝 0) := by
   let S : ℕ → Set ℂ := fun n => (Metric.closedBall (0 : ℂ) n)ᶜ
-  have hmeas (n : ℕ) : NullMeasurableSet (S n) gmcReferenceMeasure := by
-    exact ((Metric.isClosed_closedBall (x := (0 : ℂ)) (ε := (n : ℝ))).measurableSet.compl).nullMeasurableSet
+  have hmeas (n : ℕ) : NullMeasurableSet (S n) gmcReferenceMeasure := ((Metric.isClosed_closedBall (x := (0 : ℂ)) (ε := (n : ℝ))).measurableSet.compl).nullMeasurableSet
   have hanti : Antitone S := by
     intro n m hnm x hx
-    have hx' : x ∉ Metric.closedBall (0 : ℂ) m := hx
+    have hx' := hx
     intro hxclosed
     apply hx'
     apply Metric.mem_closedBall.mpr
@@ -41,14 +40,12 @@ theorem gmcReferenceMeasure_compl_closedBall_tendsto_zero :
         apply Metric.mem_closedBall.mpr
         simpa [dist_zero_right] using hn.le
       exact False.elim ((Set.mem_iInter.mp hx n) hball)
-    · intro hx
-      exact False.elim (Set.notMem_empty x hx)
+    · norm_num
   have hfinite : ∃ n, gmcReferenceMeasure (S n) ≠ ∞ := by
     refine ⟨0, ?_⟩
     apply ne_of_lt
     exact (measure_mono (Set.subset_univ _)).trans_lt
       (lt_top_iff_ne_top.mpr gmcReferenceMeasure_univ_ne_top)
-  have hlim := tendsto_measure_iInter_atTop hmeas hanti hfinite
-  simpa [Function.comp_def, S, hempty] using hlim
+  simpa [Function.comp_def, S, hempty] using tendsto_measure_iInter_atTop hmeas hanti hfinite
 
 end DOZZ.Proofs

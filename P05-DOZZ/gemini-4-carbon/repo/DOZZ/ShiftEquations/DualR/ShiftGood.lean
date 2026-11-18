@@ -22,6 +22,9 @@ open Filter Topology Set
 
 namespace DOZZ.Proofs
 
+variable {γ : ℝ}
+
+
 /-- Analyticity conditions for the γ/2 shift coefficient `𝒜(z, b, c)`: `Γ` is analytic at the
 non-constant numerator arguments and at one minus each denominator argument. -/
 def ShiftCoeffGood (γ : ℝ) (z b c : ℂ) : Prop :=
@@ -33,10 +36,13 @@ def ShiftCoeffGood (γ : ℝ) (z b c : ℂ) : Prop :=
     AnalyticAt ℂ Complex.Gamma (1 - (γ : ℂ) / 2 / 2 * ((z + b + c) - 2 * b - (γ : ℂ) / 2))
 
 
+section
+variable {f₁ f₂ f₃ : ℂ → ℂ} {t : ℂ} (h₁ : AnalyticAt ℂ f₁ t) (h₂ : AnalyticAt ℂ f₂ t) (h₃ : AnalyticAt ℂ f₃ t)
+include h₁ h₂ h₃
+
 /-- **The γ/2 shift coefficient is analytic along analytic charge curves** where
 `ShiftCoeffGood` holds. -/
-theorem analyticAt_shiftCoeffA_comp {γ : ℝ} {f₁ f₂ f₃ : ℂ → ℂ} {t : ℂ}
-    (h₁ : AnalyticAt ℂ f₁ t) (h₂ : AnalyticAt ℂ f₂ t) (h₃ : AnalyticAt ℂ f₃ t)
+theorem analyticAt_shiftCoeffA_comp
     (hg : ShiftCoeffGood γ (f₁ t) (f₂ t) (f₃ t)) :
     AnalyticAt ℂ (fun s => shiftCoeffA γ ((γ : ℂ) / 2) (f₁ s) (f₂ s) (f₃ s)) t := by
   obtain ⟨g₁, g₂, g₃, g₄, g₅, g₆⟩ := hg
@@ -52,40 +58,35 @@ theorem analyticAt_shiftCoeffA_comp {γ : ℝ} {f₁ f₂ f₃ : ℂ → ℂ} {t
     rw [div_eq_mul_inv, mul_inv, mul_inv]
     ring
   rw [hfun]
-  have a₁ : AnalyticAt ℂ (fun s => lFun ((γ : ℂ) / 2 * f₁ s)) t :=
+  have :=
     analyticAt_lFun_comp (f := fun s => (γ : ℂ) / 2 * f₁ s) (analyticAt_const.mul h₁) g₁
-  have a₂ : AnalyticAt ℂ (fun s => lFun ((γ : ℂ) / 2 * f₁ s - ((γ : ℂ) / 2) ^ 2)) t :=
+  have :=
     analyticAt_lFun_comp (f := fun s => (γ : ℂ) / 2 * f₁ s - ((γ : ℂ) / 2) ^ 2)
       ((analyticAt_const.mul h₁).sub analyticAt_const) g₂
-  have a₃ : AnalyticAt ℂ (fun s => lFun ((γ : ℂ) / 2 / 2 *
-      ((f₁ s + f₂ s + f₃ s) - 2 * f₁ s - (γ : ℂ) / 2))) t :=
+  have :=
     analyticAt_lFun_comp
       (f := fun s => (γ : ℂ) / 2 / 2 * ((f₁ s + f₂ s + f₃ s) - 2 * f₁ s - (γ : ℂ) / 2))
       (analyticAt_const.mul ((((h₁.add h₂).add h₃).sub (analyticAt_const.mul h₁)).sub
         analyticAt_const)) g₃
-  have a₄ : AnalyticAt ℂ (fun s => (lFun ((γ : ℂ) / 2 / 2 *
-      ((f₁ s + f₂ s + f₃ s) - (γ : ℂ) / 2 - 2 * Q γ)))⁻¹) t :=
+  have :=
     analyticAt_inv_lFun_comp
       (f := fun s => (γ : ℂ) / 2 / 2 * ((f₁ s + f₂ s + f₃ s) - (γ : ℂ) / 2 - 2 * Q γ))
       (analyticAt_const.mul ((((h₁.add h₂).add h₃).sub analyticAt_const).sub
         analyticAt_const)) g₄
-  have a₅ : AnalyticAt ℂ (fun s => (lFun ((γ : ℂ) / 2 / 2 *
-      ((f₁ s + f₂ s + f₃ s) - 2 * f₃ s - (γ : ℂ) / 2)))⁻¹) t :=
+  have :=
     analyticAt_inv_lFun_comp
       (f := fun s => (γ : ℂ) / 2 / 2 * ((f₁ s + f₂ s + f₃ s) - 2 * f₃ s - (γ : ℂ) / 2))
       (analyticAt_const.mul ((((h₁.add h₂).add h₃).sub (analyticAt_const.mul h₃)).sub
         analyticAt_const)) g₅
-  have a₆ : AnalyticAt ℂ (fun s => (lFun ((γ : ℂ) / 2 / 2 *
-      ((f₁ s + f₂ s + f₃ s) - 2 * f₂ s - (γ : ℂ) / 2)))⁻¹) t :=
+  have :=
     analyticAt_inv_lFun_comp
       (f := fun s => (γ : ℂ) / 2 / 2 * ((f₁ s + f₂ s + f₃ s) - 2 * f₂ s - (γ : ℂ) / 2))
       (analyticAt_const.mul ((((h₁.add h₂).add h₃).sub (analyticAt_const.mul h₂)).sub
         analyticAt_const)) g₆
-  exact (((((analyticAt_const.mul a₁).mul a₂).mul a₃).mul a₄).mul a₅).mul a₆
+  fun_prop
 
 /-- **The γ/2 shift coefficient is meromorphic along analytic charge curves.** -/
-theorem meromorphicAt_shiftCoeffA_comp {γ : ℝ} {f₁ f₂ f₃ : ℂ → ℂ} {t : ℂ}
-    (h₁ : AnalyticAt ℂ f₁ t) (h₂ : AnalyticAt ℂ f₂ t) (h₃ : AnalyticAt ℂ f₃ t) :
+theorem meromorphicAt_shiftCoeffA_comp :
     MeromorphicAt (fun s => shiftCoeffA γ ((γ : ℂ) / 2) (f₁ s) (f₂ s) (f₃ s)) t := by
   unfold shiftCoeffA
   refine (((((meromorphicAt_lFun_comp' analyticAt_const).fun_mul
@@ -100,6 +101,8 @@ theorem meromorphicAt_shiftCoeffA_comp {γ : ℝ} {f₁ f₂ f₃ : ℂ → ℂ}
     (meromorphicAt_lFun_comp' (analyticAt_const.mul ((((h₁.add h₂).add h₃).sub
       (analyticAt_const.mul h₂)).sub analyticAt_const)))))
 
+
+end
 /-- **`ShiftCoeffGood` at real charges from positivity** of the six real arguments. -/
 theorem shiftCoeffGood_ofReal {γ z b c : ℝ} (h₁ : 0 < γ / 2 * z)
     (h₂ : 0 < γ / 2 * z - (γ / 2) ^ 2)
@@ -136,7 +139,7 @@ theorem shiftCoeffGood_of_lt {γ x b c : ℝ} (hγ : 0 < γ) (h₂ : γ < x) (h�
   have hz : (x : ℂ) - γ / 2 = ((x - γ / 2 : ℝ) : ℂ) := by push_cast; ring
   rw [hz]
   have hq : (0 : ℝ) < γ / 4 := by positivity
-  have hone : γ / 4 * (4 / γ) = 1 := by field_simp
+  have : γ / 4 * (4 / γ) = 1 := by field_simp
   refine shiftCoeffGood_ofReal ?_ ?_ ?_ ?_ ?_ ?_
   · have : 0 < x - γ / 2 := by linarith
     positivity
@@ -161,12 +164,12 @@ theorem shiftCoeffGood_of_lt {γ x b c : ℝ} (hγ : 0 < γ) (h₂ : γ < x) (h�
     linarith
   · have e : γ / 2 / 2 * ((x - γ / 2 + b + c) - 2 * b - γ / 2) = γ / 4 * (x - γ + c - b) := by
       ring
-    have h := mul_lt_mul_of_pos_left h₆ hq
+    have := mul_lt_mul_of_pos_left h₆ hq
     rw [e]
     linarith
 
 /-- `ShiftCoeffGood` persists along continuous curves. -/
-theorem eventually_shiftCoeffGood {γ : ℝ} {f₁ f₂ f₃ : ℝ → ℂ} {t₀ : ℝ}
+theorem eventually_shiftCoeffGood {f₁ f₂ f₃ : ℝ → ℂ} {t₀ : ℝ}
     (h₁ : Continuous f₁) (h₂ : Continuous f₂) (h₃ : Continuous f₃)
     (h : ShiftCoeffGood γ (f₁ t₀) (f₂ t₀) (f₃ t₀)) :
     ∀ᶠ t in 𝓝 t₀, ShiftCoeffGood γ (f₁ t) (f₂ t) (f₃ t) := by

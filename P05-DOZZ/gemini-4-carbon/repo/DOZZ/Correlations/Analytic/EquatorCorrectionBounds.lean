@@ -10,7 +10,6 @@ public import DOZZ.GMC.CirclePotential
 /-! Exponential decay and exact charge degree of the equator correction. -/
 
 @[expose] public section
-open MeasureTheory ProbabilityTheory
 namespace DOZZ.Proofs
 
 /-- The regular circle pin differs from its center value by at most the circle radius. -/

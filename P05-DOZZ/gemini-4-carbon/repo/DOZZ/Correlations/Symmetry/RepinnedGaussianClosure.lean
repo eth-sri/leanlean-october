@@ -17,9 +17,9 @@ theorem reflection_normalization_in_repinned_closure
     (hX : IsEquatorGFF P X) (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) :
     IsGaussianL2Limit P (symmetryRepinnedField X (fun ω => Xc ω 1 0))
       (fun ω => Xc ω 1 0) := by
-  let : IsProbabilityMeasure P := hX.1
+  let := hX.1
   let L := fun ω => Xc ω 1 0
-  have hL : MemLp L 2 P := hXc.2.1 1 0
+  have hL := hXc.2.1 1 0
   obtain ⟨f, hgap, hint⟩ := exists_testFn_circleEnergyGap_and_integral_tendsto 0 0
   have hmass : Tendsto (fun n => testMass (f n)) atTop (𝓝 1) := by
     have h := hint (fun _ => (1 : ℝ)) continuous_const
@@ -70,7 +70,7 @@ theorem reflection_normalization_in_repinned_closure
   intro n
   change eLpNorm (fun ω => L ω - symmetryRepinnedField X L ω (g n)) 2 P ≤ _
   rw [he]
-  have h := eLpNorm_add_le (μ := P) (p := (2 : ℝ≥0∞))
+  have := eLpNorm_add_le (μ := P) (p := (2 : ℝ≥0∞))
     (f := fun ω => X ω (f n)) (g := fun ω => (1 - testMass (f n)) * L ω) (by norm_num)
-  simpa only [Pi.add_def] using h
+  assumption
 end DOZZ.Proofs

@@ -35,9 +35,8 @@ theorem reflected_global_compact_mass_comparison
       m*(∫⁻ ω, (J f₀ ω+J f₁ ω)^(-q) ∂P) := by
   have hK0 : K ⊆ ({0} : Set ℂ)ᶜ := by
     intro x hx
-    have hh : 2*ρ < ‖x‖ := hKU hx
-    have hx0 : x ≠ 0 := norm_ne_zero_iff.mp (ne_of_gt (by linarith : 0 < ‖x‖))
-    simpa using hx0
+    have : 2*ρ < ‖x‖ := hKU hx
+    simpa using norm_ne_zero_iff.mp (ne_of_gt (by linarith : 0 < ‖x‖))
   have hW : Measurable (fun x => ENNReal.ofReal (reflected_global_reinsertionWeight γ a x)) :=
     ((reflected_global_reinsertionWeight_measurable γ).comp
       (measurable_const.prodMk measurable_id)).ennreal_ofReal

@@ -123,22 +123,28 @@ def chart (T : ChartTestSystem U) : Index → Set ℂ
   | .inl i => T.K i.1
   | .inr n => tsupport (T.mass n : ℂ → ℝ)
 
-theorem chart_compact (T : ChartTestSystem U) (i : Index) : IsCompact (T.chart i) := by
+section
+variable (T : ChartTestSystem U) (i : Index)
+include T i
+
+theorem chart_compact : IsCompact (T.chart i) := by
   cases i with
   | inl i => exact T.compact i.1
   | inr n => exact T.mass_compact n
 
-theorem chart_subset (T : ChartTestSystem U) (i : Index) : T.chart i ⊆ U := by
+theorem chart_subset : T.chart i ⊆ U := by
   cases i with
   | inl i => exact T.subset i.1
   | inr n => exact T.mass_support n
 
-theorem allTest_eq_zero (T : ChartTestSystem U) (i : Index) (x : ℂ) (hx : x ∉ T.chart i) :
+theorem allTest_eq_zero (x : ℂ) (hx : x ∉ T.chart i) :
     T.allTest i x = 0 := by
   cases i with
   | inl i => exact image_eq_zero_of_notMem_tsupport (fun h => hx (T.test_support i h))
   | inr n => exact image_eq_zero_of_notMem_tsupport hx
 
+
+end
 theorem abs_allTest_le (T : ChartTestSystem U) (i : Index) (x : ℂ) :
     |T.allTest i x| ≤ ‖T.allTest i‖ := by
   rw [← Real.norm_eq_abs]
@@ -153,68 +159,24 @@ theorem K_subset_tsupport_mass (T : ChartTestSystem U) (n : ℕ) :
 
 end ChartTestSystem
 
-/-- The admissible cutoff integral is bounded in expectation by the test bound times the chart
-reference mass. -/
-theorem lintegral_ofReal_abs_admissibleCutoffIntegral_le
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) [IsProbabilityMeasure P]
-    (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ)
-    (Y : Ω → ℝ → ℂ → ℝ)
-    (hY : IsAdmissibleLogRegularization P U dens ε₀ Y) (K : Set ℂ) (g r : ℝ)
-    (hr : Real.exp (-r) ≤ ε₀) (L : ℝ) (f : ℂ → ℝ) (hf : Measurable f) (hfL : ∀ x, |f x| ≤ L)
-    (hfK : ∀ x ∉ K, f x = 0) :
-    ∫⁻ ω, ENNReal.ofReal |admissibleCutoffIntegral P U dens Y g r f ω| ∂P ≤
-      ENNReal.ofReal L * logRegularizationReference U dens K := by
-  refine le_trans (lintegral_mono fun ω => ?_) (lintegral_chartMass_le P U dens ε₀ Y hY K g r hr L
-    (fun x => |f x|) (continuous_abs.measurable.comp hf) hfL)
-  rw [← Real.enorm_eq_ofReal_abs]
-  refine (enorm_integral_le_lintegral_enorm _).trans (le_of_eq ?_)
-  rw [← lintegral_cutoff_integrand_eq_chartMass P U dens Y K g r (fun x => |f x|)
-    (fun x => abs_nonneg _) (fun x hx => by rw [hfK x hx, abs_zero]) ω]
-  apply lintegral_congr
-  intro x
-  rw [Real.enorm_eq_ofReal_abs, abs_mul, abs_of_pos (Real.exp_pos _)]
 
 /-- Fast cutoff sequence built from Cauchy thresholds. -/
 noncomputable def fastCutoff (R : ChartTestSystem.Index → ℕ → ℝ)
     (e : ℕ → ChartTestSystem.Index) (c : ℝ) (j : ℕ) : ℝ :=
   c + j + ∑ k ∈ Finset.range (j + 1), ∑ i ∈ Finset.range (k + 1), |R (e i) k|
 
-theorem le_fastCutoff (R : ChartTestSystem.Index → ℕ → ℝ) (e : ℕ → ChartTestSystem.Index)
-    (c : ℝ) (hc : 0 ≤ c) (i k j : ℕ) (hik : i ≤ k) (hkj : k ≤ j) :
-    R (e i) k ≤ fastCutoff R e c j := by
-  unfold fastCutoff
-  have hinner : |R (e i) k| ≤ ∑ i' ∈ Finset.range (k + 1), |R (e i') k| :=
-    Finset.single_le_sum (f := fun i' => |R (e i') k|) (fun _ _ => abs_nonneg _)
-      (Finset.mem_range.mpr (show i < k + 1 by omega))
-  have houter : ∑ i' ∈ Finset.range (k + 1), |R (e i') k| ≤
-      ∑ k' ∈ Finset.range (j + 1), ∑ i' ∈ Finset.range (k' + 1), |R (e i') k'| :=
-    Finset.single_le_sum (f := fun k' => ∑ i' ∈ Finset.range (k' + 1), |R (e i') k'|)
-      (fun _ _ => Finset.sum_nonneg fun _ _ => abs_nonneg _)
-      (Finset.mem_range.mpr (show k < j + 1 by omega))
-  have hj : (0 : ℝ) ≤ j := Nat.cast_nonneg j
-  linarith [le_abs_self (R (e i) k)]
 
-theorem const_le_fastCutoff (R : ChartTestSystem.Index → ℕ → ℝ)
-    (e : ℕ → ChartTestSystem.Index) (c : ℝ) (j : ℕ) : c ≤ fastCutoff R e c j := by
-  unfold fastCutoff
-  have h1 : (0 : ℝ) ≤ ∑ k ∈ Finset.range (j + 1), ∑ i ∈ Finset.range (k + 1), |R (e i) k| :=
-    Finset.sum_nonneg fun _ _ => Finset.sum_nonneg fun _ _ => abs_nonneg _
-  have hj : (0 : ℝ) ≤ j := Nat.cast_nonneg j
-  linarith
 
-theorem nat_le_fastCutoff (R : ChartTestSystem.Index → ℕ → ℝ)
-    (e : ℕ → ChartTestSystem.Index) (c : ℝ) (hc : 0 ≤ c) (j : ℕ) :
-    (j : ℝ) ≤ fastCutoff R e c j := by
-  unfold fastCutoff
-  have h1 : (0 : ℝ) ≤ ∑ k ∈ Finset.range (j + 1), ∑ i ∈ Finset.range (k + 1), |R (e i) k| :=
-    Finset.sum_nonneg fun _ _ => Finset.sum_nonneg fun _ _ => abs_nonneg _
-  linarith
 
 theorem tendsto_fastCutoff (R : ChartTestSystem.Index → ℕ → ℝ)
     (e : ℕ → ChartTestSystem.Index) (c : ℝ) (hc : 0 ≤ c) :
     Tendsto (fastCutoff R e c) atTop atTop :=
-  tendsto_atTop_mono (nat_le_fastCutoff R e c hc) tendsto_natCast_atTop_atTop
+  have nat_le_fastCutoff (j : ℕ) : (j : ℝ) ≤ fastCutoff R e c j := by
+    unfold fastCutoff
+    have : (0 : ℝ) ≤ ∑ k ∈ Finset.range (j + 1), ∑ i ∈ Finset.range (k + 1), |R (e i) k| :=
+      Finset.sum_nonneg fun _ _ => Finset.sum_nonneg fun _ _ => abs_nonneg _
+    linarith
+  tendsto_atTop_mono (nat_le_fastCutoff) tendsto_natCast_atTop_atTop
 
 /-- Each test of a chart system has cutoff `L¹` Cauchy thresholds at every geometric accuracy. -/
 theorem exists_test_cauchy_thresholds
@@ -259,78 +221,6 @@ namespace DOZZ.Assembly
 
 open DOZZ.Proofs
 
-/-- Along the fast cutoff sequence, almost surely every test converges. -/
-theorem ae_tendsto_allTest_fastCutoff
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) [IsProbabilityMeasure P]
-    (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ)
-    (Y : Ω → ℝ → ℂ → ℝ)
-    (hY : IsAdmissibleLogRegularization P U dens ε₀ Y) (T : ChartTestSystem U) (γ : ℝ)
-    (R : ChartTestSystem.Index → ℕ → ℝ)
-    (hR : ∀ i k r s, R i k ≤ r → R i k ≤ s →
-      ∫⁻ ω, ENNReal.ofReal |admissibleCutoffIntegral P U dens Y γ r (T.allTest i) ω -
-        admissibleCutoffIntegral P U dens Y γ s (T.allTest i) ω| ∂P <
-          ENNReal.ofReal ((1 / 2 : ℝ) ^ k))
-    (e : ℕ → ChartTestSystem.Index) (c : ℝ) (hc : 0 ≤ c) (hcut : Real.exp (-c) ≤ ε₀) :
-    ∀ᵐ ω ∂P, ∀ i : ℕ, ∃ L : ℝ, Tendsto (fun j => admissibleCutoffIntegral P U dens Y γ
-      (fastCutoff R e c j) (T.allTest (e i)) ω) atTop (𝓝 L) := by
-  apply ae_forall_tendsto_of_summable_lintegral_abs_increments P
-    (fun i j ω => admissibleCutoffIntegral P U dens Y γ (fastCutoff R e c j) (T.allTest (e i)) ω)
-    (fun i j => admissibleCutoffIntegral_measurable P U dens ε₀ Y hY γ _ _
-      (T.allTest (e i)).continuous.measurable)
-  intro i
-  set t := T.allTest (e i)
-  have hcutj (j : ℕ) : Real.exp (-fastCutoff R e c j) ≤ ε₀ :=
-    le_trans (Real.exp_le_exp.mpr (by linarith [const_le_fastCutoff R e c j])) hcut
-  set B : ℝ≥0∞ := 2 * (ENNReal.ofReal ‖t‖ * logRegularizationReference U dens (T.chart (e i)))
-    with hBdef
-  have hσ := admissible_logRegularization_reference_measure_ne_top P U dens ε₀ Y hY
-    (T.chart (e i)) (T.chart_compact _) (T.chart_subset _)
-  have hBfin : B ≠ ⊤ :=
-    ENNReal.mul_ne_top (by norm_num) (ENNReal.mul_ne_top ENNReal.ofReal_ne_top hσ)
-  have hterm (j : ℕ) : ∫⁻ ω, ENNReal.ofReal
-      |admissibleCutoffIntegral P U dens Y γ (fastCutoff R e c j.succ) t ω -
-        admissibleCutoffIntegral P U dens Y γ (fastCutoff R e c j) t ω| ∂P ≤
-      ENNReal.ofReal ((1 / 2 : ℝ) ^ j) + Set.indicator {j : ℕ | j < i} (fun _ => B) j := by
-    by_cases hj : i ≤ j
-    · refine le_trans (hR (e i) j _ _ (le_fastCutoff R e c hc i j (j + 1) hj (by omega))
-        (le_fastCutoff R e c hc i j j hj le_rfl)).le le_self_add
-    · rw [Set.indicator_of_mem (show j ∈ {j : ℕ | j < i} from by
-        simp only [Set.mem_ofPred_eq]; omega)]
-      refine le_trans ?_ le_add_self
-      have hmeas (k : ℕ) : Measurable (admissibleCutoffIntegral P U dens Y γ
-          (fastCutoff R e c k) t) :=
-        admissibleCutoffIntegral_measurable P U dens ε₀ Y hY γ _ _ t.continuous.measurable
-      have hbound (k : ℕ) := lintegral_ofReal_abs_admissibleCutoffIntegral_le P U dens ε₀ Y hY
-        (T.chart (e i)) γ _ (hcutj k) ‖t‖ t t.continuous.measurable (T.abs_allTest_le _)
-        (T.allTest_eq_zero _)
-      calc _ ≤ ∫⁻ ω, (ENNReal.ofReal |admissibleCutoffIntegral P U dens Y γ
-              (fastCutoff R e c j.succ) t ω| + ENNReal.ofReal |admissibleCutoffIntegral P U dens Y
-              γ (fastCutoff R e c j) t ω|) ∂P := by
-            apply lintegral_mono
-            intro ω
-            beta_reduce
-            rw [← ENNReal.ofReal_add (abs_nonneg _) (abs_nonneg _)]
-            exact ENNReal.ofReal_le_ofReal (abs_sub _ _)
-        _ = _ := lintegral_add_left (ENNReal.measurable_ofReal.comp
-            (continuous_abs.measurable.comp (hmeas j.succ))) _
-        _ ≤ ENNReal.ofReal ‖t‖ * logRegularizationReference U dens (T.chart (e i)) +
-            ENNReal.ofReal ‖t‖ * logRegularizationReference U dens (T.chart (e i)) :=
-            add_le_add (hbound j.succ) (hbound j)
-        _ = B := by rw [hBdef]; ring
-  refine ne_top_of_le_ne_top ?_ (ENNReal.tsum_le_tsum hterm)
-  rw [ENNReal.tsum_add]
-  refine ENNReal.add_ne_top.mpr ⟨?_, ?_⟩
-  · rw [← ENNReal.ofReal_tsum_of_nonneg (fun j => by positivity)
-      (summable_geometric_of_lt_one (by norm_num) (by norm_num))]
-    exact ENNReal.ofReal_ne_top
-  · rw [tsum_eq_sum (s := Finset.range i) (fun j hj => by
-      rw [Set.indicator_of_notMem (show j ∉ {j : ℕ | j < i} from by
-        simpa using hj)])]
-    exact ENNReal.sum_ne_top.mpr fun j _ => by
-      by_cases hj : j < i
-      · rw [Set.indicator_of_mem (show j ∈ {j : ℕ | j < i} from hj)]; exact hBfin
-      · rw [Set.indicator_of_notMem (show j ∉ {j : ℕ | j < i} from hj)]; exact ENNReal.zero_ne_top
 
 /-- Samples along which every test converges on the fast sequence and every unit chart mass is
 finite. -/
@@ -343,9 +233,12 @@ def realizationGoodSet {Ω : Type*} [MeasurableSpace Ω]
     ∀ (j : ℕ) (i : ChartTestSystem.Index),
       chartUnitMass P U dens (T.chart i) Y γ (fastCutoff R e c j) ω ≠ ⊤}
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P]
+include P
+
 theorem realizationGoodSet_measurable
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) [IsProbabilityMeasure P]
+
     (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ)
     (Y : Ω → ℝ → ℂ → ℝ)
     (hY : IsAdmissibleLogRegularization P U dens ε₀ Y) (T : ChartTestSystem U) (γ : ℝ)
@@ -376,8 +269,7 @@ theorem realizationGoodSet_measurable
   exact h1.inter h2
 
 theorem ae_mem_realizationGoodSet
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) [IsProbabilityMeasure P]
+
     (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ)
     (Y : Ω → ℝ → ℂ → ℝ)
     (hY : IsAdmissibleLogRegularization P U dens ε₀ Y) (T : ChartTestSystem U) (γ : ℝ)
@@ -388,7 +280,91 @@ theorem ae_mem_realizationGoodSet
           ENNReal.ofReal ((1 / 2 : ℝ) ^ k))
     (e : ℕ → ChartTestSystem.Index) (c : ℝ) (hc : 0 ≤ c) (hcut : Real.exp (-c) ≤ ε₀) :
     ∀ᵐ ω ∂P, ω ∈ realizationGoodSet P U dens Y T γ R e c := by
-  have h1 := ae_tendsto_allTest_fastCutoff P U dens ε₀ Y hY T γ R hR e c hc hcut
+  have const_le_fastCutoff (j : ℕ) : c ≤ fastCutoff R e c j := by
+    unfold fastCutoff
+    have : (0 : ℝ) ≤ ∑ k ∈ Finset.range (j + 1), ∑ i ∈ Finset.range (k + 1), |R (e i) k| :=
+      Finset.sum_nonneg fun _ _ => Finset.sum_nonneg fun _ _ => abs_nonneg _
+    linarith
+  have ae_tendsto_allTest_fastCutoff : ∀ᵐ ω ∂P, ∀ i : ℕ, ∃ L : ℝ, Tendsto (fun j => admissibleCutoffIntegral P U dens Y γ
+        (fastCutoff R e c j) (T.allTest (e i)) ω) atTop (𝓝 L) := by
+    have le_fastCutoff (i k j : ℕ) (hik : i ≤ k) (hkj : k ≤ j) : R (e i) k ≤ fastCutoff R e c j := by
+      unfold fastCutoff
+      have :=
+        Finset.single_le_sum (f := fun i' => |R (e i') k|) (fun _ _ => abs_nonneg _)
+          (Finset.mem_range.mpr (show i < k + 1 by omega))
+      have :=
+        Finset.single_le_sum (f := fun k' => ∑ i' ∈ Finset.range (k' + 1), |R (e i') k'|)
+          (fun _ _ => Finset.sum_nonneg fun _ _ => abs_nonneg _)
+          (Finset.mem_range.mpr (show k < j + 1 by omega))
+      linarith [le_abs_self (R (e i) k)]
+    have lintegral_ofReal_abs_admissibleCutoffIntegral_le (K : Set ℂ) (g r : ℝ) (hr : Real.exp (-r) ≤ ε₀) (L : ℝ) (f : ℂ → ℝ) (hf : Measurable f) (hfL : ∀ x, |f x| ≤ L) (hfK : ∀ x ∉ K, f x = 0) : ∫⁻ ω, ENNReal.ofReal |admissibleCutoffIntegral P U dens Y g r f ω| ∂P ≤
+          ENNReal.ofReal L * logRegularizationReference U dens K := by
+      refine le_trans (lintegral_mono fun ω => ?_) (lintegral_chartMass_le P U dens ε₀ Y hY K g r hr L
+        (fun x => |f x|) (continuous_abs.measurable.comp hf) hfL)
+      rw [← Real.enorm_eq_ofReal_abs]
+      refine (enorm_integral_le_lintegral_enorm _).trans (le_of_eq ?_)
+      rw [← lintegral_cutoff_integrand_eq_chartMass P U dens Y K g r (fun x => |f x|)
+        (fun x => abs_nonneg _) (fun x hx => by rw [hfK x hx, abs_zero]) ω]
+      apply lintegral_congr
+      intro x
+      rw [Real.enorm_eq_ofReal_abs, abs_mul, abs_of_pos (Real.exp_pos _)]
+    apply ae_forall_tendsto_of_summable_lintegral_abs_increments P
+      (fun i j ω => admissibleCutoffIntegral P U dens Y γ (fastCutoff R e c j) (T.allTest (e i)) ω)
+      (fun i j => admissibleCutoffIntegral_measurable P U dens ε₀ Y hY γ _ _
+        (T.allTest (e i)).continuous.measurable)
+    intro i
+    set t := T.allTest (e i)
+    have hcutj (j : ℕ) : Real.exp (-fastCutoff R e c j) ≤ ε₀ :=
+      le_trans (Real.exp_le_exp.mpr (by linarith [const_le_fastCutoff j])) hcut
+    set B : ℝ≥0∞ := 2 * (ENNReal.ofReal ‖t‖ * logRegularizationReference U dens (T.chart (e i)))
+      with hBdef
+    have hσ := admissible_logRegularization_reference_measure_ne_top P U dens ε₀ Y hY
+      (T.chart (e i)) (T.chart_compact _) (T.chart_subset _)
+    have hBfin : B ≠ ⊤ :=
+      ENNReal.mul_ne_top (by norm_num) (ENNReal.mul_ne_top ENNReal.ofReal_ne_top hσ)
+    have hterm (j : ℕ) : ∫⁻ ω, ENNReal.ofReal
+        |admissibleCutoffIntegral P U dens Y γ (fastCutoff R e c j.succ) t ω -
+          admissibleCutoffIntegral P U dens Y γ (fastCutoff R e c j) t ω| ∂P ≤
+        ENNReal.ofReal ((1 / 2 : ℝ) ^ j) + Set.indicator {j : ℕ | j < i} (fun _ => B) j := by
+      by_cases hj : i ≤ j
+      · refine le_trans (hR (e i) j _ _ (le_fastCutoff i j (j + 1) hj (by omega))
+          (le_fastCutoff i j j hj le_rfl)).le le_self_add
+      · rw [Set.indicator_of_mem (show j ∈ {j : ℕ | j < i} from by
+          simp only [Set.mem_ofPred_eq]; omega)]
+        refine le_trans ?_ le_add_self
+        have hmeas (k : ℕ) : Measurable (admissibleCutoffIntegral P U dens Y γ
+            (fastCutoff R e c k) t) :=
+          admissibleCutoffIntegral_measurable P U dens ε₀ Y hY γ _ _ t.continuous.measurable
+        have hbound (k : ℕ) := lintegral_ofReal_abs_admissibleCutoffIntegral_le
+          (T.chart (e i)) γ _ (hcutj k) ‖t‖ t t.continuous.measurable (T.abs_allTest_le _)
+          (T.allTest_eq_zero _)
+        calc _ ≤ ∫⁻ ω, (ENNReal.ofReal |admissibleCutoffIntegral P U dens Y γ
+                (fastCutoff R e c j.succ) t ω| + ENNReal.ofReal |admissibleCutoffIntegral P U dens Y
+                γ (fastCutoff R e c j) t ω|) ∂P := by
+              apply lintegral_mono
+              intro ω
+              beta_reduce
+              rw [← ENNReal.ofReal_add (abs_nonneg _) (abs_nonneg _)]
+              exact ENNReal.ofReal_le_ofReal (abs_sub _ _)
+          _ = _ := lintegral_add_left (ENNReal.measurable_ofReal.comp
+              (continuous_abs.measurable.comp (hmeas j.succ))) _
+          _ ≤ ENNReal.ofReal ‖t‖ * logRegularizationReference U dens (T.chart (e i)) +
+              ENNReal.ofReal ‖t‖ * logRegularizationReference U dens (T.chart (e i)) :=
+              add_le_add (hbound j.succ) (hbound j)
+          _ = B := by rw [hBdef]; ring
+    refine ne_top_of_le_ne_top ?_ (ENNReal.tsum_le_tsum hterm)
+    rw [ENNReal.tsum_add]
+    refine ENNReal.add_ne_top.mpr ⟨?_, ?_⟩
+    · rw [← ENNReal.ofReal_tsum_of_nonneg (fun j => by positivity)
+        (summable_geometric_of_lt_one (by norm_num) (by norm_num))]
+      exact ENNReal.ofReal_ne_top
+    · rw [tsum_eq_sum (s := Finset.range i) (fun j hj => by
+        rw [Set.indicator_of_notMem (show j ∉ {j : ℕ | j < i} from by
+          simpa using hj)])]
+      exact ENNReal.sum_ne_top.mpr fun j _ => by
+        by_cases hj : j < i
+        · rw [Set.indicator_of_mem (show j ∈ {j : ℕ | j < i} from hj)]; exact hBfin
+        · rw [Set.indicator_of_notMem (show j ∉ {j : ℕ | j < i} from hj)]; exact ENNReal.zero_ne_top
   have h2 : ∀ᵐ ω ∂P, ∀ (j : ℕ) (i : ChartTestSystem.Index),
       chartUnitMass P U dens (T.chart i) Y γ (fastCutoff R e c j) ω ≠ ⊤ := by
     rw [ae_all_iff]
@@ -397,9 +373,11 @@ theorem ae_mem_realizationGoodSet
     intro i
     exact chartUnitMass_ne_top_ae P U dens ε₀ Y hY (T.chart i) (T.chart_compact i)
       (T.chart_subset i) γ _
-      (le_trans (Real.exp_le_exp.mpr (by linarith [const_le_fastCutoff R e c j])) hcut)
-  filter_upwards [h1, h2] with ω hω₁ hω₂ using ⟨hω₁, hω₂⟩
+      (le_trans (Real.exp_le_exp.mpr (by linarith [const_le_fastCutoff j])) hcut)
+  filter_upwards [ae_tendsto_allTest_fastCutoff, h2] with ω hω₁ hω₂ using ⟨hω₁, hω₂⟩
 
+
+end
 end DOZZ.Assembly
 
 /-! ### Limits of all continuous tests
@@ -502,12 +480,10 @@ theorem exists_tendsto_fastCutoff_of_mem_goodSet
   obtain ⟨i₀, hi₀⟩ := he (.inr n)
   obtain ⟨Lχ, hLχ⟩ := hω.1 i₀
   rw [hi₀] at hLχ
-  have hχconv : Tendsto (fun j => admissibleCutoffIntegral P U dens Y γ (fastCutoff R e c j)
-      (T.mass n) ω) atTop (𝓝 Lχ) := hLχ
-  obtain ⟨B, hB⟩ := (Metric.isBounded_range_of_tendsto _ hχconv).exists_norm_le
+  obtain ⟨B, hB⟩ := (Metric.isBounded_range_of_tendsto _ (hLχ)).exists_norm_le
   have hBj (j : ℕ) : admissibleCutoffIntegral P U dens Y γ (fastCutoff R e c j) (T.mass n) ω ≤
       B := (le_abs_self _).trans (by rw [← Real.norm_eq_abs]; exact hB _ ⟨j, rfl⟩)
-  have hB0 : 0 ≤ B := (norm_nonneg _).trans (hB _ ⟨0, rfl⟩)
+  have := (norm_nonneg _).trans (hB _ ⟨0, rfl⟩)
   apply cauchySeq_tendsto_of_complete
   rw [Metric.cauchySeq_iff]
   intro ε hε
@@ -534,15 +510,15 @@ theorem exists_tendsto_fastCutoff_of_mem_goodSet
       g h hg.measurable h.continuous.measurable Lg ‖h‖ hgL (T.abs_allTest_le (.inl (n, m)))
       hgK hhK δ hδ.le hclose).trans ?_
     exact mul_le_mul_of_nonneg_left (hBj j) hδ.le
-  have hδB : δ * B < ε / 4 := by
+  have : δ * B < ε / 4 := by
     rw [hδdef]
     have h4 : 0 < 4 * (B + 1) := by positivity
     rw [div_mul_eq_mul_div, div_lt_div_iff₀ h4 (by norm_num)]
     nlinarith
   have hvab := hN a ha b hb
   rw [Real.dist_eq] at hvab ⊢
-  have h1 := happrox a
-  have h2 := happrox b
+  have := happrox a
+  have := happrox b
   calc |admissibleCutoffIntegral P U dens Y γ (fastCutoff R e c a) g ω -
         admissibleCutoffIntegral P U dens Y γ (fastCutoff R e c b) g ω|
       ≤ |admissibleCutoffIntegral P U dens Y γ (fastCutoff R e c a) g ω -

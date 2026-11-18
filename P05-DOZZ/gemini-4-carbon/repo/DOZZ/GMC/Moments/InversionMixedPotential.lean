@@ -15,6 +15,9 @@ open MeasureTheory
 open Set Metric Real
 namespace DOZZ.Proofs
 
+variable {x y : ℂ}
+
+
 open CirclePotential
 
 /-- Multiplying the clipping radius changes the logarithm by at most the absolute logarithm
@@ -33,14 +36,14 @@ theorem inversion_logmax_mul_scale_bound {q t c : ℝ}
 /-- Averaging the source field over an ordinary source circle, then evaluating at an inverted
 point, gives a clipped target logarithm with scale `exp (-s) * ‖x‖ * ‖y‖`. The remainder is
 exactly the pinning potential averaged on the source circle. -/
-theorem inversion_innerPot_eq {x y : ℂ} (hx : x ≠ 0) (hy : y ≠ 0) (s : ℝ) :
+theorem inversion_innerPot_eq (hx : x ≠ 0) (hy : y ≠ 0) (s : ℝ) :
     innerPot y⁻¹ s x⁻¹ =
       -Real.log (max ‖x - y‖ (Real.exp (-s) * (‖x‖ * ‖y‖))) +
         Real.log (normPlus x) + Real.log (normPlus y) +
           (regAvg y⁻¹ s - Real.log (normPlus y⁻¹)) := by
-  have hxN : 0 < ‖x‖ := norm_pos_iff.mpr hx
-  have hyN : 0 < ‖y‖ := norm_pos_iff.mpr hy
-  have hc : 0 < ‖x‖ * ‖y‖ := mul_pos hxN hyN
+  have hxN := norm_pos_iff.mpr hx
+  have hyN := norm_pos_iff.mpr hy
+  have hc := mul_pos hxN hyN
   have hmax : max (‖x - y‖ / (‖x‖ * ‖y‖)) (Real.exp (-s)) =
       max ‖x - y‖ (Real.exp (-s) * (‖x‖ * ‖y‖)) / (‖x‖ * ‖y‖) := by
     rw [← max_div_div_right hc.le]
@@ -58,7 +61,7 @@ theorem inversion_innerPot_eq {x y : ℂ} (hx : x ≠ 0) (hy : y ≠ 0) (s : ℝ
   ring
 
 /-- The source pinning remainder is at most the source circle radius, uniformly in its center. -/
-theorem inversion_innerPot_remainder_le {x y : ℂ} (hx : x ≠ 0) (hy : y ≠ 0) (s : ℝ) :
+theorem inversion_innerPot_remainder_le (hx : x ≠ 0) (hy : y ≠ 0) (s : ℝ) :
     |innerPot y⁻¹ s x⁻¹ -
       (-Real.log (max ‖x - y‖ (Real.exp (-s) * (‖x‖ * ‖y‖))) +
         Real.log (normPlus x) + Real.log (normPlus y))| ≤ Real.exp (-s) := by
@@ -68,7 +71,7 @@ theorem inversion_innerPot_remainder_le {x y : ℂ} (hx : x ≠ 0) (hy : y ≠ 0
 
 /-- The inverted mixed point/circle potential is comparable to the ordinary one at all
 distances, with an explicit logarithmic chart factor. -/
-theorem inversion_innerPot_sub_innerPot_le {x y : ℂ}
+theorem inversion_innerPot_sub_innerPot_le
     (hx : x ≠ 0) (hy : y ≠ 0) (s : ℝ) :
     |innerPot y⁻¹ s x⁻¹ - innerPot y s x| ≤
       |Real.log (‖x‖ * ‖y‖)| + 2 * Real.exp (-s) := by
@@ -113,7 +116,7 @@ theorem inversion_innerPot_sub_innerPot_le {x y : ℂ}
 
 /-- Away from the diagonal, the mixed inverted point/circle covariance differs from the
 target equator kernel by at most the source circle radius. -/
-theorem inversion_innerPot_sub_gffKernel_le {x y : ℂ}
+theorem inversion_innerPot_sub_gffKernel_le
     (hx : x ≠ 0) (hy : y ≠ 0) (s : ℝ)
     (hsep : Real.exp (-s) * (‖x‖ * ‖y‖) ≤ ‖x - y‖) :
     |innerPot y⁻¹ s x⁻¹ - gffKernel x y| ≤ Real.exp (-s) := by
@@ -137,7 +140,7 @@ theorem abs_circleAverage_sub_circleAverage_le {f g : ℂ → ℝ} {x : ℂ} {ε
 
 /-- The separated mixed covariance estimate after averaging in the target variable. This is
 the ordinary-target-circle versus pulled-source-circle estimate used in compatibility. -/
-theorem inversion_circleAverage_mixed_offDiagonal_le {x y : ℂ} {ε : ℝ}
+theorem inversion_circleAverage_mixed_offDiagonal_le {ε : ℝ}
     (hy : y ≠ 0) (hε : 0 < ε) (hεx : ε < ‖x‖) (s : ℝ)
     (hsep : Real.exp (-s) * ((‖x‖ + ε) * ‖y‖) ≤ ‖x - y‖ - ε) :
     |circleAverage (fun u => innerPot y⁻¹ s u⁻¹) x ε -
@@ -182,7 +185,7 @@ theorem inversion_circleAverage_mixed_offDiagonal_le {x y : ℂ} {ε : ℝ}
 including coincident centers. Bounds on the logarithmic norms encode a compact punctured chart.
 -/
 theorem inversion_circleAverage_mixed_log_bound
-    {x y : ℂ} {R B r s : ℝ} (hR : 0 ≤ R) (hxR : ‖x‖ ≤ R) (hyR : ‖y‖ ≤ R)
+ {R B r s : ℝ} (hR : 0 ≤ R) (hxR : ‖x‖ ≤ R) (hyR : ‖y‖ ≤ R)
     (hr : 0 ≤ r) (hs : 0 ≤ s) (hy : y ≠ 0) (hylog : |Real.log ‖y‖| ≤ B)
     (hcircle : ∀ u ∈ sphere x (Real.exp (-r)),
       u ≠ 0 ∧ |Real.log ‖u‖| ≤ B) :

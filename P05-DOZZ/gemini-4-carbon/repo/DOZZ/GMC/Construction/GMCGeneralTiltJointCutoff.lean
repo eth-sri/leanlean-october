@@ -32,7 +32,7 @@ theorem equatorGFF_tilted_test_regularizedGMC_cutoff_lintegral
         ((regularizedGMC P Xc γ r ω).withDensity (fun x => ENNReal.ofReal
           (Real.exp (γ * gaussianCovariance P (fun ω' => Xc ω' x r) L)))) ∂P := by
   classical
-  let _ : IsProbabilityMeasure P := hX.1
+  let _ := hX.1
   let V : ℂ → ℝ := fun x => ∫ ω', Xc ω' x r ^ 2 ∂P
   let field : Ω → TestFn → ℝ := fun ω f => X ω f
   let fieldShift : Ω → TestFn → ℝ := fun ω f => X ω f +
@@ -41,8 +41,7 @@ theorem equatorGFF_tilted_test_regularizedGMC_cutoff_lintegral
     (Real.exp (L ω - gaussianVariance P L / 2))
   let covCircle : ℂ → ℝ := fun x =>
     gaussianCovariance P (fun ω' => Xc ω' x r) L
-  have hcovCont : Continuous covCircle := by
-    exact continuous_gaussianCovariance_circle_of_IsGaussianL2Limit
+  have hcovCont : Continuous covCircle := continuous_gaussianCovariance_circle_of_IsGaussianL2Limit
       P X hX Xc hXc L hL r
   obtain ⟨Z, hZeach, hZae, hZmeas⟩ :=
     exists_measurable_continuousCircleProfile P X hX Xc hXc r
@@ -53,24 +52,20 @@ theorem equatorGFF_tilted_test_regularizedGMC_cutoff_lintegral
   have hProfileShiftAE := continuousCircleCutoffMeasure_shift_ae_eq_regularizedGMC_withDensity
     P X hX Xc hXc γ r 1 Z hZmeas hZae covCircle hcovCont
   have hDensity : AEMeasurable density P := by
-    have hlog : AEMeasurable (fun ω => L ω - gaussianVariance P L / 2) P := by
-      exact hL.1.aemeasurable.sub measurable_const.aemeasurable
+    have hlog : AEMeasurable (fun ω => L ω - gaussianVariance P L / 2) P := hL.1.aemeasurable.sub measurable_const.aemeasurable
     exact (Real.measurable_exp.comp_aemeasurable hlog).ennreal_ofReal
   have hfieldMeas : Measurable field := by
     rw [measurable_pi_iff]
     exact fun f => (hX.2 f).1
-  have hregMeas : Measurable (fun ω => regularizedGMC P Xc γ r ω) :=
-    regularizedGMC_measurable P X hX Xc hXc γ r
   have hHrawMeas : Measurable (fun ω => H (field ω)
       (regularizedGMC P Xc γ r ω)) :=
-    hH.comp (Measurable.prodMk hfieldMeas hregMeas)
-  have hProfileUnderTilt := (withDensity_absolutelyContinuous P density).ae_le hProfileAE
+    hH.comp (Measurable.prodMk hfieldMeas (regularizedGMC_measurable P X hX Xc hXc γ r))
   have hleftProfile :
       (∫⁻ ω, H (field ω) (continuousCircleCutoffMeasure V γ (Z ω))
         ∂P.withDensity density) =
       ∫⁻ ω, H (field ω) (regularizedGMC P Xc γ r ω) ∂P.withDensity density := by
     apply lintegral_congr_ae
-    filter_upwards [hProfileUnderTilt] with ω hω
+    filter_upwards [(withDensity_absolutelyContinuous P density).ae_le hProfileAE] with ω hω
     rw [hω]
   have hrightProfile :
       (∫⁻ ω, H (fun f => X ω f +

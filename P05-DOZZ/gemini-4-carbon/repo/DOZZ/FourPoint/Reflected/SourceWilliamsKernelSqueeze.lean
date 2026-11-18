@@ -46,25 +46,23 @@ theorem reflected_source_williams_kernel_squeeze
         min 1 ((1-Real.exp (-h))^(γ^2/2)*(1-Real.exp (-h)*‖z‖)⁻¹^(-|γ*α₂|))*W z+E z := by
   let R := Real.exp (-h)
   have hR : 0 < R := Real.exp_pos _
-  have hR1 : R < 1 := Real.exp_lt_one_iff.mpr (neg_neg_of_pos hh)
+  have hR1 := Real.exp_lt_one_iff.mpr (neg_neg_of_pos hh)
   filter_upwards [reflected_outer_cutoff_geometry ξ 1 hξ hξ1 zero_lt_one,self_mem_nhdsWithin]
     with z hz hz0
-  have hn : 0 < ‖z‖ := norm_pos_iff.mpr hz0
-  have hr1 : ‖z‖^(1-ξ) ≤ 1 := hz.2.2.2.2.le
-  have hzr : ‖z‖ < ‖z‖^(1-ξ) := by linarith only [hz.1,hz.2.2.2.1]
-  have hzn : ‖z‖ < 1 := hzr.trans_le hr1
+  have hn := norm_pos_iff.mpr hz0
+  have hr1 := hz.2.2.2.2.le
+  have hzr : ‖z‖ < ‖z‖^(1-ξ) := by nlinarith
+  have hzn := hzr.trans_le hr1
   have hz1 : z ≠ 1 := by intro he; simp [he] at hzn
   let T := Real.toNNReal (-Real.log ‖z‖+h)
-  have hcoord : (T : ℝ) = -Real.log ‖z‖+h := Real.coe_toNNReal _
+  have hcoord := Real.coe_toNNReal _
     (add_nonneg (neg_nonneg.mpr (Real.log_nonpos hn.le hzn.le)) hh.le)
   have hη : Real.exp (-(T : ℝ)) = R*‖z‖ := by
     rw [hcoord,neg_add,neg_neg,Real.exp_add,Real.exp_log hn,mul_comm]
   have hη1 : Real.exp (-(T : ℝ)) < 1 := by
     rw [hη]
     exact (mul_le_of_le_one_left hn.le hR1.le).trans_lt hzn
-  have hTr : Real.exp (-(T : ℝ)) ≤ ‖z‖^(1-ξ) := by
-    rw [hη]
-    exact (mul_le_of_le_one_left hn.le hR1.le).trans hzr.le
+  have hTr : Real.exp (-(T : ℝ)) ≤ ‖z‖^(1-ξ) := by nlinarith
   have hk := reflected_source_copied_kernel_inverse_squeeze P X hX Xc hc hcont γ hγ hγ₂ M hM
     N hN hi heq hfin α₁ α₂ α₃ ξ p R hp hα₁ hα₂ hα₃ z hz0 hz1 hzn.le hz.1 hzr hr1 T
     hR.le hR1 hη1 hη.le

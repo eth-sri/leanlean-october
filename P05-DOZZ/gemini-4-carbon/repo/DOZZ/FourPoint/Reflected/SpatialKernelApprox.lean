@@ -8,7 +8,6 @@ public import DOZZ.FourPoint.Reflected.OuterKernelLimit
 public import DOZZ.FourPoint.TwoRootedDomination
 /-! Compact spatial tests for the literal reflected kernel. -/
 @[expose] public section
-open MeasureTheory Set Filter Topology
 namespace DOZZ.Proofs
 
 /-- The integration-point kernel is continuous away from its two singular roots; its moving
@@ -18,8 +17,8 @@ theorem reflected_spatial_kernel_continuousOn (γ α₁ α₂ α₃ : ℝ) (z : 
   intro x hx
   have hx0 : x ≠ 0 := fun h => hx (by simp [h])
   have hx1 : x ≠ 1 := fun h => hx (by simp [h])
-  have h0 : 0 < ‖x‖ := norm_pos_iff.mpr hx0
-  have h1 : 0 < ‖x-1‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hx1)
+  have h0 := norm_pos_iff.mpr hx0
+  have h1 := norm_pos_iff.mpr (sub_ne_zero.mpr hx1)
   have hplus : Continuous normPlus := by unfold normPlus; fun_prop
   have hpp : 0 < normPlus x := by unfold normPlus; positivity
   have hn : ContinuousAt (fun x : ℂ => ‖x-z‖^(γ^2/2)) x :=

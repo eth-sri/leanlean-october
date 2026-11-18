@@ -26,10 +26,9 @@ theorem fusion_localDifference_rooting_scaled {Ω : Type*} [MeasurableSpace Ω]
     have hm : Measurable (fun x : ℂ => (z, x)) := measurable_const.prodMk measurable_id
     simpa only [Function.comp_def] using (fusionDifferenceKernel_measurable γ α₁ α₂ α₃).comp hm
   obtain ⟨hk, hβ, hβ2, _, _⟩ := fusion_difference_parameters γ α₁ hγ hlo hα₁
-  have hfi := fusion_difference_local_integrable γ α₁ α₂ α₃ hk hβ hβ2 z hz
   have h := (fusion_segment_rooting P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hα₁ hα₂ hα₃
     t ht (-p - 1) (by linarith) z hz hz4 (B.indicator (fusionDifferenceKernel γ α₁ α₂ α₃ z))
-    (hf.indicator Metric.isOpen_ball.measurableSet) hfi).2.2
+    (hf.indicator Metric.isOpen_ball.measurableSet) (fusion_difference_local_integrable γ α₁ α₂ α₃ hk hβ hβ2 z hz)).2.2
   have he : (fun u => B.indicator (fusionDifferenceKernel γ α₁ α₂ α₃ z) u *
       (∫⁻ ω, fusionUnrootedSegment γ α₁ α₂ α₃ t z (gmcRootedMeasure γ u (M ω)) ^ (-p - 1) ∂P).toReal) =
       B.indicator (fun u => fusionDifferenceKernel γ α₁ α₂ α₃ z u *

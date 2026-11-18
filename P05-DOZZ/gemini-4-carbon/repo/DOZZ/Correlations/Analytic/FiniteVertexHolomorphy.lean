@@ -11,8 +11,6 @@ public import DOZZ.Complex.Charge
 /-! Holomorphy of finite-radius Wick vertices with a retained, charge-independent GMC mass. -/
 
 @[expose] public section
-open MeasureTheory ProbabilityTheory Filter Topology Set
-open scoped ENNReal
 namespace DOZZ.Proofs
 
 /-- Sum of the complex charges as a continuous linear functional. -/

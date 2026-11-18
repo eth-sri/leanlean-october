@@ -10,8 +10,6 @@ public import DOZZ.Statements.Complex.TwoTailRational
 
 @[expose] public section
 
-open MeasureTheory Filter Topology Set
-open scoped ENNReal
 
 namespace DOZZ
 

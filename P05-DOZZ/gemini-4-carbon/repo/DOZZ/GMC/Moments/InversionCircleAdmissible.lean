@@ -16,34 +16,6 @@ open scoped Distributions Topology
 
 namespace DOZZ.Proofs
 
-/-- Admissibility depends on measurability, centered Gaussian laws and the covariance kernel. -/
-theorem isAdmissibleLogRegularization_of_covariance_eq
-    {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} {U : Set ℂ}
-    {dens : ℂ → ℝ} {ε₀ : ℝ} {Y Z : Ω → ℝ → ℂ → ℝ}
-    (hY : IsAdmissibleLogRegularization P U dens ε₀ Y)
-    (hm : ∀ ε, Measurable (fun q : Ω × ℂ => Z q.1 ε q.2))
-    (hg : ∀ n (q : Fin n → ℝ × ℂ), (∀ i, 0 < (q i).1 ∧ (q i).1 ≤ ε₀) →
-      IsCenteredJointlyGaussian P (fun ω i => Z ω (q i).1 (q i).2))
-    (hc : ∀ ε δ x y, gaussianCovariance P (fun ω => Z ω ε x) (fun ω => Z ω δ y) =
-      gaussianCovariance P (fun ω => Y ω ε x) (fun ω => Y ω δ y)) :
-    IsAdmissibleLogRegularization P U dens ε₀ Z := by
-  refine
-    { measurableAtScale := hm
-      openChart := hY.openChart
-      densityContinuous := hY.densityContinuous
-      densityPositive := hY.densityPositive
-      cutoffPositive := hY.cutoffPositive
-      gaussian := hg
-      covarianceBound := ?_
-      coarseVarianceBound := ?_
-      coarseMixedBound := ?_
-      offDiagonalLimit := ?_
-      fixedCoarseLimit := ?_ }
-  · simpa only [hc] using hY.covarianceBound
-  · simpa only [gaussianVariance, hc] using hY.coarseVarianceBound
-  · simpa only [hc] using hY.coarseMixedBound
-  · simpa only [hc] using hY.offDiagonalLimit
-  · simpa only [hc] using hY.fixedCoarseLimit
 
 /-- A jointly measurable centered Gaussian family with ordinary circle covariance is admissible
 on every open chart, even when constructed by inversion on the source probability space. -/
@@ -59,6 +31,24 @@ theorem inversionCircle_admissible_of_geometry
     (U : Set ℂ) (hU : IsOpen U) :
     IsAdmissibleLogRegularization P U (fun x => normPlus x ^ (-4 : ℝ)) 1
       (fun ω ε x => Z ω x (Real.log (1 / ε))) := by
+  have isAdmissibleLogRegularization_of_covariance_eq {P : Measure Ω} {U : Set ℂ} {dens : ℂ → ℝ} {ε₀ : ℝ} {Y Z : Ω → ℝ → ℂ → ℝ} (hY : IsAdmissibleLogRegularization P U dens ε₀ Y) (hm : ∀ ε, Measurable (fun q : Ω × ℂ => Z q.1 ε q.2)) (hg : ∀ n (q : Fin n → ℝ × ℂ), (∀ i, 0 < (q i).1 ∧ (q i).1 ≤ ε₀) → IsCenteredJointlyGaussian P (fun ω i => Z ω (q i).1 (q i).2)) (hc : ∀ ε δ x y, gaussianCovariance P (fun ω => Z ω ε x) (fun ω => Z ω δ y) = gaussianCovariance P (fun ω => Y ω ε x) (fun ω => Y ω δ y)) : IsAdmissibleLogRegularization P U dens ε₀ Z := by
+    refine
+      { measurableAtScale := hm
+        openChart := hY.openChart
+        densityContinuous := hY.densityContinuous
+        densityPositive := hY.densityPositive
+        cutoffPositive := hY.cutoffPositive
+        gaussian := hg
+        covarianceBound := ?_
+        coarseVarianceBound := ?_
+        coarseMixedBound := ?_
+        offDiagonalLimit := ?_
+        fixedCoarseLimit := ?_ }
+    · simpa only [hc] using hY.covarianceBound
+    · simpa only [gaussianVariance, hc] using hY.coarseVarianceBound
+    · simpa only [hc] using hY.coarseMixedBound
+    · simpa only [hc] using hY.offDiagonalLimit
+    · simpa only [hc] using hY.fixedCoarseLimit
   obtain ⟨Xc, hXc⟩ := exists_equatorGFF_circle_average_witness X hX
   apply isAdmissibleLogRegularization_of_covariance_eq
     (isCircleAverage_admissible P X hX Xc hXc U hU)

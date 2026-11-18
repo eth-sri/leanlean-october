@@ -42,10 +42,8 @@ theorem bpz_measurable_double_integral {μ ν : Ω → Measure ℂ} (hμ : Measu
     (hνfin : ∀ ω, IsFiniteMeasure (ν ω)) (g : ℂ → ℂ → ℝ)
     (hg : Measurable (Function.uncurry g)) :
     Measurable (fun ω => ∫ x, ∫ y, g x y ∂ν ω ∂μ ω) := by
-  have hin : Measurable (fun p : Ω × ℂ => ∫ y, g p.2 y ∂ν p.1) :=
-    measurable_integral_finite_family ν hν hνfin g hg
   have hout := measurable_integral_finite_family μ hμ hμfin
-    (fun ω' x => ∫ y, g x y ∂ν ω') hin
+    (fun ω' x => ∫ y, g x y ∂ν ω') (measurable_integral_finite_family ν hν hνfin g hg)
   exact hout.comp (measurable_id.prodMk measurable_id)
 
 /-- The near-diagonal kernel `1{|x| ≤ ρ} 1{|y - x| < t}`. -/
@@ -56,24 +54,24 @@ noncomputable def bpzNearKernel (ρ t : ℝ) (x y : ℂ) : ℝ :=
 noncomputable def bpzNearDiag (ρ t : ℝ) (μ : Measure ℂ) : ℝ :=
   ∫ x, ∫ y, bpzNearKernel ρ t x y ∂μ ∂μ
 
-theorem measurable_bpzNearKernel (ρ t : ℝ) : Measurable (Function.uncurry (bpzNearKernel ρ t)) := by
+section
+variable (ρ t : ℝ)
+include ρ t
+
+theorem measurable_bpzNearKernel : Measurable (Function.uncurry (bpzNearKernel ρ t)) := by
   have hs : MeasurableSet {p : ℂ × ℂ | ‖p.1‖ ≤ ρ ∧ dist p.2 p.1 < t} :=
     (measurableSet_le continuous_fst.norm.measurable measurable_const).inter
       (measurableSet_lt (continuous_snd.dist continuous_fst).measurable measurable_const)
   exact Measurable.ite hs measurable_const measurable_const
 
-theorem bpzNearKernel_nonneg (ρ t : ℝ) (x y : ℂ) : 0 ≤ bpzNearKernel ρ t x y := by
+theorem bpzNearKernel_nonneg (x y : ℂ) : 0 ≤ bpzNearKernel ρ t x y := by
   unfold bpzNearKernel; split_ifs <;> norm_num
 
-theorem bpzNearKernel_le_one (ρ t : ℝ) (x y : ℂ) : bpzNearKernel ρ t x y ≤ 1 := by
+theorem bpzNearKernel_le_one (x y : ℂ) : bpzNearKernel ρ t x y ≤ 1 := by
   unfold bpzNearKernel; split_ifs <;> norm_num
 
-theorem bpzNearKernel_mono {ρ ρ' t t' : ℝ} (hρ : ρ ≤ ρ') (ht : t ≤ t') (x y : ℂ) :
-    bpzNearKernel ρ t x y ≤ bpzNearKernel ρ' t' x y := by
-  unfold bpzNearKernel
-  by_cases h : ‖x‖ ≤ ρ ∧ dist y x < t
-  · rw [ite_eq_left h, ite_eq_left ⟨h.1.trans hρ, h.2.trans_le ht⟩]
-  · rw [ite_eq_right h]; exact bpzNearKernel_nonneg ρ' t' x y
+
+end
 
 /-- The inner integral of the near-diagonal kernel is the mass of a ball. -/
 theorem integral_bpzNearKernel (μ : Measure ℂ) [IsFiniteMeasure μ] (ρ t : ℝ) (x : ℂ) :
@@ -109,6 +107,11 @@ theorem bpz_inner_integral_bdd {μ : Measure ℂ} [IsFiniteMeasure μ] {g : ℂ 
 
 theorem bpzNearDiag_mono {ρ ρ' t t' : ℝ} (hρ : ρ ≤ ρ') (ht : t ≤ t') (μ : Measure ℂ)
     [IsFiniteMeasure μ] : bpzNearDiag ρ t μ ≤ bpzNearDiag ρ' t' μ := by
+  have bpzNearKernel_mono (x y : ℂ) : bpzNearKernel ρ t x y ≤ bpzNearKernel ρ' t' x y := by
+    unfold bpzNearKernel
+    by_cases h : ‖x‖ ≤ ρ ∧ dist y x < t
+    · rw [ite_eq_left h, ite_eq_left ⟨h.1.trans hρ, h.2.trans_le ht⟩]
+    · rw [ite_eq_right h]; exact bpzNearKernel_nonneg ρ' t' x y
   have hmeas : ∀ ρ t, Measurable fun x => ∫ y, bpzNearKernel ρ t x y ∂μ := fun ρ t =>
     ((measurable_bpzNearKernel ρ t).stronglyMeasurable.integral_prod_right' (ν := μ)).measurable
   refine integral_mono (integrable_of_bdd_finite (hmeas ρ t) (C := μ.real Set.univ) ?_)
@@ -130,6 +133,6 @@ theorem bpzNearDiag_mono {ρ ρ' t t' : ℝ} (hρ : ρ ≤ ρ') (ht : t ≤ t') 
         (measurable_const.prodMk measurable_id)) (C := 1) fun y => by
         rw [abs_of_nonneg (bpzNearKernel_nonneg ρ' t' x y)]
         exact bpzNearKernel_le_one ρ' t' x y)
-      fun y => bpzNearKernel_mono hρ ht x y
+      fun y => bpzNearKernel_mono x y
 
 end DOZZ.Proofs

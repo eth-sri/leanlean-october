@@ -37,14 +37,12 @@ lemma Dense.holderWith_extend (hs : Dense s) (hf : HolderWith C r f) (hr : 0 < r
   intro x y
   have hf' := hf.uniformContinuous hr
   have := neBot_comap_nhds hs
-  have hx := hs.extend_spec hf' x
-  have hy := hs.extend_spec hf' y
   refine le_of_tendsto_of_tendsto'
     (b := ((𝓝 x).comap ((↑) : s → X)) ×ˢ ((𝓝 y).comap ((↑) : s → X))) ?_ ?_
     fun z : s × s ↦ hf z.1 z.2
   · change Tendsto (edist.uncurry ∘ (fun z : s × s ↦ (f z.1, f z.2))) _ _
     refine (Continuous.tendsto (by fun_prop) (hs.extend f x, hs.extend f y)).comp ?_
-    exact Tendsto.prodMk_nhds (hx.comp tendsto_fst) (hy.comp tendsto_snd)
+    exact Tendsto.prodMk_nhds ((hs.extend_spec hf' x).comp tendsto_fst) ((hs.extend_spec hf' y).comp tendsto_snd)
   · simp_rw [Subtype.edist_eq]
     change Tendsto ((fun z : X × X ↦ C * edist z.1 z.2 ^ r.toReal) ∘
       (fun z : s × s ↦ (z.1.1, z.2.1))) _ _
@@ -81,21 +79,7 @@ lemma MemHolder.mono {X Y : Type*} [PseudoMetricSpace X] [hX : BoundedSpace X]
     ENNReal.coe_rpow_of_nonneg]
   all_goals simpa
 
-lemma MemHolder.mono' {X Y : Type*} [PseudoEMetricSpace X] [PseudoEMetricSpace Y]
-    {f : X → Y} {r s : ℝ≥0} (hf : MemHolder r f) (hs : s ≤ r) {C' : ℝ≥0}
-    (hX : ∀ x y : X, edist x y ≤ C') :
-    MemHolder s f := by
-  let := PseudoEMetricSpace.toPseudoMetricSpace
-    fun x y ↦ ne_top_of_le_ne_top ENNReal.coe_ne_top (hX x y)
-  have := PseudoEMetricSpace.boundedSpace_toPseudoMetricSpace hX
-  exact DOZZ.Proofs.MemHolder.mono hf hs
 
-lemma HolderOnWith.mono_right {X Y : Type*} [PseudoMetricSpace X] [PseudoEMetricSpace Y]
-    {f : X → Y} {C r s : ℝ≥0} {t : Set X} (hf : HolderOnWith C r f t) (hs : s ≤ r)
-    (ht : IsBounded t) : ∃ C', HolderOnWith C' s f t := by
-  simp_rw [← HolderWith.restrict_iff] at *
-  have : BoundedSpace t := boundedSpace_val_set_iff.2 ht
-  exact MemHolder.mono ⟨C, hf⟩ hs
 
 lemma HolderOnWith.mono_right' {X Y : Type*} [PseudoEMetricSpace X] [PseudoEMetricSpace Y]
     {f : X → Y} {C r s : ℝ≥0} {t : Set X} (hf : HolderOnWith C r f t) (hs : s ≤ r)
@@ -104,7 +88,7 @@ lemma HolderOnWith.mono_right' {X Y : Type*} [PseudoEMetricSpace X] [PseudoEMetr
   simp_rw [← HolderWith.restrict_iff] at *
   let := PseudoEMetricSpace.toPseudoMetricSpace
     fun x y : t ↦ ne_top_of_le_ne_top ENNReal.coe_ne_top (ht x.2 y.2)
-  have : BoundedSpace t :=
+  have :=
     PseudoEMetricSpace.boundedSpace_toPseudoMetricSpace fun x y : t ↦ ht x.2 y.2
   exact MemHolder.mono ⟨C, hf⟩ hs
 
@@ -135,7 +119,7 @@ lemma UniformContinuousOn.exists_tendsto {α β : Type*} [UniformSpace α] [Firs
       obtain ⟨N, hN⟩ := h_cauchy s hs
       exact ⟨N, fun k hNk l hNl ↦ hsV (hN k hNk l hNl)⟩
     · rw [tendsto_principal]
-      have hut : ∀ᶠ n in atTop, (u n : α) ∈ t := hu.eventually_mem (ht.mem_nhds ha)
+      have hut := hu.eventually_mem (ht.mem_nhds ha)
       simp only [eventually_atTop, Set.mem_prod, Set.mem_ofPred_eq, Prod.forall,
         Prod.exists, Prod.mk_le_mk, and_imp] at hut ⊢
       obtain ⟨N, hN⟩ := hut
@@ -154,7 +138,7 @@ lemma UniformContinuousOn.exists_tendsto {α β : Type*} [UniformSpace α] [Firs
   rw [UniformContinuousOn] at hf
   refine hf.comp ?_
   have hu' : Tendsto u atTop (comap Subtype.val (𝓝 a)) := by rwa [tendsto_comap_iff]
-  have hv' : Tendsto v atTop (comap Subtype.val (𝓝 a)) := by rwa [tendsto_comap_iff]
+  have hv' : Tendsto v atTop (comap Subtype.val (𝓝 a)) := by assumption
   refine Tendsto.mono_right (hu'.prodMk hv') ?_
   rw [le_inf_iff]
   constructor
@@ -233,7 +217,7 @@ lemma exists_modification_on_of_edist_modification_on {T Ω E : Type*} {mΩ : Me
     · rw [edist_comm]
       simp [hω]
     · simp
-  have hZ_meas t : Measurable (Z t) := DOZZ.Proofs.Measurable.of_edist_eq_zero (hY t) (h_edist_Z t)
+  have hZ_meas t := DOZZ.Proofs.Measurable.of_edist_eq_zero (hY t) (h_edist_Z t)
   refine ⟨Z, hZ_meas, h_edist_Z, fun t ht ↦ ?_⟩
   filter_upwards [h_edist t ht] with ω hω
   simp [Z, hω]
@@ -263,8 +247,7 @@ lemma Measurable.measurableSet_edist_eqOn_zero_of_continuous [SecondCountableTop
       intro t htU
       exact h t htU.1 htU.2
     refine Set.EqOn.of_subset_closure h_eqOn ?_ (by fun_prop) Set.inter_subset_right ?_
-    · intro x hx
-      exact (hf ω x hx).edist (hg ω x hx)
+    · fun_prop
     · exact subset_closure_dense_inter hT'_dense hU
   rw [this]
   have : {ω | ∀ (t : T'), ↑t ∈ U → edist (f t ω) (g t ω) = 0}
@@ -288,7 +271,7 @@ def holderSet (X : T → Ω → E) (T' : Set T) (p β : ℝ) (U : Set T) : Set �
 lemma IsKolmogorovProcess.measurableSet_holderSet
     (hX : IsKolmogorovProcess X P p q M) {T' : Set T} (hT' : T'.Countable) :
     MeasurableSet (holderSet X T' p β U) := by
-  have : Countable T' := hT'
+  have := hT'
   have : Countable (T' ∩ U : Set T) := hT'.mono Set.inter_subset_left
   let C ω := ⨆ (s : (T' ∩ U : Set T)) (t : (T' ∩ U : Set T)),
     edist (X s ω) (X t ω) ^ p / edist s t ^ (β * p)
@@ -309,9 +292,11 @@ lemma IsKolmogorovProcess.measurableSet_holderSet
     · exact MeasurableSet.preimage (measurableSet_singleton 0) hX.measurable_edist
     · exact (MeasurableSet.preimage (measurableSet_singleton 0) (by fun_prop)).compl
 
-lemma holderOnWith_of_mem_holderSet (hT : HasBoundedCoveringNumber U c d)
-    (hp_pos : 0 < p) (hβ_pos : 0 < β)
-    {T' : Set T} {ω : Ω} (hω : ω ∈ holderSet X T' p β U) :
+section
+variable (hT : HasBoundedCoveringNumber U c d) (hp_pos : 0 < p) (hβ_pos : 0 < β) {T' : Set T} {ω : Ω} (hω : ω ∈ holderSet X T' p β U)
+include hT hp_pos hβ_pos hω
+
+lemma holderOnWith_of_mem_holderSet :
     letI C ω := ⨆ (s : (T' ∩ U : Set T)) (t : (T' ∩ U : Set T)),
       edist (X s ω) (X t ω) ^ p / edist s t ^ (β * p)
     HolderOnWith (C ω ^ p⁻¹).toNNReal β (fun (t : T') ↦ X t ω) {t' | (t' : T) ∈ U} := by
@@ -333,19 +318,13 @@ lemma holderOnWith_of_mem_holderSet (hT : HasBoundedCoveringNumber U c d)
   exact le_iSup₂ ⟨s, ⟨s.2, hs⟩⟩ ⟨t, ⟨t.2, ht⟩⟩ (f := fun (s t : (T' ∩ U : Set T)) ↦
     edist (X s ω) (X t ω) ^ p / edist s t ^ (β * p))
 
-lemma uniformContinuousOn_of_mem_holderSet
-    (hT : HasBoundedCoveringNumber U c d)
-    (hp_pos : 0 < p) (hβ_pos : 0 < β)
-    {T' : Set T} {ω : Ω} (hω : ω ∈ holderSet X T' p β U) :
-    UniformContinuousOn (fun (t : T') ↦ X t ω) {x : T' | ↑x ∈ U} :=
-      (holderOnWith_of_mem_holderSet hT hp_pos hβ_pos hω).uniformContinuousOn hβ_pos
 
-lemma continuousOn_of_mem_holderSet (hT : HasBoundedCoveringNumber U c d)
-    (hp_pos : 0 < p) (hβ_pos : 0 < β)
-    {T' : Set T} {ω : Ω} (hω : ω ∈ holderSet X T' p β U) :
+lemma continuousOn_of_mem_holderSet :
     ContinuousOn (fun (t : T') ↦ X t ω) {x : T' | ↑x ∈ U} :=
   (holderOnWith_of_mem_holderSet hT hp_pos hβ_pos hω).continuousOn hβ_pos
 
+
+end
 lemma exists_tendsto_of_mem_holderSet [CompleteSpace E]
     (hT : HasBoundedCoveringNumber U c d) (hU : IsOpen U)
     (hp_pos : 0 < p) (hβ_pos : 0 < β)
@@ -353,26 +332,22 @@ lemma exists_tendsto_of_mem_holderSet [CompleteSpace E]
     (t : T) (htU : t ∈ U) :
     ∃ c, Tendsto (fun t' : T' ↦ X t' ω) (comap Subtype.val (𝓝 t)) (𝓝 c) :=
   DOZZ.Proofs.UniformContinuousOn.exists_tendsto hT'_dense hU
-    (uniformContinuousOn_of_mem_holderSet hT hp_pos hβ_pos hω) t
-    htU
+      (((holderOnWith_of_mem_holderSet hT hp_pos hβ_pos hω).uniformContinuousOn hβ_pos)) t
+      htU
 
 lemma ae_mem_holderSet [MeasurableSpace E] [BorelSpace E]
     (hT : HasBoundedCoveringNumber U c d) (hX : IsKolmogorovProcess X P p q M)
     (hc : c ≠ ∞) (hd_pos : 0 < d) (hdq_lt : d < q) (hβ_pos : 0 < β) (hβ_lt : β < (q - d) / p)
     {T' : Set T} (hT'_countable : T'.Countable) :
     ∀ᵐ ω ∂P, ω ∈ holderSet X T' p β U := by
-  have : Countable T' := hT'_countable
+  have := hT'_countable
   have hT'U : (T' ∩ U).Countable := hT'_countable.mono Set.inter_subset_left
   have : Countable (T' ∩ U : Set T) := hT'U
   have h_ae_zero : ∀ᵐ ω ∂P, ∀ (s t : (T' ∩ U : Set T)),
       edist s t = 0 → edist (X s ω) (X t ω) = 0 := by
     simp_rw [ae_all_iff]
     exact fun s t hst ↦ hX.IsAEKolmogorovProcess.edist_eq_zero hst
-  let C ω := ⨆ (s : (T' ∩ U : Set T)) (t : (T' ∩ U : Set T)),
-    edist (X s ω) (X t ω) ^ p / edist s t ^ (β * p)
-  have hC_lt_top : ∀ᵐ ω ∂P, C ω < ∞ :=
-    DOZZ.Proofs.IsKolmogorovProcess.ae_iSup_rpow_edist_div_lt_top hT hX hc hd_pos hdq_lt hβ_pos hβ_lt hT'U Set.inter_subset_right
-  filter_upwards [hC_lt_top, h_ae_zero] with ω hω₁ hω₂ using ⟨hω₁, hω₂⟩
+  filter_upwards [DOZZ.Proofs.IsKolmogorovProcess.ae_iSup_rpow_edist_div_lt_top hT hX hc hd_pos hdq_lt hβ_pos hβ_lt hT'U Set.inter_subset_right, h_ae_zero] with ω hω₁ hω₂ using ⟨hω₁, hω₂⟩
 
 end HolderSet
 

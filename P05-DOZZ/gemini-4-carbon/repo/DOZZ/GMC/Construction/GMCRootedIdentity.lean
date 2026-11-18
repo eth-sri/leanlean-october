@@ -17,8 +17,6 @@ import Mathlib.MeasureTheory.Measure.Prod
 
 @[expose] public section
 
-open MeasureTheory ProbabilityTheory
-open scoped Distributions ENNReal NNReal
 
 namespace DOZZ.Proofs
 

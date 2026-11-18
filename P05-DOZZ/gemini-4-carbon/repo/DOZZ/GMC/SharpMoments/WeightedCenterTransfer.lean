@@ -29,54 +29,59 @@ noncomputable def insertionTruncWeightE (γ α : ℝ) (N : ℕ) (y : ℂ) : ℝ�
 noncomputable def insertionTruncWeight (γ α : ℝ) (N : ℕ) (y : ℂ) : ℝ≥0 :=
   (insertionTruncWeightE γ α N y).toNNReal
 
-theorem insertionTruncWeightE_le (γ α : ℝ) (N : ℕ) (y : ℂ) :
+section
+variable (γ α : ℝ) (N : ℕ)
+include γ α N
+
+theorem insertionTruncWeightE_le (y : ℂ) :
     insertionTruncWeightE γ α N y ≤ N :=
   min_le_left _ _
 
-theorem coe_insertionTruncWeight (γ α : ℝ) (N : ℕ) (y : ℂ) :
+theorem coe_insertionTruncWeight (y : ℂ) :
     (insertionTruncWeight γ α N y : ℝ≥0∞) = insertionTruncWeightE γ α N y :=
   ENNReal.coe_toNNReal (ne_top_of_le_ne_top (ENNReal.natCast_ne_top N)
     (insertionTruncWeightE_le γ α N y))
 
-theorem insertionTruncWeight_le (γ α : ℝ) (N : ℕ) (y : ℂ) :
+theorem insertionTruncWeight_le (y : ℂ) :
     insertionTruncWeight γ α N y ≤ (N : ℝ≥0) := by
   rw [← ENNReal.coe_le_coe, coe_insertionTruncWeight, ENNReal.coe_natCast]
   exact insertionTruncWeightE_le γ α N y
 
-theorem measurable_insertionTruncWeightE (γ α : ℝ) (N : ℕ) :
+theorem measurable_insertionTruncWeightE :
     Measurable (insertionTruncWeightE γ α N) :=
   measurable_const.min ((ENNReal.continuous_rpow_const (y := -γ * α)).measurable.comp
     (ENNReal.measurable_ofReal.comp measurable_norm))
 
-theorem measurable_insertionTruncWeight (γ α : ℝ) (N : ℕ) :
+theorem measurable_insertionTruncWeight :
     Measurable (insertionTruncWeight γ α N) :=
   ENNReal.measurable_toNNReal.comp (measurable_insertionTruncWeightE γ α N)
 
-theorem insertionTruncWeightE_le_weight (γ α : ℝ) (N : ℕ) (y : ℂ) :
+theorem insertionTruncWeightE_le_weight (y : ℂ) :
     insertionTruncWeightE γ α N y ≤ ENNReal.rpow (ENNReal.ofReal ‖y‖) (-γ * α) :=
   min_le_right _ _
 
+
+end
 theorem insertionTruncWeightE_mono (γ α : ℝ) (y : ℂ) :
     Monotone fun N : ℕ => insertionTruncWeightE γ α N y := fun _ _ h =>
   min_le_min_right _ (Nat.cast_le.mpr h)
 
-theorem insertionTruncWeightE_tendsto (γ α : ℝ) (y : ℂ) :
-    Tendsto (fun N : ℕ => insertionTruncWeightE γ α N y) atTop
-      (𝓝 (ENNReal.rpow (ENNReal.ofReal ‖y‖) (-γ * α))) := by
-  have h := ENNReal.tendsto_nat_nhds_top.min
-    (tendsto_const_nhds (x := ENNReal.rpow (ENNReal.ofReal ‖y‖) (-γ * α)))
-  rwa [min_eq_right le_top] at h
 
 /-- Truncated weighted masses increase to the weighted local mass. -/
 theorem insertionTrunc_mass_tendsto (γ α : ℝ) (μ : Measure ℂ) (z : ℂ) (ρ : ℝ) :
     Tendsto (fun N : ℕ => ∫⁻ x in Metric.ball z ρ, (insertionTruncWeight γ α N (x - z) : ℝ≥0∞)
         ∂μ) atTop (𝓝 (weightedGmcBallMass γ μ α z ρ)) := by
+  have insertionTruncWeightE_tendsto (y : ℂ) : Tendsto (fun N : ℕ => insertionTruncWeightE γ α N y) atTop
+        (𝓝 (ENNReal.rpow (ENNReal.ofReal ‖y‖) (-γ * α))) := by
+    have h := ENNReal.tendsto_nat_nhds_top.min
+      (tendsto_const_nhds (x := ENNReal.rpow (ENNReal.ofReal ‖y‖) (-γ * α)))
+    rwa [min_eq_right le_top] at h
   simp only [coe_insertionTruncWeight]
   exact lintegral_tendsto_of_tendsto_of_monotone
     (fun N => ((measurable_insertionTruncWeightE γ α N).comp
       (measurable_id.sub_const z)).aemeasurable)
     (Eventually.of_forall fun x => insertionTruncWeightE_mono γ α (x - z))
-    (Eventually.of_forall fun x => insertionTruncWeightE_tendsto γ α (x - z))
+    (Eventually.of_forall fun x => insertionTruncWeightE_tendsto (x - z))
 
 /-- The weighted local moment at the chart center is bounded by an explicit constant times the
 weighted local moment at any other center, for small disks and positive subcritical orders. -/
@@ -130,7 +135,6 @@ theorem weightedGmcBallMoment_center_le_transfer
     Eventually.of_forall fun ω =>
       ((ENNReal.continuous_rpow_const (y := p)).tendsto _).comp
         (insertionTrunc_mass_tendsto γ α (M ω) 0 ρ)
-  have hconv := lintegral_tendsto_of_tendsto_of_monotone hmeas hmono hlim
-  exact le_of_tendsto' hconv hN
+  exact le_of_tendsto' (lintegral_tendsto_of_tendsto_of_monotone hmeas hmono hlim) hN
 
 end DOZZ.Proofs

@@ -6,8 +6,6 @@ module
 public import DOZZ.FourPoint.Reflected.DecorrelationRate
 /-! A source-space decorrelation error helper for the reflected inner limit. -/
 @[expose] public section
-open MeasureTheory ProbabilityTheory Set Filter Topology
-open scoped ENNReal
 namespace DOZZ.Proofs
 
 

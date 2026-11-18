@@ -23,9 +23,12 @@ open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
 
+variable {Ω : Type*} [MeasurableSpace Ω]
+
+
 /-- Cutoff-uniform moments of every order below `4/γ²` of a small disk at an arbitrary center. -/
 theorem regularizedGMC_ball_moment_uniform_any_center
-    {Ω : Type*} [MeasurableSpace Ω]
+
     (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
     (z : ℂ) (ρ : ℝ) (hρ : 0 < ρ) (hρ8 : ρ ≤ 1 / 8) (p : ℝ) (hp : p < 4 / γ ^ 2) :
@@ -60,16 +63,18 @@ theorem regularizedGMC_ball_moment_uniform_any_center
     intro c ω
     simp
   simp only [hone] at htr
-  calc gmcMassMoment P (regularizedGMC P Xc γ r) (Metric.ball z ρ) p
-      ≤ T * gmcMassMoment P (regularizedGMC P Xc γ r) (Metric.ball 0 ρ) p := htr
-    _ ≤ T * K₀ := by gcongr; exact hK₀bound r hr
+  refine (htr).trans (?_)
+  gcongr; exact hK₀bound r hr
+
+section
+variable (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+include hX hγ hγ2 hM
 
 /-- Every `IsGMCOf` limit has finite moments of every order below `4/γ²` on small disks at
 arbitrary centers. -/
 theorem gmc_ball_moment_lt_top_any_center
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+
+
     (z : ℂ) (ρ : ℝ) (hρ : 0 < ρ) (hρ8 : ρ ≤ 1 / 8) (p : ℝ) (hp : p < 4 / γ ^ 2) :
     gmcMassMoment P M (Metric.ball z ρ) p < ⊤ := by
   obtain ⟨Xc, hXc, -⟩ := hM.2
@@ -87,9 +92,8 @@ theorem gmc_ball_moment_lt_top_any_center
 
 /-- Every disk has almost surely positive mass. -/
 theorem gmc_ball_mass_pos_ae
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+
+
     (z : ℂ) (ρ : ℝ) (hρ : 0 < ρ) :
     ∀ᵐ ω ∂P, 0 < M ω (Metric.ball z ρ) := by
   set ρ' : ℝ := min ρ (1 / 8) with hρ'
@@ -101,21 +105,18 @@ theorem gmc_ball_mass_pos_ae
   have hmeas : AEMeasurable (fun ω => M ω (Metric.ball z ρ') ^ (-1 : ℝ)) P :=
     (gmc_set_mass_aemeasurable_of_isGMCOf P X hX γ hγ hγ2 M hM _
       Metric.isOpen_ball.measurableSet).pow_const _
-  have hae := ae_lt_top' hmeas hfin.ne
-  filter_upwards [hae] with ω hω
+  filter_upwards [ae_lt_top' hmeas hfin.ne] with ω hω
   have hpos : 0 < M ω (Metric.ball z ρ') := by
     by_contra h0
     push Not at h0
-    have hz : M ω (Metric.ball z ρ') = 0 := le_antisymm h0 zero_le
-    rw [hz, ENNReal.zero_rpow_of_neg (by norm_num)] at hω
+    rw [le_antisymm h0 zero_le, ENNReal.zero_rpow_of_neg (by norm_num)] at hω
     exact lt_irrefl _ hω
   exact lt_of_lt_of_le hpos (measure_mono (Metric.ball_subset_ball (min_le_left _ _)))
 
 /-- The critical moment of a small open square in the logarithmic chart is infinite. -/
 theorem gmc_openSquare_critical_moment_eq_top_of_chart
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ)
-    (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+
+
     (s : ℝ) (hs : 0 < s) (hs2 : s < 1 / 4) :
     gmcMassMoment P M (gmcOpenSquare s) (4 / γ ^ 2) = ⊤ := by
   have hball : ∀ σ₁ σ₂ : ℝ, Metric.ball (⟨σ₁ * s / 2, σ₂ * s / 2⟩ : ℂ) (s / 2) ⊆
@@ -141,19 +142,17 @@ theorem gmc_openSquare_critical_moment_eq_top_of_chart
 
 /-- Every bounded set has finite moments of every nonnegative order below `4/γ²`. -/
 theorem gmc_bounded_moment_lt_top
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+
+
     (O : Set ℂ) (hO : Bornology.IsBounded O) (p : ℝ) (hp0 : 0 ≤ p) (hp : p < 4 / γ ^ 2) :
     gmcMassMoment P M O p < ⊤ := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _ := hX.1
   rcases le_or_gt p 1 with hp1 | hp1
   · have h := gmc_mass_subunit_moment_bound P X hX γ M hM O hp0 hp1
     have : IsFiniteMeasure gmcReferenceMeasure := ⟨gmcReferenceMeasure_univ_ne_top.lt_top⟩
     exact h.trans_lt (ENNReal.add_lt_top.mpr ⟨ENNReal.one_lt_top, measure_lt_top _ _⟩)
   -- cover the closure by finitely many small disks
-  have hK : IsCompact (closure O) := hO.isCompact_closure
-  obtain ⟨t, -, htfin, hcover⟩ := finite_cover_balls_of_compact hK (by norm_num : (0 : ℝ) < 1 / 16)
+  obtain ⟨t, -, htfin, hcover⟩ := finite_cover_balls_of_compact (hO.isCompact_closure) (by norm_num : (0 : ℝ) < 1 / 16)
   set S : Finset ℂ := htfin.toFinset with hS
   have hOS : O ⊆ ⋃ c ∈ S, Metric.ball c (1 / 16) := by
     intro x hx
@@ -179,9 +178,7 @@ theorem gmc_bounded_moment_lt_top
   have hmeas : ∀ c ∈ S, AEMeasurable (fun ω => M ω (Metric.ball c (1 / 16)) ^ p) P :=
     fun c _ => (gmc_set_mass_aemeasurable_of_isGMCOf P X hX γ hγ hγ2 M hM _
       Metric.isOpen_ball.measurableSet).pow_const _
-  calc gmcMassMoment P M O p = ∫⁻ ω, M ω O ^ p ∂P := rfl
-    _ ≤ ∫⁻ ω, (S.card : ℝ≥0∞) ^ p * ∑ c ∈ S, M ω (Metric.ball c (1 / 16)) ^ p ∂P :=
-        lintegral_mono hpoint
+  calc gmcMassMoment P M O p ≤ ∫⁻ ω, (S.card : ℝ≥0∞) ^ p * ∑ c ∈ S, M ω (Metric.ball c (1 / 16)) ^ p ∂P := lintegral_mono hpoint
     _ = (S.card : ℝ≥0∞) ^ p * ∑ c ∈ S, gmcMassMoment P M (Metric.ball c (1 / 16)) p := by
         rw [lintegral_const_mul'' _ (Finset.aemeasurable_fun_sum S hmeas),
           lintegral_finsetSum' S hmeas]
@@ -189,4 +186,6 @@ theorem gmc_bounded_moment_lt_top
     _ < ⊤ := ENNReal.mul_lt_top (ENNReal.rpow_lt_top_of_nonneg hp0 (ENNReal.natCast_ne_top _))
         (ENNReal.sum_lt_top.mpr hball)
 
+
+end
 end DOZZ.Proofs

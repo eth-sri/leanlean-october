@@ -9,10 +9,12 @@ open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (Xc : Ω → ℂ → ℝ → ℝ) (γ α a r₀ W B R δ : ℝ) (z : ℂ)
+include P Xc γ α a r₀ W B R δ z
+
 theorem cutoffWeightedGmcBallMass_le_inner_add_outer
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (Xc : Ω → ℂ → ℝ → ℝ)
-    (γ α a r₀ W B R δ : ℝ) (z : ℂ)
+
     (hR : a ≤ R) (hR₀ : R ≤ r₀) (hδ : 0 < δ) (hδR : δ ≤ R)
     (hz : ‖z‖ + R ≤ B)
     (hW : ∀ s ∈ Set.Icc a (2 * r₀), s ^ (-γ * α) ≤ W) (ω : Ω) :
@@ -22,7 +24,7 @@ theorem cutoffWeightedGmcBallMass_le_inner_add_outer
   have _ := hR
   let μ := regularizedGMC P Xc γ (Real.log (1 / δ)) ω
   let w : ℂ → ℝ≥0∞ := fun x => ENNReal.ofReal ((‖x - z‖ + δ) ^ (-γ * α))
-  have hw : Measurable w := by dsimp [w]; fun_prop
+  have hw : Measurable w := by fun_prop
   have hi : Measurable ((Metric.ball z a).indicator w) :=
     hw.indicator Metric.isOpen_ball.measurableSet
   have hball : Metric.ball z R ⊆ Metric.ball (0 : ℂ) B := by
@@ -53,9 +55,7 @@ theorem cutoffWeightedGmcBallMass_le_inner_add_outer
     _ = _ := by rw [lintegral_indicator Metric.isOpen_ball.measurableSet]; rfl
 
 theorem cutoffWeightedGmcBallMass_le_coarse_weight
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (Xc : Ω → ℂ → ℝ → ℝ)
-    (γ α a r₀ W B R δ : ℝ) (z : ℂ)
+
     (hR₀ : R ≤ r₀) (hδa : a ≤ δ) (hδR : δ ≤ R) (hz : ‖z‖ + R ≤ B)
     (hW : ∀ s ∈ Set.Icc a (2 * r₀), s ^ (-γ * α) ≤ W) (ω : Ω) :
     cutoffWeightedGmcBallMass P Xc γ α z R δ ω ≤
@@ -74,10 +74,11 @@ theorem cutoffWeightedGmcBallMass_le_coarse_weight
       have hx' : ‖x - z‖ < R := by simpa [Metric.mem_ball, dist_eq_norm] using hx
       exact ENNReal.ofReal_le_ofReal (hW (‖x - z‖ + δ)
         ⟨by linarith [norm_nonneg (x - z)], by linarith⟩)
-    _ = ENNReal.ofReal W * μ (Metric.ball z R) := by
-      rw [lintegral_const, Measure.restrict_apply_univ]
+    _ = ENNReal.ofReal W * μ (Metric.ball z R) := by norm_num
     _ ≤ _ := mul_le_mul_right (measure_mono hball) _
 
+
+end
 theorem ennreal_rpow_add_le_uniform_order_cap (a b : ℝ≥0∞) (p q : ℝ)
     (hp : 0 ≤ p) (hpq : p ≤ q) :
     (a + b) ^ p ≤ (2 : ℝ≥0∞) ^ q * (a ^ p + b ^ p) := by

@@ -36,11 +36,8 @@ theorem lintegral_ofReal_limit_le_of_tendstoInMeasure
       fun ω => ENNReal.ofReal (G ω) := by
     filter_upwards [hQlim] with ω hω
     exact hω.liminf_eq
-  calc
-    ∫⁻ ω, ENNReal.ofReal (G ω) ∂P =
-        ∫⁻ ω, liminf (fun n => Q n ω) atTop ∂P := by
-          exact lintegral_congr_ae hliminf.symm
-    _ ≤ liminf (fun n => ∫⁻ ω, Q n ω ∂P) atTop := lintegral_liminf_le hQmeas
+  refine (lintegral_congr_ae hliminf.symm).trans_le (?_)
+  calc ∫⁻ ω, liminf (fun n => Q n ω) atTop ∂P ≤ liminf (fun n => ∫⁻ ω, Q n ω ∂P) atTop := lintegral_liminf_le hQmeas
     _ ≤ C := liminf_le_of_frequently_le' <| Frequently.of_forall fun n => by
       simpa [Q] using hbound (ns n)
 

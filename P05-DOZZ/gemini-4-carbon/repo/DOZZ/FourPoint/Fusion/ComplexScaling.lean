@@ -21,7 +21,7 @@ theorem fusion_integral_mul_complex (F : ℂ → ℂ) (z : ℂ) (hz : z ≠ 0) :
     (∫ x : ℂ, F x) = (‖z‖ ^ 2 : ℝ) * (∫ y : ℂ, F (y * z)) := by
   let r := ‖z‖
   let ξ := z / (r : ℂ)
-  have hr : 0 < r := norm_pos_iff.mpr hz
+  have hr := norm_pos_iff.mpr hz
   have hξ : ‖ξ‖ = 1 := by
     dsimp only [ξ, r]
     rw [norm_div, Complex.norm_real, Real.norm_of_nonneg (norm_nonneg _), div_self hr.ne']

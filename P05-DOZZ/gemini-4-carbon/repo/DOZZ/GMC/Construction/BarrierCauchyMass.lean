@@ -16,6 +16,9 @@ open scoped ENNReal NNReal Topology
 
 namespace DOZZ.Proofs
 
+variable {Ω : Type*} [MeasurableSpace Ω]
+
+
 /-- The thick-point event through log scale `r`: every integer coarse field scale between `k₀`
 and the current cutoff scale stays below the linear barrier. -/
 def admissibleGrowingBarrierSet {Ω : Type*}
@@ -23,12 +26,14 @@ def admissibleGrowingBarrierSet {Ω : Type*}
   {q | ∀ k : ℕ, k₀ ≤ k → (k : ℝ) ≤ r →
     Y q.1 (Real.exp (-(k : ℝ))) q.2 ≤ a * (k : ℝ)}
 
+section
+variable (P : Measure Ω) (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ) (Y : Ω → ℝ → ℂ → ℝ) (hY : IsAdmissibleLogRegularization P U dens ε₀ Y)
+include hY
+
 /-- The growing-barrier event is jointly measurable in the sample and spatial point. -/
 theorem admissibleGrowingBarrierSet_measurable
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ)
-    (Y : Ω → ℝ → ℂ → ℝ)
-    (hY : IsAdmissibleLogRegularization P U dens ε₀ Y)
+
+
     (a : ℝ) (k₀ : ℕ) (r : ℝ) :
     MeasurableSet (admissibleGrowingBarrierSet Y a k₀ r) := by
   classical
@@ -59,10 +64,8 @@ theorem admissibleGrowingBarrierSet_measurable
 
 /-- Every admissible Gaussian regularization is defined over a probability measure. -/
 theorem admissibleLogRegularization_isProbabilityMeasure
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ)
-    (Y : Ω → ℝ → ℂ → ℝ)
-    (hY : IsAdmissibleLogRegularization P U dens ε₀ Y) :
+
+ :
     IsProbabilityMeasure P := by
   let q : Fin 1 → ℝ × ℂ := fun _ => (ε₀ / 2, 0)
   have hq : ∀ i, 0 < (q i).1 ∧ (q i).1 ≤ ε₀ := by
@@ -71,20 +74,18 @@ theorem admissibleLogRegularization_isProbabilityMeasure
     constructor <;> linarith [hY.cutoffPositive]
   exact (hY.gaussian 1 q hq).1
 
+
+end
 /-- At each regularization scale, the variance is measurable in the spatial coordinate. -/
 theorem admissibleLogRegularization_variance_measurable
-    {Ω : Type*} [MeasurableSpace Ω]
+
     (P : Measure Ω) [IsProbabilityMeasure P]
     (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ)
     (Y : Ω → ℝ → ℂ → ℝ)
     (hY : IsAdmissibleLogRegularization P U dens ε₀ Y) (ε : ℝ) :
     Measurable (fun x => gaussianVariance P (fun ω => Y ω ε x)) := by
-  have hfield : Measurable (fun q : Ω × ℂ => Y q.1 ε q.2) := hY.measurableAtScale ε
-  have hswap : Measurable (fun q : ℂ × Ω => Y q.2 ε q.1) :=
-    hfield.comp measurable_swap
-  have hsquare : Measurable (fun q : ℂ × Ω => Y q.2 ε q.1 ^ 2) := hswap.pow_const 2
   have hvar : Measurable (fun x : ℂ => ∫ ω, Y ω ε x ^ 2 ∂P) :=
-    hsquare.stronglyMeasurable.integral_prod_right.measurable
+    (((hY.measurableAtScale ε).comp measurable_swap).pow_const 2).stronglyMeasurable.integral_prod_right.measurable
   have heq : (fun x : ℂ => gaussianVariance P (fun ω => Y ω ε x)) =
       fun x => ∫ ω, Y ω ε x ^ 2 ∂P := by
     funext x

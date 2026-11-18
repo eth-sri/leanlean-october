@@ -26,18 +26,16 @@ theorem retained_coulomb_moment_tendsto
     Tendsto (fun n : ℕ => ∫⁻ ω,
       (∫⁻ x in retainedRegion z n, coulombWeight γ α z αinf x ∂M ω) ^ p ∂P)
       atTop (𝓝 (∫⁻ ω, coulombMass γ (M ω) α z αinf ^ p ∂P)) := by
-  let : IsProbabilityMeasure P := hX.1
+  let := hX.1
   let R := 1 + 2 * ∑ j, ‖z j‖
   obtain ⟨hR, hzR⟩ := coulomb_exterior_radius_bounds z
-  have hout : ∀ᶠ n : ℕ in atTop, R + 2 ≤ Real.exp (n : ℝ) :=
-    (Real.tendsto_exp_atTop.comp tendsto_natCast_atTop_atTop).eventually_ge_atTop (R + 2)
-  obtain ⟨n0, hn0⟩ := hout.exists
+  obtain ⟨n0, hn0⟩ := ((Real.tendsto_exp_atTop.comp tendsto_natCast_atTop_atTop).eventually_ge_atTop (R + 2)).exists
   have hB := exterior_ball_subset_retainedRegion z R hR hzR n0
     (Nat.cast_nonneg _) hn0
   let f (n : ℕ) (ω : Ω) := ∫⁻ x in retainedRegion z ((n + n0 : ℕ) : ℝ),
     coulombWeight γ α z αinf x ∂M ω
   let g (ω : Ω) := coulombMass γ (M ω) α z αinf
-  have hf (n : ℕ) : AEMeasurable (f n) P :=
+  have hf (n : ℕ) :=
     gmc_setLIntegral_aemeasurable P X hX γ hγ hγ2 M hM _
       (measurable_coulombWeight γ α z αinf) _
       (retainedRegion_isOpen z ((n + n0 : ℕ) : ℝ)).measurableSet
@@ -48,7 +46,7 @@ theorem retained_coulomb_moment_tendsto
       exact retainedRegion_mono z (Nat.cast_le.mpr
         (by simpa only [zero_add] using Nat.le_add_left n0 n))
     · exact setLIntegral_le_lintegral _ _
-  have hatoms : ∀ᵐ ω ∂P, ∀ i, M ω {z i} = 0 := ae_all_iff.mpr
+  have hatoms := ae_all_iff.mpr
     (fun i => gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM (z i))
   have hlim : ∀ᵐ ω ∂P, Tendsto (fun n => f n ω) atTop (𝓝 (g ω)) := by
     filter_upwards [hatoms] with ω hω

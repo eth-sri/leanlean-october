@@ -39,16 +39,12 @@ theorem ae_conditionedPositiveStateAt_ne
     fin_cases i
     fin_cases j
     exact False.elim (by simp at hij)
-  have hfdd := negativeConditionedLaw_positiveFDD hP 1 (by norm_num)
+  have := negativeConditionedLaw_positiveFDD hP 1 (by norm_num)
     times htimes hmono
   have hfd : P.map X =
-      (volume : Measure (Fin 1 → ℝ)).withDensity f := by
-    simpa [X, times, f] using hfdd
+      (volume : Measure (Fin 1 → ℝ)).withDensity f := by assumption
   have hcoord : Measurable (fun z : Fin 1 → ℝ => z 0) := measurable_pi_apply 0
-  have hX : Measurable X := by
-    apply measurable_pi_iff.mpr
-    intro i
-    exact (ContinuousMap.measurable_eval t).neg
+  have hX : Measurable X := by fun_prop
   have hstate : P.map (conditionedPositiveStateAt t) =
       ((volume : Measure (Fin 1 → ℝ)).withDensity f).map
         (fun z : Fin 1 → ℝ => z 0) := by
@@ -61,9 +57,7 @@ theorem ae_conditionedPositiveStateAt_ne
         (fun z : Fin 1 → ℝ => z 0)) hfd
   have hcoordSet :
       (fun z : Fin 1 → ℝ => z 0) ⁻¹' ({a} : Set ℝ) =
-        {z : Fin 1 → ℝ | z 0 = a} := by
-    ext z
-    simp
+        {z : Fin 1 → ℝ | z 0 = a} := by rfl
   have hnull : (volume : Measure (Fin 1 → ℝ))
       {z : Fin 1 → ℝ | z 0 = a} = 0 := by
     have hpi : ({z : Fin 1 → ℝ | z 0 = a} : Set (Fin 1 → ℝ)) =
@@ -77,26 +71,21 @@ theorem ae_conditionedPositiveStateAt_ne
   have hdensityNull : ((volume : Measure (Fin 1 → ℝ)).withDensity f)
       {z : Fin 1 → ℝ | z 0 = a} = 0 := by
     rw [withDensity_apply f hset]
-    have hrestrict : (volume : Measure (Fin 1 → ℝ)).restrict
-        {z : Fin 1 → ℝ | z 0 = a} = 0 := Measure.restrict_eq_zero.mpr hnull
     change (∫⁻ z, f z ∂((volume : Measure (Fin 1 → ℝ)).restrict
       {z : Fin 1 → ℝ | z 0 = a})) = 0
-    rw [hrestrict]
+    rw [Measure.restrict_eq_zero.mpr hnull]
     simp
   have hstateNull : (P.map (conditionedPositiveStateAt t)) {a} = 0 := by
     rw [hstate, Measure.map_apply hcoord (measurableSet_singleton a), hcoordSet]
     exact hdensityNull
   have hpre : (conditionedPositiveStateAt t) ⁻¹' ({a} : Set ℝ) =
-      {p : BrownianPath | conditionedPositiveStateAt t p = a} := by
-    ext p
-    simp
+      {p : BrownianPath | conditionedPositiveStateAt t p = a} := by rfl
   have hzero : P {p : BrownianPath | conditionedPositiveStateAt t p = a} = 0 := by
     rw [← hpre, ← Measure.map_apply (measurable_conditionedPositiveStateAt t)
       (measurableSet_singleton a)]
     exact hstateNull
   rw [measure_eq_zero_iff_ae_notMem] at hzero
-  filter_upwards [hzero] with p hp
-  exact hp
+  assumption
 
 end DOZZ.Proofs
 

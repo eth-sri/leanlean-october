@@ -32,9 +32,8 @@ theorem reflected_admissible_field_test_limit
         ((logRegularizationReference U dens).restrict K)
         (fun x => (f x).toNNReal) γ ω).toReal) atTop
       (fun ω => ∫ x, f x ∂N ω) := by
-  have hσ := admissible_logRegularization_reference_measure_ne_top P U dens ε₀ Y hY K hK hKU
   have hfin : IsFiniteMeasure ((logRegularizationReference U dens).restrict K) :=
-    ⟨by simpa only [Measure.restrict_apply_univ] using lt_top_iff_ne_top.mpr hσ⟩
+    ⟨by simpa only [Measure.restrict_apply_univ] using lt_top_iff_ne_top.mpr (admissible_logRegularization_reference_measure_ne_top P U dens ε₀ Y hY K hK hKU)⟩
   refine ⟨hfin, ?_⟩
   have hf0 : ∀ x ∉ K, f x = 0 := fun x hx =>
     image_eq_zero_of_notMem_tsupport (fun h => hx (hfK h))
@@ -52,7 +51,6 @@ theorem reflected_admissible_field_test_limit
         0 ≤ f x * Real.exp (γ * Y ω (Real.exp (-max r R₀)) x - γ ^ 2 / 2 *
           ∫ ω', Y ω' (Real.exp (-max r R₀)) x ^ 2 ∂P) :=
       ae_of_all _ fun x => mul_nonneg (hf x) (Real.exp_pos _).le
-    have hm := ofReal_integral_eq_lintegral_ofReal hω.integrableOn hnon
     have hid : fieldChaosMass P (fun ω x => Y ω (Real.exp (-max r R₀)) x)
         ((logRegularizationReference U dens).restrict K) (fun x => (f x).toNNReal) γ ω =
       ∫⁻ x, ENNReal.ofReal (f x * Real.exp (γ * Y ω (Real.exp (-max r R₀)) x - γ ^ 2 / 2 *
@@ -61,12 +59,10 @@ theorem reflected_admissible_field_test_limit
       apply lintegral_congr
       intro x
       exact (ENNReal.ofReal_mul (hf x)).symm
-    rw [hid, ← hm, ENNReal.toReal_ofReal (integral_nonneg_of_ae hnon)]
+    rw [hid, ← (ofReal_integral_eq_lintegral_ofReal hω.integrableOn hnon), ENNReal.toReal_ofReal (integral_nonneg_of_ae hnon)]
     exact (integral_restrict_eq_integral_of_zero_on_compl _ K hK.measurableSet _
       (fun x hx => by rw [hf0 x hx, zero_mul])).symm
-  have ht : Tendsto (fun r : ℝ => max r R₀) atTop atTop :=
-    tendsto_atTop_mono (fun r => le_max_left r R₀) tendsto_id
   exact TendstoInMeasure.congr he (Filter.EventuallyEq.refl _ _)
-    ((hN.2.2.2 f (hK.of_isClosed_subset (isClosed_tsupport _) hfK) (hfK.trans hKU)).comp ht)
+    ((hN.2.2.2 f (hK.of_isClosed_subset (isClosed_tsupport _) hfK) (hfK.trans hKU)).comp (tendsto_atTop_mono (fun r => le_max_left r R₀) tendsto_id))
 
 end DOZZ.Proofs

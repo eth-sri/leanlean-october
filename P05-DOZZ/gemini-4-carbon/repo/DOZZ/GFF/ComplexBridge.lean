@@ -48,12 +48,7 @@ theorem euclideanNorm_complexToVecTwo (z : ℂ) :
 /-- The continuous linear coordinate bridge and the measurable coordinate bridge have the same
 underlying map. -/
 theorem complexLinearEquivVecTwo_apply (z : ℂ) :
-    complexLinearEquivVecTwo z = complexToVecTwo z := by
-  funext i
-  fin_cases i <;>
-    simp [complexToVecTwo, complexLinearEquivVecTwo,
-      Complex.basisOneI.equivFun_apply,
-      Complex.coe_basisOneI_repr, Complex.measurableEquivPi_apply]
+    complexLinearEquivVecTwo z = complexToVecTwo z := by rfl
 
 /-- The measurable coordinate bridge preserves subtraction, since it is the same coordinate map
 as the continuous real-linear equivalence. -/

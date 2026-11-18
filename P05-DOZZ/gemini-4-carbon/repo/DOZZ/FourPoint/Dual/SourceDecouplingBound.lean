@@ -12,8 +12,11 @@ open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal
 namespace DOZZ.Proofs
 
+variable {Ω : Type*} [MeasurableSpace Ω]
+
+
 /-- The supplied dual mass on the two separated regions, averaged at inverse order `q`. -/
-noncomputable def dualSeparatedInverseMoment {Ω : Type*} [MeasurableSpace Ω]
+noncomputable def dualSeparatedInverseMoment
     (P : Measure Ω) (M : Ω → Measure ℂ) (γ α₁ α₂ α₃ q : ℝ) (z : ℂ) (s r : ℝ) : ℝ≥0∞ :=
   ∫⁻ ω, ((∫⁻ x in reflected_innerRegion s,
     ENNReal.ofReal (dualFusionKernel γ α₁ α₂ α₃ z x) ∂M ω)+
@@ -21,7 +24,7 @@ noncomputable def dualSeparatedInverseMoment {Ω : Type*} [MeasurableSpace Ω]
       ENNReal.ofReal (dualFusionKernel γ α₁ α₂ α₃ z x) ∂M ω))^(-q) ∂P
 
 /-- The same separated observable with independent inner and outer lateral copies. -/
-noncomputable def dualCopiedSeparatedInverseMoment {Ω : Type*} [MeasurableSpace Ω]
+noncomputable def dualCopiedSeparatedInverseMoment
     (P : Measure Ω) (Xc : Ω → ℂ → ℝ → ℝ) (N : Ω → Measure ℂ)
     (γ α₁ α₂ α₃ q : ℝ) (z : ℂ) (s r : ℝ) : ℝ≥0∞ :=
   let J := fun U (a : TwoSidedPath) ω => ∫⁻ x in U,
@@ -35,7 +38,7 @@ noncomputable def dualCopiedSeparatedInverseMoment {Ω : Type*} [MeasurableSpace
 /-- The actual signed decoupling error is uniformly at most a constant times the relative
 radius. Finiteness of both expectations follows from the supplied GMC's fixed disk moments. -/
 theorem dual_source_decoupling_bound
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
+ (P : Measure Ω) (X : Ω → Distr)
     (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (hm : Measurable (fun v : Ω × (ℂ × ℝ) => Xc v.1 v.2.1 v.2.2))
     (hcont : ∀ᵐ ω ∂P, Continuous (fun v : ℂ × ℝ => Xc ω v.1 v.2))

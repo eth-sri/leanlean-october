@@ -38,7 +38,7 @@ theorem coulomb_envelope_uniform_moment
       hi * q + g ≤ 2 / γ * (Q γ - αinf) →
       (∫⁻ ω, ENNReal.ofReal ((c * M ω (Metric.ball center (1 / 8))).toReal ^ lo +
         (coulombMass γ (M ω) α z αinf).toReal ^ hi) ^ q ∂P) ≤ K := by
-  let : IsProbabilityMeasure P := hX.1
+  let := hX.1
   let L (ω : Ω) := c * M ω (Metric.ball center (1 / 8))
   have hLm : AEMeasurable L P := by
     simpa only [L, Pi.mul_def] using aemeasurable_const.mul
@@ -51,7 +51,7 @@ theorem coulomb_envelope_uniform_moment
     filter_upwards [hb] with ω hω
     exact ⟨mul_ne_zero hc hω.1, ENNReal.mul_ne_top hc' hω.2⟩
   let KL := ∫⁻ ω, L ω ^ (lo * q) ∂P
-  have hKL : KL < ⊤ := scaled_disk_negative_moment
+  have hKL := scaled_disk_negative_moment
     P X hX γ hγ hγ2 M hM center (1 / 8) (by norm_num) le_rfl c hc hc'
       (lo * q) (mul_nonpos_of_nonpos_of_nonneg hlo (by linarith))
   obtain ⟨KU, hKU, hUbound⟩ : ∃ KU : ℝ≥0∞, KU < ⊤ ∧

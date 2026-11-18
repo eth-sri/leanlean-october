@@ -55,7 +55,7 @@ theorem brownianPath_past_event_restart_lintegral {E : Type*} [MeasurableSpace E
   classical
   let I : BrownianPath → ℝ≥0∞ := A.indicator (fun _ => 1)
   let J : (E × ℝ≥0∞) × BrownianPath → ℝ≥0∞ := fun z => z.1.2*F (z.1.1,z.2)
-  have hJ : Measurable J := (measurable_snd.comp measurable_fst).mul
+  have hJ := (measurable_snd.comp measurable_fst).mul
     (hF.comp ((measurable_fst.comp measurable_fst).prodMk measurable_snd))
   have hh := brownianPath_deterministic_restart_lintegral P hB s (fun p => (X p,I p))
     (hX.prodMk (measurable_const.indicator hA)) J hJ
@@ -99,16 +99,18 @@ theorem firstPassageTime_gt_iff_strict_barrier (p : BrownianPath) (c : ℝ) (s :
     s < firstPassageTime p c ↔ ∀ u : ℝ≥0, u ≤ s → p u < c := by
   rw [← not_le,firstPassageTime_le_iff]
   constructor
-  · intro hn u hu
-    exact not_le.mp (fun h => hn (Or.inr ⟨u,hu,h⟩))
+  · norm_num
   · intro hb hn
     rcases hn with hn | ⟨u,hu,hcu⟩
     · exact hn hh
     · exact not_le.mpr (hb u hu) hcu
 
+section
+variable (P : Measure BrownianPath) (hB : IsBrownianReal (fun t p => p t) P) (a c : ℝ)
+include hB a c
+
 /-- The literal actual pre-hit event agrees almost surely with the closed finite-horizon upper barrier. -/
-theorem brownianPath_positiveDrift_firstHit_event_ae (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (a c : ℝ) (ha : 0 < a) (hc : 0 < c)
+theorem brownianPath_positiveDrift_firstHit_event_ae (ha : 0 < a) (hc : 0 < c)
     (s : ℝ≥0) (hs : s ≠ 0) :
     {p : BrownianPath | s < firstPassageTime (driftedBrownianPath a p) c} =ᵐ[P]
       {p : BrownianPath | ∀ u : ℝ≥0, u ≤ s → p u+a*(u : ℝ) ≤ c} := by
@@ -118,40 +120,37 @@ theorem brownianPath_positiveDrift_firstHit_event_ae (P : Measure BrownianPath)
     exact propext (firstPassageTime_gt_iff_strict_barrier (driftedBrownianPath a p) c s hp)
   exact he.trans (brownianPath_drift_barrier_ae_strict P hB a c hc s hs).symm
 
-/-- The actual pre-hit remaining level has the negative-drift killed endpoint density. -/
-theorem brownianPath_upperKilled_remaining_map (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (a c : ℝ) (hc : 0 < c)
-    (s : ℝ≥0) (hs : s ≠ 0) :
-    (P.restrict {p : BrownianPath | ∀ u : ℝ≥0, u ≤ s → p u+a*(u : ℝ) ≤ c}).map
-      (fun p => c-(p s+a*(s : ℝ))) =
-      volume.withDensity (fun y => ENNReal.ofReal (brownianKilledTransitionPDF (-a) s c y)) := by
-  have hm : Measurable (fun p : BrownianPath => p s+a*(s : ℝ)) :=
-    (ContinuousMap.measurable_eval s).add measurable_const
-  have he := brownianPath_lowerKilled_endpoint_map_eq_upper P hB (-a) c s
-  rw [neg_neg,Measure.map_map (show Measurable (fun y : ℝ => c-y) from
-    measurable_const.sub measurable_id) hm] at he
-  simp only [Function.comp_def] at he
-  rw [← he]
-  exact brownianPath_lowerKilled_endpoint_map P hB (-a) c hc s hs
 
 /-- Every nonnegative remaining-level test before the upper barrier integrates against the actual killed kernel. -/
-theorem brownianPath_upperKilled_remaining_lintegral (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (a c : ℝ) (hc : 0 < c)
+theorem brownianPath_upperKilled_remaining_lintegral (hc : 0 < c)
     (s : ℝ≥0) (hs : s ≠ 0) (F : ℝ → ℝ≥0∞) (hF : Measurable F) :
     (∫⁻ p in {p : BrownianPath | ∀ u : ℝ≥0, u ≤ s → p u+a*(u : ℝ) ≤ c},
       F (c-(p s+a*(s : ℝ))) ∂P) =
       ∫⁻ y, ENNReal.ofReal (brownianKilledTransitionPDF (-a) s c y)*F y := by
+  have brownianPath_upperKilled_remaining_map : (P.restrict {p : BrownianPath | ∀ u : ℝ≥0, u ≤ s → p u+a*(u : ℝ) ≤ c}).map
+        (fun p => c-(p s+a*(s : ℝ))) =
+        volume.withDensity (fun y => ENNReal.ofReal (brownianKilledTransitionPDF (-a) s c y)) := by
+    have hm : Measurable (fun p : BrownianPath => p s+a*(s : ℝ)) :=
+      (ContinuousMap.measurable_eval s).add measurable_const
+    have he := brownianPath_lowerKilled_endpoint_map_eq_upper P hB (-a) c s
+    rw [neg_neg,Measure.map_map (show Measurable (fun y : ℝ => c-y) from
+      measurable_const.sub measurable_id) hm] at he
+    simp only [Function.comp_def] at he
+    rw [← he]
+    exact brownianPath_lowerKilled_endpoint_map P hB (-a) c hc s hs
   have hm : Measurable (fun p : BrownianPath => c-(p s+a*(s : ℝ))) :=
     measurable_const.sub ((ContinuousMap.measurable_eval s).add measurable_const)
   calc
     _ = ∫⁻ y, F y ∂(P.restrict {p : BrownianPath | ∀ u : ℝ≥0, u ≤ s → p u+a*(u : ℝ) ≤ c}).map
         (fun p => c-(p s+a*(s : ℝ))) := (lintegral_map hF hm).symm
     _ = ∫⁻ y, F y ∂volume.withDensity (fun y => ENNReal.ofReal (brownianKilledTransitionPDF (-a) s c y)) := by
-      rw [brownianPath_upperKilled_remaining_map P hB a c hc s hs]
+      rw [brownianPath_upperKilled_remaining_map]
     _ = _ := lintegral_withDensity_eq_lintegral_mul volume
       (((measurable_brownianKilledTransitionPDF (-a) s).comp
         (measurable_const.prodMk measurable_id)).ennreal_ofReal) hF
 
+
+end
 /-- The first-hit clock of a future path is jointly measurable in that future and its remaining level. -/
 theorem measurable_firstPassageTime_drift_joint (a : ℝ) :
     Measurable (fun z : ℝ × BrownianPath => firstPassageTime (driftedBrownianPath a z.2) z.1) := by

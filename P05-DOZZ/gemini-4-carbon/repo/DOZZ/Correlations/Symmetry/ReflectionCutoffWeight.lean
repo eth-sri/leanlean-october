@@ -6,12 +6,13 @@ module
 public import DOZZ.Correlations.Symmetry.ReflectionCircleMean
 public import Mathlib.Topology.UniformSpace.HeineCantor
 @[expose] public section
+noncomputable section
 open Filter Set
 open scoped Topology
 namespace DOZZ.Proofs
 
 /-- Exponentiation of a bounded continuous real potential. -/
-noncomputable def symmetryExponentialBCF (f : BoundedContinuousFunction ℂ ℝ) :
+def symmetryExponentialBCF (f : BoundedContinuousFunction ℂ ℝ) :
     BoundedContinuousFunction ℂ ℝ :=
   BoundedContinuousFunction.mkOfBound ⟨fun x => Real.exp (f x), Real.continuous_exp.comp f.continuous⟩
     (2 * Real.exp ‖f‖) (fun x y => by
@@ -25,23 +26,18 @@ noncomputable def symmetryExponentialBCF (f : BoundedContinuousFunction ℂ ℝ)
         exact Real.exp_le_exp.mpr ((le_abs_self _).trans (f.norm_coe_le_norm y))
       exact (abs_sub _ _).trans (by linarith only [hx, hy]))
 
-theorem symmetryExponentialBCF_apply (f : BoundedContinuousFunction ℂ ℝ) (x : ℂ) :
-    symmetryExponentialBCF f x = Real.exp (f x) := rfl
 
 /-- The deterministic finite-cutoff density after reflection and re-pinning. -/
-noncomputable def symmetryReflectionCutoffWeight (γ r : ℝ) : BoundedContinuousFunction ℂ ℝ :=
+def symmetryReflectionCutoffWeight (γ r : ℝ) : BoundedContinuousFunction ℂ ℝ :=
   symmetryExponentialBCF (γ ^ 2 • symmetryCirclePotentialMean r + (4 : ℝ) • symmetryReflectionPotentialBCF)
 
 /-- The limiting deterministic density after reflection and re-pinning. -/
-noncomputable def symmetryReflectionLimitWeight (γ : ℝ) : BoundedContinuousFunction ℂ ℝ :=
+def symmetryReflectionLimitWeight (γ : ℝ) : BoundedContinuousFunction ℂ ℝ :=
   symmetryExponentialBCF ((γ ^ 2 + 4) • symmetryReflectionPotentialBCF)
 
 theorem symmetryReflectionCutoffWeight_apply (γ r : ℝ) (x : ℂ) :
     symmetryReflectionCutoffWeight γ r x = Real.exp (γ ^ 2 * symmetryCirclePotentialMean r x +
-      4 * symmetryReflectionPotential x) := by
-  simp only [symmetryReflectionCutoffWeight, symmetryExponentialBCF_apply,
-    BoundedContinuousFunction.add_apply, BoundedContinuousFunction.smul_apply, smul_eq_mul]
-  rfl
+      4 * symmetryReflectionPotential x) := by rfl
 
 theorem symmetryReflectionLimitWeight_apply (γ : ℝ) (x : ℂ) :
     symmetryReflectionLimitWeight γ x = Real.exp ((γ ^ 2 + 4) * symmetryReflectionPotential x) := rfl
@@ -82,11 +78,8 @@ theorem symmetryReflectionCutoffWeight_uniform (γ : ℝ) :
     rw [heq, symmetryCirclePotentialMean_apply]
     exact (mul_le_mul_of_nonneg_left (symmetryReflection_circle_potential_error x r)
       (sq_nonneg γ)).trans_lt hr
-  have he := UniformContinuousOn.comp_tendstoUniformly (s := Icc (-B) B) (g := Real.exp)
+  have := UniformContinuousOn.comp_tendstoUniformly (s := Icc (-B) B) (g := Real.exp)
     (fun r x => abs_le.mp (hb r x)) (fun x => abs_le.mp (hv x))
     (isCompact_Icc.uniformContinuousOn_of_continuous Real.continuous_exp.continuousOn) h
-  change TendstoUniformly (fun r x => Real.exp (γ ^ 2 * symmetryCirclePotentialMean r x +
-    4 * symmetryReflectionPotential x))
-    (fun x => Real.exp ((γ ^ 2 + 4) * symmetryReflectionPotential x)) atTop
-  exact he
+  assumption
 end DOZZ.Proofs

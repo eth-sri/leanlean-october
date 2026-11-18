@@ -11,6 +11,9 @@ open MeasureTheory Set
 open scoped Distributions
 namespace DOZZ.Proofs
 
+variable {Ω : Type*}
+
+
 /-- The Lebesgue mass of a test density, as a continuous distribution. -/
 noncomputable def symmetryTestIntegralCLM : TestFn →L[ℝ] ℝ :=
   TestFunction.integralAgainstBilinCLM (ContinuousLinearMap.mul ℝ ℝ)
@@ -26,7 +29,7 @@ theorem symmetryTestIntegralCLM_apply (f : TestFn) :
 
 /-- Actual correlated affine re-pinning on the original probability space. -/
 noncomputable def symmetryRepinnedField
-    {Ω : Type*} (X : Ω → Distr) (L : Ω → ℝ) (ω : Ω) : Distr :=
+ (X : Ω → Distr) (L : Ω → ℝ) (ω : Ω) : Distr :=
   { toFun := fun f => X ω (symmetryReflectionTestCLM f) - L ω * symmetryTestIntegralCLM f
     map_add' := by
       intro f g
@@ -42,7 +45,7 @@ noncomputable def symmetryRepinnedField
 
 /-- Every re-pinned evaluation retains the correlated scalar subtraction. -/
 theorem symmetryRepinnedField_apply
-    {Ω : Type*} (X : Ω → Distr) (L : Ω → ℝ) (ω : Ω) (f : TestFn) :
+ (X : Ω → Distr) (L : Ω → ℝ) (ω : Ω) (f : TestFn) :
     symmetryRepinnedField X L ω f = X ω (symmetryReflectionTest f) - L ω * ∫ x, f x := by
   change X ω (symmetryReflectionTestCLM f) - L ω * symmetryTestIntegralCLM f = _
   rw [symmetryTestIntegralCLM_apply]
@@ -50,7 +53,7 @@ theorem symmetryRepinnedField_apply
 
 /-- Re-pinned test evaluations are measurable whenever the source field and scalar are. -/
 theorem symmetryRepinnedField_eval_measurable
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
+ [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
     (hX : IsEquatorGFF P X) (L : Ω → ℝ) (hL : Measurable L) (f : TestFn) :
     Measurable (fun ω => symmetryRepinnedField X L ω f) := by
   simp only [symmetryRepinnedField_apply]

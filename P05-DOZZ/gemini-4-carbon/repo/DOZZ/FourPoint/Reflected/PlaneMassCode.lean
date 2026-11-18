@@ -6,12 +6,16 @@ module
 public import DOZZ.FourPoint.Reflected.ChartMassMeasurable
 /-! Measurable plane-mass codes on arbitrary measure inputs for the stopped-past observable. -/
 @[expose] public section
+noncomputable section
 open MeasureTheory Set
 open scoped ENNReal
 namespace DOZZ.Proofs
 
+variable {A : Type*}
+
+
 /-- A finite restriction with a measurable zero fallback. -/
-noncomputable def reflectedFinitePlaneRestriction (K : Set ℂ) (μ : Measure ℂ) : FiniteMeasure ℂ :=
+def reflectedFinitePlaneRestriction (K : Set ℂ) (μ : Measure ℂ) : FiniteMeasure ℂ :=
   if h : μ K < ⊤ then ⟨μ.restrict K,isFiniteMeasure_restrict.mpr h.ne⟩ else 0
 
 theorem reflected_finitePlaneRestriction_measurable (K : Set ℂ) (hK : MeasurableSet K) :
@@ -34,29 +38,27 @@ theorem reflected_finitePlaneRestriction_measurable (K : Set ℂ) (hK : Measurab
 def reflectedPuncturedPlane : Set ℂ := ({0} : Set ℂ)ᶜ
 
 /-- A fixed compact exhaustion of the punctured plane. -/
-noncomputable def reflectedPuncturedExhaustion : CompactExhaustion reflectedPuncturedPlane := by
+def reflectedPuncturedExhaustion : CompactExhaustion reflectedPuncturedPlane := by
   let _ : LocallyCompactSpace reflectedPuncturedPlane :=
     (isClosed_singleton (x := (0 : ℂ))).isOpen_compl.locallyCompactSpace
   exact CompactExhaustion.choice _
 
-noncomputable def reflectedPuncturedCompact (n : ℕ) : Set ℂ :=
+def reflectedPuncturedCompact (n : ℕ) : Set ℂ :=
   Subtype.val '' reflectedPuncturedExhaustion n
 
 /-- A globally measurable code agrees with the full punctured mass on locally finite inputs. -/
-noncomputable def reflectedPuncturedMassCode {A : Type*} (F : A × ℂ → ℝ≥0∞)
+def reflectedPuncturedMassCode (F : A × ℂ → ℝ≥0∞)
     (p : A × Measure ℂ) : ℝ≥0∞ :=
   ⨆ n : ℕ, ∫⁻ x, F (p.1,x) ∂(reflectedFinitePlaneRestriction (reflectedPuncturedCompact n) p.2 : Measure ℂ)
 
-theorem reflected_puncturedMassCode_measurable {A : Type*} [MeasurableSpace A]
+theorem reflected_puncturedMassCode_measurable [MeasurableSpace A]
     (F : A × ℂ → ℝ≥0∞) (hF : Measurable F) : Measurable (reflectedPuncturedMassCode F) := by
   apply Measurable.iSup
   intro n
-  have hK : IsCompact (reflectedPuncturedCompact n) :=
-    (reflectedPuncturedExhaustion.isCompact n).image continuous_subtype_val
   exact (measurable_lintegral_finiteMeasure_parameter hF).comp
-    (measurable_fst.prodMk ((reflected_finitePlaneRestriction_measurable _ hK.measurableSet).comp measurable_snd))
+    (measurable_fst.prodMk ((reflected_finitePlaneRestriction_measurable _ ((reflectedPuncturedExhaustion.isCompact n).image continuous_subtype_val).measurableSet).comp measurable_snd))
 
-theorem reflected_puncturedMassCode_eq {A : Type*} (F : A × ℂ → ℝ≥0∞)
+theorem reflected_puncturedMassCode_eq (F : A × ℂ → ℝ≥0∞)
     (p : A) (μ : Measure ℂ)
     (hfin : ∀ K, IsCompact K → K ⊆ ({0} : Set ℂ)ᶜ → μ K < ⊤) :
     reflectedPuncturedMassCode F (p,μ) = ∫⁻ x in ({0} : Set ℂ)ᶜ, F (p,x) ∂μ := by

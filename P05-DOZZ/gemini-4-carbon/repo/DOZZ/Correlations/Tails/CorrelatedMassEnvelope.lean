@@ -31,19 +31,18 @@ theorem regularized_mass_envelope_uniform
     ∃ C : ℝ≥0∞, C < ⊤ ∧
       (∀ n : ℕ, ∫⁻ ω, E ω * regularizedGMC P Xc γ n ω (Metric.closedBall 0 R) ∂P ≤ C) ∧
       (∫⁻ ω, E ω * M ω (Metric.closedBall 0 R) ∂P ≤ C) := by
-  have hp : 0 < p := hpq.pos
-  have hq : 0 < q := hpq.symm.pos
+  have := hpq.pos
+  have := hpq.symm.pos
   obtain ⟨B, hB, hb⟩ := regularized_compact_mass_moment_uniform
     P X hX Xc hc γ q R hγ hγ2 hpq.symm.pos hqc hR
   have hLm := gmc_bounded_moment_lt_top P X hX γ hγ hγ2 M hM
     (Metric.closedBall 0 R) (Metric.isBounded_closedBall) q hpq.symm.nonneg hqc
-  let A : ℝ≥0∞ := (∫⁻ ω, E ω ^ p ∂P) ^ (1/p)
-  let D : ℝ≥0∞ := gmcMassMoment P M (Metric.closedBall 0 R) q
-  let C : ℝ≥0∞ := A * B ^ (1/q) + A * D ^ (1/q)
+  let A := (∫⁻ ω, E ω ^ p ∂P) ^ (1/p)
+  let D := gmcMassMoment P M (Metric.closedBall 0 R) q
   have hA : A < ⊤ := ENNReal.rpow_lt_top_of_nonneg (by positivity) hEp.ne
   have hDB : B ^ (1/q) < ⊤ := ENNReal.rpow_lt_top_of_nonneg (by positivity) hB.ne
   have hDD : D ^ (1/q) < ⊤ := ENNReal.rpow_lt_top_of_nonneg (by positivity) hLm.ne
-  refine ⟨C, ENNReal.add_lt_top.mpr ⟨ENNReal.mul_lt_top hA hDB,
+  refine ⟨(A * B ^ (1/q) + A * D ^ (1/q)), ENNReal.add_lt_top.mpr ⟨ENNReal.mul_lt_top hA hDB,
     ENNReal.mul_lt_top hA hDD⟩, ?_, ?_⟩
   · intro n
     have hmass : AEMeasurable

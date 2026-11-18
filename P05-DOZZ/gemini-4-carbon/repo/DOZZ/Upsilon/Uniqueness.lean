@@ -24,7 +24,7 @@ variable {γ : ℝ}
 private theorem openStrip_mem_nhds (q : ℝ) (hq : 0 < q) :
     {z : ℂ | 0 < z.re ∧ z.re < q} ∈ 𝓝 ((q : ℂ) / 2) := by
   let S : Set ℂ := {z | 0 < z.re ∧ z.re < q}
-  let c : ℂ := (q : ℂ) / 2
+  let c := (q : ℂ) / 2
   have hc : c ∈ S := by
     dsimp [c, S]
     simp only [Complex.div_ofNat_re, Complex.ofReal_re]
@@ -40,7 +40,7 @@ theorem IsUpsilon.unique {U V : ℂ → ℂ} (hγ : 0 < γ) (hU : IsUpsilon γ U
   have hQ : 0 < Q γ := by
     unfold Q
     positivity
-  let c : ℂ := (Q γ : ℂ) / 2
+  let c := (Q γ : ℂ) / 2
   let S : Set ℂ := {z | 0 < z.re ∧ z.re < Q γ}
   have hS : S ∈ 𝓝 c := by
     simpa [c] using openStrip_mem_nhds (Q γ) hQ
@@ -56,15 +56,15 @@ theorem IsUpsilon.unique {U V : ℂ → ℂ} (hγ : 0 < γ) (hU : IsUpsilon γ U
 theorem IsUpsilon.reflect {U : ℂ → ℂ} (hγ : 0 < γ) (hγ2 : γ < 2)
     (hU : IsUpsilon γ U) (z : ℂ) :
     U (Q γ - z) = U z := by
-  have hratio : γ / 2 < 2 / γ := by
+  have : γ / 2 < 2 / γ := by
     apply (div_lt_iff₀ (show (0 : ℝ) < 2 by norm_num)).2
     rw [show 2 / γ * 2 = 4 / γ by ring]
     apply (lt_div_iff₀ hγ).2
     have h1 : 0 < 2 - γ := by linarith
     have h2 : 0 < 2 + γ := by linarith
-    have hprod := mul_pos h1 h2
+    have := mul_pos h1 h2
     nlinarith
-  have hγQ : γ < Q γ := by
+  have : γ < Q γ := by
     unfold Q
     linarith
   have hQ : 0 < Q γ := by linarith
@@ -89,7 +89,6 @@ theorem IsUpsilon.reflect {U : ℂ → ℂ} (hγ : 0 < γ) (hγ2 : γ < 2)
     fun_prop
   have hVanalytic : AnalyticOnNhd ℂ (fun w : ℂ => U ((Q γ : ℂ) - w)) Set.univ :=
     fun w _ => hVdiff.analyticAt w
-  have hFunext := AnalyticOnNhd.eq_of_eventuallyEq hVanalytic hUanalytic hEq
-  exact congrFun hFunext z
+  exact congrFun (AnalyticOnNhd.eq_of_eventuallyEq hVanalytic hUanalytic hEq) z
 
 end DOZZ.Proofs

@@ -19,6 +19,9 @@ open scoped ENNReal
 
 namespace DOZZ.Proofs
 
+variable {Ω : Type*} [MeasurableSpace Ω]
+
+
 private theorem withDensity_withDensity_eq_mul {α : Type*} [MeasurableSpace α]
     (μ : Measure α) (f g : α → ℝ≥0∞) (hf : Measurable f) (hg : Measurable g) :
     (μ.withDensity f).withDensity g = μ.withDensity (f * g) := by
@@ -43,23 +46,22 @@ noncomputable def continuousCircleCutoffMeasure (V : ℂ → ℝ) (γ : ℝ)
   volume.withDensity (fun x => ENNReal.ofReal
     (Real.exp (γ * F x - γ ^ 2 / 2 * V x) * normPlus x ^ (-4 : ℝ)))
 
-theorem measurable_continuousCircleCutoffMeasure (V : ℂ → ℝ) (hV : Measurable V)
-    (γ : ℝ) : Measurable (continuousCircleCutoffMeasure V γ) :=
-  continuousCircleCutoffMeasure_measurable V hV γ
+
+section
+variable (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (γ r : ℝ)
+include hX hXc γ r
 
 /-- Fubini turns the coordinatewise-a.e. agreement of a continuous modification with the circle
 witness into equality of their cutoff measures almost surely. -/
 theorem continuousCircleCutoffMeasure_ae_eq_regularizedGMC
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
-    (γ r : ℝ) (Z : Ω → C(ℂ, ℝ)) (hZ : Measurable Z)
+
+ (Z : Ω → C(ℂ, ℝ)) (hZ : Measurable Z)
     (hZae : ∀ x, (fun ω => Z ω x) =ᵐ[P] fun ω => Xc ω x r) :
     (fun ω => continuousCircleCutoffMeasure
       (fun x => ∫ ω', Xc ω' x r ^ 2 ∂P) γ (Z ω)) =ᵐ[P]
       fun ω => regularizedGMC P Xc γ r ω := by
   classical
-  let _ : IsProbabilityMeasure P := hX.1
+  let _ := hX.1
   let V : ℂ → ℝ := fun x => ∫ ω', Xc ω' x r ^ 2 ∂P
   let profileDensity : Ω × ℂ → ℝ≥0∞ := fun p => ENNReal.ofReal
     (Real.exp (γ * Z p.1 p.2 - γ ^ 2 / 2 * V p.2) * normPlus p.2 ^ (-4 : ℝ))
@@ -69,32 +71,20 @@ theorem continuousCircleCutoffMeasure_ae_eq_regularizedGMC
     have hpair : Measurable (fun p : Ω × ℂ => (Z p.1, p.2)) :=
       Measurable.prodMk (hZ.comp measurable_fst) measurable_snd
     exact (continuous_eval.measurable).comp hpair
-  have hRawEval : Measurable (fun p : Ω × ℂ => Xc p.1 p.2 r) := hXc.1 r
-  have hEqSet : MeasurableSet {p : Ω × ℂ | Z p.1 p.2 = Xc p.1 p.2 r} :=
-    measurableSet_eq_fun hProfileEval hRawEval
-  have hEach : ∀ᵐ x ∂volume, ∀ᵐ ω ∂P, Z ω x = Xc ω x r :=
-    ae_of_all volume hZae
-  have hCurr : ∀ᵐ ω ∂P, ∀ᵐ x ∂volume, Z ω x = Xc ω x r :=
-    (Measure.ae_ae_comm hEqSet).2 hEach
-  have hEqProd : ∀ᵐ p ∂P.prod volume, Z p.1 p.2 = Xc p.1 p.2 r :=
-    (Measure.ae_prod_iff_ae_ae hEqSet).2 hCurr
+  have hEqSet :=
+    measurableSet_eq_fun hProfileEval (hXc.1 r)
   have hDensityProd : profileDensity =ᵐ[P.prod volume] rawDensity := by
-    filter_upwards [hEqProd] with p hp
+    filter_upwards [(Measure.ae_prod_iff_ae_ae hEqSet).2 ((Measure.ae_ae_comm hEqSet).2 (ae_of_all volume hZae))] with p hp
     simp [profileDensity, rawDensity, V, hp]
-  have hDensityAE := Measure.ae_ae_of_ae_prod hDensityProd
-  filter_upwards [hDensityAE] with ω hω
-  have hMeasure := withDensity_congr_ae hω
-  simpa [continuousCircleCutoffMeasure, regularizedGMC, V,
-    profileDensity, rawDensity] using hMeasure
+  filter_upwards [Measure.ae_ae_of_ae_prod hDensityProd] with ω hω
+  exact withDensity_congr_ae hω
 
 /-- A continuous profile shift multiplies its cutoff measure by the exponential of the shifted
 profile. The equality is stated against the original circle witness and uses Fubini for the
 coordinatewise-a.e. profile agreement. -/
 theorem continuousCircleCutoffMeasure_shift_ae_eq_regularizedGMC_withDensity
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
-    (γ r t : ℝ) (Z : Ω → C(ℂ, ℝ)) (hZ : Measurable Z)
+
+ (t : ℝ) (Z : Ω → C(ℂ, ℝ)) (hZ : Measurable Z)
     (hZae : ∀ x, (fun ω => Z ω x) =ᵐ[P] fun ω => Xc ω x r)
     (v : ℂ → ℝ) (hv : Continuous v) :
     (fun ω => continuousCircleCutoffMeasure
@@ -103,29 +93,22 @@ theorem continuousCircleCutoffMeasure_shift_ae_eq_regularizedGMC_withDensity
       fun ω => (regularizedGMC P Xc γ r ω).withDensity
         (fun x => ENNReal.ofReal (Real.exp (γ * t * v x))) := by
   classical
-  let _ : IsProbabilityMeasure P := hX.1
+  let _ := hX.1
   let V : ℂ → ℝ := fun x => ∫ ω', Xc ω' x r ^ 2 ∂P
-  let Zshift : Ω → C(ℂ, ℝ) := continuousCircleProfileShift Z v hv t
+  let Zshift := continuousCircleProfileShift Z v hv t
   let shiftDensity : Ω × ℂ → ℝ≥0∞ := fun p => ENNReal.ofReal
     (Real.exp (γ * Zshift p.1 p.2 - γ ^ 2 / 2 * V p.2) * normPlus p.2 ^ (-4 : ℝ))
   let rawDensity : Ω × ℂ → ℝ≥0∞ := fun p => ENNReal.ofReal
     (Real.exp (γ * Xc p.1 p.2 r - γ ^ 2 / 2 * V p.2) * normPlus p.2 ^ (-4 : ℝ))
   let insertWeight : ℂ → ℝ≥0∞ := fun x => ENNReal.ofReal (Real.exp (γ * t * v x))
-  have hProfileEval : Measurable (fun p : Ω × ℂ => Z p.1 p.2) := by
-    exact (continuous_eval.measurable).comp
+  have hProfileEval : Measurable (fun p : Ω × ℂ => Z p.1 p.2) := (continuous_eval.measurable).comp
       (Measurable.prodMk (hZ.comp measurable_fst) measurable_snd)
-  have hRawEval : Measurable (fun p : Ω × ℂ => Xc p.1 p.2 r) := hXc.1 r
-  have hEqSet : MeasurableSet {p : Ω × ℂ | Z p.1 p.2 = Xc p.1 p.2 r} :=
+  have hRawEval := hXc.1 r
+  have hEqSet :=
     measurableSet_eq_fun hProfileEval hRawEval
-  have hEach : ∀ᵐ x ∂volume, ∀ᵐ ω ∂P, Z ω x = Xc ω x r :=
-    ae_of_all volume hZae
-  have hCurr : ∀ᵐ ω ∂P, ∀ᵐ x ∂volume, Z ω x = Xc ω x r :=
-    (Measure.ae_ae_comm hEqSet).2 hEach
-  have hEqProd : ∀ᵐ p ∂P.prod volume, Z p.1 p.2 = Xc p.1 p.2 r :=
-    (Measure.ae_prod_iff_ae_ae hEqSet).2 hCurr
   have hDensityProd : shiftDensity =ᵐ[P.prod volume]
       fun p => rawDensity p * insertWeight p.2 := by
-    filter_upwards [hEqProd] with p hp
+    filter_upwards [(Measure.ae_prod_iff_ae_ae hEqSet).2 ((Measure.ae_ae_comm hEqSet).2 (ae_of_all volume hZae))] with p hp
     have hExp : Real.exp (γ * Zshift p.1 p.2 - γ ^ 2 / 2 * V p.2) =
         Real.exp (γ * Xc p.1 p.2 r - γ ^ 2 / 2 * V p.2) *
           Real.exp (γ * t * v p.2) := by
@@ -145,17 +128,14 @@ theorem continuousCircleCutoffMeasure_shift_ae_eq_regularizedGMC_withDensity
       ENNReal.ofReal (Real.exp (γ * Xc p.1 p.2 r - γ ^ 2 / 2 * V p.2) *
           Real.exp (γ * t * v p.2) * normPlus p.2 ^ (-4 : ℝ)) =
         ENNReal.ofReal ((Real.exp (γ * Xc p.1 p.2 r - γ ^ 2 / 2 * V p.2) *
-          normPlus p.2 ^ (-4 : ℝ)) * Real.exp (γ * t * v p.2)) := by
-            congr 1
-            ring
+          normPlus p.2 ^ (-4 : ℝ)) * Real.exp (γ * t * v p.2)) := by ring
       _ = ENNReal.ofReal (Real.exp (γ * Xc p.1 p.2 r - γ ^ 2 / 2 * V p.2) *
           normPlus p.2 ^ (-4 : ℝ)) * ENNReal.ofReal (Real.exp (γ * t * v p.2)) :=
         ENNReal.ofReal_mul hbase
-  have hDensityAE := Measure.ae_ae_of_ae_prod hDensityProd
-  have hV : Measurable V := by
+  have : Measurable V := by
     let q : ℂ → Ω → ℝ := fun x ω' => Xc ω' x r ^ 2
     have hq : Measurable (Function.uncurry q) := by
-      have hbase : Measurable (fun p : ℂ × Ω => Xc p.2 p.1 r) :=
+      have hbase :=
         (hXc.1 r).comp measurable_swap
       have hEq : (fun p : ℂ × Ω => Xc p.2 p.1 r ^ 2) =
           fun p => Xc p.2 p.1 r * Xc p.2 p.1 r := by
@@ -167,29 +147,22 @@ theorem continuousCircleCutoffMeasure_shift_ae_eq_regularizedGMC_withDensity
     change Measurable (fun x => ∫ ω', q x ω' ∂P)
     exact hq.stronglyMeasurable.integral_prod_right.measurable
   have hrawMeas (ω : Ω) : Measurable (fun x : ℂ => rawDensity (ω, x)) := by
-    have hfield : Measurable (fun x : ℂ => Xc ω x r) :=
-      (hXc.1 r).comp (Measurable.prodMk measurable_const measurable_id)
-    have hvariance : Measurable (fun x : ℂ => V x) := hV
-    have hnorm : Measurable (fun x : ℂ => normPlus x) := by
+    have : Measurable (fun x : ℂ => normPlus x) := by
       unfold normPlus
       exact measurable_const.max measurable_norm
     dsimp [rawDensity]
     fun_prop
-  have hweightMeas : Measurable insertWeight := by
-    dsimp [insertWeight]
-    fun_prop
-  filter_upwards [hDensityAE] with ω hω
-  have hprofileMeasure : volume.withDensity (fun x => shiftDensity (ω, x)) =
-      volume.withDensity (fun x => rawDensity (ω, x) * insertWeight x) :=
-    withDensity_congr_ae hω
+  have hweightMeas : Measurable insertWeight := by fun_prop
+  filter_upwards [Measure.ae_ae_of_ae_prod hDensityProd] with ω hω
   have hbaseMeasure : regularizedGMC P Xc γ r ω =
-      volume.withDensity (fun x => rawDensity (ω, x)) := by
-    simp [regularizedGMC, rawDensity, V]
+      volume.withDensity (fun x => rawDensity (ω, x)) := by rfl
   have hmul := withDensity_withDensity_eq_mul volume
     (fun x => rawDensity (ω, x)) insertWeight (hrawMeas ω) hweightMeas
   rw [continuousCircleCutoffMeasure, hbaseMeasure, hmul]
-  exact hprofileMeasure
+  exact withDensity_congr_ae hω
 
+
+end
 theorem rootedPairPath_measurableSpace_comap :
     MeasurableSpace.comap rootedPairPath MeasurableSpace.pi =
       MeasurableSpace.prod (inferInstance : MeasurableSpace (TestFn → ℝ))
@@ -232,19 +205,19 @@ private theorem rootedPair_cylinders_piSystem :
   refine ⟨A' ∩ B',
     (MeasureTheory.isPiSystem_measurableCylinders
       (α := fun _ : ℂ ⊕ TestFn => ℝ)) A' hA' B' hB' hne', ?_⟩
-  change rootedPairPath ⁻¹' (A' ∩ B') =
-    rootedPairPath ⁻¹' A' ∩ rootedPairPath ⁻¹' B'
-  rw [Set.preimage_inter]
+  rfl
+
+section
+variable (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (r t : ℝ)
+include hX hXc r t
 
 /-- The test field and a continuous circle profile have the joint law induced by the full
 test/circle process law, provided the profile agrees coordinatewise almost surely with the
 circle-average witness. The proof uses finite cylinders, so no common null set over all roots is
 needed. -/
 theorem equatorGFF_tilted_test_continuousCircle_pair_law
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
-    (r t : ℝ) (L : Ω → ℝ) (hL : IsGaussianL2Limit P X L)
+
+ (L : Ω → ℝ) (hL : IsGaussianL2Limit P X L)
     (Z : Ω → C(ℂ, ℝ)) (hZ : Measurable Z)
     (hZae : ∀ x, (fun ω => Z ω x) =ᵐ[P] fun ω => Xc ω x r)
     (hcovCont : Continuous (fun x =>
@@ -264,7 +237,7 @@ theorem equatorGFF_tilted_test_continuousCircle_pair_law
     gaussianCovariance P (fun ω => X ω f) L
   let covCircle : ℂ → ℝ := fun x =>
     gaussianCovariance P (fun ω => Xc ω x r) L
-  let Zshift : Ω → C(ℂ, ℝ) :=
+  let Zshift :=
     continuousCircleProfileShift Z covCircle hcovCont t
   let fieldShift : Ω → TestFn → ℝ := fun ω f => X ω f + t * covField f
   let pairLeft : Ω → RootedPair := fun ω => (field ω, Z ω)
@@ -286,32 +259,25 @@ theorem equatorGFF_tilted_test_continuousCircle_pair_law
     apply ContinuousMap.measurable_iff_eval.mpr
     intro x
     exact ((ContinuousMap.measurable_eval x).comp hZ).add measurable_const
-  have hpairLeft : Measurable pairLeft := Measurable.prodMk hfield hZ
-  have hpairRight : Measurable pairRight := Measurable.prodMk hfieldShift hZshift
+  have hpairLeft := Measurable.prodMk hfield hZ
+  have hpairRight := Measurable.prodMk hfieldShift hZshift
   have hEvalOrig : Measurable evalOrig := by
     rw [measurable_pi_iff]
     intro c
     cases c with
     | inl x => exact (hXc.1 r).comp (measurable_id.prodMk measurable_const)
     | inr f => exact (hX.2 f).1
-  have hEvalShift : Measurable evalShift := by
-    rw [measurable_pi_iff]
-    intro c
-    exact ((measurable_pi_iff.mp hEvalOrig c).add measurable_const)
-  have hEvalProfile : Measurable evalProfile := by
-    exact measurable_rootedPairPath.comp hpairLeft
-  have hEvalProfileShift : Measurable evalProfileShift := by
-    exact measurable_rootedPairPath.comp hpairRight
+  have hEvalShift : Measurable evalShift := by fun_prop
   have hLaw : Measure.map evalOrig (P.withDensity density) = Measure.map evalShift P := by
     simpa [evalOrig, evalShift, density] using
       equatorGFF_tilted_test_circle_law P X hX Xc hXc r t L hL
-  let μ : Measure RootedPair := Measure.map pairLeft (P.withDensity density)
-  let ν : Measure RootedPair := Measure.map pairRight P
+  let μ := Measure.map pairLeft (P.withDensity density)
+  let ν := Measure.map pairRight P
   have hCylinder (s : Finset (ℂ ⊕ TestFn)) (S : Set (∀ i : s, ℝ))
       (hS : MeasurableSet S) :
       μ (rootedPairPath ⁻¹' MeasureTheory.cylinder s S) =
         ν (rootedPairPath ⁻¹' MeasureTheory.cylinder s S) := by
-    have hA : MeasurableSet (rootedPairPath ⁻¹' MeasureTheory.cylinder s S) :=
+    have hA :=
       (hS.cylinder).preimage measurable_rootedPairPath
     have hVectorLeft :
         (fun (ω : Ω) => fun (i : s) => evalProfile ω i) =ᵐ[P]
@@ -365,10 +331,6 @@ theorem equatorGFF_tilted_test_continuousCircle_pair_law
         exact congrFun hω i
       simp only [Set.mem_preimage, MeasureTheory.mem_cylinder]
       rw [hrestrict]
-    have hEventLeftDensity :
-        (evalProfile ⁻¹' MeasureTheory.cylinder s S) =ᵐ[P.withDensity density]
-          (evalOrig ⁻¹' MeasureTheory.cylinder s S) :=
-      (withDensity_absolutelyContinuous P density).ae_le hEventLeft
     calc
       μ (rootedPairPath ⁻¹' MeasureTheory.cylinder s S) =
           (P.withDensity density) (evalProfile ⁻¹' MeasureTheory.cylinder s S) := by
@@ -376,7 +338,7 @@ theorem equatorGFF_tilted_test_continuousCircle_pair_law
             rw [Measure.map_apply hpairLeft hA]
             rfl
       _ = (P.withDensity density) (evalOrig ⁻¹' MeasureTheory.cylinder s S) :=
-            measure_congr hEventLeftDensity
+            measure_congr ((withDensity_absolutelyContinuous P density).ae_le hEventLeft)
       _ = P (evalShift ⁻¹' MeasureTheory.cylinder s S) := by
             have h := congrArg (fun m : Measure (ℂ ⊕ TestFn → ℝ) =>
               m (MeasureTheory.cylinder s S)) hLaw
@@ -389,7 +351,7 @@ theorem equatorGFF_tilted_test_continuousCircle_pair_law
             dsimp [ν]
             rw [Measure.map_apply hpairRight hA]
             rfl
-  let C : Set (Set RootedPair) := Set.image
+  let C := Set.image
     (fun A : Set (ℂ ⊕ TestFn → ℝ) => rootedPairPath ⁻¹' A)
     (MeasureTheory.measurableCylinders (fun _ : ℂ ⊕ TestFn => ℝ))
   have hCylinderAll : ∀ A ∈ C, μ A = ν A := by
@@ -398,7 +360,7 @@ theorem equatorGFF_tilted_test_continuousCircle_pair_law
     obtain ⟨s, S, hS, rfl⟩ :=
       (MeasureTheory.mem_measurableCylinders B).mp hB
     exact hCylinder s S hS
-  have hνUniv : ν Set.univ = 1 := by
+  have : ν Set.univ = 1 := by
     dsimp [ν]
     rw [Measure.map_apply hpairRight MeasurableSet.univ]
     exact hX.1.measure_univ
@@ -417,7 +379,7 @@ theorem equatorGFF_tilted_test_continuousCircle_pair_law
       _ = P Set.univ := hMass
       _ = 1 := hX.1.measure_univ
   have hFiniteμ : IsFiniteMeasure μ := ⟨by rw [hμUniv]; simp⟩
-  have hUnivEq : μ Set.univ = ν Set.univ := by rw [hμUniv, hνUniv]
+  have hUnivEq : μ Set.univ = ν Set.univ := by grind
   exact @ext_of_generate_finite RootedPair _ μ ν C
     rootedPair_cylinder_generates.symm
     rootedPair_cylinders_piSystem hFiniteμ hCylinderAll hUnivEq
@@ -427,10 +389,8 @@ nonnegative observable of the test field and cutoff chaos. The cutoff is represe
 continuous modification; the preceding pair-law theorem allows its coordinates to agree only
 almost surely, separately at each spatial point. -/
 theorem equatorGFF_tilted_test_continuousCircle_cutoff_lintegral
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
-    (r t γ : ℝ) (L : Ω → ℝ) (hL : IsGaussianL2Limit P X L)
+
+ (γ : ℝ) (L : Ω → ℝ) (hL : IsGaussianL2Limit P X L)
     (Z : Ω → C(ℂ, ℝ)) (hZ : Measurable Z)
     (hZae : ∀ x, (fun ω => Z ω x) =ᵐ[P] fun ω => Xc ω x r)
     (hcovCont : Continuous (fun x =>
@@ -445,13 +405,15 @@ theorem equatorGFF_tilted_test_continuousCircle_cutoff_lintegral
       (continuousCircleCutoffMeasure (fun x => ∫ ω', Xc ω' x r ^ 2 ∂P) γ
         (continuousCircleProfileShift Z
           (fun x => gaussianCovariance P (fun ω' => Xc ω' x r) L) hcovCont t ω)) ∂P := by
+  have measurable_continuousCircleCutoffMeasure (V : ℂ → ℝ) (hV : Measurable V) (γ : ℝ) := 
+    continuousCircleCutoffMeasure_measurable V hV γ
   classical
-  let _ : IsProbabilityMeasure P := hX.1
+  let _ := hX.1
   let V : ℂ → ℝ := fun x => ∫ ω', Xc ω' x r ^ 2 ∂P
   have hV : Measurable V := by
     let q : ℂ → Ω → ℝ := fun x ω' => Xc ω' x r ^ 2
     have hq : Measurable (Function.uncurry q) := by
-      have hbase : Measurable (fun p : ℂ × Ω => Xc p.2 p.1 r) :=
+      have hbase :=
         (hXc.1 r).comp measurable_swap
       have hEq : (fun p : ℂ × Ω => Xc p.2 p.1 r ^ 2) =
           fun p => Xc p.2 p.1 r * Xc p.2 p.1 r := by
@@ -462,27 +424,22 @@ theorem equatorGFF_tilted_test_continuousCircle_cutoff_lintegral
       exact hbase.mul hbase
     change Measurable (fun x => ∫ ω', q x ω' ∂P)
     exact hq.stronglyMeasurable.integral_prod_right.measurable
-  let cutoff : C(ℂ, ℝ) → Measure ℂ := continuousCircleCutoffMeasure V γ
-  have hcutoff : Measurable cutoff :=
-    measurable_continuousCircleCutoffMeasure V hV γ
+  let cutoff := continuousCircleCutoffMeasure V γ
   let cutoffPair : RootedPair → (TestFn → ℝ) × Measure ℂ := fun q => (q.1, cutoff q.2)
   have hcutoffPair : Measurable cutoffPair :=
-    Measurable.prodMk measurable_fst (hcutoff.comp measurable_snd)
+    Measurable.prodMk measurable_fst ((measurable_continuousCircleCutoffMeasure V hV γ).comp measurable_snd)
   have hObs : Measurable (fun q : RootedPair => H q.1 (cutoff q.2)) :=
     hH.comp hcutoffPair
-  let density : Ω → ℝ≥0∞ := fun ω => ENNReal.ofReal (Real.exp
-    (t * L ω - t ^ 2 / 2 * gaussianVariance P L))
   let field : Ω → TestFn → ℝ := fun ω f => X ω f
   let covField : TestFn → ℝ := fun f =>
     gaussianCovariance P (fun ω => X ω f) L
   let covCircle : ℂ → ℝ := fun x =>
     gaussianCovariance P (fun ω => Xc ω x r) L
-  let Zshift : Ω → C(ℂ, ℝ) := continuousCircleProfileShift Z covCircle hcovCont t
+  let Zshift := continuousCircleProfileShift Z covCircle hcovCont t
   let fieldShift : Ω → TestFn → ℝ := fun ω f => X ω f + t * covField f
   let pairLeft : Ω → RootedPair := fun ω => (field ω, Z ω)
   let pairRight : Ω → RootedPair := fun ω => (fieldShift ω, Zshift ω)
-  have hpairLeft : Measurable pairLeft := by
-    exact Measurable.prodMk (by
+  have hpairLeft : Measurable pairLeft := Measurable.prodMk (by
       rw [measurable_pi_iff]
       exact fun f => (hX.2 f).1) hZ
   have hpairRight : Measurable pairRight := by
@@ -500,7 +457,8 @@ theorem equatorGFF_tilted_test_continuousCircle_cutoff_lintegral
   have hIntegral := congrArg (fun μ : Measure RootedPair =>
     ∫⁻ q, H q.1 (cutoff q.2) ∂μ) hpair
   rw [lintegral_map hObs hpairLeft, lintegral_map hObs hpairRight] at hIntegral
-  simpa [field, fieldShift, covField, cutoff, V, pairLeft, pairRight, Zshift,
-    density, covCircle, continuousCircleProfileShift] using hIntegral
+  assumption
 
+
+end
 end DOZZ.Proofs

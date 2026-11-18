@@ -76,21 +76,15 @@ theorem coulombMass_moment_le_pieces
   have hVm : AEMeasurable V P :=
     gmc_setLIntegral_aemeasurable P X hX γ hγ hγ2 M hM _ hg _
       (measurableSet_lt measurable_const measurable_norm)
-  have hcard : ((Finset.univ : Finset (Fin N)).card : ℝ≥0∞) = N := by
-    rw [Finset.card_univ, Fintype.card_fin]
+  have hcard : ((Finset.univ : Finset (Fin N)).card : ℝ≥0∞) = N := by norm_num
   -- the pointwise bound
-  have hatoms : ∀ᵐ ω ∂P, ∀ k, M ω {z k} = 0 :=
-    ae_all_iff.mpr fun k => gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM (z k)
   have hpt : ∀ᵐ ω ∂P, ENNReal.rpow (coulombMass γ (M ω) α z αinf) t ≤
       2 ^ t * (2 ^ t * ((N : ℝ≥0∞) ^ t * ∑ k, cR ^ t * W k ω ^ t + cB ^ t * MB ω ^ t) +
         cE ^ t * V ω ^ t) := by
-    filter_upwards [hatoms] with ω hω
-    have hdec := coulombMass_le_pieces (M ω) γ α z αinf hδ hδ1 hsep hω hRr1 hzRr
-    calc ENNReal.rpow (coulombMass γ (M ω) α z αinf) t
-        ≤ ((∑ k, cR * W k ω + cB * MB ω) + cE * V ω) ^ t := ENNReal.rpow_le_rpow hdec ht.le
-      _ ≤ 2 ^ t * ((∑ k, cR * W k ω + cB * MB ω) ^ t + (cE * V ω) ^ t) :=
-          ennreal_add_rpow_le_two_rpow_mul _ _ ht.le
-      _ ≤ 2 ^ t * (2 ^ t * ((∑ k, cR * W k ω) ^ t + (cB * MB ω) ^ t) + (cE * V ω) ^ t) := by
+    filter_upwards [ae_all_iff.mpr fun k => gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM (z k)] with ω hω
+    refine (ENNReal.rpow_le_rpow (coulombMass_le_pieces (M ω) γ α z αinf hδ hδ1 hsep hω hRr1 hzRr) ht.le).trans (?_)
+    refine (ennreal_add_rpow_le_two_rpow_mul _ _ ht.le).trans (?_)
+    calc 2 ^ t * ((∑ k, cR * W k ω + cB * MB ω) ^ t + (cE * V ω) ^ t) ≤ 2 ^ t * (2 ^ t * ((∑ k, cR * W k ω) ^ t + (cB * MB ω) ^ t) + (cE * V ω) ^ t) := by
           gcongr
           exact ennreal_add_rpow_le_two_rpow_mul _ _ ht.le
       _ ≤ 2 ^ t * (2 ^ t * ((N : ℝ≥0∞) ^ t * ∑ k, (cR * W k ω) ^ t + (cB * MB ω) ^ t) +
@@ -139,8 +133,6 @@ theorem coulombMass_moment_uniform_nonpos
   set cmin : ℝ≥0∞ := ENNReal.ofReal ((2 : ℝ) ^ (-(N * (γ * A)))) *
     ENNReal.ofReal ((Rr + 2) ^ (-(γ * A))) with hcmin
   set B : Set ℂ := Metric.ball (((Rr + 1 : ℝ)) : ℂ) (1 / 8) with hB
-  have hBm : AEMeasurable (fun ω => M ω B) P :=
-    gmc_set_mass_aemeasurable_of_isGMCOf P X hX γ hγ hγ2 M hM B Metric.isOpen_ball.measurableSet
   have hc0 : cmin ≠ 0 := mul_ne_zero
     (ENNReal.ofReal_pos.mpr (Real.rpow_pos_of_pos (by norm_num) _)).ne'
     (ENNReal.ofReal_pos.mpr (Real.rpow_pos_of_pos (by linarith) _)).ne'
@@ -158,7 +150,7 @@ theorem coulombMass_moment_uniform_nonpos
             rw [abs_mul, abs_of_pos hγ]
             exact mul_le_mul_of_nonneg_left (hαA j) hγ.le
         _ = N * (γ * A) := by simp
-    have hinf : |γ * αinf| ≤ γ * A := by
+    have : |γ * αinf| ≤ γ * A := by
       rw [abs_mul, abs_of_pos hγ]
       exact mul_le_mul_of_nonneg_left hαinfA hγ.le
     have hcle : cmin ≤ ENNReal.ofReal ((2 : ℝ) ^ (-∑ j, |γ * α j|)) *
@@ -176,27 +168,23 @@ theorem coulombMass_moment_uniform_nonpos
       have h2 : (Rr + 2) ^ (-(γ * A)) ≤ 1 :=
         Real.rpow_le_one_of_one_le_of_nonpos (by linarith)
           (neg_nonpos.mpr (mul_nonneg hγ.le hNA))
-      calc (2 : ℝ) ^ (-(N * (γ * A))) * (Rr + 2) ^ (-(γ * A)) ≤ 1 * 1 :=
-            mul_le_mul h1 h2 (Real.rpow_nonneg (by linarith) _) zero_le_one
-        _ = 1 := one_mul 1
+      exact (mul_le_mul h1 h2 (Real.rpow_nonneg (by linarith) _) zero_le_one).trans_eq (one_mul 1)
     have hlow : ∀ ω, cmin * M ω B ≤ coulombMass γ (M ω) α z αinf := fun ω =>
       (mul_le_mul' hcle le_rfl).trans (coulombMass_ge_exterior_ball (M ω) γ α z αinf hRr1 hzRr)
     calc ∫⁻ ω, ENNReal.rpow (coulombMass γ (M ω) α z αinf) t ∂P
         ≤ ∫⁻ ω, cmin ^ tmin * (1 + M ω B ^ tmin) ∂P := by
           apply lintegral_mono
           intro ω
-          calc ENNReal.rpow (coulombMass γ (M ω) α z αinf) t ≤ (cmin * M ω B) ^ t :=
-                ennreal_rpow_antitone_of_nonpos (hlow ω) ht0
-            _ = cmin ^ t * M ω B ^ t := ennreal_mul_rpow_of_ne_zero_ne_top _ _ hc0 hctop t
-            _ ≤ cmin ^ tmin * (1 + M ω B ^ tmin) := by
-                refine mul_le_mul' (ENNReal.rpow_le_rpow_of_exponent_ge hc1 htt) ?_
-                rcases le_total 1 (M ω B) with h1 | h1
-                · exact ((ennreal_rpow_antitone_of_nonpos h1 ht0).trans_eq
-                    (ENNReal.one_rpow t)).trans le_self_add
-                · exact (ENNReal.rpow_le_rpow_of_exponent_ge h1 htt).trans le_add_self
+          refine (ennreal_rpow_antitone_of_nonpos (hlow ω) ht0).trans (?_)
+          refine (ennreal_mul_rpow_of_ne_zero_ne_top _ _ hc0 hctop t).trans_le (?_)
+          refine mul_le_mul' (ENNReal.rpow_le_rpow_of_exponent_ge hc1 htt) ?_
+          rcases le_total 1 (M ω B) with h1 | h1
+          · exact ((ennreal_rpow_antitone_of_nonpos h1 ht0).trans_eq
+              (ENNReal.one_rpow t)).trans le_self_add
+          · exact (ENNReal.rpow_le_rpow_of_exponent_ge h1 htt).trans le_add_self
       _ = cmin ^ tmin * (1 + gmcMassMoment P M B tmin) := by
           have h1m : AEMeasurable (fun ω => 1 + M ω B ^ tmin) P :=
-            aemeasurable_const.add (hBm.pow_const tmin)
+            aemeasurable_const.add ((gmc_set_mass_aemeasurable_of_isGMCOf P X hX γ hγ hγ2 M hM B Metric.isOpen_ball.measurableSet).pow_const tmin)
           have hone : AEMeasurable (fun _ : Ω => (1 : ℝ≥0∞)) P := aemeasurable_const
           rw [lintegral_const_mul'' _ h1m, lintegral_add_left' hone, lintegral_const,
             measure_univ, mul_one]

@@ -16,15 +16,18 @@ open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
 
+variable {Ω : Type*}
+
+
 /-- The copied local circle field used in the one-insertion tail estimate. -/
-noncomputable def copiedCircle {Ω : Type*} (Xc : Ω → ℂ → ℝ → ℝ)
+noncomputable def copiedCircle (Xc : Ω → ℂ → ℝ → ℝ)
     (z : ℂ) (q : Ω × Ω) (p : localCircle) : ℝ :=
   Xc q.2 z 0 + (Xc q.1 (z + p.val.1) p.val.2 - Xc q.1 z 0) +
     localPinCoefficient z p.val.1 * (Xc q.2 z 0 - Xc q.1 z 0)
 
 /-- The original translated circle law retains the pin-dependent variance. -/
 theorem offCenter_circle_hasLaw
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
+ [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
     (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (z : ℂ) (hz : 2 ≤ ‖z‖) (p : localCircle) :
     HasLaw (fun ω => Xc ω (z + p.val.1) p.val.2)
@@ -76,7 +79,7 @@ theorem copied_circle_fdd_law
 
 /-- The copied circle has the original scalar Gaussian law. -/
 theorem copied_circle_hasLaw
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
+ [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
     (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (hm : Measurable (fun q : Ω × (ℂ × ℝ) => Xc q.1 q.2.1 q.2.2))
     (z : ℂ) (hz : 2 ≤ ‖z‖) (p : localCircle) :

@@ -43,8 +43,7 @@ theorem fusion_gammaHalfKernel_exterior_compare (γ α₁ α₂ α₃ : ℝ) (z 
     exact Real.rpow_le_rpow (norm_nonneg _) hn (by positivity)
   have hF : 0 ≤ normPlus x ^ (γ * (α₁ + α₂ + α₃ - γ / 2)) /
       (‖x‖ ^ (γ * α₁) * ‖x - 1‖ ^ (γ * α₂)) := by unfold normPlus; positivity
-  have h := mul_le_mul_of_nonneg_right hp hF
   unfold gammaHalfKernel
   simp only [sub_zero]
-  convert h using 1 <;> ring
+  convert (mul_le_mul_of_nonneg_right hp hF) using 1 <;> ring
 end DOZZ.Proofs

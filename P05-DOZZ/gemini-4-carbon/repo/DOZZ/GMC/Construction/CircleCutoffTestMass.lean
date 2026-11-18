@@ -30,11 +30,11 @@ theorem circleCutoff_testMass_eq_regularizedGMC
       ∫ x, f x ∂regularizedGMC P Xc γ r ω := by
   classical
   let V : ℂ → ℝ := fun x => ∫ ω', Xc ω' x r ^ 2 ∂P
-  have hVmeas : Measurable V := by
+  have : Measurable V := by
     let _ := hX.1
     let q : ℂ → Ω → ℝ := fun x ω' => Xc ω' x r ^ 2
     have hq : Measurable (Function.uncurry q) := by
-      have hbase : Measurable (fun p : ℂ × Ω => Xc p.2 p.1 r) :=
+      have hbase :=
         (hXc.1 r).comp measurable_swap
       have hEq : (fun p : ℂ × Ω => Xc p.2 p.1 r ^ 2) =
           fun p => Xc p.2 p.1 r * Xc p.2 p.1 r := by
@@ -53,13 +53,12 @@ theorem circleCutoff_testMass_eq_regularizedGMC
     Real.exp (γ * Xc ω x r - γ ^ 2 / 2 * V x) * normPlus x ^ (-4 : ℝ)
   let e₀ : ℂ → ℝ≥0∞ := fun x => ENNReal.ofReal (d₀ x)
   let e₁ : ℂ → ℝ≥0∞ := fun x => ENNReal.ofReal (d₁ x)
-  have hd₀ : Measurable d₀ := hweightMeas
   have hd₁ : Measurable d₁ := by
-    have hfield : Measurable (fun x : ℂ => Xc ω x r) :=
+    have : Measurable (fun x : ℂ => Xc ω x r) :=
       (hXc.1 r).comp (measurable_const.prodMk measurable_id)
     dsimp [d₁]
     fun_prop
-  have he₀ : Measurable e₀ := ENNReal.measurable_ofReal.comp hd₀
+  have he₀ : Measurable e₀ := ENNReal.measurable_ofReal.comp (hweightMeas)
   have he₁ : Measurable e₁ := ENNReal.measurable_ofReal.comp hd₁
   have he₀top : ∀ᵐ x ∂volume, e₀ x < ∞ :=
     ae_of_all _ (fun x => ENNReal.ofReal_lt_top)
@@ -71,9 +70,7 @@ theorem circleCutoff_testMass_eq_regularizedGMC
   have hd₁nonneg (x : ℂ) : 0 ≤ d₁ x := by
     dsimp [d₁]
     exact mul_nonneg (Real.exp_nonneg _) (Real.rpow_nonneg (le_of_lt (by simp [normPlus])) _)
-  have hlog : Real.log (1 / Real.exp (-r)) = r := by
-    rw [one_div, Real.log_inv, Real.log_exp]
-    ring
+  have hlog : Real.log (1 / Real.exp (-r)) = r := by simp
   have hleft :
       regularizedLogChaosTestMass P Set.univ d₀
         (fun ω ε x => Xc ω x (Real.log (1 / ε))) γ r ω f =

@@ -45,35 +45,27 @@ theorem reflectionBarR_eq_of_joint_input_law_of_reflectionData
   rcases hZ' with ⟨_, _, _, hZ'm, _, _, _, _, _⟩
   let pair : Ω → (BrownianPath × BrownianPath) × Measure ℝ := fun ω => (B ω, Z ω)
   let pair' : Ω' → (BrownianPath × BrownianPath) × Measure ℝ := fun ω => (B' ω, Z' ω)
-  have hBm : AEMeasurable B P := by
-    have hp := hB₁m.prodMk hB₂m
-    exact hp.congr (Eventually.of_forall fun ω => rfl)
-  have hB'm : AEMeasurable B' P' := by
-    have hp := hB₁'m.prodMk hB₂'m
-    exact hp.congr (Eventually.of_forall fun ω => rfl)
-  have hpair : AEMeasurable pair P := by
-    change AEMeasurable (fun ω => (B ω, Z ω)) P
-    exact hBm.prodMk hZm
-  have hpair' : AEMeasurable pair' P' := by
-    change AEMeasurable (fun ω => (B' ω, Z' ω)) P'
-    exact hB'm.prodMk hZ'm
+  have : AEMeasurable B P := by
+    exact (hB₁m.prodMk hB₂m).congr (Eventually.of_forall fun ω => rfl)
+  have : AEMeasurable B' P' := by
+    exact (hB₁'m.prodMk hB₂'m).congr (Eventually.of_forall fun ω => rfl)
+  have hpair : AEMeasurable pair P := by fun_prop
+  have hpair' : AEMeasurable pair' P' := by fun_prop
   have hLocal : ∀ᵐ ω ∂P, LocallyFiniteOnTranslationWindows (Z ω) := by
     filter_upwards [hZlocal] with ω hω
     intro n
     simpa [LocallyFiniteOnTranslationWindows, translationWindow] using
       hω (-(n : ℝ)) (n : ℝ)
-  have hMass := aemeasurable_reflectionMassInput_map_of_locallyFinite
+  have := aemeasurable_reflectionMassInput_map_of_locallyFinite
     P γ pair hpair (by simpa [pair] using hLocal)
-  have hpow : Measurable (fun x : ℝ≥0∞ =>
+  have : Measurable (fun x : ℝ≥0∞ =>
       ENNReal.rpow x (reflectionExponent γ α)) :=
     ENNReal.continuous_rpow_const.measurable
   have hMoment : AEMeasurable
       (fun z : (BrownianPath × BrownianPath) × Measure ℝ =>
         ENNReal.rpow (twoSidedReflectionMassInput γ z) (reflectionExponent γ α))
-      (P.map pair) := by
-    exact hpow.comp_aemeasurable hMass
-  have hLaw' : P.map pair = P'.map pair' := by
-    simpa [pair, pair'] using hLaw
+      (P.map pair) := by fun_prop
+  have hLaw' : P.map pair = P'.map pair' := by assumption
   exact reflectionBarR_eq_of_joint_input_law P P' γ α B Z B' Z'
     hpair hpair' hLaw' hMoment
 

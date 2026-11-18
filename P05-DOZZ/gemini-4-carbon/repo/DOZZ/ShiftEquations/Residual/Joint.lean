@@ -36,14 +36,20 @@ namespace DOZZ.Proofs
 noncomputable def cutoffStrip (k : ℝ) (F : ℂ → ℂ) (z : ℂ) : ℂ :=
   if |z.im| < k then F z else 0
 
-theorem cutoffStrip_of_lt {k : ℝ} {F : ℂ → ℂ} {z : ℂ} (hz : |z.im| < k) :
+section
+variable {k : ℝ} {F : ℂ → ℂ} {z : ℂ}
+include k F z
+
+theorem cutoffStrip_of_lt (hz : |z.im| < k) :
     cutoffStrip k F z = F z := by
   simp [cutoffStrip, hz]
 
-theorem cutoffStrip_of_not_lt {k : ℝ} {F : ℂ → ℂ} {z : ℂ} (hz : ¬ |z.im| < k) :
+theorem cutoffStrip_of_not_lt (hz : ¬ |z.im| < k) :
     cutoffStrip k F z = 0 := by
   simp [cutoffStrip, hz]
 
+
+end
 theorem abs_im_add_ofReal (z : ℂ) (t : ℝ) : |(z + (t : ℂ)).im| = |z.im| := by
   simp
 
@@ -69,9 +75,7 @@ theorem cutoff_relation_codiscrete {F m : ℂ → ℂ} {h : ℝ} (hh : 0 < h) (t
     · exact hzero z hzk
   · have hopen : IsOpen {w : ℂ | h / 2 < |w.im|} :=
       isOpen_lt continuous_const Complex.continuous_im.abs
-    have hxo : h / 2 < |x.im| := by
-      have := not_lt.mp hx
-      linarith
+    have hxo : h / 2 < |x.im| := by nlinarith
     filter_upwards [nhdsWithin_le_nhds (hopen.mem_nhds hxo)] with z hz
     exact hzero z (not_lt.mpr (le_of_lt hz))
 
@@ -79,10 +83,9 @@ theorem cutoff_relation_codiscrete {F m : ℂ → ℂ} {h : ℝ} (hh : 0 < h) (t
 theorem meromorphicOn_cutoffStrip {F : ℂ → ℂ} {h : ℝ} (hF : MeromorphicOn F (horizontalStrip h))
     {k : ℝ} (hk : k ≤ h) : MeromorphicOn (cutoffStrip k F) (horizontalStrip k) := by
   intro z hz
-  have hz' : |z.im| < k := hz
+  have hz' := hz
   refine (hF z (lt_of_lt_of_le hz' hk)).congr ?_
-  have hopen : IsOpen {w : ℂ | |w.im| < k} := isOpen_horizontalStrip k
-  filter_upwards [nhdsWithin_le_nhds (hopen.mem_nhds hz')] with w hw
+  filter_upwards [nhdsWithin_le_nhds ((isOpen_horizontalStrip k).mem_nhds hz')] with w hw
   exact (cutoffStrip_of_lt hw).symm
 
 /-- **The joint representative**: from a γ/2-shift function and a 2/γ-shift function, both equal to
@@ -116,8 +119,8 @@ theorem exists_joint_representative {Ω : Type*} [MeasurableSpace Ω] (P : Measu
     hC₂m z (show |z.im| < h₂ from lt_of_lt_of_le (show |z.im| < h from hz) (min_le_right _ _))
   -- the two functions have the same germs on the strip
   set x₀ : ℝ := (2 * η + Q γ) / 2 with hx₀
-  have hx₀1 : 2 * η < x₀ := by rw [hx₀]; linarith
-  have hx₀2 : x₀ < Q γ := by rw [hx₀]; linarith
+  have hx₀1 : 2 * η < x₀ := by nlinarith
+  have hx₀2 : x₀ < Q γ := by nlinarith
   have hx₀S : (x₀ : ℂ) ∈ horizontalStrip h := by
     change |((x₀ : ℝ) : ℂ).im| < h
     simpa using hh

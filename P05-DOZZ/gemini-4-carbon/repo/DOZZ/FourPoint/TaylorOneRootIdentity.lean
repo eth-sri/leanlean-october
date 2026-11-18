@@ -16,11 +16,13 @@ open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+include hX hγ hγ2 hM
+
 /-- The weighted one-root identity, with a measurable functional of the supplied measure. -/
 theorem rooted_weight_identity
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+
     (f : ℂ → ℝ≥0∞) (hf : Measurable f) (hft : ∀ x, f x ≠ ⊤)
     (G : Measure ℂ → ℝ≥0∞) (hG : Measurable G) :
     (∫⁻ ω, (∫⁻ x, f x ∂M ω) * G (M ω) ∂P) =
@@ -41,9 +43,7 @@ theorem rooted_weight_identity
 
 /-- Every measurable half-unit region obeys the one-root annular upper bound. -/
 theorem twoRooted_annular_spatial_bound
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+
     (α₁ α₂ α₃ p : ℝ) (hp : 0 ≤ p) :
     ∃ C : ℝ, 0 < C ∧ ∀ z : ℂ, ‖z‖ ≤ 1 / 4 →
       ∀ B : Set ℂ, MeasurableSet B → (∀ x ∈ B, ‖x‖ ≤ 1 / 2) →
@@ -54,7 +54,7 @@ theorem twoRooted_annular_spatial_bound
     ![-γ / 2, α₁, α₂] α₃ (p + 1) (by linarith only [hp])
   refine ⟨C, hC, ?_⟩
   intro z hz B hB hunit
-  let f : ℂ → ℝ≥0∞ := B.indicator (fun x => ENNReal.ofReal
+  let f := B.indicator (fun x => ENNReal.ofReal
     (gammaHalfKernel γ α₁ α₂ α₃ z x / ‖x - z‖ ^ 2))
   have hf : Measurable f := (ENNReal.measurable_ofReal.comp
     ((gammaHalfKernel_measurable γ α₁ α₂ α₃ z).div
@@ -95,4 +95,6 @@ theorem twoRooted_annular_spatial_bound
       rw [lintegral_mul_const _ hf, mul_comm, lintegral_indicator hB,
         gmcReferenceMeasure_restrict_unit_chart B hB (fun x hx => (hunit x hx).trans (by norm_num))]
 
+
+end
 end DOZZ.Proofs

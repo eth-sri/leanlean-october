@@ -8,15 +8,12 @@ public import DOZZ.FourPoint.ReflectedOuter.KernelPerturbation
 import Mathlib.Tactic
 /-! # Relative comparison on the full dual retained region -/
 public section
-open MeasureTheory Set
-open scoped ENNReal
 namespace DOZZ.Proofs
 
 /-- The perturbed kernel factors through the ratio of its two distances. -/
 theorem dual_kernel_distance_ratio (γ α₁ α₂ α₃ : ℝ) (z x : ℂ) (hx : 0 < ‖x‖) :
     dualFusionKernel γ α₁ α₂ α₃ z x =
       (‖x - z‖ / ‖x‖) ^ ((2 : ℝ)) * dualFusionKernel γ α₁ α₂ α₃ 0 x := by
-  have hn : ‖x‖ ^ ((2 : ℝ)) ≠ 0 := (Real.rpow_pos_of_pos hx _).ne'
   unfold dualFusionKernel
   rw [sub_zero, Real.div_rpow (norm_nonneg _) hx.le]
   field_simp
@@ -59,8 +56,7 @@ theorem dual_kernel_relative_lower (γ α₁ α₂ α₃ : ℝ) (z x : ℂ) (hx 
   have hb₂ : (2 : ℝ) ≤ 2 := by norm_num
   have hd : 1 / 2 ≤ ‖x - z‖ / ‖x‖ := by
     apply (le_div_iff₀ hx).mpr
-    have hh := norm_sub_norm_le x z
-    linarith only [hh, hz, hx]
+    linarith only [norm_sub_norm_le x z, hz, hx]
   have hl : (1 / 4 : ℝ) ≤ (‖x - z‖ / ‖x‖) ^ ((2 : ℝ)) := by
     calc
       _ = (1 / 2 : ℝ) ^ (2 : ℝ) := by norm_num

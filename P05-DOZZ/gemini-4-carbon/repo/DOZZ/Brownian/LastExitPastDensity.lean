@@ -36,9 +36,9 @@ theorem negativeConditionedLaw_finitePast_lastExit_Ioc
         ∂(volume : Measure ℝ)
         ∂(volume : Measure (Fin (k+1) → ℝ)).withDensity
           (conditionedPositiveFDDVectorDensity ν (fun i => (ss i : ℝ))) := by
-  let : IsProbabilityMeasure P := hP.2.1
+  let := hP.2.1
   let evalPast : BrownianPath → (Fin (k+1) → ℝ) := fun p i => -(p (ss i))
-  let μ : Measure (Fin (k+1) → ℝ) := volume.withDensity
+  let μ := volume.withDensity
     (conditionedPositiveFDDVectorDensity ν (fun i => (ss i : ℝ)))
   let E : ℝ≥0 → Set BrownianPath := fun w =>
     {p | evalPast p ∈ A ∧ negativeLastExitTime p (c : ℝ) ≤ w}
@@ -46,7 +46,7 @@ theorem negativeConditionedLaw_finitePast_lastExit_Ioc
     measurable_pi_iff.mpr fun _ => (ContinuousMap.measurable_eval _).neg
   have hmτ : Measurable (fun p : BrownianPath => negativeLastExitTime p (c : ℝ)) :=
     measurable_negativeLastExitTime_joint.comp (measurable_const.prodMk measurable_id)
-  have hE (w : ℝ≥0) : MeasurableSet (E w) :=
+  have hE (w : ℝ≥0) :=
     (hA.preimage hmPast).inter ((measurableSet_Iic (a := w)).preimage hmτ)
   have hpastLaw : P.map evalPast = μ :=
     negativeConditionedLaw_positiveFDD hP (k+1) (by omega) ss hs hmono

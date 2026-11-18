@@ -15,12 +15,13 @@ open MeasureTheory Filter Topology
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (α₁ α₂ α₃ : ℝ)
+include hX hγ hγ2 hM α₁ α₂ α₃
+
 /-- An arbitrary integrable planar kernel can be multiplied by the uniformly bounded rooted
 factor. This includes its signed real and complex components. -/
-theorem fusionScaledIntegral_tendsto {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (α₁ α₂ α₃ : ℝ) (hα : γ / 2 ≤ α₁) (hα₁ : α₁ < 2 / γ)
+theorem fusionScaledIntegral_tendsto (hα : γ / 2 ≤ α₁) (hα₁ : α₁ < 2 / γ)
     (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) (s : ℝ) (hs : s < 0)
     (K : ℂ → ℂ) (hK : Integrable K volume) :
     Tendsto (fun z : ℂ => ∫ y : ℂ, K y *
@@ -28,17 +29,15 @@ theorem fusionScaledIntegral_tendsto {Ω : Type*} [MeasurableSpace Ω]
       (nhds ((∫ y : ℂ, K y) *
         ((∫⁻ ω, fusionMovingMass γ α₁ α₂ α₃ 1 0 (M ω) ^ s ∂P).toReal : ℂ))) := by
   obtain ⟨B, hB, hbound⟩ := fusionScaledFactor_uniform_bound P X hX γ hγ hγ2 M hM α₁ α₂ α₃ s hs.le
-  have hmeas := fusionScaledFactor_measurable P X hX γ hγ hγ2 M hM α₁ α₂ α₃ s
   have hF : ∀ᶠ z : ℂ in nhds 0, AEStronglyMeasurable
       (fun y => K y * (fusionScaledFactor P M γ α₁ α₂ α₃ s y z : ℂ)) volume := by
     apply Eventually.of_forall
     intro z
     exact hK.aestronglyMeasurable.mul
-      ((Complex.measurable_ofReal.comp (hmeas.comp (measurable_id.prodMk measurable_const))).aestronglyMeasurable)
+      ((Complex.measurable_ofReal.comp ((fusionScaledFactor_measurable P X hX γ hγ hγ2 M hM α₁ α₂ α₃ s).comp (measurable_id.prodMk measurable_const))).aestronglyMeasurable)
   have hdom : ∀ᶠ z : ℂ in nhds 0, ∀ᵐ y : ℂ ∂volume,
       ‖K y * (fusionScaledFactor P M γ α₁ α₂ α₃ s y z : ℂ)‖ ≤ ‖K y‖ * B := by
-    have hz : ∀ᶠ z : ℂ in nhds 0, ‖z‖ ≤ 1 := by
-      exact ((continuous_norm.tendsto (0 : ℂ)).eventually_lt_const (by simp)).mono fun z h => h.le
+    have hz : ∀ᶠ z : ℂ in nhds 0, ‖z‖ ≤ 1 := ((continuous_norm.tendsto (0 : ℂ)).eventually_lt_const (by simp)).mono fun z h => h.le
     filter_upwards [hz] with z hz
     exact ae_of_all _ fun y => by
       rw [norm_mul, Complex.norm_real, Real.norm_eq_abs]
@@ -59,16 +58,11 @@ theorem fusionScaledIntegral_tendsto {Ω : Type*} [MeasurableSpace Ω]
   simpa only [integral_mul_const] using h
 
 /-- Joint measurability makes the spatial integral a measurable function of the moving point. -/
-theorem fusionScaledIntegral_measurable {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (α₁ α₂ α₃ s : ℝ) (K : ℂ → ℂ) (hK : Measurable K) :
+theorem fusionScaledIntegral_measurable (s : ℝ) (K : ℂ → ℂ) (hK : Measurable K) :
     Measurable (fun z : ℂ => ∫ y : ℂ, K y *
       (fusionScaledFactor P M γ α₁ α₂ α₃ s y z : ℂ)) := by
-  have hmeas := fusionScaledFactor_measurable P X hX γ hγ hγ2 M hM α₁ α₂ α₃ s
-  have h : Measurable (fun q : ℂ × ℂ => K q.1 *
-      (fusionScaledFactor P M γ α₁ α₂ α₃ s q.1 q.2 : ℂ)) :=
-    (hK.comp measurable_fst).mul (Complex.measurable_ofReal.comp hmeas)
-  exact h.stronglyMeasurable.integral_prod_left'.measurable
+  exact ((hK.comp measurable_fst).mul (Complex.measurable_ofReal.comp (fusionScaledFactor_measurable P X hX γ hγ hγ2 M hM α₁ α₂ α₃ s))).stronglyMeasurable.integral_prod_left'.measurable
 
+
+end
 end DOZZ.Proofs

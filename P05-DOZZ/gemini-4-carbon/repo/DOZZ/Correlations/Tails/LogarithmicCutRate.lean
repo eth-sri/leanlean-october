@@ -13,11 +13,6 @@ public import DOZZ.Correlations.Tails.WilliamsTruncatedTailError
 
 namespace DOZZ.Proofs
 
-theorem log_cut_exp (γ a x : ℝ) (hγ : γ ≠ 0) (hx : 0 < x) :
-    Real.exp (-γ*(a*Real.log x/γ)) = x^(-a) := by
-  rw [Real.rpow_def_of_pos hx]
-  congr 1
-  field_simp
 
 /-- The strict cut choices make every scalar Williams error decay at the prescribed rate. -/
 theorem log_cut_error_powers_le (γ a x p r η D K L : ℝ)
@@ -27,8 +22,12 @@ theorem log_cut_error_powers_le (γ a x p r η D K L : ℝ)
     x^(-p)*(D*Real.exp (-γ*(a*Real.log x/γ))) + x^(-r)*(K+L) +
       (x*Real.exp (-γ*(a*Real.log x/γ)))^(-r)*L ≤
         (D+K+2*L)*x^(-p-η) := by
-  have hx0 : 0 < x := zero_lt_one.trans_le hx
-  rw [log_cut_exp γ a x hγ hx0]
+  have log_cut_exp (hx : 0 < x) : Real.exp (-γ*(a*Real.log x/γ)) = x^(-a) := by
+    rw [Real.rpow_def_of_pos hx]
+    congr 1
+    field_simp
+  have hx0 := zero_lt_one.trans_le hx
+  rw [log_cut_exp hx0]
   have he1 : x^(-p)*(D*x^(-a)) = D*x^(-p-a) := by
     rw [mul_left_comm, ← Real.rpow_add hx0]
     simp only [sub_eq_add_neg]
@@ -40,15 +39,11 @@ theorem log_cut_error_powers_le (γ a x p r η D K L : ℝ)
   rw [he1, he2]
   have hp1 : x^(-p-a) ≤ x^(-p-η) :=
     Real.rpow_le_rpow_of_exponent_le hx (by linarith)
-  have ha0 : 0 < a := hη.trans ha
   have hp2 : x^(-r) ≤ x^(-p-η) :=
-    Real.rpow_le_rpow_of_exponent_le hx (by nlinarith only [hpr,ha0,hr])
+    Real.rpow_le_rpow_of_exponent_le hx (by nlinarith only [hpr,hη.trans ha,hr])
   have hp3 : x^(-(1-a)*r) ≤ x^(-p-η) :=
     Real.rpow_le_rpow_of_exponent_le hx (by linarith)
-  have h1 := mul_le_mul_of_nonneg_left hp1 hD
-  have h2 := mul_le_mul_of_nonneg_right hp2 (add_nonneg hK hL)
-  have h3 := mul_le_mul_of_nonneg_right hp3 hL
-  nlinarith only [h1,h2,h3]
+  nlinarith only [mul_le_mul_of_nonneg_left hp1 hD,mul_le_mul_of_nonneg_right hp2 (add_nonneg hK hL),mul_le_mul_of_nonneg_right hp3 hL]
 
 
 end DOZZ.Proofs

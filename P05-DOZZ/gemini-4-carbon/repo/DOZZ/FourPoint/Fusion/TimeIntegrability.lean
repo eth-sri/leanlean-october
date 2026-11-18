@@ -22,8 +22,7 @@ theorem fusion_time_integrable_of_power_bound (F : ℂ → ℂ) (hFm : Measurabl
   have hmeas : Measurable (fun t : ℝ => (1 - t : ℝ) * F ((t : ℂ) * z)) :=
     (Complex.measurable_ofReal.comp (measurable_const.sub measurable_id)).mul
       (hFm.comp (Complex.measurable_ofReal.mul_const z))
-  have hint := (time_rpow_integral e he).1.const_mul (C * ‖z‖ ^ e)
-  apply hint.mono' hmeas.aestronglyMeasurable
+  apply ((time_rpow_integral e he).1.const_mul (C * ‖z‖ ^ e)).mono' hmeas.aestronglyMeasurable
   filter_upwards [ae_restrict_mem measurableSet_Icc,
     ae_restrict_of_ae (Measure.ae_ne volume (0 : ℝ))] with t ht ht0
   have htz : ‖(t : ℂ) * z‖ = t * ‖z‖ := by
@@ -34,11 +33,9 @@ theorem fusion_time_integrable_of_power_bound (F : ℂ → ℂ) (hFm : Measurabl
   have hfn := hF ((t : ℂ) * z) (mul_ne_zero (Complex.ofReal_ne_zero.mpr ht0) hz) htr
   rw [htz, Real.mul_rpow ht.1 (norm_nonneg _)] at hfn
   rw [norm_mul, Complex.norm_real, Real.norm_of_nonneg (sub_nonneg.mpr ht.2)]
-  calc
-    (1 - t) * ‖F ((t : ℂ) * z)‖ ≤ ‖F ((t : ℂ) * z)‖ :=
-      mul_le_of_le_one_left (norm_nonneg _) (by linarith only [ht.1])
-    _ ≤ C * (t ^ e * ‖z‖ ^ e) := hfn
-    _ = (C * ‖z‖ ^ e) * t ^ e := by ring
+  refine (mul_le_of_le_one_left (norm_nonneg _) (by linarith only [ht.1])).trans (?_)
+  refine (hfn).trans_eq (?_)
+  ring
 
 /-- Integrable local and exterior expectations can be split inside the time integral. -/
 theorem fusion_time_split (F L E : ℂ → ℂ) (z : ℂ)

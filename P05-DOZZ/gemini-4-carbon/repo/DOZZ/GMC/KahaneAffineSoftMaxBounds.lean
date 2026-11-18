@@ -17,34 +17,39 @@ open scoped BigOperators
 
 namespace DOZZ.Proofs
 
+variable {ι : Type*} [Fintype ι] [Nonempty ι]
+
+
 /-- The maximum of a nonempty finite family of affine functions. -/
-noncomputable def affineMax {ι : Type*} [Fintype ι] [Nonempty ι]
+noncomputable def affineMax
     (a b : ι → ℝ) (x : ℝ) : ℝ :=
   Finset.univ.sup' Finset.univ_nonempty (fun i => a i * x + b i)
 
-theorem affineMax_le {ι : Type*} [Fintype ι] [Nonempty ι]
-    (a b : ι → ℝ) (x : ℝ) (i : ι) : a i * x + b i ≤ affineMax a b x := by
+section
+variable (a b : ι → ℝ)
+include a b
+
+theorem affineMax_le
+ (x : ℝ) (i : ι) : a i * x + b i ≤ affineMax a b x := by
   classical
   exact Finset.le_sup' (fun j => a j * x + b j) (Finset.mem_univ i)
 
-theorem affineMax_continuous {ι : Type*} [Fintype ι] [Nonempty ι]
-    (a b : ι → ℝ) : Continuous (affineMax a b) := by
+theorem affineMax_continuous
+ : Continuous (affineMax a b) := by
   classical
   exact Continuous.finset_sup'_apply Finset.univ_nonempty (fun i _ => by fun_prop)
 
 /-- Soft maxima lie between the true maximum and the maximum plus the logarithmic cardinal error. -/
-theorem affineSoftMax_bounds {ι : Type*} [Fintype ι] [Nonempty ι]
-    (a b : ι → ℝ) (β x : ℝ) (hβ : 0 < β) :
+theorem affineSoftMax_bounds
+ (β x : ℝ) (hβ : 0 < β) :
     affineMax a b x ≤ affineSoftMax a b β x ∧
       affineSoftMax a b β x ≤ affineMax a b x + Real.log (Fintype.card ι : ℝ) / β := by
   classical
-  have hSpos := affineSoftMaxSum_pos a b β x
-  have hcard : 0 < (Fintype.card ι : ℝ) := by exact_mod_cast Fintype.card_pos
+  have hcard : 0 < (Fintype.card ι : ℝ) := by positivity
   constructor
   · apply Finset.sup'_le
     intro i hi
-    have hE : Real.exp (β * (a i * x + b i)) ≤ affineSoftMaxSum a b β x := by
-      exact Finset.single_le_sum (f := fun j => Real.exp (β * (a j * x + b j)))
+    have hE : Real.exp (β * (a i * x + b i)) ≤ affineSoftMaxSum a b β x := Finset.single_le_sum (f := fun j => Real.exp (β * (a j * x + b j)))
         (fun j _ => Real.exp_nonneg _) hi
     have h := Real.log_le_log (Real.exp_pos _) hE
     rw [Real.log_exp] at h
@@ -58,7 +63,7 @@ theorem affineSoftMax_bounds {ι : Type*} [Fintype ι] [Nonempty ι]
           exact Real.exp_le_exp.mpr
             (mul_le_mul_of_nonneg_left (affineMax_le a b x i) hβ.le)
         _ = _ := by simp only [Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
-    have h := Real.log_le_log hSpos hsum
+    have h := Real.log_le_log (affineSoftMaxSum_pos a b β x) hsum
     rw [Real.log_mul hcard.ne' (Real.exp_pos _).ne', Real.log_exp] at h
     apply (div_le_iff₀ hβ).mpr
     calc
@@ -66,11 +71,11 @@ theorem affineSoftMax_bounds {ι : Type*} [Fintype ι] [Nonempty ι]
       _ = _ := by field_simp; ring
 
 /-- Finite affine maxima have at most linear growth. -/
-theorem affineMax_linear_growth {ι : Type*} [Fintype ι] [Nonempty ι]
-    (a b : ι → ℝ) : ∃ C : ℝ, 0 ≤ C ∧ ∀ x, ‖affineMax a b x‖ ≤ C * (‖x‖ + 1) := by
+theorem affineMax_linear_growth
+ : ∃ C : ℝ, 0 ≤ C ∧ ∀ x, ‖affineMax a b x‖ ≤ C * (‖x‖ + 1) := by
   classical
-  let C : ℝ := 1 + ∑ i, |a i| + ∑ i, |b i|
-  have hC : 0 ≤ C := by dsimp [C]; positivity
+  let C := 1 + ∑ i, |a i| + ∑ i, |b i|
+  have hC : 0 ≤ C := by positivity
   have ha (i : ι) : |a i| ≤ C := by
     have h := Finset.single_le_sum (f := fun i => |a i|)
       (fun j _ => abs_nonneg (a j)) (Finset.mem_univ i)
@@ -99,17 +104,16 @@ theorem affineMax_linear_growth {ι : Type*} [Fintype ι] [Nonempty ι]
   · exact Finset.sup'_le _ _ (fun i _ => (abs_le.mp (hline i x)).2)
 
 /-- Increasing the inverse smoothing scale recovers the finite affine maximum pointwise. -/
-theorem affineSoftMax_tendsto {ι : Type*} [Fintype ι] [Nonempty ι]
-    (a b : ι → ℝ) (x : ℝ) :
+theorem affineSoftMax_tendsto
+ (x : ℝ) :
     Tendsto (fun n : ℕ => affineSoftMax a b ((n : ℝ) + 1) x) atTop (𝓝 (affineMax a b x)) := by
-  have hden : Tendsto (fun n : ℕ => (n : ℝ) + 1) atTop atTop :=
-    tendsto_atTop_add_const_right atTop (1 : ℝ) tendsto_natCast_atTop_atTop
-  have herr := hden.const_div_atTop (Real.log (Fintype.card ι : ℝ))
   have hu : Tendsto (fun n : ℕ => affineMax a b x +
       Real.log (Fintype.card ι : ℝ) / ((n : ℝ) + 1)) atTop (𝓝 (affineMax a b x)) := by
-    simpa only [add_zero] using tendsto_const_nhds.add herr
+    simpa only [add_zero] using tendsto_const_nhds.add ((tendsto_atTop_add_const_right atTop (1 : ℝ) tendsto_natCast_atTop_atTop).const_div_atTop (Real.log (Fintype.card ι : ℝ)))
   exact tendsto_of_tendsto_of_tendsto_of_le_of_le tendsto_const_nhds hu
     (fun n => (affineSoftMax_bounds a b _ x (by positivity)).1)
     (fun n => (affineSoftMax_bounds a b _ x (by positivity)).2)
 
+
+end
 end DOZZ.Proofs

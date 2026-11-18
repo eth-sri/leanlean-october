@@ -32,9 +32,7 @@ theorem isCenteredJointlyGaussian_coord_mul {Ω ι : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (Z : Ω → ι → ℝ) (hZ : IsCenteredJointlyGaussian P Z) (b : ι → ℝ) :
     IsCenteredJointlyGaussian P (fun ω i => b i * Z ω i) := by
   refine ⟨hZ.1, fun i => (hZ.2.1 i).const_mul (b i), fun a => ?_⟩
-  have heq : (fun ω => ∑ i, a i * (b i * Z ω i)) = fun ω => ∑ i, (a i * b i) * Z ω i := by
-    funext ω
-    exact Finset.sum_congr rfl (fun i _ => by ring)
+  have heq : (fun ω => ∑ i, a i * (b i * Z ω i)) = fun ω => ∑ i, (a i * b i) * Z ω i := by ring
   rw [heq]
   exact hZ.2.2 (fun i => a i * b i)
 
@@ -61,15 +59,13 @@ theorem isCenteredJointlyGaussian_prod_add {Ω₁ Ω₂ ι : Type*} [MeasurableS
       simp only [U, V, mul_add, Finset.sum_add_distrib]
     rw [heq]
     refine ⟨(hm₁.comp_fst P₂).add (hm₂.comp_snd P₁), ⟨v₁ + v₂, ?_⟩⟩
-    have hind : IndepFun (fun q : Ω₁ × Ω₂ => U q.1) (fun q => V q.2) (P₁.prod P₂) :=
-      indepFun_prod₀ hm₁.aemeasurable hm₂.aemeasurable
-    have hU : HasLaw (fun q : Ω₁ × Ω₂ => U q.1) (gaussianReal 0 v₁) (P₁.prod P₂) :=
+    have hU :=
       (⟨hm₁.aemeasurable, hv₁⟩ : HasLaw U (gaussianReal 0 v₁) P₁).comp
         (measurePreserving_fst (μ := P₁) (ν := P₂)).hasLaw
-    have hV : HasLaw (fun q : Ω₁ × Ω₂ => V q.2) (gaussianReal 0 v₂) (P₁.prod P₂) :=
+    have hV :=
       (⟨hm₂.aemeasurable, hv₂⟩ : HasLaw V (gaussianReal 0 v₂) P₂).comp
         (measurePreserving_snd (μ := P₁) (ν := P₂)).hasLaw
-    have h := gaussianReal_add_gaussianReal_of_indepFun hind hU hV
+    have h := gaussianReal_add_gaussianReal_of_indepFun (indepFun_prod₀ hm₁.aemeasurable hm₂.aemeasurable) hU hV
     rw [zero_add] at h
     exact h
 
@@ -83,11 +79,11 @@ theorem gaussianCovariance_prod_add {Ω₁ Ω₂ : Type*} [MeasurableSpace Ω₁
     gaussianCovariance (P₁.prod P₂) (fun q => U₁ q.1 + U₂ q.2) (fun q => V₁ q.1 + V₂ q.2) =
       gaussianCovariance P₁ U₁ V₁ + gaussianCovariance P₂ U₂ V₂ := by
   unfold gaussianCovariance
-  have i11 : Integrable (fun q : Ω₁ × Ω₂ => U₁ q.1 * V₁ q.1) (P₁.prod P₂) :=
+  have i11 :=
     ((hU₁.integrable_mul hV₁).comp_fst P₂)
-  have i22 : Integrable (fun q : Ω₁ × Ω₂ => U₂ q.2 * V₂ q.2) (P₁.prod P₂) :=
+  have i22 :=
     ((hU₂.integrable_mul hV₂).comp_snd P₁)
-  have i12 : Integrable (fun q : Ω₁ × Ω₂ => U₁ q.1 * V₂ q.2) (P₁.prod P₂) :=
+  have i12 :=
     (hU₁.integrable one_le_two).mul_prod (hV₂.integrable one_le_two)
   have i21 : Integrable (fun q : Ω₁ × Ω₂ => U₂ q.2 * V₁ q.1) (P₁.prod P₂) := by
     have h := (hV₁.integrable one_le_two).mul_prod (hU₂.integrable one_le_two)

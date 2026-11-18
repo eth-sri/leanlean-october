@@ -61,22 +61,16 @@ theorem copied_test_cutoff_law
       congr 2
       unfold localPinCoefficient
       have hl : Real.log ‖z‖ ≠ 0 := ne_of_gt (by
-        have hv := offCenter_pin_variance_pos z hz
+        have := offCenter_pin_variance_pos z hz
         linarith)
       field_simp [hl]
   have hw0 (x : ℂ) : 0 ≤ w x := by
     rw [hw]
     exact mul_nonneg (hg0 x) (Real.exp_nonneg _)
-  have hws (x : ℂ) (hx : w x ≠ 0) : ‖x‖ ≤ ρ := by
-    apply hgs x
-    intro hzero
-    exact hx (by rw [hw, hzero, zero_mul])
-  have hlaw := copied_cutoff_volume_law P X Xc hX hc hm z hz γ r ρ hρ hr w hw0 hws
-  have hY := translated_field_isEquatorGFF P X Xc hX hc z
-  have hYc := translated_field_circleAverage P X Xc hX hc z
-  have hlocal (x : ℂ) (hx : g x ≠ 0) : ‖x‖ + Real.exp (-r) ≤ 1 := by linarith [hgs x hx]
+  have hws (x : ℂ) (hx : w x ≠ 0) : ‖x‖ ≤ ρ := by grind
+  have hlocal (x : ℂ) (hx : g x ≠ 0) : ‖x‖ + Real.exp (-r) ≤ 1 := by grind
   have hnorm (x : ℂ) (hx : g x ≠ 0) : normPlus (z+x) = ‖z+x‖ := by
-    have hn : ‖x‖ ≤ 1 := by linarith [hgs x hx, Real.exp_pos (-r)]
+    have : ‖x‖ ≤ 1 := by linarith [hgs x hx, Real.exp_pos (-r)]
     have hh := norm_sub_norm_le z (z+x)
     simp only [sub_add_cancel_left, norm_neg] at hh
     unfold normPlus
@@ -107,7 +101,7 @@ theorem copied_test_cutoff_law
         (γ*(Xc q.2 z 0+(Xc q.1 (z+x) r-Xc q.1 z 0)+
           localPinCoefficient z x*(Xc q.2 z 0-Xc q.1 z 0))-γ^2/2*(r+2*Real.log ‖z+x‖))
             ∂volume := by
-    rw [regularized_integral_volume P _ _ hY hYc γ r q.1, ← integral_const_mul]
+    rw [regularized_integral_volume P _ _ (translated_field_isEquatorGFF P X Xc hX hc z) (translated_field_circleAverage P X Xc hX hc z) γ r q.1, ← integral_const_mul]
     apply integral_congr_ae
     exact ae_of_all _ fun x => by
       dsimp only
@@ -123,7 +117,7 @@ theorem copied_test_cutoff_law
         simpa only [mul_assoc] using (copied_wick_weight_factor (g x) γ (Real.log ‖z‖)
           (Real.log ‖z+x‖) r (Xc q.1 z 0) (Xc q.2 z 0)
             (Xc q.1 (z+x) r-Xc q.1 z 0) (localPinCoefficient z x)).symm
-  simpa only [← hsrc, ← htar] using hlaw
+  simpa only [← hsrc, ← htar] using copied_cutoff_volume_law P X Xc hX hc hm z hz γ r ρ hρ hr w hw0 hws
 
 
 end DOZZ.Proofs

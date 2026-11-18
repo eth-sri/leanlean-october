@@ -32,44 +32,22 @@ open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
 
-/-- The local mass is almost surely positive and finite. -/
-theorem ae_localMassReal_pos {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
-    (hM : IsGMCOf P X γ M) {η δ : ℝ} (hW : TwoPoleWindow γ η δ) :
-    ∀ᵐ ω ∂P, 0 < localMassReal M γ η ω ∧
-      poleLocalMass γ (2 / γ + η) (2 / γ - η) (M ω) < ⊤ := by
-  filter_upwards [ae_cutoffGood P X hX γ hγ hγ2 M hM hW] with ω hω
-  exact ⟨hω.localMassReal_pos, hω.localMass_lt_top⟩
+variable {Ω : Type*} [MeasurableSpace Ω]
 
-/-- The local mass has negative real moments of all orders. -/
-theorem integrable_localMassReal_rpow_neg {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) {η δ : ℝ} (hW : TwoPoleWindow γ η δ)
-    {q : ℝ} (hq : 0 < q) : Integrable (fun ω => localMassReal M γ η ω ^ (-q)) P := by
-  have hη := (window_eta_pos hW).le
-  have hηγ := window_eta_le_two_div hγ hγ2 hW
-  have hfin := lintegral_localMass_rpow_neg_lt_top P X hX γ hγ hγ2 M hM hη hηγ hq
-  have hmeas : AEMeasurable (fun ω => localMassReal M γ η ω ^ (-q)) P :=
-    (aemeasurable_localMassReal P X hX γ hγ hγ2 M hM η).pow_const _
-  refine ⟨hmeas.aestronglyMeasurable, ?_⟩
-  have hnn : 0 ≤ᵐ[P] fun ω => localMassReal M γ η ω ^ (-q) :=
-    Eventually.of_forall fun ω => Real.rpow_nonneg ENNReal.toReal_nonneg _
-  rw [hasFiniteIntegral_iff_ofReal hnn]
-  refine lt_of_le_of_lt (le_of_eq (lintegral_congr_ae ?_)) hfin
-  filter_upwards [ae_localMassReal_pos P X hX γ hγ hγ2 M hM hW] with ω hω
-  rw [← ENNReal.ofReal_rpow_of_pos hω.1, localMassReal, ENNReal.ofReal_toReal hω.2.ne]
+
+
 
 /-- The tail coefficient of a pole is positive. -/
 theorem oneInsertionTailCoefficient_pos {γ α R F : ℝ} {z : ℂ} (hz : z ≠ 0) (hF : 0 < F)
     (hR : 0 < R) : 0 < oneInsertionTailCoefficient γ α z F R := by
   unfold oneInsertionTailCoefficient
-  have h1 : 0 < Real.rpow ‖z‖ (-4 * α * (Q γ - α)) :=
+  have : 0 < Real.rpow ‖z‖ (-4 * α * (Q γ - α)) :=
     Real.rpow_pos_of_pos (norm_pos_iff.mpr hz) _
-  have h2 : 0 < Real.rpow F (reflectionExponent γ α) := Real.rpow_pos_of_pos hF _
+  have : 0 < Real.rpow F (reflectionExponent γ α) := Real.rpow_pos_of_pos hF _
   positivity
 
 /-- **The Mellin transform of the local mass**, from its two-insertion tail expansion. -/
-theorem exists_localMass_mellin {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+theorem exists_localMass_mellin (P : Measure Ω)
     (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) {η δ : ℝ} (hW : TwoPoleWindow γ η δ)
     {R₂ R₃ θ C : ℝ} (hR₂ : 0 < R₂) (hR₃ : 0 < R₃)
@@ -93,21 +71,34 @@ theorem exists_localMass_mellin {Ω : Type*} [MeasurableSpace Ω] (P : Measure �
             (oneInsertionTailCoefficient γ (2 / γ + η) 2 (poleFactorTwo γ η 2) R₂)
             (oneInsertionTailCoefficient γ (2 / γ - η) (-2) (poleFactorNegTwo γ η (-2)) R₃)
             (reflectionExponent γ (2 / γ + η)) (reflectionExponent γ (2 / γ - η)) s + r s := by
+  have ae_localMassReal_pos : ∀ᵐ ω ∂P, 0 < localMassReal M γ η ω ∧
+        poleLocalMass γ (2 / γ + η) (2 / γ - η) (M ω) < ⊤ := by
+    filter_upwards [ae_cutoffGood P X hX γ hγ hγ2 M hM hW] with ω hω
+    exact ⟨hω.localMassReal_pos, hω.localMass_lt_top⟩
+  have integrable_localMassReal_rpow_neg {q : ℝ} (hq : 0 < q) : Integrable (fun ω => localMassReal M γ η ω ^ (-q)) P := by
+    have hη := (window_eta_pos hW).le
+    have hmeas : AEMeasurable (fun ω => localMassReal M γ η ω ^ (-q)) P :=
+      (aemeasurable_localMassReal P X hX γ hγ hγ2 M hM η).pow_const _
+    refine ⟨hmeas.aestronglyMeasurable, ?_⟩
+    have hnn : 0 ≤ᵐ[P] fun ω => localMassReal M γ η ω ^ (-q) :=
+      Eventually.of_forall fun ω => Real.rpow_nonneg ENNReal.toReal_nonneg _
+    rw [hasFiniteIntegral_iff_ofReal hnn]
+    refine lt_of_le_of_lt (le_of_eq (lintegral_congr_ae ?_)) (lintegral_localMass_rpow_neg_lt_top P X hX γ hγ hγ2 M hM hη (window_eta_le_two_div hγ hγ2 hW) hq)
+    filter_upwards [ae_localMassReal_pos] with ω hω
+    rw [← ENNReal.ofReal_rpow_of_pos hω.1, localMassReal, ENNReal.ofReal_toReal hω.2.ne]
   have := hX.1
   have hη := (window_eta_pos hW)
-  have hηγ := window_eta_le_two_div hγ hγ2 hW
-  have hp := window_threshold_pos hγ hW
   set Lr : Ω → ℝ := localMassReal M γ η with hLr
-  have hY : AEMeasurable Lr P := aemeasurable_localMassReal P X hX γ hγ hγ2 M hM η
-  have hgood := ae_localMassReal_pos P X hX γ hγ hγ2 M hM hW
+  have hY := aemeasurable_localMassReal P X hX γ hγ hγ2 M hM η
+  have hgood := ae_localMassReal_pos
   have hpos : ∀ᵐ ω ∂P, 0 < Lr ω := by
     filter_upwards [hgood] with ω hω
     exact hω.1
   have hinv : ∀ q : ℝ, 0 < q → Integrable (fun ω => Lr ω ^ (-q)) P := fun q hq =>
-    integrable_localMassReal_rpow_neg P X hX γ hγ hγ2 M hM hW hq
+    integrable_localMassReal_rpow_neg hq
   have hβ₁ : 0 < reflectionExponent γ (2 / γ + η) := by
     rw [reflectionExponent_pole hγ η]
-    exact hp
+    exact window_threshold_pos hγ hW
   have hβ₁₂ : reflectionExponent γ (2 / γ + η) < reflectionExponent γ (2 / γ - η) := by
     rw [reflectionExponent_pole hγ η]
     have : reflectionExponent γ (2 / γ - η) = 1 + 2 * η / γ := by
@@ -142,7 +133,7 @@ theorem exists_localMass_mellin {Ω : Type*} [MeasurableSpace Ω] (P : Measure �
       refine measure_congr ?_
       rw [eventuallyEqSet_iff]
       filter_upwards [hgood] with ω hω
-      rw [← poleLocalMass_eq_localSingularMass M hγ hη.le hηγ ω, hLr, localMassReal,
+      rw [← poleLocalMass_eq_localSingularMass M hγ hη.le (window_eta_le_two_div hγ hγ2 hW) ω, hLr, localMassReal,
         ENNReal.ofReal_lt_iff_lt_toReal (by linarith) hω.2.ne]
     have h := htail t ht
     rw [← hevent] at h

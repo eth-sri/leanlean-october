@@ -43,7 +43,7 @@ theorem reflected_pareto_increment_integral (p a A b : ℝ) (ha : 0 < a)
   have hpoint (v : ℝ) (hv : v ∈ Ioi (1 : ℝ)) :
       a * v ^ (-a - 1) * ((A + b * v) ^ (-p) - A ^ (-p)) =
         (a * A ^ (-p) * x ^ (a + 1)) * g (x * v) := by
-    have hvp : 0 < v := zero_lt_one.trans hv
+    have hvp := zero_lt_one.trans hv
     have hsum : A + b * v = A * (1 + x * v) := by
       dsimp only [x]
       field_simp

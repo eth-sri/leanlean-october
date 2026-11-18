@@ -114,9 +114,6 @@ theorem structureConstant_reflected_shift_and_gluing_of_deps
                     C (z - γ / 2)) := by
   obtain ⟨hη0, hηγ⟩ := hη
   have hQ : Q γ = 2 / γ + γ / 2 := rfl
-  have h2γ : γ / 16 < 2 / γ := by
-    rw [div_lt_div_iff₀ (by norm_num) hγ]
-    linarith only [mul_self_lt_mul_self hγ.le hγ2]
   obtain ⟨B, Z, hSLP, hRD, h₁, hh₁, R, hRm, hRval, hRshift⟩ := hFirstShift
   obtain ⟨h₂, hh₂, C, hCm, hCval, hCshift⟩ := hFirstStrip
   obtain ⟨H, hH⟩ := gauss_hypergeometric_exists
@@ -138,9 +135,8 @@ theorem structureConstant_reflected_shift_and_gluing_of_deps
     have hα₁ : γ / 2 < α₁ := by rw [hQ] at h1; linarith
     have hs : 2 * Q γ + γ / 2 < α₁ + α₂ + α₃ := by linarith [hα₂.1, hα₃.1]
     have hcoef := reflected_coefficient_real P X M hγ hγ2 hDiagonal hReflected hH hRD h1 h2 hs
-    have hc := gaussParameterC_half_mem hγ hγ2 h1 h2
     have hP1 := gaussCoefficientRatio_mul_eq_shiftCoeffA_half (α₂ := α₂) (α₃ := α₃) hγ
-      (ne_of_lt hc.2)
+      (ne_of_lt (gaussParameterC_half_mem hγ hγ2 h1 h2).2)
     have hD : lFun (-((γ : ℂ) ^ 2) / 4) *
         lFun ((γ : ℂ) * ((α₁ : ℂ) + γ / 2) / 2 - (γ : ℂ) ^ 2 / 4) *
         lFun (2 + (γ : ℂ) ^ 2 / 2 - (γ : ℂ) * ((α₁ : ℂ) + γ / 2) / 2) =
@@ -151,8 +147,8 @@ theorem structureConstant_reflected_shift_and_gluing_of_deps
           push_cast; ring,
         show (2 : ℂ) + (γ : ℂ) ^ 2 / 2 - (γ : ℂ) * ((α₁ : ℂ) + γ / 2) / 2 =
           2 + ((γ / 2 : ℝ) : ℂ) ^ 2 - ((γ / 2 : ℝ) : ℂ) * α₁ by push_cast; ring]
-    have hγα₁ : γ * α₁ < γ * Q γ := mul_lt_mul_of_pos_left h2 hγ
-    have hγα₁' : γ * (Q γ - γ / 16) < γ * α₁ := mul_lt_mul_of_pos_left h1 hγ
+    have hγα₁ := mul_lt_mul_of_pos_left h2 hγ
+    have hγα₁' := mul_lt_mul_of_pos_left h1 hγ
     have hγQ : γ * Q γ = 2 + γ ^ 2 / 2 := by rw [hQ]; field_simp
     have hγsq : γ ^ 2 < 4 := by linarith only [mul_self_lt_mul_self hγ.le hγ2]
     have hDne : lFun (-((γ / 2 : ℝ) : ℂ) ^ 2) * lFun (((γ / 2 : ℝ) : ℂ) * α₁) *
@@ -169,7 +165,6 @@ theorem structureConstant_reflected_shift_and_gluing_of_deps
           (by linarith only [hγα₁, hγQ, hγsq])))
         (lR_ne_zero_of_mem_one_two (by linarith only [hγα₁, hγQ])
           (by linarith only [hγα₁', hγQ, hγsq]))
-    have hRα : R (α₁ : ℂ) = (reflectionR P γ μ α₁ (B α₁) Z : ℂ) := hRval α₁ hα₁ h2
     have hC₁ : C (2 * Q γ - (α₁ : ℂ) - γ / 2) =
         (structureConstant P M γ μ (2 * Q γ - α₁ - γ / 2) α₂ α₃ : ℂ) := by
       rw [show (2 * Q γ - (α₁ : ℂ) - γ / 2) = ((2 * Q γ - α₁ - γ / 2 : ℝ) : ℂ) by push_cast; ring]
@@ -178,16 +173,13 @@ theorem structureConstant_reflected_shift_and_gluing_of_deps
       rw [show ((α₁ : ℂ) - γ / 2) = ((α₁ - γ / 2 : ℝ) : ℂ) by push_cast; ring]
       exact hCval _ (by rw [hQ] at h1; linarith) (by linarith)
     rw [add_sub_cancel_right, hD] at hshift
-    have hμπ : ((μ : ℂ) * Real.pi) ≠ 0 :=
-      mul_ne_zero (Complex.ofReal_ne_zero.mpr hμ.ne') (Complex.ofReal_ne_zero.mpr Real.pi_ne_zero)
     have hcoef' : R (α₁ : ℂ) * C (2 * Q γ - (α₁ : ℂ) - γ / 2) =
         (gaussCoefficientRatio (gaussParameterA γ (γ / 2) α₁ α₂ α₃)
           (gaussParameterB γ (γ / 2) α₁ α₂ α₃) (gaussParameterC γ (γ / 2) α₁) : ℂ) *
           C ((α₁ : ℂ) - γ / 2) := by
-      rw [hRα, hC₁, hC₂]
+      rw [hRval α₁ hα₁ h2, hC₁, hC₂]
       exact_mod_cast hcoef
-    have key := reflected_shift_algebra hμπ hDne hshift hcoef' hP1
-    rw [key, show ((γ / 2 : ℝ) : ℂ) = (γ : ℂ) / 2 by push_cast; ring]
+    rw [reflected_shift_algebra (mul_ne_zero (Complex.ofReal_ne_zero.mpr hμ.ne') (Complex.ofReal_ne_zero.mpr Real.pi_ne_zero)) hDne hshift hcoef' hP1, show ((γ / 2 : ℝ) : ℂ) = (γ : ℂ) / 2 by push_cast; ring]
     ring
   -- the reflected shift near every point of the strip
   set x₀ : ℝ := Q γ - γ / 32 with hx₀
@@ -195,10 +187,7 @@ theorem structureConstant_reflected_shift_and_gluing_of_deps
   have hx₀2 : x₀ < Q γ := by rw [hx₀]; linarith
   have hshiftloc := (eventually_codiscrete_iff_forall_eventually_nhdsNE.mp hRshift)
     ((x₀ : ℂ) + γ / 2)
-  have hshiftpt : ∀ᶠ t : ℝ in 𝓝[≠] x₀,
-      R ((t : ℂ) + γ / 2 - γ / 2) = -(μ * Real.pi : ℂ) * R ((t : ℂ) + γ / 2) /
-        (lFun (-((γ : ℂ) ^ 2) / 4) * lFun ((γ : ℂ) * ((t : ℂ) + γ / 2) / 2 - (γ : ℂ) ^ 2 / 4) *
-          lFun (2 + (γ : ℂ) ^ 2 / 2 - (γ : ℂ) * ((t : ℂ) + γ / 2) / 2)) :=
+  have hshiftpt :=
     (tendsto_ofReal_nhdsNE_slice x₀).eventually
       (ShiftGluing.eventually_comp_add (z := (x₀ : ℂ)) ((γ : ℂ) / 2) hshiftloc)
   set f : ℂ → ℂ := fun z => R (z + ((γ / 2 : ℝ) : ℂ)) * C (((2 * Q γ - γ / 2 : ℝ) : ℂ) - z)
@@ -214,7 +203,7 @@ theorem structureConstant_reflected_shift_and_gluing_of_deps
       show ((2 * Q γ - γ / 2 : ℝ) : ℂ) - (t : ℂ) = 2 * Q γ - (t : ℂ) - γ / 2 by push_cast; ring,
       show (t : ℂ) + ((-(γ / 2) : ℝ) : ℂ) = (t : ℂ) - γ / 2 by push_cast; ring]
     exact this
-  have hfm : MeromorphicOn f (horizontalStrip h) :=
+  have hfm :=
     (MeromorphicOn.comp_add_ofReal hRm' (γ / 2)).mul
       (MeromorphicOn.comp_ofReal_sub hCm' (2 * Q γ - γ / 2))
   have hgm : MeromorphicOn g (horizontalStrip h) := fun z hz =>

@@ -67,9 +67,9 @@ theorem reflected_kahane_decoupling_limit
           (fun u => Φ r u.1 x + c*u.2) (fun u => Φ r u.1 y + c*u.2) := by
     rw [gaussianCovariance_field_independent_common_scalar_add P (Φ r) (hΦ r) c]
     exact (hsand r x y hb).2
-  have hXm : AEMeasurable ZX P := hXconv.aemeasurable fun r =>
+  have hXm := hXconv.aemeasurable fun r =>
     (centeredGaussianField_fieldChaosMass_measurable P (Φ r) (hΦ r) ν h hh γ).ennreal_toReal.aemeasurable
-  have hYm : AEMeasurable ZY (P.prod P) := hYconv.aemeasurable fun r =>
+  have hYm := hYconv.aemeasurable fun r =>
     (centeredGaussianField_fieldChaosMass_measurable (P.prod P) (Ψ r) (hΨ r) ν h hh γ).ennreal_toReal.aemeasurable
   have hup := DOZZ.kahane_limit_field_negative_power P ((P.prod P).prod (gaussianReal 0 1))
     Φ (fun r u x => Ψ r u.1 x + c*u.2) hΦ

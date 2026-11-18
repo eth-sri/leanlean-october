@@ -11,7 +11,6 @@ import Mathlib.Analysis.SpecialFunctions.OrdinaryHypergeometric
 
 @[expose] public section
 
-open Polynomial
 
 namespace DOZZ.Proofs
 
@@ -32,14 +31,12 @@ theorem ordinaryHypergeometricCoefficient_gauss_recurrence (a b c : ℂ) (n : �
     intro h
     have h' : c = -(n : ℂ) := by linear_combination h
     exact hc n h'
-  have hcpn : Polynomial.eval c (ascPochhammer ℂ n) ≠ 0 :=
-    ordinaryHypergeometric_pochhammer_denominator_ne_zero n hc
   have hfact : ((n + 1).factorial : ℂ) = (n + 1 : ℂ) * (n.factorial : ℂ) := by
     exact_mod_cast Nat.factorial_succ n
   have hfact0 : (n.factorial : ℂ) ≠ 0 := by exact_mod_cast Nat.factorial_ne_zero n
   simp only [ordinaryHypergeometricCoefficient, ascPochhammer_succ_eval]
   rw [hfact]
-  field_simp [hcpn, hcn, hfact0]
+  field_simp [ordinaryHypergeometric_pochhammer_denominator_ne_zero n hc, hcn, hfact0]
   ring
 
 end DOZZ.Proofs

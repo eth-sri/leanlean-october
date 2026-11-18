@@ -24,12 +24,18 @@ open scoped Distributions ENNReal NNReal BoundedContinuousFunction
 
 namespace DOZZ.Proofs
 
+variable {Ω : Type*} [MeasurableSpace Ω]
+
+
+section
+variable (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
+include hX γ hXc
+
 /-- For actual circle cutoff measures, affine scaling preserves the full ball-mass law,
 including the independent scalar Gaussian and the corresponding change of cutoff. -/
 theorem regularizedGMC_affine_openBall_mass_law_CutoffScale
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
+
+
     {a : ℂ} {c R r : ℝ} (hc : 0 < c) (hc1 : c ≤ 1)
     (hR : 0 < R) (hRsmall : R < 1) (hTsmall : ‖a‖ + c * R < 1)
     (hsourceCut : ∀ x : {z : ℂ // z ∈ Metric.closedBall (0 : ℂ) R},
@@ -45,7 +51,7 @@ theorem regularizedGMC_affine_openBall_mass_law_CutoffScale
         neg_nonneg.mpr (Real.log_nonpos hc.le hc1)⟩)) := by
   classical
   let : IsProbabilityMeasure P := hX.1
-  let σ : ℝ := -Real.log c
+  let σ := -Real.log c
   let G : Measure ℝ := gaussianReal 0 ⟨σ,
     neg_nonneg.mpr (Real.log_nonpos hc.le hc1)⟩
   have hG : IsProbabilityMeasure G := by
@@ -86,9 +92,7 @@ theorem regularizedGMC_affine_openBall_mass_law_CutoffScale
     change 0 ≤ openBallApprox 0 R n ((c : ℂ)⁻¹ • (x - a))
     exact (openBallApproxFun_bounds 0 R n ((c : ℂ)⁻¹ • (x - a))).1
   let scaleFactor : ℝ → ℝ := fun w => c ^ 2 * Real.exp (γ * w - γ ^ 2 / 2 * σ)
-  have hscaleFactor : Measurable scaleFactor := by
-    dsimp [scaleFactor]
-    fun_prop
+  have hscaleFactor : Measurable scaleFactor := by fun_prop
   let targetCutoff : ℕ → Ω → Fin 1 → ℝ := fun n ω _ => ∫ x, f n x ∂regularizedGMC P Xc γ (r - Real.log c) ω
   let sourceCutoff : ℕ → Ω × ℝ → Fin 1 → ℝ := fun n p _ =>
     scaleFactor p.2 * ∫ x, g n x ∂regularizedGMC P Xc γ r p.1
@@ -104,10 +108,7 @@ theorem regularizedGMC_affine_openBall_mass_law_CutoffScale
     exact regularizedGMC_test_integral_aemeasurable P X hX Xc hXc γ r
       (Metric.closedBall 0 R) Metric.isClosed_closedBall.measurableSet
       hsourceUnit (g n) (g n).continuous.measurable (hgzero n)
-  have htargetCutoffMeas (n : ℕ) : AEMeasurable (targetCutoff n) P := by
-    apply aemeasurable_pi_iff.2
-    intro j
-    exact htargetIntMeas n
+  have htargetCutoffMeas (n : ℕ) : AEMeasurable (targetCutoff n) P := by fun_prop
   have hsourceCutoffMeas (n : ℕ) : AEMeasurable (sourceCutoff n) (P.prod G) := by
     apply aemeasurable_pi_iff.2
     intro j
@@ -178,16 +179,12 @@ theorem regularizedGMC_affine_openBall_mass_law_CutoffScale
     exact tendstoInMeasure_of_tendsto_ae
       (fun n => (hsourceIntMeas n).aestronglyMeasurable)
       ((regularizedGMC_finite_ae P X hX Xc hXc γ r).mono hpoint)
-  have htargetConv : TendstoInMeasure P targetCutoff atTop targetLimit :=
-    tendstoInMeasure_pi_finite P targetCutoff targetLimit htargetCoordConv
   have hsourceProductCoordConv (j : Fin 1) :
       TendstoInMeasure (P.prod G) (fun n p => sourceCutoff n p j) atTop
       (fun p => sourceLimit p j) := by
     exact tendstoInMeasure_mul_snd_of_tendstoInMeasure
       (fun n ω => ∫ x, g n x ∂regularizedGMC P Xc γ r ω)
       (fun ω => (regularizedGMC P Xc γ r ω (Metric.ball 0 R)).toReal) scaleFactor hscaleFactor hsourceConv
-  have hsourceProductConv : TendstoInMeasure (P.prod G) sourceCutoff atTop sourceLimit :=
-    tendstoInMeasure_pi_finite (P.prod G) sourceCutoff sourceLimit hsourceProductCoordConv
   have hcutoffLaw (n : ℕ) : Measure.map (targetCutoff n) P =
       Measure.map (sourceCutoff n) (P.prod G) := by
     let fvec : Fin 1 → BoundedContinuousFunction ℂ ℝ := fun _ => f n
@@ -215,150 +212,14 @@ theorem regularizedGMC_affine_openBall_mass_law_CutoffScale
     htargetLimitMeas hsourceLimitMeas hcutoffLaw
     (fun j => htargetCoordConv j) (fun j => hsourceProductCoordConv j)
 
-/-- Exact moment scaling at the actual finite cutoff, for every real order. -/
-theorem regularizedGMC_affine_openBall_moment_scale_CutoffScale
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
-    {a : ℂ} {c R r : ℝ} (hc : 0 < c) (hc1 : c ≤ 1)
-    (hR : 0 < R) (hRsmall : R < 1) (hTsmall : ‖a‖ + c * R < 1)
-    (hsourceCut : ∀ x : {z : ℂ // z ∈ Metric.closedBall (0 : ℂ) R},
-      ‖x.1‖ + Real.exp (-r) ≤ 1)
-    (htargetCut : ∀ x : {z : ℂ // z ∈ Metric.closedBall (0 : ℂ) R},
-      ‖a + c • x.1‖ + Real.exp (-(r - Real.log c)) ≤ 1) (p : ℝ) :
-    gmcMassMoment P (regularizedGMC P Xc γ (r - Real.log c)) (Metric.ball a (c * R)) p =
-    ENNReal.ofReal (c ^ (2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2)) *
-      gmcMassMoment P (regularizedGMC P Xc γ r) (Metric.ball 0 R) p := by
-  classical
-  let G : Measure ℝ := gaussianReal 0 ⟨-Real.log c,
-    neg_nonneg.mpr (Real.log_nonpos hc.le hc1)⟩
-  let : IsProbabilityMeasure P := hX.1
-  have hG : IsProbabilityMeasure G := by
-    simpa [G] using (ProbabilityTheory.instIsProbabilityMeasureGaussianReal 0
-      ⟨-Real.log c, neg_nonneg.mpr (Real.log_nonpos hc.le hc1)⟩)
-  let : IsProbabilityMeasure G := hG
-  let : IsProbabilityMeasure (P.prod G) := inferInstance
-  let scaleFactor : ℝ → ℝ := fun w =>
-    c ^ 2 * Real.exp (γ * w - γ ^ 2 / 2 * (-Real.log c))
-  let t : Ω → Fin 1 → ℝ := fun ω _ => (regularizedGMC P Xc γ (r - Real.log c) ω (Metric.ball a (c * R))).toReal
-  let s : Ω × ℝ → Fin 1 → ℝ := fun q _ =>
-    scaleFactor q.2 * (regularizedGMC P Xc γ r q.1 (Metric.ball 0 R)).toReal
-  have hLaw := regularizedGMC_affine_openBall_mass_law_CutoffScale P X hX γ Xc hXc
-    (a := a) (c := c) (R := R) hc hc1 hR hRsmall hTsmall hsourceCut htargetCut
-  change Measure.map t P = Measure.map s (P.prod G) at hLaw
-  have htCoord : AEMeasurable
-      (fun ω => (regularizedGMC P Xc γ (r - Real.log c) ω (Metric.ball a (c * R))).toReal) P := by
-    exact ENNReal.measurable_toReal.comp_aemeasurable
-      ((Measure.measurable_coe Metric.isOpen_ball.measurableSet).comp
-        (regularizedGMC_measurable P X hX Xc hXc γ (r - Real.log c))).aemeasurable
-  have hsCoord : AEMeasurable
-      (fun q : Ω × ℝ => scaleFactor q.2 * (regularizedGMC P Xc γ r q.1 (Metric.ball 0 R)).toReal)
-      (P.prod G) := by
-    have hbase : AEMeasurable (fun ω => (regularizedGMC P Xc γ r ω (Metric.ball 0 R)).toReal) P := by
-      exact ENNReal.measurable_toReal.comp_aemeasurable
-        ((Measure.measurable_coe Metric.isOpen_ball.measurableSet).comp
-          (regularizedGMC_measurable P X hX Xc hXc γ r)).aemeasurable
-    have hfst : Measure.map (fun q : Ω × ℝ => q.1) (P.prod G) = P :=
-      measurePreserving_fst.map_eq
-    have hbase' : AEMeasurable
-        (fun q : Ω × ℝ => (regularizedGMC P Xc γ r q.1 (Metric.ball 0 R)).toReal) (P.prod G) := by
-      have h' : AEMeasurable (fun ω => (regularizedGMC P Xc γ r ω (Metric.ball 0 R)).toReal)
-          (Measure.map (fun q : Ω × ℝ => q.1) (P.prod G)) := by
-        rw [hfst]
-        exact hbase
-      change AEMeasurable
-        ((fun ω => (regularizedGMC P Xc γ r ω (Metric.ball 0 R)).toReal) ∘ (fun q : Ω × ℝ => q.1))
-        (P.prod G)
-      exact h'.comp_aemeasurable measurable_fst.aemeasurable
-    have hfactor : AEMeasurable (fun q : Ω × ℝ => scaleFactor q.2) (P.prod G) := by
-      have hm : Measurable scaleFactor := by
-        dsimp [scaleFactor]
-        fun_prop
-      exact hm.comp_aemeasurable measurable_snd.aemeasurable
-    change AEMeasurable
-      (fun q : Ω × ℝ => scaleFactor q.2 * (regularizedGMC P Xc γ r q.1 (Metric.ball 0 R)).toReal)
-      (P.prod G)
-    exact hfactor.mul hbase'
-  let ψ : (Fin 1 → ℝ) → ℝ≥0∞ := fun v => ENNReal.rpow (ENNReal.ofReal (v 0)) p
-  have hψ : Measurable ψ := by
-    dsimp [ψ]
-    fun_prop
-  have hmapIntegral :
-      (∫⁻ v, ψ v ∂Measure.map t P) =
-        ∫⁻ v, ψ v ∂Measure.map s (P.prod G) := by rw [hLaw]
-  have hleft : gmcMassMoment P (regularizedGMC P Xc γ (r - Real.log c)) (Metric.ball a (c * R)) p =
-      ∫⁻ v, ψ v ∂Measure.map t P := by
-    rw [gmcMassMoment, lintegral_map' hψ.aemeasurable (aemeasurable_pi_iff.2
-      (fun j => by simpa [t] using htCoord))]
-    apply lintegral_congr_ae
-    filter_upwards [regularizedGMC_finite_ae P X hX Xc hXc γ (r - Real.log c)] with ω hfin
-    let _ := hfin
-    simp [ψ, t, ENNReal.ofReal_toReal (measure_ne_top (regularizedGMC P Xc γ (r - Real.log c) ω) _)]
-  have hright :
-      (∫⁻ v, ψ v ∂Measure.map s (P.prod G)) =
-        ∫⁻ q, ENNReal.rpow
-          (ENNReal.ofReal (scaleFactor q.2 * (regularizedGMC P Xc γ r q.1 (Metric.ball 0 R)).toReal)) p
-          ∂P.prod G := by
-    rw [lintegral_map' hψ.aemeasurable (aemeasurable_pi_iff.2
-      (fun j => by simpa [s] using hsCoord))]
-  have hfactorMom : AEMeasurable
-      (fun w => ENNReal.rpow (ENNReal.ofReal (scaleFactor w)) p) G := by
-    have hm : Measurable scaleFactor := by
-      dsimp [scaleFactor]
-      fun_prop
-    have hfac : AEMeasurable (fun w => ENNReal.ofReal (scaleFactor w)) G :=
-      ENNReal.measurable_ofReal.comp_aemeasurable hm.aemeasurable
-    exact ENNReal.continuous_rpow_const.measurable.comp_aemeasurable hfac
-  have hbaseMom : AEMeasurable
-      (fun ω => ENNReal.rpow (regularizedGMC P Xc γ r ω (Metric.ball 0 R)) p) P := by
-    have hmass : AEMeasurable (fun ω => regularizedGMC P Xc γ r ω (Metric.ball 0 R)) P :=
-      ((Measure.measurable_coe Metric.isOpen_ball.measurableSet).comp
-        (regularizedGMC_measurable P X hX Xc hXc γ r)).aemeasurable
-    exact ENNReal.continuous_rpow_const.measurable.comp_aemeasurable hmass
-  have hprod :
-      (∫⁻ q, ENNReal.rpow
-          (ENNReal.ofReal (scaleFactor q.2 * (regularizedGMC P Xc γ r q.1 (Metric.ball 0 R)).toReal)) p
-          ∂P.prod G) =
-        gmcMassMoment P (regularizedGMC P Xc γ r) (Metric.ball 0 R) p *
-          ∫⁻ w, ENNReal.rpow (ENNReal.ofReal (scaleFactor w)) p ∂G := by
-    calc
-      _ = ∫⁻ q : Ω × ℝ, ENNReal.rpow (regularizedGMC P Xc γ r q.1 (Metric.ball 0 R)) p *
-          ENNReal.rpow (ENNReal.ofReal (scaleFactor q.2)) p ∂P.prod G := by
-        apply lintegral_congr_ae
-        have hf : ∀ᵐ q : Ω × ℝ ∂P.prod G, IsFiniteMeasure (regularizedGMC P Xc γ r q.1) :=
-          measurePreserving_fst.quasiMeasurePreserving.ae
-            (regularizedGMC_finite_ae P X hX Xc hXc γ r)
-        filter_upwards [hf] with q hfin
-        let _ := hfin
-        have hmassTop : regularizedGMC P Xc γ r q.1 (Metric.ball 0 R) ≠ ∞ :=
-          measure_ne_top _ _
-        rw [ENNReal.ofReal_mul' ENNReal.toReal_nonneg, ENNReal.ofReal_toReal hmassTop]
-        simpa [mul_comm] using
-          (ENNReal.mul_rpow_of_ne_top (x := ENNReal.ofReal (scaleFactor q.2))
-            (y := regularizedGMC P Xc γ r q.1 (Metric.ball 0 R)) ENNReal.ofReal_ne_top hmassTop p)
-      _ = _ := by
-        rw [lintegral_prod_mul hbaseMom hfactorMom, gmcMassMoment]
-  calc
-    gmcMassMoment P (regularizedGMC P Xc γ (r - Real.log c)) (Metric.ball a (c * R)) p =
-        ∫⁻ v, ψ v ∂Measure.map t P := hleft
-    _ = ∫⁻ v, ψ v ∂Measure.map s (P.prod G) := hmapIntegral
-    _ = ∫⁻ q, ENNReal.rpow
-        (ENNReal.ofReal (scaleFactor q.2 * (regularizedGMC P Xc γ r q.1 (Metric.ball 0 R)).toReal)) p
-        ∂P.prod G := hright
-    _ = gmcMassMoment P (regularizedGMC P Xc γ r) (Metric.ball 0 R) p *
-        ∫⁻ w, ENNReal.rpow (ENNReal.ofReal (scaleFactor w)) p ∂G := hprod
-    _ = _ := by
-      rw [gaussianScaleFactor_rpow_integral γ c p hc hc1]
-      ac_rfl
 
 
 /-- Radius-form finite-cutoff scaling. The reference cutoff is shifted by `log(s/R)`;
 its circle radius is consequently the original circle radius multiplied by `R/s`.
 The two explicit radius guards ensure all averaging circles stay in the exact chart. -/
 theorem regularizedGMC_local_ball_moment_scale
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
+
+
     (z : ℂ) {s R t : ℝ} (hs : 0 < s) (hsR : s ≤ R) (hR : 0 < R)
     (hR1 : R < 1) (hz : ‖z‖ + s < 1)
     (hbase : R + Real.exp (-t) * (R / s) ≤ 1)
@@ -367,11 +228,132 @@ theorem regularizedGMC_local_ball_moment_scale
       ENNReal.ofReal ((s / R) ^ (2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2)) *
         gmcMassMoment P (regularizedGMC P Xc γ (t + Real.log (s / R)))
           (Metric.ball 0 R) p := by
-  have hc : 0 < s / R := div_pos hs hR
-  have hc1 : s / R ≤ 1 := (div_le_one hR).mpr hsR
+  have regularizedGMC_affine_openBall_moment_scale_CutoffScale {a : ℂ} {c R r : ℝ} (hc : 0 < c) (hc1 : c ≤ 1) (hR : 0 < R) (hRsmall : R < 1) (hTsmall : ‖a‖ + c * R < 1) (hsourceCut : ∀ x : {z : ℂ // z ∈ Metric.closedBall (0 : ℂ) R}, ‖x.1‖ + Real.exp (-r) ≤ 1) (htargetCut : ∀ x : {z : ℂ // z ∈ Metric.closedBall (0 : ℂ) R}, ‖a + c • x.1‖ + Real.exp (-(r - Real.log c)) ≤ 1) (p : ℝ) : gmcMassMoment P (regularizedGMC P Xc γ (r - Real.log c)) (Metric.ball a (c * R)) p =
+      ENNReal.ofReal (c ^ (2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2)) *
+        gmcMassMoment P (regularizedGMC P Xc γ r) (Metric.ball 0 R) p := by
+    classical
+    let G : Measure ℝ := gaussianReal 0 ⟨-Real.log c,
+      neg_nonneg.mpr (Real.log_nonpos hc.le hc1)⟩
+    let : IsProbabilityMeasure P := hX.1
+    have hG : IsProbabilityMeasure G := by
+      simpa [G] using (ProbabilityTheory.instIsProbabilityMeasureGaussianReal 0
+        ⟨-Real.log c, neg_nonneg.mpr (Real.log_nonpos hc.le hc1)⟩)
+    let : IsProbabilityMeasure G := hG
+    let : IsProbabilityMeasure (P.prod G) := inferInstance
+    let scaleFactor : ℝ → ℝ := fun w =>
+      c ^ 2 * Real.exp (γ * w - γ ^ 2 / 2 * (-Real.log c))
+    let t : Ω → Fin 1 → ℝ := fun ω _ => (regularizedGMC P Xc γ (r - Real.log c) ω (Metric.ball a (c * R))).toReal
+    let s : Ω × ℝ → Fin 1 → ℝ := fun q _ =>
+      scaleFactor q.2 * (regularizedGMC P Xc γ r q.1 (Metric.ball 0 R)).toReal
+    have hLaw := regularizedGMC_affine_openBall_mass_law_CutoffScale P X hX γ Xc hXc
+      (a := a) (c := c) (R := R) hc hc1 hR hRsmall hTsmall hsourceCut htargetCut
+    change Measure.map t P = Measure.map s (P.prod G) at hLaw
+    have htCoord : AEMeasurable
+        (fun ω => (regularizedGMC P Xc γ (r - Real.log c) ω (Metric.ball a (c * R))).toReal) P := by
+      exact ENNReal.measurable_toReal.comp_aemeasurable
+        ((Measure.measurable_coe Metric.isOpen_ball.measurableSet).comp
+          (regularizedGMC_measurable P X hX Xc hXc γ (r - Real.log c))).aemeasurable
+    have hsCoord : AEMeasurable
+        (fun q : Ω × ℝ => scaleFactor q.2 * (regularizedGMC P Xc γ r q.1 (Metric.ball 0 R)).toReal)
+        (P.prod G) := by
+      have hbase : AEMeasurable (fun ω => (regularizedGMC P Xc γ r ω (Metric.ball 0 R)).toReal) P := by
+        exact ENNReal.measurable_toReal.comp_aemeasurable
+          ((Measure.measurable_coe Metric.isOpen_ball.measurableSet).comp
+            (regularizedGMC_measurable P X hX Xc hXc γ r)).aemeasurable
+      have hfst : Measure.map (fun q : Ω × ℝ => q.1) (P.prod G) = P :=
+        measurePreserving_fst.map_eq
+      have hbase' : AEMeasurable
+          (fun q : Ω × ℝ => (regularizedGMC P Xc γ r q.1 (Metric.ball 0 R)).toReal) (P.prod G) := by
+        have h' : AEMeasurable (fun ω => (regularizedGMC P Xc γ r ω (Metric.ball 0 R)).toReal)
+            (Measure.map (fun q : Ω × ℝ => q.1) (P.prod G)) := by
+          rw [hfst]
+          exact hbase
+        change AEMeasurable
+          ((fun ω => (regularizedGMC P Xc γ r ω (Metric.ball 0 R)).toReal) ∘ (fun q : Ω × ℝ => q.1))
+          (P.prod G)
+        exact h'.comp_aemeasurable measurable_fst.aemeasurable
+      have hfactor : AEMeasurable (fun q : Ω × ℝ => scaleFactor q.2) (P.prod G) := by
+        have hm : Measurable scaleFactor := by
+          dsimp [scaleFactor]
+          fun_prop
+        exact hm.comp_aemeasurable measurable_snd.aemeasurable
+      change AEMeasurable
+        (fun q : Ω × ℝ => scaleFactor q.2 * (regularizedGMC P Xc γ r q.1 (Metric.ball 0 R)).toReal)
+        (P.prod G)
+      exact hfactor.mul hbase'
+    let ψ : (Fin 1 → ℝ) → ℝ≥0∞ := fun v => ENNReal.rpow (ENNReal.ofReal (v 0)) p
+    have hψ : Measurable ψ := by
+      dsimp [ψ]
+      fun_prop
+    have hmapIntegral :
+        (∫⁻ v, ψ v ∂Measure.map t P) =
+          ∫⁻ v, ψ v ∂Measure.map s (P.prod G) := by rw [hLaw]
+    have hleft : gmcMassMoment P (regularizedGMC P Xc γ (r - Real.log c)) (Metric.ball a (c * R)) p =
+        ∫⁻ v, ψ v ∂Measure.map t P := by
+      rw [gmcMassMoment, lintegral_map' hψ.aemeasurable (aemeasurable_pi_iff.2
+        (fun j => by simpa [t] using htCoord))]
+      apply lintegral_congr_ae
+      filter_upwards [regularizedGMC_finite_ae P X hX Xc hXc γ (r - Real.log c)] with ω hfin
+      let _ := hfin
+      simp [ψ, t, ENNReal.ofReal_toReal (measure_ne_top (regularizedGMC P Xc γ (r - Real.log c) ω) _)]
+    have hright :
+        (∫⁻ v, ψ v ∂Measure.map s (P.prod G)) =
+          ∫⁻ q, ENNReal.rpow
+            (ENNReal.ofReal (scaleFactor q.2 * (regularizedGMC P Xc γ r q.1 (Metric.ball 0 R)).toReal)) p
+            ∂P.prod G := by
+      rw [lintegral_map' hψ.aemeasurable (aemeasurable_pi_iff.2
+        (fun j => by simpa [s] using hsCoord))]
+    have hfactorMom : AEMeasurable
+        (fun w => ENNReal.rpow (ENNReal.ofReal (scaleFactor w)) p) G := by
+      have hm : Measurable scaleFactor := by
+        dsimp [scaleFactor]
+        fun_prop
+      have hfac : AEMeasurable (fun w => ENNReal.ofReal (scaleFactor w)) G :=
+        ENNReal.measurable_ofReal.comp_aemeasurable hm.aemeasurable
+      exact ENNReal.continuous_rpow_const.measurable.comp_aemeasurable hfac
+    have hbaseMom : AEMeasurable
+        (fun ω => ENNReal.rpow (regularizedGMC P Xc γ r ω (Metric.ball 0 R)) p) P := by
+      have hmass : AEMeasurable (fun ω => regularizedGMC P Xc γ r ω (Metric.ball 0 R)) P :=
+        ((Measure.measurable_coe Metric.isOpen_ball.measurableSet).comp
+          (regularizedGMC_measurable P X hX Xc hXc γ r)).aemeasurable
+      exact ENNReal.continuous_rpow_const.measurable.comp_aemeasurable hmass
+    have hprod :
+        (∫⁻ q, ENNReal.rpow
+            (ENNReal.ofReal (scaleFactor q.2 * (regularizedGMC P Xc γ r q.1 (Metric.ball 0 R)).toReal)) p
+            ∂P.prod G) =
+          gmcMassMoment P (regularizedGMC P Xc γ r) (Metric.ball 0 R) p *
+            ∫⁻ w, ENNReal.rpow (ENNReal.ofReal (scaleFactor w)) p ∂G := by
+      calc
+        _ = ∫⁻ q : Ω × ℝ, ENNReal.rpow (regularizedGMC P Xc γ r q.1 (Metric.ball 0 R)) p *
+            ENNReal.rpow (ENNReal.ofReal (scaleFactor q.2)) p ∂P.prod G := by
+          apply lintegral_congr_ae
+          have hf : ∀ᵐ q : Ω × ℝ ∂P.prod G, IsFiniteMeasure (regularizedGMC P Xc γ r q.1) :=
+            measurePreserving_fst.quasiMeasurePreserving.ae
+              (regularizedGMC_finite_ae P X hX Xc hXc γ r)
+          filter_upwards [hf] with q hfin
+          let _ := hfin
+          have hmassTop : regularizedGMC P Xc γ r q.1 (Metric.ball 0 R) ≠ ∞ :=
+            measure_ne_top _ _
+          rw [ENNReal.ofReal_mul' ENNReal.toReal_nonneg, ENNReal.ofReal_toReal hmassTop]
+          simpa [mul_comm] using
+            (ENNReal.mul_rpow_of_ne_top (x := ENNReal.ofReal (scaleFactor q.2))
+              (y := regularizedGMC P Xc γ r q.1 (Metric.ball 0 R)) ENNReal.ofReal_ne_top hmassTop p)
+        _ = _ := by
+          rw [lintegral_prod_mul hbaseMom hfactorMom, gmcMassMoment]
+    refine (hleft).trans (?_)
+    refine (hmapIntegral).trans (?_)
+    refine (hright).trans (?_)
+    calc ∫⁻ q, ENNReal.rpow
+          (ENNReal.ofReal (scaleFactor q.2 * (regularizedGMC P Xc γ r q.1 (Metric.ball 0 R)).toReal)) p
+          ∂P.prod G = gmcMassMoment P (regularizedGMC P Xc γ r) (Metric.ball 0 R) p *
+          ∫⁻ w, ENNReal.rpow (ENNReal.ofReal (scaleFactor w)) p ∂G := hprod
+      _ = _ := by
+        rw [gaussianScaleFactor_rpow_integral γ c p hc hc1]
+        ac_rfl
+  have hc := div_pos hs hR
   have he : Real.exp (-(t + Real.log (s / R))) = Real.exp (-t) * (R / s) := by
     rw [neg_add, Real.exp_add, Real.exp_neg (Real.log (s / R)), Real.exp_log hc, inv_div]
-  have hsEq : s / R * R = s := div_mul_cancel₀ s hR.ne'
+  have hsEq := div_mul_cancel₀ s hR.ne'
   have hsource : ∀ x : {w : ℂ // w ∈ Metric.closedBall (0 : ℂ) R},
       ‖x.1‖ + Real.exp (-(t + Real.log (s / R))) ≤ 1 := by
     intro x
@@ -390,11 +372,13 @@ theorem regularizedGMC_local_ball_moment_scale
         _ = _ := by rw [hsEq]
     rw [add_sub_cancel_right]
     exact (add_le_add hn le_rfl).trans htarget
-  have h := regularizedGMC_affine_openBall_moment_scale_CutoffScale P X hX γ Xc hXc
-    (a := z) (c := s / R) (R := R) (r := t + Real.log (s / R)) hc hc1 hR hR1
+  have h := regularizedGMC_affine_openBall_moment_scale_CutoffScale
+    (a := z) (c := s / R) (R := R) (r := t + Real.log (s / R)) hc ((div_le_one hR).mpr hsR) hR hR1
     (by simpa only [hsEq] using hz) hsource htar p
   simpa only [add_sub_cancel_right, hsEq] using h
 
+
+end
 /-- Spatial Hölder in the extended positive reals, including zero and infinite integrals. -/
 theorem ennreal_lintegral_rpow_le_mass_rpow_mul_lintegral_rpow
     {S : Type*} [MeasurableSpace S] (ν : Measure S) (f : S → ℝ≥0∞)
@@ -427,7 +411,7 @@ theorem ennreal_lintegral_rpow_le_mass_rpow_mul_lintegral_rpow
 /-- The actual mass at a coarse cutoff has a uniform higher-moment estimate on every bounded
 Borel chart. The reference measure and covariance remainder both appear explicitly. -/
 theorem regularizedGMC_coarse_chart_moment_upper
-    {Ω : Type*} [MeasurableSpace Ω]
+
     (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
     (γ R T p : ℝ) (hR : 0 ≤ R) (hp : 1 ≤ p)

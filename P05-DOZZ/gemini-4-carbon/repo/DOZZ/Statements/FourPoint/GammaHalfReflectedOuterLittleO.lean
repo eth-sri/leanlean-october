@@ -34,6 +34,6 @@ theorem gammaHalf_reflected_outer_littleO {Ω : Type*} [MeasurableSpace Ω]
         ((gammaHalfOuterMoment P M γ α₁ α₂ α₃
             ((α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) / γ) z ξ -
           gammaHalfMoment P M γ α₁ α₂ α₃
-            ((α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) / γ) 0 : ℝ) : ℂ)) := by exact DOZZ.Proofs.gammaHalf_reflected_outer_littleO P X M γ α₁ α₂ α₃ ξ hγ hγ₂ hξ hξ₂ hα₂ hα₃ hs hα₁ hreflect hslack hfreeze hX hM
+            ((α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) / γ) 0 : ℝ) : ℂ)) := DOZZ.Proofs.gammaHalf_reflected_outer_littleO P X M γ α₁ α₂ α₃ ξ hγ hγ₂ hξ hξ₂ hα₂ hα₃ hs hα₁ hreflect hslack hfreeze hX hM
 
 end DOZZ

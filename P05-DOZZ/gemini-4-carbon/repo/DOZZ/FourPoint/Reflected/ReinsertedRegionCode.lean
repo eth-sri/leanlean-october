@@ -16,13 +16,17 @@ noncomputable def reflectedReinsertedRegionMassCode (γ : ℝ) (U : Set ℂ) (K 
   reflectedPuncturedMassCode (fun q : TwoSidedPath × ℂ => U.indicator
     (fun x => K x*ENNReal.ofReal (reflected_global_reinsertionWeight γ q.1 x)) q.2) p
 
-theorem reflected_reinsertedRegionMassCode_measurable (γ : ℝ) (U : Set ℂ) (hU : MeasurableSet U)
+section
+variable (γ : ℝ) (U : Set ℂ) (hU : MeasurableSet U)
+include γ hU
+
+theorem reflected_reinsertedRegionMassCode_measurable
     (K : ℂ → ℝ≥0∞) (hK : Measurable K) : Measurable (reflectedReinsertedRegionMassCode γ U K) := by
   apply reflected_puncturedMassCode_measurable
   exact Measurable.ite (hU.preimage measurable_snd)
     ((hK.comp measurable_snd).mul (reflected_global_reinsertionWeight_measurable γ).ennreal_ofReal) measurable_const
 
-theorem reflected_reinsertedRegionMassCode_eq (γ : ℝ) (U : Set ℂ) (hU : MeasurableSet U)
+theorem reflected_reinsertedRegionMassCode_eq
     (hU0 : U ⊆ ({0} : Set ℂ)ᶜ) (K : ℂ → ℝ≥0∞) (a : TwoSidedPath) (μ : Measure ℂ)
     (hfin : ∀ K, IsCompact K → K ⊆ ({0} : Set ℂ)ᶜ → μ K < ⊤) :
     reflectedReinsertedRegionMassCode γ U K (a,μ) =
@@ -31,6 +35,8 @@ theorem reflected_reinsertedRegionMassCode_eq (γ : ℝ) (U : Set ℂ) (hU : Mea
   dsimp only [Prod.fst,Prod.snd]
   rw [setLIntegral_indicator hU,inter_eq_left.mpr hU0]
 
+
+end
 /-- Exact removal and reinsertion recover any measurable regional mass away from the origin. -/
 theorem reflected_reinserted_region_eq (γ : ℝ) (a : TwoSidedPath) (μ : Measure ℂ)
     (U : Set ℂ) (hU : MeasurableSet U) (hU0 : U ⊆ ({0} : Set ℂ)ᶜ)

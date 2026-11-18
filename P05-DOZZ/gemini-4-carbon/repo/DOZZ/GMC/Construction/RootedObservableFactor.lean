@@ -47,8 +47,7 @@ theorem rooted_observable_factors_through_coordinates
     rw [MeasurableSpace.comap_prodMap, MeasurableSpace.comap_id, hJoint]
     rfl
   have hPull : Measurable (fun p : ℂ × (Q × FiniteMeasure ℂ) =>
-      H p.1 p.2.1 (p.2.2 : Measure ℂ)) := by
-    exact hH.comp (measurable_fst.prodMk (measurable_fst.comp measurable_snd |>.prodMk
+      H p.1 p.2.1 (p.2.2 : Measure ℂ)) := hH.comp (measurable_fst.prodMk (measurable_fst.comp measurable_snd |>.prodMk
       (measurable_subtype_coe.comp (measurable_snd.comp measurable_snd))))
   have hPull' : @Measurable (ℂ × (Q × FiniteMeasure ℂ)) ℝ≥0∞
       (MeasurableSpace.comap lift inferInstance) inferInstance
@@ -58,11 +57,7 @@ theorem rooted_observable_factors_through_coordinates
   obtain ⟨G, hG, hGfactor⟩ := hPull'.exists_eq_measurable_comp
   let decode : (gmcTiltCoordinateIndex → ℝ) → Q × E := fun v =>
     (fun f => v (.inl f), fun j => ENNReal.ofReal (v (.inr j)))
-  have hd : Measurable decode := by
-    apply Measurable.prodMk
-    · exact measurable_pi_iff.mpr fun f => measurable_pi_apply (Sum.inl f)
-    · exact measurable_pi_iff.mpr fun j => ENNReal.measurable_ofReal.comp
-        (measurable_pi_apply (Sum.inr j))
+  have hd : Measurable decode := by fun_prop
   refine ⟨fun p => G (p.1, decode p.2),
     hG.comp (measurable_fst.prodMk (hd.comp measurable_snd)), ?_⟩
   intro u q μ hμ

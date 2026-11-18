@@ -25,10 +25,7 @@ theorem ennreal_rpow_le_one_add_of_mem_unitInterval
   by_cases hx : x ≤ 1
   · exact (ENNReal.rpow_le_one hx hp0).trans (by simp)
   · have hx1 : 1 ≤ x := le_of_not_ge hx
-    calc
-      x ^ p ≤ x ^ (1 : ℝ) := ENNReal.rpow_le_rpow_of_exponent_le hx1 hp1
-      _ = x := ENNReal.rpow_one x
-      _ ≤ 1 + x := le_add_of_nonneg_left (by norm_num)
+    exact ((ENNReal.rpow_le_rpow_of_exponent_le hx1 hp1).trans_eq (ENNReal.rpow_one x)).trans (le_add_of_nonneg_left (by norm_num))
 
 /-- On a probability space, finite first moment implies finite `p`th extended moment for every
 `p ∈ [0,1]`, with the explicit bound `1 + E[f]`. -/
@@ -36,11 +33,8 @@ theorem lintegral_rpow_le_one_add_of_probability
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P]
     (f : Ω → ℝ≥0∞) {p : ℝ} (hp0 : 0 ≤ p) (hp1 : p ≤ 1) :
     ∫⁻ ω, (f ω) ^ p ∂P ≤ 1 + ∫⁻ ω, f ω ∂P := by
-  calc
-    ∫⁻ ω, (f ω) ^ p ∂P ≤ ∫⁻ ω, (1 + f ω) ∂P :=
-      lintegral_mono fun ω => ennreal_rpow_le_one_add_of_mem_unitInterval (f ω) hp0 hp1
-    _ = 1 + ∫⁻ ω, f ω ∂P := by
-      rw [lintegral_add_left' aemeasurable_const, lintegral_one]
-      simp
+  refine (lintegral_mono fun ω => ennreal_rpow_le_one_add_of_mem_unitInterval (f ω) hp0 hp1).trans_eq (?_)
+  rw [lintegral_add_left' aemeasurable_const, lintegral_one]
+  simp
 
 end DOZZ.Proofs

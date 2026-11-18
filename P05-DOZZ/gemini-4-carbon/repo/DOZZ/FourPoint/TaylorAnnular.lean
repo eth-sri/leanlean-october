@@ -26,7 +26,7 @@ theorem twoRooted_annular_bound
         gammaHalfTwoRootedMajorantOn P M γ α₁ α₂ α₃ p z
           (Metric.ball 0 (1 / 2) \ Metric.ball 0 ρ) ≤
             ENNReal.ofReal (C * ρ ^ (γ * (Q γ - α₁) - 2)) := by
-  let a : ℝ := γ * (Q γ - α₁) - 4
+  let a := γ * (Q γ - α₁) - 4
   have ha : a < -2 := by
     have he : a = γ ^ 2 / 2 - γ * α₁ - 2 := by
       dsimp only [a]
@@ -37,21 +37,19 @@ theorem twoRooted_annular_bound
     nlinarith only [hα, hγ]
   obtain ⟨C₀, hC₀, hsp⟩ := twoRooted_annular_spatial_bound P X hX γ hγ hγ2 M hM α₁ α₂ α₃ p hp
   obtain ⟨C₁, hC₁, htail⟩ := planar_radial_tail_bound a ha
-  let k : ℝ := (2 : ℝ) ^ (|γ * α₂| + |γ ^ 2 / 2 - 2|)
-  let C : ℝ := C₀ * k * C₁
+  let k := (2 : ℝ) ^ (|γ * α₂| + |γ ^ 2 / 2 - 2|)
+  let C := C₀ * k * C₁
   refine ⟨C, by dsimp only [C, k]; positivity, ?_⟩
   intro ρ hρ hρ2 z hz
   let B : Set ℂ := Metric.ball 0 (1 / 2) \ Metric.ball 0 ρ
   have hB : MeasurableSet B := measurableSet_ball.diff measurableSet_ball
-  have hunit (x : ℂ) (hx : x ∈ B) : ‖x‖ ≤ 1 / 2 := by
-    exact (show ‖x‖ < 1 / 2 by simpa only [Metric.mem_ball, dist_zero_right] using hx.1).le
+  have hunit (x : ℂ) (hx : x ∈ B) : ‖x‖ ≤ 1 / 2 := (show ‖x‖ < 1 / 2 by simpa only [Metric.mem_ball, dist_zero_right] using hx.1).le
   have hz4 : ‖z‖ ≤ 1 / 4 := by linarith only [hz, hρ2]
   have hpoint (x : ℂ) (hx : x ∈ B) :
       ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x / ‖x - z‖ ^ 2) ≤
         ENNReal.ofReal k * ENNReal.ofReal (‖x‖ ^ a) := by
     have hxr : ρ ≤ ‖x‖ := by
-      have hh := hx.2
-      simpa only [Metric.mem_ball, dist_zero_right, not_lt] using hh
+      simpa only [Metric.mem_ball, dist_zero_right, not_lt] using hx.2
     exact gammaHalf_annular_kernel_bound γ α₁ α₂ α₃ hγ z x (hunit x hx)
       (hρ.trans_le hxr) (by linarith only [hz, hxr])
   have hkernel : (∫⁻ x in B, ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x / ‖x - z‖ ^ 2)) ≤

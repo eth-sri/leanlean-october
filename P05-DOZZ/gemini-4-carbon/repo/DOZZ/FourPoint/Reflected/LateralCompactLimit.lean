@@ -61,10 +61,8 @@ theorem reflected_lateral_compact_chaos_comparison
         (fun i => (Real.exp (-max a R₀), xs i))
   let f := f₀+f₁
   have hf : ∀ x, 0 ≤ f x := fun x => add_nonneg (hf₀ x) (hf₁ x)
-  have hfK : tsupport (f : ℂ → ℝ) ⊆ K :=
-    (tsupport_add f₀ f₁).trans (union_subset hf₀K hf₁K)
   obtain ⟨hν, hXc⟩ := reflected_admissible_field_test_limit P _ _ _ Y hY γ N hN
-    K hK hKU f hf hfK R₀ hR₀ρ
+    K hK hKU f hf ((tsupport_add f₀ f₁).trans (union_subset hf₀K hf₁K)) R₀ hR₀ρ
   let ν := (logRegularizationReference (originLateralChart ρ) originLateralPlaneDensity).restrict K
   let _ := hν
   have hYc := reflected_admissible_copied_test_limit P _ _ _ Y hY γ N hN K hK hKU
@@ -74,11 +72,10 @@ theorem reflected_lateral_compact_chaos_comparison
       |gaussianCovariance P (fun ω => Φ a ω x) (fun ω => Φ a ω y)| ≤ 2*R+η := by
     have hxo := houter x hxK hx
     have hyi := hinner y hyK hy
-    have hrel : ‖y‖ ≤ R*‖x‖ := hyi.trans (mul_le_mul_of_nonneg_left hxo hR0)
     have hdist : (1-R)*r ≤ ‖x-y‖ := by
       have hh := norm_sub_norm_le x y
       linarith only [hxo, hyi, hh]
-    exact hb _ _ (Real.exp_pos _) (hcut a) (Real.exp_pos _) (hcut a) x hxK y hyK hdist hrel
+    exact hb _ _ (Real.exp_pos _) (hcut a) (Real.exp_pos _) (hcut a) x hxK y hyK hdist (hyi.trans (mul_le_mul_of_nonneg_left hxo hR0))
   have hbill : 0 ≤ 2*R+η := by linarith
   have hcross (a : ℝ) : ∀ᵐ xy ∂ν.prod ν, ¬(xy.1 ∈ A ↔ xy.2 ∈ A) →
       |gaussianCovariance P (fun ω => Φ a ω xy.1) (fun ω => Φ a ω xy.2)| ≤

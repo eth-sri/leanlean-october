@@ -18,8 +18,12 @@ public section
 
 namespace DOZZ.Proofs
 
+section
+variable (γ α ε α' : ℝ)
+include γ α ε α'
+
 /-- The second-channel parameter satisfies C₁ = 1 − (C₀ − A − B). -/
-theorem dual_seed_channel_parameter (γ α ε α' : ℝ) (hγ : γ ≠ 0) :
+theorem dual_seed_channel_parameter (hγ : γ ≠ 0) :
     gaussParameterC γ (2 / γ) ε =
       1 - (gaussParameterC γ (2 / γ) α -
         gaussParameterA γ (2 / γ) α ε α' - gaussParameterB γ (2 / γ) α ε α') := by
@@ -28,7 +32,7 @@ theorem dual_seed_channel_parameter (γ α ε α' : ℝ) (hγ : γ ≠ 0) :
   ring
 
 /-- The first Gauss parameter is one half minus the total deficit divided by γ. -/
-theorem dual_seed_parameterA_deficits (γ α ε α' : ℝ) (hγ : γ ≠ 0) :
+theorem dual_seed_parameterA_deficits (hγ : γ ≠ 0) :
     gaussParameterA γ (2 / γ) α ε α' =
       1 / 2 - ((Q γ - α) + (Q γ - ε) + (Q γ - α')) / γ := by
   unfold gaussParameterA Q
@@ -36,7 +40,7 @@ theorem dual_seed_parameterA_deficits (γ α ε α' : ℝ) (hγ : γ ≠ 0) :
   ring
 
 /-- All arguments in the two crossing multipliers lie in their strict Gamma intervals. -/
-theorem dual_seed_parameter_intervals (γ α ε α' : ℝ)
+theorem dual_seed_parameter_intervals
     (hγ : 0 < γ) (hγ₂ : γ < 2)
     (hα : α < Q γ) (hε : ε < Q γ) (hα' : α' < Q γ)
     (hs : 2 * Q γ + 2 / γ < α + ε + α') :
@@ -55,16 +59,17 @@ theorem dual_seed_parameter_intervals (γ α ε α' : ℝ)
   obtain ⟨hA, hAB, hBC, hC, hδ, hδ₁, _, hK₂⟩ :=
     DOZZ.gauss_physical_parameter_range γ (2 / γ) α ε α'
       hγ hγ₂ (Or.inr rfl) hs hα hε hα'
-  have hC₁ := dual_seed_channel_parameter γ α ε α' hγ.ne'
   have hAhalf : gaussParameterA γ (2 / γ) α ε α' < 1 / 2 := by
     rw [dual_seed_parameterA_deficits γ α ε α' hγ.ne']
-    have ht : 0 < ((Q γ - α) + (Q γ - ε) + (Q γ - α')) / γ :=
+    have ht :=
       div_pos (add_pos (add_pos (sub_pos.mpr hα) (sub_pos.mpr hε))
         (sub_pos.mpr hα')) hγ
     linarith only [ht]
   refine ⟨hA, hAhalf, ?_, ?_, ?_, hC, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_,
     ?_, ?_, ?_, ?_, hK₂⟩ <;>
-    linarith only [hA, hAB, hBC, hC, hδ, hδ₁, hC₁]
+    linarith only [hA, hAB, hBC, hC, hδ, hδ₁, dual_seed_channel_parameter γ α ε α' hγ.ne']
 
+
+end
 
 end DOZZ.Proofs

@@ -59,8 +59,7 @@ theorem circleRooted_bounded_coordinate_lintegral_tendsto
       (𝓝 (∫⁻ ω, G (u, ω) ∂P)) := by
     filter_upwards [hRoot] with u hu
     apply tendsto_lintegral_of_dominated_convergence (fun _ => ENNReal.ofReal ‖φ‖)
-    · intro n
-      exact (hF n).comp (measurable_const.prodMk measurable_id)
+    · fun_prop
     · intro n
       exact ae_of_all _ fun ω => hbound n (u, ω)
     · simp
@@ -76,10 +75,8 @@ theorem circleRooted_bounded_coordinate_lintegral_tendsto
     exact (hF n).lintegral_prod_right'
   · intro n
     exact ae_of_all _ fun u => by
-      calc
-        (∫⁻ ω, F n (u, ω) ∂P) ≤ ∫⁻ _ω, ENNReal.ofReal ‖φ‖ ∂P :=
-          lintegral_mono fun ω => hbound n (u, ω)
-        _ = _ := by simp
+      refine (lintegral_mono fun ω => hbound n (u, ω)).trans_eq (?_)
+      simp
   · simp only [lintegral_const]
     exact ENNReal.mul_ne_top ENNReal.ofReal_ne_top (measure_ne_top ν Set.univ)
   · exact hlim

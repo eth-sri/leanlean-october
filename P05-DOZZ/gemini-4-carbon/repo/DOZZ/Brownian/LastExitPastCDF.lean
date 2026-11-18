@@ -21,39 +21,12 @@ open MeasureTheory ProbabilityTheory Set Filter Topology
 open scoped NNReal ENNReal
 namespace DOZZ.Proofs
 
-/-- The scalar state kernel's avoidance integral is the explicit last-exit primitive. -/
-theorem conditionedPastStateKernel_integral_avoidance (ν c dt : ℝ) (k : ℕ)
-    (hν : 0 < ν) (hc : 0 < c) (hdt : 0 < dt) (x : Fin (k+1) → ℝ)
-    (hx : 0 < x (Fin.last k)) :
-    (∫ y, lastExitAvoidanceFactor ν c y ∂conditionedPastStateKernel ν dt k x) =
-      lastExitGaussianKernelCDF ν c (x (Fin.last k)) dt := by
-  rw [conditionedPastStateKernel, Kernel.withDensity_apply _
-    (measurable_conditionedPastStateKernel_density _ _ _) x, Kernel.const_apply]
-  have hm : Measurable (fun y : ℝ => ENNReal.ofReal (max 0
-      (conditionedPositiveTransitionDensity ν dt (x (Fin.last k)) y))) :=
-    (measurable_conditionedPastStateKernel_density ν dt k).comp
-      (measurable_const.prodMk measurable_id)
-  rw [integral_withDensity_eq_integral_toReal_smul hm
-    (ae_of_all _ fun _ => ENNReal.ofReal_lt_top)]
-  have he : (∫ y, (ENNReal.ofReal (max 0
-      (conditionedPositiveTransitionDensity ν dt (x (Fin.last k)) y))).toReal •
-      lastExitAvoidanceFactor ν c y) =
-      ∫ y, conditionedPositiveTransitionDensity ν dt (x (Fin.last k)) y *
-        lastExitAvoidanceFactor ν c y := by
-    apply integral_congr_ae
-    filter_upwards [] with y
-    rw [ENNReal.toReal_ofReal (le_max_left _ _),
-      max_eq_right (conditionedPositiveTransitionDensity_nonneg hν.le hdt hx y), smul_eq_mul]
-  rw [he, integral_conditionedTransition_avoidance_eq_gaussianCDF ν c (x (Fin.last k)) dt hν hc hx hdt]
 
 /-- The explicit last-exit primitive is measurable in its starting state. -/
 theorem measurable_lastExitGaussianKernelCDF_state (ν c dt : ℝ) :
     Measurable (fun x => lastExitGaussianKernelCDF ν c x dt) := by
-  have hstandard : Continuous brownianStandardHeatTail :=
-    continuous_iff_continuousAt.mpr fun x => (hasDerivAt_brownianStandardHeatTail x).continuousAt
-  have htail : Measurable (brownianHeatTail dt) :=
-    (hstandard.comp (continuous_id.div_const (Real.sqrt dt))).measurable
-  have hH : Measurable (conditionedH ν) := measurable_conditionedH_ref ν
+  have htail :=
+    ((continuous_iff_continuousAt.mpr fun x => (hasDerivAt_brownianStandardHeatTail x).continuousAt).comp (continuous_id.div_const (Real.sqrt dt))).measurable
   unfold lastExitGaussianKernelCDF
   have h1 : Measurable (fun x : ℝ => brownianHeatTail dt (c-x-ν*dt)) :=
     htail.comp ((measurable_const.sub measurable_id).sub measurable_const)
@@ -66,7 +39,7 @@ theorem measurable_lastExitGaussianKernelCDF_state (ν c dt : ℝ) :
   have hE2 : Measurable (fun x : ℝ => Real.exp (-2*ν*x)) := by fun_prop
   have hE3 : Measurable (fun x : ℝ => Real.exp (2*ν*(c-x))) := by fun_prop
   exact (((h1.sub (hE2.mul h2)).sub (hE3.mul h3)).add
-    (measurable_const.mul h4)).div hH
+    (measurable_const.mul h4)).div (measurable_conditionedH_ref ν)
 
 /-- The last-exit primitive is a probability weight at every positive starting state. -/
 theorem lastExitGaussianKernelCDF_bounds (ν c x dt : ℝ)
@@ -78,7 +51,6 @@ theorem lastExitGaussianKernelCDF_bounds (ν c x dt : ℝ)
     have hb := lastExitAvoidanceFactor_bounds (x := y) hν hc
     rw [Real.norm_eq_abs, abs_of_nonneg hb.1]
     exact hb.2
-  have hi := hp.mul_bdd (measurable_lastExitAvoidanceFactor ν c).aestronglyMeasurable hbound
   rw [← integral_conditionedTransition_avoidance_eq_gaussianCDF ν c x dt hν hc hx hdt]
   constructor
   · exact integral_nonneg fun y => mul_nonneg
@@ -86,7 +58,7 @@ theorem lastExitGaussianKernelCDF_bounds (ν c x dt : ℝ)
       (lastExitAvoidanceFactor_bounds (x := y) hν hc).1
   · calc
       _ ≤ ∫ y, conditionedPositiveTransitionDensity ν dt x y :=
-        integral_mono hi hp (fun y => mul_le_of_le_one_right
+        integral_mono (hp.mul_bdd (measurable_lastExitAvoidanceFactor ν c).aestronglyMeasurable hbound) hp (fun y => mul_le_of_le_one_right
           (conditionedPositiveTransitionDensity_nonneg hν.le hdt hx y)
           (lastExitAvoidanceFactor_bounds (x := y) hν hc).2)
       _ = 1 := conditionedPositiveTransitionDensity_integral_eq_one hν.le hdt hx
@@ -106,13 +78,33 @@ theorem negativeConditionedLaw_finitePast_lastExit_CDF
         ((u : ℝ)-(ss (Fin.last k) : ℝ))
         ∂(volume : Measure (Fin (k+1) → ℝ)).withDensity
           (conditionedPositiveFDDVectorDensity ν (fun i => (ss i : ℝ))) := by
+  have conditionedPastStateKernel_integral_avoidance (c dt : ℝ) (k : ℕ) (hν : 0 < ν) (hc : 0 < c) (hdt : 0 < dt) (x : Fin (k+1) → ℝ) (hx : 0 < x (Fin.last k)) : (∫ y, lastExitAvoidanceFactor ν c y ∂conditionedPastStateKernel ν dt k x) =
+        lastExitGaussianKernelCDF ν c (x (Fin.last k)) dt := by
+    rw [conditionedPastStateKernel, Kernel.withDensity_apply _
+      (measurable_conditionedPastStateKernel_density _ _ _) x, Kernel.const_apply]
+    have hm : Measurable (fun y : ℝ => ENNReal.ofReal (max 0
+        (conditionedPositiveTransitionDensity ν dt (x (Fin.last k)) y))) :=
+      (measurable_conditionedPastStateKernel_density ν dt k).comp
+        (measurable_const.prodMk measurable_id)
+    rw [integral_withDensity_eq_integral_toReal_smul hm
+      (ae_of_all _ fun _ => ENNReal.ofReal_lt_top)]
+    have he : (∫ y, (ENNReal.ofReal (max 0
+        (conditionedPositiveTransitionDensity ν dt (x (Fin.last k)) y))).toReal •
+        lastExitAvoidanceFactor ν c y) =
+        ∫ y, conditionedPositiveTransitionDensity ν dt (x (Fin.last k)) y *
+          lastExitAvoidanceFactor ν c y := by
+      apply integral_congr_ae
+      filter_upwards [] with y
+      rw [ENNReal.toReal_ofReal (le_max_left _ _),
+        max_eq_right (conditionedPositiveTransitionDensity_nonneg hν.le hdt hx y), smul_eq_mul]
+    rw [he, integral_conditionedTransition_avoidance_eq_gaussianCDF ν c (x (Fin.last k)) dt hν hc hx hdt]
   let : IsProbabilityMeasure P := hP.2.1
   let evalPast : BrownianPath → (Fin (k+1) → ℝ) := fun p i => -(p (ss i))
   let evalPair : BrownianPath → (Fin (k+1) → ℝ) × ℝ := fun p => (evalPast p, -(p u))
-  let μ : Measure (Fin (k+1) → ℝ) := volume.withDensity
+  let μ := volume.withDensity
     (conditionedPositiveFDDVectorDensity ν (fun i => (ss i : ℝ)))
   let κ := conditionedPastStateKernel ν ((u : ℝ)-(ss (Fin.last k) : ℝ)) k
-  let U : Set BrownianPath := evalPast ⁻¹' A
+  let U := evalPast ⁻¹' A
   let E : Set BrownianPath := {p | negativeLastExitTime p (c : ℝ) ≤ u}
   let F : (Fin (k+1) → ℝ) × ℝ → ℝ :=
     (Prod.fst ⁻¹' A).indicator (fun z => lastExitAvoidanceFactor ν (c : ℝ) z.2)
@@ -138,7 +130,6 @@ theorem negativeConditionedLaw_finitePast_lastExit_CDF
   have hE : MeasurableSet E := measurableSet_le
     (measurable_negativeLastExitTime_joint.comp (measurable_const.prodMk measurable_id))
     measurable_const
-  have hCDF := conditionedPositiveHistory_lastExit_le_setIntegral hP hB hν u c hu0 hc U hU
   have hleft : (∫ p in U, E.indicator (fun _ => (1 : ℝ)) p ∂P) =
       P.real {p : BrownianPath | evalPast p ∈ A ∧ negativeLastExitTime p (c : ℝ) ≤ u} := by
     rw [setIntegral_indicator hE, setIntegral_const, smul_eq_mul, mul_one]
@@ -171,7 +162,7 @@ theorem negativeConditionedLaw_finitePast_lastExit_CDF
         (conditionedPositiveStateAt_pos_ae hP (ss (Fin.last k)) (hs (Fin.last k)))
   calc
     _ = ∫ p in U, E.indicator (fun _ => (1 : ℝ)) p ∂P := hleft.symm
-    _ = ∫ p in U, lastExitAvoidanceFactor ν (c : ℝ) (conditionedPositiveStateAt u p) ∂P := hCDF
+    _ = ∫ p in U, lastExitAvoidanceFactor ν (c : ℝ) (conditionedPositiveStateAt u p) ∂P := conditionedPositiveHistory_lastExit_le_setIntegral hP hB hν u c hu0 hc U hU
     _ = ∫ z, F z ∂(μ ⊗ₘ κ) := hint
     _ = ∫ x, ∫ y, F (x,y) ∂κ x ∂μ := Measure.integral_compProd hFint
     _ = ∫ x in A, ∫ y, lastExitAvoidanceFactor ν (c : ℝ) y ∂κ x ∂μ := by
@@ -182,7 +173,7 @@ theorem negativeConditionedLaw_finitePast_lastExit_CDF
     _ = _ := by
       apply setIntegral_congr_ae hA
       filter_upwards [hxpos] with x hx _
-      exact conditionedPastStateKernel_integral_avoidance ν (c : ℝ) _ k hν hc hdt x hx
+      exact conditionedPastStateKernel_integral_avoidance (c : ℝ) _ k hν hc hdt x hx
 
 end DOZZ.Proofs
 

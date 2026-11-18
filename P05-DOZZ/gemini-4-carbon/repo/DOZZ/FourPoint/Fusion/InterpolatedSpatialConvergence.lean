@@ -28,17 +28,15 @@ theorem fusionInterpolatedIntegral_tendsto {Ω : Type*} [MeasurableSpace Ω]
       (nhds ((∫ y : ℂ, K y) *
         ((∫⁻ ω, fusionMovingMass γ α₁ α₂ α₃ 1 0 (M ω) ^ s ∂P).toReal : ℂ))) := by
   obtain ⟨B, hB, hbound⟩ := fusionInterpolatedFactor_uniform_bound P X hX γ hγ hγ2 M hM α₁ α₂ α₃ s hs.le
-  have hmeas := fusionInterpolatedFactor_measurable P X hX γ hγ hγ2 M hM α₁ α₂ α₃ s
   have hF : ∀ᶠ z : ℂ in nhds 0, AEStronglyMeasurable
       (fun y => K y * (fusionInterpolatedFactor P M γ α₁ α₂ α₃ s t y z : ℂ)) volume := by
     apply Eventually.of_forall
     intro z
     exact hK.aestronglyMeasurable.mul
-      ((Complex.measurable_ofReal.comp (hmeas.comp (measurable_const.prodMk (measurable_id.prodMk measurable_const)))).aestronglyMeasurable)
+      ((Complex.measurable_ofReal.comp ((fusionInterpolatedFactor_measurable P X hX γ hγ hγ2 M hM α₁ α₂ α₃ s).comp (measurable_const.prodMk (measurable_id.prodMk measurable_const)))).aestronglyMeasurable)
   have hdom : ∀ᶠ z : ℂ in nhds 0, ∀ᵐ y : ℂ ∂volume,
       ‖K y * (fusionInterpolatedFactor P M γ α₁ α₂ α₃ s t y z : ℂ)‖ ≤ ‖K y‖ * B := by
-    have hz : ∀ᶠ z : ℂ in nhds 0, ‖z‖ ≤ 1 := by
-      exact ((continuous_norm.tendsto (0 : ℂ)).eventually_lt_const (by simp)).mono fun z h => h.le
+    have hz : ∀ᶠ z : ℂ in nhds 0, ‖z‖ ≤ 1 := ((continuous_norm.tendsto (0 : ℂ)).eventually_lt_const (by simp)).mono fun z h => h.le
     filter_upwards [hz] with z hz
     exact ae_of_all _ fun y => by
       rw [norm_mul, Complex.norm_real, Real.norm_eq_abs]

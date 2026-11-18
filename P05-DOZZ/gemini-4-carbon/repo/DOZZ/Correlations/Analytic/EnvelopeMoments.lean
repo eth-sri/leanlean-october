@@ -43,8 +43,7 @@ theorem mass_envelope_moment_le
         ENNReal.rpow_add_le_mul_rpow_add_rpow (L ω ^ lo) (U ω ^ hi) hq
     _ = (2 : ℝ≥0∞) ^ (q - 1) *
         ((∫⁻ ω, L ω ^ (lo * q) ∂P) + ∫⁻ ω, U ω ^ (hi * q) ∂P) := by
-      have hsum : AEMeasurable (fun ω => L ω ^ (lo * q) + U ω ^ (hi * q)) P := by
-        simpa only [Pi.add_def] using (hL.pow_const (lo * q)).add (hU.pow_const (hi * q))
+      have hsum : AEMeasurable (fun ω => L ω ^ (lo * q) + U ω ^ (hi * q)) P := by fun_prop
       rw [lintegral_const_mul'' _ hsum, lintegral_add_left' (hL.pow_const _)]
     _ ≤ _ := mul_le_mul' le_rfl (add_le_add hbL hbU)
 

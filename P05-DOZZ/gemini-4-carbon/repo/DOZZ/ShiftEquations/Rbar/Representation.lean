@@ -39,10 +39,8 @@ namespace DOZZ.Proofs
 theorem extendedSeiberg3_diag_gamma {γ a : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (ha₁ : γ / 2 < a)
     (ha₂ : a < Q γ) : ExtendedSeiberg3 γ a γ a := by
   have hQ : Q γ = 2 / γ + γ / 2 := rfl
-  have hQ2 : 2 * Q γ = 4 / γ + γ := by
-    rw [hQ]
-    ring
-  have hγh : γ / 2 < 2 / γ := by
+  have : 2 * Q γ = 4 / γ + γ := by grind
+  have : γ / 2 < 2 / γ := by
     rw [div_lt_div_iff₀ (by norm_num) hγ]
     nlinarith
   refine extendedSeiberg3_of_lt hγ ha₂ (by rw [hQ]; linarith) ha₂ ?_ ?_ ?_ ?_ <;> linarith
@@ -50,23 +48,19 @@ theorem extendedSeiberg3_diag_gamma {γ a : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) 
 /-- The charge triple `(z, γ, z)` of the `R̄` representation. -/
 noncomputable def reflectionTriple (γ : ℝ) (z : ℂ) : Fin 3 → ℂ := ![z, (γ : ℂ), z]
 
-theorem differentiable_reflectionTriple (γ : ℝ) : Differentiable ℂ (reflectionTriple γ) := by
-  rw [differentiable_pi]
-  intro i
-  fin_cases i
-  · exact differentiable_id
-  · exact differentiable_const _
-  · exact differentiable_id
 
 theorem reflectionTriple_ofReal (γ t : ℝ) :
     reflectionTriple γ (t : ℂ) = complexifyNCharges ![t, γ, t] := by
   funext i
   fin_cases i <;> simp [reflectionTriple, complexifyNCharges]
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ)
+include P X M
+
 /-- **`R̄ = coefficient · C̄(a, γ, a)`** from the diagonal crossing, the holomorphic extension of
 `C̄`, and a residue-bridge limit with value `R`. -/
-theorem eq_rbarCoefficientReal_mul_of_bridge {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (M : Ω → Measure ℂ) {γ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
+theorem eq_rbarCoefficientReal_mul_of_bridge {γ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
     (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
     (hCross : ∀ ε a : ℝ, γ / 2 < ε → ε < 2 / γ → a < Q γ → 2 * Q γ < a + a + ε - γ / 2 →
       unitVolumeStructureConstant P M γ (a - γ / 2) ε a =
@@ -110,8 +104,8 @@ theorem eq_rbarCoefficientReal_mul_of_bridge {Ω : Type*} [MeasurableSpace Ω] (
         (ε - γ / 2) * crossingMultiplierReal γ ε a *
           unitVolumeStructureConstant P M γ a (ε + γ / 2) a := by
     filter_upwards [Ioo_mem_nhdsGT hlt] with ε hε
-    have hε₂ : ε < 2 / γ := lt_of_lt_of_le hε.2 (min_le_left _ _)
-    have hεa : ε < 2 * a - γ / 2 := lt_of_lt_of_le hε.2 (min_le_right _ _)
+    have hε₂ := lt_of_lt_of_le hε.2 (min_le_left _ _)
+    have hεa := lt_of_lt_of_le hε.2 (min_le_right _ _)
     rw [unitVolume_crossing_diag_continued P M hγ hε.1 hε₂
       (fun a' h1 h2 => hCross ε a' hε.1 hε₂ h1 h2) hV₃ hV₃mem hf₃ hf₃eq (by linarith) ha₂]
     ring
@@ -126,10 +120,8 @@ theorem eq_rbarCoefficientReal_mul_of_bridge {Ω : Type*} [MeasurableSpace Ω] (
       fun_prop
     · show Continuous fun _ : ℝ => ((a : ℝ) : ℂ)
       exact continuous_const
-  have hcurve0 : complexifyNCharges ![a, γ / 2 + γ / 2, a] = complexifyNCharges ![a, γ, a] := by
-    rw [add_halves]
-  have hf₃c : Tendsto (fun ε : ℝ => f₃ (complexifyNCharges ![a, ε + γ / 2, a])) (𝓝 (γ / 2))
-      (𝓝 (f₃ (complexifyNCharges ![a, γ, a]))) :=
+  have hcurve0 : complexifyNCharges ![a, γ / 2 + γ / 2, a] = complexifyNCharges ![a, γ, a] := by ring
+  have hf₃c :=
     (hf₃.differentiableAt (hV₃.mem_nhds (hV₃mem ![a, γ, a] hES0))).continuousAt.tendsto.comp
       (hcurve.tendsto' (γ / 2) _ hcurve0)
   have hval : (f₃ (complexifyNCharges ![a, γ, a])).re = unitVolumeStructureConstant P M γ a γ a :=
@@ -139,15 +131,13 @@ theorem eq_rbarCoefficientReal_mul_of_bridge {Ω : Type*} [MeasurableSpace Ω] (
     rw [← hval]
     refine (((Complex.continuous_re.tendsto _).comp hf₃c).mono_left nhdsWithin_le_nhds).congr' ?_
     filter_upwards [Ioo_mem_nhdsGT hlt] with ε hε
-    have hε₂ : ε < 2 / γ := lt_of_lt_of_le hε.2 (min_le_left _ _)
-    have hεa : ε < 2 * a - γ / 2 := lt_of_lt_of_le hε.2 (min_le_right _ _)
+    have := lt_of_lt_of_le hε.2 (min_le_right _ _)
     exact (congrArg Complex.re (hf₃eq ![a, ε + γ / 2, a]
-      (extendedSeiberg3_raise (a := a) hγ hε.1 hε₂ (by linarith) ha₂))).trans
+      (extendedSeiberg3_raise (a := a) hγ hε.1 (lt_of_lt_of_le hε.2 (min_le_left _ _)) (by linarith) ha₂))).trans
         (Complex.ofReal_re _)
-  have hRight := (tendsto_sub_mul_crossingMultiplierReal hγ hγ2 ha₁ ha₂).mul hRight0
-  have huniq := tendsto_nhds_unique (hLeft.congr' hev) hRight
+  have huniq := tendsto_nhds_unique (hLeft.congr' hev) ((tendsto_sub_mul_crossingMultiplierReal hγ hγ2 ha₁ ha₂).mul hRight0)
   rw [hmult] at huniq
-  have hp : 0 < reflectionExponent γ a := by
+  have : 0 < reflectionExponent γ a := by
     unfold reflectionExponent
     exact div_pos (by linarith) hγ
   have h2p : (2 : ℝ) * reflectionExponent γ a ≠ 0 := by positivity
@@ -160,8 +150,7 @@ given field and chaos, the unit-volume conjunct of `gammaHalf_crossing`, the con
 `unitVolumeStructureConstant_threeToTwo_residue_bridge`, and the conclusion of
 `unitVolumeStructureConstant_holomorphic_near_extended_domain`. -/
 theorem reflectionBarR_holomorphic_representation_of_deps
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (M : Ω → Measure ℂ) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
+ (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
     (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
     (hCross : ∀ μ α' ε α : ℝ, 0 < μ → γ / 2 < ε → ε < 2 / γ → α < Q γ → α' < Q γ →
       2 * Q γ < α + α' + ε - γ / 2 →
@@ -199,9 +188,16 @@ theorem reflectionBarR_holomorphic_representation_of_deps
                 (∀ α ∈ I,
                   rbarCoefficient γ (α : ℂ) * f (α : ℂ) =
                     (reflectionBarR P γ α (B α) Z : ℂ)) := by
+  have differentiable_reflectionTriple : Differentiable ℂ (reflectionTriple γ) := by
+    rw [differentiable_pi]
+    intro i
+    fin_cases i
+    · exact differentiable_id
+    · exact differentiable_const _
+    · exact differentiable_id
   obtain ⟨V₃, hV₃, hV₃mem, f₃, hf₃, hf₃eq⟩ := hHolo
   have hQ : Q γ = 2 / γ + γ / 2 := rfl
-  have hγh : γ / 2 < 2 / γ := by
+  have : γ / 2 < 2 / γ := by
     rw [div_lt_div_iff₀ (by norm_num) hγ]
     nlinarith
   -- the witnesses: one bridge datum, extended to a family over all charges below `Q`
@@ -232,23 +228,25 @@ theorem reflectionBarR_holomorphic_representation_of_deps
       hf₃eq h1 h2 hLim
   refine ⟨B, Z, hSLP, fun α hα => hB α (hI α hα).2,
     reflectionStrip γ ∩ reflectionTriple γ ⁻¹' V₃,
-    (isOpen_reflectionStrip γ).inter (hV₃.preimage (differentiable_reflectionTriple γ).continuous),
+    (isOpen_reflectionStrip γ).inter (hV₃.preimage (differentiable_reflectionTriple).continuous),
     fun α hα => ⟨⟨by rw [Complex.ofReal_re]; exact (hI α hα).1,
       by rw [Complex.ofReal_re]; exact (hI α hα).2⟩, by
         change reflectionTriple γ (α : ℂ) ∈ V₃
         rw [reflectionTriple_ofReal]
         exact hV₃mem ![α, γ, α] (extendedSeiberg3_diag_gamma hγ hγ2 (hI α hα).1 (hI α hα).2)⟩,
     fun z => f₃ (reflectionTriple γ z),
-    hf₃.comp (differentiable_reflectionTriple γ).differentiableOn fun _ hz => hz.2,
+    hf₃.comp (differentiable_reflectionTriple).differentiableOn fun _ hz => hz.2,
     fun α hα => hf α (hI α hα).1 (hI α hα).2,
     ((differentiableOn_rbarCoefficient hγ).mono inter_subset_left).mul
-      (hf₃.comp (differentiable_reflectionTriple γ).differentiableOn fun _ hz => hz.2),
+      (hf₃.comp (differentiable_reflectionTriple).differentiableOn fun _ hz => hz.2),
     fun α hα => ?_⟩
   beta_reduce
   rw [hf α (hI α hα).1 (hI α hα).2, hR α (hI α hα).1 (hI α hα).2, rbarCoefficient_ofReal]
   push_cast
   ring
 
+
+end
 end DOZZ.Proofs
 
 end

@@ -26,6 +26,6 @@ theorem fourPointT_zero_eq_structureConstant {Ω : Type*} [MeasurableSpace Ω]
     (hs : 2 * Q γ < α₁ + α₂ + α₃ - χ)
     (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M) :
     fourPointT P M γ μ (-χ) α₁ α₂ α₃ 0 =
-      structureConstant P M γ μ (α₁ - χ) α₂ α₃ := by exact DOZZ.Proofs.fourPointT_zero_eq_structureConstant P X M γ μ χ α₁ α₂ α₃ hγ hγ₂ hμ hα₁ hα₂ hα₃ hs hX hM
+      structureConstant P M γ μ (α₁ - χ) α₂ α₃ := DOZZ.Proofs.fourPointT_zero_eq_structureConstant P X M γ μ χ α₁ α₂ α₃ hγ hγ₂ hμ hα₁ hα₂ hα₃ hs hX hM
 
 end DOZZ

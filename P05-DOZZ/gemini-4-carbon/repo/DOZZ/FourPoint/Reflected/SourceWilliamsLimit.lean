@@ -52,10 +52,9 @@ theorem reflected_source_williams_increment_tendsto
   let Λ := (∫⁻ ω, rho γ (M ω) (2*Q γ-α₁-γ/2) α₂ α₃ ^(-(p+a)) ∂P).toReal
   let A := fun z ω => (gammaHalfOuterMass γ α₁ α₂ α₃ (M ω) z ξ).toReal
   let b := fun z => reflected_radial_scale γ ν h Xc z
-  let μ := brownianMaximumReferenceLaw ν
   let W := fun z : ℂ => ∫ v : Ω × (ℝ × Ω),
     (A z v.1+b z v.1*Real.exp (γ*v.2.1)*
-      (twoSidedReflectionCutMass γ v.2.1 B Z v.2.2).toReal)^(-p)-(A z v.1)^(-p) ∂P.prod (μ.prod P)
+      (twoSidedReflectionCutMass γ v.2.1 B Z v.2.2).toReal)^(-p)-(A z v.1)^(-p) ∂P.prod ((brownianMaximumReferenceLaw ν).prod P)
   let G := fun z : ℂ => ∫ v : Ω × Ω, (∫ w,
     (A z v.1+b z v.1*(twoSidedReflectionMass γ B Z v.2).toReal*w)^(-p)-(A z v.1)^(-p)
       ∂paretoMeasure 1 a) ∂P.prod P
@@ -69,7 +68,6 @@ theorem reflected_source_williams_increment_tendsto
   let Lcut := fun H : ℝ => c*Λ*(∫⁻ ω, twoSidedReflectionCutMass γ H B Z ω ^a ∂P).toReal
   have hp : 0 < p := div_pos (by linarith only [hs]) hγ
   have hBm := conditionedPair_aemeasurable P B ν hData.1
-  have hJm := (twoSidedReflectionMass_aemeasurable_of_lateral P γ B Z hBm hData.2.1).ennreal_toReal
   have hKm (H : ℝ) := (twoSidedReflectionCutMass_aemeasurable P γ H B Z hBm
     hData.2.1.2.2.2.1 hData.2.1.2.2.2.2.1).ennreal_toReal
   have hsmall : ∀ᶠ z : ℂ in 𝓝[≠] (0 : ℂ), z ≠ 0 ∧ z ≠ 1 ∧ ‖z‖ ≤ 1 := by
@@ -89,7 +87,7 @@ theorem reflected_source_williams_increment_tendsto
     have heJ := reflected_source_williams_pareto_integral P X hX γ hγ hγ₂ M hM Xc hc
       α₁ α₂ α₃ ξ h p hα₁ hα₂ hα₃ hh hp hξ hξ₁ B₀ hB₀
         (fun ω => (twoSidedReflectionMass γ B Z ω).toReal)
-        (ae_of_all P fun _ => ENNReal.toReal_nonneg) hJm z hz.1 hz.2.1 hz.2.2
+        (ae_of_all P fun _ => ENNReal.toReal_nonneg) ((twoSidedReflectionMass_aemeasurable_of_lateral P γ B Z hBm hData.2.1).ennreal_toReal) z hz.1 hz.2.1 hz.2.2
     have heK := reflected_source_williams_pareto_integral P X hX γ hγ hγ₂ M hM Xc hc
       α₁ α₂ α₃ ξ h p hα₁ hα₂ hα₃ hh hp hξ hξ₁ B₀ hB₀
         (fun ω => (twoSidedReflectionCutMass γ H B Z ω).toReal)
@@ -98,23 +96,19 @@ theorem reflected_source_williams_increment_tendsto
     rw [heJ,heK] at hbnd
     exact hbnd
   have hG : Tendsto (fun z : ℂ => G z/‖z‖^κ) (𝓝[≠] (0 : ℂ))
-      (𝓝 (c*Λ*reflectionBarR P γ α₁ B Z)) := by
-    exact reflected_source_pareto_increment_tendsto P X hX γ hγ hγ₂ M hM Xc hc
+      (𝓝 (c*Λ*reflectionBarR P γ α₁ B Z)) := reflected_source_pareto_increment_tendsto P X hX γ hγ hγ₂ M hM Xc hc
         α₁ α₂ α₃ ξ h hα₁ hreflect hα₂ hα₃ hh hs hξ hξ₁ B Z hData
-  have hK (H : ℝ) : Tendsto (fun z : ℂ => K H z/‖z‖^κ) (𝓝[≠] (0 : ℂ)) (𝓝 (Lcut H)) := by
-    exact reflected_source_pareto_cut_increment_tendsto P X hX γ hγ hγ₂ M hM Xc hc
+  have hK (H : ℝ) : Tendsto (fun z : ℂ => K H z/‖z‖^κ) (𝓝[≠] (0 : ℂ)) (𝓝 (Lcut H)) := reflected_source_pareto_cut_increment_tendsto P X hX γ hγ hγ₂ M hM Xc hc
       α₁ α₂ α₃ ξ h H hα₁ hreflect hα₂ hα₃ hh hs hξ hξ₁ B Z hData
-  have hL : Tendsto Lcut atTop (𝓝 (c*Λ*reflectionBarR P γ α₁ B Z)) := by
-    exact (reflected_cut_moment_tendsto P γ α₁ B Z hγ hγ₂ hα₁ hreflect hData).const_mul (c*Λ)
+  have hL : Tendsto Lcut atTop (𝓝 (c*Λ*reflectionBarR P γ α₁ B Z)) := (reflected_cut_moment_tendsto P γ α₁ B Z hγ hγ₂ hα₁ hreflect hData).const_mul (c*Λ)
   have hF : Tendsto (fun z : ℂ => F z/‖z‖^κ) (𝓝[≠] (0 : ℂ)) (𝓝 0) :=
     (isComplexLittleOAtZero_ofReal_iff (γ*(Q γ-α₁)) _).mp
       (reflected_first_order_radial_error_littleO P X hX γ hγ hγ₂ M hM Xc hc
         α₁ α₂ α₃ ξ h hh hξ hξ₁ hα₁ hreflect hs)
   have hE (H : ℝ) : Tendsto (fun z : ℂ => E H z/‖z‖^κ) (𝓝[≠] (0 : ℂ)) (𝓝 0) := by
-    have ht := hF.const_mul (p*Real.exp (γ*H)*J)
-    convert ht using 1
+    convert (hF.const_mul (p*Real.exp (γ*H)*J)) using 1
     · funext z; dsimp only [E]; ring
-    · rw [mul_zero]
+    · ring
   change Tendsto (fun z : ℂ => W z/‖z‖^κ) (𝓝[≠] (0 : ℂ)) (𝓝 (c*Λ*reflectionBarR P γ α₁ B Z))
   apply reflected_ordered_cut_squeeze _ _ (fun z => G z/‖z‖^κ)
     (fun H z => K H z/‖z‖^κ) (fun H z => E H z/‖z‖^κ) _ Lcut
@@ -123,7 +117,6 @@ theorem reflected_source_williams_increment_tendsto
     exact div_le_div_of_nonneg_right hz.1 (Real.rpow_nonneg (norm_nonneg z) κ)
   · intro H hH
     filter_upwards [hsand H hH] with z hz
-    have ht := div_le_div_of_nonneg_right hz.2 (Real.rpow_nonneg (norm_nonneg z) κ)
-    simpa only [add_div] using ht
+    simpa only [add_div] using div_le_div_of_nonneg_right hz.2 (Real.rpow_nonneg (norm_nonneg z) κ)
 
 end DOZZ.Proofs

@@ -10,16 +10,14 @@ open MeasureTheory
 open scoped ENNReal
 namespace DOZZ.Proofs
 
+section
+variable {Ω Λ α : Type*} [MeasurableSpace Ω] [MeasurableSpace Λ] [MeasurableSpace α] (P : Measure Ω) (R : Measure Λ) (A : Ω → α) (A' : Λ → α) (O : Ω → ℝ≥0∞) (O' : Λ → ℝ≥0∞) (hA : AEMeasurable A P) (hA' : AEMeasurable A' R) (hO : AEMeasurable O P) (hO' : AEMeasurable O' R) (hlaw : P.map (fun ω => (A ω,O ω)) = R.map (fun ω => (A' ω,O' ω))) (p : ℝ)
+include hA hA' hO hO' hlaw p
+
 /-- The copied exterior inherits positive real mass and its integrable inverse power
 from the actual source exterior, with exact expectation equality. -/
 theorem dual_joint_law_outer_inverse_data
-    {Ω Λ α : Type*} [MeasurableSpace Ω] [MeasurableSpace Λ] [MeasurableSpace α]
-    (P : Measure Ω) (R : Measure Λ) (A : Ω → α) (A' : Λ → α)
-    (O : Ω → ℝ≥0∞) (O' : Λ → ℝ≥0∞)
-    (hA : AEMeasurable A P) (hA' : AEMeasurable A' R)
-    (hO : AEMeasurable O P) (hO' : AEMeasurable O' R)
-    (hlaw : P.map (fun ω => (A ω,O ω)) = R.map (fun ω => (A' ω,O' ω)))
-    (p : ℝ) (hpos : ∀ᵐ ω ∂P, 0 < (O ω).toReal)
+ (hpos : ∀ᵐ ω ∂P, 0 < (O ω).toReal)
     (hInv : Integrable (fun ω => (O ω).toReal^(-p)) P) :
     (∀ᵐ ω ∂R, 0 < (O' ω).toReal) ∧
     Integrable (fun ω => (O' ω).toReal^(-p)) R ∧
@@ -32,7 +30,7 @@ theorem dual_joint_law_outer_inverse_data
   rw [hlaw] at hp
   let H : α × ℝ≥0∞ → ℝ := fun v => v.2.toReal^(-p)
   have hHm : Measurable H := measurable_snd.ennreal_toReal.pow_const (-p)
-  have hi : Integrable H (P.map (fun ω => (A ω,O ω))) :=
+  have hi :=
     (integrable_map_measure hHm.aestronglyMeasurable hpair).mpr hInv
   rw [hlaw] at hi
   have hi' := (integrable_map_measure hHm.aestronglyMeasurable hpair').mp hi
@@ -42,17 +40,13 @@ theorem dual_joint_law_outer_inverse_data
 
 /-- The extended-valued retained inverse expectation is preserved before real conversion. -/
 theorem dual_joint_law_outer_inverse_lintegral
-    {Ω Λ α : Type*} [MeasurableSpace Ω] [MeasurableSpace Λ] [MeasurableSpace α]
-    (P : Measure Ω) (R : Measure Λ) (A : Ω → α) (A' : Λ → α)
-    (O : Ω → ℝ≥0∞) (O' : Λ → ℝ≥0∞)
-    (hA : AEMeasurable A P) (hA' : AEMeasurable A' R)
-    (hO : AEMeasurable O P) (hO' : AEMeasurable O' R)
-    (hlaw : P.map (fun ω => (A ω,O ω)) = R.map (fun ω => (A' ω,O' ω)))
-    (p : ℝ) :
+ :
     (∫⁻ ω, O ω^(-p) ∂P) = ∫⁻ ω, O' ω^(-p) ∂R := by
   let H : α × ℝ≥0∞ → ℝ≥0∞ := fun v => v.2^(-p)
   have hH : Measurable H := measurable_snd.pow_const (-p)
   rw [← lintegral_map' hH.aemeasurable (hA.prodMk hO),
     ← lintegral_map' hH.aemeasurable (hA'.prodMk hO'), hlaw]
 
+
+end
 end DOZZ.Proofs

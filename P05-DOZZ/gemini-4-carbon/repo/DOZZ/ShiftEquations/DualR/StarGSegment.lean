@@ -126,10 +126,8 @@ theorem starG_segment {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω
   have hstart : ∀ᶠ t : ℝ in 𝓝[>] 0, F t = G t := by
     filter_upwards [nhdsWithin_le_nhds hnear, Ioo_mem_nhdsGT (show (0 : ℝ) < 1 by norm_num)]
       with t ht hI
-    have hE₁ := extendedSeiberg3_segment hγ hS3 hP1 hI.1.le hI.2.le
-    have hE₂ := extendedSeiberg3_segment hγ hS2 hP2 hI.1.le hI.2.le
     simp only [hF, hG]
-    rw [segH_ofReal P M hμ hf₃eq hE₁, segH_ofReal P M hμ hf₃eq hE₂, segC_ofReal, segC_ofReal,
+    rw [segH_ofReal P M hμ hf₃eq (extendedSeiberg3_segment hγ hS3 hP1 hI.1.le hI.2.le), segH_ofReal P M hμ hf₃eq (extendedSeiberg3_segment hγ hS2 hP2 hI.1.le hI.2.le), segC_ofReal, segC_ofReal,
       segC_ofReal, segC_ofReal,
       show 2 * Q γ - es - 2 / γ + t * (2 * Q γ - ef - 2 / γ - (2 * Q γ - es - 2 / γ)) =
         2 * Q γ - (es + t * (ef - es)) - 2 / γ by ring,

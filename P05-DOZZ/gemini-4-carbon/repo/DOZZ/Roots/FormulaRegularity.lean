@@ -9,7 +9,6 @@ import Mathlib.Analysis.SpecialFunctions.Gamma.Deriv
 import Mathlib.Analysis.SpecialFunctions.Gamma.Beta
 /-! # Regularity at pole-free extended charges -/
 @[expose] public section
-open Complex Set
 namespace DOZZ.Proofs
 /-- Every denominator factor of the DOZZ expression is nonzero at finite extended charges. -/
 theorem roots_dozz_denominator_ne_zero {γ a b c : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
@@ -27,7 +26,7 @@ theorem roots_dozz_denominator_ne_zero {γ a b c : ℝ} (hγ : 0 < γ) (hγ2 : �
   have h2 := hu ((a + b + c) / 2 - b) (by linarith only [ht2]) (by linarith only [h.1, h.2.2.1, hb])
   have h3 := hu ((a + b + c) / 2 - c) (by linarith only [ht3]) (by linarith only [h.1, h.2.1, hc])
   norm_cast at h0 h1 h2 h3 ⊢
-  exact mul_ne_zero (mul_ne_zero (mul_ne_zero h0 h1) h2) h3
+  positivity
 /-- The normalized DOZZ expression is analytic along a charge curve at each finite extended triple. -/
 theorem roots_formula_line_analyticAt {γ μ : ℝ} {U : ℂ → ℂ}
     (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ) (hU : IsUpsilon γ U)

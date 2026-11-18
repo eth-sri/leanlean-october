@@ -25,7 +25,7 @@ theorem fourPointMoment_jointly_continuous_parameters
   obtain ⟨Xc, hXc⟩ := exists_equatorGFF_circle_average_witness X hX
   let J : (ℝ × (Fin 4 → ℝ)) → ContinuityCoulombParameter 3 :=
     fun q => (q.1, (![z, 0, 1], ![q.2 0, q.2 1, q.2 2], q.2 3))
-  have hJ : Continuous J := by unfold J; fun_prop
+  have hJ : Continuous J := by fun_prop
   have hp (q : ℝ × (Fin 4 → ℝ)) : continuityCoulombPower (J q) = -nPointSExp q.1 q.2 := by
     simp [continuityCoulombPower, J, nPointSExp, Fin.sum_univ_three, Fin.sum_univ_four]
     ring

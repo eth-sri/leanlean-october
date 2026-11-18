@@ -25,75 +25,55 @@ namespace DOZZ.Proofs
 /-- The Brownian heat density is integrable for every positive time. -/
 theorem integrable_brownianHeatDensity {t : ℝ} (ht : 0 < t) :
     Integrable (brownianHeatDensity t) (volume : Measure ℝ) := by
-  have hsqrt : 0 < Real.sqrt (2 * Real.pi * t) := by positivity
   have hcoef : 0 < 1 / (2 * t) := by positivity
-  have hbase : Integrable (fun x : ℝ => Real.exp (-(1 / (2 * t)) * x ^ 2))
-      (volume : Measure ℝ) := integrable_exp_neg_mul_sq hcoef
-  have hmul := hbase.mul_const ((Real.sqrt (2 * Real.pi * t))⁻¹)
-  refine hmul.congr ?_
+  refine ((integrable_exp_neg_mul_sq hcoef).mul_const ((Real.sqrt (2 * Real.pi * t))⁻¹)).congr ?_
   filter_upwards [] with x
   change Real.exp (-(1 / (2 * t)) * x ^ 2) * (Real.sqrt (2 * Real.pi * t))⁻¹ =
     (if 0 < t then Real.exp (-(x ^ 2) / (2 * t)) / Real.sqrt (2 * Real.pi * t)
       else 0)
   rw [ite_eq_left ht, div_eq_mul_inv]
-  congr 1
-  field_simp [ht.ne', hsqrt.ne']
+  ring
 
-/-- The heat density has total mass one. -/
-theorem integral_brownianHeatDensity {t : ℝ} (ht : 0 < t) :
-    ∫ x : ℝ, brownianHeatDensity t x = 1 := by
-  have hsqrt : 0 < Real.sqrt (2 * Real.pi * t) := by positivity
-  have hfun : (fun x : ℝ => brownianHeatDensity t x) =
-      (fun x => Real.exp (-(1 / (2 * t)) * x ^ 2) * (Real.sqrt (2 * Real.pi * t))⁻¹) := by
-    funext x
-    change (if 0 < t then Real.exp (-(x ^ 2) / (2 * t)) / Real.sqrt (2 * Real.pi * t)
-        else 0) = _
-    rw [ite_eq_left ht, div_eq_mul_inv]
-    congr 1
-    field_simp [ht.ne', hsqrt.ne']
-  rw [hfun, integral_mul_const]
-  rw [integral_gaussian]
-  have hroot : Real.sqrt (Real.pi / (1 / (2 * t))) = Real.sqrt (2 * Real.pi * t) := by
-    congr 1
-    field_simp [ht.ne']
-  rw [hroot]
-  field_simp [hsqrt.ne']
 
-private theorem volume_map_add_right (a : ℝ) :
-    (volume : Measure ℝ).map (fun x : ℝ => x + a) = volume :=
-  Measure.IsAddRightInvariant.map_add_right_eq_self a
 
-/-- Translating a heat density does not change its full-line integral. -/
-theorem integral_brownianHeatDensity_translate {t a : ℝ} (ht : 0 < t) :
-    ∫ x : ℝ, brownianHeatDensity t (x + a) = 1 := by
-  let e : ℝ ≃ᵐ ℝ := (Homeomorph.addRight a).toMeasurableEquiv
-  have he : MeasurableEmbedding (fun x : ℝ => x + a) :=
-    (Homeomorph.addRight a).isClosedEmbedding.measurableEmbedding
-  calc
-    ∫ x : ℝ, brownianHeatDensity t (x + a) =
-        ∫ y : ℝ, brownianHeatDensity t y ∂((volume : Measure ℝ).map e) := by
-          symm
-          exact he.integral_map (brownianHeatDensity t)
-    _ = ∫ y : ℝ, brownianHeatDensity t y := by
-          rw [show (volume : Measure ℝ).map e = volume by
-            exact volume_map_add_right a]
-    _ = 1 := integral_brownianHeatDensity ht
 
 /-- A reflected pair of translates of a normalized even density has total half-line mass one. -/
 theorem integral_brownianHeatDensity_halfline_pair {t a : ℝ} (ht : 0 < t) :
     (∫ y in Set.Ioi 0, brownianHeatDensity t (y - a) ∂(volume : Measure ℝ)) +
       ∫ y in Set.Ioi 0, brownianHeatDensity t (y + a) ∂(volume : Measure ℝ) = 1 := by
+  have volume_map_add_right (a : ℝ) : (volume : Measure ℝ).map (fun x : ℝ => x + a) = volume := 
+    Measure.IsAddRightInvariant.map_add_right_eq_self a
+  have integral_brownianHeatDensity_translate {t a : ℝ} (ht : 0 < t) : ∫ x : ℝ, brownianHeatDensity t (x + a) = 1 := by
+    have integral_brownianHeatDensity : ∫ x : ℝ, brownianHeatDensity t x = 1 := by
+      have hsqrt : 0 < Real.sqrt (2 * Real.pi * t) := by positivity
+      have hfun : (fun x : ℝ => brownianHeatDensity t x) =
+          (fun x => Real.exp (-(1 / (2 * t)) * x ^ 2) * (Real.sqrt (2 * Real.pi * t))⁻¹) := by
+        funext x
+        change (if 0 < t then Real.exp (-(x ^ 2) / (2 * t)) / Real.sqrt (2 * Real.pi * t)
+            else 0) = _
+        rw [ite_eq_left ht, div_eq_mul_inv]
+        congr 1
+        field_simp [ht.ne', hsqrt.ne']
+      rw [hfun, integral_mul_const]
+      rw [integral_gaussian]
+      field_simp [hsqrt.ne']
+    let e := (Homeomorph.addRight a).toMeasurableEquiv
+    calc
+      ∫ x : ℝ, brownianHeatDensity t (x + a) =
+          ∫ y : ℝ, brownianHeatDensity t y ∂((volume : Measure ℝ).map e) := by
+            symm
+            exact ((Homeomorph.addRight a).isClosedEmbedding.measurableEmbedding).integral_map (brownianHeatDensity t)
+      _ = ∫ y : ℝ, brownianHeatDensity t y := by
+            rw [show (volume : Measure ℝ).map e = volume by
+              exact volume_map_add_right a]
+      _ = 1 := integral_brownianHeatDensity
   have hshiftInt : Integrable (fun y : ℝ => brownianHeatDensity t (y - a))
       (volume : Measure ℝ) := by
-    have he : MeasurableEmbedding (fun y : ℝ => y + -a) :=
-      (Homeomorph.addRight (-a)).isClosedEmbedding.measurableEmbedding
-    have hmap : (volume : Measure ℝ).map (fun y : ℝ => y + -a) = volume :=
-      volume_map_add_right (-a)
     have hmapInt : Integrable (brownianHeatDensity t)
         ((volume : Measure ℝ).map (fun y : ℝ => y + -a)) := by
-      rw [hmap]
+      rw [volume_map_add_right (-a)]
       exact integrable_brownianHeatDensity ht
-    exact he.integrable_map_iff.mp hmapInt
+    exact ((Homeomorph.addRight (-a)).isClosedEmbedding.measurableEmbedding).integrable_map_iff.mp hmapInt
   have hreflect :
       (∫ y in Set.Ioi 0, brownianHeatDensity t (y + a) ∂(volume : Measure ℝ)) =
         ∫ y in Set.Iic 0, brownianHeatDensity t (y - a) ∂(volume : Measure ℝ) := by

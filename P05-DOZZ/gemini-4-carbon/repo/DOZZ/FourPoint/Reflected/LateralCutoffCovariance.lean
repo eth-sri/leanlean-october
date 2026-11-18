@@ -21,9 +21,12 @@ open MeasureTheory ProbabilityTheory Set
 
 namespace DOZZ.Proofs
 
+variable {Ω : Type*} [MeasurableSpace Ω]
+
+
 /-- The radial point kernel on a lateral chart is the actual unclamped origin covariance. -/
 theorem reflected_clamped_point_covariance_eq
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
+ (P : Measure Ω) (X : Ω → Distr)
     (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (ρ : ℝ) (hρ : 0 < ρ) (x y : ℂ)
     (hx : x ∈ originLateralChart ρ) (hy : y ∈ originLateralChart ρ) :
@@ -38,7 +41,7 @@ theorem reflected_clamped_point_covariance_eq
 
 /-- Actual finite cutoff covariances tend uniformly to the lateral plane kernel off diagonal. -/
 theorem reflected_lateral_cutoff_uniform
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
+ (P : Measure Ω) (X : Ω → Distr)
     (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
     (ρ : ℝ) (hρ : 0 < ρ) (K : Set ℂ) (hK : IsCompact K)
@@ -90,7 +93,7 @@ theorem reflected_lateral_cutoff_uniform
 
 /-- The actual cutoff cross-covariance bound is the radius ratio plus an arbitrary cutoff error. -/
 theorem reflected_lateral_cutoff_cross_bound
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
+ (P : Measure Ω) (X : Ω → Distr)
     (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
     (ρ : ℝ) (hρ : 0 < ρ) (K : Set ℂ) (hK : IsCompact K)

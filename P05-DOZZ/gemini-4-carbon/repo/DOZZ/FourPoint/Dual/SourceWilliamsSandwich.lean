@@ -36,7 +36,7 @@ theorem dual_source_williams_expectation_sandwich
       (∫ v, E (fun q => (twoSidedReflectionCutMass γ c B Z q.2).toReal) v ∂P.prod R) +
       p*Real.exp (γ*c)*(∫ ω, b ω*(A ω)^(-p-1) ∂P)*
         (∫ ω, (twoSidedReflectionMass γ B Z ω).toReal ∂P) := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _ := hX.1
   let _ := isProbabilityMeasure_brownianMaximumReferenceLaw (sub_pos.mpr hα₁)
   let A := fun ω => (dualOuterMass γ α₁ α₂ α₃ (M ω) z ξ).toReal
   let b := dual_radial_scale γ (Q γ-α₁) h Xc z
@@ -44,17 +44,16 @@ theorem dual_source_williams_expectation_sandwich
   have hr : ‖z‖^(1-ξ) ≤ 1 := by
     simpa only [Real.one_rpow] using Real.rpow_le_rpow (norm_nonneg z) hz
       (sub_nonneg.mpr hξ1.le)
-  have hA : ∀ᵐ ω ∂P, 0 < A ω :=
+  have hA :=
     (dual_source_outerMass_positive_finite_ae P X hX γ hγ hγ₂ M hM
       α₁ α₂ α₃ ξ hα₁ hα₂ hα₃ z hz0 hz1 hz hr).mono
         (fun ω hω => ENNReal.toReal_pos hω.1.ne' hω.2.ne)
-  have hAm : AEMeasurable A P :=
+  have hAm :=
     ((dual_outerMass_measure_measurable γ α₁ α₂ α₃ ξ z).comp_aemeasurable
       (equatorGFF_GMC_aemeasurable P X hX γ hγ hγ₂ M hM)).ennreal_toReal
-  have hcoord := (hc.2.1 0 (-Real.log ‖z‖+h)).aemeasurable
   have hbm : AEMeasurable b P := by
     dsimp only [b, dual_radial_scale]
-    exact ((hcoord.const_mul γ).sub aemeasurable_const).sub aemeasurable_const |>.exp
+    exact ((((hc.2.1 0 (-Real.log ‖z‖+h)).aemeasurable).const_mul γ).sub aemeasurable_const).sub aemeasurable_const |>.exp
   have hInv : Integrable (fun ω => (A ω)^(-p)) P := by
     have hi := (dual_radial_scale_real_expectation P X hX γ hγ hγ₂ M hM Xc hc
       (Q γ-α₁) h 0 α₁ α₂ α₃ ξ p hh hξ hξ1 hp.le z hz0 hz).1
@@ -62,15 +61,13 @@ theorem dual_source_williams_expectation_sandwich
   have h4 : 1 < 4/γ^2 := by
     rw [lt_div_iff₀ (sq_pos_of_pos hγ)]
     nlinarith only [hγ, hγ₂]
-  have hJ₀ := reflected_reflection_real_moment P γ α₁ 1 B Z hα₁ hData h4
   have hJ : Integrable (fun ω => (twoSidedReflectionMass γ B Z ω).toReal) P := by
-    simpa only [Real.rpow_one] using hJ₀.1
+    simpa only [Real.rpow_one] using (reflected_reflection_real_moment P γ α₁ 1 B Z hα₁ hData h4).1
   have hJm := (twoSidedReflectionMass_aemeasurable_of_lateral P γ B Z
     (aemeasurable_of_twoSidedConditioned hData.1) hData.2.1).ennreal_toReal
   have hJcm := (twoSidedReflectionCutMass_aemeasurable P γ c B Z
     (aemeasurable_of_twoSidedConditioned hData.1) hData.2.1.2.2.2.1
       hData.2.1.2.2.2.2.1).ennreal_toReal
-  have hjm := dual_williams_cut_real_aemeasurable P γ α₁ hα₁ B Z hData
   have hJfin := reflected_reflection_mass_positive_finite_ae P γ α₁ B Z
     hγ hγ₂ hα₁ hData
   have hcut : ∀ᵐ q : ℝ × Ω ∂R,
@@ -93,7 +90,7 @@ theorem dual_source_williams_expectation_sandwich
     (fun q => (twoSidedReflectionCutMass γ c B Z q.2).toReal)
     (fun q => (twoSidedReflectionCutMass γ q.1 B Z q.2).toReal)
     hA (ae_of_all _ (fun _ => (Real.exp_pos _).le)) hcut hAm hbm
-    measurable_fst.aemeasurable hJm.comp_snd hJcm.comp_snd hjm hInv hF (hJ.comp_snd _)
+    measurable_fst.aemeasurable hJm.comp_snd hJcm.comp_snd (dual_williams_cut_real_aemeasurable P γ α₁ hα₁ B Z hData) hInv hF (hJ.comp_snd _)
   have he : (∫ q : ℝ × Ω, (twoSidedReflectionMass γ B Z q.2).toReal ∂R) =
       ∫ ω, (twoSidedReflectionMass γ B Z ω).toReal ∂P := by
     simpa only [probReal_univ, one_smul] using

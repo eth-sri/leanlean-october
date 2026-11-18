@@ -22,16 +22,17 @@ it uniformly as the circles shrink.
 
 @[expose] public section
 
+noncomputable section
 open MeasureTheory Set Filter Topology Metric
 
 namespace DOZZ.Proofs
 
 /-- The potential `c(x) = ∫ G(x,u) dσ_{b,|a|}(u)` of the repinning circle. -/
-noncomputable def repinPotential (a b : ℂ) (x : ℂ) : ℝ :=
+def repinPotential (a b : ℂ) (x : ℂ) : ℝ :=
   ∫ u, gffKernel x u ∂circleMeasure b (-Real.log ‖a‖)
 
 /-- The unit-circle average `κ` of the affine defect. -/
-noncomputable def repinKappa (a b : ℂ) : ℝ :=
+def repinKappa (a b : ℂ) : ℝ :=
   ∫ u, affineDefect a b u ∂circleMeasure 0 0
 
 /-- The repinning circle is the affine image of the unit circle. -/
@@ -40,41 +41,18 @@ theorem circleMeasure_repin (a b : ℂ) (ha : a ≠ 0) :
   rw [circleMeasure_map_affine a b ha 0 0]
   simp
 
-/-- The unit circle carries no atoms. -/
-theorem circleMeasure_zero_singleton (y : ℂ) : circleMeasure 0 0 {y} = 0 := by
-  have hcount : (circleMap 0 (Real.exp (-0)) ⁻¹' {y}).Countable := by
-    by_cases hne : (circleMap 0 (Real.exp (-0)) ⁻¹' {y}).Nonempty
-    · obtain ⟨θ₀, hθ₀⟩ := hne
-      refine (Set.countable_range fun n : ℤ => θ₀ + n * (2 * Real.pi)).mono ?_
-      intro θ hθ
-      simp only [Set.mem_preimage, Set.mem_singleton_iff, neg_zero, Real.exp_zero,
-        circleMap_zero, Complex.ofReal_one, one_mul] at hθ hθ₀
-      obtain ⟨n, hn⟩ := Complex.exp_eq_exp_iff_exists_int.1 (hθ.trans hθ₀.symm)
-      refine ⟨n, ?_⟩
-      have := congrArg Complex.im hn
-      simp only [Complex.mul_im, Complex.ofReal_re, Complex.I_im, mul_one, Complex.ofReal_im,
-        Complex.I_re, mul_zero, sub_zero, Complex.add_im, Complex.intCast_re,
-        Complex.intCast_im, zero_mul, add_zero, Complex.mul_re, Complex.re_ofNat,
-        Complex.im_ofNat] at this
-      linarith
-    · rw [Set.not_nonempty_iff_eq_empty] at hne
-      rw [hne]
-      exact Set.countable_empty
-  rw [circleMeasure, Measure.smul_apply, Measure.map_apply (measurable_circleMap _ _)
-    (measurableSet_singleton y), Measure.restrict_apply' measurableSet_Ioc,
-    measure_mono_null Set.inter_subset_left (hcount.measure_zero _), smul_zero]
 
 /-- The unit circle measure is a probability measure. -/
 theorem circleMeasure_zero_zero_isProbability : IsProbabilityMeasure (circleMeasure 0 0) :=
   circleMeasure_isProbability 0 0
 
-/-- Almost every point of the unit circle differs from a given point. -/
-theorem ae_ne_circleMeasure_zero (y : ℂ) : ∀ᵐ u ∂circleMeasure 0 0, u ≠ y := by
-  rw [ae_iff]
-  simpa only [ne_eq, not_not, Set.ofPred_eq_eq_singleton] using circleMeasure_zero_singleton y
+
+section
+variable (a b : ℂ) (ha : a ≠ 0)
+include b ha
 
 /-- The affine defect is integrable on every circle. -/
-theorem integrable_affineDefect_circleMeasure (a b : ℂ) (ha : a ≠ 0) (x : ℂ) (r : ℝ) :
+theorem integrable_affineDefect_circleMeasure (x : ℂ) (r : ℝ) :
     Integrable (affineDefect a b) (circleMeasure x r) := by
   have _ := circleMeasure_isProbability x r
   obtain ⟨C, hC⟩ := exists_abs_affineDefect_le a b ha
@@ -82,8 +60,33 @@ theorem integrable_affineDefect_circleMeasure (a b : ℂ) (ha : a ≠ 0) (x : �
     (ae_of_all _ fun y => by rw [Real.norm_eq_abs]; exact hC y)
 
 /-- **The repinning potential through the affine map** is the defect plus its unit average. -/
-theorem repinPotential_affine (a b : ℂ) (ha : a ≠ 0) (y : ℂ) :
+theorem repinPotential_affine (y : ℂ) :
     repinPotential a b (a * y + b) = affineDefect a b y + repinKappa a b := by
+  have ae_ne_circleMeasure_zero : ∀ᵐ u ∂circleMeasure 0 0, u ≠ y := by
+    have circleMeasure_zero_singleton : circleMeasure 0 0 {y} = 0 := by
+      have hcount : (circleMap 0 (Real.exp (-0)) ⁻¹' {y}).Countable := by
+        by_cases hne : (circleMap 0 (Real.exp (-0)) ⁻¹' {y}).Nonempty
+        · obtain ⟨θ₀, hθ₀⟩ := hne
+          refine (Set.countable_range fun n : ℤ => θ₀ + n * (2 * Real.pi)).mono ?_
+          intro θ hθ
+          simp only [Set.mem_preimage, Set.mem_singleton_iff, neg_zero, Real.exp_zero,
+            circleMap_zero, Complex.ofReal_one, one_mul] at hθ hθ₀
+          obtain ⟨n, hn⟩ := Complex.exp_eq_exp_iff_exists_int.1 (hθ.trans hθ₀.symm)
+          refine ⟨n, ?_⟩
+          have := congrArg Complex.im hn
+          simp only [Complex.mul_im, Complex.ofReal_re, Complex.I_im, mul_one, Complex.ofReal_im,
+            Complex.I_re, mul_zero, sub_zero, Complex.add_im, Complex.intCast_re,
+            Complex.intCast_im, zero_mul, add_zero, Complex.mul_re, Complex.re_ofNat,
+            Complex.im_ofNat] at this
+          linarith
+        · rw [Set.not_nonempty_iff_eq_empty] at hne
+          rw [hne]
+          exact Set.countable_empty
+      rw [circleMeasure, Measure.smul_apply, Measure.map_apply (measurable_circleMap _ _)
+        (measurableSet_singleton y), Measure.restrict_apply' measurableSet_Ioc,
+        measure_mono_null Set.inter_subset_left (hcount.measure_zero _), smul_zero]
+    rw [ae_iff]
+    simpa only [ne_eq, not_not, Set.ofPred_eq_eq_singleton] using circleMeasure_zero_singleton
   have _ := circleMeasure_zero_zero_isProbability
   have hmeas : Measurable (fun u => gffKernel (a * y + b) u) :=
     CirclePotential.measurable_gffKernel _
@@ -91,9 +94,9 @@ theorem repinPotential_affine (a b : ℂ) (ha : a ≠ 0) (y : ℂ) :
   rw [circleMeasure_repin a b ha, integral_map (by fun_prop) hmeas.aestronglyMeasurable]
   have hae : (fun u => gffKernel (a * y + b) (a * u + b)) =ᵐ[circleMeasure 0 0]
       fun u => gffKernel y u + affineDefect a b y + affineDefect a b u := by
-    filter_upwards [ae_ne_circleMeasure_zero y] with u hu
+    filter_upwards [ae_ne_circleMeasure_zero] with u hu
     exact gffKernel_affine a b ha (Ne.symm hu)
-  have hG : Integrable (fun u => gffKernel y u) (circleMeasure 0 0) :=
+  have hG :=
     integrable_gffKernel_circleMeasure 0 y 0
   have hGc : Integrable (fun u => gffKernel y u + affineDefect a b y) (circleMeasure 0 0) :=
     hG.add (integrable_const _)
@@ -102,8 +105,10 @@ theorem repinPotential_affine (a b : ℂ) (ha : a ≠ 0) (y : ℂ) :
     probReal_univ, one_smul, zero_add]
   rfl
 
+
+end
 /-- The constant part of the repinning potential. -/
-noncomputable def repinConst (a b : ℂ) : ℝ :=
+def repinConst (a b : ℂ) : ℝ :=
   ∫ w, Real.log (normPlus w) ∂circleMeasure b (-Real.log ‖a‖)
 
 /-- Closed form of the repinning potential. -/
@@ -212,19 +217,19 @@ theorem exists_abs_repinPotential_le (a b : ℂ) (ha : a ≠ 0) :
       have : 1 ≤ normPlus x := le_max_left _ _
       nlinarith [norm_nonneg a, norm_nonneg b]
     have h2 : ‖b - x‖ ≤ (‖a‖ + ‖b‖ + 1) * normPlus x := by
-      have hx : ‖x‖ ≤ normPlus x := le_max_right _ _
-      have h1x : 1 ≤ normPlus x := le_max_left _ _
+      have : ‖x‖ ≤ normPlus x := le_max_right _ _
+      have : 1 ≤ normPlus x := le_max_left _ _
       have := norm_sub_le b x
       nlinarith [norm_nonneg a, norm_nonneg b, norm_nonneg x]
     exact max_le h1 h2
-  have hl1 : Real.log N - Real.log A ≤ Real.log K₁ := by
+  have : Real.log N - Real.log A ≤ Real.log K₁ := by
     rw [← Real.log_div hNpos.ne' hApos.ne']
     exact Real.log_le_log (div_pos hNpos hApos) ((div_le_iff₀ hApos).mpr hNA)
-  have hl2 : Real.log A - Real.log N ≤ Real.log K₂ := by
+  have : Real.log A - Real.log N ≤ Real.log K₂ := by
     rw [← Real.log_div hApos.ne' hNpos.ne']
     exact Real.log_le_log (div_pos hApos hNpos) ((div_le_iff₀ hNpos).mpr hAN)
-  have hK₁0 : 0 ≤ Real.log K₁ := Real.log_nonneg hK₁1
-  have hK₂0 : 0 ≤ Real.log K₂ := Real.log_nonneg hK₂1
+  have := Real.log_nonneg hK₁1
+  have := Real.log_nonneg hK₂1
   calc |-Real.log A + Real.log N + repinConst a b|
       ≤ |Real.log N - Real.log A| + |repinConst a b| := by
         rw [show -Real.log A + Real.log N + repinConst a b =
@@ -262,8 +267,12 @@ theorem abs_integral_circleMeasure_sub_le {g : ℂ → ℝ} {K : ℝ}
         rwa [hu] at this
     _ = K * Real.exp (-r) := by rw [integral_const, probReal_univ, one_smul]
 
+section
+variable (a b : ℂ) (ha : a ≠ 0)
+include b ha
+
 /-- **Uniform convergence** of the circle averages of the repinning potential. -/
-theorem tendstoUniformly_repinPotential (a b : ℂ) (ha : a ≠ 0) :
+theorem tendstoUniformly_repinPotential :
     TendstoUniformly (fun (r : ℝ) (x : ℂ) => ∫ u, repinPotential a b u ∂circleMeasure x r)
       (repinPotential a b) atTop := by
   rw [Metric.tendstoUniformly_iff]
@@ -277,19 +286,20 @@ theorem tendstoUniformly_repinPotential (a b : ℂ) (ha : a ≠ 0) :
 
 
 /-- **The self-energy of the repinning circle** is `2κ`. -/
-theorem repin_selfEnergy (a b : ℂ) (ha : a ≠ 0) :
+theorem repin_selfEnergy :
     ∫ u, ∫ v, gffKernel u v ∂circleMeasure b (-Real.log ‖a‖) ∂circleMeasure b (-Real.log ‖a‖) =
       2 * repinKappa a b := by
   have _ := circleMeasure_zero_zero_isProbability
   change ∫ u, repinPotential a b u ∂circleMeasure b (-Real.log ‖a‖) = _
-  have hmeas : Measurable (repinPotential a b) := (continuous_repinPotential a b ha).measurable
-  rw [circleMeasure_repin a b ha, integral_map (by fun_prop) hmeas.aestronglyMeasurable]
+  rw [circleMeasure_repin a b ha, integral_map (by fun_prop) ((continuous_repinPotential a b ha).measurable).aestronglyMeasurable]
   simp_rw [repinPotential_affine a b ha]
   rw [integral_add (integrable_affineDefect_circleMeasure a b ha 0 0) (integrable_const _),
     integral_const, probReal_univ, one_smul]
   unfold repinKappa
   ring
 
+
+end
 end DOZZ.Proofs
 
 end

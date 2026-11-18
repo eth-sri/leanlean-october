@@ -30,13 +30,12 @@ theorem gmc_inversion_annular_test_vector_law
     (hfU : ∀ j, tsupport (f j : ℂ → ℝ) ⊆ U) :
     P.map (fun ω j => ∫ x, f j x ∂(M ω).map (fun z : ℂ => z⁻¹)) =
       P.map (fun ω j => ∫ x, f j x ∂M ω) := by
-  let : IsProbabilityMeasure P := hX.1
+  let := hX.1
   obtain ⟨Xc, hXc, _hconv⟩ := hM.2
   obtain ⟨g, hg, Z, N, hgap, hmem, hlim, hZ, hN, hNae⟩ :=
     isGMCOf_inversion_annular_version P X hX γ hγ hγ2 M hM Xc hXc U hUopen hm hR hU
   obtain ⟨A, hA, _hAfin, hAae⟩ :=
     isGMCOf_restrict_admissible_version P X hX γ hγ hγ2 M hM Xc hXc U hUopen
-  have hY := isCircleAverage_admissible P X hX Xc hXc U hUopen
   let : IsFiniteMeasure gmcReferenceMeasure := ⟨lt_top_iff_ne_top.mpr gmcReferenceMeasure_univ_ne_top⟩
   have href : logRegularizationReference U (fun x => normPlus x ^ (-4 : ℝ)) =
       gmcReferenceMeasure.restrict U := by
@@ -48,8 +47,7 @@ theorem gmc_inversion_annular_test_vector_law
     infer_instance
   have hfdd ε (_hε : 0 < ε) (_hεb : ε ≤ min (min (m / 2) 1) 1) n (xs : Fin n → ℂ) :
       P.map (fun ω i => Z ω (xs i) (Real.log (1 / ε))) =
-      P.map (fun ω i => Xc ω (xs i) (Real.log (1 / ε))) := by
-    exact inversionCircle_fdd_law P X hX P X hX Xc hXc
+      P.map (fun ω i => Xc ω (xs i) (Real.log (1 / ε))) := inversionCircle_fdd_law P X hX P X hX Xc hXc
       (fun i => (xs i, Real.log (1 / ε)))
       (fun i ω => Z ω (xs i) (Real.log (1 / ε))) (fun i => hmem _ _)
       (fun i => g (xs i, Real.log (1 / ε))) (fun i => hg _)
@@ -57,8 +55,8 @@ theorem gmc_inversion_annular_test_vector_law
   have hlaw := admissibleLogChaos_limit_vector_law_of_fdd P P U
     (fun x => normPlus x ^ (-4 : ℝ)) (min (m / 2) 1) 1
     (fun ω ε x => Z ω x (Real.log (1 / ε)))
-    (fun ω ε x => Xc ω x (Real.log (1 / ε))) hZ hY γ N A hN hA hfdd f hfc hfU
-  have heq (μ : Measure ℂ) (j : Fin k) : ∫ x, f j x ∂μ.restrict U = ∫ x, f j x ∂μ :=
+    (fun ω ε x => Xc ω x (Real.log (1 / ε))) hZ (isCircleAverage_admissible P X hX Xc hXc U hUopen) γ N A hN hA hfdd f hfc hfU
+  have heq (μ : Measure ℂ) (j : Fin k) :=
     integral_restrict_eq_integral_of_zero_on_compl μ U hUopen.measurableSet (f j)
       (boundedContinuousFunction_eq_zero_off_tsupport_subset (f j) U (hfU j))
   have hleft : (fun ω j => ∫ x, f j x ∂N ω) =ᵐ[P]

@@ -1,2 +1,2 @@
 module
-public import DOZZ.Statements.Brownian.BrownianNaturalSigma
+public import DOZZ.Statements.Brownian.LateralUnitBlockMass

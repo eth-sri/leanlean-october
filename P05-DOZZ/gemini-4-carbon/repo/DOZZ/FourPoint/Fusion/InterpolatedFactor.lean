@@ -13,14 +13,17 @@ open MeasureTheory Filter Topology
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
 
+variable {Ω : Type*} [MeasurableSpace Ω]
+
+
 /-- The unit-chart cutoff and the remaining insertion weight after `x = y*z`. -/
-noncomputable def fusionInterpolatedFactor {Ω : Type*} [MeasurableSpace Ω]
+noncomputable def fusionInterpolatedFactor
     (P : Measure Ω) (M : Ω → Measure ℂ) (γ α₁ α₂ α₃ s t : ℝ) (y z : ℂ) : ℝ :=
   if ‖y * z‖ < 1 / 2 then ‖y * z - 1‖ ^ (-γ * α₂) *
     (∫⁻ ω, fusionInterpolatedMass γ α₁ α₂ α₃ t y z (M ω) ^ s ∂P).toReal else 0
 
 /-- Joint measurability includes the interpolation time. -/
-theorem fusionInterpolatedFactor_measurable {Ω : Type*} [MeasurableSpace Ω]
+theorem fusionInterpolatedFactor_measurable
     (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
     (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (α₁ α₂ α₃ s : ℝ) :
@@ -34,7 +37,7 @@ theorem fusionInterpolatedFactor_measurable {Ω : Type*} [MeasurableSpace Ω]
   · exact measurable_const
 
 /-- A uniform inverse moment bound also controls the entire remaining scaled factor. -/
-theorem fusionInterpolatedFactor_uniform_bound {Ω : Type*} [MeasurableSpace Ω]
+theorem fusionInterpolatedFactor_uniform_bound
     (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
     (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (α₁ α₂ α₃ s : ℝ) (hs : s ≤ 0) :
@@ -67,7 +70,7 @@ theorem fusionInterpolatedFactor_uniform_bound {Ω : Type*} [MeasurableSpace Ω]
   · simpa using mul_nonneg hb ENNReal.toReal_nonneg
 
 /-- At each nonzero rescaled root the remaining factor tends to the common inverse expectation. -/
-theorem fusionInterpolatedFactor_tendsto {Ω : Type*} [MeasurableSpace Ω]
+theorem fusionInterpolatedFactor_tendsto
     (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
     (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (α₁ α₂ α₃ : ℝ) (hα : γ / 2 ≤ α₁) (hα₁ : α₁ < 2 / γ)

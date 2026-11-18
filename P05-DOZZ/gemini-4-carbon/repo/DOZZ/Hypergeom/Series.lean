@@ -11,14 +11,16 @@ import Mathlib.Analysis.Calculus.FDeriv.Analytic
 
 @[expose] public section
 
-open Filter Topology
 
 namespace DOZZ.Proofs
 
+section
+variable (a b c : ℂ) (hc : ∀ n : ℕ, c ≠ -(n : ℂ))
+include a b hc
+
 /-- The ordinary Gauss series has positive convergence radius whenever its denominator parameter
 is not a nonpositive integer. -/
-theorem ordinaryHypergeometricSeries_radius_pos (a b c : ℂ)
-    (hc : ∀ n : ℕ, c ≠ -(n : ℂ)) :
+theorem ordinaryHypergeometricSeries_radius_pos :
     0 < (ordinaryHypergeometricSeries ℂ a b c).radius := by
   by_cases ha : ∃ n : ℕ, a = -(n : ℂ)
   · obtain ⟨n, hn⟩ := ha
@@ -60,8 +62,7 @@ theorem ordinaryHypergeometricSeries_radius_pos (a b c : ℂ)
 /-- The ordinary Gauss power series converges throughout the open unit disk whenever its
 denominator parameter is not a nonpositive integer. Terminating numerator parameters have
 infinite radius; otherwise the radius is exactly one. -/
-theorem ordinaryHypergeometricSeries_one_le_radius (a b c : ℂ)
-    (hc : ∀ n : ℕ, c ≠ -(n : ℂ)) :
+theorem ordinaryHypergeometricSeries_one_le_radius :
     1 ≤ (ordinaryHypergeometricSeries ℂ a b c).radius := by
   by_cases ha : ∃ n : ℕ, a = -(n : ℂ)
   · obtain ⟨n, hn⟩ := ha
@@ -100,4 +101,6 @@ theorem ordinaryHypergeometricSeries_one_le_radius (a b c : ℂ)
       rw [ordinaryHypergeometricSeries_radius_eq_one ℂ a b c
         (fun n => ⟨ha' n, hb' n, hc' n⟩)]
 
+
+end
 end DOZZ.Proofs

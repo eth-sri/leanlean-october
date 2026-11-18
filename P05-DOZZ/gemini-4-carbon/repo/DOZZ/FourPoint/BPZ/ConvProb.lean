@@ -25,10 +25,12 @@ namespace DOZZ.Proofs
 
 variable {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} [IsFiniteMeasure P]
 
+section
+variable {f g : ℕ → Ω → ℝ} {f₀ g₀ : Ω → ℝ} (hf : ∀ n, AEStronglyMeasurable (f n) P) (hg : ∀ n, AEStronglyMeasurable (g n) P) (hfc : TendstoInMeasure P f atTop f₀) (hgc : TendstoInMeasure P g atTop g₀)
+include hf hg hfc hgc
+
 /-- Continuous mapping theorem for convergence in measure of two real sequences. -/
-theorem bpz_tendstoInMeasure_map₂ {f g : ℕ → Ω → ℝ} {f₀ g₀ : Ω → ℝ}
-    (hf : ∀ n, AEStronglyMeasurable (f n) P) (hg : ∀ n, AEStronglyMeasurable (g n) P)
-    (hfc : TendstoInMeasure P f atTop f₀) (hgc : TendstoInMeasure P g atTop g₀)
+theorem bpz_tendstoInMeasure_map₂
     (Φ : ℝ → ℝ → ℝ) (hΦm : Measurable (Function.uncurry Φ))
     (hΦ : ∀ᵐ ω ∂P, ContinuousAt (Function.uncurry Φ) (f₀ ω, g₀ ω)) :
     TendstoInMeasure P (fun n ω => Φ (f n ω) (g n ω)) atTop (fun ω => Φ (f₀ ω) (g₀ ω)) := by
@@ -44,20 +46,18 @@ theorem bpz_tendstoInMeasure_map₂ {f g : ℕ → Ω → ℝ} {f₀ g₀ : Ω �
   exact hΦω.tendsto.comp ((hfω.comp hns''.tendsto_atTop).prodMk_nhds hgω)
 
 
-theorem bpz_tendstoInMeasure_add {f g : ℕ → Ω → ℝ} {f₀ g₀ : Ω → ℝ}
-    (hf : ∀ n, AEStronglyMeasurable (f n) P) (hg : ∀ n, AEStronglyMeasurable (g n) P)
-    (hfc : TendstoInMeasure P f atTop f₀) (hgc : TendstoInMeasure P g atTop g₀) :
+theorem bpz_tendstoInMeasure_add :
     TendstoInMeasure P (fun n ω => f n ω + g n ω) atTop (fun ω => f₀ ω + g₀ ω) :=
   bpz_tendstoInMeasure_map₂ hf hg hfc hgc (fun x y => x + y) measurable_add
     (Eventually.of_forall fun _ => continuous_add.continuousAt)
 
-theorem bpz_tendstoInMeasure_mul {f g : ℕ → Ω → ℝ} {f₀ g₀ : Ω → ℝ}
-    (hf : ∀ n, AEStronglyMeasurable (f n) P) (hg : ∀ n, AEStronglyMeasurable (g n) P)
-    (hfc : TendstoInMeasure P f atTop f₀) (hgc : TendstoInMeasure P g atTop g₀) :
+theorem bpz_tendstoInMeasure_mul :
     TendstoInMeasure P (fun n ω => f n ω * g n ω) atTop (fun ω => f₀ ω * g₀ ω) :=
   bpz_tendstoInMeasure_map₂ hf hg hfc hgc (fun x y => x * y) measurable_mul
     (Eventually.of_forall fun _ => continuous_mul.continuousAt)
 
+
+end
 /-- A deterministic convergent scalar sequence times a sequence converging in measure. -/
 theorem bpz_tendstoInMeasure_const_mul_of_tendsto {c : ℕ → ℝ} {c₀ : ℝ}
     (hc : Tendsto c atTop (𝓝 c₀)) {f : ℕ → Ω → ℝ} {f₀ : Ω → ℝ}
@@ -97,7 +97,7 @@ theorem bpz_tendstoInMeasure_of_approx {Z : ℕ → Ω → ℝ} {Z₀ : Ω → �
   rw [ENNReal.tendsto_nhds_zero]
   intro δ hδ
   obtain ⟨r, -, hr0, hrδ⟩ := ENNReal.lt_iff_exists_real_btwn.1 hδ
-  have hr : 0 < r := ENNReal.ofReal_pos.1 hr0
+  have := ENNReal.ofReal_pos.1 hr0
   have hε' : 0 < min (ε / 3) (r / 3) := lt_min (by positivity) (by positivity)
   obtain ⟨A, A₀, hA, hZA, hZA₀⟩ := h _ hε'
   have hAc := ENNReal.tendsto_nhds_zero.1 ((tendstoInMeasure_iff_norm.1 hA) _ hε') _
@@ -112,26 +112,20 @@ theorem bpz_tendstoInMeasure_of_approx {Z : ℕ → Ω → ℝ} {Z₀ : Ω → �
     simp only [Set.mem_union, Set.mem_ofPred_eq, not_or, not_le, Real.norm_eq_abs] at hcon hω
     obtain ⟨⟨h1, h2⟩, h3⟩ := hcon
     rw [abs_sub_comm] at h3
-    have htri : |Z n ω - Z₀ ω| ≤ |Z n ω - A n ω| + |A n ω - A₀ ω| + |A₀ ω - Z₀ ω| := by
+    have : |Z n ω - Z₀ ω| ≤ |Z n ω - A n ω| + |A n ω - A₀ ω| + |A₀ ω - Z₀ ω| := by
       calc |Z n ω - Z₀ ω| = |(Z n ω - A n ω) + (A n ω - A₀ ω) + (A₀ ω - Z₀ ω)| := by
             congr 1; ring
         _ ≤ |(Z n ω - A n ω) + (A n ω - A₀ ω)| + |A₀ ω - Z₀ ω| := abs_add_le _ _
         _ ≤ |Z n ω - A n ω| + |A n ω - A₀ ω| + |A₀ ω - Z₀ ω| := by
             gcongr; exact abs_add_le _ _
-    have hm1 : min (ε / 3) (r / 3) ≤ ε / 3 := min_le_left _ _
+    have : min (ε / 3) (r / 3) ≤ ε / 3 := min_le_left _ _
     linarith
-  have hm : min (ε / 3) (r / 3) + min (ε / 3) (r / 3) + min (ε / 3) (r / 3) ≤ r := by
-    have := min_le_right (ε / 3) (r / 3)
-    linarith
-  calc P {ω | ε ≤ ‖Z n ω - Z₀ ω‖}
-      ≤ P (({ω | min (ε / 3) (r / 3) ≤ |Z n ω - A n ω|} ∪
-        {ω | min (ε / 3) (r / 3) ≤ ‖A n ω - A₀ ω‖}) ∪
-        {ω | min (ε / 3) (r / 3) ≤ |Z₀ ω - A₀ ω|}) := measure_mono hsub
-    _ ≤ (P {ω | min (ε / 3) (r / 3) ≤ |Z n ω - A n ω|} +
+  have hm : min (ε / 3) (r / 3) + min (ε / 3) (r / 3) + min (ε / 3) (r / 3) ≤ r := by grind
+  refine (measure_mono hsub).trans (?_)
+  refine ((measure_union_le _ _).trans (add_le_add_left (measure_union_le _ _) _)).trans (?_)
+  calc (P {ω | min (ε / 3) (r / 3) ≤ |Z n ω - A n ω|} +
           P {ω | min (ε / 3) (r / 3) ≤ ‖A n ω - A₀ ω‖}) +
-          P {ω | min (ε / 3) (r / 3) ≤ |Z₀ ω - A₀ ω|} :=
-        (measure_union_le _ _).trans (add_le_add_left (measure_union_le _ _) _)
-    _ ≤ (ENNReal.ofReal (min (ε / 3) (r / 3)) + ENNReal.ofReal (min (ε / 3) (r / 3))) +
+          P {ω | min (ε / 3) (r / 3) ≤ |Z₀ ω - A₀ ω|} ≤ (ENNReal.ofReal (min (ε / 3) (r / 3)) + ENNReal.ofReal (min (ε / 3) (r / 3))) +
           ENNReal.ofReal (min (ε / 3) (r / 3)) := by gcongr
     _ = ENNReal.ofReal (min (ε / 3) (r / 3) + min (ε / 3) (r / 3) + min (ε / 3) (r / 3)) := by
         rw [ENNReal.ofReal_add (add_nonneg hε'.le hε'.le) hε'.le,
@@ -145,9 +139,8 @@ theorem bpz_eventually_measure_le_of_le_tendstoInMeasure {E B : ℕ → Ω → �
     (hB : TendstoInMeasure P B atTop B₀) (hEB : ∀ n, ∀ᵐ ω ∂P, |E n ω| ≤ B n ω) {ε : ℝ}
     (hε : 0 < ε) (hB₀ : P {ω | ε / 2 ≤ B₀ ω} < ENNReal.ofReal ε) :
     ∀ᶠ n in atTop, P {ω | ε ≤ |E n ω|} ≤ ENNReal.ofReal ε := by
-  have hg : 0 < ENNReal.ofReal ε - P {ω | ε / 2 ≤ B₀ ω} := tsub_pos_of_lt hB₀
   have hBc := ENNReal.tendsto_nhds_zero.1 ((tendstoInMeasure_iff_norm.1 hB) (ε / 2) (half_pos hε))
-    _ hg
+    _ (tsub_pos_of_lt hB₀)
   filter_upwards [hBc] with n hn
   have hsub : {ω | ε ≤ |E n ω|} ≤ᵐ[P]
       ({ω | ε / 2 ≤ B₀ ω} ∪ {ω | ε / 2 ≤ ‖B n ω - B₀ ω‖} : Set Ω) := by
@@ -155,12 +148,11 @@ theorem bpz_eventually_measure_le_of_le_tendstoInMeasure {E B : ℕ → Ω → �
     by_contra hcon
     simp only [Set.mem_union, Set.mem_ofPred_eq, not_or, not_le, Real.norm_eq_abs] at hcon
     obtain ⟨h1, h2⟩ := hcon
-    have h3 : B n ω - B₀ ω ≤ |B n ω - B₀ ω| := le_abs_self _
+    have : B n ω - B₀ ω ≤ |B n ω - B₀ ω| := le_abs_self _
     linarith
-  calc P {ω | ε ≤ |E n ω|}
-      ≤ P ({ω | ε / 2 ≤ B₀ ω} ∪ {ω | ε / 2 ≤ ‖B n ω - B₀ ω‖}) := measure_mono_ae hsub
-    _ ≤ P {ω | ε / 2 ≤ B₀ ω} + P {ω | ε / 2 ≤ ‖B n ω - B₀ ω‖} := measure_union_le _ _
-    _ ≤ P {ω | ε / 2 ≤ B₀ ω} + (ENNReal.ofReal ε - P {ω | ε / 2 ≤ B₀ ω}) := by gcongr
+  refine (measure_mono_ae hsub).trans (?_)
+  refine (measure_union_le _ _).trans (?_)
+  calc P {ω | ε / 2 ≤ B₀ ω} + P {ω | ε / 2 ≤ ‖B n ω - B₀ ω‖} ≤ P {ω | ε / 2 ≤ B₀ ω} + (ENNReal.ofReal ε - P {ω | ε / 2 ≤ B₀ ω}) := by gcongr
     _ = ENNReal.ofReal ε := add_tsub_cancel_of_le hB₀.le
 
 /-- Dominated convergence for convergence in measure. -/

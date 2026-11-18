@@ -31,7 +31,7 @@ theorem gaussNegativeCutPlaneContinuationState_locally_eq_picard
   obtain ⟨ε, hε, hεball⟩ := Metric.mem_nhds_iff.mp
     (gaussNegativeCutPlane_isOpen.mem_nhds z.property)
   let ρ := min ε R
-  have hρ : 0 < ρ := lt_min hε A.radius_pos
+  have hρ := lt_min hε A.radius_pos
   have hρε : ρ ≤ ε := min_le_left _ _
   have hρR : ρ ≤ R := min_le_right _ _
   have hball : Metric.ball (z : ℂ) ρ ⊆ gaussNegativeCutPlane := by
@@ -51,10 +51,8 @@ theorem gaussNegativeCutPlaneContinuationState_locally_eq_picard
       _ = subtypePathFunction p 1 := by rw [div_self hNreal.ne']
       _ = (z : ℂ) := hpEnd
   have hAend : A.value 1 = D.solution (z : ℂ) := by
-    calc
-      A.value 1 = (A.disks A.subdivision).solution
-          (subtypePathFunction p 1) := path_continuation_lift_value_one_eq_final_disk A
-      _ = D.solution (z : ℂ) := by rw [hpEnd]
+    refine (path_continuation_lift_value_one_eq_final_disk A).trans (?_)
+    rw [hpEnd]
   have hδpos : 0 < ρ / 2 := by linarith
   have hδle : ρ / 2 ≤ R / 2 := by linarith
   refine ⟨R, ρ / 2, A.radius_pos, hδpos, hδle, D, hDcenter, ?_⟩
@@ -62,7 +60,7 @@ theorem gaussNegativeCutPlaneContinuationState_locally_eq_picard
   have hw' : dist (z : ℂ) (w : ℂ) < ρ / 2 := by simpa [dist_comm] using hw
   let q := subtypeLocalSegmentPath ρ hρ hball hw'
   let pq := p.trans q
-  let γ : ℝ → ℂ := subtypePathFunction pq
+  let γ := subtypePathFunction pq
   have hγcont : ContinuousOn γ (Icc (0 : ℝ) 1) :=
     (subtypePathFunction_continuous pq).continuousOn
   have hγpath : ∀ t ∈ Icc (0 : ℝ) 1, γ t ∈ gaussRegularPlane := by
@@ -86,14 +84,12 @@ theorem gaussNegativeCutPlaneContinuationState_locally_eq_picard
     rw [harg]
     change subtypePathFunction pq (s / 2) = _
     exact subtypePathFunction_trans_left p q hs
-  let BprePath := path_continuation_lift_congr Bpre hprePath
-  let BpreBase := path_continuation_lift_initial_congr BprePath B.value_initial
-  have hBpreState := gauss_negative_cut_plane_continuation_path_endpoint_eq a b c z BpreBase
+  let BpreBase := path_continuation_lift_initial_congr (path_continuation_lift_congr Bpre hprePath) B.value_initial
   have hBmidState : B.value (1 / 2) = gaussNegativeCutPlaneContinuationState a b c z := by
     calc
       B.value (1 / 2) = Bpre.value 1 := by simpa using hBpreEnd.symm
       _ = BpreBase.value 1 := rfl
-      _ = gaussNegativeCutPlaneContinuationState a b c z := hBpreState
+      _ = gaussNegativeCutPlaneContinuationState a b c z := gauss_negative_cut_plane_continuation_path_endpoint_eq a b c z BpreBase
   have hAstate : gaussNegativeCutPlaneContinuationState a b c z = A.value 1 := rfl
   have hBmidD : B.value (1 / 2) = D.solution (z : ℂ) :=
     hBmidState.trans (hAstate.trans hAend)
@@ -112,8 +108,7 @@ theorem gaussNegativeCutPlaneContinuationState_locally_eq_picard
     rw [harg]
     change subtypePathFunction pq (1 / 2 + s / 2) = _
     exact subtypePathFunction_trans_right p q hs
-  let BpostPath := path_continuation_lift_congr Bpost hpostPath
-  let BpostLocal := path_continuation_lift_initial_congr BpostPath hBmidD
+  let BpostLocal := path_continuation_lift_initial_congr (path_continuation_lift_congr Bpost hpostPath) hBmidD
   let qfun : ℝ → ℂ := subtypePathFunction q
   let F : ℝ → ℂ × ℂ := fun s => D.solution (qfun s)
   have hqcont : ContinuousOn qfun (Icc (0 : ℝ) 1) :=
@@ -140,7 +135,6 @@ theorem gaussNegativeCutPlaneContinuationState_locally_eq_picard
   have hFchart : ∀ s ∈ Icc (0 : ℝ) 1,
       Nonempty (PathSolutionChart qfun (gaussSystemOperator a b c) F s) := by
     intro s hs
-    have hq_s := hqball s hs
     let C : PathSolutionChart qfun (gaussSystemOperator a b c) F s := {
       radius := R / 2
       radius_pos := by linarith
@@ -175,17 +169,13 @@ theorem gaussNegativeCutPlaneContinuationState_locally_eq_picard
         rfl
     }
     exact ⟨C⟩
-  have hq0 : qfun 0 = (z : ℂ) := by
-    change (q (Set.projIcc 0 1 zero_le_one 0) : ℂ) = (z : ℂ)
-    rw [Set.projIcc_of_mem zero_le_one (by norm_num)]
-    exact congrArg Subtype.val q.source
+  have hq0 : qfun 0 = (z : ℂ) := by grind
   have hstart : F 0 = BpostLocal.value 0 := by
     rw [BpostLocal.value_initial]
     change D.solution (qfun 0) = D.solution (z : ℂ)
     rw [hq0]
-  have hBpostCharts := path_continuation_lift_has_solution_charts hqcont BpostLocal
   have hpostEq := continuous_path_solution_lifts_unique hqcont
-    (gaussSystemOperator a b c) hFcont BpostLocal.value_continuous hFchart hBpostCharts hstart
+    (gaussSystemOperator a b c) hFcont BpostLocal.value_continuous hFchart (path_continuation_lift_has_solution_charts hqcont BpostLocal) hstart
   have hq1 : qfun 1 = (w : ℂ) := by
     change (q (Set.projIcc 0 1 zero_le_one 1) : ℂ) = (w : ℂ)
     rw [hproj1]
@@ -194,15 +184,10 @@ theorem gaussNegativeCutPlaneContinuationState_locally_eq_picard
     calc
       B.value 1 = Bpost.value 1 := by
         have hhalf : (1 / 2 : ℝ) + 1 / 2 = 1 := by norm_num
-        calc
-          B.value 1 = B.value ((1 / 2 : ℝ) + 1 / 2) := congrArg B.value hhalf.symm
-          _ = Bpost.value 1 := hBpostEnd.symm
+        exact (congrArg B.value hhalf.symm).trans (hBpostEnd.symm)
       _ = BpostLocal.value 1 := rfl
       _ = F 1 := (hpostEq 1 (by norm_num)).symm
       _ = D.solution (w : ℂ) := by change D.solution (qfun 1) = _; rw [hq1]
-  have hBglobal := gauss_negative_cut_plane_continuation_path_endpoint_eq a b c w B
-  calc
-    gaussNegativeCutPlaneContinuationState a b c w = B.value 1 := hBglobal.symm
-    _ = D.solution (w : ℂ) := hlocalEnd
+  exact ((gauss_negative_cut_plane_continuation_path_endpoint_eq a b c w B).symm).trans (hlocalEnd)
 
 end DOZZ.Proofs

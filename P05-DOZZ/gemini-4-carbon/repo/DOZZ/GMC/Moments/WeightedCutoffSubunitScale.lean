@@ -15,19 +15,6 @@ open scoped Distributions ENNReal NNReal
 
 namespace DOZZ.Proofs
 
-private theorem ennreal_ofReal_rpow_of_pos_scale {x p : ℝ} (hx : 0 < x) :
-    ENNReal.rpow (ENNReal.ofReal x) p = ENNReal.ofReal (x ^ p) := by
-  have hx0 : ENNReal.ofReal x ≠ 0 := ne_of_gt (ENNReal.ofReal_pos.mpr hx)
-  have hleft : ENNReal.rpow (ENNReal.ofReal x) p ≠ ⊤ :=
-    ENNReal.rpow_ne_top_of_ne_zero hx0 ENNReal.ofReal_ne_top
-  have hright : ENNReal.ofReal (x ^ p) ≠ ⊤ := ENNReal.ofReal_ne_top
-  apply (ENNReal.toReal_eq_toReal_iff' hleft hright).1
-  calc
-    (ENNReal.rpow (ENNReal.ofReal x) p).toReal =
-        (ENNReal.ofReal x).toReal ^ p := (ENNReal.toReal_rpow _ _).symm
-    _ = x ^ p := by rw [ENNReal.toReal_ofReal hx.le]
-    _ = (ENNReal.ofReal (x ^ p)).toReal := by
-      rw [ENNReal.toReal_ofReal (Real.rpow_nonneg hx.le p)]
 
 
 /-- Explicit scale constant in the nonsingular sector, for use in compact parameter families. -/
@@ -44,12 +31,21 @@ theorem cutoffWeightedGmcBallMoment_nonpos_subunit_scale_formula
         ENNReal.ofReal (2 ^ weightedCutoffMomentScaleExponent γ α p) *
           (1 + gmcReferenceMeasure (Metric.ball 0 (1 / 2))) *
           ENNReal.ofReal (R ^ weightedCutoffMomentScaleExponent γ α p) := by
-  let ξ : ℝ := 2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2
-  let η : ℝ := weightedCutoffMomentScaleExponent γ α p
-  let base : ℝ≥0∞ := 1 + gmcReferenceMeasure (Metric.ball 0 (1 / 2))
-  let s : ℝ := 2 * R
-  have hs : 0 < s := by dsimp [s]; positivity
-  have hη : -γ * α * p + ξ = η := by
+  have ennreal_ofReal_rpow_of_pos_scale {x p : ℝ} (hx : 0 < x) : ENNReal.rpow (ENNReal.ofReal x) p = ENNReal.ofReal (x ^ p) := by
+    have hleft : ENNReal.rpow (ENNReal.ofReal x) p ≠ ⊤ :=
+      ENNReal.rpow_ne_top_of_ne_zero (ne_of_gt (ENNReal.ofReal_pos.mpr hx)) ENNReal.ofReal_ne_top
+    have hright : ENNReal.ofReal (x ^ p) ≠ ⊤ := ENNReal.ofReal_ne_top
+    apply (ENNReal.toReal_eq_toReal_iff' hleft hright).1
+    refine ((ENNReal.toReal_rpow _ _).symm).trans (?_)
+    calc (ENNReal.ofReal x).toReal ^ p = x ^ p := by rw [ENNReal.toReal_ofReal hx.le]
+      _ = (ENNReal.ofReal (x ^ p)).toReal := by
+        rw [ENNReal.toReal_ofReal (Real.rpow_nonneg hx.le p)]
+  let ξ := 2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2
+  let η := weightedCutoffMomentScaleExponent γ α p
+  let base := 1 + gmcReferenceMeasure (Metric.ball 0 (1 / 2))
+  let s := 2 * R
+  have hs : 0 < s := by positivity
+  have : -γ * α * p + ξ = η := by
     dsimp [η, ξ, weightedCutoffMomentScaleExponent, Q]
     field_simp [ne_of_gt hγ]
     ring

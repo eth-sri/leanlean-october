@@ -66,8 +66,6 @@ theorem mixed_coulomb_holomorphic
     exact ((hd α).differentiableAt ((isOpen_complexPolydisc _ _).mem_nhds hα)).differentiableWithinAt
   · intro α ha hp hpi
     let αD : D := ⟨α, ha, hp, hpi⟩
-    have he := (hlim αD).tendsto_at (mem_complexPolydisc_center _ _ (hS αD))
-    have hr := normalized_vertex_real_limit P X hX γ hγ hγ2 M hM Xc hc z hz α hp hpi
-    exact tendsto_nhds_unique he hr
+    exact tendsto_nhds_unique ((hlim αD).tendsto_at (mem_complexPolydisc_center _ _ (hS αD))) (normalized_vertex_real_limit P X hX γ hγ hγ2 M hM Xc hc z hz α hp hpi)
 
 end DOZZ.Proofs

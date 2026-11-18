@@ -18,17 +18,21 @@ therefore preserves the logarithmic covariance and both coarse estimates.
 
 @[expose] public section
 
+noncomputable section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal Distributions InnerProductSpace RealInnerProductSpace
 
 namespace DOZZ.Proofs
+
+variable {Ω : Type*} [MeasurableSpace Ω]
+
 
 /-- Local punctured-plane chart on which every circle of radius at most `ρ` avoids the
 clamping disk of radius `ρ`. These charts exhaust the punctured plane as `ρ` decreases. -/
 def originLateralChart (ρ : ℝ) : Set ℂ := {x | 2 * ρ < ‖x‖}
 
 /-- The actual orthogonal circle regularizer, parameterized by Euclidean cutoff radius. -/
-noncomputable def originLateralCircleRegularization
+def originLateralCircleRegularization
     {Ω : Type*} (Xc : Ω → ℂ → ℝ → ℝ) (ρ : ℝ) : Ω → ℝ → ℂ → ℝ :=
   fun ω ε x => clampedCircleLateralSample Xc ρ ω x (Real.log (1 / ε))
 
@@ -54,19 +58,21 @@ theorem originLateralChart_cutoff_lower (ρ ε : ℝ) (x : ℂ)
 /-- The global regularizer is jointly measurable at every cutoff radius, including
 radii outside the range used by the local admissibility statement. -/
 theorem originLateralCircleRegularization_measurableAtScale
-    {Ω : Type*} [MeasurableSpace Ω] (Xc : Ω → ℂ → ℝ → ℝ)
+ (Xc : Ω → ℂ → ℝ → ℝ)
     (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
     (ρ : ℝ) (hρ : 0 < ρ) (ε : ℝ) :
     Measurable (fun p : Ω × ℂ => originLateralCircleRegularization Xc ρ p.1 ε p.2) :=
   (measurable_clampedCircleLateralSample Xc hm ρ hρ).comp
     (measurable_fst.prodMk (measurable_snd.prodMk measurable_const))
 
+section
+variable (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+include hX hc
+
 /-- The exact finite Gaussian requirement holds for all centers and all cutoff radii;
 it does not require restricting the Gaussian family to the local chart. -/
 theorem originLateralCircleRegularization_gaussian
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+
     (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
     (ρ : ℝ) (hρ : 0 < ρ) (n : ℕ) (q : Fin n → ℝ × ℂ) :
     IsCenteredJointlyGaussian P
@@ -74,52 +80,43 @@ theorem originLateralCircleRegularization_gaussian
   clampedCircleLateralSample_centeredJointlyGaussian P X Xc hX hc hm ρ hρ n
     (fun i => ((q i).2, Real.log (1 / (q i).1)))
 
-/-- A uniform bound on the clamped radial Hilbert map bounds its circle average. -/
-theorem norm_originCircleRadialL2_le
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hc : IsCircleAverage P X Xc) (ρ R L : ℝ) (x : ℂ) (r : ℝ)
-    (hR : ‖x‖ + Real.exp (-r) ≤ R)
-    (hL : ∀ z : ℂ, ‖z‖ ≤ R → ‖circleAverageL2 hc (0, clampedLogRadius ρ z)‖ ≤ L) :
-    ‖originCircleRadialL2 hc ρ x r‖ ≤ L := by
-  let _ := circleMeasure_isProbability x r
-  have hb : ∀ᵐ z ∂circleMeasure x r,
-      ‖circleAverageL2 hc (0, clampedLogRadius ρ z)‖ ≤ L := by
-    filter_upwards [ae_norm_sub_center_circleMeasure x r] with z hz
-    apply hL z
-    calc ‖z‖ = ‖(z - x) + x‖ := by rw [sub_add_cancel]
-         _ ≤ ‖z - x‖ + ‖x‖ := norm_add_le _ _
-         _ = ‖x‖ + Real.exp (-r) := by rw [hz, add_comm]
-         _ ≤ R := hR
-  have h := norm_integral_le_of_norm_le_const hb
-  rw [probReal_univ, mul_one] at h
-  exact h
 
 /-- On each compact set, all clamped radial circle averages with radius at most `ρ`
 have one deterministic Hilbert norm bound. -/
 theorem originCircleRadialL2_uniform_bound
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+
     (ρ : ℝ) (hρ : 0 < ρ) (K : Set ℂ) (hK : IsCompact K) :
     ∃ L : ℝ, 0 ≤ L ∧ ∀ ε, 0 < ε → ε ≤ ρ → ∀ x ∈ K,
       ‖originCircleRadialL2 hc ρ x (Real.log (1 / ε))‖ ≤ L := by
+  have norm_originCircleRadialL2_le (R L : ℝ) (x : ℂ) (r : ℝ) (hR : ‖x‖ + Real.exp (-r) ≤ R) (hL : ∀ z : ℂ, ‖z‖ ≤ R → ‖circleAverageL2 hc (0, clampedLogRadius ρ z)‖ ≤ L) : ‖originCircleRadialL2 hc ρ x r‖ ≤ L := by
+    let _ := circleMeasure_isProbability x r
+    have hb : ∀ᵐ z ∂circleMeasure x r,
+        ‖circleAverageL2 hc (0, clampedLogRadius ρ z)‖ ≤ L := by
+      filter_upwards [ae_norm_sub_center_circleMeasure x r] with z hz
+      apply hL z
+      calc ‖z‖ = ‖(z - x) + x‖ := by rw [sub_add_cancel]
+           _ ≤ ‖z - x‖ + ‖x‖ := norm_add_le _ _
+           _ = ‖x‖ + Real.exp (-r) := by rw [hz, add_comm]
+           _ ≤ R := hR
+    have h := norm_integral_le_of_norm_le_const hb
+    rw [probReal_univ, mul_one] at h
+    exact h
   obtain ⟨S, hS⟩ := hK.bddAbove_image continuous_norm.continuousOn
   let R := max S 0 + ρ
-  have hF := continuous_clampedRadialCircleL2 P X Xc hX hc ρ hρ
-  obtain ⟨L, hL⟩ := (isCompact_closedBall (0 : ℂ) R).bddAbove_image hF.norm.continuousOn
+  obtain ⟨L, hL⟩ := (isCompact_closedBall (0 : ℂ) R).bddAbove_image (continuous_clampedRadialCircleL2 P X Xc hX hc ρ hρ).norm.continuousOn
   refine ⟨max L 0, le_max_right _ _, fun ε hε hερ x hx => ?_⟩
-  apply norm_originCircleRadialL2_le P X Xc hc ρ R (max L 0) x (Real.log (1 / ε))
+  apply norm_originCircleRadialL2_le R (max L 0) x (Real.log (1 / ε))
   · rw [one_div, Real.log_inv, neg_neg, Real.exp_log hε]
-    have hxS := hS (mem_image_of_mem _ hx)
-    exact add_le_add (hxS.trans (le_max_left _ _)) hερ
+    exact add_le_add ((hS (mem_image_of_mem _ hx)).trans (le_max_left _ _)) hερ
   · intro z hz
     apply (hL (mem_image_of_mem _ ?_)).trans (le_max_left _ _)
     simpa only [Metric.mem_closedBall, dist_zero_right] using hz
 
+
+end
 /-- Radial mixed covariances inherit the uniform Hilbert norm bound. -/
 theorem abs_originCircleRadialL2_covariance_le
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+ (P : Measure Ω)
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (ρ : ℝ) (hρ : 0 < ρ) (L : ℝ) (hL : 0 ≤ L)
@@ -133,12 +130,14 @@ theorem abs_originCircleRadialL2_covariance_le
   exact (norm_inner_le_norm _ _).trans
     ((mul_le_mul hx hy (norm_nonneg _) hL).trans_eq (pow_two L).symm)
 
+section
+variable (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+include hX hc
+
 /-- The second moment of the scalar regularizer is the covariance of its actual
 centered L² representatives. -/
 theorem originLateralCircleRegularization_gaussianCovariance
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+
     (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
     (ρ : ℝ) (hρ : 0 < ρ) (ε δ : ℝ) (x y : ℂ) :
     gaussianCovariance P (fun ω => originLateralCircleRegularization Xc ρ ω ε x)
@@ -163,9 +162,7 @@ theorem originLateralCircleRegularization_gaussianCovariance
 
 /-- The full circle second moment likewise agrees with its centered Hilbert covariance. -/
 theorem gaussianCovariance_circleL2_eq
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc) (x y : ℂ) (r t : ℝ) :
+ (x y : ℂ) (r t : ℝ) :
     gaussianCovariance P (fun ω => Xc ω x r) (fun ω => Xc ω y t) =
       covariance (circleAverageL2 hc (x, r)) (circleAverageL2 hc (y, t)) P := by
   unfold gaussianCovariance
@@ -179,10 +176,12 @@ theorem gaussianCovariance_circleL2_eq
   simp only [ProbabilityTheory.covariance, circleAverageL2_integral_eq_zero P X Xc hX hc,
     sub_zero]
 
+
+end
 /-- The actual orthogonal regularizer satisfies the literal mixed logarithmic covariance
 bound uniformly on every compact subset of its chart. -/
 theorem originLateralCircleRegularization_covarianceBound
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+ (P : Measure Ω)
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
@@ -218,7 +217,7 @@ theorem originLateralCircleRegularization_covarianceBound
 covariance bound `originLateralCircleRegularization_covarianceBound`, keeping the coarse barrier
 scale exactly `exp(-k)`. -/
 theorem originLateralCircleRegularization_coarseMixedBound
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+ (P : Measure Ω)
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
@@ -240,7 +239,7 @@ theorem originLateralCircleRegularization_coarseMixedBound
 /-- The variance coarse estimate follows from the same-center mixed bound with the two
 cutoff radii equal. -/
 theorem originLateralCircleRegularization_coarseVarianceBound
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+ (P : Measure Ω)
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
@@ -255,12 +254,8 @@ theorem originLateralCircleRegularization_coarseVarianceBound
   exact ⟨C, hC, fun k hk x hx => hcov k hk _ (Real.exp_pos _) le_rfl x hx⟩
 
 /-- Reference density of the plane lateral chaos before logarithmic-radius pushforward. -/
-noncomputable def originLateralPlaneDensity (x : ℂ) : ℝ := ‖x‖ ^ (-2 : ℝ)
+def originLateralPlaneDensity (x : ℂ) : ℝ := ‖x‖ ^ (-2 : ℝ)
 
-/-- The lateral reference density is strictly positive on every punctured-plane chart. -/
-theorem originLateralPlaneDensity_pos (ρ : ℝ) (hρ : 0 < ρ) (x : ℂ)
-    (hx : x ∈ originLateralChart ρ) : 0 < originLateralPlaneDensity x :=
-  Real.rpow_pos_of_pos (norm_pos_iff.mpr (originLateralChart_ne_zero ρ hρ x hx)) _
 
 /-- The lateral reference density is continuous on its chart. -/
 theorem continuousOn_originLateralPlaneDensity (ρ : ℝ) (hρ : 0 < ρ) :
@@ -288,7 +283,7 @@ abbrev OriginLateralChartCutoff (ρ : ℝ) := {p : ℝ × ℂ //
   0 < p.1 ∧ p.1 ≤ min ρ 1 ∧ p.2 ∈ originLateralChart ρ}
 
 /-- A local chart cutoff is an actual circle outside the clamping disk. -/
-noncomputable def originCircleCutoffOfChart (ρ : ℝ) (hρ : 0 < ρ)
+def originCircleCutoffOfChart (ρ : ℝ) (hρ : 0 < ρ)
     (p : OriginLateralChartCutoff ρ) : OriginCircleCutoff :=
   ⟨(ρ, (p.val.2, Real.log (1 / p.val.1))), hρ,
     originLateralChart_cutoff_lower ρ p.val.1 p.val.2 p.property.2.2 p.property.1
@@ -313,7 +308,7 @@ theorem originLateralCircleRegularization_eq_cutoff
 /-- The entire local chart cutoff family is independent of the full continuous radial
 path. All spatial points and allowed radii occur in the right-hand coordinate family. -/
 theorem originRadialPath_lateralChartCutoffs_indepFun
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+ (P : Measure Ω)
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
@@ -353,7 +348,7 @@ theorem originLateralCircleRegularization_exp_neg
 /-- The radial projection converges in L² uniformly on compact sets of centers. The
 limit retains the fixed clamp, so this estimate also holds outside the local chart. -/
 theorem originCircleRadialL2_uniform_approx
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+ (P : Measure Ω)
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (ρ : ℝ) (hρ : 0 < ρ) (K : Set ℂ) (hK : IsCompact K)
@@ -372,8 +367,8 @@ theorem originCircleRadialL2_uniform_approx
 /-! ## Uniform covariance limits and admissible chaos construction -/
 
 /-- The covariance kernel of the clamped radial point variables. -/
-noncomputable def clampedRadialPointCovariance
-    {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω}
+def clampedRadialPointCovariance
+ {P : Measure Ω}
     {X : Ω → Distr} {Xc : Ω → ℂ → ℝ → ℝ}
     (hc : IsCircleAverage P X Xc) (ρ : ℝ) (x y : ℂ) : ℝ :=
   covariance (circleAverageL2 hc (0, clampedLogRadius ρ x))
@@ -381,7 +376,7 @@ noncomputable def clampedRadialPointCovariance
 
 /-- The point covariance is globally continuous after clamping. -/
 theorem continuous_clampedRadialPointCovariance
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+ (P : Measure Ω)
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc) (ρ : ℝ) (hρ : 0 < ρ) :
     Continuous (Function.uncurry (clampedRadialPointCovariance hc ρ)) := by
@@ -399,7 +394,7 @@ theorem continuous_clampedRadialPointCovariance
 /-- Pairing a radial cutoff error with any L² variable is controlled by its Hilbert norm.
 The radial variables are centered, so no error in their means remains. -/
 theorem originCircleRadialL2_covariance_error_le
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+ (P : Measure Ω)
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (ρ : ℝ) (hρ : 0 < ρ) (x : ℂ) (r : ℝ) (V : Lp ℝ 2 P) :
@@ -416,7 +411,7 @@ theorem originCircleRadialL2_covariance_error_le
 /-- Point radial variables and radial circle averages share one positive bound on a
 compact set, uniformly in all circle radii at most `ρ`. -/
 theorem originCircleRadialL2_point_uniform_bound
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+ (P : Measure Ω)
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (ρ : ℝ) (hρ : 0 < ρ) (K : Set ℂ) (hK : IsCompact K) :
@@ -428,7 +423,7 @@ theorem originCircleRadialL2_point_uniform_bound
   obtain ⟨S, hS⟩ := hK.bddAbove_image
     (continuous_clampedRadialCircleL2 P X Xc hX hc ρ hρ).norm.continuousOn
   refine ⟨max R S + 1, ?_, ?_, ?_⟩
-  · exact add_pos_of_nonneg_of_pos (hR.trans (le_max_left _ _)) zero_lt_one
+  · positivity
   · intro x hx
     exact (hS (mem_image_of_mem _ hx)).trans
       ((le_max_right _ _).trans (le_add_of_nonneg_right zero_le_one))
@@ -439,7 +434,7 @@ theorem originCircleRadialL2_point_uniform_bound
 /-- The radial covariance converges uniformly when one cutoff goes to zero, against
 every variable in a fixed bounded L² ball. This includes every fixed coarse circle. -/
 theorem originCircleRadialL2_uniform_covariance_approx
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+ (P : Measure Ω)
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (ρ : ℝ) (hρ : 0 < ρ) (K : Set ℂ) (hK : IsCompact K)
@@ -460,7 +455,7 @@ theorem originCircleRadialL2_uniform_covariance_approx
 /-- Both radial cutoff covariances converge to the continuous point kernel uniformly on
 compact sets, without requiring the two cutoff radii to be equal. -/
 theorem originCircleRadialL2_uniform_mixed_covariance_approx
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+ (P : Measure Ω)
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (ρ : ℝ) (hρ : 0 < ρ) (K : Set ℂ) (hK : IsCompact K)
@@ -487,7 +482,7 @@ theorem originCircleRadialL2_uniform_mixed_covariance_approx
 /-- The separated off-diagonal covariance limit for the actual orthogonal regularizer
 subtracts the continuous radial point kernel from the equator field's regular part. -/
 theorem originLateralCircleRegularization_offDiagonalLimit
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+ (P : Measure Ω)
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
@@ -538,7 +533,7 @@ theorem originLateralCircleRegularization_offDiagonalLimit
 /-- The mixed fixed-coarse covariance limit of the lateral regularizer subtracts the
 radial point/coarse covariance from the equator field's fixed-coarse kernel. -/
 theorem originLateralCircleRegularization_fixedCoarseLimit
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+ (P : Measure Ω)
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
@@ -589,18 +584,20 @@ theorem originLateralCircleRegularization_fixedCoarseLimit
 /-- The actual clamped orthogonal circle regularizer is admissible on each local chart,
 with the flat cylinder reference density in plane coordinates. -/
 theorem originLateralCircleRegularization_admissible
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+ (P : Measure Ω)
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
     (ρ : ℝ) (hρ : 0 < ρ) :
     IsAdmissibleLogRegularization P (originLateralChart ρ) originLateralPlaneDensity
       (min ρ 1) (originLateralCircleRegularization Xc ρ) := by
+  have originLateralPlaneDensity_pos (x : ℂ) (hx : x ∈ originLateralChart ρ) : 0 < originLateralPlaneDensity x := 
+    Real.rpow_pos_of_pos (norm_pos_iff.mpr (originLateralChart_ne_zero ρ hρ x hx)) _
   exact {
     measurableAtScale := originLateralCircleRegularization_measurableAtScale Xc hm ρ hρ
     openChart := isOpen_originLateralChart ρ
     densityContinuous := continuousOn_originLateralPlaneDensity ρ hρ
-    densityPositive := originLateralPlaneDensity_pos ρ hρ
+    densityPositive := originLateralPlaneDensity_pos
     cutoffPositive := originLateralChart_cutoffPositive ρ hρ
     gaussian := fun n q _ => originLateralCircleRegularization_gaussian P X Xc hX hc hm ρ hρ n q
     covarianceBound := originLateralCircleRegularization_covarianceBound P X Xc hX hc hm ρ hρ
@@ -612,7 +609,7 @@ theorem originLateralCircleRegularization_admissible
 /-- The clamped point kernel agrees with the actual radial covariance on the local chart,
 and its diagonal is the Brownian radial variance `|log |x||`. -/
 theorem clampedRadialPointCovariance_self
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+ (P : Measure Ω)
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (ρ : ℝ) (x : ℂ) (hx : ρ ≤ ‖x‖) :
@@ -629,7 +626,7 @@ theorem clampedRadialPointCovariance_self
 /-- The radial cutoff variance converges uniformly on the local chart to the literal
 Brownian variance. This is the deterministic correction in the polar Wick limit. -/
 theorem originCircleRadialL2_uniform_variance_approx
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+ (P : Measure Ω)
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (ρ : ℝ) (hρ : 0 < ρ) (K : Set ℂ) (hK : IsCompact K)
@@ -650,7 +647,7 @@ theorem originCircleRadialL2_uniform_variance_approx
 
 /-- Start the local path at a scale whose Euclidean circle radius is below both the
 clamping radius and one. -/
-noncomputable def originLateralCutoffBaseTime (ρ : ℝ) : ℝ := |Real.log ρ| + 1
+def originLateralCutoffBaseTime (ρ : ℝ) : ℝ := |Real.log ρ| + 1
 
 /-- The base cutoff and every subsequent cutoff are in the allowed chart range. -/
 theorem originLateralCutoffBaseTime_radius_le (ρ : ℝ) (hρ : 0 < ρ) (t : ℝ≥0) :
@@ -658,9 +655,8 @@ theorem originLateralCutoffBaseTime_radius_le (ρ : ℝ) (hρ : 0 < ρ) (t : ℝ
   apply le_min
   · calc Real.exp (-(originLateralCutoffBaseTime ρ + (t : ℝ))) ≤ Real.exp (Real.log ρ) := by
            apply Real.exp_le_exp.mpr
-           have h := neg_abs_le (Real.log ρ)
            dsimp [originLateralCutoffBaseTime]
-           linarith only [h, t.coe_nonneg]
+           linarith only [neg_abs_le (Real.log ρ), t.coe_nonneg]
          _ = ρ := Real.exp_log hρ
   · apply Real.exp_le_one_iff.mpr
     dsimp [originLateralCutoffBaseTime]
@@ -675,15 +671,19 @@ instance originLateralChart_locallyCompactSpace (ρ : ℝ) :
 
 /-- Pack the whole local cutoff field as a continuous function on its locally compact
 domain. On the common continuity event this agrees at every coordinate. -/
-noncomputable def originLateralCutoffPath
+def originLateralCutoffPath
     {Ω : Type*} (Xc : Ω → ℂ → ℝ → ℝ) (ρ : ℝ) (ω : Ω) :
     C(OriginLateralCutoffDomain ρ, ℝ) :=
   ContinuousMap.mkD (fun p => clampedCircleLateralSample Xc ρ ω p.1.val
     (originLateralCutoffBaseTime ρ + (p.2 : ℝ))) 0
 
+section
+variable (P : Measure Ω) (Xc : Ω → ℂ → ℝ → ℝ)
+include P Xc
+
 /-- One probability-one event identifies every coordinate of the packed cutoff path. -/
 theorem originLateralCutoffPath_eval_ae
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (Xc : Ω → ℂ → ℝ → ℝ)
+
     (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
     (ρ : ℝ) (hρ : 0 < ρ) :
     ∀ᵐ ω ∂P, ∀ p : OriginLateralCutoffDomain ρ,
@@ -698,7 +698,7 @@ theorem originLateralCutoffPath_eval_ae
 /-- Dense coordinate evaluations give almost-everywhere measurability of the full local
 cutoff path as a continuous-function-valued random variable. -/
 theorem originLateralCutoffPath_aemeasurable
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (Xc : Ω → ℂ → ℝ → ℝ)
+
     (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
     (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
     (ρ : ℝ) (hρ : 0 < ρ) : AEMeasurable (originLateralCutoffPath Xc ρ) P := by
@@ -722,8 +722,10 @@ theorem originLateralCutoffPath_aemeasurable
   exact hEval.aemeasurable.congr ((originLateralCutoffPath_eval_ae P Xc hcont ρ hρ).mono
     (fun ω hω => (hω p.val).symm))
 
+
+end
 /-- Every path coordinate is a valid local chart cutoff. -/
-noncomputable def originLateralChartCutoffOfDomain (ρ : ℝ) (hρ : 0 < ρ)
+def originLateralChartCutoffOfDomain (ρ : ℝ) (hρ : 0 < ρ)
     (p : OriginLateralCutoffDomain ρ) : OriginLateralChartCutoff ρ :=
   ⟨(Real.exp (-(originLateralCutoffBaseTime ρ + (p.2 : ℝ))), p.1.val),
     Real.exp_pos _, originLateralCutoffBaseTime_radius_le ρ hρ p.2, p.1.property⟩
@@ -731,7 +733,7 @@ noncomputable def originLateralChartCutoffOfDomain (ρ : ℝ) (hρ : 0 < ρ)
 /-- The entire continuous cutoff path is independent of the full radial Brownian path.
 This makes continuous spatial integrals measurable functionals of independent carriers. -/
 theorem originRadialPath_lateralCutoffPath_indepFun
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+ (P : Measure Ω)
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
@@ -746,7 +748,6 @@ theorem originRadialPath_lateralCutoffPath_indepFun
     intro f g hfg
     apply ContinuousMap.ext
     exact congrFun (hDd.denseRange_val.equalizer f.continuous g.continuous hfg)
-  have hEmb := hmE.measurableEmbedding hinj
   let restrict : (OriginLateralChartCutoff ρ → ℝ) → (D → ℝ) :=
     fun f p => f (originLateralChartCutoffOfDomain ρ hρ p.val)
   have hmrestrict : Measurable restrict :=
@@ -765,7 +766,7 @@ theorem originRadialPath_lateralCutoffPath_indepFun
     exact originLateralCircleRegularization_exp_neg Xc ρ _ ω p.val.1.val
   have hi' := hi.congr EventuallyEq.rfl heq
   change IndepFun (originRadialPath Xc) (E ∘ originLateralCutoffPath Xc ρ) P at hi'
-  rw [IndepFun_iff_Indep, ← MeasurableSpace.comap_comp, hEmb.comap_eq] at hi'
-  exact (IndepFun_iff_Indep _ _ P).2 hi'
+  rw [IndepFun_iff_Indep, ← MeasurableSpace.comap_comp, (hmE.measurableEmbedding hinj).comap_eq] at hi'
+  assumption
 
 end DOZZ.Proofs

@@ -28,7 +28,7 @@ theorem crossing_mass_swap_last (γ a b c : ℝ) (ν : Measure ℂ) (w : ℂ) :
   intro x
   simp only [Fin.prod_univ_succ, Matrix.cons_val_zero, Matrix.cons_val_succ,
     Fin.prod_univ_zero, mul_one]
-  rw [mul_comm (ENNReal.rpow _ (γ * a)) (ENNReal.rpow _ (γ * b))]
+  ring
 
 /-- The half-charge reduced four-point function is symmetric under exchange
 of zero and one, throughout its whole carrier. -/

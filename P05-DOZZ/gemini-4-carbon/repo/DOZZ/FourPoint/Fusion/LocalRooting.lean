@@ -34,8 +34,7 @@ theorem fusion_localR1_rooting {Ω : Type*} [MeasurableSpace Ω]
     ((fusion_measurable_gammaHalfKernel γ α₁ α₂ α₃).comp
       (measurable_const.prodMk measurable_id))).div ((measurable_id.sub_const z).pow_const 2)
   have hβ2 : γ * α₁ < 2 := by have h := (lt_div_iff₀ hγ).mp hα₁; nlinarith
-  have hfi := fusion_localSecondKernel_integrable γ α₁ α₂ α₃ (by positivity) hβ hβ2 z hz
-  have hz1 : z ≠ 1 := by
+  have : z ≠ 1 := by
     intro he
     rw [he, norm_one] at hz4
     norm_num at hz4
@@ -63,7 +62,7 @@ theorem fusion_localR1_rooting {Ω : Type*} [MeasurableSpace Ω]
     ![z, 0, 1] hzinj α₃ ha hα₃
   have h := (fusion_rooted_coulomb_complex_integral P X hX γ hγ hγ2 M hM
     ![-γ / 2, α₁, α₂] ![z, 0, 1] hzunit α₃ s hs hmfin (B.indicator f)
-    (hf.indicator Metric.isOpen_ball.measurableSet) hfi).2.2.2
+    (hf.indicator Metric.isOpen_ball.measurableSet) (fusion_localSecondKernel_integrable γ α₁ α₂ α₃ (by positivity) hβ hβ2 z hz)).2.2.2
   have he : (fun x : ℂ => B.indicator f x *
       ((∫⁻ ω, coulombMass γ (gmcRootedMeasure γ x (M ω))
         ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃ ^ s ∂P).toReal : ℂ)) =

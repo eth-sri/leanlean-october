@@ -30,17 +30,15 @@ theorem kahane_finite_laplace_lintegral
     ∫⁻ ω, ENNReal.ofReal (Real.exp (-s * DOZZ.finiteChaosMass PX X a γ ω)) ∂PX ≤
       ∫⁻ ω, ENNReal.ofReal (Real.exp (-s * DOZZ.finiteChaosMass PY Y a γ ω)) ∂PY := by
   classical
-  have : IsProbabilityMeasure PX := hX.1
-  have : IsProbabilityMeasure PY := hY.1
+  have := hX.1
+  have := hY.1
   obtain ⟨A, hXlaw, hXcov⟩ := centeredJointlyGaussian_standardLinearRepresentation PX X hX
   obtain ⟨B, hYlaw, hYcov⟩ := centeredJointlyGaussian_standardLinearRepresentation PY Y hY
   let μ := standardGaussianFinMeasure n
   let TX : (Fin (n + 1) → ℝ) → Fin (n + 1) → ℝ := fun x => Matrix.mulVec A x
   let TY : (Fin (n + 1) → ℝ) → Fin (n + 1) → ℝ := fun x => Matrix.mulVec B x
-  have hXlaw' : PX.map X = μ.map TX := by
-    simpa [TX, μ, standardGaussianFinMeasure] using hXlaw
-  have hYlaw' : PY.map Y = μ.map TY := by
-    simpa [TY, μ, standardGaussianFinMeasure] using hYlaw
+  have hXlaw' : PX.map X = μ.map TX := by assumption
+  have hYlaw' : PY.map Y = μ.map TY := by assumption
   let FX : (Fin (n + 1) → ℝ) → ℝ := fun z =>
     Real.exp (-s * finiteChaosVectorMass a (finiteChaosMatrixRowVariance A) γ z)
   let FY : (Fin (n + 1) → ℝ) → ℝ := fun z =>
@@ -62,27 +60,21 @@ theorem kahane_finite_laplace_lintegral
       (finiteChaosMatrixRowVariance B) γ z))
     fun_prop [finiteChaosVectorMass, finiteChaosVectorWeight]
   have hFXbound (z : Fin (n + 1) → ℝ) : ‖FX z‖ ≤ 1 := by
-    have hmass := finiteChaosVectorMass_nonneg a (finiteChaosMatrixRowVariance A) γ ha z
     rw [Real.norm_eq_abs, abs_of_nonneg (Real.exp_nonneg _)]
     apply Real.exp_le_one_iff.mpr
-    nlinarith [hs, hmass]
+    nlinarith [hs, finiteChaosVectorMass_nonneg a (finiteChaosMatrixRowVariance A) γ ha z]
   have hFYbound (z : Fin (n + 1) → ℝ) : ‖FY z‖ ≤ 1 := by
-    have hmass := finiteChaosVectorMass_nonneg a (finiteChaosMatrixRowVariance B) γ ha z
     rw [Real.norm_eq_abs, abs_of_nonneg (Real.exp_nonneg _)]
     apply Real.exp_le_one_iff.mpr
-    nlinarith [hs, hmass]
-  have hFXsrc : Integrable (fun ω => FX (X ω)) PX :=
+    nlinarith [hs, finiteChaosVectorMass_nonneg a (finiteChaosMatrixRowVariance B) γ ha z]
+  have hFXsrc :=
     Integrable.of_bound
       (hFXcont.aestronglyMeasurable.comp_aemeasurable hXae) 1
       (ae_of_all PX fun ω => hFXbound (X ω))
-  have hFYsrc : Integrable (fun ω => FY (Y ω)) PY :=
+  have hFYsrc :=
     Integrable.of_bound
       (hFYcont.aestronglyMeasurable.comp_aemeasurable hYae) 1
       (ae_of_all PY fun ω => hFYbound (Y ω))
-  have hFXmap : Integrable FX (PX.map X) :=
-    (integrable_map_measure hFXcont.aestronglyMeasurable hXae).mpr hFXsrc
-  have hFYmap : Integrable FY (PY.map Y) :=
-    (integrable_map_measure hFYcont.aestronglyMeasurable hYae).mpr hFYsrc
   have hVarX (i : Fin (n + 1)) :
       DOZZ.gaussianVariance PX (fun ω => X ω i) = finiteChaosMatrixRowVariance A i := by
     simpa [DOZZ.gaussianVariance, finiteChaosMatrixRowVariance,
@@ -106,10 +98,9 @@ theorem kahane_finite_laplace_lintegral
             apply integral_congr_ae
             exact ae_of_all PX fun ω => by simp [FX, hmassX]
       _ = ∫ z, FX z ∂PX.map X :=
-        (integral_map hXae hFXmap.aestronglyMeasurable).symm
+        (integral_map hXae ((integrable_map_measure hFXcont.aestronglyMeasurable hXae).mpr hFXsrc).aestronglyMeasurable).symm
       _ = ∫ z, FX z ∂μ.map TX := by rw [hXlaw']
-      _ = ∫ x, FX (TX x) ∂μ := by
-        exact integral_map (by fun_prop : AEMeasurable TX μ)
+      _ = ∫ x, FX (TX x) ∂μ := integral_map (by fun_prop : AEMeasurable TX μ)
           (hFXcont.aestronglyMeasurable : AEStronglyMeasurable FX (μ.map TX))
   have hrealY :
       ∫ ω, Real.exp (-s * DOZZ.finiteChaosMass PY Y a γ ω) ∂PY =
@@ -120,10 +111,9 @@ theorem kahane_finite_laplace_lintegral
             apply integral_congr_ae
             exact ae_of_all PY fun ω => by simp [FY, hmassY]
       _ = ∫ z, FY z ∂PY.map Y :=
-        (integral_map hYae hFYmap.aestronglyMeasurable).symm
+        (integral_map hYae ((integrable_map_measure hFYcont.aestronglyMeasurable hYae).mpr hFYsrc).aestronglyMeasurable).symm
       _ = ∫ z, FY z ∂μ.map TY := by rw [hYlaw']
-      _ = ∫ x, FY (TY x) ∂μ := by
-        exact integral_map (by fun_prop : AEMeasurable TY μ)
+      _ = ∫ x, FY (TY x) ∂μ := integral_map (by fun_prop : AEMeasurable TY μ)
           (hFYcont.aestronglyMeasurable : AEStronglyMeasurable FY (μ.map TY))
   have hMatrixCov (i j : Fin (n + 1)) :
       finiteChaosMatrixRowCovariance A i j ≤ finiteChaosMatrixRowCovariance B i j := by

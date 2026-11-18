@@ -24,470 +24,174 @@ theorem betaIntegral_ofReal (x y : ℝ) :
     Complex.betaIntegral (x : ℂ) (y : ℂ) =
       (↑(∫ t : ℝ in Ioc (0 : ℝ) 1, t ^ (x - 1) * (1 - t) ^ (y - 1)) : ℂ) := by
   rw [Complex.betaIntegral, intervalIntegral.integral_of_le zero_le_one]
-  calc
-    _ = ∫ t : ℝ in Ioc (0 : ℝ) 1,
-          ((t ^ (x - 1) * (1 - t) ^ (y - 1) : ℝ) : ℂ) := by
-      apply integral_congr_ae
-      filter_upwards [ae_restrict_mem measurableSet_Ioc] with t ht
-      have ht0 : 0 ≤ t := le_of_lt ht.1
-      have ht1 : 0 ≤ 1 - t := by linarith [ht.2]
-      rw [show (x : ℂ) - 1 = ((x - 1 : ℝ) : ℂ) by push_cast; ring]
-      rw [show (y : ℂ) - 1 = ((y - 1 : ℝ) : ℂ) by push_cast; ring]
-      rw [show (1 : ℂ) - (t : ℝ) = ((1 - t : ℝ) : ℂ) by push_cast; ring]
-      rw [← Complex.ofReal_cpow ht0, ← Complex.ofReal_cpow ht1]
-      exact (Complex.ofReal_mul _ _).symm
-    _ = _ := integral_ofReal
+  refine (integral_congr_ae (g := fun t : ℝ => ((t ^ (x - 1) * (1 - t) ^ (y - 1) : ℝ) : ℂ))
+    ((ae_restrict_mem measurableSet_Ioc).mono fun t ht => ?_)).trans integral_ofReal
+  dsimp only
+  rw [show (x : ℂ) - 1 = ((x - 1 : ℝ) : ℂ) by push_cast; ring,
+    show (y : ℂ) - 1 = ((y - 1 : ℝ) : ℂ) by push_cast; ring,
+    show (1 : ℂ) - (t : ℝ) = ((1 - t : ℝ) : ℂ) by push_cast; ring,
+    ← Complex.ofReal_cpow ht.1.le, ← Complex.ofReal_cpow (sub_nonneg.2 ht.2), ← Complex.ofReal_mul]
 
-private theorem beta_change_variables (x y : ℝ) :
-    (∫ v : ℝ in Ioi 0, v ^ (x - 1) * (1 + v) ^ (-(x + y))) =
-      ∫ t : ℝ in Ioc 0 1, t ^ (x - 1) * (1 - t) ^ (y - 1) := by
-  let f : ℝ → ℝ := fun v => v / (1 + v)
-  have hImage : f '' Ioi (0 : ℝ) = Ioo 0 1 := by
-    ext t
-    constructor
-    · rintro ⟨v, hv, rfl⟩
-      have hv' : 0 < v := mem_Ioi.mp hv
-      have hden : 0 < 1 + v := by linarith
-      constructor
-      · exact div_pos hv' hden
-      · rw [div_lt_one hden]
-        linarith
-    · rintro ⟨ht, ht1⟩
-      refine ⟨t / (1 - t), div_pos ht (sub_pos.mpr ht1), ?_⟩
-      dsimp [f]
-      field_simp
-      ring
-  have hInj : InjOn f (Ioi (0 : ℝ)) := by
-    intro v hv w hw h
-    have hvpos : 0 < v := mem_Ioi.mp hv
-    have hwpos : 0 < w := mem_Ioi.mp hw
-    have hv' : 1 + v ≠ 0 := by linarith
-    have hw' : 1 + w ≠ 0 := by linarith
-    have hcross : v * (1 + w) = w * (1 + v) :=
-      (div_eq_div_iff hv' hw').mp (by simpa [f] using h)
-    nlinarith [hcross]
-  have hderiv : ∀ v ∈ Ioi (0 : ℝ),
-      HasDerivWithinAt f ((1 + v) ^ 2)⁻¹ (Ioi (0 : ℝ)) v := by
-    intro v hv
-    have hvpos : 0 < v := mem_Ioi.mp hv
-    have hd : 0 < 1 + v := by linarith
-    have hden : HasDerivAt (fun t : ℝ => 1 + t) 1 v := by
-      convert (hasDerivAt_id v).const_add 1 using 1
-      · funext t
-        simp
-    have hdiv := (hasDerivAt_id v).div hden hd.ne'
-    have hfun : HasDerivAt (fun t : ℝ => t / (1 + t)) ((1 + v) ^ 2)⁻¹ v := by
-      convert hdiv using 1
-      · rfl
-      · field_simp
-        simp only [id_eq]
-        ring
-    simpa only [f] using hfun.hasDerivWithinAt
-  have hchange := MeasureTheory.integral_image_eq_integral_abs_deriv_smul
-    (s := Ioi (0 : ℝ)) (f := f) (f' := fun v => ((1 + v) ^ 2)⁻¹)
-    measurableSet_Ioi hderiv hInj (fun t : ℝ => t ^ (x - 1) * (1 - t) ^ (y - 1))
-  rw [hImage] at hchange
-  rw [setIntegral_congr_set Ioo_ae_eq_Ioc] at hchange
-  calc
-    ∫ v : ℝ in Ioi 0, v ^ (x - 1) * (1 + v) ^ (-(x + y))
-        = ∫ v : ℝ in Ioi 0,
-          |((1 + v) ^ 2)⁻¹| * ((f v) ^ (x - 1) * (1 - f v) ^ (y - 1)) := by
-            symm
-            apply setIntegral_congr_fun measurableSet_Ioi
-            intro v hv
-            have hv0 : 0 < v := hv
-            have hd : 0 < 1 + v := by linarith
-            change |((1 + v) ^ 2)⁻¹| *
-                ((f v) ^ (x - 1) * (1 - f v) ^ (y - 1)) =
-              v ^ (x - 1) * (1 + v) ^ (-(x + y))
-            have hcomp : 1 - f v = 1 / (1 + v) := by
-              dsimp [f]
-              field_simp
-              ring
-            rw [hcomp, abs_of_pos (by positivity)]
-            rw [← Real.rpow_natCast (1 + v) 2]
-            rw [Real.div_rpow hv0.le hd.le, Real.div_rpow zero_le_one hd.le]
-            rw [Real.one_rpow]
-            rw [Real.rpow_neg hd.le]
-            have hpowers : (1 + v) ^ (2 : ℝ) * (1 + v) ^ (x - 1) * (1 + v) ^ (y - 1) =
-                (1 + v) ^ (x + y) := by
-              rw [← Real.rpow_add hd]
-              rw [← Real.rpow_add hd]
-              congr 1
-              ring
-            field_simp [ne_of_gt (Real.rpow_pos_of_pos hd (x - 1)),
-              ne_of_gt (Real.rpow_pos_of_pos hd (y - 1)),
-              ne_of_gt (Real.rpow_pos_of_pos hd (x + y))]
-            rw [← hpowers]
-            ring_nf
-    _ = ∫ t : ℝ in Ioc 0 1, t ^ (x - 1) * (1 - t) ^ (y - 1) := hchange.symm
-
-private theorem one_sub_rpow_abs_le (p : ℝ) (hp : 0 < p) {v : ℝ}
-    (hv : v ∈ Ioc (0 : ℝ) 1) : |(1 + v) ^ (-p) - 1| ≤ p * v := by
-  have hdiff : ∀ x ∈ Icc (0 : ℝ) 1,
-      DifferentiableAt ℝ (fun y : ℝ => (1 + y) ^ (-p)) x := by
-    intro x hx
-    exact (Real.hasDerivAt_rpow_const (x := 1 + x) (p := -p)
-      (Or.inl (by linarith [hx.1]))).differentiableAt.comp x
-        ((hasDerivAt_id x).const_add 1).differentiableAt
-  have hderiv : ∀ x ∈ Icc (0 : ℝ) 1,
-      ‖deriv (fun y : ℝ => (1 + y) ^ (-p)) x‖ ≤ p := by
-    intro x hx
-    have h := (Real.hasDerivAt_rpow_const (x := 1 + x) (p := -p)
-      (Or.inl (by linarith [hx.1]))).comp x ((hasDerivAt_id x).const_add 1)
-    have hderiv' : deriv (fun y : ℝ => (1 + y) ^ (-p)) x =
-        (-p) * (1 + x) ^ (-p - 1) := by
-      simpa [Function.comp_def] using h.deriv
-    rw [hderiv']
-    have hpow : (1 + x) ^ (-p - 1) ≤ 1 :=
-      Real.rpow_le_one_of_one_le_of_nonpos (by linarith [hx.1]) (by linarith)
-    rw [Real.norm_eq_abs, abs_mul, abs_neg, abs_of_pos hp,
-      abs_of_nonneg (Real.rpow_nonneg (by linarith [hx.1]) _)]
-    exact (mul_le_of_le_one_right (by positivity) hpow)
-  have hmv := Convex.norm_image_sub_le_of_norm_deriv_le
-    hdiff hderiv (convex_Icc (0 : ℝ) 1) (left_mem_Icc.mpr (by norm_num))
-    (by exact ⟨le_of_lt hv.1, hv.2⟩)
-  simpa [Real.norm_eq_abs, abs_of_pos hv.1] using hmv
-
-private theorem beta_negative_power_integrable (p a : ℝ) (hp : 0 < p)
-    (ha : 1 < a) (ha₂ : a < 2) :
-    IntegrableOn (fun v : ℝ => ((1 + v) ^ (-p) - 1) * v ^ (-a)) (Ioi 0) := by
-  have hnearPow : IntegrableOn (fun v : ℝ => v ^ (1 - a)) (Ioc 0 1) := by
-    rw [integrableOn_congr_set_ae Ioo_ae_eq_Ioc.symm]
-    exact (intervalIntegral.integrableOn_Ioo_rpow_iff zero_lt_one).2 (by linarith)
-  have hnearDom : IntegrableOn (fun v : ℝ => p * v ^ (1 - a)) (Ioc 0 1) := by
-    change Integrable (fun v : ℝ => p * v ^ (1 - a)) (volume.restrict (Ioc 0 1))
-    exact hnearPow.integrable.const_mul p
-  have hnear : IntegrableOn
-      (fun v : ℝ => ((1 + v) ^ (-p) - 1) * v ^ (-a)) (Ioc 0 1) := by
-    apply hnearDom.integrable.mono' (Measurable.aestronglyMeasurable
-      (show Measurable (fun v : ℝ => ((1 + v) ^ (-p) - 1) * v ^ (-a)) from
-        (((measurable_const.add measurable_id).pow_const (-p)).sub measurable_const).mul
-          (measurable_id.pow_const (-a))))
-    filter_upwards [ae_restrict_mem measurableSet_Ioc] with v hv
-    have hv' : v ∈ Ioc (0 : ℝ) 1 := hv
-    have hbound := one_sub_rpow_abs_le p hp hv'
-    have hpow : 0 < v ^ (-a) := Real.rpow_pos_of_pos hv'.1 _
-    have hpowmul : v * v ^ (-a) = v ^ (1 - a) := by
-      calc
-        v * v ^ (-a) = v ^ (1 : ℝ) * v ^ (-a) := by rw [Real.rpow_one]
-        _ = v ^ (1 + (-a)) := by rw [← Real.rpow_add hv'.1]
-        _ = v ^ (1 - a) := by congr 1
-    calc
-      ‖((1 + v) ^ (-p) - 1) * v ^ (-a)‖ =
-          |(1 + v) ^ (-p) - 1| * v ^ (-a) := by
-            rw [Real.norm_eq_abs, abs_mul, abs_of_pos hpow]
-      _ ≤ (p * v) * v ^ (-a) := mul_le_mul_of_nonneg_right hbound hpow.le
-      _ = p * (v * v ^ (-a)) := by ring
-      _ = p * v ^ (1 - a) := by rw [hpowmul]
-  have htailPow : IntegrableOn (fun v : ℝ => v ^ (-a)) (Ioi 1) :=
-    integrableOn_Ioi_rpow_of_lt (by linarith) zero_lt_one
-  have htail : IntegrableOn
-      (fun v : ℝ => ((1 + v) ^ (-p) - 1) * v ^ (-a)) (Ioi 1) := by
-    apply htailPow.integrable.mono' (Measurable.aestronglyMeasurable
-      (show Measurable (fun v : ℝ => ((1 + v) ^ (-p) - 1) * v ^ (-a)) from
-        (((measurable_const.add measurable_id).pow_const (-p)).sub measurable_const).mul
-          (measurable_id.pow_const (-a))))
-    filter_upwards [ae_restrict_mem measurableSet_Ioi] with v hv
-    have hvpos : 0 < v := lt_trans zero_lt_one hv
-    have hbase : 0 ≤ (1 + v) ^ (-p) := Real.rpow_nonneg (by linarith [hv]) _
-    have hle : (1 + v) ^ (-p) ≤ 1 :=
-      Real.rpow_le_one_of_one_le_of_nonpos (by linarith [hv]) (by linarith)
-    have hsub : |(1 + v) ^ (-p) - 1| ≤ 1 := by
-      rw [abs_of_nonpos (sub_nonpos.mpr hle)]
-      linarith
-    have hpow : 0 ≤ v ^ (-a) := Real.rpow_nonneg hvpos.le _
-    calc
-      ‖((1 + v) ^ (-p) - 1) * v ^ (-a)‖ =
-          |(1 + v) ^ (-p) - 1| * v ^ (-a) := by
-            rw [Real.norm_eq_abs, abs_mul, abs_of_nonneg hpow]
-      _ ≤ v ^ (-a) := by simpa using mul_le_mul_of_nonneg_right hsub hpow
-  rw [← Ioc_union_Ioi_eq_Ioi zero_le_one, integrableOn_union]
-  exact ⟨hnear, htail⟩
-
-private theorem beta_ibp_derivative_integrable (p a : ℝ) (hp : 0 < p)
-    (ha : 1 < a) (ha₂ : a < 2) :
-    IntegrableOn
-      (fun v : ℝ => (-p) * (1 + v) ^ (-p - 1) * (v ^ (1 - a) / (1 - a)))
-      (Ioi 0) := by
-  let c : ℝ := p / (a - 1)
-  have hc : 0 < c := div_pos hp (by linarith)
-  have hnearPow : IntegrableOn (fun v : ℝ => v ^ (1 - a)) (Ioc 0 1) := by
-    rw [integrableOn_congr_set_ae Ioo_ae_eq_Ioc.symm]
-    exact (intervalIntegral.integrableOn_Ioo_rpow_iff zero_lt_one).2 (by linarith)
-  have hnearDom : IntegrableOn (fun v : ℝ => c * v ^ (1 - a)) (Ioc 0 1) := by
-    change Integrable (fun v : ℝ => c * v ^ (1 - a)) (volume.restrict (Ioc 0 1))
-    exact hnearPow.integrable.const_mul c
-  have hnear : IntegrableOn
-      (fun v : ℝ => (-p) * (1 + v) ^ (-p - 1) * (v ^ (1 - a) / (1 - a)))
-      (Ioc 0 1) := by
-    apply hnearDom.integrable.mono' (Measurable.aestronglyMeasurable
-      (show Measurable (fun v : ℝ => (-p) * (1 + v) ^ (-p - 1) * (v ^ (1 - a) / (1 - a))) from
-        (measurable_const.mul ((measurable_const.add measurable_id).pow_const (-p - 1))).mul
-          ((measurable_id.pow_const (1 - a)).div_const (1 - a))))
-    filter_upwards [ae_restrict_mem measurableSet_Ioc] with v hv
-    have hv' : v ∈ Ioc (0 : ℝ) 1 := hv
-    have hpow : 0 < v ^ (1 - a) := Real.rpow_pos_of_pos hv'.1 _
-    have hfactor : 0 < (1 + v) ^ (-p - 1) ∧ (1 + v) ^ (-p - 1) ≤ 1 := by
-      constructor
-      · exact Real.rpow_pos_of_pos (by linarith [hv'.1]) _
-      · exact Real.rpow_le_one_of_one_le_of_nonpos (by linarith [hv'.1]) (by linarith)
-    have hnorm :
-        ‖(-p) * (1 + v) ^ (-p - 1) * (v ^ (1 - a) / (1 - a))‖ =
-          p * (1 + v) ^ (-p - 1) * (v ^ (1 - a) / (a - 1)) := by
-      rw [Real.norm_eq_abs, abs_mul, abs_mul, abs_neg, abs_of_pos hp,
-        abs_of_pos hfactor.1, abs_div, abs_of_pos hpow,
-        abs_of_neg (by linarith : 1 - a < 0)]
-      congr 2
-      field_simp
-      ring
-    rw [hnorm]
-    have hnum : p * (1 + v) ^ (-p - 1) * v ^ (1 - a) ≤
-        p * v ^ (1 - a) := by
-      simpa using mul_le_mul_of_nonneg_right
-        (mul_le_mul_of_nonneg_left hfactor.2 hp.le) hpow.le
-    have hdiv := (div_le_div_of_nonneg_right hnum (by linarith : 0 ≤ a - 1))
-    have hconst : p * v ^ (1 - a) / (a - 1) = c * v ^ (1 - a) := by
-      dsimp [c]
-      ring
-    simpa [div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm] using hdiv.trans_eq hconst
-  have htailPow : IntegrableOn (fun v : ℝ => v ^ (-p - a)) (Ioi 1) := by
-    apply integrableOn_Ioi_rpow_of_lt (c := 1) _ zero_lt_one
-    linarith
-  have htailDom : IntegrableOn (fun v : ℝ => c * v ^ (-p - a)) (Ioi 1) := by
-    change Integrable (fun v : ℝ => c * v ^ (-p - a)) (volume.restrict (Ioi 1))
-    exact htailPow.integrable.const_mul c
-  have htail : IntegrableOn
-      (fun v : ℝ => (-p) * (1 + v) ^ (-p - 1) * (v ^ (1 - a) / (1 - a)))
-      (Ioi 1) := by
-    apply htailDom.integrable.mono' (Measurable.aestronglyMeasurable
-      (show Measurable (fun v : ℝ => (-p) * (1 + v) ^ (-p - 1) * (v ^ (1 - a) / (1 - a))) from
-        (measurable_const.mul ((measurable_const.add measurable_id).pow_const (-p - 1))).mul
-          ((measurable_id.pow_const (1 - a)).div_const (1 - a))))
-    filter_upwards [ae_restrict_mem measurableSet_Ioi] with v hv
-    have hvpos : 0 < v := lt_trans zero_lt_one hv
-    have hq : 0 < v ^ (1 - a) := Real.rpow_pos_of_pos hvpos _
-    have hpow :
-        0 < (1 + v) ^ (-p - 1) ∧ (1 + v) ^ (-p - 1) ≤ v ^ (-p - 1) := by
-      constructor
-      · exact Real.rpow_pos_of_pos (by linarith [hv]) _
-      · exact Real.rpow_le_rpow_of_nonpos hvpos (by linarith [hv]) (by linarith)
-    have hnorm :
-        ‖(-p) * (1 + v) ^ (-p - 1) * (v ^ (1 - a) / (1 - a))‖ =
-          p * (1 + v) ^ (-p - 1) * (v ^ (1 - a) / (a - 1)) := by
-      rw [Real.norm_eq_abs, abs_mul, abs_mul, abs_neg, abs_of_pos hp,
-        abs_of_pos hpow.1, abs_div, abs_of_pos hq,
-        abs_of_neg (by linarith : 1 - a < 0)]
-      congr 2
-      field_simp
-      ring
-    have hpowmul : v ^ (-p - 1) * v ^ (1 - a) = v ^ (-p - a) := by
-      rw [← Real.rpow_add hvpos]
-      congr 1
-      ring
-    rw [hnorm]
-    have hnum : p * (1 + v) ^ (-p - 1) * v ^ (1 - a) ≤
-        p * (v ^ (-p - 1) * v ^ (1 - a)) := by
-      simpa only [mul_assoc] using mul_le_mul_of_nonneg_right
-        (mul_le_mul_of_nonneg_left hpow.2 hp.le) hq.le
-    have hdiv := (div_le_div_of_nonneg_right hnum (by linarith : 0 ≤ a - 1))
-    have hconst :
-        p * (v ^ (-p - 1) * v ^ (1 - a)) / (a - 1) = c * v ^ (-p - a) := by
-      rw [hpowmul]
-      dsimp [c]
-      ring
-    simpa [div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm] using hdiv.trans_eq hconst
-  rw [← Ioc_union_Ioi_eq_Ioi zero_le_one, integrableOn_union]
-  exact ⟨hnear, htail⟩
-
-private theorem beta_primitive_abs (a x : ℝ) (ha : 1 < a) (hx : 0 < x) :
-    |x ^ (1 - a) / (1 - a)| = (1 / (a - 1)) * x ^ (1 - a) := by
-  rw [abs_div, abs_of_pos (Real.rpow_pos_of_pos hx _),
-    abs_of_neg (by linarith : 1 - a < 0)]
-  rw [show -(1 - a) = a - 1 by ring]
-  ring
-
-private theorem beta_product_tends_zero (p a : ℝ) (hp : 0 < p)
-    (ha : 1 < a) (ha₂ : a < 2) :
-    Tendsto (fun x : ℝ => ((1 + x) ^ (-p) - 1) * (x ^ (1 - a) / (1 - a)))
-      (𝓝[>] 0) (𝓝 0) ∧
-    Tendsto (fun x : ℝ => ((1 + x) ^ (-p) - 1) * (x ^ (1 - a) / (1 - a)))
-      atTop (𝓝 0) := by
-  let g : ℝ → ℝ := fun x => (1 + x) ^ (-p) - 1
-  let G : ℝ → ℝ := fun x => x ^ (1 - a) / (1 - a)
-  let c : ℝ := p / (a - 1)
-  let d : ℝ := 1 / (a - 1)
-  have hc : 0 < c := div_pos hp (by linarith)
-  have hd : 0 < d := by positivity
-  have hpowNear : Tendsto (fun x : ℝ => x ^ (2 - a)) (𝓝[>] 0) (𝓝 0) := by
-    have hcont := Real.continuousAt_rpow_const 0 (2 - a) (Or.inr (by linarith))
-    simpa [Real.zero_rpow, ne_of_gt (show 0 < 2 - a by linarith)] using
-      hcont.mono_left nhdsWithin_le_nhds
-  have hpowTop : Tendsto (fun x : ℝ => x ^ (1 - a)) atTop (𝓝 0) := by
-    simpa [sub_eq_add_neg] using tendsto_rpow_neg_atTop (by linarith : 0 < a - 1)
-  have hnear : ∀ᶠ x in 𝓝[>] (0 : ℝ), x < 1 :=
-    (eventually_lt_nhds (show (0 : ℝ) < 1 by norm_num)).filter_mono
-      nhdsWithin_le_nhds
-  have hnearBound : ∀ᶠ x in 𝓝[>] (0 : ℝ), ‖g x * G x‖ ≤ c * x ^ (2 - a) := by
-    filter_upwards [eventually_mem_nhdsWithin, hnear] with x hx hx1
-    have hg : |g x| ≤ p * x := by
-      simpa [g] using one_sub_rpow_abs_le p hp ⟨hx, le_of_lt hx1⟩
-    have hG : |G x| = d * x ^ (1 - a) := by
-      simpa [G, d] using beta_primitive_abs a x ha hx
-    have hpowmul : x * x ^ (1 - a) = x ^ (2 - a) := by
-      calc
-        x * x ^ (1 - a) = x ^ (1 : ℝ) * x ^ (1 - a) := by rw [Real.rpow_one]
-        _ = x ^ (1 + (1 - a)) := by rw [← Real.rpow_add hx]
-        _ = x ^ (2 - a) := by congr 1; ring
-    have hnorm : ‖g x * G x‖ = |g x| * |G x| := by
-      simp [Real.norm_eq_abs]
-    rw [hnorm, hG]
-    calc
-      |g x| * (d * x ^ (1 - a)) ≤ (p * x) * (d * x ^ (1 - a)) :=
-        mul_le_mul_of_nonneg_right hg
-          (mul_nonneg hd.le (Real.rpow_nonneg hx.le _))
-      _ = c * x ^ (2 - a) := by
-        dsimp [c, d]
-        field_simp
-        rw [hpowmul]
-  have hnearSqueeze :
-      Tendsto (fun x : ℝ => g x * G x) (𝓝[>] 0) (𝓝 0) := by
-    have htop : Tendsto (fun x : ℝ => c * x ^ (2 - a)) (𝓝[>] 0) (𝓝 0) := by
-      simpa [mul_comm] using hpowNear.const_mul c
-    have hbot : Tendsto (fun x : ℝ => -(c * x ^ (2 - a))) (𝓝[>] 0) (𝓝 0) := by
-      simpa using htop.neg
-    have hbounds : ∀ᶠ x in 𝓝[>] (0 : ℝ),
-        -(c * x ^ (2 - a)) ≤ g x * G x ∧ g x * G x ≤ c * x ^ (2 - a) := by
-      filter_upwards [hnearBound] with x hx
-      have habs : |g x * G x| ≤ c * x ^ (2 - a) := by
-        simpa [Real.norm_eq_abs] using hx
-      exact abs_le.mp habs
-    exact Filter.Tendsto.squeeze' hbot htop
-      (hbounds.mono fun _ h => h.1) (hbounds.mono fun _ h => h.2)
-  have htailBound : ∀ᶠ x in atTop, ‖g x * G x‖ ≤ d * x ^ (1 - a) := by
-    filter_upwards [eventually_gt_atTop (1 : ℝ)] with x hx
-    have hxpos : 1 < x := hx
-    have hbase : 0 ≤ (1 + x) ^ (-p) := Real.rpow_nonneg (by linarith) _
-    have hle : (1 + x) ^ (-p) ≤ 1 :=
-      Real.rpow_le_one_of_one_le_of_nonpos (by linarith) (by linarith)
-    have hg : |g x| ≤ 1 := by
-      rw [show g x = (1 + x) ^ (-p) - 1 by rfl,
-        abs_of_nonpos (sub_nonpos.mpr hle)]
-      linarith
-    have hG : |G x| = d * x ^ (1 - a) := by
-      simpa [G, d] using beta_primitive_abs a x ha (lt_trans zero_lt_one hx)
-    rw [Real.norm_eq_abs, abs_mul, hG]
-    simpa [d] using mul_le_mul_of_nonneg_right hg
-      (mul_nonneg hd.le (Real.rpow_nonneg (by linarith) _))
-  have htailSqueeze :
-      Tendsto (fun x : ℝ => g x * G x) atTop (𝓝 0) := by
-    have htop : Tendsto (fun x : ℝ => d * x ^ (1 - a)) atTop (𝓝 0) := by
-      simpa [mul_comm] using hpowTop.const_mul d
-    have hbot : Tendsto (fun x : ℝ => -(d * x ^ (1 - a))) atTop (𝓝 0) := by
-      simpa using htop.neg
-    have hbounds : ∀ᶠ x in atTop,
-        -(d * x ^ (1 - a)) ≤ g x * G x ∧ g x * G x ≤ d * x ^ (1 - a) := by
-      filter_upwards [htailBound] with x hx
-      have habs : |g x * G x| ≤ d * x ^ (1 - a) := by
-        simpa [Real.norm_eq_abs] using hx
-      exact abs_le.mp habs
-    exact Filter.Tendsto.squeeze' hbot htop
-      (hbounds.mono fun _ h => h.1) (hbounds.mono fun _ h => h.2)
-  constructor
-  · simpa [g, G] using hnearSqueeze
-  · simpa [g, G] using htailSqueeze
 
 /-- The signed negative-power integral from the one-dimensional identity of [KRV, Lemma 12.6]. -/
-theorem beta_negative_power_integral (p a : ℝ) (hp : 0 < p) (ha : 1 < a)
-    (ha₂ : a < 2) :
+theorem beta_negative_power_integral (p a : ℝ) (hp : 0 < p) (ha : 1 < a) (ha₂ : a < 2) :
     IntegrableOn (fun v : ℝ => ((1 + v) ^ (-p) - 1) * v ^ (-a)) (Ioi 0) ∧
       (∫ v : ℝ in Ioi 0, ((1 + v) ^ (-p) - 1) * v ^ (-a)) =
         Real.Gamma (1 - a) * Real.Gamma (p + a - 1) / Real.Gamma p := by
-  have hintegrable := beta_negative_power_integrable p a hp ha ha₂
-  refine ⟨hintegrable, ?_⟩
-  let g : ℝ → ℝ := fun x => (1 + x) ^ (-p) - 1
-  let G : ℝ → ℝ := fun x => x ^ (1 - a) / (1 - a)
-  let gp : ℝ → ℝ := fun x => (-p) * (1 + x) ^ (-p - 1)
-  let Gp : ℝ → ℝ := fun x => x ^ (-a)
-  have hgderiv : ∀ x ∈ Ioi (0 : ℝ), HasDerivAt g (gp x) x := by
-    intro x hx
-    have hxpos : 0 < x := hx
-    have hshift : HasDerivAt (fun y : ℝ => 1 + y) 1 x :=
-      (hasDerivAt_id x).const_add 1
-    have hpow := (Real.hasDerivAt_rpow_const (x := 1 + x) (p := -p)
-      (Or.inl (by linarith))).comp x hshift
-    simpa [g, gp, mul_one, sub_eq_add_neg] using hpow.sub_const 1
-  have hGderiv : ∀ x ∈ Ioi (0 : ℝ), HasDerivAt G (Gp x) x := by
-    intro x hx
-    have hpow := (Real.hasDerivAt_rpow_const (x := x) (p := 1 - a)
-      (Or.inl hx.ne')).div_const (1 - a)
-    have hderiv : (1 - a) * x ^ ((1 - a) - 1) / (1 - a) = x ^ (-a) := by
-      rw [show (1 - a) - 1 = -a by ring]
-      exact mul_div_cancel_left₀ _ (by linarith : 1 - a ≠ 0)
-    convert hpow using 1
-    simpa [Gp] using hderiv.symm
-  have hleft : IntegrableOn (g * Gp) (Ioi 0) := by
-    simpa [g, Gp, Pi.mul_def] using hintegrable
-  have hright : IntegrableOn (gp * G) (Ioi 0) := by
-    simpa [gp, G, Pi.mul_def] using beta_ibp_derivative_integrable p a hp ha ha₂
-  have hlimits := beta_product_tends_zero p a hp ha ha₂
-  have hibp := integral_Ioi_mul_deriv_eq_deriv_mul
-    (a := (0 : ℝ)) (u := g) (v := G) (u' := gp) (v' := Gp)
-    hgderiv hGderiv hleft hright (by simpa [g, G, Pi.mul_def] using hlimits.1)
-      (by simpa [g, G, Pi.mul_def] using hlimits.2)
-  have hbetaSub :
-      (∫ v : ℝ in Ioi 0, v ^ (1 - a) * (1 + v) ^ (-(p + 1))) =
-        ∫ t : ℝ in Ioc 0 1, t ^ ((2 - a) - 1) * (1 - t) ^ ((p + a - 1) - 1) := by
-    have h := beta_change_variables (2 - a) (p + a - 1)
-    simpa only [show (2 - a) - 1 = 1 - a by ring,
-      show (2 - a) + (p + a - 1) = p + 1 by ring] using h
-  have hxpos : 0 < 2 - a := by linarith
-  have hypos : 0 < p + a - 1 := by linarith
-  have hbetaC := Complex.betaIntegral_eq_Gamma_mul_div
-    ((2 - a : ℝ) : ℂ) ((p + a - 1 : ℝ) : ℂ)
-    (by simpa using hxpos) (by simpa using hypos)
-  rw [betaIntegral_ofReal] at hbetaC
-  have hbetaR :
-      (∫ t : ℝ in Ioc 0 1, t ^ ((2 - a) - 1) * (1 - t) ^ ((p + a - 1) - 1)) =
-      Real.Gamma (2 - a) * Real.Gamma (p + a - 1) / Real.Gamma (p + 1) := by
-    apply Complex.ofReal_injective
-    have hbetaC' := hbetaC
-    rw [← Complex.ofReal_add, Complex.Gamma_ofReal, Complex.Gamma_ofReal,
-      Complex.Gamma_ofReal,
-      show (2 - a) + (p + a - 1) = p + 1 by ring] at hbetaC'
-    simpa [Complex.ofReal_mul, Complex.ofReal_div] using hbetaC'
-  have hJ :
-      (∫ v : ℝ in Ioi 0, v ^ (1 - a) * (1 + v) ^ (-(p + 1))) =
-        Real.Gamma (2 - a) * Real.Gamma (p + a - 1) / Real.Gamma (p + 1) :=
-    hbetaSub.trans hbetaR
-  have hparts :
-      (∫ v : ℝ in Ioi 0, g v * Gp v) =
-        -(((-p) / (1 - a)) *
-          (∫ v : ℝ in Ioi 0, v ^ (1 - a) * (1 + v) ^ (-(p + 1)))) := by
-    rw [hibp]
-    have hfun : gp * G = fun v : ℝ =>
-        ((-p) / (1 - a)) * (v ^ (1 - a) * (1 + v) ^ (-(p + 1))) := by
-      funext v
-      dsimp [gp, G]
-      have hane : 1 - a ≠ 0 := by linarith
-      rw [show -p - 1 = -(p + 1) by ring]
-      field_simp [hane]
-    have hInt :
-        (∫ v : ℝ in Ioi 0, gp v * G v) =
-          ((-p) / (1 - a)) *
-            (∫ v : ℝ in Ioi 0, v ^ (1 - a) * (1 + v) ^ (-(p + 1))) := by
-      rw [Pi.mul_def] at hfun
-      rw [hfun, integral_const_mul]
-    rw [hInt]
-    simp
-  rw [hJ] at hparts
-  have hfactor : -(((-p) / (1 - a)) *
-        (Real.Gamma (2 - a) * Real.Gamma (p + a - 1) / Real.Gamma (p + 1))) =
-      Real.Gamma (1 - a) * Real.Gamma (p + a - 1) / Real.Gamma p := by
-    rw [show 2 - a = (1 - a) + 1 by ring,
-      Real.Gamma_add_one (by linarith : 1 - a ≠ 0), Real.Gamma_add_one hp.ne']
-    field_simp [hp.ne', ne_of_gt (Real.Gamma_pos_of_pos hp), (by linarith : 1 - a ≠ 0)]
-  rw [hfactor] at hparts
-  simpa [g, Gp] using hparts
+  have integrableOn_Ioi_of_split {f : ℝ → ℝ} (hf : Measurable f) {A B α β : ℝ} (hα : -1 < α) (hβ : β < -1) (hnear : ∀ v ∈ Ioc (0 : ℝ) 1, ‖f v‖ ≤ A * v ^ α) (htail : ∀ v ∈ Ioi (1 : ℝ), ‖f v‖ ≤ B * v ^ β) : IntegrableOn f (Ioi 0) := by
+    rw [← Ioc_union_Ioi_eq_Ioi zero_le_one, integrableOn_union]
+    have hn : IntegrableOn (fun v : ℝ => v ^ α) (Ioc 0 1) := by
+      rw [integrableOn_congr_set_ae Ioo_ae_eq_Ioc.symm]
+      exact (intervalIntegral.integrableOn_Ioo_rpow_iff zero_lt_one).2 hα
+    exact ⟨(hn.integrable.const_mul A).mono' hf.aestronglyMeasurable
+        ((ae_restrict_mem measurableSet_Ioc).mono hnear),
+      ((integrableOn_Ioi_rpow_of_lt hβ zero_lt_one).integrable.const_mul B).mono'
+        hf.aestronglyMeasurable ((ae_restrict_mem measurableSet_Ioi).mono htail)⟩
+  let g (x : ℝ) := (1 + x) ^ (-p) - 1
+  let G (x : ℝ) := x ^ (1 - a) / (1 - a)
+  let gp (x : ℝ) := (-p) * (1 + x) ^ (-p - 1)
+  let Gp (x : ℝ) := x ^ (-a)
+  have ha1_pos : 0 < a - 1 := sub_pos.2 ha
+  have ha1_neg : 1 - a < 0 := sub_neg.2 ha
+  have hg_near {v : ℝ} (hv : v ∈ Ioc (0 : ℝ) 1) : |g v| ≤ p * v := by
+    have hd : ∀ x ∈ Icc (0 : ℝ) 1, HasDerivAt (fun y : ℝ => (1 + y) ^ (-p)) ((-p) * (1 + x) ^ (-p - 1)) x :=
+      fun x hx => by
+        simpa [Function.comp_def] using (Real.hasDerivAt_rpow_const (x := 1 + x) (p := -p)
+          (Or.inl (by linarith [hx.1]))).comp x ((hasDerivAt_id x).const_add 1)
+    have hmv := Convex.norm_image_sub_le_of_norm_deriv_le (fun x hx => (hd x hx).differentiableAt)
+      (fun x hx => by
+        rw [(hd x hx).deriv, Real.norm_eq_abs, abs_mul, abs_neg, abs_of_pos hp,
+          abs_of_nonneg (Real.rpow_nonneg (by linarith [hx.1]) _)]
+        exact mul_le_of_le_one_right hp.le (Real.rpow_le_one_of_one_le_of_nonpos (by linarith [hx.1]) (by linarith)))
+      (convex_Icc 0 1) (left_mem_Icc.2 zero_le_one) ⟨hv.1.le, hv.2⟩
+    simpa [g, Real.norm_eq_abs, abs_of_pos hv.1] using hmv
+  have hg_tail {v : ℝ} (hv : 1 < v) : |g v| ≤ 1 := by
+    have h0 : 0 ≤ (1 + v) ^ (-p) := Real.rpow_nonneg (by linarith) _
+    have h1 : (1 + v) ^ (-p) ≤ 1 := Real.rpow_le_one_of_one_le_of_nonpos (by linarith) (by linarith)
+    rw [abs_of_nonpos (sub_nonpos.2 h1)]; linarith
+  have hG_abs {x : ℝ} (hx : 0 < x) : |G x| = x ^ (1 - a) / (a - 1) := by
+    dsimp [G]; rw [abs_div, abs_of_pos (Real.rpow_pos_of_pos hx _), abs_of_neg ha1_neg, neg_sub]
+  have hleft : IntegrableOn (fun v => g v * Gp v) (Ioi 0) :=
+    integrableOn_Ioi_of_split (by dsimp [g, Gp]; fun_prop) (by linarith : -1 < 1 - a) (by linarith : -a < -1)
+      (A := p) (B := 1)
+      (fun v hv => by
+        have hpv : 0 < v ^ (-a) := Real.rpow_pos_of_pos hv.1 _
+        rw [Real.norm_eq_abs, abs_mul, abs_of_pos hpv]
+        refine (mul_le_mul_of_nonneg_right (hg_near hv) hpv.le).trans_eq ?_
+        rw [mul_assoc, ← Real.rpow_one_add' hv.1.le (by linarith)]; ring_nf)
+      (fun v hv => by
+        have hv0 : 0 < v := lt_trans zero_lt_one hv
+        rw [Real.norm_eq_abs, abs_mul, abs_of_pos (Real.rpow_pos_of_pos hv0 _), one_mul]
+        exact mul_le_of_le_one_left (Real.rpow_nonneg hv0.le _) (hg_tail hv))
+  have hright : IntegrableOn (gp * G) (Ioi 0) :=
+    integrableOn_Ioi_of_split (by dsimp [gp, G]; fun_prop) (by linarith : -1 < 1 - a)
+      (by linarith : -p - a < -1) (A := p / (a - 1)) (B := p / (a - 1))
+      (fun v hv => by
+        rw [Pi.mul_def, Real.norm_eq_abs, abs_mul, hG_abs hv.1]
+        dsimp only [gp]; rw [abs_mul, abs_neg, abs_of_pos hp,
+          abs_of_pos (Real.rpow_pos_of_pos (by linarith [hv.1]) _)]
+        have h1 : (1 + v) ^ (-p - 1) ≤ 1 :=
+          Real.rpow_le_one_of_one_le_of_nonpos (by linarith [hv.1]) (by linarith)
+        have hvpos := (Real.rpow_pos_of_pos hv.1 (1 - a)).le
+        calc p * (1 + v) ^ (-p - 1) * (v ^ (1 - a) / (a - 1))
+          _ ≤ p * 1 * (v ^ (1 - a) / (a - 1)) := by gcongr
+          _ = p / (a - 1) * v ^ (1 - a) := by ring)
+      (fun v hv => by
+        have hv0 : 0 < v := lt_trans zero_lt_one hv
+        rw [Pi.mul_def, Real.norm_eq_abs, abs_mul, hG_abs hv0]
+        dsimp only [gp]; rw [abs_mul, abs_neg, abs_of_pos hp,
+          abs_of_pos (Real.rpow_pos_of_pos (by linarith) _)]
+        have h1 : (1 + v) ^ (-p - 1) ≤ v ^ (-p - 1) :=
+          Real.rpow_le_rpow_of_nonpos hv0 (by linarith) (by linarith)
+        have hvpos := (Real.rpow_pos_of_pos hv0 (1 - a)).le
+        calc p * (1 + v) ^ (-p - 1) * (v ^ (1 - a) / (a - 1))
+          _ ≤ p * v ^ (-p - 1) * (v ^ (1 - a) / (a - 1)) := by gcongr
+          _ = p / (a - 1) * (v ^ (-p - 1) * v ^ (1 - a)) := by ring
+          _ = p / (a - 1) * v ^ (-p - a) := by rw [← Real.rpow_add hv0]; congr 2; ring)
+  refine ⟨hleft, ?_⟩
+  have hlim0 : Tendsto (fun x => g x * G x) (𝓝[>] 0) (𝓝 0) := by
+    refine tendsto_zero_iff_norm_tendsto_zero.2 (squeeze_zero' (g := fun x => p / (a - 1) * x ^ (2 - a))
+      (Eventually.of_forall fun _ => norm_nonneg _) ?_ ?_)
+    · filter_upwards [eventually_mem_nhdsWithin,
+        (eventually_lt_nhds zero_lt_one).filter_mono nhdsWithin_le_nhds] with x hx hx1
+      rw [Real.norm_eq_abs, abs_mul, hG_abs hx]
+      calc |g x| * (x ^ (1 - a) / (a - 1))
+        _ ≤ (p * x) * (x ^ (1 - a) / (a - 1)) :=
+            mul_le_mul_of_nonneg_right (hg_near ⟨hx, hx1.le⟩) (div_nonneg (Real.rpow_nonneg hx.le _) ha1_pos.le)
+        _ = p / (a - 1) * (x * x ^ (1 - a)) := by ring
+        _ = p / (a - 1) * x ^ (2 - a) := by
+            congr 1; rw [← Real.rpow_one_add' hx.le (by linarith)]; congr 1; ring
+    · have hp0 : Tendsto (fun x : ℝ => x ^ (2 - a)) (𝓝[>] 0) (𝓝 0) := by
+        simpa [Real.zero_rpow (by linarith : 2 - a ≠ 0)] using
+          (Real.continuousAt_rpow_const 0 (2 - a) (Or.inr (by linarith))).mono_left nhdsWithin_le_nhds
+      simpa using hp0.const_mul (p / (a - 1))
+  have hlimTop : Tendsto (fun x => g x * G x) atTop (𝓝 0) := by
+    refine tendsto_zero_iff_norm_tendsto_zero.2 (squeeze_zero' (g := fun x => 1 / (a - 1) * x ^ (1 - a))
+      (Eventually.of_forall fun _ => norm_nonneg _) ?_ ?_)
+    · filter_upwards [eventually_gt_atTop (1 : ℝ)] with x hx
+      have hx0 : 0 < x := lt_trans zero_lt_one hx
+      rw [Real.norm_eq_abs, abs_mul, hG_abs hx0]
+      exact (mul_le_of_le_one_left (div_nonneg (Real.rpow_nonneg hx0.le _) ha1_pos.le) (hg_tail hx)).trans_eq (by ring)
+    · have hpT : Tendsto (fun x : ℝ => x ^ (1 - a)) atTop (𝓝 0) := by
+        simpa [sub_eq_add_neg] using tendsto_rpow_neg_atTop ha1_pos
+      simpa using hpT.const_mul (1 / (a - 1))
+  have hibp := integral_Ioi_mul_deriv_eq_deriv_mul (a := 0) (u := g) (v := G) (u' := gp) (v' := Gp)
+    (fun x hx => by
+      have : 0 < x := hx
+      simpa [g, gp, mul_one, sub_eq_add_neg] using
+        ((Real.hasDerivAt_rpow_const (x := 1 + x) (p := -p) (Or.inl (by linarith))).comp x
+          ((hasDerivAt_id x).const_add 1)).sub_const 1)
+    (fun x (hx : 0 < x) => by
+      convert (Real.hasDerivAt_rpow_const (x := x) (p := 1 - a) (Or.inl hx.ne')).div_const (1 - a) using 1
+      dsimp [Gp]; rw [show 1 - a - 1 = -a by ring, mul_div_cancel_left₀ _ ha1_neg.ne])
+    hleft hright hlim0 hlimTop
+  have hchg : (∫ v : ℝ in Ioi 0, v ^ (1 - a) * (1 + v) ^ (-(p + 1))) =
+      ∫ t : ℝ in Ioc 0 1, t ^ ((2 - a) - 1) * (1 - t) ^ ((p + a - 1) - 1) := by
+    let f (v : ℝ) := v / (1 + v)
+    have hImg : f '' Ioi (0 : ℝ) = Ioo 0 1 := by
+      ext t; constructor
+      · rintro ⟨v, hv : 0 < v, rfl⟩
+        exact ⟨div_pos hv (by linarith), (div_lt_one (by linarith)).2 (by linarith)⟩
+      · rintro ⟨ht0, ht1⟩
+        refine ⟨t / (1 - t), div_pos ht0 (sub_pos.2 ht1), ?_⟩
+        dsimp [f]; field_simp [show 1 - t ≠ 0 by linarith]; ring
+    have hInj : InjOn f (Ioi 0) := fun v (hv : 0 < v) w (hw : 0 < w) h => by
+      have := (div_eq_div_iff (by linarith : 1 + v ≠ 0) (by linarith : 1 + w ≠ 0)).1 h
+      linarith
+    have hder : ∀ v ∈ Ioi (0 : ℝ), HasDerivWithinAt f (((1 + v) ^ 2)⁻¹) (Ioi 0) v := fun v (hv : 0 < v) => by
+      have hd : 0 < 1 + v := by linarith
+      have hd1 : HasDerivAt (fun t : ℝ => 1 + t) 1 v := by simpa using (hasDerivAt_id v).const_add 1
+      exact (((hasDerivAt_id v).div hd1 hd.ne').congr_deriv (by field_simp [hd.ne']; simp)).hasDerivWithinAt
+    have hc := integral_image_eq_integral_abs_deriv_smul measurableSet_Ioi hder hInj
+      (fun t : ℝ => t ^ ((2 - a) - 1) * (1 - t) ^ ((p + a - 1) - 1))
+    rw [hImg, setIntegral_congr_set Ioo_ae_eq_Ioc] at hc
+    refine (setIntegral_congr_fun measurableSet_Ioi fun v (hv : 0 < v) => ?_).trans hc.symm
+    have hd : 0 < 1 + v := by linarith
+    dsimp only [f, smul_eq_mul]
+    rw [show 1 - v / (1 + v) = 1 / (1 + v) by field_simp [hd.ne']; ring,
+      abs_of_pos (by positivity), ← Real.rpow_natCast (1 + v) 2,
+      Real.div_rpow hv.le hd.le, Real.div_rpow zero_le_one hd.le, Real.one_rpow,
+      show 2 - a - 1 = 1 - a by ring, Real.rpow_neg hd.le]
+    have hpows : (1 + v) ^ (2 : ℝ) * (1 + v) ^ (1 - a) * (1 + v) ^ (p + a - 1 - 1) = (1 + v) ^ (p + 1) := by
+      rw [← Real.rpow_add hd, ← Real.rpow_add hd]; congr 1; ring
+    field_simp [(Real.rpow_pos_of_pos hd _).ne', (Real.rpow_pos_of_pos hd _).ne',
+      (Real.rpow_pos_of_pos hd _).ne']
+    rw [← hpows]; ring
+  have hbetaC := Complex.betaIntegral_eq_Gamma_mul_div ((2 - a : ℝ) : ℂ) ((p + a - 1 : ℝ) : ℂ)
+    (by simp; linarith) (by simp; linarith)
+  rw [betaIntegral_ofReal, ← Complex.ofReal_add, show 2 - a + (p + a - 1) = p + 1 by ring,
+    Complex.Gamma_ofReal, Complex.Gamma_ofReal, Complex.Gamma_ofReal] at hbetaC
+  have hbetaR : (∫ t : ℝ in Ioc 0 1, t ^ ((2 - a) - 1) * (1 - t) ^ ((p + a - 1) - 1)) =
+      Real.Gamma (2 - a) * Real.Gamma (p + a - 1) / Real.Gamma (p + 1) :=
+    Complex.ofReal_injective (by simpa [Complex.ofReal_mul, Complex.ofReal_div] using hbetaC)
+  have hgpG : (∫ v : ℝ in Ioi 0, gp v * G v) =
+      (-p / (1 - a)) * ∫ v : ℝ in Ioi 0, v ^ (1 - a) * (1 + v) ^ (-(p + 1)) := by
+    rw [← integral_const_mul]
+    exact setIntegral_congr_fun measurableSet_Ioi fun v _ => by
+      dsimp [gp, G]; rw [show -p - 1 = -(p + 1) by ring]; ring
+  rw [show (∫ v : ℝ in Ioi 0, ((1 + v) ^ (-p) - 1) * v ^ (-a)) = ∫ v : ℝ in Ioi 0, g v * Gp v from rfl,
+    hibp, hgpG, hchg, hbetaR, show 2 - a = (1 - a) + 1 by ring,
+    Real.Gamma_add_one ha1_neg.ne, Real.Gamma_add_one hp.ne']
+  field_simp [hp.ne', (Real.Gamma_pos_of_pos hp).ne', ha1_neg.ne]; ring
 
 end DOZZ.Proofs

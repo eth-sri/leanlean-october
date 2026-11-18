@@ -28,7 +28,7 @@ theorem original_localized_mass_comparison
       (∫⁻ y in Metric.ball z 1 \ Metric.ball z δ,
         ENNReal.ofReal (F y)*(ENNReal.ofReal ‖y-z‖)^(-γ*α) ∂M ω) := by
   let w := fun y : ℂ => ENNReal.ofReal (F y)*(ENNReal.ofReal ‖y-z‖)^(-γ*α)
-  have hw : Measurable w := by unfold w; fun_prop
+  have hw : Measurable w := by fun_prop
   have hzero (y : ℂ) (hy : y ∉ Metric.ball z 1) : χ (y-z) = 0 := by
     apply hχzero
     intro h

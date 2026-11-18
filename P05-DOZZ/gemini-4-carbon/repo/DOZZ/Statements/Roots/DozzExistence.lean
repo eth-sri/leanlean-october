@@ -21,6 +21,6 @@ GMC (whose circle averages exist by `IsGMCOf`), and a function `Υ_{γ/2}`. -/
 theorem dozz_existence (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) :
     (∃ U : ℂ → ℂ, IsUpsilon γ U) ∧
       ∃ (Ω : Type) (_ : MeasurableSpace Ω) (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ),
-        IsEquatorGFF P X ∧ IsGMCOf P X γ M := by exact DOZZ.Proofs.dozz_existence γ hγ hγ2
+        IsEquatorGFF P X ∧ IsGMCOf P X γ M := DOZZ.Proofs.dozz_existence γ hγ hγ2
 
 end DOZZ

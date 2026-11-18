@@ -22,14 +22,14 @@ theorem residue_local_coulomb_integrand (γ a b c : ℝ) (z w x : ℂ)
     ENNReal.ofReal (residueLocalWeight γ (a + b + c) b w x) *
       ENNReal.rpow (ENNReal.ofReal ‖x - z‖) (-γ * a) =
         coulombWeight γ ![a, b] ![z, w] c x := by
-  have hd : ‖x - z‖ < 1 := by simpa only [Metric.mem_ball, dist_eq_norm] using hx
-  have hzbound : ‖z‖ ≤ ‖x - z‖ + ‖x‖ := by
+  have : ‖x - z‖ < 1 := by simpa only [Metric.mem_ball, dist_eq_norm] using hx
+  have : ‖z‖ ≤ ‖x - z‖ + ‖x‖ := by
     simpa only [norm_sub_rev, sub_add_cancel] using norm_add_le (z - x) x
-  have hn1 : 1 ≤ ‖x‖ := by linarith only [hz, hd, hzbound]
-  have hn : 0 < ‖x‖ := lt_of_lt_of_le zero_lt_one hn1
+  have hn1 : 1 ≤ ‖x‖ := by nlinarith
+  have hn := lt_of_lt_of_le zero_lt_one hn1
   have hnp : normPlus x = ‖x‖ := max_eq_right hn1
-  have hzpos : 0 < ‖x - z‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hxz)
-  have hwpos : 0 < ‖x - w‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hxw)
+  have hzpos := norm_pos_iff.mpr (sub_ne_zero.mpr hxz)
+  have hwpos := norm_pos_iff.mpr (sub_ne_zero.mpr hxw)
   rw [residue_localWeight_eq γ (a + b + c) b z w x hz hz8 hzw hx]
   unfold coulombWeight
   simp only [Fin.prod_univ_two, Matrix.cons_val_zero, Matrix.cons_val_one,

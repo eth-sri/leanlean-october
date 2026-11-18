@@ -36,8 +36,7 @@ theorem dual_negative_increment_integrable
   have hm := ((hAm.comp_fst.add (hbm.comp_fst.mul hSm.comp_snd)).pow_const (-p)).sub
     (hAm.comp_fst.pow_const (-p))
   have hm' : AEStronglyMeasurable (fun v : Ω × Λ =>
-      (A v.1+b v.1*S v.2)^(-p)-(A v.1)^(-p)) (P.prod R) := by
-    convert hm.aestronglyMeasurable using 1
+      (A v.1+b v.1*S v.2)^(-p)-(A v.1)^(-p)) (P.prod R) := by fun_prop
   apply (hInv.comp_fst R).mono' hm'
   filter_upwards [measurePreserving_fst.quasiMeasurePreserving.ae hA,
     measurePreserving_fst.quasiMeasurePreserving.ae hb,

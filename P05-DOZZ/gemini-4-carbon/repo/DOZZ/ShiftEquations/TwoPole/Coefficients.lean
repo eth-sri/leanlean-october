@@ -23,14 +23,21 @@ The frame factor `(2/γ) 2^{4(1-z/γ)}` cancels these position factors, leaving 
 
 namespace DOZZ.Proofs
 
-theorem reflectionExponent_pole_neg {γ : ℝ} (hγ : 0 < γ) (η : ℝ) :
+variable {γ : ℝ}
+
+
+theorem reflectionExponent_pole_neg (hγ : 0 < γ) (η : ℝ) :
     reflectionExponent γ (2 / γ - η) = 1 + 2 * η / γ := by
   rw [reflectionExponent, Q]
   field_simp
   ring
 
+section
+variable (hγ : 0 < γ) (η R : ℝ)
+include hγ η R
+
 /-- The tail coefficient at `2` is `2^{-4p₂} R̄`. -/
-theorem tailCoefficient_two {γ : ℝ} (hγ : 0 < γ) (η R : ℝ) :
+theorem tailCoefficient_two :
     oneInsertionTailCoefficient γ (2 / γ + η) 2 (poleFactorTwo γ η 2) R =
       2 ^ (-(4 * (1 - 2 * η / γ))) * R := by
   unfold oneInsertionTailCoefficient
@@ -44,7 +51,7 @@ theorem tailCoefficient_two {γ : ℝ} (hγ : 0 < γ) (η R : ℝ) :
   ring
 
 /-- The tail coefficient at `-2` is `2^{-4p₃} R̄`. -/
-theorem tailCoefficient_negTwo {γ : ℝ} (hγ : 0 < γ) (η R : ℝ) :
+theorem tailCoefficient_negTwo :
     oneInsertionTailCoefficient γ (2 / γ - η) (-2) (poleFactorNegTwo γ η (-2)) R =
       2 ^ (-(4 * (1 + 2 * η / γ))) * R := by
   unfold oneInsertionTailCoefficient
@@ -58,7 +65,7 @@ theorem tailCoefficient_negTwo {γ : ℝ} (hγ : 0 < γ) (η R : ℝ) :
   ring
 
 /-- The first residue: `γ c₂ (2/γ) 2^{4p₂} p₂ = (4/γ)(Q - α₂) R̄`. -/
-theorem firstResidue_eq {γ : ℝ} (hγ : 0 < γ) (η R : ℝ) :
+theorem firstResidue_eq :
     γ * (2 ^ (-(4 * (1 - 2 * η / γ))) * R) *
         (2 / γ * 2 ^ (4 * (1 - 2 * η / γ)) * (1 - 2 * η / γ)) =
       4 / γ * (Q γ - (2 / γ + η)) * R := by
@@ -67,14 +74,14 @@ theorem firstResidue_eq {γ : ℝ} (hγ : 0 < γ) (η R : ℝ) :
   have hA0 : (2 : ℝ) ^ (-(4 * (1 - 2 * η / γ))) ≠ 0 := by positivity
   generalize (2 : ℝ) ^ (-(4 * (1 - 2 * η / γ))) = A at h hA0 ⊢
   generalize (2 : ℝ) ^ (4 * (1 - 2 * η / γ)) = B at h ⊢
-  have hB : B = A⁻¹ := eq_inv_of_mul_eq_one_right h
+  have hB := eq_inv_of_mul_eq_one_right h
   subst hB
   rw [Q]
   field_simp
   ring
 
 /-- The second residue: `γ c₃ (2/γ) 2^{4p₃} p₃ = (4/γ)(Q - (Q - η) + γ/2) R̄`. -/
-theorem secondResidue_eq {γ : ℝ} (hγ : 0 < γ) (η R : ℝ) :
+theorem secondResidue_eq :
     γ * (2 ^ (-(4 * (1 + 2 * η / γ))) * R) *
         (2 / γ * 2 ^ (4 * (1 + 2 * η / γ)) * (1 + 2 * η / γ)) =
       4 / γ * (Q γ - (Q γ - η) + γ / 2) * R := by
@@ -83,11 +90,13 @@ theorem secondResidue_eq {γ : ℝ} (hγ : 0 < γ) (η R : ℝ) :
   have hA0 : (2 : ℝ) ^ (-(4 * (1 + 2 * η / γ))) ≠ 0 := by positivity
   generalize (2 : ℝ) ^ (-(4 * (1 + 2 * η / γ))) = A at h hA0 ⊢
   generalize (2 : ℝ) ^ (4 * (1 + 2 * η / γ)) = B at h ⊢
-  have hB : B = A⁻¹ := eq_inv_of_mul_eq_one_right h
+  have hB := eq_inv_of_mul_eq_one_right h
   subst hB
   field_simp
   ring
 
+
+end
 end DOZZ.Proofs
 
 end

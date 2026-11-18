@@ -20,10 +20,10 @@ theorem gmc_inversion_open_mass_fintype_law
     P.map (fun ω j => (M ω).map (fun z : ℂ => z⁻¹) (U j)) =
       P.map (fun ω j => M ω (U j)) := by
   classical
-  let : IsProbabilityMeasure P := hX.1
-  let e : Fin (Fintype.card ι) ≃ ι := (Fintype.equivFin ι).symm
+  let := hX.1
+  let e := (Fintype.equivFin ι).symm
   let N := fun ω => (M ω).map (fun z : ℂ => z⁻¹)
-  have hNmeas : Measurable N := (Measure.measurable_map _ measurable_inv).comp hmeas
+  have hNmeas := (Measure.measurable_map _ measurable_inv).comp hmeas
   have hNfin : ∀ ω, IsFiniteMeasure (N ω) := by
     intro ω
     let := hM.1 ω
@@ -42,8 +42,8 @@ theorem gmc_inversion_open_mass_fintype_law
       (fun n ω j => ∫ x, q n j x ∂N ω) (fun n ω j => ∫ x, q n j x ∂M ω) A B
     · intro n; exact (measurable_pi_iff.mpr (hqn n)).aemeasurable
     · intro n; exact (measurable_pi_iff.mpr (hqm n)).aemeasurable
-    · exact hA.aemeasurable
-    · exact hB.aemeasurable
+    · fun_prop
+    · fun_prop
     · intro n
       exact gmc_inversion_test_vector_law P X hX γ hγ hγ2 M hM hmeas (q n)
     · intro j

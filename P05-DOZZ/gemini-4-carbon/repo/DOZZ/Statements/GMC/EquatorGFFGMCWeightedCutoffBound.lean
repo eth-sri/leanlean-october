@@ -34,6 +34,6 @@ theorem equatorGFF_GMC_weighted_cutoff_bound
       (∫⁻ ω,
         ENNReal.rpow (cutoffWeightedGmcBallMass P Xc γ t.1 z R δ ω) t.2 ∂P) ≤
         ENNReal.ofReal (C * Real.rpow R
-          (γ * (Q γ - t.1) * t.2 - γ ^ 2 * t.2 ^ 2 / 2)) := by exact DOZZ.Proofs.equatorGFF_GMC_weighted_cutoff_bound P X hX γ hγ hγ2 Xc hXc T hT hTadm K hK r₀ hr₀
+          (γ * (Q γ - t.1) * t.2 - γ ^ 2 * t.2 ^ 2 / 2)) := DOZZ.Proofs.equatorGFF_GMC_weighted_cutoff_bound P X hX γ hγ hγ2 Xc hXc T hT hTadm K hK r₀ hr₀
 
 end DOZZ

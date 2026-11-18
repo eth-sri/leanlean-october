@@ -71,14 +71,13 @@ theorem gammaHalf_reflected_formula_of_fusion_and_classification {Ω : Type*} [M
                   ‖gaussFPlus H a b c z‖ ^ 2 := by
   obtain ⟨B, Z, hZ, hB, r, hr, hlim⟩ := hfusion
   obtain ⟨ξ, _, hξ₂, hslack, _⟩ := hnear
-  let κ : ℝ := γ * (Q γ - α₁)
-  let D : ℝ := reflectionR P γ μ α₁ (B α₁) Z *
+  let κ := γ * (Q γ - α₁)
+  let D := reflectionR P γ μ α₁ (B α₁) Z *
     structureConstant P M γ μ (2 * Q γ - α₁ - γ / 2) α₂ α₃
-  let C₀ : ℝ := structureConstant P M γ μ (α₁ - γ / 2) α₂ α₃
+  let C₀ := structureConstant P M γ μ (α₁ - γ / 2) α₂ α₃
   change (∀ z, fourPointT P M γ μ (-γ / 2) α₁ α₂ α₃ z = C₀ + D * ‖z‖ ^ κ + r z) at hr
   change Tendsto (fun z => r z / ‖z‖ ^ κ)
     (nhdsWithin (0 : ℂ) {z : ℂ | z ≠ 0}) (nhds 0) at hlim
-  have hκ : κ < 1 := hslack.trans hξ₂
   have hcast : Tendsto (fun t : ℝ => (t : ℂ))
       (nhdsWithin 0 (Ioi 0)) (nhdsWithin 0 {z : ℂ | z ≠ 0}) := by
     apply tendsto_nhdsWithin_iff.mpr
@@ -100,13 +99,12 @@ theorem gammaHalf_reflected_formula_of_fusion_and_classification {Ω : Type*} [M
     filter_upwards [self_mem_nhdsWithin] with t ht
     rw [hr (t : ℂ)]
     rw [Complex.norm_real, Real.norm_eq_abs, abs_of_pos ht]
-    have hn : t ^ κ ≠ 0 := (Real.rpow_pos_of_pos ht _).ne'
+    have : t ^ κ ≠ 0 := (Real.rpow_pos_of_pos ht _).ne'
     field_simp
     ring
   dsimp only at hclassification ⊢
   obtain ⟨hA, hAB, hBC, hC, _, _, _, _⟩ := DOZZ.gauss_physical_parameter_range
     γ (γ / 2) α₁ α₂ α₃ hγ hγ₂ (Or.inl rfl) hs hα₁ hα₂ hα₃
-  have hc : 0 < gaussParameterC γ (γ / 2) α₁ := hA.trans (hAB.trans hBC)
   have he : 2 * (1 - gaussParameterC γ (γ / 2) α₁) = κ := by
     unfold gaussParameterC
     dsimp only [κ]
@@ -117,7 +115,7 @@ theorem gammaHalf_reflected_formula_of_fusion_and_classification {Ω : Type*} [M
     (gaussParameterC γ (γ / 2) α₁) C₀
     (gaussCoefficientRatio (gaussParameterA γ (γ / 2) α₁ α₂ α₃)
       (gaussParameterB γ (γ / 2) α₁ α₂ α₃) (gaussParameterC γ (γ / 2) α₁)) D
-    hc hC (he ▸ hκ) (fourPointT P M γ μ (-γ / 2) α₁ α₂ α₃)
+    (hA.trans (hAB.trans hBC)) hC (he ▸ (hslack.trans hξ₂)) (fourPointT P M γ μ (-γ / 2) α₁ α₂ α₃)
     (by simpa only [neg_div] using hclassification) (by simpa only [he] using hray)
   refine ⟨B, Z, hZ, hB, ?_⟩
   intro z hz

@@ -23,31 +23,28 @@ theorem reflected_outerMass_inverse_moment_tendsto
       (nhdsWithin (0 : ℂ) {z : ℂ | z ≠ 0})
       (nhds (∫⁻ ω, rho γ (M ω) (α₁ - γ / 2) α₂ α₃ ^ (-q) ∂P)) := by
   let l := nhdsWithin (0 : ℂ) {z : ℂ | z ≠ 0}
-  let w : ℝ := (2 : ℝ) ^ (-∑ i : Fin 3, |γ * (![-γ / 2, α₁, α₂] : Fin 3 → ℝ) i|) *
+  let w := (2 : ℝ) ^ (-∑ i : Fin 3, |γ * (![-γ / 2, α₁, α₂] : Fin 3 → ℝ) i|) *
     (4 : ℝ) ^ (-|γ * α₃|)
   let G : Ω → ℝ≥0∞ := fun ω => ENNReal.ofReal (w ^ (-q)) *
     M ω (Metric.ball (3 : ℂ) (1 / 8)) ^ (-q)
-  have hw : 0 < w := by dsimp only [w]; positivity
+  have hw : 0 < w := by positivity
   have hn : Tendsto (fun z : ℂ => ‖z‖) l (nhds 0) := by
     simpa only [norm_zero] using (continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
-  have hsmall : ∀ᶠ z in l, ‖z‖ < 1 := hn.eventually (gt_mem_nhds zero_lt_one)
   have hgeom : ∀ᶠ z in l, ‖z‖ ≤ 1 ∧ ‖z‖ ^ (1 - ξ) ≤ 1 ∧ ‖z‖ < ‖z‖ ^ (1 - ξ) := by
-    filter_upwards [hsmall, self_mem_nhdsWithin] with z hz hz0
-    have hr := Real.rpow_le_rpow (norm_nonneg z) hz.le (sub_nonneg.mpr hξ₁.le)
+    filter_upwards [hn.eventually (gt_mem_nhds zero_lt_one), self_mem_nhdsWithin] with z hz hz0
     have hs := Real.rpow_lt_rpow_of_exponent_gt (norm_pos_iff.mpr hz0) hz
       (by linarith only [hξ] : 1 - ξ < 1)
-    exact ⟨hz.le, by simpa only [Real.one_rpow] using hr,
+    exact ⟨hz.le, by simpa only [Real.one_rpow] using Real.rpow_le_rpow (norm_nonneg z) hz.le (sub_nonneg.mpr hξ₁.le),
       by simpa only [Real.rpow_one] using hs⟩
   have hbound : ∀ᶠ z in l, ∀ᵐ ω ∂P,
       gammaHalfOuterMass γ α₁ α₂ α₃ (M ω) z ξ ^ (-q) ≤ G ω := by
     filter_upwards [hgeom] with z hz
     apply Eventually.of_forall
     intro ω
-    have hlow := reflected_outerMass_fixed_disk_lower γ α₁ α₂ α₃ ξ (M ω) z hz.1 hz.2.1
     have hh : gammaHalfOuterMass γ α₁ α₂ α₃ (M ω) z ξ ^ (-q) ≤
         (ENNReal.ofReal w * M ω (Metric.ball (3 : ℂ) (1 / 8))) ^ (-q) := by
       rw [ENNReal.rpow_neg, ENNReal.rpow_neg]
-      exact ENNReal.inv_le_inv.mpr (ENNReal.rpow_le_rpow hlow hq)
+      exact ENNReal.inv_le_inv.mpr (ENNReal.rpow_le_rpow (reflected_outerMass_fixed_disk_lower γ α₁ α₂ α₃ ξ (M ω) z hz.1 hz.2.1) hq)
     have hf : M ω (Metric.ball (3 : ℂ) (1 / 8)) ≠ ⊤ := by
       let _ := hM.1 ω
       exact measure_ne_top _ _
@@ -65,7 +62,7 @@ theorem reflected_outerMass_inverse_moment_tendsto
       (fun ω => gammaHalfOuterMass γ α₁ α₂ α₃ (M ω) z ξ ^ (-q)) P := by
     obtain ⟨M', hM', _, heq⟩ := equatorGFF_GMC_measurable_version P X hX γ hγ hγ₂ M hM
     filter_upwards [hgeom] with z hz
-    let f : ℂ → ℝ≥0∞ := {x : ℂ | ‖z‖ ^ (1 - ξ) ≤ ‖x‖}.indicator
+    let f := {x : ℂ | ‖z‖ ^ (1 - ξ) ≤ ‖x‖}.indicator
       (fun x => ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x))
     have hf : Measurable f := (ENNReal.measurable_ofReal.comp
       (reflected_gammaHalfKernel_measurable γ α₁ α₂ α₃ z)).indicator

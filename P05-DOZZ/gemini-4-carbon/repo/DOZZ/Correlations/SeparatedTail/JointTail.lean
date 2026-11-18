@@ -46,8 +46,7 @@ theorem separatedSingularMass_joint_tail
   have _ := hpos3
   obtain ⟨B,hB,hbound⟩ := separatedTail_singular_mixed_moment_uniform P X hX γ hγ hγ2 M hM
     K2 K3 hK2 hK3 hsep A2 A3 hA2 hA3 hα2 hα3 ε hε hε2 hε3
-  let T : ℝ := 4/γ^2
-  have hT : 0 < T := by dsimp [T]; positivity
+  let T := 4/γ^2
   let S : ℝ≥0∞ := ENNReal.ofReal (max supBound 1)
   have hS : S ≠ ⊤ := ENNReal.ofReal_ne_top
   have hS1 : 1 ≤ S := by
@@ -71,7 +70,7 @@ theorem separatedSingularMass_joint_tail
     dsimp [T]
     linarith
   have ha3T : reflectionExponent γ α3-ε ≤ T := by
-    have hh := separatedTail_reflectionExponent_lt_bulk hγ (hα3 α3 hα3mem).1
+    have := separatedTail_reflectionExponent_lt_bulk hγ (hα3 α3 hα3mem).1
     dsimp [T]
     linarith
   have hm := separatedTail_local_mixed_moment_le P M F2 F3 z2 z3 γ α2 α3
@@ -85,6 +84,6 @@ theorem separatedSingularMass_joint_tail
   have he2 : -(reflectionExponent γ α2-ε) = -reflectionExponent γ α2+ε := by ring
   have he3 : -(reflectionExponent γ α3-ε) = -reflectionExponent γ α3+ε := by ring
   rw [he2,he3] at ht
-  simpa only [Real.rpow_eq_pow] using ht
+  assumption
 
 end DOZZ.Proofs

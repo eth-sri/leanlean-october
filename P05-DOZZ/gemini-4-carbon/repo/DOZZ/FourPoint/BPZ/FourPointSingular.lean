@@ -28,11 +28,9 @@ theorem continuousOn_bpzBaseWeight :
   intro x hx
   apply ContinuousAt.continuousWithinAt
   unfold bpzBaseWeight
-  have h0 : ‖x‖ ≠ 0 := norm_ne_zero_iff.mpr hx.1
-  have h1 : ‖x - 1‖ ≠ 0 := norm_ne_zero_iff.mpr (sub_ne_zero.mpr hx.2)
-  exact ((continuous_norm.continuousAt.rpow_const (Or.inl h0)).mul
+  exact ((continuous_norm.continuousAt.rpow_const (Or.inl (norm_ne_zero_iff.mpr hx.1))).mul
     ((continuous_norm.comp (continuous_id.sub continuous_const)).continuousAt.rpow_const
-      (Or.inl h1))).mul
+      (Or.inl (norm_ne_zero_iff.mpr (sub_ne_zero.mpr hx.2))))).mul
     (bpz_continuous_normPlus.continuousAt.rpow_const (Or.inl (bpz_normPlus_pos x).ne'))
 
 /-- The base factor is bounded near a regular root. -/
@@ -40,14 +38,13 @@ theorem bpz_base_bdd_near {z : ℂ} (hz0 : z ≠ 0) (hz1 : z ≠ 1) :
     ∃ r : ℝ, 0 < r ∧ ∃ C : ℝ, 0 ≤ C ∧
       ∀ x ∈ Metric.closedBall z r, bpzBaseWeight γ χ α₁ α₂ α₃ x ≤ C := by
   set r : ℝ := min ‖z‖ ‖z - 1‖ / 2 with hr
-  have hz0' : 0 < ‖z‖ := norm_pos_iff.mpr hz0
-  have hz1' : 0 < ‖z - 1‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hz1)
+  have hz1' := norm_pos_iff.mpr (sub_ne_zero.mpr hz1)
   have hr0 : 0 < r := by positivity
   have hsub : Metric.closedBall z r ⊆ {x | x ≠ 0 ∧ x ≠ 1} := by
     intro x hx
     rw [Metric.mem_closedBall, dist_eq_norm] at hx
-    have hm1 := min_le_left ‖z‖ ‖z - 1‖
-    have hm2 := min_le_right ‖z‖ ‖z - 1‖
+    have := min_le_left ‖z‖ ‖z - 1‖
+    have := min_le_right ‖z‖ ‖z - 1‖
     refine ⟨fun h => ?_, fun h => ?_⟩
     · rw [h, zero_sub, norm_neg] at hx; linarith
     · rw [h, ← norm_neg, neg_sub] at hx; linarith
@@ -106,10 +103,10 @@ theorem bpz_singular_moment_lt_top {Ω : Type*} [MeasurableSpace Ω] (P : Measur
         rw [hk, bpzSoftWeight_zero_norm, sub_self, norm_zero,
           Real.zero_rpow (by positivity), zero_mul]
       rw [this, mul_zero, ENNReal.ofReal_zero]; exact zero_le
-    have hxz' : 0 < ‖x - z‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hxz)
+    have hxz' := norm_pos_iff.mpr (sub_ne_zero.mpr hxz)
     by_cases hxB : x ∈ B
     · have hfx : f x = ENNReal.ofReal (CB * ‖x - z‖ ^ (γ * χ - 2)) := Set.indicator_of_mem hxB _
-      have hsing : ‖x - z‖ ^ (-2 : ℝ) * k x ≤ CB * ‖x - z‖ ^ (γ * χ - 2) := by
+      have : ‖x - z‖ ^ (-2 : ℝ) * k x ≤ CB * ‖x - z‖ ^ (γ * χ - 2) := by
         rw [hk, bpzSoftWeight_zero_norm, ← mul_assoc, ← Real.rpow_add hxz']
         rw [show (-2 : ℝ) + γ * χ = γ * χ - 2 by ring, mul_comm]
         exact mul_le_mul_of_nonneg_right (hCB x hxB) (Real.rpow_nonneg hxz'.le _)
@@ -132,12 +129,9 @@ theorem bpz_singular_moment_lt_top {Ω : Type*} [MeasurableSpace Ω] (P : Measur
   have hint : ∀ ω, ∫⁻ x, ENNReal.ofReal ((1 + ‖x - z‖ ^ (-2 : ℝ)) * k x) ∂M ω ≤
       ENNReal.ofReal (1 + r ^ (-2 : ℝ)) * bpzMass γ χ α₁ α₂ α₃ 0 (M ω) z + ∫⁻ x, f x ∂M ω := by
     intro ω
-    calc _ ≤ ∫⁻ x, (ENNReal.ofReal (1 + r ^ (-2 : ℝ)) * ENNReal.ofReal (k x) + f x) ∂M ω :=
-          lintegral_mono hpt
-      _ = ENNReal.ofReal (1 + r ^ (-2 : ℝ)) * bpzMass γ χ α₁ α₂ α₃ 0 (M ω) z +
-            ∫⁻ x, f x ∂M ω := by
-          rw [lintegral_add_right _ hfm, lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]
-          rfl
+    refine (lintegral_mono hpt).trans_eq (?_)
+    rw [lintegral_add_right _ hfm, lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]
+    rfl
   -- the two expectations
   obtain ⟨Bq, hBq, hBqz⟩ := bpzMass_negMoment_uniform (χ := χ) (α₁ := α₁) (α₂ := α₂)
     (α₃ := α₃) P X hX hγ hγ2 M hM ‖z‖ (norm_nonneg z) (q - 1) (by linarith)
@@ -154,9 +148,7 @@ theorem bpz_singular_moment_lt_top {Ω : Type*} [MeasurableSpace Ω] (P : Measur
           congr 1; funext ω; ring
       _ ≤ ENNReal.ofReal (1 + r ^ (-2 : ℝ)) * Bq := by
           gcongr
-          calc _ ≤ ∫⁻ ω, bpzMass γ χ α₁ α₂ α₃ 0 (M ω) z ^ (-(q - 1)) ∂P :=
-                lintegral_mono fun ω => bpz_rpow_neg_mul_le_rpow_sub _ hq1
-            _ ≤ Bq := hBqz z le_rfl 0 le_rfl zero_le_one
+          exact (lintegral_mono fun ω => bpz_rpow_neg_mul_le_rpow_sub _ hq1).trans (hBqz z le_rfl 0 le_rfl zero_le_one)
       _ < ⊤ := ENNReal.mul_lt_top ENNReal.ofReal_lt_top hBq
   have h2 : ∫⁻ ω, bpzMass γ χ α₁ α₂ α₃ 0 (M ω) z ^ (-q) * ∫⁻ x, f x ∂M ω ∂P < ⊤ := by
     refine lt_of_le_of_lt (hCz z le_rfl 0 le_rfl zero_le_one f hfm) ?_

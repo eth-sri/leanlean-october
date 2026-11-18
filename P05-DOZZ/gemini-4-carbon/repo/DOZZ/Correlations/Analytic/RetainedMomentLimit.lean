@@ -29,7 +29,7 @@ theorem retained_mass_moment_limit
   let bound : Ω → ℝ≥0∞ := fun ω => if 0 ≤ p then g ω ^ p else f 0 ω ^ p
   apply tendsto_lintegral_of_dominated_convergence' (F := fun n ω => f n ω ^ p)
     (μ := P) bound
-  · exact fun n => (hf n).pow_const p
+  · fun_prop
   · intro n
     filter_upwards [horder] with ω hω
     dsimp [bound]

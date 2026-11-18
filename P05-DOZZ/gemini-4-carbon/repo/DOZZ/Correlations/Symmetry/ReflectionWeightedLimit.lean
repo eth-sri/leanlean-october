@@ -10,9 +10,12 @@ open MeasureTheory Filter Set
 open scoped Distributions ENNReal Topology
 namespace DOZZ.Proofs
 
+section
+variable (μ : Measure ℂ) [IsFiniteMeasure μ] (w : BoundedContinuousFunction ℂ ℝ)
+include μ w
+
 /-- Bounded continuous densities preserve finiteness. -/
-theorem symmetry_bcf_withDensity_finite (μ : Measure ℂ) [IsFiniteMeasure μ]
-    (w : BoundedContinuousFunction ℂ ℝ) :
+theorem symmetry_bcf_withDensity_finite :
     IsFiniteMeasure (μ.withDensity (fun z => ENNReal.ofReal (w z))) := by
   apply isFiniteMeasure_withDensity
   apply ne_of_lt
@@ -25,8 +28,7 @@ theorem symmetry_bcf_withDensity_finite (μ : Measure ℂ) [IsFiniteMeasure μ]
       exact ENNReal.mul_lt_top ENNReal.ofReal_lt_top (measure_lt_top μ univ)
 
 /-- The real total mass of a nonnegative bounded density is its Bochner integral. -/
-theorem symmetry_weighted_total_eq_integral (μ : Measure ℂ) [IsFiniteMeasure μ]
-    (w : BoundedContinuousFunction ℂ ℝ) (hw : ∀ z, 0 ≤ w z) :
+theorem symmetry_weighted_total_eq_integral (hw : ∀ z, 0 ≤ w z) :
     ((μ.withDensity (fun z => ENNReal.ofReal (w z))) univ).toReal = ∫ z, w z ∂μ := by
   let := symmetry_bcf_withDensity_finite μ w
   have hm : Measurable (fun z => ENNReal.ofReal (w z)) :=
@@ -40,6 +42,8 @@ theorem symmetry_weighted_total_eq_integral (μ : Measure ℂ) [IsFiniteMeasure 
     change (ENNReal.ofReal (w z)).toReal = w z
     exact ENNReal.toReal_ofReal (hw z))
 
+
+end
 /-- Uniformly convergent nonnegative weights give convergence of actual real integrals. -/
 theorem regularizedGMC_varying_bcf_integral
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)

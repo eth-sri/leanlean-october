@@ -30,12 +30,11 @@ theorem two_mass_tail_sandwich
       rcases hω with hω | hω
       · exact lt_of_lt_of_le hω (le_add_of_nonneg_right (hB0 ω))
       · exact lt_of_lt_of_le hω (le_add_of_nonneg_left (hA0 ω))
-    have hm := measureReal_mono hi (μ := P)
     have hu := measureReal_union_add_inter₀ (μ := P)
       (s := {ω | x < A ω}) (nullMeasurableSet_lt aemeasurable_const hB)
     change P.real ({ω | x < A ω} ∪ {ω | x < B ω}) +
       P.real {ω | x < A ω ∧ x < B ω} = _ at hu
-    linarith only [hm,hu]
+    linarith only [measureReal_mono hi (μ := P),hu]
   · have hi : {ω | x < A ω+B ω} ⊆
         ({ω | x-h < A ω} ∪ {ω | x-h < B ω}) ∪ {ω | h < A ω ∧ h < B ω} := by
       intro ω hω
@@ -44,10 +43,8 @@ theorem two_mass_tail_sandwich
       by_cases hb : x-h < B ω
       · exact Or.inl (Or.inr hb)
       · exact Or.inr ⟨by dsimp at *; linarith, by dsimp at *; linarith⟩
-    have hm := measureReal_mono hi (μ := P)
     have h1 := measureReal_union_le (μ := P)
       ({ω | x-h < A ω} ∪ {ω | x-h < B ω}) {ω | h < A ω ∧ h < B ω}
-    have h2 := measureReal_union_le (μ := P) {ω | x-h < A ω} {ω | x-h < B ω}
-    linarith only [hm,h1,h2]
+    linarith only [measureReal_mono hi (μ := P),h1,measureReal_union_le (μ := P) {ω | x-h < A ω} {ω | x-h < B ω}]
 
 end DOZZ.Proofs

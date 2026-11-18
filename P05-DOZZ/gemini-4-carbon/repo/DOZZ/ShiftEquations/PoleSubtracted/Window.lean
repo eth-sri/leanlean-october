@@ -20,6 +20,9 @@ moments, with the full window and no shrinking of `η, δ`.
 
 namespace DOZZ.Proofs
 
+variable {γ η δ : ℝ}
+
+
 /-- The moment threshold of the pole of charge `2/γ + η`. -/
 theorem reflectionExponent_pole {γ : ℝ} (hγ : 0 < γ) (η : ℝ) :
     reflectionExponent γ (2 / γ + η) = 1 - 2 * η / γ := by
@@ -27,52 +30,62 @@ theorem reflectionExponent_pole {γ : ℝ} (hγ : 0 < γ) (η : ℝ) :
   field_simp
   ring
 
-theorem window_eta_pos {γ η δ : ℝ} (hW : TwoPoleWindow γ η δ) : 0 < η := hW.1
+section
+variable (hW : TwoPoleWindow γ η δ)
+include hW
 
-theorem window_delta_pos {γ η δ : ℝ} (hW : TwoPoleWindow γ η δ) : 0 < δ := hW.2.2.1
+theorem window_eta_pos : 0 < η := hW.1
 
-theorem window_eta_lt_quarter {γ η δ : ℝ} (hW : TwoPoleWindow γ η δ) : η < γ / 4 :=
+theorem window_delta_pos : 0 < δ := hW.2.2.1
+
+theorem window_eta_lt_quarter : η < γ / 4 :=
   lt_of_lt_of_le hW.2.1 ((min_le_right _ _).trans (min_le_left _ _))
 
-theorem window_eta_le_two_div {γ η δ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
+
+end
+section
+variable (hγ : 0 < γ)
+include hγ
+
+theorem window_eta_le_two_div (hγ2 : γ < 2)
     (hW : TwoPoleWindow γ η δ) : η ≤ 2 / γ := by
-  have h := window_eta_lt_quarter hW
+  have := window_eta_lt_quarter hW
   have : γ / 4 ≤ 2 / γ := by
     rw [div_le_div_iff₀ (by norm_num) hγ]
     nlinarith
   linarith
 
 /-- The pole threshold `p = 1 - 2η/γ` is positive on the window. -/
-theorem window_threshold_pos {γ η δ : ℝ} (hγ : 0 < γ) (hW : TwoPoleWindow γ η δ) :
+theorem window_threshold_pos (hW : TwoPoleWindow γ η δ) :
     0 < 1 - 2 * η / γ := by
-  have h := window_eta_lt_quarter hW
+  have := window_eta_lt_quarter hW
   have : 2 * η / γ < 1 / 2 := by
     rw [div_lt_iff₀ hγ]
     linarith
   linarith
 
 /-- **The window leaves Hölder room**: `(2η + δ)/γ < (1 - 2η/γ)(1 - γ²/4)`. -/
-theorem window_holder_room {γ η δ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
+theorem window_holder_room (hγ2 : γ < 2)
     (hW : TwoPoleWindow γ η δ) :
     (2 * η + δ) / γ < (1 - 2 * η / γ) * (1 - γ ^ 2 / 4) := by
-  have hp0 := window_threshold_pos hγ hW
+  have := window_threshold_pos hγ hW
   have hceil := hW.2.2.2.2.2
   set p : ℝ := 1 - 2 * η / γ with hp
   set a : ℝ := 4 / γ ^ 2 with ha
-  have hrefl : reflectionExponent γ (2 / γ + η) = p := reflectionExponent_pole hγ η
-  have hp1 : p ≤ 1 := by
+  have hrefl := reflectionExponent_pole hγ η
+  have : p ≤ 1 := by
     have : 0 ≤ 2 * η / γ := div_nonneg (by linarith [window_eta_pos hW]) hγ.le
     linarith
-  have ha1 : 1 < a := by
+  have : 1 < a := by
     rw [ha, lt_div_iff₀ (by positivity)]
     nlinarith
-  have hMc : oneInsertionMomentCeiling γ (2 / γ + η) ≤ a := by
+  have : oneInsertionMomentCeiling γ (2 / γ + η) ≤ a := by
     rw [oneInsertionMomentCeiling]
     exact min_le_right _ _
-  have hMc0 : 0 ≤ oneInsertionMomentCeiling γ (2 / γ + η) := by
+  have : 0 ≤ oneInsertionMomentCeiling γ (2 / γ + η) := by
     rw [oneInsertionMomentCeiling, hrefl]
     exact le_min (by positivity) (by positivity)
-  have herr : oneInsertionErrorCeiling γ (2 / γ + η) ≤ (a - p) / (1 + a) := by
+  have : oneInsertionErrorCeiling γ (2 / γ + η) ≤ (a - p) / (1 + a) := by
     rw [oneInsertionErrorCeiling, hrefl, div_le_div_iff₀ (by linarith) (by linarith)]
     nlinarith
   have hceil' : twoInsertionTailCeiling γ (2 / γ + η) (Q γ - η - γ / 2) ≤
@@ -83,7 +96,7 @@ theorem window_holder_room {γ η δ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
     have := min_le_left (oneInsertionErrorCeiling γ (2 / γ + η))
       (min ((Q γ - (Q γ - η - γ / 2)) / γ) (1 / 2 : ℝ))
     linarith
-  have hid : p + (a - p) / (1 + a) - 1 = (p * a - 1) / (1 + a) := by
+  have : p + (a - p) / (1 + a) - 1 = (p * a - 1) / (1 + a) := by
     field_simp
     ring
   have hc : (2 * η + δ) / γ < (p * a - 1) / (1 + a) := by linarith
@@ -101,6 +114,8 @@ theorem window_holder_room {γ η δ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
     linarith
   linarith
 
+
+end
 end DOZZ.Proofs
 
 end

@@ -80,11 +80,9 @@ theorem bpz_near_expect_bound {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     · have h0 : f x = 0 := by
         simp only [hf, bpzNearWeight, hx, ↓reduceIte, zero_mul, ENNReal.ofReal_zero]
       rw [h0]; exact zero_le
-  calc ENNReal.ofReal Cn * ∫⁻ x, f x ∂volume
-      ≤ ENNReal.ofReal Cn * ∫⁻ x, (Metric.ball z (2 * r)).indicator
-          (fun x => ENNReal.ofReal (CB * ‖x - z‖ ^ β)) x ∂volume :=
-        mul_le_mul_right (lintegral_mono hpt) _
-    _ = ENNReal.ofReal Cn * (ENNReal.ofReal CB *
+  refine (mul_le_mul_right (lintegral_mono hpt) _).trans (?_)
+  calc ENNReal.ofReal Cn * ∫⁻ x, (Metric.ball z (2 * r)).indicator
+          (fun x => ENNReal.ofReal (CB * ‖x - z‖ ^ β)) x ∂volume = ENNReal.ofReal Cn * (ENNReal.ofReal CB *
           ∫⁻ x in Metric.ball z (2 * r), ENNReal.ofReal (‖x - z‖ ^ β)) := by
         rw [lintegral_indicator measurableSet_ball]
         congr 1
@@ -97,9 +95,6 @@ theorem bpz_near_expect_bound {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
         gcongr
         exact bpz_lintegral_ball_rpow_le hβ (by positivity) z
     _ = ENNReal.ofReal (Cn * CB * (2 * Real.pi * (2 * r) ^ (β + 2) / (β + 2))) := by
-        have h2 : 0 ≤ 2 * Real.pi * (2 * r) ^ (β + 2) / (β + 2) := by
-          have : 0 < β + 2 := by linarith
-          positivity
         rw [← ENNReal.ofReal_mul hCB0, ← ENNReal.ofReal_mul hCn0]
         congr 1
         ring

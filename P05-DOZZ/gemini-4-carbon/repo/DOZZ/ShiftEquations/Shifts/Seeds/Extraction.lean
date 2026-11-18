@@ -47,6 +47,7 @@ Fix a point `(α, ε, α')` of the seed domain `α, ε, α' < Q`, `α + ε + α'
 
 @[expose] public section
 
+noncomputable section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal Topology
 
@@ -54,39 +55,30 @@ universe u
 
 namespace DOZZ.Proofs
 
+variable {Ω : Type*} [MeasurableSpace Ω]
+
+
 /-! ### The connection entries -/
 
 /-- Connection entry `u`: the coefficient of `G₋` in `F₋`. -/
-noncomputable def dualConnU (a b c : ℝ) : ℝ :=
+def dualConnU (a b c : ℝ) : ℝ :=
   Real.Gamma c * Real.Gamma (c - a - b) * (Real.Gamma (c - a))⁻¹ * (Real.Gamma (c - b))⁻¹
 
 /-- Connection entry `v`: the coefficient of `G₊` in `F₋`. -/
-noncomputable def dualConnV (a b c : ℝ) : ℝ :=
+def dualConnV (a b c : ℝ) : ℝ :=
   Real.Gamma c * Real.Gamma (a + b - c) * (Real.Gamma a)⁻¹ * (Real.Gamma b)⁻¹
 
 /-- Connection entry `w`: the coefficient of `G₋` in `F₊`. -/
-noncomputable def dualConnW (a b c : ℝ) : ℝ :=
+def dualConnW (a b c : ℝ) : ℝ :=
   Real.Gamma (2 - c) * Real.Gamma (c - a - b) * (Real.Gamma (1 - a))⁻¹ * (Real.Gamma (1 - b))⁻¹
 
 /-- Connection entry `x`: the coefficient of `G₊` in `F₊`. -/
-noncomputable def dualConnX (a b c : ℝ) : ℝ :=
+def dualConnX (a b c : ℝ) : ℝ :=
   Real.Gamma (2 - c) * Real.Gamma (a + b - c) *
     (Real.Gamma (a - c + 1))⁻¹ * (Real.Gamma (b - c + 1))⁻¹
 
 /-! ### Structure-constant symmetry and the channel basis -/
 
-/-- The full structure constant is symmetric in its first two charges on the extended Seiberg
-domain. -/
-theorem seeds_structureConstant_swap12 {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (M : Ω → Measure ℂ) (γ μ a b c : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M) (h : ExtendedSeiberg3 γ a b c) :
-    structureConstant P M γ μ a b c = structureConstant P M γ μ b a c := by
-  rw [residue_structureConstant_eq_unitVolume, residue_structureConstant_eq_unitVolume,
-    (unitVolumeStructureConstant_symmetric_extended P X M γ a b c hγ hγ2 hX hM h).1]
-  have hs : sExp γ b a c = sExp γ a b c := by
-    unfold sExp
-    ring
-  rw [hs]
 
 /-- **The channel basis.** At the exchanged charges, the Gauss basis at zero evaluated at `1 - z`
 is the basis at one of the original charges: `c' = 1 + a + b - c`. -/
@@ -106,11 +98,10 @@ theorem dual_channel_basis (H : ℂ → ℂ → ℂ → ℂ → ℂ) {γ : ℝ} 
   have hB : gaussParameterB γ (2 / γ) ε α α' = gaussParameterB γ (2 / γ) α ε α' := by
     unfold gaussParameterB
     ring
-  have hC := dual_seed_channel_parameter γ α ε α' hγ
   have hCC : (gaussParameterC γ (2 / γ) ε : ℂ) =
       1 + (gaussParameterA γ (2 / γ) α ε α' : ℂ) +
         (gaussParameterB γ (2 / γ) α ε α' : ℂ) - (gaussParameterC γ (2 / γ) α : ℂ) := by
-    rw [hC]
+    rw [dual_seed_channel_parameter γ α ε α' hγ]
     push_cast
     ring
   unfold gaussFMinus gaussFPlus gaussGMinus gaussGPlus
@@ -129,7 +120,7 @@ the dual Gauss parameters of `(α, ε, α')`, `d₀ = C(α - 2/γ, ε, α')`, `d
 `e₀ = C(ε - 2/γ, α, α')` and `e₁ = e₀ r'` (`r'` the ratio of [KRV, (Fundrelation)] for
 `(ε, α, α')`): the mixed term of the transformed diagonal form vanishes and its two diagonal entries
 are `e₀` and `e₁`. -/
-theorem dual_two_channel_extraction {Ω : Type*} [MeasurableSpace Ω]
+theorem dual_two_channel_extraction
     (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ) (γ μ α ε α' : ℝ)
     (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
     (hα : α < Q γ) (hε : ε < Q γ) (hα' : α' < Q γ)
@@ -151,16 +142,13 @@ theorem dual_two_channel_extraction {Ω : Type*} [MeasurableSpace Ω]
   obtain ⟨ha, hab, hbc, hc1, hδ, hδ1, -, hK₂⟩ :=
     gauss_physical_parameter_range γ (2 / γ) α ε α' hγ hγ2 (Or.inr rfl) hs hα hε hα'
   have hcn : ∀ n : ℤ, c ≠ (n : ℝ) := fun n hn => by
-    have h := seeds_ne_int_of_mem_Ioo (lt_trans (lt_trans ha hab) hbc) hc1 n
-    exact h (by exact_mod_cast hn)
+    exact seeds_ne_int_of_mem_Ioo (lt_trans (lt_trans ha hab) hbc) hc1 n (by exact_mod_cast hn)
   have hδn : ∀ n : ℤ, c - a - b ≠ (n : ℝ) := fun n hn => by
-    have h := seeds_ne_int_of_mem_Ioo hδ hδ1 n
-    exact h (by exact_mod_cast hn)
+    exact seeds_ne_int_of_mem_Ioo hδ hδ1 n (by exact_mod_cast hn)
   -- the single-valuedness constraint and the vanishing mixed term
-  have hratio := gaussCoefficientRatio_mul_K₂_add_K₁_eq_zero a b c hK₂.ne'
   have hconstraint : gaussK₁ a b c * d₀ + gaussK₂ a b c * d₁ = 0 := by
     simp only [d₁]
-    linear_combination d₀ * hratio
+    linear_combination d₀ * (gaussCoefficientRatio_mul_K₂_add_K₁_eq_zero a b c hK₂.ne')
   have hcross : d₀ * dualConnU a b c * dualConnV a b c +
       d₁ * dualConnW a b c * dualConnX a b c = 0 := by
     calc
@@ -169,7 +157,6 @@ theorem dual_two_channel_extraction {Ω : Type*} [MeasurableSpace Ω]
         simp only [dualConnU, dualConnV, dualConnW, dualConnX, gaussK₁, gaussK₂]
         ring
       _ = 0 := by rw [hconstraint, mul_zero]
-  have htransfer := gauss_diagonal_one_basis_of_constraint hH a b c d₀ d₁ hcn hδn hconstraint
   -- the classification in the two channel orders
   have hclass₀ := degenerateFourPoint_diagonal_classification hH P X M γ μ (2 / γ) α ε α'
     hγ hγ2 hμ (Or.inr rfl) hα hε hα' hs hX hM
@@ -191,7 +178,7 @@ theorem dual_two_channel_extraction {Ω : Type*} [MeasurableSpace Ω]
     intro z hz
     calc
       _ = d₀ * ‖gaussFMinus H a b c z‖ ^ 2 + d₁ * ‖gaussFPlus H a b c z‖ ^ 2 :=
-        (htransfer z hz).symm
+        ((gauss_diagonal_one_basis_of_constraint hH a b c d₀ d₁ hcn hδn hconstraint) z hz).symm
       _ = fourPointT P M γ μ (-(2 / γ)) α ε α' z := by
         rw [hclass₀ z hz]
         simp only [d₁, d₀]
@@ -274,26 +261,17 @@ theorem dual_seed_two_multiplier (γ α ε α' : ℝ) (hγ : 0 < γ) (hγ2 : γ 
   intro a b c
   obtain ⟨ha, hab, hbc, hc1, hδ, hδ1, -⟩ :=
     gauss_physical_parameter_range γ (2 / γ) α ε α' hγ hγ2 (Or.inr rfl) hs hα hε hα'
-  have hc : 0 < c := lt_trans (lt_trans ha hab) hbc
+  have hc := lt_trans (lt_trans ha hab) hbc
   have hcn : ∀ n : ℤ, c ≠ (n : ℝ) := fun n hn => by
-    have h := seeds_ne_int_of_mem_Ioo hc hc1 n
-    exact h (by exact_mod_cast hn)
+    exact seeds_ne_int_of_mem_Ioo hc hc1 n (by exact_mod_cast hn)
   have hδn : ∀ n : ℤ, c - a - b ≠ (n : ℝ) := fun n hn => by
-    have h := seeds_ne_int_of_mem_Ioo hδ hδ1 n
-    exact h (by exact_mod_cast hn)
+    exact seeds_ne_int_of_mem_Ioo hδ hδ1 n (by exact_mod_cast hn)
   have hdet : dualConnU a b c * dualConnX a b c - dualConnV a b c * dualConnW a b c =
       (c - 1) / (c - a - b) := crossing_connection_det_real a b c hcn hδn
   -- the Gamma values in `u` and `x`
-  have hGc : Real.Gamma c ≠ 0 := (Real.Gamma_pos_of_pos hc).ne'
-  have hGδ : Real.Gamma (c - a - b) ≠ 0 := (Real.Gamma_pos_of_pos hδ).ne'
-  have hGca : Real.Gamma (c - a) ≠ 0 := (Real.Gamma_pos_of_pos (by linarith)).ne'
-  have hGcb : Real.Gamma (c - b) ≠ 0 := (Real.Gamma_pos_of_pos (by linarith)).ne'
-  have hGac : Real.Gamma (a - c + 1) ≠ 0 := (Real.Gamma_pos_of_pos (by linarith)).ne'
-  have hGbc : Real.Gamma (b - c + 1) ≠ 0 := (Real.Gamma_pos_of_pos (by linarith)).ne'
-  have hG2c : Real.Gamma (2 - c) ≠ 0 := (Real.Gamma_pos_of_pos (by linarith)).ne'
-  have hu : dualConnU a b c ≠ 0 := by
-    unfold dualConnU
-    exact mul_ne_zero (mul_ne_zero (mul_ne_zero hGc hGδ) (inv_ne_zero hGca)) (inv_ne_zero hGcb)
+  have : Real.Gamma c ≠ 0 := (Real.Gamma_pos_of_pos hc).ne'
+  have : Real.Gamma (c - a) ≠ 0 := (Real.Gamma_pos_of_pos (by linarith)).ne'
+  have : Real.Gamma (c - b) ≠ 0 := (Real.Gamma_pos_of_pos (by linarith)).ne'
   -- `x det / u` in the form of the Gamma recurrence
   have hxu : dualConnX a b c * ((c - 1) / (c - a - b)) / dualConnU a b c =
       ((c - 1) / (c - a - b)) * (Real.Gamma (2 - c) / Real.Gamma c) *
@@ -304,10 +282,9 @@ theorem dual_seed_two_multiplier (γ α ε α' : ℝ) (hγ : 0 < γ) (hγ2 : γ 
     field_simp
   rw [hdet, hxu, dual_connection_second_multiplier a b c (c - a - b) hc hc1 hδ hδ1]
   -- `dualCrossingL`, with `C₁ = 1 + a + b - c`
-  have hC := dual_seed_channel_parameter γ α ε α' hγ.ne'
   unfold dualCrossingL
   simp only [lFun_ofReal_re_eq_lR]
-  rw [hC]
+  rw [dual_seed_channel_parameter γ α ε α' hγ.ne']
   have e1 : 1 - (c - a - b) - 1 = -(c - a - b) := by ring
   have e2 : 1 - (c - a - b) - a - b + 1 = 2 - c := by ring
   have e3 : 1 - (c - a - b) - a = 1 - c + b := by ring
@@ -316,7 +293,7 @@ theorem dual_seed_two_multiplier (γ α ε α' : ℝ) (hγ : 0 < γ) (hγ2 : γ 
 
 /-- **The second dual crossing identity on the whole seed domain**, given the dual reflection
 identity at the first charges `α` and `ε`. -/
-theorem dual_seed_two_identity {Ω : Type*} [MeasurableSpace Ω]
+theorem dual_seed_two_identity
     (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ) (γ μ α ε α' : ℝ)
     (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
     (hα : α < Q γ) (hε : ε < Q γ) (hα' : α' < Q γ)
@@ -336,36 +313,28 @@ theorem dual_seed_two_identity {Ω : Type*} [MeasurableSpace Ω]
       dualCrossingL γ ε α α' *
         reflectionR P γ μ α Bα Z *
           structureConstant P M γ μ ε (2 * Q γ - α - 2 / γ) α' := by
+  have seeds_structureConstant_swap12 (a b c : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M) (h : ExtendedSeiberg3 γ a b c) : structureConstant P M γ μ a b c = structureConstant P M γ μ b a c := by
+    rw [residue_structureConstant_eq_unitVolume, residue_structureConstant_eq_unitVolume,
+      (unitVolumeStructureConstant_symmetric_extended P X M γ a b c hγ hγ2 hX hM h).1]
+    have hs : sExp γ b a c = sExp γ a b c := by
+      unfold sExp
+      ring
+    rw [hs]
   obtain ⟨hcross, -, hE⟩ := dual_two_channel_extraction P X M γ μ α ε α' hγ hγ2 hμ hα hε hα'
     hs hX hM
-  have hL : dualConnX (gaussParameterA γ (2 / γ) α ε α') (gaussParameterB γ (2 / γ) α ε α')
-        (gaussParameterC γ (2 / γ) α) *
-      (dualConnU (gaussParameterA γ (2 / γ) α ε α') (gaussParameterB γ (2 / γ) α ε α')
-          (gaussParameterC γ (2 / γ) α) *
-        dualConnX (gaussParameterA γ (2 / γ) α ε α') (gaussParameterB γ (2 / γ) α ε α')
-          (gaussParameterC γ (2 / γ) α) -
-        dualConnV (gaussParameterA γ (2 / γ) α ε α') (gaussParameterB γ (2 / γ) α ε α')
-          (gaussParameterC γ (2 / γ) α) *
-        dualConnW (gaussParameterA γ (2 / γ) α ε α') (gaussParameterB γ (2 / γ) α ε α')
-          (gaussParameterC γ (2 / γ) α)) /
-      dualConnU (gaussParameterA γ (2 / γ) α ε α') (gaussParameterB γ (2 / γ) α ε α')
-        (gaussParameterC γ (2 / γ) α) = dualCrossingL γ ε α α' :=
-    dual_seed_two_multiplier γ α ε α' hγ hγ2 hα hε hα' hs
   obtain ⟨ha, hab, hbc, hc1, hδ, -⟩ :=
     gauss_physical_parameter_range γ (2 / γ) α ε α' hγ hγ2 (Or.inr rfl) hs hα hε hα'
   have hu : dualConnU (gaussParameterA γ (2 / γ) α ε α') (gaussParameterB γ (2 / γ) α ε α')
       (gaussParameterC γ (2 / γ) α) ≠ 0 := by
     unfold dualConnU
-    have hc : 0 < gaussParameterC γ (2 / γ) α := lt_trans (lt_trans ha hab) hbc
-    exact mul_ne_zero (mul_ne_zero (mul_ne_zero (Real.Gamma_pos_of_pos hc).ne'
+    exact mul_ne_zero (mul_ne_zero (mul_ne_zero (Real.Gamma_pos_of_pos (lt_trans (lt_trans ha hab) hbc)).ne'
       (Real.Gamma_pos_of_pos hδ).ne') (inv_ne_zero (Real.Gamma_pos_of_pos (by linarith)).ne'))
       (inv_ne_zero (Real.Gamma_pos_of_pos (by linarith)).ne')
-  have h2 := dual_connection_diagonal_second_from_second _ _ _ _ _ _ hcross hu
   -- the reflected triple is symmetric in its first two charges
-  have hswap := seeds_structureConstant_swap12 P X M γ μ (2 * Q γ - α - 2 / γ) ε α' hγ hγ2 hX hM
+  have hswap := seeds_structureConstant_swap12 (2 * Q γ - α - 2 / γ) ε α' hγ hγ2 hX hM
     (seeds_reflected_triple hγ hγ2 hε hα' hα hs).2
   -- `e₁ = d₁ x det / u = L d₁`
-  rw [← hRIε, hE.trans h2, ← hswap, mul_assoc (dualCrossingL γ ε α α'), ← hRIα, ← hL]
+  rw [← hRIε, hE.trans (dual_connection_diagonal_second_from_second _ _ _ _ _ _ hcross hu), ← hswap, mul_assoc (dualCrossingL γ ε α α'), ← hRIα, ← (dual_seed_two_multiplier γ α ε α' hγ hγ2 hα hε hα' hs)]
   ring
 
 end DOZZ.Proofs

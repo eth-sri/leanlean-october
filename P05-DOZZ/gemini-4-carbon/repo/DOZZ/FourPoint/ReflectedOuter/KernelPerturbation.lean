@@ -44,7 +44,6 @@ theorem reflected_rpow_near_one (b t : ℝ) (hb : 0 ≤ b) (hb₂ : b ≤ 2)
 theorem reflected_kernel_distance_ratio (γ α₁ α₂ α₃ : ℝ) (z x : ℂ) (hx : 0 < ‖x‖) :
     gammaHalfKernel γ α₁ α₂ α₃ z x =
       (‖x - z‖ / ‖x‖) ^ (γ ^ 2 / 2) * gammaHalfKernel γ α₁ α₂ α₃ 0 x := by
-  have hn : ‖x‖ ^ (γ ^ 2 / 2) ≠ 0 := (Real.rpow_pos_of_pos hx _).ne'
   unfold gammaHalfKernel
   rw [sub_zero, Real.div_rpow (norm_nonneg _) hx.le]
   field_simp
@@ -86,11 +85,10 @@ theorem reflected_kernel_relative_lower (γ α₁ α₂ α₃ : ℝ) (hγ : 0 < 
     (hγ₂ : γ < 2) (z x : ℂ) (hx : 0 < ‖x‖) (hz : ‖z‖ ≤ ‖x‖ / 2) :
     gammaHalfKernel γ α₁ α₂ α₃ 0 x / 4 ≤ gammaHalfKernel γ α₁ α₂ α₃ z x := by
   have hb : 0 ≤ γ ^ 2 / 2 := by positivity
-  have hb₂ : γ ^ 2 / 2 ≤ 2 := by nlinarith only [hγ, hγ₂]
+  have hb₂ : γ ^ 2 / 2 ≤ 2 := by nlinarith
   have hd : 1 / 2 ≤ ‖x - z‖ / ‖x‖ := by
     apply (le_div_iff₀ hx).mpr
-    have hh := norm_sub_norm_le x z
-    linarith only [hh, hz, hx]
+    linarith only [norm_sub_norm_le x z, hz, hx]
   have hl : (1 / 4 : ℝ) ≤ (‖x - z‖ / ‖x‖) ^ (γ ^ 2 / 2) := by
     calc
       _ = (1 / 2 : ℝ) ^ (2 : ℝ) := by norm_num

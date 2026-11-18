@@ -21,6 +21,7 @@ and the two sides of the real Ward identity for the test function `ℓ ∘ g`,
 
 @[expose] public section
 
+noncomputable section
 open MeasureTheory
 
 namespace DOZZ.Proofs
@@ -28,14 +29,14 @@ namespace DOZZ.Proofs
 variable {Ω : Type*} [MeasurableSpace Ω] {γ χ α₁ α₂ α₃ : ℝ}
 
 /-- The left side of the real Ward identity for `ℓ ∘ g` in the direction `v`. -/
-noncomputable def bpzWardLHS (P : Measure Ω) (M : Ω → Measure ℂ) (γ χ α₁ α₂ α₃ s : ℝ) (z : ℂ)
+def bpzWardLHS (P : Measure Ω) (M : Ω → Measure ℂ) (γ χ α₁ α₂ α₃ s : ℝ) (z : ℂ)
     (ℓ : ℂ →L[ℝ] ℝ) (v : ℂ) : ℝ :=
   ∫ ω, (∫ x, bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x ∂M ω) ^ (-(s + 1)) *
     ∫ x, fderiv ℝ (fun x => ℓ (bpzG z x) * bpzTildeWeight γ χ α₁ α₂ z x) x v *
       normPlus x ^ (γ * (α₁ + α₂ + α₃ - χ)) ∂M ω ∂P
 
 /-- The right side of the real Ward identity for `ℓ ∘ g` in the direction `v`. -/
-noncomputable def bpzWardRHS (P : Measure Ω) (M : Ω → Measure ℂ) (γ χ α₁ α₂ α₃ s : ℝ) (z : ℂ)
+def bpzWardRHS (P : Measure Ω) (M : Ω → Measure ℂ) (γ χ α₁ α₂ α₃ s : ℝ) (z : ℂ)
     (ℓ : ℂ →L[ℝ] ℝ) (v : ℂ) : ℝ :=
   ∫ ω, (s + 1) * ((∫ x, bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x ∂M ω) ^ (-(s + 1) - 1) *
     (γ ^ 2 * ∫ x, ∫ y, (ℓ (bpzG z x) - ℓ (bpzG z y)) * (bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x *
@@ -52,24 +53,24 @@ theorem bpzWardLHS_eq_wardRHS (P : Measure Ω) (X : Ω → Distr) (hX : IsEquato
   bpz_fourPoint_ward_g P X hX hγ hγ2 M hM hMm hχ hα₁ hα₂ hα₃ hs hz0 hz1 ℓ v
 
 /-- `J = E[I^{-s}]`. -/
-noncomputable def bpzMomJ (P : Measure Ω) (M : Ω → Measure ℂ) (γ χ α₁ α₂ α₃ s : ℝ) (z : ℂ) :
+def bpzMomJ (P : Measure Ω) (M : Ω → Measure ℂ) (γ χ α₁ α₂ α₃ s : ℝ) (z : ℂ) :
     ℝ :=
   ∫ ω, (∫ x, bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x ∂M ω) ^ (-s) ∂P
 
 /-- `E₁ = E[I^{-s-1} ∫ k(x)/(z - x) dM(x)]`. -/
-noncomputable def bpzMomE1 (P : Measure Ω) (M : Ω → Measure ℂ) (γ χ α₁ α₂ α₃ s : ℝ) (z : ℂ) :
+def bpzMomE1 (P : Measure Ω) (M : Ω → Measure ℂ) (γ χ α₁ α₂ α₃ s : ℝ) (z : ℂ) :
     ℂ :=
   ∫ ω, (((∫ x, bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x ∂M ω) ^ (-s - 1) : ℝ) : ℂ) *
     ∫ x, ((bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x : ℝ) : ℂ) / (z - x) ∂M ω ∂P
 
 /-- `D₁ = E[I^{-s-1} ∫ k(x)/(z - x)² dM(x)]`. -/
-noncomputable def bpzMomD1 (P : Measure Ω) (M : Ω → Measure ℂ) (γ χ α₁ α₂ α₃ s : ℝ) (z : ℂ) :
+def bpzMomD1 (P : Measure Ω) (M : Ω → Measure ℂ) (γ χ α₁ α₂ α₃ s : ℝ) (z : ℂ) :
     ℂ :=
   ∫ ω, (((∫ x, bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x ∂M ω) ^ (-s - 1) : ℝ) : ℂ) *
     ∫ x, ((bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x : ℝ) : ℂ) / (z - x) ^ 2 ∂M ω ∂P
 
 /-- `D₂ = E[I^{-s-2} (∫ k(x)/(z - x) dM(x))²]`. -/
-noncomputable def bpzMomD2 (P : Measure Ω) (M : Ω → Measure ℂ) (γ χ α₁ α₂ α₃ s : ℝ) (z : ℂ) :
+def bpzMomD2 (P : Measure Ω) (M : Ω → Measure ℂ) (γ χ α₁ α₂ α₃ s : ℝ) (z : ℂ) :
     ℂ :=
   ∫ ω, (((∫ x, bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x ∂M ω) ^ (-s - 2) : ℝ) : ℂ) *
     (∫ x, ((bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x : ℝ) : ℂ) / (z - x) ∂M ω) ^ 2 ∂P

@@ -15,8 +15,6 @@ public import Mathlib.MeasureTheory.Function.L1Space.Integrable
 
 @[expose] public section
 
-open MeasureTheory Set
-open scoped ENNReal
 
 namespace DOZZ.Proofs
 

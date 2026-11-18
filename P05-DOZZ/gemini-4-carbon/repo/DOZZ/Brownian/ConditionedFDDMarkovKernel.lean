@@ -111,15 +111,13 @@ theorem negativeConditionedLaw_twoTime_compProd
     by_cases hx : 0 < z.1
     · have he : 0 ≤ conditionedPositiveEntranceDensity ν (t₀ : ℝ) z.1 :=
         conditionedPositiveEntranceDensity_nonneg hP.1 ht₀ z.1
-      have ht : 0 ≤ conditionedPositiveTransitionDensity ν (dt : ℝ) z.1 z.2 :=
-        conditionedPositiveTransitionDensity_nonneg hP.1 hdt hx z.2
-      simp [hx, max_eq_right (mul_nonneg he ht)]
+      simp [hx, max_eq_right (mul_nonneg he (conditionedPositiveTransitionDensity_nonneg hP.1 hdt hx z.2))]
       rw [← ENNReal.ofReal_mul he]
     · have hx' : z.1 ≤ 0 := le_of_not_gt hx
       have he : conditionedPositiveEntranceDensity ν (t₀ : ℝ) z.1 = 0 := by
         simp [conditionedPositiveEntranceDensity, not_lt.mpr hx']
       simp [hx, he]
-  have hcompAux :
+  have :
       ((volume : Measure ℝ).withDensity
           (fun x => ENNReal.ofReal (conditionedPositiveEntranceDensity ν (t₀ : ℝ) x))) ⊗ₘ
         ((Kernel.const ℝ (volume : Measure ℝ)).withDensity
@@ -148,9 +146,7 @@ theorem negativeConditionedLaw_twoTime_compProd
           ENNReal.ofReal (conditionedPositiveEntranceDensity ν (t₀ : ℝ) z.1) *
             (if 0 < z.1 then
               ENNReal.ofReal (conditionedPositiveTransitionDensity ν (dt : ℝ) z.1 z.2)
-            else ENNReal.ofReal (conditionedPositiveEntranceDensity ν 1 z.2))) := by
-    rw [conditionedPositiveEntranceMeasure, conditionedPositiveTransitionKernelOnReal,
-      hcompAux, ← Measure.volume_eq_prod ℝ ℝ]
+            else ENNReal.ofReal (conditionedPositiveEntranceDensity ν 1 z.2))) := by assumption
   rw [negativeConditionedLaw_twoTime_positiveFDD hP t₀ dt ht₀ hdt]
   rw [hcomp]
   congr 1

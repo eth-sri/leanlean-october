@@ -16,8 +16,8 @@ theorem sumtail_joint_half_sqrt_power (T p q ε β θ x : ℝ)
     (hT : 0 ≤ T) (hpT : p ≤ T) (hε : 0 ≤ ε) (hεθ : 3*ε/2 ≤ θ)
     (hβ : β ≤ p+q/2) (hx : 4 ≤ x) :
     (x/2)^(-p+ε)*(Real.sqrt x)^(-q+ε) ≤ 2^T*x^(-β+θ) := by
-  have hx0 : 0 < x := by linarith only [hx]
-  have hx1 : 1 ≤ x := by linarith only [hx]
+  have hx0 : 0 < x := by positivity
+  have hx1 : 1 ≤ x := by nlinarith
   have hp := sumtail_rpow_half_bound T (x/2) x (p-ε) hT
     (by linarith only [hpT,hε]) hx0 le_rfl (by linarith only [hx0])
   have he : -(p-ε) = -p+ε := by ring

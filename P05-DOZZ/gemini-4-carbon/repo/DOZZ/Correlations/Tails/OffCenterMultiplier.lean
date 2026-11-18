@@ -11,7 +11,6 @@ density included. -/
 
 @[expose] public section
 
-open Set
 
 namespace DOZZ.Proofs
 

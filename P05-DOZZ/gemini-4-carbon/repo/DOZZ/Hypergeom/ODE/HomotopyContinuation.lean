@@ -46,20 +46,12 @@ theorem homotopy_path_continuation_endpoint_eq
       hbottomFormula, htopFormula, hbottomCenters, hbottomBound, hbottomCover,
       hbottomOverlap, htopCenters, htopBound, htopCover, htopOverlap⟩ :=
     homotopy_grid_boundary_lifts_endpoint_eq_with_formulas G hΓ
-  let Db : ℕ → HolomorphicDiskSolution H G.r :=
+  let Db :=
     homotopyGridRowChain G 0 (by omega)
-  let Dt : ℕ → HolomorphicDiskSolution H G.r :=
+  let Dt :=
     homotopyGridRowChain G G.N le_rfl
-  have hDbInitial : (Db 0).initial = y := by
-    calc
-      (Db 0).initial = finiteGridHorizontal (homotopyGridRight G) 0 0 0 y := by
-        simpa [Db] using homotopyGridRowChain_initial G 0 (by omega) 0 (by omega)
-      _ = y := by simp [finiteGridHorizontal]
-  have hDtInitial : (Dt 0).initial = y := by
-    calc
-      (Dt 0).initial = finiteGridHorizontal (homotopyGridRight G) 0 G.N 0 y := by
-        simpa [Dt] using homotopyGridRowChain_initial G G.N le_rfl 0 (by omega)
-      _ = y := by simp [finiteGridHorizontal]
+  have hDbInitial : (Db 0).initial = y := by rfl
+  have hDtInitial : (Dt 0).initial = y := by rfl
   let gridBottom : PathContinuationLift bottomPath H y := {
     subdivision := G.N
     subdivision_pos := G.N_pos
@@ -69,24 +61,14 @@ theorem homotopy_path_continuation_endpoint_eq
     coefficient_bound_nonneg := G.M_nonneg
     disks := Db
     disks_initial := hDbInitial
-    centers := by
-      intro i hi
-      simpa [Db, bottomPath] using hbottomCenters i hi
-    operator_bound := by
-      intro i hi z hz
-      exact hbottomBound i hi z hz
-    path_cover := by
-      intro i hi t ht
-      simpa [bottomPath] using hbottomCover i hi t ht
-    overlap := by
-      intro i hi z hz
-      exact hbottomOverlap i hi z hz
+    centers := by assumption
+    operator_bound := by assumption
+    path_cover := by assumption
+    overlap := by assumption
     value := bottom
     value_continuous := hbottomCont'
     value_initial := hbottomStart
-    local_formula := by
-      intro i hi t ht
-      simpa [Db, bottomPath] using hbottomFormula i hi t ht
+    local_formula := by assumption
   }
   let gridTop : PathContinuationLift topPath H y := {
     subdivision := G.N
@@ -97,30 +79,15 @@ theorem homotopy_path_continuation_endpoint_eq
     coefficient_bound_nonneg := G.M_nonneg
     disks := Dt
     disks_initial := hDtInitial
-    centers := by
-      intro i hi
-      simpa [Dt, topPath] using htopCenters i hi
-    operator_bound := by
-      intro i hi z hz
-      exact htopBound i hi z hz
-    path_cover := by
-      intro i hi t ht
-      simpa [topPath] using htopCover i hi t ht
-    overlap := by
-      intro i hi z hz
-      exact htopOverlap i hi z hz
+    centers := by assumption
+    operator_bound := by assumption
+    path_cover := by assumption
+    overlap := by assumption
     value := top
     value_continuous := htopCont'
     value_initial := htopStart
-    local_formula := by
-      intro i hi t ht
-      simpa [Dt, topPath] using htopFormula i hi t ht
+    local_formula := by assumption
   }
-  have hbottomEq := path_continuation_lifts_unique hbottomCont H y A gridBottom
-  have htopEq := path_continuation_lifts_unique htopCont H y gridTop B
-  calc
-    A.value 1 = bottom 1 := hbottomEq 1 (by norm_num)
-    _ = top 1 := hendEq
-    _ = B.value 1 := htopEq 1 (by norm_num)
+  exact ((path_continuation_lifts_unique hbottomCont H y A gridBottom 1 (by norm_num)).trans (hendEq)).trans (path_continuation_lifts_unique htopCont H y gridTop B 1 (by norm_num))
 
 end DOZZ.Proofs

@@ -32,8 +32,6 @@ theorem fusion_localSecondKernel_bound (γ α₁ α₂ α₃ : ℝ) (z x : ℂ)
     gammaHalfKernel γ α₁ α₂ α₃ z x / ‖x - z‖ ^ 2 ≤
       (2 : ℝ) ^ |γ * α₂| * planarMixedKernel (γ ^ 2 / 2) (γ * α₁) z x := by
   have hn : normPlus x = 1 := max_eq_left (by linarith)
-  have h0 : 0 < ‖x‖ := norm_pos_iff.mpr hx0
-  have hd : 0 < ‖x - z‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hxz)
   have hlo : (1 / 2 : ℝ) ≤ ‖x - 1‖ := by
     have h := norm_sub_norm_le (1 : ℂ) x
     rw [norm_one, norm_sub_rev] at h
@@ -42,15 +40,14 @@ theorem fusion_localSecondKernel_bound (γ α₁ α₂ α₃ : ℝ) (z x : ℂ)
     have h := norm_sub_le x (1 : ℂ)
     rw [norm_one] at h
     linarith
-  have h1 : 0 < ‖x - 1‖ := (by norm_num : (0 : ℝ) < 1 / 2).trans_le hlo
   have ht : ‖x - 1‖ ^ (-γ * α₂) ≤ (2 : ℝ) ^ |γ * α₂| := by
     simpa only [neg_mul, abs_neg] using coulombWeight_rpow_le (L := 2) (y := ‖x - 1‖)
       (by norm_num) (by norm_num; exact hlo) hhi (-γ * α₂)
   have he : gammaHalfKernel γ α₁ α₂ α₃ z x / ‖x - z‖ ^ 2 =
       planarMixedKernel (γ ^ 2 / 2) (γ * α₁) z x * ‖x - 1‖ ^ (-γ * α₂) := by
     unfold gammaHalfKernel planarMixedKernel
-    rw [hn, Real.one_rpow, mul_one, Real.rpow_sub hd, Real.rpow_two,
-      neg_mul γ α₂, Real.rpow_neg h1.le]
+    rw [hn, Real.one_rpow, mul_one, Real.rpow_sub (norm_pos_iff.mpr (sub_ne_zero.mpr hxz)), Real.rpow_two,
+      neg_mul γ α₂, Real.rpow_neg ((by norm_num : (0 : ℝ) < 1 / 2).trans_le hlo).le]
     ring
   rw [he, mul_comm ((2 : ℝ) ^ |γ * α₂|)]
   exact mul_le_mul_of_nonneg_left ht (by unfold planarMixedKernel; positivity)
@@ -66,9 +63,8 @@ theorem fusion_localSecondKernel_integrable (γ α₁ α₂ α₃ : ℝ)
   have hf : Measurable f := (Complex.measurable_ofReal.comp
     ((fusion_measurable_gammaHalfKernel γ α₁ α₂ α₃).comp
       (measurable_const.prodMk measurable_id))).div ((measurable_id.sub_const z).pow_const 2)
-  have hmix := (planar_mixed_integral (γ ^ 2 / 2) (γ * α₁) hk hβ hβ2 z hz).1
   have hdom : Integrable (fun x => (2 : ℝ) ^ |γ * α₂| *
-      planarMixedKernel (γ ^ 2 / 2) (γ * α₁) z x) volume := hmix.const_mul _
+      planarMixedKernel (γ ^ 2 / 2) (γ * α₁) z x) volume := ((planar_mixed_integral (γ ^ 2 / 2) (γ * α₁) hk hβ hβ2 z hz).1).const_mul _
   have hfvol : Integrable (B.indicator f) volume := by
     apply hdom.mono' (hf.indicator Metric.isOpen_ball.measurableSet).aestronglyMeasurable
     filter_upwards [Measure.ae_ne volume (0 : ℂ), Measure.ae_ne volume z] with x hx0 hxz
@@ -83,7 +79,7 @@ theorem fusion_localSecondKernel_integrable (γ α₁ α₂ α₃ : ℝ)
   change Integrable f (gmcReferenceMeasure.restrict B)
   rw [gmcReferenceMeasure_restrict_unit_chart B Metric.isOpen_ball.measurableSet
     (fun x hx => by
-      have h : ‖x‖ < 1 / 2 := by simpa only [B, Metric.mem_ball, dist_zero_right] using hx
+      have : ‖x‖ < 1 / 2 := by simpa only [B, Metric.mem_ball, dist_zero_right] using hx
       linarith)]
   exact (integrable_indicator_iff Metric.isOpen_ball.measurableSet).mp hfvol
 

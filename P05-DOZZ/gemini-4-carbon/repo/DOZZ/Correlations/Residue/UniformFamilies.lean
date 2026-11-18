@@ -10,7 +10,6 @@ public import DOZZ.Correlations.Residue.LocalWeightFamily
 `DOZZ.twoInsertion_tail_sum_uniform`. -/
 
 @[expose] public section
-open MeasureTheory Set
 namespace DOZZ.Proofs
 
 /-- Enlarge common upper bounds and decrease the positive center lower bound. -/

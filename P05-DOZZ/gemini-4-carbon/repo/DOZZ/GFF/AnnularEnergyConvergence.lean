@@ -26,56 +26,6 @@ noncomputable def annularMixedEnergy (n k : ℕ) : ℝ :=
       (-Real.log ‖q.1 - q.2‖)
     ∂((volume : Measure ℂ).prod (volume : Measure ℂ))
 
-/-- The mean-zero ABK pairing transports to a mixed complex logarithmic energy. -/
-theorem abkLogCovariancePairing_eq_complex_pair
-    (ψ φ : GaussianFields.MeanZeroTestFunction 2) :
-    GaussianFields.abkLogCovariancePairing ψ φ =
-      ∫ q : ℂ × ℂ,
-        ψ (complexToVecTwo q.1) * φ (complexToVecTwo q.2) *
-          (-Real.log ‖q.1 - q.2‖)
-        ∂((volume : Measure ℂ).prod (volume : Measure ℂ)) := by
-  let ψC : ℂ → ℝ := fun z => ψ (complexLinearEquivVecTwo z)
-  let φC : ℂ → ℝ := fun z => φ (complexLinearEquivVecTwo z)
-  have hψC : Continuous ψC := ψ.continuous.comp complexLinearEquivVecTwo.continuous
-  have hφC : Continuous φC := φ.continuous.comp complexLinearEquivVecTwo.continuous
-  have hψCc : HasCompactSupport ψC :=
-    ψ.hasCompactSupport.comp_homeomorph complexLinearEquivVecTwo.toHomeomorph
-  have hφCc : HasCompactSupport φC :=
-    φ.hasCompactSupport.comp_homeomorph complexLinearEquivVecTwo.toHomeomorph
-  have hpair := integral_complexLogKernelPair_eq_vec ψC φC hψC hφC hψCc hφCc
-  have hkernel (z w : ℂ) :
-      GaussianFields.abkLogCovarianceKernel (complexToVecTwo z) (complexToVecTwo w) =
-        -Real.log ‖z - w‖ := by
-    rw [GaussianFields.abkLogCovarianceKernel, ← complexToVecTwo_sub z w]
-    exact congrArg (fun t : ℝ => -Real.log t) (euclideanNorm_complexToVecTwo (z - w))
-  have hback (z : ℂ) : complexLinearEquivVecTwo.symm (complexToVecTwo z) = z := by
-    rw [← complexLinearEquivVecTwo_apply]
-    simp
-  have hψmap (z : ℂ) : ψC z = ψ (complexToVecTwo z) := by
-    simp [ψC, complexLinearEquivVecTwo_apply]
-  have hφmap (z : ℂ) : φC z = φ (complexToVecTwo z) := by
-    simp [φC, complexLinearEquivVecTwo_apply]
-  unfold GaussianFields.abkLogCovariancePairing GaussianFields.abkKernelPairing
-  calc
-    _ = ∫ p : GaussianFields.Vec 2 × GaussianFields.Vec 2,
-          ψC (complexLinearEquivVecTwo.symm p.1) *
-            φC (complexLinearEquivVecTwo.symm p.2) *
-            GaussianFields.abkLogCovarianceKernel p.1 p.2
-          ∂((volume : Measure (GaussianFields.Vec 2)).prod
-            (volume : Measure (GaussianFields.Vec 2))) := by
-              apply integral_congr_ae
-              filter_upwards with p
-              simp [ψC, φC]
-    _ = ∫ q : ℂ × ℂ,
-          ψC q.1 * φC q.2 * (-Real.log ‖q.1 - q.2‖)
-          ∂((volume : Measure ℂ).prod (volume : Measure ℂ)) := hpair.2.symm
-    _ = ∫ q : ℂ × ℂ,
-          ψ (complexToVecTwo q.1) * φ (complexToVecTwo q.2) *
-            (-Real.log ‖q.1 - q.2‖)
-          ∂((volume : Measure ℂ).prod (volume : Measure ℂ)) := by
-            apply integral_congr_ae
-            filter_upwards with q
-            rw [hψmap q.1, hφmap q.2]
 
 /-- The annular centered pairing for two tests and two annulus widths expands into the planar,
 two mixed, and annular-annular logarithmic energies. -/
@@ -85,11 +35,36 @@ theorem annularCenteredPairing_eq_mixedExpansion (f g : TestFn) (n k : ℕ) :
       testFnLogPairing f g - testMass g * annularCrossEnergy f k -
         testMass f * annularCrossEnergy g n +
           testMass f * testMass g * annularMixedEnergy n k := by
+  have abkLogCovariancePairing_eq_complex_pair (ψ φ : GaussianFields.MeanZeroTestFunction 2) : GaussianFields.abkLogCovariancePairing ψ φ =
+        ∫ q : ℂ × ℂ,
+          ψ (complexToVecTwo q.1) * φ (complexToVecTwo q.2) *
+            (-Real.log ‖q.1 - q.2‖)
+          ∂((volume : Measure ℂ).prod (volume : Measure ℂ)) := by
+    let ψC : ℂ → ℝ := fun z => ψ (complexLinearEquivVecTwo z)
+    let φC : ℂ → ℝ := fun z => φ (complexLinearEquivVecTwo z)
+    unfold GaussianFields.abkLogCovariancePairing GaussianFields.abkKernelPairing
+    calc
+      _ = ∫ p : GaussianFields.Vec 2 × GaussianFields.Vec 2,
+            ψC (complexLinearEquivVecTwo.symm p.1) *
+              φC (complexLinearEquivVecTwo.symm p.2) *
+              GaussianFields.abkLogCovarianceKernel p.1 p.2
+            ∂((volume : Measure (GaussianFields.Vec 2)).prod
+              (volume : Measure (GaussianFields.Vec 2))) := by
+                apply integral_congr_ae
+                filter_upwards with p
+                simp [ψC, φC]
+      _ = ∫ q : ℂ × ℂ,
+            ψC q.1 * φC q.2 * (-Real.log ‖q.1 - q.2‖)
+            ∂((volume : Measure ℂ).prod (volume : Measure ℂ)) := (integral_complexLogKernelPair_eq_vec ψC φC (ψ.continuous.comp complexLinearEquivVecTwo.continuous) (φ.continuous.comp complexLinearEquivVecTwo.continuous) (ψ.hasCompactSupport.comp_homeomorph complexLinearEquivVecTwo.toHomeomorph) (φ.hasCompactSupport.comp_homeomorph complexLinearEquivVecTwo.toHomeomorph)).2.symm
+      _ = ∫ q : ℂ × ℂ,
+            ψ (complexToVecTwo q.1) * φ (complexToVecTwo q.2) *
+              (-Real.log ‖q.1 - q.2‖)
+            ∂((volume : Measure ℂ).prod (volume : Measure ℂ)) := by rfl
   let m := testMass f
   let p := testMass g
-  let ρn : ℂ → ℝ := annularProbabilityDensity n
-  let ρk : ℂ → ℝ := annularProbabilityDensity k
-  let μ : Measure (ℂ × ℂ) := (volume : Measure ℂ).prod (volume : Measure ℂ)
+  let ρn := annularProbabilityDensity n
+  let ρk := annularProbabilityDensity k
+  let μ := (volume : Measure ℂ).prod (volume : Measure ℂ)
   let A : ℂ × ℂ → ℝ := fun q => f q.1 * g q.2 * (-Real.log ‖q.1 - q.2‖)
   let B : ℂ × ℂ → ℝ := fun q => f q.1 * ρk q.2 * (-Real.log ‖q.1 - q.2‖)
   let C : ℂ × ℂ → ℝ := fun q => ρn q.1 * g q.2 * (-Real.log ‖q.1 - q.2‖)
@@ -101,8 +76,6 @@ theorem annularCenteredPairing_eq_mixedExpansion (f g : TestFn) (n k : ℕ) :
   have hρkc := continuous_annularProbabilityDensity k
   have hρncs := hasCompactSupport_annularProbabilityDensity n
   have hρkcs := hasCompactSupport_annularProbabilityDensity k
-  have hhc : Continuous h := f.continuous.sub (hρnc.const_mul m)
-  have hjc : Continuous j := g.continuous.sub (hρkc.const_mul p)
   have hhcs : HasCompactSupport h := by
     have hmul : HasCompactSupport (fun z : ℂ => m * ρn z) := by
       have hfun : (fun z : ℂ => m * ρn z) = (fun _ : ℂ => m) • ρn := by
@@ -113,10 +86,6 @@ theorem annularCenteredPairing_eq_mixedExpansion (f g : TestFn) (n k : ℕ) :
     exact f.hasCompactSupport.sub hmul
   have hjcs : HasCompactSupport j := by
     have hmul : HasCompactSupport (fun z : ℂ => p * ρk z) := by
-      have hfun : (fun z : ℂ => p * ρk z) = (fun _ : ℂ => p) • ρk := by
-        funext z
-        simp [smul_eq_mul]
-      rw [hfun]
       exact hρkcs.smul_left (f := fun _ : ℂ => p)
     exact g.hasCompactSupport.sub hmul
   have hA0 := integral_complexLogKernelPair_eq_vec f g
@@ -125,27 +94,21 @@ theorem annularCenteredPairing_eq_mixedExpansion (f g : TestFn) (n k : ℕ) :
     f.continuous hρkc f.hasCompactSupport hρkcs
   have hC0 := integral_complexLogKernelPair_eq_vec ρn g
     hρnc g.continuous hρncs g.hasCompactSupport
-  have hCswap0 := integral_complexLogKernelPair_eq_vec g ρn
+  have := integral_complexLogKernelPair_eq_vec g ρn
     g.continuous hρnc g.hasCompactSupport hρncs
   have hD0 := integral_complexLogKernelPair_eq_vec ρn ρk
     hρnc hρkc hρncs hρkcs
   have hAint : Integrable A μ := by simpa [A, μ] using hA0.1
   have hBint : Integrable B μ := by simpa [B, μ] using hB0.1
   have hCint : Integrable C μ := by simpa [C, μ] using hC0.1
-  have hCswapInt : Integrable Cswap μ := by simpa [Cswap, μ] using hCswap0.1
   have hDint : Integrable D μ := by simpa [D, μ] using hD0.1
-  have hHJ0 := integral_complexLogKernelPair_eq_vec h j hhc hjc hhcs hjcs
-  have hHJint : Integrable
-      (fun q : ℂ × ℂ => h q.1 * j q.2 * (-Real.log ‖q.1 - q.2‖)) μ := by
-    simpa [μ] using hHJ0.1
-  have hpB : Integrable (fun q => p * B q) μ := hBint.const_mul p
-  have hmC : Integrable (fun q => m * C q) μ := hCint.const_mul m
-  have hmpD : Integrable (fun q => m * p * D q) μ := hDint.const_mul (m * p)
+  have := integral_complexLogKernelPair_eq_vec h j (f.continuous.sub (hρnc.const_mul m)) (g.continuous.sub (hρkc.const_mul p)) hhcs hjcs
+  have hpB := hBint.const_mul p
+  have hmC := hCint.const_mul m
+  have hmpD := hDint.const_mul (m * p)
   have hpoint (q : ℂ × ℂ) :
       h q.1 * j q.2 * (-Real.log ‖q.1 - q.2‖) =
-        (A q - p * B q) - (m * C q - m * p * D q) := by
-    simp [A, B, C, D, h, j, ρn, ρk, m, p]
-    ring
+        (A q - p * B q) - (m * C q - m * p * D q) := by ring
   have hswap : ∫ q : ℂ × ℂ, C q ∂μ = ∫ q : ℂ × ℂ, Cswap q ∂μ := by
     calc
       _ = ∫ q : ℂ × ℂ, Cswap q.swap ∂μ := by
@@ -500,14 +463,14 @@ theorem tendsto_annularCenteredPairing_gffCov (f g : TestFn) :
       (fun n => GaussianFields.abkLogCovariancePairing
         (annularCenteredTestFn f n) (annularCenteredTestFn g n))
       atTop (𝓝 (gffCov f g)) := by
-  let m : ℝ := testMass f
-  let p : ℝ := testMass g
-  let Lf : ℝ := ∫ z : ℂ, |f z|
-  let Lg : ℝ := ∫ z : ℂ, |g z|
+  let m := testMass f
+  let p := testMass g
+  let Lf := ∫ z : ℂ, |f z|
+  let Lg := ∫ z : ℂ, |g z|
   let δ : ℕ → ℝ := fun j => 1 / ((j : ℝ) + 2)
   let Q : ℕ → ℝ := fun j => GaussianFields.abkLogCovariancePairing
     (annularCenteredTestFn f j) (annularCenteredTestFn g j)
-  let C : ℝ := 2 * (|p| * Lf + |m| * Lg + |m * p|)
+  let C := 2 * (|p| * Lf + |m| * Lg + |m * p|)
   let B : ℕ → ℝ := fun j => C * (δ j + δ j)
   have hδ : Tendsto δ atTop (𝓝 0) := by
     convert (tendsto_const_div_atTop_nhds_zero_nat (1 : ℝ)).comp
@@ -525,11 +488,11 @@ theorem tendsto_annularCenteredPairing_gffCov (f g : TestFn) :
     simpa using hconst.add hB
   apply tendsto_of_tendsto_of_tendsto_of_le_of_le hlow hupp
   · intro j
-    have h := abs_le.mp (abs_annularCenteredPairing_sub_gffCov_le_mixed f g j j)
+    have := abs_le.mp (abs_annularCenteredPairing_sub_gffCov_le_mixed f g j j)
     dsimp [Q, B, δ, C, m, p, Lf, Lg]
     linarith
   · intro j
-    have h := abs_le.mp (abs_annularCenteredPairing_sub_gffCov_le_mixed f g j j)
+    have := abs_le.mp (abs_annularCenteredPairing_sub_gffCov_le_mixed f g j j)
     dsimp [Q, B, δ, C, m, p, Lf, Lg]
     linarith
 

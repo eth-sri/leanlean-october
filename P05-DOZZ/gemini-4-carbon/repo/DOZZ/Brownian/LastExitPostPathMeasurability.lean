@@ -30,25 +30,15 @@ theorem continuous_shiftPathAddConstant (c : ℝ) :
     Continuous (fun z : ℝ≥0 × BrownianPath => shiftPathAddConstant c z) := by
   apply ContinuousMap.continuous_of_continuous_uncurry
   change Continuous (fun z : (ℝ≥0 × BrownianPath) × ℝ≥0 => z.1.2 (z.1.1 + z.2) + c)
-  exact (continuous_eval.comp
-    (continuous_fst.snd.prodMk (continuous_fst.fst.add continuous_snd))).add continuous_const
+  fun_prop
 
 /-- The last-exit recentering map is measurable for every fixed level. -/
 theorem measurable_negativeConditionedPostLastExitPath (c : ℝ) :
     Measurable (negativeConditionedPostLastExitPath c) := by
-  have hτ : Measurable (fun p : BrownianPath => negativeLastExitTime p c) :=
+  have hτ :=
     measurable_negativeLastExitTime_joint.comp
       ((measurable_const (a := c)).prodMk measurable_id)
-  have hmap : Measurable (fun p : BrownianPath =>
-      shiftPathAddConstant c (negativeLastExitTime p c, p)) :=
-    (continuous_shiftPathAddConstant c).measurable.comp (hτ.prodMk measurable_id)
-  have heq : (fun p : BrownianPath => shiftPathAddConstant c (negativeLastExitTime p c, p)) =
-      negativeConditionedPostLastExitPath c := by
-    funext p
-    ext t
-    rfl
-  rw [← heq]
-  exact hmap
+  exact (continuous_shiftPathAddConstant c).measurable.comp (hτ.prodMk measurable_id)
 
 /-- In particular, the post-last-exit map `DOZZ.negativeConditionedPostLastExitPath` is
 almost-everywhere measurable under any path measure. -/

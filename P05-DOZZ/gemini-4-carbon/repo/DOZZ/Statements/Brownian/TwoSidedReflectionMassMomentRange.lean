@@ -33,6 +33,6 @@ theorem twoSidedReflectionMass_moment_range
     (hq : ∀ γ ∈ Kγ, ∀ q ∈ Kq, q < 4 / γ ^ 2) :
     ∃ C : ℝ≥0∞, C < ⊤ ∧
       ∀ γ ∈ Kγ, ∀ ν ∈ Kν, ∀ q ∈ Kq,
-        (∫⁻ ω, ENNReal.rpow (twoSidedReflectionMass γ (B ν) (Z γ) ω) q ∂P) ≤ C := by exact DOZZ.Proofs.twoSidedReflectionMass_moment_range P Kγ Kν Kq hKγ hKν hKq B Z hData hν hq
+        (∫⁻ ω, ENNReal.rpow (twoSidedReflectionMass γ (B ν) (Z γ) ω) q ∂P) ≤ C := DOZZ.Proofs.twoSidedReflectionMass_moment_range P Kγ Kν Kq hKγ hKν hKq B Z hData hν hq
 
 end DOZZ

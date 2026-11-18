@@ -73,21 +73,19 @@ theorem residue_unitVolume_bridge_of_insertion_tails
         Tendsto (fun ε : ℝ => ε * unitVolumeStructureConstant P M γ
           (α3 - α2 + ε) α2 α3) (𝓝[>] 0)
           (𝓝 (bridgeMultiplicity α2 α3 * reflectionExponent γ α3 * reflectionBarR P γ α3 (B α3) Z)) := by
-  have hα3pos : 0 < α3 := lt_trans (by positivity) hα.2.2.1
+  have hα3pos := lt_trans (by positivity) hα.2.2.1
   have hcharge : ∀ α ∈ ({α3} : Set ℝ), γ / 2 < α ∧ α < Q γ := by
     intro α hαs
-    have hh : α = α3 := hαs
+    have hh := hαs
     rw [hh]
     exact ⟨hα.2.2.1, hα.2.2.2⟩
   have hpos3 : ∀ z ∈ ({3} : Set ℂ), 2 ≤ ‖z‖ := by
     intro z hz
-    have hh : z = 3 := hz
-    rw [hh]
+    rw [hz]
     norm_num
   have hpos7 : ∀ z ∈ ({7} : Set ℂ), 2 ≤ ‖z‖ := by
     intro z hz
-    have hh : z = 7 := hz
-    rw [hh]
+    rw [hz]
     norm_num
   by_cases heq : α2 = α3
   · subst α2
@@ -101,9 +99,7 @@ theorem residue_unitVolume_bridge_of_insertion_tails
       {3} {7} F3s F7s (1 / 2) s3 d3 l3 s7 d7 l7 hF3 hF7
     have hsep : ∀ z2 ∈ ({3} : Set ℂ), ∀ z3 ∈ ({7} : Set ℂ), 3 ≤ ‖z2 - z3‖ := by
       intro z2 hz2 z3 hz3
-      have hh2 : z2 = 3 := hz2
-      have hh3 : z3 = 7 := hz3
-      rw [hh2, hh3]
+      rw [hz2, hz3]
       norm_num
     obtain ⟨B, Z, hZ, hB, htail⟩ := htwo {3} {7} isCompact_singleton isCompact_singleton
       hpos3 hpos7 hsep {α3} {α3} isCompact_singleton isCompact_singleton hcharge hcharge
@@ -125,12 +121,11 @@ theorem residue_unitVolume_bridge_of_insertion_tails
     obtain ⟨B, Z, hZ, hB, htail⟩ := hone {3} isCompact_singleton hpos3 {α3}
       isCompact_singleton hcharge Fs (1 / 2) s d l hF
     let η := oneInsertionErrorCeiling γ α3 / 2
-    have he : 0 < oneInsertionErrorCeiling γ α3 := residue_oneInsertionErrorCeiling_pos γ α3 hγ hα.2.2.1 hα.2.2.2
-    have hη : 0 < η := by dsimp only [η]; positivity
+    have he := residue_oneInsertionErrorCeiling_pos γ α3 hγ hα.2.2.1 hα.2.2.2
+    have hη : 0 < η := by positivity
     have hηbound : ∀ α ∈ ({α3} : Set ℝ), η < oneInsertionErrorCeiling γ α := by
       intro α hαs
-      have hh : α = α3 := hαs
-      rw [hh]
+      rw [hαs]
       dsimp only [η]
       linarith only [he]
     obtain ⟨C, hC, hCb⟩ := htail η hη hηbound

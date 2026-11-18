@@ -23,31 +23,12 @@ open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
 
+variable {N : ℕ}
+
+
 /-! ### Inversion identities -/
 
-/-- The norm of `1 - w * x⁻¹` in terms of `‖x - w‖`. -/
-theorem coulombCutoffLimit_norm_one_sub_mul_inv {x w : ℂ} (hx : x ≠ 0) :
-    ‖1 - w * x⁻¹‖ = ‖x - w‖ / ‖x‖ := by
-  have h : 1 - w * x⁻¹ = (x - w) / x := by
-    field_simp [hx]
-  rw [h, norm_div]
 
-/-- With the cutoff removed, the inverted-chart weight at `x⁻¹` is the Coulomb weight at `x`. -/
-theorem coulombInfinityWeight_inv_eq_coulombWeight {N : ℕ} (γ : ℝ) (α : Fin N → ℝ)
-    (z : Fin N → ℂ) (αinf : ℝ) {x : ℂ} (hx : x ≠ 0) :
-    (∏ k, ENNReal.rpow (ENNReal.ofReal (normPlus x⁻¹ / ‖1 - z k * x⁻¹‖)) (γ * α k)) *
-        ENNReal.rpow (ENNReal.ofReal (normPlus x⁻¹ / ‖x⁻¹‖)) (γ * αinf) =
-      coulombWeight γ α z αinf x := by
-  have hxn : ‖x‖ ≠ 0 := norm_ne_zero_iff.mpr hx
-  have h1 : ∀ k, normPlus x⁻¹ / ‖1 - z k * x⁻¹‖ = normPlus x / ‖x - z k‖ := by
-    intro k
-    rw [coulombCutoffLimit_norm_one_sub_mul_inv hx, normPlus_inv_identity hx]
-    exact div_div_div_cancel_right₀ hxn _ _
-  have h2 : normPlus x⁻¹ / ‖x⁻¹‖ = normPlus x := by
-    rw [normPlus_inv_identity hx, norm_inv]
-    field_simp
-  unfold coulombWeight
-  simp only [h1, h2]
 
 /-! ### Softening multiplies a factor by an exponential -/
 
@@ -77,17 +58,16 @@ theorem coulombCutoffLimit_factor {n d δ ρ2 : ℝ} (e : ℝ) (hn : 0 < n) (hρ
     ∃ w : ℝ, |w| ≤ |e| * (δ / ρ2) ∧
       ENNReal.rpow (ENNReal.ofReal (n / (d + δ))) e =
         ENNReal.rpow (ENNReal.ofReal (n / d)) e * ENNReal.ofReal (Real.exp w) := by
-  have hd0 : 0 < d := lt_of_lt_of_le hρ2 hd
+  have := lt_of_lt_of_le hρ2 hd
   refine ⟨-(e * Real.log (1 + δ / d)), ?_, ?_⟩
   · rw [abs_neg, abs_mul]
-    have ht : 0 ≤ δ / d := by positivity
+    have : 0 ≤ δ / d := by positivity
     have hlog0 : 0 ≤ Real.log (1 + δ / d) := Real.log_nonneg (by linarith)
     have hlog1 : Real.log (1 + δ / d) ≤ δ / d := by
       have := Real.log_le_sub_one_of_pos (by linarith : 0 < 1 + δ / d)
       linarith
-    have hdd : δ / d ≤ δ / ρ2 := div_le_div_of_nonneg_left hδ.le hρ2 hd
     rw [abs_of_nonneg hlog0]
-    exact mul_le_mul_of_nonneg_left (hlog1.trans hdd) (abs_nonneg e)
+    exact mul_le_mul_of_nonneg_left (hlog1.trans (div_le_div_of_nonneg_left hδ.le hρ2 hd)) (abs_nonneg e)
   · have h1 : 0 < n / (d + δ) := by positivity
     have h2 : 0 < n / d := by positivity
     rw [coulombWeight_rpow_ofReal h1, coulombWeight_rpow_ofReal h2,
@@ -102,7 +82,7 @@ theorem coulombCutoffLimit_factor {n d δ ρ2 : ℝ} (e : ℝ) (hn : 0 < n) (hρ
     rw [h3, Real.mul_rpow h2.le (by positivity), h5]
 
 /-- Softening a finite product of factors multiplies it by one exponential. -/
-theorem coulombCutoffLimit_prod {N : ℕ} {n δ ρ2 E : ℝ} (d e : Fin N → ℝ) (hn : 0 < n)
+theorem coulombCutoffLimit_prod {n δ ρ2 E : ℝ} (d e : Fin N → ℝ) (hn : 0 < n)
     (hρ2 : 0 < ρ2) (hd : ∀ k, ρ2 ≤ d k) (hδ : 0 < δ) (he : ∀ k, |e k| ≤ E) :
     ∃ w : ℝ, |w| ≤ N * E * (δ / ρ2) ∧
       ∏ k, ENNReal.rpow (ENNReal.ofReal (n / (d k + δ))) (e k) =
@@ -121,7 +101,7 @@ theorem coulombCutoffLimit_prod {N : ℕ} {n δ ρ2 E : ℝ} (d e : Fin N → �
       ENNReal.ofReal_prod_of_nonneg fun k _ => (Real.exp_pos _).le]
 
 /-- The finite-chart softened weight is the Coulomb weight times an exponential. -/
-theorem coulombCutoffLimit_finite_eq {N : ℕ} (γ : ℝ) (α : Fin N → ℝ) (z : Fin N → ℂ)
+theorem coulombCutoffLimit_finite_eq (γ : ℝ) (α : Fin N → ℝ) (z : Fin N → ℂ)
     (αinf r : ℝ) {E ρ2 : ℝ} (hρ2 : 0 < ρ2) (hα : ∀ j, |γ * α j| ≤ E) {x : ℂ}
     (hxz : ∀ k, ρ2 ≤ ‖x - z k‖) :
     ∃ w : ℝ, |w| ≤ N * E * (Real.exp (-r) / ρ2) ∧
@@ -136,22 +116,37 @@ theorem coulombCutoffLimit_finite_eq {N : ℕ} (γ : ℝ) (α : Fin N → ℝ) (
 
 /-- The inverted-chart softened weight at `x⁻¹` is the Coulomb weight at `x` times an
 exponential. -/
-theorem coulombCutoffLimit_infinity_eq {N : ℕ} (γ : ℝ) (α : Fin N → ℝ) (z : Fin N → ℂ)
+theorem coulombCutoffLimit_infinity_eq (γ : ℝ) (α : Fin N → ℝ) (z : Fin N → ℂ)
     (αinf r : ℝ) {E ρ : ℝ} (hρ : 0 < ρ) (hρ1 : ρ ≤ 1) (hα : ∀ j, |γ * α j| ≤ E)
     (hαinf : |γ * αinf| ≤ E) {x : ℂ} (hx : x ≠ 0) (hxρ : ‖x‖ ≤ 1 / ρ)
     (hxz : ∀ k, ρ ≤ ‖x - z k‖) :
     ∃ w : ℝ, |w| ≤ (N + 1) * E * (Real.exp (-r) / ρ ^ 2) ∧
       coulombCutoffInfinityWeight γ α z αinf r x⁻¹ =
         coulombWeight γ α z αinf x * ENNReal.ofReal (Real.exp w) := by
-  have hxpos : 0 < ‖x‖ := norm_pos_iff.mpr hx
+  have coulombCutoffLimit_norm_one_sub_mul_inv {w : ℂ} : ‖1 - w * x⁻¹‖ = ‖x - w‖ / ‖x‖ := by
+    have h : 1 - w * x⁻¹ = (x - w) / x := by grind
+    rw [h, norm_div]
+  have coulombInfinityWeight_inv_eq_coulombWeight : (∏ k, ENNReal.rpow (ENNReal.ofReal (normPlus x⁻¹ / ‖1 - z k * x⁻¹‖)) (γ * α k)) *
+          ENNReal.rpow (ENNReal.ofReal (normPlus x⁻¹ / ‖x⁻¹‖)) (γ * αinf) =
+        coulombWeight γ α z αinf x := by
+    have h1 : ∀ k, normPlus x⁻¹ / ‖1 - z k * x⁻¹‖ = normPlus x / ‖x - z k‖ := by
+      intro k
+      rw [coulombCutoffLimit_norm_one_sub_mul_inv, normPlus_inv_identity hx]
+      exact div_div_div_cancel_right₀ (norm_ne_zero_iff.mpr hx) _ _
+    have h2 : normPlus x⁻¹ / ‖x⁻¹‖ = normPlus x := by
+      rw [normPlus_inv_identity hx, norm_inv]
+      field_simp
+    unfold coulombWeight
+    simp only [h1, h2]
+  have hxpos := norm_pos_iff.mpr hx
   have hρ2 : 0 < ρ ^ 2 := by positivity
   have hρρ : ρ * ‖x‖ ≤ 1 := by
-    calc ρ * ‖x‖ ≤ ρ * (1 / ρ) := mul_le_mul_of_nonneg_left hxρ hρ.le
-      _ = 1 := by field_simp
+    refine (mul_le_mul_of_nonneg_left hxρ hρ.le).trans_eq (?_)
+    field_simp
   have hn : 0 < normPlus x⁻¹ := lt_of_lt_of_le one_pos (le_max_left _ _)
   have hd : ∀ k, ρ ^ 2 ≤ ‖1 - z k * x⁻¹‖ := by
     intro k
-    rw [coulombCutoffLimit_norm_one_sub_mul_inv hx, le_div_iff₀ hxpos]
+    rw [coulombCutoffLimit_norm_one_sub_mul_inv, le_div_iff₀ hxpos]
     calc ρ ^ 2 * ‖x‖ = ρ * (ρ * ‖x‖) := by ring
       _ ≤ ρ * 1 := mul_le_mul_of_nonneg_left hρρ hρ.le
       _ ≤ ‖x - z k‖ := by simpa using hxz k
@@ -170,7 +165,7 @@ theorem coulombCutoffLimit_infinity_eq {N : ℕ} (γ : ℝ) (α : Fin N → ℝ)
         add_le_add hw₁ ((hw₂).trans (mul_le_mul_of_nonneg_right hαinf (by positivity)))
       _ = (N + 1) * E * (Real.exp (-r) / ρ ^ 2) := by ring
   · unfold coulombCutoffInfinityWeight
-    rw [hprod, hfac, ← coulombInfinityWeight_inv_eq_coulombWeight γ α z αinf hx, Real.exp_add,
+    rw [hprod, hfac, ← coulombInfinityWeight_inv_eq_coulombWeight, Real.exp_add,
       ENNReal.ofReal_mul (Real.exp_pos _).le]
     ring
 
@@ -183,9 +178,9 @@ theorem coulombCutoffLimit_combine_le {W : ℝ≥0∞} {Wb c δ wF wG : ℝ} {fw
     (hfi : fw + iw = 1) (hF : |wF| ≤ c * δ) (hG : |wG| ≤ c * δ) :
     (fw : ℝ≥0∞) * (W * ENNReal.ofReal (Real.exp wF)) +
         (iw : ℝ≥0∞) * (W * ENNReal.ofReal (Real.exp wG)) ≤ ENNReal.ofReal (Wb * Real.exp c) := by
-  have hcδ : c * δ ≤ c := mul_le_of_le_one_right hc hδ1
-  have hwF : wF ≤ c := (le_abs_self wF).trans (hF.trans hcδ)
-  have hwG : wG ≤ c := (le_abs_self wG).trans (hG.trans hcδ)
+  have hcδ := mul_le_of_le_one_right hc hδ1
+  have := (le_abs_self wF).trans (hF.trans hcδ)
+  have := (le_abs_self wG).trans (hG.trans hcδ)
   have hone : (fw : ℝ≥0∞) + (iw : ℝ≥0∞) = 1 := by
     rw [← ENNReal.coe_add, hfi, ENNReal.coe_one]
   calc (fw : ℝ≥0∞) * (W * ENNReal.ofReal (Real.exp wF)) +

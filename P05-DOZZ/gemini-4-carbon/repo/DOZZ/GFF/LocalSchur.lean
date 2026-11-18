@@ -25,8 +25,8 @@ namespace DOZZ
 /-- The covariance `gffCov` is the product integral against its kernel `gffKernel`. -/
 theorem gffCov_eq_integral_gffKernel (f g : TestFn) :
     gffCov f g = ∫ p : ℂ × ℂ, f p.1 * gffKernel p.1 p.2 * g p.2 := by
-  let μc : Measure (ℂ × ℂ) := (volume : Measure ℂ).prod (volume : Measure ℂ)
-  let μv : Measure (GaussianFields.Vec 2 × GaussianFields.Vec 2) :=
+  let μc := (volume : Measure ℂ).prod (volume : Measure ℂ)
+  let μv :=
     (volume : Measure (GaussianFields.Vec 2)).prod
       (volume : Measure (GaussianFields.Vec 2))
   let Fv : GaussianFields.Vec 2 × GaussianFields.Vec 2 → ℝ := fun p =>
@@ -39,28 +39,22 @@ theorem gffCov_eq_integral_gffKernel (f g : TestFn) :
     simp [Fv, gffKernelVec, testFnVec_complexToVecTwo]
   have hformula : gffCov f g = ∫ p : GaussianFields.Vec 2 × GaussianFields.Vec 2,
       Fv p ∂μv := by
-    calc
-      gffCov f g = testFnLogPairing f g + testFnPotential f * testMass g +
-          testMass f * testFnPotential g := gffCov_eq_equatorLogEnergy f g
-      _ = ∫ p : GaussianFields.Vec 2 × GaussianFields.Vec 2, Fv p ∂μv := by
-        symm
-        simpa [Fv, μv] using integral_gffKernelVec_pair f g
+    refine (gffCov_eq_equatorLogEnergy f g).trans (?_)
+    symm
+    simpa [Fv, μv] using integral_gffKernelVec_pair f g
   have hchange := volume_preserving_complexPairToVecTwo.integral_comp'
     (f := complexPairToVecTwo) (g := Fv)
-  calc
-    gffCov f g = ∫ p : GaussianFields.Vec 2 × GaussianFields.Vec 2, Fv p ∂μv := hformula
+  calc gffCov f g = ∫ p : GaussianFields.Vec 2 × GaussianFields.Vec 2, Fv p ∂μv := hformula
     _ = ∫ p : ℂ × ℂ, Fv (complexPairToVecTwo p) ∂μc := hchange.symm
     _ = ∫ p : ℂ × ℂ, Fc p ∂μc := by
       apply integral_congr_ae
       filter_upwards with p
       exact (congrFun hcomp p).symm
-    _ = ∫ p : ℂ × ℂ, f p.1 * gffKernel p.1 p.2 * g p.2 ∂μc := rfl
 
 /-- A square-integrable real function belongs to `L²`. -/
 theorem memLp_two_of_integrable_norm_sq {α : Type*} [MeasurableSpace α]
     {μ : Measure α} {f : α → ℝ} (hf : AEStronglyMeasurable f μ)
-    (hsq : Integrable (fun x => ‖f x‖ ^ 2) μ) : MemLp f 2 μ := by
-  exact (integrable_norm_rpow_iff hf (by norm_num) (by simp)).mp (by simpa using hsq)
+    (hsq : Integrable (fun x => ‖f x‖ ^ 2) μ) : MemLp f 2 μ := (integrable_norm_rpow_iff hf (by norm_num) (by simp)).mp (by simpa using hsq)
 
 /-- Cauchy--Schwarz for a product integral, in the exact `L²` form used by the local kernel
 operator. -/
@@ -88,29 +82,27 @@ theorem memLp_testFnTensor_two_on_ball (R : ℝ) (f g : TestFn) :
       ((volume : Measure ℂ).restrict (ball (0 : ℂ) R) |>.prod
         ((volume : Measure ℂ).restrict (ball (0 : ℂ) R))) := by
   let B : Set ℂ := ball 0 R
-  let μB : Measure ℂ := (volume : Measure ℂ).restrict B
+  let μB := (volume : Measure ℂ).restrict B
   have hBlt : volume B < ⊤ := by
     dsimp [B]
     exact measure_ball_lt_top
-  have : IsFiniteMeasure μB := (MeasureTheory.isFiniteMeasure_restrict).2 hBlt.ne
+  have := (MeasureTheory.isFiniteMeasure_restrict).2 hBlt.ne
   have hf4 : MemLp f 4 (volume : Measure ℂ) :=
     f.continuous.memLp_of_hasCompactSupport f.hasCompactSupport
   have hg4 : MemLp g 4 (volume : Measure ℂ) :=
     g.continuous.memLp_of_hasCompactSupport g.hasCompactSupport
   have hfB : MemLp f 4 μB := hf4.mono_measure Measure.restrict_le_self
   have hgB : MemLp g 4 μB := hg4.mono_measure Measure.restrict_le_self
-  have hfProd := hfB.comp_fst μB
-  have hgProd := hgB.comp_snd μB
   have htriple : ENNReal.HolderTriple 4 4 2 := by
     have hreal : (4 : ℝ).HolderTriple 4 2 := by
       constructor <;> norm_num
     simpa using hreal.ennrealOfReal
-  have hF : MemLp (fun p : ℂ × ℂ => f p.1 * g p.2) 2 (μB.prod μB) := by
+  have : MemLp (fun p : ℂ × ℂ => f p.1 * g p.2) 2 (μB.prod μB) := by
     have := htriple
     change MemLp ((fun p : ℂ × ℂ => f p.1) * (fun p : ℂ × ℂ => g p.2)) 2
       (μB.prod μB)
-    exact hfProd.mul hgProd
-  simpa [B, μB] using hF
+    exact (hfB.comp_fst μB).mul (hgB.comp_snd μB)
+  assumption
 
 /-- The square `L²` integral of a tensor product factors over the two coordinates. -/
 theorem integral_sq_testFnTensor_on_ball (R : ℝ) (f g : TestFn) :
@@ -130,8 +122,7 @@ theorem integral_sq_testFnTensor_on_ball (R : ℝ) (f g : TestFn) :
       apply integral_congr_ae
       filter_upwards with p
       rw [norm_mul, mul_pow]
-    _ = _ := by
-      exact setIntegral_prod_mul (fun x : ℂ => ‖f x‖ ^ 2)
+    _ = _ := setIntegral_prod_mul (fun x : ℂ => ‖f x‖ ^ 2)
         (fun y : ℂ => ‖g y‖ ^ 2) (ball (0 : ℂ) R) (ball (0 : ℂ) R)
 
 /-- The pinned covariance on a compactly supported test is bounded by the local `L²` norm, with

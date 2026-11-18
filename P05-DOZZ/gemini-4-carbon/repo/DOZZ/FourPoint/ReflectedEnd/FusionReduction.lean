@@ -80,12 +80,12 @@ theorem gammaHalf_reflected_fusion_asymptotic_of_inner_limit {Ω : Type*} [Measu
             Tendsto (fun z => r z / ‖z‖ ^ κ)
               (nhdsWithin (0 : ℂ) {z : ℂ | z ≠ 0}) (nhds 0) := by
   obtain ⟨B, Z, hZ, hB, rI, hI, hrI⟩ := hinner
-  let p : ℝ := (α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) / γ
-  let κ : ℝ := γ * (Q γ - α₁)
-  let N : ℝ := 2 * μ ^ (-p) / γ * Real.Gamma p
-  let D : ℝ := reflectionR P γ μ α₁ (B α₁) Z *
+  let p := (α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) / γ
+  let κ := γ * (Q γ - α₁)
+  let N := 2 * μ ^ (-p) / γ * Real.Gamma p
+  let D := reflectionR P γ μ α₁ (B α₁) Z *
     structureConstant P M γ μ (2 * Q γ - α₁ - γ / 2) α₂ α₃
-  let C₀ : ℝ := structureConstant P M γ μ (α₁ - γ / 2) α₂ α₃
+  let C₀ := structureConstant P M γ μ (α₁ - γ / 2) α₂ α₃
   let r : ℂ → ℝ := fun z => fourPointT P M γ μ (-γ / 2) α₁ α₂ α₃ z - C₀ - D * ‖z‖ ^ κ
   have hp : 0 < p := div_pos (by linarith only [hs]) hγ
   have hT (z : ℂ) : fourPointT P M γ μ (-γ / 2) α₁ α₂ α₃ z =
@@ -113,9 +113,7 @@ theorem gammaHalf_reflected_fusion_asymptotic_of_inner_limit {Ω : Type*} [Measu
     ring
   · have ho := DOZZ.gammaHalf_reflected_outer_littleO P X M γ α₁ α₂ α₃ ξ
       hγ hγ₂ hξ hξ₂ hα₂ hα₃ hs hα₁ hreflect hslack hfreeze hX hM
-    have hor := (isComplexLittleOAtZero_ofReal_iff κ _).mp ho
-    have hir := reflected_real_part_remainder κ rI hrI
-    have ht := (hor.add hir).const_mul N
+    have ht := (((isComplexLittleOAtZero_ofReal_iff κ _).mp ho).add (reflected_real_part_remainder κ rI hrI)).const_mul N
     simp only [add_zero, mul_zero] at ht
     apply ht.congr'
     filter_upwards [] with z

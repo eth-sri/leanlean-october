@@ -15,55 +15,52 @@ open scoped Topology
 
 namespace DOZZ.Proofs
 
-/-- The concrete interior derivative sign makes the finite Laplace interpolation antitone. -/
-theorem finiteChaosMatrixLaplaceInterpolationExpectation_antitoneOn
-    {n : ℕ} (A B : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
-    (a : Fin (n + 1) → ℝ) (γ s : ℝ)
-    (ha : ∀ i, 0 ≤ a i) (hs : 0 ≤ s)
-    (hcov : ∀ i j, finiteChaosMatrixRowCovariance A i j ≤
-      finiteChaosMatrixRowCovariance B i j) :
-    AntitoneOn (finiteChaosMatrixLaplaceInterpolationExpectation A B a γ s)
-      (Set.Ioo 0 1) := by
-  let f := finiteChaosMatrixLaplaceInterpolationExpectation A B a γ s
-  have hderiv (t : ℝ) (ht : t ∈ Set.Ioo 0 1) :
-      HasDerivAt f
-        (∫ z : (Fin (n + 1) → ℝ) × (Fin (n + 1) → ℝ),
-          kahaneInterpolatedTestDerivative
-            (finiteChaosLinearImageVector A) (finiteChaosLinearImageVector B)
-            (finiteChaosMatrixRowVariance A) (finiteChaosMatrixRowVariance B) a γ
-            (fun x => -s * Real.exp (-s * x)) t z
-          ∂((standardGaussianFinMeasure n).prod (standardGaussianFinMeasure n))) t ∧
-      (∫ z : (Fin (n + 1) → ℝ) × (Fin (n + 1) → ℝ),
-          kahaneInterpolatedTestDerivative
-            (finiteChaosLinearImageVector A) (finiteChaosLinearImageVector B)
-            (finiteChaosMatrixRowVariance A) (finiteChaosMatrixRowVariance B) a γ
-            (fun x => -s * Real.exp (-s * x)) t z
-          ∂((standardGaussianFinMeasure n).prod (standardGaussianFinMeasure n))) ≤ 0 := by
-    exact finiteChaosMatrixLaplaceInterpolationExpectation_deriv_nonpos_concrete
-      A B a γ s t ha hs ht.1 ht.2 hcov
-  have hfcont : ContinuousOn f (Set.Ioo 0 1) := by
-    intro t ht
-    exact (hderiv t ht).1.continuousAt.continuousWithinAt
-  have hfdiff : DifferentiableOn ℝ f (Set.Ioo 0 1) := by
-    intro t ht
-    exact (hderiv t ht).1.differentiableAt.differentiableWithinAt
-  have hfderiv : ∀ t ∈ Set.Ioo 0 1, deriv f t ≤ 0 := by
-    intro t ht
-    rw [(hderiv t ht).1.deriv]
-    exact (hderiv t ht).2
-  exact antitoneOn_of_deriv_nonpos (convex_Ioo 0 1) hfcont
-    (by simpa using hfdiff) (by simpa using hfderiv)
+variable {n : ℕ}
+
+
+
+section
+variable (A B : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ) (a : Fin (n + 1) → ℝ) (γ s : ℝ) (ha : ∀ i, 0 ≤ a i) (hs : 0 ≤ s)
+include A B γ ha hs
 
 /-- The Laplace expectation at the `A` endpoint is bounded by the expectation at the `B`
 endpoint, with no nonsingularity requirement on either matrix. -/
 theorem finiteChaosMatrixLaplaceInterpolationExpectation_endpoint_le
-    {n : ℕ} (A B : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
-    (a : Fin (n + 1) → ℝ) (γ s : ℝ)
-    (ha : ∀ i, 0 ≤ a i) (hs : 0 ≤ s)
+
     (hcov : ∀ i j, finiteChaosMatrixRowCovariance A i j ≤
       finiteChaosMatrixRowCovariance B i j) :
     finiteChaosMatrixLaplaceInterpolationExpectation A B a γ s 1 ≤
       finiteChaosMatrixLaplaceInterpolationExpectation A B a γ s 0 := by
+  have finiteChaosMatrixLaplaceInterpolationExpectation_antitoneOn : AntitoneOn (finiteChaosMatrixLaplaceInterpolationExpectation A B a γ s)
+        (Set.Ioo 0 1) := by
+    let f := finiteChaosMatrixLaplaceInterpolationExpectation A B a γ s
+    have hderiv (t : ℝ) (ht : t ∈ Set.Ioo 0 1) :
+        HasDerivAt f
+          (∫ z : (Fin (n + 1) → ℝ) × (Fin (n + 1) → ℝ),
+            kahaneInterpolatedTestDerivative
+              (finiteChaosLinearImageVector A) (finiteChaosLinearImageVector B)
+              (finiteChaosMatrixRowVariance A) (finiteChaosMatrixRowVariance B) a γ
+              (fun x => -s * Real.exp (-s * x)) t z
+            ∂((standardGaussianFinMeasure n).prod (standardGaussianFinMeasure n))) t ∧
+        (∫ z : (Fin (n + 1) → ℝ) × (Fin (n + 1) → ℝ),
+            kahaneInterpolatedTestDerivative
+              (finiteChaosLinearImageVector A) (finiteChaosLinearImageVector B)
+              (finiteChaosMatrixRowVariance A) (finiteChaosMatrixRowVariance B) a γ
+              (fun x => -s * Real.exp (-s * x)) t z
+            ∂((standardGaussianFinMeasure n).prod (standardGaussianFinMeasure n))) ≤ 0 := finiteChaosMatrixLaplaceInterpolationExpectation_deriv_nonpos_concrete
+        A B a γ s t ha hs ht.1 ht.2 hcov
+    have hfcont : ContinuousOn f (Set.Ioo 0 1) := by
+      intro t ht
+      exact (hderiv t ht).1.continuousAt.continuousWithinAt
+    have hfdiff : DifferentiableOn ℝ f (Set.Ioo 0 1) := by
+      intro t ht
+      exact (hderiv t ht).1.differentiableAt.differentiableWithinAt
+    have hfderiv : ∀ t ∈ Set.Ioo 0 1, deriv f t ≤ 0 := by
+      intro t ht
+      rw [(hderiv t ht).1.deriv]
+      exact (hderiv t ht).2
+    exact antitoneOn_of_deriv_nonpos (convex_Ioo 0 1) hfcont
+      (by simpa using hfdiff) (by simpa using hfderiv)
   classical
   let f := finiteChaosMatrixLaplaceInterpolationExpectation A B a γ s
   let μ := standardGaussianFinMeasure n
@@ -99,14 +96,12 @@ theorem finiteChaosMatrixLaplaceInterpolationExpectation_endpoint_le
     rw [Real.norm_eq_abs, abs_of_nonneg (Real.exp_nonneg _)]
     apply Real.exp_le_one_iff.mpr
     nlinarith [hs, hmass]
-  have hconstInt : Integrable (fun _ : (Fin (n + 1) → ℝ) × (Fin (n + 1) → ℝ) => (1 : ℝ)) ν := by
-    exact integrable_const 1
+  have hconstInt : Integrable (fun _ : (Fin (n + 1) → ℝ) × (Fin (n + 1) → ℝ) => (1 : ℝ)) ν := by fun_prop
   have hDCT (u : ℕ → ℝ) (hu : Tendsto u atTop (𝓝 0)) :
       Tendsto (fun k => ∫ z, g (u k) z ∂ν) atTop (𝓝 (∫ z, g 0 z ∂ν)) := by
     apply tendsto_integral_of_dominated_convergence (fun _ : (Fin (n + 1) → ℝ) ×
       (Fin (n + 1) → ℝ) => (1 : ℝ))
-    · intro k
-      exact (hgz (u k)).aestronglyMeasurable
+    · fun_prop
     · exact hconstInt
     · intro k
       filter_upwards [] with z
@@ -117,8 +112,7 @@ theorem finiteChaosMatrixLaplaceInterpolationExpectation_endpoint_le
       Tendsto (fun k => ∫ z, g (u k) z ∂ν) atTop (𝓝 (∫ z, g 1 z ∂ν)) := by
     apply tendsto_integral_of_dominated_convergence (fun _ : (Fin (n + 1) → ℝ) ×
       (Fin (n + 1) → ℝ) => (1 : ℝ))
-    · intro k
-      exact (hgz (u k)).aestronglyMeasurable
+    · fun_prop
     · exact hconstInt
     · intro k
       filter_upwards [] with z
@@ -130,10 +124,8 @@ theorem finiteChaosMatrixLaplaceInterpolationExpectation_endpoint_le
     simpa [u] using (tendsto_one_div_add_atTop_nhds_zero_nat (𝕜 := ℝ))
   have hu1 : Tendsto (fun k => 1 - u k) atTop (𝓝 1) := by
     simpa using tendsto_const_nhds.sub hu0
-  have hlow : ∀ᶠ k : ℕ in atTop, 1 ≤ k :=
-    eventually_atTop.2 ⟨1, fun _ hk => hk⟩
   have hcomparison : ∀ᶠ k : ℕ in atTop, f (1 - u k) ≤ f (u k) := by
-    filter_upwards [hlow] with k hk
+    filter_upwards [eventually_atTop.2 ⟨1, fun _ hk => hk⟩] with k hk
     have hkNat : 2 ≤ k + 1 := by omega
     have hkReal : (2 : ℝ) ≤ (k : ℝ) + 1 := by exact_mod_cast hkNat
     have huHalf : u k ≤ (1 / 2 : ℝ) := by
@@ -146,8 +138,7 @@ theorem finiteChaosMatrixLaplaceInterpolationExpectation_endpoint_le
     have hleft : u k ∈ Set.Ioo 0 1 := ⟨huPos, huLtOne⟩
     have hright : 1 - u k ∈ Set.Ioo 0 1 := ⟨hupperPos, hupperLtOne⟩
     have horder : u k ≤ 1 - u k := by linarith
-    exact finiteChaosMatrixLaplaceInterpolationExpectation_antitoneOn
-      A B a γ s ha hs hcov hleft hright horder
+    exact finiteChaosMatrixLaplaceInterpolationExpectation_antitoneOn hleft hright horder
   have hlim0 : Tendsto (fun k => f (u k)) atTop (𝓝 (f 0)) := by
     simpa [f, g, finiteChaosMatrixLaplaceInterpolationExpectation, ν, μ] using hDCT u hu0
   have hlim1 : Tendsto (fun k => f (1 - u k)) atTop (𝓝 (f 1)) := by
@@ -158,9 +149,7 @@ theorem finiteChaosMatrixLaplaceInterpolationExpectation_endpoint_le
 /-- At the endpoints, the unused independent Gaussian block integrates out, leaving the usual
 single standard-Gaussian expectation of each matrix linear image. -/
 theorem finiteChaosMatrixLaplaceInterpolationExpectation_endpoint_eq
-    {n : ℕ} (A B : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
-    (a : Fin (n + 1) → ℝ) (γ s : ℝ)
-    (ha : ∀ i, 0 ≤ a i) (hs : 0 ≤ s) :
+ :
     finiteChaosMatrixLaplaceInterpolationExpectation A B a γ s 1 =
         ∫ x : Fin (n + 1) → ℝ,
           Real.exp (-s * finiteChaosVectorMass a (finiteChaosMatrixRowVariance A) γ
@@ -200,14 +189,6 @@ theorem finiteChaosMatrixLaplaceInterpolationExpectation_endpoint_eq
     rw [Real.norm_eq_abs, abs_of_nonneg (Real.exp_nonneg _)]
     apply Real.exp_le_one_iff.mpr
     nlinarith [hs, hmass]
-  have hgAint : Integrable gA μ :=
-    Integrable.of_bound hgAcont.aestronglyMeasurable 1 (ae_of_all μ hboundA)
-  have hgBint : Integrable gB μ :=
-    Integrable.of_bound hgBcont.aestronglyMeasurable 1 (ae_of_all μ hboundB)
-  have hprodA : Integrable (fun z : (Fin (n + 1) → ℝ) × (Fin (n + 1) → ℝ) => gA z.1) ν :=
-    hgAint.comp_fst μ
-  have hprodB : Integrable (fun z : (Fin (n + 1) → ℝ) × (Fin (n + 1) → ℝ) => gB z.2) ν :=
-    hgBint.comp_snd μ
   have hfieldA (z : (Fin (n + 1) → ℝ) × (Fin (n + 1) → ℝ)) :
       kahaneInterpolatedMass
         (finiteChaosLinearImageVector A) (finiteChaosLinearImageVector B)
@@ -237,7 +218,7 @@ theorem finiteChaosMatrixLaplaceInterpolationExpectation_endpoint_eq
         fun z => gA z.1 := by
       funext z
       rw [hfieldA]
-    rw [hfun, integral_prod _ hprodA]
+    rw [hfun, integral_prod _ ((Integrable.of_bound hgAcont.aestronglyMeasurable 1 (ae_of_all μ hboundA)).comp_fst μ)]
     simp [gA, μ]
   · change (∫ z, Real.exp (-s * kahaneInterpolatedMass
         (finiteChaosLinearImageVector A) (finiteChaosLinearImageVector B)
@@ -249,8 +230,10 @@ theorem finiteChaosMatrixLaplaceInterpolationExpectation_endpoint_eq
         fun z => gB z.2 := by
       funext z
       rw [hfieldB]
-    rw [hfun, integral_prod _ hprodB]
+    rw [hfun, integral_prod _ ((Integrable.of_bound hgBcont.aestronglyMeasurable 1 (ae_of_all μ hboundB)).comp_snd μ)]
     simp [gB, μ]
 
+
+end
 
 end DOZZ.Proofs

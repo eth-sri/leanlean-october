@@ -86,8 +86,7 @@ theorem regularizedLogChaosTestMass_inversion_coordinate_change
         rfl)
       γ f hfCompact hfSupport
   refine ⟨g, hgCompact, hgSupport, ?_, hgOff, ?_⟩
-  · intro x hx
-    simpa [complexInvOpenPartialHomeomorph] using hgOn x hx
+  · assumption
   · intro r ω
     simpa [Yinv, complexInvOpenPartialHomeomorph] using (hmass r ω).symm
 

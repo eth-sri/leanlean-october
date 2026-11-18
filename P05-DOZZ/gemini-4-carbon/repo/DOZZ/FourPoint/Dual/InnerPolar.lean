@@ -36,7 +36,7 @@ theorem dual_inner_kernel_mass_squeeze
       ENNReal.ofReal ((1+R) ^ (2 : ℝ) * (1-η)⁻¹ ^ |γ*α₂| * ‖z‖ ^ (2 : ℝ)) * V := by
   dsimp only
   rw [← reflected_inner_radial_polar γ α₁ A M T]
-  let E : Set ℂ := {x : ℂ | 0 < ‖x‖ ∧ ‖x‖ < Real.exp (-(T : ℝ))}
+  let E := {x : ℂ | 0 < ‖x‖ ∧ ‖x‖ < Real.exp (-(T : ℝ))}
   have hE : MeasurableSet E :=
     (measurableSet_lt measurable_const measurable_norm).inter
       (measurableSet_lt measurable_norm measurable_const)

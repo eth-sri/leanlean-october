@@ -13,9 +13,13 @@ public import DOZZ.Hypergeom.ODE.CutPlaneTopology
 
 namespace DOZZ.Proofs
 
+section
+variable (a b c : ℂ) (f g : ℂ → ℂ)
+include a b c f g
+
 /-- The Wronskian of two holomorphic Gauss solutions satisfies Abel's identity. -/
 theorem gauss_pair_wronskian_abel
-    (a b c : ℂ) (f g : ℂ → ℂ)
+
     (hf : AnalyticOnNhd ℂ f gaussCutPlane)
     (hg : AnalyticOnNhd ℂ g gaussCutPlane)
     (hfeq : ∀ z ∈ gaussCutPlane,
@@ -27,26 +31,19 @@ theorem gauss_pair_wronskian_abel
         (c - (a + b + 1) * z) *
           (f z * deriv g z - deriv f z * g z) = 0 := by
   let W : ℂ → ℂ := fun z => f z * deriv g z - deriv f z * g z
-  have hf₁ : AnalyticOnNhd ℂ (deriv f) gaussCutPlane := hf.deriv
-  have hg₁ : AnalyticOnNhd ℂ (deriv g) gaussCutPlane := hg.deriv
-  have hWanalytic : AnalyticOnNhd ℂ W gaussCutPlane := by
-    change AnalyticOnNhd ℂ (fun z => f z * deriv g z - deriv f z * g z)
-      gaussCutPlane
-    exact (hf.mul hg₁).sub (hf₁.mul hg)
   have hWderiv : ∀ z ∈ gaussCutPlane,
       deriv W z = f z * deriv (deriv g) z - deriv (deriv f) z * g z := by
     intro z hz
     have hleft := (hf z hz).differentiableAt.hasDerivAt.mul
-      (hg₁ z hz).differentiableAt.hasDerivAt
-    have hright := (hf₁ z hz).differentiableAt.hasDerivAt.mul
+      ((hg.deriv) z hz).differentiableAt.hasDerivAt
+    have hright := ((hf.deriv) z hz).differentiableAt.hasDerivAt.mul
       (hg z hz).differentiableAt.hasDerivAt
-    have hsub := hleft.sub hright
     change deriv (fun w => f w * deriv g w - deriv f w * g w) z = _
     have hfun : (fun w => f w * deriv g w - deriv f w * g w) =
         f * deriv g - deriv f * g := by
       funext w
       rfl
-    rw [hfun, hsub.deriv]
+    rw [hfun, (hleft.sub hright).deriv]
     ring
   intro z hz
   rw [hWderiv z hz]
@@ -58,7 +55,7 @@ theorem gauss_pair_wronskian_abel
 /-- On the principal cut plane, any solution is the unique constant linear combination of two
 holomorphic solutions whose Wronskian never vanishes. -/
 theorem gauss_two_solution_span_unique
-    (a b c : ℂ) (f g : ℂ → ℂ)
+
     (hfDiff : DifferentiableOn ℂ f gaussCutPlane)
     (hgDiff : DifferentiableOn ℂ g gaussCutPlane)
     (hfeq : ∀ z ∈ gaussCutPlane,
@@ -77,27 +74,18 @@ theorem gauss_two_solution_span_unique
   let B : ℂ → ℂ := fun z => f z * deriv y z - deriv f z * y z
   let α : ℂ → ℂ := fun z => A z / W z
   let β : ℂ → ℂ := fun z => B z / W z
-  have hfAnalytic : AnalyticOnNhd ℂ f gaussCutPlane :=
+  have hfAnalytic :=
     hfDiff.analyticOnNhd gaussCutPlane_isOpen
-  have hgAnalytic : AnalyticOnNhd ℂ g gaussCutPlane :=
+  have hgAnalytic :=
     hgDiff.analyticOnNhd gaussCutPlane_isOpen
-  have hyAnalytic : AnalyticOnNhd ℂ y gaussCutPlane :=
+  have hyAnalytic :=
     hyDiff.analyticOnNhd gaussCutPlane_isOpen
-  have hf₁ : AnalyticOnNhd ℂ (deriv f) gaussCutPlane := hfAnalytic.deriv
-  have hg₁ : AnalyticOnNhd ℂ (deriv g) gaussCutPlane := hgAnalytic.deriv
-  have hy₁ : AnalyticOnNhd ℂ (deriv y) gaussCutPlane := hyAnalytic.deriv
-  have hWanalytic : AnalyticOnNhd ℂ W gaussCutPlane := by
-    change AnalyticOnNhd ℂ (fun z => f z * deriv g z - deriv f z * g z)
-      gaussCutPlane
-    exact (hfAnalytic.mul hg₁).sub (hf₁.mul hgAnalytic)
-  have hAanalytic : AnalyticOnNhd ℂ A gaussCutPlane := by
-    change AnalyticOnNhd ℂ (fun z => y z * deriv g z - deriv y z * g z)
-      gaussCutPlane
-    exact (hyAnalytic.mul hg₁).sub (hy₁.mul hgAnalytic)
-  have hBanalytic : AnalyticOnNhd ℂ B gaussCutPlane := by
-    change AnalyticOnNhd ℂ (fun z => f z * deriv y z - deriv f z * y z)
-      gaussCutPlane
-    exact (hfAnalytic.mul hy₁).sub (hf₁.mul hyAnalytic)
+  have := hfAnalytic.deriv
+  have := hgAnalytic.deriv
+  have := hyAnalytic.deriv
+  have hWanalytic : AnalyticOnNhd ℂ W gaussCutPlane := by fun_prop
+  have hAanalytic : AnalyticOnNhd ℂ A gaussCutPlane := by fun_prop
+  have hBanalytic : AnalyticOnNhd ℂ B gaussCutPlane := by fun_prop
   have hWabel : ∀ z ∈ gaussCutPlane,
       z * (1 - z) * deriv W z +
         (c - (a + b + 1) * z) * W z = 0 := by
@@ -116,104 +104,63 @@ theorem gauss_two_solution_span_unique
     intro z hz
     simpa [B] using gauss_pair_wronskian_abel a b c f y
       hfAnalytic hyAnalytic hfeq hyeq z hz
-  have hWdiff : DifferentiableOn ℂ W gaussCutPlane := hWanalytic.differentiableOn
-  have hAdiff : DifferentiableOn ℂ A gaussCutPlane := hAanalytic.differentiableOn
-  have hBdiff : DifferentiableOn ℂ B gaussCutPlane := hBanalytic.differentiableOn
-  have hαdiff : DifferentiableOn ℂ α gaussCutPlane := by
-    exact hAdiff.div hWdiff hWne
-  have hβdiff : DifferentiableOn ℂ β gaussCutPlane := by
-    exact hBdiff.div hWdiff hWne
+  have := hWanalytic.differentiableOn
+  have := hAanalytic.differentiableOn
+  have := hBanalytic.differentiableOn
+  have hαdiff : DifferentiableOn ℂ α gaussCutPlane := by fun_prop
+  have hβdiff : DifferentiableOn ℂ β gaussCutPlane := by fun_prop
   have hαderivZero : gaussCutPlane.EqOn (deriv α) (fun _ => 0) := by
     intro z hz
-    have hAAt := (hAanalytic z hz).differentiableAt
-    have hWAt := (hWanalytic z hz).differentiableAt
-    have hquot := (hAAt.hasDerivAt.div hWAt.hasDerivAt (hWne z hz)).deriv
     have hreg := gaussCutPlane_subset_regularPlane hz
-    have hden : z * (1 - z) ≠ 0 :=
-      mul_ne_zero hreg.1 (sub_ne_zero.mpr (Ne.symm hreg.2))
     have hnum : deriv A z * W z - A z * deriv W z = 0 := by
       have hmul : z * (1 - z) *
           (deriv A z * W z - A z * deriv W z) = 0 := by
         linear_combination (W z) * hAabel z hz - (A z) * hWabel z hz
-      exact (mul_eq_zero.mp hmul).resolve_left hden
+      exact (mul_eq_zero.mp hmul).resolve_left (mul_ne_zero hreg.1 (sub_ne_zero.mpr (Ne.symm hreg.2)))
     change deriv (A / W) z = 0
-    rw [hquot, hnum]
+    rw [(((hAanalytic z hz).differentiableAt).hasDerivAt.div ((hWanalytic z hz).differentiableAt).hasDerivAt (hWne z hz)).deriv, hnum]
     simp
   have hβderivZero : gaussCutPlane.EqOn (deriv β) (fun _ => 0) := by
     intro z hz
-    have hBAt := (hBanalytic z hz).differentiableAt
-    have hWAt := (hWanalytic z hz).differentiableAt
-    have hquot := (hBAt.hasDerivAt.div hWAt.hasDerivAt (hWne z hz)).deriv
     have hreg := gaussCutPlane_subset_regularPlane hz
-    have hden : z * (1 - z) ≠ 0 :=
-      mul_ne_zero hreg.1 (sub_ne_zero.mpr (Ne.symm hreg.2))
     have hnum : deriv B z * W z - B z * deriv W z = 0 := by
       have hmul : z * (1 - z) *
           (deriv B z * W z - B z * deriv W z) = 0 := by
         linear_combination (W z) * hBabel z hz - (B z) * hWabel z hz
-      exact (mul_eq_zero.mp hmul).resolve_left hden
+      exact (mul_eq_zero.mp hmul).resolve_left (mul_ne_zero hreg.1 (sub_ne_zero.mpr (Ne.symm hreg.2)))
     change deriv (B / W) z = 0
-    rw [hquot, hnum]
+    rw [(((hBanalytic z hz).differentiableAt).hasDerivAt.div ((hWanalytic z hz).differentiableAt).hasDerivAt (hWne z hz)).deriv, hnum]
     simp
   have hcutPre : IsPreconnected gaussCutPlane := by
     rw [isPreconnected_iff_preconnectedSpace]
     infer_instance
   have hmid : (1 / 2 : ℂ) ∈ gaussCutPlane := by norm_num [gaussCutPlane]
-  have hαconst : ∀ z ∈ gaussCutPlane, α z = α (1 / 2) := by
+  have : ∀ z ∈ gaussCutPlane, α z = α (1 / 2) := by
     intro z hz
     exact gaussCutPlane_isOpen.is_const_of_deriv_eq_zero
       hcutPre hαdiff hαderivZero hz hmid
-  have hβconst : ∀ z ∈ gaussCutPlane, β z = β (1 / 2) := by
+  have : ∀ z ∈ gaussCutPlane, β z = β (1 / 2) := by
     intro z hz
     exact gaussCutPlane_isOpen.is_const_of_deriv_eq_zero
       hcutPre hβdiff hβderivZero hz hmid
-  have hdecompose : ∀ z ∈ gaussCutPlane,
-      y z = α z * f z + β z * g z := by
-    intro z hz
-    have hden := hWne z hz
-    have hnum : A z * f z + B z * g z = y z * W z := by
-      dsimp [A, B, W]
-      ring
-    calc
-      y z = y z * (W z / W z) := by rw [div_self hden, mul_one]
-      _ = y z * W z / W z := by ring
-      _ = (A z * f z + B z * g z) / W z := by rw [hnum]
-      _ = A z / W z * f z + B z / W z * g z := by
-        field_simp [hden]
-  let v : ℂ × ℂ := (α (1 / 2), β (1 / 2))
-  have hv : ∀ z ∈ gaussCutPlane, y z = v.1 * f z + v.2 * g z := by
-    intro z hz
-    calc
-      y z = α z * f z + β z * g z := hdecompose z hz
-      _ = v.1 * f z + v.2 * g z := by
-        dsimp [v]
-        rw [hαconst z hz, hβconst z hz]
+  let v := (α (1 / 2), β (1 / 2))
+  have hv : ∀ z ∈ gaussCutPlane, y z = v.1 * f z + v.2 * g z := by grind
   refine ⟨v, hv, ?_⟩
   intro v' hv'
-  have hmidValue : y (1 / 2) =
-      v'.1 * f (1 / 2) + v'.2 * g (1 / 2) := hv' (1 / 2) hmid
-  have hchosenValue : y (1 / 2) =
-      v.1 * f (1 / 2) + v.2 * g (1 / 2) := hv (1 / 2) hmid
-  have hFAt : DifferentiableAt ℂ f (1 / 2) := (hfAnalytic (1 / 2) hmid).differentiableAt
-  have hGAt : DifferentiableAt ℂ g (1 / 2) := (hgAnalytic (1 / 2) hmid).differentiableAt
   have hlinearDeriv (r s : ℂ) :
       deriv (fun z => r * f z + s * g z) (1 / 2) =
         r * deriv f (1 / 2) + s * deriv g (1 / 2) := by
-    have hsum := (hFAt.hasDerivAt.const_mul r).add (hGAt.hasDerivAt.const_mul s)
-    exact hsum.deriv
+    exact ((((hfAnalytic (1 / 2) hmid).differentiableAt).hasDerivAt.const_mul r).add (((hgAnalytic (1 / 2) hmid).differentiableAt).hasDerivAt.const_mul s)).deriv
   have hmidDeriv (r s : ℂ)
       (hvalues : ∀ z ∈ gaussCutPlane, y z = r * f z + s * g z) :
       deriv y (1 / 2) = r * deriv f (1 / 2) + s * deriv g (1 / 2) := by
     have hEqOn : gaussCutPlane.EqOn y (fun z => r * f z + s * g z) := hvalues
-    have hderiv := hEqOn.deriv gaussCutPlane_isOpen hmid
-    calc
-      deriv y (1 / 2) = deriv (fun z => r * f z + s * g z) (1 / 2) := hderiv
-      _ = r * deriv f (1 / 2) + s * deriv g (1 / 2) := hlinearDeriv r s
+    exact (hEqOn.deriv gaussCutPlane_isOpen hmid).trans (hlinearDeriv r s)
   have hE0 : (v'.1 - v.1) * f (1 / 2) + (v'.2 - v.2) * g (1 / 2) = 0 := by
     calc
       _ = (v'.1 * f (1 / 2) + v'.2 * g (1 / 2)) -
           (v.1 * f (1 / 2) + v.2 * g (1 / 2)) := by ring
-      _ = y (1 / 2) - y (1 / 2) := by rw [← hmidValue, ← hchosenValue]
+      _ = y (1 / 2) - y (1 / 2) := by rw [← (hv' (1 / 2) hmid), ← (hv (1 / 2) hmid)]
       _ = 0 := by ring
   have hE1 : (v'.1 - v.1) * deriv f (1 / 2) +
       (v'.2 - v.2) * deriv g (1 / 2) = 0 := by
@@ -229,17 +176,20 @@ theorem gauss_two_solution_span_unique
   · have hprod : (v'.1 - v.1) * W (1 / 2) = 0 := by
       dsimp [W]
       linear_combination (deriv g (1 / 2)) * hE0 - g (1 / 2) * hE1
-    have hdiff : v'.1 - v.1 = 0 := (mul_eq_zero.mp hprod).resolve_right hWmid
-    exact sub_eq_zero.mp hdiff
+    exact sub_eq_zero.mp ((mul_eq_zero.mp hprod).resolve_right hWmid)
   · have hprod : (v'.2 - v.2) * W (1 / 2) = 0 := by
       dsimp [W]
       linear_combination f (1 / 2) * hE1 - deriv f (1 / 2) * hE0
-    have hdiff : v'.2 - v.2 = 0 := (mul_eq_zero.mp hprod).resolve_right hWmid
-    exact sub_eq_zero.mp hdiff
+    exact sub_eq_zero.mp ((mul_eq_zero.mp hprod).resolve_right hWmid)
+
+
+end
+section
+variable {H : ℂ → ℂ → ℂ → ℂ → ℂ} (hH : IsGaussHypergeometricFamily H) (a b c : ℂ)
+include hH a b c
 
 /-- The zero-end local basis, including its Wronskian and global spanning property. -/
-theorem gauss_local_basis_zero {H : ℂ → ℂ → ℂ → ℂ → ℂ}
-    (hH : IsGaussHypergeometricFamily H) (a b c : ℂ)
+theorem gauss_local_basis_zero
     (hc : ∀ n : ℤ, c ≠ (n : ℂ)) :
     DifferentiableOn ℂ (gaussFMinus H a b c) gaussCutPlane ∧
     DifferentiableOn ℂ (gaussFPlus H a b c) gaussCutPlane ∧
@@ -283,8 +233,7 @@ theorem gauss_local_basis_zero {H : ℂ → ℂ → ℂ → ℂ → ℂ}
     exact mul_ne_zero (mul_ne_zero hcoeff hpowz) hpoww
 
 /-- The one-end local basis, including its Wronskian and global spanning property. -/
-theorem gauss_local_basis_one {H : ℂ → ℂ → ℂ → ℂ → ℂ}
-    (hH : IsGaussHypergeometricFamily H) (a b c : ℂ)
+theorem gauss_local_basis_one
     (hδ : ∀ n : ℤ, c - a - b ≠ (n : ℂ)) :
     DifferentiableOn ℂ (gaussGMinus H a b c) gaussCutPlane ∧
     DifferentiableOn ℂ (gaussGPlus H a b c) gaussCutPlane ∧
@@ -327,4 +276,6 @@ theorem gauss_local_basis_one {H : ℂ → ℂ → ℂ → ℂ → ℂ}
     rw [hW z hz]
     exact mul_ne_zero (mul_ne_zero hcoeff hpowz) hpoww
 
+
+end
 end DOZZ.Proofs

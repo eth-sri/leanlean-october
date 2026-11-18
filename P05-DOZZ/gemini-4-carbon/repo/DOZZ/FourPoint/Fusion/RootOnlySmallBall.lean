@@ -35,7 +35,7 @@ theorem fusion_rootOnlyKernel_smallBall_moment {Ω : Type*} [MeasurableSpace Ω]
   obtain ⟨hξ, D, hD, hbound⟩ := fusion_weightedMoment_small_uniform
     P X hX γ hγ hγ2 M hM (α₁ + γ / 2) p hp hpRange
   let ξ := γ * (Q γ - (α₁ + γ / 2)) * p - γ ^ 2 * p ^ 2 / 2
-  let A : ℝ≥0∞ := ENNReal.ofReal
+  let A := ENNReal.ofReal
     ((2 : ℝ) ^ |γ * α₂| * (1 + 2 / ‖y‖) ^ (γ ^ 2 / 2))
   refine ⟨hξ, A ^ p * (D + D * ENNReal.ofReal ((2 : ℝ) ^ ξ)), ?_, ?_⟩
   · exact ENNReal.mul_lt_top
@@ -57,8 +57,6 @@ theorem fusion_rootOnlyKernel_smallBall_moment {Ω : Type*} [MeasurableSpace Ω]
           (by linarith) hz) hp.le
       rw [ENNReal.mul_rpow_of_nonneg _ _ hp.le] at h
       exact h.trans (mul_le_mul' le_rfl (ENNReal.rpow_add_le_add_rpow _ _ hp.le hp1))
-    have hb0 := hbound 0 (by simp) δ hδ (by linarith)
-    have hbu := hbound (y * z) (by linarith) (2 * δ) (by positivity) (by linarith)
     have hr : ENNReal.ofReal ((2 * δ) ^ ξ) =
         ENNReal.ofReal ((2 : ℝ) ^ ξ) * ENNReal.ofReal (δ ^ ξ) := by
       rw [Real.mul_rpow (by norm_num : (0 : ℝ) ≤ 2) hδ.le,
@@ -76,7 +74,7 @@ theorem fusion_rootOnlyKernel_smallBall_moment {Ω : Type*} [MeasurableSpace Ω]
           lintegral_add_left' (hw0.pow_const p)]
         rfl
       _ ≤ A ^ p * (D * ENNReal.ofReal (δ ^ ξ) + D * ENNReal.ofReal ((2 * δ) ^ ξ)) :=
-        mul_le_mul' le_rfl (add_le_add hb0 hbu)
+        mul_le_mul' le_rfl (add_le_add (hbound 0 (by simp) δ hδ (by linarith)) (hbound (y * z) (by linarith) (2 * δ) (by positivity) (by linarith)))
       _ = _ := by rw [hr]; ring
 
 end DOZZ.Proofs

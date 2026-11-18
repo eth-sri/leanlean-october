@@ -11,18 +11,6 @@ public import DOZZ.Correlations.Analytic.ComplementExponential
 @[expose] public section
 namespace DOZZ.Proofs
 
-/-- The Markov/Hölder term has the precise residual exponential rate. -/
-theorem threshold_ratio_power (C rate τ m h r : ℝ) (hC : 0 ≤ C) :
-    (C * Real.exp (-rate * r) / Real.exp (-τ * r) ^ m) ^ h =
-      C ^ h * Real.exp (-((rate - τ * m) * h) * r) := by
-  have he : C * Real.exp (-rate * r) / Real.exp (-τ * r) ^ m =
-      C * Real.exp (-(rate - τ * m) * r) := by
-    rw [← Real.exp_mul, mul_div_assoc, ← Real.exp_sub]
-    congr 1
-    ring_nf
-  rw [he, Real.mul_rpow hC (Real.exp_nonneg _), ← Real.exp_mul]
-  congr 1
-  ring_nf
 
 /-- Both threshold terms decay at the smaller of their two positive rates. -/
 theorem threshold_exponential_bound (D B C rate τ m h r : ℝ)
@@ -30,7 +18,17 @@ theorem threshold_exponential_bound (D B C rate τ m h r : ℝ)
     Real.exp (-τ * r) * D +
       B * (C * Real.exp (-rate * r) / Real.exp (-τ * r) ^ m) ^ h ≤
       (D + B * C ^ h) * Real.exp (-(min τ ((rate - τ * m) * h)) * r) := by
-  rw [threshold_ratio_power C rate τ m h r hC]
+  have threshold_ratio_power : (C * Real.exp (-rate * r) / Real.exp (-τ * r) ^ m) ^ h =
+        C ^ h * Real.exp (-((rate - τ * m) * h) * r) := by
+    have he : C * Real.exp (-rate * r) / Real.exp (-τ * r) ^ m =
+        C * Real.exp (-(rate - τ * m) * r) := by
+      rw [← Real.exp_mul, mul_div_assoc, ← Real.exp_sub]
+      congr 1
+      ring_nf
+    rw [he, Real.mul_rpow hC (Real.exp_nonneg _), ← Real.exp_mul]
+    congr 1
+    ring_nf
+  rw [threshold_ratio_power]
   have h1 : Real.exp (-τ * r) ≤ Real.exp (-(min τ ((rate - τ * m) * h)) * r) := by
     apply Real.exp_le_exp.mpr
     have := mul_le_mul_of_nonneg_right (min_le_left τ ((rate - τ * m) * h)) hr

@@ -11,12 +11,13 @@ public import Mathlib.Analysis.SpecialFunctions.Integrals.PosLogEqCircleAverage
 
 @[expose] public section
 
+noncomputable section
 open MeasureTheory ProbabilityTheory Filter Topology Set Real
 open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
 
-noncomputable def circleKernel (x : ℂ) (r : ℝ) (y : ℂ) (s : ℝ) : ℝ :=
+def circleKernel (x : ℂ) (r : ℝ) (y : ℂ) (s : ℝ) : ℝ :=
   ∫ u, ∫ v, gffKernel u v ∂circleMeasure y s ∂circleMeasure x r
 
 namespace CirclePotential
@@ -104,18 +105,17 @@ theorem circleAverage_log_norm_sub {c w : ℂ} {R : ℝ} (hR : 0 < R) :
 theorem circleAverage_log_norm_sub_le (x y : ℂ) {a b : ℝ} (ha : a ≠ 0) (hb : 0 < b) :
     circleAverage (fun u => Real.log ‖u - y‖) x a ≤
       circleAverage (fun u => Real.log (max ‖u - y‖ b)) x a := by
-  have hsub : circleAverage (fun u => Real.log (max ‖u - y‖ b) - Real.log ‖u - y‖) x a =
+  have : circleAverage (fun u => Real.log (max ‖u - y‖ b) - Real.log ‖u - y‖) x a =
       circleAverage (fun u => Real.log (max ‖u - y‖ b)) x a -
         circleAverage (fun u => Real.log ‖u - y‖) x a :=
     circleAverage_fun_sub (continuous_log_max hb).continuousOn.circleIntegrable'
       (circleIntegrable_log_norm_sub_const a)
-  have hcongr : circleAverage (fun u => Real.log (max ‖u - y‖ b) - Real.log ‖u - y‖) x a =
+  have : circleAverage (fun u => Real.log (max ‖u - y‖ b) - Real.log ‖u - y‖) x a =
       circleAverage (fun u => max (Real.log (max ‖u - y‖ b) - Real.log ‖u - y‖) 0) x a := by
     apply circleAverage_congr_codiscreteWithin _ ha
     filter_upwards [compl_singleton_mem_codiscreteWithin y] with u hu
-    have hpos : 0 < ‖u - y‖ := norm_pos_iff.2 (sub_ne_zero.2 (Set.mem_compl_singleton_iff.1 hu))
-    exact (max_eq_left (sub_nonneg.2 (Real.log_le_log hpos (le_max_left _ _)))).symm
-  have hnn : 0 ≤ circleAverage
+    exact (max_eq_left (sub_nonneg.2 (Real.log_le_log (norm_pos_iff.2 (sub_ne_zero.2 (Set.mem_compl_singleton_iff.1 hu))) (le_max_left _ _)))).symm
+  have : 0 ≤ circleAverage
       (fun u => max (Real.log (max ‖u - y‖ b) - Real.log ‖u - y‖) 0) x a :=
     circleAverage_nonneg_of_nonneg (fun u _ => le_max_right _ _)
   linarith
@@ -123,11 +123,11 @@ theorem circleAverage_log_norm_sub_le (x y : ℂ) {a b : ℝ} (ha : a ≠ 0) (hb
 /-! ### The inner potential -/
 
 /-- The circle average `C_y = ∫ h dσ_{y,s}` of the regular part. -/
-noncomputable def regAvg (y : ℂ) (s : ℝ) : ℝ :=
+def regAvg (y : ℂ) (s : ℝ) : ℝ :=
   circleAverage (fun v => Real.log (normPlus v)) y (Real.exp (-s))
 
 /-- The inner potential `φ(u) = ∫ G(u, v) dσ_{y,s}(v)`. -/
-noncomputable def innerPot (y : ℂ) (s : ℝ) (u : ℂ) : ℝ :=
+def innerPot (y : ℂ) (s : ℝ) (u : ℂ) : ℝ :=
   -Real.log (max ‖u - y‖ (Real.exp (-s))) + Real.log (normPlus u) + regAvg y s
 
 theorem continuous_innerPot (y : ℂ) (s : ℝ) : Continuous (innerPot y s) := by
@@ -143,7 +143,6 @@ theorem measurable_gffKernel (u : ℂ) : Measurable (gffKernel u) := by
 theorem integral_gffKernel_circleMeasure (u y : ℂ) (s : ℝ) :
     ∫ v, gffKernel u v ∂circleMeasure y s = innerPot y s u := by
   rw [integral_circleMeasure_eq_circleAverage (measurable_gffKernel u)]
-  have hb := Real.exp_pos (-s)
   have hfun : gffKernel u = ((fun _ => Real.log (normPlus u)) + fun v => Real.log (normPlus v)) -
       fun v => Real.log ‖v - u‖ := by
     funext v
@@ -155,16 +154,14 @@ theorem integral_gffKernel_circleMeasure (u y : ℂ) (s : ℝ) :
   rw [hfun, circleAverage_sub hI1 (circleIntegrable_log_norm_sub_const _),
     circleAverage_add (circleIntegrable_const _ _ _)
       continuous_log_normPlus.continuousOn.circleIntegrable',
-    circleAverage_const, circleAverage_log_norm_sub hb]
+    circleAverage_const, circleAverage_log_norm_sub (Real.exp_pos (-s))]
   unfold innerPot regAvg
   ring
 
 theorem circleKernel_eq (x y : ℂ) (r s : ℝ) :
     circleKernel x r y s = circleAverage (innerPot y s) x (Real.exp (-r)) := by
-  have h : (fun u => ∫ v, gffKernel u v ∂circleMeasure y s) = innerPot y s :=
-    funext fun u => integral_gffKernel_circleMeasure u y s
   unfold circleKernel
-  rw [h, integral_circleMeasure_eq_circleAverage (continuous_innerPot y s).measurable]
+  rw [funext fun u => integral_gffKernel_circleMeasure u y s, integral_circleMeasure_eq_circleAverage (continuous_innerPot y s).measurable]
 
 theorem circleAverage_innerPot (x y : ℂ) (r s : ℝ) :
     circleAverage (innerPot y s) x (Real.exp (-r)) =

@@ -28,7 +28,7 @@ theorem tendstoInMeasure_countable_selection
     fun k ω => ⟨min (choice ω) k, Nat.lt_succ_of_le (min_le_right _ _)⟩
   let a : ℕ → ℕ → Ω → ℝ := fun k n ω => f n ω (select k ω)
   let b : ℕ → Ω → ℝ := fun k ω => g ω (select k ω)
-  have hab (k : ℕ) : TendstoInMeasure P (a k) atTop (b k) :=
+  have hab (k : ℕ) :=
     tendstoInMeasure_finite_selection P
       (fun n ω (i : Fin (k+1)) => f n ω i) (fun ω (i : Fin (k+1)) => g ω i)
       (select k) (fun i => hcoord i)

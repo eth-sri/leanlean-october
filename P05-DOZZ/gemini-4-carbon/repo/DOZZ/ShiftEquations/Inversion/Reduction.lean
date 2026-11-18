@@ -63,12 +63,12 @@ theorem reflectionR_inversion_meromorphic_of_reflected_shift_and_gluing
                 R (α : ℂ) =
                   (reflectionR P γ μ α (B α) Z : ℂ)) ∧
               ∀ᶠ z in codiscrete ℂ, R z * R (2 * Q γ - z) = 1 := by
-  have hhalf : γ / 2 < 2 / γ := (lt_div_iff₀ hγ).mpr (by nlinarith)
+  have : γ / 2 < 2 / γ := (lt_div_iff₀ hγ).mpr (by nlinarith)
   have hγQ : γ < Q γ := by unfold Q; linarith
   obtain ⟨η, hηpos, hηlt⟩ := exists_between
     (div_pos (sub_pos.mpr hγQ) (show (0 : ℝ) < 4 by norm_num))
   have hη : 0 < η ∧ Q γ - 2 * η > γ := ⟨hηpos, by linarith⟩
-  let a : ℝ := Q γ - η / 2
+  let a := Q γ - η / 2
   have ha : Q γ - η < a ∧ a < Q γ := by dsimp [a]; constructor <;> linarith
   obtain ⟨B, Z, hSLP, hRD, H, hH, C, F, hC, hF, hCr, hFr, hglue, -⟩ :=
     hShiftGluing η hη a a ha ha
@@ -92,8 +92,8 @@ theorem reflectionR_inversion_meromorphic_of_reflected_shift_and_gluing
     intro z hzim hlo hhi
     have hzreal : z = (z.re : ℂ) := by
       apply Complex.ext
-      · exact (Complex.ofReal_re _).symm
-      · exact hzim.trans (Complex.ofReal_im _).symm
+      · rfl
+      · assumption
     rw [hzreal]
     exact hFr z.re hlo hhi
   obtain ⟨R, hRm, hRr, hRi⟩ := exists_physical_inversion_representative F

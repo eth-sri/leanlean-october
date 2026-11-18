@@ -32,10 +32,10 @@ theorem sumtail_rpow_half_bound (T t x r : ℝ) (hT : 0 ≤ T) (hr : r ≤ T)
 /-- The square-root shift stays inside the positive half-scale chart. -/
 theorem sumtail_sqrt_shift_bounds (x : ℝ) (hx : 4 ≤ x) :
     1 ≤ Real.sqrt x ∧ x/2 ≤ x-Real.sqrt x ∧ x-Real.sqrt x ≤ x := by
-  have hx0 : 0 ≤ x := by linarith only [hx]
+  have hx0 : 0 ≤ x := by positivity
   have hsq := Real.sq_sqrt hx0
   have hs := Real.sqrt_nonneg x
-  have hs2 : Real.sqrt x ≤ x/2 := by nlinarith only [hx,hsq,hs]
+  have hs2 : Real.sqrt x ≤ x/2 := by nlinarith
   exact ⟨by nlinarith only [hx,hsq,hs], by linarith only [hs2], by linarith only [hs]⟩
 
 /-- The main power changes by an error of order `x^(-p-1/2)`. -/

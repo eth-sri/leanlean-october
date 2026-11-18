@@ -15,29 +15,32 @@ the torus `L²` space. Its norm is controlled by the zeroth test-function semino
 
 @[expose] public section
 
+noncomputable section
 open MeasureTheory
 open scoped BoundedContinuousFunction ENNReal InnerProductSpace Topology lp
 
 namespace DOZZ
 
-noncomputable local instance : MeasureSpace UnitAddCircle := ⟨AddCircle.haarAddCircle⟩
-local instance : Measure.IsAddHaarMeasure (volume : Measure UnitAddCircle) :=
-  inferInstanceAs (Measure.IsAddHaarMeasure AddCircle.haarAddCircle)
+local instance : MeasureSpace UnitAddCircle := ⟨AddCircle.haarAddCircle⟩
 local instance : IsProbabilityMeasure (volume : Measure UnitAddCircle) :=
   inferInstanceAs (IsProbabilityMeasure AddCircle.haarAddCircle)
 local instance : IsProbabilityMeasure (volume : Measure GFFUnitTorus2) := by infer_instance
 
 /-- Pull a bounded real function back along the measurable representative of the torus box. -/
-noncomputable def torusBCFFunction (L : ℝ) (f : ℂ →ᵇ ℝ) : GFFUnitTorus2 → ℂ :=
+def torusBCFFunction (L : ℝ) (f : ℂ →ᵇ ℝ) : GFFUnitTorus2 → ℂ :=
   fun x => (f (torusBoxPoint L x) : ℂ)
 
-theorem measurable_torusBCFFunction (L : ℝ) (f : ℂ →ᵇ ℝ) :
+section
+variable (L : ℝ) (f : ℂ →ᵇ ℝ)
+include L f
+
+theorem measurable_torusBCFFunction :
     Measurable (torusBCFFunction L f) := by
   unfold torusBCFFunction
   exact (Complex.measurable_ofReal.comp f.continuous.measurable).comp
     (measurable_torusBoxPoint L)
 
-theorem memLp_torusBCFFunction (L : ℝ) (f : ℂ →ᵇ ℝ) :
+theorem memLp_torusBCFFunction :
     MemLp (torusBCFFunction L f) 2 (volume : Measure GFFUnitTorus2) := by
   have hbound (x : GFFUnitTorus2) : ‖torusBCFFunction L f x‖ ≤ ‖f‖ := by
     simp only [torusBCFFunction, Complex.norm_real]
@@ -45,9 +48,11 @@ theorem memLp_torusBCFFunction (L : ℝ) (f : ℂ →ᵇ ℝ) :
   exact MemLp.of_bound (measurable_torusBCFFunction L f).aestronglyMeasurable
     ‖f‖ (Filter.Eventually.of_forall hbound)
 
+
+end
 /-- Send a bounded real function on the physical plane to its complex-valued torus `L²`
 periodization. -/
-noncomputable def torusBCFToLp (L : ℝ) :
+def torusBCFToLp (L : ℝ) :
     (ℂ →ᵇ ℝ) →ₗ[ℝ] Lp ℂ 2 (volume : Measure GFFUnitTorus2) where
   toFun f := (memLp_torusBCFFunction L f).toLp (torusBCFFunction L f)
   map_add' f g := by
@@ -108,41 +113,23 @@ theorem norm_torusBCFToLp_le (L : ℝ) (f : ℂ →ᵇ ℝ) :
   have hnorm' : eLpNorm (torusBCFFunction L f) 2
       (volume : Measure GFFUnitTorus2) ≤ ENNReal.ofReal ‖f‖ := by
     simpa using hnorm
-  calc
-    (eLpNorm (torusBCFFunction L f) 2 (volume : Measure GFFUnitTorus2)).toReal ≤
-        (ENNReal.ofReal ‖f‖).toReal :=
-      ENNReal.toReal_mono ENNReal.ofReal_ne_top hnorm'
-    _ = ‖f‖ := ENNReal.toReal_ofReal (norm_nonneg _)
+  exact (ENNReal.toReal_mono ENNReal.ofReal_ne_top hnorm').trans_eq (ENNReal.toReal_ofReal (norm_nonneg _))
 
 /-- The bounded-function periodization operator is continuous, with operator norm at most one. -/
-noncomputable def torusBCFToLpCLM (L : ℝ) :
+def torusBCFToLpCLM (L : ℝ) :
     (ℂ →ᵇ ℝ) →L[ℝ] Lp ℂ 2 (volume : Measure GFFUnitTorus2) :=
   (torusBCFToLp L).mkContinuous 1 (by
     intro f
     simpa using norm_torusBCFToLp_le L f)
 
 /-- The periodization of a test, bundled as a continuous linear map. -/
-noncomputable def torusPeriodizationLpCLM (L : ℝ) :
+def torusPeriodizationLpCLM (L : ℝ) :
     TestFn →L[ℝ] Lp ℂ 2 (volume : Measure GFFUnitTorus2) :=
   (torusBCFToLpCLM L).comp (TestFunction.toBoundedContinuousFunctionCLM ℝ)
 
 @[simp]
 theorem torusPeriodizationLpCLM_apply (L : ℝ) (f : TestFn) :
-    torusPeriodizationLpCLM L f = torusPeriodizationLp L f := by
-  change (memLp_torusBCFFunction L (f : ℂ →ᵇ ℝ)).toLp
-      (torusBCFFunction L (f : ℂ →ᵇ ℝ)) =
-    (memLp_torusPeriodizationFunction L f).toLp
-      (torusPeriodizationFunction L f)
-  apply Lp.ext
-  filter_upwards [(memLp_torusPeriodizationFunction L f).coeFn_toLp,
-    (memLp_torusBCFFunction L (f : ℂ →ᵇ ℝ)).coeFn_toLp] with x h₁ h₂
-  calc
-    (memLp_torusBCFFunction L (f : ℂ →ᵇ ℝ)).toLp
-        (torusBCFFunction L (f : ℂ →ᵇ ℝ)) x =
-        torusBCFFunction L (f : ℂ →ᵇ ℝ) x := h₂
-    _ = torusPeriodizationFunction L f x := rfl
-    _ = (memLp_torusPeriodizationFunction L f).toLp
-        (torusPeriodizationFunction L f) x := h₁.symm
+    torusPeriodizationLpCLM L f = torusPeriodizationLp L f := by rfl
 
 end DOZZ
 

@@ -21,7 +21,7 @@ theorem fusionMovingMass_finite_near {Ω : Type*} [MeasurableSpace Ω]
     ∀ᵐ ω ∂P, fusionMovingMass γ α₁ α₂ α₃ y z (M ω) ≠ ⊤ := by
   obtain ⟨_, C, hC, hb⟩ := fusion_rootedKernel_smallBall_moment P X hX γ hγ hγ2 M hM
     α₁ α₂ α₃ p hα hp hp1 hpRange y hy
-  have hbad : ∀ᵐ ω ∂P, fusionMovingBadMass γ α₁ α₂ α₃ y z (1 / 16) (M ω) ≠ ⊤ :=
+  have hbad :=
     fusion_mass_finite_of_moment (fusionMovingBadMass_aemeasurable P X hX γ hγ hγ2 M hM α₁ α₂ α₃ y z (1 / 16))
       hp (lt_of_le_of_lt (hb (1 / 16) (by norm_num) le_rfl z (by linarith))
         (ENNReal.mul_lt_top hC ENNReal.ofReal_lt_top))
@@ -46,7 +46,7 @@ theorem fusionRootOnlyMass_finite_near {Ω : Type*} [MeasurableSpace Ω]
     ∀ᵐ ω ∂P, fusionRootOnlyMass γ α₁ α₂ α₃ y z (M ω) ≠ ⊤ := by
   obtain ⟨_, C, hC, hb⟩ := fusion_rootOnlyKernel_smallBall_moment P X hX γ hγ hγ2 M hM
     α₁ α₂ α₃ p hα hp hp1 hpRange y hy
-  have hbad : ∀ᵐ ω ∂P, fusionRootOnlyBadMass γ α₁ α₂ α₃ y z (1 / 16) (M ω) ≠ ⊤ :=
+  have hbad :=
     fusion_mass_finite_of_moment (fusionRootOnlyBadMass_aemeasurable P X hX γ hγ hγ2 M hM α₁ α₂ α₃ y z (1 / 16))
       hp (lt_of_le_of_lt (hb (1 / 16) (by norm_num) le_rfl z (by linarith))
         (ENNReal.mul_lt_top hC ENNReal.ofReal_lt_top))

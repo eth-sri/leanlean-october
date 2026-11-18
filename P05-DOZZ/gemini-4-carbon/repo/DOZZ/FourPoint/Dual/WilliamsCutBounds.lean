@@ -12,10 +12,13 @@ open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P] (γ α : ℝ)
+include P γ α
+
 /-- The random last-cut reflection mass is a measurable real observable. -/
 theorem dual_williams_cut_real_aemeasurable
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P]
-    (γ α : ℝ) (hα : α < Q γ) (B : Ω → BrownianPath × BrownianPath)
+ (hα : α < Q γ) (B : Ω → BrownianPath × BrownianPath)
     (Z : Ω → Measure ℝ) (hData : IsReflectionData P γ α B Z) :
     AEMeasurable (fun q : ℝ × Ω =>
       (twoSidedReflectionCutMass γ q.1 B Z q.2).toReal)
@@ -29,8 +32,7 @@ theorem dual_williams_cut_real_aemeasurable
 reflection mass, on the original reflection witness. All real conversions are justified
 by the finite first moment of the full mass. -/
 theorem dual_williams_cut_real_bounds
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P]
-    (γ α c : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (hα : α < Q γ)
+ (c : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (hα : α < Q γ)
     (B : Ω → BrownianPath × BrownianPath) (Z : Ω → Measure ℝ)
     (hData : IsReflectionData P γ α B Z) :
     ∀ᵐ q : ℝ × Ω ∂(brownianMaximumReferenceLaw (Q γ-α)).prod P,
@@ -47,16 +49,15 @@ theorem dual_williams_cut_real_bounds
     (aemeasurable_of_twoSidedConditioned hData.1) hData.2.1
   have hmoment := reflected_reflection_mass_moment_lt_top P γ α 1 B Z hα hData h4
   simp only [ENNReal.rpow_one] at hmoment
-  have hJfin := ae_lt_top' hJm hmoment.ne
   have horder := source_last_exit_mono_prod_ae P (Q γ-α) c
     (sub_pos.mpr hα) (fun ω => (B ω).2) hData.1.2.1
-  filter_upwards [horder, measurePreserving_snd.quasiMeasurePreserving.ae hJfin] with q hq hf
+  filter_upwards [horder, measurePreserving_snd.quasiMeasurePreserving.ae (ae_lt_top' hJm hmoment.ne)] with q hq hf
   have hcut := twoSidedReflectionCutMass_le_mass γ q.1 B Z q.2
-  have hcutfin : twoSidedReflectionCutMass γ q.1 B Z q.2 ≠ ⊤ :=
-    (hcut.trans_lt hf).ne
   refine ⟨ENNReal.toReal_nonneg, ENNReal.toReal_mono hf.ne hcut, ?_⟩
   intro hc
-  exact ENNReal.toReal_mono hcutfin
+  exact ENNReal.toReal_mono ((hcut.trans_lt hf).ne)
     (reflection_cut_mass_le_of_last_exit_le γ c q.1 B Z q.2 (hq hc))
 
+
+end
 end DOZZ.Proofs

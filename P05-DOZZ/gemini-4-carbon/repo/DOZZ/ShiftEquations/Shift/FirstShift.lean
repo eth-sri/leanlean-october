@@ -37,9 +37,8 @@ theorem rbarShiftMultiplier_analyticAt_ne_zero {γ : ℝ} (hγ : 0 < γ) (hγ2 :
     ∃ z₀ : ℂ, AnalyticAt ℂ (rbarShiftMultiplier γ) z₀ ∧ rbarShiftMultiplier γ z₀ ≠ 0 := by
   obtain ⟨hQ, hQ2, hγh, h42, h2⟩ := slice_facts hγ hγ2
   set a₁ : ℝ := (γ + Q γ) / 2 with ha₁
-  have hγQ : γ < Q γ := by rw [hQ]; linarith
-  have ha₁1 : γ < a₁ := by rw [ha₁]; linarith
-  have ha₁2 : a₁ < Q γ := by rw [ha₁]; linarith
+  have ha₁1 : γ < a₁ := by nlinarith
+  have ha₁2 : a₁ < Q γ := by nlinarith
   have hopen : IsOpen {z : ℂ | γ < z.re ∧ z.re < Q γ} :=
     (isOpen_lt continuous_const Complex.continuous_re).inter
       (isOpen_lt Complex.continuous_re continuous_const)
@@ -48,10 +47,7 @@ theorem rbarShiftMultiplier_analyticAt_ne_zero {γ : ℝ} (hγ : 0 < γ) (hγ2 :
     ?_⟩
   rw [rbarShiftMultiplier_ofReal, Complex.ofReal_ne_zero]
   unfold rbarShiftMultiplierReal
-  have hγQ' : γ * Q γ = 2 + γ ^ 2 / 2 := by rw [hQ]; field_simp
-  have hu1 : γ * γ < γ * a₁ := mul_lt_mul_of_pos_left ha₁1 hγ
-  have hu2 : γ * a₁ < γ * Q γ := mul_lt_mul_of_pos_left ha₁2 hγ
-  have hγsq : γ ^ 2 < 4 := by nlinarith
+  have : γ * Q γ = 2 + γ ^ 2 / 2 := by grind
   refine div_ne_zero (mul_ne_zero (div_ne_zero (mul_ne_zero two_ne_zero (by linarith))
     hγ.ne') Real.pi_ne_zero) (mul_ne_zero (mul_ne_zero ?_ ?_) ?_)
   · exact lR_ne_zero_of_mem_neg (by nlinarith) (by nlinarith)
@@ -141,14 +137,13 @@ theorem reflectionR_first_shift_meromorphic_of_deps
   -- the unit-volume shift near `Q`
   obtain ⟨η₀, hη₀, hwin⟩ := exists_twoPoleWindow hγ hγ2
   set η₁ := min η₀ (2 / γ - γ / 2) with hη₁
-  have hη₁pos : 0 < η₁ := lt_min hη₀ (by linarith)
-  have hη₁le : η₁ ≤ 2 / γ - γ / 2 := min_le_right _ _
+  have : 0 < η₁ := lt_min hη₀ (by linarith)
+  have : η₁ ≤ 2 / γ - γ / 2 := min_le_right _ _
   have hrel : ∀ x : ℝ, Q γ - η₁ < x → x < Q γ →
       g ((x : ℂ) - ((γ / 2 : ℝ) : ℂ)) = rbarShiftMultiplier γ x * g x := by
     intro x hx1 hx2
     obtain ⟨δ, hW⟩ := hwin (Q γ - x) (by linarith)
       (by have := min_le_left η₀ (2 / γ - γ / 2); linarith)
-    have hx3 : γ < x := by linarith
     have hshift := reflectionBarR_shift_of_window P X M hγ hγ2 hX hM hCross hBridge hTail hV₃
       hV₃mem hf₃ hf₃eq hW (B (x - γ / 2)) Z
       (by rw [sub_sub_cancel]; exact hRD _ ⟨by linarith, by linarith⟩) (B x) Z
@@ -178,7 +173,7 @@ theorem reflectionR_first_shift_meromorphic_of_deps
       change |z.im| < h
       linarith
     refine (meromorphicOn_reflectionRFromBar (γ := γ) hμ hGm z hzh).congr ?_
-    have hopen : IsOpen {w : ℂ | |w.im| < h / 2} := isOpen_horizontalStrip (h / 2)
+    have hopen := isOpen_horizontalStrip (h / 2)
     filter_upwards [nhdsWithin_le_nhds (hopen.mem_nhds hz')] with w hw
     exact (hRfin w hw).symm
   · -- values on the reflection interval
@@ -206,15 +201,13 @@ theorem reflectionR_first_shift_meromorphic_of_deps
         intro hp
         apply hw2
         unfold reflectionExponentC at hp
-        have hγ0 : (γ : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hγ.ne'
+        have := Complex.ofReal_ne_zero.mpr hγ.ne'
         field_simp at hp
         linear_combination (-1 / 2 : ℂ) * hp
       · exact hzero w hw
     · have hopen : IsOpen {w : ℂ | h / 2 < |w.im|} :=
         isOpen_lt continuous_const Complex.continuous_im.abs
-      have hxo : h / 2 < |x.im| := by
-        have := not_lt.mp hx
-        linarith
+      have hxo : h / 2 < |x.im| := by nlinarith
       filter_upwards [nhdsWithin_le_nhds (hopen.mem_nhds hxo)] with w hw
       exact hzero w (by
         change h / 2 < |w.im| at hw

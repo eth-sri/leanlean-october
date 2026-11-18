@@ -29,7 +29,7 @@ theorem brownianUpperConditionedReferenceFutureKernel_real_initialIci
     (brownianUpperConditionedReferenceFutureKernel B ν hν z).real
       {y | δ ≤ y 0} = if δ ≤ z then 1 else 0 := by
   let K := brownianUpperConditionedReferenceFutureKernel B ν hν z
-  have : IsProbabilityMeasure (brownianBelowConditionedLaw B ν z) :=
+  have :=
     isProbabilityMeasure_brownianBelowConditionedLaw B hB ν z hν hz
   have : IsProbabilityMeasure K := by
     dsimp [K]
@@ -42,7 +42,7 @@ theorem brownianUpperConditionedReferenceFutureKernel_real_initialIci
   · have hset : {y : ℚ → ℝ | δ ≤ y 0} =ᵐ[K] Set.univ := by
       filter_upwards [hzero] with y hy
       simp [hy, hδz]
-    have hm : K {y : ℚ → ℝ | δ ≤ y 0} = K Set.univ := measure_congr hset
+    have hm := measure_congr hset
     rw [measureReal_def, hm]
     simp [hδz]
   · have hset : {y : ℚ → ℝ | δ ≤ y 0} =ᵐ[K] (∅ : Set (ℚ → ℝ)) := by

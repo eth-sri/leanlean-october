@@ -16,8 +16,6 @@ constant independent of `y`. -/
 
 @[expose] public section
 
-open MeasureTheory Filter Topology
-open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
 
@@ -47,9 +45,8 @@ theorem bpzLam_le (r : ℝ) (w : ℂ) : bpzLam r w ≤ r := by
     intervalIntegral.integral_mono_on hpi.le (hcont.intervalIntegrable _ _)
       intervalIntegrable_const fun θ _ => bpzTruncLog_le r _
   rw [intervalIntegral.integral_const, smul_eq_mul, sub_zero] at hle
-  calc (2 * Real.pi)⁻¹ * ∫ θ in (0 : ℝ)..2 * Real.pi, _ ≤ (2 * Real.pi)⁻¹ * (2 * Real.pi * r) :=
-        mul_le_mul_of_nonneg_left hle (by positivity)
-    _ = r := by field_simp
+  refine (mul_le_mul_of_nonneg_left hle (by positivity)).trans_eq (?_)
+  field_simp
 
 theorem bpz_abs_exp_sub_exp_le (a b : ℝ) :
     |Real.exp a - Real.exp b| ≤ Real.exp (max a b) * |a - b| := by
@@ -69,18 +66,14 @@ theorem bpz_abs_exp_sub_exp_le (a b : ℝ) :
 theorem hasFDerivAt_bpzCutRootKernel (γ r : ℝ) {x y : ℂ} (hxy : x ≠ y) :
     HasFDerivAt (fun x' => bpzCutRootKernel γ r x' y)
       ((bpzCutRootKernel γ r x y * γ ^ 2) • bpzLamDeriv r (x - y)) x := by
-  have hΛ : HasFDerivAt (fun x' => bpzLam r (x' - y)) (bpzLamDeriv r (x - y)) x := by
-    have h1 := hasFDerivAt_bpzLam r (sub_ne_zero.mpr hxy)
+  have : HasFDerivAt (fun x' => bpzLam r (x' - y)) (bpzLamDeriv r (x - y)) x := by
     have h2 : HasFDerivAt (fun x' : ℂ => x' - y) (ContinuousLinearMap.id ℝ ℂ) x :=
       (hasFDerivAt_id x).sub_const y
-    simpa [Function.comp_def] using h1.comp x h2
+    simpa [Function.comp_def] using (hasFDerivAt_bpzLam r (sub_ne_zero.mpr hxy)).comp x h2
   have hin : HasFDerivAt (fun x' => γ ^ 2 * (bpzLam r (x' - y) + bpzPin r y))
-      (γ ^ 2 • bpzLamDeriv r (x - y)) x := by
-    have := (hΛ.add_const (bpzPin r y)).const_mul (γ ^ 2)
-    simpa using this
-  have hexp := hin.exp
+      (γ ^ 2 • bpzLamDeriv r (x - y)) x := by fun_prop
   unfold bpzCutRootKernel
-  convert hexp using 1
+  convert (hin.exp) using 1
   rw [smul_smul]
 
 
@@ -112,49 +105,43 @@ theorem bpzTruncLog_eq_of_le (r : ℝ) {w : ℂ} (hw : Real.exp (-r) ≤ ‖w‖
     bpzTruncLog r w = -Real.log ‖w‖ := by
   simp only [bpzTruncLog, max_eq_right hw]
 
-/-- Away from the truncation radius the limit-region kernel is an explicit power. -/
-theorem bpzLimRootKernel_eq (γ r : ℝ) {x y : ℂ} (hxy : Real.exp (-r) ≤ ‖x - y‖) :
-    bpzLimRootKernel γ r x y = (normPlus y / ‖x - y‖) ^ (γ ^ 2) := by
-  have hpos : 0 < ‖x - y‖ := lt_of_lt_of_le (Real.exp_pos _) hxy
-  unfold bpzLimRootKernel
-  rw [bpzTruncLog_eq_of_le r hxy, Real.rpow_def_of_pos (div_pos (bpz_normPlus_pos y) hpos),
-    Real.log_div (bpz_normPlus_pos y).ne' hpos.ne']
-  congr 1
-  ring
 
 /-- The limit-region kernel is differentiable off the truncation circle. -/
 theorem hasFDerivAt_bpzLimRootKernel (γ r : ℝ) {x y : ℂ} (hxy : ‖x - y‖ ≠ Real.exp (-r)) :
     HasFDerivAt (fun x' => bpzLimRootKernel γ r x' y)
       ((bpzLimRootKernel γ r x y * γ ^ 2) • bpzTruncLogDeriv r (x - y)) x := by
-  have hT : HasFDerivAt (fun x' => bpzTruncLog r (x' - y)) (bpzTruncLogDeriv r (x - y)) x := by
-    have h1 := hasFDerivAt_bpzTruncLog r hxy
+  have : HasFDerivAt (fun x' => bpzTruncLog r (x' - y)) (bpzTruncLogDeriv r (x - y)) x := by
     have h2 : HasFDerivAt (fun x' : ℂ => x' - y) (ContinuousLinearMap.id ℝ ℂ) x :=
       (hasFDerivAt_id x).sub_const y
-    simpa [Function.comp_def] using h1.comp x h2
+    simpa [Function.comp_def] using (hasFDerivAt_bpzTruncLog r hxy).comp x h2
   have hin : HasFDerivAt (fun x' => γ ^ 2 * (bpzTruncLog r (x' - y) + Real.log (normPlus y)))
-      (γ ^ 2 • bpzTruncLogDeriv r (x - y)) x := by
-    have := (hT.add_const (Real.log (normPlus y))).const_mul (γ ^ 2)
-    simpa using this
-  have hexp := hin.exp
+      (γ ^ 2 • bpzTruncLogDeriv r (x - y)) x := by fun_prop
   unfold bpzLimRootKernel
-  convert hexp using 1
+  convert (hin.exp) using 1
   rw [smul_smul]
 
 /-- Upper bound of the limit-region kernel on a separated bounded region. -/
 theorem bpzLimRootKernel_le (γ r : ℝ) {δ R : ℝ} (hδ : 0 < δ) (hδr : Real.exp (-r) ≤ δ)
     {x y : ℂ} (hx : ‖x‖ ≤ R) (hxy : δ ≤ ‖x - y‖) :
     bpzLimRootKernel γ r x y ≤ (1 + (1 + R) / δ) ^ (γ ^ 2) := by
-  have hpos : 0 < ‖x - y‖ := lt_of_lt_of_le hδ hxy
-  rw [bpzLimRootKernel_eq γ r (le_trans hδr hxy)]
-  have hR : 0 ≤ R := le_trans (norm_nonneg x) hx
-  have hny : normPlus y ≤ 1 + R + ‖x - y‖ := by
+  have bpzLimRootKernel_eq {x y : ℂ} (hxy : Real.exp (-r) ≤ ‖x - y‖) : bpzLimRootKernel γ r x y = (normPlus y / ‖x - y‖) ^ (γ ^ 2) := by
+    have hpos := lt_of_lt_of_le (Real.exp_pos _) hxy
+    unfold bpzLimRootKernel
+    rw [bpzTruncLog_eq_of_le r hxy, Real.rpow_def_of_pos (div_pos (bpz_normPlus_pos y) hpos),
+      Real.log_div (bpz_normPlus_pos y).ne' hpos.ne']
+    congr 1
+    ring
+  have hpos := lt_of_lt_of_le hδ hxy
+  rw [bpzLimRootKernel_eq (le_trans hδr hxy)]
+  have := le_trans (norm_nonneg x) hx
+  have : normPlus y ≤ 1 + R + ‖x - y‖ := by
     unfold normPlus
     have := norm_le_norm_add_norm_sub' y x
     rw [norm_sub_rev] at this
     apply max_le <;> linarith [norm_nonneg (x - y)]
   have hratio : normPlus y / ‖x - y‖ ≤ 1 + (1 + R) / δ := by
     rw [div_le_iff₀ hpos]
-    have h1 : (1 + R) ≤ (1 + R) / δ * ‖x - y‖ := by
+    have : (1 + R) ≤ (1 + R) / δ * ‖x - y‖ := by
       rw [div_mul_eq_mul_div, le_div_iff₀ hδ]
       exact mul_le_mul_of_nonneg_left hxy (by linarith)
     nlinarith

@@ -32,6 +32,6 @@ theorem equatorGFF_GMC_tilt
     (∫⁻ ω, ENNReal.ofReal (Real.exp (L ω - gaussianVariance P L / 2)) *
         H (fun f => X ω f) (M ω) ∂P) =
       ∫⁻ ω, H (fun f => X ω f + gaussianCovariance P (fun ω => X ω f) L)
-        ((M ω).withDensity (fun x => ENNReal.ofReal (Real.exp (γ * c x)))) ∂P := by exact DOZZ.Proofs.equatorGFF_GMC_tilt P X hX γ hγ hγ2 M hM Xc hXc L hL c hc H hH
+        ((M ω).withDensity (fun x => ENNReal.ofReal (Real.exp (γ * c x)))) ∂P := DOZZ.Proofs.equatorGFF_GMC_tilt P X hX γ hγ hγ2 M hM Xc hXc L hL c hc H hH
 
 end DOZZ

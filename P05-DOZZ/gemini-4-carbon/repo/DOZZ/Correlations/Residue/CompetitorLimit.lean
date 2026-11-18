@@ -13,9 +13,13 @@ bridge. -/
 open MeasureTheory Filter Topology Set
 namespace DOZZ.Proofs
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+include P
+
 /-- A uniform higher moment gives integrability and a uniform bound for the varying powers. -/
 theorem residue_integral_lower_power_le
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P]
+ [IsProbabilityMeasure P]
     (Y : Ω → ℝ) (hY : AEMeasurable Y P) (hpos : ∀ᵐ ω ∂P, 0 ≤ Y ω)
     (q r : ℝ) (hq : 0 ≤ q) (hqr : q ≤ r)
     (hr : Integrable (fun ω => Y ω ^ r) P) :
@@ -26,17 +30,16 @@ theorem residue_integral_lower_power_le
     filter_upwards [hpos] with ω hω
     rw [Real.norm_eq_abs, abs_of_nonneg (Real.rpow_nonneg hω _)]
     exact residue_rpow_le_one_add (Y ω) q r hω hq hqr
-  have hi : Integrable (fun ω => Y ω ^ q) P :=
+  have hi :=
     hb.mono' (hY.pow_const q).aestronglyMeasurable hdom
   refine ⟨hi, ?_⟩
-  calc (∫ ω, Y ω ^ q ∂P) ≤ ∫ ω, 1 + Y ω ^ r ∂P :=
-      integral_mono_ae hi hb (hpos.mono fun ω hω => residue_rpow_le_one_add (Y ω) q r hω hq hqr)
-    _ = _ := by rw [integral_add (integrable_const _) hr]; simp
+  refine (integral_mono_ae hi hb (hpos.mono fun ω hω => residue_rpow_le_one_add (Y ω) q r hω hq hqr)).trans_eq (?_)
+  rw [integral_add (integrable_const _) hr]; simp
 
 /-- A nonnegative competitor with uniformly bounded moments cannot change the critical
 residue. The adjustable deterministic comparison replaces an independence assumption. -/
 theorem residue_addition_preserves_limit
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+
     (A R : ℝ → Ω → ℝ) (q : ℝ → ℝ) (β d₀ C L : ℝ)
     (hd₀ : 0 < d₀)
     (hA : ∀ d, 0 < d → d < d₀ → AEMeasurable (A d) P)
@@ -82,8 +85,7 @@ theorem residue_addition_preserves_limit
         rw [integral_add ((hiA d hd hd').const_mul _) ((hiR d hd hd').const_mul _),
           integral_const_mul, integral_const_mul]
       rw [hue] at hu
-      have hc := mul_le_mul_of_nonneg_left (hC d hd hd') (by positivity : 0 ≤ (1 + 1 / δ) ^ β)
-      have hh := mul_le_mul_of_nonneg_left (hu.trans (add_le_add le_rfl hc)) hd.le
+      have hh := mul_le_mul_of_nonneg_left (hu.trans (add_le_add le_rfl (mul_le_mul_of_nonneg_left (hC d hd hd') (by positivity : 0 ≤ (1 + 1 / δ) ^ β)))) hd.le
       convert hh using 1
       ring
   apply tendsto_order.2
@@ -110,4 +112,6 @@ theorem residue_addition_preserves_limit
     filter_upwards [hnear, hub] with d hd hh
     exact (hbounds d hd.1 hd.2 δ hδ).2.trans_lt hh
 
+
+end
 end DOZZ.Proofs

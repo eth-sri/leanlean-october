@@ -52,12 +52,14 @@ theorem bpz_stronglyMeasurable_integral_measure {E : Type*} [NormedAddCommGroup 
       rw [Set.indicator_of_notMem hm, zero_smul]
   rw [key]
   refine Finset.stronglyMeasurable_fun_sum _ fun i _ => ?_
-  have hc : Measurable fun x => b.coord i (f x) :=
-    ((LinearMap.continuous_of_finiteDimensional (b.coord i)).comp_stronglyMeasurable hf).measurable
-  exact (((measurable_integral_measure hc).indicator hAm).stronglyMeasurable).smul_const _
+  exact (((measurable_integral_measure (((LinearMap.continuous_of_finiteDimensional (b.coord i)).comp_stronglyMeasurable hf).measurable)).indicator hAm).stronglyMeasurable).smul_const _
+
+section
+variable (a ε : ℝ) (z : ℂ) {w : ℂ → ℝ} (hw : Measurable w)
+include a ε z hw
 
 /-- The first derivative factor is strongly measurable in the integration variable. -/
-theorem bpz_stronglyMeasurable_softDeriv (a ε : ℝ) (z : ℂ) {w : ℂ → ℝ} (hw : Measurable w) :
+theorem bpz_stronglyMeasurable_softDeriv :
     StronglyMeasurable (fun x : ℂ => w x • bpzSoftDeriv a ε x z) := by
   have hbase : Measurable (fun x : ℂ => Complex.normSq (x - z) + ε ^ 2) := by fun_prop
   have hc : Measurable
@@ -68,7 +70,7 @@ theorem bpz_stronglyMeasurable_softDeriv (a ε : ℝ) (z : ℂ) {w : ℂ → ℝ
   exact hw.stronglyMeasurable.smul (hc.stronglyMeasurable.smul hL.stronglyMeasurable)
 
 /-- The second derivative factor is strongly measurable in the integration variable. -/
-theorem bpz_stronglyMeasurable_softDeriv2 (a ε : ℝ) (z : ℂ) {w : ℂ → ℝ} (hw : Measurable w) :
+theorem bpz_stronglyMeasurable_softDeriv2 :
     StronglyMeasurable (fun x : ℂ => w x • bpzSoftDeriv2 a ε x z) := by
   have hbase : Measurable (fun x : ℂ => Complex.normSq (x - z) + ε ^ 2) := by fun_prop
   have hc2 : Measurable
@@ -79,25 +81,28 @@ theorem bpz_stronglyMeasurable_softDeriv2 (a ε : ℝ) (z : ℂ) {w : ℂ → �
     (hbase.pow_const (a - 1)).const_mul _
   have hL : Continuous (fun x : ℂ => innerSL ℝ (x - z)) :=
     (innerSL ℝ).continuous.comp (continuous_id.sub continuous_const)
-  have hS : Continuous
-      (fun x : ℂ => (innerSL ℝ (x - z)).smulRight (innerSL ℝ (x - z))) :=
-    (ContinuousLinearMap.smulRightL ℝ ℂ (ℂ →L[ℝ] ℝ)).continuous₂.comp₂ hL hL
-  exact hw.stronglyMeasurable.smul ((hc2.stronglyMeasurable.smul hS.stronglyMeasurable).add
+  exact hw.stronglyMeasurable.smul ((hc2.stronglyMeasurable.smul ((ContinuousLinearMap.smulRightL ℝ ℂ (ℂ →L[ℝ] ℝ)).continuous₂.comp₂ hL hL).stronglyMeasurable).add
     (hc1.stronglyMeasurable.smul stronglyMeasurable_const))
 
+
+end
+section
+variable (a ε : ℝ) {w : ℂ → ℝ} (hw : Measurable w) (z : ℂ)
+include a ε hw z
+
 /-- The softened mass is a measurable function of the measure. -/
-theorem bpz_measurable_softMassReal (a ε : ℝ) {w : ℂ → ℝ} (hw : Measurable w) (z : ℂ) :
+theorem bpz_measurable_softMassReal :
     Measurable (fun m : Measure ℂ => bpzSoftMassReal a ε w m z) :=
   measurable_integral_measure ((bpzSoft_measurable_rpow a ε z).mul hw)
 
 /-- The first derivative mass is a strongly measurable function of the measure. -/
-theorem bpz_stronglyMeasurable_softMassDeriv (a ε : ℝ) {w : ℂ → ℝ} (hw : Measurable w)
-    (z : ℂ) : StronglyMeasurable (fun m : Measure ℂ => bpzSoftMassDeriv a ε w m z) :=
+theorem bpz_stronglyMeasurable_softMassDeriv : StronglyMeasurable (fun m : Measure ℂ => bpzSoftMassDeriv a ε w m z) :=
   bpz_stronglyMeasurable_integral_measure (bpz_stronglyMeasurable_softDeriv a ε z hw)
 
 /-- The second derivative mass is a strongly measurable function of the measure. -/
-theorem bpz_stronglyMeasurable_softMassDeriv2 (a ε : ℝ) {w : ℂ → ℝ} (hw : Measurable w)
-    (z : ℂ) : StronglyMeasurable (fun m : Measure ℂ => bpzSoftMassDeriv2 a ε w m z) :=
+theorem bpz_stronglyMeasurable_softMassDeriv2 : StronglyMeasurable (fun m : Measure ℂ => bpzSoftMassDeriv2 a ε w m z) :=
   bpz_stronglyMeasurable_integral_measure (bpz_stronglyMeasurable_softDeriv2 a ε z hw)
 
+
+end
 end DOZZ.Proofs

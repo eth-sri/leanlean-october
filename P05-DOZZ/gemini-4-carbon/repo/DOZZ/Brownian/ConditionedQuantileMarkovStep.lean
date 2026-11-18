@@ -33,10 +33,9 @@ theorem map_prod_graph_apply_rect
     (μ.prod η).map (fun z => (z.1, f z)) (A ×ˢ B) =
       ∫⁻ x in A, K x B ∂μ := by
   let F : X × U → X × Y := fun z => (z.1, f z)
-  have hF : Measurable F := measurable_fst.prodMk hf
-  have hRect : MeasurableSet (A ×ˢ B) := hA.prod hB
-  have hPre : MeasurableSet (F ⁻¹' (A ×ˢ B)) := hRect.preimage hF
-  rw [Measure.map_apply hF hRect, Measure.prod_apply hPre]
+  have hF := measurable_fst.prodMk hf
+  have hRect := hA.prod hB
+  rw [Measure.map_apply hF hRect, Measure.prod_apply (hRect.preimage hF)]
   rw [← lintegral_indicator hA]
   apply lintegral_congr
   intro x
@@ -44,9 +43,7 @@ theorem map_prod_graph_apply_rect
   · have hfx : Measurable (fun u => f (x, u)) :=
       hf.comp (measurable_const.prodMk measurable_id)
     have hset : Prod.mk x ⁻¹' (F ⁻¹' (A ×ˢ B)) =
-        (fun u => f (x, u)) ⁻¹' B := by
-      ext u
-      simp [F, hx]
+        (fun u => f (x, u)) ⁻¹' B := by grind
     rw [hset, Set.indicator_of_mem hx]
     rw [← Measure.map_apply hfx hB, hK x]
   · have hset : Prod.mk x ⁻¹' (F ⁻¹' (A ×ˢ B)) = ∅ := by
@@ -65,7 +62,7 @@ theorem conditionedPositiveTransitionQuantile_map_uniformSubtype
   let μ := conditionedPositiveTransitionMeasure ν t x.1
   let q : ℝ → ℝ := fun u =>
     cdfGeneralizedQuantile (ProbabilityTheory.cdf μ) u
-  let : IsProbabilityMeasure μ :=
+  let :=
     isProbabilityMeasure_conditionedPositiveTransitionMeasure ν t x.1 hν ht x.2
   have hqUniform : AEMeasurable q uniformOpenUnit := by
     simpa [q, uniformOpenUnit] using

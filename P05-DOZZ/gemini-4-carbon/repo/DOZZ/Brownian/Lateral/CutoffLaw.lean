@@ -16,10 +16,14 @@ the cutoff-path law without changing any local covariance or normalization.
 
 @[expose] public section
 
+noncomputable section
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal Distributions
 
 namespace DOZZ.Proofs
+
+variable {Ω E : Type*} [MeasurableSpace Ω] [MeasurableSpace E]
+
 
 /-- Multiplying each coordinate by a deterministic scalar preserves finite centered
 joint Gaussianity, including zeroed coordinates outside a local chart. -/
@@ -30,9 +34,7 @@ theorem centeredJointlyGaussian_coordinate_mul
   refine ⟨hZ.1, fun i => (hZ.2.1 i).const_mul (b i), ?_⟩
   intro a
   have heq : (fun ω => ∑ i, a i * (b i * Z ω i)) =
-      fun ω => ∑ i, (a i * b i) * Z ω i := by
-    funext ω
-    simp only [mul_assoc]
+      fun ω => ∑ i, (a i * b i) * Z ω i := by ring
   rw [heq]
   exact hZ.2.2 (fun i => a i * b i)
 
@@ -48,7 +50,7 @@ theorem centeredJointlyGaussian_map_of_ae_eq
   let _ := hZ.1
   refine ⟨(Measure.isProbabilityMeasure_map_iff hπ.aemeasurable).2 inferInstance, fun i => (hW i).aemeasurable, ?_⟩
   intro a
-  have hm : Measurable (fun ξ => ∑ i, a i * W ξ i) :=
+  have hm :=
     Finset.measurable_sum Finset.univ (fun i _ => (hW i).const_mul (a i))
   have hsum : (fun ω => ∑ i, a i * Z ω i) =ᵐ[P] fun ω => ∑ i, a i * W (π ω) i := by
     filter_upwards [ae_all_iff.2 heq] with ω hω
@@ -100,10 +102,14 @@ theorem isAdmissibleLogRegularization_smaller_cutoff
     obtain ⟨δ, hδ, hδb⟩ := hb K hK hKU k (hk.trans hε) η hη
     exact ⟨δ, hδ, fun ε hεp hεb => hδb ε hεp (hεb.trans (min_le_min_left δ hε))⟩
 
+section
+variable (P : Measure Ω) (π : Ω → E) (hπ : Measurable π)
+include P hπ
+
 /-- Local mixed second moments are unchanged by reading the field through its image law. -/
 theorem gaussianCovariance_map_of_ae_eq
-    {Ω E : Type*} [MeasurableSpace Ω] [MeasurableSpace E]
-    (P : Measure Ω) (π : Ω → E) (hπ : Measurable π)
+
+
     (Y Z : Ω → ℝ) (F G : E → ℝ) (hF : Measurable F) (hG : Measurable G)
     (hY : Y =ᵐ[P] F ∘ π) (hZ : Z =ᵐ[P] G ∘ π) :
     gaussianCovariance (P.map π) F G = gaussianCovariance P Y Z := by
@@ -118,8 +124,8 @@ theorem gaussianCovariance_map_of_ae_eq
 /-- Admissibility passes to an image law when the image field agrees with the original
 field on the local chart and is extended by zero off that chart. -/
 theorem isAdmissibleLogRegularization_map_of_chart_ae_eq
-    {Ω E : Type*} [MeasurableSpace Ω] [MeasurableSpace E]
-    (P : Measure Ω) (π : Ω → E) (hπ : Measurable π)
+
+
     (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ)
     (Y : Ω → ℝ → ℂ → ℝ) (F : E → ℝ → ℂ → ℝ)
     (hY : IsAdmissibleLogRegularization P U dens ε₀ Y)
@@ -151,8 +157,7 @@ theorem isAdmissibleLogRegularization_map_of_chart_ae_eq
   · intro n q hq
     classical
     let b : Fin n → ℝ := fun i => if (q i).2 ∈ U then 1 else 0
-    have hG := centeredJointlyGaussian_coordinate_mul P _ (hY.gaussian n q hq) b
-    apply centeredJointlyGaussian_map_of_ae_eq P π hπ _ hG
+    apply centeredJointlyGaussian_map_of_ae_eq P π hπ _ (centeredJointlyGaussian_coordinate_mul P _ (hY.gaussian n q hq) b)
       (fun ξ i => F ξ (q i).1 (q i).2) (fun i => hm (q i).1 (q i).2)
     intro i
     by_cases hi : (q i).2 ∈ U
@@ -193,36 +198,25 @@ theorem isAdmissibleLogRegularization_map_of_chart_ae_eq
     rw [hcov ε _ hεp (hεb.trans (min_le_right _ _)) (Real.exp_pos _) hk x y (hKU hx) (hKU hy)]
     exact hδb ε hεp hεb x hx y hy
 
+
+end
 /-- A fixed default center is needed only to extend local evaluation to the whole plane;
 the universal regularizer is zero outside the chart. -/
-noncomputable def originLateralChartDefault (ρ : ℝ) (hρ : 0 < ρ) : originLateralChart ρ :=
+def originLateralChartDefault (ρ : ℝ) (hρ : 0 < ρ) : originLateralChart ρ :=
   ⟨((3 * ρ : ℝ) : ℂ), by
     change 2 * ρ < ‖((3 * ρ : ℝ) : ℂ)‖
     rw [Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (mul_nonneg (by norm_num) hρ.le)]
     linarith only [hρ]⟩
 
 /-- A measurable center selector agrees with the actual center throughout the chart. -/
-noncomputable def originLateralChartCenter (ρ : ℝ) (hρ : 0 < ρ) (x : ℂ) : originLateralChart ρ := by
+def originLateralChartCenter (ρ : ℝ) (hρ : 0 < ρ) (x : ℂ) : originLateralChart ρ := by
   classical
   exact if hx : x ∈ originLateralChart ρ then ⟨x, hx⟩ else originLateralChartDefault ρ hρ
 
-/-- The center selector is measurable as a map to the chart subtype. -/
-theorem measurable_originLateralChartCenter (ρ : ℝ) (hρ : 0 < ρ) :
-    Measurable (originLateralChartCenter ρ hρ) := by
-  classical
-  have heq : (fun x : ℂ => (originLateralChartCenter ρ hρ x).val) =
-      fun x => if x ∈ originLateralChart ρ then x else (originLateralChartDefault ρ hρ).val := by
-    funext x
-    by_cases hx : x ∈ originLateralChart ρ <;> simp only [originLateralChartCenter, hx,
-      dite_true, dite_false, ite_true, ite_false]
-  have hm : Measurable (fun x : ℂ => (originLateralChartCenter ρ hρ x).val) := by
-    rw [heq]
-    exact measurable_id.ite (isOpen_originLateralChart ρ).measurableSet measurable_const
-  exact hm.subtype_mk
 
 /-- The universal local regularizer evaluates a continuous lateral cutoff path at its
 center and logarithmic cutoff time, with zero extension off the chart. -/
-noncomputable def originLateralUniversalRegularization (ρ : ℝ) (hρ : 0 < ρ) :
+def originLateralUniversalRegularization (ρ : ℝ) (hρ : 0 < ρ) :
     C(OriginLateralCutoffDomain ρ, ℝ) → ℝ → ℂ → ℝ := by
   classical
   exact fun f ε x => if x ∈ originLateralChart ρ then
@@ -233,32 +227,28 @@ noncomputable def originLateralUniversalRegularization (ρ : ℝ) (hρ : 0 < ρ)
 theorem originLateralUniversalRegularization_measurableAtScale (ρ : ℝ) (hρ : 0 < ρ) (ε : ℝ) :
     Measurable (fun q : C(OriginLateralCutoffDomain ρ, ℝ) × ℂ =>
       originLateralUniversalRegularization ρ hρ q.1 ε q.2) := by
+  have measurable_originLateralChartCenter : Measurable (originLateralChartCenter ρ hρ) := by
+    classical
+    have heq : (fun x : ℂ => (originLateralChartCenter ρ hρ x).val) =
+        fun x => if x ∈ originLateralChart ρ then x else (originLateralChartDefault ρ hρ).val := by
+      funext x
+      by_cases hx : x ∈ originLateralChart ρ <;> simp only [originLateralChartCenter, hx,
+        dite_true, dite_false, ite_true, ite_false]
+    have hm : Measurable (fun x : ℂ => (originLateralChartCenter ρ hρ x).val) := by
+      rw [heq]
+      exact measurable_id.ite (isOpen_originLateralChart ρ).measurableSet measurable_const
+    exact hm.subtype_mk
   classical
   have hm : Measurable (fun q : C(OriginLateralCutoffDomain ρ, ℝ) × ℂ =>
       q.1 (originLateralChartCenter ρ hρ q.2,
         (Real.log (1 / ε) - originLateralCutoffBaseTime ρ).toNNReal)) :=
     continuous_eval.measurable.comp
-      (measurable_fst.prodMk ((measurable_originLateralChartCenter ρ hρ).comp
+      (measurable_fst.prodMk ((measurable_originLateralChartCenter).comp
         measurable_snd |>.prodMk measurable_const))
   exact hm.ite ((isOpen_originLateralChart ρ).measurableSet.preimage measurable_snd)
     measurable_const
 
-/-- Off-chart evaluation is exactly zero. -/
-theorem originLateralUniversalRegularization_zero (ρ : ℝ) (hρ : 0 < ρ)
-    (f : C(OriginLateralCutoffDomain ρ, ℝ)) (ε : ℝ) (x : ℂ)
-    (hx : x ∉ originLateralChart ρ) : originLateralUniversalRegularization ρ hρ f ε x = 0 := by
-  classical
-  simp only [originLateralUniversalRegularization, hx, ite_false]
 
-/-- Below the base cutoff the logarithmic time used by universal evaluation is
-nonnegative, and hence is not altered by the `toNNReal` coordinate. -/
-theorem originLateralUniversal_time_nonneg (ρ ε : ℝ) (hε : 0 < ε)
-    (hεb : ε ≤ Real.exp (-originLateralCutoffBaseTime ρ)) :
-    0 ≤ Real.log (1 / ε) - originLateralCutoffBaseTime ρ := by
-  have h := Real.log_le_log hε hεb
-  rw [Real.log_exp] at h
-  rw [one_div, Real.log_inv]
-  linarith only [h]
 
 /-- On the common continuity event the universal path evaluation reproduces every
 local circle cutoff below its base ceiling. -/
@@ -272,13 +262,18 @@ theorem originLateralUniversalRegularization_comp_ae
       ∀ x ∈ originLateralChart ρ,
         originLateralUniversalRegularization ρ hρ (π ω) ε x =
           originLateralCircleRegularization Xc ρ ω ε x := by
+  have originLateralUniversal_time_nonneg (ε : ℝ) (hε : 0 < ε) (hεb : ε ≤ Real.exp (-originLateralCutoffBaseTime ρ)) : 0 ≤ Real.log (1 / ε) - originLateralCutoffBaseTime ρ := by
+    have h := Real.log_le_log hε hεb
+    rw [Real.log_exp] at h
+    rw [one_div, Real.log_inv]
+    linarith only [h]
   classical
   filter_upwards [hπ, originLateralCutoffPath_eval_ae P Xc hcont ρ hρ] with ω hπω hω ε hε hεb x hx
   rw [hπω]
   simp only [originLateralUniversalRegularization, hx, ite_true]
   rw [hω]
   simp only [originLateralChartCenter, hx, dite_true]
-  rw [Real.coe_toNNReal _ (originLateralUniversal_time_nonneg ρ ε hε hεb), add_sub_cancel]
+  rw [Real.coe_toNNReal _ (originLateralUniversal_time_nonneg ε hε hεb), add_sub_cancel]
   rfl
 
 /-- The law of the packed local cutoff field carries the same admissible logarithmic
@@ -294,6 +289,9 @@ theorem originLateralUniversalRegularization_admissible
     (hπ : π =ᵐ[P] originLateralCutoffPath Xc ρ) :
     IsAdmissibleLogRegularization (P.map π) (originLateralChart ρ) originLateralPlaneDensity
       (Real.exp (-originLateralCutoffBaseTime ρ)) (originLateralUniversalRegularization ρ hρ) := by
+  have originLateralUniversalRegularization_zero (f : C(OriginLateralCutoffDomain ρ, ℝ)) (ε : ℝ) (x : ℂ) (hx : x ∉ originLateralChart ρ) : originLateralUniversalRegularization ρ hρ f ε x = 0 := by
+    classical
+    simp only [originLateralUniversalRegularization, hx, ite_false]
   have hceil := originLateralCutoffBaseTime_radius_le ρ hρ 0
   simp only [NNReal.coe_zero, add_zero] at hceil
   have hY := isAdmissibleLogRegularization_smaller_cutoff P (originLateralChart ρ)
@@ -303,7 +301,7 @@ theorem originLateralUniversalRegularization_admissible
   apply isAdmissibleLogRegularization_map_of_chart_ae_eq P π hπm
     (originLateralChart ρ) originLateralPlaneDensity _ _ _ hY
     (originLateralUniversalRegularization_measurableAtScale ρ hρ)
-    (originLateralUniversalRegularization_zero ρ hρ)
+    (originLateralUniversalRegularization_zero)
   intro ε hε hεb x hx
   exact (originLateralUniversalRegularization_comp_ae P Xc hcont ρ hρ π hπ).mono
     (fun ω hω => (hω ε hε hεb x hx).symm)
@@ -318,15 +316,14 @@ theorem tendstoInMeasure_map_comp
     TendstoInMeasure P (fun i ω => f i (π ω)) l (fun ω => g (π ω)) := by
   intro ε hε
   apply tendsto_of_tendsto_of_tendsto_of_le_of_le tendsto_const_nhds (hfg ε hε)
-  · intro i
-    exact zero_le
+  · positivity
   · intro i
     exact Measure.le_map_apply hπ.aemeasurable {ξ | ε ≤ edist (f i ξ) (g ξ)}
 
 /-- A local admissible chaos on an image probability space pulls back to an admissible
 chaos for the original field when all sufficiently fine chart cutoffs agree on one event. -/
 theorem isAdmissibleGMCVersion_map_pullback
-    {Ω E : Type*} [MeasurableSpace Ω] [MeasurableSpace E]
+
     (P : Measure Ω) (π : Ω → E) (hπ : Measurable π)
     (U : Set ℂ) (hU : IsOpen U) (dens : ℂ → ℝ) (ε₀ : ℝ) (hε₀ : 0 < ε₀)
     (Y : Ω → ℝ → ℂ → ℝ) (F : E → ℝ → ℂ → ℝ)
@@ -347,9 +344,7 @@ theorem isAdmissibleGMCVersion_map_pullback
         fun ω => regularizedLogChaosTestMass P U dens Y γ r ω f := by
     filter_upwards [eventually_ge_atTop (-Real.log ε₀)] with r hr
     have hcut : Real.exp (-r) ≤ ε₀ := by
-      calc Real.exp (-r) ≤ Real.exp (Real.log ε₀) :=
-             Real.exp_le_exp.mpr (by linarith only [hr])
-           _ = ε₀ := Real.exp_log hε₀
+      exact (Real.exp_le_exp.mpr (by linarith only [hr])).trans_eq (Real.exp_log hε₀)
     have hv (x : ℂ) (hx : x ∈ U) :
         (∫ ξ, F ξ (Real.exp (-r)) x ^ 2 ∂P.map π) =
           ∫ ω, Y ω (Real.exp (-r)) x ^ 2 ∂P := by
@@ -367,34 +362,6 @@ theorem isAdmissibleGMCVersion_map_pullback
   exact TendstoInMeasure.congr' hcoarse EventuallyEq.rfl hconv
 
 
-/-- Convergence in probability for every fixed parameter integrates to convergence on a
-product probability space. This is the random continuous-test step in Wick reinsertion. -/
-theorem tendstoInMeasure_prod_of_sections
-    {A E : Type*} [MeasurableSpace A] [MeasurableSpace E]
-    (μ : Measure A) (ν : Measure E) [IsProbabilityMeasure μ] [IsProbabilityMeasure ν]
-    (f : ℝ → A → E → ℝ) (g : A → E → ℝ)
-    (hf : ∀ r, Measurable (Function.uncurry (f r))) (hg : Measurable (Function.uncurry g))
-    (hconv : ∀ a, TendstoInMeasure ν (fun r ξ => f r a ξ) atTop (g a)) :
-    TendstoInMeasure (μ.prod ν) (fun r p => f r p.1 p.2) atTop (fun p => g p.1 p.2) := by
-  intro ε hε
-  let B : ℝ → Set (A × E) := fun r => {p | ε ≤ edist (f r p.1 p.2) (g p.1 p.2)}
-  have hB (r : ℝ) : MeasurableSet (B r) :=
-    measurableSet_le measurable_const ((hf r).edist hg)
-  let H : ℝ → A → ℝ≥0∞ := fun r a => ν (Prod.mk a ⁻¹' B r)
-  have hHm (r : ℝ) : Measurable (H r) := measurable_measure_prodMk_left (hB r)
-  have hlim : ∀ᵐ a ∂μ, Tendsto (fun r => H r a) atTop (𝓝 0) :=
-    ae_of_all μ (fun a => hconv a ε hε)
-  have hbound : ∀ᶠ r : ℝ in atTop, ∀ᵐ a ∂μ, H r a ≤ 1 := by
-    exact Eventually.of_forall (fun r => ae_of_all μ (fun a =>
-      (measure_mono (Set.subset_univ _)).trans_eq (measure_univ : ν univ = 1)))
-  have ht := tendsto_lintegral_filter_of_dominated_convergence (fun _ : A => (1 : ℝ≥0∞))
-    (Eventually.of_forall hHm) hbound (by simp) hlim
-  have heq : (fun r => (μ.prod ν) (B r)) = fun r => ∫⁻ a, H r a ∂μ := by
-    funext r
-    exact Measure.prod_apply (hB r)
-  change Tendsto (fun r => (μ.prod ν) (B r)) atTop (𝓝 0)
-  rw [heq]
-  simpa only [lintegral_zero] using ht
 
 /-- Independent random parameters can be inserted into the preceding product-space
 limit. The whole independent lateral carrier is retained in this statement. -/
@@ -406,6 +373,23 @@ theorem tendstoInMeasure_independent_parameters
     (hf : ∀ r, Measurable (Function.uncurry (f r))) (hg : Measurable (Function.uncurry g))
     (hconv : ∀ v, TendstoInMeasure (P.map π) (fun r ξ => f r v ξ) atTop (g v)) :
     TendstoInMeasure P (fun r ω => f r (a ω) (π ω)) atTop (fun ω => g (a ω) (π ω)) := by
+  have tendstoInMeasure_prod_of_sections (μ : Measure A) (ν : Measure E) [IsProbabilityMeasure μ] [IsProbabilityMeasure ν] (f : ℝ → A → E → ℝ) (g : A → E → ℝ) (hf : ∀ r, Measurable (Function.uncurry (f r))) (hg : Measurable (Function.uncurry g)) (hconv : ∀ a, TendstoInMeasure ν (fun r ξ => f r a ξ) atTop (g a)) : TendstoInMeasure (μ.prod ν) (fun r p => f r p.1 p.2) atTop (fun p => g p.1 p.2) := by
+    intro ε hε
+    let B : ℝ → Set (A × E) := fun r => {p | ε ≤ edist (f r p.1 p.2) (g p.1 p.2)}
+    have hB (r : ℝ) : MeasurableSet (B r) :=
+      measurableSet_le measurable_const ((hf r).edist hg)
+    let H : ℝ → A → ℝ≥0∞ := fun r a => ν (Prod.mk a ⁻¹' B r)
+    have hHm (r : ℝ) : Measurable (H r) := measurable_measure_prodMk_left (hB r)
+    have hbound : ∀ᶠ r : ℝ in atTop, ∀ᵐ a ∂μ, H r a ≤ 1 := Eventually.of_forall (fun r => ae_of_all μ (fun a =>
+        (measure_mono (Set.subset_univ _)).trans_eq (measure_univ : ν univ = 1)))
+    have ht := tendsto_lintegral_filter_of_dominated_convergence (fun _ : A => (1 : ℝ≥0∞))
+      (Eventually.of_forall hHm) hbound (by simp) (ae_of_all μ (fun a => hconv a ε hε))
+    have heq : (fun r => (μ.prod ν) (B r)) = fun r => ∫⁻ a, H r a ∂μ := by
+      funext r
+      exact Measure.prod_apply (hB r)
+    change Tendsto (fun r => (μ.prod ν) (B r)) atTop (𝓝 0)
+    rw [heq]
+    simpa only [lintegral_zero] using ht
   have ht := tendstoInMeasure_prod_of_sections (P.map a) (P.map π) f g hf hg hconv
   rw [← hi.map_prod_eq_prod_map_map ha.aemeasurable hπ.aemeasurable] at ht
   exact tendstoInMeasure_map_comp P (fun ω => (a ω, π ω)) (ha.prodMk hπ) atTop

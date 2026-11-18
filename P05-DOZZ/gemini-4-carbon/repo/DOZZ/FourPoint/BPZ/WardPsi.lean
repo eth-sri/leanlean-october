@@ -59,7 +59,7 @@ theorem bpzKernelLip_nonneg : 0 ≤ bpzKernelLip γ r δ :=
 theorem bpz_sep_ball (hsep : ∀ y, ρ y < 1 → 2 * δ ≤ ‖x₀ - y‖) {x : ℂ}
     (hx : x ∈ Metric.ball x₀ δ) {y : ℂ} (hy : ρ y < 1) : δ ≤ ‖x - y‖ := by
   rw [Metric.mem_ball, dist_eq_norm] at hx
-  have h1 := hsep y hy
+  have := hsep y hy
   have h2 := norm_sub_norm_le (x₀ - y) (x₀ - x)
   rw [show x₀ - y - (x₀ - x) = x - y by ring, norm_sub_rev x₀ x] at h2
   linarith
@@ -92,12 +92,10 @@ theorem integrable_bpz_cut_part (hρm : Measurable ρ) (hk₁ : Measurable k₁)
   refine (hI₁.mul_const (Real.exp (γ ^ 2 * r))).mono'
     ((hρm.mul hk₁).mul (continuous_bpzCutRootKernel_snd γ r x).measurable).aestronglyMeasurable
     (Eventually.of_forall fun y => ?_)
-  have hw : 0 ≤ ρ y * k₁ y := mul_nonneg (hρ0 y) (hk₁0 y)
+  have hw := mul_nonneg (hρ0 y) (hk₁0 y)
   rw [Real.norm_eq_abs, abs_of_nonneg (mul_nonneg hw (bpzCutRootKernel_pos γ r x y).le)]
-  calc ρ y * k₁ y * bpzCutRootKernel γ r x y
-      ≤ ρ y * k₁ y * (Real.exp (γ ^ 2 * r) * Real.exp (γ ^ 2 * bpzPin r y)) :=
-        mul_le_mul_of_nonneg_left (bpzCutRootKernel_le γ r x y) hw
-    _ = _ := by ring
+  refine (mul_le_mul_of_nonneg_left (bpzCutRootKernel_le γ r x y) hw).trans_eq (?_)
+  ring
 
 theorem integrable_bpz_lim_part (hρm : Measurable ρ) (hk₂ : Measurable k₂) (hρ1 : ∀ y, ρ y ≤ 1)
     (hk₂0 : ∀ y, 0 ≤ k₂ y) (hI₂ : Integrable (fun y => (1 - ρ y) * k₂ y) m₂)
@@ -315,8 +313,7 @@ theorem hasDerivAt_bpz_rooted_moment {Ω : Type*} [MeasurableSpace Ω] {P : Meas
         le_min hlow hlow'
       rw [Real.dist_eq, Real.dist_eq, Real.coe_nnabs,
         abs_of_nonneg (mul_nonneg hC0 (Real.rpow_nonneg hJ0.le _))]
-      have hmv := bpz_abs_rpow_neg_sub_le ha hb hq
-      have hpow : (min (J (x₀ + t • v) ω) (J (x₀ + t' • v) ω)) ^ (-q - 1) ≤
+      have : (min (J (x₀ + t • v) ω) (J (x₀ + t' • v) ω)) ^ (-q - 1) ≤
           (Real.exp (-(L * δ)) * J x₀ ω) ^ (-q - 1) :=
         Real.rpow_le_rpow_of_nonpos (by positivity) hmin (by linarith)
       have hsplit : (Real.exp (-(L * δ)) * J x₀ ω) ^ (-q - 1) =
@@ -331,10 +328,9 @@ theorem hasDerivAt_bpz_rooted_moment {Ω : Type*} [MeasurableSpace Ω] {P : Meas
       have hJq : J x₀ ω ^ (-q - 1) * J x₀ ω = J x₀ ω ^ (-q) := by
         rw [← Real.rpow_add_one hJ0.ne']
         ring_nf
-      calc |J (x₀ + t • v) ω ^ (-q) - J (x₀ + t' • v) ω ^ (-q)|
-          ≤ q * (min (J (x₀ + t • v) ω) (J (x₀ + t' • v) ω)) ^ (-q - 1) *
-              |J (x₀ + t • v) ω - J (x₀ + t' • v) ω| := hmv
-        _ ≤ q * (Real.exp (L * δ * (q + 1)) * J x₀ ω ^ (-q - 1)) *
+      refine (bpz_abs_rpow_neg_sub_le ha hb hq).trans (?_)
+      calc q * (min (J (x₀ + t • v) ω) (J (x₀ + t' • v) ω)) ^ (-q - 1) *
+              |J (x₀ + t • v) ω - J (x₀ + t' • v) ω| ≤ q * (Real.exp (L * δ * (q + 1)) * J x₀ ω ^ (-q - 1)) *
               (L * Real.exp (L * δ) * J x₀ ω * (|t - t'| * ‖v‖)) := by
             rw [← hsplit]
             gcongr
@@ -348,12 +344,10 @@ theorem hasDerivAt_bpz_rooted_moment {Ω : Type*} [MeasurableSpace Ω] {P : Meas
         hδr hsep
       have hline : HasDerivAt (fun t : ℝ => x₀ + t • v) v 0 := by
         simpa using ((hasDerivAt_id (0 : ℝ)).smul_const v).const_add x₀
-      have hcomp := hJd.comp_hasDerivAt_of_eq (0 : ℝ) hline (by simp)
       have hne : ((fun x => bpzRootedMixedReal γ r ρ k₁ k₂ x (m₁ ω) (m₂ ω)) ∘
           fun t : ℝ => x₀ + t • v) 0 ≠ 0 := by
         simpa [Function.comp_def] using hω₀.ne'
-      have hrpow := hcomp.rpow_const (p := -q) (Or.inl hne)
-      refine hrpow.congr_deriv ?_
+      refine ((hJd.comp_hasDerivAt_of_eq (0 : ℝ) hline (by simp)).rpow_const (p := -q) (Or.inl hne)).congr_deriv ?_
       show (bpzRootedMixedDeriv γ r ρ k₁ k₂ x₀ (m₁ ω) (m₂ ω)) v * -q *
           bpzRootedMixedReal γ r ρ k₁ k₂ (x₀ + (0 : ℝ) • v) (m₁ ω) (m₂ ω) ^ (-q - 1) =
         -q * bpzRootedMixedReal γ r ρ k₁ k₂ x₀ (m₁ ω) (m₂ ω) ^ (-q - 1) *

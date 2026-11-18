@@ -33,6 +33,6 @@ theorem complexMoment_uniform_tail_bridge {Ω : Type*} [MeasurableSpace Ω]
       Integrable (fun ω => (Y d ω : ℂ) ^ ((β - d / γ : ℝ) : ℂ)) P) ∧
     Tendsto (fun d : ℝ => (d : ℂ) *
       (∫ ω, (Y d ω : ℂ) ^ ((β - d / γ : ℝ) : ℂ) ∂P))
-      (𝓝[>] 0) (𝓝 ((γ * β * c₀ : ℝ) : ℂ)) := by exact DOZZ.Proofs.complexMoment_uniform_tail_bridge P Y c c₀ β η γ d₀ C hβ hη hγ hd₀ hC hY hpos hc htail
+      (𝓝[>] 0) (𝓝 ((γ * β * c₀ : ℝ) : ℂ)) := DOZZ.Proofs.complexMoment_uniform_tail_bridge P Y c c₀ β η γ d₀ C hβ hη hγ hd₀ hC hY hpos hc htail
 
 end DOZZ

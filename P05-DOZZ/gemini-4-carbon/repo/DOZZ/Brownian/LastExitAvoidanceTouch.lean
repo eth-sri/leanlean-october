@@ -52,20 +52,13 @@ theorem conditionedPositiveFutureAvoidance_hit_implies_touch
     simp
   have havoid (r : ℚ) (hr : 0 < (r : ℝ)) :
       (c : ℝ) < conditionedPositiveFutureRationalEvals t p r := by
-    have hcoord := (Set.mem_iInter.mp hp) r
-    simpa [conditionedPositiveFutureAvoidanceCoordinate, hr] using hcoord
+    simpa [conditionedPositiveFutureAvoidanceCoordinate, hr] using (Set.mem_iInter.mp hp) r
   let F : ℝ → ℝ := fun z => conditionedPositiveFuturePath t p
     ⟨max z 0, le_max_right z 0⟩
   have hFval (z : ℝ) (hz : 0 ≤ z) :
-      F z = conditionedPositiveFuturePath t p ⟨z, hz⟩ := by
-    dsimp [F]
-    congr 1
-    exact Subtype.ext (max_eq_left hz)
+      F z = conditionedPositiveFuturePath t p ⟨z, hz⟩ := by grind
   have hFcont : Continuous (fun z : ℝ => conditionedPositiveFuturePath t p
-      ⟨max z 0, le_max_right z 0⟩) := by
-    exact (conditionedPositiveFuturePath t p).continuous.comp
-      ((continuous_max.comp (continuous_id.prodMk continuous_const)).subtype_mk
-        (fun z => le_max_right z 0))
+      ⟨max z 0, le_max_right z 0⟩) := by fun_prop
   have htouch : lastExitRationalShift (c : ℝ)
       (conditionedPositiveFutureRationalEvals t p) ∈
       brownianPositiveRationalTouchZero := by
@@ -74,12 +67,11 @@ theorem conditionedPositiveFutureAvoidance_hit_implies_touch
       simp only [lastExitRationalShift]
       exact sub_pos.mpr (havoid r hr)
     · intro n
-      have hF : Continuous F := hFcont
       have hFs : F (s : ℝ) = (c : ℝ) := by
         rw [hFval (s : ℝ) s.property]
         exact hpathHit
       let U : Set ℝ := Set.Ioi 0 ∩ F ⁻¹' Set.Iio ((c : ℝ) + 1 / ((n : ℝ) + 1))
-      have hU : IsOpen U := isOpen_Ioi.inter (isOpen_Iio.preimage hF)
+      have hU : IsOpen U := isOpen_Ioi.inter (isOpen_Iio.preimage (hFcont))
       have hsU : (s : ℝ) ∈ U := by
         refine ⟨hs, ?_⟩
         change F (s : ℝ) < (c : ℝ) + 1 / ((n : ℝ) + 1)
@@ -87,11 +79,10 @@ theorem conditionedPositiveFutureAvoidance_hit_implies_touch
         have : 0 < 1 / ((n : ℝ) + 1) := by positivity
         exact lt_add_of_pos_right (c : ℝ) this
       obtain ⟨r, hrU⟩ := Rat.denseRange_cast.exists_mem_open hU ⟨(s : ℝ), hsU⟩
-      have hr : 0 < (r : ℝ) := hrU.1
-      have hFr : F (r : ℝ) < (c : ℝ) + 1 / ((n : ℝ) + 1) := hrU.2
+      have : F (r : ℝ) < (c : ℝ) + 1 / ((n : ℝ) + 1) := hrU.2
       have hEval : conditionedPositiveFutureRationalEvals t p r = F (r : ℝ) := by
         rfl
-      refine ⟨r, hr, ?_⟩
+      refine ⟨r, hrU.1, ?_⟩
       simp only [lastExitRationalShift, hEval]
       linarith
   exact ⟨hp, htouch⟩
@@ -105,8 +96,8 @@ theorem conditionedPositiveFutureAvoidanceTouchEvent_measure_zero
     (hν : 0 < ν) (t : ℝ≥0) (ht : 0 < (t : ℝ))
     (c : ℝ≥0) (hc : 0 < (c : ℝ)) :
     P (conditionedPositiveFutureAvoidanceTouchEvent t c) = 0 := by
-  let : IsProbabilityMeasure P := hP.2.1
-  have hfact := conditionedPositiveHistory_avoidance_shift_setIntegral
+  let := hP.2.1
+  have := conditionedPositiveHistory_avoidance_shift_setIntegral
     hP B hB t ht hν c hc brownianPositiveRationalTouchZero
     measurableSet_brownianPositiveRationalTouchZero Set.univ MeasurableSet.univ
   have havoid : MeasurableSet (conditionedPositiveFutureRationalAvoidance t c) := by
@@ -118,17 +109,14 @@ theorem conditionedPositiveFutureAvoidanceTouchEvent_measure_zero
     apply measurable_pi_iff.mpr
     intro r
     exact (measurable_pi_apply r).sub measurable_const
-  have heval : Measurable (conditionedPositiveFutureRationalEvals t) :=
-    measurable_conditionedPositiveFutureRationalEvals t
   let shiftedEval : BrownianPath → (ℚ → ℝ) := fun p =>
     lastExitRationalShift (c : ℝ) (conditionedPositiveFutureRationalEvals t p)
-  let E : Set BrownianPath :=
+  let E :=
     conditionedPositiveFutureRationalAvoidance t c ∩
       shiftedEval ⁻¹' brownianPositiveRationalTouchZero
-  have hE : MeasurableSet E := by
-    exact havoid.inter (measurableSet_brownianPositiveRationalTouchZero.preimage
-      (hshift.comp heval))
-  have hleft :
+  have hE : MeasurableSet E := havoid.inter (measurableSet_brownianPositiveRationalTouchZero.preimage
+      (hshift.comp (measurable_conditionedPositiveFutureRationalEvals t)))
+  have :
       (∫ p in Set.univ,
         (conditionedPositiveFutureRationalAvoidance t c).indicator
           (fun p => lastExitShiftedFutureTest (c : ℝ)
@@ -169,7 +157,7 @@ theorem conditionedPositiveFutureAvoidanceTouchEvent_measure_zero
         simp
       rw [hreal, mul_zero]
     · simp [lastExitAvoidanceFactor, hcx]
-  have hright :
+  have :
       (∫ p in Set.univ,
         lastExitAvoidanceFactor ν (c : ℝ) (conditionedPositiveStateAt t p) *
           (brownianUpperConditionedReferenceFutureKernel B ν hν
@@ -180,13 +168,9 @@ theorem conditionedPositiveFutureAvoidanceTouchEvent_measure_zero
         lastExitAvoidanceFactor ν (c : ℝ) (conditionedPositiveStateAt t p) *
           (brownianUpperConditionedReferenceFutureKernel B ν hν
             (conditionedPositiveStateAt t p - (c : ℝ))).real
-              brownianPositiveRationalTouchZero) = fun _ => (0 : ℝ) := by
-      funext p
-      exact hmass p
+              brownianPositiveRationalTouchZero) = fun _ => (0 : ℝ) := by grind
     rw [hzero, integral_zero]
-  have hreal : P.real E = 0 := by
-    rw [hleft, hright] at hfact
-    exact hfact
+  have hreal : P.real E = 0 := by nlinarith
   change P E = 0
   exact (measureReal_eq_zero_iff (measure_ne_top _ _)).1 hreal
 

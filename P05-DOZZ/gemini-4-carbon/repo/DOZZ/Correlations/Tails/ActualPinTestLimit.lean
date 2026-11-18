@@ -15,10 +15,14 @@ open scoped ENNReal
 
 namespace DOZZ.Proofs
 
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+include P
+
 /-- Gaussian marginal moments control exponential moments of a pin difference even when
 its two operands are correlated. -/
 theorem pin_difference_exp_abs_moment
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (U V : Ω → ℝ)
+ (U V : Ω → ℝ)
     (hU : HasGaussianLaw U P) (hV : HasGaussianLaw V P)
     (hmU : (∫ ω, U ω ∂P) = 0) (hmV : (∫ ω, V ω ∂P) = 0) (l : ℝ) :
     (∫⁻ ω, ENNReal.ofReal (Real.exp (l*|U ω-V ω|)) ∂P) < ⊤ := by
@@ -41,7 +45,7 @@ theorem pin_difference_exp_abs_moment
 exponential test. The source field `Y` may be the translated and re-pinned field; no
 independence between that field and the first pin is assumed. -/
 theorem actual_copied_pin_test_limit
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (Y : Ω → Distr) (Yc : Ω → ℂ → ℝ → ℝ)
@@ -54,15 +58,13 @@ theorem actual_copied_pin_test_limit
       (fun (n : ℕ) q => ∫ x, f x * Real.exp (c x * (Xc q.2 z 0-Xc q.1 z 0))
         ∂regularizedGMC P Yc γ n q.1)
       atTop (fun q => ∫ x, f x * Real.exp (c x * (Xc q.2 z 0-Xc q.1 z 0)) ∂N q.1) := by
-  let : IsProbabilityMeasure P := hX.1
+  let := hX.1
   have hfst : MeasurePreserving (Prod.fst : Ω × Ω → Ω) (P.prod P) P := measurePreserving_fst
   have hY' := isEquatorGFF_measurePreserving P (P.prod P) Prod.fst hfst Y hY
   have hYc' := isCircleAverage_measurePreserving P (P.prod P) Prod.fst hfst Y Yc hY hYc
   have hN' := isGMCOf_measurePreserving P (P.prod P) Prod.fst hfst Y hY γ N hN
   have hpin : Measurable (fun ω => Xc ω z 0) :=
     (hc.1 0).comp (measurable_id.prodMk measurable_const)
-  have hθ : Measurable (fun q : Ω × Ω => Xc q.2 z 0-Xc q.1 z 0) :=
-    (hpin.comp measurable_snd).sub (hpin.comp measurable_fst)
   obtain ⟨hG, hm⟩ := circleAverage_isGaussianProcess P X Xc hX hc
   have hg := hG.hasGaussianLaw_eval (z, (0 : ℝ))
   have hNlaw : HasLaw (fun ω => Xc ω z 0)
@@ -77,11 +79,13 @@ theorem actual_copied_pin_test_limit
   have hmean2 : (∫ q : Ω × Ω, Xc q.2 z 0 ∂P.prod P) = 0 := by
     simpa only [Function.comp_def, integral_id_gaussianReal] using h2.integral_eq
   have h := gmc_correlated_exponential_test_limit (P.prod P) (Y ∘ Prod.fst)
-    hY' (Yc ∘ Prod.fst) hYc' γ hγ hγ2 (N ∘ Prod.fst) hN' f c hfc _ hθ
+    hY' (Yc ∘ Prod.fst) hYc' γ hγ hγ2 (N ∘ Prod.fst) hN' f c hfc _ ((hpin.comp measurable_snd).sub (hpin.comp measurable_fst))
       (fun l => pin_difference_exp_abs_moment (P.prod P) _ _
         h2.hasGaussianLaw h1.hasGaussianLaw hmean2 hmean1 l)
   simp only [regularizedGMC_measurePreserving P (P.prod P) Prod.fst hfst Y Yc hYc] at h
-  simpa only [Function.comp_def] using h
+  assumption
 
+
+end
 
 end DOZZ.Proofs

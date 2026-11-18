@@ -26,7 +26,6 @@ on the real axis near `0`.
 
 @[expose] public section
 
-open Filter Topology
 
 namespace DOZZ.Proofs
 
@@ -58,8 +57,12 @@ theorem bpzHG_contDiffOn_normSq {H : ℂ → ℂ → ℂ → ℂ → ℂ} (hH : 
       bpzHG_mapsTo_ofReal_gaussSlitPlane
   simpa only [Complex.normSq_eq_norm_sq] using hR.norm_sq ℂ
 
+section
+variable (H : ℂ → ℂ → ℂ → ℂ → ℂ) (a b c : ℝ)
+include H a b c
+
 /-- The norm square of `F₊` at a positive real point. -/
-theorem bpzHG_normSq_gaussFPlus (H : ℂ → ℂ → ℂ → ℂ → ℂ) (a b c : ℝ) {u : ℝ} (hu : 0 < u) :
+theorem bpzHG_normSq_gaussFPlus {u : ℝ} (hu : 0 < u) :
     Complex.normSq (gaussFPlus H a b c (u : ℂ)) =
       u ^ (2 * (1 - c)) *
         Complex.normSq (H ((a : ℂ) - c + 1) ((b : ℂ) - c + 1) (2 - (c : ℂ)) (u : ℂ)) := by
@@ -73,10 +76,12 @@ theorem bpzHG_normSq_gaussFPlus (H : ℂ → ℂ → ℂ → ℂ → ℂ) (a b c
   ring_nf
 
 /-- The norm square of `F₋` is `‖H a b c u‖²`. -/
-theorem bpzHG_normSq_gaussFMinus (H : ℂ → ℂ → ℂ → ℂ → ℂ) (a b c : ℝ) (u : ℝ) :
+theorem bpzHG_normSq_gaussFMinus (u : ℝ) :
     Complex.normSq (gaussFMinus H a b c (u : ℂ)) = Complex.normSq (H a b c (u : ℂ)) :=
   rfl
 
+
+end
 /-- `‖x‖ ^ 2 = Complex.normSq x`, restated for the `‖·‖ ^ 2` form used in the statements. -/
 theorem bpzHG_norm_sq_eq_normSq (w : ℂ) : ‖w‖ ^ 2 = Complex.normSq w :=
   (Complex.normSq_eq_norm_sq w).symm

@@ -30,13 +30,11 @@ theorem normalized_cutoff_increment_norm_le
       (complexMomentPower γ β).re < 4 / γ ^ 2)
     (β : Fin (N + 1) → ℂ) (hβ : β ∈ complexPolydisc (fun i => (a i : ℂ)) R) :
     let b := fun i => (β i).re
-    let L := fun ω => ∑ i, b i * Xc ω (mixedVertexCenters z i) (mixedVertexTimes N s i)
     let p := complexMomentPower γ β
-    let A := γ * ∑ i, b i.castSucc * equatorCircleMean (z i) s
     ENNReal.ofReal ‖normalizedVertexMoment P Xc M O₁ γ z s β -
       normalizedVertexMoment P Xc M O₀ γ z r β‖ ≤
       ENNReal.ofReal (Real.exp ((normalizedVertexPolynomial P Xc γ z s β).re +
-        gaussianVariance P L / 2 + A * p.re)) *
+        gaussianVariance P (fun ω => ∑ i, b i * Xc ω (mixedVertexCenters z i) (mixedVertexTimes N s i)) / 2 + (γ * ∑ i, b i.castSucc * equatorCircleMean (z i) s) * p.re)) *
         ∫⁻ ω, ENNReal.ofReal
           ‖((∫⁻ x in O₁, coulombWeight γ (fun i => b i.castSucc) z (b (Fin.last N)) x ∂M ω).toReal : ℂ) ^ p -
             ((∫⁻ x in O₀, coulombWeight γ (fun i => b i.castSucc) z (b (Fin.last N)) x ∂M ω).toReal : ℂ) ^ p‖ ∂P := by

@@ -18,10 +18,10 @@ theorem reflected_chart_parameter_mass_measurable
     (hfin : ∀ ω K, IsCompact K → K ⊆ U → N ω K < ⊤)
     (F : A × ℂ → ℝ≥0∞) (hF : Measurable F) :
     Measurable (fun p : A × Ω => ∫⁻ x in U, F (p.1, x) ∂N p.2) := by
-  let _ : LocallyCompactSpace U := hU.locallyCompactSpace
+  let _ := hU.locallyCompactSpace
   let E := CompactExhaustion.choice U
   let K : ℕ → Set ℂ := fun n => Subtype.val '' E n
-  have hK (n : ℕ) : IsCompact (K n) := (E.isCompact n).image continuous_subtype_val
+  have hK (n : ℕ) := (E.isCompact n).image continuous_subtype_val
   have hKU (n : ℕ) : K n ⊆ U := by
     rintro x ⟨y, _, rfl⟩
     exact y.property

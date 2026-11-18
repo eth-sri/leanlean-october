@@ -44,12 +44,11 @@ theorem reflected_global_spatial_mass_limit (γ : ℝ) (a : TwoSidedPath) (μ : 
     have ht := lintegral_withDensity_eq_lintegral_mul (μ.restrict U) hW hf
     simp only [Pi.mul_apply, mul_comm] at ht
     exact ht.symm
-  have ht := hlim (μ.withDensity W)
   have hn (n : ℕ) : (∫⁻ x, ENNReal.ofReal (g n x) ∂μ.withDensity W) =
       ∫⁻ x in U, ENNReal.ofReal (g n x)*W x ∂μ := by
     rw [he _ (g n).continuous.measurable.ennreal_ofReal]
     simpa only [mul_one] using (reflected_supported_test_lintegral
       (μ.withDensity W) U hU (g n) (hgU n) (fun _ => 1)).symm
-  simpa only [hn, ← he _ hw.ennreal_ofReal] using ht
+  simpa only [hn, ← he _ hw.ennreal_ofReal] using hlim (μ.withDensity W)
 
 end DOZZ.Proofs

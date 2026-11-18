@@ -74,13 +74,8 @@ theorem structureConstant_first_shift_strip_of_unreflected
   obtain ⟨V₃, hV₃, hV₃mem, f₃, hf₃, hf₃eq⟩ :=
     unitVolumeStructureConstant_holomorphic_near_extended_domain P X M γ hγ hγ2 hX hM
   obtain ⟨hη0, hηQ⟩ := hη
-  have hQ : Q γ = 2 / γ + γ / 2 := rfl
-  have hγh : γ / 2 < 2 / γ := by
-    rw [div_lt_div_iff₀ (by norm_num) hγ]
-    linarith only [mul_lt_mul'' hγ2 hγ2 hγ.le hγ.le]
-  have hγc : (γ : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hγ.ne'
-  have hμc : (μ : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hμ.ne'
-  have hπc : (Real.pi : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr Real.pi_pos.ne'
+  have : Q γ = 2 / γ + γ / 2 := rfl
+  have hμc := Complex.ofReal_ne_zero.mpr hμ.ne'
   -- the continued slice and its window of holomorphy
   set ℓ : ℂ → Fin 3 → ℂ := tripleFirst (α₂ : ℂ) (α₃ : ℂ) with hℓ
   set g : ℂ → ℂ := fun z => structureConstantH f₃ γ μ (ℓ z) with hg
@@ -124,7 +119,7 @@ theorem structureConstant_first_shift_strip_of_unreflected
   set A : ℂ → ℂ := fun z => shiftCoeffA γ (γ / 2) z (α₂ : ℂ) (α₃ : ℂ) with hA
   have hAm : MeromorphicOn A univ := meromorphicOn_shiftCoeffA γ _ _ _
   have hAne : ∀ᶠ z in codiscrete ℂ, A z ≠ 0 :=
-    eventually_shiftCoeffA_ne_zero γ _ _ (div_ne_zero hγc two_ne_zero)
+    eventually_shiftCoeffA_ne_zero γ _ _ (div_ne_zero (Complex.ofReal_ne_zero.mpr hγ.ne') two_ne_zero)
       (lFun_ne_zero (fun n => by
         have h := ofReal_ne_neg_nat_of_mem (r := -(γ / 2) ^ 2) (Or.inl
           ⟨by linarith only [mul_lt_mul'' hγ2 hγ2 hγ.le hγ.le], by
@@ -159,8 +154,8 @@ theorem structureConstant_first_shift_strip_of_unreflected
     rw [e] at h1 h2
     exact ⟨u, ⟨h1, h2⟩, h3⟩
   set x₁ : ℝ := x₀ + u with hx₁
-  have hx₁a : γ + 2 * η < x₁ := by rw [hx₁, hx₀]; linarith [hu3.1]
-  have hx₁b : x₁ < Q γ := by rw [hx₁, hx₀]; linarith [hu3.2]
+  have : γ + 2 * η < x₁ := by grind
+  have : x₁ < Q γ := by grind
   have hloc : ∀ᶠ x : ℝ in 𝓝 x₁, AnalyticAt ℂ A ((x : ℂ) - γ / 2) ∧ A ((x : ℂ) - γ / 2) ≠ 0 := by
     have hc : ContinuousAt (fun x : ℝ => (x : ℂ) - γ / 2) x₁ := by fun_prop
     have h1 := eventually_analyticAt_comp (φ := fun x : ℝ => (x : ℂ) - γ / 2) hc hu1
@@ -173,7 +168,7 @@ theorem structureConstant_first_shift_strip_of_unreflected
   set d₂ : ℝ := min (x₁ + δ / 2) (Q γ) with hd₂
   have hd₁₂ : d₁ < d₂ := max_lt (lt_min (by linarith) (by linarith)) (lt_min (by linarith)
     (by linarith))
-  have hd₁a : 2 * η + γ ≤ d₁ := by rw [hd₁]; linarith [le_max_right (x₁ - δ / 2) (γ + 2 * η)]
+  have hd₁a : 2 * η + γ ≤ d₁ := by grind
   have hd₂b : d₂ ≤ Q γ := min_le_right _ _
   -- the multiplier and the real relation
   set m : ℂ → ℂ := fun z => -((Real.pi : ℂ) * μ) * (A (z - γ / 2))⁻¹ with hm
@@ -182,14 +177,12 @@ theorem structureConstant_first_shift_strip_of_unreflected
       (g := fun w : ℂ => w - γ / 2) (by fun_prop)).inv
   have hm0 : ∃ z₀ : ℂ, AnalyticAt ℂ m z₀ ∧ m z₀ ≠ 0 := by
     refine ⟨(x₁ : ℂ), ?_, ?_⟩
-    · have ha : AnalyticAt ℂ (fun z : ℂ => A (z - γ / 2)) (x₁ : ℂ) :=
-        AnalyticAt.comp_of_eq (g := A) (f := fun z : ℂ => z - γ / 2) hu1 (by fun_prop) rfl
-      exact analyticAt_const.mul (ha.inv hu2)
+    · fun_prop
     · simp only [hm]
-      exact mul_ne_zero (neg_ne_zero.mpr (mul_ne_zero hπc hμc)) (inv_ne_zero hu2)
+      exact mul_ne_zero (neg_ne_zero.mpr (mul_ne_zero (Complex.ofReal_ne_zero.mpr Real.pi_pos.ne') hμc)) (inv_ne_zero hu2)
   have hrel : ∀ x : ℝ, d₁ < x → x < d₂ → g ((x : ℂ) - (γ : ℂ)) = m x * g x := by
     intro x h1 h2
-    have hxa : γ + 2 * η < x := lt_of_le_of_lt (le_max_right _ _) h1
+    have : γ + 2 * η < x := lt_of_le_of_lt (le_max_right _ _) h1
     have hxb : x < Q γ := lt_of_lt_of_le h2 (min_le_right _ _)
     have hxδ : dist x x₁ < δ := by
       rw [Real.dist_eq, abs_lt]
@@ -231,12 +224,11 @@ theorem structureConstant_first_shift_strip_of_unreflected
     simp only [hm, e2] at hz
     rw [hz]
     field_simp
-  have hcut := cutoff_relation_codiscrete hh (γ / 2) (-(γ / 2)) hrel'
   refine ⟨h / 2, half_pos hh, cutoffStrip (h / 2) G,
     meromorphicOn_cutoffStrip hGm (half_le_self hh.le), fun α h1 h2 => ?_, ?_⟩
   · rw [cutoffStrip_of_lt (by simp only [Complex.ofReal_im, abs_zero]; positivity), hGg α h1 h2]
     exact hgv α h1 h2
-  · filter_upwards [hcut] with z hz
+  · filter_upwards [cutoff_relation_codiscrete hh (γ / 2) (-(γ / 2)) hrel'] with z hz
     simp only [hA] at hz
     convert hz using 2 <;> push_cast <;> ring_nf
 

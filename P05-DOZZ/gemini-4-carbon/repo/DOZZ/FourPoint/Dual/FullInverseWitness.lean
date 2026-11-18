@@ -43,17 +43,15 @@ theorem dual_source_full_inverse_fusion_witness {Ω : Type*} [MeasurableSpace Ω
   obtain ⟨Xc, B, hc, hm, hcont, hSource, hZ, hB⟩ :=
     reflected_regular_source_reflection_family P X hX γ hγ hγ₂ M hM
   let Z := fun ω => lateralProjectedGMC γ (originRadialPath Xc ω) (M ω)
-  have hData : IsReflectionData P γ α₁ (B α₁) Z := hB α₁ hαhi
-  have hiZ : IndepFun (originRadialPath Xc) Z P :=
-    lateralProjectedGMC_indep P X Xc hX hc hm hcont γ hγ hγ₂ M hM
+  have hData := hB α₁ hαhi
   obtain ⟨hν, hreflect, hκ, hκ1, houter, hα2, hαup, hβ, hν2, hfirst⟩ :=
     dual_window_margins γ α₁ η ξ hγ hγ₂ hη hη₂ hξ₂ hαlo hαhi hslack₁ hslack₂
   have hshift := (dual_window_reflected_triple γ α₁ α₂ α₃ η hγ hγ₂ hη₂ hαlo
     hαhi hα₂ hα₃ hs).1
-  have hfirst' : (4/γ)*(Q γ-α₁) < 2+γ*(Q γ-α₁)-γ^2/2 := by linarith only [hfirst]
+  have hfirst' : (4/γ)*(Q γ-α₁) < 2+γ*(Q γ-α₁)-γ^2/2 := by nlinarith
   refine ⟨B, Z, hSource, hData, ?_⟩
   exact dual_source_full_inverse_increment_tendsto P X hX γ hγ hγ₂ M hM Xc hc hm hcont
     α₁ α₂ α₃ ξ hαhi hreflect hα₂ hα₃ hs hshift hfirst' hξ hξ₂
-    (sub_pos.mp hβ) hslack₁ houter (B α₁) Z hData hiZ (Filter.Eventually.of_forall (fun _ => rfl))
+    (sub_pos.mp hβ) hslack₁ houter (B α₁) Z hData (lateralProjectedGMC_indep P X Xc hX hc hm hcont γ hγ hγ₂ M hM) (Filter.Eventually.of_forall (fun _ => rfl))
 
 end DOZZ.Proofs

@@ -23,6 +23,9 @@ open scoped Topology ENNReal NNReal InnerProductSpace
 
 namespace DOZZ.Proofs
 
+variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
+
+
 /-- Circle measure has no atoms: every angular fiber is countable. -/
 theorem circleMeasure_noAtoms (x : ℂ) (r : ℝ) : NullSingletonClass (circleMeasure x r) := by
   constructor
@@ -33,29 +36,24 @@ theorem circleMeasure_noAtoms (x : ℂ) (r : ℝ) : NullSingletonClass (circleMe
     (Set.countable_singleton z).preimage_circleMap x (Real.exp_ne_zero _)
   rw [h.measure_zero, smul_zero]
 
-/-- Radial separation identity on a unit sphere, in any real Hilbert space. -/
-theorem norm_smul_sub_sq_of_norm_one {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
-    (u v : E) (hu : ‖u‖ = 1) (hv : ‖v‖ = 1) (r s : ℝ) :
-    ‖r • u-s • v‖^2 = (r-s)^2+r*s*‖u-v‖^2 := by
-  simp only [norm_sub_sq_real, norm_smul, Real.norm_eq_abs, sq_abs,
-    real_inner_smul_left, real_inner_smul_right, hu, hv, one_pow, mul_one]
-  ring
 
 /-- Every collar distance dominates the boundary distance times the inner radius. -/
-theorem norm_smul_sub_lower {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
+theorem norm_smul_sub_lower
     (u v : E) (hu : ‖u‖ = 1) (hv : ‖v‖ = 1) (ρ r s : ℝ)
     (hρ : 0 < ρ) (hr : ρ ≤ r) (hs : ρ ≤ s) :
     ρ*‖u-v‖ ≤ ‖r • u-s • v‖ := by
-  have hi := norm_smul_sub_sq_of_norm_one u v hu hv r s
-  have hmul : ρ^2 ≤ r*s := by nlinarith
-  have hsquare : (ρ*‖u-v‖)^2 ≤ ‖r • u-s • v‖^2 := by
-    have h := mul_le_mul_of_nonneg_right hmul (sq_nonneg ‖u-v‖)
-    nlinarith [sq_nonneg (r-s)]
+  have norm_smul_sub_sq_of_norm_one : ‖r • u-s • v‖^2 = (r-s)^2+r*s*‖u-v‖^2 := by
+    simp only [norm_sub_sq_real, norm_smul, Real.norm_eq_abs, sq_abs,
+      real_inner_smul_left, real_inner_smul_right, hu, hv, one_pow, mul_one]
+    ring
+  have := norm_smul_sub_sq_of_norm_one
+  have : ρ^2 ≤ r*s := by nlinarith
+  have hsquare : (ρ*‖u-v‖)^2 ≤ ‖r • u-s • v‖^2 := by nlinarith
   exact (sq_le_sq₀ (mul_nonneg hρ.le (norm_nonneg _)) (norm_nonneg _)).mp hsquare
 
 
 /-- Radial collar logarithms admit an angular majorant uniform over both radii. -/
-theorem abs_log_norm_smul_sub_le {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
+theorem abs_log_norm_smul_sub_le
     (u v : E) (hu : ‖u‖ = 1) (hv : ‖v‖ = 1) (huv : u ≠ v) (ρ B r s : ℝ)
     (hρ : 0 < ρ) (hr : ρ ≤ r) (hs : ρ ≤ s) (hrB : r ≤ B) (hsB : s ≤ B) :
     |Real.log ‖r • u-s • v‖| ≤
@@ -99,21 +97,19 @@ theorem integrable_unitCircle_log_distance :
   rw [abs_of_nonneg (integral_nonneg (fun v => abs_nonneg (Real.log ‖u-v‖)))]
   exact h
 
-/-- The circle product diagonal is null. -/
-theorem ae_unitCircle_pair_ne :
-    ∀ᵐ p : ℂ × ℂ ∂(circleMeasure 0 0).prod (circleMeasure 0 0), p.1 ≠ p.2 := by
-  let _ := circleMeasure_noAtoms (0 : ℂ) 0
-  apply (Measure.ae_prod_iff_ae_ae ((measurableSet_eq_fun measurable_fst measurable_snd).compl : MeasurableSet {p : ℂ × ℂ | p.1 ≠ p.2})).mpr
-  apply ae_of_all
-  intro u
-  filter_upwards [(circleMeasure 0 0).ae_ne u] with v hv
-  exact hv.symm
 
 
 /-- Unit-circle pairs satisfy the simultaneous norm and off-diagonal conditions. -/
 theorem ae_unitCircle_pair_spec :
     ∀ᵐ p : ℂ × ℂ ∂(circleMeasure 0 0).prod (circleMeasure 0 0),
       ‖p.1‖ = 1 ∧ ‖p.2‖ = 1 ∧ p.1 ≠ p.2 := by
+  have ae_unitCircle_pair_ne : ∀ᵐ p : ℂ × ℂ ∂(circleMeasure 0 0).prod (circleMeasure 0 0), p.1 ≠ p.2 := by
+    let _ := circleMeasure_noAtoms (0 : ℂ) 0
+    apply (Measure.ae_prod_iff_ae_ae ((measurableSet_eq_fun measurable_fst measurable_snd).compl : MeasurableSet {p : ℂ × ℂ | p.1 ≠ p.2})).mpr
+    apply ae_of_all
+    intro u
+    filter_upwards [(circleMeasure 0 0).ae_ne u] with v hv
+    exact hv.symm
   let μ := circleMeasure (0 : ℂ) 0
   have hnorm : ∀ᵐ u ∂μ, ‖u‖ = 1 := by
     filter_upwards [ae_norm_sub_center_circleMeasure 0 0] with u hu
@@ -170,9 +166,9 @@ theorem tendsto_radial_circleLog_error (ρ B : ℝ) (hρ : 0 < ρ) :
         ‖|Real.log ‖a.1 • p.1-a.2 • p.2‖-Real.log ‖ρ • p.1-ρ • p.2‖|‖ ≤ bound p := by
     filter_upwards [self_mem_nhdsWithin] with a ha
     filter_upwards [ae_unitCircle_pair_spec] with p hp
-    have hfirst := abs_log_norm_smul_sub_le p.1 p.2 hp.1 hp.2.1 hp.2.2
+    have := abs_log_norm_smul_sub_le p.1 p.2 hp.1 hp.2.1 hp.2.2
       ρ B a.1 a.2 hρ ha.1.1 ha.2.1 ha.1.2 ha.2.2
-    have hsecond := abs_log_norm_smul_sub_le p.1 p.2 hp.1 hp.2.1 hp.2.2
+    have := abs_log_norm_smul_sub_le p.1 p.2 hp.1 hp.2.1 hp.2.2
       ρ B ρ ρ hρ le_rfl le_rfl (ha.1.1.trans ha.1.2) (ha.2.1.trans ha.2.2)
     simp only [Real.norm_eq_abs, abs_abs]
     exact (abs_sub _ _).trans (by dsimp only [bound]; linarith)
@@ -237,26 +233,23 @@ theorem measurable_unitPoissonWeight (c z : ℂ) (ρ : ℝ) :
   unfold unitPoissonWeight
   fun_prop
 
-/-- Unit-circle Poisson weights agree with the literal collar boundary factor. -/
-theorem unitPoissonWeight_eq_boundaryWeight (c z u : ℂ) (ρ : ℝ) (hu : ‖u‖ = 1) :
-    unitPoissonWeight c ρ z u =
-      (ρ^2-‖z-c‖^2)/‖c+(ρ : ℂ)*((c+u)-c)/(‖(c+u)-c‖ : ℂ)-z‖^2 := by
-  simp only [unitPoissonWeight, add_sub_cancel_left, hu, Complex.ofReal_one,
-    div_one, Complex.real_smul]
 
 /-- Unit-circle Poisson weights are nonnegative at interior parameters. -/
 theorem unitPoissonWeight_nonneg (c z u : ℂ) (ρ : ℝ) (hρ : 0 < ρ)
-    (hz : z ∈ ball c ρ) : 0 ≤ unitPoissonWeight c ρ z u := by
-  exact div_nonneg (poissonNumerator_pos c z ρ hρ hz).le (sq_nonneg _)
+    (hz : z ∈ ball c ρ) : 0 ≤ unitPoissonWeight c ρ z u := div_nonneg (poissonNumerator_pos c z ρ hρ hz).le (sq_nonneg _)
 
 /-- The same deterministic Poisson bound holds uniformly on every compact inner disk. -/
 theorem unitPoissonWeight_le (c z u : ℂ) (ρ a : ℝ) (hρ : 0 < ρ)
     (haρ : a < ρ) (hz : ‖z-c‖ ≤ a) (hu : ‖u‖ = 1) :
     unitPoissonWeight c ρ z u ≤ ρ^2/(ρ-a)^2 := by
-  rw [unitPoissonWeight_eq_boundaryWeight c z u ρ hu]
+  have unitPoissonWeight_eq_boundaryWeight : unitPoissonWeight c ρ z u =
+        (ρ^2-‖z-c‖^2)/‖c+(ρ : ℂ)*((c+u)-c)/(‖(c+u)-c‖ : ℂ)-z‖^2 := by
+    simp only [unitPoissonWeight, add_sub_cancel_left, hu, Complex.ofReal_one,
+      div_one, Complex.real_smul]
+  rw [unitPoissonWeight_eq_boundaryWeight]
   apply poissonBoundaryWeight_le c z (c+u) ρ a hρ haρ hz
   intro h
-  have : u = 0 := add_left_cancel (by simpa only [add_zero] using h : c+u=c+0)
+  have := add_left_cancel (by simpa only [add_zero] using h : c+u=c+0)
   rw [this, norm_zero] at hu
   norm_num at hu
 
@@ -316,9 +309,12 @@ theorem unitPoissonWeight_eq_poissonKernel (c z u : ℂ) (ρ : ℝ) (hρ : 0 < �
   congr 1
   ring
 
+section
+variable (c z : ℂ) (ρ : ℝ) (hρ : 0 < ρ) (hz : z ∈ ball c ρ)
+include hρ hz
+
 /-- Unit-circle Poisson weights are integrable with respect to normalized arclength. -/
-theorem integrable_unitPoissonWeight (c z : ℂ) (ρ : ℝ) (hρ : 0 < ρ)
-    (hz : z ∈ ball c ρ) : Integrable (unitPoissonWeight c ρ z) (circleMeasure 0 0) := by
+theorem integrable_unitPoissonWeight : Integrable (unitPoissonWeight c ρ z) (circleMeasure 0 0) := by
   let _ := circleMeasure_isProbability (0 : ℂ) 0
   have hbound : ∀ᵐ u ∂circleMeasure 0 0,
       ‖unitPoissonWeight c ρ z u‖ ≤ ρ^2/(ρ-‖z-c‖)^2 := by
@@ -329,8 +325,7 @@ theorem integrable_unitPoissonWeight (c z : ℂ) (ρ : ℝ) (hρ : 0 < ρ)
   exact (integrable_const _).mono' (measurable_unitPoissonWeight c z ρ).aestronglyMeasurable hbound
 
 /-- Angular Poisson probability weights have total mass one. -/
-theorem integral_unitPoissonWeight (c z : ℂ) (ρ : ℝ) (hρ : 0 < ρ)
-    (hz : z ∈ ball c ρ) : ∫ u, unitPoissonWeight c ρ z u ∂circleMeasure 0 0 = 1 := by
+theorem integral_unitPoissonWeight : ∫ u, unitPoissonWeight c ρ z u ∂circleMeasure 0 0 = 1 := by
   rw [integral_circleMeasure_eq_circleAverage _ _ _ (measurable_unitPoissonWeight c z ρ)]
   simp only [neg_zero, Real.exp_zero]
   calc
@@ -340,11 +335,13 @@ theorem integral_unitPoissonWeight (c z : ℂ) (ρ : ℝ) (hρ : 0 < ρ)
       apply intervalIntegral.integral_congr
       intro θ _
       dsimp only
-      have hn : ‖circleMap 0 1 θ‖ = 1 := by simp only [norm_circleMap_zero, abs_one]
+      have hn : ‖circleMap 0 1 θ‖ = 1 := by simp
       rw [unitPoissonWeight_eq_poissonKernel c z (circleMap 0 1 θ) ρ hρ hn]
       congr 1
       simp only [circleMap, zero_add, Complex.ofReal_one, one_mul, Complex.real_smul]
     _ = 1 := circleAverage_poissonKernel_eq_one c z ρ hz
 
+
+end
 
 end DOZZ.Proofs

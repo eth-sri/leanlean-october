@@ -44,25 +44,6 @@ noncomputable def conditionedPositiveFDDDensity (ν : ℝ) : List ℝ → List �
         conditionedPositiveTimeChainDensity ν t x ts xs
   | _, _ => 0
 
-/-- Reflecting the state and every later coordinate in the negative transition chain gives
-exactly the positive Doob transition chain. -/
-theorem negativeConditionedTransitionChainDensity_reflect
-    (ν t x : ℝ) (times values : List ℝ) :
-    negativeConditionedTransitionChainDensity ν t (-x) times (values.map fun y => -y) =
-      conditionedPositiveTimeChainDensity ν t x times values := by
-  induction times generalizing t x values with
-  | nil =>
-      cases values <;>
-        simp [negativeConditionedTransitionChainDensity,
-          conditionedPositiveTimeChainDensity]
-  | cons s ss ih =>
-      cases values with
-      | nil =>
-          simp [negativeConditionedTransitionChainDensity,
-            conditionedPositiveTimeChainDensity]
-      | cons y ys =>
-          simp [negativeConditionedTransitionChainDensity,
-            conditionedPositiveTimeChainDensity, negativeConditionedTransitionDensity, ih]
 
 /-- The negative entrance density, after reflecting its coordinates, is the explicit
 positive entrance density and transition chain. -/
@@ -70,6 +51,21 @@ theorem negativeConditionedFDDDensity_reflect
     (ν : ℝ) (times values : List ℝ) :
     negativeConditionedFDDDensity ν times (values.map fun y => -y) =
       conditionedPositiveFDDDensity ν times values := by
+  have negativeConditionedTransitionChainDensity_reflect (ν t x : ℝ) (times values : List ℝ) : negativeConditionedTransitionChainDensity ν t (-x) times (values.map fun y => -y) =
+        conditionedPositiveTimeChainDensity ν t x times values := by
+    induction times generalizing t x values with
+    | nil =>
+        cases values <;>
+          simp [negativeConditionedTransitionChainDensity,
+            conditionedPositiveTimeChainDensity]
+    | cons s ss ih =>
+        cases values with
+        | nil =>
+            simp [negativeConditionedTransitionChainDensity,
+              conditionedPositiveTimeChainDensity]
+        | cons y ys =>
+            simp [negativeConditionedTransitionChainDensity,
+              conditionedPositiveTimeChainDensity, negativeConditionedTransitionDensity, ih]
   cases times with
   | nil =>
       cases values <;>
@@ -103,31 +99,6 @@ def conditionedPositiveLastState (x₀ : ℝ) : List ℝ → ℝ
   | [] => x₀
   | x :: xs => conditionedPositiveLastState x xs
 
-/-- The absolute-time transition density factors at the final state of a finite past list. -/
-theorem conditionedPositiveTimeChainDensity_append
-    (ν t₀ x₀ : ℝ) (pastTimes pastValues futureTimes futureValues : List ℝ)
-    (hpast : pastTimes.length = pastValues.length) :
-    conditionedPositiveTimeChainDensity ν t₀ x₀
-        (pastTimes ++ futureTimes) (pastValues ++ futureValues) =
-      conditionedPositiveTimeChainDensity ν t₀ x₀ pastTimes pastValues *
-        conditionedPositiveTimeChainDensity ν
-          (conditionedPositiveLastTime t₀ pastTimes)
-          (conditionedPositiveLastState x₀ pastValues) futureTimes futureValues := by
-  induction pastTimes generalizing t₀ x₀ pastValues with
-  | nil =>
-      cases pastValues with
-      | nil => simp [conditionedPositiveTimeChainDensity,
-          conditionedPositiveLastTime, conditionedPositiveLastState]
-      | cons x xs => simp at hpast
-  | cons t ts ih =>
-      cases pastValues with
-      | nil => simp at hpast
-      | cons x xs =>
-          have htail : ts.length = xs.length := by simpa using hpast
-          simp only [List.cons_append, conditionedPositiveTimeChainDensity,
-            conditionedPositiveLastTime, conditionedPositiveLastState]
-          rw [ih t x xs htail]
-          ring
 
 /-- The explicit entrance FDD density splits at the state reached after any finite ordered past.
 The right factor is exactly the finite transition density started at that deterministic state. -/
@@ -141,9 +112,29 @@ theorem conditionedPositiveFDDDensity_split
         conditionedPositiveTimeChainDensity ν
           (conditionedPositiveLastTime t₀ pastTimes)
           (conditionedPositiveLastState x₀ pastValues) futureTimes futureValues := by
+  have conditionedPositiveTimeChainDensity_append : conditionedPositiveTimeChainDensity ν t₀ x₀
+          (pastTimes ++ futureTimes) (pastValues ++ futureValues) =
+        conditionedPositiveTimeChainDensity ν t₀ x₀ pastTimes pastValues *
+          conditionedPositiveTimeChainDensity ν
+            (conditionedPositiveLastTime t₀ pastTimes)
+            (conditionedPositiveLastState x₀ pastValues) futureTimes futureValues := by
+    induction pastTimes generalizing t₀ x₀ pastValues with
+    | nil =>
+        cases pastValues with
+        | nil => simp [conditionedPositiveTimeChainDensity,
+            conditionedPositiveLastTime, conditionedPositiveLastState]
+        | cons x xs => simp at hpast
+    | cons t ts ih =>
+        cases pastValues with
+        | nil => simp at hpast
+        | cons x xs =>
+            have htail : ts.length = xs.length := by simpa using hpast
+            simp only [List.cons_append, conditionedPositiveTimeChainDensity,
+              conditionedPositiveLastTime, conditionedPositiveLastState]
+            rw [ih t x xs htail]
+            ring
   rw [conditionedPositiveFDDDensity_cons,
-    conditionedPositiveTimeChainDensity_append ν t₀ x₀ pastTimes pastValues
-      futureTimes futureValues hpast]
+    conditionedPositiveTimeChainDensity_append]
   ring
 
 /-- A continuous path stays in the closed half-line `[c,∞)` after `t` exactly when it does so at
@@ -159,34 +150,21 @@ theorem continuous_path_ge_iff_rational_ge
     exact h ⟨(q : ℝ), le_trans ht hq.le⟩ hq
   · intro h s hts
     by_contra hnot
-    have hbad : p s < c := lt_of_not_ge hnot
     let F : ℝ → ℝ := fun x => p ⟨max x 0, le_max_right _ _⟩
     have hmax : Continuous (fun x : ℝ => max x 0) :=
       continuous_max.comp (continuous_id.prodMk continuous_const)
-    have hsub : Continuous (fun x : ℝ =>
-        (⟨max x 0, le_max_right _ _⟩ : ℝ≥0)) :=
-      hmax.subtype_mk (fun x => le_max_right x 0)
-    have hF : Continuous F := p.continuous.comp hsub
-    have hsnonneg : (0 : ℝ) ≤ (s : ℝ) := by exact_mod_cast s.2
+    have hsnonneg : (0 : ℝ) ≤ (s : ℝ) := by positivity
     have hFs : F (s : ℝ) = p s := by
       change p ⟨max (s : ℝ) 0, le_max_right _ _⟩ = p s
       congr 1
       exact Subtype.ext (max_eq_left hsnonneg)
-    let U : Set ℝ := {x | t < x ∧ F x < c}
-    have hUopen : IsOpen U := by
-      exact isOpen_Ioi.inter (isOpen_Iio.preimage hF)
-    have hUnonempty : U.Nonempty := ⟨s, hts, by simpa [hFs] using hbad⟩
+    let U := {x | t < x ∧ F x < c}
+    have hUopen : IsOpen U := isOpen_Ioi.inter (isOpen_Iio.preimage (p.continuous.comp (hmax.subtype_mk (fun x => le_max_right x 0))))
+    have hUnonempty : U.Nonempty := ⟨s, hts, by simpa [hFs] using lt_of_not_ge hnot⟩
     obtain ⟨q, hqU⟩ := Rat.denseRange_cast.exists_mem_open hUopen hUnonempty
-    have hqU' : t < (q : ℝ) ∧ F (q : ℝ) < c := hqU
-    have hq0 : (0 : ℝ) ≤ (q : ℝ) := le_trans ht (le_of_lt hqU'.1)
-    have hqF : F (q : ℝ) = p ⟨(q : ℝ), hq0⟩ := by
-      change p ⟨max (q : ℝ) 0, le_max_right _ _⟩ = p ⟨(q : ℝ), hq0⟩
-      congr 1
-      exact Subtype.ext (max_eq_left hq0)
-    have hqbound := h q hqU'.1
-    have hqbelow : p ⟨(q : ℝ), hq0⟩ < c := by
-      simpa only [hqF] using hqU'.2
-    exact (not_lt_of_ge hqbound) hqbelow
+    have hqU' := hqU
+    have hqbelow : p ⟨(q : ℝ), le_trans ht (le_of_lt hqU'.1)⟩ < c := by grind
+    exact (not_lt_of_ge (h q hqU'.1)) hqbelow
 
 end DOZZ.Proofs
 

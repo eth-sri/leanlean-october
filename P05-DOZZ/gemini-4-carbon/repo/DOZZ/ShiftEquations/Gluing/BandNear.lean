@@ -32,17 +32,9 @@ open MeasureTheory Filter Topology Set
 
 namespace DOZZ.Proofs
 
-/-- Punctured germs are transported by the reflection `w ↦ c - w`. -/
-theorem eventually_comp_reflect {p : ℂ → Prop} {z : ℂ} (c : ℂ)
-    (h : ∀ᶠ w in 𝓝[≠] (c - z), p w) : ∀ᶠ w in 𝓝[≠] z, p (c - w) := by
-  have htend : Tendsto (fun w : ℂ => c - w) (𝓝[≠] z) (𝓝[≠] (c - z)) :=
-    tendsto_nhdsWithin_of_tendsto_nhds_of_eventually_within _
-      ((continuous_const.sub continuous_id).continuousAt.tendsto.mono_left nhdsWithin_le_nhds)
-      (eventually_nhdsWithin_of_forall fun w hw => by
-        change c - w ≠ c - z
-        intro h'
-        exact hw (sub_right_injective h'))
-  exact htend.eventually h
+variable {Ω : Type*} [MeasurableSpace Ω]
+
+
 
 /-- Two germs that agree on a punctured neighbourhood and are continuous at the point agree at
 the point. -/
@@ -53,7 +45,7 @@ theorem eq_of_eventuallyEq_nhdsNE_of_continuousAt {f g : ℂ → ℂ} {z : ℂ}
 
 /-- **A meromorphic function on a strip that equals the physical slice on `(2η, Q)` has the germs
 of the continued slice there.** -/
-theorem eventuallyEq_structureConstantH_of_physical {Ω : Type*} [MeasurableSpace Ω]
+theorem eventuallyEq_structureConstantH_of_physical
     (P : Measure Ω) (M : Ω → Measure ℂ) {γ μ η b c : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
     (hμ : 0 < μ) (hη : 0 < η ∧ Q γ - 2 * η > γ) (hb : Q γ - η < b ∧ b < Q γ)
     (hc : Q γ - η < c ∧ c < Q γ)
@@ -69,7 +61,7 @@ theorem eventuallyEq_structureConstantH_of_physical {Ω : Type*} [MeasurableSpac
   obtain ⟨hη0, hηγ⟩ := hη
   set g : ℂ → ℂ := fun z => structureConstantH f₃ γ μ (tripleFirst (b : ℂ) (c : ℂ) z) with hg
   set D : Set ℂ := horizontalStrip h ∩ tripleFirst (b : ℂ) (c : ℂ) ⁻¹' V₃ with hD
-  have hDo : IsOpen D := (isOpen_horizontalStrip h).inter
+  have : IsOpen D := (isOpen_horizontalStrip h).inter
     (hV₃.preimage (differentiable_tripleFirst _ _).continuous)
   have hES : ∀ t : ℝ, 2 * η < t → t < Q γ → ExtendedSeiberg3 γ t b c := fun t h1 h2 =>
     extendedSeiberg3_slice hγ hγ2 ⟨hη0, hηγ⟩ hb hc
@@ -93,9 +85,8 @@ theorem eventuallyEq_structureConstantH_of_physical {Ω : Type*} [MeasurableSpac
     meromorphicOn_structureConstantH_comp hV₃ hf₃ hμ (differentiable_tripleFirst _ _) z hz.2
   have hCm' : MeromorphicOn C D := fun z hz => hCm z hz.1
   set W := connectedComponentIn D (x : ℂ) with hW
-  have hWo : IsOpen W := hDo.connectedComponentIn
   have hWsub : W ⊆ D := connectedComponentIn_subset D _
-  have hxW : (x : ℂ) ∈ W := mem_connectedComponentIn (hDmem x hx₁ hx₂)
+  have hxW := mem_connectedComponentIn (hDmem x hx₁ hx₂)
   have hev : ∀ᶠ t : ℝ in 𝓝[≠] x, C t = g t :=
     eventually_nhdsWithin_of_eventually_nhds (eventually_of_mem (Ioo_mem_nhds hx₁ hx₂)
       fun t ht => (hCv t ht.1 ht.2).trans (hgval t ht.1 ht.2).symm)
@@ -113,7 +104,7 @@ theorem analyticAt_structureConstantH_slice {γ μ η b c : ℝ} (hγ : 0 < γ) 
     {f₃ : (Fin 3 → ℂ) → ℂ} (hf₃ : DifferentiableOn ℂ f₃ V₃)
     {x : ℝ} (hx₁ : 2 * η < x) (hx₂ : x < Q γ) :
     AnalyticAt ℂ (fun z => structureConstantH f₃ γ μ (tripleFirst (b : ℂ) (c : ℂ) z)) (x : ℂ) := by
-  have hES : ExtendedSeiberg3 γ x b c :=
+  have hES :=
     extendedSeiberg3_slice hγ hγ2 hη hb hc
       (lt_of_lt_of_le' hx₁ (by
         have : max (b - c) (c - b) < η := max_lt (by linarith [hb.2, hc.1])
@@ -124,25 +115,20 @@ theorem analyticAt_structureConstantH_slice {γ μ η b c : ℝ} (hγ : 0 < γ) 
     exact hV₃mem ![x, b, c] hES
   · intro n hn
     rw [tripleFirst_ofReal, sExpC_complexify] at hn
-    have hs : 0 < sExp γ x b c := by
+    have : 0 < sExp γ x b c := by
       unfold sExp
       exact div_pos (by linarith [hb.1, hc.1]) hγ
     have hn' : sExp γ x b c = -(n : ℝ) := by exact_mod_cast hn
     have : (0 : ℝ) ≤ n := Nat.cast_nonneg n
     linarith
 
+section
+variable (P : Measure Ω) (M : Ω → Measure ℂ) {γ μ η b c : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ) (hη : 0 < η ∧ Q γ - 2 * η > γ) (hb : Q γ - η < b ∧ b < Q γ) (hc : Q γ - η < c ∧ c < Q γ) {V₃ : Set (Fin 3 → ℂ)} (hV₃ : IsOpen V₃) (hV₃mem : ∀ α : Fin 3 → ℝ, ExtendedSeiberg3 γ (α 0) (α 1) (α 2) → complexifyNCharges α ∈ V₃) {f₃ : (Fin 3 → ℂ) → ℂ} (hf₃ : DifferentiableOn ℂ f₃ V₃) (hf₃eq : ∀ α : Fin 3 → ℝ, ExtendedSeiberg3 γ (α 0) (α 1) (α 2) → f₃ (complexifyNCharges α) = (unitVolumeStructureConstant P M γ (α 0) (α 1) (α 2) : ℂ)) {h : ℝ} (hh : 0 < h) {C : ℂ → ℂ}
+include hγ hγ2 hμ hη hb hc hV₃ hV₃mem hf₃ hf₃eq hh C
+
 /-- **The first structure shift at an exact real point** near `Q`, from a strip function of
 `DOZZ.structureConstant_first_shift_strip`. -/
-theorem firstShift_exact_of_strip {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (M : Ω → Measure ℂ) {γ μ η b c : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
-    (hη : 0 < η ∧ Q γ - 2 * η > γ) (hb : Q γ - η < b ∧ b < Q γ)
-    (hc : Q γ - η < c ∧ c < Q γ)
-    {V₃ : Set (Fin 3 → ℂ)} (hV₃ : IsOpen V₃)
-    (hV₃mem : ∀ α : Fin 3 → ℝ, ExtendedSeiberg3 γ (α 0) (α 1) (α 2) → complexifyNCharges α ∈ V₃)
-    {f₃ : (Fin 3 → ℂ) → ℂ} (hf₃ : DifferentiableOn ℂ f₃ V₃)
-    (hf₃eq : ∀ α : Fin 3 → ℝ, ExtendedSeiberg3 γ (α 0) (α 1) (α 2) →
-      f₃ (complexifyNCharges α) = (unitVolumeStructureConstant P M γ (α 0) (α 1) (α 2) : ℂ))
-    {h : ℝ} (hh : 0 < h) {C : ℂ → ℂ} (hCm : MeromorphicOn C (horizontalStrip h))
+theorem firstShift_exact_of_strip (hCm : MeromorphicOn C (horizontalStrip h))
     (hCv : ∀ α : ℝ, 2 * η < α → α < Q γ → C (α : ℂ) = (structureConstant P M γ μ α b c : ℂ))
     (hCs : ∀ᶠ z in codiscrete ℂ, C (z + γ / 2) =
       -(1 / (Real.pi * μ)) * shiftCoeffA γ (γ / 2) z (b : ℂ) (c : ℂ) * C (z - γ / 2))
@@ -163,7 +149,7 @@ theorem firstShift_exact_of_strip {Ω : Type*} [MeasurableSpace Ω] (P : Measure
     (x := α - γ) (by linarith) (by linarith)
   have hval : ∀ t : ℝ, 2 * η < t → t < Q γ → g t = (structureConstant P M γ μ t b c : ℂ) :=
     fun t h1 h2 => by
-      have hES : ExtendedSeiberg3 γ t b c :=
+      have hES :=
         extendedSeiberg3_slice hγ hγ2 hη hb hc
           (lt_of_lt_of_le' h1 (by
             have : max (b - c) (c - b) < η := max_lt (by linarith [hb.2, hc.1])
@@ -204,16 +190,7 @@ theorem firstShift_exact_of_strip {Ω : Type*} [MeasurableSpace Ω] (P : Measure
 
 /-- **The reflected γ/2 shift at an exact real point** to the right of `Q`, from strip functions of
 `DOZZ.structureConstant_reflected_shift_and_gluing` and a reference reflection germ `R`. -/
-theorem reflectedShift_exact_of_strip {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (M : Ω → Measure ℂ) {γ μ η b c : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
-    (hη : 0 < η ∧ Q γ - 2 * η > γ) (hb : Q γ - η < b ∧ b < Q γ)
-    (hc : Q γ - η < c ∧ c < Q γ)
-    {V₃ : Set (Fin 3 → ℂ)} (hV₃ : IsOpen V₃)
-    (hV₃mem : ∀ α : Fin 3 → ℝ, ExtendedSeiberg3 γ (α 0) (α 1) (α 2) → complexifyNCharges α ∈ V₃)
-    {f₃ : (Fin 3 → ℂ) → ℂ} (hf₃ : DifferentiableOn ℂ f₃ V₃)
-    (hf₃eq : ∀ α : Fin 3 → ℝ, ExtendedSeiberg3 γ (α 0) (α 1) (α 2) →
-      f₃ (complexifyNCharges α) = (unitVolumeStructureConstant P M γ (α 0) (α 1) (α 2) : ℂ))
-    {h : ℝ} (hh : 0 < h) {C Rs R : ℂ → ℂ} (hCm : MeromorphicOn C (horizontalStrip h))
+theorem reflectedShift_exact_of_strip {Rs R : ℂ → ℂ} (hCm : MeromorphicOn C (horizontalStrip h))
     (hRsm : MeromorphicOn Rs (horizontalStrip h)) (hRm : MeromorphicOn R (horizontalStrip h))
     (hCv : ∀ α : ℝ, 2 * η < α → α < Q γ → C (α : ℂ) = (structureConstant P M γ μ α b c : ℂ))
     (hRsR : ∀ α : ℝ, γ / 2 < α → α < Q γ → Rs (α : ℂ) = R (α : ℂ))
@@ -225,11 +202,16 @@ theorem reflectedShift_exact_of_strip {Ω : Type*} [MeasurableSpace Ω] (P : Mea
     R α * (structureConstant P M γ μ (2 * Q γ - α) b c : ℂ) =
       -(1 / (Real.pi * μ)) * shiftCoeffA γ (γ / 2) ((α : ℂ) - γ / 2) (b : ℂ) (c : ℂ) *
         (structureConstant P M γ μ (α - γ) b c : ℂ) := by
+  have eventually_comp_reflect {p : ℂ → Prop} {z : ℂ} (c : ℂ) (h : ∀ᶠ w in 𝓝[≠] (c - z), p w) : ∀ᶠ w in 𝓝[≠] z, p (c - w) := by
+    have htend : Tendsto (fun w : ℂ => c - w) (𝓝[≠] z) (𝓝[≠] (c - z)) :=
+      tendsto_nhdsWithin_of_tendsto_nhds_of_eventually_within _
+        ((continuous_const.sub continuous_id).continuousAt.tendsto.mono_left nhdsWithin_le_nhds)
+        (eventually_nhdsWithin_of_forall fun w hw => by
+          change c - w ≠ c - z
+          intro h'
+          exact hw (sub_right_injective h'))
+    exact htend.eventually h
   obtain ⟨hη0, hηγ⟩ := hη
-  have hQ : Q γ = 2 / γ + γ / 2 := rfl
-  have hγh : γ / 2 < 2 / γ := by
-    rw [div_lt_div_iff₀ (by norm_num) hγ]
-    nlinarith
   set g : ℂ → ℂ := fun z => structureConstantH f₃ γ μ (tripleFirst (b : ℂ) (c : ℂ) z) with hg
   set z₀ : ℂ := (α : ℂ) - γ / 2 with hz₀
   have hg₁ := eventuallyEq_structureConstantH_of_physical P M hγ hγ2 hμ ⟨hη0, hηγ⟩ hb hc hV₃
@@ -242,7 +224,7 @@ theorem reflectedShift_exact_of_strip {Ω : Type*} [MeasurableSpace Ω] (P : Mea
     (x := α - γ) (by linarith) (by linarith)
   have hval : ∀ t : ℝ, 2 * η < t → t < Q γ → g t = (structureConstant P M γ μ t b c : ℂ) :=
     fun t h1 h2 => by
-      have hES : ExtendedSeiberg3 γ t b c :=
+      have hES :=
         extendedSeiberg3_slice hγ hγ2 ⟨hη0, hηγ⟩ hb hc
           (lt_of_lt_of_le' h1 (by
             have : max (b - c) (c - b) < η := max_lt (by linarith [hb.2, hc.1])
@@ -266,7 +248,7 @@ theorem reflectedShift_exact_of_strip {Ω : Type*} [MeasurableSpace Ω] (P : Mea
       ((tendsto_ofReal_nhdsNE_slice x₀).frequently hev.frequently)
   have hrel : ∀ᶠ z in 𝓝[≠] z₀, R (z + γ / 2) * g (2 * Q γ - z - γ / 2) =
       -(1 / (Real.pi * μ)) * shiftCoeffA γ (γ / 2) z (b : ℂ) (c : ℂ) * g (z - γ / 2) := by
-    have e₀ : ∀ᶠ z in 𝓝[≠] z₀, Rs (z + γ / 2) = R (z + γ / 2) :=
+    have e₀ :=
       ShiftGluing.eventually_comp_add (z := z₀) ((γ : ℂ) / 2)
         (by rw [hz₀, sub_add_cancel]; exact hRR)
     have e₁ : ∀ᶠ z in 𝓝[≠] z₀, C (2 * Q γ - γ / 2 - z) = g (2 * Q γ - γ / 2 - z) :=
@@ -307,6 +289,8 @@ theorem reflectedShift_exact_of_strip {Ω : Type*} [MeasurableSpace Ω] (P : Mea
     at hpt
   exact hpt
 
+
+end
 end DOZZ.Proofs
 
 end

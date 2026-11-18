@@ -41,8 +41,7 @@ theorem two_space_localization_tail_sandwich
     rw [add_sub_cancel_right,← hT x] at hb
     have hm : P {ω | ENNReal.ofReal x < L ω} ≤ P {ω | ENNReal.ofReal x < A ω} :=
       measure_mono_ae (hSource.mono fun ω hω hlt => hlt.trans_le hω.1)
-    have ht := ENNReal.toReal_mono (by finiteness) hm
-    linarith only [hb,ht]
+    linarith only [hb,ENNReal.toReal_mono (by finiteness) hm]
   · have ha := ennreal_tail_domination P A L E
       (hSource.mono fun _ h => h.2) x h hh (by linarith only [hh,hhx])
     have hb := ennreal_tail_domination P' L' B E'

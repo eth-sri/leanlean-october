@@ -16,8 +16,6 @@ public import Mathlib.Probability.Distributions.Gaussian.HasGaussianLaw.Def
 
 @[expose] public section
 
-open MeasureTheory Filter Topology Set
-open scoped ENNReal
 
 namespace DOZZ
 

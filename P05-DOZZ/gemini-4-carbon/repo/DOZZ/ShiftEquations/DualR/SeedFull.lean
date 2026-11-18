@@ -66,12 +66,11 @@ theorem seed_full {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω →
       dualLC γ ε α α' * R α * (structureConstant P M γ μ ε (2 * Q γ - α - 2 / γ) α' : ℂ) := by
   obtain ⟨V₃, hV₃, hV₃mem, f₃, hf₃, hf₃eq⟩ :=
     unitVolumeStructureConstant_holomorphic_near_extended_domain P X M γ hγ hγ2 hX hM
-  have hQ : Q γ = 2 / γ + γ / 2 := rfl
-  have hγh : γ / 2 < 2 / γ := by
+  have : Q γ = 2 / γ + γ / 2 := rfl
+  have : γ / 2 < 2 / γ := by
     rw [div_lt_div_iff₀ (by norm_num) hγ]
     nlinarith
-  have h2γ : 0 < 2 / γ := by positivity
-  have h42 : 4 / γ = 2 * (2 / γ) := by ring
+  have : 4 / γ = 2 * (2 / γ) := by ring
   -- the seed point
   set e₀ : ℝ := Q γ - γ / 12 with he₀
   have hq₀₁ : ExtendedSeiberg3 γ (2 * Q γ - e₀ - 2 / γ) e₀ e₀ :=
@@ -113,17 +112,12 @@ theorem seed_full {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω →
     set αt : ℝ := e₀ + t * (α - e₀) with hαt'
     set α't : ℝ := e₀ + t * (α' - e₀) with hα't'
     have hsum' : 2 * Q γ + 2 / γ < αt + εt + α't := by
-      have e : e₀ + e₀ + e₀ + t * (ε + α + α' - (e₀ + e₀ + e₀)) = αt + εt + α't := by
-        rw [hεt', hαt', hα't']
-        ring
       linarith
-    have hE₁ := extendedSeiberg3_segment hγ hq₀₁ h₁ ht.1.le ht.2.le
-    have hE₂ := extendedSeiberg3_segment hγ hq₀₂ h₂ ht.1.le ht.2.le
     obtain ⟨Bε, Bα, Z, -, hBε, hBα, hseed⟩ := hSeed αt εt α't hαt hεt hα't hsum'
     have hεγ : γ / 2 < εt := by linarith
     have hαγ : γ / 2 < αt := by linarith
     simp only [hF, hG]
-    rw [segH_ofReal P M hμ hf₃eq hE₁, segH_ofReal P M hμ hf₃eq hE₂, segC_ofReal, segC_ofReal,
+    rw [segH_ofReal P M hμ hf₃eq (extendedSeiberg3_segment hγ hq₀₁ h₁ ht.1.le ht.2.le), segH_ofReal P M hμ hf₃eq (extendedSeiberg3_segment hγ hq₀₂ h₂ ht.1.le ht.2.le), segC_ofReal, segC_ofReal,
       segC_ofReal, dualLC_ofReal hγ.ne', hRv _ hεγ hεt, hRv _ hαγ hαt,
       reflectionR_eq_of_isReflectionData P P γ μ _ (BR _) ZR Bε Z (hBR _ hεγ hεt) hBε,
       reflectionR_eq_of_isReflectionData P P γ μ _ (BR _) ZR Bα Z (hBR _ hαγ hαt) hBα,

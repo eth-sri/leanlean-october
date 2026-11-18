@@ -27,13 +27,13 @@ public import Mathlib.Analysis.SpecialFunctions.Gamma.Deriv
 
 namespace DOZZ.Proofs
 
+variable {y : ℝ}
+
+
 /-- The complex Gamma function is analytic away from the poles `-m`, `m : ℕ`. -/
 theorem bpz_analyticAt_complex_Gamma {s : ℂ} (hs : ∀ m : ℕ, s ≠ -(m : ℂ)) :
     AnalyticAt ℂ Complex.Gamma s := by
-  have h1 : AnalyticAt ℂ (fun z : ℂ => (Complex.Gamma z)⁻¹) s :=
-    Complex.differentiable_one_div_Gamma.analyticAt s
-  have h2 : (Complex.Gamma s)⁻¹ ≠ 0 := inv_ne_zero (Complex.Gamma_ne_zero hs)
-  simpa only [inv_inv] using h1.fun_inv h2
+  simpa only [inv_inv] using (Complex.differentiable_one_div_Gamma.analyticAt s).fun_inv (inv_ne_zero (Complex.Gamma_ne_zero hs))
 
 /-- The real Gamma function is real analytic away from the poles `-m`, `m : ℕ`. -/
 theorem bpz_analyticAt_real_Gamma {x : ℝ} (hx : ∀ m : ℕ, x ≠ -(m : ℝ)) :
@@ -41,19 +41,8 @@ theorem bpz_analyticAt_real_Gamma {x : ℝ} (hx : ∀ m : ℕ, x ≠ -(m : ℝ))
   have hc : ∀ m : ℕ, (x : ℂ) ≠ -(m : ℂ) := fun m h => hx m (by exact_mod_cast h)
   have h1 : AnalyticAt ℝ Complex.Gamma (Complex.ofRealCLM x) :=
     (bpz_analyticAt_complex_Gamma hc).restrictScalars
-  have h2 : AnalyticAt ℝ (fun y : ℝ => (Complex.Gamma (y : ℂ)).re) x :=
-    (Complex.reCLM.analyticAt _).comp (h1.comp (Complex.ofRealCLM.analyticAt x))
-  have e : Real.Gamma = fun y : ℝ => (Complex.Gamma (y : ℂ)).re := by
-    funext y
-    simp only [Complex.Gamma_ofReal, Complex.ofReal_re]
-  rw [e]
-  exact h2
+  exact (Complex.reCLM.analyticAt _).comp (h1.comp (Complex.ofRealCLM.analyticAt x))
 
-/-- `Real.Gamma ∘ f` is real analytic at a point where `f` is analytic with positive value. -/
-theorem bpzGA_analyticAt_real_Gamma_comp {f : ℝ → ℝ} {x₀ : ℝ} (hf : AnalyticAt ℝ f x₀)
-    (h : 0 < f x₀) : AnalyticAt ℝ (fun x => Real.Gamma (f x)) x₀ :=
-  (bpz_analyticAt_real_Gamma fun m =>
-    (lt_of_le_of_lt (neg_nonpos.2 (Nat.cast_nonneg m)) h).ne').fun_comp hf
 
 /-- The Gauss coefficient ratio is real analytic in the parameters where all ten Gamma arguments
 are positive. -/
@@ -63,59 +52,48 @@ theorem bpz_analyticAt_gaussCoefficientRatio {a b c : ℝ → ℝ} {x₀ : ℝ}
     (h5 : 0 < b x₀ - c x₀ + 1) (h6 : 0 < 2 - c x₀) (h7 : 0 < c x₀ - a x₀)
     (h8 : 0 < c x₀ - b x₀) (h9 : 0 < a x₀) (h10 : 0 < b x₀) :
     AnalyticAt ℝ (fun x => gaussCoefficientRatio (a x) (b x) (c x)) x₀ := by
-  have k1 := bpzGA_analyticAt_real_Gamma_comp hc h1
-  have k2 := bpzGA_analyticAt_real_Gamma_comp (analyticAt_const.fun_sub ha) h2
-  have k3 := bpzGA_analyticAt_real_Gamma_comp (analyticAt_const.fun_sub hb) h3
-  have k4 := bpzGA_analyticAt_real_Gamma_comp
-    ((ha.fun_sub hc).fun_add (analyticAt_const (v := (1 : ℝ)))) h4
-  have k5 := bpzGA_analyticAt_real_Gamma_comp
-    ((hb.fun_sub hc).fun_add (analyticAt_const (v := (1 : ℝ)))) h5
-  have k6 := bpzGA_analyticAt_real_Gamma_comp (analyticAt_const.fun_sub hc) h6
-  have k7 := bpzGA_analyticAt_real_Gamma_comp (hc.fun_sub ha) h7
-  have k8 := bpzGA_analyticAt_real_Gamma_comp (hc.fun_sub hb) h8
-  have k9 := bpzGA_analyticAt_real_Gamma_comp ha h9
-  have k10 := bpzGA_analyticAt_real_Gamma_comp hb h10
-  have hden : Real.Gamma (2 - c x₀) ^ 2 * Real.Gamma (c x₀ - a x₀) * Real.Gamma (c x₀ - b x₀) *
-      Real.Gamma (a x₀) * Real.Gamma (b x₀) ≠ 0 :=
+  have bpzGA_analyticAt_real_Gamma_comp {f : ℝ → ℝ} (hf : AnalyticAt ℝ f x₀) (h : 0 < f x₀) := 
+    (bpz_analyticAt_real_Gamma fun m =>
+      (lt_of_le_of_lt (neg_nonpos.2 (Nat.cast_nonneg m)) h).ne').fun_comp hf
+  have := bpzGA_analyticAt_real_Gamma_comp hb h10
+  have :=
     mul_ne_zero (mul_ne_zero (mul_ne_zero (mul_ne_zero
       (pow_ne_zero 2 (Real.Gamma_pos_of_pos h6).ne') (Real.Gamma_pos_of_pos h7).ne')
       (Real.Gamma_pos_of_pos h8).ne') (Real.Gamma_pos_of_pos h9).ne')
       (Real.Gamma_pos_of_pos h10).ne'
   unfold gaussCoefficientRatio
-  exact (((((k1.fun_pow 2).fun_mul k2).fun_mul k3).fun_mul k4).fun_mul k5).fun_neg.fun_div
-    (((((k6.fun_pow 2).fun_mul k7).fun_mul k8).fun_mul k9).fun_mul k10) hden
+  fun_prop
+
+section
+variable (h : ∀ n : ℤ, y ≠ n)
+include h
 
 /-- A real number that is not an integer is not a pole `-m` of `Γ`. -/
-theorem bpzGA_ne_neg_nat {y : ℝ} (h : ∀ n : ℤ, y ≠ n) (m : ℕ) : (y : ℂ) ≠ -(m : ℂ) :=
+theorem bpzGA_ne_neg_nat (m : ℕ) : (y : ℂ) ≠ -(m : ℂ) :=
   fun hm => h (-(m : ℤ)) (by exact_mod_cast hm)
 
 /-- For a real number `y` that is not an integer, `1 - y` is not a pole `-m` of `Γ`. -/
-theorem bpzGA_one_sub_ne_neg_nat {y : ℝ} (h : ∀ n : ℤ, y ≠ n) (m : ℕ) :
+theorem bpzGA_one_sub_ne_neg_nat (m : ℕ) :
     1 - (y : ℂ) ≠ -(m : ℂ) := fun hm =>
   h (1 + (m : ℤ)) (by
     have : (y : ℂ) = 1 + (m : ℂ) := by linear_combination -hm
     exact_mod_cast this)
 
 /-- `lFun` is nonzero at a real point that is not an integer. -/
-theorem bpzGA_lFun_ne_zero {y : ℝ} (h : ∀ n : ℤ, y ≠ n) : lFun (y : ℂ) ≠ 0 :=
+theorem bpzGA_lFun_ne_zero : lFun (y : ℂ) ≠ 0 :=
   div_ne_zero (Complex.Gamma_ne_zero (bpzGA_ne_neg_nat h))
     (Complex.Gamma_ne_zero (bpzGA_one_sub_ne_neg_nat h))
 
-/-- `Complex.Gamma ∘ g` is real analytic where `g : ℝ → ℂ` is real analytic and avoids the
-poles of `Γ`. -/
-theorem bpzGA_analyticAt_Gamma_comp {g : ℝ → ℂ} {x₀ : ℝ} (hg : AnalyticAt ℝ g x₀)
-    (h : ∀ m : ℕ, g x₀ ≠ -(m : ℂ)) : AnalyticAt ℝ (fun x => Complex.Gamma (g x)) x₀ :=
-  (bpz_analyticAt_complex_Gamma h).restrictScalars.fun_comp hg
+
+end
 
 /-- `x ↦ lFun (f x)` is real analytic where `f` is real analytic and avoids the integers. -/
 theorem bpzGA_analyticAt_lFun {f : ℝ → ℝ} {x₀ : ℝ} (hf : AnalyticAt ℝ f x₀)
     (h : ∀ n : ℤ, f x₀ ≠ n) : AnalyticAt ℝ (fun x => lFun (f x : ℂ)) x₀ := by
-  have hg : AnalyticAt ℝ (fun x : ℝ => (f x : ℂ)) x₀ := (Complex.ofRealCLM.analyticAt _).comp hf
-  have e1 : AnalyticAt ℝ (fun x => Complex.Gamma (f x : ℂ)) x₀ :=
-    bpzGA_analyticAt_Gamma_comp hg (bpzGA_ne_neg_nat h)
-  have e2 : AnalyticAt ℝ (fun x => Complex.Gamma (1 - (f x : ℂ))) x₀ :=
-    bpzGA_analyticAt_Gamma_comp (analyticAt_const.fun_sub hg) (bpzGA_one_sub_ne_neg_nat h)
-  exact e1.fun_div e2 (Complex.Gamma_ne_zero (bpzGA_one_sub_ne_neg_nat h))
+  have bpzGA_analyticAt_Gamma_comp {g : ℝ → ℂ} (hg : AnalyticAt ℝ g x₀) (h : ∀ m : ℕ, g x₀ ≠ -(m : ℂ)) := 
+    (bpz_analyticAt_complex_Gamma h).restrictScalars.fun_comp hg
+  have hg := (Complex.ofRealCLM.analyticAt _).comp hf
+  exact (bpzGA_analyticAt_Gamma_comp hg (bpzGA_ne_neg_nat h)).fun_div (bpzGA_analyticAt_Gamma_comp (analyticAt_const.fun_sub hg) (bpzGA_one_sub_ne_neg_nat h)) (Complex.Gamma_ne_zero (bpzGA_one_sub_ne_neg_nat h))
 
 /-- The real part of the planar Gauss constant is real analytic in the parameters where the three
 arguments of `lFun` avoid the integers. -/

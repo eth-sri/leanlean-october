@@ -34,6 +34,9 @@ open Filter Topology
 
 namespace DOZZ.Proofs
 
+variable {γ : ℝ} {U : ℂ → ℂ}
+
+
 /-- **The rewrite as pure algebra.** With `Γ(s + 1) = s Γ(s)`, `Υ(w) = w q` and `w = g s / 2`,
 the product `m Γ(s)⁻¹ · (b D₀ u₁ u₂ u₃ / (v₀ v₁ v₂ v₃))` equals
 `(m b) Γ(s + 1)⁻¹ (2 / g) (D₀ / q) (u₁ u₂ u₃ / (v₁ v₂ v₃))`. No nonvanishing hypotheses are
@@ -41,39 +44,40 @@ needed: only the distributivity of `⁻¹` over products. -/
 theorem zeroMode_algebra {m b G G₁ s g D₀ u₁ u₂ u₃ v₀ v₁ v₂ v₃ w q : ℂ}
     (hG : G₁ = s * G) (hv : v₀ = w * q) (hw : w = g * s / 2) :
     m / G * (b * (D₀ * u₁ * u₂ * u₃) / (v₀ * v₁ * v₂ * v₃)) =
-      m * b * G₁⁻¹ * (2 / g) * (D₀ / q) * (u₁ * u₂ * u₃ / (v₁ * v₂ * v₃)) := by
-  subst hG hv hw
-  ring
+      m * b * G₁⁻¹ * (2 / g) * (D₀ / q) * (u₁ * u₂ * u₃ / (v₁ * v₂ * v₃)) := by grind
+
+section
+variable {ι : Type*} {l : Filter ι}
+include l
 
 /-- A complex power with fixed nonzero base tends to `1` as the exponent tends to `0`. -/
-theorem zeroMode_tendsto_cpow {ι : Type*} {l : Filter ι} {a : ℂ} (ha : a ≠ 0) {s : ι → ℂ}
+theorem zeroMode_tendsto_cpow {a : ℂ} (ha : a ≠ 0) {s : ι → ℂ}
     (hs : Tendsto s l (𝓝 0)) : Tendsto (fun i => a ^ s i) l (𝓝 1) := by
-  have h := (continuousAt_const_cpow (a := a) (b := 0) ha).tendsto.comp hs
-  simpa [Function.comp_def] using h
+  simpa [Function.comp_def] using (continuousAt_const_cpow (a := a) (b := 0) ha).tendsto.comp hs
 
 /-- `Γ(s + 1)⁻¹ → 1` as `s → 0`, since `Γ` is continuous at `1` with `Γ(1) = 1`. -/
-theorem zeroMode_tendsto_inv_gamma {ι : Type*} {l : Filter ι} {s : ι → ℂ}
+theorem zeroMode_tendsto_inv_gamma {s : ι → ℂ}
     (hs : Tendsto s l (𝓝 0)) : Tendsto (fun i => (Complex.Gamma (s i + 1))⁻¹) l (𝓝 1) := by
   have h1 : Tendsto (fun i => s i + 1) l (𝓝 1) := by simpa using hs.add_const 1
   have h2 := Complex.continuousAt_Gamma_one.tendsto.comp h1
   rw [Complex.Gamma_one] at h2
   simpa [Function.comp_def] using h2.inv₀ one_ne_zero
 
-/-- The slope of an entire function vanishing at `0`: `U(x) / x → U'(0)` along real `x → 0`. -/
-theorem zeroMode_tendsto_slope {U : ℂ → ℂ} (hU : Differentiable ℂ U) (h0 : U 0 = 0) :
-    Tendsto (fun x : ℝ => U (x : ℂ) / (x : ℂ)) (𝓝[≠] 0) (𝓝 (deriv U 0)) := by
-  have hd : HasDerivAt (fun x : ℝ => U (x : ℂ)) (deriv U 0) 0 := by
-    have h := (hU 0).hasDerivAt
-    exact HasDerivAt.comp_ofReal (z := 0) (by simpa using h)
-  refine hd.tendsto_slope_zero.congr (fun x => ?_)
-  simp [h0, Complex.real_smul, div_eq_inv_mul]
+
+end
 
 /-- The slope limit along the shifted variable `w = (t - t₀) / 2`, as `t → t₀` with `t ≠ t₀`. -/
 theorem zeroMode_tendsto_slope_comp {U : ℂ → ℂ} (hU : Differentiable ℂ U) (h0 : U 0 = 0)
     (t₀ : ℝ) :
     Tendsto (fun t : ℝ => U (((t - t₀) / 2 : ℝ) : ℂ) / (((t - t₀) / 2 : ℝ) : ℂ))
       (𝓝[≠] t₀) (𝓝 (deriv U 0)) := by
-  refine (zeroMode_tendsto_slope hU h0).comp ?_
+  have zeroMode_tendsto_slope : Tendsto (fun x : ℝ => U (x : ℂ) / (x : ℂ)) (𝓝[≠] 0) (𝓝 (deriv U 0)) := by
+    have hd : HasDerivAt (fun x : ℝ => U (x : ℂ)) (deriv U 0) 0 := by
+      have h := (hU 0).hasDerivAt
+      exact HasDerivAt.comp_ofReal (z := 0) (by simpa using h)
+    refine hd.tendsto_slope_zero.congr (fun x => ?_)
+    simp [h0, Complex.real_smul, div_eq_inv_mul]
+  refine (zeroMode_tendsto_slope).comp ?_
   rw [tendsto_nhdsWithin_iff]
   refine ⟨?_, ?_⟩
   · have hc : Continuous (fun t : ℝ => (t - t₀) / 2) := by fun_prop
@@ -81,39 +85,41 @@ theorem zeroMode_tendsto_slope_comp {U : ℂ → ℂ} (hU : Differentiable ℂ U
     rw [sub_self, zero_div] at h
     exact h.mono_left nhdsWithin_le_nhds
   · filter_upwards [self_mem_nhdsWithin] with t ht
-    have ht' : t - t₀ ≠ 0 := sub_ne_zero.mpr ht
+    have ht' := sub_ne_zero.mpr ht
     simpa using ht'
 
 /-- `Υ` does not vanish at a real point of the open strip `0 < x < Q`. -/
-theorem zeroMode_ne_zero {γ : ℝ} {U : ℂ → ℂ} (hU : IsUpsilon γ U) {x : ℝ} (hx : 0 < x)
+theorem zeroMode_ne_zero (hU : IsUpsilon γ U) {x : ℝ} (hx : 0 < x)
     (hx' : x < Q γ) : U (x : ℂ) ≠ 0 := by
   rw [hU.2 (x : ℂ) (by simpa using hx) (by simpa using hx')]
   exact Complex.exp_ne_zero _
 
+section
+variable (hγ : 0 < γ) (hγ2 : γ < 2) (hU : IsUpsilon γ U)
+include hγ hγ2 hU
+
 /-- `Υ` vanishes at `0`: the lattice point `m = n = 0`. -/
-theorem zeroMode_zero {γ : ℝ} {U : ℂ → ℂ} (hγ : 0 < γ) (hγ2 : γ < 2) (hU : IsUpsilon γ U) :
+theorem zeroMode_zero :
     U 0 = 0 := by
   rw [IsUpsilon.eq_zero_iff hγ hγ2 hU]
   exact ⟨0, 0, Or.inl (by simp)⟩
 
 /-- `Υ'(0) = Υ(γ / 2) ≠ 0`, since `γ / 2` lies in the open strip. -/
-theorem zeroMode_deriv_ne_zero {γ : ℝ} {U : ℂ → ℂ} (hγ : 0 < γ) (hγ2 : γ < 2)
-    (hU : IsUpsilon γ U) : deriv U 0 ≠ 0 := by
+theorem zeroMode_deriv_ne_zero : deriv U 0 ≠ 0 := by
   rw [IsUpsilon.deriv_zero hγ hγ2 hU]
-  have h2 : 0 < 2 / γ := by positivity
+  have : 0 < 2 / γ := by positivity
   have h := zeroMode_ne_zero hU (x := γ / 2) (by positivity) (by unfold Q; linarith)
   simpa using h
 
 /-- **The bracket of non-singular `Υ`-values tends to `1`.** At `t = t₀` (where
 `t₀ + α₂ + α₃ = 2Q`) the half-sum is `Q`, so the denominator is `Υ(Q - t₀) Υ(Q - α₂) Υ(Q - α₃)
 = Υ(t₀) Υ(α₂) Υ(α₃)` by reflection, which equals the (nonzero) numerator. -/
-theorem zeroMode_bracket_limit {γ : ℝ} {U : ℂ → ℂ} (hγ : 0 < γ) (hγ2 : γ < 2)
-    (hU : IsUpsilon γ U) {α₂ α₃ t₀ : ℝ} (ht₀ : t₀ + α₂ + α₃ = 2 * Q γ) (h₁ : 0 < t₀)
+theorem zeroMode_bracket_limit {α₂ α₃ t₀ : ℝ} (ht₀ : t₀ + α₂ + α₃ = 2 * Q γ) (h₁ : 0 < t₀)
     (h₁' : t₀ < Q γ) (h₂ : 0 < α₂) (h₂' : α₂ < Q γ) (h₃ : 0 < α₃) (h₃' : α₃ < Q γ) :
     Tendsto (fun t : ℝ => U t * U α₂ * U α₃ /
         (U (((t : ℂ) + α₂ + α₃) / 2 - t) * U (((t : ℂ) + α₂ + α₃) / 2 - α₂) *
           U (((t : ℂ) + α₂ + α₃) / 2 - α₃))) (𝓝[≠] t₀) (𝓝 1) := by
-  have hUc : Continuous U := hU.1.continuous
+  have := hU.1.continuous
   have hhalf : ((t₀ : ℂ) + α₂ + α₃) / 2 = (Q γ : ℂ) := by
     have h : ((t₀ : ℂ) + α₂ + α₃) = ((t₀ + α₂ + α₃ : ℝ) : ℂ) := by push_cast; ring
     rw [h, ht₀]
@@ -126,13 +132,15 @@ theorem zeroMode_bracket_limit {γ : ℝ} {U : ℂ → ℂ} (hγ : 0 < γ) (hγ2
       U (((t₀ : ℂ) + α₂ + α₃) / 2 - α₃) = U t₀ * U α₂ * U α₃ := by
     rw [hhalf, IsUpsilon.reflect hγ hγ2 hU, IsUpsilon.reflect hγ hγ2 hU,
       IsUpsilon.reflect hγ hγ2 hU]
-  have hne : U t₀ * U α₂ * U α₃ ≠ 0 :=
+  have hne :=
     mul_ne_zero (mul_ne_zero (zeroMode_ne_zero hU h₁ h₁') (zeroMode_ne_zero hU h₂ h₂'))
       (zeroMode_ne_zero hU h₃ h₃')
   have hlim := (hN.tendsto t₀).div (hD.tendsto t₀) (by rw [hDt₀]; exact hne)
   rw [hDt₀, div_self hne] at hlim
   exact hlim.mono_left nhdsWithin_le_nhds
 
+
+end
 /-- **The product on the punctured neighbourhood.** For `t ≠ t₀` (so `s = sExp ≠ 0`),
 `μ^s Γ(s)⁻¹ D(t, α₂, α₃)` factors as `(μ^s B^(-s)) Γ(s + 1)⁻¹ (2/γ) (Υ'(0) / q) · bracket`,
 where `q = Υ(w) / w` with `w = (t - t₀) / 2`. -/
@@ -146,7 +154,7 @@ theorem zeroMode_formula_eq {γ μ : ℝ} {U : ℂ → ℂ} (hγ : 0 < γ) {α�
         (deriv U 0 / (U (((t - t₀) / 2 : ℝ) : ℂ) / (((t - t₀) / 2 : ℝ) : ℂ))) *
         (U t * U α₂ * U α₃ / (U (((t : ℂ) + α₂ + α₃) / 2 - t) *
           U (((t : ℂ) + α₂ + α₃) / 2 - α₂) * U (((t : ℂ) + α₂ + α₃) / 2 - α₃))) := by
-  have hγc : (γ : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hγ.ne'
+  have := Complex.ofReal_ne_zero.mpr hγ.ne'
   have hQ : (2 * (Q γ : ℂ)) = (t₀ : ℂ) + α₂ + α₃ := by
     have h := congrArg (fun x : ℝ => (x : ℂ)) ht₀
     push_cast at h
@@ -158,8 +166,6 @@ theorem zeroMode_formula_eq {γ μ : ℝ} {U : ℂ → ℂ} (hγ : 0 < γ) {α�
   have hsne : (sExp γ t α₂ α₃ : ℂ) ≠ 0 := by
     rw [hs]
     exact Complex.ofReal_ne_zero.mpr (div_ne_zero (sub_ne_zero.mpr ht) hγ.ne')
-  have hwne : (((t - t₀) / 2 : ℝ) : ℂ) ≠ 0 :=
-    Complex.ofReal_ne_zero.mpr (div_ne_zero (sub_ne_zero.mpr ht) two_ne_zero)
   have hexp : (2 * (Q γ : ℂ) - ((t : ℂ) + α₂ + α₃)) / (γ : ℂ) = -(sExp γ t α₂ α₃ : ℂ) := by
     rw [hs]
     push_cast
@@ -168,7 +174,7 @@ theorem zeroMode_formula_eq {γ μ : ℝ} {U : ℂ → ℂ} (hγ : 0 < γ) {α�
   have hv : U (((t : ℂ) + α₂ + α₃ - 2 * (Q γ : ℂ)) / 2) =
       (((t - t₀) / 2 : ℝ) : ℂ) *
         (U (((t - t₀) / 2 : ℝ) : ℂ) / (((t - t₀) / 2 : ℝ) : ℂ)) := by
-    rw [mul_div_cancel₀ _ hwne]
+    rw [mul_div_cancel₀ _ (Complex.ofReal_ne_zero.mpr (div_ne_zero (sub_ne_zero.mpr ht) two_ne_zero))]
     congr 1
     push_cast
     rw [hQ]
@@ -177,11 +183,9 @@ theorem zeroMode_formula_eq {γ μ : ℝ} {U : ℂ → ℂ} (hγ : 0 < γ) {α�
     rw [hs]
     push_cast
     field_simp
-  have hG : Complex.Gamma ((sExp γ t α₂ α₃ : ℂ) + 1) =
-      (sExp γ t α₂ α₃ : ℂ) * Complex.Gamma (sExp γ t α₂ α₃) := Complex.Gamma_add_one _ hsne
   unfold dozzFormula
   rw [hexp]
-  exact zeroMode_algebra hG hv hw
+  exact zeroMode_algebra (Complex.Gamma_add_one _ hsne) hv hw
 
 /-- The zero-mode limit with the critical value presented as a free `t₀` satisfying
 `t₀ + α₂ + α₃ = 2Q`. -/
@@ -190,7 +194,6 @@ theorem zeroMode_limit_aux {γ μ : ℝ} {U : ℂ → ℂ} (hγ : 0 < γ) (hγ2 
     (h₁' : t₀ < Q γ) (h₂ : 0 < α₂) (h₂' : α₂ < Q γ) (h₃ : 0 < α₃) (h₃' : α₃ < Q γ) :
     Tendsto (fun t : ℝ => ((μ : ℂ) ^ (sExp γ t α₂ α₃ : ℂ) / Complex.Gamma (sExp γ t α₂ α₃)) *
         dozzFormula γ μ U t α₂ α₃) (𝓝[≠] t₀) (𝓝 (2 / γ)) := by
-  have hμc : (μ : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hμ.ne'
   have hBc : ((dozzBase γ μ * (γ / 2) ^ (2 - γ ^ 2 / 2) : ℝ) : ℂ) ≠ 0 := by
     apply Complex.ofReal_ne_zero.mpr
     exact (mul_pos (dozzBase_pos hγ hγ2 hμ) (Real.rpow_pos_of_pos (by positivity) _)).ne'
@@ -209,14 +212,9 @@ theorem zeroMode_limit_aux {γ μ : ℝ} {U : ℂ → ℂ} (hγ : 0 < γ) (hγ2 
   have hP : Tendsto (fun t : ℝ => (μ : ℂ) ^ (sExp γ t α₂ α₃ : ℂ) *
       ((dozzBase γ μ * (γ / 2) ^ (2 - γ ^ 2 / 2) : ℝ) : ℂ) ^ (-(sExp γ t α₂ α₃ : ℂ)))
       (𝓝[≠] t₀) (𝓝 1) := by
-    have h1 := zeroMode_tendsto_cpow hμc hs
-    have h2 := zeroMode_tendsto_cpow hBc (by simpa using hs.neg)
-    simpa using h1.mul h2
-  have hI := zeroMode_tendsto_inv_gamma hs
-  have hR := zeroMode_tendsto_slope_comp hU.1 (zeroMode_zero hγ hγ2 hU) t₀
-  have hBr := zeroMode_bracket_limit hγ hγ2 hU ht₀ h₁ h₁' h₂ h₂' h₃ h₃'
-  have hmain := (((hP.mul hI).mul (tendsto_const_nhds (x := (2 / (γ : ℂ))))).mul
-    ((tendsto_const_nhds (x := deriv U 0)).div hR hD)).mul hBr
+    simpa using (zeroMode_tendsto_cpow (Complex.ofReal_ne_zero.mpr hμ.ne') hs).mul (zeroMode_tendsto_cpow hBc (by simpa using hs.neg))
+  have hmain := (((hP.mul (zeroMode_tendsto_inv_gamma hs)).mul (tendsto_const_nhds (x := (2 / (γ : ℂ))))).mul
+    ((tendsto_const_nhds (x := deriv U 0)).div (zeroMode_tendsto_slope_comp hU.1 (zeroMode_zero hγ hγ2 hU) t₀) hD)).mul (zeroMode_bracket_limit hγ hγ2 hU ht₀ h₁ h₁' h₂ h₂' h₃ h₃')
   rw [div_self hD] at hmain
   simp only [one_mul, mul_one] at hmain
   refine hmain.congr' ?_

@@ -47,29 +47,23 @@ theorem bpz_continuous_normPlus : Continuous normPlus := by
 
 theorem bpzBaseWeight_nonneg (x : ℂ) : 0 ≤ bpzBaseWeight γ χ α₁ α₂ α₃ x := by
   unfold bpzBaseWeight
-  have h1 := Real.rpow_nonneg (norm_nonneg x) (-(γ * α₁))
-  have h2 := Real.rpow_nonneg (norm_nonneg (x - 1)) (-(γ * α₂))
-  have h3 := Real.rpow_nonneg (bpz_normPlus_pos x).le (γ * (α₁ + α₂ + α₃ - χ))
+  have := Real.rpow_nonneg (bpz_normPlus_pos x).le (γ * (α₁ + α₂ + α₃ - χ))
   positivity
 
-theorem bpz_soft_base_nonneg (ε : ℝ) (z x : ℂ) : 0 ≤ Complex.normSq (x - z) + ε ^ 2 :=
-  add_nonneg (Complex.normSq_nonneg _) (sq_nonneg ε)
 
 theorem bpzSoftWeight_nonneg (ε : ℝ) (z x : ℂ) : 0 ≤ bpzSoftWeight γ χ α₁ α₂ α₃ ε z x :=
-  mul_nonneg (Real.rpow_nonneg (bpz_soft_base_nonneg ε z x) _) (bpzBaseWeight_nonneg x)
+  mul_nonneg (Real.rpow_nonneg ((add_nonneg (Complex.normSq_nonneg _) (sq_nonneg ε))) _) (bpzBaseWeight_nonneg x)
 
 theorem measurable_bpzBaseWeight : Measurable (bpzBaseWeight γ χ α₁ α₂ α₃) := by
   unfold bpzBaseWeight
   refine ((measurable_norm.pow_const _).mul ?_).mul (bpz_measurable_normPlus.pow_const _)
-  exact (measurable_id.sub_const 1).norm.pow_const _
+  fun_prop
 
 theorem measurable_bpzSoftWeight (ε : ℝ) (z : ℂ) :
     Measurable (bpzSoftWeight γ χ α₁ α₂ α₃ ε z) := by
   unfold bpzSoftWeight
   refine Measurable.mul ?_ measurable_bpzBaseWeight
-  refine Measurable.pow_const ?_ _
-  exact (Complex.continuous_normSq.measurable.comp (measurable_id.sub_const z)).add
-    measurable_const
+  fun_prop
 
 /-- At `ε = 0` the softened factor is the power of the distance to the degenerate root. -/
 theorem bpzSoftWeight_zero (z x : ℂ) :
@@ -86,47 +80,8 @@ theorem bpzSoftWeight_zero (z x : ℂ) :
   unfold bpzSoftWeight
   rw [h]
 
-private theorem bpz_div_rpow_eq (n d e : ℝ) (hn : 0 < n) (hd : 0 < d) :
-    (n / d) ^ e = n ^ e * d ^ (-e) := by
-  rw [Real.div_rpow hn.le hd.le, Real.rpow_neg hd.le, div_eq_mul_inv]
 
-/-- The real identity behind the Coulomb weight off the finite roots. -/
-theorem bpz_coulomb_real_identity (n d₀ d₁ d₂ : ℝ) (hn : 0 < n) (h₀ : 0 < d₀) (h₁ : 0 < d₁)
-    (h₂ : 0 < d₂) :
-    (n / d₀) ^ (γ * -χ) * ((n / d₁) ^ (γ * α₁) * (n / d₂) ^ (γ * α₂)) * n ^ (γ * α₃) =
-      d₀ ^ (γ * χ) * (d₁ ^ (-(γ * α₁)) * d₂ ^ (-(γ * α₂)) *
-        n ^ (γ * (α₁ + α₂ + α₃ - χ))) := by
-  rw [bpz_div_rpow_eq n d₀ _ hn h₀, bpz_div_rpow_eq n d₁ _ hn h₁, bpz_div_rpow_eq n d₂ _ hn h₂]
-  have hsum : γ * (α₁ + α₂ + α₃ - χ) = γ * -χ + (γ * α₁ + (γ * α₂ + γ * α₃)) := by ring
-  rw [hsum, Real.rpow_add hn, Real.rpow_add hn, Real.rpow_add hn,
-    show -(γ * -χ) = γ * χ by ring]
-  ring
 
-/-- Off the three finite roots the Coulomb weight is the real weight at `ε = 0`. -/
-theorem coulombWeight_eq_ofReal_bpzSoftWeight {z x : ℂ} (hxz : x ≠ z) (hx0 : x ≠ 0)
-    (hx1 : x ≠ 1) :
-    coulombWeight γ ![-χ, α₁, α₂] ![z, 0, 1] α₃ x =
-      ENNReal.ofReal (bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x) := by
-  have hn : 0 < normPlus x := bpz_normPlus_pos x
-  have h₀ : 0 < ‖x - z‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hxz)
-  have h₁ : 0 < ‖x‖ := norm_pos_iff.mpr hx0
-  have h₂ : 0 < ‖x - 1‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hx1)
-  unfold coulombWeight
-  simp only [Fin.prod_univ_succ, Matrix.cons_val_zero, Matrix.cons_val_succ,
-    Fin.prod_univ_zero, mul_one, sub_zero]
-  change ((ENNReal.ofReal (normPlus x / ‖x - z‖)) ^ (γ * -χ) *
-      ((ENNReal.ofReal (normPlus x / ‖x‖)) ^ (γ * α₁) *
-      (ENNReal.ofReal (normPlus x / ‖x - 1‖)) ^ (γ * α₂))) *
-      (ENNReal.ofReal (normPlus x)) ^ (γ * α₃) = _
-  rw [ENNReal.ofReal_rpow_of_pos (div_pos hn h₀), ENNReal.ofReal_rpow_of_pos (div_pos hn h₁),
-    ENNReal.ofReal_rpow_of_pos (div_pos hn h₂), ENNReal.ofReal_rpow_of_pos hn,
-    ← ENNReal.ofReal_mul (Real.rpow_nonneg (div_pos hn h₁).le _),
-    ← ENNReal.ofReal_mul (Real.rpow_nonneg (div_pos hn h₀).le _),
-    ← ENNReal.ofReal_mul (mul_nonneg (Real.rpow_nonneg (div_pos hn h₀).le _)
-      (mul_nonneg (Real.rpow_nonneg (div_pos hn h₁).le _)
-        (Real.rpow_nonneg (div_pos hn h₂).le _)))]
-  rw [bpzSoftWeight_zero, bpz_coulomb_real_identity _ _ _ _ hn h₀ h₁ h₂]
-  rfl
 
 /-- For a measure without atoms at the three finite roots, the Coulomb mass is the
 integral of the real weight. -/
@@ -134,6 +89,38 @@ theorem coulombMass_eq_lintegral_bpzSoftWeight (μ : Measure ℂ) (z : ℂ) (hz 
     (h0 : μ {0} = 0) (h1 : μ {1} = 0) :
     coulombMass γ μ ![-χ, α₁, α₂] ![z, 0, 1] α₃ =
       ∫⁻ x, ENNReal.ofReal (bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x) ∂μ := by
+  have coulombWeight_eq_ofReal_bpzSoftWeight {z x : ℂ} (hxz : x ≠ z) (hx0 : x ≠ 0) (hx1 : x ≠ 1) : coulombWeight γ ![-χ, α₁, α₂] ![z, 0, 1] α₃ x =
+        ENNReal.ofReal (bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x) := by
+    have bpz_coulomb_real_identity (n d₀ d₁ d₂ : ℝ) (hn : 0 < n) (h₀ : 0 < d₀) (h₁ : 0 < d₁) (h₂ : 0 < d₂) : (n / d₀) ^ (γ * -χ) * ((n / d₁) ^ (γ * α₁) * (n / d₂) ^ (γ * α₂)) * n ^ (γ * α₃) =
+          d₀ ^ (γ * χ) * (d₁ ^ (-(γ * α₁)) * d₂ ^ (-(γ * α₂)) *
+            n ^ (γ * (α₁ + α₂ + α₃ - χ))) := by
+      have bpz_div_rpow_eq (d e : ℝ) (hn : 0 < n) (hd : 0 < d) : (n / d) ^ e = n ^ e * d ^ (-e) := by
+        rw [Real.div_rpow hn.le hd.le, Real.rpow_neg hd.le, div_eq_mul_inv]
+      rw [bpz_div_rpow_eq d₀ _ hn h₀, bpz_div_rpow_eq d₁ _ hn h₁, bpz_div_rpow_eq d₂ _ hn h₂]
+      have hsum : γ * (α₁ + α₂ + α₃ - χ) = γ * -χ + (γ * α₁ + (γ * α₂ + γ * α₃)) := by ring
+      rw [hsum, Real.rpow_add hn, Real.rpow_add hn, Real.rpow_add hn,
+        show -(γ * -χ) = γ * χ by ring]
+      ring
+    have hn := bpz_normPlus_pos x
+    have h₀ := norm_pos_iff.mpr (sub_ne_zero.mpr hxz)
+    have h₁ := norm_pos_iff.mpr hx0
+    have h₂ := norm_pos_iff.mpr (sub_ne_zero.mpr hx1)
+    unfold coulombWeight
+    simp only [Fin.prod_univ_succ, Matrix.cons_val_zero, Matrix.cons_val_succ,
+      Fin.prod_univ_zero, mul_one, sub_zero]
+    change ((ENNReal.ofReal (normPlus x / ‖x - z‖)) ^ (γ * -χ) *
+        ((ENNReal.ofReal (normPlus x / ‖x‖)) ^ (γ * α₁) *
+        (ENNReal.ofReal (normPlus x / ‖x - 1‖)) ^ (γ * α₂))) *
+        (ENNReal.ofReal (normPlus x)) ^ (γ * α₃) = _
+    rw [ENNReal.ofReal_rpow_of_pos (div_pos hn h₀), ENNReal.ofReal_rpow_of_pos (div_pos hn h₁),
+      ENNReal.ofReal_rpow_of_pos (div_pos hn h₂), ENNReal.ofReal_rpow_of_pos hn,
+      ← ENNReal.ofReal_mul (Real.rpow_nonneg (div_pos hn h₁).le _),
+      ← ENNReal.ofReal_mul (Real.rpow_nonneg (div_pos hn h₀).le _),
+      ← ENNReal.ofReal_mul (mul_nonneg (Real.rpow_nonneg (div_pos hn h₀).le _)
+        (mul_nonneg (Real.rpow_nonneg (div_pos hn h₁).le _)
+          (Real.rpow_nonneg (div_pos hn h₂).le _)))]
+    rw [bpzSoftWeight_zero, bpz_coulomb_real_identity _ _ _ _ hn h₀ h₁ h₂]
+    rfl
   rw [coulombMass_eq_lintegral_coulombWeight]
   apply lintegral_congr_ae
   have hz' : ∀ᵐ x ∂μ, x ≠ z := by apply ae_iff.mpr; simpa using hz

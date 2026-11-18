@@ -13,8 +13,6 @@ import Mathlib.Analysis.Complex.HalfPlane
 
 /-!
 # Entire continuation of the Upsilon strip function
-
-The continuation is defined by compatible charts on the translates of the defining strip.
 -/
 
 @[expose] public section
@@ -27,776 +25,240 @@ namespace DOZZ.Proofs
 
 variable {γ : ℝ}
 
-private def upsilonBase (γ : ℝ) (z : ℂ) : ℂ := Complex.exp (upsilonLog γ z)
+private def upsBase (γ : ℝ) (z : ℂ) : ℂ := Complex.exp (upsilonLog γ z)
+private def upsB (γ : ℝ) : ℂ := ((γ / 2 : ℝ) : ℂ)
+private def upsShift (γ : ℝ) (n : ℕ) : ℂ := ((n : ℝ) * (γ / 2) : ℂ)
 
-private def upsilonStrip (γ : ℝ) : Set ℂ :=
-  {z | 0 < z.re ∧ z.re < Q γ}
+private def upsRFactor (γ : ℝ) (z : ℂ) : ℂ :=
+  Complex.Gamma (upsB γ * z) * (Complex.Gamma (1 - upsB γ * z))⁻¹ * upsB γ ^ (1 - (γ : ℂ) * z)
 
-private theorem differentiableOn_upsilonBase_of_log
-    {γ : ℝ}
-    (hLog : DifferentiableOn ℂ (fun z => upsilonLog γ z) (upsilonStrip γ)) :
-    DifferentiableOn ℂ (upsilonBase γ) (upsilonStrip γ) := by
-  intro z hz
-  change DifferentiableWithinAt ℂ (fun w => Complex.exp (upsilonLog γ w))
-    (upsilonStrip γ) z
-  exact differentiable_exp.differentiableAt.comp_differentiableWithinAt z (hLog z hz)
+private def upsLFactor (γ : ℝ) (z : ℂ) : ℂ :=
+  upsB γ ^ ((γ : ℂ) * z - 1) * Complex.Gamma (1 - upsB γ * z) * (Complex.Gamma (upsB γ * z))⁻¹
 
-private theorem upsilonStrip_isOpen (γ : ℝ) : IsOpen (upsilonStrip γ) := by
-  change IsOpen ((Complex.re ⁻¹' Set.Ioi (0 : ℝ)) ∩
-    (Complex.re ⁻¹' Set.Iio (Q γ)))
-  exact (Complex.isOpen_re_gt 0).inter (Complex.isOpen_re_lt (Q γ))
+private def upsRChart (γ : ℝ) (n : ℕ) (z : ℂ) : ℂ :=
+  upsBase γ (z - upsShift γ n) * ∏ j ∈ Finset.range n, upsRFactor γ (z - upsShift γ (j + 1))
 
-private def upsilonB (γ : ℝ) : ℂ := ((γ / 2 : ℝ) : ℂ)
+private def upsLChart (γ : ℝ) (n : ℕ) (z : ℂ) : ℂ :=
+  upsBase γ (z + upsShift γ n) * ∏ j ∈ Finset.range n, upsLFactor γ (z + upsShift γ j)
 
-private def upsilonShiftN (γ : ℝ) (n : ℕ) : ℂ := ((n : ℝ) * (γ / 2) : ℂ)
+private def upsRDom (γ : ℝ) (n : ℕ) : Set ℂ :=
+  {z | 0 < (z - upsShift γ n).re ∧ (z - upsShift γ n).re < Q γ}
 
-private def upsilonRightFactor (γ : ℝ) (z : ℂ) : ℂ :=
-  Complex.Gamma (upsilonB γ * z) * (Complex.Gamma (1 - upsilonB γ * z))⁻¹ *
-    upsilonB γ ^ (1 - (γ : ℂ) * z)
+private def upsLDom (γ : ℝ) (n : ℕ) : Set ℂ :=
+  {z | 0 < (z + upsShift γ n).re ∧ (z + upsShift γ n).re < Q γ}
 
-private def upsilonLeftFactor (γ : ℝ) (z : ℂ) : ℂ :=
-  upsilonB γ ^ ((γ : ℂ) * z - 1) * Complex.Gamma (1 - upsilonB γ * z) *
-    (Complex.Gamma (upsilonB γ * z))⁻¹
+@[simp] private lemma upsShift_re (γ : ℝ) (n : ℕ) : (upsShift γ n).re = (n : ℝ) * (γ / 2) := by
+  simp [upsShift]
 
-private def upsilonRightChart (γ : ℝ) (n : ℕ) (z : ℂ) : ℂ :=
-  upsilonBase γ (z - upsilonShiftN γ n) *
-    ∏ j ∈ Finset.range n,
-      upsilonRightFactor γ (z - upsilonShiftN γ (j + 1))
 
-private def upsilonLeftChart (γ : ℝ) (n : ℕ) (z : ℂ) : ℂ :=
-  upsilonBase γ (z + upsilonShiftN γ n) *
-    ∏ j ∈ Finset.range n,
-      upsilonLeftFactor γ (z + upsilonShiftN γ j)
 
-private def upsilonRightDomain (γ : ℝ) (n : ℕ) : Set ℂ :=
-  {z | 0 < (z - upsilonShiftN γ n).re ∧ (z - upsilonShiftN γ n).re < Q γ}
 
-private def upsilonLeftDomain (γ : ℝ) (n : ℕ) : Set ℂ :=
-  {z | 0 < (z + upsilonShiftN γ n).re ∧ (z + upsilonShiftN γ n).re < Q γ}
 
-private inductive UpsilonChartIndex where
-  | left : ℕ → UpsilonChartIndex
-  | right : ℕ → UpsilonChartIndex
-
-private def upsilonChartDomain (γ : ℝ) : UpsilonChartIndex → Set ℂ
-  | .left n => upsilonLeftDomain γ n
-  | .right n => upsilonRightDomain γ n
-
-private def upsilonChart (γ : ℝ) : UpsilonChartIndex → ℂ → ℂ
-  | .left n => upsilonLeftChart γ n
-  | .right n => upsilonRightChart γ n
-
-private theorem upsilonShiftN_re (γ : ℝ) (n : ℕ) :
-    (upsilonShiftN γ n).re = (n : ℝ) * (γ / 2) := by
-  simp [upsilonShiftN]
-
-private theorem upsilonShiftN_succ (γ : ℝ) (n : ℕ) :
-    upsilonShiftN γ (n + 1) = upsilonShiftN γ n + upsilonB γ := by
-  simp [upsilonShiftN, upsilonB, Nat.cast_add]
-  ring
-
-private theorem upsilonRightArg_re (γ : ℝ) (n : ℕ) (z : ℂ) :
-    (z - upsilonShiftN γ n).re = z.re - (n : ℝ) * (γ / 2) := by
-  simp [Complex.sub_re, upsilonShiftN_re]
-
-private theorem upsilonLeftArg_re (γ : ℝ) (n : ℕ) (z : ℂ) :
-    (z + upsilonShiftN γ n).re = z.re + (n : ℝ) * (γ / 2) := by
-  simp [Complex.add_re, upsilonShiftN_re]
-
-private theorem upsilonShiftN_mono {γ : ℝ} (hγ : 0 < γ) {m n : ℕ} (hmn : m ≤ n) :
-    (upsilonShiftN γ m).re ≤ (upsilonShiftN γ n).re := by
-  rw [upsilonShiftN_re, upsilonShiftN_re]
-  exact mul_le_mul_of_nonneg_right (Nat.cast_le.mpr hmn) (by positivity)
-
-private theorem upsilon_Q_sub_B (γ : ℝ) : Q γ - γ / 2 = 2 / γ := by
-  unfold Q
-  ring
-
-private theorem upsilon_Q_gt_B (hγ : 0 < γ) : γ / 2 < Q γ := by
-  unfold Q
-  have : 0 < 2 / γ := by positivity
-  linarith
-
-private theorem upsilon_Q_gt_twoB (hγ : 0 < γ) (hγ2 : γ < 2) :
-    γ < Q γ := by
-  unfold Q
-  have hsq : γ ^ 2 < 4 := by
-    linarith only [mul_lt_mul'' hγ2 hγ2 hγ.le hγ.le]
-  have hb : γ / 2 < 2 / γ := by
-    rw [lt_div_iff₀ hγ]
-    linarith only [hsq]
-  linarith
-
-private theorem upsilonB_ne_zero (hγ : 0 < γ) : upsilonB γ ≠ 0 := by
-  apply Complex.ofReal_ne_zero.mpr
-  exact (div_pos hγ (by norm_num)).ne'
-
-private theorem differentiableAt_upsilonRightFactor
-    (hγ : 0 < γ) {z : ℂ} (hz : 0 < z.re) :
-    DifferentiableAt ℂ (upsilonRightFactor γ) z := by
-  have hbR : 0 < γ / 2 := by positivity
-  have hbzre : (upsilonB γ * z).re = (γ / 2) * z.re := by
-    simp [upsilonB, Complex.mul_re]
-  have hArgRe : 0 < (upsilonB γ * z).re := by
-    rw [hbzre]
-    exact mul_pos hbR hz
-  have hlin : DifferentiableAt ℂ (fun w : ℂ => upsilonB γ * w) z := by fun_prop
-  have hOneMinus : DifferentiableAt ℂ
-      (fun w : ℂ => 1 - upsilonB γ * w) z := by fun_prop
-  have hGamma : DifferentiableAt ℂ Complex.Gamma (upsilonB γ * z) :=
-    Complex.differentiableAt_Gamma (upsilonB γ * z) (by
-      intro n hn
-      apply (Complex.Gamma_ne_zero_of_re_pos hArgRe)
-      rw [hn]
-      exact Complex.Gamma_neg_nat_eq_zero n)
-  have hGammaComp : DifferentiableAt ℂ
-      (fun w : ℂ => Complex.Gamma (upsilonB γ * w)) z :=
-    DifferentiableAt.fun_comp' z (f := fun w : ℂ => upsilonB γ * w)
-      (g := Complex.Gamma) hGamma hlin
-  have hInvGammaComp : DifferentiableAt ℂ
-      (fun w : ℂ => (Complex.Gamma (1 - upsilonB γ * w))⁻¹) z := by
-    exact DifferentiableAt.fun_comp' z (f := fun w : ℂ => 1 - upsilonB γ * w)
-      (g := fun w : ℂ => (Complex.Gamma w)⁻¹)
-      Complex.differentiable_one_div_Gamma.differentiableAt hOneMinus
-  have hpow : DifferentiableAt ℂ
-      (fun w : ℂ => upsilonB γ ^ (1 - (γ : ℂ) * w)) z := by
-    apply DifferentiableAt.const_cpow
-    · fun_prop
-    · exact Or.inl (upsilonB_ne_zero hγ)
-  change DifferentiableAt ℂ
-    (fun w => Complex.Gamma (upsilonB γ * w) *
-      (Complex.Gamma (1 - upsilonB γ * w))⁻¹ *
-      upsilonB γ ^ (1 - (γ : ℂ) * w)) z
-  exact (hGammaComp.mul hInvGammaComp).mul hpow
-
-private theorem differentiableAt_upsilonLeftFactor
-    (hγ : 0 < γ) {z : ℂ} (hz : z.re < 2 / γ) :
-    DifferentiableAt ℂ (upsilonLeftFactor γ) z := by
-  have hbR : 0 < γ / 2 := by positivity
-  have hbzre : (upsilonB γ * z).re = (γ / 2) * z.re := by
-    simp [upsilonB, Complex.mul_re]
-  have hscale : (γ / 2) * z.re < 1 := by
-    have hmul := mul_lt_mul_of_pos_left hz hbR
-    have hcancel : (γ / 2) * (2 / γ) = 1 := by field_simp [hγ.ne']
-    rw [hcancel] at hmul
-    exact hmul
-  have hArgRe : 0 < (1 - upsilonB γ * z).re := by
-    rw [Complex.sub_re, Complex.one_re, hbzre]
-    linarith
-  have hlin : DifferentiableAt ℂ (fun w : ℂ => upsilonB γ * w) z := by fun_prop
-  have hOneMinus : DifferentiableAt ℂ
-      (fun w : ℂ => 1 - upsilonB γ * w) z := by fun_prop
-  have hGamma : DifferentiableAt ℂ Complex.Gamma (1 - upsilonB γ * z) :=
-    Complex.differentiableAt_Gamma (1 - upsilonB γ * z) (by
-      intro n hn
-      apply (Complex.Gamma_ne_zero_of_re_pos hArgRe)
-      rw [hn]
-      exact Complex.Gamma_neg_nat_eq_zero n)
-  have hGammaComp : DifferentiableAt ℂ
-      (fun w : ℂ => Complex.Gamma (1 - upsilonB γ * w)) z :=
-    DifferentiableAt.fun_comp' z (f := fun w : ℂ => 1 - upsilonB γ * w)
-      (g := Complex.Gamma) hGamma hOneMinus
-  have hInvGammaComp : DifferentiableAt ℂ
-      (fun w : ℂ => (Complex.Gamma (upsilonB γ * w))⁻¹) z := by
-    exact DifferentiableAt.fun_comp' z (f := fun w : ℂ => upsilonB γ * w)
-      (g := fun w : ℂ => (Complex.Gamma w)⁻¹)
-      Complex.differentiable_one_div_Gamma.differentiableAt hlin
-  have hpow : DifferentiableAt ℂ
-      (fun w : ℂ => upsilonB γ ^ ((γ : ℂ) * w - 1)) z := by
-    apply DifferentiableAt.const_cpow
-    · fun_prop
-    · exact Or.inl (upsilonB_ne_zero hγ)
-  change DifferentiableAt ℂ
-    (fun w => upsilonB γ ^ ((γ : ℂ) * w - 1) *
-      Complex.Gamma (1 - upsilonB γ * w) *
-      (Complex.Gamma (upsilonB γ * w))⁻¹) z
-  exact (hpow.mul hGammaComp).mul hInvGammaComp
-
-private theorem upsilonLeftRight_cancel
-    (hγ : 0 < γ) {z : ℂ} (hz0 : 0 < z.re) (hzQ : z.re < 2 / γ) :
-    upsilonLeftFactor γ z * upsilonRightFactor γ z = 1 := by
-  have hb : upsilonB γ ≠ 0 := upsilonB_ne_zero hγ
-  have hbzre : (upsilonB γ * z).re = (γ / 2) * z.re := by
-    simp [upsilonB, Complex.mul_re]
-  have hGamma : Complex.Gamma (upsilonB γ * z) ≠ 0 :=
-    Complex.Gamma_ne_zero_of_re_pos (by
-      rw [hbzre]
-      exact mul_pos (by positivity) hz0)
-  have hscale : (γ / 2) * z.re < 1 := by
-    have hmul := mul_lt_mul_of_pos_left hzQ (by positivity : 0 < γ / 2)
-    have hcancel : (γ / 2) * (2 / γ) = 1 := by field_simp [hγ.ne']
-    rw [hcancel] at hmul
-    exact hmul
-  have hGamma1 : Complex.Gamma (1 - upsilonB γ * z) ≠ 0 :=
-    Complex.Gamma_ne_zero_of_re_pos (by
-      rw [Complex.sub_re, Complex.one_re, hbzre]
-      linarith)
-  have hGamma' : Complex.Gamma (z * upsilonB γ) ≠ 0 := by
-    have heq : z * upsilonB γ = upsilonB γ * z := mul_comm _ _
-    rw [heq]
-    exact hGamma
-  have hGamma1' : Complex.Gamma (1 - z * upsilonB γ) ≠ 0 := by
-    have heq : 1 - z * upsilonB γ = 1 - upsilonB γ * z := by ring
-    rw [heq]
-    exact hGamma1
-  have hpow : upsilonB γ ^ (1 - (γ : ℂ) * z) ≠ 0 :=
-    Complex.cpow_ne_zero_iff.mpr (Or.inl hb)
-  change
-    (upsilonB γ ^ ((γ : ℂ) * z - 1) *
-      Complex.Gamma (1 - upsilonB γ * z) *
-      (Complex.Gamma (upsilonB γ * z))⁻¹) *
-    (Complex.Gamma (upsilonB γ * z) *
-      (Complex.Gamma (1 - upsilonB γ * z))⁻¹ *
-      upsilonB γ ^ (1 - (γ : ℂ) * z)) = 1
-  rw [show (γ : ℂ) * z - 1 = -(1 - (γ : ℂ) * z) by ring, Complex.cpow_neg]
-  field_simp [hGamma', hGamma1', hpow]
-
-private theorem upsilonLeftRecurrence
-    (hγ : 0 < γ) {z : ℂ} (hz0 : 0 < z.re) (hzQ : z.re < 2 / γ)
-    (hshift : upsilonBase γ (z + upsilonB γ) =
-      upsilonRightFactor γ z * upsilonBase γ z) :
-    upsilonLeftFactor γ z * upsilonBase γ (z + upsilonB γ) = upsilonBase γ z := by
-  calc
-    _ = upsilonLeftFactor γ z * (upsilonRightFactor γ z * upsilonBase γ z) := by
-      rw [hshift]
-    _ = upsilonBase γ z := by
-      rw [← mul_assoc, upsilonLeftRight_cancel hγ hz0 hzQ, one_mul]
-
-private theorem differentiableAt_upsilonChart
-    (hγ : 0 < γ) {i : UpsilonChartIndex} {z : ℂ}
-    (hbase : DifferentiableOn ℂ (upsilonBase γ) (upsilonStrip γ))
-    (hz : z ∈ upsilonChartDomain γ i) :
-    DifferentiableAt ℂ (upsilonChart γ i) z := by
-  cases i with
-  | left n =>
-    have hBaseArg : z + upsilonShiftN γ n ∈ upsilonStrip γ := by
-      exact hz
-    have hBaseAt : DifferentiableAt ℂ (upsilonBase γ)
-        (z + upsilonShiftN γ n) :=
-      hbase.differentiableAt ((upsilonStrip_isOpen γ).mem_nhds hBaseArg)
-    have hShiftDiff : DifferentiableAt ℂ
-        (fun w : ℂ => w + upsilonShiftN γ n) z := by fun_prop
-    have hBaseComp : DifferentiableAt ℂ
-        (fun w : ℂ => upsilonBase γ (w + upsilonShiftN γ n)) z :=
-      DifferentiableAt.fun_comp' z (f := fun w : ℂ => w + upsilonShiftN γ n)
-        (g := upsilonBase γ) hBaseAt hShiftDiff
-    have hProd : DifferentiableAt ℂ
-        (fun w : ℂ => ∏ j ∈ Finset.range n,
-          upsilonLeftFactor γ (w + upsilonShiftN γ j)) z := by
-      have hprod := DifferentiableAt.fun_finsetProd
-        (u := Finset.range n)
-        (f := fun (j : ℕ) (w : ℂ) => upsilonLeftFactor γ (w + upsilonShiftN γ j))
-        (by
-          intro j hj
-          have hjn : j < n := Finset.mem_range.mp hj
-          have hjcast : (j : ℝ) + 1 ≤ n := by exact_mod_cast (Nat.succ_le_iff.mpr hjn)
-          have hshift : (j : ℝ) * (γ / 2) + γ / 2 ≤ (n : ℝ) * (γ / 2) := by
-            have hmul := mul_le_mul_of_nonneg_right hjcast (by positivity : 0 ≤ γ / 2)
-            linarith only [hmul]
-          have harg : (z + upsilonShiftN γ j).re < 2 / γ := by
-            rw [upsilonLeftArg_re]
-            have hzn := hz.2
-            rw [upsilonLeftArg_re] at hzn
-            have hQ := upsilon_Q_sub_B γ
-            linarith only [hshift, hzn, hQ]
-          have hArgDiff := differentiableAt_upsilonLeftFactor hγ harg
-          have hlin : DifferentiableAt ℂ (fun w : ℂ => w + upsilonShiftN γ j) z := by
-            fun_prop
-          exact DifferentiableAt.fun_comp' z
-            (f := fun w : ℂ => w + upsilonShiftN γ j)
-            (g := upsilonLeftFactor γ) hArgDiff hlin)
-      simpa only [Finset.prod_apply] using hprod
-    change DifferentiableAt ℂ
-      (fun w => upsilonBase γ (w + upsilonShiftN γ n) *
-        ∏ j ∈ Finset.range n,
-          upsilonLeftFactor γ (w + upsilonShiftN γ j)) z
-    exact hBaseComp.mul hProd
-  | right n =>
-    have hBaseArg : z - upsilonShiftN γ n ∈ upsilonStrip γ := hz
-    have hBaseAt : DifferentiableAt ℂ (upsilonBase γ)
-        (z - upsilonShiftN γ n) :=
-      hbase.differentiableAt ((upsilonStrip_isOpen γ).mem_nhds hBaseArg)
-    have hShiftDiff : DifferentiableAt ℂ
-        (fun w : ℂ => w - upsilonShiftN γ n) z := by fun_prop
-    have hBaseComp : DifferentiableAt ℂ
-        (fun w : ℂ => upsilonBase γ (w - upsilonShiftN γ n)) z :=
-      DifferentiableAt.fun_comp' z (f := fun w : ℂ => w - upsilonShiftN γ n)
-        (g := upsilonBase γ) hBaseAt hShiftDiff
-    have hProd : DifferentiableAt ℂ
-        (fun w : ℂ => ∏ j ∈ Finset.range n,
-          upsilonRightFactor γ (w - upsilonShiftN γ (j + 1))) z := by
-      have hprod := DifferentiableAt.fun_finsetProd
-        (u := Finset.range n)
-        (f := fun (j : ℕ) (w : ℂ) =>
-          upsilonRightFactor γ (w - upsilonShiftN γ (j + 1)))
-        (by
-          intro j hj
-          have hjn : j < n := Finset.mem_range.mp hj
-          have hjn' : j + 1 ≤ n := Nat.succ_le_iff.mpr hjn
-          have hshift : (upsilonShiftN γ (j + 1)).re ≤
-              (upsilonShiftN γ n).re := upsilonShiftN_mono hγ hjn'
-          change (z - upsilonShiftN γ n).re > 0 ∧
-            (z - upsilonShiftN γ n).re < Q γ at hz
-          have harg : 0 < (z - upsilonShiftN γ (j + 1)).re := by
-            rw [upsilonRightArg_re] at hz
-            rw [upsilonRightArg_re]
-            exact lt_of_lt_of_le hz.1 (by
-              have hshift' : ((j + 1 : ℕ) : ℝ) * (γ / 2) ≤
-                  (n : ℝ) * (γ / 2) := by
-                simpa only [upsilonShiftN_re] using hshift
-              linarith)
-          have hArgDiff := differentiableAt_upsilonRightFactor hγ harg
-          have hlin : DifferentiableAt ℂ
-              (fun w : ℂ => w - upsilonShiftN γ (j + 1)) z := by fun_prop
-          exact DifferentiableAt.fun_comp' z
-            (f := fun w : ℂ => w - upsilonShiftN γ (j + 1))
-            (g := upsilonRightFactor γ) hArgDiff hlin)
-      simpa only [Finset.prod_apply] using hprod
-    change DifferentiableAt ℂ
-      (fun w => upsilonBase γ (w - upsilonShiftN γ n) *
-        ∏ j ∈ Finset.range n,
-          upsilonRightFactor γ (w - upsilonShiftN γ (j + 1))) z
-    exact hBaseComp.mul hProd
-
-private theorem upsilonChartDomain_isOpen (γ : ℝ) (i : UpsilonChartIndex) :
-    IsOpen (upsilonChartDomain γ i) := by
-  cases i with
-  | left n =>
-    change IsOpen ((fun z : ℂ => (z + upsilonShiftN γ n).re) ⁻¹' Set.Ioo 0 (Q γ))
-    exact isOpen_Ioo.preimage (by fun_prop)
-  | right n =>
-    change IsOpen ((fun z : ℂ => (z - upsilonShiftN γ n).re) ⁻¹' Set.Ioo 0 (Q γ))
-    exact isOpen_Ioo.preimage (by fun_prop)
-
-private theorem upsilonLeftChart_succ_eq
-    (hγ : 0 < γ) {n : ℕ} {z : ℂ}
-    (hshift : ∀ v : ℂ, 0 < v.re → v.re < 2 / γ →
-      upsilonBase γ (v + upsilonB γ) =
-        upsilonRightFactor γ v * upsilonBase γ v)
-    (hzₙ : z ∈ upsilonLeftDomain γ n)
-    (hzₙ₁ : z ∈ upsilonLeftDomain γ (n + 1)) :
-    upsilonLeftChart γ (n + 1) z = upsilonLeftChart γ n z := by
-  let v : ℂ := z + upsilonShiftN γ n
-  have hv0 : 0 < v.re := by
-    simpa [v, upsilonLeftArg_re] using hzₙ.1
-  have htranslate : z + upsilonShiftN γ (n + 1) = v + upsilonB γ := by
-    dsimp [v]
-    rw [upsilonShiftN_succ]
-    ring
-  have hvQ : v.re < 2 / γ := by
-    have hupper := hzₙ₁.2
-    rw [htranslate] at hupper
-    rw [Complex.add_re, show (upsilonB γ).re = γ / 2 by simp [upsilonB]] at hupper
-    have hQ := upsilon_Q_sub_B γ
-    linarith
-  have hstripShift := hshift v hv0 hvQ
-  have hrec := upsilonLeftRecurrence hγ hv0 hvQ hstripShift
-  unfold upsilonLeftChart
-  rw [Finset.prod_range_succ, htranslate]
-  change upsilonBase γ (v + upsilonB γ) *
-      ((∏ j ∈ Finset.range n, upsilonLeftFactor γ (z + upsilonShiftN γ j)) *
-        upsilonLeftFactor γ v) =
-    upsilonBase γ v * ∏ j ∈ Finset.range n,
-      upsilonLeftFactor γ (z + upsilonShiftN γ j)
-  calc
-    _ = (upsilonLeftFactor γ v * upsilonBase γ (v + upsilonB γ)) *
-        ∏ j ∈ Finset.range n, upsilonLeftFactor γ (z + upsilonShiftN γ j) := by ring
-    _ = upsilonBase γ v *
-        ∏ j ∈ Finset.range n, upsilonLeftFactor γ (z + upsilonShiftN γ j) := by
-      rw [hrec]
-
-private theorem upsilonRightChart_succ_eq
-    {n : ℕ} {z : ℂ}
-    (hshift : ∀ v : ℂ, 0 < v.re → v.re < 2 / γ →
-      upsilonBase γ (v + upsilonB γ) =
-        upsilonRightFactor γ v * upsilonBase γ v)
-    (hzₙ : z ∈ upsilonRightDomain γ n)
-    (hzₙ₁ : z ∈ upsilonRightDomain γ (n + 1)) :
-    upsilonRightChart γ (n + 1) z = upsilonRightChart γ n z := by
-  let v : ℂ := z - upsilonShiftN γ (n + 1)
-  have hv0 : 0 < v.re := by
-    simpa [v, upsilonRightArg_re] using hzₙ₁.1
-  have htranslate : z - upsilonShiftN γ n = v + upsilonB γ := by
-    dsimp [v]
-    rw [upsilonShiftN_succ]
-    ring
-  have hvQ : v.re < 2 / γ := by
-    have hupper := hzₙ.2
-    rw [htranslate] at hupper
-    rw [Complex.add_re, show (upsilonB γ).re = γ / 2 by simp [upsilonB]] at hupper
-    have hQ := upsilon_Q_sub_B γ
-    linarith
-  have hstripShift := hshift v hv0 hvQ
-  unfold upsilonRightChart
-  rw [Finset.prod_range_succ]
-  rw [htranslate]
-  change upsilonBase γ v *
-      ((∏ j ∈ Finset.range n,
-        upsilonRightFactor γ (z - upsilonShiftN γ (j + 1))) *
-        upsilonRightFactor γ v) =
-    upsilonBase γ (v + upsilonB γ) * ∏ j ∈ Finset.range n,
-      upsilonRightFactor γ (z - upsilonShiftN γ (j + 1))
-  calc
-    _ = (upsilonRightFactor γ v * upsilonBase γ v) *
-        ∏ j ∈ Finset.range n,
-          upsilonRightFactor γ (z - upsilonShiftN γ (j + 1)) := by ring
-    _ = upsilonBase γ (v + upsilonB γ) *
-        ∏ j ∈ Finset.range n,
-          upsilonRightFactor γ (z - upsilonShiftN γ (j + 1)) := by
-      rw [← hstripShift]
-
-private theorem upsilonLeftDomain_intermediate
-    (hγ : 0 < γ) {m k n : ℕ} {z : ℂ}
-    (hmk : m ≤ k) (hkn : k ≤ n)
-    (hm : z ∈ upsilonLeftDomain γ m) (hn : z ∈ upsilonLeftDomain γ n) :
-    z ∈ upsilonLeftDomain γ k := by
-  change 0 < (z + upsilonShiftN γ m).re ∧
-    (z + upsilonShiftN γ m).re < Q γ at hm
-  change 0 < (z + upsilonShiftN γ n).re ∧
-    (z + upsilonShiftN γ n).re < Q γ at hn
-  change 0 < (z + upsilonShiftN γ k).re ∧
-    (z + upsilonShiftN γ k).re < Q γ
-  have hmk' := upsilonShiftN_mono hγ hmk
-  have hkn' := upsilonShiftN_mono hγ hkn
-  have hmkR : (m : ℝ) * (γ / 2) ≤ (k : ℝ) * (γ / 2) := by
-    simpa only [upsilonShiftN_re] using hmk'
-  have hknR : (k : ℝ) * (γ / 2) ≤ (n : ℝ) * (γ / 2) := by
-    simpa only [upsilonShiftN_re] using hkn'
-  rw [upsilonLeftArg_re] at hm hn ⊢
-  constructor
-  · linarith
-  · linarith
-
-private theorem upsilonRightDomain_intermediate
-    (hγ : 0 < γ) {m k n : ℕ} {z : ℂ}
-    (hmk : m ≤ k) (hkn : k ≤ n)
-    (hm : z ∈ upsilonRightDomain γ m) (hn : z ∈ upsilonRightDomain γ n) :
-    z ∈ upsilonRightDomain γ k := by
-  change 0 < (z - upsilonShiftN γ m).re ∧
-    (z - upsilonShiftN γ m).re < Q γ at hm
-  change 0 < (z - upsilonShiftN γ n).re ∧
-    (z - upsilonShiftN γ n).re < Q γ at hn
-  change 0 < (z - upsilonShiftN γ k).re ∧
-    (z - upsilonShiftN γ k).re < Q γ
-  have hmk' := upsilonShiftN_mono hγ hmk
-  have hkn' := upsilonShiftN_mono hγ hkn
-  have hmkR : (m : ℝ) * (γ / 2) ≤ (k : ℝ) * (γ / 2) := by
-    simpa only [upsilonShiftN_re] using hmk'
-  have hknR : (k : ℝ) * (γ / 2) ≤ (n : ℝ) * (γ / 2) := by
-    simpa only [upsilonShiftN_re] using hkn'
-  rw [upsilonRightArg_re] at hm hn ⊢
-  constructor
-  · linarith
-  · linarith
-
-private theorem upsilonLeftChart_eq_of_overlap_of_le
-    (hγ : 0 < γ) {m n : ℕ} {z : ℂ}
-    (hmn : m ≤ n)
-    (hshift : ∀ v : ℂ, 0 < v.re → v.re < 2 / γ →
-      upsilonBase γ (v + upsilonB γ) =
-        upsilonRightFactor γ v * upsilonBase γ v)
-    (hm : z ∈ upsilonLeftDomain γ m) (hn : z ∈ upsilonLeftDomain γ n) :
-    upsilonLeftChart γ m z = upsilonLeftChart γ n z := by
-  have hchain : ∀ k, ∀ m : ℕ, m ≤ k →
-        z ∈ upsilonLeftDomain γ m → z ∈ upsilonLeftDomain γ k →
-        upsilonLeftChart γ m z = upsilonLeftChart γ k z := by
-      intro k
-      induction k with
-      | zero =>
-          intro m hmle hmDom hkDom
-          have : m = 0 := Nat.eq_zero_of_le_zero hmle
-          subst m
-          rfl
-      | succ k ih =>
-          intro m hmle hmDom hkDom
-          by_cases hmk : m = k + 1
-          · subst m
-            rfl
-          · have hmle' : m ≤ k := by omega
-            have hDomK := upsilonLeftDomain_intermediate hγ hmle' (Nat.le_succ k)
-              hmDom hkDom
-            have hadj := upsilonLeftChart_succ_eq hγ hshift hDomK hkDom
-            calc
-              upsilonLeftChart γ m z = upsilonLeftChart γ k z := ih m hmle' hmDom hDomK
-              _ = upsilonLeftChart γ (k + 1) z := hadj.symm
-  exact hchain n m hmn hm hn
-
-private theorem upsilonLeftChart_eq_of_overlap
-    (hγ : 0 < γ) {m n : ℕ} {z : ℂ}
-    (hshift : ∀ v : ℂ, 0 < v.re → v.re < 2 / γ →
-      upsilonBase γ (v + upsilonB γ) =
-        upsilonRightFactor γ v * upsilonBase γ v)
-    (hm : z ∈ upsilonLeftDomain γ m) (hn : z ∈ upsilonLeftDomain γ n) :
-    upsilonLeftChart γ m z = upsilonLeftChart γ n z := by
-  rcases le_total m n with hmn | hnm
-  · exact upsilonLeftChart_eq_of_overlap_of_le hγ hmn hshift hm hn
-  · exact (upsilonLeftChart_eq_of_overlap_of_le hγ hnm hshift hn hm).symm
-
-private theorem upsilonRightChart_eq_of_overlap_of_le
-    (hγ : 0 < γ) {m n : ℕ} {z : ℂ}
-    (hmn : m ≤ n)
-    (hshift : ∀ v : ℂ, 0 < v.re → v.re < 2 / γ →
-      upsilonBase γ (v + upsilonB γ) =
-        upsilonRightFactor γ v * upsilonBase γ v)
-    (hm : z ∈ upsilonRightDomain γ m) (hn : z ∈ upsilonRightDomain γ n) :
-    upsilonRightChart γ m z = upsilonRightChart γ n z := by
-  have hchain : ∀ k, ∀ m : ℕ, m ≤ k →
-        z ∈ upsilonRightDomain γ m → z ∈ upsilonRightDomain γ k →
-        upsilonRightChart γ m z = upsilonRightChart γ k z := by
-      intro k
-      induction k with
-      | zero =>
-          intro m hmle hmDom hkDom
-          have : m = 0 := Nat.eq_zero_of_le_zero hmle
-          subst m
-          rfl
-      | succ k ih =>
-          intro m hmle hmDom hkDom
-          by_cases hmk : m = k + 1
-          · subst m
-            rfl
-          · have hmle' : m ≤ k := by omega
-            have hDomK := upsilonRightDomain_intermediate hγ hmle' (Nat.le_succ k)
-              hmDom hkDom
-            have hadj := upsilonRightChart_succ_eq hshift hDomK hkDom
-            calc
-              upsilonRightChart γ m z = upsilonRightChart γ k z := ih m hmle' hmDom hDomK
-              _ = upsilonRightChart γ (k + 1) z := hadj.symm
-  exact hchain n m hmn hm hn
-
-private theorem upsilonRightChart_eq_of_overlap
-    (hγ : 0 < γ) {m n : ℕ} {z : ℂ}
-    (hshift : ∀ v : ℂ, 0 < v.re → v.re < 2 / γ →
-      upsilonBase γ (v + upsilonB γ) =
-        upsilonRightFactor γ v * upsilonBase γ v)
-    (hm : z ∈ upsilonRightDomain γ m) (hn : z ∈ upsilonRightDomain γ n) :
-    upsilonRightChart γ m z = upsilonRightChart γ n z := by
-  rcases le_total m n with hmn | hnm
-  · exact upsilonRightChart_eq_of_overlap_of_le hγ hmn hshift hm hn
-  · exact (upsilonRightChart_eq_of_overlap_of_le hγ hnm hshift hn hm).symm
-
-private theorem upsilonLeftRightChart_eq_of_mem
-    (hγ : 0 < γ) {z : ℂ} {m n : ℕ}
-    (hshift : ∀ v : ℂ, 0 < v.re → v.re < 2 / γ →
-      upsilonBase γ (v + upsilonB γ) =
-        upsilonRightFactor γ v * upsilonBase γ v)
-    (hi : z ∈ upsilonLeftDomain γ m) (hj : z ∈ upsilonRightDomain γ n) :
-    upsilonLeftChart γ m z = upsilonRightChart γ n z := by
-  have hz0 : 0 < z.re := by
-    change 0 < (z - upsilonShiftN γ n).re ∧ _ at hj
-    rw [upsilonRightArg_re] at hj
-    have hnonneg : 0 ≤ (n : ℝ) * (γ / 2) := by positivity
-    linarith
-  have hzQ : z.re < Q γ := by
-    change 0 < (z + upsilonShiftN γ m).re ∧
-      (z + upsilonShiftN γ m).re < Q γ at hi
-    rw [upsilonLeftArg_re] at hi
-    have hnonneg : 0 ≤ (m : ℝ) * (γ / 2) := by positivity
-    linarith
-  have hbase : z ∈ upsilonStrip γ := ⟨hz0, hzQ⟩
-  have hleft0 : z ∈ upsilonLeftDomain γ 0 := by
-    simpa [upsilonLeftDomain, upsilonShiftN, upsilonStrip] using hbase
-  have hright0 : z ∈ upsilonRightDomain γ 0 := by
-    simpa [upsilonRightDomain, upsilonShiftN, upsilonStrip] using hbase
-  have hleft := upsilonLeftChart_eq_of_overlap hγ hshift hi hleft0
-  have hright := upsilonRightChart_eq_of_overlap hγ hshift hright0 hj
-  calc
-    upsilonLeftChart γ m z = upsilonLeftChart γ 0 z := hleft
-    _ = upsilonBase γ z := by simp [upsilonLeftChart, upsilonShiftN, upsilonBase]
-    _ = upsilonRightChart γ 0 z := by simp [upsilonRightChart, upsilonShiftN, upsilonBase]
-    _ = upsilonRightChart γ n z := hright
-
-private theorem upsilonChart_eq_of_mem
-    (hγ : 0 < γ) {z : ℂ} {i j : UpsilonChartIndex}
-    (hshift : ∀ v : ℂ, 0 < v.re → v.re < 2 / γ →
-      upsilonBase γ (v + upsilonB γ) =
-        upsilonRightFactor γ v * upsilonBase γ v)
-    (hi : z ∈ upsilonChartDomain γ i) (hj : z ∈ upsilonChartDomain γ j) :
-    upsilonChart γ i z = upsilonChart γ j z := by
-  cases i with
-  | left m =>
-    cases j with
-    | left n =>
-      exact upsilonLeftChart_eq_of_overlap hγ hshift hi hj
-    | right n =>
-      exact upsilonLeftRightChart_eq_of_mem hγ hshift hi hj
-  | right m =>
-    cases j with
-    | left n =>
-      change z ∈ upsilonRightDomain γ m at hi
-      change z ∈ upsilonLeftDomain γ n at hj
-      exact (upsilonLeftRightChart_eq_of_mem hγ hshift hj hi).symm
-    | right n =>
-      exact upsilonRightChart_eq_of_overlap hγ hshift hi hj
-
-private theorem exists_upsilonChartDomain
-    {γ : ℝ}
-    (hγ : 0 < γ) (hγ2 : γ < 2) (z : ℂ) :
-    ∃ i : UpsilonChartIndex, z ∈ upsilonChartDomain γ i := by
-  have hb : 0 < γ / 2 := by positivity
-  have hQb := upsilon_Q_gt_B hγ
-  by_cases hzpos : 0 < z.re
-  · let y : ℝ := z.re / (γ / 2)
-    have hy0 : 0 ≤ y := by dsimp [y]; positivity
-    by_cases hylt : y < 1
-    · refine ⟨.right 0, ?_⟩
-      change 0 < (z - upsilonShiftN γ 0).re ∧
-        (z - upsilonShiftN γ 0).re < Q γ
-      rw [upsilonRightArg_re]
-      constructor
-      · simpa using hzpos
-      · have hylt' : z.re / (γ / 2) < 1 := by simpa only [y] using hylt
-        have hzlt : z.re < γ / 2 := by
-          simpa using (div_lt_iff₀ hb).mp hylt'
-        simpa using hzlt.trans hQb
-    · let N : ℕ := Nat.floor y
-      have hNpos : 1 ≤ N := by
-        by_contra hnot
-        have hNlt : N < 1 := Nat.lt_of_not_ge hnot
-        have hNlt' : Nat.floor y < 1 := by simpa only [N] using hNlt
-        have hylt' : y < 1 := by
-          simpa using (Nat.floor_lt hy0).mp hNlt'
-        exact (not_lt_of_ge (le_of_not_gt hylt)) hylt'
-      let n : ℕ := N - 1
-      have hfloor : (N : ℝ) ≤ y := by
-        exact Nat.floor_le hy0
-      have hfloorlt : y < (N : ℝ) + 1 := by
-        exact Nat.lt_floor_add_one y
-      have hncast : (n : ℝ) = (N : ℝ) - 1 := by
-        simp [n, Nat.cast_sub hNpos]
-      have hxy : z.re = y * (γ / 2) := by
-        dsimp [y]
-        field_simp [ne_of_gt hb]
-      have hlow : (N : ℝ) - 1 < y := by linarith
-      have hscaledLow : ((N : ℝ) - 1) * (γ / 2) < z.re := by
-        have h := mul_lt_mul_of_pos_right hlow hb
-        simpa [hxy] using h
-      have hscaledHigh : z.re < ((N : ℝ) + 1) * (γ / 2) := by
-        have h := mul_lt_mul_of_pos_right hfloorlt hb
-        simpa [hxy] using h
-      refine ⟨.right n, ?_⟩
-      change 0 < (z - upsilonShiftN γ n).re ∧
-        (z - upsilonShiftN γ n).re < Q γ
-      rw [upsilonRightArg_re, hncast]
-      constructor
-      · linarith
-      · have hQ2 : 2 * (γ / 2) < Q γ := by
-          linarith only [upsilon_Q_gt_twoB hγ hγ2]
-        linarith only [hscaledHigh, hQ2]
-  · have hzle : z.re ≤ 0 := le_of_not_gt hzpos
-    let y : ℝ := -z.re / (γ / 2)
-    have hy0 : 0 ≤ y := by
-      dsimp [y]
-      exact div_nonneg (neg_nonneg.mpr hzle) hb.le
-    let N : ℕ := Nat.floor y
-    let n : ℕ := N + 1
-    have hfloor : (N : ℝ) ≤ y := Nat.floor_le hy0
-    have hfloorlt : y < (N : ℝ) + 1 := Nat.lt_floor_add_one y
-    have hncast : (n : ℝ) = (N : ℝ) + 1 := by simp [n]
-    have hxy : z.re = -(y * (γ / 2)) := by
-      dsimp [y]
-      field_simp [ne_of_gt hb]
-    have hscaledLow : -z.re < (n : ℝ) * (γ / 2) := by
-      have h := mul_lt_mul_of_pos_right hfloorlt hb
-      rw [hxy, hncast]
-      linarith only [h]
-    have hscaledLow' : -z.re < ((N : ℝ) + 1) * (γ / 2) := by
-      simpa [hncast] using hscaledLow
-    have hscaledHigh : (n : ℝ) * (γ / 2) ≤ y * (γ / 2) + γ / 2 := by
-      have hle : (N : ℝ) + 1 ≤ y + 1 := by linarith
-      have h := mul_le_mul_of_nonneg_right hle (le_of_lt hb)
-      rw [hncast]
-      linarith only [h]
-    have hscaledHigh' : ((N : ℝ) + 1) * (γ / 2) ≤
-        y * (γ / 2) + γ / 2 := by simpa [hncast] using hscaledHigh
-    refine ⟨.left n, ?_⟩
-    change 0 < (z + upsilonShiftN γ n).re ∧
-      (z + upsilonShiftN γ n).re < Q γ
-    rw [upsilonLeftArg_re, hncast]
-    constructor
-    · linarith [hscaledLow']
-    · linarith only [hscaledHigh', hxy, hQb]
-
-private noncomputable def upsilonIndexAt
-    {γ : ℝ}
-    (hγ : 0 < γ) (hγ2 : γ < 2) (z : ℂ) : UpsilonChartIndex :=
-  Classical.choose (exists_upsilonChartDomain (γ := γ) hγ hγ2 z)
-
-private theorem upsilonIndexAt_mem
-    {γ : ℝ}
-    (hγ : 0 < γ) (hγ2 : γ < 2) (z : ℂ) :
-    z ∈ upsilonChartDomain γ (upsilonIndexAt hγ hγ2 z) :=
-  Classical.choose_spec (exists_upsilonChartDomain (γ := γ) hγ hγ2 z)
-
-private noncomputable def upsilonContinuationFunction
-    {γ : ℝ}
-    (hγ : 0 < γ) (hγ2 : γ < 2) (z : ℂ) : ℂ :=
-  upsilonChart γ (upsilonIndexAt (γ := γ) hγ hγ2 z) z
-
-private theorem upsilonContinuation_eq_chart_of_mem
-    {γ : ℝ}
-    (hγ : 0 < γ) (hγ2 : γ < 2)
-    (hshift : ∀ v : ℂ, 0 < v.re → v.re < 2 / γ →
-      upsilonBase γ (v + upsilonB γ) =
-        upsilonRightFactor γ v * upsilonBase γ v)
-    {z : ℂ} {i : UpsilonChartIndex} (hi : z ∈ upsilonChartDomain γ i) :
-    upsilonContinuationFunction (γ := γ) hγ hγ2 z = upsilonChart γ i z := by
-  exact upsilonChart_eq_of_mem hγ hshift
-    (upsilonIndexAt_mem (γ := γ) hγ hγ2 z) hi
-
-private theorem upsilonContinuation_differentiableAt
-    {γ : ℝ}
-    (hγ : 0 < γ) (hγ2 : γ < 2)
-    (hbase : DifferentiableOn ℂ (upsilonBase γ) (upsilonStrip γ))
-    (hshift : ∀ v : ℂ, 0 < v.re → v.re < 2 / γ →
-      upsilonBase γ (v + upsilonB γ) =
-        upsilonRightFactor γ v * upsilonBase γ v)
-    (z : ℂ) :
-    DifferentiableAt ℂ (upsilonContinuationFunction (γ := γ) hγ hγ2) z := by
-  let i := upsilonIndexAt (γ := γ) hγ hγ2 z
-  have hi : z ∈ upsilonChartDomain γ i := by
-    exact upsilonIndexAt_mem (γ := γ) hγ hγ2 z
-  have hChart := differentiableAt_upsilonChart hγ hbase hi
-  have hloc : upsilonContinuationFunction (γ := γ) hγ hγ2 =ᶠ[𝓝 z] upsilonChart γ i := by
-    filter_upwards [(upsilonChartDomain_isOpen γ i).mem_nhds hi] with w hw
-    exact upsilonContinuation_eq_chart_of_mem (γ := γ) hγ hγ2 hshift hw
-  exact hChart.congr_of_eventuallyEq hloc
-
-private theorem exists_IsUpsilon_of_strip_data
-    {γ : ℝ}
-    (hγ : 0 < γ) (hγ2 : γ < 2)
-    (hbase : DifferentiableOn ℂ (upsilonBase γ) (upsilonStrip γ))
-    (hshift : ∀ z : ℂ, 0 < z.re → z.re < 2 / γ →
-      upsilonBase γ (z + upsilonB γ) =
-        upsilonRightFactor γ z * upsilonBase γ z) :
-    ∃ U : ℂ → ℂ, IsUpsilon γ U := by
-  let U : ℂ → ℂ := upsilonContinuationFunction (γ := γ) hγ hγ2
-  have hUdiff : Differentiable ℂ U := by
-    intro z
-    change DifferentiableAt ℂ (upsilonContinuationFunction (γ := γ) hγ hγ2) z
-    exact upsilonContinuation_differentiableAt hγ hγ2 hbase hshift z
-  refine ⟨U, hUdiff, ?_⟩
-  intro z hz0 hzQ
-  have hstrip : z ∈ upsilonStrip γ := ⟨hz0, hzQ⟩
-  have hleft0 : z ∈ upsilonLeftDomain γ 0 := by
-    simpa [upsilonLeftDomain, upsilonShiftN, upsilonStrip] using hstrip
-  calc
-    U z = upsilonContinuationFunction (γ := γ) hγ hγ2 z := rfl
-    _ = upsilonChart γ (.left 0) z :=
-      upsilonContinuation_eq_chart_of_mem (γ := γ) hγ hγ2 hshift hleft0
-    _ = Complex.exp (upsilonLog γ z) := by
-      simp [upsilonChart, upsilonLeftChart, upsilonShiftN, upsilonBase]
-
-/-- Existence of an entire Upsilon function from the defining strip integral and its first shift.
-The continuation charts use the reciprocal-Gamma multiplier on the left half-plane. -/
+/-- Existence of an entire Upsilon function from the defining strip integral and its first shift. -/
 theorem exists_IsUpsilon (hγ : 0 < γ) (hγ2 : γ < 2) :
     ∃ U : ℂ → ℂ, IsUpsilon γ U := by
-  apply exists_IsUpsilon_of_strip_data hγ hγ2
-  · exact differentiableOn_upsilonBase_of_log (upsilonLog_differentiableOn hγ hγ2)
-  · intro z hz0 hzQ
-    have hshift := exp_upsilonLog_shift_b hγ hγ2 hz0 hzQ
-    simpa [upsilonBase, upsilonB, upsilonRightFactor, lFun,
-      div_eq_mul_inv, mul_assoc] using hshift
+  have exists_chart (z : ℂ) : ∃ s : ℕ ⊕ ℕ, z ∈ Sum.elim (upsLDom γ) (upsRDom γ) s := by
+    have hb : 0 < γ / 2 := half_pos hγ
+    have hQb : γ / 2 < Q γ := by unfold Q; linarith [div_pos zero_lt_two hγ]
+    have hQ2b : γ < Q γ := by
+      unfold Q; have : γ / 2 < 2 / γ := (lt_div_iff₀ hγ).2 (by nlinarith); linarith
+    by_cases hzpos : 0 < z.re
+    · let y := z.re / (γ / 2)
+      have hy0 : 0 ≤ y := by positivity
+      by_cases hylt : y < 1
+      · refine ⟨.inr 0, ?_⟩
+        simp only [Sum.elim_inr, upsRDom, upsShift, Nat.cast_zero, zero_mul, Complex.ofReal_zero, sub_zero]
+        exact ⟨hzpos, by linarith [(div_lt_iff₀ hb).1 hylt]⟩
+      · let N := Nat.floor y
+        have hN1 : 1 ≤ N := (Nat.one_le_floor_iff y).2 (le_of_not_gt hylt)
+        refine ⟨.inr (N - 1), ?_⟩
+        simp only [Sum.elim_inr, upsRDom, Complex.sub_re, upsShift_re, Nat.cast_sub hN1, Nat.cast_one]
+        have hy_eq : z.re = y * (γ / 2) := (div_mul_cancel₀ _ hb.ne').symm
+        have hfl := Nat.floor_le hy0
+        have hfl1 := Nat.lt_floor_add_one y
+        exact ⟨by nlinarith, by nlinarith⟩
+    · let y := -z.re / (γ / 2)
+      have hy0 : 0 ≤ y := div_nonneg (neg_nonneg.2 (le_of_not_gt hzpos)) hb.le
+      let N := Nat.floor y
+      refine ⟨.inl (N + 1), ?_⟩
+      simp only [Sum.elim_inl, upsLDom, Complex.add_re, upsShift_re, Nat.cast_add, Nat.cast_one]
+      have hy_eq : -z.re = y * (γ / 2) := (div_mul_cancel₀ _ hb.ne').symm
+      have hfl := Nat.floor_le hy0
+      have hfl1 := Nat.lt_floor_add_one y
+      exact ⟨by nlinarith, by nlinarith⟩
+  have diffAt_upsLFactor {z : ℂ} (hz : z.re < 2 / γ) : DifferentiableAt ℂ (upsLFactor γ) z := by
+    have hlt1 : (γ / 2) * z.re < 1 := by
+      have := mul_lt_mul_of_pos_left hz (half_pos hγ)
+      rwa [show (γ / 2) * (2 / γ) = 1 by field_simp [hγ.ne']] at this
+    have hRe : 0 < (1 - upsB γ * z).re := by simp [upsB, Complex.mul_re]; linarith
+    have hG1 : DifferentiableAt ℂ (fun w => upsB γ ^ ((γ : ℂ) * w - 1)) z :=
+      DifferentiableAt.const_cpow (by fun_prop) (Or.inl (Complex.ofReal_ne_zero.2 (by positivity)))
+    have hG2 := DifferentiableAt.fun_comp' z
+      (Complex.differentiableAt_Gamma (1 - upsB γ * z) fun n hn =>
+        (Complex.Gamma_ne_zero_of_re_pos hRe) (by rw [hn]; exact Complex.Gamma_neg_nat_eq_zero n))
+      (by fun_prop : DifferentiableAt ℂ (fun w => 1 - upsB γ * w) z)
+    have hG3 := DifferentiableAt.fun_comp' z Complex.differentiable_one_div_Gamma.differentiableAt
+      (by fun_prop : DifferentiableAt ℂ (fun w => upsB γ * w) z)
+    exact (hG1.mul hG2).mul hG3
+  have diffAt_upsRFactor {z : ℂ} (hz : 0 < z.re) : DifferentiableAt ℂ (upsRFactor γ) z := by
+    have hRe : 0 < (upsB γ * z).re := by simp [upsB, Complex.mul_re]; positivity
+    have hG1 := Complex.differentiableAt_Gamma (upsB γ * z) fun n hn =>
+      (Complex.Gamma_ne_zero_of_re_pos hRe) (by rw [hn]; exact Complex.Gamma_neg_nat_eq_zero n)
+    have hG2 := DifferentiableAt.fun_comp' z Complex.differentiable_one_div_Gamma.differentiableAt
+      (by fun_prop : DifferentiableAt ℂ (fun w => 1 - upsB γ * w) z)
+    have hG3 : DifferentiableAt ℂ (fun w => upsB γ ^ (1 - (γ : ℂ) * w)) z :=
+      DifferentiableAt.const_cpow (by fun_prop) (Or.inl (Complex.ofReal_ne_zero.2 (by positivity)))
+    exact ((hG1.comp z (by fun_prop)).mul hG2).mul hG3
+  have chain_eq_of_overlap {P : ℕ → Prop} {F : ℕ → ℂ} (hinter : ∀ {m k n}, m ≤ k → k ≤ n → P m → P n → P k) (hstep : ∀ {k}, P k → P (k + 1) → F (k + 1) = F k) : ∀ {m n}, P m → P n → F m = F n := by
+    have hle : ∀ k m, m ≤ k → P m → P k → F m = F k := fun k => by
+      induction k with
+      | zero => intro m hm _ _; obtain rfl := Nat.eq_zero_of_le_zero hm; rfl
+      | succ k ih =>
+        intro m hm pm pk1
+        rcases eq_or_lt_of_le hm with rfl | hlt
+        · rfl
+        · have hmk : m ≤ k := Nat.lt_succ_iff.1 hlt
+          have pk := hinter hmk (Nat.le_succ k) pm pk1
+          exact (ih m hmk pm pk).trans (hstep pk pk1).symm
+    intro m n pm pn
+    rcases le_total m n with h | h
+    · exact hle n m h pm pn
+    · exact (hle m n h pn pm).symm
+  have hQsub : Q γ - γ / 2 = 2 / γ := by unfold Q; ring
+  have hbase_diff : DifferentiableOn ℂ (upsBase γ) {z | 0 < z.re ∧ z.re < Q γ} :=
+    fun z hz => differentiable_exp.differentiableAt.comp_differentiableWithinAt z
+      (upsilonLog_differentiableOn hγ hγ2 z hz)
+  have hstrip_open : IsOpen {z : ℂ | 0 < z.re ∧ z.re < Q γ} :=
+    (Complex.isOpen_re_gt 0).inter (Complex.isOpen_re_lt (Q γ))
+  have hshift (z : ℂ) (hz0 : 0 < z.re) (hzQ : z.re < 2 / γ) :
+      upsBase γ (z + upsB γ) = upsRFactor γ z * upsBase γ z := by
+    simpa [upsBase, upsB, upsRFactor, lFun, div_eq_mul_inv, mul_assoc] using
+      exp_upsilonLog_shift_b hγ hγ2 hz0 hzQ
+  have hlrec {v : ℂ} (hv0 : 0 < v.re) (hvQ : v.re < 2 / γ) :
+      upsLFactor γ v * upsBase γ (v + upsB γ) = upsBase γ v := by
+    have hbz : (upsB γ * v).re = (γ / 2) * v.re := by simp [upsB, Complex.mul_re]
+    have hlt1 : (γ / 2) * v.re < 1 := by
+      have := mul_lt_mul_of_pos_left hvQ (half_pos hγ)
+      rwa [show (γ / 2) * (2 / γ) = 1 by field_simp [hγ.ne']] at this
+    have hG0 : Complex.Gamma (upsB γ * v) ≠ 0 :=
+      Complex.Gamma_ne_zero_of_re_pos (by rw [hbz]; positivity)
+    have hG1 : Complex.Gamma (1 - upsB γ * v) ≠ 0 :=
+      Complex.Gamma_ne_zero_of_re_pos (by rw [Complex.sub_re, Complex.one_re, hbz]; linarith)
+    have hpow : upsB γ ^ (1 - (γ : ℂ) * v) ≠ 0 :=
+      Complex.cpow_ne_zero_iff.2 (Or.inl (Complex.ofReal_ne_zero.2 (by positivity : γ / 2 ≠ 0)))
+    have hcancel : upsLFactor γ v * upsRFactor γ v = 1 := by
+      dsimp [upsLFactor, upsRFactor]
+      rw [show (γ : ℂ) * v - 1 = -(1 - (γ : ℂ) * v) by ring, Complex.cpow_neg]
+      rw [mul_comm (upsB γ) v] at hG0 hG1
+      field_simp [hG0, hG1, hpow]
+    rw [hshift v hv0 hvQ, ← mul_assoc, hcancel, one_mul]
+  have hl_eq {m n : ℕ} {z : ℂ} (hm : z ∈ upsLDom γ m) (hn : z ∈ upsLDom γ n) :
+      upsLChart γ m z = upsLChart γ n z :=
+    chain_eq_of_overlap (P := fun k => z ∈ upsLDom γ k) (F := fun k => upsLChart γ k z)
+      (fun {a k b} hak hkb ha hb => by
+        obtain ⟨ha1, ha2⟩ := ha; obtain ⟨hb1, hb2⟩ := hb
+        simp only [upsShift_re, Complex.add_re] at ha1 ha2 hb1 hb2
+        have h1 : (a : ℝ) * (γ / 2) ≤ (k : ℝ) * (γ / 2) := mul_le_mul_of_nonneg_right (Nat.cast_le.2 hak) (by positivity)
+        have h2 : (k : ℝ) * (γ / 2) ≤ (b : ℝ) * (γ / 2) := mul_le_mul_of_nonneg_right (Nat.cast_le.2 hkb) (by positivity)
+        exact ⟨by simp only [Complex.add_re, upsShift_re]; linarith,
+          by simp only [Complex.add_re, upsShift_re]; linarith⟩)
+      (fun {k} hk hk1 => by
+        let v := z + upsShift γ k
+        have htr : z + upsShift γ (k + 1) = v + upsB γ := by
+          dsimp [v, upsShift, upsB]; push_cast; ring
+        have hv0 : 0 < v.re := hk.1
+        have hvQ : v.re < 2 / γ := by
+          have h2 := hk1.2; rw [htr, Complex.add_re] at h2
+          simp only [upsB, Complex.ofReal_re] at h2; linarith
+        unfold upsLChart
+        rw [Finset.prod_range_succ, htr,
+          show upsBase γ (v + upsB γ) * ((∏ j ∈ Finset.range k, upsLFactor γ (z + upsShift γ j)) * upsLFactor γ v) =
+            (upsLFactor γ v * upsBase γ (v + upsB γ)) * ∏ j ∈ Finset.range k, upsLFactor γ (z + upsShift γ j) by ring,
+          hlrec hv0 hvQ])
+      hm hn
+  have hr_eq {m n : ℕ} {z : ℂ} (hm : z ∈ upsRDom γ m) (hn : z ∈ upsRDom γ n) :
+      upsRChart γ m z = upsRChart γ n z :=
+    chain_eq_of_overlap (P := fun k => z ∈ upsRDom γ k) (F := fun k => upsRChart γ k z)
+      (fun {a k b} hak hkb ha hb => by
+        obtain ⟨ha1, ha2⟩ := ha; obtain ⟨hb1, hb2⟩ := hb
+        simp only [upsShift_re, Complex.sub_re] at ha1 ha2 hb1 hb2
+        have h1 : (a : ℝ) * (γ / 2) ≤ (k : ℝ) * (γ / 2) := mul_le_mul_of_nonneg_right (Nat.cast_le.2 hak) (by positivity)
+        have h2 : (k : ℝ) * (γ / 2) ≤ (b : ℝ) * (γ / 2) := mul_le_mul_of_nonneg_right (Nat.cast_le.2 hkb) (by positivity)
+        exact ⟨by simp only [Complex.sub_re, upsShift_re]; linarith,
+          by simp only [Complex.sub_re, upsShift_re]; linarith⟩)
+      (fun {k} hk hk1 => by
+        let v := z - upsShift γ (k + 1)
+        have htr : z - upsShift γ k = v + upsB γ := by
+          dsimp [v, upsShift, upsB]; push_cast; ring
+        have hv0 : 0 < v.re := hk1.1
+        have hvQ : v.re < 2 / γ := by
+          have h2 := hk.2; rw [htr, Complex.add_re] at h2
+          simp only [upsB, Complex.ofReal_re] at h2; linarith
+        unfold upsRChart
+        rw [Finset.prod_range_succ, htr,
+          show upsBase γ v * ((∏ j ∈ Finset.range k, upsRFactor γ (z - upsShift γ (j + 1))) * upsRFactor γ v) =
+            (upsRFactor γ v * upsBase γ v) * ∏ j ∈ Finset.range k, upsRFactor γ (z - upsShift γ (j + 1)) by ring,
+          ← hshift v hv0 hvQ])
+      hm hn
+  let chart : ℕ ⊕ ℕ → ℂ → ℂ := Sum.elim (upsLChart γ) (upsRChart γ)
+  let dom : ℕ ⊕ ℕ → Set ℂ := Sum.elim (upsLDom γ) (upsRDom γ)
+  have hchart_eq {z : ℂ} {i j : ℕ ⊕ ℕ} (hi : z ∈ dom i) (hj : z ∈ dom j) : chart i z = chart j z := by
+    have hlr {m n : ℕ} (hl : z ∈ upsLDom γ m) (hr : z ∈ upsRDom γ n) :
+        upsLChart γ m z = upsRChart γ n z := by
+      have hl1 := hl.1; have hl2 := hl.2; have hr1 := hr.1; have hr2 := hr.2
+      simp only [Complex.sub_re, Complex.add_re, upsShift_re] at hl1 hl2 hr1 hr2
+      have hz0 : 0 < z.re := by linarith [mul_nonneg (Nat.cast_nonneg (α := ℝ) n) (half_pos hγ).le]
+      have hzQ : z.re < Q γ := by linarith [mul_nonneg (Nat.cast_nonneg (α := ℝ) m) (half_pos hγ).le]
+      have h0L : z ∈ upsLDom γ 0 := by simpa [upsLDom, upsShift] using (⟨hz0, hzQ⟩ : 0 < z.re ∧ z.re < Q γ)
+      have h0R : z ∈ upsRDom γ 0 := by simpa [upsRDom, upsShift] using (⟨hz0, hzQ⟩ : 0 < z.re ∧ z.re < Q γ)
+      have h0eq : upsLChart γ 0 z = upsRChart γ 0 z := by simp [upsLChart, upsRChart, upsShift]
+      exact (hl_eq hl h0L).trans (h0eq.trans (hr_eq h0R hr))
+    rcases i with m | m <;> rcases j with n | n
+    · exact hl_eq hi hj
+    · exact hlr hi hj
+    · exact (hlr hj hi).symm
+    · exact hr_eq hi hj
+  let idx (z : ℂ) := Classical.choose (exists_chart z)
+  have hidx (z : ℂ) : z ∈ dom (idx z) := Classical.choose_spec (exists_chart z)
+  let U (z : ℂ) := chart (idx z) z
+  refine ⟨U, fun z => ?_, fun z hz0 hzQ => ?_⟩
+  · have hopen (s : ℕ ⊕ ℕ) : IsOpen (dom s) := by
+      rcases s with n | n
+      · exact isOpen_Ioo.preimage (by fun_prop : Continuous fun w : ℂ => (w + upsShift γ n).re)
+      · exact isOpen_Ioo.preimage (by fun_prop : Continuous fun w : ℂ => (w - upsShift γ n).re)
+    have hloc : U =ᶠ[𝓝 z] chart (idx z) :=
+      eventually_of_mem ((hopen (idx z)).mem_nhds (hidx z)) fun w hw => hchart_eq (hidx w) hw
+    refine (?_ : DifferentiableAt ℂ (chart (idx z)) z).congr_of_eventuallyEq hloc
+    have hz := hidx z
+    rcases h : idx z with n | n
+    · rw [h] at hz
+      have hzn : z + upsShift γ n ∈ {w : ℂ | 0 < w.re ∧ w.re < Q γ} := hz
+      have hb := (hbase_diff.differentiableAt (hstrip_open.mem_nhds hzn)).comp z
+        (by fun_prop : DifferentiableAt ℂ (fun w => w + upsShift γ n) z)
+      have hp := DifferentiableAt.fun_finsetProd (u := Finset.range n)
+        (f := fun j w => upsLFactor γ (w + upsShift γ j)) fun j hj => by
+          have hj1 : (j : ℝ) + 1 ≤ n := mod_cast Nat.succ_le_iff.2 (Finset.mem_range.1 hj)
+          have harg : (z + upsShift γ j).re < 2 / γ := by
+            have h2 := hzn.2
+            simp only [Complex.add_re, upsShift_re] at h2 ⊢
+            nlinarith
+          exact DifferentiableAt.fun_comp' z (diffAt_upsLFactor harg) (by fun_prop)
+      exact hb.mul (by simpa only [Finset.prod_apply] using hp)
+    · rw [h] at hz
+      have hzn : z - upsShift γ n ∈ {w : ℂ | 0 < w.re ∧ w.re < Q γ} := hz
+      have hb := (hbase_diff.differentiableAt (hstrip_open.mem_nhds hzn)).comp z
+        (by fun_prop : DifferentiableAt ℂ (fun w => w - upsShift γ n) z)
+      have hp := DifferentiableAt.fun_finsetProd (u := Finset.range n)
+        (f := fun j w => upsRFactor γ (w - upsShift γ (j + 1))) fun j hj => by
+          have hj1 : ((j + 1 : ℕ) : ℝ) ≤ n := mod_cast Nat.succ_le_iff.2 (Finset.mem_range.1 hj)
+          have harg : 0 < (z - upsShift γ (j + 1)).re := by
+            have h1 := hzn.1
+            simp only [Complex.sub_re, upsShift_re] at h1 ⊢
+            nlinarith
+          exact DifferentiableAt.fun_comp' z (diffAt_upsRFactor harg) (by fun_prop)
+      exact hb.mul (by simpa only [Finset.prod_apply] using hp)
+  · have h0 : z ∈ dom (.inl 0) := by simpa [dom, upsLDom, upsShift] using (⟨hz0, hzQ⟩ : 0 < z.re ∧ z.re < Q γ)
+    exact (hchart_eq (hidx z) h0).trans (by simp [chart, upsLChart, upsShift, upsBase])
 
 end DOZZ.Proofs
 

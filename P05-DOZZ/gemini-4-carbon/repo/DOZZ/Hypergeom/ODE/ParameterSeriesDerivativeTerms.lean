@@ -68,11 +68,6 @@ theorem gaussParameterSeriesTerm_recurrence_of_finite_pole_free
 private def gaussParameterSeriesPrefixDomain (n : ℕ) : Set (ℂ × ℂ × ℂ) :=
   ⋂ k ∈ Finset.range (n + 1), {p | p.2.2 ≠ -(k : ℂ)}
 
-private theorem gaussParameterSeriesPrefixDomain_isOpen (n : ℕ) :
-    IsOpen (gaussParameterSeriesPrefixDomain n) := by
-  apply isOpen_biInter_finset
-  intro k hk
-  exact isOpen_ne.preimage (continuous_snd.comp continuous_snd)
 
 /-- The Fréchet derivatives of adjacent parameter-series terms satisfy the derivative of their
 scalar term recurrence. -/
@@ -83,19 +78,21 @@ theorem gaussParameterSeriesTerm_fderiv_succ
       gaussParameterSeriesRatio p z n •
           fderiv ℂ (fun q => gaussParameterSeriesTerm q z n) p +
         gaussParameterSeriesTerm p z n •> gaussParameterSeriesRatioDeriv p z n := by
+  have gaussParameterSeriesPrefixDomain_isOpen : IsOpen (gaussParameterSeriesPrefixDomain n) := by
+    apply isOpen_biInter_finset
+    intro k hk
+    exact isOpen_ne.preimage (continuous_snd.comp continuous_snd)
   have hfinite : ∀ k ∈ Finset.range (n + 1), p.2.2 ≠ -(k : ℂ) := by
     intro k hk
     exact hc k
   have hpU : p ∈ gaussParameterSeriesPrefixDomain n := by
     simpa [gaussParameterSeriesPrefixDomain] using hfinite
-  have hUopen := gaussParameterSeriesPrefixDomain_isOpen n
   have hrec : ∀ q ∈ gaussParameterSeriesPrefixDomain n,
       gaussParameterSeriesTerm q z (n + 1) =
         gaussParameterSeriesRatio q z n * gaussParameterSeriesTerm q z n := by
     intro q hq
     have hqfinite : ∀ k ∈ Finset.range (n + 1), q.2.2 ≠ -(k : ℂ) := by
       simpa [gaussParameterSeriesPrefixDomain] using hq
-    have hterm := gaussParameterSeriesTerm_recurrence_of_finite_pole_free q z n hqfinite
     have hden : (n + 1 : ℂ) * ((n : ℂ) + q.2.2) ≠ 0 := by
       apply mul_ne_zero
       · exact_mod_cast Nat.succ_ne_zero n
@@ -108,19 +105,17 @@ theorem gaussParameterSeriesTerm_fderiv_succ
           gaussParameterSeriesTerm q z n) /
           ((n + 1 : ℂ) * ((n : ℂ) + q.2.2)) := by
       apply (eq_div_iff hden).2
-      simpa [mul_assoc, mul_left_comm, mul_comm] using hterm
+      simpa [mul_assoc, mul_left_comm, mul_comm] using gaussParameterSeriesTerm_recurrence_of_finite_pole_free q z n hqfinite
     rw [hsolve]
     field_simp [hden]
   have hnear : (fun q => gaussParameterSeriesTerm q z (n + 1)) =ᶠ[𝓝 p]
       (fun q => gaussParameterSeriesRatio q z n * gaussParameterSeriesTerm q z n) := by
-    filter_upwards [hUopen.mem_nhds hpU] with q hq
+    filter_upwards [(gaussParameterSeriesPrefixDomain_isOpen).mem_nhds hpU] with q hq
     exact hrec q hq
   have hratioPole : (n : ℂ) + p.2.2 ≠ 0 := by
     intro hzero
     have hneg : p.2.2 = -(n : ℂ) := by linear_combination hzero
     exact hc n hneg
-  have hratio := gaussParameterSeriesRatio_hasFDerivAt p z n hratioPole
-  have hterm := gaussParameterSeriesTerm_differentiableAt p z n hc |>.hasFDerivAt
-  exact (hratio.mul hterm).congr_of_eventuallyEq hnear |>.fderiv
+  exact ((gaussParameterSeriesRatio_hasFDerivAt p z n hratioPole).mul (gaussParameterSeriesTerm_differentiableAt p z n hc |>.hasFDerivAt)).congr_of_eventuallyEq hnear |>.fderiv
 
 end DOZZ.Proofs

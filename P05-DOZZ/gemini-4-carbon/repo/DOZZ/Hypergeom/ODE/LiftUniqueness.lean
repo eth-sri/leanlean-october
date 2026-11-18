@@ -86,7 +86,7 @@ theorem continuous_path_solution_lifts_unique
   have hv : Continuous v := by
     change Continuous (fun t : I => G t.1)
     exact hGcont.domRestrict
-  let S : Set I := {t | u t = v t}
+  let S := {t | u t = v t}
   have hclosed : IsClosed S := by
     change IsClosed {t : I | u t = v t}
     exact isClosed_eq hu hv
@@ -98,32 +98,25 @@ theorem continuous_path_solution_lifts_unique
     obtain ⟨δA, hδA, hAagree⟩ := A.local_agrees
     obtain ⟨δB, hδB, hBagree⟩ := B.local_agrees
     let ρ := min A.radius B.radius
-    have hρ : 0 < ρ := lt_min A.radius_pos B.radius_pos
-    have hAat : A.solution (γ t) = F t := by
+    have hρ := lt_min A.radius_pos B.radius_pos
+    have : A.solution (γ t) = F t := by
       symm
       exact hAagree t t.2 (by simpa using hδA)
-    have hBat : B.solution (γ t) = G t := by
+    have : B.solution (γ t) = G t := by
       symm
       exact hBagree t t.2 (by simpa using hδB)
-    have htval : F t = G t := by
+    have : F t = G t := by
       change u t = v t at ht
       exact ht
-    have hsameAt : A.solution (γ t) = B.solution (γ t) := by
-      calc
-        A.solution (γ t) = F t := hAat
-        _ = G t := htval
-        _ = B.solution (γ t) := hBat.symm
+    have hsameAt : A.solution (γ t) = B.solution (γ t) := by grind
     obtain ⟨δγ, hδγ, hγclose⟩ :=
       (Metric.continuousWithinAt_iff.mp (hγ.continuousWithinAt t.2)) ρ hρ
-    let δ := min δγ (min δA δB)
-    refine ⟨δ, lt_min hδγ (lt_min hδA hδB), ?_⟩
+    refine ⟨(min δγ (min δA δB)), lt_min hδγ (lt_min hδA hδB), ?_⟩
     intro s hs
-    have hst : dist (s : ℝ) t < δ := Metric.mem_ball.mp hs
-    have hstγ : dist (γ s) (γ t) < ρ := hγclose s.2
+    have hst := Metric.mem_ball.mp hs
+    have hstγ := hγclose s.2
       (lt_of_lt_of_le hst (min_le_left _ _))
-    have hAagreeS : F s = A.solution (γ s) :=
-      hAagree s s.2 (lt_of_lt_of_le hst (le_trans (min_le_right _ _) (min_le_left _ _)))
-    have hBagreeS : G s = B.solution (γ s) :=
+    have hBagreeS :=
       hBagree s s.2 (lt_of_lt_of_le hst
         (le_trans (min_le_right _ _) (min_le_right _ _)))
     have hAderiv : ∀ z ∈ Metric.ball (γ t) ρ,
@@ -143,10 +136,7 @@ theorem continuous_path_solution_lifts_unique
       hbound hAderiv hBderiv (Metric.mem_ball_self hρ)
       (Metric.mem_ball.mpr hstγ) hsameAt
     change F s = G s
-    calc
-      F s = A.solution (γ s) := hAagreeS
-      _ = B.solution (γ s) := hlocalEq
-      _ = G s := hBagreeS.symm
+    exact ((hAagree s s.2 (lt_of_lt_of_le hst (le_trans (min_le_right _ _) (min_le_left _ _)))).trans (hlocalEq)).trans (hBagreeS.symm)
   have hconn : ConnectedSpace I :=
     Subtype.connectedSpace ⟨⟨0, by simp⟩, isPreconnected_Icc⟩
   have hnonempty : S.Nonempty := by

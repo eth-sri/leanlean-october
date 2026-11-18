@@ -24,7 +24,7 @@ theorem actual_prefactor_moment_uniform
       ∀ r : ℝ, 0 < r → r ≤ R →
         (∫⁻ ω, ENNReal.ofReal (f*‖z‖^(-4 : ℝ)*
           Real.exp (γ*Xc ω z 0-γ^2*Real.log ‖z‖))^r ∂P) ≤ C := by
-  let : IsProbabilityMeasure P := hX.1
+  let := hX.1
   obtain ⟨C,hC,hbound⟩ := complete_envelope_moment_uniform_compact P
     K hK hz γ b 0 R hb le_rfl hR
   refine ⟨C,hC,?_⟩
@@ -35,8 +35,7 @@ theorem actual_prefactor_moment_uniform
   have hv : variance (fun ω => Xc ω z 0) P = 2*Real.log ‖z‖ := by
     simpa only [variance_id_gaussianReal,
       Real.coe_toNNReal _ (offCenter_pin_variance_pos z (hz z hzk)).le] using hN.variance_eq
-  have h := hbound z hzk _ _ hN.hasGaussianLaw hN.hasGaussianLaw hm hm hv hv r hr hrR
-  apply le_trans (lintegral_mono fun ω => ?_) h
+  apply le_trans (lintegral_mono fun ω => ?_) (hbound z hzk _ _ hN.hasGaussianLaw hN.hasGaussianLaw hm hm hv hv r hr hrR)
   apply ENNReal.rpow_le_rpow _ hr.le
   apply ENNReal.ofReal_le_ofReal
   have hn : ‖z‖^(-4 : ℝ) ≤ 1 :=
@@ -46,14 +45,13 @@ theorem actual_prefactor_moment_uniform
     simp only [sub_self,abs_zero,mul_zero,zero_add]
   simp only [zero_mul,add_zero,hD]
   have he : 1 ≤ Real.exp (γ^2+4) := Real.one_le_exp_iff.mpr (by positivity)
-  have hfb' : f*‖z‖^(-4 : ℝ) ≤ b :=
+  have hfb' :=
     (mul_le_of_le_one_right hf hn).trans hfb
-  have hbb : b ≤ b*Real.exp (γ^2+4) := le_mul_of_one_le_right hb he
   calc
     _ ≤ b*Real.exp (γ*Xc ω z 0-γ^2*Real.log ‖z‖) :=
       mul_le_mul_of_nonneg_right hfb' (Real.exp_nonneg _)
     _ ≤ (b*Real.exp (γ^2+4))*Real.exp (γ*Xc ω z 0-γ^2*Real.log ‖z‖) :=
-      mul_le_mul_of_nonneg_right hbb (Real.exp_nonneg _)
+      mul_le_mul_of_nonneg_right (le_mul_of_one_le_right hb he) (Real.exp_nonneg _)
     _ = _ := mul_comm _ _
 
 

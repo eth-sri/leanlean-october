@@ -35,7 +35,7 @@ theorem tendsto_lintegral_probabilityDensity_test
     Tendsto (fun n => ∫⁻ x, f n x * F x ∂μ) atTop
       (𝓝 (∫⁻ x, g x * F x ∂μ)) := by
   let A : ℕ → E → ℝ≥0∞ := fun n x => min (f n x) (g x)
-  have hA (n : ℕ) : Measurable (A n) := (hf n).min hg
+  have hA (n : ℕ) := (hf n).min hg
   have hAm (n : ℕ) : (∫⁻ x, A n x ∂μ) ≠ ∞ := ne_top_of_le_ne_top
     (hgm ▸ ENNReal.one_ne_top) (lintegral_mono (fun x => min_le_right _ _))
   have hAlim (x : E) : Tendsto (fun n => A n x) atTop (𝓝 (g x)) := by
@@ -45,7 +45,6 @@ theorem tendsto_lintegral_probabilityDensity_test
     exact tendsto_lintegral_of_dominated_convergence g hA
       (fun n => ae_of_all _ (fun x => min_le_right _ _))
       (hgm ▸ ENNReal.one_ne_top) (ae_of_all _ hAlim)
-  have hKg : Measurable (fun x => K * g x) := measurable_const.mul hg
   have hKgfin : (∫⁻ x, K * g x ∂μ) ≠ ∞ := by
     rw [lintegral_const_mul K hg, hgm, mul_one]
     exact hK
@@ -84,11 +83,6 @@ theorem tendsto_lintegral_probabilityDensity_test
         rw [lintegral_const_mul K hm,
           lintegral_sub (hA n) (hAm n)
             (ae_of_all _ (fun x => min_le_left _ _)), hfm n]
-  have hI : (∫⁻ x, g x * F x ∂μ) ≤ K := by
-    calc
-      _ ≤ ∫⁻ x, K * g x ∂μ := lintegral_mono (fun x =>
-        (mul_le_mul' le_rfl (hbound x)).trans_eq (mul_comm _ _))
-      _ = K := by rw [lintegral_const_mul K hg, hgm, mul_one]
   have htop : Tendsto
       (fun n => (∫⁻ x, A n x * F x ∂μ) + K * (1 - ∫⁻ x, A n x ∂μ))
       atTop (𝓝 (∫⁻ x, g x * F x ∂μ)) := by
@@ -97,13 +91,14 @@ theorem tendsto_lintegral_probabilityDensity_test
     (fun n => lintegral_mono (fun x =>
       mul_le_mul' (min_le_left _ _) le_rfl)) hupper
 
+section
+variable (P Q : Measure BrownianPath) (hB : IsBrownianReal (fun t p => p t) P) (ν : ℝ) (hν : 0 < ν) (hQ : IsNegativeConditionedBrownianLaw ν Q) (n : ℕ) (ds : Fin n → ℝ≥0) (hds : ∀ i, 0 < ds i) (xs : ℕ → ℝ) (hxs : ∀ k, 0 < xs k) (hxlim : Tendsto xs atTop (𝓝 0))
+include hB hν hQ hds hxs hxlim
+
 /-- The finite Doob density converges to the entrance density against any bounded measurable
 test along positive starting states tending to zero. -/
 theorem brownianDoobFinitePDF_lintegral_tendsto_entrance_test
-    (P Q : Measure BrownianPath) (hB : IsBrownianReal (fun t p => p t) P)
-    (ν : ℝ) (hν : 0 < ν) (hQ : IsNegativeConditionedBrownianLaw ν Q)
-    (n : ℕ) (ds : Fin n → ℝ≥0) (hds : ∀ i, 0 < ds i)
-    (xs : ℕ → ℝ) (hxs : ∀ k, 0 < xs k) (hxlim : Tendsto xs atTop (𝓝 0))
+
     (F : (Fin n → ℝ) → ℝ≥0∞) (hF : Measurable F)
     (K : ℝ≥0∞) (hK : K ≠ ∞) (hbound : ∀ ys, F ys ≤ K) :
     Tendsto
@@ -112,7 +107,7 @@ theorem brownianDoobFinitePDF_lintegral_tendsto_entrance_test
       atTop
       (𝓝 (∫⁻ ys, brownianEntranceFinitePDF ν n ds ys * F ys
         ∂(volume : Measure (Fin n → ℝ)))) := by
-  have hwithin : Tendsto xs atTop (𝓝[>] 0) := tendsto_nhdsWithin_iff.mpr
+  have hwithin := tendsto_nhdsWithin_iff.mpr
     ⟨hxlim, Filter.Eventually.of_forall hxs⟩
   exact tendsto_lintegral_probabilityDensity_test
     (volume : Measure (Fin n → ℝ))
@@ -129,10 +124,7 @@ theorem brownianDoobFinitePDF_lintegral_tendsto_entrance_test
 /-- The finite Doob probability measures converge on every measurable set to the entrance
 finite-dimensional law. -/
 theorem brownianDoobFinitePDF_measure_tendsto_entrance_event
-    (P Q : Measure BrownianPath) (hB : IsBrownianReal (fun t p => p t) P)
-    (ν : ℝ) (hν : 0 < ν) (hQ : IsNegativeConditionedBrownianLaw ν Q)
-    (n : ℕ) (ds : Fin n → ℝ≥0) (hds : ∀ i, 0 < ds i)
-    (xs : ℕ → ℝ) (hxs : ∀ k, 0 < xs k) (hxlim : Tendsto xs atTop (𝓝 0))
+
     (A : Set (Fin n → ℝ)) (hA : MeasurableSet A) :
     Tendsto
       (fun k => (volume.withDensity (brownianDoobFinitePDF ν n ds (xs k))) A)
@@ -162,6 +154,8 @@ theorem brownianDoobFinitePDF_measure_tendsto_entrance_event
     by_cases hy : ys ∈ A <;> simp [hy]
   simpa only [hleft, hright] using htest
 
+
+end
 end DOZZ.Proofs
 
 end

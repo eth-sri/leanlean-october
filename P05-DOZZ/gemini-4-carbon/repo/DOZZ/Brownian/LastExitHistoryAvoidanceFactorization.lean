@@ -20,10 +20,6 @@ open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
 
-private theorem conditionedPositiveNaturalFiltration_le (t : ℝ≥0) :
-    conditionedPositiveNaturalFiltration t ≤ ContinuousMap.measurableSpace := by
-  refine iSup_le fun s => iSup_le fun _ => ?_
-  exact (measurable_conditionedPositiveProcessValue s).comap_le
 
 /-- For a deterministic-time history event, the joint probability of future avoidance and an
 arbitrary measurable recentered rational-future event factors through the current state. -/
@@ -44,11 +40,14 @@ theorem conditionedPositiveHistory_avoidance_shift_setIntegral
         (conditionedPositiveStateAt t p) *
         (brownianUpperConditionedReferenceFutureKernel B ν hν
           (conditionedPositiveStateAt t p - c)).real C ∂P) := by
+  have conditionedPositiveNaturalFiltration_le : conditionedPositiveNaturalFiltration t ≤ ContinuousMap.measurableSpace := by
+    refine iSup_le fun s => iSup_le fun _ => ?_
+    exact (measurable_conditionedPositiveProcessValue s).comap_le
   classical
-  let eval : BrownianPath → (ℚ → ℝ) := conditionedPositiveFutureRationalEvals t
+  let eval := conditionedPositiveFutureRationalEvals t
   let shift := lastExitRationalShift (c : ℝ)
   let shiftedEval : BrownianPath → (ℚ → ℝ) := fun p => shift (eval p)
-  let avoid : Set BrownianPath := conditionedPositiveFutureRationalAvoidance t c
+  let avoid := conditionedPositiveFutureRationalAvoidance t c
   let f : BrownianPath → ℝ := fun p => avoid.indicator
     (fun p => lastExitShiftedFutureTest (c : ℝ) C (eval p)) p
   have hshift : Measurable shift := by
@@ -56,10 +55,7 @@ theorem conditionedPositiveHistory_avoidance_shift_setIntegral
     intro r
     exact (measurable_pi_apply r).sub measurable_const
   have heval : @Measurable BrownianPath (ℚ → ℝ)
-      ContinuousMap.measurableSpace inferInstance eval := by
-    exact measurable_conditionedPositiveFutureRationalEvals t
-  have hpath : MeasurableSet (shiftedEval ⁻¹' C) :=
-    hC.preimage (hshift.comp heval)
+      ContinuousMap.measurableSpace inferInstance eval := measurable_conditionedPositiveFutureRationalEvals t
   have havoid : MeasurableSet avoid := by
     change MeasurableSet (⋂ q : ℚ,
       conditionedPositiveFutureAvoidanceCoordinate t c q)
@@ -70,8 +66,6 @@ theorem conditionedPositiveHistory_avoidance_shift_setIntegral
       exact measurableSet_lt measurable_const
         ((measurable_pi_apply q).comp heval)
     · simp [conditionedPositiveFutureAvoidanceCoordinate, hq]
-  have hset : @MeasurableSet BrownianPath ContinuousMap.measurableSpace
-      (avoid ∩ shiftedEval ⁻¹' C) := havoid.inter hpath
   have hf_eq : f = (avoid ∩ shiftedEval ⁻¹' C).indicator (fun _ => (1 : ℝ)) := by
     funext p
     by_cases hp : p ∈ avoid
@@ -83,22 +77,13 @@ theorem conditionedPositiveHistory_avoidance_shift_setIntegral
     · simp [f, avoid, hp]
   have hfInt : Integrable f P := by
     rw [hf_eq]
-    exact (integrable_const (1 : ℝ)).indicator hset
-  have hm : conditionedPositiveNaturalFiltration t ≤ ContinuousMap.measurableSpace :=
-    conditionedPositiveNaturalFiltration_le t
-  have hAambient : @MeasurableSet BrownianPath ContinuousMap.measurableSpace A :=
-    hm A hA
+    exact (integrable_const (1 : ℝ)).indicator (havoid.inter (hC.preimage (hshift.comp heval)))
+  have hm :=
+    conditionedPositiveNaturalFiltration_le
   have hce := conditionedPositiveHistory_condExp_rationalFuture_avoidance_shift
     hP B hB t ht hν c hc C hC
-  calc
-    (∫ p in A, f p ∂P) =
-        ∫ p in A, P[f | conditionedPositiveNaturalFiltration t] p ∂P :=
-          (setIntegral_condExp hm hfInt hA).symm
-    _ = ∫ p in A, lastExitAvoidanceFactor ν (c : ℝ)
-        (conditionedPositiveStateAt t p) *
-          (brownianUpperConditionedReferenceFutureKernel B ν hν
-            (conditionedPositiveStateAt t p - c)).real C ∂P := by
-      exact setIntegral_congr_ae hAambient
+  refine ((setIntegral_condExp hm hfInt hA).symm).trans (?_)
+  exact setIntegral_congr_ae (hm A hA)
         (hce.mono fun p hp _ => hp)
 
 end DOZZ.Proofs

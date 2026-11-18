@@ -19,10 +19,14 @@ Port of the corresponding GaussianFields source module.
 
 public section
 
+noncomputable section
 open MeasureTheory ProbabilityTheory
 open scoped BigOperators ENNReal NNReal ProbabilityTheory
 
 namespace GaussianFields
+
+variable {ι : Type*}
+
 
 /-- The concrete sample space for a family of independent Gaussian coefficients. -/
 abbrev GaussianSequenceSpace (ι : Type*) :=
@@ -30,7 +34,7 @@ abbrev GaussianSequenceSpace (ι : Type*) :=
 
 /-- The standard centered real Gaussian law. -/
 @[expose]
-noncomputable def standardGaussianReal : Measure ℝ :=
+def standardGaussianReal : Measure ℝ :=
   ProbabilityTheory.gaussianReal 0 (1 : ℝ≥0)
 
 instance instIsProbabilityMeasure_standardGaussianReal :
@@ -40,7 +44,7 @@ instance instIsProbabilityMeasure_standardGaussianReal :
 
 /-- The product law of independent standard centered real Gaussian coefficients. -/
 @[expose]
-noncomputable def gaussianSequenceMeasure (ι : Type*) :
+def gaussianSequenceMeasure (ι : Type*) :
     Measure (GaussianSequenceSpace ι) :=
   Measure.infinitePi fun _ : ι => standardGaussianReal
 
@@ -51,28 +55,31 @@ instance instIsProbabilityMeasure_gaussianSequenceMeasure (ι : Type*) :
 
 /-- The `i`-th Gaussian coordinate. -/
 @[expose]
-def gaussianCoordinate {ι : Type*} (i : ι) : GaussianSequenceSpace ι → ℝ :=
+def gaussianCoordinate (i : ι) : GaussianSequenceSpace ι → ℝ :=
   fun ω => ω i
 
+section
+variable (i : ι)
+include i
+
 @[fun_prop]
-theorem measurable_gaussianCoordinate {ι : Type*} (i : ι) :
+theorem measurable_gaussianCoordinate :
     Measurable (gaussianCoordinate i) := by
   change Measurable (fun ω : GaussianSequenceSpace ι => ω i)
   exact measurable_pi_apply i
 
-theorem aemeasurable_gaussianCoordinate {ι : Type*} (i : ι) :
+theorem aemeasurable_gaussianCoordinate :
     AEMeasurable (gaussianCoordinate i) (gaussianSequenceMeasure ι) :=
   (measurable_gaussianCoordinate i).aemeasurable
 
 /-- Each coordinate has the standard Gaussian law. -/
-theorem gaussianCoordinate_hasLaw {ι : Type*} (i : ι) :
-    HasLaw (gaussianCoordinate i) standardGaussianReal (gaussianSequenceMeasure ι) := by
-  exact MeasurePreserving.hasLaw
+theorem gaussianCoordinate_hasLaw :
+    HasLaw (gaussianCoordinate i) standardGaussianReal (gaussianSequenceMeasure ι) := MeasurePreserving.hasLaw
     (measurePreserving_eval_infinitePi (fun _ : ι => standardGaussianReal) i)
 
 /-- A coordinate under the product law is identically distributed with the identity under the
 standard Gaussian law. -/
-theorem identDistrib_gaussianCoordinate_id {ι : Type*} (i : ι) :
+theorem identDistrib_gaussianCoordinate_id :
     IdentDistrib (gaussianCoordinate i) id (gaussianSequenceMeasure ι) standardGaussianReal where
   aemeasurable_fst := aemeasurable_gaussianCoordinate i
   aemeasurable_snd := aemeasurable_id'
@@ -81,55 +88,24 @@ theorem identDistrib_gaussianCoordinate_id {ι : Type*} (i : ι) :
     exact Measure.map_id.symm
 
 /-- Gaussian coordinates have all finite moments; in particular they are in `L^2`. -/
-theorem memLp_gaussianCoordinate {ι : Type*} (i : ι) :
+theorem memLp_gaussianCoordinate :
     MemLp (gaussianCoordinate i) 2 (gaussianSequenceMeasure ι) := by
-  have hdist := identDistrib_gaussianCoordinate_id (ι := ι) i
-  exact hdist.symm.memLp_snd
+  exact (identDistrib_gaussianCoordinate_id (ι := ι) i).symm.memLp_snd
     (ProbabilityTheory.memLp_id_gaussianReal' (μ := 0) (v := (1 : ℝ≥0)) 2 (by norm_num))
 
 /-- Coordinate means are zero. -/
-theorem integral_gaussianCoordinate {ι : Type*} (i : ι) :
+theorem integral_gaussianCoordinate :
     ∫ ω, gaussianCoordinate i ω ∂gaussianSequenceMeasure ι = 0 := by
-  calc
-    ∫ ω, gaussianCoordinate i ω ∂gaussianSequenceMeasure ι =
-        ∫ x, x ∂standardGaussianReal := (gaussianCoordinate_hasLaw i).integral_eq
-    _ = 0 := by
-      rw [standardGaussianReal]
-      simp
+  refine ((gaussianCoordinate_hasLaw i).integral_eq).trans (?_)
+  rw [standardGaussianReal]
+  simp
 
-/-- Coordinate variances are one. -/
-theorem variance_gaussianCoordinate {ι : Type*} (i : ι) :
-    Var[gaussianCoordinate i; gaussianSequenceMeasure ι] = 1 := by
-  calc
-    Var[gaussianCoordinate i; gaussianSequenceMeasure ι] =
-        Var[id; standardGaussianReal] := (gaussianCoordinate_hasLaw i).variance_eq
-    _ = 1 := by
-      rw [standardGaussianReal]
-      simp
 
-/-- A deterministic multiple of one Gaussian coordinate is Gaussian. -/
-theorem map_const_mul_gaussianCoordinate {ι : Type*} (i : ι) (c : ℝ) :
-    Measure.map (fun ω => c * gaussianCoordinate i ω) (gaussianSequenceMeasure ι) =
-      ProbabilityTheory.gaussianReal 0 (Real.toNNReal (c ^ (2 : Nat))) := by
-  change Measure.map ((fun x : ℝ => c * x) ∘ gaussianCoordinate i)
-      (gaussianSequenceMeasure ι) =
-    ProbabilityTheory.gaussianReal 0 (Real.toNNReal (c ^ (2 : Nat)))
-  have hmul_meas :
-      AEMeasurable (fun x : ℝ => c * x)
-        (Measure.map (gaussianCoordinate i) (gaussianSequenceMeasure ι)) := by
-    rw [(gaussianCoordinate_hasLaw i).map_eq]
-    fun_prop
-  rw [← AEMeasurable.map_map_of_aemeasurable
-    hmul_meas (aemeasurable_gaussianCoordinate i)]
-  rw [(gaussianCoordinate_hasLaw i).map_eq, standardGaussianReal,
-    ProbabilityTheory.gaussianReal_map_const_mul]
-  congr
-  · ring
-  · apply NNReal.coe_injective
-    simp [Real.coe_toNNReal _ (sq_nonneg c)]
+end
+
 
 /-- The coordinate process is independent. -/
-theorem iIndepFun_gaussianCoordinate {ι : Type*} :
+theorem iIndepFun_gaussianCoordinate :
     iIndepFun (fun i : ι => gaussianCoordinate i) (gaussianSequenceMeasure ι) := by
   rw [iIndepFun_iff_map_fun_eq_infinitePi_map (by
     intro i
@@ -141,26 +117,22 @@ theorem iIndepFun_gaussianCoordinate {ι : Type*} :
   funext i
   exact ((measurePreserving_eval_infinitePi (fun _ : ι => standardGaussianReal) i).map_eq).symm
 
-/-- Distinct Gaussian coordinates are independent. -/
-theorem indepFun_gaussianCoordinate {ι : Type*} {i j : ι} (hij : i ≠ j) :
-    gaussianCoordinate i ⟂ᵢ[gaussianSequenceMeasure ι] gaussianCoordinate j :=
-  iIndepFun_gaussianCoordinate.indepFun hij
 
-/-- Distinct Gaussian coordinates are uncorrelated. -/
-theorem covariance_gaussianCoordinate_eq_zero {ι : Type*} {i j : ι} (hij : i ≠ j) :
-    cov[gaussianCoordinate i, gaussianCoordinate j; gaussianSequenceMeasure ι] = 0 :=
-  (indepFun_gaussianCoordinate hij).covariance_eq_zero
-    (memLp_gaussianCoordinate i) (memLp_gaussianCoordinate j)
 
-/-- The covariance of a Gaussian coordinate with itself is one. -/
-theorem covariance_gaussianCoordinate_self {ι : Type*} (i : ι) :
-    cov[gaussianCoordinate i, gaussianCoordinate i; gaussianSequenceMeasure ι] = 1 := by
-  rw [covariance_self (aemeasurable_gaussianCoordinate i), variance_gaussianCoordinate i]
 
 /-- Coordinate covariance is the Kronecker delta. -/
-theorem covariance_gaussianCoordinate {ι : Type*} [DecidableEq ι] (i j : ι) :
+theorem covariance_gaussianCoordinate [DecidableEq ι] (i j : ι) :
     cov[gaussianCoordinate i, gaussianCoordinate j; gaussianSequenceMeasure ι] =
       if i = j then 1 else 0 := by
+  have covariance_gaussianCoordinate_self (i : ι) : cov[gaussianCoordinate i, gaussianCoordinate i; gaussianSequenceMeasure ι] = 1 := by
+    have variance_gaussianCoordinate : Var[gaussianCoordinate i; gaussianSequenceMeasure ι] = 1 := by
+      refine ((gaussianCoordinate_hasLaw i).variance_eq).trans (?_)
+      rw [standardGaussianReal]
+      simp
+    rw [covariance_self (aemeasurable_gaussianCoordinate i), variance_gaussianCoordinate]
+  have covariance_gaussianCoordinate_eq_zero {i j : ι} (hij : i ≠ j) := 
+    ((iIndepFun_gaussianCoordinate.indepFun hij)).covariance_eq_zero
+        (memLp_gaussianCoordinate i) (memLp_gaussianCoordinate j)
   by_cases hij : i = j
   · subst j
     simp [covariance_gaussianCoordinate_self]
@@ -168,55 +140,52 @@ theorem covariance_gaussianCoordinate {ι : Type*} [DecidableEq ι] (i j : ι) :
 
 /-- A finite linear combination of Gaussian coordinates. -/
 @[expose]
-noncomputable def gaussianLinearCombination {ι : Type*} (s : Finset ι) (a : ι → ℝ) :
+def gaussianLinearCombination (s : Finset ι) (a : ι → ℝ) :
     GaussianSequenceSpace ι → ℝ :=
   fun ω => ∑ i ∈ s, a i * gaussianCoordinate i ω
 
+section
+variable (s : Finset ι) (a : ι → ℝ)
+include s a
+
 @[simp]
-theorem gaussianLinearCombination_apply {ι : Type*} (s : Finset ι) (a : ι → ℝ)
+theorem gaussianLinearCombination_apply
     (ω : GaussianSequenceSpace ι) :
     gaussianLinearCombination s a ω = ∑ i ∈ s, a i * gaussianCoordinate i ω :=
   rfl
 
 @[fun_prop]
-theorem measurable_gaussianLinearCombination {ι : Type*} (s : Finset ι) (a : ι → ℝ) :
+theorem measurable_gaussianLinearCombination :
     Measurable (gaussianLinearCombination s a) := by
   unfold gaussianLinearCombination
   fun_prop
 
-theorem aemeasurable_gaussianLinearCombination {ι : Type*} (s : Finset ι) (a : ι → ℝ) :
+theorem aemeasurable_gaussianLinearCombination :
     AEMeasurable (gaussianLinearCombination s a) (gaussianSequenceMeasure ι) :=
   (measurable_gaussianLinearCombination s a).aemeasurable
 
+
+end
 /-- A coordinate outside a finite set is independent of every finite linear combination over that
 set. -/
-theorem indepFun_gaussianCoordinate_gaussianLinearCombination {ι : Type*} [DecidableEq ι]
+theorem indepFun_gaussianCoordinate_gaussianLinearCombination [DecidableEq ι]
     {i : ι} {s : Finset ι} (his : i ∉ s) (a : ι → ℝ) :
     gaussianCoordinate i ⟂ᵢ[gaussianSequenceMeasure ι] gaussianLinearCombination s a := by
   let S : Finset ι := {i}
   have hdisjoint : Disjoint S s := by
     rw [Finset.disjoint_left]
     intro j hj hjs
-    have hji : j = i := by simpa [S] using hj
+    have hji : j = i := by grind
     exact his (hji ▸ hjs)
-  have htuple :
-      (fun ω (j : S) => gaussianCoordinate (j : ι) ω)
-        ⟂ᵢ[gaussianSequenceMeasure ι]
-      (fun ω (j : s) => gaussianCoordinate (j : ι) ω) :=
+  have htuple :=
     iIndepFun_gaussianCoordinate.indepFun_finset S s hdisjoint
       (fun j => measurable_gaussianCoordinate j)
   let φ : ((j : S) → ℝ) → ℝ := fun x => x ⟨i, by simp [S]⟩
   let ψ : ((j : s) → ℝ) → ℝ := fun x => ∑ j : s, a j * x j
-  have hφ : Measurable φ := by
-    change Measurable (fun x : (j : S) → ℝ => x ⟨i, by simp [S]⟩)
-    exact measurable_pi_apply _
-  have hψ : Measurable ψ := by
-    change Measurable (fun x : (j : s) → ℝ => ∑ j : s, a j * x j)
-    fun_prop
-  have hcomp := htuple.comp hφ hψ
-  refine hcomp.congr ?_ ?_
-  · filter_upwards with ω
-    simp [φ, S, gaussianCoordinate]
+  have hφ : Measurable φ := by fun_prop
+  have hψ : Measurable ψ := by fun_prop
+  refine (htuple.comp hφ hψ).congr ?_ ?_
+  · rfl
   · filter_upwards with ω
     change (∑ j : s, a j * ω (j : ι)) = ∑ x ∈ s, a x * ω x
     rw [← Finset.sum_attach s (fun x => a x * ω x)]
@@ -224,16 +193,12 @@ theorem indepFun_gaussianCoordinate_gaussianLinearCombination {ι : Type*} [Deci
 
 /-- The finite variance parameter associated with a deterministic coefficient family. -/
 @[expose]
-noncomputable def gaussianLinearCombinationVariance {ι : Type*} (s : Finset ι) (a : ι → ℝ) :
+def gaussianLinearCombinationVariance (s : Finset ι) (a : ι → ℝ) :
     ℝ≥0 :=
   ∑ i ∈ s, Real.toNNReal ((a i) ^ (2 : Nat))
 
-@[simp]
-theorem gaussianLinearCombinationVariance_empty {ι : Type*} (a : ι → ℝ) :
-    gaussianLinearCombinationVariance (∅ : Finset ι) a = 0 := by
-  simp [gaussianLinearCombinationVariance]
 
-theorem gaussianLinearCombinationVariance_insert {ι : Type*} [DecidableEq ι]
+theorem gaussianLinearCombinationVariance_insert [DecidableEq ι]
     {i : ι} {s : Finset ι} (his : i ∉ s) (a : ι → ℝ) :
     gaussianLinearCombinationVariance (insert i s) a =
       Real.toNNReal ((a i) ^ (2 : Nat)) + gaussianLinearCombinationVariance s a := by
@@ -241,10 +206,26 @@ theorem gaussianLinearCombinationVariance_insert {ι : Type*} [DecidableEq ι]
 
 /-- Every finite Gaussian linear combination is a centered Gaussian with variance equal to the
 finite square sum of its coefficients. -/
-theorem map_gaussianLinearCombination_eq_gaussianReal {ι : Type*} [DecidableEq ι]
+theorem map_gaussianLinearCombination_eq_gaussianReal [DecidableEq ι]
     (s : Finset ι) (a : ι → ℝ) :
     Measure.map (gaussianLinearCombination s a) (gaussianSequenceMeasure ι) =
       ProbabilityTheory.gaussianReal 0 (gaussianLinearCombinationVariance s a) := by
+  have map_const_mul_gaussianCoordinate (i : ι) (c : ℝ) : Measure.map (fun ω => c * gaussianCoordinate i ω) (gaussianSequenceMeasure ι) =
+        ProbabilityTheory.gaussianReal 0 (Real.toNNReal (c ^ (2 : Nat))) := by
+    change Measure.map ((fun x : ℝ => c * x) ∘ gaussianCoordinate i)
+        (gaussianSequenceMeasure ι) =
+      ProbabilityTheory.gaussianReal 0 (Real.toNNReal (c ^ (2 : Nat)))
+    have hmul_meas :
+        AEMeasurable (fun x : ℝ => c * x)
+          (Measure.map (gaussianCoordinate i) (gaussianSequenceMeasure ι)) := by fun_prop
+    rw [← AEMeasurable.map_map_of_aemeasurable
+      hmul_meas (aemeasurable_gaussianCoordinate i)]
+    rw [(gaussianCoordinate_hasLaw i).map_eq, standardGaussianReal,
+      ProbabilityTheory.gaussianReal_map_const_mul]
+    congr
+    · ring
+    · apply NNReal.coe_injective
+      simp [Real.coe_toNNReal _ (sq_nonneg c)]
   induction s using Finset.induction with
   | empty =>
       change Measure.map (fun _ : GaussianSequenceSpace ι => 0) (gaussianSequenceMeasure ι) =
@@ -264,21 +245,14 @@ theorem map_gaussianLinearCombination_eq_gaussianReal {ι : Type*} [DecidableEq 
         have h := (indepFun_gaussianCoordinate_gaussianLinearCombination his a).comp
           (by fun_prop : Measurable (fun x : ℝ => a i * x)) measurable_id
         simpa [Function.comp_def] using h
-      have hscaled :
-          Measure.map (fun ω => a i * gaussianCoordinate i ω)
-              (gaussianSequenceMeasure ι) =
-            ProbabilityTheory.gaussianReal 0 (Real.toNNReal ((a i) ^ (2 : Nat))) :=
-        map_const_mul_gaussianCoordinate i (a i)
       have hscaledLaw :
           HasLaw (fun ω => a i * gaussianCoordinate i ω)
             (ProbabilityTheory.gaussianReal 0 (Real.toNNReal ((a i) ^ (2 : Nat))))
-            (gaussianSequenceMeasure ι) := by
-        exact ⟨by fun_prop, hscaled⟩
+            (gaussianSequenceMeasure ι) := ⟨by fun_prop, map_const_mul_gaussianCoordinate i (a i)⟩
       have htailLaw :
           HasLaw (gaussianLinearCombination s a)
             (ProbabilityTheory.gaussianReal 0 (gaussianLinearCombinationVariance s a))
-            (gaussianSequenceMeasure ι) := by
-        exact ⟨aemeasurable_gaussianLinearCombination s a, ih⟩
+            (gaussianSequenceMeasure ι) := ⟨aemeasurable_gaussianLinearCombination s a, ih⟩
       have hsum :=
         ProbabilityTheory.gaussianReal_add_gaussianReal_of_indepFun
           hindep hscaledLaw htailLaw
@@ -286,7 +260,7 @@ theorem map_gaussianLinearCombination_eq_gaussianReal {ι : Type*} [DecidableEq 
       simpa [gaussianLinearCombinationVariance_insert his a] using hsum
 
 /-- The finite square-sum variance parameter as a real number. -/
-theorem coe_gaussianLinearCombinationVariance {ι : Type*} (s : Finset ι) (a : ι → ℝ) :
+theorem coe_gaussianLinearCombinationVariance (s : Finset ι) (a : ι → ℝ) :
     (gaussianLinearCombinationVariance s a : ℝ) =
       ∑ i ∈ s, (a i) ^ (2 : Nat) := by
   simp [gaussianLinearCombinationVariance, Real.coe_toNNReal _ (sq_nonneg _)]

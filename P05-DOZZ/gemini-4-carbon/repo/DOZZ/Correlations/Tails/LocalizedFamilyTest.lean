@@ -10,7 +10,6 @@ public import DOZZ.Correlations.Tails.OffCenterMultiplier
 /-! Compact copied tests built from the literal locally C1 multiplier family. -/
 
 @[expose] public section
-open MeasureTheory Set
 
 namespace DOZZ.Proofs
 
@@ -35,23 +34,20 @@ theorem localized_translated_test
   have hs : tsupport G ⊆ tsupport (χ : ℂ → ℝ) := tsupport_mul_subset_left
   have hsu : tsupport G ⊆ Metric.ball 0 (2*radius) := by
     intro x hx
-    have h := hχs (hs hx)
-    have hn : ‖x‖ < min radius 1 := by simpa only [Metric.mem_ball, dist_zero_right] using h
-    have hr := hFamily.1
+    have hn : ‖x‖ < min radius 1 := by simpa only [Metric.mem_ball, dist_zero_right] using hχs (hs hx)
+    have := hFamily.1
     simp only [Metric.mem_ball, dist_zero_right]
     exact hn.trans_le ((min_le_left _ _).trans (by linarith))
   have hFc : ContinuousOn (fun x => F (z+x)) (Metric.ball 0 (2*radius)) := by
-    have hcont := (hFamily.2.2.2.2 z hzk F hF).2.2.2.1.continuousOn
-    exact hcont.comp (continuous_const.add continuous_id).continuousOn (by
+    exact ((hFamily.2.2.2.2 z hzk F hF).2.2.2.1.continuousOn).comp (continuous_const.add continuous_id).continuousOn (by
       intro x hx
       simpa only [Metric.mem_ball, dist_eq_norm, add_sub_cancel_left, sub_zero] using hx)
-  have hGc : Continuous G :=
+  have hGc :=
     (χ.continuous.continuousOn.mul (hFc.mul hV.continuousOn)).continuous_of_tsupport_subset
       Metric.isOpen_ball hsu
   have hGs : HasCompactSupport G := hχc.mul_right
   let hb := hGc.bounded_above_of_compact_support hGs
-  let g := BoundedContinuousFunction.ofNormedAddCommGroup G hGc hb.choose hb.choose_spec
-  refine ⟨g, hGs, ?_, ?_, ?_⟩
+  refine ⟨(BoundedContinuousFunction.ofNormedAddCommGroup G hGc hb.choose hb.choose_spec), hGs, ?_, ?_, ?_⟩
   · intro x
     change χ x * (F (z+x)*V x) = _
     rw [mul_assoc]

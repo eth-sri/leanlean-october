@@ -69,17 +69,16 @@ theorem dualShift_product {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X 
         (lFun (1 - 2 * θ / γ))⁻¹) *
       (2 * (μ * Real.pi : ℂ) * R γ /
         ((γ : ℂ) * (lFun (-((γ : ℂ) ^ 2) / 4) * lFun ((γ : ℂ) ^ 2 / 4)))) * (-4) := by
-  have hγh : γ / 2 < 2 / γ := by
+  have : γ / 2 < 2 / γ := by
     rw [div_lt_div_iff₀ (by norm_num) hγ]
     nlinarith
   have hQ : Q γ = 2 / γ + γ / 2 := rfl
   -- the crossed seed for all small `η > 0`
   have hRev : ∀ᶠ η : ℝ in 𝓝[>] 0, AnalyticAt ℂ R ((γ / 2 + η : ℝ) : ℂ) := by
     have hm : MeromorphicAt R ((γ / 2 : ℝ) : ℂ) := hRm _ (ofReal_mem_horizontalStrip hhR _)
-    have hev := eventually_analyticAt_affine hm (a := 1) one_ne_zero
-    filter_upwards [nhdsWithin_mono _ (fun x (hx : (0 : ℝ) < x) => hx.ne') hev] with η hη
+    filter_upwards [nhdsWithin_mono _ (fun x (hx : (0 : ℝ) < x) => hx.ne') (eventually_analyticAt_affine hm (a := 1) one_ne_zero)] with η hη
     simpa using hη
-  have h42 : 4 / γ = 2 * (2 / γ) := by ring
+  have : 4 / γ = 2 * (2 / γ) := by ring
   have hpos : 0 < min (γ / 2) (4 / γ - γ) := lt_min (by linarith) (by linarith)
   have hT : ∀ᶠ η : ℝ in 𝓝[>] 0,
       R ((γ / 2 - θ : ℝ) : ℂ) * R ((Q γ + θ : ℝ) : ℂ) *
@@ -98,8 +97,7 @@ theorem dualShift_product {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X 
     have h1 := tendsto_mul_structureConstant_chargeZero P X M hγ hγ2 hμ hX hM
       (a := Q γ - θ) (b := γ / 2) (c := 2 / γ + θ) (by rw [hQ]; ring) (by linarith)
       (by linarith) (by linarith)
-    have h1c := (Complex.continuous_ofReal.tendsto _).comp h1
-    have h := (tendsto_const_nhds (x := R ((γ / 2 - θ : ℝ) : ℂ) * R ((Q γ + θ : ℝ) : ℂ))).mul h1c
+    have h := (tendsto_const_nhds (x := R ((γ / 2 - θ : ℝ) : ℂ) * R ((Q γ + θ : ℝ) : ℂ))).mul ((Complex.continuous_ofReal.tendsto _).comp h1)
     simp only [Complex.ofReal_ofNat] at h
     refine h.congr' (Eventually.of_forall fun η => ?_)
     simp only [Function.comp_apply]
@@ -114,21 +112,17 @@ theorem dualShift_product {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X 
         lFun (1 + 4 / (γ : ℂ) ^ 2) * (lFun (1 - 2 * θ / γ))⁻¹) *
         (2 * (μ * Real.pi : ℂ) * R γ /
           ((γ : ℂ) * (lFun (-((γ : ℂ) ^ 2) / 4) * lFun ((γ : ℂ) ^ 2 / 4)))) * (-4))) := by
-    have h4 := tendsto_dualLC_div (γ := γ) hγ hθ₁
-    have h3 := tendsto_mul_reflection_pole (μ := μ) hγ hγ2 hRγ hshift
     have h2 := structureConstant_lastone_limit P X M γ μ (γ / 2 - θ) hγ hγ2 hμ
       ⟨by linarith, lt_min (by linarith) (by linarith)⟩ hX hM
     have h2' : Tendsto (fun η : ℝ => η * structureConstant P M γ μ (γ / 2 - θ) (Q γ - η)
         (2 / γ + θ)) (𝓝[>] 0) (𝓝 (-4)) := by
-      have e : Q γ - (γ / 2 - θ) = 2 / γ + θ := by rw [hQ]; ring
+      have e : Q γ - (γ / 2 - θ) = 2 / γ + θ := by nlinarith
       rw [e] at h2
       exact h2
-    have h2c := (Complex.continuous_ofReal.tendsto _).comp h2'
-    have h := (h4.mul h3).mul h2c
+    have h := ((tendsto_dualLC_div (γ := γ) hγ hθ₁).mul (tendsto_mul_reflection_pole (μ := μ) hγ hγ2 hRγ hshift)).mul ((Complex.continuous_ofReal.tendsto _).comp h2')
     simp only [Complex.ofReal_neg, Complex.ofReal_ofNat] at h
     refine h.congr' ?_
     filter_upwards [self_mem_nhdsWithin] with η (hη : 0 < η)
-    have hηc : (η : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hη.ne'
     simp only [Function.comp_apply]
     push_cast
     field_simp

@@ -40,10 +40,10 @@ theorem dual_full_spatial_comparison
     (∫⁻ p : TwoSidedPath × (Ω × Ω),
         (J U₀ (p.1, p.2.1)+J U₁ (p.1, p.2.2))^(-q) ∂Q.prod (P.prod P)) ≤
       m*(∫⁻ p, (J U₀ p+J U₁ p)^(-q) ∂Q.prod P) := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _ := hX.1
   let k := dualFusionKernel γ α₁ α₂ α₃ z
-  have hk : Measurable k := dual_kernel_measurable γ α₁ α₂ α₃ z
-  have hkn : ∀ x, 0 ≤ k x := dual_kernel_nonneg γ α₁ α₂ α₃ z
+  have hk := dual_kernel_measurable γ α₁ α₂ α₃ z
+  have hkn := dual_kernel_nonneg γ α₁ α₂ α₃ z
   let D := Metric.closedBall (3 : ℂ) (1/8)
   obtain ⟨g₀, _, hgc₀, hgU₀, hgn₀, hlim₀⟩ := reflected_open_weighted_mass_approximation
     U₀ hU₀ ∅ isCompact_empty (empty_subset _) k
@@ -53,15 +53,13 @@ theorem dual_full_spatial_comparison
     ((dual_kernel_continuousOn γ α₁ α₂ α₃ z).mono hroot₁) hk hkn
   let W : TwoSidedPath × ℂ → ℝ≥0∞ := fun p =>
     ENNReal.ofReal (reflected_global_reinsertionWeight γ p.1 p.2)
-  have hW : Measurable W := (reflected_global_reinsertionWeight_measurable γ).ennreal_ofReal
+  have hW := (reflected_global_reinsertionWeight_measurable γ).ennreal_ofReal
   have hU₀0 : U₀ ⊆ ({0} : Set ℂ)ᶜ := fun x hx => by
-    have hh := hroot₀ hx
     simpa only [mem_compl_iff, mem_singleton_iff] using
-      (show x ≠ 0 from fun he => hh (by simp [he]))
+      (show x ≠ 0 from fun he => (hroot₀ hx) (by simp [he]))
   have hU₁0 : U₁ ⊆ ({0} : Set ℂ)ᶜ := fun x hx => by
-    have hh := hroot₁ hx
     simpa only [mem_compl_iff, mem_singleton_iff] using
-      (show x ≠ 0 from fun he => hh (by simp [he]))
+      (show x ≠ 0 from fun he => (hroot₁ hx) (by simp [he]))
   let I₀ : ℕ → TwoSidedPath × Ω → ℝ≥0∞ := fun n p =>
     ∫⁻ x in U₀, ENNReal.ofReal (g₀ n x)*W (p.1, x) ∂N p.2
   let I₁ : ℕ → TwoSidedPath × Ω → ℝ≥0∞ := fun n p =>
@@ -72,10 +70,10 @@ theorem dual_full_spatial_comparison
     ENNReal.ofReal (k x)*W (p.1, x) ∂N p.2
   let G : TwoSidedPath × Ω → ℝ≥0∞ := fun p => ∫⁻ x in D,
     ENNReal.ofReal (k x)*W (p.1, x) ∂N p.2
-  have hi₀ (n : ℕ) : Measurable (I₀ n) := reflected_chart_parameter_mass_measurable
+  have hi₀ (n : ℕ) := reflected_chart_parameter_mass_measurable
     U₀ hU₀ N hNm (fun ω K hK hKU => hfin ω K hK (hKU.trans hU₀0)) _
     (((g₀ n).continuous.measurable.ennreal_ofReal.comp measurable_snd).mul hW)
-  have hi₁ (n : ℕ) : Measurable (I₁ n) := reflected_chart_parameter_mass_measurable
+  have hi₁ (n : ℕ) := reflected_chart_parameter_mass_measurable
     U₁ hU₁ N hNm (fun ω K hK hKU => hfin ω K hK (hKU.trans hU₁0)) _
     (((g₁ n).continuous.measurable.ennreal_ofReal.comp measurable_snd).mul hW)
   have hG : Measurable G := by
@@ -89,7 +87,7 @@ theorem dual_full_spatial_comparison
         ∫⁻ x in D, ENNReal.ofReal (k x)*W (a, x) ∂μ := by
       rw [setLIntegral_indicator measurableSet_closedBall, inter_eq_left.mpr hD]
     simpa only [he] using ht
-  have hl₀ (p : TwoSidedPath × Ω) : Tendsto (fun n => I₀ n p) atTop (𝓝 (L₀ p)) :=
+  have hl₀ (p : TwoSidedPath × Ω) :=
     reflected_global_spatial_mass_limit γ p.1 (N p.2) U₀ hU₀.measurableSet k hk g₀ hgU₀ hlim₀
   have hl₁ (p : TwoSidedPath × Ω) : Tendsto (fun n => I₁ n p) atTop (𝓝 (L₁ p)) :=
     reflected_global_spatial_mass_limit γ p.1 (N p.2) U₁ hU₁.measurableSet k hk g₁ hgU₁ hlim₁
@@ -123,28 +121,18 @@ theorem dual_full_spatial_comparison
     obtain ⟨j, hKj⟩ := hK.elim_directed_cover
       (fun j => originLateralChart (originLateralChartRadius j))
       (fun j => isOpen_originLateralChart _) (by rwa [originLateralChart_exhaustion]) hmono.directed_le
-    have hnK₀ : ∀ x ∈ K, x ∈ A → ‖x‖ ≤ R*r := by
-      intro x hx hxA
-      rcases hx with hx | hx
-      · exact hn₀ x (hgU₀ n hx)
-      · exact False.elim (hU₁A (hgU₁ n hx) hxA)
-    have hnK₁ : ∀ x ∈ K, x ∉ A → r ≤ ‖x‖ := by
-      intro x hx hxA
-      rcases hx with hx | hx
-      · exact False.elim (hxA (hU₀A (hgU₀ n hx)))
-      · exact hn₁ x (hgU₁ n hx)
+    have hnK₀ : ∀ x ∈ K, x ∈ A → ‖x‖ ≤ R*r := by grind
+    have hnK₁ : ∀ x ∈ K, x ∉ A → r ≤ ‖x‖ := by grind
     have hb (a : TwoSidedPath) := reflected_global_compact_mass_comparison
       P X Xc hX hc hm (originLateralChartRadius j) γ (originLateralChartRadius_pos j)
       N (hNa _ (originLateralChartRadius_pos j)) K hK hKj (fun ω => hfin ω K hK hK0)
       A hA R r η hR0 hR hr hη hnK₀ hnK₁ (g₀ n) (g₁ n) (hgn₀ n) (hgn₁ n)
       hg₀K hg₁K ((hgU₀ n).trans hU₀A) ((hgU₁ n).trans hU₁A) q hq a
     have he₀ (a : TwoSidedPath) (ω : Ω) :
-        (∫⁻ x in K, ENNReal.ofReal (g₀ n x)*W (a, x) ∂N ω) = I₀ n (a, ω) := by
-      exact (reflected_supported_test_lintegral (N ω) K hK.measurableSet (g₀ n) hg₀K _).trans
+        (∫⁻ x in K, ENNReal.ofReal (g₀ n x)*W (a, x) ∂N ω) = I₀ n (a, ω) := (reflected_supported_test_lintegral (N ω) K hK.measurableSet (g₀ n) hg₀K _).trans
         (reflected_supported_test_lintegral (N ω) U₀ hU₀.measurableSet (g₀ n) (hgU₀ n) _).symm
     have he₁ (a : TwoSidedPath) (ω : Ω) :
-        (∫⁻ x in K, ENNReal.ofReal (g₁ n x)*W (a, x) ∂N ω) = I₁ n (a, ω) := by
-      exact (reflected_supported_test_lintegral (N ω) K hK.measurableSet (g₁ n) hg₁K _).trans
+        (∫⁻ x in K, ENNReal.ofReal (g₁ n x)*W (a, x) ∂N ω) = I₁ n (a, ω) := (reflected_supported_test_lintegral (N ω) K hK.measurableSet (g₁ n) hg₁K _).trans
         (reflected_supported_test_lintegral (N ω) U₁ hU₁.measurableSet (g₁ n) (hgU₁ n) _).symm
     dsimp only at hb
     dsimp only [W] at he₀ he₁

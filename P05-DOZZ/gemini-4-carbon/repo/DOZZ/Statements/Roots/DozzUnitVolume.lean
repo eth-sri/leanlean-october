@@ -29,6 +29,6 @@ theorem dozz_unitVolume (γ μ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < 
           dozzFormula γ μ U a.1 a.2.1 a.2.2)
       (𝓝[{a | ExtendedSeiberg3 γ a.1 a.2.1 a.2.2 ∧
               ∀ n : ℕ, sExp γ a.1 a.2.1 a.2.2 ≠ -(n : ℝ)}] (α₁, α₂, α₃))
-      (𝓝 (unitVolumeStructureConstant P M γ α₁ α₂ α₃ : ℂ)) := by exact DOZZ.Proofs.dozz_unitVolume γ μ hγ hγ2 hμ α₁ α₂ α₃ hα U hU P X M hX hM
+      (𝓝 (unitVolumeStructureConstant P M γ α₁ α₂ α₃ : ℂ)) := DOZZ.Proofs.dozz_unitVolume γ μ hγ hγ2 hμ α₁ α₂ α₃ hα U hU P X M hX hM
 
 end DOZZ

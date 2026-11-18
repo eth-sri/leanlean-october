@@ -29,41 +29,37 @@ theorem regularizedGMC_openBall_root_bound_compact_gamma_chart
     P X hX Xc hXc Γ hΓ hΓpos q hq hcrit
   obtain ⟨D, hD, hlarge⟩ := regularizedGMC_openBall_moment_compact_gamma_large_chart
     P X hX Xc hXc Γ hΓ hΓpos q hq hcrit
-  let B : ℝ≥0∞ := 1 + D
-  have hB : B < ⊤ := ENNReal.add_lt_top.mpr ⟨ENNReal.one_lt_top, hD⟩
+  let B := 1 + D
+  have hB := ENNReal.add_lt_top.mpr ⟨ENNReal.one_lt_top, hD⟩
   have hBone : 1 ≤ B := le_add_of_nonneg_right (by positivity)
-  let A : ℝ≥0∞ := Asmall + B
-  have hA : A < ⊤ := ENNReal.add_lt_top.mpr ⟨hAsmall, hB⟩
-  refine ⟨A, hA, ?_⟩
+  let A := Asmall + B
+  refine ⟨A, ENNReal.add_lt_top.mpr ⟨hAsmall, hB⟩, ?_⟩
   intro γ hγ p hp hpq z R δ hR hRhalf hδ hδR hchart
-  have hp0 : 0 < p := lt_of_lt_of_le zero_lt_one hp
+  have hp0 := lt_of_lt_of_le zero_lt_one hp
   by_cases hRsmall : R ≤ 1 / 8
   · obtain ⟨hs, htop⟩ := hsmall γ hγ p hp hpq z R δ hR hRsmall hδ hδR hchart
     refine ⟨hs.trans ?_, htop⟩
     apply mul_le_mul_left
     exact le_add_of_nonneg_right (by positivity)
-  have hRlo : 1 / 8 ≤ R := le_of_not_ge hRsmall
   let f : Ω → ℝ≥0∞ := fun ω =>
     regularizedGMC P Xc γ (Real.log (1 / δ)) ω (Metric.ball z R)
-  have hf : AEMeasurable f P := regularizedGMC_mass_aemeasurable P X hX Xc hXc γ
+  have hf := regularizedGMC_mass_aemeasurable P X hX Xc hXc γ
     (Real.log (1 / δ)) (Metric.ball z R) Metric.isOpen_ball.measurableSet
-  have hqbound := hlarge γ hγ z R δ hRlo hRhalf hδ hδR hchart
   have hmoment : (∫⁻ ω, f ω ^ p ∂P) ≤ B := by
     calc
       _ ≤ P Set.univ + ∫⁻ ω, f ω ^ q ∂P :=
         lintegral_rpow_le_measure_add_larger_order P f hf hp0.le hpq
       _ ≤ B := by
         rw [hX.1.measure_univ]
-        simpa [B, f, add_comm] using add_le_add_left hqbound 1
+        simpa [B, f, add_comm] using add_le_add_left (hlarge γ hγ z R δ (le_of_not_ge hRsmall) hRhalf hδ hδR hchart) 1
   have hroot : (∫⁻ ω, f ω ^ p ∂P) ^ (1 / p) ≤ B := by
     calc
       _ ≤ B ^ (1 / p) := ENNReal.rpow_le_rpow hmoment (by positivity)
       _ ≤ B ^ (1 : ℝ) := ENNReal.rpow_le_rpow_of_exponent_le hBone
         ((div_le_iff₀ hp0).mpr (by simpa using hp))
       _ = B := ENNReal.rpow_one B
-  have hγpos := hΓpos γ hγ
-  have hcritp : γ ^ 2 * p < 4 := by
-    have hcritq := (lt_div_iff₀ (sq_pos_of_pos hγpos)).mp (hcrit γ hγ)
+  have : γ ^ 2 * p < 4 := by
+    have := (lt_div_iff₀ (sq_pos_of_pos (hΓpos γ hγ))).mp (hcrit γ hγ)
     nlinarith [mul_le_mul_of_nonneg_left hpq (sq_nonneg γ)]
   have hxi : 0 < 2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2 := by
     have hfac : 0 < 2 + γ ^ 2 / 2 - γ ^ 2 * p / 2 := by nlinarith

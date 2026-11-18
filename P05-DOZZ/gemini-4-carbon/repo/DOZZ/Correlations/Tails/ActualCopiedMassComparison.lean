@@ -51,7 +51,7 @@ theorem actual_copied_localization_comparison
   have hUm : Measurable U := by
     unfold U copiedMultiplier localPinCoefficient
     fun_prop
-  have hk : Measurable k := by unfold k; fun_prop
+  have hk : Measurable k := by fun_prop
   have hv : Measurable v := measurable_const.mul hk
   have he : Measurable e := (continuous_abs.measurable.comp (hUm.sub_const c)).ennreal_ofReal.mul hk
   have hpoint (x : ℂ) (_ : x ∈ Metric.ball (0 : ℂ) ρ) : u x ≤ v x+e x ∧ v x ≤ u x+e x := by

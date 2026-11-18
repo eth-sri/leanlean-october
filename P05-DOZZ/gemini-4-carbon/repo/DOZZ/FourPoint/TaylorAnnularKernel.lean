@@ -10,8 +10,6 @@ public import DOZZ.FourPoint.TwoRootedExponents
 /-! The annular absolute Jensen kernel with the corrected radial exponent. -/
 
 @[expose] public section
-open MeasureTheory Set
-open scoped ENNReal NNReal
 namespace DOZZ.Proofs
 
 /-- On the origin annulus with the moving root separated by half its inner radius,
@@ -29,7 +27,6 @@ theorem gammaHalf_annular_kernel_bound
   have hhigh : ‖x - z‖ ≤ 2 * ‖x‖ := by
     have hh := norm_sub_le x z
     linarith only [hh, hz, hxpos]
-  have hxz : 0 < ‖x - z‖ := (by positivity : 0 < ‖x‖ / 2).trans_le hlow
   have hlow1 : 1 / 2 ≤ ‖x - 1‖ := by
     have hh := norm_sub_norm_le (1 : ℂ) x
     rw [norm_one, norm_sub_rev] at hh
@@ -42,7 +39,7 @@ theorem gammaHalf_annular_kernel_bound
   have heq : gammaHalfKernel γ α₁ α₂ α₃ z x / ‖x - z‖ ^ 2 =
       ‖x - z‖ ^ (γ ^ 2 / 2 - 2) * ‖x‖ ^ (-γ * α₁) * ‖x - 1‖ ^ (-γ * α₂) := by
     unfold gammaHalfKernel
-    rw [hn, Real.one_rpow, mul_one, Real.rpow_sub hxz, Real.rpow_two,
+    rw [hn, Real.one_rpow, mul_one, Real.rpow_sub ((by positivity : 0 < ‖x‖ / 2).trans_le hlow), Real.rpow_two,
       neg_mul γ α₁, neg_mul γ α₂, Real.rpow_neg hxpos.le, Real.rpow_neg hx1.le]
     field_simp
   have hdist := rpow_distance_comparison ‖x - z‖ ‖x‖ 2

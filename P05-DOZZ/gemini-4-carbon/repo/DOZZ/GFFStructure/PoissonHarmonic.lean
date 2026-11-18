@@ -22,12 +22,14 @@ open Filter MeasureTheory ProbabilityTheory Set Metric
 open scoped Topology ENNReal NNReal InnerProductSpace
 namespace DOZZ.Proofs
 
+variable {Ω : Type*} [MeasurableSpace Ω]
+
+
 /-- The closed harmonic covariance is harmonic in its first variable. -/
 theorem harmonicOnNhd_poisson_covariance (c w : ℂ) (R ρ : ℝ) (hρ : 0 < ρ)
     (hw : w ∈ ball c ρ) :
     InnerProductSpace.HarmonicOnNhd (fun z : ℂ => Real.log R+Real.log ρ-
-      Real.log ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖) (closedBall c ρ) := by
-  exact (show InnerProductSpace.HarmonicOnNhd (fun _ : ℂ => Real.log R+Real.log ρ)
+      Real.log ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖) (closedBall c ρ) := (show InnerProductSpace.HarmonicOnNhd (fun _ : ℂ => Real.log R+Real.log ρ)
     (closedBall c ρ) from InnerProductSpace.harmonicOnNhd_const (Real.log R+Real.log ρ)).sub
       (harmonicOnNhd_diskGreen_regular c w ρ hρ hw)
 
@@ -54,7 +56,7 @@ theorem toLp_norm_sub_sq_eq_variance {Ω T : Type*} [MeasurableSpace Ω]
 
 /-- The exact harmonic covariance makes the original Poisson family continuous in L²
 throughout the open disk. -/
-theorem continuous_poisson_gaussian_toLp {Ω : Type*} [MeasurableSpace Ω]
+theorem continuous_poisson_gaussian_toLp
     (P : Measure Ω) [IsProbabilityMeasure P] (c : ℂ) (R ρ : ℝ) (hρ : 0 < ρ)
     (H : {z : ℂ // z ∈ ball c ρ} → Ω → ℝ)
     (hmem : ∀ z, MemLp (H z) 2 P) (hmean : ∀ z, (∫ ω, H z ω ∂P) = 0)
@@ -81,8 +83,7 @@ theorem continuous_poisson_gaussian_toLp {Ω : Type*} [MeasurableSpace Ω]
       poisson_gaussian_increment_variance P c R ρ hρ H hmem hcov]
     exact hlim
   apply tendsto_iff_norm_sub_tendsto_zero.mpr
-  have hn := Real.continuous_sqrt.continuousAt.tendsto.comp hs
-  simpa only [Function.comp_def, Real.sqrt_sq_eq_abs, abs_norm, Real.sqrt_zero] using hn
+  simpa only [Function.comp_def, Real.sqrt_sq_eq_abs, abs_norm, Real.sqrt_zero] using Real.continuous_sqrt.continuousAt.tendsto.comp hs
 
 /-- The Poisson kernel is continuous on a boundary circle containing its pole strictly inside. -/
 theorem continuousOn_poissonKernel_sphere (c z : ℂ) (b : ℝ) (_hb : 0 < b)
@@ -95,7 +96,7 @@ theorem continuousOn_poissonKernel_sphere (c z : ℂ) (b : ℝ) (_hb : 0 < b)
   apply norm_ne_zero_iff.mpr
   apply sub_ne_zero.mpr
   intro h
-  have hcz : v = z := by exact sub_left_injective h
+  have : v = z := sub_left_injective h
   subst v
   exact (mem_ball_iff_norm.mp hz).ne (mem_sphere_iff_norm.mp hv)
 
@@ -104,9 +105,13 @@ theorem sphere_subset_larger_ball (c : ℂ) (b ρ : ℝ) (hbρ : b < ρ) :
     sphere c b ⊆ ball c ρ := fun _z hz => mem_ball_iff_norm.mpr
       ((mem_sphere_iff_norm.mp hz).trans_lt hbρ)
 
+section
+variable (P : Measure Ω) [IsProbabilityMeasure P] (c : ℂ)
+include P c
+
 /-- Centering and covariance identify a centered L² pairing with the regular covariance. -/
-theorem inner_poisson_gaussian_L2 {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) [IsProbabilityMeasure P] (c : ℂ) (R ρ : ℝ)
+theorem inner_poisson_gaussian_L2
+ (R ρ : ℝ)
     (U : ℂ → Lp ℝ 2 P) (hmean : ∀ z ∈ ball c ρ, (∫ ω, U z ω ∂P) = 0)
     (hcov : ∀ z ∈ ball c ρ, ∀ w ∈ ball c ρ,
       covariance (U z) (U w) P = Real.log R+Real.log ρ-
@@ -120,8 +125,8 @@ theorem inner_poisson_gaussian_L2 {Ω : Type*} [MeasurableSpace Ω]
   exact hcov z hz w hw
 
 /-- The weighted L² boundary integral pairs with every interior coordinate exactly as its pole. -/
-theorem inner_poisson_circleAverage_L2 {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) [IsProbabilityMeasure P] (c z w : ℂ) (R ρ b : ℝ)
+theorem inner_poisson_circleAverage_L2
+ (z w : ℂ) (R ρ b : ℝ)
     (hρ : 0 < ρ) (hb : 0 < b) (hbρ : b < ρ) (hz : z ∈ ball c b) (hw : w ∈ ball c ρ)
     (U : ℂ → Lp ℝ 2 P) (hU : ContinuousOn U (ball c ρ))
     (hmean : ∀ z ∈ ball c ρ, (∫ ω, U z ω ∂P) = 0)
@@ -129,7 +134,7 @@ theorem inner_poisson_circleAverage_L2 {Ω : Type*} [MeasurableSpace Ω]
       covariance (U z) (U w) P = Real.log R+Real.log ρ-
         Real.log ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖) :
     inner ℝ (Real.circleAverage (poissonKernel c z • U) c b) (U w) = inner ℝ (U z) (U w) := by
-  have hc : CircleIntegrable (poissonKernel c z • U) c b :=
+  have hc :=
     ((continuousOn_poissonKernel_sphere c z b hb hz).smul
       (hU.mono (sphere_subset_larger_ball c b ρ hbρ))).circleIntegrable hb.le
   have hcomm := (innerSL ℝ (U w)).circleAverage_comp_comm hc
@@ -153,8 +158,8 @@ theorem inner_poisson_circleAverage_L2 {Ω : Type*} [MeasurableSpace Ω]
       (ball_subset_ball hbρ.le hz) hw]
 
 /-- The Poisson boundary Bochner average reproduces the actual L² harmonic coordinate. -/
-theorem poisson_circleAverage_L2_eq {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) [IsProbabilityMeasure P] (c z : ℂ) (R ρ b : ℝ)
+theorem poisson_circleAverage_L2_eq
+ (z : ℂ) (R ρ b : ℝ)
     (hρ : 0 < ρ) (hb : 0 < b) (hbρ : b < ρ) (hz : z ∈ ball c b)
     (U : ℂ → Lp ℝ 2 P) (hU : ContinuousOn U (ball c ρ))
     (hmean : ∀ z ∈ ball c ρ, (∫ ω, U z ω ∂P) = 0)
@@ -163,12 +168,10 @@ theorem poisson_circleAverage_L2_eq {Ω : Type*} [MeasurableSpace Ω]
         Real.log ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖) :
     Real.circleAverage (poissonKernel c z • U) c b = U z := by
   let J := Real.circleAverage (poissonKernel c z • U) c b
-  have hc : CircleIntegrable (poissonKernel c z • U) c b :=
+  have hc :=
     ((continuousOn_poissonKernel_sphere c z b hb hz).smul
       (hU.mono (sphere_subset_larger_ball c b ρ hbρ))).circleIntegrable hb.le
   have hJw w hw := inner_poisson_circleAverage_L2 P c z w R ρ b hρ hb hbρ hz hw U hU hmean hcov
-  have hJz : inner ℝ J (U z) = inner ℝ (U z) (U z) :=
-    hJw z (ball_subset_ball hbρ.le hz)
   have hJJ : inner ℝ J J = inner ℝ (U z) J := by
     have hleft := (innerSL ℝ J).circleAverage_comp_comm hc
     have hright := (innerSL ℝ (U z)).circleAverage_comp_comm hc
@@ -189,36 +192,33 @@ theorem poisson_circleAverage_L2_eq {Ω : Type*} [MeasurableSpace Ω]
       (hJw v (sphere_subset_larger_ball c b ρ hbρ hv))
   have hs : ‖J-U z‖^2 = 0 := by
     rw [norm_sub_sq_real, ← real_inner_self_eq_norm_sq, ← real_inner_self_eq_norm_sq,
-      hJJ, ← real_inner_comm (U z) J, hJz]
+      hJJ, ← real_inner_comm (U z) J, hJw z (ball_subset_ball hbρ.le hz)]
     ring
   exact sub_eq_zero.mp (norm_eq_zero.mp ((sq_eq_zero_iff).mp hs))
 
 /-- Circle averages of L²-valued maps have the literal samplewise representatives. -/
-theorem circleAverage_L2_ae_eq {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) [IsProbabilityMeasure P] (c : ℂ) (b : ℝ) (hb : 0 ≤ b)
+theorem circleAverage_L2_ae_eq
+ (b : ℝ) (hb : 0 ≤ b)
     (F : ℂ → Lp ℝ 2 P) (hF : CircleIntegrable F c b)
     (f : ℂ → Ω → ℝ) (hf : Measurable (Function.uncurry f))
     (heq : ∀ v ∈ sphere c b, (⇑(F v)) =ᵐ[P] f v) :
     (⇑(Real.circleAverage F c b)) =ᵐ[P] fun ω => Real.circleAverage (fun v => f v ω) c b := by
-  let μ : Measure ℝ := volume.restrict (Ioc 0 (2*Real.pi))
-  have hI : Integrable (fun θ => F (circleMap c b θ)) μ :=
-    (intervalIntegrable_iff_integrableOn_Ioc_of_le Real.two_pi_pos.le).mp hF
-  have hm : Measurable (fun p : ℝ × Ω => f (circleMap c b p.1) p.2) :=
-    hf.comp (((measurable_circleMap c b).comp measurable_fst).prodMk measurable_snd)
-  have he θ : (⇑(F (circleMap c b θ))) =ᵐ[P] f (circleMap c b θ) :=
+  let μ := volume.restrict (Ioc 0 (2*Real.pi))
+  have he θ :=
     heq _ (circleMap_mem_sphere c hb θ)
-  have hraw := L2_integral_ae_eq_integral μ _ hI (fun θ ω => f (circleMap c b θ) ω) hm.aestronglyMeasurable he
   rw [Real.circleAverage_def, intervalIntegral.integral_of_le Real.two_pi_pos.le]
-  filter_upwards [Lp.coeFn_smul (2*Real.pi)⁻¹ (∫ θ, F (circleMap c b θ) ∂μ),hraw] with ω hs hr
+  filter_upwards [Lp.coeFn_smul (2*Real.pi)⁻¹ (∫ θ, F (circleMap c b θ) ∂μ),L2_integral_ae_eq_integral μ _ ((intervalIntegrable_iff_integrableOn_Ioc_of_le Real.two_pi_pos.le).mp hF) (fun θ ω => f (circleMap c b θ) ω) (hf.comp (((measurable_circleMap c b).comp measurable_fst).prodMk measurable_snd)).aestronglyMeasurable he] with ω hs hr
   rw [hs, Pi.smul_apply, smul_eq_mul, hr, Real.circleAverage_def,
     intervalIntegral.integral_of_le Real.two_pi_pos.le, smul_eq_mul]
 
+
+end
 /-- Parameter-dependent real Poisson circle averages are jointly measurable. -/
-theorem measurable_poissonExtension {Ω : Type*} [MeasurableSpace Ω]
+theorem measurable_poissonExtension
     (c : ℂ) (b : ℝ) (f : Ω → ℂ → ℝ)
     (hf : Measurable (fun p : Ω × ℂ => f p.1 p.2)) :
     Measurable (fun p : Ω × ℂ => Real.circleAverage (poissonKernel c p.2 • f p.1) c b) := by
-  let μ : Measure ℝ := volume.restrict (Ioc 0 (2*Real.pi))
+  let μ := volume.restrict (Ioc 0 (2*Real.pi))
   have hm : Measurable (fun p : (Ω × ℂ) × ℝ =>
       poissonKernel c p.1.2 (circleMap c b p.2)*f p.1.1 (circleMap c b p.2)) := by
     have hraw : Measurable (fun p : (Ω × ℂ) × ℝ =>
@@ -261,15 +261,14 @@ theorem harmonicOnNhd_poissonExtension (c : ℂ) (b : ℝ) (hb : 0 < b)
     exact Complex.ofRealCLM.integrable_comp hg
   let F (z : ℂ) := Real.circleAverage
     (fun u => herglotzRieszKernel 0 (z-c) u • (g u : ℂ)) 0 b
-  have hbase := analyticOnNhd_circleAverage_herglotzRieszKernel_smul hgC
   have hnot z (hz : z ∈ ball c b) : z-c ∉ sphere 0 |b| := by
     rw [abs_of_pos hb]
     intro hs
     have hn := mem_sphere_iff_norm.mp hs
     rw [sub_zero] at hn
     exact (mem_ball_iff_norm.mp hz).ne hn
-  have hFa z (hz : z ∈ ball c b) : AnalyticAt ℂ F z :=
-    (hbase (z-c) (hnot z hz)).comp (f := fun v : ℂ => v-c)
+  have hFa z (hz : z ∈ ball c b) :=
+    ((analyticOnNhd_circleAverage_herglotzRieszKernel_smul hgC) (z-c) (hnot z hz)).comp (f := fun v : ℂ => v-c)
       (show AnalyticAt ℂ (fun v : ℂ => v-c) z by fun_prop)
   have he z (hz : z ∈ ball c b) : (F z).re =
       Real.circleAverage (poissonKernel c z • f) c b := by
@@ -290,7 +289,7 @@ theorem harmonicOnNhd_poissonExtension (c : ℂ) (b : ℝ) (hb : 0 < b)
 
 /-- Extend jointly measurable random data from a closed disk by zero, retaining relative
 sample continuity and every interior coordinate. -/
-theorem exists_measurable_closedBall_extension {Ω : Type*} [MeasurableSpace Ω]
+theorem exists_measurable_closedBall_extension
     (c : ℂ) (a : ℝ) (Z : {z : ℂ // z ∈ closedBall c a} → Ω → ℝ)
     (hZm : Measurable (fun p : Ω × {z : ℂ // z ∈ closedBall c a} => Z p.2 p.1))
     (hZc : ∀ ω, Continuous (fun z => Z z ω)) :
@@ -316,7 +315,7 @@ theorem exists_measurable_closedBall_extension {Ω : Type*} [MeasurableSpace Ω]
 /-- A real Gaussian Poisson family with its exact covariance admits a jointly measurable
 smooth harmonic modification on every smaller disk in the same probability space. -/
 theorem exists_local_harmonic_poisson_modification
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P]
+ (P : Measure Ω) [IsProbabilityMeasure P]
     (c : ℂ) (R ρ b : ℝ) (hρ : 0 < ρ) (hb : 0 < b) (hbρ : b < ρ)
     (H : {z : ℂ // z ∈ ball c ρ} → Ω → ℝ) (hG : IsGaussianProcess H P)
     (hmeas : ∀ z, Measurable (H z)) (hmem : ∀ z, MemLp (H z) 2 P)
@@ -330,15 +329,13 @@ theorem exists_local_harmonic_poisson_modification
         H ⟨z,ball_subset_ball hbρ.le hz⟩) := by
   classical
   let a := (b+ρ)/2
-  have ha : 0 < a := by dsimp only [a]; linarith
-  have hba : b < a := by dsimp only [a]; linarith
-  have haρ : a < ρ := by dsimp only [a]; linarith
+  have ha : 0 < a := by positivity
+  have hba : b < a := by grind
+  have haρ : a < ρ := by grind
   obtain ⟨Z,hZm,hZc,hZe⟩ := exists_continuous_poisson_gaussian_on_closedBall
     P c R ρ a hρ ha haρ H hG hmeas hmem hmean hcov
-  have hZj : Measurable (fun p : Ω × {z : ℂ // z ∈ closedBall c a} => Z p.2 p.1) :=
-    (measurable_uncurry_of_continuous_of_measurable hZc hZm).comp measurable_swap
-  obtain ⟨B,hBm,hBc,hB⟩ := exists_measurable_closedBall_extension c a Z hZj hZc
-  let U (v : ℂ) : Lp ℝ 2 P := if hv : v ∈ ball c ρ then (hmem ⟨v,hv⟩).toLp (H ⟨v,hv⟩) else 0
+  obtain ⟨B,hBm,hBc,hB⟩ := exists_measurable_closedBall_extension c a Z ((measurable_uncurry_of_continuous_of_measurable hZc hZm).comp measurable_swap) hZc
+  let U (v : ℂ) := if hv : v ∈ ball c ρ then (hmem ⟨v,hv⟩).toLp (H ⟨v,hv⟩) else 0
   have hUc : ContinuousOn U (ball c ρ) := by
     rw [continuousOn_iff_continuous_domRestrict]
     convert continuous_poisson_gaussian_toLp P c R ρ hρ H hmem hmean hcov using 1
@@ -356,12 +353,12 @@ theorem exists_local_harmonic_poisson_modification
     rw [covariance_congr_ae (hmem ⟨z,hz⟩).coeFn_toLp (hmem ⟨w,hw⟩).coeFn_toLp]
     exact hcov ⟨z,hz⟩ ⟨w,hw⟩
   let V (ω : Ω) (z : ℂ) := Real.circleAverage (poissonKernel c z • B ω) c b
-  have hBs ω : CircleIntegrable (B ω) c b :=
+  have hBs ω :=
     ((hBc ω).mono (sphere_subset_closedBall.trans (closedBall_subset_closedBall hba.le))).circleIntegrable hb.le
   refine ⟨V,measurable_poissonExtension c b B hBm,
     fun ω => harmonicOnNhd_poissonExtension c b hb (B ω) (hBs ω),?_⟩
   intro z hz
-  have hc : CircleIntegrable (poissonKernel c z • U) c b :=
+  have hc :=
     ((continuousOn_poissonKernel_sphere c z b hb hz).smul
       (hUc.mono (sphere_subset_larger_ball c b ρ hbρ))).circleIntegrable hb.le
   have hf : Measurable (fun p : ℂ × Ω => poissonKernel c z p.1*B p.2 p.1) := by
@@ -372,7 +369,7 @@ theorem exists_local_harmonic_poisson_modification
     exact (hk.comp measurable_fst).mul (hBm.comp measurable_swap)
   have he v (hv : v ∈ sphere c b) :
       (⇑((poissonKernel c z • U) v)) =ᵐ[P] fun ω => poissonKernel c z v*B ω v := by
-    have hva : v ∈ closedBall c a :=
+    have hva :=
       mem_closedBall_iff_norm.mpr ((mem_sphere_iff_norm.mp hv).le.trans hba.le)
     have hvρ := sphere_subset_larger_ball c b ρ hbρ hv
     change (⇑(poissonKernel c z v • U v)) =ᵐ[P] _
@@ -384,7 +381,7 @@ theorem exists_local_harmonic_poisson_modification
   have hraw := circleAverage_L2_ae_eq P c b hb.le _ hc
     (fun v ω => poissonKernel c z v*B ω v) hf he
   rw [poisson_circleAverage_L2_eq P c z R ρ b hρ hb hbρ hz U hUc hUm hUcov] at hraw
-  have hzρ : z ∈ ball c ρ := mem_ball_iff_norm.mpr ((mem_ball_iff_norm.mp hz).trans hbρ)
+  have hzρ := mem_ball_iff_norm.mpr ((mem_ball_iff_norm.mp hz).trans hbρ)
   have hUz : (⇑(U z)) =ᵐ[P] H ⟨z,hzρ⟩ := by
     simp only [U, dite_eq_left hzρ]
     exact (hmem _).coeFn_toLp
@@ -405,8 +402,12 @@ theorem continuous_poissonDiskClamp (c : ℂ) (d : ℝ) (hd : 0 < d) :
       (fun z => ne_of_gt (hd.trans_le (le_max_left _ _)))
   · fun_prop
 
+section
+variable (c z : ℂ) (d : ℝ) (hd : 0 < d)
+include c z hd
+
 /-- The radial clamp takes values in its stated closed disk. -/
-theorem poissonDiskClamp_mem_closedBall (c z : ℂ) (d : ℝ) (hd : 0 < d) :
+theorem poissonDiskClamp_mem_closedBall :
     poissonDiskClamp c d z ∈ closedBall c d := by
   rw [mem_closedBall_iff_norm, poissonDiskClamp, add_sub_cancel_left, norm_smul,
     Real.norm_eq_abs, abs_of_pos (div_pos hd (hd.trans_le (le_max_left _ _)))]
@@ -414,10 +415,12 @@ theorem poissonDiskClamp_mem_closedBall (c z : ℂ) (d : ℝ) (hd : 0 < d) :
   exact mul_le_mul_of_nonneg_left (le_max_right _ _) hd.le
 
 /-- The clamp agrees exactly with the identity on its closed target disk. -/
-theorem poissonDiskClamp_eq_self (c z : ℂ) (d : ℝ) (hd : 0 < d) (hz : ‖z-c‖ ≤ d) :
+theorem poissonDiskClamp_eq_self (hz : ‖z-c‖ ≤ d) :
     poissonDiskClamp c d z = z := by
   rw [poissonDiskClamp, max_eq_left hz, div_self hd.ne', one_smul, add_sub_cancel]
 
+
+end
 /-- Every open disk has a positive-radius concentric exhaustion with a larger smoothing disk. -/
 theorem exists_poisson_inner_disk_exhaustion (ρ : ℝ) (hρ : 0 < ρ) :
     ∃ d b : ℕ → ℝ, (∀ j, 0 < d j ∧ d j < b j ∧ b j < ρ) ∧
@@ -426,8 +429,8 @@ theorem exists_poisson_inner_disk_exhaustion (ρ : ℝ) (hρ : 0 < ρ) :
   let b (j : ℕ) := (d j+ρ)/2
   have hd j : 0 < d j ∧ d j < b j ∧ b j < ρ := by
     have hj : 1 < (j : ℝ)+2 := by linarith [(Nat.cast_nonneg j : (0 : ℝ) ≤ (j : ℝ))]
-    have hp : 0 < ρ/((j : ℝ)+2) := div_pos hρ (by positivity)
-    have hq : ρ/((j : ℝ)+2) < ρ := (div_lt_self hρ hj)
+    have : 0 < ρ/((j : ℝ)+2) := div_pos hρ (by positivity)
+    have := (div_lt_self hρ hj)
     dsimp only [d,b]
     constructor
     · linarith
@@ -441,100 +444,12 @@ theorem exists_poisson_inner_disk_exhaustion (ρ : ℝ) (hρ : 0 < ρ) :
   refine ⟨d,b,hd,fun r hr => ?_⟩
   exact (hlim.eventually (Ioi_mem_nhds hr)).exists
 
-/-- Gluing the original family's local Poisson extensions gives a jointly measurable
-harmonic modification throughout the disk, with one common smoothness event. -/
-theorem exists_harmonic_poisson_modification
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P]
-    (c : ℂ) (R ρ : ℝ) (hρ : 0 < ρ)
-    (H : {z : ℂ // z ∈ ball c ρ} → Ω → ℝ) (hG : IsGaussianProcess H P)
-    (hmeas : ∀ z, Measurable (H z)) (hmem : ∀ z, MemLp (H z) 2 P)
-    (hmean : ∀ z, (∫ ω, H z ω ∂P) = 0)
-    (hcov : ∀ z w, covariance (H z) (H w) P = Real.log R+Real.log ρ-
-      Real.log ‖(ρ : ℂ)^2-(z.1-c)*star (w.1-c)‖) :
-    ∃ V : Ω → ℂ → ℝ, Measurable (fun p : Ω × ℂ => V p.1 p.2) ∧
-      (∀ᵐ ω ∂P, InnerProductSpace.HarmonicOnNhd (V ω) (ball c ρ) ∧
-        ContDiffOn ℝ (⊤ : ℕ∞) (V ω) (ball c ρ)) ∧
-      (∀ z (hz : z ∈ ball c ρ), (fun ω => V ω z) =ᵐ[P] H ⟨z,hz⟩) := by
-  classical
-  obtain ⟨d,b,hdb,hcover⟩ := exists_poisson_inner_disk_exhaustion ρ hρ
-  have hloc j := exists_local_harmonic_poisson_modification P c R ρ (b j) hρ
-    ((hdb j).1.trans (hdb j).2.1) (hdb j).2.2 H hG hmeas hmem hmean hcov
-  choose W hWm hWh hWe using hloc
-  let Z (j : ℕ) (z : ℂ) (ω : Ω) := W j ω (poissonDiskClamp c (d j) z)
-  have hZc j ω : Continuous (fun z => Z j z ω) := by
-    apply continuous_iff_continuousAt.mpr
-    intro z
-    have hz : poissonDiskClamp c (d j) z ∈ ball c (b j) :=
-      mem_ball_iff_norm.mpr ((mem_closedBall_iff_norm.mp
-        (poissonDiskClamp_mem_closedBall c z (d j) (hdb j).1)).trans_lt (hdb j).2.1)
-    exact ((hWh j ω).1.continuousOn.continuousAt (isOpen_ball.mem_nhds hz)).comp
-      (continuous_poissonDiskClamp c (d j) (hdb j).1).continuousAt
-  have hZm j z : Measurable (Z j z) :=
-    (hWm j).comp (measurable_id.prodMk measurable_const)
-  let A (j : ℕ) : Set {z : ℂ // z ∈ ball c ρ} := {z | z.1 ∈ ball c (d j)}
-  have hAo j : IsOpen (A j) := isOpen_ball.preimage continuous_subtype_val
-  have hAc z : ∃ j, z ∈ A j := by
-    obtain ⟨j,hj⟩ := hcover ‖z.1-c‖ (mem_ball_iff_norm.mp z.2)
-    exact ⟨j,mem_ball_iff_norm.mpr hj⟩
-  have hZe j z (hz : z ∈ A j) : Z j z.1 =ᵐ[P] H z := by
-    have hz' : ‖z.1-c‖ ≤ d j := (mem_ball_iff_norm.mp hz).le
-    simp only [Z,poissonDiskClamp_eq_self c z.1 (d j) (hdb j).1 hz']
-    exact hWe j z.1 (mem_ball_iff_norm.mpr ((mem_ball_iff_norm.mp hz).trans (hdb j).2.1))
-  obtain ⟨Y,hYm,hYc,hYe,hYj⟩ := exists_continuous_modification_of_open_cover
-    P H A hAo hAc (fun j z => Z j z.1) (fun j z => hZm j z.1)
-    (fun j ω => (hZc j ω).comp continuous_subtype_val) hZe
-  let V (ω : Ω) (z : ℂ) := if hz : z ∈ ball c ρ then Y ⟨z,hz⟩ ω else 0
-  have hVm : Measurable (fun p : Ω × ℂ => V p.1 p.2) := by
-    let S : Set (Ω × ℂ) := {p | p.2 ∈ ball c ρ}
-    have hS : MeasurableSet S := isOpen_ball.measurableSet.preimage measurable_snd
-    have hbranch : Measurable (fun p : S => Y ⟨p.1.2,p.2⟩ p.1.1) :=
-      hYj.comp (measurable_subtype_coe.fst.prodMk measurable_subtype_coe.snd.subtype_mk)
-    exact Measurable.dite hbranch measurable_const hS
-  have hVc ω : ContinuousOn (V ω) (ball c ρ) := by
-    rw [continuousOn_iff_continuous_domRestrict]
-    convert hYc ω using 1
-    funext z
-    change (if hz : z.1 ∈ ball c ρ then Y ⟨z.1,hz⟩ ω else 0) = Y z ω
-    simp only [dite_eq_left z.2]
-  have hVe z (hz : z ∈ ball c ρ) : (fun ω => V ω z) =ᵐ[P] H ⟨z,hz⟩ := by
-    simpa only [V,dite_eq_left hz] using hYe ⟨z,hz⟩
-  have hsim j : ∀ᵐ ω ∂P, ∀ z ∈ ball c (d j), V ω z = Z j z ω := by
-    have h := indistinguishable_of_edist_modification_on (T := ℂ) (E := ℝ) isOpen_ball
-      (ae_of_all P (fun ω => (hVc ω).mono (ball_subset_ball ((hdb j).2.1.trans (hdb j).2.2).le)))
-      (ae_of_all P (fun ω => (hZc j ω).continuousOn)) (fun z hz => ?_)
-    · simpa only [edist_eq_zero] using h
-    · have hzρ : z ∈ ball c ρ := mem_ball_iff_norm.mpr
-        ((mem_ball_iff_norm.mp hz).trans ((hdb j).2.1.trans (hdb j).2.2))
-      have hzZ : Z j z =ᵐ[P] H ⟨z,hzρ⟩ := hZe j ⟨z,hzρ⟩ hz
-      filter_upwards [hVe z hzρ,hzZ] with ω hv hz'
-      have hzero : edist (V ω z) (Z j z ω) = 0 := by rw [hv,hz',edist_self]
-      exact hzero
-  have hcommon : ∀ᵐ ω ∂P, ∀ j z, z ∈ ball c (d j) → V ω z = W j ω z := by
-    rw [ae_all_iff]
-    intro j
-    filter_upwards [hsim j] with ω hω
-    intro z hz
-    have hn := (mem_ball_iff_norm.mp hz).le
-    simpa only [Z,poissonDiskClamp_eq_self c z (d j) (hdb j).1 hn] using hω z hz
-  refine ⟨V,hVm,?_,hVe⟩
-  filter_upwards [hcommon] with ω hω
-  have hpoint z (hz : z ∈ ball c ρ) :
-      InnerProductSpace.HarmonicAt (V ω) z ∧ ContDiffAt ℝ (⊤ : ℕ∞) (V ω) z := by
-    obtain ⟨j,hj⟩ := hcover ‖z-c‖ (mem_ball_iff_norm.mp hz)
-    have hzd : z ∈ ball c (d j) := mem_ball_iff_norm.mpr hj
-    have hzb : z ∈ ball c (b j) := mem_ball_iff_norm.mpr (hj.trans (hdb j).2.1)
-    have heq : V ω =ᶠ[𝓝 z] W j ω :=
-      (show ∀ᶠ x in 𝓝 z, x ∈ ball c (d j) from isOpen_ball.mem_nhds hzd).mono
-        (fun x hx => hω j x hx)
-    refine ⟨(InnerProductSpace.harmonicAt_congr_nhds heq).mpr ((hWh j ω).1 z hzb),?_⟩
-    exact (((hWh j ω).2 z hzb).contDiffAt (isOpen_ball.mem_nhds hzb)).congr_of_eventuallyEq heq
-  exact ⟨fun z hz => (hpoint z hz).1,fun z hz => (hpoint z hz).2.contDiffWithinAt⟩
 
 /-- The literal exterior collars admit a jointly measurable smooth harmonic Gaussian limit with
 exactly the harmonic covariance formula of `DOZZ.exists_exteriorPinned_markov_uniform`, on the
 original given probability space. -/
 theorem exists_exteriorPinned_harmonic_poisson_family
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
+ (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (c : ℂ) (R ρ ε δ : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε)
     (hεδ : ε < δ) (hpin : ‖c‖+ρ+δ ≤ R) :
@@ -548,10 +463,85 @@ theorem exists_exteriorPinned_harmonic_poisson_family
       (∀ z w, z ∈ ball c ρ → w ∈ ball c ρ →
         covariance (fun ω => V ω z) (fun ω => V ω w) P = Real.log R+Real.log ρ-
           Real.log ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖) := by
+  have exists_harmonic_poisson_modification [IsProbabilityMeasure P] (H : {z : ℂ // z ∈ ball c ρ} → Ω → ℝ) (hG : IsGaussianProcess H P) (hmeas : ∀ z, Measurable (H z)) (hmem : ∀ z, MemLp (H z) 2 P) (hmean : ∀ z, (∫ ω, H z ω ∂P) = 0) (hcov : ∀ z w, covariance (H z) (H w) P = Real.log R+Real.log ρ- Real.log ‖(ρ : ℂ)^2-(z.1-c)*star (w.1-c)‖) : ∃ V : Ω → ℂ → ℝ, Measurable (fun p : Ω × ℂ => V p.1 p.2) ∧
+        (∀ᵐ ω ∂P, InnerProductSpace.HarmonicOnNhd (V ω) (ball c ρ) ∧
+          ContDiffOn ℝ (⊤ : ℕ∞) (V ω) (ball c ρ)) ∧
+        (∀ z (hz : z ∈ ball c ρ), (fun ω => V ω z) =ᵐ[P] H ⟨z,hz⟩) := by
+    classical
+    obtain ⟨d,b,hdb,hcover⟩ := exists_poisson_inner_disk_exhaustion ρ hρ
+    have hloc j := exists_local_harmonic_poisson_modification P c R ρ (b j) hρ
+      ((hdb j).1.trans (hdb j).2.1) (hdb j).2.2 H hG hmeas hmem hmean hcov
+    choose W hWm hWh hWe using hloc
+    let Z (j : ℕ) (z : ℂ) (ω : Ω) := W j ω (poissonDiskClamp c (d j) z)
+    have hZc j ω : Continuous (fun z => Z j z ω) := by
+      apply continuous_iff_continuousAt.mpr
+      intro z
+      have hz :=
+        mem_ball_iff_norm.mpr ((mem_closedBall_iff_norm.mp
+          (poissonDiskClamp_mem_closedBall c z (d j) (hdb j).1)).trans_lt (hdb j).2.1)
+      exact ((hWh j ω).1.continuousOn.continuousAt (isOpen_ball.mem_nhds hz)).comp
+        (continuous_poissonDiskClamp c (d j) (hdb j).1).continuousAt
+    have hZm j z : Measurable (Z j z) :=
+      (hWm j).comp (measurable_id.prodMk measurable_const)
+    let A (j : ℕ) : Set {z : ℂ // z ∈ ball c ρ} := {z | z.1 ∈ ball c (d j)}
+    have hAo j : IsOpen (A j) := isOpen_ball.preimage continuous_subtype_val
+    have hAc z : ∃ j, z ∈ A j := by
+      obtain ⟨j,hj⟩ := hcover ‖z.1-c‖ (mem_ball_iff_norm.mp z.2)
+      exact ⟨j,mem_ball_iff_norm.mpr hj⟩
+    have hZe j z (hz : z ∈ A j) : Z j z.1 =ᵐ[P] H z := by
+      have hz' := (mem_ball_iff_norm.mp hz).le
+      simp only [Z,poissonDiskClamp_eq_self c z.1 (d j) (hdb j).1 hz']
+      exact hWe j z.1 (mem_ball_iff_norm.mpr ((mem_ball_iff_norm.mp hz).trans (hdb j).2.1))
+    obtain ⟨Y,hYm,hYc,hYe,hYj⟩ := exists_continuous_modification_of_open_cover
+      P H A hAo hAc (fun j z => Z j z.1) (fun j z => hZm j z.1)
+      (fun j ω => (hZc j ω).comp continuous_subtype_val) hZe
+    let V (ω : Ω) (z : ℂ) := if hz : z ∈ ball c ρ then Y ⟨z,hz⟩ ω else 0
+    have hVm : Measurable (fun p : Ω × ℂ => V p.1 p.2) := by
+      let S : Set (Ω × ℂ) := {p | p.2 ∈ ball c ρ}
+      have hS : MeasurableSet S := isOpen_ball.measurableSet.preimage measurable_snd
+      have hbranch : Measurable (fun p : S => Y ⟨p.1.2,p.2⟩ p.1.1) :=
+        hYj.comp (measurable_subtype_coe.fst.prodMk measurable_subtype_coe.snd.subtype_mk)
+      exact Measurable.dite hbranch measurable_const hS
+    have hVc ω : ContinuousOn (V ω) (ball c ρ) := by
+      rw [continuousOn_iff_continuous_domRestrict]
+      convert hYc ω using 1
+      funext z
+      change (if hz : z.1 ∈ ball c ρ then Y ⟨z.1,hz⟩ ω else 0) = Y z ω
+      simp only [dite_eq_left z.2]
+    have hVe z (hz : z ∈ ball c ρ) : (fun ω => V ω z) =ᵐ[P] H ⟨z,hz⟩ := by
+      simpa only [V,dite_eq_left hz] using hYe ⟨z,hz⟩
+    have hsim j : ∀ᵐ ω ∂P, ∀ z ∈ ball c (d j), V ω z = Z j z ω := by
+      have h := indistinguishable_of_edist_modification_on (T := ℂ) (E := ℝ) isOpen_ball
+        (ae_of_all P (fun ω => (hVc ω).mono (ball_subset_ball ((hdb j).2.1.trans (hdb j).2.2).le)))
+        (ae_of_all P (fun ω => (hZc j ω).continuousOn)) (fun z hz => ?_)
+      · simpa only [edist_eq_zero] using h
+      · have hzρ : z ∈ ball c ρ := mem_ball_iff_norm.mpr
+          ((mem_ball_iff_norm.mp hz).trans ((hdb j).2.1.trans (hdb j).2.2))
+        filter_upwards [hVe z hzρ,hZe j ⟨z,hzρ⟩ hz] with ω hv hz'
+        have hzero : edist (V ω z) (Z j z ω) = 0 := by rw [hv,hz',edist_self]
+        exact hzero
+    have hcommon : ∀ᵐ ω ∂P, ∀ j z, z ∈ ball c (d j) → V ω z = W j ω z := by
+      rw [ae_all_iff]
+      intro j
+      filter_upwards [hsim j] with ω hω
+      intro z hz
+      simpa only [Z,poissonDiskClamp_eq_self c z (d j) (hdb j).1 ((mem_ball_iff_norm.mp hz).le)] using hω z hz
+    refine ⟨V,hVm,?_,hVe⟩
+    filter_upwards [hcommon] with ω hω
+    have hpoint z (hz : z ∈ ball c ρ) :
+        InnerProductSpace.HarmonicAt (V ω) z ∧ ContDiffAt ℝ (⊤ : ℕ∞) (V ω) z := by
+      obtain ⟨j,hj⟩ := hcover ‖z-c‖ (mem_ball_iff_norm.mp hz)
+      have hzb := mem_ball_iff_norm.mpr (hj.trans (hdb j).2.1)
+      have heq :=
+        (show ∀ᶠ x in 𝓝 z, x ∈ ball c (d j) from isOpen_ball.mem_nhds (mem_ball_iff_norm.mpr hj)).mono
+          (fun x hx => hω j x hx)
+      refine ⟨(InnerProductSpace.harmonicAt_congr_nhds heq).mpr ((hWh j ω).1 z hzb),?_⟩
+      exact (((hWh j ω).2 z hzb).contDiffAt (isOpen_ball.mem_nhds hzb)).congr_of_eventuallyEq heq
+    exact ⟨fun z hz => (hpoint z hz).1,fun z hz => (hpoint z hz).2.contDiffWithinAt⟩
   let _ := hX.1
   obtain ⟨H,hG,hH,hcov⟩ := exists_exteriorPinned_poisson_gaussian_family_closed
     P X Xc hX hc c R ρ ε δ hR hρ hε hεδ hpin
-  obtain ⟨V,hVm,hVh,hVe⟩ := exists_harmonic_poisson_modification P c R ρ hρ H hG
+  obtain ⟨V,hVm,hVh,hVe⟩ := exists_harmonic_poisson_modification H hG
     (fun z => (hH z).1) (fun z => (hH z).2.1) (fun z => (hH z).2.2.1) hcov
   refine ⟨V,hVm,hVh,hG.congr (fun z => (hVe z.1 z.2).symm),?_,?_⟩
   · intro z hz

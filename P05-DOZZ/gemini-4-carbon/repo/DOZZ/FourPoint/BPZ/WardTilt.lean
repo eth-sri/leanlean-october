@@ -36,16 +36,13 @@ noncomputable def bpzLimRootDensity (γ r : ℝ) (x y : ℂ) : ℝ≥0∞ :=
   ENNReal.ofReal (Real.exp (γ ^ 2 * (bpzTruncLog r (x - y) + bpzPin r x +
     Real.log (normPlus y))))
 
-theorem bpz_gaussianCovariance_const_mul_right (P : Measure Ω) (Y Z : Ω → ℝ) (c : ℝ) :
-    gaussianCovariance P Y (fun ω => c * Z ω) = c * gaussianCovariance P Y Z := by
-  unfold gaussianCovariance
-  rw [← integral_const_mul]
-  congr 1
-  funext ω
-  ring
+
+section
+variable (P : Measure Ω)
+include P
 
 /-- The circle-average tilt of a joint functional of the cutoff and limit chaos. -/
-theorem bpz_cutoff_root_tilt (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+theorem bpz_cutoff_root_tilt (X : Ω → Distr) (hX : IsEquatorGFF P X)
     {γ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (r : ℝ) (x : ℂ)
     (H : Measure ℂ → Measure ℂ → ℝ≥0∞)
@@ -54,15 +51,20 @@ theorem bpz_cutoff_root_tilt (P : Measure Ω) (X : Ω → Distr) (hX : IsEquator
         H (regularizedGMC P Xc γ r ω) (M ω) ∂P =
       ∫⁻ ω, H ((regularizedGMC P Xc γ r ω).withDensity (bpzCutRootDensity γ r x))
         ((M ω).withDensity (bpzLimRootDensity γ r x)) ∂P := by
+  have bpz_gaussianCovariance_const_mul_right (P : Measure Ω) (Y Z : Ω → ℝ) (c : ℝ) : gaussianCovariance P Y (fun ω => c * Z ω) = c * gaussianCovariance P Y Z := by
+    unfold gaussianCovariance
+    rw [← integral_const_mul]
+    congr 1
+    funext ω
+    ring
   set L : Ω → ℝ := fun ω => ∑ k : Fin 1, ![γ] k * Xc ω (![x] k) r with hLdef
   have hLeq : L = fun ω => γ * Xc ω x r := by
     funext ω
     simp [hLdef]
-  have hL := circleAverage_sum_isGaussianL2Limit P X hX Xc hXc ![γ] ![x] r
   obtain ⟨c, hcx, hc⟩ := circleAverage_sum_covariance_uniform P X hX Xc hXc ![γ] ![x] r
   have hH' : Measurable (fun q : (TestFn → ℝ) × Measure ℂ × Measure ℂ => H q.2.1 q.2.2) :=
     hH.comp (measurable_fst.comp measurable_snd |>.prodMk (measurable_snd.comp measurable_snd))
-  have htilt := equatorGFF_GMC_tilt_cutoff P X hX γ hγ hγ2 M hM Xc hXc L hL c hc r
+  have htilt := equatorGFF_GMC_tilt_cutoff P X hX γ hγ hγ2 M hM Xc hXc L (circleAverage_sum_isGaussianL2Limit P X hX Xc hXc ![γ] ![x] r) c hc r
     (fun _ m₁ m₂ => H m₁ m₂) hH'
   rw [hLeq] at htilt
   have hvar : gaussianVariance P (fun ω => γ * Xc ω x r) = γ ^ 2 * ∫ ω', Xc ω' x r ^ 2 ∂P := by
@@ -95,17 +97,15 @@ theorem bpz_cutoff_root_tilt (P : Measure Ω) (X : Ω → Distr) (hX : IsEquator
     ring
 
 /-- The pointwise variance of the circle-average field is measurable. -/
-theorem measurable_bpz_circle_variance (P : Measure Ω) [SFinite P] (Xc : Ω → ℂ → ℝ → ℝ)
+theorem measurable_bpz_circle_variance [SFinite P] (Xc : Ω → ℂ → ℝ → ℝ)
     (hXc : ∀ r : ℝ, Measurable (fun p : Ω × ℂ => Xc p.1 p.2 r)) (r : ℝ) :
     Measurable (fun x : ℂ => ∫ ω, Xc ω x r ^ 2 ∂P) := by
-  have h : Measurable (fun p : ℂ × Ω => Xc p.2 p.1 r ^ 2) :=
-    ((hXc r).comp measurable_swap).pow_const 2
-  exact (StronglyMeasurable.integral_prod_right' (ν := P) h.stronglyMeasurable).measurable
+  exact (StronglyMeasurable.integral_prod_right' (ν := P) (((hXc r).comp measurable_swap).pow_const 2).stronglyMeasurable).measurable
 
 /-- Integrating a joint functional against the cutoff chaos roots it at the integration point.
 Only joint measurability along the two random measures and measurability in the measures at each
 fixed point are needed. -/
-theorem bpz_cutoff_deroot (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+theorem bpz_cutoff_deroot (X : Ω → Distr) (hX : IsEquatorGFF P X)
     {γ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (r : ℝ)
     (H : ℂ → Measure ℂ → Measure ℂ → ℝ≥0∞)
@@ -115,15 +115,14 @@ theorem bpz_cutoff_deroot (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF
       ∫⁻ x, ENNReal.ofReal (normPlus x ^ (-4 : ℝ)) *
         ∫⁻ ω, H x ((regularizedGMC P Xc γ r ω).withDensity (bpzCutRootDensity γ r x))
           ((M ω).withDensity (bpzLimRootDensity γ r x)) ∂P := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _ := hX.1
   set V : ℂ → ℝ := fun x => ∫ ω, Xc ω x r ^ 2 ∂P with hV
-  have hVm : Measurable V := measurable_bpz_circle_variance P Xc hXc.1 r
   set dens : Ω → ℂ → ℝ≥0∞ := fun ω x => ENNReal.ofReal
     (Real.exp (γ * Xc ω x r - γ ^ 2 / 2 * V x) * normPlus x ^ (-4 : ℝ)) with hdens
   have hdensm : Measurable (fun p : Ω × ℂ => dens p.1 p.2) := by
     refine ENNReal.measurable_ofReal.comp (Measurable.mul ?_ ?_)
     · exact Real.measurable_exp.comp (((hXc.1 r).const_mul γ).sub
-        ((hVm.comp measurable_snd).const_mul _))
+        (((measurable_bpz_circle_variance P Xc hXc.1 r).comp measurable_snd).const_mul _))
     · exact (bpz_measurable_normPlus.comp measurable_snd).pow_const _
   have hstep1 : ∀ ω, ∫⁻ x, H x (regularizedGMC P Xc γ r ω) (M ω) ∂regularizedGMC P Xc γ r ω =
       ∫⁻ x, dens ω x * H x (regularizedGMC P Xc γ r ω) (M ω) := by
@@ -153,6 +152,8 @@ theorem bpz_cutoff_deroot (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF
   congr 1
   exact bpz_cutoff_root_tilt P X hX hγ hγ2 M hM Xc hXc r x (H x) (hHx x)
 
+
+end
 /-- A measurable family of finite measures integrates jointly measurable integrands to a jointly
 measurable function. -/
 theorem bpz_measurable_lintegral_finite_family {α β : Type*} [MeasurableSpace α]
@@ -173,7 +174,7 @@ theorem bpz_measurable_lintegral_finite_family {α β : Type*} [MeasurableSpace 
     exact ((hcm.comp measurable_fst).inv).mul
       ((Measure.measurable_coe hs).comp (hm.comp measurable_fst))
   let κ : ProbabilityTheory.Kernel (α × β) ℂ := ⟨fun p => (c p.1)⁻¹ • m p.1, hnm⟩
-  have hκfin : ProbabilityTheory.IsFiniteKernel κ := by
+  have : ProbabilityTheory.IsFiniteKernel κ := by
     refine ⟨⟨1, ENNReal.one_lt_top, fun p => ?_⟩⟩
     change ((c p.1)⁻¹ • m p.1) Set.univ ≤ 1
     rw [Measure.smul_apply, smul_eq_mul]
@@ -181,9 +182,6 @@ theorem bpz_measurable_lintegral_finite_family {α β : Type*} [MeasurableSpace 
           gcongr
           simp [hc]
       _ = 1 := ENNReal.inv_mul_cancel (hc0 _) (hctop _)
-  have hint : Measurable fun p : α × β => ∫⁻ y, g p.2 y ∂κ p :=
-    Measurable.lintegral_kernel_prod_right (κ := κ) (f := fun p y => g p.2 y)
-      (hg.comp (measurable_fst.snd.prodMk measurable_snd))
   have heq : (fun p : α × β => ∫⁻ y, g p.2 y ∂m p.1) =
       fun p => c p.1 * ∫⁻ y, g p.2 y ∂κ p := by
     funext p
@@ -191,6 +189,6 @@ theorem bpz_measurable_lintegral_finite_family {α β : Type*} [MeasurableSpace 
     rw [lintegral_smul_measure, smul_eq_mul, ← mul_assoc,
       ENNReal.mul_inv_cancel (hc0 _) (hctop _), one_mul]
   rw [heq]
-  exact (hcm.comp measurable_fst).mul hint
+  fun_prop
 
 end DOZZ.Proofs

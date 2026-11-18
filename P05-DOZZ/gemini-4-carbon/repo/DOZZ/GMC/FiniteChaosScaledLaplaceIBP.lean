@@ -77,12 +77,8 @@ theorem finiteChaos_laplace_score_scaled_shifted_standardGaussian_ibp
     congr 1
     calc
       (∑ k, (scale * A j k) * x k) =
-          ∑ k, scale * (A j k * x k) := by
-            apply Finset.sum_congr rfl
-            intro k hk
-            ring
-      _ = scale * (∑ k, A j k * x k) := by
-            exact (Finset.mul_sum Finset.univ (fun k => A j k * x k) scale).symm
+          ∑ k, scale * (A j k * x k) := by ring
+      _ = scale * (∑ k, A j k * x k) := (Finset.mul_sum Finset.univ (fun k => A j k * x k) scale).symm
   have hscore (x : Fin (n + 1) → ℝ) : Wraw x = W x := by
     simp [Wraw, W, hfield]
   have hderiv (x : Fin (n + 1) → ℝ) (p q : Fin (n + 1)) :
@@ -102,8 +98,7 @@ theorem finiteChaos_laplace_score_scaled_shifted_standardGaussian_ibp
       (∫ x, (∑ k, B i k * x k) * Wraw x
           ∂(Measure.pi fun _ : Fin (n + 1) => gaussianReal 0 1)) =
         ∑ j, (∑ k, B i k * B j k) *
-          ∫ x, Draw x i j ∂(Measure.pi fun _ : Fin (n + 1) => gaussianReal 0 1) := by
-    simpa [Wraw, Draw] using hbase
+          ∫ x, Draw x i j ∂(Measure.pi fun _ : Fin (n + 1) => gaussianReal 0 1) := by assumption
   have hbase' :
       (∫ x, (∑ k, B i k * x k) * W x
           ∂(Measure.pi fun _ : Fin (n + 1) => gaussianReal 0 1)) =
@@ -135,12 +130,8 @@ theorem finiteChaos_laplace_score_scaled_shifted_standardGaussian_ibp
         scale * (∑ k, A i k * x k)
       calc
         (∑ k, (scale * A i k) * x k) =
-            ∑ k, scale * (A i k * x k) := by
-              apply Finset.sum_congr rfl
-              intro k hk
-              ring
-        _ = scale * (∑ k, A i k * x k) := by
-              exact (Finset.mul_sum Finset.univ (fun k => A i k * x k) scale).symm
+            ∑ k, scale * (A i k * x k) := by ring
+        _ = scale * (∑ k, A i k * x k) := (Finset.mul_sum Finset.univ (fun k => A i k * x k) scale).symm
     calc
       _ = ∫ x, scale * ((∑ k, A i k * x k) * W x)
           ∂(Measure.pi fun _ : Fin (n + 1) => gaussianReal 0 1) := by
@@ -166,18 +157,12 @@ theorem finiteChaos_laplace_score_scaled_shifted_standardGaussian_ibp
       _ = scale ^ 2 * (∑ j, (∑ k, A i k * A j k) *
           ∫ x, D x i j ∂(Measure.pi fun _ : Fin (n + 1) => gaussianReal 0 1)) := by
             rw [Finset.mul_sum]
-  have hscaled := hleft.symm.trans (hbase'.trans hright)
   change (∫ x, (∑ k, A i k * x k) * W x
       ∂(Measure.pi fun _ : Fin (n + 1) => gaussianReal 0 1)) =
     scale * ∑ j, (∑ k, A i k * A j k) *
       ∫ x, D x i j ∂(Measure.pi fun _ : Fin (n + 1) => gaussianReal 0 1)
   apply (mul_left_cancel₀ (ne_of_gt hscale))
-  calc
-    scale * (∫ x, (∑ k, A i k * x k) * W x
-        ∂(Measure.pi fun _ : Fin (n + 1) => gaussianReal 0 1)) =
-      scale ^ 2 * (∑ j, (∑ k, A i k * A j k) *
-        ∫ x, D x i j ∂(Measure.pi fun _ : Fin (n + 1) => gaussianReal 0 1)) := hscaled
-    _ = scale * (scale * ∑ j, (∑ k, A i k * A j k) *
-        ∫ x, D x i j ∂(Measure.pi fun _ : Fin (n + 1) => gaussianReal 0 1)) := by ring
+  refine (hleft.symm.trans (hbase'.trans hright)).trans (?_)
+  ring
 
 end DOZZ.Proofs

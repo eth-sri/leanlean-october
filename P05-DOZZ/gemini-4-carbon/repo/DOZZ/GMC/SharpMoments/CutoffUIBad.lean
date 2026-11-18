@@ -21,24 +21,27 @@ open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
 
+variable {N : ℕ}
+
+
 /-- The bad region: disks of radius `ρ` about the roots and the exterior of the disk of radius
 `1/ρ`. -/
-def coulombBadRegion {N : ℕ} (z : Fin N → ℂ) (ρ : ℝ) : Set ℂ :=
+def coulombBadRegion (z : Fin N → ℂ) (ρ : ℝ) : Set ℂ :=
   (⋃ k, Metric.ball (z k) ρ) ∪ {x : ℂ | 1 / ρ < ‖x‖}
 
-theorem measurableSet_coulombBadRegion {N : ℕ} (z : Fin N → ℂ) (ρ : ℝ) :
+theorem measurableSet_coulombBadRegion (z : Fin N → ℂ) (ρ : ℝ) :
     MeasurableSet (coulombBadRegion z ρ) :=
   (MeasurableSet.iUnion fun _ => Metric.isOpen_ball.measurableSet).union
     (measurableSet_lt measurable_const measurable_norm)
 
-theorem mem_coulombBadRegion_compl {N : ℕ} (z : Fin N → ℂ) (ρ : ℝ) (x : ℂ) :
+theorem mem_coulombBadRegion_compl (z : Fin N → ℂ) (ρ : ℝ) (x : ℂ) :
     x ∈ (coulombBadRegion z ρ)ᶜ ↔ ‖x‖ ≤ 1 / ρ ∧ ∀ k, ρ ≤ ‖x - z k‖ := by
   simp only [coulombBadRegion, Set.mem_compl_iff, Set.mem_union, Set.mem_iUnion,
     Metric.mem_ball, dist_eq_norm, not_or, not_exists, not_lt, Set.mem_ofPred_eq]
   tauto
 
 /-- The bad part of a weighted mass is at most the sum of its root and exterior pieces. -/
-theorem lintegral_coulombBadRegion_le {N : ℕ} (μ : Measure ℂ) (G : ℂ → ℝ≥0∞)
+theorem lintegral_coulombBadRegion_le (μ : Measure ℂ) (G : ℂ → ℝ≥0∞)
     (hG : Measurable G) (z : Fin N → ℂ) (ρ : ℝ) :
     ∫⁻ x in coulombBadRegion z ρ, G x ∂μ ≤
       ∑ k, ∫⁻ x in Metric.ball (z k) ρ, G x ∂μ + ∫⁻ x in {x : ℂ | 1 / ρ < ‖x‖}, G x ∂μ := by
@@ -89,11 +92,10 @@ theorem farExterior_coeff_le {ρ R0 β E t ξ κ : ℝ} (hρ : 0 < ρ) (hρ1 : �
     rw [sub_eq_add_neg, Real.rpow_add hρ]
     ring
   rw [h3]
-  have hb : (2 : ℝ) ^ (β * t) ≤ 2 ^ (E * t) :=
+  have : (2 : ℝ) ^ (β * t) ≤ 2 ^ (E * t) :=
     Real.rpow_le_rpow_of_exponent_le (by norm_num) (mul_le_mul_of_nonneg_right hβE ht.le)
-  have hr : R0 ^ ξ ≤ R0 ^ (4 * t) := Real.rpow_le_rpow_of_exponent_le hR0 hξ
-  have hp : ρ ^ (ξ - β * t) ≤ ρ ^ κ := Real.rpow_le_rpow_of_exponent_ge hρ hρ1 hκ
-  have h0 : 0 ≤ ρ ^ (ξ - β * t) := Real.rpow_nonneg hρ.le _
+  have := Real.rpow_le_rpow_of_exponent_ge hρ hρ1 hκ
+  have : 0 ≤ ρ ^ (ξ - β * t) := Real.rpow_nonneg hρ.le _
   calc 2 ^ (β * t) * R0 ^ ξ * ρ ^ (ξ - β * t) ≤ 2 ^ (E * t) * R0 ^ (4 * t) * ρ ^ (ξ - β * t) := by
         gcongr
     _ ≤ 2 ^ (E * t) * R0 ^ (4 * t) * ρ ^ κ := by gcongr
@@ -116,7 +118,7 @@ theorem cutoffUI_bad_cutoff_moment_le
           coulombCutoffWeight partition c.1 c.2.2.1 c.2.1 c.2.2.2 r x
             ∂regularizedGMC P Xc c.1 r ω) ^ tst ∂P ≤ A * ENNReal.ofReal (ρ ^ κ) := by
   classical
-  let _ : IsProbabilityMeasure P := hX.1
+  let _ := hX.1
   have hadmInf : ∀ c ∈ S, 0 < c.1 ∧ c.1 < 2 ∧ 0 < tst ∧ tst < 4 / c.1 ^ 2 ∧
       tst < 2 / c.1 * (Q c.1 - max c.2.2.2 0) := by
     intro c hc
@@ -162,10 +164,9 @@ theorem cutoffUI_bad_cutoff_moment_le
       fun_prop (disch := first | exact h | exact pow_ne_zero _ h)
     · have h := (weightedCutoffSlack_pos_iff _).mp (hroot c hc k)
       obtain ⟨hγ0, -, -, -, ht⟩ := h
-      have ht2 := (lt_min_iff.mp ht).2
       have h1 : c.1 * tst / 2 < Q c.1 - c.2.2.1 k := by
-        have h := mul_lt_mul_of_pos_left ht2 (by positivity : (0 : ℝ) < c.1 / 2)
-        have hl : c.1 / 2 * (2 / c.1 * (Q c.1 - c.2.2.1 k)) = Q c.1 - c.2.2.1 k := by
+        have h := mul_lt_mul_of_pos_left ((lt_min_iff.mp ht).2) (by positivity : (0 : ℝ) < c.1 / 2)
+        have : c.1 / 2 * (2 / c.1 * (Q c.1 - c.2.2.1 k)) = Q c.1 - c.2.2.1 k := by
           field_simp
         linarith
       have hexp : c.1 * (Q c.1 - c.2.2.1 k) * tst - c.1 ^ 2 * tst ^ 2 / 2 =
@@ -183,7 +184,7 @@ theorem cutoffUI_bad_cutoff_moment_le
       field_simp
     have h1 : c.1 * tst / 2 < Q c.1 - max c.2.2.2 0 := by
       have h := mul_lt_mul_of_pos_left htinf (by positivity : (0 : ℝ) < c.1 / 2)
-      have hl : c.1 / 2 * (2 / c.1 * (Q c.1 - max c.2.2.2 0)) = Q c.1 - max c.2.2.2 0 := by
+      have : c.1 / 2 * (2 / c.1 * (Q c.1 - max c.2.2.2 0)) = Q c.1 - max c.2.2.2 0 := by
         field_simp
       linarith
     have hexp : 2 * tst + c.1 ^ 2 * tst / 2 - c.1 ^ 2 * tst ^ 2 / 2 -
@@ -195,7 +196,7 @@ theorem cutoffUI_bad_cutoff_moment_le
     exact mul_pos (mul_pos hγ0 htst) (by linarith)
   obtain ⟨κ, ⟨hκr, hκi⟩, hκ0⟩ := ((eventually_all.mpr hζr).and hζi).and self_mem_nhdsWithin
     |>.exists
-  have hκpos : 0 < κ := hκ0
+  have hκpos := hκ0
   -- partition supports and the exterior radius
   obtain ⟨Rf, Ri, hRf, hRi, hsuppf, hsuppi⟩ := partition_support_bounds partition
   set R0 : ℝ := max (2 * Zs + 2) Rf with hR0def
@@ -260,9 +261,8 @@ theorem cutoffUI_bad_cutoff_moment_le
     refine h.trans (ENNReal.ofReal_le_ofReal (mul_le_mul_of_nonneg_left ?_ hC0.le))
     have hexp : c.1 * (Q c.1 - 0) * tst - c.1 ^ 2 * tst ^ 2 / 2 ≤ 4 * tst := by
       have hQ : c.1 * Q c.1 = 2 + c.1 ^ 2 / 2 := by rw [Q]; field_simp
-      have hγsq : c.1 ^ 2 < 2 ^ 2 := pow_lt_pow_left₀ hγ2 hγ0.le two_ne_zero
       have hQt : c.1 * (Q c.1 - 0) * tst = (2 + c.1 ^ 2 / 2) * tst := by rw [sub_zero, hQ]
-      have h1 : c.1 ^ 2 * tst < 2 ^ 2 * tst := mul_lt_mul_of_pos_right hγsq htst
+      have h1 : c.1 ^ 2 * tst < 2 ^ 2 * tst := mul_lt_mul_of_pos_right (pow_lt_pow_left₀ hγ2 hγ0.le two_ne_zero) htst
       have h2 : 0 ≤ c.1 ^ 2 * tst ^ 2 := by positivity
       linarith only [hQt, h1, h2]
     exact Real.rpow_le_rpow_of_exponent_le (by linarith) hexp
@@ -285,9 +285,9 @@ theorem cutoffUI_bad_cutoff_moment_le
         (ENNReal.mul_lt_top ENNReal.ofReal_lt_top ENNReal.ofReal_lt_top) hGmt)
   intro c hc ρ hρ hρ1 r hr
   obtain ⟨hγ0, hγ2, -, -, -⟩ := hadmInf c hc
-  have hρs' : ρ ≤ ρs := hρ1.trans (min_le_left _ _)
-  have hρR0 : ρ ≤ 1 / R0 := hρ1.trans (min_le_right _ _)
-  have hρ1' : ρ ≤ 1 := hρs'.trans hρs1
+  have hρs' := hρ1.trans (min_le_left _ _)
+  have hρR0 := hρ1.trans (min_le_right _ _)
+  have hρ1' := hρs'.trans hρs1
   have hinvρ : R0 ≤ 1 / ρ := by
     rw [le_div_iff₀ hρ]
     rw [le_div_iff₀ (by linarith)] at hρR0
@@ -297,8 +297,7 @@ theorem cutoffUI_bad_cutoff_moment_le
     have := Real.exp_le_exp.mpr (neg_le_neg hr)
     rwa [Real.log_div one_ne_zero hρ.ne', Real.log_one, zero_sub, neg_neg, Real.exp_log hρ]
       at this
-  have hlog : Real.log (1 / Real.exp (-r)) = r := by
-    rw [one_div, ← Real.exp_neg, neg_neg, Real.log_exp]
+  have hlog : Real.log (1 / Real.exp (-r)) = r := by simp
   -- the pieces, pointwise in the sample
   set cw : Fin N → Ω → ℝ≥0∞ := fun k ω =>
     cutoffWeightedGmcBallMass P Xc c.1 (c.2.2.1 k) (c.2.1 k) ρ (Real.exp (-r)) ω with hcw
@@ -368,7 +367,7 @@ theorem cutoffUI_bad_cutoff_moment_le
     rw [← ENNReal.ofReal_mul (hCkpos k).le]
     refine ENNReal.ofReal_le_ofReal (mul_le_mul_of_nonneg_left ?_ (hCkpos k).le)
     exact Real.rpow_le_rpow_of_exponent_ge hρ hρ1' (hκr k c hc)
-  have hVb : ∫⁻ ω, V ω ^ tst ∂P ≤
+  have : ∫⁻ ω, V ω ^ tst ∂P ≤
       ENNReal.ofReal (2 ^ (E * tst) * R0 ^ (4 * tst)) * K0 * Gm * ENNReal.ofReal (ρ ^ κ) := by
     have hK0b : ∀ r' : ℝ, 0 ≤ r' →
         ∫⁻ ω, regularizedGMC P Xc c.1 r' ω (exteriorAnnulus R0 0) ^ tst ∂P ≤ K0 := by
@@ -388,15 +387,13 @@ theorem cutoffUI_bad_cutoff_moment_le
     have hext := cutoff_exterior_power_moment_le P X hX Xc hXc c.1 (le_trans hR02 hinvρ)
       (le_max_right (c.1 * c.2.2.2) 0) htst hfar hr0
     refine hext.trans ?_
-    have hβE : max (c.1 * c.2.2.2) 0 ≤ E := max_le ((le_abs_self _).trans (hEinf c hc)) hE
     have hξ : 2 * tst + c.1 ^ 2 * tst / 2 - c.1 ^ 2 * tst ^ 2 / 2 ≤ 4 * tst := by
-      have hγsq : c.1 ^ 2 < 2 ^ 2 := pow_lt_pow_left₀ hγ2 hγ0.le two_ne_zero
-      have h1 : c.1 ^ 2 * tst < 2 ^ 2 * tst := mul_lt_mul_of_pos_right hγsq htst
+      have h1 : c.1 ^ 2 * tst < 2 ^ 2 * tst := mul_lt_mul_of_pos_right (pow_lt_pow_left₀ hγ2 hγ0.le two_ne_zero) htst
       have h2 : 0 ≤ c.1 ^ 2 * tst ^ 2 := by positivity
       linarith only [h1, h2]
-    have hcoeff := farExterior_coeff_le (κ := κ) hρ hρ1' (by linarith : (1 : ℝ) ≤ R0)
-      hβE htst hξ (by linarith [hκi c hc])
-    have hG := geometric_factor_le hκpos (hκi c hc) (le_refl tst)
+    have := farExterior_coeff_le (κ := κ) hρ hρ1' (by linarith : (1 : ℝ) ≤ R0)
+      (max_le ((le_abs_self _).trans (hEinf c hc)) hE) htst hξ (by linarith [hκi c hc])
+    have := geometric_factor_le hκpos (hκi c hc) (le_refl tst)
     calc ENNReal.ofReal ((2 * (1 / ρ)) ^ (max (c.1 * c.2.2.2) 0 * tst)) *
           (ENNReal.ofReal ((1 / ρ / R0) ^ (-(2 * tst + c.1 ^ 2 * tst / 2 -
             c.1 ^ 2 * tst ^ 2 / 2))) * K0) *

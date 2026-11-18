@@ -99,7 +99,11 @@ theorem abs_mixIntegrand_le (hd : BPZLimitData γ q δ ρ kt k₂ φ D) {B : ℝ
       ≤ (1 - ρ y) * k₂ y * (B * Kk * (c * ‖v‖ / (2 * δ))) := by gcongr
     _ = c * ‖v‖ / (2 * δ) * B * Kk * ((1 - ρ y) * k₂ y) := by ring
 
-theorem integrable_mixIntegrand (hd : BPZLimitData γ q δ ρ kt k₂ φ D) {B : ℝ}
+section
+variable (hd : BPZLimitData γ q δ ρ kt k₂ φ D)
+include hd
+
+theorem integrable_mixIntegrand {B : ℝ}
     (hB : ∀ x, |φ x| ≤ B) {c : ℝ} (hc : 0 ≤ c) (v : ℂ) {k L : ℂ → ℝ}
     (hLm : Measurable L) (hL : ∀ w, |L w| ≤ c * ‖v‖ / ‖w‖) {Kk : ℝ}
     (hk : ∀ x, ρ x * |k x| ≤ Kk) {m : Measure ℂ}
@@ -113,18 +117,17 @@ theorem integrable_mixIntegrand (hd : BPZLimitData γ q δ ρ kt k₂ φ D) {B :
     exact hd.abs_mixIntegrand_le hB hc v hL hk x y
 
 /-- The far-region test functions converge. -/
-theorem conv_mix (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (hp : BPZWardProb P X γ M Xc ρ k₂ D)
+theorem conv_mix (hp : BPZWardProb P X γ M Xc ρ k₂ D)
     (v : ℂ) :
     TendstoInMeasure P
       (fun (n : ℕ) ω => ∫ x, bpzMixTest φ ρ (bpzWardCutWeight γ q n kt) k₂
         (fun w => bpzTruncLogDeriv n w v) (M ω) x ∂bpzCutChaos P Xc γ n ω) atTop
       (fun ω => ∫ x, bpzMixTest φ ρ k₂ k₂ (bpzKern v) (M ω) x ∂M ω) := by
   have : IsProbabilityMeasure P := hp.hX.1
-  have hμ := bpzWeakConv_gmc P X hp.hX hd.γ_pos hp.γ2 M hp.hM hp.hMm Xc hp.hXc
   obtain ⟨K, hK0, hK⟩ := hd.cutWeight_bound
   obtain ⟨R, hR0, hR⟩ := hd.rho_zero_of_norm
   obtain ⟨B, hB0, hB⟩ := hd.phi_bdd
-  have hδ := hd.δ_pos
+  have := hd.δ_pos
   set I₂ : Ω → ℝ := fun ω => ∫ y, (1 - ρ y) * k₂ y ∂M ω with hI₂
   have hI₂m : Measurable I₂ :=
     (measurable_integral_measure ((measurable_const.sub hd.ρ_meas).mul hd.k₂_meas)).comp hp.hMm
@@ -162,18 +165,15 @@ theorem conv_mix (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (hp : BPZWardProb P
     filter_upwards [hp.k₂_int] with ω hω x
     refine (hd.abs_mixTest_le hB zero_le_one v hL hω x).trans ?_
     have h1 : 1 * ‖v‖ / (2 * δ) * B * (ρ x * |k x|) ≤ C₀ := by
-      calc 1 * ‖v‖ / (2 * δ) * B * (ρ x * |k x|) ≤ 1 * ‖v‖ / (2 * δ) * B * K :=
-            mul_le_mul_of_nonneg_left (hk x) (by positivity)
-        _ ≤ C₀ := by rw [hC₀, one_mul]; linarith
-    calc 1 * ‖v‖ / (2 * δ) * B * (ρ x * |k x|) * I₂ ω ≤ C₀ * I₂ ω :=
-          mul_le_mul_of_nonneg_right h1 (hI₂0 ω)
-      _ = V ω := rfl
+      refine (mul_le_mul_of_nonneg_left (hk x) (by positivity)).trans (?_)
+      rw [hC₀, one_mul]; linarith
+    exact mul_le_mul_of_nonneg_right h1 (hI₂0 ω)
   have hsupp : ∀ (k L : ℂ → ℝ) ω x, R < ‖x‖ → bpzMixTest φ ρ k k₂ L (M ω) x = 0 := by
     intro k L ω x hx
     unfold bpzMixTest
     rw [hd.phi_zero_of_rho_zero (hR x hx)]
     simp
-  refine hμ.tendstoInMeasure_random_test
+  refine (bpzWeakConv_gmc P X hp.hX hd.γ_pos hp.γ2 M hp.hM hp.hMm Xc hp.hXc).tendstoInMeasure_random_test
     (fun n ω x => bpzMixTest φ ρ (bpzWardCutWeight γ q n kt) k₂ (fun w => bpzTruncLogDeriv n w v)
       (M ω) x)
     (fun ω x => bpzMixTest φ ρ k₂ k₂ (bpzKern v) (M ω) x)
@@ -202,11 +202,9 @@ theorem conv_mix (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (hp : BPZWardProb P
     have hep : 0 < e := by positivity
     obtain ⟨δa, hδa, hua⟩ := bpz_unifCont_of_compact hac has e hep
     set δk : ℝ := ε / 2 * (2 * δ) ^ 2 / (3 * (Ba' + 1) * (‖v‖ + 1)) with hδk
-    have hδkp : 0 < δk := by positivity
     refine ⟨min δa δk, by positivity, ?_⟩
     filter_upwards [hp.k₂_int] with ω hω x x' hxx'
-    have h1 : ‖x - x'‖ ≤ δa := hxx'.trans (min_le_left _ _)
-    have h2 : ‖x - x'‖ ≤ δk := hxx'.trans (min_le_right _ _)
+    have := hxx'.trans (min_le_right _ _)
     have hpt : ∀ y, |(1 - ρ y) * k₂ y * (φ x * k₂ x * bpzKern v (x - y)) -
         (1 - ρ y) * k₂ y * (φ x' * k₂ x' * bpzKern v (x' - y))| ≤ ε * ((1 - ρ y) * k₂ y) := by
       intro y
@@ -217,27 +215,24 @@ theorem conv_mix (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (hp : BPZWardProb P
       have hsep : ∀ z, a z ≠ 0 → 2 * δ ≤ ‖z - y‖ := fun z hz => by
         have hφz : φ z ≠ 0 := fun h => hz (by simp only [ha]; rw [h, zero_mul])
         exact hd.sep z (subset_tsupport φ hφz) y (lt_of_le_of_ne (hd.ρ_le_one y) hρy)
-      have hk := bpz_weighted_kern_sub_le hη hBa' v y hsep x x'
       have heq : (1 - ρ y) * k₂ y * (φ x * k₂ x * bpzKern v (x - y)) -
           (1 - ρ y) * k₂ y * (φ x' * k₂ x' * bpzKern v (x' - y)) =
           (1 - ρ y) * k₂ y * (a x * bpzKern v (x - y) - a x' * bpzKern v (x' - y)) := by
         simp only [ha]; ring
       rw [heq, abs_mul, abs_of_nonneg hw, mul_comm ε]
       apply mul_le_mul_of_nonneg_left _ hw
-      refine hk.trans ?_
-      have hA : |a x - a x'| * (‖v‖ / (2 * δ)) ≤ ε / 2 := by
-        calc |a x - a x'| * (‖v‖ / (2 * δ)) ≤ e * (‖v‖ / (2 * δ)) :=
-              mul_le_mul_of_nonneg_right (hua x x' h1) (by positivity)
-          _ = ε / 2 * (‖v‖ / (‖v‖ + 1)) := by rw [he]; field_simp
+      refine (bpz_weighted_kern_sub_le hη hBa' v y hsep x x').trans ?_
+      have : |a x - a x'| * (‖v‖ / (2 * δ)) ≤ ε / 2 := by
+        refine (mul_le_mul_of_nonneg_right (hua x x' (hxx'.trans (min_le_left _ _))) (by positivity)).trans (?_)
+        calc e * (‖v‖ / (2 * δ)) = ε / 2 * (‖v‖ / (‖v‖ + 1)) := by rw [he]; field_simp
           _ ≤ ε / 2 * 1 := mul_le_mul_of_nonneg_left
               ((div_le_one (by positivity)).2 (by linarith)) (by positivity)
           _ = ε / 2 := mul_one _
       have hB : Ba' * (3 * ‖v‖ * ‖x - x'‖ / (2 * δ) ^ 2) ≤ ε / 2 := by
-        have hfrac := bpz_frac_mul_le_one (le_max_right Ba 0) (norm_nonneg v)
         calc Ba' * (3 * ‖v‖ * ‖x - x'‖ / (2 * δ) ^ 2) ≤ Ba' * (3 * ‖v‖ * δk / (2 * δ) ^ 2) := by
               gcongr
           _ = ε / 2 * (Ba' * ‖v‖ / ((Ba' + 1) * (‖v‖ + 1))) := by rw [hδk]; field_simp
-          _ ≤ ε / 2 * 1 := mul_le_mul_of_nonneg_left hfrac (by positivity)
+          _ ≤ ε / 2 * 1 := mul_le_mul_of_nonneg_left (bpz_frac_mul_le_one (le_max_right Ba 0) (norm_nonneg v)) (by positivity)
           _ = ε / 2 := mul_one _
       linarith
     have hI1 := hd.integrable_mixIntegrand hB zero_le_one v (measurable_bpzKern v)
@@ -250,9 +245,8 @@ theorem conv_mix (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (hp : BPZWardProb P
       ?_
     · rw [Real.norm_eq_abs]; exact hpt y
     · rw [integral_const_mul]
-      calc ε * I₂ ω ≤ ε * (C₀ * I₂ ω) := mul_le_mul_of_nonneg_left
+      exact mul_le_mul_of_nonneg_left
             (le_mul_of_one_le_left (hI₂0 ω) hC₀1) hε.le
-        _ = ε * V ω := rfl
   · -- uniform convergence
     intro ε hε
     set ε' : ℝ := ε * (2 * δ) / ((B + 1) * (‖v‖ + 1)) with hε'
@@ -279,7 +273,7 @@ theorem conv_mix (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (hp : BPZWardProb P
       have hρx : ρ x ≠ 0 := by rw [hd.rho_eq_one hxt]; exact one_ne_zero
       have hdk := hn x hρx
       rw [← hd.k₂_eq] at hdk
-      have hKb : |bpzKern v (x - y)| ≤ ‖v‖ / (2 * δ) :=
+      have : |bpzKern v (x - y)| ≤ ‖v‖ / (2 * δ) :=
         (abs_bpzKern_le v _).trans (div_le_div_of_nonneg_left (norm_nonneg v) (by positivity)
           hsep)
       rw [hT]
@@ -290,7 +284,7 @@ theorem conv_mix (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (hp : BPZWardProb P
       rw [heq, abs_mul, abs_of_nonneg hw, mul_comm ε]
       apply mul_le_mul_of_nonneg_left _ hw
       rw [abs_mul, abs_mul]
-      have hφb := hB x
+      have := hB x
       calc |φ x| * |bpzWardCutWeight γ q n kt x - k₂ x| * |bpzKern v (x - y)|
           ≤ B * ε' * (‖v‖ / (2 * δ)) := by gcongr
         _ = ε * (B * ‖v‖ / ((B + 1) * (‖v‖ + 1))) := by rw [hε']; field_simp
@@ -306,10 +300,11 @@ theorem conv_mix (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (hp : BPZWardProb P
       ?_
     · rw [Real.norm_eq_abs]; exact hpt y
     · rw [integral_const_mul]
-      calc ε * I₂ ω ≤ ε * (C₀ * I₂ ω) := mul_le_mul_of_nonneg_left
+      exact mul_le_mul_of_nonneg_left
             (le_mul_of_one_le_left (hI₂0 ω) hC₀1) hε.le
-        _ = ε * V ω := rfl
 
+
+end
 end BPZLimitData
 
 end DOZZ.Proofs

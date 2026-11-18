@@ -76,14 +76,13 @@ theorem dualShift_eventually {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) 
         R (((γ / 2 - (γ / 8 + u) : ℝ) : ℂ) + 2 / γ) /
           (lFun (-4 / (γ : ℂ) ^ 2) * lFun (2 * ((γ / 2 - (γ / 8 + u) : ℝ) : ℂ) / γ) *
             lFun (2 + 4 / (γ : ℂ) ^ 2 - 2 * ((γ / 2 - (γ / 8 + u) : ℝ) : ℂ) / γ)) := by
-  have hQ : Q γ = 2 / γ + γ / 2 := rfl
-  have hγh : γ / 2 < 2 / γ := by
+  have : Q γ = 2 / γ + γ / 2 := rfl
+  have : γ / 2 < 2 / γ := by
     rw [div_lt_div_iff₀ (by norm_num) hγ]
     nlinarith
-  have hγc : (γ : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hγ.ne'
   -- the two representatives agree as germs on the common strip
   set h' : ℝ := min hR h₅ with hh'
-  have hh'0 : 0 < h' := lt_min hhR hh₅
+  have hh'0 := lt_min hhR hh₅
   have hsub₁ : horizontalStrip h' ⊆ horizontalStrip hR := fun z hz =>
     lt_of_lt_of_le (show |z.im| < h' from hz) (min_le_left _ _)
   have hsub₂ : horizontalStrip h' ⊆ horizontalStrip h₅ := fun z hz =>
@@ -125,7 +124,7 @@ theorem dualShift_eventually {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) 
   have e7 : ∀ᶠ u : ℝ in 𝓝[≠] 0,
       ∀ n : ℕ, dualArg₁ γ ((γ / 2 - γ / 8 + u * (-1) : ℝ) : ℂ) ≠ -(n : ℂ) := by
     have hc := eventually_affine_ne_neg_nat (c := 2 / (γ : ℂ)) (d := -(2 * Q γ / γ))
-      (div_ne_zero two_ne_zero hγc)
+      (div_ne_zero two_ne_zero (Complex.ofReal_ne_zero.mpr hγ.ne'))
     have h := eventually_ofReal_affine (x₀ := γ / 2 - γ / 8) (s := -1) (by norm_num)
       ((eventually_codiscrete_iff_forall_eventually_nhdsNE.mp hc) _)
     filter_upwards [h] with u hu n
@@ -139,11 +138,11 @@ theorem dualShift_eventually {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) 
     nhdsWithin_le_nhds (Ioo_mem_nhds (by linarith) (by linarith))
   filter_upwards [e1, e2, e3, e4, e5, e6, e7, e8] with u a1 a2 a3 a4 a5 a6 a7 a8
   set θ : ℝ := γ / 8 + u with hθ
-  have hθ₁ : 0 < θ := by rw [hθ]; linarith [a8.1]
-  have hθ₂ : θ < γ / 4 := by rw [hθ]; linarith [a8.2]
-  have r1 : (γ / 2 - γ / 8 + u * (-1) : ℝ) = γ / 2 - θ := by rw [hθ]; ring
-  have r2 : (Q γ + γ / 8 + u * 1 : ℝ) = Q γ + θ := by rw [hθ]; ring
-  have r3 : (Q γ - γ / 8 + u * (-1) : ℝ) = Q γ - θ := by rw [hθ]; ring
+  have hθ₁ : 0 < θ := by grind
+  have hθ₂ : θ < γ / 4 := by grind
+  have r1 : (γ / 2 - γ / 8 + u * (-1) : ℝ) = γ / 2 - θ := by ring
+  have r2 : (Q γ + γ / 8 + u * 1 : ℝ) = Q γ + θ := by ring
+  have r3 : (Q γ - γ / 8 + u * (-1) : ℝ) = Q γ - θ := by ring
   rw [r1] at a1 a7
   rw [r2] at a2 a4 a6
   rw [r3] at a3 a5

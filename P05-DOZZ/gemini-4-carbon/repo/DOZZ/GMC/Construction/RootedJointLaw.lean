@@ -39,9 +39,9 @@ theorem rooted_joint_coordinate_law
   let rightPath : ℂ × Ω → gmcTiltCoordinateIndex → ℝ := fun q =>
     gmcTiltCoordinatePath (fun f => X q.2 f + γ * gffRootCovariance q.1 f)
       (gmcRootedMeasure γ q.1 (M q.2))
-  have hl : Measurable leftPath := measurable_gmcTiltCoordinatePath.comp
+  have hl := measurable_gmcTiltCoordinatePath.comp
     ((measurable_pi_iff.mpr fun f => (hX.2 f).1).prodMk hMmeas)
-  have hr : Measurable rightPath := measurable_pointRootedCoordinatePath P X hX γ M hMmeas hM.1
+  have hr := measurable_pointRootedCoordinatePath P X hX γ M hMmeas hM.1
   have hres : Measurable (fun ω => (M ω).restrict B) := by
     apply Measure.measurable_of_measurable_coe
     intro A hA
@@ -67,11 +67,10 @@ theorem rooted_joint_coordinate_law
     ae_restrict_of_ae_restrict_of_subset Set.inter_subset_right hRoot
   have hLaw := rooted_full_coordinate_law P X hX γ hγ hγ2 M hM hMmeas
     Xc hXc (A ∩ B) (hA.inter hB) R (Set.inter_subset_right.trans hBR) hRootAB
-  have heval := congrArg (fun μ : Measure (gmcTiltCoordinateIndex → ℝ) => μ D) hLaw
   change Measure.map leftPath (P.withDensity (fun ω => M ω (A ∩ B))) D =
     Measure.map (fun q : ℂ × Ω => (q.1, rightPath q))
       ((gmcReferenceMeasure.restrict B).prod P) (A ×ˢ D)
-  rw [heval]
+  rw [congrArg (fun μ : Measure (gmcTiltCoordinateIndex → ℝ) => μ D) hLaw]
   rw [Measure.map_apply hr hD,
     Measure.map_apply (measurable_fst.prodMk hr) (hA.prod hD)]
   rw [← Measure.restrict_restrict hA, Measure.restrict_prod_eq_prod_univ,

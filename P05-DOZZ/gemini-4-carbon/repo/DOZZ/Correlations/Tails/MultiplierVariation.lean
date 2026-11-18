@@ -13,7 +13,6 @@ public import Mathlib.Analysis.Calculus.MeanValue
 
 @[expose] public section
 
-open Set
 
 namespace DOZZ.Proofs
 

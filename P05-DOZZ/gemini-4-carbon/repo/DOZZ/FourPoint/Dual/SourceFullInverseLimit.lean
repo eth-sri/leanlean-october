@@ -84,7 +84,7 @@ theorem dual_source_full_inverse_increment_tendsto
   let L := (a*Real.Gamma (-a)*Real.Gamma (p+a)/Real.Gamma p)*
     (∫⁻ ω, rho γ (M ω) (2*Q γ-α₁-2/γ) α₂ α₃^(-(p+a)) ∂P).toReal*
     (∫⁻ ω, twoSidedReflectionMass γ B Z ω^a ∂P).toReal
-  have hg (h : ℝ) (hh : 0 < h) : Tendsto (g h) (𝓝[≠] (0 : ℂ)) (𝓝 L) :=
+  have hg (h : ℝ) (hh : 0 < h) :=
     dual_source_copied_polar_increment_tendsto P X hX γ hγ hγ₂ M hM Xc hc hm hcont
       (N h) (hN h).1 (hN h).2.2.1 (hN h).2.2.2.2.1 α₁ α₂ α₃ ξ h
       hα₁ hreflect hα₂ hα₃ hh.le hs hshifted hslack hξ hξ1 B Z hData hiZ
@@ -108,8 +108,7 @@ theorem dual_source_full_inverse_increment_tendsto
     simpa only [Real.rpow_one] using Real.rpow_lt_rpow_of_exponent_gt hzpos hz
       (by linarith only [hξ] : 1-ξ < 1)
   have htime : 0 ≤ -Real.log ‖z‖+h := by
-    have hl := Real.log_nonpos hzpos.le hz.le
-    linarith only [hl, hh]
+    linarith only [Real.log_nonpos hzpos.le hz.le, hh]
   have hT : (T h z : ℝ) = -Real.log ‖z‖+h := Real.coe_toNNReal _ htime
   have hηEq : Real.exp (-(T h z : ℝ)) = Real.exp (-h)*‖z‖ := by
     rw [hT]
@@ -135,9 +134,7 @@ theorem dual_source_full_inverse_increment_tendsto
     dsimp only [e, g]
     ring
   have hdecomp : f z-g h z = (full z-copied h z)/‖z‖^κ+
-      (outer z-zero)/‖z‖^κ+(copied h z-outer z-D h z)/‖z‖^κ := by
-    dsimp only [f, g]
-    ring
+      (outer z-zero)/‖z‖^κ+(copied h z-outer z-D h z)/‖z‖^κ := by ring
   rw [hdecomp]
   exact (abs_add_le _ _).trans (add_le_add
     (abs_add_le ((full z-copied h z)/‖z‖^κ) ((outer z-zero)/‖z‖^κ)) hb')

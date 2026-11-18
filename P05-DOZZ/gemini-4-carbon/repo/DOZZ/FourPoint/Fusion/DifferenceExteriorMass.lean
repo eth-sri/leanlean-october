@@ -28,14 +28,11 @@ theorem fusion_difference_exterior_absolute_bound (γ α₁ α₂ α₃ t p : �
   let C := (2 : ℝ) ^ (γ ^ 2 / 2)
   let D := 2 * (|γ ^ 2 / 2| * max ((1 / 2 : ℝ) ^ (γ ^ 2 / 2 - 1))
     ((3 / 2 : ℝ) ^ (γ ^ 2 / 2 - 1)))
-  have hD : 0 ≤ D := by dsimp only [D]; positivity
-  have hC : 0 ≤ C := by dsimp only [C]; positivity
+  have hD : 0 ≤ D := by positivity
+  have hC : 0 ≤ C := by positivity
   have hC1 : 1 ≤ ENNReal.ofReal C := by
     apply (ENNReal.ofReal_le_ofReal (Real.one_le_rpow (by norm_num : (1 : ℝ) ≤ 2) (by positivity))).trans'
     norm_num
-  have hk : Measurable (fun x : ℂ => ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ 0 x)) :=
-    ENNReal.measurable_ofReal.comp ((fusion_measurable_gammaHalfKernel γ α₁ α₂ α₃).comp
-      (f := fun x : ℂ => ((0 : ℂ), x)) (measurable_const.prodMk measurable_id))
   have hJ0 : J ≤ coulombMass γ μ ![-γ / 2, α₁, α₂] ![0, 0, 1] α₃ := by
     rw [fusion_gammaHalfMass_kernel γ α₁ α₂ α₃ 0 μ h0μ h0μ h1μ]
     exact setLIntegral_le_lintegral _ _
@@ -52,7 +49,7 @@ theorem fusion_difference_exterior_absolute_bound (γ α₁ α₂ α₃ t p : �
       _ ≤ ENNReal.ofReal C * ∫⁻ x, ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x) ∂μ :=
         mul_le_mul' le_rfl (setLIntegral_le_lintegral _ _)
       _ = _ := by rw [← fusion_gammaHalfMass_kernel γ α₁ α₂ α₃ z μ hzμ h0μ h1μ]
-  have hJseg : J ≤ ENNReal.ofReal C * fusionUnrootedSegment γ α₁ α₂ α₃ t z μ :=
+  have hJseg :=
     fusion_convex_mass_majorant J _ _ _ t ht hJz
       (hJ0.trans (le_mul_of_one_le_left' hC1))
   have hA : (∫⁻ x in B, ENNReal.ofReal |fusionDifferenceKernel γ α₁ α₂ α₃ z x| ∂μ) ≤

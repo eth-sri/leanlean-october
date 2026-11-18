@@ -21,9 +21,6 @@ input to the last-exit decomposition.
 
 @[expose] public section
 
-open MeasureTheory Filter
-open Topology
-open scoped NNReal
 
 namespace DOZZ.Proofs
 

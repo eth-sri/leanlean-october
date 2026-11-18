@@ -38,12 +38,11 @@ theorem reflected_copied_radial_plane_observable
     P X Xc hX hc hm hcont γ hγ hγ₂ M hM
   refine ⟨N, hNm, hi, hfin, heq, hNa, ?_⟩
   intro f hf G hG
-  let U : Set ℂ := ({0} : Set ℂ)ᶜ
-  have hU : IsOpen U := (isClosed_singleton (x := (0 : ℂ))).isOpen_compl
-  let _ : LocallyCompactSpace U := hU.locallyCompactSpace
+  let U := ({0} : Set ℂ)ᶜ
+  let _ := ((isClosed_singleton (x := (0 : ℂ))).isOpen_compl).locallyCompactSpace
   let E := CompactExhaustion.choice U
   let K : ℕ → Set ℂ := fun n => Subtype.val '' E n
-  have hK (n : ℕ) : IsCompact (K n) := (E.isCompact n).image continuous_subtype_val
+  have hK (n : ℕ) := (E.isCompact n).image continuous_subtype_val
   have hKU (n : ℕ) : K n ⊆ (({0} : Set ℂ)ᶜ) := by
     rintro x ⟨y, _, rfl⟩
     exact y.property
@@ -67,11 +66,9 @@ theorem reflected_copied_radial_plane_observable
   have hA := originRadialPath_aemeasurable P X Xc hc hcont
   have hNFc : @Measurable Ω (ℕ → FiniteMeasure ℂ)
       (MeasurableSpace.comap N inferInstance) inferInstance NF := by
-    let : MeasurableSpace Ω := MeasurableSpace.comap N inferInstance
+    let := MeasurableSpace.comap N inferInstance
     exact Measurable.of_eval fun n => Measurable.subtype_mk
       ((measurable_measure_restrict (K n) (hK n).measurableSet).comp (comap_measurable N))
-  have hAN : IndepFun A NF P :=
-    indep_of_indep_of_le_right hi hNFc.comap_le
   let F : TwoSidedPath × (ℕ → FiniteMeasure ℂ) → ℝ≥0∞ := fun p =>
     G (p.1, ⨆ n, ∫⁻ x, f x * ENNReal.ofReal (reflected_global_reinsertionWeight γ p.1 x)
       ∂(p.2 n : Measure ℂ))
@@ -101,8 +98,6 @@ theorem reflected_copied_radial_plane_observable
     rw [← hd, ← restrict_withDensity ((isClosed_singleton (x := (0 : ℂ))).isOpen_compl).measurableSet, he,
       reflected_global_reinsertion_measure,
       Measure.restrict_restrict_of_subset (Subset.refl _)]
-  have hj : P.map (fun ω => (A ω, NF ω)) = (P.map A).prod (P.map NF) :=
-    (indepFun_iff_map_prod_eq_prod_map_map hA hNF.aemeasurable).mp hAN
   have hAc : AEMeasurable (fun ω : Ω × Ω => A ω.1) (P.prod P) :=
     hA.comp_quasiMeasurePreserving measurePreserving_fst.quasiMeasurePreserving
   have hNc : AEMeasurable (fun ω : Ω × Ω => NF ω.2) (P.prod P) :=
@@ -127,7 +122,7 @@ theorem reflected_copied_radial_plane_observable
   calc
     _ = ∫⁻ ω, F (A ω, NF ω) ∂P := lintegral_congr_ae hid
     _ = ∫⁻ p, F p ∂(P.map A).prod (P.map NF) := by
-      rw [← hj]
+      rw [← ((indepFun_iff_map_prod_eq_prod_map_map hA hNF.aemeasurable).mp (indep_of_indep_of_le_right hi hNFc.comap_le))]
       exact (lintegral_map' hF.aemeasurable (hA.prodMk hNF.aemeasurable)).symm
     _ = ∫⁻ ω : Ω × Ω, F (A ω.1, NF ω.2) ∂P.prod P := by
       rw [← hjc]

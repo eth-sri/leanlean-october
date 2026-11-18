@@ -39,9 +39,7 @@ theorem symmetryReflection_testPotential (f : TestFn) :
   rw [testFnPotential_eq_complex_logPlus, testFnPotential_eq_complex_logPlus]
   have h := symmetryReflection_integral (fun x => f x * Real.log (normPlus (1 - x)))
   have he : (fun x : ℂ => f (1 - x) * Real.log (normPlus (1 - (1 - x)))) =
-      fun x => f (1 - x) * Real.log (normPlus x) := by
-    funext x
-    rw [show (1 : ℂ) - (1 - x) = x by ring]
+      fun x => f (1 - x) * Real.log (normPlus x) := by ring
   rw [he] at h
   change (∫ x, f (1 - x) * Real.log (normPlus x)) =
     (∫ x, f x * Real.log (normPlus x)) + ∫ x, f x * symmetryReflectionPotential x

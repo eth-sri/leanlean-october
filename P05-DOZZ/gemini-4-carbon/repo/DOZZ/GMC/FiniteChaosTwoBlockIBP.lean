@@ -11,12 +11,16 @@ public import Mathlib.MeasureTheory.Integral.Prod
 
 @[expose] public section
 
+noncomputable section
 open MeasureTheory ProbabilityTheory
 
 namespace DOZZ.Proofs
 
+variable {n : ℕ}
+
+
 /-- The standard Gaussian law on a finite real coordinate space. -/
-noncomputable def standardGaussianFinMeasure (n : ℕ) : Measure (Fin (n + 1) → ℝ) :=
+def standardGaussianFinMeasure (n : ℕ) : Measure (Fin (n + 1) → ℝ) :=
   Measure.pi fun _ : Fin (n + 1) => gaussianReal 0 1
 
 instance standardGaussianFinMeasure_isProbability (n : ℕ) :
@@ -25,15 +29,15 @@ instance standardGaussianFinMeasure_isProbability (n : ℕ) :
   infer_instance
 
 /-- The linearly interpolated field with a deterministic shift supplied by the other block. -/
-noncomputable def finiteChaosTwoBlockField
-    {n : ℕ} (A : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+def finiteChaosTwoBlockField
+ (A : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
     (c : (Fin (n + 1) → ℝ) → Fin (n + 1) → ℝ) (t : ℝ)
     (x y : Fin (n + 1) → ℝ) : Fin (n + 1) → ℝ :=
   fun j => Real.sqrt t * (∑ k, A j k * x k) + c y j
 
 /-- One coordinate of the finite-chaos Laplace score along a two-block field. -/
-noncomputable def finiteChaosTwoBlockLaplaceScore
-    {n : ℕ} (A : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+def finiteChaosTwoBlockLaplaceScore
+ (A : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
     (c : (Fin (n + 1) → ℝ) → Fin (n + 1) → ℝ)
     (a v : Fin (n + 1) → ℝ) (γ s t : ℝ) (i : Fin (n + 1))
     (x y : Fin (n + 1) → ℝ) : ℝ :=
@@ -42,8 +46,8 @@ noncomputable def finiteChaosTwoBlockLaplaceScore
       (finiteChaosTwoBlockField A c t x y)))
 
 /-- The field-coordinate derivative of the Laplace score, including the diagonal Wick term. -/
-noncomputable def finiteChaosTwoBlockLaplaceScoreDerivative
-    {n : ℕ} (A : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
+def finiteChaosTwoBlockLaplaceScoreDerivative
+ (A : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
     (c : (Fin (n + 1) → ℝ) → Fin (n + 1) → ℝ)
     (a v : Fin (n + 1) → ℝ) (γ s t : ℝ) (i j : Fin (n + 1))
     (x y : Fin (n + 1) → ℝ) : ℝ :=
@@ -56,89 +60,63 @@ noncomputable def finiteChaosTwoBlockLaplaceScoreDerivative
         (s ^ 2 * Real.exp (-s * finiteChaosVectorMass a v γ
           (finiteChaosTwoBlockField A c t x y)))
 
-/-- Integrating the conditional `X`-block Laplace-score IBP over an independent standard Gaussian
-block gives the covariance identity on the product Gaussian space. The integrability premises are
-exactly those needed for Fubini; the uniform Laplace-score bounds supply them in applications. -/
-theorem finiteChaos_laplace_X_block_ibp_on_product
-    {n : ℕ} (A : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
-    (a v : Fin (n + 1) → ℝ)
-    (c : (Fin (n + 1) → ℝ) → Fin (n + 1) → ℝ)
-    (γ s t : ℝ) (ha : ∀ j, 0 ≤ a j) (hs : 0 ≤ s) (ht : 0 < t)
-    (i : Fin (n + 1))
-    (hleft : Integrable
-      (fun z : (Fin (n + 1) → ℝ) × (Fin (n + 1) → ℝ) =>
-        (∑ k, A i k * z.2 k) *
-          finiteChaosTwoBlockLaplaceScore A c a v γ s t i z.2 z.1)
-      ((standardGaussianFinMeasure n).prod (standardGaussianFinMeasure n)))
-    (hderiv : ∀ (j : Fin (n + 1)), Integrable
-      (fun z : (Fin (n + 1) → ℝ) × (Fin (n + 1) → ℝ) =>
-        finiteChaosTwoBlockLaplaceScoreDerivative A c a v γ s t i j z.2 z.1)
-      ((standardGaussianFinMeasure n).prod (standardGaussianFinMeasure n))) :
-    ∫ z, (∑ k, A i k * z.2 k) *
-        finiteChaosTwoBlockLaplaceScore A c a v γ s t i z.2 z.1
-      ∂((standardGaussianFinMeasure n).prod (standardGaussianFinMeasure n)) =
-      Real.sqrt t * ∑ j, (∑ k, A i k * A j k) *
-        ∫ z, finiteChaosTwoBlockLaplaceScoreDerivative A c a v γ s t i j z.2 z.1
-          ∂((standardGaussianFinMeasure n).prod (standardGaussianFinMeasure n)) := by
-  classical
-  let μ := standardGaussianFinMeasure n
-  let V := finiteChaosTwoBlockField A c t
-  let W := finiteChaosTwoBlockLaplaceScore A c a v γ s t i
-  let D := finiteChaosTwoBlockLaplaceScoreDerivative A c a v γ s t i
-  have hconditional (y : Fin (n + 1) → ℝ) :
-      ∫ x, (∑ k, A i k * x k) * W x y ∂μ =
-        Real.sqrt t * ∑ j, (∑ k, A i k * A j k) *
-          ∫ x, D j x y ∂μ := by
-    exact finiteChaos_laplace_score_scaled_shifted_standardGaussian_ibp
-      A a v (c y) γ s (Real.sqrt t) ha hs (Real.sqrt_pos.2 ht) i
-  have hiter :
-      ∫ y, ∫ x, (∑ k, A i k * x k) * W x y ∂μ ∂μ =
-        Real.sqrt t * ∑ j, (∑ k, A i k * A j k) *
-          ∫ y, ∫ x, D j x y ∂μ ∂μ := by
-    calc
-      ∫ y, ∫ x, (∑ k, A i k * x k) * W x y ∂μ ∂μ =
-          ∫ y, Real.sqrt t * ∑ j, (∑ k, A i k * A j k) *
-          ∫ x, D j x y ∂μ ∂μ := by
-              apply integral_congr_ae
-              filter_upwards [] with y
-              exact hconditional y
-      _ = Real.sqrt t * ∑ j, (∑ k, A i k * A j k) *
-            ∫ y, ∫ x, D j x y ∂μ ∂μ := by
-              rw [integral_const_mul, integral_finsetSum]
-              · apply congrArg (fun q : ℝ => Real.sqrt t * q)
-                apply Finset.sum_congr rfl
-                intro j hj
-                rw [integral_const_mul]
-              · intro j hj
-                exact (hderiv j).integral_prod_left.const_mul _
-  calc
-    ∫ z, (∑ k, A i k * z.2 k) * W z.2 z.1 ∂(μ.prod μ) =
-        ∫ y, ∫ x, (∑ k, A i k * x k) * W x y ∂μ ∂μ :=
-          integral_prod _ hleft
-    _ = Real.sqrt t * ∑ j, (∑ k, A i k * A j k) *
-        ∫ y, ∫ x, D j x y ∂μ ∂μ := hiter
-    _ = Real.sqrt t * ∑ j, (∑ k, A i k * A j k) *
-        ∫ z, D j z.2 z.1 ∂(μ.prod μ) := by
-          congr 1
-          apply Finset.sum_congr rfl
-          intro j hj
-          congr 1
-          exact (integral_prod _ (hderiv j)).symm
+
+section
+variable (A : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ) (a v : Fin (n + 1) → ℝ) (c : (Fin (n + 1) → ℝ) → Fin (n + 1) → ℝ) (hc : Measurable c) (γ s t : ℝ) (ha : ∀ j, 0 ≤ a j) (hs : 0 ≤ s) (ht : 0 < t) (i : Fin (n + 1))
+include A v hc γ ha hs ht i
 
 /-- The product-integrability conditions for the `X`-block identity follow from the uniform
 Laplace-score bounds whenever the deterministic shift is measurable. -/
 theorem finiteChaos_laplace_X_block_ibp_on_product_of_measurable_shift
-    {n : ℕ} (A : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
-    (a v : Fin (n + 1) → ℝ)
-    (c : (Fin (n + 1) → ℝ) → Fin (n + 1) → ℝ) (hc : Measurable c)
-    (γ s t : ℝ) (ha : ∀ j, 0 ≤ a j) (hs : 0 ≤ s) (ht : 0 < t)
-    (i : Fin (n + 1)) :
+ :
     ∫ z, (∑ k, A i k * z.2 k) *
         finiteChaosTwoBlockLaplaceScore A c a v γ s t i z.2 z.1
       ∂((standardGaussianFinMeasure n).prod (standardGaussianFinMeasure n)) =
       Real.sqrt t * ∑ j, (∑ k, A i k * A j k) *
         ∫ z, finiteChaosTwoBlockLaplaceScoreDerivative A c a v γ s t i j z.2 z.1
           ∂((standardGaussianFinMeasure n).prod (standardGaussianFinMeasure n)) := by
+  have finiteChaos_laplace_X_block_ibp_on_product (hleft : Integrable (fun z : (Fin (n + 1) → ℝ) × (Fin (n + 1) → ℝ) => (∑ k, A i k * z.2 k) * finiteChaosTwoBlockLaplaceScore A c a v γ s t i z.2 z.1) ((standardGaussianFinMeasure n).prod (standardGaussianFinMeasure n))) (hderiv : ∀ (j : Fin (n + 1)), Integrable (fun z : (Fin (n + 1) → ℝ) × (Fin (n + 1) → ℝ) => finiteChaosTwoBlockLaplaceScoreDerivative A c a v γ s t i j z.2 z.1) ((standardGaussianFinMeasure n).prod (standardGaussianFinMeasure n))) : ∫ z, (∑ k, A i k * z.2 k) *
+          finiteChaosTwoBlockLaplaceScore A c a v γ s t i z.2 z.1
+        ∂((standardGaussianFinMeasure n).prod (standardGaussianFinMeasure n)) =
+        Real.sqrt t * ∑ j, (∑ k, A i k * A j k) *
+          ∫ z, finiteChaosTwoBlockLaplaceScoreDerivative A c a v γ s t i j z.2 z.1
+            ∂((standardGaussianFinMeasure n).prod (standardGaussianFinMeasure n)) := by
+    classical
+    let μ := standardGaussianFinMeasure n
+    let W := finiteChaosTwoBlockLaplaceScore A c a v γ s t i
+    let D := finiteChaosTwoBlockLaplaceScoreDerivative A c a v γ s t i
+    have hconditional (y : Fin (n + 1) → ℝ) :
+        ∫ x, (∑ k, A i k * x k) * W x y ∂μ =
+          Real.sqrt t * ∑ j, (∑ k, A i k * A j k) *
+            ∫ x, D j x y ∂μ := finiteChaos_laplace_score_scaled_shifted_standardGaussian_ibp
+        A a v (c y) γ s (Real.sqrt t) ha hs (Real.sqrt_pos.2 ht) i
+    have hiter :
+        ∫ y, ∫ x, (∑ k, A i k * x k) * W x y ∂μ ∂μ =
+          Real.sqrt t * ∑ j, (∑ k, A i k * A j k) *
+            ∫ y, ∫ x, D j x y ∂μ ∂μ := by
+      calc
+        ∫ y, ∫ x, (∑ k, A i k * x k) * W x y ∂μ ∂μ =
+            ∫ y, Real.sqrt t * ∑ j, (∑ k, A i k * A j k) *
+            ∫ x, D j x y ∂μ ∂μ := by
+                apply integral_congr_ae
+                filter_upwards [] with y
+                exact hconditional y
+        _ = Real.sqrt t * ∑ j, (∑ k, A i k * A j k) *
+              ∫ y, ∫ x, D j x y ∂μ ∂μ := by
+                rw [integral_const_mul, integral_finsetSum]
+                · apply congrArg (fun q : ℝ => Real.sqrt t * q)
+                  apply Finset.sum_congr rfl
+                  intro j hj
+                  rw [integral_const_mul]
+                · intro j hj
+                  exact (hderiv j).integral_prod_left.const_mul _
+    refine (integral_prod _ hleft).trans (?_)
+    refine (hiter).trans (?_)
+    congr 1
+    apply Finset.sum_congr rfl
+    intro j hj
+    congr 1
+    exact (integral_prod _ (hderiv j)).symm
   classical
   let μ := standardGaussianFinMeasure n
   let V := finiteChaosTwoBlockField A c t
@@ -162,8 +140,7 @@ theorem finiteChaos_laplace_X_block_ibp_on_product_of_measurable_shift
       Integrable (fun x : Fin (n + 1) → ℝ => A i k * x k) μ :=
     (hcoord k).const_mul _
   have hlinear : Integrable
-      (fun x : Fin (n + 1) → ℝ => ∑ k, A i k * x k) μ := by
-    exact integrable_finsetSum Finset.univ (fun k hk => hterm k)
+      (fun x : Fin (n + 1) → ℝ => ∑ k, A i k * x k) μ := by fun_prop
   have hlinearProd : Integrable
       (fun z : (Fin (n + 1) → ℝ) × (Fin (n + 1) → ℝ) =>
         ∑ k, A i k * z.2 k) (μ.prod μ) := by
@@ -205,7 +182,7 @@ theorem finiteChaos_laplace_X_block_ibp_on_product_of_measurable_shift
     have hweight (k : Fin (n + 1)) :
         Continuous (fun x : Fin (n + 1) → ℝ => finiteChaosVectorWeight a v γ x k) := by
       fun_prop [finiteChaosVectorWeight]
-    have hmass : Continuous (fun x : Fin (n + 1) → ℝ =>
+    have : Continuous (fun x : Fin (n + 1) → ℝ =>
         finiteChaosVectorMass a v γ x) := by
       simp only [finiteChaosVectorMass]
       exact continuous_finsetSum Finset.univ (fun k hk => hweight k)
@@ -231,11 +208,8 @@ theorem finiteChaos_laplace_X_block_ibp_on_product_of_measurable_shift
     · exact hlinearProd.aestronglyMeasurable.mul hscoreMeas.aestronglyMeasurable
     · filter_upwards [] with z
       rw [norm_mul]
-      calc
-        ‖∑ k, A i k * z.2 k‖ * ‖score z.2 z.1‖ ≤
-            ‖∑ k, A i k * z.2 k‖ * 1 :=
-              mul_le_mul_of_nonneg_left (hscoreBound z) (norm_nonneg _)
-        _ = ‖∑ k, A i k * z.2 k‖ := by ring
+      refine (mul_le_mul_of_nonneg_left (hscoreBound z) (norm_nonneg _)).trans_eq (?_)
+      ring
   have hderiv : ∀ j : Fin (n + 1), Integrable
       (fun z : (Fin (n + 1) → ℝ) × (Fin (n + 1) → ℝ) => deriv j z.2 z.1)
       (μ.prod μ) := by
@@ -250,17 +224,12 @@ theorem finiteChaos_laplace_X_block_ibp_on_product_of_measurable_shift
     V, scoreField, derivField, finiteChaosTwoBlockField,
     finiteChaosTwoBlockLaplaceScore,
     finiteChaosTwoBlockLaplaceScoreDerivative] using
-    finiteChaos_laplace_X_block_ibp_on_product
-      A a v c γ s t ha hs ht i hleft hderiv
+    finiteChaos_laplace_X_block_ibp_on_product hleft hderiv
 
 /-- The same product-space identity with the differentiated Gaussian block in the first product
 coordinate. This form lets the `Y` block of the interpolation use the same conditional lemma. -/
 theorem finiteChaos_laplace_X_block_ibp_on_product_first_of_measurable_shift
-    {n : ℕ} (A : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
-    (a v : Fin (n + 1) → ℝ)
-    (c : (Fin (n + 1) → ℝ) → Fin (n + 1) → ℝ) (hc : Measurable c)
-    (γ s t : ℝ) (ha : ∀ j, 0 ≤ a j) (hs : 0 ≤ s) (ht : 0 < t)
-    (i : Fin (n + 1)) :
+ :
     ∫ z, (∑ k, A i k * z.1 k) *
         finiteChaosTwoBlockLaplaceScore A c a v γ s t i z.1 z.2
       ∂((standardGaussianFinMeasure n).prod (standardGaussianFinMeasure n)) =
@@ -302,4 +271,6 @@ theorem finiteChaos_laplace_X_block_ibp_on_product_first_of_measurable_shift
             intro j hj
             rw [hright j]
 
+
+end
 end DOZZ.Proofs

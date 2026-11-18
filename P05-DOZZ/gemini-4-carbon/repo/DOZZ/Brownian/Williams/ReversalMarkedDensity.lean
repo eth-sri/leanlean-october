@@ -41,33 +41,6 @@ theorem measurable_brownianFirstHitReversedIncreasingObservation (ν c : ℝ) (n
   exact measurable_const.sub ((continuous_eval.measurable.comp (measurable_id.prodMk ht)).add
     (measurable_const.mul (NNReal.continuous_coe.measurable.comp ht)))
 
-/-- Joint measurability of a conditioned transition in elapsed time and starting state. -/
-theorem measurable_conditionedPositiveTransitionDensity_time_start (ν c : ℝ) :
-    Measurable (fun z : ℝ × ℝ => conditionedPositiveTransitionDensity ν z.1 z.2 c) := by
-  classical
-  have hh : Measurable (fun z : ℝ × ℝ => conditionedH ν z.2) :=
-    (measurable_conditionedH_ref ν).comp measurable_snd
-  have hg : MeasurableSet {z : ℝ × ℝ | 0 ≤ ν ∧ 0 < z.1 ∧ 0 < z.2 ∧ 0 < c} := by
-    by_cases hν : 0 ≤ ν
-    · by_cases hc : 0 < c
-      · simpa only [hν, hc, true_and, and_true, Set.ofPred_and] using
-          (measurableSet_lt measurable_const measurable_fst).inter
-            (measurableSet_lt measurable_const measurable_snd)
-      · simp [hc]
-    · simp [hν]
-  have hheat (f : ℝ × ℝ → ℝ) (hf : Measurable f) :
-      Measurable (fun z => brownianHeatDensity z.1 (f z)) := by
-    unfold brownianHeatDensity
-    apply Measurable.ite (measurableSet_lt measurable_const measurable_fst) _ measurable_const
-    exact (Real.measurable_exp.comp ((hf.pow_const 2).neg.div
-      (measurable_const.mul measurable_fst))).div
-      (Real.continuous_sqrt.measurable.comp (measurable_const.mul measurable_fst))
-  unfold conditionedPositiveTransitionDensity
-  apply Measurable.ite hg _ measurable_const
-  exact (((Real.measurable_exp.comp ((measurable_const.mul (measurable_const.sub measurable_snd)).sub
-    ((measurable_const.mul measurable_fst).div_const 2))).mul
-    ((hheat _ (measurable_const.sub measurable_snd)).sub
-      (hheat _ (measurable_const.add measurable_snd)))).mul measurable_const).div hh
 
 /-- Last-exit boundary density for a finite observed past. -/
 noncomputable def brownianReversalBoundaryDensity (ν c : ℝ) (n : ℕ)
@@ -77,80 +50,35 @@ noncomputable def brownianReversalBoundaryDensity (ν c : ℝ) (n : ℕ)
 
 theorem measurable_brownianReversalBoundaryDensity (ν c : ℝ) (n : ℕ)
     (ss : Fin (n+1) → ℝ≥0) : Measurable (brownianReversalBoundaryDensity ν c n ss) :=
-  (((measurable_conditionedPositiveTransitionDensity_time_start ν c).comp
-    ((measurable_snd.sub measurable_const).prodMk
-      ((measurable_pi_apply _).comp measurable_fst))).mul_const ν).div_const _
+  have measurable_conditionedPositiveTransitionDensity_time_start : Measurable (fun z : ℝ × ℝ => conditionedPositiveTransitionDensity ν z.1 z.2 c) := by
+    classical
+    have hh : Measurable (fun z : ℝ × ℝ => conditionedH ν z.2) :=
+      (measurable_conditionedH_ref ν).comp measurable_snd
+    have hg : MeasurableSet {z : ℝ × ℝ | 0 ≤ ν ∧ 0 < z.1 ∧ 0 < z.2 ∧ 0 < c} := by
+      by_cases hν : 0 ≤ ν
+      · by_cases hc : 0 < c
+        · simpa only [hν, hc, true_and, and_true, Set.ofPred_and] using
+            (measurableSet_lt measurable_const measurable_fst).inter
+              (measurableSet_lt measurable_const measurable_snd)
+        · simp [hc]
+      · simp [hν]
+    have hheat (f : ℝ × ℝ → ℝ) (hf : Measurable f) :
+        Measurable (fun z => brownianHeatDensity z.1 (f z)) := by
+      unfold brownianHeatDensity
+      apply Measurable.ite (measurableSet_lt measurable_const measurable_fst) _ measurable_const
+      exact (Real.measurable_exp.comp ((hf.pow_const 2).neg.div
+        (measurable_const.mul measurable_fst))).div
+        (Real.continuous_sqrt.measurable.comp (measurable_const.mul measurable_fst))
+    unfold conditionedPositiveTransitionDensity
+    apply Measurable.ite hg _ measurable_const
+    exact (((Real.measurable_exp.comp ((measurable_const.mul (measurable_const.sub measurable_snd)).sub
+      ((measurable_const.mul measurable_fst).div_const 2))).mul
+      ((hheat _ (measurable_const.sub measurable_snd)).sub
+        (hheat _ (measurable_const.add measurable_snd)))).mul measurable_const).div hh
+  (((measurable_conditionedPositiveTransitionDensity_time_start).comp
+      ((measurable_snd.sub measurable_const).prodMk
+        ((measurable_pi_apply _).comp measurable_fst))).mul_const ν).div_const _
 
-/-- The first-hit reversed marked law, in precisely the increasing observation order of the
-conditioned last-exit FDD, has the entrance density times its boundary density. -/
-theorem brownianPath_firstHit_reversedIncreasing_density_map (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (ν c : ℝ) (hν : 0 < ν) (hc : 0 < c)
-    (n : ℕ) (ss : Fin (n+1) → ℝ≥0) (hss : StrictMono ss) (hs0 : 0 < ss 0) :
-    (P.restrict {p : BrownianPath | ss (Fin.last n) < firstPassageTime (driftedBrownianPath ν p) c}).map
-      (brownianFirstHitReversedIncreasingObservation ν c n ss) =
-      ((((volume : Measure (Fin (n+1) → ℝ)).withDensity
-        (conditionedPositiveFDDVectorDensity ν (fun i => (ss i : ℝ)))).prod volume).restrict
-        {z : (Fin (n+1) → ℝ) × ℝ | (ss (Fin.last n) : ℝ) < z.2}).withDensity
-          (fun z => ENNReal.ofReal (brownianReversalBoundaryDensity ν c n ss z)) := by
-  let e : ((Fin (n+1) → ℝ) × ℝ) ≃ᵐ ((Fin (n+1) → ℝ) × ℝ) :=
-    (MeasurableEquiv.piCongrLeft (fun _ : Fin (n+1) => ℝ) (Fin.revPerm)).prodCongr
-      (MeasurableEquiv.refl ℝ)
-  have he (z : (Fin (n+1) → ℝ) × ℝ) : e z = ((fun i => z.1 i.rev),z.2) := by
-    apply Prod.ext
-    · funext i
-      change (MeasurableEquiv.piCongrLeft (fun _ : Fin (n+1) => ℝ) Fin.revPerm) z.1 i = _
-      simpa only [Fin.revPerm_apply, Fin.rev_rev] using
-        MeasurableEquiv.piCongrLeft_apply_apply (β := fun _ : Fin (n+1) => ℝ) Fin.revPerm z.1 i.rev
-    · rfl
-  have he' (z : (Fin (n+1) → ℝ) × ℝ) : e.symm z = ((fun i => z.1 i.rev),z.2) := by
-    apply e.injective
-    rw [e.apply_symm_apply, he]
-    simp only [Fin.rev_rev]
-  have hv : MeasurePreserving e (volume.prod volume) (volume.prod volume) :=
-    (volume_measurePreserving_piCongrLeft (fun _ : Fin (n+1) => ℝ) Fin.revPerm).prod
-      (MeasurePreserving.id (volume : Measure ℝ))
-  let D := {z : (Fin (n+1) → ℝ) × ℝ | (ss (Fin.last n) : ℝ) < z.2}
-  have hD : MeasurableSet D := measurableSet_lt measurable_const measurable_snd
-  have hvD : MeasurePreserving e ((volume.prod volume).restrict D)
-      ((volume.prod volume).restrict D) := by
-    convert hv.restrict_preimage hD using 1
-    congr 1
-  have hm : Measurable (brownianFirstHitReversedObservation ν c n ss) := by
-    have hcomp : brownianFirstHitReversedObservation ν c n ss =
-        e ∘ brownianFirstHitReversedIncreasingObservation ν c n ss := by
-      funext p
-      simp only [comp_apply, he, brownianFirstHitReversedIncreasingObservation,
-        brownianFirstHitReversedObservation]
-    rw [hcomp]
-    exact e.measurable.comp (measurable_brownianFirstHitReversedIncreasingObservation ν c n ss)
-  have hobs : brownianFirstHitReversedIncreasingObservation ν c n ss =
-      e ∘ brownianFirstHitReversedObservation ν c n ss := by
-    funext p
-    simp only [comp_apply, he, brownianFirstHitReversedIncreasingObservation,
-      brownianFirstHitReversedObservation, Fin.rev_rev]
-  have hd := measurable_brownianFirstHitReversedPDF ν c n ss
-  rw [hobs, ← Measure.map_map e.measurable hm,
-    brownianPath_firstHit_reversed_observation_density_map P hB ν c hν hc n ss hss hs0,
-    map_withDensity_of_measurePreserving_equiv e _ _ hvD _ hd,
-    prod_withDensity_left (measurable_conditionedPositiveFDDVectorDensity ν _),
-    restrict_withDensity hD]
-  rw [← withDensity_mul _
-    (show Measurable (fun z : (Fin (n+1) → ℝ) × ℝ =>
-      conditionedPositiveFDDVectorDensity ν (fun i => (ss i : ℝ)) z.1) from
-      (measurable_conditionedPositiveFDDVectorDensity ν _).comp measurable_fst)
-    (measurable_brownianReversalBoundaryDensity ν c n ss).ennreal_ofReal]
-  apply withDensity_congr_ae
-  filter_upwards [ae_restrict_mem hD] with z hz
-  rw [comp_apply, brownianFirstHitReversedPDF_eq_lastExitDensity ν c hν hc n ss hss hs0
-    (e.symm z) (by simpa only [he', D, mem_ofPred_eq] using hz)]
-  simp only [he', Fin.rev_rev, Fin.rev_zero]
-  have hp := conditionedPositiveFDDDensity_nonneg hν.le
-    (List.ofFn fun i => (ss i : ℝ)) (List.ofFn z.1) (by simp)
-  simp only [conditionedPositiveFDDVectorDensity, max_eq_right hp,
-    brownianReversalBoundaryDensity, Pi.mul_apply]
-  rw [← ENNReal.ofReal_mul hp]
-  congr 1
-  ring
 
 /-- The boundary density is nonnegative everywhere; invalid elapsed times and states give zero. -/
 theorem brownianReversalBoundaryDensity_nonneg (ν c : ℝ) (hν : 0 < ν) (hc : 0 < c)
@@ -176,7 +104,68 @@ theorem brownianPath_firstHit_reversedIncreasing_density_map_unrestricted
       (((volume : Measure (Fin (n+1) → ℝ)).withDensity
         (conditionedPositiveFDDVectorDensity ν (fun i => (ss i : ℝ)))).prod volume).withDensity
           (fun z => ENNReal.ofReal (brownianReversalBoundaryDensity ν c n ss z)) := by
-  rw [brownianPath_firstHit_reversedIncreasing_density_map P hB ν c hν hc n ss hss hs0,
+  have brownianPath_firstHit_reversedIncreasing_density_map : (P.restrict {p : BrownianPath | ss (Fin.last n) < firstPassageTime (driftedBrownianPath ν p) c}).map
+        (brownianFirstHitReversedIncreasingObservation ν c n ss) =
+        ((((volume : Measure (Fin (n+1) → ℝ)).withDensity
+          (conditionedPositiveFDDVectorDensity ν (fun i => (ss i : ℝ)))).prod volume).restrict
+          {z : (Fin (n+1) → ℝ) × ℝ | (ss (Fin.last n) : ℝ) < z.2}).withDensity
+            (fun z => ENNReal.ofReal (brownianReversalBoundaryDensity ν c n ss z)) := by
+    let e :=
+      (MeasurableEquiv.piCongrLeft (fun _ : Fin (n+1) => ℝ) (Fin.revPerm)).prodCongr
+        (MeasurableEquiv.refl ℝ)
+    have he (z : (Fin (n+1) → ℝ) × ℝ) : e z = ((fun i => z.1 i.rev),z.2) := by
+      apply Prod.ext
+      · funext i
+        change (MeasurableEquiv.piCongrLeft (fun _ : Fin (n+1) => ℝ) Fin.revPerm) z.1 i = _
+        simpa only [Fin.revPerm_apply, Fin.rev_rev] using
+          MeasurableEquiv.piCongrLeft_apply_apply (β := fun _ : Fin (n+1) => ℝ) Fin.revPerm z.1 i.rev
+      · rfl
+    have he' (z : (Fin (n+1) → ℝ) × ℝ) : e.symm z = ((fun i => z.1 i.rev),z.2) := by rfl
+    have hv : MeasurePreserving e (volume.prod volume) (volume.prod volume) :=
+      (volume_measurePreserving_piCongrLeft (fun _ : Fin (n+1) => ℝ) Fin.revPerm).prod
+        (MeasurePreserving.id (volume : Measure ℝ))
+    let D := {z : (Fin (n+1) → ℝ) × ℝ | (ss (Fin.last n) : ℝ) < z.2}
+    have hD : MeasurableSet D := measurableSet_lt measurable_const measurable_snd
+    have hvD : MeasurePreserving e ((volume.prod volume).restrict D)
+        ((volume.prod volume).restrict D) := by
+      convert hv.restrict_preimage hD using 1
+      congr 1
+    have hm : Measurable (brownianFirstHitReversedObservation ν c n ss) := by
+      have hcomp : brownianFirstHitReversedObservation ν c n ss =
+          e ∘ brownianFirstHitReversedIncreasingObservation ν c n ss := by
+        funext p
+        simp only [comp_apply, he, brownianFirstHitReversedIncreasingObservation,
+          brownianFirstHitReversedObservation]
+      rw [hcomp]
+      exact e.measurable.comp (measurable_brownianFirstHitReversedIncreasingObservation ν c n ss)
+    have hobs : brownianFirstHitReversedIncreasingObservation ν c n ss =
+        e ∘ brownianFirstHitReversedObservation ν c n ss := by
+      funext p
+      simp only [comp_apply, he, brownianFirstHitReversedIncreasingObservation,
+        brownianFirstHitReversedObservation, Fin.rev_rev]
+    rw [hobs, ← Measure.map_map e.measurable hm,
+      brownianPath_firstHit_reversed_observation_density_map P hB ν c hν hc n ss hss hs0,
+      map_withDensity_of_measurePreserving_equiv e _ _ hvD _ (measurable_brownianFirstHitReversedPDF ν c n ss),
+      prod_withDensity_left (measurable_conditionedPositiveFDDVectorDensity ν _),
+      restrict_withDensity hD]
+    rw [← withDensity_mul _
+      (show Measurable (fun z : (Fin (n+1) → ℝ) × ℝ =>
+        conditionedPositiveFDDVectorDensity ν (fun i => (ss i : ℝ)) z.1) from
+        (measurable_conditionedPositiveFDDVectorDensity ν _).comp measurable_fst)
+      (measurable_brownianReversalBoundaryDensity ν c n ss).ennreal_ofReal]
+    apply withDensity_congr_ae
+    filter_upwards [ae_restrict_mem hD] with z hz
+    rw [comp_apply, brownianFirstHitReversedPDF_eq_lastExitDensity ν c hν hc n ss hss hs0
+      (e.symm z) (by simpa only [he', D, mem_ofPred_eq] using hz)]
+    simp only [he', Fin.rev_rev, Fin.rev_zero]
+    have hp := conditionedPositiveFDDDensity_nonneg hν.le
+      (List.ofFn fun i => (ss i : ℝ)) (List.ofFn z.1) (by simp)
+    simp only [conditionedPositiveFDDVectorDensity, max_eq_right hp,
+      brownianReversalBoundaryDensity, Pi.mul_apply]
+    rw [← ENNReal.ofReal_mul hp]
+    congr 1
+    ring
+  rw [brownianPath_firstHit_reversedIncreasing_density_map,
     ← restrict_withDensity (measurableSet_lt measurable_const measurable_snd)]
   apply Measure.restrict_eq_self_of_ae_mem
   apply (ae_withDensity_iff

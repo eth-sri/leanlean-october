@@ -58,20 +58,17 @@ theorem fourPointT_continuousAt_zero
     apply tendsto_lintegral_filter_of_dominated_convergence' bound
     · exact Eventually.of_forall fun z => (hm z).pow_const (-s)
     · filter_upwards [Metric.ball_mem_nhds (0 : ℂ) zero_lt_one] with z hz
-      have hz' : ‖z‖ ≤ 1 := (show ‖z‖ < 1 by
+      have hz' := (show ‖z‖ < 1 by
         simpa only [Metric.mem_ball, dist_zero_right] using hz).le
       exact ae_of_all P fun ω => hbnd z hz' ω
     · exact hboundfin.ne
     · filter_upwards [hmass] with ω hω
       exact (show Continuous (fun r : ℝ≥0∞ => ENNReal.rpow r (-s)) from
         ENNReal.continuous_rpow_const).continuousAt.tendsto.comp hω.tendsto
-  have hzeroFin : (∫⁻ ω, ENNReal.rpow (bpzMass γ χ a b c 0 (M ω) 0) (-s) ∂P) < ⊤ :=
-    lt_of_le_of_lt (lintegral_mono (hbnd 0 (by simp))) hboundfin
-  have hreal := (ENNReal.tendsto_toReal hzeroFin.ne).comp hmoment
   have ht : ContinuousAt (fun z : ℂ =>
       2 * μ ^ (-s) / γ * Real.Gamma s *
         (∫⁻ ω, ENNReal.rpow (bpzMass γ χ a b c 0 (M ω) z) (-s) ∂P).toReal) 0 :=
-    continuousAt_const.mul hreal
+    continuousAt_const.mul ((ENNReal.tendsto_toReal (lt_of_le_of_lt (lintegral_mono (hbnd 0 (by simp))) hboundfin).ne).comp hmoment)
   apply ht.congr_of_eventuallyEq
   exact Eventually.of_forall fun z => fourPointT_eq_bpzMass P X hX hγ hγ2 M hM μ z
 

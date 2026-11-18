@@ -42,13 +42,8 @@ theorem translated_canonical_williams_mass_law
   have hcU := translated_field_circleAverage P X Xc hX hc z
   have hcontU := translated_circle_continuous P Xc hcont z
   have hA := originRadialPath_aemeasurable P _ Uc hcU hcontU
-  have hD : AEMeasurable D P := continuous_radialPositiveHalf.measurable.comp_aemeasurable hA
-  have hBp := (originRadialPath_isBrownian P _ Uc hU hcU hcontU).1
-  have hDB := radialPositiveHalf_map_isBrownian P A hA hBp
-  have hZ := translated_lateral_isLateralGMCOf P X Xc hX hc hm hcont z γ hγ hγ2 N hN
   have hAZ := lateralProjectedGMC_indep P _ Uc hU hcU
     (translated_circle_jointMeasurable Xc hm z) hcontU γ hγ hγ2 N hN
-  have hDZ : IndepFun D Z P := hAZ.comp continuous_radialPositiveHalf.measurable measurable_id
   have hmass : (localSingularMass N (fun _ => 1) 0 γ α) =ᵐ[P]
       (fun ω => ∫⁻ t, (if 0 < t then ENNReal.ofReal
         (Real.exp (γ * (D ω (Real.toNNReal t) - (Q γ - α) * t))) else 0) ∂Z ω) := by
@@ -65,7 +60,7 @@ theorem translated_canonical_williams_mass_law
       rw [he]
     · rw [ite_eq_right ht, ite_eq_right ht]
   rw [Measure.map_congr hmass]
-  exact williams_polar_mass_law P D hD hDB γ Z hZ hDZ (Q γ - α)
+  exact williams_polar_mass_law P D (continuous_radialPositiveHalf.measurable.comp_aemeasurable hA) (radialPositiveHalf_map_isBrownian P A hA ((originRadialPath_isBrownian P _ Uc hU hcU hcontU).1)) γ Z (translated_lateral_isLateralGMCOf P X Xc hX hc hm hcont z γ hγ hγ2 N hN) (hAZ.comp continuous_radialPositiveHalf.measurable measurable_id) (Q γ - α)
     (sub_pos.mpr hα) Qν hQν
 
 

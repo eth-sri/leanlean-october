@@ -7,8 +7,6 @@ public import DOZZ.Correlations.Symmetry.ReflectionKernel
 public import DOZZ.Statements.Defs.Rho
 public import DOZZ.Statements.Defs.SExp
 @[expose] public section
-open MeasureTheory
-open scoped ENNReal
 namespace DOZZ.Proofs
 
 /-- The canonical density picks up precisely the charge times the pinning change. -/
@@ -26,8 +24,6 @@ theorem rho_reflection_density (γ α₁ α₂ α₃ : ℝ) (x : ℂ) :
     unfold symmetryReflectionPotential
     ring
   rw [norm_sub_rev (1 : ℂ) x, show (1 - x) - 1 = -x by ring, norm_neg, he]
-  have hs : α₂ + α₁ + α₃ = α₁ + α₂ + α₃ := by ring
-  rw [hs]
   ring
 
 /-- The Wick and reference-density correction has exponent twice gamma Q. -/

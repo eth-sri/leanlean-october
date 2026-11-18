@@ -122,7 +122,7 @@ theorem tendstoInMeasure_random_test [IsProbabilityMeasure P] (hμ : BPZWeakConv
   set h : ℝ := min (1 / 4) (δ / 2) with hhdef
   have hh0 : 0 < h := by positivity
   have hh1 : h ≤ 1 / 4 := min_le_left _ _
-  have hhδ : 2 * h ≤ δ := by have := min_le_right (1 / 4 : ℝ) (δ / 2); linarith
+  have hhδ : 2 * h ≤ δ := by grind
   set S := bpzGridBox ⌈R / h⌉₊ with hS
   set c := bpzGridCorner h with hc
   set cell : ℤ × ℤ → Set ℂ := fun i => bpzGridIdx h ⁻¹' {i} with hcell

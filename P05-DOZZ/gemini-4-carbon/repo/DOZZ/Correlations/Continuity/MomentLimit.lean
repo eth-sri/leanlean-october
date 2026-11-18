@@ -9,6 +9,9 @@ open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
 
+variable {Ω : Type*} [MeasurableSpace Ω]
+
+
 /-- The exponent of the normalized insertion moment in the two sphere charts. -/
 noncomputable def continuityCoulombPower {N : ℕ} (c : ContinuityCoulombParameter N) : ℝ :=
   (2 * Q c.1 - (∑ k, c.2.2.1 k + c.2.2.2)) / c.1
@@ -16,7 +19,7 @@ noncomputable def continuityCoulombPower {N : ℕ} (c : ContinuityCoulombParamet
 /-- A uniform higher moment preserves expectations when both the nonnegative
 random base and the real power vary, including through power zero. -/
 theorem continuity_integral_varying_power
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P]
+ (P : Measure Ω) [IsProbabilityMeasure P]
     (f : ℕ → Ω → ℝ≥0∞) (g : Ω → ℝ≥0∞) (p : ℕ → ℝ) (p₀ : ℝ)
     (hf : ∀ n, AEMeasurable (f n) P) (hg : AEMeasurable g P)
     (hfp : ∀ n, ∀ᵐ ω ∂P, f n ω ^ p n ≠ ⊤)
@@ -42,39 +45,32 @@ theorem continuity_integral_varying_power
     (fun n ω => (f n ω ^ p n).toReal) (fun ω => (g ω ^ p₀).toReal) hF
     (continuity_tendstoInMeasure_varying_rpow P f g p p₀ hf hgfin hgpos hconv hp)
     (1 + η) (by linarith) B hB hnorm
-  have hn (n : ℕ) : (∫⁻ ω, f n ω ^ p n ∂P).toReal = ∫ ω, (f n ω ^ p n).toReal ∂P :=
+  have hn (n : ℕ) :=
     (integral_toReal ((hf n).pow_const (p n))
       ((hfp n).mono fun _ h => h.lt_top)).symm
-  have hg' : (∫⁻ ω, g ω ^ p₀ ∂P).toReal = ∫ ω, (g ω ^ p₀).toReal ∂P :=
+  have hg' :=
     (integral_toReal (hg.pow_const p₀) (hgp.mono fun _ h => h.lt_top)).symm
   simpa only [hn, hg'] using hlim
+
+section
+variable {N : ℕ} (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (M : ℝ → Ω → Measure ℂ) (hM : ∀ γ ∈ Ioo (0 : ℝ) 2, IsGMCOf P X γ (M γ)) (S : Set (ContinuityCoulombParameter N)) (hS : IsCompact S) (hadm : ∀ c ∈ S, 0 < c.1 ∧ c.1 < 2 ∧ Function.Injective c.2.1 ∧ (∀ k, c.2.2.1 k < Q c.1) ∧ c.2.2.2 < Q c.1 ∧ continuityCoulombPower c < 4 / c.1 ^ 2 ∧ (∀ k, continuityCoulombPower c < 2 / c.1 * (Q c.1 - c.2.2.1 k)) ∧ continuityCoulombPower c < 2 / c.1 * (Q c.1 - c.2.2.2))
+include hX hXc hM hS hadm
 
 /-- The uniform higher cutoff moment passes to the actual singular masses.
 Each parameter keeps its own Seiberg power; the bound is common over the compact set. -/
 theorem continuity_coulomb_higher_moment
-    {Ω : Type*} [MeasurableSpace Ω] {N : ℕ}
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
-    (M : ℝ → Ω → Measure ℂ)
-    (hM : ∀ γ ∈ Ioo (0 : ℝ) 2, IsGMCOf P X γ (M γ))
-    (S : Set (ContinuityCoulombParameter N)) (hS : IsCompact S)
-    (hadm : ∀ c ∈ S, 0 < c.1 ∧ c.1 < 2 ∧ Function.Injective c.2.1 ∧
-      (∀ k, c.2.2.1 k < Q c.1) ∧ c.2.2.2 < Q c.1 ∧
-      continuityCoulombPower c < 4 / c.1 ^ 2 ∧
-      (∀ k, continuityCoulombPower c < 2 / c.1 * (Q c.1 - c.2.2.1 k)) ∧
-      continuityCoulombPower c < 2 / c.1 * (Q c.1 - c.2.2.2)) :
+ :
     ∃ η : ℝ, 0 < η ∧ ∃ B : ℝ≥0∞, B < ⊤ ∧ ∀ c ∈ S,
       ∫⁻ ω, (coulombMass c.1 (M c.1 ω) c.2.2.1 c.2.1 c.2.2.2) ^
         ((1 + η) * continuityCoulombPower c) ∂P ≤ B := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _ := hX.1
   let partition := continuityChartPartition
   obtain ⟨hprob, η, hη, B, hB, hbound⟩ := equatorGFF_extendedSeiberg_cutoff_UI P X hX Xc hXc
     partition M hM S hS hadm
   refine ⟨η, hη, B, hB, fun c hc => ?_⟩
   obtain ⟨hγ, hγ2, hz, hα, hinf, _⟩ := hadm c hc
-  have hMc := hM c.1 ⟨hγ, hγ2⟩
   have hfin := continuity_coulombMass_positive_finite_ae P X hX c.1 hγ hγ2 (M c.1)
-    hMc c.2.1 hz c.2.2.1 c.2.2.2 hα hinf
+    (hM c.1 ⟨hγ, hγ2⟩) c.2.1 hz c.2.2.1 c.2.2.2 hα hinf
   have hconv : TendstoInMeasure P
       (fun r ω => (regularizedCoulombMass P Xc c.1 partition c.2.2.1 c.2.1 c.2.2.2 r ω).toReal)
       atTop (fun ω => (coulombMass c.1 (M c.1 ω) c.2.2.1 c.2.1 c.2.2.2).toReal) := by
@@ -93,20 +89,10 @@ theorem continuity_coulomb_higher_moment
 strict parameter sets, uniformly dominated by the cutoff estimate
 `DOZZ.equatorGFF_extendedSeiberg_cutoff_UI`. -/
 theorem continuity_coulomb_moment_on_compact
-    {Ω : Type*} [MeasurableSpace Ω] {N : ℕ}
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
-    (M : ℝ → Ω → Measure ℂ)
-    (hM : ∀ γ ∈ Ioo (0 : ℝ) 2, IsGMCOf P X γ (M γ))
-    (S : Set (ContinuityCoulombParameter N)) (hS : IsCompact S)
-    (hadm : ∀ c ∈ S, 0 < c.1 ∧ c.1 < 2 ∧ Function.Injective c.2.1 ∧
-      (∀ k, c.2.2.1 k < Q c.1) ∧ c.2.2.2 < Q c.1 ∧
-      continuityCoulombPower c < 4 / c.1 ^ 2 ∧
-      (∀ k, continuityCoulombPower c < 2 / c.1 * (Q c.1 - c.2.2.1 k)) ∧
-      continuityCoulombPower c < 2 / c.1 * (Q c.1 - c.2.2.2)) :
+ :
     ContinuousOn (fun c => (∫⁻ ω,
       (coulombMass c.1 (M c.1 ω) c.2.2.1 c.2.1 c.2.2.2) ^ continuityCoulombPower c ∂P).toReal) S := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _ := hX.1
   obtain ⟨η, hη, B, hB, hb⟩ := continuity_coulomb_higher_moment P X hX Xc hXc M hM S hS hadm
   let G : S → Ω → ℝ≥0∞ := fun c ω => coulombMass c.val.1 (M c.val.1 ω)
     c.val.2.2.1 c.val.2.1 c.val.2.2.2
@@ -140,4 +126,6 @@ theorem continuity_coulomb_moment_on_compact
   · exact hB
   · exact fun n => hb (cs n).val (cs n).property
 
+
+end
 end DOZZ.Proofs

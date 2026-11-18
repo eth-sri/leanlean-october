@@ -14,13 +14,16 @@ open MeasureTheory Metric Set
 open scoped ENNReal
 namespace DOZZ.Proofs
 
-noncomputable def separatedTail_harmonicEnvelope {Ω : Type*} (c : ℂ)
+variable {Ω : Type*}
+
+
+noncomputable def separatedTail_harmonicEnvelope (c : ℂ)
     (H : Ω → ℂ → ℝ) (L : Ω → ℝ) (l : ℝ) (ω : Ω) : ℝ≥0∞ :=
   ENNReal.ofReal (Real.exp (l*|L ω|)) *
     ⨆ z : closedBall c 1, ENNReal.ofReal (Real.exp (l*|H ω z|))
 
 theorem separatedTail_harmonicEnvelope_aemeasurable
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (c : ℂ)
+ [MeasurableSpace Ω] (P : Measure Ω) (c : ℂ)
     (H : Ω → ℂ → ℝ) (L : Ω → ℝ)
     (hH : Measurable (fun q : Ω × ℂ => H q.1 q.2)) (hL : Measurable L)
     (hcont : ∀ᵐ ω ∂P, ContinuousOn (H ω) (closedBall c 1)) (l : ℝ) :
@@ -31,9 +34,13 @@ theorem separatedTail_harmonicEnvelope_aemeasurable
     simpa only [iSup_subtype] using hm
   exact (measurable_ofReal_exp_mul_abs L hL l).aemeasurable.mul hm'
 
+section
+variable (c : ℂ) (H : Ω → ℂ → ℝ) (L : Ω → ℝ)
+include c H L
+
 /-- The envelope's power is the same envelope at the multiplied linear order. -/
 theorem separatedTail_harmonicEnvelope_rpow
-    {Ω : Type*} (c : ℂ) (H : Ω → ℂ → ℝ) (L : Ω → ℝ)
+
     (l r : ℝ) (hr : 0 < r) (ω : Ω) :
     separatedTail_harmonicEnvelope c H L l ω ^ r = separatedTail_harmonicEnvelope c H L (l*r) ω := by
   unfold separatedTail_harmonicEnvelope
@@ -51,7 +58,7 @@ theorem separatedTail_harmonicEnvelope_rpow
 
 /-- The envelope increases with its linear order. -/
 theorem separatedTail_harmonicEnvelope_mono
-    {Ω : Type*} (c : ℂ) (H : Ω → ℂ → ℝ) (L : Ω → ℝ)
+
     {l m : ℝ} (hlm : l ≤ m) (ω : Ω) :
     separatedTail_harmonicEnvelope c H L l ω ≤ separatedTail_harmonicEnvelope c H L m ω := by
   apply mul_le_mul'
@@ -64,7 +71,7 @@ theorem separatedTail_harmonicEnvelope_mono
 
 /-- Every point in the closed unit disk is dominated by the correlated envelope. -/
 theorem separatedTail_exp_harmonic_sub_le_envelope
-    {Ω : Type*} (c : ℂ) (H : Ω → ℂ → ℝ) (L : Ω → ℝ)
+
     (l : ℝ) (hl : 0 ≤ l) (ω : Ω) (x : ℂ) (hx : x ∈ closedBall c 1) :
     ENNReal.ofReal (Real.exp (l*(H ω x-L ω))) ≤ separatedTail_harmonicEnvelope c H L l ω := by
   have h := mul_le_mul_of_nonneg_left
@@ -79,10 +86,12 @@ theorem separatedTail_exp_harmonic_sub_le_envelope
     _ ≤ _ := mul_le_mul_right (le_iSup
       (fun z : closedBall c 1 => ENNReal.ofReal (Real.exp (l*|H ω z|))) ⟨x,hx⟩) _
 
+
+end
 /-- A uniform all-linear-order bound from the exterior-pinned Markov decomposition controls the
 product envelope in Hölder's inequality, including the correlated scalar in both factors. -/
 theorem separatedTail_product_envelope_moment_le
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+ [MeasurableSpace Ω] (P : Measure Ω)
     (c2 c3 : ℂ) (H2 H3 : Ω → ℂ → ℝ) (L : Ω → ℝ)
     (hE2 : ∀ l, AEMeasurable (separatedTail_harmonicEnvelope c2 H2 L l) P)
     (C : ℝ → ℝ)

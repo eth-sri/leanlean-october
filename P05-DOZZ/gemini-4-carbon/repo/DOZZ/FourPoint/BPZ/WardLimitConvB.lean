@@ -42,97 +42,9 @@ theorem bpz_three_frac_mul_le_one {S K V : ℝ} (hS : 0 ≤ S) (hK : 0 ≤ K) (h
     S * K * V / ((S + 1) * (K + 1) * (V + 1)) ≤ 1 := by
   rw [div_le_one (by positivity)]
   have h1 : S * K ≤ (S + 1) * (K + 1) := by nlinarith
-  have h2 : S * K * V ≤ (S + 1) * (K + 1) * V := mul_le_mul_of_nonneg_right h1 hV
+  have := mul_le_mul_of_nonneg_right h1 hV
   nlinarith [mul_nonneg (mul_nonneg hS hK) hV]
 
-/-- The antisymmetrized limit kernel is uniformly continuous in the first variable away from
-the diagonal. -/
-theorem bpz_antisym_kern_cont {a b : ℂ → ℝ} (ha : Continuous a) (hac : HasCompactSupport a)
-    (hb : Continuous b) (hbc : HasCompactSupport b) (v : ℂ) :
-    ∀ η : ℝ, 0 < η → ∀ ε : ℝ, 0 < ε → ∃ δ : ℝ, 0 < δ ∧ ∀ x x' y, η ≤ ‖x - y‖ →
-      ‖x - x'‖ ≤ δ → |(a x * b y - a y * b x) / 2 * bpzKern v (x - y) -
-        (a x' * b y - a y * b x') / 2 * bpzKern v (x' - y)| ≤ ε := by
-  intro η hη ε hε
-  obtain ⟨Ba, hBa⟩ := ha.bounded_above_of_compact_support hac
-  obtain ⟨Bb, hBb⟩ := hb.bounded_above_of_compact_support hbc
-  set A : ℝ := max Ba 0 with hA
-  set B : ℝ := max Bb 0 with hB
-  have hA0 : 0 ≤ A := le_max_right _ _
-  have hB0 : 0 ≤ B := le_max_right _ _
-  have hAx : ∀ x, |a x| ≤ A := fun x => by
-    rw [← Real.norm_eq_abs]; exact (hBa x).trans (le_max_left _ _)
-  have hBx : ∀ x, |b x| ≤ B := fun x => by
-    rw [← Real.norm_eq_abs]; exact (hBb x).trans (le_max_left _ _)
-  set V : ℝ := ‖v‖ with hVdef
-  have hV0 : 0 ≤ V := norm_nonneg v
-  set e₀ : ℝ := ε * η / ((A + B + 1) * (V + 1)) with he₀
-  have he₀p : 0 < e₀ := by positivity
-  obtain ⟨δa, hδa, hua⟩ := bpz_unifCont_of_compact ha hac e₀ he₀p
-  obtain ⟨δb, hδb, hub⟩ := bpz_unifCont_of_compact hb hbc e₀ he₀p
-  set δk : ℝ := ε * (η / 2) ^ 2 / (6 * ((A * B + 1) * (V + 1))) with hδk
-  have hδkp : 0 < δk := by positivity
-  refine ⟨min (min δa δb) (min (η / 2) δk), by positivity, fun x x' y hxy hxx' => ?_⟩
-  have h1 : ‖x - x'‖ ≤ δa := hxx'.trans ((min_le_left _ _).trans (min_le_left _ _))
-  have h2 : ‖x - x'‖ ≤ δb := hxx'.trans ((min_le_left _ _).trans (min_le_right _ _))
-  have h3 : ‖x - x'‖ ≤ η / 2 := hxx'.trans ((min_le_right _ _).trans (min_le_left _ _))
-  have h4 : ‖x - x'‖ ≤ δk := hxx'.trans ((min_le_right _ _).trans (min_le_right _ _))
-  have hη2 : 0 < η / 2 := by positivity
-  have hx'y : η / 2 ≤ ‖x' - y‖ := by
-    have := norm_sub_le_norm_sub_add_norm_sub x x' y
-    linarith
-  have hxy2 : η / 2 ≤ ‖x - y‖ := by linarith
-  have hPb : |(a x' * b y - a y * b x') / 2| ≤ A * B := by
-    rw [abs_div, abs_two]
-    have e1 := mul_le_mul (hAx x') (hBx y) (abs_nonneg _) hA0
-    have e2 := mul_le_mul (hAx y) (hBx x') (abs_nonneg _) hA0
-    have : |a x' * b y - a y * b x'| ≤ 2 * (A * B) := by
-      refine (abs_sub _ _).trans ?_
-      rw [abs_mul (a x') (b y), abs_mul (a y) (b x')]
-      linarith
-    linarith
-  have hKb : |bpzKern v (x - y)| ≤ V / η :=
-    (abs_bpzKern_le v _).trans (div_le_div_of_nonneg_left (norm_nonneg v) hη hxy)
-  have hPd : |(a x * b y - a y * b x) / 2 - (a x' * b y - a y * b x') / 2| ≤
-      e₀ * (A + B) / 2 := by
-    have : (a x * b y - a y * b x) / 2 - (a x' * b y - a y * b x') / 2 =
-        ((a x - a x') * b y - a y * (b x - b x')) / 2 := by ring
-    rw [this, abs_div, abs_two]
-    have e1 : |(a x - a x') * b y| ≤ e₀ * B := by
-      rw [abs_mul]; exact mul_le_mul (hua x x' h1) (hBx y) (abs_nonneg _) he₀p.le
-    have e2 : |a y * (b x - b x')| ≤ A * e₀ := by
-      rw [abs_mul]; exact mul_le_mul (hAx y) (hub x x' h2) (abs_nonneg _) hA0
-    have := (abs_sub _ _).trans (add_le_add e1 e2)
-    linarith
-  have hKd : |bpzKern v (x - y) - bpzKern v (x' - y)| ≤ 3 * V * ‖x - x'‖ / (η / 2) ^ 2 := by
-    have := abs_bpzKern_sub_le v hη2 hxy2 hx'y
-    rwa [show x - y - (x' - y) = x - x' by ring] at this
-  have hfirst : e₀ * (A + B) / 2 * (V / η) ≤ ε / 2 := by
-    have := bpz_frac_mul_le_one (add_nonneg hA0 hB0) hV0
-    have hrw : e₀ * (A + B) / 2 * (V / η) = ε / 2 * ((A + B) * V / ((A + B + 1) * (V + 1))) := by
-      rw [he₀]; field_simp
-    rw [hrw]
-    calc ε / 2 * ((A + B) * V / ((A + B + 1) * (V + 1))) ≤ ε / 2 * 1 :=
-          mul_le_mul_of_nonneg_left this (by positivity)
-      _ = ε / 2 := mul_one _
-  have hsecond : A * B * (3 * V * δk / (η / 2) ^ 2) ≤ ε / 2 := by
-    have := bpz_frac_mul_le_one (mul_nonneg hA0 hB0) hV0
-    have hrw : A * B * (3 * V * δk / (η / 2) ^ 2) =
-        ε / 2 * (A * B * V / ((A * B + 1) * (V + 1))) := by
-      rw [hδk]; field_simp; ring
-    rw [hrw]
-    calc ε / 2 * (A * B * V / ((A * B + 1) * (V + 1))) ≤ ε / 2 * 1 :=
-          mul_le_mul_of_nonneg_left this (by positivity)
-      _ = ε / 2 := mul_one _
-  calc |(a x * b y - a y * b x) / 2 * bpzKern v (x - y) -
-        (a x' * b y - a y * b x') / 2 * bpzKern v (x' - y)|
-      ≤ |(a x * b y - a y * b x) / 2 - (a x' * b y - a y * b x') / 2| * (V / η) +
-          A * B * |bpzKern v (x - y) - bpzKern v (x' - y)| :=
-        bpz_abs_mul_sub_mul_le hPb hKb
-    _ ≤ e₀ * (A + B) / 2 * (V / η) + A * B * (3 * V * δk / (η / 2) ^ 2) :=
-        add_le_add (mul_le_mul_of_nonneg_right hPd (by positivity))
-          (mul_le_mul_of_nonneg_left (hKd.trans (by gcongr)) (mul_nonneg hA0 hB0))
-    _ ≤ ε / 2 + ε / 2 := add_le_add hfirst hsecond
-    _ = ε := by ring
 
 namespace BPZLimitData
 
@@ -256,14 +168,83 @@ theorem conv_sym (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (hp : BPZWardProb P
       (fun (n : ℕ) ω => ∫ x, ∫ y, bpzSymKer φ ρ (bpzWardCutWeight γ q n kt)
         (fun w => bpzLamDeriv n w v) x y ∂bpzCutChaos P Xc γ n ω ∂bpzCutChaos P Xc γ n ω) atTop
       (fun ω => ∫ x, ∫ y, bpzSymKer φ ρ k₂ (bpzKern v) x y ∂M ω ∂M ω) := by
-  have : IsProbabilityMeasure P := hp.hX.1
-  have hμ := bpzWeakConv_gmc P X hp.hX hd.γ_pos hp.γ2 M hp.hM hp.hMm Xc hp.hXc
-  have hatom := gmc_noAtoms_ae P X hp.hX γ hd.γ_pos hp.γ2 M hp.hM hp.hMm
+  have bpz_antisym_kern_cont {a b : ℂ → ℝ} (ha : Continuous a) (hac : HasCompactSupport a) (hb : Continuous b) (hbc : HasCompactSupport b) (v : ℂ) : ∀ η : ℝ, 0 < η → ∀ ε : ℝ, 0 < ε → ∃ δ : ℝ, 0 < δ ∧ ∀ x x' y, η ≤ ‖x - y‖ →
+        ‖x - x'‖ ≤ δ → |(a x * b y - a y * b x) / 2 * bpzKern v (x - y) -
+          (a x' * b y - a y * b x') / 2 * bpzKern v (x' - y)| ≤ ε := by
+    intro η hη ε hε
+    obtain ⟨Ba, hBa⟩ := ha.bounded_above_of_compact_support hac
+    obtain ⟨Bb, hBb⟩ := hb.bounded_above_of_compact_support hbc
+    set A : ℝ := max Ba 0 with hA
+    set B : ℝ := max Bb 0 with hB
+    have hA0 : 0 ≤ A := le_max_right _ _
+    have hB0 : 0 ≤ B := le_max_right _ _
+    have hAx : ∀ x, |a x| ≤ A := fun x => by
+      rw [← Real.norm_eq_abs]; exact (hBa x).trans (le_max_left _ _)
+    have hBx : ∀ x, |b x| ≤ B := fun x => by
+      rw [← Real.norm_eq_abs]; exact (hBb x).trans (le_max_left _ _)
+    set V : ℝ := ‖v‖ with hVdef
+    have hV0 := norm_nonneg v
+    set e₀ : ℝ := ε * η / ((A + B + 1) * (V + 1)) with he₀
+    have he₀p : 0 < e₀ := by positivity
+    obtain ⟨δa, hδa, hua⟩ := bpz_unifCont_of_compact ha hac e₀ he₀p
+    obtain ⟨δb, hδb, hub⟩ := bpz_unifCont_of_compact hb hbc e₀ he₀p
+    set δk : ℝ := ε * (η / 2) ^ 2 / (6 * ((A * B + 1) * (V + 1))) with hδk
+    refine ⟨min (min δa δb) (min (η / 2) δk), by positivity, fun x x' y hxy hxx' => ?_⟩
+    have := hxx'.trans ((min_le_right _ _).trans (min_le_left _ _))
+    have := hxx'.trans ((min_le_right _ _).trans (min_le_right _ _))
+    have hη2 : 0 < η / 2 := by positivity
+    have hx'y : η / 2 ≤ ‖x' - y‖ := by
+      have := norm_sub_le_norm_sub_add_norm_sub x x' y
+      linarith
+    have hxy2 : η / 2 ≤ ‖x - y‖ := by linarith
+    have hPb : |(a x' * b y - a y * b x') / 2| ≤ A * B := by
+      rw [abs_div, abs_two]
+      have e1 := mul_le_mul (hAx x') (hBx y) (abs_nonneg _) hA0
+      have e2 := mul_le_mul (hAx y) (hBx x') (abs_nonneg _) hA0
+      have : |a x' * b y - a y * b x'| ≤ 2 * (A * B) := by
+        refine (abs_sub _ _).trans ?_
+        rw [abs_mul (a x') (b y), abs_mul (a y) (b x')]
+        linarith
+      linarith
+    have hPd : |(a x * b y - a y * b x) / 2 - (a x' * b y - a y * b x') / 2| ≤
+        e₀ * (A + B) / 2 := by
+      have : (a x * b y - a y * b x) / 2 - (a x' * b y - a y * b x') / 2 =
+          ((a x - a x') * b y - a y * (b x - b x')) / 2 := by ring
+      rw [this, abs_div, abs_two]
+      have e1 : |(a x - a x') * b y| ≤ e₀ * B := by
+        rw [abs_mul]; exact mul_le_mul (hua x x' (hxx'.trans ((min_le_left _ _).trans (min_le_left _ _)))) (hBx y) (abs_nonneg _) he₀p.le
+      have e2 : |a y * (b x - b x')| ≤ A * e₀ := by
+        rw [abs_mul]; exact mul_le_mul (hAx y) (hub x x' (hxx'.trans ((min_le_left _ _).trans (min_le_right _ _)))) (abs_nonneg _) hA0
+      have := (abs_sub _ _).trans (add_le_add e1 e2)
+      linarith
+    have hKd : |bpzKern v (x - y) - bpzKern v (x' - y)| ≤ 3 * V * ‖x - x'‖ / (η / 2) ^ 2 := by
+      have := abs_bpzKern_sub_le v hη2 hxy2 hx'y
+      rwa [show x - y - (x' - y) = x - x' by ring] at this
+    have hfirst : e₀ * (A + B) / 2 * (V / η) ≤ ε / 2 := by
+      have := bpz_frac_mul_le_one (add_nonneg hA0 hB0) hV0
+      have hrw : e₀ * (A + B) / 2 * (V / η) = ε / 2 * ((A + B) * V / ((A + B + 1) * (V + 1))) := by
+        rw [he₀]; field_simp
+      rw [hrw]
+      exact (mul_le_mul_of_nonneg_left this (by positivity)).trans_eq (mul_one _)
+    have hsecond : A * B * (3 * V * δk / (η / 2) ^ 2) ≤ ε / 2 := by
+      have := bpz_frac_mul_le_one (mul_nonneg hA0 hB0) hV0
+      have hrw : A * B * (3 * V * δk / (η / 2) ^ 2) =
+          ε / 2 * (A * B * V / ((A * B + 1) * (V + 1))) := by
+        rw [hδk]; field_simp; ring
+      rw [hrw]
+      exact (mul_le_mul_of_nonneg_left this (by positivity)).trans_eq (mul_one _)
+    refine (bpz_abs_mul_sub_mul_le hPb ((abs_bpzKern_le v _).trans (div_le_div_of_nonneg_left (norm_nonneg v) hη hxy))).trans (?_)
+    calc |(a x * b y - a y * b x) / 2 - (a x' * b y - a y * b x') / 2| * (V / η) +
+            A * B * |bpzKern v (x - y) - bpzKern v (x' - y)| ≤ e₀ * (A + B) / 2 * (V / η) + A * B * (3 * V * δk / (η / 2) ^ 2) := add_le_add (mul_le_mul_of_nonneg_right hPd (by positivity))
+            (mul_le_mul_of_nonneg_left (hKd.trans (by gcongr)) (mul_nonneg hA0 hB0))
+      _ ≤ ε / 2 + ε / 2 := add_le_add hfirst hsecond
+      _ = ε := by ring
+  have := hp.hX.1
   obtain ⟨K, hK0, hK⟩ := hd.cutWeight_bound
   obtain ⟨R, hR0, hR⟩ := hd.rho_zero_of_norm
   obtain ⟨B, hB0, hB⟩ := hd.phi_bdd
   obtain ⟨Lφ, hLφ⟩ := hd.φ_lip
-  have hδ := hd.δ_pos
+  have := hd.δ_pos
   set Cs : ℝ := 2 * ‖v‖ * ((Lφ : ℝ) + B / δ) with hCs
   have hCs0 : 0 ≤ Cs := by positivity
   have hLn : ∀ (n : ℕ) w, |bpzLamDeriv n w v| ≤ 2 * ‖v‖ / ‖w‖ := fun n w =>
@@ -296,7 +277,7 @@ theorem conv_sym (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (hp : BPZWardProb P
     fun x hx => by rw [hd.phi_zero_of_rho_zero (hR x hx), zero_mul]
   have hbs : HasCompactSupport fun x => ρ x * k₂ x := bpz_hasCompactSupport_of_ball (R := R)
     fun x hx => by rw [hR x hx, zero_mul]
-  refine hμ.tendstoInMeasure_double hatom
+  refine (bpzWeakConv_gmc P X hp.hX hd.γ_pos hp.γ2 M hp.hM hp.hMm Xc hp.hXc).tendstoInMeasure_double (gmc_noAtoms_ae P X hp.hX γ hd.γ_pos hp.γ2 M hp.hM hp.hMm)
     (fun n => bpzSymKer φ ρ (bpzWardCutWeight γ q n kt) (fun w => bpzLamDeriv n w v))
     (bpzSymKer φ ρ k₂ (bpzKern v))
     (fun n => measurable_bpzSymKer hd.phi_cont.measurable hd.ρ_meas

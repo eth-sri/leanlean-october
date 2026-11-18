@@ -28,14 +28,11 @@ theorem separatedTail_joint_tail_le_of_mixed_moment
     (u v : ℝ) (hu : 0 < u) (hv : 0 < v) :
     (P {ω | ENNReal.ofReal u < W2 ω ∧ ENNReal.ofReal v < W3 ω}).toReal ≤
       B.toReal * u ^ (-a2) * v ^ (-a3) := by
-  let T : ℝ≥0∞ := ENNReal.ofReal u ^ a2 * ENNReal.ofReal v ^ a3
+  let T := ENNReal.ofReal u ^ a2 * ENNReal.ofReal v ^ a3
   have hsub : {ω | ENNReal.ofReal u < W2 ω ∧ ENNReal.ofReal v < W3 ω} ⊆
       {ω | T ≤ W2 ω ^ a2 * W3 ω ^ a3} := fun ω hω =>
     mul_le_mul' (ENNReal.rpow_le_rpow hω.1.le ha2) (ENNReal.rpow_le_rpow hω.2.le ha3)
-  have hmarkov := mul_meas_ge_le_lintegral₀ ((hW2.pow_const a2).mul (hW3.pow_const a3)) T
-  have hle : T * P {ω | ENNReal.ofReal u < W2 ω ∧ ENNReal.ofReal v < W3 ω} ≤ B :=
-    (mul_le_mul_right (measure_mono hsub) T).trans (hmarkov.trans hbound)
-  have hreal := ENNReal.toReal_mono hB hle
+  have hreal := ENNReal.toReal_mono hB ((mul_le_mul_right (measure_mono hsub) T).trans ((mul_meas_ge_le_lintegral₀ ((hW2.pow_const a2).mul (hW3.pow_const a3)) T).trans hbound))
   rw [ENNReal.toReal_mul] at hreal
   have hTr : T.toReal = u ^ a2 * v ^ a3 := by
     simp only [T, ENNReal.toReal_mul, ← ENNReal.toReal_rpow, ENNReal.toReal_ofReal hu.le,
