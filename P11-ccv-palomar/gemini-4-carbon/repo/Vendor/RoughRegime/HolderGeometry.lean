@@ -1,7 +1,7 @@
 module
 
 public import RoughRegime.HolderConstants
-public import RoughRegime.UniformCube
+public import RoughRegime.Model
 
 @[expose] public section
 

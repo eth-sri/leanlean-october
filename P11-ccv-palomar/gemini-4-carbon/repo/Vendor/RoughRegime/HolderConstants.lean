@@ -21,8 +21,5 @@ theorem holderExponent_pos {t : ℝ} (ht : 0 < t) : 0 < holderExponent t := by
   rw [hcast]
   linarith [Nat.ceil_lt_add_one ht.le]
 
-@[simp] theorem coordinateDerivative_const_zero {d : ℕ} (c : ℝ)
-    (σ : Fin 0 → Fin d) (x : Covariate d) :
-    coordinateDerivative (fun _ : Covariate d ↦ c) 0 σ x = c := rfl
 
 end RoughRegime.Model

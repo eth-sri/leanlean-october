@@ -1,8 +1,6 @@
 module
 
 public import NearlyMinimax.PaperMain
-public import NearlyMinimax.PaperLowSmoothness
-public import NearlyMinimax.PaperParametric
 
 public section
 

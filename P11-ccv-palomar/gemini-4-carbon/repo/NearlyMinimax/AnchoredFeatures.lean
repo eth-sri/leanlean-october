@@ -50,16 +50,7 @@ theorem anchoredMonomial_scale {d ℓ : ℕ} (γ : AnchoredIndex d ℓ)
   simp only [mul_pow]
   rw [Finset.prod_mul_distrib, Finset.prod_pow_eq_pow_sum]
 
-@[simp] theorem anchoredMonomial_zero {d ℓ : ℕ} (γ : AnchoredIndex d ℓ) :
-    anchoredMonomial γ 0 = 0 := by
-  have h := anchoredMonomial_scale γ 0 (fun _ => 1)
-  have hd : anchoredDegree γ ≠ 0 := ne_of_gt γ.property.1
-  change anchoredMonomial γ (fun _ => 0) = 0
-  simpa only [zero_mul, zero_pow hd] using h
 
-@[simp] theorem anchoredFeature_self {d ℓ : ℕ} (x : Covariate d)
-    (γ : AnchoredIndex d ℓ) : anchoredFeature x x γ = 0 := by
-  simp [anchoredFeature]
 
 theorem dyadicAnchoredFeature_scale {d ℓ : ℕ} (j : ℕ) (x z : Covariate d)
     (γ : AnchoredIndex d ℓ) :

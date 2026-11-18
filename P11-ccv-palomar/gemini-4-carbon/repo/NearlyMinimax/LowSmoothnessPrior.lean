@@ -1,7 +1,6 @@
 module
 
 public import NearlyMinimax.ScoreSupport
-public import NearlyMinimax.ParametricConstants
 public import NearlyMinimax.TernaryMeasure
 public import NearlyMinimax.ModelRegularity
 public import NearlyMinimax.PathRisk
@@ -189,18 +188,27 @@ structure LowSmoothnessTernaryConstants {d : ℕ} (C : ModelConstants d) where
 
 theorem lowSmoothnessTernaryConstants_exists {d : ℕ} (C : ModelConstants d) :
     Nonempty (LowSmoothnessTernaryConstants C) := by
-  obtain ⟨P⟩ := parametricTernaryConstants_exists C
-  let v := (P.l + P.r) / 2
-  have hv : 0 < v := by dsimp [v]; linarith [P.l_pos, P.interval]
-  have hVl : C.varianceLower < v := by dsimp [v]; linarith [P.lower_le, P.interval]
-  have hVr : v < C.varianceUpper := by dsimp [v]; linarith [P.upper_le, P.interval]
-  have hva : v < P.a ^ 2 := by dsimp [v]; linarith [P.variance_lt_square, P.interval]
-  have hfourth : P.a ^ 2 * v < C.fourthBound := by
-    have hmid : v < P.r := by dsimp [v]; linarith [P.interval]
-    exact (mul_lt_mul_of_pos_left hmid (sq_pos_of_pos P.a_pos)).trans_le P.fourth_le
-  obtain ⟨ρ, c, hρ, hc, hlegal⟩ := ternary_admissible_neighborhood P.a v
-    C.varianceLower C.varianceUpper C.fourthBound P.a_pos hv hva hVl hVr hfourth
-  exact ⟨⟨P.a, v, ρ, c, P.a_pos, hρ, hc, hlegal⟩⟩
+  let s := Real.sqrt C.fourthBound
+  have hC4 : 0 < C.fourthBound := (sq_pos_of_pos C.varianceLower_pos).trans C.fourth_margin
+  have hs2 : s ^ 2 = C.fourthBound := Real.sq_sqrt hC4.le
+  have hs_pos : 0 < s := Real.sqrt_pos.2 hC4
+  have hvs : C.varianceLower < s := by nlinarith [C.fourth_margin, C.varianceLower_pos]
+  let t := (C.varianceLower + s) / 2
+  have hvt0 : C.varianceLower < t := by dsimp [t]; linarith
+  have hts : t < s := by dsimp [t]; linarith
+  have ht : 0 < t := C.varianceLower_pos.trans hvt0
+  let v := (C.varianceLower + min C.varianceUpper t) / 2
+  have hv_lt : v < min C.varianceUpper t := by dsimp [v]; linarith [lt_min C.variance_interval hvt0]
+  have hv_gt : C.varianceLower < v := by dsimp [v]; linarith [lt_min C.variance_interval hvt0]
+  have hvt : v < t := hv_lt.trans_le (min_le_right _ _)
+  let a := Real.sqrt t
+  have ha : 0 < a := Real.sqrt_pos.2 ht
+  have ha2 : a ^ 2 = t := Real.sq_sqrt ht.le
+  obtain ⟨ρ, c, hρ, hc, hlegal⟩ := ternary_admissible_neighborhood a v
+    C.varianceLower C.varianceUpper C.fourthBound ha (C.varianceLower_pos.trans hv_gt)
+    (ha2 ▸ hvt) hv_gt (hv_lt.trans_le (min_le_left _ _))
+    (by rw [ha2]; nlinarith [mul_pos ht (sub_pos.2 hvt)])
+  exact ⟨⟨a, v, ρ, c, ha, hρ, hc, hlegal⟩⟩
 
 namespace LowSmoothnessTernaryConstants
 
