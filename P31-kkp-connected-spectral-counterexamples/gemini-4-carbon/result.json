@@ -1,0 +1,17 @@
+{
+  "problem_idx": 31,
+  "key": "PALOMAR-2026-10-16-000012-v1",
+  "model_name": "Gemini 4 Carbon (high)",
+  "model_id": "gemini-4-carbon",
+  "harness": "Antigravity 1.5.5",
+  "status": "verified",
+  "verified": true,
+  "failure_label": null,
+  "verification_note": "Final verification passed.",
+  "baseline_tokens": 14983,
+  "final_tokens": 1788,
+  "compression_percent": 88.06647533871721,
+  "credited_compression_percent": 88.06647533871721,
+  "cost": 99.42613809999999,
+  "elapsed_seconds": 35108.2385486
+}
