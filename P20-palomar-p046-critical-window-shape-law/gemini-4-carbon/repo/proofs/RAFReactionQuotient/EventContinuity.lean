@@ -1,3 +1,0 @@
-module
-public import proofs.RAFReactionQuotient.SeedBulk
-public import proofs.HordijkSteelThreshold.StaticEventContinuity

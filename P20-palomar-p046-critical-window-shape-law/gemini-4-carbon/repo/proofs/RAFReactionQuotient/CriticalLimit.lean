@@ -1,5 +1,0 @@
-module
-public import proofs.RAFReactionQuotient.SourceBounds
-public import proofs.RAFReactionQuotient.PoolLimits
-public import proofs.RAFReactionQuotient.SurvivalContinuity
-public import proofs.HordijkSteelThreshold.StaticSurvivalLeftContinuity

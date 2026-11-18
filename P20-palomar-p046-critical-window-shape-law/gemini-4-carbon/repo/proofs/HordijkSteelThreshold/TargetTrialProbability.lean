@@ -1,3 +1,0 @@
-module
-public import proofs.HordijkSteelThreshold.TargetTrials
-public import proofs.HordijkSteelThreshold.StaticSeedProbability

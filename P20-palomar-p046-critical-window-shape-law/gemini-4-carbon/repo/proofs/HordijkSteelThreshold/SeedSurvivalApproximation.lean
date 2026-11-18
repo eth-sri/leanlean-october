@@ -1,5 +1,0 @@
-module
-public import proofs.HordijkSteelThreshold.StaticDecreasingEvents
-public import proofs.HordijkSteelThreshold.StaticSeedMassBound
-public import proofs.HordijkSteelThreshold.AmbientEscapeBound
-public import proofs.HordijkSteelThreshold.SourceTerminalRAF
