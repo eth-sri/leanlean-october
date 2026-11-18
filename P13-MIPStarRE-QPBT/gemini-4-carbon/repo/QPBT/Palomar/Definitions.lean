@@ -58,12 +58,6 @@ noncomputable def reindexState {I J : Type*} [Fintype I] [DecidableEq I]
     (ψ : EuclideanSpace ℂ I) : EuclideanSpace ℂ J :=
   (EuclideanSpace.equiv J ℂ).symm (fun j => (EuclideanSpace.equiv I ℂ ψ) (e.symm j))
 
-/-- A symmetric finite game. -/
-structure SymmetricGame (X A : Type) [Fintype X] [Fintype A]
-    [DecidableEq X] [DecidableEq A] extends Game X X A A where
-  μ_symm : ∀ x y, μ (x, y) = μ (y, x)
-  decide_symm : ∀ x y a b, decide x y a b = decide y x b a
-
 /-- A swap-invariant strategy using one local space and one measurement family. -/
 structure SymmetricStrategy (X A : Type) [Fintype X] [Fintype A] where
   ι : Type
@@ -128,13 +122,6 @@ def IsCommutingOn {X Y A B I : Type*} [Fintype X] [Fintype Y]
     [Fintype A] [Fintype B] [Fintype I] [DecidableEq I]
     (μ : PMF (X × Y)) (alice : X → POVM A I) (bob : Y → POVM B I) : Prop :=
   ∀ x y, 0 < μ (x, y) → ∀ a b, Commute ((alice x).effect a) ((bob y).effect b)
-
-/-- Symmetric, projective, consistent, and support-wise commuting strategy. -/
-def SymmetricStrategy.IsSPCC {X A : Type} [Fintype X] [Fintype A]
-    [DecidableEq X] [DecidableEq A] (S : SymmetricStrategy X A)
-    (G : SymmetricGame X A) : Prop :=
-  (∀ x, (S.meas x).IsProjective) ∧ S.IsConsistent ∧ IsCommutingOn G.μ S.meas S.meas
-
 
 /-- The numerical domain of the classical low individual degree game. -/
 structure LowDegreeParams where

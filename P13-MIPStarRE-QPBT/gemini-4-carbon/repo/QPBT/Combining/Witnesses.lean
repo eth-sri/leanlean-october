@@ -2,34 +2,17 @@ module
 
 public import QPBT.Combining.Defs
 public import QPBT.Combining.DirectLowDegree
+public import QPBT.Games.Sandwich.Support
 public import QPBT.Games.Consistency
 public import QPBT.Observables.LineMeasurement
-public import QPBT.Observables.WinImplications
-
-/-!
-# Witnesses for combining the Pauli bases
-
-This module defines the five measurement and distribution witnesses used in
-the combining argument.  Every measurement is indexed by the player side, so
-Alice's and Bob's local spaces remain distinct.  The extended-dimensional
-line objects use the directly indexed low-degree interface and therefore do
-not require a dimension-divisibility hypothesis.
-
-## References
-
-`CombinedPointsWitness`, `CombinedLinesWitness`, and `GlobalPairWitness` record
-the measurement conclusions of `lem:qld-4-10`, `lem:qld-xz-lines`, and
-`lem:qld-4-7`, respectively, in
-`blueprint/src/chapter/ch15_qpbt_combining.tex`.  `SubLineWitness` and
-`ExtendedLinesWitness` instead support `lem:qld-sublines` and `lem:qld-4-13`
-through the directly indexed extended-line carrier and probability law.  The
-latter also uses the completed answer alphabet, rather than the field-valued
-answer sum in the source statement.  The paper source is
-`references/qpbt-paper/14_analysis_of_the_pauli_basis_test.tex:689-709,
-882-894,1020-1069,1267-1274`.
--/
+public import QPBT.Observables.WinImplications.InterchangedCommutation
+public import QPBT.Observables.ExpandedPlacement
 
 @[expose] public section
+
+open scoped BigOperators MatrixOrder ComplexOrder
+
+set_option synthInstance.maxSize 400
 
 namespace MIPStarRE.QPBT
 
@@ -320,6 +303,152 @@ structure GlobalPairWitness {P : AdmissibleParams} {ε : ℝ}
       (fun u a => S.place .AB''
         ((S.pointMeasExp .alice W u).effect a))
       S.psiHat <= δ
+
+theorem CombinedPointsWitness.delta_nonneg {P : AdmissibleParams} {epsilon deltaQ : ℝ}
+    {setting : ProjectiveSetting P epsilon}
+    (points : CombinedPointsWitness setting deltaQ) : 0 ≤ deltaQ :=
+  (DistanceCalculus.opFamilyDistSq_nonneg _ _ _ _).trans (points.self_consistent .AA' .BA'' trivial)
+
+namespace ExtendedLineGame
+
+open ProjectiveSetting
+
+def pairState {P : AdmissibleParams} {epsilon : ℝ} (setting : ProjectiveSetting P epsilon) :
+    EuclideanSpace ℂ (setting.ExpandedLocalSpace .alice × setting.ExpandedLocalSpace .bob) :=
+  reindexState prodShuffle (vecTensor setting.toStrategy.ψ (eprState (PauliRegister P)))
+
+theorem pairState_norm {P : AdmissibleParams} {epsilon : ℝ} (setting : ProjectiveSetting P epsilon) :
+    ‖pairState setting‖ = 1 := by
+  change ‖reindexState prodShuffle
+    (vecTensor setting.toStrategy.ψ (eprState (PauliRegister P)))‖ = 1
+  rw [reindexState_norm_eq, vecTensor_norm_eq, setting.toStrategy.ψ_norm, eprState_norm, mul_one]
+
+def aaBaRegrouping {P : AdmissibleParams} {epsilon : ℝ} (setting : ProjectiveSetting P epsilon) :
+    SixReg P setting.toStrategy.ιA setting.toStrategy.ιB ≃
+      (setting.ExpandedLocalSpace .alice × setting.ExpandedLocalSpace .bob) ×
+        (PauliRegister P × PauliRegister P) :=
+  (aaBaBipartition P setting.toStrategy.ιA setting.toStrategy.ιB).trans (Equiv.prodAssoc _ _ _).symm
+
+def abBbRegrouping {P : AdmissibleParams} {epsilon : ℝ} (setting : ProjectiveSetting P epsilon) :
+    SixReg P setting.toStrategy.ιA setting.toStrategy.ιB ≃
+      (setting.ExpandedLocalSpace .alice × setting.ExpandedLocalSpace .bob) ×
+        (PauliRegister P × PauliRegister P) :=
+  (abBbBipartition P setting.toStrategy.ιA setting.toStrategy.ιB).trans (Equiv.prodAssoc _ _ _).symm
+
+theorem reindexState_aaBaRegrouping_psiHat {P : AdmissibleParams} {epsilon : ℝ}
+    (setting : ProjectiveSetting P epsilon) :
+    reindexState (aaBaRegrouping setting) setting.psiHat =
+      vecTensor (pairState setting) (eprState (PauliRegister P)) := by
+  ext p; rfl
+
+theorem reindexState_abBbRegrouping_psiHat {P : AdmissibleParams} {epsilon : ℝ}
+    (setting : ProjectiveSetting P epsilon) :
+    reindexState (abBbRegrouping setting) setting.psiHat =
+      vecTensor (pairState setting) (eprState (PauliRegister P)) := by
+  ext p
+  have hswap := congrArg
+    (fun v : EuclideanSpace ℂ (PauliRegister P × PauliRegister P) => v (p.1.1.2, p.1.2.2))
+    (reindexState_prodComm_eprState (PauliRegister P))
+  change eprState (PauliRegister P) (p.1.2.2, p.1.1.2) =
+    eprState (PauliRegister P) (p.1.1.2, p.1.2.2) at hswap
+  change (setting.toStrategy.ψ (p.1.1.1, p.1.2.1) * eprState (PauliRegister P) p.2) *
+      eprState (PauliRegister P) (p.1.2.2, p.1.1.2) =
+    (setting.toStrategy.ψ (p.1.1.1, p.1.2.1) * eprState (PauliRegister P) (p.1.1.2, p.1.2.2)) *
+      eprState (PauliRegister P) p.2
+  rw [hswap]; ring
+
+theorem stateQForm_pairState_eq_AA'_BA'' {P : AdmissibleParams} {epsilon : ℝ}
+    (setting : ProjectiveSetting P epsilon)
+    (A : Op (setting.ExpandedLocalSpace .alice)) (B : Op (setting.ExpandedLocalSpace .bob))
+    (hA : A.IsHermitian) (hB : B.IsHermitian) :
+    DistanceCalculus.stateQForm (pairState setting) (heteroKron A B) =
+      DistanceCalculus.stateQForm setting.psiHat (setting.place .AA' A * setting.place .BA'' B) := by
+  let I : Op (PauliRegister P × PauliRegister P) := 1
+  have hop : reindexOp (aaBaRegrouping setting) (heteroKron (heteroKron A B) I) =
+      setting.place .AA' A * setting.place .BA'' B := by
+    change Op (setting.toStrategy.ιA × PauliRegister P) at A
+    change Op (setting.toStrategy.ιB × PauliRegister P) at B
+    change reindexOp (aaBaBipartition P setting.toStrategy.ιA setting.toStrategy.ιB)
+      (reindexOp (Equiv.prodAssoc _ _ _).symm (heteroKron (heteroKron A B) I)) = _
+    rw [show reindexOp (Equiv.prodAssoc _ _ _).symm (heteroKron (heteroKron A B) I) =
+        heteroKron A (heteroKron B I) from Matrix.kronecker_assoc A B I,
+      show heteroKron A (heteroKron B I) = heteroKron A 1 * heteroKron 1 (heteroKron B I) by
+        rw [heteroKron_mul, Matrix.mul_one, Matrix.one_mul]]
+    exact (WinImplications.reindexOp_mul _ _ _).trans
+      (congrArg₂ (· * ·) (reindexOp_aaBaBipartition_left setting A)
+        (reindexOp_aaBaBipartition_right setting B))
+  have hv := stateQForm_vecTensor_heteroKron (heteroKron A B) I (pairState setting)
+    (eprState (PauliRegister P)) (heteroKron_isHermitian A B hA hB) Matrix.isHermitian_one
+  rw [stateQForm_one_eq_norm_sq, eprState_norm, one_pow, mul_one] at hv
+  rw [← hv, ← reindexState_aaBaRegrouping_psiHat setting, WinImplications.stateQForm_reindexState, hop]
+
+theorem stateQForm_pairState_eq_AB''_BB' {P : AdmissibleParams} {epsilon : ℝ}
+    (setting : ProjectiveSetting P epsilon)
+    (A : Op (setting.ExpandedLocalSpace .alice)) (B : Op (setting.ExpandedLocalSpace .bob))
+    (hA : A.IsHermitian) (hB : B.IsHermitian) :
+    DistanceCalculus.stateQForm (pairState setting) (heteroKron A B) =
+      DistanceCalculus.stateQForm setting.psiHat (setting.place .AB'' A * setting.place .BB' B) := by
+  let I : Op (PauliRegister P × PauliRegister P) := 1
+  have hop : reindexOp (abBbRegrouping setting) (heteroKron (heteroKron A B) I) =
+      setting.place .AB'' A * setting.place .BB' B := by
+    change Op (setting.toStrategy.ιA × PauliRegister P) at A
+    change Op (setting.toStrategy.ιB × PauliRegister P) at B
+    change reindexOp (abBbBipartition P setting.toStrategy.ιA setting.toStrategy.ιB)
+      (reindexOp (Equiv.prodAssoc _ _ _).symm (heteroKron (heteroKron A B) I)) = _
+    rw [show reindexOp (Equiv.prodAssoc _ _ _).symm (heteroKron (heteroKron A B) I) =
+        heteroKron A (heteroKron B I) from Matrix.kronecker_assoc A B I,
+      show heteroKron A (heteroKron B I) = heteroKron A 1 * heteroKron 1 (heteroKron B I) by
+        rw [heteroKron_mul, Matrix.mul_one, Matrix.one_mul]]
+    exact (WinImplications.reindexOp_mul _ _ _).trans
+      (congrArg₂ (· * ·) (reindexOp_abBbBipartition_left setting A)
+        (reindexOp_abBbBipartition_right setting B))
+  have hv := stateQForm_vecTensor_heteroKron (heteroKron A B) I (pairState setting)
+    (eprState (PauliRegister P)) (heteroKron_isHermitian A B hA hB) Matrix.isHermitian_one
+  rw [stateQForm_one_eq_norm_sq, eprState_norm, one_pow, mul_one] at hv
+  rw [← hv, ← reindexState_abBbRegrouping_psiHat setting, WinImplications.stateQForm_reindexState, hop]
+
+def completedLinePointDefect {P : AdmissibleParams} {epsilon deltaQ deltaL : ℝ}
+    {setting : ProjectiveSetting P epsilon} {points : CombinedPointsWitness setting deltaQ}
+    (lines : ExtendedLinesWitness setting points deltaL)
+    (linePlacement pointPlacement : Placement)
+    (law : Distribution (DirectLineDesc P.extendedDirectLd ×
+      (Fin P.extendedDirectLd.m → DirectScalarQ P.extendedDirectLd))) : ℝ :=
+  consistencyDefect law
+    (fun sample answer => setting.place linePlacement
+      (((lines.Qline linePlacement.side sample.1).postprocess
+        (fun coeffs => (directEvalOpt sample.1 sample.2 coeffs).map
+          (extendedDirectScalarEquiv P))).effect answer))
+    (fun sample answer => setting.place pointPlacement
+      (((points.Q pointPlacement.side
+        (projX (directPointToPauli P sample.2))
+        (projZ (directPointToPauli P sample.2))).postprocess fun values =>
+          some (directPointToPauli P sample.2 (alphaVar P.m) * values.1 +
+            directPointToPauli P sample.2 (betaVar P.m) * values.2)).effect answer))
+    setting.psiHat
+
+end ExtendedLineGame
+
+theorem ExtendedLinesWitness.delta_nonneg {P : AdmissibleParams}
+    {epsilon deltaQ deltaL : ℝ} {setting : ProjectiveSetting P epsilon}
+    {points : CombinedPointsWitness setting deltaQ}
+    (lines : ExtendedLinesWitness setting points deltaL) : 0 ≤ deltaL := by
+  refine le_trans ?_ lines.consistent_alice
+  unfold consistencyDefect avgOver
+  refine Finset.sum_nonneg fun s _ => mul_nonneg ((directLinePointDist P.extendedDirectLd).nonnegative s) ?_
+  refine Finset.sum_nonneg fun a _ => Finset.sum_nonneg fun b _ => ?_
+  by_cases hab : a = b
+  · simp [hab]
+  · simp only [hab, if_false, DistanceCalculus.consistency_term_eq_stateQForm]
+    let mA := (lines.Qline .alice s.1).postprocess
+      (fun coeffs => (directEvalOpt s.1 s.2 coeffs).map (extendedDirectScalarEquiv P))
+    let mB := (points.Q .bob (projX (directPointToPauli P s.2))
+      (projZ (directPointToPauli P s.2))).postprocess fun v =>
+        some (directPointToPauli P s.2 (alphaVar P.m) * v.1 +
+          directPointToPauli P s.2 (betaVar P.m) * v.2)
+    rw [← ExtendedLineGame.stateQForm_pairState_eq_AA'_BA'' setting (mA.effect a) (mB.effect b)
+      (Matrix.nonneg_iff_posSemidef.mp (mA.pos a)).isHermitian
+      (Matrix.nonneg_iff_posSemidef.mp (mB.pos b)).isHermitian]
+    exact DistanceCalculus.stateQForm_nonneg _ (kronecker_nonneg (mA.pos a) (mB.pos b))
 
 end
 

@@ -1,6 +1,6 @@
 module
 
-public import QPBT.Observables.LineMeasurement.LinePointConsistency
+public import QPBT.Observables.LineMeasurement.EvalClassConsistency
 
 /-!
 # Expanded line measurements

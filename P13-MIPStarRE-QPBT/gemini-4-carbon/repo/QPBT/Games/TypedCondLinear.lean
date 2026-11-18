@@ -1,6 +1,6 @@
 module
 
-public import QPBT.Games.CondLinearTheorems
+public import QPBT.Games.CondLinear
 public import QPBT.Games.DistributionAux
 
 /-! # Typed conditionally linear distributions
