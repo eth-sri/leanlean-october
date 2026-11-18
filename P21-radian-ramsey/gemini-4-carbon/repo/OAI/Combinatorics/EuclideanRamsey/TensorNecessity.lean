@@ -1,274 +1,160 @@
-/-
-From openai/math (https://github.com/openai/math), commit
-fd4aeeb2ee4fc729c18d98444fed42fd0529eeeb, lean/OAI/Combinatorics/EuclideanRamsey/TensorNecessity.lean;
-licensed under the Apache License, Version 2.0 (see LICENSES/Apache-2.0.txt and NOTICE).
-Modified: ported to the Lean module system for Lean v4.35.0-rc2 / Mathlib v4.35.0-rc2 (this
-notice, a `module` header, `public import`, `@[expose] public section`). No other line was
-changed; see docs/PORT-LOG.md.
--/
 module
 
-public import OAI.Combinatorics.EuclideanRamsey.Congruence
+public import OAI.Combinatorics.EuclideanRamsey.Model
 
 @[expose] public section
-
 namespace OAI
 
-universe uPoint
-
 noncomputable section
-
-open scoped TensorProduct RealInnerProductSpace
+open scoped TensorProduct RealInnerProductSpace BigOperators
 
 namespace EuclideanRamsey
 
-private theorem sum_floor_bounds {s : ℕ} (hs : 0 < s) (f : Fin s → ℝ) :
-    (∑ i, f i) - s < ((∑ i, ⌊f i⌋ : ℤ) : ℝ) ∧
-    ((∑ i, ⌊f i⌋ : ℤ) : ℝ) ≤ ∑ i, f i := by
-  have hu : (Finset.univ : Finset (Fin s)).Nonempty := ⟨⟨0, hs⟩, Finset.mem_univ _⟩
-  have hlt := Finset.sum_lt_sum_of_nonempty hu (fun i _ => Int.lt_floor_add_one (f i))
-  have hle := Finset.sum_le_sum (s := Finset.univ) (fun i _ => Int.floor_le (f i))
-  simp only [Finset.sum_add_distrib, Finset.sum_const, Finset.card_univ, Fintype.card_fin,
-    nsmul_eq_mul, mul_one] at hlt
-  constructor
-  · push_cast
-    linarith
-  · simpa only [Int.cast_sum] using hle
-
-theorem floor_coloring_obstruction {X : Type uPoint} {s : ℕ} (hs : 0 < s)
-    (H : Fin s → X → ℝ) (hcancel : ∀ z, ∑ i, H i z = 0)
-    (b : Fin s → X)
-    (hmono : ∀ i, (fun j : Fin s =>
-      (⌊((2 * s + 1 : ℕ) : ℝ) / 2 * H j (b i)⌋ : ZMod (2 * s + 1))) =
-      (fun j : Fin s =>
-      (⌊((2 * s + 1 : ℕ) : ℝ) / 2 * H j (b ⟨0, hs⟩)⌋ : ZMod (2 * s + 1)))) :
-    ∑ i, H i (b i) ≠ -1 := by
-  intro hsum
-  let K : ℕ := 2 * s + 1
-  let x : Fin s → ℝ := fun i => (K : ℝ) / 2 * H i (b i)
-  let y : Fin s → ℝ := fun i => (K : ℝ) / 2 * H i (b ⟨0, hs⟩)
-  have hx : ∑ i, x i = -(K : ℝ) / 2 := by
-    simp [x, ← Finset.mul_sum, hsum]; ring
-  have hy : ∑ i, y i = 0 := by
-    simp [y, ← Finset.mul_sum, hcancel]
-  let A : ℤ := ∑ i, ⌊x i⌋
-  let B : ℤ := ∑ i, ⌊y i⌋
-  have hAB : (A : ZMod K) = (B : ZMod K) := by
-    simp only [A, B, Int.cast_sum]
-    apply Finset.sum_congr rfl
-    intro i _
-    exact congrFun (hmono i) i
-  have hdvd : (K : ℤ) ∣ B - A := (ZMod.intCast_eq_intCast_iff_dvd_sub A B K).mp hAB
-  obtain ⟨hxlo, hxhi⟩ := sum_floor_bounds hs x
-  obtain ⟨hylo, hyhi⟩ := sum_floor_bounds hs y
-  change (∑ i, x i) - s < (A : ℝ) at hxlo
-  change (A : ℝ) ≤ ∑ i, x i at hxhi
-  change (∑ i, y i) - s < (B : ℝ) at hylo
-  change (B : ℝ) ≤ ∑ i, y i at hyhi
-  rw [hx] at hxlo hxhi
-  rw [hy] at hylo hyhi
-  have hK : (K : ℝ) = 2 * (s : ℝ) + 1 := by simp [K]
-  have hpos : (0 : ℤ) < B - A := by
-    have : (0 : ℝ) < (B : ℝ) - (A : ℝ) := by linarith
-    exact_mod_cast this
-  have hlt : B - A < (K : ℤ) := by
-    have : (B : ℝ) - (A : ℝ) < (K : ℝ) := by linarith
-    exact_mod_cast this
-  exact (not_le_of_gt hlt) (Int.le_of_dvd hpos hdvd)
-
 abbrev RealTensor := ℝ ⊗[ℚ] ℝ
 abbrev RealArray (d : ℕ) := Matrix (Option (Fin d)) (Option (Fin d)) RealTensor
-abbrev SeparationSpace (s d : ℕ) := (Fin s → RealTensor) × Matrix (Fin d) (Fin d) ℝ
 
 def realAugmented {s d : ℕ} (a : Fin s → Space d) (i : Fin s) : Option (Fin d) → ℝ
   | none => 1
   | some j => a i j
 
-def arrayEvaluation {s d : ℕ} (a : Fin s → Space d) (i : Fin s) :
-    RealArray d →ₗ[ℚ] RealTensor where
-  toFun P := ∑ α, ∑ β, ((realAugmented a i α) ⊗ₜ[ℚ] (1 : ℝ)) * P α β *
-    ((1 : ℝ) ⊗ₜ[ℚ] (realAugmented a i β))
-  map_add' P Q := by
-    simp only [Matrix.add_apply, mul_add, add_mul, Finset.sum_add_distrib]
-  map_smul' q P := by
-    simp only [Matrix.smul_apply, RingHom.id_apply, mul_smul_comm, smul_mul_assoc,
-      Finset.smul_sum]
+def arrayEvaluation {s d : ℕ} (a : Fin s → Space d) (i : Fin s) : RealArray d →ₗ[ℚ] RealTensor where
+  toFun P := ∑ α, ∑ β, (realAugmented a i α ⊗ₜ[ℚ] (1 : ℝ)) * P α β * ((1 : ℝ) ⊗ₜ[ℚ] realAugmented a i β)
+  map_add' _ _ := by simp [Matrix.add_apply, mul_add, add_mul, Finset.sum_add_distrib]
+  map_smul' _ _ := by simp [Finset.smul_sum]
 
 def spatialMultiply {d : ℕ} : RealArray d →ₗ[ℚ] Matrix (Fin d) (Fin d) ℝ where
-  toFun P := fun α β => Algebra.TensorProduct.lmul' ℚ (P (some α) (some β))
-  map_add' P Q := by
-    ext α β
-    exact map_add (Algebra.TensorProduct.lmul' ℚ) _ _
-  map_smul' q P := by
-    ext α β
-    exact (Algebra.TensorProduct.lmul' ℚ).toLinearMap.map_smul q _
-
-def arrayMap {s d : ℕ} (a : Fin s → Space d) :
-    RealArray d →ₗ[ℚ] SeparationSpace s d :=
-  (LinearMap.pi (arrayEvaluation a)).prod spatialMultiply
+  toFun P α β := Algebra.TensorProduct.lmul' ℚ (P (some α) (some β))
+  map_add' _ _ := by ext; exact map_add _ _ _
+  map_smul' q _ := by ext; exact (Algebra.TensorProduct.lmul' ℚ).toLinearMap.map_smul q _
 
 def RealCriterion {s d : ℕ} (a : Fin s → Space d) : Prop :=
   ∃ P : RealArray d, (∀ i, arrayEvaluation a i P = 0) ∧ spatialMultiply P = 1
 
-theorem separate_arrayMap {s d : ℕ} (a : Fin s → Space d) (h : ¬ RealCriterion a) :
-    ∃ ℓ : SeparationSpace s d →ₗ[ℚ] ℝ,
-      (∀ P, ℓ (arrayMap a P) = 0) ∧ ℓ (0, 1) = 1 := by
-  let N := LinearMap.range (arrayMap a)
-  have hy : (0, 1) ∉ N := by
-    rintro ⟨P, hP⟩
-    apply h
-    refine ⟨P, ?_, ?_⟩
-    · intro i
-      exact congrFun (congrArg Prod.fst hP) i
-    · exact congrArg Prod.snd hP
-  have hq : N.mkQ (0, 1) ≠ 0 := by
-    intro hz
-    exact hy ((Submodule.Quotient.mk_eq_zero N).mp hz)
-  obtain ⟨f, hf⟩ := Module.Projective.exists_dual_eq_one ℚ hq
-  let ℓ : SeparationSpace s d →ₗ[ℚ] ℝ :=
-    (Algebra.linearMap ℚ ℝ).comp (f.comp N.mkQ)
-  refine ⟨ℓ, ?_, ?_⟩
-  · intro P
-    have hp : N.mkQ (arrayMap a P) = 0 := by
-      apply (Submodule.Quotient.mk_eq_zero N).mpr
-      exact ⟨P, rfl⟩
-    simp [ℓ, hp]
-  · change ((f (N.mkQ (0, 1)) : ℚ) : ℝ) = 1
-    rw [hf]
-    norm_num
-
-def diagonalArray {d : ℕ} (v : ℝ) (u : Space d) : RealArray d :=
-  let w : Option (Fin d) → ℝ := fun α => α.elim v (u ·)
-  fun α β => w α ⊗ₜ[ℚ] w β
-
-def gradientRankOne {d : ℕ} (u : Space d) : Matrix (Fin d) (Fin d) ℝ :=
-  fun α β => u α * u β
-
-def affineEvaluation {s d : ℕ} (a : Fin s → Space d) (i : Fin s)
-    (v : ℝ) (u : Space d) : ℝ := v + ∑ j, a i j * u j
-
-lemma arrayEvaluation_diagonal {s d : ℕ} (a : Fin s → Space d) (i : Fin s)
-    (v : ℝ) (u : Space d) :
-    arrayEvaluation a i (diagonalArray v u) =
-      affineEvaluation a i v u ⊗ₜ[ℚ] affineEvaluation a i v u := by
-  let w : Option (Fin d) → ℝ := fun α => α.elim v (u ·)
-  have he : affineEvaluation a i v u = ∑ α, realAugmented a i α * w α := by
-    simp [affineEvaluation, realAugmented, w, Fintype.sum_option]
-  rw [he, TensorProduct.sum_tmul]
-  simp only [TensorProduct.tmul_sum]
-  change (∑ α, ∑ β, (realAugmented a i α ⊗ₜ[ℚ] (1 : ℝ)) *
-    (w α ⊗ₜ[ℚ] w β) * ((1 : ℝ) ⊗ₜ[ℚ] realAugmented a i β)) = _
-  simp only [Algebra.TensorProduct.tmul_mul_tmul, one_mul,  mul_comm]
-
-lemma spatialMultiply_diagonal {d : ℕ} (v : ℝ) (u : Space d) :
-    spatialMultiply (diagonalArray v u) = gradientRankOne u := by
-  ext α β
-  change (Algebra.TensorProduct.lmul' ℚ) (u α ⊗ₜ[ℚ] u β) = u α * u β
-  simp
-
-theorem exists_separated_functions {s d : ℕ} (a : Fin s → Space d)
-    (h : ¬ RealCriterion a) :
-    ∃ f : Fin s → ℝ → ℝ, ∃ L : Matrix (Fin d) (Fin d) ℝ →ₗ[ℚ] ℝ,
-      L 1 = 1 ∧
-      (∀ v u, (∑ i, f i (affineEvaluation a i v u)) + L (gradientRankOne u) = 0) ∧
-      ∀ x, ∑ i, f i x = 0 := by
+theorem ramsey_realCriterion {s d : ℕ} (a : Fin s → Space d)
+    (hs : 0 < s) (hspan : affineSpan ℝ (Set.range a) = ⊤) (hR : Ramsey a) : RealCriterion a := by
   classical
-  obtain ⟨ℓ, hℓ, hℓ₀⟩ := separate_arrayMap a h
-  let f : Fin s → ℝ → ℝ := fun i x => ℓ (Pi.single i (x ⊗ₜ[ℚ] x), 0)
-  let L : Matrix (Fin d) (Fin d) ℝ →ₗ[ℚ] ℝ := ℓ.comp (LinearMap.inr ℚ _ _)
+  by_contra h
+  let i₀ : Fin s := ⟨0, hs⟩
+  let arrayMap : RealArray d →ₗ[ℚ] (Fin s → RealTensor) × Matrix (Fin d) (Fin d) ℝ :=
+    (LinearMap.pi (arrayEvaluation a)).prod spatialMultiply
+  let N := LinearMap.range arrayMap
+  have hq : N.mkQ (0, 1) ≠ 0 := fun hz => h <| by
+    obtain ⟨P, hP⟩ := (Submodule.Quotient.mk_eq_zero N).mp hz
+    exact ⟨P, fun i => congrFun (congrArg Prod.fst hP) i, congrArg Prod.snd hP⟩
+  obtain ⟨dual_f, hdf⟩ := Module.Projective.exists_dual_eq_one ℚ hq
+  let ℓ := (Algebra.linearMap ℚ ℝ).comp (dual_f.comp N.mkQ)
+  have hℓ (P : RealArray d) : ℓ (arrayMap P) = 0 := by
+    simp [ℓ, (Submodule.Quotient.mk_eq_zero N).mpr ⟨P, rfl⟩]
+  have hℓ1 : ℓ (0, 1) = 1 := by change ((dual_f (N.mkQ (0, 1)) : ℚ) : ℝ) = 1; rw [hdf]; norm_num
+  let f (i : Fin s) (x : ℝ) : ℝ := ℓ (Pi.single i (x ⊗ₜ[ℚ] x), 0)
+  let L := ℓ.comp (LinearMap.inr ℚ _ _)
   have hsplit (x : Fin s → RealTensor) (M : Matrix (Fin d) (Fin d) ℝ) :
       ℓ (x, M) = (∑ i, ℓ (Pi.single i (x i), 0)) + L M := by
     change ℓ (x, M) = (∑ i, ℓ (Pi.single i (x i), 0)) + ℓ (0, M)
-    rw [← map_sum, ← map_add]
-    congr 1
+    rw [← map_sum, ← map_add]; congr 1
     ext <;> simp [Prod.fst_sum, Prod.snd_sum, Finset.sum_apply]
+  let rk1 (u : Space d) : Matrix (Fin d) (Fin d) ℝ := fun α β => u α * u β
   have heq (v : ℝ) (u : Space d) :
-      (∑ i, f i (affineEvaluation a i v u)) + L (gradientRankOne u) = 0 := by
-    have hp := hℓ (diagonalArray v u)
-    change ℓ ((fun i => arrayEvaluation a i (diagonalArray v u)),
-      spatialMultiply (diagonalArray v u)) = 0 at hp
-    simp only [arrayEvaluation_diagonal, spatialMultiply_diagonal] at hp
-    rw [hsplit] at hp
-    exact hp
-  refine ⟨f, L, hℓ₀, heq, ?_⟩
-  intro x
-  have hz : gradientRankOne (0 : Space d) = 0 := by ext; simp [gradientRankOne]
-  simpa [affineEvaluation, hz] using heq x (0 : Space d)
-
-def isometryRows {d D : ℕ} (Q : Space d →ₗᵢ[ℝ] Space D) (j : Fin D) : Space d :=
-  WithLp.toLp 2 (fun α => Q (EuclideanSpace.single α 1) j)
-
-lemma isometryRows_apply {d D : ℕ} (Q : Space d →ₗᵢ[ℝ] Space D)
-    (x : Space d) (j : Fin D) :
-    Q x j = ∑ α, x α * isometryRows Q j α := by
-  have hx := (EuclideanSpace.basisFun (Fin d) ℝ).sum_repr x
-  have hv := congrArg (fun z : Space d => Q z j) hx
-  simpa only [map_sum, map_smul, EuclideanSpace.basisFun_repr,
-    EuclideanSpace.basisFun_apply, WithLp.ofLp_sum, Finset.sum_apply, PiLp.smul_apply, smul_eq_mul,
-    isometryRows, WithLp.ofLp_toLp] using hv.symm
-
-lemma isometryRows_gram {d D : ℕ} (Q : Space d →ₗᵢ[ℝ] Space D)
-    (α β : Fin d) :
-    ∑ j, isometryRows Q j α * isometryRows Q j β = if α = β then 1 else 0 := by
-  have h := Q.inner_map_map (EuclideanSpace.single β 1) (EuclideanSpace.single α 1)
-  rw [EuclideanSpace.inner_single_left] at h
-  simpa only [PiLp.inner_apply, RCLike.inner_apply, conj_trivial, map_one, one_mul,
-    PiLp.single_apply, eq_comm, isometryRows, WithLp.ofLp_toLp] using h
-
-theorem separated_copy_sum {s d D : ℕ} (a : Fin s → Space d)
-    (f : Fin s → ℝ → ℝ) (L : Matrix (Fin d) (Fin d) ℝ →ₗ[ℚ] ℝ)
-    (hL : L 1 = 1)
-    (heq : ∀ v u, (∑ i, f i (affineEvaluation a i v u)) + L (gradientRankOne u) = 0)
-    (Q : Space d →ₗᵢ[ℝ] Space D) (t : Space D) :
-    ∑ i, ∑ j, f i ((t + Q (a i)) j) = -1 := by
-  have hrows : (∑ j, gradientRankOne (isometryRows Q j)) = (1 : Matrix (Fin d) (Fin d) ℝ) := by
-    ext α β
-    simp only [Matrix.sum_apply, gradientRankOne, Matrix.one_apply, isometryRows_gram]
-  have heach (j : Fin D) :
-      (∑ i, f i ((t + Q (a i)) j)) = -L (gradientRankOne (isometryRows Q j)) := by
-    have h := heq (t j) (isometryRows Q j)
-    apply eq_neg_of_add_eq_zero_left
-    convert h using 2
-    apply Finset.sum_congr rfl
-    intro i _
-    congr 1
-    simp only [PiLp.add_apply, affineEvaluation, isometryRows_apply]
-  rw [Finset.sum_comm]
-  simp only [heach, Finset.sum_neg_distrib, ← map_sum, hrows, hL]
-
-theorem ramsey_realCriterion {s d : ℕ} (a : Fin s → Space d)
-    (hs : 0 < s) (hspan : affineSpan ℝ (Set.range a) = ⊤)
-    (hR : Ramsey a) : RealCriterion a := by
-  classical
-  by_contra h
-  obtain ⟨f, L, hL, heq, hcancel⟩ := exists_separated_functions a h
+      (∑ i, f i (v + ∑ α, a i α * u α)) + L (rk1 u) = 0 := by
+    let w : Option (Fin d) → ℝ := fun α => α.elim v (u ·)
+    have hp := hℓ fun α β => w α ⊗ₜ[ℚ] w β
+    have h1 (i : Fin s) : arrayEvaluation a i (fun α β => w α ⊗ₜ[ℚ] w β) =
+        (v + ∑ α, a i α * u α) ⊗ₜ[ℚ] (v + ∑ α, a i α * u α) := by
+      have hw : v + ∑ α, a i α * u α = ∑ α, realAugmented a i α * w α := by
+        simp [realAugmented, w, Fintype.sum_option]
+      rw [hw, TensorProduct.sum_tmul]; simp only [TensorProduct.tmul_sum]
+      change (∑ α, ∑ β, (realAugmented a i α ⊗ₜ[ℚ] (1 : ℝ)) * (w α ⊗ₜ[ℚ] w β) *
+        ((1 : ℝ) ⊗ₜ[ℚ] realAugmented a i β)) = _
+      simp only [Algebra.TensorProduct.tmul_mul_tmul, one_mul, mul_comm]
+    have h2 : spatialMultiply (fun α β => w α ⊗ₜ[ℚ] w β) = rk1 u := by ext; rfl
+    change ℓ (fun i => arrayEvaluation a i _, spatialMultiply _) = 0 at hp
+    simp only [h1, h2] at hp; rwa [hsplit] at hp
+  have hcancel (x : ℝ) : ∑ i, f i x = 0 := by
+    have hz : rk1 0 = 0 := by ext; simp [rk1]
+    simpa [hz] using heq x 0
   let K := 2 * s + 1
   let Colors := Fin s → ZMod K
-  have hK : 1 < K := by dsimp [K]; omega
   have hr : 2 ≤ Fintype.card Colors := by
     change 2 ≤ Fintype.card (Fin s → ZMod K)
     simp only [Fintype.card_fun, ZMod.card, Fintype.card_fin]
-    exact Nat.one_lt_pow (by omega) hK
-  obtain ⟨D, hD, hD'⟩ := hR (Fintype.card Colors) hr
-  let H : Fin s → Space D → ℝ := fun i z => ∑ j, f i (z j)
-  have hH (z : Space D) : ∑ i, H i z = 0 := by
-    simp only [H]
+    exact Nat.one_lt_pow (by omega) (by dsimp [K]; omega)
+  obtain ⟨D, _, hD'⟩ := hR (Fintype.card Colors) hr
+  let H (i : Fin s) (z : Space D) : ℝ := ∑ j, f i (z j)
+  let color (z : Space D) : Colors := fun i => (⌊(K : ℝ) / 2 * H i z⌋ : ZMod K)
+  obtain ⟨b, hb, k, hk⟩ := hD' fun z => Fintype.equivFin Colors (color z)
+  obtain ⟨Q, t, hQ⟩ : ∃ Q : Space d →ₗᵢ[ℝ] Space D, ∃ t : Space D, ∀ i, b i = t + Q (a i) := by
+    let x := fun i => a i - a i₀
+    let y := fun i => b i - b i₀
+    have hs' : Submodule.span ℝ (Set.range x) = ⊤ := by
+      have hv : vectorSpan ℝ (Set.range a) = ⊤ := by
+        simpa [direction_affineSpan] using congrArg AffineSubspace.direction hspan
+      rwa [vectorSpan_range_eq_span_range_vsub_right ℝ a i₀] at hv
+    have hg (i j : Fin s) : ⟪y i, y j⟫ = ⟪x i, x j⟫ := by
+      simp only [x, y, real_inner_eq_norm_mul_self_add_norm_mul_self_sub_norm_sub_mul_self_div_two,
+        sub_sub_sub_cancel_right, ← dist_eq_norm, hb i i₀, hb j i₀, hb i j]
+    let A := Fintype.linearCombination ℝ x
+    let B := Fintype.linearCombination ℝ y
+    have hnorm (c : Fin s → ℝ) : ‖B c‖ = ‖A c‖ := by
+      have hi : ⟪B c, B c⟫ = ⟪A c, A c⟫ := by
+        simp only [A, B, Fintype.linearCombination_apply, sum_inner, inner_sum,
+          real_inner_smul_left, inner_smul_right, hg]
+      rw [real_inner_self_eq_norm_sq, real_inner_self_eq_norm_sq] at hi
+      nlinarith [norm_nonneg (B c), norm_nonneg (A c)]
+    obtain ⟨R, hR⟩ := A.exists_rightInverse_of_surjective (by rwa [Fintype.range_linearCombination])
+    have hR' (z : Space d) : A (R z) = z := LinearMap.congr_fun hR z
+    let Q : Space d →ₗᵢ[ℝ] Space D := ⟨B.comp R, fun z => by change ‖B (R z)‖ = ‖z‖; rw [hnorm, hR']⟩
+    refine ⟨Q, b i₀ - Q (a i₀), fun i => ?_⟩
+    have hf : Q (x i) = y i := by
+      simpa [Q, A, B, sub_eq_zero] using norm_eq_zero.mp
+        (by rw [hnorm, map_sub, hR', sub_self, norm_zero] : ‖B (R (A (Pi.single i 1)) - Pi.single i 1)‖ = 0)
+    rw [map_sub] at hf
+    calc b i = y i + b i₀ := (sub_add_cancel _ _).symm
+      _ = (Q (a i) - Q (a i₀)) + b i₀ := by rw [hf]
+      _ = b i₀ - Q (a i₀) + Q (a i) := by abel
+  have hsum_neg1 : ∑ i, H i (b i) = -1 := by
+    simp only [H, hQ]
     rw [Finset.sum_comm]
-    simp only [hcancel, Finset.sum_const_zero]
-  let color : Space D → Colors := fun z i => (⌊(K : ℝ) / 2 * H i z⌋ : ZMod K)
-  obtain ⟨b, hb, k, hk⟩ := hD' (fun z => Fintype.equivFin Colors (color z))
-  have hmono : ∀ i, color (b i) = color (b ⟨0, hs⟩) := by
-    intro i
-    apply (Fintype.equivFin Colors).injective
-    exact (hk i).trans (hk ⟨0, hs⟩).symm
-  have hnot := floor_coloring_obstruction hs H hH b hmono
-  apply hnot
-  obtain ⟨Q, t, hQ⟩ := congruent_linearIsometry a b ⟨0, hs⟩ hspan hb
-  simp only [H, hQ]
-  exact separated_copy_sum a f L hL heq Q t
+    let row (j : Fin D) : Space d := WithLp.toLp 2 fun α => Q (EuclideanSpace.single α 1) j
+    have heach (j : Fin D) : (∑ i, f i ((t + Q (a i)) j)) = -L (rk1 (row j)) := by
+      apply eq_neg_of_add_eq_zero_left
+      convert heq (t j) (row j) using 2
+      refine Finset.sum_congr rfl fun i _ => congrArg (f i) ?_
+      have hx := congrArg (fun z : Space d => Q z j) ((EuclideanSpace.basisFun (Fin d) ℝ).sum_repr (a i))
+      simp only [PiLp.add_apply]; congr 1
+      simpa only [map_sum, map_smul, EuclideanSpace.basisFun_repr, EuclideanSpace.basisFun_apply,
+        WithLp.ofLp_sum, Finset.sum_apply, PiLp.smul_apply, smul_eq_mul, row, WithLp.ofLp_toLp] using hx.symm
+    have hrows : (∑ j : Fin D, rk1 (row j)) = (1 : Matrix (Fin d) (Fin d) ℝ) := by
+      ext α β
+      have hg := Q.inner_map_map (EuclideanSpace.single β 1) (EuclideanSpace.single α 1)
+      rw [EuclideanSpace.inner_single_right] at hg
+      rw [Matrix.sum_apply, Matrix.one_apply]
+      simpa only [rk1, row, WithLp.ofLp_toLp, PiLp.inner_apply, RCLike.inner_apply, conj_trivial,
+        map_one, one_mul, PiLp.single_apply] using hg
+    simp only [heach, Finset.sum_neg_distrib, ← map_sum, hrows]
+    exact congrArg Neg.neg hℓ1
+  have hmono (i : Fin s) : color (b i) i = color (b i₀) i :=
+    congrFun ((Fintype.equivFin Colors).injective ((hk i).trans (hk i₀).symm)) i
+  let x (i : Fin s) : ℝ := (K : ℝ) / 2 * H i (b i)
+  let y (i : Fin s) : ℝ := (K : ℝ) / 2 * H i (b i₀)
+  let fl (g : Fin s → ℝ) : ℤ := ∑ i, ⌊g i⌋
+  have hfl (g : Fin s → ℝ) : (∑ i, g i) - s < (fl g : ℝ) ∧ (fl g : ℝ) ≤ ∑ i, g i := by
+    have hlt := Finset.sum_lt_sum_of_nonempty ⟨i₀, Finset.mem_univ _⟩ fun i _ => Int.lt_floor_add_one (g i)
+    have hle := Finset.sum_le_sum (s := Finset.univ) fun i _ => Int.floor_le (g i)
+    simp only [Finset.sum_add_distrib, Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul, mul_one] at hlt
+    exact ⟨by dsimp [fl]; push_cast; linarith, by simpa only [fl, Int.cast_sum] using hle⟩
+  obtain ⟨hx1, hx2⟩ := hfl x; obtain ⟨hy1, hy2⟩ := hfl y
+  have hx_s : ∑ i, x i = -(K : ℝ) / 2 := by simp [x, ← Finset.mul_sum, hsum_neg1]; ring
+  have hy_s : ∑ i, y i = 0 := by
+    have hH0 : ∑ i, H i (b i₀) = 0 := by dsimp [H]; rw [Finset.sum_comm]; simp [hcancel]
+    simp [y, ← Finset.mul_sum, hH0]
+  rw [hx_s] at hx1 hx2; rw [hy_s] at hy1 hy2
+  have hdvd : (K : ℤ) ∣ fl y - fl x := (ZMod.intCast_eq_intCast_iff_dvd_sub _ _ K).mp <| by
+    simpa only [fl, Int.cast_sum] using Finset.sum_congr rfl fun i _ => hmono i
+  have hK_eq : (K : ℝ) = 2 * (s : ℝ) + 1 := by simp [K]
+  have hpos : (0 : ℤ) < fl y - fl x := by exact_mod_cast (by push_cast; linarith : (0 : ℝ) < (fl y - fl x : ℤ))
+  have hlt : fl y - fl x < (K : ℤ) := by exact_mod_cast (by push_cast; linarith : ((fl y - fl x : ℤ) : ℝ) < K)
+  exact not_le_of_gt hlt (Int.le_of_dvd hpos hdvd)
 
 end EuclideanRamsey
-
 end
-
 end OAI
