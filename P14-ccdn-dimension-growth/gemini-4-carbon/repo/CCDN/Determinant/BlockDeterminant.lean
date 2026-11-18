@@ -6,7 +6,6 @@ Authors: Jason Davies
 module
 
 public import ArithmeticHeights.BombieriVaaler
-import all ArithmeticHeights.BombieriVaaler
 import CCDN.ForMathlib.Matrix
 
 /-! Combining maximal-minor divisibility across row blocks. -/
@@ -152,15 +151,6 @@ private theorem residue_minor_divisors_dvd_det {c s : ℕ}
   intro i j
   exact hd i (e ∘ (Fintype.equivFin _).symm ∘ j)
 
-/-- `Int.Matrix.minorGcd` is the gcd of the Plücker coordinates of the rows. The vendored
-definition is not exposed; this module imports its body (`import all`) so that the rest of the
-library can rewrite with this lemma instead. -/
-theorem minorGcd_eq_gcd_plucker {ι : Type*} [Fintype ι] [LinearOrder ι] {m : ℕ}
-    (A : Matrix (Fin m) ι ℤ) :
-    Int.Matrix.minorGcd A = (univ : Finset (Set.powersetCard ι m)).gcd
-      (exteriorPower.plucker m A.row) := by
-  rw [Int.Matrix.minorGcd]
-
 /-- If each `d i` divides every maximal minor of the rows labelled `i`, then `∏ i, d i`
 divides the gcd of all maximal minors of the rectangular matrix, as required by the
 Bombieri--Vaaler bound. -/
@@ -168,15 +158,8 @@ private theorem residue_minor_divisors_dvd_minorGcd {c s N : ℕ}
     (A : Matrix (Fin s) (Fin N) ℤ) (label : Fin s → Fin c) (d : Fin c → ℤ)
     (hd : ∀ i, ∀ j : Fin (Fintype.card {j : Fin s // label j = i}) → Fin N,
       d i ∣ (A.submatrix (residueRows label i) j).det) :
-    (∏ i, d i) ∣ Int.Matrix.minorGcd A := by
-  classical
-  rw [minorGcd_eq_gcd_plucker]
-  apply Finset.dvd_gcd
-  intro S _
-  rw [Matrix.plucker_row_eq_det_submatrix]
-  apply residue_minor_divisors_dvd_det _ label d
-  intro i j
-  exact hd i _
+    (∏ i, d i) ∣ Int.Matrix.minorGcd A :=
+  Finset.dvd_gcd fun _ _ => residue_minor_divisors_dvd_det _ label d fun i _ => hd i _
 
 /-- If the rows of an integer matrix `A` are partitioned into blocks by `label`, and for each block
 `i` the power `p ^ e i` divides every maximal minor of the block's rows, then `p ^ (∑ i, e i)`

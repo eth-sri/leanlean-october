@@ -56,12 +56,6 @@ structure IsPointAuxiliary {σ R ι : Type*} [CommRing R] (f g : MvPolynomial σ
   /-- The auxiliary form is not a multiple of `f`. -/
   not_dvd : ¬ f ∣ g
 
-/-- Unbundled form of `CCDN.IsPointAuxiliary`. -/
-theorem isPointAuxiliary_iff {σ R ι : Type*} [CommRing R] {f g : MvPolynomial σ R} {M : ℕ}
-    {z : ι → σ → R} : IsPointAuxiliary f g M z ↔
-      g ≠ 0 ∧ g.IsHomogeneous M ∧ (∀ i, eval (z i) g = 0) ∧ ¬ f ∣ g :=
-  ⟨fun h => ⟨h.1, h.2, h.3, h.4⟩, fun h => ⟨h.1, h.2.1, h.2.2.1, h.2.2.2⟩⟩
-
 /-- If there is no auxiliary form of degree `M` through the points `z`, then every form of
 degree `M` vanishing at all of them is a multiple of `f`. This is the hypothesis under which the
 determinant method bounds the number of points. -/
@@ -72,22 +66,5 @@ theorem dvd_of_not_exists_isPointAuxiliary {σ R ι : Type*} [CommRing R]
   · simp [hg0]
   · by_contra hnd
     exact h ⟨g, hg0, hg, hz, hnd⟩
-
-/-- `g` is a projective auxiliary form of degree `M` for the integral form `f` at height `B`:
-a nonzero form of degree `M`, not a multiple of `f`, whose rational projective zero locus
-contains every rational projective zero of `f` of multiplicative height at most `B`. -/
-structure IsProjectiveAuxiliary {n : ℕ} (f g : MvPolynomial (Fin (n + 1)) ℤ) (M : ℕ) (B : ℝ) :
-    Prop where
-  /-- The auxiliary form is nonzero. -/
-  ne_zero : g ≠ 0
-  /-- The auxiliary form is homogeneous of degree `M`. -/
-  isHomogeneous : g.IsHomogeneous M
-  /-- The auxiliary form vanishes at every rational projective zero of `f` of multiplicative
-  height at most `B`. -/
-  vanishes : ∀ x : ProjectivePoint n, x.mulHeight ≤ B →
-    x ∈ projectiveZeroLocus (map (Int.castRingHom ℚ) f) →
-    x ∈ projectiveZeroLocus (map (Int.castRingHom ℚ) g)
-  /-- The auxiliary form is not a multiple of `f`. -/
-  not_dvd : ¬ f ∣ g
 
 end CCDN

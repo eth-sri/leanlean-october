@@ -78,22 +78,5 @@ theorem exists_integer_hypersurface_generators {p n : ℕ} [Fact p.Prime]
   obtain ⟨G, hG, hrep⟩ := lift_origin_truncation_generators f r g hg hs
   exact ⟨r, G, hr, hG, hrep⟩
 
-/-- The local generators are homogeneous integer polynomials. Their
-uniform reduction formula separates the defining equation, the origin-adic
-error, and the p-divisible error. -/
-theorem exists_integer_origin_generators {p μ : ℕ} [Fact p.Prime]
-    (f : MvPolynomial (Fin 2) ℤ)
-    (hf : map (Int.castRingHom (ZMod p)) f ∈ idealOfVars (Fin 2) (ZMod p) ^ μ)
-    (hμ : homogeneousComponent μ (map (Int.castRingHom (ZMod p)) f) ≠ 0) :
-    ∃ (r : ℕ → ℕ) (g : (k : ℕ) → Fin (r k) → MvPolynomial (Fin 2) ℤ),
-      (∀ k, r k ≤ μ) ∧ (∀ k j, (g k j).IsHomogeneous k) ∧
-      ∀ N u, ∃ (c : (k : Fin N) → Fin (r k.val) → ℤ) (h v w : MvPolynomial (Fin 2) ℤ),
-        v ∈ idealOfVars (Fin 2) ℤ ^ N ∧
-        u - ∑ k : Fin N, ∑ j, c k j • g k.val j = f * h + v + C (p : ℤ) * w := by
-  obtain ⟨r, g, hr, hg, hs⟩ :=
-    exists_plane_truncation_generators (map (Int.castRingHom (ZMod p)) f) hf hμ
-  obtain ⟨G, hG, hrep⟩ := lift_origin_truncation_generators f r g hg hs
-  exact ⟨r, G, hr, hG, hrep⟩
-
 end
 end CCDN

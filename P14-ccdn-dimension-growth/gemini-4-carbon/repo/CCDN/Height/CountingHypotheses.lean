@@ -47,26 +47,6 @@ structure IsBoxZeroFamily {n : ℕ} {ι : Type*} (f : MvPolynomial (Fin n) ℤ) 
   /-- Every point `z i` lies in the box of radius `B`. -/
   abs_le : ∀ i, InBox (z i) B
 
-/-- The points `z i` are primitive integral zeros of `f` lying in the box of radius `B ≥ 1`;
-for a form `f` these are the reduced representatives of rational projective zeros of `f`. -/
-structure IsPrimitiveBoxZeroFamily {n : ℕ} {ι : Type*} (f : MvPolynomial (Fin n) ℤ) (B : ℝ)
-    (z : ι → IntPoint n) : Prop extends IsBoxZeroFamily f B z where
-  /-- The coordinates of every point `z i` have gcd `1`. -/
-  primitive : ∀ i, Finset.univ.gcd (z i) = 1
-
-/-- The integral affine plane equation `q` has total degree `d`, is irreducible over the
-field `F`, and all its coefficients are bounded in absolute value by `H ≥ 1`. -/
-structure IsBoundedPlaneCurve (F : Type*) [Field F] (q : MvPolynomial (Fin 2) ℤ) (d : ℕ)
-    (H : ℝ) : Prop where
-  /-- The polynomial `q` has total degree `d`. -/
-  totalDegree_eq : q.totalDegree = d
-  /-- The image of `q` over `F` is irreducible. -/
-  irreducible : Irreducible (map (Int.castRingHom F) q)
-  /-- The coefficient bound `H` is at least `1`. -/
-  one_le_height : 1 ≤ H
-  /-- Every coefficient of `q` has absolute value at most `H`. -/
-  coeff_le : CoefficientHeightLE q H
-
 /-- The input of the determinant method: forms `F j` of degree `M`, primitive integral zeros
 `z i` of `f`, and an evaluation matrix `(F j (z i))` whose rows are linearly independent over
 `ℚ`, so that it has a nonzero maximal minor. -/

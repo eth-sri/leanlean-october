@@ -190,19 +190,6 @@ lemma affineChart_eval {K : Type*} [CommRing K] {n : ℕ}
     refine Fin.cases ?_ (fun j => ?_) i <;> simp
   rw [he]
 
-/-- Evaluating the affine chart of `f` at `a` through `φ` is evaluating `f` at `Fin.cons 1 a`
-through `φ`. -/
-lemma eval₂_affineChart {K R : Type*} [CommRing K] [CommRing R] {n : ℕ} (φ : K →+* R)
-    (a : Fin n → R) (f : MvPolynomial (Fin (n + 1)) K) :
-    eval₂ φ a (affineChart n f) = eval₂ φ (Fin.cons 1 a) f := by
-  induction f using MvPolynomial.induction_on with
-  | C c => simp only [affineChart, eval₂Hom_C, eval₂_C]
-  | add f g hf hg => simp only [map_add, eval₂_add, hf, hg]
-  | mul_X f j hf =>
-    rw [map_mul, eval₂_mul, eval₂_mul, hf]
-    congr 1
-    refine Fin.cases ?_ (fun k => ?_) j <;> simp [affineChart]
-
 /-- Divisibility of affine charts lifts to homogeneous divisibility when the
 first equation retains its degree on the chart. -/
 theorem homogeneous_dvd_of_affineChart_dvd {K : Type*} [CommRing K] [IsDomain K]
@@ -232,24 +219,6 @@ theorem homogeneous_dvd_of_affineChart_dvd {K : Type*} [CommRing K] [IsDomain K]
       hf.mul (scaledHomogenize_homogeneous 1 q (show q.totalDegree ≤ M - d by omega))
   · rw [map_mul, affineChart_scaledHomogenize_one]
     exact hq
-
-/-- Let `f` be a primitive integer homogeneous polynomial of degree `d` whose affine chart
-`x₀ = 1` still has degree `d`. If `f` does not divide the homogeneous polynomial `g`, then over
-`ℚ` the affine chart of `f` does not divide the affine chart of `g`. -/
-theorem rational_affineChart_not_dvd {n d M : ℕ} {f g : MvPolynomial (Fin (n + 1)) ℤ}
-    (hf : f.IsHomogeneous d) (hf0 : f ≠ 0) (hg : g.IsHomogeneous M)
-    (hprim : PrimitiveIntegerPolynomial f) (hdchart : (affineChart n f).totalDegree = d)
-    (hnd : ¬ f ∣ g) :
-    ¬ MvPolynomial.map (Int.castRingHom ℚ) (affineChart n f) ∣
-      MvPolynomial.map (Int.castRingHom ℚ) (affineChart n g) := by
-  intro hdiv
-  rw [← affineChart_map, ← affineChart_map] at hdiv
-  apply hnd
-  apply hprim.rational_map_dvd_iff.mp
-  apply homogeneous_dvd_of_affineChart_dvd (hf.map _) ?_ (hg.map _) ?_ hdiv
-  · exact fun he => hf0 ((map_injective (Int.castRingHom ℚ) Int.cast_injective) (by simpa using he))
-  · rw [affineChart_map]
-    exact (totalDegree_map_of_injective (RingHom.injective_int _) _).trans hdchart
 
 end
 end CCDN

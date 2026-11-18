@@ -5,102 +5,132 @@ Authors: Jason Davies
 -/
 module
 
-public import CCDN.Plane.ProjectivePlaneAbsoluteCount
+public import CCDN.Algebra.ProjectiveSection
+public import CCDN.AuxiliaryPolynomial.HypersurfaceAuxiliaryTheorem
+public import CCDN.Height.ProjectiveZeroLocus
+import CCDN.Algebra.IntegerRationalIrreducibility
 import CCDN.Algebra.PrimitiveNormalization
-import CCDN.ForMathlib.SchwartzZippel
-import CCDN.Plane.ProjectivePlaneNonabsoluteCount
+import CCDN.Plane.ProjectivePlaneBezout
 
-/-! The elementary linear case completes the uniform plane-equation
-bound in every positive degree. -/
+/-! Uniform CCDN Theorem 2 for rational projective plane equations in every positive degree,
+obtained from the `n = 0` specialization of `hypersurface_projective_auxiliary` and Bézout. -/
 
 @[expose] public section
 namespace CCDN
 noncomputable section
 open MvPolynomial
 
-private lemma integer_ternary_zero_box_card_le (f : MvPolynomial (Fin 3) ℤ) (hf : f ≠ 0)
-    {B : ℝ} (hB : 1 ≤ B) :
-    (((integerBox 3 B).filter (fun x => eval x f = 0)).card : ℝ) ≤
-      f.totalDegree * (3 * B) ^ 2 := by
-  classical
-  let S := Finset.Icc (-⌊B⌋) ⌊B⌋
-  have hfloor : 0 ≤ ⌊B⌋ := Int.floor_nonneg.mpr (by linarith)
-  have hSne : S.Nonempty := ⟨0, Finset.mem_Icc.mpr ⟨by omega, hfloor⟩⟩
-  have hSpos : (0 : ℝ) < S.card := by exact_mod_cast Finset.card_pos.mpr hSne
-  have h : ((integerBox 3 B).filter (fun x => eval x f = 0)).card * S.card ≤
-      f.totalDegree * S.card ^ 3 := by
-    simpa only [integerBox, S, Fintype.card_fin] using schwartz_zippel_totalDegree_card hf S
-  have hcard : (((integerBox 3 B).filter (fun x => eval x f = 0)).card : ℝ) ≤
-      f.totalDegree * (S.card : ℝ) ^ 2 := by
-    refine le_of_mul_le_mul_right ?_ hSpos
-    rw [mul_assoc, ← pow_succ]
-    exact_mod_cast h
-  have hScard : (S.card : ℝ) ≤ 3 * B := by
-    dsimp only [S]
-    rw [Int.card_Icc]
-    rw [← Int.cast_natCast, Int.toNat_of_nonneg (by omega)]
-    push_cast
-    have hh := Int.floor_le B
-    linarith
-  exact hcard.trans (mul_le_mul_of_nonneg_left
-    (pow_le_pow_left₀ hSpos.le hScard 2) (by positivity))
+/-- Explicit constant for the uniform projective plane curve bound. -/
+def projectivePlaneAbsoluteConstant : ℝ :=
+  hypersurfaceAbsoluteAuxiliaryConstant 0 *
+    (Real.exp (2 * mertensError + 1) * hypersurfaceHeightConstant 3 + 2)
 
-private theorem projective_plane_linear_count
-    (f : MvPolynomial (Fin 3) ℚ) (hf : f.IsHomogeneous 1) (hf0 : f ≠ 0)
-    {B : ℝ} (hB : 1 ≤ B) :
-    (projectiveCount (projectiveZeroLocus f) B : ℝ) ≤ 9 * B ^ 2 := by
-  classical
-  obtain ⟨g, a, _, ha, he⟩ := exists_primitive_integer_model f hf0
-  have hgh := rational_scalar_model_homogeneous he hf
-  have hg0 : g ≠ 0 := by
-    intro h
-    have hzero : C a * f = 0 := by simpa [h] using he.symm
-    exact mul_ne_zero (C_eq_zero.not.mpr ha) hf0 hzero
-  have hzero : projectiveZeroLocus (map (Int.castRingHom ℚ) g) = projectiveZeroLocus f := by
-    ext x
-    exact rational_scalar_model_zero_iff ha he x.rep
-  rw [← hzero]
-  apply projective_zero_count_le_of_family_bound g hgh
-  intro t z hz0 hinj _ hz hbox
-  let T := (integerBox 3 B).filter (fun x => eval x g = 0)
-  let ψ : Fin t → T := fun i => ⟨z i, Finset.mem_filter.mpr ⟨mem_integerBox.mpr (hbox i), hz i⟩⟩
-  have hψ : Function.Injective ψ := by
-    intro i j heq
-    have hzi : z i = z j := congrArg Subtype.val heq
-    apply hinj
-    apply (Projectivization.mk_eq_mk_iff' ℚ _ _ _ _).mpr
-    exact ⟨1, by simp [hzi]⟩
-  have hc := Fintype.card_le_of_injective ψ hψ
-  have hcR : (t : ℝ) ≤ T.card := by
-    exact_mod_cast (show t ≤ T.card by simpa only [Fintype.card_fin, Fintype.card_coe] using hc)
-  have hb := integer_ternary_zero_box_card_le g hg0 hB
-  rw [hgh.totalDegree hg0] at hb
-  have hh := hcR.trans hb
-  convert hh using 1
-  norm_num
-  ring
+/-- The constant `projectivePlaneAbsoluteConstant` is positive. -/
+lemma projectivePlaneAbsoluteConstant_pos : 0 < projectivePlaneAbsoluteConstant := by
+  unfold projectivePlaneAbsoluteConstant
+  have := hypersurfaceAbsoluteAuxiliaryConstant_pos 0
+  have := zero_lt_one.trans_le (hypersurfaceHeightConstant_one_le 3)
+  positivity
+
+private lemma auxDegreeBound_zero_le {d : ℕ} (hd : 0 < d) (g : MvPolynomial (Fin 3) ℤ)
+    (hgd : g.totalDegree = d) (hg0 : g ≠ 0) {B : ℝ} (hB : 1 ≤ B) :
+    hypersurfaceAuxiliaryDegreeBound 0 d B (hypersurfaceBadPrimeFactor g)
+      (integerCoefficientHeight g) ≤
+      projectivePlaneAbsoluteConstant * (d : ℝ) ^ 3 * B ^ (2 / (d : ℝ)) := by
+  have hd1 : (1 : ℝ) ≤ d := by exact_mod_cast hd
+  have hd0 : (0 : ℝ) < d := zero_lt_one.trans_le hd1
+  have hB0 : 0 < B := zero_lt_one.trans_le hB
+  set H : ℝ := (integerCoefficientHeight g : ℝ)
+  have hH1 : 1 ≤ H := by
+    dsimp only [H]
+    exact_mod_cast Nat.one_le_iff_ne_zero.mpr (integerCoefficientHeight_pos g hg0).ne'
+  have hH0 : 0 < H := zero_lt_one.trans_le hH1
+  set K₀ : ℝ := Real.exp (2 * mertensError + 1) * hypersurfaceHeightConstant 3
+  have hK₀ : 0 < K₀ := by
+    dsimp only [K₀]
+    have := zero_lt_one.trans_le (hypersurfaceHeightConstant_one_le 3)
+    positivity
+  have hb := hypersurfaceBadPrimeFactor_le_height g H hH1
+    (coefficient_abs_le_integerCoefficientHeight g)
+  rw [hgd] at hb
+  set u := H ^ (1 / (d : ℝ) ^ 2)
+  have hu0 : 0 < u := Real.rpow_pos_of_pos hH0 _
+  have hratio : (1 + Real.log H / (d : ℝ) ^ 2) / u ≤ 1 := by
+    rw [div_le_one hu0]
+    have hl : Real.log u = Real.log H / (d : ℝ) ^ 2 := by
+      rw [Real.log_rpow hH0]; ring
+    linarith [Real.log_le_sub_one_of_pos hu0]
+  have hBpow : 1 ≤ B ^ (2 / (d : ℝ)) := Real.one_le_rpow hB (by positivity)
+  have hmain : auxMainTerm 0 d B (hypersurfaceBadPrimeFactor g) H ≤
+      K₀ * (d : ℝ) ^ 3 * B ^ (2 / (d : ℝ)) := by
+    unfold auxMainTerm boxExponent heightExponent degreeRoot
+    norm_num only [Nat.cast_zero, zero_add, div_one, Real.rpow_one, one_mul,
+      show (4 - 1 : ℝ) = 3 by norm_num, Real.rpow_ofNat]
+    rw [show 1 / ((d : ℝ) * d) = 1 / (d : ℝ) ^ 2 by ring]
+    change (d : ℝ) ^ 3 * hypersurfaceBadPrimeFactor g * B ^ (2 / (d : ℝ)) / u ≤ _
+    calc (d : ℝ) ^ 3 * hypersurfaceBadPrimeFactor g * B ^ (2 / (d : ℝ)) / u
+        ≤ (d : ℝ) ^ 3 * (K₀ * (1 + Real.log H / (d : ℝ) ^ 2)) * B ^ (2 / (d : ℝ)) / u := by
+          gcongr
+      _ = K₀ * (d : ℝ) ^ 3 * B ^ (2 / (d : ℝ)) * ((1 + Real.log H / (d : ℝ) ^ 2) / u) := by ring
+      _ ≤ K₀ * (d : ℝ) ^ 3 * B ^ (2 / (d : ℝ)) * 1 := by gcongr
+      _ = _ := mul_one _
+  have hlogB : Real.log B ≤ (d : ℝ) ^ 3 * B ^ (2 / (d : ℝ)) := by
+    have h1 : Real.log (B ^ (2 / (d : ℝ))) = 2 / (d : ℝ) * Real.log B := Real.log_rpow hB0 _
+    have h2 : Real.log (B ^ (2 / (d : ℝ))) ≤ B ^ (2 / (d : ℝ)) :=
+      Real.log_le_self (by positivity)
+    rw [h1, div_mul_eq_mul_div, div_le_iff₀ hd0] at h2
+    have hd3 : (d : ℝ) ≤ 2 * (d : ℝ) ^ 3 := by
+      have : (d : ℝ) ≤ (d : ℝ) ^ 3 := by
+        simpa only [pow_one] using pow_le_pow_right₀ hd1 (by omega : 1 ≤ 3)
+      linarith
+    have hm := mul_le_mul_of_nonneg_left h2 (by norm_num : (0 : ℝ) ≤ 1 / 2)
+    have hm2 := mul_le_mul_of_nonneg_right hd3 (show 0 ≤ B ^ (2 / (d : ℝ)) by positivity)
+    nlinarith
+  have hd3B : (d : ℝ) ^ 3 ≤ (d : ℝ) ^ 3 * B ^ (2 / (d : ℝ)) :=
+    le_mul_of_one_le_right (by positivity) hBpow
+  unfold hypersurfaceAuxiliaryDegreeBound auxDegreeBound projectivePlaneAbsoluteConstant
+  norm_num only [Nat.cast_zero, zero_add, div_one, sub_self, Real.rpow_zero, one_mul,
+    show (4 - 1 : ℝ) = 3 by norm_num, Real.rpow_ofNat]
+  have hsum : auxMainTerm 0 d B (hypersurfaceBadPrimeFactor g) H + Real.log B + (d : ℝ) ^ 3 ≤
+      (K₀ + 2) * (d : ℝ) ^ 3 * B ^ (2 / (d : ℝ)) := by
+    dsimp only [K₀] at hmain ⊢; linarith
+  exact (mul_le_mul_of_nonneg_left hsum (hypersurfaceAbsoluteAuxiliaryConstant_pos 0).le).trans_eq
+    (by dsimp only [K₀]; ring)
 
 /-- Uniform CCDN Theorem 2 for rational projective plane equations,
-in every positive degree and for every real B >= 1. -/
+in every positive degree and for every real `B ≥ 1`. -/
 theorem projective_plane_equation_bound {d : ℕ}
     (f : MvPolynomial (Fin 3) ℚ) (hf : f.IsHomogeneous d) (hd : 0 < d)
     (hir : Irreducible f) {B : ℝ} (hB : 1 ≤ B) :
     (projectiveCount (projectiveZeroLocus f) B : ℝ) ≤
       projectivePlaneAbsoluteConstant * (d : ℝ) ^ 4 * B ^ (2 / (d : ℝ)) := by
-  by_cases hd1 : d = 1
-  · subst d
-    have h := projective_plane_linear_count f hf hir.ne_zero hB
-    have hC : 9 ≤ projectivePlaneAbsoluteConstant := by
-      unfold projectivePlaneAbsoluteConstant
-      have hpos := Real.exp_pos
-        (heightDeterminantError projectivePlaneDeterminantConstant + 20)
-      have hpos' : 0 ≤
-          2 * Real.exp (heightDeterminantError projectivePlaneDeterminantConstant + 23) *
-            Real.exp 14 * Real.exp 2 := by positivity
-      linarith
-    norm_num only [Nat.cast_one, one_pow, mul_one, div_one, Real.rpow_two]
-    exact h.trans (mul_le_mul_of_nonneg_right hC (sq_nonneg B))
-  · exact projective_plane_rational_count f hf (by omega) hir hB
+  classical
+  obtain ⟨g₀, a, hprim, ha, he⟩ := exists_primitive_integer_model f hir.ne_zero
+  have hgh := rational_scalar_model_homogeneous he hf
+  have hg0_irQ : Irreducible (map (Int.castRingHom ℚ) g₀) := by
+    rw [he]
+    exact (irreducible_isUnit_mul ((isUnit_iff_ne_zero.mpr ha).map C)).mpr hir
+  have hgir : Irreducible g₀ := hprim.irreducible_of_rational_map hg0_irQ
+  have hgd : g₀.totalDegree = d := hgh.totalDegree hgir.ne_zero
+  have hzero : projectiveZeroLocus (map (Int.castRingHom ℚ) g₀) = projectiveZeroLocus f :=
+    Set.ext fun x => rational_scalar_model_zero_iff ha he x.rep
+  obtain ⟨M, hM, G, _, hGhom, hGzero, hGnd⟩ :=
+    hypersurface_projective_auxiliary g₀ hgh hd hgir hB
+  have hndQ : ¬ map (Int.castRingHom ℚ) g₀ ∣ map (Int.castRingHom ℚ) G :=
+    fun h => hGnd (hprim.rational_map_dvd_iff.mp h)
+  let S := projectivePoints (projectiveZeroLocus (map (Int.castRingHom ℚ) g₀)) B
+  have hbez := projective_plane_common_zeros_card_le (map (Int.castRingHom ℚ) g₀)
+    (map (Int.castRingHom ℚ) G) (hgh.map _) hg0_irQ (hGhom.map _) hndQ
+    (fun x : S => x.val) Subtype.val_injective
+    (fun x => (mem_projectivePoints.mp x.property).2)
+    (fun x => hGzero x.val (mem_projectivePoints.mp x.property).1
+      (mem_projectivePoints.mp x.property).2)
+  rw [Fintype.card_coe] at hbez
+  rw [← hzero]
+  have hcard : (projectiveCount (projectiveZeroLocus (map (Int.castRingHom ℚ) g₀)) B : ℝ) ≤
+      (d : ℝ) * M := by exact_mod_cast hbez
+  have hM' := hM.trans (auxDegreeBound_zero_le hd g₀ hgd hgir.ne_zero hB)
+  exact (hcard.trans (mul_le_mul_of_nonneg_left hM' (Nat.cast_nonneg _))).trans_eq (by ring)
 
 end
 end CCDN

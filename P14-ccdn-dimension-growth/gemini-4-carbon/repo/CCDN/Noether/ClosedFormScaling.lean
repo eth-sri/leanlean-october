@@ -184,21 +184,6 @@ lemma bivariate_monic_normalize {F : Type*} [Field F]
   change (C (C a⁻¹) * f).leadingCoeff = 1
   rw [leadingCoeff_mul, leadingCoeff_C, hl, ← map_mul, inv_mul_cancel₀ ha, map_one]
 
-/-- Over an algebraically closed field of characteristic zero, an irreducible `f` of outer degree
-`d` whose outer leading coefficient is a nonzero constant has closed-form coefficient matrix of
-rank at least `2 * d ^ 2 - 1`; the equation need not be monic. -/
-theorem closedForm_rank_lower_of_constant_leading
-    {F : Type*} [Field F] [CharZero F] [IsAlgClosed F]
-    (d : ℕ) (a : F) (ha : a ≠ 0) (f : F[X][X])
-    (hl : f.leadingCoeff = C a) (hf : Irreducible f) (hdeg : f.natDegree = d) :
-    2 * d ^ 2 ≤ (closedFormCoefficientMatrix d f).rank + 1 := by
-  have hm := bivariate_monic_normalize a ha f hl
-  have hi := (bivariate_irreducible_smul_iff a⁻¹ (inv_ne_zero ha) f).mpr hf
-  have hd : (a⁻¹ • f).degree = d := by
-    rw [degree_eq_natDegree hm.ne_zero, natDegree_smul f (inv_ne_zero ha), hdeg]
-  have hr := closedForm_coefficient_rank_lower d _ hi hm hd _ le_rfl (.of_charZero _)
-  rwa [closedForm_rank_smul _ (inv_ne_zero ha)] at hr
-
 /-- A reducible `f` of outer degree and total degree `d`, whose outer leading coefficient is a
 nonzero constant, has closed-form coefficient matrix of rank at most `2 * d ^ 2 - 2`, in
 characteristic zero or greater than `d`. -/

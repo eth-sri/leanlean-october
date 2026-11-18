@@ -1,145 +1,106 @@
-/-
-Copyright (c) 2026 Jason Davies. All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Jason Davies
--/
 module
 
 public import CCDN.Algebra.HomogeneousSlice
-public import CCDN.AuxiliaryPolynomial.AbsoluteAuxiliary
-public import CCDN.AuxiliaryPolynomial.HypersurfaceBadPrimeFactor
-import CCDN.Algebra.IntegerRationalIrreducibility
-import CCDN.Algebra.ScaledHypersurfaceModel
-import CCDN.AuxiliaryPolynomial.HypersurfaceAuxiliaryTheorem
-import CCDN.AuxiliaryPolynomial.HypersurfaceCoefficientDichotomy
-import CCDN.ForMathlib.MvPolynomial
-import CCDN.Height.ProjectiveIntegerHeight
-import CCDN.Plane.UnscaledModelCount
-
-/-! The ordinary homogenization provides an affine auxiliary without a
-scaling-prime hypothesis and transfers the coefficient-height dichotomy. -/
+public import CCDN.AuxiliaryPolynomial.Nonmultiple
+public import CCDN.Height.IntegerCoefficientHeight
+import ArithmeticHeights.BombieriVaaler
+import CCDN.Algebra.HomogeneousEvaluation
+import CCDN.Algebra.HomogeneousMonomials
+import CCDN.Algebra.HomogeneousRank
+import CCDN.Algebra.PrimitiveNormalization
+import CCDN.Algebra.RowSelection
+import CCDN.AuxiliaryPolynomial.CoefficientBound
+import CCDN.Determinant.HomogeneousDeterminantComparison
 
 @[expose] public section
 namespace CCDN
 noncomputable section
-open MvPolynomial
+open MvPolynomial Matrix
 
-/-- The ordinary homogenization (scaling factor one) of an integer polynomial has the same
-coefficient height as the polynomial. -/
 lemma integerCoefficientHeight_scaledHomogenize_one {n : ℕ} (d : ℕ)
     (f : MvPolynomial (Fin n) ℤ) :
     integerCoefficientHeight (scaledHomogenize d 1 f) = integerCoefficientHeight f := by
   classical
   have hupper : (integerCoefficientHeight (scaledHomogenize d 1 f) : ℝ) ≤
       integerCoefficientHeight f := by
-    apply integerCoefficientHeight_le _ (Nat.cast_nonneg _)
-    intro m
+    refine integerCoefficientHeight_le _ (Nat.cast_nonneg _) fun m => ?_
     by_cases hm : ∃ k, homogenizedExponent d k = m
     · obtain ⟨k, rfl⟩ := hm
       simpa only [scaledHomogenize_coefficient, one_pow, one_mul] using
         coefficient_abs_le_integerCoefficientHeight f k
     · have hz : (scaledHomogenize d 1 f).coeff m = 0 := by
         simp only [scaledHomogenize, coeff_sum]
-        apply Finset.sum_eq_zero
-        intro k _
-        simp only [coeff_monomial, ite_eq_right (fun h => hm ⟨k, h⟩)]
-      rw [hz, Int.cast_zero, abs_zero]
-      positivity
+        exact Finset.sum_eq_zero fun k _ => by
+          simp only [coeff_monomial, ite_eq_right fun h => hm ⟨k, h⟩]
+      simp [hz]
   have hlower : (integerCoefficientHeight f : ℝ) ≤
-      integerCoefficientHeight (scaledHomogenize d 1 f) := by
-    apply integerCoefficientHeight_le _ (Nat.cast_nonneg _)
-    intro m
-    simpa only [scaledHomogenize_coefficient, one_pow, one_mul] using
-      coefficient_abs_le_integerCoefficientHeight (scaledHomogenize d 1 f)
-        (homogenizedExponent d m)
+      integerCoefficientHeight (scaledHomogenize d 1 f) :=
+    integerCoefficientHeight_le _ (Nat.cast_nonneg _) fun m => by
+      simpa only [scaledHomogenize_coefficient, one_pow, one_mul] using
+        coefficient_abs_le_integerCoefficientHeight (scaledHomogenize d 1 f)
+          (homogenizedExponent d m)
   exact_mod_cast le_antisymm hupper hlower
 
-private lemma scaledHomogenize_one_integer_irreducible {n : ℕ}
-    (f : MvPolynomial (Fin n) ℤ) (hprim : PrimitiveIntegerPolynomial f)
-    (hir : Irreducible f) (hd : 0 < f.totalDegree) :
-    Irreducible (scaledHomogenize f.totalDegree 1 f) := by
-  apply (hprim.scaledHomogenize_one _).irreducible_of_rational_map
-  rw [scaledHomogenize_map]
-  have hdeg : (map (Int.castRingHom ℚ) f).totalDegree = f.totalDegree :=
-      totalDegree_map_of_injective Int.cast_injective _
-  rw [← hdeg]
-  exact scaledHomogenize_irreducible _ (rational_map_irreducible_of_integer f hir hd)
-    (by simp)
+private lemma homogeneous_no_auxiliary_coefficient_height {n d t : ℕ}
+    (f : MvPolynomial (Fin (n + 1)) ℤ) (hf : f.IsHomogeneous d) (hf0 : f ≠ 0)
+    (z : Fin t → IntPoint (n + 1)) (hz : ∀ i, eval (z i) f = 0)
+    {B : ℝ} (hB : 1 ≤ B) (hbox : ∀ i, InBox (z i) B)
+    (hrel : ∀ g : MvPolynomial (Fin (n + 1)) ℤ, g.IsHomogeneous d →
+      (∀ i, eval (z i) g = 0) → f ∣ g) :
+    Real.log (integerCoefficientHeight f : ℝ) ≤
+      ((n + d).choose d : ℝ) * Real.log ((n + d).choose d) +
+        ((n + d).choose d : ℝ) * d * Real.log B := by
+  classical
+  obtain ⟨s, a, ha, hli, hspan, hs⟩ :=
+    homogeneous_independent_evaluation_rows f hf hf0 le_rfl z hz
+  let mon := homogeneousMonomials n d
+  let A := evaluationMatrix mon (z ∘ a)
+  let N := (n + d).choose d
+  obtain ⟨v, hv, hAv, hsmall⟩ :=
+    Int.Matrix.exists_ne_zero_mulVec_eq_zero_iSup_abs_le_det_rpow A hli (by simpa using hs)
+  simp only [Fintype.card_fin] at hsmall
+  let g := polynomialOfCoefficients mon v
+  have hg0 : g ≠ 0 := polynomialOfCoefficients_ne_zero mon (homogeneousMonomials_injective n d) hv
+  have hgh : g.IsHomogeneous d := polynomialOfCoefficients_homogeneous n d v
+  have hgz (i) : eval (z i) g = 0 :=
+    vanishes_of_evaluation_row_mem_span mon (z ∘ a) v hAv (z i)
+      (hspan ▸ Submodule.subset_span ⟨i, rfl⟩)
+  have hD1 : (1 : ℝ) ≤ (Int.Matrix.minorGcd A : ℝ) := mod_cast Int.Matrix.one_le_minorGcd hli
+  have hD0 : (0 : ℝ) < (Int.Matrix.minorGcd A : ℝ) := by linarith
+  let R := (Real.sqrt (((A * Aᵀ).det : ℤ) : ℝ) / (Int.Matrix.minorGcd A : ℝ)) ^ (((N : ℝ) - s)⁻¹)
+  have hR0 : 0 ≤ R := Real.rpow_nonneg (div_nonneg (Real.sqrt_nonneg _) hD0.le) _
+  have hc : CoefficientHeightLE g R :=
+    abs_coefficient_polynomialOfCoefficients_le mon (homogeneousMonomials_injective n d) v hR0
+      fun j => (show |(v j : ℝ)| ≤ ((⨆ k, |v k| : ℤ) : ℝ) from
+        mod_cast le_ciSup (Set.finite_range fun k => |v k|).bddAbove j).trans hsmall
+  obtain ⟨q, hfq⟩ := hrel g hgh hgz
+  have hq0 : q ≠ 0 := fun h => hg0 (by simp [hfq, h])
+  have hqdeg : q.totalDegree = 0 := by
+    have hh := totalDegree_mul_of_isDomain hf0 hq0
+    rw [← hfq, hf.totalDegree hf0, hgh.totalDegree hg0] at hh; omega
+  have hqC := totalDegree_eq_zero_iff_eq_C.mp hqdeg
+  have hqc0 : q.coeff 0 ≠ 0 := fun h => hq0 (by simpa [h] using hqC)
+  have hHb : (integerCoefficientHeight f : ℝ) ≤ R := integerCoefficientHeight_le f hR0 fun m =>
+    (integer_scalar_factor_coefficient_bound hqc0
+      ((hfq.trans (congrArg (f * ·) hqC)).trans (mul_comm _ _)) m).trans (hc m)
+  have hH1 : (1 : ℝ) ≤ integerCoefficientHeight f := mod_cast integerCoefficientHeight_pos f hf0
+  let H := (integerCoefficientHeight f : ℝ)
+  have hNs : (1 : ℝ) ≤ (N : ℝ) - s := by
+    have : (s : ℝ) + 1 ≤ N := mod_cast hs; linarith
+  obtain ⟨hGram, _⟩ := log_gcd_le_of_coefficient_bound (by linarith : 0 < H) hD0 (by linarith) hHb
+  have hN : 0 < N := lt_of_le_of_lt (Nat.zero_le s) hs
+  have harch := evaluation_log_gram_le hN mon (z ∘ a) hB (fun i j => hbox (a i) j)
+    (fun j => (homogeneousMonomials_degree n d j).le) hGram
+  have hlogfact : Real.log (s.factorial : ℝ) ≤ (s : ℝ) * Real.log (N : ℝ) := by
+    rw [← Real.log_pow]
+    exact Real.log_le_log (mod_cast Nat.factorial_pos s)
+      (mod_cast (Nat.factorial_le_pow s).trans (Nat.pow_le_pow_left hs.le s))
+  have hsN : (s : ℝ) ≤ N := mod_cast hs.le
+  nlinarith [mul_le_mul_of_nonneg_right hNs (Real.log_nonneg hH1),
+    Real.log_nonneg hD1,
+    mul_le_mul_of_nonneg_right hsN (Real.log_nonneg (mod_cast hN : (1 : ℝ) ≤ N)),
+    mul_le_mul_of_nonneg_right hsN (mul_nonneg (Nat.cast_nonneg (α := ℝ) d) (Real.log_nonneg hB))]
 
-/-- If a form `G` is not divisible by the ordinary homogenization of a nonzero primitive integer
-polynomial `f`, then its dehomogenization at `x₀ = 1` is not divisible by `f`. -/
-lemma unscaled_auxiliary_not_dvd {n M : ℕ}
-    (f : MvPolynomial (Fin n) ℤ) (hf0 : f ≠ 0) (hprim : PrimitiveIntegerPolynomial f)
-    (G : MvPolynomial (Fin (n + 1)) ℤ) (hGhom : G.IsHomogeneous M)
-    (hGnd : ¬ scaledHomogenize f.totalDegree 1 f ∣ G) :
-    ¬ f ∣ homogeneousSlice n 1 G := by
-  have hslice : homogeneousSlice n 1 (scaledHomogenize f.totalDegree 1 f) = f := by
-    simp only [homogeneousSlice_scaledHomogenize 1 f le_rfl, one_pow, map_one, one_mul]
-  have hndQ := rational_homogeneousSlice_not_dvd one_ne_zero
-    (scaledHomogenize_homogeneous 1 f le_rfl) (scaledHomogenize_ne_zero _ one_ne_zero hf0)
-    hGhom (hprim.scaledHomogenize_one _) (by rw [hslice]) hGnd
-  rw [hslice] at hndQ
-  exact fun h => hndQ (map_dvd (map (Int.castRingHom ℚ)) h)
-
-private lemma unscaled_auxiliary_vanishes {n M : ℕ}
-    (f : MvPolynomial (Fin n) ℤ) (G : MvPolynomial (Fin (n + 1)) ℤ)
-    (hGhom : G.IsHomogeneous M) {B : ℝ} (hB : 1 ≤ B)
-    (hGzero : ∀ P : ProjectivePoint n, P.mulHeight ≤ B →
-      P ∈ projectiveZeroLocus (map (Int.castRingHom ℚ) (scaledHomogenize f.totalDegree 1 f)) →
-      P ∈ projectiveZeroLocus (map (Int.castRingHom ℚ) G)) :
-    ∀ x : IntPoint n, InBox x B → eval x f = 0 →
-      eval x (homogeneousSlice n 1 G) = 0 := by
-  intro x hx hxf
-  let v : IntPoint (n + 1) := Fin.cons 1 x
-  have hv0 : v ≠ 0 := by
-    intro hz
-    have hh := congrFun hz 0
-    exact one_ne_zero hh
-  let P := Projectivization.mk ℚ (rationalPoint v) (rationalPoint_ne_zero hv0)
-  have hvbox (j : Fin (n + 1)) : |(v j : ℝ)| ≤ B := by
-    refine Fin.cases ?_ (fun k => hx k) j
-    simpa only [v, Fin.cons_zero, Int.cast_one, abs_one] using hB
-  have hPB : P.mulHeight ≤ B := projective_integer_height_le v hv0 hvbox
-  have hvF : eval v (scaledHomogenize f.totalDegree 1 f) = 0 := by
-    rw [scaledHomogenize_eval _ _ le_rfl, hxf, mul_zero]
-  have hPF : P ∈ projectiveZeroLocus
-      (map (Int.castRingHom ℚ) (scaledHomogenize f.totalDegree 1 f)) := by
-    apply (mem_projectiveZeroLocus_mk ((scaledHomogenize_homogeneous 1 f le_rfl).map _) _ _).mpr
-    have hh := congrArg (Int.castRingHom ℚ) hvF
-    rw [map_eval, map_zero] at hh
-    exact hh
-  have hcast := (mem_projectiveZeroLocus_mk (hGhom.map _) _ _).mp (hGzero P hPB hPF)
-  rw [homogeneousSlice_eval]
-  apply Int.cast_injective (α := ℚ)
-  change (Int.castRingHom ℚ) (eval v G) = (Int.castRingHom ℚ) 0
-  rw [map_eval, map_zero]
-  exact hcast
-
-/-- Ordinary homogenization gives an auxiliary in every affine
-box, with the height and bad-prime factor of the unscaled model. -/
-theorem unscaled_affine_auxiliary {n : ℕ}
-    (f : MvPolynomial (Fin (n + 2)) ℤ) (hprim : PrimitiveIntegerPolynomial f)
-    (hir : Irreducible f) (hd : 0 < f.totalDegree) {B : ℝ} (hB : 1 ≤ B) :
-    ∃ g, IsBoxAuxiliary f g B ∧
-      (g.totalDegree : ℝ) ≤ hypersurfaceAuxiliaryDegreeBound n f.totalDegree B
-        (hypersurfaceBadPrimeFactor (scaledHomogenize f.totalDegree 1 f))
-        (integerCoefficientHeight f : ℝ) := by
-  let F := scaledHomogenize f.totalDegree 1 f
-  have hFhom : F.IsHomogeneous f.totalDegree := scaledHomogenize_homogeneous _ _ le_rfl
-  have hFir : Irreducible F := scaledHomogenize_one_integer_irreducible f hprim hir hd
-  obtain ⟨M, hM, G, _, hGhom, hGzero, hGnd⟩ := hypersurface_projective_auxiliary F hFhom hd hFir hB
-  let g := homogeneousSlice (n + 2) 1 G
-  have hgnd : ¬ f ∣ g := unscaled_auxiliary_not_dvd f hir.ne_zero hprim G hGhom hGnd
-  refine ⟨g, ⟨fun h => hgnd (by rw [h]; exact dvd_zero _), hgnd,
-    unscaled_auxiliary_vanishes f G hGhom hB hGzero⟩, ?_⟩
-  have hgM : (g.totalDegree : ℝ) ≤ M := by
-    exact_mod_cast homogeneousSlice_degree_le (1 : ℤ) hGhom
-  have hh := hgM.trans hM
-  simpa only [F, integerCoefficientHeight_scaledHomogenize_one,
-    hypersurfaceAuxiliaryDegreeBound, auxDegreeBound, auxMainTerm] using hh
-
-/-- Either the affine equation has controlled coefficient height, or a
-degree-at-most-d nonmultiple vanishes on every bounded integer zero. -/
 theorem affine_coefficient_height_dichotomy {n : ℕ}
     (f : MvPolynomial (Fin n) ℤ) (hf0 : f ≠ 0) (hprim : PrimitiveIntegerPolynomial f)
     {B : ℝ} (hB : 1 ≤ B) :
@@ -148,16 +109,41 @@ theorem affine_coefficient_height_dichotomy {n : ℕ}
         Real.log ((n + f.totalDegree).choose f.totalDegree) +
       ((n + f.totalDegree).choose f.totalDegree : ℝ) * f.totalDegree * Real.log B ∨
     ∃ g, IsBoxAuxiliary f g B ∧ g.totalDegree ≤ f.totalDegree := by
-  rcases projective_coefficient_height_dichotomy (scaledHomogenize f.totalDegree 1 f)
-      (scaledHomogenize_homogeneous 1 f le_rfl) (scaledHomogenize_ne_zero _ one_ne_zero hf0) hB with
-    hheight | ⟨G, _, hGhom, hGzero, hGnd⟩
+  classical
+  let d := f.totalDegree
+  let F := scaledHomogenize d 1 f
+  have hFhom : F.IsHomogeneous d := scaledHomogenize_homogeneous 1 f le_rfl
+  have hF0 : F ≠ 0 := scaledHomogenize_ne_zero d one_ne_zero hf0
+  let S := (integerBox n B).filter fun x => eval x f = 0
+  let e := (Fintype.equivFin S).symm
+  let z : Fin (Fintype.card S) → IntPoint (n + 1) := fun i => Fin.cons 1 (e i).val
+  have hz (i) : eval (z i) F = 0 := by
+    rw [scaledHomogenize_eval 1 f le_rfl, (Finset.mem_filter.mp (e i).property).2, mul_zero]
+  have hbox (i) : InBox (z i) B := Fin.cases (by simpa [z] using hB)
+    (mem_integerBox.mp (Finset.mem_filter.mp (e i).property).1)
+  by_cases hrel : ∀ G : MvPolynomial (Fin (n + 1)) ℤ, G.IsHomogeneous d →
+      (∀ i, eval (z i) G = 0) → F ∣ G
   · left
-    simpa only [integerCoefficientHeight_scaledHomogenize_one] using hheight
+    simpa only [F, integerCoefficientHeight_scaledHomogenize_one] using
+      homogeneous_no_auxiliary_coefficient_height F hFhom hF0 z hz hB hbox hrel
   · right
+    push Not at hrel
+    obtain ⟨G, hGhom, hGz, hGnd⟩ := hrel
     let g := homogeneousSlice n 1 G
-    have hgnd : ¬ f ∣ g := unscaled_auxiliary_not_dvd f hf0 hprim G hGhom hGnd
-    exact ⟨g, ⟨fun h => hgnd (by rw [h]; exact dvd_zero _), hgnd,
-      unscaled_auxiliary_vanishes f G hGhom hB hGzero⟩, homogeneousSlice_degree_le (1 : ℤ) hGhom⟩
+    have hslice : homogeneousSlice n 1 F = f := by
+      simp [F, d, homogeneousSlice_scaledHomogenize 1 f le_rfl]
+    have hFprim : PrimitiveIntegerPolynomial F := fun c hc =>
+      hprim c fun m => by simpa [F, scaledHomogenize_coefficient] using hc (homogenizedExponent d m)
+    have hndQ := rational_homogeneousSlice_not_dvd one_ne_zero hFhom hF0 hGhom hFprim
+      (by rw [hslice]) hGnd
+    rw [hslice] at hndQ
+    have hgnd : ¬ f ∣ g := fun h => hndQ (map_dvd (map (Int.castRingHom ℚ)) h)
+    refine ⟨g, ⟨fun h => hgnd (h ▸ dvd_zero _), hgnd, fun x hx hxf => ?_⟩,
+      homogeneousSlice_degree_le 1 hGhom⟩
+    obtain ⟨i, hi⟩ := e.surjective ⟨x, Finset.mem_filter.mpr ⟨mem_integerBox.mpr hx, hxf⟩⟩
+    have hh : eval (Fin.cons 1 (e i).val) G = 0 := hGz i
+    rw [hi] at hh
+    simpa only [g, homogeneousSlice_eval] using hh
 
 end
 end CCDN

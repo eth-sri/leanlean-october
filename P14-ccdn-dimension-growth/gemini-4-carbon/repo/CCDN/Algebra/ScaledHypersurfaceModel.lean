@@ -60,21 +60,5 @@ theorem scaledHomogenize_irreducible {K : Type*} [Field K] {n : ℕ}
   exact (MulEquiv.irreducible_iff (f := firstCoordinateScale K h hh)).mp
     (irreducible_of_affineChart_irreducible G hchartdeg hchartir)
 
-/-- Prime scaling preserves integer irreducibility whenever it preserves
-primitivity; avoiding the constant coefficient discharges that condition. -/
-theorem scaledHomogenize_integer_irreducible {n : ℕ}
-    (f : MvPolynomial (Fin n) ℤ) (hprim : PrimitiveIntegerPolynomial f)
-    (hir : Irreducible f) (hd : 0 < f.totalDegree)
-    {p : ℕ} (hp : p.Prime) (hp0 : ¬ (p : ℤ) ∣ f.coeff 0) :
-    Irreducible (scaledHomogenize f.totalDegree (p : ℤ) f) := by
-  apply (hprim.scaledHomogenize f.totalDegree hp hp0).irreducible_of_rational_map
-  rw [scaledHomogenize_map]
-  have hdeg : (map (Int.castRingHom ℚ) f).totalDegree = f.totalDegree :=
-      totalDegree_map_of_injective Int.cast_injective _
-  rw [← hdeg]
-  exact scaledHomogenize_irreducible _ (rational_map_irreducible_of_integer f hir hd)
-    (by simpa only [Int.coe_castRingHom, Int.cast_natCast] using
-      (show (p : ℚ) ≠ 0 by exact_mod_cast hp.ne_zero))
-
 end
 end CCDN

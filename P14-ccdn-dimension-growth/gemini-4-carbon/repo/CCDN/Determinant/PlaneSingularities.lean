@@ -8,7 +8,7 @@ module
 public import Mathlib.Algebra.MvPolynomial.PDeriv
 import CCDN.Algebra.CharZeroOrGT
 import CCDN.ForMathlib.MvPolynomialDerivative
-import CCDN.Plane.Bezout
+import Mathlib.Algebra.MvPolynomial.NoZeroDivisors
 
 /-! The singular-point correction in the finite-field curve estimate. The
 remaining estimate for all nonsingular rational points is not asserted here. -/
@@ -48,20 +48,6 @@ theorem not_dvd_pderiv_of_pderiv_ne_zero {K σ : Type*} [Field K]
   rw [← he] at htotal
   have := pderiv_totalDegree_le f i
   omega
-
-/-- Distinct singular points of an irreducible plane equation of degree `d`
-number at most `d(d-1)`, whenever the degree is smaller than the characteristic. -/
-theorem plane_singular_points_card_le {K ι : Type*} [Field K] [Fintype ι] [DecidableEq ι]
-    {p : ℕ} [CharP K p] (f : MvPolynomial (Fin 2) K) (hf : Irreducible f)
-    (hpos : 0 < f.totalDegree) (hchar : f.totalDegree < p)
-    (z : ι → Fin 2 → K) (hz : Function.Injective z)
-    (hzf : ∀ i, eval (z i) f = 0)
-    (hzsing : ∀ i j, eval (z i) (pderiv j f) = 0) :
-    Fintype.card ι ≤ f.totalDegree * (f.totalDegree - 1) := by
-  obtain ⟨j, hj⟩ := exists_pderiv_ne_zero hpos (CharZeroOrGT.of_charP hchar)
-  exact (plane_common_zeros_card_le f (pderiv j f) hf
-    (not_dvd_pderiv_of_pderiv_ne_zero hf.ne_zero hj) z hz hzf
-    (fun i => hzsing i j)).trans (Nat.mul_le_mul_left _ (pderiv_totalDegree_le f j))
 
 end
 end CCDN

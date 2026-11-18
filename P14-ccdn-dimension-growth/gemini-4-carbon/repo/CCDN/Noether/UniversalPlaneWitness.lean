@@ -132,13 +132,12 @@ private lemma universalPlaneLeading_map {K L σ : Type*} [Field K] [Field L]
 suffice for the leading polynomial to be nonzero. -/
 theorem universalPlaneLeading_ne_zero_of_irreducible
     {K σ : Type*} [Field K] [IsAlgClosed K] [Fintype σ]
-    (f : MvPolynomial (Option σ) K) (hf : Irreducible f) (hpos : 0 < f.totalDegree)
-    (hchar : CharZeroOrGT K f.totalDegree) :
-    universalPlaneLeading f ≠ 0 := by
-  obtain ⟨a, b, _, hdir, _⟩ := exists_monic_smooth_hypersurface_coordinates f hf hpos hchar
-  intro hz
-  apply hdir
-  rw [← universalPlaneLeading_specialize a b 0, hz, map_zero]
+    (f : MvPolynomial (Option σ) K) (hf : Irreducible f) (_hpos : 0 < f.totalDegree)
+    (_hchar : CharZeroOrGT K f.totalDegree) :
+    universalPlaneLeading f ≠ 0 := fun hz =>
+  homogeneousComponent_totalDegree_ne_zero hf.ne_zero <|
+    (homogeneousComponent_isHomogeneous _ _).eq_zero_of_forall_eval_eq_zero fun b => by
+      rw [← universalPlaneLeading_specialize 0 b 0, hz, map_zero]
 
 /-- Geometric irreducibility and the characteristic bound suffice for the
 leading polynomial to be nonzero. -/

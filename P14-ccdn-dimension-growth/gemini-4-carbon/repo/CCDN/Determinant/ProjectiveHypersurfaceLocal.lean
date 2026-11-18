@@ -5,11 +5,11 @@ Authors: Jason Davies
 -/
 module
 
+public import ArithmeticHeights.BombieriVaaler
 public import CCDN.Algebra.HomogeneousChart
 public import CCDN.Determinant.HypersurfaceLocalDeterminant
 public import CCDN.Determinant.PlaneMultiplicity
 import CCDN.Determinant.BlockDeterminant
-import CCDN.Determinant.ProjectiveLocalDeterminant
 import CCDN.ForMathlib.Matrix
 import CCDN.Height.ProjectiveZeroLocus
 
@@ -52,6 +52,23 @@ end CCDN
 namespace CCDN
 noncomputable section
 open MvPolynomial
+
+lemma dvd_eval_sub_of_dvd_coordinates {σ : Type*} (q : ℤ)
+    (x y : σ → ℤ) (hxy : ∀ j, q ∣ x j - y j) (f : MvPolynomial σ ℤ) :
+    q ∣ eval x f - eval y f := by
+  induction f using MvPolynomial.induction_on with
+  | C c => simp
+  | add f g hf hg => simpa only [eval_add, add_sub_add_comm] using dvd_add hf hg
+  | mul_X f j hf =>
+    rw [eval_mul, eval_mul, eval_X, eval_X,
+      show eval x f * x j - eval y f * y j =
+        (eval x f - eval y f) * x j + eval y f * (x j - y j) by ring]
+    exact dvd_add (dvd_mul_of_dvd_left hf _) (dvd_mul_of_dvd_right (hxy j) _)
+
+lemma exists_integer_inverse_of_isCoprime {q a : ℤ} (h : IsCoprime q a) :
+    ∃ u : ℤ, q ∣ u * a - 1 ∧ IsCoprime q u := by
+  obtain ⟨v, u, he⟩ := h
+  exact ⟨u, ⟨-v, by linear_combination he⟩, v, a, by simpa only [mul_comm a u] using he⟩
 
 /-- Unit normalization in the first homogeneous coordinate preserves the
 evaluation of a degree-M form, up to the corresponding unit row factor. -/

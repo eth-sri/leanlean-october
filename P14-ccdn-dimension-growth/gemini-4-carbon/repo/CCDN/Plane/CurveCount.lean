@@ -5,45 +5,21 @@ Authors: Jason Davies
 -/
 module
 
-public import CCDN.Plane.RationalPlaneAssembly
-import CCDN.ForMathlib.MvPolynomial
-import CCDN.Plane.NonabsolutePlaneCount
+public import CCDN.ForMathlib.MvPolynomial
+public import CCDN.Plane.FiniteFieldConstants
+public import Mathlib.Algebra.Field.ZMod
+public import Mathlib.Algebra.MvPolynomial.Eval
+public import Mathlib.Analysis.Real.Sqrt
 import CCDN.Plane.StepanovBound
 import CCDN.Plane.StepanovDimension
 import CCDN.Plane.StepanovParameters
 
-/-!
-Sharp finite-field counting and the complete rational-plane
-integral-point bound. The finite-field proof uses the constructed Stepanov
-auxiliary and retains an explicit absolute error constant.
-
-The complete rational plane reduction to sharp finite-field counting.
-The non-absolutely-irreducible case is bounded by d².
-
-The explicit real-valued error term for the integer Stepanov parameters.
-
-The affine residue points of an integer plane equation are the
-zeros of its reduction.
--/
+/-! Sharp finite-field plane-curve counting via Stepanov's auxiliary polynomial. -/
 
 @[expose] public section
 namespace CCDN
 noncomputable section
 open MvPolynomial
-
-private lemma planeResidue_card_eq_zero_card (f : MvPolynomial (Fin 2) ℤ) (p : ℕ) :
-    Nat.card (PlaneResidue f p) =
-      Nat.card {x : Fin 2 → ZMod p //
-        eval x (MvPolynomial.map (Int.castRingHom (ZMod p)) f) = 0} := by
-  apply Nat.card_congr
-  apply Equiv.subtypeEquivRight
-  intro x
-  simp only [eval_map]
-
-end
-end CCDN
-
-namespace CCDN
 
 /-- The Stepanov count `t N ≤ d (D + p A) + d (d - 1) N` gives the plane-curve bound
 `t ≤ p + 161 d² √p`; see `planeResidueConstant` for the derivation of `161`. -/
@@ -93,59 +69,6 @@ lemma stepanov_real_bound (d p A D N t : ℕ) (hd : 0 < d)
     nlinarith only [hcR, hDR, hprod1, hprod2, hsmall]
   exact (mul_le_mul_iff_left₀ (by exact_mod_cast hNpos : (0 : ℝ) < N)).mp hfin
 
-end CCDN
-
-namespace CCDN
-noncomputable section
-open MvPolynomial Real
-
-/-- Every box on a rational irreducible plane curve which splits over a field
-extension has at most d² integer points, independently of the radius. -/
-private theorem count_nonabsolute_plane_le {F : Type*} [Field F] [CharZero F]
-    (f : MvPolynomial (Fin 2) ℚ) (hf : Irreducible f) (hd : 0 < f.totalDegree)
-    (hred : ¬ Irreducible (MvPolynomial.map (algebraMap ℚ F) f)) (B : ℝ) :
-    count (zeroLocus f) B ≤ f.totalDegree ^ 2 := by
-  classical
-  let S := integralPoints (zeroLocus f) B
-  let z : S → Fin 2 → ℚ := fun i => rationalPoint i.val
-  have hi : Function.Injective z := by
-    intro i j he
-    apply Subtype.ext
-    funext k
-    exact Int.cast_injective (congrFun he k)
-  have hz : ∀ i, eval (z i) f = 0 := fun i => (mem_integralPoints.mp i.property).2
-  have h := nonabsolute_plane_points_card_le f hf hd hred z hi hz
-  simpa only [Fintype.card_coe, S, count] using h
-
-/-- The exact PlaneCurveBound target follows from the sharp finite-field
-estimate. The rational nonabsolute case is covered by the d² bound. -/
-private theorem planeCurveBound_of_residue_bound {C : ℝ}
-    (hC : 0 ≤ C) (hres : PlaneResidueBound C) : PlaneCurveBound := by
-  let K := 2 * Real.exp 1 * affineNonzeroConstantBound C
-  have hK : 0 < K := mul_pos (by positivity) (affineNonzeroConstantBound_pos C)
-  refine ⟨K + 1, by linarith, ?_⟩
-  intro f hf hd B hB
-  have hG : 0 ≤ curveBound f.totalDegree B := by
-    have h := degree_four_le_curveBound hd hB
-    exact (by positivity : (0 : ℝ) ≤ (f.totalDegree : ℝ) ^ 4).trans h
-  by_cases habs : AbsolutelyIrreducibleRat f
-  · exact (count_rational_plane_of_residue_bound f habs hd hB hC hres).trans
-      (mul_le_mul_of_nonneg_right (by linarith) hG)
-  · have hh := count_nonabsolute_plane_le f hf hd habs B
-    have ht : (count (zeroLocus f) B : ℝ) ≤ (f.totalDegree : ℝ) ^ 2 := by exact_mod_cast hh
-    have hd1 : (1 : ℝ) ≤ f.totalDegree := by exact_mod_cast hd
-    have hpow : (f.totalDegree : ℝ) ^ 2 ≤ (f.totalDegree : ℝ) ^ 4 := by
-      nlinarith [sq_nonneg ((f.totalDegree : ℝ) ^ 2 - 1)]
-    have hb := ht.trans (hpow.trans (degree_four_le_curveBound hd hB))
-    exact hb.trans (by nlinarith)
-
-end
-end CCDN
-
-namespace CCDN
-noncomputable section
-open MvPolynomial
-
 /-- An irreducible plane equation over the prime field has at most
 `p + planeResidueConstant * d² * √p` rational points when `p > stepanovThreshold d`. -/
 theorem plane_finite_field_card_bound {ι : Type*} [Fintype ι] [DecidableEq ι]
@@ -165,29 +88,6 @@ theorem plane_finite_field_card_bound {ι : Type*} [Fintype ι] [DecidableEq ι]
   have hdim := stepanov_hilbert_dimension_inequality f hf.ne_zero p A D N hd hp hA hD hx hy hN hNpos
   have hc := plane_stepanov_bound p f hf hd hchar z hz hzero hDp hNp hdim
   exact stepanov_real_bound f.totalDegree p A D N (Fintype.card ι) hd hp hDp hN hNpos hpx hc
-
-/-- The sharp finite-field hypothesis used by the affine determinant argument
-holds with the absolute constant `planeResidueConstant = 161`. -/
-theorem planeResidueBound : PlaneResidueBound planeResidueConstant := by
-  intro f _hd p hp hsize hir
-  let : Fact p.Prime := ⟨hp⟩
-  classical
-  let q := MvPolynomial.map (Int.castRingHom (ZMod p)) f
-  have hqd : q.totalDegree ≤ f.totalDegree := totalDegree_map_le _ _
-  have hs : stepanovThreshold (q.totalDegree : ℝ) < (p : ℝ) := by
-    apply lt_of_le_of_lt _ hsize
-    gcongr
-  let S := {x : Fin 2 → ZMod p // eval x q = 0}
-  have hh := plane_finite_field_card_bound p q hir hs (fun x : S => x.val)
-    Subtype.val_injective (fun x => x.property)
-  rw [planeResidue_card_eq_zero_card, Nat.card_eq_fintype_card]
-  apply hh.trans
-  gcongr
-  exact planeResidueConstant_pos.le
-
-/-- The full coefficient-uniform rational-plane integral-point bound. -/
-theorem planeCurveBound : PlaneCurveBound :=
-  planeCurveBound_of_residue_bound planeResidueConstant_pos.le planeResidueBound
 
 end
 end CCDN

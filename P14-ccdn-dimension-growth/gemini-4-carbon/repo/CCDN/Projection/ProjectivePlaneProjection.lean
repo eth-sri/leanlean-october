@@ -7,7 +7,7 @@ module
 
 public import CCDN.Algebra.ProjectiveChartIdeal
 public import CCDN.Projection.DegreePreservingProjectionBox
-import CCDN.Determinant.PolynomialMapDeterminant
+import CCDN.ForMathlib.MvPolynomial
 import CCDN.Height.ProjectiveIntegerHeight
 import CCDN.Projection.DegreePreservingProjectionBox
 

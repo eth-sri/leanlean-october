@@ -52,33 +52,5 @@ lemma scaledHomogenize_ne_zero {R : Type*} [CommRing R] [IsDomain R] {n : ℕ}
   have he : h ^ m.sum (fun _ e => e) * f.coeff m = 0 := by simpa [hz] using hc.symm
   exact (mul_ne_zero (pow_ne_zero _ hh) hm) he
 
-/-- A scaling factor at least one does not decrease any original coefficient. -/
-lemma scaledHomogenize_integer_coefficient_lower {n : ℕ} (d : ℕ) {h : ℤ} (hh : 1 ≤ h)
-    (f : MvPolynomial (Fin n) ℤ) (m : Fin n →₀ ℕ) :
-    |(f.coeff m : ℝ)| ≤ |((scaledHomogenize d h f).coeff (homogenizedExponent d m) : ℝ)| := by
-  have hhR : (1 : ℝ) ≤ h := by exact_mod_cast hh
-  rw [scaledHomogenize_coefficient, Int.cast_mul, Int.cast_pow, abs_mul, abs_pow,
-    abs_of_nonneg (by linarith : (0 : ℝ) ≤ h)]
-  have hp := one_le_pow₀ (n := m.sum (fun _ e => e)) hhR
-  nlinarith [abs_nonneg (f.coeff m : ℝ)]
-
-/-- A highest-degree nonzero coefficient gains the full factor h^d. -/
-theorem exists_scaledHomogenize_top_coefficient {n : ℕ} (f : MvPolynomial (Fin n) ℤ)
-    (hf : f ≠ 0) {h : ℤ} (hh : 1 ≤ h) :
-    ∃ m : Fin n →₀ ℕ, m.sum (fun _ e => e) = f.totalDegree ∧
-      (h : ℝ) ^ f.totalDegree ≤
-        |((scaledHomogenize f.totalDegree h f).coeff
-          (homogenizedExponent f.totalDegree m) : ℝ)| := by
-  obtain ⟨m, hm, hdeg⟩ := f.support.exists_mem_eq_sup (support_nonempty.mpr hf)
-    (fun m => m.sum (fun _ e => e))
-  have hm0 : f.coeff m ≠ 0 := mem_support_iff.mp hm
-  have hdegree : m.sum (fun _ e => e) = f.totalDegree := hdeg.symm
-  refine ⟨m, hdegree, ?_⟩
-  have hcoef : (1 : ℝ) ≤ |(f.coeff m : ℝ)| := by exact_mod_cast Int.one_le_abs hm0
-  have hhR : (1 : ℝ) ≤ h := by exact_mod_cast hh
-  rw [scaledHomogenize_coefficient, hdegree, Int.cast_mul, Int.cast_pow, abs_mul, abs_pow,
-    abs_of_nonneg (by linarith : (0 : ℝ) ≤ h)]
-  nlinarith [show 0 ≤ (h : ℝ) ^ f.totalDegree by positivity]
-
 end
 end CCDN

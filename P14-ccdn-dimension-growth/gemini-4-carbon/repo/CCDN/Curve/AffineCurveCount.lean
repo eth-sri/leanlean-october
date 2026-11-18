@@ -6,7 +6,7 @@ Authors: Jason Davies
 module
 
 public import CCDN.Statements
-import CCDN.Plane.CurveCount
+import CCDN.Plane.AffinePlaneBadPrimeCount
 import CCDN.Projection.AffineProjectionCount
 import CCDN.Projection.ScaleAbsorption
 

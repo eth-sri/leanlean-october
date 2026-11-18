@@ -137,21 +137,5 @@ lemma originLayer_finrank_le {K : Type*} [Field K] {n : ℕ}
     Module.Finite.of_fg (homogeneousSubmodule_fg _ _ _)
   exact (Submodule.finrank_map_le _ _).trans_eq (finrank_homogeneousSubmodule_fin n k)
 
-/-- In the plane-curve case each origin-adic layer has dimension at most
-its multiplicity. This is the bound needed for the quadratic local exponent. -/
-theorem plane_originLayer_finrank_le_multiplicity {K : Type*} [Field K]
-    {μ k : ℕ} (f : MvPolynomial (Fin 2) K)
-    (hf : f ∈ idealOfVars (Fin 2) K ^ μ) (hμ : homogeneousComponent μ f ≠ 0) :
-    Module.finrank K (originLayer f k) ≤ μ := by
-  by_cases hk : μ ≤ k
-  · have h := originLayer_hilbert_bound (n := 1) f hf hμ hk
-    simp only [Nat.add_comm 1, Nat.choose_succ_self_right] at h
-    change Module.finrank K (originLayer f k) + (k - μ + 1) ≤ k + 1 at h
-    omega
-  · have h := originLayer_finrank_le (n := 1) f k
-    simp only [Nat.add_comm 1, Nat.choose_succ_self_right] at h
-    change Module.finrank K (originLayer f k) ≤ k + 1 at h
-    omega
-
 end
 end CCDN

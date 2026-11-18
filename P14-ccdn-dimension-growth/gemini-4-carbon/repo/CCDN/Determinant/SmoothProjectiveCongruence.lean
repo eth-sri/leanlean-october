@@ -66,14 +66,9 @@ theorem smooth_projective_hypersurface_congruence_minorGcd {p n s N d M : ℕ}
     (hz : ∀ i, eval (z i) f = 0) :
     (p : ℤ) ^ hypersurfaceMultiplicityExponent (n + 1) 1 s ∣
       Int.Matrix.minorGcd (Matrix.of fun i j => eval (z i) (F j)) := by
-  classical
   obtain ⟨hpow, hcomp⟩ := smooth_hypersurface_origin_order
     (projectiveHypersurfaceChart k f) a ha hs
-  rw [minorGcd_eq_gcd_plucker]
-  apply Finset.dvd_gcd
-  intro S _
-  rw [Matrix.plucker_row_eq_det_submatrix]
-  exact projective_hypersurface_local_det_divisibility f hf _
+  exact Finset.dvd_gcd fun _ _ => projective_hypersurface_local_det_divisibility f hf _
     (fun j => hF _) z k a hpow hcomp hunit hres hz
 
 end

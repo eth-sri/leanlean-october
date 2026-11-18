@@ -5,6 +5,8 @@ Authors: Jason Davies
 -/
 module
 
+public import Mathlib.FieldTheory.IsAlgClosed.AlgebraicClosure
+
 public import CCDN.AuxiliaryPolynomial.DegreeBound
 public import CCDN.Determinant.ProjectiveHypersurfaceResidueDeterminant
 public import CCDN.Plane.FiniteFieldConstants

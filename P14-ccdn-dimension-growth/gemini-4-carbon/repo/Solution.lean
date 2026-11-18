@@ -166,7 +166,7 @@ theorem affine_curve_bound (n : ℕ) (hn : 2 ≤ n) :
       ∀ B : ℝ, 1 ≤ B →
       (affineCount (affineZeroSet I) B : ℝ) ≤
         C * ((d : ℝ) ^ 3 * B ^ (1 / (d : ℝ)) * (Real.log B + d)) := by
-  obtain ⟨C, hC, h⟩ := CCDN.affineCurveBound n hn
+  obtain ⟨C, hC, h⟩ := CCDN.affine_curve_count n hn
   refine ⟨C, hC, fun I hI d hd hdeg B hB => ?_⟩
   rw [affineCount_eq]
   exact h I hI d hd hdeg B hB
@@ -179,7 +179,7 @@ theorem affine_hypersurface_bound (n : ℕ) :
       5 ≤ f.totalDegree → ∀ B : ℝ, 1 ≤ B →
       (affineCount {x | eval x (map (Int.castRingHom ℚ) f) = 0} B : ℝ) ≤
         C * (f.totalDegree : ℝ) ^ (18 + 3 * n) * B ^ (n + 1) := by
-  obtain ⟨C, hC, h⟩ := CCDN.affine_hypersurface_dimension_growth n
+  obtain ⟨C, hC, h⟩ := CCDN.affineHypersurfaceGrowth n
   refine ⟨C, hC, fun f hf hd B hB => ?_⟩
   rw [affineCount_eq]
   exact h f hf hd B hB
@@ -192,7 +192,7 @@ theorem affine_hypersurface_bound_rat (n : ℕ) :
       5 ≤ f.totalDegree → ∀ B : ℝ, 1 ≤ B →
       (affineCount {x | eval x f = 0} B : ℝ) ≤
         C * (f.totalDegree : ℝ) ^ (18 + 3 * n) * B ^ (n + 1) := by
-  obtain ⟨C, hC, h⟩ := CCDN.affine_hypersurface_dimension_growth_rat n
+  obtain ⟨C, hC, h⟩ := (CCDN.affineHypersurfaceGrowth n).rational
   refine ⟨C, hC, fun f hf hd B hB => ?_⟩
   rw [affineCount_eq]
   exact h f hf hd B hB

@@ -68,21 +68,6 @@ lemma homogeneousTranslation_homogeneous {R : Type*} [CommRing R] {n d : ℕ}
         (isHomogeneous_X R j.succ).add ((isHomogeneous_X R (0 : Fin (n + 1))).C_mul (a j))
   simpa only [one_mul] using hf.aeval v hv
 
-/-- The homogeneous translation by an integer vector of a primitive integer polynomial is
-primitive. -/
-lemma PrimitiveIntegerPolynomial.translate_homogeneous {n : ℕ} (a : Fin n → ℤ)
-    {f : MvPolynomial (Fin (n + 1)) ℤ} (hf : PrimitiveIntegerPolynomial f) :
-    PrimitiveIntegerPolynomial (homogeneousTranslation ℤ a f) := by
-  intro c hc
-  have hd := (C_dvd_iff_dvd_coeff c _).mpr hc
-  have he := map_dvd (homogeneousTranslation ℤ a).symm.toRingHom hd
-  have hC : (homogeneousTranslation ℤ a).symm (C c) = C c :=
-    (homogeneousTranslation ℤ a).symm.commutes c
-  change (homogeneousTranslation ℤ a).symm (C c) ∣
-    (homogeneousTranslation ℤ a).symm (homogeneousTranslation ℤ a f) at he
-  rw [hC, AlgEquiv.symm_apply_apply] at he
-  exact hf c ((C_dvd_iff_dvd_coeff c f).mp he)
-
 /-- The homogeneous translation of `f` by `a` evaluates at `x` to the value of `f` at the point
 with coordinates `x 0` and `x (j + 1) + a j * x 0`. -/
 lemma homogeneousTranslation_eval {R : Type*} [CommRing R] {n : ℕ}
@@ -103,19 +88,6 @@ lemma homogeneousTranslation_eval_chart {R : Type*} [CommRing R] {n : ℕ}
   rw [homogeneousTranslation_eval]
   simp only [Fin.cons_zero, Fin.cons_succ, mul_one]
   rfl
-
-/-- If `z` lies in the box of radius `B ≥ 1` and every coordinate of `a` lies in `[0, d]`, then
-every coordinate of `z - a` has absolute value at most `(d + 1) * B`. -/
-lemma homogeneousTranslation_integer_point_box {n : ℕ} {B : ℝ} {d : ℕ}
-    (hB : 1 ≤ B) (a z : Fin n → ℤ) (ha : ∀ j, 0 ≤ a j ∧ a j ≤ d)
-    (hz : InBox z B) (j : Fin n) :
-    |((z j - a j : ℤ) : ℝ)| ≤ ((d : ℝ) + 1) * B := by
-  rw [Int.cast_sub]
-  have ha0 : (0 : ℝ) ≤ a j := by exact_mod_cast (ha j).1
-  have had : (a j : ℝ) ≤ d := by exact_mod_cast (ha j).2
-  have h := abs_sub_le (z j : ℝ) 0 (a j : ℝ)
-  simp only [sub_zero, zero_sub, abs_neg, abs_of_nonneg ha0] at h
-  nlinarith [hz j, show (0 : ℝ) ≤ d by positivity]
 
 end
 end CCDN

@@ -9,7 +9,6 @@ public import CCDN.Algebra.HomogeneousChart
 public import Mathlib.Analysis.SpecialFunctions.Pow.Real
 import CCDN.AuxiliaryPolynomial.PlaneBadPrimes
 import CCDN.ForMathlib.MvPolynomial
-import CCDN.Plane.Bezout
 
 /-! Distinct-point bounds obtained from the auxiliary polynomials and
 Bézout. The sharp finite-field estimate remains an explicit hypothesis. -/
@@ -34,40 +33,6 @@ lemma rational_irreducible_of_charZero_map {F σ : Type*} [Field F] [CharZero F]
   have he : (algebraMap ℚ F).comp (Int.castRingHom ℚ) = Int.castRingHom F := by ext; simp
   rw [he]
   exact hf
-
-/-- The precise Bézout step for a homogeneous integer auxiliary
-polynomial and a primitive equation whose chart has full degree. -/
-theorem plane_chart_points_card_le_auxiliary_degree {d M t : ℕ}
-    (f g : MvPolynomial (Fin 3) ℤ) (hf : f.IsHomogeneous d) (hf0 : f ≠ 0)
-    (hg : g.IsHomogeneous M) (hprim : PrimitiveIntegerPolynomial f)
-    (hdchart : (affineChart 2 f).totalDegree = d)
-    (hir : Irreducible (MvPolynomial.map (Int.castRingHom ℚ) (affineChart 2 f)))
-    (hnd : ¬ f ∣ g) (z : Fin t → Fin 2 → ℤ) (hinj : Function.Injective z)
-    (hzf : ∀ i, eval (z i) (affineChart 2 f) = 0)
-    (hzg : ∀ i, eval (Fin.cons 1 (z i)) g = 0) : t ≤ d * M := by
-  let zQ : Fin t → Fin 2 → ℚ := fun i j => (z i j : ℚ)
-  have hiQ : Function.Injective zQ := by
-    intro i j he
-    apply hinj
-    funext k
-    exact Int.cast_injective (congrFun he k)
-  have hfQ : ∀ i, eval (zQ i) (MvPolynomial.map (Int.castRingHom ℚ) (affineChart 2 f)) = 0 := by
-    intro i
-    have h := congrArg (Int.castRingHom ℚ) (hzf i)
-    rw [map_eval, map_zero] at h
-    exact h
-  have hgQ : ∀ i, eval (zQ i) (MvPolynomial.map (Int.castRingHom ℚ) (affineChart 2 g)) = 0 := by
-    intro i
-    have h := congrArg (Int.castRingHom ℚ) (hzg i)
-    rw [← affineChart_eval] at h
-    rw [map_eval, map_zero] at h
-    exact h
-  have hndQ : ¬ MvPolynomial.map (Int.castRingHom ℚ) (affineChart 2 f) ∣
-      MvPolynomial.map (Int.castRingHom ℚ) (affineChart 2 g) :=
-    rational_affineChart_not_dvd hf hf0 hg hprim hdchart hnd
-  have h := plane_common_zeros_card_le _ _ hir hndQ zQ hiQ hfQ hgQ
-  rw [Fintype.card_fin, rational_map_totalDegree, rational_map_totalDegree, hdchart] at h
-  exact h.trans (Nat.mul_le_mul_left d ((affineChart_totalDegree_le g).trans hg.totalDegree_le))
 
 /-- Enumerating the integer zeros transfers finite-family bounds to
 the counting interface, including empty point sets. -/

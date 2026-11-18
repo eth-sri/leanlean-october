@@ -51,11 +51,6 @@ private lemma bivariateCoefficientBound_sub {f g : ℤ[X][X]} {H K : ℝ}
   simp only [coeff_sub, Int.cast_sub]
   exact (abs_sub _ _).trans (add_le_add (hf i j) (hg i j))
 
-/-- A coefficient bound `H` for `f` implies every larger coefficient bound `K`. -/
-lemma bivariateCoefficientBound_mono {f : ℤ[X][X]} {H K : ℝ}
-    (hf : BivariateCoefficientBound f H) (h : H ≤ K) :
-    BivariateCoefficientBound f K := fun i j => (hf i j).trans h
-
 private lemma bivariateGridPolynomial_single {R : Type*} [CommRing R] (d : ℕ)
     (i : BivariateGrid d) (a : R) :
     bivariateGridPolynomial R d (Pi.single i a) =

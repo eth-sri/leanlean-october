@@ -53,5 +53,14 @@ lemma le_rpow_four_sub_inv {n d : ℕ} (hd : 0 < d) :
   have hd1 : (1 : ℝ) ≤ d := by exact_mod_cast hd
   simpa only [Real.rpow_one] using Real.rpow_le_rpow_of_exponent_le hd1 (one_le_four_sub_inv n)
 
+lemma auxiliary_integer_degree_selection (d : ℕ) {l R : ℝ} (hl : 0 ≤ l) (hR : 0 ≤ R) :
+    ∃ M : ℕ, d ≤ M ∧ l ≤ M ∧ R < M ∧ (M : ℝ) ≤ d + l + R + 2 := by
+  refine ⟨d + ⌈l⌉₊ + ⌊R⌋₊ + 1, by omega, ?_, ?_, ?_⟩
+  · push_cast; linarith [Nat.le_ceil l, show (0 : ℝ) ≤ d by positivity,
+      show (0 : ℝ) ≤ ⌊R⌋₊ by positivity]
+  · push_cast; linarith [Nat.lt_floor_add_one R, show (0 : ℝ) ≤ d by positivity,
+      show (0 : ℝ) ≤ ⌈l⌉₊ by positivity]
+  · push_cast; linarith [Nat.ceil_lt_add_one hl, Nat.floor_le hR]
+
 end
 end CCDN

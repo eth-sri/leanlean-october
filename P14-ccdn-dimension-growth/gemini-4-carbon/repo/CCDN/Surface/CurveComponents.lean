@@ -41,4 +41,14 @@ structure IsSectionCurve (f g : CoordinatePolynomial 3) (I : Ideal (CoordinatePo
   /-- The degree `e` is positive. -/
   pos : 0 < e
 
+theorem count_biUnion_finset_le {n : ℕ} {ι : Type*}
+    (s : Finset ι) (X : ι → Set (RatPoint n)) (B : ℝ) :
+    count (⋃ i ∈ s, X i) B ≤ ∑ i ∈ s, count (X i) B := by
+  classical
+  induction s using Finset.induction_on with
+  | empty => simp [count, integralPoints]
+  | @insert i s hi ih =>
+    simpa only [Finset.set_biUnion_insert, Finset.sum_insert hi] using
+      (count_union_le (X i) (⋃ j ∈ s, X j) B).trans (Nat.add_le_add_left ih _)
+
 end CCDN

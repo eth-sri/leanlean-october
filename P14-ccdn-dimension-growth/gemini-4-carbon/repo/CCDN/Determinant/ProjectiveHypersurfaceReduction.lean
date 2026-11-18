@@ -6,7 +6,8 @@ Authors: Jason Davies
 module
 
 public import CCDN.Determinant.ProjectiveHypersurfaceLocal
-public import CCDN.Determinant.ProjectiveReduction
+public import Mathlib.Data.ZMod.Basic
+public import Mathlib.LinearAlgebra.Projectivization.Basic
 import CCDN.Height.ProjectiveZeroLocus
 
 /-! Projective residue points determine unit charts and integral lifts
@@ -16,6 +17,30 @@ in arbitrary dimension. Their reduced affine equations vanish at those lifts. -/
 namespace CCDN
 noncomputable section
 open MvPolynomial
+
+abbrev ProjectiveResidueSpace (n p : ℕ) [Fact p.Prime] :=
+  Projectivization (ZMod p) (Fin (n + 1) → ZMod p)
+
+lemma primitive_mod_ne_zero {n p : ℕ} [Fact p.Prime]
+    (z : IntPoint n) (hz : Finset.univ.gcd z = 1) :
+    (fun i => (z i : ZMod p)) ≠ 0 := fun h => by
+  have hd : (p : ℤ) ∣ Finset.univ.gcd z := Finset.dvd_gcd fun i _ =>
+    (ZMod.intCast_zmod_eq_zero_iff_dvd _ _).mp (congrFun h i)
+  rw [hz] at hd
+  exact (Nat.prime_iff_prime_int.mp (Fact.out : p.Prime)).not_isUnit (isUnit_of_dvd_one hd)
+
+def primitiveProjectiveReduction {n p : ℕ} [Fact p.Prime]
+    (z : IntPoint (n + 1)) (hz : Finset.univ.gcd z = 1) : ProjectiveResidueSpace n p :=
+  Projectivization.mk (ZMod p) (fun i => (z i : ZMod p)) (primitive_mod_ne_zero z hz)
+
+lemma primitiveProjectiveReduction_zero {n p d : ℕ} [Fact p.Prime]
+    (f : MvPolynomial (Fin (n + 1)) ℤ) (hf : f.IsHomogeneous d)
+    (z : IntPoint (n + 1)) (hz : Finset.univ.gcd z = 1) (hfz : eval z f = 0) :
+    eval (primitiveProjectiveReduction z hz).rep (map (Int.castRingHom (ZMod p)) f) = 0 := by
+  rw [homogeneous_eval_zero_iff_projective_eq (hf.map _) _ _
+    (primitiveProjectiveReduction z hz).mk_rep]
+  change eval ((Int.castRingHom (ZMod p)) ∘ z) (map (Int.castRingHom (ZMod p)) f) = 0
+  rw [← map_eval, hfz, map_zero]
 
 /-- A coordinate index at which the chosen representative of a point of `ℙⁿ⁺²(𝔽_p)` is nonzero. -/
 def hypersurfaceResiduePivot {n p : ℕ} [Fact p.Prime] (r : ProjectiveResidueSpace (n + 2) p) :

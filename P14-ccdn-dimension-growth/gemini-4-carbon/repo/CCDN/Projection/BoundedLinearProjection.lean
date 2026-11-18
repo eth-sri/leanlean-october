@@ -6,8 +6,8 @@ Authors: Jason Davies
 module
 
 public import CCDN.Height.ProjectiveBox
-import CCDN.Algebra.BoundedRowSeparation
 import CCDN.Height.ProjectiveIntegerHeight
+import Mathlib.LinearAlgebra.Matrix.Adjugate
 
 /-! An explicit integral linear projection away from a bounded rational
 linear center. Its kernel is exactly the span of the given independent

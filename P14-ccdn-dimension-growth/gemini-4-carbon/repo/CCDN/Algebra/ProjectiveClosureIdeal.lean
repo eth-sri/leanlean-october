@@ -7,9 +7,6 @@ module
 
 public import CCDN.Algebra.HomogeneousChart
 public import CCDN.Algebra.RadialHomogeneousMap
-import CCDN.Algebra.IdealScalarDescent
-import CCDN.Algebra.ProjectiveChartScalarExtension
-import CCDN.Hilbert.HomogeneousPrimeComponents
 
 /-! The projective closure ideal of an affine coordinate ideal. The
 homogenizing parameter is a polynomial variable over the affine quotient,

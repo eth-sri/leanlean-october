@@ -175,3 +175,14 @@ theorem finrank_homogeneousSubmodule_fin [Field K] (n M : ℕ) :
   omega
 
 end MvPolynomial
+
+namespace CCDN
+
+lemma eval_polynomial_coordinate_map {R : Type*} [CommRing R] {n m : ℕ}
+    (τ : Fin m → MvPolynomial (Fin n) R) (g : MvPolynomial (Fin m) R) (z : Fin n → R) :
+    MvPolynomial.eval z (MvPolynomial.aeval τ g) =
+      MvPolynomial.eval (fun j => MvPolynomial.eval z (τ j)) g := by
+  change MvPolynomial.eval z (MvPolynomial.eval₂ MvPolynomial.C τ g) = _
+  rw [← MvPolynomial.eval_assoc]; rfl
+
+end CCDN

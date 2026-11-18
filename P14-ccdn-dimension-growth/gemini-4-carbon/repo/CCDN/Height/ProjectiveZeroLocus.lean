@@ -98,38 +98,5 @@ lemma mem_integer_projectiveZeroLocus {n d : ℕ}
   rw [← map_eval]
   exact Int.cast_eq_zero
 
-/-- Reduce a projective count to a finite family of bounded primitive
-integer vectors representing distinct projective points. -/
-theorem projective_zero_count_le_of_family_bound {n d : ℕ}
-    (f : MvPolynomial (Fin (n + 1)) ℤ) (hf : f.IsHomogeneous d)
-    (B R : ℝ)
-    (hbound : ∀ (t : ℕ) (z : Fin t → IntPoint (n + 1))
-      (hz : ∀ i, z i ≠ 0),
-      Function.Injective (fun i => Projectivization.mk ℚ (rationalPoint (z i))
-        (rationalPoint_ne_zero (hz i))) →
-      (∀ i, Finset.univ.gcd (z i) = 1) →
-      (∀ i, eval (z i) f = 0) →
-      (∀ i, InBox (z i) B) → (t : ℝ) ≤ R) :
-    (projectiveCount (projectiveZeroLocus (map (Int.castRingHom ℚ) f)) B : ℝ) ≤ R := by
-  classical
-  let S := projectivePoints (projectiveZeroLocus (map (Int.castRingHom ℚ) f)) B
-  let e := (Fintype.equivFin S).symm
-  let z : Fin (Fintype.card S) → IntPoint (n + 1) :=
-    fun i => primitiveProjectiveRep (e i).val
-  have hz (i) : z i ≠ 0 := primitiveProjectiveRep_ne_zero _
-  have he (i) : Projectivization.mk ℚ (rationalPoint (z i))
-      (rationalPoint_ne_zero (hz i)) = (e i).val := primitiveProjectiveRep_mk _
-  have hinj : Function.Injective (fun i => Projectivization.mk ℚ (rationalPoint (z i))
-      (rationalPoint_ne_zero (hz i))) := by
-    simp_rw [he]
-    exact Subtype.val_injective.comp e.injective
-  have hprim (i) : Finset.univ.gcd (z i) = 1 := primitiveProjectiveRep_gcd _
-  have hzero (i) : eval (z i) f = 0 :=
-    (mem_integer_projectiveZeroLocus hf _).mp (mem_projectivePoints.mp (e i).property).2
-  have hbox (i j) : |(z i j : ℝ)| ≤ B :=
-    (primitiveProjectiveRep_bound _ j).trans (mem_projectivePoints.mp (e i).property).1
-  have h := hbound _ z hz hinj hprim hzero hbox
-  simpa only [Fintype.card_coe, S, projectiveCount] using h
-
 end
 end CCDN

@@ -9,7 +9,7 @@ public import CCDN.Algebra.IdealZeroLocus
 public import CCDN.Hilbert.AffineCurveDegree
 public import CCDN.Projection.DegreePreservingProjectionBox
 public import Mathlib.Analysis.SpecialFunctions.Pow.Real
-import CCDN.Determinant.PolynomialMapDeterminant
+import CCDN.ForMathlib.MvPolynomial
 import CCDN.Projection.BoundedDegreePreservingProjection
 
 /-! Reduce the integral-point count of an arbitrary prime affine curve

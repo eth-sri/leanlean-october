@@ -50,19 +50,6 @@ lemma stepanovThreshold_le_stepanovThreshold {R : Type*} [Semiring R] [PartialOr
 `p ≤ 32 N √p` and `1 ≤ √p`, giving `t ≤ p + (5 · 32 + 1) d² √p`. -/
 def planeResidueConstant : ℝ := 161
 
-/-- The constant `162 = 161 + 1` of the projective plane-curve count
-(`projective_plane_finite_field_card_bound`): the affine chart contributes
-`p + 161 d² √p` and the line at infinity at most `d ≤ d² √p` further points
-(`projectivePlaneResidueConstant_eq_add`). -/
-def projectivePlaneResidueConstant : ℝ := 162
-
-/-- The constant `C = 164 = 162 + 2` for which the projective plane total multiplicity is
-at most `p + (C + 1) d² √p` (`projectivePlaneTotalMultiplicity_le`). The singular
-correction `3 d² (d - 1) ≤ 3 d² √p` adds `3` to `162`; the shift by one matches the affine
-convention of `degreeFourDeterminantError`, whose singular correction `d² (d - 1)` costs `1`
-(`projectivePlaneDeterminantConstant_eq_add`). -/
-def projectivePlaneDeterminantConstant : ℝ := 164
-
 /-- The constant `164 = 161 + 3` of the affine hypersurface count
 `#X(𝔽_p) ≤ p^(m-1) + 164 d² p^(m-2) √p` (`affine_hypersurface_finite_field_bound`). Averaging
 the plane count over plane sections gives `161`; bad and zero plane sections cost at most
@@ -78,12 +65,6 @@ def projectiveHypersurfaceResidueConstant : ℝ := 330
 /-- The value of `planeResidueConstant` is `161`. -/
 lemma planeResidueConstant_eq : planeResidueConstant = 161 := rfl
 
-/-- The value of `projectivePlaneResidueConstant` is `162`. -/
-lemma projectivePlaneResidueConstant_eq : projectivePlaneResidueConstant = 162 := rfl
-
-/-- The value of `projectivePlaneDeterminantConstant` is `164`. -/
-lemma projectivePlaneDeterminantConstant_eq : projectivePlaneDeterminantConstant = 164 := rfl
-
 /-- The value of `hypersurfaceResidueConstant` is `164`. -/
 lemma hypersurfaceResidueConstant_eq : hypersurfaceResidueConstant = 164 := rfl
 
@@ -94,10 +75,6 @@ lemma projectiveHypersurfaceResidueConstant_eq : projectiveHypersurfaceResidueCo
 /-- The plane constant `planeResidueConstant` is positive. -/
 lemma planeResidueConstant_pos : 0 < planeResidueConstant := by
   norm_num [planeResidueConstant]
-
-/-- The constant `projectivePlaneDeterminantConstant` is positive. -/
-lemma projectivePlaneDeterminantConstant_pos : 0 < projectivePlaneDeterminantConstant := by
-  norm_num [projectivePlaneDeterminantConstant]
 
 /-- The constant `projectiveHypersurfaceResidueConstant` is positive. -/
 lemma projectiveHypersurfaceResidueConstant_pos : 0 < projectiveHypersurfaceResidueConstant := by

@@ -33,13 +33,6 @@ theorem natCast_le_of_log_le_log {n : ℕ} {y : ℝ} (hn : 0 < n) (hy : 0 < y)
     (h : log n ≤ log y) : (n : ℝ) ≤ y :=
   (log_le_log_iff (Nat.cast_pos.mpr hn) hy).mp h
 
-/-- The logarithm `log (1 + x)` exceeds `x / 4` by at most `log 4 + 1` for `x ≥ 0`. -/
-theorem log_one_add_sub_div_four_le {x : ℝ} (hx : 0 ≤ x) :
-    Real.log (1 + x) - x / 4 ≤ Real.log 4 + 1 := by
-  have h := Real.log_le_sub_one_of_pos (show 0 < (1 + x) / 4 by positivity)
-  rw [Real.log_div (by positivity) (by norm_num)] at h
-  linarith
-
 /-- Absorb the logarithm with a specified positive exponent loss and an explicit constant. -/
 theorem rpow_half_mul_log_add_le {B ε D : ℝ} (hB : 1 ≤ B) (hε : 0 < ε) (hD : 0 ≤ D) :
     B ^ (1 / 2 : ℝ) * (Real.log B + D) ≤

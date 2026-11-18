@@ -9,7 +9,6 @@ public import CCDN.Algebra.HomogeneousTranslation
 public import CCDN.Height.IntegerCoefficientHeight
 public import Mathlib.RingTheory.MvPolynomial.MonomialOrder
 import CCDN.Algebra.HomogeneousChart
-import CCDN.Plane.GridHeight
 
 /-! Positioning a coefficient-height witness as the lexicographic leading
 coefficient by a bounded integral translation of the affine chart. -/
@@ -83,41 +82,6 @@ lemma homogeneousTranslation_pure_first {R : Type*} [CommRing R] {n d : ℕ}
     (homogeneousTranslation R a f).coeff (Finsupp.single 0 d) = eval (Fin.cons 1 a) f := by
   rw [homogeneous_pure_first_coefficient _ (homogeneousTranslation_homogeneous a hf),
     homogeneousTranslation_eval_chart, zero_add]
-
-/-- Every original coefficient is controlled by the leading coefficient
-obtained by a translation with parameters in 0,...,d. -/
-theorem exists_bounded_leading_coefficient_translation {d : ℕ}
-    (f : MvPolynomial (Fin 3) ℤ) (hf : f.IsHomogeneous d) (hf0 : f ≠ 0) :
-    ∃ a : Fin 2 → ℤ, (∀ j, 0 ≤ a j ∧ a j ≤ d) ∧
-      MonomialOrder.lex.leadingCoeff (homogeneousTranslation ℤ a f) ≠ 0 ∧
-      CoefficientHeightLE f (((d : ℝ) + 1) ^ (2 * (d + 1)) *
-        |((MonomialOrder.lex.leadingCoeff (homogeneousTranslation ℤ a f) : ℤ) : ℝ)|) := by
-  have hc0 : affineChart 2 f ≠ 0 := by
-    intro hz
-    exact hf0 (affineChart_injective_on_homogeneous hf (isHomogeneous_zero _ _ d)
-      (by simpa only [map_zero] using hz))
-  obtain ⟨x, y, hx, hy, hval, hcoeff⟩ := exists_integer_plane_grid_height_witness (affineChart 2 f)
-    hc0 ((affineChart_totalDegree_le f).trans hf.totalDegree_le)
-  let a : Fin 2 → ℤ := ![(x : ℤ), (y : ℤ)]
-  have he : (homogeneousTranslation ℤ a f).coeff (Finsupp.single 0 d) =
-      eval ![(x : ℤ), (y : ℤ)] (affineChart 2 f) := by
-    rw [homogeneousTranslation_pure_first a f hf, affineChart_eval]
-  have hlc := lex_leadingCoeff_eq_pure_first (homogeneousTranslation ℤ a f)
-    (homogeneousTranslation_homogeneous a hf).totalDegree_le (he ▸ hval)
-  refine ⟨a, ?_, by rw [hlc, he]; exact hval, ?_⟩
-  · intro j
-    fin_cases j
-    · change 0 ≤ (x : ℤ) ∧ (x : ℤ) ≤ d
-      exact ⟨by positivity, by exact_mod_cast hx⟩
-    · change 0 ≤ (y : ℤ) ∧ (y : ℤ) ≤ d
-      exact ⟨by positivity, by exact_mod_cast hy⟩
-  · intro m
-    by_cases hm : m.degree = d
-    · obtain ⟨j, rfl⟩ := homogeneousMonomials_surjective 2 d m hm
-      rw [← affineChart_homogeneous_coefficient f hf j, hlc, he]
-      exact hcoeff _
-    · rw [hf.coeff_eq_zero hm, Int.cast_zero, abs_zero]
-      positivity
 
 end
 end CCDN

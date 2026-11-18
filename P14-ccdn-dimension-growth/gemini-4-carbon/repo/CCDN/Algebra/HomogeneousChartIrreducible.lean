@@ -70,19 +70,6 @@ theorem variable_not_dvd_irreducible_homogeneous {K : Type*} [Field K] {n d : �
     (isUnit_iff_totalDegree_of_isReduced.mp hu).2] at h
   omega
 
-/-- An irreducible homogeneous polynomial of degree at least `2` divides no variable `X j`. -/
-theorem irreducible_homogeneous_not_dvd_variable {K : Type*} [Field K] {n d : ℕ}
-    (f : MvPolynomial (Fin (n + 1)) K) (hf : f.IsHomogeneous d)
-    (hir : Irreducible f) (hd : 2 ≤ d) (j : Fin (n + 1)) : ¬ f ∣ X j := by
-  rintro ⟨g, hg⟩
-  have hg0 : g ≠ 0 := by
-    intro h
-    exact X_ne_zero j (by simpa only [h, mul_zero] using hg)
-  have hh := congrArg totalDegree hg
-  rw [totalDegree_X, totalDegree_mul_of_isDomain hir.ne_zero hg0,
-    hf.totalDegree hir.ne_zero] at hh
-  omega
-
 /-- If `X 0` does not divide the homogeneous polynomial `f` of degree `d`, then the affine chart
 `x₀ = 1` of `f` has total degree exactly `d`. -/
 theorem affineChart_degree_of_not_variable_dvd {K : Type*} [Field K] {n d : ℕ}

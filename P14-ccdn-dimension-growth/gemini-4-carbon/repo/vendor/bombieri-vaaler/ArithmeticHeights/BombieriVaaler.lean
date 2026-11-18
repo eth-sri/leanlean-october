@@ -6,496 +6,375 @@ Authors: Ralf Stephan
 module
 
 public import ArithmeticHeights.CubeSlicing
-public import ArithmeticHeights.Duality
-public import ArithmeticHeights.MinkowskiSecond
-public import ArithmeticHeights.RationalLattice
-public import ArithmeticHeights.Siegel
-
-/-!
-# Bombieri–Vaaler's theorem over `ℤ`
-
-For an `M × N` integer matrix `A` whose rows are linearly independent, the integral solutions of
-`A x = 0` contain `N - M` linearly independent vectors `x₁, …, x_{N-M}` with
-
-```text
-∏ l, max n, |x l n|  ≤  D⁻¹ √(det (A Aᵀ)),
-```
-
-`D` the greatest common divisor of the maximal minors of `A`, and in particular a nonzero integral
-solution with `max n, |x n| ≤ (D⁻¹ √(det (A Aᵀ)))^{1/(N-M)}`. These are Theorems 2 and 1 of
-Bombieri–Vaaler 1983, and the right-hand side is an absolute height on the Grassmannian, so — unlike
-the bound of Layer 5.1 — it does not move under `A ↦ U A` for `U ∈ GL_M(ℤ)`.
-
-The proof is the assembly the roadmap prices it at: the covolume identity of Layer 4.3 over `ℚ`
-identifies the covolume of the solution lattice with the Arakelov height of the solution space,
-Layer 3.5 identifies that with the Arakelov height of the row space and Layer 3.4 computes the
-latter as `D⁻¹ √(det (A Aᵀ))`, while Minkowski's second theorem (Layer 4.2) against the central
-slice of the unit cube, whose volume Layer 4.5 bounds below by `2^{N-M}`, bounds the product of the
-successive minima by that covolume. Layer 4.1 then supplies vectors realizing the minima.
-
-## Main definitions
-
-* `Submodule.cubeSlice`: the central slice `{y ∈ V | ∀ i, |y i| ≤ 1}` of the unit cube of
-  `EuclideanSpace ℝ ι` by a subspace `V`. This is the convex body Minkowski's second theorem is
-  applied to, and the body Layer 4.5 measures.
-* `Int.Matrix.minorGcd`: the greatest common divisor of the maximal minors of an integer matrix,
-  the `D` of Bombieri–Vaaler. The minors are Layer 3.1's Plücker coordinates of the rows.
-
-## Main results
-
-* `Int.Matrix.exists_linearIndependent_mulVec_eq_zero_prod_iSup_abs_le`: **Bombieri–Vaaler's
-  Theorem 2**, a small basis of the integral solutions.
-* `Int.Matrix.exists_linearIndependent_mulVec_eq_zero_prod_mulHeight_le`: the same, with the
-  multiplicative height of Layer 1 on the left — the `K = ℚ` case of the statement Layer 5.4 makes
-  over a number field.
-* `Int.Matrix.exists_ne_zero_mulVec_eq_zero_iSup_abs_le_det_rpow`: **Bombieri–Vaaler's Theorem 1**,
-  a single small nonzero integral solution.
-* `Int.Matrix.sqrt_det_div_minorGcd_unit_mul`: **the invariance** of the bound under
-  `A ↦ U A` for `U ∈ GL_M(ℤ)`, which is what Theorem 1 has over Layer 5.1's Siegel lemma.
-* `Int.Matrix.minorGcd_mul_arakelovMulHeight_ker`: the identity the bound *is*,
-  `D · H_Ar(ker A) = √(det (A Aᵀ))`.
-* `ZLattice.prod_successiveMinimum_cubeSlice_le_covolume`: Minkowski's second theorem against the
-  cube slice, with the factor `2^n` cancelled by Vaaler's bound. This is the geometric half of the
-  theorem, and it knows no arithmetic.
-* `NumberField.gcd_mul_arakelovMulHeight_intCast`: the Arakelov analogue of Layer 5.1's
-  `Rat.gcd_mul_mulHeight_intCast`, the translation the arithmetic half is read through.
-* `Int.Matrix.linearIndependent_row_map_rat_iff`, `Int.Matrix.det_pos`,
-  `Int.Matrix.one_le_minorGcd`: the hypothesis and the two positivity facts that make the bound
-  meaningful.
-
-## Implementation notes
-
-⚠ **The absolute value in Bombieri–Vaaler's `√|det (A Aᵀ)|` is redundant.** The Gram determinant of
-the rows is a sum of squares of minors — this is Layer 3.4's `Matrix.det_mul_transpose_self_nonneg`
-— and under the rank hypothesis it is *positive*, `Int.Matrix.det_pos`. The statements here carry
-no absolute value, and the hypothesis is stated as `Int.Matrix.linearIndependent_row_map_rat_iff`
-makes available: linear independence of the rows over `ℚ` is exactly `(A * Aᵀ).det ≠ 0`, a
-condition on the integer matrix alone.
-
-⚠ **The milestone needs Layer 3.5, which its pricing does not mention.** The roadmap prices 5.2 at
-"3.4, 4.2, 4.5 and the `ℚ`-case of 4.3", and Layer 4.3 delivers the covolume of the solution
-lattice as the Arakelov height of the *solution space*. Turning that into the minors of `A` is the
-duality theorem `Matrix.arakelovMulHeight_ker_mulVecLin` of Layer 3.5, and nothing else will do:
-the Plücker coordinates of the kernel are the complementary minors, which is what duality says.
-So the `ℚ` spine is 3.1 → 3.2 → 3.3 → 3.4, 3.5 → 4.1 → 4.2 → 4.3(`ℚ`) → 4.5 → 5.2, one rung longer
-than advertised, and every rung of it is landed.
-
-⚠ **The `2^n` of Minkowski's second theorem and the `2^n` of Vaaler's cube-slicing theorem cancel
-exactly, and that is the whole of why the constant is `1`.** Layer 4.2 bounds
-`(∏ λ i) · vol B` by `2^n · covol L`, and Layer 4.5 bounds `vol B` below by `2^n` for `B` the cube
-slice; the product of the minima is therefore at most the covolume, with no constant at all. Any
-body with a worse slice bound would leave a constant behind, which is precisely what happens over a
-number field with a complex place — Layer 5.4's `(2/π)^{k r₂ / d}`.
-
-⚠ **The basis form needs no hypothesis `M < N`.**
-`Int.Matrix.exists_linearIndependent_mulVec_eq_zero_prod_iSup_abs_le` is stated for `Fin (N - M)`
-solutions and is sharp at `N = M`, where both sides are `1`: the empty
-product on the left, and on the right the Arakelov height of the zero subspace. Only the one-vector
-form needs `M < N`, and there it is not removable — the exponent `1/(N - M)` requires it.
-
-⚠ **The left-hand side is the sup norm, and the height form is strictly weaker.** By Layer 5.1's
-`Rat.gcd_mul_mulHeight_intCast` the height of an integer tuple is its sup norm divided by the
-content, so `∏ H(x l) ≤ ∏ max |x l n|` with equality exactly when every `x l` is primitive. The
-basis produced here is *not* primitive in general — the minima vectors of a lattice need not be —
-so the height form recorded as
-`Int.Matrix.exists_linearIndependent_mulVec_eq_zero_prod_mulHeight_le` is a genuine weakening, and
-it is the form Layer 5.4 generalizes.
-
-## References
-
-E. Bombieri and J. Vaaler, "On Siegel's lemma", *Inventiones Mathematicae* **73** (1983), 11–32,
-Theorems 1 and 2, and equation (2.5) for the invariance.
-
-I. Aliev and M. Henk, "Successive minima and best simultaneous Diophantine approximations",
-*Monatshefte für Mathematik* **147** (2006), 95–101, §6, Theorems 6.2–6.3, where this assembly is
-written out adele-free and the `ℚ` case of the covolume identity is quoted as folklore.
-
-E. Bombieri and W. Gubler, *Heights in Diophantine Geometry*, Cambridge University Press (2006),
-Theorem 2.9.4 and Remark 2.9.5 for the number-field statement this is the `K = ℚ` case of.
-
-This is Layer 5.2 of the `ArithmeticHeights` roadmap.
--/
+public import Mathlib.Algebra.Field.ZMod
+public import Mathlib.Algebra.Module.ZLattice.Basic
+public import Mathlib.LinearAlgebra.Dual.Basis
+public import Mathlib.LinearAlgebra.ExteriorPower.Basis
+public import Mathlib.LinearAlgebra.FreeModule.PID
+public import Mathlib.LinearAlgebra.Matrix.Block
+public import Mathlib.LinearAlgebra.Matrix.NonsingularInverse
+public import Mathlib.LinearAlgebra.Matrix.Rank
+public import Mathlib.LinearAlgebra.Projectivization.Basic
+public import Mathlib.MeasureTheory.Group.GeometryOfNumbers
+public import Mathlib.RingTheory.Polynomial.UniqueFactorization
 
 public section
 
-open Finset MeasureTheory Module Submodule Matrix exteriorPower
+open Finset MeasureTheory Module Submodule Matrix
 open scoped ENNReal Pointwise
 
-/-!
-### The central slice of the unit cube
-
-The convex body Minkowski's second theorem is applied to. Everything in this section is elementary;
-the one statement with content about it is Layer 4.5's `two_pow_finrank_le_volume_inter_cube`, which
-bounds its volume below by `2 ^ dim V`.
--/
-
-namespace Submodule
-
-variable {ι : Type*} (V : Submodule ℝ (EuclideanSpace ℝ ι))
-
-/-- The **central slice of the unit cube** `[-1, 1]^ι` by a subspace `V` of `EuclideanSpace ℝ ι`,
-as a subset of `V`. -/
-def cubeSlice : Set ↥V := {y : ↥V | ∀ i, |(y : EuclideanSpace ℝ ι) i| ≤ 1}
-
-/-- A dilation of the cube slice is the slice of the corresponding cube, which is how a bound by a
-successive minimum is read off. -/
-theorem mem_smul_cubeSlice {r : ℝ} (hr : 0 < r) {y : ↥V} :
-    y ∈ r • V.cubeSlice ↔ ∀ i, |(y : EuclideanSpace ℝ ι) i| ≤ r := by
-  have h : r • V.cubeSlice = {y : ↥V | ∀ i, |(y : EuclideanSpace ℝ ι) i| ≤ r} := by
-    rw [show V.cubeSlice = {y : ↥V | ∀ i, |(y : EuclideanSpace ℝ ι) i| ≤ 1} from rfl,
-      smul_setOf_abs_le V hr, mul_one]
-  rw [h]
-  exact Iff.rfl
-
-theorem convex_cubeSlice : Convex ℝ V.cubeSlice := by
-  intro x hx y hy a b ha hb hab i
-  have h : ((a • x + b • y : ↥V) : EuclideanSpace ℝ ι) i
-      = a * (x : EuclideanSpace ℝ ι) i + b * (y : EuclideanSpace ℝ ι) i := by
-    simp
-  rw [h]
-  calc |a * (x : EuclideanSpace ℝ ι) i + b * (y : EuclideanSpace ℝ ι) i|
-      ≤ |a * (x : EuclideanSpace ℝ ι) i| + |b * (y : EuclideanSpace ℝ ι) i| := abs_add_le _ _
-    _ = a * |(x : EuclideanSpace ℝ ι) i| + b * |(y : EuclideanSpace ℝ ι) i| := by
-        rw [abs_mul, abs_mul, abs_of_nonneg ha, abs_of_nonneg hb]
-    _ ≤ a * 1 + b * 1 := by gcongr; exacts [hx i, hy i]
-    _ = 1 := by rw [mul_one, mul_one, hab]
-
-theorem neg_mem_cubeSlice {x : ↥V} (hx : x ∈ V.cubeSlice) : -x ∈ V.cubeSlice := by
-  intro i
-  have h : ((-x : ↥V) : EuclideanSpace ℝ ι) i = -(x : EuclideanSpace ℝ ι) i := by simp
-  rw [h, abs_neg]
-  exact hx i
-
-theorem isClosed_cubeSlice : IsClosed V.cubeSlice := by
-  have h : V.cubeSlice = ⋂ i, (fun y : ↥V ↦ (y : EuclideanSpace ℝ ι) i) ⁻¹' (Set.Icc (-1) 1) := by
-    ext y
-    simp [cubeSlice, abs_le, Set.mem_Icc]
-  rw [h]
-  refine isClosed_iInter fun i ↦ IsClosed.preimage ?_ isClosed_Icc
-  fun_prop
-
-theorem isBounded_cubeSlice [Finite ι] : Bornology.IsBounded V.cubeSlice := by
-  have : Fintype ι := Fintype.ofFinite ι
-  refine Bornology.IsBounded.subset
-    (Metric.isBounded_closedBall (x := (0 : ↥V)) (r := Real.sqrt (Fintype.card ι))) ?_
-  intro y hy
-  rw [Metric.mem_closedBall, dist_zero_right]
-  have hnorm : ‖y‖ = ‖(y : EuclideanSpace ℝ ι)‖ := rfl
-  rw [hnorm, EuclideanSpace.norm_eq]
-  refine Real.sqrt_le_sqrt ?_
-  calc ∑ i, ‖(y : EuclideanSpace ℝ ι) i‖ ^ 2 ≤ ∑ _i : ι, (1 : ℝ) := by
-        refine Finset.sum_le_sum fun i _ ↦ ?_
-        rw [Real.norm_eq_abs]
-        nlinarith [abs_nonneg ((y : EuclideanSpace ℝ ι) i), hy i]
-    _ = (Fintype.card ι : ℝ) := by simp
-
-theorem interior_cubeSlice_nonempty [Finite ι] : (interior V.cubeSlice).Nonempty := by
-  set U : Set ↥V := ⋂ i, (fun y : ↥V ↦ (y : EuclideanSpace ℝ ι) i) ⁻¹' (Set.Ioo (-1) 1) with hU
-  have hsub : U ⊆ V.cubeSlice := by
-    intro y hy i
-    rw [hU] at hy
-    simp only [Set.mem_iInter, Set.mem_preimage, Set.mem_Ioo] at hy
-    exact abs_le.2 ⟨(hy i).1.le, (hy i).2.le⟩
-  have hopen : IsOpen U := by
-    rw [hU]
-    refine isOpen_iInter_of_finite fun i ↦ IsOpen.preimage ?_ isOpen_Ioo
-    fun_prop
-  have hmem : (0 : ↥V) ∈ U := by rw [hU]; simp
-  exact ⟨0, interior_maximal hsub hopen hmem⟩
-
-end Submodule
-
-/-!
-### Minkowski's second theorem against the cube slice
-
-Layers 4.2 and 4.5, combined: the two factors `2 ^ n` cancel and the product of the successive
-minima is bounded by the covolume with no constant.
--/
-
-namespace ZLattice
-
-variable {ι : Type*} [Fintype ι] (V : Submodule ℝ (EuclideanSpace ℝ ι))
-
-/-- **The geometric half of Bombieri–Vaaler's theorem.** For the central slice of the unit cube as
-the convex body, the product of the successive minima of a lattice in a subspace of
-`EuclideanSpace ℝ ι` is at most the covolume of the lattice. The `2 ^ n` of Minkowski's second
-theorem (Layer 4.2) is cancelled exactly by Vaaler's slice bound (Layer 4.5). -/
-theorem prod_successiveMinimum_cubeSlice_le_covolume (L : Submodule ℤ ↥V) [DiscreteTopology L]
-    [IsZLattice ℝ L] :
-    ∏ i ∈ Finset.range (finrank ℝ ↥V), successiveMinimum L V.cubeSlice i ≤ covolume L := by
-  have hM := prod_successiveMinimum_mul_measure_le L volume V.convex_cubeSlice
-    (fun _ hx ↦ V.neg_mem_cubeSlice hx) V.interior_cubeSlice_nonempty V.isBounded_cubeSlice
-  have hvol : (2 : ℝ≥0∞) ^ finrank ℝ ↥V ≤ volume V.cubeSlice :=
-    two_pow_finrank_le_volume_inter_cube V
-  have hfin : volume V.cubeSlice ≠ ⊤ := (V.isBounded_cubeSlice.measure_lt_top).ne
-  have hvolr : (2 : ℝ) ^ finrank ℝ ↥V ≤ (volume V.cubeSlice).toReal := by
-    rw [show ((2 : ℝ) ^ finrank ℝ ↥V) = ((2 : ℝ≥0∞) ^ finrank ℝ ↥V).toReal by
-      rw [ENNReal.toReal_pow]; norm_num]
-    exact ENNReal.toReal_mono hfin hvol
-  have hppos : 0 < ∏ i ∈ Finset.range (finrank ℝ ↥V), successiveMinimum L V.cubeSlice i :=
-    Finset.prod_pos fun i hi ↦ successiveMinimum_pos L V.convex_cubeSlice
-      (fun _ hx ↦ V.neg_mem_cubeSlice hx) V.interior_cubeSlice_nonempty V.isBounded_cubeSlice
-      (Finset.mem_range.1 hi)
-  have h2pos : (0 : ℝ) < 2 ^ finrank ℝ ↥V := by positivity
-  nlinarith [hM, hvolr, hppos, h2pos]
-
-end ZLattice
-
-/-!
-### The Arakelov height of an integer tuple
-
-The Arakelov analogue of Layer 5.1's `Rat.gcd_mul_mulHeight_intCast`, which is what turns the
-Plücker point of the row space into a euclidean norm of minors.
--/
-
-namespace NumberField
-
-/-- **The Arakelov sup-norm-to-height translation.** The Arakelov height of a nonzero tuple of
-integers, read as a tuple of rationals, is its euclidean norm divided by the greatest common
-divisor of its entries. Layer 4.3's `NumberField.arakelovMulHeight_intCast_of_gcd_eq_one` is the
-primitive case, and Layer 5.1's `Rat.gcd_mul_mulHeight_intCast` is the same statement for the sup
-norm. -/
-theorem gcd_mul_arakelovMulHeight_intCast {κ : Type*} [Fintype κ] {x : κ → ℤ} (hx : x ≠ 0) :
-    ((univ.gcd x : ℤ) : ℝ) * arakelovMulHeight (((↑) : ℤ → ℚ) ∘ x) =
-      Real.sqrt (∑ i, ((x i : ℝ)) ^ 2) := by
-  obtain ⟨i₀, hi₀⟩ := Function.ne_iff.mp hx
-  have hg0 : univ.gcd x ≠ 0 := fun h ↦ hi₀ (Finset.gcd_eq_zero_iff.1 h i₀ (mem_univ i₀))
-  have hgnn : 0 ≤ univ.gcd x := by
-    rw [← Finset.normalize_gcd, ← Int.abs_eq_normalize]
-    exact abs_nonneg _
-  have hdvd : ∀ i, univ.gcd x ∣ x i := fun i ↦ Finset.gcd_dvd (mem_univ i)
-  set y : κ → ℤ := fun i ↦ x i / univ.gcd x with hy
-  have hxy : ∀ i, x i = univ.gcd x * y i := fun i ↦ (Int.mul_ediv_cancel' (hdvd i)).symm
-  have hy1 : univ.gcd y = 1 := Finset.gcd_div_eq_one (mem_univ i₀) hi₀
-  have hsmul : (((↑) : ℤ → ℚ) ∘ x) = ((univ.gcd x : ℤ) : ℚ) • (((↑) : ℤ → ℚ) ∘ y) := by
-    funext i
-    simp only [Function.comp_apply, Pi.smul_apply, smul_eq_mul]
-    exact_mod_cast congrArg (Int.cast : ℤ → ℚ) (hxy i)
-  rw [hsmul, arakelovMulHeight_smul_eq _ (by exact_mod_cast hg0),
-    arakelovMulHeight_intCast_of_gcd_eq_one hy1,
-    show ((univ.gcd x : ℤ) : ℝ) = Real.sqrt (((univ.gcd x : ℤ) : ℝ) ^ 2) by
-      rw [Real.sqrt_sq (by exact_mod_cast hgnn)], ← Real.sqrt_mul (by positivity), Finset.mul_sum]
+/-- Cauchy–Binet identity: the determinant of `A * B` is the sum of products of maximal minors. -/
+theorem Matrix.det_mul_eq_sum_det_submatrix {R : Type*} [CommRing R] {ι : Type*} [Fintype ι]
+    [LinearOrder ι] {m : ℕ} (A : Matrix (Fin m) ι R) (B : Matrix ι (Fin m) R) :
+    (A * B).det = ∑ s : Fin m ↪o ι, (A.submatrix id s).det * (B.submatrix s id).det := by
+  let b := Pi.basisFun R ι
+  let x := exteriorPower.ιMulti R m A.row
+  let y := exteriorPower.ιMulti R m Bᵀ.row
+  have hpair : exteriorPower.pairingDual R (ι → R) m (exteriorPower.map m b.toDual x) y =
+      ∑ s : Set.powersetCard ι m,
+        (b.exteriorPower m).repr x s * (b.exteriorPower m).repr y s := by
+    conv_lhs => rw [← (b.exteriorPower m).sum_repr x]
+    rw [map_sum, map_sum, LinearMap.sum_apply]
+    refine Finset.sum_congr rfl fun s _ => ?_
+    rw [map_smul, map_smul, LinearMap.smul_apply, smul_eq_mul]
+    congr 1
+    rw [exteriorPower.basis_apply, exteriorPower.map_apply_ιMulti_family,
+      show b.toDual ∘ b = b.coord from funext b.coe_toDual_self, exteriorPower.basis_repr_apply]
+    rfl
+  rw [exteriorPower.map_apply_ιMulti, exteriorPower.pairingDual_ιMulti_ιMulti] at hpair
+  have hlhs : (Matrix.of fun i j => (b.toDual ∘ A.row) j (Bᵀ.row i)).det = (A * B).det := by
+    have hdot (u v : ι → R) : b.toDual u v = u ⬝ᵥ v := by
+      conv_lhs => rw [← b.sum_repr v]
+      rw [map_sum]
+      simp only [map_smul, b, Basis.toDual_apply_left, Pi.basisFun_repr, smul_eq_mul, dotProduct]
+      exact Finset.sum_congr rfl fun _ _ => mul_comm _ _
+    simp only [Function.comp_apply, hdot]
+    rw [← Matrix.det_transpose (Matrix.of fun i j => A.row j ⬝ᵥ Bᵀ.row i)]; rfl
+  rw [← hlhs, hpair, ← Equiv.sum_comp Set.powersetCard.ofFinEmbEquiv]
+  refine Finset.sum_congr rfl fun s _ => ?_
+  simp only [x, y, b, exteriorPower.basis_repr_apply, exteriorPower.ιMultiDual_apply_ιMulti,
+    Set.powersetCard.ofFinEmbEquiv.symm_apply_apply, Basis.coord_apply, Pi.basisFun_repr]
   congr 1
-  refine Finset.sum_congr rfl fun i _ ↦ ?_
-  rw [← mul_pow]
-  norm_cast
-  rw [← hxy i]
-
-end NumberField
-
-/-!
-### The greatest common divisor of the maximal minors
--/
+  rw [← Matrix.det_transpose (B.submatrix s id), Matrix.transpose_submatrix]; rfl
 
 namespace Int.Matrix
 
 variable {ι : Type*} [Fintype ι] [LinearOrder ι] {m : ℕ}
 
-/-- The **greatest common divisor of the maximal minors** of an integer matrix — the `D` of
-Bombieri–Vaaler. The minors are Layer 3.1's Plücker coordinates of the rows, indexed by the sets of
-`m` columns. -/
-noncomputable def minorGcd (A : _root_.Matrix (Fin m) ι ℤ) : ℤ :=
-  (univ : Finset (Set.powersetCard ι m)).gcd (plucker m A.row)
+/-- Greatest common divisor of the `m × m` minors of an `m × ι` integer matrix. -/
+@[expose] noncomputable def minorGcd (A : _root_.Matrix (Fin m) ι ℤ) : ℤ :=
+  (Finset.univ : Finset (Fin m ↪o ι)).gcd fun s => (A.submatrix id s).det
 
-/-- The minors of the rational matrix are the minors of the integer matrix, cast. -/
-private theorem plucker_row_map_rat (A : _root_.Matrix (Fin m) ι ℤ) :
-    plucker m (A.map ((↑) : ℤ → ℚ)).row = ((↑) : ℤ → ℚ) ∘ plucker m A.row :=
-  funext fun s ↦ plucker_row_map (Int.castRingHom ℚ) A s
+private theorem det_gram_eq (A : _root_.Matrix (Fin m) ι ℤ) :
+    (A * Aᵀ).det = ∑ s : Fin m ↪o ι, (A.submatrix id s).det ^ 2 := by
+  rw [_root_.Matrix.det_mul_eq_sum_det_submatrix]
+  exact Finset.sum_congr rfl fun s _ => by rw [sq, ← _root_.Matrix.det_transpose (Aᵀ.submatrix s id)]; rfl
 
-/-- Under the rank hypothesis some maximal minor is nonzero. -/
-private theorem plucker_row_ne_zero {A : _root_.Matrix (Fin m) ι ℤ}
-    (hA : LinearIndependent ℚ (A.map ((↑) : ℤ → ℚ)).row) : plucker m A.row ≠ 0 := by
-  intro h
-  refine (linearIndependent_row_iff_plucker_row_ne_zero (A.map ((↑) : ℤ → ℚ))).1 hA ?_
-  rw [plucker_row_map_rat, h]
-  rfl
-
-/-- **The Gram determinant is positive** under the rank hypothesis, so the Bombieri–Vaaler bound is
-a positive real and the absolute value the literature writes around `det (A Aᵀ)` is redundant. -/
-theorem det_pos {A : _root_.Matrix (Fin m) ι ℤ}
+private theorem det_pos {A : _root_.Matrix (Fin m) ι ℤ}
     (hA : LinearIndependent ℚ (A.map ((↑) : ℤ → ℚ)).row) : 0 < (A * Aᵀ).det := by
-  rw [_root_.Matrix.det_mul_transpose_self_eq_sum_sq]
-  obtain ⟨s, hs⟩ := Function.ne_iff.1 (plucker_row_ne_zero hA)
-  refine Finset.sum_pos' (fun t _ ↦ sq_nonneg _) ⟨s, mem_univ s, ?_⟩
-  have hs' : plucker m A.row s ≠ 0 := by simpa using hs
-  exact lt_of_le_of_ne (sq_nonneg _) (Ne.symm (pow_ne_zero 2 hs'))
+  refine lt_of_le_of_ne (det_gram_eq A ▸ Finset.sum_nonneg fun _ _ => sq_nonneg _) fun h0 => ?_
+  set Aq := A.map ((↑) : ℤ → ℚ)
+  have hdet0 : (Aq * Aqᵀ).det = 0 := by
+    rw [show Aq * Aqᵀ = (Int.castRingHom ℚ).mapMatrix (A * Aᵀ) by ext; simp [Aq, _root_.Matrix.mul_apply],
+      ← RingHom.map_det, ← h0, map_zero]
+  obtain ⟨c, hc0, hc⟩ := _root_.Matrix.exists_mulVec_eq_zero_iff.mpr hdet0
+  set w := Aqᵀ *ᵥ c
+  have hw2 : w ⬝ᵥ w = 0 := by
+    have h2 : c ⬝ᵥ (Aq *ᵥ w) = 0 := by rw [_root_.Matrix.mulVec_mulVec, hc, dotProduct_zero]
+    rwa [_root_.Matrix.dotProduct_mulVec, show c ᵥ* Aq = w from funext fun _ => dotProduct_comm _ _] at h2
+  have hw0 (j : ι) : w j = 0 := sq_eq_zero_iff.mp <|
+    (Finset.sum_eq_zero_iff_of_nonneg fun _ _ => sq_nonneg _).mp (by simpa [dotProduct, sq] using hw2) j (mem_univ j)
+  refine hc0 (funext fun i => Fintype.linearIndependent_iff.mp hA c ?_ i)
+  ext j; simpa [w, _root_.Matrix.mulVec, dotProduct, Finset.sum_apply, mul_comm] using hw0 j
 
-/-- The divisor `D` is at least `1` under the rank hypothesis: it is a normalized greatest common
-divisor of integers not all zero. -/
 theorem one_le_minorGcd {A : _root_.Matrix (Fin m) ι ℤ}
     (hA : LinearIndependent ℚ (A.map ((↑) : ℤ → ℚ)).row) : 1 ≤ minorGcd A := by
-  have hD0 : minorGcd A ≠ 0 := fun h ↦ plucker_row_ne_zero hA
-    (funext fun s ↦ Finset.gcd_eq_zero_iff.1 h s (mem_univ s))
-  have hDnn : 0 ≤ minorGcd A := by
-    rw [minorGcd, ← Finset.normalize_gcd, ← Int.abs_eq_normalize]
-    exact abs_nonneg _
+  have hpos := det_gram_eq A ▸ det_pos hA
+  have hne : minorGcd A ≠ 0 := fun h => by
+    simp [fun s => Finset.gcd_eq_zero_iff.mp h s (mem_univ s)] at hpos
+  have hnn : 0 ≤ minorGcd A := by
+    rw [minorGcd, ← Finset.normalize_gcd, ← Int.abs_eq_normalize]; exact abs_nonneg _
   omega
 
-/-- **The identity the Bombieri–Vaaler bound is**: `D` times the Arakelov height of the solution
-space of `A x = 0` is `√(det (A Aᵀ))`. Layer 3.5 identifies the height of the solution space with
-that of the row space, Layer 3.3 computes the latter as the height of the tuple of maximal minors,
-and `NumberField.gcd_mul_arakelovMulHeight_intCast` divides out its content; the sum of squares of
-minors is Layer 3.4's Cauchy–Binet identity. -/
-theorem minorGcd_mul_arakelovMulHeight_ker (A : _root_.Matrix (Fin m) ι ℤ)
-    (hA : LinearIndependent ℚ (A.map ((↑) : ℤ → ℚ)).row) :
-    ((minorGcd A : ℤ) : ℝ) *
-        (LinearMap.ker (A.map ((↑) : ℤ → ℚ)).mulVecLin).arakelovMulHeight
-      = Real.sqrt (((A * Aᵀ).det : ℤ) : ℝ) := by
-  have hp := plucker_row_map_rat A
-  have hne := plucker_row_ne_zero hA
-  rw [_root_.Matrix.arakelovMulHeight_ker_mulVecLin, Submodule.arakelovMulHeight_span_range hA, hp,
-    minorGcd, NumberField.gcd_mul_arakelovMulHeight_intCast hne,
-    _root_.Matrix.det_mul_transpose_self_eq_sum_sq]
-  push_cast
-  rfl
-
-/-!
-### Bombieri–Vaaler's theorems
--/
-
-omit [LinearOrder ι] in
-/-- The solution space of `A x = 0` has dimension `N - M` when the rows are independent. -/
-private theorem finrank_ker (A : _root_.Matrix (Fin m) ι ℤ)
-    (hA : LinearIndependent ℚ (A.map ((↑) : ℤ → ℚ)).row) :
-    finrank ℚ ↥(LinearMap.ker (A.map ((↑) : ℤ → ℚ)).mulVecLin) = Fintype.card ι - m := by
-  have hrank : (A.map ((↑) : ℤ → ℚ)).rank = m := by
-    simpa using hA.rank_matrix
-  have h := LinearMap.finrank_range_add_finrank_ker (A.map ((↑) : ℤ → ℚ)).mulVecLin
-  rw [show finrank ℚ ↥(LinearMap.range (A.map ((↑) : ℤ → ℚ)).mulVecLin)
-      = (A.map ((↑) : ℤ → ℚ)).rank from rfl, hrank] at h
-  simp only [Module.finrank_pi] at h
-  omega
-
-/-- **Bombieri–Vaaler's Theorem 2** (Bombieri–Vaaler 1983, Theorem 2; Aliev–Henk §6, Theorem 6.3).
-For an `M × N` integer matrix with linearly independent rows there are `N - M` linearly independent
-integral solutions of `A x = 0` whose sup norms have product at most `D⁻¹ √(det (A Aᵀ))`, `D` the
-greatest common divisor of the maximal minors.
-
-No hypothesis `M < N` is needed: at `N = M` the conclusion is the empty product `1` on the left and
-the Arakelov height of the zero subspace, also `1`, on the right. -/
-theorem exists_linearIndependent_mulVec_eq_zero_prod_iSup_abs_le (A : _root_.Matrix (Fin m) ι ℤ)
-    (hA : LinearIndependent ℚ (A.map ((↑) : ℤ → ℚ)).row) :
-    ∃ x : Fin (Fintype.card ι - m) → (ι → ℤ), LinearIndependent ℤ x ∧ (∀ l, A *ᵥ x l = 0) ∧
-      (∏ l, ((⨆ i, |x l i| : ℤ) : ℝ)) ≤
-        Real.sqrt (((A * Aᵀ).det : ℤ) : ℝ) / ((minorGcd A : ℤ) : ℝ) := by
-  set Aq := A.map ((↑) : ℤ → ℚ) with hAqdef
-  set V := LinearMap.ker Aq.mulVecLin with hVdef
-  have hrs : finrank ℝ ↥V.realSpan = Fintype.card ι - m := by
-    rw [Submodule.finrank_realSpan, hVdef, finrank_ker A hA]
-  have hmink := ZLattice.prod_successiveMinimum_cubeSlice_le_covolume V.realSpan V.intLattice
-  rw [Submodule.covolume_intLattice] at hmink
-  obtain ⟨v, hvL, hvind, hvmem⟩ :=
-    ZLattice.exists_linearIndependent_mem_smul_successiveMinimum V.intLattice
-      V.realSpan.convex_cubeSlice (fun _ hx ↦ V.realSpan.neg_mem_cubeSlice hx)
-      V.realSpan.interior_cubeSlice_nonempty V.realSpan.isBounded_cubeSlice
-      V.realSpan.isClosed_cubeSlice
-  choose z hzV hzc using fun j ↦ Submodule.mem_intLattice.1 (hvL j)
-  have hzco : ∀ j i, ((z j i : ℤ) : ℝ) = (v j : EuclideanSpace ℝ ι) i := fun j i ↦ by
-    rw [hzc j]; rfl
-  rw [← hrs]
-  refine ⟨z, ?_, ?_, ?_⟩
-  · rw [Fintype.linearIndependent_iff]
-    intro c hc j
-    have key : ∑ l, (c l : ℝ) • v l = 0 := by
-      refine Submodule.coe_eq_zero.1 ?_
-      ext i
-      have hco : ((∑ l, (c l : ℝ) • v l : ↥V.realSpan) : EuclideanSpace ℝ ι) i
-          = ∑ l, (c l : ℝ) * (v l : EuclideanSpace ℝ ι) i := by
-        push_cast
-        simp [Finset.sum_apply]
-      rw [hco]
-      have h2 : ∀ l, (c l : ℝ) * (v l : EuclideanSpace ℝ ι) i = ((c l * z l i : ℤ) : ℝ) :=
-        fun l ↦ by rw [← hzco l i]; push_cast; ring
-      rw [Finset.sum_congr rfl fun l _ ↦ h2 l, ← Int.cast_sum]
-      have h3 : ∑ l, c l * z l i = 0 := by
-        have := congrFun hc i
-        simpa [Finset.sum_apply] using this
-      rw [h3]
-      simp
-    exact_mod_cast Fintype.linearIndependent_iff.1 hvind (fun l ↦ (c l : ℝ)) key j
-  · intro l
-    funext i
-    have h : (Aq *ᵥ Rat.piIntCast ι (z l)) i = 0 := by
-      have hk := LinearMap.mem_ker.1 (hzV l)
-      rw [_root_.Matrix.mulVecLin_apply] at hk
-      exact congrFun hk i
-    have hcast : ((A *ᵥ z l) i : ℚ) = (Aq *ᵥ Rat.piIntCast ι (z l)) i := by
-      simp only [_root_.Matrix.mulVec, dotProduct, hAqdef, _root_.Matrix.map_apply,
-        Rat.piIntCast_apply]
-      push_cast
-      rfl
-    have hz : ((A *ᵥ z l) i : ℚ) = 0 := by rw [hcast, h]
-    exact_mod_cast hz
-  · have hid : ((minorGcd A : ℤ) : ℝ) * V.arakelovMulHeight
-        = Real.sqrt (((A * Aᵀ).det : ℤ) : ℝ) := minorGcd_mul_arakelovMulHeight_ker A hA
-    have hD1 : (1 : ℝ) ≤ ((minorGcd A : ℤ) : ℝ) := by exact_mod_cast one_le_minorGcd hA
-    have hDne : ((minorGcd A : ℤ) : ℝ) ≠ 0 := by linarith
-    have hrhs : Real.sqrt (((A * Aᵀ).det : ℤ) : ℝ) / ((minorGcd A : ℤ) : ℝ)
-        = V.arakelovMulHeight := by
-      rw [← hid, mul_comm, mul_div_assoc, div_self hDne, mul_one]
-    rw [hrhs]
-    refine le_trans ?_ hmink
-    rw [← Fin.prod_univ_eq_prod_range]
-    have hbound : ∀ l : Fin (finrank ℝ ↥V.realSpan),
-        0 ≤ (((⨆ i, |z l i| : ℤ)) : ℝ) ∧ (((⨆ i, |z l i| : ℤ)) : ℝ) ≤
-          ZLattice.successiveMinimum V.intLattice V.realSpan.cubeSlice l := by
-      intro l
-      have hne : Nonempty ι := by
-        have h1 : 0 < finrank ℝ ↥V.realSpan := lt_of_le_of_lt (Nat.zero_le _) l.isLt
-        rw [hrs] at h1
-        exact Fintype.card_pos_iff.1 (by omega)
-      obtain ⟨i₀, hi₀⟩ := exists_eq_ciSup_of_finite (f := fun i ↦ |z l i|)
-      have hval : (((⨆ i, |z l i| : ℤ)) : ℝ) = |(v l : EuclideanSpace ℝ ι) i₀| := by
-        rw [← hi₀, Int.cast_abs, hzco l i₀]
-      rw [hval]
-      refine ⟨abs_nonneg _, (V.realSpan.mem_smul_cubeSlice ?_).1 (hvmem l) i₀⟩
-      exact ZLattice.successiveMinimum_pos V.intLattice V.realSpan.convex_cubeSlice
-        (fun _ hx ↦ V.realSpan.neg_mem_cubeSlice hx) V.realSpan.interior_cubeSlice_nonempty
-        V.realSpan.isBounded_cubeSlice l.isLt
-    exact Finset.prod_le_prod₀ (fun l _ ↦ (hbound l).1) fun l _ ↦ (hbound l).2
-
-/-- **Bombieri–Vaaler's Theorem 1** (Bombieri–Vaaler 1983, Theorem 1; Aliev–Henk §6, Theorem 6.2).
-For an `M × N` integer matrix with linearly independent rows and `M < N` there is a nonzero
-integral solution of `A x = 0` with sup norm at most `(D⁻¹ √(det (A Aᵀ)))^{1/(N - M)}`.
-
-Unlike the bound of Layer 5.1 this one is invariant under `A ↦ U A` for `U ∈ GL_M(ℤ)`, by
-`Int.Matrix.sqrt_det_div_minorGcd_unit_mul`. -/
+/-- Bombieri–Vaaler's Theorem 1: for an `m × ι` integer matrix with linearly independent rows
+and `m < Fintype.card ι`, there is a nonzero integral solution `A *ᵥ x = 0` with sup norm at most
+`(√det(A Aᵀ) / minorGcd A) ^ (1 / (card ι - m))`. -/
 theorem exists_ne_zero_mulVec_eq_zero_iSup_abs_le_det_rpow (A : _root_.Matrix (Fin m) ι ℤ)
     (hA : LinearIndependent ℚ (A.map ((↑) : ℤ → ℚ)).row) (hmn : m < Fintype.card ι) :
     ∃ x : ι → ℤ, x ≠ 0 ∧ A *ᵥ x = 0 ∧
       ((⨆ i, |x i| : ℤ) : ℝ) ≤
         (Real.sqrt (((A * Aᵀ).det : ℤ) : ℝ) / ((minorGcd A : ℤ) : ℝ)) ^
           (((Fintype.card ι : ℝ) - m)⁻¹) := by
-  have hk0 : Fintype.card ι - m ≠ 0 := by omega
-  have hkr : ((Fintype.card ι : ℝ) - m) = ((Fintype.card ι - m : ℕ) : ℝ) := by
-    rw [Nat.cast_sub hmn.le]
-  have hD1 : (1 : ℝ) ≤ ((minorGcd A : ℤ) : ℝ) := by exact_mod_cast one_le_minorGcd hA
-  have hCpos : 0 < Real.sqrt (((A * Aᵀ).det : ℤ) : ℝ) / ((minorGcd A : ℤ) : ℝ) := by
-    refine div_pos (Real.sqrt_pos.2 ?_) (by linarith)
-    exact_mod_cast det_pos hA
-  obtain ⟨x, hxind, hxA, hxprod⟩ := exists_linearIndependent_mulVec_eq_zero_prod_iSup_abs_le A hA
-  have hsnn : ∀ l, 0 ≤ ((⨆ i, |x l i| : ℤ) : ℝ) := by
-    intro l
-    have hne : Nonempty ι := Fintype.card_pos_iff.1 (by omega)
-    obtain ⟨i₀, hi₀⟩ := exists_eq_ciSup_of_finite (f := fun i ↦ |x l i|)
-    rw [← hi₀]
-    exact_mod_cast abs_nonneg (x l i₀)
-  have hne : Nonempty (Fin (Fintype.card ι - m)) :=
-    Fin.pos_iff_nonempty.1 (Nat.pos_of_ne_zero hk0)
-  obtain ⟨l₀, -, hmin⟩ := Finset.exists_min_image (Finset.univ : Finset (Fin (Fintype.card ι - m)))
-    (fun l ↦ ((⨆ i, |x l i| : ℤ) : ℝ)) ⟨Classical.arbitrary _, mem_univ _⟩
-  have hpow : ((⨆ i, |x l₀ i| : ℤ) : ℝ) ^ (Fintype.card ι - m)
-      ≤ Real.sqrt (((A * Aᵀ).det : ℤ) : ℝ) / ((minorGcd A : ℤ) : ℝ) := by
-    calc ((⨆ i, |x l₀ i| : ℤ) : ℝ) ^ (Fintype.card ι - m)
-        = ∏ _l : Fin (Fintype.card ι - m), ((⨆ i, |x l₀ i| : ℤ) : ℝ) := by
-          rw [Finset.prod_const, Finset.card_univ, Fintype.card_fin]
-      _ ≤ ∏ l, ((⨆ i, |x l i| : ℤ) : ℝ) :=
-          Finset.prod_le_prod₀ (fun l _ ↦ hsnn l₀) fun l _ ↦ hmin l (mem_univ l)
-      _ ≤ _ := hxprod
-  refine ⟨x l₀, hxind.ne_zero l₀, hxA l₀, ?_⟩
-  rw [hkr]
-  refine (pow_le_pow_iff_left₀ (hsnn l₀) (Real.rpow_nonneg hCpos.le _) hk0).1 ?_
-  rw [Real.rpow_inv_natCast_pow hCpos.le hk0]
-  exact hpow
+  classical
+  set K := LinearMap.ker A.mulVecLin
+  obtain ⟨r, snf⟩ := K.smithNormalForm (Pi.basisFun ℤ ι)
+  have hbK (l : Fin r) : A *ᵥ snf.bM (snf.f l) = 0 := by
+    have ha : snf.a l ≠ 0 := fun h => Subtype.coe_injective.ne (snf.bN.ne_zero l) (by simp [snf.snf, h])
+    have hmul : A.mulVecLin (snf.a l • snf.bM (snf.f l)) = 0 :=
+      snf.snf l ▸ LinearMap.mem_ker.mp (snf.bN l).2
+    exact smul_eq_zero.mp (map_smul A.mulVecLin _ _ ▸ hmul) |>.resolve_left ha
+  let U : _root_.Matrix ι ι ℤ := _root_.Matrix.of snf.bM
+  let Uinv : _root_.Matrix ι ι ℤ := fun j k => snf.bM.repr (Pi.single j 1) k
+  have hUinvU : Uinv * U = 1 := by
+    ext j l; rw [_root_.Matrix.mul_apply]
+    simpa [U, Uinv, Finset.sum_apply, smul_eq_mul, _root_.Matrix.one_apply,
+      Pi.single_apply, eq_comm] using congrFun (snf.bM.sum_repr (Pi.single j 1)) l
+  have hUUinv : U * Uinv = 1 := by
+    ext u v; rw [_root_.Matrix.mul_apply]
+    have hlin : ∑ j, U u j * Uinv j v = snf.bM.repr (∑ j, U u j • Pi.single j (1 : ℤ)) v := by
+      rw [map_sum, Finsupp.coe_finsetSum, Finset.sum_apply]
+      exact Finset.sum_congr rfl fun _ _ => by
+        rw [map_smul, Finsupp.coe_smul, Pi.smul_apply, smul_eq_mul]
+    rw [hlin, show (∑ j, U u j • Pi.single j (1 : ℤ)) = snf.bM u by
+      ext j; simp [U, Finset.sum_apply, Pi.single_apply], snf.bM.repr_self]
+    by_cases h : u = v <;> simp [h, _root_.Matrix.one_apply]
+  have hU_li (R : Type) [Field R] : LinearIndependent R (fun j : ι => ((↑) : ℤ → R) ∘ snf.bM j) := by
+    rw [Fintype.linearIndependent_iff]; intro c hc j
+    have hvec : c ᵥ* U.map ((↑) : ℤ → R) = 0 := by
+      ext k; simpa [U, _root_.Matrix.vecMul, dotProduct, Finset.sum_apply] using congrFun hc k
+    have h1 : U.map ((↑) : ℤ → R) * Uinv.map ((↑) : ℤ → R) = 1 := by
+      change (Int.castRingHom R).mapMatrix U * (Int.castRingHom R).mapMatrix Uinv = 1
+      rw [← map_mul, hUUinv, map_one]
+    have hmul := congrFun (congrArg (· ᵥ* Uinv.map ((↑) : ℤ → R)) hvec) j
+    simpa [_root_.Matrix.vecMul_vecMul, h1] using hmul
+  set Aq := A.map ((↑) : ℤ → ℚ)
+  have hker_eq : LinearMap.ker Aq.mulVecLin =
+      Submodule.span ℚ (Set.range fun l : Fin r => ((↑) : ℤ → ℚ) ∘ snf.bM (snf.f l)) := by
+    refine le_antisymm (fun v hv => ?_) (Submodule.span_le.mpr ?_)
+    · let d : ℤ := ∏ i : ι, ((v i).den : ℤ)
+      have hd0 : (d : ℚ) ≠ 0 := by
+        dsimp only [d]
+        exact_mod_cast (Finset.prod_ne_zero_iff.mpr fun i _ =>
+          Int.natCast_ne_zero.mpr (v i).pos.ne' : (∏ i : ι, ((v i).den : ℤ)) ≠ 0)
+      let z : ι → ℤ := fun i => (v i).num * ∏ k ∈ univ.erase i, ((v k).den : ℤ)
+      have hz (i : ι) : (d : ℚ) * v i = z i := by
+        dsimp only [d, z]; push_cast
+        rw [← Finset.mul_prod_erase univ (fun k => ((v k).den : ℚ)) (mem_univ i),
+          mul_right_comm, mul_comm (((v i).den : ℚ)) (v i), Rat.mul_den_eq_num]
+      have hzK : z ∈ K := by
+        rw [LinearMap.mem_ker]; ext i
+        have hcast : ((A *ᵥ z) i : ℚ) = (Aq *ᵥ (((↑) : ℤ → ℚ) ∘ z)) i := by
+          simp [Aq, _root_.Matrix.mulVec, dotProduct]
+        have heq : (((↑) : ℤ → ℚ) ∘ z) = (d : ℚ) • v := funext fun j => (hz j).symm
+        have hi : (Aq *ᵥ (((↑) : ℤ → ℚ) ∘ z)) i = 0 := by
+          rw [heq, ← Aq.mulVecLin_apply, map_smul, LinearMap.mem_ker.mp hv, smul_zero, Pi.zero_apply]
+        exact_mod_cast hcast.trans hi
+      have hz_sum : z = ∑ l : Fin r, snf.bM.repr z (snf.f l) • snf.bM (snf.f l) := by
+        conv_lhs => rw [← snf.bM.sum_repr z]
+        rw [← Finset.sum_filter_of_ne (p := fun j => j ∈ Set.range snf.f) fun j _ hj => by
+          by_contra hnr
+          exact hj (snf.repr_eq_zero_of_notMem_range ⟨z, hzK⟩ hnr ▸ zero_smul ℤ _)]
+        rw [show (univ.filter fun j => j ∈ Set.range snf.f) = univ.image snf.f by ext; simp,
+          Finset.sum_image fun _ _ _ _ h => snf.f.injective h]
+      rw [show v = ∑ l : Fin r, ((d : ℚ)⁻¹ * (snf.bM.repr z (snf.f l) : ℚ)) •
+          (((↑) : ℤ → ℚ) ∘ snf.bM (snf.f l)) by
+        ext j
+        have hzj := congrArg ((↑) : ℤ → ℚ) (congrFun hz_sum j)
+        simp only [Finset.sum_apply, Pi.smul_apply, Function.comp_apply, smul_eq_mul,
+          Int.cast_sum, Int.cast_mul, mul_assoc] at hzj ⊢
+        rw [← Finset.mul_sum, ← hzj, ← hz j, inv_mul_cancel_left₀ hd0]]
+      exact sum_mem fun l _ => smul_mem _ _ (subset_span ⟨l, rfl⟩)
+    · rintro _ ⟨l, rfl⟩
+      rw [SetLike.mem_coe, LinearMap.mem_ker, _root_.Matrix.mulVecLin_apply]
+      ext i
+      simpa [Aq, _root_.Matrix.mulVec, dotProduct] using congrArg ((↑) : ℤ → ℚ) (congrFun (hbK l) i)
+  have hmr : m + r = Fintype.card ι := by
+    have h1 := LinearMap.finrank_range_add_finrank_ker Aq.mulVecLin
+    have h2 : finrank ℚ (LinearMap.range Aq.mulVecLin) = m := by
+      change Aq.rank = m; simpa using hA.rank_matrix
+    have h3 : finrank ℚ (LinearMap.ker Aq.mulVecLin) = r := by
+      rw [hker_eq]
+      change finrank ℚ (span ℚ (Set.range ((fun j => ((↑) : ℤ → ℚ) ∘ snf.bM j) ∘ snf.f))) = r
+      rw [finrank_span_eq_card ((hU_li ℚ).comp snf.f snf.f.injective), Fintype.card_fin]
+    simpa [h2, h3] using h1
+  have hrpos : 0 < r := by omega
+  set Sc : Finset ι := (univ.map snf.f)ᶜ
+  have hScard : Fintype.card Sc = m := by
+    rw [Fintype.card_coe, Finset.card_compl, Finset.card_map, Finset.card_univ, Fintype.card_fin]; omega
+  let g : Fin m ↪ ι := (Fintype.equivFinOfCardEq hScard).symm.toEmbedding.trans (.subtype _)
+  have hdisj (i : Fin m) (l : Fin r) : g i ≠ snf.f l := fun h => by
+    have hmem : g i ∈ Sc := ((Fintype.equivFinOfCardEq hScard).symm i).2
+    exact (Finset.mem_compl.mp hmem) (h ▸ Finset.mem_map_of_mem snf.f (mem_univ l))
+  let e : Fin m ⊕ Fin r ≃ ι := Equiv.ofBijective (Sum.elim g snf.f)
+    ((Fintype.bijective_iff_injective_and_card _).mpr ⟨by
+      rintro (i₁ | l₁) (i₂ | l₂) h
+      · exact congrArg Sum.inl (g.injective h)
+      · exact (hdisj i₁ l₂ h).elim
+      · exact (hdisj i₂ l₁ h.symm).elim
+      · exact congrArg Sum.inr (snf.f.injective h), by simp [hmr]⟩)
+  let C : _root_.Matrix (Fin m) ι ℤ := U.submatrix g id
+  let B : _root_.Matrix (Fin r) ι ℤ := U.submatrix snf.f id
+  let M : _root_.Matrix (Fin m ⊕ Fin r) ι ℤ := U.submatrix e id
+  let P : _root_.Matrix ι (Fin m ⊕ Fin r) ℤ := Uinv.submatrix id e
+  have hPM : P * M = 1 := by
+    ext j l
+    simp only [P, M, _root_.Matrix.mul_apply, _root_.Matrix.submatrix_apply, id_eq]
+    rw [Equiv.sum_comp e fun w => Uinv j w * U w l]
+    exact congrArg (fun X => X j l) hUinvU
+  have hABt : A * Bᵀ = 0 := funext fun i => funext fun l => congrFun (hbK l) i
+  have hA_fac : A = (A * Cᵀ) * Pᵀ.submatrix Sum.inl id := by
+    calc A = (A * Mᵀ) * Pᵀ := by
+          rw [_root_.Matrix.mul_assoc, ← _root_.Matrix.transpose_mul, hPM,
+            _root_.Matrix.transpose_one, _root_.Matrix.mul_one]
+      _ = (A * Cᵀ) * Pᵀ.submatrix Sum.inl id := by
+          ext i j
+          rw [_root_.Matrix.mul_apply, Fintype.sum_sum_type, _root_.Matrix.mul_apply]
+          have hz : ∑ l : Fin r, (A * Mᵀ) i (Sum.inr l) * Pᵀ (Sum.inr l) j = 0 :=
+            Finset.sum_eq_zero fun l _ => by
+              have : (A * Mᵀ) i (Sum.inr l) = (A * Bᵀ) i l := rfl
+              rw [this, hABt, _root_.Matrix.zero_apply, zero_mul]
+          rw [hz, add_zero]; rfl
+  have hgcd_sq : minorGcd A ^ 2 = (A * Cᵀ).det ^ 2 := by
+    have hd1 : minorGcd A ∣ (A * Cᵀ).det := by
+      rw [_root_.Matrix.det_mul_eq_sum_det_submatrix]
+      exact Finset.dvd_sum fun s _ => dvd_mul_of_dvd_left (Finset.gcd_dvd (mem_univ s))
+    have hd2 : (A * Cᵀ).det ∣ minorGcd A := Finset.dvd_gcd fun s _ => by
+      have hs : A.submatrix id s = (A * Cᵀ) * Pᵀ.submatrix Sum.inl s := by
+        conv_lhs => rw [hA_fac]
+        rfl
+      rw [hs, _root_.Matrix.det_mul]; exact dvd_mul_right _ _
+    obtain ⟨u, hu⟩ := associated_of_dvd_dvd hd1 hd2
+    rcases Int.isUnit_iff.mp u.isUnit with h | h <;> simp [← hu, h]
+  let W : _root_.Matrix (Fin m ⊕ Fin r) ι ℤ := _root_.Matrix.of (Sum.elim A.row B.row)
+  let M₀ := M.submatrix id e
+  let P₀ := P.submatrix e id
+  let W₀ := W.submatrix id e
+  have hM₀_sq : M₀.det ^ 2 = 1 := by
+    have h1 : P₀.det * M₀.det = 1 := by
+      rw [← _root_.Matrix.det_mul, show P₀ * M₀ = 1 by
+        ext u v; refine (congrArg (fun X => X (e u) (e v)) hPM).trans ?_
+        by_cases huv : u = v <;> simp [huv, _root_.Matrix.one_apply, e.injective.eq_iff],
+        _root_.Matrix.det_one]
+    rcases Int.isUnit_iff.mp (isUnit_of_dvd_one ⟨P₀.det, h1.symm.trans (mul_comm _ _)⟩) with h | h <;>
+      simp [h]
+  have hWWt : (W₀ * W₀ᵀ).det = (A * Aᵀ).det * (B * Bᵀ).det := by
+    have h1 : W₀ * W₀ᵀ = W * Wᵀ := by ext u v; exact Equiv.sum_comp e fun j => W u j * W v j
+    have h2 : W * Wᵀ = _root_.Matrix.fromBlocks (A * Aᵀ) (A * Bᵀ) (B * Aᵀ) (B * Bᵀ) := by
+      ext (_ | _) (_ | _) <;> rfl
+    have hBAt : B * Aᵀ = 0 := by
+      rw [← _root_.Matrix.transpose_transpose B, ← _root_.Matrix.transpose_mul, hABt,
+        _root_.Matrix.transpose_zero]
+    rw [h1, h2, hABt, hBAt, _root_.Matrix.det_fromBlocks_zero₁₂]
+  have hWMt : (W₀ * M₀ᵀ).det = (A * Cᵀ).det * (B * Bᵀ).det := by
+    have h1 : W₀ * M₀ᵀ = W * Mᵀ := by ext u v; exact Equiv.sum_comp e fun j => W u j * M v j
+    have h2 : W * Mᵀ = _root_.Matrix.fromBlocks (A * Cᵀ) (A * Bᵀ) (B * Cᵀ) (B * Bᵀ) := by
+      ext (_ | _) (_ | _) <;> rfl
+    rw [h1, h2, hABt, _root_.Matrix.det_fromBlocks_zero₁₂]
+  have hBBpos : 0 < (B * Bᵀ).det := det_pos ((hU_li ℚ).comp snf.f snf.f.injective)
+  have hdet_id : (A * Aᵀ).det = minorGcd A ^ 2 * (B * Bᵀ).det := by
+    refine mul_right_cancel₀ hBBpos.ne' ?_
+    rw [← hWWt, _root_.Matrix.det_mul, _root_.Matrix.det_transpose, ← sq,
+      show W₀.det ^ 2 = (W₀ * M₀ᵀ).det ^ 2 by
+        rw [_root_.Matrix.det_mul, _root_.Matrix.det_transpose, mul_pow, hM₀_sq, mul_one],
+      hWMt, hgcd_sq, mul_pow, sq ((B * Bᵀ).det), mul_assoc]
+  let b : Fin r → EuclideanSpace ℝ ι := fun l => WithLp.toLp 2 (((↑) : ℤ → ℝ) ∘ B l)
+  have hb_li : LinearIndependent ℝ b :=
+    ((hU_li ℝ).comp snf.f snf.f.injective).map'
+      (WithLp.linearEquiv 2 ℝ (ι → ℝ)).symm.toLinearMap (LinearEquiv.ker _)
+  set V : Submodule ℝ (EuclideanSpace ℝ ι) := Submodule.span ℝ (Set.range b)
+  let β : Basis (Fin r) ℝ V := Basis.span hb_li
+  have hdim : finrank ℝ V = r := by rw [finrank_eq_card_basis β, Fintype.card_fin]
+  let o : OrthonormalBasis (Fin r) ℝ V :=
+    (stdOrthonormalBasis ℝ V).reindex (Fintype.equivFinOfCardEq (by simp [hdim]))
+  have hgram : (o.toBasis.toMatrix β)ᵀ * o.toBasis.toMatrix β = (B * Bᵀ).map ((↑) : ℤ → ℝ) := by
+    ext l₁ l₂
+    simp only [_root_.Matrix.mul_apply, _root_.Matrix.transpose_apply, Basis.toMatrix_apply,
+      OrthonormalBasis.coe_toBasis_repr_apply, OrthonormalBasis.repr_apply_apply, _root_.Matrix.map_apply]
+    have hin : ∑ k : Fin r, inner ℝ (o k) (β l₁) * inner ℝ (o k) (β l₂) =
+        inner ℝ (β l₁ : EuclideanSpace ℝ ι) (β l₂ : EuclideanSpace ℝ ι) :=
+      (Finset.sum_congr rfl fun k _ => by rw [real_inner_comm (o k) (β l₁)]).trans
+        (o.sum_inner_mul_inner (β l₁) (β l₂))
+    rw [hin, Basis.span_apply, Basis.span_apply, PiLp.inner_apply]
+    push_cast; exact Finset.sum_congr rfl fun _ _ => mul_comm _ _
+  set Cval : ℝ := Real.sqrt (((A * Aᵀ).det : ℤ) : ℝ) / ((minorGcd A : ℤ) : ℝ)
+  have hCpos : 0 < Cval := div_pos (Real.sqrt_pos.mpr (mod_cast det_pos hA))
+    (mod_cast one_le_minorGcd hA)
+  have hfund : volume (ZSpan.fundamentalDomain β) = ENNReal.ofReal Cval := by
+    have ho1 : volume (ZSpan.fundamentalDomain o.toBasis) = 1 := by
+      rw [measure_congr (ZSpan.fundamentalDomain_ae_parallelepiped o.toBasis volume)]
+      simp [o.volume_parallelepiped]
+    rw [ZSpan.measure_fundamentalDomain β volume o.toBasis, ho1, mul_one, Basis.det_apply]
+    congr 1
+    refine (sq_eq_sq₀ (abs_nonneg _) hCpos.le).mp ?_
+    have hsq : |(o.toBasis.toMatrix β).det| ^ 2 = (((B * Bᵀ).det : ℤ) : ℝ) := by
+      rw [sq_abs, sq]
+      conv_lhs => arg 1; rw [← _root_.Matrix.det_transpose]
+      rw [← _root_.Matrix.det_mul, hgram]
+      change _ = (Int.castRingHom ℝ) (B * Bᵀ).det
+      rw [RingHom.map_det]; rfl
+    have hD1 : (1 : ℝ) ≤ ((minorGcd A : ℤ) : ℝ) := mod_cast one_le_minorGcd hA
+    rw [hsq, div_pow, Real.sq_sqrt (mod_cast (det_pos hA).le), hdet_id]; push_cast; field_simp
+  set X : ℝ := Cval ^ ((r : ℝ)⁻¹)
+  have hXpos : 0 < X := Real.rpow_pos_of_pos hCpos _
+  set t : ℝ := (X + ((⌊X⌋ : ℝ) + 1)) / 2
+  have hXt : X < t := by dsimp only [t]; linarith [Int.lt_floor_add_one X]
+  have htfl : t < (⌊X⌋ : ℝ) + 1 := by dsimp only [t]; linarith [Int.lt_floor_add_one X]
+  have htpos : 0 < t := hXpos.trans hXt
+  set Kset : Set V := {y : V | ∀ j, |(y : EuclideanSpace ℝ ι) j| ≤ 1}
+  have hKconv : Convex ℝ Kset := fun x hx y hy a₁ a₂ ha₁ ha₂ ha j => by
+    have h : ((a₁ • x + a₂ • y : V) : EuclideanSpace ℝ ι) j =
+        a₁ * (x : EuclideanSpace ℝ ι) j + a₂ * (y : EuclideanSpace ℝ ι) j := by simp
+    rw [h]
+    exact (abs_add_le _ _).trans <| by
+      rw [abs_mul, abs_mul, abs_of_nonneg ha₁, abs_of_nonneg ha₂]
+      exact (add_le_add (mul_le_mul_of_nonneg_left (hx j) ha₁)
+        (mul_le_mul_of_nonneg_left (hy j) ha₂)).trans_eq (by linarith)
+  have hKsymm : ∀ y ∈ t • Kset, -y ∈ t • Kset := by
+    rintro _ ⟨y, hy, rfl⟩
+    refine ⟨-y, fun j => ?_, smul_neg t y⟩
+    have h : ((-y : V) : EuclideanSpace ℝ ι) j = -((y : V) : EuclideanSpace ℝ ι) j := by simp
+    rw [h, abs_neg]; exact hy j
+  have hvol_lt : volume (ZSpan.fundamentalDomain β) * 2 ^ finrank ℝ V < volume (t • Kset) := by
+    have hpow : Cval < t ^ r :=
+      Real.rpow_inv_natCast_pow hCpos.le hrpos.ne' ▸ pow_lt_pow_left₀ hXt hXpos.le hrpos.ne'
+    have hcube := hdim ▸ two_pow_finrank_le_volume_inter_cube V
+    rw [Measure.addHaar_smul, hdim, abs_of_pos (pow_pos htpos r), hfund]
+    calc ENNReal.ofReal Cval * 2 ^ r < ENNReal.ofReal (t ^ r) * 2 ^ r := by
+          rw [mul_comm, mul_comm _ (2 ^ r)]
+          exact ENNReal.mul_lt_mul_right (pow_ne_zero r two_ne_zero) (by finiteness)
+            ((ENNReal.ofReal_lt_ofReal_iff (pow_pos htpos r)).mpr hpow)
+      _ ≤ ENNReal.ofReal (t ^ r) * volume Kset := by gcongr
+  have : Countable (span ℤ (Set.range ⇑β)).toAddSubgroup :=
+    Function.Surjective.countable (f := fun c : Fin r → ℤ =>
+      (⟨∑ l, c l • β l, sum_mem fun l _ => zsmul_mem (subset_span (Set.mem_range_self l)) _⟩ :
+        (span ℤ (Set.range ⇑β)).toAddSubgroup)) fun ⟨y, hy⟩ => by
+      obtain ⟨c, hc⟩ := Finsupp.mem_span_range_iff_exists_finsupp.mp hy
+      exact ⟨c, Subtype.ext (by simpa [Finsupp.sum_fintype] using hc)⟩
+  obtain ⟨y, hy0, y', hy'K, hy'eq⟩ := exists_ne_zero_mem_lattice_of_measure_mul_two_pow_lt_measure
+    (ZSpan.isAddFundamentalDomain' β volume) hKsymm (hKconv.smul t) hvol_lt
+  obtain ⟨c, hc⟩ := Finsupp.mem_span_range_iff_exists_finsupp.mp y.2
+  set x : ι → ℤ := fun j => ∑ l : Fin r, c l * B l j
+  have hy_coord (j : ι) : ((y : V) : EuclideanSpace ℝ ι) j = (x j : ℝ) := by
+    rw [show (y : V) = ∑ l : Fin r, c l • β l by simpa [Finsupp.sum_fintype] using hc.symm]
+    have hcoe : ((∑ l : Fin r, c l • β l : V) : EuclideanSpace ℝ ι) j =
+        ∑ l : Fin r, (c l : ℝ) * (b l) j := by
+      push_cast; simp only [WithLp.ofLp_sum, Finset.sum_apply]
+      refine Finset.sum_congr rfl fun l _ => ?_
+      rw [congrArg Subtype.val (Basis.span_apply hb_li l)]; simp
+    rw [hcoe]; simp [x, b]
+  refine ⟨x, fun hx0 => hy0 <| by
+    ext1; ext j; rw [hy_coord j, hx0, Pi.zero_apply, Int.cast_zero]; simp, ?_, ?_⟩
+  · ext i
+    simp only [_root_.Matrix.mulVec, dotProduct, x, Finset.mul_sum, Pi.zero_apply]
+    rw [Finset.sum_comm]
+    refine Finset.sum_eq_zero fun l _ => ?_
+    simp_rw [← mul_assoc, mul_comm (A i _) (c l), mul_assoc, ← Finset.mul_sum]
+    exact mul_eq_zero_of_right _
+      (by simpa [_root_.Matrix.mulVec, dotProduct, B, U] using congrFun (hbK l) i)
+  · have hxle (j : ι) : |x j| ≤ ⌊X⌋ := by
+      have hj : |((y : V) : EuclideanSpace ℝ ι) j| ≤ t := by
+        rw [← hy'eq, show ((t • y' : V) : EuclideanSpace ℝ ι) j = t * (y' : EuclideanSpace ℝ ι) j by simp,
+          abs_mul, abs_of_pos htpos]
+        exact (mul_le_mul_of_nonneg_left (hy'K j) htpos.le).trans_eq (mul_one t)
+      have hjR : ((|x j| : ℤ) : ℝ) < (⌊X⌋ : ℝ) + 1 := by
+        rw [Int.cast_abs, ← hy_coord j]; exact hj.trans_lt htfl
+      have hjZ : |x j| < ⌊X⌋ + 1 := mod_cast hjR
+      omega
+    have : Nonempty ι := Fintype.card_pos_iff.mp (by omega)
+    obtain ⟨j₀, hj₀⟩ := exists_eq_ciSup_of_finite (f := fun j => |x j|)
+    rw [← Nat.cast_sub hmn.le, show Fintype.card ι - m = r by omega, ← hj₀]
+    exact (Int.cast_le.mpr (hxle j₀)).trans (Int.floor_le X)
 
 end Int.Matrix
+
+end

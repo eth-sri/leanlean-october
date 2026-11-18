@@ -10,7 +10,7 @@ public import Mathlib.RingTheory.Algebraic.Defs
 import CCDN.ForMathlib.MvPolynomial
 import CCDN.Hilbert.AffineCurveDegree
 import CCDN.Hilbert.PlaneHilbert
-import CCDN.Plane.NonabsolutePlaneCount
+import CCDN.Plane.Bezout
 import CCDN.Projection.PlaneProjectionKernel
 
 /-! The irreducible image equation has degree at most the original affine

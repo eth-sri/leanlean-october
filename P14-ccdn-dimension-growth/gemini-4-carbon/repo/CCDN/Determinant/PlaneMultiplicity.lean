@@ -5,7 +5,11 @@ Authors: Jason Davies
 -/
 module
 
-public import CCDN.Determinant.SingularPlaneChart
+public import CCDN.Algebra.OriginShift
+public import CCDN.Determinant.LocalDeterminant
+public import Mathlib.Algebra.Field.ZMod
+public import Mathlib.Data.ZMod.Basic
+public import Mathlib.RingTheory.MvPolynomial.Ideal
 
 /-! Positive singular multiplicity is derived from a nonzero equation
 vanishing at the origin; it is bounded by the equation's total degree. -/

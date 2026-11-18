@@ -31,39 +31,6 @@ lemma homogeneousPointTranslation_inverse {R : Type*} [CommRing R] {n : ℕ}
   · rfl
   · simp [homogeneousPointTranslation]
 
-private lemma homogeneousPointTranslation_injective {R : Type*} [CommRing R] {n : ℕ}
-    (a : Fin n → R) : Function.Injective (homogeneousPointTranslation a) :=
-  Function.LeftInverse.injective (homogeneousPointTranslation_inverse a)
-
-/-- The shear of a nonzero point is nonzero. -/
-lemma homogeneousPointTranslation_ne_zero {R : Type*} [CommRing R] {n : ℕ}
-    (a : Fin n → R) {x : Fin (n + 1) → R} (hx : x ≠ 0) :
-    homogeneousPointTranslation a x ≠ 0 := by
-  intro h
-  apply hx
-  apply homogeneousPointTranslation_injective a
-  have hzero : homogeneousPointTranslation a 0 = 0 := by
-    funext i
-    refine Fin.cases ?_ (fun j => ?_) i <;> simp [homogeneousPointTranslation]
-  exact h.trans hzero.symm
-
-private lemma homogeneousPointTranslation_smul {K : Type*} [Field K] {n : ℕ}
-    (a : Fin n → K) (c : K) (x : Fin (n + 1) → K) :
-    homogeneousPointTranslation a (c • x) = c • homogeneousPointTranslation a x := by
-  funext i
-  refine Fin.cases ?_ (fun j => ?_) i
-  · rfl
-  · simp only [homogeneousPointTranslation, Fin.cons_succ, Pi.smul_apply, smul_eq_mul]
-    ring
-
-private lemma homogeneousPointTranslation_map {R S : Type*} [CommRing R] [CommRing S]
-    {n : ℕ} (φ : R →+* S) (a : Fin n → R) (x : Fin (n + 1) → R) :
-    φ ∘ homogeneousPointTranslation a x = homogeneousPointTranslation (φ ∘ a) (φ ∘ x) := by
-  funext i
-  refine Fin.cases ?_ (fun j => ?_) i
-  · rfl
-  · simp [homogeneousPointTranslation]
-
 /-- An integral shear preserves the greatest common divisor of the coordinates of an integer
 point; in particular it preserves primitivity. -/
 lemma homogeneousPointTranslation_gcd {n : ℕ} (a : Fin n → ℤ)
@@ -81,26 +48,6 @@ lemma homogeneousPointTranslation_gcd {n : ℕ} (a : Fin n → ℤ)
   rw [homogeneousPointTranslation_inverse] at hback
   apply dvd_antisymm_of_normalize_eq Finset.normalize_gcd Finset.normalize_gcd
     hback (hdiv a x)
-
-/-- An integral shear preserves distinctness of projective classes: if the nonzero integer points
-`z i` represent pairwise distinct points of projective space over `ℚ`, so do their shears. -/
-lemma homogeneousPointTranslation_projective_injective {n t : ℕ}
-    (a : Fin n → ℤ) (z : Fin t → IntPoint (n + 1)) (hz0 : ∀ i, z i ≠ 0)
-    (hinj : Function.Injective (fun i => Projectivization.mk ℚ (rationalPoint (z i))
-      (rationalPoint_ne_zero (hz0 i)))) :
-    Function.Injective (fun i => Projectivization.mk ℚ
-      (rationalPoint (homogeneousPointTranslation a (z i)))
-      (rationalPoint_ne_zero (homogeneousPointTranslation_ne_zero a (hz0 i)))) := by
-  intro i j he
-  apply hinj
-  obtain ⟨c, hc⟩ := (Projectivization.mk_eq_mk_iff ℚ _ _ _ _).mp he
-  apply (Projectivization.mk_eq_mk_iff ℚ _ _ _ _).mpr
-  refine ⟨c, ?_⟩
-  change (c : ℚ) • ((Int.castRingHom ℚ) ∘ homogeneousPointTranslation a (z j)) =
-    (Int.castRingHom ℚ) ∘ homogeneousPointTranslation a (z i) at hc
-  rw [homogeneousPointTranslation_map, homogeneousPointTranslation_map,
-    ← homogeneousPointTranslation_smul] at hc
-  exact homogeneousPointTranslation_injective _ hc
 
 /-- If `z` lies in the box of radius `B ≥ 1` and every coordinate of `a` lies in `[0, d]`, then
 the shear of `z` by `-a` lies in the box of radius `(d + 1) * B`. -/
